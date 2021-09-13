@@ -10,6 +10,7 @@ filesets:
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:padring
+      - lowrisc:systems:ast
       - lowrisc:tool:chip_earlgrey_nexysvideo_size_check
     files:
       - rtl/clkgen_xil7series.sv

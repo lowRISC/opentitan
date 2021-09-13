@@ -325,6 +325,8 @@ module chip_earlgrey_cw310 #(
   // Padring Instance //
   //////////////////////
 
+  ast_pkg::ast_clks_t ast_base_clks;
+
 
   padring #(
     // Padring specific counts may differ from pinmux config due
@@ -692,16 +694,141 @@ module chip_earlgrey_cw310 #(
 
 
 
-  //////////////////
-  // PLL for FPGA //
-  //////////////////
+  //////////////////////////////////
+  // AST - Common for all targets //
+  //////////////////////////////////
 
-  assign manual_out_io_clk = 1'b0;
-  assign manual_oe_io_clk = 1'b0;
-  assign manual_out_por_n = 1'b0;
-  assign manual_oe_por_n = 1'b0;
-  assign manual_out_io_jsrst_n = 1'b0;
-  assign manual_oe_io_jsrst_n = 1'b0;
+  // pwrmgr interface
+  pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
+  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+
+  // assorted ast status
+  ast_pkg::ast_pwst_t ast_pwst;
+  ast_pkg::ast_pwst_t ast_pwst_h;
+
+  // TLUL interface
+  tlul_pkg::tl_h2d_t base_ast_bus;
+  tlul_pkg::tl_d2h_t ast_base_bus;
+
+  assign ast_base_pwr.main_pok = ast_pwst.main_pok;
+
+  // synchronization clocks / rests
+  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
+  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
+
+  // external clock
+  logic ext_clk;
+
+  // monitored clock
+  logic sck_monitor;
+
+  // otp power sequence
+  otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
+  otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
+
+  logic usb_ref_pulse;
+  logic usb_ref_val;
+
+  // adc
+  ast_pkg::adc_ast_req_t adc_req;
+  ast_pkg::adc_ast_rsp_t adc_rsp;
+
+  // entropy source interface
+  // The entropy source pacakge definition should eventually be moved to es
+  entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
+  entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
+  logic es_rng_fips;
+
+  // entropy distribution network
+  edn_pkg::edn_req_t ast_edn_edn_req;
+  edn_pkg::edn_rsp_t ast_edn_edn_rsp;
+
+  // alerts interface
+  ast_pkg::ast_alert_rsp_t ast_alert_rsp;
+  ast_pkg::ast_alert_req_t ast_alert_req;
+
+  // Flash connections
+  lc_ctrl_pkg::lc_tx_t flash_bist_enable;
+  logic flash_power_down_h;
+  logic flash_power_ready_h;
+
+  // Life cycle clock bypass req/ack
+  lc_ctrl_pkg::lc_tx_t ast_clk_byp_req;
+  lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
+
+  // DFT connections
+  logic scan_en;
+  lc_ctrl_pkg::lc_tx_t dft_en;
+  pinmux_pkg::dft_strap_test_req_t dft_strap_test;
+
+  // Debug connections
+  logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
+  logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
+
+  // Jitter enable
+  logic jen;
+
+  // reset domain connections
+  import rstmgr_pkg::PowerDomains;
+  import rstmgr_pkg::DomainAonSel;
+  import rstmgr_pkg::Domain0Sel;
+
+  // Memory configuration connections
+  ast_pkg::spm_rm_t ast_ram_1p_cfg;
+  ast_pkg::spm_rm_t ast_rf_cfg;
+  ast_pkg::spm_rm_t ast_rom_cfg;
+  ast_pkg::dpm_rm_t ast_ram_2p_fcfg;
+  ast_pkg::dpm_rm_t ast_ram_2p_lcfg;
+
+  prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
+  prim_ram_2p_pkg::ram_2p_cfg_t ram_2p_cfg;
+  prim_rom_pkg::rom_cfg_t rom_cfg;
+
+  // conversion from ast structure to memory centric structures
+  assign ram_1p_cfg = '{
+    ram_cfg: '{
+                cfg_en: ast_ram_1p_cfg.marg_en,
+                cfg:    ast_ram_1p_cfg.marg
+              },
+    rf_cfg:  '{
+                cfg_en: ast_rf_cfg.marg_en,
+                cfg:    ast_rf_cfg.marg
+              }
+  };
+
+  assign ram_2p_cfg = '{
+    a_ram_fcfg: '{
+                   cfg_en: ast_ram_2p_fcfg.marg_en_a,
+                   cfg:    ast_ram_2p_fcfg.marg_a
+                 },
+    a_ram_lcfg: '{
+                   cfg_en: ast_ram_2p_lcfg.marg_en_a,
+                   cfg:    ast_ram_2p_lcfg.marg_a
+                 },
+    b_ram_fcfg: '{
+                   cfg_en: ast_ram_2p_fcfg.marg_en_b,
+                   cfg:    ast_ram_2p_fcfg.marg_b
+                 },
+    b_ram_lcfg: '{
+                   cfg_en: ast_ram_2p_lcfg.marg_en_b,
+                   cfg:    ast_ram_2p_lcfg.marg_b
+                 }
+  };
+
+  assign rom_cfg = '{
+    cfg_en: ast_rom_cfg.marg_en,
+    cfg: ast_rom_cfg.marg
+  };
+
+
+  //////////////////////////////////
+  // AST - Custom for targets     //
+  //////////////////////////////////
+
+
+  // TODO: Hook this up when FPGA pads are updated
+  assign ext_clk = '0;
+  assign pad2ast = '0;
 
   logic clk_main, clk_usb_48mhz, clk_aon, rst_n;
   clkgen_xil7series # (
@@ -715,6 +842,156 @@ module chip_earlgrey_cw310 #(
     .clk_aon_o(clk_aon),
     .rst_no(rst_n)
   );
+
+  ast_pkg::clks_osc_byp_t clks_osc_byp;
+  assign clks_osc_byp = '{
+    usb: clk_usb_48mhz,
+    sys: clk_main,
+    io:  clk_main,
+    aon: clk_aon
+  };
+
+
+  ast #(
+    .EntropyStreams(ast_pkg::EntropyStreams),
+    .AdcChannels(ast_pkg::AdcChannels),
+    .AdcDataWidth(ast_pkg::AdcDataWidth),
+    .UsbCalibWidth(ast_pkg::UsbCalibWidth),
+    .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
+    .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
+  ) u_ast (
+    // external POR
+    .por_ni                ( rst_n ),
+
+    // USB IO Pull-up Calibration Setting
+    .usb_io_pu_cal_o       ( ),
+
+    // clocks' oschillator bypass for FPGA
+    .clk_osc_byp_i         ( clks_osc_byp ),
+
+    // adc
+    .adc_a0_ai             ( '0 ),
+    .adc_a1_ai             ( '0 ),
+
+    // Direct short to PAD
+    .pad2ast_t0_ai         ( '0 ),
+    .pad2ast_t1_ai         ( '0 ),
+    .ast2pad_t0_ao         (  ),
+    .ast2pad_t1_ao         (  ),
+
+    // clocks and resets supplied for detection
+    .sns_clks_i            ( clkmgr_aon_clocks    ),
+    .sns_rsts_i            ( rstmgr_aon_resets    ),
+    .sns_spi_ext_clk_i     ( sck_monitor          ),
+    // tlul
+    .tl_i                  ( base_ast_bus ),
+    .tl_o                  ( ast_base_bus ),
+    // init done indication
+    .ast_init_done_o       ( ast_init_done ),
+    // buffered clocks & resets
+    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_secure),
+    .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_secure),
+    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_div4_secure),
+    .clk_ast_es_i (clkmgr_aon_clocks.clk_main_secure),
+    .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
+    .clk_ast_usb_i (clkmgr_aon_clocks.clk_usb_secure),
+    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_adc_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_es_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_rng_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_usb_ni (rstmgr_aon_resets.rst_usbif_n[rstmgr_pkg::Domain0Sel]),
+    .clk_ast_ext_i         ( ext_clk ),
+
+    // pok test for FPGA
+    .vcc_supp_i            ( 1'b1 ),
+    .vcaon_supp_i          ( 1'b1 ),
+    .vcmain_supp_i         ( 1'b1 ),
+    .vioa_supp_i           ( 1'b1 ),
+    .viob_supp_i           ( 1'b1 ),
+    // pok
+    .ast_pwst_o            ( ast_pwst ),
+    .ast_pwst_h_o          ( ast_pwst_h ),
+    // main regulator
+    .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
+    .main_pd_ni            ( base_ast_pwr.main_pd_n ),
+    // pdm control (flash)/otp
+    .flash_power_down_h_o  ( flash_power_down_h ),
+    .flash_power_ready_h_o ( flash_power_ready_h ),
+    .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
+    .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
+    // system source clock
+    .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
+    // need to add function in clkmgr
+    .clk_src_sys_jen_i     ( jen ),
+    .clk_src_sys_o         ( ast_base_clks.clk_sys  ),
+    .clk_src_sys_val_o     ( ast_base_pwr.core_clk_val ),
+    // aon source clock
+    .clk_src_aon_o         ( ast_base_clks.clk_aon ),
+    .clk_src_aon_val_o     ( ast_base_pwr.slow_clk_val ),
+    // io source clock
+    .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
+    .clk_src_io_o          ( ast_base_clks.clk_io ),
+    .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
+    // usb source clock
+    .usb_ref_pulse_i       ( usb_ref_pulse ),
+    .usb_ref_val_i         ( usb_ref_val ),
+    .clk_src_usb_en_i      ( base_ast_pwr.usb_clk_en ),
+    .clk_src_usb_o         ( ast_base_clks.clk_usb ),
+    .clk_src_usb_val_o     ( ast_base_pwr.usb_clk_val ),
+    // adc
+    .adc_pd_i              ( adc_req.pd ),
+    .adc_chnsel_i          ( adc_req.channel_sel ),
+    .adc_d_o               ( adc_rsp.data ),
+    .adc_d_val_o           ( adc_rsp.data_valid ),
+    // rng
+    .rng_en_i              ( es_rng_req.rng_enable ),
+    .rng_fips_i            ( es_rng_fips ),
+    .rng_val_o             ( es_rng_rsp.rng_valid ),
+    .rng_b_o               ( es_rng_rsp.rng_b ),
+    // entropy
+    .entropy_rsp_i         ( ast_edn_edn_rsp ),
+    .entropy_req_o         ( ast_edn_edn_req ),
+    // alerts
+    .fla_alert_src_i       ( flash_alert    ),
+    .otp_alert_src_i       ( otp_alert      ),
+    .alert_rsp_i           ( ast_alert_rsp  ),
+    .alert_req_o           ( ast_alert_req  ),
+    // dft
+    .dft_strap_test_i      ( dft_strap_test   ),
+    .lc_dft_en_i           ( dft_en           ),
+    // pinmux related
+    .padmux2ast_i          ( pad2ast    ),
+    .ast2padmux_o          ( ast2pinmux ),
+    .lc_clk_byp_req_i      ( ast_clk_byp_req   ),
+    .lc_clk_byp_ack_o      ( ast_clk_byp_ack   ),
+    .flash_bist_en_o       ( flash_bist_enable ),
+    // Memory configuration connections
+    .dpram_rmf_o           ( ast_ram_2p_fcfg ),
+    .dpram_rml_o           ( ast_ram_2p_lcfg ),
+    .spram_rm_o            ( ast_ram_1p_cfg  ),
+    .sprgf_rm_o            ( ast_rf_cfg      ),
+    .sprom_rm_o            ( ast_rom_cfg     ),
+    // scan
+    .dft_scan_md_o         ( scanmode ),
+    .scan_shift_en_o       ( scan_en ),
+    .scan_reset_no         ( scan_rst_n )
+  );
+
+
+
+
+  //////////////////
+  // PLL for FPGA //
+  //////////////////
+
+  assign manual_out_io_clk = 1'b0;
+  assign manual_oe_io_clk = 1'b0;
+  assign manual_out_por_n = 1'b0;
+  assign manual_oe_por_n = 1'b0;
+  assign manual_out_io_jsrst_n = 1'b0;
+  assign manual_oe_io_jsrst_n = 1'b0;
+
 
   //////////////////////
   // Top-level design //
@@ -766,38 +1043,42 @@ module chip_earlgrey_cw310 #(
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
-    .por_n_i                      ( {rst_n, rst_n}   ),
-    .clk_main_i                   ( clk_main         ),
-    .clk_io_i                     ( clk_main         ),
-    .clk_usb_i                    ( clk_usb_48mhz    ),
-    .clk_aon_i                    ( clk_aon          ),
-    .clks_ast_o                   (                  ),
-    .clk_main_jitter_en_o         (                  ),
-    .rsts_ast_o                   (                  ),
-    .pwrmgr_ast_req_o             (                  ),
-    .pwrmgr_ast_rsp_i             ( ast_base_pwr     ),
-    .usbdev_usb_ref_val_o         (                  ),
-    .usbdev_usb_ref_pulse_o       (                  ),
-    .ast_edn_req_i                ( '0               ),
-    .ast_edn_rsp_o                (                  ),
-    .flash_bist_enable_i          ( lc_ctrl_pkg::Off ),
-    .flash_power_down_h_i         ( 1'b0             ),
-    .flash_power_ready_h_i        ( 1'b1             ),
-    .ast_clk_byp_req_o            ( lc_clk_bypass    ),
-    .ast_clk_byp_ack_i            ( lc_clk_bypass    ),
+    .por_n_i                      ( {rst_n, rst_n}        ),
+    .clk_main_i                   ( ast_base_clks.clk_sys ),
+    .clk_io_i                     ( ast_base_clks.clk_io  ),
+    .clk_usb_i                    ( ast_base_clks.clk_usb ),
+    .clk_aon_i                    ( ast_base_clks.clk_aon ),
+    .clks_ast_o                   ( clkmgr_aon_clocks     ),
+    .clk_main_jitter_en_o         ( jen                   ),
+    .rsts_ast_o                   ( rstmgr_aon_resets     ),
+    .sck_monitor_o                ( sck_monitor           ),
+    .pwrmgr_ast_req_o             ( base_ast_pwr          ),
+    .pwrmgr_ast_rsp_i             ( ast_base_pwr          ),
+    .usbdev_usb_ref_val_o         ( usb_ref_pulse         ),
+    .usbdev_usb_ref_pulse_o       ( usb_ref_val           ),
+    .ast_edn_req_i                ( ast_edn_edn_req       ),
+    .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
+    .flash_bist_enable_i          ( lc_ctrl_pkg::Off      ),
+    .flash_power_down_h_i         ( 1'b0                  ),
+    .flash_power_ready_h_i        ( 1'b1                  ),
+    .ast_clk_byp_req_o            ( ast_clk_byp_req       ),
+    .ast_clk_byp_ack_i            ( ast_clk_byp_ack       ),
 
-    .ast_tl_req_o                 (                  ),
-    .ast_tl_rsp_i                 ( '0               ),
-    .otp_ctrl_otp_ast_pwr_seq_o   (                  ),
-    .otp_ctrl_otp_ast_pwr_seq_h_i ( '0               ),
-    .otp_alert_o                  (                  ),
-    .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts  ),
-    .sensor_ctrl_ast_alert_rsp_o  (                  ),
-    .sensor_ctrl_ast_status_i     ( ast_base_status  ),
-    .es_rng_req_o                 (                  ),
-    .es_rng_rsp_i                 ( '0               ),
-    .es_rng_fips_o                (                  ),
-    .ast2pinmux_i                 ( '0               ),
+    .ast_tl_req_o                 ( base_ast_bus               ),
+    .ast_tl_rsp_i                 ( ast_base_bus               ),
+    .adc_req_o                    ( adc_req                    ),
+    .adc_rsp_i                    ( adc_rsp                    ),
+    .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
+    .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_alert_o                  ( otp_alert                  ),
+    .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
+    .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
+    .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
+    .es_rng_req_o                 ( es_rng_req                 ),
+    .es_rng_rsp_i                 ( es_rng_rsp                 ),
+    .es_rng_fips_o                ( es_rng_fips                ),
+    .ast2pinmux_i                 ( ast2pinmux                 ),
+    .ast_init_done_i              ( ast_init_done              ),
 
     // Multiplexed I/O
     .mio_in_i        ( mio_in   ),

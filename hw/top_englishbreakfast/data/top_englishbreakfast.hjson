@@ -283,6 +283,28 @@
       base_addr: "0x40470000",
       attr: "templated",
     },
+    { name: "ast",
+      type: "ast",
+      clock_srcs: {
+        clk_ast_tlul_i: "io_div4",
+        clk_ast_adc_i: "aon",
+        clk_ast_alert_i: "io_div4",
+        clk_ast_es_i: "main",
+        clk_ast_rng_i: "main",
+        clk_ast_usb_i: "usb"
+      },
+      clock_group: "secure",
+      reset_connections: {
+        rst_ast_tlul_ni: "lc_io_div4",
+        rst_ast_adc_ni: "sys_aon",
+        rst_ast_alert_ni: "lc_io_div4",
+        rst_ast_es_ni: "sys",
+        rst_ast_rng_ni: "sys",
+        rst_ast_usb_ni: "usb"
+      },
+      base_addr: "0x40480000",
+      attr: "reggen_only",
+    },
     { name: "sram_ctrl_ret_aon",
       type: "sram_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_otp_i: "io_div4"},
@@ -620,16 +642,17 @@
         'flash_ctrl.flash_power_ready_h'   : 'flash_power_ready_h',
         # 'entropy_src.entropy_src_rng'  : '',
         # 'entropy_src.rng_fips'         : '',
-        # 'peri.tl_ast'                  : '',
+        'peri.tl_ast'                  : 'ast_tl',
         'pinmux_aon.dft_strap_test'    : 'dft_strap_test'
         'pinmux_aon.dft_hold_tap_sel'  : 'dft_hold_tap_sel',
         'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
         # 'otp_ctrl.otp_ast_pwr_seq'     : '',
         # 'otp_ctrl.otp_ast_pwr_seq_h'   : '',
         # 'otp_ctrl.otp_alert'           : 'otp_alert',
-        'rstmgr_aon.por_n'             : 'por_n'
-        'usbdev.usb_ref_val'           : '',
-        'usbdev.usb_ref_pulse'         : '',
+        'rstmgr_aon.por_n'               : 'por_n'
+        'usbdev.usb_ref_val'             : '',
+        'usbdev.usb_ref_pulse'           : '',
+        'spi_device.sck_monitor'         : 'sck_monitor',
     },
   },
 
