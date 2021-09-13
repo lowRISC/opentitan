@@ -47,15 +47,11 @@ enum { kBase = TOP_EARLGREY_OTBN_BASE_ADDR };
 /**
  * Ensures that `offset_bytes` and `len` are valid for a given `mem_size`.
  */
-static rom_error_t check_offset_len(uint32_t offset_bytes, size_t len,
+static rom_error_t check_offset_len(uint32_t offset_bytes, size_t num_words,
                                     size_t mem_size) {
-  // TODO: Update to use alignment utility functions.
-  // https://github.com/lowRISC/opentitan/issues/6112
-  if (offset_bytes % sizeof(uint32_t) != 0) {
-    return kErrorOtbnBadOffset;
-  }
-  if (offset_bytes + len * sizeof(uint32_t) < len * sizeof(uint32_t) ||
-      offset_bytes + len * sizeof(uint32_t) > mem_size) {
+  if (offset_bytes + num_words * sizeof(uint32_t) <
+          num_words * sizeof(uint32_t) ||
+      offset_bytes + num_words * sizeof(uint32_t) > mem_size) {
     return kErrorOtbnBadOffsetLen;
   }
   return kErrorOk;
@@ -76,10 +72,11 @@ void otbn_get_err_bits(otbn_err_bits_t *err_bits) {
 }
 
 rom_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
-                            size_t len) {
-  RETURN_IF_ERROR(check_offset_len(offset_bytes, len, kOtbnIMemSizeBytes));
+                            size_t num_words) {
+  RETURN_IF_ERROR(
+      check_offset_len(offset_bytes, num_words, kOtbnIMemSizeBytes));
 
-  for (size_t i = 0; i < len; ++i, offset_bytes += sizeof(uint32_t)) {
+  for (size_t i = 0; i < num_words; ++i, offset_bytes += sizeof(uint32_t)) {
     abs_mmio_write32(kBase + OTBN_IMEM_REG_OFFSET + offset_bytes, src[i]);
   }
 
@@ -87,20 +84,23 @@ rom_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
 }
 
 rom_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
-                            size_t len) {
-  RETURN_IF_ERROR(check_offset_len(offset_bytes, len, kOtbnDMemSizeBytes));
+                            size_t num_words) {
+  RETURN_IF_ERROR(
+      check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
 
-  for (size_t i = 0; i < len; ++i, offset_bytes += sizeof(uint32_t)) {
+  for (size_t i = 0; i < num_words; ++i, offset_bytes += sizeof(uint32_t)) {
     abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + offset_bytes, src[i]);
   }
 
   return kErrorOk;
 }
 
-rom_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest, size_t len) {
-  RETURN_IF_ERROR(check_offset_len(offset_bytes, len, kOtbnDMemSizeBytes));
+rom_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest,
+                           size_t num_words) {
+  RETURN_IF_ERROR(
+      check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
 
-  for (size_t i = 0; i < len; ++i, offset_bytes += sizeof(uint32_t)) {
+  for (size_t i = 0; i < num_words; ++i, offset_bytes += sizeof(uint32_t)) {
     dest[i] = abs_mmio_read32(kBase + OTBN_DMEM_REG_OFFSET + offset_bytes);
   }
 

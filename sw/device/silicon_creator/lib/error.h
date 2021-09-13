@@ -91,7 +91,6 @@ enum module_ {
   X(kErrorOtpBadAlignment,            ERROR_(1, kModuleOtp, kInvalidArgument)), \
   X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
-  X(kErrorOtbnBadOffset,              ERROR_(3, kModuleOtbn, kInvalidArgument)), \
   X(kErrorFlashCtrlInvalidArgument,   ERROR_(1, kModuleFlashCtrl, kInvalidArgument)), \
   X(kErrorFlashCtrlBusy,              ERROR_(2, kModuleFlashCtrl, kUnavailable)), \
   X(kErrorSecMmioRegFileSize,         ERROR_(0, kModuleSecMmio, kResourceExhausted)), \
