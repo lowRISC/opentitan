@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+x2 = 1
+x3 = 100
+
+INSN_CNT = 2
+ERR_BITS = 0x9  # BAD_DATA_ADDR, ILLEGAL_INSN
