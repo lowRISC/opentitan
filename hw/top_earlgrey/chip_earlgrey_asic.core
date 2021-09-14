@@ -44,6 +44,9 @@ parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
+  AST_BYPASS_CLK:
+    datatype: bool
+    paramtype: vlogdefine
 
 targets:
   default: &default_target
@@ -59,6 +62,7 @@ targets:
     default_tool: verilator
     parameters:
       - SYNTHESIS=true
+      - AST_BYPASS_CLK=true
     tools:
       verilator:
         mode: lint-only
@@ -73,6 +77,7 @@ targets:
     default_tool: icarus
     parameters:
       - SYNTHESIS=true
+      - AST_CLK_BYPASS=true
     toplevel: chip_earlgrey_asic
 
   formal:
