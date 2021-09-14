@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-//
+
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_FREERTOSCONFIG_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_FREERTOSCONFIG_H_
 
@@ -14,7 +14,7 @@
 // guide, since they are specific to FreeRTOS.
 
 // Main FreeRTOS configs.
-#define configUSE_PREEMPTION 0
+#define configUSE_PREEMPTION 1
 #define configUSE_IDLE_HOOK 0
 #define configUSE_TICK_HOOK 0
 #define configTICK_RATE_HZ ((TickType_t)5)
@@ -48,7 +48,7 @@
 // Task priorities. Allow these to be overridden.
 #ifndef uartPRIMARY_PRIORITY
 #define uartPRIMARY_PRIORITY (configMAX_PRIORITIES - 3)
-#endif
+#endif  // uartPRIMARY_PRIORITY
 
 // Set the following definitions to 1 to include the API function, or zero to
 // exclude the API function.

@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
-#include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/vendor/freertos_freertos_kernel/include/FreeRTOS.h"
 #include "sw/vendor/freertos_freertos_kernel/include/task.h"
 #include "sw/vendor/freertos_freertos_kernel/portable/GCC/RISC-V/portmacro.h"
@@ -21,13 +20,28 @@
 // functions.
 
 // ----------------------------------------------------------------------------
-// Timer.
+// Timer Setup (for use when preemptive scheduling is enabled)
 // ----------------------------------------------------------------------------
+#if configUSE_PREEMPTION
+
 static dif_rv_timer_t timer;
 static const uint32_t kTimerHartId = (uint32_t)kTopEarlgreyPlicTargetIbex0;
 static const uint32_t kTimerComparatorId = 0;
 static const uint64_t kTimerDeadline =
     100;  // Counter must reach 100 for an IRQ to be triggered.
+
+// Override the timer ISR to support preemptive context switching.
+void ottf_timer_isr(void) {
+  LOG_INFO("Handling timer IQR ...");
+  CHECK(dif_rv_timer_irq_disable(&timer, kTimerHartId, NULL) == kDifRvTimerOk);
+  CHECK(dif_rv_timer_counter_write(&timer, kTimerHartId, 0) == kDifRvTimerOk);
+  CHECK(dif_rv_timer_irq_clear(&timer, kTimerHartId, kTimerComparatorId) ==
+        kDifRvTimerOk);
+  // TODO: increment scheduler tick and switch context if necessary
+  CHECK(dif_rv_timer_irq_enable(&timer, kTimerHartId, kTimerComparatorId,
+                                kDifRvTimerEnabled) == kDifRvTimerOk);
+  LOG_INFO("Done.");
+}
 
 void vPortSetupTimerInterrupt(void) {
   LOG_INFO("Configuring timer interrupt ...");
@@ -61,13 +75,17 @@ void vPortSetupTimerInterrupt(void) {
                                          kDifRvTimerEnabled) == kDifRvTimerOk);
 }
 
+#endif  // configUSE_PREEMPTION
+
 // ----------------------------------------------------------------------------
-// Scheduler.
+// Scheduler Setup
 // ----------------------------------------------------------------------------
 extern void xPortStartFirstTask(void);
 
 BaseType_t xPortStartScheduler(void) {
+#if configUSE_PREEMPTION
   vPortSetupTimerInterrupt();
+#endif  // configUSE_PREEMPTION
   irq_timer_ctrl(true);
   irq_external_ctrl(true);
   irq_software_ctrl(true);
@@ -84,19 +102,4 @@ void vPortEndScheduler(void) {
   while (true) {
     wait_for_interrupt();
   }
-}
-
-// ----------------------------------------------------------------------------
-// ISRs.
-// TODO: add support for remaining ISRs.
-// ----------------------------------------------------------------------------
-void handler_irq_timer(void) {
-  LOG_INFO("Handling timer IQR ...");
-  CHECK(dif_rv_timer_irq_disable(&timer, kTimerHartId, NULL) == kDifRvTimerOk);
-  CHECK(dif_rv_timer_counter_write(&timer, kTimerHartId, 0) == kDifRvTimerOk);
-  CHECK(dif_rv_timer_irq_clear(&timer, kTimerHartId, kTimerComparatorId) ==
-        kDifRvTimerOk);
-  CHECK(dif_rv_timer_irq_enable(&timer, kTimerHartId, kTimerComparatorId,
-                                kDifRvTimerEnabled) == kDifRvTimerOk);
-  LOG_INFO("Done.");
 }

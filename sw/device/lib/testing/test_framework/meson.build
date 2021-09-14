@@ -78,6 +78,7 @@ freertos_portable_path = '@0@/@1@'.format(freertos_root, 'portable/GCC/RISC-V')
 # OpenTitan Test Framework (OTTF) sources & includes.
 ottf_sources = [
   'ottf.c',
+  'ottf_isrs.c',
   'example_earlgrey_test.c',
   'freertos_hooks.c',
   'freertos_port.S',
@@ -103,6 +104,7 @@ sw_lib_ottf = declare_dependency(
     ],
     dependencies: [
       sw_lib_mem,
+      sw_lib_runtime_ibex,
       sw_lib_runtime_hart,
       sw_lib_runtime_log,
       sw_lib_runtime_print,

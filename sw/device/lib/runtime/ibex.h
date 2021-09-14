@@ -41,4 +41,38 @@ inline uint64_t ibex_mcycle_read(void) {
   return (uint64_t)cycle_high << 32 | cycle_low;
 }
 
+/**
+ * Reads the mcause register.
+ *
+ * When an exception is encountered, the corresponding exception code is stored
+ * in mcause register.
+ *
+ * A list of the exception codes can be found at:
+ * https://ibex-core.readthedocs.io/en/latest/03_reference/
+ * exception_interrupts.html#exceptions
+ */
+uint32_t ibex_mcause_read(void);
+
+/**
+ * Reads the mtval register.
+ *
+ * When an exception is encountered, the Machine Trap Value (mtval) register
+ * can holds exception-specific information to assist software in handling the
+ * trap.
+ *
+ * From the Ibex documentation (found at
+ * https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html)
+ * - In the case of errors in the load-store unit mtval holds the address of
+ * the transaction causing the error.
+ *
+ * - If a transaction is misaligned, mtval holds the address of the missing
+ *   transaction part.
+ *
+ * - In the case of illegal instruction exceptions, mtval holds the actual
+ * faulting instruction.
+ *
+ * - For all other exceptions, mtval is 0.
+ */
+uint32_t ibex_mtval_read(void);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_
