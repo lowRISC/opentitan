@@ -345,6 +345,18 @@ class ShutdownTest : public mask_rom_test::MaskRomTest {
         }));
   }
 
+  // Expect a call to `shutdown_finalize`.
+  void ExpectFinalize(rom_error_t error) {
+    // In the RV32 environment, finalize should never return.
+    // In the X86_64 unittest environment, verify that all of the various
+    // kill functions were called.
+    EXPECT_CALL(shutdown_, shutdown_report_error(error));
+    EXPECT_CALL(shutdown_, shutdown_software_escalate());
+    EXPECT_CALL(shutdown_, shutdown_keymgr_kill());
+    EXPECT_CALL(shutdown_, shutdown_flash_kill());
+    EXPECT_CALL(shutdown_, shutdown_hang());
+  }
+
   OtpConfiguration otp_config_ = kOtpConfig;
   // Use NiceMock because we aren't interested in the specifics of OTP reads,
   // but we want to mock out calls to otp_read32.
@@ -491,12 +503,10 @@ TEST_F(ShutdownTest, InitializeRma) {
 TEST_F(ShutdownTest, RedactPolicyManufacturing) {
   // Devices in manufacturing or RMA states should not redact errors regardless
   // of the redaction level set by OTP.
-  constexpr auto kManufacturingStates = std::array<lifecycle_state_t, 10>{
-      kLcStateRaw,           kLcStateTestUnlocked0,
-      kLcStateTestUnlocked1, kLcStateTestUnlocked2,
-      kLcStateTestUnlocked3, kLcStateTestUnlocked4,
-      kLcStateTestUnlocked5, kLcStateTestUnlocked6,
-      kLcStateTestUnlocked7, kLcStateRma};
+  constexpr auto kManufacturingStates = std::array<lifecycle_state_t, 9>{
+      kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
+      kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
+      kLcStateTestUnlocked6, kLcStateTestUnlocked7, kLcStateRma};
   for (const auto state : kManufacturingStates) {
     EXPECT_ABS_READ32(
         TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
@@ -537,6 +547,40 @@ TEST_F(ShutdownTest, RedactPolicyInvalid) {
   }
 }
 
+TEST_F(ShutdownTest, InitializeManufacturing) {
+  // OTP reads and alert setup should be skipped in the RAW and TEST_UNLOCKED
+  // lifecycle states.
+  constexpr std::array<lifecycle_state_t, 8> kManufacturingStates = {
+      kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
+      kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
+      kLcStateTestUnlocked6, kLcStateTestUnlocked7,
+  };
+  for (auto state : kManufacturingStates) {
+    EXPECT_EQ(shutdown_init(state), kErrorOk);
+  }
+}
+
+TEST_F(ShutdownTest, InitializeInvalid) {
+  // Invalid states (such as the INVALID lifecycle state itself) should be
+  // treated as PROD.
+  constexpr std::array<lifecycle_state_t, 12> kInvalidStates = {
+      kLcStateRaw,         kLcStateTestLocked0,
+      kLcStateTestLocked1, kLcStateTestLocked2,
+      kLcStateTestLocked3, kLcStateTestLocked4,
+      kLcStateTestLocked5, kLcStateTestLocked6,
+      kLcStateScrap,       kLcStatePostTransition,
+      kLcStateEscalate,    kLcStateInvalid,
+  };
+  for (auto state : kInvalidStates) {
+    SetupOtpReads();
+    ExpectFinalize(kErrorShutdownBadLcState);
+
+    // Note: the unmocked implementation of `shutdown_finalize` will never
+    // return and therefore `shutdown_init` will not return.
+    EXPECT_EQ(shutdown_init(state), kErrorShutdownBadLcState);
+  }
+}
+
 TEST(ShutdownModule, RedactErrors) {
   EXPECT_EQ(shutdown_redact(kErrorOk, kShutdownErrorRedactNone), 0);
   EXPECT_EQ(shutdown_redact(kErrorOk, kShutdownErrorRedactError), 0);
@@ -555,15 +599,7 @@ TEST(ShutdownModule, RedactErrors) {
 
 TEST_F(ShutdownTest, ShutdownFinalize) {
   SetupOtpReads();
-  EXPECT_CALL(shutdown_, shutdown_report_error(kErrorUnknown));
-  EXPECT_CALL(shutdown_, shutdown_software_escalate());
-  EXPECT_CALL(shutdown_, shutdown_keymgr_kill());
-  EXPECT_CALL(shutdown_, shutdown_flash_kill());
-  EXPECT_CALL(shutdown_, shutdown_hang());
-
-  // In the RV32 environment, finalize should never return.
-  // In the X86_64 unittest environment, verify that all of the various
-  // kill functions were called.
+  ExpectFinalize(kErrorUnknown);
   shutdown_finalize(kErrorUnknown);
 }
 

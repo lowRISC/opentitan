@@ -70,6 +70,17 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   // Are we in a lifecycle state which needs alert configuration?
   uint32_t lc_shift;
   switch (lc_state) {
+    case kLcStateTestUnlocked0:
+    case kLcStateTestUnlocked1:
+    case kLcStateTestUnlocked2:
+    case kLcStateTestUnlocked3:
+    case kLcStateTestUnlocked4:
+    case kLcStateTestUnlocked5:
+    case kLcStateTestUnlocked6:
+    case kLcStateTestUnlocked7:
+      // Don't configure alerts during manufacturing as OTP may not have been
+      // programmed yet.
+      return kErrorOk;
     case kLcStateProd:
       lc_shift = 0;
       break;
@@ -83,8 +94,11 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
       lc_shift = 24;
       break;
     default:
-      // No alert init for any other lifecycle states.
-      return kErrorOk;
+      // Invalid lifecycle state.
+      shutdown_finalize(kErrorShutdownBadLcState);
+
+      // Reachable if using a mock implementation of `shutdown_finalize`.
+      return kErrorShutdownBadLcState;
   }
 
   // Get the enable and escalation settings for all four alert classes.
@@ -216,7 +230,6 @@ shutdown_redact_policy_inline(void) {
                       LC_CTRL_LC_STATE_REG_OFFSET),
       LC_CTRL_LC_STATE_STATE_FIELD);
   switch (lc_state) {
-    case kLcStateRaw:
     case kLcStateTestUnlocked0:
     case kLcStateTestUnlocked1:
     case kLcStateTestUnlocked2:
