@@ -123,10 +123,10 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         // Read only.
         do_read_check = 1'b0;
       end
-      "sw_rst_regen": begin
+      "sw_rst_regwen": begin
       end
       "sw_rst_ctrl_n": begin
-        // TODO Check with bitwise enables from sw_rst_regen.
+        // TODO Check with bitwise enables from sw_rst_regwen.
         do_read_check = 1'b0;
       end
       default: begin
