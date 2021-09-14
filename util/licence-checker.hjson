@@ -23,6 +23,11 @@
     'hw/ip/hmac/dv/cryptoc_dpi/*',
     # PRINCE C++ reference model from Sebastien Riou
     'hw/ip/prim/dv/prim_prince/crypto_dpi_prince/prince_ref.h',
+    # PRESENT C reference model from Thomas Siebert
+    'hw/ip/prim/dv/prim_present/crypto_dpi_present/boxes.inc'
+    'hw/ip/prim/dv/prim_present/crypto_dpi_present/comline.inc'
+    'hw/ip/prim/dv/prim_present/crypto_dpi_present/present.inc'
+    'hw/ip/prim/dv/prim_present/crypto_dpi_present/verbose.inc'
     # PRESENT Python reference model
     'util/design/lib/Present.py',
     # Vendored FPGA information
