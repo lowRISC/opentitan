@@ -20,6 +20,9 @@ filesets:
       - lowrisc:ip:pinmux_component
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
+      - lowrisc:systems:clkmgr_pkg
+      - lowrisc:ip:rstmgr_pkg
+
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_pkg.sv
@@ -108,4 +111,3 @@ targets:
       vcs:
         vcs_options: [-timescale=1ns/1ps -l vcs.log]
     toplevel: ast
-

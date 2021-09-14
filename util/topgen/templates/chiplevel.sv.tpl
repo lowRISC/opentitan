@@ -647,6 +647,12 @@ module chip_${top["name"]}_${target["name"]} (
   // AST - Custom for targets     //
   //////////////////////////////////
 
+<%
+  ast = [m for m in top["module"] if m["name"] == "ast"]
+  assert(len(ast) == 1)
+  ast = ast[0]
+%>\
+
 % if target["name"] == "asic":
 
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
@@ -700,12 +706,6 @@ module chip_${top["name"]}_${target["name"]} (
   };
 
 % endif
-
-<%
-  ast = [m for m in top["module"] if m["name"] == "ast"]
-  assert len(ast) == 1
-  ast = ast[0]
-%>\
 
   ast #(
     .EntropyStreams(ast_pkg::EntropyStreams),
