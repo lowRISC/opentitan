@@ -32,12 +32,16 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  sim: &sim_target
+  default: &default_target
     toplevel: tb
     filesets:
       - files_rtl
       - files_dv
+
+  sim:
+    <<: *default_target
     default_tool: vcs
 
   lint:
-    <<: *sim_target
+    <<: *default_target
+
