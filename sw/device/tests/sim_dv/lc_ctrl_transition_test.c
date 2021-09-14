@@ -21,6 +21,20 @@ static dif_lc_ctrl_t lc;
 
 const test_config_t kTestConfig;
 
+/**
+ * Track number of iterations of this C test.
+ *
+ * From the software / compiler's perspective, this is a constant (hence the
+ * `const` qualifier). However, the external DV testbench finds this symbol's
+ * address and modifies it via backdoor, to track how many transactions have
+ * been sent. Hence, we add the `volatile` keyword to prevent the compiler from
+ * optimizing it out.
+ * The `const` is needed to put it in the .rodata section, otherwise it gets
+ * placed in .data section in the main SRAM. We cannot backdoor write anything
+ * in SRAM at the start of the test because the CRT init code wipes it to 0s.
+ */
+static volatile const uint8_t kTestIterationCount = 0x0;
+
 // LC exit token value for LC state transition.
 static volatile const uint8_t kLcExitToken[LC_TOKEN_SIZE] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -49,6 +63,8 @@ static void check_lc_state_transition_count(uint8_t exp_lc_count) {
  * 5). Issue hard reset.
  * 6). Wait for LC_CTRL is ready, then check if LC_STATE advanced to `Dev`
  * state, and lc_count advanced to `9`.
+ * 7). Issue hard reset and override OTP's LC partition, and reset LC state to
+ * `TestUnlocked2` state.
  */
 
 bool test_main(void) {
@@ -62,8 +78,10 @@ bool test_main(void) {
   dif_lc_ctrl_state_t curr_state;
   CHECK(dif_lc_ctrl_get_state(&lc, &curr_state) == kDifLcCtrlOk);
 
-  // The OTP preload image hardcode lc_count as 8.
-  const uint8_t LcStateTransitionCount = 8;
+  // The OTP preload image hardcodes the initial LC state transition count to 8.
+  // With each iteration of the test, we increment it.
+  // `kTestIterationCount` starts with 1 in SystemVerilog.
+  const uint8_t LcStateTransitionCount = 8 + kTestIterationCount - 1;
 
   if (curr_state == kDifLcCtrlStateTestUnlocked2) {
     // LC TestUnlocked2 is the intial test state for this sequence.

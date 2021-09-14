@@ -32,6 +32,14 @@ interface sw_test_status_if #(
   bit sw_test_done;
   bit sw_test_passed;
 
+  // SystemVerilog sequence can iterate over SW test multiple times with external reset.
+  // Only allow SW to exit if it is the last SV iteration.
+  bit sw_test_last_iteration = 1'b1;
+
+  function automatic void set_sw_test_last_iteration(bit value);
+    sw_test_last_iteration = value;
+  endfunction
+
   always @(posedge clk_i) begin
     if (data_valid) begin
       sw_test_status_prev = sw_test_status;
@@ -47,8 +55,10 @@ interface sw_test_status_if #(
           `dv_error("==== SW TEST FAILED ====")
         end
         sw_test_done |= sw_test_status inside {SwTestStatusPassed, SwTestStatusFailed};
+        sw_test_done &= sw_test_last_iteration;
 
-        if (sw_test_status == SwTestStatusPassed) begin
+        // Exit only when all iterations of the SW test are finished.
+        if ((sw_test_status == SwTestStatusPassed) && sw_test_done) begin
           if (can_pass_only_in_test && sw_test_status_prev != SwTestStatusInTest) begin
             `dv_error($sformatf("SW test transitioned to %s from an illegal state: %s.",
                                 sw_test_status.name(), sw_test_status_prev.name()))
@@ -57,6 +67,7 @@ interface sw_test_status_if #(
             sw_test_passed = 1'b1;
             `dv_info("==== SW TEST PASSED ====")
           end
+        // Any SW test failure will result in a DV error.
         end else if (sw_test_status == SwTestStatusFailed) begin
           `dv_error("==== SW TEST FAILED ====")
         end

@@ -224,10 +224,12 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
+      // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
       name: chip_sw_lc_ctrl_transition
       uvm_test_seq: chip_sw_lc_ctrl_transition_vseq
       sw_images: ["sw/device/tests/lc_ctrl_transition_test:1"]
       en_run_modes: ["sw_test_mode"]
+      reseed: 15
     }
     {
       name: chip_sw_pwrmgr_usbdev_wakeup
