@@ -261,7 +261,7 @@
 
     { multireg: {
         cname: "RSTMGR_SW_RST",
-        name:  "SW_RST_REGEN",
+        name:  "SW_RST_REGWEN",
         desc:  '''
           Register write enable for software controllable resets.
           When a particular bit value is 0, the corresponding value in !!SW_RST_CTRL_N can no longer be changed.

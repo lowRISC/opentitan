@@ -12,12 +12,12 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
   rand ibex_pkg::crash_dump_t cpu_dump;
   rand alert_pkg::alert_crashdump_t alert_dump;
   rand logic [pwrmgr_pkg::TotalResetWidth-1:0] rstreqs;
-  rand logic [NumSwResets-1:0] sw_rst_regen;
+  rand logic [NumSwResets-1:0] sw_rst_regwen;
   rand logic [NumSwResets-1:0] sw_rst_ctrl_n;
 
   constraint rstreqs_non_zero_c {rstreqs != '0;}
-  constraint sw_rst_regen_non_trivial_c {sw_rst_regen != '0 && sw_rst_regen != '1;}
-  constraint sw_rst_some_reset_n {sw_rst_regen & ~sw_rst_ctrl_n != '0;}
+  constraint sw_rst_regwen_non_trivial_c {sw_rst_regwen != '0 && sw_rst_regwen != '1;}
+  constraint sw_rst_some_reset_n {sw_rst_regwen & ~sw_rst_ctrl_n != '0;}
 
   task body();
     // The rstmgr is ready for CSR accesses.
@@ -79,22 +79,22 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
       set_alert_and_cpu_info_for_capture(bogus_alert_dump, bogus_cpu_dump);
       csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(sw_rst_all_ones),
                    .err_msg("expected no reset on"));
-      csr_wr(.ptr(ral.sw_rst_regen[0]), .value(sw_rst_regen));
-      `uvm_info(`gfn, $sformatf("sw_rst_regen set to 0x%0h", sw_rst_regen), UVM_LOW)
-      csr_rd_check(.ptr(ral.sw_rst_regen[0]), .compare_value(sw_rst_regen),
-                   .err_msg("Expected sw_rst_regen to reflect rw0c"));
+      csr_wr(.ptr(ral.sw_rst_regwen[0]), .value(sw_rst_regwen));
+      `uvm_info(`gfn, $sformatf("sw_rst_regwen set to 0x%0h", sw_rst_regwen), UVM_LOW)
+      csr_rd_check(.ptr(ral.sw_rst_regwen[0]), .compare_value(sw_rst_regwen),
+                   .err_msg("Expected sw_rst_regwen to reflect rw0c"));
 
-      // Check sw_rst_regen can not be set to all ones again because it is rw0c.
-      csr_wr(.ptr(ral.sw_rst_regen[0]), .value('1));
-      csr_rd_check(.ptr(ral.sw_rst_regen[0]), .compare_value(sw_rst_regen),
-                   .err_msg("Expected sw_rst_regen block raising individual bits because rw0c"));
+      // Check sw_rst_regwen can not be set to all ones again because it is rw0c.
+      csr_wr(.ptr(ral.sw_rst_regwen[0]), .value('1));
+      csr_rd_check(.ptr(ral.sw_rst_regwen[0]), .compare_value(sw_rst_regwen),
+                   .err_msg("Expected sw_rst_regwen block raising individual bits because rw0c"));
 
-      // Check that the regen disabled bits block corresponding updated to ctrl_n.
-      csr_wr(.ptr(ral.sw_rst_ctrl_n[0]), .value(sw_rst_regen));
+      // Check that the regwen disabled bits block corresponding updated to ctrl_n.
+      csr_wr(.ptr(ral.sw_rst_ctrl_n[0]), .value(sw_rst_regwen));
       csr_rd_check(.ptr(ral.sw_rst_ctrl_n[0]), .compare_value(sw_rst_all_ones),
                    .err_msg("Expected sw_rst_ctrl_n not to change"));
 
-      check_sw_rst_ctrl_n(sw_rst_ctrl_n, sw_rst_regen, 1);
+      check_sw_rst_ctrl_n(sw_rst_ctrl_n, sw_rst_regwen, 1);
     end
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
   endtask : body

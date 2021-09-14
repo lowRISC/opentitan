@@ -76,7 +76,7 @@ TEST_F(ResetLockTest, Success) {
     // indexed by `bit_index`.
     uint32_t bitfield = bitfield_bit32_write(
         std::numeric_limits<uint32_t>::max(), bit_index, false);
-    EXPECT_WRITE32(RSTMGR_SW_RST_REGEN_REG_OFFSET, bitfield);
+    EXPECT_WRITE32(RSTMGR_SW_RST_REGWEN_REG_OFFSET, bitfield);
 
     EXPECT_EQ(dif_rstmgr_reset_lock(&rstmgr_, bit_index), kDifRstmgrOk);
   }
@@ -108,7 +108,7 @@ TEST_F(ResetIsLockedTest, Success) {
     // by `bit_index`.
     uint32_t bit_locked = bitfield_bit32_write(
         std::numeric_limits<uint32_t>::max(), bit_index, false);
-    EXPECT_READ32(RSTMGR_SW_RST_REGEN_REG_OFFSET, bit_locked);
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET, bit_locked);
 
     bool is_locked = false;
     EXPECT_EQ(dif_rstmgr_reset_is_locked(&rstmgr_, bit_index, &is_locked),
@@ -116,7 +116,7 @@ TEST_F(ResetIsLockedTest, Success) {
     EXPECT_TRUE(is_locked);
 
     is_locked = true;
-    EXPECT_READ32(RSTMGR_SW_RST_REGEN_REG_OFFSET, {{bit_index, true}});
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET, {{bit_index, true}});
     EXPECT_EQ(dif_rstmgr_reset_is_locked(&rstmgr_, bit_index, &is_locked),
               kDifRstmgrOk);
     EXPECT_FALSE(is_locked);
@@ -397,7 +397,7 @@ TEST_F(SoftwareResetTest, SoftwareResetIsLocked) {
     // by `bit_index`.
     uint32_t locked = bitfield_bit32_write(std::numeric_limits<uint32_t>::max(),
                                            bit_index, false);
-    EXPECT_READ32(RSTMGR_SW_RST_REGEN_REG_OFFSET, locked);
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET, locked);
 
     EXPECT_EQ(dif_rstmgr_software_reset(&rstmgr_, bit_index,
                                         kDifRstmgrSoftwareResetHold),
@@ -409,7 +409,7 @@ TEST_F(SoftwareResetTest, SuccessHold) {
   for (uint32_t bit_index = 0; bit_index < RSTMGR_PARAM_NUM_SW_RESETS;
        ++bit_index) {
     // Software reset is not locked for any of the supported peripherals.
-    EXPECT_READ32(RSTMGR_SW_RST_REGEN_REG_OFFSET,
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET,
                   std::numeric_limits<uint32_t>::max());
 
     // Check that reset can be asserted for every supported peripheral.
@@ -433,7 +433,7 @@ TEST_F(SoftwareResetTest, SuccessRelease) {
   for (uint32_t bit_index = 0; bit_index < RSTMGR_PARAM_NUM_SW_RESETS;
        ++bit_index) {
     // Software reset is not locked for any of the supported peripherals.
-    EXPECT_READ32(RSTMGR_SW_RST_REGEN_REG_OFFSET,
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET,
                   std::numeric_limits<uint32_t>::max());
 
     // Check that reset can be de-asserted for every supported peripheral.
@@ -450,7 +450,7 @@ TEST_F(SoftwareResetTest, SuccessReset) {
   for (uint32_t bit_index = 0; bit_index < RSTMGR_PARAM_NUM_SW_RESETS;
        ++bit_index) {
     // Software reset is not locked for any of the supported peripherals.
-    EXPECT_READ32(RSTMGR_SW_RST_REGEN_REG_OFFSET,
+    EXPECT_READ32(RSTMGR_SW_RST_REGWEN_REG_OFFSET,
                   std::numeric_limits<uint32_t>::max());
 
     // Check that reset can be asserted for every supported peripheral.
