@@ -78,6 +78,9 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 
 // This alert configuration is described in the Mask ROM Shutdown specification:
 // https://docs.google.com/document/d/1V8hRvQnJhsvddieJbRHS3azbPZvoBWxfxPZV_0YA1QU/edit#
+// Dummy alerts have been added to prevent the tests breaking when new alerts
+// are added (see #7183). These lists of alerts and local alerts are for test
+// purposes only and may not be complete and/or up to date.
 // clang-format off
 #define ALERTS(Xmacro) \
       Xmacro("Uart0FatalFault",                C, C, X, X), \
@@ -161,12 +164,23 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("Dummy78",                        X, X, X, X), \
       Xmacro("Dummy79",                        X, X, X, X)
 
-// TODO: find all of the local alerts and define them.
 #define LOC_ALERTS(Xmacro) \
       Xmacro("LocAlertPingFail",               A, A, X, X), \
       Xmacro("LocEscPingFail",                 A, A, X, X), \
       Xmacro("LocAlertIntegrityFail",          A, A, X, X), \
       Xmacro("LocEscIntegrityFail",            A, A, X, X), \
+      Xmacro("LocBusIntegrityFail",            A, A, X, X), \
+      Xmacro("LocShadowRegUpdateFail",         A, A, X, X), \
+      Xmacro("LocShadowRegStorageError",       A, A, X, X), \
+      Xmacro("LocDummy7",                      X, X, X, X), \
+      Xmacro("LocDummy8",                      X, X, X, X), \
+      Xmacro("LocDummy9",                      X, X, X, X), \
+      Xmacro("LocDummy10",                     X, X, X, X), \
+      Xmacro("LocDummy11",                     X, X, X, X), \
+      Xmacro("LocDummy12",                     X, X, X, X), \
+      Xmacro("LocDummy13",                     X, X, X, X), \
+      Xmacro("LocDummy14",                     X, X, X, X), \
+      Xmacro("LocDummy15",                     X, X, X, X),
 // clang-format on
 
 // TODO: adjust this to match the OTP layout in PR#6921.
@@ -215,13 +229,21 @@ constexpr OtpConfiguration kOtpConfig = {
 constexpr DefaultAlertClassification kDefaultAlertClassification[] = {
     ALERTS(FULL),
 };
-static_assert(
-    ARRAYSIZE(kDefaultAlertClassification) <= 80,
-    "The default alert classification must be less than or equal to the number of reserved OTP words");
+static_assert(ARRAYSIZE(kDefaultAlertClassification) <=
+                  (OTP_CTRL_PARAM_ROM_ALERT_CLASSIFICATION_SIZE / 4),
+              "The default alert classification must be less than or equal to "
+              "the number of reserved OTP words");
 
 static_assert(
     kTopEarlgreyAlertIdLast < ARRAYSIZE(kDefaultAlertClassification),
     "The number of alert sources must be smaller than the alert classification");
+
+constexpr DefaultAlertClassification kDefaultLocAlertClassification[] = {
+    LOC_ALERTS(FULL)};
+static_assert(ARRAYSIZE(kDefaultLocAlertClassification) <=
+                  (OTP_CTRL_PARAM_ROM_LOCAL_ALERT_CLASSIFICATION_SIZE / 4),
+              "The default local alert classification must be less than or "
+              "equal to the number of reserved OTP words");
 
 constexpr alert_class_t kClasses[] = {
     kAlertClassA,
@@ -334,11 +356,19 @@ TEST_F(ShutdownTest, InitializeProd) {
     EXPECT_CALL(alert_, alert_configure(i, cls, en))
         .WillOnce(Return(kErrorOk));
   }
+  for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
+    const auto &c = kDefaultLocAlertClassification[i];
+    alert_class_t cls = c.prod;
+    alert_enable_t en = RomAlertClassEnable(cls);
+    EXPECT_CALL(alert_, alert_local_configure(i, cls, en))
+        .WillOnce(Return(kErrorOk));
+  }
   ExpectClassConfigure();
   EXPECT_EQ(shutdown_init(kLcStateProd), kErrorOk);
 }
 
-TEST_F(ShutdownTest, InitializeProdWithError) {
+TEST_F(ShutdownTest, InitializeProdWithAlertError) {
   SetupOtpReads();
   for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
     const auto &c = kDefaultAlertClassification[i];
@@ -348,6 +378,39 @@ TEST_F(ShutdownTest, InitializeProdWithError) {
     // configuation to abort early (ie: still expect the rest of the
     // alerts to get configured).
     EXPECT_CALL(alert_, alert_configure(i, cls, en))
+        .WillOnce(Return(i == 0 ? kErrorUnknown : kErrorOk));
+  }
+  for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
+    const auto &c = kDefaultLocAlertClassification[i];
+    alert_class_t cls = c.prod;
+    alert_enable_t en = RomAlertClassEnable(cls);
+    EXPECT_CALL(alert_, alert_local_configure(i, cls, en))
+        .WillOnce(Return(kErrorOk));
+  }
+  ExpectClassConfigure();
+  // We expect to get the error from alert configuration.
+  EXPECT_EQ(shutdown_init(kLcStateProd), kErrorUnknown);
+}
+
+TEST_F(ShutdownTest, InitializeProdWithLocalAlertError) {
+  SetupOtpReads();
+  for (size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
+    const auto &c = kDefaultAlertClassification[i];
+    alert_class_t cls = c.prod;
+    alert_enable_t en = RomAlertClassEnable(cls);
+    EXPECT_CALL(alert_, alert_configure(i, cls, en)).WillOnce(Return(kErrorOk));
+  }
+  for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
+    const auto &c = kDefaultLocAlertClassification[i];
+    alert_class_t cls = c.prod;
+    alert_enable_t en = RomAlertClassEnable(cls);
+    // Return an error on i zero.  The error should not cause alert
+    // configuation to abort early (ie: still expect the rest of the
+    // alerts to get configured).
+    EXPECT_CALL(alert_, alert_local_configure(i, cls, en))
         .WillOnce(Return(i == 0 ? kErrorUnknown : kErrorOk));
   }
   ExpectClassConfigure();
@@ -364,6 +427,14 @@ TEST_F(ShutdownTest, InitializeProdEnd) {
     EXPECT_CALL(alert_, alert_configure(i, cls, en))
         .WillOnce(Return(kErrorOk));
   }
+  for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
+    const auto &c = kDefaultLocAlertClassification[i];
+    alert_class_t cls = c.prodend;
+    alert_enable_t en = RomAlertClassEnable(cls);
+    EXPECT_CALL(alert_, alert_local_configure(i, cls, en))
+        .WillOnce(Return(kErrorOk));
+  }
   ExpectClassConfigure();
   EXPECT_EQ(shutdown_init(kLcStateProdEnd), kErrorOk);
 }
@@ -377,6 +448,14 @@ TEST_F(ShutdownTest, InitializeDev) {
     EXPECT_CALL(alert_, alert_configure(i, cls, en))
         .WillOnce(Return(kErrorOk));
   }
+  for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
+    const auto &c = kDefaultLocAlertClassification[i];
+    alert_class_t cls = c.dev;
+    alert_enable_t en = RomAlertClassEnable(cls);
+    EXPECT_CALL(alert_, alert_local_configure(i, cls, en))
+        .WillOnce(Return(kErrorOk));
+  }
   ExpectClassConfigure();
   EXPECT_EQ(shutdown_init(kLcStateDev), kErrorOk);
 }
@@ -388,6 +467,14 @@ TEST_F(ShutdownTest, InitializeRma) {
     alert_class_t cls = c.rma;
     alert_enable_t en = RomAlertClassEnable(cls);
     EXPECT_CALL(alert_, alert_configure(i, cls, en))
+        .WillOnce(Return(kErrorOk));
+  }
+  for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
+    const auto &c = kDefaultLocAlertClassification[i];
+    alert_class_t cls = c.rma;
+    alert_enable_t en = RomAlertClassEnable(cls);
+    EXPECT_CALL(alert_, alert_local_configure(i, cls, en))
         .WillOnce(Return(kErrorOk));
   }
   ExpectClassConfigure();
