@@ -801,6 +801,7 @@ module chip_earlgrey_asic (
   //////////////////////////////////
 
 
+
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
 
   // external clock comes in at a fixed position
@@ -825,7 +826,6 @@ module chip_earlgrey_asic (
   ast_pkg::ast_dif_t flash_alert;
   ast_pkg::ast_dif_t otp_alert;
   logic ast_init_done;
-
 
 
   ast #(

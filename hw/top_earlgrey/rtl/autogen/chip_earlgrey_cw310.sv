@@ -825,6 +825,7 @@ module chip_earlgrey_cw310 #(
   // AST - Custom for targets     //
   //////////////////////////////////
 
+
   assign ext_clk = '0;
   assign pad2ast = '0;
 
@@ -848,7 +849,6 @@ module chip_earlgrey_cw310 #(
     io:  clk_main,
     aon: clk_aon
   };
-
 
 
   ast #(
