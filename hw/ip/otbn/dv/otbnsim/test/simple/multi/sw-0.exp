@@ -3,4 +3,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 INSN_CNT = 0
-ERR_BITS = 0x4  # CALL_STACK
+ERR_BITS = 0x5  # BAD_DATA_ADDR, CALL_STACK
