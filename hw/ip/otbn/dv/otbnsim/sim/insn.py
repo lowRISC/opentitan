@@ -1156,28 +1156,40 @@ class BNMOVR(OTBNInsn):
 
         grd_val = state.gprs.get_reg(self.grd).read_unsigned()
         grs_val = state.gprs.get_reg(self.grs).read_unsigned()
+
+        bad_grs = state.gprs.call_stack_err and (self.grs == 1)
+        bad_grd = state.gprs.call_stack_err and (self.grd == 1)
+
+        saw_err = False
+
         if state.gprs.call_stack_err:
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
+            saw_err = True
+
+        if grd_val > 31 and not bad_grd:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            saw_err = True
+
+        if grs_val > 31 and not bad_grs:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            saw_err = True
+
+        if saw_err:
             return
 
-        if grd_val > 31:
-            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-        elif grs_val > 31:
-            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-        else:
-            wrd = grd_val & 0x1f
-            wrs = grs_val & 0x1f
+        wrd = grd_val & 0x1f
+        wrs = grs_val & 0x1f
 
-            value = state.wdrs.get_reg(wrs).read_unsigned()
-            state.wdrs.get_reg(wrd).write_unsigned(value)
+        value = state.wdrs.get_reg(wrs).read_unsigned()
+        state.wdrs.get_reg(wrd).write_unsigned(value)
 
-            if self.grd_inc:
-                new_grd_val = grd_val + 1
-                state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
+        if self.grd_inc:
+            new_grd_val = grd_val + 1
+            state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
 
-            if self.grs_inc:
-                new_grs_val = grs_val + 1
-                state.gprs.get_reg(self.grs).write_unsigned(new_grs_val)
+        if self.grs_inc:
+            new_grs_val = grs_val + 1
+            state.gprs.get_reg(self.grs).write_unsigned(new_grs_val)
 
 
 class BNWSRR(OTBNInsn):
