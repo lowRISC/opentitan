@@ -278,9 +278,9 @@ module prim_fifo_async #(
   end
 
   // TODO: assertions on full, empty
-  `ASSERT(GrayWptr_A, $countones(fifo_wptr_gray_q ^ $past(fifo_wptr_gray_q)) <= 1,
+  `ASSERT(GrayWptr_A, ##1 $countones(fifo_wptr_gray_q ^ $past(fifo_wptr_gray_q)) <= 1,
           clk_wr_i, !rst_wr_ni)
-  `ASSERT(GrayRptr_A, $countones(fifo_rptr_gray_q ^ $past(fifo_rptr_gray_q)) <= 1,
+  `ASSERT(GrayRptr_A, ##1 $countones(fifo_rptr_gray_q ^ $past(fifo_rptr_gray_q)) <= 1,
           clk_rd_i, !rst_rd_ni)
 
 endmodule
