@@ -20,6 +20,11 @@ class chip_base_vseq extends cip_base_vseq #(
   // Local queue for holding received UART TX data.
   byte uart_tx_data_q[$];
 
+  // Default only iterate through SW code once.
+  constraint num_trans_c {
+    num_trans == 1;
+  }
+
   `uvm_object_new
 
   task post_start();
@@ -65,6 +70,7 @@ class chip_base_vseq extends cip_base_vseq #(
     // Do DUT init after some additional settings.
     bit do_dut_init_save = do_dut_init;
     do_dut_init = 1'b0;
+    cfg.sw_test_status_vif.set_sw_test_last_iteration(num_trans == 1);
     super.pre_start();
     do_dut_init = do_dut_init_save;
 
