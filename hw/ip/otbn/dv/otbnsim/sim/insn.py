@@ -1027,20 +1027,28 @@ class BNLID(OTBNInsn):
         # increment any GPRs, then perform the load itself. On the second
         # cycle, update the WDR with the result.
 
+        if self.grs1_inc and self.grd_inc:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
+
         grs1_val = state.gprs.get_reg(self.grs1).read_unsigned()
         addr = (grs1_val + self.offset) & ((1 << 32) - 1)
         grd_val = state.gprs.get_reg(self.grd).read_unsigned()
-        if state.gprs.call_stack_err:
-            state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
-            return
+
+        bad_grs1 = state.gprs.call_stack_err and (self.grs1 == 1)
+        bad_grd = state.gprs.call_stack_err and (self.grd == 1)
 
         saw_err = False
 
-        if grd_val > 31:
+        if state.gprs.call_stack_err:
+            state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
+            saw_err = True
+
+        if grd_val > 31 and not bad_grd:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             saw_err = True
 
-        if not state.dmem.is_valid_256b_addr(addr):
+        if not state.dmem.is_valid_256b_addr(addr) and not bad_grs1:
             state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
             saw_err = True
 
@@ -1049,10 +1057,6 @@ class BNLID(OTBNInsn):
 
         wrd = grd_val & 0x1f
         value = state.dmem.load_u256(addr)
-
-        if self.grs1_inc and self.grd_inc:
-            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
-            return
 
         if self.grd_inc:
             new_grd_val = grd_val + 1
@@ -1080,24 +1084,28 @@ class BNSID(OTBNInsn):
         self.grs1_inc = op_vals['grs1_inc']
 
     def execute(self, state: OTBNState) -> None:
-        grs1_val = state.gprs.get_reg(self.grs1).read_unsigned()
-        addr = (grs1_val + self.offset) & ((1 << 32) - 1)
-        grs2_val = state.gprs.get_reg(self.grs2).read_unsigned()
-        if state.gprs.call_stack_err:
-            state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
-            return
-
         if self.grs1_inc and self.grs2_inc:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return
 
+        grs1_val = state.gprs.get_reg(self.grs1).read_unsigned()
+        addr = (grs1_val + self.offset) & ((1 << 32) - 1)
+        grs2_val = state.gprs.get_reg(self.grs2).read_unsigned()
+
+        bad_grs1 = state.gprs.call_stack_err and (self.grs1 == 1)
+        bad_grs2 = state.gprs.call_stack_err and (self.grs2 == 1)
+
         saw_err = False
 
-        if grs2_val > 31:
+        if state.gprs.call_stack_err:
+            state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
+            saw_err = True
+
+        if grs2_val > 31 and not bad_grs2:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             saw_err = True
 
-        if not state.dmem.is_valid_256b_addr(addr):
+        if not state.dmem.is_valid_256b_addr(addr) and not bad_grs1:
             state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
             saw_err = True
 
