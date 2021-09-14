@@ -41,6 +41,19 @@
       reg_block_path = reg_block_path if block.hier_path is None else block.hier_path + "." + reg_block_path
 %>\
 // Block: ${block_name.lower()}${if_desc}
+// TODO(issue #8204): a hack to allow 'real' AST register model to extend from ast_base_reg
+//instead of extending directly from dv_base_reg.
+//ast_base_reg is an extension of dv_base_reg that abstracts some of the AST specific features
+//and that is only visible in Nuvoton's internal repo.
+//In chip level register model all the blocks except AST extend from dv_base_reg class.
+<%
+  dv_base_my_prefix = dv_base_prefix
+%>\
+%if (block_name.lower() == "ast"):
+<%
+  dv_base_my_prefix = "ast_base"
+%>\
+%endif
 ${make_ral_pkg(dv_base_prefix, top.regwidth, reg_block_path, rb, esc_if_name)}
 %   endfor
 % endfor
