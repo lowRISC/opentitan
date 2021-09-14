@@ -19,9 +19,23 @@ title: "SPI Device HWIP Technical Specification"
 - Interrupts for RX/TX SRAM FIFO conditions (empty, full, designated level for
   RX, TX)
 
+### TPM over SPI
+
+- In compliance with [TCG TPM 2.0][TPM over SPI 2.0]
+- up to 64B compile-time configurable read and write data buffer (default: 4B)
+- 1 TPM command (8b) and 1 address (24bit) buffer
+- HW controlled wait state
+- Shared SPI with other SPI Device functionalities. Unique CS# for the TPM
+- HW processed registers for the read requests
+  - TPM_ACCESS_x, TPM_STS_x, TPM_INTF_CAPABILITY, TPM_INT_ENABLE, TPM_INT_STATUS, TPM_INT_VECTOR, TPM_DID_VID, TPM_RID
+  - TPM_HASH_START returns FFh
+- 5 Locality (compile-time parameter)
+
 ## Description
 
-The SPI device module is a serial-to-parallel receive (RX) and
+The SPI device module consists of four functions, the generic mode, SPI Flash mode, SPI passthrough mode, and TPM over SPI mode.
+
+The SPI generic mode is a serial-to-parallel receive (RX) and
 parallel-to-serial transmit (TX) full duplex design (single line mode) used to communicate
 with an outside host. This first version of the module supports operations
 controlled by firmware to dump incoming single-line RX data (SDI) to an
@@ -31,9 +45,16 @@ peripheral pin SCK. In this design the SCK is directly used to drive the
 interface logic as its primary clock, which has performance benefits, but incurs
 design complications described later.
 
+The SW can receive TPM commands with payload (address and data) and respond to the read commands with the return data using the TPM submodule in the SPI_DEVICE HWIP.
+The submodule provides the command, address, write, and read FIFOs for the SW to communicate with the TPM host system, South Brige (SB).
+The submodule also supports the SW by managing a certain set of the FIFO registers and returning the read request by HW quickly.
+
 ## Compatibility
 
-The SPI device doesn't support emulating an EEPROM as of this initial version.
+The SPI device supports emulating an EEPROM (SPI flash mode in this document).
+The TPM submodule conforms to the [TPM over SPI 2.0][] specification.
+
+[TPM over SPI 2.0]: https://trustedcomputinggroup.org/wp-content/uploads/Trusted-Platform-Module-Library-Family-2.0-Level-00-Revision-1.59_pub.zip
 
 # Theory of Operations
 
@@ -41,7 +62,7 @@ The SPI device doesn't support emulating an EEPROM as of this initial version.
 
 ![Block Diagram](block_diagram.svg)
 
-The block diagram above shows how the SPI Device IP converts incoming
+The block diagram above shows how the SPI Device generic mode converts incoming
 bit-serialized SDI data into a valid byte, where the data bit is valid when the
 chip select signal (CSB) is 0 (active low) and SCK is at positive or negative
 edge (configurable, henceforth called the "active edge"). The bit order within
@@ -70,6 +91,16 @@ signal when the SPI interface is idle.
 ## Hardware Interfaces
 
 {{< incGenFromIpDesc "../data/spi_device.hjson" "hwcfg" >}}
+
+The TPM submodule requires a separate input port for CS#.
+The TPM submodule and other SPI Device modes are able to be active together.
+The SB distinguishes between the TPM transactions and the other SPI transactions using separate CS# ports.
+Even though both submodules are able to be active, the SB cannot issue a TPM command and a SPI transaction at the same time due to the  SPI IO lines being shared.
+
+The TPM has no write FIFO interrupt.
+As TPM transactions are not bigger than 4B in current usage case, the waiting time of the core is not a concern.
+The core takes multiple cycles to pop a byte from the write FIFO due to the slower peripheral clock and multiple CDC paths.
+The gain of having write FIFO interrupt is not great.
 
 ## General Data Transfer on Pins
 
@@ -246,6 +277,36 @@ All reads and writes to/from the SRAM for RXF and TXF activity are managed by
 direct reads and writes through the TLUL bus interface, managed by the
 auto-generated register file control logic.
 
+## TPM over SPI
+
+![TPM over SPI block diagram](tpm-blockdiagram.svg)
+
+The TPM over SPI submodule processes the low level data only.
+The TPM submodule parses the incoming SPI MOSI line and stacks the stream up to the SW accessible registers, such as TPM_CMD_ADDR, and TPM_WRITE_FIFO.
+The SW must decode the command and the address.
+Then the SW reads the data from the write FIFO or pushes data into the read FIFO depending on the command.
+
+The TPM submodule returns appropriate data for read commands depending on the current read FIFO status, the received address, and the Locality.
+The module sends bytes from the return-by-HW registers to the parallel-to-serial logic right after the address phase when the received address falls into the HW managed registers.
+
+The TPM specification mandates the TPM module to return the data right after the address phase or send the WAIT at the last bit of the address phase.
+The address of the return-by-HW registers has a 4B boundary.
+The TPM submodule has enough time to determine if the incoming address falls into the return-by-HW registers or not.
+As the logic decides if the HW returns data or waits for the SW response at the address[2] bit phase, the logic always sends `WAIT(0x00)` at the last byte of the incoming address phase.
+The module sends `START(0x01)` at the next byte followed by the actual return-by-HW value if the received address falls into the list of the return-by-HW registers.
+
+The module, by default, returns `WAIT` when the address does not fall into the return-by-HW register address.
+In the wait state, the TPM submodule watches the read FIFO status.
+The module stays in the wait state until the read FIFO is not empty.
+The module sends `START` at the next byte when the logic sees the notempty signal of the read FIFO.
+Then the module pops data from the read FIFO and sends the data over SPI.
+
+The return-by-HW register values come from the SW read-writable CSRs.
+The module latches the CSRs from the SYS_CLK domain into the SPI SCK domain when CSb is asserted.
+The SW is allowed to modify the return-by-HW registers when CSb is not active.
+
+The TPM submodule accepts the payload for the TPM write command without the `WAIT` state if the write FIFO is empty.
+In other case, the TPM submodule sends `WAIT` until the write FIFO becomes available (empty).
 
 # Design Details
 
@@ -411,6 +472,53 @@ address)) reserved for the region (RXF or TXF) that the pointer is in. For
 instance, if FW sets RXFIFO depth to 128 (default value), it should not update
 the read pointer outside the range 0x000 -  0x1FF (128*4 = 512Bytes ignoring
 the phase bit, bit 11).
+
+## TPM over SPI
+
+### Initialization
+
+The SW should enable the TPM submodule by writing 1 to the TPM_CFG.en CSR field.
+Other SPI_DEVICE features (Generic, Flash, Passthrough) CSRs do not affect the TPM feature.
+
+Update TPM_ACCESS_0, TPM_ACCESS_1 CSRs.
+The TPM submodule uses TPM_ACCESS_x.activeLocality to determine if the TPM_STS is returned to the SB.
+The SW may configure TPM_CFG.hw_reg_dis and/or TPM_CFG.invalid_locality to fully control the TPM transactions.
+
+### TPM mode: FIFO and CRB
+
+The HW returns the return-by-HW registers for the read request in the TPM FIFO mode.
+In the TPM CRB mode (TPM_CFG.tpm_mode is 1), the logic always upload the command and address to the SW and waits for the read FIFO data even the received address falls into the managed address.
+
+### Return-by-HW register update
+
+The SW manages the retun-by-HW registers.
+The contents are placed inside the SPI_DEVICE CSRs.
+The SW must maintain the other TPM registers outside of the SPI_DEVICE HWIP and use write/read FIFOs to receive the content from/ send the register value to the SB.
+
+When the SW updates the return-by-HW registers, the SW is recommended to read back the register to confirm the value is written.
+Due to the CDC issue, the SW is only permitted to update the registers when the TPM CS# is de-asserted.
+
+### TPM Read
+
+1. The SB sends the TPM read command with the address.
+1. The SW reads a word from TPM_CMD_ADDR CSR (optional cmdaddr_notempty interrupt).
+  1. If the address falls into the return-by-HW registers and TPM_CFG.hw_reg_dis is not set, the HW does not push the command and address bytes into the TPM_CMD_ADDR CSR.
+1. The SW prepares the register value and writes the value into the read FIFO.
+1. The TPM submodule sends `WAIT` until the read FIFO is available. When available, the TPM submodule sends `START` followed by the register value.
+
+### TPM Write
+
+1. The SB sends the TPM write command with the address.
+1. The TPM submodule pushes the command and the address to the TPM_CMD_ADDR CSR.
+1. The TPM submodule checks the write FIFO status.
+1. If not empty, the TPM submodule sends `WAIT` to the SB.
+1. When the FIFO is empty, the TPM sends `START` to the SB, receives the payload, and stores the data into the write FIFO.
+1. The SW, in the meantime, reads TPM_CMD_ADDR then reads the write FIFO data when the FIFO is available.
+
+### TPM Interrupt
+
+The TPM submodule does not process the TPM over SPI interrupt.
+The SW must check TPM_INT_ENABLE, TPM_INT_STATUS and control the GPIO pin that is designated to the TPM over SPI interrupt.
 
 ## Device Interface Functions (DIFs)
 
