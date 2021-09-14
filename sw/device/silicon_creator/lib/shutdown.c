@@ -25,6 +25,9 @@
 static_assert(ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT <=
                   OTP_CTRL_PARAM_ROM_ALERT_CLASSIFICATION_SIZE / 4,
               "More alerts than alert classification OTP words!");
+static_assert(ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT <=
+                  OTP_CTRL_PARAM_ROM_LOCAL_ALERT_CLASSIFICATION_SIZE / 4,
+              "More local alerts than local alert classification OTP words!");
 
 #define NO_MODIFIERS
 
@@ -124,11 +127,10 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
     }
   }
 
-#if 0
-  // TODO(lowRISC/opentitan#7148): Bring local alerts back into the code path.
   // For each local alert, read its corresponding OTP word and extract the class
   // configuration for the current lifecycle state.
-  for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_MULTIREG_COUNT; ++i) {
+  for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
     uint32_t value = otp_read32(OTP_CTRL_PARAM_ROM_LOCAL_ALERT_CLASSIFICATION_OFFSET +
                                 i * sizeof(uint32_t));
     alert_class_t cls = (alert_class_t)bitfield_field32_read(
@@ -140,7 +142,6 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
       error = e;
     }
   }
-#endif
 
   // For each alert class, configure the various escalation parameters.
   const alert_class_t kClasses[] = {
