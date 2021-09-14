@@ -93,4 +93,9 @@
  */
 #define OT_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
+/**
+ * Attribute for weak functions that can be overridden, e.g., ISRs.
+ */
+#define OT_ATTR_WEAK __attribute__((weak))
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_

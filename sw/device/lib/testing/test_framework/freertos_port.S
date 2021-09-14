@@ -8,13 +8,327 @@
 
 .extern pxCurrentTCB
 .extern xISRStackTop
+.extern ottf_exception_handler
+.extern ottf_software_isr
+.extern ottf_timer_isr
+.extern ottf_external_isr
 
+// -----------------------------------------------------------------------------
+
+/**
+ * Exception handler.
+ */
+.balign 4
+.global handler_exception
+.type handler_exception, @function
+handler_exception:
+  // Save all registers to the stack.
+  addi sp, sp, -PORT_CONTEXT_SIZE
+  sw   ra,  1 * PORT_WORD_SIZE(sp)
+  sw   t0,  2 * PORT_WORD_SIZE(sp)
+  sw   t1,  3 * PORT_WORD_SIZE(sp)
+  sw   t2,  4 * PORT_WORD_SIZE(sp)
+  sw   s0,  5 * PORT_WORD_SIZE(sp)
+  sw   s1,  6 * PORT_WORD_SIZE(sp)
+  sw   a0,  7 * PORT_WORD_SIZE(sp)
+  sw   a1,  8 * PORT_WORD_SIZE(sp)
+  sw   a2,  9 * PORT_WORD_SIZE(sp)
+  sw   a3, 10 * PORT_WORD_SIZE(sp)
+  sw   a4, 11 * PORT_WORD_SIZE(sp)
+  sw   a5, 12 * PORT_WORD_SIZE(sp)
+  sw   a6, 13 * PORT_WORD_SIZE(sp)
+  sw   a7, 14 * PORT_WORD_SIZE(sp)
+  sw   s2, 15 * PORT_WORD_SIZE(sp)
+  sw   s3, 16 * PORT_WORD_SIZE(sp)
+  sw   s4, 17 * PORT_WORD_SIZE(sp)
+  sw   s5, 18 * PORT_WORD_SIZE(sp)
+  sw   s6, 19 * PORT_WORD_SIZE(sp)
+  sw   s7, 20 * PORT_WORD_SIZE(sp)
+  sw   s8, 21 * PORT_WORD_SIZE(sp)
+  sw   s9, 22 * PORT_WORD_SIZE(sp)
+  sw  s10, 23 * PORT_WORD_SIZE(sp)
+  sw  s11, 24 * PORT_WORD_SIZE(sp)
+  sw   t3, 25 * PORT_WORD_SIZE(sp)
+  sw   t4, 26 * PORT_WORD_SIZE(sp)
+  sw   t5, 27 * PORT_WORD_SIZE(sp)
+  sw   t6, 28 * PORT_WORD_SIZE(sp)
+
+  // Save MSTATUS for the MPIE bit.
+  csrr t0, mstatus
+  sw t0, 29 * PORT_WORD_SIZE(sp)
+
+  // Save MEPC to the stack.
+  // NOTE: this ISQ is synchronous, therefore, we must update the ISR resturn
+  // address to point to the instruction after the one that triggered this IRQ.
+  csrr t0, mepc
+  addi t0, t0, PORT_WORD_SIZE
+  sw t0, 0(sp)
+
+  // Store stack pointer to current TCB.
+  lw t0, pxCurrentTCB
+  sw sp, 0(t0)
+
+  // Jump to the exception handler.
+  jal ottf_exception_handler
+
+  // Return from ISR.
+  j freertosIrqExit
+
+  // Set size so this function can be disassembled.
+  .size handler_exception, .-handler_exception
+
+// -----------------------------------------------------------------------------
+
+/**
+ * Software IRQ handler.
+ */
+.balign 4
+.global handler_irq_software
+.type handler_irq_software, @function
+handler_irq_software:
+  // Save all registers to the stack.
+  addi sp, sp, -PORT_CONTEXT_SIZE
+  sw   ra,  1 * PORT_WORD_SIZE(sp)
+  sw   t0,  2 * PORT_WORD_SIZE(sp)
+  sw   t1,  3 * PORT_WORD_SIZE(sp)
+  sw   t2,  4 * PORT_WORD_SIZE(sp)
+  sw   s0,  5 * PORT_WORD_SIZE(sp)
+  sw   s1,  6 * PORT_WORD_SIZE(sp)
+  sw   a0,  7 * PORT_WORD_SIZE(sp)
+  sw   a1,  8 * PORT_WORD_SIZE(sp)
+  sw   a2,  9 * PORT_WORD_SIZE(sp)
+  sw   a3, 10 * PORT_WORD_SIZE(sp)
+  sw   a4, 11 * PORT_WORD_SIZE(sp)
+  sw   a5, 12 * PORT_WORD_SIZE(sp)
+  sw   a6, 13 * PORT_WORD_SIZE(sp)
+  sw   a7, 14 * PORT_WORD_SIZE(sp)
+  sw   s2, 15 * PORT_WORD_SIZE(sp)
+  sw   s3, 16 * PORT_WORD_SIZE(sp)
+  sw   s4, 17 * PORT_WORD_SIZE(sp)
+  sw   s5, 18 * PORT_WORD_SIZE(sp)
+  sw   s6, 19 * PORT_WORD_SIZE(sp)
+  sw   s7, 20 * PORT_WORD_SIZE(sp)
+  sw   s8, 21 * PORT_WORD_SIZE(sp)
+  sw   s9, 22 * PORT_WORD_SIZE(sp)
+  sw  s10, 23 * PORT_WORD_SIZE(sp)
+  sw  s11, 24 * PORT_WORD_SIZE(sp)
+  sw   t3, 25 * PORT_WORD_SIZE(sp)
+  sw   t4, 26 * PORT_WORD_SIZE(sp)
+  sw   t5, 27 * PORT_WORD_SIZE(sp)
+  sw   t6, 28 * PORT_WORD_SIZE(sp)
+
+  // Save MSTATUS for the MPIE bit.
+  csrr t0, mstatus
+  sw t0, 29 * PORT_WORD_SIZE(sp)
+
+  // Save MEPC to the stack.
+  // NOTE: this ISQ is synchronous, therefore, we must update the ISR resturn
+  // address to point to the instruction after the one that triggered this IRQ.
+  csrr t0, mepc
+  addi t0, t0, PORT_WORD_SIZE
+  sw t0, 0(sp)
+
+  // Store stack pointer to current TCB.
+  lw t0, pxCurrentTCB
+  sw sp, 0(t0)
+
+  // Jump to the software ISR.
+  jal ottf_software_isr
+
+  // Return from ISR.
+  j freertosIrqExit
+
+  // Set size so this function can be disassembled.
+  .size handler_irq_software, .-handler_irq_software
+
+// -----------------------------------------------------------------------------
+
+/**
+ * Timer IRQ handler.
+ */
+.balign 4
+.global handler_irq_timer
+.type handler_irq_timer, @function
+handler_irq_timer:
+  // Save all registers to the stack.
+  addi sp, sp, -PORT_CONTEXT_SIZE
+  sw   ra,  1 * PORT_WORD_SIZE(sp)
+  sw   t0,  2 * PORT_WORD_SIZE(sp)
+  sw   t1,  3 * PORT_WORD_SIZE(sp)
+  sw   t2,  4 * PORT_WORD_SIZE(sp)
+  sw   s0,  5 * PORT_WORD_SIZE(sp)
+  sw   s1,  6 * PORT_WORD_SIZE(sp)
+  sw   a0,  7 * PORT_WORD_SIZE(sp)
+  sw   a1,  8 * PORT_WORD_SIZE(sp)
+  sw   a2,  9 * PORT_WORD_SIZE(sp)
+  sw   a3, 10 * PORT_WORD_SIZE(sp)
+  sw   a4, 11 * PORT_WORD_SIZE(sp)
+  sw   a5, 12 * PORT_WORD_SIZE(sp)
+  sw   a6, 13 * PORT_WORD_SIZE(sp)
+  sw   a7, 14 * PORT_WORD_SIZE(sp)
+  sw   s2, 15 * PORT_WORD_SIZE(sp)
+  sw   s3, 16 * PORT_WORD_SIZE(sp)
+  sw   s4, 17 * PORT_WORD_SIZE(sp)
+  sw   s5, 18 * PORT_WORD_SIZE(sp)
+  sw   s6, 19 * PORT_WORD_SIZE(sp)
+  sw   s7, 20 * PORT_WORD_SIZE(sp)
+  sw   s8, 21 * PORT_WORD_SIZE(sp)
+  sw   s9, 22 * PORT_WORD_SIZE(sp)
+  sw  s10, 23 * PORT_WORD_SIZE(sp)
+  sw  s11, 24 * PORT_WORD_SIZE(sp)
+  sw   t3, 25 * PORT_WORD_SIZE(sp)
+  sw   t4, 26 * PORT_WORD_SIZE(sp)
+  sw   t5, 27 * PORT_WORD_SIZE(sp)
+  sw   t6, 28 * PORT_WORD_SIZE(sp)
+
+  // Save MSTATUS for the MPIE bit.
+  csrr t0, mstatus
+  sw t0, 29 * PORT_WORD_SIZE(sp)
+
+  // Save MEPC to the stack.
+  // NOTE: this ISQ is asynchronous, therefore, we do not need to modify MEPC.
+  csrr t0, mepc
+  sw t0, 0(sp)
+
+  // Store stack pointer to current TCB.
+  lw t0, pxCurrentTCB
+  sw sp, 0(t0)
+
+  // Jump to timer ISR.
+  jal ottf_timer_isr
+
+  // Return from ISR.
+  j freertosIrqExit
+
+  // Set size so this function can be disassembled.
+  .size handler_irq_timer, .-handler_irq_timer
+
+// -----------------------------------------------------------------------------
+
+/**
+ * External IRQ handler.
+ */
+.balign 4
+.global handler_irq_external
+.type handler_irq_external, @function
+handler_irq_external:
+  // Save all registers to the stack.
+  addi sp, sp, -PORT_CONTEXT_SIZE
+  sw   ra,  1 * PORT_WORD_SIZE(sp)
+  sw   t0,  2 * PORT_WORD_SIZE(sp)
+  sw   t1,  3 * PORT_WORD_SIZE(sp)
+  sw   t2,  4 * PORT_WORD_SIZE(sp)
+  sw   s0,  5 * PORT_WORD_SIZE(sp)
+  sw   s1,  6 * PORT_WORD_SIZE(sp)
+  sw   a0,  7 * PORT_WORD_SIZE(sp)
+  sw   a1,  8 * PORT_WORD_SIZE(sp)
+  sw   a2,  9 * PORT_WORD_SIZE(sp)
+  sw   a3, 10 * PORT_WORD_SIZE(sp)
+  sw   a4, 11 * PORT_WORD_SIZE(sp)
+  sw   a5, 12 * PORT_WORD_SIZE(sp)
+  sw   a6, 13 * PORT_WORD_SIZE(sp)
+  sw   a7, 14 * PORT_WORD_SIZE(sp)
+  sw   s2, 15 * PORT_WORD_SIZE(sp)
+  sw   s3, 16 * PORT_WORD_SIZE(sp)
+  sw   s4, 17 * PORT_WORD_SIZE(sp)
+  sw   s5, 18 * PORT_WORD_SIZE(sp)
+  sw   s6, 19 * PORT_WORD_SIZE(sp)
+  sw   s7, 20 * PORT_WORD_SIZE(sp)
+  sw   s8, 21 * PORT_WORD_SIZE(sp)
+  sw   s9, 22 * PORT_WORD_SIZE(sp)
+  sw  s10, 23 * PORT_WORD_SIZE(sp)
+  sw  s11, 24 * PORT_WORD_SIZE(sp)
+  sw   t3, 25 * PORT_WORD_SIZE(sp)
+  sw   t4, 26 * PORT_WORD_SIZE(sp)
+  sw   t5, 27 * PORT_WORD_SIZE(sp)
+  sw   t6, 28 * PORT_WORD_SIZE(sp)
+
+  // Save MSTATUS for the MPIE bit.
+  csrr t0, mstatus
+  sw t0, 29 * PORT_WORD_SIZE(sp)
+
+  // Save MEPC to the stack.
+  // NOTE: this ISQ is asynchronous, therefore, we do not need to modify MEPC.
+  csrr t0, mepc
+  sw t0, 0(sp)
+
+  // Store stack pointer to current TCB.
+  lw t0, pxCurrentTCB
+  sw sp, 0(t0)
+
+  // Jump to external ISR.
+  jal ottf_external_isr
+
+  // Return from ISR.
+  j freertosIrqExit
+
+  // Set size so this function can be disassembled.
+  .size handler_irq_external, .-handler_irq_external
+
+// -----------------------------------------------------------------------------
+
+/**
+ * ISR exit sub-routine restores registers from the stack.
+ */
+.balign 4
+.global freertosIrqExit
+.type freertosIrqExit, @function
+freertosIrqExit:
+  // Load the stack pointer for the current TCB.
+	lw  t1, pxCurrentTCB
+	lw  sp, 0(t1)
+
+  // Load the correct MEPC for the next instruction in the current task.
+	lw t0, 0(sp)
+	csrw mepc, t0
+
+  // Load MSTATUS for the MPIE bit.
+	lw  t0, 29 * PORT_WORD_SIZE(sp)
+	csrw mstatus, t0
+
+  // Restore all registers from the stack.
+  lw   ra,  1 * PORT_WORD_SIZE(sp)
+  lw   t0,  2 * PORT_WORD_SIZE(sp)
+  lw   t1,  3 * PORT_WORD_SIZE(sp)
+  lw   t2,  4 * PORT_WORD_SIZE(sp)
+  lw   s0,  5 * PORT_WORD_SIZE(sp)
+  lw   s1,  6 * PORT_WORD_SIZE(sp)
+  lw   a0,  7 * PORT_WORD_SIZE(sp)
+  lw   a1,  8 * PORT_WORD_SIZE(sp)
+  lw   a2,  9 * PORT_WORD_SIZE(sp)
+  lw   a3, 10 * PORT_WORD_SIZE(sp)
+  lw   a4, 11 * PORT_WORD_SIZE(sp)
+  lw   a5, 12 * PORT_WORD_SIZE(sp)
+  lw   a6, 13 * PORT_WORD_SIZE(sp)
+  lw   a7, 14 * PORT_WORD_SIZE(sp)
+  lw   s2, 15 * PORT_WORD_SIZE(sp)
+  lw   s3, 16 * PORT_WORD_SIZE(sp)
+  lw   s4, 17 * PORT_WORD_SIZE(sp)
+  lw   s5, 18 * PORT_WORD_SIZE(sp)
+  lw   s6, 19 * PORT_WORD_SIZE(sp)
+  lw   s7, 20 * PORT_WORD_SIZE(sp)
+  lw   s8, 21 * PORT_WORD_SIZE(sp)
+  lw   s9, 22 * PORT_WORD_SIZE(sp)
+  lw  s10, 23 * PORT_WORD_SIZE(sp)
+  lw  s11, 24 * PORT_WORD_SIZE(sp)
+  lw   t3, 25 * PORT_WORD_SIZE(sp)
+  lw   t4, 26 * PORT_WORD_SIZE(sp)
+  lw   t5, 27 * PORT_WORD_SIZE(sp)
+  lw   t6, 28 * PORT_WORD_SIZE(sp)
+  addi sp, sp, PORT_CONTEXT_SIZE
+
+  // This exits the ISR completely, and does not return control flow to the ISR
+  // that called this sub-routine.
+  mret
+
+  // Set size so this function can be disassembled.
+  .size freertosIrqExit, .-freertosIrqExit
 // -----------------------------------------------------------------------------
 
 /**
  * FreeRTOS, expects this function to exist and uses it to start the first task. 
  */
-.balign 8
+.balign 4
 .global xPortStartFirstTask
 .type xPortStartFirstTask, @function
 xPortStartFirstTask:
@@ -133,7 +447,7 @@ xPortStartFirstTask:
  *      0 - (pxCode)
  * -----Stack Top----
  */
-.balign 8
+.balign 4
 .global pxPortInitialiseStack
 .type pxPortInitialiseStack, @function
 pxPortInitialiseStack:
