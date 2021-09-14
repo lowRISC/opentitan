@@ -279,12 +279,20 @@ class SW(OTBNInsn):
         base = state.gprs.get_reg(self.grs1).read_unsigned()
         addr = (base + self.offset) & ((1 << 32) - 1)
         value = state.gprs.get_reg(self.grs2).read_unsigned()
+
+        bad_grs1 = state.gprs.call_stack_err and (self.grs1 == 1)
+
+        saw_err = False
+
         if state.gprs.call_stack_err:
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
-            return
+            saw_err = True
 
-        if not state.dmem.is_valid_32b_addr(addr):
+        if not state.dmem.is_valid_32b_addr(addr) and not bad_grs1:
             state.stop_at_end_of_cycle(ErrBits.BAD_DATA_ADDR)
+            saw_err = True
+
+        if saw_err:
             return
 
         state.dmem.store_u32(addr, value)
