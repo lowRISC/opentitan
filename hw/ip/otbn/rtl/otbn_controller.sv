@@ -184,6 +184,9 @@ module otbn_controller
   logic [5:0]  rf_base_rd_data_b_inc;
   logic [26:0] rf_base_rd_data_a_wlen_word_inc;
 
+  // Read/Write enables for base register file before illegal instruction encoding are factored in
+  logic rf_base_rd_en_a_raw, rf_base_rd_en_b_raw, rf_base_wr_en_raw;
+
   // Output of mux taking the above increments as inputs and choosing one to write back to base
   // register file with appropriate zero extension and padding to give a 32-bit result.
   logic [31:0]              increment_out;
@@ -204,6 +207,7 @@ module otbn_controller
   logic csr_illegal_addr, wsr_illegal_addr, ispr_illegal_addr;
   logic imem_addr_err, loop_err, ispr_err;
   logic dmem_addr_err, dmem_addr_unaligned_base, dmem_addr_unaligned_bignum, dmem_addr_overflow;
+  logic illegal_insn_static;
 
   logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
 
@@ -328,12 +332,16 @@ module otbn_controller
     end
   end
 
+  // Instruction is illegal based on the static properties of the instruction bits (illegal encoding
+  // or illegal WSR/CSR referenced).
+  assign illegal_insn_static = insn_illegal_i | ispr_err;
+
   assign err_bits_o.fatal_lifecycle_escalation = lifecycle_escalation_i;
   assign err_bits_o.fatal_illegal_bus_access   = illegal_bus_access_i;
   assign err_bits_o.fatal_reg                  = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
   assign err_bits_o.fatal_imem                 = insn_fetch_err_i;
   assign err_bits_o.fatal_dmem                 = lsu_rdata_err_i;
-  assign err_bits_o.illegal_insn               = insn_illegal_i | ispr_err | rf_indirect_err;
+  assign err_bits_o.illegal_insn               = illegal_insn_static | rf_indirect_err;
   assign err_bits_o.bad_data_addr              = dmem_addr_err;
   assign err_bits_o.loop                       = loop_err;
   assign err_bits_o.call_stack                 = rf_base_call_stack_err_i;
@@ -454,19 +462,19 @@ module otbn_controller
     rf_base_rd_commit_o = insn_executing;
     rf_base_wr_commit_o = insn_executing;
 
-    rf_base_rd_en_a_o   = 1'b0;
-    rf_base_rd_en_b_o   = 1'b0;
-    rf_base_wr_en_o     = 1'b0;
+    rf_base_rd_en_a_raw = 1'b0;
+    rf_base_rd_en_b_raw = 1'b0;
+    rf_base_wr_en_raw   = 1'b0;
 
     if (insn_valid_i) begin
       if (insn_dec_shared_i.st_insn) begin
         // For stores, both base reads happen in the same cycle as the request because they give the
         // address and data, which make up the request.
-        rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & lsu_store_req_raw;
-        rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & lsu_store_req_raw;
+        rf_base_rd_en_a_raw = insn_dec_base_i.rf_ren_a & lsu_store_req_raw;
+        rf_base_rd_en_b_raw = insn_dec_base_i.rf_ren_b & lsu_store_req_raw;
 
         // Bignum stores can update the base register file where an increment is used.
-        rf_base_wr_en_o     = (insn_dec_shared_i.subset == InsnSubsetBignum) &
+        rf_base_wr_en_raw   = (insn_dec_shared_i.subset == InsnSubsetBignum) &
                               insn_dec_base_i.rf_we                          &
                               lsu_store_req_raw;
       end else if (insn_dec_shared_i.ld_insn) begin
@@ -474,24 +482,24 @@ module otbn_controller
         // required for the request and the indirect destination register (only used for Bignum
         // loads) is flopped in ld_insn_bignum_wr_addr_q to correctly deal with the case where it's
         // updated by an increment.
-        rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & lsu_load_req_raw;
-        rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & lsu_load_req_raw;
+        rf_base_rd_en_a_raw = insn_dec_base_i.rf_ren_a & lsu_load_req_raw;
+        rf_base_rd_en_b_raw = insn_dec_base_i.rf_ren_b & lsu_load_req_raw;
 
         if (insn_dec_shared_i.subset == InsnSubsetBignum) begin
           // Bignum loads can update the base register file where an increment is used. This must
           // always happen in the same cycle as the request as this is where both registers are
           // read.
-          rf_base_wr_en_o = insn_dec_base_i.rf_we & lsu_load_req_raw;
+          rf_base_wr_en_raw = insn_dec_base_i.rf_we & lsu_load_req_raw;
         end else begin
           // For Base loads write the base register file when the instruction is unstalled (meaning
           // the load data is available).
-          rf_base_wr_en_o = insn_dec_base_i.rf_we & ~stall;
+          rf_base_wr_en_raw = insn_dec_base_i.rf_we & ~stall;
         end
       end else begin
         // For all other instructions the read and write happen when the instruction is unstalled.
-        rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & ~stall;
-        rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & ~stall;
-        rf_base_wr_en_o     = insn_dec_base_i.rf_we    & ~stall;
+        rf_base_rd_en_a_raw = insn_dec_base_i.rf_ren_a & ~stall;
+        rf_base_rd_en_b_raw = insn_dec_base_i.rf_ren_b & ~stall;
+        rf_base_wr_en_raw   = insn_dec_base_i.rf_we    & ~stall;
       end
     end
 
@@ -509,6 +517,10 @@ module otbn_controller
         default: ;
       endcase
     end
+
+    rf_base_rd_en_a_o = rf_base_rd_en_a_raw & ~illegal_insn_static;
+    rf_base_rd_en_b_o = rf_base_rd_en_b_raw & ~illegal_insn_static;
+    rf_base_wr_en_o   = rf_base_wr_en_raw   & ~illegal_insn_static;
   end
 
   // Base ALU Operand A MUX
