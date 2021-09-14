@@ -47,7 +47,8 @@ initial begin
   init_start = 1'b0;
 end
 
-always_ff @( init_start, posedge vcc_pok_h_i, negedge vcc_pok_h_i ) begin
+always_ff @( posedge init_start, negedge init_start,
+             posedge vcc_pok_h_i, negedge vcc_pok_h_i ) begin
   if ( init_start ) begin
     mr_vcc_dly <= 1'b0;
   end else if ( !init_start && vcc_pok_h_i ) begin
@@ -57,7 +58,9 @@ always_ff @( init_start, posedge vcc_pok_h_i, negedge vcc_pok_h_i ) begin
   end
 end
 
-always_ff @( init_start, vcc_pok_h_i,
+
+always_ff @( posedge init_start, negedge init_start,
+             posedge vcc_pok_h_i, negedge vcc_pok_h_i,
              posedge main_pd_h_ni, negedge main_pd_h_ni ) begin
   if ( init_start ) begin
     mr_pd_dly <= 1'b1;
@@ -77,6 +80,7 @@ vcaon_pgd u_vcaon_pok (
 );
 
 assign vcaon_pok_h_o = vcaon_pok_h && vcc_pok_h_i;
+
 
 `else  // of SYNTHESIS
 // SYNTHESUS/VERILATOR/LINTER/FPGA
