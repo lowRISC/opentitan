@@ -222,6 +222,9 @@ module spi_device
   // Mailbox in Passthrough needs to take SPI if readcmd hits mailbox address
   logic mailbox_assumed, passthrough_assumed_by_internal;
 
+  logic cfg_mailbox_en;
+  logic [31:0] mailbox_addr;
+
   // Threshold value of a buffer in bytes
   logic [BufferAw:0] readbuf_threshold;
 
@@ -539,6 +542,12 @@ module spi_device
   assign jedec_id = {reg2hw.jedec_id.mf.q, reg2hw.jedec_id.id.q};
 
   assign readbuf_threshold = reg2hw.read_threshold.q[BufferAw:0];
+
+  localparam int unsigned MailboxAw = $clog2(SramMailboxDepth*SramDw/8);
+  assign cfg_mailbox_en = reg2hw.cfg.mailbox_en.q;
+  assign mailbox_addr   = { reg2hw.mailbox_addr.q[31:MailboxAw],
+                            {MailboxAw{1'b0}}
+                          };
 
   // Passthrough config: value shall be stable while SPI transaction is active
   //assign cmd_filter = reg2hw.cmd_filter.q;
@@ -1078,8 +1087,8 @@ module spi_device
 
     .addr_4b_en_i (cfg_addr_4b_en),
 
-    .mailbox_en_i      (1'b 0),
-    .mailbox_addr_i    ('0), // 32
+    .mailbox_en_i      (cfg_mailbox_en ),
+    .mailbox_addr_i    (mailbox_addr   ),
     .mailbox_assumed_o (mailbox_assumed),
 
     .readbuf_address_o (readbuf_addr_sck),

@@ -214,6 +214,16 @@
             the SPI line 0 following the SPI command as the address field.
             '''
         }
+        { bits: "24"
+          name: "mailbox_en"
+          desc: '''Mailbox enable.
+
+            If 1, in the flash and passthrough mode, the IP checks the incoming
+            address and return from the internal Mailbox buffer if the address
+            falls into the MAILBOX range
+            (MAILBOX_ADDR:MAILBOX_ADDR+MAILBOX_SIZE)}.
+            '''
+        } // f: mailbox_en
       ]
     },
     { name: "FIFO_LEVEL",
@@ -475,6 +485,21 @@
         } // f: threshold
       ]
     } // R: READ_THRESHOLD
+    { name: "MAILBOX_ADDR"
+      desc: '''Mailbox Base address register.
+
+        The mailbox size is fixed. In this version of IP, the size is 1kB.
+        Lower 10 bits of the Mailbox address is tied to 0.
+        '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "addr"
+          desc: "Mailbox Address. Lower 10 bits are ignored"
+        } // f: addr
+      ]
+    } // R: MAILBOX_ADDR
     { name: "UPLOAD_STATUS"
       desc: '''Upload module status register.
         '''
