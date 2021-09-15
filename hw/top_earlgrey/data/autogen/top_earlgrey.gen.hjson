@@ -12929,7 +12929,7 @@
       module_name: flash_ctrl
     }
     {
-      name: flash_ctrl_err
+      name: flash_ctrl_corr_err
       width: 1
       type: interrupt
       module_name: flash_ctrl
@@ -13333,21 +13333,7 @@
       module_name: flash_ctrl
     }
     {
-      name: flash_ctrl_recov_mp_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: flash_ctrl
-    }
-    {
-      name: flash_ctrl_recov_ecc_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: flash_ctrl
-    }
-    {
-      name: flash_ctrl_fatal_intg_err
+      name: flash_ctrl_fatal_err
       width: 1
       type: alert
       async: "1"
