@@ -6,16 +6,16 @@
 
 // [UNSUPPORTED] Exclude unused TL port signals at all hierarchies, wherever port toggle coverage is
 // enabled. Exercising these reserved signals will result in assertion errors thrown by the design.
--node tb.dut*.u_* tl_*.a_param
--node tb.dut*.u_* tl_*.d_param
--node tb.dut*.u_* tl_*.d_opcode[2:1]
--node tb.dut*.u_* tl_*.a_source[8:7]
--node tb.dut*.u_* tl_*.d_source[8:7]
+-node tb.dut*.u_* *tl_*.a_param
+-node tb.dut*.u_* *tl_*.d_param
+-node tb.dut*.u_* *tl_*.d_opcode[2:1]
+-node tb.dut*.u_* *tl_*.a_source[7:6]
+-node tb.dut*.u_* *tl_*.d_source[7:6]
 -node tb.dut.top_${top["name"]} *tl_*.a_param
 -node tb.dut.top_${top["name"]} *tl_*.d_param
 -node tb.dut.top_${top["name"]} *tl_*.d_opcode[2:1]
--node tb.dut.top_${top["name"]} *tl_*.a_source[8:7]
--node tb.dut.top_${top["name"]} *tl_*.d_source[8:7]
+-node tb.dut.top_${top["name"]} *tl_*.a_source[7:6]
+-node tb.dut.top_${top["name"]} *tl_*.d_source[7:6]
 
 // [LOW_RISK] Exclude the full TL a_address signal on all pass-through hierarchies. We instead look
 // at the full coverage of this signal directly at the host or at the device.
@@ -39,7 +39,7 @@
     dev_name = device["name"].replace('.', '__')
 %>\
       % for bit_range in excl_bits:
--node tb.dut*.u_${dev_name} tl_i.a_address[${bit_range[1]}:${bit_range[0]}]
+-node tb.dut*.u_${dev_name} *tl_i.a_address[${bit_range[1]}:${bit_range[0]}]
       % endfor
     % endif
   % endfor
