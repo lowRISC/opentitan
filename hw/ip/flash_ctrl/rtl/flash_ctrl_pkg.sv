@@ -364,10 +364,7 @@ package flash_ctrl_pkg;
     logic [BusWidth-1:0] rd_data;
     logic                init_busy;
     logic                flash_err;
-    logic                flash_alert_p;
-    logic                flash_alert_n;
     logic [NumBanks-1:0] ecc_single_err;
-    logic [NumBanks-1:0] ecc_multi_err;
     logic [NumBanks-1:0][BusAddrW-1:0] ecc_addr;
     jtag_pkg::jtag_rsp_t jtag_rsp;
     logic                intg_err;
@@ -383,10 +380,7 @@ package flash_ctrl_pkg;
     rd_data:            '0,
     init_busy:          1'b0,
     flash_err:          1'b0,
-    flash_alert_p:      1'b0,
-    flash_alert_n:      1'b1,
     ecc_single_err:     '0,
-    ecc_multi_err:      '0,
     ecc_addr:           '0,
     jtag_rsp:           '0,
     intg_err:           '0
@@ -467,6 +461,27 @@ package flash_ctrl_pkg;
     FlashBistSel,
     FlashLcDftLast
   } flash_lc_jtag_e;
+
+  // Error bit positioning
+  typedef struct packed {
+    logic oob_err;
+    logic mp_err;
+    logic rd_err;
+    logic prog_win_err;
+    logic prog_type_err;
+    logic phy_err;
+  } flash_ctrl_err_t;
+
+  // interrupt bit positioning
+  typedef enum logic[2:0] {
+    ProgEmpty,
+    ProgLvl,
+    RdFull,
+    RdLvl,
+    OpDone,
+    CorrErr,
+    LastIntrIdx
+  } flash_ctrl_intr_e;
 
   // find the max number pages among info types
   function automatic integer max_info_pages(int infos[InfoTypes]);

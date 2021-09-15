@@ -62,13 +62,13 @@ rom_error_t alert_escalate_test(void) {
       .phase_cycles = {1, 10, 100, 1000},
   };
 
-  LOG_INFO("Configure FlashCtrlFatalIntgErr as class A");
-  RETURN_IF_ERROR(alert_configure(kTopEarlgreyAlertIdFlashCtrlFatalIntgErr,
+  LOG_INFO("Configure FlashCtrlFatalErr as class A");
+  RETURN_IF_ERROR(alert_configure(kTopEarlgreyAlertIdFlashCtrlFatalErr,
                                   kAlertClassA, kAlertEnableEnabled));
   LOG_INFO("Configure class A alerts");
   RETURN_IF_ERROR(alert_class_configure(kAlertClassA, &config));
   LOG_INFO("Generate alert via test regs");
-  abs_mmio_write32(kFlashBase + FLASH_CTRL_ALERT_TEST_REG_OFFSET, 8);
+  abs_mmio_write32(kFlashBase + FLASH_CTRL_ALERT_TEST_REG_OFFSET, 2);
   return kErrorUnknown;
 }
 

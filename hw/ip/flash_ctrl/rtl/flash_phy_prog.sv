@@ -74,7 +74,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   logic align_next;
   data_sel_e data_sel;
 
-  localparam bit [WordSelW-1:0] MaxIdx = WordSelW'(WidthMultiple - 1);
+  localparam int MaxIdx = WidthMultiple - 1;
 
   logic [WidthMultiple-1:0][BusWidth-1:0] packed_data;
 

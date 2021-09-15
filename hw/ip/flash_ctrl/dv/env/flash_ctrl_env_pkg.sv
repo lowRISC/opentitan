@@ -22,7 +22,7 @@ package flash_ctrl_env_pkg;
 
   // parameters
   parameter string LIST_OF_ALERTS[] = {
-    "recov_err", "recov_mp_err", "recov_ecc_err", "fatal_intg_err"
+    "recov_err", "fatal_err"
   };
 
   parameter uint NUM_ALERTS = 4;

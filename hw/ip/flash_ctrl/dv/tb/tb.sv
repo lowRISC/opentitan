@@ -99,7 +99,7 @@ module tb;
     .intr_rd_full_o     (intr_rd_full   ),
     .intr_rd_lvl_o      (intr_rd_lvl    ),
     .intr_op_done_o     (intr_op_done   ),
-    .intr_err_o         (intr_err       ),
+    .intr_corr_err_o    (intr_err       ),
     .alert_rx_i         (alert_rx       ),
     .alert_tx_o         (alert_tx       )
   );

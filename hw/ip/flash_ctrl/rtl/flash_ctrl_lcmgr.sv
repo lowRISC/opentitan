@@ -25,7 +25,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   output logic req_o,
   output logic [top_pkg::TL_AW-1:0] addr_o,
   input done_i,
-  input err_i,
+  input flash_ctrl_err_t err_i,
 
   // interface to ctrl_arb data ports
   output logic rready_o,
@@ -590,7 +590,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         rma_start = 1'b1;
         rma_op = FlashOpErase;
         if (done_i) begin
-          err_sts_set = err_i;
+          err_sts_set = |err_i;
           rma_state_d = StRmaWordSel;
         end
       end
@@ -621,7 +621,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
         if (done_i) begin
           beat_cnt_clr = 1'b1;
-          err_sts_set = err_i;
+          err_sts_set = |err_i;
           rma_state_d = StRmaRdVerify;
         end
       end
