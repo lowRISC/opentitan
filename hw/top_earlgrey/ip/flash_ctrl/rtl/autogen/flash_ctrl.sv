@@ -64,7 +64,7 @@ module flash_ctrl
   output logic cio_tdo_o,
 
   // Interrupts
-  output logic intr_err_o,        // ERR_CODE is non-zero
+  output logic intr_corr_err_o,   // Correctable errors encountered
   output logic intr_prog_empty_o, // Program fifo is empty
   output logic intr_prog_lvl_o,   // Program fifo is empty
   output logic intr_rd_full_o,    // Read fifo is full
@@ -150,18 +150,16 @@ module flash_ctrl
   flash_erase_e erase_flash_type;
   logic erase_op_valid;
 
-  // combined indication that an operation has started
-  logic op_valid;
-
   // Done / Error signaling from ctrl modules
   logic prog_done, rd_done, erase_done;
-  logic prog_err, rd_err, erase_err;
+  flash_ctrl_err_t prog_err, rd_err, erase_err;
+  logic [BusAddrW-1:0] prog_err_addr, rd_err_addr, erase_err_addr;
 
   // Flash Memory Properties Connections
   logic [BusAddrW-1:0] flash_addr;
   logic flash_req;
   logic flash_rd_done, flash_prog_done, flash_erase_done;
-  logic flash_mp_error;
+  logic flash_mp_err;
   logic [BusWidth-1:0] flash_prog_data;
   logic flash_prog_last;
   flash_prog_e flash_prog_type;
@@ -171,7 +169,6 @@ module flash_ctrl
   logic rd_op;
   logic prog_op;
   logic erase_op;
-  logic [AllPagesW-1:0] err_addr;
   flash_lcmgr_phase_e phase;
 
   // Flash control arbitration connections to hardware interface
@@ -183,7 +180,7 @@ module flash_ctrl
   logic hw_req;
   logic [top_pkg::TL_AW-1:0] hw_addr;
   logic hw_done;
-  logic hw_err;
+  flash_ctrl_err_t hw_err;
   logic hw_rvalid;
   logic hw_rready;
   logic hw_wvalid;
@@ -197,7 +194,7 @@ module flash_ctrl
 
   // Flash control arbitration connections to software interface
   logic sw_ctrl_done;
-  logic sw_ctrl_err;
+  flash_ctrl_err_t sw_ctrl_err;
 
   // Flash control muxed connections
   flash_ctrl_reg2hw_control_reg_t muxed_ctrl;
@@ -205,6 +202,7 @@ module flash_ctrl
   logic op_start;
   logic [11:0] op_num_words;
   logic [BusAddrW-1:0] op_addr;
+  logic [BusAddrW-1:0] ctrl_err_addr;
   // SW or HW supplied address is out of bounds
   logic op_addr_oob;
   flash_op_e op_type;
@@ -311,6 +309,9 @@ module flash_ctrl
     .clk_i,
     .rst_ni,
 
+    // error output shared by both interfaces
+    .ctrl_err_addr_o(ctrl_err_addr),
+
     // software interface to rd_ctrl / erase_ctrl
     .sw_ctrl_i(reg2hw.control),
     .sw_addr_i(reg2hw.addr.q),
@@ -352,10 +353,13 @@ module flash_ctrl
     .muxed_addr_o(muxed_addr),
     .prog_ack_i(prog_done),
     .prog_err_i(prog_err),
+    .prog_err_addr_i(prog_err_addr),
     .rd_ack_i(rd_done),
     .rd_err_i(rd_err),
+    .rd_err_addr_i(rd_err_addr),
     .erase_ack_i(erase_done),
     .erase_err_i(erase_err),
+    .erase_err_addr_i(erase_err_addr),
 
     // muxed interface to rd_fifo
     .rd_fifo_rvalid_i(rd_fifo_rvalid),
@@ -394,7 +398,6 @@ module flash_ctrl
   assign prog_op       = op_type == FlashOpProgram;
   assign erase_op      = op_type == FlashOpErase;
   assign sw_sel        = if_sel == SwSel;
-  assign op_valid      = prog_op_valid | rd_op_valid | erase_op_valid;
 
   // software privilege to creator seed
   assign creator_seed_priv = lc_creator_seed_sw_rw_en == lc_ctrl_pkg::On;
@@ -530,6 +533,7 @@ module flash_ctrl
     .op_addr_oob_i  (op_addr_oob),
     .op_type_i      (op_prog_type),
     .type_avail_i   (prog_type_en),
+    .op_err_addr_o  (prog_err_addr),
 
     // FIFO Interface
     .data_i         (prog_fifo_rdata),
@@ -544,7 +548,9 @@ module flash_ctrl
     .flash_last_o   (flash_prog_last),
     .flash_type_o   (flash_prog_type),
     .flash_done_i   (flash_prog_done),
-    .flash_error_i  (flash_mp_error)
+    // TODO, pending feedback
+    .flash_phy_err_i(flash_phy_rsp.flash_err),
+    .flash_mp_err_i (flash_mp_err)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -608,6 +614,7 @@ module flash_ctrl
     .op_num_words_i (op_num_words),
     .op_done_o      (rd_done),
     .op_err_o       (rd_err),
+    .op_err_addr_o  (rd_err_addr),
     .op_addr_i      (op_addr),
     .op_addr_oob_i  (op_addr_oob),
 
@@ -622,7 +629,9 @@ module flash_ctrl
     .flash_ovfl_o   (rd_flash_ovfl),
     .flash_data_i   (flash_rd_data),
     .flash_done_i   (flash_rd_done),
-    .flash_error_i  (flash_mp_error | flash_rd_err)
+    .flash_mp_err_i (flash_mp_err),
+    .flash_rd_err_i (flash_rd_err),
+    .flash_phy_err_i(flash_phy_rsp.flash_err)
   );
 
   // Erase handler does not consume fifo
@@ -635,13 +644,15 @@ module flash_ctrl
     .op_err_o       (erase_err),
     .op_addr_i      (op_addr),
     .op_addr_oob_i  (op_addr_oob),
+    .op_err_addr_o  (erase_err_addr),
 
     // Flash Macro Interface
     .flash_req_o    (erase_flash_req),
     .flash_addr_o   (erase_flash_addr),
     .flash_op_o     (erase_flash_type),
     .flash_done_i   (flash_erase_done),
-    .flash_error_i  (flash_mp_error)
+    .flash_mp_err_i (flash_mp_err),
+    .flash_phy_err_i(flash_phy_rsp.flash_err)
   );
 
   // Final muxing to flash macro module
@@ -762,8 +773,7 @@ module flash_ctrl
     .rd_done_o(flash_rd_done),
     .prog_done_o(flash_prog_done),
     .erase_done_o(flash_erase_done),
-    .error_o(flash_mp_error),
-    .err_addr_o(err_addr),
+    .error_o(flash_mp_err),
 
     // flash phy interface
     .req_o(flash_phy_req.req),
@@ -787,7 +797,7 @@ module flash_ctrl
   assign hw2reg.op_status.done.d     = 1'b1;
   assign hw2reg.op_status.done.de    = sw_ctrl_done;
   assign hw2reg.op_status.err.d      = 1'b1;
-  assign hw2reg.op_status.err.de     = sw_ctrl_err;
+  assign hw2reg.op_status.err.de     = |sw_ctrl_err;
   assign hw2reg.status.rd_full.d     = rd_fifo_full;
   assign hw2reg.status.rd_full.de    = sw_sel;
   assign hw2reg.status.rd_empty.d    = ~rd_fifo_rvalid;
@@ -862,31 +872,24 @@ module flash_ctrl
   logic [NumAlerts-1:0] alert_srcs;
   logic [NumAlerts-1:0] alert_tests;
 
+  // TODO Add shadow update
+  // An excessive number of recoverable errors may also indicate an attack
   logic recov_err;
-  assign recov_err = flash_phy_rsp.flash_alert_p | ~flash_phy_rsp.flash_alert_n;
+  assign recov_err = sw_ctrl_done & |sw_ctrl_err;
 
-  logic recov_mp_err;
-  assign recov_mp_err = flash_mp_error;
+  logic fatal_err;
+  assign fatal_err = |reg2hw.fault_status;
 
-  logic recov_ecc_err;
-  assign recov_ecc_err = |flash_phy_rsp.ecc_single_err | |flash_phy_rsp.ecc_multi_err;
 
-  logic fatal_intg_err;
-  assign fatal_intg_err = flash_phy_rsp.intg_err | intg_err;
-
-  assign alert_srcs = { fatal_intg_err,
-                        recov_ecc_err,
-                        recov_mp_err,
+  assign alert_srcs = { fatal_err,
                         recov_err
                       };
 
-  assign alert_tests = { reg2hw.alert_test.fatal_intg_err.q & reg2hw.alert_test.fatal_intg_err.qe,
-                         reg2hw.alert_test.recov_ecc_err.q & reg2hw.alert_test.recov_ecc_err.qe,
-                         reg2hw.alert_test.recov_mp_err.q  & reg2hw.alert_test.recov_mp_err.qe,
-                         reg2hw.alert_test.recov_err.q     & reg2hw.alert_test.recov_err.qe
+  assign alert_tests = { reg2hw.alert_test.fatal_err.q & reg2hw.alert_test.fatal_err.qe,
+                         reg2hw.alert_test.recov_err.q & reg2hw.alert_test.recov_err.qe
                        };
 
-  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b0, 1'b0, 1'b0};
+  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b0};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
@@ -907,7 +910,7 @@ module flash_ctrl
   // Flash Disable
   //////////////////////////////////////
   assign flash_disable = reg2hw.flash_disable.q ? lc_ctrl_pkg::On :
-                         fatal_intg_err         ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
+                         fatal_err              ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
 
   lc_ctrl_pkg::lc_tx_t lc_escalate_en;
   prim_lc_sync #(
@@ -925,133 +928,184 @@ module flash_ctrl
   // Errors and Interrupts
   //////////////////////////////////////
 
-  assign hw2reg.err_code.oob_err.d = 1'b1;
-  assign hw2reg.err_code.mp_err.d = 1'b1;
-  assign hw2reg.err_code.ecc_single_err.d = 1'b1;
-  assign hw2reg.err_code.ecc_multi_err.d = 1'b1;
-  assign hw2reg.err_code.flash_err.d = 1'b1;
-  assign hw2reg.err_code.flash_alert.d = 1'b1;
-  assign hw2reg.err_code.oob_err.de = op_valid & op_addr_oob;
-  assign hw2reg.err_code.mp_err.de = flash_mp_error;
-  assign hw2reg.err_code.ecc_single_err.de = |flash_phy_rsp.ecc_single_err;
-  assign hw2reg.err_code.ecc_multi_err.de = |flash_phy_rsp.ecc_multi_err;
-  assign hw2reg.err_code.flash_err.de = flash_phy_rsp.flash_err;
-  assign hw2reg.err_code.flash_alert.de = flash_phy_rsp.flash_alert_p |
-                                          ~flash_phy_rsp.flash_alert_n;
-  assign hw2reg.err_addr.d = err_addr;
-  assign hw2reg.err_addr.de = flash_mp_error;
+  // all software interface errors are treated as synchronous errors
+  assign hw2reg.err_code.oob_err.d        = 1'b1;
+  assign hw2reg.err_code.mp_err.d         = 1'b1;
+  assign hw2reg.err_code.rd_err.d         = 1'b1;
+  assign hw2reg.err_code.prog_win_err.d   = 1'b1;
+  assign hw2reg.err_code.prog_type_err.d  = 1'b1;
+  assign hw2reg.err_code.flash_phy_err.d  = 1'b1;
+  assign hw2reg.err_code.oob_err.de       = sw_ctrl_err.oob_err;
+  assign hw2reg.err_code.mp_err.de        = sw_ctrl_err.mp_err;
+  assign hw2reg.err_code.rd_err.de        = sw_ctrl_err.rd_err;
+  assign hw2reg.err_code.prog_win_err.de  = sw_ctrl_err.prog_win_err;
+  assign hw2reg.err_code.prog_type_err.de = sw_ctrl_err.prog_type_err;
+  assign hw2reg.err_code.flash_phy_err.de = sw_ctrl_err.phy_err;
+  assign hw2reg.err_addr.d                = {reg2hw.addr.q[31:BusAddrW],ctrl_err_addr};
+  assign hw2reg.err_addr.de               = sw_ctrl_err.mp_err |
+                                            sw_ctrl_err.rd_err |
+                                            sw_ctrl_err.phy_err;
 
-  for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_single_err_cons
-    assign hw2reg.ecc_single_err_addr[bank].d  = {flash_phy_rsp.ecc_addr[bank],
-      {BusByteWidth{1'b0}}};
-    assign hw2reg.ecc_single_err_addr[bank].de = flash_phy_rsp.ecc_single_err[bank];
+  // all hardware interface errors are considered faults
+  assign hw2reg.fault_status.oob_err.d        = 1'b1;
+  assign hw2reg.fault_status.mp_err.d         = 1'b1;
+  assign hw2reg.fault_status.rd_err.d         = 1'b1;
+  assign hw2reg.fault_status.prog_win_err.d   = 1'b1;
+  assign hw2reg.fault_status.prog_type_err.d  = 1'b1;
+  assign hw2reg.fault_status.flash_phy_err.d  = 1'b1;
+  assign hw2reg.fault_status.reg_intg_err.d   = 1'b1;
+  assign hw2reg.fault_status.phy_intg_err.d   = 1'b1;
+  assign hw2reg.fault_status.oob_err.de       = hw_err.oob_err;
+  assign hw2reg.fault_status.mp_err.de        = hw_err.mp_err;
+  assign hw2reg.fault_status.rd_err.de        = hw_err.rd_err;
+  assign hw2reg.fault_status.prog_win_err.de  = hw_err.prog_win_err;
+  assign hw2reg.fault_status.prog_type_err.de = hw_err.prog_type_err;
+  assign hw2reg.fault_status.flash_phy_err.de = hw_err.phy_err;
+  assign hw2reg.fault_status.reg_intg_err.de  = intg_err;
+  assign hw2reg.fault_status.phy_intg_err.de  = flash_phy_rsp.intg_err;
+
+  // Correctable ECC count / address
+  for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg
+    assign hw2reg.ecc_single_err_cnt[i].de = flash_phy_rsp.ecc_single_err[i];
+    assign hw2reg.ecc_single_err_cnt[i].d = &reg2hw.ecc_single_err_cnt[i].q ?
+                                            reg2hw.ecc_single_err_cnt[i].q :
+                                            reg2hw.ecc_single_err_cnt[i].q + 1'b1;
+
+    assign hw2reg.ecc_single_err_addr[i].de = flash_phy_rsp.ecc_single_err[i];
+    assign hw2reg.ecc_single_err_addr[i].d = {flash_phy_rsp.ecc_addr[i], {BusByteWidth{1'b0}}};
   end
-
-  for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_multi_err_cons
-    assign hw2reg.ecc_multi_err_addr[bank].d  = {flash_phy_rsp.ecc_addr[bank],
-      {BusByteWidth{1'b0}}};
-    assign hw2reg.ecc_multi_err_addr[bank].de = flash_phy_rsp.ecc_multi_err[bank];
-  end
-
-  logic [7:0] single_err_cnt_d, multi_err_cnt_d;
-  always_comb begin
-    single_err_cnt_d = reg2hw.ecc_single_err_cnt.q;
-    multi_err_cnt_d = reg2hw.ecc_multi_err_cnt.q;
-
-    if (|flash_phy_rsp.ecc_single_err && single_err_cnt_d < '1) begin
-      single_err_cnt_d = single_err_cnt_d + 1'b1;
-    end
-
-    if (|flash_phy_rsp.ecc_multi_err && multi_err_cnt_d < '1) begin
-      multi_err_cnt_d = multi_err_cnt_d + 1'b1;
-    end
-  end
-
-  // feed back in error count
-  assign hw2reg.ecc_single_err_cnt.de = 1'b1;
-  assign hw2reg.ecc_single_err_cnt.d  = single_err_cnt_d;
-  assign hw2reg.ecc_multi_err_cnt.de  = 1'b1;
-  assign hw2reg.ecc_multi_err_cnt.d   = multi_err_cnt_d;
-
-  // err code interrupt event
-  flash_ctrl_reg2hw_err_code_reg_t err_code_d, err_code_q;
-  logic err_code_intr_event;
-
-  assign err_code_d = reg2hw.err_code & reg2hw.err_code_intr_en;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      err_code_q <= '0;
-    end else begin
-      err_code_q <= err_code_d;
-    end
-  end
-
-  assign err_code_intr_event = err_code_d != err_code_q;
 
   // general interrupt events
-  logic [3:0] intr_src_d;
-  logic [3:0] intr_src_q;
+  logic [LastIntrIdx-1:0] intr_event;
 
-  assign intr_src_d = { ~prog_fifo_rvalid,
-                        reg2hw.fifo_lvl.prog.q == prog_fifo_depth,
-                        rd_fifo_full,
-                        reg2hw.fifo_lvl.rd.q == rd_fifo_depth
-                      };
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue(1)
+  ) u_prog_empty_event (
+    .clk_i,
+    .rst_ni,
+    .d_i(~prog_fifo_rvalid),
+    .q_sync_o(),
+    .q_posedge_pulse_o(intr_event[ProgEmpty]),
+    .q_negedge_pulse_o()
+  );
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      intr_src_q <= 4'h8; //prog_fifo is empty by default
-    end else begin
-      if (sw_sel) begin
-        intr_src_q[3:0] <= intr_src_d[3:0];
-      end
-    end
-  end
+  prim_intr_hw #(.Width(1)) u_intr_prog_empty (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_event[ProgEmpty]),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.prog_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.prog_empty.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.prog_empty.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.prog_empty.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.prog_empty.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.prog_empty.d),
+    .intr_o                 (intr_prog_empty_o)
+  );
 
-  // interrupt events
-  logic [4:0] intr_assert;
-  assign intr_assert[4] = err_code_intr_event;
-  assign intr_assert[3:0] = ~intr_src_q & intr_src_d;
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_prog_lvl_event (
+    .clk_i,
+    .rst_ni,
+    .d_i(reg2hw.fifo_lvl.prog.q == prog_fifo_depth),
+    .q_sync_o(),
+    .q_posedge_pulse_o(intr_event[ProgLvl]),
+    .q_negedge_pulse_o()
+  );
 
-  assign intr_prog_empty_o = reg2hw.intr_enable.prog_empty.q & reg2hw.intr_state.prog_empty.q;
-  assign intr_prog_lvl_o = reg2hw.intr_enable.prog_lvl.q & reg2hw.intr_state.prog_lvl.q;
-  assign intr_rd_full_o = reg2hw.intr_enable.rd_full.q & reg2hw.intr_state.rd_full.q;
-  assign intr_rd_lvl_o = reg2hw.intr_enable.rd_lvl.q & reg2hw.intr_state.rd_lvl.q;
-  assign intr_op_done_o = reg2hw.intr_enable.op_done.q & reg2hw.intr_state.op_done.q;
-  assign intr_err_o = reg2hw.intr_enable.err.q & reg2hw.intr_state.err.q;
+  prim_intr_hw #(.Width(1)) u_intr_prog_lvl (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_event[ProgLvl]),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.prog_lvl.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.prog_lvl.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.prog_lvl.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.prog_lvl.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.prog_lvl.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.prog_lvl.d),
+    .intr_o                 (intr_prog_lvl_o)
+  );
 
-  assign hw2reg.intr_state.err.d  = 1'b1;
-  assign hw2reg.intr_state.err.de = intr_assert[4] |
-                                    (reg2hw.intr_test.err.qe  &
-                                    reg2hw.intr_test.err.q);
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_rd_full_event (
+    .clk_i,
+    .rst_ni,
+    .d_i(rd_fifo_full),
+    .q_sync_o(),
+    .q_posedge_pulse_o(intr_event[RdFull]),
+    .q_negedge_pulse_o()
+  );
 
-  assign hw2reg.intr_state.prog_empty.d  = 1'b1;
-  assign hw2reg.intr_state.prog_empty.de = intr_assert[3]  |
-                                           (reg2hw.intr_test.prog_empty.qe  &
-                                           reg2hw.intr_test.prog_empty.q);
+  prim_intr_hw #(.Width(1)) u_intr_rd_full (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_event[RdFull]),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rd_full.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rd_full.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rd_full.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rd_full.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rd_full.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rd_full.d),
+    .intr_o                 (intr_rd_full_o)
+  );
 
-  assign hw2reg.intr_state.prog_lvl.d  = 1'b1;
-  assign hw2reg.intr_state.prog_lvl.de = intr_assert[2]  |
-                                         (reg2hw.intr_test.prog_lvl.qe  &
-                                         reg2hw.intr_test.prog_lvl.q);
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_rd_lvl_event (
+    .clk_i,
+    .rst_ni,
+    .d_i(reg2hw.fifo_lvl.rd.q == rd_fifo_depth),
+    .q_sync_o(),
+    .q_posedge_pulse_o(intr_event[RdLvl]),
+    .q_negedge_pulse_o()
+  );
 
-  assign hw2reg.intr_state.rd_full.d  = 1'b1;
-  assign hw2reg.intr_state.rd_full.de = intr_assert[1] |
-                                        (reg2hw.intr_test.rd_full.qe  &
-                                        reg2hw.intr_test.rd_full.q);
+  prim_intr_hw #(.Width(1)) u_intr_rd_lvl (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_event[RdLvl]),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rd_lvl.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rd_lvl.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rd_lvl.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rd_lvl.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rd_lvl.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rd_lvl.d),
+    .intr_o                 (intr_rd_lvl_o)
+  );
 
-  assign hw2reg.intr_state.rd_lvl.d  = 1'b1;
-  assign hw2reg.intr_state.rd_lvl.de =  intr_assert[0] |
-                                       (reg2hw.intr_test.rd_lvl.qe  &
-                                       reg2hw.intr_test.rd_lvl.q);
+  assign intr_event[OpDone] = sw_ctrl_done;
+  assign intr_event[CorrErr] = |flash_phy_rsp.ecc_single_err;
 
-  assign hw2reg.intr_state.op_done.d  = 1'b1;
-  assign hw2reg.intr_state.op_done.de = sw_ctrl_done  |
-                                        (reg2hw.intr_test.op_done.qe  &
-                                        reg2hw.intr_test.op_done.q);
+  prim_intr_hw #(.Width(1)) u_intr_op_done (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_event[OpDone]),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.op_done.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.op_done.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.op_done.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.op_done.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.op_done.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.op_done.d),
+    .intr_o                 (intr_op_done_o)
+  );
 
-
+  prim_intr_hw #(.Width(1)) u_intr_corr_err (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_event[CorrErr]),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.corr_err.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.corr_err.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.corr_err.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.corr_err.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.corr_err.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.corr_err.d),
+    .intr_o                 (intr_corr_err_o)
+  );
 
   // Unused bits
   logic [BusByteWidth-1:0] unused_byte_sel;
@@ -1150,12 +1204,15 @@ module flash_ctrl
   `ASSERT_KNOWN(IntrProgRdFullKnownO_A, intr_rd_full_o   )
   `ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o    )
   `ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o   )
-  `ASSERT_KNOWN(IntrErrO_A,             intr_err_o       )
+  `ASSERT_KNOWN(IntrErrO_A,             intr_corr_err_o  )
 
-
+  // combined indication that an operation has started
+  // This is used only for assertions
+  logic unused_op_valid;
+  assign unused_op_valid = prog_op_valid | rd_op_valid | erase_op_valid;
 
   // if there is an out of bounds error, flash request should never assert
-  `ASSERT(OutofBoundsReq_A, op_valid & op_addr_oob |-> ~flash_phy_req.req)
+  `ASSERT(OutofBoundsReq_A, unused_op_valid & op_addr_oob |-> ~flash_phy_req.req)
 
   // add more assertions
 
