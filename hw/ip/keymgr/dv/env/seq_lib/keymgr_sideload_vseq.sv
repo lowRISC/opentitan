@@ -18,7 +18,7 @@ class keymgr_sideload_vseq extends keymgr_smoke_vseq;
   constraint clear_dest_c {
     clear_dest dist {[0:3] :/ 4,
                      // reserved value, clear all sideload
-                     [4:$] :/ 1};
+                     [4:$] :/ 2};
   }
 
   virtual task keymgr_operations(bit advance_state = $urandom_range(0, 1),
@@ -26,13 +26,15 @@ class keymgr_sideload_vseq extends keymgr_smoke_vseq;
                                  bit clr_output    = $urandom_range(0, 1),
                                  bit wait_done     = 1);
     super.keymgr_operations(advance_state, num_gen_op, clr_output, wait_done);
+    randomly_clear_sideload();
+  endtask : keymgr_operations
 
+  virtual task randomly_clear_sideload();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_clear_sideload)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_dest)
     if (do_clear_sideload) begin
       `uvm_info(`gfn, $sformatf("Clear sideload with value %0d", clear_dest), UVM_MEDIUM)
       csr_wr(.ptr(ral.sideload_clear), .value(clear_dest));
     end
-  endtask : keymgr_operations
-
+  endtask : randomly_clear_sideload
 endclass : keymgr_sideload_vseq
