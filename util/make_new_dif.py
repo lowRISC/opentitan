@@ -115,8 +115,9 @@ class Ip:
         assert (self.hjson_data and
                 "ERROR: must load IP HJSON before loarding IRQs")
         irqs = []
-        for irq in self.hjson_data["interrupt_list"]:
-            irqs.append(Irq(irq))
+        if "interrupt_list" in self.hjson_data:
+            for irq in self.hjson_data["interrupt_list"]:
+                irqs.append(Irq(irq))
         return irqs
 
 
@@ -191,21 +192,12 @@ def main():
 
         if "autogen" in args.only:
             # Render all templates
-            for filetype in ["inc", "c", "unittest"]:
-                assert (ip.irqs and "ERROR: this IP generates no interrupts.")
+            for filetype in [".inc", ".c", "_unittest.cc"]:
                 # Build input/output file names.
-                if filetype == "unittest":
-                    template_file = (
-                        REPO_TOP /
-                        f"util/make_new_dif/dif_autogen_{filetype}.cc.tpl")
-                    out_file = (autogen_dif_dir /
-                                f"dif_{ip.name_snake}_autogen_unittest.cc")
-                else:
-                    template_file = (
-                        REPO_TOP /
-                        f"util/make_new_dif/dif_autogen.{filetype}.tpl")
-                    out_file = (autogen_dif_dir /
-                                f"dif_{ip.name_snake}_autogen.{filetype}")
+                template_file = (
+                    REPO_TOP / f"util/make_new_dif/dif_autogen{filetype}.tpl")
+                out_file = (autogen_dif_dir /
+                            f"dif_{ip.name_snake}_autogen{filetype}")
 
                 # Read in template.
                 template = Template(template_file.read_text())
