@@ -32,6 +32,7 @@ module otbn_core
 
   input  logic  start_i, // start the operation
   output logic  done_o,  // operation done
+  output logic  locked_o, // otbn locked, reset required to perform further commands
 
   output err_bits_t err_bits_o, // valid when done_o is asserted
 
@@ -264,6 +265,7 @@ module otbn_core
 
     .start_i (controller_start),
     .done_o,
+    .locked_o,
 
     .err_bits_o,
 

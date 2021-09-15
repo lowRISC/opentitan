@@ -88,6 +88,7 @@ module otbn
   logic start_d, start_q;
   logic busy_execute_d, busy_execute_q;
   logic done;
+  logic locked;
   logic illegal_bus_access_d, illegal_bus_access_q;
 
   err_bits_t err_bits;
@@ -592,10 +593,13 @@ module otbn
   always_comb begin
     unique case (1'b1)
       busy_execute_q: hw2reg.status.d = StatusBusyExecute;
+      locked:         hw2reg.status.d = StatusLocked;
       // TODO: Add other busy flags, and assert onehot encoding.
-      default: hw2reg.status.d = StatusIdle;
+      default:        hw2reg.status.d = StatusIdle;
     endcase
   end
+
+  `ASSERT(OtbnStatesOneHot, $onehot0({busy_execute_q, locked}))
 
   // ERR_BITS register
   // The error bits for an OTBN operation get stored on the cycle that done is
@@ -756,6 +760,7 @@ module otbn
 
     // Mux between model and RTL implementation at runtime.
     logic         done_model, done_rtl;
+    logic         locked_model, locked_rtl;
     logic         start_model, start_rtl;
     err_bits_t    err_bits_model, err_bits_rtl;
     logic [31:0]  insn_cnt_model, insn_cnt_rtl;
@@ -764,6 +769,7 @@ module otbn
     logic [255:0] edn_rnd_data_model;
 
     assign done = otbn_use_model ? done_model : done_rtl;
+    assign locked = otbn_use_model ? locked_model : locked_rtl;
     assign err_bits = otbn_use_model ? err_bits_model : err_bits_rtl;
     assign insn_cnt = otbn_use_model ? insn_cnt_model : insn_cnt_rtl;
     assign start_model = start_q & otbn_use_model;
@@ -804,6 +810,8 @@ module otbn
       .err_o ()
     );
 
+    assign locked_model = 1'b0;
+
     // RTL implementation
     otbn_core #(
       .RegFile(RegFile),
@@ -817,6 +825,7 @@ module otbn
 
       .start_i                (start_rtl),
       .done_o                 (done_rtl),
+      .locked_o               (locked_rtl),
 
       .err_bits_o             (err_bits_rtl),
 
@@ -866,6 +875,7 @@ module otbn
 
       .start_i                (start_q),
       .done_o                 (done),
+      .locked_o               (locked),
 
       .err_bits_o             (err_bits),
 

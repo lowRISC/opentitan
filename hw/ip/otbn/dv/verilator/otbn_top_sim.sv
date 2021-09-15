@@ -66,6 +66,7 @@ module otbn_top_sim (
 
     .start_i                ( otbn_start       ),
     .done_o                 ( otbn_done_d      ),
+    .locked_o               (                  ),
 
     .err_bits_o             ( otbn_err_bits_d  ),
 

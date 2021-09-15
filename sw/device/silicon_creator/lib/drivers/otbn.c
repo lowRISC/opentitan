@@ -74,7 +74,7 @@ rom_error_t otbn_start(uint32_t start_addr) {
 
 bool otbn_is_busy() {
   uint32_t status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
-  return status != kOtbnStatusIdle;
+  return status != kOtbnStatusIdle && status != kOtbnStatusLocked;
 }
 
 void otbn_get_err_bits(otbn_err_bits_t *err_bits) {
