@@ -411,6 +411,7 @@ Similarly, if we underflow the call stack, we won't have an address at all (vali
 This leaves a single combination to check:
 
 - Overflow the call stack when loading from an invalid address.
+  Tracked as `overflow_cs_invalid_addr_cp`.
 
 #### SW
 
@@ -441,6 +442,7 @@ The possible errors are: underflow call stack and invalid DMEM address.
 These can happen together, giving a single combination to check:
 
 - Underflow the call stack when reading the value to be stored and try to write it to an invalid address.
+  Tracked as `underflow_cs_invalid_addr_cp`.
 
 #### BEQ
 
@@ -471,8 +473,9 @@ Since the target address check only triggers if the branch is taken, which requi
 This leaves two possible combinations:
 
 - Underflow the call stack in a branch at the end of a loop.
+  Tracked as `underflow_at_loop_end_cross`.
 - Take a branch to an invalid address where the branch instruction is at the end of a loop.
-
+  Tracked as `bad_addr_at_loop_end_cross`.
 
 #### BNE
 
@@ -503,7 +506,9 @@ Since the target address check only triggers if the branch is taken, which requi
 This leaves two possible combinations:
 
 - Underflow the call stack in a branch at the end of a loop.
+  Tracked as `underflow_at_loop_end_cross`.
 - Take a branch to an invalid address where the branch instruction is at the end of a loop.
+  Tracked as `bad_addr_at_loop_end_cross`.
 
 #### JAL
 
@@ -530,9 +535,13 @@ The possible errors are: overflow call stack, bad target address, and jump at en
 All four combinations are possible:
 
 - Overflow call stack when jumping to an invalid address.
+  Tracked as `overflow_and_invalid_addr_cp`.
 - Overflow call stack from a jump at the end of a loop.
+  Tracked as `overflow_at_loop_end_cp`.
 - Jump to an invalid address from the end of a loop.
+  Tracked as `invalid_addr_at_loop_end_cp`.
 - Overflow call stack when jumping to an invalid address from the end of a loop.
+  Tracked as `overflow_and_invalid_addr_at_loop_end_cp`.
 
 #### JALR
 
@@ -567,10 +576,15 @@ This means the only error that can occur in combination with underflowing the ca
 Otherwise, all other combinations are possible.
 
 - Underflow call stack in a jump instruction at the end of a loop.
+  Tracked as `underflow_at_loop_end_cp`.
 - Overflow call stack when jumping to an invalid address.
+  Tracked as `overflow_and_bad_addr_cp`.
 - Overflow call stack from a jump at the end of a loop.
+  Tracked as `overflow_at_loop_end_cp`.
 - Jump to an invalid address from the end of a loop.
+  Tracked as `bad_addr_at_loop_end_cp`.
 - Overflow call stack when jumping to an invalid address from the end of a loop.
+  Tracked as `overflow_and_bad_addr_at_loop_end_cp`.
 
 #### CSRRS
 
@@ -589,7 +603,9 @@ It's not possible to under- and overflow the call stack in a single cycle.
 The other two combinations are possible:
 
 - Underflow the call stack and access an invalid CSR
+  Tracked as `underflow_with_bad_csr_cp`.
 - Overflow the call stack and access an invalid CSR
+  Tracked as `overflow_with_bad_csr_cp`.
 
 #### CSRRW
 
@@ -609,7 +625,9 @@ It's not possible to under- and overflow the call stack in a single cycle.
 The other two combinations are possible:
 
 - Underflow the call stack and access an invalid CSR
+  Tracked as `underflow_with_bad_csr_cp`.
 - Overflow the call stack and access an invalid CSR
+  Tracked as `overflow_with_bad_csr_cp`.
 
 #### ECALL
 
@@ -641,7 +659,9 @@ The possible errors are: underflow call stack, zero loop count, and loop at end 
 It's not possible to underflow the call stack and see a zero loop count (because if we underflow the call stack, we have no loop count), so we get two pairs:
 
 - Underflow the call stack and loop at the end of a loop.
+  Tracked as `underflow_at_loop_end_cp`.
 - Loop with a zero loop count at the end of a loop.
+  Tracked as `zero_count_at_loop_end_cp`.
 
 #### LOOPI
 
@@ -664,6 +684,7 @@ The possible errors are: zero loop count and loop at end of loop.
 These can happen together:
 
 - Loop with a zero loop count at the end of a loop.
+  Tracked as `zero_count_at_loop_end_cp`.
 
 #### BN.ADD
 
@@ -906,14 +927,23 @@ However, every other combination is possible.
 Binning together the two underflows unless it makes a difference to the possible behaviour gives the following list:
 
 - Underflow call stack and set both increments.
+  Tracked as `underflow_and_inc_both_cross`.
 - Underflow call stack for `grs1` and have a bad WDR index in `*grd`.
+  Tracked as `underflow_and_badb_cross`.
 - Underflow call stack for `grd` and compute a bad address from `*grs1`.
+  Tracked as `underflow_and_bad_addr_cross`.
 - Set both increments and have a bad WDR index.
+  Tracked as `inc_both_and_bad_wdr_cross`.
 - Set both increments and load from a bad address.
+  Tracked as `inc_both_and_bad_addr_cross`.
 - Have a bad WDR index when loading from a bad address.
+  Tracked as `bad_wdr_and_bad_addr_cross`.
 - Underflow call stack for `grs1`, setting both increments and have a bad WDR index in `*grd`.
+  Tracked as `underflow_and_inc_both_and_bad_wdr_cross`.
 - Underflow call stack for `grd`, setting both increments and compute a bad address from `*grs1`.
+  Tracked as `underflow_and_inc_both_and_bad_addr_cross`.
 - Set both increments and have both a bad WDR index and a bad address.
+  Tracked as `inc_both_and_bad_wdr_and_bad_addr_cross`.
 
 #### BN.SID
 
@@ -953,14 +983,23 @@ However, every other combination is possible.
 Binning together the two underflows unless it makes a difference to the possible behaviour gives the following list:
 
 - Underflow call stack and set both increments.
+  Tracked as `underflow_and_inc_both_cross`.
 - Underflow call stack for `grs1` and have a bad WDR index in `*grs2`.
+  Tracked as `underflow_and_badb_cross`.
 - Underflow call stack for `grs2` and compute a bad address from `*grs1`.
+  Tracked as `underflow_and_bad_addr_cross`.
 - Set both increments and have a bad WDR index.
-- Set both increments and load from a bad address.
-- Have a bad WDR index when loading from a bad address.
+  Tracked as `inc_both_and_bad_wdr_cross`.
+- Set both increments and store to a bad address.
+  Tracked as `inc_both_and_bad_addr_cross`.
+- Have a bad WDR index when storing to a bad address.
+  Tracked as `bad_wdr_and_bad_addr_cross`.
 - Underflow call stack for `grs1`, setting both increments and have a bad WDR index in `*grs2`.
+  Tracked as `underflow_and_inc_both_and_bad_wdr_cross`.
 - Underflow call stack for `grs2`, setting both increments and compute a bad address from `*grs1`.
+  Tracked as `underflow_and_inc_both_and_bad_addr_cross`.
 - Set both increments and have both a bad WDR index and a bad address.
+  Tracked as `inc_both_and_bad_wdr_and_bad_addr_cross`.
 
 #### BN.MOV
 
@@ -972,7 +1011,7 @@ No special coverage otherwise.
 #### BN.MOVR
 
 This instruction uses the `bnmovr` encoding schema, with covergroup `enc_bnmovr_cg`.
-There is no instruction-specific covergroup.
+The instruction-specific covergroup is `insn_bn_movr_cg`.
 
 - See an invalid instruction with both increments specified
   Tracked in `enc_bnmovr_cg` as a bin of `incd_inc1_cross`.
@@ -986,11 +1025,17 @@ Similarly, if we underflow the call stack for `grd` then there's no WDR index fr
 Binning together the two underflows and WDR indices unless it makes a difference to the possible behaviour gives the following list:
 
 - Underflow call stack and set both increments.
+  Tracked as `underflow_and_inc_both_cp`.
 - Underflow call stack for `grs` and have a bad WDR index in `*grd`.
+  Tracked as `underflow_and_bad_grd_cp`.
 - Underflow call stack for `grd` and have a bad WDR index in `*grs`.
+  Tracked as `underflow_and_bad_grs_cp`.
 - Set both increments and have a bad WDR index.
+  Tracked as `inc_both_and_bad_wdr_cp`.
 - Underflow call stack for `grs`, setting both increments and have a bad WDR index in `*grd`.
+  Tracked as `underflow_grs_and_inc_both_and_bad_wdr_cp`.
 - Underflow call stack for `grd`, setting both increments and have a bad WDR index in `*grs`.
+  Tracked as `underflow_grd_and_inc_both_and_bad_wdr_cp`.
 
 #### BN.WSRR
 

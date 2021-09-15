@@ -1084,9 +1084,14 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   // the instruction encoding. We extract that in the giant case statement in on_insn() so that we
   // reuse the code for LW and SW (which encode the fields differently).
   covergroup insn_xw_cg
-    with function sample(mnem_str_t   mnemonic,
-                         logic [11:0] offset,
-                         logic [31:0] operand_a);
+    with function sample(mnem_str_t          mnemonic,
+                         logic [11:0]        offset,
+                         logic [4:0]         grs1,
+                         logic [4:0]         grx2,
+                         logic [31:0]        operand_a,
+                         logic signed [31:0] addr,
+                         stack_fullness_e    call_stack_fullness,
+                         logic               call_stack_underflow);
 
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_lw);
@@ -1099,43 +1104,35 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(oob_base_neg_off_cp,
                  ($signed(operand_a) > DmemSizeByte) &&
                  ($signed(offset) < 0) &&
-                 (0 <= ($signed(operand_a) + $signed(offset))) &&
-                 (($signed(operand_a) + $signed(offset)) + 4 <= DmemSizeByte) &&
-                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+                 (0 <= addr) && (addr + 4 <= DmemSizeByte) && ((addr & 32'h3) == 0))
     `DEF_MNEM_CROSS(oob_base_neg_off)
 
     // Load from a valid address, where grs1 is negative and a positive offset brings the load
     // address in range.
     `DEF_SEEN_CP(neg_base_pos_off_cp,
-                 ($signed(operand_a) < 0) &&
-                 ($signed(offset) > 0) &&
-                 (0 <= ($signed(operand_a) + $signed(offset))) &&
-                 (($signed(operand_a) + $signed(offset)) + 4 <= DmemSizeByte) &&
-                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+                 ($signed(operand_a) < 0) && ($signed(offset) > 0) &&
+                 (0 <= addr) && (addr + 4 <= DmemSizeByte) && ((addr & 32'h3) == 0))
     `DEF_MNEM_CROSS(neg_base_pos_off)
 
     // Load from address zero
-    `DEF_SEEN_CP(addr0_cp, $signed(operand_a) + $signed(offset) == 0)
+    `DEF_SEEN_CP(addr0_cp, addr == 0)
     `DEF_MNEM_CROSS(addr0)
 
     // Load from the top word of memory
-    `DEF_SEEN_CP(top_addr_cp, $signed(operand_a) + $signed(offset) == DmemSizeByte - 4)
+    `DEF_SEEN_CP(top_addr_cp, addr == DmemSizeByte - 4)
     `DEF_MNEM_CROSS(top_addr)
 
     // Load from an invalid address (aligned but above the top of memory)
-    `DEF_SEEN_CP(oob_addr_cp,
-                 ($signed(operand_a) + $signed(offset) > DmemSizeByte - 4) &&
-                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+    `DEF_SEEN_CP(oob_addr_cp, (addr > DmemSizeByte - 4) && ((addr & 32'h3) == 0))
     `DEF_MNEM_CROSS(oob_addr)
+
     // Load from a negative invalid address (aligned but unsigned address exceeds the top of memory)
-    `DEF_SEEN_CP(oob_addr_neg_cp,
-                 ($signed(operand_a) + $signed(offset) < 0) &&
-                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+    `DEF_SEEN_CP(oob_addr_neg_cp, (addr < 0) && ((addr & 32'h3) == 0))
     `DEF_MNEM_CROSS(oob_addr_neg)
 
     // Load from a "barely invalid" address (the smallest aligned address that's above the top of
     // memory)
-    `DEF_SEEN_CP(barely_oob_addr_cp, $signed(operand_a) + $signed(offset) == DmemSizeByte)
+    `DEF_SEEN_CP(barely_oob_addr_cp, addr == DmemSizeByte)
     `DEF_MNEM_CROSS(barely_oob_addr)
 
     // Cross the different possible address alignments for otherwise valid addresses
@@ -1143,17 +1140,34 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     offset_align_cp: coverpoint offset[1:0];
     align_cross:
       cross mnemonic_cp, grs1_align_cp, offset_align_cp
-        iff ((0 <= ($signed(operand_a) + $signed(offset))) &&
-             (($signed(operand_a) + $signed(offset)) + 4 <= DmemSizeByte));
+        iff ((0 <= addr) && (addr + 4 <= DmemSizeByte));
+
+    // Overflow the call stack when accessing an invalid address. Note that this is only possible
+    // for LW (since SW never pushes to the call stack). Also note that we have to compute whether
+    // this is an overflow: we'll never see the push to a full call stack on the initial cycle of
+    // the instruction because the load data comes back on the following cycle.
+    `DEF_SEEN_CP(overflow_cs_invalid_addr_cp,
+                 (call_stack_fullness == StackFull) && (grx2 == 1) &&
+                 (addr < 0 || (addr + 4 > DmemSizeByte) || (addr & 32'h3) != 0))
+
+    // Underflow the call stack when accessing an invalid address. We have to be a bit careful here
+    // to make sure this is an SW instruction and we're underflowing with grs2 rather than grs1.
+    `DEF_SEEN_CP(underflow_cs_invalid_addr_cp,
+                 mnemonic == mnem_sw &&
+                 call_stack_underflow &&
+                 grs1 != 5'd1 &&
+                 (addr < 0 || (addr + 4 > DmemSizeByte) || (addr & 32'h3) != 0))
   endgroup
 
   covergroup insn_bxx_cg
-    with function sample(mnem_str_t   mnemonic,
-                         logic [31:0] insn_addr,
-                         logic [12:0] offset,
-                         logic [31:0] operand_a,
-                         logic [31:0] operand_b,
-                         logic        at_current_loop_end_insn);
+    with function sample(mnem_str_t          mnemonic,
+                         logic [31:0]        insn_addr,
+                         logic [12:0]        offset,
+                         logic [31:0]        operand_a,
+                         logic [31:0]        operand_b,
+                         logic signed [31:0] tgt_addr,
+                         logic               at_current_loop_end_insn,
+                         logic               call_stack_underflow);
 
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_beq);
@@ -1169,20 +1183,33 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     offset_align_cp: coverpoint offset[1];
     `DEF_MNEM_CROSS2(eq, offset_align)
 
-    `DEF_SEEN_CP(oob_cp, $signed(insn_addr) + $signed(offset) > ImemSizeByte)
+    `DEF_SEEN_CP(oob_cp, tgt_addr > ImemSizeByte)
     `DEF_MNEM_CROSS2(eq, oob)
 
-    `DEF_SEEN_CP(neg_cp, $signed(insn_addr) + $signed(offset) < 0)
+    `DEF_SEEN_CP(neg_cp, tgt_addr < 0)
     `DEF_MNEM_CROSS2(eq, neg)
 
     at_loop_end_cp: coverpoint at_current_loop_end_insn;
     `DEF_MNEM_CROSS2(eq, at_loop_end)
+
+    // A branch at the end of a loop where we also underflow the call stack
+    `DEF_SEEN_CP(underflow_at_loop_end_cp, at_current_loop_end_insn && call_stack_underflow)
+    `DEF_MNEM_CROSS(underflow_at_loop_end)
+
+    // A branch at the end of a loop that is taken and points at a bad address
+    `DEF_SEEN_CP(bad_addr_at_loop_end_cp,
+                 at_current_loop_end_insn &&
+                 ((mnemonic == mnem_beq) ? (operand_a == operand_b) : (operand_a != operand_b)) &&
+                 (tgt_addr < 0 || tgt_addr > ImemSizeByte || tgt_addr[1:0] != 0))
+    `DEF_MNEM_CROSS(bad_addr_at_loop_end)
   endgroup
 
   covergroup insn_jal_cg
-    with function sample(logic [31:0] insn_addr,
-                         logic [20:0] offset,
-                         logic        at_current_loop_end_insn);
+    with function sample(logic [31:0]        insn_addr,
+                         logic [20:0]        offset,
+                         logic signed [31:0] tgt_addr,
+                         logic               at_current_loop_end_insn,
+                         logic               call_stack_overflow);
 
     `DEF_SIGN_CP(dir_cp, offset, 21)
     offset_align_cp: coverpoint offset[1:0] {
@@ -1190,18 +1217,41 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       illegal_bins other = default;
     }
 
-    `DEF_SEEN_CP(oob_cp, $signed(insn_addr) + $signed(offset) > ImemSizeByte)
-    `DEF_SEEN_CP(neg_cp, $signed(insn_addr) + $signed(offset) < 0)
+    `DEF_SEEN_CP(oob_cp, tgt_addr > ImemSizeByte)
+    `DEF_SEEN_CP(neg_cp, tgt_addr < 0)
     `DEF_SEEN_CP(from_top_cp, insn_addr == ImemSizeByte - 4)
 
     at_loop_end_cp: coverpoint at_current_loop_end_insn;
+
+    // Overflow the call stack when jumping to an invalid address
+    `DEF_SEEN_CP(overflow_and_invalid_addr_cp,
+                 call_stack_overflow &&
+                 (tgt_addr < 0 || tgt_addr > ImemSizeByte || tgt_addr[1:0] != 0))
+
+    // Overflow the call stack at the end of a loop
+    `DEF_SEEN_CP(overflow_at_loop_end_cp,
+                 call_stack_overflow && at_current_loop_end_insn)
+
+    // Jump to an invalid address at the end of a loop
+    `DEF_SEEN_CP(invalid_addr_at_loop_end_cp,
+                 (tgt_addr < 0 || tgt_addr > ImemSizeByte || tgt_addr[1:0] != 0) &&
+                 at_current_loop_end_insn)
+
+    // Overflow the call stack while jumping to an invalid address at the end of a loop
+    `DEF_SEEN_CP(overflow_and_invalid_addr_at_loop_end_cp,
+                 call_stack_overflow &&
+                 (tgt_addr < 0 || tgt_addr > ImemSizeByte || tgt_addr[1:0] != 0) &&
+                 at_current_loop_end_insn)
   endgroup
 
   covergroup insn_jalr_cg
-    with function sample(logic [31:0] insn_addr,
-                         logic [11:0] offset,
-                         logic [31:0] operand_a,
-                         logic        at_current_loop_end_insn);
+    with function sample(logic [31:0]        insn_addr,
+                         logic [11:0]        offset,
+                         logic signed [31:0] tgt_addr,
+                         logic [31:0]        operand_a,
+                         logic               at_current_loop_end_insn,
+                         logic               call_stack_underflow,
+                         logic               call_stack_overflow);
 
     `DEF_SIGN_CP(off_dir_cp, offset, 12)
 
@@ -1213,53 +1263,103 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(pos_wrap_cp,
                  (operand_a >= ImemSizeByte) &&
                  ($signed(offset) > 0) &&
-                 (operand_a + $signed(offset) <= ImemSizeByte - 4))
+                 (tgt_addr <= ImemSizeByte - 4))
 
     // Jump with a base address just above top of IMEM but with a negative offset to give a valid
     // target.
     `DEF_SEEN_CP(sub_cp,
                  (operand_a >= ImemSizeByte) &&
                  ($signed(offset) < 0) &&
-                 (operand_a + $signed(offset) <= ImemSizeByte - 4))
+                 (tgt_addr <= ImemSizeByte - 4))
 
     // Jump with a negative offset, wrapping to give an invalid target.
     `DEF_SEEN_CP(neg_wrap_cp,
                  (operand_a <= ImemSizeByte - 4) &&
                  ($signed(offset) < 0) &&
-                 (operand_a + $signed(offset) > ImemSizeByte - 4))
+                 (tgt_addr > ImemSizeByte - 4))
 
     // Jump to an aligned address above top of IMEM.
-    `DEF_SEEN_CP(oob_cp,
-                 (((operand_a + $signed(offset)) & 32'h3) == 0) &&
-                 (operand_a + $signed(offset) > ImemSizeByte - 4))
+    `DEF_SEEN_CP(oob_cp, (((tgt_addr) & 32'h3) == 0) && (tgt_addr > ImemSizeByte - 4))
 
     // Jump to current address.
-    `DEF_SEEN_CP(self_cp, operand_a + $signed(offset) == insn_addr)
+    `DEF_SEEN_CP(self_cp, tgt_addr == insn_addr)
 
     // Jump when the current PC is the top word in IMEM.
     `DEF_SEEN_CP(from_top_cp, insn_addr == ImemSizeByte - 4)
 
     // Is this jump the last instruction of the current loop?
     at_loop_end_cp: coverpoint at_current_loop_end_insn;
+
+    // Underflow call stack at end of loop
+    `DEF_SEEN_CP(underflow_at_loop_end_cp, call_stack_underflow && at_current_loop_end_insn)
+
+    // Overflow call stack when jumping to an invalid address
+    `DEF_SEEN_CP(overflow_and_bad_addr_cp,
+                 call_stack_overflow &&
+                 (tgt_addr < 0 || tgt_addr >= ImemSizeByte || tgt_addr[1:0] != 0))
+
+    // Overflow call stack at end of loop
+    `DEF_SEEN_CP(overflow_at_loop_end_cp, call_stack_overflow && at_current_loop_end_insn)
+
+    // Jump to an invalid address at the end of a loop
+    `DEF_SEEN_CP(bad_addr_at_loop_end_cp,
+                 (tgt_addr < 0 || tgt_addr >= ImemSizeByte || tgt_addr[1:0] != 0) &&
+                 at_current_loop_end_insn)
+
+    // Overflow call stack when jumping to an invalid address at the end of a loop
+    `DEF_SEEN_CP(overflow_and_bad_addr_at_loop_end_cp,
+                 call_stack_overflow &&
+                 (tgt_addr < 0 || tgt_addr >= ImemSizeByte || tgt_addr[1:0] != 0) &&
+                 at_current_loop_end_insn)
   endgroup
 
   covergroup insn_csrrs_cg
-    with function sample(logic [31:0] insn_data,
-                         logic [31:0] operand_a);
+    with function sample(logic [31:0]     insn_data,
+                         logic [31:0]     operand_a,
+                         stack_fullness_e call_stack_fullness);
 
     `DEF_CSR_CP(csr_cp, insn_data[31:20])
     `DEF_NZ_CP(bits_to_set_cp, operand_a)
 
     csr_cross: cross csr_cp, bits_to_set_cp;
+
+    // Underflow the call stack while accessing an invalid CSR. The RTL squashes the GPR reads in
+    // this case, so we have to figure out a call stack underflow by hand (true if the call stack
+    // was empty and grs1 is x1)
+    `DEF_SEEN_CP(underflow_with_bad_csr_cp,
+                 (call_stack_fullness == StackEmpty) && (insn_data[19:15] == 5'd1) &&
+                 (remap_csr(insn_data[31:20]) == -1))
+
+    // Overflow the call stack while accessing an invalid CSR. The RTL squashes the GPR reads in
+    // this case, so we have to figure out a call stack underflow by hand (true if the call stack
+    // was full and grd is x1)
+    `DEF_SEEN_CP(overflow_with_bad_csr_cp,
+                 (call_stack_fullness == StackFull) && (insn_data[11:7] == 5'd1) &&
+                 (remap_csr(insn_data[31:20]) == -1))
   endgroup
 
   covergroup insn_csrrw_cg
-    with function sample(logic [31:0] insn_data);
+    with function sample(logic [31:0] insn_data,
+                         stack_fullness_e call_stack_fullness);
 
     `DEF_CSR_CP(csr_cp, insn_data[31:20])
     `DEF_NZ_CP(grd_cp, insn_data[11:7])
 
     csr_cross: cross csr_cp, grd_cp;
+
+    // Underflow the call stack while accessing an invalid CSR. The RTL squashes the GPR reads in
+    // this case, so we have to figure out a call stack underflow by hand (true if the call stack
+    // was empty and grs1 is x1)
+    `DEF_SEEN_CP(underflow_with_bad_csr_cp,
+                 (call_stack_fullness == StackEmpty) && (insn_data[19:15] == 5'd1) &&
+                 (remap_csr(insn_data[31:20]) == -1))
+
+    // Overflow the call stack while accessing an invalid CSR. The RTL squashes the GPR reads in
+    // this case, so we have to figure out a call stack underflow by hand (true if the call stack
+    // was full and grd is x1)
+    `DEF_SEEN_CP(overflow_with_bad_csr_cp,
+                 (call_stack_fullness == StackFull) && (insn_data[11:7] == 5'd1) &&
+                 (remap_csr(insn_data[31:20]) == -1))
   endgroup
 
   covergroup insn_loop_cg
@@ -1269,7 +1369,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          stack_fullness_e loop_stack_fullness,
                          logic [31:0]     current_loop_end,
                          logic [31:0]     bodysize,
-                         logic            at_loop_end);
+                         logic            at_loop_end,
+                         logic            call_stack_underflow);
     // Extremes for iteration count
     iterations_cp: coverpoint operand_a { bins extremes[] = {'0, '1}; }
 
@@ -1289,6 +1390,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(duplicate_loop_end_cp,
                  (loop_stack_fullness != StackEmpty) &&
                  (current_loop_end == insn_addr + 4 * bodysize))
+
+    // Underflow the call stack at the end of a loop
+    `DEF_SEEN_CP(underflow_at_loop_end_cp, at_loop_end && call_stack_underflow)
+
+    // A zero loop count at the end of a loop
+    `DEF_SEEN_CP(zero_count_at_loop_end_cp, at_loop_end && (operand_a == 0))
   endgroup
 
   covergroup insn_loopi_cg
@@ -1296,6 +1403,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          logic [31:0]     insn_data,
                          stack_fullness_e loop_stack_fullness,
                          logic [31:0]     current_loop_end,
+                         logic [9:0]      iterations,
                          logic [31:0]     bodysize,
                          logic            at_loop_end);
 
@@ -1315,6 +1423,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(duplicate_loop_end_cp,
                  (loop_stack_fullness != StackEmpty) &&
                  (current_loop_end == insn_addr + 4 * bodysize))
+
+    // A zero loop count at the end of a loop
+    `DEF_SEEN_CP(zero_count_at_loop_end_cp, at_loop_end && (iterations == 0))
   endgroup
 
   covergroup insn_bn_addc_cg
@@ -1438,10 +1549,15 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
   // Used by BN.LID and BN.SID
   covergroup insn_bn_xid_cg
-    with function sample(mnem_str_t   mnemonic,
-                         logic [14:0] offset,
-                         logic [31:0] operand_a,
-                         logic [31:0] operand_b);
+    with function sample(mnem_str_t          mnemonic,
+                         logic [14:0]        offset,
+                         logic [31:0]        operand_a,
+                         logic [31:0]        operand_b,
+                         logic signed [31:0] addr,
+                         logic               inc_both,
+                         logic [4:0]         grs1,
+                         logic [4:0]         grx2,
+                         logic               call_stack_underflow);
 
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_bn_lid);
@@ -1454,9 +1570,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(oob_base_neg_off_cp,
                  ($signed(operand_a) > DmemSizeByte) &&
                  ($signed(offset) < 0) &&
-                 (0 <= ($signed(operand_a) + $signed(offset))) &&
-                 (($signed(operand_a) + $signed(offset)) + 32 <= DmemSizeByte) &&
-                 ((($signed(operand_a) + $signed(offset)) & 32'd31) == 0))
+                 (0 <= addr) && (addr + 32 <= DmemSizeByte) && ((addr & 32'd31) == 0))
     `DEF_MNEM_CROSS(oob_base_neg_off)
 
     // Access a valid address, where grs1 is negative and a positive offset brings the address in
@@ -1464,28 +1578,25 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(neg_base_pos_off_cp,
                  ($signed(operand_a) < 0) &&
                  ($signed(offset) > 0) &&
-                 (0 <= ($signed(operand_a) + $signed(offset))) &&
-                 (($signed(operand_a) + $signed(offset)) + 32 <= DmemSizeByte) &&
-                 ((($signed(operand_a) + $signed(offset)) & 32'd31) == 0))
+                 (0 <= addr) && (addr + 32 <= DmemSizeByte) && ((addr & 32'd31) == 0))
     `DEF_MNEM_CROSS(neg_base_pos_off)
 
     // Access address zero
-    `DEF_SEEN_CP(addr0_cp, $signed(operand_a) + $signed(offset) == 0)
+    `DEF_SEEN_CP(addr0_cp, addr == 0)
     `DEF_MNEM_CROSS(addr0)
 
     // Access the top word of memory
-    `DEF_SEEN_CP(top_addr_cp, $signed(operand_a) + $signed(offset) == DmemSizeByte - 32)
+    `DEF_SEEN_CP(top_addr_cp, addr == DmemSizeByte - 32)
     `DEF_MNEM_CROSS(top_addr)
 
     // Access an invalid address (aligned but above the top of memory)
     `DEF_SEEN_CP(oob_addr_cp,
-                 ($signed(operand_a) + $signed(offset) > DmemSizeByte - 32) &&
-                 ((($signed(operand_a) + $signed(offset)) & 32'd31) == 0))
+                 (addr > DmemSizeByte - 32) && ((addr & 32'd31) == 0))
     `DEF_MNEM_CROSS(oob_addr)
+
     // Load from a negative invalid address (aligned but unsigned address exceeds the top of memory)
     `DEF_SEEN_CP(oob_addr_neg_cp,
-                 ($signed(operand_a) + $signed(offset) < 0) &&
-                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+                 (addr < 0) && ((addr & 32'h3) == 0))
     `DEF_MNEM_CROSS(oob_addr_neg)
 
     // Misaligned address tracking (see DV document for why we have these exact crosses)
@@ -1493,14 +1604,112 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     addr_align_cross:
       cross mnemonic_cp, addr_align_cp
-        iff ((0 <= ($signed(operand_a) + $signed(offset))) &&
-             (($signed(operand_a) + $signed(offset)) + 32 <= DmemSizeByte));
+        iff ((0 <= addr) && (addr + 32 <= DmemSizeByte));
 
     // See operand_b >= 32. This is grs2 for BN.SID and grd for BN.LID: in either case, it causes an
     // error.
     `DEF_SEEN_CP(bigb_cp, operand_b >= 32)
     `DEF_MNEM_CROSS(bigb)
 
+    // Underflow call stack and set both increments
+    `DEF_SEEN_CP(underflow_and_inc_both_cp, call_stack_underflow && inc_both)
+    `DEF_MNEM_CROSS(underflow_and_inc_both)
+
+    // Underflow call stack with grs1 and have a bad WDR index in *grd or *grs2 (depending on
+    // whether it's BN.LID or BN.SID).
+    `DEF_SEEN_CP(underflow_and_badb_cp,
+                 call_stack_underflow && (grx2 != 5'd1) && (operand_b >= 32))
+    `DEF_MNEM_CROSS(underflow_and_badb)
+
+    // Underflow call stack with grd/grs2 and compute a bad address from *grs1
+    `DEF_SEEN_CP(underflow_and_bad_addr_cp,
+                 call_stack_underflow &&
+                 (grs1 != 5'd1) &&
+                 ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
+    `DEF_MNEM_CROSS(underflow_and_bad_addr)
+
+    // Set both increments and have a bad WDR index in *grd/*grs2.
+    `DEF_SEEN_CP(inc_both_and_bad_wdr_cp,
+                 inc_both && !call_stack_underflow && (operand_b >= 32))
+    `DEF_MNEM_CROSS(inc_both_and_bad_wdr)
+
+    // Set both increments and compute a bad address from *grs1
+    `DEF_SEEN_CP(inc_both_and_bad_addr_cp,
+                 inc_both &&
+                 !call_stack_underflow &&
+                 ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
+    `DEF_MNEM_CROSS(inc_both_and_bad_addr)
+
+    // Have a bad WDR index and also compute a bad address
+    `DEF_SEEN_CP(bad_wdr_and_bad_addr_cp,
+                 !call_stack_underflow &&
+                 (operand_b >= 32) &&
+                 ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
+    `DEF_MNEM_CROSS(bad_wdr_and_bad_addr)
+
+    // Underflow call stack with grs1, set both increments, and have a bad WDR index in *grd/*grs2
+    `DEF_SEEN_CP(underflow_and_inc_both_and_bad_wdr_cp,
+                 call_stack_underflow &&
+                 inc_both &&
+                 (grx2 != 5'd1) &&
+                 (operand_b >= 32))
+    `DEF_MNEM_CROSS(underflow_and_inc_both_and_bad_wdr)
+
+    // Underflow call stack with grd/grs2, set both increments, and compute a bad address from *grs1
+    `DEF_SEEN_CP(underflow_and_inc_both_and_bad_addr_cp,
+                 call_stack_underflow &&
+                 inc_both &&
+                 (grs1 != 5'd1) &&
+                 ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
+    `DEF_MNEM_CROSS(underflow_and_inc_both_and_bad_addr)
+
+    // Set both increments, have a bad WDR index and compute a bad address
+    `DEF_SEEN_CP(inc_both_and_bad_wdr_and_bad_addr_cp,
+                 inc_both &&
+                 !call_stack_underflow &&
+                 (operand_b >= 32) &&
+                 ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
+    `DEF_MNEM_CROSS(inc_both_and_bad_wdr_and_bad_addr)
+  endgroup
+
+  covergroup insn_bn_movr_cg
+    with function sample(logic [31:0] operand_a,
+                         logic [31:0] operand_b,
+                         logic        inc_both,
+                         logic [4:0]  grs,
+                         logic [4:0]  grd,
+                         logic        call_stack_underflow);
+
+    // Underflow call stack and set both increments
+    `DEF_SEEN_CP(underflow_and_inc_both_cp, call_stack_underflow && inc_both)
+
+    // Underflow call stack for grs and have a bad WDR index in *grd.
+    `DEF_SEEN_CP(underflow_and_bad_grd_cp,
+                 call_stack_underflow && (grd != 5'd1) && (operand_b >= 32))
+
+    // Underflow call stack for grd and have a bad WDR index in *grs.
+    `DEF_SEEN_CP(underflow_and_bad_grs_cp,
+                 call_stack_underflow && (grs != 5'd1) && (operand_a >= 32))
+
+    // Set both increments and have a bad WDR index.
+    `DEF_SEEN_CP(inc_both_and_bad_wdr_cp,
+                 inc_both &&
+                 !call_stack_underflow &&
+                 ((operand_a >= 32) || (operand_b >= 32)))
+
+    // Underflow call stack for grs, setting both increments and have a bad WDR index in *grd.
+    `DEF_SEEN_CP(underflow_grs_and_inc_both_and_bad_wdr_cp,
+                 call_stack_underflow &&
+                 inc_both &&
+                 (grd != 5'd1) &&
+                 (operand_b >= 32))
+
+    // Underflow call stack for grd, setting both increments and have a bad WDR index in *grs.
+    `DEF_SEEN_CP(underflow_grd_and_inc_both_and_bad_wdr_cp,
+                 call_stack_underflow &&
+                 inc_both &&
+                 (grs != 5'd1) &&
+                 (operand_a >= 32))
   endgroup
 
   // A mapping from instruction name to the name of that instruction's encoding.
@@ -1561,6 +1770,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_bn_subcmpb_cg = new;
     insn_bn_subm_cg = new;
     insn_bn_xid_cg = new;
+    insn_bn_movr_cg = new;
 
     // Set up instruction encoding mapping
     insn_encodings[mnem_add]           = "R";
@@ -1630,6 +1840,14 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     mnem_str_t   mnem;
     logic [31:0] insn_data;
     logic [31:0] loop_bodysize;
+    logic        call_stack_push, call_stack_pop, call_stack_overflow, call_stack_underflow;
+
+    logic signed [31:0] addr;
+    logic [9:0]         imm10;
+    logic [11:0]        imm12;
+    logic [12:0]        imm13;
+    logic [14:0]        imm15;
+    logic [20:0]        imm21;
 
     // Since iss_item and rtl_item have come in separately, we do a quick check here to make sure
     // they actually match the same instruction.
@@ -1643,8 +1861,17 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     mnem = mnem_str_t'(iss_item.mnemonic);
     insn_data = rtl_item.insn_data;
 
-    // Call stack tracking.
+    // Call stack tracking. Some instructions want to know whether they are over- or under-flowing
+    // the call stack so, as well as sampling in the call_stack_cg covergroup, we also compute those
+    // flags which we'll use below.
     call_stack_cg.sample(rtl_item.call_stack_flags, rtl_item.call_stack_fullness);
+
+    call_stack_push = rtl_item.call_stack_flags.push;
+    call_stack_pop = rtl_item.call_stack_flags.pop_a | rtl_item.call_stack_flags.pop_b;
+
+    call_stack_overflow = ((rtl_item.call_stack_fullness == StackFull) &&
+                           call_stack_push && !call_stack_pop);
+    call_stack_underflow = (rtl_item.call_stack_fullness == StackEmpty) && call_stack_pop;
 
     // Flag set/clear tracking
     for (int fg = 0; fg < 2; fg++) begin
@@ -1758,31 +1985,69 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         if (insn_data[11:7] != 0) begin
           insn_log_binop_cg.sample(mnem, insn_data, rtl_item.gpr_write_data);
         end
-      mnem_lw:
-        insn_xw_cg.sample(mnem, insn_data[31:20], rtl_item.gpr_operand_a);
-      mnem_sw:
-        insn_xw_cg.sample(mnem, {insn_data[31:25], insn_data[11:7]}, rtl_item.gpr_operand_a);
-      mnem_beq, mnem_bne:
+      mnem_lw: begin
+        imm12 = insn_data[31:20];
+        addr = $signed(rtl_item.gpr_operand_a) + $signed(imm12);
+        insn_xw_cg.sample(mnem,
+                          imm12,
+                          insn_data[19:15] /* grs1 */,
+                          insn_data[11:7] /* grd */,
+                          rtl_item.gpr_operand_a,
+                          addr,
+                          rtl_item.call_stack_fullness,
+                          call_stack_underflow);
+      end
+      mnem_sw: begin
+        imm12 = {insn_data[31:25], insn_data[11:7]};
+        addr = $signed(rtl_item.gpr_operand_a) + $signed(imm12);
+        insn_xw_cg.sample(mnem,
+                          imm12,
+                          insn_data[19:15] /* grs1 */,
+                          insn_data[24:20] /* grs2 */,
+                          rtl_item.gpr_operand_a,
+                          addr,
+                          rtl_item.call_stack_fullness,
+                          call_stack_underflow);
+      end
+      mnem_beq, mnem_bne: begin
+        imm13 = {insn_data[31], insn_data[7], insn_data[30:25], insn_data[11:8], 1'b0};
+        addr = $signed(rtl_item.insn_addr) + $signed(imm13);
         insn_bxx_cg.sample(mnem,
                            rtl_item.insn_addr,
-                           {insn_data[31], insn_data[7], insn_data[30:25], insn_data[11:8], 1'b0},
+                           imm13,
                            rtl_item.gpr_operand_a,
                            rtl_item.gpr_operand_b,
-                           rtl_item.at_current_loop_end_insn);
-      mnem_jal:
+                           addr,
+                           rtl_item.at_current_loop_end_insn,
+                           call_stack_underflow);
+      end
+      mnem_jal: begin
+        imm21 = {insn_data[31], insn_data[19:12], insn_data[20], insn_data[30:21], 1'b0};
+        addr = $signed(rtl_item.insn_addr) + $signed(imm21);
         insn_jal_cg.sample(rtl_item.insn_addr,
-                           {insn_data[31], insn_data[19:12],
-                            insn_data[20], insn_data[30:21], 1'b0},
-                           rtl_item.at_current_loop_end_insn);
-      mnem_jalr:
+                           imm21,
+                           addr,
+                           rtl_item.at_current_loop_end_insn,
+                           call_stack_overflow);
+      end
+      mnem_jalr: begin
+        imm12 = insn_data[31:20];
+        addr = $signed(rtl_item.gpr_operand_a) + $signed(imm12);
         insn_jalr_cg.sample(rtl_item.insn_addr,
-                            insn_data[31:20],
+                            imm12,
+                            addr,
                             rtl_item.gpr_operand_a,
-                            rtl_item.at_current_loop_end_insn);
+                            rtl_item.at_current_loop_end_insn,
+                            call_stack_underflow,
+                            call_stack_overflow);
+      end
       mnem_csrrs:
-        insn_csrrs_cg.sample(insn_data, rtl_item.gpr_operand_a);
+        insn_csrrs_cg.sample(insn_data,
+                             rtl_item.gpr_operand_a,
+                             rtl_item.call_stack_fullness);
       mnem_csrrw:
-        insn_csrrw_cg.sample(insn_data);
+        insn_csrrw_cg.sample(insn_data,
+                             rtl_item.call_stack_fullness);
       mnem_loop:
         insn_loop_cg.sample(rtl_item.insn_addr,
                             insn_data,
@@ -1790,14 +2055,18 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                             rtl_item.loop_stack_fullness,
                             rtl_item.current_loop_end,
                             loop_bodysize,
-                            rtl_item.at_current_loop_end_insn);
-      mnem_loopi:
+                            rtl_item.at_current_loop_end_insn,
+                            call_stack_underflow);
+      mnem_loopi: begin
+        imm10 = {insn_data[19:15], insn_data[11:7]};
         insn_loopi_cg.sample(rtl_item.insn_addr,
                              insn_data,
                              rtl_item.loop_stack_fullness,
                              rtl_item.current_loop_end,
+                             imm10,
                              loop_bodysize,
                              rtl_item.at_current_loop_end_insn);
+      end
       mnem_bn_addc:
         insn_bn_addc_cg.sample(insn_data,
                                rtl_item.flags_read_data);
@@ -1818,11 +2087,54 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                                rtl_item.wdr_operand_a,
                                rtl_item.wdr_operand_b,
                                rtl_item.mod);
-      mnem_bn_lid, mnem_bn_sid:
+      mnem_bn_lid, mnem_bn_sid: begin
+        logic       inc_both = insn_data[8] && insn_data[7];
+        logic [4:0] grs1 = insn_data[19:15];
+        logic [4:0] grx2 = insn_data[24:20]; // Either GRD or GRS2
+        logic       local_x1_uflow;
+
+        imm15 = {insn_data[11:9], insn_data[31:25], 5'b0};
+        addr = $signed(rtl_item.gpr_operand_a) + $signed(imm15);
+
+        // Compute our own definition of call_stack_underflow. This should match the existing one if
+        // !inc_both. However, when both increments are set the RTL decoder squashes the call stack
+        // update flags so we have to figure them out ourselves.
+        local_x1_uflow = (rtl_item.call_stack_fullness == StackEmpty) &&
+                         ((grs1 == 5'd1) || (grx2 == 5'd1));
+        `DV_CHECK_FATAL(local_x1_uflow || !call_stack_underflow)
+        `DV_CHECK_FATAL(inc_both || call_stack_underflow || !local_x1_uflow)
+
         insn_bn_xid_cg.sample(mnem,
-                              {insn_data[11:9], insn_data[31:25], 5'b0},
+                              imm15,
                               rtl_item.gpr_operand_a,
-                              rtl_item.gpr_operand_b);
+                              rtl_item.gpr_operand_b,
+                              addr,
+                              inc_both,
+                              grs1,
+                              grx2,
+                              local_x1_uflow);
+      end
+      mnem_bn_movr: begin
+        logic       inc_both = insn_data[9] && insn_data[7];
+        logic [4:0] grs = insn_data[19:15];
+        logic [4:0] grd = insn_data[24:20];
+        logic       local_x1_uflow;
+
+        // Compute our own definition of call_stack_underflow. This should match the existing one if
+        // !inc_both. However, when both increments are set the RTL decoder squashes the call stack
+        // update flags so we have to figure them out ourselves.
+        local_x1_uflow = (rtl_item.call_stack_fullness == StackEmpty) &&
+                         ((grs == 5'd1) || (grd == 5'd1));
+        `DV_CHECK_FATAL(local_x1_uflow || !call_stack_underflow)
+        `DV_CHECK_FATAL(inc_both || call_stack_underflow || !local_x1_uflow)
+
+        insn_bn_movr_cg.sample(rtl_item.gpr_operand_a,
+                               rtl_item.gpr_operand_b,
+                               inc_both,
+                               grs,
+                               grd,
+                               local_x1_uflow);
+      end
       default:
         // No special handling for this instruction yet.
         ;
