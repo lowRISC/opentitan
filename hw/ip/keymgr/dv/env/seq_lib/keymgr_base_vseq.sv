@@ -31,6 +31,10 @@ class keymgr_base_vseq extends cip_base_vseq #(
     is_key_version_err == 0;
   }
 
+  constraint gen_operation_c {
+    gen_operation inside {keymgr_pkg::OpGenId, keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut};
+  }
+
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -121,6 +125,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
                                          max_key_ver_val != '1 -> key_version_val > max_key_ver_val;
                                        } else {
                                          key_version_val <= max_key_ver_val;
+                                         key_version_val == max_key_ver_val dist {0 :/ 3, 1 :/ 1};
                                        })
     ral.key_version[0].set(key_version_val);
     csr_update(ral.key_version[0]);
@@ -249,13 +254,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   // issue any invalid operation at reset state to trigger op error
   virtual task keymgr_invalid_op_at_reset_state();
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.control,
-                                   operation.value != keymgr_pkg::OpAdvance;)
-
-    `uvm_info(`gfn, $sformatf("Issuing OP: %0d at state %0s",
-                              ral.control.operation.get(), current_state), UVM_MEDIUM)
-    csr_update(.csr(ral.control));
-    if (ral.control.start.get()) wait_op_done();
+    keymgr_operations(.advance_state(0));
   endtask
 
   // when reset occurs or keymgr_en = Off, disable checks in seq and check in scb only

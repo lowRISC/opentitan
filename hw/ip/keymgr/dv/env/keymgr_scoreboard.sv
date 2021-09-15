@@ -110,6 +110,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       forever begin
         wait(cfg.keymgr_vif.keymgr_en_sync2 != lc_ctrl_pkg::On);
 
+        if (cfg.en_cov) begin
+          cov.lc_disable_cg.sample(current_state, get_operation,
+                                   current_op_status == keymgr_pkg::OpWip);
+        end
+
         if (current_state != keymgr_pkg::StReset || current_op_status == keymgr_pkg::OpWip) begin
           wipe_hw_keys();
         end
@@ -181,6 +186,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     // fault error is preserved until reset
     if (!is_kmac_rsp_err) is_kmac_rsp_err = item.rsp_error;
     if (!is_kmac_invalid_data) is_kmac_invalid_data = item.get_is_kmac_rsp_data_invalid();
+
     update_result = process_update_after_op_done();
 
     case (update_result)
@@ -259,14 +265,33 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         cfg.clk_rst_vif.wait_n_clks(1);
         if (is_final_kdf) begin
           if (get_err_code() || get_fault_err()) current_op_status = keymgr_pkg::OpDoneFail;
-          else                current_op_status = keymgr_pkg::OpDoneSuccess;
+          else                                   current_op_status = keymgr_pkg::OpDoneSuccess;
+
+          if (cfg.en_cov && cfg.keymgr_vif.get_keymgr_en() && is_final_kdf) begin
+            keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
+                `gmv(ral.control.dest_sel));
+            cov.state_and_op_cg.sample(current_state, op, current_op_status, current_cdi, dest);
+          end
         end
       end
     join_none
 
-    if (is_final_kdf) process_error_n_alert();
-    // IntrOpDone occurs after every KDF
-    void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+    if (is_final_kdf) begin
+      process_error_n_alert();
+      void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+      if (cfg.en_cov && cfg.keymgr_vif.get_keymgr_en()) begin
+        compare_op_e key_version_cmp;
+
+        if (`gmv(ral.key_version[0]) > get_current_max_version) begin
+          key_version_cmp = CompareOpGt;
+        end else if (`gmv(ral.key_version[0]) == get_current_max_version) begin
+          key_version_cmp = CompareOpEq;
+        end else begin
+          key_version_cmp = CompareOpLt;
+        end
+        cov.key_version_compare_cg.sample(key_version_cmp, current_state, op);
+      end
+    end
 
     if (get_fault_err() || !cfg.keymgr_vif.get_keymgr_en()) begin
       if (op inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
@@ -379,6 +404,22 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     // if incoming access is a write to a valid csr, then make updates right away
     if (addr_phase_write) begin
+      // sample regwen and its locked CSRs
+      if (cfg.en_cov && ral.cfg_regwen.locks_reg_or_fld(dv_reg) &&
+          cfg.keymgr_vif.get_keymgr_en()) begin
+        bit cfg_regwen = (current_op_status == keymgr_pkg::OpWip);
+        if (csr.get_name() == "control") begin
+          cov.control_w_regwen_cg.sample(item.a_data, cfg_regwen);
+        end else begin
+          cov.sw_input_cg_wrap[csr.get_name()].sample(item.a_data, cfg_regwen);
+        end
+      end
+      if (cfg.en_cov && ral.sw_binding_regwen.locks_reg_or_fld(dv_reg)) begin
+        cov.sw_input_cg_wrap[csr.get_name()].sample(
+            item.a_data,
+            `gmv(ral.sw_binding_regwen));
+      end
+
       // if OP WIP or keymgr_en=0, will clear cfg_regwen and below csr can't be written
       if ((current_op_status == keymgr_pkg::OpWip || !cfg.keymgr_vif.get_keymgr_en()) &&
           ral.cfg_regwen.locks_reg_or_fld(dv_reg)) begin
@@ -423,6 +464,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
             `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
                            $sformatf("Interrupt_pin: %0s", intr.name));
+
+            if (cfg.en_cov) begin
+              cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
+              cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+            end
           end
         end
       end
@@ -439,14 +485,23 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           `DV_CHECK_EQ(item.d_data[keymgr_pkg::ErrInvalidOp],
                        err_code[keymgr_pkg::ErrInvalidOp])
 
-          `DV_CHECK_EQ(item.d_data[keymgr_pkg::ErrShadowUpdate],
-                       err_code[keymgr_pkg::ErrShadowUpdate])
+          // skip checking ErrShadowUpdate as it's done in common direct sequence where we disable
+          // the scb
 
           // when op error occurs with keymgr_en = 0, input is meaningless. Design may or may not
           // assert ErrInvalidIn,  which doesn't matter
           if (!err_code[keymgr_pkg::ErrInvalidOp] || cfg.keymgr_vif.get_keymgr_en()) begin
             `DV_CHECK_EQ(item.d_data[keymgr_pkg::ErrInvalidIn],
                          err_code[keymgr_pkg::ErrInvalidIn])
+          end
+
+          if (cfg.en_cov) begin
+            if (err_code[keymgr_pkg::ErrInvalidOp]) begin
+              cov.err_code_cg.sample(keymgr_pkg::ErrInvalidOp);
+            end
+            if (err_code[keymgr_pkg::ErrInvalidIn]) begin
+              cov.err_code_cg.sample(keymgr_pkg::ErrInvalidIn);
+            end
           end
         end
       end
@@ -511,6 +566,14 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                     begin
                       cfg.clk_rst_vif.wait_clks(1);
                       process_error_n_alert();
+
+                      if (cfg.en_cov) begin
+                        keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
+                            `gmv(ral.control.dest_sel));
+
+                        cov.state_and_op_cg.sample(current_state, op, current_op_status,
+                            current_cdi, dest);
+                      end
                     end
                   join_none
                 end
@@ -578,6 +641,15 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             if (current_op_status == keymgr_pkg::OpWip &&
                 item.d_data inside {keymgr_pkg::OpDoneSuccess, keymgr_pkg::OpDoneFail}) begin
               current_op_status = item.d_data;
+
+              if (cfg.en_cov) begin
+                keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
+                    `gmv(ral.control.dest_sel));
+
+                cov.state_and_op_cg.sample(current_state, get_operation(), current_op_status,
+                    current_cdi, dest);
+              end
+
               current_state = get_next_state(current_state);
               void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
 
@@ -591,16 +663,42 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       "reseed_interval_shadowed": begin
-        if (addr_phase_write) cfg.keymgr_vif.edn_interval = `gmv(ral.reseed_interval_shadowed.val);
+        if (addr_phase_write) begin
+          cfg.keymgr_vif.edn_interval = `gmv(ral.reseed_interval_shadowed.val);
+
+          if (cfg.en_cov) cov.reseed_interval_cg.sample(`gmv(ral.reseed_interval_shadowed.val));
+        end
       end
       "sideload_clear": begin
         if (addr_phase_write) begin
+          if (cfg.en_cov) begin
+            cov.sideload_clear_cg.sample(`gmv(ral.sideload_clear.val), current_state, get_operation());
+          end
+
           fork
             begin
               cfg.clk_rst_vif.wait_clks(1);
               cfg.keymgr_vif.clear_sideload_key(`gmv(ral.sideload_clear.val));
             end
           join_none
+        end
+      end
+      "max_creator_key_ver_shadowed": begin
+        if (cfg.en_cov && addr_phase_write) begin
+          cov.sw_input_cg_wrap["max_creator_key_ver_shadowed"].sample(item.a_data,
+              `gmv(ral.max_creator_key_ver_regwen));
+        end
+      end
+      "max_owner_int_key_ver_shadowed": begin
+        if (cfg.en_cov && addr_phase_write) begin
+          cov.sw_input_cg_wrap["max_owner_int_key_ver_shadowed"].sample(item.a_data,
+              `gmv(ral.max_owner_int_key_ver_regwen));
+        end
+      end
+      "max_owner_key_ver_shadowed": begin
+        if (cfg.en_cov && addr_phase_write) begin
+          cov.sw_input_cg_wrap["max_owner_key_ver_shadowed"].sample(item.a_data,
+              `gmv(ral.max_owner_key_ver_regwen));
         end
       end
       default: begin
@@ -863,7 +961,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     `CREATE_CMP_STR(unused)
     `CREATE_CMP_STR(OwnerRootSecret)
-    for (int i=0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
       `CREATE_CMP_STR(SoftwareBinding[i])
     end
 
