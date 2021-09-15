@@ -174,6 +174,10 @@ module otbn_reg_top (
   logic alert_test_recov_wd;
   logic cmd_we;
   logic [7:0] cmd_wd;
+  logic ctrl_re;
+  logic ctrl_we;
+  logic ctrl_qs;
+  logic ctrl_wd;
   logic status_re;
   logic [7:0] status_qs;
   logic err_bits_bad_data_addr_qs;
@@ -187,12 +191,14 @@ module otbn_reg_top (
   logic err_bits_bus_intg_violation_qs;
   logic err_bits_illegal_bus_access_qs;
   logic err_bits_lifecycle_escalation_qs;
+  logic err_bits_fatal_software_qs;
   logic fatal_alert_cause_imem_intg_violation_qs;
   logic fatal_alert_cause_dmem_intg_violation_qs;
   logic fatal_alert_cause_reg_intg_violation_qs;
   logic fatal_alert_cause_bus_intg_violation_qs;
   logic fatal_alert_cause_illegal_bus_access_qs;
   logic fatal_alert_cause_lifecycle_escalation_qs;
+  logic fatal_alert_cause_fatal_software_qs;
   logic insn_cnt_re;
   logic [31:0] insn_cnt_qs;
 
@@ -306,6 +312,21 @@ module otbn_reg_top (
     .qe     (reg2hw.cmd.qe),
     .q      (reg2hw.cmd.q),
     .qs     ()
+  );
+
+
+  // R[ctrl]: V(True)
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_ctrl (
+    .re     (ctrl_re),
+    .we     (ctrl_we),
+    .wd     (ctrl_wd),
+    .d      (hw2reg.ctrl.d),
+    .qre    (),
+    .qe     (reg2hw.ctrl.qe),
+    .q      (reg2hw.ctrl.q),
+    .qs     (ctrl_qs)
   );
 
 
@@ -600,6 +621,31 @@ module otbn_reg_top (
     .qs     (err_bits_lifecycle_escalation_qs)
   );
 
+  //   F[fatal_software]: 22:22
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_err_bits_fatal_software (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.fatal_software.de),
+    .d      (hw2reg.err_bits.fatal_software.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_fatal_software_qs)
+  );
+
 
   // R[fatal_alert_cause]: V(False)
   //   F[imem_intg_violation]: 0:0
@@ -752,6 +798,31 @@ module otbn_reg_top (
     .qs     (fatal_alert_cause_lifecycle_escalation_qs)
   );
 
+  //   F[fatal_software]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fatal_alert_cause_fatal_software (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_alert_cause.fatal_software.de),
+    .d      (hw2reg.fatal_alert_cause.fatal_software.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fatal_alert_cause_fatal_software_qs)
+  );
+
 
   // R[insn_cnt]: V(True)
   prim_subreg_ext #(
@@ -769,7 +840,7 @@ module otbn_reg_top (
 
 
 
-  logic [8:0] addr_hit;
+  logic [9:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == OTBN_INTR_STATE_OFFSET);
@@ -777,10 +848,11 @@ module otbn_reg_top (
     addr_hit[2] = (reg_addr == OTBN_INTR_TEST_OFFSET);
     addr_hit[3] = (reg_addr == OTBN_ALERT_TEST_OFFSET);
     addr_hit[4] = (reg_addr == OTBN_CMD_OFFSET);
-    addr_hit[5] = (reg_addr == OTBN_STATUS_OFFSET);
-    addr_hit[6] = (reg_addr == OTBN_ERR_BITS_OFFSET);
-    addr_hit[7] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
-    addr_hit[8] = (reg_addr == OTBN_INSN_CNT_OFFSET);
+    addr_hit[5] = (reg_addr == OTBN_CTRL_OFFSET);
+    addr_hit[6] = (reg_addr == OTBN_STATUS_OFFSET);
+    addr_hit[7] = (reg_addr == OTBN_ERR_BITS_OFFSET);
+    addr_hit[8] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
+    addr_hit[9] = (reg_addr == OTBN_INSN_CNT_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -796,7 +868,8 @@ module otbn_reg_top (
                (addr_hit[5] & (|(OTBN_PERMIT[5] & ~reg_be))) |
                (addr_hit[6] & (|(OTBN_PERMIT[6] & ~reg_be))) |
                (addr_hit[7] & (|(OTBN_PERMIT[7] & ~reg_be))) |
-               (addr_hit[8] & (|(OTBN_PERMIT[8] & ~reg_be)))));
+               (addr_hit[8] & (|(OTBN_PERMIT[8] & ~reg_be))) |
+               (addr_hit[9] & (|(OTBN_PERMIT[9] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -815,8 +888,12 @@ module otbn_reg_top (
   assign cmd_we = addr_hit[4] & reg_we & !reg_error;
 
   assign cmd_wd = reg_wdata[7:0];
-  assign status_re = addr_hit[5] & reg_re & !reg_error;
-  assign insn_cnt_re = addr_hit[8] & reg_re & !reg_error;
+  assign ctrl_re = addr_hit[5] & reg_re & !reg_error;
+  assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
+
+  assign ctrl_wd = reg_wdata[0];
+  assign status_re = addr_hit[6] & reg_re & !reg_error;
+  assign insn_cnt_re = addr_hit[9] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -844,10 +921,14 @@ module otbn_reg_top (
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[7:0] = status_qs;
+        reg_rdata_next[0] = ctrl_qs;
       end
 
       addr_hit[6]: begin
+        reg_rdata_next[7:0] = status_qs;
+      end
+
+      addr_hit[7]: begin
         reg_rdata_next[0] = err_bits_bad_data_addr_qs;
         reg_rdata_next[1] = err_bits_bad_insn_addr_qs;
         reg_rdata_next[2] = err_bits_call_stack_qs;
@@ -859,18 +940,20 @@ module otbn_reg_top (
         reg_rdata_next[19] = err_bits_bus_intg_violation_qs;
         reg_rdata_next[20] = err_bits_illegal_bus_access_qs;
         reg_rdata_next[21] = err_bits_lifecycle_escalation_qs;
+        reg_rdata_next[22] = err_bits_fatal_software_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = fatal_alert_cause_imem_intg_violation_qs;
         reg_rdata_next[1] = fatal_alert_cause_dmem_intg_violation_qs;
         reg_rdata_next[2] = fatal_alert_cause_reg_intg_violation_qs;
         reg_rdata_next[3] = fatal_alert_cause_bus_intg_violation_qs;
         reg_rdata_next[4] = fatal_alert_cause_illegal_bus_access_qs;
         reg_rdata_next[5] = fatal_alert_cause_lifecycle_escalation_qs;
+        reg_rdata_next[6] = fatal_alert_cause_fatal_software_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[31:0] = insn_cnt_qs;
       end
 

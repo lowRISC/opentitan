@@ -91,6 +91,8 @@ typedef enum otbn_err_bits {
   kOtbnErrBitsIllegalBusAccess = (1 << 20),
   /** A LIFECYCLE_ESCALATION error was observed. */
   kOtbnErrBitsLifecycleEscalation = (1 << 21),
+  /** A FATAL_SOFTWARE error was observed. */
+  kOtbnErrBitsFatalSoftware = (1 << 22),
 } otbn_err_bits_t;
 
 /**

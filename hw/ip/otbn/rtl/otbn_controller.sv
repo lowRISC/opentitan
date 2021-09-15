@@ -353,6 +353,8 @@ module otbn_controller
   // or illegal WSR/CSR referenced).
   assign illegal_insn_static = insn_illegal_i | ispr_err;
 
+  // TODO: Implement fatal error on software error mode
+  assign err_bits_o.fatal_software       = 1'b0;
   assign err_bits_o.lifecycle_escalation = lifecycle_escalation_i;
   assign err_bits_o.illegal_bus_access   = illegal_bus_access_i;
   assign err_bits_o.bus_intg_violation   = bus_intg_violation_i;
@@ -366,7 +368,8 @@ module otbn_controller
   assign err_bits_o.bad_insn_addr        = imem_addr_err;
 
   assign err = |err_bits_o;
-  assign fatal_err = |{err_bits_o.lifecycle_escalation,
+  assign fatal_err = |{err_bits_o.fatal_software,
+                       err_bits_o.lifecycle_escalation,
                        err_bits_o.illegal_bus_access,
                        err_bits_o.bus_intg_violation,
                        err_bits_o.reg_intg_violation,

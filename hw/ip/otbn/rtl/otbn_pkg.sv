@@ -70,6 +70,7 @@ package otbn_pkg;
   //
   // Note: These errors are duplicated in other places. If updating them here, update those too.
   typedef struct packed {
+    logic fatal_software;
     logic lifecycle_escalation;
     logic illegal_bus_access;
     logic bus_intg_violation;
