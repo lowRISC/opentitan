@@ -23,6 +23,7 @@ module otbn_controller
 
   input  logic  start_i, // start the processing at start_addr_i
   output logic  done_o,  // processing done, signaled by ECALL or error occurring
+  output logic  locked_o, // OTBN in locked state and must be reset to perform any further actions
 
   output err_bits_t err_bits_o, // valid when done_o is asserted
 
@@ -132,6 +133,7 @@ module otbn_controller
   otbn_state_e state_q, state_d, state_raw;
 
   logic err;
+  logic fatal_err;
   logic done_complete;
 
   logic insn_fetch_req_valid_raw;
@@ -233,6 +235,7 @@ module otbn_controller
   // error handling logic.
   assign done_complete = (insn_valid_i && insn_dec_shared_i.ecall_insn);
   assign done_o = done_complete | err;
+  assign locked_o = state_q == OtbnStateLocked;
 
   assign jump_or_branch = (insn_valid_i &
                            (insn_dec_shared_i.branch_insn | insn_dec_shared_i.jump_insn));
@@ -306,6 +309,10 @@ module otbn_controller
           state_raw = OtbnStateRun;
         end
       end
+      OtbnStateLocked: begin
+        insn_fetch_req_valid_raw = 1'b0;
+        state_raw = OtbnStateLocked;
+      end
       default: ;
     endcase
   end
@@ -314,7 +321,10 @@ module otbn_controller
   `ASSERT(StallIfNextStateStall, insn_valid_i & (state_d == OtbnStateStall) |-> stall)
 
   // On any error immediately halt and suppress any Imem request.
-  assign state_d = err ? OtbnStateHalt : state_raw;
+  assign state_d = fatal_err ? OtbnStateLocked :
+                   err       ? OtbnStateHalt   :
+                               state_raw;
+
   assign insn_fetch_req_valid_o = err ? 1'b0 : insn_fetch_req_valid_raw;
 
   // Determine if there are any errors related to the Imem fetch address.
@@ -350,11 +360,18 @@ module otbn_controller
   assign err_bits_o.bad_insn_addr        = imem_addr_err;
 
   assign err = |err_bits_o;
+  assign fatal_err = |{err_bits_o.lifecycle_escalation,
+                       err_bits_o.illegal_bus_access,
+                       err_bits_o.bus_intg_violation,
+                       err_bits_o.reg_intg_violation,
+                       err_bits_o.dmem_intg_violation,
+                       err_bits_o.imem_intg_violation};
 
   // Instructions must not execute if there is an error
   assign insn_executing = insn_valid_i & ~err;
 
   `ASSERT(ErrBitSetOnErr, err |-> |err_bits_o)
+  `ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
 
   `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun,
                                                 OtbnStateStall})

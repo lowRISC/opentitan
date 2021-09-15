@@ -47,7 +47,7 @@ otbn_result_t otbn_busy_wait_for_done(otbn_t *ctx) {
     if (dif_otbn_get_status(&ctx->dif, &status) != kDifOtbnOk) {
       return kOtbnError;
     }
-    busy = status != kDifOtbnStatusIdle;
+    busy = status != kDifOtbnStatusIdle && status != kDifOtbnStatusLocked;
   }
 
   dif_otbn_err_bits_t err_bits;
