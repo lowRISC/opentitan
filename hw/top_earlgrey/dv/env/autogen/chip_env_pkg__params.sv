@@ -38,9 +38,7 @@ parameter string LIST_OF_ALERTS[] = {
   "sensor_ctrl_fatal_alert",
   "sram_ctrl_ret_aon_fatal_error",
   "flash_ctrl_recov_err",
-  "flash_ctrl_recov_mp_err",
-  "flash_ctrl_recov_ecc_err",
-  "flash_ctrl_fatal_intg_err",
+  "flash_ctrl_fatal_err",
   "rv_dm_fatal_fault",
   "rv_plic_fatal_fault",
   "aes_recov_ctrl_update_err",
@@ -67,4 +65,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 60;
+parameter uint NUM_ALERTS = 58;
