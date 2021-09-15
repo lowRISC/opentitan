@@ -167,12 +167,8 @@
                      "-dir {cov_merge_db_dir}",
                      "-line nocasedef",
                      "-format both",
-                     '''{eval_cmd} opts=`echo {vcs_cov_excl_files}`; \
-                     if [ "$opts" != "" ]; then \
-                       opts="-elfile $opts"; \
-                       echo $opts;
-                     fi
-                     ''',
+                     // Prepend each el file with `-elfile`.
+                     "{eval_cmd} echo {vcs_cov_excl_files} | sed -E 's/(\\S+)/-elfile \\1/g'",
                      "-report {cov_report_dir}"]
   cov_report_txt:   "{cov_report_dir}/dashboard.txt"
   cov_report_page:  "dashboard.html"
