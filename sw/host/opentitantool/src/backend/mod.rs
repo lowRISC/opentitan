@@ -11,6 +11,7 @@ use opentitanlib::app::TargetEnvironment;
 use opentitanlib::util::parse_int::ParseInt;
 
 pub mod ultradebug;
+pub mod hyperdebug;
 pub mod verilator;
 
 #[derive(Debug, StructOpt)]
@@ -46,6 +47,7 @@ pub fn create(args: &BackendOpts) -> Result<TargetEnvironment> {
         "" => Ok(Box::new(EmptyTransport) as Box<dyn Transport>),
         "verilator" => verilator::create(&args.verilator_opts),
         "ultradebug" => ultradebug::create(args),
+        "hyperdebug" => hyperdebug::create(args),
         _ => Err(Error::UnknownInterface(args.interface.clone()).into()),
     }?;
     let mut env = TargetEnvironment::new(transport);

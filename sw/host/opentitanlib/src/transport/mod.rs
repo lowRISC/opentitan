@@ -11,6 +11,7 @@ use crate::io::gpio::Gpio;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
+pub mod hyperdebug;
 pub mod ultradebug;
 pub mod verilator;
 
