@@ -29,8 +29,13 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    logic [3:0]  q;
-  } clkmgr_reg2hw_extclk_sel_reg_t;
+    struct packed {
+      logic [3:0]  q;
+    } sel;
+    struct packed {
+      logic [3:0]  q;
+    } step_down;
+  } clkmgr_reg2hw_extclk_ctrl_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -204,8 +209,8 @@ package clkmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    clkmgr_reg2hw_alert_test_reg_t alert_test; // [120:117]
-    clkmgr_reg2hw_extclk_sel_reg_t extclk_sel; // [116:113]
+    clkmgr_reg2hw_alert_test_reg_t alert_test; // [124:121]
+    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [120:113]
     clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [112:112]
     clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [111:108]
     clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [107:103]
@@ -227,8 +232,8 @@ package clkmgr_reg_pkg;
 
   // Register offsets
   parameter logic [BlockAw-1:0] CLKMGR_ALERT_TEST_OFFSET = 6'h 0;
-  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_SEL_REGWEN_OFFSET = 6'h 4;
-  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_SEL_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_CTRL_REGWEN_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_CTRL_OFFSET = 6'h 8;
   parameter logic [BlockAw-1:0] CLKMGR_JITTER_ENABLE_OFFSET = 6'h c;
   parameter logic [BlockAw-1:0] CLKMGR_CLK_ENABLES_OFFSET = 6'h 10;
   parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 6'h 14;
@@ -250,8 +255,8 @@ package clkmgr_reg_pkg;
   // Register index
   typedef enum int {
     CLKMGR_ALERT_TEST,
-    CLKMGR_EXTCLK_SEL_REGWEN,
-    CLKMGR_EXTCLK_SEL,
+    CLKMGR_EXTCLK_CTRL_REGWEN,
+    CLKMGR_EXTCLK_CTRL,
     CLKMGR_JITTER_ENABLE,
     CLKMGR_CLK_ENABLES,
     CLKMGR_CLK_HINTS,
@@ -269,8 +274,8 @@ package clkmgr_reg_pkg;
   // Register width information to check illegal writes
   parameter logic [3:0] CLKMGR_PERMIT [15] = '{
     4'b 0001, // index[ 0] CLKMGR_ALERT_TEST
-    4'b 0001, // index[ 1] CLKMGR_EXTCLK_SEL_REGWEN
-    4'b 0001, // index[ 2] CLKMGR_EXTCLK_SEL
+    4'b 0001, // index[ 1] CLKMGR_EXTCLK_CTRL_REGWEN
+    4'b 0001, // index[ 2] CLKMGR_EXTCLK_CTRL
     4'b 0001, // index[ 3] CLKMGR_JITTER_ENABLE
     4'b 0001, // index[ 4] CLKMGR_CLK_ENABLES
     4'b 0001, // index[ 5] CLKMGR_CLK_HINTS
