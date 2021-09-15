@@ -753,12 +753,21 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   assign sync_fault = sync_fault_q | sync_fault_d;
 
   // async faults
-  assign async_fault[AsyncFaultKmacCmd] = kmac_cmd_err_i;
-  assign async_fault[AsyncFaultKmacFsm] = kmac_fsm_err_i;
-  assign async_fault[AsyncFaultRegIntg] = regfile_intg_err_i;
-  assign async_fault[AsyncFaultShadow ] = shadowed_storage_err_i;
-  assign async_fault[AsyncFaultFsmIntg] = state_intg_err_q;
-  assign async_fault[AsyncFaultCntErr ] = cnt_err;
+  logic [AsyncFaultLastIdx-1:0] async_fault_q, async_fault_d;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      async_fault_q <= '0;
+    end else begin
+      async_fault_q <= async_fault;
+    end
+  end
+  assign async_fault = async_fault_q | async_fault_d;
+  assign async_fault_d[AsyncFaultKmacCmd] = kmac_cmd_err_i;
+  assign async_fault_d[AsyncFaultKmacFsm] = kmac_fsm_err_i;
+  assign async_fault_d[AsyncFaultRegIntg] = regfile_intg_err_i;
+  assign async_fault_d[AsyncFaultShadow ] = shadowed_storage_err_i;
+  assign async_fault_d[AsyncFaultFsmIntg] = state_intg_err_q;
+  assign async_fault_d[AsyncFaultCntErr ] = cnt_err;
 
   // output to error code register
   assign error_o[ErrInvalidOp]    = op_done_o & sync_err[SyncErrInvalidOp];
