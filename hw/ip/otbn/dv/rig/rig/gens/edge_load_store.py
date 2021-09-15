@@ -174,23 +174,23 @@ class EdgeLoadStore(SnippetGen):
         # Max/Min Offsets for BN.SID (-512 * 32, 511 * 32)
         min_offset, max_offset = bn_offset_rng
 
-        # Get known registers
+        # Get known GPRs and the WDRs with an architecturally specified value
         known_regs = model.regs_with_known_vals('gpr')
-
-        base = []
-        valid_grs2s = []
-        known_wdrs = model.regs_with_known_vals('wdr')
+        known_wdrs = set(model.regs_with_architectural_vals('wdr'))
         if not known_wdrs:
             return None
 
+        base = []
+        valid_grs2s = []
+
         # Choose not too big not too little register values
-        # Also find a register for grd and grs2 operands
+        # Also find a register for grs1 and grs2 operands
         for reg_idx, u_reg_val in known_regs:
             reg_val = u_reg_val - (1 << 32) if u_reg_val >> 31 else u_reg_val
             if ((model.dmem_size - reg_val - 32
                  in range(min_offset, max_offset + 1) and not reg_val % 32)):
                 base.append((reg_idx, reg_val))
-            if reg_val < 32 and reg_val in known_wdrs[0]:
+            if reg_val < 32 and reg_val in known_wdrs:
                 valid_grs2s.append(reg_idx)
 
         if not valid_grs2s:
