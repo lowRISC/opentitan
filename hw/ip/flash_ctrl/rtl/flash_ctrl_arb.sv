@@ -16,11 +16,14 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   input clk_i,
   input rst_ni,
 
+  // error address shared between interfaces
+  output logic [BusAddrW-1:0] ctrl_err_addr_o,
+
   // software interface to rd_ctrl / erase_ctrl
   input flash_ctrl_reg_pkg::flash_ctrl_reg2hw_control_reg_t sw_ctrl_i,
   input [31:0] sw_addr_i,
   output logic sw_ack_o,
-  output logic sw_err_o,
+  output flash_ctrl_err_t sw_err_o,
 
   // software interface to rd_fifo
   output logic sw_rvalid_o,
@@ -37,7 +40,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   input flash_lcmgr_phase_e hw_phase_i,
   input [31:0] hw_addr_i,
   output logic hw_ack_o,
-  output logic hw_err_o,
+  output flash_ctrl_err_t hw_err_o,
 
   // hardware interface to rd_fifo
   output logic hw_rvalid_o,
@@ -52,11 +55,14 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   output flash_ctrl_reg_pkg::flash_ctrl_reg2hw_control_reg_t muxed_ctrl_o,
   output logic [31:0] muxed_addr_o,
   input prog_ack_i,
-  input prog_err_i,
+  input flash_ctrl_err_t prog_err_i,
+  input [BusAddrW-1:0] prog_err_addr_i,
   input rd_ack_i,
-  input rd_err_i,
+  input flash_ctrl_err_t rd_err_i,
+  input [BusAddrW-1:0] rd_err_addr_i,
   input erase_ack_i,
-  input erase_err_i,
+  input flash_ctrl_err_t erase_err_i,
+  input [BusAddrW-1:0] erase_err_addr_i,
 
   // muxed interface to rd_fifo
   input rd_fifo_rvalid_i,
@@ -156,22 +162,23 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
     endcase // unique case (state_q)
   end // always_comb
 
-  logic ctrl_ack, ctrl_err;
+  logic ctrl_ack;
+  flash_ctrl_err_t ctrl_err;
 
   always_comb begin
     muxed_ctrl_o = '0;
     muxed_addr_o = '0;
-    sw_ack_o = 1'b0;
-    sw_err_o = 1'b0;
-    sw_rvalid_o = 1'b0;
-    sw_wready_o = 1'b0;
-    hw_ack_o = 1'b0;
-    hw_err_o = 1'b0;
-    hw_rvalid_o = 1'b0;
-    hw_wready_o = 1'b0;
-    prog_fifo_wvalid_o = 1'b0;
+    sw_ack_o = '0;
+    sw_err_o = '0;
+    sw_rvalid_o = '0;
+    sw_wready_o = '0;
+    hw_ack_o = '0;
+    hw_err_o = '0;
+    hw_rvalid_o = '0;
+    hw_wready_o = '0;
+    prog_fifo_wvalid_o = '0;
     prog_fifo_wdata_o = '0;
-    rd_fifo_rready_o = 1'b0;
+    rd_fifo_rready_o = '0;
 
     unique case (func_sel)
       HwSel: begin
@@ -213,16 +220,29 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   always_comb begin
     ctrl_ack = '0;
     ctrl_err = '0;
-    if (muxed_ctrl_o.op.q == FlashOpProgram) begin
-      ctrl_ack = prog_ack_i;
-      ctrl_err = prog_err_i;
-    end else if (muxed_ctrl_o.op.q == FlashOpErase) begin
-      ctrl_ack = erase_ack_i;
-      ctrl_err = erase_err_i;
-    end else if (muxed_ctrl_o.op.q == FlashOpRead) begin
-      ctrl_ack = rd_ack_i;
-      ctrl_err = rd_err_i;
-    end
+    ctrl_err_addr_o = '0;
+
+    unique case (muxed_ctrl_o.op.q)
+      FlashOpProgram: begin
+        ctrl_ack = prog_ack_i;
+        ctrl_err = prog_err_i;
+        ctrl_err_addr_o = prog_err_addr_i;
+      end
+
+      FlashOpErase: begin
+        ctrl_ack = erase_ack_i;
+        ctrl_err = erase_err_i;
+        ctrl_err_addr_o = erase_err_addr_i;
+      end
+
+      FlashOpRead: begin
+        ctrl_ack = rd_ack_i;
+        ctrl_err = rd_err_i;
+        ctrl_err_addr_o = rd_err_addr_i;
+      end
+
+      default:;
+    endcase // unique case (muxed_ctrl_o.op.q)
   end
 
   assign sel_o = func_sel;

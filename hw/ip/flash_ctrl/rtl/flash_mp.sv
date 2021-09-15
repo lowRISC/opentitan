@@ -36,7 +36,6 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   output logic prog_done_o,
   output logic erase_done_o,
   output logic error_o,
-  output logic [AllPagesW-1:0] err_addr_o,
 
   // interface signals to/from flash_phy
   output logic req_o,
@@ -263,12 +262,10 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       txn_err <= 1'b0;
-      err_addr_o <= '0;
     end else if (txn_err) begin
       txn_err <= 1'b0;
     end else if (no_allowed_txn) begin
       txn_err <= 1'b1;
-      err_addr_o <= bank_page_addr;
     end
   end
 
