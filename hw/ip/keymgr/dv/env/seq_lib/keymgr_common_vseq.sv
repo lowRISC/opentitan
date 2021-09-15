@@ -5,7 +5,9 @@
 class keymgr_common_vseq extends keymgr_base_vseq;
   `uvm_object_utils(keymgr_common_vseq)
 
-  bit csr_vseq_done;
+  // Set this flag low before calling csr seq, then set it back to 1 when it's done
+  // If no csr seq is called, this flag should be high
+  bit csr_vseq_done = 1;
 
   constraint num_trans_c {
     num_trans inside {[1:2]};
