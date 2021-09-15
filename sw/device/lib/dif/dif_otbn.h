@@ -116,6 +116,8 @@ typedef enum dif_otbn_err_bits {
   kDifOtbnErrBitsIllegalBusAccess = (1 << 20),
   /** A LIFECYCLE_ESCALATION error was observed. */
   kDifOtbnErrBitsLifecycleEscalation = (1 << 21),
+  /** A FATAL_SOFTWARE error was observed. */
+  kDifOtbnErrBitsFatalSoftware = (1 << 22),
 } dif_otbn_err_bits_t;
 
 /**

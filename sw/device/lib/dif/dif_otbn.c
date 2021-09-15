@@ -41,6 +41,9 @@ static_assert(kDifOtbnErrBitsIllegalBusAccess ==
 static_assert(kDifOtbnErrBitsLifecycleEscalation ==
                   (1 << OTBN_ERR_BITS_LIFECYCLE_ESCALATION_BIT),
               "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsFatalSoftware ==
+                  (1 << OTBN_ERR_BITS_FATAL_SOFTWARE_BIT),
+              "Layout of error bits changed.");
 
 /**
  * Data width of big number subset, in bytes.

@@ -36,6 +36,8 @@ ASSERT_ERR_BIT_MATCH(kOtbnErrBitsIllegalBusAccess,
                      OTBN_ERR_BITS_ILLEGAL_BUS_ACCESS_BIT);
 ASSERT_ERR_BIT_MATCH(kOtbnErrBitsLifecycleEscalation,
                      OTBN_ERR_BITS_LIFECYCLE_ESCALATION_BIT);
+ASSERT_ERR_BIT_MATCH(kOtbnErrBitsFatalSoftware,
+                     OTBN_ERR_BITS_FATAL_SOFTWARE_BIT);
 
 const size_t kOtbnDMemSizeBytes = OTBN_DMEM_SIZE_BYTES;
 const size_t kOtbnIMemSizeBytes = OTBN_IMEM_SIZE_BYTES;

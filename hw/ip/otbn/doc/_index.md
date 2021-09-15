@@ -588,7 +588,8 @@ Whenever an error is detected, OTBN reacts locally, and informs the OpenTitan sy
 OTBN generally does not try to recover from errors itself, and provides no error handling support to code that runs on it.
 
 OTBN gives host software the option to recover from some errors by restarting the operation.
-All software errors are treated as recoverable and are handled as described in the section [Reaction to Recoverable Errors](#design-details-recoverable-errors).
+All software errors are treated as recoverable, unless {{< regref "CTRL.software_errs_fatal" >}} is set, and are handled as described in the section [Reaction to Recoverable Errors](#design-details-recoverable-errors).
+When {{< regref "CTRL.software_errs_fatal" >}} is set, software errors become fatal errors.
 
 Fatal errors are treated as described in the section [Reaction to Fatal Errors](#design-details-fatal-errors).
 
@@ -701,6 +702,11 @@ This way, no alert is generated without setting an error code somewhere.
       <td><code>LIFECYCLE_ESCALATION<code></td>
       <td>fatal</td>
       <td>A life cycle escalation request was received.</td>
+    </tr>
+    <tr>
+      <td><code>FATAL_SOFTWARE<code></td>
+      <td>fatal</td>
+      <td>A software error was seen and {{< regref "CTRL.software_errs_fatal" >}} was set.</td>
     </tr>
   </tbody>
 </table>

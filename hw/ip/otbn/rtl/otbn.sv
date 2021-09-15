@@ -599,6 +599,8 @@ module otbn
 
   `ASSERT(OtbnStatesOneHot, $onehot0({busy_execute_q, locked}))
 
+  assign hw2reg.ctrl.d = 1'b0;
+
   // ERR_BITS register
   // The error bits for an OTBN operation get stored on the cycle that done is
   // asserted. Software is expected to read them out before starting the next operation.
@@ -635,6 +637,9 @@ module otbn
   assign hw2reg.err_bits.lifecycle_escalation.de = done;
   assign hw2reg.err_bits.lifecycle_escalation.d = err_bits.lifecycle_escalation;
 
+  assign hw2reg.err_bits.fatal_software.de = done;
+  assign hw2reg.err_bits.fatal_software.d = 1'b0;
+
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
   assign hw2reg.fatal_alert_cause.imem_intg_violation.de = imem_rerror;
@@ -650,6 +655,8 @@ module otbn
   assign hw2reg.fatal_alert_cause.illegal_bus_access.d  = illegal_bus_access_d;
   assign hw2reg.fatal_alert_cause.lifecycle_escalation.de = lifecycle_escalation;
   assign hw2reg.fatal_alert_cause.lifecycle_escalation.d  = lifecycle_escalation;
+  assign hw2reg.fatal_alert_cause.fatal_software.de = 0;
+  assign hw2reg.fatal_alert_cause.fatal_software.d  = 0;
 
   // INSN_CNT register
   logic [31:0] insn_cnt;

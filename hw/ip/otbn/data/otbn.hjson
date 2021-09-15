@@ -197,6 +197,25 @@
         }
       ],
     }
+    { name: "CTRL",
+      desc: "control register",
+      hwext: "true",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe:  "true",
+      fields: [
+        { bits: "0",
+          name: "software_errs_fatal",
+          resval: 0,
+          desc: '''
+            When set software errors produce fatal errors, rather than
+            recoverable errors. This field can only be changed when OTBN is in
+            the IDLE state (see !!STATUS). Any writes to this field when OTBN
+            isn't in the IDLE state are ignored.
+          '''
+        }
+      ],
+    }
     { name: "STATUS",
       desc: "Status",
       swaccess: "ro",
@@ -326,6 +345,11 @@
           resval: 0,
           desc: "A `LIFECYCLE_ESCALATION` error was observed."
         }
+        { bits: "22",
+          name: "fatal_software"
+          resval: 0,
+          desc: "A `FATAL_SOFTWARE` error was observed."
+        }
       ]
     } // register : err_bits
     { name: "FATAL_ALERT_CAUSE",
@@ -369,6 +393,11 @@
           name: "lifecycle_escalation"
           resval: 0,
           desc: "A `LIFECYCLE_ESCALATION` error was observed."
+        }
+        { bits: "6",
+          name: "fatal_software"
+          resval: 0,
+          desc: "A `FATAL_SOFTWARE` error was observed."
         }
       ]
     } // register : fatal_alert_cause
