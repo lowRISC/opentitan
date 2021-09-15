@@ -28,6 +28,8 @@ class keymgr_direct_to_disabled_vseq extends keymgr_random_vseq;
     wait_op_done();
     if (get_check_en()) `DV_CHECK_EQ(current_state, keymgr_pkg::StDisabled)
 
+    randomly_clear_sideload();
+
     // issue some random operations in StDisabled
     keymgr_operations();
 
