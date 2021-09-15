@@ -3,27 +3,31 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package chip_env_pkg;
+
   // dep packages
   import uvm_pkg::*;
   import top_pkg::*;
-  import flash_ctrl_pkg::*;
-  import otp_ctrl_pkg::*;
-  import sram_ctrl_pkg::*;
-  import dv_utils_pkg::*;
-  import dv_base_reg_pkg::*;
+
+  import bus_params_pkg::*;
+  import chip_ral_pkg::*;
+  import cip_base_pkg::*;
   import csr_utils_pkg::*;
+  import digestpp_dpi_pkg::*;
+  import dv_base_reg_pkg::*;
+  import dv_lib_pkg::*;
+  import dv_utils_pkg::*;
+  import flash_ctrl_pkg::*;
+  import jtag_riscv_agent_pkg::*;
+  import kmac_pkg::*;
+  import mem_bkdr_util_pkg::*;
+  import otp_ctrl_pkg::*;
+  import spi_agent_pkg::*;
+  import sram_ctrl_pkg::*;
+  import str_utils_pkg::*;
+  import sw_test_status_pkg::*;
   import tl_agent_pkg::*;
   import uart_agent_pkg::*;
-  import jtag_riscv_agent_pkg::*;
-  import spi_agent_pkg::*;
-  import dv_lib_pkg::*;
-  import cip_base_pkg::*;
-  import chip_ral_pkg::*;
-  import sw_test_status_pkg::*;
   import xbar_env_pkg::*;
-  import bus_params_pkg::*;
-  import str_utils_pkg::*;
-  import mem_bkdr_util_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

@@ -7,6 +7,12 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
+  // LC sends two 64-bit msg as input token.
+  localparam uint ExitTokenWidthBit  = kmac_pkg::MsgWidth * 2;
+  localparam uint ExitTokenWidthByte = ExitTokenWidthBit / 8;
+
+  rand bit [7:0] lc_exit_token[ExitTokenWidthByte];
+
   virtual task dut_init(string reset_kind = "HARD");
     bit [otp_ctrl_reg_pkg::TestUnlockTokenSize-1:0] rand_unlock_token;
     `DV_CHECK_STD_RANDOMIZE_FATAL(rand_unlock_token)
@@ -17,17 +23,39 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition(lc_ctrl_state_pkg::LcStTestUnlocked2);
 
     // Override the test exit token to match SW test's input token.
-    // TODO: randomize the exit_token.
     cfg.mem_bkdr_util_h[Otp].otp_write_secret0_partition(
         .unlock_token(rand_unlock_token),
-        .exit_token('h547070d7503264af5b9a971b894ef3be));
+        .exit_token(get_otp_exit_token(lc_exit_token)));
   endtask
 
+  // This function takes the token value from LC_CTRL token CSRs, then runs through cshake128 to
+  // get a 768-bit XORed token output.
+  // The first 128 bits of the decoded token should match the OTP's secret9 paritition's
+  // descrambled exit token value.
+  virtual function bit[ExitTokenWidthBit-1:0] get_otp_exit_token(
+      bit[7:0] token_in[ExitTokenWidthByte]);
+
+    bit [7:0]                      dpi_digest[kmac_pkg::AppDigestW/8];
+    bit [kmac_pkg::AppDigestW-1:0] digest_bits;
+
+    digestpp_dpi_pkg::c_dpi_cshake128(token_in, "", "LC_CTRL", ExitTokenWidthByte,
+                                      kmac_pkg::AppDigestW/8, dpi_digest);
+
+    digest_bits = {<< byte {dpi_digest}};
+    return (digest_bits[ExitTokenWidthBit-1:0]);
+  endfunction
+
   virtual task body();
+    byte lc_exit_token_byte [ExitTokenWidthByte];
     super.body();
 
-     // Select LC jtag.
+    // Select LC jtag.
     cfg.tap_straps_vif.drive(SelectLCJtagTap);
+
+    // Override the C test kLcExitToken with random data.
+    // TODO: try to remove this conversion variable, and use `bit[7:0]` array type as input.
+    foreach (lc_exit_token[i]) lc_exit_token_byte[i] = lc_exit_token[i];
+    sw_symbol_backdoor_overwrite("kLcExitToken", lc_exit_token_byte);
 
     // Wait for SW to finish set up LC_CTRL.
     cfg.clk_rst_vif.wait_clks(21000);
