@@ -284,13 +284,13 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           prev_lc_clk_byp_req = cfg.clkmgr_vif.lc_clk_byp_req;
         end
         if (cfg.clk_rst_vif.rst_n) begin
-          if (((cfg.clkmgr_vif.clk_cb.extclk_sel_csr == On) &&
+          if (((cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == On) &&
                (cfg.clkmgr_vif.clk_cb.lc_dft_en_i == On)) ||
               (cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On)) begin
             `DV_CHECK_EQ(cfg.clkmgr_vif.ast_clk_byp_req, On, "Expected ast_clk_byp_req to be On")
           end
           if (cfg.en_cov) begin
-            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_sel_csr,
+            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel,
                                  cfg.clkmgr_vif.clk_cb.lc_dft_en_i,
                                  cfg.clkmgr_vif.clk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
           end
@@ -441,7 +441,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     string         access_str = write ? "write" : "read";
     string         channel_str = channel == AddrChannel ? "address" : "data";
 
-    logic          extclk_sel_regwen = ral.extclk_sel_regwen.get_reset();
+    logic          extclk_ctrl_regwen = ral.extclk_ctrl_regwen.get_reset();
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -475,14 +475,14 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "intr_test": begin
         // FIXME
       end
-      "extclk_sel_regwen": begin
+      "extclk_ctrl_regwen": begin
         if (addr_phase_write) begin
-          extclk_sel_regwen = item.a_data;
+          extclk_ctrl_regwen = item.a_data;
         end
       end
-      "extclk_sel": begin
-        if (addr_phase_write && extclk_sel_regwen) begin
-          cfg.clkmgr_vif.update_extclk_sel(item.a_data);
+      "extclk_ctrl": begin
+        if (addr_phase_write && extclk_ctrl_regwen) begin
+          cfg.clkmgr_vif.update_extclk_ctrl(item.a_data);
         end
       end
       "jitter_enable": begin
