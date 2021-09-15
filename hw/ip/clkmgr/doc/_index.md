@@ -189,18 +189,18 @@ There are two occasions where this is required:
 
 Software request for external clocks is not always valid.
 Software is only able to request for external clocks when dft functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#dft_en" >}}).
+When software requests the external clock switch, it also has the option to request whether the clock divider should be stepped down by a factor of 2.
+
 
 When the life cycle controller requests external clock, a request signal `lc_clk_byp_req_i` is sent from `lc_ctrl` to `clkmgr`.
 `clkmgr` then forwards the request to `ast` through `ast_clk_byp_req_o`, which performs the actual clock switch.
-When the clock switch is complete, the life cycle controller is acknowledged through `lc_clk_byp_ack_o`.
+When the clock switch is complete, the clock dividers are stepped down by a factor of 2 and the life cycle controller is acknowledged through `lc_clk_byp_ack_o`.
 
-When software requests external clock, the register bit {{< regref "EXTCLK_SEL" >}} is written.
+When software requests external clock, the register bit {{< regref "EXTCLK_CTRL" >}} is written.
 If dft functions are allowed, the `clkmgr` sends a request signal `ast_clk_byp_req_o` to `ast`.
 
-In both cases, when the clock switch is complete, the internal dividers of the `clkmgr` are stepped down by 2x.
-A divide-by-4 clock becomes divide-by-2 clock , and a divide-by-2 becomes a divide-by-1 clock.
-The step down function will be made more flexible in the future as it is highly dependent on the ratio of internal to external clock ratios.
-However, given currently known requirements, a blanket 2x step down is sufficient.
+When the divider is stepped down, a divide-by-4 clock becomes divide-by-2 clock , and a divide-by-2 becomes a divide-by-1 clock.
+This allows external connection to be either nominal frequencies or nominal divided-by-2.
 
 ### Clock Frequency Measurements
 

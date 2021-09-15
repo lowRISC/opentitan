@@ -61,26 +61,26 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     !(scanmode_other inside {On, Off});
   }
 
-  // extclk_sel is set according to sel_extclk_sel, which is randomized with weights.
-  lc_tx_t            extclk_sel;
-  rand lc_tx_t       extclk_sel_other;
-  rand lc_tx_t_sel_e sel_extclk_sel;
+  // extclk_ctrl_sel is set according to sel_extclk_ctrl_sel, which is randomized with weights.
+  lc_tx_t            extclk_ctrl_sel;
+  rand lc_tx_t       extclk_ctrl_sel_other;
+  rand lc_tx_t_sel_e sel_extclk_ctrl_sel;
 
-  constraint extclk_sel_c {
-    sel_extclk_sel dist {
+  constraint extclk_ctrl_sel_c {
+    sel_extclk_ctrl_sel dist {
       LcTxTSelOn    := 4,
       LcTxTSelOff   := 2,
       LcTxTSelOther := 2
     };
-    !(extclk_sel_other inside {On, Off});
+    !(extclk_ctrl_sel_other inside {On, Off});
   }
 
   `uvm_object_new
 
   function void post_randomize();
     super.post_randomize();
-    scanmode   = get_lc_tx_t_from_sel(sel_scanmode, scanmode_other);
-    extclk_sel = get_lc_tx_t_from_sel(sel_extclk_sel, extclk_sel_other);
+    scanmode = get_lc_tx_t_from_sel(sel_scanmode, scanmode_other);
+    extclk_ctrl_sel = get_lc_tx_t_from_sel(sel_extclk_ctrl_sel, extclk_ctrl_sel_other);
   endfunction
 
   virtual function void set_scanmode_on_low_weight();
@@ -206,7 +206,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   function void update_csrs_with_reset_values();
     cfg.clkmgr_vif.update_clk_enables(ral.clk_enables.get_reset());
     cfg.clkmgr_vif.update_clk_hints(ral.clk_hints.get_reset());
-    cfg.clkmgr_vif.update_extclk_sel(ral.extclk_sel.get_reset());
+    cfg.clkmgr_vif.update_extclk_ctrl(ral.extclk_ctrl.get_reset());
   endfunction
 
 endclass : clkmgr_base_vseq
