@@ -10,15 +10,17 @@ filesets:
       - lowrisc:opentitan:bus_params_pkg
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:ip:spi_device
-      - lowrisc:dv:ralgen
-      - lowrisc:dv:str_utils
+      - lowrisc:ip:kmac_pkg
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:uart_agent
+      - lowrisc:dv:digestpp_dpi
       - lowrisc:dv:jtag_riscv_agent
-      - lowrisc:dv:spi_agent
       - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:spi_agent
+      - lowrisc:dv:str_utils
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:sw_logger_if
+      - lowrisc:dv:uart_agent
     files:
       - chip_env_pkg.sv
       - chip_env_cfg.sv: {is_include_file: true}
