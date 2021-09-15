@@ -13,7 +13,6 @@ filesets:
     depend:
       - lowrisc:dv:uart_test
       - lowrisc:dv:uart_sva
-      - lowrisc:dv:uart_cov
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
