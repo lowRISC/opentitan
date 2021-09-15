@@ -13,9 +13,10 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   input                    op_start_i,
   input  [11:0]            op_num_words_i,
   output logic             op_done_o,
-  output logic             op_err_o,
+  flash_ctrl_err_t         op_err_o,
   input [BusAddrW-1:0]     op_addr_i,
   input                    op_addr_oob_i,
+  output logic [BusAddrW-1:0] op_err_addr_o,
 
   // FIFO Interface
   input                    data_rdy_i,
@@ -28,7 +29,9 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   output logic             flash_ovfl_o,
   input [BusWidth-1:0]     flash_data_i,
   input                    flash_done_i,
-  input                    flash_error_i
+  input                    flash_phy_err_i,
+  input                    flash_rd_err_i,
+  input                    flash_mp_err_i
 );
 
   typedef enum logic [1:0] {
@@ -37,75 +40,100 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
     StErr
   } state_e;
 
-  state_e st, st_nxt;
-  logic [11:0] cnt, cnt_nxt;
+  state_e st_q, st_d;
+  logic [11:0] cnt;
   logic cnt_hit;
   logic [BusAddrW:0] int_addr;
   logic txn_done;
   logic err_sel; //1 selects error data, 0 selects normal data
+  flash_ctrl_err_t op_err_q, op_err_d;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      st_q <= StIdle;
+    end else begin
+      st_q <= st_d;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      op_err_q <= '0;
+    end else if (op_start_i && op_done_o) begin
+      op_err_q <= '0;
+    end else begin
+      op_err_q <= op_err_d;
+    end
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cnt <= '0;
-      st <= StIdle;
-    end else begin
-      cnt <= cnt_nxt;
-      st <= st_nxt;
+    end else if (op_start_i && op_done_o) begin
+      cnt <= '0;
+    end else if (data_wr_o) begin
+      cnt <= cnt + 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      op_err_addr_o <= '0;
+    end else if (~|op_err_q && |op_err_d) begin
+      op_err_addr_o <= flash_addr_o;
     end
   end
 
   assign txn_done = flash_req_o & flash_done_i;
   assign cnt_hit = (cnt == op_num_words_i);
 
+
   // when error'd, continue to complete existing read transaction but fill in with all 1's
   // if this is not done, software may continue to attempt to read out of the fifo
   // and eventually cause a bus deadlock as the fifo would be empty
   // This scheme is similar to burst completion up an error
   always_comb begin
-    st_nxt = st;
-    cnt_nxt = cnt;
+    st_d = st_q;
     flash_req_o = 1'b0;
     data_wr_o = 1'b0;
     op_done_o = 1'b0;
-    op_err_o = 1'b0;
-    err_sel = 1'b0;
+    op_err_d = op_err_q;
 
-    unique case (st)
+    unique case (st_q)
       StIdle: begin
-        if (op_start_i && op_addr_oob_i) begin
-          st_nxt = StErr;
-        end else if (op_start_i) begin
-          st_nxt = StNorm;
+        if (op_start_i) begin
+          op_err_d.oob_err = op_addr_oob_i;
+          st_d = |op_err_d ? StErr : StNorm;
         end
       end
 
+      // Note the address counter is incremented on tx_done
+      // and cleared when the entire operation is complete.
       StNorm: begin
         flash_req_o = op_start_i & data_rdy_i;
 
-        if (txn_done && cnt_hit) begin
-          cnt_nxt = '0;
+        if (txn_done) begin
+          op_err_d.mp_err = flash_mp_err_i;
+          op_err_d.rd_err = flash_rd_err_i;
+          op_err_d.phy_err = flash_phy_err_i;
+
           data_wr_o = 1'b1;
-          op_done_o = 1'b1;
-          op_err_o = flash_error_i;
-        end else if (txn_done) begin
-          cnt_nxt = cnt + 1'b1;
-          data_wr_o = 1'b1;
-          err_sel = flash_error_i;
-          st_nxt = flash_error_i ? StErr : StIdle;
+
+          if (cnt_hit) begin
+            op_done_o = 1'b1;
+            st_d = StIdle;
+          end else begin
+            st_d = |op_err_d ? StErr : StNorm;
+          end
         end
       end
 
       StErr: begin
         data_wr_o = data_rdy_i;
-        err_sel = 1'b1;
 
         if (data_rdy_i && cnt_hit) begin
-          st_nxt = StIdle;
-          cnt_nxt = '0;
+          st_d = StIdle;
           op_done_o = 1'b1;
-          op_err_o = 1'b1;
-        end else if (data_rdy_i) begin
-          cnt_nxt = cnt + 1'b1;
         end
       end
       default:;
@@ -117,7 +145,9 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   assign flash_addr_o = int_addr[0 +: BusAddrW];
   assign flash_ovfl_o = int_addr[BusAddrW];
   // if error, return "empty" data
+  assign err_sel = data_wr_o & |op_err_o;
   assign data_o = err_sel ? {BusWidth{1'b1}} : flash_data_i;
+  assign op_err_o = op_err_q | op_err_d;
 
 
 endmodule // flash_ctrl_rd

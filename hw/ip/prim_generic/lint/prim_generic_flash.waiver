@@ -3,3 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for prim_generic_flash
+
+# The prim generic module does not make use of the IO ports
+waive -rules INOUT_AS_IN -location {prim_generic_flash.sv} \
+      -regexp {Inout port 'flash_.*_io' has no driver}

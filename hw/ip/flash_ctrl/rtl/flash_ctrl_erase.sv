@@ -12,14 +12,16 @@ module flash_ctrl_erase import flash_ctrl_pkg::*; (
   input [BusAddrW-1:0]        op_addr_i,
   input                       op_addr_oob_i,
   output logic                op_done_o,
-  output logic                op_err_o,
+  output flash_ctrl_err_t     op_err_o,
+  output logic [BusAddrW-1:0] op_err_addr_o,
 
   // Flash Macro Interface
   output logic                flash_req_o,
   output logic [BusAddrW-1:0] flash_addr_o,
   output flash_erase_e        flash_op_o,
   input                       flash_done_i,
-  input                       flash_error_i
+  input                       flash_mp_err_i,
+  input                       flash_phy_err_i
 );
 
   import flash_ctrl_pkg::*;
@@ -42,8 +44,15 @@ module flash_ctrl_erase import flash_ctrl_pkg::*; (
   assign oob_err = op_start_i & op_addr_oob_i;
 
   // IO assignments
-  assign op_done_o = flash_req_o & flash_done_i | oob_err;
-  assign op_err_o = flash_req_o & flash_error_i | oob_err;
+  assign op_done_o = flash_req_o & (flash_done_i | oob_err);
+
+  always_comb begin
+    op_err_o = '0;
+    op_err_o.oob_err = op_done_o & oob_err;
+    op_err_o.mp_err = op_done_o & flash_mp_err_i;
+    op_err_o.phy_err = op_done_o & flash_phy_err_i;
+  end
+
 
   // Flash Interface assignments
   assign flash_req_o = op_start_i & ~op_addr_oob_i;
@@ -51,6 +60,8 @@ module flash_ctrl_erase import flash_ctrl_pkg::*; (
   assign flash_addr_o = (op_type_i == FlashErasePage) ?
                         op_addr_i & PageAddrMask :
                         op_addr_i & BankAddrMask;
+
+  assign op_err_addr_o = flash_addr_o;
 
   // unused bus
   logic [WordsBitWidth-1:0] unused_addr_i;

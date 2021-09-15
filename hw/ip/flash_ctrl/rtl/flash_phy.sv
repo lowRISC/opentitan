@@ -159,11 +159,9 @@ module flash_phy import flash_ctrl_pkg::*; (
   flash_phy_pkg::flash_phy_prim_flash_req_t [NumBanks-1:0] prim_flash_req;
   flash_phy_pkg::flash_phy_prim_flash_rsp_t [NumBanks-1:0] prim_flash_rsp;
   logic [NumBanks-1:0] ecc_single_err;
-  logic [NumBanks-1:0] ecc_multi_err;
   logic [NumBanks-1:0][BusAddrW-1:0] ecc_addr;
 
   assign flash_ctrl_o.ecc_single_err = ecc_single_err;
-  assign flash_ctrl_o.ecc_multi_err = ecc_multi_err;
   assign flash_ctrl_o.ecc_addr = ecc_addr;
 
   lc_ctrl_pkg::lc_tx_t [NumBanks-1:0] flash_disable;
@@ -250,7 +248,6 @@ module flash_phy import flash_ctrl_pkg::*; (
       .prim_flash_req_o(prim_flash_req[bank]),
       .prim_flash_rsp_i(prim_flash_rsp[bank]),
       .ecc_single_err_o(ecc_single_err[bank]),
-      .ecc_multi_err_o(ecc_multi_err[bank]),
       .ecc_addr_o(ecc_addr[bank][BusBankAddrW-1:0])
     );
   end // block: gen_flash_banks
@@ -311,8 +308,6 @@ module flash_phy import flash_ctrl_pkg::*; (
   );
   logic unused_alert;
   assign unused_alert = flash_ctrl_i.alert_trig & flash_ctrl_i.alert_ack;
-  assign flash_ctrl_o.flash_alert_p = flash_alert_o.p;
-  assign flash_ctrl_o.flash_alert_n = flash_alert_o.n;
 
   logic unused_trst_n;
   assign unused_trst_n = flash_ctrl_i.jtag_req.trst_n;

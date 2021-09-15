@@ -21,3 +21,7 @@ waive -rules OUTPUT_NOT_DRIVEN -location {prim_flop*.sv} -regexp {.*q_o.*} \
 
 waive -rules INPUT_NOT_READ -location {prim_flop_2sync.sv} -regexp {Input port.*} \
       -comment "Silience prim related errors"
+
+# State is handled as part of "default"
+waive -rules MISSING_STATE -location {flash_phy_core.sv} \
+      -regexp {.*'StDisable' does not have corresponding case branch tag}
