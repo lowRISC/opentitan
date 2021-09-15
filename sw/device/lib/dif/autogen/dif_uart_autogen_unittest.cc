@@ -9,7 +9,6 @@
 namespace dif_uart_unittest {
 namespace {
 using testing::Eq;
-using testing::Test;
 
 class IrqGetStateTest : public UartTest {};
 
