@@ -157,14 +157,16 @@ module prim_esc_receiver
       Idle: begin
         if (esc_level) begin
           state_d = Check;
-          resp_pd = 1'b1;
-          resp_nd = 1'b0;
+          resp_pd = ~resp_pq;
+          resp_nd = resp_pq;
         end
       end
       // we decide here whether this is only a ping request or
       // whether this is an escalation enable
       Check: begin
         state_d = PingResp;
+        resp_pd = ~resp_pq;
+        resp_nd = resp_pq;
         if (esc_level) begin
           state_d  = EscResp;
           esc_req  = 1'b1;
@@ -174,8 +176,8 @@ module prim_esc_receiver
       // we got an escalation signal (pings cannot occur back to back)
       PingResp: begin
         state_d = Idle;
-        resp_pd = 1'b1;
-        resp_nd = 1'b0;
+        resp_pd = ~resp_pq;
+        resp_nd = resp_pq;
         ping_en = 1'b1;
         if (esc_level) begin
           state_d  = EscResp;
