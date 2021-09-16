@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:spi_tpm_sim:0.1"
+description: "SPI TPM submodule sim target"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:spi_device
+    file_type: systemVerilogSource
+
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_test_status
+      - lowrisc:dv:common_ifs
+    files:
+      - tb/spi_tpm_tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim: &sim_target
+    toplevel: spi_tpm_tb
+    filesets:
+      - files_rtl
+      - files_dv
+    default_tool: vcs
+
+  lint:
+    <<: *sim_target
