@@ -39,11 +39,18 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
+
+    op_before_enable_keymgr();
+
     cfg.keymgr_vif.init();
 
     delay_after_reset_before_access_csr();
 
     if (do_keymgr_init) keymgr_init();
+  endtask
+
+  // callback task before LC enables keymgr
+  virtual task op_before_enable_keymgr();
   endtask
 
   virtual task delay_after_reset_before_access_csr();
@@ -183,6 +190,12 @@ class keymgr_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.err_code), .value(rd_val));
     if (rd_val != 0) begin
       csr_wr(.ptr(ral.err_code), .value(rd_val));
+    end
+
+    // read and clear interrupt
+    csr_rd(.ptr(ral.intr_state), .value(rd_val));
+    if (rd_val != 0) begin
+      csr_wr(.ptr(ral.intr_state), .value(rd_val));
     end
   endtask : wait_op_done
 
