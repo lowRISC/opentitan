@@ -131,7 +131,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   assign start = adv_en_i | id_en_i | gen_en_i;
 
   logic cnt_err;
-  keymgr_cnt #(
+  prim_count #(
     .Width(CntWidth),
     .OutSelDnCnt(1'b1)
   ) u_cnt (

@@ -100,12 +100,6 @@ package keymgr_pkg;
     Otbn
   } keymgr_key_dest_e;
 
-  // Enumeration for hardened count style
-  typedef enum logic {
-    CrossCnt, // up count and down count
-    DupCnt    // duplicate counters
-  } keymgr_cnt_style_e;
-
   // Enumeration for key select
   typedef enum logic {
     HwKey = 0,
