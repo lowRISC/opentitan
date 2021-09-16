@@ -182,12 +182,20 @@ class dv_base_reg extends uvm_reg;
   // TODO: create an `enable_field_access_policy` variable and set the template code during
   // automation.
   virtual function void pre_do_predict(uvm_reg_item rw, uvm_predict_e kind);
-    dv_base_reg_field fields[$];
+    dv_base_reg_field dv_fields[$];
+    get_dv_base_reg_fields(dv_fields);
 
-    // no need to update shadow value or access type if access is not OK, as access is aborted
-    // no need to update if not write
-    // no need to update staged value if it triggers a storage error
-    if (rw.status != UVM_IS_OK || kind != UVM_PREDICT_WRITE || get_shadow_storage_err()) return;
+    if (this.get_name() == "classa_clr_shadowed") $display("policy %0s val %0h", dv_fields[0].get_access(), rw.value[0]);
+    if (this.get_name() == "classa_clr_regwen") $display("regwen val %0h", rw.value[0]);
+    // Skip updating shadow value or access type if:
+    // 1). access is not OK, as access is aborted
+    // 2). the operation is not write
+    // 3). a storage error is triggered
+    // 4). the register is "RO". This condition is used to cover enable register locks shadowed
+    // register's write access. This condition assumes shadow register's all fields share the same
+    // access policy.
+    if (rw.status != UVM_IS_OK || kind != UVM_PREDICT_WRITE || get_shadow_storage_err() ||
+        dv_fields[0].get_access() == "RO") return;
 
     if (is_shadowed && !shadow_fatal_lock) begin
       // first write
@@ -200,8 +208,6 @@ class dv_base_reg extends uvm_reg;
         // second write
         shadow_wr_staged = 0;
         if (staged_shadow_val != (rw.value[0] & get_reg_mask())) begin
-          dv_base_reg_field dv_fields[$];
-          get_dv_base_reg_fields(dv_fields);
 
           // Compare second write value by field, if any field matches the first write value, will
           // update the committed_val in the specific field.
