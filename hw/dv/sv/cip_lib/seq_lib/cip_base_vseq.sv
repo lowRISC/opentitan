@@ -529,9 +529,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   // override csr_vseq to control adapter to abort transaction
-  virtual task run_csr_vseq(string          csr_test_type = "",
-                            int             num_test_csrs = 0,
-                            bit             do_rand_wr_and_reset = 1);
+  virtual task run_csr_vseq(string csr_test_type = "",
+                            int    num_test_csrs = 0,
+                            bit    do_rand_wr_and_reset = 1);
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_access_abort_pct)
     foreach (cfg.m_tl_agent_cfgs[i]) begin
