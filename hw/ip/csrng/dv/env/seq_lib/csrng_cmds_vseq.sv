@@ -11,7 +11,39 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   csrng_item                                        cs_item, cs_item_clone, cs_item_q[NUM_HW_APPS][$];
   uint                                              cmds_gen, cmds_sent;
   bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0]            genbits;
-  bit                                               uninstantiate;
+
+  function void create_cmds(uint hwapp);
+    bit   uninstantiate;
+
+    // Start with instantiate command
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                   cs_item.acmd == csrng_pkg::INS;
+                                  )
+    `downcast(cs_item_clone, cs_item.clone());
+    cs_item_q[hwapp].push_back(cs_item_clone);
+
+    // Generate other commands
+    for (int i = 0; i < 10; i++) begin
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                     cs_item.acmd inside { csrng_pkg::GEN,
+                                                           csrng_pkg::RES,
+                                                           csrng_pkg::UPD
+                                                         };)
+      `downcast(cs_item_clone, cs_item.clone());
+      cs_item_q[hwapp].push_back(cs_item_clone);
+    end
+
+    // If no uninstantiate command, internal state is non-zero
+    `DV_CHECK_STD_RANDOMIZE_FATAL(uninstantiate)
+
+    if (uninstantiate) begin
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                     cs_item.acmd  == csrng_pkg::UNI;
+                                    )
+      `downcast(cs_item_clone, cs_item.clone());
+      cs_item_q[hwapp].push_back(cs_item_clone);
+    end
+  endfunction
 
   task body();
     // TODO: Add/randomize other commands. Use/add prediction for entropy from entropy_src agent.
@@ -21,66 +53,22 @@ class csrng_cmds_vseq extends csrng_base_vseq;
          create("m_entropy_src_pull_seq");
     // Create csrng_cmd host sequences and cs_item
     for (int i = 0; i < NUM_HW_APPS; i++) begin
-      m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::create($sformatf("m_edn_push_seq[%0d]", i));
-      cs_item           = csrng_item::type_id::create("cs_item");
+      m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::create
+           ($sformatf("m_edn_push_seq[%0d]", i));
+      cs_item = csrng_item::type_id::create("cs_item");
     end
 
     // Generate queues of csrng commands
-    // TODO: Create function for random generation of sequence of commands
     for (int i = 0; i < NUM_HW_APPS; i++) begin
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                     cs_item.acmd == csrng_pkg::INS;
-                                    )
-      `downcast(cs_item_clone, cs_item.clone());
-      cs_item_q[i].push_back(cs_item_clone);
-
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                     cs_item.acmd == csrng_pkg::GEN;
-                                    )
-      `downcast(cs_item_clone, cs_item.clone());
-      cs_item_q[i].push_back(cs_item_clone);
-
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                     cs_item.acmd  == csrng_pkg::RES;
-                                    )
-      `downcast(cs_item_clone, cs_item.clone());
-      cs_item_q[i].push_back(cs_item_clone);
-
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                     cs_item.acmd  == csrng_pkg::GEN;
-				    )
-      `downcast(cs_item_clone, cs_item.clone());
-      cs_item_q[i].push_back(cs_item_clone);
-
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                     cs_item.acmd  == csrng_pkg::UPD;
-				    )
-      `downcast(cs_item_clone, cs_item.clone());
-      cs_item_q[i].push_back(cs_item_clone);
-
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                     cs_item.acmd  == csrng_pkg::GEN;
-                                    )
-      `downcast(cs_item_clone, cs_item.clone());
-      cs_item_q[i].push_back(cs_item_clone);
-
-      // Randomize whether to add an uninstantiate command so internal state is non-zero
-      `DV_CHECK_STD_RANDOMIZE_FATAL(uninstantiate)
-
-      if (uninstantiate) begin
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                       cs_item.acmd  == csrng_pkg::UNI;
-                                      )
-        `downcast(cs_item_clone, cs_item.clone());
-        cs_item_q[i].push_back(cs_item_clone);
-      end
+      create_cmds(i);
     end
 
     // Print cs_items
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       foreach (cs_item_q[i][j]) begin
         cmds_gen += 1;
-        `uvm_info(`gfn, $sformatf("cs_item_q[%0d][%0d]: %s", i, j, cs_item_q[i][j].convert2string()), UVM_DEBUG)
+        `uvm_info(`gfn, $sformatf("cs_item_q[%0d][%0d]: %s", i, j, cs_item_q[i][j].convert2string()),
+             UVM_DEBUG)
       end
     end
 
