@@ -37,6 +37,10 @@ static void set_config_register(const dif_entropy_src_t *entropy_src,
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD,
                                rng_bit_sel);
 
+  uint32_t sw_rd_en = config->route_to_firmware ? 0xa : 0x5;
+  reg = bitfield_field32_write(
+      reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD, sw_rd_en);
+
   // Enable configuration
   uint32_t enable_val = config->mode != kDifEntropySrcModeDisabled ? 0xa : 0x5;
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_ENABLE_FIELD, enable_val);
@@ -57,7 +61,6 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
   if (entropy_src == NULL) {
     return kDifBadArg;
   }
-
 
   // Conditioning bypass is hardcoded to enabled. Bypass is not intended as
   // a regular mode of operation.

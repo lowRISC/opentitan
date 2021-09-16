@@ -231,6 +231,7 @@ typedef struct dif_entropy_src_config {
    * Configuration parameters for health tests.
    */
   dif_entropy_src_test_config_t test_config;
+
 } dif_entropy_src_config_t;
 
 /**

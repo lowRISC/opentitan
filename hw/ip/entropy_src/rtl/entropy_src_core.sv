@@ -390,7 +390,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_entropy_data;
   logic                    unused_fw_ov_rd_data;
 
-
   // flops
   logic [RngBusWidth-1:0] ht_esbus_dly_q, ht_esbus_dly_d;
   logic        ht_esbus_vld_dly_q, ht_esbus_vld_dly_d;
