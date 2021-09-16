@@ -2,13 +2,27 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager interface to kmac
+// Primitive hardened counter module
 //
+// This module implements two styles of hardened counting
+// 1. Duplicate count
+//    There are two copies of the relevant counter and they are constantly compared.
+// 2. Cross count
+//    There is an up count and a down count, and the combined value must always
+//    combine to the same value
+//
+// This counter supports a generic clr / set / en interface.
+// When clr_i is set, the counter clears to 0
+// When set_i is set, the down count (if enabled) will set to the max value
+// When neither of the above is set, increment the up count(s) or decrement the down count.
+//
+// Note there are many other flavor of functions that can be added, but this primitive
+// module initially favors the usage inside keymgr and flash_ctrl.
 
-module keymgr_cnt import keymgr_pkg::*; #(
+module prim_count import prim_count_pkg::*; #(
   parameter int Width = 2,
   parameter bit OutSelDnCnt = 1, // 0 selects up count
-  parameter keymgr_cnt_style_e CntStyle = CrossCnt
+  parameter prim_count_style_e CntStyle = CrossCnt
 ) (
   input clk_i,
   input rst_ni,
@@ -21,11 +35,6 @@ module keymgr_cnt import keymgr_pkg::*; #(
 );
 
   localparam int CntCopies = (CntStyle == DupCnt) ? 2 : 1;
-
-  typedef enum logic [1:0] {
-    CmpInvalid = 2'b01,
-    CmpValid   = 2'b10
-  } cmp_valid_e;
 
   cmp_valid_e cmp_valid;
   logic [CntCopies-1:0][Width-1:0] up_cnt_d, up_cnt_d_buf;
@@ -108,5 +117,7 @@ module keymgr_cnt import keymgr_pkg::*; #(
   assign err_o = (cmp_valid == CmpValid)   ?  err :
                  (cmp_valid == CmpInvalid) ?  '0  : 1'b1;
 
+  // Clear and set should not be seen at the same time
+  `ASSERT(SimulClrSet_A, clr_i |-> !set_i)
 
 endmodule // keymgr_cnt
