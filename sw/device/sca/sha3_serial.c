@@ -35,6 +35,23 @@ enum {
    * Message length in bytes.
    */
   kMessageLength = 16,
+  /**
+   * Digest length in 32-bit words.
+   */
+  kDigestLength = 8,
+  /**
+   * The offset of the second share within the output state register.
+   */
+  kDifKmacStateShareOffset = 0x100,
+  /**
+   * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
+   * noise during SHA3 operations. Caution: This number should be chosen to
+   * provide enough time. Otherwise, Ibex might wake up while SHA3 is still busy
+   * and disturb the capture. Currently, we use a start trigger delay of 40
+   * clock cycles and the scope captures 200 clock cycles at kClockFreqCpuHz
+   * (2000 samples).
+   */
+  kIbexSha3SleepCycles = 800,
 };
 
 /**
@@ -73,18 +90,284 @@ static void kmac_reset(void) {
 }
 
 /**
- * Issues a process command to KMAC and waits until absorb step is complete.
+ * Report whether the hardware is currently idle.
+ *
+ * If the hardware is not idle then the `CFG` register is locked.
+ *
+ * @param params Hardware parameters.
+ * @returns Whether the hardware is currently idle or not.
  */
-static void kmac_absorb_end(void) {
-  // TODO(#7841, #7842): Remove when we finalize the way we capture traces.
-  uint32_t reg = 0;
-  reg = bitfield_field32_write(reg, KMAC_CMD_CMD_FIELD,
-                               KMAC_CMD_CMD_VALUE_PROCESS);
-  mmio_region_write32(kmac.params.base_addr, KMAC_CMD_REG_OFFSET, reg);
+static bool is_state_idle(dif_kmac_params_t params) {
+  uint32_t reg = mmio_region_read32(params.base_addr, KMAC_STATUS_REG_OFFSET);
+  return bitfield_bit32_read(reg, KMAC_STATUS_SHA3_IDLE_BIT);
+}
 
+/**
+ * Calculate the rate (r) in bits from the given security level.
+ *
+ * @param security_level Security level in bits.
+ * @returns Rate in bits.
+ */
+static uint32_t calculate_rate_bits(uint32_t security_level) {
+  // Formula for the rate in bits is:
+  //
+  //   r = 1600 - c
+  //
+  // Where c is the capacity (the security level in bits multiplied by two).
+  return 1600 - 2 * security_level;
+}
+
+/**
+ * Starts KMAC message without sending START command.
+ *
+ * Based on dif_kmac_mode_kmac_start().
+ *
+ * Unlike dif_kmac_mode_kmac_start(), this function doesn't provide the START
+ * command to the hardware, i.e., just the key is provided and the initial setup
+ * for starting a new message is performed.
+ */
+static dif_kmac_result_t kmac_msg_start(
+    dif_kmac_mode_kmac_t mode, size_t l, const dif_kmac_key_t *k,
+    const dif_kmac_customization_string_t *s) {
+  if (k == NULL || l > kDifKmacMaxOutputLenWords) {
+    return kDifKmacBadArg;
+  }
+
+  // Set key strength and calculate rate (r).
+  uint32_t kstrength;
+  switch (mode) {
+    case kDifKmacModeCshakeLen128:
+      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L128;
+      kmac.r = calculate_rate_bits(128) / 32;
+      break;
+    case kDifKmacModeCshakeLen256:
+      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L256;
+      kmac.r = calculate_rate_bits(256) / 32;
+      break;
+    default:
+      return kDifKmacBadArg;
+  }
+  kmac.offset = 0;
+  kmac.d = l;
+  kmac.append_d = true;
+
+  uint32_t key_len;
+  switch (k->length) {
+    case kDifKmacKeyLen128:
+      key_len = KMAC_KEY_LEN_LEN_VALUE_KEY128;
+      break;
+    case kDifKmacKeyLen192:
+      key_len = KMAC_KEY_LEN_LEN_VALUE_KEY192;
+      break;
+    case kDifKmacKeyLen256:
+      key_len = KMAC_KEY_LEN_LEN_VALUE_KEY256;
+      break;
+    case kDifKmacKeyLen384:
+      key_len = KMAC_KEY_LEN_LEN_VALUE_KEY384;
+      break;
+    case kDifKmacKeyLen512:
+      key_len = KMAC_KEY_LEN_LEN_VALUE_KEY512;
+      break;
+    default:
+      return kDifKmacBadArg;
+  }
+
+  // Hardware must be idle to start an operation.
+  if (!is_state_idle(kmac.params)) {
+    return kDifKmacError;
+  }
+
+  // Set key length and shares.
+  mmio_region_write32(kmac.params.base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
+  for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {
+    mmio_region_write32(kmac.params.base_addr,
+                        KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t),
+                        k->share0[i]);
+    mmio_region_write32(kmac.params.base_addr,
+                        KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t),
+                        k->share1[i]);
+  }
+
+  // Configure cSHAKE mode with the given strength and enable KMAC mode.
+  uint32_t cfg_reg =
+      mmio_region_read32(kmac.params.base_addr, KMAC_CFG_REG_OFFSET);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_KMAC_EN_BIT, true);
+  cfg_reg =
+      bitfield_field32_write(cfg_reg, KMAC_CFG_KSTRENGTH_FIELD, kstrength);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
+                                   KMAC_CFG_MODE_VALUE_CSHAKE);
+  mmio_region_write32(kmac.params.base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+
+  // Initialize prefix registers with function name ("KMAC") and empty
+  // customization string. The empty customization string will be overwritten if
+  // a non-empty string is provided.
+  uint32_t prefix_regs[11] = {
+      0x4D4B2001,  //  1  32  'K' 'M'
+      0x00014341,  // 'A' 'C'  1   0
+  };
+
+  // Encoded customization string (s) must be at least 3 bytes long if it is not
+  // the empty string.
+  if (s != NULL && s->length >= 3) {
+    // First two bytes overwrite the pre-encoded empty customization string.
+    prefix_regs[1] &= 0xFFFF;
+    prefix_regs[1] |= (uint32_t)((uint8_t)s->buffer[0]) << 16;
+    prefix_regs[1] |= (uint32_t)((uint8_t)s->buffer[1]) << 24;
+    memcpy(&prefix_regs[2], &s->buffer[2], s->length - 2);
+  }
+
+  // Write PREFIX register values.
+  const mmio_region_t base = kmac.params.base_addr;
+  mmio_region_write32(base, KMAC_PREFIX_0_REG_OFFSET, prefix_regs[0]);
+  mmio_region_write32(base, KMAC_PREFIX_1_REG_OFFSET, prefix_regs[1]);
+  mmio_region_write32(base, KMAC_PREFIX_2_REG_OFFSET, prefix_regs[2]);
+  mmio_region_write32(base, KMAC_PREFIX_3_REG_OFFSET, prefix_regs[3]);
+  mmio_region_write32(base, KMAC_PREFIX_4_REG_OFFSET, prefix_regs[4]);
+  mmio_region_write32(base, KMAC_PREFIX_5_REG_OFFSET, prefix_regs[5]);
+  mmio_region_write32(base, KMAC_PREFIX_6_REG_OFFSET, prefix_regs[6]);
+  mmio_region_write32(base, KMAC_PREFIX_7_REG_OFFSET, prefix_regs[7]);
+  mmio_region_write32(base, KMAC_PREFIX_8_REG_OFFSET, prefix_regs[8]);
+  mmio_region_write32(base, KMAC_PREFIX_9_REG_OFFSET, prefix_regs[9]);
+  mmio_region_write32(base, KMAC_PREFIX_10_REG_OFFSET, prefix_regs[10]);
+
+  return kDifKmacOk;
+}
+
+/**
+ * Writes the message including its length to the message FIFO.
+ *
+ * Based on dif_kmac_absorb().
+ *
+ * Unlike dif_kmac_absorb(), this function 1) doesn't require the hardware
+ * to enter the 'absorb' state before writing the message into the message
+ * FIFO, and 2) appends the output length afterwards (normally done as
+ * part of dif_kmac_squeeze()).
+ */
+static dif_kmac_result_t kmac_msg_write(const void *msg, size_t msg_len,
+                                        size_t *processed) {
+  // Set the number of bytes processed to 0.
+  if (processed != NULL) {
+    *processed = 0;
+  }
+
+  if (msg == NULL && msg_len != 0) {
+    return kDifKmacBadArg;
+  }
+
+  // Check that an operation has been started.
+  if (kmac.r == 0) {
+    return kDifKmacError;
+  }
+
+  // Copy the message one byte at a time.
+  // This could be sped up copying a word at a time but be careful
+  // about message endianness (e.g. only copy a word at a time when in
+  // little-endian mode).
+  for (size_t i = 0; i < msg_len; ++i) {
+    mmio_region_write8(kmac.params.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                       ((const uint8_t *)msg)[i]);
+  }
+
+  if (processed != NULL) {
+    *processed = msg_len;
+  }
+
+  // The KMAC operation requires that the output length (d) in bits be right
+  // encoded and appended to the end of the message.
+  // Note: kDifKmacMaxOutputLenWords could be reduced to make this code
+  // simpler. For example, a maximum of `(UINT16_MAX - 32) / 32` (just under
+  // 8 KiB) would mean that d is guaranteed to be less than 0xFFFF.
+  uint32_t d = kmac.d * 32;
+  int out_len = 1 + (d > 0xFF) + (d > 0xFFFF) + (d > 0xFFFFFF);
+  int shift = (out_len - 1) * 8;
+  while (shift >= 8) {
+    mmio_region_write8(kmac.params.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                       (uint8_t)(d >> shift));
+    shift -= 8;
+  }
+  mmio_region_write8(kmac.params.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                     (uint8_t)d);
+  mmio_region_write8(kmac.params.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                     (uint8_t)out_len);
+  kmac.squeezing = true;
+
+  return kDifKmacOk;
+}
+
+/**
+ * Starts actual processing of a previously provided message.
+ *
+ * This function issues a START command directly followed by a PROCESS command.
+ */
+static void kmac_msg_proc(void) {
+  // Issue START command.
+  uint32_t cmd_reg =
+      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
+  mmio_region_write32(kmac.params.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Issue PROCESS command.
+  cmd_reg =
+      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_PROCESS);
+  mmio_region_write32(kmac.params.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+}
+
+/**
+ * Waits until the hardware enters the 'squeeze' state.
+ *
+ * If the hardware enters the `squeeze` state, this means the output state is
+ * valid and can be read by software.
+ */
+static void kmac_msg_done(void) {
+  // TODO(#7841, #7842): Remove when we finalize the way we capture traces.
+  uint32_t reg;
   do {
     reg = mmio_region_read32(kmac.params.base_addr, KMAC_STATUS_REG_OFFSET);
   } while (!bitfield_bit32_read(reg, KMAC_STATUS_SHA3_SQUEEZE_BIT));
+}
+
+/**
+ * Reads the digest from the hardware.
+ *
+ * Based on dif_kmac_squeeze().
+ *
+ * Unlike dif_kmac_squeeze(), this function 1) doesn't wait until the hardware
+ * enters the 'squeeze' state, 2) doesn't append the output length, 3) doesn't
+ * support the generation of more state.
+ */
+static dif_kmac_result_t kmac_get_digest(uint32_t *out, size_t len) {
+  if (out == NULL && len != 0) {
+    return kDifKmacBadArg;
+  }
+
+  while (len > 0) {
+    size_t n = len;
+    size_t remaining = kmac.r - kmac.offset;
+    if (kmac.d != 0 && kmac.d < kmac.r) {
+      remaining = kmac.d - kmac.offset;
+    }
+    if (n > remaining) {
+      n = remaining;
+    }
+    if (n == 0) {
+      // Normally, the hardware would now have to generate more state. But
+      // since at this point, the power measurement is already stopped, we don't
+      // support that here.
+      return kDifKmacError;
+    }
+
+    uint32_t offset = KMAC_STATE_REG_OFFSET + kmac.offset * sizeof(uint32_t);
+    for (size_t i = 0; i < n; ++i) {
+      // Read both shares from state register and combine using XOR.
+      uint32_t share0 = mmio_region_read32(kmac.params.base_addr, offset);
+      uint32_t share1 = mmio_region_read32(kmac.params.base_addr,
+                                           offset + kDifKmacStateShareOffset);
+      *out++ = share0 ^ share1;
+      offset += sizeof(uint32_t);
+    }
+    kmac.offset += n;
+    len -= n;
+  }
+  return kDifKmacOk;
 }
 
 /**
@@ -130,9 +413,31 @@ static void sha3_serial_set_key(const uint8_t *key, size_t key_len) {
 }
 
 /**
+ * Absorbs a message using KMAC128 without a customization string.
+ *
+ * @param msg Message.
+ * @param msg_len Message length.
+ */
+static void sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
+  // Start a new message and write data to message FIFO.
+  SS_CHECK(kmac_msg_start(kDifKmacModeKmacLen128, kDigestLength, &kmac_key,
+                          NULL) == kDifKmacOk);
+  SS_CHECK(kmac_msg_write(msg, msg_len, NULL) == kDifKmacOk);
+
+  // Start the SHA3 processing (this triggers the capture) and go to sleep.
+  // Using the SecCmdDelay hardware parameter, the KMAC unit is
+  // configured to start operation 40 cycles after receiving the START and PROC
+  // commands. This allows Ibex to go to sleep in order to not disturb the
+  // capture.
+  sca_call_and_sleep(kmac_msg_proc, kIbexSha3SleepCycles);
+}
+
+/**
  * Simple serial 'p' (absorb) command handler.
  *
- * Absorbs the given message using KMAC128 without a customization string.
+ * Absorbs the given message using KMAC128 without a customization string,
+ * and sends the digest over UART. This function also handles the trigger
+ * signal.
  *
  * @param msg Message.
  * @param msg_len Message length.
@@ -140,18 +445,18 @@ static void sha3_serial_set_key(const uint8_t *key, size_t key_len) {
 static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
   SS_CHECK(msg_len == kMessageLength);
 
-  SS_CHECK(dif_kmac_mode_kmac_start(&kmac, kDifKmacModeKmacLen128, 0, &kmac_key,
-                                    NULL) == kDifKmacOk);
-
-  // TODO(#7841): Consider delaying the absorb step until triggered manually to
-  // be able to use `sca_call_and_sleep()`.
+  // Ungate the capture trigger signal and then start the operation.
   sca_set_trigger_high();
-  SS_CHECK(dif_kmac_absorb(&kmac, msg, msg_len, NULL) == kDifKmacOk);
-  // Note: Performing the squeeze step after this call using HW directly would
-  // produce incorrect results. See `dif_kmac_mode_kmac_start()` and
-  // `dif_kmac_squeeze()`.
-  kmac_absorb_end();
+  sha3_serial_absorb(msg, msg_len);
   sca_set_trigger_low();
+
+  // Check KMAC has finsihed processing the message.
+  kmac_msg_done();
+
+  // Read the digest and send it to the host for verification.
+  uint32_t out[kDigestLength];
+  SS_CHECK(kmac_get_digest(out, kDigestLength) == kDifKmacOk);
+  simple_serial_send_packet('r', (uint8_t *)out, kDigestLength * 4);
 
   // Reset before the next absorb since KMAC must be idle before starting
   // another absorb.
