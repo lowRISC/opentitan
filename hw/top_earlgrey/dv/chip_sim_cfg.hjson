@@ -277,6 +277,12 @@
       en_run_modes: ["stub_cpu_mode"]
       reseed: 20
     }
+    {
+      name: chip_plic_all_irqs
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/plic_all_irqs_test:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
   ]
 
   // List of regressions.

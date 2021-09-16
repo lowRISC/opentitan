@@ -4,14 +4,15 @@
 """This contains a class which is used to help generate `top_{name}.h` and
 `top_{name}.h`.
 """
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from typing import Dict, List, Optional, Tuple
 
 from mako.template import Template
-
-from .lib import get_base_and_size, Name
-
 from reggen.ip_block import IpBlock
+
+from .lib import Name, get_base_and_size
+
+C_FILE_EXTENSIONS = (".c", ".h", ".cc", ".inc")
 
 
 class MemoryRegion(object):
@@ -129,6 +130,10 @@ class TopGenC:
 
         '''
         ret = []  # type: List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]
+        # TODO: This method is invoked in templates, as well as in the extended
+        # class TopGenCTest. We could refactor and optimize the implementation
+        # a bit.
+        self.device_regions = defaultdict(dict)
         for inst in self.top['module']:
             block = self._name_to_block[inst['type']]
             for if_name, rb in block.reg_blocks.items():
@@ -142,6 +147,7 @@ class TopGenC:
                                                inst, if_name)
 
                 region = MemoryRegion(name, base, size)
+                self.device_regions[inst['name']].update({if_name: region})
                 ret.append((full_if, region))
 
         return ret
@@ -217,6 +223,8 @@ class TopGenC:
 
         sources.add_last_constant("Final PLIC peripheral")
 
+        # Maintain a list of instance-specific IRQs by instance name.
+        self.device_irqs = defaultdict(list)
         for intr in self.top["interrupt"]:
             # Some interrupts are multiple bits wide. Here we deal with that by
             # adding a bit-index suffix
@@ -228,11 +236,14 @@ class TopGenC:
                                                          intr["name"], i))
                     source_name = source_name_map[intr["module_name"]]
                     plic_mapping.add_entry(irq_id, source_name)
+                    self.device_irqs[intr["module_name"]].append(intr["name"] +
+                                                                 str(i))
             else:
                 name = Name.from_snake_case(intr["name"])
                 irq_id = interrupts.add_constant(name, docstring=intr["name"])
                 source_name = source_name_map[intr["module_name"]]
                 plic_mapping.add_entry(irq_id, source_name)
+                self.device_irqs[intr["module_name"]].append(intr["name"])
 
         interrupts.add_last_constant("The Last Valid Interrupt ID.")
 
