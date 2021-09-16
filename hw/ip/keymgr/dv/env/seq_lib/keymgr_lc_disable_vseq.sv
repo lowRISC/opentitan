@@ -7,6 +7,12 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
   `uvm_object_utils(keymgr_lc_disable_vseq)
   `uvm_object_new
 
+  virtual task op_before_enable_keymgr();
+    `uvm_info(`gfn, "Dummy operations before LC enables keymgr", UVM_MEDIUM)
+    keymgr_operations();
+    `uvm_info(`gfn, "Dummy operations are done", UVM_MEDIUM)
+  endtask
+
   virtual task body();
     bit regular_vseq_done;
 
