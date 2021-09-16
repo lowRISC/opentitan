@@ -19,7 +19,7 @@ module prim_esc_tb;
   //////////////////////////////////////////////////////
 
   localparam time ClkPeriod  = 10000;
-  localparam int  PING_CNT_DW = 0;
+  localparam int  PING_CNT_DW = 1;
   localparam int  TIMEOUT_CYCLES = 1 << (PING_CNT_DW + 6);
 
   //////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ module prim_esc_tb;
 
   prim_esc_receiver #(
     .N_ESC_SEV(4),
-    // Set to 0 to avoid long wait period to check ping request reverse timeout.
+    // Set to 1 to avoid long wait period to check ping request reverse timeout.
     .PING_CNT_DW(PING_CNT_DW)
   ) i_esc_receiver (
     .clk_i(clk),
