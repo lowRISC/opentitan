@@ -635,7 +635,7 @@
             high value.
             '''
       milestone: V2
-      tests: [""]
+      tests: ["chip_plic_all_irqs"]
     }
     {
       name: chip_sw_plic_sw_irq

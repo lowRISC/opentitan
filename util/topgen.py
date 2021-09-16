@@ -7,6 +7,7 @@ r"""Top Module Generator
 import argparse
 import logging as log
 import random
+import shutil
 import subprocess
 import sys
 from collections import OrderedDict
@@ -28,7 +29,8 @@ from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, search_ips, validate_top
-from topgen.c import TopGenC
+from topgen.c import C_FILE_EXTENSIONS
+from topgen.c_test import TopGenCTest
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
 from topgen.top import Top
@@ -46,9 +48,24 @@ genhdr = '''// Copyright lowRISC contributors.
 // SPDX-License-Identifier: Apache-2.0
 ''' + warnhdr
 
+GENCMD = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson\n"
+          "// -o hw/top_{topname}")
+
 SRCTREE_TOP = Path(__file__).parent.parent.resolve()
 
 TOPGEN_TEMPLATE_PATH = Path(__file__).parent / 'topgen/templates'
+
+
+def clang_format(outfile: Path) -> None:
+    """Formats auto-generated C sources with clang-format."""
+    assert shutil.which("clang-format"), log.error(
+        "clang-format is not installed!")
+
+    try:
+        subprocess.check_call(["clang-format", "-i", outfile])
+    except subprocess.CalledProcessError:
+        log.error(f"Failed to format {outfile} with clang-format.")
+        sys.exit(1)
 
 
 def generate_top(top, name_to_block, tpl_filename, **kwargs):
@@ -1098,7 +1115,7 @@ def main():
 
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.
-        c_helper = TopGenC(completecfg, name_to_block)
+        c_helper = TopGenCTest(completecfg, name_to_block)
 
         # 'toplevel_pkg.sv.tpl' -> 'rtl/autogen/top_{topname}_pkg.sv'
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",
@@ -1204,6 +1221,17 @@ def main():
 
         # generate documentation for toplevel
         gen_top_docs(completecfg, c_helper, out_path)
+
+        # Auto-generate tests in 'sw/device/tests/autogen` area.
+        gencmd = warnhdr + GENCMD.format(topname=topname)
+        for fname in ["plic_all_irqs_test.c", "meson.build"]:
+            outfile = SRCTREE_TOP / 'sw/device/tests/autogen' / fname
+            render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
+                            outfile,
+                            helper=c_helper,
+                            gencmd=gencmd)
+            if str(outfile).endswith(C_FILE_EXTENSIONS):
+                clang_format(outfile)
 
 
 if __name__ == "__main__":
