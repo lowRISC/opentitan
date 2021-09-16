@@ -580,7 +580,7 @@ module sysrst_ctrl_reg_top (
 
   prim_reg_cdc #(
     .DataWidth(16),
-    .ResetVal(16'h2),
+    .ResetVal(16'h82),
     .BitMask(16'hffff)
   ) u_pin_allowed_ctl_cdc (
     .clk_src_i    (clk_i),
@@ -629,7 +629,7 @@ module sysrst_ctrl_reg_top (
 
   prim_reg_cdc #(
     .DataWidth(8),
-    .ResetVal(8'h2),
+    .ResetVal(8'h82),
     .BitMask(8'hff)
   ) u_pin_out_ctl_cdc (
     .clk_src_i    (clk_i),
@@ -2237,7 +2237,7 @@ module sysrst_ctrl_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h1)
   ) u_pin_allowed_ctl_flash_wp_l_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2639,7 +2639,7 @@ module sysrst_ctrl_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h1)
   ) u_pin_out_ctl_flash_wp_l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),

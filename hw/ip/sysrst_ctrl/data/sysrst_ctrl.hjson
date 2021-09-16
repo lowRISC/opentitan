@@ -323,7 +323,7 @@
         { bits:   "7",
           name:   "flash_wp_l_0",
           desc:   "1: not allowed; 1: allowed",
-          resval: "0",
+          resval: "1",
         }
         { bits:   "8",
           name:   "bat_disable_1",
@@ -411,7 +411,7 @@
         { bits:   "7",
           name:   "flash_wp_l",
           desc:   "1: disable override; 1: enable override",
-          resval: "0",
+          resval: "1",
         }
       ]
     }
