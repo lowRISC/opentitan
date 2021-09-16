@@ -34,8 +34,7 @@ static void setup_entropy_src(void) {
       // this field needs to manually toggled by software.  Disable for now
       .reset_health_test_registers = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .route_to_firmware = false
-  };
+      .route_to_firmware = false};
   CHECK(dif_entropy_src_configure(&entropy, config) == kDifEntropySrcOk);
 }
 

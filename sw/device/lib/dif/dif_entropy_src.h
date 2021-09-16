@@ -115,8 +115,7 @@ typedef enum dif_entropy_src_mode {
    */
   kDifEntropySrcModePtrng = 1,
 
-} dif_entropy_mode_t;
-
+} dif_entropy_src_mode_t;
 
 /**
  * A single-bit RNG mode, where only one bit is sampled.
@@ -261,7 +260,7 @@ typedef struct dif_entropy_src_config {
    */
   dif_entropy_src_test_config_t test_config;
 
-} dif_entropy_config_t;
+} dif_entropy_src_config_t;
 
 /**
  * A handle to an entropy source.

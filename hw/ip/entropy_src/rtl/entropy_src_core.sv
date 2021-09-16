@@ -391,7 +391,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_fw_ov_rd_data;
   // TODO: remove below after connecting up
   logic                    unused_es_enable_pfa;
-  logic                    unused_lfsr_enable_pfa;
   logic                    unused_entropy_data_reg_enable_pfa;
   logic                    unused_fw_ov_mode_pfa;
   logic                    unused_fw_ov_entropy_insert_pfa;
@@ -481,7 +480,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_enable_early = es_enable_pfe;
   assign es_enable = es_enable_q;
   assign es_enable_rng = es_enable_q;
-  assign load_seed = !es_enable;
   assign observe_fifo_thresh = reg2hw.observe_fifo_thresh.q;
 
   assign fw_ov_mode_pfe = (es_enb_e'(reg2hw.fw_ov_control.fw_ov_mode.q) == ES_FIELD_ON);

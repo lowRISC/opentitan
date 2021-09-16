@@ -36,10 +36,9 @@ static void set_config_register(const dif_entropy_src_t *entropy,
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD,
                                rng_bit_sel);
 
-  // Configure lfsr
-  uint32_t lfsr_sel = config->mode == kDifEntropySrcModeLfsr ? 0xa : 0x5;
-  reg =
-      bitfield_field32_write(reg, ENTROPY_SRC_CONF_LFSR_ENABLE_FIELD, lfsr_sel);
+  uint32_t sw_rd_en = config->route_to_firmware ? 0xa : 0x5;
+  reg = bitfield_field32_write(
+      reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD, sw_rd_en);
 
   // Enable configuration
   uint32_t enable_val = config->mode != kDifEntropySrcModeDisabled ? 0xa : 0x5;
@@ -62,17 +61,6 @@ dif_entropy_src_result_t dif_entropy_src_configure(
   if (entropy == NULL) {
     return kDifEntropySrcBadArg;
   }
-
-  if (config.lfsr_seed > ENTROPY_SRC_SEED_LFSR_SEED_MASK) {
-    return kDifEntropySrcBadArg;
-  }
-
-  uint32_t seed = config.mode == kDifEntropySrcModeLfsr ? config.lfsr_seed : 0;
-  mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_SEED_REG_OFFSET,
-                      seed);
-
-  mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_RATE_REG_OFFSET,
-                      (uint32_t)config.sample_rate);
 
   // Conditioning bypass is hardcoded to enabled. Bypass is not intended as
   // a regular mode of operation.

@@ -16,8 +16,8 @@ const test_config_t kTestConfig;
 const size_t kEntropyDataNumWords = 12;
 
 const uint32_t kExpectedEntropyData[] = {
-    0xa8f49c0d, 0x148ca619, 0xd1818b93, 0x25f2397d, 0x32955611, 0x0aca4b8e,
-    0xc0956655, 0x80735507, 0x4cf2b852, 0x97e50e09, 0x39649525, 0x6a2795f0,
+    0xdaf90306, 0x0466d674, 0x9691df54, 0xd2e3c93f, 0xdcbc993e, 0x64bfd173,
+    0xaba04e99, 0xf8ae1105, 0xd01dc17a, 0x608c5480, 0x373c5dcc, 0xc4e6cd55,
 };
 
 bool test_main() {
@@ -30,8 +30,8 @@ bool test_main() {
   // Disable entropy for test purpose, as it has been turned on by ROM
   CHECK(dif_entropy_src_disable(&entropy) == kDifEntropySrcOk);
 
-  const dif_entropy_config_t config = {
-      .mode = kDifEntropyModePtrng,
+  const dif_entropy_src_config_t config = {
+      .mode = kDifEntropySrcModePtrng,
       .tests =
           {
               [kDifEntropySrcTestRepCount] = false,
