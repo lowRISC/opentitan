@@ -38,7 +38,7 @@ class ConfigTest : public DifEntropySrcTest {
       .reset_health_test_registers = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .route_to_firmware = false,
-      .fips_mode = false,1
+      .fips_mode = false,
       .test_config = {0},
   };
 };
@@ -46,7 +46,6 @@ class ConfigTest : public DifEntropySrcTest {
 TEST_F(ConfigTest, NullArgs) {
   EXPECT_EQ(dif_entropy_src_configure(nullptr, {}), kDifBadArg);
 }
-
 
 struct ConfigParams {
   dif_entropy_src_mode_t mode;
@@ -76,15 +75,13 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
                       (uint32_t)(test_param.route_to_firmware ? 0xa : 0x5)},
                      {ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_OFFSET, 0x5},
                  });
-  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0);
+  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0x55);
 
   // Current dif does not perform a read modified write
   // EXPECT_READ32(ENTROPY_SRC_CONF_REG_OFFSET, 0);
 
   uint32_t rng_bit_enable = test_param.expected_rng_bit_en ? 0xa : 0x5;
-  // Current dif does not set these fields
-
-  // uint32_t route_to_fw = test_param.route_to_firmware ? 0xa : 0x5;
+  uint32_t route_to_fw = test_param.route_to_firmware ? 0xa : 0x5;
   uint32_t enable =
       test_param.expected_mode != kDifEntropySrcModeDisabled ? 0xa : 0x5;
   uint32_t reset_ht = test_param.reset_health_test_registers ? 0xa : 0x5;
@@ -95,8 +92,7 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
           {ENTROPY_SRC_CONF_RNG_BIT_ENABLE_OFFSET, rng_bit_enable},
           {ENTROPY_SRC_CONF_HEALTH_TEST_CLR_OFFSET, reset_ht},
           {ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_OFFSET, 0x5},
-          // Current dif doesn ot set these fields
-          //{ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET, route_to_fw},
+          {ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET, route_to_fw},
           {ENTROPY_SRC_CONF_ENABLE_OFFSET, enable},
       });
 
@@ -125,14 +121,14 @@ INSTANTIATE_TEST_SUITE_P(
                      kDifEntropySrcSingleBitModeDisabled, true, true, 2, false,
                      0, 4},
         // Test single_bit_mode
-        ConfigParams{kDifEntropySrcModePtrng, kDifEntropySrcSingleBitMode0, true,
-                     true, 2, true, 0, 4},
-        ConfigParams{kDifEntropySrcModePtrng, kDifEntropySrcSingleBitMode1, true,
-                     true, 2, true, 1, 4},
-        ConfigParams{kDifEntropySrcModePtrng, kDifEntropySrcSingleBitMode2, true,
-                     true, 2, true, 2, 4},
-        ConfigParams{kDifEntropySrcModePtrng, kDifEntropySrcSingleBitMode3, true,
-                     true, 2, true, 3, 4}));
+        ConfigParams{kDifEntropySrcModePtrng, kDifEntropySrcSingleBitMode0,
+                     true, true, 2, true, 0, 4},
+        ConfigParams{kDifEntropySrcModePtrng, kDifEntropySrcSingleBitMode1,
+                     true, true, 2, true, 1, 4},
+        ConfigParams{kDifEntropySrcModePtrng, kDifEntropySrcSingleBitMode2,
+                     true, true, 2, true, 2, 4},
+        ConfigParams{kDifEntropySrcModePtrng, kDifEntropySrcSingleBitMode3,
+                     true, true, 2, true, 3, 4}));
 
 class ReadTest : public DifEntropySrcTest {};
 

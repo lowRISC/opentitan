@@ -5,7 +5,7 @@ index acff1a477..1c8e29d86 100644
 @@ -81,19 +81,6 @@ _reset_start:
  _start:
    .globl _start
- 
+
 -  // Enable entropy complex - this is not the full enable
 -  li   a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
 -  li   t0, 0x55505a
@@ -58,7 +58,7 @@ index 5dc1286af..1e2dced96 100644
 @@ -198,18 +198,13 @@ int main(void) {
    sca_init(kScaTriggerSourceAes, kScaPeripheralAes);
    sca_get_uart(&uart1);
- 
+
 -  LOG_INFO("Running AES serial");
 -
 -  LOG_INFO("Initializing simple serial interface to capture board.");
@@ -66,10 +66,10 @@ index 5dc1286af..1e2dced96 100644
    simple_serial_register_handler('k', aes_serial_set_key);
    simple_serial_register_handler('p', aes_serial_single_encrypt);
    simple_serial_register_handler('b', aes_serial_batch_encrypt);
- 
+
 -  LOG_INFO("Initializing AES unit.");
    init_aes();
- 
+
 -  LOG_INFO("Starting simple serial packet handling.");
    while (true) {
      simple_serial_process_packet();
@@ -81,14 +81,14 @@ index 4a431b9ea..fcfcee1ab 100644
 @@ -56,7 +56,6 @@ enum {
    kRvTimerHart = kTopEarlgreyPlicTargetIbex0,
  };
- 
+
 -static dif_uart_t uart0;
  static dif_uart_t uart1;
  static dif_gpio_t gpio;
  static dif_rv_timer_t timer;
 @@ -75,13 +74,9 @@ static void sca_init_uart(void) {
    };
- 
+
    IGNORE_RESULT(dif_uart_init(
 -      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
 -  IGNORE_RESULT(dif_uart_configure(&uart0, uart_config));
@@ -100,7 +100,7 @@ index 4a431b9ea..fcfcee1ab 100644
    IGNORE_RESULT(dif_uart_configure(&uart1, uart_config));
 +  base_uart_stdout(&uart1);
  }
- 
+
  /**
 @@ -148,29 +143,10 @@ void handler_irq_timer(void) {
   * @param disable Set of peripherals to disable.
@@ -163,12 +163,12 @@ index 1a5fef16c..214e08151 100644
  #include "sw/device/lib/testing/check.h"
 -#include "sw/device/lib/testing/entropy_testutils.h"
  #include "sw/device/lib/testing/test_framework/test_main.h"
- 
+
  #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 @@ -66,9 +65,6 @@ bool test_main(void) {
- 
+
    LOG_INFO("Running AES test");
- 
+
 -  // First of all, we need to get the entropy complex up and running.
 -  entropy_testutils_boot_mode_init();
 -

@@ -19,7 +19,7 @@ static void setup_entropy_src(void) {
   CHECK_DIF_OK(dif_entropy_src_disable(&entropy_src));
 
   const dif_entropy_src_config_t config = {
-      .mode = kDifEntropySrcModeLfsr,
+      .mode = kDifEntropySrcModePtrng,
       .tests =
           {
               [kDifEntropySrcTestRepCount] = false,
@@ -33,8 +33,6 @@ static void setup_entropy_src(void) {
       .reset_health_test_registers = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .route_to_firmware = false,
-      .sample_rate = 2,
-      .lfsr_seed = 0,
   };
   CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, config));
 }
