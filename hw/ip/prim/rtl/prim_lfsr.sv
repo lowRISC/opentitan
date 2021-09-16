@@ -41,7 +41,7 @@ module prim_lfsr #(
   parameter logic [LfsrDw-1:0] CustomCoeffs = '0,
   // If StatePermEn is set to 1, the custom permutation specified via StatePerm is applied
   // to the state output, in order to break linear shifting patterns of the LFSR.
-  parameter bit                      StatePermEn = 1'b0,
+  parameter bit                StatePermEn  = 1'b0,
   parameter logic [LfsrDw-1:0][$clog2(LfsrDw)-1:0] StatePerm = '0,
   // Enable this for DV, disable this for long LFSRs in FPV
   parameter bit                MaxLenSVA    = 1'b1,
@@ -53,6 +53,7 @@ module prim_lfsr #(
   // Introduce non-linearity to lfsr output
   // Note, unlike StatePermEn, this feature is not "for free".
   // Please double check that this feature is indeed required.
+  // Also note that this feature is only available for 32bit and 64bit wide LFSRs.
   parameter bit                NonLinearOut = 1'b0
 ) (
   input                         clk_i,
@@ -374,28 +375,32 @@ module prim_lfsr #(
                   (lfsr_en_i)           ? next_lfsr_state :
                                           lfsr_q;
 
-  logic [StateOutDw-1:0] state;
-  if (StatePermEn) begin : gen_state_perm
-    for (genvar k = 0; k < StateOutDw; k++) begin : gen_perm_loop
-      assign state[k] = lfsr_q[StatePerm[k]];
-    end
-  end else begin : gen_no_state_perm
-    assign state  = lfsr_q[StateOutDw-1:0];
-  end
-
+  logic [LfsrDw-1:0] sbox_out;
   if (NonLinearOut) begin : gen_out_non_linear
-    localparam int NumBytes = StateOutDw / 8;
-    logic [NumBytes-1:0][7:0] sbox_in, sbox_out;
-    assign sbox_in = state;
-    assign state_o = sbox_out;
-    for (genvar b = 0; b < NumBytes; b++) begin : gen_sub
-      assign sbox_out[b] =
-        prim_cipher_pkg::sbox4_8bit(sbox_in[b], prim_cipher_pkg::PRINCE_SBOX4);
+    // The "aligned" permutation ensures that aligned bits do not go into the same SBox.
+    // It is different from the state permutation that can be specified via the StatePerm parameter.
+    logic [LfsrDw-1:0] aligned_perm;
+    if (LfsrDw == 32) begin : gen_32bit
+      assign aligned_perm = prim_cipher_pkg::perm_32bit(lfsr_q[31:0],
+                                                        prim_cipher_pkg::PRESENT_PERM32);
+      assign sbox_out = prim_cipher_pkg::sbox4_32bit(aligned_perm, prim_cipher_pkg::PRINCE_SBOX4);
+    end else if (LfsrDw == 64) begin : gen_64bit
+      assign aligned_perm = prim_cipher_pkg::perm_64bit(lfsr_q[63:0],
+                                                        prim_cipher_pkg::PRESENT_PERM64);
+      assign sbox_out = prim_cipher_pkg::sbox4_64bit(aligned_perm, prim_cipher_pkg::PRINCE_SBOX4);
     end
   end else begin : gen_out_passthru
-    assign state_o = state;
+    assign sbox_out = lfsr_q;
   end
 
+  // Random output permutation, defined at compile time
+  if (StatePermEn) begin : gen_state_perm
+    for (genvar k = 0; k < StateOutDw; k++) begin : gen_perm_loop
+      assign state_o[k] = sbox_out[StatePerm[k]];
+    end
+  end else begin : gen_no_state_perm
+    assign state_o = StateOutDw'(sbox_out);
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_reg
     if (!rst_ni) begin
@@ -485,7 +490,7 @@ module prim_lfsr #(
   // output check
   `ASSERT_KNOWN(OutputKnown_A, state_o)
   if (!StatePermEn) begin : gen_output_sva
-    `ASSERT(OutputCheck_A, state == StateOutDw'(lfsr_q))
+    `ASSERT(OutputCheck_A, state_o == StateOutDw'(lfsr_q))
   end
   // if no external input changes the lfsr state, a lockup must not occur (by design)
   //`ASSERT(NoLockups_A, (!entropy_i) && (!seed_en_i) |=> !lockup, clk_i, !rst_ni)
@@ -507,9 +512,9 @@ module prim_lfsr #(
     `ASSERT(LfsrLockupCheck_A, lfsr_en_i && lockup && !seed_en_i |=> !lockup)
   end
 
-  // If non-linear output requested, the output must be multiples of 8-bits
+  // If non-linear output requested, the output must be 32bit or 64bit
   if(NonLinearOut) begin : gen_byte_check_sva
-    `ASSERT_INIT(SboxByteAlign_A, StateOutDw % 8 == 0)
+    `ASSERT_INIT(SboxByteAlign_A, LfsrDw inside {32, 64})
   end
 
   // It does not make sense to enable non-linear output but not permutation.
