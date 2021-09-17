@@ -131,6 +131,8 @@ impl CommandDispatch for SpiReadId {
 /// Read data from a SPI EEPROM.
 #[derive(Debug, StructOpt)]
 pub struct SpiRead {
+    #[structopt(long, default_value = "flash", help = "ID of flash device (usually there is only one, HyperDebug may support flashing one of several).")]
+    flash: String,
     #[structopt(short, long, default_value = "0", help = "Start offset.")]
     start: u32,
     #[structopt(
@@ -166,20 +168,15 @@ impl SpiRead {
 impl CommandDispatch for SpiRead {
     fn run(
         &self,
-        context: &dyn Any,
+        _context: &dyn Any,
         env: &TargetEnvironment,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        let transport = env.transport.borrow_mut();
-        transport.capabilities().request(Capability::SPI).ok()?;
-        let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = transport.spi(context.bus)?;
-        let mut flash = SpiFlash::from_spi(&*spi)?;
-        flash.set_address_mode_auto(&*spi)?;
+        let flash_driver = &mut *opentitanlib::spiflash::flash::create_flash(&self.flash, &env)?;
 
         let mut buffer = vec![0u8; self.length];
         let progress = progress_bar(self.length as u64);
         let t0 = Instant::now();
-        flash.read_with_progress(&*spi, self.start, &mut buffer, |_, chunk| {
+        flash_driver.read_with_progress(self.start, &mut buffer, &|_, chunk| {
             progress.inc(chunk as u64);
         })?;
         progress.finish();
@@ -202,6 +199,8 @@ impl CommandDispatch for SpiRead {
 /// Erase sectors of a SPI EEPROM.
 #[derive(Debug, StructOpt)]
 pub struct SpiErase {
+    #[structopt(long, default_value = "flash", help = "ID of flash device (usually there is only one, HyperDebug may support flashing one of several).")]
+    flash: String,
     #[structopt(short, long, help = "Start offset.")]
     start: u32,
     #[structopt(short = "n", long, help = "Number of bytes to erase.")]
@@ -217,19 +216,14 @@ pub struct SpiEraseResponse {
 impl CommandDispatch for SpiErase {
     fn run(
         &self,
-        context: &dyn Any,
+        _context: &dyn Any,
         env: &TargetEnvironment,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        let transport = env.transport.borrow_mut();
-        transport.capabilities().request(Capability::SPI).ok()?;
-        let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = transport.spi(context.bus)?;
-        let mut flash = SpiFlash::from_spi(&*spi)?;
-        flash.set_address_mode_auto(&*spi)?;
+        let flash_driver = &mut *opentitanlib::spiflash::flash::create_flash(&self.flash, &env)?;
 
         let progress = progress_bar(self.length as u64);
         let t0 = Instant::now();
-        flash.erase_with_progress(&*spi, self.start, self.length, |_, chunk| {
+        flash_driver.erase_with_progress(self.start, self.length, &|_, chunk| {
             progress.inc(chunk as u64);
         })?;
         progress.finish();
@@ -245,6 +239,8 @@ impl CommandDispatch for SpiErase {
 /// Program data into a SPI EEPROM.
 #[derive(Debug, StructOpt)]
 pub struct SpiProgram {
+    #[structopt(long, default_value = "flash", help = "ID of flash device (usually there is only one, HyperDebug may support flashing one of several).")]
+    flash: String,
     #[structopt(short, long, default_value = "0", help = "Start offset.")]
     start: u32,
     #[structopt(name = "FILE")]
@@ -260,20 +256,15 @@ pub struct SpiProgramResponse {
 impl CommandDispatch for SpiProgram {
     fn run(
         &self,
-        context: &dyn Any,
+        _context: &dyn Any,
         env: &TargetEnvironment,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        let transport = env.transport.borrow_mut();
-        transport.capabilities().request(Capability::SPI).ok()?;
-        let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = transport.spi(context.bus)?;
-        let mut flash = SpiFlash::from_spi(&*spi)?;
-        flash.set_address_mode_auto(&*spi)?;
+        let flash_driver = &mut *opentitanlib::spiflash::flash::create_flash(&self.flash, &env)?;
 
         let buffer = fs::read(&self.filename)?;
         let progress = progress_bar(buffer.len() as u64);
         let t0 = Instant::now();
-        flash.program_with_progress(&*spi, self.start, &buffer, |_, chunk| {
+        flash_driver.program_with_progress(self.start, &buffer, &|_, chunk| {
             progress.inc(chunk as u64);
         })?;
         progress.finish();

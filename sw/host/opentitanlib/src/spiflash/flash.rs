@@ -2,11 +2,203 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::app::TargetEnvironment;
 use crate::io::spi::{Target, Transfer};
+use crate::io::gpio::Gpio;
 use crate::spiflash::sfdp::{BlockEraseSize, Sfdp, SupportedAddressModes};
 use anyhow::{ensure, Result};
+use std::rc::Rc;
 use std::convert::TryFrom;
 use thiserror::Error;
+
+/// Trait implemented by drivers of programmable flash chips.
+/// Implementations may use SPI or some other transport, and could
+/// allow various protocols.
+pub trait Flash {
+    /// Read into `buffer` from the SPI flash starting at `address`.
+    fn read(&self, address: u32, buffer: &mut [u8]) -> Result<()> {
+        self.read_with_progress(address, buffer, &|_, _| {})
+    }
+
+    /// Read into `buffer` from the SPI flash starting at `address`.
+    /// The `progress` callback will be invoked after each chunk of the read operation.
+    fn read_with_progress(
+        &self,
+        address: u32,
+        buffer: &mut [u8],
+        progress: &dyn Fn(u32, u32),
+    ) -> Result<()>;
+    
+    /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
+    /// The address and length must be sector aligned.
+    fn erase(&self, address: u32, length: u32) -> Result<()> {
+        self.erase_with_progress(address, length, &|_, _| {})
+    }
+
+    /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
+    /// The address and length must be sector aligned.
+    /// The `progress` callback will be invoked after each chunk of the erase operation.
+    fn erase_with_progress(
+        &self,
+        address: u32,
+        length: u32,
+        progress: &dyn Fn(u32, u32),
+    ) -> Result<()>;
+
+
+    /// Program a segment of the SPI flash starting at `address` with the contents of `buffer`.
+    /// The address and buffer length may be arbitrary.  This function will not
+    /// erase the segment first.
+    fn program(&self, address: u32, buffer: &[u8]) -> Result<()> {
+        self.program_with_progress(address, buffer, &|_, _| {})
+    }
+
+    /// Program a segment of the SPI flash starting at `address` with the contents of `buffer`.
+    /// The address and buffer length may be arbitrary.  This function will not
+    /// erase the segment first.
+    /// The `progress` callback will be invoked after each chunk of the program operation.
+    fn program_with_progress(
+        &self,
+        address: u32,
+        buffer: &[u8],
+        progress: &dyn Fn(u32, u32),
+    ) -> Result<()>;
+}
+
+pub fn create_flash(name: &String, env: &TargetEnvironment) -> Result<Box<dyn Flash>> {
+    let flash_conf: &crate::app::conf::FlashConfiguration = env.flash_map.get(name).ok_or(Error::InvalidFlash(name.clone()))?;
+    match &flash_conf.driver {
+        crate::app::conf::FlashDriver::SpiEeprom {
+            size: _,
+            erase_block_size: _,
+            erase_opcode: _,
+            program_block_size: _,
+            address_mode: _,
+            spi_bus: bus,
+        } => {
+            // TODO(jbk): Make use of configuration value above, if
+            // present, rather than auto-detection.
+            let mut result = SpiFlash::from_spi(env.transport.borrow_mut().spi(bus.parse()?)?)?;
+            result.set_address_mode_auto()?;
+            Ok(Box::new(result))
+        }
+        crate::app::conf::FlashDriver::SpiExternalDriver {
+            command,
+            spi_bus: bus,
+        } => Ok(Box::new(SubprocessSpiFlash::create(
+            env.transport.borrow_mut().spi(bus.parse()?)?,
+            env.transport.borrow_mut().gpio()?,
+            *env.pin_map.get(&flash_conf.reset_pin)
+                .ok_or(Error::InvalidPin(flash_conf.reset_pin.clone()))?,
+            *env.pin_map.get(&flash_conf.bootloader_pin)
+                .ok_or(Error::InvalidPin(flash_conf.bootloader_pin.clone()))?,
+            command.to_string()))),
+    }
+}
+
+/// An implementation of the Flash trait which relies on an external
+/// executable (declared in configuration files) for driving the
+/// particular SPI protocol.
+struct SubprocessSpiFlash {
+    spi: Rc<dyn Target>,
+    gpio: Rc<dyn Gpio>,
+    reset_pin: u32,
+    bootloader_pin: u32,
+    command: String,
+}
+
+impl SubprocessSpiFlash {
+    pub fn create(spi: Rc<dyn Target>, gpio: Rc<dyn Gpio>, reset_pin: u32, bootloader_pin: u32, command: String) -> Self {
+        Self {
+            spi,
+            gpio,
+            reset_pin,
+            bootloader_pin,
+            command,
+        }
+    }
+}
+
+impl Flash for SubprocessSpiFlash {
+    fn read_with_progress(
+        &self,
+        _address: u32,
+        _buffer: &mut [u8],
+        _progress: &dyn Fn(u32, u32),
+    ) -> Result<()> {
+        unimplemented!()
+    }
+    
+    fn erase_with_progress(
+        &self,
+        _address: u32,
+        _length: u32,
+        _progress: &dyn Fn(u32, u32),
+    ) -> Result<()> {
+        unimplemented!()
+    }
+
+    fn program_with_progress(
+        &self,
+        address: u32,
+        buffer: &[u8],
+        _progress: &dyn Fn(u32, u32)) -> Result<()> {
+        // Temporary file will be deleted by Rust destructor (if this
+        // program does not crash).
+        let mut tmp = tempfile::NamedTempFile::new()?;
+        std::io::Write::write_all(&mut tmp, buffer)?;
+
+        let mut child_shell = std::process::Command::new("/bin/sh")
+            .arg("-c")
+            .arg(&self.command)
+            .env("IMAGEFILE", tmp.path().to_str().ok_or(Error::BadFileName)?)
+            .env("ADDRESS", address.to_string())
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
+        
+        let child_in = child_shell.stdin.as_mut().unwrap();
+        let child_out = child_shell.stdout.as_mut().unwrap();
+
+        let mut cmd = [0; 4];
+        loop {
+            match std::io::Read::read_exact(child_out, &mut cmd) {
+                Ok(()) => {
+                    match cmd[0] {
+                        0 => {
+                            let len = ((cmd[1] as usize) << 16)
+                                | ((cmd[2] as usize) << 8)
+                                | (cmd[3] as usize);
+                            let mut wbuf = vec![0; len];
+                            std::io::Read::read_exact(child_out, &mut wbuf)?;
+                            let mut rbuf = vec![0; len];
+                            self.spi.run_transaction(&mut [
+                                Transfer::Both(& wbuf, &mut rbuf),
+                            ])?; 
+                            std::io::Write::write_all(child_in, &mut rbuf)?;
+                        }
+                        1 => {
+                            self.gpio.write(&self.reset_pin.to_string(), cmd[1] != 0)?;
+                        }
+                        2 => {
+                            self.gpio.write(&self.bootloader_pin.to_string(), cmd[1] != 0)?;
+                        }
+                        _ => print!("Unrecognized command\n")
+                    }
+                }
+                Err(err) => {
+                    match err.kind() {
+                        std::io::ErrorKind::UnexpectedEof => (),
+                        _ => print!("IO error: {}\n", err),
+                    }
+                    break;
+                }
+            }
+        }
+        Ok(())
+    }
+}
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -16,6 +208,12 @@ pub enum Error {
     BadEraseAddress(u32, u32),
     #[error("erase length {0} not a multiple of {1} bytes")]
     BadEraseLength(u32, u32),
+    #[error("Non-utf8 file name")]
+    BadFileName,
+    #[error("Invalid flash name: {0}")]
+    InvalidFlash(String),
+    #[error("Invalid pin name: {0}")]
+    InvalidPin(String),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -40,25 +238,13 @@ impl Default for AddressMode {
 }
 
 pub struct SpiFlash {
+    spi: Rc<dyn Target>,
     pub size: u32,
     pub erase_size: u32,
     pub erase_opcode: u8,
     pub program_size: u32,
     pub address_mode: AddressMode,
     pub sfdp: Option<Sfdp>,
-}
-
-impl Default for SpiFlash {
-    fn default() -> Self {
-        SpiFlash {
-            size: 16 * 1024 * 1024,
-            erase_size: 4 * 1024,
-            erase_opcode: 0x20,
-            program_size: SpiFlash::LEGACY_PAGE_SIZE,
-            address_mode: AddressMode::default(),
-            sfdp: None,
-        }
-    }
 }
 
 impl SpiFlash {
@@ -162,12 +348,13 @@ impl SpiFlash {
     }
 
     /// Create a new `SpiFlash` instance from an SFDP table.
-    pub fn from_sfdp(sfdp: Sfdp) -> Self {
+    pub fn from_sfdp(spi: Rc<dyn Target>, sfdp: Sfdp) -> Self {
         let (erase_sz, erase_op) = match sfdp.jedec.block_erase_size {
             BlockEraseSize::Block4KiB => (4096, sfdp.jedec.erase_opcode_4kib),
             _ => (sfdp.jedec.sector[0].size, sfdp.jedec.sector[0].erase_opcode),
         };
         SpiFlash {
+            spi,
             size: sfdp.jedec.density,
             erase_size: erase_sz,
             erase_opcode: erase_op,
@@ -178,26 +365,25 @@ impl SpiFlash {
     }
 
     /// Create a new `SpiFlash` instance by reading an SFDP table from the `spi` Target.
-    pub fn from_spi(spi: &dyn Target) -> Result<Self> {
-        let sfdp = SpiFlash::read_sfdp(spi)?;
-        Ok(SpiFlash::from_sfdp(sfdp))
+    pub fn from_spi(spi: Rc<dyn Target>) -> Result<Self> {
+        let sfdp = SpiFlash::read_sfdp(&*spi)?;
+        Ok(SpiFlash::from_sfdp(spi, sfdp))
     }
 
     /// Set the SPI flash addressing mode to either 3b or 4b mode.
-    pub fn set_address_mode(&mut self, spi: &dyn Target, mode: AddressMode) -> Result<()> {
+    pub fn set_address_mode(&mut self, mode: AddressMode) -> Result<()> {
         let opcode = [match mode {
             AddressMode::Mode3b => SpiFlash::EXIT_4B,
             AddressMode::Mode4b => SpiFlash::ENTER_4B,
         }];
-        spi.run_transaction(&mut [Transfer::Write(&opcode)])?;
+        self.spi.run_transaction(&mut [Transfer::Write(&opcode)])?;
         self.address_mode = mode;
         Ok(())
     }
 
     /// Automatically set the addressing mode based on the size of the SPI flash.
-    pub fn set_address_mode_auto(&mut self, spi: &dyn Target) -> Result<()> {
+    pub fn set_address_mode_auto(&mut self) -> Result<()> {
         self.set_address_mode(
-            spi,
             if self.size <= 16 * 1024 * 1024 {
                 AddressMode::Mode3b
             } else {
@@ -205,46 +391,30 @@ impl SpiFlash {
             },
         )
     }
+}
 
-    /// Read into `buffer` from the SPI flash starting at `address`.
-    pub fn read(&self, spi: &dyn Target, address: u32, buffer: &mut [u8]) -> Result<()> {
-        self.read_with_progress(spi, address, buffer, |_, _| {})
-    }
-
-    /// Read into `buffer` from the SPI flash starting at `address`.
-    /// The `progress` callback will be invoked after each chunk of the read operation.
-    pub fn read_with_progress(
+impl Flash for SpiFlash {
+    fn read_with_progress(
         &self,
-        spi: &dyn Target,
         mut address: u32,
         buffer: &mut [u8],
-        progress: impl Fn(u32, u32),
+        progress: &dyn Fn(u32, u32),
     ) -> Result<()> {
         // Break the read up according to the maximum chunksize the backend can handle.
-        for chunk in buffer.chunks_mut(spi.max_chunk_size()) {
+        for chunk in buffer.chunks_mut(self.spi.max_chunk_size()) {
             let op_addr = self.opcode_with_address(SpiFlash::READ, address)?;
-            spi.run_transaction(&mut [Transfer::Write(&op_addr), Transfer::Read(chunk)])?;
+            self.spi.run_transaction(&mut [Transfer::Write(&op_addr), Transfer::Read(chunk)])?;
             address += chunk.len() as u32;
             progress(address, chunk.len() as u32);
         }
         Ok(())
     }
 
-    /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
-    /// The address and length must be sector aligned.
-    pub fn erase(&self, spi: &dyn Target, address: u32, length: u32) -> Result<()> {
-        self.erase_with_progress(spi, address, length, |_, _| {})
-    }
-
-    /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
-    /// The address and length must be sector aligned.
-    /// The `progress` callback will be invoked after each chunk of the erase operation.
-    pub fn erase_with_progress(
+    fn erase_with_progress(
         &self,
-        spi: &dyn Target,
         address: u32,
         length: u32,
-        progress: impl Fn(u32, u32),
+        progress: &dyn Fn(u32, u32),
     ) -> Result<()> {
         if address % self.erase_size != 0 {
             return Err(Error::BadEraseAddress(address, self.erase_size).into());
@@ -255,33 +425,21 @@ impl SpiFlash {
         let end = address + length;
         for addr in (address..end).step_by(self.erase_size as usize) {
             // Issue the write enable first as a separate transaction.
-            SpiFlash::set_write_enable(spi)?;
+            SpiFlash::set_write_enable(&*self.spi)?;
             // Then issue the erase transaction.
             let op_addr = self.opcode_with_address(SpiFlash::SECTOR_ERASE, addr)?;
-            spi.run_transaction(&mut [Transfer::Write(&op_addr)])?;
-            SpiFlash::wait_for_busy_clear(spi)?;
+            self.spi.run_transaction(&mut [Transfer::Write(&op_addr)])?;
+            SpiFlash::wait_for_busy_clear(&*self.spi)?;
             progress(addr, self.erase_size);
         }
         Ok(())
     }
 
-    /// Program a segment of the SPI flash starting at `address` with the contents of `buffer`.
-    /// The address and buffer length may be arbitrary.  This function will not
-    /// erase the segment first.
-    pub fn program(&self, spi: &dyn Target, address: u32, buffer: &[u8]) -> Result<()> {
-        self.program_with_progress(spi, address, buffer, |_, _| {})
-    }
-
-    /// Program a segment of the SPI flash starting at `address` with the contents of `buffer`.
-    /// The address and buffer length may be arbitrary.  This function will not
-    /// erase the segment first.
-    /// The `progress` callback will be invoked after each chunk of the program operation.
-    pub fn program_with_progress(
+    fn program_with_progress(
         &self,
-        spi: &dyn Target,
         mut address: u32,
         buffer: &[u8],
-        progress: impl Fn(u32, u32),
+        progress: &dyn Fn(u32, u32),
     ) -> Result<()> {
         let mut remain = buffer.len();
         let mut chunkstart = 0usize;
@@ -296,13 +454,13 @@ impl SpiFlash {
             let chunkend = chunkstart + chunk;
             let op_addr = self.opcode_with_address(SpiFlash::PAGE_PROGRAM, address)?;
             // Issue the write enable first as a separate transaction.
-            SpiFlash::set_write_enable(spi)?;
+            SpiFlash::set_write_enable(&*(self.spi))?;
             // Then issue the program operation.
-            spi.run_transaction(&mut [
+            self.spi.run_transaction(&mut [
                 Transfer::Write(&op_addr),
                 Transfer::Write(&buffer[chunkstart..chunkend]),
             ])?;
-            SpiFlash::wait_for_busy_clear(spi)?;
+            SpiFlash::wait_for_busy_clear(&*(self.spi))?;
             address += chunk as u32;
             chunkstart += chunk;
             remain -= chunk;
