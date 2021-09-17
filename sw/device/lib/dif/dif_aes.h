@@ -8,8 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -230,7 +230,7 @@ typedef enum dif_aes_result {
  * @param[out] aes Out param for the initialised handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_init(dif_aes_params_t params, dif_aes_t *aes);
 
 /**
@@ -241,7 +241,7 @@ dif_aes_result_t dif_aes_init(dif_aes_params_t params, dif_aes_t *aes);
  * @param aes AES state data.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_reset(const dif_aes_t *aes);
 
 /**
@@ -263,7 +263,7 @@ dif_aes_result_t dif_aes_reset(const dif_aes_t *aes);
  * @param transaction Configuration data.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_start_ecb(const dif_aes_t *aes,
                                    const dif_aes_transaction_t *transaction,
                                    dif_aes_key_share_t key);
@@ -290,7 +290,7 @@ dif_aes_result_t dif_aes_start_ecb(const dif_aes_t *aes,
  * @param iv AES Initialisation Vector.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_start_cbc(const dif_aes_t *aes,
                                    const dif_aes_transaction_t *transaction,
                                    dif_aes_key_share_t key, dif_aes_iv_t iv);
@@ -315,7 +315,7 @@ dif_aes_result_t dif_aes_start_cbc(const dif_aes_t *aes,
  * @param iv AES Initial Counter Value.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_start_ctr(const dif_aes_t *aes,
                                    const dif_aes_transaction_t *transaction,
                                    dif_aes_key_share_t key, dif_aes_iv_t iv);
@@ -332,7 +332,7 @@ dif_aes_result_t dif_aes_start_ctr(const dif_aes_t *aes,
  * @param aes AES state data.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_end(const dif_aes_t *aes);
 
 /**
@@ -348,7 +348,7 @@ dif_aes_result_t dif_aes_end(const dif_aes_t *aes);
  * @param data AES Input Data.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_load_data(const dif_aes_t *aes,
                                    const dif_aes_data_t data);
 
@@ -363,7 +363,7 @@ dif_aes_result_t dif_aes_load_data(const dif_aes_t *aes,
  * @param data AES Output Data.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_read_output(const dif_aes_t *aes,
                                      dif_aes_data_t *data);
 
@@ -399,7 +399,7 @@ typedef enum dif_aes_trigger {
  * @param trigger AES trigger.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_trigger(const dif_aes_t *aes,
                                  dif_aes_trigger_t trigger);
 
@@ -452,7 +452,7 @@ typedef enum dif_aes_status {
  * @param set Flag state (set/unset).
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_get_status(const dif_aes_t *aes, dif_aes_status_t flag,
                                     bool *set);
 
@@ -464,7 +464,7 @@ dif_aes_result_t dif_aes_get_status(const dif_aes_t *aes, dif_aes_status_t flag,
  * @param alert An alert type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_alert_force(const dif_aes_t *aes,
                                      dif_aes_alert_t alert);
 

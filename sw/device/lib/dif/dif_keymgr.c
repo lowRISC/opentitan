@@ -116,7 +116,7 @@ static_assert(kDifKeymgrStatusCodeInvalidKmacInput >> 1 ==
  * Checks if the key manager is ready for a new operation, i.e. it is idle and
  * the CONFIG register is unlocked.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool is_ready(const dif_keymgr_t *keymgr) {
   // Keymgr must be idle and the CONTROL register must be writable.
   uint32_t reg_op_status =
@@ -155,7 +155,7 @@ typedef struct max_key_version_reg_info {
 /**
  * Returns max key version register information for transitioning from a state.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool get_max_key_version_reg_info_for_next_state(
     uint32_t cur_state, max_key_version_reg_info_t *reg_info) {
   switch (cur_state) {
@@ -231,7 +231,7 @@ static void start_operation(const dif_keymgr_t *keymgr,
 /**
  * Returns the bit index for a given IRQ.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool get_irq_bit_index(dif_keymgr_irq_t irq,
                               bitfield_bit32_index_t *bit_index) {
   switch (irq) {
@@ -246,7 +246,7 @@ static bool get_irq_bit_index(dif_keymgr_irq_t irq,
 /**
  * Checks if a value is a valid `dif_keymgr_toggle_t` and converts it to `bool`.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool toggle_to_bool(dif_keymgr_toggle_t val, bool *val_bool) {
   switch (val) {
     case kDifKeymgrToggleEnabled:

@@ -14,8 +14,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -194,7 +194,7 @@ extern const uint16_t kDifSpiDeviceBufferLen;
  * @param[out] spi Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_init(dif_spi_device_params_t params,
                                             dif_spi_device_t *spi);
 
@@ -207,7 +207,7 @@ dif_spi_device_result_t dif_spi_device_init(dif_spi_device_params_t params,
  * @param config Runtime configuration parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_configure(
     dif_spi_device_t *spi, dif_spi_device_config_t config);
 
@@ -218,7 +218,7 @@ dif_spi_device_result_t dif_spi_device_configure(
  * @param spi A SPI handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_abort(const dif_spi_device_t *spi);
 
 /**
@@ -229,7 +229,7 @@ dif_spi_device_result_t dif_spi_device_abort(const dif_spi_device_t *spi);
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_is_pending(
     const dif_spi_device_t *spi, dif_spi_device_irq_t irq, bool *is_pending);
 
@@ -241,7 +241,7 @@ dif_spi_device_result_t dif_spi_device_irq_is_pending(
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_acknowledge(
     const dif_spi_device_t *spi, dif_spi_device_irq_t irq);
 
@@ -253,7 +253,7 @@ dif_spi_device_result_t dif_spi_device_irq_acknowledge(
  * @param[out] state Out-param toggle state of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_get_enabled(
     const dif_spi_device_t *spi, dif_spi_device_irq_t irq,
     dif_spi_device_toggle_t *state);
@@ -266,7 +266,7 @@ dif_spi_device_result_t dif_spi_device_irq_get_enabled(
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_set_enabled(
     const dif_spi_device_t *spi, dif_spi_device_irq_t irq,
     dif_spi_device_toggle_t state);
@@ -279,7 +279,7 @@ dif_spi_device_result_t dif_spi_device_irq_set_enabled(
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_force(const dif_spi_device_t *spi,
                                                  dif_spi_device_irq_t irq);
 
@@ -291,7 +291,7 @@ dif_spi_device_result_t dif_spi_device_irq_force(const dif_spi_device_t *spi,
  * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_disable_all(
     const dif_spi_device_t *spi, dif_spi_device_irq_snapshot_t *snapshot);
 
@@ -306,7 +306,7 @@ dif_spi_device_result_t dif_spi_device_irq_disable_all(
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_restore_all(
     const dif_spi_device_t *spi, const dif_spi_device_irq_snapshot_t *snapshot);
 
@@ -329,7 +329,7 @@ dif_spi_device_result_t dif_spi_device_irq_restore_all(
  * @param tx_level The new TX level, as described above.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_set_irq_levels(
     const dif_spi_device_t *spi, uint16_t rx_level, uint16_t tx_level);
 
@@ -340,7 +340,7 @@ dif_spi_device_result_t dif_spi_device_set_irq_levels(
  * @param[out] bytes_pending The number of bytes pending
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_rx_pending(const dif_spi_device_t *spi,
                                                   size_t *bytes_pending);
 
@@ -352,7 +352,7 @@ dif_spi_device_result_t dif_spi_device_rx_pending(const dif_spi_device_t *spi,
  * @param[out] bytes_pending The number of bytes pending
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
                                                   size_t *bytes_pending);
 
@@ -367,7 +367,7 @@ dif_spi_device_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
  * null.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
                                             void *buf, size_t buf_len,
                                             size_t *bytes_received);
@@ -382,7 +382,7 @@ dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
  * @param[out] bytes_sent The number of bytes successfully written; may be null.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_send(const dif_spi_device_t *spi,
                                             const void *buf, size_t buf_len,
                                             size_t *bytes_sent);

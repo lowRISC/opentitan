@@ -36,7 +36,7 @@ static uint32_t index_to_mask(uint32_t index) { return 1u << index; }
  * @param mask Mask that identifies the bits to write to.
  * @param val Value to write.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static dif_gpio_result_t gpio_masked_write(const dif_gpio_t *gpio,
                                            ptrdiff_t reg_lower_offset,
                                            ptrdiff_t reg_upper_offset,
@@ -78,7 +78,7 @@ static dif_gpio_result_t gpio_masked_write(const dif_gpio_t *gpio,
  * @param index Zero-based index of the bit to write to.
  * @param val Value to write.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static dif_gpio_result_t gpio_masked_bit_write(const dif_gpio_t *gpio,
                                                ptrdiff_t reg_lower_offset,
                                                ptrdiff_t reg_upper_offset,

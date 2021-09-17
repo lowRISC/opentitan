@@ -13,8 +13,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,7 +60,9 @@ typedef struct dif_gpio_params {
  *
  * This type should be treated as opaque by users.
  */
-typedef struct dif_gpio { dif_gpio_params_t params; } dif_gpio_t;
+typedef struct dif_gpio {
+  dif_gpio_params_t params;
+} dif_gpio_t;
 
 /**
  * The result of a GPIO operation.
@@ -160,7 +162,7 @@ typedef uint32_t dif_gpio_mask_t;
  * @param[out] gpio Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_init(dif_gpio_params_t params, dif_gpio_t *gpio);
 
 /**
@@ -172,7 +174,7 @@ dif_gpio_result_t dif_gpio_init(dif_gpio_params_t params, dif_gpio_t *gpio);
  * @param gpio A GPIO handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio);
 
 /**
@@ -183,7 +185,7 @@ dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio);
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_is_pending(const dif_gpio_t *gpio,
                                           dif_gpio_pin_t pin, bool *is_pending);
 
@@ -194,7 +196,7 @@ dif_gpio_result_t dif_gpio_irq_is_pending(const dif_gpio_t *gpio,
  * @param[out] is_pending Out-param for which interrupts are pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_is_pending_all(const dif_gpio_t *gpio,
                                               dif_gpio_state_t *is_pending);
 
@@ -207,7 +209,7 @@ dif_gpio_result_t dif_gpio_irq_is_pending_all(const dif_gpio_t *gpio,
  * @param pin A GPIO pin.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_acknowledge(const dif_gpio_t *gpio,
                                            dif_gpio_pin_t pin);
 
@@ -219,7 +221,7 @@ dif_gpio_result_t dif_gpio_irq_acknowledge(const dif_gpio_t *gpio,
  * @param[out] state Out-param toggle state of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_get_enabled(const dif_gpio_t *gpio,
                                            dif_gpio_pin_t pin,
                                            dif_gpio_toggle_t *state);
@@ -232,7 +234,7 @@ dif_gpio_result_t dif_gpio_irq_get_enabled(const dif_gpio_t *gpio,
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_set_enabled(const dif_gpio_t *gpio,
                                            dif_gpio_pin_t pin,
                                            dif_gpio_toggle_t state);
@@ -246,7 +248,7 @@ dif_gpio_result_t dif_gpio_irq_set_enabled(const dif_gpio_t *gpio,
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_set_enabled_masked(const dif_gpio_t *gpio,
                                                   dif_gpio_mask_t mask,
                                                   dif_gpio_toggle_t state);
@@ -259,7 +261,7 @@ dif_gpio_result_t dif_gpio_irq_set_enabled_masked(const dif_gpio_t *gpio,
  * @param pin A GPIO pin.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_force(const dif_gpio_t *gpio,
                                      dif_gpio_pin_t pin);
 
@@ -271,7 +273,7 @@ dif_gpio_result_t dif_gpio_irq_force(const dif_gpio_t *gpio,
  * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_disable_all(const dif_gpio_t *gpio,
                                            dif_gpio_state_t *snapshot);
 
@@ -285,7 +287,7 @@ dif_gpio_result_t dif_gpio_irq_disable_all(const dif_gpio_t *gpio,
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_restore_all(const dif_gpio_t *gpio,
                                            const dif_gpio_state_t *snapshot);
 
@@ -302,7 +304,7 @@ dif_gpio_result_t dif_gpio_irq_restore_all(const dif_gpio_t *gpio,
  * @param trigger New configuration of interrupt triggers.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_set_trigger(const dif_gpio_t *gpio,
                                            dif_gpio_mask_t mask,
                                            dif_gpio_irq_trigger_t trigger);
@@ -319,7 +321,7 @@ dif_gpio_result_t dif_gpio_irq_set_trigger(const dif_gpio_t *gpio,
  * @param[out] state Pin value.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_read(const dif_gpio_t *gpio, dif_gpio_pin_t pin,
                                 bool *state);
 
@@ -334,7 +336,7 @@ dif_gpio_result_t dif_gpio_read(const dif_gpio_t *gpio, dif_gpio_pin_t pin,
  * @param[out] state Pin values.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_read_all(const dif_gpio_t *gpio,
                                     dif_gpio_state_t *state);
 
@@ -348,7 +350,7 @@ dif_gpio_result_t dif_gpio_read_all(const dif_gpio_t *gpio,
  * @param state Value to write.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_write(const dif_gpio_t *gpio, dif_gpio_pin_t pin,
                                  bool state);
 
@@ -361,7 +363,7 @@ dif_gpio_result_t dif_gpio_write(const dif_gpio_t *gpio, dif_gpio_pin_t pin,
  * @param state Value to write.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_write_all(const dif_gpio_t *gpio,
                                      dif_gpio_state_t state);
 
@@ -375,7 +377,7 @@ dif_gpio_result_t dif_gpio_write_all(const dif_gpio_t *gpio,
  * @param state Value to write.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_write_masked(const dif_gpio_t *gpio,
                                         dif_gpio_mask_t mask,
                                         dif_gpio_state_t state);
@@ -388,7 +390,7 @@ dif_gpio_result_t dif_gpio_write_masked(const dif_gpio_t *gpio,
  * @param state Output mode of the pin.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_output_set_enabled(const dif_gpio_t *gpio,
                                               dif_gpio_pin_t pin,
                                               dif_gpio_toggle_t state);
@@ -400,7 +402,7 @@ dif_gpio_result_t dif_gpio_output_set_enabled(const dif_gpio_t *gpio,
  * @param state Output modes of the pins.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_output_set_enabled_all(const dif_gpio_t *gpio,
                                                   dif_gpio_state_t state);
 
@@ -412,7 +414,7 @@ dif_gpio_result_t dif_gpio_output_set_enabled_all(const dif_gpio_t *gpio,
  * @param state Output modes of the pins.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_output_set_enabled_masked(const dif_gpio_t *gpio,
                                                      dif_gpio_mask_t mask,
                                                      dif_gpio_state_t state);
@@ -428,7 +430,7 @@ dif_gpio_result_t dif_gpio_output_set_enabled_masked(const dif_gpio_t *gpio,
  * @param state The new toggle state for the filter.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_input_noise_filter_set_enabled(
     const dif_gpio_t *gpio, dif_gpio_mask_t mask, dif_gpio_toggle_t state);
 

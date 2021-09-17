@@ -456,7 +456,7 @@ def main(argv):
         print("WARNING: It is recommended to pass the --top-hjson switch to "
               "get a more accurate representation of the DIF progress. The "
               "list of IPs for which no DIF sources exist is unknown.")
-        shared_headers = ["dif_warn_unused_result"]
+        shared_headers = ["dif_base"]
         top_level = "top_earlgrey"
         difs = get_list_of_difs(difs_root_path, shared_headers)
 

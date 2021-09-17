@@ -14,8 +14,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -420,7 +420,7 @@ typedef enum dif_lc_ctrl_alert {
  * @param[out] lc Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_result_t dif_lc_ctrl_init(dif_lc_ctrl_params_t params,
                                       dif_lc_ctrl_t *lc);
 
@@ -431,7 +431,7 @@ dif_lc_ctrl_result_t dif_lc_ctrl_init(dif_lc_ctrl_params_t params,
  * @param[out] state Out-param for the controller's state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
                                            dif_lc_ctrl_state_t *state);
 
@@ -443,7 +443,7 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
  * @param[out] count Out-param for the number of attempts.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_attempts_result_t dif_lc_ctrl_get_attempts(const dif_lc_ctrl_t *lc,
                                                        uint8_t *count);
 
@@ -454,7 +454,7 @@ dif_lc_ctrl_attempts_result_t dif_lc_ctrl_get_attempts(const dif_lc_ctrl_t *lc,
  * @param[out] status Out-param for the controller's status.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
                                             dif_lc_ctrl_status_t *status);
 
@@ -465,7 +465,7 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
  * @param[out] state Out-param for the controller's personalization state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
                                               dif_lc_ctrl_id_state_t *state);
 
@@ -477,7 +477,7 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
  * @param[out] device_id Out-param for the device id.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_result_t dif_lc_ctrl_get_device_id(
     const dif_lc_ctrl_t *lc, dif_lc_ctrl_device_id_t *device_id);
 
@@ -489,7 +489,7 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_device_id(
  * @param alert The alert to force.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
                                              dif_lc_ctrl_alert_t alert);
 
@@ -504,7 +504,7 @@ dif_lc_ctrl_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
  */
 // Open Q: do we want to be checking REGWEN for all operations dependent on the
 // mutex?
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_try_acquire(
     const dif_lc_ctrl_t *lc);
 
@@ -517,7 +517,7 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_try_acquire(
  * @param lc A lifecycle handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc);
 
 /**
@@ -531,7 +531,7 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc);
  * @param token A token for unlocking the transition; may be null.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
     const dif_lc_ctrl_t *lc, dif_lc_ctrl_state_t state,
     const dif_lc_ctrl_token_t *token, const dif_lc_ctrl_settings_t *settings);
@@ -543,7 +543,7 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
  * @param settings The settings to write to the register.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_vendor_test_reg(
     const dif_lc_ctrl_t *lc, uint32_t settings);
 
@@ -554,7 +554,7 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_vendor_test_reg(
  * @param settings Output parameter for the settings.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_lc_ctrl_result_t dif_lc_ctrl_get_otp_vendor_test_reg(
     const dif_lc_ctrl_t *lc, uint32_t *settings);
 

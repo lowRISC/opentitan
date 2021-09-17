@@ -150,7 +150,7 @@ static const request_reg_info_t request_reg_infos[2] = {
 /**
  * Checks if a value is a valid `dif_pwrmgr_toggle_t` and converts it to `bool`.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool toggle_to_bool(dif_pwrmgr_toggle_t val, bool *val_bool) {
   switch (val) {
     case kDifPwrmgrToggleEnabled:
@@ -175,7 +175,7 @@ static dif_pwrmgr_toggle_t bool_to_toggle(bool val) {
 /**
  * Checks if a value is a valid `dif_pwrmgr_req_type_t`.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool is_valid_req_type(dif_pwrmgr_req_type_t val) {
   return val == kDifPwrmgrReqTypeWakeup || val == kDifPwrmgrReqTypeReset;
 }
@@ -183,7 +183,7 @@ static bool is_valid_req_type(dif_pwrmgr_req_type_t val) {
 /**
  * Checks if a value is a valid `dif_pwrmgr_irq_t`.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool is_valid_irq(dif_pwrmgr_irq_t val) {
   return val >= 0 && val <= kDifPwrmgrIrqLast;
 }
@@ -192,7 +192,7 @@ static bool is_valid_irq(dif_pwrmgr_irq_t val) {
  * Checks if a value is valid for, i.e. fits in the mask of, a
  * `bitfield_field32_t`.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool is_valid_for_bitfield(uint32_t val, bitfield_field32_t bitfield) {
   return (val & bitfield.mask) == val;
 }
@@ -203,7 +203,7 @@ static bool is_valid_for_bitfield(uint32_t val, bitfield_field32_t bitfield) {
  * Control register is locked when low power is enabled and WFI occurs. It is
  * unlocked when the chip transitions back to active power state.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool control_register_is_locked(const dif_pwrmgr_t *pwrmgr) {
   // Control register is locked when `PWRMGR_CTRL_CFG_REGWEN_EN_BIT` bit is 0.
   return !bitfield_bit32_read(
@@ -232,7 +232,7 @@ static void sync_slow_clock_domain_polled(const dif_pwrmgr_t *pwrmgr) {
 /**
  * Checks if sources of a request type are locked.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool request_sources_is_locked(const dif_pwrmgr_t *pwrmgr,
                                       dif_pwrmgr_req_type_t req_type) {
   request_reg_info_t reg_info = request_reg_infos[req_type];

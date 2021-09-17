@@ -44,7 +44,7 @@ dif_alert_handler_result_t dif_alert_handler_init(
  * Classifies alerts for a single alert class. Returns `false` if any of the
  * provided configuration is invalid.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool classify_alerts(const dif_alert_handler_t *handler,
                             const dif_alert_handler_class_config_t *class) {
   if (class->alerts == NULL && class->alerts_len != 0) {
@@ -122,7 +122,7 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
  * Classifies local alerts for a single alert class. Returns `false` if any of
  * the provided configuration is invalid.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool classify_local_alerts(
     const dif_alert_handler_t *handler,
     const dif_alert_handler_class_config_t *class) {
@@ -224,7 +224,7 @@ static bool classify_local_alerts(
  *
  * Returns false if `toggle` is out of range.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool toggle_to_bool(dif_alert_handler_toggle_t toggle, bool *flag) {
   switch (toggle) {
     case kDifAlertHandlerToggleEnabled:
@@ -242,7 +242,7 @@ static bool toggle_to_bool(dif_alert_handler_toggle_t toggle, bool *flag) {
 /**
  * Configures the control registers of a particular alert handler class.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool configure_class(const dif_alert_handler_t *handler,
                             const dif_alert_handler_class_config_t *class) {
   ptrdiff_t reg_offset;
@@ -378,7 +378,7 @@ static bool configure_class(const dif_alert_handler_t *handler,
 /**
  * Configures phase durations of a particular class.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool configure_phase_durations(
     const dif_alert_handler_t *handler,
     const dif_alert_handler_class_config_t *class) {
@@ -528,7 +528,7 @@ dif_alert_handler_result_t dif_alert_handler_is_locked(
   return kDifAlertHandlerOk;
 }
 
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool irq_index(dif_alert_handler_class_t class,
                       bitfield_bit32_index_t *index) {
   switch (class) {
@@ -721,7 +721,7 @@ dif_alert_handler_result_t dif_alert_handler_alert_acknowledge(
   return kDifAlertHandlerOk;
 }
 
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool loc_alert_cause_reg_offset(dif_alert_handler_local_alert_t alert,
                                        ptrdiff_t *offset) {
   switch (alert) {
@@ -752,7 +752,7 @@ static bool loc_alert_cause_reg_offset(dif_alert_handler_local_alert_t alert,
   return true;
 }
 
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool loc_alert_cause_bit_index(dif_alert_handler_local_alert_t alert,
                                       bitfield_bit32_index_t *index) {
   switch (alert) {
@@ -834,7 +834,7 @@ dif_alert_handler_result_t dif_alert_handler_local_alert_acknowledge(
   return kDifAlertHandlerOk;
 }
 
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool get_clear_enable_reg_offset(dif_alert_handler_class_t class,
                                         ptrdiff_t *reg_offset) {
   switch (class) {

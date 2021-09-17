@@ -13,8 +13,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -429,7 +429,7 @@ typedef struct dif_alert_handler_config {
  * @param handler Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_init(
     dif_alert_handler_params_t params, dif_alert_handler_t *handler);
 
@@ -444,7 +444,7 @@ dif_alert_handler_result_t dif_alert_handler_init(
  * @param config Runtime configuration parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_config_result_t dif_alert_handler_configure(
     const dif_alert_handler_t *handler, dif_alert_handler_config_t config);
 /**
@@ -462,7 +462,7 @@ dif_alert_handler_config_result_t dif_alert_handler_configure(
  * @param handler An alert handler handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_lock(
     const dif_alert_handler_t *handler);
 
@@ -475,7 +475,7 @@ dif_alert_handler_result_t dif_alert_handler_lock(
  * @param is_locked Out-param for the locked state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_is_locked(
     const dif_alert_handler_t *handler, bool *is_locked);
 
@@ -487,7 +487,7 @@ dif_alert_handler_result_t dif_alert_handler_is_locked(
  * @param is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_irq_is_pending(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
     bool *is_pending);
@@ -500,7 +500,7 @@ dif_alert_handler_result_t dif_alert_handler_irq_is_pending(
  * @param alert_class An alert class.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_irq_acknowledge(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class);
 
@@ -512,7 +512,7 @@ dif_alert_handler_result_t dif_alert_handler_irq_acknowledge(
  * @param state Out-param toggle state of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_irq_get_enabled(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
     dif_alert_handler_toggle_t *state);
@@ -525,7 +525,7 @@ dif_alert_handler_result_t dif_alert_handler_irq_get_enabled(
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_irq_set_enabled(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
     dif_alert_handler_toggle_t state);
@@ -538,7 +538,7 @@ dif_alert_handler_result_t dif_alert_handler_irq_set_enabled(
  * @param alert_class An alert class.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_irq_force(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class);
 
@@ -550,7 +550,7 @@ dif_alert_handler_result_t dif_alert_handler_irq_force(
  * @param snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_irq_disable_all(
     const dif_alert_handler_t *handler,
     dif_alert_handler_irq_snapshot_t *snapshot);
@@ -566,7 +566,7 @@ dif_alert_handler_result_t dif_alert_handler_irq_disable_all(
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_irq_restore_all(
     const dif_alert_handler_t *handler,
     const dif_alert_handler_irq_snapshot_t *snapshot);
@@ -581,7 +581,7 @@ dif_alert_handler_result_t dif_alert_handler_irq_restore_all(
  * @param is_cause Out-param for whether this alert is a cause.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_alert_is_cause(
     const dif_alert_handler_t *handler, dif_alert_handler_alert_t alert,
     bool *is_cause);
@@ -593,7 +593,7 @@ dif_alert_handler_result_t dif_alert_handler_alert_is_cause(
  * @param alert The alert to acknowledge.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_alert_acknowledge(
     const dif_alert_handler_t *handler, dif_alert_handler_alert_t alert);
 
@@ -607,7 +607,7 @@ dif_alert_handler_result_t dif_alert_handler_alert_acknowledge(
  * @param is_cause Out-param for whether this alert is a cause.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_local_alert_is_cause(
     const dif_alert_handler_t *handler, dif_alert_handler_local_alert_t alert,
     bool *is_cause);
@@ -620,7 +620,7 @@ dif_alert_handler_result_t dif_alert_handler_local_alert_is_cause(
  * @param alert The alert to acknowledge.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_local_alert_acknowledge(
     const dif_alert_handler_t *handler, dif_alert_handler_local_alert_t alert);
 
@@ -636,7 +636,7 @@ dif_alert_handler_result_t dif_alert_handler_local_alert_acknowledge(
  * @param can_clear Out-param for the clear enablement state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_escalation_can_clear(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
     bool *can_clear);
@@ -650,7 +650,7 @@ dif_alert_handler_result_t dif_alert_handler_escalation_can_clear(
  * @param alert_class The class to disable clearing for.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_escalation_disable_clearing(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class);
 
@@ -664,7 +664,7 @@ dif_alert_handler_result_t dif_alert_handler_escalation_disable_clearing(
  * @param alert_class The class to clear an escalation for.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_escalation_clear(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class);
 
@@ -684,7 +684,7 @@ dif_alert_handler_result_t dif_alert_handler_escalation_clear(
  * @param alerts Out-param for the accumulator.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_get_accumulator(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
     uint16_t *alerts);
@@ -703,7 +703,7 @@ dif_alert_handler_result_t dif_alert_handler_get_accumulator(
  * @param cycles Out-param for the counter.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_get_escalation_counter(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
     uint32_t *cycles);
@@ -718,7 +718,7 @@ dif_alert_handler_result_t dif_alert_handler_get_escalation_counter(
  * @param state Out-param for the class state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_get_class_state(
     const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
     dif_alert_handler_class_state_t *state);

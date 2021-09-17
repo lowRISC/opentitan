@@ -255,7 +255,7 @@ dif_csrng_result_t dif_csrng_get_output_status(
   return kDifCsrngOk;
 }
 
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_get_internal_state(
     const dif_csrng_t *csrng, dif_csrng_internal_state_id_t instance_id,
     dif_csrng_internal_state_t *state) {

@@ -13,8 +13,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -295,7 +295,7 @@ typedef enum dif_keymgr_state {
  * @param[out] keymgr Out-param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_init(dif_keymgr_params_t params,
                                     dif_keymgr_t *keymgr);
 
@@ -308,7 +308,7 @@ dif_keymgr_result_t dif_keymgr_init(dif_keymgr_params_t params,
  * @param config Runtime configuration parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_configure(const dif_keymgr_t *keymgr,
                                          dif_keymgr_config_t config);
 
@@ -363,7 +363,7 @@ typedef struct dif_keymgr_state_params {
  * @param params The binding and max key version value for the next state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_lockable_result_t dif_keymgr_advance_state(
     const dif_keymgr_t *keymgr, const dif_keymgr_state_params_t *params);
 
@@ -377,7 +377,7 @@ dif_keymgr_lockable_result_t dif_keymgr_advance_state(
  * @param keymgr A key manager handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_lockable_result_t dif_keymgr_disable(const dif_keymgr_t *keymgr);
 
 /**
@@ -435,7 +435,7 @@ typedef uint8_t dif_keymgr_status_codes_t;
  * @param[out] status_codes Out-param for key manager status codes.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_get_status_codes(
     const dif_keymgr_t *keymgr, dif_keymgr_status_codes_t *status_codes);
 
@@ -446,7 +446,7 @@ dif_keymgr_result_t dif_keymgr_get_status_codes(
  * @param[out] state Out-param for current key manager state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_get_state(const dif_keymgr_t *keymgr,
                                          dif_keymgr_state_t *state);
 
@@ -464,7 +464,7 @@ dif_keymgr_result_t dif_keymgr_get_state(const dif_keymgr_t *keymgr,
  * @param keymgr A key manager handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_lockable_result_t dif_keymgr_generate_identity_seed(
     const dif_keymgr_t *keymgr);
 
@@ -534,7 +534,7 @@ typedef struct dif_keymgr_versioned_key_params {
  * @param params Key generation parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_lockable_result_t dif_keymgr_generate_versioned_key(
     const dif_keymgr_t *keymgr, dif_keymgr_versioned_key_params_t params);
 
@@ -551,7 +551,7 @@ dif_keymgr_lockable_result_t dif_keymgr_generate_versioned_key(
  * @param state The new toggle state for sideload clear.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_sideload_clear_set_enabled(
     const dif_keymgr_t *keymgr, dif_keymgr_toggle_t state);
 
@@ -562,7 +562,7 @@ dif_keymgr_result_t dif_keymgr_sideload_clear_set_enabled(
  * @param[out] Out-param for the current toggle state of sideload clear.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_sideload_clear_get_enabled(
     const dif_keymgr_t *keymgr, dif_keymgr_toggle_t *state);
 
@@ -592,7 +592,7 @@ typedef struct dif_keymgr_output {
  * @param[out] output Out-param for key manager output.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_read_output(const dif_keymgr_t *keymgr,
                                            dif_keymgr_output_t *output);
 
@@ -603,7 +603,7 @@ dif_keymgr_result_t dif_keymgr_read_output(const dif_keymgr_t *keymgr,
  * @param alert An alert type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
                                            dif_keymgr_alert_t alert);
 /**
@@ -614,7 +614,7 @@ dif_keymgr_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_irq_is_pending(const dif_keymgr_t *keymgr,
                                               dif_keymgr_irq_t irq,
                                               bool *is_pending);
@@ -627,7 +627,7 @@ dif_keymgr_result_t dif_keymgr_irq_is_pending(const dif_keymgr_t *keymgr,
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_irq_acknowledge(const dif_keymgr_t *keymgr,
                                                dif_keymgr_irq_t irq);
 
@@ -639,7 +639,7 @@ dif_keymgr_result_t dif_keymgr_irq_acknowledge(const dif_keymgr_t *keymgr,
  * @param[out] state Out-param for toggle state of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_irq_get_enabled(const dif_keymgr_t *keymgr,
                                                dif_keymgr_irq_t irq,
                                                dif_keymgr_toggle_t *state);
@@ -652,7 +652,7 @@ dif_keymgr_result_t dif_keymgr_irq_get_enabled(const dif_keymgr_t *keymgr,
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_irq_set_enabled(const dif_keymgr_t *keymgr,
                                                dif_keymgr_irq_t irq,
                                                dif_keymgr_toggle_t state);
@@ -665,7 +665,7 @@ dif_keymgr_result_t dif_keymgr_irq_set_enabled(const dif_keymgr_t *keymgr,
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_irq_force(const dif_keymgr_t *keymgr,
                                          dif_keymgr_irq_t irq);
 
@@ -677,7 +677,7 @@ dif_keymgr_result_t dif_keymgr_irq_force(const dif_keymgr_t *keymgr,
  * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_irq_disable_all(
     const dif_keymgr_t *keymgr, dif_keymgr_irq_snapshot_t *snapshot);
 
@@ -691,7 +691,7 @@ dif_keymgr_result_t dif_keymgr_irq_disable_all(
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_irq_restore_all(
     const dif_keymgr_t *keymgr, const dif_keymgr_irq_snapshot_t *snapshot);
 

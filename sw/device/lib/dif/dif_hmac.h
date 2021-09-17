@@ -12,6 +12,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include "sw/device/lib/base/mmio.h"
 
 #ifdef __cplusplus
@@ -158,7 +159,9 @@ typedef struct dif_hmac_transaction {
 /**
  * A typed representation of the HMAC digest.
  */
-typedef struct dif_hmac_digest { uint32_t digest[8]; } dif_hmac_digest_t;
+typedef struct dif_hmac_digest {
+  uint32_t digest[8];
+} dif_hmac_digest_t;
 
 /**
  * State for a particular HMAC device.
@@ -166,7 +169,9 @@ typedef struct dif_hmac_digest { uint32_t digest[8]; } dif_hmac_digest_t;
  * Its member variables should be considered private, and are only provided so
  * that callers can allocate it.
  */
-typedef struct dif_hmac { mmio_region_t base_addr; } dif_hmac_t;
+typedef struct dif_hmac {
+  mmio_region_t base_addr;
+} dif_hmac_t;
 
 /**
  * Initializes the HMAC device described by `config`, writing internal state to
