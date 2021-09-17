@@ -39,7 +39,7 @@ io_osc u_io_osc (
 // Clock & Valid
 ///////////////////////////////////////
 prim_clock_buf #(
-  .NoFpgaBuf(1'b1)
+  .NoFpgaBuf ( 1'b1 )
 ) u_clk_io_buf(
   .clk_i ( clk ),
   .clk_o ( clk_src_io_o )

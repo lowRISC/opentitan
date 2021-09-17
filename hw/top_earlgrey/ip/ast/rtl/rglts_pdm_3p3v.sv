@@ -58,7 +58,6 @@ always_ff @( posedge init_start, negedge init_start,
   end
 end
 
-
 always_ff @( posedge init_start, negedge init_start,
              posedge vcc_pok_h_i, negedge vcc_pok_h_i,
              posedge main_pd_h_ni, negedge main_pd_h_ni ) begin
@@ -80,7 +79,6 @@ vcaon_pgd u_vcaon_pok (
 );
 
 assign vcaon_pok_h_o = vcaon_pok_h && vcc_pok_h_i;
-
 
 `else  // of SYNTHESIS
 // SYNTHESUS/VERILATOR/LINTER/FPGA

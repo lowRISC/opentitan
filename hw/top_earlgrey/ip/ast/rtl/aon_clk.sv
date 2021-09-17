@@ -39,7 +39,7 @@ aon_osc u_aon_osc (
 // Clock & Valid
 ///////////////////////////////////////
 prim_clock_buf #(
-  .NoFpgaBuf(1'b1)
+  .NoFpgaBuf ( 1'b1 )
 ) u_clk_aon_buf(
   .clk_i ( clk ),
   .clk_o ( clk_src_aon_o )
