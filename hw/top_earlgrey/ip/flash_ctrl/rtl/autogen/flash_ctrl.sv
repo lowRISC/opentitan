@@ -191,6 +191,7 @@ module flash_ctrl
   flash_lcmgr_phase_e hw_phase;
   logic creator_seed_priv;
   logic owner_seed_priv;
+  logic lcmgr_err;
 
   // Flash control arbitration connections to software interface
   logic sw_ctrl_done;
@@ -462,6 +463,9 @@ module flash_ctrl
     .edn_ack_i(1'b1),
     .lfsr_en_o(lfsr_en),
     .rand_i(rand_val),
+
+    // error indication
+    .fatal_err_o(lcmgr_err),
 
     // init ongoing
     .init_busy_o(ctrl_init_busy)
@@ -955,6 +959,7 @@ module flash_ctrl
   assign hw2reg.fault_status.flash_phy_err.d  = 1'b1;
   assign hw2reg.fault_status.reg_intg_err.d   = 1'b1;
   assign hw2reg.fault_status.phy_intg_err.d   = 1'b1;
+  assign hw2reg.fault_status.lcmgr_err.d      = 1'b1;
   assign hw2reg.fault_status.oob_err.de       = hw_err.oob_err;
   assign hw2reg.fault_status.mp_err.de        = hw_err.mp_err;
   assign hw2reg.fault_status.rd_err.de        = hw_err.rd_err;
@@ -963,6 +968,7 @@ module flash_ctrl
   assign hw2reg.fault_status.flash_phy_err.de = hw_err.phy_err;
   assign hw2reg.fault_status.reg_intg_err.de  = intg_err;
   assign hw2reg.fault_status.phy_intg_err.de  = flash_phy_rsp.intg_err;
+  assign hw2reg.fault_status.lcmgr_err.de     = lcmgr_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg

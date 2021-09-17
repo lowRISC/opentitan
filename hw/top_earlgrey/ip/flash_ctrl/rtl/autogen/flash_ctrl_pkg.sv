@@ -500,5 +500,38 @@ package flash_ctrl_pkg;
     return current_max;
   endfunction // max_info_banks
 
+  // RMA control FSM encoding
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 7 -n 10   //      -s 3319803877 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (47.62%)
+  //  6: |||||||||||||||| (38.10%)
+  //  7: |||| (9.52%)
+  //  8: || (4.76%)
+  //  9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 8
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 6
+  //
+  localparam int RmaStateWidth = 10;
+  typedef enum logic [RmaStateWidth-1:0] {
+    StRmaIdle        = 10'b1000000111,
+    StRmaPageSel     = 10'b0110100101,
+    StRmaErase       = 10'b0100011100,
+    StRmaWordSel     = 10'b1011110010,
+    StRmaProgram     = 10'b0000111011,
+    StRmaProgramWait = 10'b0011001000,
+    StRmaRdVerify    = 10'b1101101001
+  } rma_state_e;
 
 endpackage : flash_ctrl_pkg

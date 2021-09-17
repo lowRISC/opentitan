@@ -1505,6 +1505,13 @@
               The flash memory encountered a register integrity error.
             '''
           },
+          { bits: "8",
+            name: "lcmgr_err",
+            desc: '''
+              The life cycle management interface has encountered a fatal error.
+              There is an error with the RMA state machine or counts.
+              '''
+          }
         ]
       },
 
