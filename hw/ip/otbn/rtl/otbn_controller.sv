@@ -336,16 +336,16 @@ module otbn_controller
   // or illegal WSR/CSR referenced).
   assign illegal_insn_static = insn_illegal_i | ispr_err;
 
-  assign err_bits_o.fatal_lifecycle_escalation = lifecycle_escalation_i;
-  assign err_bits_o.fatal_illegal_bus_access   = illegal_bus_access_i;
-  assign err_bits_o.fatal_reg                  = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
-  assign err_bits_o.fatal_imem                 = insn_fetch_err_i;
-  assign err_bits_o.fatal_dmem                 = lsu_rdata_err_i;
-  assign err_bits_o.illegal_insn               = illegal_insn_static | rf_indirect_err;
-  assign err_bits_o.bad_data_addr              = dmem_addr_err;
-  assign err_bits_o.loop                       = loop_err;
-  assign err_bits_o.call_stack                 = rf_base_call_stack_err_i;
-  assign err_bits_o.bad_insn_addr              = imem_addr_err;
+  assign err_bits_o.lifecycle_escalation = lifecycle_escalation_i;
+  assign err_bits_o.illegal_bus_access   = illegal_bus_access_i;
+  assign err_bits_o.reg_intg_violation   = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
+  assign err_bits_o.imem_intg_violation  = insn_fetch_err_i;
+  assign err_bits_o.dmem_intg_violation  = lsu_rdata_err_i;
+  assign err_bits_o.illegal_insn         = illegal_insn_static | rf_indirect_err;
+  assign err_bits_o.bad_data_addr        = dmem_addr_err;
+  assign err_bits_o.loop                 = loop_err;
+  assign err_bits_o.call_stack           = rf_base_call_stack_err_i;
+  assign err_bits_o.bad_insn_addr        = imem_addr_err;
 
   assign err = |err_bits_o;
 

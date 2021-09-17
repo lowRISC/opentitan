@@ -57,7 +57,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     model_agent_cfg = otbn_model_agent_cfg::type_id::create("model_agent_cfg");
 
     super.initialize(csr_base_addr);
-    tl_intg_alert_fields[ral.fatal_alert_cause.bus_integrity_error] = 1;
+    tl_intg_alert_fields[ral.fatal_alert_cause.bus_intg_violation] = 1;
   endfunction
 
 endclass

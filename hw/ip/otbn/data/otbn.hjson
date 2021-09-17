@@ -260,8 +260,10 @@
     } // register : status
     { name: "ERR_BITS",
       desc: '''
-        Error bitfield. Reads as non-zero if an error was seen during OTBN
-        operation
+        Description of an error detected during an operation.
+
+        Refer to the section "List of Errors" for a detailed description of the
+        errors.
       ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -269,81 +271,52 @@
         { bits: "0",
           name: "bad_data_addr"
           resval: 0,
-          desc: '''
-            A DMEM read or write occurred with an out of bounds or unaligned
-            address.
-          '''
+          desc: "A `BAD_DATA_ADDR` error was observed."
         }
         { bits: "1",
           name: "bad_insn_addr"
           resval: 0,
-          desc: '''
-            An IMEM read occurred with an out of bounds or unaligned address.
-          '''
+          desc: "A `BAD_INSN_ADDR` error was observed."
         }
         { bits: "2",
           resval: 0,
           name: "call_stack"
-          desc: '''
-            A instruction tried to pop from an empty call stack or push to a
-            full call stack.
-          '''
+          desc: "A `CALL_STACK` error was observed."
         }
         { bits: "3",
           resval: 0,
           name: "illegal_insn"
-          desc: '''
-            One of the following happened:
-            <ul>
-              <li>An instruction being excuted had an invalid encoding.</li>
-              <li>An access occurred for an invalid CSR or WSR.</li>
-            </ul>
-          '''
+          desc: "An `ILLEGAL_INSN` error was observed."
         }
         { bits: "4",
           name: "loop"
           resval: 0,
-          desc: '''
-            One of the following happened:
-            <ul>
-              <li>A loop was started with an iteration count of zero.</li>
-              <li>
-                The final instruction of a loop was a branch or another loop.
-              </li>
-              <li>
-                A new loop tried to push to a full loop stack (loop nesting
-                level too deep).
-              </li>
-            </ul>
-          '''
+          desc: "A `LOOP` error was observed."
         }
         { bits: "5",
-          name: "fatal_imem"
+          name: "imem_intg_violation"
           resval: 0,
-          desc: "A fatal error was seen on an instruction fetch."
+          desc: "A `IMEM_INTG_VIOLATION` error was observed."
         }
         { bits: "6",
-          name: "fatal_dmem"
+          name: "dmem_intg_violation"
           resval: 0,
-          desc: "A fatal error was seen on a DMEM read."
+          desc: "A `DMEM_INTG_VIOLATION` error was observed."
         }
         { bits: "7",
-          name: "fatal_reg"
+          name: "reg_intg_violation"
           resval: 0,
-          desc: "A fatal error was seen on a GPR or WDR read."
+          desc: "A `REG_INTG_VIOLATION` error was observed."
         }
         { bits: "8",
-          name: "fatal_illegal_bus_access"
+          name: "illegal_bus_access"
           resval: 0,
-          desc: '''
-            A bus-accessible register or memory was read or written while when
-            it was not allowed.
-            '''
+          desc: "An `ILLEGAL_BUS_ACCESS` error was observed."
         }
         { bits: "9",
-          name: "fatal_lifecycle_escalation"
+          name: "lifecycle_escalation"
           resval: 0,
-          desc: "OTBN received a life cycle escalation request from the system."
+          desc: "A `LIFECYCLE_ESCALATION` error was observed."
         }
       ]
     } // register : err_bits
@@ -364,7 +337,7 @@
     } // register : start_addr
     { name: "FATAL_ALERT_CAUSE",
       desc: '''
-        The cause of a fatal alert.
+        Description of the error that caused a fatal alert.
 
         The bits of this register correspond to errors that can cause a fatal
         alert. Software can read these bits to see what went wrong. Once set,
@@ -374,40 +347,34 @@
       hwaccess: "hwo",
       fields: [
         { bits: "0",
-          name: "bus_integrity_error",
+          name: "bus_intg_violation",
           resval: 0,
-          desc: '''
-            Set by a failed integrity check on a bus access.
-            Note that this can happen even when OTBN is not running.
-          '''
+          desc: "A `BUS_INTG_VIOLATION` error was observed."
         }
         { bits: "1",
-          name: "imem_error",
+          name: "imem_intg_violation",
           resval: 0,
-          desc: "Set on any integrity error in IMEM"
+          desc: "A `IMEM_INTG_VIOLATION` error was observed."
         }
         { bits: "2",
-          name: "dmem_error",
+          name: "dmem_intg_violation",
           resval: 0,
-          desc: "Set on any integrity error in DMEM"
+          desc: "A `DMEM_INTG_VIOLATION` error was observed."
         }
         { bits: "3",
-          name: "reg_error",
+          name: "reg_intg_violation",
           resval: 0,
-          desc: "Set on any integrity error in a register file"
+          desc: "A `REG_INTG_VIOLATION` error was observed."
         }
         { bits: "4",
           name: "illegal_bus_access"
           resval: 0,
-          desc: '''
-            A bus-accessible register or memory was read or written while when
-            it was not allowed.
-            '''
+          desc: "A `ILLEGAL_BUS_ACCESS` error was observed."
         }
         { bits: "5",
           name: "lifecycle_escalation"
           resval: 0,
-          desc: "OTBN received a life cycle escalation request from the system."
+          desc: "A `LIFECYCLE_ESCALATION` error was observed."
         }
       ]
     } // register : fatal_alert_cause

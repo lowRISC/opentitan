@@ -82,42 +82,42 @@ package otbn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } fatal_imem;
+    } imem_intg_violation;
     struct packed {
       logic        d;
       logic        de;
-    } fatal_dmem;
+    } dmem_intg_violation;
     struct packed {
       logic        d;
       logic        de;
-    } fatal_reg;
+    } reg_intg_violation;
     struct packed {
       logic        d;
       logic        de;
-    } fatal_illegal_bus_access;
+    } illegal_bus_access;
     struct packed {
       logic        d;
       logic        de;
-    } fatal_lifecycle_escalation;
+    } lifecycle_escalation;
   } otbn_hw2reg_err_bits_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } bus_integrity_error;
+    } bus_intg_violation;
     struct packed {
       logic        d;
       logic        de;
-    } imem_error;
+    } imem_intg_violation;
     struct packed {
       logic        d;
       logic        de;
-    } dmem_error;
+    } dmem_intg_violation;
     struct packed {
       logic        d;
       logic        de;
-    } reg_error;
+    } reg_intg_violation;
     struct packed {
       logic        d;
       logic        de;
