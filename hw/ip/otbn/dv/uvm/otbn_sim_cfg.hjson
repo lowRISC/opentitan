@@ -94,6 +94,7 @@ name:
   gen_rnd: "{gen_binaries_py} --obj-dir {otbn_obj_dir} {rnd_args}"
 
   smoke_dir: "{otbn_dir}/dv/smoke"
+  multi_err_dir: "{otbn_dir}/dv/otbnsim/test/simple/multi"
 
   run_modes: [
     // Run the random instruction generator and builds the one resulting binary
@@ -106,6 +107,15 @@ name:
       ]
     }
 
+    // Run the random instruction generator several times and build the
+    // resulting binaries in {otbn_elf_dir}.
+    {
+      name: build_otbn_rig_binaries_mode
+      pre_run_cmds: [
+        "{gen_rnd} --count 10 {otbn_elf_dir}"
+      ]
+    }
+
     // Build the smoke test in {otbn_elf_dir}.
     {
       name: build_otbn_smoke_binary_mode
@@ -114,12 +124,11 @@ name:
       ]
     }
 
-    // Run the random instruction generator several times and build the
-    // resulting binaries in {otbn_elf_dir}.
+    // Build the multi-error tests in {otbn_elf_dir}.
     {
-      name: build_otbn_rig_binaries_mode
+      name: build_otbn_multi_err_binaries_mode
       pre_run_cmds: [
-        "{gen_rnd} --count 10 {otbn_elf_dir}"
+        "{gen_fixed} --src-dir {multi_err_dir} {otbn_elf_dir}"
       ]
     }
   ]
@@ -160,6 +169,16 @@ name:
       en_run_modes: ["build_otbn_rig_binary_mode"]
       reseed: 5
     }
+
+    // This test runs a fixed set of binaries, one after the other. Since this
+    // is essentially a directed test, there's probably no real benefit to
+    // running it more than once.
+    {
+      name: "otbn_multi_err"
+      uvm_test_seq: "otbn_sequential_vseq"
+      en_run_modes: ["build_otbn_multi_err_binaries_mode"]
+      reseed: 1
+    }
   ]
 
   // List of regressions.
@@ -170,8 +189,8 @@ name:
     }
 
     {
-      name: "core",
-      tests: ["otbn_smoke", "otbn_single", "otbn_multi", "otbn_reset"]
+      name: "core"
+      tests: ["otbn_smoke", "otbn_single", "otbn_multi", "otbn_reset", "otbn_multi_err"]
     }
   ]
 }

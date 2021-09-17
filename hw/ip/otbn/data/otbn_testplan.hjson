@@ -57,6 +57,23 @@
       milestone: V2
       tests: ["otbn_reset"]
     }
+
+    {
+      name: multi_error
+      desc: '''
+            Run instructions that cause multiple SW errors in a cycle
+
+            These are directed tests, designed to exhaustively trigger all the
+            cases where a single instruction execution can fail for more than
+            one reason. Since each of these instructions causes the operation
+            to fail, we have to run an OTBN operation for each. To do this, we
+            compile and run all the binaries in a collection of ISS unit tests.
+            We have coverage points to ensure we see every event we expect.
+       '''
+      milestone: V2
+      tests: ["otbn_multi_err"]
+    }
+
     {
       name: mem_integrity
       desc: '''
