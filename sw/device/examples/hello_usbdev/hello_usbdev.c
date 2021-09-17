@@ -34,9 +34,12 @@ static uint8_t config_descriptors[] = {
     USB_CFG_DSCR_HEAD(
         USB_CFG_DSCR_LEN + 2 * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN),
         2),
-    VEND_INTERFACE_DSCR(0, 2, 0x50, 1), USB_BULK_EP_DSCR(0, 1, 32, 0),
-    USB_BULK_EP_DSCR(1, 1, 32, 4), VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 2, 32, 0), USB_BULK_EP_DSCR(1, 2, 32, 4),
+    VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 1, 32, 0),
+    USB_BULK_EP_DSCR(1, 1, 32, 4),
+    VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 2, 32, 0),
+    USB_BULK_EP_DSCR(1, 2, 32, 4),
 };
 
 /**
@@ -75,12 +78,12 @@ static dif_uart_t uart;
  */
 static void usb_receipt_callback_0(uint8_t c) {
   c = make_printable(c, '?');
-  CHECK(dif_uart_byte_send_polled(&uart, c) == kDifUartOk);
+  CHECK(dif_uart_byte_send_polled(&uart, c) == kDifOk);
   ++usb_chars_recved_total;
 }
 static void usb_receipt_callback_1(uint8_t c) {
   c = make_printable(c + 1, '?');
-  CHECK(dif_uart_byte_send_polled(&uart, c) == kDifUartOk);
+  CHECK(dif_uart_byte_send_polled(&uart, c) == kDifOk);
   ++usb_chars_recved_total;
 }
 
@@ -105,16 +108,12 @@ static const uint32_t kDiffMask = 2;
 static const uint32_t kUPhyMask = 4;
 
 int main(int argc, char **argv) {
-  CHECK(
-      dif_uart_init(
-          (dif_uart_params_t){
-              .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-          },
-          &uart) == kDifUartOk);
+  CHECK(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
+                      &uart) == kDifOk);
   CHECK(dif_uart_configure(&uart, (dif_uart_config_t){
                                       .baudrate = kUartBaudrate,
                                       .clk_freq_hz = kClockFreqPeripheralHz,
-                                      .parity_enable = kDifUartToggleDisabled,
+                                      .parity_enable = kDifToggleDisabled,
                                       .parity = kDifUartParityEven,
                                   }) == kDifUartConfigOk);
   base_uart_stdout(&uart);
@@ -181,14 +180,14 @@ int main(int argc, char **argv) {
 
     while (true) {
       size_t chars_available;
-      if (dif_uart_rx_bytes_available(&uart, &chars_available) != kDifUartOk ||
+      if (dif_uart_rx_bytes_available(&uart, &chars_available) != kDifOk ||
           chars_available == 0) {
         break;
       }
 
       uint8_t rcv_char;
-      CHECK(dif_uart_bytes_receive(&uart, 1, &rcv_char, NULL) == kDifUartOk);
-      CHECK(dif_uart_byte_send_polled(&uart, rcv_char) == kDifUartOk);
+      CHECK(dif_uart_bytes_receive(&uart, 1, &rcv_char, NULL) == kDifOk);
+      CHECK(dif_uart_byte_send_polled(&uart, rcv_char) == kDifOk);
 
       CHECK(dif_gpio_write_all(&gpio, rcv_char << 8) == kDifGpioOk);
 

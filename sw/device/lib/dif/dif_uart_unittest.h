@@ -50,7 +50,7 @@ class UartTest : public Test, public MmioTest {
   dif_uart_config_t config_ = {
       .baudrate = 1,
       .clk_freq_hz = 1048576,
-      .parity_enable = kDifUartToggleDisabled,
+      .parity_enable = kDifToggleDisabled,
       .parity = kDifUartParityEven,
   };
 };

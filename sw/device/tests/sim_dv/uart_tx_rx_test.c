@@ -260,12 +260,12 @@ void handler_irq_external(void) {
 
   // Check if the same interrupt fired at UART as well.
   bool is_pending;
-  CHECK(dif_uart_irq_is_pending(&uart, uart_irq, &is_pending) == kDifUartOk,
+  CHECK(dif_uart_irq_is_pending(&uart, uart_irq, &is_pending) == kDifOk,
         "dif_uart_irq_is_pending failed");
   CHECK(is_pending, "UART interrupt fired at PLIC did not fire at UART");
 
   // Clear the interrupt at UART.
-  CHECK(dif_uart_irq_acknowledge(&uart, uart_irq) == kDifUartOk,
+  CHECK(dif_uart_irq_acknowledge(&uart, uart_irq) == kDifOk,
         "dif_uart_irq_acknowledge failed");
 
   // Complete the IRQ at PLIC.
@@ -280,39 +280,34 @@ void handler_irq_external(void) {
 static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
   LOG_INFO("Initializing the UART.");
 
-  CHECK(dif_uart_init(
-            (dif_uart_params_t){
-                .base_addr = base_addr,
-            },
-            uart) == kDifUartOk,
-        "dif_uart_init failed");
+  CHECK(dif_uart_init(base_addr, uart) == kDifOk, "dif_uart_init failed");
   CHECK(dif_uart_configure(uart,
                            (dif_uart_config_t){
                                .baudrate = kUartBaudrate,
                                .clk_freq_hz = kClockFreqPeripheralHz,
-                               .parity_enable = kDifUartToggleDisabled,
+                               .parity_enable = kDifToggleDisabled,
                                .parity = kDifUartParityEven,
                            }) == kDifUartConfigOk,
         "dif_uart_configure failed");
 
   // Set the TX and RX watermark to 16 bytes.
-  CHECK(dif_uart_watermark_tx_set(uart, kDifUartWatermarkByte16) == kDifUartOk,
+  CHECK(dif_uart_watermark_tx_set(uart, kDifUartWatermarkByte16) == kDifOk,
         "dif_uart_watermark_tx_set failed");
-  CHECK(dif_uart_watermark_rx_set(uart, kDifUartWatermarkByte16) == kDifUartOk,
+  CHECK(dif_uart_watermark_rx_set(uart, kDifUartWatermarkByte16) == kDifOk,
         "dif_uart_watermark_rx_set failed");
 
   // Enable these UART interrupts - TX/TX watermark, TX empty and RX overflow.
   CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxWatermark,
-                                 kDifUartToggleEnabled) == kDifUartOk,
+                                 kDifToggleEnabled) == kDifOk,
         "dif_uart_irq_set_enabled failed");
   CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
-                                 kDifUartToggleEnabled) == kDifUartOk,
+                                 kDifToggleEnabled) == kDifOk,
         "dif_uart_irq_set_enabled failed");
-  CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxEmpty,
-                                 kDifUartToggleEnabled) == kDifUartOk,
+  CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxEmpty, kDifToggleEnabled) ==
+            kDifOk,
         "dif_uart_irq_set_enabled failed");
   CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxOverflow,
-                                 kDifUartToggleEnabled) == kDifUartOk,
+                                 kDifToggleEnabled) == kDifOk,
         "dif_uart_irq_set_enabled failed");
 }
 
@@ -422,12 +417,12 @@ static bool uart_transfer_ongoing_bytes(const dif_uart_t *uart,
   switch (uart_direction) {
     case kUartSend:
       result = dif_uart_bytes_send(uart, &data[*dataset_index], bytes_remaining,
-                                   &bytes_transferred) == kDifUartOk;
+                                   &bytes_transferred) == kDifOk;
       break;
     case kUartReceive:
       result =
           dif_uart_bytes_receive(uart, bytes_remaining, &data[*dataset_index],
-                                 &bytes_transferred) == kDifUartOk;
+                                 &bytes_transferred) == kDifOk;
       break;
     default:
       LOG_FATAL("Invalid UART data transfer direction!");
@@ -493,7 +488,7 @@ static bool execute_test(const dif_uart_t *uart) {
         // We disable the RX watermark interrupt and let the fifo
         // overflow by dropping all future incoming data.
         CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
-                                       kDifUartToggleDisabled) == kDifUartOk,
+                                       kDifToggleDisabled) == kDifOk,
               "dif_uart_irq_set_enabled failed");
         // Expect the RX overflow interrupt to fire at some point.
         exp_uart_irq_rx_overflow = true;

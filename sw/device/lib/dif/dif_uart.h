@@ -12,29 +12,13 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+
+#include "sw/device/lib/dif/autogen/dif_uart_autogen.inc"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-/**
- * A toggle state: enabled, or disabled.
- *
- * This enum may be used instead of a `bool` when describing an enabled/disabled
- * state.
- */
-typedef enum dif_uart_toggle {
-  /**
-   * The "enabled" state.
-   */
-  kDifUartToggleEnabled,
-  /**
-   * The "disabled" state.
-   */
-  kDifUartToggleDisabled,
-} dif_uart_toggle_t;
 
 /**
  * A parity state: odd, or even.
@@ -49,20 +33,6 @@ typedef enum dif_uart_parity {
    */
   kDifUartParityEven,
 } dif_uart_parity_t;
-
-/**
- * Hardware instantiation parameters for UART.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_uart_params {
-  /**
-   * The base address for the UART hardware registers.
-   */
-  mmio_region_t base_addr;
-} dif_uart_params_t;
 
 /**
  * Runtime configuration for UART.
@@ -82,42 +52,12 @@ typedef struct dif_uart_config {
   /**
    * Whether to enable parity checking.
    */
-  dif_uart_toggle_t parity_enable;
+  dif_toggle_t parity_enable;
   /**
    * The parity to set.
    */
   dif_uart_parity_t parity;
 } dif_uart_config_t;
-
-/**
- * A handle to UART.
- *
- * This type should be treated as opaque by users.
- */
-typedef struct dif_uart {
-  dif_uart_params_t params;
-} dif_uart_t;
-
-/**
- * The result of a UART operation.
- */
-typedef enum dif_uart_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifUartOk = 0,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifUartError = 1,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifUartBadArg = 2,
-} dif_uart_result_t;
 
 /**
  * The result of a UART operation.
@@ -126,18 +66,18 @@ typedef enum dif_uart_config_result {
   /**
    * Indicates that the operation succeeded.
    */
-  kDifUartConfigOk = kDifUartOk,
+  kDifUartConfigOk = kDifOk,
   /**
    * Indicates some unspecified failure.
    */
-  kDifUartConfigError = kDifUartError,
+  kDifUartConfigError = kDifError,
   /**
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
    * When this value is returned, no hardware operations occurred.
    */
-  kDifUartConfigBadArg = kDifUartBadArg,
+  kDifUartConfigBadArg = kDifBadArg,
   /**
    * Indicates that the given configuration parameters are not valid.
    */
@@ -147,52 +87,6 @@ typedef enum dif_uart_config_result {
    */
   kDifUartConfigBadNco,
 } dif_uart_config_result_t;
-
-/**
- * A UART interrupt request type.
- */
-typedef enum dif_uart_irq {
-  /**
-   * Fired when the TX FIFO dips below its watermark.
-   */
-  kDifUartIrqTxWatermark = 0,
-  /**
-   * Fired when the RX FIFO goes over its watermark.
-   */
-  kDifUartIrqRxWatermark,
-  /**
-   * Fired when the TX FIFO is empty.
-   */
-  kDifUartIrqTxEmpty,
-  /**
-   * Fired when the RX FIFO overflows.
-   */
-  kDifUartIrqRxOverflow,
-  /**
-   * Fired when an RX framing error occurs.
-   */
-  kDifUartIrqRxFrameErr,
-  /**
-   * Fired to indicate an RX break condition.
-   */
-  kDifUartIrqRxBreakErr,
-  /**
-   * Fired when the RX FIFO timeout expires before it is emptied.
-   */
-  kDifUartIrqRxTimeout,
-  /**
-   * Fired when an RX parity error is detected.
-   */
-  kDifUartIrqRxParityErr,
-} dif_uart_irq_t;
-
-/**
- * A snapshot of the enablement state of the interrupts for UART.
- *
- * This is an opaque type, to be used with the `dif_uart_irq_disable_all()` and
- * `dif_uart_irq_restore_all()` functions.
- */
-typedef uint32_t dif_uart_irq_snapshot_t;
 
 /**
  * A UART FIFO watermark depth configuration.
@@ -262,12 +156,12 @@ extern const uint32_t kDifUartFifoSizeBytes;
  *
  * This function does not actuate the hardware.
  *
- * @param params Hardware instantiation parameters.
- * @param uart Out param for the initialized handle.
+ * @param base_addr Base address of the UART peripheral.
+ * @param[out] uart Out param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_init(dif_uart_params_t params, dif_uart_t *uart);
+dif_result_t dif_uart_init(mmio_region_t base_addr, dif_uart_t *uart);
 
 /**
  * Configures UART with runtime information.
@@ -283,94 +177,6 @@ dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
                                             dif_uart_config_t config);
 
 /**
- * Returns whether a particular interrupt is currently pending.
- *
- * @param uart A UART handle.
- * @param irq An interrupt type.
- * @param is_pending Out-param for whether the interrupt is pending.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_irq_is_pending(const dif_uart_t *uart,
-                                          dif_uart_irq_t irq, bool *is_pending);
-
-/**
- * Acknowledges a particular interrupt, indicating to the hardware that it has
- * been successfully serviced.
- *
- * @param uart A UART handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_irq_acknowledge(const dif_uart_t *uart,
-                                           dif_uart_irq_t irq);
-
-/**
- * Checks whether a particular interrupt is currently enabled or disabled.
- *
- * @param uart A UART handle.
- * @param irq An interrupt type.
- * @param state Out-param toggle state of the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_irq_get_enabled(const dif_uart_t *uart,
-                                           dif_uart_irq_t irq,
-                                           dif_uart_toggle_t *state);
-
-/**
- * Sets whether a particular interrupt is currently enabled or disabled.
- *
- * @param uart A UART handle.
- * @param irq An interrupt type.
- * @param state The new toggle state for the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_irq_set_enabled(const dif_uart_t *uart,
-                                           dif_uart_irq_t irq,
-                                           dif_uart_toggle_t state);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param uart A UART handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_irq_force(const dif_uart_t *uart,
-                                     dif_uart_irq_t irq);
-
-/**
- * Disables all interrupts, optionally snapshotting all toggle state for later
- * restoration.
- *
- * @param uart A UART handle.
- * @param snapshot Out-param for the snapshot; may be `NULL`.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_irq_disable_all(const dif_uart_t *uart,
-                                           dif_uart_irq_snapshot_t *snapshot);
-
-/**
- * Restores interrupts from the given snapshot.
- *
- * This function can be used with `dif_uart_irq_disable_all()` to temporary
- * interrupt save-and-restore.
- *
- * @param uart A UART handle.
- * @param snapshot A snapshot to restore from.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_irq_restore_all(
-    const dif_uart_t *uart, const dif_uart_irq_snapshot_t *snapshot);
-
-/**
  * Sets the RX FIFO watermark.
  *
  * This function is only useful when the corresponding interrupt is enabled.
@@ -382,8 +188,8 @@ dif_uart_result_t dif_uart_irq_restore_all(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
-                                            dif_uart_watermark_t watermark);
+dif_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
+                                       dif_uart_watermark_t watermark);
 
 /**
  * Sets the TX FIFO watermark.
@@ -397,8 +203,8 @@ dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
-                                            dif_uart_watermark_t watermark);
+dif_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
+                                       dif_uart_watermark_t watermark);
 
 /**
  * Sends bytes over UART.
@@ -417,10 +223,8 @@ dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_bytes_send(const dif_uart_t *uart,
-                                      const uint8_t *data,
-                                      size_t bytes_requested,
-                                      size_t *bytes_written);
+dif_result_t dif_uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
+                                 size_t bytes_requested, size_t *bytes_written);
 
 /**
  * Recieves bytes over UART.
@@ -439,9 +243,9 @@ dif_uart_result_t dif_uart_bytes_send(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_bytes_receive(const dif_uart_t *uart,
-                                         size_t bytes_requested, uint8_t *data,
-                                         size_t *bytes_read);
+dif_result_t dif_uart_bytes_receive(const dif_uart_t *uart,
+                                    size_t bytes_requested, uint8_t *data,
+                                    size_t *bytes_read);
 
 /**
  * Transmits a single UART byte (polled).
@@ -455,8 +259,7 @@ dif_uart_result_t dif_uart_bytes_receive(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_byte_send_polled(const dif_uart_t *uart,
-                                            uint8_t byte);
+dif_result_t dif_uart_byte_send_polled(const dif_uart_t *uart, uint8_t byte);
 
 /**
  * Receives a single UART byte (polled).
@@ -470,8 +273,8 @@ dif_uart_result_t dif_uart_byte_send_polled(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_byte_receive_polled(const dif_uart_t *uart,
-                                               uint8_t *byte);
+dif_result_t dif_uart_byte_receive_polled(const dif_uart_t *uart,
+                                          uint8_t *byte);
 
 /**
  * Gets the number of bytes available to be read from the UART RX FIFO.
@@ -483,8 +286,8 @@ dif_uart_result_t dif_uart_byte_receive_polled(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
-                                              size_t *num_bytes);
+dif_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
+                                         size_t *num_bytes);
 
 /**
  * Gets the number of bytes available to be written from the UART TX FIFO.
@@ -496,8 +299,9 @@ dif_uart_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
-                                              size_t *num_bytes);
+dif_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
+                                         size_t *num_bytes);
+
 /**
  * UART TX reset RX/TX FIFO.
  *
@@ -508,8 +312,8 @@ dif_uart_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
  * @param reset FIFO to reset (RX, TX or both).
  * @return The result of the operation.
  */
-dif_uart_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
-                                      dif_uart_fifo_reset_t reset);
+dif_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
+                                 dif_uart_fifo_reset_t reset);
 
 /**
  * Enables or disables a transmit/receive loopback.
@@ -531,9 +335,9 @@ dif_uart_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
  * @param enable Enable/disable control flag.
  * @return The result of the operation.
  */
-dif_uart_result_t dif_uart_loopback_set(const dif_uart_t *uart,
-                                        dif_uart_loopback_t loopback,
-                                        dif_uart_toggle_t enable);
+dif_result_t dif_uart_loopback_set(const dif_uart_t *uart,
+                                   dif_uart_loopback_t loopback,
+                                   dif_toggle_t enable);
 
 /**
  * Enables the RX timeout with the given duration.
@@ -544,8 +348,8 @@ dif_uart_result_t dif_uart_loopback_set(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_enable_rx_timeout(const dif_uart_t *uart,
-                                             uint32_t duration_ticks);
+dif_result_t dif_uart_enable_rx_timeout(const dif_uart_t *uart,
+                                        uint32_t duration_ticks);
 
 /**
  * Disables the RX timeout.
@@ -557,7 +361,7 @@ dif_uart_result_t dif_uart_enable_rx_timeout(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_disable_rx_timeout(const dif_uart_t *uart);
+dif_result_t dif_uart_disable_rx_timeout(const dif_uart_t *uart);
 
 /**
  * Gets the current status of the RX timeout control.
@@ -570,9 +374,9 @@ dif_uart_result_t dif_uart_disable_rx_timeout(const dif_uart_t *uart);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_result_t dif_uart_get_rx_timeout(const dif_uart_t *uart,
-                                          dif_uart_toggle_t *status,
-                                          uint32_t *duration_ticks);
+dif_result_t dif_uart_get_rx_timeout(const dif_uart_t *uart,
+                                     dif_toggle_t *status,
+                                     uint32_t *duration_ticks);
 
 #ifdef __cplusplus
 }  // extern "C"

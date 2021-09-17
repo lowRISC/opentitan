@@ -70,23 +70,17 @@ static void sca_init_uart(void) {
   const dif_uart_config_t uart_config = {
       .baudrate = kUartBaudrate,
       .clk_freq_hz = kClockFreqPeripheralHz,
-      .parity_enable = kDifUartToggleDisabled,
+      .parity_enable = kDifToggleDisabled,
       .parity = kDifUartParityEven,
   };
 
   IGNORE_RESULT(dif_uart_init(
-      (dif_uart_params_t){
-          .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-      },
-      &uart0));
+      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
   IGNORE_RESULT(dif_uart_configure(&uart0, uart_config));
   base_uart_stdout(&uart0);
 
   IGNORE_RESULT(dif_uart_init(
-      (dif_uart_params_t){
-          .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR),
-      },
-      &uart1));
+      mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR), &uart1));
   IGNORE_RESULT(dif_uart_configure(&uart1, uart_config));
 }
 
