@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:count
       - lowrisc:prim:edge_detector
       - lowrisc:prim:secded
       - lowrisc:prim:lfsr

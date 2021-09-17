@@ -35,7 +35,7 @@ module prim_count import prim_count_pkg::*; #(
   input set_i,
   input [Width-1:0] set_cnt_i,
   input en_i,
-  input [Width-1:0] step_i,
+  input [Width-1:0] step_i, // increment/decrement step when enabled
   output logic [Width-1:0] cnt_o,
   output logic err_o
 );
