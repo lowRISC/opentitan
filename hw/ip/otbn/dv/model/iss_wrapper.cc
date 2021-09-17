@@ -396,6 +396,7 @@ int ISSWrapper::step(bool gen_trace) {
 void ISSWrapper::reset(bool gen_trace) {
   if (gen_trace)
     OtbnTraceChecker::get().Flush();
+  run_command("reset\n", nullptr);
 }
 
 void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,
