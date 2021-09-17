@@ -104,8 +104,10 @@ targets:
           - '--trace-params'
           - '--trace-max-array 1024'
           - '--unroll-count 512'
-          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_sim_tb"'
-          - '-LDFLAGS "-pthread -lutil -lelf"'
+          # TODO: Variable expansion depends on edalize internals. Find better solution.
+          #       (Applies to LDFLAGS expansion below as well)
+          - '-CFLAGS "$(CFLAGS_FOR_BUILD) -std=c++11 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_sim_tb"'
+          - '-LDFLAGS "$(LDFLAGS_FOR_BUILD) -pthread -lutil -lelf"'
           - '-Wall'
           # Execute simulation with four threads by default, which works best
           # with four physical CPU cores.
