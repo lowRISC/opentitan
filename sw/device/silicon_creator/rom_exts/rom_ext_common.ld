@@ -68,6 +68,19 @@ SECTIONS {
   } > eflash
 
   /**
+   * Shutdown text section, containing shutdown function(s).
+   *
+   * This must be the last executable section in the ROM_EXT flash image.
+   */
+  .shutdown : ALIGN(4) {
+    *(.shutdown)
+    *(.shutdown.*)
+
+    /* Ensure section end is word-aligned. */
+    . = ALIGN(4);
+  } > eflash
+
+  /**
    * Read-only data section, containing all large compile-time constants, like
    * strings.
    */
