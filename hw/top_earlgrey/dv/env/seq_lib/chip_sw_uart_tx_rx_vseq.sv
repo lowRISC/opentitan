@@ -11,18 +11,18 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_base_vseq;
   localparam uint UART_RX_FIFO_SIZE = 32;
 
   // A set of bytes expected to be received on TX.
-  rand byte exp_uart_tx_data[];
+  rand bit [7:0] exp_uart_tx_data[];
   constraint exp_uart_tx_data_c {
     exp_uart_tx_data.size() == UART_DATASET_SIZE;
   }
 
   // A set of bytes to be send back over RX.
-  rand byte uart_rx_data[];
+  rand bit [7:0] uart_rx_data[];
   constraint uart_rx_data_c {
     uart_rx_data.size() == UART_DATASET_SIZE;
   }
 
-  byte uart_idx = 0;
+  bit [7:0] uart_idx = 0;
 
   task pre_start();
     void'($value$plusargs("uart_idx=%0d", uart_idx));
@@ -32,7 +32,7 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_base_vseq;
 
   virtual task cpu_init();
     // sw_symbol_backdoor_overwrite takes an array as the input
-    byte uart_idx_data[] = {uart_idx};
+    bit [7:0] uart_idx_data[] = {uart_idx};
 
     super.cpu_init();
     sw_symbol_backdoor_overwrite("kUartTxData", exp_uart_tx_data);
