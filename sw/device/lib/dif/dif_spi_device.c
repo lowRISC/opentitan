@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
+
 #include "spi_device_regs.h"  // Generated.
 
 const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
@@ -110,7 +111,7 @@ dif_spi_device_result_t dif_spi_device_abort(const dif_spi_device_t *spi) {
   }
 }
 
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool irq_index(dif_spi_device_irq_t irq, bitfield_bit32_index_t *index) {
   switch (irq) {
     case kDifSpiDeviceIrqRxFull:
@@ -424,18 +425,18 @@ static void compress_ptrs(const dif_spi_device_t *spi, fifo_ptr_params_t params,
   }
 
   uint32_t ptr = 0;
-  ptr = bitfield_field32_write(
-      ptr,
-      (bitfield_field32_t){
-          .mask = params.write_mask, .index = params.write_offset,
-      },
-      write_val);
-  ptr = bitfield_field32_write(
-      ptr,
-      (bitfield_field32_t){
-          .mask = params.read_mask, .index = params.read_offset,
-      },
-      read_val);
+  ptr = bitfield_field32_write(ptr,
+                               (bitfield_field32_t){
+                                   .mask = params.write_mask,
+                                   .index = params.write_offset,
+                               },
+                               write_val);
+  ptr = bitfield_field32_write(ptr,
+                               (bitfield_field32_t){
+                                   .mask = params.read_mask,
+                                   .index = params.read_offset,
+                               },
+                               read_val);
   mmio_region_write32(spi->params.base_addr, params.reg_offset, ptr);
 }
 

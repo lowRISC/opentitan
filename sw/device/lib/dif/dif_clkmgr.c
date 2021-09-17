@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_clkmgr.h"
+
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 

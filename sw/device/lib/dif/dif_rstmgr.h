@@ -14,8 +14,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -147,7 +147,7 @@ typedef struct dif_rstmgr {
  * @param handle Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_rstmgr_result_t dif_rstmgr_init(dif_rstmgr_params_t params,
                                     dif_rstmgr_t *handle);
 
@@ -160,7 +160,7 @@ dif_rstmgr_result_t dif_rstmgr_init(dif_rstmgr_params_t params,
  * @param handle A Reset Manager handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_rstmgr_result_t dif_rstmgr_reset(const dif_rstmgr_t *handle);
 
 /**
@@ -173,7 +173,7 @@ dif_rstmgr_result_t dif_rstmgr_reset(const dif_rstmgr_t *handle);
  * @param peripheral Peripheral to lock the reset functionality for.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_rstmgr_result_t dif_rstmgr_reset_lock(const dif_rstmgr_t *handle,
                                           dif_rstmgr_peripheral_t peripheral);
 
@@ -185,7 +185,7 @@ dif_rstmgr_result_t dif_rstmgr_reset_lock(const dif_rstmgr_t *handle,
  * @param is_locked Out-param for the locked state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_rstmgr_result_t dif_rstmgr_reset_is_locked(
     const dif_rstmgr_t *handle, dif_rstmgr_peripheral_t peripheral,
     bool *is_locked);
@@ -200,7 +200,7 @@ dif_rstmgr_result_t dif_rstmgr_reset_is_locked(
  * @param info Reset information.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_rstmgr_result_t dif_rstmgr_reset_info_get(
     const dif_rstmgr_t *handle, dif_rstmgr_reset_info_bitfield_t *info);
 
@@ -211,7 +211,7 @@ dif_rstmgr_result_t dif_rstmgr_reset_info_get(
  * @return `dif_rstmgr_result_t`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_rstmgr_result_t dif_rstmgr_reset_info_clear(const dif_rstmgr_t *handle);
 
 /**
@@ -226,7 +226,7 @@ dif_rstmgr_result_t dif_rstmgr_reset_info_clear(const dif_rstmgr_t *handle);
  * @param state The new toggle state for the crash dump capture.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_rstmgr_result_t dif_rstmgr_alert_info_set_enabled(
     const dif_rstmgr_t *handle, dif_rstmgr_toggle_t state);
 
@@ -265,7 +265,7 @@ typedef uint32_t dif_rstmgr_alert_info_dump_segment_t;
  *
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_rstmgr_result_t dif_rstmgr_alert_info_dump_read(
     const dif_rstmgr_t *handle, dif_rstmgr_alert_info_dump_segment_t *dump,
     size_t dump_size, size_t *segments_read);
@@ -304,7 +304,7 @@ typedef enum dif_rstmgr_software_reset_result {
  * @param reset Reset control.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_rstmgr_software_reset_result_t dif_rstmgr_software_reset(
     const dif_rstmgr_t *handle, dif_rstmgr_peripheral_t peripheral,
     dif_rstmgr_software_reset_t reset);
@@ -317,7 +317,7 @@ dif_rstmgr_software_reset_result_t dif_rstmgr_software_reset(
  * @param asserted 'true' when held in reset, `false` otherwise.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_rstmgr_result_t dif_rstmgr_software_reset_is_held(
     const dif_rstmgr_t *handle, dif_rstmgr_peripheral_t peripheral,
     bool *asserted);

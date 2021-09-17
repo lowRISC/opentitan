@@ -13,8 +13,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -115,7 +115,7 @@ typedef enum dif_clkmgr_result {
  * @param[out] handle Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_clkmgr_result_t dif_clkmgr_init(dif_clkmgr_params_t params,
                                     dif_clkmgr_t *handle);
 
@@ -127,7 +127,7 @@ dif_clkmgr_result_t dif_clkmgr_init(dif_clkmgr_params_t params,
  * @param[out] is_enabled whether the clock is enabled or not.
  * @returns The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_clkmgr_result_t dif_clkmgr_gateable_clock_get_enabled(
     const dif_clkmgr_t *handle, dif_clkmgr_gateable_clock_t clock,
     bool *is_enabled);
@@ -140,7 +140,7 @@ dif_clkmgr_result_t dif_clkmgr_gateable_clock_get_enabled(
  * @param new_state whether to enable or disable the clock.
  * @returns The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_clkmgr_result_t dif_clkmgr_gateable_clock_set_enabled(
     const dif_clkmgr_t *handle, dif_clkmgr_gateable_clock_t clock,
     dif_clkmgr_toggle_t new_state);
@@ -160,7 +160,7 @@ dif_clkmgr_result_t dif_clkmgr_gateable_clock_set_enabled(
  * @param[out] is_enabled whether the clock is enabled or not.
  * @returns The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_clkmgr_result_t dif_clkmgr_hintable_clock_get_enabled(
     const dif_clkmgr_t *handle, dif_clkmgr_hintable_clock_t clock,
     bool *is_enabled);
@@ -181,7 +181,7 @@ dif_clkmgr_result_t dif_clkmgr_hintable_clock_get_enabled(
  * @param new_state whether to enable or disable the clock.
  * @returns The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_clkmgr_result_t dif_clkmgr_hintable_clock_set_hint(
     const dif_clkmgr_t *handle, dif_clkmgr_hintable_clock_t clock,
     dif_clkmgr_toggle_t new_state);
@@ -202,7 +202,7 @@ dif_clkmgr_result_t dif_clkmgr_hintable_clock_set_hint(
  * clock.
  * @returns The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_clkmgr_result_t dif_clkmgr_hintable_clock_get_hint(
     const dif_clkmgr_t *handle, dif_clkmgr_hintable_clock_t clock,
     bool *hinted_is_enabled);

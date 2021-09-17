@@ -91,7 +91,7 @@ static const uint8_t kIrqEnumToBitIndex[] = {
  * @param pool A buffer pool.
  * @return `true` if the buffer pool if full, `false` otherwise.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool buffer_pool_is_full(dif_usbdev_buffer_pool_t *pool) {
   return pool->top == BUFFER_POOL_FULL;
 }
@@ -102,7 +102,7 @@ static bool buffer_pool_is_full(dif_usbdev_buffer_pool_t *pool) {
  * @param pool A buffer pool.
  * @return `true` if the buffer pool is empty, `false` otherwise.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool buffer_pool_is_empty(dif_usbdev_buffer_pool_t *pool) {
   return pool->top == BUFFER_POOL_EMPTY;
 }
@@ -115,7 +115,7 @@ static bool buffer_pool_is_empty(dif_usbdev_buffer_pool_t *pool) {
  * @param buffer_id A buffer id.
  * @return `true` if `buffer_id` is valid, `false` otherwise.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool buffer_pool_is_valid_buffer_id(uint8_t buffer_id) {
   return buffer_id < USBDEV_NUM_BUFFERS;
 }
@@ -127,7 +127,7 @@ static bool buffer_pool_is_valid_buffer_id(uint8_t buffer_id) {
  * @param buffer_id A buffer id.
  * @return `true` if the operation was successful, `false` otherwise.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool buffer_pool_add(dif_usbdev_buffer_pool_t *pool, uint8_t buffer_id) {
   if (buffer_pool_is_full(pool) || !buffer_pool_is_valid_buffer_id(buffer_id)) {
     return false;
@@ -146,7 +146,7 @@ static bool buffer_pool_add(dif_usbdev_buffer_pool_t *pool, uint8_t buffer_id) {
  * @param buffer_id A buffer id.
  * @return `true` if the operation was successful, `false` otherwise.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool buffer_pool_remove(dif_usbdev_buffer_pool_t *pool,
                                uint8_t *buffer_id) {
   if (buffer_pool_is_empty(pool) || buffer_id == NULL) {
@@ -168,7 +168,7 @@ static bool buffer_pool_remove(dif_usbdev_buffer_pool_t *pool,
  * @param pool A buffer pool.
  * @return `true` if the operation was successful, `false` otherwise.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool buffer_pool_init(dif_usbdev_buffer_pool_t *pool) {
   // Start with an empty pool
   pool->top = -1;
@@ -190,7 +190,7 @@ static bool buffer_pool_init(dif_usbdev_buffer_pool_t *pool) {
 /**
  * Checks if the given value is a valid `dif_usbdev_toggle_t` variant.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool is_valid_toggle(dif_usbdev_toggle_t val) {
   return val == kDifUsbdevToggleEnable || val == kDifUsbdevToggleDisable;
 }
@@ -199,7 +199,7 @@ static bool is_valid_toggle(dif_usbdev_toggle_t val) {
  * Checks if the given value is a valid `dif_usbdev_power_sense_override_t`
  * variant.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool is_valid_power_sense_override(
     dif_usbdev_power_sense_override_t val) {
   return val == kDifUsbdevPowerSenseOverrideDisabled ||
@@ -210,7 +210,7 @@ static bool is_valid_power_sense_override(
 /**
  * Checks if the given value is a valid endpoint number.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool is_valid_endpoint(uint8_t endpoint) {
   return endpoint < USBDEV_NUM_ENDPOINTS;
 }
@@ -218,7 +218,7 @@ static bool is_valid_endpoint(uint8_t endpoint) {
 /**
  * Checks if the given value is a valid `dif_usbdev_irq_t` variant.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool is_valid_irq(dif_usbdev_irq_t irq) {
   return irq >= kDifUsbdevIrqFirst && irq <= kDifUsbdevIrqLast;
 }
@@ -227,7 +227,7 @@ static bool is_valid_irq(dif_usbdev_irq_t irq) {
  * Enables/disables the functionality controlled by the register at `reg_offset`
  * for an endpoint.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static dif_usbdev_result_t endpoint_functionality_enable(
     dif_usbdev_t *usbdev, uint32_t reg_offset, uint8_t endpoint,
     dif_usbdev_toggle_t new_state) {
@@ -251,7 +251,7 @@ static dif_usbdev_result_t endpoint_functionality_enable(
  * Returns the address that corresponds to the given buffer and offset
  * into that buffer.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static uint32_t get_buffer_addr(uint8_t buffer_id, size_t offset) {
   return USBDEV_BUFFER_REG_OFFSET +
          (buffer_id * USBDEV_BUFFER_ENTRY_SIZE_BYTES) + offset;

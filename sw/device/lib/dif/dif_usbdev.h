@@ -12,8 +12,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -191,7 +192,7 @@ typedef enum dif_usbdev_result {
  * @param[out] usbdev Internal state of the initialized USB device.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
                                     dif_usbdev_t *usbdev);
 
@@ -210,7 +211,7 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
  * @param usbdev A USB device.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_fill_available_fifo(dif_usbdev_t *usbdev);
 
 /**
@@ -221,7 +222,7 @@ dif_usbdev_result_t dif_usbdev_fill_available_fifo(dif_usbdev_t *usbdev);
  * @param new_state New SETUP packet reception state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_endpoint_setup_enable(
     dif_usbdev_t *usbdev, uint8_t endpoint, dif_usbdev_toggle_t new_state);
 
@@ -233,7 +234,7 @@ dif_usbdev_result_t dif_usbdev_endpoint_setup_enable(
  * @param new_state New OUT packet reception state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_endpoint_out_enable(
     dif_usbdev_t *usbdev, uint8_t endpoint, dif_usbdev_toggle_t new_state);
 
@@ -245,7 +246,7 @@ dif_usbdev_result_t dif_usbdev_endpoint_out_enable(
  * @param new_state New STALL state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_endpoint_stall_enable(
     dif_usbdev_t *usbdev, uint8_t endpoint, dif_usbdev_toggle_t new_state);
 
@@ -257,7 +258,7 @@ dif_usbdev_result_t dif_usbdev_endpoint_stall_enable(
  * @param[out] state Current STALL state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_endpoint_stall_get(dif_usbdev_t *usbdev,
                                                   uint8_t endpoint,
                                                   bool *state);
@@ -274,7 +275,7 @@ dif_usbdev_result_t dif_usbdev_endpoint_stall_get(dif_usbdev_t *usbdev,
  * @param new_state New isochronous state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_endpoint_iso_enable(
     dif_usbdev_t *usbdev, uint8_t endpoint, dif_usbdev_toggle_t new_state);
 
@@ -288,7 +289,7 @@ dif_usbdev_result_t dif_usbdev_endpoint_iso_enable(
  * @param new_state New interface state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_interface_enable(dif_usbdev_t *usbdev,
                                                 dif_usbdev_toggle_t new_state);
 
@@ -367,7 +368,7 @@ typedef enum dif_usbdev_recv_result {
  * @param[out] buffer Buffer that holds the packet payload.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_recv_result_t dif_usbdev_recv(
     dif_usbdev_t *usbdev, dif_usbdev_rx_packet_info_t *packet_info,
     dif_usbdev_buffer_t *buffer);
@@ -416,7 +417,7 @@ typedef enum dif_usbdev_buffer_read_result {
  * @param[out] bytes_written Number of bytes written to destination buffer.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
     dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer, uint8_t *dst,
     size_t dst_len, size_t *bytes_written);
@@ -438,7 +439,7 @@ dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
  *               `dif_usbdev_buffer_request`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_buffer_return(dif_usbdev_t *usbdev,
                                              dif_usbdev_buffer_t *buffer);
 
@@ -499,7 +500,7 @@ typedef enum dif_usbdev_buffer_request_result {
  * @param[out] buffer A buffer for writing outgoing packet payload.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_buffer_request_result_t dif_usbdev_buffer_request(
     dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer);
 
@@ -544,7 +545,7 @@ typedef enum dif_usbdev_buffer_write_result {
  * @param[out] bytes_written Number of bytes written to the USB device buffer.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_buffer_write_result_t dif_usbdev_buffer_write(
     dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer, uint8_t *src,
     size_t src_len, size_t *bytes_written);
@@ -577,7 +578,7 @@ dif_usbdev_buffer_write_result_t dif_usbdev_buffer_write(
  * @param buffer A buffer provided by `dif_usbdev_buffer_request`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_send(dif_usbdev_t *usbdev, uint8_t endpoint,
                                     dif_usbdev_buffer_t *buffer);
 
@@ -621,7 +622,7 @@ typedef enum dif_usbdev_tx_status {
  * @param[out] status Status of the packet.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_get_tx_status(dif_usbdev_t *usbdev,
                                              uint8_t endpoint,
                                              dif_usbdev_tx_status_t *status);
@@ -633,7 +634,7 @@ dif_usbdev_result_t dif_usbdev_get_tx_status(dif_usbdev_t *usbdev,
  * @param addr New address. Only the last 7 bits are significant.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_address_set(dif_usbdev_t *usbdev, uint8_t addr);
 
 /**
@@ -643,7 +644,7 @@ dif_usbdev_result_t dif_usbdev_address_set(dif_usbdev_t *usbdev, uint8_t addr);
  * @param[out] addr Current address.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_address_get(dif_usbdev_t *usbdev, uint8_t *addr);
 
 /**
@@ -653,7 +654,7 @@ dif_usbdev_result_t dif_usbdev_address_get(dif_usbdev_t *usbdev, uint8_t *addr);
  * @param[out] frame_index USB frame index.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_status_get_frame(dif_usbdev_t *usbdev,
                                                 uint16_t *frame_index);
 
@@ -668,7 +669,7 @@ dif_usbdev_result_t dif_usbdev_status_get_frame(dif_usbdev_t *usbdev,
  * otherwise.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_status_get_host_lost(dif_usbdev_t *usbdev,
                                                     bool *host_lost);
 
@@ -690,7 +691,7 @@ typedef enum dif_usbdev_link_state {
  * @param[out] link_state USB link state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_status_get_link_state(
     dif_usbdev_t *usbdev, dif_usbdev_link_state_t *link_state);
 
@@ -702,7 +703,7 @@ dif_usbdev_result_t dif_usbdev_status_get_link_state(
  * VBUS, `false` otherwise.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_status_get_sense(dif_usbdev_t *usbdev,
                                                 bool *sense);
 
@@ -715,7 +716,7 @@ dif_usbdev_result_t dif_usbdev_status_get_sense(dif_usbdev_t *usbdev,
  * @param[out] depth Depth of the AV FIFO.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_status_get_available_fifo_depth(
     dif_usbdev_t *usbdev, uint8_t *depth);
 /**
@@ -727,7 +728,7 @@ dif_usbdev_result_t dif_usbdev_status_get_available_fifo_depth(
  * @param[out] is_full State of the AV FIFO. `true` if full, false otherwise.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_status_get_available_fifo_full(
     dif_usbdev_t *usbdev, bool *is_full);
 /**
@@ -739,7 +740,7 @@ dif_usbdev_result_t dif_usbdev_status_get_available_fifo_full(
  * @param[out] depth Depth of the RX FIFO.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_depth(dif_usbdev_t *usbdev,
                                                         uint8_t *depth);
 
@@ -753,7 +754,7 @@ dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_depth(dif_usbdev_t *usbdev,
  * otherwise.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_empty(dif_usbdev_t *usbdev,
                                                         bool *is_empty);
 
@@ -845,7 +846,7 @@ typedef enum dif_usbdev_irq {
  * @param state New state of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_irq_enable(dif_usbdev_t *usbdev,
                                           dif_usbdev_irq_t irq,
                                           dif_usbdev_toggle_t state);
@@ -858,7 +859,7 @@ dif_usbdev_result_t dif_usbdev_irq_enable(dif_usbdev_t *usbdev,
  * @param[out] state State of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_irq_get(dif_usbdev_t *usbdev,
                                        dif_usbdev_irq_t irq, bool *state);
 
@@ -869,7 +870,7 @@ dif_usbdev_result_t dif_usbdev_irq_get(dif_usbdev_t *usbdev,
  * @param irq An interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_irq_clear(dif_usbdev_t *usbdev,
                                          dif_usbdev_irq_t irq);
 
@@ -879,7 +880,7 @@ dif_usbdev_result_t dif_usbdev_irq_clear(dif_usbdev_t *usbdev,
  * @param usbdev A USB device.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_irq_clear_all(dif_usbdev_t *usbdev);
 
 /**
@@ -890,7 +891,7 @@ dif_usbdev_result_t dif_usbdev_irq_clear_all(dif_usbdev_t *usbdev);
  * @param[out] cur_config Current interrupt configuration.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_irq_disable_all(dif_usbdev_t *usbdev,
                                                uint32_t *cur_config);
 
@@ -901,7 +902,7 @@ dif_usbdev_result_t dif_usbdev_irq_disable_all(dif_usbdev_t *usbdev,
  * @param new_config New interrupt configuration.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_irq_restore(dif_usbdev_t *usbdev,
                                            uint32_t new_config);
 
@@ -912,7 +913,7 @@ dif_usbdev_result_t dif_usbdev_irq_restore(dif_usbdev_t *usbdev,
  * @param irq An interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_irq_test(dif_usbdev_t *usbdev,
                                         dif_usbdev_irq_t irq);
 

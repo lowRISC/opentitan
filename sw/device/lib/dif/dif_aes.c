@@ -416,7 +416,7 @@ dif_aes_result_t dif_aes_get_status(const dif_aes_t *aes, dif_aes_status_t flag,
   return kDifAesOk;
 }
 
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_alert_force(const dif_aes_t *aes,
                                      dif_aes_alert_t alert) {
   if (aes == NULL) {

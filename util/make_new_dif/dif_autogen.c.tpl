@@ -53,135 +53,135 @@ static bool ${ip.name_snake}_get_irq_bit_index(
   return true;
 }
 
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_get_state(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_get_state(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_state_snapshot_t *snapshot) {
 
   if (${ip.name_snake} == NULL || snapshot == NULL) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   *snapshot = ${mmio_region_read32("STATE")}
 
-  return kDif${ip.name_camel}Ok;
+  return kDifOk;
 }
 
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_is_pending(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_is_pending(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_t irq,
   bool *is_pending) {
 
   if (${ip.name_snake} == NULL || is_pending == NULL) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   bitfield_bit32_index_t index;
   if (!${ip.name_snake}_get_irq_bit_index(irq, &index)) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   uint32_t intr_state_reg = ${mmio_region_read32("STATE")}
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
 
-  return kDif${ip.name_camel}Ok;
+  return kDifOk;
 }
 
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_acknowledge(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_acknowledge(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_t irq) {
 
   if (${ip.name_snake} == NULL) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   bitfield_bit32_index_t index;
   if (!${ip.name_snake}_get_irq_bit_index(irq, &index)) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   // Writing to the register clears the corresponding bits (Write-one clear).
   uint32_t intr_state_reg = bitfield_bit32_write(0, index, true);
   ${mmio_region_write32("STATE", "intr_state_reg")}
 
-  return kDif${ip.name_camel}Ok;
+  return kDifOk;
 }
 
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_get_enabled(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_get_enabled(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_t irq,
-  dif_${ip.name_snake}_toggle_t *state) {
+  dif_toggle_t *state) {
   
   if (${ip.name_snake} == NULL || state == NULL) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   bitfield_bit32_index_t index;
   if (!${ip.name_snake}_get_irq_bit_index(irq, &index)) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   uint32_t intr_enable_reg = ${mmio_region_read32("ENABLE")}
   bool is_enabled = bitfield_bit32_read(intr_enable_reg, index);
   *state = is_enabled ? 
-    kDif${ip.name_camel}ToggleEnabled : kDif${ip.name_camel}ToggleDisabled;
+    kDifToggleEnabled : kDifToggleDisabled;
 
-  return kDif${ip.name_camel}Ok;
+  return kDifOk;
 }
 
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_set_enabled(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_set_enabled(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_t irq,
-  dif_${ip.name_snake}_toggle_t state) {
+  dif_toggle_t state) {
 
   if (${ip.name_snake} == NULL) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   bitfield_bit32_index_t index;
   if (!${ip.name_snake}_get_irq_bit_index(irq, &index)) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   uint32_t intr_enable_reg = ${mmio_region_read32("ENABLE")}
-  bool enable_bit = (state == kDifUartToggleEnabled) ? true : false;
+  bool enable_bit = (state == kDifToggleEnabled) ? true : false;
   intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
   ${mmio_region_write32("ENABLE", "intr_enable_reg")}
 
-  return kDif${ip.name_camel}Ok;
+  return kDifOk;
 }
 
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_force(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_force(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_t irq) {
 
   if (${ip.name_snake} == NULL) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   bitfield_bit32_index_t index;
   if (!${ip.name_snake}_get_irq_bit_index(irq, &index)) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
   ${mmio_region_write32("TEST", "intr_test_reg")}
 
-  return kDif${ip.name_camel}Ok;
+  return kDifOk;
 }
 
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_disable_all(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_disable_all(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_enable_snapshot_t *snapshot) {
 
   if (${ip.name_snake} == NULL) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   // Pass the current interrupt state to the caller, if requested.
@@ -192,19 +192,19 @@ dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_disable_all(
   // Disable all interrupts.
   ${mmio_region_write32("ENABLE", "0u")}
 
-  return kDif${ip.name_camel}Ok;
+  return kDifOk;
 }
 
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_restore_all(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_restore_all(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   const dif_${ip.name_snake}_irq_enable_snapshot_t *snapshot) {
 
   if (${ip.name_snake} == NULL || snapshot == NULL) {
-    return kDif${ip.name_camel}BadArg;
+    return kDifBadArg;
   }
 
   ${mmio_region_write32("ENABLE", "*snapshot")}
 
-  return kDif${ip.name_camel}Ok;
+  return kDifOk;
 }

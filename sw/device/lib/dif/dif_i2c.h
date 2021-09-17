@@ -13,8 +13,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -152,7 +152,9 @@ typedef struct dif_i2c_config {
  *
  * This type should be treated as opaque by users.
  */
-typedef struct dif_i2c { dif_i2c_params_t params; } dif_i2c_t;
+typedef struct dif_i2c {
+  dif_i2c_params_t params;
+} dif_i2c_t;
 
 /**
  * The result of a I2C operation.
@@ -361,7 +363,7 @@ typedef enum dif_i2c_fmt {
  * parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_compute_timing(dif_i2c_timing_config_t timing_config,
                                         dif_i2c_config_t *config);
 /**
@@ -373,7 +375,7 @@ dif_i2c_result_t dif_i2c_compute_timing(dif_i2c_timing_config_t timing_config,
  * @param[out] i2c Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_init(dif_i2c_params_t params, dif_i2c_t *i2c);
 
 /**
@@ -385,7 +387,7 @@ dif_i2c_result_t dif_i2c_init(dif_i2c_params_t params, dif_i2c_t *i2c);
  * @param config Runtime configuration parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_configure(const dif_i2c_t *i2c,
                                    dif_i2c_config_t config);
 
@@ -397,7 +399,7 @@ dif_i2c_result_t dif_i2c_configure(const dif_i2c_t *i2c,
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_irq_is_pending(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
                                         bool *is_pending);
 
@@ -409,7 +411,7 @@ dif_i2c_result_t dif_i2c_irq_is_pending(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_irq_acknowledge(const dif_i2c_t *i2c,
                                          dif_i2c_irq_t irq);
 
@@ -421,7 +423,7 @@ dif_i2c_result_t dif_i2c_irq_acknowledge(const dif_i2c_t *i2c,
  * @param[out] state Out-param toggle state of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_irq_get_enabled(const dif_i2c_t *i2c,
                                          dif_i2c_irq_t irq,
                                          dif_i2c_toggle_t *state);
@@ -434,7 +436,7 @@ dif_i2c_result_t dif_i2c_irq_get_enabled(const dif_i2c_t *i2c,
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_irq_set_enabled(const dif_i2c_t *i2c,
                                          dif_i2c_irq_t irq,
                                          dif_i2c_toggle_t state);
@@ -447,7 +449,7 @@ dif_i2c_result_t dif_i2c_irq_set_enabled(const dif_i2c_t *i2c,
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_irq_force(const dif_i2c_t *i2c, dif_i2c_irq_t irq);
 
 /**
@@ -458,7 +460,7 @@ dif_i2c_result_t dif_i2c_irq_force(const dif_i2c_t *i2c, dif_i2c_irq_t irq);
  * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_irq_disable_all(const dif_i2c_t *i2c,
                                          dif_i2c_irq_snapshot_t *snapshot);
 
@@ -472,7 +474,7 @@ dif_i2c_result_t dif_i2c_irq_disable_all(const dif_i2c_t *i2c,
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_irq_restore_all(
     const dif_i2c_t *i2c, const dif_i2c_irq_snapshot_t *snapshot);
 
@@ -482,7 +484,7 @@ dif_i2c_result_t dif_i2c_irq_restore_all(
  * @param i2c An I2c handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_reset_rx_fifo(const dif_i2c_t *i2c);
 
 /**
@@ -492,7 +494,7 @@ dif_i2c_result_t dif_i2c_reset_rx_fifo(const dif_i2c_t *i2c);
  * @param i2c An I2c handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_reset_fmt_fifo(const dif_i2c_t *i2c);
 
 /**
@@ -507,7 +509,7 @@ dif_i2c_result_t dif_i2c_reset_fmt_fifo(const dif_i2c_t *i2c);
  * @param fmt_level The desired watermark level for the FMT FIFO.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
                                         dif_i2c_level_t rx_level,
                                         dif_i2c_level_t fmt_level);
@@ -521,7 +523,7 @@ dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
  * @param state The new toggle state for the host functionality.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_host_set_enabled(const dif_i2c_t *i2c,
                                           dif_i2c_toggle_t state);
 
@@ -534,7 +536,7 @@ dif_i2c_result_t dif_i2c_host_set_enabled(const dif_i2c_t *i2c,
  * @param state The new toggle state for override mode.'
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_override_set_enabled(const dif_i2c_t *i2c,
                                               dif_i2c_toggle_t state);
 
@@ -547,7 +549,7 @@ dif_i2c_result_t dif_i2c_override_set_enabled(const dif_i2c_t *i2c,
  * @param sda The value to drive SDA to.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_override_drive_pins(const dif_i2c_t *i2c, bool scl,
                                              bool sda);
 
@@ -560,7 +562,7 @@ dif_i2c_result_t dif_i2c_override_drive_pins(const dif_i2c_t *i2c, bool scl,
  * @param[out] sda_samples SDA sample bits; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
                                               uint16_t *scl_samples,
                                               uint16_t *sda_samples);
@@ -575,7 +577,7 @@ dif_i2c_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
  * @param[out] rx_fifo_level The number of unread RX bytes; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
                                          uint8_t *fmt_fifo_level,
                                          uint8_t *rx_fifo_level);
@@ -588,7 +590,7 @@ dif_i2c_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
  * @param[out] byte The popped byte; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_read_byte(const dif_i2c_t *i2c, uint8_t *byte);
 
 /**
@@ -605,7 +607,7 @@ dif_i2c_result_t dif_i2c_read_byte(const dif_i2c_t *i2c, uint8_t *byte);
  * @param flags The flags to use for this write.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
                                         dif_i2c_fmt_flags_t flags);
 
@@ -621,7 +623,7 @@ dif_i2c_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
  *        May not be used in combination with `Rx` codes.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_write_byte(const dif_i2c_t *i2c, uint8_t byte,
                                     dif_i2c_fmt_t code, bool suppress_nak_irq);
 

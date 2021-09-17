@@ -631,34 +631,37 @@ TEST_F(FifoTest, WriteRaw) {
                                            {I2C_FDATA_READ_BIT, 0x1},
                                            {I2C_FDATA_RCONT_BIT, 0x1},
                                        });
-  EXPECT_EQ(
-      dif_i2c_write_byte_raw(
-          &i2c_, 0x00,
-          {
-              .start = false, .stop = false, .read = true, .read_cont = true,
-          }),
-      kDifI2cOk);
+  EXPECT_EQ(dif_i2c_write_byte_raw(&i2c_, 0x00,
+                                   {
+                                       .start = false,
+                                       .stop = false,
+                                       .read = true,
+                                       .read_cont = true,
+                                   }),
+            kDifI2cOk);
 
   EXPECT_WRITE32(I2C_FDATA_REG_OFFSET, {
                                            {I2C_FDATA_FBYTE_OFFSET, 0x77},
                                            {I2C_FDATA_READ_BIT, 0x1},
                                        });
-  EXPECT_EQ(
-      dif_i2c_write_byte_raw(&i2c_, 0x77,
-                             {
-                                 .start = false, .stop = false, .read = true,
-                             }),
-      kDifI2cOk);
+  EXPECT_EQ(dif_i2c_write_byte_raw(&i2c_, 0x77,
+                                   {
+                                       .start = false,
+                                       .stop = false,
+                                       .read = true,
+                                   }),
+            kDifI2cOk);
 }
 
 TEST_F(FifoTest, WriteRawBadArgs) {
   EXPECT_EQ(dif_i2c_write_byte_raw(nullptr, 0xff, {}), kDifI2cBadArg);
-  EXPECT_EQ(
-      dif_i2c_write_byte_raw(&i2c_, 0xff,
-                             {
-                                 .start = false, .stop = true, .read = true,
-                             }),
-      kDifI2cBadArg);
+  EXPECT_EQ(dif_i2c_write_byte_raw(&i2c_, 0xff,
+                                   {
+                                       .start = false,
+                                       .stop = true,
+                                       .read = true,
+                                   }),
+            kDifI2cBadArg);
   EXPECT_EQ(dif_i2c_write_byte_raw(&i2c_, 0xff,
                                    {
                                        .start = false,
