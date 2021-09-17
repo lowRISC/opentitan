@@ -131,7 +131,6 @@ module prim_alert_sender
     AlertHsPhase2,
     PingHsPhase1,
     PingHsPhase2,
-    SigInt,
     Pause0,
     Pause1
     } state_e;
@@ -234,34 +233,22 @@ module prim_alert_sender
       Pause0: begin
         state_d = Pause1;
       end
-
       // clear and ack alert request if it was set
       Pause1: begin
         state_d = Idle;
       end
-
-      // we have a signal integrity issue at one of
-      // the incoming diff pairs. this condition is
-      // signalled by setting the output diffpair
-      // to the same value and continuously toggling
-      // them.
-      SigInt: begin
-        state_d  = Idle;
-        if (sigint_detected) begin
-          state_d  = SigInt;
-          alert_pd = ~alert_pq;
-          alert_nd = ~alert_pq;
-        end
-      end
       // catch parasitic states
       default : state_d = Idle;
     endcase
-    // bail out if a signal integrity issue has been detected
-    if (sigint_detected && (state_q != SigInt)) begin
-      state_d   = SigInt;
+
+    // we have a signal integrity issue at one of the incoming diff pairs. this condition is
+    // signalled by setting the output diffpair to zero. If the sigint has disappeared, we clear
+    // the ping request state of this sender and go back to idle.
+    if (sigint_detected) begin
+      state_d   = Idle;
       alert_pd  = 1'b0;
       alert_nd  = 1'b0;
-      ping_clr  = 1'b0;
+      ping_clr  = 1'b1;
       alert_clr = 1'b0;
     end
   end
