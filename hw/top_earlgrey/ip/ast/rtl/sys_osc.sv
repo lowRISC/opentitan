@@ -59,7 +59,7 @@ assign sys_clk_dly = 1'b1;
 logic clk, en_osc;
 
 prim_clock_gating #(
-  .NoFpgaGate(1'b1)
+  .NoFpgaGate ( 1'b1 )
 ) u_clk_ckgt (
   .clk_i ( clk_sys_ext_i ),
   .en_i ( en_osc ),
@@ -86,7 +86,7 @@ assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 // Clock Output Buffer
 ////////////////////////////////////////
 prim_clock_buf #(
-  .NoFpgaBuf(1'b1)
+  .NoFpgaBuf ( 1'b1 )
 ) u_buf (
   .clk_i ( clk ),
   .clk_o ( sys_clk_o )

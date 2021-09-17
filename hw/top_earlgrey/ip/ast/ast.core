@@ -114,3 +114,4 @@ targets:
       vcs:
         vcs_options: [-timescale=1ns/1ps -l vcs.log]
     toplevel: ast
+
