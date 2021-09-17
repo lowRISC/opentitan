@@ -200,7 +200,7 @@ class csr_write_seq extends csr_base_seq;
                                 test_csrs[i].get_full_name()), UVM_MEDIUM)
 
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
-      wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, CsrHwResetTest);
+      wdata = get_csr_wdata_with_write_excl(test_csrs[i], wdata, CsrHwResetTest);
 
       `downcast(dv_csr, test_csrs[i])
       if (en_rand_backdoor_write && !dv_csr.get_is_ext_reg()) begin
@@ -245,7 +245,7 @@ class csr_rw_seq extends csr_base_seq;
                                 test_csrs[i].get_full_name()), UVM_MEDIUM)
 
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
-      wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, CsrRwTest);
+      wdata = get_csr_wdata_with_write_excl(test_csrs[i], wdata, CsrRwTest);
 
       // if external checker is not enabled and writes are made non-blocking, then we need to
       // pre-predict so that the mirrored value will be updated. if we dont, then csr_rd_check task
@@ -422,7 +422,7 @@ class csr_aliasing_seq extends csr_base_seq;
                                 test_csrs[i].get_full_name()), UVM_MEDIUM)
 
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
-      wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, CsrAliasingTest);
+      wdata = get_csr_wdata_with_write_excl(test_csrs[i], wdata, CsrAliasingTest);
       csr_wr(.ptr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
 
       all_csrs.shuffle();
