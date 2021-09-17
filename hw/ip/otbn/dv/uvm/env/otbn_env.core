@@ -34,6 +34,7 @@ filesets:
       - seq_lib/otbn_common_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_multi_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/otbn_sequential_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_single_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_smoke_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource

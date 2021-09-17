@@ -6,5 +6,6 @@
 `include "otbn_common_vseq.sv"
 `include "otbn_multi_vseq.sv"
 `include "otbn_reset_vseq.sv"
+`include "otbn_sequential_vseq.sv"
 `include "otbn_single_vseq.sv"
 `include "otbn_smoke_vseq.sv"
