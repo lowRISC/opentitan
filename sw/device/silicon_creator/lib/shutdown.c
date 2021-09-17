@@ -257,10 +257,20 @@ SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
 #endif
 }
 
+#ifndef OT_OFF_TARGET_TEST
+/**
+ * The shutdown_finalize function goes into the .shutdown section which is
+ * placed by the linker script after all other executable code.
+ */
+__attribute__((section(".shutdown")))
+#endif
 void shutdown_finalize(rom_error_t reason) {
   uint32_t redacted_error = shutdown_redact(
       reason, otp_read32(OTP_CTRL_PARAM_ROM_ERROR_REPORTING_OFFSET));
+
+  // TODO(lowRISC/opentitan#8236): base_printf is in the .text section.
   base_printf("boot_fault: 0x%08x\n", redacted_error);
+
   shutdown_software_escalate();
   shutdown_keymgr_kill();
   shutdown_flash_kill();
