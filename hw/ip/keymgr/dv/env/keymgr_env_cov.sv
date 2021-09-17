@@ -73,7 +73,10 @@ class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
   // Covergroup to sample sideload_clear in all the states and followed by all the operations
   covergroup sideload_clear_cg with function sample(bit [2:0] sideload_clear,
                                                     keymgr_pkg::keymgr_working_state_e state,
-                                                    keymgr_pkg::keymgr_ops_e op);
+                                                    keymgr_pkg::keymgr_ops_e op,
+                                                    bit aes_sl_avail,
+                                                    bit kmac_sl_avail,
+                                                    bit otbn_sl_avail);
     sideload_clear_cp: coverpoint sideload_clear {
       bins clear_none  = {0};
       bins clear_one[] = {[1:3]};
@@ -83,7 +86,12 @@ class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
     state_cp:          coverpoint state;
     // the operation followed by sideload_clear
     op_cp:             coverpoint op;
+    aes_sl_avail_cp:   coverpoint aes_sl_avail;
+    kmac_sl_avail_cp:  coverpoint kmac_sl_avail;
+    otbn_sl_avail_cp:  coverpoint otbn_sl_avail;
     sideload_clear_x_state_op_cross: cross sideload_clear, state, op;
+    sideload_clear_x_sl_avail_cross: cross sideload_clear_cp, aes_sl_avail, kmac_sl_avail,
+                                           otbn_sl_avail;
   endgroup
 
   covergroup err_code_cg with function sample(keymgr_pkg::keymgr_err_pos_e err_code);

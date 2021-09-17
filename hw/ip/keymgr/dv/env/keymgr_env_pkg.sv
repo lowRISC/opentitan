@@ -48,6 +48,12 @@ package keymgr_env_pkg;
     FlashOwnerSeedInvalid
   } keymgr_invalid_hw_input_type_e;
 
+  typedef enum bit[1:0] {
+    SideLoadNotAvail,
+    SideLoadAvail,
+    SideLoadClear
+  } keymgr_sideload_status_e;
+
   string msg_id = "keymgr_env_pkg";
   // functions
   // state is incremental, if it's not in defined enum, consider as StDisabled
