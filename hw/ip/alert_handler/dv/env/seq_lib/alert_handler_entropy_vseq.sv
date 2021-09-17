@@ -11,7 +11,7 @@ class alert_handler_entropy_vseq extends alert_handler_smoke_vseq;
 
   // large number of num_trans to make sure covers all alerts and escalation pings
   constraint num_trans_c {
-    num_trans inside {[4_000:10_000]};
+    num_trans inside {[400:1000]};
   }
 
   // increase the possibility to enable more alerts, because alert_handler only sends ping on
