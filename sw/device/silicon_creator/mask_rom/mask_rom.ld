@@ -86,6 +86,20 @@ SECTIONS {
     *(.text)
     *(.text.*)
 
+
+    /* Ensure section end is word-aligned. */
+    . = ALIGN(4);
+  } > rom
+
+  /**
+   * Shutdown text section, containing shutdown function(s).
+   *
+   * This must be the last executable section in the ROM.
+   */
+  .shutdown : ALIGN(4) {
+    *(.shutdown)
+    *(.shutdown.*)
+
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
