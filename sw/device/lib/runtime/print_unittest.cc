@@ -17,9 +17,8 @@ extern "C" {
 
 // NOTE: This is only present so that print.c can link without pulling in
 // dif_uart.c.
-extern "C" dif_uart_result_t dif_uart_byte_send_polled(const dif_uart *,
-                                                       uint8_t) {
-  return kDifUartOk;
+extern "C" dif_result_t dif_uart_byte_send_polled(const dif_uart *, uint8_t) {
+  return kDifOk;
 }
 
 namespace base {

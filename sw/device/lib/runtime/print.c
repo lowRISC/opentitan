@@ -49,7 +49,8 @@ static size_t base_dev_null(void *data, const char *buf, size_t len) {
   return len;
 }
 static buffer_sink_t base_stdout = {
-    .data = NULL, .sink = &base_dev_null,
+    .data = NULL,
+    .sink = &base_dev_null,
 };
 
 void base_set_stdout(buffer_sink_t out) {
@@ -62,7 +63,7 @@ void base_set_stdout(buffer_sink_t out) {
 static size_t base_dev_uart(void *data, const char *buf, size_t len) {
   const dif_uart_t *uart = (const dif_uart_t *)data;
   for (size_t i = 0; i < len; ++i) {
-    if (dif_uart_byte_send_polled(uart, (uint8_t)buf[i]) != kDifUartOk) {
+    if (dif_uart_byte_send_polled(uart, (uint8_t)buf[i]) != kDifOk) {
       return i;
     }
   }
@@ -111,10 +112,12 @@ size_t base_snprintf(char *buf, size_t len, const char *format, ...) {
   va_start(args, format);
 
   snprintf_captures_t data = {
-      .buf = buf, .bytes_left = len,
+      .buf = buf,
+      .bytes_left = len,
   };
   buffer_sink_t out = {
-      .data = &data, .sink = &snprintf_sink,
+      .data = &data,
+      .sink = &snprintf_sink,
   };
   size_t bytes_left = base_vfprintf(out, format, args);
   va_end(args);
