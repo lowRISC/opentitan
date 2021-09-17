@@ -478,7 +478,7 @@ module kmac
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       idle_o <= 1'b 1;
-    end else if ((sha3_fsm == sha3_pkg::StIdle) && msgfifo_empty) begin
+    end else if ((sha3_fsm == sha3_pkg::StIdle) && (msgfifo_empty || SecIdleAcceptSwMsg)) begin
       idle_o <= 1'b 1;
     end else begin
       idle_o <= 1'b 0;
