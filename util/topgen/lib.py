@@ -298,6 +298,7 @@ def is_shadowed_port(block: IpBlock, port: str) -> bool:
 
     return port == shadowed_port
 
+
 def shadow_name(name: str) -> str:
     """Return the appropriate shadow reset name based on port name
     """
@@ -504,6 +505,16 @@ def is_rom_ctrl(modules):
     '''
     for m in modules:
         if m['type'] == 'rom_ctrl':
+            return True
+
+    return False
+
+
+def is_lc_ctrl(modules):
+    '''Return true if lc_ctrl exists in the design
+    '''
+    for m in modules:
+        if m['type'] == 'lc_ctrl':
             return True
 
     return False
