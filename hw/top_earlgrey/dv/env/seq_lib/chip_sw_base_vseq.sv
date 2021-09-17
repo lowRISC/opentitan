@@ -157,7 +157,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // TODO: bootstrap mode not supported.
   // TODO: Need to deal with scrambling.
   virtual function void sw_symbol_backdoor_overwrite(input string symbol,
-                                                     inout byte data[],
+                                                     inout bit [7:0] data[],
                                                      input chip_mem_e mem = FlashBank0Data,
                                                      input sw_type_e sw_type = SwTypeTest);
 

@@ -11,13 +11,13 @@ class chip_sw_spi_tx_rx_vseq extends chip_sw_base_vseq;
   localparam uint SPI_DEVICE_RX_SRAM_SIZE = 1024;
 
   // A set of bytes to be send from SPI_HOST to SPI_DEVICE RX FIFO.
-  rand byte spi_device_rx_data[];
+  rand bit [7:0] spi_device_rx_data[];
   constraint spi_device_rx_data_c {
     spi_device_rx_data.size() == SPI_DEVICE_DATA_SIZE;
   }
 
   // A set of bytes expected to be received on SPI_HOST from SPI_DEVICE TX FIFO.
-  rand byte exp_spi_device_tx_data[];
+  rand bit [7:0] exp_spi_device_tx_data[];
   constraint exp_spi_device_tx_data_c {
     exp_spi_device_tx_data.size() == SPI_DEVICE_DATA_SIZE;
   }
@@ -57,7 +57,7 @@ class chip_sw_spi_tx_rx_vseq extends chip_sw_base_vseq;
     send_spi_host_rx_data(spi_device_tx_data, SPI_DEVICE_DATA_SIZE);
   endtask
 
-  virtual task send_spi_host_rx_data(ref bit[7:0] device_data[$],input int size);
+  virtual task send_spi_host_rx_data(ref bit [7:0] device_data[$],input int size);
     spi_host_seq m_spi_host_seq;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
     if (size == SPI_DEVICE_DATA_SIZE) begin
