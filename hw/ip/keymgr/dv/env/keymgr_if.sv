@@ -15,12 +15,6 @@ interface keymgr_if(input clk, input rst_n);
   // Status can't be directly changed from SideLoadClear to SideLoadAvail.
   // When status is SideLoadClear due to SIDELOAD_CLEAR programmed, need to write CSR to 0 to reset
   // it so that status is changed to SideLoadNotAvail, then we may set it to SideLoadAvail again
-  typedef enum bit[1:0] {
-    SideLoadNotAvail,
-    SideLoadAvail,
-    SideLoadClear
-  } keymgr_sideload_status_e;
-
   lc_ctrl_pkg::lc_tx_t            keymgr_en;
   lc_ctrl_pkg::lc_keymgr_div_t    keymgr_div;
   otp_ctrl_pkg::otp_device_id_t   otp_device_id;

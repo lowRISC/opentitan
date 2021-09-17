@@ -676,7 +676,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       "sideload_clear": begin
         if (addr_phase_write) begin
           if (cfg.en_cov) begin
-            cov.sideload_clear_cg.sample(`gmv(ral.sideload_clear.val), current_state, get_operation());
+            cov.sideload_clear_cg.sample(`gmv(ral.sideload_clear.val),
+                                         current_state,
+                                         get_operation(),
+                                         cfg.keymgr_vif.aes_sideload_status == SideLoadAvail,
+                                         cfg.keymgr_vif.kmac_sideload_status == SideLoadAvail,
+                                         cfg.keymgr_vif.otbn_sideload_status == SideLoadAvail);
           end
 
           fork

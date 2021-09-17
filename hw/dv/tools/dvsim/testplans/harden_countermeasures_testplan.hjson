@@ -1,0 +1,52 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // TODO, split this into several testplan for each CM
+  testpoints: [
+    {
+      name: one_hot_check
+      desc: ''' Verify design behavior is correct when one-hot coding is violated.
+
+            Stimulus:
+            - Backdoor force one-hot coding signals to not one-hot.
+            - Randomly flip the value back to ensure the error is latched and won't go away until
+              reset.
+
+            Checks:
+            - Check that fatal alert is triggered.
+            - Check that err_code/fault_status is updated correctly and preserved until reset.
+            - Check the following operation should be failed if applicable.'''
+      milestone: V2
+      tests: ["{name}_harden_countermeasures"]
+    }
+    {
+      name: redundant_coding_fsm_check
+      desc: ''' Verify design behavior is correct when the redundant FSM enters an invalid state.
+
+            Stimulus:
+            - Backdoor force the FSM to any of the undefined values.
+            - Randomly flip the value back to a defined state to ensure the error is latched and
+               won't go away until reset.
+
+            Same checks as `one_hot_check`'''
+      milestone: V2
+      tests: ["{name}_harden_countermeasures"]
+    }
+    {
+      name: hardened_counter_check
+      desc: ''' Verify design behavior is correct when the harden counter is changed to an
+            unexpected value.
+
+            Stimulus:
+            - At the falling edge (non-active edge), force the counter to a different value.
+            - Randomly flip the value back to any other value to ensure the error is latched and
+              won't go away until reset.
+
+            Same checks as `one_hot_check`'''
+      milestone: V2
+      tests: ["{name}_harden_countermeasures"]
+    }
+  ]
+}
+

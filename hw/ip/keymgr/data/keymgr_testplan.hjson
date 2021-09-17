@@ -8,6 +8,7 @@
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/harden_countermeasures_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
   testpoints: [
     {
@@ -21,6 +22,8 @@
             - Issue gen-id, gen-sw-output operation in each state, including invalid operations in
               states other than normal operating states (`StCreatorRootKey`, `StOwnerIntKey` and
               `StOwnerRootKey`).
+            - Randomize `CDI_SEL` and `DEST_SEL`.
+            - Use default/fixed values for HW/SW inputs.
 
             Checks:
             - Check STATUS reg for each operation.
@@ -38,11 +41,13 @@
       name: random
       desc: '''
             Extend from smoke to randomize all SW input data
-            - Fully randomize SW input: rom_ext_desc_*, software_binding_*, salt_*, max_*_key_ver,
-              *_key_ver_en.
+            - Fully randomize SW inputs: rom_ext_desc_*, software_binding_*, salt_*, max_*_key_ver,
+              *_key_ver_regwen.
             - Randomize key_version any value less than max_*_key_ver, to avoid triggerring
               `invalid_kmac_input` error.
-            - Fully randomize HW input from flash, otp and life cycle.
+            - Fully randomize HW inputs from flash, otp and life cycle.
+            - Randomize *sw_binding_regwen. Ensure this gates the *_sw_binding and it will
+              be cleared after a successful advance operation.
 
             Most of other sequences are derived from this to have similar init and sequence.
 
@@ -54,22 +59,11 @@
     {
       name: cfgen_during_op
       desc: '''
-            CFGEN is RO reg and it gates bunch of write access of other registers, which isn't
-            tested in common CSR tests.
+            `cfg_regwen` is RO reg and it gates bunch of write access of other registers, which is
+            not tested in common CSR tests.
 
             Stimulus and checks:
-            Test command and reg access gated by CFGEN is ignored during operation.
-            '''
-      milestone: V2
-      tests: ["keymgr_cfg_regwen"]
-    }
-    {
-      name: cfgen_at_st_random
-      desc: '''
-            `StRandom` is a temporary state during init operation, which will set CSR CFGEN.
-
-            Stimulus and checks:
-            Test command and reg access gated by CFGEN is ignored during `StRandom`.
+            Test command and reg access gated by `cfg_regwen` is ignored during operation.
             '''
       milestone: V2
       tests: ["keymgr_cfg_regwen"]
@@ -77,10 +71,12 @@
     {
       name: sideload
       desc: '''
-            Keymgr contains HW sideload interfaces to output keys for KMAC, HMAC, AES.
+            Keymgr contains HW sideload interfaces to output keys for KMAC, AES, OTBN.
 
             Stimulus:
-            Generate a keymgr output to HW sideload interface, excising all the sideload interfaces.
+            - Generate a keymgr output to HW sideload interface, exercising all the sideload
+              interfaces.
+            - Randomly program any value to Sideload_clear after any operation.
 
             Checks:
             Verify the sideload data and status for correctness.
@@ -88,17 +84,6 @@
       milestone: V2
       tests: ["keymgr_sideload", "keymgr_sideload_kmac",
               "keymgr_sideload_aes", "keymgr_sideload_otbn"]
-    }
-    {
-      name: init_n_start
-      desc: '''
-            Stimulus and checks:
-            Verify all combinations of `init` and `start`.
-            - If both are set in `StReset`, check `INVALID_OP` error is triggered.
-            - If it's in other state, `init` is ignored.
-            '''
-      milestone: V2
-      tests: ["keymgr_random"]
     }
     {
       name: direct_to_disabled_state
@@ -120,33 +105,12 @@
             Checks:
             - If keymgr is not initialized, check it can't be initialized until life cycle enables
               keymgr.
-            - If keymgr is in a valid state after init, key output to KMAC is wiped immediately and
-              SW output will be invalid after OP is done.
+            - If keymgr is in a valid state after `StReset`, key output to KMAC is wiped immediately
+              and SW output will be invalid after OP is done.
             - If keymgr in disabled state, check the behavior is consistent with normal behavior.
             '''
       milestone: V2
       tests: ["keymgr_lc_disable"]
-    }
-    {
-      name: invalid_cmd
-      desc: '''
-            Verify `keymgr` security countermeasures on fault injection.
-
-            Stimulus:
-            Force one of these or both
-            - Force advance, gen_id and gen_out to not one-hot
-              - Path: `dut.u_ctrl.adv_en_o/id_en_o/gen_en_o`
-            - Force KMAC FSM to default branch to trigger FSM error
-              - Path: `dut.u_kmac_if.state_d`
-
-            Checks:
-            - Check interrupts `err` is triggered.
-            - Check alert `fatal_fault_err` is triggered and err_code is `INVALID_CMD`.
-            - Check KMAC output key and output data to SW are corrupted, also keymgr enters
-              StDisabled.
-            '''
-      milestone: V2
-      tests: ["keymgr_cmd_invalid"]
     }
     {
       name: kmac_error_response
@@ -197,13 +161,109 @@
       tests: ["keymgr_hwsw_invalid_input"]
     }
     {
+      name: sync_async_fault_cross
+      desc: '''
+            Verify `keymgr` behavior with invalid data patterns.
+
+            Stimulus:
+            Create these 2 direct tests:
+            - Sync (transactional) fault occurs followed by async (non-transactional) fault.
+            - Async (non-transactional) fault occurs followed by sync (transactional) fault.
+
+            Checks:
+            - Check interrupts `err` is triggered.
+            - Check alert `fatal_fault_err` is triggered.
+            - Check `fault_status` is updated correctly.
+            '''
+      milestone: V2
+      tests: ["keymgr_sync_async_fault_cross"]
+    }
+    {
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence and
-              keymgr_cfg_regwen (requires zero_delays)
-            - Randomly add reset between each sequence'''
+              keymgr_cfg_regwen (requires zero_delays).
+            - Randomly add reset between each sequence.'''
       milestone: V2
       tests: ["keymgr_stress_all"]
+    }
+  ]
+  covergroups: [
+    {
+      name: state_and_op_cg
+      desc: '''
+            - Cover all operations with `cdi_sel`, `dest_sel` and `op_status` (only fail or success)
+            at any of all working_states.
+            - This is sampled once an operation is done.'''
+    }
+    {
+      name: lc_disable_cg
+      desc: '''
+             - Cover LC disable occurs at any of all the states or during any of all the
+             operations.
+             - This is sampled once LC disables keymgr.'''
+    }
+    {
+      name: sideload_clear_cg
+      desc: '''
+            - Cover all the `sideload_clear` values are used after any of all the operations and in
+            any of all the states.
+            - Cover `sideload_clear` with any combination of availability of 3 sideload interfaces.
+            - This is sampled once sideload_clear is programmed after an operation.'''
+    }
+    {
+      name: reseed_interval_cg
+      desc: '''
+            - Cover small values of reseed_interval are used, so that TB can actually check EDN
+              request is sent in the right interval.
+            - Also Cover some large values to ensure all bits are toggled.'''
+    }
+    {
+      name: keymgr_sw_input_cg
+      desc: '''
+            - Cover all bits of SW inputs are toggled.
+            - SW input includes these CSRS: `*_sw_binding`, `salt`, `key_version`, `max_*_key_ver*`.
+            - Cross with the corresponding regwen.'''
+    }
+    {
+      name: control_w_regwen_cg
+      desc: '''
+            - Similar to keymgr_sw_input_cg, create a separate cg as there are some reserved fields
+              scattered in the CSR.
+            '''
+    }
+    {
+      name: err_code_cg
+      desc: '''
+            - Cover `err_codes` values except `invalid_shadow_update` as that is tested in a common
+              direct test.
+            - This is sampled when `err_codes` is read.'''
+    }
+    {
+      name: hw_invalid_input_cg
+      desc: '''
+            Cover all HW invalid inputs, including
+            - all ones/zeros on OTP root key.
+            - OTP root key valid is low.
+            - all ones/zeros on LC keymgr health state.
+            - all ones/zeros on ROM degist.
+            - ROM degist valid is low.
+            - all ones/zeros on flash creator seeds.
+            - all ones/zeros on flash owner seeds.'''
+    }
+    {
+      name: key_version_compare_cg
+      desc: '''
+            - Cover comparison results (equal, less, greater) of key_version and current max value.
+            - Cross with state and operation (gen-sw-out or gen-hw-out).'''
+    }
+    {
+      name: fault_status_cg
+      desc: '''
+            - Cover fault_status` values except `REGFILE_INTG` and `SHADOW` as they are tested in
+              a common direct test.
+            - Cover sync and async fault cross with each other.
+            - This is sampled when `fault_status` is read.'''
     }
   ]
 }
