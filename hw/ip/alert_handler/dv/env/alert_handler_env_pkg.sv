@@ -33,7 +33,7 @@ package alert_handler_env_pkg;
   // extra cycle to the calculated cnt, or even combine two signals into one.
   parameter uint IGNORE_CNT_CHECK_NS       = 100_000_000;
   // set the max ping timeout cycle to constrain the simulation run time
-  parameter uint MAX_PING_TIMEOUT_CYCLE    = 100;
+  parameter uint MAX_PING_TIMEOUT_CYCLE    = 300;
 
   parameter uint NUM_CRASHDUMP             = NUM_ALERT_CLASSES * (alert_handler_reg_pkg::AccuCntDw
                                              + alert_handler_reg_pkg::EscCntDw + 3) +
