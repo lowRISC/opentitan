@@ -43,8 +43,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -200,7 +200,7 @@ typedef uint32_t dif_edn_irq_snapshot_t;
  * @param[out] edn Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_init(dif_edn_params_t params, dif_edn_t *edn);
 
 /**
@@ -211,7 +211,7 @@ dif_edn_result_t dif_edn_init(dif_edn_params_t params, dif_edn_t *edn);
  * @param edn An Entropy Distribution Network handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_configure(const dif_edn_t *edn);
 
 /**
@@ -223,7 +223,7 @@ dif_edn_result_t dif_edn_configure(const dif_edn_t *edn);
  * @param edn An Entropy Distribution Network handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_boot_mode_start(const dif_edn_t *edn);
 
 /**
@@ -236,7 +236,7 @@ dif_edn_result_t dif_edn_boot_mode_start(const dif_edn_t *edn);
  * @param config Auto request configuration parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_auto_mode_start(const dif_edn_t *edn,
                                          dif_edn_auto_params_t *config);
 
@@ -272,7 +272,7 @@ dif_edn_result_t dif_edn_get_status(const dif_edn_t *edn, dif_edn_status_t flag,
  * @param edn An Entropy Distribution Network handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_stop(const dif_edn_t *edn);
 
 /**
@@ -284,7 +284,7 @@ dif_edn_result_t dif_edn_stop(const dif_edn_t *edn);
  * @param edn An Entropy Distribution Network handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_lock(const dif_edn_t *edn);
 
 /**
@@ -294,7 +294,7 @@ dif_edn_result_t dif_edn_lock(const dif_edn_t *edn);
  * @param[out] is_locked Out-param for the locked state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_is_locked(const dif_edn_t *edn, bool *is_locked);
 
 /**
@@ -305,7 +305,7 @@ dif_edn_result_t dif_edn_is_locked(const dif_edn_t *edn, bool *is_locked);
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_irq_is_pending(const dif_edn_t *edn, dif_edn_irq_t irq,
                                         bool *is_pending);
 
@@ -317,7 +317,7 @@ dif_edn_result_t dif_edn_irq_is_pending(const dif_edn_t *edn, dif_edn_irq_t irq,
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_irq_acknowledge(const dif_edn_t *edn,
                                          dif_edn_irq_t irq);
 
@@ -329,7 +329,7 @@ dif_edn_result_t dif_edn_irq_acknowledge(const dif_edn_t *edn,
  * @param[out] state Out-param toggle state of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_irq_get_enabled(const dif_edn_t *edn,
                                          dif_edn_irq_t irq,
                                          dif_edn_toggle_t *state);
@@ -342,7 +342,7 @@ dif_edn_result_t dif_edn_irq_get_enabled(const dif_edn_t *edn,
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_irq_set_enabled(const dif_edn_t *edn,
                                          dif_edn_irq_t irq,
                                          dif_edn_toggle_t state);
@@ -355,7 +355,7 @@ dif_edn_result_t dif_edn_irq_set_enabled(const dif_edn_t *edn,
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_irq_force(const dif_edn_t *edn, dif_edn_irq_t irq);
 
 /**
@@ -366,7 +366,7 @@ dif_edn_result_t dif_edn_irq_force(const dif_edn_t *edn, dif_edn_irq_t irq);
  * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_irq_disable_all(const dif_edn_t *edn,
                                          dif_edn_irq_snapshot_t *snapshot);
 
@@ -380,7 +380,7 @@ dif_edn_result_t dif_edn_irq_disable_all(const dif_edn_t *edn,
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_edn_result_t dif_edn_irq_restore_all(
     const dif_edn_t *edn, const dif_edn_irq_snapshot_t *snapshot);
 

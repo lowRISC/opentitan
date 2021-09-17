@@ -31,9 +31,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
+#include "sw/device/lib/dif/dif_base.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,47 +50,6 @@ typedef struct dif_${ip.name_snake} {
    */
   mmio_region_t base_addr;
 } dif_${ip.name_snake}_t;
-
-/**
- * The result of a ${ip.name_long_lower} operation.
- *
- * NOTE: additional result values can be defined in the manually-implemented
- * header.
- */
-typedef enum dif_${ip.name_snake}_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDif${ip.name_camel}Ok = 0,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDif${ip.name_camel}Error = 1,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDif${ip.name_camel}BadArg = 2,
-} dif_${ip.name_snake}_result_t;
-
-/**
- * A toggle state: enabled, or disabled.
- *
- * This enum may be used instead of a `bool` when describing an enabled/disabled
- * state.
- */
-typedef enum dif_${ip.name_snake}_toggle {
-  /**
-   * The "enabled" state.
-   */
-  kDif${ip.name_camel}ToggleEnabled,
-  /**
-   * The "disabled" state.
-   */
-  kDif${ip.name_camel}ToggleDisabled,
-} dif_${ip.name_snake}_toggle_t;
 
 /**
  * A ${ip.name_long_lower} interrupt request type.
@@ -129,8 +88,8 @@ typedef uint32_t dif_${ip.name_snake}_irq_enable_snapshot_t;
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_get_state(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_get_state(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_state_snapshot_t *snapshot);
 
@@ -142,8 +101,8 @@ dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_get_state(
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_is_pending(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_is_pending(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_t irq,
   bool *is_pending);
@@ -156,8 +115,8 @@ dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_is_pending(
  * @param irq An interrupt request.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_acknowledge(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_acknowledge(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_t irq);
 
@@ -169,11 +128,11 @@ dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_acknowledge(
  * @param[out] state Out-param toggle state of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_get_enabled(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_get_enabled(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_t irq,
-  dif_${ip.name_snake}_toggle_t *state);
+  dif_toggle_t *state);
 
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
@@ -183,11 +142,11 @@ dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_get_enabled(
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_set_enabled(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_set_enabled(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_t irq,
-  dif_${ip.name_snake}_toggle_t state);
+  dif_toggle_t state);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -197,8 +156,8 @@ dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_set_enabled(
  * @param irq An interrupt request.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_force(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_force(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_t irq);
 
@@ -210,8 +169,8 @@ dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_force(
  * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_disable_all(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_disable_all(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_irq_enable_snapshot_t *snapshot);
 
@@ -222,8 +181,8 @@ dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_disable_all(
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
-dif_${ip.name_snake}_result_t dif_${ip.name_snake}_irq_restore_all(
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_irq_restore_all(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   const dif_${ip.name_snake}_irq_enable_snapshot_t *snapshot);
 

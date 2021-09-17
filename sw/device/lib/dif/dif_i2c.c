@@ -5,6 +5,7 @@
 #include "sw/device/lib/dif/dif_i2c.h"
 
 #include "sw/device/lib/base/bitfield.h"
+
 #include "i2c_regs.h"  // Generated
 
 /**
@@ -263,7 +264,7 @@ dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
   return kDifI2cOk;
 }
 
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 static bool irq_index(dif_i2c_irq_t irq, bitfield_bit32_index_t *bit_index) {
   switch (irq) {
     case kDifI2cIrqFmtWatermarkUnderflow:

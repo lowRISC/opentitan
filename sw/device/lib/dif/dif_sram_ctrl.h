@@ -28,8 +28,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -105,7 +105,7 @@ typedef enum dif_sram_ctrl_toggle {
  * @param[out] handle Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_sram_ctrl_result_t dif_sram_ctrl_init(dif_sram_ctrl_params_t params,
                                           dif_sram_ctrl_t *handle);
 
@@ -115,7 +115,7 @@ dif_sram_ctrl_result_t dif_sram_ctrl_init(dif_sram_ctrl_params_t params,
  * @param sram_ctrl A SRAM Controller handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_sram_ctrl_result_t dif_sram_ctrl_force_alert(
     const dif_sram_ctrl_t *sram_ctrl);
 
@@ -129,7 +129,7 @@ dif_sram_ctrl_result_t dif_sram_ctrl_force_alert(
  * @param sram_ctrl A SRAM Controller handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_sram_ctrl_result_t dif_sram_ctrl_exec_lock(
     const dif_sram_ctrl_t *sram_ctrl);
 
@@ -143,7 +143,7 @@ dif_sram_ctrl_result_t dif_sram_ctrl_exec_lock(
  * @param state[out] Enabled if locked, disabled if unlocked.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_sram_ctrl_result_t dif_sram_ctrl_exec_is_locked(
     const dif_sram_ctrl_t *sram_ctrl, dif_sram_ctrl_toggle_t *state);
 
@@ -157,7 +157,7 @@ dif_sram_ctrl_result_t dif_sram_ctrl_exec_is_locked(
  * @param state[out] Enabled if locked, disabled if unlocked.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_sram_ctrl_result_t dif_sram_ctrl_control_is_locked(
     const dif_sram_ctrl_t *sram_ctrl, dif_sram_ctrl_toggle_t *state);
 
@@ -194,7 +194,7 @@ typedef enum dif_sram_ctrl_exec_result {
  * @param state Enable or disable SRAM execution.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_sram_ctrl_exec_result_t dif_sram_ctrl_exec_set_enabled(
     const dif_sram_ctrl_t *sram_ctrl, dif_sram_ctrl_toggle_t state);
 
@@ -205,7 +205,7 @@ dif_sram_ctrl_exec_result_t dif_sram_ctrl_exec_set_enabled(
  * @param[out] state State of SRAM execution (enabled or disabled).
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_sram_ctrl_result_t dif_sram_ctrl_exec_get_enabled(
     const dif_sram_ctrl_t *sram_ctrl, dif_sram_ctrl_toggle_t *state);
 
@@ -223,7 +223,7 @@ dif_sram_ctrl_result_t dif_sram_ctrl_exec_get_enabled(
  * @param[out] address The byte address of the last parity error (optional).
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_sram_ctrl_result_t dif_sram_ctrl_get_error(const dif_sram_ctrl_t *sram_ctrl,
                                                bool *error, uintptr_t *address);
 
@@ -257,7 +257,7 @@ typedef struct dif_sram_ctrl_scrambling_status {
  * @param[out] status Information about the scrambling key in use.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_sram_ctrl_result_t dif_sram_ctrl_get_scrambling_status(
     const dif_sram_ctrl_t *sram_ctrl,
     dif_sram_ctrl_scrambling_status_t *status);

@@ -12,8 +12,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -292,7 +292,7 @@ typedef uint32_t dif_csrng_irq_snapshot_t;
  * @param[out] csrng Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_init(dif_csrng_params_t params,
                                   dif_csrng_t *csrng);
 
@@ -304,7 +304,7 @@ dif_csrng_result_t dif_csrng_init(dif_csrng_params_t params,
  * @param csrng A CSRNG handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_configure(const dif_csrng_t *csrng);
 
 /**
@@ -322,7 +322,7 @@ dif_csrng_result_t dif_csrng_configure(const dif_csrng_t *csrng);
  * @param seed_material Seed initialization parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_instantiate(
     const dif_csrng_t *csrng, dif_csrng_entropy_src_toggle_t entropy_src_enable,
     const dif_csrng_seed_material_t *seed_material);
@@ -338,7 +338,7 @@ dif_csrng_result_t dif_csrng_instantiate(
  * @param seed_material Reseed parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_reseed(
     const dif_csrng_t *csrng, const dif_csrng_seed_material_t *seed_material);
 
@@ -355,7 +355,7 @@ dif_csrng_result_t dif_csrng_reseed(
  * @param seed_material Update parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_update(
     const dif_csrng_t *csrng, const dif_csrng_seed_material_t *seed_material);
 
@@ -375,7 +375,7 @@ dif_csrng_result_t dif_csrng_update(
  * @param len Number of uint32_t words to generate.
  *
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_generate_start(const dif_csrng_t *csrng,
                                             size_t len);
 
@@ -394,7 +394,7 @@ dif_csrng_result_t dif_csrng_generate_start(const dif_csrng_t *csrng,
  * @param len The number of words to read into `buf`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_generate_end(const dif_csrng_t *csrng,
                                           uint32_t *buf, size_t len);
 
@@ -408,7 +408,7 @@ dif_csrng_result_t dif_csrng_generate_end(const dif_csrng_t *csrng,
  * @param csrng An CSRNG handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_uninstantiate(const dif_csrng_t *csrng);
 
 /**
@@ -426,7 +426,7 @@ dif_csrng_result_t dif_csrng_uninstantiate(const dif_csrng_t *csrng);
  * @param[out] status Command interface status.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_get_cmd_interface_status(
     const dif_csrng_t *csrng, dif_csrng_cmd_status_t *status);
 
@@ -440,7 +440,7 @@ dif_csrng_result_t dif_csrng_get_cmd_interface_status(
  * @param[out] status CSRNG output status.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_get_output_status(
     const dif_csrng_t *csrng, dif_csrng_output_status_t *status);
 
@@ -453,7 +453,7 @@ dif_csrng_result_t dif_csrng_get_output_status(
  * @return The result of the operation.
  *
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_get_internal_state(
     const dif_csrng_t *csrng, dif_csrng_internal_state_id_t instance_id,
     dif_csrng_internal_state_t *state);
@@ -467,7 +467,7 @@ dif_csrng_result_t dif_csrng_get_internal_state(
  * @param csrng A CSRNG handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_lock(const dif_csrng_t *csrng);
 
 /**
@@ -477,7 +477,7 @@ dif_csrng_result_t dif_csrng_lock(const dif_csrng_t *csrng);
  * @param[out] is_locked Out-param for the locked state.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_is_locked(const dif_csrng_t *csrng,
                                        bool *is_locked);
 
@@ -489,7 +489,7 @@ dif_csrng_result_t dif_csrng_is_locked(const dif_csrng_t *csrng,
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_irq_is_pending(const dif_csrng_t *csrng,
                                             dif_csrng_irq_t irq,
                                             bool *is_pending);
@@ -502,7 +502,7 @@ dif_csrng_result_t dif_csrng_irq_is_pending(const dif_csrng_t *csrng,
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_irq_acknowledge(const dif_csrng_t *csrng,
                                              dif_csrng_irq_t irq);
 
@@ -514,7 +514,7 @@ dif_csrng_result_t dif_csrng_irq_acknowledge(const dif_csrng_t *csrng,
  * @param[out] state Out-param toggle state of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_irq_get_enabled(const dif_csrng_t *csrng,
                                              dif_csrng_irq_t irq,
                                              dif_csrng_toggle_t *state);
@@ -527,7 +527,7 @@ dif_csrng_result_t dif_csrng_irq_get_enabled(const dif_csrng_t *csrng,
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_irq_set_enabled(const dif_csrng_t *csrng,
                                              dif_csrng_irq_t irq,
                                              dif_csrng_toggle_t state);
@@ -540,7 +540,7 @@ dif_csrng_result_t dif_csrng_irq_set_enabled(const dif_csrng_t *csrng,
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_irq_force(const dif_csrng_t *csrng,
                                        dif_csrng_irq_t irq);
 
@@ -552,7 +552,7 @@ dif_csrng_result_t dif_csrng_irq_force(const dif_csrng_t *csrng,
  * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_irq_disable_all(
     const dif_csrng_t *csrng, dif_csrng_irq_snapshot_t *snapshot);
 
@@ -566,7 +566,7 @@ dif_csrng_result_t dif_csrng_irq_disable_all(
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_irq_restore_all(
     const dif_csrng_t *csrng, const dif_csrng_irq_snapshot_t *snapshot);
 

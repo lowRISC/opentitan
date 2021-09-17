@@ -12,8 +12,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -94,7 +94,9 @@ typedef struct dif_uart_config {
  *
  * This type should be treated as opaque by users.
  */
-typedef struct dif_uart { dif_uart_params_t params; } dif_uart_t;
+typedef struct dif_uart {
+  dif_uart_params_t params;
+} dif_uart_t;
 
 /**
  * The result of a UART operation.
@@ -264,7 +266,7 @@ extern const uint32_t kDifUartFifoSizeBytes;
  * @param uart Out param for the initialized handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_init(dif_uart_params_t params, dif_uart_t *uart);
 
 /**
@@ -276,7 +278,7 @@ dif_uart_result_t dif_uart_init(dif_uart_params_t params, dif_uart_t *uart);
  * @param config Runtime configuration parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
                                             dif_uart_config_t config);
 
@@ -288,7 +290,7 @@ dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
  * @param is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_is_pending(const dif_uart_t *uart,
                                           dif_uart_irq_t irq, bool *is_pending);
 
@@ -300,7 +302,7 @@ dif_uart_result_t dif_uart_irq_is_pending(const dif_uart_t *uart,
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_acknowledge(const dif_uart_t *uart,
                                            dif_uart_irq_t irq);
 
@@ -312,7 +314,7 @@ dif_uart_result_t dif_uart_irq_acknowledge(const dif_uart_t *uart,
  * @param state Out-param toggle state of the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_get_enabled(const dif_uart_t *uart,
                                            dif_uart_irq_t irq,
                                            dif_uart_toggle_t *state);
@@ -325,7 +327,7 @@ dif_uart_result_t dif_uart_irq_get_enabled(const dif_uart_t *uart,
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_set_enabled(const dif_uart_t *uart,
                                            dif_uart_irq_t irq,
                                            dif_uart_toggle_t state);
@@ -338,7 +340,7 @@ dif_uart_result_t dif_uart_irq_set_enabled(const dif_uart_t *uart,
  * @param irq An interrupt type.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_force(const dif_uart_t *uart,
                                      dif_uart_irq_t irq);
 
@@ -350,7 +352,7 @@ dif_uart_result_t dif_uart_irq_force(const dif_uart_t *uart,
  * @param snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_disable_all(const dif_uart_t *uart,
                                            dif_uart_irq_snapshot_t *snapshot);
 
@@ -364,7 +366,7 @@ dif_uart_result_t dif_uart_irq_disable_all(const dif_uart_t *uart,
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_restore_all(
     const dif_uart_t *uart, const dif_uart_irq_snapshot_t *snapshot);
 
@@ -379,7 +381,7 @@ dif_uart_result_t dif_uart_irq_restore_all(
  * @param watermark RX FIFO watermark.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
                                             dif_uart_watermark_t watermark);
 
@@ -394,7 +396,7 @@ dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
  * @param watermark TX FIFO watermark.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
                                             dif_uart_watermark_t watermark);
 
@@ -414,7 +416,7 @@ dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
  * @param[out] bytes_written Number of bytes written (optional).
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_bytes_send(const dif_uart_t *uart,
                                       const uint8_t *data,
                                       size_t bytes_requested,
@@ -436,7 +438,7 @@ dif_uart_result_t dif_uart_bytes_send(const dif_uart_t *uart,
  * @param[out] bytes_read Number of bytes read (optional).
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_bytes_receive(const dif_uart_t *uart,
                                          size_t bytes_requested, uint8_t *data,
                                          size_t *bytes_read);
@@ -452,7 +454,7 @@ dif_uart_result_t dif_uart_bytes_receive(const dif_uart_t *uart,
  * @param byte Byte to be transmitted.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_byte_send_polled(const dif_uart_t *uart,
                                             uint8_t byte);
 
@@ -467,7 +469,7 @@ dif_uart_result_t dif_uart_byte_send_polled(const dif_uart_t *uart,
  * @param[out] byte Received byte.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_byte_receive_polled(const dif_uart_t *uart,
                                                uint8_t *byte);
 
@@ -480,7 +482,7 @@ dif_uart_result_t dif_uart_byte_receive_polled(const dif_uart_t *uart,
  * @param[out] num_bytes Number of bytes available to be read.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
                                               size_t *num_bytes);
 
@@ -493,7 +495,7 @@ dif_uart_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
  * @param[out] num_bytes Number of bytes available to be written.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
                                               size_t *num_bytes);
 /**
@@ -541,7 +543,7 @@ dif_uart_result_t dif_uart_loopback_set(const dif_uart_t *uart,
  * clock as reference) in the range [0,0xffffff].
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_enable_rx_timeout(const dif_uart_t *uart,
                                              uint32_t duration_ticks);
 
@@ -554,7 +556,7 @@ dif_uart_result_t dif_uart_enable_rx_timeout(const dif_uart_t *uart,
  * @param uart A UART handle.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_disable_rx_timeout(const dif_uart_t *uart);
 
 /**
@@ -567,7 +569,7 @@ dif_uart_result_t dif_uart_disable_rx_timeout(const dif_uart_t *uart);
  * rate clock as reference) in the range [0,0xffffff] (optional).
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT
+OT_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_get_rx_timeout(const dif_uart_t *uart,
                                           dif_uart_toggle_t *status,
                                           uint32_t *duration_ticks);
