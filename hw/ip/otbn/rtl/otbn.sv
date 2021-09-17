@@ -671,10 +671,12 @@ module otbn
                                   reg2hw.alert_test.recov.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal] = illegal_bus_access_d |
+  assign alerts[AlertFatal] = imem_rerror          |
+                              dmem_rerror          |
                               bus_intg_violation   |
-                              imem_rerror          |
-                              dmem_rerror;
+                              illegal_bus_access_d |
+                              lifecycle_escalation;
+
   assign alerts[AlertRecov] = 1'b0; // TODO: Implement
 
   for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
