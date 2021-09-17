@@ -61,11 +61,11 @@ class GetErrBitsTest : public OtbnTest {};
 
 TEST_F(GetErrBitsTest, Success) {
   EXPECT_ABS_READ32(base_ + OTBN_ERR_BITS_REG_OFFSET,
-                    kOtbnErrBitsIllegalInsn | kOtbnErrBitsFatalReg);
+                    kOtbnErrBitsIllegalInsn | kOtbnErrBitsRegIntgViolation);
 
   otbn_err_bits_t err_bits;
   otbn_get_err_bits(&err_bits);
-  EXPECT_EQ(err_bits, kOtbnErrBitsIllegalInsn | kOtbnErrBitsFatalReg);
+  EXPECT_EQ(err_bits, kOtbnErrBitsIllegalInsn | kOtbnErrBitsRegIntgViolation);
 }
 
 class ImemWriteTest : public OtbnTest {};

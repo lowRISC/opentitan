@@ -181,17 +181,17 @@ module otbn_reg_top (
   logic err_bits_call_stack_qs;
   logic err_bits_illegal_insn_qs;
   logic err_bits_loop_qs;
-  logic err_bits_fatal_imem_qs;
-  logic err_bits_fatal_dmem_qs;
-  logic err_bits_fatal_reg_qs;
-  logic err_bits_fatal_illegal_bus_access_qs;
-  logic err_bits_fatal_lifecycle_escalation_qs;
+  logic err_bits_imem_intg_violation_qs;
+  logic err_bits_dmem_intg_violation_qs;
+  logic err_bits_reg_intg_violation_qs;
+  logic err_bits_illegal_bus_access_qs;
+  logic err_bits_lifecycle_escalation_qs;
   logic start_addr_we;
   logic [31:0] start_addr_wd;
-  logic fatal_alert_cause_bus_integrity_error_qs;
-  logic fatal_alert_cause_imem_error_qs;
-  logic fatal_alert_cause_dmem_error_qs;
-  logic fatal_alert_cause_reg_error_qs;
+  logic fatal_alert_cause_bus_intg_violation_qs;
+  logic fatal_alert_cause_imem_intg_violation_qs;
+  logic fatal_alert_cause_dmem_intg_violation_qs;
+  logic fatal_alert_cause_reg_intg_violation_qs;
   logic fatal_alert_cause_illegal_bus_access_qs;
   logic fatal_alert_cause_lifecycle_escalation_qs;
   logic insn_cnt_re;
@@ -451,12 +451,12 @@ module otbn_reg_top (
     .qs     (err_bits_loop_qs)
   );
 
-  //   F[fatal_imem]: 5:5
+  //   F[imem_intg_violation]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_err_bits_fatal_imem (
+  ) u_err_bits_imem_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -465,23 +465,23 @@ module otbn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.err_bits.fatal_imem.de),
-    .d      (hw2reg.err_bits.fatal_imem.d),
+    .de     (hw2reg.err_bits.imem_intg_violation.de),
+    .d      (hw2reg.err_bits.imem_intg_violation.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (err_bits_fatal_imem_qs)
+    .qs     (err_bits_imem_intg_violation_qs)
   );
 
-  //   F[fatal_dmem]: 6:6
+  //   F[dmem_intg_violation]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_err_bits_fatal_dmem (
+  ) u_err_bits_dmem_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -490,23 +490,23 @@ module otbn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.err_bits.fatal_dmem.de),
-    .d      (hw2reg.err_bits.fatal_dmem.d),
+    .de     (hw2reg.err_bits.dmem_intg_violation.de),
+    .d      (hw2reg.err_bits.dmem_intg_violation.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (err_bits_fatal_dmem_qs)
+    .qs     (err_bits_dmem_intg_violation_qs)
   );
 
-  //   F[fatal_reg]: 7:7
+  //   F[reg_intg_violation]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_err_bits_fatal_reg (
+  ) u_err_bits_reg_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -515,23 +515,23 @@ module otbn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.err_bits.fatal_reg.de),
-    .d      (hw2reg.err_bits.fatal_reg.d),
+    .de     (hw2reg.err_bits.reg_intg_violation.de),
+    .d      (hw2reg.err_bits.reg_intg_violation.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (err_bits_fatal_reg_qs)
+    .qs     (err_bits_reg_intg_violation_qs)
   );
 
-  //   F[fatal_illegal_bus_access]: 8:8
+  //   F[illegal_bus_access]: 8:8
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_err_bits_fatal_illegal_bus_access (
+  ) u_err_bits_illegal_bus_access (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -540,23 +540,23 @@ module otbn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.err_bits.fatal_illegal_bus_access.de),
-    .d      (hw2reg.err_bits.fatal_illegal_bus_access.d),
+    .de     (hw2reg.err_bits.illegal_bus_access.de),
+    .d      (hw2reg.err_bits.illegal_bus_access.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (err_bits_fatal_illegal_bus_access_qs)
+    .qs     (err_bits_illegal_bus_access_qs)
   );
 
-  //   F[fatal_lifecycle_escalation]: 9:9
+  //   F[lifecycle_escalation]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_err_bits_fatal_lifecycle_escalation (
+  ) u_err_bits_lifecycle_escalation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -565,15 +565,15 @@ module otbn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.err_bits.fatal_lifecycle_escalation.de),
-    .d      (hw2reg.err_bits.fatal_lifecycle_escalation.d),
+    .de     (hw2reg.err_bits.lifecycle_escalation.de),
+    .d      (hw2reg.err_bits.lifecycle_escalation.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (err_bits_fatal_lifecycle_escalation_qs)
+    .qs     (err_bits_lifecycle_escalation_qs)
   );
 
 
@@ -604,12 +604,12 @@ module otbn_reg_top (
 
 
   // R[fatal_alert_cause]: V(False)
-  //   F[bus_integrity_error]: 0:0
+  //   F[bus_intg_violation]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_fatal_alert_cause_bus_integrity_error (
+  ) u_fatal_alert_cause_bus_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -618,23 +618,23 @@ module otbn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.fatal_alert_cause.bus_integrity_error.de),
-    .d      (hw2reg.fatal_alert_cause.bus_integrity_error.d),
+    .de     (hw2reg.fatal_alert_cause.bus_intg_violation.de),
+    .d      (hw2reg.fatal_alert_cause.bus_intg_violation.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (fatal_alert_cause_bus_integrity_error_qs)
+    .qs     (fatal_alert_cause_bus_intg_violation_qs)
   );
 
-  //   F[imem_error]: 1:1
+  //   F[imem_intg_violation]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_fatal_alert_cause_imem_error (
+  ) u_fatal_alert_cause_imem_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -643,23 +643,23 @@ module otbn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.fatal_alert_cause.imem_error.de),
-    .d      (hw2reg.fatal_alert_cause.imem_error.d),
+    .de     (hw2reg.fatal_alert_cause.imem_intg_violation.de),
+    .d      (hw2reg.fatal_alert_cause.imem_intg_violation.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (fatal_alert_cause_imem_error_qs)
+    .qs     (fatal_alert_cause_imem_intg_violation_qs)
   );
 
-  //   F[dmem_error]: 2:2
+  //   F[dmem_intg_violation]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_fatal_alert_cause_dmem_error (
+  ) u_fatal_alert_cause_dmem_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -668,23 +668,23 @@ module otbn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.fatal_alert_cause.dmem_error.de),
-    .d      (hw2reg.fatal_alert_cause.dmem_error.d),
+    .de     (hw2reg.fatal_alert_cause.dmem_intg_violation.de),
+    .d      (hw2reg.fatal_alert_cause.dmem_intg_violation.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (fatal_alert_cause_dmem_error_qs)
+    .qs     (fatal_alert_cause_dmem_intg_violation_qs)
   );
 
-  //   F[reg_error]: 3:3
+  //   F[reg_intg_violation]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_fatal_alert_cause_reg_error (
+  ) u_fatal_alert_cause_reg_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -693,15 +693,15 @@ module otbn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.fatal_alert_cause.reg_error.de),
-    .d      (hw2reg.fatal_alert_cause.reg_error.d),
+    .de     (hw2reg.fatal_alert_cause.reg_intg_violation.de),
+    .d      (hw2reg.fatal_alert_cause.reg_intg_violation.d),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (fatal_alert_cause_reg_error_qs)
+    .qs     (fatal_alert_cause_reg_intg_violation_qs)
   );
 
   //   F[illegal_bus_access]: 4:4
@@ -860,11 +860,11 @@ module otbn_reg_top (
         reg_rdata_next[2] = err_bits_call_stack_qs;
         reg_rdata_next[3] = err_bits_illegal_insn_qs;
         reg_rdata_next[4] = err_bits_loop_qs;
-        reg_rdata_next[5] = err_bits_fatal_imem_qs;
-        reg_rdata_next[6] = err_bits_fatal_dmem_qs;
-        reg_rdata_next[7] = err_bits_fatal_reg_qs;
-        reg_rdata_next[8] = err_bits_fatal_illegal_bus_access_qs;
-        reg_rdata_next[9] = err_bits_fatal_lifecycle_escalation_qs;
+        reg_rdata_next[5] = err_bits_imem_intg_violation_qs;
+        reg_rdata_next[6] = err_bits_dmem_intg_violation_qs;
+        reg_rdata_next[7] = err_bits_reg_intg_violation_qs;
+        reg_rdata_next[8] = err_bits_illegal_bus_access_qs;
+        reg_rdata_next[9] = err_bits_lifecycle_escalation_qs;
       end
 
       addr_hit[7]: begin
@@ -872,10 +872,10 @@ module otbn_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[0] = fatal_alert_cause_bus_integrity_error_qs;
-        reg_rdata_next[1] = fatal_alert_cause_imem_error_qs;
-        reg_rdata_next[2] = fatal_alert_cause_dmem_error_qs;
-        reg_rdata_next[3] = fatal_alert_cause_reg_error_qs;
+        reg_rdata_next[0] = fatal_alert_cause_bus_intg_violation_qs;
+        reg_rdata_next[1] = fatal_alert_cause_imem_intg_violation_qs;
+        reg_rdata_next[2] = fatal_alert_cause_dmem_intg_violation_qs;
+        reg_rdata_next[3] = fatal_alert_cause_reg_intg_violation_qs;
         reg_rdata_next[4] = fatal_alert_cause_illegal_bus_access_qs;
         reg_rdata_next[5] = fatal_alert_cause_lifecycle_escalation_qs;
       end

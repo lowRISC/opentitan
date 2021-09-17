@@ -23,17 +23,20 @@ static_assert(kDifOtbnErrBitsIllegalInsn ==
               "Layout of error bits changed.");
 static_assert(kDifOtbnErrBitsLoop == (1 << OTBN_ERR_BITS_LOOP_BIT),
               "Layout of error bits changed.");
-static_assert(kDifOtbnErrBitsFatalImem == (1 << OTBN_ERR_BITS_FATAL_IMEM_BIT),
+static_assert(kDifOtbnErrBitsImemIntgViolation ==
+                  (1 << OTBN_ERR_BITS_IMEM_INTG_VIOLATION_BIT),
               "Layout of error bits changed.");
-static_assert(kDifOtbnErrBitsFatalDmem == (1 << OTBN_ERR_BITS_FATAL_DMEM_BIT),
+static_assert(kDifOtbnErrBitsDmemIntgViolation ==
+                  (1 << OTBN_ERR_BITS_DMEM_INTG_VIOLATION_BIT),
               "Layout of error bits changed.");
-static_assert(kDifOtbnErrBitsFatalReg == (1 << OTBN_ERR_BITS_FATAL_REG_BIT),
+static_assert(kDifOtbnErrBitsRegIntgViolation ==
+                  (1 << OTBN_ERR_BITS_REG_INTG_VIOLATION_BIT),
               "Layout of error bits changed.");
-static_assert(kDifOtbnErrBitsFatalIllegalBusAccess ==
-                  (1 << OTBN_ERR_BITS_FATAL_ILLEGAL_BUS_ACCESS_BIT),
+static_assert(kDifOtbnErrBitsIllegalBusAccess ==
+                  (1 << OTBN_ERR_BITS_ILLEGAL_BUS_ACCESS_BIT),
               "Layout of error bits changed.");
-static_assert(kDifOtbnErrBitsFatalLifecycleEscalation ==
-                  (1 << OTBN_ERR_BITS_FATAL_LIFECYCLE_ESCALATION_BIT),
+static_assert(kDifOtbnErrBitsLifecycleEscalation ==
+                  (1 << OTBN_ERR_BITS_LIFECYCLE_ESCALATION_BIT),
               "Layout of error bits changed.");
 
 /**
