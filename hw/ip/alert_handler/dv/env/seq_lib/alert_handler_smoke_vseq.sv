@@ -54,9 +54,12 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
     max_phase_cyc inside {[0:1_000]};
   }
 
-  // set min to 32 cycles (default value) to avoid alert ping timeout due to random delay
+  // Set min to 120 cycles to avoid alert ping timeout due to random delay.
+  // The max delay after ping request is 10 cycles plus 2 cycles async delay.
+  // Also the alert_sender and alert_handlers are in different clock domains, with a max 10 times
+  // difference in clock frequency.
   constraint ping_timeout_cyc_c {
-    ping_timeout_cyc inside {[32:MAX_PING_TIMEOUT_CYCLE]};
+    ping_timeout_cyc inside {[120:MAX_PING_TIMEOUT_CYCLE]};
   }
 
   constraint enable_classa_only_c {
