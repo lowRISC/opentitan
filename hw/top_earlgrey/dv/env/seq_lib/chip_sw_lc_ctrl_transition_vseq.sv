@@ -32,8 +32,8 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
   // get a 768-bit XORed token output.
   // The first 128 bits of the decoded token should match the OTP's secret9 paritition's
   // descrambled exit token value.
-  virtual function bit[ExitTokenWidthBit-1:0] get_otp_exit_token(
-      bit[7:0] token_in[ExitTokenWidthByte]);
+  virtual function bit [ExitTokenWidthBit-1:0] get_otp_exit_token(
+      bit [7:0] token_in[ExitTokenWidthByte]);
 
     bit [7:0]                      dpi_digest[kmac_pkg::AppDigestW/8];
     bit [kmac_pkg::AppDigestW-1:0] digest_bits;
@@ -46,16 +46,13 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
   endfunction
 
   virtual task body();
-    byte lc_exit_token_byte [ExitTokenWidthByte];
     super.body();
 
     // Select LC jtag.
     cfg.tap_straps_vif.drive(SelectLCJtagTap);
 
     // Override the C test kLcExitToken with random data.
-    // TODO: try to remove this conversion variable, and use `bit[7:0]` array type as input.
-    foreach (lc_exit_token[i]) lc_exit_token_byte[i] = lc_exit_token[i];
-    sw_symbol_backdoor_overwrite("kLcExitToken", lc_exit_token_byte);
+    sw_symbol_backdoor_overwrite("kLcExitToken", lc_exit_token);
 
     // Wait for SW to finish set up LC_CTRL.
     cfg.clk_rst_vif.wait_clks(21000);
