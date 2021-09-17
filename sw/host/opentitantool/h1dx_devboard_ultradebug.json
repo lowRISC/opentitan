@@ -1,0 +1,40 @@
+{
+  "pins": [
+    {
+      "name": "RESET",
+      "mode": "OpenDrain",
+      "initial_level": true,
+      "pullup": true,
+      "alias_of": "UD_RESET_B"
+    },
+    {
+      "name": "BOOTSTRAP",
+      "mode": "PushPull",
+      "initial_level": false,
+      "pullup": false,
+      "alias_of": "UD_BOOTSTRAP"
+    }
+  ],
+  "uarts": [
+    {
+      "name": "console",
+      "baudrate": 115200,
+      "parity": "None",
+      "stopbits": "Stop1",
+      "alias_of": "UART1"
+    }
+  ],
+  "flash": [
+    {
+      "name": "H1Dx_flash",
+      "reset_pin": "RESET",
+      "bootloader_pin": "BOOTSTRAP",
+      "driver": {
+	"SpiExternalDriver": {
+	  "command": "/home/jbk/src/ti50/ports/cr50-utils/software/tools/SPI/spiflash --dauntless --verbose --parent --input=$IMAGEFILE",
+	  "spi_bus": "SPI1"
+	}
+      }
+    }
+  ]
+}

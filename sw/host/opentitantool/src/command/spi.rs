@@ -12,10 +12,11 @@ use std::path::PathBuf;
 use std::time::Instant;
 use structopt::StructOpt;
 
+use opentitanlib::app::TargetEnvironment;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::spi::Transfer;
 use opentitanlib::spiflash::SpiFlash;
-use opentitanlib::transport::{Capability, Transport};
+use opentitanlib::transport::Capability;
 
 /// Read and parse an SFDP table.
 #[derive(Debug, StructOpt)]
@@ -73,8 +74,9 @@ impl CommandDispatch for SpiSfdp {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        env: &TargetEnvironment,
     ) -> Result<Option<Box<dyn Serialize>>> {
+        let transport = env.transport.borrow_mut();
         transport.capabilities().request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = transport.spi(context.bus)?;
@@ -115,8 +117,9 @@ impl CommandDispatch for SpiReadId {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        env: &TargetEnvironment,
     ) -> Result<Option<Box<dyn Serialize>>> {
+        let transport = env.transport.borrow_mut();
         transport.capabilities().request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = transport.spi(context.bus)?;
@@ -164,8 +167,9 @@ impl CommandDispatch for SpiRead {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        env: &TargetEnvironment,
     ) -> Result<Option<Box<dyn Serialize>>> {
+        let transport = env.transport.borrow_mut();
         transport.capabilities().request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = transport.spi(context.bus)?;
@@ -214,8 +218,9 @@ impl CommandDispatch for SpiErase {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        env: &TargetEnvironment,
     ) -> Result<Option<Box<dyn Serialize>>> {
+        let transport = env.transport.borrow_mut();
         transport.capabilities().request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = transport.spi(context.bus)?;
@@ -256,8 +261,9 @@ impl CommandDispatch for SpiProgram {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        env: &TargetEnvironment,
     ) -> Result<Option<Box<dyn Serialize>>> {
+        let transport = env.transport.borrow_mut();
         transport.capabilities().request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = transport.spi(context.bus)?;
@@ -302,10 +308,10 @@ impl CommandDispatch for SpiCommand {
     fn run(
         &self,
         _context: &dyn Any,
-        transport: &mut dyn Transport,
+        env: &TargetEnvironment,
     ) -> Result<Option<Box<dyn Serialize>>> {
         // None of the SPI commands care about the prior context, but they do
         // care about the `bus` parameter in the current node.
-        self.command.run(self, transport)
+        self.command.run(self, env)
     }
 }

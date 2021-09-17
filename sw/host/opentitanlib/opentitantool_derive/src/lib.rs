@@ -74,7 +74,7 @@ fn dispatch_enum(name: &Ident, e: &DataEnum) -> TokenStream {
                 fn run(
                     &self,
                     context: &dyn std::any::Any,
-                    backend: &mut dyn opentitanlib::transport::Transport
+                    env: &opentitanlib::app::TargetEnvironment,
                 ) -> anyhow::Result<Option<Box<dyn erased_serde::Serialize>>> {
                     match self {
                         #(#arms),*
@@ -102,6 +102,6 @@ fn dispatch_variant(name: &Ident, variant: &Variant) -> TokenStream {
     }
     quote! {
         #name::#ident(ref __field) =>
-            opentitanlib::app::command::CommandDispatch::run(__field, context, backend)
+            opentitanlib::app::command::CommandDispatch::run(__field, context, env)
     }
 }

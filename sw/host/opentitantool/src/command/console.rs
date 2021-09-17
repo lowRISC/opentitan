@@ -15,10 +15,12 @@ use std::os::unix::io::AsRawFd;
 use std::time::{Duration, Instant};
 use structopt::StructOpt;
 
+use opentitanlib::app::TargetEnvironment;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::uart::Uart;
-use opentitanlib::transport::{Capability, Transport};
+use opentitanlib::transport::Capability;
 use opentitanlib::util::file;
+
 
 #[derive(Debug, StructOpt)]
 pub struct Console {
@@ -45,8 +47,10 @@ impl CommandDispatch for Console {
     fn run(
         &self,
         _context: &dyn Any,
-        transport: &mut dyn Transport,
+        env: &TargetEnvironment,
     ) -> Result<Option<Box<dyn Serialize>>> {
+        let transport = env.transport.borrow_mut();
+
         // We need the UART for the console command to operate.
         transport.capabilities().request(Capability::UART).ok()?;
         let mut stdout = std::io::stdout();
