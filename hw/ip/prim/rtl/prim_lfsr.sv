@@ -31,6 +31,8 @@ module prim_lfsr #(
   parameter                    LfsrType     = "GAL_XOR",
   // Lfsr width
   parameter int unsigned       LfsrDw       = 32,
+  // Derived parameter, do not override
+  localparam int unsigned      LfsrIdxDw    = $clog2(LfsrDw),
   // Width of the entropy input to be XOR'd into state (lfsr_q[EntropyDw-1:0])
   parameter int unsigned       EntropyDw    =  8,
   // Width of output tap (from lfsr_q[StateOutDw-1:0])
@@ -39,10 +41,16 @@ module prim_lfsr #(
   parameter logic [LfsrDw-1:0] DefaultSeed  = LfsrDw'(1),
   // Custom polynomial coeffs
   parameter logic [LfsrDw-1:0] CustomCoeffs = '0,
-  // If StatePermEn is set to 1, the custom permutation specified via StatePerm is applied
-  // to the state output, in order to break linear shifting patterns of the LFSR.
+  // If StatePermEn is set to 1, the custom permutation specified via StatePerm is applied to the
+  // state output, in order to break linear shifting patterns of the LFSR. Note that this
+  // permutation represents a way of customizing the LFSR via a random netlist constant. This is
+  // different from the NonLinearOut feature below which just transforms the output non-linearly
+  // with a fixed function. In most cases, designers should consider enabling StatePermEn as it
+  // comes basically "for free" in terms of area and timing impact. NonLinearOut on the other hand
+  // has area and timing implications and designers should consider whether the use of that feature
+  // is justified.
   parameter bit                StatePermEn  = 1'b0,
-  parameter logic [LfsrDw-1:0][$clog2(LfsrDw)-1:0] StatePerm = '0,
+  parameter logic [LfsrDw-1:0][LfsrIdxDw-1:0] StatePerm = '0,
   // Enable this for DV, disable this for long LFSRs in FPV
   parameter bit                MaxLenSVA    = 1'b1,
   // Can be disabled in cases where seed and entropy
@@ -50,10 +58,9 @@ module prim_lfsr #(
   // (the SVA will be unreachable in such cases)
   parameter bit                LockupSVA    = 1'b1,
   parameter bit                ExtSeedSVA   = 1'b1,
-  // Introduce non-linearity to lfsr output
-  // Note, unlike StatePermEn, this feature is not "for free".
-  // Please double check that this feature is indeed required.
-  // Also note that this feature is only available for 32bit and 64bit wide LFSRs.
+  // Introduce non-linearity to lfsr output. Note, unlike StatePermEn, this feature is not "for
+  // free". Please double check that this feature is indeed required. Also note that this feature
+  // is only available for LFSRs that have a power-of-two width greater or equal 16bit.
   parameter bit                NonLinearOut = 1'b0
 ) (
   input                         clk_i,
@@ -377,17 +384,117 @@ module prim_lfsr #(
 
   logic [LfsrDw-1:0] sbox_out;
   if (NonLinearOut) begin : gen_out_non_linear
-    // The "aligned" permutation ensures that aligned bits do not go into the same SBox.
-    // It is different from the state permutation that can be specified via the StatePerm parameter.
-    logic [LfsrDw-1:0] aligned_perm;
-    if (LfsrDw == 32) begin : gen_32bit
-      assign aligned_perm = prim_cipher_pkg::perm_32bit(lfsr_q[31:0],
-                                                        prim_cipher_pkg::PRESENT_PERM32);
-      assign sbox_out = prim_cipher_pkg::sbox4_32bit(aligned_perm, prim_cipher_pkg::PRINCE_SBOX4);
-    end else if (LfsrDw == 64) begin : gen_64bit
-      assign aligned_perm = prim_cipher_pkg::perm_64bit(lfsr_q[63:0],
-                                                        prim_cipher_pkg::PRESENT_PERM64);
-      assign sbox_out = prim_cipher_pkg::sbox4_64bit(aligned_perm, prim_cipher_pkg::PRINCE_SBOX4);
+    // The "aligned" permutation ensures that adjacent bits do not go into the same SBox. It is
+    // different from the state permutation that can be specified via the StatePerm parameter. The
+    // permutation taps out 4 SBox input bits at regular stride intervals. E.g., for a 16bit
+    // vector, the input assignment looks as follows:
+    //
+    // SBox0: 0,  4,  8, 12
+    // SBox1: 1,  5,  9, 13
+    // SBox2: 2,  6, 10, 14
+    // SBox3: 3,  7, 11, 15
+    //
+    // Note that this permutation can be produced by filling the input vector into matrix columns
+    // and reading out the SBox inputs as matrix rows.
+    localparam int NumSboxes = LfsrDw / 4;
+    // Fill in the input vector in col-major order.
+    logic [3:0][NumSboxes-1:0][LfsrIdxDw-1:0] matrix_indices;
+    for (genvar j = 0; j < LfsrDw; j++) begin : gen_input_idx_map
+      assign matrix_indices[j / NumSboxes][j % NumSboxes] = LfsrIdxDw'(j);
+    end
+    // Due to the LFSR shifting pattern, the above permutation has the property that the output of
+    // SBox(n) is going to be equal to SBox(n+1) in the subsequent cycle (unless the LFSR polynomial
+    // modifies some of the associated shifted bits via an XOR tap).
+    // We therefore tweak this permutation by rotating and reversing some of the assignment matrix
+    // columns. The rotation and reversion operations have been chosen such that this
+    // generalizes to all power of two widths supported by the LFSR primitive. For 16bit, this
+    // looks as follows:
+    //
+    // SBox0: 0,  6, 11, 14
+    // SBox1: 1,  7, 10, 13
+    // SBox2: 2,  4,  9, 12
+    // SBox3: 3,  5,  8, 15
+    //
+    // This can be achieved by:
+    //   1) down rotating the second column by NumSboxes/2
+    //   2) reversing the third column
+    //   3) down rotating the fourth column by 1 and reversing it
+    //
+    logic [3:0][NumSboxes-1:0][LfsrIdxDw-1:0] matrix_rotrev_indices;
+    typedef logic [NumSboxes-1:0][LfsrIdxDw-1:0] matrix_col_t;
+
+    // left-rotates a matrix column by the shift amount
+    function automatic matrix_col_t lrotcol(matrix_col_t col, int shift);
+      matrix_col_t out;
+      for (int k = 0; k < NumSboxes; k++) begin
+        out[(k + shift) % NumSboxes] = col[k];
+      end
+      return out;
+    endfunction : lrotcol
+
+    // reverses a matrix column
+    function automatic matrix_col_t revcol(matrix_col_t col);
+      return {<<LfsrIdxDw{col}};
+    endfunction : revcol
+
+    always_comb begin : p_rotrev
+      matrix_rotrev_indices[0] = matrix_indices[0];
+      matrix_rotrev_indices[1] = lrotcol(matrix_indices[1], NumSboxes/2);
+      matrix_rotrev_indices[2] = revcol(matrix_indices[2]);
+      matrix_rotrev_indices[3] = revcol(lrotcol(matrix_indices[3], 1));
+    end
+
+    // Read out the matrix rows and linearize.
+    logic [LfsrDw-1:0][LfsrIdxDw-1:0] sbox_in_indices;
+    for (genvar k = 0; k < LfsrDw; k++) begin : gen_reverse_upper
+      assign sbox_in_indices[k] = matrix_rotrev_indices[k % 4][k / 4];
+    end
+
+`ifndef SYNTHESIS
+      // Check that the permutation is indeed a permutation.
+      logic [LfsrDw-1:0] sbox_perm_test;
+      always_comb begin : p_perm_check
+        sbox_perm_test = '0;
+        for (int k = 0; k < LfsrDw; k++) begin
+          sbox_perm_test[sbox_in_indices[k]] = 1'b1;
+        end
+      end
+      // All bit positions must be marked with 1.
+      `ASSERT(SboxPermutationCheck_A, &sbox_perm_test)
+`endif
+
+`ifdef FPV_ON
+      // Verify that the permutation indeed breaks linear shifting patterns of 4bit input groups.
+      // The symbolic variables let the FPV tool select all sbox index combinations and linear shift
+      // offsets.
+      int shift;
+      int unsigned sk, sj;
+      `ASSUME(SjSkRange_M, (sj < NumSboxes) && (sk < NumSboxes))
+      `ASSUME(SjSkDifferent_M, sj != sk)
+      `ASSUME(SjSkStable_M, ##1 $stable(sj) && $stable(sk) && $stable(shift))
+      `ASSERT(SboxInputIndexGroupIsUnique_A,
+          !((((sbox_in_indices[sj * 4 + 0] + shift) % LfsrDw) == sbox_in_indices[sk * 4 + 0]) &&
+            (((sbox_in_indices[sj * 4 + 1] + shift) % LfsrDw) == sbox_in_indices[sk * 4 + 1]) &&
+            (((sbox_in_indices[sj * 4 + 2] + shift) % LfsrDw) == sbox_in_indices[sk * 4 + 2]) &&
+            (((sbox_in_indices[sj * 4 + 3] + shift) % LfsrDw) == sbox_in_indices[sk * 4 + 3])))
+
+      // this checks that the permutations does not preserve neighboring bit positions.
+      // i.e. no two neighboring bits are mapped to neighboring bit positions.
+      int y;
+      int unsigned ik;
+      `ASSUME(IkYRange_M, (ik < LfsrDw) && (y == 1 || y == -1))
+      `ASSUME(IkStable_M, ##1 $stable(ik) && $stable(y))
+      `ASSERT(IndicesNotAdjacent_A, (sbox_in_indices[ik] - sbox_in_indices[(ik + y) % LfsrDw]) != 1)
+`endif
+
+    // Use the permutation indices to create the SBox layer
+    for (genvar k = 0; k < NumSboxes; k++) begin : gen_sboxes
+      logic [3:0] sbox_in;
+      assign sbox_in = {lfsr_q[sbox_in_indices[k*4 + 3]],
+                        lfsr_q[sbox_in_indices[k*4 + 2]],
+                        lfsr_q[sbox_in_indices[k*4 + 1]],
+                        lfsr_q[sbox_in_indices[k*4 + 0]]};
+      assign sbox_out[k*4 +: 4] = prim_cipher_pkg::PRINCE_SBOX4[sbox_in];
     end
   end else begin : gen_out_passthru
     assign sbox_out = lfsr_q;
@@ -489,7 +596,7 @@ module prim_lfsr #(
 
   // output check
   `ASSERT_KNOWN(OutputKnown_A, state_o)
-  if (!StatePermEn) begin : gen_output_sva
+  if (!StatePermEn && !NonLinearOut) begin : gen_output_sva
     `ASSERT(OutputCheck_A, state_o == StateOutDw'(lfsr_q))
   end
   // if no external input changes the lfsr state, a lockup must not occur (by design)
@@ -512,20 +619,12 @@ module prim_lfsr #(
     `ASSERT(LfsrLockupCheck_A, lfsr_en_i && lockup && !seed_en_i |=> !lockup)
   end
 
-  // If non-linear output requested, the output must be 32bit or 64bit
-  if(NonLinearOut) begin : gen_byte_check_sva
-    `ASSERT_INIT(SboxByteAlign_A, LfsrDw inside {32, 64})
+  // If non-linear output requested, the LFSR width must be a power of 2 and greater than 16.
+  if(NonLinearOut) begin : gen_nonlinear_align_check_sva
+    `ASSERT_INIT(SboxByteAlign_A, 2**$clog2(LfsrDw) == LfsrDw && LfsrDw >= 16)
   end
 
-  // It does not make sense to enable non-linear output but not permutation.
-  // Permutation is basically for free, so if NonLinear is enabled so should
-  // permutation.  If non-linear is enabled but permutation is not, it is
-  // perhaps an error where the user intended to enable permutation only.
-  `ASSERT_INIT(SboxOutParamCheck_A, ~(~StatePermEn & NonLinearOut))
-
-
   if (MaxLenSVA) begin : gen_max_len_sva
-
 `ifndef SYNTHESIS
     // the code below is a workaround to enable long sequences to be checked.
     // some simulators do not support SVA sequences longer than 2**32-1.
