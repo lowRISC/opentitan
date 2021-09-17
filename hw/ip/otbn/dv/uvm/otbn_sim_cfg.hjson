@@ -18,8 +18,10 @@ name:
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:otbn_sim:0.1
 
+  otbn_dir: "{proj_root}/hw/ip/otbn"
+
   // Testplan hjson file.
-  testplan: "{proj_root}/hw/ip/otbn/data/otbn_testplan.hjson"
+  testplan: "{otbn_dir}/data/otbn_testplan.hjson"
 
   exports: [
     { REPO_TOP: "{proj_root}" },
@@ -32,8 +34,8 @@ name:
       "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
       // Config files to get the correct flags for otbn_memutil and otbn_tracer
       "{proj_root}/hw/dv/verilator/memutil_dpi_scrambled_opts.hjson",
-      "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
-      "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
+      "{otbn_dir}/dv/memutil/otbn_memutil_sim_opts.hjson",
+      "{otbn_dir}/dv/tracer/otbn_tracer_sim_opts.hjson",
       // Common CIP test lists
       "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
       "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
@@ -85,9 +87,13 @@ name:
   binary_size: 2000
 
   otbn_obj_dir: "{build_dir}/build-out"
-  gen_binaries_py: "{proj_root}/hw/ip/otbn/dv/uvm/gen-binaries.py"
-  gen_binary: "{gen_binaries_py} --count 1 --obj-dir {otbn_obj_dir}"
-  gen_binaries: "{gen_binaries_py} --count 10 --obj-dir {otbn_obj_dir}"
+  gen_binaries_py: "{otbn_dir}/dv/uvm/gen-binaries.py"
+
+  rnd_args: "--seed {seed} --size {binary_size}"
+  gen_fixed: "{gen_binaries_py} --obj-dir {otbn_obj_dir}"
+  gen_rnd: "{gen_binaries_py} --obj-dir {otbn_obj_dir} {rnd_args}"
+
+  smoke_dir: "{otbn_dir}/dv/smoke"
 
   run_modes: [
     // Run the random instruction generator and builds the one resulting binary
@@ -96,7 +102,7 @@ name:
     {
       name: build_otbn_rig_binary_mode
       pre_run_cmds: [
-        "{gen_binary} --no-smoke --seed {seed} --size {binary_size} {otbn_elf_dir}"
+        "{gen_rnd} --count 1 {otbn_elf_dir}"
       ]
     }
 
@@ -104,7 +110,7 @@ name:
     {
       name: build_otbn_smoke_binary_mode
       pre_run_cmds: [
-        "{gen_binary} {otbn_elf_dir}"
+        "{gen_fixed} --src-dir {smoke_dir} {otbn_elf_dir}"
       ]
     }
 
@@ -113,7 +119,7 @@ name:
     {
       name: build_otbn_rig_binaries_mode
       pre_run_cmds: [
-        "{gen_binaries} --no-smoke --seed {seed} --size {binary_size} {otbn_elf_dir}"
+        "{gen_rnd} --count 10 {otbn_elf_dir}"
       ]
     }
   ]

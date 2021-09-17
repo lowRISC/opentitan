@@ -109,20 +109,23 @@ def read_toolchain(obj_dir_arg: Optional[str], otbn_dir: str) -> Toolchain:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--count', type=read_positive, default=10,
-                        help='Number of binaries to generate')
     parser.add_argument('--obj-dir',
                         help=('Object directory configured with Meson (used '
                               'to find tool configuration). If not supplied, '
                               'defaults to the OBJ_DIR environment variable '
                               'if set, or build-out at the top of the '
                               'repository if not.'))
-    parser.add_argument('--seed', type=read_positive, default=1)
-    parser.add_argument('--size', type=read_positive, default=100)
+    parser.add_argument('--count', type=read_positive,
+                        help='Number of binaries to generate (default: 10)')
+    parser.add_argument('--seed', type=read_positive)
+    parser.add_argument('--size', type=read_positive)
+    parser.add_argument('--src-dir',
+                        help=('If supplied, gen-binaries.py will not generate '
+                              'random binaries. Instead, it will assemble and '
+                              'link each .s file that it can find in the '
+                              'given directory. This is useful for building '
+                              'the smoke test or other directed tests.'))
     parser.add_argument('--verbose', '-v', action='store_true')
-    parser.add_argument('--no-smoke', action='store_true',
-                        help=('Do not generate the smoke test (useful if '
-                              'generating exactly one binary)'))
     parser.add_argument('--jobs', '-j', type=read_jobs, nargs='?',
                         const='unlimited', help='Number of parallel jobs.')
     parser.add_argument('--gen-only', action='store_true',
@@ -133,6 +136,25 @@ def main() -> int:
 
     args = parser.parse_args()
 
+    # Argument consistency checks
+    if args.src_dir is None:
+        if args.count is None:
+            args.count = 10
+        if args.seed is None:
+            args.seed = 1
+        if args.size is None:
+            args.size = 100
+    else:
+        if args.count is not None:
+            raise RuntimeError('Invalid combination: --count and --src-dir '
+                               'both supplied.')
+        if args.seed is not None:
+            raise RuntimeError('Invalid combination: --seed and --src-dir '
+                               'both supplied.')
+        if args.size is not None:
+            raise RuntimeError('Invalid combination: --size and --src-dir '
+                               'both supplied.')
+
     script_dir = os.path.dirname(__file__)
     otbn_dir = os.path.normpath(os.path.join(script_dir, '../' * 2))
 
@@ -142,8 +164,6 @@ def main() -> int:
         print(err, file=sys.stderr)
         return 1
 
-    rig_count = args.count if args.no_smoke else args.count - 1
-
     os.makedirs(args.destdir, exist_ok=True)
 
     ninja_fname = 'build.ninja'
@@ -151,8 +171,11 @@ def main() -> int:
         ninja_fname += '.' + args.ninja_suffix
 
     with open(os.path.join(args.destdir, ninja_fname), 'w') as ninja_handle:
-        write_ninja(ninja_handle, not args.no_smoke, rig_count,
-                    args.seed, args.size, toolchain, otbn_dir)
+        if args.src_dir is None:
+            write_ninja_rnd(ninja_handle, toolchain, otbn_dir,
+                            args.count, args.seed, args.size)
+        else:
+            write_ninja_fixed(ninja_handle, toolchain, otbn_dir, args.src_dir)
 
     if args.gen_only:
         return 0
@@ -174,51 +197,44 @@ def main() -> int:
     return subprocess.run(cmd, cwd=args.destdir, check=False).returncode
 
 
-def write_ninja(handle: TextIO, build_smoke: bool, rig_count: int,
-                start_seed: int, size: int,
-                toolchain: Toolchain, otbn_dir: str) -> None:
-    '''Write a build.ninja to build rig_count random binaries and a smoke test
+def write_ninja_rnd(handle: TextIO,
+                    toolchain: Toolchain,
+                    otbn_dir: str,
+                    count: int,
+                    start_seed: int,
+                    size: int) -> None:
+    '''Write a build.ninja to build random binaries
 
     The rules build everything in the same directory as the build.ninja file.
-    OTBN tooling is found in util_dir.
+    OTBN tooling is found through the toolchain argument.
 
     '''
+    assert count > 0
     assert start_seed >= 0
     assert size > 0
 
     otbn_rig = os.path.join(otbn_dir, 'dv/rig/otbn-rig')
-    smoke_src_dir = os.path.join(otbn_dir, 'dv/smoke')
 
-    seeds = [start_seed + idx for idx in range(rig_count)]
-
-    if rig_count:
-        handle.write('rule rig-gen\n'
-                     '  command = {rig} gen --size {size} --seed $seed -o $out\n'
-                     .format(rig=otbn_rig, size=size))
+    handle.write('rule rig-gen\n'
+                 '  command = {rig} gen --size {size} --seed $seed -o $out\n\n'
+                 .format(rig=otbn_rig, size=size))
 
     handle.write('rule rig-asm\n'
-                 '  command = {rig} asm -o $seed $in\n'
+                 '  command = {rig} asm -o $seed $in\n\n'
                  .format(rig=otbn_rig))
 
     handle.write('rule as\n'
-                 '  command = RV32_TOOL_AS={rv32_as} {otbn_as} -o $out $in\n'
+                 '  command = RV32_TOOL_AS={rv32_as} {otbn_as} -o $out $in\n\n'
                  .format(rv32_as=toolchain.rv32_tool_as,
                          otbn_as=toolchain.otbn_as))
 
-    if rig_count:
-        handle.write('rule ld\n'
-                     '  command = RV32_TOOL_LD={rv32_ld} '
-                     '{otbn_ld} -o $out -T $ldscript $in\n'
-                     .format(rv32_ld=toolchain.rv32_tool_ld,
-                             otbn_ld=toolchain.otbn_ld))
+    handle.write('rule ld\n'
+                 '  command = RV32_TOOL_LD={rv32_ld} '
+                 '{otbn_ld} -o $out -T $ldscript $in\n'
+                 .format(rv32_ld=toolchain.rv32_tool_ld,
+                         otbn_ld=toolchain.otbn_ld))
 
-    if build_smoke:
-        handle.write('rule ld1\n'
-                     '  command = RV32_TOOL_LD={rv32_ld} {otbn_ld} -o $out $in\n\n'
-                     .format(rv32_ld=toolchain.rv32_tool_ld,
-                             otbn_ld=toolchain.otbn_ld))
-
-    for seed in seeds:
+    for seed in range(start_seed, start_seed + count):
         # Generate the .s and .ld files.
         handle.write('build {seed}.json: rig-gen\n'
                      '  seed = {seed}\n'
@@ -236,11 +252,42 @@ def write_ninja(handle: TextIO, build_smoke: bool, rig_count: int,
                      '  ldscript = {seed}.ld\n\n'
                      .format(seed=seed))
 
-    # Rules to build the smoke test.
-    if build_smoke:
-        smoke_src = os.path.join(os.path.abspath(smoke_src_dir), 'smoke_test.s')
-        handle.write('build smoke.o: as {smoke_src}\n'.format(smoke_src=smoke_src))
-        handle.write('build smoke.elf: ld1 smoke.o\n\n')
+
+def write_ninja_fixed(handle: TextIO,
+                      toolchain: Toolchain,
+                      otbn_dir: str,
+                      src_dir: str) -> None:
+    '''Write a build.ninja to build a fixed set of binaries
+
+    The rules build everything in the same directory as the build.ninja file.
+    OTBN tooling is found through the toolchain argument.
+
+    '''
+
+    handle.write('rule as\n'
+                 '  command = RV32_TOOL_AS={rv32_as} {otbn_as} -o $out $in\n\n'
+                 .format(rv32_as=toolchain.rv32_tool_as,
+                         otbn_as=toolchain.otbn_as))
+
+    handle.write('rule ld\n'
+                 '  command = RV32_TOOL_LD={rv32_ld} {otbn_ld} -o $out $in\n\n'
+                 .format(rv32_ld=toolchain.rv32_tool_ld,
+                         otbn_ld=toolchain.otbn_ld))
+
+    count = 0
+    for fname in os.listdir(src_dir):
+        if not fname.endswith('.s'):
+            continue
+
+        abs_path = os.path.abspath(os.path.join(src_dir, fname))
+        basename = fname[:-2]
+
+        handle.write(f'build {basename}.o: as {abs_path}\n')
+        handle.write(f'build {basename}.elf: ld {basename}.o\n\n')
+        count += 1
+
+    if not count:
+        raise RuntimeError(f'No .s files in {src_dir}')
 
 
 if __name__ == '__main__':

@@ -46,9 +46,6 @@ def main() -> int:
                         help='Number of binaries to generate and run')
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--size', type=int, default=100)
-    parser.add_argument('--no-smoke', action='store_true',
-                        help=('Do not generate the smoke test (useful if '
-                              'generating exactly one binary)'))
     parser.add_argument('destdir', help='Destination directory')
 
     args = parser.parse_args()
@@ -60,8 +57,6 @@ def main() -> int:
                 '--count={}'.format(args.count),
                 '--seed={}'.format(args.seed),
                 '--size={}'.format(args.size)]
-    if args.no_smoke:
-        gb_flags.append('--no-smoke')
 
     gb_cmd = [find_gen_binaries()] + gb_flags + [args.destdir]
     if subprocess.run(gb_cmd, check=False).returncode:
@@ -73,8 +68,7 @@ def main() -> int:
     # Next, we make our own build.ninja, which says how to compile and run the
     # verilated testbench
     with open(os.path.join(args.destdir, 'build.ninja'), 'w') as ninja_handle:
-        write_ninja(ninja_handle, args.destdir,
-                    args.no_smoke, args.seed, args.count)
+        write_ninja(ninja_handle, args.destdir, args.seed, args.count)
 
     # Finally, use ninja to run everything, continuing on error (so that you
     # can run 100 seeds and see what proportion fails).
@@ -84,7 +78,6 @@ def main() -> int:
 
 def write_ninja(handle: TextIO,
                 destdir: str,
-                no_smoke: bool,
                 seed: int,
                 count: int) -> None:
     handle.write('include build.ninja.gen\n\n')
@@ -102,9 +95,7 @@ def write_ninja(handle: TextIO,
     handle.write('build $tb: fusesoc\n\n')
 
     # Collect up all the generated files
-    basenames = [] if no_smoke else ['smoke']
-    for off in range(count if no_smoke else count - 1):
-        basenames.append(str(seed + off))
+    basenames = [str(seed + off) for off in range(count)]
 
     # Rules to run them
     handle.write(f'rule run\n'

@@ -16,7 +16,7 @@ class otbn_smoke_vseq extends otbn_single_vseq;
     // Check that cfg.otbn_elf_dir was set by the test
     `DV_CHECK_FATAL(cfg.otbn_elf_dir.len() > 0);
 
-    return $sformatf("%0s/smoke.elf", cfg.otbn_elf_dir);
+    return $sformatf("%0s/smoke_test.elf", cfg.otbn_elf_dir);
   endfunction
 
 endclass
