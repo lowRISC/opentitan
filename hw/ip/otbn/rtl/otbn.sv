@@ -763,7 +763,6 @@ module otbn
     logic [31:0]  insn_cnt_model, insn_cnt_rtl;
     logic         edn_rnd_data_valid;
     logic         edn_urnd_data_valid;
-    logic [255:0] edn_rnd_data_model;
 
     assign done = otbn_use_model ? done_model : done_rtl;
     assign locked = otbn_use_model ? locked_model : locked_rtl;
@@ -773,14 +772,8 @@ module otbn
     assign start_rtl = start_q & ~otbn_use_model;
 
     // Model (Instruction Set Simulator)
-    // In model only runs, leave valid signals high and supply constant RND data for EDN which will
-    // allow the model to continue without RND/URND related stalls.
-    // TODO: Implement proper EDN requests in model only runs
-    localparam logic [WLEN-1:0] ModelOnlyEdnVal = {{(WLEN / 4){4'h9}}};
-
-    assign edn_rnd_data_valid = otbn_use_model ? 1'b1 : edn_rnd_req & edn_rnd_ack;
+    assign edn_rnd_data_valid = edn_rnd_req & edn_rnd_ack;
     assign edn_urnd_data_valid = otbn_use_model ? 1'b1 : edn_urnd_req & edn_urnd_ack;
-    assign edn_rnd_data_model = otbn_use_model ? ModelOnlyEdnVal : edn_rnd_data;
 
     otbn_core_model #(
       .DmemSizeByte(DmemSizeByte),
@@ -789,18 +782,22 @@ module otbn
       .DesignScope("")
     ) u_otbn_core_model (
       .clk_i,
-      .rst_ni (rst_n),
+      .clk_edn_i,
 
-      .start_i (start_model),
-      .done_o (done_model),
+      .rst_ni                (rst_n),
+      .rst_edn_ni,
 
-      .err_bits_o (err_bits_model),
+      .start_i               (start_model),
+      .done_o                (done_model),
 
-      .edn_rnd_data_valid_i  ( edn_rnd_data_valid ),
-      .edn_rnd_data_i        ( edn_rnd_data ),
-      .edn_urnd_data_valid_i ( edn_urnd_data_valid ),
+      .err_bits_o            (err_bits_model),
 
-      .insn_cnt_o (insn_cnt_model),
+      .edn_rnd_i             (edn_rnd_i),
+      .edn_rnd_cdc_done_i    (edn_rnd_data_valid),
+
+      .edn_urnd_data_valid_i (edn_urnd_data_valid),
+
+      .insn_cnt_o            (insn_cnt_model),
 
       .err_o ()
     );

@@ -53,8 +53,14 @@ class OTBNState:
         self._err_bits = 0
         self.pending_halt = False
 
-        self._new_rnd_data = None  # type: Optional[int]
         self._urnd_reseed_complete = False
+
+        self.rnd_256b_counter = 0
+        self.rnd_cdc_pending = False
+        self.rnd_cdc_counter = 0
+        self.rnd_256b = 0
+        self.rnd_cached_tmp = None  # type: Optional[int]
+        self.counter = 0
 
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
@@ -66,8 +72,46 @@ class OTBNState:
         assert(self.is_pc_valid(next_pc))
         self._pc_next_override = next_pc
 
-    def set_rnd_data(self, rnd_data: int) -> None:
-        self._new_rnd_data = rnd_data
+    def step_edn(self, rnd_data: int) -> None:
+        # Take the new data
+        assert 0 <= rnd_data < (1 << 32)
+
+        # There should not be a pending RND result before an EDN step. 
+        assert not self.rnd_cdc_pending
+
+        # Collect 32b packages in a 256b variable
+        self.rnd_256b = ((self.rnd_256b << 32) | rnd_data) & ((1 << 256) - 1)
+
+        if self.rnd_256b_counter == 7:
+            # Reset the 32b package counter and wait until receiving done
+            # signal from RTL
+            self.rnd_256b_counter = 0
+            self.rnd_cdc_pending = True
+        else:
+            # Count until 8 valid packages are received
+            self.rnd_256b_counter += 1
+            return
+
+        # Reset the 32b package counter and wait until receiving done
+        # signal from RTL
+        self.rnd_256b_counter = 0
+        self.rnd_cdc_pending = True
+
+    def rnd_completed(self) -> None:
+        # This will be called when all the packages are received and processed
+        # by RTL. Model will set RND register, pending flag and internal
+        # variables will be cleared.
+
+        # These must be true since model calculates RND data faster than RTL.
+        # But the synchronisation of the data should not take more than
+        # 5 cycles ideally.
+        assert self.rnd_cdc_pending
+        assert self.rnd_cdc_counter < 6
+
+        self.wsrs.RND.set_unsigned(self.rnd_256b)
+        self.rnd_256b = 0
+        self.rnd_cdc_pending = False
+        self.rnd_cdc_counter = 0
 
     def set_urnd_reseed_complete(self) -> None:
         self._urnd_reseed_complete = True
@@ -110,14 +154,14 @@ class OTBNState:
         # If error bits are set, pending_halt should have been set as well.
         assert self._err_bits == 0
 
-        if self._new_rnd_data:
-            self.wsrs.RND.set_unsigned(self._new_rnd_data)
-            self._new_rnd_data = None
+        # If model is waiting for a RTL done signal regarding RND while also executing instructions,
+        # increase the counter
+        if self.rnd_cdc_pending:
+            self.rnd_cdc_counter += 1
 
         if self._urnd_stall:
             if self._urnd_reseed_complete:
                 self._urnd_stall = False
-
             return
 
         # If self._start_stall, this is the end of the stall cycle at the start
@@ -170,7 +214,15 @@ class OTBNState:
 
         # Reset CSRs, WSRs, loop stack and call stack
         self.csrs = CSRFile()
+
+        # Save the RND value when starting another run because when a SW
+        # run finishes we still keep RND data.
+        old_rnd = self.wsrs.RND._random_value
+
         self.wsrs = WSRFile()
+        if old_rnd is not None:
+            self.wsrs.RND.set_unsigned(old_rnd)
+
         self.loop_stack = LoopStack()
         self.gprs.start()
 
@@ -188,6 +240,7 @@ class OTBNState:
         clear the busy flag and write STOP_PC.
 
         '''
+
         if self._err_bits:
             # Abort all pending changes, including changes to external registers.
             self._abort()
