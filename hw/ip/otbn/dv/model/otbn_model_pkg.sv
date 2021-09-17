@@ -16,12 +16,16 @@ package otbn_model_pkg;
 
   import "DPI-C" function void otbn_model_destroy(chandle model);
 
+  import "DPI-C" function void edn_model_step(chandle model,
+                                              logic [31:0] edn_rnd_data);
+
+  import "DPI-C" function
+    void edn_model_rnd_cdc_done(chandle model);
+
   import "DPI-C" context function
     int unsigned otbn_model_step(chandle          model,
                                  logic            start,
                                  int unsigned     model_state,
-                                 logic            edn_rnd_data_valid,
-                                 logic [WLEN-1:0] edn_rnd_data,
                                  logic            edn_urnd_data_valid,
                                  inout bit [7:0]  status,
                                  inout bit [31:0] insn_cnt,

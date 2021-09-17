@@ -229,17 +229,6 @@ static bool read_ext_reg(const std::string &reg_name,
   return true;
 }
 
-static std::string wlen_val_to_hex_str(uint32_t val[8]) {
-  std::ostringstream oss;
-
-  oss << std::hex << "0x";
-  for (int i = 7; i >= 0; --i) {
-    oss << std::setfill('0') << std::setw(8) << val[i];
-  }
-
-  return oss.str();
-}
-
 ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
   std::string model_path(find_otbn_model());
 
@@ -368,9 +357,13 @@ void ISSWrapper::start() {
   mirrored_.status = 1;
 }
 
-void ISSWrapper::edn_rnd_data(uint32_t edn_rnd_data[8]) {
+void ISSWrapper::edn_rnd_cdc_done() {
+  run_command("edn_rnd_cdc_done\n", nullptr);
+}
+
+void ISSWrapper::edn_step(uint32_t edn_rnd_data) {
   std::ostringstream oss;
-  oss << "edn_rnd_data " << wlen_val_to_hex_str(edn_rnd_data) << "\n";
+  oss << "edn_step " << std::hex << "0x" << edn_rnd_data << "\n";
   run_command(oss.str(), nullptr);
 }
 

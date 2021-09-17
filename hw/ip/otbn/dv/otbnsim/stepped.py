@@ -42,6 +42,11 @@ prefixed with "0x" if they are hexadecimal.
 
     print_regs           Write the contents of all registers to stdout (in hex)
 
+    edn_step             Send 32b RND Data to the model.
+
+    edn_rnd_cdc_done     Finish the RND data write process by signalling RTL
+                         is also finished processing 32b packages from EDN.
+
 '''
 
 import sys
@@ -246,13 +251,24 @@ def on_print_call_stack(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
-def on_edn_rnd_data(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+def on_edn_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     if len(args) != 1:
-        raise ValueError('edn_rnd_data expects exactly 1 argument. Got {}.'
+        raise ValueError('edn_step expects exactly 1 argument. Got {}.'
                          .format(args))
 
-    edn_rnd_data = read_word('edn_rnd_data', args[0], 256)
-    sim.state.set_rnd_data(edn_rnd_data)
+    edn_rnd_data = read_word('edn_step', args[0], 32)
+
+    sim.state.step_edn(edn_rnd_data)
+
+    return None
+
+
+def on_edn_rnd_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    if len(args) != 0:
+        raise ValueError('edn_rnd_cdc_done expects zero arguments. Got {}.'
+                         .format(args))
+
+    sim.state.rnd_completed()
 
     return None
 
@@ -287,9 +303,10 @@ _HANDLERS = {
     'dump_d': on_dump_d,
     'print_regs': on_print_regs,
     'print_call_stack': on_print_call_stack,
-    'edn_rnd_data': on_edn_rnd_data,
-    'edn_urnd_reseed_complete': on_edn_urnd_reseed_complete,
-    'reset': on_reset
+    'reset': on_reset,
+    'edn_step': on_edn_step,
+    'edn_rnd_cdc_done': on_edn_rnd_cdc_done,
+    'edn_urnd_reseed_complete': on_edn_urnd_reseed_complete
 }
 
 

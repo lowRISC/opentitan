@@ -58,8 +58,12 @@ struct ISSWrapper {
   void start();
 
   // Provide data for RND. ISS will stall when RND is read and RND data isn't
-  // available
-  void edn_rnd_data(uint32_t edn_rnd_data[8]);
+  // available. RND data is available only when 8 32b packages are sent and
+  // also RTL signals CDC is done.
+  void edn_step(uint32_t edn_rnd_data);
+
+  // Signals 256b EDN random number is valid in the RTL.
+  void edn_rnd_cdc_done();
 
   // Signal URND reseed at beginning of execution is complete
   void edn_urnd_reseed_complete();

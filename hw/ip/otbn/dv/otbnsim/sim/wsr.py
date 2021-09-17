@@ -129,7 +129,7 @@ class RandWSR(WSR):
 
     def request_value(self) -> bool:
         '''Signals intent to read RND, returns True if a value is available'''
-        if self._random_value:
+        if self._random_value is not None:
             return True
 
         self.pending_request = True

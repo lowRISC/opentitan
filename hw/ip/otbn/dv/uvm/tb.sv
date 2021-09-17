@@ -48,7 +48,7 @@ module tb;
 
   assign edn_rnd_rsp.edn_ack  = edn_rnd_req.edn_req;
   assign edn_rnd_rsp.edn_fips = 1'b0;
-  assign edn_rnd_rsp.edn_bus  = 32'h99999999;
+  assign edn_rnd_rsp.edn_bus =  32'h99999999;
 
   assign edn_urnd_rsp.edn_ack  = edn_urnd_req.edn_req;
   assign edn_urnd_rsp.edn_fips = 1'b0;
@@ -162,13 +162,13 @@ module tb;
   // decoding errors).
   assign model_if.start = dut.start_q;
 
-  // Internally otbn_core uses a 256-bit width interface for EDN data. This maps to muliple EDN
-  // requests at this level (via a packing FIFO internal to otbn). The model works with the internal
-  // otbn_core interface so probe into it here to provide the relevant signals to the model.
-  logic edn_rnd_data_valid;
+  // Valid signals below are set when DUT finishes processing incoming 32b packages and constructs
+  // 256b EDN data. Model checks if the processing of the packages are done in maximum of 5 cycles
   logic edn_urnd_data_valid;
+  logic edn_rnd_cdc_done;
 
-  assign edn_rnd_data_valid = dut.edn_rnd_req & dut.edn_rnd_ack;
+  assign edn_rnd_cdc_done = dut.edn_rnd_req & dut.edn_rnd_ack;
+
   assign edn_urnd_data_valid = dut.edn_urnd_req & dut.edn_urnd_ack;
 
   bit [31:0] model_insn_cnt;
@@ -180,15 +180,18 @@ module tb;
     .DesignScope  ("..dut.u_otbn_core")
   ) u_model (
     .clk_i        (model_if.clk_i),
+    .clk_edn_i    (model_if.clk_i),
     .rst_ni       (model_if.rst_ni),
+    .rst_edn_ni   (model_if.rst_ni),
 
     .start_i      (model_if.start),
     .done_o       (model_if.done),
 
     .err_bits_o   (),
 
-    .edn_rnd_data_valid_i  (edn_rnd_data_valid),
-    .edn_rnd_data_i        (dut.edn_rnd_data),
+    .edn_rnd_i             (edn_rnd_rsp),
+    .edn_rnd_cdc_done_i    (edn_rnd_cdc_done),
+
     .edn_urnd_data_valid_i (edn_urnd_data_valid),
 
     .status_o     (model_if.status),

@@ -22,6 +22,13 @@ OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
 // Delete an OtbnModel
 void otbn_model_destroy(OtbnModel *model);
 
+// Call edn_step function of OtbnModel
+void edn_model_step(OtbnModel *model,
+                    svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+
+// Signal RTL is finished processing RND data to Model
+void edn_model_rnd_cdc_done(OtbnModel *model);
+
 // The main entry point to the OTBN model, exported from here and used in
 // otbn_core_model.sv.
 //
@@ -52,11 +59,9 @@ void otbn_model_destroy(OtbnModel *model);
 // the contents of DMEM from the ISS and inject them into the simulation
 // memory.
 //
-// If start is true, we start the model and then step once (as described
+// If start is true, we start the model and then step once (as
 // above).
 unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
-                         svLogic edn_rnd_data_valid,
-                         svLogicVecVal *edn_rnd_data, /* logic [255:0] */
                          svLogic edn_urnd_data_valid,
                          svBitVecVal *status /* bit [7:0] */,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
