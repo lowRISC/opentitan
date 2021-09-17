@@ -679,7 +679,6 @@ assign ot4_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ot5_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ts_alert_hi_src = '{p: 1'b0, n: 1'b1};
 assign ts_alert_lo_src = '{p: 1'b0, n: 1'b1};
-assign ot0_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ot1_alert_src   = '{p: 1'b0, n: 1'b1};
 
 
@@ -725,6 +724,9 @@ always_ff @( posedge clk_ast_tlul_i, negedge regal_rst_n ) begin
     ast_init_done_o <= 1'b1;
   end
 end
+
+// TLUL Integrity Error
+assign ot0_alert_src = '{p: intg_err, n: !intg_err};
 
 // USB PU-P and PU-N value selection
 assign usb_io_pu_cal_o = (1 << (UsbCalibWidth[5-1:0]/2));
@@ -783,10 +785,15 @@ assign ast2pad_t1_ao = 1'bz;
 //
 `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_ast_tlul_i, rst_ast_tlul_ni)
 `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_ast_tlul_i, rst_ast_tlul_ni)
+`ASSERT_KNOWN(InitDoneKnownO_A, ast_init_done_o, clk_ast_tlul_i, rst_ast_tlul_ni)
 `ASSERT_KNOWN(VcaonPokKnownO_A, ast_pwst_o.aon_pok, clk_src_aon_o, por_n)                //TODO
 `ASSERT_KNOWN(VcmainPokKnownO_A, ast_pwst_o.main_pok, clk_src_aon_o, por_n)              //TODO
 `ASSERT_KNOWN(VioaPokKnownO_A, ast_pwst_o.io_pok[0], clk_src_aon_o, por_n)               //TODO
 `ASSERT_KNOWN(ViobPokKnownO_A, ast_pwst_o.io_pok[1], clk_src_aon_o, por_n)               //TODO
+`ASSERT_KNOWN(VcaonPokHKnownO_A, ast_pwst_h_o.aon_pok, clk_src_aon_o, por_n)             //TODO
+`ASSERT_KNOWN(VcmainPokHKnownO_A, ast_pwst_h_o.main_pok, clk_src_aon_o, por_n)           //TODO
+`ASSERT_KNOWN(VioaPokHKnownO_A, ast_pwst_h_o.io_pok[0], clk_src_aon_o, por_n)            //TODO
+`ASSERT_KNOWN(ViobPokHKnownO_A, ast_pwst_h_o.io_pok[1], clk_src_aon_o, por_n)            //TODO
 `ASSERT_KNOWN(FlashPowerDownKnownO_A, flash_power_down_h_o, 1, ast_pwst_o.main_pok)      //TODO
 `ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, ast_pwst_o.main_pok)    //TODO
 `ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst_o.main_pok)            //TODO
