@@ -542,11 +542,6 @@ module otbn
   assign dmem_rerror_bus  = !dmem_access_core ? {dmem_rerror, 1'b0} : 2'b00;
   assign dmem_rerror_core = dmem_rerror;
 
-  // The top bits of DMEM rdata aren't currently used (they will eventually be used for integrity
-  // checks within the core)
-  logic unused_dmem_top_rdata;
-  assign unused_dmem_top_rdata = &{1'b0, dmem_rdata[ExtWLEN-1:WLEN]};
-
   // Registers =================================================================
 
   logic reg_bus_intg_violation;
