@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+subdir('autogen')
+
 # Clock Manager DIF Library (dif_clkmgr)
 sw_lib_dif_clkmgr = declare_dependency(
   link_with: static_library(
@@ -80,6 +82,7 @@ sw_lib_dif_edn = declare_dependency(
   )
 )
 
+
 # UART DIF library (dif_uart)
 sw_lib_dif_uart = declare_dependency(
   link_with: static_library(
@@ -90,6 +93,7 @@ sw_lib_dif_uart = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
+      sw_lib_dif_autogen_uart,
     ],
   )
 )
@@ -98,7 +102,9 @@ test('dif_uart_unittest', executable(
     'dif_uart_unittest',
     sources: [
       'dif_uart_unittest.cc',
+      'autogen/dif_uart_autogen_unittest.cc',
       meson.source_root() / 'sw/device/lib/dif/dif_uart.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_uart_autogen.c',
       hw_ip_uart_reg_h,
     ],
     dependencies: [

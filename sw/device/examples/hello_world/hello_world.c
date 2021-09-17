@@ -21,16 +21,12 @@ static dif_spi_device_t spi;
 static dif_uart_t uart;
 
 int main(int argc, char **argv) {
-  CHECK(
-      dif_uart_init(
-          (dif_uart_params_t){
-              .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-          },
-          &uart) == kDifUartOk);
+  CHECK(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
+                      &uart) == kDifOk);
   CHECK(dif_uart_configure(&uart, (dif_uart_config_t){
                                       .baudrate = kUartBaudrate,
                                       .clk_freq_hz = kClockFreqPeripheralHz,
-                                      .parity_enable = kDifUartToggleDisabled,
+                                      .parity_enable = kDifToggleDisabled,
                                       .parity = kDifUartParityEven,
                                   }) == kDifUartConfigOk);
   base_uart_stdout(&uart);

@@ -37,13 +37,10 @@ void rom_ext_boot(void) {
     abort();
   }
 
-  dif_uart_result_t init_result = dif_uart_init(
-      (dif_uart_params_t){
-          .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-      },
-      &uart);
+  dif_result_t init_result =
+      dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart);
 
-  if (init_result != kDifUartOk) {
+  if (init_result != kDifOk) {
     abort();
   }
 
@@ -51,7 +48,7 @@ void rom_ext_boot(void) {
       dif_uart_configure(&uart, (dif_uart_config_t){
                                     .baudrate = kUartBaudrate,
                                     .clk_freq_hz = kClockFreqPeripheralHz,
-                                    .parity_enable = kDifUartToggleDisabled,
+                                    .parity_enable = kDifToggleDisabled,
                                     .parity = kDifUartParityEven,
                                 });
 

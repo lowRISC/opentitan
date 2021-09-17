@@ -78,14 +78,14 @@ void demo_spi_to_log_echo(const dif_spi_device_t *spi) {
 void demo_uart_to_uart_and_gpio_echo(dif_uart_t *uart, dif_gpio_t *gpio) {
   while (true) {
     size_t chars_available;
-    if (dif_uart_rx_bytes_available(uart, &chars_available) != kDifUartOk ||
+    if (dif_uart_rx_bytes_available(uart, &chars_available) != kDifOk ||
         chars_available == 0) {
       break;
     }
 
     uint8_t rcv_char;
-    CHECK(dif_uart_bytes_receive(uart, 1, &rcv_char, NULL) == kDifUartOk);
-    CHECK(dif_uart_byte_send_polled(uart, rcv_char) == kDifUartOk);
+    CHECK(dif_uart_bytes_receive(uart, 1, &rcv_char, NULL) == kDifOk);
+    CHECK(dif_uart_byte_send_polled(uart, rcv_char) == kDifOk);
     CHECK(dif_gpio_write_all(gpio, rcv_char << 8) == kDifGpioOk);
   }
 }
