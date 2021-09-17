@@ -185,8 +185,6 @@ class dv_base_reg extends uvm_reg;
     dv_base_reg_field dv_fields[$];
     get_dv_base_reg_fields(dv_fields);
 
-    if (this.get_name() == "classa_clr_shadowed") $display("policy %0s val %0h", dv_fields[0].get_access(), rw.value[0]);
-    if (this.get_name() == "classa_clr_regwen") $display("regwen val %0h", rw.value[0]);
     // Skip updating shadow value or access type if:
     // 1). access is not OK, as access is aborted
     // 2). the operation is not write
