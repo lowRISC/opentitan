@@ -223,13 +223,6 @@
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40110000",
     },
-    { name: "lc_ctrl",
-      type: "lc_ctrl",
-      clock_srcs: {clk_i: "io_div4", clk_kmac_i: "io_div4"},
-      clock_group: "timers",
-      reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "lc_io_div4"},
-      base_addr: "0x40140000",
-    },
     { name: "pwrmgr_aon",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
@@ -518,13 +511,9 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
-      'flash_ctrl.rma_req'      : ['lc_ctrl.lc_flash_rma_req'],
-      'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
-      'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
       'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
-      'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
       'pwrmgr_aon.strap'        : ['pinmux_aon.strap_en'],
       'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en',
                                    'aon_timer_aon.sleep_mode'],
@@ -543,34 +532,7 @@
       'clkmgr_aon.idle'         : [],
 
       // Pinmux JTAG signals
-      'pinmux_aon.lc_jtag' : ['lc_ctrl.jtag'],
       'pinmux_aon.rv_jtag' : ['rv_dm.jtag'],
-
-      // LC function control signal broadcast
-      'lc_ctrl.lc_dft_en'          : ['pinmux_aon.lc_dft_en',
-                                      'clkmgr_aon.lc_dft_en'
-                                     ],
-      'lc_ctrl.lc_nvm_debug_en'    : ['flash_ctrl.lc_nvm_debug_en'],
-      'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
-                                      'sram_ctrl_ret_aon.lc_hw_debug_en',
-                                      'pinmux_aon.lc_hw_debug_en',
-                                      'rv_dm.lc_hw_debug_en'],
-      'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
-      'lc_ctrl.lc_keymgr_en'       : [],
-      'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
-                                      'sram_ctrl_main.lc_escalate_en',
-                                      'sram_ctrl_ret_aon.lc_escalate_en',
-                                      'aon_timer_aon.lc_escalate_en',
-                                      'flash_ctrl.lc_escalate_en'],
-      'lc_ctrl.lc_clk_byp_req'     : ['clkmgr_aon.lc_clk_byp_req'],
-      'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_byp_ack'],
-
-      // LC access control signal broadcast
-      'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['flash_ctrl.lc_creator_seed_sw_rw_en'],
-      'lc_ctrl.lc_owner_seed_sw_rw_en'     : ['flash_ctrl.lc_owner_seed_sw_rw_en'],
-      'lc_ctrl.lc_iso_part_sw_rd_en'       : ['flash_ctrl.lc_iso_part_sw_rd_en'],
-      'lc_ctrl.lc_iso_part_sw_wr_en'       : ['flash_ctrl.lc_iso_part_sw_wr_en'],
-      'lc_ctrl.lc_seed_hw_rd_en'           : ['flash_ctrl.lc_seed_hw_rd_en'],
 
       // rv_plic connections
       'rv_plic.msip' : ['rv_core_ibex.irq_software'],
@@ -607,6 +569,9 @@
         // hardwired connections
         'rv_core_ibex.hart_id', 'rv_core_ibex.boot_addr',
 
+        // lc_ctrl.lc_cpu_en - always enabled for English Breakfast
+        'rv_core_ibex.lc_cpu_en'
+
         // Xbars
 
         // Pinmux JTAG signals for the tool-inserted DFT TAP
@@ -615,8 +580,6 @@
         // OTP HW_CFG Broadcast signals.
         // TODO(#6713): The actual struct breakout and mapping currently needs to
         // be performed by hand in the toplevel template.
-        'lc_ctrl.otp_device_id',
-        'lc_ctrl.otp_manuf_state',
         'sram_ctrl_main.otp_en_sram_ifetch',
         'sram_ctrl_ret_aon.otp_en_sram_ifetch'
     ],

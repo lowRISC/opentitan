@@ -75,12 +75,6 @@
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    { name:      "lc_ctrl",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  "false"
-    },
     { name:      "sram_ctrl_ret_aon.regs",
       type:      "device",
       clock:     "clk_peri_i",
@@ -105,7 +99,6 @@
       "uart0",
       "gpio", "spi_device", "spi_host0", "rv_timer", "usbdev",
       "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
-      "lc_ctrl",
       "sram_ctrl_ret_aon.ram", "sram_ctrl_ret_aon.regs", "ast"
     ],
   },
