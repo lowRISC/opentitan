@@ -78,12 +78,10 @@ static uint64_t prince_k0_to_k0_prime(const uint64_t k0) {
 }
 
 static uint64_t prince_round_constant(const unsigned int round) {
-  uint64_t rc[] = {UINT64_C(0x0000000000000000), UINT64_C(0x13198a2e03707344),
-                   UINT64_C(0xa4093822299f31d0), UINT64_C(0x082efa98ec4e6c89),
-                   UINT64_C(0x452821e638d01377), UINT64_C(0xbe5466cf34e90c6c),
-                   UINT64_C(0x7ef84f78fd955cb1), UINT64_C(0x85840851f1ac43aa),
-                   UINT64_C(0xc882d32f25323c54), UINT64_C(0x64a51195e0e3610d),
-                   UINT64_C(0xd3b5a399ca0c2399), UINT64_C(0xc0ac29b7c97c50dd)};
+  uint64_t rc[] = {0x0000000000000000, 0x13198a2e03707344, 0xa4093822299f31d0,
+                   0x082efa98ec4e6c89, 0x452821e638d01377, 0xbe5466cf34e90c6c,
+                   0x7ef84f78fd955cb1, 0x85840851f1ac43aa, 0xc882d32f25323c54,
+                   0x64a51195e0e3610d, 0xd3b5a399ca0c2399, 0xc0ac29b7c97c50dd};
   return rc[round];
 }
 
@@ -198,7 +196,7 @@ static uint64_t prince_m_prime_layer(const uint64_t m_prime_in) {
  * The shift row and inverse shift row of the Prince cipher.
  */
 static uint64_t prince_shift_rows(const uint64_t in, int inverse) {
-  const uint64_t row_mask = UINT64_C(0xF000F000F000F000);
+  const uint64_t row_mask = 0xF000F000F000F000;
   uint64_t shift_rows_out = 0;
   for (unsigned int i = 0; i < 4; i++) {
     const uint64_t row = in & (row_mask >> (4 * i));
@@ -278,7 +276,7 @@ static uint64_t prince_core(const uint64_t core_input, const uint64_t k0_new,
 uint64_t prince_enc_dec_uint64(const uint64_t input, const uint64_t enc_k0,
                                const uint64_t enc_k1, int decrypt,
                                int num_half_rounds, int old_key_schedule) {
-  const uint64_t prince_alpha = UINT64_C(0xc0ac29b7c97c50dd);
+  const uint64_t prince_alpha = 0xc0ac29b7c97c50dd;
   const uint64_t k1 = enc_k1 ^ (decrypt ? prince_alpha : 0);
   const uint64_t k0_new =
       (old_key_schedule) ? k1 : enc_k0 ^ (decrypt ? prince_alpha : 0);
