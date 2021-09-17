@@ -70,29 +70,26 @@ bool otbn_is_busy(void);
  */
 typedef enum otbn_err_bits {
   kOtbnErrBitsNoError = 0,
-  /** Load or store to invalid address. */
+  /** A BAD_DATA_ADDR error was observed. */
   kOtbnErrBitsBadDataAddr = (1 << 0),
-  /** Instruction fetch from invalid address. */
+  /** A BAD_INSN_ADDR error was observed. */
   kOtbnErrBitsBadInsnAddr = (1 << 1),
-  /** Call stack underflow or overflow. */
+  /** A CALL_STACK error was observed. */
   kOtbnErrBitsCallStack = (1 << 2),
-  /** Illegal instruction execution attempted */
+  /** An ILLEGAL_INSN error was observed. */
   kOtbnErrBitsIllegalInsn = (1 << 3),
-  /** LOOP[I] related error */
+  /** A LOOP error was observed. */
   kOtbnErrBitsLoop = (1 << 4),
-  /** Error seen in Imem read */
-  kOtbnErrBitsFatalImem = (1 << 5),
-  /** Error seen in Dmem read */
-  kOtbnErrBitsFatalDmem = (1 << 6),
-  /** Error seen in RF read */
-  kOtbnErrBitsFatalReg = (1 << 7),
-  /**
-   * A bus-accessible register or memory was read or written while when it was
-   * not allowed.
-   */
-  kOtbnErrBitsFatalIllegalBusAccess = (1 << 8),
-  /** OTBN received a life cycle escalation request from the system */
-  kOtbnErrBitsFatalLifecycleEscalation = (1 << 9),
+  /** A IMEM_INTG_VIOLATION error was observed. */
+  kOtbnErrBitsImemIntgViolation = (1 << 5),
+  /** A DMEM_INTG_VIOLATION error was observed. */
+  kOtbnErrBitsDmemIntgViolation = (1 << 6),
+  /** A REG_INTG_VIOLATION error was observed. */
+  kOtbnErrBitsRegIntgViolation = (1 << 7),
+  /** An ILLEGAL_BUS_ACCESS error was observed. */
+  kOtbnErrBitsIllegalBusAccess = (1 << 8),
+  /** A LIFECYCLE_ESCALATION error was observed. */
+  kOtbnErrBitsLifecycleEscalation = (1 << 9),
 } otbn_err_bits_t;
 
 /**

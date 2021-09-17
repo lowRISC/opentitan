@@ -27,8 +27,8 @@ class ErrBits(IntEnum):
     CALL_STACK = 1 << 2
     ILLEGAL_INSN = 1 << 3
     LOOP = 1 << 4
-    FATAL_IMEM = 1 << 5
-    FATAL_DMEM = 1 << 6
-    FATAL_REG = 1 << 7
-    FATAL_ILLEGAL_BUS_ACCESS = 1 << 8
-    FATAL_LIFECYCLE_ESCALATION = 1 << 9
+    IMEM_INTG_VIOLATION = 1 << 5
+    DMEM_INTG_VIOLATION = 1 << 6
+    REG_INTG_VIOLATION = 1 << 7
+    ILLEGAL_BUS_ACCESS = 1 << 8
+    LIFECYCLE_ESCALATION = 1 << 9

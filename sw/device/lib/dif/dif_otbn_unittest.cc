@@ -276,11 +276,12 @@ TEST_F(GetErrBitsTest, NullArgs) {
 
 TEST_F(GetErrBitsTest, Success) {
   EXPECT_READ32(OTBN_ERR_BITS_REG_OFFSET,
-                kDifOtbnErrBitsIllegalInsn | kDifOtbnErrBitsFatalReg);
+                kDifOtbnErrBitsIllegalInsn | kDifOtbnErrBitsRegIntgViolation);
 
   dif_otbn_err_bits_t err_bits;
   EXPECT_EQ(dif_otbn_get_err_bits(&dif_otbn_, &err_bits), kDifOtbnOk);
-  EXPECT_EQ(err_bits, kDifOtbnErrBitsIllegalInsn | kDifOtbnErrBitsFatalReg);
+  EXPECT_EQ(err_bits,
+            kDifOtbnErrBitsIllegalInsn | kDifOtbnErrBitsRegIntgViolation);
 }
 
 class GetInsnCntTest : public OtbnTest {};

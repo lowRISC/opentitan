@@ -70,11 +70,11 @@ package otbn_pkg;
   //
   // Note: These errors are duplicated in other places. If updating them here, update those too.
   typedef struct packed {
-    logic fatal_lifecycle_escalation;
-    logic fatal_illegal_bus_access;
-    logic fatal_reg;
-    logic fatal_dmem;
-    logic fatal_imem;
+    logic lifecycle_escalation;
+    logic illegal_bus_access;
+    logic reg_intg_violation;
+    logic dmem_intg_violation;
+    logic imem_intg_violation;
     logic loop;
     logic illegal_insn;
     logic call_stack;

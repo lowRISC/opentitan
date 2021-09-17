@@ -576,20 +576,23 @@ The software then runs to completion, without the ability for host software to i
 - OTBN transitions into the [idle state](#design-details-operational-states) (in case of a successful execution, or a recoverable error) or the locked state (in case of a fatal error).
   This transition is signaled by raising the `done` interrupt ({{< regref "INTR_STATE.done" >}}), and reflected in the {{< regref "STATUS" >}} register.
 
-### Error Handling and Reporting {#design-details-error-handling-and-reporting}
+### Errors {#design-details-errors}
 
-OTBN is able to detect a range of errors.
+OTBN is able to detect a range of errors, which are classified as *software errors* or *fatal errors*.
+A software error is an error in the code that OTBN executes.
+In the absence of an attacker, these errors are due to a programmer's mistake.
+A fatal error is typically the violation of a security property.
+All errors and their classification are listed in the [List of Errors](#design-details-list-of-errors).
+
 Whenever an error is detected, OTBN reacts locally, and informs the OpenTitan system about it by raising an alert.
-OTBN generally does not try to recover from errors, and provides no error handling support to code that runs on it.
+OTBN generally does not try to recover from errors itself, and provides no error handling support to code that runs on it.
 
-OTBN classifies errors as either *recoverable* or *fatal*.
-Errors which could be caused by a programmer's mistake are typically considered recoverable, while errors which are unlikely or impossible to result from a programmer's mistake are considered fatal.
-The description of the {{< regref "ERR_BITS" >}} register lists all possible error causes; those prefixed with `fatal_` are fatal errors.
+OTBN gives host software the option to recover from some errors by restarting the operation.
+All software errors are treated as recoverable and are handled as described in the section [Reaction to Recoverable Errors](#design-details-recoverable-errors).
 
-Recoverable errors terminate the currently active OTBN operation and return control to the host CPU.
-Fatal errors lock OTBN until it is reset.
+Fatal errors are treated as described in the section [Reaction to Fatal Errors](#design-details-fatal-errors).
 
-### Recoverable Errors {#design-details-recoverable-errors}
+### Reaction to Recoverable Errors {#design-details-recoverable-errors}
 
 Recoverable errors can be the result of a programming error in OTBN software.
 Recoverable errors can only occur during the execution of software on OTBN, and not in other situations in which OTBN might be busy.
@@ -606,7 +609,7 @@ The following actions are taken when OTBN detects a recoverable error:
 
 The host software can start another operation on OTBN after a recoverable error was detected.
 
-### Fatal Errors {#design-details-fatal-errors}
+### Reaction to Fatal Errors {#design-details-fatal-errors}
 
 Fatal errors are generally seen as a sign of an intrusion, resulting in more drastic measures to protect the secrets stored within OTBN.
 Fatal errors can occur at any time, even when an OTBN operation isn't in progress.
@@ -630,10 +633,82 @@ However, every error that OTBN detects when it isn't running is fatal.
 This means that the cause will be reflected in {{< regref "FATAL_ALERT_CAUSE" >}}, as described below in [Alerts]({{< relref "#alerts" >}}).
 This way, no alert is generated without setting an error code somewhere.
 
+### List of Errors {#design-details-list-of-errors}
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Class</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>BAD_DATA_ADDR<code></td>
+      <td>software</td>
+      <td>A data memory access occurred with an out of bounds or unaligned access.</td>
+    </tr>
+    <tr>
+      <td><code>BAD_INSN_ADDR<code></td>
+      <td>software</td>
+      <td>An instruction memory access occurred with an out of bounds or unaligned access.</td>
+    </tr>
+    <tr>
+      <td><code>CALL_STACK<code></td>
+      <td>software</td>
+      <td>An instruction tried to pop from an empty call stack or push to a full call stack.</td>
+    </tr>
+    <tr>
+      <td><code>ILLEGAL_INSN<code></td>
+      <td>software</td>
+      <td>
+        An illegal instruction was about to be executed.
+      </td>
+    <tr>
+      <td><code>LOOP<code></td>
+      <td>software</td>
+      <td>
+        A loop stack-related error was detected.
+      </td>
+    </tr>
+    <tr>
+      <td><code>IMEM_INTG_VIOLATION<code></td>
+      <td>fatal</td>
+      <td>Data read from the instruction memory failed the integrity checks.</td>
+    </tr>
+    <tr>
+      <td><code>DMEM_INTG_VIOLATION<code></td>
+      <td>fatal</td>
+      <td>Data read from the data memory failed the integrity checks.</td>
+    </tr>
+    <tr>
+      <td><code>REG_INTG_VIOLATION<code></td>
+      <td>fatal</td>
+      <td>Data read from a GPR or WDR failed the integrity checks.</td>
+    </tr>
+    <tr>
+      <td><code>BUS_INTG_VIOLATION<code></td>
+      <td>fatal</td>
+      <td>An incoming bus transaction failed the integrity checks.</td>
+    </tr>
+    <tr>
+      <td><code>ILLEGAL_BUS_ACCESS<code></td>
+      <td>fatal</td>
+      <td>A bus-accessible register or memory was accessed when not allowed.</td>
+    </tr>
+    <tr>
+      <td><code>LIFECYCLE_ESCALATION<code></td>
+      <td>fatal</td>
+      <td>A life cycle escalation request was received.</td>
+    </tr>
+  </tbody>
+</table>
+
 ### Alerts
 
+An alert is a reaction to an error that OTBN detected.
 OTBN has two alerts, one recoverable and one fatal.
-The {{< regref "ERR_BITS" >}} register documentation has a detailed list of error conditions, those with 'fatal' in the name raise a **fatal alert**, otherwise they raise a **recoverable alert**.
 
 A **recoverable alert** is a one-time triggered alert caused by [recoverable errors](#design-details-recoverable-errors).
 The error that caused the alert can be determined by reading the {{< regref "ERR_BITS" >}} register.
