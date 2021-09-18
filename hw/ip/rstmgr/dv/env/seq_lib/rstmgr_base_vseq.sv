@@ -246,9 +246,9 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task por_reset();
-    cfg.rstmgr_vif.por_n = 1'b0;
+    cfg.rstmgr_vif.por_n = '0;
     cfg.aon_clk_rst_vif.wait_clks(POR_CLK_CYCLES);
-    cfg.rstmgr_vif.por_n = 1'b1;
+    cfg.rstmgr_vif.por_n = '1;
     @(posedge cfg.rstmgr_vif.resets_o.rst_por_io_div4_n[0]);
   endtask
 
