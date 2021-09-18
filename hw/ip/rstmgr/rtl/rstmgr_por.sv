@@ -67,6 +67,11 @@ module rstmgr_por #(
     .clk_o(rst_clean_n)
   );
 
+  // It turns out we can use rst_filter_n[FilterStages-1] instead of &rst_filter_n because any drop
+  // in rst_ni clears all rst_filter_n bits. This assertion checks that property.
+  `ASSERT(FilterInvariant_A, rst_filter_n[FilterStages-1] == &rst_filter_n,
+          clk_i, rst_ni !== 'x)
+
   assign rst_stable = &rst_filter_n;
   assign cnt_en = rst_stable & !rst_no;
 
