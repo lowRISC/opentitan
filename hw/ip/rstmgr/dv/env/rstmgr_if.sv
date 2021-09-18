@@ -11,7 +11,7 @@ interface rstmgr_if (
 );
 
   import rstmgr_env_pkg::*;
-  import rstmgr_pkg::*;
+  import rstmgr_pkg::PowerDomains;
 
   logic                        [PowerDomains-1:0] por_n;
 

@@ -33,6 +33,8 @@ module rstmgr_bind;
     .clk_usb_i,
     .por_n_i,
     .resets_o,
+    .rst_lc_req(pwr_i.rst_lc_req),
+    .rst_sys_req(pwr_i.rst_sys_req),
     .rst_lc_src_n(pwr_o.rst_lc_src_n),
     .rst_sys_src_n(pwr_o.rst_sys_src_n),
     .scan_rst_ni,
