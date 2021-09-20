@@ -297,7 +297,7 @@ impl TryFrom<&[u8]> for JedecParams {
     type Error = Error;
     fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
         let p = InternalJedecParams::try_from(buf)?;
-        let density = if p.density()? & 0x8000_0000 == 0 {
+        let size_bytes = if p.density()? & 0x8000_0000 == 0 {
             (p.density()? + 1) / 8
         } else {
             1u32 << ((p.density()? & 0x7FFF_FFFF) - 8)
@@ -316,7 +316,7 @@ impl TryFrom<&[u8]> for JedecParams {
             support_fast_read_114: p.support_fast_read_114()?,
             support_fast_read_222: p.support_fast_read_222()?,
             support_fast_read_444: p.support_fast_read_444()?,
-            density: density,
+            density: size_bytes,
             sector: [
                 Sector {
                     size: 1u32 << p.sector_type1_size()?,
@@ -459,9 +459,9 @@ impl TryFrom<&[u8]> for Sfdp {
             JedecParams::try_from(buf.get(start..end).ok_or(Error::SliceRange(start, end))?)?;
 
         let mut params = Vec::new();
-        for i in 1..=(header.nph as usize) {
-            let start = phdr[i].offset as usize;
-            let end = start + phdr[i].dwords as usize * 4;
+        for ph in phdr.iter().take((header.nph as usize) + 1).skip(1) {
+            let start = ph.offset as usize;
+            let end = start + ph.dwords as usize * 4;
             params.push(UnknownParams::try_from(
                 buf.get(start..end).ok_or(Error::SliceRange(start, end))?,
             )?);

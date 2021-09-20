@@ -14,9 +14,9 @@ pub trait ParseInt: Sized {
     fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError>;
 
     fn from_str(src: &str) -> Result<Self, ParseIntError> {
-        let (val, negative) = if let Some(v) = src.strip_prefix("-") {
+        let (val, negative) = if let Some(v) = src.strip_prefix('-') {
             (v, true)
-        } else if let Some(v) = src.strip_prefix("+") {
+        } else if let Some(v) = src.strip_prefix('+') {
             (v, false)
         } else {
             (src, false)
@@ -26,7 +26,7 @@ pub trait ParseInt: Sized {
             Some("0x") | Some("0X") => (16, &val[2..]),
             Some("0o") | Some("0O") => (8, &val[2..]),
             Some("0b") | Some("0B") => (2, &val[2..]),
-            _ if val.starts_with("0") => (8, val),
+            _ if val.starts_with('0') => (8, val),
             _ => (10, val),
         };
 

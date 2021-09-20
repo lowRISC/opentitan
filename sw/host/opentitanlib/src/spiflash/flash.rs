@@ -93,14 +93,13 @@ impl SpiFlash {
             address < self.size,
             Error::AddressOutOfBounds(address, self.size)
         );
-        let mut buf = Vec::new();
-        buf.push(opcode);
+        let mut buf = vec![opcode];
         if self.address_mode == AddressMode::Mode4b {
             buf.push((address >> 24) as u8);
         }
         buf.push((address >> 16) as u8);
         buf.push((address >> 8) as u8);
-        buf.push((address >> 0) as u8);
+        buf.push(address as u8);
         Ok(buf)
     }
 
@@ -155,7 +154,7 @@ impl SpiFlash {
             // extension. If parsing fails a second time, just return the error.
             let result = Sfdp::try_from(&buf[..]);
             if result.is_ok() || tries > 0 {
-                return result.into();
+                return result;
             }
             buf.resize(Sfdp::length_required(&buf)?, 0);
             tries += 1;

@@ -29,7 +29,7 @@ impl CommandDispatch for GpioRead {
         let value = gpio.read(self.pin)?;
         Ok(Some(Box::new(GpioReadResult {
             pin: self.pin,
-            value: value,
+            value,
         })))
     }
 }
