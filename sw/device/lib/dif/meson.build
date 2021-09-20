@@ -548,6 +548,7 @@ sw_lib_dif_lc_ctrl = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_lc_ctrl,
     ],
   )
 )
@@ -555,9 +556,11 @@ sw_lib_dif_lc_ctrl = declare_dependency(
 test('dif_lc_ctrl_unittest', executable(
     'dif_lc_ctrl_unittest',
     sources: [
-      hw_ip_lc_ctrl_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_lc_ctrl.c',
       'dif_lc_ctrl_unittest.cc',
+      'autogen/dif_lc_ctrl_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_lc_ctrl.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.c',
+      hw_ip_lc_ctrl_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,
