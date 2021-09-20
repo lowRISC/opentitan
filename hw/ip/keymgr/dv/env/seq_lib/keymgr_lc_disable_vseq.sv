@@ -8,8 +8,10 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
   `uvm_object_new
 
   virtual task op_before_enable_keymgr();
+    if (cfg.keymgr_vif.keymgr_en == lc_ctrl_pkg::On) return;
+
     `uvm_info(`gfn, "Dummy operations before LC enables keymgr", UVM_MEDIUM)
-    keymgr_operations();
+    keymgr_operations(.advance_state(0));
     `uvm_info(`gfn, "Dummy operations are done", UVM_MEDIUM)
   endtask
 

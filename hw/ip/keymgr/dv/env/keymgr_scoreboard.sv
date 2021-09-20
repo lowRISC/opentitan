@@ -426,7 +426,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to cfg_regwen=0", csr.get_name()),
                   UVM_MEDIUM)
         return;
-      end else if (`gmv(ral.sw_binding_regwen) == 0 &&
+      end else if ((`gmv(ral.sw_binding_regwen) == 0 || !cfg.keymgr_vif.get_keymgr_en()) &&
           ral.sw_binding_regwen.locks_reg_or_fld(dv_reg)) begin
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to sw_binding_regwen=0",
                                   csr.get_name()), UVM_MEDIUM)
@@ -1130,19 +1130,30 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function void wipe_hw_keys();
     fork
       begin
+        keymgr_pkg::keymgr_working_state_e current_design_state;
         cfg.clk_rst_vif.wait_n_clks(1);
-        if (current_op_status != keymgr_pkg::OpWip || current_state == keymgr_pkg::StReset) begin
-          if (current_state != keymgr_pkg::StReset) begin
-            // design takes 2 cycle to update state
-            update_state(.cyc_dly(2));
-            `uvm_info(`gfn, "Keymgr_en is Off, wipe secret and move state to Invalid", UVM_LOW)
-          end else begin
-            bit [TL_DW-1:0] err_code = get_err_code();
-            err_code[keymgr_pkg::ErrInvalidOp] = 1;
-            // if it's StReset, the Advance OP is ongoing. alert will be sent after the OP
-            set_exp_alert("recov_operation_err", .max_delay(RESET_ADV_CYCLES));
-            void'(ral.err_code.predict(err_code));
-          end
+        // When LC disables keymgr across with an operation, will have InvalidOp error.
+        // If no operation at that time, no error.
+        // Need to know the actual state in design, in order to predict correctly
+        // And we will check that hw key is wiped no matter whether InvalidOp is set or not.
+        csr_rd(.ptr(ral.working_state), .value(current_design_state), .backdoor(1'b1));
+
+        // LC-disable happens during advancing to StInit
+        // If LC-disable happens during an operation in other states, KDF will occur.
+        // err_code/alert is updated when KDF is done
+        if (current_design_state == keymgr_pkg::StReset) begin
+          bit [TL_DW-1:0] err_code = get_err_code();
+          err_code[keymgr_pkg::ErrInvalidOp] = 1;
+          // if it's StReset, the Advance OP is ongoing. alert will be sent after the OP
+          set_exp_alert("recov_operation_err", .max_delay(RESET_ADV_CYCLES));
+          void'(ral.err_code.predict(err_code));
+          `uvm_info(`gfn,
+              "Keymgr_en is Off when advancing to StInit, wipe secret and move state to Invalid",
+              UVM_LOW)
+        end
+        else if (current_op_status != keymgr_pkg::OpWip) begin
+          update_state(.cyc_dly(2));
+          `uvm_info(`gfn, "Keymgr_en is Off, wipe secret and move state to Invalid", UVM_LOW)
         end
       end
       begin
