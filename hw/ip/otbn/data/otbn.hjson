@@ -264,6 +264,8 @@
 
         Refer to the section "List of Errors" for a detailed description of the
         errors.
+
+        The value is retained until a new operation is started by writing !!CMD.
       ''',
       swaccess: "ro",
       hwaccess: "hwo",
