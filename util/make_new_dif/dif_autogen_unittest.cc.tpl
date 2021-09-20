@@ -27,7 +27,7 @@ using testing::Test;
 class IrqGetStateTest : public ${ip.name_camel}Test {};
 
 TEST_F(IrqGetStateTest, NullArgs) {
-  dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot;
+  dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot = 0;
 
   EXPECT_EQ(dif_${ip.name_snake}_irq_get_state(
       nullptr, 
@@ -46,7 +46,7 @@ TEST_F(IrqGetStateTest, NullArgs) {
 }
 
 TEST_F(IrqGetStateTest, SuccessAllRaised) {
-  dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot;
+  dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot = 0;
 
   EXPECT_READ32(${ip.name_upper}_INTR_STATE_REG_OFFSET, 
     std::numeric_limits<uint32_t>::max());
@@ -58,7 +58,7 @@ TEST_F(IrqGetStateTest, SuccessAllRaised) {
 }
 
 TEST_F(IrqGetStateTest, SuccessNoneRaised) {
-  dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot;
+  dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot = 0;
 
   EXPECT_READ32(${ip.name_upper}_INTR_STATE_REG_OFFSET, 0);
   EXPECT_EQ(dif_${ip.name_snake}_irq_get_state(
@@ -309,7 +309,7 @@ TEST_F(IrqForceTest, Success) {
 class IrqDisableAllTest : public ${ip.name_camel}Test {};
 
 TEST_F(IrqDisableAllTest, NullArgs) {
-  dif_${ip.name_snake}_irq_enable_snapshot_t irq_snapshot;
+  dif_${ip.name_snake}_irq_enable_snapshot_t irq_snapshot = 0;
 
   EXPECT_EQ(dif_${ip.name_snake}_irq_disable_all(
       nullptr, 
@@ -331,7 +331,7 @@ TEST_F(IrqDisableAllTest, SuccessNoSnapshot) {
 }
 
 TEST_F(IrqDisableAllTest, SuccessSnapshotAllDisabled) {
-  dif_${ip.name_snake}_irq_enable_snapshot_t irq_snapshot;
+  dif_${ip.name_snake}_irq_enable_snapshot_t irq_snapshot = 0;
 
   EXPECT_READ32(${ip.name_upper}_INTR_ENABLE_REG_OFFSET, 0);
   EXPECT_WRITE32(${ip.name_upper}_INTR_ENABLE_REG_OFFSET, 0);
@@ -343,7 +343,7 @@ TEST_F(IrqDisableAllTest, SuccessSnapshotAllDisabled) {
 }
 
 TEST_F(IrqDisableAllTest, SuccessSnapshotAllEnabled) {
-  dif_${ip.name_snake}_irq_enable_snapshot_t irq_snapshot;
+  dif_${ip.name_snake}_irq_enable_snapshot_t irq_snapshot = 0;
 
   EXPECT_READ32(${ip.name_upper}_INTR_ENABLE_REG_OFFSET,
                 std::numeric_limits<uint32_t>::max());
@@ -358,7 +358,7 @@ TEST_F(IrqDisableAllTest, SuccessSnapshotAllEnabled) {
 class IrqRestoreAllTest : public ${ip.name_camel}Test {};
 
 TEST_F(IrqRestoreAllTest, NullArgs) {
-  dif_${ip.name_snake}_irq_enable_snapshot_t irq_snapshot;
+  dif_${ip.name_snake}_irq_enable_snapshot_t irq_snapshot = 0;
 
   EXPECT_EQ(dif_${ip.name_snake}_irq_restore_all(
       nullptr, 

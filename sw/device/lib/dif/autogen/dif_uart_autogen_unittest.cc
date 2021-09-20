@@ -14,7 +14,7 @@ using testing::Test;
 class IrqGetStateTest : public UartTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {
-  dif_uart_irq_state_snapshot_t irq_snapshot;
+  dif_uart_irq_state_snapshot_t irq_snapshot = 0;
 
   EXPECT_EQ(dif_uart_irq_get_state(nullptr, &irq_snapshot), kDifBadArg);
 
@@ -24,7 +24,7 @@ TEST_F(IrqGetStateTest, NullArgs) {
 }
 
 TEST_F(IrqGetStateTest, SuccessAllRaised) {
-  dif_uart_irq_state_snapshot_t irq_snapshot;
+  dif_uart_irq_state_snapshot_t irq_snapshot = 0;
 
   EXPECT_READ32(UART_INTR_STATE_REG_OFFSET,
                 std::numeric_limits<uint32_t>::max());
@@ -33,7 +33,7 @@ TEST_F(IrqGetStateTest, SuccessAllRaised) {
 }
 
 TEST_F(IrqGetStateTest, SuccessNoneRaised) {
-  dif_uart_irq_state_snapshot_t irq_snapshot;
+  dif_uart_irq_state_snapshot_t irq_snapshot = 0;
 
   EXPECT_READ32(UART_INTR_STATE_REG_OFFSET, 0);
   EXPECT_EQ(dif_uart_irq_get_state(&uart_, &irq_snapshot), kDifOk);
@@ -211,7 +211,7 @@ TEST_F(IrqForceTest, Success) {
 class IrqDisableAllTest : public UartTest {};
 
 TEST_F(IrqDisableAllTest, NullArgs) {
-  dif_uart_irq_enable_snapshot_t irq_snapshot;
+  dif_uart_irq_enable_snapshot_t irq_snapshot = 0;
 
   EXPECT_EQ(dif_uart_irq_disable_all(nullptr, &irq_snapshot), kDifBadArg);
 
@@ -224,7 +224,7 @@ TEST_F(IrqDisableAllTest, SuccessNoSnapshot) {
 }
 
 TEST_F(IrqDisableAllTest, SuccessSnapshotAllDisabled) {
-  dif_uart_irq_enable_snapshot_t irq_snapshot;
+  dif_uart_irq_enable_snapshot_t irq_snapshot = 0;
 
   EXPECT_READ32(UART_INTR_ENABLE_REG_OFFSET, 0);
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
@@ -233,7 +233,7 @@ TEST_F(IrqDisableAllTest, SuccessSnapshotAllDisabled) {
 }
 
 TEST_F(IrqDisableAllTest, SuccessSnapshotAllEnabled) {
-  dif_uart_irq_enable_snapshot_t irq_snapshot;
+  dif_uart_irq_enable_snapshot_t irq_snapshot = 0;
 
   EXPECT_READ32(UART_INTR_ENABLE_REG_OFFSET,
                 std::numeric_limits<uint32_t>::max());
@@ -245,7 +245,7 @@ TEST_F(IrqDisableAllTest, SuccessSnapshotAllEnabled) {
 class IrqRestoreAllTest : public UartTest {};
 
 TEST_F(IrqRestoreAllTest, NullArgs) {
-  dif_uart_irq_enable_snapshot_t irq_snapshot;
+  dif_uart_irq_enable_snapshot_t irq_snapshot = 0;
 
   EXPECT_EQ(dif_uart_irq_restore_all(nullptr, &irq_snapshot), kDifBadArg);
 
