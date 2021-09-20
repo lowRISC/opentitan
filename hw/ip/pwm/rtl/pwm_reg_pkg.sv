@@ -23,10 +23,6 @@ package pwm_reg_pkg;
   } pwm_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    logic        q;
-  } pwm_reg2hw_regen_reg_t;
-
-  typedef struct packed {
     struct packed {
       logic [26:0] q;
       logic        qe;
@@ -90,8 +86,7 @@ package pwm_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    pwm_reg2hw_alert_test_reg_t alert_test; // [595:594]
-    pwm_reg2hw_regen_reg_t regen; // [593:593]
+    pwm_reg2hw_alert_test_reg_t alert_test; // [594:593]
     pwm_reg2hw_cfg_reg_t cfg; // [592:558]
     pwm_reg2hw_pwm_en_mreg_t [5:0] pwm_en; // [557:546]
     pwm_reg2hw_invert_mreg_t [5:0] invert; // [545:534]
@@ -102,7 +97,7 @@ package pwm_reg_pkg;
 
   // Register offsets
   parameter logic [BlockAw-1:0] PWM_ALERT_TEST_OFFSET = 7'h 0;
-  parameter logic [BlockAw-1:0] PWM_REGEN_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] PWM_REGWEN_OFFSET = 7'h 4;
   parameter logic [BlockAw-1:0] PWM_CFG_OFFSET = 7'h 8;
   parameter logic [BlockAw-1:0] PWM_PWM_EN_OFFSET = 7'h c;
   parameter logic [BlockAw-1:0] PWM_INVERT_OFFSET = 7'h 10;
@@ -132,7 +127,7 @@ package pwm_reg_pkg;
   // Register index
   typedef enum int {
     PWM_ALERT_TEST,
-    PWM_REGEN,
+    PWM_REGWEN,
     PWM_CFG,
     PWM_PWM_EN,
     PWM_INVERT,
@@ -159,7 +154,7 @@ package pwm_reg_pkg;
   // Register width information to check illegal writes
   parameter logic [3:0] PWM_PERMIT [23] = '{
     4'b 0001, // index[ 0] PWM_ALERT_TEST
-    4'b 0001, // index[ 1] PWM_REGEN
+    4'b 0001, // index[ 1] PWM_REGWEN
     4'b 1111, // index[ 2] PWM_CFG
     4'b 0001, // index[ 3] PWM_PWM_EN
     4'b 0001, // index[ 4] PWM_INVERT

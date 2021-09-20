@@ -62,11 +62,6 @@ module pwm_core #(
   logic                  phase_ctr_en;
   logic                  cycle_end;
 
-  logic                  unused_regen;
-
-  // TODO: implement register locking
-  assign unused_regen = reg2hw.regen.q;
-
   assign cntr_en = reg2hw.cfg.cntr_en.q;
   assign dc_resn = reg2hw.cfg.dc_resn.q;
   assign clk_div = reg2hw.cfg.clk_div.q;
