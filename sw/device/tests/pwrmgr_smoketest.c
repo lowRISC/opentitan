@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
+#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
@@ -49,6 +50,7 @@ void aon_timer_wakeup_config(dif_aon_timer_t *aon_timer,
 
 bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
+  dif_rstmgr_t rstmgr;
   dif_aon_timer_t aon_timer;
 
   // Initialize pwrmgr
@@ -59,12 +61,30 @@ bool test_main(void) {
             },
             &pwrmgr) == kDifPwrmgrOk);
 
+  // Initialize rstmgr since this will check some registers.
+  CHECK(dif_rstmgr_init(
+            (dif_rstmgr_params_t){
+                .base_addr =
+                    mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+            },
+            &rstmgr) == kDifRstmgrOk);
+
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
+  // Notice we are clear rstmgr's RESET_INFO, so after the aon wakeup there
+  // is only one bit set.
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason) == kDifPwrmgrOk);
 
   if (compare_wakeup_reasons(&wakeup_reason, &kWakeUpReasonPor)) {
     LOG_INFO("Powered up for the first time, begin test");
+
+    LOG_INFO("Check the rstmgr reset_info is POR");
+    dif_rstmgr_reset_info_bitfield_t info;
+    CHECK(dif_rstmgr_reset_info_get(&rstmgr, &info) == kDifRstmgrOk);
+    CHECK(info == (dif_rstmgr_reset_info_bitfield_t)(kDifRstmgrResetInfoPor));
+
+    // Clear reset_info.
+    CHECK(dif_rstmgr_reset_info_clear(&rstmgr) == kDifRstmgrOk);
 
     // Initialize aon_timer
     dif_aon_timer_params_t params = {
@@ -73,7 +93,7 @@ bool test_main(void) {
     };
     CHECK(dif_aon_timer_init(params, &aon_timer) == kDifAonTimerOk);
 
-    // Issue a wakeup singal in ~150us through the AON timer.
+    // Issue a wakeup signal in ~150us through the AON timer.
     //
     // At 200kHz, threshold of 30 is equal to 150us. There is an additional
     // ~4 cycle overhead for the CSR value to synchronize with the AON clock.
@@ -106,6 +126,11 @@ bool test_main(void) {
 
   } else if (compare_wakeup_reasons(&wakeup_reason, &kWakeUpReasonTest)) {
     LOG_INFO("Aon timer wakeup detected");
+    LOG_INFO("Check the rstmgr reset_info is LOW_POWER timer wakeup detected");
+    dif_rstmgr_reset_info_bitfield_t info;
+    CHECK(dif_rstmgr_reset_info_get(&rstmgr, &info) == kDifRstmgrOk);
+    CHECK(info ==
+          (dif_rstmgr_reset_info_bitfield_t)(kDifRstmgrResetInfoLowPowerExit));
     return true;
 
   } else {
