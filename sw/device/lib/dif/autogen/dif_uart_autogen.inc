@@ -24,7 +24,7 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * A handle to UART.
+ * A handle to uart.
  *
  * This type should be treated as opaque by users.
  */
@@ -36,7 +36,7 @@ typedef struct dif_uart {
 } dif_uart_t;
 
 /**
- * A UART interrupt request type.
+ * A uart interrupt request type.
  */
 typedef enum dif_uart_irq {
   /**
@@ -94,7 +94,7 @@ typedef uint32_t dif_uart_irq_enable_snapshot_t;
 /**
  * Returns whether a particular interrupt is currently pending.
  *
- * @param uart A UART handle.
+ * @param uart A uart handle.
  * @param irq An interrupt request.
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
@@ -106,7 +106,7 @@ dif_result_t dif_uart_irq_get_state(const dif_uart_t *uart,
 /**
  * Returns whether a particular interrupt is currently pending.
  *
- * @param uart A UART handle.
+ * @param uart A uart handle.
  * @param irq An interrupt request.
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
@@ -119,7 +119,7 @@ dif_result_t dif_uart_irq_is_pending(const dif_uart_t *uart, dif_uart_irq_t irq,
  * Acknowledges a particular interrupt, indicating to the hardware that it has
  * been successfully serviced.
  *
- * @param uart A UART handle.
+ * @param uart A uart handle.
  * @param irq An interrupt request.
  * @return The result of the operation.
  */
@@ -130,7 +130,7 @@ dif_result_t dif_uart_irq_acknowledge(const dif_uart_t *uart,
 /**
  * Checks whether a particular interrupt is currently enabled or disabled.
  *
- * @param uart A UART handle.
+ * @param uart A uart handle.
  * @param irq An interrupt request.
  * @param[out] state Out-param toggle state of the interrupt.
  * @return The result of the operation.
@@ -142,7 +142,7 @@ dif_result_t dif_uart_irq_get_enabled(const dif_uart_t *uart,
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
  *
- * @param uart A UART handle.
+ * @param uart A uart handle.
  * @param irq An interrupt request.
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
@@ -155,7 +155,7 @@ dif_result_t dif_uart_irq_set_enabled(const dif_uart_t *uart,
  * Forces a particular interrupt, causing it to be serviced as if hardware had
  * asserted it.
  *
- * @param uart A UART handle.
+ * @param uart A uart handle.
  * @param irq An interrupt request.
  * @return The result of the operation.
  */
@@ -166,7 +166,7 @@ dif_result_t dif_uart_irq_force(const dif_uart_t *uart, dif_uart_irq_t irq);
  * Disables all interrupts, optionally snapshotting all enable states for later
  * restoration.
  *
- * @param uart A UART handle.
+ * @param uart A uart handle.
  * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
@@ -177,7 +177,7 @@ dif_result_t dif_uart_irq_disable_all(const dif_uart_t *uart,
 /**
  * Restores interrupts from the given (enable) snapshot.
  *
- * @param uart A UART handle.
+ * @param uart A uart handle.
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
