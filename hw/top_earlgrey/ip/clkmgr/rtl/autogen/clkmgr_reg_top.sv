@@ -742,7 +742,7 @@ module clkmgr_reg_top (
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h1)
+    .RESVAL  (10'h1d6)
   ) u_io_measure_ctrl_min_thresh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -819,7 +819,7 @@ module clkmgr_reg_top (
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (9'h1)
+    .RESVAL  (9'he6)
   ) u_io_div2_measure_ctrl_min_thresh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -896,7 +896,7 @@ module clkmgr_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h1)
+    .RESVAL  (8'h6e)
   ) u_io_div4_measure_ctrl_min_thresh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -973,7 +973,7 @@ module clkmgr_reg_top (
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h1)
+    .RESVAL  (10'h1ea)
   ) u_main_measure_ctrl_min_thresh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1050,7 +1050,7 @@ module clkmgr_reg_top (
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (9'h1)
+    .RESVAL  (9'he6)
   ) u_usb_measure_ctrl_min_thresh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

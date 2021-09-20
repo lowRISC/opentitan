@@ -310,14 +310,20 @@
           bits: "${max_msb}:4",
           name: "MAX_THRESH",
           desc: "Max threshold for ${src} measurement",
-          resval: "${ratio + 10}"
+          resval: "${ratio + 10}",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
           bits: "${min_msb}:${max_msb+1}",
           name: "MIN_THRESH",
           desc: "Min threshold for ${src} measurement",
-          resval: "1"
+          resval: "${ratio - 10}",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
