@@ -16,7 +16,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
 
   // configuration from sw
   input mp_region_cfg_t [MpRegions:0] region_cfgs_i,
-  input flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [NumBanks-1:0] bank_cfgs_i,
+  input bank_cfg_t [NumBanks-1:0] bank_cfgs_i,
   input info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs_i,
   input erase_suspend_i,
   output logic erase_suspend_done_o,

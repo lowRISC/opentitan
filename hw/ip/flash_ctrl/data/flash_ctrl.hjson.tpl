@@ -592,13 +592,14 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "MP_REGION_CFG",
+          name: "MP_REGION_CFG_SHADOWED",
           desc: "Memory property configuration for data partition",
           count: "NumRegions",
           swaccess: "rw",
           hwaccess: "hro",
           regwen: "REGION_CFG_REGWEN",
           regwen_multi: true,
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -668,10 +669,11 @@
       },
 
       // Default region properties for data partition
-      { name: "DEFAULT_REGION",
+      { name: "DEFAULT_REGION_SHADOWED",
         desc: "Default region properties",
         swaccess: "rw",
         hwaccess: "hro",
+        shadowed: "true",
         resval: "0",
         fields: [
           { bits: "0",
@@ -756,7 +758,7 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "BANK${bank}_INFO${idx}_PAGE_CFG",
+          name: "BANK${bank}_INFO${idx}_PAGE_CFG_SHADOWED",
           desc: '''
                   Memory property configuration for info partition in bank${bank},
                   Unlike data partition, each page is individually configured.
@@ -766,6 +768,7 @@
           hwaccess: "hro",
           regwen: "BANK${bank}_INFO${idx}_REGWEN",
           regwen_multi: true,
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -851,12 +854,13 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "MP_BANK_CFG",
+          name: "MP_BANK_CFG_SHADOWED",
           desc: "Memory properties bank configuration",
           count: "RegNumBanks",
           swaccess: "rw",
           hwaccess: "hro",
-          regwen: "BANK_CFG_REGWEN"
+          regwen: "BANK_CFG_REGWEN",
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "ERASE_EN",
@@ -953,6 +957,12 @@
               This is a synchronous error.
             '''
           },
+          { bits: "6",
+            name: "update_err",
+            desc: '''
+              A shadow register encountered an update error.
+            '''
+          },
         ]
       },
 
@@ -1021,7 +1031,13 @@
               The life cycle management interface has encountered a fatal error.
               There is an error with the RMA state machine or counts.
               '''
-          }
+          },
+          { bits: "9",
+            name: "storage_err",
+            desc: '''
+              A shadow register encountered a storage fault.
+            '''
+          },
         ]
       },
 

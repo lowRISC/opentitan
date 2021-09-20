@@ -595,13 +595,14 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "MP_REGION_CFG",
+          name: "MP_REGION_CFG_SHADOWED",
           desc: "Memory property configuration for data partition",
           count: "NumRegions",
           swaccess: "rw",
           hwaccess: "hro",
           regwen: "REGION_CFG_REGWEN",
           regwen_multi: true,
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -671,10 +672,11 @@
       },
 
       // Default region properties for data partition
-      { name: "DEFAULT_REGION",
+      { name: "DEFAULT_REGION_SHADOWED",
         desc: "Default region properties",
         swaccess: "rw",
         hwaccess: "hro",
+        shadowed: "true",
         resval: "0",
         fields: [
           { bits: "0",
@@ -757,7 +759,7 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "BANK0_INFO0_PAGE_CFG",
+          name: "BANK0_INFO0_PAGE_CFG_SHADOWED",
           desc: '''
                   Memory property configuration for info partition in bank0,
                   Unlike data partition, each page is individually configured.
@@ -767,6 +769,7 @@
           hwaccess: "hro",
           regwen: "BANK0_INFO0_REGWEN",
           regwen_multi: true,
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -854,7 +857,7 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "BANK0_INFO1_PAGE_CFG",
+          name: "BANK0_INFO1_PAGE_CFG_SHADOWED",
           desc: '''
                   Memory property configuration for info partition in bank0,
                   Unlike data partition, each page is individually configured.
@@ -864,6 +867,7 @@
           hwaccess: "hro",
           regwen: "BANK0_INFO1_REGWEN",
           regwen_multi: true,
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -951,7 +955,7 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "BANK0_INFO2_PAGE_CFG",
+          name: "BANK0_INFO2_PAGE_CFG_SHADOWED",
           desc: '''
                   Memory property configuration for info partition in bank0,
                   Unlike data partition, each page is individually configured.
@@ -961,6 +965,7 @@
           hwaccess: "hro",
           regwen: "BANK0_INFO2_REGWEN",
           regwen_multi: true,
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -1048,7 +1053,7 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "BANK1_INFO0_PAGE_CFG",
+          name: "BANK1_INFO0_PAGE_CFG_SHADOWED",
           desc: '''
                   Memory property configuration for info partition in bank1,
                   Unlike data partition, each page is individually configured.
@@ -1058,6 +1063,7 @@
           hwaccess: "hro",
           regwen: "BANK1_INFO0_REGWEN",
           regwen_multi: true,
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -1145,7 +1151,7 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "BANK1_INFO1_PAGE_CFG",
+          name: "BANK1_INFO1_PAGE_CFG_SHADOWED",
           desc: '''
                   Memory property configuration for info partition in bank1,
                   Unlike data partition, each page is individually configured.
@@ -1155,6 +1161,7 @@
           hwaccess: "hro",
           regwen: "BANK1_INFO1_REGWEN",
           regwen_multi: true,
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -1242,7 +1249,7 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "BANK1_INFO2_PAGE_CFG",
+          name: "BANK1_INFO2_PAGE_CFG_SHADOWED",
           desc: '''
                   Memory property configuration for info partition in bank1,
                   Unlike data partition, each page is individually configured.
@@ -1252,6 +1259,7 @@
           hwaccess: "hro",
           regwen: "BANK1_INFO2_REGWEN",
           regwen_multi: true,
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -1335,12 +1343,13 @@
 
       { multireg: {
           cname: "FLASH_CTRL",
-          name: "MP_BANK_CFG",
+          name: "MP_BANK_CFG_SHADOWED",
           desc: "Memory properties bank configuration",
           count: "RegNumBanks",
           swaccess: "rw",
           hwaccess: "hro",
-          regwen: "BANK_CFG_REGWEN"
+          regwen: "BANK_CFG_REGWEN",
+          shadowed: "true",
           fields: [
               { bits: "0",
                 name: "ERASE_EN",
