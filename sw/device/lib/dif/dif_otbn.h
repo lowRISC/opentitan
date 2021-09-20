@@ -105,15 +105,17 @@ typedef enum dif_otbn_err_bits {
   /** A LOOP error was observed. */
   kDifOtbnErrBitsLoop = (1 << 4),
   /** A IMEM_INTG_VIOLATION error was observed. */
-  kDifOtbnErrBitsImemIntgViolation = (1 << 5),
+  kDifOtbnErrBitsImemIntgViolation = (1 << 16),
   /** A DMEM_INTG_VIOLATION error was observed. */
-  kDifOtbnErrBitsDmemIntgViolation = (1 << 6),
+  kDifOtbnErrBitsDmemIntgViolation = (1 << 17),
   /** A REG_INTG_VIOLATION error was observed. */
-  kDifOtbnErrBitsRegIntgViolation = (1 << 7),
+  kDifOtbnErrBitsRegIntgViolation = (1 << 18),
+  /** A BUS_INTG_VIOLATION error was observed. */
+  kDifOtbnErrBitsBusIntgViolation = (1 << 19),
   /** An ILLEGAL_BUS_ACCESS error was observed. */
-  kDifOtbnErrBitsIllegalBusAccess = (1 << 8),
+  kDifOtbnErrBitsIllegalBusAccess = (1 << 20),
   /** A LIFECYCLE_ESCALATION error was observed. */
-  kDifOtbnErrBitsLifecycleEscalation = (1 << 9),
+  kDifOtbnErrBitsLifecycleEscalation = (1 << 21),
 } dif_otbn_err_bits_t;
 
 /**

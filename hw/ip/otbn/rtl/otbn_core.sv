@@ -68,6 +68,9 @@ module otbn_core
 
   output logic [31:0]             insn_cnt_o,
 
+  // An integrity check on an incoming bus transaction failed. Results in a fatal error.
+  input  logic                    bus_intg_violation_i,
+
   // Asserted by system when bus tries to access OTBN memories whilst OTBN is active. Results in a
   // fatal error.
   input  logic                    illegal_bus_access_i,
@@ -356,6 +359,7 @@ module otbn_core
 
     .state_reset_i      (state_reset),
     .insn_cnt_o         (insn_cnt),
+    .bus_intg_violation_i,
     .illegal_bus_access_i,
     .lifecycle_escalation_i
   );

@@ -72,6 +72,7 @@ package otbn_pkg;
   typedef struct packed {
     logic lifecycle_escalation;
     logic illegal_bus_access;
+    logic bus_intg_violation;
     logic reg_intg_violation;
     logic dmem_intg_violation;
     logic imem_intg_violation;

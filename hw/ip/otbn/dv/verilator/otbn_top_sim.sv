@@ -98,6 +98,7 @@ module otbn_top_sim (
 
     .insn_cnt_o             ( insn_cnt         ),
 
+    .bus_intg_violation_i   ( 1'b0             ),
     .illegal_bus_access_i   ( 1'b0             ),
     .lifecycle_escalation_i ( 1'b0             )
   );

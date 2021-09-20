@@ -624,6 +624,9 @@ module otbn
   assign hw2reg.err_bits.reg_intg_violation.de = done;
   assign hw2reg.err_bits.reg_intg_violation.d = err_bits.reg_intg_violation;
 
+  assign hw2reg.err_bits.bus_intg_violation.de = done;
+  assign hw2reg.err_bits.bus_intg_violation.d = bus_intg_violation;
+
   assign hw2reg.err_bits.illegal_bus_access.de = done;
   assign hw2reg.err_bits.illegal_bus_access.d = err_bits.illegal_bus_access;
 
@@ -637,8 +640,6 @@ module otbn
 
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
-  assign hw2reg.fatal_alert_cause.bus_intg_violation.de = bus_intg_violation;
-  assign hw2reg.fatal_alert_cause.bus_intg_violation.d  = bus_intg_violation;
   assign hw2reg.fatal_alert_cause.imem_intg_violation.de = imem_rerror;
   assign hw2reg.fatal_alert_cause.imem_intg_violation.d  = imem_rerror;
   assign hw2reg.fatal_alert_cause.dmem_intg_violation.de = dmem_rerror;
@@ -646,6 +647,8 @@ module otbn
   // TODO: Register file errors
   assign hw2reg.fatal_alert_cause.reg_intg_violation.de = 0;
   assign hw2reg.fatal_alert_cause.reg_intg_violation.d  = 0;
+  assign hw2reg.fatal_alert_cause.bus_intg_violation.de = bus_intg_violation;
+  assign hw2reg.fatal_alert_cause.bus_intg_violation.d  = bus_intg_violation;
   assign hw2reg.fatal_alert_cause.illegal_bus_access.de = illegal_bus_access_d;
   assign hw2reg.fatal_alert_cause.illegal_bus_access.d  = illegal_bus_access_d;
   assign hw2reg.fatal_alert_cause.lifecycle_escalation.de = lifecycle_escalation;
@@ -846,6 +849,7 @@ module otbn
 
       .insn_cnt_o             (insn_cnt_rtl),
 
+      .bus_intg_violation_i   (bus_intg_violation),
       .illegal_bus_access_i   (illegal_bus_access_q),
       .lifecycle_escalation_i (lifecycle_escalation)
     );
@@ -894,6 +898,7 @@ module otbn
 
       .insn_cnt_o             (insn_cnt),
 
+      .bus_intg_violation_i   (bus_intg_violation),
       .illegal_bus_access_i   (illegal_bus_access_q),
       .lifecycle_escalation_i (lifecycle_escalation)
     );
