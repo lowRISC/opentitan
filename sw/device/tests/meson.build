@@ -292,6 +292,7 @@ pwrmgr_smoketest_lib = declare_dependency(
     sources: ['pwrmgr_smoketest.c'],
     dependencies: [
       sw_lib_dif_pwrmgr,
+      sw_lib_dif_rstmgr,
       sw_lib_dif_aon_timer,
       sw_lib_mmio,
       sw_lib_runtime_log,
