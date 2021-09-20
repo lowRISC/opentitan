@@ -410,14 +410,20 @@
           bits: "13:4",
           name: "MAX_THRESH",
           desc: "Max threshold for io measurement",
-          resval: "490"
+          resval: "490",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
           bits: "23:14",
           name: "MIN_THRESH",
           desc: "Min threshold for io measurement",
-          resval: "1"
+          resval: "470",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
@@ -443,14 +449,20 @@
           bits: "12:4",
           name: "MAX_THRESH",
           desc: "Max threshold for io_div2 measurement",
-          resval: "250"
+          resval: "250",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
           bits: "21:13",
           name: "MIN_THRESH",
           desc: "Min threshold for io_div2 measurement",
-          resval: "1"
+          resval: "230",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
@@ -476,14 +488,20 @@
           bits: "11:4",
           name: "MAX_THRESH",
           desc: "Max threshold for io_div4 measurement",
-          resval: "130"
+          resval: "130",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
           bits: "19:12",
           name: "MIN_THRESH",
           desc: "Min threshold for io_div4 measurement",
-          resval: "1"
+          resval: "110",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
@@ -509,14 +527,20 @@
           bits: "13:4",
           name: "MAX_THRESH",
           desc: "Max threshold for main measurement",
-          resval: "510"
+          resval: "510",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
           bits: "23:14",
           name: "MIN_THRESH",
           desc: "Min threshold for main measurement",
-          resval: "1"
+          resval: "490",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
@@ -542,14 +566,20 @@
           bits: "12:4",
           name: "MAX_THRESH",
           desc: "Max threshold for usb measurement",
-          resval: "250"
+          resval: "250",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
           bits: "21:13",
           name: "MIN_THRESH",
           desc: "Min threshold for usb measurement",
-          resval: "1"
+          resval: "230",
+          // random updates to this field if measurements are turned on can
+          // cause the results to fail
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
       ]
     },
