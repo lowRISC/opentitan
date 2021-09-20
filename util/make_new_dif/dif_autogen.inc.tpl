@@ -46,7 +46,7 @@ extern "C" {
  */
 typedef struct dif_${ip.name_snake} { 
   /**
-   * The base address for the ${ip.name_upper} hardware registers.
+   * The base address for the ${ip.name_snake} hardware registers.
    */
   mmio_region_t base_addr;
 } dif_${ip.name_snake}_t;

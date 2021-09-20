@@ -30,7 +30,7 @@ extern "C" {
  */
 typedef struct dif_uart {
   /**
-   * The base address for the UART hardware registers.
+   * The base address for the uart hardware registers.
    */
   mmio_region_t base_addr;
 } dif_uart_t;
