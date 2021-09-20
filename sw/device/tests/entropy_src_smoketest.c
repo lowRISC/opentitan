@@ -61,5 +61,5 @@ bool test_main() {
     result |= entropy_data[i] ^ kExpectedEntropyData[i];
   }
 
-  return true;
+  return result == 0;
 }
