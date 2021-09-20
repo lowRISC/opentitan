@@ -10,7 +10,7 @@ ARG VERILATOR_VERSION=4.210
 ARG OPENOCD_VERSION=0.11.0
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20210412-1
-ARG RUST_VERSION=1.52.1
+ARG RUST_VERSION=1.55.0
 
 # Main container image.
 FROM ubuntu:18.04 AS opentitan
