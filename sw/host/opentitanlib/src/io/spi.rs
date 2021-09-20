@@ -12,6 +12,10 @@ pub enum SpiError {
     InvalidWordSize(u32),
     #[error("Invalid speed: {0}")]
     InvalidSpeed(u32),
+    #[error("Invalid data length: {0}")]
+    InvalidDataLength(usize),
+    #[error("Mismatched data length: {0} != {1}")]
+    MismatchedDataLength(usize, usize),
 }
 
 /// Represents the SPI transfer mode.

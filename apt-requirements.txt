@@ -31,6 +31,7 @@ libftdi1-dev
 # A requirement of the prebuilt clang toolchain.
 libncurses5
 libssl-dev
+libudev-dev
 libusb-1.0-0
 lsb-release
 make
