@@ -268,6 +268,7 @@
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
+        // Software errors
         { bits: "0",
           name: "bad_data_addr"
           resval: 0,
@@ -293,27 +294,34 @@
           resval: 0,
           desc: "A `LOOP` error was observed."
         }
-        { bits: "5",
+
+        // Fatal errors. Keep in sync with list in FATAL_ALERT_CAUSE.
+        { bits: "16",
           name: "imem_intg_violation"
           resval: 0,
           desc: "A `IMEM_INTG_VIOLATION` error was observed."
         }
-        { bits: "6",
+        { bits: "17",
           name: "dmem_intg_violation"
           resval: 0,
           desc: "A `DMEM_INTG_VIOLATION` error was observed."
         }
-        { bits: "7",
+        { bits: "18",
           name: "reg_intg_violation"
           resval: 0,
           desc: "A `REG_INTG_VIOLATION` error was observed."
         }
-        { bits: "8",
+        { bits: "19",
+          name: "bus_intg_violation"
+          resval: 0,
+          desc: "A `BUS_INTG_VIOLATION` error was observed."
+        }
+        { bits: "20",
           name: "illegal_bus_access"
           resval: 0,
           desc: "An `ILLEGAL_BUS_ACCESS` error was observed."
         }
-        { bits: "9",
+        { bits: "21",
           name: "lifecycle_escalation"
           resval: 0,
           desc: "A `LIFECYCLE_ESCALATION` error was observed."
@@ -346,25 +354,26 @@
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
+        // Keep the list in sync with the fatal errors in ERR_BITS.
         { bits: "0",
-          name: "bus_intg_violation",
-          resval: 0,
-          desc: "A `BUS_INTG_VIOLATION` error was observed."
-        }
-        { bits: "1",
           name: "imem_intg_violation",
           resval: 0,
           desc: "A `IMEM_INTG_VIOLATION` error was observed."
         }
-        { bits: "2",
+        { bits: "1",
           name: "dmem_intg_violation",
           resval: 0,
           desc: "A `DMEM_INTG_VIOLATION` error was observed."
         }
-        { bits: "3",
+        { bits: "2",
           name: "reg_intg_violation",
           resval: 0,
           desc: "A `REG_INTG_VIOLATION` error was observed."
+        }
+        { bits: "3",
+          name: "bus_intg_violation",
+          resval: 0,
+          desc: "A `BUS_INTG_VIOLATION` error was observed."
         }
         { bits: "4",
           name: "illegal_bus_access"

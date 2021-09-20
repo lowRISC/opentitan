@@ -30,6 +30,8 @@ ASSERT_ERR_BIT_MATCH(kOtbnErrBitsDmemIntgViolation,
                      OTBN_ERR_BITS_DMEM_INTG_VIOLATION_BIT);
 ASSERT_ERR_BIT_MATCH(kOtbnErrBitsRegIntgViolation,
                      OTBN_ERR_BITS_REG_INTG_VIOLATION_BIT);
+ASSERT_ERR_BIT_MATCH(kOtbnErrBitsBusIntgViolation,
+                     OTBN_ERR_BITS_BUS_INTG_VIOLATION_BIT);
 ASSERT_ERR_BIT_MATCH(kOtbnErrBitsIllegalBusAccess,
                      OTBN_ERR_BITS_ILLEGAL_BUS_ACCESS_BIT);
 ASSERT_ERR_BIT_MATCH(kOtbnErrBitsLifecycleEscalation,

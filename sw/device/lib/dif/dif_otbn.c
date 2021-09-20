@@ -32,6 +32,9 @@ static_assert(kDifOtbnErrBitsDmemIntgViolation ==
 static_assert(kDifOtbnErrBitsRegIntgViolation ==
                   (1 << OTBN_ERR_BITS_REG_INTG_VIOLATION_BIT),
               "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsBusIntgViolation ==
+                  (1 << OTBN_ERR_BITS_BUS_INTG_VIOLATION_BIT),
+              "Layout of error bits changed.");
 static_assert(kDifOtbnErrBitsIllegalBusAccess ==
                   (1 << OTBN_ERR_BITS_ILLEGAL_BUS_ACCESS_BIT),
               "Layout of error bits changed.");
