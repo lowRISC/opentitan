@@ -94,6 +94,11 @@ class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
     }
   endgroup
 
+  covergroup invalid_hw_input_cg with function sample(
+      keymgr_invalid_hw_input_type_e invalid_hw_input);
+    invalid_hw_input_cp: coverpoint invalid_hw_input;
+  endgroup
+
   covergroup fault_status_cg with function sample(keymgr_pkg::keymgr_fault_pos_e fault);
     fault_cp: coverpoint fault {
       // these are done in a direct test
@@ -145,6 +150,7 @@ class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
     lc_disable_cg = new();
     sideload_clear_cg = new();
     err_code_cg = new();
+    invalid_hw_input_cg = new();
     fault_status_cg = new();
     reseed_interval_cg = new();
     key_version_compare_cg = new();
