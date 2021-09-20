@@ -40,7 +40,7 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * A handle to ${ip.name_long_lower}.
+ * A handle to ${ip.name_snake}.
  *
  * This type should be treated as opaque by users.
  */
@@ -52,7 +52,7 @@ typedef struct dif_${ip.name_snake} {
 } dif_${ip.name_snake}_t;
 
 /**
- * A ${ip.name_long_lower} interrupt request type.
+ * A ${ip.name_snake} interrupt request type.
  */
 typedef enum dif_${ip.name_snake}_irq {
 % for irq in irqs:
@@ -83,7 +83,7 @@ typedef uint32_t dif_${ip.name_snake}_irq_enable_snapshot_t;
 /**
  * Returns whether a particular interrupt is currently pending.
  *
- * @param ${ip.name_snake} A ${ip.name_long_lower} handle.
+ * @param ${ip.name_snake} A ${ip.name_snake} handle.
  * @param irq An interrupt request.
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
@@ -96,7 +96,7 @@ dif_result_t dif_${ip.name_snake}_irq_get_state(
 /**
  * Returns whether a particular interrupt is currently pending.
  *
- * @param ${ip.name_snake} A ${ip.name_long_lower} handle.
+ * @param ${ip.name_snake} A ${ip.name_snake} handle.
  * @param irq An interrupt request.
  * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
@@ -111,7 +111,7 @@ dif_result_t dif_${ip.name_snake}_irq_is_pending(
  * Acknowledges a particular interrupt, indicating to the hardware that it has
  * been successfully serviced.
  *
- * @param ${ip.name_snake} A ${ip.name_long_lower} handle.
+ * @param ${ip.name_snake} A ${ip.name_snake} handle.
  * @param irq An interrupt request.
  * @return The result of the operation.
  */
@@ -123,7 +123,7 @@ dif_result_t dif_${ip.name_snake}_irq_acknowledge(
 /**
  * Checks whether a particular interrupt is currently enabled or disabled.
  *
- * @param ${ip.name_snake} A ${ip.name_long_lower} handle.
+ * @param ${ip.name_snake} A ${ip.name_snake} handle.
  * @param irq An interrupt request.
  * @param[out] state Out-param toggle state of the interrupt.
  * @return The result of the operation.
@@ -137,7 +137,7 @@ dif_result_t dif_${ip.name_snake}_irq_get_enabled(
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
  *
- * @param ${ip.name_snake} A ${ip.name_long_lower} handle.
+ * @param ${ip.name_snake} A ${ip.name_snake} handle.
  * @param irq An interrupt request.
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
@@ -152,7 +152,7 @@ dif_result_t dif_${ip.name_snake}_irq_set_enabled(
  * Forces a particular interrupt, causing it to be serviced as if hardware had
  * asserted it.
  *
- * @param ${ip.name_snake} A ${ip.name_long_lower} handle.
+ * @param ${ip.name_snake} A ${ip.name_snake} handle.
  * @param irq An interrupt request.
  * @return The result of the operation.
  */
@@ -165,7 +165,7 @@ dif_result_t dif_${ip.name_snake}_irq_force(
  * Disables all interrupts, optionally snapshotting all enable states for later
  * restoration.
  *
- * @param ${ip.name_snake} A ${ip.name_long_lower} handle.
+ * @param ${ip.name_snake} A ${ip.name_snake} handle.
  * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
  * @return The result of the operation.
  */
@@ -177,7 +177,7 @@ dif_result_t dif_${ip.name_snake}_irq_disable_all(
 /**
  * Restores interrupts from the given (enable) snapshot.
  *
- * @param ${ip.name_snake} A ${ip.name_long_lower} handle.
+ * @param ${ip.name_snake} A ${ip.name_snake} handle.
  * @param snapshot A snapshot to restore from.
  * @return The result of the operation.
  */
