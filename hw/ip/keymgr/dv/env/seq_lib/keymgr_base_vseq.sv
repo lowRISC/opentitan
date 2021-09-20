@@ -272,7 +272,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   // when reset occurs or keymgr_en = Off, disable checks in seq and check in scb only
   virtual function bit get_check_en();
-    return cfg.keymgr_vif.keymgr_en == lc_ctrl_pkg::On && !cfg.under_reset;
+    return cfg.keymgr_vif.get_keymgr_en() && !cfg.under_reset;
   endfunction
 
   task post_start();
