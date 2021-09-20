@@ -81,15 +81,17 @@ typedef enum otbn_err_bits {
   /** A LOOP error was observed. */
   kOtbnErrBitsLoop = (1 << 4),
   /** A IMEM_INTG_VIOLATION error was observed. */
-  kOtbnErrBitsImemIntgViolation = (1 << 5),
+  kOtbnErrBitsImemIntgViolation = (1 << 16),
   /** A DMEM_INTG_VIOLATION error was observed. */
-  kOtbnErrBitsDmemIntgViolation = (1 << 6),
+  kOtbnErrBitsDmemIntgViolation = (1 << 17),
   /** A REG_INTG_VIOLATION error was observed. */
-  kOtbnErrBitsRegIntgViolation = (1 << 7),
+  kOtbnErrBitsRegIntgViolation = (1 << 18),
+  /** A BUS_INTG_VIOLATION error was observed. */
+  kOtbnErrBitsBusIntgViolation = (1 << 19),
   /** An ILLEGAL_BUS_ACCESS error was observed. */
-  kOtbnErrBitsIllegalBusAccess = (1 << 8),
+  kOtbnErrBitsIllegalBusAccess = (1 << 20),
   /** A LIFECYCLE_ESCALATION error was observed. */
-  kOtbnErrBitsLifecycleEscalation = (1 << 9),
+  kOtbnErrBitsLifecycleEscalation = (1 << 21),
 } otbn_err_bits_t;
 
 /**

@@ -125,6 +125,7 @@ module otbn_controller
 
   input  logic        state_reset_i,
   output logic [31:0] insn_cnt_o,
+  input  logic        bus_intg_violation_i,
   input  logic        illegal_bus_access_i,
   input  logic        lifecycle_escalation_i
 );
@@ -338,9 +339,10 @@ module otbn_controller
 
   assign err_bits_o.lifecycle_escalation = lifecycle_escalation_i;
   assign err_bits_o.illegal_bus_access   = illegal_bus_access_i;
+  assign err_bits_o.bus_intg_violation   = bus_intg_violation_i;
   assign err_bits_o.reg_intg_violation   = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
-  assign err_bits_o.imem_intg_violation  = insn_fetch_err_i;
   assign err_bits_o.dmem_intg_violation  = lsu_rdata_err_i;
+  assign err_bits_o.imem_intg_violation  = insn_fetch_err_i;
   assign err_bits_o.illegal_insn         = illegal_insn_static | rf_indirect_err;
   assign err_bits_o.bad_data_addr        = dmem_addr_err;
   assign err_bits_o.loop                 = loop_err;
