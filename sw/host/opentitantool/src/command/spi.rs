@@ -141,9 +141,9 @@ pub struct SpiReadResponse {
 impl SpiRead {
     fn write_file(&self, mut writer: impl Write, buffer: &[u8]) -> Result<()> {
         if self.hexdump {
-            hexdump(writer, &buffer)?;
+            hexdump(writer, buffer)?;
         } else {
-            writer.write_all(&buffer)?;
+            writer.write_all(buffer)?;
         }
         Ok(())
     }

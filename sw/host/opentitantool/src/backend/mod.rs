@@ -41,7 +41,7 @@ pub fn create(args: &BackendOpts) -> Result<Box<dyn Transport>> {
     match args.interface.as_str() {
         "" => Ok(Box::new(EmptyTransport)),
         "verilator" => verilator::create(&args.verilator_opts),
-        "ultradebug" => ultradebug::create(&args),
+        "ultradebug" => ultradebug::create(args),
         _ => Err(Error::UnknownInterface(args.interface.clone()).into()),
     }
 }

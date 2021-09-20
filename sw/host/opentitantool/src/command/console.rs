@@ -161,7 +161,7 @@ impl InnerConsole {
                 if len == 1 && buf[0] == InnerConsole::CTRL_C {
                     break;
                 }
-                uart.write(&buf[..len])?;
+                uart.write_all(&buf[..len])?;
             }
         }
         Ok(())
@@ -169,7 +169,7 @@ impl InnerConsole {
 
     // Maintain a buffer for the exit regexes to match against.
     fn append_buffer(&mut self, data: &[u8]) {
-        self.buffer.push_str(&String::from_utf8_lossy(&data[..]));
+        self.buffer.push_str(&String::from_utf8_lossy(data));
         if self.buffer.len() > InnerConsole::BUFFER_LEN {
             let (_, end) = self
                 .buffer
