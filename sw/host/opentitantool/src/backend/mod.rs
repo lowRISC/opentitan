@@ -9,6 +9,7 @@ use thiserror::Error;
 use opentitanlib::transport::{EmptyTransport, Transport};
 use opentitanlib::util::parse_int::ParseInt;
 
+pub mod cw310;
 pub mod ultradebug;
 pub mod verilator;
 
@@ -42,6 +43,7 @@ pub fn create(args: &BackendOpts) -> Result<Box<dyn Transport>> {
         "" => Ok(Box::new(EmptyTransport)),
         "verilator" => verilator::create(&args.verilator_opts),
         "ultradebug" => ultradebug::create(args),
+        "cw310" => cw310::create(args),
         _ => Err(Error::UnknownInterface(args.interface.clone()).into()),
     }
 }
