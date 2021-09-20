@@ -18,6 +18,7 @@ class Status(IntEnum):
     BUSY_EXECUTE = 0x01
     BUSY_SEC_WIPE_DMEM = 0x02
     BUSY_SEC_WIPE_IMEM = 0x03
+    LOCKED = 0xFF
 
 
 class ErrBits(IntEnum):
