@@ -680,18 +680,28 @@ module flash_ctrl
   //////////////////////////////////////
   // extra region is the default region
   mp_region_cfg_t [MpRegions:0] region_cfgs;
-  assign region_cfgs[MpRegions-1:0] = reg2hw.mp_region_cfg[MpRegions-1:0];
+  for (genvar i = 0; i < MpRegions; i++) begin : gen_mp_regions
+    assign region_cfgs[i].base.q        = reg2hw.mp_region_cfg_shadowed[i].base.q;
+    assign region_cfgs[i].size.q        = reg2hw.mp_region_cfg_shadowed[i].size.q;
+    assign region_cfgs[i].en.q          = reg2hw.mp_region_cfg_shadowed[i].en.q;
+    assign region_cfgs[i].rd_en.q       = reg2hw.mp_region_cfg_shadowed[i].rd_en.q;
+    assign region_cfgs[i].prog_en.q     = reg2hw.mp_region_cfg_shadowed[i].prog_en.q;
+    assign region_cfgs[i].erase_en.q    = reg2hw.mp_region_cfg_shadowed[i].erase_en.q;
+    assign region_cfgs[i].scramble_en.q = reg2hw.mp_region_cfg_shadowed[i].scramble_en.q;
+    assign region_cfgs[i].ecc_en.q      = reg2hw.mp_region_cfg_shadowed[i].ecc_en.q;
+    assign region_cfgs[i].he_en.q       = reg2hw.mp_region_cfg_shadowed[i].he_en.q;
+  end
 
   //default region
   assign region_cfgs[MpRegions].base.q = '0;
   assign region_cfgs[MpRegions].size.q = NumBanks * PagesPerBank;
   assign region_cfgs[MpRegions].en.q = 1'b1;
-  assign region_cfgs[MpRegions].rd_en.q = reg2hw.default_region.rd_en.q;
-  assign region_cfgs[MpRegions].prog_en.q = reg2hw.default_region.prog_en.q;
-  assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region.erase_en.q;
-  assign region_cfgs[MpRegions].scramble_en.q = reg2hw.default_region.scramble_en.q;
-  assign region_cfgs[MpRegions].ecc_en.q = reg2hw.default_region.ecc_en.q;
-  assign region_cfgs[MpRegions].he_en.q = reg2hw.default_region.he_en.q;
+  assign region_cfgs[MpRegions].rd_en.q = reg2hw.default_region_shadowed.rd_en.q;
+  assign region_cfgs[MpRegions].prog_en.q = reg2hw.default_region_shadowed.prog_en.q;
+  assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region_shadowed.erase_en.q;
+  assign region_cfgs[MpRegions].scramble_en.q = reg2hw.default_region_shadowed.scramble_en.q;
+  assign region_cfgs[MpRegions].ecc_en.q = reg2hw.default_region_shadowed.ecc_en.q;
+  assign region_cfgs[MpRegions].he_en.q = reg2hw.default_region_shadowed.he_en.q;
 
   //////////////////////////////////////
   // Info partition properties configuration
@@ -702,12 +712,12 @@ module flash_ctrl
 
   // transform from reg output to structure
   // Not all types have the maximum number of banks, so those are packed to 0
-  assign reg2hw_info_page_cfgs[0][0] = InfoBits'(reg2hw.bank0_info0_page_cfg);
-  assign reg2hw_info_page_cfgs[0][1] = InfoBits'(reg2hw.bank0_info1_page_cfg);
-  assign reg2hw_info_page_cfgs[0][2] = InfoBits'(reg2hw.bank0_info2_page_cfg);
-  assign reg2hw_info_page_cfgs[1][0] = InfoBits'(reg2hw.bank1_info0_page_cfg);
-  assign reg2hw_info_page_cfgs[1][1] = InfoBits'(reg2hw.bank1_info1_page_cfg);
-  assign reg2hw_info_page_cfgs[1][2] = InfoBits'(reg2hw.bank1_info2_page_cfg);
+  assign reg2hw_info_page_cfgs[0][0] = InfoBits'(reg2hw.bank0_info0_page_cfg_shadowed);
+  assign reg2hw_info_page_cfgs[0][1] = InfoBits'(reg2hw.bank0_info1_page_cfg_shadowed);
+  assign reg2hw_info_page_cfgs[0][2] = InfoBits'(reg2hw.bank0_info2_page_cfg_shadowed);
+  assign reg2hw_info_page_cfgs[1][0] = InfoBits'(reg2hw.bank1_info0_page_cfg_shadowed);
+  assign reg2hw_info_page_cfgs[1][1] = InfoBits'(reg2hw.bank1_info1_page_cfg_shadowed);
+  assign reg2hw_info_page_cfgs[1][2] = InfoBits'(reg2hw.bank1_info2_page_cfg_shadowed);
 
   // qualify reg2hw settings with creator / owner privileges
   for(genvar i = 0; i < NumBanks; i++) begin : gen_info_priv_bank
@@ -750,7 +760,7 @@ module flash_ctrl
 
     // sw configuration for data partition
     .region_cfgs_i(region_cfgs),
-    .bank_cfgs_i(reg2hw.mp_bank_cfg),
+    .bank_cfgs_i(reg2hw.mp_bank_cfg_shadowed),
 
     // sw configuration for info partition
     .info_page_cfgs_i(info_page_cfgs),
@@ -925,6 +935,26 @@ module flash_ctrl
   //////////////////////////////////////
   // Errors and Interrupts
   //////////////////////////////////////
+
+  // shadow errors and faults
+  logic [MpRegions-1:0] data_update_err;
+  logic info_update_err;
+  logic update_err;
+  logic storage_err;
+
+  for (genvar i = 0; i < MpRegions; i++) begin : gen_data_update_err
+    assign data_update_err[i] = reg2hw.mp_region_cfg_shadowed[i].base.err_update |
+                                reg2hw.mp_region_cfg_shadowed[i].size.err_update |
+                                reg2hw.mp_region_cfg_shadowed[i].en.err_update |
+                                reg2hw.mp_region_cfg_shadowed[i].rd_en.err_update |
+                                reg2hw.mp_region_cfg_shadowed[i].prog_en.err_update |
+                                reg2hw.mp_region_cfg_shadowed[i].erase_en.err_update |
+                                reg2hw.mp_region_cfg_shadowed[i].scramble_en.err_update |
+                                reg2hw.mp_region_cfg_shadowed[i].ecc_en.err_update |
+                                reg2hw.mp_region_cfg_shadowed[i].he_en.err_update;
+  end
+
+
 
   // all software interface errors are treated as synchronous errors
   assign hw2reg.err_code.oob_err.d        = 1'b1;

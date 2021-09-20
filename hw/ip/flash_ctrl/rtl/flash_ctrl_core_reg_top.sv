@@ -9,6 +9,7 @@
 module flash_ctrl_core_reg_top (
   input clk_i,
   input rst_ni,
+  input rst_shadowed_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
@@ -255,171 +256,180 @@ module flash_ctrl_core_reg_top (
   logic region_cfg_regwen_7_we;
   logic region_cfg_regwen_7_qs;
   logic region_cfg_regwen_7_wd;
-  logic mp_region_cfg_0_we;
-  logic mp_region_cfg_0_en_0_qs;
-  logic mp_region_cfg_0_en_0_wd;
-  logic mp_region_cfg_0_rd_en_0_qs;
-  logic mp_region_cfg_0_rd_en_0_wd;
-  logic mp_region_cfg_0_prog_en_0_qs;
-  logic mp_region_cfg_0_prog_en_0_wd;
-  logic mp_region_cfg_0_erase_en_0_qs;
-  logic mp_region_cfg_0_erase_en_0_wd;
-  logic mp_region_cfg_0_scramble_en_0_qs;
-  logic mp_region_cfg_0_scramble_en_0_wd;
-  logic mp_region_cfg_0_ecc_en_0_qs;
-  logic mp_region_cfg_0_ecc_en_0_wd;
-  logic mp_region_cfg_0_he_en_0_qs;
-  logic mp_region_cfg_0_he_en_0_wd;
-  logic [8:0] mp_region_cfg_0_base_0_qs;
-  logic [8:0] mp_region_cfg_0_base_0_wd;
-  logic [9:0] mp_region_cfg_0_size_0_qs;
-  logic [9:0] mp_region_cfg_0_size_0_wd;
-  logic mp_region_cfg_1_we;
-  logic mp_region_cfg_1_en_1_qs;
-  logic mp_region_cfg_1_en_1_wd;
-  logic mp_region_cfg_1_rd_en_1_qs;
-  logic mp_region_cfg_1_rd_en_1_wd;
-  logic mp_region_cfg_1_prog_en_1_qs;
-  logic mp_region_cfg_1_prog_en_1_wd;
-  logic mp_region_cfg_1_erase_en_1_qs;
-  logic mp_region_cfg_1_erase_en_1_wd;
-  logic mp_region_cfg_1_scramble_en_1_qs;
-  logic mp_region_cfg_1_scramble_en_1_wd;
-  logic mp_region_cfg_1_ecc_en_1_qs;
-  logic mp_region_cfg_1_ecc_en_1_wd;
-  logic mp_region_cfg_1_he_en_1_qs;
-  logic mp_region_cfg_1_he_en_1_wd;
-  logic [8:0] mp_region_cfg_1_base_1_qs;
-  logic [8:0] mp_region_cfg_1_base_1_wd;
-  logic [9:0] mp_region_cfg_1_size_1_qs;
-  logic [9:0] mp_region_cfg_1_size_1_wd;
-  logic mp_region_cfg_2_we;
-  logic mp_region_cfg_2_en_2_qs;
-  logic mp_region_cfg_2_en_2_wd;
-  logic mp_region_cfg_2_rd_en_2_qs;
-  logic mp_region_cfg_2_rd_en_2_wd;
-  logic mp_region_cfg_2_prog_en_2_qs;
-  logic mp_region_cfg_2_prog_en_2_wd;
-  logic mp_region_cfg_2_erase_en_2_qs;
-  logic mp_region_cfg_2_erase_en_2_wd;
-  logic mp_region_cfg_2_scramble_en_2_qs;
-  logic mp_region_cfg_2_scramble_en_2_wd;
-  logic mp_region_cfg_2_ecc_en_2_qs;
-  logic mp_region_cfg_2_ecc_en_2_wd;
-  logic mp_region_cfg_2_he_en_2_qs;
-  logic mp_region_cfg_2_he_en_2_wd;
-  logic [8:0] mp_region_cfg_2_base_2_qs;
-  logic [8:0] mp_region_cfg_2_base_2_wd;
-  logic [9:0] mp_region_cfg_2_size_2_qs;
-  logic [9:0] mp_region_cfg_2_size_2_wd;
-  logic mp_region_cfg_3_we;
-  logic mp_region_cfg_3_en_3_qs;
-  logic mp_region_cfg_3_en_3_wd;
-  logic mp_region_cfg_3_rd_en_3_qs;
-  logic mp_region_cfg_3_rd_en_3_wd;
-  logic mp_region_cfg_3_prog_en_3_qs;
-  logic mp_region_cfg_3_prog_en_3_wd;
-  logic mp_region_cfg_3_erase_en_3_qs;
-  logic mp_region_cfg_3_erase_en_3_wd;
-  logic mp_region_cfg_3_scramble_en_3_qs;
-  logic mp_region_cfg_3_scramble_en_3_wd;
-  logic mp_region_cfg_3_ecc_en_3_qs;
-  logic mp_region_cfg_3_ecc_en_3_wd;
-  logic mp_region_cfg_3_he_en_3_qs;
-  logic mp_region_cfg_3_he_en_3_wd;
-  logic [8:0] mp_region_cfg_3_base_3_qs;
-  logic [8:0] mp_region_cfg_3_base_3_wd;
-  logic [9:0] mp_region_cfg_3_size_3_qs;
-  logic [9:0] mp_region_cfg_3_size_3_wd;
-  logic mp_region_cfg_4_we;
-  logic mp_region_cfg_4_en_4_qs;
-  logic mp_region_cfg_4_en_4_wd;
-  logic mp_region_cfg_4_rd_en_4_qs;
-  logic mp_region_cfg_4_rd_en_4_wd;
-  logic mp_region_cfg_4_prog_en_4_qs;
-  logic mp_region_cfg_4_prog_en_4_wd;
-  logic mp_region_cfg_4_erase_en_4_qs;
-  logic mp_region_cfg_4_erase_en_4_wd;
-  logic mp_region_cfg_4_scramble_en_4_qs;
-  logic mp_region_cfg_4_scramble_en_4_wd;
-  logic mp_region_cfg_4_ecc_en_4_qs;
-  logic mp_region_cfg_4_ecc_en_4_wd;
-  logic mp_region_cfg_4_he_en_4_qs;
-  logic mp_region_cfg_4_he_en_4_wd;
-  logic [8:0] mp_region_cfg_4_base_4_qs;
-  logic [8:0] mp_region_cfg_4_base_4_wd;
-  logic [9:0] mp_region_cfg_4_size_4_qs;
-  logic [9:0] mp_region_cfg_4_size_4_wd;
-  logic mp_region_cfg_5_we;
-  logic mp_region_cfg_5_en_5_qs;
-  logic mp_region_cfg_5_en_5_wd;
-  logic mp_region_cfg_5_rd_en_5_qs;
-  logic mp_region_cfg_5_rd_en_5_wd;
-  logic mp_region_cfg_5_prog_en_5_qs;
-  logic mp_region_cfg_5_prog_en_5_wd;
-  logic mp_region_cfg_5_erase_en_5_qs;
-  logic mp_region_cfg_5_erase_en_5_wd;
-  logic mp_region_cfg_5_scramble_en_5_qs;
-  logic mp_region_cfg_5_scramble_en_5_wd;
-  logic mp_region_cfg_5_ecc_en_5_qs;
-  logic mp_region_cfg_5_ecc_en_5_wd;
-  logic mp_region_cfg_5_he_en_5_qs;
-  logic mp_region_cfg_5_he_en_5_wd;
-  logic [8:0] mp_region_cfg_5_base_5_qs;
-  logic [8:0] mp_region_cfg_5_base_5_wd;
-  logic [9:0] mp_region_cfg_5_size_5_qs;
-  logic [9:0] mp_region_cfg_5_size_5_wd;
-  logic mp_region_cfg_6_we;
-  logic mp_region_cfg_6_en_6_qs;
-  logic mp_region_cfg_6_en_6_wd;
-  logic mp_region_cfg_6_rd_en_6_qs;
-  logic mp_region_cfg_6_rd_en_6_wd;
-  logic mp_region_cfg_6_prog_en_6_qs;
-  logic mp_region_cfg_6_prog_en_6_wd;
-  logic mp_region_cfg_6_erase_en_6_qs;
-  logic mp_region_cfg_6_erase_en_6_wd;
-  logic mp_region_cfg_6_scramble_en_6_qs;
-  logic mp_region_cfg_6_scramble_en_6_wd;
-  logic mp_region_cfg_6_ecc_en_6_qs;
-  logic mp_region_cfg_6_ecc_en_6_wd;
-  logic mp_region_cfg_6_he_en_6_qs;
-  logic mp_region_cfg_6_he_en_6_wd;
-  logic [8:0] mp_region_cfg_6_base_6_qs;
-  logic [8:0] mp_region_cfg_6_base_6_wd;
-  logic [9:0] mp_region_cfg_6_size_6_qs;
-  logic [9:0] mp_region_cfg_6_size_6_wd;
-  logic mp_region_cfg_7_we;
-  logic mp_region_cfg_7_en_7_qs;
-  logic mp_region_cfg_7_en_7_wd;
-  logic mp_region_cfg_7_rd_en_7_qs;
-  logic mp_region_cfg_7_rd_en_7_wd;
-  logic mp_region_cfg_7_prog_en_7_qs;
-  logic mp_region_cfg_7_prog_en_7_wd;
-  logic mp_region_cfg_7_erase_en_7_qs;
-  logic mp_region_cfg_7_erase_en_7_wd;
-  logic mp_region_cfg_7_scramble_en_7_qs;
-  logic mp_region_cfg_7_scramble_en_7_wd;
-  logic mp_region_cfg_7_ecc_en_7_qs;
-  logic mp_region_cfg_7_ecc_en_7_wd;
-  logic mp_region_cfg_7_he_en_7_qs;
-  logic mp_region_cfg_7_he_en_7_wd;
-  logic [8:0] mp_region_cfg_7_base_7_qs;
-  logic [8:0] mp_region_cfg_7_base_7_wd;
-  logic [9:0] mp_region_cfg_7_size_7_qs;
-  logic [9:0] mp_region_cfg_7_size_7_wd;
-  logic default_region_we;
-  logic default_region_rd_en_qs;
-  logic default_region_rd_en_wd;
-  logic default_region_prog_en_qs;
-  logic default_region_prog_en_wd;
-  logic default_region_erase_en_qs;
-  logic default_region_erase_en_wd;
-  logic default_region_scramble_en_qs;
-  logic default_region_scramble_en_wd;
-  logic default_region_ecc_en_qs;
-  logic default_region_ecc_en_wd;
-  logic default_region_he_en_qs;
-  logic default_region_he_en_wd;
+  logic mp_region_cfg_shadowed_0_re;
+  logic mp_region_cfg_shadowed_0_we;
+  logic mp_region_cfg_shadowed_0_en_0_qs;
+  logic mp_region_cfg_shadowed_0_en_0_wd;
+  logic mp_region_cfg_shadowed_0_rd_en_0_qs;
+  logic mp_region_cfg_shadowed_0_rd_en_0_wd;
+  logic mp_region_cfg_shadowed_0_prog_en_0_qs;
+  logic mp_region_cfg_shadowed_0_prog_en_0_wd;
+  logic mp_region_cfg_shadowed_0_erase_en_0_qs;
+  logic mp_region_cfg_shadowed_0_erase_en_0_wd;
+  logic mp_region_cfg_shadowed_0_scramble_en_0_qs;
+  logic mp_region_cfg_shadowed_0_scramble_en_0_wd;
+  logic mp_region_cfg_shadowed_0_ecc_en_0_qs;
+  logic mp_region_cfg_shadowed_0_ecc_en_0_wd;
+  logic mp_region_cfg_shadowed_0_he_en_0_qs;
+  logic mp_region_cfg_shadowed_0_he_en_0_wd;
+  logic [8:0] mp_region_cfg_shadowed_0_base_0_qs;
+  logic [8:0] mp_region_cfg_shadowed_0_base_0_wd;
+  logic [9:0] mp_region_cfg_shadowed_0_size_0_qs;
+  logic [9:0] mp_region_cfg_shadowed_0_size_0_wd;
+  logic mp_region_cfg_shadowed_1_re;
+  logic mp_region_cfg_shadowed_1_we;
+  logic mp_region_cfg_shadowed_1_en_1_qs;
+  logic mp_region_cfg_shadowed_1_en_1_wd;
+  logic mp_region_cfg_shadowed_1_rd_en_1_qs;
+  logic mp_region_cfg_shadowed_1_rd_en_1_wd;
+  logic mp_region_cfg_shadowed_1_prog_en_1_qs;
+  logic mp_region_cfg_shadowed_1_prog_en_1_wd;
+  logic mp_region_cfg_shadowed_1_erase_en_1_qs;
+  logic mp_region_cfg_shadowed_1_erase_en_1_wd;
+  logic mp_region_cfg_shadowed_1_scramble_en_1_qs;
+  logic mp_region_cfg_shadowed_1_scramble_en_1_wd;
+  logic mp_region_cfg_shadowed_1_ecc_en_1_qs;
+  logic mp_region_cfg_shadowed_1_ecc_en_1_wd;
+  logic mp_region_cfg_shadowed_1_he_en_1_qs;
+  logic mp_region_cfg_shadowed_1_he_en_1_wd;
+  logic [8:0] mp_region_cfg_shadowed_1_base_1_qs;
+  logic [8:0] mp_region_cfg_shadowed_1_base_1_wd;
+  logic [9:0] mp_region_cfg_shadowed_1_size_1_qs;
+  logic [9:0] mp_region_cfg_shadowed_1_size_1_wd;
+  logic mp_region_cfg_shadowed_2_re;
+  logic mp_region_cfg_shadowed_2_we;
+  logic mp_region_cfg_shadowed_2_en_2_qs;
+  logic mp_region_cfg_shadowed_2_en_2_wd;
+  logic mp_region_cfg_shadowed_2_rd_en_2_qs;
+  logic mp_region_cfg_shadowed_2_rd_en_2_wd;
+  logic mp_region_cfg_shadowed_2_prog_en_2_qs;
+  logic mp_region_cfg_shadowed_2_prog_en_2_wd;
+  logic mp_region_cfg_shadowed_2_erase_en_2_qs;
+  logic mp_region_cfg_shadowed_2_erase_en_2_wd;
+  logic mp_region_cfg_shadowed_2_scramble_en_2_qs;
+  logic mp_region_cfg_shadowed_2_scramble_en_2_wd;
+  logic mp_region_cfg_shadowed_2_ecc_en_2_qs;
+  logic mp_region_cfg_shadowed_2_ecc_en_2_wd;
+  logic mp_region_cfg_shadowed_2_he_en_2_qs;
+  logic mp_region_cfg_shadowed_2_he_en_2_wd;
+  logic [8:0] mp_region_cfg_shadowed_2_base_2_qs;
+  logic [8:0] mp_region_cfg_shadowed_2_base_2_wd;
+  logic [9:0] mp_region_cfg_shadowed_2_size_2_qs;
+  logic [9:0] mp_region_cfg_shadowed_2_size_2_wd;
+  logic mp_region_cfg_shadowed_3_re;
+  logic mp_region_cfg_shadowed_3_we;
+  logic mp_region_cfg_shadowed_3_en_3_qs;
+  logic mp_region_cfg_shadowed_3_en_3_wd;
+  logic mp_region_cfg_shadowed_3_rd_en_3_qs;
+  logic mp_region_cfg_shadowed_3_rd_en_3_wd;
+  logic mp_region_cfg_shadowed_3_prog_en_3_qs;
+  logic mp_region_cfg_shadowed_3_prog_en_3_wd;
+  logic mp_region_cfg_shadowed_3_erase_en_3_qs;
+  logic mp_region_cfg_shadowed_3_erase_en_3_wd;
+  logic mp_region_cfg_shadowed_3_scramble_en_3_qs;
+  logic mp_region_cfg_shadowed_3_scramble_en_3_wd;
+  logic mp_region_cfg_shadowed_3_ecc_en_3_qs;
+  logic mp_region_cfg_shadowed_3_ecc_en_3_wd;
+  logic mp_region_cfg_shadowed_3_he_en_3_qs;
+  logic mp_region_cfg_shadowed_3_he_en_3_wd;
+  logic [8:0] mp_region_cfg_shadowed_3_base_3_qs;
+  logic [8:0] mp_region_cfg_shadowed_3_base_3_wd;
+  logic [9:0] mp_region_cfg_shadowed_3_size_3_qs;
+  logic [9:0] mp_region_cfg_shadowed_3_size_3_wd;
+  logic mp_region_cfg_shadowed_4_re;
+  logic mp_region_cfg_shadowed_4_we;
+  logic mp_region_cfg_shadowed_4_en_4_qs;
+  logic mp_region_cfg_shadowed_4_en_4_wd;
+  logic mp_region_cfg_shadowed_4_rd_en_4_qs;
+  logic mp_region_cfg_shadowed_4_rd_en_4_wd;
+  logic mp_region_cfg_shadowed_4_prog_en_4_qs;
+  logic mp_region_cfg_shadowed_4_prog_en_4_wd;
+  logic mp_region_cfg_shadowed_4_erase_en_4_qs;
+  logic mp_region_cfg_shadowed_4_erase_en_4_wd;
+  logic mp_region_cfg_shadowed_4_scramble_en_4_qs;
+  logic mp_region_cfg_shadowed_4_scramble_en_4_wd;
+  logic mp_region_cfg_shadowed_4_ecc_en_4_qs;
+  logic mp_region_cfg_shadowed_4_ecc_en_4_wd;
+  logic mp_region_cfg_shadowed_4_he_en_4_qs;
+  logic mp_region_cfg_shadowed_4_he_en_4_wd;
+  logic [8:0] mp_region_cfg_shadowed_4_base_4_qs;
+  logic [8:0] mp_region_cfg_shadowed_4_base_4_wd;
+  logic [9:0] mp_region_cfg_shadowed_4_size_4_qs;
+  logic [9:0] mp_region_cfg_shadowed_4_size_4_wd;
+  logic mp_region_cfg_shadowed_5_re;
+  logic mp_region_cfg_shadowed_5_we;
+  logic mp_region_cfg_shadowed_5_en_5_qs;
+  logic mp_region_cfg_shadowed_5_en_5_wd;
+  logic mp_region_cfg_shadowed_5_rd_en_5_qs;
+  logic mp_region_cfg_shadowed_5_rd_en_5_wd;
+  logic mp_region_cfg_shadowed_5_prog_en_5_qs;
+  logic mp_region_cfg_shadowed_5_prog_en_5_wd;
+  logic mp_region_cfg_shadowed_5_erase_en_5_qs;
+  logic mp_region_cfg_shadowed_5_erase_en_5_wd;
+  logic mp_region_cfg_shadowed_5_scramble_en_5_qs;
+  logic mp_region_cfg_shadowed_5_scramble_en_5_wd;
+  logic mp_region_cfg_shadowed_5_ecc_en_5_qs;
+  logic mp_region_cfg_shadowed_5_ecc_en_5_wd;
+  logic mp_region_cfg_shadowed_5_he_en_5_qs;
+  logic mp_region_cfg_shadowed_5_he_en_5_wd;
+  logic [8:0] mp_region_cfg_shadowed_5_base_5_qs;
+  logic [8:0] mp_region_cfg_shadowed_5_base_5_wd;
+  logic [9:0] mp_region_cfg_shadowed_5_size_5_qs;
+  logic [9:0] mp_region_cfg_shadowed_5_size_5_wd;
+  logic mp_region_cfg_shadowed_6_re;
+  logic mp_region_cfg_shadowed_6_we;
+  logic mp_region_cfg_shadowed_6_en_6_qs;
+  logic mp_region_cfg_shadowed_6_en_6_wd;
+  logic mp_region_cfg_shadowed_6_rd_en_6_qs;
+  logic mp_region_cfg_shadowed_6_rd_en_6_wd;
+  logic mp_region_cfg_shadowed_6_prog_en_6_qs;
+  logic mp_region_cfg_shadowed_6_prog_en_6_wd;
+  logic mp_region_cfg_shadowed_6_erase_en_6_qs;
+  logic mp_region_cfg_shadowed_6_erase_en_6_wd;
+  logic mp_region_cfg_shadowed_6_scramble_en_6_qs;
+  logic mp_region_cfg_shadowed_6_scramble_en_6_wd;
+  logic mp_region_cfg_shadowed_6_ecc_en_6_qs;
+  logic mp_region_cfg_shadowed_6_ecc_en_6_wd;
+  logic mp_region_cfg_shadowed_6_he_en_6_qs;
+  logic mp_region_cfg_shadowed_6_he_en_6_wd;
+  logic [8:0] mp_region_cfg_shadowed_6_base_6_qs;
+  logic [8:0] mp_region_cfg_shadowed_6_base_6_wd;
+  logic [9:0] mp_region_cfg_shadowed_6_size_6_qs;
+  logic [9:0] mp_region_cfg_shadowed_6_size_6_wd;
+  logic mp_region_cfg_shadowed_7_re;
+  logic mp_region_cfg_shadowed_7_we;
+  logic mp_region_cfg_shadowed_7_en_7_qs;
+  logic mp_region_cfg_shadowed_7_en_7_wd;
+  logic mp_region_cfg_shadowed_7_rd_en_7_qs;
+  logic mp_region_cfg_shadowed_7_rd_en_7_wd;
+  logic mp_region_cfg_shadowed_7_prog_en_7_qs;
+  logic mp_region_cfg_shadowed_7_prog_en_7_wd;
+  logic mp_region_cfg_shadowed_7_erase_en_7_qs;
+  logic mp_region_cfg_shadowed_7_erase_en_7_wd;
+  logic mp_region_cfg_shadowed_7_scramble_en_7_qs;
+  logic mp_region_cfg_shadowed_7_scramble_en_7_wd;
+  logic mp_region_cfg_shadowed_7_ecc_en_7_qs;
+  logic mp_region_cfg_shadowed_7_ecc_en_7_wd;
+  logic mp_region_cfg_shadowed_7_he_en_7_qs;
+  logic mp_region_cfg_shadowed_7_he_en_7_wd;
+  logic [8:0] mp_region_cfg_shadowed_7_base_7_qs;
+  logic [8:0] mp_region_cfg_shadowed_7_base_7_wd;
+  logic [9:0] mp_region_cfg_shadowed_7_size_7_qs;
+  logic [9:0] mp_region_cfg_shadowed_7_size_7_wd;
+  logic default_region_shadowed_re;
+  logic default_region_shadowed_we;
+  logic default_region_shadowed_rd_en_qs;
+  logic default_region_shadowed_rd_en_wd;
+  logic default_region_shadowed_prog_en_qs;
+  logic default_region_shadowed_prog_en_wd;
+  logic default_region_shadowed_erase_en_qs;
+  logic default_region_shadowed_erase_en_wd;
+  logic default_region_shadowed_scramble_en_qs;
+  logic default_region_shadowed_scramble_en_wd;
+  logic default_region_shadowed_ecc_en_qs;
+  logic default_region_shadowed_ecc_en_wd;
+  logic default_region_shadowed_he_en_qs;
+  logic default_region_shadowed_he_en_wd;
   logic bank0_info0_regwen_0_we;
   logic bank0_info0_regwen_0_qs;
   logic bank0_info0_regwen_0_wd;
@@ -450,210 +460,223 @@ module flash_ctrl_core_reg_top (
   logic bank0_info0_regwen_9_we;
   logic bank0_info0_regwen_9_qs;
   logic bank0_info0_regwen_9_wd;
-  logic bank0_info0_page_cfg_0_we;
-  logic bank0_info0_page_cfg_0_en_0_qs;
-  logic bank0_info0_page_cfg_0_en_0_wd;
-  logic bank0_info0_page_cfg_0_rd_en_0_qs;
-  logic bank0_info0_page_cfg_0_rd_en_0_wd;
-  logic bank0_info0_page_cfg_0_prog_en_0_qs;
-  logic bank0_info0_page_cfg_0_prog_en_0_wd;
-  logic bank0_info0_page_cfg_0_erase_en_0_qs;
-  logic bank0_info0_page_cfg_0_erase_en_0_wd;
-  logic bank0_info0_page_cfg_0_scramble_en_0_qs;
-  logic bank0_info0_page_cfg_0_scramble_en_0_wd;
-  logic bank0_info0_page_cfg_0_ecc_en_0_qs;
-  logic bank0_info0_page_cfg_0_ecc_en_0_wd;
-  logic bank0_info0_page_cfg_0_he_en_0_qs;
-  logic bank0_info0_page_cfg_0_he_en_0_wd;
-  logic bank0_info0_page_cfg_1_we;
-  logic bank0_info0_page_cfg_1_en_1_qs;
-  logic bank0_info0_page_cfg_1_en_1_wd;
-  logic bank0_info0_page_cfg_1_rd_en_1_qs;
-  logic bank0_info0_page_cfg_1_rd_en_1_wd;
-  logic bank0_info0_page_cfg_1_prog_en_1_qs;
-  logic bank0_info0_page_cfg_1_prog_en_1_wd;
-  logic bank0_info0_page_cfg_1_erase_en_1_qs;
-  logic bank0_info0_page_cfg_1_erase_en_1_wd;
-  logic bank0_info0_page_cfg_1_scramble_en_1_qs;
-  logic bank0_info0_page_cfg_1_scramble_en_1_wd;
-  logic bank0_info0_page_cfg_1_ecc_en_1_qs;
-  logic bank0_info0_page_cfg_1_ecc_en_1_wd;
-  logic bank0_info0_page_cfg_1_he_en_1_qs;
-  logic bank0_info0_page_cfg_1_he_en_1_wd;
-  logic bank0_info0_page_cfg_2_we;
-  logic bank0_info0_page_cfg_2_en_2_qs;
-  logic bank0_info0_page_cfg_2_en_2_wd;
-  logic bank0_info0_page_cfg_2_rd_en_2_qs;
-  logic bank0_info0_page_cfg_2_rd_en_2_wd;
-  logic bank0_info0_page_cfg_2_prog_en_2_qs;
-  logic bank0_info0_page_cfg_2_prog_en_2_wd;
-  logic bank0_info0_page_cfg_2_erase_en_2_qs;
-  logic bank0_info0_page_cfg_2_erase_en_2_wd;
-  logic bank0_info0_page_cfg_2_scramble_en_2_qs;
-  logic bank0_info0_page_cfg_2_scramble_en_2_wd;
-  logic bank0_info0_page_cfg_2_ecc_en_2_qs;
-  logic bank0_info0_page_cfg_2_ecc_en_2_wd;
-  logic bank0_info0_page_cfg_2_he_en_2_qs;
-  logic bank0_info0_page_cfg_2_he_en_2_wd;
-  logic bank0_info0_page_cfg_3_we;
-  logic bank0_info0_page_cfg_3_en_3_qs;
-  logic bank0_info0_page_cfg_3_en_3_wd;
-  logic bank0_info0_page_cfg_3_rd_en_3_qs;
-  logic bank0_info0_page_cfg_3_rd_en_3_wd;
-  logic bank0_info0_page_cfg_3_prog_en_3_qs;
-  logic bank0_info0_page_cfg_3_prog_en_3_wd;
-  logic bank0_info0_page_cfg_3_erase_en_3_qs;
-  logic bank0_info0_page_cfg_3_erase_en_3_wd;
-  logic bank0_info0_page_cfg_3_scramble_en_3_qs;
-  logic bank0_info0_page_cfg_3_scramble_en_3_wd;
-  logic bank0_info0_page_cfg_3_ecc_en_3_qs;
-  logic bank0_info0_page_cfg_3_ecc_en_3_wd;
-  logic bank0_info0_page_cfg_3_he_en_3_qs;
-  logic bank0_info0_page_cfg_3_he_en_3_wd;
-  logic bank0_info0_page_cfg_4_we;
-  logic bank0_info0_page_cfg_4_en_4_qs;
-  logic bank0_info0_page_cfg_4_en_4_wd;
-  logic bank0_info0_page_cfg_4_rd_en_4_qs;
-  logic bank0_info0_page_cfg_4_rd_en_4_wd;
-  logic bank0_info0_page_cfg_4_prog_en_4_qs;
-  logic bank0_info0_page_cfg_4_prog_en_4_wd;
-  logic bank0_info0_page_cfg_4_erase_en_4_qs;
-  logic bank0_info0_page_cfg_4_erase_en_4_wd;
-  logic bank0_info0_page_cfg_4_scramble_en_4_qs;
-  logic bank0_info0_page_cfg_4_scramble_en_4_wd;
-  logic bank0_info0_page_cfg_4_ecc_en_4_qs;
-  logic bank0_info0_page_cfg_4_ecc_en_4_wd;
-  logic bank0_info0_page_cfg_4_he_en_4_qs;
-  logic bank0_info0_page_cfg_4_he_en_4_wd;
-  logic bank0_info0_page_cfg_5_we;
-  logic bank0_info0_page_cfg_5_en_5_qs;
-  logic bank0_info0_page_cfg_5_en_5_wd;
-  logic bank0_info0_page_cfg_5_rd_en_5_qs;
-  logic bank0_info0_page_cfg_5_rd_en_5_wd;
-  logic bank0_info0_page_cfg_5_prog_en_5_qs;
-  logic bank0_info0_page_cfg_5_prog_en_5_wd;
-  logic bank0_info0_page_cfg_5_erase_en_5_qs;
-  logic bank0_info0_page_cfg_5_erase_en_5_wd;
-  logic bank0_info0_page_cfg_5_scramble_en_5_qs;
-  logic bank0_info0_page_cfg_5_scramble_en_5_wd;
-  logic bank0_info0_page_cfg_5_ecc_en_5_qs;
-  logic bank0_info0_page_cfg_5_ecc_en_5_wd;
-  logic bank0_info0_page_cfg_5_he_en_5_qs;
-  logic bank0_info0_page_cfg_5_he_en_5_wd;
-  logic bank0_info0_page_cfg_6_we;
-  logic bank0_info0_page_cfg_6_en_6_qs;
-  logic bank0_info0_page_cfg_6_en_6_wd;
-  logic bank0_info0_page_cfg_6_rd_en_6_qs;
-  logic bank0_info0_page_cfg_6_rd_en_6_wd;
-  logic bank0_info0_page_cfg_6_prog_en_6_qs;
-  logic bank0_info0_page_cfg_6_prog_en_6_wd;
-  logic bank0_info0_page_cfg_6_erase_en_6_qs;
-  logic bank0_info0_page_cfg_6_erase_en_6_wd;
-  logic bank0_info0_page_cfg_6_scramble_en_6_qs;
-  logic bank0_info0_page_cfg_6_scramble_en_6_wd;
-  logic bank0_info0_page_cfg_6_ecc_en_6_qs;
-  logic bank0_info0_page_cfg_6_ecc_en_6_wd;
-  logic bank0_info0_page_cfg_6_he_en_6_qs;
-  logic bank0_info0_page_cfg_6_he_en_6_wd;
-  logic bank0_info0_page_cfg_7_we;
-  logic bank0_info0_page_cfg_7_en_7_qs;
-  logic bank0_info0_page_cfg_7_en_7_wd;
-  logic bank0_info0_page_cfg_7_rd_en_7_qs;
-  logic bank0_info0_page_cfg_7_rd_en_7_wd;
-  logic bank0_info0_page_cfg_7_prog_en_7_qs;
-  logic bank0_info0_page_cfg_7_prog_en_7_wd;
-  logic bank0_info0_page_cfg_7_erase_en_7_qs;
-  logic bank0_info0_page_cfg_7_erase_en_7_wd;
-  logic bank0_info0_page_cfg_7_scramble_en_7_qs;
-  logic bank0_info0_page_cfg_7_scramble_en_7_wd;
-  logic bank0_info0_page_cfg_7_ecc_en_7_qs;
-  logic bank0_info0_page_cfg_7_ecc_en_7_wd;
-  logic bank0_info0_page_cfg_7_he_en_7_qs;
-  logic bank0_info0_page_cfg_7_he_en_7_wd;
-  logic bank0_info0_page_cfg_8_we;
-  logic bank0_info0_page_cfg_8_en_8_qs;
-  logic bank0_info0_page_cfg_8_en_8_wd;
-  logic bank0_info0_page_cfg_8_rd_en_8_qs;
-  logic bank0_info0_page_cfg_8_rd_en_8_wd;
-  logic bank0_info0_page_cfg_8_prog_en_8_qs;
-  logic bank0_info0_page_cfg_8_prog_en_8_wd;
-  logic bank0_info0_page_cfg_8_erase_en_8_qs;
-  logic bank0_info0_page_cfg_8_erase_en_8_wd;
-  logic bank0_info0_page_cfg_8_scramble_en_8_qs;
-  logic bank0_info0_page_cfg_8_scramble_en_8_wd;
-  logic bank0_info0_page_cfg_8_ecc_en_8_qs;
-  logic bank0_info0_page_cfg_8_ecc_en_8_wd;
-  logic bank0_info0_page_cfg_8_he_en_8_qs;
-  logic bank0_info0_page_cfg_8_he_en_8_wd;
-  logic bank0_info0_page_cfg_9_we;
-  logic bank0_info0_page_cfg_9_en_9_qs;
-  logic bank0_info0_page_cfg_9_en_9_wd;
-  logic bank0_info0_page_cfg_9_rd_en_9_qs;
-  logic bank0_info0_page_cfg_9_rd_en_9_wd;
-  logic bank0_info0_page_cfg_9_prog_en_9_qs;
-  logic bank0_info0_page_cfg_9_prog_en_9_wd;
-  logic bank0_info0_page_cfg_9_erase_en_9_qs;
-  logic bank0_info0_page_cfg_9_erase_en_9_wd;
-  logic bank0_info0_page_cfg_9_scramble_en_9_qs;
-  logic bank0_info0_page_cfg_9_scramble_en_9_wd;
-  logic bank0_info0_page_cfg_9_ecc_en_9_qs;
-  logic bank0_info0_page_cfg_9_ecc_en_9_wd;
-  logic bank0_info0_page_cfg_9_he_en_9_qs;
-  logic bank0_info0_page_cfg_9_he_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_0_re;
+  logic bank0_info0_page_cfg_shadowed_0_we;
+  logic bank0_info0_page_cfg_shadowed_0_en_0_qs;
+  logic bank0_info0_page_cfg_shadowed_0_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_rd_en_0_qs;
+  logic bank0_info0_page_cfg_shadowed_0_rd_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_prog_en_0_qs;
+  logic bank0_info0_page_cfg_shadowed_0_prog_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_erase_en_0_qs;
+  logic bank0_info0_page_cfg_shadowed_0_erase_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_scramble_en_0_qs;
+  logic bank0_info0_page_cfg_shadowed_0_scramble_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_ecc_en_0_qs;
+  logic bank0_info0_page_cfg_shadowed_0_ecc_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_0_he_en_0_qs;
+  logic bank0_info0_page_cfg_shadowed_0_he_en_0_wd;
+  logic bank0_info0_page_cfg_shadowed_1_re;
+  logic bank0_info0_page_cfg_shadowed_1_we;
+  logic bank0_info0_page_cfg_shadowed_1_en_1_qs;
+  logic bank0_info0_page_cfg_shadowed_1_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_rd_en_1_qs;
+  logic bank0_info0_page_cfg_shadowed_1_rd_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_prog_en_1_qs;
+  logic bank0_info0_page_cfg_shadowed_1_prog_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_erase_en_1_qs;
+  logic bank0_info0_page_cfg_shadowed_1_erase_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_scramble_en_1_qs;
+  logic bank0_info0_page_cfg_shadowed_1_scramble_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_ecc_en_1_qs;
+  logic bank0_info0_page_cfg_shadowed_1_ecc_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_1_he_en_1_qs;
+  logic bank0_info0_page_cfg_shadowed_1_he_en_1_wd;
+  logic bank0_info0_page_cfg_shadowed_2_re;
+  logic bank0_info0_page_cfg_shadowed_2_we;
+  logic bank0_info0_page_cfg_shadowed_2_en_2_qs;
+  logic bank0_info0_page_cfg_shadowed_2_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_rd_en_2_qs;
+  logic bank0_info0_page_cfg_shadowed_2_rd_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_prog_en_2_qs;
+  logic bank0_info0_page_cfg_shadowed_2_prog_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_erase_en_2_qs;
+  logic bank0_info0_page_cfg_shadowed_2_erase_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_scramble_en_2_qs;
+  logic bank0_info0_page_cfg_shadowed_2_scramble_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_ecc_en_2_qs;
+  logic bank0_info0_page_cfg_shadowed_2_ecc_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_2_he_en_2_qs;
+  logic bank0_info0_page_cfg_shadowed_2_he_en_2_wd;
+  logic bank0_info0_page_cfg_shadowed_3_re;
+  logic bank0_info0_page_cfg_shadowed_3_we;
+  logic bank0_info0_page_cfg_shadowed_3_en_3_qs;
+  logic bank0_info0_page_cfg_shadowed_3_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_rd_en_3_qs;
+  logic bank0_info0_page_cfg_shadowed_3_rd_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_prog_en_3_qs;
+  logic bank0_info0_page_cfg_shadowed_3_prog_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_erase_en_3_qs;
+  logic bank0_info0_page_cfg_shadowed_3_erase_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_scramble_en_3_qs;
+  logic bank0_info0_page_cfg_shadowed_3_scramble_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_ecc_en_3_qs;
+  logic bank0_info0_page_cfg_shadowed_3_ecc_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_3_he_en_3_qs;
+  logic bank0_info0_page_cfg_shadowed_3_he_en_3_wd;
+  logic bank0_info0_page_cfg_shadowed_4_re;
+  logic bank0_info0_page_cfg_shadowed_4_we;
+  logic bank0_info0_page_cfg_shadowed_4_en_4_qs;
+  logic bank0_info0_page_cfg_shadowed_4_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_rd_en_4_qs;
+  logic bank0_info0_page_cfg_shadowed_4_rd_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_prog_en_4_qs;
+  logic bank0_info0_page_cfg_shadowed_4_prog_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_erase_en_4_qs;
+  logic bank0_info0_page_cfg_shadowed_4_erase_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_scramble_en_4_qs;
+  logic bank0_info0_page_cfg_shadowed_4_scramble_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_ecc_en_4_qs;
+  logic bank0_info0_page_cfg_shadowed_4_ecc_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_4_he_en_4_qs;
+  logic bank0_info0_page_cfg_shadowed_4_he_en_4_wd;
+  logic bank0_info0_page_cfg_shadowed_5_re;
+  logic bank0_info0_page_cfg_shadowed_5_we;
+  logic bank0_info0_page_cfg_shadowed_5_en_5_qs;
+  logic bank0_info0_page_cfg_shadowed_5_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_rd_en_5_qs;
+  logic bank0_info0_page_cfg_shadowed_5_rd_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_prog_en_5_qs;
+  logic bank0_info0_page_cfg_shadowed_5_prog_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_erase_en_5_qs;
+  logic bank0_info0_page_cfg_shadowed_5_erase_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_scramble_en_5_qs;
+  logic bank0_info0_page_cfg_shadowed_5_scramble_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_ecc_en_5_qs;
+  logic bank0_info0_page_cfg_shadowed_5_ecc_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_5_he_en_5_qs;
+  logic bank0_info0_page_cfg_shadowed_5_he_en_5_wd;
+  logic bank0_info0_page_cfg_shadowed_6_re;
+  logic bank0_info0_page_cfg_shadowed_6_we;
+  logic bank0_info0_page_cfg_shadowed_6_en_6_qs;
+  logic bank0_info0_page_cfg_shadowed_6_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_rd_en_6_qs;
+  logic bank0_info0_page_cfg_shadowed_6_rd_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_prog_en_6_qs;
+  logic bank0_info0_page_cfg_shadowed_6_prog_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_erase_en_6_qs;
+  logic bank0_info0_page_cfg_shadowed_6_erase_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_scramble_en_6_qs;
+  logic bank0_info0_page_cfg_shadowed_6_scramble_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_ecc_en_6_qs;
+  logic bank0_info0_page_cfg_shadowed_6_ecc_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_6_he_en_6_qs;
+  logic bank0_info0_page_cfg_shadowed_6_he_en_6_wd;
+  logic bank0_info0_page_cfg_shadowed_7_re;
+  logic bank0_info0_page_cfg_shadowed_7_we;
+  logic bank0_info0_page_cfg_shadowed_7_en_7_qs;
+  logic bank0_info0_page_cfg_shadowed_7_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_rd_en_7_qs;
+  logic bank0_info0_page_cfg_shadowed_7_rd_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_prog_en_7_qs;
+  logic bank0_info0_page_cfg_shadowed_7_prog_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_erase_en_7_qs;
+  logic bank0_info0_page_cfg_shadowed_7_erase_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_scramble_en_7_qs;
+  logic bank0_info0_page_cfg_shadowed_7_scramble_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_ecc_en_7_qs;
+  logic bank0_info0_page_cfg_shadowed_7_ecc_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_7_he_en_7_qs;
+  logic bank0_info0_page_cfg_shadowed_7_he_en_7_wd;
+  logic bank0_info0_page_cfg_shadowed_8_re;
+  logic bank0_info0_page_cfg_shadowed_8_we;
+  logic bank0_info0_page_cfg_shadowed_8_en_8_qs;
+  logic bank0_info0_page_cfg_shadowed_8_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_rd_en_8_qs;
+  logic bank0_info0_page_cfg_shadowed_8_rd_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_prog_en_8_qs;
+  logic bank0_info0_page_cfg_shadowed_8_prog_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_erase_en_8_qs;
+  logic bank0_info0_page_cfg_shadowed_8_erase_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_scramble_en_8_qs;
+  logic bank0_info0_page_cfg_shadowed_8_scramble_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_ecc_en_8_qs;
+  logic bank0_info0_page_cfg_shadowed_8_ecc_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_8_he_en_8_qs;
+  logic bank0_info0_page_cfg_shadowed_8_he_en_8_wd;
+  logic bank0_info0_page_cfg_shadowed_9_re;
+  logic bank0_info0_page_cfg_shadowed_9_we;
+  logic bank0_info0_page_cfg_shadowed_9_en_9_qs;
+  logic bank0_info0_page_cfg_shadowed_9_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_rd_en_9_qs;
+  logic bank0_info0_page_cfg_shadowed_9_rd_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_prog_en_9_qs;
+  logic bank0_info0_page_cfg_shadowed_9_prog_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_erase_en_9_qs;
+  logic bank0_info0_page_cfg_shadowed_9_erase_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_scramble_en_9_qs;
+  logic bank0_info0_page_cfg_shadowed_9_scramble_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_ecc_en_9_qs;
+  logic bank0_info0_page_cfg_shadowed_9_ecc_en_9_wd;
+  logic bank0_info0_page_cfg_shadowed_9_he_en_9_qs;
+  logic bank0_info0_page_cfg_shadowed_9_he_en_9_wd;
   logic bank0_info1_regwen_we;
   logic bank0_info1_regwen_qs;
   logic bank0_info1_regwen_wd;
-  logic bank0_info1_page_cfg_we;
-  logic bank0_info1_page_cfg_en_0_qs;
-  logic bank0_info1_page_cfg_en_0_wd;
-  logic bank0_info1_page_cfg_rd_en_0_qs;
-  logic bank0_info1_page_cfg_rd_en_0_wd;
-  logic bank0_info1_page_cfg_prog_en_0_qs;
-  logic bank0_info1_page_cfg_prog_en_0_wd;
-  logic bank0_info1_page_cfg_erase_en_0_qs;
-  logic bank0_info1_page_cfg_erase_en_0_wd;
-  logic bank0_info1_page_cfg_scramble_en_0_qs;
-  logic bank0_info1_page_cfg_scramble_en_0_wd;
-  logic bank0_info1_page_cfg_ecc_en_0_qs;
-  logic bank0_info1_page_cfg_ecc_en_0_wd;
-  logic bank0_info1_page_cfg_he_en_0_qs;
-  logic bank0_info1_page_cfg_he_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_re;
+  logic bank0_info1_page_cfg_shadowed_we;
+  logic bank0_info1_page_cfg_shadowed_en_0_qs;
+  logic bank0_info1_page_cfg_shadowed_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_rd_en_0_qs;
+  logic bank0_info1_page_cfg_shadowed_rd_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_prog_en_0_qs;
+  logic bank0_info1_page_cfg_shadowed_prog_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_erase_en_0_qs;
+  logic bank0_info1_page_cfg_shadowed_erase_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_scramble_en_0_qs;
+  logic bank0_info1_page_cfg_shadowed_scramble_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_ecc_en_0_qs;
+  logic bank0_info1_page_cfg_shadowed_ecc_en_0_wd;
+  logic bank0_info1_page_cfg_shadowed_he_en_0_qs;
+  logic bank0_info1_page_cfg_shadowed_he_en_0_wd;
   logic bank0_info2_regwen_0_we;
   logic bank0_info2_regwen_0_qs;
   logic bank0_info2_regwen_0_wd;
   logic bank0_info2_regwen_1_we;
   logic bank0_info2_regwen_1_qs;
   logic bank0_info2_regwen_1_wd;
-  logic bank0_info2_page_cfg_0_we;
-  logic bank0_info2_page_cfg_0_en_0_qs;
-  logic bank0_info2_page_cfg_0_en_0_wd;
-  logic bank0_info2_page_cfg_0_rd_en_0_qs;
-  logic bank0_info2_page_cfg_0_rd_en_0_wd;
-  logic bank0_info2_page_cfg_0_prog_en_0_qs;
-  logic bank0_info2_page_cfg_0_prog_en_0_wd;
-  logic bank0_info2_page_cfg_0_erase_en_0_qs;
-  logic bank0_info2_page_cfg_0_erase_en_0_wd;
-  logic bank0_info2_page_cfg_0_scramble_en_0_qs;
-  logic bank0_info2_page_cfg_0_scramble_en_0_wd;
-  logic bank0_info2_page_cfg_0_ecc_en_0_qs;
-  logic bank0_info2_page_cfg_0_ecc_en_0_wd;
-  logic bank0_info2_page_cfg_0_he_en_0_qs;
-  logic bank0_info2_page_cfg_0_he_en_0_wd;
-  logic bank0_info2_page_cfg_1_we;
-  logic bank0_info2_page_cfg_1_en_1_qs;
-  logic bank0_info2_page_cfg_1_en_1_wd;
-  logic bank0_info2_page_cfg_1_rd_en_1_qs;
-  logic bank0_info2_page_cfg_1_rd_en_1_wd;
-  logic bank0_info2_page_cfg_1_prog_en_1_qs;
-  logic bank0_info2_page_cfg_1_prog_en_1_wd;
-  logic bank0_info2_page_cfg_1_erase_en_1_qs;
-  logic bank0_info2_page_cfg_1_erase_en_1_wd;
-  logic bank0_info2_page_cfg_1_scramble_en_1_qs;
-  logic bank0_info2_page_cfg_1_scramble_en_1_wd;
-  logic bank0_info2_page_cfg_1_ecc_en_1_qs;
-  logic bank0_info2_page_cfg_1_ecc_en_1_wd;
-  logic bank0_info2_page_cfg_1_he_en_1_qs;
-  logic bank0_info2_page_cfg_1_he_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_0_re;
+  logic bank0_info2_page_cfg_shadowed_0_we;
+  logic bank0_info2_page_cfg_shadowed_0_en_0_qs;
+  logic bank0_info2_page_cfg_shadowed_0_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_rd_en_0_qs;
+  logic bank0_info2_page_cfg_shadowed_0_rd_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_prog_en_0_qs;
+  logic bank0_info2_page_cfg_shadowed_0_prog_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_erase_en_0_qs;
+  logic bank0_info2_page_cfg_shadowed_0_erase_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_scramble_en_0_qs;
+  logic bank0_info2_page_cfg_shadowed_0_scramble_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_ecc_en_0_qs;
+  logic bank0_info2_page_cfg_shadowed_0_ecc_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_0_he_en_0_qs;
+  logic bank0_info2_page_cfg_shadowed_0_he_en_0_wd;
+  logic bank0_info2_page_cfg_shadowed_1_re;
+  logic bank0_info2_page_cfg_shadowed_1_we;
+  logic bank0_info2_page_cfg_shadowed_1_en_1_qs;
+  logic bank0_info2_page_cfg_shadowed_1_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_rd_en_1_qs;
+  logic bank0_info2_page_cfg_shadowed_1_rd_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_prog_en_1_qs;
+  logic bank0_info2_page_cfg_shadowed_1_prog_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_erase_en_1_qs;
+  logic bank0_info2_page_cfg_shadowed_1_erase_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_scramble_en_1_qs;
+  logic bank0_info2_page_cfg_shadowed_1_scramble_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_ecc_en_1_qs;
+  logic bank0_info2_page_cfg_shadowed_1_ecc_en_1_wd;
+  logic bank0_info2_page_cfg_shadowed_1_he_en_1_qs;
+  logic bank0_info2_page_cfg_shadowed_1_he_en_1_wd;
   logic bank1_info0_regwen_0_we;
   logic bank1_info0_regwen_0_qs;
   logic bank1_info0_regwen_0_wd;
@@ -684,218 +707,232 @@ module flash_ctrl_core_reg_top (
   logic bank1_info0_regwen_9_we;
   logic bank1_info0_regwen_9_qs;
   logic bank1_info0_regwen_9_wd;
-  logic bank1_info0_page_cfg_0_we;
-  logic bank1_info0_page_cfg_0_en_0_qs;
-  logic bank1_info0_page_cfg_0_en_0_wd;
-  logic bank1_info0_page_cfg_0_rd_en_0_qs;
-  logic bank1_info0_page_cfg_0_rd_en_0_wd;
-  logic bank1_info0_page_cfg_0_prog_en_0_qs;
-  logic bank1_info0_page_cfg_0_prog_en_0_wd;
-  logic bank1_info0_page_cfg_0_erase_en_0_qs;
-  logic bank1_info0_page_cfg_0_erase_en_0_wd;
-  logic bank1_info0_page_cfg_0_scramble_en_0_qs;
-  logic bank1_info0_page_cfg_0_scramble_en_0_wd;
-  logic bank1_info0_page_cfg_0_ecc_en_0_qs;
-  logic bank1_info0_page_cfg_0_ecc_en_0_wd;
-  logic bank1_info0_page_cfg_0_he_en_0_qs;
-  logic bank1_info0_page_cfg_0_he_en_0_wd;
-  logic bank1_info0_page_cfg_1_we;
-  logic bank1_info0_page_cfg_1_en_1_qs;
-  logic bank1_info0_page_cfg_1_en_1_wd;
-  logic bank1_info0_page_cfg_1_rd_en_1_qs;
-  logic bank1_info0_page_cfg_1_rd_en_1_wd;
-  logic bank1_info0_page_cfg_1_prog_en_1_qs;
-  logic bank1_info0_page_cfg_1_prog_en_1_wd;
-  logic bank1_info0_page_cfg_1_erase_en_1_qs;
-  logic bank1_info0_page_cfg_1_erase_en_1_wd;
-  logic bank1_info0_page_cfg_1_scramble_en_1_qs;
-  logic bank1_info0_page_cfg_1_scramble_en_1_wd;
-  logic bank1_info0_page_cfg_1_ecc_en_1_qs;
-  logic bank1_info0_page_cfg_1_ecc_en_1_wd;
-  logic bank1_info0_page_cfg_1_he_en_1_qs;
-  logic bank1_info0_page_cfg_1_he_en_1_wd;
-  logic bank1_info0_page_cfg_2_we;
-  logic bank1_info0_page_cfg_2_en_2_qs;
-  logic bank1_info0_page_cfg_2_en_2_wd;
-  logic bank1_info0_page_cfg_2_rd_en_2_qs;
-  logic bank1_info0_page_cfg_2_rd_en_2_wd;
-  logic bank1_info0_page_cfg_2_prog_en_2_qs;
-  logic bank1_info0_page_cfg_2_prog_en_2_wd;
-  logic bank1_info0_page_cfg_2_erase_en_2_qs;
-  logic bank1_info0_page_cfg_2_erase_en_2_wd;
-  logic bank1_info0_page_cfg_2_scramble_en_2_qs;
-  logic bank1_info0_page_cfg_2_scramble_en_2_wd;
-  logic bank1_info0_page_cfg_2_ecc_en_2_qs;
-  logic bank1_info0_page_cfg_2_ecc_en_2_wd;
-  logic bank1_info0_page_cfg_2_he_en_2_qs;
-  logic bank1_info0_page_cfg_2_he_en_2_wd;
-  logic bank1_info0_page_cfg_3_we;
-  logic bank1_info0_page_cfg_3_en_3_qs;
-  logic bank1_info0_page_cfg_3_en_3_wd;
-  logic bank1_info0_page_cfg_3_rd_en_3_qs;
-  logic bank1_info0_page_cfg_3_rd_en_3_wd;
-  logic bank1_info0_page_cfg_3_prog_en_3_qs;
-  logic bank1_info0_page_cfg_3_prog_en_3_wd;
-  logic bank1_info0_page_cfg_3_erase_en_3_qs;
-  logic bank1_info0_page_cfg_3_erase_en_3_wd;
-  logic bank1_info0_page_cfg_3_scramble_en_3_qs;
-  logic bank1_info0_page_cfg_3_scramble_en_3_wd;
-  logic bank1_info0_page_cfg_3_ecc_en_3_qs;
-  logic bank1_info0_page_cfg_3_ecc_en_3_wd;
-  logic bank1_info0_page_cfg_3_he_en_3_qs;
-  logic bank1_info0_page_cfg_3_he_en_3_wd;
-  logic bank1_info0_page_cfg_4_we;
-  logic bank1_info0_page_cfg_4_en_4_qs;
-  logic bank1_info0_page_cfg_4_en_4_wd;
-  logic bank1_info0_page_cfg_4_rd_en_4_qs;
-  logic bank1_info0_page_cfg_4_rd_en_4_wd;
-  logic bank1_info0_page_cfg_4_prog_en_4_qs;
-  logic bank1_info0_page_cfg_4_prog_en_4_wd;
-  logic bank1_info0_page_cfg_4_erase_en_4_qs;
-  logic bank1_info0_page_cfg_4_erase_en_4_wd;
-  logic bank1_info0_page_cfg_4_scramble_en_4_qs;
-  logic bank1_info0_page_cfg_4_scramble_en_4_wd;
-  logic bank1_info0_page_cfg_4_ecc_en_4_qs;
-  logic bank1_info0_page_cfg_4_ecc_en_4_wd;
-  logic bank1_info0_page_cfg_4_he_en_4_qs;
-  logic bank1_info0_page_cfg_4_he_en_4_wd;
-  logic bank1_info0_page_cfg_5_we;
-  logic bank1_info0_page_cfg_5_en_5_qs;
-  logic bank1_info0_page_cfg_5_en_5_wd;
-  logic bank1_info0_page_cfg_5_rd_en_5_qs;
-  logic bank1_info0_page_cfg_5_rd_en_5_wd;
-  logic bank1_info0_page_cfg_5_prog_en_5_qs;
-  logic bank1_info0_page_cfg_5_prog_en_5_wd;
-  logic bank1_info0_page_cfg_5_erase_en_5_qs;
-  logic bank1_info0_page_cfg_5_erase_en_5_wd;
-  logic bank1_info0_page_cfg_5_scramble_en_5_qs;
-  logic bank1_info0_page_cfg_5_scramble_en_5_wd;
-  logic bank1_info0_page_cfg_5_ecc_en_5_qs;
-  logic bank1_info0_page_cfg_5_ecc_en_5_wd;
-  logic bank1_info0_page_cfg_5_he_en_5_qs;
-  logic bank1_info0_page_cfg_5_he_en_5_wd;
-  logic bank1_info0_page_cfg_6_we;
-  logic bank1_info0_page_cfg_6_en_6_qs;
-  logic bank1_info0_page_cfg_6_en_6_wd;
-  logic bank1_info0_page_cfg_6_rd_en_6_qs;
-  logic bank1_info0_page_cfg_6_rd_en_6_wd;
-  logic bank1_info0_page_cfg_6_prog_en_6_qs;
-  logic bank1_info0_page_cfg_6_prog_en_6_wd;
-  logic bank1_info0_page_cfg_6_erase_en_6_qs;
-  logic bank1_info0_page_cfg_6_erase_en_6_wd;
-  logic bank1_info0_page_cfg_6_scramble_en_6_qs;
-  logic bank1_info0_page_cfg_6_scramble_en_6_wd;
-  logic bank1_info0_page_cfg_6_ecc_en_6_qs;
-  logic bank1_info0_page_cfg_6_ecc_en_6_wd;
-  logic bank1_info0_page_cfg_6_he_en_6_qs;
-  logic bank1_info0_page_cfg_6_he_en_6_wd;
-  logic bank1_info0_page_cfg_7_we;
-  logic bank1_info0_page_cfg_7_en_7_qs;
-  logic bank1_info0_page_cfg_7_en_7_wd;
-  logic bank1_info0_page_cfg_7_rd_en_7_qs;
-  logic bank1_info0_page_cfg_7_rd_en_7_wd;
-  logic bank1_info0_page_cfg_7_prog_en_7_qs;
-  logic bank1_info0_page_cfg_7_prog_en_7_wd;
-  logic bank1_info0_page_cfg_7_erase_en_7_qs;
-  logic bank1_info0_page_cfg_7_erase_en_7_wd;
-  logic bank1_info0_page_cfg_7_scramble_en_7_qs;
-  logic bank1_info0_page_cfg_7_scramble_en_7_wd;
-  logic bank1_info0_page_cfg_7_ecc_en_7_qs;
-  logic bank1_info0_page_cfg_7_ecc_en_7_wd;
-  logic bank1_info0_page_cfg_7_he_en_7_qs;
-  logic bank1_info0_page_cfg_7_he_en_7_wd;
-  logic bank1_info0_page_cfg_8_we;
-  logic bank1_info0_page_cfg_8_en_8_qs;
-  logic bank1_info0_page_cfg_8_en_8_wd;
-  logic bank1_info0_page_cfg_8_rd_en_8_qs;
-  logic bank1_info0_page_cfg_8_rd_en_8_wd;
-  logic bank1_info0_page_cfg_8_prog_en_8_qs;
-  logic bank1_info0_page_cfg_8_prog_en_8_wd;
-  logic bank1_info0_page_cfg_8_erase_en_8_qs;
-  logic bank1_info0_page_cfg_8_erase_en_8_wd;
-  logic bank1_info0_page_cfg_8_scramble_en_8_qs;
-  logic bank1_info0_page_cfg_8_scramble_en_8_wd;
-  logic bank1_info0_page_cfg_8_ecc_en_8_qs;
-  logic bank1_info0_page_cfg_8_ecc_en_8_wd;
-  logic bank1_info0_page_cfg_8_he_en_8_qs;
-  logic bank1_info0_page_cfg_8_he_en_8_wd;
-  logic bank1_info0_page_cfg_9_we;
-  logic bank1_info0_page_cfg_9_en_9_qs;
-  logic bank1_info0_page_cfg_9_en_9_wd;
-  logic bank1_info0_page_cfg_9_rd_en_9_qs;
-  logic bank1_info0_page_cfg_9_rd_en_9_wd;
-  logic bank1_info0_page_cfg_9_prog_en_9_qs;
-  logic bank1_info0_page_cfg_9_prog_en_9_wd;
-  logic bank1_info0_page_cfg_9_erase_en_9_qs;
-  logic bank1_info0_page_cfg_9_erase_en_9_wd;
-  logic bank1_info0_page_cfg_9_scramble_en_9_qs;
-  logic bank1_info0_page_cfg_9_scramble_en_9_wd;
-  logic bank1_info0_page_cfg_9_ecc_en_9_qs;
-  logic bank1_info0_page_cfg_9_ecc_en_9_wd;
-  logic bank1_info0_page_cfg_9_he_en_9_qs;
-  logic bank1_info0_page_cfg_9_he_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_0_re;
+  logic bank1_info0_page_cfg_shadowed_0_we;
+  logic bank1_info0_page_cfg_shadowed_0_en_0_qs;
+  logic bank1_info0_page_cfg_shadowed_0_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_rd_en_0_qs;
+  logic bank1_info0_page_cfg_shadowed_0_rd_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_prog_en_0_qs;
+  logic bank1_info0_page_cfg_shadowed_0_prog_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_erase_en_0_qs;
+  logic bank1_info0_page_cfg_shadowed_0_erase_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_scramble_en_0_qs;
+  logic bank1_info0_page_cfg_shadowed_0_scramble_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_ecc_en_0_qs;
+  logic bank1_info0_page_cfg_shadowed_0_ecc_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_0_he_en_0_qs;
+  logic bank1_info0_page_cfg_shadowed_0_he_en_0_wd;
+  logic bank1_info0_page_cfg_shadowed_1_re;
+  logic bank1_info0_page_cfg_shadowed_1_we;
+  logic bank1_info0_page_cfg_shadowed_1_en_1_qs;
+  logic bank1_info0_page_cfg_shadowed_1_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_rd_en_1_qs;
+  logic bank1_info0_page_cfg_shadowed_1_rd_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_prog_en_1_qs;
+  logic bank1_info0_page_cfg_shadowed_1_prog_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_erase_en_1_qs;
+  logic bank1_info0_page_cfg_shadowed_1_erase_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_scramble_en_1_qs;
+  logic bank1_info0_page_cfg_shadowed_1_scramble_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_ecc_en_1_qs;
+  logic bank1_info0_page_cfg_shadowed_1_ecc_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_1_he_en_1_qs;
+  logic bank1_info0_page_cfg_shadowed_1_he_en_1_wd;
+  logic bank1_info0_page_cfg_shadowed_2_re;
+  logic bank1_info0_page_cfg_shadowed_2_we;
+  logic bank1_info0_page_cfg_shadowed_2_en_2_qs;
+  logic bank1_info0_page_cfg_shadowed_2_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_rd_en_2_qs;
+  logic bank1_info0_page_cfg_shadowed_2_rd_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_prog_en_2_qs;
+  logic bank1_info0_page_cfg_shadowed_2_prog_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_erase_en_2_qs;
+  logic bank1_info0_page_cfg_shadowed_2_erase_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_scramble_en_2_qs;
+  logic bank1_info0_page_cfg_shadowed_2_scramble_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_ecc_en_2_qs;
+  logic bank1_info0_page_cfg_shadowed_2_ecc_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_2_he_en_2_qs;
+  logic bank1_info0_page_cfg_shadowed_2_he_en_2_wd;
+  logic bank1_info0_page_cfg_shadowed_3_re;
+  logic bank1_info0_page_cfg_shadowed_3_we;
+  logic bank1_info0_page_cfg_shadowed_3_en_3_qs;
+  logic bank1_info0_page_cfg_shadowed_3_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_rd_en_3_qs;
+  logic bank1_info0_page_cfg_shadowed_3_rd_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_prog_en_3_qs;
+  logic bank1_info0_page_cfg_shadowed_3_prog_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_erase_en_3_qs;
+  logic bank1_info0_page_cfg_shadowed_3_erase_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_scramble_en_3_qs;
+  logic bank1_info0_page_cfg_shadowed_3_scramble_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_ecc_en_3_qs;
+  logic bank1_info0_page_cfg_shadowed_3_ecc_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_3_he_en_3_qs;
+  logic bank1_info0_page_cfg_shadowed_3_he_en_3_wd;
+  logic bank1_info0_page_cfg_shadowed_4_re;
+  logic bank1_info0_page_cfg_shadowed_4_we;
+  logic bank1_info0_page_cfg_shadowed_4_en_4_qs;
+  logic bank1_info0_page_cfg_shadowed_4_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_rd_en_4_qs;
+  logic bank1_info0_page_cfg_shadowed_4_rd_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_prog_en_4_qs;
+  logic bank1_info0_page_cfg_shadowed_4_prog_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_erase_en_4_qs;
+  logic bank1_info0_page_cfg_shadowed_4_erase_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_scramble_en_4_qs;
+  logic bank1_info0_page_cfg_shadowed_4_scramble_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_ecc_en_4_qs;
+  logic bank1_info0_page_cfg_shadowed_4_ecc_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_4_he_en_4_qs;
+  logic bank1_info0_page_cfg_shadowed_4_he_en_4_wd;
+  logic bank1_info0_page_cfg_shadowed_5_re;
+  logic bank1_info0_page_cfg_shadowed_5_we;
+  logic bank1_info0_page_cfg_shadowed_5_en_5_qs;
+  logic bank1_info0_page_cfg_shadowed_5_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_rd_en_5_qs;
+  logic bank1_info0_page_cfg_shadowed_5_rd_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_prog_en_5_qs;
+  logic bank1_info0_page_cfg_shadowed_5_prog_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_erase_en_5_qs;
+  logic bank1_info0_page_cfg_shadowed_5_erase_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_scramble_en_5_qs;
+  logic bank1_info0_page_cfg_shadowed_5_scramble_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_ecc_en_5_qs;
+  logic bank1_info0_page_cfg_shadowed_5_ecc_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_5_he_en_5_qs;
+  logic bank1_info0_page_cfg_shadowed_5_he_en_5_wd;
+  logic bank1_info0_page_cfg_shadowed_6_re;
+  logic bank1_info0_page_cfg_shadowed_6_we;
+  logic bank1_info0_page_cfg_shadowed_6_en_6_qs;
+  logic bank1_info0_page_cfg_shadowed_6_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_rd_en_6_qs;
+  logic bank1_info0_page_cfg_shadowed_6_rd_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_prog_en_6_qs;
+  logic bank1_info0_page_cfg_shadowed_6_prog_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_erase_en_6_qs;
+  logic bank1_info0_page_cfg_shadowed_6_erase_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_scramble_en_6_qs;
+  logic bank1_info0_page_cfg_shadowed_6_scramble_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_ecc_en_6_qs;
+  logic bank1_info0_page_cfg_shadowed_6_ecc_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_6_he_en_6_qs;
+  logic bank1_info0_page_cfg_shadowed_6_he_en_6_wd;
+  logic bank1_info0_page_cfg_shadowed_7_re;
+  logic bank1_info0_page_cfg_shadowed_7_we;
+  logic bank1_info0_page_cfg_shadowed_7_en_7_qs;
+  logic bank1_info0_page_cfg_shadowed_7_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_rd_en_7_qs;
+  logic bank1_info0_page_cfg_shadowed_7_rd_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_prog_en_7_qs;
+  logic bank1_info0_page_cfg_shadowed_7_prog_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_erase_en_7_qs;
+  logic bank1_info0_page_cfg_shadowed_7_erase_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_scramble_en_7_qs;
+  logic bank1_info0_page_cfg_shadowed_7_scramble_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_ecc_en_7_qs;
+  logic bank1_info0_page_cfg_shadowed_7_ecc_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_7_he_en_7_qs;
+  logic bank1_info0_page_cfg_shadowed_7_he_en_7_wd;
+  logic bank1_info0_page_cfg_shadowed_8_re;
+  logic bank1_info0_page_cfg_shadowed_8_we;
+  logic bank1_info0_page_cfg_shadowed_8_en_8_qs;
+  logic bank1_info0_page_cfg_shadowed_8_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_rd_en_8_qs;
+  logic bank1_info0_page_cfg_shadowed_8_rd_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_prog_en_8_qs;
+  logic bank1_info0_page_cfg_shadowed_8_prog_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_erase_en_8_qs;
+  logic bank1_info0_page_cfg_shadowed_8_erase_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_scramble_en_8_qs;
+  logic bank1_info0_page_cfg_shadowed_8_scramble_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_ecc_en_8_qs;
+  logic bank1_info0_page_cfg_shadowed_8_ecc_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_8_he_en_8_qs;
+  logic bank1_info0_page_cfg_shadowed_8_he_en_8_wd;
+  logic bank1_info0_page_cfg_shadowed_9_re;
+  logic bank1_info0_page_cfg_shadowed_9_we;
+  logic bank1_info0_page_cfg_shadowed_9_en_9_qs;
+  logic bank1_info0_page_cfg_shadowed_9_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_rd_en_9_qs;
+  logic bank1_info0_page_cfg_shadowed_9_rd_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_prog_en_9_qs;
+  logic bank1_info0_page_cfg_shadowed_9_prog_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_erase_en_9_qs;
+  logic bank1_info0_page_cfg_shadowed_9_erase_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_scramble_en_9_qs;
+  logic bank1_info0_page_cfg_shadowed_9_scramble_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_ecc_en_9_qs;
+  logic bank1_info0_page_cfg_shadowed_9_ecc_en_9_wd;
+  logic bank1_info0_page_cfg_shadowed_9_he_en_9_qs;
+  logic bank1_info0_page_cfg_shadowed_9_he_en_9_wd;
   logic bank1_info1_regwen_we;
   logic bank1_info1_regwen_qs;
   logic bank1_info1_regwen_wd;
-  logic bank1_info1_page_cfg_we;
-  logic bank1_info1_page_cfg_en_0_qs;
-  logic bank1_info1_page_cfg_en_0_wd;
-  logic bank1_info1_page_cfg_rd_en_0_qs;
-  logic bank1_info1_page_cfg_rd_en_0_wd;
-  logic bank1_info1_page_cfg_prog_en_0_qs;
-  logic bank1_info1_page_cfg_prog_en_0_wd;
-  logic bank1_info1_page_cfg_erase_en_0_qs;
-  logic bank1_info1_page_cfg_erase_en_0_wd;
-  logic bank1_info1_page_cfg_scramble_en_0_qs;
-  logic bank1_info1_page_cfg_scramble_en_0_wd;
-  logic bank1_info1_page_cfg_ecc_en_0_qs;
-  logic bank1_info1_page_cfg_ecc_en_0_wd;
-  logic bank1_info1_page_cfg_he_en_0_qs;
-  logic bank1_info1_page_cfg_he_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_re;
+  logic bank1_info1_page_cfg_shadowed_we;
+  logic bank1_info1_page_cfg_shadowed_en_0_qs;
+  logic bank1_info1_page_cfg_shadowed_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_rd_en_0_qs;
+  logic bank1_info1_page_cfg_shadowed_rd_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_prog_en_0_qs;
+  logic bank1_info1_page_cfg_shadowed_prog_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_erase_en_0_qs;
+  logic bank1_info1_page_cfg_shadowed_erase_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_scramble_en_0_qs;
+  logic bank1_info1_page_cfg_shadowed_scramble_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_ecc_en_0_qs;
+  logic bank1_info1_page_cfg_shadowed_ecc_en_0_wd;
+  logic bank1_info1_page_cfg_shadowed_he_en_0_qs;
+  logic bank1_info1_page_cfg_shadowed_he_en_0_wd;
   logic bank1_info2_regwen_0_we;
   logic bank1_info2_regwen_0_qs;
   logic bank1_info2_regwen_0_wd;
   logic bank1_info2_regwen_1_we;
   logic bank1_info2_regwen_1_qs;
   logic bank1_info2_regwen_1_wd;
-  logic bank1_info2_page_cfg_0_we;
-  logic bank1_info2_page_cfg_0_en_0_qs;
-  logic bank1_info2_page_cfg_0_en_0_wd;
-  logic bank1_info2_page_cfg_0_rd_en_0_qs;
-  logic bank1_info2_page_cfg_0_rd_en_0_wd;
-  logic bank1_info2_page_cfg_0_prog_en_0_qs;
-  logic bank1_info2_page_cfg_0_prog_en_0_wd;
-  logic bank1_info2_page_cfg_0_erase_en_0_qs;
-  logic bank1_info2_page_cfg_0_erase_en_0_wd;
-  logic bank1_info2_page_cfg_0_scramble_en_0_qs;
-  logic bank1_info2_page_cfg_0_scramble_en_0_wd;
-  logic bank1_info2_page_cfg_0_ecc_en_0_qs;
-  logic bank1_info2_page_cfg_0_ecc_en_0_wd;
-  logic bank1_info2_page_cfg_0_he_en_0_qs;
-  logic bank1_info2_page_cfg_0_he_en_0_wd;
-  logic bank1_info2_page_cfg_1_we;
-  logic bank1_info2_page_cfg_1_en_1_qs;
-  logic bank1_info2_page_cfg_1_en_1_wd;
-  logic bank1_info2_page_cfg_1_rd_en_1_qs;
-  logic bank1_info2_page_cfg_1_rd_en_1_wd;
-  logic bank1_info2_page_cfg_1_prog_en_1_qs;
-  logic bank1_info2_page_cfg_1_prog_en_1_wd;
-  logic bank1_info2_page_cfg_1_erase_en_1_qs;
-  logic bank1_info2_page_cfg_1_erase_en_1_wd;
-  logic bank1_info2_page_cfg_1_scramble_en_1_qs;
-  logic bank1_info2_page_cfg_1_scramble_en_1_wd;
-  logic bank1_info2_page_cfg_1_ecc_en_1_qs;
-  logic bank1_info2_page_cfg_1_ecc_en_1_wd;
-  logic bank1_info2_page_cfg_1_he_en_1_qs;
-  logic bank1_info2_page_cfg_1_he_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_0_re;
+  logic bank1_info2_page_cfg_shadowed_0_we;
+  logic bank1_info2_page_cfg_shadowed_0_en_0_qs;
+  logic bank1_info2_page_cfg_shadowed_0_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_rd_en_0_qs;
+  logic bank1_info2_page_cfg_shadowed_0_rd_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_prog_en_0_qs;
+  logic bank1_info2_page_cfg_shadowed_0_prog_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_erase_en_0_qs;
+  logic bank1_info2_page_cfg_shadowed_0_erase_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_scramble_en_0_qs;
+  logic bank1_info2_page_cfg_shadowed_0_scramble_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_ecc_en_0_qs;
+  logic bank1_info2_page_cfg_shadowed_0_ecc_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_0_he_en_0_qs;
+  logic bank1_info2_page_cfg_shadowed_0_he_en_0_wd;
+  logic bank1_info2_page_cfg_shadowed_1_re;
+  logic bank1_info2_page_cfg_shadowed_1_we;
+  logic bank1_info2_page_cfg_shadowed_1_en_1_qs;
+  logic bank1_info2_page_cfg_shadowed_1_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_rd_en_1_qs;
+  logic bank1_info2_page_cfg_shadowed_1_rd_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_prog_en_1_qs;
+  logic bank1_info2_page_cfg_shadowed_1_prog_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_erase_en_1_qs;
+  logic bank1_info2_page_cfg_shadowed_1_erase_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_scramble_en_1_qs;
+  logic bank1_info2_page_cfg_shadowed_1_scramble_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_ecc_en_1_qs;
+  logic bank1_info2_page_cfg_shadowed_1_ecc_en_1_wd;
+  logic bank1_info2_page_cfg_shadowed_1_he_en_1_qs;
+  logic bank1_info2_page_cfg_shadowed_1_he_en_1_wd;
   logic bank_cfg_regwen_we;
   logic bank_cfg_regwen_qs;
   logic bank_cfg_regwen_wd;
-  logic mp_bank_cfg_we;
-  logic mp_bank_cfg_erase_en_0_qs;
-  logic mp_bank_cfg_erase_en_0_wd;
-  logic mp_bank_cfg_erase_en_1_qs;
-  logic mp_bank_cfg_erase_en_1_wd;
+  logic mp_bank_cfg_shadowed_re;
+  logic mp_bank_cfg_shadowed_we;
+  logic mp_bank_cfg_shadowed_erase_en_0_qs;
+  logic mp_bank_cfg_shadowed_erase_en_0_wd;
+  logic mp_bank_cfg_shadowed_erase_en_1_qs;
+  logic mp_bank_cfg_shadowed_erase_en_1_wd;
   logic op_status_we;
   logic op_status_done_qs;
   logic op_status_done_wd;
@@ -1947,20 +1984,22 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  // Subregister 0 of Multireg mp_region_cfg
-  // R[mp_region_cfg_0]: V(False)
+  // Subregister 0 of Multireg mp_region_cfg_shadowed
+  // R[mp_region_cfg_shadowed_0]: V(False)
   //   F[en_0]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_0_en_0 (
+  ) u_mp_region_cfg_shadowed_0_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
-    .wd     (mp_region_cfg_0_en_0_wd),
+    .re     (mp_region_cfg_shadowed_0_re),
+    .we     (mp_region_cfg_shadowed_0_we & region_cfg_regwen_0_qs),
+    .wd     (mp_region_cfg_shadowed_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1968,24 +2007,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[0].en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_0_en_0_qs)
+    .qs     (mp_region_cfg_shadowed_0_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[0].en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[0].en.err_storage)
   );
 
   //   F[rd_en_0]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_0_rd_en_0 (
+  ) u_mp_region_cfg_shadowed_0_rd_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
-    .wd     (mp_region_cfg_0_rd_en_0_wd),
+    .re     (mp_region_cfg_shadowed_0_re),
+    .we     (mp_region_cfg_shadowed_0_we & region_cfg_regwen_0_qs),
+    .wd     (mp_region_cfg_shadowed_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1993,24 +2038,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].rd_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[0].rd_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_0_rd_en_0_qs)
+    .qs     (mp_region_cfg_shadowed_0_rd_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[0].rd_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[0].rd_en.err_storage)
   );
 
   //   F[prog_en_0]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_0_prog_en_0 (
+  ) u_mp_region_cfg_shadowed_0_prog_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
-    .wd     (mp_region_cfg_0_prog_en_0_wd),
+    .re     (mp_region_cfg_shadowed_0_re),
+    .we     (mp_region_cfg_shadowed_0_we & region_cfg_regwen_0_qs),
+    .wd     (mp_region_cfg_shadowed_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2018,24 +2069,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].prog_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[0].prog_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_0_prog_en_0_qs)
+    .qs     (mp_region_cfg_shadowed_0_prog_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[0].prog_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[0].prog_en.err_storage)
   );
 
   //   F[erase_en_0]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_0_erase_en_0 (
+  ) u_mp_region_cfg_shadowed_0_erase_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
-    .wd     (mp_region_cfg_0_erase_en_0_wd),
+    .re     (mp_region_cfg_shadowed_0_re),
+    .we     (mp_region_cfg_shadowed_0_we & region_cfg_regwen_0_qs),
+    .wd     (mp_region_cfg_shadowed_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2043,24 +2100,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].erase_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[0].erase_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_0_erase_en_0_qs)
+    .qs     (mp_region_cfg_shadowed_0_erase_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[0].erase_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[0].erase_en.err_storage)
   );
 
   //   F[scramble_en_0]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_0_scramble_en_0 (
+  ) u_mp_region_cfg_shadowed_0_scramble_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
-    .wd     (mp_region_cfg_0_scramble_en_0_wd),
+    .re     (mp_region_cfg_shadowed_0_re),
+    .we     (mp_region_cfg_shadowed_0_we & region_cfg_regwen_0_qs),
+    .wd     (mp_region_cfg_shadowed_0_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2068,24 +2131,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].scramble_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[0].scramble_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_0_scramble_en_0_qs)
+    .qs     (mp_region_cfg_shadowed_0_scramble_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[0].scramble_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[0].scramble_en.err_storage)
   );
 
   //   F[ecc_en_0]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_0_ecc_en_0 (
+  ) u_mp_region_cfg_shadowed_0_ecc_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
-    .wd     (mp_region_cfg_0_ecc_en_0_wd),
+    .re     (mp_region_cfg_shadowed_0_re),
+    .we     (mp_region_cfg_shadowed_0_we & region_cfg_regwen_0_qs),
+    .wd     (mp_region_cfg_shadowed_0_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2093,24 +2162,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].ecc_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[0].ecc_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_0_ecc_en_0_qs)
+    .qs     (mp_region_cfg_shadowed_0_ecc_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[0].ecc_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[0].ecc_en.err_storage)
   );
 
   //   F[he_en_0]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_0_he_en_0 (
+  ) u_mp_region_cfg_shadowed_0_he_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
-    .wd     (mp_region_cfg_0_he_en_0_wd),
+    .re     (mp_region_cfg_shadowed_0_re),
+    .we     (mp_region_cfg_shadowed_0_we & region_cfg_regwen_0_qs),
+    .wd     (mp_region_cfg_shadowed_0_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2118,24 +2193,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].he_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[0].he_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_0_he_en_0_qs)
+    .qs     (mp_region_cfg_shadowed_0_he_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[0].he_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[0].he_en.err_storage)
   );
 
   //   F[base_0]: 16:8
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg_0_base_0 (
+  ) u_mp_region_cfg_shadowed_0_base_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
-    .wd     (mp_region_cfg_0_base_0_wd),
+    .re     (mp_region_cfg_shadowed_0_re),
+    .we     (mp_region_cfg_shadowed_0_we & region_cfg_regwen_0_qs),
+    .wd     (mp_region_cfg_shadowed_0_base_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2143,24 +2224,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].base.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[0].base.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_0_base_0_qs)
+    .qs     (mp_region_cfg_shadowed_0_base_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[0].base.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[0].base.err_storage)
   );
 
   //   F[size_0]: 26:17
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg_0_size_0 (
+  ) u_mp_region_cfg_shadowed_0_size_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_0_we & region_cfg_regwen_0_qs),
-    .wd     (mp_region_cfg_0_size_0_wd),
+    .re     (mp_region_cfg_shadowed_0_re),
+    .we     (mp_region_cfg_shadowed_0_we & region_cfg_regwen_0_qs),
+    .wd     (mp_region_cfg_shadowed_0_size_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2168,27 +2255,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].size.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[0].size.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_0_size_0_qs)
+    .qs     (mp_region_cfg_shadowed_0_size_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[0].size.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[0].size.err_storage)
   );
 
 
-  // Subregister 1 of Multireg mp_region_cfg
-  // R[mp_region_cfg_1]: V(False)
+  // Subregister 1 of Multireg mp_region_cfg_shadowed
+  // R[mp_region_cfg_shadowed_1]: V(False)
   //   F[en_1]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_1_en_1 (
+  ) u_mp_region_cfg_shadowed_1_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
-    .wd     (mp_region_cfg_1_en_1_wd),
+    .re     (mp_region_cfg_shadowed_1_re),
+    .we     (mp_region_cfg_shadowed_1_we & region_cfg_regwen_1_qs),
+    .wd     (mp_region_cfg_shadowed_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2196,24 +2289,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[1].en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_1_en_1_qs)
+    .qs     (mp_region_cfg_shadowed_1_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[1].en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[1].en.err_storage)
   );
 
   //   F[rd_en_1]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_1_rd_en_1 (
+  ) u_mp_region_cfg_shadowed_1_rd_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
-    .wd     (mp_region_cfg_1_rd_en_1_wd),
+    .re     (mp_region_cfg_shadowed_1_re),
+    .we     (mp_region_cfg_shadowed_1_we & region_cfg_regwen_1_qs),
+    .wd     (mp_region_cfg_shadowed_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2221,24 +2320,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].rd_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[1].rd_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_1_rd_en_1_qs)
+    .qs     (mp_region_cfg_shadowed_1_rd_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[1].rd_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[1].rd_en.err_storage)
   );
 
   //   F[prog_en_1]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_1_prog_en_1 (
+  ) u_mp_region_cfg_shadowed_1_prog_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
-    .wd     (mp_region_cfg_1_prog_en_1_wd),
+    .re     (mp_region_cfg_shadowed_1_re),
+    .we     (mp_region_cfg_shadowed_1_we & region_cfg_regwen_1_qs),
+    .wd     (mp_region_cfg_shadowed_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2246,24 +2351,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].prog_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[1].prog_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_1_prog_en_1_qs)
+    .qs     (mp_region_cfg_shadowed_1_prog_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[1].prog_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[1].prog_en.err_storage)
   );
 
   //   F[erase_en_1]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_1_erase_en_1 (
+  ) u_mp_region_cfg_shadowed_1_erase_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
-    .wd     (mp_region_cfg_1_erase_en_1_wd),
+    .re     (mp_region_cfg_shadowed_1_re),
+    .we     (mp_region_cfg_shadowed_1_we & region_cfg_regwen_1_qs),
+    .wd     (mp_region_cfg_shadowed_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2271,24 +2382,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].erase_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[1].erase_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_1_erase_en_1_qs)
+    .qs     (mp_region_cfg_shadowed_1_erase_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[1].erase_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[1].erase_en.err_storage)
   );
 
   //   F[scramble_en_1]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_1_scramble_en_1 (
+  ) u_mp_region_cfg_shadowed_1_scramble_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
-    .wd     (mp_region_cfg_1_scramble_en_1_wd),
+    .re     (mp_region_cfg_shadowed_1_re),
+    .we     (mp_region_cfg_shadowed_1_we & region_cfg_regwen_1_qs),
+    .wd     (mp_region_cfg_shadowed_1_scramble_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2296,24 +2413,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].scramble_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[1].scramble_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_1_scramble_en_1_qs)
+    .qs     (mp_region_cfg_shadowed_1_scramble_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[1].scramble_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[1].scramble_en.err_storage)
   );
 
   //   F[ecc_en_1]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_1_ecc_en_1 (
+  ) u_mp_region_cfg_shadowed_1_ecc_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
-    .wd     (mp_region_cfg_1_ecc_en_1_wd),
+    .re     (mp_region_cfg_shadowed_1_re),
+    .we     (mp_region_cfg_shadowed_1_we & region_cfg_regwen_1_qs),
+    .wd     (mp_region_cfg_shadowed_1_ecc_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2321,24 +2444,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].ecc_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[1].ecc_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_1_ecc_en_1_qs)
+    .qs     (mp_region_cfg_shadowed_1_ecc_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[1].ecc_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[1].ecc_en.err_storage)
   );
 
   //   F[he_en_1]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_1_he_en_1 (
+  ) u_mp_region_cfg_shadowed_1_he_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
-    .wd     (mp_region_cfg_1_he_en_1_wd),
+    .re     (mp_region_cfg_shadowed_1_re),
+    .we     (mp_region_cfg_shadowed_1_we & region_cfg_regwen_1_qs),
+    .wd     (mp_region_cfg_shadowed_1_he_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2346,24 +2475,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].he_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[1].he_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_1_he_en_1_qs)
+    .qs     (mp_region_cfg_shadowed_1_he_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[1].he_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[1].he_en.err_storage)
   );
 
   //   F[base_1]: 16:8
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg_1_base_1 (
+  ) u_mp_region_cfg_shadowed_1_base_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
-    .wd     (mp_region_cfg_1_base_1_wd),
+    .re     (mp_region_cfg_shadowed_1_re),
+    .we     (mp_region_cfg_shadowed_1_we & region_cfg_regwen_1_qs),
+    .wd     (mp_region_cfg_shadowed_1_base_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2371,24 +2506,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].base.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[1].base.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_1_base_1_qs)
+    .qs     (mp_region_cfg_shadowed_1_base_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[1].base.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[1].base.err_storage)
   );
 
   //   F[size_1]: 26:17
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg_1_size_1 (
+  ) u_mp_region_cfg_shadowed_1_size_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_1_we & region_cfg_regwen_1_qs),
-    .wd     (mp_region_cfg_1_size_1_wd),
+    .re     (mp_region_cfg_shadowed_1_re),
+    .we     (mp_region_cfg_shadowed_1_we & region_cfg_regwen_1_qs),
+    .wd     (mp_region_cfg_shadowed_1_size_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2396,27 +2537,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].size.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[1].size.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_1_size_1_qs)
+    .qs     (mp_region_cfg_shadowed_1_size_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[1].size.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[1].size.err_storage)
   );
 
 
-  // Subregister 2 of Multireg mp_region_cfg
-  // R[mp_region_cfg_2]: V(False)
+  // Subregister 2 of Multireg mp_region_cfg_shadowed
+  // R[mp_region_cfg_shadowed_2]: V(False)
   //   F[en_2]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_2_en_2 (
+  ) u_mp_region_cfg_shadowed_2_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
-    .wd     (mp_region_cfg_2_en_2_wd),
+    .re     (mp_region_cfg_shadowed_2_re),
+    .we     (mp_region_cfg_shadowed_2_we & region_cfg_regwen_2_qs),
+    .wd     (mp_region_cfg_shadowed_2_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2424,24 +2571,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[2].en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_2_en_2_qs)
+    .qs     (mp_region_cfg_shadowed_2_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[2].en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[2].en.err_storage)
   );
 
   //   F[rd_en_2]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_2_rd_en_2 (
+  ) u_mp_region_cfg_shadowed_2_rd_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
-    .wd     (mp_region_cfg_2_rd_en_2_wd),
+    .re     (mp_region_cfg_shadowed_2_re),
+    .we     (mp_region_cfg_shadowed_2_we & region_cfg_regwen_2_qs),
+    .wd     (mp_region_cfg_shadowed_2_rd_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2449,24 +2602,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].rd_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[2].rd_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_2_rd_en_2_qs)
+    .qs     (mp_region_cfg_shadowed_2_rd_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[2].rd_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[2].rd_en.err_storage)
   );
 
   //   F[prog_en_2]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_2_prog_en_2 (
+  ) u_mp_region_cfg_shadowed_2_prog_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
-    .wd     (mp_region_cfg_2_prog_en_2_wd),
+    .re     (mp_region_cfg_shadowed_2_re),
+    .we     (mp_region_cfg_shadowed_2_we & region_cfg_regwen_2_qs),
+    .wd     (mp_region_cfg_shadowed_2_prog_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2474,24 +2633,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].prog_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[2].prog_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_2_prog_en_2_qs)
+    .qs     (mp_region_cfg_shadowed_2_prog_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[2].prog_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[2].prog_en.err_storage)
   );
 
   //   F[erase_en_2]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_2_erase_en_2 (
+  ) u_mp_region_cfg_shadowed_2_erase_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
-    .wd     (mp_region_cfg_2_erase_en_2_wd),
+    .re     (mp_region_cfg_shadowed_2_re),
+    .we     (mp_region_cfg_shadowed_2_we & region_cfg_regwen_2_qs),
+    .wd     (mp_region_cfg_shadowed_2_erase_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2499,24 +2664,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].erase_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[2].erase_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_2_erase_en_2_qs)
+    .qs     (mp_region_cfg_shadowed_2_erase_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[2].erase_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[2].erase_en.err_storage)
   );
 
   //   F[scramble_en_2]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_2_scramble_en_2 (
+  ) u_mp_region_cfg_shadowed_2_scramble_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
-    .wd     (mp_region_cfg_2_scramble_en_2_wd),
+    .re     (mp_region_cfg_shadowed_2_re),
+    .we     (mp_region_cfg_shadowed_2_we & region_cfg_regwen_2_qs),
+    .wd     (mp_region_cfg_shadowed_2_scramble_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2524,24 +2695,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].scramble_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[2].scramble_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_2_scramble_en_2_qs)
+    .qs     (mp_region_cfg_shadowed_2_scramble_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[2].scramble_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[2].scramble_en.err_storage)
   );
 
   //   F[ecc_en_2]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_2_ecc_en_2 (
+  ) u_mp_region_cfg_shadowed_2_ecc_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
-    .wd     (mp_region_cfg_2_ecc_en_2_wd),
+    .re     (mp_region_cfg_shadowed_2_re),
+    .we     (mp_region_cfg_shadowed_2_we & region_cfg_regwen_2_qs),
+    .wd     (mp_region_cfg_shadowed_2_ecc_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2549,24 +2726,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].ecc_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[2].ecc_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_2_ecc_en_2_qs)
+    .qs     (mp_region_cfg_shadowed_2_ecc_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[2].ecc_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[2].ecc_en.err_storage)
   );
 
   //   F[he_en_2]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_2_he_en_2 (
+  ) u_mp_region_cfg_shadowed_2_he_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
-    .wd     (mp_region_cfg_2_he_en_2_wd),
+    .re     (mp_region_cfg_shadowed_2_re),
+    .we     (mp_region_cfg_shadowed_2_we & region_cfg_regwen_2_qs),
+    .wd     (mp_region_cfg_shadowed_2_he_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2574,24 +2757,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].he_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[2].he_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_2_he_en_2_qs)
+    .qs     (mp_region_cfg_shadowed_2_he_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[2].he_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[2].he_en.err_storage)
   );
 
   //   F[base_2]: 16:8
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg_2_base_2 (
+  ) u_mp_region_cfg_shadowed_2_base_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
-    .wd     (mp_region_cfg_2_base_2_wd),
+    .re     (mp_region_cfg_shadowed_2_re),
+    .we     (mp_region_cfg_shadowed_2_we & region_cfg_regwen_2_qs),
+    .wd     (mp_region_cfg_shadowed_2_base_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2599,24 +2788,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].base.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[2].base.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_2_base_2_qs)
+    .qs     (mp_region_cfg_shadowed_2_base_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[2].base.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[2].base.err_storage)
   );
 
   //   F[size_2]: 26:17
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg_2_size_2 (
+  ) u_mp_region_cfg_shadowed_2_size_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_2_we & region_cfg_regwen_2_qs),
-    .wd     (mp_region_cfg_2_size_2_wd),
+    .re     (mp_region_cfg_shadowed_2_re),
+    .we     (mp_region_cfg_shadowed_2_we & region_cfg_regwen_2_qs),
+    .wd     (mp_region_cfg_shadowed_2_size_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2624,27 +2819,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].size.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[2].size.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_2_size_2_qs)
+    .qs     (mp_region_cfg_shadowed_2_size_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[2].size.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[2].size.err_storage)
   );
 
 
-  // Subregister 3 of Multireg mp_region_cfg
-  // R[mp_region_cfg_3]: V(False)
+  // Subregister 3 of Multireg mp_region_cfg_shadowed
+  // R[mp_region_cfg_shadowed_3]: V(False)
   //   F[en_3]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_3_en_3 (
+  ) u_mp_region_cfg_shadowed_3_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
-    .wd     (mp_region_cfg_3_en_3_wd),
+    .re     (mp_region_cfg_shadowed_3_re),
+    .we     (mp_region_cfg_shadowed_3_we & region_cfg_regwen_3_qs),
+    .wd     (mp_region_cfg_shadowed_3_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2652,24 +2853,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[3].en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_3_en_3_qs)
+    .qs     (mp_region_cfg_shadowed_3_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[3].en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[3].en.err_storage)
   );
 
   //   F[rd_en_3]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_3_rd_en_3 (
+  ) u_mp_region_cfg_shadowed_3_rd_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
-    .wd     (mp_region_cfg_3_rd_en_3_wd),
+    .re     (mp_region_cfg_shadowed_3_re),
+    .we     (mp_region_cfg_shadowed_3_we & region_cfg_regwen_3_qs),
+    .wd     (mp_region_cfg_shadowed_3_rd_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2677,24 +2884,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].rd_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[3].rd_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_3_rd_en_3_qs)
+    .qs     (mp_region_cfg_shadowed_3_rd_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[3].rd_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[3].rd_en.err_storage)
   );
 
   //   F[prog_en_3]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_3_prog_en_3 (
+  ) u_mp_region_cfg_shadowed_3_prog_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
-    .wd     (mp_region_cfg_3_prog_en_3_wd),
+    .re     (mp_region_cfg_shadowed_3_re),
+    .we     (mp_region_cfg_shadowed_3_we & region_cfg_regwen_3_qs),
+    .wd     (mp_region_cfg_shadowed_3_prog_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2702,24 +2915,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].prog_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[3].prog_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_3_prog_en_3_qs)
+    .qs     (mp_region_cfg_shadowed_3_prog_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[3].prog_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[3].prog_en.err_storage)
   );
 
   //   F[erase_en_3]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_3_erase_en_3 (
+  ) u_mp_region_cfg_shadowed_3_erase_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
-    .wd     (mp_region_cfg_3_erase_en_3_wd),
+    .re     (mp_region_cfg_shadowed_3_re),
+    .we     (mp_region_cfg_shadowed_3_we & region_cfg_regwen_3_qs),
+    .wd     (mp_region_cfg_shadowed_3_erase_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2727,24 +2946,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].erase_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[3].erase_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_3_erase_en_3_qs)
+    .qs     (mp_region_cfg_shadowed_3_erase_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[3].erase_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[3].erase_en.err_storage)
   );
 
   //   F[scramble_en_3]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_3_scramble_en_3 (
+  ) u_mp_region_cfg_shadowed_3_scramble_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
-    .wd     (mp_region_cfg_3_scramble_en_3_wd),
+    .re     (mp_region_cfg_shadowed_3_re),
+    .we     (mp_region_cfg_shadowed_3_we & region_cfg_regwen_3_qs),
+    .wd     (mp_region_cfg_shadowed_3_scramble_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2752,24 +2977,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].scramble_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[3].scramble_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_3_scramble_en_3_qs)
+    .qs     (mp_region_cfg_shadowed_3_scramble_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[3].scramble_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[3].scramble_en.err_storage)
   );
 
   //   F[ecc_en_3]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_3_ecc_en_3 (
+  ) u_mp_region_cfg_shadowed_3_ecc_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
-    .wd     (mp_region_cfg_3_ecc_en_3_wd),
+    .re     (mp_region_cfg_shadowed_3_re),
+    .we     (mp_region_cfg_shadowed_3_we & region_cfg_regwen_3_qs),
+    .wd     (mp_region_cfg_shadowed_3_ecc_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2777,24 +3008,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].ecc_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[3].ecc_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_3_ecc_en_3_qs)
+    .qs     (mp_region_cfg_shadowed_3_ecc_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[3].ecc_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[3].ecc_en.err_storage)
   );
 
   //   F[he_en_3]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_3_he_en_3 (
+  ) u_mp_region_cfg_shadowed_3_he_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
-    .wd     (mp_region_cfg_3_he_en_3_wd),
+    .re     (mp_region_cfg_shadowed_3_re),
+    .we     (mp_region_cfg_shadowed_3_we & region_cfg_regwen_3_qs),
+    .wd     (mp_region_cfg_shadowed_3_he_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2802,24 +3039,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].he_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[3].he_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_3_he_en_3_qs)
+    .qs     (mp_region_cfg_shadowed_3_he_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[3].he_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[3].he_en.err_storage)
   );
 
   //   F[base_3]: 16:8
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg_3_base_3 (
+  ) u_mp_region_cfg_shadowed_3_base_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
-    .wd     (mp_region_cfg_3_base_3_wd),
+    .re     (mp_region_cfg_shadowed_3_re),
+    .we     (mp_region_cfg_shadowed_3_we & region_cfg_regwen_3_qs),
+    .wd     (mp_region_cfg_shadowed_3_base_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2827,24 +3070,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].base.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[3].base.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_3_base_3_qs)
+    .qs     (mp_region_cfg_shadowed_3_base_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[3].base.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[3].base.err_storage)
   );
 
   //   F[size_3]: 26:17
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg_3_size_3 (
+  ) u_mp_region_cfg_shadowed_3_size_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_3_we & region_cfg_regwen_3_qs),
-    .wd     (mp_region_cfg_3_size_3_wd),
+    .re     (mp_region_cfg_shadowed_3_re),
+    .we     (mp_region_cfg_shadowed_3_we & region_cfg_regwen_3_qs),
+    .wd     (mp_region_cfg_shadowed_3_size_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2852,27 +3101,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].size.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[3].size.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_3_size_3_qs)
+    .qs     (mp_region_cfg_shadowed_3_size_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[3].size.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[3].size.err_storage)
   );
 
 
-  // Subregister 4 of Multireg mp_region_cfg
-  // R[mp_region_cfg_4]: V(False)
+  // Subregister 4 of Multireg mp_region_cfg_shadowed
+  // R[mp_region_cfg_shadowed_4]: V(False)
   //   F[en_4]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_4_en_4 (
+  ) u_mp_region_cfg_shadowed_4_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
-    .wd     (mp_region_cfg_4_en_4_wd),
+    .re     (mp_region_cfg_shadowed_4_re),
+    .we     (mp_region_cfg_shadowed_4_we & region_cfg_regwen_4_qs),
+    .wd     (mp_region_cfg_shadowed_4_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2880,24 +3135,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[4].en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_4_en_4_qs)
+    .qs     (mp_region_cfg_shadowed_4_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[4].en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[4].en.err_storage)
   );
 
   //   F[rd_en_4]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_4_rd_en_4 (
+  ) u_mp_region_cfg_shadowed_4_rd_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
-    .wd     (mp_region_cfg_4_rd_en_4_wd),
+    .re     (mp_region_cfg_shadowed_4_re),
+    .we     (mp_region_cfg_shadowed_4_we & region_cfg_regwen_4_qs),
+    .wd     (mp_region_cfg_shadowed_4_rd_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2905,24 +3166,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].rd_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[4].rd_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_4_rd_en_4_qs)
+    .qs     (mp_region_cfg_shadowed_4_rd_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[4].rd_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[4].rd_en.err_storage)
   );
 
   //   F[prog_en_4]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_4_prog_en_4 (
+  ) u_mp_region_cfg_shadowed_4_prog_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
-    .wd     (mp_region_cfg_4_prog_en_4_wd),
+    .re     (mp_region_cfg_shadowed_4_re),
+    .we     (mp_region_cfg_shadowed_4_we & region_cfg_regwen_4_qs),
+    .wd     (mp_region_cfg_shadowed_4_prog_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2930,24 +3197,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].prog_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[4].prog_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_4_prog_en_4_qs)
+    .qs     (mp_region_cfg_shadowed_4_prog_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[4].prog_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[4].prog_en.err_storage)
   );
 
   //   F[erase_en_4]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_4_erase_en_4 (
+  ) u_mp_region_cfg_shadowed_4_erase_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
-    .wd     (mp_region_cfg_4_erase_en_4_wd),
+    .re     (mp_region_cfg_shadowed_4_re),
+    .we     (mp_region_cfg_shadowed_4_we & region_cfg_regwen_4_qs),
+    .wd     (mp_region_cfg_shadowed_4_erase_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2955,24 +3228,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].erase_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[4].erase_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_4_erase_en_4_qs)
+    .qs     (mp_region_cfg_shadowed_4_erase_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[4].erase_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[4].erase_en.err_storage)
   );
 
   //   F[scramble_en_4]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_4_scramble_en_4 (
+  ) u_mp_region_cfg_shadowed_4_scramble_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
-    .wd     (mp_region_cfg_4_scramble_en_4_wd),
+    .re     (mp_region_cfg_shadowed_4_re),
+    .we     (mp_region_cfg_shadowed_4_we & region_cfg_regwen_4_qs),
+    .wd     (mp_region_cfg_shadowed_4_scramble_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2980,24 +3259,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].scramble_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[4].scramble_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_4_scramble_en_4_qs)
+    .qs     (mp_region_cfg_shadowed_4_scramble_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[4].scramble_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[4].scramble_en.err_storage)
   );
 
   //   F[ecc_en_4]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_4_ecc_en_4 (
+  ) u_mp_region_cfg_shadowed_4_ecc_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
-    .wd     (mp_region_cfg_4_ecc_en_4_wd),
+    .re     (mp_region_cfg_shadowed_4_re),
+    .we     (mp_region_cfg_shadowed_4_we & region_cfg_regwen_4_qs),
+    .wd     (mp_region_cfg_shadowed_4_ecc_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3005,24 +3290,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].ecc_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[4].ecc_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_4_ecc_en_4_qs)
+    .qs     (mp_region_cfg_shadowed_4_ecc_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[4].ecc_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[4].ecc_en.err_storage)
   );
 
   //   F[he_en_4]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_4_he_en_4 (
+  ) u_mp_region_cfg_shadowed_4_he_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
-    .wd     (mp_region_cfg_4_he_en_4_wd),
+    .re     (mp_region_cfg_shadowed_4_re),
+    .we     (mp_region_cfg_shadowed_4_we & region_cfg_regwen_4_qs),
+    .wd     (mp_region_cfg_shadowed_4_he_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3030,24 +3321,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].he_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[4].he_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_4_he_en_4_qs)
+    .qs     (mp_region_cfg_shadowed_4_he_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[4].he_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[4].he_en.err_storage)
   );
 
   //   F[base_4]: 16:8
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg_4_base_4 (
+  ) u_mp_region_cfg_shadowed_4_base_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
-    .wd     (mp_region_cfg_4_base_4_wd),
+    .re     (mp_region_cfg_shadowed_4_re),
+    .we     (mp_region_cfg_shadowed_4_we & region_cfg_regwen_4_qs),
+    .wd     (mp_region_cfg_shadowed_4_base_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3055,24 +3352,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].base.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[4].base.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_4_base_4_qs)
+    .qs     (mp_region_cfg_shadowed_4_base_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[4].base.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[4].base.err_storage)
   );
 
   //   F[size_4]: 26:17
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg_4_size_4 (
+  ) u_mp_region_cfg_shadowed_4_size_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_4_we & region_cfg_regwen_4_qs),
-    .wd     (mp_region_cfg_4_size_4_wd),
+    .re     (mp_region_cfg_shadowed_4_re),
+    .we     (mp_region_cfg_shadowed_4_we & region_cfg_regwen_4_qs),
+    .wd     (mp_region_cfg_shadowed_4_size_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3080,27 +3383,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].size.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[4].size.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_4_size_4_qs)
+    .qs     (mp_region_cfg_shadowed_4_size_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[4].size.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[4].size.err_storage)
   );
 
 
-  // Subregister 5 of Multireg mp_region_cfg
-  // R[mp_region_cfg_5]: V(False)
+  // Subregister 5 of Multireg mp_region_cfg_shadowed
+  // R[mp_region_cfg_shadowed_5]: V(False)
   //   F[en_5]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_5_en_5 (
+  ) u_mp_region_cfg_shadowed_5_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
-    .wd     (mp_region_cfg_5_en_5_wd),
+    .re     (mp_region_cfg_shadowed_5_re),
+    .we     (mp_region_cfg_shadowed_5_we & region_cfg_regwen_5_qs),
+    .wd     (mp_region_cfg_shadowed_5_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3108,24 +3417,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[5].en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_5_en_5_qs)
+    .qs     (mp_region_cfg_shadowed_5_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[5].en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[5].en.err_storage)
   );
 
   //   F[rd_en_5]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_5_rd_en_5 (
+  ) u_mp_region_cfg_shadowed_5_rd_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
-    .wd     (mp_region_cfg_5_rd_en_5_wd),
+    .re     (mp_region_cfg_shadowed_5_re),
+    .we     (mp_region_cfg_shadowed_5_we & region_cfg_regwen_5_qs),
+    .wd     (mp_region_cfg_shadowed_5_rd_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3133,24 +3448,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].rd_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[5].rd_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_5_rd_en_5_qs)
+    .qs     (mp_region_cfg_shadowed_5_rd_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[5].rd_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[5].rd_en.err_storage)
   );
 
   //   F[prog_en_5]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_5_prog_en_5 (
+  ) u_mp_region_cfg_shadowed_5_prog_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
-    .wd     (mp_region_cfg_5_prog_en_5_wd),
+    .re     (mp_region_cfg_shadowed_5_re),
+    .we     (mp_region_cfg_shadowed_5_we & region_cfg_regwen_5_qs),
+    .wd     (mp_region_cfg_shadowed_5_prog_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3158,24 +3479,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].prog_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[5].prog_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_5_prog_en_5_qs)
+    .qs     (mp_region_cfg_shadowed_5_prog_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[5].prog_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[5].prog_en.err_storage)
   );
 
   //   F[erase_en_5]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_5_erase_en_5 (
+  ) u_mp_region_cfg_shadowed_5_erase_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
-    .wd     (mp_region_cfg_5_erase_en_5_wd),
+    .re     (mp_region_cfg_shadowed_5_re),
+    .we     (mp_region_cfg_shadowed_5_we & region_cfg_regwen_5_qs),
+    .wd     (mp_region_cfg_shadowed_5_erase_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3183,24 +3510,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].erase_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[5].erase_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_5_erase_en_5_qs)
+    .qs     (mp_region_cfg_shadowed_5_erase_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[5].erase_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[5].erase_en.err_storage)
   );
 
   //   F[scramble_en_5]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_5_scramble_en_5 (
+  ) u_mp_region_cfg_shadowed_5_scramble_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
-    .wd     (mp_region_cfg_5_scramble_en_5_wd),
+    .re     (mp_region_cfg_shadowed_5_re),
+    .we     (mp_region_cfg_shadowed_5_we & region_cfg_regwen_5_qs),
+    .wd     (mp_region_cfg_shadowed_5_scramble_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3208,24 +3541,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].scramble_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[5].scramble_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_5_scramble_en_5_qs)
+    .qs     (mp_region_cfg_shadowed_5_scramble_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[5].scramble_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[5].scramble_en.err_storage)
   );
 
   //   F[ecc_en_5]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_5_ecc_en_5 (
+  ) u_mp_region_cfg_shadowed_5_ecc_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
-    .wd     (mp_region_cfg_5_ecc_en_5_wd),
+    .re     (mp_region_cfg_shadowed_5_re),
+    .we     (mp_region_cfg_shadowed_5_we & region_cfg_regwen_5_qs),
+    .wd     (mp_region_cfg_shadowed_5_ecc_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3233,24 +3572,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].ecc_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[5].ecc_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_5_ecc_en_5_qs)
+    .qs     (mp_region_cfg_shadowed_5_ecc_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[5].ecc_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[5].ecc_en.err_storage)
   );
 
   //   F[he_en_5]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_5_he_en_5 (
+  ) u_mp_region_cfg_shadowed_5_he_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
-    .wd     (mp_region_cfg_5_he_en_5_wd),
+    .re     (mp_region_cfg_shadowed_5_re),
+    .we     (mp_region_cfg_shadowed_5_we & region_cfg_regwen_5_qs),
+    .wd     (mp_region_cfg_shadowed_5_he_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3258,24 +3603,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].he_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[5].he_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_5_he_en_5_qs)
+    .qs     (mp_region_cfg_shadowed_5_he_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[5].he_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[5].he_en.err_storage)
   );
 
   //   F[base_5]: 16:8
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg_5_base_5 (
+  ) u_mp_region_cfg_shadowed_5_base_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
-    .wd     (mp_region_cfg_5_base_5_wd),
+    .re     (mp_region_cfg_shadowed_5_re),
+    .we     (mp_region_cfg_shadowed_5_we & region_cfg_regwen_5_qs),
+    .wd     (mp_region_cfg_shadowed_5_base_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3283,24 +3634,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].base.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[5].base.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_5_base_5_qs)
+    .qs     (mp_region_cfg_shadowed_5_base_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[5].base.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[5].base.err_storage)
   );
 
   //   F[size_5]: 26:17
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg_5_size_5 (
+  ) u_mp_region_cfg_shadowed_5_size_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_5_we & region_cfg_regwen_5_qs),
-    .wd     (mp_region_cfg_5_size_5_wd),
+    .re     (mp_region_cfg_shadowed_5_re),
+    .we     (mp_region_cfg_shadowed_5_we & region_cfg_regwen_5_qs),
+    .wd     (mp_region_cfg_shadowed_5_size_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3308,27 +3665,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].size.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[5].size.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_5_size_5_qs)
+    .qs     (mp_region_cfg_shadowed_5_size_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[5].size.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[5].size.err_storage)
   );
 
 
-  // Subregister 6 of Multireg mp_region_cfg
-  // R[mp_region_cfg_6]: V(False)
+  // Subregister 6 of Multireg mp_region_cfg_shadowed
+  // R[mp_region_cfg_shadowed_6]: V(False)
   //   F[en_6]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_6_en_6 (
+  ) u_mp_region_cfg_shadowed_6_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
-    .wd     (mp_region_cfg_6_en_6_wd),
+    .re     (mp_region_cfg_shadowed_6_re),
+    .we     (mp_region_cfg_shadowed_6_we & region_cfg_regwen_6_qs),
+    .wd     (mp_region_cfg_shadowed_6_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3336,24 +3699,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[6].en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_6_en_6_qs)
+    .qs     (mp_region_cfg_shadowed_6_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[6].en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[6].en.err_storage)
   );
 
   //   F[rd_en_6]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_6_rd_en_6 (
+  ) u_mp_region_cfg_shadowed_6_rd_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
-    .wd     (mp_region_cfg_6_rd_en_6_wd),
+    .re     (mp_region_cfg_shadowed_6_re),
+    .we     (mp_region_cfg_shadowed_6_we & region_cfg_regwen_6_qs),
+    .wd     (mp_region_cfg_shadowed_6_rd_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3361,24 +3730,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].rd_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[6].rd_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_6_rd_en_6_qs)
+    .qs     (mp_region_cfg_shadowed_6_rd_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[6].rd_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[6].rd_en.err_storage)
   );
 
   //   F[prog_en_6]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_6_prog_en_6 (
+  ) u_mp_region_cfg_shadowed_6_prog_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
-    .wd     (mp_region_cfg_6_prog_en_6_wd),
+    .re     (mp_region_cfg_shadowed_6_re),
+    .we     (mp_region_cfg_shadowed_6_we & region_cfg_regwen_6_qs),
+    .wd     (mp_region_cfg_shadowed_6_prog_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3386,24 +3761,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].prog_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[6].prog_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_6_prog_en_6_qs)
+    .qs     (mp_region_cfg_shadowed_6_prog_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[6].prog_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[6].prog_en.err_storage)
   );
 
   //   F[erase_en_6]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_6_erase_en_6 (
+  ) u_mp_region_cfg_shadowed_6_erase_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
-    .wd     (mp_region_cfg_6_erase_en_6_wd),
+    .re     (mp_region_cfg_shadowed_6_re),
+    .we     (mp_region_cfg_shadowed_6_we & region_cfg_regwen_6_qs),
+    .wd     (mp_region_cfg_shadowed_6_erase_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3411,24 +3792,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].erase_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[6].erase_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_6_erase_en_6_qs)
+    .qs     (mp_region_cfg_shadowed_6_erase_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[6].erase_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[6].erase_en.err_storage)
   );
 
   //   F[scramble_en_6]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_6_scramble_en_6 (
+  ) u_mp_region_cfg_shadowed_6_scramble_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
-    .wd     (mp_region_cfg_6_scramble_en_6_wd),
+    .re     (mp_region_cfg_shadowed_6_re),
+    .we     (mp_region_cfg_shadowed_6_we & region_cfg_regwen_6_qs),
+    .wd     (mp_region_cfg_shadowed_6_scramble_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3436,24 +3823,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].scramble_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[6].scramble_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_6_scramble_en_6_qs)
+    .qs     (mp_region_cfg_shadowed_6_scramble_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[6].scramble_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[6].scramble_en.err_storage)
   );
 
   //   F[ecc_en_6]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_6_ecc_en_6 (
+  ) u_mp_region_cfg_shadowed_6_ecc_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
-    .wd     (mp_region_cfg_6_ecc_en_6_wd),
+    .re     (mp_region_cfg_shadowed_6_re),
+    .we     (mp_region_cfg_shadowed_6_we & region_cfg_regwen_6_qs),
+    .wd     (mp_region_cfg_shadowed_6_ecc_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3461,24 +3854,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].ecc_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[6].ecc_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_6_ecc_en_6_qs)
+    .qs     (mp_region_cfg_shadowed_6_ecc_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[6].ecc_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[6].ecc_en.err_storage)
   );
 
   //   F[he_en_6]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_6_he_en_6 (
+  ) u_mp_region_cfg_shadowed_6_he_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
-    .wd     (mp_region_cfg_6_he_en_6_wd),
+    .re     (mp_region_cfg_shadowed_6_re),
+    .we     (mp_region_cfg_shadowed_6_we & region_cfg_regwen_6_qs),
+    .wd     (mp_region_cfg_shadowed_6_he_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3486,24 +3885,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].he_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[6].he_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_6_he_en_6_qs)
+    .qs     (mp_region_cfg_shadowed_6_he_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[6].he_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[6].he_en.err_storage)
   );
 
   //   F[base_6]: 16:8
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg_6_base_6 (
+  ) u_mp_region_cfg_shadowed_6_base_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
-    .wd     (mp_region_cfg_6_base_6_wd),
+    .re     (mp_region_cfg_shadowed_6_re),
+    .we     (mp_region_cfg_shadowed_6_we & region_cfg_regwen_6_qs),
+    .wd     (mp_region_cfg_shadowed_6_base_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3511,24 +3916,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].base.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[6].base.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_6_base_6_qs)
+    .qs     (mp_region_cfg_shadowed_6_base_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[6].base.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[6].base.err_storage)
   );
 
   //   F[size_6]: 26:17
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg_6_size_6 (
+  ) u_mp_region_cfg_shadowed_6_size_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_6_we & region_cfg_regwen_6_qs),
-    .wd     (mp_region_cfg_6_size_6_wd),
+    .re     (mp_region_cfg_shadowed_6_re),
+    .we     (mp_region_cfg_shadowed_6_we & region_cfg_regwen_6_qs),
+    .wd     (mp_region_cfg_shadowed_6_size_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3536,27 +3947,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].size.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[6].size.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_6_size_6_qs)
+    .qs     (mp_region_cfg_shadowed_6_size_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[6].size.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[6].size.err_storage)
   );
 
 
-  // Subregister 7 of Multireg mp_region_cfg
-  // R[mp_region_cfg_7]: V(False)
+  // Subregister 7 of Multireg mp_region_cfg_shadowed
+  // R[mp_region_cfg_shadowed_7]: V(False)
   //   F[en_7]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_7_en_7 (
+  ) u_mp_region_cfg_shadowed_7_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
-    .wd     (mp_region_cfg_7_en_7_wd),
+    .re     (mp_region_cfg_shadowed_7_re),
+    .we     (mp_region_cfg_shadowed_7_we & region_cfg_regwen_7_qs),
+    .wd     (mp_region_cfg_shadowed_7_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3564,24 +3981,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[7].en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_7_en_7_qs)
+    .qs     (mp_region_cfg_shadowed_7_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[7].en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[7].en.err_storage)
   );
 
   //   F[rd_en_7]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_7_rd_en_7 (
+  ) u_mp_region_cfg_shadowed_7_rd_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
-    .wd     (mp_region_cfg_7_rd_en_7_wd),
+    .re     (mp_region_cfg_shadowed_7_re),
+    .we     (mp_region_cfg_shadowed_7_we & region_cfg_regwen_7_qs),
+    .wd     (mp_region_cfg_shadowed_7_rd_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3589,24 +4012,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].rd_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[7].rd_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_7_rd_en_7_qs)
+    .qs     (mp_region_cfg_shadowed_7_rd_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[7].rd_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[7].rd_en.err_storage)
   );
 
   //   F[prog_en_7]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_7_prog_en_7 (
+  ) u_mp_region_cfg_shadowed_7_prog_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
-    .wd     (mp_region_cfg_7_prog_en_7_wd),
+    .re     (mp_region_cfg_shadowed_7_re),
+    .we     (mp_region_cfg_shadowed_7_we & region_cfg_regwen_7_qs),
+    .wd     (mp_region_cfg_shadowed_7_prog_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3614,24 +4043,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].prog_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[7].prog_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_7_prog_en_7_qs)
+    .qs     (mp_region_cfg_shadowed_7_prog_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[7].prog_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[7].prog_en.err_storage)
   );
 
   //   F[erase_en_7]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_7_erase_en_7 (
+  ) u_mp_region_cfg_shadowed_7_erase_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
-    .wd     (mp_region_cfg_7_erase_en_7_wd),
+    .re     (mp_region_cfg_shadowed_7_re),
+    .we     (mp_region_cfg_shadowed_7_we & region_cfg_regwen_7_qs),
+    .wd     (mp_region_cfg_shadowed_7_erase_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3639,24 +4074,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].erase_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[7].erase_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_7_erase_en_7_qs)
+    .qs     (mp_region_cfg_shadowed_7_erase_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[7].erase_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[7].erase_en.err_storage)
   );
 
   //   F[scramble_en_7]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_7_scramble_en_7 (
+  ) u_mp_region_cfg_shadowed_7_scramble_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
-    .wd     (mp_region_cfg_7_scramble_en_7_wd),
+    .re     (mp_region_cfg_shadowed_7_re),
+    .we     (mp_region_cfg_shadowed_7_we & region_cfg_regwen_7_qs),
+    .wd     (mp_region_cfg_shadowed_7_scramble_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3664,24 +4105,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].scramble_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[7].scramble_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_7_scramble_en_7_qs)
+    .qs     (mp_region_cfg_shadowed_7_scramble_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[7].scramble_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[7].scramble_en.err_storage)
   );
 
   //   F[ecc_en_7]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_7_ecc_en_7 (
+  ) u_mp_region_cfg_shadowed_7_ecc_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
-    .wd     (mp_region_cfg_7_ecc_en_7_wd),
+    .re     (mp_region_cfg_shadowed_7_re),
+    .we     (mp_region_cfg_shadowed_7_we & region_cfg_regwen_7_qs),
+    .wd     (mp_region_cfg_shadowed_7_ecc_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3689,24 +4136,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].ecc_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[7].ecc_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_7_ecc_en_7_qs)
+    .qs     (mp_region_cfg_shadowed_7_ecc_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[7].ecc_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[7].ecc_en.err_storage)
   );
 
   //   F[he_en_7]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg_7_he_en_7 (
+  ) u_mp_region_cfg_shadowed_7_he_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
-    .wd     (mp_region_cfg_7_he_en_7_wd),
+    .re     (mp_region_cfg_shadowed_7_re),
+    .we     (mp_region_cfg_shadowed_7_we & region_cfg_regwen_7_qs),
+    .wd     (mp_region_cfg_shadowed_7_he_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3714,24 +4167,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].he_en.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[7].he_en.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_7_he_en_7_qs)
+    .qs     (mp_region_cfg_shadowed_7_he_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[7].he_en.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[7].he_en.err_storage)
   );
 
   //   F[base_7]: 16:8
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg_7_base_7 (
+  ) u_mp_region_cfg_shadowed_7_base_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
-    .wd     (mp_region_cfg_7_base_7_wd),
+    .re     (mp_region_cfg_shadowed_7_re),
+    .we     (mp_region_cfg_shadowed_7_we & region_cfg_regwen_7_qs),
+    .wd     (mp_region_cfg_shadowed_7_base_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3739,24 +4198,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].base.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[7].base.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_7_base_7_qs)
+    .qs     (mp_region_cfg_shadowed_7_base_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[7].base.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[7].base.err_storage)
   );
 
   //   F[size_7]: 26:17
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg_7_size_7 (
+  ) u_mp_region_cfg_shadowed_7_size_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_region_cfg_7_we & region_cfg_regwen_7_qs),
-    .wd     (mp_region_cfg_7_size_7_wd),
+    .re     (mp_region_cfg_shadowed_7_re),
+    .we     (mp_region_cfg_shadowed_7_we & region_cfg_regwen_7_qs),
+    .wd     (mp_region_cfg_shadowed_7_size_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3764,26 +4229,32 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].size.q),
+    .q      (reg2hw.mp_region_cfg_shadowed[7].size.q),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_7_size_7_qs)
+    .qs     (mp_region_cfg_shadowed_7_size_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_region_cfg_shadowed[7].size.err_update),
+    .err_storage (reg2hw.mp_region_cfg_shadowed[7].size.err_storage)
   );
 
 
-  // R[default_region]: V(False)
+  // R[default_region_shadowed]: V(False)
   //   F[rd_en]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_default_region_rd_en (
+  ) u_default_region_shadowed_rd_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (default_region_we),
-    .wd     (default_region_rd_en_wd),
+    .re     (default_region_shadowed_re),
+    .we     (default_region_shadowed_we),
+    .wd     (default_region_shadowed_rd_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3791,24 +4262,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.rd_en.q),
+    .q      (reg2hw.default_region_shadowed.rd_en.q),
 
     // to register interface (read)
-    .qs     (default_region_rd_en_qs)
+    .qs     (default_region_shadowed_rd_en_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.default_region_shadowed.rd_en.err_update),
+    .err_storage (reg2hw.default_region_shadowed.rd_en.err_storage)
   );
 
   //   F[prog_en]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_default_region_prog_en (
+  ) u_default_region_shadowed_prog_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (default_region_we),
-    .wd     (default_region_prog_en_wd),
+    .re     (default_region_shadowed_re),
+    .we     (default_region_shadowed_we),
+    .wd     (default_region_shadowed_prog_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3816,24 +4293,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.prog_en.q),
+    .q      (reg2hw.default_region_shadowed.prog_en.q),
 
     // to register interface (read)
-    .qs     (default_region_prog_en_qs)
+    .qs     (default_region_shadowed_prog_en_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.default_region_shadowed.prog_en.err_update),
+    .err_storage (reg2hw.default_region_shadowed.prog_en.err_storage)
   );
 
   //   F[erase_en]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_default_region_erase_en (
+  ) u_default_region_shadowed_erase_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (default_region_we),
-    .wd     (default_region_erase_en_wd),
+    .re     (default_region_shadowed_re),
+    .we     (default_region_shadowed_we),
+    .wd     (default_region_shadowed_erase_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3841,24 +4324,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.erase_en.q),
+    .q      (reg2hw.default_region_shadowed.erase_en.q),
 
     // to register interface (read)
-    .qs     (default_region_erase_en_qs)
+    .qs     (default_region_shadowed_erase_en_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.default_region_shadowed.erase_en.err_update),
+    .err_storage (reg2hw.default_region_shadowed.erase_en.err_storage)
   );
 
   //   F[scramble_en]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_default_region_scramble_en (
+  ) u_default_region_shadowed_scramble_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (default_region_we),
-    .wd     (default_region_scramble_en_wd),
+    .re     (default_region_shadowed_re),
+    .we     (default_region_shadowed_we),
+    .wd     (default_region_shadowed_scramble_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3866,24 +4355,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.scramble_en.q),
+    .q      (reg2hw.default_region_shadowed.scramble_en.q),
 
     // to register interface (read)
-    .qs     (default_region_scramble_en_qs)
+    .qs     (default_region_shadowed_scramble_en_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.default_region_shadowed.scramble_en.err_update),
+    .err_storage (reg2hw.default_region_shadowed.scramble_en.err_storage)
   );
 
   //   F[ecc_en]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_default_region_ecc_en (
+  ) u_default_region_shadowed_ecc_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (default_region_we),
-    .wd     (default_region_ecc_en_wd),
+    .re     (default_region_shadowed_re),
+    .we     (default_region_shadowed_we),
+    .wd     (default_region_shadowed_ecc_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3891,24 +4386,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.ecc_en.q),
+    .q      (reg2hw.default_region_shadowed.ecc_en.q),
 
     // to register interface (read)
-    .qs     (default_region_ecc_en_qs)
+    .qs     (default_region_shadowed_ecc_en_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.default_region_shadowed.ecc_en.err_update),
+    .err_storage (reg2hw.default_region_shadowed.ecc_en.err_storage)
   );
 
   //   F[he_en]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_default_region_he_en (
+  ) u_default_region_shadowed_he_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (default_region_we),
-    .wd     (default_region_he_en_wd),
+    .re     (default_region_shadowed_re),
+    .we     (default_region_shadowed_we),
+    .wd     (default_region_shadowed_he_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3916,10 +4417,14 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.he_en.q),
+    .q      (reg2hw.default_region_shadowed.he_en.q),
 
     // to register interface (read)
-    .qs     (default_region_he_en_qs)
+    .qs     (default_region_shadowed_he_en_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.default_region_shadowed.he_en.err_update),
+    .err_storage (reg2hw.default_region_shadowed.he_en.err_storage)
   );
 
 
@@ -4193,20 +4698,22 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  // Subregister 0 of Multireg bank0_info0_page_cfg
-  // R[bank0_info0_page_cfg_0]: V(False)
+  // Subregister 0 of Multireg bank0_info0_page_cfg_shadowed
+  // R[bank0_info0_page_cfg_shadowed_0]: V(False)
   //   F[en_0]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_0_en_0 (
+  ) u_bank0_info0_page_cfg_shadowed_0_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
-    .wd     (bank0_info0_page_cfg_0_en_0_wd),
+    .re     (bank0_info0_page_cfg_shadowed_0_re),
+    .we     (bank0_info0_page_cfg_shadowed_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4214,24 +4721,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[0].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_0_en_0_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_0_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].en.err_storage)
   );
 
   //   F[rd_en_0]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_0_rd_en_0 (
+  ) u_bank0_info0_page_cfg_shadowed_0_rd_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
-    .wd     (bank0_info0_page_cfg_0_rd_en_0_wd),
+    .re     (bank0_info0_page_cfg_shadowed_0_re),
+    .we     (bank0_info0_page_cfg_shadowed_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4239,24 +4752,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].rd_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[0].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_0_rd_en_0_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_0_rd_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].rd_en.err_storage)
   );
 
   //   F[prog_en_0]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_0_prog_en_0 (
+  ) u_bank0_info0_page_cfg_shadowed_0_prog_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
-    .wd     (bank0_info0_page_cfg_0_prog_en_0_wd),
+    .re     (bank0_info0_page_cfg_shadowed_0_re),
+    .we     (bank0_info0_page_cfg_shadowed_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4264,24 +4783,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].prog_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[0].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_0_prog_en_0_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_0_prog_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].prog_en.err_storage)
   );
 
   //   F[erase_en_0]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_0_erase_en_0 (
+  ) u_bank0_info0_page_cfg_shadowed_0_erase_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
-    .wd     (bank0_info0_page_cfg_0_erase_en_0_wd),
+    .re     (bank0_info0_page_cfg_shadowed_0_re),
+    .we     (bank0_info0_page_cfg_shadowed_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4289,24 +4814,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].erase_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[0].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_0_erase_en_0_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_0_erase_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].erase_en.err_storage)
   );
 
   //   F[scramble_en_0]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_0_scramble_en_0 (
+  ) u_bank0_info0_page_cfg_shadowed_0_scramble_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
-    .wd     (bank0_info0_page_cfg_0_scramble_en_0_wd),
+    .re     (bank0_info0_page_cfg_shadowed_0_re),
+    .we     (bank0_info0_page_cfg_shadowed_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_0_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4314,24 +4845,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].scramble_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[0].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_0_scramble_en_0_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_0_scramble_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].scramble_en.err_storage)
   );
 
   //   F[ecc_en_0]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_0_ecc_en_0 (
+  ) u_bank0_info0_page_cfg_shadowed_0_ecc_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
-    .wd     (bank0_info0_page_cfg_0_ecc_en_0_wd),
+    .re     (bank0_info0_page_cfg_shadowed_0_re),
+    .we     (bank0_info0_page_cfg_shadowed_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_0_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4339,24 +4876,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].ecc_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[0].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_0_ecc_en_0_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_0_ecc_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].ecc_en.err_storage)
   );
 
   //   F[he_en_0]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_0_he_en_0 (
+  ) u_bank0_info0_page_cfg_shadowed_0_he_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_0_we & bank0_info0_regwen_0_qs),
-    .wd     (bank0_info0_page_cfg_0_he_en_0_wd),
+    .re     (bank0_info0_page_cfg_shadowed_0_re),
+    .we     (bank0_info0_page_cfg_shadowed_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_0_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4364,27 +4907,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].he_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[0].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_0_he_en_0_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_0_he_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[0].he_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[0].he_en.err_storage)
   );
 
 
-  // Subregister 1 of Multireg bank0_info0_page_cfg
-  // R[bank0_info0_page_cfg_1]: V(False)
+  // Subregister 1 of Multireg bank0_info0_page_cfg_shadowed
+  // R[bank0_info0_page_cfg_shadowed_1]: V(False)
   //   F[en_1]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_1_en_1 (
+  ) u_bank0_info0_page_cfg_shadowed_1_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
-    .wd     (bank0_info0_page_cfg_1_en_1_wd),
+    .re     (bank0_info0_page_cfg_shadowed_1_re),
+    .we     (bank0_info0_page_cfg_shadowed_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4392,24 +4941,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[1].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_1_en_1_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_1_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].en.err_storage)
   );
 
   //   F[rd_en_1]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_1_rd_en_1 (
+  ) u_bank0_info0_page_cfg_shadowed_1_rd_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
-    .wd     (bank0_info0_page_cfg_1_rd_en_1_wd),
+    .re     (bank0_info0_page_cfg_shadowed_1_re),
+    .we     (bank0_info0_page_cfg_shadowed_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4417,24 +4972,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].rd_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[1].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_1_rd_en_1_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_1_rd_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].rd_en.err_storage)
   );
 
   //   F[prog_en_1]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_1_prog_en_1 (
+  ) u_bank0_info0_page_cfg_shadowed_1_prog_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
-    .wd     (bank0_info0_page_cfg_1_prog_en_1_wd),
+    .re     (bank0_info0_page_cfg_shadowed_1_re),
+    .we     (bank0_info0_page_cfg_shadowed_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4442,24 +5003,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].prog_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[1].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_1_prog_en_1_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_1_prog_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].prog_en.err_storage)
   );
 
   //   F[erase_en_1]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_1_erase_en_1 (
+  ) u_bank0_info0_page_cfg_shadowed_1_erase_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
-    .wd     (bank0_info0_page_cfg_1_erase_en_1_wd),
+    .re     (bank0_info0_page_cfg_shadowed_1_re),
+    .we     (bank0_info0_page_cfg_shadowed_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4467,24 +5034,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].erase_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[1].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_1_erase_en_1_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_1_erase_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].erase_en.err_storage)
   );
 
   //   F[scramble_en_1]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_1_scramble_en_1 (
+  ) u_bank0_info0_page_cfg_shadowed_1_scramble_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
-    .wd     (bank0_info0_page_cfg_1_scramble_en_1_wd),
+    .re     (bank0_info0_page_cfg_shadowed_1_re),
+    .we     (bank0_info0_page_cfg_shadowed_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_1_scramble_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4492,24 +5065,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].scramble_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[1].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_1_scramble_en_1_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_1_scramble_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].scramble_en.err_storage)
   );
 
   //   F[ecc_en_1]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_1_ecc_en_1 (
+  ) u_bank0_info0_page_cfg_shadowed_1_ecc_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
-    .wd     (bank0_info0_page_cfg_1_ecc_en_1_wd),
+    .re     (bank0_info0_page_cfg_shadowed_1_re),
+    .we     (bank0_info0_page_cfg_shadowed_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_1_ecc_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4517,24 +5096,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].ecc_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[1].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_1_ecc_en_1_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_1_ecc_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].ecc_en.err_storage)
   );
 
   //   F[he_en_1]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_1_he_en_1 (
+  ) u_bank0_info0_page_cfg_shadowed_1_he_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_1_we & bank0_info0_regwen_1_qs),
-    .wd     (bank0_info0_page_cfg_1_he_en_1_wd),
+    .re     (bank0_info0_page_cfg_shadowed_1_re),
+    .we     (bank0_info0_page_cfg_shadowed_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_1_he_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4542,27 +5127,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].he_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[1].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_1_he_en_1_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_1_he_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[1].he_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[1].he_en.err_storage)
   );
 
 
-  // Subregister 2 of Multireg bank0_info0_page_cfg
-  // R[bank0_info0_page_cfg_2]: V(False)
+  // Subregister 2 of Multireg bank0_info0_page_cfg_shadowed
+  // R[bank0_info0_page_cfg_shadowed_2]: V(False)
   //   F[en_2]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_2_en_2 (
+  ) u_bank0_info0_page_cfg_shadowed_2_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
-    .wd     (bank0_info0_page_cfg_2_en_2_wd),
+    .re     (bank0_info0_page_cfg_shadowed_2_re),
+    .we     (bank0_info0_page_cfg_shadowed_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_2_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4570,24 +5161,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[2].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_2_en_2_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_2_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].en.err_storage)
   );
 
   //   F[rd_en_2]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_2_rd_en_2 (
+  ) u_bank0_info0_page_cfg_shadowed_2_rd_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
-    .wd     (bank0_info0_page_cfg_2_rd_en_2_wd),
+    .re     (bank0_info0_page_cfg_shadowed_2_re),
+    .we     (bank0_info0_page_cfg_shadowed_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_2_rd_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4595,24 +5192,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].rd_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[2].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_2_rd_en_2_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_2_rd_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].rd_en.err_storage)
   );
 
   //   F[prog_en_2]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_2_prog_en_2 (
+  ) u_bank0_info0_page_cfg_shadowed_2_prog_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
-    .wd     (bank0_info0_page_cfg_2_prog_en_2_wd),
+    .re     (bank0_info0_page_cfg_shadowed_2_re),
+    .we     (bank0_info0_page_cfg_shadowed_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_2_prog_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4620,24 +5223,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].prog_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[2].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_2_prog_en_2_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_2_prog_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].prog_en.err_storage)
   );
 
   //   F[erase_en_2]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_2_erase_en_2 (
+  ) u_bank0_info0_page_cfg_shadowed_2_erase_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
-    .wd     (bank0_info0_page_cfg_2_erase_en_2_wd),
+    .re     (bank0_info0_page_cfg_shadowed_2_re),
+    .we     (bank0_info0_page_cfg_shadowed_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_2_erase_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4645,24 +5254,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].erase_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[2].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_2_erase_en_2_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_2_erase_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].erase_en.err_storage)
   );
 
   //   F[scramble_en_2]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_2_scramble_en_2 (
+  ) u_bank0_info0_page_cfg_shadowed_2_scramble_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
-    .wd     (bank0_info0_page_cfg_2_scramble_en_2_wd),
+    .re     (bank0_info0_page_cfg_shadowed_2_re),
+    .we     (bank0_info0_page_cfg_shadowed_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_2_scramble_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4670,24 +5285,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].scramble_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[2].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_2_scramble_en_2_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_2_scramble_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].scramble_en.err_storage)
   );
 
   //   F[ecc_en_2]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_2_ecc_en_2 (
+  ) u_bank0_info0_page_cfg_shadowed_2_ecc_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
-    .wd     (bank0_info0_page_cfg_2_ecc_en_2_wd),
+    .re     (bank0_info0_page_cfg_shadowed_2_re),
+    .we     (bank0_info0_page_cfg_shadowed_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_2_ecc_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4695,24 +5316,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].ecc_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[2].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_2_ecc_en_2_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_2_ecc_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].ecc_en.err_storage)
   );
 
   //   F[he_en_2]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_2_he_en_2 (
+  ) u_bank0_info0_page_cfg_shadowed_2_he_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_2_we & bank0_info0_regwen_2_qs),
-    .wd     (bank0_info0_page_cfg_2_he_en_2_wd),
+    .re     (bank0_info0_page_cfg_shadowed_2_re),
+    .we     (bank0_info0_page_cfg_shadowed_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_2_he_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4720,27 +5347,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].he_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[2].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_2_he_en_2_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_2_he_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[2].he_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[2].he_en.err_storage)
   );
 
 
-  // Subregister 3 of Multireg bank0_info0_page_cfg
-  // R[bank0_info0_page_cfg_3]: V(False)
+  // Subregister 3 of Multireg bank0_info0_page_cfg_shadowed
+  // R[bank0_info0_page_cfg_shadowed_3]: V(False)
   //   F[en_3]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_3_en_3 (
+  ) u_bank0_info0_page_cfg_shadowed_3_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
-    .wd     (bank0_info0_page_cfg_3_en_3_wd),
+    .re     (bank0_info0_page_cfg_shadowed_3_re),
+    .we     (bank0_info0_page_cfg_shadowed_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_3_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4748,24 +5381,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[3].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_3_en_3_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_3_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].en.err_storage)
   );
 
   //   F[rd_en_3]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_3_rd_en_3 (
+  ) u_bank0_info0_page_cfg_shadowed_3_rd_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
-    .wd     (bank0_info0_page_cfg_3_rd_en_3_wd),
+    .re     (bank0_info0_page_cfg_shadowed_3_re),
+    .we     (bank0_info0_page_cfg_shadowed_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_3_rd_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4773,24 +5412,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].rd_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[3].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_3_rd_en_3_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_3_rd_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].rd_en.err_storage)
   );
 
   //   F[prog_en_3]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_3_prog_en_3 (
+  ) u_bank0_info0_page_cfg_shadowed_3_prog_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
-    .wd     (bank0_info0_page_cfg_3_prog_en_3_wd),
+    .re     (bank0_info0_page_cfg_shadowed_3_re),
+    .we     (bank0_info0_page_cfg_shadowed_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_3_prog_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4798,24 +5443,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].prog_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[3].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_3_prog_en_3_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_3_prog_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].prog_en.err_storage)
   );
 
   //   F[erase_en_3]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_3_erase_en_3 (
+  ) u_bank0_info0_page_cfg_shadowed_3_erase_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
-    .wd     (bank0_info0_page_cfg_3_erase_en_3_wd),
+    .re     (bank0_info0_page_cfg_shadowed_3_re),
+    .we     (bank0_info0_page_cfg_shadowed_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_3_erase_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4823,24 +5474,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].erase_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[3].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_3_erase_en_3_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_3_erase_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].erase_en.err_storage)
   );
 
   //   F[scramble_en_3]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_3_scramble_en_3 (
+  ) u_bank0_info0_page_cfg_shadowed_3_scramble_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
-    .wd     (bank0_info0_page_cfg_3_scramble_en_3_wd),
+    .re     (bank0_info0_page_cfg_shadowed_3_re),
+    .we     (bank0_info0_page_cfg_shadowed_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_3_scramble_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4848,24 +5505,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].scramble_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[3].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_3_scramble_en_3_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_3_scramble_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].scramble_en.err_storage)
   );
 
   //   F[ecc_en_3]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_3_ecc_en_3 (
+  ) u_bank0_info0_page_cfg_shadowed_3_ecc_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
-    .wd     (bank0_info0_page_cfg_3_ecc_en_3_wd),
+    .re     (bank0_info0_page_cfg_shadowed_3_re),
+    .we     (bank0_info0_page_cfg_shadowed_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_3_ecc_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4873,24 +5536,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].ecc_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[3].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_3_ecc_en_3_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_3_ecc_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].ecc_en.err_storage)
   );
 
   //   F[he_en_3]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_3_he_en_3 (
+  ) u_bank0_info0_page_cfg_shadowed_3_he_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_3_we & bank0_info0_regwen_3_qs),
-    .wd     (bank0_info0_page_cfg_3_he_en_3_wd),
+    .re     (bank0_info0_page_cfg_shadowed_3_re),
+    .we     (bank0_info0_page_cfg_shadowed_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_3_he_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4898,27 +5567,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].he_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[3].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_3_he_en_3_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_3_he_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[3].he_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[3].he_en.err_storage)
   );
 
 
-  // Subregister 4 of Multireg bank0_info0_page_cfg
-  // R[bank0_info0_page_cfg_4]: V(False)
+  // Subregister 4 of Multireg bank0_info0_page_cfg_shadowed
+  // R[bank0_info0_page_cfg_shadowed_4]: V(False)
   //   F[en_4]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_4_en_4 (
+  ) u_bank0_info0_page_cfg_shadowed_4_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
-    .wd     (bank0_info0_page_cfg_4_en_4_wd),
+    .re     (bank0_info0_page_cfg_shadowed_4_re),
+    .we     (bank0_info0_page_cfg_shadowed_4_we & bank0_info0_regwen_4_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_4_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4926,24 +5601,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[4].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_4_en_4_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_4_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].en.err_storage)
   );
 
   //   F[rd_en_4]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_4_rd_en_4 (
+  ) u_bank0_info0_page_cfg_shadowed_4_rd_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
-    .wd     (bank0_info0_page_cfg_4_rd_en_4_wd),
+    .re     (bank0_info0_page_cfg_shadowed_4_re),
+    .we     (bank0_info0_page_cfg_shadowed_4_we & bank0_info0_regwen_4_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_4_rd_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4951,24 +5632,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].rd_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[4].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_4_rd_en_4_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_4_rd_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].rd_en.err_storage)
   );
 
   //   F[prog_en_4]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_4_prog_en_4 (
+  ) u_bank0_info0_page_cfg_shadowed_4_prog_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
-    .wd     (bank0_info0_page_cfg_4_prog_en_4_wd),
+    .re     (bank0_info0_page_cfg_shadowed_4_re),
+    .we     (bank0_info0_page_cfg_shadowed_4_we & bank0_info0_regwen_4_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_4_prog_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -4976,24 +5663,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].prog_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[4].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_4_prog_en_4_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_4_prog_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].prog_en.err_storage)
   );
 
   //   F[erase_en_4]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_4_erase_en_4 (
+  ) u_bank0_info0_page_cfg_shadowed_4_erase_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
-    .wd     (bank0_info0_page_cfg_4_erase_en_4_wd),
+    .re     (bank0_info0_page_cfg_shadowed_4_re),
+    .we     (bank0_info0_page_cfg_shadowed_4_we & bank0_info0_regwen_4_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_4_erase_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5001,24 +5694,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].erase_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[4].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_4_erase_en_4_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_4_erase_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].erase_en.err_storage)
   );
 
   //   F[scramble_en_4]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_4_scramble_en_4 (
+  ) u_bank0_info0_page_cfg_shadowed_4_scramble_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
-    .wd     (bank0_info0_page_cfg_4_scramble_en_4_wd),
+    .re     (bank0_info0_page_cfg_shadowed_4_re),
+    .we     (bank0_info0_page_cfg_shadowed_4_we & bank0_info0_regwen_4_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_4_scramble_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5026,24 +5725,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].scramble_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[4].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_4_scramble_en_4_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_4_scramble_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].scramble_en.err_storage)
   );
 
   //   F[ecc_en_4]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_4_ecc_en_4 (
+  ) u_bank0_info0_page_cfg_shadowed_4_ecc_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
-    .wd     (bank0_info0_page_cfg_4_ecc_en_4_wd),
+    .re     (bank0_info0_page_cfg_shadowed_4_re),
+    .we     (bank0_info0_page_cfg_shadowed_4_we & bank0_info0_regwen_4_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_4_ecc_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5051,24 +5756,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].ecc_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[4].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_4_ecc_en_4_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_4_ecc_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].ecc_en.err_storage)
   );
 
   //   F[he_en_4]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_4_he_en_4 (
+  ) u_bank0_info0_page_cfg_shadowed_4_he_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_4_we & bank0_info0_regwen_4_qs),
-    .wd     (bank0_info0_page_cfg_4_he_en_4_wd),
+    .re     (bank0_info0_page_cfg_shadowed_4_re),
+    .we     (bank0_info0_page_cfg_shadowed_4_we & bank0_info0_regwen_4_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_4_he_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5076,27 +5787,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].he_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[4].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_4_he_en_4_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_4_he_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[4].he_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[4].he_en.err_storage)
   );
 
 
-  // Subregister 5 of Multireg bank0_info0_page_cfg
-  // R[bank0_info0_page_cfg_5]: V(False)
+  // Subregister 5 of Multireg bank0_info0_page_cfg_shadowed
+  // R[bank0_info0_page_cfg_shadowed_5]: V(False)
   //   F[en_5]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_5_en_5 (
+  ) u_bank0_info0_page_cfg_shadowed_5_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
-    .wd     (bank0_info0_page_cfg_5_en_5_wd),
+    .re     (bank0_info0_page_cfg_shadowed_5_re),
+    .we     (bank0_info0_page_cfg_shadowed_5_we & bank0_info0_regwen_5_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_5_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5104,24 +5821,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[5].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_5_en_5_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_5_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].en.err_storage)
   );
 
   //   F[rd_en_5]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_5_rd_en_5 (
+  ) u_bank0_info0_page_cfg_shadowed_5_rd_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
-    .wd     (bank0_info0_page_cfg_5_rd_en_5_wd),
+    .re     (bank0_info0_page_cfg_shadowed_5_re),
+    .we     (bank0_info0_page_cfg_shadowed_5_we & bank0_info0_regwen_5_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_5_rd_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5129,24 +5852,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].rd_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[5].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_5_rd_en_5_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_5_rd_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].rd_en.err_storage)
   );
 
   //   F[prog_en_5]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_5_prog_en_5 (
+  ) u_bank0_info0_page_cfg_shadowed_5_prog_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
-    .wd     (bank0_info0_page_cfg_5_prog_en_5_wd),
+    .re     (bank0_info0_page_cfg_shadowed_5_re),
+    .we     (bank0_info0_page_cfg_shadowed_5_we & bank0_info0_regwen_5_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_5_prog_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5154,24 +5883,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].prog_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[5].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_5_prog_en_5_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_5_prog_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].prog_en.err_storage)
   );
 
   //   F[erase_en_5]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_5_erase_en_5 (
+  ) u_bank0_info0_page_cfg_shadowed_5_erase_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
-    .wd     (bank0_info0_page_cfg_5_erase_en_5_wd),
+    .re     (bank0_info0_page_cfg_shadowed_5_re),
+    .we     (bank0_info0_page_cfg_shadowed_5_we & bank0_info0_regwen_5_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_5_erase_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5179,24 +5914,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].erase_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[5].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_5_erase_en_5_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_5_erase_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].erase_en.err_storage)
   );
 
   //   F[scramble_en_5]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_5_scramble_en_5 (
+  ) u_bank0_info0_page_cfg_shadowed_5_scramble_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
-    .wd     (bank0_info0_page_cfg_5_scramble_en_5_wd),
+    .re     (bank0_info0_page_cfg_shadowed_5_re),
+    .we     (bank0_info0_page_cfg_shadowed_5_we & bank0_info0_regwen_5_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_5_scramble_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5204,24 +5945,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].scramble_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[5].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_5_scramble_en_5_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_5_scramble_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].scramble_en.err_storage)
   );
 
   //   F[ecc_en_5]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_5_ecc_en_5 (
+  ) u_bank0_info0_page_cfg_shadowed_5_ecc_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
-    .wd     (bank0_info0_page_cfg_5_ecc_en_5_wd),
+    .re     (bank0_info0_page_cfg_shadowed_5_re),
+    .we     (bank0_info0_page_cfg_shadowed_5_we & bank0_info0_regwen_5_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_5_ecc_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5229,24 +5976,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].ecc_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[5].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_5_ecc_en_5_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_5_ecc_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].ecc_en.err_storage)
   );
 
   //   F[he_en_5]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_5_he_en_5 (
+  ) u_bank0_info0_page_cfg_shadowed_5_he_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_5_we & bank0_info0_regwen_5_qs),
-    .wd     (bank0_info0_page_cfg_5_he_en_5_wd),
+    .re     (bank0_info0_page_cfg_shadowed_5_re),
+    .we     (bank0_info0_page_cfg_shadowed_5_we & bank0_info0_regwen_5_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_5_he_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5254,27 +6007,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].he_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[5].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_5_he_en_5_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_5_he_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[5].he_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[5].he_en.err_storage)
   );
 
 
-  // Subregister 6 of Multireg bank0_info0_page_cfg
-  // R[bank0_info0_page_cfg_6]: V(False)
+  // Subregister 6 of Multireg bank0_info0_page_cfg_shadowed
+  // R[bank0_info0_page_cfg_shadowed_6]: V(False)
   //   F[en_6]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_6_en_6 (
+  ) u_bank0_info0_page_cfg_shadowed_6_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
-    .wd     (bank0_info0_page_cfg_6_en_6_wd),
+    .re     (bank0_info0_page_cfg_shadowed_6_re),
+    .we     (bank0_info0_page_cfg_shadowed_6_we & bank0_info0_regwen_6_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_6_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5282,24 +6041,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[6].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_6_en_6_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_6_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].en.err_storage)
   );
 
   //   F[rd_en_6]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_6_rd_en_6 (
+  ) u_bank0_info0_page_cfg_shadowed_6_rd_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
-    .wd     (bank0_info0_page_cfg_6_rd_en_6_wd),
+    .re     (bank0_info0_page_cfg_shadowed_6_re),
+    .we     (bank0_info0_page_cfg_shadowed_6_we & bank0_info0_regwen_6_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_6_rd_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5307,24 +6072,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].rd_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[6].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_6_rd_en_6_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_6_rd_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].rd_en.err_storage)
   );
 
   //   F[prog_en_6]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_6_prog_en_6 (
+  ) u_bank0_info0_page_cfg_shadowed_6_prog_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
-    .wd     (bank0_info0_page_cfg_6_prog_en_6_wd),
+    .re     (bank0_info0_page_cfg_shadowed_6_re),
+    .we     (bank0_info0_page_cfg_shadowed_6_we & bank0_info0_regwen_6_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_6_prog_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5332,24 +6103,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].prog_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[6].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_6_prog_en_6_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_6_prog_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].prog_en.err_storage)
   );
 
   //   F[erase_en_6]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_6_erase_en_6 (
+  ) u_bank0_info0_page_cfg_shadowed_6_erase_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
-    .wd     (bank0_info0_page_cfg_6_erase_en_6_wd),
+    .re     (bank0_info0_page_cfg_shadowed_6_re),
+    .we     (bank0_info0_page_cfg_shadowed_6_we & bank0_info0_regwen_6_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_6_erase_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5357,24 +6134,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].erase_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[6].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_6_erase_en_6_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_6_erase_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].erase_en.err_storage)
   );
 
   //   F[scramble_en_6]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_6_scramble_en_6 (
+  ) u_bank0_info0_page_cfg_shadowed_6_scramble_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
-    .wd     (bank0_info0_page_cfg_6_scramble_en_6_wd),
+    .re     (bank0_info0_page_cfg_shadowed_6_re),
+    .we     (bank0_info0_page_cfg_shadowed_6_we & bank0_info0_regwen_6_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_6_scramble_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5382,24 +6165,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].scramble_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[6].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_6_scramble_en_6_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_6_scramble_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].scramble_en.err_storage)
   );
 
   //   F[ecc_en_6]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_6_ecc_en_6 (
+  ) u_bank0_info0_page_cfg_shadowed_6_ecc_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
-    .wd     (bank0_info0_page_cfg_6_ecc_en_6_wd),
+    .re     (bank0_info0_page_cfg_shadowed_6_re),
+    .we     (bank0_info0_page_cfg_shadowed_6_we & bank0_info0_regwen_6_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_6_ecc_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5407,24 +6196,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].ecc_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[6].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_6_ecc_en_6_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_6_ecc_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].ecc_en.err_storage)
   );
 
   //   F[he_en_6]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_6_he_en_6 (
+  ) u_bank0_info0_page_cfg_shadowed_6_he_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_6_we & bank0_info0_regwen_6_qs),
-    .wd     (bank0_info0_page_cfg_6_he_en_6_wd),
+    .re     (bank0_info0_page_cfg_shadowed_6_re),
+    .we     (bank0_info0_page_cfg_shadowed_6_we & bank0_info0_regwen_6_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_6_he_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5432,27 +6227,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].he_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[6].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_6_he_en_6_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_6_he_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[6].he_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[6].he_en.err_storage)
   );
 
 
-  // Subregister 7 of Multireg bank0_info0_page_cfg
-  // R[bank0_info0_page_cfg_7]: V(False)
+  // Subregister 7 of Multireg bank0_info0_page_cfg_shadowed
+  // R[bank0_info0_page_cfg_shadowed_7]: V(False)
   //   F[en_7]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_7_en_7 (
+  ) u_bank0_info0_page_cfg_shadowed_7_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
-    .wd     (bank0_info0_page_cfg_7_en_7_wd),
+    .re     (bank0_info0_page_cfg_shadowed_7_re),
+    .we     (bank0_info0_page_cfg_shadowed_7_we & bank0_info0_regwen_7_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_7_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5460,24 +6261,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[7].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_7_en_7_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_7_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].en.err_storage)
   );
 
   //   F[rd_en_7]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_7_rd_en_7 (
+  ) u_bank0_info0_page_cfg_shadowed_7_rd_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
-    .wd     (bank0_info0_page_cfg_7_rd_en_7_wd),
+    .re     (bank0_info0_page_cfg_shadowed_7_re),
+    .we     (bank0_info0_page_cfg_shadowed_7_we & bank0_info0_regwen_7_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_7_rd_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5485,24 +6292,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].rd_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[7].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_7_rd_en_7_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_7_rd_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].rd_en.err_storage)
   );
 
   //   F[prog_en_7]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_7_prog_en_7 (
+  ) u_bank0_info0_page_cfg_shadowed_7_prog_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
-    .wd     (bank0_info0_page_cfg_7_prog_en_7_wd),
+    .re     (bank0_info0_page_cfg_shadowed_7_re),
+    .we     (bank0_info0_page_cfg_shadowed_7_we & bank0_info0_regwen_7_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_7_prog_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5510,24 +6323,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].prog_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[7].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_7_prog_en_7_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_7_prog_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].prog_en.err_storage)
   );
 
   //   F[erase_en_7]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_7_erase_en_7 (
+  ) u_bank0_info0_page_cfg_shadowed_7_erase_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
-    .wd     (bank0_info0_page_cfg_7_erase_en_7_wd),
+    .re     (bank0_info0_page_cfg_shadowed_7_re),
+    .we     (bank0_info0_page_cfg_shadowed_7_we & bank0_info0_regwen_7_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_7_erase_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5535,24 +6354,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].erase_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[7].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_7_erase_en_7_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_7_erase_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].erase_en.err_storage)
   );
 
   //   F[scramble_en_7]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_7_scramble_en_7 (
+  ) u_bank0_info0_page_cfg_shadowed_7_scramble_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
-    .wd     (bank0_info0_page_cfg_7_scramble_en_7_wd),
+    .re     (bank0_info0_page_cfg_shadowed_7_re),
+    .we     (bank0_info0_page_cfg_shadowed_7_we & bank0_info0_regwen_7_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_7_scramble_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5560,24 +6385,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].scramble_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[7].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_7_scramble_en_7_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_7_scramble_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].scramble_en.err_storage)
   );
 
   //   F[ecc_en_7]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_7_ecc_en_7 (
+  ) u_bank0_info0_page_cfg_shadowed_7_ecc_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
-    .wd     (bank0_info0_page_cfg_7_ecc_en_7_wd),
+    .re     (bank0_info0_page_cfg_shadowed_7_re),
+    .we     (bank0_info0_page_cfg_shadowed_7_we & bank0_info0_regwen_7_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_7_ecc_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5585,24 +6416,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].ecc_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[7].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_7_ecc_en_7_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_7_ecc_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].ecc_en.err_storage)
   );
 
   //   F[he_en_7]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_7_he_en_7 (
+  ) u_bank0_info0_page_cfg_shadowed_7_he_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_7_we & bank0_info0_regwen_7_qs),
-    .wd     (bank0_info0_page_cfg_7_he_en_7_wd),
+    .re     (bank0_info0_page_cfg_shadowed_7_re),
+    .we     (bank0_info0_page_cfg_shadowed_7_we & bank0_info0_regwen_7_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_7_he_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5610,27 +6447,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].he_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[7].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_7_he_en_7_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_7_he_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[7].he_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[7].he_en.err_storage)
   );
 
 
-  // Subregister 8 of Multireg bank0_info0_page_cfg
-  // R[bank0_info0_page_cfg_8]: V(False)
+  // Subregister 8 of Multireg bank0_info0_page_cfg_shadowed
+  // R[bank0_info0_page_cfg_shadowed_8]: V(False)
   //   F[en_8]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_8_en_8 (
+  ) u_bank0_info0_page_cfg_shadowed_8_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
-    .wd     (bank0_info0_page_cfg_8_en_8_wd),
+    .re     (bank0_info0_page_cfg_shadowed_8_re),
+    .we     (bank0_info0_page_cfg_shadowed_8_we & bank0_info0_regwen_8_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_8_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5638,24 +6481,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[8].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_8_en_8_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_8_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].en.err_storage)
   );
 
   //   F[rd_en_8]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_8_rd_en_8 (
+  ) u_bank0_info0_page_cfg_shadowed_8_rd_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
-    .wd     (bank0_info0_page_cfg_8_rd_en_8_wd),
+    .re     (bank0_info0_page_cfg_shadowed_8_re),
+    .we     (bank0_info0_page_cfg_shadowed_8_we & bank0_info0_regwen_8_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_8_rd_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5663,24 +6512,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].rd_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[8].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_8_rd_en_8_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_8_rd_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].rd_en.err_storage)
   );
 
   //   F[prog_en_8]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_8_prog_en_8 (
+  ) u_bank0_info0_page_cfg_shadowed_8_prog_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
-    .wd     (bank0_info0_page_cfg_8_prog_en_8_wd),
+    .re     (bank0_info0_page_cfg_shadowed_8_re),
+    .we     (bank0_info0_page_cfg_shadowed_8_we & bank0_info0_regwen_8_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_8_prog_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5688,24 +6543,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].prog_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[8].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_8_prog_en_8_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_8_prog_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].prog_en.err_storage)
   );
 
   //   F[erase_en_8]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_8_erase_en_8 (
+  ) u_bank0_info0_page_cfg_shadowed_8_erase_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
-    .wd     (bank0_info0_page_cfg_8_erase_en_8_wd),
+    .re     (bank0_info0_page_cfg_shadowed_8_re),
+    .we     (bank0_info0_page_cfg_shadowed_8_we & bank0_info0_regwen_8_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_8_erase_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5713,24 +6574,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].erase_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[8].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_8_erase_en_8_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_8_erase_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].erase_en.err_storage)
   );
 
   //   F[scramble_en_8]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_8_scramble_en_8 (
+  ) u_bank0_info0_page_cfg_shadowed_8_scramble_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
-    .wd     (bank0_info0_page_cfg_8_scramble_en_8_wd),
+    .re     (bank0_info0_page_cfg_shadowed_8_re),
+    .we     (bank0_info0_page_cfg_shadowed_8_we & bank0_info0_regwen_8_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_8_scramble_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5738,24 +6605,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].scramble_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[8].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_8_scramble_en_8_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_8_scramble_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].scramble_en.err_storage)
   );
 
   //   F[ecc_en_8]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_8_ecc_en_8 (
+  ) u_bank0_info0_page_cfg_shadowed_8_ecc_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
-    .wd     (bank0_info0_page_cfg_8_ecc_en_8_wd),
+    .re     (bank0_info0_page_cfg_shadowed_8_re),
+    .we     (bank0_info0_page_cfg_shadowed_8_we & bank0_info0_regwen_8_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_8_ecc_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5763,24 +6636,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].ecc_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[8].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_8_ecc_en_8_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_8_ecc_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].ecc_en.err_storage)
   );
 
   //   F[he_en_8]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_8_he_en_8 (
+  ) u_bank0_info0_page_cfg_shadowed_8_he_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_8_we & bank0_info0_regwen_8_qs),
-    .wd     (bank0_info0_page_cfg_8_he_en_8_wd),
+    .re     (bank0_info0_page_cfg_shadowed_8_re),
+    .we     (bank0_info0_page_cfg_shadowed_8_we & bank0_info0_regwen_8_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_8_he_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5788,27 +6667,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].he_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[8].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_8_he_en_8_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_8_he_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[8].he_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[8].he_en.err_storage)
   );
 
 
-  // Subregister 9 of Multireg bank0_info0_page_cfg
-  // R[bank0_info0_page_cfg_9]: V(False)
+  // Subregister 9 of Multireg bank0_info0_page_cfg_shadowed
+  // R[bank0_info0_page_cfg_shadowed_9]: V(False)
   //   F[en_9]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_9_en_9 (
+  ) u_bank0_info0_page_cfg_shadowed_9_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
-    .wd     (bank0_info0_page_cfg_9_en_9_wd),
+    .re     (bank0_info0_page_cfg_shadowed_9_re),
+    .we     (bank0_info0_page_cfg_shadowed_9_we & bank0_info0_regwen_9_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_9_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5816,24 +6701,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[9].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_9_en_9_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_9_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].en.err_storage)
   );
 
   //   F[rd_en_9]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_9_rd_en_9 (
+  ) u_bank0_info0_page_cfg_shadowed_9_rd_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
-    .wd     (bank0_info0_page_cfg_9_rd_en_9_wd),
+    .re     (bank0_info0_page_cfg_shadowed_9_re),
+    .we     (bank0_info0_page_cfg_shadowed_9_we & bank0_info0_regwen_9_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_9_rd_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5841,24 +6732,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].rd_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[9].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_9_rd_en_9_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_9_rd_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].rd_en.err_storage)
   );
 
   //   F[prog_en_9]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_9_prog_en_9 (
+  ) u_bank0_info0_page_cfg_shadowed_9_prog_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
-    .wd     (bank0_info0_page_cfg_9_prog_en_9_wd),
+    .re     (bank0_info0_page_cfg_shadowed_9_re),
+    .we     (bank0_info0_page_cfg_shadowed_9_we & bank0_info0_regwen_9_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_9_prog_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5866,24 +6763,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].prog_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[9].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_9_prog_en_9_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_9_prog_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].prog_en.err_storage)
   );
 
   //   F[erase_en_9]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_9_erase_en_9 (
+  ) u_bank0_info0_page_cfg_shadowed_9_erase_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
-    .wd     (bank0_info0_page_cfg_9_erase_en_9_wd),
+    .re     (bank0_info0_page_cfg_shadowed_9_re),
+    .we     (bank0_info0_page_cfg_shadowed_9_we & bank0_info0_regwen_9_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_9_erase_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5891,24 +6794,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].erase_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[9].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_9_erase_en_9_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_9_erase_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].erase_en.err_storage)
   );
 
   //   F[scramble_en_9]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_9_scramble_en_9 (
+  ) u_bank0_info0_page_cfg_shadowed_9_scramble_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
-    .wd     (bank0_info0_page_cfg_9_scramble_en_9_wd),
+    .re     (bank0_info0_page_cfg_shadowed_9_re),
+    .we     (bank0_info0_page_cfg_shadowed_9_we & bank0_info0_regwen_9_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_9_scramble_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5916,24 +6825,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].scramble_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[9].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_9_scramble_en_9_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_9_scramble_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].scramble_en.err_storage)
   );
 
   //   F[ecc_en_9]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_9_ecc_en_9 (
+  ) u_bank0_info0_page_cfg_shadowed_9_ecc_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
-    .wd     (bank0_info0_page_cfg_9_ecc_en_9_wd),
+    .re     (bank0_info0_page_cfg_shadowed_9_re),
+    .we     (bank0_info0_page_cfg_shadowed_9_we & bank0_info0_regwen_9_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_9_ecc_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5941,24 +6856,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].ecc_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[9].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_9_ecc_en_9_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_9_ecc_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].ecc_en.err_storage)
   );
 
   //   F[he_en_9]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info0_page_cfg_9_he_en_9 (
+  ) u_bank0_info0_page_cfg_shadowed_9_he_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info0_page_cfg_9_we & bank0_info0_regwen_9_qs),
-    .wd     (bank0_info0_page_cfg_9_he_en_9_wd),
+    .re     (bank0_info0_page_cfg_shadowed_9_re),
+    .we     (bank0_info0_page_cfg_shadowed_9_we & bank0_info0_regwen_9_qs),
+    .wd     (bank0_info0_page_cfg_shadowed_9_he_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -5966,10 +6887,14 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].he_en.q),
+    .q      (reg2hw.bank0_info0_page_cfg_shadowed[9].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info0_page_cfg_9_he_en_9_qs)
+    .qs     (bank0_info0_page_cfg_shadowed_9_he_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info0_page_cfg_shadowed[9].he_en.err_update),
+    .err_storage (reg2hw.bank0_info0_page_cfg_shadowed[9].he_en.err_storage)
   );
 
 
@@ -6000,20 +6925,22 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  // Subregister 0 of Multireg bank0_info1_page_cfg
-  // R[bank0_info1_page_cfg]: V(False)
+  // Subregister 0 of Multireg bank0_info1_page_cfg_shadowed
+  // R[bank0_info1_page_cfg_shadowed]: V(False)
   //   F[en_0]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info1_page_cfg_en_0 (
+  ) u_bank0_info1_page_cfg_shadowed_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
-    .wd     (bank0_info1_page_cfg_en_0_wd),
+    .re     (bank0_info1_page_cfg_shadowed_re),
+    .we     (bank0_info1_page_cfg_shadowed_we & bank0_info1_regwen_qs),
+    .wd     (bank0_info1_page_cfg_shadowed_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6021,24 +6948,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].en.q),
+    .q      (reg2hw.bank0_info1_page_cfg_shadowed[0].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info1_page_cfg_en_0_qs)
+    .qs     (bank0_info1_page_cfg_shadowed_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].en.err_update),
+    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].en.err_storage)
   );
 
   //   F[rd_en_0]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info1_page_cfg_rd_en_0 (
+  ) u_bank0_info1_page_cfg_shadowed_rd_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
-    .wd     (bank0_info1_page_cfg_rd_en_0_wd),
+    .re     (bank0_info1_page_cfg_shadowed_re),
+    .we     (bank0_info1_page_cfg_shadowed_we & bank0_info1_regwen_qs),
+    .wd     (bank0_info1_page_cfg_shadowed_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6046,24 +6979,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].rd_en.q),
+    .q      (reg2hw.bank0_info1_page_cfg_shadowed[0].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info1_page_cfg_rd_en_0_qs)
+    .qs     (bank0_info1_page_cfg_shadowed_rd_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].rd_en.err_storage)
   );
 
   //   F[prog_en_0]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info1_page_cfg_prog_en_0 (
+  ) u_bank0_info1_page_cfg_shadowed_prog_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
-    .wd     (bank0_info1_page_cfg_prog_en_0_wd),
+    .re     (bank0_info1_page_cfg_shadowed_re),
+    .we     (bank0_info1_page_cfg_shadowed_we & bank0_info1_regwen_qs),
+    .wd     (bank0_info1_page_cfg_shadowed_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6071,24 +7010,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].prog_en.q),
+    .q      (reg2hw.bank0_info1_page_cfg_shadowed[0].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info1_page_cfg_prog_en_0_qs)
+    .qs     (bank0_info1_page_cfg_shadowed_prog_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].prog_en.err_storage)
   );
 
   //   F[erase_en_0]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info1_page_cfg_erase_en_0 (
+  ) u_bank0_info1_page_cfg_shadowed_erase_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
-    .wd     (bank0_info1_page_cfg_erase_en_0_wd),
+    .re     (bank0_info1_page_cfg_shadowed_re),
+    .we     (bank0_info1_page_cfg_shadowed_we & bank0_info1_regwen_qs),
+    .wd     (bank0_info1_page_cfg_shadowed_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6096,24 +7041,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].erase_en.q),
+    .q      (reg2hw.bank0_info1_page_cfg_shadowed[0].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info1_page_cfg_erase_en_0_qs)
+    .qs     (bank0_info1_page_cfg_shadowed_erase_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].erase_en.err_storage)
   );
 
   //   F[scramble_en_0]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info1_page_cfg_scramble_en_0 (
+  ) u_bank0_info1_page_cfg_shadowed_scramble_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
-    .wd     (bank0_info1_page_cfg_scramble_en_0_wd),
+    .re     (bank0_info1_page_cfg_shadowed_re),
+    .we     (bank0_info1_page_cfg_shadowed_we & bank0_info1_regwen_qs),
+    .wd     (bank0_info1_page_cfg_shadowed_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6121,24 +7072,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].scramble_en.q),
+    .q      (reg2hw.bank0_info1_page_cfg_shadowed[0].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info1_page_cfg_scramble_en_0_qs)
+    .qs     (bank0_info1_page_cfg_shadowed_scramble_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].scramble_en.err_storage)
   );
 
   //   F[ecc_en_0]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info1_page_cfg_ecc_en_0 (
+  ) u_bank0_info1_page_cfg_shadowed_ecc_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
-    .wd     (bank0_info1_page_cfg_ecc_en_0_wd),
+    .re     (bank0_info1_page_cfg_shadowed_re),
+    .we     (bank0_info1_page_cfg_shadowed_we & bank0_info1_regwen_qs),
+    .wd     (bank0_info1_page_cfg_shadowed_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6146,24 +7103,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].ecc_en.q),
+    .q      (reg2hw.bank0_info1_page_cfg_shadowed[0].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info1_page_cfg_ecc_en_0_qs)
+    .qs     (bank0_info1_page_cfg_shadowed_ecc_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].ecc_en.err_storage)
   );
 
   //   F[he_en_0]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info1_page_cfg_he_en_0 (
+  ) u_bank0_info1_page_cfg_shadowed_he_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info1_page_cfg_we & bank0_info1_regwen_qs),
-    .wd     (bank0_info1_page_cfg_he_en_0_wd),
+    .re     (bank0_info1_page_cfg_shadowed_re),
+    .we     (bank0_info1_page_cfg_shadowed_we & bank0_info1_regwen_qs),
+    .wd     (bank0_info1_page_cfg_shadowed_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6171,10 +7134,14 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].he_en.q),
+    .q      (reg2hw.bank0_info1_page_cfg_shadowed[0].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info1_page_cfg_he_en_0_qs)
+    .qs     (bank0_info1_page_cfg_shadowed_he_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info1_page_cfg_shadowed[0].he_en.err_update),
+    .err_storage (reg2hw.bank0_info1_page_cfg_shadowed[0].he_en.err_storage)
   );
 
 
@@ -6232,20 +7199,22 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  // Subregister 0 of Multireg bank0_info2_page_cfg
-  // R[bank0_info2_page_cfg_0]: V(False)
+  // Subregister 0 of Multireg bank0_info2_page_cfg_shadowed
+  // R[bank0_info2_page_cfg_shadowed_0]: V(False)
   //   F[en_0]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_0_en_0 (
+  ) u_bank0_info2_page_cfg_shadowed_0_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
-    .wd     (bank0_info2_page_cfg_0_en_0_wd),
+    .re     (bank0_info2_page_cfg_shadowed_0_re),
+    .we     (bank0_info2_page_cfg_shadowed_0_we & bank0_info2_regwen_0_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6253,24 +7222,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[0].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_0_en_0_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_0_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].en.err_storage)
   );
 
   //   F[rd_en_0]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_0_rd_en_0 (
+  ) u_bank0_info2_page_cfg_shadowed_0_rd_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
-    .wd     (bank0_info2_page_cfg_0_rd_en_0_wd),
+    .re     (bank0_info2_page_cfg_shadowed_0_re),
+    .we     (bank0_info2_page_cfg_shadowed_0_we & bank0_info2_regwen_0_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6278,24 +7253,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].rd_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[0].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_0_rd_en_0_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_0_rd_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].rd_en.err_storage)
   );
 
   //   F[prog_en_0]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_0_prog_en_0 (
+  ) u_bank0_info2_page_cfg_shadowed_0_prog_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
-    .wd     (bank0_info2_page_cfg_0_prog_en_0_wd),
+    .re     (bank0_info2_page_cfg_shadowed_0_re),
+    .we     (bank0_info2_page_cfg_shadowed_0_we & bank0_info2_regwen_0_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6303,24 +7284,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].prog_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[0].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_0_prog_en_0_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_0_prog_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].prog_en.err_storage)
   );
 
   //   F[erase_en_0]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_0_erase_en_0 (
+  ) u_bank0_info2_page_cfg_shadowed_0_erase_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
-    .wd     (bank0_info2_page_cfg_0_erase_en_0_wd),
+    .re     (bank0_info2_page_cfg_shadowed_0_re),
+    .we     (bank0_info2_page_cfg_shadowed_0_we & bank0_info2_regwen_0_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6328,24 +7315,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].erase_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[0].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_0_erase_en_0_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_0_erase_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].erase_en.err_storage)
   );
 
   //   F[scramble_en_0]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_0_scramble_en_0 (
+  ) u_bank0_info2_page_cfg_shadowed_0_scramble_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
-    .wd     (bank0_info2_page_cfg_0_scramble_en_0_wd),
+    .re     (bank0_info2_page_cfg_shadowed_0_re),
+    .we     (bank0_info2_page_cfg_shadowed_0_we & bank0_info2_regwen_0_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_0_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6353,24 +7346,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].scramble_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[0].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_0_scramble_en_0_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_0_scramble_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].scramble_en.err_storage)
   );
 
   //   F[ecc_en_0]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_0_ecc_en_0 (
+  ) u_bank0_info2_page_cfg_shadowed_0_ecc_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
-    .wd     (bank0_info2_page_cfg_0_ecc_en_0_wd),
+    .re     (bank0_info2_page_cfg_shadowed_0_re),
+    .we     (bank0_info2_page_cfg_shadowed_0_we & bank0_info2_regwen_0_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_0_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6378,24 +7377,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].ecc_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[0].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_0_ecc_en_0_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_0_ecc_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].ecc_en.err_storage)
   );
 
   //   F[he_en_0]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_0_he_en_0 (
+  ) u_bank0_info2_page_cfg_shadowed_0_he_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_0_we & bank0_info2_regwen_0_qs),
-    .wd     (bank0_info2_page_cfg_0_he_en_0_wd),
+    .re     (bank0_info2_page_cfg_shadowed_0_re),
+    .we     (bank0_info2_page_cfg_shadowed_0_we & bank0_info2_regwen_0_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_0_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6403,27 +7408,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].he_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[0].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_0_he_en_0_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_0_he_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[0].he_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[0].he_en.err_storage)
   );
 
 
-  // Subregister 1 of Multireg bank0_info2_page_cfg
-  // R[bank0_info2_page_cfg_1]: V(False)
+  // Subregister 1 of Multireg bank0_info2_page_cfg_shadowed
+  // R[bank0_info2_page_cfg_shadowed_1]: V(False)
   //   F[en_1]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_1_en_1 (
+  ) u_bank0_info2_page_cfg_shadowed_1_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
-    .wd     (bank0_info2_page_cfg_1_en_1_wd),
+    .re     (bank0_info2_page_cfg_shadowed_1_re),
+    .we     (bank0_info2_page_cfg_shadowed_1_we & bank0_info2_regwen_1_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6431,24 +7442,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[1].en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_1_en_1_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_1_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].en.err_storage)
   );
 
   //   F[rd_en_1]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_1_rd_en_1 (
+  ) u_bank0_info2_page_cfg_shadowed_1_rd_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
-    .wd     (bank0_info2_page_cfg_1_rd_en_1_wd),
+    .re     (bank0_info2_page_cfg_shadowed_1_re),
+    .we     (bank0_info2_page_cfg_shadowed_1_we & bank0_info2_regwen_1_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6456,24 +7473,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].rd_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[1].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_1_rd_en_1_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_1_rd_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].rd_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].rd_en.err_storage)
   );
 
   //   F[prog_en_1]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_1_prog_en_1 (
+  ) u_bank0_info2_page_cfg_shadowed_1_prog_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
-    .wd     (bank0_info2_page_cfg_1_prog_en_1_wd),
+    .re     (bank0_info2_page_cfg_shadowed_1_re),
+    .we     (bank0_info2_page_cfg_shadowed_1_we & bank0_info2_regwen_1_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6481,24 +7504,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].prog_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[1].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_1_prog_en_1_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_1_prog_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].prog_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].prog_en.err_storage)
   );
 
   //   F[erase_en_1]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_1_erase_en_1 (
+  ) u_bank0_info2_page_cfg_shadowed_1_erase_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
-    .wd     (bank0_info2_page_cfg_1_erase_en_1_wd),
+    .re     (bank0_info2_page_cfg_shadowed_1_re),
+    .we     (bank0_info2_page_cfg_shadowed_1_we & bank0_info2_regwen_1_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6506,24 +7535,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].erase_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[1].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_1_erase_en_1_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_1_erase_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].erase_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].erase_en.err_storage)
   );
 
   //   F[scramble_en_1]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_1_scramble_en_1 (
+  ) u_bank0_info2_page_cfg_shadowed_1_scramble_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
-    .wd     (bank0_info2_page_cfg_1_scramble_en_1_wd),
+    .re     (bank0_info2_page_cfg_shadowed_1_re),
+    .we     (bank0_info2_page_cfg_shadowed_1_we & bank0_info2_regwen_1_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_1_scramble_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6531,24 +7566,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].scramble_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[1].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_1_scramble_en_1_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_1_scramble_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].scramble_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].scramble_en.err_storage)
   );
 
   //   F[ecc_en_1]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_1_ecc_en_1 (
+  ) u_bank0_info2_page_cfg_shadowed_1_ecc_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
-    .wd     (bank0_info2_page_cfg_1_ecc_en_1_wd),
+    .re     (bank0_info2_page_cfg_shadowed_1_re),
+    .we     (bank0_info2_page_cfg_shadowed_1_we & bank0_info2_regwen_1_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_1_ecc_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6556,24 +7597,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].ecc_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[1].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_1_ecc_en_1_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_1_ecc_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].ecc_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].ecc_en.err_storage)
   );
 
   //   F[he_en_1]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank0_info2_page_cfg_1_he_en_1 (
+  ) u_bank0_info2_page_cfg_shadowed_1_he_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank0_info2_page_cfg_1_we & bank0_info2_regwen_1_qs),
-    .wd     (bank0_info2_page_cfg_1_he_en_1_wd),
+    .re     (bank0_info2_page_cfg_shadowed_1_re),
+    .we     (bank0_info2_page_cfg_shadowed_1_we & bank0_info2_regwen_1_qs),
+    .wd     (bank0_info2_page_cfg_shadowed_1_he_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6581,10 +7628,14 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].he_en.q),
+    .q      (reg2hw.bank0_info2_page_cfg_shadowed[1].he_en.q),
 
     // to register interface (read)
-    .qs     (bank0_info2_page_cfg_1_he_en_1_qs)
+    .qs     (bank0_info2_page_cfg_shadowed_1_he_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank0_info2_page_cfg_shadowed[1].he_en.err_update),
+    .err_storage (reg2hw.bank0_info2_page_cfg_shadowed[1].he_en.err_storage)
   );
 
 
@@ -6858,20 +7909,22 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  // Subregister 0 of Multireg bank1_info0_page_cfg
-  // R[bank1_info0_page_cfg_0]: V(False)
+  // Subregister 0 of Multireg bank1_info0_page_cfg_shadowed
+  // R[bank1_info0_page_cfg_shadowed_0]: V(False)
   //   F[en_0]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_0_en_0 (
+  ) u_bank1_info0_page_cfg_shadowed_0_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
-    .wd     (bank1_info0_page_cfg_0_en_0_wd),
+    .re     (bank1_info0_page_cfg_shadowed_0_re),
+    .we     (bank1_info0_page_cfg_shadowed_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6879,24 +7932,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[0].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_0_en_0_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_0_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].en.err_storage)
   );
 
   //   F[rd_en_0]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_0_rd_en_0 (
+  ) u_bank1_info0_page_cfg_shadowed_0_rd_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
-    .wd     (bank1_info0_page_cfg_0_rd_en_0_wd),
+    .re     (bank1_info0_page_cfg_shadowed_0_re),
+    .we     (bank1_info0_page_cfg_shadowed_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6904,24 +7963,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].rd_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[0].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_0_rd_en_0_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_0_rd_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].rd_en.err_storage)
   );
 
   //   F[prog_en_0]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_0_prog_en_0 (
+  ) u_bank1_info0_page_cfg_shadowed_0_prog_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
-    .wd     (bank1_info0_page_cfg_0_prog_en_0_wd),
+    .re     (bank1_info0_page_cfg_shadowed_0_re),
+    .we     (bank1_info0_page_cfg_shadowed_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6929,24 +7994,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].prog_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[0].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_0_prog_en_0_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_0_prog_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].prog_en.err_storage)
   );
 
   //   F[erase_en_0]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_0_erase_en_0 (
+  ) u_bank1_info0_page_cfg_shadowed_0_erase_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
-    .wd     (bank1_info0_page_cfg_0_erase_en_0_wd),
+    .re     (bank1_info0_page_cfg_shadowed_0_re),
+    .we     (bank1_info0_page_cfg_shadowed_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6954,24 +8025,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].erase_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[0].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_0_erase_en_0_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_0_erase_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].erase_en.err_storage)
   );
 
   //   F[scramble_en_0]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_0_scramble_en_0 (
+  ) u_bank1_info0_page_cfg_shadowed_0_scramble_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
-    .wd     (bank1_info0_page_cfg_0_scramble_en_0_wd),
+    .re     (bank1_info0_page_cfg_shadowed_0_re),
+    .we     (bank1_info0_page_cfg_shadowed_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_0_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -6979,24 +8056,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].scramble_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[0].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_0_scramble_en_0_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_0_scramble_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].scramble_en.err_storage)
   );
 
   //   F[ecc_en_0]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_0_ecc_en_0 (
+  ) u_bank1_info0_page_cfg_shadowed_0_ecc_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
-    .wd     (bank1_info0_page_cfg_0_ecc_en_0_wd),
+    .re     (bank1_info0_page_cfg_shadowed_0_re),
+    .we     (bank1_info0_page_cfg_shadowed_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_0_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7004,24 +8087,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].ecc_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[0].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_0_ecc_en_0_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_0_ecc_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].ecc_en.err_storage)
   );
 
   //   F[he_en_0]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_0_he_en_0 (
+  ) u_bank1_info0_page_cfg_shadowed_0_he_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_0_we & bank1_info0_regwen_0_qs),
-    .wd     (bank1_info0_page_cfg_0_he_en_0_wd),
+    .re     (bank1_info0_page_cfg_shadowed_0_re),
+    .we     (bank1_info0_page_cfg_shadowed_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_0_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7029,27 +8118,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].he_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[0].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_0_he_en_0_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_0_he_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[0].he_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[0].he_en.err_storage)
   );
 
 
-  // Subregister 1 of Multireg bank1_info0_page_cfg
-  // R[bank1_info0_page_cfg_1]: V(False)
+  // Subregister 1 of Multireg bank1_info0_page_cfg_shadowed
+  // R[bank1_info0_page_cfg_shadowed_1]: V(False)
   //   F[en_1]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_1_en_1 (
+  ) u_bank1_info0_page_cfg_shadowed_1_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
-    .wd     (bank1_info0_page_cfg_1_en_1_wd),
+    .re     (bank1_info0_page_cfg_shadowed_1_re),
+    .we     (bank1_info0_page_cfg_shadowed_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7057,24 +8152,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[1].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_1_en_1_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_1_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].en.err_storage)
   );
 
   //   F[rd_en_1]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_1_rd_en_1 (
+  ) u_bank1_info0_page_cfg_shadowed_1_rd_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
-    .wd     (bank1_info0_page_cfg_1_rd_en_1_wd),
+    .re     (bank1_info0_page_cfg_shadowed_1_re),
+    .we     (bank1_info0_page_cfg_shadowed_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7082,24 +8183,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].rd_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[1].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_1_rd_en_1_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_1_rd_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].rd_en.err_storage)
   );
 
   //   F[prog_en_1]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_1_prog_en_1 (
+  ) u_bank1_info0_page_cfg_shadowed_1_prog_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
-    .wd     (bank1_info0_page_cfg_1_prog_en_1_wd),
+    .re     (bank1_info0_page_cfg_shadowed_1_re),
+    .we     (bank1_info0_page_cfg_shadowed_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7107,24 +8214,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].prog_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[1].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_1_prog_en_1_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_1_prog_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].prog_en.err_storage)
   );
 
   //   F[erase_en_1]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_1_erase_en_1 (
+  ) u_bank1_info0_page_cfg_shadowed_1_erase_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
-    .wd     (bank1_info0_page_cfg_1_erase_en_1_wd),
+    .re     (bank1_info0_page_cfg_shadowed_1_re),
+    .we     (bank1_info0_page_cfg_shadowed_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7132,24 +8245,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].erase_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[1].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_1_erase_en_1_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_1_erase_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].erase_en.err_storage)
   );
 
   //   F[scramble_en_1]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_1_scramble_en_1 (
+  ) u_bank1_info0_page_cfg_shadowed_1_scramble_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
-    .wd     (bank1_info0_page_cfg_1_scramble_en_1_wd),
+    .re     (bank1_info0_page_cfg_shadowed_1_re),
+    .we     (bank1_info0_page_cfg_shadowed_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_1_scramble_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7157,24 +8276,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].scramble_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[1].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_1_scramble_en_1_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_1_scramble_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].scramble_en.err_storage)
   );
 
   //   F[ecc_en_1]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_1_ecc_en_1 (
+  ) u_bank1_info0_page_cfg_shadowed_1_ecc_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
-    .wd     (bank1_info0_page_cfg_1_ecc_en_1_wd),
+    .re     (bank1_info0_page_cfg_shadowed_1_re),
+    .we     (bank1_info0_page_cfg_shadowed_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_1_ecc_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7182,24 +8307,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].ecc_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[1].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_1_ecc_en_1_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_1_ecc_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].ecc_en.err_storage)
   );
 
   //   F[he_en_1]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_1_he_en_1 (
+  ) u_bank1_info0_page_cfg_shadowed_1_he_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_1_we & bank1_info0_regwen_1_qs),
-    .wd     (bank1_info0_page_cfg_1_he_en_1_wd),
+    .re     (bank1_info0_page_cfg_shadowed_1_re),
+    .we     (bank1_info0_page_cfg_shadowed_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_1_he_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7207,27 +8338,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].he_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[1].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_1_he_en_1_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_1_he_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[1].he_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[1].he_en.err_storage)
   );
 
 
-  // Subregister 2 of Multireg bank1_info0_page_cfg
-  // R[bank1_info0_page_cfg_2]: V(False)
+  // Subregister 2 of Multireg bank1_info0_page_cfg_shadowed
+  // R[bank1_info0_page_cfg_shadowed_2]: V(False)
   //   F[en_2]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_2_en_2 (
+  ) u_bank1_info0_page_cfg_shadowed_2_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
-    .wd     (bank1_info0_page_cfg_2_en_2_wd),
+    .re     (bank1_info0_page_cfg_shadowed_2_re),
+    .we     (bank1_info0_page_cfg_shadowed_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_2_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7235,24 +8372,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[2].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_2_en_2_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_2_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].en.err_storage)
   );
 
   //   F[rd_en_2]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_2_rd_en_2 (
+  ) u_bank1_info0_page_cfg_shadowed_2_rd_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
-    .wd     (bank1_info0_page_cfg_2_rd_en_2_wd),
+    .re     (bank1_info0_page_cfg_shadowed_2_re),
+    .we     (bank1_info0_page_cfg_shadowed_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_2_rd_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7260,24 +8403,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].rd_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[2].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_2_rd_en_2_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_2_rd_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].rd_en.err_storage)
   );
 
   //   F[prog_en_2]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_2_prog_en_2 (
+  ) u_bank1_info0_page_cfg_shadowed_2_prog_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
-    .wd     (bank1_info0_page_cfg_2_prog_en_2_wd),
+    .re     (bank1_info0_page_cfg_shadowed_2_re),
+    .we     (bank1_info0_page_cfg_shadowed_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_2_prog_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7285,24 +8434,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].prog_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[2].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_2_prog_en_2_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_2_prog_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].prog_en.err_storage)
   );
 
   //   F[erase_en_2]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_2_erase_en_2 (
+  ) u_bank1_info0_page_cfg_shadowed_2_erase_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
-    .wd     (bank1_info0_page_cfg_2_erase_en_2_wd),
+    .re     (bank1_info0_page_cfg_shadowed_2_re),
+    .we     (bank1_info0_page_cfg_shadowed_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_2_erase_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7310,24 +8465,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].erase_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[2].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_2_erase_en_2_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_2_erase_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].erase_en.err_storage)
   );
 
   //   F[scramble_en_2]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_2_scramble_en_2 (
+  ) u_bank1_info0_page_cfg_shadowed_2_scramble_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
-    .wd     (bank1_info0_page_cfg_2_scramble_en_2_wd),
+    .re     (bank1_info0_page_cfg_shadowed_2_re),
+    .we     (bank1_info0_page_cfg_shadowed_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_2_scramble_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7335,24 +8496,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].scramble_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[2].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_2_scramble_en_2_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_2_scramble_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].scramble_en.err_storage)
   );
 
   //   F[ecc_en_2]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_2_ecc_en_2 (
+  ) u_bank1_info0_page_cfg_shadowed_2_ecc_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
-    .wd     (bank1_info0_page_cfg_2_ecc_en_2_wd),
+    .re     (bank1_info0_page_cfg_shadowed_2_re),
+    .we     (bank1_info0_page_cfg_shadowed_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_2_ecc_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7360,24 +8527,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].ecc_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[2].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_2_ecc_en_2_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_2_ecc_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].ecc_en.err_storage)
   );
 
   //   F[he_en_2]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_2_he_en_2 (
+  ) u_bank1_info0_page_cfg_shadowed_2_he_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_2_we & bank1_info0_regwen_2_qs),
-    .wd     (bank1_info0_page_cfg_2_he_en_2_wd),
+    .re     (bank1_info0_page_cfg_shadowed_2_re),
+    .we     (bank1_info0_page_cfg_shadowed_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_2_he_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7385,27 +8558,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].he_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[2].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_2_he_en_2_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_2_he_en_2_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[2].he_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[2].he_en.err_storage)
   );
 
 
-  // Subregister 3 of Multireg bank1_info0_page_cfg
-  // R[bank1_info0_page_cfg_3]: V(False)
+  // Subregister 3 of Multireg bank1_info0_page_cfg_shadowed
+  // R[bank1_info0_page_cfg_shadowed_3]: V(False)
   //   F[en_3]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_3_en_3 (
+  ) u_bank1_info0_page_cfg_shadowed_3_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
-    .wd     (bank1_info0_page_cfg_3_en_3_wd),
+    .re     (bank1_info0_page_cfg_shadowed_3_re),
+    .we     (bank1_info0_page_cfg_shadowed_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_3_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7413,24 +8592,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[3].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_3_en_3_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_3_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].en.err_storage)
   );
 
   //   F[rd_en_3]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_3_rd_en_3 (
+  ) u_bank1_info0_page_cfg_shadowed_3_rd_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
-    .wd     (bank1_info0_page_cfg_3_rd_en_3_wd),
+    .re     (bank1_info0_page_cfg_shadowed_3_re),
+    .we     (bank1_info0_page_cfg_shadowed_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_3_rd_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7438,24 +8623,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].rd_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[3].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_3_rd_en_3_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_3_rd_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].rd_en.err_storage)
   );
 
   //   F[prog_en_3]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_3_prog_en_3 (
+  ) u_bank1_info0_page_cfg_shadowed_3_prog_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
-    .wd     (bank1_info0_page_cfg_3_prog_en_3_wd),
+    .re     (bank1_info0_page_cfg_shadowed_3_re),
+    .we     (bank1_info0_page_cfg_shadowed_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_3_prog_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7463,24 +8654,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].prog_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[3].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_3_prog_en_3_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_3_prog_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].prog_en.err_storage)
   );
 
   //   F[erase_en_3]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_3_erase_en_3 (
+  ) u_bank1_info0_page_cfg_shadowed_3_erase_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
-    .wd     (bank1_info0_page_cfg_3_erase_en_3_wd),
+    .re     (bank1_info0_page_cfg_shadowed_3_re),
+    .we     (bank1_info0_page_cfg_shadowed_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_3_erase_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7488,24 +8685,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].erase_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[3].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_3_erase_en_3_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_3_erase_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].erase_en.err_storage)
   );
 
   //   F[scramble_en_3]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_3_scramble_en_3 (
+  ) u_bank1_info0_page_cfg_shadowed_3_scramble_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
-    .wd     (bank1_info0_page_cfg_3_scramble_en_3_wd),
+    .re     (bank1_info0_page_cfg_shadowed_3_re),
+    .we     (bank1_info0_page_cfg_shadowed_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_3_scramble_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7513,24 +8716,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].scramble_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[3].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_3_scramble_en_3_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_3_scramble_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].scramble_en.err_storage)
   );
 
   //   F[ecc_en_3]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_3_ecc_en_3 (
+  ) u_bank1_info0_page_cfg_shadowed_3_ecc_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
-    .wd     (bank1_info0_page_cfg_3_ecc_en_3_wd),
+    .re     (bank1_info0_page_cfg_shadowed_3_re),
+    .we     (bank1_info0_page_cfg_shadowed_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_3_ecc_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7538,24 +8747,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].ecc_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[3].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_3_ecc_en_3_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_3_ecc_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].ecc_en.err_storage)
   );
 
   //   F[he_en_3]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_3_he_en_3 (
+  ) u_bank1_info0_page_cfg_shadowed_3_he_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_3_we & bank1_info0_regwen_3_qs),
-    .wd     (bank1_info0_page_cfg_3_he_en_3_wd),
+    .re     (bank1_info0_page_cfg_shadowed_3_re),
+    .we     (bank1_info0_page_cfg_shadowed_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_3_he_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7563,27 +8778,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].he_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[3].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_3_he_en_3_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_3_he_en_3_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[3].he_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[3].he_en.err_storage)
   );
 
 
-  // Subregister 4 of Multireg bank1_info0_page_cfg
-  // R[bank1_info0_page_cfg_4]: V(False)
+  // Subregister 4 of Multireg bank1_info0_page_cfg_shadowed
+  // R[bank1_info0_page_cfg_shadowed_4]: V(False)
   //   F[en_4]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_4_en_4 (
+  ) u_bank1_info0_page_cfg_shadowed_4_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
-    .wd     (bank1_info0_page_cfg_4_en_4_wd),
+    .re     (bank1_info0_page_cfg_shadowed_4_re),
+    .we     (bank1_info0_page_cfg_shadowed_4_we & bank1_info0_regwen_4_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_4_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7591,24 +8812,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[4].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_4_en_4_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_4_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].en.err_storage)
   );
 
   //   F[rd_en_4]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_4_rd_en_4 (
+  ) u_bank1_info0_page_cfg_shadowed_4_rd_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
-    .wd     (bank1_info0_page_cfg_4_rd_en_4_wd),
+    .re     (bank1_info0_page_cfg_shadowed_4_re),
+    .we     (bank1_info0_page_cfg_shadowed_4_we & bank1_info0_regwen_4_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_4_rd_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7616,24 +8843,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].rd_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[4].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_4_rd_en_4_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_4_rd_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].rd_en.err_storage)
   );
 
   //   F[prog_en_4]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_4_prog_en_4 (
+  ) u_bank1_info0_page_cfg_shadowed_4_prog_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
-    .wd     (bank1_info0_page_cfg_4_prog_en_4_wd),
+    .re     (bank1_info0_page_cfg_shadowed_4_re),
+    .we     (bank1_info0_page_cfg_shadowed_4_we & bank1_info0_regwen_4_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_4_prog_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7641,24 +8874,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].prog_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[4].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_4_prog_en_4_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_4_prog_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].prog_en.err_storage)
   );
 
   //   F[erase_en_4]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_4_erase_en_4 (
+  ) u_bank1_info0_page_cfg_shadowed_4_erase_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
-    .wd     (bank1_info0_page_cfg_4_erase_en_4_wd),
+    .re     (bank1_info0_page_cfg_shadowed_4_re),
+    .we     (bank1_info0_page_cfg_shadowed_4_we & bank1_info0_regwen_4_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_4_erase_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7666,24 +8905,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].erase_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[4].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_4_erase_en_4_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_4_erase_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].erase_en.err_storage)
   );
 
   //   F[scramble_en_4]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_4_scramble_en_4 (
+  ) u_bank1_info0_page_cfg_shadowed_4_scramble_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
-    .wd     (bank1_info0_page_cfg_4_scramble_en_4_wd),
+    .re     (bank1_info0_page_cfg_shadowed_4_re),
+    .we     (bank1_info0_page_cfg_shadowed_4_we & bank1_info0_regwen_4_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_4_scramble_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7691,24 +8936,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].scramble_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[4].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_4_scramble_en_4_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_4_scramble_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].scramble_en.err_storage)
   );
 
   //   F[ecc_en_4]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_4_ecc_en_4 (
+  ) u_bank1_info0_page_cfg_shadowed_4_ecc_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
-    .wd     (bank1_info0_page_cfg_4_ecc_en_4_wd),
+    .re     (bank1_info0_page_cfg_shadowed_4_re),
+    .we     (bank1_info0_page_cfg_shadowed_4_we & bank1_info0_regwen_4_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_4_ecc_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7716,24 +8967,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].ecc_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[4].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_4_ecc_en_4_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_4_ecc_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].ecc_en.err_storage)
   );
 
   //   F[he_en_4]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_4_he_en_4 (
+  ) u_bank1_info0_page_cfg_shadowed_4_he_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_4_we & bank1_info0_regwen_4_qs),
-    .wd     (bank1_info0_page_cfg_4_he_en_4_wd),
+    .re     (bank1_info0_page_cfg_shadowed_4_re),
+    .we     (bank1_info0_page_cfg_shadowed_4_we & bank1_info0_regwen_4_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_4_he_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7741,27 +8998,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].he_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[4].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_4_he_en_4_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_4_he_en_4_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[4].he_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[4].he_en.err_storage)
   );
 
 
-  // Subregister 5 of Multireg bank1_info0_page_cfg
-  // R[bank1_info0_page_cfg_5]: V(False)
+  // Subregister 5 of Multireg bank1_info0_page_cfg_shadowed
+  // R[bank1_info0_page_cfg_shadowed_5]: V(False)
   //   F[en_5]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_5_en_5 (
+  ) u_bank1_info0_page_cfg_shadowed_5_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
-    .wd     (bank1_info0_page_cfg_5_en_5_wd),
+    .re     (bank1_info0_page_cfg_shadowed_5_re),
+    .we     (bank1_info0_page_cfg_shadowed_5_we & bank1_info0_regwen_5_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_5_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7769,24 +9032,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[5].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_5_en_5_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_5_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].en.err_storage)
   );
 
   //   F[rd_en_5]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_5_rd_en_5 (
+  ) u_bank1_info0_page_cfg_shadowed_5_rd_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
-    .wd     (bank1_info0_page_cfg_5_rd_en_5_wd),
+    .re     (bank1_info0_page_cfg_shadowed_5_re),
+    .we     (bank1_info0_page_cfg_shadowed_5_we & bank1_info0_regwen_5_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_5_rd_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7794,24 +9063,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].rd_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[5].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_5_rd_en_5_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_5_rd_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].rd_en.err_storage)
   );
 
   //   F[prog_en_5]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_5_prog_en_5 (
+  ) u_bank1_info0_page_cfg_shadowed_5_prog_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
-    .wd     (bank1_info0_page_cfg_5_prog_en_5_wd),
+    .re     (bank1_info0_page_cfg_shadowed_5_re),
+    .we     (bank1_info0_page_cfg_shadowed_5_we & bank1_info0_regwen_5_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_5_prog_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7819,24 +9094,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].prog_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[5].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_5_prog_en_5_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_5_prog_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].prog_en.err_storage)
   );
 
   //   F[erase_en_5]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_5_erase_en_5 (
+  ) u_bank1_info0_page_cfg_shadowed_5_erase_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
-    .wd     (bank1_info0_page_cfg_5_erase_en_5_wd),
+    .re     (bank1_info0_page_cfg_shadowed_5_re),
+    .we     (bank1_info0_page_cfg_shadowed_5_we & bank1_info0_regwen_5_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_5_erase_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7844,24 +9125,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].erase_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[5].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_5_erase_en_5_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_5_erase_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].erase_en.err_storage)
   );
 
   //   F[scramble_en_5]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_5_scramble_en_5 (
+  ) u_bank1_info0_page_cfg_shadowed_5_scramble_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
-    .wd     (bank1_info0_page_cfg_5_scramble_en_5_wd),
+    .re     (bank1_info0_page_cfg_shadowed_5_re),
+    .we     (bank1_info0_page_cfg_shadowed_5_we & bank1_info0_regwen_5_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_5_scramble_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7869,24 +9156,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].scramble_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[5].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_5_scramble_en_5_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_5_scramble_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].scramble_en.err_storage)
   );
 
   //   F[ecc_en_5]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_5_ecc_en_5 (
+  ) u_bank1_info0_page_cfg_shadowed_5_ecc_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
-    .wd     (bank1_info0_page_cfg_5_ecc_en_5_wd),
+    .re     (bank1_info0_page_cfg_shadowed_5_re),
+    .we     (bank1_info0_page_cfg_shadowed_5_we & bank1_info0_regwen_5_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_5_ecc_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7894,24 +9187,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].ecc_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[5].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_5_ecc_en_5_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_5_ecc_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].ecc_en.err_storage)
   );
 
   //   F[he_en_5]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_5_he_en_5 (
+  ) u_bank1_info0_page_cfg_shadowed_5_he_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_5_we & bank1_info0_regwen_5_qs),
-    .wd     (bank1_info0_page_cfg_5_he_en_5_wd),
+    .re     (bank1_info0_page_cfg_shadowed_5_re),
+    .we     (bank1_info0_page_cfg_shadowed_5_we & bank1_info0_regwen_5_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_5_he_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7919,27 +9218,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].he_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[5].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_5_he_en_5_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_5_he_en_5_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[5].he_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[5].he_en.err_storage)
   );
 
 
-  // Subregister 6 of Multireg bank1_info0_page_cfg
-  // R[bank1_info0_page_cfg_6]: V(False)
+  // Subregister 6 of Multireg bank1_info0_page_cfg_shadowed
+  // R[bank1_info0_page_cfg_shadowed_6]: V(False)
   //   F[en_6]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_6_en_6 (
+  ) u_bank1_info0_page_cfg_shadowed_6_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
-    .wd     (bank1_info0_page_cfg_6_en_6_wd),
+    .re     (bank1_info0_page_cfg_shadowed_6_re),
+    .we     (bank1_info0_page_cfg_shadowed_6_we & bank1_info0_regwen_6_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_6_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7947,24 +9252,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[6].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_6_en_6_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_6_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].en.err_storage)
   );
 
   //   F[rd_en_6]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_6_rd_en_6 (
+  ) u_bank1_info0_page_cfg_shadowed_6_rd_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
-    .wd     (bank1_info0_page_cfg_6_rd_en_6_wd),
+    .re     (bank1_info0_page_cfg_shadowed_6_re),
+    .we     (bank1_info0_page_cfg_shadowed_6_we & bank1_info0_regwen_6_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_6_rd_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7972,24 +9283,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].rd_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[6].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_6_rd_en_6_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_6_rd_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].rd_en.err_storage)
   );
 
   //   F[prog_en_6]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_6_prog_en_6 (
+  ) u_bank1_info0_page_cfg_shadowed_6_prog_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
-    .wd     (bank1_info0_page_cfg_6_prog_en_6_wd),
+    .re     (bank1_info0_page_cfg_shadowed_6_re),
+    .we     (bank1_info0_page_cfg_shadowed_6_we & bank1_info0_regwen_6_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_6_prog_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -7997,24 +9314,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].prog_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[6].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_6_prog_en_6_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_6_prog_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].prog_en.err_storage)
   );
 
   //   F[erase_en_6]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_6_erase_en_6 (
+  ) u_bank1_info0_page_cfg_shadowed_6_erase_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
-    .wd     (bank1_info0_page_cfg_6_erase_en_6_wd),
+    .re     (bank1_info0_page_cfg_shadowed_6_re),
+    .we     (bank1_info0_page_cfg_shadowed_6_we & bank1_info0_regwen_6_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_6_erase_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8022,24 +9345,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].erase_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[6].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_6_erase_en_6_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_6_erase_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].erase_en.err_storage)
   );
 
   //   F[scramble_en_6]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_6_scramble_en_6 (
+  ) u_bank1_info0_page_cfg_shadowed_6_scramble_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
-    .wd     (bank1_info0_page_cfg_6_scramble_en_6_wd),
+    .re     (bank1_info0_page_cfg_shadowed_6_re),
+    .we     (bank1_info0_page_cfg_shadowed_6_we & bank1_info0_regwen_6_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_6_scramble_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8047,24 +9376,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].scramble_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[6].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_6_scramble_en_6_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_6_scramble_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].scramble_en.err_storage)
   );
 
   //   F[ecc_en_6]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_6_ecc_en_6 (
+  ) u_bank1_info0_page_cfg_shadowed_6_ecc_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
-    .wd     (bank1_info0_page_cfg_6_ecc_en_6_wd),
+    .re     (bank1_info0_page_cfg_shadowed_6_re),
+    .we     (bank1_info0_page_cfg_shadowed_6_we & bank1_info0_regwen_6_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_6_ecc_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8072,24 +9407,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].ecc_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[6].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_6_ecc_en_6_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_6_ecc_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].ecc_en.err_storage)
   );
 
   //   F[he_en_6]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_6_he_en_6 (
+  ) u_bank1_info0_page_cfg_shadowed_6_he_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_6_we & bank1_info0_regwen_6_qs),
-    .wd     (bank1_info0_page_cfg_6_he_en_6_wd),
+    .re     (bank1_info0_page_cfg_shadowed_6_re),
+    .we     (bank1_info0_page_cfg_shadowed_6_we & bank1_info0_regwen_6_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_6_he_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8097,27 +9438,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].he_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[6].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_6_he_en_6_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_6_he_en_6_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[6].he_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[6].he_en.err_storage)
   );
 
 
-  // Subregister 7 of Multireg bank1_info0_page_cfg
-  // R[bank1_info0_page_cfg_7]: V(False)
+  // Subregister 7 of Multireg bank1_info0_page_cfg_shadowed
+  // R[bank1_info0_page_cfg_shadowed_7]: V(False)
   //   F[en_7]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_7_en_7 (
+  ) u_bank1_info0_page_cfg_shadowed_7_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
-    .wd     (bank1_info0_page_cfg_7_en_7_wd),
+    .re     (bank1_info0_page_cfg_shadowed_7_re),
+    .we     (bank1_info0_page_cfg_shadowed_7_we & bank1_info0_regwen_7_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_7_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8125,24 +9472,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[7].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_7_en_7_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_7_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].en.err_storage)
   );
 
   //   F[rd_en_7]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_7_rd_en_7 (
+  ) u_bank1_info0_page_cfg_shadowed_7_rd_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
-    .wd     (bank1_info0_page_cfg_7_rd_en_7_wd),
+    .re     (bank1_info0_page_cfg_shadowed_7_re),
+    .we     (bank1_info0_page_cfg_shadowed_7_we & bank1_info0_regwen_7_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_7_rd_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8150,24 +9503,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].rd_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[7].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_7_rd_en_7_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_7_rd_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].rd_en.err_storage)
   );
 
   //   F[prog_en_7]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_7_prog_en_7 (
+  ) u_bank1_info0_page_cfg_shadowed_7_prog_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
-    .wd     (bank1_info0_page_cfg_7_prog_en_7_wd),
+    .re     (bank1_info0_page_cfg_shadowed_7_re),
+    .we     (bank1_info0_page_cfg_shadowed_7_we & bank1_info0_regwen_7_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_7_prog_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8175,24 +9534,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].prog_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[7].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_7_prog_en_7_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_7_prog_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].prog_en.err_storage)
   );
 
   //   F[erase_en_7]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_7_erase_en_7 (
+  ) u_bank1_info0_page_cfg_shadowed_7_erase_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
-    .wd     (bank1_info0_page_cfg_7_erase_en_7_wd),
+    .re     (bank1_info0_page_cfg_shadowed_7_re),
+    .we     (bank1_info0_page_cfg_shadowed_7_we & bank1_info0_regwen_7_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_7_erase_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8200,24 +9565,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].erase_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[7].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_7_erase_en_7_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_7_erase_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].erase_en.err_storage)
   );
 
   //   F[scramble_en_7]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_7_scramble_en_7 (
+  ) u_bank1_info0_page_cfg_shadowed_7_scramble_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
-    .wd     (bank1_info0_page_cfg_7_scramble_en_7_wd),
+    .re     (bank1_info0_page_cfg_shadowed_7_re),
+    .we     (bank1_info0_page_cfg_shadowed_7_we & bank1_info0_regwen_7_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_7_scramble_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8225,24 +9596,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].scramble_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[7].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_7_scramble_en_7_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_7_scramble_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].scramble_en.err_storage)
   );
 
   //   F[ecc_en_7]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_7_ecc_en_7 (
+  ) u_bank1_info0_page_cfg_shadowed_7_ecc_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
-    .wd     (bank1_info0_page_cfg_7_ecc_en_7_wd),
+    .re     (bank1_info0_page_cfg_shadowed_7_re),
+    .we     (bank1_info0_page_cfg_shadowed_7_we & bank1_info0_regwen_7_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_7_ecc_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8250,24 +9627,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].ecc_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[7].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_7_ecc_en_7_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_7_ecc_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].ecc_en.err_storage)
   );
 
   //   F[he_en_7]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_7_he_en_7 (
+  ) u_bank1_info0_page_cfg_shadowed_7_he_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_7_we & bank1_info0_regwen_7_qs),
-    .wd     (bank1_info0_page_cfg_7_he_en_7_wd),
+    .re     (bank1_info0_page_cfg_shadowed_7_re),
+    .we     (bank1_info0_page_cfg_shadowed_7_we & bank1_info0_regwen_7_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_7_he_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8275,27 +9658,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].he_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[7].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_7_he_en_7_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_7_he_en_7_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[7].he_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[7].he_en.err_storage)
   );
 
 
-  // Subregister 8 of Multireg bank1_info0_page_cfg
-  // R[bank1_info0_page_cfg_8]: V(False)
+  // Subregister 8 of Multireg bank1_info0_page_cfg_shadowed
+  // R[bank1_info0_page_cfg_shadowed_8]: V(False)
   //   F[en_8]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_8_en_8 (
+  ) u_bank1_info0_page_cfg_shadowed_8_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
-    .wd     (bank1_info0_page_cfg_8_en_8_wd),
+    .re     (bank1_info0_page_cfg_shadowed_8_re),
+    .we     (bank1_info0_page_cfg_shadowed_8_we & bank1_info0_regwen_8_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_8_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8303,24 +9692,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[8].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_8_en_8_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_8_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].en.err_storage)
   );
 
   //   F[rd_en_8]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_8_rd_en_8 (
+  ) u_bank1_info0_page_cfg_shadowed_8_rd_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
-    .wd     (bank1_info0_page_cfg_8_rd_en_8_wd),
+    .re     (bank1_info0_page_cfg_shadowed_8_re),
+    .we     (bank1_info0_page_cfg_shadowed_8_we & bank1_info0_regwen_8_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_8_rd_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8328,24 +9723,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].rd_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[8].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_8_rd_en_8_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_8_rd_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].rd_en.err_storage)
   );
 
   //   F[prog_en_8]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_8_prog_en_8 (
+  ) u_bank1_info0_page_cfg_shadowed_8_prog_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
-    .wd     (bank1_info0_page_cfg_8_prog_en_8_wd),
+    .re     (bank1_info0_page_cfg_shadowed_8_re),
+    .we     (bank1_info0_page_cfg_shadowed_8_we & bank1_info0_regwen_8_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_8_prog_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8353,24 +9754,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].prog_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[8].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_8_prog_en_8_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_8_prog_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].prog_en.err_storage)
   );
 
   //   F[erase_en_8]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_8_erase_en_8 (
+  ) u_bank1_info0_page_cfg_shadowed_8_erase_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
-    .wd     (bank1_info0_page_cfg_8_erase_en_8_wd),
+    .re     (bank1_info0_page_cfg_shadowed_8_re),
+    .we     (bank1_info0_page_cfg_shadowed_8_we & bank1_info0_regwen_8_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_8_erase_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8378,24 +9785,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].erase_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[8].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_8_erase_en_8_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_8_erase_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].erase_en.err_storage)
   );
 
   //   F[scramble_en_8]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_8_scramble_en_8 (
+  ) u_bank1_info0_page_cfg_shadowed_8_scramble_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
-    .wd     (bank1_info0_page_cfg_8_scramble_en_8_wd),
+    .re     (bank1_info0_page_cfg_shadowed_8_re),
+    .we     (bank1_info0_page_cfg_shadowed_8_we & bank1_info0_regwen_8_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_8_scramble_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8403,24 +9816,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].scramble_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[8].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_8_scramble_en_8_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_8_scramble_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].scramble_en.err_storage)
   );
 
   //   F[ecc_en_8]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_8_ecc_en_8 (
+  ) u_bank1_info0_page_cfg_shadowed_8_ecc_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
-    .wd     (bank1_info0_page_cfg_8_ecc_en_8_wd),
+    .re     (bank1_info0_page_cfg_shadowed_8_re),
+    .we     (bank1_info0_page_cfg_shadowed_8_we & bank1_info0_regwen_8_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_8_ecc_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8428,24 +9847,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].ecc_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[8].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_8_ecc_en_8_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_8_ecc_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].ecc_en.err_storage)
   );
 
   //   F[he_en_8]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_8_he_en_8 (
+  ) u_bank1_info0_page_cfg_shadowed_8_he_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_8_we & bank1_info0_regwen_8_qs),
-    .wd     (bank1_info0_page_cfg_8_he_en_8_wd),
+    .re     (bank1_info0_page_cfg_shadowed_8_re),
+    .we     (bank1_info0_page_cfg_shadowed_8_we & bank1_info0_regwen_8_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_8_he_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8453,27 +9878,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].he_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[8].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_8_he_en_8_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_8_he_en_8_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[8].he_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[8].he_en.err_storage)
   );
 
 
-  // Subregister 9 of Multireg bank1_info0_page_cfg
-  // R[bank1_info0_page_cfg_9]: V(False)
+  // Subregister 9 of Multireg bank1_info0_page_cfg_shadowed
+  // R[bank1_info0_page_cfg_shadowed_9]: V(False)
   //   F[en_9]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_9_en_9 (
+  ) u_bank1_info0_page_cfg_shadowed_9_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
-    .wd     (bank1_info0_page_cfg_9_en_9_wd),
+    .re     (bank1_info0_page_cfg_shadowed_9_re),
+    .we     (bank1_info0_page_cfg_shadowed_9_we & bank1_info0_regwen_9_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_9_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8481,24 +9912,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[9].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_9_en_9_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_9_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].en.err_storage)
   );
 
   //   F[rd_en_9]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_9_rd_en_9 (
+  ) u_bank1_info0_page_cfg_shadowed_9_rd_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
-    .wd     (bank1_info0_page_cfg_9_rd_en_9_wd),
+    .re     (bank1_info0_page_cfg_shadowed_9_re),
+    .we     (bank1_info0_page_cfg_shadowed_9_we & bank1_info0_regwen_9_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_9_rd_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8506,24 +9943,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].rd_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[9].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_9_rd_en_9_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_9_rd_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].rd_en.err_storage)
   );
 
   //   F[prog_en_9]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_9_prog_en_9 (
+  ) u_bank1_info0_page_cfg_shadowed_9_prog_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
-    .wd     (bank1_info0_page_cfg_9_prog_en_9_wd),
+    .re     (bank1_info0_page_cfg_shadowed_9_re),
+    .we     (bank1_info0_page_cfg_shadowed_9_we & bank1_info0_regwen_9_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_9_prog_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8531,24 +9974,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].prog_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[9].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_9_prog_en_9_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_9_prog_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].prog_en.err_storage)
   );
 
   //   F[erase_en_9]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_9_erase_en_9 (
+  ) u_bank1_info0_page_cfg_shadowed_9_erase_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
-    .wd     (bank1_info0_page_cfg_9_erase_en_9_wd),
+    .re     (bank1_info0_page_cfg_shadowed_9_re),
+    .we     (bank1_info0_page_cfg_shadowed_9_we & bank1_info0_regwen_9_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_9_erase_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8556,24 +10005,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].erase_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[9].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_9_erase_en_9_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_9_erase_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].erase_en.err_storage)
   );
 
   //   F[scramble_en_9]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_9_scramble_en_9 (
+  ) u_bank1_info0_page_cfg_shadowed_9_scramble_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
-    .wd     (bank1_info0_page_cfg_9_scramble_en_9_wd),
+    .re     (bank1_info0_page_cfg_shadowed_9_re),
+    .we     (bank1_info0_page_cfg_shadowed_9_we & bank1_info0_regwen_9_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_9_scramble_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8581,24 +10036,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].scramble_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[9].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_9_scramble_en_9_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_9_scramble_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].scramble_en.err_storage)
   );
 
   //   F[ecc_en_9]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_9_ecc_en_9 (
+  ) u_bank1_info0_page_cfg_shadowed_9_ecc_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
-    .wd     (bank1_info0_page_cfg_9_ecc_en_9_wd),
+    .re     (bank1_info0_page_cfg_shadowed_9_re),
+    .we     (bank1_info0_page_cfg_shadowed_9_we & bank1_info0_regwen_9_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_9_ecc_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8606,24 +10067,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].ecc_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[9].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_9_ecc_en_9_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_9_ecc_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].ecc_en.err_storage)
   );
 
   //   F[he_en_9]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info0_page_cfg_9_he_en_9 (
+  ) u_bank1_info0_page_cfg_shadowed_9_he_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info0_page_cfg_9_we & bank1_info0_regwen_9_qs),
-    .wd     (bank1_info0_page_cfg_9_he_en_9_wd),
+    .re     (bank1_info0_page_cfg_shadowed_9_re),
+    .we     (bank1_info0_page_cfg_shadowed_9_we & bank1_info0_regwen_9_qs),
+    .wd     (bank1_info0_page_cfg_shadowed_9_he_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8631,10 +10098,14 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].he_en.q),
+    .q      (reg2hw.bank1_info0_page_cfg_shadowed[9].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info0_page_cfg_9_he_en_9_qs)
+    .qs     (bank1_info0_page_cfg_shadowed_9_he_en_9_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info0_page_cfg_shadowed[9].he_en.err_update),
+    .err_storage (reg2hw.bank1_info0_page_cfg_shadowed[9].he_en.err_storage)
   );
 
 
@@ -8665,20 +10136,22 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  // Subregister 0 of Multireg bank1_info1_page_cfg
-  // R[bank1_info1_page_cfg]: V(False)
+  // Subregister 0 of Multireg bank1_info1_page_cfg_shadowed
+  // R[bank1_info1_page_cfg_shadowed]: V(False)
   //   F[en_0]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info1_page_cfg_en_0 (
+  ) u_bank1_info1_page_cfg_shadowed_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
-    .wd     (bank1_info1_page_cfg_en_0_wd),
+    .re     (bank1_info1_page_cfg_shadowed_re),
+    .we     (bank1_info1_page_cfg_shadowed_we & bank1_info1_regwen_qs),
+    .wd     (bank1_info1_page_cfg_shadowed_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8686,24 +10159,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].en.q),
+    .q      (reg2hw.bank1_info1_page_cfg_shadowed[0].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info1_page_cfg_en_0_qs)
+    .qs     (bank1_info1_page_cfg_shadowed_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].en.err_update),
+    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].en.err_storage)
   );
 
   //   F[rd_en_0]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info1_page_cfg_rd_en_0 (
+  ) u_bank1_info1_page_cfg_shadowed_rd_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
-    .wd     (bank1_info1_page_cfg_rd_en_0_wd),
+    .re     (bank1_info1_page_cfg_shadowed_re),
+    .we     (bank1_info1_page_cfg_shadowed_we & bank1_info1_regwen_qs),
+    .wd     (bank1_info1_page_cfg_shadowed_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8711,24 +10190,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].rd_en.q),
+    .q      (reg2hw.bank1_info1_page_cfg_shadowed[0].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info1_page_cfg_rd_en_0_qs)
+    .qs     (bank1_info1_page_cfg_shadowed_rd_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].rd_en.err_storage)
   );
 
   //   F[prog_en_0]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info1_page_cfg_prog_en_0 (
+  ) u_bank1_info1_page_cfg_shadowed_prog_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
-    .wd     (bank1_info1_page_cfg_prog_en_0_wd),
+    .re     (bank1_info1_page_cfg_shadowed_re),
+    .we     (bank1_info1_page_cfg_shadowed_we & bank1_info1_regwen_qs),
+    .wd     (bank1_info1_page_cfg_shadowed_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8736,24 +10221,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].prog_en.q),
+    .q      (reg2hw.bank1_info1_page_cfg_shadowed[0].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info1_page_cfg_prog_en_0_qs)
+    .qs     (bank1_info1_page_cfg_shadowed_prog_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].prog_en.err_storage)
   );
 
   //   F[erase_en_0]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info1_page_cfg_erase_en_0 (
+  ) u_bank1_info1_page_cfg_shadowed_erase_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
-    .wd     (bank1_info1_page_cfg_erase_en_0_wd),
+    .re     (bank1_info1_page_cfg_shadowed_re),
+    .we     (bank1_info1_page_cfg_shadowed_we & bank1_info1_regwen_qs),
+    .wd     (bank1_info1_page_cfg_shadowed_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8761,24 +10252,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].erase_en.q),
+    .q      (reg2hw.bank1_info1_page_cfg_shadowed[0].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info1_page_cfg_erase_en_0_qs)
+    .qs     (bank1_info1_page_cfg_shadowed_erase_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].erase_en.err_storage)
   );
 
   //   F[scramble_en_0]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info1_page_cfg_scramble_en_0 (
+  ) u_bank1_info1_page_cfg_shadowed_scramble_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
-    .wd     (bank1_info1_page_cfg_scramble_en_0_wd),
+    .re     (bank1_info1_page_cfg_shadowed_re),
+    .we     (bank1_info1_page_cfg_shadowed_we & bank1_info1_regwen_qs),
+    .wd     (bank1_info1_page_cfg_shadowed_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8786,24 +10283,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].scramble_en.q),
+    .q      (reg2hw.bank1_info1_page_cfg_shadowed[0].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info1_page_cfg_scramble_en_0_qs)
+    .qs     (bank1_info1_page_cfg_shadowed_scramble_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].scramble_en.err_storage)
   );
 
   //   F[ecc_en_0]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info1_page_cfg_ecc_en_0 (
+  ) u_bank1_info1_page_cfg_shadowed_ecc_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
-    .wd     (bank1_info1_page_cfg_ecc_en_0_wd),
+    .re     (bank1_info1_page_cfg_shadowed_re),
+    .we     (bank1_info1_page_cfg_shadowed_we & bank1_info1_regwen_qs),
+    .wd     (bank1_info1_page_cfg_shadowed_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8811,24 +10314,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].ecc_en.q),
+    .q      (reg2hw.bank1_info1_page_cfg_shadowed[0].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info1_page_cfg_ecc_en_0_qs)
+    .qs     (bank1_info1_page_cfg_shadowed_ecc_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].ecc_en.err_storage)
   );
 
   //   F[he_en_0]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info1_page_cfg_he_en_0 (
+  ) u_bank1_info1_page_cfg_shadowed_he_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info1_page_cfg_we & bank1_info1_regwen_qs),
-    .wd     (bank1_info1_page_cfg_he_en_0_wd),
+    .re     (bank1_info1_page_cfg_shadowed_re),
+    .we     (bank1_info1_page_cfg_shadowed_we & bank1_info1_regwen_qs),
+    .wd     (bank1_info1_page_cfg_shadowed_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8836,10 +10345,14 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].he_en.q),
+    .q      (reg2hw.bank1_info1_page_cfg_shadowed[0].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info1_page_cfg_he_en_0_qs)
+    .qs     (bank1_info1_page_cfg_shadowed_he_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info1_page_cfg_shadowed[0].he_en.err_update),
+    .err_storage (reg2hw.bank1_info1_page_cfg_shadowed[0].he_en.err_storage)
   );
 
 
@@ -8897,20 +10410,22 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  // Subregister 0 of Multireg bank1_info2_page_cfg
-  // R[bank1_info2_page_cfg_0]: V(False)
+  // Subregister 0 of Multireg bank1_info2_page_cfg_shadowed
+  // R[bank1_info2_page_cfg_shadowed_0]: V(False)
   //   F[en_0]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_0_en_0 (
+  ) u_bank1_info2_page_cfg_shadowed_0_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
-    .wd     (bank1_info2_page_cfg_0_en_0_wd),
+    .re     (bank1_info2_page_cfg_shadowed_0_re),
+    .we     (bank1_info2_page_cfg_shadowed_0_we & bank1_info2_regwen_0_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8918,24 +10433,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[0].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_0_en_0_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_0_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].en.err_storage)
   );
 
   //   F[rd_en_0]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_0_rd_en_0 (
+  ) u_bank1_info2_page_cfg_shadowed_0_rd_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
-    .wd     (bank1_info2_page_cfg_0_rd_en_0_wd),
+    .re     (bank1_info2_page_cfg_shadowed_0_re),
+    .we     (bank1_info2_page_cfg_shadowed_0_we & bank1_info2_regwen_0_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8943,24 +10464,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].rd_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[0].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_0_rd_en_0_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_0_rd_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].rd_en.err_storage)
   );
 
   //   F[prog_en_0]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_0_prog_en_0 (
+  ) u_bank1_info2_page_cfg_shadowed_0_prog_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
-    .wd     (bank1_info2_page_cfg_0_prog_en_0_wd),
+    .re     (bank1_info2_page_cfg_shadowed_0_re),
+    .we     (bank1_info2_page_cfg_shadowed_0_we & bank1_info2_regwen_0_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8968,24 +10495,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].prog_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[0].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_0_prog_en_0_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_0_prog_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].prog_en.err_storage)
   );
 
   //   F[erase_en_0]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_0_erase_en_0 (
+  ) u_bank1_info2_page_cfg_shadowed_0_erase_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
-    .wd     (bank1_info2_page_cfg_0_erase_en_0_wd),
+    .re     (bank1_info2_page_cfg_shadowed_0_re),
+    .we     (bank1_info2_page_cfg_shadowed_0_we & bank1_info2_regwen_0_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -8993,24 +10526,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].erase_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[0].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_0_erase_en_0_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_0_erase_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].erase_en.err_storage)
   );
 
   //   F[scramble_en_0]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_0_scramble_en_0 (
+  ) u_bank1_info2_page_cfg_shadowed_0_scramble_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
-    .wd     (bank1_info2_page_cfg_0_scramble_en_0_wd),
+    .re     (bank1_info2_page_cfg_shadowed_0_re),
+    .we     (bank1_info2_page_cfg_shadowed_0_we & bank1_info2_regwen_0_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_0_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9018,24 +10557,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].scramble_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[0].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_0_scramble_en_0_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_0_scramble_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].scramble_en.err_storage)
   );
 
   //   F[ecc_en_0]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_0_ecc_en_0 (
+  ) u_bank1_info2_page_cfg_shadowed_0_ecc_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
-    .wd     (bank1_info2_page_cfg_0_ecc_en_0_wd),
+    .re     (bank1_info2_page_cfg_shadowed_0_re),
+    .we     (bank1_info2_page_cfg_shadowed_0_we & bank1_info2_regwen_0_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_0_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9043,24 +10588,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].ecc_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[0].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_0_ecc_en_0_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_0_ecc_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].ecc_en.err_storage)
   );
 
   //   F[he_en_0]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_0_he_en_0 (
+  ) u_bank1_info2_page_cfg_shadowed_0_he_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_0_we & bank1_info2_regwen_0_qs),
-    .wd     (bank1_info2_page_cfg_0_he_en_0_wd),
+    .re     (bank1_info2_page_cfg_shadowed_0_re),
+    .we     (bank1_info2_page_cfg_shadowed_0_we & bank1_info2_regwen_0_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_0_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9068,27 +10619,33 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].he_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[0].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_0_he_en_0_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_0_he_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[0].he_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[0].he_en.err_storage)
   );
 
 
-  // Subregister 1 of Multireg bank1_info2_page_cfg
-  // R[bank1_info2_page_cfg_1]: V(False)
+  // Subregister 1 of Multireg bank1_info2_page_cfg_shadowed
+  // R[bank1_info2_page_cfg_shadowed_1]: V(False)
   //   F[en_1]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_1_en_1 (
+  ) u_bank1_info2_page_cfg_shadowed_1_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
-    .wd     (bank1_info2_page_cfg_1_en_1_wd),
+    .re     (bank1_info2_page_cfg_shadowed_1_re),
+    .we     (bank1_info2_page_cfg_shadowed_1_we & bank1_info2_regwen_1_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9096,24 +10653,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[1].en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_1_en_1_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_1_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].en.err_storage)
   );
 
   //   F[rd_en_1]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_1_rd_en_1 (
+  ) u_bank1_info2_page_cfg_shadowed_1_rd_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
-    .wd     (bank1_info2_page_cfg_1_rd_en_1_wd),
+    .re     (bank1_info2_page_cfg_shadowed_1_re),
+    .we     (bank1_info2_page_cfg_shadowed_1_we & bank1_info2_regwen_1_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9121,24 +10684,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].rd_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[1].rd_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_1_rd_en_1_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_1_rd_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].rd_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].rd_en.err_storage)
   );
 
   //   F[prog_en_1]: 2:2
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_1_prog_en_1 (
+  ) u_bank1_info2_page_cfg_shadowed_1_prog_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
-    .wd     (bank1_info2_page_cfg_1_prog_en_1_wd),
+    .re     (bank1_info2_page_cfg_shadowed_1_re),
+    .we     (bank1_info2_page_cfg_shadowed_1_we & bank1_info2_regwen_1_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9146,24 +10715,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].prog_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[1].prog_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_1_prog_en_1_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_1_prog_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].prog_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].prog_en.err_storage)
   );
 
   //   F[erase_en_1]: 3:3
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_1_erase_en_1 (
+  ) u_bank1_info2_page_cfg_shadowed_1_erase_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
-    .wd     (bank1_info2_page_cfg_1_erase_en_1_wd),
+    .re     (bank1_info2_page_cfg_shadowed_1_re),
+    .we     (bank1_info2_page_cfg_shadowed_1_we & bank1_info2_regwen_1_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9171,24 +10746,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].erase_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[1].erase_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_1_erase_en_1_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_1_erase_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].erase_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].erase_en.err_storage)
   );
 
   //   F[scramble_en_1]: 4:4
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_1_scramble_en_1 (
+  ) u_bank1_info2_page_cfg_shadowed_1_scramble_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
-    .wd     (bank1_info2_page_cfg_1_scramble_en_1_wd),
+    .re     (bank1_info2_page_cfg_shadowed_1_re),
+    .we     (bank1_info2_page_cfg_shadowed_1_we & bank1_info2_regwen_1_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_1_scramble_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9196,24 +10777,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].scramble_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[1].scramble_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_1_scramble_en_1_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_1_scramble_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].scramble_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].scramble_en.err_storage)
   );
 
   //   F[ecc_en_1]: 5:5
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_1_ecc_en_1 (
+  ) u_bank1_info2_page_cfg_shadowed_1_ecc_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
-    .wd     (bank1_info2_page_cfg_1_ecc_en_1_wd),
+    .re     (bank1_info2_page_cfg_shadowed_1_re),
+    .we     (bank1_info2_page_cfg_shadowed_1_we & bank1_info2_regwen_1_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_1_ecc_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9221,24 +10808,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].ecc_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[1].ecc_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_1_ecc_en_1_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_1_ecc_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].ecc_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].ecc_en.err_storage)
   );
 
   //   F[he_en_1]: 6:6
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_bank1_info2_page_cfg_1_he_en_1 (
+  ) u_bank1_info2_page_cfg_shadowed_1_he_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (bank1_info2_page_cfg_1_we & bank1_info2_regwen_1_qs),
-    .wd     (bank1_info2_page_cfg_1_he_en_1_wd),
+    .re     (bank1_info2_page_cfg_shadowed_1_re),
+    .we     (bank1_info2_page_cfg_shadowed_1_we & bank1_info2_regwen_1_qs),
+    .wd     (bank1_info2_page_cfg_shadowed_1_he_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9246,10 +10839,14 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].he_en.q),
+    .q      (reg2hw.bank1_info2_page_cfg_shadowed[1].he_en.q),
 
     // to register interface (read)
-    .qs     (bank1_info2_page_cfg_1_he_en_1_qs)
+    .qs     (bank1_info2_page_cfg_shadowed_1_he_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.bank1_info2_page_cfg_shadowed[1].he_en.err_update),
+    .err_storage (reg2hw.bank1_info2_page_cfg_shadowed[1].he_en.err_storage)
   );
 
 
@@ -9279,20 +10876,22 @@ module flash_ctrl_core_reg_top (
   );
 
 
-  // Subregister 0 of Multireg mp_bank_cfg
-  // R[mp_bank_cfg]: V(False)
+  // Subregister 0 of Multireg mp_bank_cfg_shadowed
+  // R[mp_bank_cfg_shadowed]: V(False)
   //   F[erase_en_0]: 0:0
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_bank_cfg_erase_en_0 (
+  ) u_mp_bank_cfg_shadowed_erase_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_bank_cfg_we & bank_cfg_regwen_qs),
-    .wd     (mp_bank_cfg_erase_en_0_wd),
+    .re     (mp_bank_cfg_shadowed_re),
+    .we     (mp_bank_cfg_shadowed_we & bank_cfg_regwen_qs),
+    .wd     (mp_bank_cfg_shadowed_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9300,24 +10899,30 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_bank_cfg[0].q),
+    .q      (reg2hw.mp_bank_cfg_shadowed[0].q),
 
     // to register interface (read)
-    .qs     (mp_bank_cfg_erase_en_0_qs)
+    .qs     (mp_bank_cfg_shadowed_erase_en_0_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_bank_cfg_shadowed[0].err_update),
+    .err_storage (reg2hw.mp_bank_cfg_shadowed[0].err_storage)
   );
 
   //   F[erase_en_1]: 1:1
-  prim_subreg #(
+  prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_mp_bank_cfg_erase_en_1 (
+  ) u_mp_bank_cfg_shadowed_erase_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (mp_bank_cfg_we & bank_cfg_regwen_qs),
-    .wd     (mp_bank_cfg_erase_en_1_wd),
+    .re     (mp_bank_cfg_shadowed_re),
+    .we     (mp_bank_cfg_shadowed_we & bank_cfg_regwen_qs),
+    .wd     (mp_bank_cfg_shadowed_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -9325,10 +10930,14 @@ module flash_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_bank_cfg[1].q),
+    .q      (reg2hw.mp_bank_cfg_shadowed[1].q),
 
     // to register interface (read)
-    .qs     (mp_bank_cfg_erase_en_1_qs)
+    .qs     (mp_bank_cfg_shadowed_erase_en_1_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.mp_bank_cfg_shadowed[1].err_update),
+    .err_storage (reg2hw.mp_bank_cfg_shadowed[1].err_storage)
   );
 
 
@@ -10331,15 +11940,15 @@ module flash_ctrl_core_reg_top (
     addr_hit[16] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_5_OFFSET);
     addr_hit[17] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_6_OFFSET);
     addr_hit[18] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_7_OFFSET);
-    addr_hit[19] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_0_OFFSET);
-    addr_hit[20] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_1_OFFSET);
-    addr_hit[21] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_2_OFFSET);
-    addr_hit[22] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_3_OFFSET);
-    addr_hit[23] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_4_OFFSET);
-    addr_hit[24] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_5_OFFSET);
-    addr_hit[25] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_6_OFFSET);
-    addr_hit[26] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_7_OFFSET);
-    addr_hit[27] = (reg_addr == FLASH_CTRL_DEFAULT_REGION_OFFSET);
+    addr_hit[19] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_OFFSET);
+    addr_hit[20] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_SHADOWED_1_OFFSET);
+    addr_hit[21] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_SHADOWED_2_OFFSET);
+    addr_hit[22] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_SHADOWED_3_OFFSET);
+    addr_hit[23] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_SHADOWED_4_OFFSET);
+    addr_hit[24] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_SHADOWED_5_OFFSET);
+    addr_hit[25] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_SHADOWED_6_OFFSET);
+    addr_hit[26] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_SHADOWED_7_OFFSET);
+    addr_hit[27] = (reg_addr == FLASH_CTRL_DEFAULT_REGION_SHADOWED_OFFSET);
     addr_hit[28] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_0_OFFSET);
     addr_hit[29] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_1_OFFSET);
     addr_hit[30] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_2_OFFSET);
@@ -10350,22 +11959,22 @@ module flash_ctrl_core_reg_top (
     addr_hit[35] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_7_OFFSET);
     addr_hit[36] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_8_OFFSET);
     addr_hit[37] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_9_OFFSET);
-    addr_hit[38] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_OFFSET);
-    addr_hit[39] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_1_OFFSET);
-    addr_hit[40] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_2_OFFSET);
-    addr_hit[41] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_3_OFFSET);
-    addr_hit[42] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_4_OFFSET);
-    addr_hit[43] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_5_OFFSET);
-    addr_hit[44] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_6_OFFSET);
-    addr_hit[45] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_7_OFFSET);
-    addr_hit[46] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_8_OFFSET);
-    addr_hit[47] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_9_OFFSET);
+    addr_hit[38] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_OFFSET);
+    addr_hit[39] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_1_OFFSET);
+    addr_hit[40] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_2_OFFSET);
+    addr_hit[41] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_3_OFFSET);
+    addr_hit[42] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_4_OFFSET);
+    addr_hit[43] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_5_OFFSET);
+    addr_hit[44] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_6_OFFSET);
+    addr_hit[45] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_7_OFFSET);
+    addr_hit[46] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_8_OFFSET);
+    addr_hit[47] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_9_OFFSET);
     addr_hit[48] = (reg_addr == FLASH_CTRL_BANK0_INFO1_REGWEN_OFFSET);
-    addr_hit[49] = (reg_addr == FLASH_CTRL_BANK0_INFO1_PAGE_CFG_OFFSET);
+    addr_hit[49] = (reg_addr == FLASH_CTRL_BANK0_INFO1_PAGE_CFG_SHADOWED_OFFSET);
     addr_hit[50] = (reg_addr == FLASH_CTRL_BANK0_INFO2_REGWEN_0_OFFSET);
     addr_hit[51] = (reg_addr == FLASH_CTRL_BANK0_INFO2_REGWEN_1_OFFSET);
-    addr_hit[52] = (reg_addr == FLASH_CTRL_BANK0_INFO2_PAGE_CFG_0_OFFSET);
-    addr_hit[53] = (reg_addr == FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_OFFSET);
+    addr_hit[52] = (reg_addr == FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_0_OFFSET);
+    addr_hit[53] = (reg_addr == FLASH_CTRL_BANK0_INFO2_PAGE_CFG_SHADOWED_1_OFFSET);
     addr_hit[54] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_0_OFFSET);
     addr_hit[55] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_1_OFFSET);
     addr_hit[56] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_2_OFFSET);
@@ -10376,24 +11985,24 @@ module flash_ctrl_core_reg_top (
     addr_hit[61] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_7_OFFSET);
     addr_hit[62] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_8_OFFSET);
     addr_hit[63] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_9_OFFSET);
-    addr_hit[64] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_OFFSET);
-    addr_hit[65] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_1_OFFSET);
-    addr_hit[66] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_2_OFFSET);
-    addr_hit[67] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_3_OFFSET);
-    addr_hit[68] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_4_OFFSET);
-    addr_hit[69] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_5_OFFSET);
-    addr_hit[70] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_6_OFFSET);
-    addr_hit[71] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_7_OFFSET);
-    addr_hit[72] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_8_OFFSET);
-    addr_hit[73] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_9_OFFSET);
+    addr_hit[64] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_0_OFFSET);
+    addr_hit[65] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_1_OFFSET);
+    addr_hit[66] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_2_OFFSET);
+    addr_hit[67] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_3_OFFSET);
+    addr_hit[68] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_4_OFFSET);
+    addr_hit[69] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_5_OFFSET);
+    addr_hit[70] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_6_OFFSET);
+    addr_hit[71] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_7_OFFSET);
+    addr_hit[72] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_8_OFFSET);
+    addr_hit[73] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_9_OFFSET);
     addr_hit[74] = (reg_addr == FLASH_CTRL_BANK1_INFO1_REGWEN_OFFSET);
-    addr_hit[75] = (reg_addr == FLASH_CTRL_BANK1_INFO1_PAGE_CFG_OFFSET);
+    addr_hit[75] = (reg_addr == FLASH_CTRL_BANK1_INFO1_PAGE_CFG_SHADOWED_OFFSET);
     addr_hit[76] = (reg_addr == FLASH_CTRL_BANK1_INFO2_REGWEN_0_OFFSET);
     addr_hit[77] = (reg_addr == FLASH_CTRL_BANK1_INFO2_REGWEN_1_OFFSET);
-    addr_hit[78] = (reg_addr == FLASH_CTRL_BANK1_INFO2_PAGE_CFG_0_OFFSET);
-    addr_hit[79] = (reg_addr == FLASH_CTRL_BANK1_INFO2_PAGE_CFG_1_OFFSET);
+    addr_hit[78] = (reg_addr == FLASH_CTRL_BANK1_INFO2_PAGE_CFG_SHADOWED_0_OFFSET);
+    addr_hit[79] = (reg_addr == FLASH_CTRL_BANK1_INFO2_PAGE_CFG_SHADOWED_1_OFFSET);
     addr_hit[80] = (reg_addr == FLASH_CTRL_BANK_CFG_REGWEN_OFFSET);
-    addr_hit[81] = (reg_addr == FLASH_CTRL_MP_BANK_CFG_OFFSET);
+    addr_hit[81] = (reg_addr == FLASH_CTRL_MP_BANK_CFG_SHADOWED_OFFSET);
     addr_hit[82] = (reg_addr == FLASH_CTRL_OP_STATUS_OFFSET);
     addr_hit[83] = (reg_addr == FLASH_CTRL_STATUS_OFFSET);
     addr_hit[84] = (reg_addr == FLASH_CTRL_ERR_CODE_OFFSET);
@@ -10615,171 +12224,180 @@ module flash_ctrl_core_reg_top (
   assign region_cfg_regwen_7_we = addr_hit[18] & reg_we & !reg_error;
 
   assign region_cfg_regwen_7_wd = reg_wdata[0];
-  assign mp_region_cfg_0_we = addr_hit[19] & reg_we & !reg_error;
+  assign mp_region_cfg_shadowed_0_re = addr_hit[19] & reg_re & !reg_error;
+  assign mp_region_cfg_shadowed_0_we = addr_hit[19] & reg_we & !reg_error;
 
-  assign mp_region_cfg_0_en_0_wd = reg_wdata[0];
+  assign mp_region_cfg_shadowed_0_en_0_wd = reg_wdata[0];
 
-  assign mp_region_cfg_0_rd_en_0_wd = reg_wdata[1];
+  assign mp_region_cfg_shadowed_0_rd_en_0_wd = reg_wdata[1];
 
-  assign mp_region_cfg_0_prog_en_0_wd = reg_wdata[2];
+  assign mp_region_cfg_shadowed_0_prog_en_0_wd = reg_wdata[2];
 
-  assign mp_region_cfg_0_erase_en_0_wd = reg_wdata[3];
+  assign mp_region_cfg_shadowed_0_erase_en_0_wd = reg_wdata[3];
 
-  assign mp_region_cfg_0_scramble_en_0_wd = reg_wdata[4];
+  assign mp_region_cfg_shadowed_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign mp_region_cfg_0_ecc_en_0_wd = reg_wdata[5];
+  assign mp_region_cfg_shadowed_0_ecc_en_0_wd = reg_wdata[5];
 
-  assign mp_region_cfg_0_he_en_0_wd = reg_wdata[6];
+  assign mp_region_cfg_shadowed_0_he_en_0_wd = reg_wdata[6];
 
-  assign mp_region_cfg_0_base_0_wd = reg_wdata[16:8];
+  assign mp_region_cfg_shadowed_0_base_0_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_0_size_0_wd = reg_wdata[26:17];
-  assign mp_region_cfg_1_we = addr_hit[20] & reg_we & !reg_error;
+  assign mp_region_cfg_shadowed_0_size_0_wd = reg_wdata[26:17];
+  assign mp_region_cfg_shadowed_1_re = addr_hit[20] & reg_re & !reg_error;
+  assign mp_region_cfg_shadowed_1_we = addr_hit[20] & reg_we & !reg_error;
 
-  assign mp_region_cfg_1_en_1_wd = reg_wdata[0];
+  assign mp_region_cfg_shadowed_1_en_1_wd = reg_wdata[0];
 
-  assign mp_region_cfg_1_rd_en_1_wd = reg_wdata[1];
+  assign mp_region_cfg_shadowed_1_rd_en_1_wd = reg_wdata[1];
 
-  assign mp_region_cfg_1_prog_en_1_wd = reg_wdata[2];
+  assign mp_region_cfg_shadowed_1_prog_en_1_wd = reg_wdata[2];
 
-  assign mp_region_cfg_1_erase_en_1_wd = reg_wdata[3];
+  assign mp_region_cfg_shadowed_1_erase_en_1_wd = reg_wdata[3];
 
-  assign mp_region_cfg_1_scramble_en_1_wd = reg_wdata[4];
+  assign mp_region_cfg_shadowed_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign mp_region_cfg_1_ecc_en_1_wd = reg_wdata[5];
+  assign mp_region_cfg_shadowed_1_ecc_en_1_wd = reg_wdata[5];
 
-  assign mp_region_cfg_1_he_en_1_wd = reg_wdata[6];
+  assign mp_region_cfg_shadowed_1_he_en_1_wd = reg_wdata[6];
 
-  assign mp_region_cfg_1_base_1_wd = reg_wdata[16:8];
+  assign mp_region_cfg_shadowed_1_base_1_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_1_size_1_wd = reg_wdata[26:17];
-  assign mp_region_cfg_2_we = addr_hit[21] & reg_we & !reg_error;
+  assign mp_region_cfg_shadowed_1_size_1_wd = reg_wdata[26:17];
+  assign mp_region_cfg_shadowed_2_re = addr_hit[21] & reg_re & !reg_error;
+  assign mp_region_cfg_shadowed_2_we = addr_hit[21] & reg_we & !reg_error;
 
-  assign mp_region_cfg_2_en_2_wd = reg_wdata[0];
+  assign mp_region_cfg_shadowed_2_en_2_wd = reg_wdata[0];
 
-  assign mp_region_cfg_2_rd_en_2_wd = reg_wdata[1];
+  assign mp_region_cfg_shadowed_2_rd_en_2_wd = reg_wdata[1];
 
-  assign mp_region_cfg_2_prog_en_2_wd = reg_wdata[2];
+  assign mp_region_cfg_shadowed_2_prog_en_2_wd = reg_wdata[2];
 
-  assign mp_region_cfg_2_erase_en_2_wd = reg_wdata[3];
+  assign mp_region_cfg_shadowed_2_erase_en_2_wd = reg_wdata[3];
 
-  assign mp_region_cfg_2_scramble_en_2_wd = reg_wdata[4];
+  assign mp_region_cfg_shadowed_2_scramble_en_2_wd = reg_wdata[4];
 
-  assign mp_region_cfg_2_ecc_en_2_wd = reg_wdata[5];
+  assign mp_region_cfg_shadowed_2_ecc_en_2_wd = reg_wdata[5];
 
-  assign mp_region_cfg_2_he_en_2_wd = reg_wdata[6];
+  assign mp_region_cfg_shadowed_2_he_en_2_wd = reg_wdata[6];
 
-  assign mp_region_cfg_2_base_2_wd = reg_wdata[16:8];
+  assign mp_region_cfg_shadowed_2_base_2_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_2_size_2_wd = reg_wdata[26:17];
-  assign mp_region_cfg_3_we = addr_hit[22] & reg_we & !reg_error;
+  assign mp_region_cfg_shadowed_2_size_2_wd = reg_wdata[26:17];
+  assign mp_region_cfg_shadowed_3_re = addr_hit[22] & reg_re & !reg_error;
+  assign mp_region_cfg_shadowed_3_we = addr_hit[22] & reg_we & !reg_error;
 
-  assign mp_region_cfg_3_en_3_wd = reg_wdata[0];
+  assign mp_region_cfg_shadowed_3_en_3_wd = reg_wdata[0];
 
-  assign mp_region_cfg_3_rd_en_3_wd = reg_wdata[1];
+  assign mp_region_cfg_shadowed_3_rd_en_3_wd = reg_wdata[1];
 
-  assign mp_region_cfg_3_prog_en_3_wd = reg_wdata[2];
+  assign mp_region_cfg_shadowed_3_prog_en_3_wd = reg_wdata[2];
 
-  assign mp_region_cfg_3_erase_en_3_wd = reg_wdata[3];
+  assign mp_region_cfg_shadowed_3_erase_en_3_wd = reg_wdata[3];
 
-  assign mp_region_cfg_3_scramble_en_3_wd = reg_wdata[4];
+  assign mp_region_cfg_shadowed_3_scramble_en_3_wd = reg_wdata[4];
 
-  assign mp_region_cfg_3_ecc_en_3_wd = reg_wdata[5];
+  assign mp_region_cfg_shadowed_3_ecc_en_3_wd = reg_wdata[5];
 
-  assign mp_region_cfg_3_he_en_3_wd = reg_wdata[6];
+  assign mp_region_cfg_shadowed_3_he_en_3_wd = reg_wdata[6];
 
-  assign mp_region_cfg_3_base_3_wd = reg_wdata[16:8];
+  assign mp_region_cfg_shadowed_3_base_3_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_3_size_3_wd = reg_wdata[26:17];
-  assign mp_region_cfg_4_we = addr_hit[23] & reg_we & !reg_error;
+  assign mp_region_cfg_shadowed_3_size_3_wd = reg_wdata[26:17];
+  assign mp_region_cfg_shadowed_4_re = addr_hit[23] & reg_re & !reg_error;
+  assign mp_region_cfg_shadowed_4_we = addr_hit[23] & reg_we & !reg_error;
 
-  assign mp_region_cfg_4_en_4_wd = reg_wdata[0];
+  assign mp_region_cfg_shadowed_4_en_4_wd = reg_wdata[0];
 
-  assign mp_region_cfg_4_rd_en_4_wd = reg_wdata[1];
+  assign mp_region_cfg_shadowed_4_rd_en_4_wd = reg_wdata[1];
 
-  assign mp_region_cfg_4_prog_en_4_wd = reg_wdata[2];
+  assign mp_region_cfg_shadowed_4_prog_en_4_wd = reg_wdata[2];
 
-  assign mp_region_cfg_4_erase_en_4_wd = reg_wdata[3];
+  assign mp_region_cfg_shadowed_4_erase_en_4_wd = reg_wdata[3];
 
-  assign mp_region_cfg_4_scramble_en_4_wd = reg_wdata[4];
+  assign mp_region_cfg_shadowed_4_scramble_en_4_wd = reg_wdata[4];
 
-  assign mp_region_cfg_4_ecc_en_4_wd = reg_wdata[5];
+  assign mp_region_cfg_shadowed_4_ecc_en_4_wd = reg_wdata[5];
 
-  assign mp_region_cfg_4_he_en_4_wd = reg_wdata[6];
+  assign mp_region_cfg_shadowed_4_he_en_4_wd = reg_wdata[6];
 
-  assign mp_region_cfg_4_base_4_wd = reg_wdata[16:8];
+  assign mp_region_cfg_shadowed_4_base_4_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_4_size_4_wd = reg_wdata[26:17];
-  assign mp_region_cfg_5_we = addr_hit[24] & reg_we & !reg_error;
+  assign mp_region_cfg_shadowed_4_size_4_wd = reg_wdata[26:17];
+  assign mp_region_cfg_shadowed_5_re = addr_hit[24] & reg_re & !reg_error;
+  assign mp_region_cfg_shadowed_5_we = addr_hit[24] & reg_we & !reg_error;
 
-  assign mp_region_cfg_5_en_5_wd = reg_wdata[0];
+  assign mp_region_cfg_shadowed_5_en_5_wd = reg_wdata[0];
 
-  assign mp_region_cfg_5_rd_en_5_wd = reg_wdata[1];
+  assign mp_region_cfg_shadowed_5_rd_en_5_wd = reg_wdata[1];
 
-  assign mp_region_cfg_5_prog_en_5_wd = reg_wdata[2];
+  assign mp_region_cfg_shadowed_5_prog_en_5_wd = reg_wdata[2];
 
-  assign mp_region_cfg_5_erase_en_5_wd = reg_wdata[3];
+  assign mp_region_cfg_shadowed_5_erase_en_5_wd = reg_wdata[3];
 
-  assign mp_region_cfg_5_scramble_en_5_wd = reg_wdata[4];
+  assign mp_region_cfg_shadowed_5_scramble_en_5_wd = reg_wdata[4];
 
-  assign mp_region_cfg_5_ecc_en_5_wd = reg_wdata[5];
+  assign mp_region_cfg_shadowed_5_ecc_en_5_wd = reg_wdata[5];
 
-  assign mp_region_cfg_5_he_en_5_wd = reg_wdata[6];
+  assign mp_region_cfg_shadowed_5_he_en_5_wd = reg_wdata[6];
 
-  assign mp_region_cfg_5_base_5_wd = reg_wdata[16:8];
+  assign mp_region_cfg_shadowed_5_base_5_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_5_size_5_wd = reg_wdata[26:17];
-  assign mp_region_cfg_6_we = addr_hit[25] & reg_we & !reg_error;
+  assign mp_region_cfg_shadowed_5_size_5_wd = reg_wdata[26:17];
+  assign mp_region_cfg_shadowed_6_re = addr_hit[25] & reg_re & !reg_error;
+  assign mp_region_cfg_shadowed_6_we = addr_hit[25] & reg_we & !reg_error;
 
-  assign mp_region_cfg_6_en_6_wd = reg_wdata[0];
+  assign mp_region_cfg_shadowed_6_en_6_wd = reg_wdata[0];
 
-  assign mp_region_cfg_6_rd_en_6_wd = reg_wdata[1];
+  assign mp_region_cfg_shadowed_6_rd_en_6_wd = reg_wdata[1];
 
-  assign mp_region_cfg_6_prog_en_6_wd = reg_wdata[2];
+  assign mp_region_cfg_shadowed_6_prog_en_6_wd = reg_wdata[2];
 
-  assign mp_region_cfg_6_erase_en_6_wd = reg_wdata[3];
+  assign mp_region_cfg_shadowed_6_erase_en_6_wd = reg_wdata[3];
 
-  assign mp_region_cfg_6_scramble_en_6_wd = reg_wdata[4];
+  assign mp_region_cfg_shadowed_6_scramble_en_6_wd = reg_wdata[4];
 
-  assign mp_region_cfg_6_ecc_en_6_wd = reg_wdata[5];
+  assign mp_region_cfg_shadowed_6_ecc_en_6_wd = reg_wdata[5];
 
-  assign mp_region_cfg_6_he_en_6_wd = reg_wdata[6];
+  assign mp_region_cfg_shadowed_6_he_en_6_wd = reg_wdata[6];
 
-  assign mp_region_cfg_6_base_6_wd = reg_wdata[16:8];
+  assign mp_region_cfg_shadowed_6_base_6_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_6_size_6_wd = reg_wdata[26:17];
-  assign mp_region_cfg_7_we = addr_hit[26] & reg_we & !reg_error;
+  assign mp_region_cfg_shadowed_6_size_6_wd = reg_wdata[26:17];
+  assign mp_region_cfg_shadowed_7_re = addr_hit[26] & reg_re & !reg_error;
+  assign mp_region_cfg_shadowed_7_we = addr_hit[26] & reg_we & !reg_error;
 
-  assign mp_region_cfg_7_en_7_wd = reg_wdata[0];
+  assign mp_region_cfg_shadowed_7_en_7_wd = reg_wdata[0];
 
-  assign mp_region_cfg_7_rd_en_7_wd = reg_wdata[1];
+  assign mp_region_cfg_shadowed_7_rd_en_7_wd = reg_wdata[1];
 
-  assign mp_region_cfg_7_prog_en_7_wd = reg_wdata[2];
+  assign mp_region_cfg_shadowed_7_prog_en_7_wd = reg_wdata[2];
 
-  assign mp_region_cfg_7_erase_en_7_wd = reg_wdata[3];
+  assign mp_region_cfg_shadowed_7_erase_en_7_wd = reg_wdata[3];
 
-  assign mp_region_cfg_7_scramble_en_7_wd = reg_wdata[4];
+  assign mp_region_cfg_shadowed_7_scramble_en_7_wd = reg_wdata[4];
 
-  assign mp_region_cfg_7_ecc_en_7_wd = reg_wdata[5];
+  assign mp_region_cfg_shadowed_7_ecc_en_7_wd = reg_wdata[5];
 
-  assign mp_region_cfg_7_he_en_7_wd = reg_wdata[6];
+  assign mp_region_cfg_shadowed_7_he_en_7_wd = reg_wdata[6];
 
-  assign mp_region_cfg_7_base_7_wd = reg_wdata[16:8];
+  assign mp_region_cfg_shadowed_7_base_7_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_7_size_7_wd = reg_wdata[26:17];
-  assign default_region_we = addr_hit[27] & reg_we & !reg_error;
+  assign mp_region_cfg_shadowed_7_size_7_wd = reg_wdata[26:17];
+  assign default_region_shadowed_re = addr_hit[27] & reg_re & !reg_error;
+  assign default_region_shadowed_we = addr_hit[27] & reg_we & !reg_error;
 
-  assign default_region_rd_en_wd = reg_wdata[0];
+  assign default_region_shadowed_rd_en_wd = reg_wdata[0];
 
-  assign default_region_prog_en_wd = reg_wdata[1];
+  assign default_region_shadowed_prog_en_wd = reg_wdata[1];
 
-  assign default_region_erase_en_wd = reg_wdata[2];
+  assign default_region_shadowed_erase_en_wd = reg_wdata[2];
 
-  assign default_region_scramble_en_wd = reg_wdata[3];
+  assign default_region_shadowed_scramble_en_wd = reg_wdata[3];
 
-  assign default_region_ecc_en_wd = reg_wdata[4];
+  assign default_region_shadowed_ecc_en_wd = reg_wdata[4];
 
-  assign default_region_he_en_wd = reg_wdata[5];
+  assign default_region_shadowed_he_en_wd = reg_wdata[5];
   assign bank0_info0_regwen_0_we = addr_hit[28] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_0_wd = reg_wdata[0];
@@ -10810,210 +12428,223 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_regwen_9_we = addr_hit[37] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_9_wd = reg_wdata[0];
-  assign bank0_info0_page_cfg_0_we = addr_hit[38] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_0_re = addr_hit[38] & reg_re & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_0_we = addr_hit[38] & reg_we & !reg_error;
 
-  assign bank0_info0_page_cfg_0_en_0_wd = reg_wdata[0];
+  assign bank0_info0_page_cfg_shadowed_0_en_0_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_0_rd_en_0_wd = reg_wdata[1];
+  assign bank0_info0_page_cfg_shadowed_0_rd_en_0_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_0_prog_en_0_wd = reg_wdata[2];
+  assign bank0_info0_page_cfg_shadowed_0_prog_en_0_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_0_erase_en_0_wd = reg_wdata[3];
+  assign bank0_info0_page_cfg_shadowed_0_erase_en_0_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
+  assign bank0_info0_page_cfg_shadowed_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_0_ecc_en_0_wd = reg_wdata[5];
+  assign bank0_info0_page_cfg_shadowed_0_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_0_he_en_0_wd = reg_wdata[6];
-  assign bank0_info0_page_cfg_1_we = addr_hit[39] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_0_he_en_0_wd = reg_wdata[6];
+  assign bank0_info0_page_cfg_shadowed_1_re = addr_hit[39] & reg_re & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_1_we = addr_hit[39] & reg_we & !reg_error;
 
-  assign bank0_info0_page_cfg_1_en_1_wd = reg_wdata[0];
+  assign bank0_info0_page_cfg_shadowed_1_en_1_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_1_rd_en_1_wd = reg_wdata[1];
+  assign bank0_info0_page_cfg_shadowed_1_rd_en_1_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_1_prog_en_1_wd = reg_wdata[2];
+  assign bank0_info0_page_cfg_shadowed_1_prog_en_1_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_1_erase_en_1_wd = reg_wdata[3];
+  assign bank0_info0_page_cfg_shadowed_1_erase_en_1_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
+  assign bank0_info0_page_cfg_shadowed_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_1_ecc_en_1_wd = reg_wdata[5];
+  assign bank0_info0_page_cfg_shadowed_1_ecc_en_1_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_1_he_en_1_wd = reg_wdata[6];
-  assign bank0_info0_page_cfg_2_we = addr_hit[40] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_1_he_en_1_wd = reg_wdata[6];
+  assign bank0_info0_page_cfg_shadowed_2_re = addr_hit[40] & reg_re & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_2_we = addr_hit[40] & reg_we & !reg_error;
 
-  assign bank0_info0_page_cfg_2_en_2_wd = reg_wdata[0];
+  assign bank0_info0_page_cfg_shadowed_2_en_2_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_2_rd_en_2_wd = reg_wdata[1];
+  assign bank0_info0_page_cfg_shadowed_2_rd_en_2_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_2_prog_en_2_wd = reg_wdata[2];
+  assign bank0_info0_page_cfg_shadowed_2_prog_en_2_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_2_erase_en_2_wd = reg_wdata[3];
+  assign bank0_info0_page_cfg_shadowed_2_erase_en_2_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_2_scramble_en_2_wd = reg_wdata[4];
+  assign bank0_info0_page_cfg_shadowed_2_scramble_en_2_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_2_ecc_en_2_wd = reg_wdata[5];
+  assign bank0_info0_page_cfg_shadowed_2_ecc_en_2_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_2_he_en_2_wd = reg_wdata[6];
-  assign bank0_info0_page_cfg_3_we = addr_hit[41] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_2_he_en_2_wd = reg_wdata[6];
+  assign bank0_info0_page_cfg_shadowed_3_re = addr_hit[41] & reg_re & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_3_we = addr_hit[41] & reg_we & !reg_error;
 
-  assign bank0_info0_page_cfg_3_en_3_wd = reg_wdata[0];
+  assign bank0_info0_page_cfg_shadowed_3_en_3_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_3_rd_en_3_wd = reg_wdata[1];
+  assign bank0_info0_page_cfg_shadowed_3_rd_en_3_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_3_prog_en_3_wd = reg_wdata[2];
+  assign bank0_info0_page_cfg_shadowed_3_prog_en_3_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_3_erase_en_3_wd = reg_wdata[3];
+  assign bank0_info0_page_cfg_shadowed_3_erase_en_3_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_3_scramble_en_3_wd = reg_wdata[4];
+  assign bank0_info0_page_cfg_shadowed_3_scramble_en_3_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_3_ecc_en_3_wd = reg_wdata[5];
+  assign bank0_info0_page_cfg_shadowed_3_ecc_en_3_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_3_he_en_3_wd = reg_wdata[6];
-  assign bank0_info0_page_cfg_4_we = addr_hit[42] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_3_he_en_3_wd = reg_wdata[6];
+  assign bank0_info0_page_cfg_shadowed_4_re = addr_hit[42] & reg_re & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_4_we = addr_hit[42] & reg_we & !reg_error;
 
-  assign bank0_info0_page_cfg_4_en_4_wd = reg_wdata[0];
+  assign bank0_info0_page_cfg_shadowed_4_en_4_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_4_rd_en_4_wd = reg_wdata[1];
+  assign bank0_info0_page_cfg_shadowed_4_rd_en_4_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_4_prog_en_4_wd = reg_wdata[2];
+  assign bank0_info0_page_cfg_shadowed_4_prog_en_4_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_4_erase_en_4_wd = reg_wdata[3];
+  assign bank0_info0_page_cfg_shadowed_4_erase_en_4_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_4_scramble_en_4_wd = reg_wdata[4];
+  assign bank0_info0_page_cfg_shadowed_4_scramble_en_4_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_4_ecc_en_4_wd = reg_wdata[5];
+  assign bank0_info0_page_cfg_shadowed_4_ecc_en_4_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_4_he_en_4_wd = reg_wdata[6];
-  assign bank0_info0_page_cfg_5_we = addr_hit[43] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_4_he_en_4_wd = reg_wdata[6];
+  assign bank0_info0_page_cfg_shadowed_5_re = addr_hit[43] & reg_re & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_5_we = addr_hit[43] & reg_we & !reg_error;
 
-  assign bank0_info0_page_cfg_5_en_5_wd = reg_wdata[0];
+  assign bank0_info0_page_cfg_shadowed_5_en_5_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_5_rd_en_5_wd = reg_wdata[1];
+  assign bank0_info0_page_cfg_shadowed_5_rd_en_5_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_5_prog_en_5_wd = reg_wdata[2];
+  assign bank0_info0_page_cfg_shadowed_5_prog_en_5_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_5_erase_en_5_wd = reg_wdata[3];
+  assign bank0_info0_page_cfg_shadowed_5_erase_en_5_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_5_scramble_en_5_wd = reg_wdata[4];
+  assign bank0_info0_page_cfg_shadowed_5_scramble_en_5_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_5_ecc_en_5_wd = reg_wdata[5];
+  assign bank0_info0_page_cfg_shadowed_5_ecc_en_5_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_5_he_en_5_wd = reg_wdata[6];
-  assign bank0_info0_page_cfg_6_we = addr_hit[44] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_5_he_en_5_wd = reg_wdata[6];
+  assign bank0_info0_page_cfg_shadowed_6_re = addr_hit[44] & reg_re & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_6_we = addr_hit[44] & reg_we & !reg_error;
 
-  assign bank0_info0_page_cfg_6_en_6_wd = reg_wdata[0];
+  assign bank0_info0_page_cfg_shadowed_6_en_6_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_6_rd_en_6_wd = reg_wdata[1];
+  assign bank0_info0_page_cfg_shadowed_6_rd_en_6_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_6_prog_en_6_wd = reg_wdata[2];
+  assign bank0_info0_page_cfg_shadowed_6_prog_en_6_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_6_erase_en_6_wd = reg_wdata[3];
+  assign bank0_info0_page_cfg_shadowed_6_erase_en_6_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_6_scramble_en_6_wd = reg_wdata[4];
+  assign bank0_info0_page_cfg_shadowed_6_scramble_en_6_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_6_ecc_en_6_wd = reg_wdata[5];
+  assign bank0_info0_page_cfg_shadowed_6_ecc_en_6_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_6_he_en_6_wd = reg_wdata[6];
-  assign bank0_info0_page_cfg_7_we = addr_hit[45] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_6_he_en_6_wd = reg_wdata[6];
+  assign bank0_info0_page_cfg_shadowed_7_re = addr_hit[45] & reg_re & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_7_we = addr_hit[45] & reg_we & !reg_error;
 
-  assign bank0_info0_page_cfg_7_en_7_wd = reg_wdata[0];
+  assign bank0_info0_page_cfg_shadowed_7_en_7_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_7_rd_en_7_wd = reg_wdata[1];
+  assign bank0_info0_page_cfg_shadowed_7_rd_en_7_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_7_prog_en_7_wd = reg_wdata[2];
+  assign bank0_info0_page_cfg_shadowed_7_prog_en_7_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_7_erase_en_7_wd = reg_wdata[3];
+  assign bank0_info0_page_cfg_shadowed_7_erase_en_7_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_7_scramble_en_7_wd = reg_wdata[4];
+  assign bank0_info0_page_cfg_shadowed_7_scramble_en_7_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_7_ecc_en_7_wd = reg_wdata[5];
+  assign bank0_info0_page_cfg_shadowed_7_ecc_en_7_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_7_he_en_7_wd = reg_wdata[6];
-  assign bank0_info0_page_cfg_8_we = addr_hit[46] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_7_he_en_7_wd = reg_wdata[6];
+  assign bank0_info0_page_cfg_shadowed_8_re = addr_hit[46] & reg_re & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_8_we = addr_hit[46] & reg_we & !reg_error;
 
-  assign bank0_info0_page_cfg_8_en_8_wd = reg_wdata[0];
+  assign bank0_info0_page_cfg_shadowed_8_en_8_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_8_rd_en_8_wd = reg_wdata[1];
+  assign bank0_info0_page_cfg_shadowed_8_rd_en_8_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_8_prog_en_8_wd = reg_wdata[2];
+  assign bank0_info0_page_cfg_shadowed_8_prog_en_8_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_8_erase_en_8_wd = reg_wdata[3];
+  assign bank0_info0_page_cfg_shadowed_8_erase_en_8_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_8_scramble_en_8_wd = reg_wdata[4];
+  assign bank0_info0_page_cfg_shadowed_8_scramble_en_8_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_8_ecc_en_8_wd = reg_wdata[5];
+  assign bank0_info0_page_cfg_shadowed_8_ecc_en_8_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_8_he_en_8_wd = reg_wdata[6];
-  assign bank0_info0_page_cfg_9_we = addr_hit[47] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_8_he_en_8_wd = reg_wdata[6];
+  assign bank0_info0_page_cfg_shadowed_9_re = addr_hit[47] & reg_re & !reg_error;
+  assign bank0_info0_page_cfg_shadowed_9_we = addr_hit[47] & reg_we & !reg_error;
 
-  assign bank0_info0_page_cfg_9_en_9_wd = reg_wdata[0];
+  assign bank0_info0_page_cfg_shadowed_9_en_9_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_9_rd_en_9_wd = reg_wdata[1];
+  assign bank0_info0_page_cfg_shadowed_9_rd_en_9_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_9_prog_en_9_wd = reg_wdata[2];
+  assign bank0_info0_page_cfg_shadowed_9_prog_en_9_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_9_erase_en_9_wd = reg_wdata[3];
+  assign bank0_info0_page_cfg_shadowed_9_erase_en_9_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_9_scramble_en_9_wd = reg_wdata[4];
+  assign bank0_info0_page_cfg_shadowed_9_scramble_en_9_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_9_ecc_en_9_wd = reg_wdata[5];
+  assign bank0_info0_page_cfg_shadowed_9_ecc_en_9_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_9_he_en_9_wd = reg_wdata[6];
+  assign bank0_info0_page_cfg_shadowed_9_he_en_9_wd = reg_wdata[6];
   assign bank0_info1_regwen_we = addr_hit[48] & reg_we & !reg_error;
 
   assign bank0_info1_regwen_wd = reg_wdata[0];
-  assign bank0_info1_page_cfg_we = addr_hit[49] & reg_we & !reg_error;
+  assign bank0_info1_page_cfg_shadowed_re = addr_hit[49] & reg_re & !reg_error;
+  assign bank0_info1_page_cfg_shadowed_we = addr_hit[49] & reg_we & !reg_error;
 
-  assign bank0_info1_page_cfg_en_0_wd = reg_wdata[0];
+  assign bank0_info1_page_cfg_shadowed_en_0_wd = reg_wdata[0];
 
-  assign bank0_info1_page_cfg_rd_en_0_wd = reg_wdata[1];
+  assign bank0_info1_page_cfg_shadowed_rd_en_0_wd = reg_wdata[1];
 
-  assign bank0_info1_page_cfg_prog_en_0_wd = reg_wdata[2];
+  assign bank0_info1_page_cfg_shadowed_prog_en_0_wd = reg_wdata[2];
 
-  assign bank0_info1_page_cfg_erase_en_0_wd = reg_wdata[3];
+  assign bank0_info1_page_cfg_shadowed_erase_en_0_wd = reg_wdata[3];
 
-  assign bank0_info1_page_cfg_scramble_en_0_wd = reg_wdata[4];
+  assign bank0_info1_page_cfg_shadowed_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank0_info1_page_cfg_ecc_en_0_wd = reg_wdata[5];
+  assign bank0_info1_page_cfg_shadowed_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank0_info1_page_cfg_he_en_0_wd = reg_wdata[6];
+  assign bank0_info1_page_cfg_shadowed_he_en_0_wd = reg_wdata[6];
   assign bank0_info2_regwen_0_we = addr_hit[50] & reg_we & !reg_error;
 
   assign bank0_info2_regwen_0_wd = reg_wdata[0];
   assign bank0_info2_regwen_1_we = addr_hit[51] & reg_we & !reg_error;
 
   assign bank0_info2_regwen_1_wd = reg_wdata[0];
-  assign bank0_info2_page_cfg_0_we = addr_hit[52] & reg_we & !reg_error;
+  assign bank0_info2_page_cfg_shadowed_0_re = addr_hit[52] & reg_re & !reg_error;
+  assign bank0_info2_page_cfg_shadowed_0_we = addr_hit[52] & reg_we & !reg_error;
 
-  assign bank0_info2_page_cfg_0_en_0_wd = reg_wdata[0];
+  assign bank0_info2_page_cfg_shadowed_0_en_0_wd = reg_wdata[0];
 
-  assign bank0_info2_page_cfg_0_rd_en_0_wd = reg_wdata[1];
+  assign bank0_info2_page_cfg_shadowed_0_rd_en_0_wd = reg_wdata[1];
 
-  assign bank0_info2_page_cfg_0_prog_en_0_wd = reg_wdata[2];
+  assign bank0_info2_page_cfg_shadowed_0_prog_en_0_wd = reg_wdata[2];
 
-  assign bank0_info2_page_cfg_0_erase_en_0_wd = reg_wdata[3];
+  assign bank0_info2_page_cfg_shadowed_0_erase_en_0_wd = reg_wdata[3];
 
-  assign bank0_info2_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
+  assign bank0_info2_page_cfg_shadowed_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank0_info2_page_cfg_0_ecc_en_0_wd = reg_wdata[5];
+  assign bank0_info2_page_cfg_shadowed_0_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank0_info2_page_cfg_0_he_en_0_wd = reg_wdata[6];
-  assign bank0_info2_page_cfg_1_we = addr_hit[53] & reg_we & !reg_error;
+  assign bank0_info2_page_cfg_shadowed_0_he_en_0_wd = reg_wdata[6];
+  assign bank0_info2_page_cfg_shadowed_1_re = addr_hit[53] & reg_re & !reg_error;
+  assign bank0_info2_page_cfg_shadowed_1_we = addr_hit[53] & reg_we & !reg_error;
 
-  assign bank0_info2_page_cfg_1_en_1_wd = reg_wdata[0];
+  assign bank0_info2_page_cfg_shadowed_1_en_1_wd = reg_wdata[0];
 
-  assign bank0_info2_page_cfg_1_rd_en_1_wd = reg_wdata[1];
+  assign bank0_info2_page_cfg_shadowed_1_rd_en_1_wd = reg_wdata[1];
 
-  assign bank0_info2_page_cfg_1_prog_en_1_wd = reg_wdata[2];
+  assign bank0_info2_page_cfg_shadowed_1_prog_en_1_wd = reg_wdata[2];
 
-  assign bank0_info2_page_cfg_1_erase_en_1_wd = reg_wdata[3];
+  assign bank0_info2_page_cfg_shadowed_1_erase_en_1_wd = reg_wdata[3];
 
-  assign bank0_info2_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
+  assign bank0_info2_page_cfg_shadowed_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign bank0_info2_page_cfg_1_ecc_en_1_wd = reg_wdata[5];
+  assign bank0_info2_page_cfg_shadowed_1_ecc_en_1_wd = reg_wdata[5];
 
-  assign bank0_info2_page_cfg_1_he_en_1_wd = reg_wdata[6];
+  assign bank0_info2_page_cfg_shadowed_1_he_en_1_wd = reg_wdata[6];
   assign bank1_info0_regwen_0_we = addr_hit[54] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_0_wd = reg_wdata[0];
@@ -11044,218 +12675,232 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_regwen_9_we = addr_hit[63] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_9_wd = reg_wdata[0];
-  assign bank1_info0_page_cfg_0_we = addr_hit[64] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_0_re = addr_hit[64] & reg_re & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_0_we = addr_hit[64] & reg_we & !reg_error;
 
-  assign bank1_info0_page_cfg_0_en_0_wd = reg_wdata[0];
+  assign bank1_info0_page_cfg_shadowed_0_en_0_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_0_rd_en_0_wd = reg_wdata[1];
+  assign bank1_info0_page_cfg_shadowed_0_rd_en_0_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_0_prog_en_0_wd = reg_wdata[2];
+  assign bank1_info0_page_cfg_shadowed_0_prog_en_0_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_0_erase_en_0_wd = reg_wdata[3];
+  assign bank1_info0_page_cfg_shadowed_0_erase_en_0_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
+  assign bank1_info0_page_cfg_shadowed_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_0_ecc_en_0_wd = reg_wdata[5];
+  assign bank1_info0_page_cfg_shadowed_0_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_0_he_en_0_wd = reg_wdata[6];
-  assign bank1_info0_page_cfg_1_we = addr_hit[65] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_0_he_en_0_wd = reg_wdata[6];
+  assign bank1_info0_page_cfg_shadowed_1_re = addr_hit[65] & reg_re & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_1_we = addr_hit[65] & reg_we & !reg_error;
 
-  assign bank1_info0_page_cfg_1_en_1_wd = reg_wdata[0];
+  assign bank1_info0_page_cfg_shadowed_1_en_1_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_1_rd_en_1_wd = reg_wdata[1];
+  assign bank1_info0_page_cfg_shadowed_1_rd_en_1_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_1_prog_en_1_wd = reg_wdata[2];
+  assign bank1_info0_page_cfg_shadowed_1_prog_en_1_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_1_erase_en_1_wd = reg_wdata[3];
+  assign bank1_info0_page_cfg_shadowed_1_erase_en_1_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
+  assign bank1_info0_page_cfg_shadowed_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_1_ecc_en_1_wd = reg_wdata[5];
+  assign bank1_info0_page_cfg_shadowed_1_ecc_en_1_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_1_he_en_1_wd = reg_wdata[6];
-  assign bank1_info0_page_cfg_2_we = addr_hit[66] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_1_he_en_1_wd = reg_wdata[6];
+  assign bank1_info0_page_cfg_shadowed_2_re = addr_hit[66] & reg_re & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_2_we = addr_hit[66] & reg_we & !reg_error;
 
-  assign bank1_info0_page_cfg_2_en_2_wd = reg_wdata[0];
+  assign bank1_info0_page_cfg_shadowed_2_en_2_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_2_rd_en_2_wd = reg_wdata[1];
+  assign bank1_info0_page_cfg_shadowed_2_rd_en_2_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_2_prog_en_2_wd = reg_wdata[2];
+  assign bank1_info0_page_cfg_shadowed_2_prog_en_2_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_2_erase_en_2_wd = reg_wdata[3];
+  assign bank1_info0_page_cfg_shadowed_2_erase_en_2_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_2_scramble_en_2_wd = reg_wdata[4];
+  assign bank1_info0_page_cfg_shadowed_2_scramble_en_2_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_2_ecc_en_2_wd = reg_wdata[5];
+  assign bank1_info0_page_cfg_shadowed_2_ecc_en_2_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_2_he_en_2_wd = reg_wdata[6];
-  assign bank1_info0_page_cfg_3_we = addr_hit[67] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_2_he_en_2_wd = reg_wdata[6];
+  assign bank1_info0_page_cfg_shadowed_3_re = addr_hit[67] & reg_re & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_3_we = addr_hit[67] & reg_we & !reg_error;
 
-  assign bank1_info0_page_cfg_3_en_3_wd = reg_wdata[0];
+  assign bank1_info0_page_cfg_shadowed_3_en_3_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_3_rd_en_3_wd = reg_wdata[1];
+  assign bank1_info0_page_cfg_shadowed_3_rd_en_3_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_3_prog_en_3_wd = reg_wdata[2];
+  assign bank1_info0_page_cfg_shadowed_3_prog_en_3_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_3_erase_en_3_wd = reg_wdata[3];
+  assign bank1_info0_page_cfg_shadowed_3_erase_en_3_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_3_scramble_en_3_wd = reg_wdata[4];
+  assign bank1_info0_page_cfg_shadowed_3_scramble_en_3_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_3_ecc_en_3_wd = reg_wdata[5];
+  assign bank1_info0_page_cfg_shadowed_3_ecc_en_3_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_3_he_en_3_wd = reg_wdata[6];
-  assign bank1_info0_page_cfg_4_we = addr_hit[68] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_3_he_en_3_wd = reg_wdata[6];
+  assign bank1_info0_page_cfg_shadowed_4_re = addr_hit[68] & reg_re & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_4_we = addr_hit[68] & reg_we & !reg_error;
 
-  assign bank1_info0_page_cfg_4_en_4_wd = reg_wdata[0];
+  assign bank1_info0_page_cfg_shadowed_4_en_4_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_4_rd_en_4_wd = reg_wdata[1];
+  assign bank1_info0_page_cfg_shadowed_4_rd_en_4_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_4_prog_en_4_wd = reg_wdata[2];
+  assign bank1_info0_page_cfg_shadowed_4_prog_en_4_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_4_erase_en_4_wd = reg_wdata[3];
+  assign bank1_info0_page_cfg_shadowed_4_erase_en_4_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_4_scramble_en_4_wd = reg_wdata[4];
+  assign bank1_info0_page_cfg_shadowed_4_scramble_en_4_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_4_ecc_en_4_wd = reg_wdata[5];
+  assign bank1_info0_page_cfg_shadowed_4_ecc_en_4_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_4_he_en_4_wd = reg_wdata[6];
-  assign bank1_info0_page_cfg_5_we = addr_hit[69] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_4_he_en_4_wd = reg_wdata[6];
+  assign bank1_info0_page_cfg_shadowed_5_re = addr_hit[69] & reg_re & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_5_we = addr_hit[69] & reg_we & !reg_error;
 
-  assign bank1_info0_page_cfg_5_en_5_wd = reg_wdata[0];
+  assign bank1_info0_page_cfg_shadowed_5_en_5_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_5_rd_en_5_wd = reg_wdata[1];
+  assign bank1_info0_page_cfg_shadowed_5_rd_en_5_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_5_prog_en_5_wd = reg_wdata[2];
+  assign bank1_info0_page_cfg_shadowed_5_prog_en_5_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_5_erase_en_5_wd = reg_wdata[3];
+  assign bank1_info0_page_cfg_shadowed_5_erase_en_5_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_5_scramble_en_5_wd = reg_wdata[4];
+  assign bank1_info0_page_cfg_shadowed_5_scramble_en_5_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_5_ecc_en_5_wd = reg_wdata[5];
+  assign bank1_info0_page_cfg_shadowed_5_ecc_en_5_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_5_he_en_5_wd = reg_wdata[6];
-  assign bank1_info0_page_cfg_6_we = addr_hit[70] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_5_he_en_5_wd = reg_wdata[6];
+  assign bank1_info0_page_cfg_shadowed_6_re = addr_hit[70] & reg_re & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_6_we = addr_hit[70] & reg_we & !reg_error;
 
-  assign bank1_info0_page_cfg_6_en_6_wd = reg_wdata[0];
+  assign bank1_info0_page_cfg_shadowed_6_en_6_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_6_rd_en_6_wd = reg_wdata[1];
+  assign bank1_info0_page_cfg_shadowed_6_rd_en_6_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_6_prog_en_6_wd = reg_wdata[2];
+  assign bank1_info0_page_cfg_shadowed_6_prog_en_6_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_6_erase_en_6_wd = reg_wdata[3];
+  assign bank1_info0_page_cfg_shadowed_6_erase_en_6_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_6_scramble_en_6_wd = reg_wdata[4];
+  assign bank1_info0_page_cfg_shadowed_6_scramble_en_6_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_6_ecc_en_6_wd = reg_wdata[5];
+  assign bank1_info0_page_cfg_shadowed_6_ecc_en_6_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_6_he_en_6_wd = reg_wdata[6];
-  assign bank1_info0_page_cfg_7_we = addr_hit[71] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_6_he_en_6_wd = reg_wdata[6];
+  assign bank1_info0_page_cfg_shadowed_7_re = addr_hit[71] & reg_re & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_7_we = addr_hit[71] & reg_we & !reg_error;
 
-  assign bank1_info0_page_cfg_7_en_7_wd = reg_wdata[0];
+  assign bank1_info0_page_cfg_shadowed_7_en_7_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_7_rd_en_7_wd = reg_wdata[1];
+  assign bank1_info0_page_cfg_shadowed_7_rd_en_7_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_7_prog_en_7_wd = reg_wdata[2];
+  assign bank1_info0_page_cfg_shadowed_7_prog_en_7_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_7_erase_en_7_wd = reg_wdata[3];
+  assign bank1_info0_page_cfg_shadowed_7_erase_en_7_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_7_scramble_en_7_wd = reg_wdata[4];
+  assign bank1_info0_page_cfg_shadowed_7_scramble_en_7_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_7_ecc_en_7_wd = reg_wdata[5];
+  assign bank1_info0_page_cfg_shadowed_7_ecc_en_7_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_7_he_en_7_wd = reg_wdata[6];
-  assign bank1_info0_page_cfg_8_we = addr_hit[72] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_7_he_en_7_wd = reg_wdata[6];
+  assign bank1_info0_page_cfg_shadowed_8_re = addr_hit[72] & reg_re & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_8_we = addr_hit[72] & reg_we & !reg_error;
 
-  assign bank1_info0_page_cfg_8_en_8_wd = reg_wdata[0];
+  assign bank1_info0_page_cfg_shadowed_8_en_8_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_8_rd_en_8_wd = reg_wdata[1];
+  assign bank1_info0_page_cfg_shadowed_8_rd_en_8_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_8_prog_en_8_wd = reg_wdata[2];
+  assign bank1_info0_page_cfg_shadowed_8_prog_en_8_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_8_erase_en_8_wd = reg_wdata[3];
+  assign bank1_info0_page_cfg_shadowed_8_erase_en_8_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_8_scramble_en_8_wd = reg_wdata[4];
+  assign bank1_info0_page_cfg_shadowed_8_scramble_en_8_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_8_ecc_en_8_wd = reg_wdata[5];
+  assign bank1_info0_page_cfg_shadowed_8_ecc_en_8_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_8_he_en_8_wd = reg_wdata[6];
-  assign bank1_info0_page_cfg_9_we = addr_hit[73] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_8_he_en_8_wd = reg_wdata[6];
+  assign bank1_info0_page_cfg_shadowed_9_re = addr_hit[73] & reg_re & !reg_error;
+  assign bank1_info0_page_cfg_shadowed_9_we = addr_hit[73] & reg_we & !reg_error;
 
-  assign bank1_info0_page_cfg_9_en_9_wd = reg_wdata[0];
+  assign bank1_info0_page_cfg_shadowed_9_en_9_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_9_rd_en_9_wd = reg_wdata[1];
+  assign bank1_info0_page_cfg_shadowed_9_rd_en_9_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_9_prog_en_9_wd = reg_wdata[2];
+  assign bank1_info0_page_cfg_shadowed_9_prog_en_9_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_9_erase_en_9_wd = reg_wdata[3];
+  assign bank1_info0_page_cfg_shadowed_9_erase_en_9_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_9_scramble_en_9_wd = reg_wdata[4];
+  assign bank1_info0_page_cfg_shadowed_9_scramble_en_9_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_9_ecc_en_9_wd = reg_wdata[5];
+  assign bank1_info0_page_cfg_shadowed_9_ecc_en_9_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_9_he_en_9_wd = reg_wdata[6];
+  assign bank1_info0_page_cfg_shadowed_9_he_en_9_wd = reg_wdata[6];
   assign bank1_info1_regwen_we = addr_hit[74] & reg_we & !reg_error;
 
   assign bank1_info1_regwen_wd = reg_wdata[0];
-  assign bank1_info1_page_cfg_we = addr_hit[75] & reg_we & !reg_error;
+  assign bank1_info1_page_cfg_shadowed_re = addr_hit[75] & reg_re & !reg_error;
+  assign bank1_info1_page_cfg_shadowed_we = addr_hit[75] & reg_we & !reg_error;
 
-  assign bank1_info1_page_cfg_en_0_wd = reg_wdata[0];
+  assign bank1_info1_page_cfg_shadowed_en_0_wd = reg_wdata[0];
 
-  assign bank1_info1_page_cfg_rd_en_0_wd = reg_wdata[1];
+  assign bank1_info1_page_cfg_shadowed_rd_en_0_wd = reg_wdata[1];
 
-  assign bank1_info1_page_cfg_prog_en_0_wd = reg_wdata[2];
+  assign bank1_info1_page_cfg_shadowed_prog_en_0_wd = reg_wdata[2];
 
-  assign bank1_info1_page_cfg_erase_en_0_wd = reg_wdata[3];
+  assign bank1_info1_page_cfg_shadowed_erase_en_0_wd = reg_wdata[3];
 
-  assign bank1_info1_page_cfg_scramble_en_0_wd = reg_wdata[4];
+  assign bank1_info1_page_cfg_shadowed_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank1_info1_page_cfg_ecc_en_0_wd = reg_wdata[5];
+  assign bank1_info1_page_cfg_shadowed_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank1_info1_page_cfg_he_en_0_wd = reg_wdata[6];
+  assign bank1_info1_page_cfg_shadowed_he_en_0_wd = reg_wdata[6];
   assign bank1_info2_regwen_0_we = addr_hit[76] & reg_we & !reg_error;
 
   assign bank1_info2_regwen_0_wd = reg_wdata[0];
   assign bank1_info2_regwen_1_we = addr_hit[77] & reg_we & !reg_error;
 
   assign bank1_info2_regwen_1_wd = reg_wdata[0];
-  assign bank1_info2_page_cfg_0_we = addr_hit[78] & reg_we & !reg_error;
+  assign bank1_info2_page_cfg_shadowed_0_re = addr_hit[78] & reg_re & !reg_error;
+  assign bank1_info2_page_cfg_shadowed_0_we = addr_hit[78] & reg_we & !reg_error;
 
-  assign bank1_info2_page_cfg_0_en_0_wd = reg_wdata[0];
+  assign bank1_info2_page_cfg_shadowed_0_en_0_wd = reg_wdata[0];
 
-  assign bank1_info2_page_cfg_0_rd_en_0_wd = reg_wdata[1];
+  assign bank1_info2_page_cfg_shadowed_0_rd_en_0_wd = reg_wdata[1];
 
-  assign bank1_info2_page_cfg_0_prog_en_0_wd = reg_wdata[2];
+  assign bank1_info2_page_cfg_shadowed_0_prog_en_0_wd = reg_wdata[2];
 
-  assign bank1_info2_page_cfg_0_erase_en_0_wd = reg_wdata[3];
+  assign bank1_info2_page_cfg_shadowed_0_erase_en_0_wd = reg_wdata[3];
 
-  assign bank1_info2_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
+  assign bank1_info2_page_cfg_shadowed_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank1_info2_page_cfg_0_ecc_en_0_wd = reg_wdata[5];
+  assign bank1_info2_page_cfg_shadowed_0_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank1_info2_page_cfg_0_he_en_0_wd = reg_wdata[6];
-  assign bank1_info2_page_cfg_1_we = addr_hit[79] & reg_we & !reg_error;
+  assign bank1_info2_page_cfg_shadowed_0_he_en_0_wd = reg_wdata[6];
+  assign bank1_info2_page_cfg_shadowed_1_re = addr_hit[79] & reg_re & !reg_error;
+  assign bank1_info2_page_cfg_shadowed_1_we = addr_hit[79] & reg_we & !reg_error;
 
-  assign bank1_info2_page_cfg_1_en_1_wd = reg_wdata[0];
+  assign bank1_info2_page_cfg_shadowed_1_en_1_wd = reg_wdata[0];
 
-  assign bank1_info2_page_cfg_1_rd_en_1_wd = reg_wdata[1];
+  assign bank1_info2_page_cfg_shadowed_1_rd_en_1_wd = reg_wdata[1];
 
-  assign bank1_info2_page_cfg_1_prog_en_1_wd = reg_wdata[2];
+  assign bank1_info2_page_cfg_shadowed_1_prog_en_1_wd = reg_wdata[2];
 
-  assign bank1_info2_page_cfg_1_erase_en_1_wd = reg_wdata[3];
+  assign bank1_info2_page_cfg_shadowed_1_erase_en_1_wd = reg_wdata[3];
 
-  assign bank1_info2_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
+  assign bank1_info2_page_cfg_shadowed_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign bank1_info2_page_cfg_1_ecc_en_1_wd = reg_wdata[5];
+  assign bank1_info2_page_cfg_shadowed_1_ecc_en_1_wd = reg_wdata[5];
 
-  assign bank1_info2_page_cfg_1_he_en_1_wd = reg_wdata[6];
+  assign bank1_info2_page_cfg_shadowed_1_he_en_1_wd = reg_wdata[6];
   assign bank_cfg_regwen_we = addr_hit[80] & reg_we & !reg_error;
 
   assign bank_cfg_regwen_wd = reg_wdata[0];
-  assign mp_bank_cfg_we = addr_hit[81] & reg_we & !reg_error;
+  assign mp_bank_cfg_shadowed_re = addr_hit[81] & reg_re & !reg_error;
+  assign mp_bank_cfg_shadowed_we = addr_hit[81] & reg_we & !reg_error;
 
-  assign mp_bank_cfg_erase_en_0_wd = reg_wdata[0];
+  assign mp_bank_cfg_shadowed_erase_en_0_wd = reg_wdata[0];
 
-  assign mp_bank_cfg_erase_en_1_wd = reg_wdata[1];
+  assign mp_bank_cfg_shadowed_erase_en_1_wd = reg_wdata[1];
   assign op_status_we = addr_hit[82] & reg_we & !reg_error;
 
   assign op_status_done_wd = reg_wdata[0];
@@ -11406,108 +13051,108 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[0] = mp_region_cfg_0_en_0_qs;
-        reg_rdata_next[1] = mp_region_cfg_0_rd_en_0_qs;
-        reg_rdata_next[2] = mp_region_cfg_0_prog_en_0_qs;
-        reg_rdata_next[3] = mp_region_cfg_0_erase_en_0_qs;
-        reg_rdata_next[4] = mp_region_cfg_0_scramble_en_0_qs;
-        reg_rdata_next[5] = mp_region_cfg_0_ecc_en_0_qs;
-        reg_rdata_next[6] = mp_region_cfg_0_he_en_0_qs;
-        reg_rdata_next[16:8] = mp_region_cfg_0_base_0_qs;
-        reg_rdata_next[26:17] = mp_region_cfg_0_size_0_qs;
+        reg_rdata_next[0] = mp_region_cfg_shadowed_0_en_0_qs;
+        reg_rdata_next[1] = mp_region_cfg_shadowed_0_rd_en_0_qs;
+        reg_rdata_next[2] = mp_region_cfg_shadowed_0_prog_en_0_qs;
+        reg_rdata_next[3] = mp_region_cfg_shadowed_0_erase_en_0_qs;
+        reg_rdata_next[4] = mp_region_cfg_shadowed_0_scramble_en_0_qs;
+        reg_rdata_next[5] = mp_region_cfg_shadowed_0_ecc_en_0_qs;
+        reg_rdata_next[6] = mp_region_cfg_shadowed_0_he_en_0_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_shadowed_0_base_0_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_shadowed_0_size_0_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[0] = mp_region_cfg_1_en_1_qs;
-        reg_rdata_next[1] = mp_region_cfg_1_rd_en_1_qs;
-        reg_rdata_next[2] = mp_region_cfg_1_prog_en_1_qs;
-        reg_rdata_next[3] = mp_region_cfg_1_erase_en_1_qs;
-        reg_rdata_next[4] = mp_region_cfg_1_scramble_en_1_qs;
-        reg_rdata_next[5] = mp_region_cfg_1_ecc_en_1_qs;
-        reg_rdata_next[6] = mp_region_cfg_1_he_en_1_qs;
-        reg_rdata_next[16:8] = mp_region_cfg_1_base_1_qs;
-        reg_rdata_next[26:17] = mp_region_cfg_1_size_1_qs;
+        reg_rdata_next[0] = mp_region_cfg_shadowed_1_en_1_qs;
+        reg_rdata_next[1] = mp_region_cfg_shadowed_1_rd_en_1_qs;
+        reg_rdata_next[2] = mp_region_cfg_shadowed_1_prog_en_1_qs;
+        reg_rdata_next[3] = mp_region_cfg_shadowed_1_erase_en_1_qs;
+        reg_rdata_next[4] = mp_region_cfg_shadowed_1_scramble_en_1_qs;
+        reg_rdata_next[5] = mp_region_cfg_shadowed_1_ecc_en_1_qs;
+        reg_rdata_next[6] = mp_region_cfg_shadowed_1_he_en_1_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_shadowed_1_base_1_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_shadowed_1_size_1_qs;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[0] = mp_region_cfg_2_en_2_qs;
-        reg_rdata_next[1] = mp_region_cfg_2_rd_en_2_qs;
-        reg_rdata_next[2] = mp_region_cfg_2_prog_en_2_qs;
-        reg_rdata_next[3] = mp_region_cfg_2_erase_en_2_qs;
-        reg_rdata_next[4] = mp_region_cfg_2_scramble_en_2_qs;
-        reg_rdata_next[5] = mp_region_cfg_2_ecc_en_2_qs;
-        reg_rdata_next[6] = mp_region_cfg_2_he_en_2_qs;
-        reg_rdata_next[16:8] = mp_region_cfg_2_base_2_qs;
-        reg_rdata_next[26:17] = mp_region_cfg_2_size_2_qs;
+        reg_rdata_next[0] = mp_region_cfg_shadowed_2_en_2_qs;
+        reg_rdata_next[1] = mp_region_cfg_shadowed_2_rd_en_2_qs;
+        reg_rdata_next[2] = mp_region_cfg_shadowed_2_prog_en_2_qs;
+        reg_rdata_next[3] = mp_region_cfg_shadowed_2_erase_en_2_qs;
+        reg_rdata_next[4] = mp_region_cfg_shadowed_2_scramble_en_2_qs;
+        reg_rdata_next[5] = mp_region_cfg_shadowed_2_ecc_en_2_qs;
+        reg_rdata_next[6] = mp_region_cfg_shadowed_2_he_en_2_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_shadowed_2_base_2_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_shadowed_2_size_2_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[0] = mp_region_cfg_3_en_3_qs;
-        reg_rdata_next[1] = mp_region_cfg_3_rd_en_3_qs;
-        reg_rdata_next[2] = mp_region_cfg_3_prog_en_3_qs;
-        reg_rdata_next[3] = mp_region_cfg_3_erase_en_3_qs;
-        reg_rdata_next[4] = mp_region_cfg_3_scramble_en_3_qs;
-        reg_rdata_next[5] = mp_region_cfg_3_ecc_en_3_qs;
-        reg_rdata_next[6] = mp_region_cfg_3_he_en_3_qs;
-        reg_rdata_next[16:8] = mp_region_cfg_3_base_3_qs;
-        reg_rdata_next[26:17] = mp_region_cfg_3_size_3_qs;
+        reg_rdata_next[0] = mp_region_cfg_shadowed_3_en_3_qs;
+        reg_rdata_next[1] = mp_region_cfg_shadowed_3_rd_en_3_qs;
+        reg_rdata_next[2] = mp_region_cfg_shadowed_3_prog_en_3_qs;
+        reg_rdata_next[3] = mp_region_cfg_shadowed_3_erase_en_3_qs;
+        reg_rdata_next[4] = mp_region_cfg_shadowed_3_scramble_en_3_qs;
+        reg_rdata_next[5] = mp_region_cfg_shadowed_3_ecc_en_3_qs;
+        reg_rdata_next[6] = mp_region_cfg_shadowed_3_he_en_3_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_shadowed_3_base_3_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_shadowed_3_size_3_qs;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[0] = mp_region_cfg_4_en_4_qs;
-        reg_rdata_next[1] = mp_region_cfg_4_rd_en_4_qs;
-        reg_rdata_next[2] = mp_region_cfg_4_prog_en_4_qs;
-        reg_rdata_next[3] = mp_region_cfg_4_erase_en_4_qs;
-        reg_rdata_next[4] = mp_region_cfg_4_scramble_en_4_qs;
-        reg_rdata_next[5] = mp_region_cfg_4_ecc_en_4_qs;
-        reg_rdata_next[6] = mp_region_cfg_4_he_en_4_qs;
-        reg_rdata_next[16:8] = mp_region_cfg_4_base_4_qs;
-        reg_rdata_next[26:17] = mp_region_cfg_4_size_4_qs;
+        reg_rdata_next[0] = mp_region_cfg_shadowed_4_en_4_qs;
+        reg_rdata_next[1] = mp_region_cfg_shadowed_4_rd_en_4_qs;
+        reg_rdata_next[2] = mp_region_cfg_shadowed_4_prog_en_4_qs;
+        reg_rdata_next[3] = mp_region_cfg_shadowed_4_erase_en_4_qs;
+        reg_rdata_next[4] = mp_region_cfg_shadowed_4_scramble_en_4_qs;
+        reg_rdata_next[5] = mp_region_cfg_shadowed_4_ecc_en_4_qs;
+        reg_rdata_next[6] = mp_region_cfg_shadowed_4_he_en_4_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_shadowed_4_base_4_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_shadowed_4_size_4_qs;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[0] = mp_region_cfg_5_en_5_qs;
-        reg_rdata_next[1] = mp_region_cfg_5_rd_en_5_qs;
-        reg_rdata_next[2] = mp_region_cfg_5_prog_en_5_qs;
-        reg_rdata_next[3] = mp_region_cfg_5_erase_en_5_qs;
-        reg_rdata_next[4] = mp_region_cfg_5_scramble_en_5_qs;
-        reg_rdata_next[5] = mp_region_cfg_5_ecc_en_5_qs;
-        reg_rdata_next[6] = mp_region_cfg_5_he_en_5_qs;
-        reg_rdata_next[16:8] = mp_region_cfg_5_base_5_qs;
-        reg_rdata_next[26:17] = mp_region_cfg_5_size_5_qs;
+        reg_rdata_next[0] = mp_region_cfg_shadowed_5_en_5_qs;
+        reg_rdata_next[1] = mp_region_cfg_shadowed_5_rd_en_5_qs;
+        reg_rdata_next[2] = mp_region_cfg_shadowed_5_prog_en_5_qs;
+        reg_rdata_next[3] = mp_region_cfg_shadowed_5_erase_en_5_qs;
+        reg_rdata_next[4] = mp_region_cfg_shadowed_5_scramble_en_5_qs;
+        reg_rdata_next[5] = mp_region_cfg_shadowed_5_ecc_en_5_qs;
+        reg_rdata_next[6] = mp_region_cfg_shadowed_5_he_en_5_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_shadowed_5_base_5_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_shadowed_5_size_5_qs;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[0] = mp_region_cfg_6_en_6_qs;
-        reg_rdata_next[1] = mp_region_cfg_6_rd_en_6_qs;
-        reg_rdata_next[2] = mp_region_cfg_6_prog_en_6_qs;
-        reg_rdata_next[3] = mp_region_cfg_6_erase_en_6_qs;
-        reg_rdata_next[4] = mp_region_cfg_6_scramble_en_6_qs;
-        reg_rdata_next[5] = mp_region_cfg_6_ecc_en_6_qs;
-        reg_rdata_next[6] = mp_region_cfg_6_he_en_6_qs;
-        reg_rdata_next[16:8] = mp_region_cfg_6_base_6_qs;
-        reg_rdata_next[26:17] = mp_region_cfg_6_size_6_qs;
+        reg_rdata_next[0] = mp_region_cfg_shadowed_6_en_6_qs;
+        reg_rdata_next[1] = mp_region_cfg_shadowed_6_rd_en_6_qs;
+        reg_rdata_next[2] = mp_region_cfg_shadowed_6_prog_en_6_qs;
+        reg_rdata_next[3] = mp_region_cfg_shadowed_6_erase_en_6_qs;
+        reg_rdata_next[4] = mp_region_cfg_shadowed_6_scramble_en_6_qs;
+        reg_rdata_next[5] = mp_region_cfg_shadowed_6_ecc_en_6_qs;
+        reg_rdata_next[6] = mp_region_cfg_shadowed_6_he_en_6_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_shadowed_6_base_6_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_shadowed_6_size_6_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[0] = mp_region_cfg_7_en_7_qs;
-        reg_rdata_next[1] = mp_region_cfg_7_rd_en_7_qs;
-        reg_rdata_next[2] = mp_region_cfg_7_prog_en_7_qs;
-        reg_rdata_next[3] = mp_region_cfg_7_erase_en_7_qs;
-        reg_rdata_next[4] = mp_region_cfg_7_scramble_en_7_qs;
-        reg_rdata_next[5] = mp_region_cfg_7_ecc_en_7_qs;
-        reg_rdata_next[6] = mp_region_cfg_7_he_en_7_qs;
-        reg_rdata_next[16:8] = mp_region_cfg_7_base_7_qs;
-        reg_rdata_next[26:17] = mp_region_cfg_7_size_7_qs;
+        reg_rdata_next[0] = mp_region_cfg_shadowed_7_en_7_qs;
+        reg_rdata_next[1] = mp_region_cfg_shadowed_7_rd_en_7_qs;
+        reg_rdata_next[2] = mp_region_cfg_shadowed_7_prog_en_7_qs;
+        reg_rdata_next[3] = mp_region_cfg_shadowed_7_erase_en_7_qs;
+        reg_rdata_next[4] = mp_region_cfg_shadowed_7_scramble_en_7_qs;
+        reg_rdata_next[5] = mp_region_cfg_shadowed_7_ecc_en_7_qs;
+        reg_rdata_next[6] = mp_region_cfg_shadowed_7_he_en_7_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_shadowed_7_base_7_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_shadowed_7_size_7_qs;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[0] = default_region_rd_en_qs;
-        reg_rdata_next[1] = default_region_prog_en_qs;
-        reg_rdata_next[2] = default_region_erase_en_qs;
-        reg_rdata_next[3] = default_region_scramble_en_qs;
-        reg_rdata_next[4] = default_region_ecc_en_qs;
-        reg_rdata_next[5] = default_region_he_en_qs;
+        reg_rdata_next[0] = default_region_shadowed_rd_en_qs;
+        reg_rdata_next[1] = default_region_shadowed_prog_en_qs;
+        reg_rdata_next[2] = default_region_shadowed_erase_en_qs;
+        reg_rdata_next[3] = default_region_shadowed_scramble_en_qs;
+        reg_rdata_next[4] = default_region_shadowed_ecc_en_qs;
+        reg_rdata_next[5] = default_region_shadowed_he_en_qs;
       end
 
       addr_hit[28]: begin
@@ -11551,103 +13196,103 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[38]: begin
-        reg_rdata_next[0] = bank0_info0_page_cfg_0_en_0_qs;
-        reg_rdata_next[1] = bank0_info0_page_cfg_0_rd_en_0_qs;
-        reg_rdata_next[2] = bank0_info0_page_cfg_0_prog_en_0_qs;
-        reg_rdata_next[3] = bank0_info0_page_cfg_0_erase_en_0_qs;
-        reg_rdata_next[4] = bank0_info0_page_cfg_0_scramble_en_0_qs;
-        reg_rdata_next[5] = bank0_info0_page_cfg_0_ecc_en_0_qs;
-        reg_rdata_next[6] = bank0_info0_page_cfg_0_he_en_0_qs;
+        reg_rdata_next[0] = bank0_info0_page_cfg_shadowed_0_en_0_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_shadowed_0_rd_en_0_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_shadowed_0_prog_en_0_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_shadowed_0_erase_en_0_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_shadowed_0_scramble_en_0_qs;
+        reg_rdata_next[5] = bank0_info0_page_cfg_shadowed_0_ecc_en_0_qs;
+        reg_rdata_next[6] = bank0_info0_page_cfg_shadowed_0_he_en_0_qs;
       end
 
       addr_hit[39]: begin
-        reg_rdata_next[0] = bank0_info0_page_cfg_1_en_1_qs;
-        reg_rdata_next[1] = bank0_info0_page_cfg_1_rd_en_1_qs;
-        reg_rdata_next[2] = bank0_info0_page_cfg_1_prog_en_1_qs;
-        reg_rdata_next[3] = bank0_info0_page_cfg_1_erase_en_1_qs;
-        reg_rdata_next[4] = bank0_info0_page_cfg_1_scramble_en_1_qs;
-        reg_rdata_next[5] = bank0_info0_page_cfg_1_ecc_en_1_qs;
-        reg_rdata_next[6] = bank0_info0_page_cfg_1_he_en_1_qs;
+        reg_rdata_next[0] = bank0_info0_page_cfg_shadowed_1_en_1_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_shadowed_1_rd_en_1_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_shadowed_1_prog_en_1_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_shadowed_1_erase_en_1_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_shadowed_1_scramble_en_1_qs;
+        reg_rdata_next[5] = bank0_info0_page_cfg_shadowed_1_ecc_en_1_qs;
+        reg_rdata_next[6] = bank0_info0_page_cfg_shadowed_1_he_en_1_qs;
       end
 
       addr_hit[40]: begin
-        reg_rdata_next[0] = bank0_info0_page_cfg_2_en_2_qs;
-        reg_rdata_next[1] = bank0_info0_page_cfg_2_rd_en_2_qs;
-        reg_rdata_next[2] = bank0_info0_page_cfg_2_prog_en_2_qs;
-        reg_rdata_next[3] = bank0_info0_page_cfg_2_erase_en_2_qs;
-        reg_rdata_next[4] = bank0_info0_page_cfg_2_scramble_en_2_qs;
-        reg_rdata_next[5] = bank0_info0_page_cfg_2_ecc_en_2_qs;
-        reg_rdata_next[6] = bank0_info0_page_cfg_2_he_en_2_qs;
+        reg_rdata_next[0] = bank0_info0_page_cfg_shadowed_2_en_2_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_shadowed_2_rd_en_2_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_shadowed_2_prog_en_2_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_shadowed_2_erase_en_2_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_shadowed_2_scramble_en_2_qs;
+        reg_rdata_next[5] = bank0_info0_page_cfg_shadowed_2_ecc_en_2_qs;
+        reg_rdata_next[6] = bank0_info0_page_cfg_shadowed_2_he_en_2_qs;
       end
 
       addr_hit[41]: begin
-        reg_rdata_next[0] = bank0_info0_page_cfg_3_en_3_qs;
-        reg_rdata_next[1] = bank0_info0_page_cfg_3_rd_en_3_qs;
-        reg_rdata_next[2] = bank0_info0_page_cfg_3_prog_en_3_qs;
-        reg_rdata_next[3] = bank0_info0_page_cfg_3_erase_en_3_qs;
-        reg_rdata_next[4] = bank0_info0_page_cfg_3_scramble_en_3_qs;
-        reg_rdata_next[5] = bank0_info0_page_cfg_3_ecc_en_3_qs;
-        reg_rdata_next[6] = bank0_info0_page_cfg_3_he_en_3_qs;
+        reg_rdata_next[0] = bank0_info0_page_cfg_shadowed_3_en_3_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_shadowed_3_rd_en_3_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_shadowed_3_prog_en_3_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_shadowed_3_erase_en_3_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_shadowed_3_scramble_en_3_qs;
+        reg_rdata_next[5] = bank0_info0_page_cfg_shadowed_3_ecc_en_3_qs;
+        reg_rdata_next[6] = bank0_info0_page_cfg_shadowed_3_he_en_3_qs;
       end
 
       addr_hit[42]: begin
-        reg_rdata_next[0] = bank0_info0_page_cfg_4_en_4_qs;
-        reg_rdata_next[1] = bank0_info0_page_cfg_4_rd_en_4_qs;
-        reg_rdata_next[2] = bank0_info0_page_cfg_4_prog_en_4_qs;
-        reg_rdata_next[3] = bank0_info0_page_cfg_4_erase_en_4_qs;
-        reg_rdata_next[4] = bank0_info0_page_cfg_4_scramble_en_4_qs;
-        reg_rdata_next[5] = bank0_info0_page_cfg_4_ecc_en_4_qs;
-        reg_rdata_next[6] = bank0_info0_page_cfg_4_he_en_4_qs;
+        reg_rdata_next[0] = bank0_info0_page_cfg_shadowed_4_en_4_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_shadowed_4_rd_en_4_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_shadowed_4_prog_en_4_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_shadowed_4_erase_en_4_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_shadowed_4_scramble_en_4_qs;
+        reg_rdata_next[5] = bank0_info0_page_cfg_shadowed_4_ecc_en_4_qs;
+        reg_rdata_next[6] = bank0_info0_page_cfg_shadowed_4_he_en_4_qs;
       end
 
       addr_hit[43]: begin
-        reg_rdata_next[0] = bank0_info0_page_cfg_5_en_5_qs;
-        reg_rdata_next[1] = bank0_info0_page_cfg_5_rd_en_5_qs;
-        reg_rdata_next[2] = bank0_info0_page_cfg_5_prog_en_5_qs;
-        reg_rdata_next[3] = bank0_info0_page_cfg_5_erase_en_5_qs;
-        reg_rdata_next[4] = bank0_info0_page_cfg_5_scramble_en_5_qs;
-        reg_rdata_next[5] = bank0_info0_page_cfg_5_ecc_en_5_qs;
-        reg_rdata_next[6] = bank0_info0_page_cfg_5_he_en_5_qs;
+        reg_rdata_next[0] = bank0_info0_page_cfg_shadowed_5_en_5_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_shadowed_5_rd_en_5_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_shadowed_5_prog_en_5_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_shadowed_5_erase_en_5_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_shadowed_5_scramble_en_5_qs;
+        reg_rdata_next[5] = bank0_info0_page_cfg_shadowed_5_ecc_en_5_qs;
+        reg_rdata_next[6] = bank0_info0_page_cfg_shadowed_5_he_en_5_qs;
       end
 
       addr_hit[44]: begin
-        reg_rdata_next[0] = bank0_info0_page_cfg_6_en_6_qs;
-        reg_rdata_next[1] = bank0_info0_page_cfg_6_rd_en_6_qs;
-        reg_rdata_next[2] = bank0_info0_page_cfg_6_prog_en_6_qs;
-        reg_rdata_next[3] = bank0_info0_page_cfg_6_erase_en_6_qs;
-        reg_rdata_next[4] = bank0_info0_page_cfg_6_scramble_en_6_qs;
-        reg_rdata_next[5] = bank0_info0_page_cfg_6_ecc_en_6_qs;
-        reg_rdata_next[6] = bank0_info0_page_cfg_6_he_en_6_qs;
+        reg_rdata_next[0] = bank0_info0_page_cfg_shadowed_6_en_6_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_shadowed_6_rd_en_6_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_shadowed_6_prog_en_6_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_shadowed_6_erase_en_6_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_shadowed_6_scramble_en_6_qs;
+        reg_rdata_next[5] = bank0_info0_page_cfg_shadowed_6_ecc_en_6_qs;
+        reg_rdata_next[6] = bank0_info0_page_cfg_shadowed_6_he_en_6_qs;
       end
 
       addr_hit[45]: begin
-        reg_rdata_next[0] = bank0_info0_page_cfg_7_en_7_qs;
-        reg_rdata_next[1] = bank0_info0_page_cfg_7_rd_en_7_qs;
-        reg_rdata_next[2] = bank0_info0_page_cfg_7_prog_en_7_qs;
-        reg_rdata_next[3] = bank0_info0_page_cfg_7_erase_en_7_qs;
-        reg_rdata_next[4] = bank0_info0_page_cfg_7_scramble_en_7_qs;
-        reg_rdata_next[5] = bank0_info0_page_cfg_7_ecc_en_7_qs;
-        reg_rdata_next[6] = bank0_info0_page_cfg_7_he_en_7_qs;
+        reg_rdata_next[0] = bank0_info0_page_cfg_shadowed_7_en_7_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_shadowed_7_rd_en_7_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_shadowed_7_prog_en_7_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_shadowed_7_erase_en_7_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_shadowed_7_scramble_en_7_qs;
+        reg_rdata_next[5] = bank0_info0_page_cfg_shadowed_7_ecc_en_7_qs;
+        reg_rdata_next[6] = bank0_info0_page_cfg_shadowed_7_he_en_7_qs;
       end
 
       addr_hit[46]: begin
-        reg_rdata_next[0] = bank0_info0_page_cfg_8_en_8_qs;
-        reg_rdata_next[1] = bank0_info0_page_cfg_8_rd_en_8_qs;
-        reg_rdata_next[2] = bank0_info0_page_cfg_8_prog_en_8_qs;
-        reg_rdata_next[3] = bank0_info0_page_cfg_8_erase_en_8_qs;
-        reg_rdata_next[4] = bank0_info0_page_cfg_8_scramble_en_8_qs;
-        reg_rdata_next[5] = bank0_info0_page_cfg_8_ecc_en_8_qs;
-        reg_rdata_next[6] = bank0_info0_page_cfg_8_he_en_8_qs;
+        reg_rdata_next[0] = bank0_info0_page_cfg_shadowed_8_en_8_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_shadowed_8_rd_en_8_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_shadowed_8_prog_en_8_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_shadowed_8_erase_en_8_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_shadowed_8_scramble_en_8_qs;
+        reg_rdata_next[5] = bank0_info0_page_cfg_shadowed_8_ecc_en_8_qs;
+        reg_rdata_next[6] = bank0_info0_page_cfg_shadowed_8_he_en_8_qs;
       end
 
       addr_hit[47]: begin
-        reg_rdata_next[0] = bank0_info0_page_cfg_9_en_9_qs;
-        reg_rdata_next[1] = bank0_info0_page_cfg_9_rd_en_9_qs;
-        reg_rdata_next[2] = bank0_info0_page_cfg_9_prog_en_9_qs;
-        reg_rdata_next[3] = bank0_info0_page_cfg_9_erase_en_9_qs;
-        reg_rdata_next[4] = bank0_info0_page_cfg_9_scramble_en_9_qs;
-        reg_rdata_next[5] = bank0_info0_page_cfg_9_ecc_en_9_qs;
-        reg_rdata_next[6] = bank0_info0_page_cfg_9_he_en_9_qs;
+        reg_rdata_next[0] = bank0_info0_page_cfg_shadowed_9_en_9_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_shadowed_9_rd_en_9_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_shadowed_9_prog_en_9_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_shadowed_9_erase_en_9_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_shadowed_9_scramble_en_9_qs;
+        reg_rdata_next[5] = bank0_info0_page_cfg_shadowed_9_ecc_en_9_qs;
+        reg_rdata_next[6] = bank0_info0_page_cfg_shadowed_9_he_en_9_qs;
       end
 
       addr_hit[48]: begin
@@ -11655,13 +13300,13 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[49]: begin
-        reg_rdata_next[0] = bank0_info1_page_cfg_en_0_qs;
-        reg_rdata_next[1] = bank0_info1_page_cfg_rd_en_0_qs;
-        reg_rdata_next[2] = bank0_info1_page_cfg_prog_en_0_qs;
-        reg_rdata_next[3] = bank0_info1_page_cfg_erase_en_0_qs;
-        reg_rdata_next[4] = bank0_info1_page_cfg_scramble_en_0_qs;
-        reg_rdata_next[5] = bank0_info1_page_cfg_ecc_en_0_qs;
-        reg_rdata_next[6] = bank0_info1_page_cfg_he_en_0_qs;
+        reg_rdata_next[0] = bank0_info1_page_cfg_shadowed_en_0_qs;
+        reg_rdata_next[1] = bank0_info1_page_cfg_shadowed_rd_en_0_qs;
+        reg_rdata_next[2] = bank0_info1_page_cfg_shadowed_prog_en_0_qs;
+        reg_rdata_next[3] = bank0_info1_page_cfg_shadowed_erase_en_0_qs;
+        reg_rdata_next[4] = bank0_info1_page_cfg_shadowed_scramble_en_0_qs;
+        reg_rdata_next[5] = bank0_info1_page_cfg_shadowed_ecc_en_0_qs;
+        reg_rdata_next[6] = bank0_info1_page_cfg_shadowed_he_en_0_qs;
       end
 
       addr_hit[50]: begin
@@ -11673,23 +13318,23 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[52]: begin
-        reg_rdata_next[0] = bank0_info2_page_cfg_0_en_0_qs;
-        reg_rdata_next[1] = bank0_info2_page_cfg_0_rd_en_0_qs;
-        reg_rdata_next[2] = bank0_info2_page_cfg_0_prog_en_0_qs;
-        reg_rdata_next[3] = bank0_info2_page_cfg_0_erase_en_0_qs;
-        reg_rdata_next[4] = bank0_info2_page_cfg_0_scramble_en_0_qs;
-        reg_rdata_next[5] = bank0_info2_page_cfg_0_ecc_en_0_qs;
-        reg_rdata_next[6] = bank0_info2_page_cfg_0_he_en_0_qs;
+        reg_rdata_next[0] = bank0_info2_page_cfg_shadowed_0_en_0_qs;
+        reg_rdata_next[1] = bank0_info2_page_cfg_shadowed_0_rd_en_0_qs;
+        reg_rdata_next[2] = bank0_info2_page_cfg_shadowed_0_prog_en_0_qs;
+        reg_rdata_next[3] = bank0_info2_page_cfg_shadowed_0_erase_en_0_qs;
+        reg_rdata_next[4] = bank0_info2_page_cfg_shadowed_0_scramble_en_0_qs;
+        reg_rdata_next[5] = bank0_info2_page_cfg_shadowed_0_ecc_en_0_qs;
+        reg_rdata_next[6] = bank0_info2_page_cfg_shadowed_0_he_en_0_qs;
       end
 
       addr_hit[53]: begin
-        reg_rdata_next[0] = bank0_info2_page_cfg_1_en_1_qs;
-        reg_rdata_next[1] = bank0_info2_page_cfg_1_rd_en_1_qs;
-        reg_rdata_next[2] = bank0_info2_page_cfg_1_prog_en_1_qs;
-        reg_rdata_next[3] = bank0_info2_page_cfg_1_erase_en_1_qs;
-        reg_rdata_next[4] = bank0_info2_page_cfg_1_scramble_en_1_qs;
-        reg_rdata_next[5] = bank0_info2_page_cfg_1_ecc_en_1_qs;
-        reg_rdata_next[6] = bank0_info2_page_cfg_1_he_en_1_qs;
+        reg_rdata_next[0] = bank0_info2_page_cfg_shadowed_1_en_1_qs;
+        reg_rdata_next[1] = bank0_info2_page_cfg_shadowed_1_rd_en_1_qs;
+        reg_rdata_next[2] = bank0_info2_page_cfg_shadowed_1_prog_en_1_qs;
+        reg_rdata_next[3] = bank0_info2_page_cfg_shadowed_1_erase_en_1_qs;
+        reg_rdata_next[4] = bank0_info2_page_cfg_shadowed_1_scramble_en_1_qs;
+        reg_rdata_next[5] = bank0_info2_page_cfg_shadowed_1_ecc_en_1_qs;
+        reg_rdata_next[6] = bank0_info2_page_cfg_shadowed_1_he_en_1_qs;
       end
 
       addr_hit[54]: begin
@@ -11733,103 +13378,103 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[64]: begin
-        reg_rdata_next[0] = bank1_info0_page_cfg_0_en_0_qs;
-        reg_rdata_next[1] = bank1_info0_page_cfg_0_rd_en_0_qs;
-        reg_rdata_next[2] = bank1_info0_page_cfg_0_prog_en_0_qs;
-        reg_rdata_next[3] = bank1_info0_page_cfg_0_erase_en_0_qs;
-        reg_rdata_next[4] = bank1_info0_page_cfg_0_scramble_en_0_qs;
-        reg_rdata_next[5] = bank1_info0_page_cfg_0_ecc_en_0_qs;
-        reg_rdata_next[6] = bank1_info0_page_cfg_0_he_en_0_qs;
+        reg_rdata_next[0] = bank1_info0_page_cfg_shadowed_0_en_0_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_shadowed_0_rd_en_0_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_shadowed_0_prog_en_0_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_shadowed_0_erase_en_0_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_shadowed_0_scramble_en_0_qs;
+        reg_rdata_next[5] = bank1_info0_page_cfg_shadowed_0_ecc_en_0_qs;
+        reg_rdata_next[6] = bank1_info0_page_cfg_shadowed_0_he_en_0_qs;
       end
 
       addr_hit[65]: begin
-        reg_rdata_next[0] = bank1_info0_page_cfg_1_en_1_qs;
-        reg_rdata_next[1] = bank1_info0_page_cfg_1_rd_en_1_qs;
-        reg_rdata_next[2] = bank1_info0_page_cfg_1_prog_en_1_qs;
-        reg_rdata_next[3] = bank1_info0_page_cfg_1_erase_en_1_qs;
-        reg_rdata_next[4] = bank1_info0_page_cfg_1_scramble_en_1_qs;
-        reg_rdata_next[5] = bank1_info0_page_cfg_1_ecc_en_1_qs;
-        reg_rdata_next[6] = bank1_info0_page_cfg_1_he_en_1_qs;
+        reg_rdata_next[0] = bank1_info0_page_cfg_shadowed_1_en_1_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_shadowed_1_rd_en_1_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_shadowed_1_prog_en_1_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_shadowed_1_erase_en_1_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_shadowed_1_scramble_en_1_qs;
+        reg_rdata_next[5] = bank1_info0_page_cfg_shadowed_1_ecc_en_1_qs;
+        reg_rdata_next[6] = bank1_info0_page_cfg_shadowed_1_he_en_1_qs;
       end
 
       addr_hit[66]: begin
-        reg_rdata_next[0] = bank1_info0_page_cfg_2_en_2_qs;
-        reg_rdata_next[1] = bank1_info0_page_cfg_2_rd_en_2_qs;
-        reg_rdata_next[2] = bank1_info0_page_cfg_2_prog_en_2_qs;
-        reg_rdata_next[3] = bank1_info0_page_cfg_2_erase_en_2_qs;
-        reg_rdata_next[4] = bank1_info0_page_cfg_2_scramble_en_2_qs;
-        reg_rdata_next[5] = bank1_info0_page_cfg_2_ecc_en_2_qs;
-        reg_rdata_next[6] = bank1_info0_page_cfg_2_he_en_2_qs;
+        reg_rdata_next[0] = bank1_info0_page_cfg_shadowed_2_en_2_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_shadowed_2_rd_en_2_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_shadowed_2_prog_en_2_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_shadowed_2_erase_en_2_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_shadowed_2_scramble_en_2_qs;
+        reg_rdata_next[5] = bank1_info0_page_cfg_shadowed_2_ecc_en_2_qs;
+        reg_rdata_next[6] = bank1_info0_page_cfg_shadowed_2_he_en_2_qs;
       end
 
       addr_hit[67]: begin
-        reg_rdata_next[0] = bank1_info0_page_cfg_3_en_3_qs;
-        reg_rdata_next[1] = bank1_info0_page_cfg_3_rd_en_3_qs;
-        reg_rdata_next[2] = bank1_info0_page_cfg_3_prog_en_3_qs;
-        reg_rdata_next[3] = bank1_info0_page_cfg_3_erase_en_3_qs;
-        reg_rdata_next[4] = bank1_info0_page_cfg_3_scramble_en_3_qs;
-        reg_rdata_next[5] = bank1_info0_page_cfg_3_ecc_en_3_qs;
-        reg_rdata_next[6] = bank1_info0_page_cfg_3_he_en_3_qs;
+        reg_rdata_next[0] = bank1_info0_page_cfg_shadowed_3_en_3_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_shadowed_3_rd_en_3_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_shadowed_3_prog_en_3_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_shadowed_3_erase_en_3_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_shadowed_3_scramble_en_3_qs;
+        reg_rdata_next[5] = bank1_info0_page_cfg_shadowed_3_ecc_en_3_qs;
+        reg_rdata_next[6] = bank1_info0_page_cfg_shadowed_3_he_en_3_qs;
       end
 
       addr_hit[68]: begin
-        reg_rdata_next[0] = bank1_info0_page_cfg_4_en_4_qs;
-        reg_rdata_next[1] = bank1_info0_page_cfg_4_rd_en_4_qs;
-        reg_rdata_next[2] = bank1_info0_page_cfg_4_prog_en_4_qs;
-        reg_rdata_next[3] = bank1_info0_page_cfg_4_erase_en_4_qs;
-        reg_rdata_next[4] = bank1_info0_page_cfg_4_scramble_en_4_qs;
-        reg_rdata_next[5] = bank1_info0_page_cfg_4_ecc_en_4_qs;
-        reg_rdata_next[6] = bank1_info0_page_cfg_4_he_en_4_qs;
+        reg_rdata_next[0] = bank1_info0_page_cfg_shadowed_4_en_4_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_shadowed_4_rd_en_4_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_shadowed_4_prog_en_4_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_shadowed_4_erase_en_4_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_shadowed_4_scramble_en_4_qs;
+        reg_rdata_next[5] = bank1_info0_page_cfg_shadowed_4_ecc_en_4_qs;
+        reg_rdata_next[6] = bank1_info0_page_cfg_shadowed_4_he_en_4_qs;
       end
 
       addr_hit[69]: begin
-        reg_rdata_next[0] = bank1_info0_page_cfg_5_en_5_qs;
-        reg_rdata_next[1] = bank1_info0_page_cfg_5_rd_en_5_qs;
-        reg_rdata_next[2] = bank1_info0_page_cfg_5_prog_en_5_qs;
-        reg_rdata_next[3] = bank1_info0_page_cfg_5_erase_en_5_qs;
-        reg_rdata_next[4] = bank1_info0_page_cfg_5_scramble_en_5_qs;
-        reg_rdata_next[5] = bank1_info0_page_cfg_5_ecc_en_5_qs;
-        reg_rdata_next[6] = bank1_info0_page_cfg_5_he_en_5_qs;
+        reg_rdata_next[0] = bank1_info0_page_cfg_shadowed_5_en_5_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_shadowed_5_rd_en_5_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_shadowed_5_prog_en_5_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_shadowed_5_erase_en_5_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_shadowed_5_scramble_en_5_qs;
+        reg_rdata_next[5] = bank1_info0_page_cfg_shadowed_5_ecc_en_5_qs;
+        reg_rdata_next[6] = bank1_info0_page_cfg_shadowed_5_he_en_5_qs;
       end
 
       addr_hit[70]: begin
-        reg_rdata_next[0] = bank1_info0_page_cfg_6_en_6_qs;
-        reg_rdata_next[1] = bank1_info0_page_cfg_6_rd_en_6_qs;
-        reg_rdata_next[2] = bank1_info0_page_cfg_6_prog_en_6_qs;
-        reg_rdata_next[3] = bank1_info0_page_cfg_6_erase_en_6_qs;
-        reg_rdata_next[4] = bank1_info0_page_cfg_6_scramble_en_6_qs;
-        reg_rdata_next[5] = bank1_info0_page_cfg_6_ecc_en_6_qs;
-        reg_rdata_next[6] = bank1_info0_page_cfg_6_he_en_6_qs;
+        reg_rdata_next[0] = bank1_info0_page_cfg_shadowed_6_en_6_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_shadowed_6_rd_en_6_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_shadowed_6_prog_en_6_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_shadowed_6_erase_en_6_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_shadowed_6_scramble_en_6_qs;
+        reg_rdata_next[5] = bank1_info0_page_cfg_shadowed_6_ecc_en_6_qs;
+        reg_rdata_next[6] = bank1_info0_page_cfg_shadowed_6_he_en_6_qs;
       end
 
       addr_hit[71]: begin
-        reg_rdata_next[0] = bank1_info0_page_cfg_7_en_7_qs;
-        reg_rdata_next[1] = bank1_info0_page_cfg_7_rd_en_7_qs;
-        reg_rdata_next[2] = bank1_info0_page_cfg_7_prog_en_7_qs;
-        reg_rdata_next[3] = bank1_info0_page_cfg_7_erase_en_7_qs;
-        reg_rdata_next[4] = bank1_info0_page_cfg_7_scramble_en_7_qs;
-        reg_rdata_next[5] = bank1_info0_page_cfg_7_ecc_en_7_qs;
-        reg_rdata_next[6] = bank1_info0_page_cfg_7_he_en_7_qs;
+        reg_rdata_next[0] = bank1_info0_page_cfg_shadowed_7_en_7_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_shadowed_7_rd_en_7_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_shadowed_7_prog_en_7_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_shadowed_7_erase_en_7_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_shadowed_7_scramble_en_7_qs;
+        reg_rdata_next[5] = bank1_info0_page_cfg_shadowed_7_ecc_en_7_qs;
+        reg_rdata_next[6] = bank1_info0_page_cfg_shadowed_7_he_en_7_qs;
       end
 
       addr_hit[72]: begin
-        reg_rdata_next[0] = bank1_info0_page_cfg_8_en_8_qs;
-        reg_rdata_next[1] = bank1_info0_page_cfg_8_rd_en_8_qs;
-        reg_rdata_next[2] = bank1_info0_page_cfg_8_prog_en_8_qs;
-        reg_rdata_next[3] = bank1_info0_page_cfg_8_erase_en_8_qs;
-        reg_rdata_next[4] = bank1_info0_page_cfg_8_scramble_en_8_qs;
-        reg_rdata_next[5] = bank1_info0_page_cfg_8_ecc_en_8_qs;
-        reg_rdata_next[6] = bank1_info0_page_cfg_8_he_en_8_qs;
+        reg_rdata_next[0] = bank1_info0_page_cfg_shadowed_8_en_8_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_shadowed_8_rd_en_8_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_shadowed_8_prog_en_8_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_shadowed_8_erase_en_8_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_shadowed_8_scramble_en_8_qs;
+        reg_rdata_next[5] = bank1_info0_page_cfg_shadowed_8_ecc_en_8_qs;
+        reg_rdata_next[6] = bank1_info0_page_cfg_shadowed_8_he_en_8_qs;
       end
 
       addr_hit[73]: begin
-        reg_rdata_next[0] = bank1_info0_page_cfg_9_en_9_qs;
-        reg_rdata_next[1] = bank1_info0_page_cfg_9_rd_en_9_qs;
-        reg_rdata_next[2] = bank1_info0_page_cfg_9_prog_en_9_qs;
-        reg_rdata_next[3] = bank1_info0_page_cfg_9_erase_en_9_qs;
-        reg_rdata_next[4] = bank1_info0_page_cfg_9_scramble_en_9_qs;
-        reg_rdata_next[5] = bank1_info0_page_cfg_9_ecc_en_9_qs;
-        reg_rdata_next[6] = bank1_info0_page_cfg_9_he_en_9_qs;
+        reg_rdata_next[0] = bank1_info0_page_cfg_shadowed_9_en_9_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_shadowed_9_rd_en_9_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_shadowed_9_prog_en_9_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_shadowed_9_erase_en_9_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_shadowed_9_scramble_en_9_qs;
+        reg_rdata_next[5] = bank1_info0_page_cfg_shadowed_9_ecc_en_9_qs;
+        reg_rdata_next[6] = bank1_info0_page_cfg_shadowed_9_he_en_9_qs;
       end
 
       addr_hit[74]: begin
@@ -11837,13 +13482,13 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[75]: begin
-        reg_rdata_next[0] = bank1_info1_page_cfg_en_0_qs;
-        reg_rdata_next[1] = bank1_info1_page_cfg_rd_en_0_qs;
-        reg_rdata_next[2] = bank1_info1_page_cfg_prog_en_0_qs;
-        reg_rdata_next[3] = bank1_info1_page_cfg_erase_en_0_qs;
-        reg_rdata_next[4] = bank1_info1_page_cfg_scramble_en_0_qs;
-        reg_rdata_next[5] = bank1_info1_page_cfg_ecc_en_0_qs;
-        reg_rdata_next[6] = bank1_info1_page_cfg_he_en_0_qs;
+        reg_rdata_next[0] = bank1_info1_page_cfg_shadowed_en_0_qs;
+        reg_rdata_next[1] = bank1_info1_page_cfg_shadowed_rd_en_0_qs;
+        reg_rdata_next[2] = bank1_info1_page_cfg_shadowed_prog_en_0_qs;
+        reg_rdata_next[3] = bank1_info1_page_cfg_shadowed_erase_en_0_qs;
+        reg_rdata_next[4] = bank1_info1_page_cfg_shadowed_scramble_en_0_qs;
+        reg_rdata_next[5] = bank1_info1_page_cfg_shadowed_ecc_en_0_qs;
+        reg_rdata_next[6] = bank1_info1_page_cfg_shadowed_he_en_0_qs;
       end
 
       addr_hit[76]: begin
@@ -11855,23 +13500,23 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[78]: begin
-        reg_rdata_next[0] = bank1_info2_page_cfg_0_en_0_qs;
-        reg_rdata_next[1] = bank1_info2_page_cfg_0_rd_en_0_qs;
-        reg_rdata_next[2] = bank1_info2_page_cfg_0_prog_en_0_qs;
-        reg_rdata_next[3] = bank1_info2_page_cfg_0_erase_en_0_qs;
-        reg_rdata_next[4] = bank1_info2_page_cfg_0_scramble_en_0_qs;
-        reg_rdata_next[5] = bank1_info2_page_cfg_0_ecc_en_0_qs;
-        reg_rdata_next[6] = bank1_info2_page_cfg_0_he_en_0_qs;
+        reg_rdata_next[0] = bank1_info2_page_cfg_shadowed_0_en_0_qs;
+        reg_rdata_next[1] = bank1_info2_page_cfg_shadowed_0_rd_en_0_qs;
+        reg_rdata_next[2] = bank1_info2_page_cfg_shadowed_0_prog_en_0_qs;
+        reg_rdata_next[3] = bank1_info2_page_cfg_shadowed_0_erase_en_0_qs;
+        reg_rdata_next[4] = bank1_info2_page_cfg_shadowed_0_scramble_en_0_qs;
+        reg_rdata_next[5] = bank1_info2_page_cfg_shadowed_0_ecc_en_0_qs;
+        reg_rdata_next[6] = bank1_info2_page_cfg_shadowed_0_he_en_0_qs;
       end
 
       addr_hit[79]: begin
-        reg_rdata_next[0] = bank1_info2_page_cfg_1_en_1_qs;
-        reg_rdata_next[1] = bank1_info2_page_cfg_1_rd_en_1_qs;
-        reg_rdata_next[2] = bank1_info2_page_cfg_1_prog_en_1_qs;
-        reg_rdata_next[3] = bank1_info2_page_cfg_1_erase_en_1_qs;
-        reg_rdata_next[4] = bank1_info2_page_cfg_1_scramble_en_1_qs;
-        reg_rdata_next[5] = bank1_info2_page_cfg_1_ecc_en_1_qs;
-        reg_rdata_next[6] = bank1_info2_page_cfg_1_he_en_1_qs;
+        reg_rdata_next[0] = bank1_info2_page_cfg_shadowed_1_en_1_qs;
+        reg_rdata_next[1] = bank1_info2_page_cfg_shadowed_1_rd_en_1_qs;
+        reg_rdata_next[2] = bank1_info2_page_cfg_shadowed_1_prog_en_1_qs;
+        reg_rdata_next[3] = bank1_info2_page_cfg_shadowed_1_erase_en_1_qs;
+        reg_rdata_next[4] = bank1_info2_page_cfg_shadowed_1_scramble_en_1_qs;
+        reg_rdata_next[5] = bank1_info2_page_cfg_shadowed_1_ecc_en_1_qs;
+        reg_rdata_next[6] = bank1_info2_page_cfg_shadowed_1_he_en_1_qs;
       end
 
       addr_hit[80]: begin
@@ -11879,8 +13524,8 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[81]: begin
-        reg_rdata_next[0] = mp_bank_cfg_erase_en_0_qs;
-        reg_rdata_next[1] = mp_bank_cfg_erase_en_1_qs;
+        reg_rdata_next[0] = mp_bank_cfg_shadowed_erase_en_0_qs;
+        reg_rdata_next[1] = mp_bank_cfg_shadowed_erase_en_1_qs;
       end
 
       addr_hit[82]: begin
@@ -11974,7 +13619,26 @@ module flash_ctrl_core_reg_top (
 
   // shadow busy
   logic shadow_busy;
-  assign shadow_busy = 1'b0;
+  logic rst_done;
+  logic shadow_rst_done;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rst_done <= '0;
+    end else begin
+      rst_done <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_shadowed_ni) begin
+    if (!rst_shadowed_ni) begin
+      shadow_rst_done <= '0;
+    end else begin
+      shadow_rst_done <= 1'b1;
+    end
+  end
+
+  // both shadow and normal resets have been released
+  assign shadow_busy = ~(rst_done & shadow_rst_done);
 
   // register busy
   logic reg_busy_sel;
