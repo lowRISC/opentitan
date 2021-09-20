@@ -14,8 +14,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+
+#include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -297,68 +298,24 @@ typedef struct dif_lc_ctrl_device_id {
 } dif_lc_ctrl_device_id_t;
 
 /**
- * Hardware instantiation parameters for a lifecycle controller.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_lc_ctrl_params {
-  /**
-   * The base address for the lifecycle controller hardware registers.
-   */
-  mmio_region_t base_addr;
-} dif_lc_ctrl_params_t;
-
-/**
- * A handle to a lifecycle controller.
- *
- * This type should be treated as opaque by users.
- */
-typedef struct dif_lc_ctrl {
-  dif_lc_ctrl_params_t params;
-} dif_lc_ctrl_t;
-
-/**
- * The result of a lifecycle controller operation.
- */
-typedef enum dif_lc_ctrl_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifLcCtrlOk = 0,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifLcCtrlError = 1,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifLcCtrlBadArg = 2,
-} dif_lc_ctrl_result_t;
-
-/**
  * The result of a lifecycle attempt counter operation.
  */
 typedef enum dif_lc_ctrl_attempts_result {
   /**
    * Indicates that the operation succeeded.
    */
-  kDifLcCtrlAttemptsOk = kDifLcCtrlOk,
+  kDifLcCtrlAttemptsOk = kDifOk,
   /**
    * Indicates some unspecified failure.
    */
-  kDifLcCtrlAttemptsError = kDifLcCtrlError,
+  kDifLcCtrlAttemptsError = kDifError,
   /**
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
    * When this value is returned, no hardware operations occurred.
    */
-  kDifLcCtrlAttemptsBadArg = kDifLcCtrlBadArg,
+  kDifLcCtrlAttemptsBadArg = kDifBadArg,
   /**
    * Indicates that too many lifecycle transitions have occurred, such that the
    * hardware can no longer keep a count.
@@ -373,18 +330,18 @@ typedef enum dif_lc_ctrl_mutex_result {
   /**
    * Indicates that the operation succeeded.
    */
-  kDifLcCtrlMutexOk = kDifLcCtrlOk,
+  kDifLcCtrlMutexOk = kDifOk,
   /**
    * Indicates some unspecified failure.
    */
-  kDifLcCtrlMutexError = kDifLcCtrlError,
+  kDifLcCtrlMutexError = kDifError,
   /**
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
    * When this value is returned, no hardware operations occurred.
    */
-  kDifLcCtrlMutexBadArg = kDifLcCtrlBadArg,
+  kDifLcCtrlMutexBadArg = kDifBadArg,
 
   /**
    * Indicates that a mutex-guarded operation failed because someone (other
@@ -416,13 +373,12 @@ typedef enum dif_lc_ctrl_alert {
  *
  * This function does not actuate the hardware.
  *
- * @param params Hardware instantiation parameters.
+ * @param base_addr Base address of the UART peripheral.
  * @param[out] lc Out param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_result_t dif_lc_ctrl_init(dif_lc_ctrl_params_t params,
-                                      dif_lc_ctrl_t *lc);
+dif_result_t dif_lc_ctrl_init(mmio_region_t base_addr, dif_lc_ctrl_t *lc);
 
 /**
  * Returns the current state of the lifecycle controller.
@@ -432,8 +388,8 @@ dif_lc_ctrl_result_t dif_lc_ctrl_init(dif_lc_ctrl_params_t params,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
-                                           dif_lc_ctrl_state_t *state);
+dif_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
+                                   dif_lc_ctrl_state_t *state);
 
 /**
  * Returns the number of lifecycle transitions that this device has attempted,
@@ -455,8 +411,8 @@ dif_lc_ctrl_attempts_result_t dif_lc_ctrl_get_attempts(const dif_lc_ctrl_t *lc,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
-                                            dif_lc_ctrl_status_t *status);
+dif_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
+                                    dif_lc_ctrl_status_t *status);
 
 /**
  * Returns the current personalization state of the lifecycle controller.
@@ -466,8 +422,8 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
-                                              dif_lc_ctrl_id_state_t *state);
+dif_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
+                                      dif_lc_ctrl_id_state_t *state);
 
 /**
  * Returns the current device id reading from lifecycle controller's device id
@@ -478,8 +434,8 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_result_t dif_lc_ctrl_get_device_id(
-    const dif_lc_ctrl_t *lc, dif_lc_ctrl_device_id_t *device_id);
+dif_result_t dif_lc_ctrl_get_device_id(const dif_lc_ctrl_t *lc,
+                                       dif_lc_ctrl_device_id_t *device_id);
 
 /**
  * Forces a particular alert, causing it to be escalated as if the hardware had
@@ -490,8 +446,8 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_device_id(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
-                                             dif_lc_ctrl_alert_t alert);
+dif_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
+                                     dif_lc_ctrl_alert_t alert);
 
 /**
  * Attempts to acquire the lifecycle controller's HW mutex.
@@ -555,8 +511,8 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_vendor_test_reg(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_result_t dif_lc_ctrl_get_otp_vendor_test_reg(
-    const dif_lc_ctrl_t *lc, uint32_t *settings);
+dif_result_t dif_lc_ctrl_get_otp_vendor_test_reg(const dif_lc_ctrl_t *lc,
+                                                 uint32_t *settings);
 
 #ifdef __cplusplus
 }  // extern "C"

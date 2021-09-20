@@ -16,3 +16,18 @@ sw_lib_dif_autogen_uart = declare_dependency(
     ],
   )
 )
+
+# Autogen Lifecycle Controller DIF library
+sw_lib_dif_autogen_lc_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_lc_ctrl',
+    sources: [
+      hw_ip_lc_ctrl_reg_h,
+      'dif_lc_ctrl_autogen.c',
+    ],
+    include_directories: include_directories('../'),
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
