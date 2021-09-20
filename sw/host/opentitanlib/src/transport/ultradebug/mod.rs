@@ -114,14 +114,14 @@ impl Transport for Ultradebug {
     }
 
     fn uart(&self) -> Result<Box<dyn Uart>> {
-        Ok(Box::new(uart::UltradebugUart::open(&self)?))
+        Ok(Box::new(uart::UltradebugUart::open(self)?))
     }
 
     fn gpio(&self) -> Result<Box<dyn Gpio>> {
-        Ok(Box::new(gpio::UltradebugGpio::open(&self)?))
+        Ok(Box::new(gpio::UltradebugGpio::open(self)?))
     }
 
     fn spi(&self) -> Result<Box<dyn Target>> {
-        Ok(Box::new(spi::UltradebugSpi::open(&self)?))
+        Ok(Box::new(spi::UltradebugSpi::open(self)?))
     }
 }
