@@ -233,7 +233,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     if (current_state != keymgr_pkg::StReset &&
         get_operation() inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
       current_cdi = get_adv_cdi_type();
-      if (current_cdi > 0) begin
+      if (current_cdi > 0 && current_internal_key[current_cdi] > 0) begin
         cfg.keymgr_vif.update_kdf_key(current_internal_key[current_cdi], current_state,
                                       get_is_kmac_key_correct());
       end
@@ -489,8 +489,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           // the scb
 
           // when op error occurs with keymgr_en = 0, input is meaningless. Design may or may not
-          // assert ErrInvalidIn,  which doesn't matter
-          if (!err_code[keymgr_pkg::ErrInvalidOp] || cfg.keymgr_vif.get_keymgr_en()) begin
+          // assert ErrInvalidIn, which doesn't matter
+          if (!err_code[keymgr_pkg::ErrInvalidOp] && cfg.keymgr_vif.get_keymgr_en()) begin
             `DV_CHECK_EQ(item.d_data[keymgr_pkg::ErrInvalidIn],
                          err_code[keymgr_pkg::ErrInvalidIn])
           end
@@ -549,10 +549,17 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             case (current_state)
               keymgr_pkg::StReset: begin
                 if (op == keymgr_pkg::OpAdvance) begin
+                  key_shares_t otp_key;
+                  if (cfg.keymgr_vif.otp_key.valid) begin
+                    otp_key = {cfg.keymgr_vif.otp_key.key_share1,
+                               cfg.keymgr_vif.otp_key.key_share0};
+                  end else begin
+                    if (cfg.en_cov) cov.invalid_hw_input_cg.sample(OtpRootKeyValidLow);
+                    `uvm_info(`gfn, "otp_key valid is low", UVM_LOW)
+                  end
                   // for advance to OwnerRootSecret, both KDF use same otp_key
-                  current_internal_key[Sealing] = {cfg.keymgr_vif.otp_key.key_share1,
-                                                   cfg.keymgr_vif.otp_key.key_share0};
-                  current_internal_key[Attestation] = current_internal_key[Sealing];
+                  current_internal_key[Sealing] = otp_key;
+                  current_internal_key[Attestation] = otp_key;
                   cfg.keymgr_vif.store_internal_key(current_internal_key[Sealing], current_state,
                                                     current_cdi);
 
@@ -595,8 +602,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                   `downcast(current_cdi, cdi_sel)
                 end
                 // update kmac key for check
-                cfg.keymgr_vif.update_kdf_key(current_internal_key[current_cdi], current_state,
-                                              good_key);
+                if (current_internal_key[current_cdi] > 0) begin
+                  cfg.keymgr_vif.update_kdf_key(current_internal_key[current_cdi], current_state,
+                                                good_key);
+                end
               end
             endcase
             // start will be clear after OP is done
@@ -836,7 +845,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   // When a generate output key operation is invoked:
   //   The working state key is checked for all 0's and all 1's.
   virtual function bit get_hw_invalid_input();
-    bit is_err;
+    int err_cnt;
+    keymgr_invalid_hw_input_type_e invalid_hw_input_type;
 
     // if it's an invalid op, kmac key and data are random value, they shouldn't be all 0s/1s
     if (get_invalid_op()) return 0;
@@ -845,45 +855,62 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
          current_internal_key[current_cdi][1] inside {0, '1}) &&
          current_state != keymgr_pkg::StReset)
     begin
-      is_err = 1;
+      invalid_hw_input_type = OtpRootKeyInvalid;
+      err_cnt++;
       `uvm_info(`gfn, $sformatf("internal key for %s %s is invalid", current_state, current_cdi),
                 UVM_LOW)
     end
 
-    if (get_operation() != keymgr_pkg::OpAdvance) return is_err;
+    if (get_operation() != keymgr_pkg::OpAdvance) return err_cnt > 0;
 
-    // TODO, expand all types of errors for adding coverage later
     case (current_state)
       keymgr_pkg::StInit: begin
         if (cfg.keymgr_vif.keymgr_div inside {0, '1}) begin
-          is_err = 1;
+          invalid_hw_input_type = LcStateInvalid;
+          err_cnt++;
           `uvm_info(`gfn, "HW invalid input on keymgr_div", UVM_LOW)
         end
 
         if (cfg.keymgr_vif.otp_device_id inside {0, '1}) begin
-          is_err = 1;
+          invalid_hw_input_type = OtpDevIdInvalid;
+          err_cnt++;
           `uvm_info(`gfn, "HW invalid input on otp_device_id", UVM_LOW)
         end
 
         if (cfg.keymgr_vif.rom_digest.data inside {0, '1}) begin
-          is_err = 1;
+          invalid_hw_input_type = RomDigestInvalid;
+          err_cnt++;
           `uvm_info(`gfn, "HW invalid input on rom_digest", UVM_LOW)
         end
 
+        if (!cfg.keymgr_vif.rom_digest.valid) begin
+          invalid_hw_input_type = RomDigestValidLow;
+          err_cnt++;
+          `uvm_info(`gfn, "HW invalid input, rom_digest.valid is low", UVM_LOW)
+        end
+
         if (cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx] inside {0, '1}) begin
-          is_err = 1;
+          invalid_hw_input_type = FlashCreatorSeedInvalid;
+          err_cnt++;
           `uvm_info(`gfn, "HW invalid input on flash.seeds[CreatorSeedIdx]", UVM_LOW)
         end
       end
       keymgr_pkg::StCreatorRootKey: begin
         if (cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx] inside {0, '1}) begin
-          is_err = 1;
+          invalid_hw_input_type = FlashOwnerSeedInvalid;
+          err_cnt++;
           `uvm_info(`gfn, "HW invalid input on flash.seeds[OwnerSeedIdx]", UVM_LOW)
         end
       end
       default: ;
     endcase
-    return is_err;
+
+    // Sample error when there is only one error to make sure each error can cause operation to
+    // fail
+    if (err_cnt == 1 && cfg.en_cov) begin
+      cov.invalid_hw_input_cg.sample(invalid_hw_input_type);
+    end
+    return err_cnt > 0;
   endfunction
 
   // in normal operational states, invalid command etc lead to random data for gen-out OP

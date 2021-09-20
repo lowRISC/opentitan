@@ -166,8 +166,12 @@ interface keymgr_if(input clk, input rst_n);
                                              local_otp_device_id inside {0, '1};, , msg_id)
         end
         1: begin
+           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
+                                              !local_otp_key.valid;, , msg_id)
+         end
+        1: begin
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
-                                             local_otp_key.valid == 1; // TODO this is tie to 1
+                                             local_otp_key.valid;
                                              local_otp_key.key_share0 inside {0, '1} ||
                                              local_otp_key.key_share1 inside {0, '1};, , msg_id)
         end
@@ -178,7 +182,12 @@ interface keymgr_if(input clk, input rst_n);
         end
         1: begin
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_rom_digest,
-                                             local_rom_digest inside {0, '1};, , msg_id)
+                                             !local_rom_digest.valid;, , msg_id)
+        end
+        1: begin
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_rom_digest,
+                                             local_rom_digest.valid == 1;
+                                             local_rom_digest.data inside {0, '1};, , msg_id)
         end
       endcase
     end

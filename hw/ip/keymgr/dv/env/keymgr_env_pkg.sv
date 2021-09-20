@@ -37,6 +37,17 @@ package keymgr_env_pkg;
     Attestation
   } keymgr_cdi_type_e;
 
+  typedef enum {
+    OtpRootKeyInvalid,
+    OtpRootKeyValidLow,
+    LcStateInvalid,
+    OtpDevIdInvalid,
+    RomDigestInvalid,
+    RomDigestValidLow,
+    FlashCreatorSeedInvalid,
+    FlashOwnerSeedInvalid
+  } keymgr_invalid_hw_input_type_e;
+
   string msg_id = "keymgr_env_pkg";
   // functions
   // state is incremental, if it's not in defined enum, consider as StDisabled
