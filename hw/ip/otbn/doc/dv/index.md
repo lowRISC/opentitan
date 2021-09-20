@@ -52,7 +52,11 @@ The idle and interrupt signals are modelled with the basic
 
 As well as instantiating OTBN, the testbench also instantiates an `otbn_core_model`.
 This module wraps an ISS (instruction set simulator) subprocess and performs checks to make sure that OTBN behaves the same as the ISS.
-The model communicates with the testbench through an `otbn_model_if` interface, which is monitored by the `otbn_model_agent`, described below.
+The `otbn_core_model` module communicates with test sequences through an `otbn_model_if` interface, which is monitored by the `otbn_model_agent`, described below.
+The module communicates with the Python subprocess as shown in the diagram below.
+
+![Model communication](model.svg)
+
 
 ### OTBN model agent
 
