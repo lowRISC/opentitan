@@ -31,11 +31,10 @@
     }
   ],
   registers: [
-    { name: "REGEN",
+    { name: "REGWEN",
       desc: "Register write enable for all control registers",
-      swaccess: "rw1c",
-      hwaccess: "hro",
-      async: "clk_core_i",
+      swaccess: "rw0c",
+      hwaccess: "none",
       fields: [
         { bits: "0",
           desc: ''' When true, all writable registers can be modified.
@@ -52,6 +51,7 @@
       swaccess: "rw",
       async: "clk_core_i",
       hwqe: "true",
+      regwen: "REGWEN",
       fields: [
         { bits: "31",
           name: "CNTR_EN",
@@ -88,6 +88,7 @@
         compact: "1",
         async: "clk_core_i",
         hwqe: "true",
+        regwen: "REGWEN",
         fields: [
           { bits: "0",
             name: "EN",
@@ -106,6 +107,7 @@
         compact: "1",
         async: "clk_core_i",
         hwqe: "true",
+        regwen: "REGWEN",
         fields: [
           { bits: "0",
             name: "INVERT",
@@ -123,6 +125,7 @@
         cname: "pwm_params",
         async: "clk_core_i",
         hwqe: "true",
+        regwen: "REGWEN",
         fields: [
           { bits: "31",
             name: "BLINK_EN",
@@ -161,6 +164,7 @@
         cname: "duty_cycle",
         async: "clk_core_i",
         hwqe: "true",
+        regwen: "REGWEN",
         fields: [
           { bits: "31:16",
             name: "B",
@@ -192,6 +196,7 @@
         cname: "blink_param",
         async: "clk_core_i",
         hwqe: "true",
+        regwen: "REGWEN",
         fields: [
           { bits: "15:0",
             name: "X",

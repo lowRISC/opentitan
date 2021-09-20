@@ -123,9 +123,9 @@ module pwm_reg_top (
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic alert_test_we;
   logic alert_test_wd;
-  logic regen_we;
-  logic [0:0] regen_qs;
-  logic regen_busy;
+  logic regwen_we;
+  logic regwen_qs;
+  logic regwen_wd;
   logic cfg_we;
   logic [31:0] cfg_qs;
   logic cfg_busy;
@@ -192,41 +192,6 @@ module pwm_reg_top (
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
-  logic  core_regen_qs_int;
-  logic [0:0] core_regen_d;
-  logic [0:0] core_regen_wdata;
-  logic core_regen_we;
-  logic unused_core_regen_wdata;
-
-  always_comb begin
-    core_regen_d = '0;
-    core_regen_d = core_regen_qs_int;
-  end
-
-  prim_reg_cdc #(
-    .DataWidth(1),
-    .ResetVal(1'h1),
-    .BitMask(1'h1)
-  ) u_regen_cdc (
-    .clk_src_i    (clk_i),
-    .rst_src_ni   (rst_ni),
-    .clk_dst_i    (clk_core_i),
-    .rst_dst_ni   (rst_core_ni),
-    .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
-    .src_we_i     (regen_we),
-    .src_re_i     ('0),
-    .src_wd_i     (reg_wdata[0:0]),
-    .src_busy_o   (regen_busy),
-    .src_qs_o     (regen_qs), // for software read back
-    .dst_d_i      (core_regen_d),
-    .dst_we_o     (core_regen_we),
-    .dst_re_o     (),
-    .dst_regwen_o (),
-    .dst_wd_o     (core_regen_wdata)
-  );
-  assign unused_core_regen_wdata = ^core_regen_wdata;
-
   logic [26:0]  core_cfg_clk_div_qs_int;
   logic [3:0]  core_cfg_dc_resn_qs_int;
   logic  core_cfg_cntr_en_qs_int;
@@ -234,6 +199,7 @@ module pwm_reg_top (
   logic [31:0] core_cfg_wdata;
   logic core_cfg_we;
   logic unused_core_cfg_wdata;
+  logic core_cfg_regwen;
 
   always_comb begin
     core_cfg_d = '0;
@@ -252,7 +218,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (cfg_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -261,7 +227,7 @@ module pwm_reg_top (
     .dst_d_i      (core_cfg_d),
     .dst_we_o     (core_cfg_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_cfg_regwen),
     .dst_wd_o     (core_cfg_wdata)
   );
   assign unused_core_cfg_wdata = ^core_cfg_wdata;
@@ -276,6 +242,7 @@ module pwm_reg_top (
   logic [5:0] core_pwm_en_wdata;
   logic core_pwm_en_we;
   logic unused_core_pwm_en_wdata;
+  logic core_pwm_en_regwen;
 
   always_comb begin
     core_pwm_en_d = '0;
@@ -297,7 +264,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_en_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[5:0]),
@@ -306,7 +273,7 @@ module pwm_reg_top (
     .dst_d_i      (core_pwm_en_d),
     .dst_we_o     (core_pwm_en_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_pwm_en_regwen),
     .dst_wd_o     (core_pwm_en_wdata)
   );
   assign unused_core_pwm_en_wdata = ^core_pwm_en_wdata;
@@ -321,6 +288,7 @@ module pwm_reg_top (
   logic [5:0] core_invert_wdata;
   logic core_invert_we;
   logic unused_core_invert_wdata;
+  logic core_invert_regwen;
 
   always_comb begin
     core_invert_d = '0;
@@ -342,7 +310,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (invert_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[5:0]),
@@ -351,7 +319,7 @@ module pwm_reg_top (
     .dst_d_i      (core_invert_d),
     .dst_we_o     (core_invert_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_invert_regwen),
     .dst_wd_o     (core_invert_wdata)
   );
   assign unused_core_invert_wdata = ^core_invert_wdata;
@@ -363,6 +331,7 @@ module pwm_reg_top (
   logic [31:0] core_pwm_param_0_wdata;
   logic core_pwm_param_0_we;
   logic unused_core_pwm_param_0_wdata;
+  logic core_pwm_param_0_regwen;
 
   always_comb begin
     core_pwm_param_0_d = '0;
@@ -381,7 +350,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_0_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -390,7 +359,7 @@ module pwm_reg_top (
     .dst_d_i      (core_pwm_param_0_d),
     .dst_we_o     (core_pwm_param_0_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_pwm_param_0_regwen),
     .dst_wd_o     (core_pwm_param_0_wdata)
   );
   assign unused_core_pwm_param_0_wdata = ^core_pwm_param_0_wdata;
@@ -402,6 +371,7 @@ module pwm_reg_top (
   logic [31:0] core_pwm_param_1_wdata;
   logic core_pwm_param_1_we;
   logic unused_core_pwm_param_1_wdata;
+  logic core_pwm_param_1_regwen;
 
   always_comb begin
     core_pwm_param_1_d = '0;
@@ -420,7 +390,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_1_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -429,7 +399,7 @@ module pwm_reg_top (
     .dst_d_i      (core_pwm_param_1_d),
     .dst_we_o     (core_pwm_param_1_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_pwm_param_1_regwen),
     .dst_wd_o     (core_pwm_param_1_wdata)
   );
   assign unused_core_pwm_param_1_wdata = ^core_pwm_param_1_wdata;
@@ -441,6 +411,7 @@ module pwm_reg_top (
   logic [31:0] core_pwm_param_2_wdata;
   logic core_pwm_param_2_we;
   logic unused_core_pwm_param_2_wdata;
+  logic core_pwm_param_2_regwen;
 
   always_comb begin
     core_pwm_param_2_d = '0;
@@ -459,7 +430,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_2_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -468,7 +439,7 @@ module pwm_reg_top (
     .dst_d_i      (core_pwm_param_2_d),
     .dst_we_o     (core_pwm_param_2_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_pwm_param_2_regwen),
     .dst_wd_o     (core_pwm_param_2_wdata)
   );
   assign unused_core_pwm_param_2_wdata = ^core_pwm_param_2_wdata;
@@ -480,6 +451,7 @@ module pwm_reg_top (
   logic [31:0] core_pwm_param_3_wdata;
   logic core_pwm_param_3_we;
   logic unused_core_pwm_param_3_wdata;
+  logic core_pwm_param_3_regwen;
 
   always_comb begin
     core_pwm_param_3_d = '0;
@@ -498,7 +470,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_3_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -507,7 +479,7 @@ module pwm_reg_top (
     .dst_d_i      (core_pwm_param_3_d),
     .dst_we_o     (core_pwm_param_3_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_pwm_param_3_regwen),
     .dst_wd_o     (core_pwm_param_3_wdata)
   );
   assign unused_core_pwm_param_3_wdata = ^core_pwm_param_3_wdata;
@@ -519,6 +491,7 @@ module pwm_reg_top (
   logic [31:0] core_pwm_param_4_wdata;
   logic core_pwm_param_4_we;
   logic unused_core_pwm_param_4_wdata;
+  logic core_pwm_param_4_regwen;
 
   always_comb begin
     core_pwm_param_4_d = '0;
@@ -537,7 +510,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_4_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -546,7 +519,7 @@ module pwm_reg_top (
     .dst_d_i      (core_pwm_param_4_d),
     .dst_we_o     (core_pwm_param_4_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_pwm_param_4_regwen),
     .dst_wd_o     (core_pwm_param_4_wdata)
   );
   assign unused_core_pwm_param_4_wdata = ^core_pwm_param_4_wdata;
@@ -558,6 +531,7 @@ module pwm_reg_top (
   logic [31:0] core_pwm_param_5_wdata;
   logic core_pwm_param_5_we;
   logic unused_core_pwm_param_5_wdata;
+  logic core_pwm_param_5_regwen;
 
   always_comb begin
     core_pwm_param_5_d = '0;
@@ -576,7 +550,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (pwm_param_5_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -585,7 +559,7 @@ module pwm_reg_top (
     .dst_d_i      (core_pwm_param_5_d),
     .dst_we_o     (core_pwm_param_5_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_pwm_param_5_regwen),
     .dst_wd_o     (core_pwm_param_5_wdata)
   );
   assign unused_core_pwm_param_5_wdata = ^core_pwm_param_5_wdata;
@@ -596,6 +570,7 @@ module pwm_reg_top (
   logic [31:0] core_duty_cycle_0_wdata;
   logic core_duty_cycle_0_we;
   logic unused_core_duty_cycle_0_wdata;
+  logic core_duty_cycle_0_regwen;
 
   always_comb begin
     core_duty_cycle_0_d = '0;
@@ -613,7 +588,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_0_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -622,7 +597,7 @@ module pwm_reg_top (
     .dst_d_i      (core_duty_cycle_0_d),
     .dst_we_o     (core_duty_cycle_0_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_duty_cycle_0_regwen),
     .dst_wd_o     (core_duty_cycle_0_wdata)
   );
   assign unused_core_duty_cycle_0_wdata = ^core_duty_cycle_0_wdata;
@@ -633,6 +608,7 @@ module pwm_reg_top (
   logic [31:0] core_duty_cycle_1_wdata;
   logic core_duty_cycle_1_we;
   logic unused_core_duty_cycle_1_wdata;
+  logic core_duty_cycle_1_regwen;
 
   always_comb begin
     core_duty_cycle_1_d = '0;
@@ -650,7 +626,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_1_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -659,7 +635,7 @@ module pwm_reg_top (
     .dst_d_i      (core_duty_cycle_1_d),
     .dst_we_o     (core_duty_cycle_1_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_duty_cycle_1_regwen),
     .dst_wd_o     (core_duty_cycle_1_wdata)
   );
   assign unused_core_duty_cycle_1_wdata = ^core_duty_cycle_1_wdata;
@@ -670,6 +646,7 @@ module pwm_reg_top (
   logic [31:0] core_duty_cycle_2_wdata;
   logic core_duty_cycle_2_we;
   logic unused_core_duty_cycle_2_wdata;
+  logic core_duty_cycle_2_regwen;
 
   always_comb begin
     core_duty_cycle_2_d = '0;
@@ -687,7 +664,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_2_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -696,7 +673,7 @@ module pwm_reg_top (
     .dst_d_i      (core_duty_cycle_2_d),
     .dst_we_o     (core_duty_cycle_2_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_duty_cycle_2_regwen),
     .dst_wd_o     (core_duty_cycle_2_wdata)
   );
   assign unused_core_duty_cycle_2_wdata = ^core_duty_cycle_2_wdata;
@@ -707,6 +684,7 @@ module pwm_reg_top (
   logic [31:0] core_duty_cycle_3_wdata;
   logic core_duty_cycle_3_we;
   logic unused_core_duty_cycle_3_wdata;
+  logic core_duty_cycle_3_regwen;
 
   always_comb begin
     core_duty_cycle_3_d = '0;
@@ -724,7 +702,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_3_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -733,7 +711,7 @@ module pwm_reg_top (
     .dst_d_i      (core_duty_cycle_3_d),
     .dst_we_o     (core_duty_cycle_3_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_duty_cycle_3_regwen),
     .dst_wd_o     (core_duty_cycle_3_wdata)
   );
   assign unused_core_duty_cycle_3_wdata = ^core_duty_cycle_3_wdata;
@@ -744,6 +722,7 @@ module pwm_reg_top (
   logic [31:0] core_duty_cycle_4_wdata;
   logic core_duty_cycle_4_we;
   logic unused_core_duty_cycle_4_wdata;
+  logic core_duty_cycle_4_regwen;
 
   always_comb begin
     core_duty_cycle_4_d = '0;
@@ -761,7 +740,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_4_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -770,7 +749,7 @@ module pwm_reg_top (
     .dst_d_i      (core_duty_cycle_4_d),
     .dst_we_o     (core_duty_cycle_4_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_duty_cycle_4_regwen),
     .dst_wd_o     (core_duty_cycle_4_wdata)
   );
   assign unused_core_duty_cycle_4_wdata = ^core_duty_cycle_4_wdata;
@@ -781,6 +760,7 @@ module pwm_reg_top (
   logic [31:0] core_duty_cycle_5_wdata;
   logic core_duty_cycle_5_we;
   logic unused_core_duty_cycle_5_wdata;
+  logic core_duty_cycle_5_regwen;
 
   always_comb begin
     core_duty_cycle_5_d = '0;
@@ -798,7 +778,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (duty_cycle_5_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -807,7 +787,7 @@ module pwm_reg_top (
     .dst_d_i      (core_duty_cycle_5_d),
     .dst_we_o     (core_duty_cycle_5_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_duty_cycle_5_regwen),
     .dst_wd_o     (core_duty_cycle_5_wdata)
   );
   assign unused_core_duty_cycle_5_wdata = ^core_duty_cycle_5_wdata;
@@ -818,6 +798,7 @@ module pwm_reg_top (
   logic [31:0] core_blink_param_0_wdata;
   logic core_blink_param_0_we;
   logic unused_core_blink_param_0_wdata;
+  logic core_blink_param_0_regwen;
 
   always_comb begin
     core_blink_param_0_d = '0;
@@ -835,7 +816,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_0_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -844,7 +825,7 @@ module pwm_reg_top (
     .dst_d_i      (core_blink_param_0_d),
     .dst_we_o     (core_blink_param_0_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_blink_param_0_regwen),
     .dst_wd_o     (core_blink_param_0_wdata)
   );
   assign unused_core_blink_param_0_wdata = ^core_blink_param_0_wdata;
@@ -855,6 +836,7 @@ module pwm_reg_top (
   logic [31:0] core_blink_param_1_wdata;
   logic core_blink_param_1_we;
   logic unused_core_blink_param_1_wdata;
+  logic core_blink_param_1_regwen;
 
   always_comb begin
     core_blink_param_1_d = '0;
@@ -872,7 +854,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_1_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -881,7 +863,7 @@ module pwm_reg_top (
     .dst_d_i      (core_blink_param_1_d),
     .dst_we_o     (core_blink_param_1_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_blink_param_1_regwen),
     .dst_wd_o     (core_blink_param_1_wdata)
   );
   assign unused_core_blink_param_1_wdata = ^core_blink_param_1_wdata;
@@ -892,6 +874,7 @@ module pwm_reg_top (
   logic [31:0] core_blink_param_2_wdata;
   logic core_blink_param_2_we;
   logic unused_core_blink_param_2_wdata;
+  logic core_blink_param_2_regwen;
 
   always_comb begin
     core_blink_param_2_d = '0;
@@ -909,7 +892,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_2_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -918,7 +901,7 @@ module pwm_reg_top (
     .dst_d_i      (core_blink_param_2_d),
     .dst_we_o     (core_blink_param_2_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_blink_param_2_regwen),
     .dst_wd_o     (core_blink_param_2_wdata)
   );
   assign unused_core_blink_param_2_wdata = ^core_blink_param_2_wdata;
@@ -929,6 +912,7 @@ module pwm_reg_top (
   logic [31:0] core_blink_param_3_wdata;
   logic core_blink_param_3_we;
   logic unused_core_blink_param_3_wdata;
+  logic core_blink_param_3_regwen;
 
   always_comb begin
     core_blink_param_3_d = '0;
@@ -946,7 +930,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_3_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -955,7 +939,7 @@ module pwm_reg_top (
     .dst_d_i      (core_blink_param_3_d),
     .dst_we_o     (core_blink_param_3_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_blink_param_3_regwen),
     .dst_wd_o     (core_blink_param_3_wdata)
   );
   assign unused_core_blink_param_3_wdata = ^core_blink_param_3_wdata;
@@ -966,6 +950,7 @@ module pwm_reg_top (
   logic [31:0] core_blink_param_4_wdata;
   logic core_blink_param_4_we;
   logic unused_core_blink_param_4_wdata;
+  logic core_blink_param_4_regwen;
 
   always_comb begin
     core_blink_param_4_d = '0;
@@ -983,7 +968,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_4_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -992,7 +977,7 @@ module pwm_reg_top (
     .dst_d_i      (core_blink_param_4_d),
     .dst_we_o     (core_blink_param_4_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_blink_param_4_regwen),
     .dst_wd_o     (core_blink_param_4_wdata)
   );
   assign unused_core_blink_param_4_wdata = ^core_blink_param_4_wdata;
@@ -1003,6 +988,7 @@ module pwm_reg_top (
   logic [31:0] core_blink_param_5_wdata;
   logic core_blink_param_5_we;
   logic unused_core_blink_param_5_wdata;
+  logic core_blink_param_5_regwen;
 
   always_comb begin
     core_blink_param_5_d = '0;
@@ -1020,7 +1006,7 @@ module pwm_reg_top (
     .clk_dst_i    (clk_core_i),
     .rst_dst_ni   (rst_core_ni),
     .src_update_i (sync_core_update),
-    .src_regwen_i ('0),
+    .src_regwen_i (regwen_qs),
     .src_we_i     (blink_param_5_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[31:0]),
@@ -1029,7 +1015,7 @@ module pwm_reg_top (
     .dst_d_i      (core_blink_param_5_d),
     .dst_we_o     (core_blink_param_5_we),
     .dst_re_o     (),
-    .dst_regwen_o (),
+    .dst_regwen_o (core_blink_param_5_regwen),
     .dst_wd_o     (core_blink_param_5_wdata)
   );
   assign unused_core_blink_param_5_wdata = ^core_blink_param_5_wdata;
@@ -1050,18 +1036,18 @@ module pwm_reg_top (
   );
 
 
-  // R[regen]: V(False)
+  // R[regwen]: V(False)
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
-  ) u_regen (
-    .clk_i   (clk_core_i),
-    .rst_ni  (rst_core_ni),
+  ) u_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (core_regen_we),
-    .wd     (core_regen_wdata[0]),
+    .we     (regwen_we),
+    .wd     (regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1069,10 +1055,10 @@ module pwm_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regen.q),
+    .q      (),
 
     // to register interface (read)
-    .qs     (core_regen_qs_int)
+    .qs     (regwen_qs)
   );
 
 
@@ -1087,7 +1073,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_cfg_we),
+    .we     (core_cfg_we & core_cfg_regwen),
     .wd     (core_cfg_wdata[26:0]),
 
     // from internal hardware
@@ -1112,7 +1098,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_cfg_we),
+    .we     (core_cfg_we & core_cfg_regwen),
     .wd     (core_cfg_wdata[30:27]),
 
     // from internal hardware
@@ -1137,7 +1123,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_cfg_we),
+    .we     (core_cfg_we & core_cfg_regwen),
     .wd     (core_cfg_wdata[31]),
 
     // from internal hardware
@@ -1165,7 +1151,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we),
+    .we     (core_pwm_en_we & core_pwm_en_regwen),
     .wd     (core_pwm_en_wdata[0]),
 
     // from internal hardware
@@ -1190,7 +1176,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we),
+    .we     (core_pwm_en_we & core_pwm_en_regwen),
     .wd     (core_pwm_en_wdata[1]),
 
     // from internal hardware
@@ -1215,7 +1201,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we),
+    .we     (core_pwm_en_we & core_pwm_en_regwen),
     .wd     (core_pwm_en_wdata[2]),
 
     // from internal hardware
@@ -1240,7 +1226,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we),
+    .we     (core_pwm_en_we & core_pwm_en_regwen),
     .wd     (core_pwm_en_wdata[3]),
 
     // from internal hardware
@@ -1265,7 +1251,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we),
+    .we     (core_pwm_en_we & core_pwm_en_regwen),
     .wd     (core_pwm_en_wdata[4]),
 
     // from internal hardware
@@ -1290,7 +1276,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_en_we),
+    .we     (core_pwm_en_we & core_pwm_en_regwen),
     .wd     (core_pwm_en_wdata[5]),
 
     // from internal hardware
@@ -1318,7 +1304,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we),
+    .we     (core_invert_we & core_invert_regwen),
     .wd     (core_invert_wdata[0]),
 
     // from internal hardware
@@ -1343,7 +1329,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we),
+    .we     (core_invert_we & core_invert_regwen),
     .wd     (core_invert_wdata[1]),
 
     // from internal hardware
@@ -1368,7 +1354,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we),
+    .we     (core_invert_we & core_invert_regwen),
     .wd     (core_invert_wdata[2]),
 
     // from internal hardware
@@ -1393,7 +1379,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we),
+    .we     (core_invert_we & core_invert_regwen),
     .wd     (core_invert_wdata[3]),
 
     // from internal hardware
@@ -1418,7 +1404,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we),
+    .we     (core_invert_we & core_invert_regwen),
     .wd     (core_invert_wdata[4]),
 
     // from internal hardware
@@ -1443,7 +1429,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_invert_we),
+    .we     (core_invert_we & core_invert_regwen),
     .wd     (core_invert_wdata[5]),
 
     // from internal hardware
@@ -1471,7 +1457,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_0_we),
+    .we     (core_pwm_param_0_we & core_pwm_param_0_regwen),
     .wd     (core_pwm_param_0_wdata[15:0]),
 
     // from internal hardware
@@ -1496,7 +1482,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_0_we),
+    .we     (core_pwm_param_0_we & core_pwm_param_0_regwen),
     .wd     (core_pwm_param_0_wdata[30]),
 
     // from internal hardware
@@ -1521,7 +1507,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_0_we),
+    .we     (core_pwm_param_0_we & core_pwm_param_0_regwen),
     .wd     (core_pwm_param_0_wdata[31]),
 
     // from internal hardware
@@ -1549,7 +1535,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_1_we),
+    .we     (core_pwm_param_1_we & core_pwm_param_1_regwen),
     .wd     (core_pwm_param_1_wdata[15:0]),
 
     // from internal hardware
@@ -1574,7 +1560,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_1_we),
+    .we     (core_pwm_param_1_we & core_pwm_param_1_regwen),
     .wd     (core_pwm_param_1_wdata[30]),
 
     // from internal hardware
@@ -1599,7 +1585,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_1_we),
+    .we     (core_pwm_param_1_we & core_pwm_param_1_regwen),
     .wd     (core_pwm_param_1_wdata[31]),
 
     // from internal hardware
@@ -1627,7 +1613,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_2_we),
+    .we     (core_pwm_param_2_we & core_pwm_param_2_regwen),
     .wd     (core_pwm_param_2_wdata[15:0]),
 
     // from internal hardware
@@ -1652,7 +1638,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_2_we),
+    .we     (core_pwm_param_2_we & core_pwm_param_2_regwen),
     .wd     (core_pwm_param_2_wdata[30]),
 
     // from internal hardware
@@ -1677,7 +1663,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_2_we),
+    .we     (core_pwm_param_2_we & core_pwm_param_2_regwen),
     .wd     (core_pwm_param_2_wdata[31]),
 
     // from internal hardware
@@ -1705,7 +1691,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_3_we),
+    .we     (core_pwm_param_3_we & core_pwm_param_3_regwen),
     .wd     (core_pwm_param_3_wdata[15:0]),
 
     // from internal hardware
@@ -1730,7 +1716,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_3_we),
+    .we     (core_pwm_param_3_we & core_pwm_param_3_regwen),
     .wd     (core_pwm_param_3_wdata[30]),
 
     // from internal hardware
@@ -1755,7 +1741,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_3_we),
+    .we     (core_pwm_param_3_we & core_pwm_param_3_regwen),
     .wd     (core_pwm_param_3_wdata[31]),
 
     // from internal hardware
@@ -1783,7 +1769,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_4_we),
+    .we     (core_pwm_param_4_we & core_pwm_param_4_regwen),
     .wd     (core_pwm_param_4_wdata[15:0]),
 
     // from internal hardware
@@ -1808,7 +1794,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_4_we),
+    .we     (core_pwm_param_4_we & core_pwm_param_4_regwen),
     .wd     (core_pwm_param_4_wdata[30]),
 
     // from internal hardware
@@ -1833,7 +1819,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_4_we),
+    .we     (core_pwm_param_4_we & core_pwm_param_4_regwen),
     .wd     (core_pwm_param_4_wdata[31]),
 
     // from internal hardware
@@ -1861,7 +1847,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_5_we),
+    .we     (core_pwm_param_5_we & core_pwm_param_5_regwen),
     .wd     (core_pwm_param_5_wdata[15:0]),
 
     // from internal hardware
@@ -1886,7 +1872,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_5_we),
+    .we     (core_pwm_param_5_we & core_pwm_param_5_regwen),
     .wd     (core_pwm_param_5_wdata[30]),
 
     // from internal hardware
@@ -1911,7 +1897,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_pwm_param_5_we),
+    .we     (core_pwm_param_5_we & core_pwm_param_5_regwen),
     .wd     (core_pwm_param_5_wdata[31]),
 
     // from internal hardware
@@ -1939,7 +1925,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_0_we),
+    .we     (core_duty_cycle_0_we & core_duty_cycle_0_regwen),
     .wd     (core_duty_cycle_0_wdata[15:0]),
 
     // from internal hardware
@@ -1964,7 +1950,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_0_we),
+    .we     (core_duty_cycle_0_we & core_duty_cycle_0_regwen),
     .wd     (core_duty_cycle_0_wdata[31:16]),
 
     // from internal hardware
@@ -1992,7 +1978,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_1_we),
+    .we     (core_duty_cycle_1_we & core_duty_cycle_1_regwen),
     .wd     (core_duty_cycle_1_wdata[15:0]),
 
     // from internal hardware
@@ -2017,7 +2003,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_1_we),
+    .we     (core_duty_cycle_1_we & core_duty_cycle_1_regwen),
     .wd     (core_duty_cycle_1_wdata[31:16]),
 
     // from internal hardware
@@ -2045,7 +2031,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_2_we),
+    .we     (core_duty_cycle_2_we & core_duty_cycle_2_regwen),
     .wd     (core_duty_cycle_2_wdata[15:0]),
 
     // from internal hardware
@@ -2070,7 +2056,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_2_we),
+    .we     (core_duty_cycle_2_we & core_duty_cycle_2_regwen),
     .wd     (core_duty_cycle_2_wdata[31:16]),
 
     // from internal hardware
@@ -2098,7 +2084,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_3_we),
+    .we     (core_duty_cycle_3_we & core_duty_cycle_3_regwen),
     .wd     (core_duty_cycle_3_wdata[15:0]),
 
     // from internal hardware
@@ -2123,7 +2109,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_3_we),
+    .we     (core_duty_cycle_3_we & core_duty_cycle_3_regwen),
     .wd     (core_duty_cycle_3_wdata[31:16]),
 
     // from internal hardware
@@ -2151,7 +2137,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_4_we),
+    .we     (core_duty_cycle_4_we & core_duty_cycle_4_regwen),
     .wd     (core_duty_cycle_4_wdata[15:0]),
 
     // from internal hardware
@@ -2176,7 +2162,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_4_we),
+    .we     (core_duty_cycle_4_we & core_duty_cycle_4_regwen),
     .wd     (core_duty_cycle_4_wdata[31:16]),
 
     // from internal hardware
@@ -2204,7 +2190,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_5_we),
+    .we     (core_duty_cycle_5_we & core_duty_cycle_5_regwen),
     .wd     (core_duty_cycle_5_wdata[15:0]),
 
     // from internal hardware
@@ -2229,7 +2215,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_duty_cycle_5_we),
+    .we     (core_duty_cycle_5_we & core_duty_cycle_5_regwen),
     .wd     (core_duty_cycle_5_wdata[31:16]),
 
     // from internal hardware
@@ -2257,7 +2243,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_0_we),
+    .we     (core_blink_param_0_we & core_blink_param_0_regwen),
     .wd     (core_blink_param_0_wdata[15:0]),
 
     // from internal hardware
@@ -2282,7 +2268,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_0_we),
+    .we     (core_blink_param_0_we & core_blink_param_0_regwen),
     .wd     (core_blink_param_0_wdata[31:16]),
 
     // from internal hardware
@@ -2310,7 +2296,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_1_we),
+    .we     (core_blink_param_1_we & core_blink_param_1_regwen),
     .wd     (core_blink_param_1_wdata[15:0]),
 
     // from internal hardware
@@ -2335,7 +2321,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_1_we),
+    .we     (core_blink_param_1_we & core_blink_param_1_regwen),
     .wd     (core_blink_param_1_wdata[31:16]),
 
     // from internal hardware
@@ -2363,7 +2349,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_2_we),
+    .we     (core_blink_param_2_we & core_blink_param_2_regwen),
     .wd     (core_blink_param_2_wdata[15:0]),
 
     // from internal hardware
@@ -2388,7 +2374,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_2_we),
+    .we     (core_blink_param_2_we & core_blink_param_2_regwen),
     .wd     (core_blink_param_2_wdata[31:16]),
 
     // from internal hardware
@@ -2416,7 +2402,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_3_we),
+    .we     (core_blink_param_3_we & core_blink_param_3_regwen),
     .wd     (core_blink_param_3_wdata[15:0]),
 
     // from internal hardware
@@ -2441,7 +2427,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_3_we),
+    .we     (core_blink_param_3_we & core_blink_param_3_regwen),
     .wd     (core_blink_param_3_wdata[31:16]),
 
     // from internal hardware
@@ -2469,7 +2455,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_4_we),
+    .we     (core_blink_param_4_we & core_blink_param_4_regwen),
     .wd     (core_blink_param_4_wdata[15:0]),
 
     // from internal hardware
@@ -2494,7 +2480,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_4_we),
+    .we     (core_blink_param_4_we & core_blink_param_4_regwen),
     .wd     (core_blink_param_4_wdata[31:16]),
 
     // from internal hardware
@@ -2522,7 +2508,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_5_we),
+    .we     (core_blink_param_5_we & core_blink_param_5_regwen),
     .wd     (core_blink_param_5_wdata[15:0]),
 
     // from internal hardware
@@ -2547,7 +2533,7 @@ module pwm_reg_top (
     .rst_ni  (rst_core_ni),
 
     // from register interface
-    .we     (core_blink_param_5_we),
+    .we     (core_blink_param_5_we & core_blink_param_5_regwen),
     .wd     (core_blink_param_5_wdata[31:16]),
 
     // from internal hardware
@@ -2568,7 +2554,7 @@ module pwm_reg_top (
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == PWM_ALERT_TEST_OFFSET);
-    addr_hit[ 1] = (reg_addr == PWM_REGEN_OFFSET);
+    addr_hit[ 1] = (reg_addr == PWM_REGWEN_OFFSET);
     addr_hit[ 2] = (reg_addr == PWM_CFG_OFFSET);
     addr_hit[ 3] = (reg_addr == PWM_PWM_EN_OFFSET);
     addr_hit[ 4] = (reg_addr == PWM_INVERT_OFFSET);
@@ -2624,8 +2610,9 @@ module pwm_reg_top (
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign regen_we = addr_hit[1] & reg_we & !reg_error;
+  assign regwen_we = addr_hit[1] & reg_we & !reg_error;
 
+  assign regwen_wd = reg_wdata[0];
   assign cfg_we = addr_hit[2] & reg_we & !reg_error;
 
 
@@ -2714,8 +2701,9 @@ module pwm_reg_top (
       end
 
       addr_hit[1]: begin
-        reg_rdata_next = DW'(regen_qs);
+        reg_rdata_next[0] = regwen_qs;
       end
+
       addr_hit[2]: begin
         reg_rdata_next = DW'(cfg_qs);
       end
@@ -2795,9 +2783,6 @@ module pwm_reg_top (
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
-      addr_hit[1]: begin
-        reg_busy_sel = regen_busy;
-      end
       addr_hit[2]: begin
         reg_busy_sel = cfg_busy;
       end
