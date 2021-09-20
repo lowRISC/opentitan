@@ -39,13 +39,17 @@ The top-level testbench is located at `hw/ip/otbn/dv/uvm/tb.sv`.
 This instantiates the OTBN DUT module `hw/ip/otbn/rtl/otbn.sv`.
 
 OTBN has the following interfaces:
-- A [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs#clk_rst_if" >}})
-- A [TileLink interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}}).
-  OTBN is a TL device, which expects to communicate with a TL host.
+- A [Clock and reset interface]({{< relref "/hw/dv/sv/common_ifs#clk_rst_if" >}})
+- A [TileLink interface]({{< relref "/hw/dv/sv/tl_agent/README.md" >}}).
+  OTBN is a TL-UL device, which expects to communicate with a TL-UL host.
   In the OpenTitan SoC, this will be the Ibex core.
-- An idle signal, `idle_o`
-- Two interrupts
-- An [alert interface]({{< relref "hw/dv/sv/alert_esc_agent/README" >}})
+- Idle signals in each clock domain, `idle_o`, and `idle_otp_o`
+- One interrupt
+- An [alert interface]({{< relref "/hw/dv/sv/alert_esc_agent/README" >}})
+- A life cycle escalation interface
+- An [OTP]({{< relref "/hw/ip/otp_ctrl/doc" >}}) connection
+- Two [EDN]({{< relref "/hw/ip/edn/doc" >}}) connections
+- A RAM configuration interface, which is passed through to the SRAM macros
 
 The idle and interrupt signals are modelled with the basic
 [`pins_if`]({{< relref "hw/dv/sv/common_ifs#pins_if" >}}) interface.
