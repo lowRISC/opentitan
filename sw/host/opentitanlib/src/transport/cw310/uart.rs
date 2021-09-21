@@ -17,6 +17,13 @@ pub struct CW310Uart {
 }
 
 impl CW310Uart {
+    // Not really forever, but close enough.  I'd rather use Duration::MAX, but
+    // it seems that the serialport library can compute an invalid `timeval` struct
+    // to pass to `poll`, which then leads to an `Invalid argument` error when
+    // trying to `read` or `write` without a timeout.  One hundred years should be
+    // longer than any invocation of this program.
+    const FOREVER: Duration = Duration::from_secs(100 * 365 * 86400);
+
     pub fn open(backend: Rc<RefCell<Backend>>, instance: u32) -> Result<Self> {
         let usb = backend.borrow();
         let serial_number = usb.get_serial_number();
@@ -66,9 +73,9 @@ impl Uart for CW310Uart {
     fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
         let mut port = self.port.borrow_mut();
         port.set_timeout(timeout)?;
-        let len = port.read(buf)?;
-        port.set_timeout(Duration::MAX)?;
-        Ok(len)
+        let len = port.read(buf);
+        port.set_timeout(Self::FOREVER)?;
+        Ok(len?)
     }
 
     /// Writes data from `buf` to the UART.
