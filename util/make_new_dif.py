@@ -107,8 +107,9 @@ class Ip:
         assert (self.hjson_data and
                 "ERROR: must load IP HJSON before loarding IRQs")
         irqs = []
-        for irq in self.hjson_data["interrupt_list"]:
-            irqs.append(Irq(irq))
+        if "interrupt_list" in self.hjson_data:
+            for irq in self.hjson_data["interrupt_list"]:
+                irqs.append(Irq(irq))
         return irqs
 
 
@@ -157,7 +158,7 @@ def main():
         print("DIF header successfully written to {}.".format(
             str(header_out_file)))
 
-    if "autogen" in args.only:
+    if "autogen" in args.only and len(ip.irqs):
         # Render all templates
         for filetype in ["inc", "c", "unittest"]:
             assert (ip.irqs and "ERROR: this IP generates no interrupts.")
