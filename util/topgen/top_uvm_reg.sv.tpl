@@ -144,6 +144,7 @@ ${make_ral_pkg_window_class(dv_base_prefix, 'chip', window)}
 %>\
       ${if_inst} =
           ${bcname(esc_if_name)}::type_id::create("${if_inst}");
+      ${if_inst}.set_ip_name("${inst_name}");
       ${if_inst}.configure(.parent(this));
       ${if_inst}.build(.base_addr(base_addr + ${base_addr_txt}), .csr_excl(csr_excl));
       ${if_inst}.set_hdl_path_root("${hdl_path}",

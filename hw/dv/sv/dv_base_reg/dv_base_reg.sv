@@ -33,6 +33,10 @@ class dv_base_reg extends uvm_reg;
     foreach (m_fields[i]) `downcast(dv_fields[i], m_fields[i])
   endfunction
 
+  function dv_base_reg_block get_dv_base_reg_block();
+    `downcast(get_dv_base_reg_block, get_parent())
+  endfunction
+
   // get_n_bits will return number of all the bits in the csr
   // while this function will return actual number of bits used in reg field
   function uint get_n_used_bits();
@@ -348,13 +352,11 @@ class dv_base_reg extends uvm_reg;
   endfunction
 
   function string get_update_err_alert_name();
-    string parent_name = this.get_parent().get_name();
-
     // block level alert name is input alert name from hjson
     if (get_parent().get_parent() == null) return update_err_alert_name;
 
-    // top-level alert name is ${block_name} + alert name from hjson
-    return ($sformatf("%0s_%0s", parent_name, update_err_alert_name));
+    // top-level alert name is ${ip_name} + alert name from hjson
+    return ($sformatf("%0s_%0s", get_dv_base_reg_block().get_ip_name(), update_err_alert_name));
   endfunction
 
   function void lock_shadow_reg();
@@ -366,13 +368,13 @@ class dv_base_reg extends uvm_reg;
   endfunction
 
   function string get_storage_err_alert_name();
-    string parent_name = this.get_parent().get_name();
+    string ip_name;
 
     // block level alert name is input alert name from hjson
     if (get_parent().get_parent() == null) return storage_err_alert_name;
 
-    // top-level alert name is ${block_name} + alert name from hjson
-    return ($sformatf("%0s_%0s", parent_name, storage_err_alert_name));
+    // top-level alert name is ${ip_name} + alert name from hjson
+    return ($sformatf("%0s_%0s", get_dv_base_reg_block().get_ip_name(), storage_err_alert_name));
   endfunction
 
 endclass
