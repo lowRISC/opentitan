@@ -91,6 +91,8 @@ module prim_alert_tb;
   ) i_alert_receiver (
     .clk_i(clk),
     .rst_ni(rst_n),
+    // TODO: randomly trigger this
+    .init_trig_i(lc_ctrl_pkg::Off),
     .ping_req_i(ping_req),
     .ping_ok_o(ping_ok),
     .integ_fail_o(integ_fail),
@@ -199,6 +201,12 @@ module prim_alert_tb;
     main_clk.set_period_ps(ClkPeriod);
     main_clk.set_active();
     main_clk.apply_reset();
+
+    // Wait for initialization sequence to end
+    // This should take no more than 20 cycles
+    // if the sender / receiver clocks are on
+    // the same clock domain.
+    main_clk.wait_clks(20);
 
     // Sequence 1). Alert request sequence.
     main_clk.wait_clks($urandom_range(0, 10));
