@@ -225,8 +225,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   //  interaction between main fsm and prng
   ///////////////////////////
 
-  logic prng_en;
-  assign prng_en_o = prng_en | disabled | invalid | wipe_req;
+  assign prng_en_o = random_req | disabled | invalid | wipe_req;
 
   //////////////////////////
   // Main Control FSM
@@ -267,8 +266,12 @@ module keymgr_ctrl import keymgr_pkg::*; #(
 
 
   // key state is intentionally not reset
-  always_ff @(posedge clk_i) begin
-    key_state_q <= key_state_d;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      key_state_q <= '0;
+    end else begin
+      key_state_q <= key_state_d;
+    end
   end
 
   // root key valid sync
@@ -313,6 +316,12 @@ module keymgr_ctrl import keymgr_pkg::*; #(
               key_state_d[i][0] = root_key_i.key_share0 ^ root_key_i.key_share1;
               key_state_d[i][1] = '0;
             end
+          end
+        end else begin
+          // if root key is not valid, load and invalid value
+          for (int i = 0; i < CDIs; i++) begin
+              key_state_d[i][0] = '0;
+              key_state_d[i][1] = '{default: '1};
           end
         end
       end
@@ -396,7 +405,6 @@ module keymgr_ctrl import keymgr_pkg::*; #(
 
     // enable prng toggling
     prng_reseed_req_o = 1'b0;
-    prng_en = 1'b0;
 
     // initialization complete
     init_o = 1'b0;
@@ -408,8 +416,6 @@ module keymgr_ctrl import keymgr_pkg::*; #(
     unique case (state_q)
       // Only advance can be called from reset state
       StCtrlReset: begin
-        // in reset state, don't enable entropy yet, since there are no users.
-        prng_en = 1'b0;
 
         // always use random data for advance, since out of reset state
         // the key state will be randomized.
@@ -435,15 +441,12 @@ module keymgr_ctrl import keymgr_pkg::*; #(
 
       // This state does not accept any command.
       StCtrlRandom: begin
-        prng_en = 1'b1;
+        random_req = 1'b1;
 
-        if (cnt < EntropyRounds-1) begin
-          random_req = 1'b1;
-        end
         // when mask population is complete, xor the root_key into the zero share
         // if in the future the root key is updated to 2 shares, it will direclty overwrite
         // the values here
-        else begin
+        if (cnt == EntropyRounds-1) begin
           random_ack = 1'b1;
           state_d = StCtrlRootKey;
         end
