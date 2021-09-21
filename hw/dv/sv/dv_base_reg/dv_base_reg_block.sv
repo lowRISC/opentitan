@@ -6,6 +6,12 @@
 class dv_base_reg_block extends uvm_reg_block;
   `uvm_object_utils(dv_base_reg_block)
 
+  // Since an IP may contains more than one reg block we construct reg_block name as
+  // {ip_name}_{reg_interface_name}.
+  // All the reg_blocks in the IP share the same alert. In top-level, We construct the alert
+  // name as {ip_name}_{alert_name}. Hence, we need this ip_name in reg_block
+  local string ip_name;
+
   csr_excl_item csr_excl;
 
   // The address mask for the register block specific to a map. This will be (1 << K) - 1 for some
@@ -27,6 +33,17 @@ class dv_base_reg_block extends uvm_reg_block;
 
   function new (string name = "", int has_coverage = UVM_NO_COVERAGE);
     super.new(name, has_coverage);
+  endfunction
+
+  function void set_ip_name(string name);
+    ip_name = name;
+  endfunction
+
+  function string get_ip_name();
+    // `DV_CHECK_NE_FATAL can't take "" as an input
+    string empty_str = "";
+    `DV_CHECK_NE_FATAL(ip_name, empty_str, "ip_name hasn't been set yet")
+    return ip_name;
   endfunction
 
   // provide build function to supply base addr
