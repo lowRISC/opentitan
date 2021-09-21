@@ -1471,6 +1471,10 @@ module top_earlgrey #(
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),
 
+      // TODO(#8174): top-level integration for LPGs
+      .lpg_cg_en_i ( {lc_ctrl_pkg::Off} ),
+      .lpg_rst_en_i ( {lc_ctrl_pkg::Off} ),
+
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
       .clk_edn_i (clkmgr_aon_clocks.clk_main_secure),

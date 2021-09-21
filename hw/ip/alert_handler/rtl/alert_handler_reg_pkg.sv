@@ -8,6 +8,9 @@ package alert_handler_reg_pkg;
 
   // Param list
   parameter int NAlerts = 4;
+  parameter int NLpg = 1;
+  parameter int NLpgWidth = 1;
+  parameter logic [NAlerts-1:0][NLpgWidth-1:0] AlertLpgMap = '0;
   parameter int EscCntDw = 32;
   parameter int AccuCntDw = 16;
   parameter logic [NAlerts-1:0] AsyncOn = '0;
