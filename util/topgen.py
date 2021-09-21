@@ -123,6 +123,9 @@ def generate_alert_handler(top, out_path):
     async_on = "'0"
     # leave this constant
     n_classes = 4
+    # TODO(#8174): topgen integration for LPGs
+    n_lpg = 1
+    lpg_map = "'0"
 
     topname = top["name"]
 
@@ -173,7 +176,9 @@ def generate_alert_handler(top, out_path):
                                    esc_cnt_dw=esc_cnt_dw,
                                    accu_cnt_dw=accu_cnt_dw,
                                    async_on=async_on,
-                                   n_classes=n_classes)
+                                   n_classes=n_classes,
+                                   n_lpg=n_lpg,
+                                   lpg_map=lpg_map)
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("alert_handler hjson: %s" % out)

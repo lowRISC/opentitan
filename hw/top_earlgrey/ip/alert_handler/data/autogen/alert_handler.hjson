@@ -18,6 +18,8 @@
 #  - accu_cnt_dw: Width of accumulator
 #  - async_on:    Enables asynchronous sygnalling between specific alert RX/TX pairs
 #  - n_classes:   Number of supported classes (leave this at 4 at the moment)
+#  - n_lpg:       Number of low-power groups (LPGs)
+#  - lpg_map:     Defines a mapping from alerts to LPGs.
 
 {
   name: "ALERT_HANDLER",
@@ -49,6 +51,26 @@
       desc: "Number of alert channels.",
       type: "int",
       default: "58",
+      local: "true"
+    },
+    { name: "NLpg",
+      desc: "Number of LPGs.",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+    { name: "NLpgWidth",
+      desc: "Width of LPG ID.",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+    { name: "AlertLpgMap",
+      desc: '''
+            Defines a mapping from alerts to LPGs.
+            '''
+      type: "logic [NAlerts-1:0][NLpgWidth-1:0]",
+      default: "'0",
       local: "true"
     },
     { name: "EscCntDw",

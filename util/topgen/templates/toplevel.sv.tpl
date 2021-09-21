@@ -398,6 +398,10 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       // alert signals
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),
+
+      // TODO(#8174): top-level integration for LPGs
+      .lpg_cg_en_i ( {lc_ctrl_pkg::Off} ),
+      .lpg_rst_en_i ( {lc_ctrl_pkg::Off} ),
     % endif
     % if block.scan:
       .scanmode_i,

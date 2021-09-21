@@ -9,6 +9,9 @@ package alert_pkg;
   localparam int unsigned      NAlerts   = alert_handler_reg_pkg::NAlerts;   // maximum 252
   localparam int unsigned      EscCntDw  = alert_handler_reg_pkg::EscCntDw;  // maximum 32
   localparam int unsigned      AccuCntDw = alert_handler_reg_pkg::AccuCntDw; // maximum 32
+  localparam int unsigned      NLpg      = alert_handler_reg_pkg::NLpg;
+  localparam int unsigned      NLpgWidth = alert_handler_reg_pkg::NLpgWidth;
+  localparam logic [NAlerts-1:0][NLpgWidth-1:0] AlertLpgMap = alert_handler_reg_pkg::AlertLpgMap;
   // enable async transitions for specific RX/TX pairs
   localparam bit [NAlerts-1:0] AsyncOn   = alert_handler_reg_pkg::AsyncOn;
 
