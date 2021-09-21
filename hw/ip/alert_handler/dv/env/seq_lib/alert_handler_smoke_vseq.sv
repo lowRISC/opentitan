@@ -163,21 +163,27 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
       if ((esc_int_err == 0) && (esc_ping_timeout == 0)) check_alert_interrupts();
 
       // if ping timeout enabled, wait for ping timeout done before checking escalation phases
-      if ((esc_int_err | alert_ping_timeout) > 0) cfg.clk_rst_vif.wait_clks(MAX_PING_TIMEOUT_CYCLE);
+      if ((esc_int_err | alert_ping_timeout) > 0) begin
+        cfg.clk_rst_vif.wait_clks(MAX_PING_TIMEOUT_CYCLE);
+      end
 
       // wait escalation done, and random interrupt with clear_esc
-      wait_alert_handshake_done();
-      if ($urandom_range(0, 1) && (esc_int_err == 0)) begin
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc));
-        clear_esc();
-      end
-      wait_esc_handshake_done();
+      wait_alert_esc_done();
 
       read_alert_cause();
       read_esc_status();
       if (do_clr_esc) clear_esc();
       check_alert_interrupts();
     end
+  endtask
+
+  virtual task wait_alert_esc_done();
+    wait_alert_handshake_done();
+    if ($urandom_range(0, 1) && (esc_int_err == 0)) begin
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc));
+      clear_esc();
+    end
+    wait_esc_handshake_done();
   endtask
 
 endclass : alert_handler_smoke_vseq

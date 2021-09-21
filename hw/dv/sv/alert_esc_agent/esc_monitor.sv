@@ -49,7 +49,7 @@ class esc_monitor extends alert_esc_base_monitor;
                  !cfg.probe_vif.get_esc_en() &&
                  !under_reset) begin
             @(cfg.vif.monitor_cb);
-            check_esc_resp(.req(req), .is_ping(1));
+            check_esc_resp(.req(req), .is_ping(1), .ping_triggered(1));
             ping_cnter ++;
           end
           if (under_reset) continue;
@@ -64,7 +64,7 @@ class esc_monitor extends alert_esc_base_monitor;
             while (!cfg.probe_vif.get_esc_en() &&
                    !(req.esc_handshake_sta inside {EscIntFail, EscRespComplete, EscReceived})) begin
               @(cfg.vif.monitor_cb);
-              check_esc_resp(.req(req), .is_ping(1));
+              check_esc_resp(.req(req), .is_ping(1), .ping_triggered(1));
             end
           end
             // wait a clk cycle to enter the esc_p/n mode
@@ -132,13 +132,19 @@ class esc_monitor extends alert_esc_base_monitor;
     end
   endtask : sig_int_fail_thread
 
-  // this task checks if resp_p/n is correct by:
-  // if ping is interrupt by real escalation, abort checking and goes to next expected stage
-  // if it is not a ping_response, it should follow: low -> high .. until esc_p goes low
-  // if it is a ping_response, it should follow: low -> high -> low -> high
-  // if any clock cycle resp_p/n does not match the expected pattern, reset back to "low" state
-  // if any clock cycle resp_p/n are not complement, reset back to "low" state
-  virtual task check_esc_resp(alert_esc_seq_item req, bit is_ping);
+  // This task checks if resp_p/n is correct.
+  //
+  // Check conditions:
+  // - If ping is interrupt by real escalation, abort checking and goes to next expected stage.
+  // - If it is not a ping_response, it should follow: low -> high .. until esc_p goes low.
+  // - If it is a ping_response, it should follow: low -> high -> low -> high.
+  // - If any clock cycle resp_p/n does not match the expected pattern, reset back to "low" state.
+  // - If any clock cycle resp_p/n are not complement, reset back to "low" state.
+  // The `ping_triggered` input is added to cover a corner case when escalation ping has integrity
+  // error and FSM goes back to EscReceived case. Because escalation ping is an one cycle pulse, so
+  // design does not know this is ping request thus stays in this EscReceived case.
+  // TODO: maybe use separate esc and ping enum to avoid adding this `ping_triggered` input.
+  virtual task check_esc_resp(alert_esc_seq_item req, bit is_ping, bit ping_triggered = 0);
     case (req.esc_handshake_sta)
       EscIntFail, EscReceived: begin
         if (cfg.vif.monitor_cb.esc_rx.resp_p !== 0) begin
@@ -146,8 +152,13 @@ class esc_monitor extends alert_esc_base_monitor;
           `downcast(req_clone, req.clone());
           req_clone.esc_handshake_sta = EscIntFail;
           alert_esc_port.write(req_clone);
+          `uvm_info("esc_monitor", $sformatf("[%s]: EscReceived has integrity error",
+              req.alert_esc_type.name()), UVM_HIGH)
         end
-        if (!cfg.probe_vif.get_esc_en() && req.esc_handshake_sta == EscIntFail && !is_ping) begin
+        // If there is signal integrity error or it is not the first ping request or escalation
+        // request, stay in this case for one more clock cycle.
+        if (!cfg.probe_vif.get_esc_en() &&
+            (ping_triggered || (req.esc_handshake_sta == EscIntFail && !is_ping))) begin
           req.esc_handshake_sta = EscReceived;
         end else begin
           req.esc_handshake_sta = EscRespHi;
@@ -159,6 +170,8 @@ class esc_monitor extends alert_esc_base_monitor;
         end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 1) begin
           req.esc_handshake_sta = EscIntFail;
           alert_esc_port.write(req);
+          `uvm_info("esc_monitor", $sformatf("[%s]: EscRespHi has integrity error",
+              req.alert_esc_type.name()), UVM_HIGH)
         end else begin
           req.esc_handshake_sta = EscRespLo;
         end
@@ -169,6 +182,8 @@ class esc_monitor extends alert_esc_base_monitor;
         end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 0) begin
           req.esc_handshake_sta = EscIntFail;
           alert_esc_port.write(req);
+          `uvm_info("esc_monitor", $sformatf("[%s]: EscRespLow has integrity error",
+              req.alert_esc_type.name()), UVM_HIGH)
         end else begin
           if (is_ping) req.esc_handshake_sta = EscRespPing0;
           else req.esc_handshake_sta = EscRespHi;
@@ -180,6 +195,8 @@ class esc_monitor extends alert_esc_base_monitor;
         end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 1) begin
           req.esc_handshake_sta = EscIntFail;
           alert_esc_port.write(req);
+          `uvm_info("esc_monitor", $sformatf("[%s]: EscRespPing0 has integrity error",
+              req.alert_esc_type.name()), UVM_HIGH)
         end else begin
           req.esc_handshake_sta = EscRespPing1;
         end
@@ -190,6 +207,8 @@ class esc_monitor extends alert_esc_base_monitor;
         end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 0) begin
           req.esc_handshake_sta = EscIntFail;
           alert_esc_port.write(req);
+          `uvm_info("esc_monitor", $sformatf("[%s]: EscRespPing1 has integrity error",
+              req.alert_esc_type.name()), UVM_HIGH)
         end else begin
           req.esc_handshake_sta = EscRespComplete;
         end
