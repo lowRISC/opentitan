@@ -107,8 +107,9 @@ def write_ninja(handle: TextIO,
         basenames.append(str(seed + off))
 
     # Rules to run them
-    handle.write('rule run\n'
-                 '  command = $tb --load-elf $in >$out\n\n')
+    handle.write(f'rule run\n'
+                 f'  command = REPO_TOP={projdir_from_destdir} '
+                 f'$tb --load-elf $in >$out\n\n')
     for name in basenames:
         handle.write(f'build {name}.out: run {name}.elf | $tb\n')
     handle.write('\n')
