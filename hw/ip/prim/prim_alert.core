@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:diff_decode
       - lowrisc:prim:buf
       - lowrisc:prim:flop
+      - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/prim_alert_pkg.sv
       - rtl/prim_alert_receiver.sv
