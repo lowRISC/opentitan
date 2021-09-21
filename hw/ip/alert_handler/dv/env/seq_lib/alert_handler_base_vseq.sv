@@ -268,7 +268,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
 
   virtual task wr_ping_timeout_cycle(bit[TL_DW-1:0] timeout_val);
     csr_wr(.ptr(ral.ping_timeout_cyc_shadowed), .value(timeout_val));
-    if (!config_locked) begin
+    if (`gmv(ral.ping_timer_regwen)) begin
       if (timeout_val == 0) timeout_val = 1;
       foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].ping_timeout_cycle = timeout_val;
       foreach (cfg.esc_device_cfg[i]) cfg.esc_device_cfg[i].ping_timeout_cycle = timeout_val;

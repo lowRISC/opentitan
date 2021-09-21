@@ -81,6 +81,20 @@
       tests: ["alert_handler_random_classes"]
     }
     {
+      name: ping_timeout
+      desc: '''
+            Based on entropy test, this test request alert_sender and esc_receiver drivers to
+            randomly create ping requests timeout stimulus.
+
+            Checks:
+            - Verify interrupt pin and states.
+            - Verify alert and local alert causes.
+            - Verify escalation states and counts.
+            '''
+      milestone: V2
+      tests: ["alert_handler_ping_timeout"]
+    }
+    {
       name: stress_all
       desc: '''
             Combine above sequences in one test to run sequentially with the following exclusions:
