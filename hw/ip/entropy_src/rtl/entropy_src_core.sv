@@ -582,44 +582,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   //--------------------------------------------
-  // lfsr - a version of a entropy source
-  //--------------------------------------------
-
-//  assign lfsr_incr = es_enable_lfsr && es_rate_entropy_pulse;
-//  assign lfsr_incr_dly_d =
-//         !es_enable ? 1'b0 :
-//         lfsr_incr;
-//
-//  prim_lfsr #(
-//    .LfsrDw(RngBusWidth),
-//    .EntropyDw(RngBusWidth),
-//    .StateOutDw(RngBusWidth),
-//    .DefaultSeed(1),
-//    .CustomCoeffs('0)
-//  ) u_prim_lfsr (
-//    .clk_i          (clk_i),
-//    .rst_ni         (rst_ni),
-//    .seed_en_i      (load_seed),
-//    .seed_i         (seed_value),
-//    .lfsr_en_i      (lfsr_incr_dly _q),
-//    .entropy_i      ('0),
-//    .state_o        (lfsr_value)
-//  );
-//
-//  // entropy rate limiter
-//
-//  assign es_rate_cntr_d =
-//         !es_enable ? 16'h0001 :
-//         (es_rate == '0) ? 16'h0000 :
-//         es_rate_entropy_pulse ? es_rate :
-//         (es_rate_cntr_q - 1);
-//
-//  assign es_rate_entropy_pulse =
-//         !es_enable ? 1'b0 :
-//         (es_rate == '0) ? 1'b0 :
-//         (es_rate_cntr_q == 16'h0001);
-
-  //--------------------------------------------
   // tlul register settings
   //--------------------------------------------
 
