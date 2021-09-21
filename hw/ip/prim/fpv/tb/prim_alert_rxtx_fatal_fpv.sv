@@ -20,6 +20,7 @@ module prim_alert_rxtx_fatal_fpv
   // normal I/Os
   input        alert_test_i,
   input        alert_req_i,
+  input  lc_ctrl_pkg::lc_tx_t init_trig_i,
   input        ping_req_i,
   output logic alert_ack_o,
   output logic alert_state_o,
@@ -47,8 +48,8 @@ module prim_alert_rxtx_fatal_fpv
     .AsyncOn ( AsyncOn ),
     .IsFatal ( IsFatal )
   ) i_prim_alert_sender (
-    .clk_i      ,
-    .rst_ni     ,
+    .clk_i,
+    .rst_ni,
     .alert_test_i,
     .alert_req_i,
     .alert_ack_o,
@@ -60,12 +61,13 @@ module prim_alert_rxtx_fatal_fpv
   prim_alert_receiver #(
     .AsyncOn ( AsyncOn )
   ) i_prim_alert_receiver (
-    .clk_i        ,
-    .rst_ni       ,
-    .ping_req_i    ,
-    .ping_ok_o    ,
-    .integ_fail_o ,
-    .alert_o      ,
+    .clk_i,
+    .rst_ni,
+    .init_trig_i,
+    .ping_req_i,
+    .ping_ok_o,
+    .integ_fail_o,
+    .alert_o,
     .alert_rx_o ( alert_rx_out ),
     .alert_tx_i ( alert_tx_in  )
   );

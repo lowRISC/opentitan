@@ -23,6 +23,7 @@ module prim_alert_rxtx_async_fpv
   // normal I/Os
   input        alert_test_i,
   input        alert_req_i,
+  input  lc_ctrl_pkg::lc_tx_t init_trig_i,
   input        ping_req_i,
   output logic alert_ack_o,
   output logic alert_state_o,
@@ -33,6 +34,7 @@ module prim_alert_rxtx_async_fpv
 
   // asynchronous case
   localparam bit AsyncOn = 1'b1;
+  localparam bit IsFatal = 1'b0;
 
   logic ping_pd;
   logic ping_nd;
@@ -68,10 +70,11 @@ module prim_alert_rxtx_async_fpv
   assign alert_tx_in.alert_n = alert_nq[alert_skew_i[1]] ^ alert_err_ni;
 
   prim_alert_sender #(
-    .AsyncOn ( AsyncOn )
+    .AsyncOn ( AsyncOn ),
+    .IsFatal ( IsFatal )
   ) i_prim_alert_sender (
-    .clk_i      ,
-    .rst_ni     ,
+    .clk_i,
+    .rst_ni,
     .alert_test_i,
     .alert_req_i,
     .alert_ack_o,
@@ -83,15 +86,17 @@ module prim_alert_rxtx_async_fpv
   prim_alert_receiver #(
     .AsyncOn ( AsyncOn )
   ) i_prim_alert_receiver (
-    .clk_i        ,
-    .rst_ni       ,
-    .ping_req_i    ,
-    .ping_ok_o    ,
-    .integ_fail_o ,
-    .alert_o      ,
+    .clk_i,
+    .rst_ni,
+    .init_trig_i,
+    .ping_req_i,
+    .ping_ok_o,
+    .integ_fail_o,
+    .alert_o,
     .alert_rx_o ( alert_rx_out ),
     .alert_tx_i ( alert_tx_in  )
   );
+
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_skew_delay
     if (!rst_ni) begin

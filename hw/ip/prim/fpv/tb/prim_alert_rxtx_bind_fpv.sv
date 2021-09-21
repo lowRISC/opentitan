@@ -19,6 +19,7 @@ module prim_alert_rxtx_bind_fpv;
     .alert_req_i,
     .alert_ack_o,
     .alert_state_o,
+    .init_trig_i,
     .ping_req_i,
     .ping_ok_o,
     .integ_fail_o,
