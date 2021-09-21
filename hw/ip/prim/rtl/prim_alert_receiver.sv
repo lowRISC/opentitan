@@ -194,7 +194,7 @@ module prim_alert_receiver
         // ping requests. As soon as the init request is dropped however, ping requests are not
         // acked anymore such that the ping mechanism can also flag alert channels that got stuck
         // in the initialization sequence.
-        if (init_trig_i==lc_ctrl_pkg::On) begin
+        if (init_trig_i == lc_ctrl_pkg::On) begin
           ping_ok_o = ping_pending_q;
         // the sender will respond to the sigint error above with a sigint error on the alert lines.
         // hence we treat the alert_sigint like an acknowledgement in this case.
@@ -263,8 +263,9 @@ module prim_alert_receiver
 
   // check encoding of outgoing diffpairs. note that during init, the outgoing diffpairs are
   // supposed to be incorrectly encoded on purpose.
-  `ASSERT(PingDiffOk_A, ##1 $past(send_init) ^ alert_rx_o.ping_p ^ alert_rx_o.ping_n)
-  `ASSERT(AckDiffOk_A, ##1 $past(send_init) ^ alert_rx_o.ack_p ^ alert_rx_o.ack_n)
+  // shift sequence two cycles to the right to avoid reset effects.
+  `ASSERT(PingDiffOk_A, ##2 $past(send_init) ^ alert_rx_o.ping_p ^ alert_rx_o.ping_n)
+  `ASSERT(AckDiffOk_A, ##2 $past(send_init) ^ alert_rx_o.ack_p ^ alert_rx_o.ack_n)
   // ping request at input -> need to see encoded ping request
   `ASSERT(PingRequest0_A, ##1 $rose(ping_req_i) && !send_init |=> $changed(alert_rx_o.ping_p))
   // ping response implies it has been requested
@@ -303,14 +304,15 @@ module prim_alert_receiver
     `ASSERT(SigInt_A,
         alert_tx_i.alert_p == alert_tx_i.alert_n &&
         !(state_q inside {InitReq, InitAckWait}) &&
-        !init_trig_i==lc_ctrl_pkg::On
+        init_trig_i != lc_ctrl_pkg::On
         |->
         integ_fail_o)
     // ping response
     `ASSERT(PingResponse1_A,
         ##1 $rose(alert_tx_i.alert_p) &&
         state_q == Idle &&
-        ping_pending_q |->
+        ping_pending_q
+        |->
         ping_ok_o,
         clk_i, !rst_ni || integ_fail_o || init_trig_i == lc_ctrl_pkg::On)
     // alert
@@ -322,5 +324,42 @@ module prim_alert_receiver
         alert_o,
         clk_i, !rst_ni || integ_fail_o || init_trig_i == lc_ctrl_pkg::On)
   end
+
+  // check in-band init request is always accepted
+  `ASSERT(InBandInitRequest_A,
+      init_trig_i == lc_ctrl_pkg::On &&
+      state_q != InitAckWait
+      |=>
+      state_q == InitReq)
+  // check in-band init sequence moves FSM into IDLE state
+  `ASSERT(InBandInitSequence_A,
+      (state_q == InitReq &&
+      init_trig_i == lc_ctrl_pkg::On [*1:$]) ##1
+      (alert_sigint &&
+      init_trig_i != lc_ctrl_pkg::On) [*1:$] ##1
+      (!alert_sigint &&
+      init_trig_i != lc_ctrl_pkg::On) [*3]
+      |=>
+      state_q == Idle)
+  // check there are no spurious alerts during init
+  `ASSERT(NoSpuriousAlertsDuringInit_A,
+      init_trig_i == lc_ctrl_pkg::On ||
+      (state_q inside {InitReq, InitAckWait})
+      |->
+      !alert_o)
+  // check that there are no spurious ping OKs
+  `ASSERT(NoSpuriousPingOksDuringInit_A,
+      (init_trig_i == lc_ctrl_pkg::On ||
+      (state_q inside {InitReq, InitAckWait})) &&
+      !ping_pending_q
+      |->
+      !ping_ok_o)
+  // check ping request is bypassed when in init state
+  `ASSERT(PingOkBypassDuringInit_A,
+      $rose(ping_req_i) ##1
+      state_q == InitReq &&
+      init_trig_i == lc_ctrl_pkg::On
+      |->
+      ping_ok_o)
 
 endmodule : prim_alert_receiver
