@@ -69,7 +69,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   task body();
     update_csrs_with_reset_values();
     set_scanmode_on_low_weight();
-    csr_wr(.ptr(ral.extclk_sel_regwen), .value(1));
+    csr_wr(.ptr(ral.extclk_ctrl_regwen), .value(1));
     fork
       forever
         @cfg.clkmgr_vif.ast_clk_byp_req begin : ast_clk_byp_ack
@@ -105,7 +105,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
       fork
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_extclk_sel);
-          csr_wr(.ptr(ral.extclk_sel), .value(extclk_sel));
+          csr_wr(.ptr(ral.extclk_ctrl), .value(extclk_sel));
         end
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_req);
@@ -119,7 +119,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
                 lc_dft_en,
                 scanmode
                 ), UVM_MEDIUM)
-      csr_rd_check(.ptr(ral.extclk_sel), .compare_value(extclk_sel));
+      csr_rd_check(.ptr(ral.extclk_ctrl), .compare_value(extclk_sel));
       cfg.clk_rst_vif.wait_clks(cycles_before_next_trans);
     end
     disable fork;

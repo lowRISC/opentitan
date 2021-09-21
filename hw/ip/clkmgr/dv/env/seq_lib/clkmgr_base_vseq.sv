@@ -206,7 +206,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   function void update_csrs_with_reset_values();
     cfg.clkmgr_vif.update_clk_enables(ral.clk_enables.get_reset());
     cfg.clkmgr_vif.update_clk_hints(ral.clk_hints.get_reset());
-    cfg.clkmgr_vif.update_extclk_sel(ral.extclk_sel.get_reset());
+    cfg.clkmgr_vif.update_extclk_sel(ral.extclk_ctrl.get_reset());
   endfunction
 
 endclass : clkmgr_base_vseq

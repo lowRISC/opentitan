@@ -441,7 +441,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     string         access_str = write ? "write" : "read";
     string         channel_str = channel == AddrChannel ? "address" : "data";
 
-    logic          extclk_sel_regwen = ral.extclk_sel_regwen.get_reset();
+    logic          extclk_ctrl_regwen = ral.extclk_ctrl_regwen.get_reset();
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -475,13 +475,13 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "intr_test": begin
         // FIXME
       end
-      "extclk_sel_regwen": begin
+      "extclk_ctrl_regwen": begin
         if (addr_phase_write) begin
-          extclk_sel_regwen = item.a_data;
+          extclk_ctrl_regwen = item.a_data;
         end
       end
       "extclk_sel": begin
-        if (addr_phase_write && extclk_sel_regwen) begin
+        if (addr_phase_write && extclk_ctrl_regwen) begin
           cfg.clkmgr_vif.update_extclk_sel(item.a_data);
         end
       end
