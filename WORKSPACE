@@ -9,19 +9,25 @@ git_repository(
 )
 
 load("@bazel_embedded//:bazel_embedded_deps.bzl", "bazel_embedded_deps")
+
 bazel_embedded_deps()
 
 load("@bazel_embedded//platforms:execution_platforms.bzl", "register_platforms")
+
 register_platforms()
 
 load(
     "@bazel_embedded//toolchains/compilers/lowrisc_toolchain_rv32imc:lowrisc_toolchain_rv32imc_repository.bzl",
     "lowrisc_toolchain_rv32imc_compiler",
 )
+
 lowrisc_toolchain_rv32imc_compiler()
 
-load("@bazel_embedded//toolchains/lowrisc_toolchain_rv32imc:lowrisc_toolchain_rv32imc.bzl",
-     "register_lowrisc_toolchain_rv32imc_toolchain")
+load(
+    "@bazel_embedded//toolchains/lowrisc_toolchain_rv32imc:lowrisc_toolchain_rv32imc.bzl",
+    "register_lowrisc_toolchain_rv32imc_toolchain",
+)
+
 register_lowrisc_toolchain_rv32imc_toolchain()
 
 # We have a 'vendored' copy of the googletest repo in our repository.
@@ -31,9 +37,15 @@ local_repository(
     path = "sw/vendor/google_googletest",
 )
 
+# We have a 'vendored' copy of the google_verible_verilog_syntax_py repo
+local_repository(
+    name = "google_verible_verilog_syntax_py",
+    path = "hw/ip/prim/util/vendor/google_verible_verilog_syntax_py",
+)
+
 # Abseil is required by googletest.
 http_archive(
-     name = "com_google_absl",
-     urls = ["https://github.com/abseil/abseil-cpp/archive/master.zip"],
-     strip_prefix = "abseil-cpp-master",
+    name = "com_google_absl",
+    strip_prefix = "abseil-cpp-master",
+    urls = ["https://github.com/abseil/abseil-cpp/archive/master.zip"],
 )
