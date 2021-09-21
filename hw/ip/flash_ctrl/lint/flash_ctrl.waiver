@@ -11,16 +11,10 @@ waive -rules TERMINAL_STATE -location {flash_ctrl_lcmgr.sv} -regexp {.*StInvalid
 waive -rules MISSING_STATE -location {flash_ctrl_lcmgr.sv} -regexp {.*StInvalid.*} \
       -comment "Behavior is part of default state"
 
-# Remove errors from prim_* modules
-# TBD These should be directly addressed in primgen modules long term
-waive -rules INPUT_NOT_READ -location {prim_flop.sv} -regexp {Input port.*} \
-      -comment "Silience prim related errors"
-
-waive -rules OUTPUT_NOT_DRIVEN -location {prim_flop*.sv} -regexp {.*q_o.*} \
-      -comment "Silience prim related errors"
-
-waive -rules INPUT_NOT_READ -location {prim_flop_2sync.sv} -regexp {Input port.*} \
-      -comment "Silience prim related errors"
+# the rst done signals were an intentional choice to address resets
+# that could potentially release at different times
+waive -rules CONST_FF -location {flash_ctrl_core_reg_top.sv} \
+      -regexp {.*rst_done.*} \
 
 # State is handled as part of "default"
 waive -rules MISSING_STATE -location {flash_phy_core.sv} \

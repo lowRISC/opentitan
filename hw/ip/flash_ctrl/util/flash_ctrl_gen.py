@@ -69,10 +69,12 @@ def main():
     current = Path(__file__).parent.absolute()
 
     hjson_tpl = Template(filename=str(current / '../data/flash_ctrl.hjson.tpl'))
+    region_cfg_tpl = Template(filename=str(current / '../data/flash_ctrl_region_cfg.sv.tpl'))
     rtl_tpl = Template(filename=str(current / '../data/flash_ctrl.sv.tpl'))
     pkg_tpl = Template(filename=str(current / '../data/flash_ctrl_pkg.sv.tpl'))
 
     hjson_out = current / '../data/flash_ctrl.hjson'
+    region_cfg_out = current / '../rtl/flash_ctrl_region_cfg.sv'
     rtl_out = current / '../rtl/flash_ctrl.sv'
     pkg_out = current / '../rtl/flash_ctrl_pkg.sv'
     cfgpath = current / '../../../top_earlgrey/data/autogen/top_earlgrey.gen.hjson'
@@ -98,6 +100,9 @@ def main():
 
     # generate rtl package
     pkg_out.write_text(pkg_tpl.render(cfg=cfg))
+
+    # generate reg wrap
+    region_cfg_out.write_text(region_cfg_tpl.render(cfg=cfg))
 
     # generate top level
     rtl_out.write_text(rtl_tpl.render(cfg=cfg))

@@ -18,7 +18,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
-  
+
   // Vseq to do some initial post-reset actions. Can be overriden by extending envs.
   flash_ctrl_callback_vseq callback_vseq;
 
@@ -66,16 +66,19 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
     uvm_reg csr;
     data =
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].en, data, region_cfg.en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en, data, region_cfg.read_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].prog_en, data,
+        get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].en, data,
+                                       region_cfg.en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].rd_en, data,
+                                       region_cfg.read_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].prog_en, data,
                                        region_cfg.program_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].erase_en, data,
+        get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].erase_en, data,
                                        region_cfg.erase_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].base, data,
+        get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].base, data,
                                        region_cfg.start_page) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg[index].size, data, region_cfg.num_pages);
-    csr_wr(.ptr(ral.mp_region_cfg[index]), .value(data));
+        get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].size, data,
+                                       region_cfg.num_pages);
+    csr_wr(.ptr(ral.mp_region_cfg_shadowed[index]), .value(data));
   endtask
 
   // Configure the protection for the "default" region (all pages that do not fall into one
@@ -83,10 +86,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   virtual task flash_ctrl_default_region_cfg(bit read_en, bit program_en, bit erase_en);
     uvm_reg_data_t data;
 
-    data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, read_en) |
-           get_csr_val_with_updated_field(ral.default_region.prog_en, data, program_en) |
-           get_csr_val_with_updated_field(ral.default_region.erase_en, data, erase_en);
-    csr_wr(.ptr(ral.default_region), .value(data));
+    data = get_csr_val_with_updated_field(ral.default_region_shadowed.rd_en, data, read_en) |
+           get_csr_val_with_updated_field(ral.default_region_shadowed.prog_en, data, program_en) |
+           get_csr_val_with_updated_field(ral.default_region_shadowed.erase_en, data, erase_en);
+    csr_wr(.ptr(ral.default_region_shadowed), .value(data));
   endtask
 
   // Configure the memory protection of some selected page in one of the information partitions in
@@ -95,7 +98,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                            flash_bank_mp_info_page_cfg_t page_cfg);
     uvm_reg_data_t data;
     uvm_reg csr;
-    string csr_name = $sformatf("bank%0d_info%0d_page_cfg", bank, info_part);
+    string csr_name = $sformatf("bank%0d_info%0d_page_cfg_shadowed", bank, info_part);
     // If the selected information partition has only 1 page, no suffix needed to the register
     //  name, if there is more than one page, the page index should be added to the register name.
     if (flash_ctrl_pkg::InfoTypeSize[info_part] > 1) begin
@@ -114,7 +117,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Configure bank erasability.
   virtual task flash_ctrl_bank_erase_cfg(bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en);
-    csr_wr(.ptr(ral.mp_bank_cfg[0]), .value(bank_erase_en));
+    csr_wr(.ptr(ral.mp_bank_cfg_shadowed[0]), .value(bank_erase_en));
   endtask
 
   // Configure read and program fifo levels for interrupt.

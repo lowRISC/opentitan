@@ -150,6 +150,7 @@ def main():
                     'ip/clkmgr/rtl/autogen/clkmgr.sv',
                     'ip/flash_ctrl/rtl/autogen/flash_ctrl_pkg.sv',
                     'ip/flash_ctrl/rtl/autogen/flash_ctrl.sv',
+                    'ip/flash_ctrl/rtl/autogen/flash_ctrl_region_cfg.sv',
                     'ip/rstmgr/rtl/autogen/rstmgr_pkg.sv',
                     'ip/rstmgr/rtl/autogen/rstmgr.sv',
                     'ip/rv_plic/rtl/autogen/rv_plic.sv',

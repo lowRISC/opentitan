@@ -113,6 +113,16 @@ package flash_ctrl_pkg;
     PhaseInvalid
   } flash_lcmgr_phase_e;
 
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_bank_cfg_shadowed_mreg_t;
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_shadowed_mreg_t;
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info0_page_cfg_shadowed_mreg_t;
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_default_region_shadowed_reg_t;
+
+  typedef flash_ctrl_reg2hw_mp_bank_cfg_shadowed_mreg_t sw_bank_cfg_t;
+  typedef flash_ctrl_reg2hw_mp_region_cfg_shadowed_mreg_t sw_region_cfg_t;
+  typedef flash_ctrl_reg2hw_default_region_shadowed_reg_t sw_default_cfg_t;
+  typedef flash_ctrl_reg2hw_bank0_info0_page_cfg_shadowed_mreg_t sw_info_cfg_t;
+
   // alias for super long reg_pkg typedef
   typedef struct packed {
     logic        q;

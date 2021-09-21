@@ -600,6 +600,8 @@
           regwen: "REGION_CFG_REGWEN",
           regwen_multi: true,
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -674,6 +676,8 @@
         swaccess: "rw",
         hwaccess: "hro",
         shadowed: "true",
+        update_err_alert: "recov_err",
+        storage_err_alert: "fatal_err",
         resval: "0",
         fields: [
           { bits: "0",
@@ -769,6 +773,8 @@
           regwen: "BANK${bank}_INFO${idx}_REGWEN",
           regwen_multi: true,
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -861,6 +867,8 @@
           hwaccess: "hro",
           regwen: "BANK_CFG_REGWEN",
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "ERASE_EN",

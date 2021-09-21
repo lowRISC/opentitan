@@ -48,6 +48,7 @@ module tb;
   flash_ctrl dut (
     .clk_i      (clk      ),
     .rst_ni     (rst_n    ),
+    .rst_shadowed_ni(rst_n),
     .clk_otp_i  (clk      ),
     .rst_otp_ni (rst_n    ),
 

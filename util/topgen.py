@@ -601,7 +601,10 @@ def generate_flash(topcfg, out_path):
     # Read template files from ip directory.
     tpls = []
     outputs = []
-    names = ['flash_ctrl.hjson', 'flash_ctrl.sv', 'flash_ctrl_pkg.sv']
+    names = ['flash_ctrl.hjson',
+             'flash_ctrl.sv',
+             'flash_ctrl_pkg.sv',
+             'flash_ctrl_region_cfg.sv']
 
     for x in names:
         tpls.append(tpl_path / Path(x + ".tpl"))

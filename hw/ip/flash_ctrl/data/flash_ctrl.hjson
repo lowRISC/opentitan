@@ -603,6 +603,8 @@
           regwen: "REGION_CFG_REGWEN",
           regwen_multi: true,
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -677,6 +679,8 @@
         swaccess: "rw",
         hwaccess: "hro",
         shadowed: "true",
+        update_err_alert: "recov_err",
+        storage_err_alert: "fatal_err",
         resval: "0",
         fields: [
           { bits: "0",
@@ -770,6 +774,8 @@
           regwen: "BANK0_INFO0_REGWEN",
           regwen_multi: true,
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -868,6 +874,8 @@
           regwen: "BANK0_INFO1_REGWEN",
           regwen_multi: true,
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -966,6 +974,8 @@
           regwen: "BANK0_INFO2_REGWEN",
           regwen_multi: true,
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -1064,6 +1074,8 @@
           regwen: "BANK1_INFO0_REGWEN",
           regwen_multi: true,
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -1162,6 +1174,8 @@
           regwen: "BANK1_INFO1_REGWEN",
           regwen_multi: true,
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -1260,6 +1274,8 @@
           regwen: "BANK1_INFO2_REGWEN",
           regwen_multi: true,
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "EN",
@@ -1350,6 +1366,8 @@
           hwaccess: "hro",
           regwen: "BANK_CFG_REGWEN",
           shadowed: "true",
+          update_err_alert: "recov_err",
+          storage_err_alert: "fatal_err",
           fields: [
               { bits: "0",
                 name: "ERASE_EN",
@@ -1446,6 +1464,12 @@
               This is a synchronous error.
             '''
           },
+          { bits: "6",
+            name: "update_err",
+            desc: '''
+              A shadow register encountered an update error.
+            '''
+          },
         ]
       },
 
@@ -1514,7 +1538,13 @@
               The life cycle management interface has encountered a fatal error.
               There is an error with the RMA state machine or counts.
               '''
-          }
+          },
+          { bits: "9",
+            name: "storage_err",
+            desc: '''
+              A shadow register encountered a storage fault.
+            '''
+          },
         ]
       },
 
