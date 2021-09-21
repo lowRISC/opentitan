@@ -4,6 +4,9 @@
 #
 # waiver file for keymgr
 
+waive -rules {CONST_FF} -location {keymgr_reg_top.sv} -regexp {.*rst_done.*} \
+      -comment "rst_done is part of the back-pressure process to ensure all resets are released."
+
 waive -rules {MISSING_STATE} -location {keymgr_ctrl.sv} -regexp {.*StCtrlDisabled.*} \
       -comment "Disabled state absorbed into default."
 
