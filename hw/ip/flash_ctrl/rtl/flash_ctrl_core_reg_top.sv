@@ -956,6 +956,8 @@ module flash_ctrl_core_reg_top (
   logic err_code_prog_type_err_wd;
   logic err_code_flash_phy_err_qs;
   logic err_code_flash_phy_err_wd;
+  logic err_code_update_err_qs;
+  logic err_code_update_err_wd;
   logic fault_status_oob_err_qs;
   logic fault_status_mp_err_qs;
   logic fault_status_rd_err_qs;
@@ -965,6 +967,7 @@ module flash_ctrl_core_reg_top (
   logic fault_status_reg_intg_err_qs;
   logic fault_status_phy_intg_err_qs;
   logic fault_status_lcmgr_err_qs;
+  logic fault_status_storage_err_qs;
   logic [31:0] err_addr_qs;
   logic ecc_single_err_cnt_we;
   logic [7:0] ecc_single_err_cnt_ecc_single_err_cnt_0_qs;
@@ -11271,6 +11274,31 @@ module flash_ctrl_core_reg_top (
     .qs     (err_code_flash_phy_err_qs)
   );
 
+  //   F[update_err]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_err_code_update_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (err_code_we),
+    .wd     (err_code_update_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.update_err.de),
+    .d      (hw2reg.err_code.update_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_code_update_err_qs)
+  );
+
 
   // R[fault_status]: V(False)
   //   F[oob_err]: 0:0
@@ -11496,6 +11524,31 @@ module flash_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (fault_status_lcmgr_err_qs)
+  );
+
+  //   F[storage_err]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_storage_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.storage_err.de),
+    .d      (hw2reg.fault_status.storage_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fault_status.storage_err.q),
+
+    // to register interface (read)
+    .qs     (fault_status_storage_err_qs)
   );
 
 
@@ -12919,6 +12972,8 @@ module flash_ctrl_core_reg_top (
   assign err_code_prog_type_err_wd = reg_wdata[4];
 
   assign err_code_flash_phy_err_wd = reg_wdata[5];
+
+  assign err_code_update_err_wd = reg_wdata[6];
   assign ecc_single_err_cnt_we = addr_hit[87] & reg_we & !reg_error;
 
   assign ecc_single_err_cnt_ecc_single_err_cnt_0_wd = reg_wdata[7:0];
@@ -13548,6 +13603,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[3] = err_code_prog_win_err_qs;
         reg_rdata_next[4] = err_code_prog_type_err_qs;
         reg_rdata_next[5] = err_code_flash_phy_err_qs;
+        reg_rdata_next[6] = err_code_update_err_qs;
       end
 
       addr_hit[85]: begin
@@ -13560,6 +13616,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[6] = fault_status_reg_intg_err_qs;
         reg_rdata_next[7] = fault_status_phy_intg_err_qs;
         reg_rdata_next[8] = fault_status_lcmgr_err_qs;
+        reg_rdata_next[9] = fault_status_storage_err_qs;
       end
 
       addr_hit[86]: begin

@@ -113,10 +113,31 @@ module flash_ctrl
     .devmode_i  (1'b1)
   );
 
-  bank_cfg_t [NumBanks-1:0] bank_cfg;
-  for (genvar i = 0; i < NumBanks; i++) begin : gen_bank_cfg
-    assign bank_cfg[i].q = reg2hw.mp_bank_cfg_shadowed[i].q;
-  end
+  bank_cfg_t [NumBanks-1:0] bank_cfgs;
+  mp_region_cfg_t [MpRegions:0] region_cfgs;
+  info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs;
+
+  flash_ctrl_region_cfg u_region_cfg (
+    .clk_i,
+    .rst_ni,
+    .lc_creator_seed_sw_rw_en_i,
+    .lc_owner_seed_sw_rw_en_i,
+    .lc_iso_part_sw_wr_en_i,
+    .lc_iso_part_sw_rd_en_i,
+    .bank_cfg_i(reg2hw.mp_bank_cfg_shadowed),
+    .region_cfg_i(reg2hw.mp_region_cfg_shadowed),
+    .default_cfg_i(reg2hw.default_region_shadowed),
+% for bank in range(cfg.banks):
+  % for idx in range(cfg.info_types):
+    .bank${bank}_info${idx}_cfg_i(reg2hw.bank${bank}_info${idx}_page_cfg_shadowed),
+  % endfor
+% endfor
+    .bank_cfg_o(bank_cfgs),
+    .region_cfgs_o(region_cfgs),
+    .info_page_cfgs_o(info_page_cfgs),
+    .update_err_o(update_err),
+    .storage_err_o(storage_err)
+  );
 
   // FIFO Connections
   logic                 prog_fifo_wvalid;
@@ -193,8 +214,6 @@ module flash_ctrl
   flash_sel_e if_sel;
   logic sw_sel;
   flash_lcmgr_phase_e hw_phase;
-  logic creator_seed_priv;
-  logic owner_seed_priv;
   logic lcmgr_err;
 
   // Flash control arbitration connections to software interface
@@ -237,51 +256,10 @@ module flash_ctrl
   flash_req_t flash_phy_req;
 
   // life cycle connections
-  lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en;
-  lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en;
-  lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en;
-  lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en;
   lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en;
 
   // flash functional disable
   lc_ctrl_pkg::lc_tx_t flash_disable;
-
-  // synchronize enables into local domain
-  prim_lc_sync #(
-    .NumCopies(1)
-  ) u_lc_creator_seed_sw_rw_en_sync (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_creator_seed_sw_rw_en_i),
-    .lc_en_o(lc_creator_seed_sw_rw_en)
-  );
-
-  prim_lc_sync #(
-    .NumCopies(1)
-  ) u_lc_owner_seed_sw_rw_en_sync (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_owner_seed_sw_rw_en_i),
-    .lc_en_o(lc_owner_seed_sw_rw_en)
-  );
-
-  prim_lc_sync #(
-    .NumCopies(1)
-  ) u_lc_iso_part_sw_rd_en_sync (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_iso_part_sw_rd_en_i),
-    .lc_en_o(lc_iso_part_sw_rd_en)
-  );
-
-  prim_lc_sync #(
-    .NumCopies(1)
-  ) u_lc_iso_part_sw_wr_en_sync (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_iso_part_sw_wr_en_i),
-    .lc_en_o(lc_iso_part_sw_wr_en)
-  );
 
   prim_lc_sync #(
     .NumCopies(1)
@@ -403,12 +381,6 @@ module flash_ctrl
   assign prog_op       = op_type == FlashOpProgram;
   assign erase_op      = op_type == FlashOpErase;
   assign sw_sel        = if_sel == SwSel;
-
-  // software privilege to creator seed
-  assign creator_seed_priv = lc_creator_seed_sw_rw_en == lc_ctrl_pkg::On;
-
-  // software privilege to owner seed
-  assign owner_seed_priv = lc_owner_seed_sw_rw_en == lc_ctrl_pkg::On;
 
   // hardware interface
   flash_ctrl_lcmgr #(
@@ -685,82 +657,12 @@ module flash_ctrl
     endcase // unique case (op_type)
   end
 
-  //////////////////////////////////////
-  // Data partition properties configuration
-  //////////////////////////////////////
-  // extra region is the default region
-  mp_region_cfg_t [MpRegions:0] region_cfgs;
-  for (genvar i = 0; i < MpRegions; i++) begin : gen_mp_regions
-    assign region_cfgs[i].base.q        = reg2hw.mp_region_cfg_shadowed[i].base.q;
-    assign region_cfgs[i].size.q        = reg2hw.mp_region_cfg_shadowed[i].size.q;
-    assign region_cfgs[i].en.q          = reg2hw.mp_region_cfg_shadowed[i].en.q;
-    assign region_cfgs[i].rd_en.q       = reg2hw.mp_region_cfg_shadowed[i].rd_en.q;
-    assign region_cfgs[i].prog_en.q     = reg2hw.mp_region_cfg_shadowed[i].prog_en.q;
-    assign region_cfgs[i].erase_en.q    = reg2hw.mp_region_cfg_shadowed[i].erase_en.q;
-    assign region_cfgs[i].scramble_en.q = reg2hw.mp_region_cfg_shadowed[i].scramble_en.q;
-    assign region_cfgs[i].ecc_en.q      = reg2hw.mp_region_cfg_shadowed[i].ecc_en.q;
-    assign region_cfgs[i].he_en.q       = reg2hw.mp_region_cfg_shadowed[i].he_en.q;
-  end
 
-  //default region
-  assign region_cfgs[MpRegions].base.q = '0;
-  assign region_cfgs[MpRegions].size.q = NumBanks * PagesPerBank;
-  assign region_cfgs[MpRegions].en.q = 1'b1;
-  assign region_cfgs[MpRegions].rd_en.q = reg2hw.default_region_shadowed.rd_en.q;
-  assign region_cfgs[MpRegions].prog_en.q = reg2hw.default_region_shadowed.prog_en.q;
-  assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region_shadowed.erase_en.q;
-  assign region_cfgs[MpRegions].scramble_en.q = reg2hw.default_region_shadowed.scramble_en.q;
-  assign region_cfgs[MpRegions].ecc_en.q = reg2hw.default_region_shadowed.ecc_en.q;
-  assign region_cfgs[MpRegions].he_en.q = reg2hw.default_region_shadowed.he_en.q;
 
   //////////////////////////////////////
   // Info partition properties configuration
   //////////////////////////////////////
-  typedef flash_ctrl_reg2hw_bank0_info0_page_cfg_shadowed_mreg_t reg2hw_info_page_cft_t;
-  reg2hw_info_page_cft_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] sw_info_cfgs;
-  info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_cfgs;
-  info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs;
-  localparam int InfoBits = $bits(reg2hw_info_page_cft_t) * InfosPerBank;
 
-  // transform from reg output to structure
-  // Not all types have the maximum number of banks, so those are packed to 0
-  % for bank in range(cfg.banks):
-  %   for idx in range(cfg.info_types):
-  assign sw_info_cfgs[${bank}][${idx}] = InfoBits'(reg2hw.bank${bank}_info${idx}_page_cfg_shadowed);
-  %   endfor
-  % endfor
-
-  // strip error indications
-  for (genvar i = 0; i < NumBanks; i++) begin : gen_info_cfg_bank
-    for (genvar j = 0; j < InfoTypes; j++) begin : gen_info_cfg_type
-      for (genvar k = 0; k < InfosPerBank; k++) begin : gen_info_cfg_page
-        assign info_cfgs[i][j][k].en.q = sw_info_cfgs[i][j][k].en.q;
-        assign info_cfgs[i][j][k].rd_en.q = sw_info_cfgs[i][j][k].rd_en.q;
-        assign info_cfgs[i][j][k].prog_en.q = sw_info_cfgs[i][j][k].prog_en.q;
-        assign info_cfgs[i][j][k].erase_en.q = sw_info_cfgs[i][j][k].erase_en.q;
-        assign info_cfgs[i][j][k].scramble_en.q = sw_info_cfgs[i][j][k].scramble_en.q;
-        assign info_cfgs[i][j][k].ecc_en.q = sw_info_cfgs[i][j][k].ecc_en.q;
-        assign info_cfgs[i][j][k].he_en.q = sw_info_cfgs[i][j][k].he_en.q;
-      end
-    end
-  end
-
-  // qualify reg2hw settings with creator / owner privileges
-  for(genvar i = 0; i < NumBanks; i++) begin : gen_info_priv_bank
-    for (genvar j = 0; j < InfoTypes; j++) begin : gen_info_priv_type
-      flash_ctrl_info_cfg # (
-        .Bank(i),
-        .InfoSel(j)
-      ) u_info_cfg (
-        .cfgs_i(info_cfgs[i][j]),
-        .creator_seed_priv_i(creator_seed_priv),
-        .owner_seed_priv_i(owner_seed_priv),
-        .iso_flash_wr_en_i(lc_iso_part_sw_wr_en == lc_ctrl_pkg::On),
-        .iso_flash_rd_en_i(lc_iso_part_sw_rd_en == lc_ctrl_pkg::On),
-        .cfgs_o(info_page_cfgs[i][j])
-      );
-    end
-  end
 
   //////////////////////////////////////
   // flash memory properties
@@ -786,7 +688,7 @@ module flash_ctrl
 
     // sw configuration for data partition
     .region_cfgs_i(region_cfgs),
-    .bank_cfgs_i(bank_cfg),
+    .bank_cfgs_i(bank_cfgs),
 
     // sw configuration for info partition
     .info_page_cfgs_i(info_page_cfgs),
@@ -963,84 +865,7 @@ module flash_ctrl
   // Errors and Interrupts
   //////////////////////////////////////
 
-  // shadow errors and faults
-  logic [NumBanks-1:0] bank_update_err, bank_store_err;
-  logic [MpRegions-1:0] data_update_err, data_store_err;
-  logic default_update_err, default_store_err;
-  logic [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_update_err, info_store_err;
 
-  assign update_err = |data_update_err |
-                      |default_update_err |
-                      |info_update_err |
-                      |bank_update_err;
-
-  assign storage_err = |data_store_err |
-                       |default_store_err |
-                       |info_store_err |
-                       |bank_store_err;
-
-  for (genvar i = 0; i < NumBanks; i++) begin : gen_bank_err
-    assign bank_update_err[i] = reg2hw.mp_bank_cfg_shadowed[i].err_update;
-    assign bank_store_err[i] = reg2hw.mp_bank_cfg_shadowed[i].err_storage;
-  end
-
-  for (genvar i = 0; i < MpRegions; i++) begin : gen_data_err
-    assign data_update_err[i] = reg2hw.mp_region_cfg_shadowed[i].base.err_update |
-                                reg2hw.mp_region_cfg_shadowed[i].size.err_update |
-                                reg2hw.mp_region_cfg_shadowed[i].en.err_update |
-                                reg2hw.mp_region_cfg_shadowed[i].rd_en.err_update |
-                                reg2hw.mp_region_cfg_shadowed[i].prog_en.err_update |
-                                reg2hw.mp_region_cfg_shadowed[i].erase_en.err_update |
-                                reg2hw.mp_region_cfg_shadowed[i].scramble_en.err_update |
-                                reg2hw.mp_region_cfg_shadowed[i].ecc_en.err_update |
-                                reg2hw.mp_region_cfg_shadowed[i].he_en.err_update;
-
-    assign data_store_err[i] = reg2hw.mp_region_cfg_shadowed[i].base.err_storage |
-                               reg2hw.mp_region_cfg_shadowed[i].size.err_storage |
-                               reg2hw.mp_region_cfg_shadowed[i].en.err_storage |
-                               reg2hw.mp_region_cfg_shadowed[i].rd_en.err_storage |
-                               reg2hw.mp_region_cfg_shadowed[i].prog_en.err_storage |
-                               reg2hw.mp_region_cfg_shadowed[i].erase_en.err_storage |
-                               reg2hw.mp_region_cfg_shadowed[i].scramble_en.err_storage |
-                               reg2hw.mp_region_cfg_shadowed[i].ecc_en.err_storage |
-                               reg2hw.mp_region_cfg_shadowed[i].he_en.err_storage;
-  end
-
-  assign default_update_err =  reg2hw.default_region_shadowed.rd_en.err_update |
-                               reg2hw.default_region_shadowed.prog_en.err_update |
-                               reg2hw.default_region_shadowed.erase_en.err_update |
-                               reg2hw.default_region_shadowed.scramble_en.err_update |
-                               reg2hw.default_region_shadowed.ecc_en.err_update |
-                               reg2hw.default_region_shadowed.he_en.err_update;
-
-  assign default_store_err =  reg2hw.default_region_shadowed.rd_en.err_storage |
-                              reg2hw.default_region_shadowed.prog_en.err_storage |
-                              reg2hw.default_region_shadowed.erase_en.err_storage |
-                              reg2hw.default_region_shadowed.scramble_en.err_storage |
-                              reg2hw.default_region_shadowed.ecc_en.err_storage |
-                              reg2hw.default_region_shadowed.he_en.err_storage;
-
-  for (genvar i = 0; i < NumBanks; i++) begin : gen_info_err_bank
-    for (genvar j = 0; j < InfoTypes; j++) begin : gen_info_err_type
-      for (genvar k = 0; k < InfosPerBank; k++) begin : gen_info_err_page
-        assign info_update_err[i][j][k] = sw_info_cfgs[i][j][k].en.err_update |
-                                          sw_info_cfgs[i][j][k].rd_en.err_update |
-                                          sw_info_cfgs[i][j][k].prog_en.err_update |
-                                          sw_info_cfgs[i][j][k].erase_en.err_update |
-                                          sw_info_cfgs[i][j][k].scramble_en.err_update |
-                                          sw_info_cfgs[i][j][k].ecc_en.err_update |
-                                          sw_info_cfgs[i][j][k].he_en.err_update;
-
-        assign info_store_err[i][j][k] = sw_info_cfgs[i][j][k].en.err_storage |
-                                         sw_info_cfgs[i][j][k].rd_en.err_storage |
-                                         sw_info_cfgs[i][j][k].prog_en.err_storage |
-                                         sw_info_cfgs[i][j][k].erase_en.err_storage |
-                                         sw_info_cfgs[i][j][k].scramble_en.err_storage |
-                                         sw_info_cfgs[i][j][k].ecc_en.err_storage |
-                                         sw_info_cfgs[i][j][k].he_en.err_storage;
-      end
-    end
-  end
 
   // all software interface errors are treated as synchronous errors
   assign hw2reg.err_code.oob_err.d        = 1'b1;

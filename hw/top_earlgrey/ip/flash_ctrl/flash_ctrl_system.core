@@ -10,6 +10,7 @@ filesets:
       - lowrisc:ip:flash_ctrl_pkg
     files:
       - rtl/autogen/flash_ctrl_core_reg_top.sv
+      - rtl/autogen/flash_ctrl_region_cfg.sv
       - rtl/autogen/flash_ctrl.sv
     file_type: systemVerilogSource
 
