@@ -37,6 +37,12 @@ local_repository(
     path = "sw/vendor/google_googletest",
 )
 
+# We have a 'vendored' copy of the google_verible_verilog_syntax_py repo
+local_repository(
+    name = "google_verible_verilog_syntax_py",
+    path = "hw/ip/prim/util/vendor/google_verible_verilog_syntax_py",
+)
+
 # Abseil is required by googletest.
 http_archive(
     name = "com_google_absl",
