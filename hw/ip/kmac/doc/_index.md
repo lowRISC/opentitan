@@ -124,9 +124,9 @@ The interface has an additional address signal on top of the valid, ready, and d
 
 ![](sha3-padding.svg)
 
-The hashing process begins when the software issues the start command to !!CMD .
+The hashing process begins when the software issues the start command to {{< regref "CMD" >}} .
 If cSHAKE is enabled, the padding logic expands the prefix value (`N || S` above) into a block size.
-The block size is determined by the !!CFG.kstrength .
+The block size is determined by the {{< regref "CFG.kstrength" >}} .
 If the value is 128, the block size will be 168 bytes.
 If it is 256, the block size will be 136 bytes.
 The expanded prefix value is transmitted to the Keccak round logic.
@@ -135,16 +135,16 @@ After sending the block size, the padding logic triggers the Keccak round logic 
 If the mode is not cSHAKE, or cSHAKE mode and the prefix block has been processed, the padding logic accepts the incoming message bitstream and forward the data to the Keccak round logic in a block granularity.
 The padding logic controls the data flow and makes the Keccak logic to run after sending a block size.
 
-After the software writes the message bitstream, it should issue the Process command into !!CMD register.
-The padding logic, after receiving the Process command, appends proper ending bits with respect to the !!CFG.mode value.
+After the software writes the message bitstream, it should issue the Process command into {{< regref "CMD" >}} register.
+The padding logic, after receiving the Process command, appends proper ending bits with respect to the {{< regref "CFG.mode" >}} value.
 The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block.
 
 ![](sha3-padding-fsm.svg)
 
 After the Keccak round completes the last block, the padding logic asserts an `absorbed` signal to notify the software.
 The signal generates the `kmac_done` interrupt.
-At this point, the software is able to read the digest in !!STATE memory region.
-If the output length is greater than the Keccak block rate in SHAKE and cSHAKE mode, the software may run the Keccak round manually by issuing Run command to !!CMD register.
+At this point, the software is able to read the digest in {{< regref "STATE" >}} memory region.
+If the output length is greater than the Keccak block rate in SHAKE and cSHAKE mode, the software may run the Keccak round manually by issuing Run command to {{< regref "CMD" >}} register.
 
 The software completes the operation by issuing Done command after reading the digest.
 The padding logic clears internal variables and goes back to Idle state.
@@ -156,8 +156,8 @@ The padding logic clears internal variables and goes back to Idle state.
 KMAC core prepends and appends additional bitstream on top of Keccak padding logic in SHA3 core.
 The [NIST SP 800-185][] defines `KMAC[128,256](K, X, L, S)` as a cSHAKE function.
 See the section 4.3 in NIST SP 800-185 for details.
-If KMAC is enabled, the software should configure !!CFG.mode to cSHAKE and the first six bytes of !!PREFIX to `0x01204B4D4143` (bigendian).
-The first six bytes of !!PREFIX represents the value of `encode_string("KMAC")`.
+If KMAC is enabled, the software should configure {{< regref "CMD.mode" >}} to cSHAKE and the first six bytes of {{< regref "PREFIX" >}} to `0x01204B4D4143` (bigendian).
+The first six bytes of {{< regref "PREFIX" >}} represents the value of `encode_string("KMAC")`.
 
 The KMAC padding logic prepends a block containing the encoded secret key to the output message.
 The KMAC first sends the block of secret key then accepts the incoming message bitstream.
@@ -202,7 +202,7 @@ In addition to that, the KMAC/SHA3 blocks the software access to the Keccak stat
 ![](application-interface.svg)
 
 KMAC/SHA3 HWIP has an option to receive the secret key from the KeyMgr via sideload key interface.
-The software should set !!CFG.sideload to use the KeyMgr sideloaded key for the SW-initiated KMAC operation.
+The software should set {{< regref "CFG.sideload" >}} to use the KeyMgr sideloaded key for the SW-initiated KMAC operation.
 `keymgr_pkg::hw_key_t` defines the structure of the sideloaded key.
 KeyMgr provides the sideloaded key in two-share masked form regardless of the compile-time parameter `EnMasking`.
 If `EnMasking` is not defined, the KMAC merges the shared key to the unmasked form before uses the key.
@@ -360,44 +360,44 @@ The incorrect command is dropped at the following datapath, SHA3 core.
 ## Initialization
 
 The software can update the KMAC/SHA3 configurations only when the IP is in the idle state.
-The software should check !!STATUS.sha3_idle before updating the configurations.
-The software must first program !!CFG.msg_endianness and !!CFG.state_endianness at the initialization stage.
+The software should check {{< regref "STATUS.sha3_idle" >}} before updating the configurations.
+The software must first program {{< regref "CFG.msg_endianness" >}} and {{< regref "CFG.state_endianness" >}} at the initialization stage.
 These determine the byte order of incoming messages (msg_endianness) and the Keccak state output (state_endianness).
 
 ## Software Initiated KMAC/SHA3 process
 
 This section describes the expected software process to run the KMAC/SHA3 HWIP.
-At first, the software configures !!CFG.kmac_en for KMAC operation.
-If KMAC is enabled, the software should configure !!CFG.mode to cSHAKE and !!CFG.kstrength to 128 or 256 bit security strength.
-The software also updates !!PREFIX registers if cSHAKE mode is used.
-Current design does not convert cSHAKE mode to SHAKE even if !!PREFIX is empty string.
-It is the software's responsiblity to change the !!CFG.mode to SHAKE in case of empty !!PREFIX.
-The KMAC/SHA3 HWIP uses !!PREFIX registers as it is.
-It means that the software should update !!PREFIX with encoded values.
+At first, the software configures {{< regref "CFG.kmac_en" >}} for KMAC operation.
+If KMAC is enabled, the software should configure {{< regref "CFG.mode" >}} to cSHAKE and {{< regref "CFG.kstrength" >}} to 128 or 256 bit security strength.
+The software also updates {{< regref "PREFIX" >}} registers if cSHAKE mode is used.
+Current design does not convert cSHAKE mode to SHAKE even if {{< regref "PREFIX" >}} is empty string.
+It is the software's responsiblity to change the {{< regref "CFG.mode" >}} to SHAKE in case of empty {{< regref "PREFIX" >}}.
+The KMAC/SHA3 HWIP uses {{< regref "PREFIX" >}} registers as it is.
+It means that the software should update {{< regref "PREFIX" >}} with encoded values.
 
-If !!CFG.kmac_en is set, the software should update the secret key.
-The software prepares two shares of the secret key and selects its length in !!KEY_LEN then writes the shares of the secret key to !!KEY_SHARE0 and !!KEY_SHARE1 .
+If {{< regref "CFG.kmac_en" >}} is set, the software should update the secret key.
+The software prepares two shares of the secret key and selects its length in {{< regref "KEY_LEN" >}} then writes the shares of the secret key to {{< regref "KEY_SHARE0" >}} and {{< regref "KEY_SHARE1" >}} .
 The two shares of the secret key are the values that represent the secret key value when they are XORed together.
 The software can XOR the unmasked secret key with entropy.
 The XORed value is a share and the entropy used is the other share.
 
-After configuring, the software notifies the KMAC/SHA3 engine to accept incoming messages by issuing Start command into !!CMD .
+After configuring, the software notifies the KMAC/SHA3 engine to accept incoming messages by issuing Start command into {{< regref "CMD" >}} .
 If Start command is not issued, the incoming message is discarded.
 If KMAC is enabled, the software pushes the `right_encode(output_length)` value at the end of the message.
 For example, if the desired output length is 256 bit, the software writes `0x00020100` to MSG_FIFO.
 
-After the software pushes all messages, it issues Process command to !!CMD for SHA3 engine to complete the sponge absorbing process.
+After the software pushes all messages, it issues Process command to {{< regref "CMD" >}} for SHA3 engine to complete the sponge absorbing process.
 SHA3 hashing engine pads the incoming message as defined in the SHA3 specification.
 
 After the SHA3 engine completes the sponge absorbing step, it generates `kmac_done` interrupt.
-Or the software can poll the !!STATUS.squeeze bit until it becomes 1.
+Or the software can poll the {{< regref "STATUS.squeeze" >}} bit until it becomes 1.
 In this stage, the software may run the Keccak round manually.
 
 If the desired digest length is greater than the Keccak rate, the software issues Run command for the Keccak round logic to run one full round after the software reads the current available Keccak state.
 At this stage, KMAC/SHA3 does not raise an interrupt when the Keccak round completes the software initiated manual run.
-The software should check !!STATUS.squeeze register field for the readiness of !!STATE value.
+The software should check {{< regref "STATUS.squeeze" >}} register field for the readiness of {{< regref "STATE" >}} value.
 
-After the software reads all the digest values, it issues Done command to !!CMD register to clear the internal states.
+After the software reads all the digest values, it issues Done command to {{< regref "CMD" >}} register to clear the internal states.
 Done command clears the Keccak state, FSM in SHA3 and KMAC, and a few internal variables.
 Secret key and other software programmed values won't be reset.
 
@@ -408,7 +408,7 @@ This KMAC HWIP operates in little-endian.
 Internal SHA3 hashing engine receives in 64-bit granularity.
 The data written to SHA3 is assumed to be little endian.
 
-The software may write/read the data in big-endian order if !!CFG.msg_endianness or !!CFG.state_endianness is set.
+The software may write/read the data in big-endian order if {{< regref "CFG.msg_endianness" >}} or {{< regref "CFG.state_endianness" >}} is set.
 If the endianness bit is 1, the data is assumed to be big-endian.
 So, the internal logic byte-swap the data.
 For example, when the software writes `0xDEADBEEF` with endianness as 1, the logic converts it to `0xEFBEADDE` then writes into MSG_FIFO.
@@ -416,7 +416,7 @@ For example, when the software writes `0xDEADBEEF` with endianness as 1, the log
 The software managed secret key, and the prefix are always little-endian values.
 For example, if the software configures the function name `N` in KMAC operation, it writes `encode_string("KMAC")`.
 The `encode_string("KMAC")` represents `0x01 0x20 0x4b 0x4d 0x41 0x43` in byte order.
-The software writes `0x4d4b2001` into !!PREFIX0 and `0x????4341` into !!PREFIX1 .
+The software writes `0x4d4b2001` into {{< regref "PREFIX0" >}} and `0x????4341` into {{< regref "PREFIX1" >}} .
 Upper 2 bytes can vary depending on the customization input string `S`.
 
 ## KMAC/SHA3 context switching
