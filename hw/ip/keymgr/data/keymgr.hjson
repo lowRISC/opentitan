@@ -481,8 +481,6 @@
           '''
         },
       ]
-      tags: [// when it's set, it can't be modified until the next advance operation completes
-             "excl:CsrNonInitTests:CsrExclWrite"]
     },
 
     { multireg: {
@@ -723,6 +721,8 @@
             },
         ],
         tags: [// HW-update reg
+               // When a fault happens (e.g. when we test TL integrity error), this CSR will be
+               // wiped with random value.
                "excl:CsrNonInitTests:CsrExclCheck"]
       },
     },
@@ -749,6 +749,8 @@
             },
         ],
         tags: [// HW-update reg
+               // When a fault happens (e.g. when we test TL integrity error), this CSR will be
+               // wiped with random value.
                "excl:CsrNonInitTests:CsrExclCheck"]
       },
     },
