@@ -91,7 +91,7 @@ See the documentation for {{< otbnInsnRef "JAL" >}} and {{< otbnInsnRef "JALR" >
 The call stack has a maximum depth of 8 elements.
 Each instruction that reads from `x1` pops a single element from the stack.
 Each instruction that writes to `x1` pushes a single element onto the stack.
-An instruction that reads from an empty stack or writes to a full stack causes OTBN to stop, raising an alert and setting the `ErrBitCallStack` bit in the {{< regref "ERR_BITS" >}} register.
+An instruction that reads from an empty stack or writes to a full stack causes a `CALL_STACK` [software error](#design-details-errors).
 
 A single instruction can both read and write to the stack.
 In this case, the read is ordered before the write.
