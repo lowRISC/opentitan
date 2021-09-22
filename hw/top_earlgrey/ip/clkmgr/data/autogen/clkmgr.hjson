@@ -142,8 +142,8 @@
 
 
   registers: [
-    { name: "EXTCLK_CTRL_REGWEN",
-      desc: "External clock control write enable",
+    { name: "EXTCLK_SEL_REGWEN",
+      desc: "External clock select write enable",
       swaccess: "rw0c",
       hwaccess: "none",
       fields: [
@@ -151,41 +151,30 @@
           name: "EN",
           resval: "1"
           desc: '''
-            When 1, the value of !!EXTCLK_CTRL can be set.  When 0, writes to !!EXTCLK_CTRL have no
+            When 1, the value of !!EXTCLK_SEL can be set.  When 0, writes to !!EXTCLK_SEL have no
             effect.
           '''
         },
       ]
     },
 
-    { name: "EXTCLK_CTRL",
+    { name: "EXTCLK_SEL",
       desc: '''
         Select external clock
       ''',
-      regwen: "EXTCLK_CTRL_REGWEN",
+      regwen: "EXTCLK_SEL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
         {
           bits: "3:0",
-          name: "SEL",
+          name: "VAL",
           desc: '''
             A value of b1010 selects external clock as clock for the system.
             While this register can always be programmed, it only takes effect when the system is in
             life cycle TEST or RMA states when DFT is enabled.
 
             All other values are invalid and keep clocks on internal sources.
-          '''
-          resval: "0x5"
-        },
-        {
-          bits: "7:4",
-          name: "STEP_DOWN",
-          desc: '''
-            A value of b1010 steps down the clock dividers by a factor of 2 if the !!EXTCLK_CTRL.SEL
-            field is also set to b1010.
-
-            All other values have no effect.
           '''
           resval: "0x5"
         }
