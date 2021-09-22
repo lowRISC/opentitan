@@ -144,6 +144,7 @@ sw_silicon_creator_lib_irq_asm = declare_dependency(
     'sw_silicon_creator_lib_irq_asm',
     sources: [
       hw_ip_aon_timer_reg_h,
+      hw_ip_flash_ctrl_reg_h,
       hw_ip_pwrmgr_reg_h,
       'irq_asm.S',
     ],

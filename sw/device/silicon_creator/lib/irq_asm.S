@@ -4,6 +4,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "aon_timer_regs.h"
+#include "flash_ctrl_regs.h"
 #include "pwrmgr_regs.h"
 
   // This code is in the .crt section since it is designed to be safe
@@ -40,6 +41,13 @@ _asm_exception_handler:
   // Enable the watchdog timer (if it is not already enabled).
   li t1, (1 << AON_TIMER_WDOG_CTRL_ENABLE_BIT)
   sw t1, AON_TIMER_WDOG_CTRL_REG_OFFSET(t0)
+
+  // Disable access to flash.
+  //
+  // This is done after requesting a reset so that this function will
+  // work even if it is in flash.
+  li t0, TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR
+  sw zero, FLASH_CTRL_DIS_REG_OFFSET(t0)
 
   // Enter a wait for interrupt loop, the device should reset shortly.
 .L_wfi_loop:
