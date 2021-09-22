@@ -24,6 +24,7 @@ class alert_sender_driver extends alert_esc_base_driver;
       @(posedge cfg.vif.rst_n);
       void'(alert_atomic.try_get(1));
       alert_atomic.put(1);
+      do_post_reset();
       under_reset = 0;
     end
   endtask
@@ -213,6 +214,17 @@ class alert_sender_driver extends alert_esc_base_driver;
 
   virtual task do_reset();
     cfg.vif.alert_tx_int.alert_p <= 1'b0;
+    cfg.vif.alert_tx_int.alert_n <= 1'b1;
+  endtask
+
+  // This task handles alert init request.
+  //
+  // After alert_receiver is reset, it will send a signal integrity fail via `ping_n` and `ack_n`,
+  // alert_sender acknowledged the init via sending an `alert_n` integrity fail.
+  virtual task do_post_reset();
+    wait (cfg.vif.alert_rx.ping_p == cfg.vif.alert_rx.ping_n);
+    cfg.vif.alert_tx_int.alert_n <= 1'b0;
+    wait (cfg.vif.alert_rx.ping_p != cfg.vif.alert_rx.ping_n);
     cfg.vif.alert_tx_int.alert_n <= 1'b1;
   endtask
 
