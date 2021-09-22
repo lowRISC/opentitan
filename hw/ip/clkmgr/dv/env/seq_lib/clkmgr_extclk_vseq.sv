@@ -55,7 +55,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   constraint cycles_to_stim_c {
     cycles_before_extclk_ctrl_sel inside {[4 : 20]};
     cycles_before_lc_clk_byp_req inside {[4 : 20]};
-    cycles_before_lc_clk_byp_ack inside {[4 : 20]};
+    cycles_before_lc_clk_byp_ack inside {[12 : 20]};
     cycles_before_ast_clk_byp_ack inside {[3 : 11]};
     cycles_before_next_trans inside {[15 : 25]};
   }
@@ -87,10 +87,6 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
         @cfg.clkmgr_vif.lc_clk_byp_ack begin : lc_clk_byp_ack
           if (cfg.clkmgr_vif.lc_clk_byp_ack == lc_ctrl_pkg::On) begin
             `uvm_info(`gfn, "Got lc_clk_byp_ack on", UVM_MEDIUM)
-          end else begin
-            `uvm_info(`gfn, "Got lc_clk_byp_req off", UVM_MEDIUM)
-            cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_ack);
-            cfg.clkmgr_vif.update_lc_clk_byp_req(lc_ctrl_pkg::Off);
           end
         end
     join_none
@@ -119,6 +115,11 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
                 scanmode
                 ), UVM_MEDIUM)
       csr_rd_check(.ptr(ral.extclk_ctrl), .compare_value({lc_ctrl_pkg::On, extclk_ctrl_sel}));
+      if (lc_clk_byp_req == lc_ctrl_pkg::On) begin
+        wait(cfg.clkmgr_vif.lc_clk_byp_req == lc_ctrl_pkg::On);
+        cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_ack);
+        cfg.clkmgr_vif.update_lc_clk_byp_req(lc_ctrl_pkg::Off);
+      end
       cfg.clk_rst_vif.wait_clks(cycles_before_next_trans);
     end
     disable fork;

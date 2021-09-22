@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:dv:clkmgr_pwrmgr_sva_if
+      - lowrisc:dv:clkmgr_sva_ifs
     files:
       - clkmgr_bind.sv
     file_type: systemVerilogSource
