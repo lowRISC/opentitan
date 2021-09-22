@@ -60,7 +60,8 @@ interface clkmgr_if (
   // The CSR values from the testbench side.
   clk_enables_t        clk_enables_csr;
   clk_hints_t          clk_hints_csr;
-  lc_ctrl_pkg::lc_tx_t extclk_sel_csr;
+  lc_ctrl_pkg::lc_tx_t extclk_ctrl_csr_sel;
+  lc_ctrl_pkg::lc_tx_t extclk_ctrl_csr_step_down;
   logic                jitter_enable_csr;
 
   // The expected and actual divided io clocks.
@@ -69,8 +70,8 @@ interface clkmgr_if (
   logic                exp_clk_io_div4;
   logic                actual_clk_io_div4;
 
-  function automatic void update_extclk_sel(lc_ctrl_pkg::lc_tx_t value);
-    extclk_sel_csr = value;
+  function automatic void update_extclk_ctrl(logic [2*$bits(lc_ctrl_pkg::lc_tx_t)-1:0] value);
+    {extclk_ctrl_csr_step_down, extclk_ctrl_csr_sel} = value;
   endfunction
 
   function automatic void update_clk_enables(clk_enables_t value);
@@ -246,7 +247,7 @@ interface clkmgr_if (
   end
 
   clocking clk_cb @(posedge clk);
-    input extclk_sel_csr;
+    input extclk_ctrl_csr_sel;
     input lc_dft_en_i;
     input ast_clk_byp_req;
     input lc_clk_byp_req;

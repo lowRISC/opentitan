@@ -9,7 +9,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-  // If the extclk_sel_regwen is clear, it is not possible to select external clocks.
+  // When extclk_ctrl_regwen is clear it is not possible to select external clocks.
   // This is tested in regular csr_rw, so here this register is simply set to 1.
 
   // lc_dft_en is set according to sel_lc_dft_en, which is randomized with weights.
@@ -43,17 +43,17 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   // The extclk cannot be manipulated in low power mode.
   constraint ip_clk_en_on_c {ip_clk_en == 1'b1;}
 
-  // This randomizes the time when the extclk_sel CSR write and the lc_clk_byp_req
+  // This randomizes the time when the extclk_ctrl CSR write and the lc_clk_byp_req
   // input is asserted for good measure. Of course, there is a good chance only a single
   // one of these trigger a request, so they are also independently tested.
-  rand int cycles_before_extclk_sel;
+  rand int cycles_before_extclk_ctrl_sel;
   rand int cycles_before_lc_clk_byp_req;
   rand int cycles_before_lc_clk_byp_ack;
   rand int cycles_before_ast_clk_byp_ack;
   rand int cycles_before_next_trans;
 
   constraint cycles_to_stim_c {
-    cycles_before_extclk_sel inside {[4 : 20]};
+    cycles_before_extclk_ctrl_sel inside {[4 : 20]};
     cycles_before_lc_clk_byp_req inside {[4 : 20]};
     cycles_before_lc_clk_byp_ack inside {[4 : 20]};
     cycles_before_ast_clk_byp_ack inside {[3 : 11]};
@@ -69,7 +69,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   task body();
     update_csrs_with_reset_values();
     set_scanmode_on_low_weight();
-    csr_wr(.ptr(ral.extclk_sel_regwen), .value(1));
+    csr_wr(.ptr(ral.extclk_ctrl_regwen), .value(1));
     fork
       forever
         @cfg.clkmgr_vif.ast_clk_byp_req begin : ast_clk_byp_ack
@@ -95,7 +95,6 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
         end
     join_none
     for (int i = 0; i < num_trans; ++i) begin
-      logic [TL_DW-1:0] value;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // Init needs to be synchronous.
       @cfg.clk_rst_vif.cb begin
@@ -104,8 +103,8 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
       end
       fork
         begin
-          cfg.clk_rst_vif.wait_clks(cycles_before_extclk_sel);
-          csr_wr(.ptr(ral.extclk_sel), .value(extclk_sel));
+          cfg.clk_rst_vif.wait_clks(cycles_before_extclk_ctrl_sel);
+          csr_wr(.ptr(ral.extclk_ctrl), .value({lc_ctrl_pkg::On, extclk_ctrl_sel}));
         end
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_req);
@@ -113,13 +112,13 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
         end
       join
       `uvm_info(`gfn, $sformatf(
-                "extclk_sel=0x%0x, lc_clk_byp_req=0x%0x, lc_dft_en=0x%0x, scanmode=0x%0x",
-                extclk_sel,
+                "extclk_ctrl_sel=0x%0x, lc_clk_byp_req=0x%0x, lc_dft_en=0x%0x, scanmode=0x%0x",
+                extclk_ctrl_sel,
                 lc_clk_byp_req,
                 lc_dft_en,
                 scanmode
                 ), UVM_MEDIUM)
-      csr_rd_check(.ptr(ral.extclk_sel), .compare_value(extclk_sel));
+      csr_rd_check(.ptr(ral.extclk_ctrl), .compare_value({lc_ctrl_pkg::On, extclk_ctrl_sel}));
       cfg.clk_rst_vif.wait_clks(cycles_before_next_trans);
     end
     disable fork;
