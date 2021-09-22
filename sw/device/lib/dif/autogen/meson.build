@@ -10,7 +10,6 @@ sw_lib_dif_autogen_uart = declare_dependency(
       hw_ip_uart_reg_h,
       'dif_uart_autogen.c',
     ],
-    include_directories: include_directories('../'),
     dependencies: [
       sw_lib_mmio,
     ],
@@ -25,7 +24,6 @@ sw_lib_dif_autogen_lc_ctrl = declare_dependency(
       hw_ip_lc_ctrl_reg_h,
       'dif_lc_ctrl_autogen.c',
     ],
-    include_directories: include_directories('../'),
     dependencies: [
       sw_lib_mmio,
     ],

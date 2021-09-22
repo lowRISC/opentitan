@@ -192,7 +192,7 @@ def main():
 
         if "autogen" in args.only:
             # Render all templates
-            for filetype in [".inc", ".c", "_unittest.cc"]:
+            for filetype in [".h", ".c", "_unittest.cc"]:
                 # Build input/output file names.
                 template_file = (
                     REPO_TOP / f"util/make_new_dif/dif_autogen{filetype}.tpl")

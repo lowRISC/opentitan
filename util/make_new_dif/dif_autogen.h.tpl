@@ -18,10 +18,10 @@
     2. list[irq]: See util/make_new_dif.py for the definition of the `irq` obj.
 </%doc>
 
-// This file is auto-generated.
+#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
+#define OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_INC_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_INC_
+// This file is auto-generated.
 
 /**
  * @file
@@ -194,4 +194,4 @@ typedef struct dif_${ip.name_snake} {
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_INC_
+#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_

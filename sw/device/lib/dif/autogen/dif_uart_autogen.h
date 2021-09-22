@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This file is auto-generated.
+#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_UART_AUTOGEN_H_
+#define OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_UART_AUTOGEN_H_
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_UART_AUTOGEN_INC_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_UART_AUTOGEN_INC_
+// This file is auto-generated.
 
 /**
  * @file
@@ -189,4 +189,4 @@ dif_result_t dif_uart_irq_restore_all(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_UART_AUTOGEN_INC_
+#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_UART_AUTOGEN_H_
