@@ -2,5 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-#https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
+# https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
 build --cxxopt='-std=c++14'
+build --conlyopt='-std=c11'
+
+# Enable toolchain resolution with cc
+build --incompatible_enable_cc_toolchain_resolution
