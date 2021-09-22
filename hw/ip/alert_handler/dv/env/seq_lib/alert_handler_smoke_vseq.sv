@@ -16,8 +16,8 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
   rand bit [NUM_ALERTS-1:0]                              alert_en;
   rand bit [NUM_ALERTS-1:0]                              alert_ping_timeout;
   rand bit [NUM_ALERT_CLASSES-1:0][NUM_ALERTS-1:0]       alert_class_map;
-  rand bit [NUM_ALERT_CLASSES-1:0][NUM_LOCAL_ALERTS-1:0] local_alert_en;
-  rand bit [NUM_LOCAL_ALERTS-1:0]                        local_alert_class_map;
+  rand bit [NUM_LOCAL_ALERTS-1:0]                        local_alert_en;
+  rand bit [NUM_ALERT_CLASSES-1:0][NUM_LOCAL_ALERTS-1:0] local_alert_class_map;
   rand bit [NUM_ESCS-1:0]                                esc_int_err;
   rand bit [NUM_ESCS-1:0]                                esc_standalone_int_err;
   rand bit [NUM_ESCS-1:0]                                esc_ping_timeout;
@@ -33,7 +33,6 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
 
   int max_wait_phases_cyc = MIN_CYCLE_PER_PHASE * NUM_ESC_PHASES;
   int max_intr_timeout_cyc;
-  bit do_standalone_alert_handler_init = 1;
 
   uvm_verbosity verbosity = UVM_LOW;
 
@@ -111,17 +110,15 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
       `uvm_info(`gfn,
-          $sformatf("start seq %0d/%0d: intr_en=%0b, alert=%0b, alert_en=%0b, alert_class=%0b",
-          i, num_trans, intr_en, alert_trigger, alert_en, alert_class_map), verbosity)
+          $sformatf("start seq %0d/%0d: intr_en=%0b, alert=%0b, alert_en=%0b, loc_alert_en=%0b",
+          i, num_trans, intr_en, alert_trigger, alert_en, local_alert_en), verbosity)
 
       // write initial settings (enable and mapping csrs)
-      if (do_standalone_alert_handler_init) begin
-        alert_handler_init(.intr_en(intr_en),
-                           .alert_en(alert_en),
-                           .alert_class(alert_class_map),
-                           .loc_alert_en(local_alert_en),
-                           .loc_alert_class(local_alert_class_map));
-      end
+      alert_handler_init(.intr_en(intr_en),
+                         .alert_en(alert_en),
+                         .alert_class(alert_class_map),
+                         .loc_alert_en(local_alert_en),
+                         .loc_alert_class(local_alert_class_map));
 
       // write class_ctrl and clren_reg
       alert_handler_rand_wr_class_ctrl(lock_bit_en);
@@ -163,7 +160,7 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
       end
       // only check interrupt when no esc_int_err, otherwise clear interrupt might happen the
       // same cycle as interrupt triggered by esc_int_err
-      if (esc_int_err == 0) check_alert_interrupts();
+      if ((esc_int_err == 0) && (esc_ping_timeout == 0)) check_alert_interrupts();
 
       // if ping timeout enabled, wait for ping timeout done before checking escalation phases
       if ((esc_int_err | alert_ping_timeout) > 0) cfg.clk_rst_vif.wait_clks(MAX_PING_TIMEOUT_CYCLE);
