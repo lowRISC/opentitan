@@ -111,14 +111,12 @@ module clkmgr_reg_top (
   logic alert_test_we;
   logic alert_test_recov_fault_wd;
   logic alert_test_fatal_fault_wd;
-  logic extclk_ctrl_regwen_we;
-  logic extclk_ctrl_regwen_qs;
-  logic extclk_ctrl_regwen_wd;
-  logic extclk_ctrl_we;
-  logic [3:0] extclk_ctrl_sel_qs;
-  logic [3:0] extclk_ctrl_sel_wd;
-  logic [3:0] extclk_ctrl_step_down_qs;
-  logic [3:0] extclk_ctrl_step_down_wd;
+  logic extclk_sel_regwen_we;
+  logic extclk_sel_regwen_qs;
+  logic extclk_sel_regwen_wd;
+  logic extclk_sel_we;
+  logic [3:0] extclk_sel_qs;
+  logic [3:0] extclk_sel_wd;
   logic jitter_enable_we;
   logic jitter_enable_qs;
   logic jitter_enable_wd;
@@ -229,18 +227,18 @@ module clkmgr_reg_top (
   );
 
 
-  // R[extclk_ctrl_regwen]: V(False)
+  // R[extclk_sel_regwen]: V(False)
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
-  ) u_extclk_ctrl_regwen (
+  ) u_extclk_sel_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (extclk_ctrl_regwen_we),
-    .wd     (extclk_ctrl_regwen_wd),
+    .we     (extclk_sel_regwen_we),
+    .wd     (extclk_sel_regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -251,23 +249,22 @@ module clkmgr_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (extclk_ctrl_regwen_qs)
+    .qs     (extclk_sel_regwen_qs)
   );
 
 
-  // R[extclk_ctrl]: V(False)
-  //   F[sel]: 3:0
+  // R[extclk_sel]: V(False)
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h5)
-  ) u_extclk_ctrl_sel (
+  ) u_extclk_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (extclk_ctrl_we & extclk_ctrl_regwen_qs),
-    .wd     (extclk_ctrl_sel_wd),
+    .we     (extclk_sel_we & extclk_sel_regwen_qs),
+    .wd     (extclk_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -275,35 +272,10 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.extclk_ctrl.sel.q),
+    .q      (reg2hw.extclk_sel.q),
 
     // to register interface (read)
-    .qs     (extclk_ctrl_sel_qs)
-  );
-
-  //   F[step_down]: 7:4
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
-  ) u_extclk_ctrl_step_down (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (extclk_ctrl_we & extclk_ctrl_regwen_qs),
-    .wd     (extclk_ctrl_step_down_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.extclk_ctrl.step_down.q),
-
-    // to register interface (read)
-    .qs     (extclk_ctrl_step_down_qs)
+    .qs     (extclk_sel_qs)
   );
 
 
@@ -1258,8 +1230,8 @@ module clkmgr_reg_top (
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CLKMGR_ALERT_TEST_OFFSET);
-    addr_hit[ 1] = (reg_addr == CLKMGR_EXTCLK_CTRL_REGWEN_OFFSET);
-    addr_hit[ 2] = (reg_addr == CLKMGR_EXTCLK_CTRL_OFFSET);
+    addr_hit[ 1] = (reg_addr == CLKMGR_EXTCLK_SEL_REGWEN_OFFSET);
+    addr_hit[ 2] = (reg_addr == CLKMGR_EXTCLK_SEL_OFFSET);
     addr_hit[ 3] = (reg_addr == CLKMGR_JITTER_ENABLE_OFFSET);
     addr_hit[ 4] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
     addr_hit[ 5] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
@@ -1300,14 +1272,12 @@ module clkmgr_reg_top (
   assign alert_test_recov_fault_wd = reg_wdata[0];
 
   assign alert_test_fatal_fault_wd = reg_wdata[1];
-  assign extclk_ctrl_regwen_we = addr_hit[1] & reg_we & !reg_error;
+  assign extclk_sel_regwen_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign extclk_ctrl_regwen_wd = reg_wdata[0];
-  assign extclk_ctrl_we = addr_hit[2] & reg_we & !reg_error;
+  assign extclk_sel_regwen_wd = reg_wdata[0];
+  assign extclk_sel_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign extclk_ctrl_sel_wd = reg_wdata[3:0];
-
-  assign extclk_ctrl_step_down_wd = reg_wdata[7:4];
+  assign extclk_sel_wd = reg_wdata[3:0];
   assign jitter_enable_we = addr_hit[3] & reg_we & !reg_error;
 
   assign jitter_enable_wd = reg_wdata[0];
@@ -1391,12 +1361,11 @@ module clkmgr_reg_top (
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = extclk_ctrl_regwen_qs;
+        reg_rdata_next[0] = extclk_sel_regwen_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[3:0] = extclk_ctrl_sel_qs;
-        reg_rdata_next[7:4] = extclk_ctrl_step_down_qs;
+        reg_rdata_next[3:0] = extclk_sel_qs;
       end
 
       addr_hit[3]: begin

@@ -10,8 +10,7 @@ module clkmgr_byp import clkmgr_pkg::*; import lc_ctrl_pkg::lc_tx_t; # (
   input                   clk_i,
   input                   rst_ni,
   input  lc_tx_t          en_i,
-  input  lc_tx_t          byp_req_i,
-  input  lc_tx_t          step_down_req_i,
+  input  lc_tx_t          byp_req,
   output lc_tx_t          ast_clk_byp_req_o,
   input  lc_tx_t          ast_clk_byp_ack_i,
   input  lc_tx_t          lc_clk_byp_req_i,
@@ -27,7 +26,7 @@ module clkmgr_byp import clkmgr_pkg::*; import lc_ctrl_pkg::lc_tx_t; # (
   // Generate qualified reg clk bypass request
   for (genvar i = 0; i < $bits(lc_tx_t); i++) begin : gen_clk_byp
     prim_buf u_buf (
-      .in_i(on_val[i] ? byp_req_i[i] & en_i[i] : byp_req_i[i] | en_i[i]),
+      .in_i(on_val[i] ? byp_req[i] & en_i[i] : byp_req[i] | en_i[i]),
       .out_o(reg_clk_byp_req[i])
     );
   end
@@ -49,19 +48,12 @@ module clkmgr_byp import clkmgr_pkg::*; import lc_ctrl_pkg::lc_tx_t; # (
    .lc_en_o(ast_clk_byp_req_o)
   );
 
-  lc_tx_t ast_clk_byp_ack;
   prim_lc_sync u_rcv (
     .clk_i,
     .rst_ni,
     .lc_en_i(ast_clk_byp_ack_i),
-    .lc_en_o(ast_clk_byp_ack)
+    .lc_en_o(step_down_req_o)
   );
-
-  // if switch request came from software, let software dictate whether to step down
-  assign step_down_req_o =
-    lc_clk_byp_req_i == lc_ctrl_pkg::On ? ast_clk_byp_ack :
-    reg_clk_byp_req == lc_ctrl_pkg::On  ? ast_clk_byp_ack & step_down_req_i :
-                                          lc_ctrl_pkg::Off;
 
   // only ack the lc_ctrl if it made a request.
   prim_lc_sender u_send (
