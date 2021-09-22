@@ -16,14 +16,15 @@ class otbn_reset_vseq extends otbn_base_vseq;
     string elf_path;
 
     elf_path = pick_elf_path();
-    `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
-    load_elf(elf_path, 1'b1);
-
     max_cycles = 1000;
+
     for (int i = 0; i < num_iters; i++) begin
       int cycle_counter;
       int reset_wait;
       bit timed_out = 1'b0;
+
+      `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
+      load_elf(elf_path, 1'b1);
 
       // Guess the number of cycles until reset. The first time around, we pick any number between 1
       // and 1,000. After that, we replace "1,000" with "75% of the longest we've seen the sequence
