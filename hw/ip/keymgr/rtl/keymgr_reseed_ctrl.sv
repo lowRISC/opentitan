@@ -26,7 +26,10 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
 
   // interface to lfsr
   output logic seed_en_o,
-  output logic [LfsrWidth-1:0] seed_o
+  output logic [LfsrWidth-1:0] seed_o,
+
+  // error condition
+  output logic cnt_err_o
 );
 
   localparam int unsigned EdnRounds = LfsrWidth / EdnWidth;
@@ -64,21 +67,24 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
     end
   end
 
-  // whenever reseed count drops to 0, issue a request and wait for ack
+  // whenever reseed count reaches reseed_interval, issue a request and wait for ack
   logic [15:0] reseed_cnt;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      reseed_cnt <= '{default: 1};
-    end else if(edn_done) begin
-      reseed_cnt <= reseed_interval_i;
-    end else if(reseed_req_i) begin
-      reseed_cnt <= '0;
-    end else if(|reseed_cnt && !first_use) begin
-      reseed_cnt <= reseed_cnt - 1'b1;
-    end
-  end
+  prim_count #(
+    .Width(16),
+    .OutSelDnCnt(0),
+    .CntStyle(prim_count_pkg::DupCnt)
+  ) u_reseed_cnt (
+    .clk_i,
+    .rst_ni,
+    .clr_i(edn_done),
+    .set_i(reseed_req_i & ~edn_req),
+    .set_cnt_i(reseed_interval_i),
+    .en_i(~edn_req & ~first_use),
+    .cnt_o(reseed_cnt),
+    .err_o(cnt_err_o)
+  );
 
-  assign edn_req = (reseed_cnt == '0);
+  assign edn_req = (reseed_cnt == reseed_interval_i);
   assign reseed_ack_o = reseed_req_i & edn_done;
   assign seed_en_o = edn_done;
 

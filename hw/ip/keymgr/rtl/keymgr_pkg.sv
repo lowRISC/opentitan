@@ -86,10 +86,10 @@ package keymgr_pkg;
 
   // Enumeration for operations
   typedef enum logic [1:0] {
-    Creator   = 0,
-    OwnerInt  = 1,
-    Owner     = 2,
-    Disable   = 3
+    Creator,
+    OwnerInt,
+    Owner,
+    Disable
   } keymgr_stage_e;
 
   // Enumeration for sideload sel
@@ -157,13 +157,15 @@ package keymgr_pkg;
     SyncFaultLastIdx
   } keymgr_sync_fault_e;
 
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     AsyncFaultKmacCmd,
     AsyncFaultKmacFsm,
     AsyncFaultRegIntg,
     AsyncFaultShadow,
     AsyncFaultFsmIntg,
     AsyncFaultCntErr,
+    AsyncFaultRCntErr,
+    AsyncFaultSideErr,
     AsyncFaultLastIdx
   } keymgr_async_fault_e;
 
@@ -187,6 +189,8 @@ package keymgr_pkg;
     FaultShadow,
     FaultCtrlFsm,
     FaultCtrlCnt,
+    FaultReseedCnt,
+    FaultSideFsm,
     FaultLastPos
   } keymgr_fault_pos_e;
 
