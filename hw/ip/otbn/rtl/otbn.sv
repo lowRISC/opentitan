@@ -625,7 +625,7 @@ module otbn
   assign hw2reg.err_bits.reg_intg_violation.d = err_bits.reg_intg_violation;
 
   assign hw2reg.err_bits.bus_intg_violation.de = done;
-  assign hw2reg.err_bits.bus_intg_violation.d = bus_intg_violation;
+  assign hw2reg.err_bits.bus_intg_violation.d = err_bits.bus_intg_violation;
 
   assign hw2reg.err_bits.illegal_bus_access.de = done;
   assign hw2reg.err_bits.illegal_bus_access.d = err_bits.illegal_bus_access;
