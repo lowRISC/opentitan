@@ -32,10 +32,16 @@ filesets:
       - tb/tb.sv
     file_type: systemVerilogSource
 
+  files_veriblelint_waiver:
+    files:
+      - lint/chip_sim.vbw
+    file_type: veribleLintWaiver
+
 targets:
   default: &default_target
     toplevel: tb
     filesets:
+      - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
       - files_dv
 
@@ -45,4 +51,3 @@ targets:
 
   lint:
     <<: *default_target
-
