@@ -281,12 +281,10 @@ module keymgr
   logic cfg_regwen;
 
   // key manager registers cannot be changed once an operation starts
-  keymgr_cfg_en #(
-    .NonInitClr(1'b1) // clear has effect even when non-init
-  ) u_cfgen (
+  keymgr_cfg_en u_cfgen (
     .clk_i,
     .rst_ni,
-    .init_i(init),
+    .init_i(1'b1), // cfg_regwen does not care about init
     .en_i(lc_keymgr_en[KeyMgrEnCfgEn] == lc_ctrl_pkg::On),
     .set_i(reg2hw.control.start.q & op_done),
     .clr_i(reg2hw.control.start.q),
@@ -295,13 +293,9 @@ module keymgr
 
   assign hw2reg.cfg_regwen.d = cfg_regwen;
 
-  logic sw_binding_set;
+
   logic sw_binding_clr;
   logic sw_binding_regwen;
-
-  // set on a successful advance
-  assign sw_binding_set = reg2hw.control.operation.q == OpAdvance &
-                          sw_binding_unlock;
 
   // this is w0c
   assign sw_binding_clr = reg2hw.sw_binding_regwen.qe & ~reg2hw.sw_binding_regwen.q;
@@ -309,13 +303,13 @@ module keymgr
   // software clears the enable
   // hardware restores it upon successful advance
   keymgr_cfg_en #(
-    .NonInitClr(1'b0)  // clear has no effect until init
+    .NonInitClr(1'b1)  // clear has an effect regardless of init state
   ) u_sw_binding_regwen (
     .clk_i,
     .rst_ni,
     .init_i(init),
     .en_i(lc_keymgr_en[KeyMgrEnSwBindingEn] == lc_ctrl_pkg::On),
-    .set_i(sw_binding_set),
+    .set_i(sw_binding_unlock),
     .clr_i(sw_binding_clr),
     .out_o(sw_binding_regwen)
   );

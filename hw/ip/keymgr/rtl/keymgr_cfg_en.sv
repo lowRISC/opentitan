@@ -42,7 +42,7 @@ module keymgr_cfg_en #(
       init_q <= '0;
     end else if (init_q && !en_i) begin
       init_q <= '0;
-    end else if (init_i) begin
+    end else if (init_i && en_i) begin
       init_q <= 1'b1;
     end
   end
@@ -55,7 +55,7 @@ module keymgr_cfg_en #(
       out_q <= 1'b0;
     end else if (vld_set) begin
       out_q <= 1'b1;
-    end else if (vld_clr) begin
+    end else if (out_clr) begin
       out_q <= 1'b0;
     end
   end
