@@ -36,7 +36,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.inc"
+#include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

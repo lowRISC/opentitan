@@ -14,9 +14,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
 
-#include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.inc"
+#include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
