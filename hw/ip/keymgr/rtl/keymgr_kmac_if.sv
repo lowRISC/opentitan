@@ -133,7 +133,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   logic cnt_err;
   prim_count #(
     .Width(CntWidth),
-    .OutSelDnCnt(1'b1)
+    .OutSelDnCnt(1'b1),
+    .CntStyle(prim_count_pkg::CrossCnt)
   ) u_cnt (
     .clk_i,
     .rst_ni,

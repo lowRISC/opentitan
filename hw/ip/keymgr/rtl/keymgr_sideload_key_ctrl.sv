@@ -22,31 +22,61 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   output logic prng_en_o,
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
-  output otbn_key_req_t otbn_key_o
+  output otbn_key_req_t otbn_key_o,
+  output logic fsm_err_o
 );
 
-  // Enumeration for working state
-  typedef enum logic [2:0] {
-    StSideloadReset,
-    StSideloadIdle,
-    StSideloadWipe,
-    StSideloadStop
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 4 -n 10 \
+  //      -s 1700801647 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (33.33%)
+  //  6: |||||||||| (16.67%)
+  //  7: |||||||||||||||||||| (33.33%)
+  //  8: |||||||||| (16.67%)
+  //  9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 8
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 7
+  //
+  localparam int StateWidth = 10;
+  typedef enum logic [StateWidth-1:0] {
+    StSideloadReset = 10'b0011111011,
+    StSideloadIdle  = 10'b0101000101,
+    StSideloadWipe  = 10'b1110110010,
+    StSideloadStop  = 10'b1000001010
   } keymgr_sideload_e;
 
   keymgr_sideload_e state_q, state_d;
-  logic keys_en;
 
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = keymgr_sideload_e'(state_raw_q);
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(StSideloadReset))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d     ),
+    .q_o ( state_raw_q )
+  );
+
+  logic keys_en;
   logic [Shares-1:0][KeyWidth-1:0] data_truncated;
   for(genvar i = 0; i < Shares; i++) begin : gen_truncate_data
     assign data_truncated[i] = data_i[i][KeyWidth-1:0];
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= StSideloadReset;
-    end else begin
-      state_q <= state_d;
-    end
   end
 
   // clear all keys when selected by software, or when
@@ -68,6 +98,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   always_comb begin
     keys_en = 1'b0;
     state_d = state_q;
+    fsm_err_o = 1'b0;
 
     unique case (state_q)
       StSideloadReset: begin
@@ -97,7 +128,10 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
         keys_en = 1'b0;
       end
 
-      default:;
+      default: begin
+        fsm_err_o = 1'b1;
+      end
+
     endcase // unique case (state_q)
   end
 

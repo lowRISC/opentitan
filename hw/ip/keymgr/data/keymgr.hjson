@@ -382,6 +382,7 @@
       desc: "sideload key slots clear"
       swaccess: "rw",
       hwaccess: "hro",
+      regwen: "CFG_REGWEN",
       fields: [
         { bits: "2:0",
           name: "VAL",
@@ -422,11 +423,27 @@
       ]
     },
 
+    { name: "RESEED_INTERVAL_REGWEN",
+      desc: "regwen for reseed interval",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            Configuration enable for reseed interval
+          '''
+        },
+      ]
+    },
+
     { name: "RESEED_INTERVAL_SHADOWED",
-      desc: "reseed interval for key manager entropy reseed",
+      desc: "Reseed interval for key manager entropy reseed",
       shadowed: "true",
       update_err_alert: "recov_operation_err",
       storage_err_alert: "fatal_fault_err",
+      regwen: "RESEED_INTERVAL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
@@ -929,6 +946,16 @@
           name: "CTRL_FSM_CNT",
           resval: "0x0"
           desc: "Control FSM counter integrity error, asynchronous fault",
+        },
+        { bits: "8",
+          name: "RESEED_CNT",
+          resval: "0x0"
+          desc: "Reseed counter integrity error, asynchronous fault",
+        },
+        { bits: "9",
+          name: "SIDE_CTRL_FSM",
+          resval: "0x0"
+          desc: "Sideload control FSM integrity error, asynchronous fault",
         },
       ]
     },

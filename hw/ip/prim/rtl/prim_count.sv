@@ -34,6 +34,9 @@ module prim_count import prim_count_pkg::*; #(
   output logic err_o
 );
 
+  // if output selects downcount, it MUST be the cross count style
+  `ASSERT_INIT(CntStyleMatch_A, OutSelDnCnt ? CntStyle == CrossCnt : 1'b1 )
+
   localparam int CntCopies = (CntStyle == DupCnt) ? 2 : 1;
 
   cmp_valid_e cmp_valid;
@@ -53,6 +56,7 @@ module prim_count import prim_count_pkg::*; #(
   for (genvar i = 0; i < CntCopies; i++) begin : gen_cnts
     // up-count
     assign up_cnt_d[i] = (clr_i)                        ? '0 :
+                         (set_i & CntStyle == DupCnt)   ? set_cnt_i :
                          (en_i & up_cnt_q[i] < max_val) ? up_cnt_q[i] + 1'b1 :
                                                           up_cnt_q[i];
 

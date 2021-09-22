@@ -7,7 +7,10 @@
 
 `include "prim_assert.sv"
 
-module keymgr_ctrl import keymgr_pkg::*; #(
+module keymgr_ctrl
+  import keymgr_pkg::*;
+  import keymgr_reg_pkg::*;
+#(
   parameter bit KmacEnMasking = 1'b1
 ) (
   input clk_i,
@@ -20,6 +23,8 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   input regfile_intg_err_i,
   input shadowed_update_err_i,
   input shadowed_storage_err_i,
+  input reseed_cnt_err_i,
+  input sideload_fsm_err_i,
 
   // Software interface
   input op_start_i,
@@ -40,6 +45,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   input  otp_ctrl_pkg::otp_keymgr_key_t root_key_i,
   output keymgr_gen_out_e hw_sel_o,
   output keymgr_stage_e stage_sel_o,
+  output logic invalid_stage_sel_o,
   output logic [CdiWidth-1:0] cdi_sel_o,
 
   // KMAC ctrl interface
@@ -258,8 +264,9 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   assign key_o.valid = op_req;
   assign cdi_sel_o = advance_sel ? cdi_cnt : op_cdi_sel_i;
 
+  assign invalid_stage_sel_o = ~(stage_sel_o inside {Creator, OwnerInt, Owner});
   for (genvar i = 0; i < Shares; i++) begin : gen_key_out_assign
-    assign key_o.key[i] = stage_sel_o == Disable ?
+    assign key_o.key[i] = invalid_stage_sel_o ?
                           {EntropyRounds{entropy_i[i]}} :
                           key_state_q[cdi_sel_o][i];
   end
@@ -346,6 +353,7 @@ module keymgr_ctrl import keymgr_pkg::*; #(
 
   prim_count #(
     .Width(CntWidth),
+    .OutSelDnCnt(1'b0),
     .CntStyle(prim_count_pkg::DupCnt)
   ) u_cnt (
     .clk_i,
@@ -771,6 +779,8 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   assign async_fault_d[AsyncFaultShadow ] = shadowed_storage_err_i;
   assign async_fault_d[AsyncFaultFsmIntg] = state_intg_err_q;
   assign async_fault_d[AsyncFaultCntErr ] = cnt_err;
+  assign async_fault_d[AsyncFaultRCntErr] = reseed_cnt_err_i;
+  assign async_fault_d[AsyncFaultSideErr] = sideload_fsm_err_i;
 
   // output to error code register
   assign error_o[ErrInvalidOp]    = op_done_o & sync_err[SyncErrInvalidOp];
@@ -778,14 +788,16 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   assign error_o[ErrShadowUpdate] = async_err[AsyncErrShadowUpdate];
 
   // output to fault code register
-  assign fault_o[FaultKmacOp]  = op_done_o & sync_fault[SyncFaultKmacOp];
-  assign fault_o[FaultKmacOut] = op_done_o & sync_fault[SyncFaultKmacOut];
-  assign fault_o[FaultKmacCmd] = async_fault[AsyncFaultKmacCmd];
-  assign fault_o[FaultKmacFsm] = async_fault[AsyncFaultKmacFsm];
-  assign fault_o[FaultRegIntg] = async_fault[AsyncFaultRegIntg];
-  assign fault_o[FaultShadow]  = async_fault[AsyncFaultShadow];
-  assign fault_o[FaultCtrlFsm] = async_fault[AsyncFaultFsmIntg];
-  assign fault_o[FaultCtrlCnt] = async_fault[AsyncFaultCntErr];
+  assign fault_o[FaultKmacOp]    = op_done_o & sync_fault[SyncFaultKmacOp];
+  assign fault_o[FaultKmacOut]   = op_done_o & sync_fault[SyncFaultKmacOut];
+  assign fault_o[FaultKmacCmd]   = async_fault[AsyncFaultKmacCmd];
+  assign fault_o[FaultKmacFsm]   = async_fault[AsyncFaultKmacFsm];
+  assign fault_o[FaultRegIntg]   = async_fault[AsyncFaultRegIntg];
+  assign fault_o[FaultShadow]    = async_fault[AsyncFaultShadow];
+  assign fault_o[FaultCtrlFsm]   = async_fault[AsyncFaultFsmIntg];
+  assign fault_o[FaultCtrlCnt]   = async_fault[AsyncFaultCntErr];
+  assign fault_o[FaultReseedCnt] = async_fault[AsyncFaultRCntErr];
+  assign fault_o[FaultSideFsm]   = async_fault[AsyncFaultSideErr];
 
   always_comb begin
     status_o = OpIdle;
@@ -880,6 +892,11 @@ module keymgr_ctrl import keymgr_pkg::*; #(
   /////////////////////////////////
   // Assertions
   /////////////////////////////////
+
+  // This assertion will not work if fault_status ever takes on metafields such as
+  // qe / re etc.
+  `ASSERT_INIT(SameErrCnt_A, $bits(keymgr_reg2hw_fault_status_reg_t) ==
+                             (SyncFaultLastIdx + AsyncFaultLastIdx))
 
   // stage select should always be Disable whenever it is not enabled
   `ASSERT(StageDisableSel_A, !en_i |-> stage_sel_o == Disable)
