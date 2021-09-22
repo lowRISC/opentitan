@@ -32,9 +32,6 @@ cc_library(
     srcs = [
         "mmio.c",
     ],
-    hdrs = [
-        "mmio.h",
-    ],
     deps = [
         ":base",
     ],
