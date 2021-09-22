@@ -28,7 +28,7 @@ Top level testbench is located at `hw/ip/keymgr/dv/tb/tb.sv`. It instantiates th
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
-* KEYMGR IOs
+* KEYMGR IOs (`keymgr_if`)
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 * Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
@@ -52,11 +52,12 @@ KEYMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< r
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into KEYMGR device.
 
-### UVC/agent 1
-[Describe here or add link to its README]
+### EDN Agent
+The KEYMGR testbench instantiates a `push_pull_agent` in `Pull` mode as the agent modelling the [EDN interface]({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) (this is already handled in the CIP base classes).
+This agent will return random data as entropy when the KEYMGR sends a request.
 
-### UVC/agent 2
-[Describe here or add link to its README]
+### KMAC_APP Agent
+The KEYMGR testbench instantiates a [`kmac_app_agent`](<{{ relref "hw/dv/sv/kmac_app_agent/README.md" >}}) to request a KMAC hash operation on the secret data.
 
 ### UVM RAL Model
 The KEYMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
@@ -73,28 +74,29 @@ The `keymgr_base_vseq` virtual sequence is extended from `cip_base_vseq` and ser
 All test sequences are extended from `keymgr_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+* keymgr_operations: This task issues operations as set in the inputs, such as advance operation, generating sw/hw output.
+* wait_op_done: This task polls the `op_status` until it returns success / fail status, as well as checking if the status is expected.
+* keymgr_rd_clr: This reads `sw_share_output` to allow scoreboard to check the values.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+The covergroups defined in testplan have been developed to prove that the test intent has been adequately met.
 
 ### Self-checking strategy
 #### Scoreboard
 The `keymgr_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* analysis port1:
-* analysis port2:
-<!-- explain inputs monitored, flow of data and outputs checked -->
+* tl_a_chan_fifo: An analysis FIFO to hold transactions from TL address channel.
+* tl_d_chan_fifo: An analysis FIFO to hold transactions from TL data channel.
+* req_fifo: An analysis FIFO to hold request data sent to KMAC.
+* rsp_fifo: An analysis FIFO to hold response digests received from KMAC.
+* edn_fifo: An analysis FIFO to hold transactions coming from the EDN interface.
 
 #### Assertions
 * TLUL assertions: The `tb/keymgr_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assert prop 1:
-* assert prop 2:
+* Check(Kmac|Aes|Otbn)Key: Check keys on the 3 sideload interfaces.
+* CheckEdn1stReq / CheckEdn2ndReq: Check KEYMGR sends 2 EDN request periodically based on the CSR `reseed_interval`.
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
