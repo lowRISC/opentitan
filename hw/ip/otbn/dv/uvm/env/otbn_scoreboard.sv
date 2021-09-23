@@ -102,13 +102,6 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     uvm_reg_addr_t       csr_addr;
     otbn_exp_read_data_t exp_read_data = '{upd: 1'b0, chk: 'x, val: 'x};
 
-    // The only TL accesses we currently track are writes to the "start" bit of the CMD register.
-    // These start the processor. We don't pass those to the model through UVM, because it's
-    // difficult to get the timing right (you only recognise the transaction on the clock edge after
-    // you needed to set the signal!), so the testbench actually grabs the model's start signal from
-    // the DUT internals. Of course, we need to check this is true exactly when we expect it to be.
-    // Here, we set a flag to say that we expect the "start" signal to be high. See the
-    // check_start() task, which checks it's true at the right time.
     csr_addr = ral.get_word_aligned_addr(item.a_addr);
     csr = ral.default_map.get_reg_by_offset(csr_addr);
 
@@ -120,11 +113,23 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       // If this is a write, update the RAL model
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
+      // Track coverage for write accesses to external CSRs over TL-UL.
+      if (cfg.en_cov) begin
+        cov.on_ext_csr_access(csr, otbn_env_pkg::AccessSoftwareWrite, item.a_data,
+                              cfg.controller_vif.get_operational_state());
+      end
+
       case (csr.get_name())
         // Spot writes to the "cmd" register, which tell us to start
+        // These start the processor. We don't pass those to the model through UVM, because it's
+        // difficult to get the timing right (you only recognise the transaction on the clock edge
+        // after you needed to set the signal!), so the testbench actually grabs the model's start
+        // signal from the DUT internals. Of course, we need to check this is true exactly when we
+        // expect it to be. Here, we set a flag to say that we expect the "start" signal to be high.
+        // See the check_start() task, which checks it's true at the right time.
         "cmd": begin
-          // We start the execution when we see a write of the START command.
-          if (item.a_data == 8'h01) begin
+          // We start the execution when we see a write of the EXECUTE command.
+          if (item.a_data == otbn_pkg::CmdExecute) begin
             saw_start_tl_trans = 1'b1;
           end
         end
@@ -205,6 +210,12 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     csr = ral.default_map.get_reg_by_offset(csr_addr);
     if (csr == null)
       return;
+
+    // Track coverage for read accesses through the bus to external CSRs.
+    if (cfg.en_cov) begin
+      cov.on_ext_csr_access(csr, otbn_env_pkg::AccessSoftwareRead, item.d_data,
+                            cfg.controller_vif.get_operational_state());
+    end
 
     // Look up the expected read data for item and then clear it (to get a quick error if something
     // has come unstuck and we see two replies for a single addr + source combo)

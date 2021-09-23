@@ -43,6 +43,10 @@ class otbn_env extends cip_base_env #(
                                                       cfg.rf_base_vif)) begin
       `uvm_fatal(`gfn, "failed to get otbn_rf_base_if handle from uvm_config_db")
     end
+    if (!uvm_config_db#(virtual otbn_controller_if)::get(this, "", "controller_vif",
+                                                      cfg.controller_vif)) begin
+      `uvm_fatal(`gfn, "failed to get otbn_controller_if handle from uvm_config_db")
+    end
 
     trace_monitor = otbn_trace_monitor::type_id::create("trace_monitor", this);
     trace_monitor.cfg = cfg;
