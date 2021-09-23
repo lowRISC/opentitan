@@ -362,6 +362,7 @@ module keymgr_ctrl
     .set_i('0),
     .set_cnt_i('0),
     .en_i(op_update | random_req),
+    .step_i(CntWidth'(1'b1)),
     .cnt_o(cnt),
     .err_o(cnt_err)
   );

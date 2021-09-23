@@ -18,6 +18,11 @@
 //
 // Note there are many other flavor of functions that can be added, but this primitive
 // module initially favors the usage inside keymgr and flash_ctrl.
+//
+// The usage of set_cnt_i is as follows:
+// When doing CrossCnt, set_cnt_i sets the maximum value as well as the starting value of down_cnt.
+// When doing DupCnt, set_cnt_i sets the starting value of up_cnt. Note during DupCnt, the maximum
+// value is just the max possible value given the counter width.
 
 module prim_count import prim_count_pkg::*; #(
   parameter int Width = 2,
@@ -30,6 +35,7 @@ module prim_count import prim_count_pkg::*; #(
   input set_i,
   input [Width-1:0] set_cnt_i,
   input en_i,
+  input [Width-1:0] step_i,
   output logic [Width-1:0] cnt_o,
   output logic err_o
 );
@@ -48,7 +54,7 @@ module prim_count import prim_count_pkg::*; #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       max_val <= '{default: '1};
-    end else if (set_i && OutSelDnCnt) begin
+    end else if (set_i && (CntStyle == CrossCnt)) begin
       max_val <= set_cnt_i;
     end
   end
@@ -57,7 +63,7 @@ module prim_count import prim_count_pkg::*; #(
     // up-count
     assign up_cnt_d[i] = (clr_i)                        ? '0 :
                          (set_i & CntStyle == DupCnt)   ? set_cnt_i :
-                         (en_i & up_cnt_q[i] < max_val) ? up_cnt_q[i] + 1'b1 :
+                         (en_i & up_cnt_q[i] < max_val) ? up_cnt_q[i] + step_i :
                                                           up_cnt_q[i];
 
     prim_buf #(
@@ -101,7 +107,7 @@ module prim_count import prim_count_pkg::*; #(
       end else if (set_i) begin
         down_cnt <= set_cnt_i;
       end else if (en_i && down_cnt > '0) begin
-        down_cnt <= down_cnt - 1'b1;
+        down_cnt <= down_cnt - step_i;
       end
     end
 
@@ -132,5 +138,13 @@ module prim_count import prim_count_pkg::*; #(
 
   // Clear and set should not be seen at the same time
   `ASSERT(SimulClrSet_A, clr_i || set_i |-> clr_i != set_i)
+
+  // Max value must be an integer multiple of the step size during cross count
+  `ASSERT(DownCntStepInt_A, (CntStyle == CrossCnt) & cmp_valid |-> max_val % step_i == 0)
+
+  // If using DupCnt, the count can never overflow
+  logic [Width:0] unused_cnt;
+  assign unused_cnt = up_cnt_d[0] + step_i;
+  `ASSERT(UpCntOverFlow_A, (CntStyle == DupCnt) & cmp_valid |-> ~unused_cnt[Width])
 
 endmodule // keymgr_cnt

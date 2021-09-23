@@ -80,6 +80,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
     .set_i(reseed_req_i & ~edn_req),
     .set_cnt_i(reseed_interval_i),
     .en_i(~edn_req & ~first_use),
+    .step_i(16'h1),
     .cnt_o(reseed_cnt),
     .err_o(cnt_err_o)
   );

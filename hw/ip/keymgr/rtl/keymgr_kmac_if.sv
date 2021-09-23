@@ -142,6 +142,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     .set_i(cnt_set),
     .set_cnt_i(rounds),
     .en_i(cnt_en),
+    .step_i(CntWidth'(1'b1)),
     .cnt_o(cnt),
     .err_o(cnt_err)
   );
