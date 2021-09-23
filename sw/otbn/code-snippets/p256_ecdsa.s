@@ -8,7 +8,7 @@
  * Uses OTBN ECC P-256 lib to perform an ECDSA operations.
  */
 
-.text
+.section .text.start
 .globl start
 start:
   /* Read mode, then tail-call either p256_ecdsa_sign or p256_ecdsa_verify */
@@ -24,6 +24,7 @@ start:
   /* Mode is neither 1 (= sign) nor 2 (= verify). Fail. */
   unimp
 
+.text
 p256_ecdsa_sign:
   jal      x1, p256_ecdsa_setup_rand
   jal      x1, p256_sign

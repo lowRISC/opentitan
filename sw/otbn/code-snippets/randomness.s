@@ -4,8 +4,7 @@
 
 /* Test access to randomness from OTBN. */
 
-.text
-
+.section .text.start
 /* Test entry point, no arguments need to be passed in nor results returned */
 .globl main
 main:
@@ -14,6 +13,8 @@ main:
 
   jal x0, exit_success
 
+
+.text
 /**
  * Tests access to cryptographic-strength randomness.
  *

@@ -224,6 +224,7 @@ barrett384:
  *                               here).
  * @param[out] dmem[559:512]: c, result, max. length 384 bit.
  */
+.section .text.start
 .globl wrap_barrett384
 wrap_barrett384:
   bn.xor w31, w31, w31

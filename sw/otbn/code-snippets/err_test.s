@@ -4,7 +4,7 @@
 
 /* Test to trigger a BadDataAddr error */
 
-.section .text
+.section .text.start
 
 /* Test entry point, no arguments need to be passed in nor results returned */
 .globl err_test
