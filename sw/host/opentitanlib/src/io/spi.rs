@@ -68,17 +68,17 @@ pub trait Target {
     /// Gets the current SPI transfer mode.
     fn get_transfer_mode(&self) -> Result<TransferMode>;
     /// Sets the current SPI transfer mode.
-    fn set_transfer_mode(&mut self, mode: TransferMode) -> Result<()>;
+    fn set_transfer_mode(&self, mode: TransferMode) -> Result<()>;
 
     /// Gets the current number of bits per word.
     fn get_bits_per_word(&self) -> Result<u32>;
     /// Sets the current number of bits per word.
-    fn set_bits_per_word(&mut self, bits_per_word: u32) -> Result<()>;
+    fn set_bits_per_word(&self, bits_per_word: u32) -> Result<()>;
 
     /// Gets the maximum allowed speed of the SPI bus.
     fn get_max_speed(&self) -> Result<u32>;
     /// Sets the maximum allowed speed of the SPI bus.
-    fn set_max_speed(&mut self, max_speed: u32) -> Result<()>;
+    fn set_max_speed(&self, max_speed: u32) -> Result<()>;
 
     /// Returns the maximum number of transfers allowed in a single transaction.
     fn get_max_transfer_count(&self) -> usize;

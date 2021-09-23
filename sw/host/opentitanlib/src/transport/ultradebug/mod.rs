@@ -23,14 +23,17 @@ pub struct Ultradebug {
     pub usb_vid: Option<u16>,
     pub usb_pid: Option<u16>,
     pub usb_serial: Option<String>,
-    internal: RefCell<Internal>,
+    // A ref-counted pointer to an MPSSE context for FTDI interface B.  This is needed because
+    // interface B contains both the SPI and GPIO functions on ultradebug.
+    mpsse_b: RefCell<Option<Rc<RefCell<mpsse::Context>>>>,
+    inner: RefCell<Inner>,
 }
 
 #[derive(Default)]
-struct Internal {
-    // A ref-counted pointer to an MPSSE context for FTDI interface B.  This is needed because
-    // interface B contains both the SPI and GPIO functions on ultradebug.
-    pub mpsse_b: Option<Rc<RefCell<mpsse::Context>>>,
+struct Inner {
+    gpio: Option<Rc<dyn Gpio>>,
+    spi: Option<Rc<dyn Target>>,
+    uart: Option<Rc<dyn Uart>>,
 }
 
 impl Ultradebug {
@@ -61,8 +64,8 @@ impl Ultradebug {
     // Create an instance of an MPSSE context bound to Ultradebug interface B.
     // This is both the SPI and GPIO block on ultradebug.
     fn mpsse_interface_b(&self) -> Result<Rc<RefCell<mpsse::Context>>> {
-        let mut internal = self.internal.borrow_mut();
-        if internal.mpsse_b.is_none() {
+        let mut mpsse_b = self.mpsse_b.borrow_mut();
+        if mpsse_b.is_none() {
             let device = self.from_interface(ftdi::Interface::B)?;
             // Read and write timeouts:
             device.set_timeouts(5000, 5000);
@@ -86,9 +89,9 @@ impl Ultradebug {
             // We don't need to change the GPIOs immediately; it is sufficient
             // to cache the value before the next GPIO operation.
             mpdev.gpio_value &= 0xF8;
-            internal.mpsse_b = Some(Rc::new(RefCell::new(mpdev)));
+            *mpsse_b = Some(Rc::new(RefCell::new(mpdev)));
         }
-        Ok(Rc::clone(internal.mpsse_b.as_ref().unwrap()))
+        Ok(Rc::clone(mpsse_b.as_ref().unwrap()))
     }
 
     /// Construct an `mpsse::Context` for the requested interface.
@@ -113,15 +116,27 @@ impl Transport for Ultradebug {
         Capabilities::new(Capability::UART | Capability::GPIO | Capability::SPI)
     }
 
-    fn uart(&self) -> Result<Box<dyn Uart>> {
-        Ok(Box::new(uart::UltradebugUart::open(self)?))
+    fn uart(&self) -> Result<Rc<dyn Uart>> {
+        let mut inner = self.inner.borrow_mut();
+        if inner.uart.is_none() {
+            inner.uart = Some(Rc::new(uart::UltradebugUart::open(self)?));
+        }
+        Ok(Rc::clone(inner.uart.as_ref().unwrap()))
     }
 
-    fn gpio(&self) -> Result<Box<dyn Gpio>> {
-        Ok(Box::new(gpio::UltradebugGpio::open(self)?))
+    fn gpio(&self) -> Result<Rc<dyn Gpio>> {
+        let mut inner = self.inner.borrow_mut();
+        if inner.gpio.is_none() {
+            inner.gpio = Some(Rc::new(gpio::UltradebugGpio::open(self)?));
+        }
+        Ok(Rc::clone(inner.gpio.as_ref().unwrap()))
     }
 
-    fn spi(&self) -> Result<Box<dyn Target>> {
-        Ok(Box::new(spi::UltradebugSpi::open(self)?))
+    fn spi(&self) -> Result<Rc<dyn Target>> {
+        let mut inner = self.inner.borrow_mut();
+        if inner.spi.is_none() {
+            inner.spi = Some(Rc::new(spi::UltradebugSpi::open(self)?));
+        }
+        Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
 }
