@@ -103,7 +103,7 @@
     ],
   },
 
-  // This is the reset data strcture of the design.
+  // This is the reset data structure of the design.
   // The hier path refers to the reset reference path (struct / port)
   //   - The top/ext desgination follows the same scheme as inter-module
   // The node key represents all the known resets in the design
