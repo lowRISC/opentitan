@@ -17,7 +17,21 @@ from shared.toolchain import find_tool
 def snoop_disasm_flags(argv: List[str]) -> bool:
     '''Look through objdump's flags for -d, -D etc.'''
     for arg in argv:
-        if arg in ['-d', '-D', '--disassemble', '--disassemble-all']:
+        # We're only interested in flags (starting with '-' or '--')
+        if not arg.startswith('-'):
+            continue
+
+        # If the argument starts with a single hyphen, the following characters
+        # explode into multiple flags (so -fhSD is the same as -f -h -S -D).
+        # Handle -d and -D here.
+        if not arg.startswith('--'):
+            if 'd' in arg[1:] or 'D' in arg[1:]:
+                return True
+            else:
+                continue
+
+        # The argument starts with two hyphens.
+        if arg in ['--disassemble', '--disassemble-all']:
             return True
 
         # --disassemble=symbol
