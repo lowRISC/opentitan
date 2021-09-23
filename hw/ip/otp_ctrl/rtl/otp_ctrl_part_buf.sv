@@ -71,6 +71,7 @@ module otp_ctrl_part_buf
   // Integration Checks //
   ////////////////////////
 
+  import prim_mubi_pkg::*;
   import prim_util_pkg::vbits;
 
   localparam int unsigned DigestOffsetInt = (int'(Info.offset) +
@@ -156,7 +157,7 @@ module otp_ctrl_part_buf
   otp_err_e error_d, error_q;
   data_sel_e data_sel;
   base_sel_e base_sel;
-  access_e dout_gate_d, dout_gate_q;
+  mubi8_t dout_locked_d, dout_locked_q;
   logic [CntWidth-1:0] cnt_d, cnt_q;
   logic cnt_en, cnt_clr;
   logic ecc_err;
@@ -175,7 +176,7 @@ module otp_ctrl_part_buf
     state_d = state_q;
 
     // Redundantly encoded lock signal for buffer regs.
-    dout_gate_d = dout_gate_q;
+    dout_locked_d = dout_locked_q;
 
     // OTP signals
     otp_req_o = 1'b0;
@@ -409,8 +410,8 @@ module otp_ctrl_part_buf
         // This is the only way the buffer regs can get unlocked.
         end else begin
           state_d = IdleSt;
-          if (dout_gate_q == Locked) begin
-            dout_gate_d = Unlocked;
+          if (mubi8_tst_hi_strict(dout_locked_q)) begin
+            dout_locked_d = mubi8_lo_value();
           end
         end
       end
@@ -506,8 +507,8 @@ module otp_ctrl_part_buf
             state_d = IdleSt;
             // If the partition is still locked, this is the first integrity check after
             // initialization. This is the only way the buffer regs can get unlocked.
-            if (dout_gate_q == Locked) begin
-              dout_gate_d = Unlocked;
+            if (mubi8_tst_hi_strict(dout_locked_q)) begin
+              dout_locked_d = mubi8_lo_value();
             // Otherwise, this integrity check has requested by the LFSR timer, and we have
             // to acknowledge its completion.
             end else begin
@@ -527,7 +528,7 @@ module otp_ctrl_part_buf
       // Make sure the partition signals an error state if no error
       // code has been latched so far, and lock the buffer regs down.
       ErrorSt: begin
-        dout_gate_d = Locked;
+        dout_locked_d = mubi8_hi_value();
         if (error_q == NoError) begin
           error_d = FsmStateError;
         end
@@ -610,42 +611,40 @@ module otp_ctrl_part_buf
     .ecc_err_o ( ecc_err       )
   );
 
+  // We have successfully initialized the partition once it has been unlocked.
+  assign init_done_o = mubi8_tst_lo_strict(dout_locked_q);
   // Hardware output gating.
   // Note that this is decoupled from the DAI access rules further below.
-  assign data_o = (dout_gate_q == Unlocked) ? data : DataDefault;
+  assign data_o = (init_done_o) ? data : DataDefault;
   // The digest does not have to be gated.
   assign digest_o = data[$high(data_o) -: ScrmblBlockWidth];
-  // We have successfully initialized the partition once it has been unlocked.
-  assign init_done_o = (dout_gate_q == Unlocked);
-
 
   ////////////////////////
   // DAI Access Control //
   ////////////////////////
 
-  part_access_t access;
-  // Aggregate all possible DAI write locks. The partition is also locked when uninitialized.
+  // Aggregate all possible DAI write /readlocks. The partition is also locked when uninitialized.
   // Note that the locks are redundantly encoded values.
+  part_access_t access_pre, access;
+  assign access_pre.write_lock = mubi8_and_lo(dout_locked_q, access_i.write_lock);
+  assign access_pre.read_lock  = mubi8_and_lo(dout_locked_q, access_i.read_lock);
+
   if (Info.write_lock) begin : gen_digest_write_lock
-    assign access.write_lock = ((dout_gate_q != Unlocked) ||
-                                (access_i.write_lock != Unlocked) ||
-                                (digest_o != '0))  ? Locked : Unlocked;
-    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> access.write_lock == Locked)
+    mubi8_t digest_locked;
+    assign digest_locked = (digest_o != '0) ? mubi8_hi_value() : mubi8_lo_value();
+    assign access.write_lock = mubi8_and_lo(access_pre.write_lock, digest_locked);
+    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_tst_hi_loose(access.write_lock))
   end else begin : gen_no_digest_write_lock
-    assign access.write_lock = ((dout_gate_q != Unlocked) ||
-                                (access_i.write_lock != Unlocked)) ? Locked : Unlocked;
+    assign access.write_lock = access_pre.write_lock;
   end
 
-  // Aggregate all possible DAI read locks. The partition is also locked when uninitialized.
-  // Note that the locks are redundantly encoded 16bit values.
   if (Info.read_lock) begin : gen_digest_read_lock
-    assign access.read_lock = ((dout_gate_q != Unlocked) ||
-                               (access_i.read_lock != Unlocked) ||
-                               (digest_o != '0)) ? Locked : Unlocked;
-    `ASSERT(DigestReadLocksPartition_A, digest_o |-> access.read_lock == Locked)
+    mubi8_t digest_locked;
+    assign digest_locked = (digest_o != '0) ? mubi8_hi_value() : mubi8_lo_value();
+    assign access.read_lock = mubi8_and_lo(access_pre.read_lock, digest_locked);
+    `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_tst_hi_loose(access.read_lock))
   end else begin : gen_no_digest_read_lock
-    assign access.read_lock = ((dout_gate_q != Unlocked) ||
-                               (access_i.read_lock != Unlocked)) ? Locked : Unlocked;
+    assign access.read_lock = access_pre.read_lock;
   end
 
   // Make sure there is a hand-picked buffer on each bit to prevent
@@ -680,13 +679,14 @@ module otp_ctrl_part_buf
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      error_q     <= NoError;
-      cnt_q       <= '0;
-      dout_gate_q <= Locked;
+      error_q       <= NoError;
+      cnt_q         <= '0;
+      // data output is locked by default
+      dout_locked_q <= mubi8_hi_value();
     end else begin
-      error_q     <= error_d;
-      cnt_q       <= cnt_d;
-      dout_gate_q <= dout_gate_d;
+      error_q       <= error_d;
+      cnt_q         <= cnt_d;
+      dout_locked_q <= dout_locked_d;
     end
   end
 
@@ -716,22 +716,22 @@ module otp_ctrl_part_buf
 
   // Uninitialized partitions should always be locked, no matter what.
   `ASSERT(InitWriteLocksPartition_A,
-      dout_gate_q != Unlocked
+      mubi8_tst_hi_loose(dout_locked_q)
       |->
-      access_o.write_lock == Locked)
+      mubi8_tst_hi_loose(access_o.write_lock))
   `ASSERT(InitReadLocksPartition_A,
-      dout_gate_q != Unlocked
+      mubi8_tst_hi_loose(dout_locked_q)
       |->
-      access_o.read_lock == Locked)
+      mubi8_tst_hi_loose(access_o.read_lock))
   // Incoming Lock propagation
   `ASSERT(WriteLockPropagation_A,
-      access_i.write_lock != Unlocked
+      mubi8_tst_hi_loose(access_i.write_lock)
       |->
-      access_o.write_lock == Locked)
+      mubi8_tst_hi_loose(access_o.write_lock))
   `ASSERT(ReadLockPropagation_A,
-      access_i.read_lock != Unlocked
+      mubi8_tst_hi_loose(access_i.read_lock)
       |->
-      access_o.read_lock == Locked)
+      mubi8_tst_hi_loose(access_o.read_lock))
   // ECC error in buffer regs
   `ASSERT(EccErrorState_A,
       ecc_err

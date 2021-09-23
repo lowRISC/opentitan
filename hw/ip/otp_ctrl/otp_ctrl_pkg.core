@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:prim:mubi
 
     files:
       - rtl/otp_ctrl_reg_pkg.sv

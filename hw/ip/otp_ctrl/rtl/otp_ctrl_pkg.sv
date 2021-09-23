@@ -33,16 +33,10 @@ package otp_ctrl_pkg;
 
   // Redundantly encoded and complementary values are used to for signalling to the partition
   // controller FSMs and the DAI whether a partition is locked or not. Any other value than
-  // "Unlocked" is interpreted as "Locked" in those FSMs.
-  typedef enum logic [7:0] {
-    Unlocked = 8'h5A,
-    Locked   = 8'hA5
-  } access_e;
-
-  // Partition access type
+  // "Mubi8Lo" is interpreted as "Locked" in those FSMs.
   typedef struct packed {
-    access_e read_lock;
-    access_e write_lock;
+    prim_mubi_pkg::mubi8_t read_lock;
+    prim_mubi_pkg::mubi8_t write_lock;
   } part_access_t;
 
   parameter int DaiCmdWidth = 3;
