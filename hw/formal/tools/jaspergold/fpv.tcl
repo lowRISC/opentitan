@@ -19,11 +19,19 @@ set_property_compile_time_limit 1000s
 #-------------------------------------------------------------------------
 
 # only one scr file exists in this folder
-analyze -sv09                 \
-  +define+FPV_ON              \
+analyze -sv09     \
+  +define+FPV_ON  \
   -f [glob *.scr]
 
-elaborate -bbox_a 4320 -top $env(DUT_TOP) -enable_sva_isunknown
+if {$env(DUT_TOP) == "prim_count_tb"} {
+  elaborate -bbox_a 4320 \
+            -top $env(DUT_TOP) \
+            -enable_sva_isunknown \
+            -param OutSelDnCnt $OutSelDnCnt \
+            -param CntStyle $CntStyle
+} else {
+  elaborate -bbox_a 4320 -top $env(DUT_TOP) -enable_sva_isunknown
+}
 
 #-------------------------------------------------------------------------
 # specify clock(s) and reset(s)
@@ -69,7 +77,7 @@ if {$env(DUT_TOP) == "rv_dm"} {
 #   clock clk_main_i -both_edges
 #   reset -expr {!rst_main_ni}
 
-} elseif {$env(DUT_TOP) == "prim_fifo_async_sram_adapter_fpv"} {
+} elseif {$env(DUT_TOP) == "prim_fifo_async_sram_adapter_tb"} {
   clock clk_wr_i -factor 2
   clock -rate {wvalid_i, wready_o, wdata_i} clk_wr_i
   clock clk_rd_i -factor 3

@@ -59,6 +59,36 @@
                cov: true
              }
              {
+               name: prim_dup_up_count_fpv
+               dut: prim_count_tb
+               fusesoc_core: lowrisc:fpv:prim_count_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               build_opts: ["-define OutSelDnCnt 0", "-define CntStyle DupCnt"]
+               rel_path: "hw/ip/prim/prim_count/{sub_flow}/{tool}"
+               // TODO: turn on coverage once design finalizes on issue #8343.
+               cov: false
+             }
+             {
+               name: prim_cross_up_count_fpv
+               dut: prim_count_tb
+               fusesoc_core: lowrisc:fpv:prim_count_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               build_opts: ["-define OutSelDnCnt 0",  "-define CntStyle CrossCnt"]
+               rel_path: "hw/ip/prim/prim_count/{sub_flow}/{tool}"
+               // TODO: turn on coverage once design finalizes on issue #8343.
+               cov: false
+             }
+             {
+               name: prim_cross_down_count_fpv
+               dut: prim_count_tb
+               fusesoc_core: lowrisc:fpv:prim_count_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               build_opts: ["-define OutSelDnCnt 1", "-define CntStyle CrossCnt"]
+               rel_path: "hw/ip/prim/prim_count/{sub_flow}/{tool}"
+               // TODO: turn on coverage once design finalizes on issue #8343.
+               cov: false
+             }
+             {
                name: prim_lfsr_fpv
                dut: prim_lfsr_tb
                fusesoc_core: lowrisc:fpv:prim_lfsr_fpv
