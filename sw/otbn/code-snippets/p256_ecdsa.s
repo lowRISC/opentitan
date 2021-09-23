@@ -9,14 +9,26 @@
  */
 
 .text
+.globl start
+start:
+  /* Read mode, then tail-call either p256_ecdsa_sign or p256_ecdsa_verify */
+  la    x2, mode
+  lw    x2, 0(x2)
 
-.globl p256_ecdsa_sign
+  li    x3, 1
+  beq   x2, x3, p256_ecdsa_sign
+
+  li    x3, 2
+  beq   x2, x3, p256_ecdsa_verify
+
+  /* Mode is neither 1 (= sign) nor 2 (= verify). Fail. */
+  unimp
+
 p256_ecdsa_sign:
   jal      x1, p256_ecdsa_setup_rand
   jal      x1, p256_sign
   ecall
 
-.globl p256_ecdsa_verify
 p256_ecdsa_verify:
   jal      x1, p256_verify
   ecall
@@ -48,6 +60,13 @@ p256_ecdsa_setup_rand:
 .data
 
 /* Freely available DMEM space. */
+
+/* Operation mode (1 = sign; 2 = verify) */
+.globl mode
+.balign 4
+mode:
+  .zero 4
+
 /* All constants below must be 256b-aligned. */
 
 /* random scalar k */
