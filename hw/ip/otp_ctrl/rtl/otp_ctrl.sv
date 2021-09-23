@@ -83,6 +83,7 @@ module otp_ctrl
   output logic [OtpTestVectWidth-1:0]                cio_test_en_o
 );
 
+  import prim_mubi_pkg::*;
   import prim_util_pkg::vbits;
 
   ////////////////////////
@@ -304,21 +305,23 @@ module otp_ctrl
   // Access Defaults and CSRs //
   //////////////////////////////
 
-  part_access_t [NumPart-1:0] part_access_csrs;
+  part_access_t [NumPart-1:0] part_access;
   always_comb begin : p_access_control
     // Default (this will be overridden by partition-internal settings).
-    part_access_csrs = {{32'(2*NumPart)}{Unlocked}};
+    part_access = {{32'(2*NumPart)}{mubi8_lo_value()}};
     // Permanently lock DAI write and read access to the life cycle partition.
     // The LC partition can only be read from and written to via the LC controller.
-    part_access_csrs[LifeCycleIdx].write_lock = Locked;
-    part_access_csrs[LifeCycleIdx].read_lock = Locked;
+    part_access[LifeCycleIdx].write_lock = mubi8_hi_value();
+    part_access[LifeCycleIdx].read_lock = mubi8_hi_value();
 
     // Propagate CSR read enables down to the SW_CFG partitions.
-    if (!reg2hw.vendor_test_read_lock) part_access_csrs[VendorTestIdx].read_lock = Locked;
-    if (!reg2hw.creator_sw_cfg_read_lock) part_access_csrs[CreatorSwCfgIdx].read_lock = Locked;
-    if (!reg2hw.owner_sw_cfg_read_lock) part_access_csrs[OwnerSwCfgIdx].read_lock = Locked;
+    if (!reg2hw.vendor_test_read_lock) part_access[VendorTestIdx].read_lock = mubi8_hi_value();
+    if (!reg2hw.creator_sw_cfg_read_lock) part_access[CreatorSwCfgIdx].read_lock = mubi8_hi_value();
+    if (!reg2hw.owner_sw_cfg_read_lock) part_access[OwnerSwCfgIdx].read_lock = mubi8_hi_value();
     // The SECRET2 partition can only be accessed (write&read) when provisioning is enabled.
-    if (lc_creator_seed_sw_rw_en != lc_ctrl_pkg::On) part_access_csrs[Secret2Idx] = {2{Locked}};
+    if (lc_creator_seed_sw_rw_en != lc_ctrl_pkg::On) begin
+      part_access[Secret2Idx] = {2{mubi8_hi_value()}};
+    end
   end
 
   //////////////////////
@@ -1021,7 +1024,7 @@ module otp_ctrl
         .init_done_o   ( part_init_done[k]            ),
         .escalate_en_i ( lc_escalate_en[k]            ),
         .error_o       ( part_error[k]                ),
-        .access_i      ( part_access_csrs[k]          ),
+        .access_i      ( part_access[k]               ),
         .access_o      ( part_access_dai[k]           ),
         .digest_o      ( part_digest[k]               ),
         .tlul_req_i    ( part_tlul_req[k]             ),
@@ -1078,7 +1081,7 @@ module otp_ctrl
         // Only supported by life cycle partition (see further below).
         .check_byp_en_i    ( lc_ctrl_pkg::Off                ),
         .error_o           ( part_error[k]                   ),
-        .access_i          ( part_access_csrs[k]             ),
+        .access_i          ( part_access[k]                  ),
         .access_o          ( part_access_dai[k]              ),
         .digest_o          ( part_digest[k]                  ),
         .data_o            ( part_buf_data[PartInfo[k].offset +: PartInfo[k].size] ),
@@ -1129,7 +1132,7 @@ module otp_ctrl
         // consistent with the values in the buffer regs anymore).
         .check_byp_en_i    ( lc_check_byp_en                 ),
         .error_o           ( part_error[k]                   ),
-        .access_i          ( part_access_csrs[k]             ),
+        .access_i          ( part_access[k]                  ),
         .access_o          ( part_access_dai[k]              ),
         .digest_o          ( part_digest[k]                  ),
         .data_o            ( part_buf_data[PartInfo[k].offset +: PartInfo[k].size] ),
