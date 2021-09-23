@@ -142,22 +142,54 @@ module prim_count import prim_count_pkg::*; #(
     `ASSERT(DupCntErrBackward_A, err_o |-> up_cnt_q[0] != up_cnt_q[1])
   end
 
-  // if the compare flag is not a valid enum, treat it like an error.
+  // If the compare flag is not a valid enum, treat it like an error
   assign err_o = (cmp_valid == CmpValid)   ?  err :
                  (cmp_valid == CmpInvalid) ?  '0  : 1'b1;
 
+  // ASSERTIONS AND ASSUMPTIONS
+
+  // Down counter assumption to control underflow
+  if (CntStyle == CrossCnt && OutSelDnCnt) begin : gen_down_cnter_assumptions
+    `ASSUME(DownCntStepInt_A, cmp_valid == CmpValid |-> max_val % step_i == 0)
+  // Up counter assumption to control overflow
+  end else begin : gen_up_cnter_assumptions
+    logic [Width:0] unused_cnt;
+    assign unused_cnt = up_cnt_q[0] + step_i;
+    logic unused_incr_cnt;
+    assign unused_incr_cnt = (cmp_valid == CmpValid) & !clr_i & !set_i;
+
+    `ASSUME(UpCntOverFlow_A, unused_incr_cnt |-> ~unused_cnt[Width])
+  end
+
+  // Helper variables to hold the previous valid `cnt_o` and `step_i` when `en_i` is set.
+  logic [Width-1:0] past_cnt_o, past_step_i;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      past_cnt_o  <= cnt_o;
+      past_step_i <= step_i;
+    end else if (en_i) begin
+      past_cnt_o  <= cnt_o;
+      past_step_i <= step_i;
+    end
+  end
+
   // Clear and set should not be seen at the same time
-  `ASSERT(SimulClrSet_A, clr_i || set_i |-> clr_i != set_i)
+  `ASSUME(SimulClrSet_A, clr_i || set_i |-> clr_i != set_i)
 
-  // Max value must be an integer multiple of the step size during cross count
-  `ASSERT(DownCntStepInt_A, (CntStyle == CrossCnt) & (cmp_valid == CmpValid)
-    |-> max_val % step_i == 0)
+  `ASSERT(OutClr_A, clr_i |=> cnt_o == 0)
 
-  // If using DupCnt, the count can never overflow
-  logic [Width:0] unused_cnt;
-  assign unused_cnt = up_cnt_q[0] + step_i;
-  logic unused_incr_cnt;
-  assign unused_incr_cnt = (CntStyle == DupCnt) & (cmp_valid == CmpValid) & !clr_i & !set_i;
-  `ASSERT(UpCntOverFlow_A, unused_incr_cnt |-> ~unused_cnt[Width])
+  // When `en_i` is set without `clr_i` and `set_i`, and counter does not reach max/min value,
+  // we expect `cnt_o` to increment or decrement base on `step_i`.
+  `ASSERT(OutStep_A,
+          !(clr_i ||set_i) throughout en_i ##[1:$] en_i && max_val > cnt_o && cnt_o > 0 |->
+          (CntStyle == DupCnt || !OutSelDnCnt) ? cnt_o - past_cnt_o == past_step_i :
+           past_cnt_o - cnt_o == past_step_i)
 
-endmodule // keymgr_cnt
+  // When `set_i` is set, at next clock cycle:
+  // 1). For duplicate counter, sets the `cnt_o` to `set_cnt_i`.
+  // 2). For cross up counter, sets the `max_value` to `set_cnt_i`.
+  // 3). For cross down counter, sets the `cnt_o` and `max_value` to `set_cnt_i`.
+  `ASSERT(OutSet_A, set_i |=>
+          (CntStyle == DupCnt || OutSelDnCnt) ? cnt_o == $past(set_cnt_i) : cnt_o == 0)
+
+endmodule : prim_count
