@@ -6,12 +6,19 @@ use anyhow::Result;
 use lazy_static::lazy_static;
 use log::info;
 use regex::Regex;
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::time::Duration;
 
 use crate::io::uart::Uart;
 use crate::transport::verilator::subprocess::{Options, Subprocess};
 use crate::transport::verilator::uart::VerilatorUart;
 use crate::transport::{Capabilities, Capability, Transport};
+
+#[derive(Default)]
+struct Inner {
+    uart: Option<Rc<dyn Uart>>,
+}
 
 /// Represents the verilator transport object.
 pub struct Verilator {
@@ -20,6 +27,8 @@ pub struct Verilator {
     pub spi_file: String,
     pub gpio_read_file: String,
     pub gpio_write_file: String,
+
+    inner: RefCell<Inner>,
 }
 
 impl Verilator {
@@ -51,6 +60,7 @@ impl Verilator {
             spi_file: spi,
             gpio_read_file: gpio_rd,
             gpio_write_file: gpio_wr,
+            inner: RefCell::default(),
         })
     }
 
@@ -75,7 +85,11 @@ impl Transport for Verilator {
         Capabilities::new(Capability::UART)
     }
 
-    fn uart(&self) -> Result<Box<dyn Uart>> {
-        Ok(Box::new(VerilatorUart::open(&self.uart_file)?))
+    fn uart(&self) -> Result<Rc<dyn Uart>> {
+        let mut inner = self.inner.borrow_mut();
+        if inner.uart.is_none() {
+            inner.uart = Some(Rc::new(VerilatorUart::open(&self.uart_file)?));
+        }
+        Ok(Rc::clone(inner.uart.as_ref().unwrap()))
     }
 }

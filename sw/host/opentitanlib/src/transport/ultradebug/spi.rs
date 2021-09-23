@@ -12,11 +12,14 @@ use crate::io::spi::{ClockPolarity, SpiError, Target, Transfer, TransferMode};
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
 
+struct Inner {
+    mode: TransferMode,
+}
+
 /// Represents the Ultradebug SPI device.
 pub struct UltradebugSpi {
     pub device: Rc<RefCell<mpsse::Context>>,
-    pub mode: TransferMode,
-    pub speed: u32,
+    inner: RefCell<Inner>,
 }
 
 impl UltradebugSpi {
@@ -35,28 +38,28 @@ impl UltradebugSpi {
             .borrow_mut()
             .gpio_set(UltradebugSpi::PIN_SPI_ZB, false)?;
 
-        let clock_frequency = mpsse.borrow().clock_frequency;
         Ok(UltradebugSpi {
             device: mpsse,
-            mode: TransferMode::Mode0,
-            speed: clock_frequency,
+            inner: RefCell::new(Inner {
+                mode: TransferMode::Mode0,
+            }),
         })
     }
 }
 
 impl Target for UltradebugSpi {
     fn get_transfer_mode(&self) -> Result<TransferMode> {
-        Ok(self.mode)
+        Ok(self.inner.borrow().mode)
     }
-    fn set_transfer_mode(&mut self, mode: TransferMode) -> Result<()> {
-        self.mode = mode;
+    fn set_transfer_mode(&self, mode: TransferMode) -> Result<()> {
+        self.inner.borrow_mut().mode = mode;
         Ok(())
     }
 
     fn get_bits_per_word(&self) -> Result<u32> {
         Ok(8)
     }
-    fn set_bits_per_word(&mut self, bits_per_word: u32) -> Result<()> {
+    fn set_bits_per_word(&self, bits_per_word: u32) -> Result<()> {
         match bits_per_word {
             8 => Ok(()),
             _ => Err(SpiError::InvalidWordSize(bits_per_word).into()),
@@ -66,7 +69,7 @@ impl Target for UltradebugSpi {
     fn get_max_speed(&self) -> Result<u32> {
         Ok(self.device.borrow().max_clock_frequency)
     }
-    fn set_max_speed(&mut self, frequency: u32) -> Result<()> {
+    fn set_max_speed(&self, frequency: u32) -> Result<()> {
         let mut device = self.device.borrow_mut();
         device.set_clock_frequency(frequency)
     }
@@ -83,7 +86,7 @@ impl Target for UltradebugSpi {
     }
 
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {
-        let (rdedge, wredge) = match self.mode.polarity() {
+        let (rdedge, wredge) = match self.inner.borrow().mode.polarity() {
             ClockPolarity::IdleLow => (mpsse::ClockEdge::Rising, mpsse::ClockEdge::Falling),
             ClockPolarity::IdleHigh => (mpsse::ClockEdge::Falling, mpsse::ClockEdge::Rising),
         };

@@ -4,6 +4,7 @@
 
 use anyhow::{anyhow, Result};
 use bitflags::bitflags;
+use std::rc::Rc;
 
 use crate::io::gpio::Gpio;
 use crate::io::spi::Target;
@@ -66,15 +67,15 @@ pub trait Transport {
     fn capabilities(&self) -> Capabilities;
 
     /// Returns a SPI [`Target`] implementation.
-    fn spi(&self) -> Result<Box<dyn Target>> {
+    fn spi(&self) -> Result<Rc<dyn Target>> {
         unimplemented!();
     }
     /// Returns a [`Uart`] implementation.
-    fn uart(&self) -> Result<Box<dyn Uart>> {
+    fn uart(&self) -> Result<Rc<dyn Uart>> {
         unimplemented!();
     }
     /// Returns a [`Gpio`] implementation.
-    fn gpio(&self) -> Result<Box<dyn Gpio>> {
+    fn gpio(&self) -> Result<Rc<dyn Gpio>> {
         unimplemented!();
     }
 }

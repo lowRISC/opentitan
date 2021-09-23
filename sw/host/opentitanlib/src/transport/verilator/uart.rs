@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use std::cell::RefCell;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
@@ -13,13 +14,13 @@ use crate::util::file;
 
 /// Represents the verilator virtual UART.
 pub struct VerilatorUart {
-    file: File,
+    file: RefCell<File>,
 }
 
 impl VerilatorUart {
     pub fn open(path: &str) -> Result<Self> {
         Ok(VerilatorUart {
-            file: OpenOptions::new().read(true).write(true).open(path)?,
+            file: RefCell::new(OpenOptions::new().read(true).write(true).open(path)?),
         })
     }
 }
@@ -31,29 +32,23 @@ impl Uart for VerilatorUart {
         7200
     }
 
-    fn set_baudrate(&mut self, _baudrate: u32) -> Result<()> {
+    fn set_baudrate(&self, _baudrate: u32) -> Result<()> {
         // As a virtual uart, setting the baudrate is a no-op.
         Ok(())
     }
 
-    fn read_timeout(&mut self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
-        file::wait_read_timeout(&self.file, timeout)?;
-        Ok(self.file.read(buf)?)
-    }
-}
-
-impl Read for VerilatorUart {
-    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        self.file.read(buf)
-    }
-}
-
-impl Write for VerilatorUart {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.file.write(buf)
+    fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
+        let mut file = self.file.borrow_mut();
+        file::wait_read_timeout(&*file, timeout)?;
+        Ok(file.read(buf)?)
     }
 
-    fn flush(&mut self) -> std::io::Result<()> {
-        self.file.flush()
+    fn read(&self, buf: &mut [u8]) -> Result<usize> {
+        Ok(self.file.borrow_mut().read(buf)?)
+    }
+
+    fn write(&self, buf: &[u8]) -> Result<usize> {
+        self.file.borrow_mut().write_all(buf)?;
+        Ok(buf.len())
     }
 }

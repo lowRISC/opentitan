@@ -4,17 +4,20 @@
 
 use anyhow::Result;
 use safe_ftdi as ftdi;
-use std::io::{Error, ErrorKind};
-use std::io::{Read, Write};
+use std::cell::RefCell;
 use std::time::Duration;
 
 use crate::io::uart::Uart;
 use crate::transport::ultradebug::Ultradebug;
 
-/// Represents the Ultradebug UART.
-pub struct UltradebugUart {
+pub struct Inner {
     device: ftdi::Device,
     baudrate: u32,
+}
+
+/// Represents the Ultradebug UART.
+pub struct UltradebugUart {
+    inner: RefCell<Inner>,
 }
 
 impl UltradebugUart {
@@ -25,55 +28,45 @@ impl UltradebugUart {
         // Read and write timeouts:
         device.set_timeouts(5000, 5000);
         Ok(UltradebugUart {
-            device,
-            baudrate: 115200,
+            inner: RefCell::new(Inner {
+                device,
+                baudrate: 115200,
+            }),
         })
     }
 }
 
 impl Uart for UltradebugUart {
     fn get_baudrate(&self) -> u32 {
-        self.baudrate
+        self.inner.borrow().baudrate
     }
 
-    fn set_baudrate(&mut self, baudrate: u32) -> Result<()> {
-        self.device.set_baudrate(baudrate)?;
-        self.baudrate = baudrate;
+    fn set_baudrate(&self, baudrate: u32) -> Result<()> {
+        let mut inner = self.inner.borrow_mut();
+        inner.device.set_baudrate(baudrate)?;
+        inner.baudrate = baudrate;
         Ok(())
     }
 
-    fn read_timeout(&mut self, buf: &mut [u8], _timeout: Duration) -> Result<usize> {
+    fn read_timeout(&self, buf: &mut [u8], _timeout: Duration) -> Result<usize> {
         // Note: my recollection is that there is no way to set a read timeout
         // for the UART.  If there are no characters ready, the FTDI device
         // simply returns a zero-length read.
         Ok(self.read(buf)?)
     }
-}
 
-impl Read for UltradebugUart {
-    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        let n = self
-            .device
-            .read_data(buf)
-            .map_err(|e| Error::new(ErrorKind::Other, e))?;
+    fn read(&self, buf: &mut [u8]) -> Result<usize> {
+        let n = self.inner.borrow().device.read_data(buf)?;
         Ok(n as usize)
     }
-}
 
-impl Write for UltradebugUart {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+    fn write(&self, buf: &[u8]) -> Result<usize> {
         let mut total = 0usize;
+        let inner = self.inner.borrow();
         while total < buf.len() {
-            let n = self
-                .device
-                .write_data(&buf[total..])
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
+            let n = inner.device.write_data(&buf[total..])?;
             total += n as usize;
         }
         Ok(total)
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
     }
 }

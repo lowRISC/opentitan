@@ -117,7 +117,7 @@ impl InnerConsole {
         stdin: &mut (impl Read + AsRawFd),
         stdout: &mut impl Write,
     ) -> Result<()> {
-        let mut uart = transport.uart()?;
+        let uart = transport.uart()?;
         let mut buf = [0u8; 256];
 
         loop {
@@ -145,7 +145,7 @@ impl InnerConsole {
             // better way to approach waiting on the UART and keyboard.
 
             // Check for input on the uart.
-            match self.uart_read(&mut *uart, Duration::from_millis(10), stdout)? {
+            match self.uart_read(&*uart, Duration::from_millis(10), stdout)? {
                 ExitStatus::None => {}
                 ExitStatus::ExitSuccess => {
                     break;
@@ -161,7 +161,7 @@ impl InnerConsole {
                 if len == 1 && buf[0] == InnerConsole::CTRL_C {
                     break;
                 }
-                uart.write_all(&buf[..len])?;
+                uart.write(&buf[..len])?;
             }
         }
         Ok(())
@@ -181,7 +181,7 @@ impl InnerConsole {
     // Read from the uart and process the data read.
     fn uart_read(
         &mut self,
-        uart: &mut dyn Uart,
+        uart: &dyn Uart,
         timeout: Duration,
         stdout: &mut impl Write,
     ) -> Result<ExitStatus> {
