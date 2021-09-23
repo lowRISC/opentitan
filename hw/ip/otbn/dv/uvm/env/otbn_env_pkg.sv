@@ -77,6 +77,17 @@ package otbn_env_pkg;
     logic push;
   } call_stack_flags_t;
 
+  typedef enum {
+    OperationalStateIdle,
+    OperationalStateBusy,
+    OperationalStateLocked
+  } operational_state_e;
+
+  typedef enum {
+    AccessSoftwareRead,
+    AccessSoftwareWrite
+  } access_e;
+
   // package sources
   `include "otbn_env_cfg.sv"
   `include "otbn_trace_item.sv"

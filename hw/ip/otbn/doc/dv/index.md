@@ -173,6 +173,29 @@ See the instruction counter saturate.
 
 > This is tracked in the `insn_cnt_if` interface with the `InsnCntSaturated_C` cover property.
 
+#### External (bus-accessible) CSRs
+
+The OTBN block exposes functionality to a bus host through bus-accessible CSRs.
+Behavior of some CSRs depends on [OTBN's operational state]({{< relref "..#design-details-operational-states" >}}).
+
+Events we want to see:
+- For the `CMD` CSR, we want to see all valid commands being written crossed with all operational states to ensure commands are ignored as expected when OTBN is busy or locked.
+
+  Tracked in the `csr_ext_cmd_cg` covergroup.
+- For the `STATUS` CSR we want to see a read of all valid status codes.
+
+  Tracked in the `csr_ext_status_cg` covergroup.
+- For the `ERR_BITS` CSR, we want to see that every valid bit is read at least once, and we want to see a read in each operational state.
+
+  Tracked in the `csr_ext_err_bits_cg` covergroup.
+- For the `FATAL_ALERT_CAUSE` CSR, we want to see that every valid bit is read at least once, and we want to see a read in each operational state.
+
+  Tracked in the `csr_ext_fatal_alert_cause_cg` covergroup.
+- For `INSN_CNT` we want to see a read returning a zero and a non-zero value.
+  We also want to see a read in every operational state.
+
+  Tracked in the `csr_ext_fatal_insn_cnt_cg` covergroup.
+
 ### Instruction-based coverage
 
 As a processor, much of OTBN's coverage points are described in terms of instructions being executed.

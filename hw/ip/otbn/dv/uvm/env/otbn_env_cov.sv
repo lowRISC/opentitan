@@ -290,6 +290,78 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     illegal_bins bad = default;        \
   }
 
+  // Non-core covergroups //////////////////////////////////////////////////////
+
+  // CMD external CSR
+  covergroup ext_csr_cmd_cg
+    with function sample(otbn_pkg::cmd_e value, otbn_env_pkg::operational_state_e state);
+
+    cmd_cp: coverpoint value;
+    state_cp: coverpoint state;
+
+    // We want to see an attempt to issue every command in every state.
+    cmd_state_cross: cross cmd_cp, state_cp;
+  endgroup
+
+  // STATUS external CSR
+  covergroup ext_csr_status_cg
+    with function sample(otbn_pkg::status_e value);
+
+    status_cp: coverpoint value;
+  endgroup
+
+  // ERR_BITS external CSR
+  covergroup ext_csr_err_bits_cg
+    with function sample(otbn_pkg::err_bits_t value, otbn_env_pkg::operational_state_e state);
+
+    // We want to see every error bit at least once.
+    `DEF_SEEN_CP(err_bits_bad_data_addr_cp, value.bad_data_addr)
+    `DEF_SEEN_CP(err_bits_bad_insn_addr_cp, value.bad_insn_addr)
+    `DEF_SEEN_CP(err_bits_call_stack_cp, value.call_stack)
+    `DEF_SEEN_CP(err_bits_illegal_insn_cp, value.illegal_insn)
+    `DEF_SEEN_CP(err_bits_loop_cp, value.loop)
+    `DEF_SEEN_CP(err_bits_imem_intg_violation_cp, value.imem_intg_violation)
+    `DEF_SEEN_CP(err_bits_dmem_intg_violation_cp, value.dmem_intg_violation)
+    `DEF_SEEN_CP(err_bits_reg_intg_violation_cp, value.reg_intg_violation)
+    `DEF_SEEN_CP(err_bits_bus_intg_violation_cp, value.bus_intg_violation)
+    `DEF_SEEN_CP(err_bits_illegal_bus_access_cp, value.illegal_bus_access)
+    `DEF_SEEN_CP(err_bits_lifecycle_escalation_cp, value.lifecycle_escalation)
+
+    // We want to see an access to ERR_BITS in every operational state, but don't need a full cross
+    // with all possible error values.
+    state_cp: coverpoint state;
+  endgroup
+
+  // FATAL_ALERT_CAUSE external CSR
+  covergroup ext_csr_fatal_alert_cause_cg
+    with function sample(logic [31:0] value, otbn_env_pkg::operational_state_e state);
+
+    // We want to see every valid bit at least once.
+    `DEF_SEEN_CP(fatal_alert_cause_imem_intg_violation_cp, value[0])
+    `DEF_SEEN_CP(fatal_alert_cause_dmem_intg_violation_cp, value[1])
+    `DEF_SEEN_CP(fatal_alert_cause_reg_intg_violation_cp, value[2])
+    `DEF_SEEN_CP(fatal_alert_cause_bus_intg_violation_cp, value[3])
+    `DEF_SEEN_CP(fatal_alert_cause_illegal_bus_access_cp, value[4])
+    `DEF_SEEN_CP(fatal_alert_cause_lifecycle_escalation_cp, value[5])
+
+    // We want to see an access to FATAL_ALERT_CAUSE in every operational state, but don't need to
+    // see all possible values that could be read.
+    state_cp: coverpoint state;
+  endgroup
+
+  // INSN_CNT external CSR
+  covergroup ext_csr_insn_cnt_cg
+    with function sample(logic [31:0] value, otbn_env_pkg::operational_state_e state);
+
+    // We want to see at least one non-zero value of INSN_CNT to ensure it's doing something.
+    // The actual values are cross-checked with the ISS.
+    `DEF_NZ_CP(insn_cnt_cp, value)
+
+    // We want to see an access to INSN_CNT in all operational states, but don't care about the
+    // cross between the actual value and the state.
+    state_cp: coverpoint state;
+  endgroup
+
   // Non-instruction covergroups ///////////////////////////////////////////////
 
   covergroup call_stack_cg
@@ -1718,6 +1790,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   function new(string name, uvm_component parent);
     super.new(name, parent);
 
+    ext_csr_cmd_cg = new;
+    ext_csr_status_cg = new;
+    ext_csr_err_bits_cg = new;
+    ext_csr_fatal_alert_cause_cg = new;
+    ext_csr_insn_cnt_cg = new;
+
     call_stack_cg = new;
     flag_write_cg = new;
 
@@ -1826,6 +1904,30 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_encodings[mnem_bn_wsrr]       = "wcsr";
     insn_encodings[mnem_bn_wsrw]       = "wcsr";
     insn_encodings[mnem_dummy]         = "dummy";
+  endfunction
+
+  // Handle coverage for external (bus-accessible) CSRs
+  function void on_ext_csr_access(uvm_reg csr, otbn_env_pkg::access_e access_type,
+                                  logic [31:0] data, otbn_env_pkg::operational_state_e state);
+
+    case (csr.get_name())
+      "cmd": begin
+        ext_csr_cmd_cg.sample(otbn_pkg::cmd_e'(data), state);
+      end
+      "status": begin
+        ext_csr_status_cg.sample(otbn_pkg::status_e'(data));
+      end
+      "err_bits": begin
+        ext_csr_err_bits_cg.sample(otbn_pkg::err_bits_t'(data), state);
+      end
+      "fatal_alert_cause": begin
+        ext_csr_fatal_alert_cause_cg.sample(data, state);
+      end
+      "insn_cnt": begin
+        ext_csr_insn_cnt_cg.sample(data, state);
+      end
+      default: ; // We only track some registers with functional coverage.
+    endcase
   endfunction
 
   // Handle coverage for an instruction that was executed
