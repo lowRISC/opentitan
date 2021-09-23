@@ -919,9 +919,8 @@ OTBN applications are run to completion.
 The host CPU can determine if an application has completed by either polling {{< regref "STATUS">}} or listening for an interrupt.
 
 * To poll for a completed operation, software should repeatedly read the {{< regref "STATUS" >}} register.
-  While the operation is in progress, {{< regref "STATUS" >}} is non-zero.
-  The operation is complete if {{< regref "STATUS" >}} is `IDLE`.
-  If a fatal error occurs {{< regref "STATUS" >}} will become `LOCKED` and the operation will never complete.
+  The operation is complete if {{< regref "STATUS" >}} is `IDLE` or `LOCKED`, otherwise the operation is in progress.
+  When {{< regref "STATUS" >}} has become `LOCKED` a fatal error has occurred and OTBN must be reset to perform further operations.
 * Alternatively, software can listen for the `done` interrupt to determine if the operation has completed.
   The standard sequence of working with interrupts has to be followed, i.e. the interrupt has to be enabled, an interrupt service routine has to be registered, etc.
   The [DIF]({{<relref "#dif" >}}) contains helpers to do so conveniently.
