@@ -63,8 +63,8 @@ module prim_lc_combine #(
   // different from the active value.
   //
   for (genvar k = 0; k < $bits(ActiveValue); k++) begin : gen_loop
-    if (ActiveLow && ActiveValue[k] ||
-       (!ActiveLow && !ActiveValue[k])) begin : gen_and_gate
+    if (CombineMode && ActiveValue[k] ||
+       (!CombineMode && !ActiveValue[k])) begin : gen_and_gate
       assign lc_en_o[k] = lc_en_a_i[k] && lc_en_b_i[k];
     end else begin : gen_or_gate
       assign lc_en_o[k] = lc_en_a_i[k] || lc_en_b_i[k];
