@@ -24,8 +24,6 @@ SECTIONS
 {
     .text ORIGIN(imem) : ALIGN(4)
     {
-        _imem_start = .;
-
         *(.text*)
 
         /* Align section end. Shouldn't really matter, but might make binary
@@ -37,8 +35,6 @@ SECTIONS
 
     .data ORIGIN(dmem) : ALIGN(32)
     {
-        _dmem_start = .;
-
         *(.data*)
         . = ALIGN(32);
         *(.bss*)

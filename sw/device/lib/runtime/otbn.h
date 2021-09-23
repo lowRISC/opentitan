@@ -22,17 +22,9 @@
  */
 typedef struct otbn_app {
   /**
-   * Start of OTBN instruction memory.
-   */
-  const uint8_t *imem_start;
-  /**
    * End of OTBN instruction memory.
    */
   const uint8_t *imem_end;
-  /**
-   * Start of OTBN data memory.
-   */
-  const uint8_t *dmem_start;
   /**
    * End of OTBN data memory.
    */
@@ -112,9 +104,7 @@ typedef struct otbn {
  *                 name of the main (assembly) source file.
  */
 #define OTBN_DECLARE_APP_SYMBOLS(app_name)                   \
-  extern const uint8_t _otbn_app_##app_name##__imem_start[]; \
   extern const uint8_t _otbn_app_##app_name##__imem_end[];   \
-  extern const uint8_t _otbn_app_##app_name##__dmem_start[]; \
   extern const uint8_t _otbn_app_##app_name##__dmem_end[]
 
 /**
@@ -129,9 +119,7 @@ typedef struct otbn {
  */
 #define OTBN_APP_T_INIT(app_name)                       \
   ((otbn_app_t){                                        \
-      .imem_start = _otbn_app_##app_name##__imem_start, \
       .imem_end = _otbn_app_##app_name##__imem_end,     \
-      .dmem_start = _otbn_app_##app_name##__dmem_start, \
       .dmem_end = _otbn_app_##app_name##__dmem_end,     \
   })
 

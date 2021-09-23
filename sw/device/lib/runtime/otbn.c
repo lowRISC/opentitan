@@ -15,28 +15,26 @@ const int kOtbnWlenBytes = 256 / 8;
 otbn_result_t otbn_func_ptr_to_imem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
                                          uint32_t *imem_addr_otbn) {
   uintptr_t ptr_addr = (uintptr_t)ptr;
-  uintptr_t app_imem_start_addr = (uintptr_t)ctx->app.imem_start;
   uintptr_t app_imem_end_addr = (uintptr_t)ctx->app.imem_end;
 
   if (imem_addr_otbn == NULL || ptr == NULL || ctx == NULL ||
-      ptr_addr < app_imem_start_addr || ptr_addr > app_imem_end_addr) {
+      ptr_addr > app_imem_end_addr) {
     return kOtbnBadArg;
   }
-  *imem_addr_otbn = ptr_addr - app_imem_start_addr;
+  *imem_addr_otbn = ptr_addr;
   return kOtbnOk;
 }
 
 otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
                                          uint32_t *dmem_addr_otbn) {
   uintptr_t ptr_addr = (uintptr_t)ptr;
-  uintptr_t app_dmem_start_addr = (uintptr_t)ctx->app.dmem_start;
   uintptr_t app_dmem_end_addr = (uintptr_t)ctx->app.dmem_end;
 
   if (dmem_addr_otbn == NULL || ptr == NULL || ctx == NULL ||
-      ptr_addr < app_dmem_start_addr || ptr_addr > app_dmem_end_addr) {
+      ptr_addr > app_dmem_end_addr) {
     return kOtbnBadArg;
   }
-  *dmem_addr_otbn = ptr_addr - app_dmem_start_addr;
+  *dmem_addr_otbn = ptr_addr;
   return kOtbnOk;
 }
 
@@ -75,12 +73,17 @@ otbn_result_t otbn_init(otbn_t *ctx, const dif_otbn_config_t dif_config) {
 }
 
 otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
-  if (app.imem_end <= app.imem_start || app.dmem_end < app.dmem_start) {
+  if (app.imem_end == 0) {
     return kOtbnBadArg;
   }
 
-  const size_t imem_size = app.imem_end - app.imem_start;
-  const size_t dmem_size = app.dmem_end - app.dmem_start;
+  // Instruction and data memory both start at address zero (in OTBN's
+  // memory space).
+  otbn_ptr_t imem_start = 0;
+  otbn_ptr_t dmem_start = 0;
+
+  const size_t imem_size = app.imem_end - imem_start;
+  const size_t dmem_size = app.dmem_end - dmem_start;
 
   // Instruction and data memory images must be multiples of 32b words.
   if (imem_size % sizeof(uint32_t) != 0 || dmem_size % sizeof(uint32_t) != 0) {
@@ -90,14 +93,12 @@ otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
   ctx->app_is_loaded = false;
   ctx->app = app;
 
-  if (dif_otbn_imem_write(&ctx->dif, 0, ctx->app.imem_start, imem_size) !=
-      kDifOtbnOk) {
+  if (dif_otbn_imem_write(&ctx->dif, 0, 0, imem_size) != kDifOtbnOk) {
     return kOtbnError;
   }
 
   if (dmem_size > 0) {
-    if (dif_otbn_dmem_write(&ctx->dif, 0, ctx->app.dmem_start, dmem_size) !=
-        kDifOtbnOk) {
+    if (dif_otbn_dmem_write(&ctx->dif, 0, 0, dmem_size) != kDifOtbnOk) {
       return kOtbnError;
     }
   }
