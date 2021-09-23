@@ -28,7 +28,7 @@ class csrng_item extends uvm_sequence_item;
     flags inside {[0:1]};
   };
 
-  // TODO: Try glen > 32
+  // TODO: Try glen > 32, glen = 0
   constraint c_glen {
     glen inside {[1:32]};
   };

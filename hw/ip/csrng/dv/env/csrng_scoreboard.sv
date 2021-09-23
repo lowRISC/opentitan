@@ -14,6 +14,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   bit [BLOCK_LEN-1:0]     v;
   bit [KEY_LEN-1:0]       key;
 
+  virtual csrng_cov_if    cov_vif;
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))
       entropy_src_fifo;
@@ -32,6 +34,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     entropy_src_fifo = new("entropy_src_fifo", this);
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       csrng_cmd_fifo[i] = new($sformatf("csrng_cmd_fifo[%0d]", i), this);
+    end
+
+    if (!uvm_config_db#(virtual csrng_cov_if)::get(null, "*.env" , "csrng_cov_if", cov_vif)) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to get csrng_cov_if from uvm_config_db"))
     end
   endfunction
 
@@ -282,7 +288,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.reseed_counter[hwapp] += 1;
   endfunction
 
-  task process_csrng_cmd_fifo(uint hwapp);
+  task process_csrng_cmd_fifo(bit[NUM_HW_APPS-1:0]   hwapp);
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   cmd_data;
     csrng_item                                   cs_item;
 
@@ -293,6 +299,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           cmd_data = (cs_item.cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) + cmd_data;
         end
         `uvm_info(`gfn, $sformatf("Received cs_item:\n%0s", cs_item.convert2string()), UVM_HIGH)
+        cov_vif.cg_cmds_sample(hwapp, cs_item);
 
         case (cs_item.acmd)
           csrng_pkg::INS: begin
