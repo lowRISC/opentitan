@@ -2,7 +2,7 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-.text
+.section .text.start
 .globl start
 start:
   /* Read mode, then tail-call either rsa_encrypt or rsa_decrypt */
@@ -18,7 +18,7 @@ start:
   /* Mode is neither 1 (= encrypt) nor 2 (= decrypt). Fail. */
   unimp
 
-
+.text
 /**
  * RSA encryption
  */

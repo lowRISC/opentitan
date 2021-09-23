@@ -35,9 +35,22 @@ hw/ip/otbn/util/otbn-as -o foo.o foo.s
 
 The OTBN linker is called `otbn-ld` and can be found at `hw/ip/otbn/util/otbn-ld`.
 This is a thin wrapper around `riscv32-unknown-elf-ld`, but supplies a default linker script that matches the OTBN memory layout.
-This linker script creates a `.text` and a `.data` section.
-Since OTBN has a strict Harvard architecture (instructions and data both starting at address zero), the linker script places them both at VMA zero.
+This linker script creates `.start`, `.text` and `.data` output sections.
+The `.start` and `.text` sections go to IMEM, with `.start` coming first.
+The `.data` section goes to DMEM.
+Since OTBN has a strict Harvard architecture with IMEM and DMEM both starting at address zero, the `.start` and the `.data` sections will both start at VMA zero.
 The instruction and data segments have distinct LMAs (for addresses, see the IMEM and DMEM windows at `hw/ip/otbn/data/otbn.hjson`).
+
+Since the entry point for OTBN is always address zero, the entry vector should be the one and only thing in the `.start` section.
+To achieve that, put your entry point (and nothing else) in the `.text.start` input section like this:
+```asm
+.section .text.start
+  jal x0, main
+
+.text
+  ...
+```
+This ensure that, even if there are multiple objects being linked together, the intended entry point will appear in the right place.
 
 To link ELF object files to an OTBN ELF binary, run
 ```shell
