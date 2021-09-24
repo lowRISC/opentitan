@@ -431,11 +431,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to sw_binding_regwen=0",
                                   csr.get_name()), UVM_MEDIUM)
         return;
-      end else if (csr.get_name() == "sw_binding_regwen" && current_state == keymgr_pkg::StReset)
-      begin
-        `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to state in StReset",
-                                  csr.get_name()), UVM_MEDIUM)
-        return;
       end else begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
