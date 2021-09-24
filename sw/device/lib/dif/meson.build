@@ -258,6 +258,7 @@ sw_lib_dif_i2c = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
+      sw_lib_dif_autogen_i2c,
     ],
   )
 )
@@ -265,9 +266,11 @@ sw_lib_dif_i2c = declare_dependency(
 test('dif_i2c_unittest', executable(
     'dif_i2c_unittest',
     sources: [
-      hw_ip_i2c_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_i2c.c',
       'dif_i2c_unittest.cc',
+      'autogen/dif_i2c_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_i2c.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_i2c_autogen.c',
+      hw_ip_i2c_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,
