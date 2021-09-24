@@ -624,27 +624,27 @@ TEST_F(WakeupRecording, GetReason) {
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_PARAM_AON_SYSRST_CTRL_WKUP_REQ_IDX,
+                           .offset = PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX,
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_PARAM_DEBUG_CABLE_WAKEUP_IDX,
+                           .offset = PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX,
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_PARAM_AON_WKUP_REQ_IDX,
+                           .offset = PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX,
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_PARAM_USB_WKUP_REQ_IDX,
+                           .offset = PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX,
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_PARAM_AON_TIMER_WKUP_REQ_IDX,
+                           .offset = PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX,
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_PARAM_WKUP_REQ_IDX,
+                           .offset = PWRMGR_PARAM_SENSOR_CTRL_WKUP_REQ_IDX,
                            .value = 1,
                        }},
           .exp_output = {.types = kDifPwrmgrWakeupTypeAbort |
@@ -684,7 +684,7 @@ TEST_F(WakeupRecording, GetReason) {
       // Only requests from peripherals.
       {
           .read_val = {{
-              .offset = PWRMGR_PARAM_AON_SYSRST_CTRL_WKUP_REQ_IDX,
+              .offset = PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX,
               .value = 1,
           }},
           .exp_output =
@@ -695,7 +695,7 @@ TEST_F(WakeupRecording, GetReason) {
       },
       {
           .read_val = {{
-              .offset = PWRMGR_PARAM_DEBUG_CABLE_WAKEUP_IDX,
+              .offset = PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX,
               .value = 1,
           }},
           .exp_output =
@@ -706,7 +706,7 @@ TEST_F(WakeupRecording, GetReason) {
       },
       {
           .read_val = {{
-              .offset = PWRMGR_PARAM_AON_WKUP_REQ_IDX,
+              .offset = PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX,
               .value = 1,
           }},
           .exp_output =
@@ -717,7 +717,7 @@ TEST_F(WakeupRecording, GetReason) {
       },
       {
           .read_val = {{
-              .offset = PWRMGR_PARAM_USB_WKUP_REQ_IDX,
+              .offset = PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX,
               .value = 1,
           }},
           .exp_output =
@@ -728,7 +728,7 @@ TEST_F(WakeupRecording, GetReason) {
       },
       {
           .read_val = {{
-              .offset = PWRMGR_PARAM_AON_TIMER_WKUP_REQ_IDX,
+              .offset = PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX,
               .value = 1,
           }},
           .exp_output =
@@ -739,7 +739,7 @@ TEST_F(WakeupRecording, GetReason) {
       },
       {
           .read_val = {{
-              .offset = PWRMGR_PARAM_WKUP_REQ_IDX,
+              .offset = PWRMGR_PARAM_SENSOR_CTRL_WKUP_REQ_IDX,
               .value = 1,
           }},
           .exp_output =
