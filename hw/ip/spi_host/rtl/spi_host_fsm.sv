@@ -60,6 +60,7 @@ module spi_host_fsm
 
   logic [2:0]       bit_cntr_d, bit_cntr_q;
   logic [8:0]       byte_cntr_d, byte_cntr_q;
+  // TODO: merge lead, trail * idle counters to match documentation
   logic [3:0]       lead_cntr_d, idle_cntr_d, trail_cntr_d;
   logic [3:0]       lead_cntr_q, idle_cntr_q, trail_cntr_q;
   logic             last_bit, last_byte;
@@ -74,6 +75,7 @@ module spi_host_fsm
 
   logic             sample_en_d, sample_en_q, sample_en_q2;
 
+  // TODO: Update switch_required to handle ANY change in parameters
   logic             switch_required;
   logic             fsm_en;
   logic             new_command;
@@ -139,6 +141,9 @@ module spi_host_fsm
 
   assign new_command     = command_valid_i && command_ready_o;
   assign switch_required = command_valid_i && (command_i.csid != csid_q);
+
+  // TODO: use functions/combinational logic to simplify "bypassable"
+  // state logic (see documentation)
 
   always_comb begin
     csid      = new_command ? command_i.csid : csid_q;
