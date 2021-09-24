@@ -52,10 +52,10 @@ index 8861f54ba..8442bb896 100644
 -  mmio_region_write32(reg32, reg_offset, reg_value & mask);
  }
 diff --git a/sw/device/sca/aes_serial.c b/sw/device/sca/aes_serial.c
-index 901eba868..b19979b89 100644
+index a2087eb4f..d8d347e1e 100644
 --- a/sw/device/sca/aes_serial.c
 +++ b/sw/device/sca/aes_serial.c
-@@ -203,18 +203,13 @@ int main(void) {
+@@ -201,18 +201,13 @@ int main(void) {
    sca_init(kScaTriggerSourceAes, kScaPeripheralAes);
    sca_get_uart(&uart1);
  
@@ -75,7 +75,7 @@ index 901eba868..b19979b89 100644
      simple_serial_process_packet();
    }
 diff --git a/sw/device/sca/lib/sca.c b/sw/device/sca/lib/sca.c
-index 3fb4ff13d..e310076c3 100644
+index 093d215b1..dd231b2cc 100644
 --- a/sw/device/sca/lib/sca.c
 +++ b/sw/device/sca/lib/sca.c
 @@ -56,7 +56,6 @@ enum {
@@ -157,7 +157,7 @@ index 3fb4ff13d..e310076c3 100644
      IGNORE_RESULT(dif_clkmgr_gateable_clock_set_enabled(
          &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
 diff --git a/sw/device/tests/aes_smoketest.c b/sw/device/tests/aes_smoketest.c
-index 5b995c27f..0ce27b2f1 100644
+index dff8bd9b6..396123ef7 100644
 --- a/sw/device/tests/aes_smoketest.c
 +++ b/sw/device/tests/aes_smoketest.c
 @@ -7,7 +7,6 @@
@@ -168,7 +168,7 @@ index 5b995c27f..0ce27b2f1 100644
  #include "sw/device/lib/testing/test_framework/test_main.h"
  
  #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-@@ -67,9 +66,6 @@ bool test_main(void) {
+@@ -66,9 +65,6 @@ bool test_main(void) {
  
    LOG_INFO("Running AES test");
  
@@ -176,8 +176,8 @@ index 5b995c27f..0ce27b2f1 100644
 -  entropy_testutils_boot_mode_init();
 -
    // Initialise AES.
-   dif_aes_params_t params = {
-       .base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR),
+   CHECK(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes) ==
+         kDifOk);
 diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
 index 7abdc2045..829968cb9 100644
 --- a/sw/device/tests/meson.build

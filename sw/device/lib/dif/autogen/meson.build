@@ -2,6 +2,20 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Autogen AES DIF library
+sw_lib_dif_autogen_aes = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_aes',
+    sources: [
+      hw_ip_aes_reg_h,
+      'dif_aes_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen UART DIF library
 sw_lib_dif_autogen_uart = declare_dependency(
   link_with: static_library(
