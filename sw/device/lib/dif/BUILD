@@ -91,12 +91,12 @@ cc_library(
     name = "uart",
     srcs = [
         "autogen/dif_uart_autogen.c",
-        "autogen/dif_uart_autogen.inc",
+        "autogen/dif_uart_autogen.h",
         "dif_uart.c",
     ],
     hdrs = ["dif_uart.h"],
     deps = [
-        "base",
+        ":base",
         "//hw/ip/uart/data:uart_regs",
         "//sw/device/lib/base",
     ],
@@ -105,17 +105,18 @@ cc_library(
 cc_test(
     name = "uart_unittest",
     srcs = [
-        "autogen/dif_uart_autogen.inc",
+        "autogen/dif_uart_autogen.c",
+        "autogen/dif_uart_autogen.h",
+        "autogen/dif_uart_autogen_unittest.cc",
         "dif_uart.c",
         "dif_uart.h",
         "dif_uart_unittest.cc",
-        "dif_uart_unittest.h",
     ],
     defines = [
         "MOCK_MMIO=1",
     ],
     deps = [
-        "base",
+        ":base",
         "//hw/ip/uart/data:uart_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
@@ -158,12 +159,15 @@ cc_test(
 cc_library(
     name = "gpio",
     srcs = [
+        "autogen/dif_gpio_autogen.c",
+        "autogen/dif_gpio_autogen.h",
         "dif_gpio.c",
     ],
     hdrs = [
         "dif_gpio.h",
     ],
     deps = [
+        ":base",
         "//hw/ip/gpio/data:gpio_regs",
         "//sw/device/lib/base",
     ],
@@ -172,6 +176,9 @@ cc_library(
 cc_test(
     name = "gpio_unittest",
     srcs = [
+        "autogen/dif_gpio_autogen.c",
+        "autogen/dif_gpio_autogen.h",
+        "autogen/dif_gpio_autogen_unittest.cc",
         "dif_gpio.c",
         "dif_gpio.h",
         "dif_gpio_unittest.cc",
@@ -180,6 +187,7 @@ cc_test(
         "MOCK_MMIO=1",
     ],
     deps = [
+        ":base",
         "//hw/ip/gpio/data:gpio_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
@@ -300,14 +308,38 @@ cc_library(
 cc_library(
     name = "hmac",
     srcs = [
+        "autogen/dif_hmac_autogen.c",
+        "autogen/dif_hmac_autogen.h",
         "dif_hmac.c",
     ],
     hdrs = [
         "dif_hmac.h",
     ],
     deps = [
+        ":base",
         "//hw/ip/hmac/data:hmac_regs",
         "//sw/device/lib/base",
+    ],
+)
+
+cc_test(
+    name = "hmac_unittest",
+    srcs = [
+        "autogen/dif_hmac_autogen.c",
+        "autogen/dif_hmac_autogen.h",
+        "autogen/dif_hmac_autogen_unittest.cc",
+        "dif_hmac.c",
+        "dif_hmac.h",
+    ],
+    defines = [
+        "MOCK_MMIO=1",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/hmac/data:hmac_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -410,12 +442,15 @@ cc_test(
 cc_library(
     name = "alert_handler",
     srcs = [
+        "autogen/dif_alert_handler_autogen.c",
+        "autogen/dif_alert_handler_autogen.h",
         "dif_alert_handler.c",
     ],
     hdrs = [
         "dif_alert_handler.h",
     ],
     deps = [
+        ":base",
         "//hw/top_earlgrey/ip/alert_handler/data/autogen:alert_handler_regs",
         "//sw/device/lib/base",
     ],
@@ -424,6 +459,9 @@ cc_library(
 cc_test(
     name = "alert_handler_unittest",
     srcs = [
+        "autogen/dif_alert_handler_autogen.c",
+        "autogen/dif_alert_handler_autogen.h",
+        "autogen/dif_alert_handler_autogen_unittest.cc",
         "dif_alert_handler.c",
         "dif_alert_handler.h",
         "dif_alert_handler_unittest.cc",
@@ -432,6 +470,7 @@ cc_test(
         "MOCK_MMIO=1",
     ],
     deps = [
+        ":base",
         "//hw/top_earlgrey/ip/alert_handler/data/autogen:alert_handler_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
@@ -538,12 +577,15 @@ cc_test(
 cc_library(
     name = "lc_ctrl",
     srcs = [
+        "autogen/dif_lc_ctrl_autogen.c",
+        "autogen/dif_lc_ctrl_autogen.h",
         "dif_lc_ctrl.c",
     ],
     hdrs = [
         "dif_lc_ctrl.h",
     ],
     deps = [
+        ":base",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//sw/device/lib/base",
     ],
@@ -552,6 +594,9 @@ cc_library(
 cc_test(
     name = "lc_ctrl_unittest",
     srcs = [
+        "autogen/dif_lc_ctrl_autogen.c",
+        "autogen/dif_lc_ctrl_autogen.h",
+        "autogen/dif_lc_ctrl_autogen_unittest.cc",
         "dif_lc_ctrl.c",
         "dif_lc_ctrl.h",
         "dif_lc_ctrl_unittest.cc",
@@ -560,6 +605,7 @@ cc_test(
         "MOCK_MMIO=1",
     ],
     deps = [
+        ":base",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
@@ -634,12 +680,15 @@ cc_test(
 cc_library(
     name = "aes",
     srcs = [
+        "autogen/dif_aes_autogen.c",
+        "autogen/dif_aes_autogen.h",
         "dif_aes.c",
     ],
     hdrs = [
         "dif_aes.h",
     ],
     deps = [
+        ":base",
         "//hw/ip/aes/data:aes_regs",
         "//sw/device/lib/base",
     ],
@@ -648,6 +697,9 @@ cc_library(
 cc_test(
     name = "aes_unittest",
     srcs = [
+        "autogen/dif_aes_autogen.c",
+        "autogen/dif_aes_autogen.h",
+        "autogen/dif_aes_autogen_unittest.cc",
         "dif_aes.c",
         "dif_aes.h",
         "dif_aes_unittest.cc",
@@ -656,6 +708,7 @@ cc_test(
         "MOCK_MMIO=1",
     ],
     deps = [
+        ":base",
         "//hw/ip/aes/data:aes_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
