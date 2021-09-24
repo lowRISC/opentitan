@@ -73,28 +73,28 @@ static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
       .digest_endianness = kDifHmacEndiannessLittle,
       .message_endianness = kDifHmacEndiannessLittle,
   };
-  CHECK(dif_hmac_mode_sha256_start(hmac, config) == kDifHmacOk,
+  CHECK(dif_hmac_mode_sha256_start(hmac, config) == kDifOk,
         "Error on hmac start.");
   const char *data8 = (const char *)data;
   size_t data_left = len;
   while (data_left > 0) {
     size_t bytes_sent;
-    dif_hmac_fifo_result_t result =
+    dif_result_t result =
         dif_hmac_fifo_push(hmac, data8, data_left, &bytes_sent);
-    if (result == kDifHmacFifoOk) {
+    if (result == kDifOk) {
       break;
     }
-    CHECK(result == kDifHmacFifoFull, "Error while pushing to FIFO.");
+    CHECK(result == kDifIpFifoFull, "Error while pushing to FIFO.");
     data8 += bytes_sent;
     data_left -= bytes_sent;
   }
 
-  CHECK(dif_hmac_process(hmac) == kDifHmacOk, "Error processing digest.");
-  dif_hmac_digest_result_t digest_result = kDifHmacDigestProcessing;
-  while (digest_result == kDifHmacDigestProcessing) {
+  CHECK(dif_hmac_process(hmac) == kDifOk, "Error processing digest.");
+  dif_result_t digest_result = kDifIpBusy;
+  while (digest_result == kDifIpBusy) {
     digest_result = dif_hmac_finish(hmac, digest);
   }
-  CHECK(digest_result == kDifHmacDigestOk, "Error reading the digest.");
+  CHECK(digest_result == kDifOk, "Error reading the digest.");
 }
 
 /**
@@ -214,10 +214,8 @@ int bootstrap(void) {
       "Failed to configure SPI.");
 
   dif_hmac_t hmac;
-  dif_hmac_config_t config = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
-  };
-  CHECK(dif_hmac_init(&config, &hmac) == kDifHmacOk,
+  CHECK(dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
+                      &hmac) == kDifOk,
         "Failed to configure HMAC.");
 
   LOG_INFO("HW initialisation completed, waiting for SPI input...");
