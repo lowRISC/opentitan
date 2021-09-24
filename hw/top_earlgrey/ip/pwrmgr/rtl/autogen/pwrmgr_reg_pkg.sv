@@ -8,12 +8,12 @@ package pwrmgr_reg_pkg;
 
   // Param list
   parameter int NumWkups = 6;
-  parameter int AON_SYSRST_CTRL_WKUP_REQ_IDX = 0;
-  parameter int DEBUG_CABLE_WAKEUP_IDX = 1;
-  parameter int AON_WKUP_REQ_IDX = 2;
-  parameter int USB_WKUP_REQ_IDX = 3;
-  parameter int AON_TIMER_WKUP_REQ_IDX = 4;
-  parameter int WKUP_REQ_IDX = 5;
+  parameter int SYSRST_CTRL_AON_WKUP_REQ_IDX = 0;
+  parameter int ADC_CTRL_AON_WKUP_REQ_IDX = 1;
+  parameter int PINMUX_AON_PIN_WKUP_REQ_IDX = 2;
+  parameter int PINMUX_AON_USB_WKUP_REQ_IDX = 3;
+  parameter int AON_TIMER_AON_WKUP_REQ_IDX = 4;
+  parameter int SENSOR_CTRL_WKUP_REQ_IDX = 5;
   parameter int NumRstReqs = 2;
   parameter int NumAlerts = 1;
 

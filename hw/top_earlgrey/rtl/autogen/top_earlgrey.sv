@@ -1629,7 +1629,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[24:24] ),
 
       // Inter-module signals
-      .aon_sysrst_ctrl_wkup_req_o(pwrmgr_aon_wakeups[0]),
+      .wkup_req_o(pwrmgr_aon_wakeups[0]),
       .aon_sysrst_ctrl_rst_req_o(pwrmgr_aon_rstreqs[0]),
       .tl_i(sysrst_ctrl_aon_tl_req),
       .tl_o(sysrst_ctrl_aon_tl_rsp),
@@ -1654,7 +1654,7 @@ module top_earlgrey #(
       // Inter-module signals
       .adc_o(adc_req_o),
       .adc_i(adc_rsp_i),
-      .debug_cable_wakeup_o(pwrmgr_aon_wakeups[1]),
+      .wkup_req_o(pwrmgr_aon_wakeups[1]),
       .tl_i(adc_ctrl_aon_tl_req),
       .tl_o(adc_ctrl_aon_tl_rsp),
 
@@ -1708,7 +1708,7 @@ module top_earlgrey #(
       .dft_hold_tap_sel_i(dft_hold_tap_sel_i),
       .sleep_en_i(pwrmgr_aon_low_power),
       .strap_en_i(pwrmgr_aon_strap),
-      .aon_wkup_req_o(pwrmgr_aon_wakeups[2]),
+      .pin_wkup_req_o(pwrmgr_aon_wakeups[2]),
       .usb_wkup_req_o(pwrmgr_aon_wakeups[3]),
       .usb_out_of_rst_i(usbdev_usb_out_of_rst),
       .usb_aon_wake_en_i(usbdev_usb_aon_wake_en),
@@ -1758,7 +1758,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .nmi_wdog_timer_bark_o(aon_timer_aon_nmi_wdog_timer_bark),
-      .aon_timer_wkup_req_o(pwrmgr_aon_wakeups[4]),
+      .wkup_req_o(pwrmgr_aon_wakeups[4]),
       .aon_timer_rst_req_o(pwrmgr_aon_rstreqs[1]),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .sleep_mode_i(pwrmgr_aon_low_power),

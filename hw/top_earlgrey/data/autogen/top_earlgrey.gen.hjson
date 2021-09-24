@@ -3009,7 +3009,7 @@
       inter_signal_list:
       [
         {
-          name: aon_sysrst_ctrl_wkup_req
+          name: wkup_req
           struct: logic
           type: uni
           act: req
@@ -3100,7 +3100,7 @@
           index: -1
         }
         {
-          name: debug_cable_wakeup
+          name: wkup_req
           struct: logic
           type: uni
           act: req
@@ -3344,7 +3344,7 @@
           index: -1
         }
         {
-          name: aon_wkup_req
+          name: pin_wkup_req
           struct: logic
           type: uni
           act: req
@@ -3499,7 +3499,7 @@
           index: -1
         }
         {
-          name: aon_timer_wkup_req
+          name: wkup_req
           struct: logic
           type: uni
           act: req
@@ -7270,11 +7270,11 @@
       ]
       pwrmgr_aon.wakeups:
       [
-        sysrst_ctrl_aon.aon_sysrst_ctrl_wkup_req
-        adc_ctrl_aon.debug_cable_wakeup
-        pinmux_aon.aon_wkup_req
+        sysrst_ctrl_aon.wkup_req
+        adc_ctrl_aon.wkup_req
+        pinmux_aon.pin_wkup_req
         pinmux_aon.usb_wkup_req
-        aon_timer_aon.aon_timer_wkup_req
+        aon_timer_aon.wkup_req
         sensor_ctrl.wkup_req
       ]
       pwrmgr_aon.rstreqs:
@@ -12083,17 +12083,17 @@
   wakeups:
   [
     {
-      name: aon_sysrst_ctrl_wkup_req
+      name: wkup_req
       width: "1"
       module: sysrst_ctrl_aon
     }
     {
-      name: debug_cable_wakeup
+      name: wkup_req
       width: "1"
       module: adc_ctrl_aon
     }
     {
-      name: aon_wkup_req
+      name: pin_wkup_req
       width: "1"
       module: pinmux_aon
     }
@@ -12103,7 +12103,7 @@
       module: pinmux_aon
     }
     {
-      name: aon_timer_wkup_req
+      name: wkup_req
       width: "1"
       module: aon_timer_aon
     }
@@ -15094,7 +15094,7 @@
         index: -1
       }
       {
-        name: aon_sysrst_ctrl_wkup_req
+        name: wkup_req
         struct: logic
         type: uni
         act: req
@@ -15144,7 +15144,7 @@
         index: -1
       }
       {
-        name: debug_cable_wakeup
+        name: wkup_req
         struct: logic
         type: uni
         act: req
@@ -15294,7 +15294,7 @@
         index: -1
       }
       {
-        name: aon_wkup_req
+        name: pin_wkup_req
         struct: logic
         type: uni
         act: req
@@ -15407,7 +15407,7 @@
         index: -1
       }
       {
-        name: aon_timer_wkup_req
+        name: wkup_req
         struct: logic
         type: uni
         act: req

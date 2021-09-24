@@ -1617,11 +1617,11 @@ typedef enum top_earlgrey_pinmux_outsel {
  * Power Manager Wakeup Signals
  */
 typedef enum top_earlgrey_power_manager_wake_ups {
-  kTopEarlgreyPowerManagerWakeUpsSysrstCtrlAonAonSysrstCtrlWkupReq = 0, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsAdcCtrlAonDebugCableWakeup = 1, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsPinmuxAonAonWkupReq = 2, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsSysrstCtrlAonWkupReq = 0, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsAdcCtrlAonWkupReq = 1, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsPinmuxAonPinWkupReq = 2, /**<  */
   kTopEarlgreyPowerManagerWakeUpsPinmuxAonUsbWkupReq = 3, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsAonTimerAonAonTimerWkupReq = 4, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsAonTimerAonWkupReq = 4, /**<  */
   kTopEarlgreyPowerManagerWakeUpsSensorCtrlWkupReq = 5, /**<  */
   kTopEarlgreyPowerManagerWakeUpsLast = 5, /**< \internal Last valid pwrmgr wakeup signal */
 } top_earlgrey_power_manager_wake_ups_t;
