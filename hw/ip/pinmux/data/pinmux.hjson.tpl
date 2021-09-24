@@ -35,7 +35,7 @@
   ],
 
   wakeup_list: [
-    { name: "aon_wkup_req",
+    { name: "pin_wkup_req",
       desc: "pin wake request"
     },
     { name: "usb_wkup_req",
@@ -111,7 +111,7 @@
     },
     { struct:  "logic",
       type:    "uni",
-      name:    "aon_wkup_req",
+      name:    "pin_wkup_req",
       act:     "req",
       package: "",
       default: "1'b0"

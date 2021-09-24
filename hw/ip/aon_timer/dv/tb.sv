@@ -58,7 +58,7 @@ module tb;
     .lc_escalate_en_i          (lc_escalate_en),
     .intr_wkup_timer_expired_o (wkup_expired),
     .intr_wdog_timer_bark_o    (wdog_bark),
-    .aon_timer_wkup_req_o      (wkup_req),
+    .wkup_req_o                (wkup_req),
     .aon_timer_rst_req_o       (rst_req),
     .sleep_mode_i              (sleep)
   );

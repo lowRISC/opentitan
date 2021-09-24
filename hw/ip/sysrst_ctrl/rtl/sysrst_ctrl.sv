@@ -25,7 +25,7 @@ module sysrst_ctrl
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // Wake, reset and interrupt requests
-  output logic aon_sysrst_ctrl_wkup_req_o,  // OT wake to pwrmgr
+  output logic wkup_req_o,  // OT wake to pwrmgr
   output logic aon_sysrst_ctrl_rst_req_o,  // OT reset to rstmgr
   output logic intr_sysrst_ctrl_o,  // sysrst_ctrl interrupt to PLIC
 
@@ -312,7 +312,7 @@ module sysrst_ctrl
   ///////////////////////////
 
   // OT wakeup signal to pwrmgr, CSRs and signals on AON domain (see #6323)
-  assign aon_sysrst_ctrl_wkup_req_o = reg2hw.wkup_status.q;
+  assign wkup_req_o = reg2hw.wkup_status.q;
   assign hw2reg.wkup_status.de = aon_ulp_wakeup_pulse_int ||
                                  aon_sysrst_ctrl_combo_intr ||
                                  aon_sysrst_ctrl_key_intr;
@@ -325,7 +325,7 @@ module sysrst_ctrl
   ) u_prim_flop_2sync (
     .clk_i,
     .rst_ni,
-    .d_i(aon_sysrst_ctrl_wkup_req_o),
+    .d_i(wkup_req_o),
     .q_o(wkup_req)
   );
 
@@ -347,7 +347,7 @@ module sysrst_ctrl
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(IntrSysRstCtrlOKnown, intr_sysrst_ctrl_o)
-  `ASSERT_KNOWN(OTWkOKnown, aon_sysrst_ctrl_wkup_req_o)
+  `ASSERT_KNOWN(OTWkOKnown, wkup_req_o)
   `ASSERT_KNOWN(OTRstOKnown, aon_sysrst_ctrl_rst_req_o)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)

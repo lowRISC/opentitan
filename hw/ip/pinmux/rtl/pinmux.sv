@@ -25,7 +25,7 @@ module pinmux
   input                            clk_aon_i,
   input                            rst_aon_ni,
   // Wakeup request, running on clk_aon_i
-  output logic                     aon_wkup_req_o,
+  output logic                     pin_wkup_req_o,
   output logic                     usb_wkup_req_o,
   // Sleep enable and strap sample enable
   // from pwrmgr, running on clk_i
@@ -435,7 +435,7 @@ module pinmux
   end
 
   // OR' together all wakeup requests
-  assign aon_wkup_req_o = |aon_wkup_req;
+  assign pin_wkup_req_o = |aon_wkup_req;
 
   ////////////////
   // Assertions //
@@ -465,12 +465,12 @@ module pinmux
   `ASSERT_KNOWN(DftStrapsKnown_A, dft_strap_test_o)
 
   // running on slow AON clock
-  `ASSERT_KNOWN(AonWkupReqKnownO_A, aon_wkup_req_o, clk_aon_i, !rst_aon_ni)
+  `ASSERT_KNOWN(AonWkupReqKnownO_A, pin_wkup_req_o, clk_aon_i, !rst_aon_ni)
   `ASSERT_KNOWN(UsbWkupReqKnownO_A, usb_wkup_req_o, clk_aon_i, !rst_aon_ni)
   `ASSERT_KNOWN(UsbStateDebugKnownO_A, usb_state_debug_o, clk_aon_i, !rst_aon_ni)
 
   // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
-  `ASSERT(PinmuxWkupStable_A, aon_wkup_req_o |=> aon_wkup_req_o ||
+  `ASSERT(PinmuxWkupStable_A, pin_wkup_req_o |=> pin_wkup_req_o ||
       $fell(|reg2hw.wkup_cause) && !sleep_en_i, clk_aon_i, !rst_aon_ni)
 
   // Some inputs at the chip-level may be forced to X in chip-level simulations.
