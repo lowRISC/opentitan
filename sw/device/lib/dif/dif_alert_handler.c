@@ -19,25 +19,26 @@ static_assert(ALERT_HANDLER_PARAM_N_PHASES == 4,
 static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
               "Expected seven local alerts!");
 
-dif_alert_handler_result_t dif_alert_handler_init(
-    dif_alert_handler_params_t params, dif_alert_handler_t *handler) {
-  if (handler == NULL) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_init(mmio_region_t base_addr,
+                                    dif_alert_handler_params_t params,
+                                    dif_alert_handler_t *alert_handler) {
+  if (alert_handler == NULL) {
+    return kDifBadArg;
   }
 
   // Check we do not exceed maximum number of alerts supported by the hardware.
   if (params.alert_count > ALERT_HANDLER_PARAM_N_ALERTS) {
-    return kDifAlertHandlerBadArg;
+    return kDifBadArg;
   }
 
   // For now, the hardware is hardwired to four signals.
   if (params.escalation_signal_count != ALERT_HANDLER_PARAM_N_ESC_SEV) {
-    return kDifAlertHandlerBadArg;
+    return kDifBadArg;
   }
 
-  handler->params = params;
+  alert_handler->base_addr = base_addr;
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
 /**
@@ -45,14 +46,15 @@ dif_alert_handler_result_t dif_alert_handler_init(
  * provided configuration is invalid.
  */
 OT_WARN_UNUSED_RESULT
-static bool classify_alerts(const dif_alert_handler_t *handler,
+static bool classify_alerts(const dif_alert_handler_t *alert_handler,
+                            dif_alert_handler_params_t params,
                             const dif_alert_handler_class_config_t *class) {
   if (class->alerts == NULL && class->alerts_len != 0) {
     return false;
   }
 
   for (int i = 0; i < class->alerts_len; ++i) {
-    if (class->alerts[i] >= handler->params.alert_count) {
+    if (class->alerts[i] >= params.alert_count) {
       return false;
     }
 
@@ -62,14 +64,14 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
     ptrdiff_t enable_reg_offset = ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET +
                                   class->alerts[i] * sizeof(uint32_t);
     uint32_t enable_reg =
-        mmio_region_read32(handler->params.base_addr, enable_reg_offset);
+        mmio_region_read32(alert_handler->base_addr, enable_reg_offset);
     // TODO: we would like to use the generated macro for the ENABLE BIT OFFSET
     // below for the alert with the given index/ID, not just assume they are
     // the same across all regs in the multireg. However, making this assumption
     // for now.
     enable_reg = bitfield_bit32_write(
         enable_reg, ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT, true);
-    mmio_region_write32_shadowed(handler->params.base_addr, enable_reg_offset,
+    mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
                                  enable_reg);
 
     // Determine alert classification.
@@ -102,14 +104,14 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
         ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
         class->alerts[i] * sizeof(uint32_t);
     uint32_t class_reg =
-        mmio_region_read32(handler->params.base_addr, class_reg_offset);
+        mmio_region_read32(alert_handler->base_addr, class_reg_offset);
     // TODO: we would like to use the generated macro for the BITFIELD
     // below for the alert with the given index/ID, not just assume they are
     // the same across all regs in the multireg.
     class_reg = bitfield_field32_write(
         class_reg, ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_FIELD,
         classification);
-    mmio_region_write32_shadowed(handler->params.base_addr, class_reg_offset,
+    mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
                                  class_reg);
 
     // TODO: support locking the alert class configuration.
@@ -124,7 +126,7 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
  */
 OT_WARN_UNUSED_RESULT
 static bool classify_local_alerts(
-    const dif_alert_handler_t *handler,
+    const dif_alert_handler_t *alert_handler,
     const dif_alert_handler_class_config_t *class) {
   if (class->local_alerts == NULL && class->local_alerts_len != 0) {
     return false;
@@ -205,14 +207,14 @@ static bool classify_local_alerts(
     }
 
     uint32_t enable_reg =
-        mmio_region_read32(handler->params.base_addr, enable_reg_offset);
+        mmio_region_read32(alert_handler->base_addr, enable_reg_offset);
     uint32_t class_reg =
-        mmio_region_read32(handler->params.base_addr, class_reg_offset);
+        mmio_region_read32(alert_handler->base_addr, class_reg_offset);
     enable_reg = bitfield_bit32_write(enable_reg, enable_bit, true);
     class_reg = bitfield_field32_write(class_reg, class_field, classification);
-    mmio_region_write32_shadowed(handler->params.base_addr, enable_reg_offset,
+    mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
                                  enable_reg);
-    mmio_region_write32_shadowed(handler->params.base_addr, class_reg_offset,
+    mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
                                  class_reg);
   }
 
@@ -225,12 +227,12 @@ static bool classify_local_alerts(
  * Returns false if `toggle` is out of range.
  */
 OT_WARN_UNUSED_RESULT
-static bool toggle_to_bool(dif_alert_handler_toggle_t toggle, bool *flag) {
+static bool toggle_to_bool(dif_toggle_t toggle, bool *flag) {
   switch (toggle) {
-    case kDifAlertHandlerToggleEnabled:
+    case kDifToggleEnabled:
       *flag = true;
       break;
-    case kDifAlertHandlerToggleDisabled:
+    case kDifToggleDisabled:
       *flag = false;
       break;
     default:
@@ -243,7 +245,8 @@ static bool toggle_to_bool(dif_alert_handler_toggle_t toggle, bool *flag) {
  * Configures the control registers of a particular alert handler class.
  */
 OT_WARN_UNUSED_RESULT
-static bool configure_class(const dif_alert_handler_t *handler,
+static bool configure_class(const dif_alert_handler_t *alert_handler,
+                            dif_alert_handler_params_t params,
                             const dif_alert_handler_class_config_t *class) {
   ptrdiff_t reg_offset;
   switch (class->alert_class) {
@@ -295,8 +298,7 @@ static bool configure_class(const dif_alert_handler_t *handler,
   // Configure the escalation signals for each escalation phase. In particular,
   // if an escalation phase is configured, it is also enabled.
   for (int i = 0; i < class->phase_signals_len; ++i) {
-    if (class->phase_signals[i].signal >=
-        handler->params.escalation_signal_count) {
+    if (class->phase_signals[i].signal >= params.escalation_signal_count) {
       return false;
     }
 
@@ -328,7 +330,7 @@ static bool configure_class(const dif_alert_handler_t *handler,
                                       class->phase_signals[i].signal);
   }
 
-  mmio_region_write32_shadowed(handler->params.base_addr, reg_offset, ctrl_reg);
+  mmio_region_write32_shadowed(alert_handler->base_addr, reg_offset, ctrl_reg);
 
   // Configure the class accumulator threshold.
   ptrdiff_t acc_offset;
@@ -348,7 +350,7 @@ static bool configure_class(const dif_alert_handler_t *handler,
     default:
       return false;
   }
-  mmio_region_write32_shadowed(handler->params.base_addr, acc_offset,
+  mmio_region_write32_shadowed(alert_handler->base_addr, acc_offset,
                                class->accumulator_threshold);
 
   // Configure the class IRQ deadline.
@@ -369,7 +371,7 @@ static bool configure_class(const dif_alert_handler_t *handler,
     default:
       return false;
   }
-  mmio_region_write32_shadowed(handler->params.base_addr, deadline_offset,
+  mmio_region_write32_shadowed(alert_handler->base_addr, deadline_offset,
                                class->irq_deadline_cycles);
 
   return true;
@@ -380,7 +382,7 @@ static bool configure_class(const dif_alert_handler_t *handler,
  */
 OT_WARN_UNUSED_RESULT
 static bool configure_phase_durations(
-    const dif_alert_handler_t *handler,
+    const dif_alert_handler_t *alert_handler,
     const dif_alert_handler_class_config_t *class) {
   if (class->phase_durations == NULL && class->phase_durations_len != 0) {
     return false;
@@ -435,50 +437,50 @@ static bool configure_phase_durations(
         kRegOffsets[class->alert_class]
                    [phase - kDifAlertHandlerClassStatePhase0];
 
-    mmio_region_write32_shadowed(handler->params.base_addr, reg_offset,
+    mmio_region_write32_shadowed(alert_handler->base_addr, reg_offset,
                                  class->phase_durations[i].cycles);
   }
 
   return true;
 }
 
-dif_alert_handler_config_result_t dif_alert_handler_configure(
-    const dif_alert_handler_t *handler, dif_alert_handler_config_t config) {
-  if (handler == NULL) {
-    return kDifAlertHandlerConfigBadArg;
+dif_result_t dif_alert_handler_configure(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_params_t params,
+    dif_alert_handler_config_t config) {
+  if (alert_handler == NULL) {
+    return kDifBadArg;
   }
   // Check that the provided ping timeout actually fits in the timeout register,
   // which is smaller than a native word length.
   if (config.ping_timeout >
       ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_MASK) {
-    return kDifAlertHandlerConfigBadArg;
+    return kDifBadArg;
   }
   if (config.classes == NULL && config.classes_len != 0) {
-    return kDifAlertHandlerConfigBadArg;
+    return kDifBadArg;
   }
 
   bool is_locked;
-  dif_alert_handler_result_t result =
-      dif_alert_handler_is_locked(handler, &is_locked);
-  if (result != kDifAlertHandlerOk) {
-    return (dif_alert_handler_config_result_t)result;
+  dif_result_t result = dif_alert_handler_is_locked(alert_handler, &is_locked);
+  if (result != kDifOk) {
+    return result;
   }
   if (is_locked) {
-    return kDifAlertHandlerConfigLocked;
+    return kDifLocked;
   }
 
   for (int i = 0; i < config.classes_len; ++i) {
-    if (!classify_alerts(handler, &config.classes[i])) {
-      return kDifAlertHandlerConfigError;
+    if (!classify_alerts(alert_handler, params, &config.classes[i])) {
+      return kDifError;
     }
-    if (!classify_local_alerts(handler, &config.classes[i])) {
-      return kDifAlertHandlerConfigError;
+    if (!classify_local_alerts(alert_handler, &config.classes[i])) {
+      return kDifError;
     }
-    if (!configure_class(handler, &config.classes[i])) {
-      return kDifAlertHandlerConfigError;
+    if (!configure_class(alert_handler, params, &config.classes[i])) {
+      return kDifError;
     }
-    if (!configure_phase_durations(handler, &config.classes[i])) {
-      return kDifAlertHandlerConfigError;
+    if (!configure_phase_durations(alert_handler, &config.classes[i])) {
+      return kDifError;
     }
   }
 
@@ -487,31 +489,30 @@ dif_alert_handler_config_result_t dif_alert_handler_configure(
       ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_FIELD,
       config.ping_timeout);
   mmio_region_write32_shadowed(
-      handler->params.base_addr,
+      alert_handler->base_addr,
       ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_REG_OFFSET, ping_timeout_reg);
 
-  return kDifAlertHandlerConfigOk;
+  return kDifOk;
 }
 
-dif_alert_handler_result_t dif_alert_handler_lock(
-    const dif_alert_handler_t *handler) {
-  if (handler == NULL) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_lock(const dif_alert_handler_t *alert_handler) {
+  if (alert_handler == NULL) {
+    return kDifBadArg;
   }
 
   uint32_t reg = bitfield_bit32_write(
       1, ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT, true);
-  mmio_region_write32_shadowed(handler->params.base_addr,
+  mmio_region_write32_shadowed(alert_handler->base_addr,
                                ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
                                reg);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
-dif_alert_handler_result_t dif_alert_handler_is_locked(
-    const dif_alert_handler_t *handler, bool *is_locked) {
-  if (handler == NULL || is_locked == NULL) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_is_locked(
+    const dif_alert_handler_t *alert_handler, bool *is_locked) {
+  if (alert_handler == NULL || is_locked == NULL) {
+    return kDifBadArg;
   }
   // TODO(timothytrippel): more "locking" functionality has been added that
   // can lock the ping-timer-en and ping-timer-cyc with the
@@ -520,194 +521,39 @@ dif_alert_handler_result_t dif_alert_handler_is_locked(
   // enabled.
 
   uint32_t reg =
-      mmio_region_read32(handler->params.base_addr,
+      mmio_region_read32(alert_handler->base_addr,
                          ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET);
   *is_locked = bitfield_bit32_read(
       reg, ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
-OT_WARN_UNUSED_RESULT
-static bool irq_index(dif_alert_handler_class_t class,
-                      bitfield_bit32_index_t *index) {
-  switch (class) {
-    case kDifAlertHandlerClassA:
-      *index = ALERT_HANDLER_INTR_COMMON_CLASSA_BIT;
-      break;
-    case kDifAlertHandlerClassB:
-      *index = ALERT_HANDLER_INTR_COMMON_CLASSB_BIT;
-      break;
-    case kDifAlertHandlerClassC:
-      *index = ALERT_HANDLER_INTR_COMMON_CLASSC_BIT;
-      break;
-    case kDifAlertHandlerClassD:
-      *index = ALERT_HANDLER_INTR_COMMON_CLASSD_BIT;
-      break;
-    default:
-      return false;
-  }
-  return true;
-}
-
-dif_alert_handler_result_t dif_alert_handler_irq_is_pending(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
-    bool *is_pending) {
-  if (handler == NULL || is_pending == NULL) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!irq_index(alert_class, &index)) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  uint32_t reg = mmio_region_read32(handler->params.base_addr,
-                                    ALERT_HANDLER_INTR_STATE_REG_OFFSET);
-  *is_pending = bitfield_bit32_read(reg, index);
-
-  return kDifAlertHandlerOk;
-}
-
-dif_alert_handler_result_t dif_alert_handler_irq_acknowledge(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class) {
-  if (handler == NULL) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!irq_index(alert_class, &index)) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  uint32_t reg = mmio_region_read32(handler->params.base_addr,
-                                    ALERT_HANDLER_INTR_STATE_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, index, true);  // Write-one clear.
-  mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_INTR_STATE_REG_OFFSET, reg);
-
-  return kDifAlertHandlerOk;
-}
-
-dif_alert_handler_result_t dif_alert_handler_irq_get_enabled(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
-    dif_alert_handler_toggle_t *state) {
-  if (handler == NULL || state == NULL) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!irq_index(alert_class, &index)) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  uint32_t reg = mmio_region_read32(handler->params.base_addr,
-                                    ALERT_HANDLER_INTR_ENABLE_REG_OFFSET);
-  *state = bitfield_bit32_read(reg, index) ? kDifAlertHandlerToggleEnabled
-                                           : kDifAlertHandlerToggleDisabled;
-
-  return kDifAlertHandlerOk;
-}
-
-dif_alert_handler_result_t dif_alert_handler_irq_set_enabled(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
-    dif_alert_handler_toggle_t state) {
-  if (handler == NULL) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!irq_index(alert_class, &index)) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  bool flag;
-  if (!toggle_to_bool(state, &flag)) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  uint32_t reg = mmio_region_read32(handler->params.base_addr,
-                                    ALERT_HANDLER_INTR_ENABLE_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, index, flag);
-  mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_INTR_ENABLE_REG_OFFSET, reg);
-
-  return kDifAlertHandlerOk;
-}
-
-dif_alert_handler_result_t dif_alert_handler_irq_force(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class) {
-  if (handler == NULL) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!irq_index(alert_class, &index)) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  uint32_t reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_INTR_TEST_REG_OFFSET, reg);
-
-  return kDifAlertHandlerOk;
-}
-
-dif_alert_handler_result_t dif_alert_handler_irq_disable_all(
-    const dif_alert_handler_t *handler,
-    dif_alert_handler_irq_snapshot_t *snapshot) {
-  if (handler == NULL) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  if (snapshot != NULL) {
-    *snapshot = mmio_region_read32(handler->params.base_addr,
-                                   ALERT_HANDLER_INTR_ENABLE_REG_OFFSET);
-  }
-
-  mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_INTR_ENABLE_REG_OFFSET, 0);
-
-  return kDifAlertHandlerOk;
-}
-
-dif_alert_handler_result_t dif_alert_handler_irq_restore_all(
-    const dif_alert_handler_t *handler,
-    const dif_alert_handler_irq_snapshot_t *snapshot) {
-  if (handler == NULL || snapshot == NULL) {
-    return kDifAlertHandlerBadArg;
-  }
-
-  mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_INTR_ENABLE_REG_OFFSET, *snapshot);
-
-  return kDifAlertHandlerOk;
-}
-
-dif_alert_handler_result_t dif_alert_handler_alert_is_cause(
-    const dif_alert_handler_t *handler, dif_alert_handler_alert_t alert,
-    bool *is_cause) {
-  if (handler == NULL || is_cause == NULL ||
-      alert >= handler->params.alert_count) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_alert_is_cause(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_params_t params,
+    dif_alert_handler_alert_t alert, bool *is_cause) {
+  if (alert_handler == NULL || is_cause == NULL ||
+      alert >= params.alert_count) {
+    return kDifBadArg;
   }
 
   ptrdiff_t cause_reg_offset =
       ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET + alert * sizeof(uint32_t);
   uint32_t cause_reg =
-      mmio_region_read32(handler->params.base_addr, cause_reg_offset);
+      mmio_region_read32(alert_handler->base_addr, cause_reg_offset);
   // NOTE: assuming all cause registers across all alerts use the same bit index
   // for the cause bit
   *is_cause =
       bitfield_bit32_read(cause_reg, ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
-dif_alert_handler_result_t dif_alert_handler_alert_acknowledge(
-    const dif_alert_handler_t *handler, dif_alert_handler_alert_t alert) {
-  if (handler == NULL || alert >= handler->params.alert_count) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_alert_acknowledge(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_params_t params,
+    dif_alert_handler_alert_t alert) {
+  if (alert_handler == NULL || alert >= params.alert_count) {
+    return kDifBadArg;
   }
 
   ptrdiff_t cause_reg_offset =
@@ -716,9 +562,9 @@ dif_alert_handler_result_t dif_alert_handler_alert_acknowledge(
   // for the cause bit
   uint32_t cause_reg =
       bitfield_bit32_write(0, ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT, true);
-  mmio_region_write32(handler->params.base_addr, cause_reg_offset, cause_reg);
+  mmio_region_write32(alert_handler->base_addr, cause_reg_offset, cause_reg);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -783,55 +629,56 @@ static bool loc_alert_cause_bit_index(dif_alert_handler_local_alert_t alert,
   return true;
 }
 
-dif_alert_handler_result_t dif_alert_handler_local_alert_is_cause(
-    const dif_alert_handler_t *handler, dif_alert_handler_local_alert_t alert,
-    bool *is_cause) {
-  if (handler == NULL || is_cause == NULL) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_local_alert_is_cause(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_local_alert_t alert, bool *is_cause) {
+  if (alert_handler == NULL || is_cause == NULL) {
+    return kDifBadArg;
   }
 
   // Get offset of cause register.
   ptrdiff_t offset;
   if (!loc_alert_cause_reg_offset(alert, &offset)) {
-    return kDifAlertHandlerBadArg;
+    return kDifBadArg;
   }
 
   // Get bit index within cause register.
   bitfield_bit32_index_t index;
   if (!loc_alert_cause_bit_index(alert, &index)) {
-    return kDifAlertHandlerBadArg;
+    return kDifBadArg;
   }
 
   // Read the cause register.
-  uint32_t reg = mmio_region_read32(handler->params.base_addr, offset);
+  uint32_t reg = mmio_region_read32(alert_handler->base_addr, offset);
   *is_cause = bitfield_bit32_read(reg, index);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
-dif_alert_handler_result_t dif_alert_handler_local_alert_acknowledge(
-    const dif_alert_handler_t *handler, dif_alert_handler_local_alert_t alert) {
-  if (handler == NULL) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_local_alert_acknowledge(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_local_alert_t alert) {
+  if (alert_handler == NULL) {
+    return kDifBadArg;
   }
 
   // Get offset of cause register.
   ptrdiff_t offset;
   if (!loc_alert_cause_reg_offset(alert, &offset)) {
-    return kDifAlertHandlerBadArg;
+    return kDifBadArg;
   }
 
   // Get bit index within cause register.
   bitfield_bit32_index_t index;
   if (!loc_alert_cause_bit_index(alert, &index)) {
-    return kDifAlertHandlerBadArg;
+    return kDifBadArg;
   }
 
   // Clear the cause register by writing setting the index bit.
   uint32_t reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(handler->params.base_addr, offset, reg);
+  mmio_region_write32(alert_handler->base_addr, offset, reg);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -856,47 +703,49 @@ static bool get_clear_enable_reg_offset(dif_alert_handler_class_t class,
   return true;
 }
 
-dif_alert_handler_result_t dif_alert_handler_escalation_can_clear(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
-    bool *can_clear) {
-  if (handler == NULL || can_clear == NULL) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_escalation_can_clear(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class, bool *can_clear) {
+  if (alert_handler == NULL || can_clear == NULL) {
+    return kDifBadArg;
   }
 
   ptrdiff_t reg_offset;
   if (!get_clear_enable_reg_offset(alert_class, &reg_offset)) {
-    return kDifAlertHandlerBadArg;
+    return kDifBadArg;
   }
 
-  uint32_t reg = mmio_region_read32(handler->params.base_addr, reg_offset);
+  uint32_t reg = mmio_region_read32(alert_handler->base_addr, reg_offset);
   *can_clear = bitfield_bit32_read(
       reg, ALERT_HANDLER_CLASSA_CLR_REGWEN_CLASSA_CLR_REGWEN_BIT);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
-dif_alert_handler_result_t dif_alert_handler_escalation_disable_clearing(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class) {
-  if (handler == NULL) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_escalation_disable_clearing(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class) {
+  if (alert_handler == NULL) {
+    return kDifBadArg;
   }
 
   ptrdiff_t reg_offset;
   if (!get_clear_enable_reg_offset(alert_class, &reg_offset)) {
-    return kDifAlertHandlerBadArg;
+    return kDifBadArg;
   }
 
   uint32_t reg = bitfield_bit32_write(
       0, ALERT_HANDLER_CLASSA_CLR_REGWEN_CLASSA_CLR_REGWEN_BIT, true);
-  mmio_region_write32(handler->params.base_addr, reg_offset, reg);
+  mmio_region_write32(alert_handler->base_addr, reg_offset, reg);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
-dif_alert_handler_result_t dif_alert_handler_escalation_clear(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class) {
-  if (handler == NULL) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_escalation_clear(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class) {
+  if (alert_handler == NULL) {
+    return kDifBadArg;
   }
 
   ptrdiff_t reg_offset;
@@ -914,21 +763,21 @@ dif_alert_handler_result_t dif_alert_handler_escalation_clear(
       reg_offset = ALERT_HANDLER_CLASSD_CLR_SHADOWED_REG_OFFSET;
       break;
     default:
-      return kDifAlertHandlerBadArg;
+      return kDifBadArg;
   }
 
   uint32_t reg = bitfield_bit32_write(
       0, ALERT_HANDLER_CLASSA_CLR_SHADOWED_CLASSA_CLR_SHADOWED_BIT, true);
-  mmio_region_write32_shadowed(handler->params.base_addr, reg_offset, reg);
+  mmio_region_write32_shadowed(alert_handler->base_addr, reg_offset, reg);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
-dif_alert_handler_result_t dif_alert_handler_get_accumulator(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
-    uint16_t *alerts) {
-  if (handler == NULL || alerts == NULL) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_get_accumulator(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class, uint16_t *alerts) {
+  if (alert_handler == NULL || alerts == NULL) {
+    return kDifBadArg;
   }
 
   ptrdiff_t reg_offset;
@@ -951,20 +800,20 @@ dif_alert_handler_result_t dif_alert_handler_get_accumulator(
       field = ALERT_HANDLER_CLASSD_ACCUM_CNT_CLASSD_ACCUM_CNT_FIELD;
       break;
     default:
-      return kDifAlertHandlerBadArg;
+      return kDifBadArg;
   }
 
-  uint32_t reg = mmio_region_read32(handler->params.base_addr, reg_offset);
+  uint32_t reg = mmio_region_read32(alert_handler->base_addr, reg_offset);
   *alerts = bitfield_field32_read(reg, field);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
-dif_alert_handler_result_t dif_alert_handler_get_escalation_counter(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
-    uint32_t *cycles) {
-  if (handler == NULL || cycles == NULL) {
-    return kDifAlertHandlerBadArg;
+dif_result_t dif_alert_handler_get_escalation_counter(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class, uint32_t *cycles) {
+  if (alert_handler == NULL || cycles == NULL) {
+    return kDifBadArg;
   }
 
   ptrdiff_t reg_offset;
@@ -982,19 +831,20 @@ dif_alert_handler_result_t dif_alert_handler_get_escalation_counter(
       reg_offset = ALERT_HANDLER_CLASSD_ESC_CNT_REG_OFFSET;
       break;
     default:
-      return kDifAlertHandlerBadArg;
+      return kDifBadArg;
   }
 
-  *cycles = mmio_region_read32(handler->params.base_addr, reg_offset);
+  *cycles = mmio_region_read32(alert_handler->base_addr, reg_offset);
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }
 
-dif_alert_handler_result_t dif_alert_handler_get_class_state(
-    const dif_alert_handler_t *handler, dif_alert_handler_class_t alert_class,
+dif_result_t dif_alert_handler_get_class_state(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class,
     dif_alert_handler_class_state_t *state) {
-  if (handler == NULL || state == NULL) {
-    return kDifAlertHandlerBadArg;
+  if (alert_handler == NULL || state == NULL) {
+    return kDifBadArg;
   }
 
   ptrdiff_t reg_offset;
@@ -1017,10 +867,10 @@ dif_alert_handler_result_t dif_alert_handler_get_class_state(
       field = ALERT_HANDLER_CLASSD_STATE_CLASSD_STATE_FIELD;
       break;
     default:
-      return kDifAlertHandlerBadArg;
+      return kDifBadArg;
   }
 
-  uint32_t reg = mmio_region_read32(handler->params.base_addr, reg_offset);
+  uint32_t reg = mmio_region_read32(alert_handler->base_addr, reg_offset);
   switch (bitfield_field32_read(reg, field)) {
     case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_IDLE:
       *state = kDifAlertHandlerClassStateIdle;
@@ -1044,8 +894,8 @@ dif_alert_handler_result_t dif_alert_handler_get_class_state(
       *state = kDifAlertHandlerClassStateTerminal;
       break;
     default:
-      return kDifAlertHandlerError;
+      return kDifError;
   }
 
-  return kDifAlertHandlerOk;
+  return kDifOk;
 }

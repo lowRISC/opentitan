@@ -16,6 +16,20 @@ sw_lib_dif_autogen_aes = declare_dependency(
   )
 )
 
+# Autogen Alert Handler DIF library
+sw_lib_dif_autogen_alert_handler = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_alert_handler',
+    sources: [
+      hw_ip_alert_handler_reg_h,
+      'dif_alert_handler_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen HMAC DIF library
 sw_lib_dif_autogen_hmac = declare_dependency(
   link_with: static_library(

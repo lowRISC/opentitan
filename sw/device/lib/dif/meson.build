@@ -438,6 +438,7 @@ sw_lib_dif_alert_handler = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_alert_handler,
     ],
   )
 )
@@ -446,7 +447,9 @@ test('dif_alert_handler_unittest', executable(
     'dif_alert_handler_unittest',
     sources: [
       'dif_alert_handler_unittest.cc',
+      'autogen/dif_alert_handler_autogen_unittest.cc',
       meson.source_root() / 'sw/device/lib/dif/dif_alert_handler.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_alert_handler_autogen.c',
       hw_ip_alert_handler_reg_h,
     ],
     dependencies: [
