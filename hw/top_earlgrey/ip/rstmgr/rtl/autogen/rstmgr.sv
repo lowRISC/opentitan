@@ -495,7 +495,7 @@ module rstmgr
   assign rst_en_o.rst_por_usb[Domain0Sel] = lc_ctrl_pkg::On;
   // Generating resets for lc
   // Power Domains: ['0']
-  // Shadowed: False
+  // Shadowed: True
   logic [PowerDomains-1:0] rst_lc_n;
   assign rst_lc_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_lc_n[DomainAonSel] = rst_lc_n[DomainAonSel];
@@ -527,6 +527,38 @@ module rstmgr
     .rst_ni(rst_lc_n[Domain0Sel]),
     .lc_en_i(lc_ctrl_pkg::Off),
     .lc_en_o(rst_en_o.rst_lc[Domain0Sel])
+  );
+  logic [PowerDomains-1:0] rst_lc_shadowed_n;
+  assign rst_lc_shadowed_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_lc_shadowed_n[DomainAonSel] = rst_lc_shadowed_n[DomainAonSel];
+  assign rst_en_o.rst_lc_shadowed[DomainAonSel] = lc_ctrl_pkg::On;
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_lc_shadowed (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_lc_src_n[Domain0Sel]),
+    .d_i(1'b1),
+    .q_o(rst_lc_shadowed_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_lc_shadowed_mux (
+    .clk0_i(rst_lc_shadowed_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(leaf_rst_scanmode[5] == lc_ctrl_pkg::On),
+    .clk_o(resets_o.rst_lc_shadowed_n[Domain0Sel])
+  );
+
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_lc_shadowed_domain_0 (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_lc_shadowed_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_lc_shadowed[Domain0Sel])
   );
   // Generating resets for lc_io_div4
   // Power Domains: ['0', 'Aon']
