@@ -1,0 +1,214 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// This file is auto-generated.
+
+#include "sw/device/lib/dif/dif_i2c.h"
+
+#include "i2c_regs.h"  // Generated.
+
+/**
+ * Get the corresponding interrupt register bit offset. INTR_STATE,
+ * INTR_ENABLE and INTR_TEST registers have the same bit offsets, so this
+ * routine can be reused.
+ */
+static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
+                                  bitfield_bit32_index_t *index_out) {
+  switch (irq) {
+    case kDifI2cIrqFmtWatermark:
+      *index_out = I2C_INTR_STATE_FMT_WATERMARK_BIT;
+      break;
+    case kDifI2cIrqRxWatermark:
+      *index_out = I2C_INTR_STATE_RX_WATERMARK_BIT;
+      break;
+    case kDifI2cIrqFmtOverflow:
+      *index_out = I2C_INTR_STATE_FMT_OVERFLOW_BIT;
+      break;
+    case kDifI2cIrqRxOverflow:
+      *index_out = I2C_INTR_STATE_RX_OVERFLOW_BIT;
+      break;
+    case kDifI2cIrqNak:
+      *index_out = I2C_INTR_STATE_NAK_BIT;
+      break;
+    case kDifI2cIrqSclInterference:
+      *index_out = I2C_INTR_STATE_SCL_INTERFERENCE_BIT;
+      break;
+    case kDifI2cIrqSdaInterference:
+      *index_out = I2C_INTR_STATE_SDA_INTERFERENCE_BIT;
+      break;
+    case kDifI2cIrqStretchTimeout:
+      *index_out = I2C_INTR_STATE_STRETCH_TIMEOUT_BIT;
+      break;
+    case kDifI2cIrqSdaUnstable:
+      *index_out = I2C_INTR_STATE_SDA_UNSTABLE_BIT;
+      break;
+    case kDifI2cIrqTransComplete:
+      *index_out = I2C_INTR_STATE_TRANS_COMPLETE_BIT;
+      break;
+    case kDifI2cIrqTxEmpty:
+      *index_out = I2C_INTR_STATE_TX_EMPTY_BIT;
+      break;
+    case kDifI2cIrqTxNonempty:
+      *index_out = I2C_INTR_STATE_TX_NONEMPTY_BIT;
+      break;
+    case kDifI2cIrqTxOverflow:
+      *index_out = I2C_INTR_STATE_TX_OVERFLOW_BIT;
+      break;
+    case kDifI2cIrqAcqOverflow:
+      *index_out = I2C_INTR_STATE_ACQ_OVERFLOW_BIT;
+      break;
+    case kDifI2cIrqAckStop:
+      *index_out = I2C_INTR_STATE_ACK_STOP_BIT;
+      break;
+    case kDifI2cIrqHostTimeout:
+      *index_out = I2C_INTR_STATE_HOST_TIMEOUT_BIT;
+      break;
+    default:
+      return false;
+  }
+
+  return true;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_get_state(const dif_i2c_t *i2c,
+                                   dif_i2c_irq_state_snapshot_t *snapshot) {
+  if (i2c == NULL || snapshot == NULL) {
+    return kDifBadArg;
+  }
+
+  *snapshot = mmio_region_read32(i2c->base_addr, I2C_INTR_STATE_REG_OFFSET);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_is_pending(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
+                                    bool *is_pending) {
+  if (i2c == NULL || is_pending == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!i2c_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t intr_state_reg =
+      mmio_region_read32(i2c->base_addr, I2C_INTR_STATE_REG_OFFSET);
+
+  *is_pending = bitfield_bit32_read(intr_state_reg, index);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_acknowledge(const dif_i2c_t *i2c, dif_i2c_irq_t irq) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!i2c_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  // Writing to the register clears the corresponding bits (Write-one clear).
+  uint32_t intr_state_reg = bitfield_bit32_write(0, index, true);
+  mmio_region_write32(i2c->base_addr, I2C_INTR_STATE_REG_OFFSET,
+                      intr_state_reg);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_get_enabled(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
+                                     dif_toggle_t *state) {
+  if (i2c == NULL || state == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!i2c_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t intr_enable_reg =
+      mmio_region_read32(i2c->base_addr, I2C_INTR_ENABLE_REG_OFFSET);
+
+  bool is_enabled = bitfield_bit32_read(intr_enable_reg, index);
+  *state = is_enabled ? kDifToggleEnabled : kDifToggleDisabled;
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_set_enabled(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
+                                     dif_toggle_t state) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!i2c_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t intr_enable_reg =
+      mmio_region_read32(i2c->base_addr, I2C_INTR_ENABLE_REG_OFFSET);
+
+  bool enable_bit = (state == kDifToggleEnabled) ? true : false;
+  intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
+  mmio_region_write32(i2c->base_addr, I2C_INTR_ENABLE_REG_OFFSET,
+                      intr_enable_reg);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_force(const dif_i2c_t *i2c, dif_i2c_irq_t irq) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!i2c_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  mmio_region_write32(i2c->base_addr, I2C_INTR_TEST_REG_OFFSET, intr_test_reg);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_disable_all(const dif_i2c_t *i2c,
+                                     dif_i2c_irq_enable_snapshot_t *snapshot) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  // Pass the current interrupt state to the caller, if requested.
+  if (snapshot != NULL) {
+    *snapshot = mmio_region_read32(i2c->base_addr, I2C_INTR_ENABLE_REG_OFFSET);
+  }
+
+  // Disable all interrupts.
+  mmio_region_write32(i2c->base_addr, I2C_INTR_ENABLE_REG_OFFSET, 0u);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_restore_all(
+    const dif_i2c_t *i2c, const dif_i2c_irq_enable_snapshot_t *snapshot) {
+  if (i2c == NULL || snapshot == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(i2c->base_addr, I2C_INTR_ENABLE_REG_OFFSET, *snapshot);
+
+  return kDifOk;
+}
