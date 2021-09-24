@@ -374,7 +374,7 @@ module otbn_controller
   `ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
 
   `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun,
-                                                OtbnStateStall})
+                                                OtbnStateStall, OtbnStateLocked})
   // Branch only takes effect in OtbnStateRun so must not go into stall state for branch
   // instructions.
   `ASSERT(NoStallOnBranch,
