@@ -154,8 +154,8 @@ TEST_F(IrqGetEnabledTest, Success) {
   // Last IRQ is disabled.
   irq_state = kDifToggleEnabled;
   EXPECT_READ32(HMAC_INTR_ENABLE_REG_OFFSET,
-                {{HMAC_INTR_ENABLE_HMAC_ERR_BIT, true}});
-  EXPECT_EQ(dif_hmac_irq_get_enabled(&hmac_, kDifHmacIrqHmacDone, &irq_state),
+                {{HMAC_INTR_ENABLE_HMAC_ERR_BIT, false}});
+  EXPECT_EQ(dif_hmac_irq_get_enabled(&hmac_, kDifHmacIrqHmacErr, &irq_state),
             kDifOk);
   EXPECT_EQ(irq_state, kDifToggleDisabled);
 }

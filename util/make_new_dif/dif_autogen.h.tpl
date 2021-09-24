@@ -61,7 +61,15 @@ typedef struct dif_${ip.name_snake} {
     /**
      * ${irq.description}
      */
-    kDif${ip.name_camel}Irq${irq.name_camel} = ${loop.index},
+    ## This handles the GPIO IP case where there is a multi-bit interrupt.
+    % if irq.width > 1:
+      % for irq_idx in range(irq.width):
+        kDif${ip.name_camel}Irq${irq.name_camel}${irq_idx} = ${loop.index},
+      % endfor
+    ## This handles all other IPs.
+    % else:
+        kDif${ip.name_camel}Irq${irq.name_camel} = ${loop.index},
+    % endif
   % endfor
   } dif_${ip.name_snake}_irq_t;
 

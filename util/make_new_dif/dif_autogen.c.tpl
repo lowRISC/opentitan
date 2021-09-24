@@ -44,9 +44,19 @@
 
     switch (irq) {
   % for irq in irqs:
+    ## This handles the GPIO IP case where there is a multi-bit interrupt.
+    % if irq.width > 1:
+      % for irq_idx in range(irq.width):
+        case kDif${ip.name_camel}Irq${irq.name_camel}${irq_idx}:
+          *index_out = ${irq_idx};
+          break;
+      % endfor
+    ## This handles all other IPs.
+    % else:
       case kDif${ip.name_camel}Irq${irq.name_camel}:
         *index_out = ${ip.name_upper}_INTR_STATE_${irq.name_upper}_BIT;
         break;
+    % endif
   % endfor
       default:
         return false;
