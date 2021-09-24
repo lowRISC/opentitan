@@ -125,14 +125,6 @@ package csr_utils_pkg;
     return result;
   endfunction : decode_csr_or_field
 
-  // mask and shift data to extract the value specific to that supplied field
-  function automatic uvm_reg_data_t get_field_val(uvm_reg_field   field,
-                                                  uvm_reg_data_t  value);
-    uvm_reg_data_t  mask = (1 << field.get_n_bits()) - 1;
-    uint            shift = field.get_lsb_pos();
-    get_field_val = (value >> shift) & mask;
-  endfunction
-
   // get updated reg value by using new specific field value
   function automatic uvm_reg_data_t get_csr_val_with_updated_field(uvm_reg_field   field,
                                                                    uvm_reg_data_t  csr_value,
