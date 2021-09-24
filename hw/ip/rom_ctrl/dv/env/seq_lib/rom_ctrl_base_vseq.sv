@@ -41,7 +41,6 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
 
   // Task to perform `num_ops` fully randomized memory transactions.
   virtual task do_rand_ops(int num_ops);
-    uvm_status_e status;
     addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_rom_reg_block"].mem_ranges;
 
     bit [TL_DW-1:0] data;
@@ -50,6 +49,8 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
     int             mem_idx;
 
     repeat (num_ops) begin
+      bit completed, saw_err;
+
       int mem_idx = $urandom_range(0, loc_mem_range.size - 1);
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
@@ -59,7 +60,8 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
 
       tl_access_w_abort(.addr(addr),
                         .data(data),
-                        .status(status),
+                        .completed(completed),
+                        .saw_err(saw_err),
                         .mask(get_rand_contiguous_mask('1)),
                         .write(write),
                         .blocking(1'b0),

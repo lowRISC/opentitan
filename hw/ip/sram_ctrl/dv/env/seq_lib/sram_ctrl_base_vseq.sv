@@ -133,12 +133,12 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                            bit blocking  = $urandom_range(0, 1),
                            bit abort     = 0,
                            bit en_ifetch = 0);
-    uvm_status_e status;
-
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
     tlul_pkg::tl_type_e tl_type;
     repeat (num_ops) begin
+      bit completed, saw_err;
+
       // full randomize addr and data
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
       `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
@@ -148,7 +148,8 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
 
       tl_access_w_abort(.addr(addr),
                         .data(data),
-                        .status(status),
+                        .completed(completed),
+                        .saw_err(saw_err),
                         .mask(get_rand_contiguous_mask()),
                         .write($urandom_range(0, 1)),
                         .blocking(blocking),
