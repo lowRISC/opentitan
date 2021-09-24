@@ -40,39 +40,6 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 );
 
 
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 6 -n 10 \
-  //      -s 2292624416 --language=sv
-  //
-  // Hamming distance histogram:
-  //
-  //  0: --
-  //  1: --
-  //  2: --
-  //  3: --
-  //  4: --
-  //  5: |||||||||||||||||||| (46.67%)
-  //  6: ||||||||||||||||| (40.00%)
-  //  7: ||||| (13.33%)
-  //  8: --
-  //  9: --
-  // 10: --
-  //
-  // Minimum Hamming distance: 5
-  // Maximum Hamming distance: 7
-  // Minimum Hamming weight: 2
-  // Maximum Hamming weight: 9
-  //
-  localparam int StateWidth = 10;
-  typedef enum logic [StateWidth-1:0] {
-    StIdle    = 10'b1110100010,
-    StTx      = 10'b0010011011,
-    StTxLast  = 10'b0101000000,
-    StOpWait  = 10'b1000101001,
-    StClean   = 10'b1111111101,
-    StError   = 10'b0011101110
-  } data_state_e;
-
   localparam int AdvRem = AdvDataWidth % KmacDataIfWidth;
   localparam int IdRem  = IdDataWidth  % KmacDataIfWidth;
   localparam int GenRem = GenDataWidth % KmacDataIfWidth;
@@ -120,7 +87,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   logic [3:0] inputs_invalid_d, inputs_invalid_q;
   logic clr_err;
 
-  data_state_e state_q, state_d;
+  keymgr_kmac_state_e state_q, state_d;
 
   // 0 pad to the appropriate width
   // this is basically for scenarios where *DataWidth % KmacDataIfWidth != 0
@@ -156,12 +123,12 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] state_raw_q;
-  assign state_q = data_state_e'(state_raw_q);
+  logic [KmacIfStateWidth-1:0] state_raw_q;
+  assign state_q = keymgr_kmac_state_e'(state_raw_q);
 
   prim_flop #(
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(StIdle))
+    .Width(KmacIfStateWidth),
+    .ResetValue(KmacIfStateWidth'(StIdle))
   ) u_state_regs (
     .clk_i,
     .rst_ni,

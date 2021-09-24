@@ -72,45 +72,6 @@ module keymgr_ctrl
   localparam int EntropyRndWidth = prim_util_pkg::vbits(EntropyRounds);
   localparam int CntWidth = EntropyRounds > CDIs ? EntropyRndWidth : CdiWidth;
 
-  // Enumeration for working state
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 11 -n 10 \
-  //      -s 4101887575 --language=sv
-  //
-  // Hamming distance histogram:
-  //
-  //  0: --
-  //  1: --
-  //  2: --
-  //  3: --
-  //  4: --
-  //  5: |||||||||||||||||||| (54.55%)
-  //  6: |||||||||||||||| (45.45%)
-  //  7: --
-  //  8: --
-  //  9: --
-  // 10: --
-  //
-  // Minimum Hamming distance: 5
-  // Maximum Hamming distance: 6
-  // Minimum Hamming weight: 2
-  // Maximum Hamming weight: 8
-  //
-  localparam int StateWidth = 10;
-  typedef enum logic [StateWidth-1:0] {
-    StCtrlReset          = 10'b1101100001,
-    StCtrlEntropyReseed  = 10'b1110010010,
-    StCtrlRandom         = 10'b0011110100,
-    StCtrlRootKey        = 10'b0110101111,
-    StCtrlInit           = 10'b0100000100,
-    StCtrlCreatorRootKey = 10'b1000011101,
-    StCtrlOwnerIntKey    = 10'b0001001010,
-    StCtrlOwnerKey       = 10'b1101111110,
-    StCtrlDisabled       = 10'b1010101000,
-    StCtrlWipe           = 10'b0000110011,
-    StCtrlInvalid        = 10'b1011000111
-  } keymgr_ctrl_state_e;
-
   // Enumeration for operation handling
   typedef enum logic [1:0] {
     StIdle,
@@ -237,11 +198,11 @@ module keymgr_ctrl
   // Main Control FSM
   //////////////////////////
 
-  logic [StateWidth-1:0] state_raw_q;
+  logic [CtrlStateWidth-1:0] state_raw_q;
   assign state_q = keymgr_ctrl_state_e'(state_raw_q);
   prim_flop #(
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(StCtrlReset))
+    .Width(CtrlStateWidth),
+    .ResetValue(CtrlStateWidth'(StCtrlReset))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
