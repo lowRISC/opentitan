@@ -83,6 +83,9 @@ static_assert(kDifPwrmgrWakeupRequestSourceFour ==
 static_assert(kDifPwrmgrWakeupRequestSourceFive ==
                   (1u << PWRMGR_PARAM_AON_TIMER_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
+static_assert(kDifPwrmgrWakeupRequestSourceSix ==
+                  (1u << PWRMGR_PARAM_WKUP_REQ_IDX),
+              "Layout of WAKE_INFO register changed.");
 
 /**
  * Relevant bits of the RESET_EN register must start at `0` and be in the same
@@ -90,6 +93,9 @@ static_assert(kDifPwrmgrWakeupRequestSourceFive ==
  */
 static_assert(kDifPwrmgrResetRequestSourceOne ==
                   (1u << PWRMGR_RESET_EN_EN_0_BIT),
+              "Layout of RESET_EN register changed.");
+static_assert(kDifPwrmgrResetRequestSourceTwo ==
+                  (1u << PWRMGR_RESET_EN_EN_1_BIT),
               "Layout of RESET_EN register changed.");
 
 /**
@@ -129,7 +135,8 @@ static const request_reg_info_t request_reg_infos[2] = {
                             kDifPwrmgrWakeupRequestSourceTwo |
                             kDifPwrmgrWakeupRequestSourceThree |
                             kDifPwrmgrWakeupRequestSourceFour |
-                            kDifPwrmgrWakeupRequestSourceFive,
+                            kDifPwrmgrWakeupRequestSourceFive |
+                            kDifPwrmgrWakeupRequestSourceSix,
                     .index = 0,
                 },
         },
@@ -141,7 +148,8 @@ static const request_reg_info_t request_reg_infos[2] = {
             .cur_req_sources_reg_offset = PWRMGR_RESET_STATUS_REG_OFFSET,
             .bitfield =
                 {
-                    .mask = kDifPwrmgrResetRequestSourceOne,
+                    .mask = kDifPwrmgrResetRequestSourceOne |
+                            kDifPwrmgrResetRequestSourceTwo,
                     .index = 0,
                 },
         },

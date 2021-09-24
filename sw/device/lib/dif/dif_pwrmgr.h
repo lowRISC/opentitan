@@ -131,6 +131,7 @@ typedef enum dif_pwrmgr_wakeup_request_source {
   kDifPwrmgrWakeupRequestSourceThree = (1u << 2),
   kDifPwrmgrWakeupRequestSourceFour = (1u << 3),
   kDifPwrmgrWakeupRequestSourceFive = (1u << 4),
+  kDifPwrmgrWakeupRequestSourceSix = (1u << 5),
 } dif_pwrmgr_wakeup_request_source_t;
 
 /**
@@ -145,6 +146,7 @@ typedef enum dif_pwrmgr_wakeup_request_source {
  */
 typedef enum dif_pwrmgr_reset_request_source {
   kDifPwrmgrResetRequestSourceOne = (1u << 0),
+  kDifPwrmgrResetRequestSourceTwo = (1u << 1),
 } dif_pwrmgr_reset_request_source_t;
 
 /**
