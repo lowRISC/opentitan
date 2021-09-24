@@ -42,6 +42,7 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_por_io_div2_n;
     logic [PowerDomains-1:0] rst_por_io_div4_n;
     logic [PowerDomains-1:0] rst_por_usb_n;
+    logic [PowerDomains-1:0] rst_lc_shadowed_n;
     logic [PowerDomains-1:0] rst_lc_n;
     logic [PowerDomains-1:0] rst_lc_io_div4_shadowed_n;
     logic [PowerDomains-1:0] rst_lc_io_div4_n;
@@ -70,6 +71,7 @@ package rstmgr_pkg;
     lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_por_io_div2;
     lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_por_io_div4;
     lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_por_usb;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_lc_shadowed;
     lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_lc;
     lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_lc_io_div4_shadowed;
     lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_lc_io_div4;
@@ -90,7 +92,7 @@ package rstmgr_pkg;
     lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_i2c2;
   } rstmgr_rst_en_t;
 
-  parameter int NumOutputRst = 24 * PowerDomains;
+  parameter int NumOutputRst = 25 * PowerDomains;
 
   // cpu reset requests and status
   typedef struct packed {

@@ -119,9 +119,76 @@ package flash_ctrl_pkg;
     PhaseInvalid
   } flash_lcmgr_phase_e;
 
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_bank_cfg_shadowed_mreg_t;
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_shadowed_mreg_t;
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info0_page_cfg_shadowed_mreg_t;
+  import flash_ctrl_reg_pkg::flash_ctrl_reg2hw_default_region_shadowed_reg_t;
+
+  typedef flash_ctrl_reg2hw_mp_bank_cfg_shadowed_mreg_t sw_bank_cfg_t;
+  typedef flash_ctrl_reg2hw_mp_region_cfg_shadowed_mreg_t sw_region_cfg_t;
+  typedef flash_ctrl_reg2hw_default_region_shadowed_reg_t sw_default_cfg_t;
+  typedef flash_ctrl_reg2hw_bank0_info0_page_cfg_shadowed_mreg_t sw_info_cfg_t;
+
   // alias for super long reg_pkg typedef
-  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t info_page_cfg_t;
-  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_mreg_t mp_region_cfg_t;
+  typedef struct packed {
+    logic        q;
+  } bank_cfg_t;
+
+  // This is identical to the reg structures but do not have err_updates / storage
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } en;
+    struct packed {
+      logic        q;
+    } rd_en;
+    struct packed {
+      logic        q;
+    } prog_en;
+    struct packed {
+      logic        q;
+    } erase_en;
+    struct packed {
+      logic        q;
+    } scramble_en;
+    struct packed {
+      logic        q;
+    } ecc_en;
+    struct packed {
+      logic        q;
+    } he_en;
+  } info_page_cfg_t;
+
+  // This is identical to the reg structures but do not have err_updates / storage
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } en;
+    struct packed {
+      logic        q;
+    } rd_en;
+    struct packed {
+      logic        q;
+    } prog_en;
+    struct packed {
+      logic        q;
+    } erase_en;
+    struct packed {
+      logic        q;
+    } scramble_en;
+    struct packed {
+      logic        q;
+    } ecc_en;
+    struct packed {
+      logic        q;
+    } he_en;
+    struct packed {
+      logic [8:0]  q;
+    } base;
+    struct packed {
+      logic [9:0] q;
+    } size;
+  } mp_region_cfg_t;
 
   // memory protection specific structs
   typedef struct packed {

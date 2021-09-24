@@ -294,7 +294,7 @@
         [
           "0"
         ]
-        shadowed: false
+        shadowed: true
         sw: false
         path: rstmgr_aon_resets.rst_lc_n
         parent: lc_src
