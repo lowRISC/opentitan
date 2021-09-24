@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{bail, ensure, Result};
 
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
@@ -11,7 +11,7 @@ use std::rc::Rc;
 use crate::io::gpio::Gpio;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::{Capabilities, Capability, Transport};
+use crate::transport::{Capabilities, Capability, Transport, TransportError};
 
 pub mod gpio;
 pub mod mpsse;
@@ -116,7 +116,11 @@ impl Transport for Ultradebug {
         Capabilities::new(Capability::UART | Capability::GPIO | Capability::SPI)
     }
 
-    fn uart(&self) -> Result<Rc<dyn Uart>> {
+    fn uart(&self, instance: u32) -> Result<Rc<dyn Uart>> {
+        ensure!(
+            instance == 0,
+            TransportError::InvalidInstance("uart", instance)
+        );
         let mut inner = self.inner.borrow_mut();
         if inner.uart.is_none() {
             inner.uart = Some(Rc::new(uart::UltradebugUart::open(self)?));
@@ -132,7 +136,11 @@ impl Transport for Ultradebug {
         Ok(Rc::clone(inner.gpio.as_ref().unwrap()))
     }
 
-    fn spi(&self) -> Result<Rc<dyn Target>> {
+    fn spi(&self, instance: u32) -> Result<Rc<dyn Target>> {
+        ensure!(
+            instance == 0,
+            TransportError::InvalidInstance("spi", instance)
+        );
         let mut inner = self.inner.borrow_mut();
         if inner.spi.is_none() {
             inner.spi = Some(Rc::new(spi::UltradebugSpi::open(self)?));

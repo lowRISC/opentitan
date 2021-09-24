@@ -43,7 +43,7 @@ fn main() -> Result<()> {
 
     let mut interface = backend::create(&opts.backend_opts)?;
 
-    if let Some(value) = opts.command.run(&mut *interface)? {
+    if let Some(value) = opts.command.run(&opts, &mut *interface)? {
         println!("{}", serde_json::to_string_pretty(&value)?);
     }
     Ok(())

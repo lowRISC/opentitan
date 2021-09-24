@@ -5,6 +5,7 @@
 use anyhow::{anyhow, Result};
 use bitflags::bitflags;
 use std::rc::Rc;
+use thiserror::Error;
 
 use crate::io::gpio::Gpio;
 use crate::io::spi::Target;
@@ -59,6 +60,13 @@ impl Capabilities {
     }
 }
 
+/// Errors related to the SPI interface and SPI transactions.
+#[derive(Error, Debug)]
+pub enum TransportError {
+    #[error("This transport does not support {0} instance {1}")]
+    InvalidInstance(&'static str, u32),
+}
+
 /// A transport object is a factory for the low-level interfaces provided
 /// by a given communications backend.
 pub trait Transport {
@@ -67,11 +75,11 @@ pub trait Transport {
     fn capabilities(&self) -> Capabilities;
 
     /// Returns a SPI [`Target`] implementation.
-    fn spi(&self) -> Result<Rc<dyn Target>> {
+    fn spi(&self, _instance: u32) -> Result<Rc<dyn Target>> {
         unimplemented!();
     }
     /// Returns a [`Uart`] implementation.
-    fn uart(&self) -> Result<Rc<dyn Uart>> {
+    fn uart(&self, _instance: u32) -> Result<Rc<dyn Uart>> {
         unimplemented!();
     }
     /// Returns a [`Gpio`] implementation.
