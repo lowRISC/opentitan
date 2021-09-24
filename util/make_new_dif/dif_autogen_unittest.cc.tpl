@@ -17,12 +17,27 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_${ip.name_snake}_unittest.h"
+#include "sw/device/lib/dif/dif_${ip.name_snake}.h"
 
-namespace dif_${ip.name_snake}_unittest {
+#include "gtest/gtest.h"
+#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/testing/mock_mmio.h"
+
+#include "${ip.name_snake}_regs.h"  // Generated.
+
+namespace dif_${ip.name_snake}_autogen_unittest {
 namespace {
+  using ::mock_mmio::MmioTest;
+  using ::mock_mmio::MockDevice;
+  using ::testing::Test;
+
+  class ${ip.name_camel}Test : public Test, public MmioTest {
+   protected:
+    dif_${ip.name_snake}_t ${ip.name_snake}_ = {.base_addr = dev().region()};
+  };
+
 % if len(irqs) > 0:
-  using testing::Eq;
+  using ::testing::Eq;
 
   class IrqGetStateTest : public ${ip.name_camel}Test {};
 
@@ -401,4 +416,4 @@ namespace {
 % endif
 
 }  // namespace
-}  // namespace dif_${ip.name_snake}_unittest
+}  // namespace dif_${ip.name_snake}_autogen_unittest

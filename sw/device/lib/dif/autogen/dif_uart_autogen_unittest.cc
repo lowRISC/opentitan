@@ -4,11 +4,26 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_uart_unittest.h"
+#include "sw/device/lib/dif/dif_uart.h"
 
-namespace dif_uart_unittest {
+#include "gtest/gtest.h"
+#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/testing/mock_mmio.h"
+
+#include "uart_regs.h"  // Generated.
+
+namespace dif_uart_autogen_unittest {
 namespace {
-using testing::Eq;
+using ::mock_mmio::MmioTest;
+using ::mock_mmio::MockDevice;
+using ::testing::Test;
+
+class UartTest : public Test, public MmioTest {
+ protected:
+  dif_uart_t uart_ = {.base_addr = dev().region()};
+};
+
+using ::testing::Eq;
 
 class IrqGetStateTest : public UartTest {};
 
@@ -270,4 +285,4 @@ TEST_F(IrqRestoreAllTest, SuccessAllDisabled) {
 }
 
 }  // namespace
-}  // namespace dif_uart_unittest
+}  // namespace dif_uart_autogen_unittest
