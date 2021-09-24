@@ -42,6 +42,17 @@ typedef enum dif_result {
    * disabled.
    */
   kDifLocked = 3,
+  /**
+   * The operation failed because the IP is processing an operation, and will
+   * finish in some amount of time. A function that returns this error may be
+   * retried at any time, and is guaranteed to have not produced any side
+   * effects.
+   */
+  kDifIpBusy = 4,
+  /**
+   * Indicates that the Ip's FIFO (if it has one or more of) is full.
+   */
+  kDifIpFifoFull = 5,
 } dif_result_t;
 
 /**
