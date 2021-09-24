@@ -52,7 +52,7 @@ impl Uart for UltradebugUart {
         // Note: my recollection is that there is no way to set a read timeout
         // for the UART.  If there are no characters ready, the FTDI device
         // simply returns a zero-length read.
-        Ok(self.read(buf)?)
+        self.read(buf)
     }
 
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
