@@ -35,7 +35,7 @@ module prim_count import prim_count_pkg::*; #(
 );
 
   // if output selects downcount, it MUST be the cross count style
-  `ASSERT_INIT(CntStyleMatch_A, OutSelDnCnt ? CntStyle == CrossCnt : 1'b1 )
+  `ASSERT_INIT(CntStyleMatch_A, OutSelDnCnt ? CntStyle == CrossCnt : 1'b1)
 
   localparam int CntCopies = (CntStyle == DupCnt) ? 2 : 1;
 
@@ -100,7 +100,7 @@ module prim_count import prim_count_pkg::*; #(
         down_cnt <= '0;
       end else if (set_i) begin
         down_cnt <= set_cnt_i;
-      end else if (en_i && down_cnt >'0) begin
+      end else if (en_i && down_cnt > '0) begin
         down_cnt <= down_cnt - 1'b1;
       end
     end
@@ -110,11 +110,20 @@ module prim_count import prim_count_pkg::*; #(
     assign cnt_o = OutSelDnCnt ? down_cnt : up_cnt_q[0];
     assign err   = max_val != sum | msb;
 
+    // TODO: check if it covers counter overflow.
+    `ASSERT(CrossCntErrForward_A,
+            (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != max_val) |-> err_o)
+    `ASSERT(CrossCntErrBackward_A, err_o |->
+            (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != max_val))
+
   end else if (CntStyle == DupCnt) begin : gen_dup_cnt_hardening
     // duplicate count compare is always valid
     assign cmp_valid = CmpValid;
     assign cnt_o = up_cnt_q[0];
     assign err   = (up_cnt_q[0] != up_cnt_q[1]);
+
+    `ASSERT(DupCntErrForward_A,  up_cnt_q[0] != up_cnt_q[1] |-> err_o)
+    `ASSERT(DupCntErrBackward_A, err_o |-> up_cnt_q[0] != up_cnt_q[1])
   end
 
   // if the compare flag is not a valid enum, treat it like an error.
@@ -122,6 +131,6 @@ module prim_count import prim_count_pkg::*; #(
                  (cmp_valid == CmpInvalid) ?  '0  : 1'b1;
 
   // Clear and set should not be seen at the same time
-  `ASSERT(SimulClrSet_A, clr_i |-> !set_i)
+  `ASSERT(SimulClrSet_A, clr_i || set_i |-> clr_i != set_i)
 
 endmodule // keymgr_cnt
