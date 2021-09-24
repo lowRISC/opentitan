@@ -303,8 +303,30 @@ sw_lib_dif_hmac = declare_dependency(
     dependencies: [
       sw_lib_bitfield,
       sw_lib_mmio,
+      sw_lib_dif_autogen_hmac,
     ],
   )
+)
+
+test('dif_hmac_unittest', executable(
+    'dif_hmac_unittest',
+    sources: [
+      #'dif_hmac_unittest.cc',
+      'autogen/dif_hmac_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/base/memory.c',
+      meson.source_root() / 'sw/device/lib/dif/dif_hmac.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_hmac_autogen.c',
+      hw_ip_hmac_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )
 
 # KMAC device DIF library

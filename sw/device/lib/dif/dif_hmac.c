@@ -39,160 +39,23 @@ static uint32_t get_fifo_available_space(const dif_hmac_t *hmac) {
   return HMAC_MSG_FIFO_SIZE_WORDS - get_fifo_entry_count(hmac);
 }
 
-/**
- * Convert from a `dif_hmac_interrupt_t` to the appropriate bit index.
- * INTR_STATE, INTR_ENABLE, and INTR_TEST registers have the same bit offset.
- */
-static bool irq_bit_offset_get(dif_hmac_interrupt_t irq_type,
-                               uint8_t *offset_out) {
-  ptrdiff_t offset;
-  switch (irq_type) {
-    case kDifHmacInterruptHmacDone:
-      offset = HMAC_INTR_COMMON_HMAC_DONE_BIT;
-      break;
-    case kDifHmacInterruptFifoEmpty:
-      offset = HMAC_INTR_COMMON_FIFO_EMPTY_BIT;
-      break;
-    case kDifHmacInterruptHmacErr:
-      offset = HMAC_INTR_COMMON_HMAC_ERR_BIT;
-      break;
-    default:
-      return false;
+dif_result_t dif_hmac_init(mmio_region_t base_addr, dif_hmac_t *hmac) {
+  if (hmac == NULL) {
+    return kDifBadArg;
   }
 
-  *offset_out = offset;
-
-  return true;
-}
-
-dif_hmac_result_t dif_hmac_init(const dif_hmac_config_t *config,
-                                dif_hmac_t *hmac) {
-  // Basic checks on parameters. In `kDifHmacModeHmac` mode a key is required.
-  if (config == NULL || hmac == NULL) {
-    return kDifHmacBadArg;
-  }
-
-  hmac->base_addr = config->base_addr;
+  hmac->base_addr = base_addr;
 
   // Clear the config, stopping the SHA engine.
-  mmio_region_write32(config->base_addr, HMAC_CFG_REG_OFFSET, 0);
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, 0);
 
   // Clear INTER.
-  mmio_region_write32(config->base_addr, HMAC_INTR_STATE_REG_OFFSET,
+  mmio_region_write32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
                       (1 << HMAC_INTR_STATE_HMAC_DONE_BIT) |
                           (1 << HMAC_INTR_STATE_FIFO_EMPTY_BIT) |
                           (1 << HMAC_INTR_STATE_HMAC_ERR_BIT));
 
-  return kDifHmacOk;
-}
-
-dif_hmac_result_t dif_hmac_irq_state_get(const dif_hmac_t *hmac,
-                                         dif_hmac_interrupt_t irq_type,
-                                         dif_hmac_enable_t *state) {
-  if (hmac == NULL || state == NULL) {
-    return kDifHmacBadArg;
-  }
-
-  uint8_t offset;
-  if (!irq_bit_offset_get(irq_type, &offset)) {
-    return kDifHmacError;
-  }
-
-  // Get the interrupt state.
-  bool enabled = mmio_region_get_bit32(hmac->base_addr,
-                                       HMAC_INTR_STATE_REG_OFFSET, offset);
-  *state = (enabled ? kDifHmacEnable : kDifHmacDisable);
-
-  return kDifHmacOk;
-}
-
-dif_hmac_result_t dif_hmac_irq_state_clear(const dif_hmac_t *hmac,
-                                           dif_hmac_interrupt_t irq_type) {
-  if (hmac == NULL) {
-    return kDifHmacBadArg;
-  }
-
-  uint8_t offset;
-  if (!irq_bit_offset_get(irq_type, &offset)) {
-    return kDifHmacError;
-  }
-
-  // Clear the interrupt state.
-  mmio_region_write_only_set_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
-                                   offset);
-
-  return kDifHmacOk;
-}
-
-dif_hmac_result_t dif_hmac_irqs_disable(const dif_hmac_t *hmac,
-                                        uint32_t *state) {
-  if (hmac == NULL) {
-    return kDifHmacBadArg;
-  }
-
-  // Pass the interrupt state back to the caller.
-  if (state != NULL) {
-    *state = mmio_region_read32(hmac->base_addr, HMAC_INTR_ENABLE_REG_OFFSET);
-  }
-
-  // Disable all interrupts.
-  mmio_region_write32(hmac->base_addr, HMAC_INTR_ENABLE_REG_OFFSET, 0u);
-
-  return kDifHmacOk;
-}
-
-dif_hmac_result_t dif_hmac_irqs_restore(const dif_hmac_t *hmac,
-                                        uint32_t state) {
-  if (hmac == NULL) {
-    return kDifHmacBadArg;
-  }
-
-  // Restore interrupt state.
-  mmio_region_write32(hmac->base_addr, HMAC_INTR_ENABLE_REG_OFFSET, state);
-
-  return kDifHmacOk;
-}
-
-dif_hmac_result_t dif_hmac_irq_control(const dif_hmac_t *hmac,
-                                       dif_hmac_interrupt_t irq_type,
-                                       dif_hmac_enable_t enable) {
-  if (hmac == NULL) {
-    return kDifHmacBadArg;
-  }
-
-  uint8_t offset;
-  if (!irq_bit_offset_get(irq_type, &offset)) {
-    return kDifHmacError;
-  }
-
-  // Enable/Disable interrupt.
-  if (enable == kDifHmacEnable) {
-    mmio_region_nonatomic_set_bit32(hmac->base_addr,
-                                    HMAC_INTR_ENABLE_REG_OFFSET, offset);
-  } else {
-    mmio_region_nonatomic_clear_bit32(hmac->base_addr,
-                                      HMAC_INTR_ENABLE_REG_OFFSET, offset);
-  }
-
-  return kDifHmacOk;
-}
-
-dif_hmac_result_t dif_hmac_irq_force(const dif_hmac_t *hmac,
-                                     dif_hmac_interrupt_t irq_type) {
-  if (hmac == NULL) {
-    return kDifHmacBadArg;
-  }
-
-  uint8_t offset;
-  if (!irq_bit_offset_get(irq_type, &offset)) {
-    return kDifHmacError;
-  }
-
-  // Force the requested interrupt.
-  mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_INTR_TEST_REG_OFFSET,
-                                  offset);
-
-  return kDifHmacOk;
+  return kDifOk;
 }
 
 /**
@@ -204,14 +67,14 @@ dif_hmac_result_t dif_hmac_irq_force(const dif_hmac_t *hmac,
  * The implementation here is careful to only update `*device_config` once it
  * has calculated the entire value for the register, rather than gradually
  * updating it early. The value of `*device_config` is only updated if the
- * function returns #kDifHmacOk.
+ * function returns #kDifOk.
  *
  * @param[inout] device_config HMAC CFG register value to be updated;
  * @param config A per-transaction configuration.
- * @returns #kDifHmacError if the config is invalid, #kDifHmacOk if
+ * @returns #kDifError if the config is invalid, #kDifOk if
  * `*device_config` was sucessfully updated.
  */
-static dif_hmac_result_t dif_hmac_calculate_device_config_value(
+static dif_result_t dif_hmac_calculate_device_config_value(
     uint32_t *device_config, const dif_hmac_transaction_t config) {
   // Set the byte-order of the input message.
   bool swap_message_endianness;
@@ -223,7 +86,7 @@ static dif_hmac_result_t dif_hmac_calculate_device_config_value(
       swap_message_endianness = true;
       break;
     default:
-      return kDifHmacError;
+      return kDifError;
   }
 
   // Set the byte-order of the digest.
@@ -236,24 +99,24 @@ static dif_hmac_result_t dif_hmac_calculate_device_config_value(
       swap_digest_endianness = true;
       break;
     default:
-      return kDifHmacError;
+      return kDifError;
   }
 
   // `*device_config` must only be updated after the two switch statements,
-  // because they can return #kDifHmacError.
+  // because they can return #kDifError.
   *device_config = bitfield_bit32_write(
       *device_config, HMAC_CFG_ENDIAN_SWAP_BIT, swap_message_endianness);
   *device_config = bitfield_bit32_write(
       *device_config, HMAC_CFG_DIGEST_SWAP_BIT, swap_digest_endianness);
 
-  return kDifHmacOk;
+  return kDifOk;
 }
 
-dif_hmac_result_t dif_hmac_mode_hmac_start(
-    const dif_hmac_t *hmac, const uint8_t *key,
-    const dif_hmac_transaction_t config) {
+dif_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
+                                      const uint8_t *key,
+                                      const dif_hmac_transaction_t config) {
   if (hmac == NULL || key == NULL) {
-    return kDifHmacBadArg;
+    return kDifBadArg;
   }
 
   // Set the HMAC key.
@@ -266,9 +129,9 @@ dif_hmac_result_t dif_hmac_mode_hmac_start(
       mmio_region_read32(hmac->base_addr, HMAC_CFG_REG_OFFSET);
 
   // Set the byte-order of the input message and the digest.
-  dif_hmac_result_t update_result =
+  dif_result_t update_result =
       dif_hmac_calculate_device_config_value(&device_config, config);
-  if (update_result != kDifHmacOk) {
+  if (update_result != kDifOk) {
     return update_result;
   }
 
@@ -282,13 +145,13 @@ dif_hmac_result_t dif_hmac_mode_hmac_start(
   // Begin HMAC operation.
   mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CMD_REG_OFFSET,
                                   HMAC_CMD_HASH_START_BIT);
-  return kDifHmacOk;
+  return kDifOk;
 }
 
-dif_hmac_result_t dif_hmac_mode_sha256_start(
-    const dif_hmac_t *hmac, const dif_hmac_transaction_t config) {
+dif_result_t dif_hmac_mode_sha256_start(const dif_hmac_t *hmac,
+                                        const dif_hmac_transaction_t config) {
   if (hmac == NULL) {
-    return kDifHmacBadArg;
+    return kDifBadArg;
   }
 
   // TODO: Clear HMAC Key? Write Zeroed HMAC Key?
@@ -298,9 +161,9 @@ dif_hmac_result_t dif_hmac_mode_sha256_start(
       mmio_region_read32(hmac->base_addr, HMAC_CFG_REG_OFFSET);
 
   // Set the byte-order of the input message and the digest.
-  dif_hmac_result_t update_result =
+  dif_result_t update_result =
       dif_hmac_calculate_device_config_value(&device_config, config);
-  if (update_result != kDifHmacOk) {
+  if (update_result != kDifOk) {
     return update_result;
   }
 
@@ -317,14 +180,13 @@ dif_hmac_result_t dif_hmac_mode_sha256_start(
   mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CMD_REG_OFFSET,
                                   HMAC_CMD_HASH_START_BIT);
 
-  return kDifHmacOk;
+  return kDifOk;
 }
 
-dif_hmac_fifo_result_t dif_hmac_fifo_push(const dif_hmac_t *hmac,
-                                          const void *data, size_t len,
-                                          size_t *bytes_sent) {
+dif_result_t dif_hmac_fifo_push(const dif_hmac_t *hmac, const void *data,
+                                size_t len, size_t *bytes_sent) {
   if (hmac == NULL || data == NULL) {
-    return kDifHmacFifoBadArg;
+    return kDifBadArg;
   }
 
   const uint8_t *data_sent = (const uint8_t *)data;
@@ -355,27 +217,27 @@ dif_hmac_fifo_result_t dif_hmac_fifo_push(const dif_hmac_t *hmac,
   }
 
   if (bytes_remaining > 0) {
-    return kDifHmacFifoFull;
+    return kDifIpFifoFull;
   }
 
-  return kDifHmacFifoOk;
+  return kDifOk;
 }
 
-dif_hmac_result_t dif_hmac_fifo_count_entries(const dif_hmac_t *hmac,
-                                              uint32_t *num_entries) {
+dif_result_t dif_hmac_fifo_count_entries(const dif_hmac_t *hmac,
+                                         uint32_t *num_entries) {
   if (hmac == NULL || num_entries == NULL) {
-    return kDifHmacBadArg;
+    return kDifBadArg;
   }
 
   *num_entries = get_fifo_entry_count(hmac);
 
-  return kDifHmacOk;
+  return kDifOk;
 }
 
-dif_hmac_result_t dif_hmac_get_message_length(const dif_hmac_t *hmac,
-                                              uint64_t *msg_len) {
+dif_result_t dif_hmac_get_message_length(const dif_hmac_t *hmac,
+                                         uint64_t *msg_len) {
   if (hmac == NULL || msg_len == NULL) {
-    return kDifHmacBadArg;
+    return kDifBadArg;
   }
 
   uint64_t msg_lower =
@@ -385,23 +247,23 @@ dif_hmac_result_t dif_hmac_get_message_length(const dif_hmac_t *hmac,
 
   *msg_len = (msg_upper << 32) | msg_lower;
 
-  return kDifHmacOk;
+  return kDifOk;
 }
 
-dif_hmac_result_t dif_hmac_process(const dif_hmac_t *hmac) {
+dif_result_t dif_hmac_process(const dif_hmac_t *hmac) {
   if (hmac == NULL) {
-    return kDifHmacBadArg;
+    return kDifBadArg;
   }
 
   mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CMD_REG_OFFSET,
                                   HMAC_CMD_HASH_PROCESS_BIT);
-  return kDifHmacOk;
+  return kDifOk;
 }
 
-dif_hmac_digest_result_t dif_hmac_finish(const dif_hmac_t *hmac,
-                                         dif_hmac_digest_t *digest) {
+dif_result_t dif_hmac_finish(const dif_hmac_t *hmac,
+                             dif_hmac_digest_t *digest) {
   if (hmac == NULL || digest == NULL) {
-    return kDifHmacDigestBadArg;
+    return kDifBadArg;
   }
 
   // Check if hmac_done is asserted.
@@ -413,7 +275,7 @@ dif_hmac_digest_result_t dif_hmac_finish(const dif_hmac_t *hmac,
     mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
                                     HMAC_INTR_STATE_HMAC_DONE_BIT);
   } else {
-    return kDifHmacDigestProcessing;
+    return kDifIpBusy;
   }
 
   // Read the digest.
@@ -432,16 +294,15 @@ dif_hmac_digest_result_t dif_hmac_finish(const dif_hmac_t *hmac,
       bitfield_bit32_write(device_config, HMAC_CFG_HMAC_EN_BIT, false);
   mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, device_config);
 
-  return kDifHmacDigestOk;
+  return kDifOk;
 }
 
-dif_hmac_result_t dif_hmac_wipe_secret(const dif_hmac_t *hmac,
-                                       uint32_t entropy) {
+dif_result_t dif_hmac_wipe_secret(const dif_hmac_t *hmac, uint32_t entropy) {
   if (hmac == NULL) {
-    return kDifHmacBadArg;
+    return kDifBadArg;
   }
 
   mmio_region_write32(hmac->base_addr, HMAC_WIPE_SECRET_REG_OFFSET, entropy);
 
-  return kDifHmacOk;
+  return kDifOk;
 }
