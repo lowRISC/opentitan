@@ -401,9 +401,19 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_KMAC_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for otbn in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_OTBN_BASE_ADDR = 32'h41130000;
+
+  /**
+   * Peripheral size in bytes for otbn in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_OTBN_SIZE_BYTES = 32'h10000;
+
+  /**
    * Peripheral base address for keymgr in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_KEYMGR_BASE_ADDR = 32'h41130000;
+  parameter int unsigned TOP_EARLGREY_KEYMGR_BASE_ADDR = 32'h41140000;
 
   /**
    * Peripheral size in bytes for keymgr in top earlgrey.
@@ -469,16 +479,6 @@ package top_earlgrey_pkg;
    * Peripheral size in bytes for ram device on sram_ctrl_main in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h20000;
-
-  /**
-   * Peripheral base address for otbn in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_OTBN_BASE_ADDR = 32'h411D0000;
-
-  /**
-   * Peripheral size in bytes for otbn in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_OTBN_SIZE_BYTES = 32'h10000;
 
   /**
    * Peripheral base address for regs device on rom_ctrl in top earlgrey.
