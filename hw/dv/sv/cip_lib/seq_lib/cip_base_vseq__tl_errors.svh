@@ -273,31 +273,7 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
         run_csr_vseq("rw");
       end
       begin
-        bit [BUS_AW-1:0] addr;
-        bit [BUS_DW-1:0] data = $urandom;
-        bit              write;
-        tl_intg_err_e    tl_intg_err_type;
-        bit              has_mem = cfg.ral_models[ral_name].mem_ranges.size > 0;
-
-        #($urandom_range(10, 1000) * 1ns);
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_intg_err_type,
-                                           tl_intg_err_type != TlIntgErrNone;)
-        // data integrity doesn't apply to read
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(write,
-            tl_intg_err_type inside {TlIntgErrData, TlIntgErrBoth} -> write == 1;)
-
-        randcase
-          // any address
-          1: addr = $urandom;
-          // mem address
-          has_mem: begin
-            int mem_idx = $urandom_range(0, cfg.ral_models[ral_name].mem_ranges.size - 1);
-            addr = $urandom_range(cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr,
-                                  cfg.ral_models[ral_name].mem_ranges[mem_idx].end_addr);
-          end
-        endcase
-        tl_access(.addr($urandom), .write(write), .data(data),
-                  .tl_intg_err_type(tl_intg_err_type));
+        issue_tl_access_w_intg_err(ral_name);
 
         // Check design's response to tl_intg_error.
         // This virtual task verifies the fatal alert is firing continuously and verifies integrity
@@ -309,6 +285,34 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
     // issue hard reset for fatal alert to recover
     dut_init("HARD");
   end
+endtask
+
+virtual task issue_tl_access_w_intg_err(string ral_name);
+  bit [BUS_AW-1:0] addr;
+  bit [BUS_DW-1:0] data = $urandom;
+  bit              write;
+  tl_intg_err_e    tl_intg_err_type;
+  bit              has_mem = cfg.ral_models[ral_name].mem_ranges.size > 0;
+
+  #($urandom_range(10, 1000) * 1ns);
+  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_intg_err_type,
+                                     tl_intg_err_type != TlIntgErrNone;)
+  // data integrity doesn't apply to read
+  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(write,
+      tl_intg_err_type inside {TlIntgErrData, TlIntgErrBoth} -> write == 1;)
+
+  randcase
+    // any address
+    1: addr = $urandom;
+    // mem address
+    has_mem: begin
+      int mem_idx = $urandom_range(0, cfg.ral_models[ral_name].mem_ranges.size - 1);
+      addr = $urandom_range(cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr,
+                            cfg.ral_models[ral_name].mem_ranges[mem_idx].end_addr);
+    end
+  endcase
+  tl_access(.addr($urandom), .write(write), .data(data),
+            .tl_intg_err_type(tl_intg_err_type));
 endtask
 
 virtual task check_tl_intg_error_response();
