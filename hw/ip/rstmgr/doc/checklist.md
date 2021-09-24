@@ -131,7 +131,7 @@ Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Done        |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
-Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
+Review        | [TESTPLAN_REVIEWED][]                 | Done        |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Exception: power, performance
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 

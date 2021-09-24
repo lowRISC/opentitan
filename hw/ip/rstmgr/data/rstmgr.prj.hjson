@@ -13,7 +13,7 @@
         version:            "0.1",
         life_stage:         "L1",
         design_stage:       "D2",
-        verification_stage: "V0", // this module is not verified at the block level
+        verification_stage: "V1",
         dif_stage:          "S1",
       }
     ]
