@@ -82,8 +82,7 @@ Some of the most commonly used tasks / functions are as follows:
 Other sequences follow:
 * `rstmgr_smoke_vseq` tests the rstmgr through software initiated low power, peripheral reset, ndm reset, and software initiated resets.
 * `rstmgr_reset_stretcher_vseq` tests the `resets_o.rst_por_aon_n[0]` output is asserted after 32 stable cycles of `ast_i.aon_pok`.
-* `rstmgr_sw_rst_regen_clear_once_vseq` tests that the `sw_rst_regen` CSR is such that a bit cannot be flipped back to 1.
-* `rstmgr_sw_rst_vseq` tests the functionality provided by the `sw_rst_regen` and `sw_rst_ctrl_n`.
+* `rstmgr_sw_rst_vseq` tests the functionality provided by the `sw_rst_regwen` and `sw_rst_ctrl_n`.
 * `rstmgr_reset_info_vseq` tests the `reset_info` CSR contents correspond to the different resets.
 * `rstmgr_cpu_info_vseq` tests the `cpu_info` CSR contents capture to the `cpu_dump_i` present at the time of a reset.
 * `rstmgr_alert_info_vseq` tests the `alert_info` CSR contents capture to the `alert_dump_i` present at the time of a reset.
@@ -102,7 +101,7 @@ The partition between checks done in the scoreboard is not fixed.
 #### Scoreboard
 The `rstmgr_scoreboard` is primarily used for end to end checking.
 The following checks are performed:
-* The software controlled peripheral resets are asserted based on both `sw_rst_regen` and `sw_rst_ctrl_n` CSRs when not set by `rst_lc_reg`, `rst_sys_req`, or por.
+* The software controlled peripheral resets are asserted based on both `sw_rst_regwen` and `sw_rst_ctrl_n` CSRs when not set by `rst_lc_reg`, `rst_sys_req`, or por.
 * The `cpu_info` CSRs record the expected values based on the inputs on a system reset.
 * The `alert_info` CSRs record the expected values based on the inputs on a system reset.
 * The `reset_info` CSR records the expected reset cause.
@@ -120,6 +119,8 @@ The following checks are performed:
   Checked via SVA in `hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`.
 * The scan reset `scan_rst_ni` qualified by `scanmode_i` triggers all cascaded resets that `por_n_i` does.
   Checked via SVA in `hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`.
+* The `alert` and `cpu_info_attr` indicate the number of 32-bit words needed to capture their inputs.
+  Checked via SVA in `hw/ip/rstmgr/dv/sva/rstmgr_attrs_sva_if.sv`.
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.

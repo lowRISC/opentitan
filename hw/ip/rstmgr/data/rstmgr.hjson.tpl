@@ -278,8 +278,6 @@
             resval: "1",
           },
         ],
-        tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-               "excl:CsrAllTests:CsrExclWrite"]
       }
     }
 
@@ -309,6 +307,4 @@
       }
     }
   ]
-
-
 }

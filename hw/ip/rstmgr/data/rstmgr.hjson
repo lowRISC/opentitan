@@ -219,7 +219,7 @@
 
     { multireg: {
         cname: "RSTMGR_SW_RST",
-        name:  "SW_RST_REGEN",
+        name:  "SW_RST_REGWEN",
         desc:  '''
           Register write enable for software controllable resets.
           When a particular bit value is 0, the corresponding value in !!SW_RST_CTRL_N can no longer be changed.
@@ -236,8 +236,6 @@
             resval: "1",
           },
         ],
-        tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-               "excl:CsrAllTests:CsrExclWrite"]
       }
     }
 
@@ -267,6 +265,4 @@
       }
     }
   ]
-
-
 }

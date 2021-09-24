@@ -52,38 +52,26 @@
       tests: ["rstmgr_por_stretcher"]
     }
     {
-      name: sw_rst_regen_clear_once
-      desc: '''Test that `sw_rst_regen` cannot change a bit to 1.
-
-            Once a bit in `sw_rst_regen` is set to 0 there is no way to change
-            it back to 1.
-
-            This should be tested in the common CSR tests.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
       name: sw_rst
       desc: '''Test the sw_rst functionality.
 
-            The `sw_rst_regen` and `sw_rst_ctrl_n` CSRs control the specific
+            The `sw_rst_regwen` and `sw_rst_ctrl_n` CSRs control the specific
             reset outputs to peripherals in the following sequence:
-            - Test all `sw_rst_ctrl_n` bits when `sw_rst_regen` is all 1's.
-            - Clear each `sw_rst_regen` bit to verify the corresponding resets
+            - Test all `sw_rst_ctrl_n` bits when `sw_rst_regwen` is all 1's.
+            - Clear each `sw_rst_regwen` bit to verify the corresponding resets
               are masked.
 
             **Stimulus**:
-            - Write `sw_rst_ctrl_n` CSR with random values when regen is all 1's.
-            - Clear each `sw_rst_regen` bit and write `sw_rst_ctrl_n` CSR with
+            - Write `sw_rst_ctrl_n` CSR with random values when regwen is all 1's.
+            - Clear each `sw_rst_regwen` bit and write `sw_rst_ctrl_n` CSR with
               all 0's.
-            - After each regen bit check set `sw_rst_ctrl_n` to all 1's.
+            - After each regwen bit check set `sw_rst_ctrl_n` to all 1's.
 
             **Checks**:
             - Check that the zero bits in `sw_rst_ctrl_n` enabled by
-              `sw_rst_regen` cause the respective resets to become active.
+              `sw_rst_regwen` cause the respective resets to become active.
             - Check that the zero bits in `sw_rst_ctrl_n` disabled by
-              `sw_rst_regen` have no effect on resets.
+              `sw_rst_regwen` have no effect on resets.
             - Check the `reset_info`, `cpu_info`, and `alert_info` CSRs are not modified.
             '''
       milestone: V2
@@ -213,7 +201,7 @@
       name: sw_rst_cg
       desc: '''Collects coverage on the software reset functionality.
 
-            Each bit of the pair `sw_rst_regen` and `sw_rst_ctrl_n` CSRs
+            Each bit of the pair `sw_rst_regwen` and `sw_rst_ctrl_n` CSRs
             independently control if the corresponding output reset is
             asserted (active low).
             This collects one coverpoint for each, and their cross.
