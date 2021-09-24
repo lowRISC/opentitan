@@ -157,7 +157,7 @@ A preliminary investigation of DTR transfer mode suggests that proper support fo
 A SPI command consists of at least one segment. Each segment has a different speed (number of active SD lines), direction and length.
 For example a Quad SPI read transaction consists of 4 segments:
 1. A single byte instruction transmitted at *standard* data rate
-2. A three or four byte address transmitted at *quad* data rate
+2. A three or four byte address transmitted at *Quad* data rate
 3. A number of dummy cycles (no data transmitted or received)
 4. The desired data, received by SPI_HOST at *Quad* data rate
 
@@ -297,17 +297,27 @@ For example, if the TL-UL bus is operating at 100MHz, a 200MHz SPI core clock ca
 
 Since some peripheral devices attached to the same SPI_HOST may require different clock frequencies, there is also the option to divide the core clock by an additional factor when dealing with slower peripherals.
 
-$$T_\textrm{\textrm{SCK},0}=\frac{1}{2}\frac{T_\textrm{core}}{\textrm{CONFIGOPTS_0.CLKDIV}+1}$$
+$$T_{\textrm{SCK},0}=\frac{1}{2}\frac{T_\textrm{core}}{\textrm{CONFIGOPTS.CLKDIV}+1}$$
 
 Alternatively, this clock-divide feature can also be used to entirely bypass the need for an independent core clock.
 Instead the core can be driven by the TL-UL bus clock, and the SCK period can be adjusted using the {{< regref CONFIGOPTS_0.CLKDIV_0 >}} setting.
 
-#### Chip-select timing control
+#### Chip-select Timing Control
 
 Typically the CSB line is automatically deasserted after the last edge of SCK.
-However,  by asserting {{< regref "COMMAND.CSAAT" >}} when issuing a particular command, one can instruct the core to hold CSB low indefinitely after the last clock edge.
-This is useful for merging two adjacent commands together, to create very long commands such as continuous read operations.
-The CSB line can then be deasserted by either issuing another command without the {{< regref "COMMAND.CSAAT" >}} field, issuing a command to a different device (after changing the a {{< regref "CSID" >}} register), or simply resetting the core FSM via the {{< regref "CONTROL.RST">}} register.
+However, by asserting {{< regref "COMMAND.CSAAT" >}} when issuing a particular command, one can instruct the core to hold CSB low indefinitely after the last clock edge.
+This is useful for merging two adjacent command segments together, to create more complex commands, such as flash Quad read commands which require a mix of segments with different speeds and directions.
+The CSB line can then be deasserted by either issuing another command without the {{< regref "COMMAND.CSAAT" >}} field, issuing a command to a different device (after changing the a {{< regref "CSID" >}} register), or simply resetting the core FSM via the {{< regref "CONTROL.RST" >}} register.
+
+To avoid spurious clock signals, changes to the {{< regref "CONFIGOPTS_0" >}} parameters take effect only at the end of a command segment and only when all `csb` lines are deasserted.
+There are two cases to consider:
+1. Configuration changes detected and CSAAT=0 for the previous segment:
+This is when configuration changes are typically expected, and in this case, the SPI_HOST waits for the previous segment to complete before moving changing the configuration.
+The SPI_HOST ensures that all `csb` lines are held idle long enough to satisfy the configuration requirements both *before* and *after* the change.
+2. CSAAT = 1 for the previous segment:
+Configuration changes are not typically expected after CSAAT segments, and require special treatment as the IP does not usually return the `csb` lines to the idle/inactive state at this time.
+In such cases, the SPI_HOST IP closes out the ongoing transaction, ignoring CSAAT, and the configuration is then applied once the SPI_HOST has returned to the idle state.
+The next segment can then proceed, even though the remote device will likely see the next segment as the start of a new transaction (as opposed to a continuation of the previous transaction), because of the brief intervening idle pulse.
 
 Most devices require at least one-half SCK clock-cycle between either edge of CSB and the nearest SCK edge.
 However, some devices may require more timing margin and so the SPI_HOST core offers some configuration registers for controlling the timing of the CSB edges when operating under automatic control.
@@ -340,6 +350,48 @@ This time delay is a half SCK cycle by default but can be extended to as long as
 {{< /wavejson >}}
 
 These settings are all minimum bounds, and delays in the FSM implementation may create more margin in each of these timing constraints.
+
+### Idle Time Delays When Changing Configurations
+
+It is important that the configuration changes are applied while `csb` is high to avoid sending spurious `sck` events to any devices.
+For example, if two devices have different requirements for `CPOL`, the clock polarity should not toggle except when `csb` is high (inactive) for all devices.
+
+Furthermore, `csb` should be remain high for the minimum idle time both before and after the configuration update.
+For example, consider a SPI_HOST attached to two devices each with different requirements for the clock divider, clock polarity, and idle time.
+Consider a configuration where total idle time (as determined by the {{< regref "CONFIGOPTS_0.CLKDIV_0" >}} and {{< regref "CONFIGOPTS_0.CSNIDLE_0" >}} multi-registers) works out to 9 idle clocks for the first device, and 4 clocks for second device.
+In this scenario then, when swapping from the first device to the second, the SPI_HOST IP will only swap the clock polarity when the first `csb` line, `csb[0]`, has been high for at least 9 clocks, and will continue to hold the second `csb` line, `csb[1]`, high for 4 additional clocks before starting the next transaction.
+
+{{< wavejson >}}
+{signal: [
+  {name: 'clk', wave: 'p..............'},
+  ["Requested Config",
+   {name: 'Configuration ID',  wave: '3.4............', data: ["CSID=0", "CSID=1"]},
+   {name: 'CPOL',              wave: '2.2............', data: ["0", "1"]},
+   {name: 'CLKDIV',            wave: '2.2............', data: ["2", "1"]},
+   {name: 'CSNIDLE',           wave: '2.2............', data: ["2", "1"]},
+   {name: 'Min. Idle cycles', wave: '2.2............', data: ["9", "4"]},
+  ],
+  ["Active Config",
+   {name: 'Configuration ID',  wave: '3.........4....', data: ["CSID=0", "CSID=1"]},
+   {name: 'CPOL',              wave: '2.........2....', data: ["0", "1"]},
+   {name: 'CLKDIV',            wave: '2.........2....', data: ["2", "1"]},
+   {name: 'CSNIDLE',           wave: '2.........2....', data: ["2", "1"]},
+   {name: 'Min. Idle cycles', wave: '2.........2....', data: ["9", "4"]},
+  ],
+   {name: 'csb[0]',                     wave: '01.............',
+                                        node: '.A........B....'},
+   {name: 'csb[1]',                     wave: '1.............0',
+                                        node: '..........C...D'},
+   {name: 'configuration update event', wave: '1.........H....'}
+],
+  edge: ["A<->B min. 9 cycles", "C<->D min. 4 cycles"],
+  head: {text: "Extended Idle Time During Configuration Changes", tock: 1}
+}
+{{< /wavejson >}}
+
+This additional idle time applies not only when switching between devices but when making any changes to the configuration for most recently used device.
+For instance, even in a SPI_HOST configured for one device, changes to {{< regref "CONFIGOPTS_0" >}}, will trigger this extended idle time behavior to ensure that the change in configuration only occurs in the middle of a long idle period.
+
 
 ### Special Command Fields
 
@@ -502,6 +554,13 @@ This means that when copying bytes into {{< regref "DATA" >}} from unaligned fir
 Full-word instructions should however be used whenever possible, because each write consumes a full word of data in the TX FIFO regardless of the instruction size.
 Smaller writes will thus make inefficient use of the TX FIFO.
 
+Filtering out disabled bytes consumes clock cycles in the data pipeline, and can create bubbles in the transmission of SPI_DATA.
+In the worst case, such bubbles can also be interpreted as transient underflow conditions in the TX FIFO, and could trigger spurious interrupts.
+The longest delays occur whenever a word is loaded into the TX FIFO with only one byte enabled.
+
+Zero-byte writes to the {{< regref "DATA" >}} window are not expected.
+Should such transactions ever occur in verification, they will trigger a block level assertion.
+
 The RX FIFO has no special provisions for packing received data in any unaligned fashion.
 Depending on the ByteOrder parameter, the first byte received is always packed into either the most- or least-significant byte read from the {{< regref "DATA" >}} memory window.
 
@@ -513,9 +572,7 @@ This feature is entirely controlled by intermodule signals `passthrough_i` and `
 If `passthrough_i.passthrough_en` is asserted the SPI_HOST peripheral bus signals reflect the corresponding signals in the `passthrough_i` structure.
 Otherwise, the peripheral signals are controlled by the SPI_HOST FSM and the internal shift register.
 
-
-
-## Interrupt aggregation
+## Interrupt Aggregation
 
 In order to reduce the total number of interrupts in the system, the SPI_HOST has only two interrupt lines: `error` and `spi_event`.
 Within these two interrupt classes, there are a number of conditions which can trigger them.
@@ -547,6 +604,14 @@ They need to be enabled by writing to the corresponding field in {{< regref "EVE
 The SPI event interrupt is signaled only when the IP enters the corresponding state.
 For example if an interrupt is requested when the TX FIFO is empty, the IP will only generate one interrupt when the last data word is transmitted from the TX FIFO.
 In this case, no new interrupts will be created until more data has been added to the FIFO, and all of it has been transmitted.
+
+#### Stall Conditions
+
+The SPI_HOST IP will temporarily suspend operations if it detects a potential overflow of the RX FIFO or an attempted underflow of the TX FIFO.
+During a stall event, `csb` remains active, and there are no `sck` clock ticks until there is more data to transmit or there is some space to receive more data.
+The `RXSTALL` and `TXSTALL` status bits are meant to inform firmware of such halts.
+Due to implementation details the SPI_HOST IP will also pause, and signal a stall condition, if there are delays related to packing or unpacking the SPI_DATA into 32-bit words.
+The exact conditions for these *transient* stall conditions are implementation dependent, and described in detail in [the Design Details section](#bubbles-in-the-data-pipeline).
 
 ### Error Interrupt Conditions
 
