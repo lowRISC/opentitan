@@ -600,7 +600,7 @@ TEST_F(WakeupRecording, GetReason) {
     dif_pwrmgr_wakeup_reason_t exp_output;
   };
 
-  std::array<TestCase, 5> test_cases = {{
+  std::array<TestCase, 10> test_cases = {{
       // No bits set.
       {
           .read_val = {{
@@ -624,21 +624,38 @@ TEST_F(WakeupRecording, GetReason) {
                            .value = 1,
                        },
                        {
+                           .offset = PWRMGR_PARAM_AON_SYSRST_CTRL_WKUP_REQ_IDX,
+                           .value = 1,
+                       },
+                       {
                            .offset = PWRMGR_PARAM_DEBUG_CABLE_WAKEUP_IDX,
                            .value = 1,
                        },
                        {
                            .offset = PWRMGR_PARAM_AON_WKUP_REQ_IDX,
                            .value = 1,
+                       },
+                       {
+                           .offset = PWRMGR_PARAM_USB_WKUP_REQ_IDX,
+                           .value = 1,
+                       },
+                       {
+                           .offset = PWRMGR_PARAM_AON_TIMER_WKUP_REQ_IDX,
+                           .value = 1,
+                       },
+                       {
+                           .offset = PWRMGR_PARAM_WKUP_REQ_IDX,
+                           .value = 1,
                        }},
-          .exp_output =
-              {
-                  .types = kDifPwrmgrWakeupTypeAbort |
-                           kDifPwrmgrWakeupTypeFallThrough |
-                           kDifPwrmgrWakeupTypeRequest,
-                  .request_sources = kDifPwrmgrWakeupRequestSourceTwo |
-                                     kDifPwrmgrWakeupRequestSourceThree,
-              },
+          .exp_output = {.types = kDifPwrmgrWakeupTypeAbort |
+                                  kDifPwrmgrWakeupTypeFallThrough |
+                                  kDifPwrmgrWakeupTypeRequest,
+                         .request_sources = kDifPwrmgrWakeupRequestSourceOne |
+                                            kDifPwrmgrWakeupRequestSourceTwo |
+                                            kDifPwrmgrWakeupRequestSourceThree |
+                                            kDifPwrmgrWakeupRequestSourceFour |
+                                            kDifPwrmgrWakeupRequestSourceFive |
+                                            kDifPwrmgrWakeupRequestSourceSix},
       },
       // Only abort.
       {
@@ -667,6 +684,17 @@ TEST_F(WakeupRecording, GetReason) {
       // Only requests from peripherals.
       {
           .read_val = {{
+              .offset = PWRMGR_PARAM_AON_SYSRST_CTRL_WKUP_REQ_IDX,
+              .value = 1,
+          }},
+          .exp_output =
+              {
+                  .types = kDifPwrmgrWakeupTypeRequest,
+                  .request_sources = kDifPwrmgrWakeupRequestSourceOne,
+              },
+      },
+      {
+          .read_val = {{
               .offset = PWRMGR_PARAM_DEBUG_CABLE_WAKEUP_IDX,
               .value = 1,
           }},
@@ -674,6 +702,50 @@ TEST_F(WakeupRecording, GetReason) {
               {
                   .types = kDifPwrmgrWakeupTypeRequest,
                   .request_sources = kDifPwrmgrWakeupRequestSourceTwo,
+              },
+      },
+      {
+          .read_val = {{
+              .offset = PWRMGR_PARAM_AON_WKUP_REQ_IDX,
+              .value = 1,
+          }},
+          .exp_output =
+              {
+                  .types = kDifPwrmgrWakeupTypeRequest,
+                  .request_sources = kDifPwrmgrWakeupRequestSourceThree,
+              },
+      },
+      {
+          .read_val = {{
+              .offset = PWRMGR_PARAM_USB_WKUP_REQ_IDX,
+              .value = 1,
+          }},
+          .exp_output =
+              {
+                  .types = kDifPwrmgrWakeupTypeRequest,
+                  .request_sources = kDifPwrmgrWakeupRequestSourceFour,
+              },
+      },
+      {
+          .read_val = {{
+              .offset = PWRMGR_PARAM_AON_TIMER_WKUP_REQ_IDX,
+              .value = 1,
+          }},
+          .exp_output =
+              {
+                  .types = kDifPwrmgrWakeupTypeRequest,
+                  .request_sources = kDifPwrmgrWakeupRequestSourceFive,
+              },
+      },
+      {
+          .read_val = {{
+              .offset = PWRMGR_PARAM_WKUP_REQ_IDX,
+              .value = 1,
+          }},
+          .exp_output =
+              {
+                  .types = kDifPwrmgrWakeupTypeRequest,
+                  .request_sources = kDifPwrmgrWakeupRequestSourceSix,
               },
       },
   }};
