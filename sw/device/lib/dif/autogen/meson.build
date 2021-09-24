@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen GPIO DIF library
-sw_lib_dif_autogen_gpio = declare_dependency(
+# Autogen I2C Controller DIF library
+sw_lib_dif_autogen_i2c = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_gpio',
+    'sw_lib_dif_autogen_i2c',
     sources: [
-      hw_ip_gpio_reg_h,
-      'dif_gpio_autogen.c',
+      hw_ip_i2c_reg_h,
+      'dif_i2c_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -37,6 +37,20 @@ sw_lib_dif_autogen_alert_handler = declare_dependency(
     sources: [
       hw_ip_alert_handler_reg_h,
       'dif_alert_handler_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen GPIO DIF library
+sw_lib_dif_autogen_gpio = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_gpio',
+    sources: [
+      hw_ip_gpio_reg_h,
+      'dif_gpio_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
