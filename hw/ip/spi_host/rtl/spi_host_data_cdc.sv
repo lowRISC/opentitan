@@ -113,6 +113,7 @@ module spi_host_data_cdc #(
 
   if (TxSyncDepth == 0) begin : gen_tx_async_only
 
+    // TODO:  Ignore zero byte writes
     assign tx_data_be_async_fifo = tx_data_be;
     assign tx_valid_async_fifo   = tx_valid_i;
     assign tx_ready_o            = tx_ready_async_fifo;
