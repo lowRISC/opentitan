@@ -73,4 +73,12 @@ package dv_base_reg_pkg;
     end
   endfunction
 
+  // mask and shift data to extract the value specific to that supplied field
+  function automatic uvm_reg_data_t get_field_val(uvm_reg_field   field,
+                                                  uvm_reg_data_t  value);
+    uvm_reg_data_t  mask = (1 << field.get_n_bits()) - 1;
+    uint            shift = field.get_lsb_pos();
+    get_field_val = (value >> shift) & mask;
+  endfunction
+
 endpackage

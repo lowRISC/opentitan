@@ -106,6 +106,7 @@ virtual task check_csr_read_clear_staged_val(dv_base_reg shadowed_csr);
   string         alert_name = shadowed_csr.get_update_err_alert_name();
   `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
 
+  `uvm_info(`gfn, $sformatf("%0s check csr read clear", shadowed_csr.get_name()), UVM_HIGH);
   csr_wr(.ptr(shadowed_csr), .value(wdata), .en_shadow_wr(0), .predict(1));
   csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
   wdata = get_shadow_reg_diff_val(shadowed_csr, wdata);
@@ -148,9 +149,8 @@ virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
 
   // Check if CSR write is blocked.
   `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val);
-  csr_wr(.ptr(shadowed_csr), .value(rand_val), .en_shadow_wr(1), .predict(0));
-  // TODO: Commented out due to issue #7764.
-  //csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
+  csr_wr(.ptr(shadowed_csr), .value(rand_val), .en_shadow_wr(1), .predict(1));
+  csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
 
   // Backdoor write back to original value and ensure the fatal alert is continuously firing.
   csr_poke(.ptr(shadowed_csr), .value(origin_val), .kind(kind), .predict(1));

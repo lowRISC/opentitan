@@ -7,6 +7,7 @@ class dv_base_reg_field extends uvm_reg_field;
   local string m_original_access;
   local dv_base_reg_field lockable_flds[$];
   local bit is_intr_test_fld;
+  local uvm_reg_data_t staged_val, committed_val, shadowed_val;
 
   `uvm_object_utils(dv_base_reg_field)
   `uvm_object_new
@@ -34,6 +35,7 @@ class dv_base_reg_field extends uvm_reg_field;
       value.rand_mode(is_rand);
 
       is_intr_test_fld = !(uvm_re_match("intr_test*", get_parent().get_name()));
+      shadowed_val = ~committed_val;
     endfunction
 
   virtual function dv_base_reg get_dv_base_reg_parent();
@@ -134,11 +136,42 @@ class dv_base_reg_field extends uvm_reg_field;
     end
   endtask
 
+  function bit get_shadow_storage_err();
+    uvm_reg_data_t mask = (1 << get_n_bits()) - 1;
+    uvm_reg_data_t shadowed_val_temp = (~shadowed_val) & mask;
+    uvm_reg_data_t committed_val_temp = committed_val & mask;
+    `uvm_info(`gfn, $sformatf("shadow_val %0h, commmit_val %0h", shadowed_val_temp,
+                              committed_val_temp), UVM_HIGH)
+    return shadowed_val_temp != committed_val_temp;
+  endfunction
+
+  function void update_staged_val(uvm_reg_data_t val);
+    staged_val = val;
+  endfunction
+
+  function uvm_reg_data_t get_staged_val();
+    return staged_val;
+  endfunction
+
+  function void update_shadowed_val(uvm_reg_data_t val);
+    shadowed_val = val;
+  endfunction
+
+  function void update_committed_val(uvm_reg_data_t val);
+    committed_val = val;
+  endfunction
+
+  function uvm_reg_data_t get_committed_val();
+    return committed_val;
+  endfunction
+
   // override RAL's reset function to support enable registers
   // when reset issued - the lockable field's access will be reset to original access
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     set_fld_access(0);
+    committed_val = get_mirrored_value();
+    shadowed_val  = ~committed_val;
   endfunction
 
   // this function can only be called when this reg is intr_test reg
