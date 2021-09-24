@@ -56,10 +56,10 @@ tl_device_t xbar_devices[$] = '{
         '{32'h48000000, 32'h4fffffff}
     }},
     '{"otbn", '{
-        '{32'h411d0000, 32'h411dffff}
+        '{32'h41130000, 32'h4113ffff}
     }},
     '{"keymgr", '{
-        '{32'h41130000, 32'h41130fff}
+        '{32'h41140000, 32'h41140fff}
     }},
     '{"rv_core_ibex__cfg", '{
         '{32'h411f0000, 32'h411f0fff}

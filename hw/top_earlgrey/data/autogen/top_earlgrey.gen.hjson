@@ -5066,6 +5066,210 @@
       }
     }
     {
+      name: otbn
+      type: otbn
+      clock_srcs:
+      {
+        clk_i: main
+        clk_edn_i: main
+        clk_otp_i: io_div4
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_edn_ni:
+        {
+          name: sys
+          domain: "0"
+        }
+        rst_otp_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_otbn
+        clk_edn_i: clkmgr_aon_clocks.clk_main_otbn
+        clk_otp_i: clkmgr_aon_clocks.clk_io_div4_otbn
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out the core of Otbn logic
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: OtbnStub
+        }
+        {
+          name: RegFile
+          desc: Selection of the register file implementation. See otbn_pkg.sv.
+          type: otbn_pkg::regfile_e
+          default: otbn_pkg::RegFileFF
+          expose: "true"
+          name_top: OtbnRegFile
+        }
+        {
+          name: RndCnstUrndLfsrSeed
+          desc: Default seed of the PRNG used for URND.
+          type: otbn_pkg::urnd_lfsr_seed_t
+          randcount: 256
+          randtype: data
+          name_top: RndCnstOtbnUrndLfsrSeed
+          default: 0xf9e20b072b46413fea8f46c61a39ebb93e4ef606d8cefa03d0ec61b1bdcbc0e3
+          randwidth: 256
+        }
+        {
+          name: RndCnstUrndChunkLfsrPerm
+          desc: Permutation applied to the LFSR chunks of the PRNG used for URND.
+          type: otbn_pkg::urnd_chunk_lfsr_perm_t
+          randcount: 64
+          randtype: perm
+          name_top: RndCnstOtbnUrndChunkLfsrPerm
+          default: 0xe25a640354ea467d232e123f0f1b7d55b822406c1ac8264f252726bc578c518f2c2be06b38ded6eb7d84a1fcc75eee5d
+          randwidth: 384
+        }
+        {
+          name: RndCnstOtbnKey
+          desc: Compile-time random reset value for IMem/DMem scrambling key.
+          type: otp_ctrl_pkg::otbn_key_t
+          randcount: 128
+          randtype: data
+          name_top: RndCnstOtbnOtbnKey
+          default: 0x4f5a0a911c1bcafe7663f6d1fbe7e440
+          randwidth: 128
+        }
+        {
+          name: RndCnstOtbnNonce
+          desc: Compile-time random reset value for IMem/DMem scrambling nonce.
+          type: otp_ctrl_pkg::otbn_nonce_t
+          randcount: 64
+          randtype: data
+          name_top: RndCnstOtbnOtbnNonce
+          default: 0x34816103a781d0a
+          randwidth: 64
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: otbn_otp_key
+          struct: otbn_otp_key
+          package: otp_ctrl_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: otbn
+          top_signame: otp_ctrl_otbn_otp_key
+          index: -1
+        }
+        {
+          name: edn_rnd
+          struct: edn
+          package: edn_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: otbn
+          default: ""
+          top_signame: edn1_edn
+          index: 0
+        }
+        {
+          name: edn_urnd
+          struct: edn
+          package: edn_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: otbn
+          default: ""
+          top_signame: edn0_edn
+          index: 6
+        }
+        {
+          name: idle
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: otbn
+          default: ""
+          package: ""
+          top_signame: clkmgr_aon_idle
+          index: 4
+        }
+        {
+          name: idle_otp
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: otbn
+          default: ""
+          package: ""
+          top_signame: clkmgr_aon_idle
+          index: 3
+        }
+        {
+          name: ram_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: otbn
+          default: ""
+          top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: lc_escalate_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: otbn
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: otbn
+          default: ""
+          end_idx: -1
+          top_signame: otbn_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null: 0x41130000
+      }
+    }
+    {
       name: keymgr
       type: keymgr
       clock_srcs:
@@ -5115,7 +5319,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstKeymgrLfsrSeed
-          default: 0xd0ec61b1bdcbc0e3
+          default: 0x2761603352213b7a
           randwidth: 64
         }
         {
@@ -5125,7 +5329,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstKeymgrLfsrPerm
-          default: 0x8804e50dde2145a22454bc0fb129e0990fad6c266fab125c8f515e314637a7cd01afd3765b2128ffb1d7bb93b32ba19f
+          default: 0x430a9ebcd7da3ffda144ca00831dd90e7e476caebd513cfb8a6d46138f9294ebadf24097556274b1d718ca3ac8a412c5
           randwidth: 384
         }
         {
@@ -5135,7 +5339,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstKeymgrRandPerm
-          default: 0xb4f46fd228cc84f5efacadf81813c03a46e2e14d
+          default: 0xae95d648fe096166a7e2c81ee22ef834c71e6e88
           randwidth: 160
         }
         {
@@ -5145,7 +5349,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrRevisionSeed
-          default: 0x2c1194fb74487a86b6fee0311af608b7123f603c251a36ab2e658548c5420be5
+          default: 0x17a9838dd4cd7f1bdce673b937a6d75202fedbf893bf7d52c8a744ad83d2630b
           randwidth: 256
         }
         {
@@ -5155,7 +5359,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrCreatorIdentitySeed
-          default: 0x21b7387a0a07db44fe8c330ca072829f9970f91074501568220e25ba7743095f
+          default: 0xc20c05a20251023541544776930be76bfbb22e1d8aaa4783f2b5e094e3e8d3f8
           randwidth: 256
         }
         {
@@ -5165,7 +5369,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrOwnerIntIdentitySeed
-          default: 0x98e681252f1c7741dd6e62190d79f1230d02f643ac42fa70cb942155264f8c1
+          default: 0x93cdb1d9a6a60050ef0d8a166d91200dc6757907237df4401908799dfa1fe8f2
           randwidth: 256
         }
         {
@@ -5175,7 +5379,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrOwnerIdentitySeed
-          default: 0x69029587c377a10c9ab33f80f21fad7205be139eaa9fbe945120695530d16a94
+          default: 0xa88601ca1695a7c8c5d32486aac4e086628d6c8ca138f65d25dfa5f9c912f354
           randwidth: 256
         }
         {
@@ -5185,7 +5389,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrSoftOutputSeed
-          default: 0x4814ac33b45de425069e5959df06d42254a25afae52a5963310fb843b64ef41e
+          default: 0xdf273097a573a411332efd86009bd0a175f08814ecc17ab02cc1e3404e1cd8bf
           randwidth: 256
         }
         {
@@ -5195,7 +5399,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrHardOutputSeed
-          default: 0x8745ae400e4aee8385f157b88ab8ed1fce7408f7be58b7d21102be301eb1a8d0
+          default: 0x69582e71443c8be0fc00de9d9734c3fe7f4266d10a752de74814f2a3079f69a3
           randwidth: 256
         }
         {
@@ -5205,7 +5409,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrAesSeed
-          default: 0x189f1d198d56ac2fe28503e9dd872066a008d66622dd38e0cab1ca634857ffe3
+          default: 0x73e5bc251b143b74476e576754125d61930d203f199a87c123c074e020fd5028
           randwidth: 256
         }
         {
@@ -5215,7 +5419,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrKmacSeed
-          default: 0x7fa1a35f74a8586d23e3bd765866c6f6363a02ed345973cf312efea89c274c21
+          default: 0xce44cbff5e09e6dd3ae54e9e45da6e662fb69c3aab936b415a0d6e7185eaa2e0
           randwidth: 256
         }
         {
@@ -5225,7 +5429,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrOtbnSeed
-          default: 0x15891b60c560a7fb75457e09e258c252c3083125be14e22d044c7bd9e98eb284
+          default: 0xfcc581b66ae11d33f678e7d227881bcfe58a331208f189de6265edc8fde06db0
           randwidth: 256
         }
         {
@@ -5235,7 +5439,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrNoneSeed
-          default: 0x562ce22f82424801d95cd1c662bdae87dda4c0a399420265983d914e80a925bc
+          default: 0xb76a8aff9e4da0e3ff9f3036fd9c13ac08496db56fbc4894d38bd8674f4b542d
           randwidth: 256
         }
       ]
@@ -5403,7 +5607,7 @@
       ]
       base_addrs:
       {
-        null: 0x41130000
+        null: 0x41140000
       }
     }
     {
@@ -5441,7 +5645,7 @@
           randcount: 384
           randtype: data
           name_top: RndCnstCsrngCsKeymgrDivNonProduction
-          default: 0x2af4ec91410d0bd90b447e3291b8e6cb502bf90b4e2ac5b0cdcb5641c54b65648424eb8a4bccbeffd45524ae1f5bba6b
+          default: 0x4093f0ec256b2646079c10f2f41f73af3fc6afbec695054a0407221fb798ab7845c3feab0d2f4c7cf730a5675d7717a4
           randwidth: 384
         }
         {
@@ -5451,7 +5655,7 @@
           randcount: 384
           randtype: data
           name_top: RndCnstCsrngCsKeymgrDivProduction
-          default: 0xfbb22e1d8aaa4783f2b5e094e3e8d3f817a9838dd4cd7f1bdce673b937a6d75202fedbf893bf7d52c8a744ad83d2630b
+          default: 0x1f44b085a363cb599df4de1e830f93658a789bdc189f345cf4e341f211c9d00beefa4d4c2e269435471a7a682a6260eb
           randwidth: 384
         }
         {
@@ -5914,7 +6118,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMainSramKey
-          default: 0xc20c05a20251023541544776930be76b
+          default: 0x37f67765a0d2eb0cb514e4199cf3de67
           randwidth: 128
         }
         {
@@ -5924,7 +6128,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMainSramNonce
-          default: 0xc6757907237df4401908799dfa1fe8f2
+          default: 0xc9e673e4db3fee8922d1f0bcdd09153
           randwidth: 128
         }
         {
@@ -5934,7 +6138,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstSramCtrlMainLfsrSeed
-          default: 0x6d91200d
+          default: 0xf45740eb
           randwidth: 32
         }
         {
@@ -5944,7 +6148,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlMainLfsrPerm
-          default: 0x54ec7ec06b25e516ebc878779301c5ff058ab289
+          default: 0x8dfe6ebd18cd97c1a58a179d524a9a3ee0d004b3
           randwidth: 160
         }
         {
@@ -6054,210 +6258,6 @@
       ]
     }
     {
-      name: otbn
-      type: otbn
-      clock_srcs:
-      {
-        clk_i: main
-        clk_edn_i: main
-        clk_otp_i: io_div4
-      }
-      clock_group: trans
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: sys
-          domain: "0"
-        }
-        rst_edn_ni:
-        {
-          name: sys
-          domain: "0"
-        }
-        rst_otp_ni:
-        {
-          name: lc_io_div4
-          domain: "0"
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_main_otbn
-        clk_edn_i: clkmgr_aon_clocks.clk_main_otbn
-        clk_otp_i: clkmgr_aon_clocks.clk_io_div4_otbn
-      }
-      domain:
-      [
-        "0"
-      ]
-      param_decl: {}
-      memory: {}
-      param_list:
-      [
-        {
-          name: Stub
-          desc: Stub out the core of Otbn logic
-          type: bit
-          default: "0"
-          expose: "true"
-          name_top: OtbnStub
-        }
-        {
-          name: RegFile
-          desc: Selection of the register file implementation. See otbn_pkg.sv.
-          type: otbn_pkg::regfile_e
-          default: otbn_pkg::RegFileFF
-          expose: "true"
-          name_top: OtbnRegFile
-        }
-        {
-          name: RndCnstUrndLfsrSeed
-          desc: Default seed of the PRNG used for URND.
-          type: otbn_pkg::urnd_lfsr_seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstOtbnUrndLfsrSeed
-          default: 0xf678e7d227881bcfe58a331208f189de6265edc8fde06db0ce44cbff5e09e6dd
-          randwidth: 256
-        }
-        {
-          name: RndCnstUrndChunkLfsrPerm
-          desc: Permutation applied to the LFSR chunks of the PRNG used for URND.
-          type: otbn_pkg::urnd_chunk_lfsr_perm_t
-          randcount: 64
-          randtype: perm
-          name_top: RndCnstOtbnUrndChunkLfsrPerm
-          default: 0xff886acf2218656a1ea7032e7c5395ad251a9bcbe571d03bb23dfe90d1fa8221842f629027d3f10794435ed9c26f44f5
-          randwidth: 384
-        }
-        {
-          name: RndCnstOtbnKey
-          desc: Compile-time random reset value for IMem/DMem scrambling key.
-          type: otp_ctrl_pkg::otbn_key_t
-          randcount: 128
-          randtype: data
-          name_top: RndCnstOtbnOtbnKey
-          default: 0x260058176d17f3660ebad9424ae5e2cf
-          randwidth: 128
-        }
-        {
-          name: RndCnstOtbnNonce
-          desc: Compile-time random reset value for IMem/DMem scrambling nonce.
-          type: otp_ctrl_pkg::otbn_nonce_t
-          randcount: 64
-          randtype: data
-          name_top: RndCnstOtbnOtbnNonce
-          default: 0x1893c0ce9e8e5600
-          randwidth: 64
-        }
-      ]
-      inter_signal_list:
-      [
-        {
-          name: otbn_otp_key
-          struct: otbn_otp_key
-          package: otp_ctrl_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          default: "'0"
-          inst_name: otbn
-          top_signame: otp_ctrl_otbn_otp_key
-          index: -1
-        }
-        {
-          name: edn_rnd
-          struct: edn
-          package: edn_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: otbn
-          default: ""
-          top_signame: edn1_edn
-          index: 0
-        }
-        {
-          name: edn_urnd
-          struct: edn
-          package: edn_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: otbn
-          default: ""
-          top_signame: edn0_edn
-          index: 6
-        }
-        {
-          name: idle
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: otbn
-          default: ""
-          package: ""
-          top_signame: clkmgr_aon_idle
-          index: 4
-        }
-        {
-          name: idle_otp
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: otbn
-          default: ""
-          package: ""
-          top_signame: clkmgr_aon_idle
-          index: 3
-        }
-        {
-          name: ram_cfg
-          struct: ram_1p_cfg
-          package: prim_ram_1p_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: otbn
-          default: ""
-          top_signame: ast_ram_1p_cfg
-          index: -1
-        }
-        {
-          name: lc_escalate_en
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: lc_ctrl_pkg::Off
-          inst_name: otbn
-          top_signame: lc_ctrl_lc_escalate_en
-          index: -1
-        }
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: otbn
-          default: ""
-          end_idx: -1
-          top_signame: otbn_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null: 0x411D0000
-      }
-    }
-    {
       name: rom_ctrl
       type: rom_ctrl
       clock_srcs:
@@ -6318,7 +6318,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRomCtrlScrNonce
-          default: 0x54c36f827b99dcc9
+          default: 0xebad9424ae5e2cf
           randwidth: 64
         }
         {
@@ -6328,7 +6328,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRomCtrlScrKey
-          default: 0x838e24fafe4257bcd0d4af885661e47d
+          default: 0x1893c0ce9e8e5600260058176d17f366
           randwidth: 128
         }
         {
@@ -6491,7 +6491,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstRvCoreIbexLfsrSeed
-          default: 0x7d8490dc
+          default: 0x7b99dcc9
           randwidth: 32
         }
         {
@@ -6501,7 +6501,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstRvCoreIbexLfsrPerm
-          default: 0xe3c46469cdee68cbacff8ccb555b019101b1c13e
+          default: 0xb3918eb0d96c66b3d0572f8322007c4efef86955
           randwidth: 160
         }
         {
@@ -7975,7 +7975,7 @@
           addr_range:
           [
             {
-              base_addr: 0x411d0000
+              base_addr: 0x41130000
               size_byte: 0x10000
             }
           ]
@@ -7993,7 +7993,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41130000
+              base_addr: 0x41140000
               size_byte: 0x1000
             }
           ]
@@ -12151,12 +12151,12 @@
     flash_ctrl
     hmac
     kmac
+    otbn
     keymgr
     csrng
     entropy_src
     edn0
     edn1
-    otbn
   ]
   interrupt:
   [
@@ -12971,6 +12971,12 @@
       module_name: kmac
     }
     {
+      name: otbn_done
+      width: 1
+      type: interrupt
+      module_name: otbn
+    }
+    {
       name: keymgr_op_done
       width: 1
       type: interrupt
@@ -13048,12 +13054,6 @@
       type: interrupt
       module_name: edn1
     }
-    {
-      name: otbn_done
-      width: 1
-      type: interrupt
-      module_name: otbn
-    }
   ]
   alert_module:
   [
@@ -13089,13 +13089,13 @@
     aes
     hmac
     kmac
+    otbn
     keymgr
     csrng
     entropy_src
     edn0
     edn1
     sram_ctrl_main
-    otbn
     rom_ctrl
     rv_core_ibex
   ]
@@ -13382,6 +13382,20 @@
       module_name: kmac
     }
     {
+      name: otbn_fatal
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otbn
+    }
+    {
+      name: otbn_recov
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otbn
+    }
+    {
       name: keymgr_fatal_fault_err
       width: 1
       type: alert
@@ -13457,20 +13471,6 @@
       type: alert
       async: "1"
       module_name: sram_ctrl_main
-    }
-    {
-      name: otbn_fatal
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otbn
-    }
-    {
-      name: otbn_recov
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otbn
     }
     {
       name: rom_ctrl_fatal
@@ -16244,6 +16244,103 @@
         index: -1
       }
       {
+        name: otbn_otp_key
+        struct: otbn_otp_key
+        package: otp_ctrl_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: otbn
+        top_signame: otp_ctrl_otbn_otp_key
+        index: -1
+      }
+      {
+        name: edn_rnd
+        struct: edn
+        package: edn_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: otbn
+        default: ""
+        top_signame: edn1_edn
+        index: 0
+      }
+      {
+        name: edn_urnd
+        struct: edn
+        package: edn_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: otbn
+        default: ""
+        top_signame: edn0_edn
+        index: 6
+      }
+      {
+        name: idle
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: otbn
+        default: ""
+        package: ""
+        top_signame: clkmgr_aon_idle
+        index: 4
+      }
+      {
+        name: idle_otp
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: otbn
+        default: ""
+        package: ""
+        top_signame: clkmgr_aon_idle
+        index: 3
+      }
+      {
+        name: ram_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: otbn
+        default: ""
+        top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: lc_escalate_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: otbn
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: otbn
+        default: ""
+        end_idx: -1
+        top_signame: otbn_tl
+        index: -1
+      }
+      {
         name: edn
         struct: edn
         package: edn_pkg
@@ -16756,103 +16853,6 @@
         default: ""
         end_idx: -1
         top_signame: sram_ctrl_main_ram_tl
-        index: -1
-      }
-      {
-        name: otbn_otp_key
-        struct: otbn_otp_key
-        package: otp_ctrl_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        default: "'0"
-        inst_name: otbn
-        top_signame: otp_ctrl_otbn_otp_key
-        index: -1
-      }
-      {
-        name: edn_rnd
-        struct: edn
-        package: edn_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: otbn
-        default: ""
-        top_signame: edn1_edn
-        index: 0
-      }
-      {
-        name: edn_urnd
-        struct: edn
-        package: edn_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: otbn
-        default: ""
-        top_signame: edn0_edn
-        index: 6
-      }
-      {
-        name: idle
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: otbn
-        default: ""
-        package: ""
-        top_signame: clkmgr_aon_idle
-        index: 4
-      }
-      {
-        name: idle_otp
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: otbn
-        default: ""
-        package: ""
-        top_signame: clkmgr_aon_idle
-        index: 3
-      }
-      {
-        name: ram_cfg
-        struct: ram_1p_cfg
-        package: prim_ram_1p_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: otbn
-        default: ""
-        top_signame: ast_ram_1p_cfg
-        index: -1
-      }
-      {
-        name: lc_escalate_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: lc_ctrl_pkg::Off
-        inst_name: otbn
-        top_signame: lc_ctrl_lc_escalate_en
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: otbn
-        default: ""
-        end_idx: -1
-        top_signame: otbn_tl
         index: -1
       }
       {
