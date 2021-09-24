@@ -7,6 +7,7 @@ use erased_serde::Serialize;
 use nix::unistd::isatty;
 use raw_tty::TtyModeGuard;
 use regex::Regex;
+use std::any::Any;
 use std::fs::File;
 use std::io;
 use std::io::{ErrorKind, Read, Write};
@@ -24,6 +25,9 @@ pub struct Console {
     #[structopt(short, long, help = "Do not print console start end exit messages.")]
     quiet: bool,
 
+    #[structopt(short, long, help = "Which UART to connect", default_value = "0")]
+    uart: u32,
+
     #[structopt(short, long, help = "Log console output to a file")]
     logfile: Option<String>,
 
@@ -38,7 +42,11 @@ pub struct Console {
 }
 
 impl CommandDispatch for Console {
-    fn run(&self, transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
         // We need the UART for the console command to operate.
         transport.capabilities().request(Capability::UART).ok()?;
         let mut stdout = std::io::stdout();
@@ -82,7 +90,8 @@ impl CommandDispatch for Console {
             } else {
                 None
             };
-            console.interact(transport, &mut stdin, &mut stdout)?;
+            let uart = transport.uart(self.uart)?;
+            console.interact(&*uart, &mut stdin, &mut stdout)?;
         }
         if !self.quiet {
             println!("\n\nExiting interactive console.");
@@ -113,11 +122,10 @@ impl InnerConsole {
     // Runs an interactive console until CTRL_C is received.
     fn interact(
         &mut self,
-        transport: &mut dyn Transport,
+        uart: &dyn Uart,
         stdin: &mut (impl Read + AsRawFd),
         stdout: &mut impl Write,
     ) -> Result<()> {
-        let uart = transport.uart()?;
         let mut buf = [0u8; 256];
 
         loop {
@@ -145,7 +153,7 @@ impl InnerConsole {
             // better way to approach waiting on the UART and keyboard.
 
             // Check for input on the uart.
-            match self.uart_read(&*uart, Duration::from_millis(10), stdout)? {
+            match self.uart_read(uart, Duration::from_millis(10), stdout)? {
                 ExitStatus::None => {}
                 ExitStatus::ExitSuccess => {
                     break;

@@ -30,11 +30,12 @@ use syn::{parse_macro_input, Data, DataEnum, DeriveInput, Fields, Ident, Variant
 /// impl opentitanlib::app::command::CommandDispatch for Hello {
 ///     fn run(
 ///         &self,
+///         context: &dyn std::any::Any,
 ///         backend: &mut dyn opentitanlib::transport::Transport
 ///     ) -> anyhow::Result<Option<Box<dyn erased_serde::Serialize>>> {
 ///         match self {
-///             Hello::World(ref __field) => __field.run(backend),
-///             Hello::People(ref __field) => __field.run(backend),
+///             Hello::World(ref __field) => __field.run(context, backend),
+///             Hello::People(ref __field) => __field.run(context, backend),
 ///         }
 ///     }
 /// }
@@ -72,6 +73,7 @@ fn dispatch_enum(name: &Ident, e: &DataEnum) -> TokenStream {
             impl opentitanlib::app::command::CommandDispatch for #name {
                 fn run(
                     &self,
+                    context: &dyn std::any::Any,
                     backend: &mut dyn opentitanlib::transport::Transport
                 ) -> anyhow::Result<Option<Box<dyn erased_serde::Serialize>>> {
                     match self {
@@ -100,6 +102,6 @@ fn dispatch_variant(name: &Ident, variant: &Variant) -> TokenStream {
     }
     quote! {
         #name::#ident(ref __field) =>
-            opentitanlib::app::command::CommandDispatch::run(__field, backend)
+            opentitanlib::app::command::CommandDispatch::run(__field, context, backend)
     }
 }

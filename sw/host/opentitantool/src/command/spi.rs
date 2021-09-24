@@ -5,6 +5,7 @@
 use anyhow::Result;
 use erased_serde::Serialize;
 use indicatif::{ProgressBar, ProgressStyle};
+use std::any::Any;
 use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::PathBuf;
@@ -69,9 +70,14 @@ fn progress_bar(total: u64) -> ProgressBar {
 }
 
 impl CommandDispatch for SpiSfdp {
-    fn run(&self, transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::SPI).ok()?;
-        let spi = transport.spi()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi = transport.spi(context.bus)?;
 
         if let Some(length) = self.raw {
             let mut buffer = vec![0u8; length];
@@ -106,9 +112,14 @@ pub struct SpiReadIdResponse {
 }
 
 impl CommandDispatch for SpiReadId {
-    fn run(&self, transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::SPI).ok()?;
-        let spi = transport.spi()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi = transport.spi(context.bus)?;
         let jedec_id = SpiFlash::read_jedec_id(&*spi, self.length)?;
         Ok(Some(Box::new(SpiReadIdResponse { jedec_id })))
     }
@@ -150,9 +161,14 @@ impl SpiRead {
 }
 
 impl CommandDispatch for SpiRead {
-    fn run(&self, transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::SPI).ok()?;
-        let spi = transport.spi()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi = transport.spi(context.bus)?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
 
@@ -195,9 +211,14 @@ pub struct SpiEraseResponse {
 }
 
 impl CommandDispatch for SpiErase {
-    fn run(&self, transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::SPI).ok()?;
-        let spi = transport.spi()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi = transport.spi(context.bus)?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
 
@@ -232,9 +253,14 @@ pub struct SpiProgramResponse {
 }
 
 impl CommandDispatch for SpiProgram {
-    fn run(&self, transport: &mut dyn Transport) -> Result<Option<Box<dyn Serialize>>> {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::SPI).ok()?;
-        let spi = transport.spi()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi = transport.spi(context.bus)?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
 
@@ -256,10 +282,30 @@ impl CommandDispatch for SpiProgram {
 
 /// Commands for interacting with a SPI EEPROM.
 #[derive(Debug, StructOpt, CommandDispatch)]
-pub enum SpiCommand {
+pub enum InternalSpiCommand {
     Sfdp(SpiSfdp),
     ReadId(SpiReadId),
     Read(SpiRead),
     Erase(SpiErase),
     Program(SpiProgram),
+}
+
+#[derive(Debug, StructOpt)]
+pub struct SpiCommand {
+    #[structopt(short, long, default_value = "0", help = "SPI bus")]
+    pub bus: u32,
+    #[structopt(subcommand)]
+    command: InternalSpiCommand,
+}
+
+impl CommandDispatch for SpiCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &mut dyn Transport,
+    ) -> Result<Option<Box<dyn Serialize>>> {
+        // None of the SPI commands care about the prior context, but they do
+        // care about the `bus` parameter in the current node.
+        self.command.run(self, transport)
+    }
 }
