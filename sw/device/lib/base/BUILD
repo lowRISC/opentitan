@@ -6,9 +6,6 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "base",
-    copts = [
-        "-fno-builtin",
-    ],
     srcs = [
         "bitfield.c",
         "hardened.c",
@@ -24,8 +21,10 @@ cc_library(
         "mmio.h",
         "stdasm.h",
     ],
+    copts = [
+        "-fno-builtin",
+    ],
 )
-
 
 cc_library(
     name = "mmio",
