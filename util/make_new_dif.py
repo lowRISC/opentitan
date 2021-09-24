@@ -69,6 +69,7 @@ class Irq:
             [word.capitalize() for word in self.name_snake.split("_")])
         _multiline_description = irq["desc"][0].upper() + irq["desc"][1:]
         self.description = _multiline_description.replace("\n", " ")
+        self.width = irq["width"] if "width" in irq else 1
 
 
 class Ip:
@@ -200,7 +201,8 @@ def main():
                             f"dif_{ip.name_snake}_autogen{filetype}")
 
                 # Read in template.
-                template = Template(template_file.read_text())
+                template = Template(template_file.read_text(),
+                                    strict_undefined=True)
 
                 # Generate output file.
                 out_file.write_text(template.render(ip=ip, irqs=ip.irqs))

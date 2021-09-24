@@ -177,9 +177,9 @@ TEST_F(IrqGetEnabledTest, Success) {
   // Last IRQ is disabled.
   irq_state = kDifToggleEnabled;
   EXPECT_READ32(ALERT_HANDLER_INTR_ENABLE_REG_OFFSET,
-                {{ALERT_HANDLER_INTR_ENABLE_CLASSD_BIT, true}});
+                {{ALERT_HANDLER_INTR_ENABLE_CLASSD_BIT, false}});
   EXPECT_EQ(dif_alert_handler_irq_get_enabled(
-                &alert_handler_, kDifAlertHandlerIrqClassa, &irq_state),
+                &alert_handler_, kDifAlertHandlerIrqClassd, &irq_state),
             kDifOk);
   EXPECT_EQ(irq_state, kDifToggleDisabled);
 }

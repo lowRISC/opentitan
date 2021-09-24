@@ -158,9 +158,9 @@ TEST_F(IrqGetEnabledTest, Success) {
   // Last IRQ is disabled.
   irq_state = kDifToggleEnabled;
   EXPECT_READ32(UART_INTR_ENABLE_REG_OFFSET,
-                {{UART_INTR_ENABLE_RX_PARITY_ERR_BIT, true}});
+                {{UART_INTR_ENABLE_RX_PARITY_ERR_BIT, false}});
   EXPECT_EQ(
-      dif_uart_irq_get_enabled(&uart_, kDifUartIrqTxWatermark, &irq_state),
+      dif_uart_irq_get_enabled(&uart_, kDifUartIrqRxParityErr, &irq_state),
       kDifOk);
   EXPECT_EQ(irq_state, kDifToggleDisabled);
 }
