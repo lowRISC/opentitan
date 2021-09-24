@@ -10,7 +10,7 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:dv:pwrmgr_rstmgr_sva_if
-      - lowrisc:dv:rstmgr_cascading_sva_if
+      - lowrisc:dv:rstmgr_sva_ifs
 
     files:
       - rstmgr_bind.sv

@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:rstmgr_cascading_sva_if:0.1"
+name: "lowrisc:dv:rstmgr_sva_ifs:0.1"
 description: "RSTMGR cascading resets assertion interface."
 filesets:
   files_dv:
@@ -13,6 +13,7 @@ filesets:
 
     files:
       - rstmgr_cascading_sva_if.sv
+      - rstmgr_attrs_sva_if.sv
     file_type: systemVerilogSource
 
 targets:

@@ -35,7 +35,7 @@ package rstmgr_reg_pkg;
 
   typedef struct packed {
     logic        q;
-  } rstmgr_reg2hw_sw_rst_regen_mreg_t;
+  } rstmgr_reg2hw_sw_rst_regwen_mreg_t;
 
   typedef struct packed {
     logic        q;
@@ -80,7 +80,7 @@ package rstmgr_reg_pkg;
   typedef struct packed {
     rstmgr_reg2hw_reset_info_reg_t reset_info; // [11:11]
     rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [10:6]
-    rstmgr_reg2hw_sw_rst_regen_mreg_t [1:0] sw_rst_regen; // [5:4]
+    rstmgr_reg2hw_sw_rst_regwen_mreg_t [1:0] sw_rst_regwen; // [5:4]
     rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [1:0] sw_rst_ctrl_n; // [3:0]
   } rstmgr_reg2hw_t;
 
@@ -98,7 +98,7 @@ package rstmgr_reg_pkg;
   parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 5'h 4;
   parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 5'h 8;
   parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_OFFSET = 5'h c;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGEN_OFFSET = 5'h 10;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGWEN_OFFSET = 5'h 10;
   parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 5'h 14;
 
   // Reset values for hwext registers and their fields
@@ -116,7 +116,7 @@ package rstmgr_reg_pkg;
     RSTMGR_ALERT_INFO_CTRL,
     RSTMGR_ALERT_INFO_ATTR,
     RSTMGR_ALERT_INFO,
-    RSTMGR_SW_RST_REGEN,
+    RSTMGR_SW_RST_REGWEN,
     RSTMGR_SW_RST_CTRL_N
   } rstmgr_id_e;
 
@@ -126,7 +126,7 @@ package rstmgr_reg_pkg;
     4'b 0001, // index[1] RSTMGR_ALERT_INFO_CTRL
     4'b 0001, // index[2] RSTMGR_ALERT_INFO_ATTR
     4'b 1111, // index[3] RSTMGR_ALERT_INFO
-    4'b 0001, // index[4] RSTMGR_SW_RST_REGEN
+    4'b 0001, // index[4] RSTMGR_SW_RST_REGWEN
     4'b 0001  // index[5] RSTMGR_SW_RST_CTRL_N
   };
 
