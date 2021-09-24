@@ -19,6 +19,7 @@ enum RootCommandHierarchy {
     Spi(command::spi::SpiCommand),
 
     // Flattened because `Greetings` is a subcommand hierarchy.
+    #[cfg(feature = "demo_commands")]
     #[structopt(flatten)]
     Greetings(command::hello::Greetings),
 }
