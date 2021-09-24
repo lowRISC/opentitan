@@ -262,8 +262,14 @@
       desc: '''
             - Cover fault_status` values except `REGFILE_INTG` and `SHADOW` as they are tested in
               a common direct test.
-            - Cover sync and async fault cross with each other.
             - This is sampled when `fault_status` is read.'''
+    }
+    {
+      name: sync_async_fault_cross_cg
+      desc: '''
+            - Cover sync and async fault cross with each other, including 2 cases - sync fault
+              occurs first and async fault occurs first.
+            - This is sampled after `fault_status` is read in the sequence.'''
     }
   ]
 }

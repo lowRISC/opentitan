@@ -119,6 +119,11 @@
     }
 
     {
+      name: keymgr_sync_async_fault_cross
+      uvm_test_seq: keymgr_sync_async_fault_cross_vseq
+    }
+
+    {
       name: keymgr_stress_all
       uvm_test_seq: keymgr_stress_all_vseq
     }

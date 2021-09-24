@@ -119,6 +119,17 @@ class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
     }
   endgroup
 
+  // when async and sync fault both happen, use these 2 CP to enable both orders are covered
+  covergroup sync_async_fault_cross_cg with function sample(bit sync_fault_trig_first  = 1,
+                                                            bit async_fault_trig_first = 1);
+    sync_fault_trig_first_cp: coverpoint sync_fault_trig_first {
+      bins sync_first = {1};
+    }
+    async_fault_trig_first_cp: coverpoint async_fault_trig_first {
+      bins async_first = {1};
+    }
+  endgroup
+
   // Covergroup to cover small values that TB can actually check EDN request sends correctly, and
   // large values to make sure all bits are toggled
   covergroup reseed_interval_cg with function sample(bit[15:0] reseed_interval);
@@ -164,6 +175,7 @@ class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
     err_code_cg = new();
     invalid_hw_input_cg = new();
     fault_status_cg = new();
+    sync_async_fault_cross_cg = new();
     reseed_interval_cg = new();
     key_version_compare_cg = new();
     control_w_regwen_cg = new();
