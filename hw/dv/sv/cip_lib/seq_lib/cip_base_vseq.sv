@@ -154,8 +154,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input tl_type_e         tl_type = DataType,
                          tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
                          input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
-    uvm_status_e status;
-    tl_access_w_abort(addr, write, data, status, mask, check_rsp, exp_err_rsp, exp_data,
+    bit completed, saw_err;
+    tl_access_w_abort(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp, exp_data,
                       compare_mask, check_exp_data, blocking, tl_type, tl_sequencer_h,
                       tl_intg_err_type);
   endtask
@@ -166,7 +166,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       input bit [BUS_AW-1:0]  addr,
       input bit               write,
       inout bit [BUS_DW-1:0]  data,
-      output uvm_status_e     status,
+      output bit              completed,
+      output bit              saw_err,
       input bit [BUS_DBW-1:0] mask = '1,
       input bit               check_rsp = 1'b1,
       input bit               exp_err_rsp = 1'b0,
@@ -180,12 +181,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       input int               req_abort_pct = 0);
 
     if (blocking) begin
-      tl_access_sub(addr, write, data, status, mask, check_rsp, exp_err_rsp, exp_data,
+      tl_access_sub(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp, exp_data,
                     compare_mask, check_exp_data, req_abort_pct, tl_type, tl_sequencer_h,
                     tl_intg_err_type);
     end else begin
       fork
-        tl_access_sub(addr, write, data, status, mask, check_rsp, exp_err_rsp, exp_data,
+        tl_access_sub(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp, exp_data,
                       compare_mask, check_exp_data, req_abort_pct, tl_type, tl_sequencer_h,
                       tl_intg_err_type);
       join_none
@@ -197,7 +198,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task tl_access_sub(input bit [BUS_AW-1:0]  addr,
                              input bit               write,
                              inout bit [BUS_DW-1:0]  data,
-                             output uvm_status_e     status,
+                             output bit              completed,
+                             output bit              saw_err,
                              input bit [BUS_DBW-1:0] mask = '1,
                              input bit               check_rsp = 1'b1,
                              input bit               exp_err_rsp = 1'b0,
@@ -238,10 +240,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           `DV_CHECK_EQ(tl_seq.rsp.d_error, exp_err_rsp, "unexpected error response")
         end
 
-        // when error occurs or item isn't completed, use status to let seq not update predicted
-        // value
-        if (tl_seq.rsp.d_error || !tl_seq.rsp.rsp_completed) status = UVM_NOT_OK;
-        else                                                 status = UVM_IS_OK;
+        // Expose whether the transaction ran and whether it generated an error. Note that we
+        // probably only want to do a RAL update if it ran and caused no error.
+        completed = tl_seq.rsp.rsp_completed;
+        saw_err = tl_seq.rsp.d_error;
 
         csr_utils_pkg::decrement_outstanding_access();,
         // thread to check timeout
@@ -725,11 +727,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           bit [BUS_AW-1:0]  addr;
           bit [BUS_DW-1:0]  data;
           bit [BUS_DBW-1:0] mask;
-          uvm_status_e      status;
           randcase
             1: begin // write
               dv_base_mem mem;
               int mem_idx = $urandom_range(0, loc_mem_range.size - 1);
+              bit write_completed, write_error;
 
               `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
                   addr inside {[loc_mem_range[mem_idx].start_addr :
@@ -742,11 +744,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 if (mem.get_mem_partial_write_support()) mask = get_rand_contiguous_mask();
                 else                                     mask = '1;
                 data = $urandom;
-                tl_access_w_abort(.addr(addr), .write(1), .data(data), .status(status), .mask(mask),
-                                  .blocking(1), .req_abort_pct($urandom_range(0, 100)),
+                tl_access_w_abort(.addr(addr), .write(1), .data(data),
+                                  .completed(write_completed), .saw_err(write_error),
+                                  .mask(mask), .blocking(1), .req_abort_pct($urandom_range(0, 100)),
                                   .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
 
-                if (!cfg.under_reset && status == UVM_IS_OK) begin
+                if (!cfg.under_reset && write_completed && !write_error) begin
                   addr[1:0] = 0;
                   mem_exist_addr_q[ral_name].push_back(addr_mask_t'{addr, mask});
                 end
@@ -763,9 +766,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               if (addr_mask.mask == '1) begin
                 addr = addr_mask.addr;
                 if (get_mem_access_by_addr(local_ral, addr) != "WO") begin
+                  bit completed, saw_err;
                   mask = get_rand_contiguous_mask(addr_mask.mask);
-                  tl_access_w_abort(.addr(addr), .write(0), .data(data), .status(status), .mask(mask),
-                                    .blocking(1), .req_abort_pct($urandom_range(0, 100)),
+                  tl_access_w_abort(.addr(addr), .write(0), .data(data),
+                                    .completed(completed), .saw_err(saw_err),
+                                    .mask(mask), .blocking(1),
+                                    .req_abort_pct($urandom_range(0, 100)),
                                     .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
                 end
               end
