@@ -133,6 +133,7 @@ module otbn_controller
   logic err;
   logic fatal_err;
   logic done_complete;
+  logic executing;
 
   logic insn_fetch_req_valid_raw;
 
@@ -228,11 +229,18 @@ module otbn_controller
 
   assign stall = mem_stall | ispr_stall;
 
-  // OTBN is done (raising the 'done' interrupt) either when it executes an ecall or an error
-  // occurs. The ecall triggered done is factored out as `done_complete` to avoid logic loops in the
-  // error handling logic.
+  // OTBN is done when it was executing something (in state OtbnStateUrndRefresh, OtbnStateRun or
+  // OtbnStateStall) and either it executes an ecall or an error occurs. A pulse on the done signal
+  // raises the 'done' interrupt and also tells the top-level to update its err_bits status
+  // register.
+  //
+  // The calculation that ecall triggered done is factored out as `done_complete` to avoid logic
+  // loops in the error handling logic.
   assign done_complete = (insn_valid_i && insn_dec_shared_i.ecall_insn);
-  assign done_o = done_complete | err;
+  assign executing = (state_q == OtbnStateUrndRefresh) ||
+                     (state_q == OtbnStateRun) ||
+                     (state_q == OtbnStateStall);
+  assign done_o = executing & (done_complete | err);
   assign locked_o = state_q == OtbnStateLocked;
 
   assign jump_or_branch = (insn_valid_i &
