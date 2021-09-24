@@ -140,8 +140,8 @@
     },
 
     % for wkup in Wkups:
-    { name: "${wkup['name'].upper()}_IDX",
-      desc: "Vector index for ${wkup['name']}, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+    { name: "${wkup['module'].upper()}_${wkup['name'].upper()}_IDX",
+      desc: "Vector index for ${wkup['module']} ${wkup['name']}, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "${loop.index}",
       local: "true"

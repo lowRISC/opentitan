@@ -22,7 +22,7 @@
     }
   ],
   wakeup_list: [
-    { name: "aon_sysrst_ctrl_wkup_req",
+    { name: "wkup_req",
       desc: "user directed wakeup",
     }
   ],
@@ -72,7 +72,7 @@
     { name: "z3_wakeup", desc: "To enter Z3 mode and exit from Z4 sleep mode" }
   ],
   inter_signal_list: [
-    { name:    "aon_sysrst_ctrl_wkup_req",
+    { name:    "wkup_req",
       package: "",
       struct:  "logic",
       act:     "req"

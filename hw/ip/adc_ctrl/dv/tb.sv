@@ -49,7 +49,7 @@ module tb;
     .adc_o               (),
     .adc_i               ('0),
     .intr_debug_cable_o  (interrupts[0]),
-    .debug_cable_wakeup_o()
+    .wkup_req_o          ()
   );
 
   initial begin

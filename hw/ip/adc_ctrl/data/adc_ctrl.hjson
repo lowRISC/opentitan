@@ -19,7 +19,7 @@
     { struct: "logic",
       type: "uni",
       act: "req",
-      name: "debug_cable_wakeup",
+      name: "wkup_req",
       package: "",
     }
   ],
@@ -36,7 +36,7 @@
     }
   ],
   wakeup_list: [
-    { name: "debug_cable_wakeup",
+    { name: "wkup_req",
       desc: "USB-C debug cable wakeup request",
     }
   ],

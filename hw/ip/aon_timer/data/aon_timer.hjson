@@ -27,7 +27,7 @@
     }
   ],
   wakeup_list: [
-    { name: "aon_timer_wkup_req",
+    { name: "wkup_req",
       desc: "Raised if the wakeup or watchdog timer has hit the specified threshold"
     },
   ],
@@ -47,7 +47,7 @@
     },
     { struct:  "logic",
       type:    "uni",
-      name:    "aon_timer_wkup_req",
+      name:    "wkup_req",
       act:     "req",
       package: "",
       default: "1'b0"
