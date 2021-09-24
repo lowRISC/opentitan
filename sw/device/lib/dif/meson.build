@@ -647,16 +647,21 @@ sw_lib_dif_aes = declare_dependency(
       hw_ip_aes_reg_h,
       'dif_aes.c',
     ],
-    dependencies: [sw_lib_mmio],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_autogen_aes,
+    ],
   )
 )
 
 test('dif_aes_unittest', executable(
     'dif_aes_unittest',
     sources: [
-      hw_ip_aes_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_aes.c',
       'dif_aes_unittest.cc',
+      'autogen/dif_aes_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_aes.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_aes_autogen.c',
+      hw_ip_aes_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

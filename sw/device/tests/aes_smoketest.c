@@ -49,15 +49,14 @@ const test_config_t kTestConfig;
 
 static bool aes_input_ready(const dif_aes_t *aes) {
   bool status;
-  CHECK(dif_aes_get_status(aes, kDifAesStatusInputReady, &status) == kDifAesOk);
+  CHECK(dif_aes_get_status(aes, kDifAesStatusInputReady, &status) == kDifOk);
 
   return status;
 }
 
 static bool aes_output_valid(const dif_aes_t *aes) {
   bool status;
-  CHECK(dif_aes_get_status(aes, kDifAesStatusOutputValid, &status) ==
-        kDifAesOk);
+  CHECK(dif_aes_get_status(aes, kDifAesStatusOutputValid, &status) == kDifOk);
 
   return status;
 }
@@ -71,11 +70,9 @@ bool test_main(void) {
   entropy_testutils_boot_mode_init();
 
   // Initialise AES.
-  dif_aes_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR),
-  };
-  CHECK(dif_aes_init(params, &aes) == kDifAesOk);
-  CHECK(dif_aes_reset(&aes) == kDifAesOk);
+  CHECK(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes) ==
+        kDifOk);
+  CHECK(dif_aes_reset(&aes) == kDifOk);
 
   // Mask the key. Note that this should not be done manually. Software is
   // expected to get the key in two shares right from the beginning.
@@ -95,7 +92,7 @@ bool test_main(void) {
       .mode = kDifAesModeEncrypt,
       .operation = kDifAesOperationAuto,
   };
-  CHECK(dif_aes_start_ecb(&aes, &transaction, key) == kDifAesOk);
+  CHECK(dif_aes_start_ecb(&aes, &transaction, key) == kDifOk);
 
   // "Convert" plain data byte arrays to `dif_aes_data_t`.
   dif_aes_data_t in_data_plain;
@@ -104,16 +101,16 @@ bool test_main(void) {
   // Load the plain text to trigger the encryption operation.
   while (!aes_input_ready(&aes)) {
   }
-  CHECK(dif_aes_load_data(&aes, in_data_plain) == kDifAesOk);
+  CHECK(dif_aes_load_data(&aes, in_data_plain) == kDifOk);
 
   // Read out the produced cipher text.
   dif_aes_data_t out_data_cipher;
   while (!aes_output_valid(&aes)) {
   }
-  CHECK(dif_aes_read_output(&aes, &out_data_cipher) == kDifAesOk);
+  CHECK(dif_aes_read_output(&aes, &out_data_cipher) == kDifOk);
 
   // Finish the ECB encryption transaction.
-  CHECK(dif_aes_end(&aes) == kDifAesOk);
+  CHECK(dif_aes_end(&aes) == kDifOk);
 
   // Check the produced cipher text against the reference.
   uint32_t cipher_text_gold_words[TEXT_LENGTH_IN_WORDS];
@@ -126,22 +123,22 @@ bool test_main(void) {
 
   // Setup ECB decryption transaction.
   transaction.mode = kDifAesModeDecrypt;
-  CHECK(dif_aes_start_ecb(&aes, &transaction, key) == kDifAesOk);
+  CHECK(dif_aes_start_ecb(&aes, &transaction, key) == kDifOk);
 
   // Load the previously produced cipher text to start the decryption operation.
   while (!aes_input_ready(&aes)) {
   }
-  CHECK(dif_aes_load_data(&aes, out_data_cipher) == kDifAesOk);
+  CHECK(dif_aes_load_data(&aes, out_data_cipher) == kDifOk);
 
   // Read out the produced plain text.
 
   dif_aes_data_t out_data_plain;
   while (!aes_output_valid(&aes)) {
   }
-  CHECK(dif_aes_read_output(&aes, &out_data_plain) == kDifAesOk);
+  CHECK(dif_aes_read_output(&aes, &out_data_plain) == kDifOk);
 
   // Finish the ECB encryption transaction.
-  CHECK(dif_aes_end(&aes) == kDifAesOk);
+  CHECK(dif_aes_end(&aes) == kDifOk);
 
   // Check the produced plain text against the reference.
   uint32_t plain_text_gold_words[TEXT_LENGTH_IN_WORDS];
