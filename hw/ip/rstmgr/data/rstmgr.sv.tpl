@@ -49,6 +49,9 @@ module rstmgr
   input scan_rst_ni,
   input lc_ctrl_pkg::lc_tx_t scanmode_i,
 
+  // Reset asserted indications going to alert handler
+  output rstmgr_rst_en_t rst_en_o,
+
   // reset outputs
 % for intf in export_rsts:
   output rstmgr_${intf}_out_t resets_${intf}_o,
@@ -85,6 +88,16 @@ module rstmgr
         .scanmode_i(por_scanmode == lc_ctrl_pkg::On),
         .rst_no(rst_por_aon_n[i])
       );
+
+      // reset asserted indication for alert handler
+      prim_lc_sender #(
+        .ResetValueIsOn(1)
+      ) u_prim_lc_sender (
+        .clk_i(clk_aon_i),
+        .rst_ni(rst_por_aon_n[i]),
+        .lc_en_i(lc_ctrl_pkg::Off),
+        .lc_en_o(rst_en_o.rst_por_aon[i])
+      );
     end else begin : gen_rst_por_domain
       logic rst_por_aon_premux;
       prim_flop_2sync #(
@@ -105,6 +118,16 @@ module rstmgr
         .clk1_i(scan_rst_ni),
         .sel_i(por_scanmode == lc_ctrl_pkg::On),
         .clk_o(rst_por_aon_n[i])
+      );
+
+      // reset asserted indication for alert handler
+      prim_lc_sender #(
+        .ResetValueIsOn(1)
+      ) u_prim_lc_sender (
+        .clk_i(clk_aon_i),
+        .rst_ni(rst_por_aon_n[i]),
+        .lc_en_i(lc_ctrl_pkg::Off),
+        .lc_en_o(rst_en_o.rst_por_aon[i])
       );
     end
   end
@@ -300,10 +323,19 @@ module rstmgr
     .clk_o(resets_o.rst_${name}_n[Domain${domain}Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_${name}_domain_${domain.lower()} (
+    .clk_i(clk_${rst.clock.name}_i),
+    .rst_ni(rst_${name}_n[Domain${domain}Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_${name}[Domain${domain}Sel])
+  );
       % else:
   assign rst_${name}_n[Domain${domain}Sel] = 1'b0;
   assign resets_o.rst_${name}_n[Domain${domain}Sel] = rst_${name}_n[Domain${domain}Sel];
-
+  assign rst_en_o.rst_${name}[Domain${domain}Sel] = lc_ctrl_pkg::On;
       % endif
     % endfor
   % endfor
@@ -433,6 +465,7 @@ module rstmgr
   `ASSERT_KNOWN(AlertsKnownO_A,      alert_tx_o    )
   `ASSERT_KNOWN(PwrKnownO_A,         pwr_o         )
   `ASSERT_KNOWN(ResetsKnownO_A,      resets_o      )
+  `ASSERT_KNOWN(RstEnKnownO_A,       rst_en_o      )
 % for intf in export_rsts:
   `ASSERT_KNOWN(${intf.capitalize()}ResetsKnownO_A, resets_${intf}_o )
 % endfor

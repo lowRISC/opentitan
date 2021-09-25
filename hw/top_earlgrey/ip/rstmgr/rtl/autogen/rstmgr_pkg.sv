@@ -35,7 +35,6 @@ package rstmgr_pkg;
   parameter int I2C2 = 9;
 
   // resets generated and broadcast
-  // This should be templatized and generated
   typedef struct packed {
     logic [PowerDomains-1:0] rst_por_aon_n;
     logic [PowerDomains-1:0] rst_por_n;
@@ -62,6 +61,36 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_i2c1_n;
     logic [PowerDomains-1:0] rst_i2c2_n;
   } rstmgr_out_t;
+
+  // reset indication for alert handler
+  typedef struct packed {
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_por_aon;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_por;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_por_io;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_por_io_div2;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_por_io_div4;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_por_usb;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_lc;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_lc_io_div4_shadowed;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_lc_io_div4;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_lc_aon;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_sys_shadowed;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_sys;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_sys_io_div4;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_sys_aon;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_spi_device;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_spi_host0;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_spi_host0_core;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_spi_host1;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_spi_host1_core;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_usb;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_usbif;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_i2c0;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_i2c1;
+    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] rst_i2c2;
+  } rstmgr_rst_en_t;
+
+  parameter int NumOutputRst = 24 * PowerDomains;
 
   // cpu reset requests and status
   typedef struct packed {

@@ -58,6 +58,9 @@ module rstmgr
   input scan_rst_ni,
   input lc_ctrl_pkg::lc_tx_t scanmode_i,
 
+  // Reset asserted indications going to alert handler
+  output rstmgr_rst_en_t rst_en_o,
+
   // reset outputs
   output rstmgr_out_t resets_o
 
@@ -91,6 +94,16 @@ module rstmgr
         .scanmode_i(por_scanmode == lc_ctrl_pkg::On),
         .rst_no(rst_por_aon_n[i])
       );
+
+      // reset asserted indication for alert handler
+      prim_lc_sender #(
+        .ResetValueIsOn(1)
+      ) u_prim_lc_sender (
+        .clk_i(clk_aon_i),
+        .rst_ni(rst_por_aon_n[i]),
+        .lc_en_i(lc_ctrl_pkg::Off),
+        .lc_en_o(rst_en_o.rst_por_aon[i])
+      );
     end else begin : gen_rst_por_domain
       logic rst_por_aon_premux;
       prim_flop_2sync #(
@@ -111,6 +124,16 @@ module rstmgr
         .clk1_i(scan_rst_ni),
         .sel_i(por_scanmode == lc_ctrl_pkg::On),
         .clk_o(rst_por_aon_n[i])
+      );
+
+      // reset asserted indication for alert handler
+      prim_lc_sender #(
+        .ResetValueIsOn(1)
+      ) u_prim_lc_sender (
+        .clk_i(clk_aon_i),
+        .rst_ni(rst_por_aon_n[i]),
+        .lc_en_i(lc_ctrl_pkg::Off),
+        .lc_en_o(rst_en_o.rst_por_aon[i])
       );
     end
   end
@@ -293,9 +316,18 @@ module rstmgr
     .clk_o(resets_o.rst_por_n[DomainAonSel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_por_domain_aon (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_por_n[DomainAonSel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_por[DomainAonSel])
+  );
   assign rst_por_n[Domain0Sel] = 1'b0;
   assign resets_o.rst_por_n[Domain0Sel] = rst_por_n[Domain0Sel];
-
+  assign rst_en_o.rst_por[Domain0Sel] = lc_ctrl_pkg::On;
   // Generating resets for por_io
   // Power Domains: ['Aon']
   // Shadowed: False
@@ -319,9 +351,18 @@ module rstmgr
     .clk_o(resets_o.rst_por_io_n[DomainAonSel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_por_io_domain_aon (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_por_io_n[DomainAonSel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_por_io[DomainAonSel])
+  );
   assign rst_por_io_n[Domain0Sel] = 1'b0;
   assign resets_o.rst_por_io_n[Domain0Sel] = rst_por_io_n[Domain0Sel];
-
+  assign rst_en_o.rst_por_io[Domain0Sel] = lc_ctrl_pkg::On;
   // Generating resets for por_io_div2
   // Power Domains: ['Aon']
   // Shadowed: False
@@ -345,9 +386,18 @@ module rstmgr
     .clk_o(resets_o.rst_por_io_div2_n[DomainAonSel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_por_io_div2_domain_aon (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_por_io_div2_n[DomainAonSel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_por_io_div2[DomainAonSel])
+  );
   assign rst_por_io_div2_n[Domain0Sel] = 1'b0;
   assign resets_o.rst_por_io_div2_n[Domain0Sel] = rst_por_io_div2_n[Domain0Sel];
-
+  assign rst_en_o.rst_por_io_div2[Domain0Sel] = lc_ctrl_pkg::On;
   // Generating resets for por_io_div4
   // Power Domains: ['Aon', '0']
   // Shadowed: False
@@ -371,6 +421,15 @@ module rstmgr
     .clk_o(resets_o.rst_por_io_div4_n[DomainAonSel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_por_io_div4_domain_aon (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_por_io_div4_n[DomainAonSel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_por_io_div4[DomainAonSel])
+  );
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -390,6 +449,15 @@ module rstmgr
     .clk_o(resets_o.rst_por_io_div4_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_por_io_div4_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_por_io_div4_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_por_io_div4[Domain0Sel])
+  );
   // Generating resets for por_usb
   // Power Domains: ['Aon']
   // Shadowed: False
@@ -413,16 +481,25 @@ module rstmgr
     .clk_o(resets_o.rst_por_usb_n[DomainAonSel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_por_usb_domain_aon (
+    .clk_i(clk_usb_i),
+    .rst_ni(rst_por_usb_n[DomainAonSel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_por_usb[DomainAonSel])
+  );
   assign rst_por_usb_n[Domain0Sel] = 1'b0;
   assign resets_o.rst_por_usb_n[Domain0Sel] = rst_por_usb_n[Domain0Sel];
-
+  assign rst_en_o.rst_por_usb[Domain0Sel] = lc_ctrl_pkg::On;
   // Generating resets for lc
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_lc_n;
   assign rst_lc_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_lc_n[DomainAonSel] = rst_lc_n[DomainAonSel];
-
+  assign rst_en_o.rst_lc[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -442,6 +519,15 @@ module rstmgr
     .clk_o(resets_o.rst_lc_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_lc_domain_0 (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_lc_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_lc[Domain0Sel])
+  );
   // Generating resets for lc_io_div4
   // Power Domains: ['0', 'Aon']
   // Shadowed: True
@@ -465,6 +551,15 @@ module rstmgr
     .clk_o(resets_o.rst_lc_io_div4_n[DomainAonSel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_lc_io_div4_domain_aon (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_lc_io_div4_n[DomainAonSel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_lc_io_div4[DomainAonSel])
+  );
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -484,6 +579,15 @@ module rstmgr
     .clk_o(resets_o.rst_lc_io_div4_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_lc_io_div4_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_lc_io_div4_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_lc_io_div4[Domain0Sel])
+  );
   logic [PowerDomains-1:0] rst_lc_io_div4_shadowed_n;
   prim_flop_2sync #(
     .Width(1),
@@ -504,6 +608,15 @@ module rstmgr
     .clk_o(resets_o.rst_lc_io_div4_shadowed_n[DomainAonSel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_lc_io_div4_shadowed_domain_aon (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_lc_io_div4_shadowed_n[DomainAonSel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_lc_io_div4_shadowed[DomainAonSel])
+  );
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -523,6 +636,15 @@ module rstmgr
     .clk_o(resets_o.rst_lc_io_div4_shadowed_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_lc_io_div4_shadowed_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_lc_io_div4_shadowed_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_lc_io_div4_shadowed[Domain0Sel])
+  );
   // Generating resets for lc_aon
   // Power Domains: ['Aon']
   // Shadowed: False
@@ -546,16 +668,25 @@ module rstmgr
     .clk_o(resets_o.rst_lc_aon_n[DomainAonSel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_lc_aon_domain_aon (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_lc_aon_n[DomainAonSel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_lc_aon[DomainAonSel])
+  );
   assign rst_lc_aon_n[Domain0Sel] = 1'b0;
   assign resets_o.rst_lc_aon_n[Domain0Sel] = rst_lc_aon_n[Domain0Sel];
-
+  assign rst_en_o.rst_lc_aon[Domain0Sel] = lc_ctrl_pkg::On;
   // Generating resets for sys
   // Power Domains: ['0']
   // Shadowed: True
   logic [PowerDomains-1:0] rst_sys_n;
   assign rst_sys_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_sys_n[DomainAonSel] = rst_sys_n[DomainAonSel];
-
+  assign rst_en_o.rst_sys[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -575,10 +706,19 @@ module rstmgr
     .clk_o(resets_o.rst_sys_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_sys_domain_0 (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_sys_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_sys[Domain0Sel])
+  );
   logic [PowerDomains-1:0] rst_sys_shadowed_n;
   assign rst_sys_shadowed_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_sys_shadowed_n[DomainAonSel] = rst_sys_shadowed_n[DomainAonSel];
-
+  assign rst_en_o.rst_sys_shadowed[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -598,6 +738,15 @@ module rstmgr
     .clk_o(resets_o.rst_sys_shadowed_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_sys_shadowed_domain_0 (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_sys_shadowed_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_sys_shadowed[Domain0Sel])
+  );
   // Generating resets for sys_io_div4
   // Power Domains: ['0', 'Aon']
   // Shadowed: False
@@ -621,6 +770,15 @@ module rstmgr
     .clk_o(resets_o.rst_sys_io_div4_n[DomainAonSel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_sys_io_div4_domain_aon (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_sys_io_div4_n[DomainAonSel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_sys_io_div4[DomainAonSel])
+  );
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -640,6 +798,15 @@ module rstmgr
     .clk_o(resets_o.rst_sys_io_div4_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_sys_io_div4_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_sys_io_div4_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_sys_io_div4[Domain0Sel])
+  );
   // Generating resets for sys_aon
   // Power Domains: ['0', 'Aon']
   // Shadowed: False
@@ -663,6 +830,15 @@ module rstmgr
     .clk_o(resets_o.rst_sys_aon_n[DomainAonSel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_sys_aon_domain_aon (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_sys_aon_n[DomainAonSel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_sys_aon[DomainAonSel])
+  );
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -682,13 +858,22 @@ module rstmgr
     .clk_o(resets_o.rst_sys_aon_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_sys_aon_domain_0 (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_sys_aon_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_sys_aon[Domain0Sel])
+  );
   // Generating resets for spi_device
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_spi_device_n;
   assign rst_spi_device_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_spi_device_n[DomainAonSel] = rst_spi_device_n[DomainAonSel];
-
+  assign rst_en_o.rst_spi_device[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -708,13 +893,22 @@ module rstmgr
     .clk_o(resets_o.rst_spi_device_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_spi_device_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_spi_device_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_spi_device[Domain0Sel])
+  );
   // Generating resets for spi_host0
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_spi_host0_n;
   assign rst_spi_host0_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_spi_host0_n[DomainAonSel] = rst_spi_host0_n[DomainAonSel];
-
+  assign rst_en_o.rst_spi_host0[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -734,13 +928,22 @@ module rstmgr
     .clk_o(resets_o.rst_spi_host0_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_spi_host0_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_spi_host0_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_spi_host0[Domain0Sel])
+  );
   // Generating resets for spi_host0_core
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_spi_host0_core_n;
   assign rst_spi_host0_core_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_spi_host0_core_n[DomainAonSel] = rst_spi_host0_core_n[DomainAonSel];
-
+  assign rst_en_o.rst_spi_host0_core[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -760,13 +963,22 @@ module rstmgr
     .clk_o(resets_o.rst_spi_host0_core_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_spi_host0_core_domain_0 (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_spi_host0_core_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_spi_host0_core[Domain0Sel])
+  );
   // Generating resets for spi_host1
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_spi_host1_n;
   assign rst_spi_host1_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_spi_host1_n[DomainAonSel] = rst_spi_host1_n[DomainAonSel];
-
+  assign rst_en_o.rst_spi_host1[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -786,13 +998,22 @@ module rstmgr
     .clk_o(resets_o.rst_spi_host1_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_spi_host1_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_spi_host1_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_spi_host1[Domain0Sel])
+  );
   // Generating resets for spi_host1_core
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_spi_host1_core_n;
   assign rst_spi_host1_core_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_spi_host1_core_n[DomainAonSel] = rst_spi_host1_core_n[DomainAonSel];
-
+  assign rst_en_o.rst_spi_host1_core[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -812,13 +1033,22 @@ module rstmgr
     .clk_o(resets_o.rst_spi_host1_core_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_spi_host1_core_domain_0 (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_spi_host1_core_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_spi_host1_core[Domain0Sel])
+  );
   // Generating resets for usb
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_usb_n;
   assign rst_usb_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_usb_n[DomainAonSel] = rst_usb_n[DomainAonSel];
-
+  assign rst_en_o.rst_usb[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -838,13 +1068,22 @@ module rstmgr
     .clk_o(resets_o.rst_usb_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_usb_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_usb_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_usb[Domain0Sel])
+  );
   // Generating resets for usbif
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_usbif_n;
   assign rst_usbif_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_usbif_n[DomainAonSel] = rst_usbif_n[DomainAonSel];
-
+  assign rst_en_o.rst_usbif[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -864,13 +1103,22 @@ module rstmgr
     .clk_o(resets_o.rst_usbif_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_usbif_domain_0 (
+    .clk_i(clk_usb_i),
+    .rst_ni(rst_usbif_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_usbif[Domain0Sel])
+  );
   // Generating resets for i2c0
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_i2c0_n;
   assign rst_i2c0_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_i2c0_n[DomainAonSel] = rst_i2c0_n[DomainAonSel];
-
+  assign rst_en_o.rst_i2c0[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -890,13 +1138,22 @@ module rstmgr
     .clk_o(resets_o.rst_i2c0_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_i2c0_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_i2c0_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_i2c0[Domain0Sel])
+  );
   // Generating resets for i2c1
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_i2c1_n;
   assign rst_i2c1_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_i2c1_n[DomainAonSel] = rst_i2c1_n[DomainAonSel];
-
+  assign rst_en_o.rst_i2c1[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -916,13 +1173,22 @@ module rstmgr
     .clk_o(resets_o.rst_i2c1_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_i2c1_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_i2c1_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_i2c1[Domain0Sel])
+  );
   // Generating resets for i2c2
   // Power Domains: ['0']
   // Shadowed: False
   logic [PowerDomains-1:0] rst_i2c2_n;
   assign rst_i2c2_n[DomainAonSel] = 1'b0;
   assign resets_o.rst_i2c2_n[DomainAonSel] = rst_i2c2_n[DomainAonSel];
-
+  assign rst_en_o.rst_i2c2[DomainAonSel] = lc_ctrl_pkg::On;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -942,6 +1208,15 @@ module rstmgr
     .clk_o(resets_o.rst_i2c2_n[Domain0Sel])
   );
 
+  // reset asserted indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_i2c2_domain_0 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_i2c2_n[Domain0Sel]),
+    .lc_en_i(lc_ctrl_pkg::Off),
+    .lc_en_o(rst_en_o.rst_i2c2[Domain0Sel])
+  );
 
   ////////////////////////////////////////////////////
   // Reset info construction                        //
@@ -1060,5 +1335,6 @@ module rstmgr
   `ASSERT_KNOWN(AlertsKnownO_A,      alert_tx_o    )
   `ASSERT_KNOWN(PwrKnownO_A,         pwr_o         )
   `ASSERT_KNOWN(ResetsKnownO_A,      resets_o      )
+  `ASSERT_KNOWN(RstEnKnownO_A,       rst_en_o      )
 
 endmodule // rstmgr

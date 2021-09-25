@@ -2664,6 +2664,16 @@
           index: -1
         }
         {
+          name: rst_en
+          struct: rstmgr_rst_en
+          package: rstmgr_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rstmgr_aon
+          index: -1
+        }
+        {
           name: rst_cpu_n
           struct: logic
           type: uni
@@ -14852,6 +14862,16 @@
         inst_name: rstmgr_aon
         default: ""
         top_signame: rstmgr_aon_resets
+        index: -1
+      }
+      {
+        name: rst_en
+        struct: rstmgr_rst_en
+        package: rstmgr_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rstmgr_aon
         index: -1
       }
       {
