@@ -20,6 +20,7 @@ package clkmgr_pkg;
     HintMainOtbn = 4
   } hint_names_e;
 
+  // clocks generated and broadcast
   typedef struct packed {
     logic clk_io_div4_powerup;
     logic clk_aon_powerup;
@@ -46,8 +47,38 @@ package clkmgr_pkg;
     logic clk_io_div2_peri;
     logic clk_io_peri;
     logic clk_usb_peri;
-
   } clkmgr_out_t;
+
+  // clock gating indication for alert handler
+  typedef struct packed {
+    lc_ctrl_pkg::lc_tx_t clk_io_div4_powerup;
+    lc_ctrl_pkg::lc_tx_t clk_aon_powerup;
+    lc_ctrl_pkg::lc_tx_t clk_main_powerup;
+    lc_ctrl_pkg::lc_tx_t clk_io_powerup;
+    lc_ctrl_pkg::lc_tx_t clk_usb_powerup;
+    lc_ctrl_pkg::lc_tx_t clk_io_div2_powerup;
+    lc_ctrl_pkg::lc_tx_t clk_aon_infra;
+    lc_ctrl_pkg::lc_tx_t clk_aon_secure;
+    lc_ctrl_pkg::lc_tx_t clk_aon_peri;
+    lc_ctrl_pkg::lc_tx_t clk_aon_timers;
+    lc_ctrl_pkg::lc_tx_t clk_main_aes;
+    lc_ctrl_pkg::lc_tx_t clk_main_hmac;
+    lc_ctrl_pkg::lc_tx_t clk_main_kmac;
+    lc_ctrl_pkg::lc_tx_t clk_main_otbn;
+    lc_ctrl_pkg::lc_tx_t clk_io_div4_otbn;
+    lc_ctrl_pkg::lc_tx_t clk_io_div4_infra;
+    lc_ctrl_pkg::lc_tx_t clk_main_infra;
+    lc_ctrl_pkg::lc_tx_t clk_io_div4_secure;
+    lc_ctrl_pkg::lc_tx_t clk_main_secure;
+    lc_ctrl_pkg::lc_tx_t clk_usb_secure;
+    lc_ctrl_pkg::lc_tx_t clk_io_div4_timers;
+    lc_ctrl_pkg::lc_tx_t clk_io_div4_peri;
+    lc_ctrl_pkg::lc_tx_t clk_io_div2_peri;
+    lc_ctrl_pkg::lc_tx_t clk_io_peri;
+    lc_ctrl_pkg::lc_tx_t clk_usb_peri;
+  } clkmgr_cg_en_t;
+
+  parameter int NumOutputClk = 25;
 
 
   typedef struct packed {

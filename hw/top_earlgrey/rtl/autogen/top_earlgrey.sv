@@ -1570,6 +1570,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .clocks_o(clkmgr_aon_clocks),
+      .cg_en_o(),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .ast_clk_byp_req_o(ast_clk_byp_req_o),
       .ast_clk_byp_ack_i(ast_clk_byp_ack_i),

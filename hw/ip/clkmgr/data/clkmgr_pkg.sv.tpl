@@ -14,12 +14,22 @@ package clkmgr_pkg;
 % endfor
   } hint_names_e;
 
+  // clocks generated and broadcast
   typedef struct packed {
 % for clk in typed_clocks.all_clocks():
     logic ${clk};
 % endfor
-
   } clkmgr_out_t;
+
+  // clock gating indication for alert handler
+  typedef struct packed {
+<% n_clk = 0 %>\
+% for clk in typed_clocks.all_clocks():
+    lc_ctrl_pkg::lc_tx_t ${clk};<% n_clk += 1 %>
+% endfor
+  } clkmgr_cg_en_t;
+
+  parameter int NumOutputClk = ${n_clk};
 
 % for intf, eps in cfg['exported_clks'].items():
   typedef struct packed {
