@@ -10,19 +10,26 @@
 
 `include "prim_assert.sv"
 
-module prim_lc_sender (
+module prim_lc_sender #(
+  // 0: reset value is lc_ctrl_pkg::Off
+  // 1: reset value is lc_ctrl_pkg::On
+  parameter bit ResetValueIsOn = 0
+) (
   input                       clk_i,
   input                       rst_ni,
   input  lc_ctrl_pkg::lc_tx_t lc_en_i,
   output lc_ctrl_pkg::lc_tx_t lc_en_o
 );
 
+  localparam lc_ctrl_pkg::lc_tx_t ResetValue = (ResetValueIsOn) ? lc_ctrl_pkg::On :
+                                                                  lc_ctrl_pkg::Off;
+
   logic [lc_ctrl_pkg::TxWidth-1:0] lc_en, lc_en_out;
   assign lc_en = lc_ctrl_pkg::TxWidth'(lc_en_i);
 
   prim_flop #(
     .Width(lc_ctrl_pkg::TxWidth),
-    .ResetValue(lc_ctrl_pkg::TxWidth'(lc_ctrl_pkg::Off))
+    .ResetValue(lc_ctrl_pkg::TxWidth'(ResetValue))
   ) u_prim_flop (
     .clk_i,
     .rst_ni,
