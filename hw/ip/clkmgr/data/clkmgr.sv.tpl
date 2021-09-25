@@ -61,6 +61,9 @@
   // jittery enable
   output logic jitter_en_o,
 
+  // clock gated indications going to alert handlers
+  output clkmgr_cg_en_t cg_en_o,
+
   // clock output interface
 % for intf in cfg['exported_clks']:
   output clkmgr_${intf}_out_t clocks_${intf}_o,
@@ -189,6 +192,9 @@
     .clk_i(clk_${v.src.name}_i),
     .clk_o(clocks_o.${k})
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.${k} = lc_ctrl_pkg::Off;
 % endfor
 
   ////////////////////////////////////////////////////
@@ -332,6 +338,14 @@
   ////////////////////////////////////////////////////
 % for k,v in typed_clocks.rg_clks.items():
   assign clocks_o.${k} = clk_${v.src.name}_root;
+
+  // clock gated indication for alert handler
+  prim_lc_sender u_prim_lc_sender_${k} (
+    .clk_i(clk_${v.src.name}_i),
+    .rst_ni(rst_${v.src.name}_ni),
+    .lc_en_i(((clk_${v.src.name}_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.${k})
+  );
 % endfor
 
   ////////////////////////////////////////////////////
@@ -363,13 +377,25 @@
     .lc_en_o(${k}_scanmode)
   );
 
+  logic ${k}_combined_en;
+  assign ${k}_combined_en = ${k}_sw_en & clk_${v.src.name}_en;
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_${k}_cg (
     .clk_i(clk_${v.src.name}_root),
-    .en_i(${k}_sw_en & clk_${v.src.name}_en),
+    .en_i(${k}_combined_en),
     .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${k})
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_${k} (
+    .clk_i(clk_${v.src.name}_i),
+    .rst_ni(rst_${v.src.name}_ni),
+    .lc_en_i(((${k}_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.${k})
   );
 
 % endfor
@@ -408,13 +434,31 @@
     .lc_en_o(${clk}_scanmode)
   );
 
+  // Add a prim buf here to make sure the CG and the lc sender inputs
+  // are derived from the same physical signal.
+  logic ${clk}_combined_en;
+  prim_buf u_prim_buf_${clk}_en (
+    .in_i(${clk}_en & clk_${sig.src.name}_en),
+    .out_o(${clk}_combined_en)
+  );
+
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_${clk}_cg (
     .clk_i(clk_${sig.src.name}_root),
-    .en_i(${clk}_en & clk_${sig.src.name}_en),
+    .en_i(${clk}_combined_en),
     .test_en_i(${clk}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${clk})
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_${clk} (
+    .clk_i(clk_${sig.src.name}_i),
+    .rst_ni(rst_${sig.src.name}_ni),
+    .lc_en_i(((${clk}_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.${clk})
   );
 
 % endfor
@@ -454,5 +498,6 @@
   `ASSERT_KNOWN(ExportClocksKownO_A, clocks_${intf}_o)
 % endfor
   `ASSERT_KNOWN(ClocksKownO_A, clocks_o)
+  `ASSERT_KNOWN(CgEnKnownO_A, cg_en_o)
 
 endmodule // clkmgr

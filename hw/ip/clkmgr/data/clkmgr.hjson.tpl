@@ -49,6 +49,13 @@
       package: "clkmgr_pkg",
     },
 
+    { struct:  "clkmgr_cg_en",
+      type:    "uni",
+      name:    "cg_en",
+      act:     "req",
+      package: "clkmgr_pkg",
+    },
+
     { struct:  "lc_tx",
       type:    "uni",
       name:    "lc_dft_en",

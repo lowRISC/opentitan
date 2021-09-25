@@ -70,6 +70,9 @@
   // jittery enable
   output logic jitter_en_o,
 
+  // clock gated indications going to alert handlers
+  output clkmgr_cg_en_t cg_en_o,
+
   // clock output interface
   output clkmgr_out_t clocks_o
 
@@ -213,42 +216,72 @@
     .clk_i(clk_io_div4_i),
     .clk_o(clocks_o.clk_io_div4_powerup)
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.clk_io_div4_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_aon_powerup_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_powerup)
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.clk_aon_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_main_powerup_buf (
     .clk_i(clk_main_i),
     .clk_o(clocks_o.clk_main_powerup)
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.clk_main_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_io_powerup_buf (
     .clk_i(clk_io_i),
     .clk_o(clocks_o.clk_io_powerup)
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.clk_io_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_usb_powerup_buf (
     .clk_i(clk_usb_i),
     .clk_o(clocks_o.clk_usb_powerup)
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.clk_usb_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_io_div2_powerup_buf (
     .clk_i(clk_io_div2_i),
     .clk_o(clocks_o.clk_io_div2_powerup)
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.clk_io_div2_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_aon_infra_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_infra)
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.clk_aon_infra = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_aon_secure_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_secure)
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.clk_aon_secure = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_aon_peri_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_peri)
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.clk_aon_peri = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_aon_timers_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_timers)
   );
+
+  // clock gated indication for alert handler: these clocks are never gated.
+  assign cg_en_o.clk_aon_timers = lc_ctrl_pkg::Off;
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -559,11 +592,59 @@
   // Clocks with only root gate
   ////////////////////////////////////////////////////
   assign clocks_o.clk_io_div4_infra = clk_io_div4_root;
+
+  // clock gated indication for alert handler
+  prim_lc_sender u_prim_lc_sender_clk_io_div4_infra (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .lc_en_i(((clk_io_div4_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_io_div4_infra)
+  );
   assign clocks_o.clk_main_infra = clk_main_root;
+
+  // clock gated indication for alert handler
+  prim_lc_sender u_prim_lc_sender_clk_main_infra (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_main_ni),
+    .lc_en_i(((clk_main_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_main_infra)
+  );
   assign clocks_o.clk_io_div4_secure = clk_io_div4_root;
+
+  // clock gated indication for alert handler
+  prim_lc_sender u_prim_lc_sender_clk_io_div4_secure (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .lc_en_i(((clk_io_div4_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_io_div4_secure)
+  );
   assign clocks_o.clk_main_secure = clk_main_root;
+
+  // clock gated indication for alert handler
+  prim_lc_sender u_prim_lc_sender_clk_main_secure (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_main_ni),
+    .lc_en_i(((clk_main_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_main_secure)
+  );
   assign clocks_o.clk_usb_secure = clk_usb_root;
+
+  // clock gated indication for alert handler
+  prim_lc_sender u_prim_lc_sender_clk_usb_secure (
+    .clk_i(clk_usb_i),
+    .rst_ni(rst_usb_ni),
+    .lc_en_i(((clk_usb_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_usb_secure)
+  );
   assign clocks_o.clk_io_div4_timers = clk_io_div4_root;
+
+  // clock gated indication for alert handler
+  prim_lc_sender u_prim_lc_sender_clk_io_div4_timers (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .lc_en_i(((clk_io_div4_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_io_div4_timers)
+  );
 
   ////////////////////////////////////////////////////
   // Software direct control group
@@ -594,13 +675,25 @@
     .lc_en_o(clk_io_div4_peri_scanmode)
   );
 
+  logic clk_io_div4_peri_combined_en;
+  assign clk_io_div4_peri_combined_en = clk_io_div4_peri_sw_en & clk_io_div4_en;
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div4_peri_cg (
     .clk_i(clk_io_div4_root),
-    .en_i(clk_io_div4_peri_sw_en & clk_io_div4_en),
+    .en_i(clk_io_div4_peri_combined_en),
     .test_en_i(clk_io_div4_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div4_peri)
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_clk_io_div4_peri (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .lc_en_i(((clk_io_div4_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_io_div4_peri)
   );
 
   prim_flop_2sync #(
@@ -623,13 +716,25 @@
     .lc_en_o(clk_io_div2_peri_scanmode)
   );
 
+  logic clk_io_div2_peri_combined_en;
+  assign clk_io_div2_peri_combined_en = clk_io_div2_peri_sw_en & clk_io_div2_en;
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div2_peri_cg (
     .clk_i(clk_io_div2_root),
-    .en_i(clk_io_div2_peri_sw_en & clk_io_div2_en),
+    .en_i(clk_io_div2_peri_combined_en),
     .test_en_i(clk_io_div2_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div2_peri)
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_clk_io_div2_peri (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_io_div2_ni),
+    .lc_en_i(((clk_io_div2_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_io_div2_peri)
   );
 
   prim_flop_2sync #(
@@ -652,13 +757,25 @@
     .lc_en_o(clk_io_peri_scanmode)
   );
 
+  logic clk_io_peri_combined_en;
+  assign clk_io_peri_combined_en = clk_io_peri_sw_en & clk_io_en;
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_peri_cg (
     .clk_i(clk_io_root),
-    .en_i(clk_io_peri_sw_en & clk_io_en),
+    .en_i(clk_io_peri_combined_en),
     .test_en_i(clk_io_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_peri)
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_clk_io_peri (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .lc_en_i(((clk_io_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_io_peri)
   );
 
   prim_flop_2sync #(
@@ -681,13 +798,25 @@
     .lc_en_o(clk_usb_peri_scanmode)
   );
 
+  logic clk_usb_peri_combined_en;
+  assign clk_usb_peri_combined_en = clk_usb_peri_sw_en & clk_usb_en;
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_usb_peri_cg (
     .clk_i(clk_usb_root),
-    .en_i(clk_usb_peri_sw_en & clk_usb_en),
+    .en_i(clk_usb_peri_combined_en),
     .test_en_i(clk_usb_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_usb_peri)
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_clk_usb_peri (
+    .clk_i(clk_usb_i),
+    .rst_ni(rst_usb_ni),
+    .lc_en_i(((clk_usb_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_usb_peri)
   );
 
 
@@ -730,13 +859,31 @@
     .lc_en_o(clk_main_aes_scanmode)
   );
 
+  // Add a prim buf here to make sure the CG and the lc sender inputs
+  // are derived from the same physical signal.
+  logic clk_main_aes_combined_en;
+  prim_buf u_prim_buf_clk_main_aes_en (
+    .in_i(clk_main_aes_en & clk_main_en),
+    .out_o(clk_main_aes_combined_en)
+  );
+
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_aes_cg (
     .clk_i(clk_main_root),
-    .en_i(clk_main_aes_en & clk_main_en),
+    .en_i(clk_main_aes_combined_en),
     .test_en_i(clk_main_aes_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_aes)
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_clk_main_aes (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_main_ni),
+    .lc_en_i(((clk_main_aes_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_main_aes)
   );
 
   assign clk_main_hmac_en = clk_main_hmac_hint | ~idle_i[HintMainHmac];
@@ -761,13 +908,31 @@
     .lc_en_o(clk_main_hmac_scanmode)
   );
 
+  // Add a prim buf here to make sure the CG and the lc sender inputs
+  // are derived from the same physical signal.
+  logic clk_main_hmac_combined_en;
+  prim_buf u_prim_buf_clk_main_hmac_en (
+    .in_i(clk_main_hmac_en & clk_main_en),
+    .out_o(clk_main_hmac_combined_en)
+  );
+
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_hmac_cg (
     .clk_i(clk_main_root),
-    .en_i(clk_main_hmac_en & clk_main_en),
+    .en_i(clk_main_hmac_combined_en),
     .test_en_i(clk_main_hmac_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_hmac)
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_clk_main_hmac (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_main_ni),
+    .lc_en_i(((clk_main_hmac_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_main_hmac)
   );
 
   assign clk_main_kmac_en = clk_main_kmac_hint | ~idle_i[HintMainKmac];
@@ -792,13 +957,31 @@
     .lc_en_o(clk_main_kmac_scanmode)
   );
 
+  // Add a prim buf here to make sure the CG and the lc sender inputs
+  // are derived from the same physical signal.
+  logic clk_main_kmac_combined_en;
+  prim_buf u_prim_buf_clk_main_kmac_en (
+    .in_i(clk_main_kmac_en & clk_main_en),
+    .out_o(clk_main_kmac_combined_en)
+  );
+
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_kmac_cg (
     .clk_i(clk_main_root),
-    .en_i(clk_main_kmac_en & clk_main_en),
+    .en_i(clk_main_kmac_combined_en),
     .test_en_i(clk_main_kmac_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_kmac)
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_clk_main_kmac (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_main_ni),
+    .lc_en_i(((clk_main_kmac_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_main_kmac)
   );
 
   assign clk_main_otbn_en = clk_main_otbn_hint | ~idle_i[HintMainOtbn];
@@ -823,13 +1006,31 @@
     .lc_en_o(clk_main_otbn_scanmode)
   );
 
+  // Add a prim buf here to make sure the CG and the lc sender inputs
+  // are derived from the same physical signal.
+  logic clk_main_otbn_combined_en;
+  prim_buf u_prim_buf_clk_main_otbn_en (
+    .in_i(clk_main_otbn_en & clk_main_en),
+    .out_o(clk_main_otbn_combined_en)
+  );
+
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_otbn_cg (
     .clk_i(clk_main_root),
-    .en_i(clk_main_otbn_en & clk_main_en),
+    .en_i(clk_main_otbn_combined_en),
     .test_en_i(clk_main_otbn_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_otbn)
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_clk_main_otbn (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_main_ni),
+    .lc_en_i(((clk_main_otbn_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_main_otbn)
   );
 
   assign clk_io_div4_otbn_en = clk_io_div4_otbn_hint | ~idle_i[HintIoDiv4Otbn];
@@ -854,13 +1055,31 @@
     .lc_en_o(clk_io_div4_otbn_scanmode)
   );
 
+  // Add a prim buf here to make sure the CG and the lc sender inputs
+  // are derived from the same physical signal.
+  logic clk_io_div4_otbn_combined_en;
+  prim_buf u_prim_buf_clk_io_div4_otbn_en (
+    .in_i(clk_io_div4_otbn_en & clk_io_div4_en),
+    .out_o(clk_io_div4_otbn_combined_en)
+  );
+
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_io_div4_otbn_cg (
     .clk_i(clk_io_div4_root),
-    .en_i(clk_io_div4_otbn_en & clk_io_div4_en),
+    .en_i(clk_io_div4_otbn_combined_en),
     .test_en_i(clk_io_div4_otbn_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div4_otbn)
+  );
+
+  // clock gated indication for alert handler
+  prim_lc_sender #(
+    .ResetValueIsOn(1)
+  ) u_prim_lc_sender_clk_io_div4_otbn (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .lc_en_i(((clk_io_div4_otbn_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
+    .lc_en_o(cg_en_o.clk_io_div4_otbn)
   );
 
 
@@ -895,5 +1114,6 @@
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
   `ASSERT_KNOWN(ClocksKownO_A, clocks_o)
+  `ASSERT_KNOWN(CgEnKnownO_A, cg_en_o)
 
 endmodule // clkmgr

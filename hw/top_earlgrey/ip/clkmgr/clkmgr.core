@@ -12,6 +12,7 @@ filesets:
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:buf
       - lowrisc:prim:clock_buf
       - lowrisc:prim:clock_div
       - lowrisc:prim:clock_gating
