@@ -46,10 +46,10 @@ static const uint32_t kGpioMask = 0x0000FFFF;
  * @param write_val Value to write.
  */
 static void test_gpio_write(uint32_t write_val) {
-  CHECK(dif_gpio_write_all(&gpio, write_val) == kDifGpioOk);
+  CHECK(dif_gpio_write_all(&gpio, write_val) == kDifOk);
 
   uint32_t read_val = 0;
-  CHECK(dif_gpio_read_all(&gpio, &read_val) == kDifGpioOk);
+  CHECK(dif_gpio_read_all(&gpio, &read_val) == kDifOk);
 
   uint32_t expected = write_val & kGpioMask;
   uint32_t actual = read_val & kGpioMask;
@@ -63,12 +63,9 @@ static void test_gpio_write(uint32_t write_val) {
  * NOTE: This test can currently run only on FPGA and DV.
  */
 bool test_main(void) {
-  CHECK(dif_gpio_init(
-            (dif_gpio_params_t){
-                .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
-            },
-            &gpio) == kDifGpioOk);
-  CHECK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask) == kDifGpioOk);
+  CHECK(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
+                      &gpio) == kDifOk);
+  CHECK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask) == kDifOk);
 
   for (uint8_t i = 0; i < ARRAYSIZE(kGpioVals); ++i) {
     test_gpio_write(kGpioVals[i]);

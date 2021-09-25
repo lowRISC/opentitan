@@ -38,12 +38,11 @@ static bool bootstrap_requested(void) {
 
   // Initialize GPIO device.
   dif_gpio_t gpio;
-  dif_gpio_params_t gpio_params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
-  CHECK(dif_gpio_init(gpio_params, &gpio) == kDifGpioOk);
+  CHECK(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
+                      &gpio) == kDifOk);
 
   dif_gpio_state_t gpio_in;
-  CHECK(dif_gpio_read_all(&gpio, &gpio_in) == kDifGpioOk);
+  CHECK(dif_gpio_read_all(&gpio, &gpio_in) == kDifOk);
   return (gpio_in & GPIO_BOOTSTRAP_BIT_MASK) != 0;
 }
 

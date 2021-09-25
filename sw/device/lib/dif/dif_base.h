@@ -63,13 +63,13 @@ typedef enum dif_result {
  */
 typedef enum dif_toggle {
   /**
-   * The "enabled" state.
-   */
-  kDifToggleEnabled,
-  /**
    * The "disabled" state.
    */
-  kDifToggleDisabled,
+  kDifToggleDisabled = 0,
+  /**
+   * The "enabled" state.
+   */
+  kDifToggleEnabled = 1,
 } dif_toggle_t;
 
 #ifdef __cplusplus

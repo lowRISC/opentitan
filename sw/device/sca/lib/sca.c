@@ -90,9 +90,8 @@ static void sca_init_uart(void) {
  * @param trigger Trigger source.
  */
 static void sca_init_gpio(sca_trigger_source_t trigger) {
-  dif_gpio_params_t gpio_params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
-  IGNORE_RESULT(dif_gpio_init(gpio_params, &gpio));
+  IGNORE_RESULT(
+      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
 
   uint32_t select_mask =
       bitfield_field32_write(0, kTriggerSourceBitfield, UINT32_MAX);
