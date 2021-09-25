@@ -161,6 +161,7 @@ sw_lib_dif_gpio = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
+      sw_lib_dif_autogen_gpio,
     ],
   )
 )
@@ -168,9 +169,11 @@ sw_lib_dif_gpio = declare_dependency(
 test('dif_gpio_unittest', executable(
     'dif_gpio_unittest',
     sources: [
-      hw_ip_gpio_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_gpio.c',
       'dif_gpio_unittest.cc',
+      'autogen/dif_gpio_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_gpio.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_gpio_autogen.c',
+      hw_ip_gpio_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

@@ -137,12 +137,10 @@ int main(int argc, char **argv) {
                       .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
                   }) == kDifSpiDeviceOk);
 
-  dif_gpio_params_t gpio_params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
-  };
-  CHECK(dif_gpio_init(gpio_params, &gpio) == kDifGpioOk);
+  CHECK(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
+                      &gpio) == kDifOk);
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
-  CHECK(dif_gpio_output_set_enabled_all(&gpio, 0x0ff00) == kDifGpioOk);
+  CHECK(dif_gpio_output_set_enabled_all(&gpio, 0x0ff00) == kDifOk);
 
   LOG_INFO("Hello, USB!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
@@ -153,7 +151,7 @@ int main(int argc, char **argv) {
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
   uint32_t gpio_state;
-  CHECK(dif_gpio_read_all(&gpio, &gpio_state) == kDifGpioOk);
+  CHECK(dif_gpio_read_all(&gpio, &gpio_state) == kDifOk);
   bool pinflip = gpio_state & kPinflipMask ? true : false;
   bool differential = gpio_state & kDiffMask ? true : false;
   bool uphy = gpio_state & kUPhyMask ? true : false;
@@ -189,7 +187,7 @@ int main(int argc, char **argv) {
       CHECK(dif_uart_bytes_receive(&uart, 1, &rcv_char, NULL) == kDifOk);
       CHECK(dif_uart_byte_send_polled(&uart, rcv_char) == kDifOk);
 
-      CHECK(dif_gpio_write_all(&gpio, rcv_char << 8) == kDifGpioOk);
+      CHECK(dif_gpio_write_all(&gpio, rcv_char << 8) == kDifOk);
 
       if (rcv_char == '/') {
         uint32_t usb_irq_state =

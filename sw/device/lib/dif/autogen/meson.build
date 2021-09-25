@@ -2,6 +2,20 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Autogen GPIO DIF library
+sw_lib_dif_autogen_gpio = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_gpio',
+    sources: [
+      hw_ip_gpio_reg_h,
+      'dif_gpio_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen AES DIF library
 sw_lib_dif_autogen_aes = declare_dependency(
   link_with: static_library(
