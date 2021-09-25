@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Flash Controller module.
-//
+## TODO: (uncomment) ${autogen_banner}
+
+// Flash Controller module package.
 
 package flash_ctrl_pkg;
 

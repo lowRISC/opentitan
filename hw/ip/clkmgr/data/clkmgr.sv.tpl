@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+${autogen_banner}
+
 // The overall clock manager
 
 `include "prim_assert.sv"

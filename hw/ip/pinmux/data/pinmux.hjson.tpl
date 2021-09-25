@@ -2,18 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-## PINMUX register template
-##
-## Parameter (given by Python tool)
-##  - n_mio_periph_in:     Number of muxed peripheral inputs
-##  - n_mio_periph_out:    Number of muxed peripheral outputs
-##  - n_mio_pads:          Number of muxed IO pads
-##  - n_dio_periph_in:     Number of dedicated peripheral inputs
-##  - n_dio_periph_out:    Number of dedicated peripheral outputs
-##  - n_dio_pads:          Number of dedicated IO pads
-##  - n_wkup_detect:       Number of wakeup condition detectors
-##  - wkup_cnt_width:      Width of wakeup counters
-##  - attr_dw:             Width of wakeup counters
+${autogen_banner}
+
+// PINMUX register template
+//
+// Parameter (given by Python tool)
+//  - n_mio_periph_in:     Number of muxed peripheral inputs
+//  - n_mio_periph_out:    Number of muxed peripheral outputs
+//  - n_mio_pads:          Number of muxed IO pads
+//  - n_dio_periph_in:     Number of dedicated peripheral inputs
+//  - n_dio_periph_out:    Number of dedicated peripheral outputs
+//  - n_dio_pads:          Number of dedicated IO pads
+//  - n_wkup_detect:       Number of wakeup condition detectors
+//  - wkup_cnt_width:      Width of wakeup counters
+//  - attr_dw:             Width of wakeup counters
 {
   name: "PINMUX",
   clocking: [

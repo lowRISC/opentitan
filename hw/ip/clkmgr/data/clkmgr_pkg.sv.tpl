@@ -1,11 +1,12 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+${autogen_banner}
 
 <%
 num_hints = len(typed_clocks.hint_clks)
-%>
-
+%>\
 package clkmgr_pkg;
 
   typedef enum int {

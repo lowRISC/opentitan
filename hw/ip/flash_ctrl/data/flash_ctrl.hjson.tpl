@@ -1,6 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+## TODO: (uncomment) ${autogen_banner}
 
 <%
   page_width = (cfg.pages_per_bank-1).bit_length()
@@ -9,8 +11,7 @@
   bytes_per_page = cfg.words_per_page * cfg.word_bytes
   total_byte_width = int(total_pages*bytes_per_page-1).bit_length()
   info_type_width = (cfg.info_types-1).bit_length()
-%>
-
+%>\
 { name: "FLASH_CTRL",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},

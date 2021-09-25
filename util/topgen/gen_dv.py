@@ -9,6 +9,7 @@ from mako import exceptions  # type: ignore
 from mako.lookup import TemplateLookup  # type: ignore
 from pkg_resources import resource_filename
 
+from autogen_banner import get_autogen_banner
 from reggen.gen_dv import gen_core_file
 
 from .top import Top
@@ -27,11 +28,16 @@ def gen_dv(top: Top,
     lookup = TemplateLookup(directories=[resource_filename('topgen', '.'),
                                          resource_filename('reggen', '.')])
     uvm_reg_tpl = lookup.get_template('top_uvm_reg.sv.tpl')
+    gencmd = (f"./util/topgen.py -t hw/top_{top.name}/data/"
+              f"top_{top.name}.hjson --top_ral -o . "
+              "[--dv-base-prefix my_reg_base]")
+    banner = get_autogen_banner(command=gencmd, comment="//")
 
     # Expand template
     try:
         to_write = uvm_reg_tpl.render(top=top,
-                                      dv_base_prefix=dv_base_prefix)
+                                      dv_base_prefix=dv_base_prefix,
+                                      autogen_banner=banner)
     except:  # noqa: E722
         log.error(exceptions.text_error_template().render())
         return 1

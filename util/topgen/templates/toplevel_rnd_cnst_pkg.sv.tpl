@@ -1,7 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-${gencmd}
+//
+${autogen_banner}
 <%
   def make_blocked_sv_literal(hexstr, randwidth):
     """Chop a hex string into blocks of <= 64 digits"""

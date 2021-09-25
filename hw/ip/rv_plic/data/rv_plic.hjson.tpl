@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+${autogen_banner}
+
 <% import math %>\
-# RV_PLIC register template
-#
-# Parameter (given by Python tool)
-#  - src:    Number of Interrupt Sources
-#  - target: Number of Targets that handle interrupt requests
-#  - prio:   Max value of interrupt priorities
+// RV_PLIC register template
+//
+// Parameter (given by Python tool)
+//  - src:    Number of Interrupt Sources
+//  - target: Number of Targets that handle interrupt requests
+//  - prio:   Max value of interrupt priorities
 {
   name: "RV_PLIC",
   clocking: [{clock: "clk_i", reset: "rst_ni"}],

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+${autogen_banner}
+
 // This module is the overall reset manager wrapper
 // TODO: This module is only a draft implementation that covers most of the rstmgr
 // functoinality but is incomplete

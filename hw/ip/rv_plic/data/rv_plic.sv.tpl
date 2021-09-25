@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+${autogen_banner}
+
 // RISC-V Platform-Level Interrupt Controller compliant INTC
 //
 //   Current version doesn't support MSI interrupt but it is easy to add

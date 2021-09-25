@@ -1,6 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+${autogen_banner}
 
 #ifndef _TOP_${top["name"].upper()}_H_
 #define _TOP_${top["name"].upper()}_H_

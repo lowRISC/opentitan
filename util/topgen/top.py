@@ -26,6 +26,7 @@ class Top:
     '''
 
     def __init__(self,
+                 name: str,
                  regwidth: int,
                  blocks: Dict[str, IpBlock],
                  instances: Dict[str, str],
@@ -55,6 +56,7 @@ class Top:
 
         '''
 
+        self.name = name
         self.regwidth = regwidth
         self.blocks = blocks
         self.instances = instances

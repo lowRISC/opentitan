@@ -1,14 +1,14 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+${autogen_banner}
 
 <%
   crash_dump_srcs = ['alert', 'cpu']
   total_hw_resets = num_rstreqs+2
-%>
-
-# RSTMGR register template
-#
+%>\
+// RSTMGR register template
 {
   name: "RSTMGR",
   clocking: [
