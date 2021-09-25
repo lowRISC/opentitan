@@ -1533,6 +1533,7 @@ module top_earlgrey #(
       .pwr_i(pwrmgr_aon_pwr_rst_req),
       .pwr_o(pwrmgr_aon_pwr_rst_rsp),
       .resets_o(rstmgr_aon_resets),
+      .rst_en_o(),
       .rst_cpu_n_i(rv_core_ibex_rst_cpu_n),
       .ndmreset_req_i(rv_dm_ndmreset_req),
       .alert_dump_i(alert_handler_crashdump),

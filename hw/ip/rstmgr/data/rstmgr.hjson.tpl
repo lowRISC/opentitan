@@ -84,6 +84,13 @@
       package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
+    { struct:  "rstmgr_rst_en",
+      type:    "uni",
+      name:    "rst_en",
+      act:     "req",
+      package: "rstmgr_pkg", // Origin package (only needs for the req)
+    },
+
     { struct:  "logic",
       type:    "uni",
       name:    "rst_cpu_n",
