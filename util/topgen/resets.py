@@ -111,7 +111,7 @@ class Resets:
             if reset.rst_type != 'ext':
                 clocks[reset.clock.name] = 1
 
-        return clocks.keys()
+        return list(clocks)
 
     def get_generated_resets(self) -> list:
         '''Get generated resets and return reset object
