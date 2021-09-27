@@ -19,8 +19,8 @@ const test_config_t kTestConfig = {
 
 bool test_main(void) {
   dif_uart_t uart;
-  CHECK(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-                      &uart) == kDifOk);
+  CHECK_DIF_OK(dif_uart_init(
+      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
   CHECK(dif_uart_configure(&uart,
                            (dif_uart_config_t){
                                .baudrate = kUartBaudrate,
@@ -30,17 +30,17 @@ bool test_main(void) {
                            }) == kDifUartConfigOk,
         "UART config failed!");
 
-  CHECK(dif_uart_loopback_set(&uart, kDifUartLoopbackSystem,
-                              kDifToggleEnabled) == kDifOk);
-  CHECK(dif_uart_fifo_reset(&uart, kDifUartFifoResetAll) == kDifOk);
+  CHECK_DIF_OK(
+      dif_uart_loopback_set(&uart, kDifUartLoopbackSystem, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_uart_fifo_reset(&uart, kDifUartFifoResetAll));
 
   // Send all bytes in `kSendData`, and check that they are received via
   // the loopback mechanism.
   for (int i = 0; i < sizeof(kSendData); ++i) {
-    CHECK(dif_uart_byte_send_polled(&uart, kSendData[i]) == kDifOk);
+    CHECK_DIF_OK(dif_uart_byte_send_polled(&uart, kSendData[i]));
 
     uint8_t receive_byte;
-    CHECK(dif_uart_byte_receive_polled(&uart, &receive_byte) == kDifOk);
+    CHECK_DIF_OK(dif_uart_byte_receive_polled(&uart, &receive_byte));
     CHECK(receive_byte == kSendData[i]);
   }
 

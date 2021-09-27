@@ -52,10 +52,10 @@ index 8861f54ba..8442bb896 100644
 -  mmio_region_write32(reg32, reg_offset, reg_value & mask);
  }
 diff --git a/sw/device/sca/aes_serial.c b/sw/device/sca/aes_serial.c
-index a2087eb4f..d8d347e1e 100644
+index 5dc1286af..1e2dced96 100644
 --- a/sw/device/sca/aes_serial.c
 +++ b/sw/device/sca/aes_serial.c
-@@ -201,18 +201,13 @@ int main(void) {
+@@ -198,18 +198,13 @@ int main(void) {
    sca_init(kScaTriggerSourceAes, kScaPeripheralAes);
    sca_get_uart(&uart1);
  
@@ -75,7 +75,7 @@ index a2087eb4f..d8d347e1e 100644
      simple_serial_process_packet();
    }
 diff --git a/sw/device/sca/lib/sca.c b/sw/device/sca/lib/sca.c
-index 093d215b1..dd231b2cc 100644
+index ef4443533..5629a15d8 100644
 --- a/sw/device/sca/lib/sca.c
 +++ b/sw/device/sca/lib/sca.c
 @@ -56,7 +56,6 @@ enum {
@@ -102,7 +102,7 @@ index 093d215b1..dd231b2cc 100644
  }
  
  /**
-@@ -149,32 +144,11 @@ void handler_irq_timer(void) {
+@@ -148,32 +143,11 @@ void handler_irq_timer(void) {
   * @param disable Set of peripherals to disable.
   */
  void sca_disable_peripherals(sca_peripherals_t disable) {
@@ -136,7 +136,7 @@ index 093d215b1..dd231b2cc 100644
    dif_clkmgr_t clkmgr;
    IGNORE_RESULT(dif_clkmgr_init(clkmgr_params, &clkmgr));
  
-@@ -188,19 +162,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
+@@ -187,19 +161,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
          &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT,
          kDifClkmgrToggleDisabled));
    }
@@ -157,7 +157,7 @@ index 093d215b1..dd231b2cc 100644
      IGNORE_RESULT(dif_clkmgr_gateable_clock_set_enabled(
          &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
 diff --git a/sw/device/tests/aes_smoketest.c b/sw/device/tests/aes_smoketest.c
-index dff8bd9b6..396123ef7 100644
+index 1a5fef16c..214e08151 100644
 --- a/sw/device/tests/aes_smoketest.c
 +++ b/sw/device/tests/aes_smoketest.c
 @@ -7,7 +7,6 @@
@@ -176,10 +176,10 @@ index dff8bd9b6..396123ef7 100644
 -  entropy_testutils_boot_mode_init();
 -
    // Initialise AES.
-   CHECK(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes) ==
-         kDifOk);
+   CHECK_DIF_OK(
+       dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
-index 7abdc2045..829968cb9 100644
+index 1b1c8ae72..66635fb0a 100644
 --- a/sw/device/tests/meson.build
 +++ b/sw/device/tests/meson.build
 @@ -207,7 +207,6 @@ aes_smoketest_lib = declare_dependency(

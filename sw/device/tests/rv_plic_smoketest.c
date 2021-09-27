@@ -58,8 +58,7 @@ static void handle_uart_isr(const dif_rv_plic_irq_id_t interrupt_id) {
       test_status_set(kTestStatusFailed);
   }
 
-  CHECK(dif_uart_irq_acknowledge(&uart0, uart_irq) == kDifOk,
-        "ISR failed to clear IRQ!");
+  CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart0, uart_irq));
 }
 
 /**
@@ -92,7 +91,7 @@ void handler_irq_external(void) {
 }
 
 static void uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
-  CHECK(dif_uart_init(base_addr, uart) == kDifOk);
+  CHECK_DIF_OK(dif_uart_init(base_addr, uart));
   CHECK(dif_uart_configure(uart,
                            (dif_uart_config_t){
                                .baudrate = kUartBaudrate,
@@ -113,12 +112,10 @@ static void plic_initialise(mmio_region_t base_addr, dif_rv_plic_t *plic) {
  * Configures all the relevant interrupts in UART.
  */
 static void uart_configure_irqs(dif_uart_t *uart) {
-  CHECK(dif_uart_irq_set_enabled(&uart0, kDifUartIrqRxOverflow,
-                                 kDifToggleEnabled) == kDifOk,
-        "RX overflow IRQ enable failed!");
-  CHECK(dif_uart_irq_set_enabled(&uart0, kDifUartIrqTxEmpty,
-                                 kDifToggleEnabled) == kDifOk,
-        "TX empty IRQ enable failed!");
+  CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart0, kDifUartIrqRxOverflow,
+                                        kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_uart_irq_set_enabled(&uart0, kDifUartIrqTxEmpty, kDifToggleEnabled));
 }
 
 /**
@@ -154,8 +151,7 @@ static void plic_configure_irqs(dif_rv_plic_t *plic) {
 static void execute_test(dif_uart_t *uart) {
   // Force UART RX overflow interrupt.
   uart_rx_overflow_handled = false;
-  CHECK(dif_uart_irq_force(uart, kDifUartIrqRxOverflow) == kDifOk,
-        "failed to force RX overflow IRQ!");
+  CHECK_DIF_OK(dif_uart_irq_force(uart, kDifUartIrqRxOverflow));
   // Check if the IRQ has occured and has been handled appropriately.
   if (!uart_rx_overflow_handled) {
     usleep(10);
@@ -164,8 +160,7 @@ static void execute_test(dif_uart_t *uart) {
 
   // Force UART TX empty interrupt.
   uart_tx_empty_handled = false;
-  CHECK(dif_uart_irq_force(uart, kDifUartIrqTxEmpty) == kDifOk,
-        "failed to force TX empty IRQ!");
+  CHECK_DIF_OK(dif_uart_irq_force(uart, kDifUartIrqTxEmpty));
   // Check if the IRQ has occured and has been handled appropriately.
   if (!uart_tx_empty_handled) {
     usleep(10);

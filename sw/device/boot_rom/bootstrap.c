@@ -38,11 +38,11 @@ static bool bootstrap_requested(void) {
 
   // Initialize GPIO device.
   dif_gpio_t gpio;
-  CHECK(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
-                      &gpio) == kDifOk);
+  CHECK_DIF_OK(
+      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
 
   dif_gpio_state_t gpio_in;
-  CHECK(dif_gpio_read_all(&gpio, &gpio_in) == kDifOk);
+  CHECK_DIF_OK(dif_gpio_read_all(&gpio, &gpio_in));
   return (gpio_in & GPIO_BOOTSTRAP_BIT_MASK) != 0;
 }
 
@@ -72,8 +72,7 @@ static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
       .digest_endianness = kDifHmacEndiannessLittle,
       .message_endianness = kDifHmacEndiannessLittle,
   };
-  CHECK(dif_hmac_mode_sha256_start(hmac, config) == kDifOk,
-        "Error on hmac start.");
+  CHECK_DIF_OK(dif_hmac_mode_sha256_start(hmac, config));
   const char *data8 = (const char *)data;
   size_t data_left = len;
   while (data_left > 0) {
@@ -88,12 +87,12 @@ static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
     data_left -= bytes_sent;
   }
 
-  CHECK(dif_hmac_process(hmac) == kDifOk, "Error processing digest.");
+  CHECK_DIF_OK(dif_hmac_process(hmac));
   dif_result_t digest_result = kDifIpBusy;
   while (digest_result == kDifIpBusy) {
     digest_result = dif_hmac_finish(hmac, digest);
   }
-  CHECK(digest_result == kDifOk, "Error reading the digest.");
+  CHECK_DIF_OK(digest_result);
 }
 
 /**
@@ -213,9 +212,8 @@ int bootstrap(void) {
       "Failed to configure SPI.");
 
   dif_hmac_t hmac;
-  CHECK(dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
-                      &hmac) == kDifOk,
-        "Failed to configure HMAC.");
+  CHECK_DIF_OK(
+      dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
 
   LOG_INFO("HW initialisation completed, waiting for SPI input...");
   int error = bootstrap_flash(&spi, &hmac);

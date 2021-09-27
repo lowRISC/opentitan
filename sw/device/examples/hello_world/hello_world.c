@@ -21,8 +21,8 @@ static dif_spi_device_t spi;
 static dif_uart_t uart;
 
 int main(int argc, char **argv) {
-  CHECK(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-                      &uart) == kDifOk);
+  CHECK_DIF_OK(dif_uart_init(
+      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
   CHECK(dif_uart_configure(&uart, (dif_uart_config_t){
                                       .baudrate = kUartBaudrate,
                                       .clk_freq_hz = kClockFreqPeripheralHz,
@@ -50,10 +50,10 @@ int main(int argc, char **argv) {
                       .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
                   }) == kDifSpiDeviceOk);
 
-  CHECK(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
-                      &gpio) == kDifOk);
+  CHECK_DIF_OK(
+      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
-  CHECK(dif_gpio_output_set_enabled_all(&gpio, 0x0ff00) == kDifOk);
+  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x0ff00));
 
   // Add DATE and TIME because I keep fooling myself with old versions
   LOG_INFO("Hello World!");
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
   // Now have UART <-> Buttons/LEDs demo
   // all LEDs off
-  CHECK(dif_gpio_write_all(&gpio, 0x0000) == kDifOk);
+  CHECK_DIF_OK(dif_gpio_write_all(&gpio, 0x0000));
   LOG_INFO("Try out the switches on the board");
   LOG_INFO("or type anything into the console window.");
   LOG_INFO("The LEDs show the ASCII code of the last character.");

@@ -78,7 +78,7 @@
  * different dif_result_t value (defined in sw/device/lib/dif/dif_base.h), this
  * function logs and then aborts.
  *
- * @param DIF call to invoke and check its return value .
+ * @param DIF call to invoke and check its return value.
  * @param ... arguments to a LOG_* macro, which are evaluated if the check
  * fails.
  */
@@ -90,9 +90,9 @@
          only one of the below string constants           \
          will be included in the final binary.*/          \
       if (GET_NUM_VARIABLE_ARGS(_, ##__VA_ARGS__) == 0) { \
-        LOG_ERROR("CHECK-fail: " #dif_call);              \
+        LOG_ERROR("DIF-fail: " #dif_call);                \
       } else {                                            \
-        LOG_ERROR("CHECK-fail: " __VA_ARGS__);            \
+        LOG_ERROR("DIF-fail: " __VA_ARGS__);              \
       }                                                   \
       /* Currently, this macro will call into             \
          the test failure code, which logs                \
