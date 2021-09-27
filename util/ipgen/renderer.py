@@ -60,7 +60,7 @@ class IpTemplateRendererBase:
             if name not in self.ip_template.params:
                 raise KeyError("No parameter named {!r} exists.".format(name))
 
-    def get_template_parameter_values(self) -> Dict[str, Union[str, int]]:
+    def get_template_parameter_values(self) -> Dict[str, Union[str, int, object]]:
         """ Get a typed mapping of all template parameters and their values.
         """
         ret = {}
@@ -75,12 +75,14 @@ class IpTemplateRendererBase:
             assert template_param.param_type in TemplateParameter.VALID_PARAM_TYPES
             try:
                 if template_param.param_type == 'string':
-                    val_typed = str(val)  # type: Union[int, str]
+                    val_typed = str(val)  # type: Union[int, str, object]
                 elif template_param.param_type == 'int':
                     if not isinstance(val, int):
                         val_typed = int(val, 0)
                     else:
                         val_typed = val
+                elif template_param.param_type == 'object':
+                    val_typed = val
             except (ValueError, TypeError):
                 raise TemplateRenderError(
                     "For parameter {} cannot convert value {!r} "
