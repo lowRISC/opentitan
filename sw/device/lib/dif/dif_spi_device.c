@@ -32,9 +32,9 @@ static uint32_t build_control_word(dif_spi_device_config_t config) {
 
   val =
       bitfield_bit32_write(val, SPI_DEVICE_CFG_CPOL_BIT,
-                           config.clock_polarity == kDifSpiDeviceEdgeNegative);
+                           config.clock_polarity == kDifSpiDeviceClockNegative);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_CPHA_BIT,
-                             config.data_phase == kDifSpiDeviceEdgePositive);
+                             config.clock_phase == kDifSpiDevicePhaseSampleTrailing);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_TX_ORDER_BIT,
                              config.tx_order == kDifSpiDeviceBitOrderLsbToMsb);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_RX_ORDER_BIT,
