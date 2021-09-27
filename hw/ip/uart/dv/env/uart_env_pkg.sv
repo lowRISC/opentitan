@@ -11,6 +11,7 @@ package uart_env_pkg;
   import tl_agent_pkg::*;
   import uart_agent_pkg::*;
   import dv_lib_pkg::*;
+  import dv_base_reg_pkg::*;
   import cip_base_pkg::*;
   import uart_ral_pkg::*;
 

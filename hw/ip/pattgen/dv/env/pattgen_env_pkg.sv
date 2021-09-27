@@ -8,6 +8,7 @@ package pattgen_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import csr_utils_pkg::*;
+  import dv_base_reg_pkg::*;
   import tl_agent_pkg::*;
   import pattgen_agent_pkg::*;
   import dv_lib_pkg::*;
