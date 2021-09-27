@@ -76,4 +76,63 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     read_current_state();
     `DV_CHECK_EQ(current_state, keymgr_pkg::StInvalid)
   endtask
+
+  virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
+    bit[TL_DW-1:0] exp;
+
+    // TODO, remove this after #8464 is solved
+    if (!uvm_re_match("*.u_kmac_if*", if_proxy.path)) return;
+
+    super.check_sec_cm_fi_resp(if_proxy);
+
+    if (!uvm_re_match("*.u_reseed_ctrl*", if_proxy.path)) begin
+      exp[keymgr_pkg::FaultReseedCnt] = 1;
+    end else begin
+      exp[keymgr_pkg::FaultCtrlCnt] = 1;
+    end
+    csr_rd_check(.ptr(ral.fault_status), .compare_value(exp));
+
+    // after an advance, keymgr should enter StInvalid
+    keymgr_advance();
+    csr_rd_check(.ptr(ral.op_status), .compare_value(keymgr_pkg::OpDoneFail));
+    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
+  endtask : check_sec_cm_fi_resp
+
+   virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
+    // TODO, remove this after #8464 is solved
+    // $assertoff(0, "tb.dut.u_kmac_if.u_cnt.u_prim_count_if.ErrorTriggerAlert");
+
+    // TODO, review if we need to disable all these for prim_count
+    case (if_proxy.sec_cm_type)
+      SecCmPrimCount: begin
+        if (enable) begin
+          $asserton(0, "tb.keymgr_kmac_intf");
+          $asserton(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
+          $asserton(0, "tb.dut.u_ctrl.DataEn_A");
+          $asserton(0, "tb.dut.u_ctrl.DataEnDis_A");
+          $asserton(0, "tb.dut.u_ctrl.CntZero_A");
+          $asserton(0, "tb.dut.u_kmac_if.LastStrb_A");
+          $asserton(0, "tb.dut.KmacDataKnownO_A");
+        end else begin
+          $assertoff(0, "tb.keymgr_kmac_intf");
+          $assertoff(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
+          $assertoff(0, "tb.dut.u_ctrl.DataEn_A");
+          $assertoff(0, "tb.dut.u_ctrl.DataEnDis_A");
+          $assertoff(0, "tb.dut.u_ctrl.CntZero_A");
+          $assertoff(0, "tb.dut.u_kmac_if.LastStrb_A");
+          $assertoff(0, "tb.dut.KmacDataKnownO_A");
+        end
+      end
+      SecCmPrimFsm: begin
+        // TODO
+      end
+      default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
+    endcase
+  endfunction: sec_cm_fi_ctrl_svas
+
+  // disable checker in seq, only check in this seq
+  virtual function bit get_check_en();
+    return 0;
+  endfunction
+
 endclass

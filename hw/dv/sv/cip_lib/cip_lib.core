@@ -16,6 +16,7 @@ filesets:
       - lowrisc:dv:push_pull_agent
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:mem_model
+      - lowrisc:dv:sec_cm
       - lowrisc:opentitan:bus_params_pkg
     files:
       - cip_base_pkg.sv
@@ -29,6 +30,7 @@ filesets:
       - seq_lib/cip_base_vseq.sv: {is_include_file: true}
       - seq_lib/cip_base_vseq__tl_errors.svh: {is_include_file: true}
       - seq_lib/cip_base_vseq__shadow_reg_errors.svh: {is_include_file: true}
+      - seq_lib/cip_base_vseq__sec_cm_fi.svh: {is_include_file: true}
       - seq_lib/cip_tl_seq_item.sv: {is_include_file: true}
       - seq_lib/cip_tl_host_single_seq.sv: {is_include_file: true}
       - cip_base_test.sv: {is_include_file: true}

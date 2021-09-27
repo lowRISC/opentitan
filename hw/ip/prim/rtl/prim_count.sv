@@ -158,7 +158,7 @@ module prim_count import prim_count_pkg::*; #(
     logic unused_incr_cnt;
     assign unused_incr_cnt = (cmp_valid == CmpValid) & !clr_i & !set_i;
 
-    `ASSUME(UpCntOverFlow_A, unused_incr_cnt |-> ~unused_cnt[Width])
+    `ASSUME(UpCntOverFlow_A, unused_incr_cnt && !err |-> ~unused_cnt[Width])
   end
 
   `ifdef INC_ASSERT
@@ -194,4 +194,13 @@ module prim_count import prim_count_pkg::*; #(
   `ASSERT(OutSet_A, set_i |=>
           (CntStyle == DupCnt || OutSelDnCnt) ? cnt_o == $past(set_cnt_i) : cnt_o == 0)
 
-endmodule : prim_count
+  // This logic that will be assign to one, when user adds macro
+  // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
+  // is used in design without adding this assertion check.
+  logic unused_assert_connected;
+  `ASSERT_INIT(AssertConnected_A, unused_assert_connected === 1'b1)
+endmodule // prim_count
+
+`define ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, MAX_CYCLES_ = 5) \
+  `ASSERT(NAME_, $rose(PRIM_HIER_.err_o) |-> ##[1:MAX_CYCLES_] $rose(ALERT_.alert_p)); \
+  assign PRIM_HIER_.unused_assert_connected = 1'b1;
