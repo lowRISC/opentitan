@@ -189,7 +189,8 @@ class IpConfig:
     @classmethod
     def from_text(cls, txt: str, where: str) -> 'IpConfig':
         """Load an IpConfig from an Hjson description in txt"""
-        return cls.from_raw(hjson.loads(txt, use_decimal=True), where)
+        return cls.from_raw(
+            hjson.loads(txt, use_decimal=True, encoding="UTF-8"), where)
 
     def to_file(self, file_path: Path, header: Optional[str] = ""):
         obj = {}
