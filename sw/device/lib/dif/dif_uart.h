@@ -60,35 +60,6 @@ typedef struct dif_uart_config {
 } dif_uart_config_t;
 
 /**
- * The result of a UART operation.
- */
-typedef enum dif_uart_config_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifUartConfigOk = kDifOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifUartConfigError = kDifError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifUartConfigBadArg = kDifBadArg,
-  /**
-   * Indicates that the given configuration parameters are not valid.
-   */
-  kDifUartConfigBadConfig,
-  /**
-   * Indicates that the calculated NCO value was not valid.
-   */
-  kDifUartConfigBadNco,
-} dif_uart_config_result_t;
-
-/**
  * A UART FIFO watermark depth configuration.
  */
 typedef enum dif_uart_watermark {
@@ -173,8 +144,8 @@ dif_result_t dif_uart_init(mmio_region_t base_addr, dif_uart_t *uart);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
-                                            dif_uart_config_t config);
+dif_result_t dif_uart_configure(const dif_uart_t *uart,
+                                dif_uart_config_t config);
 
 /**
  * Sets the RX FIFO watermark.

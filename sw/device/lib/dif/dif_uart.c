@@ -95,14 +95,14 @@ dif_result_t dif_uart_init(mmio_region_t base_addr, dif_uart_t *uart) {
   return kDifOk;
 }
 
-dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
-                                            dif_uart_config_t config) {
+dif_result_t dif_uart_configure(const dif_uart_t *uart,
+                                dif_uart_config_t config) {
   if (uart == NULL) {
-    return kDifUartConfigBadArg;
+    return kDifBadArg;
   }
 
   if (config.baudrate == 0 || config.clk_freq_hz == 0) {
-    return kDifUartConfigBadConfig;
+    return kDifBadArg;
   }
 
   // Calculation formula: NCO = 16 * 2^nco_width * baud / fclk.
@@ -125,7 +125,7 @@ dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
 
   // Requested baudrate is too high for the given clock frequency.
   if (nco != nco_masked) {
-    return kDifUartConfigBadNco;
+    return kDifBadArg;
   }
 
   // Must be called before the first write to any of the UART registers.
@@ -147,7 +147,7 @@ dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
   // Disable interrupts.
   mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
 
-  return kDifUartConfigOk;
+  return kDifOk;
 }
 
 dif_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,

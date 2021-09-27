@@ -92,14 +92,13 @@ void handler_irq_external(void) {
 
 static void uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
   CHECK_DIF_OK(dif_uart_init(base_addr, uart));
-  CHECK(dif_uart_configure(uart,
-                           (dif_uart_config_t){
-                               .baudrate = kUartBaudrate,
-                               .clk_freq_hz = kClockFreqPeripheralHz,
-                               .parity_enable = kDifToggleDisabled,
-                               .parity = kDifUartParityEven,
-                           }) == kDifUartConfigOk,
-        "UART config failed!");
+  CHECK_DIF_OK(
+      dif_uart_configure(uart, (dif_uart_config_t){
+                                   .baudrate = kUartBaudrate,
+                                   .clk_freq_hz = kClockFreqPeripheralHz,
+                                   .parity_enable = kDifToggleDisabled,
+                                   .parity = kDifUartParityEven,
+                               }));
 }
 
 static void plic_initialise(mmio_region_t base_addr, dif_rv_plic_t *plic) {

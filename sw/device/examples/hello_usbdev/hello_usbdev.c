@@ -110,12 +110,13 @@ static const uint32_t kUPhyMask = 4;
 int main(int argc, char **argv) {
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
-  CHECK(dif_uart_configure(&uart, (dif_uart_config_t){
-                                      .baudrate = kUartBaudrate,
-                                      .clk_freq_hz = kClockFreqPeripheralHz,
-                                      .parity_enable = kDifToggleDisabled,
-                                      .parity = kDifUartParityEven,
-                                  }) == kDifUartConfigOk);
+  CHECK_DIF_OK(
+      dif_uart_configure(&uart, (dif_uart_config_t){
+                                    .baudrate = kUartBaudrate,
+                                    .clk_freq_hz = kClockFreqPeripheralHz,
+                                    .parity_enable = kDifToggleDisabled,
+                                    .parity = kDifUartParityEven,
+                                }));
   base_uart_stdout(&uart);
 
   pinmux_init();

@@ -116,14 +116,13 @@ static dif_uart_t uart;
 void portable_init(core_portable *p, int *argc, char *argv[]) {
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
-  CHECK(dif_uart_configure(&uart,
-                           (dif_uart_config_t){
-                               .baudrate = kUartBaudrate,
-                               .clk_freq_hz = kClockFreqPeripheralHz,
-                               .parity_enable = kDifToggleDisabled,
-                               .parity = kDifUartParityEven,
-                           }) == kDifUartConfigOk,
-        "failed to configure UART");
+  CHECK_DIF_OK(
+      dif_uart_configure(&uart, (dif_uart_config_t){
+                                    .baudrate = kUartBaudrate,
+                                    .clk_freq_hz = kClockFreqPeripheralHz,
+                                    .parity_enable = kDifToggleDisabled,
+                                    .parity = kDifUartParityEven,
+                                }));
 
   if (sizeof(ee_ptr_int) != sizeof(ee_u8 *)) {
     ee_printf(

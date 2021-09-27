@@ -64,7 +64,7 @@ TEST_F(InitTest, NullArgs) {
 class ConfigTest : public UartTest {};
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_uart_configure(nullptr, config_), kDifUartConfigBadArg);
+  EXPECT_EQ(dif_uart_configure(nullptr, config_), kDifBadArg);
 }
 
 TEST_F(ConfigTest, Default) {
@@ -78,7 +78,7 @@ TEST_F(ConfigTest, Default) {
 
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
-  EXPECT_EQ(dif_uart_configure(&uart_, config_), kDifUartConfigOk);
+  EXPECT_EQ(dif_uart_configure(&uart_, config_), kDifOk);
 }
 
 TEST_F(ConfigTest, ParityEven) {
@@ -96,7 +96,7 @@ TEST_F(ConfigTest, ParityEven) {
 
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
-  EXPECT_EQ(dif_uart_configure(&uart_, config_), kDifUartConfigOk);
+  EXPECT_EQ(dif_uart_configure(&uart_, config_), kDifOk);
 }
 
 TEST_F(ConfigTest, ParityOdd) {
@@ -115,7 +115,7 @@ TEST_F(ConfigTest, ParityOdd) {
 
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
-  EXPECT_EQ(dif_uart_configure(&uart_, config_), kDifUartConfigOk);
+  EXPECT_EQ(dif_uart_configure(&uart_, config_), kDifOk);
 }
 
 class WatermarkRxSetTest : public UartTest {};
