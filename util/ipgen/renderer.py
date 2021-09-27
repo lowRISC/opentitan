@@ -7,6 +7,7 @@ import shutil
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
+import logging
 
 import reggen.gen_rtl
 from mako import exceptions as mako_exceptions  # type: ignore
@@ -20,6 +21,7 @@ _HJSON_LICENSE_HEADER = ("""// Copyright lowRISC contributors.
 // SPDX-License-Identifier: Apache-2.0
 """)
 
+log = logging.getLogger(__name__)
 
 
 class TemplateRenderError(Exception):
@@ -67,6 +69,7 @@ class IpTemplateRendererBase:
             if name in self.ip_config.param_values:
                 val = self.ip_config.param_values[name]
             else:
+                log.info(f"Using default value for template parameter {name}")
                 val = template_param.default
 
             assert template_param.param_type in ('string', 'int')
