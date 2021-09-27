@@ -6,7 +6,7 @@ import os
 import shutil
 import time
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import reggen.gen_rtl
 from mako import exceptions as mako_exceptions  # type: ignore
@@ -21,8 +21,21 @@ _HJSON_LICENSE_HEADER = ("""// Copyright lowRISC contributors.
 """)
 
 
+
 class TemplateRenderError(Exception):
-    pass
+    def __init__(self, message, template_vars: Any = None) -> None:
+        self.message = message
+        self.template_vars = template_vars
+
+    def verbose_str(self) -> str:
+        """ Get a verbose human-readable representation of the error. """
+
+        from pprint import PrettyPrinter
+        if self.template_vars is not None:
+            return (self.message + "\n" +
+                    "Template variables:\n" +
+                    PrettyPrinter().pformat(self.template_vars))
+        return self.message
 
 
 class IpTemplateRendererBase:
@@ -129,10 +142,11 @@ class IpTemplateRendererBase:
         }
         try:
             return template.render(**tpl_args)
-        except:
+        except Exception:
             raise TemplateRenderError(
                 "Unable to render template: " +
-                mako_exceptions.text_error_template().render()) from None
+                mako_exceptions.text_error_template().render(),
+                self.get_template_parameter_values()) from None
 
     def _render_mako_template_to_file(self, template_filepath: Path,
                                       outdir_path: Path) -> None:
