@@ -260,13 +260,11 @@ void handler_irq_external(void) {
 
   // Check if the same interrupt fired at UART as well.
   bool is_pending;
-  CHECK(dif_uart_irq_is_pending(&uart, uart_irq, &is_pending) == kDifOk,
-        "dif_uart_irq_is_pending failed");
+  CHECK_DIF_OK(dif_uart_irq_is_pending(&uart, uart_irq, &is_pending));
   CHECK(is_pending, "UART interrupt fired at PLIC did not fire at UART");
 
   // Clear the interrupt at UART.
-  CHECK(dif_uart_irq_acknowledge(&uart, uart_irq) == kDifOk,
-        "dif_uart_irq_acknowledge failed");
+  CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart, uart_irq));
 
   // Complete the IRQ at PLIC.
   CHECK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
@@ -280,7 +278,7 @@ void handler_irq_external(void) {
 static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
   LOG_INFO("Initializing the UART.");
 
-  CHECK(dif_uart_init(base_addr, uart) == kDifOk, "dif_uart_init failed");
+  CHECK_DIF_OK(dif_uart_init(base_addr, uart));
   CHECK(dif_uart_configure(uart,
                            (dif_uart_config_t){
                                .baudrate = kUartBaudrate,
@@ -291,24 +289,18 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
         "dif_uart_configure failed");
 
   // Set the TX and RX watermark to 16 bytes.
-  CHECK(dif_uart_watermark_tx_set(uart, kDifUartWatermarkByte16) == kDifOk,
-        "dif_uart_watermark_tx_set failed");
-  CHECK(dif_uart_watermark_rx_set(uart, kDifUartWatermarkByte16) == kDifOk,
-        "dif_uart_watermark_rx_set failed");
+  CHECK_DIF_OK(dif_uart_watermark_tx_set(uart, kDifUartWatermarkByte16));
+  CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kDifUartWatermarkByte16));
 
   // Enable these UART interrupts - TX/TX watermark, TX empty and RX overflow.
-  CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxWatermark,
-                                 kDifToggleEnabled) == kDifOk,
-        "dif_uart_irq_set_enabled failed");
-  CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
-                                 kDifToggleEnabled) == kDifOk,
-        "dif_uart_irq_set_enabled failed");
-  CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxEmpty, kDifToggleEnabled) ==
-            kDifOk,
-        "dif_uart_irq_set_enabled failed");
-  CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxOverflow,
-                                 kDifToggleEnabled) == kDifOk,
-        "dif_uart_irq_set_enabled failed");
+  CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxWatermark,
+                                        kDifToggleEnabled));
+  CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
+                                        kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_uart_irq_set_enabled(uart, kDifUartIrqTxEmpty, kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_uart_irq_set_enabled(uart, kDifUartIrqRxOverflow, kDifToggleEnabled));
 }
 
 /**
@@ -487,9 +479,8 @@ static bool execute_test(const dif_uart_t *uart) {
         // At this point we have received the required number of bytes.
         // We disable the RX watermark interrupt and let the fifo
         // overflow by dropping all future incoming data.
-        CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
-                                       kDifToggleDisabled) == kDifOk,
-              "dif_uart_irq_set_enabled failed");
+        CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
+                                              kDifToggleDisabled));
         // Expect the RX overflow interrupt to fire at some point.
         exp_uart_irq_rx_overflow = true;
       }

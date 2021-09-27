@@ -71,11 +71,11 @@ bool test_main(void) {
   LOG_INFO("Start LC_CTRL transition test.");
 
   mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
-  CHECK(dif_lc_ctrl_init(lc_reg, &lc) == kDifOk);
+  CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
 
   LOG_INFO("Read and check LC state.");
   dif_lc_ctrl_state_t curr_state;
-  CHECK(dif_lc_ctrl_get_state(&lc, &curr_state) == kDifOk);
+  CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
 
   // The OTP preload image hardcodes the initial LC state transition count to 8.
   // With each iteration of the test, we increment it.

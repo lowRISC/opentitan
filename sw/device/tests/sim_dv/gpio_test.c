@@ -102,19 +102,16 @@ static void gpio_output_test(const dif_gpio_t *gpio) {
   LOG_INFO("Starting GPIO output test");
 
   // Set the GPIOs to be in output mode.
-  CHECK(dif_gpio_output_set_enabled_all(gpio, kGpiosAllowedMask) == kDifOk,
-        "dif_gpio_output_set_enabled_all failed");
+  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(gpio, kGpiosAllowedMask));
 
   // Walk 1s - 0001, 0010, 0100, 1000, etc.
   for (uint32_t i = 0; i < kNumGpios; ++i) {
     uint32_t gpio_val = 1 << i;
-    CHECK(dif_gpio_write_all(gpio, gpio_val) == kDifOk,
-          "dif_gpio_write_all failed");
+    CHECK_DIF_OK(dif_gpio_write_all(gpio, gpio_val));
 
     // Read GPIO_IN to confirm what we wrote.
     uint32_t read_val;
-    CHECK(dif_gpio_read_all(gpio, &read_val) == kDifOk,
-          "dif_gpio_read_all failed");
+    CHECK_DIF_OK(dif_gpio_read_all(gpio, &read_val));
 
     // Check written and read val for correctness.
     // Though we try to set all available GPIOs, only the ones that are exposed
@@ -127,23 +124,19 @@ static void gpio_output_test(const dif_gpio_t *gpio) {
   }
 
   // Write all 0s to the GPIOs.
-  CHECK(dif_gpio_write_all(gpio, ~kGpiosMask) == kDifOk,
-        "dif_gpio_write_all failed");
+  CHECK_DIF_OK(dif_gpio_write_all(gpio, ~kGpiosMask));
 
   // Write all 1s to the GPIOs.
-  CHECK(dif_gpio_write_all(gpio, kGpiosMask) == kDifOk,
-        "dif_gpio_write_all failed");
+  CHECK_DIF_OK(dif_gpio_write_all(gpio, kGpiosMask));
 
   // Now walk 0s - 1110, 1101, 1011, 0111, etc.
   for (uint32_t i = 0; i < kNumGpios; ++i) {
     uint32_t gpio_val = ~(1 << i);
-    CHECK(dif_gpio_write_all(gpio, gpio_val) == kDifOk,
-          "dif_gpio_write_all failed");
+    CHECK_DIF_OK(dif_gpio_write_all(gpio, gpio_val));
 
     // Read GPIO_IN to confirm what we wrote.
     uint32_t read_val;
-    CHECK(dif_gpio_read_all(gpio, &read_val) == kDifOk,
-          "dif_gpio_read_all failed");
+    CHECK_DIF_OK(dif_gpio_read_all(gpio, &read_val));
 
     // Check written and read val for correctness.
     // Though we try to set all available GPIOs, only the ones that are exposed
@@ -156,12 +149,10 @@ static void gpio_output_test(const dif_gpio_t *gpio) {
   }
 
   // Write all 1s to the GPIOs.
-  CHECK(dif_gpio_write_all(gpio, kGpiosMask) == kDifOk,
-        "dif_gpio_write_all failed");
+  CHECK_DIF_OK(dif_gpio_write_all(gpio, kGpiosMask));
 
   // Write all 0s to the GPIOs.
-  CHECK(dif_gpio_write_all(gpio, ~kGpiosMask) == kDifOk,
-        "dif_gpio_write_all failed");
+  CHECK_DIF_OK(dif_gpio_write_all(gpio, ~kGpiosMask));
 }
 
 /**
@@ -178,22 +169,18 @@ static void gpio_input_test(const dif_gpio_t *gpio) {
   LOG_INFO("Starting GPIO input test");
 
   // Enable the noise filter on all GPIOs.
-  CHECK(dif_gpio_input_noise_filter_set_enabled(gpio, kGpiosAllowedMask,
-                                                kDifToggleEnabled) == kDifOk,
-        "dif_gpio_input_noise_filter_set_enabled failed");
+  CHECK_DIF_OK(dif_gpio_input_noise_filter_set_enabled(gpio, kGpiosAllowedMask,
+                                                       kDifToggleEnabled));
 
   // Configure all GPIOs to be rising and falling edge interrupts.
-  CHECK(dif_gpio_irq_set_trigger(gpio, kGpiosAllowedMask,
-                                 kDifGpioIrqTriggerEdgeRisingFalling) == kDifOk,
-        "dif_gpio_irq_set_trigger failed");
+  CHECK_DIF_OK(dif_gpio_irq_set_trigger(gpio, kGpiosAllowedMask,
+                                        kDifGpioIrqTriggerEdgeRisingFalling));
 
   // Enable interrupts on all GPIOs.
-  CHECK(dif_gpio_irq_restore_all(gpio, &kGpiosAllowedMask) == kDifOk,
-        "dif_gpio_irq_restore_all failed");
+  CHECK_DIF_OK(dif_gpio_irq_restore_all(gpio, &kGpiosAllowedMask));
 
   // Set the GPIOs to be in input mode.
-  CHECK(dif_gpio_output_set_enabled_all(gpio, 0u) == kDifOk,
-        "dif_gpio_output_set_enabled_all failed");
+  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(gpio, 0u));
 
   // Wait for rising edge interrupt on each pin.
   expected_irq_edge = true;
@@ -240,24 +227,21 @@ void handler_irq_external(void) {
 
   // Check if the same interrupt fired at GPIO as well.
   uint32_t gpio_irqs_status;
-  CHECK(dif_gpio_irq_get_state(&gpio, &gpio_irqs_status) == kDifOk,
-        "dif_gpio_irq_get_state failed");
+  CHECK_DIF_OK(dif_gpio_irq_get_state(&gpio, &gpio_irqs_status));
   CHECK(gpio_irqs_status == (1 << expected_gpio_pin_irq),
         "Incorrect GPIO irqs status {exp: %x, obs: %x}",
         (1 << expected_gpio_pin_irq), gpio_irqs_status);
 
   // Read the gpio pin value to ensure the right value is being reflected.
   bool pin_val;
-  CHECK(dif_gpio_read(&gpio, expected_gpio_pin_irq, &pin_val) == kDifOk,
-        "dif_gpio_read failed");
+  CHECK_DIF_OK(dif_gpio_read(&gpio, expected_gpio_pin_irq, &pin_val));
 
   // Check if the pin value is set correctly.
   CHECK(pin_val == expected_irq_edge, "Incorrect GPIO %d pin value (exp: %b)",
         expected_gpio_pin_irq, expected_irq_edge);
 
   // Clear the interrupt at GPIO.
-  CHECK(dif_gpio_irq_acknowledge(&gpio, gpio_pin_irq_fired) == kDifOk,
-        "dif_gpio_irq_acknowledge failed");
+  CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio, gpio_pin_irq_fired));
 
   // Complete the IRQ at PLIC.
   CHECK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
@@ -272,9 +256,8 @@ bool test_main(void) {
   pinmux_init();
 
   // Initialize the GPIO.
-  CHECK(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
-                      &gpio) == kDifOk,
-        "dif_gpio_init failed");
+  CHECK_DIF_OK(
+      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
 
   // Initialize the PLIC.
   mmio_region_t plic_base_addr =

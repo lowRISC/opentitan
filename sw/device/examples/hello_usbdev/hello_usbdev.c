@@ -78,12 +78,12 @@ static dif_uart_t uart;
  */
 static void usb_receipt_callback_0(uint8_t c) {
   c = make_printable(c, '?');
-  CHECK(dif_uart_byte_send_polled(&uart, c) == kDifOk);
+  CHECK_DIF_OK(dif_uart_byte_send_polled(&uart, c));
   ++usb_chars_recved_total;
 }
 static void usb_receipt_callback_1(uint8_t c) {
   c = make_printable(c + 1, '?');
-  CHECK(dif_uart_byte_send_polled(&uart, c) == kDifOk);
+  CHECK_DIF_OK(dif_uart_byte_send_polled(&uart, c));
   ++usb_chars_recved_total;
 }
 
@@ -108,8 +108,8 @@ static const uint32_t kDiffMask = 2;
 static const uint32_t kUPhyMask = 4;
 
 int main(int argc, char **argv) {
-  CHECK(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-                      &uart) == kDifOk);
+  CHECK_DIF_OK(dif_uart_init(
+      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
   CHECK(dif_uart_configure(&uart, (dif_uart_config_t){
                                       .baudrate = kUartBaudrate,
                                       .clk_freq_hz = kClockFreqPeripheralHz,
@@ -137,10 +137,10 @@ int main(int argc, char **argv) {
                       .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
                   }) == kDifSpiDeviceOk);
 
-  CHECK(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
-                      &gpio) == kDifOk);
+  CHECK_DIF_OK(
+      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
-  CHECK(dif_gpio_output_set_enabled_all(&gpio, 0x0ff00) == kDifOk);
+  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x0ff00));
 
   LOG_INFO("Hello, USB!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
   uint32_t gpio_state;
-  CHECK(dif_gpio_read_all(&gpio, &gpio_state) == kDifOk);
+  CHECK_DIF_OK(dif_gpio_read_all(&gpio, &gpio_state));
   bool pinflip = gpio_state & kPinflipMask ? true : false;
   bool differential = gpio_state & kDiffMask ? true : false;
   bool uphy = gpio_state & kUPhyMask ? true : false;
@@ -184,10 +184,10 @@ int main(int argc, char **argv) {
       }
 
       uint8_t rcv_char;
-      CHECK(dif_uart_bytes_receive(&uart, 1, &rcv_char, NULL) == kDifOk);
-      CHECK(dif_uart_byte_send_polled(&uart, rcv_char) == kDifOk);
+      CHECK_DIF_OK(dif_uart_bytes_receive(&uart, 1, &rcv_char, NULL));
+      CHECK_DIF_OK(dif_uart_byte_send_polled(&uart, rcv_char));
 
-      CHECK(dif_gpio_write_all(&gpio, rcv_char << 8) == kDifOk);
+      CHECK_DIF_OK(dif_gpio_write_all(&gpio, rcv_char << 8));
 
       if (rcv_char == '/') {
         uint32_t usb_irq_state =

@@ -52,10 +52,7 @@ static const uint32_t kExpectedHmacDigest[8] = {
  * Initialize the HMAC engine. Return `true` if the configuration is valid.
  */
 static void test_setup(mmio_region_t base_addr, dif_hmac_t *hmac) {
-  dif_result_t res = dif_hmac_init(base_addr, hmac);
-
-  CHECK(res != kDifBadArg, "Invalid arguments encountered in HMAC init.");
-  CHECK(res == kDifOk, "Unknown error encountered in HMAC init.");
+  CHECK_DIF_OK(dif_hmac_init(base_addr, hmac));
 }
 
 /**
@@ -63,16 +60,12 @@ static void test_setup(mmio_region_t base_addr, dif_hmac_t *hmac) {
  * use the provided key in HMAC mode.
  */
 static void test_start(const dif_hmac_t *hmac, const uint8_t *key) {
-  dif_result_t res;
   // Let a null key indicate we are operating in SHA256-only mode.
   if (key == NULL) {
-    res = dif_hmac_mode_sha256_start(hmac, kHmacTransactionConfig);
+    CHECK_DIF_OK(dif_hmac_mode_sha256_start(hmac, kHmacTransactionConfig));
   } else {
-    res = dif_hmac_mode_hmac_start(hmac, key, kHmacTransactionConfig);
+    CHECK_DIF_OK(dif_hmac_mode_hmac_start(hmac, key, kHmacTransactionConfig));
   }
-
-  CHECK(res != kDifBadArg, "Invalid arguments encountered in HMAC start.");
-  CHECK(res == kDifOk, "Unknown error encountered in HMAC start.");
 }
 
 /**
@@ -112,11 +105,7 @@ static void push_message(const dif_hmac_t *hmac, const char *data, size_t len) {
 static void wait_for_fifo_empty(const dif_hmac_t *hmac) {
   uint32_t fifo_depth;
   do {
-    dif_result_t res = dif_hmac_fifo_count_entries(hmac, &fifo_depth);
-
-    CHECK(res != kDifBadArg,
-          "Invalid arguments encountered checking FIFO depth.");
-    CHECK(res == kDifOk, "Unknown error encountered checking FIFO depth.");
+    CHECK_DIF_OK(dif_hmac_fifo_count_entries(hmac, &fifo_depth));
   } while (fifo_depth > 0);
 }
 
@@ -127,11 +116,7 @@ static void wait_for_fifo_empty(const dif_hmac_t *hmac) {
 static void check_message_length(const dif_hmac_t *hmac,
                                  uint64_t expected_sent_bits) {
   uint64_t sent_bits;
-  dif_result_t res = dif_hmac_get_message_length(hmac, &sent_bits);
-
-  CHECK(res != kDifBadArg,
-        "Invalid arguments encountered checking message length.");
-  CHECK(res == kDifOk, "Unknown error encountered checking message length.");
+  CHECK_DIF_OK(dif_hmac_get_message_length(hmac, &sent_bits));
 
   // TODO: Support 64-bit integers in logging.
   CHECK(expected_sent_bits == sent_bits,
@@ -143,10 +128,7 @@ static void check_message_length(const dif_hmac_t *hmac,
  * Kick off the HMAC (or SHA256) run.
  */
 static void run_hmac(const dif_hmac_t *hmac) {
-  dif_result_t res = dif_hmac_process(hmac);
-
-  CHECK(res != kDifBadArg, "Invalid arguments encountered running HMAC.");
-  CHECK(res == kDifOk, "Unknown error encountered running HMAC.");
+  CHECK_DIF_OK(dif_hmac_process(hmac));
 }
 
 /**

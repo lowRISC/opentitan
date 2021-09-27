@@ -73,7 +73,7 @@ bool test_main(void) {
                         &otp) == kDifOtpCtrlOk);
 
   mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
-  CHECK(dif_lc_ctrl_init(lc_reg, &lc) == kDifOk);
+  CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
 
   dif_otp_ctrl_config_t config = {
       .check_timeout = 100000,
@@ -84,8 +84,7 @@ bool test_main(void) {
 
   // Read out Device ID from LC_CTRL's `device_id` registers.
   dif_lc_ctrl_device_id_t lc_device_id;
-  CHECK(dif_lc_ctrl_get_device_id(&lc, &lc_device_id) == kDifOk,
-        "LC_CTRL failed to read device_id registers");
+  CHECK_DIF_OK(dif_lc_ctrl_get_device_id(&lc, &lc_device_id));
 
   // Read out Device ID from OTP DAI read, and compare the value with LC_CTRL's
   // `device_id` registers.
