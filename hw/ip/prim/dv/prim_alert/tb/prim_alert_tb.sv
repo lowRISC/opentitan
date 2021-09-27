@@ -298,10 +298,12 @@ module prim_alert_tb;
     $display("Ack signal integrity error sequence finished!");
 
     // Sequence 5) `Ping_p/n` integrity check sequence.
+    // Disable the assertion at least two clock cycles before sending the ping request, because the
+    // `PingDiffOk_A` assertion has ##2 delay.
+    $assertoff(2, prim_alert_tb.i_alert_receiver.PingDiffOk_A);
     main_clk.wait_clks($urandom_range(MinHandshakeWait, 10));
     ping_req = 1;
 
-    $assertoff(0, prim_alert_tb.i_alert_receiver.PingDiffOk_A);
     force i_alert_receiver.alert_rx_o.ping_n = 1;
     wait (integ_fail == 1);
     ping_req = 0;
