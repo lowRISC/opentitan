@@ -410,6 +410,14 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         bit cfg_regwen = (current_op_status == keymgr_pkg::OpWip);
         if (csr.get_name() == "control") begin
           cov.control_w_regwen_cg.sample(item.a_data, cfg_regwen);
+        end else if (csr.get_name() == "sideload_clear") begin
+          cov.sideload_clear_cg.sample(`gmv(ral.sideload_clear.val),
+                                       current_state,
+                                       get_operation(),
+                                       cfg.keymgr_vif.aes_sideload_status == SideLoadAvail,
+                                       cfg.keymgr_vif.kmac_sideload_status == SideLoadAvail,
+                                       cfg.keymgr_vif.otbn_sideload_status == SideLoadAvail,
+                                       cfg_regwen);
         end else begin
           cov.sw_input_cg_wrap[csr.get_name()].sample(item.a_data, cfg_regwen);
         end
@@ -675,15 +683,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       end
       "sideload_clear": begin
         if (addr_phase_write) begin
-          if (cfg.en_cov) begin
-            cov.sideload_clear_cg.sample(`gmv(ral.sideload_clear.val),
-                                         current_state,
-                                         get_operation(),
-                                         cfg.keymgr_vif.aes_sideload_status == SideLoadAvail,
-                                         cfg.keymgr_vif.kmac_sideload_status == SideLoadAvail,
-                                         cfg.keymgr_vif.otbn_sideload_status == SideLoadAvail);
-          end
-
           fork
             begin
               cfg.clk_rst_vif.wait_clks(1);
