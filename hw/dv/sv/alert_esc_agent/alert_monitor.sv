@@ -26,6 +26,8 @@ class alert_monitor extends alert_esc_base_monitor;
   endtask : run_phase
 
   virtual task reset_thread();
+    under_reset = 1;
+    wait_alert_init_done();
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
@@ -33,15 +35,20 @@ class alert_monitor extends alert_esc_base_monitor;
       // Reset signals at posedge rst_n to avoid race condition at negedge rst_n
       reset_signals();
       // Wait for alert init with an intentional integrity fail to finish.
-      wait (cfg.vif.monitor_cb.alert_tx_final.alert_p == cfg.vif.monitor_cb.alert_tx_final.alert_n);
-      wait (cfg.vif.monitor_cb.alert_tx_final.alert_p != cfg.vif.monitor_cb.alert_tx_final.alert_n);
-      under_reset = 0;
+      wait_alert_init_done();
     end
   endtask : reset_thread
 
   virtual function void reset_signals();
     under_ping_rsp = 0;
   endfunction : reset_signals
+
+  virtual task wait_alert_init_done();
+    wait (cfg.vif.monitor_cb.alert_tx_final.alert_p == cfg.vif.monitor_cb.alert_tx_final.alert_n);
+    wait (cfg.vif.monitor_cb.alert_tx_final.alert_p != cfg.vif.monitor_cb.alert_tx_final.alert_n);
+    `uvm_info("alert_monitor", "Alert init done!", UVM_HIGH)
+    under_reset = 0;
+  endtask
 
   virtual task ping_thread();
     alert_esc_seq_item req;
