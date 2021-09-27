@@ -229,7 +229,7 @@ class IpConfig:
     def to_file(self, file_path: Path, header: Optional[str] = ""):
         obj = {}
         obj['instance_name'] = self.instance_name
-        obj['param_values'] = str(self.param_values)
+        obj['param_values'] = self.param_values
 
         with open(file_path, 'w') as fp:
             if header:
