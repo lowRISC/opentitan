@@ -49,7 +49,7 @@ module prim_edge_detector #(
     else         q_sync_q <= q_sync_d;
   end
 
-  assign q_posedge_pulse_o = ~q_sync_d & q_sync_q;
-  assign q_negedge_pulse_o = q_sync_d & ~q_sync_q;
+  assign q_posedge_pulse_o = q_sync_d & ~q_sync_q;
+  assign q_negedge_pulse_o = ~q_sync_d & q_sync_q;
 
 endmodule : prim_edge_detector
