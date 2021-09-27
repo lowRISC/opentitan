@@ -84,6 +84,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   `include "cip_base_vseq__tl_errors.svh"
   `include "cip_base_vseq__shadow_reg_errors.svh"
+  `include "cip_base_vseq__sec_cm_fi.svh"
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
@@ -388,6 +389,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       "mem_partial_access":            run_mem_partial_access_vseq(num_times);
       "csr_mem_rw_with_rand_reset":    run_csr_mem_rw_with_rand_reset_vseq(num_times);
       "csr_mem_rw":                    run_csr_mem_rw_vseq(num_times);
+      "sec_cm_fi":                  run_sec_cm_fi_vseq(num_times);
       default:                         run_csr_vseq_wrapper(num_times);
     endcase
   endtask

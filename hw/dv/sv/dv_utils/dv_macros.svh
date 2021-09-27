@@ -71,6 +71,10 @@
     _inst_name_ = _type_name_::type_id::create(`"_inst_name_`", this);
 `endif
 
+`ifndef DUT_HIER_STR
+  `define DUT_HIER_STR `DV_STRINGIFY(`DUT_HIER)
+`endif
+
 // Convert arbitrary text / expression to string.
 `ifndef DV_STRINGIFY
   `define DV_STRINGIFY(I_) `"I_`"

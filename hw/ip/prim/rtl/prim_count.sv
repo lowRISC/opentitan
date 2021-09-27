@@ -192,4 +192,9 @@ module prim_count import prim_count_pkg::*; #(
   `ASSERT(OutSet_A, set_i |=>
           (CntStyle == DupCnt || OutSelDnCnt) ? cnt_o == $past(set_cnt_i) : cnt_o == 0)
 
-endmodule : prim_count
+  // This logic that will be assign to one, when user adds macro
+  // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
+  // is used in design without adding this assertion check.
+  logic unused_assert_covered;
+  `ASSERT_INIT(AssertCoveredConnected_A, unused_assert_covered == 1'b1)
+endmodule // keymgr_cnt

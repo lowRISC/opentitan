@@ -11,6 +11,7 @@ filesets:
 
   files_dv:
     depend:
+      - lowrisc:dv:sec_cm
       - lowrisc:dv:keymgr_test
       - lowrisc:dv:keymgr_sva
     files:
