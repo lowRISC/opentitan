@@ -14,7 +14,7 @@ from mako import exceptions as mako_exceptions  # type: ignore
 from mako.lookup import TemplateLookup as MakoTemplateLookup  # type: ignore
 from reggen.ip_block import IpBlock
 
-from .lib import IpConfig, IpTemplate
+from .lib import IpConfig, IpTemplate, TemplateParameter
 
 _HJSON_LICENSE_HEADER = ("""// Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -72,7 +72,7 @@ class IpTemplateRendererBase:
                 log.info(f"Using default value for template parameter {name}")
                 val = template_param.default
 
-            assert template_param.param_type in ('string', 'int')
+            assert template_param.param_type in TemplateParameter.VALID_PARAM_TYPES
             try:
                 if template_param.param_type == 'string':
                     val_typed = str(val)  # type: Union[int, str]
