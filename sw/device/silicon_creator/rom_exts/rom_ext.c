@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
@@ -44,7 +45,7 @@ void rom_ext_boot(void) {
     abort();
   }
 
-  dif_uart_config_result_t config_result =
+  dif_result_t config_result =
       dif_uart_configure(&uart, (dif_uart_config_t){
                                     .baudrate = kUartBaudrate,
                                     .clk_freq_hz = kClockFreqPeripheralHz,
@@ -52,7 +53,7 @@ void rom_ext_boot(void) {
                                     .parity = kDifUartParityEven,
                                 });
 
-  if (config_result != kDifUartConfigOk) {
+  if (config_result != kDifOk) {
     abort();
   }
 

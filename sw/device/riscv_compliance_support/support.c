@@ -22,14 +22,13 @@ static dif_uart_t uart0;
 int opentitan_compliance_main(int argc, char **argv) {
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
-  CHECK(dif_uart_configure(&uart0,
-                           (dif_uart_config_t){
-                               .baudrate = kUartBaudrate,
-                               .clk_freq_hz = kClockFreqPeripheralHz,
-                               .parity_enable = kDifToggleDisabled,
-                               .parity = kDifUartParityEven,
-                           }) == kDifUartConfigOk,
-        "failed to configure UART");
+  CHECK_DIF_OK(
+      dif_uart_configure(&uart0, (dif_uart_config_t){
+                                     .baudrate = kUartBaudrate,
+                                     .clk_freq_hz = kClockFreqPeripheralHz,
+                                     .parity_enable = kDifToggleDisabled,
+                                     .parity = kDifUartParityEven,
+                                 }));
   base_uart_stdout(&uart0);
 
   run_rvc_test();

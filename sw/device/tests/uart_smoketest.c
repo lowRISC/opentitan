@@ -27,7 +27,7 @@ bool test_main(void) {
                                .clk_freq_hz = kClockFreqPeripheralHz,
                                .parity_enable = kDifToggleDisabled,
                                .parity = kDifUartParityEven,
-                           }) == kDifUartConfigOk,
+                           }) == kDifOk,
         "UART config failed!");
 
   CHECK_DIF_OK(
