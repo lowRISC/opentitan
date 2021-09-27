@@ -171,7 +171,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
                               current_state.name, operation.name, is_good_op), UVM_MEDIUM)
 
     // wait for status to get out of OpWip and check
-    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
+    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip), .timeout_ns(100_000),
                  .compare_op(CompareOpNe), .spinwait_delay_ns($urandom_range(0, 100)));
 
     exp_status = is_good_op ? keymgr_pkg::OpDoneSuccess : keymgr_pkg::OpDoneFail;

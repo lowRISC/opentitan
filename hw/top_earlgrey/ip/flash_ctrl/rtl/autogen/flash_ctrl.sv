@@ -1172,5 +1172,8 @@ module flash_ctrl
   `ASSERT(OutofBoundsReq_A, unused_op_valid & op_addr_oob |-> ~flash_phy_req.req)
 
   // add more assertions
-
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PageCntAlertCheck_A, u_flash_hw_if.u_page_cnt,
+                                         alert_tx_o[0])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_flash_hw_if.u_word_cnt,
+                                         alert_tx_o[0])
 endmodule
