@@ -189,7 +189,8 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   // plusarg, provide ability to set a random number of csrs to test from higher level sequence
   virtual task run_csr_vseq(string          csr_test_type = "",
                             int             num_test_csrs = 0,
-                            bit             do_rand_wr_and_reset = 1);
+                            bit             do_rand_wr_and_reset = 1'b1,
+                            bit             enable_value_check = 1'b1);
     csr_base_seq  m_csr_seq;
 
     // env needs to have a ral instance
@@ -246,6 +247,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
       m_csr_seq.models[i] = cfg.ral_models[i];
     end
     m_csr_seq.external_checker = cfg.en_scb;
+    m_csr_seq.enable_value_check = enable_value_check;
     m_csr_seq.num_test_csrs = num_test_csrs;
     m_csr_seq.start(null);
   endtask

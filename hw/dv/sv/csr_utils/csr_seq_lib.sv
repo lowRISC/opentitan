@@ -28,11 +28,12 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
   uvm_reg         test_csrs[$];
 
   // By default, assume external checker (example, scoreboard) is turned off. If that is the case,
-  // then writes are followed by call to predict function to update the mirrored value. Reads are
-  // then checked against the mirrored value using csr_rd_check task. If external checker is
-  // enabled, then we let the external checker do the predict and compare.
-  // In either case, we should be able to do completely non-blocking writes and reads.
-  bit external_checker = 1'b0;
+  // then writes are followed by call to predict function to update the mirrored value. If
+  // enable_value_check is set then reads are then checked against the mirrored value using
+  // csr_rd_check task. If an external checker is enabled, then we let it do the predict and
+  // compare. In either case, we should be able to do completely non-blocking writes and reads.
+  bit external_checker   = 1'b0;
+  bit enable_value_check = 1'b1;
 
   // either use num_test_csrs or {test_csr_chunk, num_csr_chunks} to test slice of all csrs
   int num_test_csrs = 0;
@@ -144,7 +145,7 @@ class csr_hw_reset_seq extends csr_base_seq;
       compare_mask = get_mask_excl_fields(test_csrs[i], CsrExclInitCheck, CsrHwResetTest);
       csr_rd_check(.ptr           (test_csrs[i]),
                    .blocking      (0),
-                   .compare       (!external_checker),
+                   .compare       (enable_value_check && !external_checker),
                    .compare_vs_ral(1'b1),
                    .compare_mask  (compare_mask));
     end
@@ -264,7 +265,7 @@ class csr_rw_seq extends csr_base_seq;
 
       do_check_csr_or_field_rd(.csr(test_csrs[i]),
                               .blocking(0),
-                              .compare(!external_checker),
+                              .compare(enable_value_check && !external_checker),
                               .compare_vs_ral(1),
                               .csr_excl_type(CsrExclWriteCheck),
                               .csr_test_type(CsrRwTest));
@@ -386,7 +387,7 @@ class csr_bit_bash_seq extends csr_base_seq;
       // uvm_reg waits until transaction is completed, before start another read/write in same reg
       csr_rd_check(.ptr           (rg),
                    .blocking      (0),
-                   .compare       (!external_checker),
+                   .compare       (enable_value_check && !external_checker),
                    .compare_vs_ral(1'b1),
                    .compare_mask  (~mask),
                    .err_msg       (err_msg));
@@ -445,7 +446,7 @@ class csr_aliasing_seq extends csr_base_seq;
         compare_mask = get_mask_excl_fields(all_csrs[j], CsrExclWriteCheck, CsrAliasingTest);
         csr_rd_check(.ptr           (all_csrs[j]),
                      .blocking      (0),
-                     .compare       (!external_checker),
+                     .compare       (enable_value_check && !external_checker),
                      .compare_vs_ral(1'b1),
                      .compare_mask  (compare_mask));
       end

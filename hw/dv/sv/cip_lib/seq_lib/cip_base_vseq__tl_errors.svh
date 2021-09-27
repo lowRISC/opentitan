@@ -267,10 +267,12 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
     `uvm_info(`gfn, $sformatf("Running run_tl_intg_err_vseq %0d/%0d", trans, num_times),
               UVM_LOW)
     fork
-      // run csr_rw seq to send some normal CSR accesses in parallel
       begin
+        // run csr_rw seq to send some normal CSR accesses in parallel. We disable checking register
+        // values because generating a TL error might cause the block to update status registers in
+        // ways that we can't predict (because we've turned off its scoreboard).
         `uvm_info(`gfn, "Run csr_rw seq", UVM_HIGH)
-        run_csr_vseq("rw");
+        run_csr_vseq(.csr_test_type("rw"), .enable_value_check(1'b0));
       end
       begin
         bit [BUS_AW-1:0] addr;

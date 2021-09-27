@@ -31,11 +31,12 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
   // such as `class_clr` and `clr_regwen` registers are not correct.
   virtual task run_csr_vseq(string csr_test_type = "",
                             int    num_test_csrs = 0,
-                            bit    do_rand_wr_and_reset = 1);
+                            bit    do_rand_wr_and_reset = 1'b1,
+                            bit    enable_value_check = 1'b1);
     if (common_seq_type == "tl_intg_err") begin
       csr_wr(.ptr(ral.loc_alert_regwen[LocalBusIntgFail]), .value(0), .predict(1));
     end
-    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset);
+    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset, enable_value_check);
   endtask
 
   virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,

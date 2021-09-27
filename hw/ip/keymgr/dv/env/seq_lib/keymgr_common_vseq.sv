@@ -43,9 +43,10 @@ class keymgr_common_vseq extends keymgr_base_vseq;
 
   virtual task run_csr_vseq(string csr_test_type = "",
                             int    num_test_csrs = 0,
-                            bit    do_rand_wr_and_reset = 1);
+                            bit    do_rand_wr_and_reset = 1'b1,
+                            bit    enable_value_check = 1'b1);
     csr_vseq_done = 0;
-    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset);
+    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset, enable_value_check);
     csr_vseq_done = 1;
   endtask
 
