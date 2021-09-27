@@ -5,10 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_SCA_LIB_SIMPLE_SERIAL_H_
 #define OPENTITAN_SW_DEVICE_SCA_LIB_SIMPLE_SERIAL_H_
 
-#include "sw/device/lib/dif/dif_uart.h"
-
 #include <stddef.h>
 #include <stdint.h>
+
+#include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_uart.h"
 
 /**
  * @file
@@ -27,6 +28,17 @@
 #define SS_CHECK(condition)                          \
   do {                                               \
     if (!(condition)) {                              \
+      simple_serial_send_status(kSimpleSerialError); \
+      return;                                        \
+    }                                                \
+  } while (false)
+
+/**
+ * Sends an error message over UART if DIF does not return kDifOk.
+ */
+#define SS_CHECK_DIF_OK(dif_call)                    \
+  do {                                               \
+    if (dif_call != kDifOk) {                        \
       simple_serial_send_status(kSimpleSerialError); \
       return;                                        \
     }                                                \
