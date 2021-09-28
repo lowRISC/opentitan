@@ -56,7 +56,7 @@ logic clk, en_osc;
 
 prim_clock_gating #(
   .NoFpgaGate ( 1'b1 )
-) uu_clk_ckgt (
+) u_clk_ckgt (
   .clk_i ( clk_aon_ext_i ),
   .en_i ( en_osc ),
   .test_en_i ( 1'b0 ),
@@ -83,7 +83,7 @@ assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 ////////////////////////////////////////
 prim_clock_buf #(
   .NoFpgaBuf ( 1'b1 )
-) uu_buf (
+) u_buf (
   .clk_i ( clk ),
   .clk_o ( aon_clk_o )
 );
