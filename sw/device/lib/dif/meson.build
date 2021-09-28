@@ -39,13 +39,14 @@ test('dif_clkmgr_unittest', executable(
 # CSRNG DIF Library (dif_csrng)
 sw_lib_dif_csrng = declare_dependency(
   link_with: static_library(
-    'csrng_ot',
+    'sw_lib_dif_csrng',
     sources: [
       hw_ip_csrng_reg_h,
       'dif_csrng.c',
     ],
     dependencies: [
       sw_lib_mmio,
+      sw_lib_dif_autogen_csrng,
     ],
   )
 )
@@ -53,9 +54,11 @@ sw_lib_dif_csrng = declare_dependency(
 test('dif_csrng_unittest', executable(
     'dif_csrng_unittest',
     sources: [
-      hw_ip_csrng_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_csrng.c',
       'dif_csrng_unittest.cc',
+      'autogen/dif_csrng_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_csrng.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_csrng_autogen.c',
+      hw_ip_csrng_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

@@ -24,8 +24,7 @@ enum {
 static void wait_for_csrng_cmd_ready(const dif_csrng_t *csrng) {
   dif_csrng_cmd_status_t cmd_status;
   do {
-    CHECK(dif_csrng_get_cmd_interface_status(csrng, &cmd_status) ==
-          kDifCsrngOk);
+    CHECK_DIF_OK(dif_csrng_get_cmd_interface_status(csrng, &cmd_status));
     CHECK(cmd_status != kDifCsrngCmdStatusError);
   } while (cmd_status != kDifCsrngCmdStatusReady);
 }
@@ -40,8 +39,8 @@ static void check_internal_state(const dif_csrng_t *csrng,
                                  const dif_csrng_internal_state_t *expected) {
   wait_for_csrng_cmd_ready(csrng);
   dif_csrng_internal_state_t got;
-  CHECK(dif_csrng_get_internal_state(csrng, kCsrngInternalStateIdSw, &got) ==
-        kDifCsrngOk);
+  CHECK_DIF_OK(
+      dif_csrng_get_internal_state(csrng, kCsrngInternalStateIdSw, &got));
 
   CHECK(got.instantiated == expected->instantiated);
   CHECK(got.reseed_counter == expected->reseed_counter);
@@ -68,8 +67,8 @@ static void fips_instantiate_kat(const dif_csrng_t *csrng) {
       .seed_material_len = 12,
   };
   wait_for_csrng_cmd_ready(csrng);
-  CHECK(dif_csrng_instantiate(csrng, kDifCsrngEntropySrcToggleDisable,
-                              &kEntropyInput) == kDifCsrngOk);
+  CHECK_DIF_OK(dif_csrng_instantiate(csrng, kDifCsrngEntropySrcToggleDisable,
+                                     &kEntropyInput));
 
   const dif_csrng_internal_state_t kExpectedState = {
       .reseed_counter = 1,
@@ -92,14 +91,14 @@ static void fips_instantiate_kat(const dif_csrng_t *csrng) {
 static void run_generate_cmd(const dif_csrng_t *csrng, uint32_t *output,
                              size_t output_len) {
   wait_for_csrng_cmd_ready(csrng);
-  CHECK(dif_csrng_generate_start(csrng, output_len) == kDifCsrngOk);
+  CHECK_DIF_OK(dif_csrng_generate_start(csrng, output_len));
 
   dif_csrng_output_status_t output_status;
   do {
-    CHECK(dif_csrng_get_output_status(csrng, &output_status) == kDifCsrngOk);
+    CHECK_DIF_OK(dif_csrng_get_output_status(csrng, &output_status));
   } while (!output_status.valid_data);
 
-  CHECK(dif_csrng_generate_end(csrng, output, output_len) == kDifCsrngOk);
+  CHECK_DIF_OK(dif_csrng_generate_end(csrng, output, output_len));
 }
 
 /**
@@ -135,18 +134,16 @@ static void fips_generate_kat(const dif_csrng_t *csrng) {
  * Run CTR DRBG Known-Answer-Tests (KATs).
  */
 void test_ctr_drbg_ctr0(const dif_csrng_t *csrng) {
-  CHECK(dif_csrng_uninstantiate(csrng) == kDifCsrngOk);
+  CHECK_DIF_OK(dif_csrng_uninstantiate(csrng));
   fips_instantiate_kat(csrng);
   fips_generate_kat(csrng);
 }
 
 bool test_main() {
-  const dif_csrng_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-  };
   dif_csrng_t csrng;
-  CHECK(dif_csrng_init(params, &csrng) == kDifCsrngOk);
-  CHECK(dif_csrng_configure(&csrng) == kDifCsrngOk);
+  CHECK_DIF_OK(dif_csrng_init(
+      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
+  CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   test_ctr_drbg_ctr0(&csrng);
 

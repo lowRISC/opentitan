@@ -20,43 +20,38 @@ using ::testing::ElementsAreArray;
 
 class DifCsrngTest : public testing::Test, public mock_mmio::MmioTest {
  protected:
-  const dif_csrng_params_t params_ = {.base_addr = dev().region()};
-  const dif_csrng_t csrng_ = {
-      .params = {.base_addr = dev().region()},
-  };
+  const dif_csrng_t csrng_ = {.base_addr = dev().region()};
 };
 
 class InitTest : public DifCsrngTest {};
 
 TEST_F(InitTest, BadArgs) {
-  EXPECT_EQ(dif_csrng_init(params_, nullptr), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, InitOk) {
   dif_csrng_t csrng;
-  EXPECT_EQ(dif_csrng_init(params_, &csrng), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_init(dev().region(), &csrng), kDifOk);
 }
 
 class ConfigTest : public DifCsrngTest {};
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_csrng_configure(nullptr), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_configure(nullptr), kDifBadArg);
 }
 
 TEST_F(ConfigTest, ConfigOk) {
   EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, 0xaaa);
-  EXPECT_EQ(dif_csrng_configure(&csrng_), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_configure(&csrng_), kDifOk);
 }
 
 class GetCmdInterfaceStatusTest : public DifCsrngTest {};
 
 TEST_F(GetCmdInterfaceStatusTest, NullArgs) {
   dif_csrng_cmd_status_t status;
-  EXPECT_EQ(dif_csrng_get_cmd_interface_status(nullptr, &status),
-            kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_get_cmd_interface_status(nullptr, &status), kDifBadArg);
 
-  EXPECT_EQ(dif_csrng_get_cmd_interface_status(&csrng_, nullptr),
-            kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_get_cmd_interface_status(&csrng_, nullptr), kDifBadArg);
 }
 
 struct GetCmdInterfaceStatusParams {
@@ -77,7 +72,7 @@ TEST_P(GetCmdInterfaceStatusTestAllParams, ValidConfigurationMode) {
                     {CSRNG_SW_CMD_STS_CMD_RDY_BIT, test_param.cmd_ready},
                     {CSRNG_SW_CMD_STS_CMD_STS_BIT, test_param.cmd_status},
                 });
-  EXPECT_EQ(dif_csrng_get_cmd_interface_status(&csrng_, &status), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_get_cmd_interface_status(&csrng_, &status), kDifOk);
   EXPECT_EQ(status, test_param.expected_status);
 }
 
@@ -93,9 +88,9 @@ class GetOutputStatusTest : public DifCsrngTest {};
 
 TEST_F(GetOutputStatusTest, NullArgs) {
   dif_csrng_output_status_t status;
-  EXPECT_EQ(dif_csrng_get_output_status(nullptr, &status), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_get_output_status(nullptr, &status), kDifBadArg);
 
-  EXPECT_EQ(dif_csrng_get_output_status(&csrng_, nullptr), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_get_output_status(&csrng_, nullptr), kDifBadArg);
 }
 
 TEST_F(GetOutputStatusTest, ValidStatus) {
@@ -108,7 +103,7 @@ TEST_F(GetOutputStatusTest, ValidStatus) {
                     {CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT, false},
                 });
 
-  EXPECT_EQ(dif_csrng_get_output_status(&csrng_, &status), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_get_output_status(&csrng_, &status), kDifOk);
   EXPECT_EQ(status.valid_data, true);
   EXPECT_EQ(status.fips_mode, false);
 }
@@ -129,12 +124,12 @@ TEST_F(CommandTest, InstantiateOk) {
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000101);
   EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleDisable,
                                   &seed_material_),
-            kDifCsrngOk);
+            kDifOk);
 
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000001);
   EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleEnable,
                                   &seed_material_),
-            kDifCsrngOk);
+            kDifOk);
 
   seed_material_.seed_material[0] = 0x5a5a5a5a;
   seed_material_.seed_material_len = 1;
@@ -142,73 +137,73 @@ TEST_F(CommandTest, InstantiateOk) {
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
   EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleEnable,
                                   &seed_material_),
-            kDifCsrngOk);
+            kDifOk);
 }
 
 TEST_F(CommandTest, InstantiateBadArgs) {
   EXPECT_EQ(dif_csrng_instantiate(nullptr, kDifCsrngEntropySrcToggleDisable,
                                   &seed_material_),
-            kDifCsrngBadArg);
+            kDifBadArg);
 
   // Failed overflow check.
   seed_material_.seed_material_len = 16;
   EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleDisable,
                                   &seed_material_),
-            kDifCsrngBadArg);
+            kDifBadArg);
 }
 
 TEST_F(CommandTest, ReseedOk) {
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000002);
-  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifOk);
 
   seed_material_.seed_material[0] = 0x5a5a5a5a;
   seed_material_.seed_material_len = 1;
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000012);
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
-  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifOk);
 }
 
 TEST_F(CommandTest, ReseedBadArgs) {
-  EXPECT_EQ(dif_csrng_reseed(nullptr, &seed_material_), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_reseed(nullptr, &seed_material_), kDifBadArg);
 
   // Failed overflow check.
   seed_material_.seed_material_len = 16;
-  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifBadArg);
 }
 
 TEST_F(CommandTest, UpdateOk) {
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000004);
-  EXPECT_EQ(dif_csrng_update(&csrng_, &seed_material_), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_update(&csrng_, &seed_material_), kDifOk);
 
   seed_material_.seed_material[0] = 0x5a5a5a5a;
   seed_material_.seed_material_len = 1;
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000014);
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
-  EXPECT_EQ(dif_csrng_update(&csrng_, &seed_material_), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_update(&csrng_, &seed_material_), kDifOk);
 }
 
 TEST_F(CommandTest, UpdateBadArgs) {
-  EXPECT_EQ(dif_csrng_update(nullptr, &seed_material_), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_update(nullptr, &seed_material_), kDifBadArg);
 }
 
 TEST_F(CommandTest, GenerateOk) {
   // 512bits = 16 x 32bit = 4 x 128bit blocks
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00004003);
-  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/16), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/16), kDifOk);
 
   // 576bits = 18 x 32bit = 5 x 128bit blocks (rounded up)
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00005003);
-  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/18), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/18), kDifOk);
 }
 
 TEST_F(CommandTest, GenerateBadArgs) {
-  EXPECT_EQ(dif_csrng_generate_start(nullptr, /*len=*/1), kDifCsrngBadArg);
-  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/0), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_generate_start(nullptr, /*len=*/1), kDifBadArg);
+  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/0), kDifBadArg);
 }
 
 TEST_F(CommandTest, UninstantiateOk) {
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000005);
-  EXPECT_EQ(dif_csrng_uninstantiate(&csrng_), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_uninstantiate(&csrng_), kDifOk);
 }
 
 class GenerateEndTest : public DifCsrngTest {};
@@ -230,17 +225,15 @@ TEST_F(GenerateEndTest, ReadOk) {
   }
 
   std::vector<uint32_t> got(kExpected.size());
-  EXPECT_EQ(dif_csrng_generate_end(&csrng_, got.data(), got.size()),
-            kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_generate_end(&csrng_, got.data(), got.size()), kDifOk);
   EXPECT_THAT(got, testing::ElementsAreArray(kExpected));
 }
 
 TEST_F(GenerateEndTest, ReadBadArgs) {
-  EXPECT_EQ(dif_csrng_generate_end(&csrng_, nullptr, /*len=*/0),
-            kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_generate_end(&csrng_, nullptr, /*len=*/0), kDifBadArg);
 
   uint32_t data;
-  EXPECT_EQ(dif_csrng_generate_end(nullptr, &data, /*len=*/1), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_generate_end(nullptr, &data, /*len=*/1), kDifBadArg);
 }
 
 class GetInternalStateTest : public DifCsrngTest {};
@@ -271,8 +264,7 @@ TEST_F(GetInternalStateTest, GetInternalStateOk) {
   EXPECT_READ32(CSRNG_INT_STATE_VAL_REG_OFFSET, 3);
 
   dif_csrng_internal_state_t got;
-  EXPECT_EQ(dif_csrng_get_internal_state(&csrng_, instance_id, &got),
-            kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_get_internal_state(&csrng_, instance_id, &got), kDifOk);
 
   EXPECT_EQ(got.reseed_counter, expected.reseed_counter);
   EXPECT_THAT(got.key, ElementsAreArray(expected.key));
@@ -284,12 +276,12 @@ TEST_F(GetInternalStateTest, GetInternalStateOk) {
 TEST_F(GetInternalStateTest, GetInternalStateBadArgs) {
   EXPECT_EQ(
       dif_csrng_get_internal_state(&csrng_, kCsrngInternalStateIdSw, nullptr),
-      kDifCsrngBadArg);
+      kDifBadArg);
 
   dif_csrng_internal_state unused;
   EXPECT_EQ(
       dif_csrng_get_internal_state(nullptr, kCsrngInternalStateIdSw, &unused),
-      kDifCsrngBadArg);
+      kDifBadArg);
 }
 
 }  // namespace

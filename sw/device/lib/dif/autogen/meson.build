@@ -2,27 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen Entropy Source DIF library
-sw_lib_dif_autogen_entropy_src = declare_dependency(
+# Autogen CSRNG DIF library
+sw_lib_dif_autogen_csrng = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_entropy_src',
+    'sw_lib_dif_autogen_csrng',
     sources: [
-      hw_ip_entropy_src_reg_h,
-      'dif_entropy_src_autogen.c',
-    ],
-    dependencies: [
-      sw_lib_mmio,
-    ],
-  )
-)
-
-# Autogen I2C Controller DIF library
-sw_lib_dif_autogen_i2c = declare_dependency(
-  link_with: static_library(
-    'sw_lib_dif_autogen_i2c',
-    sources: [
-      hw_ip_i2c_reg_h,
-      'dif_i2c_autogen.c',
+      hw_ip_csrng_reg_h,
+      'dif_csrng_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -58,6 +44,20 @@ sw_lib_dif_autogen_alert_handler = declare_dependency(
   )
 )
 
+# Autogen Entropy Source DIF library
+sw_lib_dif_autogen_entropy_src = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_entropy_src',
+    sources: [
+      hw_ip_entropy_src_reg_h,
+      'dif_entropy_src_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen GPIO DIF library
 sw_lib_dif_autogen_gpio = declare_dependency(
   link_with: static_library(
@@ -79,6 +79,20 @@ sw_lib_dif_autogen_hmac = declare_dependency(
     sources: [
       hw_ip_hmac_reg_h,
       'dif_hmac_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen I2C DIF library
+sw_lib_dif_autogen_i2c = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_i2c',
+    sources: [
+      hw_ip_i2c_reg_h,
+      'dif_i2c_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
