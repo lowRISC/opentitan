@@ -191,7 +191,9 @@ module tb;
     .edn_rnd_data_i        (dut.edn_rnd_data),
     .edn_urnd_data_valid_i (edn_urnd_data_valid),
 
+    .status_o     (),
     .insn_cnt_o   (model_insn_cnt),
+
     .err_o        (model_if.err)
   );
 
