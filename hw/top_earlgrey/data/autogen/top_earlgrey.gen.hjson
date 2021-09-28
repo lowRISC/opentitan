@@ -79,6 +79,19 @@
     groups:
     [
       {
+        name: ast
+        src: ext
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_main_i: main
+          clk_io_i: io
+          clk_usb_i: usb
+          clk_aon_i: aon
+        }
+      }
+      {
         name: powerup
         src: top
         sw_cg: no
@@ -2736,6 +2749,26 @@
       clock_srcs:
       {
         clk_i: io_div4
+        clk_main_i:
+        {
+          group: ast
+          clock: main
+        }
+        clk_io_i:
+        {
+          group: ast
+          clock: io
+        }
+        clk_usb_i:
+        {
+          group: ast
+          clock: usb
+        }
+        clk_aon_i:
+        {
+          group: ast
+          clock: aon
+        }
       }
       clock_group: powerup
       reset_connections:
@@ -2784,6 +2817,10 @@
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
+        clk_main_i: clk_main_i
+        clk_io_i: clk_io_i
+        clk_usb_i: clk_usb_i
+        clk_aon_i: clk_aon_i
       }
       param_decl: {}
       param_list: []
@@ -2874,58 +2911,6 @@
           package: ""
           external: true
           top_signame: clk_main_jitter_en
-          index: -1
-        }
-        {
-          name: clk_main
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: clkmgr_aon
-          default: ""
-          package: ""
-          external: true
-          top_signame: clk_main
-          index: -1
-        }
-        {
-          name: clk_io
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: clkmgr_aon
-          default: ""
-          package: ""
-          external: true
-          top_signame: clk_io
-          index: -1
-        }
-        {
-          name: clk_usb
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: clkmgr_aon
-          default: ""
-          package: ""
-          external: true
-          top_signame: clk_usb
-          index: -1
-        }
-        {
-          name: clk_aon
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: clkmgr_aon
-          default: ""
-          package: ""
-          external: true
-          top_signame: clk_aon
           index: -1
         }
         {
@@ -7520,10 +7505,6 @@
       ast.ram_1p_cfg: ram_1p_cfg
       ast.ram_2p_cfg: ram_2p_cfg
       ast.rom_cfg: rom_cfg
-      clkmgr_aon.clk_main: clk_main
-      clkmgr_aon.clk_io: clk_io
-      clkmgr_aon.clk_usb: clk_usb
-      clkmgr_aon.clk_aon: clk_aon
       clkmgr_aon.jitter_en: clk_main_jitter_en
       clkmgr_aon.ast_clk_byp_req: ast_clk_byp_req
       clkmgr_aon.ast_clk_byp_ack: ast_clk_byp_ack
@@ -15013,58 +14994,6 @@
         index: -1
       }
       {
-        name: clk_main
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: clkmgr_aon
-        default: ""
-        package: ""
-        external: true
-        top_signame: clk_main
-        index: -1
-      }
-      {
-        name: clk_io
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: clkmgr_aon
-        default: ""
-        package: ""
-        external: true
-        top_signame: clk_io
-        index: -1
-      }
-      {
-        name: clk_usb
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: clkmgr_aon
-        default: ""
-        package: ""
-        external: true
-        top_signame: clk_usb
-        index: -1
-      }
-      {
-        name: clk_aon
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: clkmgr_aon
-        default: ""
-        package: ""
-        external: true
-        top_signame: clk_aon
-        index: -1
-      }
-      {
         name: pwr
         struct: pwr_clk
         type: req_rsp
@@ -18000,54 +17929,6 @@
         conn_type: true
         index: -1
         netname: ast_rom_cfg
-      }
-      {
-        package: ""
-        struct: logic
-        signame: clk_main_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: clk_main
-      }
-      {
-        package: ""
-        struct: logic
-        signame: clk_io_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: clk_io
-      }
-      {
-        package: ""
-        struct: logic
-        signame: clk_usb_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: clk_usb
-      }
-      {
-        package: ""
-        struct: logic
-        signame: clk_aon_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: clk_aon
       }
       {
         package: ""

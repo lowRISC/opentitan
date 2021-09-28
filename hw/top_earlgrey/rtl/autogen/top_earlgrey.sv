@@ -121,10 +121,6 @@ module top_earlgrey #(
   input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
   input  prim_ram_2p_pkg::ram_2p_cfg_t       ram_2p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
-  input  logic       clk_main_i,
-  input  logic       clk_io_i,
-  input  logic       clk_usb_i,
-  input  logic       clk_aon_i,
   output logic       clk_main_jitter_en_o,
   output lc_ctrl_pkg::lc_tx_t       ast_clk_byp_req_o,
   input  lc_ctrl_pkg::lc_tx_t       ast_clk_byp_ack_i,
@@ -157,6 +153,12 @@ module top_earlgrey #(
   output logic       usbdev_usb_ref_val_o,
   output logic       usbdev_usb_ref_pulse_o,
 
+
+  // All externally supplied clocks
+  input clk_main_i,
+  input clk_io_i,
+  input clk_usb_i,
+  input clk_aon_i,
 
   // All clocks forwarded to ast
   output clkmgr_pkg::clkmgr_out_t clks_ast_o,
@@ -1574,10 +1576,6 @@ module top_earlgrey #(
       .lc_clk_byp_req_i(lc_ctrl_lc_clk_byp_req),
       .lc_clk_byp_ack_o(lc_ctrl_lc_clk_byp_ack),
       .jitter_en_o(clk_main_jitter_en_o),
-      .clk_main_i(clk_main_i),
-      .clk_io_i(clk_io_i),
-      .clk_usb_i(clk_usb_i),
-      .clk_aon_i(clk_aon_i),
       .pwr_i(pwrmgr_aon_pwr_clk_req),
       .pwr_o(pwrmgr_aon_pwr_clk_rsp),
       .idle_i(clkmgr_aon_idle),
@@ -1587,6 +1585,10 @@ module top_earlgrey #(
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
+      .clk_main_i (clk_main_i),
+      .clk_io_i (clk_io_i),
+      .clk_usb_i (clk_usb_i),
+      .clk_aon_i (clk_aon_i),
       .rst_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_main_ni (rstmgr_aon_resets.rst_por_n[rstmgr_pkg::DomainAonSel]),
       .rst_io_ni (rstmgr_aon_resets.rst_por_io_n[rstmgr_pkg::DomainAonSel]),

@@ -15,12 +15,12 @@
   scan: "true",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
-    {reset: "rst_main_ni"},
-    {reset: "rst_io_ni"},
-    {reset: "rst_usb_ni"},
-    {reset: "rst_aon_ni"},
-    {reset: "rst_io_div2_ni"},
-    {reset: "rst_io_div4_ni"},
+    {clock: "clk_main_i", reset: "rst_main_ni"},
+    {clock: "clk_io_i", reset: "rst_io_ni"},
+    {clock: "clk_usb_i", reset: "rst_usb_ni"},
+    {clock: "clk_aon_i", reset: "rst_aon_ni"},
+    {clock: "clk_io_div2_i", reset: "rst_io_div2_ni", internal: true},
+    {clock: "clk_io_div4_i", reset: "rst_io_div4_ni", internal: true},
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
@@ -42,7 +42,7 @@
     { name: "NumGroups",
       desc: "Number of clock groups",
       type: "int",
-      default: "6",
+      default: "7",
       local: "true"
     },
   ],
@@ -95,32 +95,6 @@
       name:    "jitter_en",
       act:     "req",
       package: ""
-    },
-
-  // All clock inputs
-    { struct:  "logic",
-      type:    "uni",
-      name:    "clk_main",
-      act:     "rcv",
-      package: "",
-    },
-    { struct:  "logic",
-      type:    "uni",
-      name:    "clk_io",
-      act:     "rcv",
-      package: "",
-    },
-    { struct:  "logic",
-      type:    "uni",
-      name:    "clk_usb",
-      act:     "rcv",
-      package: "",
-    },
-    { struct:  "logic",
-      type:    "uni",
-      name:    "clk_aon",
-      act:     "rcv",
-      package: "",
     },
 
   // Exported clocks
