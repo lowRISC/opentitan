@@ -976,8 +976,8 @@ module spi_tpm
         // NOTE: The coding style in this state is ugly. How can we improve?
         cmdaddr_shift_en = 1'b 1;
 
-        if (cmdaddr_bitcnt >= 5'h 17) begin
-          // TODO: Add output logic here (Send WAIT or START)
+        if (cmdaddr_bitcnt >= 5'h 18) begin
+          // Send Wait byte [18h:1Fh]
           sck_p2s_valid = 1'b 1;
           sck_data_sel  = SelWait;
         end
