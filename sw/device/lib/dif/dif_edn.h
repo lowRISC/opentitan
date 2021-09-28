@@ -45,6 +45,9 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+
+#include "sw/device/lib/dif/autogen/dif_edn_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,77 +60,6 @@ enum {
    */
   kDifEntropySeedMaterialMaxWordLen = 12,
 };
-
-/**
- * A toggle state: enabled, or disabled.
- *
- * This enum may be used instead of a `bool` when describing an enabled/disabled
- * state.
- */
-typedef enum dif_edn_toggle {
-  /*
-   * The "enabled" state.
-   */
-  kDifEdnToggleEnabled,
-  /**
-   * The "disabled" state.
-   */
-  kDifEdnToggleDisabled,
-} dif_edn_toggle_t;
-
-/**
- * Hardware instantiation parameters for Entropy Distribution Network.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_edn_params {
-  /**
-   * The base address for the Entropy Distribution Network hardware registers.
-   */
-  mmio_region_t base_addr;
-} dif_edn_params_t;
-
-/**
- * A handle to Entropy Distribution Network.
- *
- * This type should be treated as opaque by users.
- */
-typedef struct dif_edn {
-  dif_edn_params_t params;
-} dif_edn_t;
-
-/**
- * The result of a Entropy Distribution Network operation.
- */
-typedef enum dif_edn_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifEdnOk = 0,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifEdnError = 1,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifEdnBadArg = 2,
-  /**
-   * Indicates that this operation has been locked out, and can never
-   * succeed until hardware reset.
-   */
-  kDifEdnLocked = 3,
-  /**
-   * Indicates that the device is busy and cannot perform the requested
-   * operation.
-   */
-  kDifEdnBusy = 4,
-} dif_edn_result_t;
 
 /**
  * CSRNG additional parameters for instantiate and generate commands.
@@ -170,38 +102,16 @@ typedef struct dif_edn_auto_params {
 } dif_edn_auto_params_t;
 
 /**
- * A Entropy Distribution Network interrupt request type.
- */
-typedef enum dif_edn_irq {
-  /**
-   * Asserted when a CSRNG request has completed.
-   */
-  kDifEdnCmdReqDone,
-  /**
-   * Asserted when a FIFO error occurs.
-   */
-  kDifEdnFatalError,
-} dif_edn_irq_t;
-
-/**
- * A snapshot of the enablement state of the interrupts the device.
- *
- * This is an opaque type, to be used with the `dif_edn_irq_disable_all()` and
- * `dif_edn_irq_restore_all()` functions.
- */
-typedef uint32_t dif_edn_irq_snapshot_t;
-
-/**
  * Creates a new handle for Entropy Distribution Network.
  *
  * This function does not actuate the hardware.
  *
- * @param params Hardware instantiation parameters.
+ * @param base_addr Hardware instantiation base address.
  * @param[out] edn Out param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_init(dif_edn_params_t params, dif_edn_t *edn);
+dif_result_t dif_edn_init(mmio_region_t base_addr, dif_edn_t *edn);
 
 /**
  * Configures Entropy Distribution Network with runtime information.
@@ -212,7 +122,7 @@ dif_edn_result_t dif_edn_init(dif_edn_params_t params, dif_edn_t *edn);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_configure(const dif_edn_t *edn);
+dif_result_t dif_edn_configure(const dif_edn_t *edn);
 
 /**
  * Enables the Entropy Distribution Network in boot-time mode.
@@ -224,7 +134,7 @@ dif_edn_result_t dif_edn_configure(const dif_edn_t *edn);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_boot_mode_start(const dif_edn_t *edn);
+dif_result_t dif_edn_boot_mode_start(const dif_edn_t *edn);
 
 /**
  * Enables the Entropy Distribution Network in auto refresh mode.
@@ -237,8 +147,8 @@ dif_edn_result_t dif_edn_boot_mode_start(const dif_edn_t *edn);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_auto_mode_start(const dif_edn_t *edn,
-                                         dif_edn_auto_params_t *config);
+dif_result_t dif_edn_auto_mode_start(const dif_edn_t *edn,
+                                     dif_edn_auto_params_t *config);
 
 /**
  * EDN Status flags.
@@ -263,8 +173,8 @@ typedef enum dif_edn_status {
  * @param set Flag state (set/unset).
  * @return The result of the operation.
  */
-dif_edn_result_t dif_edn_get_status(const dif_edn_t *edn, dif_edn_status_t flag,
-                                    bool *set);
+dif_result_t dif_edn_get_status(const dif_edn_t *edn, dif_edn_status_t flag,
+                                bool *set);
 
 /**
  * Stops the current mode of operation and disables the entropy module.
@@ -273,7 +183,7 @@ dif_edn_result_t dif_edn_get_status(const dif_edn_t *edn, dif_edn_status_t flag,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_stop(const dif_edn_t *edn);
+dif_result_t dif_edn_stop(const dif_edn_t *edn);
 
 /**
  * Locks out Entropy Distribution Network functionality.
@@ -285,7 +195,7 @@ dif_edn_result_t dif_edn_stop(const dif_edn_t *edn);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_lock(const dif_edn_t *edn);
+dif_result_t dif_edn_lock(const dif_edn_t *edn);
 
 /**
  * Checks whether this Entropy Distribution Network is locked.
@@ -295,94 +205,7 @@ dif_edn_result_t dif_edn_lock(const dif_edn_t *edn);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_is_locked(const dif_edn_t *edn, bool *is_locked);
-
-/**
- * Returns whether a particular interrupt is currently pending.
- *
- * @param edn An Entropy Distribution Network handle.
- * @param irq An interrupt type.
- * @param[out] is_pending Out-param for whether the interrupt is pending.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_irq_is_pending(const dif_edn_t *edn, dif_edn_irq_t irq,
-                                        bool *is_pending);
-
-/**
- * Acknowledges a particular interrupt, indicating to the hardware that it has
- * been successfully serviced.
- *
- * @param edn An Entropy Distribution Network handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_irq_acknowledge(const dif_edn_t *edn,
-                                         dif_edn_irq_t irq);
-
-/**
- * Checks whether a particular interrupt is currently enabled or disabled.
- *
- * @param edn An Entropy Distribution Network handle.
- * @param irq An interrupt type.
- * @param[out] state Out-param toggle state of the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_irq_get_enabled(const dif_edn_t *edn,
-                                         dif_edn_irq_t irq,
-                                         dif_edn_toggle_t *state);
-
-/**
- * Sets whether a particular interrupt is currently enabled or disabled.
- *
- * @param edn An Entropy Distribution Network handle.
- * @param irq An interrupt type.
- * @param state The new toggle state for the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_irq_set_enabled(const dif_edn_t *edn,
-                                         dif_edn_irq_t irq,
-                                         dif_edn_toggle_t state);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param edn An Entropy Distribution Network handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_irq_force(const dif_edn_t *edn, dif_edn_irq_t irq);
-
-/**
- * Disables all interrupts, optionally snapshotting all toggle state for later
- * restoration.
- *
- * @param edn An Entropy Distribution Network handle.
- * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_irq_disable_all(const dif_edn_t *edn,
-                                         dif_edn_irq_snapshot_t *snapshot);
-
-/**
- * Restores interrupts from the given snapshot.
- *
- * This function can be used with `dif_edn_irq_disable_all()` to temporary
- * interrupt save-and-restore.
- *
- * @param edn An Entropy Distribution Network handle.
- * @param snapshot A snapshot to restore from.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_edn_result_t dif_edn_irq_restore_all(
-    const dif_edn_t *edn, const dif_edn_irq_snapshot_t *snapshot);
+dif_result_t dif_edn_is_locked(const dif_edn_t *edn, bool *is_locked);
 
 #ifdef __cplusplus
 }  // extern "C"

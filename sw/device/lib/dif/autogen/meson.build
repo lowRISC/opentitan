@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen OTBN DIF library
-sw_lib_dif_autogen_otbn = declare_dependency(
+# Autogen EDN DIF library
+sw_lib_dif_autogen_edn = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_otbn',
+    'sw_lib_dif_autogen_edn',
     sources: [
-      hw_ip_otbn_reg_h,
-      'dif_otbn_autogen.c',
+      hw_ip_edn_reg_h,
+      'dif_edn_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -135,6 +135,20 @@ sw_lib_dif_autogen_lc_ctrl = declare_dependency(
     sources: [
       hw_ip_lc_ctrl_reg_h,
       'dif_lc_ctrl_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen OTBN DIF library
+sw_lib_dif_autogen_otbn = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_otbn',
+    sources: [
+      hw_ip_otbn_reg_h,
+      'dif_otbn_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,

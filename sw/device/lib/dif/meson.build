@@ -81,10 +81,29 @@ sw_lib_dif_edn = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
+      sw_lib_dif_autogen_edn,
     ],
   )
 )
 
+test('dif_edn_unittest', executable(
+    'dif_edn_unittest',
+    sources: [
+      'autogen/dif_edn_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_edn.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_edn_autogen.c',
+      hw_ip_edn_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
 
 # UART DIF library (dif_uart)
 sw_lib_dif_uart = declare_dependency(
