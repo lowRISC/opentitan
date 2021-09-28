@@ -20,6 +20,7 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:rom_ctrl_pkg
     files:
+      - rtl/cm_count_if.sv
       - rtl/keymgr_reg_top.sv
       - rtl/keymgr_sideload_key_ctrl.sv
       - rtl/keymgr_sideload_key.sv

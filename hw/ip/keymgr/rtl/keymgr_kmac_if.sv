@@ -39,7 +39,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   output logic cmd_error_o
 );
 
-
+bind prim_count cm_count_if u_cm_count_if();
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 6 -n 10 \
   //      -s 2292624416 --language=sv

@@ -66,6 +66,7 @@ module keymgr_ctrl
   output logic prng_reseed_req_o,
   output logic prng_en_o
 );
+bind prim_count cm_count_if u_cm_count_if();
 
   localparam int EntropyWidth = LfsrWidth / 2;
   localparam int EntropyRounds = KeyWidth / EntropyWidth;
