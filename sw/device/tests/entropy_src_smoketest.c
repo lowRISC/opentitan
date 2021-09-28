@@ -21,14 +21,12 @@ const uint32_t kExpectedEntropyData[] = {
 };
 
 bool test_main() {
-  const dif_entropy_src_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
-  };
-  dif_entropy_src_t entropy;
-  CHECK(dif_entropy_src_init(params, &entropy) == kDifEntropySrcOk);
+  dif_entropy_src_t entropy_src;
+  CHECK_DIF_OK(dif_entropy_src_init(
+      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
 
   // Disable entropy for test purpose, as it has been turned on by ROM
-  CHECK(dif_entropy_src_disable(&entropy) == kDifEntropySrcOk);
+  CHECK_DIF_OK(dif_entropy_src_disable(&entropy_src));
 
   const dif_entropy_src_config_t config = {
       .mode = kDifEntropySrcModeLfsr,
@@ -48,13 +46,13 @@ bool test_main() {
       .sample_rate = 2,
       .lfsr_seed = 2,
   };
-  CHECK(dif_entropy_src_configure(&entropy, config) == kDifEntropySrcOk);
+  CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, config));
 
   uint32_t entropy_data[kEntropyDataNumWords];
   uint32_t result = 0;
   for (uint32_t i = 0; i < kEntropyDataNumWords; ++i) {
     // wait for entropy to become available
-    while (dif_entropy_src_read(&entropy, &entropy_data[i]) != kDifEntropySrcOk)
+    while (dif_entropy_src_read(&entropy_src, &entropy_data[i]) != kDifOk)
       ;
     LOG_INFO("received 0x%x, expectecd 0x%x", entropy_data[i],
              kExpectedEntropyData[i]);

@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
 
 #include "entropy_src_regs.h"  // Generated
 
@@ -15,21 +16,18 @@ namespace {
 
 class DifEntropySrcTest : public testing::Test, public mock_mmio::MmioTest {
  protected:
-  const dif_entropy_src_params_t params_ = {.base_addr = dev().region()};
-  const dif_entropy_src_t entropy_ = {
-      .params = {.base_addr = dev().region()},
-  };
+  const dif_entropy_src_t entropy_src_ = {.base_addr = dev().region()};
 };
 
 class InitTest : public DifEntropySrcTest {};
 
 TEST_F(InitTest, BadArgs) {
-  EXPECT_EQ(dif_entropy_src_init(params_, nullptr), kDifEntropySrcBadArg);
+  EXPECT_EQ(dif_entropy_src_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Init) {
   dif_entropy_src_t entropy;
-  EXPECT_EQ(dif_entropy_src_init(params_, &entropy), kDifEntropySrcOk);
+  EXPECT_EQ(dif_entropy_src_init(dev().region(), &entropy), kDifOk);
 }
 
 class ConfigTest : public DifEntropySrcTest {
@@ -48,13 +46,12 @@ class ConfigTest : public DifEntropySrcTest {
 };
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_entropy_src_configure(nullptr, {}), kDifEntropySrcBadArg);
+  EXPECT_EQ(dif_entropy_src_configure(nullptr, {}), kDifBadArg);
 }
 
 TEST_F(ConfigTest, LfsrSeedBadArg) {
   config_.lfsr_seed = 16;
-  EXPECT_EQ(dif_entropy_src_configure(&entropy_, config_),
-            kDifEntropySrcBadArg);
+  EXPECT_EQ(dif_entropy_src_configure(&entropy_src_, config_), kDifBadArg);
 }
 
 struct ConfigParams {
@@ -114,7 +111,7 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
           {ENTROPY_SRC_CONF_ENABLE_OFFSET, enable},
       });
 
-  EXPECT_EQ(dif_entropy_src_configure(&entropy_, config_), kDifEntropySrcOk);
+  EXPECT_EQ(dif_entropy_src_configure(&entropy_src_, config_), kDifOk);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -152,18 +149,17 @@ class ReadTest : public DifEntropySrcTest {};
 
 TEST_F(ReadTest, EntropyBadArg) {
   uint32_t word;
-  EXPECT_EQ(dif_entropy_src_read(nullptr, &word), kDifEntropySrcBadArg);
+  EXPECT_EQ(dif_entropy_src_read(nullptr, &word), kDifBadArg);
 }
 
 TEST_F(ReadTest, WordBadArg) {
-  EXPECT_EQ(dif_entropy_src_read(&entropy_, nullptr), kDifEntropySrcBadArg);
+  EXPECT_EQ(dif_entropy_src_read(&entropy_src_, nullptr), kDifBadArg);
 }
 
 TEST_F(ReadTest, ReadDataUnAvailable) {
   EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET, 0);
   uint32_t got_word;
-  EXPECT_EQ(dif_entropy_src_read(&entropy_, &got_word),
-            kDifEntropySrcDataUnAvailable);
+  EXPECT_EQ(dif_entropy_src_read(&entropy_src_, &got_word), kDifUnavailable);
 }
 
 TEST_F(ReadTest, ReadOk) {
@@ -177,7 +173,7 @@ TEST_F(ReadTest, ReadOk) {
                  {{ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT, true}});
 
   uint32_t got_word;
-  EXPECT_EQ(dif_entropy_src_read(&entropy_, &got_word), kDifEntropySrcOk);
+  EXPECT_EQ(dif_entropy_src_read(&entropy_src_, &got_word), kDifOk);
   EXPECT_EQ(got_word, expected_word);
 }
 

@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
 
 #include "entropy_src_regs.h"  // Generated.
 
@@ -15,7 +16,7 @@
  * Sets the `entropy` source configuration register with the settings
  * derived from `config`.
  */
-static void set_config_register(const dif_entropy_src_t *entropy,
+static void set_config_register(const dif_entropy_src_t *entropy_src,
                                 const dif_entropy_src_config_t *config) {
   // TODO: Make this configurable at the API level.
   uint32_t reg = bitfield_field32_write(
@@ -44,34 +45,33 @@ static void set_config_register(const dif_entropy_src_t *entropy,
   // Enable configuration
   uint32_t enable_val = config->mode != kDifEntropySrcModeDisabled ? 0xa : 0x5;
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_ENABLE_FIELD, enable_val);
-  mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_CONF_REG_OFFSET,
-                      reg);
+  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET, reg);
 }
 
-dif_entropy_src_result_t dif_entropy_src_init(dif_entropy_src_params_t params,
-                                              dif_entropy_src_t *entropy) {
-  if (entropy == NULL) {
-    return kDifEntropySrcBadArg;
+dif_result_t dif_entropy_src_init(mmio_region_t base_addr,
+                                  dif_entropy_src_t *entropy_src) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
   }
-  *entropy = (dif_entropy_src_t){.params = params};
-  return kDifEntropySrcOk;
+  entropy_src->base_addr = base_addr;
+  return kDifOk;
 }
 
-dif_entropy_src_result_t dif_entropy_src_configure(
-    const dif_entropy_src_t *entropy, dif_entropy_src_config_t config) {
-  if (entropy == NULL) {
-    return kDifEntropySrcBadArg;
+dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
+                                       dif_entropy_src_config_t config) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
   }
 
   if (config.lfsr_seed > ENTROPY_SRC_SEED_LFSR_SEED_MASK) {
-    return kDifEntropySrcBadArg;
+    return kDifBadArg;
   }
 
   uint32_t seed = config.mode == kDifEntropySrcModeLfsr ? config.lfsr_seed : 0;
-  mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_SEED_REG_OFFSET,
+  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_SEED_REG_OFFSET,
                       seed);
 
-  mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_RATE_REG_OFFSET,
+  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_RATE_REG_OFFSET,
                       (uint32_t)config.sample_rate);
 
   // Conditioning bypass is hardcoded to enabled. Bypass is not intended as
@@ -81,63 +81,59 @@ dif_entropy_src_result_t dif_entropy_src_configure(
       0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, es_route_val);
   reg = bitfield_field32_write(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
                                0x5);
-  mmio_region_write32(entropy->params.base_addr,
+  mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET, reg);
 
   // TODO: Add test configuration parameters.
 
   // TODO: Add support for FIFO mode.
-  mmio_region_write32(entropy->params.base_addr,
+  mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0);
 
-  set_config_register(entropy, &config);
-  return kDifEntropySrcOk;
+  set_config_register(entropy_src, &config);
+  return kDifOk;
 }
 
-static bool get_entropy_avail(const dif_entropy_src_t *entropy) {
-  return mmio_region_get_bit32(entropy->params.base_addr,
+static bool get_entropy_avail(const dif_entropy_src_t *entropy_src) {
+  return mmio_region_get_bit32(entropy_src->base_addr,
                                ENTROPY_SRC_INTR_STATE_REG_OFFSET,
                                ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);
 }
 
-dif_entropy_src_result_t dif_entropy_src_avail(
-    const dif_entropy_src_t *entropy) {
-  if (entropy == NULL) {
-    return kDifEntropySrcBadArg;
+dif_result_t dif_entropy_src_avail(const dif_entropy_src_t *entropy_src) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
   }
 
-  return get_entropy_avail(entropy) ? kDifEntropySrcOk
-                                    : kDifEntropySrcDataUnAvailable;
+  return get_entropy_avail(entropy_src) ? kDifOk : kDifUnavailable;
 }
 
-dif_entropy_src_result_t dif_entropy_src_read(const dif_entropy_src_t *entropy,
-                                              uint32_t *word) {
-  if (entropy == NULL || word == NULL) {
-    return kDifEntropySrcBadArg;
+dif_result_t dif_entropy_src_read(const dif_entropy_src_t *entropy_src,
+                                  uint32_t *word) {
+  if (entropy_src == NULL || word == NULL) {
+    return kDifBadArg;
   }
 
   // Check if entropy is available
-  if (!get_entropy_avail(entropy)) {
-    return kDifEntropySrcDataUnAvailable;
+  if (!get_entropy_avail(entropy_src)) {
+    return kDifUnavailable;
   }
 
-  *word = mmio_region_read32(entropy->params.base_addr,
+  *word = mmio_region_read32(entropy_src->base_addr,
                              ENTROPY_SRC_ENTROPY_DATA_REG_OFFSET);
 
   // clear interrupt state after fetching read
   // if there is still entropy available, the interrupt state will set again
-  mmio_region_nonatomic_set_bit32(entropy->params.base_addr,
+  mmio_region_nonatomic_set_bit32(entropy_src->base_addr,
                                   ENTROPY_SRC_INTR_STATE_REG_OFFSET,
                                   ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);
 
-  return kDifEntropySrcOk;
+  return kDifOk;
 }
 
-dif_entropy_src_result_t dif_entropy_src_disable(
-    const dif_entropy_src_t *entropy) {
+dif_result_t dif_entropy_src_disable(const dif_entropy_src_t *entropy_src) {
   // TODO: should first check if entropy is locked and return error if it is.
-  mmio_region_write32(entropy->params.base_addr, ENTROPY_SRC_CONF_REG_OFFSET,
-                      0);
+  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET, 0);
 
-  return kDifEntropySrcOk;
+  return kDifOk;
 }

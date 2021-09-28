@@ -11,14 +11,12 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static void setup_entropy_src(void) {
-  const dif_entropy_src_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
-  };
-  dif_entropy_src_t entropy;
-  CHECK(dif_entropy_src_init(params, &entropy) == kDifEntropySrcOk);
+  dif_entropy_src_t entropy_src;
+  CHECK_DIF_OK(dif_entropy_src_init(
+      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
 
   // Disable entropy for test purpose, as it has been turned on by ROM
-  CHECK(dif_entropy_src_disable(&entropy) == kDifEntropySrcOk);
+  CHECK_DIF_OK(dif_entropy_src_disable(&entropy_src));
 
   const dif_entropy_src_config_t config = {
       .mode = kDifEntropySrcModeLfsr,
@@ -38,7 +36,7 @@ static void setup_entropy_src(void) {
       .sample_rate = 2,
       .lfsr_seed = 0,
   };
-  CHECK(dif_entropy_src_configure(&entropy, config) == kDifEntropySrcOk);
+  CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, config));
 }
 
 static void setup_csrng(void) {

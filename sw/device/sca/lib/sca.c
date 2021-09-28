@@ -161,11 +161,9 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
                         CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
   }
   if (disable & kScaPeripheralEntropy) {
-    const dif_entropy_src_params_t entropy_params = {
-        .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
-    };
     dif_entropy_src_t entropy;
-    IGNORE_RESULT(dif_entropy_src_init(entropy_params, &entropy));
+    IGNORE_RESULT(dif_entropy_src_init(
+        mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy));
     IGNORE_RESULT(dif_entropy_src_disable(&entropy));
   }
 

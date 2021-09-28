@@ -75,7 +75,7 @@ index 5dc1286af..1e2dced96 100644
      simple_serial_process_packet();
    }
 diff --git a/sw/device/sca/lib/sca.c b/sw/device/sca/lib/sca.c
-index ef4443533..5629a15d8 100644
+index e894f1793..5629a15d8 100644
 --- a/sw/device/sca/lib/sca.c
 +++ b/sw/device/sca/lib/sca.c
 @@ -56,7 +56,6 @@ enum {
@@ -102,7 +102,7 @@ index ef4443533..5629a15d8 100644
  }
  
  /**
-@@ -148,32 +143,11 @@ void handler_irq_timer(void) {
+@@ -148,30 +143,11 @@ void handler_irq_timer(void) {
   * @param disable Set of peripherals to disable.
   */
  void sca_disable_peripherals(sca_peripherals_t disable) {
@@ -119,11 +119,9 @@ index ef4443533..5629a15d8 100644
 -                        CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
 -  }
 -  if (disable & kScaPeripheralEntropy) {
--    const dif_entropy_src_params_t entropy_params = {
--        .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
--    };
 -    dif_entropy_src_t entropy;
--    IGNORE_RESULT(dif_entropy_src_init(entropy_params, &entropy));
+-    IGNORE_RESULT(dif_entropy_src_init(
+-        mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy));
 -    IGNORE_RESULT(dif_entropy_src_disable(&entropy));
 -  }
 -
@@ -136,7 +134,7 @@ index ef4443533..5629a15d8 100644
    dif_clkmgr_t clkmgr;
    IGNORE_RESULT(dif_clkmgr_init(clkmgr_params, &clkmgr));
  
-@@ -187,19 +161,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
+@@ -185,19 +161,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
          &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT,
          kDifClkmgrToggleDisabled));
    }
@@ -179,7 +177,7 @@ index 1a5fef16c..214e08151 100644
    CHECK_DIF_OK(
        dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
-index 1b1c8ae72..66635fb0a 100644
+index d9260ca0f..ff7e3ee0b 100644
 --- a/sw/device/tests/meson.build
 +++ b/sw/device/tests/meson.build
 @@ -207,7 +207,6 @@ aes_smoketest_lib = declare_dependency(
