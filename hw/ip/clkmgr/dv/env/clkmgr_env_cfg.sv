@@ -6,6 +6,9 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
   .RAL_T(clkmgr_reg_block)
 );
 
+  // This scoreboard handle is used to flag expected errors.
+  clkmgr_scoreboard scoreboard;
+
   // ext component cfgs
 
   // ext interfaces
@@ -14,16 +17,6 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
   virtual clk_rst_if io_clk_rst_vif;
   virtual clk_rst_if usb_clk_rst_vif;
   virtual clk_rst_if aon_clk_rst_vif;
-
-  // A map from trans clock to its source clock (giving the signal that will appear on this clock
-  // output if it's enabled).
-  src_e trans_to_src [int] = '{
-    TransAes:        SrcMain,
-    TransHmac:       SrcMain,
-    TransKmac:       SrcMain,
-    TransOtbnIoDiv4: SrcIoDiv4,
-    TransOtbnMain:   SrcMain
-  };
 
   `uvm_object_utils_begin(clkmgr_env_cfg)
   `uvm_object_utils_end

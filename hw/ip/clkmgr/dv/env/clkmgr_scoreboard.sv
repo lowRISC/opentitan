@@ -12,6 +12,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(clkmgr_scoreboard)
 
   // local variables
+  logic extclk_ctrl_regwen;
+  logic measure_ctrl_regwen;
 
   // TLM agent fifos
 
@@ -25,6 +27,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    cfg.scoreboard = this;
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -99,8 +102,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     string         access_str = write ? "write" : "read";
     string         channel_str = channel == AddrChannel ? "address" : "data";
 
-    logic          extclk_ctrl_regwen = ral.extclk_ctrl_regwen.get_reset();
-
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
@@ -134,9 +135,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         // FIXME
       end
       "extclk_ctrl_regwen": begin
-        if (addr_phase_write) begin
-          extclk_ctrl_regwen = item.a_data;
-        end
+        if (addr_phase_write) extclk_ctrl_regwen = item.a_data;
       end
       "extclk_ctrl": begin
         if (addr_phase_write && extclk_ctrl_regwen) begin
@@ -164,6 +163,44 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         // the sequence.
         do_read_check = 1'b0;
       end
+      "measure_ctrl_regwen": begin
+        if (addr_phase_write) measure_ctrl_regwen = item.a_data;
+      end
+      "io_measure_ctrl": begin
+        if (cfg.en_cov) begin
+          // TODO(maturana) Insert coverage.
+        end
+      end
+      "io_div2_measure_ctrl": begin
+        if (cfg.en_cov) begin
+          // TODO(maturana) Insert coverage.
+        end
+      end
+      "io_div4_measure_ctrl": begin
+        if (cfg.en_cov) begin
+          // TODO(maturana) Insert coverage.
+        end
+      end
+      "main_measure_ctrl": begin
+        if (cfg.en_cov) begin
+          // TODO(maturana) Insert coverage.
+        end
+      end
+      "usb_measure_ctrl": begin
+        if (cfg.en_cov) begin
+          // TODO(maturana) Insert coverage.
+        end
+      end
+      "recov_err_code": begin
+        if (cfg.en_cov) begin
+          // TODO(maturana) Insert coverage.
+        end
+      end
+      "fatal_err_code": begin
+        if (cfg.en_cov) begin
+          // TODO(maturana) Insert coverage.
+        end
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
@@ -183,6 +220,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
+    extclk_ctrl_regwen  = ral.extclk_ctrl_regwen.get_reset();
+    measure_ctrl_regwen = ral.measure_ctrl_regwen.get_reset();
   endfunction
 
   function void check_phase(uvm_phase phase);

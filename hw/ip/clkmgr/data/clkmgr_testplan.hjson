@@ -99,9 +99,11 @@
               `lc_ctrl_pkg::On`.
             - Notice writes to the `extclk_sel` register are ignored unless the
               CSR `extclk_sel_regwen` is 1.
-            - A successful switch to external clocks will cause the clkmgr
-              to undo a divide by 2 for io_div4 and io_div2 clocks except when
-              `(scanmode_i == lc_ctrl_pkg::On)`.
+            - A successful switch to external clocks due to `lc_clk_byl_req_i`
+              will cause the clkmgr to undo a divide by 2 for io_div4 and
+              io_div2 clocks except when `(scanmode_i == lc_ctrl_pkg::On)`.
+            - A software triggered switch to external clock will undo divides
+              by 2 if `extclk_ctrl.step_down` is set to `lc_ctrl_pkg::On`.
 
             **Stimulus**:
             - CSR writes to `extclk_sel` and `extclk_sel_regwen`.
@@ -181,6 +183,45 @@
       tests: ["clkmgr_smoke"]
     }
     {
+      name: frequency
+      desc: '''This tests the frequency counters functionality.
+
+            These counters compute the number of cycles of some clock relative
+            to the aon timer. It should trigger a recoverable alert when the
+            count is not in the expected interval. This tests programs counts
+            for each counter, with intervals set to trigger correct, fast, and
+            slow counts.
+
+            **Stimulus**:
+            - Randomly set slow, correct, and fast interval for each counter
+              and test.
+
+            **Check**:
+            - Slow and fast intervals should cause a recoverable alert.
+            - Coverage collected per clock.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: frequency_overflow
+      desc: '''This tests the overflow feature in prim_clock_meas.
+
+            This needs to modify the state of the counter to trigger the
+            feature.
+
+            **Stimulus**:
+            - Program the counter. Whenever it hits the value of 1, set it to
+              the range - 2.
+
+            **Check**:
+            - The internal cnt_ovfl flop is set.
+            - The fast_o output should be set.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
       name: stress
       desc: '''Create standard stress tests.
 
@@ -237,6 +278,15 @@
       name: jitter_cg
       desc: '''
             Collects coverage of the `jitter` CSR.
+            '''
+    }
+    {
+      name: freq_measure_cg
+      desc: '''
+            Collects coverage for the frequency measurement counters.
+
+            The relevant information is whether it got an okay, slow, and
+            fast measurement.
             '''
     }
   ]

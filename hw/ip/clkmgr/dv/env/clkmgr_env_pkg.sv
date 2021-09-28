@@ -29,11 +29,27 @@ package clkmgr_env_pkg;
   localparam int NUM_PERI = 4;
   localparam int NUM_TRANS = 5;
 
+  localparam int MainClkHz = 100_000_000;
+  localparam int IoClkHz = 96_000_000;
+  localparam int UsbClkHz = 48_000_000;
+  localparam int AonClkHz = 200_000;
+  localparam int FakeAonClkHz = 7_000_000;
+
   // alerts
   parameter uint NUM_ALERTS = 2;
   parameter string LIST_OF_ALERTS[] = {"recov_fault", "fatal_fault"};
 
   // types
+
+  // These are ordered per the bits in the recov_err_code register.
+  typedef enum int {
+    ClkMesrIo,
+    ClkMesrIoDiv2,
+    ClkMesrIoDiv4,
+    ClkMesrMain,
+    ClkMesrUsb
+  } clk_mesr_e;
+
   // The enum values for these match the bit order in the CSRs.
   typedef enum int {
     PeriDiv4,
@@ -48,10 +64,19 @@ package clkmgr_env_pkg;
     TransOtbnIoDiv4,
     TransOtbnMain
   } trans_e;
-  typedef enum int {
-    SrcMain,
-    SrcIoDiv4
-  } src_e;
+
+  // Forward class decl to enable cfg to hold a scoreboard handle.
+  typedef class clkmgr_scoreboard;
+
+  localparam int ClkInHz[ClkMesrUsb+1] = {IoClkHz, IoClkHz / 2, IoClkHz / 4, MainClkHz, UsbClkHz};
+
+  localparam int ExpectedClkMeasurement[ClkMesrUsb+1] = {
+    ClkInHz[ClkMesrIo] / AonClkHz,
+    ClkInHz[ClkMesrIoDiv2] / AonClkHz,
+    ClkInHz[ClkMesrIoDiv4] / AonClkHz,
+    ClkInHz[ClkMesrMain] / AonClkHz,
+    ClkInHz[ClkMesrUsb] / AonClkHz
+  };
 
   // functions
 

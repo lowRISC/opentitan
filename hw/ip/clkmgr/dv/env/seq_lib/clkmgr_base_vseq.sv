@@ -157,12 +157,10 @@ class clkmgr_base_vseq extends cip_base_vseq #(
       super.apply_reset(kind);
       if (kind == "HARD")
         fork
+          cfg.aon_clk_rst_vif.apply_reset();
           cfg.main_clk_rst_vif.apply_reset();
           cfg.io_clk_rst_vif.apply_reset();
           cfg.usb_clk_rst_vif.apply_reset();
-          // There is no reset for the aon clock: we just want it to start
-          // ASAP, especially given its very low frequency.
-          start_aon_clk();
         join
     join
     initialize_on_start();
@@ -195,12 +193,12 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   // setup basic clkmgr features
   virtual task clkmgr_init();
     // Initialize input clock frequencies.
-    cfg.main_clk_rst_vif.set_freq_mhz(100);
-    cfg.io_clk_rst_vif.set_freq_mhz(96);
-    cfg.usb_clk_rst_vif.set_freq_mhz(48);
+    cfg.main_clk_rst_vif.set_freq_mhz((1.0 * MainClkHz) / 1_000_000);
+    cfg.io_clk_rst_vif.set_freq_mhz((1.0 * IoClkHz) / 1_000_000);
+    cfg.usb_clk_rst_vif.set_freq_mhz((1.0 * UsbClkHz) / 1_000_000);
     // The real clock rate for aon is 200kHz, but that can slow testing down.
     // Increasing its frequency improves DV efficiency without compromising quality.
-    cfg.aon_clk_rst_vif.set_freq_mhz(7);
+    cfg.aon_clk_rst_vif.set_freq_mhz((1.0 * FakeAonClkHz) / 1_000_000);
   endtask
 
   function void update_csrs_with_reset_values();
