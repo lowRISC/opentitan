@@ -346,7 +346,9 @@ module alert_handler_reg_wrap import alert_pkg::*; (
     end
   end
 
-  assign crashdump_o = crashdump_q;
+  // As long as the crashdump has not been latched yet, we output the current alert handler state.
+  // Once it has been latched, we switch to the latched snapshot.
+  assign crashdump_o = (crashump_latched_q) ? crashdump_q : crashdump_d;
 
   /////////////////////////////
   // aggregate shadow errors //
