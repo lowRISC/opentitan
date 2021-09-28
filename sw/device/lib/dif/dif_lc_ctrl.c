@@ -121,10 +121,9 @@ dif_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
   return kDifOk;
 }
 
-dif_lc_ctrl_attempts_result_t dif_lc_ctrl_get_attempts(const dif_lc_ctrl_t *lc,
-                                                       uint8_t *count) {
+dif_result_t dif_lc_ctrl_get_attempts(const dif_lc_ctrl_t *lc, uint8_t *count) {
   if (lc == NULL || count == NULL) {
-    return kDifLcCtrlAttemptsBadArg;
+    return kDifBadArg;
   }
 
   uint32_t reg =
@@ -132,11 +131,11 @@ dif_lc_ctrl_attempts_result_t dif_lc_ctrl_get_attempts(const dif_lc_ctrl_t *lc,
   uint8_t value =
       bitfield_field32_read(reg, LC_CTRL_LC_TRANSITION_CNT_CNT_FIELD);
   if (value == LC_CTRL_LC_TRANSITION_CNT_CNT_MASK) {
-    return kDifLcCtrlAttemptsTooMany;
+    return kDifError;
   }
 
   *count = value;
-  return kDifLcCtrlAttemptsOk;
+  return kDifOk;
 }
 
 dif_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
@@ -267,10 +266,9 @@ dif_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
   return kDifOk;
 }
 
-dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_try_acquire(
-    const dif_lc_ctrl_t *lc) {
+dif_result_t dif_lc_ctrl_mutex_try_acquire(const dif_lc_ctrl_t *lc) {
   if (lc == NULL) {
-    return kDifLcCtrlMutexBadArg;
+    return kDifBadArg;
   }
 
   mmio_region_write32(lc->base_addr, LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET,
@@ -280,34 +278,35 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_try_acquire(
   // If the register is zero, that means we failed to take the mutex for
   // whatever reason.
   if (reg == kLcCtrlMutexRelease) {
-    return kDifLcCtrlMutexAlreadyTaken;
+    return kDifUnavailable;
   } else {
-    return kDifLcCtrlMutexOk;
+    return kDifOk;
   }
 }
 
-dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc) {
+dif_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc) {
   if (lc == NULL) {
-    return kDifLcCtrlMutexBadArg;
+    return kDifBadArg;
   }
 
   uint32_t reg =
       mmio_region_read32(lc->base_addr, LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET);
   if (reg == kLcCtrlMutexRelease) {
     // We're not holding the mutex, which is a programmer error.
-    return kDifLcCtrlMutexError;
+    return kDifError;
   }
 
   mmio_region_write32(lc->base_addr, LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET,
                       kLcCtrlMutexRelease);
-  return kDifLcCtrlMutexOk;
+  return kDifOk;
 }
 
-dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
-    const dif_lc_ctrl_t *lc, dif_lc_ctrl_state_t state,
-    const dif_lc_ctrl_token_t *token, const dif_lc_ctrl_settings_t *settings) {
+dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc,
+                                    dif_lc_ctrl_state_t state,
+                                    const dif_lc_ctrl_token_t *token,
+                                    const dif_lc_ctrl_settings_t *settings) {
   if (lc == NULL) {
-    return kDifLcCtrlMutexBadArg;
+    return kDifBadArg;
   }
 
   uint32_t target;
@@ -377,7 +376,7 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
       break;
 
     default:
-      return kDifLcCtrlMutexBadArg;
+      return kDifBadArg;
   }
 
   uint32_t ctrl_reg = 0;
@@ -393,7 +392,7 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
         break;
 
       default:
-        return kDifLcCtrlMutexBadArg;
+        return kDifBadArg;
     }
   } else {
     // Default to internal clock
@@ -404,7 +403,7 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
   uint32_t busy =
       mmio_region_read32(lc->base_addr, LC_CTRL_TRANSITION_REGWEN_REG_OFFSET);
   if (busy == 0) {
-    return kDifLcCtrlMutexAlreadyTaken;
+    return kDifUnavailable;
   }
 
   // Set the target for the transition.
@@ -427,25 +426,25 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
 
   // With both parameters set up, schedule the transition.
   mmio_region_write32(lc->base_addr, LC_CTRL_TRANSITION_CMD_REG_OFFSET, 1);
-  return kDifLcCtrlMutexOk;
+  return kDifOk;
 }
 
-dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_vendor_test_reg(
-    const dif_lc_ctrl_t *lc, uint32_t settings) {
+dif_result_t dif_lc_ctrl_set_otp_vendor_test_reg(const dif_lc_ctrl_t *lc,
+                                                 uint32_t settings) {
   if (lc == NULL) {
-    return kDifLcCtrlMutexBadArg;
+    return kDifBadArg;
   }
 
   uint32_t busy =
       mmio_region_read32(lc->base_addr, LC_CTRL_TRANSITION_REGWEN_REG_OFFSET);
   if (busy == 0) {
-    return kDifLcCtrlMutexAlreadyTaken;
+    return kDifUnavailable;
   }
 
   mmio_region_write32(lc->base_addr, LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET,
                       settings);
 
-  return kDifLcCtrlMutexOk;
+  return kDifOk;
 }
 
 dif_result_t dif_lc_ctrl_get_otp_vendor_test_reg(const dif_lc_ctrl_t *lc,

@@ -275,7 +275,7 @@ dif_result_t dif_hmac_finish(const dif_hmac_t *hmac,
     mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
                                     HMAC_INTR_STATE_HMAC_DONE_BIT);
   } else {
-    return kDifIpBusy;
+    return kDifUnavailable;
   }
 
   // Read the digest.

@@ -144,7 +144,7 @@ static void check_digest(const dif_hmac_t *hmac,
     CHECK(res != kDifBadArg,
           "Invalid arguments encountered reading HMAC digest.");
 
-    hmac_done = (res != kDifIpBusy);
+    hmac_done = (res != kDifUnavailable);
 
     if (hmac_done) {
       CHECK(res == kDifOk, "Unknown error encountered reading HMAC digest.");

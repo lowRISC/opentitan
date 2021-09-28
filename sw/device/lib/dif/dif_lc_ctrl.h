@@ -300,59 +300,6 @@ typedef struct dif_lc_ctrl_device_id {
 } dif_lc_ctrl_device_id_t;
 
 /**
- * The result of a lifecycle attempt counter operation.
- */
-typedef enum dif_lc_ctrl_attempts_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifLcCtrlAttemptsOk = kDifOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifLcCtrlAttemptsError = kDifError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifLcCtrlAttemptsBadArg = kDifBadArg,
-  /**
-   * Indicates that too many lifecycle transitions have occurred, such that the
-   * hardware can no longer keep a count.
-   */
-  kDifLcCtrlAttemptsTooMany,
-} dif_lc_ctrl_attempts_result_t;
-
-/**
- * The result of a lifecycle controller operation involving the hardware mutex.
- */
-typedef enum dif_lc_ctrl_mutex_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifLcCtrlMutexOk = kDifOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifLcCtrlMutexError = kDifError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifLcCtrlMutexBadArg = kDifBadArg,
-
-  /**
-   * Indicates that a mutex-guarded operation failed because someone (other
-   * than software) is holding it.
-   */
-  kDifLcCtrlMutexAlreadyTaken = 3,
-} dif_lc_ctrl_mutex_result_t;
-
-/**
  * An alert that can be raised by the hardware.
  */
 typedef enum dif_lc_ctrl_alert {
@@ -402,8 +349,7 @@ dif_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_attempts_result_t dif_lc_ctrl_get_attempts(const dif_lc_ctrl_t *lc,
-                                                       uint8_t *count);
+dif_result_t dif_lc_ctrl_get_attempts(const dif_lc_ctrl_t *lc, uint8_t *count);
 
 /**
  * Returns the current status of the lifecycle controller.
@@ -463,8 +409,7 @@ dif_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
 // Open Q: do we want to be checking REGWEN for all operations dependent on the
 // mutex?
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_try_acquire(
-    const dif_lc_ctrl_t *lc);
+dif_result_t dif_lc_ctrl_mutex_try_acquire(const dif_lc_ctrl_t *lc);
 
 /**
  * Releases the lifecycle controller's HW mutex.
@@ -476,7 +421,7 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_try_acquire(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc);
+dif_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc);
 
 /**
  * Performs a lifecycle transition.
@@ -490,9 +435,10 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
-    const dif_lc_ctrl_t *lc, dif_lc_ctrl_state_t state,
-    const dif_lc_ctrl_token_t *token, const dif_lc_ctrl_settings_t *settings);
+dif_result_t dif_lc_ctrl_transition(const dif_lc_ctrl_t *lc,
+                                    dif_lc_ctrl_state_t state,
+                                    const dif_lc_ctrl_token_t *token,
+                                    const dif_lc_ctrl_settings_t *settings);
 
 /**
  * Writes settings to the vendor-specific OTP test control register.
@@ -502,8 +448,8 @@ dif_lc_ctrl_mutex_result_t dif_lc_ctrl_transition(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_lc_ctrl_mutex_result_t dif_lc_ctrl_set_otp_vendor_test_reg(
-    const dif_lc_ctrl_t *lc, uint32_t settings);
+dif_result_t dif_lc_ctrl_set_otp_vendor_test_reg(const dif_lc_ctrl_t *lc,
+                                                 uint32_t settings);
 
 /**
  * Reads settings from the vendor-specific OTP test control register.
