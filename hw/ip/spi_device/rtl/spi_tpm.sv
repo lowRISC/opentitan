@@ -582,8 +582,9 @@ module spi_tpm
     end
   end
   `ASSERT(SckFifoAddrLatchCondition_A,
-          sck_fifoaddr_latch |-> $past(sck_st_q) == StAddr
-                             && sck_st_q inside {StWait, StStartByte},
+          sck_fifoaddr_latch |=>
+            $past(sck_st_q) == StAddr && (sck_st_q inside {StWait, StStartByte}
+                                          || invalid_locality),
           clk_in_i, !rst_n)
 
   // only fifoaddr[1:0] is used in this version.
@@ -970,6 +971,11 @@ module spi_tpm
         // NOTE: The coding style in this state is ugly. How can we improve?
         cmdaddr_shift_en = 1'b 1;
 
+        // Latch locality
+        if (cmdaddr_bitcnt == 5'h 13) begin
+          latch_locality = 1'b 1;
+        end
+
         if (cmdaddr_bitcnt >= 5'h 18) begin
           // Send Wait byte [18h:1Fh]
           sck_p2s_valid = 1'b 1;
@@ -1214,7 +1220,7 @@ module spi_tpm
 
   // when latch_locality, the address should have 16 bits received.
   `ASSERT(LocalityLatchCondition_A,
-          latch_locality |-> (cmdaddr_bitcnt == 5'h 17),
+          latch_locality |-> (cmdaddr_bitcnt == 5'h 13),
           clk_in_i, !rst_n)
 
   // when check_hw_reg is set, the address should have a word size
