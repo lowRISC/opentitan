@@ -15,6 +15,9 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+
+#include "sw/device/lib/dif/autogen/dif_entropy_src_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,23 +30,6 @@ enum {
   // TODO: Synchronize value with hardware.
   kDifEntropySrcFifoMaxCapacity = 64,
 };
-
-/**
- * A toggle state: enabled, or disabled.
- *
- * This enum may be used instead of a `bool` when describing an enabled/disabled
- * state.
- */
-typedef enum dif_entropy_src_toggle {
-  /*
-   * The "enabled" state.
-   */
-  kDifEntropySrcToggleEnabled,
-  /**
-   * The "disabled" state.
-   */
-  kDifEntropySrcToggleDisabled,
-} dif_entropy_src_toggle_t;
 
 /**
  * A statistical test on the bits emitted by an entropy source.
@@ -199,20 +185,6 @@ typedef struct dif_entropy_src_test_config {
 } dif_entropy_src_test_config_t;
 
 /**
- * Hardware instantiation parameters for an entropy source.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_entropy_src_params {
-  /**
-   * The base address for the entropy source hardware registers.
-   */
-  mmio_region_t base_addr;
-} dif_entropy_src_params_t;
-
-/**
  * Runtime configuration for an entropy source.
  *
  * This struct describes runtime information for one-time configuration of the
@@ -283,15 +255,6 @@ typedef struct dif_entropy_src_config {
 } dif_entropy_src_config_t;
 
 /**
- * A handle to an entropy source.
- *
- * This type should be treated as opaque by users.
- */
-typedef struct dif_entropy {
-  dif_entropy_src_params_t params;
-} dif_entropy_src_t;
-
-/**
  * Revision information for an entropy source.
  *
  * The fields of this struct have an implementation-specific interpretation.
@@ -340,71 +303,6 @@ typedef struct dif_entropy_src_test_stats {
 } dif_entropy_src_test_stats_t;
 
 /**
- * The result of an entropy source operation.
- */
-typedef enum dif_entropy_src_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifEntropySrcOk = 0,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifEntropySrcError = 1,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occured.
-   */
-  kDifEntropySrcBadArg = 2,
-  /**
-   * Indicates that this operation has been locked out, and can never
-   * succeed until hardware reset.
-   */
-  kDifEntropySrcLocked = 3,
-  /**
-   * Indicates that entropy is not yet available for software consumption
-   */
-  kDifEntropySrcDataUnAvailable = 4,
-  /**
-   * Indicates that entropy is not idle
-   */
-  kDifEntropySrcNotIdle = 5,
-} dif_entropy_src_result_t;
-
-/**
- * An entropy source interrupt request type.
- */
-typedef enum dif_entropy_src_irq {
-  /**
-   * Indicates that bits of entropy are available to consume.
-   */
-  kDifEntropySrcIrqAvailable,
-
-  /**
-   * Indicates that the health test has failed and the alert count has been
-   * met.
-   */
-  kDifEntropySrcIrqUnhealthy,
-
-  /**
-   * Indicates that an internal error occured in the FIFO, or if an illegal
-   * state machine state is reached.
-   */
-  kDifEntropySrcIrqFatalError,
-} dif_entropy_src_irq_t;
-
-/**
- * A snapshot of the enablement state of the interrupts for an entropy source.
- *
- * This is an opaque type, to be used with the
- * `dif_entropy_src_irq_disable_all()` and `dif_entropy_src_irq_restore_all()`
- * functions.
- */
-typedef uint32_t dif_entropy_src_irq_snapshot_t;
-
-/**
  * An entropy source alert type.
  */
 typedef enum dif_entropy_src_alert {
@@ -424,13 +322,13 @@ typedef enum dif_entropy_src_alert {
  *
  * This function does not actuate the hardware.
  *
- * @param params Hardware instantiation parameters.
+ * @param base_addr Hardware instantiation parameters.
  * @param[out] entropy Out param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_init(dif_entropy_src_params_t params,
-                                              dif_entropy_src_t *entropy);
+dif_result_t dif_entropy_src_init(mmio_region_t base_addr,
+                                  dif_entropy_src_t *entropy_src);
 
 /**
  * Configures entropy source with runtime information.
@@ -442,8 +340,8 @@ dif_entropy_src_result_t dif_entropy_src_init(dif_entropy_src_params_t params,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_configure(
-    const dif_entropy_src_t *entropy, dif_entropy_src_config_t config);
+dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
+                                       dif_entropy_src_config_t config);
 
 /**
  * Queries the entropy source IP for its revision information.
@@ -453,8 +351,8 @@ dif_entropy_src_result_t dif_entropy_src_configure(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_get_revision(
-    const dif_entropy_src_t *entropy, dif_entropy_src_revision_t *revision);
+dif_result_t dif_entropy_src_get_revision(const dif_entropy_src_t *entropy_src,
+                                          dif_entropy_src_revision_t *revision);
 
 /**
  * Queries the entropy source for health statistics.
@@ -467,9 +365,9 @@ dif_entropy_src_result_t dif_entropy_src_get_revision(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_get_stats(
-    const dif_entropy_src_t *entropy, bool fips_mode,
-    dif_entropy_src_test_stats_t *stats);
+dif_result_t dif_entropy_src_get_stats(const dif_entropy_src_t *entropy_src,
+                                       bool fips_mode,
+                                       dif_entropy_src_test_stats_t *stats);
 
 /**
  * Locks out entropy source functionality.
@@ -481,7 +379,7 @@ dif_entropy_src_result_t dif_entropy_src_get_stats(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_lock(const dif_entropy_src_t *entropy);
+dif_result_t dif_entropy_src_lock(const dif_entropy_src_t *entropy_src);
 
 /**
  * Checks whether this entropy source is locked.
@@ -491,8 +389,8 @@ dif_entropy_src_result_t dif_entropy_src_lock(const dif_entropy_src_t *entropy);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_is_locked(
-    const dif_entropy_src_t *entropy, bool *is_locked);
+dif_result_t dif_entropy_src_is_locked(const dif_entropy_src_t *entropy_src,
+                                       bool *is_locked);
 
 /**
  * Checks to see if entropy is available for software consumption
@@ -501,8 +399,7 @@ dif_entropy_src_result_t dif_entropy_src_is_locked(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_avail(
-    const dif_entropy_src_t *entropy);
+dif_result_t dif_entropy_src_avail(const dif_entropy_src_t *entropy_src);
 
 /**
  * Reads off a word of entropy from the entropy source.
@@ -512,98 +409,8 @@ dif_entropy_src_result_t dif_entropy_src_avail(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_read(const dif_entropy_src_t *entropy,
-                                              uint32_t *word);
-
-/**
- * Returns whether a particular interrupt is currently pending.
- *
- * @param entropy An entropy source handle.
- * @param irq An interrupt type.
- * @param[out] is_pending Out-param for whether the interrupt is pending.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_irq_is_pending(
-    const dif_entropy_src_t *entropy, dif_entropy_src_irq_t irq,
-    bool *is_pending);
-
-/**
- * Acknowledges a particular interrupt, indicating to the hardware that it has
- * been successfully serviced.
- *
- * @param entropy An entropy source handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_irq_acknowledge(
-    const dif_entropy_src_t *entropy, dif_entropy_src_irq_t irq);
-
-/**
- * Checks whether a particular interrupt is currently enabled or disabled.
- *
- * @param entropy An entropy source handle.
- * @param irq An interrupt type.
- * @param[out] state Out-param toggle state of the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_irq_get_enabled(
-    const dif_entropy_src_t *entropy, dif_entropy_src_irq_t irq,
-    dif_entropy_src_toggle_t *state);
-
-/**
- * Sets whether a particular interrupt is currently enabled or disabled.
- *
- * @param entropy An entropy source handle.
- * @param irq An interrupt type.
- * @param state The new toggle state for the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_irq_set_enabled(
-    const dif_entropy_src_t *entropy, dif_entropy_src_irq_t irq,
-    dif_entropy_src_toggle_t state);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param entropy An entropy source handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_irq_force(
-    const dif_entropy_src_t *entropy, dif_entropy_src_irq_t irq);
-
-/**
- * Disables all interrupts, optionally snapshotting all toggle state for later
- * restoration.
- *
- * @param entropy An entropy source handle.
- * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_irq_disable_all(
-    const dif_entropy_src_t *entropy, dif_entropy_src_irq_snapshot_t *snapshot);
-
-/**
- * Restores interrupts from the given snapshot.
- *
- * This function can be used with `dif_entropy_src_irq_disable_all()` to
- * temporary interrupt save-and-restore.
- *
- * @param entropy An entropy source handle.
- * @param snapshot A snapshot to restore from.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_irq_restore_all(
-    const dif_entropy_src_t *entropy,
-    const dif_entropy_src_irq_snapshot_t *snapshot);
+dif_result_t dif_entropy_src_read(const dif_entropy_src_t *entropy_src,
+                                  uint32_t *word);
 
 /**
  * Forces a particular alert, causing it to be emitted as if the hardware had
@@ -614,8 +421,8 @@ dif_entropy_src_result_t dif_entropy_src_irq_restore_all(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_alert_force(
-    const dif_entropy_src_t *entropy, dif_entropy_src_alert_t alert);
+dif_result_t dif_entropy_src_alert_force(const dif_entropy_src_t *entropy_src,
+                                         dif_entropy_src_alert_t alert);
 
 /**
  * Performs an override read from the entropy pipeline.
@@ -632,8 +439,8 @@ dif_entropy_src_result_t dif_entropy_src_alert_force(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_fifo_read(
-    const dif_entropy_src_t *entropy, uint32_t *buf, size_t len);
+dif_result_t dif_entropy_src_fifo_read(const dif_entropy_src_t *entropy_src,
+                                       uint32_t *buf, size_t len);
 
 /**
  * Performs an override write to the entropy pipeline.
@@ -648,8 +455,8 @@ dif_entropy_src_result_t dif_entropy_src_fifo_read(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_fifo_write(
-    const dif_entropy_src_t *entropy, const uint32_t *buf, size_t len);
+dif_result_t dif_entropy_src_fifo_write(const dif_entropy_src_t *entropy_src,
+                                        const uint32_t *buf, size_t len);
 
 /**
  * Gets the current number of entries in the pre-conditioner FIFO.
@@ -661,8 +468,8 @@ dif_entropy_src_result_t dif_entropy_src_fifo_write(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_fifo_get_len(
-    const dif_entropy_src_t *entropy, uint8_t *len);
+dif_result_t dif_entropy_src_fifo_get_len(const dif_entropy_src_t *entropy_src,
+                                          uint8_t *len);
 
 /**
  * Gets the current capacity of the pre-conditioner FIFO.
@@ -672,8 +479,8 @@ dif_entropy_src_result_t dif_entropy_src_fifo_get_len(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_fifo_get_capacity(
-    const dif_entropy_src_t *entropy, uint8_t *capacity);
+dif_result_t dif_entropy_src_fifo_get_capacity(
+    const dif_entropy_src_t *entropy_src, uint8_t *capacity);
 
 /**
  * Sets the current capacity of the pre-conditioner FIFO.
@@ -686,8 +493,8 @@ dif_entropy_src_result_t dif_entropy_src_fifo_get_capacity(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_fifo_set_capacity(
-    const dif_entropy_src_t *entropy, uint8_t capacity);
+dif_result_t dif_entropy_src_fifo_set_capacity(
+    const dif_entropy_src_t *entropy_src, uint8_t capacity);
 
 /**
  * Reconnects the entropy pipeline after an operation that pauses it.
@@ -700,8 +507,8 @@ dif_entropy_src_result_t dif_entropy_src_fifo_set_capacity(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_fifo_reconnect(
-    const dif_entropy_src_t *entropy);
+dif_result_t dif_entropy_src_fifo_reconnect(
+    const dif_entropy_src_t *entropy_src);
 
 /**
  * Disables the entropy module
@@ -710,8 +517,7 @@ dif_entropy_src_result_t dif_entropy_src_fifo_reconnect(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_disable(
-    const dif_entropy_src_t *entropy);
+dif_result_t dif_entropy_src_disable(const dif_entropy_src_t *entropy_src);
 
 /**
  * Get main entropy fsm idle status
@@ -720,8 +526,7 @@ dif_entropy_src_result_t dif_entropy_src_disable(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_entropy_src_result_t dif_entropy_src_get_idle(
-    const dif_entropy_src_t *entropy);
+dif_result_t dif_entropy_src_get_idle(const dif_entropy_src_t *entropy_src);
 
 #ifdef __cplusplus
 }  // extern "C"

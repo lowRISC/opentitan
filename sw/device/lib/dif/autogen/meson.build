@@ -2,6 +2,20 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Autogen Entropy Source DIF library
+sw_lib_dif_autogen_entropy_src = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_entropy_src',
+    sources: [
+      hw_ip_entropy_src_reg_h,
+      'dif_entropy_src_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen I2C Controller DIF library
 sw_lib_dif_autogen_i2c = declare_dependency(
   link_with: static_library(

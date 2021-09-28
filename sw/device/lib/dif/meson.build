@@ -648,6 +648,7 @@ sw_lib_dif_entropy_src = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_entropy_src,
     ],
   )
 )
@@ -655,9 +656,11 @@ sw_lib_dif_entropy_src = declare_dependency(
 test('dif_entropy_src_unittest', executable(
     'dif_entropy_src_unittest',
     sources: [
-      hw_ip_entropy_src_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_entropy_src.c',
       'dif_entropy_src_unittest.cc',
+      'autogen/dif_entropy_src_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_entropy_src.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_entropy_src_autogen.c',
+      hw_ip_entropy_src_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,
