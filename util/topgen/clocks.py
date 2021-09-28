@@ -80,7 +80,6 @@ class ClockSignal:
 class Group:
     def __init__(self,
                  raw: Dict[str, object],
-                 sources: Dict[str, SourceClock],
                  what: str):
         self.name = str(raw['name'])
         self.src = str(raw['src'])
@@ -98,16 +97,6 @@ class Group:
                              f'unique set.')
 
         self.clocks = {}  # type: Dict[str, ClockSignal]
-        raw_clocks = raw.get('clocks', {})
-        if not isinstance(raw_clocks, dict):
-            raise ValueError(f'clocks for {what} is not a dictionary')
-        for clk_name, src_name in raw_clocks.items():
-            src = sources.get(src_name)
-            if src is None:
-                raise ValueError(f'The {clk_name} entry of clocks for {what} '
-                                 f'has source {src_name}, which is not a '
-                                 f'known clock source.')
-            self.add_clock(clk_name, src)
 
     def add_clock(self, clk_name: str, src: SourceClock) -> ClockSignal:
         # Duplicates are ok, so long as they have the same source.
@@ -227,7 +216,7 @@ class Clocks:
         assert isinstance(raw['groups'], list)
         for idx, raw_grp in enumerate(raw['groups']):
             assert isinstance(raw_grp, dict)
-            grp = Group(raw_grp, self.srcs, f'clocks.groups[{idx}]')
+            grp = Group(raw_grp, f'clocks.groups[{idx}]')
             self.groups[grp.name] = grp
 
     def _asdict(self) -> Dict[str, object]:

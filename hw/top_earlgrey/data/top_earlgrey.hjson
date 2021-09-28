@@ -93,14 +93,6 @@
       { name: "secure",  src:"top", sw_cg: "no"                   }
       { name: "peri",    src:"top", sw_cg: "yes",  unique: "no"   }
       { name: "timers",  src:"top", sw_cg: "no"                   }
-      { name: "proc",
-        src: "no",
-        sw_cg: "no",
-        unique: "no",
-        clocks: {
-          clk_proc_main: main
-        }
-      }
     ],
   },
 
