@@ -42,7 +42,7 @@
     { name: "NumGroups",
       desc: "Number of clock groups",
       type: "int",
-      default: "7",
+      default: "6",
       local: "true"
     },
   ],
