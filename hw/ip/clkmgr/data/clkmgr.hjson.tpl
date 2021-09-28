@@ -9,8 +9,11 @@
   scan: "true",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
-% for rst in clocks.reset_signals():
-    {reset: "${rst}"},
+% for src in clocks.srcs.values():
+    {clock: "clk_${src.name}_i", reset: "rst_${src.name}_ni"},
+% endfor
+% for src in clocks.derived_srcs.values():
+    {clock: "clk_${src.name}_i", reset: "rst_${src.name}_ni", internal: true},
 % endfor
   ]
   bus_interfaces: [
@@ -87,16 +90,6 @@
       act:     "req",
       package: ""
     },
-
-  // All clock inputs
-% for src in clocks.srcs.values():
-    { struct:  "logic",
-      type:    "uni",
-      name:    "clk_${src.name}",
-      act:     "rcv",
-      package: "",
-    },
-% endfor
 
   // Exported clocks
 % for intf in cfg['exported_clks']:

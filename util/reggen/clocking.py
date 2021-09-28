@@ -16,6 +16,7 @@ class ClockingItem:
                  reset: Optional[str],
                  idle: Optional[str],
                  primary: bool,
+                 internal: bool,
                  clock_base_name: Optional[str]):
         if primary:
             assert clock is not None
@@ -26,17 +27,23 @@ class ClockingItem:
         self.reset = reset
         self.primary = primary
         self.idle = idle
+        # Internal means this clock is generated completely internal to the module
+        # and not supplied by the top level.
+        # However, the IpBlock may need to be aware of this clock for CDC purposes
+        self.internal = internal
 
     @staticmethod
     def from_raw(raw: object, only_item: bool, where: str) -> 'ClockingItem':
         what = f'clocking item at {where}'
-        rd = check_keys(raw, what, [], ['clock', 'reset', 'idle', 'primary'])
+        rd = check_keys(raw, what, [], ['clock', 'reset', 'idle', 'primary', 'internal'])
 
         clock = check_optional_name(rd.get('clock'), 'clock field of ' + what)
         reset = check_optional_name(rd.get('reset'), 'reset field of ' + what)
         idle = check_optional_name(rd.get('idle'), 'idle field of ' + what)
         primary = check_bool(rd.get('primary', only_item),
                              'primary field of ' + what)
+        internal = check_bool(rd.get('internal', False),
+                              'internal field of ' + what)
 
         match = re.match(r'^clk_([A-Za-z0-9_]+)_i', str(clock))
         if not clock or clock in ['clk_i', 'scan_clk_i']:
@@ -55,7 +62,7 @@ class ClockingItem:
                 raise ValueError('No reset signal for primary '
                                  f'clocking item at {what}.')
 
-        return ClockingItem(clock, reset, idle, primary, clock_base_name)
+        return ClockingItem(clock, reset, idle, primary, internal, clock_base_name)
 
     def _asdict(self) -> Dict[str, object]:
         ret = {}  # type: Dict[str, object]
@@ -107,8 +114,12 @@ class Clocking:
                 ret.append(item.clock)
         return ret
 
-    def clock_signals(self) -> List[str]:
-        return [item.clock for item in self.items if item.clock is not None]
+    def clock_signals(self, ret_internal: bool = True) -> List[str]:
+        # By default clock_signals returns all clocks, including internal clocks.
+        # If the ret_internal input is set to false, then only externally supplied
+        # clocks are returned.
+        return [item.clock for item in self.items if item.clock is not None and
+                (ret_internal or not item.internal)]
 
     def reset_signals(self) -> List[str]:
         return [item.reset for item in self.items if item.reset is not None]
@@ -117,8 +128,8 @@ class Clocking:
         ret = None
         for item in self.items:
             if name == item.clock:
-                 ret = item
-                 break
+                ret = item
+                break
 
         if ret is None:
             raise ValueError(f'The requested clock {name} does not exist.')

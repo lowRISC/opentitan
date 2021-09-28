@@ -47,7 +47,7 @@ module tb;
 
   // internal clocks and resets
   // cpu clock cannot reference cpu_hier since cpu clocks are forced off in stub_cpu mode
-  wire cpu_clk = `CLKMGR_HIER.clocks_o.clk_proc_main;
+  wire cpu_clk = `CPU_HIER.clk_i;
   wire cpu_rst_n = `CPU_HIER.rst_ni;
   wire alert_handler_clk = `ALERT_HANDLER_HIER.clk_i;
 
