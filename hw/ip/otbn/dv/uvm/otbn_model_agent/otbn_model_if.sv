@@ -31,7 +31,7 @@ interface otbn_model_if #(
   task automatic wait_status();
     automatic bit [7:0] old_status = status;
     while (rst_ni === 1'b1 && status == old_status) begin
-      @(posedge clk_i or negedge rst_ni);
+      @(negedge clk_i or negedge rst_ni);
     end
   endtask
 

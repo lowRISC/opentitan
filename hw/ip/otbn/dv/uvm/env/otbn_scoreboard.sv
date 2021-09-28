@@ -276,6 +276,10 @@ class otbn_scoreboard extends cip_base_scoreboard #(
             pending_start_tl_trans = 1'b0;
           end
           model_status = item.status;
+          // If the model status is locked, the scoreboard should expect a fatal error.
+          if (model_status == otbn_pkg::StatusLocked) begin
+            set_exp_alert("fatal", .is_fatal(1));
+          end
         end
 
         OtbnModelInsn: begin

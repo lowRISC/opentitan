@@ -9,3 +9,4 @@
 `include "otbn_sequential_vseq.sv"
 `include "otbn_single_vseq.sv"
 `include "otbn_smoke_vseq.sv"
+`include "otbn_imem_err_vseq.sv"
