@@ -60,6 +60,10 @@
       uvm_test_seq: clkmgr_extclk_vseq
     }
     {
+      name: clkmgr_frequency
+      uvm_test_seq: clkmgr_frequency_vseq
+    }
+    {
       name: clkmgr_peri
       uvm_test_seq: clkmgr_peri_vseq
     }

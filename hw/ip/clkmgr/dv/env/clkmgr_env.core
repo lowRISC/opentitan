@@ -21,6 +21,7 @@ filesets:
       - seq_lib/clkmgr_clk_status_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_common_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_extclk_vseq.sv: {is_include_file: true}
+      - seq_lib/clkmgr_frequency_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_peri_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_trans_vseq.sv: {is_include_file: true}
