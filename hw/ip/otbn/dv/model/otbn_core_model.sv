@@ -48,20 +48,11 @@ module otbn_core_model
   localparam int ImemSizeWords = ImemSizeByte / 4;
   localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
 
-  // Work-around for Verilator. IEEE 1800-2017 says you should compare/assign to a chandle with
-  // null. Verilator would prefer you to use zero: it treats null as a synonym of 1'b0 and chandle
-  // as a synonym of bit [63:0], so comparing with null causes width mismatch errors.
-`ifdef VERILATOR
-  chandle chandle_null = 0;
-`else
-  chandle chandle_null = null;
-`endif
-
   // Create and destroy an object through which we can talk to the ISS.
   chandle model_handle;
   initial begin
     model_handle = otbn_model_init(MemScope, DesignScope, ImemSizeWords, DmemSizeWords);
-    assert(model_handle != chandle_null);
+    assert(model_handle != null);
   end
   final begin
     otbn_model_destroy(model_handle);
