@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   build_cmd: "{job_prefix} vcf"
-  build_opts: ["-batch -f {formal_root}/tools/{tool}/{sub_flow}.tcl -output_log_file fpv.log"]
+  build_opts: ["{batch_mode_prefix}",
+               "-f {formal_root}/tools/{tool}/{sub_flow}.tcl",
+               "-output_log_file {sub_flow}.log"]
 
   exports: [
     {COMMON_MSG_TCL_PATH: "{formal_root}/tools/{tool}/vcf_message_config.tcl"}

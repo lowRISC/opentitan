@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   build_cmd: "{job_prefix} jg"
-  build_opts: ["-batch {formal_root}/tools/{tool}/{sub_flow}.tcl",
+  build_opts: ["{batch_mode_prefix} {formal_root}/tools/{tool}/{sub_flow}.tcl",
                "-proj jgproject",
                "-allow_unsupported_OS",
                "-command exit"]
