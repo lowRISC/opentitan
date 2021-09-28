@@ -107,7 +107,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   // Start OTBN and then wait until done
   //
   // If the block gets reset, this task will exit early.
-  protected task run_otbn();
+  protected task run_otbn(input check_end_addr = 1);
     int exp_end_addr;
 
     // Check that we haven't been called re-entrantly. This could happen if there's a bug in the
@@ -131,7 +131,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     //
     // The CSR operations above short-circuit and exit immediately if the reset line goes low. If
     // that happens, we don't want to run the checks (since the run didn't finish properly).
-    if (!cfg.under_reset) begin
+    if (!cfg.under_reset && check_end_addr) begin
       // If there was an expected end address, compare it with the model. This isn't really a test of
       // the RTL, but it's handy to make sure that the RIG really is generating the control flow that
       // it expects.
@@ -153,7 +153,9 @@ class otbn_base_vseq extends cip_base_vseq #(
 
     // Now wait until OTBN has finished
     `uvm_info(`gfn, $sformatf("\n\t ----| Waiting for OTBN to finish"), UVM_MEDIUM)
-    csr_utils_pkg::csr_spinwait(.ptr(ral.status), .exp_data(otbn_pkg::StatusIdle));
+    csr_utils_pkg::csr_spinwait(.ptr(ral.status),
+                                .exp_data(otbn_pkg::StatusBusyExecute),
+                                .compare_op(CompareOpNe));
 
     `uvm_info(`gfn, $sformatf("\n\t ----| OTBN finished"), UVM_MEDIUM)
 
