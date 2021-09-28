@@ -528,6 +528,9 @@ def extract_clocks(top: OrderedDict):
     generate the (templated) clkmgr code. This runs before we load up IP blocks
     with reggen, so can only see top-level configuration.
 
+    By default each end point (peripheral, memory etc) is in the same clock group.
+    However, it is possible to define the group attribute per clock if required.
+
     '''
     clocks = top['clocks']
     assert isinstance(clocks, Clocks)
@@ -540,42 +543,52 @@ def extract_clocks(top: OrderedDict):
         # Ensure each module has a default case
         export_if = ep.get('clock_reset_export', [])
 
-        # if no clock group assigned, default is unique
+        # The clock group attribute in an end point sets the defaut
+        # group for every clock in that end point.
+        #
+        # However, the end point can also override specific clocks to
+        # different groups inside clock_srcs.  This is generally not
+        # recommended as it is better to stay consistent.  However
+        # if needed, the method is available.
         ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep[
             'clock_group']
         ep_grp = ep['clock_group']
 
         # end point names and clocks
         ep_name = ep['name']
-        ep_clks = []
-
-        group = clocks.groups[ep_grp]
 
         for port, clk in ep['clock_srcs'].items():
-            ep_clks.append(clk)
+
+            # If the value of a particular connection is a dict,
+            # there are additional attributes to explore
+            if isinstance(clk, str):
+                group_name = ep_grp
+                src_name = clk
+            else:
+                assert isinstance(clk, Dict)
+                group_name = clk.get('group', ep_grp)
+                src_name = clk['clock']
+
+            group = clocks.groups[group_name]
 
             name = ''
             hier_name = clocks.hier_paths[group.src]
 
             if group.src == 'ext':
-                # clock comes from top ports
-                if clk == 'main':
-                    name = "i"
-                else:
-                    name = "{}_i".format(clk)
+                name = "{}_i".format(src_name)
 
             elif group.unique:
                 # new unqiue clock name
-                name = "{}_{}".format(clk, ep_name)
+                name = "{}_{}".format(src_name, ep_name)
 
             else:
                 # new group clock name
-                name = "{}_{}".format(clk, ep_grp)
+                name = "{}_{}".format(src_name, group_name)
 
             clk_name = "clk_" + name
 
             # add clock to a particular group
-            clk_sig = clocks.add_clock_to_group(group, clk_name, clk)
+            clk_sig = clocks.add_clock_to_group(group, clk_name, src_name)
             clk_sig.add_endpoint(ep_name, port)
 
             # add clock connections

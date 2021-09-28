@@ -87,6 +87,7 @@
 
     groups: [
       // the powerup group is used exclusively by clk/pwr/rstmgr/pinmux
+      { name: "ast",     src:"ext", sw_cg: "no"                   }
       { name: "powerup", src:"top", sw_cg: "no"                   }
       { name: "trans",   src:"top", sw_cg: "hint", unique: "yes", }
       { name: "infra",   src:"top", sw_cg: "no",                  }
@@ -361,7 +362,25 @@
     },
     { name: "clkmgr_aon",
       type: "clkmgr",
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {
+        clk_i: "io_div4",
+        clk_main_i: {
+          group: "ast",
+          clock: "main"
+        },
+        clk_io_i: {
+          group: "ast",
+          clock: "io"
+        },
+        clk_usb_i: {
+          group: "ast",
+          clock: "usb"
+        },
+        clk_aon_i: {
+          group: "ast",
+          clock: "aon"
+        }
+      },
       clock_group: "powerup",
       reset_connections: {rst_ni: "por_io_div4",
                           rst_main_ni: "por",
@@ -897,10 +916,6 @@
         'ast.ram_1p_cfg'                  : 'ram_1p_cfg',
         'ast.ram_2p_cfg'                  : 'ram_2p_cfg',
         'ast.rom_cfg'                     : 'rom_cfg',
-        'clkmgr_aon.clk_main'             : 'clk_main',  // clock inputs
-        'clkmgr_aon.clk_io'               : 'clk_io',    // clock inputs
-        'clkmgr_aon.clk_usb'              : 'clk_usb',   // clock inputs
-        'clkmgr_aon.clk_aon'              : 'clk_aon',   // clock inputs
         'clkmgr_aon.jitter_en'            : 'clk_main_jitter_en',
         'clkmgr_aon.ast_clk_byp_req'      : 'ast_clk_byp_req',
         'clkmgr_aon.ast_clk_byp_ack'      : 'ast_clk_byp_ack',

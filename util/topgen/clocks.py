@@ -125,6 +125,10 @@ class Group:
 
 
 class TypedClocks(NamedTuple):
+    # External clocks that are consumed only inside the clkmgr and are fed from
+    # an external ast source.
+    ast_clks: Dict[str, ClockSignal]
+
     # Clocks fed through clkmgr but not disturbed in any way. This maintains
     # the clocking structure consistency. This includes two groups of clocks:
     #
@@ -260,6 +264,7 @@ class Clocks:
 
     def typed_clocks(self) -> TypedClocks:
         '''Split the clocks by type'''
+        ast_clks = {}
         ft_clks = {}
         rg_clks = {}
         sw_clks = {}
@@ -273,6 +278,10 @@ class Clocks:
                 continue
 
             for clk, sig in grp.clocks.items():
+                if grp.src == "ext":
+                    ast_clks[clk] = sig
+                    continue
+
                 if sig.src.aon:
                     # Any always-on clock is a feedthrough
                     ft_clks[clk] = sig
@@ -299,7 +308,8 @@ class Clocks:
         # Define a canonical ordering for rg_srcs
         rg_srcs = list(sorted(rg_srcs_set))
 
-        return TypedClocks(ft_clks=ft_clks,
+        return TypedClocks(ast_clks=ast_clks,
+                           ft_clks=ft_clks,
                            rg_clks=rg_clks,
                            sw_clks=sw_clks,
                            hint_clks=hint_clks,

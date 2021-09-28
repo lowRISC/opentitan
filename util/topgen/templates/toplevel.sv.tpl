@@ -93,6 +93,11 @@ module top_${top["name"]} #(
 
 % endif
 
+  // All externally supplied clocks
+  % for clk in top['clocks'].typed_clocks().ast_clks:
+  input ${clk},
+  % endfor
+
   // All clocks forwarded to ast
   output clkmgr_pkg::clkmgr_out_t clks_ast_o,
   output rstmgr_pkg::rstmgr_out_t rsts_ast_o,
