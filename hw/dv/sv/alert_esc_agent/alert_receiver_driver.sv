@@ -174,6 +174,16 @@ class alert_receiver_driver extends alert_esc_base_driver;
     cfg.vif.alert_rx_int.ping_n <= 1'b1;
     cfg.vif.alert_rx_int.ack_p <= 1'b0;
     cfg.vif.alert_rx_int.ack_n <= 1'b1;
+
+    // Drive alert init signal integrity error handshake.
+    repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
+    cfg.vif.alert_rx_int.ping_n <= 1'b0;
+    wait (cfg.vif.receiver_cb.alert_tx.alert_p == cfg.vif.receiver_cb.alert_tx.alert_n);
+    cfg.vif.alert_rx_int.ack_n <= 1'b0;
+    repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
+    cfg.vif.alert_rx_int.ack_n  <= 1'b1;
+    cfg.vif.alert_rx_int.ping_n <= 1'b1;
+    wait (cfg.vif.receiver_cb.alert_tx.alert_p != cfg.vif.receiver_cb.alert_tx.alert_n);
   endtask
 
 endclass : alert_receiver_driver
