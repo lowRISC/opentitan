@@ -230,7 +230,7 @@ dif_result_t dif_aes_start_ecb(const dif_aes_t *aes,
   }
 
   if (!aes_idle(aes)) {
-    return kDifIpBusy;
+    return kDifUnavailable;
   }
 
   dif_result_t result = configure(aes, transaction, kAesModeFieldValEcb);
@@ -255,7 +255,7 @@ dif_result_t dif_aes_start_cbc(const dif_aes_t *aes,
   }
 
   if (!aes_idle(aes)) {
-    return kDifIpBusy;
+    return kDifUnavailable;
   }
 
   dif_result_t result = configure(aes, transaction, kAesModeFieldValCbc);
@@ -282,7 +282,7 @@ dif_result_t dif_aes_start_ctr(const dif_aes_t *aes,
   }
 
   if (!aes_idle(aes)) {
-    return kDifIpBusy;
+    return kDifUnavailable;
   }
 
   dif_result_t result = configure(aes, transaction, kAesModeFieldValCtr);
@@ -307,7 +307,7 @@ dif_result_t dif_aes_end(const dif_aes_t *aes) {
   }
 
   if (!aes_idle(aes)) {
-    return kDifIpBusy;
+    return kDifUnavailable;
   }
 
   aes_clear_internal_state(aes);
@@ -322,7 +322,7 @@ dif_result_t dif_aes_load_data(const dif_aes_t *aes,
   }
 
   if (!aes_input_ready(aes)) {
-    return kDifIpBusy;
+    return kDifUnavailable;
   }
 
   aes_set_multireg(aes, &data.data[0], AES_DATA_IN_MULTIREG_COUNT,

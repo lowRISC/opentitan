@@ -88,8 +88,8 @@ static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
   }
 
   CHECK_DIF_OK(dif_hmac_process(hmac));
-  dif_result_t digest_result = kDifIpBusy;
-  while (digest_result == kDifIpBusy) {
+  dif_result_t digest_result = kDifUnavailable;
+  while (digest_result == kDifUnavailable) {
     digest_result = dif_hmac_finish(hmac, digest);
   }
   CHECK_DIF_OK(digest_result);

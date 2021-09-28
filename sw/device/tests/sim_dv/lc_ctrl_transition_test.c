@@ -44,7 +44,7 @@ static volatile const uint8_t kLcExitToken[LC_TOKEN_SIZE] = {
 static void check_lc_state_transition_count(uint8_t exp_lc_count) {
   LOG_INFO("Read LC count and check with expect_val=%0d", exp_lc_count);
   uint8_t lc_count;
-  CHECK(dif_lc_ctrl_get_attempts(&lc, &lc_count) == kDifLcCtrlAttemptsOk,
+  CHECK(dif_lc_ctrl_get_attempts(&lc, &lc_count) == kDifOk,
         "Read lc_count register failed!");
   CHECK(lc_count == exp_lc_count,
         "LC_count error, expected %0d but actual count is %0d", exp_lc_count,
@@ -94,9 +94,9 @@ bool test_main(void) {
     for (int i = 0; i < LC_TOKEN_SIZE; i++) {
       token.data[i] = kLcExitToken[i];
     }
-    CHECK(dif_lc_ctrl_mutex_try_acquire(&lc) == kDifLcCtrlMutexOk);
+    CHECK(dif_lc_ctrl_mutex_try_acquire(&lc) == kDifOk);
     CHECK(dif_lc_ctrl_transition(&lc, kDifLcCtrlStateDev, &token, &settings) ==
-              kDifLcCtrlMutexOk,
+              kDifOk,
           "LC_transition failed!");
 
     LOG_INFO("Waiting for LC transtition done and reboot.");

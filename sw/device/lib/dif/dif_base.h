@@ -48,7 +48,7 @@ typedef enum dif_result {
    * retried at any time, and is guaranteed to have not produced any side
    * effects.
    */
-  kDifIpBusy = 4,
+  kDifUnavailable = 4,
   /**
    * Indicates that the Ip's FIFO (if it has one or more of) is full.
    */
