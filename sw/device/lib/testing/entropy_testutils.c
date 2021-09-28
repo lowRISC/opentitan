@@ -40,12 +40,10 @@ static void setup_entropy_src(void) {
 }
 
 static void setup_csrng(void) {
-  const dif_csrng_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-  };
   dif_csrng_t csrng;
-  CHECK(dif_csrng_init(params, &csrng) == kDifCsrngOk);
-  CHECK(dif_csrng_configure(&csrng) == kDifCsrngOk);
+  CHECK_DIF_OK(dif_csrng_init(
+      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
+  CHECK_DIF_OK(dif_csrng_configure(&csrng));
 }
 
 static void setup_edn(void) {
