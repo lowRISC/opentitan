@@ -19,6 +19,9 @@ class FormalCfg(OneShotCfg):
     flow = 'formal'
 
     def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
+        # Options set from command line
+        self.batch_mode_prefix = "" if args.gui else "-batch"
+
         super().__init__(flow_cfg_file, hjson_data, args, mk_config)
         self.header = ["name", "errors", "warnings", "proven", "cex", "undetermined",
                        "covered", "unreachable", "pass_rate", "cov_rate"]
