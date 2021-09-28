@@ -5,8 +5,8 @@
 // Perform logical OR or AND between two life cycle multibit signals.
 
 module prim_lc_combine #(
-  // 0: use the ON value for the logical combination
-  // 1: use the OFF value for the logical combination
+  // 0: use the ON value as active value for the logical combination
+  // 1: use the OFF value as active value for the logical combination
   parameter bit ActiveLow = 0,
   // 0: logical combination is an OR function
   // 1: logical combination is an AND function
@@ -19,8 +19,7 @@ module prim_lc_combine #(
 
   // Determine whether which multibit value is considered "active" for the
   // purpose of the logical function below.
-  parameter lc_ctrl_pkg::lc_tx_t ActiveValue = (ActiveLow) ? lc_ctrl_pkg::Off :
-                                                             lc_ctrl_pkg::On;
+  parameter lc_ctrl_pkg::lc_tx_t ActiveValue = (ActiveLow) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On;
   // Truth tables:
   //
   // ActiveLow: 0, CombineMode: 0 (active-high "OR")
@@ -41,23 +40,23 @@ module prim_lc_combine #(
   // !On  | On   | !On
   // On   | On   | On
   //
-  // ActiveLow: 1, CombineMode: 1 (active-low "AND")
-  //
-  // A    | B    | OUT
-  //------+------+-----
-  // Off  | Off  | Off
-  // !Off | Off  | !Off
-  // Off  | !Off | !Off
-  // !Off | !Off | !Off
-  //
   // ActiveLow: 1, CombineMode: 0 (active-low "OR")
   //
   // A    | B    | OUT
   //------+------+-----
-  // Off  | Off  | Off
-  // !Off | Off  | Off
-  // Off  | !Off | Off
   // !Off | !Off | !Off
+  // Off  | !Off | Off
+  // !Off | Off  | Off
+  // Off  | Off  | Off
+  //
+  // ActiveLow: 1, CombineMode: 1 (active-low "AND")
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !Off | !Off | !Off
+  // Off  | !Off | !Off
+  // !Off | Off  | !Off
+  // Off  | Off  | Off
   //
   // Note: the inactive value (e.g. !On) can be any multibit value
   // different from the active value.
