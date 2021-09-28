@@ -19,18 +19,16 @@ interface otbn_model_if #(
   bit                       done;         // Operation done
   bit                       err;          // Something went wrong
   bit [31:0]                stop_pc;      // PC at end of operation
+
+  // Mirrored registers
+  bit [7:0]                 status;       // STATUS register
+
   chandle                   handle;       // Handle for DPI calls to C model
 
-  // Wait until done goes high. Stops early on reset
-  task automatic wait_done();
-    while (rst_ni === 1'b1 && !done) begin
-      @(posedge clk_i or negedge rst_ni);
-    end
-  endtask
-
-  // Wait until done goes low. Stops early on reset
-  task automatic wait_not_done();
-    while (rst_ni === 1'b1 && done) begin
+  // Wait until reset or change of status.
+  task automatic wait_status();
+    bit old_status = status;
+    while (rst_ni === 1'b1 && status == old_status) begin
       @(posedge clk_i or negedge rst_ni);
     end
   endtask

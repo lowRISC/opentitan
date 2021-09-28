@@ -13,7 +13,7 @@ package otbn_model_agent_pkg;
 
   typedef enum {
     OtbnModelStart,
-    OtbnModelDone,
+    OtbnModelStatus,
     OtbnModelInsn
   } otbn_model_item_type_e;
 
