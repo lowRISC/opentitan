@@ -390,6 +390,7 @@
       regwen: "MEASURE_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_io_i",
       fields: [
         {
           bits: "0",
@@ -429,6 +430,7 @@
       regwen: "MEASURE_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_io_div2_i",
       fields: [
         {
           bits: "0",
@@ -468,6 +470,7 @@
       regwen: "MEASURE_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_io_div4_i",
       fields: [
         {
           bits: "0",
@@ -507,6 +510,7 @@
       regwen: "MEASURE_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_main_i",
       fields: [
         {
           bits: "0",
@@ -546,6 +550,7 @@
       regwen: "MEASURE_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_usb_i",
       fields: [
         {
           bits: "0",

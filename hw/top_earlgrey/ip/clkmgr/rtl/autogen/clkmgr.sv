@@ -79,59 +79,6 @@
 );
 
   ////////////////////////////////////////////////////
-  // Register Interface
-  ////////////////////////////////////////////////////
-
-  logic [NumAlerts-1:0] alert_test, alerts;
-  clkmgr_reg_pkg::clkmgr_reg2hw_t reg2hw;
-  clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg;
-
-  clkmgr_reg_top u_reg (
-    .clk_i,
-    .rst_ni,
-    .tl_i,
-    .tl_o,
-    .reg2hw,
-    .hw2reg,
-    .intg_err_o(hw2reg.fatal_err_code.de),
-    .devmode_i(1'b1)
-  );
-  assign hw2reg.fatal_err_code.d = 1'b1;
-
-
-  ////////////////////////////////////////////////////
-  // Alerts
-  ////////////////////////////////////////////////////
-
-  assign alert_test = {
-    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe,
-    reg2hw.alert_test.recov_fault.q & reg2hw.alert_test.recov_fault.qe
-  };
-
-  assign alerts = {
-    |reg2hw.fatal_err_code,
-    |reg2hw.recov_err_code
-  };
-
-  localparam logic [NumAlerts-1:0] AlertFatal = {1'b1, 1'b0};
-
-  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
-    prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[i]),
-      .IsFatal(AlertFatal[i])
-    ) u_prim_alert_sender (
-      .clk_i,
-      .rst_ni,
-      .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[i]     ),
-      .alert_ack_o   (               ),
-      .alert_state_o (               ),
-      .alert_rx_i    ( alert_rx_i[i] ),
-      .alert_tx_o    ( alert_tx_o[i] )
-    );
-  end
-
-  ////////////////////////////////////////////////////
   // Divided clocks
   ////////////////////////////////////////////////////
 
@@ -185,6 +132,69 @@
     .test_en_i(io_div4_div_scanmode == lc_ctrl_pkg::On),
     .clk_o(clk_io_div4_i)
   );
+
+  ////////////////////////////////////////////////////
+  // Register Interface
+  ////////////////////////////////////////////////////
+
+  logic [NumAlerts-1:0] alert_test, alerts;
+  clkmgr_reg_pkg::clkmgr_reg2hw_t reg2hw;
+  clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg;
+
+  clkmgr_reg_top u_reg (
+    .clk_i,
+    .rst_ni,
+    .clk_io_i,
+    .rst_io_ni,
+    .clk_io_div2_i,
+    .rst_io_div2_ni,
+    .clk_io_div4_i,
+    .rst_io_div4_ni,
+    .clk_main_i,
+    .rst_main_ni,
+    .clk_usb_i,
+    .rst_usb_ni,
+    .tl_i,
+    .tl_o,
+    .reg2hw,
+    .hw2reg,
+    .intg_err_o(hw2reg.fatal_err_code.de),
+    .devmode_i(1'b1)
+  );
+  assign hw2reg.fatal_err_code.d = 1'b1;
+
+
+  ////////////////////////////////////////////////////
+  // Alerts
+  ////////////////////////////////////////////////////
+
+  assign alert_test = {
+    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe,
+    reg2hw.alert_test.recov_fault.q & reg2hw.alert_test.recov_fault.qe
+  };
+
+  assign alerts = {
+    |reg2hw.fatal_err_code,
+    |reg2hw.recov_err_code
+  };
+
+  localparam logic [NumAlerts-1:0] AlertFatal = {1'b1, 1'b0};
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(AlertFatal[i])
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[i]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   ////////////////////////////////////////////////////
   // Clock bypass request
@@ -467,7 +477,6 @@
   // Clock Measurement for the roots
   ////////////////////////////////////////////////////
 
-  logic io_meas_valid;
   logic io_fast_err;
   logic io_slow_err;
     prim_clock_meas #(
@@ -481,17 +490,24 @@
     .en_i(clk_io_en & reg2hw.io_measure_ctrl.en.q),
     .max_cnt(reg2hw.io_measure_ctrl.max_thresh.q),
     .min_cnt(reg2hw.io_measure_ctrl.min_thresh.q),
-    .valid_o(io_meas_valid),
+    .valid_o(),
     .fast_o(io_fast_err),
     .slow_o(io_slow_err)
   );
 
-  assign hw2reg.recov_err_code.io_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_measure_err.de =
-    io_meas_valid &
-    (io_fast_err | io_slow_err);
+  logic synced_io_err;
+  prim_pulse_sync u_io_err_sync (
+    .clk_src_i(clk_io_i),
+    .rst_src_ni(rst_io_ni),
+    .src_pulse_i(io_fast_err | io_slow_err),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(synced_io_err)
+  );
 
-  logic io_div2_meas_valid;
+  assign hw2reg.recov_err_code.io_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_measure_err.de = synced_io_err;
+
   logic io_div2_fast_err;
   logic io_div2_slow_err;
     prim_clock_meas #(
@@ -505,17 +521,24 @@
     .en_i(clk_io_div2_en & reg2hw.io_div2_measure_ctrl.en.q),
     .max_cnt(reg2hw.io_div2_measure_ctrl.max_thresh.q),
     .min_cnt(reg2hw.io_div2_measure_ctrl.min_thresh.q),
-    .valid_o(io_div2_meas_valid),
+    .valid_o(),
     .fast_o(io_div2_fast_err),
     .slow_o(io_div2_slow_err)
   );
 
-  assign hw2reg.recov_err_code.io_div2_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_div2_measure_err.de =
-    io_div2_meas_valid &
-    (io_div2_fast_err | io_div2_slow_err);
+  logic synced_io_div2_err;
+  prim_pulse_sync u_io_div2_err_sync (
+    .clk_src_i(clk_io_div2_i),
+    .rst_src_ni(rst_io_div2_ni),
+    .src_pulse_i(io_div2_fast_err | io_div2_slow_err),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(synced_io_div2_err)
+  );
 
-  logic io_div4_meas_valid;
+  assign hw2reg.recov_err_code.io_div2_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_div2_measure_err.de = synced_io_div2_err;
+
   logic io_div4_fast_err;
   logic io_div4_slow_err;
     prim_clock_meas #(
@@ -529,17 +552,24 @@
     .en_i(clk_io_div4_en & reg2hw.io_div4_measure_ctrl.en.q),
     .max_cnt(reg2hw.io_div4_measure_ctrl.max_thresh.q),
     .min_cnt(reg2hw.io_div4_measure_ctrl.min_thresh.q),
-    .valid_o(io_div4_meas_valid),
+    .valid_o(),
     .fast_o(io_div4_fast_err),
     .slow_o(io_div4_slow_err)
   );
 
-  assign hw2reg.recov_err_code.io_div4_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_div4_measure_err.de =
-    io_div4_meas_valid &
-    (io_div4_fast_err | io_div4_slow_err);
+  logic synced_io_div4_err;
+  prim_pulse_sync u_io_div4_err_sync (
+    .clk_src_i(clk_io_div4_i),
+    .rst_src_ni(rst_io_div4_ni),
+    .src_pulse_i(io_div4_fast_err | io_div4_slow_err),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(synced_io_div4_err)
+  );
 
-  logic main_meas_valid;
+  assign hw2reg.recov_err_code.io_div4_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_div4_measure_err.de = synced_io_div4_err;
+
   logic main_fast_err;
   logic main_slow_err;
     prim_clock_meas #(
@@ -553,17 +583,24 @@
     .en_i(clk_main_en & reg2hw.main_measure_ctrl.en.q),
     .max_cnt(reg2hw.main_measure_ctrl.max_thresh.q),
     .min_cnt(reg2hw.main_measure_ctrl.min_thresh.q),
-    .valid_o(main_meas_valid),
+    .valid_o(),
     .fast_o(main_fast_err),
     .slow_o(main_slow_err)
   );
 
-  assign hw2reg.recov_err_code.main_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.main_measure_err.de =
-    main_meas_valid &
-    (main_fast_err | main_slow_err);
+  logic synced_main_err;
+  prim_pulse_sync u_main_err_sync (
+    .clk_src_i(clk_main_i),
+    .rst_src_ni(rst_main_ni),
+    .src_pulse_i(main_fast_err | main_slow_err),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(synced_main_err)
+  );
 
-  logic usb_meas_valid;
+  assign hw2reg.recov_err_code.main_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.main_measure_err.de = synced_main_err;
+
   logic usb_fast_err;
   logic usb_slow_err;
     prim_clock_meas #(
@@ -577,15 +614,23 @@
     .en_i(clk_usb_en & reg2hw.usb_measure_ctrl.en.q),
     .max_cnt(reg2hw.usb_measure_ctrl.max_thresh.q),
     .min_cnt(reg2hw.usb_measure_ctrl.min_thresh.q),
-    .valid_o(usb_meas_valid),
+    .valid_o(),
     .fast_o(usb_fast_err),
     .slow_o(usb_slow_err)
   );
 
+  logic synced_usb_err;
+  prim_pulse_sync u_usb_err_sync (
+    .clk_src_i(clk_usb_i),
+    .rst_src_ni(rst_usb_ni),
+    .src_pulse_i(usb_fast_err | usb_slow_err),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(synced_usb_err)
+  );
+
   assign hw2reg.recov_err_code.usb_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.usb_measure_err.de =
-    usb_meas_valid &
-    (usb_fast_err | usb_slow_err);
+  assign hw2reg.recov_err_code.usb_measure_err.de = synced_usb_err;
 
 
   ////////////////////////////////////////////////////

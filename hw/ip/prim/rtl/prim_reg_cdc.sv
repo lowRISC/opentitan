@@ -139,16 +139,16 @@ module prim_reg_cdc #(
 
   `ifdef SIMULATION
     logic async_flag;
-    always_ff @(posedge clk_dst_i or
-      negedge rst_src_ni or negedge rst_dst_ni) begin
-      if (!rst_src_ni | !rst_dst_ni) begin
+    always_ff @(posedge clk_src_i or negedge rst_src_ni) begin
+      if (!rst_src_ni) begin
         async_flag <= '0;
       end else if (src_req) begin
         async_flag <= 1'b1;
       end else if (dst_req) begin
-        async_flag <= 1'b0;
+        async_flag <= '0;
       end
     end
+
     `ASSERT(ReqTimeout_A, $rose(async_flag) |-> strong(##[0:3] dst_req), clk_dst_i, !rst_dst_ni)
   `endif
 

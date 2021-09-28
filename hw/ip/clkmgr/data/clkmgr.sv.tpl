@@ -73,6 +73,42 @@
 );
 
   ////////////////////////////////////////////////////
+  // Divided clocks
+  ////////////////////////////////////////////////////
+
+  lc_tx_t step_down_req;
+  logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
+
+% for src_name in clocks.derived_srcs:
+  logic clk_${src_name}_i;
+% endfor
+
+% for src in clocks.derived_srcs.values():
+
+  lc_tx_t ${src.name}_div_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_${src.name}_div_scanmode_sync  (
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
+    .lc_en_i(scanmode_i),
+    .lc_en_o(${src.name}_div_scanmode)
+  );
+
+  prim_clock_div #(
+    .Divisor(${src.div})
+  ) u_no_scan_${src.name}_div (
+    .clk_i(clk_${src.src.name}_i),
+    .rst_ni(rst_${src.src.name}_ni),
+    .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
+    .step_down_ack_o(step_down_acks[${loop.index}]),
+    .test_en_i(${src.name}_div_scanmode == lc_ctrl_pkg::On),
+    .clk_o(clk_${src.name}_i)
+  );
+% endfor
+
+  ////////////////////////////////////////////////////
   // Register Interface
   ////////////////////////////////////////////////////
 
@@ -83,6 +119,10 @@
   clkmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
+% for src in typed_clocks.rg_srcs:
+    .clk_${src}_i,
+    .rst_${src}_ni,
+% endfor
     .tl_i,
     .tl_o,
     .reg2hw,
@@ -124,42 +164,6 @@
       .alert_tx_o    ( alert_tx_o[i] )
     );
   end
-
-  ////////////////////////////////////////////////////
-  // Divided clocks
-  ////////////////////////////////////////////////////
-
-  lc_tx_t step_down_req;
-  logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
-
-% for src_name in clocks.derived_srcs:
-  logic clk_${src_name}_i;
-% endfor
-
-% for src in clocks.derived_srcs.values():
-
-  lc_tx_t ${src.name}_div_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_${src.name}_div_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(${src.name}_div_scanmode)
-  );
-
-  prim_clock_div #(
-    .Divisor(${src.div})
-  ) u_no_scan_${src.name}_div (
-    .clk_i(clk_${src.src.name}_i),
-    .rst_ni(rst_${src.src.name}_ni),
-    .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
-    .step_down_ack_o(step_down_acks[${loop.index}]),
-    .test_en_i(${src.name}_div_scanmode == lc_ctrl_pkg::On),
-    .clk_o(clk_${src.name}_i)
-  );
-% endfor
 
   ////////////////////////////////////////////////////
   // Clock bypass request
@@ -303,7 +307,6 @@
 
 <% aon_freq = clocks.all_srcs['aon'].freq %>\
 % for src in typed_clocks.rg_srcs:
-  logic ${src}_meas_valid;
   logic ${src}_fast_err;
   logic ${src}_slow_err;
   <%
@@ -321,15 +324,23 @@
     .en_i(clk_${src}_en & reg2hw.${src}_measure_ctrl.en.q),
     .max_cnt(reg2hw.${src}_measure_ctrl.max_thresh.q),
     .min_cnt(reg2hw.${src}_measure_ctrl.min_thresh.q),
-    .valid_o(${src}_meas_valid),
+    .valid_o(),
     .fast_o(${src}_fast_err),
     .slow_o(${src}_slow_err)
   );
 
+  logic synced_${src}_err;
+  prim_pulse_sync u_${src}_err_sync (
+    .clk_src_i(clk_${src}_i),
+    .rst_src_ni(rst_${src}_ni),
+    .src_pulse_i(${src}_fast_err | ${src}_slow_err),
+    .clk_dst_i(clk_i),
+    .rst_dst_ni(rst_ni),
+    .dst_pulse_o(synced_${src}_err)
+  );
+
   assign hw2reg.recov_err_code.${src}_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.${src}_measure_err.de =
-    ${src}_meas_valid &
-    (${src}_fast_err | ${src}_slow_err);
+  assign hw2reg.recov_err_code.${src}_measure_err.de = synced_${src}_err;
 
 % endfor
 
