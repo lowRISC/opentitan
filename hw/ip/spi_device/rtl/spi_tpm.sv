@@ -443,7 +443,6 @@ module spi_tpm
   } tpm_data_sel_e;
 
   logic       sck_p2s_valid;
-  logic       sck_p2s_sent; // pulse of bit 7
 
   logic       isck_p2s_valid;
   logic [7:0] isck_p2s_data;
@@ -736,7 +735,7 @@ module spi_tpm
   always_ff @(posedge clk_in_i or negedge rst_n) begin
     if (!rst_n) begin
       xfer_bytes_q <= '0;
-    end else if ((sck_p2s_sent && sck_rddata_shift_en) ||
+    end else if ((isck_p2s_sent && sck_rddata_shift_en) ||
       (sck_wrfifo_wvalid && wrdata_shift_en)) begin
       xfer_bytes_q <= xfer_bytes_d;
     end
@@ -874,11 +873,6 @@ module spi_tpm
   // p2s_valid & p2s_sent & p2s_data
   //                                        ~|isck_p2s_bitcnt
   assign isck_p2s_sent = isck_p2s_valid && (isck_p2s_bitcnt == '0);
-
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) sck_p2s_sent <= 1'b 0;
-    else        sck_p2s_sent <= isck_p2s_sent;
-  end
 
   always_ff @(posedge clk_out_i or negedge rst_n) begin
     if (!rst_n) isck_p2s_valid <= 1'b 0;
@@ -1022,7 +1016,7 @@ module spi_tpm
         sck_data_sel = SelWait;
 
         // at every LSB of a byte, check the next state condition
-        if (sck_p2s_sent &&
+        if (isck_p2s_sent &&
           (((cmd_type == Read) && |isck_rdfifo_rdepth) ||
           ((cmd_type == Write) && ~|sck_wrfifo_wdepth))) begin
           sck_st_d = StStartByte;
@@ -1033,7 +1027,7 @@ module spi_tpm
         sck_p2s_valid = 1'b 1;
         sck_data_sel  = SelStart;
 
-        if (sck_p2s_sent) begin
+        if (isck_p2s_sent) begin
           // Must move to next state as StartByte is a byte
           if ((cmd_type == Read) && is_hw_reg) begin
             sck_st_d = StReadHwReg;
@@ -1054,7 +1048,7 @@ module spi_tpm
         // TODO: RdFifo rready (sck --> isck)
 
         // TODO: check xfer_size handling
-        if (sck_p2s_sent && xfer_size_met) begin
+        if (isck_p2s_sent && xfer_size_met) begin
           sck_st_d = StEnd;
         end
       end // StReadFifo
@@ -1065,7 +1059,7 @@ module spi_tpm
 
         // HW Reg slice? using index
 
-        if (sck_p2s_sent && xfer_size_met) begin
+        if (isck_p2s_sent && xfer_size_met) begin
           sck_st_d = StEnd;
         end
       end // StReadHwReg
