@@ -42,7 +42,12 @@ bool test_main() {
       // this field needs to manually toggled by software.  Disable for now
       .reset_health_test_registers = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .route_to_firmware = true};
+      .route_to_firmware = true,
+      .fw_override = {
+          .enable = false,
+          .entropy_insert_enable = false,
+          .buffer_threshold = kDifEntropyFifoIntDefaultThreshold,
+      }};
   CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, config));
 
   uint32_t entropy_data[kEntropyDataNumWords];

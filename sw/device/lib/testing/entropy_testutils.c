@@ -33,7 +33,11 @@ static void setup_entropy_src(void) {
       .reset_health_test_registers = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .route_to_firmware = false,
-  };
+      .fw_override = {
+          .enable = false,
+          .entropy_insert_enable = false,
+          .buffer_threshold = kDifEntropyFifoIntDefaultThreshold,
+      }};
   CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, config));
 }
 
