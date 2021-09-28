@@ -40,11 +40,28 @@ class ConfigTest : public DifEntropySrcTest {
       .route_to_firmware = false,
       .fips_mode = false,
       .test_config = {0},
+      .fw_override =
+          {
+              .enable = false,
+              .entropy_insert_enable = false,
+              .buffer_threshold = kDifEntropyFifoIntDefaultThreshold,
+          },
   };
 };
 
 TEST_F(ConfigTest, NullArgs) {
   EXPECT_EQ(dif_entropy_src_configure(nullptr, {}), kDifBadArg);
+}
+
+TEST_F(ConfigTest, InvalidFifoThreshold) {
+  config_.fw_override.buffer_threshold = 65;
+  EXPECT_EQ(dif_entropy_src_configure(&entropy_src_, config_), kDifBadArg);
+}
+
+TEST_F(ConfigTest, InvalidFwOverrideSettings) {
+  config_.fw_override.enable = false;
+  config_.fw_override.entropy_insert_enable = true;
+  EXPECT_EQ(dif_entropy_src_configure(&entropy_src_, config_), kDifBadArg);
 }
 
 struct ConfigParams {
@@ -69,13 +86,23 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
   config_.route_to_firmware = test_param.route_to_firmware;
   config_.reset_health_test_registers = test_param.reset_health_test_registers;
 
+  EXPECT_WRITE32(ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_OFFSET,
+                 config_.fw_override.buffer_threshold);
+  EXPECT_WRITE32(
+      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+      {
+          {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET,
+           (uint32_t)(config_.fw_override.enable ? 0xa : 0x5)},
+          {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
+           (uint32_t)(config_.fw_override.entropy_insert_enable ? 0xa : 0x5)},
+      });
+
   EXPECT_WRITE32(ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
                  {
                      {ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_OFFSET,
                       (uint32_t)(test_param.route_to_firmware ? 0xa : 0x5)},
                      {ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_OFFSET, 0x5},
                  });
-  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0x55);
 
   // Current dif does not perform a read modified write
   // EXPECT_READ32(ENTROPY_SRC_CONF_REG_OFFSET, 0);
@@ -84,6 +111,7 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
   uint32_t route_to_fw = test_param.route_to_firmware ? 0xa : 0x5;
   uint32_t enable =
       test_param.expected_mode != kDifEntropySrcModeDisabled ? 0xa : 0x5;
+
   uint32_t reset_ht = test_param.reset_health_test_registers ? 0xa : 0x5;
   EXPECT_WRITE32(
       ENTROPY_SRC_CONF_REG_OFFSET,
