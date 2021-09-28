@@ -19,7 +19,7 @@ package otbn_env_pkg;
   import otbn_ral_pkg::*;
 
   import otbn_pkg::flags_t;
-  import bus_params_pkg::BUS_DW;
+  import bus_params_pkg::BUS_AW, bus_params_pkg::BUS_DW, bus_params_pkg::BUS_DBW;
   import top_pkg::TL_AIW;
 
   // macro includes
