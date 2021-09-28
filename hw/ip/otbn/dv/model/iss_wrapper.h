@@ -15,6 +15,21 @@
 // Forward declaration (the implementation is private in iss_wrapper.cc)
 struct TmpDir;
 
+// OTBN has some externally visible CSRs that can be updated by hardware
+// (without explicit writes from software). The ISSWrapper mirrors the ISS's
+// versions of these registers in this structure.
+class MirroredRegs {
+ public:
+  MirroredRegs() : status(0), insn_cnt(0), err_bits(0), stop_pc(0) {}
+
+  uint32_t status;
+  uint32_t insn_cnt;
+  uint32_t err_bits;
+
+  // The final PC from the most recent run
+  uint32_t stop_pc;
+};
+
 // An object wrapping the ISS subprocess.
 struct ISSWrapper {
   // A 256-bit unsigned integer value, stored in "LSB order". Thus, words[0]
@@ -49,37 +64,29 @@ struct ISSWrapper {
   // Signal URND reseed at beginning of execution is complete
   void edn_urnd_reseed_complete();
 
-  // Run simulation for a single cycle. Returns a pair (ret_code, err_bits).
+  // Run simulation for a single cycle.
   //
-  // If gen_trace is true, pass trace data to the (singleton)
-  // OtbnTraceChecker object.
+  // If gen_trace is true, pass trace data to the (singleton) OtbnTraceChecker
+  // object.
   //
-  // ret_code describes the state of the simulation. It is 1 if the simulation
-  // just stopped (on ECALL or an architectural error); it is 0 if the
-  // simulation is still running. It is -1 if something went wrong (such as a
-  // trace mismatch).
+  // The return code describes the state of the simulation. It is 1 if the
+  // simulation just stopped (on ECALL or an architectural error); it is 0 if
+  // the simulation is still running. It is -1 if something went wrong (such as
+  // a trace mismatch).
   //
-  // err_bits is zero unless the simulation just came to a halt, in which case
-  // it's the value of the ERR_BITS register.
+  // Updates mirrored versions of STATUS and INSN_CNT registers. If execution
+  // finishes (so we return 1), also updates mirrored versions of ERR_BITS and
+  // the final PC (see get_stop_pc()).
   int step(bool gen_trace);
 
   // Reset simulation
   //
-  // This doesn't actually send anything to the ISS, but instead tells
-  // the OtbnTraceChecker to clear out any partial instructions
+  // This doesn't actually send anything to the ISS, but instead tells the
+  // OtbnTraceChecker to clear out any partial instructions. It also resets
+  // mirrored registers to their initial states.
   void reset(bool gen_trace);
 
-  // Get the current value of otbn.INSN_CNT. This should be called just after
-  // step (but doesn't necessarily need to wait until the run has finished).
-  uint32_t get_insn_cnt() const { return insn_cnt_; }
-
-  // Get the err_bits from a run that's just finished. This should be
-  // called just after step() returns 1.
-  uint32_t get_err_bits() const { return err_bits_; }
-
-  // Get the final PC from a run that's just finished. This should be
-  // called just after step() returns 1.
-  uint32_t get_stop_pc() const { return stop_pc_; }
+  const MirroredRegs &get_mirrored() const { return mirrored_; }
 
   // Read contents of the register file
   void get_regs(std::array<uint32_t, 32> *gprs, std::array<u256_t, 32> *wdrs);
@@ -109,13 +116,8 @@ struct ISSWrapper {
   // A temporary directory for communicating with the child process
   std::unique_ptr<TmpDir> tmpdir;
 
-  // INSN_CNT for the current run if there is one, or the previous run if
-  // there's no current one.
-  uint32_t insn_cnt_;
-
-  // ERR_BITS and STOP_PC values from a run that's just finished.
-  uint32_t err_bits_;
-  uint32_t stop_pc_;
+  // Mirrored copies of registers
+  MirroredRegs mirrored_;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_ISS_WRAPPER_H_

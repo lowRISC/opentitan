@@ -6,6 +6,15 @@
 
 #include <svdpi.h>
 
+// Utility function that packs a uint8_t into a SystemVerilog bit vector that
+// represents a "bit [7:0]"
+inline void set_sv_u8(svBitVecVal *dst, uint8_t src) {
+  for (int i = 0; i < 8; ++i) {
+    svBit bit = (src >> i) & 1;
+    svPutBitselBit(dst, i, bit);
+  }
+}
+
 // Utility function that packs a uint32_t into a SystemVerilog bit vector that
 // represents a "bit [31:0]"
 inline void set_sv_u32(svBitVecVal *dst, uint32_t src) {

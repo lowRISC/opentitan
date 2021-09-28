@@ -25,7 +25,7 @@ void otbn_model_destroy(OtbnModel *model);
 // The main entry point to the OTBN model, exported from here and used in
 // otbn_core_model.sv.
 //
-// This communicates state with otbn_core_model.sv through the status
+// This communicates state with otbn_core_model.sv through the model_state
 // parameter, which has the following bits:
 //
 //    Bit 0:      running       True if the model is currently running
@@ -34,9 +34,9 @@ void otbn_model_destroy(OtbnModel *model);
 //    Bit 3:      failed_cmp    Consistency check at end of run failed
 //
 // The otbn_model_step function should only be called when either the model is
-// running (bit 0 of status), has a check due (bit 1 of status), or when start
-// is asserted. At other times, it will return immediately (but wastes a DPI
-// call).
+// running (bit 0 of model_state), has a check due (bit 1 of model_state), or
+// when start is asserted. At other times, it will return immediately (but
+// wastes a DPI call).
 //
 // If the model is running and start is false, otbn_model_step steps the ISS by
 // a single cycle. If something goes wrong, it will set failed_step to true and
@@ -54,10 +54,11 @@ void otbn_model_destroy(OtbnModel *model);
 //
 // If start is true, we start the model and then step once (as described
 // above).
-unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned status,
+unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
                          svLogic edn_rnd_data_valid,
                          svLogicVecVal *edn_rnd_data, /* logic [255:0] */
                          svLogic edn_urnd_data_valid,
+                         svBitVecVal *status /* bit [7:0] */,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
                          svBitVecVal *err_bits /* bit [31:0] */,
                          svBitVecVal *stop_pc /* bit [31:0] */);

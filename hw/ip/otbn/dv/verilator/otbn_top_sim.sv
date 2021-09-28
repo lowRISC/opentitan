@@ -290,6 +290,7 @@ module otbn_top_sim (
     .edn_rnd_data_i        ( edn_rnd_data ),
     .edn_urnd_data_valid_i ( edn_urnd_data_valid ),
 
+    .status_o              (),
     .insn_cnt_o            ( otbn_model_insn_cnt ),
 
     .err_o                 ( otbn_model_err )
