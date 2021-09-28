@@ -118,8 +118,8 @@ module prim_clock_meas #(
   end
 
   assign valid_o = en_i & valid & |cnt;
-  assign fast_o = valid & ((cnt > max_cnt) | cnt_ovfl);
-  assign slow_o = valid & (cnt < min_cnt);
+  assign fast_o = valid_o & ((cnt > max_cnt) | cnt_ovfl);
+  assign slow_o = valid_o & (cnt < min_cnt);
 
   //////////////////////////
   // Assertions

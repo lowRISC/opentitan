@@ -302,6 +302,7 @@
       regwen: "MEASURE_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
+      async: "clk_${src}_i",
       fields: [
         {
           bits: "0",
