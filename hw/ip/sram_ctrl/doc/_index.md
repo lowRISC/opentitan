@@ -146,7 +146,7 @@ Initialization can be triggered via the {{< regref "CTRL.INIT" >}} CSR, and once
 Then, the memory is initialized with pseudorandom data pulled from the LFSR.
 For each pseudorandom 32bit word, the initialization mechanism computes the corresponding integrity bits and writes both the data and integrity bits (39bit total) through the scrambling device using the most recently obtained scrambling key.
 
-If SW triggers the scrambling key renewal and LFSR initialization at the same time (i.e., with the same CSR write operation), the LFSR initialization will be stalled until a new scrambling has been obtained.
+If SW triggers the scrambling key renewal and LFSR initialization at the same time (i.e., with the same CSR write operation), the LFSR initialization will be stalled until a new scrambling key has been obtained.
 
 There is no limit on how often the initialization feature can be called, and hence it can also be used as a cheap SRAM wiping mechanism at runtime.
 Note however that the PRNG sequence does not have strong security guarantees, since it is produced using an LFSR.
