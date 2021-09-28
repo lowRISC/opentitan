@@ -88,6 +88,7 @@
       // the ast group is used to represent input clocks to the top
       { name: "ast",     src:"ext", sw_cg: "no"                   }
       // the powerup group is used exclusively by clk/pwr/rstmgr/pinmux
+      { name: "ast",     src:"ext", sw_cg: "no"                   }
       { name: "powerup", src:"top", sw_cg: "no"                   }
       { name: "trans",   src:"top", sw_cg: "hint", unique: "yes", }
       { name: "infra",   src:"top", sw_cg: "no",                  }
