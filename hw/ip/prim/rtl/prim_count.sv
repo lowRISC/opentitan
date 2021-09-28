@@ -140,11 +140,14 @@ module prim_count import prim_count_pkg::*; #(
   `ASSERT(SimulClrSet_A, clr_i || set_i |-> clr_i != set_i)
 
   // Max value must be an integer multiple of the step size during cross count
-  `ASSERT(DownCntStepInt_A, (CntStyle == CrossCnt) & cmp_valid |-> max_val % step_i == 0)
+  `ASSERT(DownCntStepInt_A, (CntStyle == CrossCnt) & (cmp_valid == CmpValid)
+    |-> max_val % step_i == 0)
 
   // If using DupCnt, the count can never overflow
   logic [Width:0] unused_cnt;
-  assign unused_cnt = up_cnt_d[0] + step_i;
-  `ASSERT(UpCntOverFlow_A, (CntStyle == DupCnt) & cmp_valid |-> ~unused_cnt[Width])
+  assign unused_cnt = up_cnt_q[0] + step_i;
+  logic unused_incr_cnt;
+  assign unused_incr_cnt = (CntStyle == DupCnt) & (cmp_valid == CmpValid) & !clr_i & !set_i;
+  `ASSERT(UpCntOverFlow_A, unused_incr_cnt |-> ~unused_cnt[Width])
 
 endmodule // keymgr_cnt
