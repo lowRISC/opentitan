@@ -761,3 +761,23 @@ sw_lib_dif_sram_ctrl = declare_dependency(
     dependencies: [sw_lib_mmio],
   )
 )
+
+test('dif_sram_ctrl_unittest', executable(
+    'dif_sram_ctrl_unittest',
+    sources: [
+      'dif_sram_ctrl_unittest.cc',
+      'autogen/dif_sram_ctrl_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_sram_ctrl.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_sram_ctrl_autogen.c',
+      hw_ip_sram_ctrl_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
