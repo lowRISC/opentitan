@@ -364,6 +364,21 @@ int OtbnModel::load_dmem() {
   return 0;
 }
 
+int OtbnModel::invalidate_imem() {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    iss->invalidate_imem();
+  } catch (const std::exception &err) {
+    std::cerr << "Error when invalidating IMEM in ISS: " << err.what() << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
 void OtbnModel::reset() {
   ISSWrapper *iss = iss_.get();
   if (iss)
@@ -631,6 +646,11 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
   }
 
   return model_state;
+}
+
+int otbn_model_invalidate_imem(OtbnModel *model) {
+  assert(model);
+  return model->invalidate_imem();
 }
 
 void otbn_model_reset(OtbnModel *model) {

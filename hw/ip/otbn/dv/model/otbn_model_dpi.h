@@ -68,6 +68,10 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
                          svBitVecVal *err_bits /* bit [31:0] */,
                          svBitVecVal *stop_pc /* bit [31:0] */);
 
+// Tell the model to mark all of IMEM as invalid so that any fetch causes an
+// integrity error. Returns 0 on success or -1 on failure.
+int otbn_model_invalidate_imem(OtbnModel *model);
+
 // Flush any information in the model
 void otbn_model_reset(OtbnModel *model);
 

@@ -61,6 +61,10 @@ class OTBNInsn:
     # a loop).
     affects_control = False
 
+    # A class variable that is true if this instruction has valid bits. (Set to
+    # false by the EmptyInsn subclass)
+    has_bits = True
+
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         self.raw = raw
         self.op_vals = op_vals
@@ -95,6 +99,15 @@ class OTBNInsn:
         '''Interpret the signed value as a 2's complement u32'''
         assert -(1 << 31) <= value < (1 << 31)
         return (1 << 32) + value if value < 0 else value
+
+    def rtl_trace(self, pc: int) -> str:
+        '''Return the RTL trace entry for executing this insn'''
+        if self.has_bits:
+            return (f'E PC: {pc:#010x}, insn: {self.raw:#010x}\n'
+                    f'# @{pc:#010x}: {self.insn.mnemonic}')
+        else:
+            return (f'E PC: {pc:#010x}, insn: ??\n'
+                    f'# @{pc:#010x}: ??')
 
 
 class RV32RegReg(OTBNInsn):

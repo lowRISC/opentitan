@@ -57,6 +57,10 @@ class OtbnModel {
   // 0 on success; -1 on failure.
   int load_dmem();
 
+  // Mark all of IMEM as invalid so that any fetch causes an integrity
+  // error. Returns 0 on success; -1 on failure.
+  int invalidate_imem();
+
   // Flush any information in the model
   void reset();
 

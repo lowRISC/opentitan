@@ -19,6 +19,9 @@ interface otbn_model_if #(
   bit                       err;          // Something went wrong
   bit [31:0]                stop_pc;      // PC at end of operation
 
+  // Backdoor inputs to DUT
+  bit                       invalidate_imem;   // Trash the contents of IMEM, causing integrity errors
+
   // Mirrored registers
   bit [7:0]                 status;       // STATUS register
 
@@ -26,7 +29,7 @@ interface otbn_model_if #(
 
   // Wait until reset or change of status.
   task automatic wait_status();
-    bit old_status = status;
+    automatic bit [7:0] old_status = status;
     while (rst_ni === 1'b1 && status == old_status) begin
       @(posedge clk_i or negedge rst_ni);
     end

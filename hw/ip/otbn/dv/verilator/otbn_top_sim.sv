@@ -309,6 +309,8 @@ module otbn_top_sim (
     .status_o              ( ),
     .insn_cnt_o            ( otbn_model_insn_cnt ),
 
+    .invalidate_imem_i     ( 1'b0 ),
+
     .done_r_o              ( otbn_model_done_r ),
 
     .err_o                 ( otbn_model_err )

@@ -4,6 +4,7 @@
 
 from typing import Dict, Iterator, List, Optional, Tuple
 
+from .decode import EmptyInsn
 from .isa import OTBNInsn
 from .state import OTBNState
 from .stats import ExecutionStats
@@ -58,6 +59,9 @@ class OTBNSim:
                                .format(pc,
                                        4 * len(self.program),
                                        len(self.program)))
+
+        if self.state.invalidated_imem:
+            return EmptyInsn(self.state.pc)
 
         return self.program[word_pc]
 
@@ -127,6 +131,14 @@ class OTBNSim:
         insn = self._next_insn
         if insn is None:
             return (None, self._on_stall(verbose, fetch_next=True))
+
+        # Whether or not we're currently executing an instruction, we fetched
+        # an instruction on the previous cycle. If that fetch failed then
+        # insn.has_bits will be false. In that case, generate an error by
+        # throwing away the generator so we start executing the (bogus)
+        # instruction immediately.
+        if not insn.has_bits:
+            self._execute_generator = None
 
         if self._execute_generator is None:
             # This is the first cycle for an instruction. Run any setup for

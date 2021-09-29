@@ -44,6 +44,8 @@ prefixed with "0x" if they are hexadecimal.
     edn_rnd_cdc_done     Finish the RND data write process by signalling RTL
                          is also finished processing 32b packages from EDN.
 
+    invalidate_imem      Mark all of IMEM as having invalid ECC checksums
+
 '''
 
 import sys
@@ -98,12 +100,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
     insn, changes = sim.step(verbose=False)
 
-    if insn is None:
-        print('STALL')
-    else:
-        print(f'E PC: {pc:#010x}, insn: {insn.raw:#010x}')
-        print(f'# @{pc:#010x}: {insn.insn.mnemonic}')
-
+    print('STALL' if insn is None else insn.rtl_trace(pc))
     for change in changes:
         entry = change.rtl_trace()
         if entry is not None:
@@ -264,6 +261,16 @@ def on_edn_urnd_reseed_complete(sim: OTBNSim, args: List[str]) -> Optional[OTBNS
     return None
 
 
+def on_invalidate_imem(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    if args:
+        raise ValueError('invalidate_imem expects zero arguments. Got {}.'
+                         .format(args))
+
+    sim.state.invalidated_imem = True
+
+    return None
+
+
 def on_reset(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     if args:
         raise ValueError('reset expects zero arguments. Got {}.'
@@ -286,7 +293,8 @@ _HANDLERS = {
     'reset': on_reset,
     'edn_step': on_edn_step,
     'edn_rnd_cdc_done': on_edn_rnd_cdc_done,
-    'edn_urnd_reseed_complete': on_edn_urnd_reseed_complete
+    'edn_urnd_reseed_complete': on_edn_urnd_reseed_complete,
+    'invalidate_imem': on_invalidate_imem
 }
 
 

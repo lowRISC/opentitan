@@ -40,6 +40,28 @@ class IllegalInsn(OTBNInsn):
         return None
 
 
+class EmptyInsn(OTBNInsn):
+    '''A subclass of Instruction that represents non-existent data
+
+    This is what we generate on a fetch error, where we don't really have any
+    instruction data at all.
+
+    '''
+    # We don't have any instruction data
+    has_bits = False
+
+    def __init__(self, pc: int) -> None:
+        super().__init__(0, {})
+
+        # Override the memoized disassembly for the instruction, avoiding us
+        # disassembling the underlying DummyInsn.
+        self._disasm = (pc, '?? (no instruction data)')
+
+    def execute(self, state: 'OTBNState') -> Optional[Iterator[None]]:
+        state.stop_at_end_of_cycle(ErrBits.IMEM_INTG_VIOLATION)
+        return None
+
+
 def _decode_word(pc: int, word: int) -> OTBNInsn:
     mnem = INSNS_FILE.mnem_for_word(word)
     if mnem is None:
