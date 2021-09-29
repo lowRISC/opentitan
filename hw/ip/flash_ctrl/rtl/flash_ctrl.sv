@@ -259,9 +259,6 @@ module flash_ctrl
   // life cycle connections
   lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en;
 
-  // flash functional disable
-  lc_ctrl_pkg::lc_tx_t flash_disable;
-
   prim_lc_sync #(
     .NumCopies(1)
   ) u_lc_seed_hw_rd_en_sync (
@@ -845,10 +842,8 @@ module flash_ctrl
   end
 
   //////////////////////////////////////
-  // Flash Disable
+  // Flash Disable and execute enable
   //////////////////////////////////////
-  assign flash_disable = reg2hw.flash_disable.q ? lc_ctrl_pkg::On :
-                         fatal_err              ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
 
   lc_ctrl_pkg::lc_tx_t lc_escalate_en;
   prim_lc_sync #(
@@ -860,13 +855,22 @@ module flash_ctrl
     .lc_en_o(lc_escalate_en)
   );
 
-  assign flash_phy_req.flash_disable = flash_disable | lc_escalate_en;
+  // flash functional disable
+  prim_mubi_pkg::mubi4_t flash_disable;
+  assign flash_disable = lc_escalate_en == lc_ctrl_pkg::On ?
+                         prim_mubi_pkg::mubi4_true_value() :
+                         prim_mubi_pkg::mubi4_e'(reg2hw.dis.q);
+
+  assign flash_phy_req.flash_disable = flash_disable;
+
+  prim_mubi_pkg::mubi4_t flash_exec_en;
+  assign flash_exec_en = lc_escalate_en == lc_ctrl_pkg::On ?
+                         prim_mubi_pkg::mubi4_false_value() :
+                         prim_mubi_pkg::mubi4_e'(reg2hw.exec.q);
 
   //////////////////////////////////////
   // Errors and Interrupts
   //////////////////////////////////////
-
-
 
   // all software interface errors are treated as synchronous errors
   assign hw2reg.err_code.oob_err.d        = 1'b1;
@@ -1063,6 +1067,7 @@ module flash_ctrl
   assign unused_higher_addr_bits = muxed_addr[top_pkg::TL_AW-1:BusAddrW];
   assign unused_scratch = reg2hw.scratch;
 
+
   //////////////////////////////////////
   // flash phy module
   //////////////////////////////////////
@@ -1074,6 +1079,11 @@ module flash_ctrl
   logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
   logic flash_host_intg_err;
+  // convert to mubi later directly
+  tlul_pkg::tl_instr_en_t exec_en;
+  assign exec_en = prim_mubi_pkg::mubi4_test_true_strict(flash_exec_en) ?
+                   tlul_pkg::InstrEn :
+                   tlul_pkg::InstrDis;
 
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
@@ -1089,8 +1099,7 @@ module flash_ctrl
     .rst_ni,
     .tl_i        (mem_tl_i),
     .tl_o        (mem_tl_o),
-    // tie this to secure boot, see #7834
-    .en_ifetch_i (tlul_pkg::InstrEn),
+    .en_ifetch_i (exec_en),
     .req_o       (flash_host_req),
     .req_type_o  (flash_host_req_type),
     .gnt_i       (flash_host_req_rdy),

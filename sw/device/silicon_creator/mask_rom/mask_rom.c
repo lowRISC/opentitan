@@ -16,6 +16,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
@@ -67,6 +68,7 @@ static void mask_rom_init(void) {
   // Initialize the shutdown policy according to lifecycle state.
   lc_state = lifecycle_state_get();
   shutdown_init(lc_state);
+  flash_ctrl_init();
   // Initiaize in-memory copy of the ePMP register configuration.
   mask_rom_epmp_state_init(&epmp);
 

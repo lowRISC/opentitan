@@ -69,6 +69,7 @@ mask_rom_epmp_test_lib = declare_dependency(
   dependencies: [
     freestanding_headers,
     sw_silicon_creator_lib_base_sec_mmio,
+    sw_silicon_creator_lib_driver_flash_ctrl,
     sw_silicon_creator_lib_driver_uart,
     sw_silicon_creator_lib_epmp_test_unlock,
     sw_silicon_creator_lib_fake_deps,
@@ -171,6 +172,7 @@ mask_rom_lib = declare_dependency(
     dependencies: [
       freestanding_headers,
       sw_silicon_creator_lib_driver_hmac,
+      sw_silicon_creator_lib_driver_flash_ctrl,
       sw_silicon_creator_lib_driver_keymgr,
       sw_silicon_creator_lib_driver_lifecycle,
       sw_silicon_creator_lib_driver_pinmux,

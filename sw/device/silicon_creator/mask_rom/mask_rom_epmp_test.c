@@ -18,6 +18,7 @@
 #include "sw/device/lib/testing/test_framework/test_status.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
 #include "sw/device/silicon_creator/mask_rom/mask_rom_epmp.h"
@@ -367,6 +368,7 @@ static void test_unlock_exec_eflash(epmp_state_t *epmp) {
 void mask_rom_main(void) {
   // Initialize pinmux configuration so we can use the UART.
   pinmux_init();
+  flash_ctrl_init();
 
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);

@@ -164,16 +164,17 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign flash_ctrl_o.ecc_single_err = ecc_single_err;
   assign flash_ctrl_o.ecc_addr = ecc_addr;
 
-  lc_ctrl_pkg::lc_tx_t [NumBanks-1:0] flash_disable;
-  prim_lc_sync #(
-    .NumCopies(NumBanks),
-    .AsyncOn(0)
-  ) u_flash_disable_sync (
-    .clk_i('0),
-    .rst_ni('0),
-    .lc_en_i(flash_ctrl_i.flash_disable),
-    .lc_en_o(flash_disable)
-  );
+  logic [NumBanks-1:0][prim_mubi_pkg::MuBi4Width-1:0] flash_disable, flash_disable_raw;
+
+  for (genvar i=0; i < NumBanks; i++) begin : gen_flash_disable_buf
+    prim_buf #(
+      .Width(prim_mubi_pkg::MuBi4Width)
+    ) u_flash_disable_buf (
+      .in_i(flash_ctrl_i.flash_disable),
+      .out_o(flash_disable_raw[i])
+    );
+    assign flash_disable[i] = prim_mubi_pkg::mubi4_t'(flash_disable_raw[i]);
+  end
 
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_cores
 

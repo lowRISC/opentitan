@@ -28,6 +28,8 @@ TEST_F(InitTest, Initialize) {
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
 
+  EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, 0xa);
+
   flash_ctrl_init();
 }
 

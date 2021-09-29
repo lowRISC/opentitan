@@ -308,21 +308,41 @@
   regwidth: "32",
   registers: {
     core: [
-      { name: "FLASH_DISABLE",
+      { name: "DIS",
         desc: "Disable flash functionality",
-        swaccess: "rw1s",
+        swaccess: "rw0c",
         hwaccess: "hro",
         fields: [
-          { bits: "0",
+          { bits: "3:0",
             name: "VAL",
+            mubi: true,
             desc: '''
                Disables flash functionality completely.
                This is a shortcut mechanism used by the software to completely
                kill flash in case of emergency.
+
+               To disable, set this field to anything other than false.
               '''
-            resval: "0"
+            resval: false,
             tags: [// Dont touch disable, it has several side effects on the system
                    "excl:CsrAllTests:CsrExclWrite"],
+          },
+        ]
+      },
+
+      { name: "EXEC",
+        desc: "Controls whether flash can be used for code execution fetches",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "3:0",
+            mubi: true,
+            name: "EN",
+            desc: '''
+              A value of true allows flash to be used for code execution.
+              Any other value prevents code execution.
+            '''
+            resval: false
           },
         ]
       },
