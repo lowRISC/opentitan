@@ -227,9 +227,14 @@
     },
     { name: "pwrmgr_aon",
       type: "pwrmgr",
-      clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
+      clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon", clk_esc_i: "io_div4"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io_div4", rst_main_ni: "por_aon", rst_slow_ni: "por_aon"},
+      reset_connections: {
+        rst_ni: "por_io_div4",
+        rst_esc_ni: "lc_io_div4",
+        rst_main_ni: "por_aon",
+        rst_slow_ni: "por_aon"
+      },
       domain: ["Aon"],
       base_addr: "0x40400000",
       attr: "templated",
