@@ -911,7 +911,6 @@ def im_netname(sig: OrderedDict,
     err, obj = check_intermodule_field(sig)
     assert not err
 
-
     # Floating signals
     # TODO: Find smarter way to assign default?
     if "top_signame" not in obj or default_name:

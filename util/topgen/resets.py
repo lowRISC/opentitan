@@ -120,7 +120,6 @@ class Resets:
                 for reset in self.nodes.values()
                 if reset.gen]
 
-
     def get_top_resets(self) -> list:
         '''Get resets pushed to the top level'''
 
@@ -145,7 +144,6 @@ class Resets:
         if reset.rst_type == 'ext':
             return reset.path
 
-
         if shadow:
             path = reset.shadow_path
         else:
@@ -155,7 +153,6 @@ class Resets:
             path += f'[rstmgr_pkg::Domain{domain}Sel]'
 
         return path
-
 
     def get_unused_resets(self, domains: list) -> Dict[str, str]:
         '''Get unused resets'''
