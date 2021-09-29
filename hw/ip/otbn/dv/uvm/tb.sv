@@ -194,6 +194,8 @@ module tb;
     .status_o     (model_if.status),
     .insn_cnt_o   (model_insn_cnt),
 
+    .invalidate_imem_i (model_if.invalidate_imem),
+
     .done_r_o     (),
 
     .err_o        (model_if.err)

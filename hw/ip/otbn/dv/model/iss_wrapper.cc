@@ -383,6 +383,10 @@ int ISSWrapper::step(bool gen_trace) {
   return error ? -1 : (done ? 1 : 0);
 }
 
+void ISSWrapper::invalidate_imem() {
+  run_command("invalidate_imem\n", nullptr);
+}
+
 void ISSWrapper::reset(bool gen_trace) {
   if (gen_trace)
     OtbnTraceChecker::get().Flush();

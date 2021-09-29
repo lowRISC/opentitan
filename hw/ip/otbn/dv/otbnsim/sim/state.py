@@ -59,6 +59,10 @@ class OTBNState:
         self.rnd_cached_tmp = None  # type: Optional[int]
         self.counter = 0
 
+        # This flag is set to true if we've injected integrity errors, trashing
+        # the whole of IMEM. The next fetch should fail.
+        self.invalidated_imem = False
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -240,8 +244,12 @@ class OTBNState:
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
         # set) is the 'done' flag.
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
-        # STATUS is a status register. Return to idle.
-        self.ext_regs.write('STATUS', Status.IDLE, True)
+
+        # STATUS is a status register. If there are any pending error bits
+        # greater than 16, this was a fatal error so we should lock ourselves.
+        # Otherwise, go back to IDLE.
+        new_status = Status.LOCKED if self._err_bits >> 16 else Status.IDLE
+        self.ext_regs.write('STATUS', new_status, True)
 
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)

@@ -32,6 +32,8 @@ package otbn_model_pkg;
                                  inout bit [31:0] err_bits,
                                  inout bit [31:0] stop_pc);
 
+  import "DPI-C" context function int otbn_model_invalidate_imem(chandle model);
+
   import "DPI-C" function void otbn_model_reset(chandle model);
 
   import "DPI-C" function void otbn_take_loop_warps(chandle model, chandle memutil);

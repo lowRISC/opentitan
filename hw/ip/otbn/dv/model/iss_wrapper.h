@@ -83,6 +83,9 @@ struct ISSWrapper {
   // the final PC (see get_stop_pc()).
   int step(bool gen_trace);
 
+  // Mark all of IMEM as invalid so that any fetch causes an integrity error.
+  void invalidate_imem();
+
   // Reset simulation
   //
   // This doesn't actually send anything to the ISS, but instead tells the
