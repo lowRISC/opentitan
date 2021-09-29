@@ -26,10 +26,6 @@ void OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
   std::sort(writes_.begin(), writes_.end());
 }
 
-bool OtbnTraceEntry::operator==(const OtbnTraceEntry &other) const {
-  return hdr_ == other.hdr_ && writes_ == other.writes_;
-}
-
 void OtbnTraceEntry::print(const std::string &indent, std::ostream &os) const {
   os << indent << hdr_ << "\n";
   for (const std::string &write : writes_) {
@@ -115,4 +111,46 @@ bool OtbnIssTraceEntry::from_iss_trace(const std::vector<std::string> &lines) {
 
   std::sort(writes_.begin(), writes_.end());
   return true;
+}
+
+bool OtbnIssTraceEntry::is_model_of(const OtbnTraceEntry &other) const {
+  if (writes_ != other.get_writes())
+    return false;
+
+  // The writes match. How about the header line? If the two strings are
+  // exactly equal, we're good.
+  if (hdr_ == other.get_header())
+    return true;
+
+  // Otherwise, we might still be ok if our header is of the form 'FOO ???' and
+  // the other header is of the form 'FOO BAR'. We don't support anything
+  // particularly clever here: our header must end in one or more '?' signs
+  // and, if so, we require the other header to start match that prefix.
+  //
+  // Firstly, is there a question mark at all?
+  size_t last_question = hdr_.find_last_of('?');
+  if (last_question == std::string::npos) {
+    // Our line doesn't have a '?'. Give up.
+    return false;
+  }
+  // Now, is that really at the end of the string? (That is, we want to allow
+  // 'FOO???', but not 'FOO??BAR')
+  size_t post_question = hdr_.find_first_not_of('?', last_question + 1);
+  if (post_question != std::string::npos) {
+    // There was something else after the last '?'. Give up.
+    return false;
+  }
+  // Now skip backwards to the first character before the (last) block of '?'
+  // signs. For 'FOO???', this would point at the second 'O'.
+  size_t pre_question = hdr_.find_last_not_of('?', last_question);
+  if (pre_question == std::string::npos) {
+    // We can't find anything. Disallow the pattern.
+    return false;
+  }
+  size_t prefix_len = pre_question + 1;
+
+  // If we get here then prefix_len is the length of the prefix that we want to
+  // test against. Writing this as a regex, hdr_ matches '(.*)?+$' and
+  // prefix_len is the length of the capture group.
+  return hdr_.compare(0, prefix_len, other.get_header(), 0, prefix_len) == 0;
 }
