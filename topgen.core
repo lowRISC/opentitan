@@ -8,17 +8,10 @@ description: "Top-level generator tool."
 filesets:
   rtl:
     depend:
-      - lowrisc:systems:topgen-generator
+      - lowrisc:systems:generated-topgen
 
-generate:
-  generated_topgen:
-    generator: topgen-generator
-    parameters:
-      topname: top_englishbreakfast
 
 targets:
   default: &default
     filesets:
       - rtl
-    generate:
-      - generated_topgen

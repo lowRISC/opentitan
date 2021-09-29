@@ -2,29 +2,22 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""FuseSoC wrapper for Top Module Generator
+r"""Stopgap script to generate some cores for the englishbreakfast toplevel.
 
-This wrapper is called by FuseSoC. It extracts the arguments for topgen from the auto-generated
-GAPI file and creates a core file for the generated sources.
+All output files are written to $REPO_TOP/build/$TOPNAME-autogen/.
 """
+
+import argparse
 import sys
 import yaml
+import shutil
 import subprocess
 import os
 
 try:
-    from yaml import CSafeLoader as YamlLoader, CSafeDumper as YamlDumper
+    from yaml import CSafeDumper as YamlDumper
 except ImportError:
-    from yaml import SafeLoader as YamlLoader, SafeDumper as YamlDumper
-
-
-def _check_gapi(gapi):
-    if 'cores' not in gapi:
-        print("Key 'cores' not found in GAPI structure. "
-              "Install a compatible version with "
-              "'pip3 install --user -r python-requirements.txt'.")
-        return False
-    return True
+    from yaml import SafeDumper as YamlDumper
 
 
 def write_core(core_filepath, generated_core):
@@ -42,30 +35,19 @@ def write_core(core_filepath, generated_core):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--files-root', required=True)
+    parser.add_argument('--topname', required=True)
 
-    # Extract arguments from GAPI file.
-    gapi_filepath = sys.argv[1]
-    with open(gapi_filepath) as f:
-        gapi = yaml.load(f, Loader=YamlLoader)
-
-    if not _check_gapi(gapi):
-        sys.exit(1)
-
-    files_root = ""
-    if 'files_root' in gapi:
-        files_root = gapi['files_root']
-
-    topname = ""
-    if 'parameters' in gapi and 'topname' in gapi['parameters']:
-        topname = gapi['parameters']['topname']
-
-    reg_only = ""
-    if 'parameters' in gapi and 'reg-only' in gapi['parameters']:
-        reg_only = gapi['parameters']['reg-only']
+    args = parser.parse_args()
+    topname = args.topname
+    files_root = args.files_root
 
     # Call topgen.
     files_data = files_root + "/hw/" + topname + "/data/"
-    files_out = os.getcwd()
+    files_out = os.path.abspath(files_root + "/build/" + topname + "-autogen/")
+    shutil.rmtree(files_out, ignore_errors=True)
+    os.makedirs(files_out, exist_ok=False)
     cmd = [files_root + "/util/topgen.py",  # "--verbose",
            "-t", files_data + topname + ".hjson",
            "-o", files_out]
@@ -96,90 +78,24 @@ def main():
         'pinmux': '',
         'pwrmgr': '',
         'rstmgr': '',
-        'rv_plic': ''
+        'rv_plic': '',
     }
 
-    if reg_only:
-        for ip in ['alert_handler', 'clkmgr', 'flash_ctrl', 'pinmux', 'pwrmgr',
-                   'rstmgr', 'rv_plic']:
-            core_filepath = os.path.abspath('generated-%s.core' % ip)
-            name = 'lowrisc:ip:%s_reggen' % ip,
-            files = ['ip/%s/rtl/autogen/%s_reg_pkg.sv' % (ip, ip),
-                     'ip/%s/rtl/autogen/%s_reg_top.sv' % (ip, ip + reg_top_suffix[ip])]
-            generated_core = {
-                'name': '%s' % name,
-                'filesets': {
-                    'files_rtl': {
-                        'depend': [
-                            'lowrisc:ip:tlul',
-                        ],
-                        'files': files,
-                        'file_type': 'systemVerilogSource'
-                    },
-                },
-                'targets': {
-                    'default': {
-                        'filesets': [
-                            'files_rtl',
-                        ],
-                    },
-                },
-            }
-            write_core(core_filepath, generated_core)
-
-    else:
-        nameparts = topname.split('_')
-        if nameparts[0] == 'top' and len(nameparts) > 1:
-            chipname = 'chip_' + '_'.join(nameparts[1:])
-        else:
-            chipname = topname
-
-        core_filepath = os.path.abspath('generated-topgen.core')
+    # reg-only
+    for ip in ['alert_handler', 'clkmgr', 'flash_ctrl', 'pinmux', 'pwrmgr',
+                'rstmgr', 'rv_plic']:
+        core_filepath = os.path.abspath(os.path.join(files_out, 'generated-%s.core' % ip))
+        name = 'lowrisc:ip:%s_reggen' % ip,
+        files = ['ip/%s/rtl/autogen/%s_reg_pkg.sv' % (ip, ip),
+                 'ip/%s/rtl/autogen/%s_reg_top.sv' % (ip, ip + reg_top_suffix[ip])]
         generated_core = {
-            'name': "lowrisc:systems:generated-topgen",
+            'name': '%s' % name,
             'filesets': {
                 'files_rtl': {
                     'depend': [
-                        # Ibex and OTBN constants
-                        'lowrisc:ibex:ibex_pkg',
-                        'lowrisc:ip:otbn_pkg',
-                        # flash_ctrl
-                        'lowrisc:constants:top_pkg',
-                        'lowrisc:prim:util',
-                        'lowrisc:ip:lc_ctrl_pkg',
-                        'lowrisc:ip:pwrmgr_pkg',
-                        # rstmgr
-                        'lowrisc:prim:clock_mux2',
-                        # clkmgr
-                        'lowrisc:prim:all',
-                        'lowrisc:prim:clock_gating',
-                        'lowrisc:prim:clock_buf',
-                        'lowrisc:prim:clock_div',
-                        'lowrisc:ip:clkmgr_components',
-                        # Top
-                        # ast and sensor_ctrl not auto-generated, re-used from top_earlgrey
-                        'lowrisc:systems:sensor_ctrl',
-                        'lowrisc:systems:ast_pkg',
-                        # TODO: absorb this into AST longerm
-                        'lowrisc:systems:clkgen_xil7series',
+                        'lowrisc:ip:tlul',
                     ],
-                    'files': [
-                        # IPs
-                        'ip/clkmgr/rtl/autogen/clkmgr.sv',
-                        'ip/flash_ctrl/rtl/autogen/flash_ctrl_pkg.sv',
-                        'ip/flash_ctrl/rtl/autogen/flash_ctrl.sv',
-                        'ip/rstmgr/rtl/autogen/rstmgr_pkg.sv',
-                        'ip/rstmgr/rtl/autogen/rstmgr.sv',
-                        'ip/rv_plic/rtl/autogen/rv_plic.sv',
-                        # Top
-                        'rtl/autogen/%s_rnd_cnst_pkg.sv' % topname,
-                        'rtl/autogen/%s_pkg.sv' % topname,
-                        'rtl/autogen/%s.sv' % topname,
-                        # TODO: this is not ideal. we should extract
-                        # this info from the target configuration and
-                        # possibly generate separate core files for this.
-                        'rtl/autogen/%s_cw305.sv' % chipname,
-                    ],
+                    'files': files,
                     'file_type': 'systemVerilogSource'
                 },
             },
@@ -192,6 +108,72 @@ def main():
             },
         }
         write_core(core_filepath, generated_core)
+
+    # topgen
+    nameparts = topname.split('_')
+    if nameparts[0] == 'top' and len(nameparts) > 1:
+        chipname = 'chip_' + '_'.join(nameparts[1:])
+    else:
+        chipname = topname
+
+    core_filepath = os.path.abspath(os.path.join(files_out, 'generated-topgen.core'))
+    generated_core = {
+        'name': "lowrisc:systems:generated-topgen",
+        'filesets': {
+            'files_rtl': {
+                'depend': [
+                    # Ibex and OTBN constants
+                    'lowrisc:ibex:ibex_pkg',
+                    'lowrisc:ip:otbn_pkg',
+                    # flash_ctrl
+                    'lowrisc:constants:top_pkg',
+                    'lowrisc:prim:util',
+                    'lowrisc:ip:lc_ctrl_pkg',
+                    'lowrisc:ip:pwrmgr_pkg',
+                    # rstmgr
+                    'lowrisc:prim:clock_mux2',
+                    # clkmgr
+                    'lowrisc:prim:all',
+                    'lowrisc:prim:clock_gating',
+                    'lowrisc:prim:clock_buf',
+                    'lowrisc:prim:clock_div',
+                    'lowrisc:ip:clkmgr_components',
+                    # Top
+                    # ast and sensor_ctrl not auto-generated, re-used from top_earlgrey
+                    'lowrisc:systems:sensor_ctrl',
+                    'lowrisc:systems:ast_pkg',
+                    # TODO: absorb this into AST longerm
+                    'lowrisc:systems:clkgen_xil7series',
+                ],
+                'files': [
+                    # IPs
+                    'ip/clkmgr/rtl/autogen/clkmgr.sv',
+                    'ip/flash_ctrl/rtl/autogen/flash_ctrl_pkg.sv',
+                    'ip/flash_ctrl/rtl/autogen/flash_ctrl.sv',
+                    'ip/rstmgr/rtl/autogen/rstmgr_pkg.sv',
+                    'ip/rstmgr/rtl/autogen/rstmgr.sv',
+                    'ip/rv_plic/rtl/autogen/rv_plic.sv',
+                    # Top
+                    'rtl/autogen/%s_rnd_cnst_pkg.sv' % topname,
+                    'rtl/autogen/%s_pkg.sv' % topname,
+                    'rtl/autogen/%s.sv' % topname,
+                    # TODO: this is not ideal. we should extract
+                    # this info from the target configuration and
+                    # possibly generate separate core files for this.
+                    'rtl/autogen/%s_cw305.sv' % chipname,
+                ],
+                'file_type': 'systemVerilogSource'
+            },
+        },
+        'targets': {
+            'default': {
+                'filesets': [
+                    'files_rtl',
+                ],
+            },
+        },
+    }
+    write_core(core_filepath, generated_core)
 
     return 0
 
