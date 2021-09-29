@@ -35,7 +35,7 @@ from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
 from topgen.top import Top
 from topgen.clocks import Clocks
-from topgen.merge import extract_clocks, connect_clocks
+from topgen.merge import extract_clocks, connect_clocks, create_alert_lpgs
 from topgen.resets import Resets
 
 # Common header for generated files
@@ -140,19 +140,26 @@ def generate_alert_handler(top, out_path):
     async_on = "'0"
     # leave this constant
     n_classes = 4
-    # TODO(#8174): topgen integration for LPGs
+    # low power groups
     n_lpg = 1
     lpg_map = "'0"
 
     topname = top["name"]
 
-    if esc_cnt_dw < 1:
-        log.error("EscCntDw must be larger than 0")
-    if accu_cnt_dw < 1:
-        log.error("AccuCntDw must be larger than 0")
-
-    # Count number of alerts
+    # Count number of alerts and LPGs
     n_alerts = sum([x["width"] if "width" in x else 1 for x in top["alert"]])
+    n_lpg = len(top['alert_lpgs'])
+    n_lpg_width = n_lpg.bit_length()
+    # format used to print out LPG map indices in binary format
+    lpg_idx_format = str(n_lpg_width) + "'d{:d},\n"
+
+    # Double check that all these values are greated than 0
+    if esc_cnt_dw < 1:
+        raise ValueError("esc_cnt_dw must be larger than 0")
+    if accu_cnt_dw < 1:
+        raise ValueError("accu_cnt_dw must be larger than 0")
+    if n_lpg < 1:
+        raise ValueError("n_lpg must be larger than 0")
 
     if n_alerts < 1:
         # set number of alerts to 1 such that the config is still valid
@@ -161,17 +168,22 @@ def generate_alert_handler(top, out_path):
         log.warning("no alerts are defined in the system")
     else:
         async_on = ""
+        lpg_map = ""
         for alert in top['alert']:
             for k in range(alert['width']):
                 async_on = str(alert['async']) + async_on
+                lpg_map = lpg_idx_format.format(alert['lpg_idx']) + lpg_map
         # convert to hexstring to shorten line length
         async_on = ("%d'h" % n_alerts) + hex(int(async_on, 2))[2:]
+        lpg_map = '{' + lpg_map[:-2] + '}'
 
     log.info("alert handler parameterization:")
     log.info("NAlerts   = %d" % n_alerts)
     log.info("EscCntDw  = %d" % esc_cnt_dw)
     log.info("AccuCntDw = %d" % accu_cnt_dw)
     log.info("AsyncOn   = %s" % async_on)
+    log.info("NLpg      = %s" % n_lpg)
+    log.info("LpgMap    = %s" % lpg_map)
 
     # Define target path
     rtl_path = out_path / 'ip/alert_handler/rtl/autogen'
@@ -891,6 +903,10 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
         generate_plic(completecfg, out_path)
         if args.plic_only:
             sys.exit()
+
+    # Create Alert Handler LPGs before
+    # generating the Alert Handler
+    create_alert_lpgs(topcfg, name_to_block)
 
     # Generate Alert Handler
     if not args.xbar_only:

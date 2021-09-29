@@ -296,7 +296,21 @@ module top_${top["name"]} #(
     .tdo_oe_i (1'b0)
   );
 
-## Peripheral Instantiation
+  // Wire up alert handler LPGs
+  lc_ctrl_pkg::lc_tx_t [alert_pkg::NLpg-1:0] lpg_cg_en;
+  lc_ctrl_pkg::lc_tx_t [alert_pkg::NLpg-1:0] lpg_rst_en;
+% for k, lpg in enumerate(top['alert_lpgs']):
+  // ${lpg['name']}
+<%
+  ## TODO: need to find a better way to assemble the clock path here.
+  cg_en = top['clocks'].hier_paths['lpg'] + lpg['clock_connection'].split('.clk_')[-1]
+  rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'])
+%>\
+  assign lpg_cg_en[${k}] = ${cg_en};
+  assign lpg_rst_en[${k}] = ${rst_en};
+% endfor
+
+  // Peripheral Instantiation
 
 <% alert_idx = 0 %>
 % for m in top["module"]:
@@ -403,10 +417,10 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       // alert signals
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),
-
-      // TODO(#8174): top-level integration for LPGs
-      .lpg_cg_en_i ( {lc_ctrl_pkg::Off} ),
-      .lpg_rst_en_i ( {lc_ctrl_pkg::Off} ),
+      // synchronized clock gated / reset asserted
+      // indications for each alert
+      .lpg_cg_en_i  ( lpg_cg_en  ),
+      .lpg_rst_en_i ( lpg_rst_en ),
     % endif
     % if block.scan:
       .scanmode_i,
@@ -429,7 +443,6 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .${port} (${lib.get_reset_path(top, reset)})${"," if not loop.last else ""}
     % endfor
   );
-
 % endfor
   // interrupt assignments
 <% base = interrupt_num %>\

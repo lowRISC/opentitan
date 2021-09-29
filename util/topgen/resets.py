@@ -19,6 +19,7 @@ class ResetItem:
         self.path = ""
         if self.rst_type == 'top':
             self.path = f"{hier['top']}rst_{self.name}_n"
+            self.lpg_path = f"{hier['lpg']}{self.name}"
         elif self.rst_type == 'ext':
             self.path = f"{hier['ext']}{self.name}"
 
@@ -153,6 +154,24 @@ class Resets:
             path += f'[rstmgr_pkg::Domain{domain}Sel]'
 
         return path
+
+
+    def get_lpg_path(self, name: str, domain: Optional[str]) -> str:
+        '''Get path to lpg indication signals'''
+
+        reset = self.get_reset_by_name(name)
+        if reset.rst_type == 'int':
+            raise ValueError(f'Reset {name} is not a reset exported from rstmgr')
+
+        if reset.rst_type == 'ext':
+            raise ValueError(f'External reset cannot be associated with an LPG')
+
+        path = reset.lpg_path
+        if domain:
+            path += f'[rstmgr_pkg::Domain{domain}Sel]'
+
+        return path
+
 
     def get_unused_resets(self, domains: list) -> Dict[str, str]:
         '''Get unused resets'''

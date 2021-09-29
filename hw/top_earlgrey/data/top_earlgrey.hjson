@@ -36,6 +36,7 @@
     hier_paths: {
       top: "clkmgr_aon_clocks.", // top level is a struct
       ext: "",                   // ext is a port of the clock name
+      lpg: "clkmgr_aon_cg_en.",  // top level struct for alert lpg reset enables
     },
 
     // Clock Source attributes
@@ -106,6 +107,7 @@
     hier_paths: {
       top: "rstmgr_aon_resets.", // top level is a struct
       ext: "",                   // ext is a port of the clock name
+      lpg: "rstmgr_aon_rst_en.", // top level struct for alert lpg reset enables
     },
 
     // Reset node attributes
@@ -898,8 +900,14 @@
         // top level net for clocks
         'clkmgr_aon.clocks',
 
-        // top levle net for reset
+        // top level clock gating indications for alert subsystem
+        'clkmgr_aon.cg_en',
+
+        // top level net for reset
         'rstmgr_aon.resets',
+
+        // top level reset asserted indications for alert subsystem
+        'rstmgr_aon.rst_en',
 
         // dedicated timer interrupt
         'rv_core_ibex.irq_timer',
