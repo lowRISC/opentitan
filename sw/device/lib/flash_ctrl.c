@@ -292,4 +292,6 @@ void flash_init(void) {
   mmio_region_t flash_ctrl_base =
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
   mmio_region_write32(flash_ctrl_base, FLASH_CTRL_INIT_REG_OFFSET, 1);
+
+  mmio_region_write32(flash_ctrl_base, FLASH_CTRL_EXEC_REG_OFFSET, 0xa);
 }

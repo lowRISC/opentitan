@@ -41,7 +41,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   input [KeySize-1:0]                rand_addr_key_i,
   input [KeySize-1:0]                rand_data_key_i,
   input                              rd_buf_en_i,
-  input lc_ctrl_pkg::lc_tx_t         flash_disable_i,
+  input prim_mubi_pkg::mubi4_t       flash_disable_i,
   input  flash_phy_prim_flash_rsp_t  prim_flash_rsp_i,
   output flash_phy_prim_flash_req_t  prim_flash_req_o,
   output logic                       host_req_rdy_o,
@@ -159,7 +159,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
       StIdle: begin
         // escalation handling is always done gracefully after an
         // existing transaction terminates, otherwise we may risk damaging flash
-        if (flash_disable_i != lc_ctrl_pkg::Off) begin
+        if (~prim_mubi_pkg::mubi4_test_false_strict(flash_disable_i)) begin
           state_d = StDisable;
         end else if (host_req_masked) begin
           reqs[PhyRead] = 1'b1;
@@ -191,7 +191,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
       StHostRead: begin
         host_rsp = 1'b1;
         // if escalation occurs, do not accept more read transactions
-        if (host_req_masked && (flash_disable_i == lc_ctrl_pkg::Off)) begin
+        if (host_req_masked && (prim_mubi_pkg::mubi4_test_false_strict(flash_disable_i))) begin
           reqs[PhyRead] = 1'b1;
           host_sel = 1'b1;
           host_req_rdy_o = rd_stage_rdy;
@@ -373,7 +373,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .clk_i,
     .rst_ni,
     // both escalation and and integrity error cause the scramble keys to change
-    .intg_err_i(intg_err_i || flash_disable_i != lc_ctrl_pkg::Off),
+    .intg_err_i(intg_err_i | prim_mubi_pkg::mubi4_test_true_loose(flash_disable_i)),
     .calc_req_i(prog_calc_req | rd_calc_req),
     .op_req_i(prog_op_req | rd_op_req),
     .op_type_i(prog_op_req ? ScrambleOp : DeScrambleOp),

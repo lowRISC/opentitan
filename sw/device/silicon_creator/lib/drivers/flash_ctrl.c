@@ -27,6 +27,9 @@ void flash_ctrl_init(void) {
   // Initialize the flash controller.
   abs_mmio_write32(kBase + FLASH_CTRL_INIT_REG_OFFSET,
                    bitfield_bit32_write(0u, FLASH_CTRL_INIT_VAL_BIT, true));
+
+  // Enable flash execution
+  abs_mmio_write32(kBase + FLASH_CTRL_EXEC_REG_OFFSET, 0xa);
 }
 
 rom_error_t flash_ctrl_status_get(flash_ctrl_status_t *status) {
