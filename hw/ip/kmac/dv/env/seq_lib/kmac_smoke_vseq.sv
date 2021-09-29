@@ -175,9 +175,11 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
           // This thread will create an error case by writing a SW command to the KMAC
           // while an application interface operation is in progress.
+          //
+          // As per designer comment on https://github.com/lowRISC/opentitan/issues/7716,
+          // the only command that will trigger this particular error is CmdStart.
           if (kmac_err_type == kmac_pkg::ErrSwIssuedCmdInAppActive) begin : sw_cmd_in_app
-            kmac_pkg::kmac_cmd_e invalid_cmd;
-            `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_cmd, invalid_cmd != kmac_pkg::CmdNone;)
+            kmac_pkg::kmac_cmd_e invalid_cmd = kmac_pkg::CmdStart;
             wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.valid);
             cfg.clk_rst_vif.wait_clks($urandom_range(25, 250));
             issue_cmd(invalid_cmd);

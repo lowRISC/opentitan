@@ -2070,11 +2070,20 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         // TODO - handle error cases
         if (addr_phase_write) begin
           if (app_fsm_active) begin
+            // As per designer comment in https://github.com/lowRISC/opentitan/issues/7716,
+            // if CmdStart is sent during an active App operation, KMAC will throw
+            // ErrSwIssuedCmdInAppActive, but for any other command the KMAC will throw a
+            // ErrSwCmdSequence.
             if (kmac_cmd_e'(item.a_data) != CmdNone) begin
-              kmac_err.valid  = 1;
-              kmac_err.code   = kmac_pkg::ErrSwIssuedCmdInAppActive;
-              kmac_err.info   = 24'(item.a_data);
-
+              if (kmac_cmd_e'(item.a_data) == CmdStart) begin
+                kmac_err.valid = 1;
+                kmac_err.code  = kmac_pkg::ErrSwIssuedCmdInAppActive;
+                kmac_err.info  = 24'(item.a_data);
+              end begin
+                kmac_err.valid = 1;
+                kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
+                kmac_err.info  = 24'(item.a_data);
+              end
               predict_err(.is_kmac_err(1));
             end
           end else begin
