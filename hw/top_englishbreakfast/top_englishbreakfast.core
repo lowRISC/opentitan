@@ -37,6 +37,8 @@ filesets:
       - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
+      - lowrisc:top_englishbreakfast:xbar_main
+      - lowrisc:top_englishbreakfast:xbar_peri
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
       - lowrisc:ip:rom_ctrl
@@ -108,4 +110,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
