@@ -136,10 +136,5 @@ sudo chmod 777 /tools/verible
 tar -C /tools/verible -xf "$verible_tar" --strip-components=1
 export PATH=/tools/verible/bin:$PATH
 
-# Install Rust
-sw/vendor/rustup/rustup-init.sh -y \
-    --default-toolchain "${RUST_VERSION}"
-export PATH=$HOME/.cargo/bin:$PATH
-
 # Propagate PATH changes to all subsequent steps of the job
 echo "##vso[task.setvariable variable=PATH]$PATH"
