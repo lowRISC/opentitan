@@ -112,4 +112,18 @@ sw_lib_testing_rv_plic_testutils = declare_dependency(
   ),
 )
 
+sw_lib_testing_sram_ctrl_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_sram_ctrl_testutils',
+    sources: [
+      hw_ip_sram_ctrl_reg_h,
+      'sram_ctrl_testutils.c'
+    ],
+    dependencies: [
+      sw_lib_dif_sram_ctrl,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+
 subdir('test_framework')
