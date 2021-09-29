@@ -274,8 +274,8 @@ class IpBlockRenderer(IpTemplateRendererBase):
                     shutil.rmtree(output_dir_existing_bak)
                 except Exception as e:
                     msg = (
-                        f'Unable to delete the backup directory '
-                        '{output_dir_existing_bak} of the overwritten data. '
+                        'Unable to delete the backup directory '
+                        f'{output_dir_existing_bak} of the overwritten data. '
                         'Please remove it manually.')
                     raise TemplateRenderError(msg).with_traceback(
                         e.__traceback__)
