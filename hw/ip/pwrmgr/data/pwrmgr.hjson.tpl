@@ -5,7 +5,8 @@
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {reset: "rst_main_ni"},
-    {clock: "clk_slow_i", reset: "rst_slow_ni"}
+    {clock: "clk_slow_i", reset: "rst_slow_ni"},
+    {clock: "clk_esc_i", reset: "rst_esc_ni"}
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }

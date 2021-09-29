@@ -2333,12 +2333,17 @@
     {
       name: pwrmgr_aon
       type: pwrmgr
+      clock_group: powerup
       clock_srcs:
       {
         clk_i: io_div4
         clk_slow_i: aon
+        clk_esc_i:
+        {
+          clock: io_div4
+          group: secure
+        }
       }
-      clock_group: powerup
       reset_connections:
       {
         rst_ni:
@@ -2349,6 +2354,11 @@
         rst_main_ni:
         {
           name: por_aon
+          domain: "0"
+        }
+        rst_esc_ni:
+        {
+          name: lc_io_div4
           domain: "0"
         }
         rst_slow_ni:
@@ -2367,6 +2377,7 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_slow_i: clkmgr_aon_clocks.clk_aon_powerup
+        clk_esc_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       param_decl: {}
       param_list: []
@@ -6451,7 +6462,11 @@
       clock_srcs:
       {
         clk_i: main
-        clk_esc_i: io_div4
+        clk_esc_i:
+        {
+          clock: io_div4
+          group: secure
+        }
       }
       clock_group: infra
       reset_connections:
@@ -6470,7 +6485,7 @@
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
-        clk_esc_i: clkmgr_aon_clocks.clk_io_div4_infra
+        clk_esc_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain:
       [

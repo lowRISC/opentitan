@@ -19,6 +19,8 @@ module pwrmgr
   input rst_slow_ni,
   input rst_ni,
   input rst_main_ni,
+  input clk_esc_i,
+  input rst_esc_ni,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -84,8 +86,8 @@ module pwrmgr
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
   ) u_esc_rx (
-    .clk_i,
-    .rst_ni,
+    .clk_i(clk_esc_i),
+    .rst_ni(rst_esc_ni),
     .esc_req_o(esc_rst_req),
     .esc_rx_o(esc_rst_rx_o),
     .esc_tx_i(esc_rst_tx_i)
