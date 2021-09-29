@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_OTBN_H_
 #define OPENTITAN_SW_DEVICE_LIB_RUNTIME_OTBN_H_
 
+#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 
 /**
@@ -160,10 +162,10 @@ typedef struct otbn {
  * Initializes the OTBN context structure.
  *
  * @param ctx The context object.
- * @param dif_config The OTBN DIF configuration (passed on to the DIF).
+ * @param base_addr The OTBN hardware base address.
  * @return The result of the operation.
  */
-otbn_result_t otbn_init(otbn_t *ctx, const dif_otbn_config_t dif_config);
+otbn_result_t otbn_init(otbn_t *ctx, mmio_region_t base_addr);
 
 /**
  * (Re-)loads the RSA application into OTBN.

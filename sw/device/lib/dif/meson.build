@@ -389,7 +389,9 @@ test('dif_otbn_unittest', executable(
     'dif_otbn_unittest',
     sources: [
       'dif_otbn_unittest.cc',
+      'autogen/dif_otbn_autogen_unittest.cc',
       meson.source_root() / 'sw/device/lib/dif/dif_otbn.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_otbn_autogen.c',
       hw_ip_otbn_reg_h,
     ],
     dependencies: [

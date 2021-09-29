@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
@@ -42,10 +43,8 @@ bool test_main() {
 
   // Initialize
   otbn_t otbn_ctx;
-  dif_otbn_config_t otbn_config = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR),
-  };
-  CHECK(otbn_init(&otbn_ctx, otbn_config) == kOtbnOk);
+  CHECK(otbn_init(&otbn_ctx, mmio_region_from_addr(
+                                 TOP_EARLGREY_OTBN_BASE_ADDR)) == kOtbnOk);
   CHECK(otbn_load_app(&otbn_ctx, kOtbnAppCfiTest) == kOtbnOk);
 
   CHECK(otbn_execute(&otbn_ctx) == kOtbnOk);

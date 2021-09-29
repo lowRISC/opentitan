@@ -243,15 +243,12 @@ static void rsa_roundtrip(uint32_t size_bytes, const uint8_t *modulus,
                           const uint8_t *private_exponent, const uint8_t *in,
                           const uint8_t *encrypted_expected,
                           uint8_t *out_encrypted, uint8_t *out_decrypted) {
-  dif_otbn_config_t otbn_config = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR),
-  };
-
   otbn_t otbn_ctx;
 
   // Initialize
   profile_start();
-  CHECK(otbn_init(&otbn_ctx, otbn_config) == kOtbnOk);
+  CHECK(otbn_init(&otbn_ctx, mmio_region_from_addr(
+                                 TOP_EARLGREY_OTBN_BASE_ADDR)) == kOtbnOk);
   CHECK(otbn_load_app(&otbn_ctx, kOtbnAppRsa) == kOtbnOk);
   profile_end("Initialization");
 

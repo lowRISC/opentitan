@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen Key Manager DIF library
-sw_lib_dif_autogen_keymgr = declare_dependency(
+# Autogen OTBN DIF library
+sw_lib_dif_autogen_otbn = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_keymgr',
+    'sw_lib_dif_autogen_otbn',
     sources: [
-      hw_ip_keymgr_reg_h,
-      'dif_keymgr_autogen.c',
+      hw_ip_otbn_reg_h,
+      'dif_otbn_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -107,6 +107,20 @@ sw_lib_dif_autogen_i2c = declare_dependency(
     sources: [
       hw_ip_i2c_reg_h,
       'dif_i2c_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen Key Manager DIF library
+sw_lib_dif_autogen_keymgr = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_keymgr',
+    sources: [
+      hw_ip_keymgr_reg_h,
+      'dif_keymgr_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,

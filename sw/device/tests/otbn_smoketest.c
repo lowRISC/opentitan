@@ -28,8 +28,7 @@ const test_config_t kTestConfig;
 static void check_otbn_err_bits(otbn_t *otbn_ctx,
                                 dif_otbn_err_bits_t expected_err_bits) {
   dif_otbn_err_bits_t otbn_err_bits;
-  dif_otbn_result_t rv = dif_otbn_get_err_bits(&otbn_ctx->dif, &otbn_err_bits);
-  CHECK(rv == kDifOtbnOk, "dif_otbn_get_err_bits() failed: %d", rv);
+  CHECK_DIF_OK(dif_otbn_get_err_bits(&otbn_ctx->dif, &otbn_err_bits));
   CHECK(otbn_err_bits == expected_err_bits,
         "dif_otbn_get_err_bits() produced unexpected error bits: %x",
         otbn_err_bits);
@@ -40,7 +39,7 @@ static void check_otbn_err_bits(otbn_t *otbn_ctx,
  */
 static void check_otbn_insn_cnt(otbn_t *otbn_ctx, uint32_t expected_insn_cnt) {
   uint32_t insn_cnt;
-  CHECK(dif_otbn_get_insn_cnt(&otbn_ctx->dif, &insn_cnt) == kDifOtbnOk);
+  CHECK_DIF_OK(dif_otbn_get_insn_cnt(&otbn_ctx->dif, &insn_cnt));
   CHECK(insn_cnt == expected_insn_cnt,
         "Expected to execute %d instructions, but got %d.", expected_insn_cnt,
         insn_cnt);
@@ -94,14 +93,14 @@ static void test_barrett384(otbn_t *otbn_ctx) {
 
   // TODO: Use symbols from the application to load these parameters once they
   // are available (#3998).
-  CHECK(dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/0, &a,
-                            sizeof(a)) == kDifOtbnOk);
-  CHECK(dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/64, &b,
-                            sizeof(b)) == kDifOtbnOk);
-  CHECK(dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/256, &m,
-                            sizeof(m)) == kDifOtbnOk);
-  CHECK(dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/320, &u,
-                            sizeof(u)) == kDifOtbnOk);
+  CHECK_DIF_OK(
+      dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/0, &a, sizeof(a)));
+  CHECK_DIF_OK(
+      dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/64, &b, sizeof(b)));
+  CHECK_DIF_OK(
+      dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/256, &m, sizeof(m)));
+  CHECK_DIF_OK(
+      dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/320, &u, sizeof(u)));
 
   CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
@@ -142,12 +141,9 @@ static void test_err_test(otbn_t *otbn_ctx) {
 bool test_main() {
   entropy_testutils_boot_mode_init();
 
-  dif_otbn_config_t otbn_config = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR),
-  };
-
   otbn_t otbn_ctx;
-  CHECK(otbn_init(&otbn_ctx, otbn_config) == kOtbnOk);
+  CHECK(otbn_init(&otbn_ctx, mmio_region_from_addr(
+                                 TOP_EARLGREY_OTBN_BASE_ADDR)) == kOtbnOk);
 
   test_barrett384(&otbn_ctx);
   test_err_test(&otbn_ctx);
