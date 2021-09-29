@@ -263,11 +263,9 @@ static void test_ecdsa_p256_roundtrip(void) {
 
   // Initialize
   otbn_t otbn_ctx;
-  dif_otbn_config_t otbn_config = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR),
-  };
   uint64_t t_start_init = profile_start();
-  CHECK(otbn_init(&otbn_ctx, otbn_config) == kOtbnOk);
+  CHECK(otbn_init(&otbn_ctx, mmio_region_from_addr(
+                                 TOP_EARLGREY_OTBN_BASE_ADDR)) == kOtbnOk);
   CHECK(otbn_load_app(&otbn_ctx, kOtbnAppP256Ecdsa) == kOtbnOk);
   profile_end(t_start_init, "Initialization");
 
