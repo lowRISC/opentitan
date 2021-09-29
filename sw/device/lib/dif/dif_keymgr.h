@@ -15,24 +15,13 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+
+#include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-/**
- * Enumeration for enabling/disabling various functionality.
- */
-typedef enum dif_keymgr_toggle {
-  /**
-   * Enabled state.
-   */
-  kDifKeymgrToggleEnabled,
-  /**
-   * Disabled state.
-   */
-  kDifKeymgrToggleDisabled,
-} dif_keymgr_toggle_t;
 
 /**
  * Enumeration for side load slot clearing.
@@ -45,20 +34,6 @@ typedef enum dif_keymgr_sideload_clr {
   kDifKeyMgrSideLoadClearOtbn,
   kDifKeyMgrSideLoadClearAll,
 } dif_keymgr_sideload_clr_t;
-
-/**
- * Hardware instantiation parameters for key manager.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_keymgr_params {
-  /**
-   * Base address of key manager registers.
-   */
-  mmio_region_t base_addr;
-} dif_keymgr_params_t;
 
 /**
  * Runtime configuration for key manager.
@@ -76,88 +51,6 @@ typedef struct dif_keymgr_config {
    */
   uint16_t entropy_reseed_interval;
 } dif_keymgr_config_t;
-
-/**
- * A handle to a key manager.
- *
- * This type should be treated as opaque by users.
- */
-typedef struct dif_keymgr {
-  /**
-   * Hardware instantiation parameters.
-   */
-  dif_keymgr_params_t params;
-} dif_keymgr_t;
-
-/**
- * Result of a key manager operation.
- */
-typedef enum dif_keymgr_result {
-  /**
-   * The call succeeded.
-   */
-  kDifKeymgrOk = 0,
-  /**
-   * A non-specific error occurred and the hardware is in an invalid or
-   * irrecoverable state.
-   */
-  kDifKeymgrError = 1,
-  /**
-   * The caller supplied invalid arguments but the call did not cause any
-   * side-effects and the hardware is in a valid and recoverable state.
-   */
-  kDifKeymgrBadArg = 2,
-} dif_keymgr_result_t;
-
-/**
- * Result of a key manager operation that writes to lockable registers.
- */
-typedef enum dif_keymgr_lockable_result {
-  /**
-   * The call succeeded.
-   */
-  kDifKeymgrLockableOk = kDifKeymgrOk,
-  /**
-   * A non-specific error occurred and the hardware is in an invalid or
-   * irrecoverable state.
-   */
-  kDifKeymgrLockableError = kDifKeymgrError,
-  /**
-   * The caller supplied invalid arguments but the call did not cause any
-   * side-effects and the hardware is in a valid and recoverable state.
-   */
-  kDifKeymgrLockableBadArg = kDifKeymgrBadArg,
-  /**
-   * The register that needs to be written to is locked.
-   */
-  kDifKeymgrLockableLocked,
-} dif_keymgr_lockable_result_t;
-
-/**
- * Key manager interrupts.
- */
-typedef enum dif_keymgr_irq {
-  /**
-   * Operation was completed.
-   *
-   * This interrupt is triggered regardless of the outcome of the operation.
-   * Clients can use `dif_keymgr_get_status_codes()` to determine whether a key
-   * manager operation was successful or not.
-   */
-  kDifKeymgrIrqDone,
-  /**
-   * \internal Last key manager interrupt.
-   */
-  kDifKeymgrIrqLast = kDifKeymgrIrqDone,
-} dif_keymgr_irq_t;
-
-/**
- * A snapshot of the enablement state of key manager interrupts.
- *
- * This is an opaque type, to be used with the `dif_keymgr_irq_disable_all()`
- * and `dif_keymgr_irq_restore_all()` functions.
- */
-typedef uint32_t dif_keymgr_irq_snapshot_t;
 
 /**
  * Key manager alerts.
@@ -291,13 +184,12 @@ typedef enum dif_keymgr_state {
  *   - Advance state: `dif_keymgr_advance_state()`,
  *     `dif_keymgr_get_status_codes()`, `dif_keymgr_get_state()`.
  *
- * @param params Hardware instantiation parameters.
+ * @param base_addr Hardware instantiation base address.
  * @param[out] keymgr Out-param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_init(dif_keymgr_params_t params,
-                                    dif_keymgr_t *keymgr);
+dif_result_t dif_keymgr_init(mmio_region_t base_addr, dif_keymgr_t *keymgr);
 
 /**
  * Configures key manager with runtime information.
@@ -309,8 +201,8 @@ dif_keymgr_result_t dif_keymgr_init(dif_keymgr_params_t params,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_configure(const dif_keymgr_t *keymgr,
-                                         dif_keymgr_config_t config);
+dif_result_t dif_keymgr_configure(const dif_keymgr_t *keymgr,
+                                  dif_keymgr_config_t config);
 
 /**
  * Parameters for a key manager state.
@@ -364,8 +256,8 @@ typedef struct dif_keymgr_state_params {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_lockable_result_t dif_keymgr_advance_state(
-    const dif_keymgr_t *keymgr, const dif_keymgr_state_params_t *params);
+dif_result_t dif_keymgr_advance_state(const dif_keymgr_t *keymgr,
+                                      const dif_keymgr_state_params_t *params);
 
 /**
  * Disables key manager.
@@ -378,7 +270,7 @@ dif_keymgr_lockable_result_t dif_keymgr_advance_state(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_lockable_result_t dif_keymgr_disable(const dif_keymgr_t *keymgr);
+dif_result_t dif_keymgr_disable(const dif_keymgr_t *keymgr);
 
 /**
  * Status code bit flags.
@@ -436,7 +328,7 @@ typedef uint8_t dif_keymgr_status_codes_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_get_status_codes(
+dif_result_t dif_keymgr_get_status_codes(
     const dif_keymgr_t *keymgr, dif_keymgr_status_codes_t *status_codes);
 
 /**
@@ -447,8 +339,8 @@ dif_keymgr_result_t dif_keymgr_get_status_codes(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_get_state(const dif_keymgr_t *keymgr,
-                                         dif_keymgr_state_t *state);
+dif_result_t dif_keymgr_get_state(const dif_keymgr_t *keymgr,
+                                  dif_keymgr_state_t *state);
 
 /**
  * Generates an identity seed.
@@ -465,8 +357,7 @@ dif_keymgr_result_t dif_keymgr_get_state(const dif_keymgr_t *keymgr,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_lockable_result_t dif_keymgr_generate_identity_seed(
-    const dif_keymgr_t *keymgr);
+dif_result_t dif_keymgr_generate_identity_seed(const dif_keymgr_t *keymgr);
 
 /**
  * Destination of a versioned key generation operation.
@@ -535,7 +426,7 @@ typedef struct dif_keymgr_versioned_key_params {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_lockable_result_t dif_keymgr_generate_versioned_key(
+dif_result_t dif_keymgr_generate_versioned_key(
     const dif_keymgr_t *keymgr, dif_keymgr_versioned_key_params_t params);
 
 /**
@@ -552,8 +443,8 @@ dif_keymgr_lockable_result_t dif_keymgr_generate_versioned_key(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_sideload_clear_set_enabled(
-    const dif_keymgr_t *keymgr, dif_keymgr_toggle_t state);
+dif_result_t dif_keymgr_sideload_clear_set_enabled(const dif_keymgr_t *keymgr,
+                                                   dif_toggle_t state);
 
 /**
  * Checks whether clearing of sideload keys is enabled or not.
@@ -563,8 +454,8 @@ dif_keymgr_result_t dif_keymgr_sideload_clear_set_enabled(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_sideload_clear_get_enabled(
-    const dif_keymgr_t *keymgr, dif_keymgr_toggle_t *state);
+dif_result_t dif_keymgr_sideload_clear_get_enabled(const dif_keymgr_t *keymgr,
+                                                   dif_toggle_t *state);
 
 /**
  * Output of a key manager operation.
@@ -593,8 +484,8 @@ typedef struct dif_keymgr_output {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_read_output(const dif_keymgr_t *keymgr,
-                                           dif_keymgr_output_t *output);
+dif_result_t dif_keymgr_read_output(const dif_keymgr_t *keymgr,
+                                    dif_keymgr_output_t *output);
 
 /**
  * Forces a particular alert as if hardware had asserted it.
@@ -604,96 +495,8 @@ dif_keymgr_result_t dif_keymgr_read_output(const dif_keymgr_t *keymgr,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
-                                           dif_keymgr_alert_t alert);
-/**
- * Returns whether a particular interrupt is currently pending.
- *
- * @param keymgr A key manager handle.
- * @param irq An interrupt type.
- * @param[out] is_pending Out-param for whether the interrupt is pending.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_irq_is_pending(const dif_keymgr_t *keymgr,
-                                              dif_keymgr_irq_t irq,
-                                              bool *is_pending);
-
-/**
- * Acknowledges a particular interrupt, indicating to the hardware that it has
- * been successfully serviced.
- *
- * @param keymgr A key manager handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_irq_acknowledge(const dif_keymgr_t *keymgr,
-                                               dif_keymgr_irq_t irq);
-
-/**
- * Checks whether a particular interrupt is currently enabled or disabled.
- *
- * @param keymgr A key manager handle.
- * @param irq An interrupt type.
- * @param[out] state Out-param for toggle state of the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_irq_get_enabled(const dif_keymgr_t *keymgr,
-                                               dif_keymgr_irq_t irq,
-                                               dif_keymgr_toggle_t *state);
-
-/**
- * Sets whether a particular interrupt is currently enabled or disabled.
- *
- * @param keymgr A key manager handle.
- * @param irq An interrupt type.
- * @param state The new toggle state for the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_irq_set_enabled(const dif_keymgr_t *keymgr,
-                                               dif_keymgr_irq_t irq,
-                                               dif_keymgr_toggle_t state);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param keymgr A key manager handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_irq_force(const dif_keymgr_t *keymgr,
-                                         dif_keymgr_irq_t irq);
-
-/**
- * Disables all interrupts, optionally snapshotting all toggle state for later
- * restoration.
- *
- * @param keymgr A key manager handle.
- * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_irq_disable_all(
-    const dif_keymgr_t *keymgr, dif_keymgr_irq_snapshot_t *snapshot);
-
-/**
- * Restores interrupts from the given snapshot.
- *
- * This function can be used with `dif_keymgr_irq_disable_all()` to temporary
- * interrupt save-and-restore.
- *
- * @param keymgr A key manager handle.
- * @param snapshot A snapshot to restore from.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_irq_restore_all(
-    const dif_keymgr_t *keymgr, const dif_keymgr_irq_snapshot_t *snapshot);
+dif_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
+                                    dif_keymgr_alert_t alert);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -516,6 +516,7 @@ sw_lib_dif_keymgr = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_keymgr,
     ],
   )
 )
@@ -523,9 +524,11 @@ sw_lib_dif_keymgr = declare_dependency(
 test('dif_keymgr_unittest', executable(
     'dif_keymgr_unittest',
     sources: [
-      hw_ip_keymgr_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_keymgr.c',
       'dif_keymgr_unittest.cc',
+      'autogen/dif_keymgr_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_keymgr.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_keymgr_autogen.c',
+      hw_ip_keymgr_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,
