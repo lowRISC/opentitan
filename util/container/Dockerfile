@@ -95,6 +95,10 @@ RUN groupadd dev \
 # All subsequent steps are performed as user.
 USER dev
 
+# Install Rust plus packages.
+COPY sw/vendor/rustup/rustup-init.sh /tmp/rustup-init.sh
+RUN /tmp/rustup-init.sh -y --default-toolchain ${RUST_VERSION}
+
 # Install Python plus packages.
 #
 # Explicitly updating pip and setuptools is required to have these tools
