@@ -558,6 +558,7 @@ jobs:
       BOOTROM_VMEM="$BIN_DIR/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
       test -f "$BOOTROM_VMEM"
 
+      util/topgen-fusesoc.py --files-root=. --topname=top_englishbreakfast
       fusesoc --cores-root=. \
         run --flag=fileset_topgen --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \

@@ -8,18 +8,15 @@ description: "Top-level generator tool."
 filesets:
   rtl:
     depend:
-      - lowrisc:systems:topgen-generator
-
-generate:
-  generated_topgen:
-    generator: topgen-generator
-    parameters:
-      topname: top_englishbreakfast
-      reg-only: 1
+      - lowrisc:ip:alert_handler_reggen
+      - lowrisc:ip:clkmgr_reggen
+      - lowrisc:ip:flash_ctrl_reggen
+      - lowrisc:ip:pinmux_reggen
+      - lowrisc:ip:pwrmgr_reggen
+      - lowrisc:ip:rstmgr_reggen
+      - lowrisc:ip:rv_plic_reggen
 
 targets:
   default: &default
     filesets:
       - rtl
-    generate:
-      - generated_topgen

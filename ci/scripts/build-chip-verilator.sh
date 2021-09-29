@@ -26,6 +26,8 @@ case "$tl" in
         fileset=fileset_topgen
         fusesoc_core=lowrisc:systems:chip_englishbreakfast_verilator
         vname=Vchip_englishbreakfast_verilator
+
+        util/topgen-fusesoc.py --files-root=. --topname=top_englishbreakfast
         ;;
     *)
         echo >&2 "Unknown toplevel: $tl"
