@@ -60,6 +60,7 @@ def _decode_word(pc: int, word: int) -> OTBNInsn:
 
     return cls(word, op_vals)
 
+
 def decode_bytes(base_addr: int, data: bytes) -> List[OTBNInsn]:
     '''Decode instruction bytes as instructions'''
     assert len(data) & 3 == 0

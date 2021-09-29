@@ -20,6 +20,7 @@ except RuntimeError as err:
     sys.stderr.write('{}\n'.format(err))
     sys.exit(1)
 
+
 def insn_for_mnemonic(mnemonic: str, num_operands: int) -> Insn:
     '''Look up the named instruction in the loaded YAML data.
 
