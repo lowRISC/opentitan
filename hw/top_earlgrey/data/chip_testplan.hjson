@@ -20,7 +20,7 @@
 
     // UART (pre-verified IP) integration tests:
     {
-      name: chip_uart_tx_rx
+      name: chip_sw_uart_tx_rx
       desc: '''Verify transmission of data over the TX and RX port.
 
             SW test sends a known payload over the TX port. The testbench, at the same time
@@ -35,7 +35,7 @@
       tests: ["chip_sw_uart_tx_rx"]
     }
     {
-      name: chip_uart_rx_overflow
+      name: chip_sw_uart_rx_overflow
       desc: '''Verify the RX overflow interrupt.
 
             The testbench sends a random payload of size greater than the RX fifo size (32). The SW
@@ -49,7 +49,7 @@
               "chip_sw_uart_tx_rx_idx3"]
     }
     {
-      name: chip_uart_tx_rx_alt_clk_freq
+      name: chip_sw_uart_tx_rx_alt_clk_freq
       desc: '''Verify the transmission of UART while randomizing the core clock frequency.
 
             Run the chip_uart_tx_rx test with the core clock frequency randomized between known
@@ -63,7 +63,7 @@
 
     // GPIO (pre-verified IP) integration tests:
     {
-      name: chip_gpio_out
+      name: chip_sw_gpio_out
       desc: '''Verify GPIO outputs.
 
             SW test configures the GPIOs to be in the output mode. The test walks a 1 through the
@@ -74,7 +74,7 @@
       tests: ["chip_sw_gpio"]
     }
     {
-      name: chip_gpio_in
+      name: chip_sw_gpio_in
       desc: '''Verify GPIO inputs.
 
             The SW test configures the GPIOs to be in input mode. The testbench walks a 1 through
@@ -84,7 +84,7 @@
       tests: ["chip_sw_gpio"]
     }
     {
-      name: chip_gpio_irq
+      name: chip_sw_gpio_irq
       desc: '''Verify GPIO interrupts.
 
             The SW test configures the GPIOs to be in input mode and enables all of them to generate
@@ -97,7 +97,7 @@
 
     // SPI_DEVICE (pre-verified IP) integration tests:
     {
-      name: chip_spi_device_tx_rx
+      name: chip_sw_spi_device_tx_rx
       desc: '''Verify the transmission of data on the chip's SPI device port in firmware mode with
                single mode.
 
@@ -117,7 +117,7 @@
       tests: ["chip_sw_spi_device_tx_rx"]
     }
     {
-      name: chip_spi_device_flash_mode
+      name: chip_sw_spi_device_flash_mode
       desc: '''Verify the SPI device in flash mode.
 
             - SW puts the SPI device in flash mode
@@ -130,7 +130,7 @@
       tests: []
     }
     {
-      name: chip_spi_device_pass_through
+      name: chip_sw_spi_device_pass_through
       desc: '''Verify the pass through mode from an end-to-end perspective.
 
             - Configure the SPI device and host in pass through mode.
@@ -149,7 +149,7 @@
       tests: []
     }
     {
-      name: chip_spi_device_pass_through_filter
+      name: chip_sw_spi_device_pass_through_filter
       desc: '''Verify the command filtering mechanism in passthrough mode.
 
             - Extend the chip_spi_device_pass_through test.
@@ -164,7 +164,7 @@
     }
 
     {
-      name: chip_spi_device_pass_through_flash_model
+      name: chip_sw_spi_device_pass_through_flash_model
       desc: '''Verify the command filtering mechanism in passthrough mode.
 
             - Extend the chip_spi_device_pass_through and chip_spi_device_pass_through_filter
@@ -188,7 +188,7 @@
     }
 
     {
-      name: chip_spi_device_pass_through_collision
+      name: chip_sw_spi_device_pass_through_collision
       desc: '''Verify the collisions on driving spi_host is handled properly
 
             TODO, add detail testplan once we have a conclusion on #5134
@@ -199,7 +199,7 @@
 
     // SPI_HOST (pre-verified IP) integration tests:
     {
-      name: chip_spi_host_tx_rx
+      name: chip_sw_spi_host_tx_rx
       desc: '''Verify the transmission of data on the chip's SPI host port.
 
             - Program the SPI host to send a known payload out of the chip on the SPI host ports.
@@ -218,7 +218,7 @@
 
     // I2C (pre-verified IP) integration tests:
     {
-      name: chip_i2c_host_tx_rx
+      name: chip_sw_i2c_host_tx_rx
       desc: '''Verify the transmission of data over the chip's I2C host interface.
 
             - Program the I2C to be in host mode.
@@ -233,7 +233,7 @@
       tests: []
     }
     {
-      name: chip_i2c_device_tx_rx
+      name: chip_sw_i2c_device_tx_rx
       desc: '''Verify the transmission of data over the chip's I2C device interface.
 
             - Program the I2C to be in device mode.
@@ -250,7 +250,7 @@
 
     // USB (pre-verified IP) integration tests:
     {
-      name: chip_usb_fs_se_tx_rx
+      name: chip_sw_usb_fs_se_tx_rx
       desc: '''Verify the transmission of single-ended data over the USB at full speed. As a part of
             this test, the enablement of USB pullup is also expected to be verified.
 
@@ -260,7 +260,7 @@
       tests: []
     }
     {
-      name: chip_usb_fs_df_tx_rx
+      name: chip_sw_usb_fs_df_tx_rx
       desc: '''Verify the transmission of data over the USB at full speed. As a part of this test,
             the enablement of USB pullup is also expected to be verified. In this test, the USB is
             configured in differential mode.
@@ -271,7 +271,7 @@
       tests: []
     }
     {
-      name: chip_usb_vbus
+      name: chip_sw_usb_vbus
       desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
 
             TBD.
@@ -280,7 +280,7 @@
       tests: []
     }
     {
-      name: chip_usb_suspend
+      name: chip_sw_usb_suspend
       desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
 
             TBD.
@@ -289,7 +289,7 @@
       tests: []
     }
     {
-      name: chip_sleep_usb_suspend
+      name: chip_sw_sleep_usb_suspend
       desc: '''Same as the above, but tested with low power entry/exit.
 
             TBD.
@@ -300,7 +300,7 @@
 
     // PINMUX (pre-verified IP) integration tests:
     {
-      name: chip_pin_mux
+      name: chip_sw_pin_mux
       desc: '''Verify the MIO muxing at input and output sides.
 
             SW programs MIO INSEL and OUTSEL CSRs to connect and verify each muxed source. At the
@@ -310,7 +310,7 @@
       tests: []
     }
     {
-      name: chip_sleep_pin_mio_dio_val
+      name: chip_sw_sleep_pin_mio_dio_val
       desc: '''Verify the MIO output values in deep sleep state.
 
             SW programs the MIO OUTSEL CSRs to to ensure that in deep sleep it randomly picks
@@ -324,7 +324,7 @@
       tests: []
     }
     {
-      name: chip_sleep_pin_wake
+      name: chip_sw_sleep_pin_wake
       desc: '''Verify pin wake up from deep sleep state.
 
             Verify one of the 8 possible MIO or DIO pad inputs (randomly configured) can cause the
@@ -336,7 +336,7 @@
       tests: []
     }
     {
-      name: chip_tap_strap_sampling
+      name: chip_sw_tap_strap_sampling
       desc: '''Verify tap accesses in different LC states.
 
             Verify pinmux can select the life_cycle, RISC-V, and DFT taps after reset.
@@ -349,7 +349,7 @@
 
     // PADCTRL tests:
     {
-      name: chip_padctrl_attributes
+      name: chip_sw_padctrl_attributes
       desc: '''Verify pad attribute settings for all MIO and DIO pads.
             '''
       milestone: V2
@@ -358,7 +358,7 @@
 
     // PATTGEN (pre-verified IP) integration tests:
     {
-      name: chip_pattgen_ios
+      name: chip_sw_pattgen_ios
       desc: '''Verify pattern generation to chip output pads.
 
             - Program the pattgen to generate a known pattern in each lane.
@@ -373,7 +373,7 @@
 
     // PWM (pre-verified IP) integration tests:
     {
-      name: chip_sleep_pwm_pulses
+      name: chip_sw_sleep_pwm_pulses
       desc: '''Verify PWM signaling to chip output pads during deep sleep.
 
             - Program each PWM output to pulse in a known pattern.
@@ -396,7 +396,7 @@
 
     // XBAR (pre-verified IP) tests:
     {
-      name: chip_data_integrity
+      name: chip_sw_data_integrity
       desc: '''
             Verify the alert signaling mechanism due to data integrity violation.
 
@@ -416,7 +416,7 @@
 
     // RV_DM (JTAG) tests:
     {
-      name: chip_jtag_csr_rw
+      name: chip_sw_jtag_csr_rw
       desc: '''
             Verify accessibility of CSRs as indicated in the RAL specification.
 
@@ -430,28 +430,28 @@
       tests: []
     }
     {
-      name: chip_rv_dm_cpu_debug_mem
+      name: chip_sw_rv_dm_cpu_debug_mem
       desc: '''Verify access to the debug mem from the CPU.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_rv_dm_jtag_debug_mem
+      name: chip_sw_rv_dm_jtag_debug_mem
       desc: '''Verify access to the debug mem from the external JTAG interface.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_rv_dm_cpu_debug_req
+      name: chip_sw_rv_dm_cpu_debug_req
       desc: '''Verify debug request to Ibex while it is actively executing.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_rv_dm_ndm_reset_req
+      name: chip_sw_rv_dm_ndm_reset_req
       desc: '''Verify non-debug reset req initiated from RV_DM when the chip is awake.
 
             Read CSRs / mem within all IPs in the chip to ensure that they are reset to the original
@@ -461,7 +461,7 @@
       tests: []
     }
     {
-      name: chip_sleep_rv_dm_ndm_reset_req
+      name: chip_sw_sleep_rv_dm_ndm_reset_req
       desc: '''Verify non-debug reset req initiated from RV_DM when the chip is in deep sleep.
 
             Read CSRs / mem within all IPs in the chip to ensure that they are reset to the original
@@ -476,7 +476,7 @@
       tests: []
     }
     {
-      name: chip_rv_dm_jtag_tap_sel
+      name: chip_sw_rv_dm_jtag_tap_sel
       desc: '''Verify ability to select all available TAPs.
 
             Details TBD.
@@ -485,7 +485,7 @@
       tests: []
     }
     {
-      name: chip_rv_dm_lc_disabled
+      name: chip_sw_rv_dm_lc_disabled
       desc: '''Verify that the debug capabilities are disabled in certain life cycle stages.
 
             Verify that the debug mem is inaccessible from the CPU as well as external JTAG.
@@ -497,7 +497,7 @@
 
     // RV_TIMER (pre-verified IP) integration tests:
     {
-      name: chip_timer
+      name: chip_sw_timer
       desc: '''Verify the timeout interrupt assertion.
 
             - Configure the RV_TIMER to generate interrupt after a set timeout.
@@ -511,7 +511,7 @@
 
     // AON_TIMER (pre-verified IP) integration tests:
     {
-      name: chip_aon_timer_wakeup_irq
+      name: chip_sw_aon_timer_wakeup_irq
       desc: '''Verify the AON timer wake up interrupt in normal operating state.
 
             - Program the PLIC to let the AON time wake up interrupt the CPU.
@@ -524,7 +524,7 @@
       tests: []
     }
     {
-      name: chip_aon_timer_sleep_wakeup
+      name: chip_sw_aon_timer_sleep_wakeup
       desc: '''Verify that AON timer can wake up the chip from a deep sleep state.
 
             - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
@@ -539,10 +539,10 @@
               not be reset.
             '''
       milestone: V2
-      tests: ["chip_pwrmgr_smoketest"]
+      tests: ["chip_sw_pwrmgr_smoketest"]
     }
     {
-      name: chip_aon_timer_clks_resets
+      name: chip_sw_aon_timer_clks_resets
       desc: '''Verify that the correct clocks and resets are connected to the AON timer.
 
             - The chip_aon_timer_deep_sleep_wakeup achieves this goal.
@@ -553,7 +553,7 @@
       tests: []
     }
     {
-      name: chip_aon_timer_wdog_bark_irq
+      name: chip_sw_aon_timer_wdog_bark_irq
       desc: '''Verify the watchdog bark reception in normal state.
 
             - Program the PLIC to let the wdog bark signal interrupt the CPU.
@@ -564,7 +564,7 @@
       tests: []
     }
     {
-      name: chip_aon_timer_wdog_lc_escalate
+      name: chip_sw_aon_timer_wdog_lc_escalate
       desc: '''Verify that the LC escalation signal disables the AON timer wdog.
 
             - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
@@ -578,7 +578,7 @@
       tests: []
     }
     {
-      name: chip_aon_timer_wdog_bite_reset
+      name: chip_sw_aon_timer_wdog_bite_reset
       desc: '''Verify the watchdog bite causing reset in the normal state.
 
             - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
@@ -592,7 +592,7 @@
       tests: []
     }
     {
-      name: chip_aon_timer_sleep_wdog_bite_reset
+      name: chip_sw_aon_timer_sleep_wdog_bite_reset
       desc: '''Verify the watchdog bite causing reset in sleep state.
 
             - Repeat the steps in chip_aon_timer_wdog_bite_reset test, but with following changes:
@@ -606,7 +606,7 @@
       tests: []
     }
     {
-      name: chip_aon_timer_sleep_wdog_sleep_pause
+      name: chip_sw_aon_timer_sleep_wdog_sleep_pause
       desc: '''Verify that the wdog can be paused in sleep state.
 
             - Repeat the steps in chip_aon_timer_sleep_wakeup test, but with following changes:
@@ -624,7 +624,7 @@
 
     // PLIC (pre-verified IP) integration tests:
     {
-      name: chip_plic_all_irqs
+      name: chip_sw_plic_all_irqs
       desc: '''Verify all interrupts from all peripherals aggregated at the PLIC.
 
             The automated SW test enables all interrupts at the PLIC to interrupt the core. It uses
@@ -638,7 +638,7 @@
       tests: [""]
     }
     {
-      name: chip_plic_sw_irq
+      name: chip_sw_plic_sw_irq
       desc: '''Verify the SW interrupt to the CPU.
 
             Enable all peripheral interrupts at PLIC. Enable all types of interrupt at the CPU core.
@@ -649,7 +649,7 @@
       tests: [""]
     }
     {
-      name: chip_plic_nmi_irq
+      name: chip_sw_plic_nmi_irq
       desc: '''Verify the NMI interrupt to the CPU and correctness of the cause.
 
             TBD if multiple NMI irqs are OR-ed into the CPU (example - NMI from alert handler and
@@ -713,7 +713,7 @@
       tests: []
     }
     {
-      name: chip_clkmgr_external_clk_src
+      name: chip_sw_clkmgr_external_clk_src
       desc: '''Verify the clkmgr requests ext clk src during certain LC states.
 
             On POR lc asserts lc_clk_byp_req on some LC states, and de-asserts
@@ -724,7 +724,7 @@
       tests: []
     }
     {
-      name: chip_clkmgr_jitter_enable
+      name: chip_sw_clkmgr_jitter_enable
       desc: '''Verify the chip operates correctly when clock jitter is enabled.
 
             Run a full regression with the chip configured with jittery clocks.
@@ -737,7 +737,7 @@
 
     // PWRMGR tests:
     {
-      name: chip_pwrmgr_cold_boot
+      name: chip_sw_pwrmgr_cold_boot
       desc: '''Verify the cold boot sequence through the wiggling of `por_rst_n`.
 
             This mainly ensures that both FSMs are properly reset on the POR signal. The check
@@ -748,7 +748,7 @@
       tests: []
     }
     {
-      name: chip_pwrmgr_sleep_all_wake_ups
+      name: chip_sw_pwrmgr_sleep_all_wake_ups
       desc: '''Verify that the chip can go into normal sleep state and be woken up by ALL wake up
             sources.
 
@@ -763,7 +763,7 @@
       tests: []
     }
     {
-      name: chip_pwrmgr_sleep_all_reset_reqs
+      name: chip_sw_pwrmgr_sleep_all_reset_reqs
       desc: '''Verify that the chip can go into normal sleep state and be reset by ALL reset req
             sources.
 
@@ -776,7 +776,7 @@
       tests: []
     }
     {
-      name: chip_pwrmgr_deep_sleep_all_wake_ups
+      name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
       desc: '''Verify that the chip can go into deep sleep state and be woken up by ALL wake up
             sources.
 
@@ -785,11 +785,11 @@
             chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
             '''
       milestone: V2
-      tests: ["chip_pwrmgr_smoketest",
+      tests: ["chip_sw_pwrmgr_smoketest",
               "chip_sw_pwrmgr_usbdev_wakeup"]
     }
     {
-      name: chip_pwrmgr_deep_sleep_all_reset_reqs
+      name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
       desc: '''Verify that the chip can go into deep sleep state and be reset up by ALL reset req
             sources.
 
@@ -801,7 +801,7 @@
       tests: []
     }
     {
-      name: chip_pwrmgr_all_reset_reqs
+      name: chip_sw_pwrmgr_all_reset_reqs
       desc: '''Verify that the chip can be reset by ALL available reset sources.
 
             This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
@@ -812,7 +812,7 @@
       tests: []
     }
     {
-      name: chip_pwrmgr_bad_main_pok
+      name: chip_sw_pwrmgr_bad_main_pok
       desc: '''Verify the effect of main_pok de-assertion in the middle of low power entry / exit
             FSM transition.
 
@@ -824,7 +824,7 @@
       tests: []
     }
     {
-      name: chip_pwrmgr_b2b_sleep_reset_req
+      name: chip_sw_pwrmgr_b2b_sleep_reset_req
       desc: '''Verify that the pwrmgr sequences sleep_req and reset req coming in almost at the same
             time, one after the other.
 
@@ -834,7 +834,7 @@
       tests: []
     }
     {
-      name: chip_pwrmgr_debug_sleep
+      name: chip_sw_pwrmgr_debug_sleep
       desc: '''Verify low power entry is prevented when the chip is in "debuggable" state.
 
             This is an open issue: https://github.com/lowRISC/opentitan/issues/7215
@@ -843,7 +843,7 @@
       tests: []
     }
     {
-      name: chip_pwrmgr_sleep_disabled
+      name: chip_sw_pwrmgr_sleep_disabled
       desc: '''Verify that the chip does not go to sleep on WFI when low power hint is 0.
             '''
       milestone: V2
@@ -852,7 +852,7 @@
 
     // RSTMGR tests:
     {
-      name: chip_rstrmgr_non_sys_reset_info
+      name: chip_sw_rstrmgr_non_sys_reset_info
       desc: '''Verify the `reset_info` CSR register for lc or higher resets.
 
             Generate the 5 types of reset at `lc` level or higher, and check the `reset_info` CSR
@@ -868,10 +868,10 @@
             TODO(maturana) Add specific tests once they are developed.
             '''
       milestone: V2
-      tests: ["chip_pwrmgr_smoketest"]
+      tests: ["chip_sw_pwrmgr_smoketest"]
     }
     {
-      name: chip_rstrmgr_sys_reset_info
+      name: chip_sw_rstrmgr_sys_reset_info
       desc: '''Verify the `reset_info` CSR register for sys reset.
 
             Generate reset triggered by `rv_dm`, which results in a sys level reset, and check the
@@ -888,7 +888,7 @@
       tests: []
     }
     {
-      name: chip_rstrmgr_cpu_info
+      name: chip_sw_rstrmgr_cpu_info
       desc: '''Verify the expected values from the `cpu_info` CSR on reset.
 
             For some software induced resets we can predict the expected contents of `cpu_info`;
@@ -900,7 +900,7 @@
       tests: []
     }
     {
-      name: chip_rstrmgr_alert_info
+      name: chip_sw_rstrmgr_alert_info
       desc: '''Verify the expected values from the `alert_info` CSR on reset.
 
             Various alerts can be created, for example, timeouts, and integrity errors, and at
@@ -913,7 +913,7 @@
       tests: []
     }
     {
-      name: chip_rstrmgr_sw_rst
+      name: chip_sw_rstrmgr_sw_rst
       desc: '''Verify `sw_rst_ctrl_n` CSR resets individual peripherals.
 
             Check the peripheral is reset via timeout accessing their CSRs while the corresponding
@@ -931,7 +931,7 @@
 
     // ALERT_HANDLER (pre-verified IP) integration tests:
     {
-      name: chip_alert_handler_alerts
+      name: chip_sw_alert_handler_alerts
       desc: '''Verify all alerts coming into the alert_handler.
 
             An automated SW test, which does the following (applies to all alerts in all IPs):
@@ -943,7 +943,7 @@
       tests: []
     }
     {
-      name: chip_alert_handler_escalations
+      name: chip_sw_alert_handler_escalations
       desc: '''Verify all alert escalation paths.
 
             Verify all escalation paths triggered by an alert.
@@ -957,7 +957,7 @@
       tests: []
     }
     {
-      name: chip_alert_handler_irqs
+      name: chip_sw_alert_handler_irqs
       desc: '''Verify all classes of alert handler interrupts to the CPU.
 
             X-ref'ed with the automated PLIC test.
@@ -966,7 +966,7 @@
       tests: []
     }
     {
-      name: chip_alert_handler_entropy
+      name: chip_sw_alert_handler_entropy
       desc: '''Verify the alert handler entropy input to ensure pseudo-random ping timer.
 
             - Force `alert_handler_ping_timer` input signal `wait_cyc_mask_i` to `4'bff` to shorten
@@ -979,7 +979,7 @@
       tests: []
     }
     {
-      name: chip_alert_handler_edn_reset
+      name: chip_sw_alert_handler_edn_reset
       desc: '''Verify that the EDN clock / reset is connected to alert_handler.
 
             - Ensure that the ping timer LFSR resets when the EDN logic is held in reset.
@@ -988,7 +988,7 @@
       tests: []
     }
     {
-      name: chip_alert_handler_crashdump
+      name: chip_sw_alert_handler_crashdump
       desc: '''Verify the alert handler crashdump signal.
 
             When the chip resets due to alert escalating to cause the chip to reset, verify the
@@ -1000,7 +1000,7 @@
 
     // LC_CTRL (pre-verified IP) integration tests:
     {
-      name: chip_lc_ctrl_alert_handler_escalation
+      name: chip_sw_lc_ctrl_alert_handler_escalation
       desc: '''Verify that the escalation signals from the alert handler are connected to LC ctrl.
 
             - Trigger an alert to initiate the escalations.
@@ -1024,7 +1024,7 @@
       tests: []
     }
     {
-      name: chip_lc_ctrl_jtag_access
+      name: chip_sw_lc_ctrl_jtag_access
       desc: '''Verify enable to access LC ctrl via JTAG.
 
             Using the JTAG agent, write and read LC ctrl CSRs, verify the read value for
@@ -1034,7 +1034,7 @@
       tests: []
     }
     {
-      name: chip_lc_ctrl_jtag_trst
+      name: chip_sw_lc_ctrl_jtag_trst
       desc: '''Verify the JTAG test reset input connection to LC ctrl.
 
             '''
@@ -1042,7 +1042,7 @@
       tests: []
     }
     {
-      name: chip_lc_ctrl_otp_hw_cfg
+      name: chip_sw_lc_ctrl_otp_hw_cfg
       desc: '''Verify the device_ID and ID_state CSRs
 
             - Preload the hw_cfg partition in OTP ctrl with random data.
@@ -1053,7 +1053,7 @@
       tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
     }
     {
-      name: chip_lc_ctrl_init
+      name: chip_sw_lc_ctrl_init
       desc: '''Verify the LC ctrl initialization on power up.
 
             Verify that the chip powers up correctly on POR.
@@ -1066,7 +1066,7 @@
       tests: []
     }
     {
-      name: chip_lc_ctrl_transitions
+      name: chip_sw_lc_ctrl_transitions
       desc: '''Verify the LC ctrl can transition from one state to another valid state.
 
             - Initiate an LC ctrl state transition.
@@ -1081,7 +1081,7 @@
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
-      name: chip_lc_ctrl_kmac_req
+      name: chip_sw_lc_ctrl_kmac_req
       desc: '''Verify the token requested from KMAC.
 
             - For conditional transition, the LC ctrl will send out a token request to KMAC.
@@ -1094,7 +1094,7 @@
       tests: []
     }
     {
-      name: chip_lc_ctrl_kmac_reset
+      name: chip_sw_lc_ctrl_kmac_reset
       desc: '''Verify the effect of putting the KMAC logic in reset.
 
             '''
@@ -1102,7 +1102,7 @@
       tests: []
     }
     {
-      name: chip_lc_ctrl_key_div
+      name: chip_sw_lc_ctrl_key_div
       desc: '''Verify the keymgr div output to keymgr.
 
             - Verify in different LC states, LC ctrl outputs the correct `key_div_o` to keymgr.
@@ -1114,7 +1114,7 @@
       tests: []
     }
     {
-      name: chip_lc_ctrl_broadcast
+      name: chip_sw_lc_ctrl_broadcast
       desc: '''Verify broadcast signals from lc_ctrl.
 
             - Preload the LC partition in the OTP ctrl with the following states: RMA, DEV,
@@ -1151,7 +1151,7 @@
       tests: []
     }
     {
-      name: chip_lc_ctrl_scanmode_reset
+      name: chip_sw_ctrl_scanmode_reset
       desc: '''Verify the connectivity of scanmode reset to LC ctrl.
 
             '''
@@ -1161,7 +1161,7 @@
 
     // SYSRST_CTRL (pre-verified IP) integration tests:
     {
-      name: chip_sysrst_ctrl_inputs
+      name: chip_sw_sysrst_ctrl_inputs
       desc: '''Verify that the SYSRST ctrl input pin values can be read.
 
             - Drive a known value on ac_reset, ec_rst_l, flash_wp_l, pwrb, lid_open and key* pins at
@@ -1172,7 +1172,7 @@
       tests: []
     }
     {
-      name: chip_sysrst_ctrl_outputs
+      name: chip_sw_sysrst_ctrl_outputs
       desc: '''Verify that the SYSRST ctrl output pin values can be set.
 
             - Drive a known value on ac_reset, ec_rst_l, flash_wp_l, pwrb, lid_open and key* pins
@@ -1192,7 +1192,7 @@
       tests: []
     }
     {
-      name: chip_sysrst_ctrl_in_irq
+      name: chip_sw_sysrst_ctrl_in_irq
       desc: '''Verify the SYSRST ctrl can detect an input combination to signal an interrupt.
 
             - Program a specific combination of transitions on pwrb, key*, ac_present and ec_reset_l
@@ -1208,7 +1208,7 @@
       tests: []
     }
     {
-      name: chip_sysrst_ctrl_sleep_gsc_wakeup
+      name: chip_sw_sysrst_ctrl_sleep_gsc_wakeup
       desc: '''Verify the SYSRST ctrl can wake up the chip from deep sleep.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
@@ -1230,7 +1230,7 @@
       tests: []
     }
     {
-      name: chip_sysrst_ctrl_gsc_reset
+      name: chip_sw_sysrst_ctrl_gsc_reset
       desc: '''Verify the SYSRST ctrl can reset the chip from normal state.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
@@ -1250,7 +1250,7 @@
       tests: []
     }
     {
-      name: chip_sysrst_ctrl_sleep_gsc_reset
+      name: chip_sw_sysrst_ctrl_sleep_gsc_reset
       desc: '''Verify the SYSRST ctrl can reset the chip from deep sleep.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
@@ -1274,7 +1274,7 @@
       tests: []
     }
     {
-      name: chip_sysrst_ctrl_ec_rst_l
+      name: chip_sw_sysrst_ctrl_ec_rst_l
       desc: '''Verify that the ec_rst_l stays asserted on power-on-reset until SW can control it.
 
             - Verify that ec_rst_l stays asserted as the chip is brought out of reset.
@@ -1288,7 +1288,7 @@
       tests: []
     }
     {
-      name: chip_sysrst_ctrl_flash_wp_l
+      name: chip_sw_sysrst_ctrl_flash_wp_l
       desc: '''Verify that the flash_wp_l stays asserted on power-on-reset until SW can control it.
 
             - Exactly the same as chip_sysrst_ctrl_ec_rst_l, but covers the flash_wp_l pin.
@@ -1297,7 +1297,7 @@
       tests: []
     }
     {
-      name: chip_sysrst_ctrl_ulp_z3_wakeup
+      name: chip_sw_sysrst_ctrl_ulp_z3_wakeup
       desc: '''Verify the z3_wakeup signaling.
 
             - Start off with ac_present = 0, lid_open = 0 and pwrb = 0 at the chip inputs.
@@ -1316,7 +1316,7 @@
 
     // ADC_CTRL (pre-verified IP) integration tests:
     {
-      name: chip_adc_ctrl_debug_cable_irq
+      name: chip_sw_adc_ctrl_debug_cable_irq
       desc: '''Verify that the ADC correctly detects the voltage level programmed for each channel.
 
             - Program both ADC channels to detect mutually exclusive range of voltages. Setting only
@@ -1338,7 +1338,7 @@
       tests: []
     }
     {
-      name: chip_adc_ctrl_sleep_debug_cable_wakeup
+      name: chip_sw_adc_ctrl_sleep_debug_cable_wakeup
       desc: '''Verify that in deep sleep, ADC ctrl can signal the ADC within the AST to power down.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
@@ -1367,7 +1367,7 @@
 
     // AES (pre-verified IP) integration tests:
     {
-      name: chip_aes_enc
+      name: chip_sw_aes_enc
       desc: '''Verify the AES operation.
 
             Write a 32-byte key and a 16-byte plain text to the AES registers and trigger the AES
@@ -1378,7 +1378,7 @@
       tests: []
     }
     {
-      name: chip_aes_entropy
+      name: chip_sw_aes_entropy
       desc: '''Verify the AES entropy input used by the internal PRNGs.
 
             - Write the initial key share, IV and data in CSRs (known combinations).
@@ -1400,7 +1400,7 @@
       tests: []
     }
     {
-      name: chip_aes_edn_reset
+      name: chip_sw_aes_edn_reset
       desc: '''Verify that the EDN clock / reset is connected to AES.
 
             - Ensure that the PRNG within AES resets when the EDN logic is held in reset.
@@ -1409,7 +1409,7 @@
       tests: []
     }
     {
-      name: chip_aes_lc_escalate_en
+      name: chip_sw_aes_lc_escalate_en
       desc: '''Verify the effect of LC escalate en signal on AES.
 
             - Trigger an LC escalatation signal by writing to alert_test CSR (in some other IP).
@@ -1420,7 +1420,7 @@
       tests: []
     }
     {
-      name: chip_aes_idle
+      name: chip_sw_aes_idle
       desc: '''Verify AES idle signaling to clkmgr.
 
             - Write the AES clk hint to 1 within clkmgr to indicate AES clk is ready to be gated.
@@ -1436,7 +1436,7 @@
       tests: []
     }
     {
-      name: chip_aes_sideload
+      name: chip_sw_aes_sideload
       desc: '''Verify the AES sideload mechanism.
 
             Details TBD, design updates pending.
@@ -1447,7 +1447,7 @@
 
     // HMAC (pre-verified IP) integration tests:
     {
-      name: chip_hmac_enc
+      name: chip_sw_hmac_enc
       desc: '''Verify HMAC operation.
 
             SW test verifies an HMAC operation with a known key, plain text and digest (pick one of
@@ -1458,7 +1458,7 @@
       tests: []
     }
     {
-      name: chip_hmac_idle
+      name: chip_sw_hmac_idle
       desc: '''Verify the HMAC clk idle signal to clkmgr.
 
             - Write the HMAC clk hint to 1 within clkmgr to indicate HMAC clk is ready to be gated.
@@ -1476,17 +1476,17 @@
 
     // KMAC pre-verified IP) integration tests:
     {
-      name: chip_kmac_enc
+      name: chip_sw_kmac_enc
       desc: '''Verify the SHA3 operation.
 
             SW test verifies SHA3 operation with a known key, plain text and digest (pick one of
             the NIST vectors). SW validates the reception of kmac done and fifo empty interrupts.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_kmac_mode_cshake_test", "chip_sw_kmac_mode_kmac_test"]
     }
     {
-      name: chip_kmac_app_keymgr
+      name: chip_sw_kmac_app_keymgr
       desc: '''Verify the keymgr interface to KMAC.
 
             - Configure the keymgr to start sending known message data to the KMAC.
@@ -1502,7 +1502,7 @@
       tests: []
     }
     {
-      name: chip_kmac_app_lc
+      name: chip_sw_kmac_app_lc
       desc: '''Verify the LC interface to KMAC.
 
             - Configure the LC_CTRL to start a token hash using KMAC interface.
@@ -1515,7 +1515,7 @@
       tests: []
     }
     {
-      name: chip_kmac_app_rom
+      name: chip_sw_kmac_app_rom
       desc: '''Verify the ROM interface to KMAC.
 
             - Backdoor initialize ROM memory immediately out of reset.
@@ -1530,7 +1530,7 @@
       tests: []
     }
     {
-      name: chip_kmac_entropy
+      name: chip_sw_kmac_entropy
       desc: '''Verify the EDN interface to KMAC.
 
             Requires `EnMasking` parameter to be enabled.
@@ -1552,7 +1552,7 @@
       tests: []
     }
     {
-      name: chip_kmac_edn_reset
+      name: chip_sw_kmac_edn_reset
       desc: '''Verify that the EDN clock / reset is connected to KMAC.
 
             - Ensure that the `entropy_timer` resets when the EDN logic is held in reset.
@@ -1561,7 +1561,7 @@
       tests: []
     }
     {
-      name: chip_kmac_idle
+      name: chip_sw_kmac_idle
       desc: '''Verify the KMAC idle signaling to clkmgr.
 
             - Write the KMAC clk hint to 1 within clkmgr to indicate KMAC clk is ready to be gated.
@@ -1579,7 +1579,7 @@
 
     // ENTROPY_SRC (pre-verified IP) integration tests:
     {
-      name: chip_entropy_src_ast_rng_req
+      name: chip_sw_entropy_src_ast_rng_req
       desc: '''Verify the RNG req to ast.
 
             - Program the entropy src in normal RNG mode.
@@ -1592,7 +1592,7 @@
       tests: []
     }
     {
-      name: chip_entropy_src_ast_fips
+      name: chip_sw_entropy_src_ast_fips
       desc: '''Verify the connectivity of rng_fips_o feedback signal to RNG.
 
             Details TBD.
@@ -1601,7 +1601,7 @@
       tests: []
     }
     {
-      name: chip_entropy_src_csrng
+      name: chip_sw_entropy_src_csrng
       desc: '''Verify the transfer of entropy bits to CSRNG.
 
             Verify the entropy valid interrupt.
@@ -1612,7 +1612,7 @@
       tests: []
     }
     {
-      name: chip_entropy_src_cs_aes_halt
+      name: chip_sw_entropy_src_cs_aes_halt
       desc: '''Verify the aes halt handshake with CSRNG.
 
             Details TBD.
@@ -1621,7 +1621,7 @@
       tests: []
     }
     {
-      name: chip_entropy_src_fuse_en_fw_read
+      name: chip_sw_entropy_src_fuse_en_fw_read
       desc: '''Verify the fuse input entropy_src.
 
             - Initialize the OTP with this fuse bit set to 1.
@@ -1637,7 +1637,7 @@
 
     // CSRNG tests:
     {
-      name: chip_csrng_edn_cmd
+      name: chip_sw_csrng_edn_cmd
       desc: '''Verify incoming command interface from EDN.
 
             - Have each EDN instance issue an instantiate command to CSRNG.
@@ -1650,7 +1650,7 @@
       tests: []
     }
     {
-      name: chip_csrng_fuse_en_sw_app_read
+      name: chip_sw_csrng_fuse_en_sw_app_read
       desc: '''Verify the fuse input to CSRNG.
 
             - Initialize the OTP with this fuse bit set to 1.
@@ -1663,7 +1663,7 @@
       tests: []
     }
     {
-      name: chip_csrng_lc_hw_debug_en
+      name: chip_sw_csrng_lc_hw_debug_en
       desc: '''Verify the effect of LC HW debug enable on CSRNG.
 
             TODO: This is pending SCA security review and might be removed.
@@ -1674,7 +1674,7 @@
 
     // EDN (pre-verified IP) integration tests:
     {
-      name: chip_edn_entropy_reqs
+      name: chip_sw_edn_entropy_reqs
       desc: '''Verify the entropy requests from all peripherals.
 
             Verify that there are no misconnects between each peripheral requesting entropy.
@@ -1689,7 +1689,7 @@
 
     // KEYMGR (pre-verified IP) integration tests:
     {
-      name: chip_keymgr_key_derivation
+      name: chip_sw_keymgr_key_derivation
       desc: '''Verify the keymgr advances to all states and generate identity / SW output.
 
             - Backdoor load random value to OTP key, OTP device ID, creator and owner seeds in
@@ -1723,7 +1723,7 @@
       tests: []
     }
     {
-      name: chip_keymgr_lc_disable
+      name: chip_sw_keymgr_lc_disable
       desc: '''Verify that the keymgr is disabled on LC escalation.
 
             - Configure the keymgr and advance to `CreatorRootKey`.
@@ -1736,7 +1736,7 @@
       tests: []
     }
     {
-      name: chip_keymgr_sideload_kmac
+      name: chip_sw_keymgr_sideload_kmac
       desc: '''Verify the keymgr sideload interface to KMAC, similar to `chip_kmac_app_keymgr`.
 
             - Configure the keymgr and advance to `CreatorRootKey`.
@@ -1751,7 +1751,7 @@
       tests: []
     }
     {
-      name: chip_keymgr_sideload_aes
+      name: chip_sw_keymgr_sideload_aes
       desc: '''Verify the keymgr sideload interface to AES.
 
                Same as `chip_keymgr_sideload_kmac`, except, sideload to AES.
@@ -1760,7 +1760,7 @@
       tests: []
     }
     {
-      name: chip_keymgr_sideload_otbn
+      name: chip_sw_keymgr_sideload_otbn
       desc: '''Verify the keymgr sideload interface to OTBN.
 
                Load OTBN binary image, the rest is similar to `chip_keymgr_sideload_kmac`, except
@@ -1772,7 +1772,7 @@
 
     // OTBN (pre-verified IP) integration tests:
     {
-      name: chip_otbn_op
+      name: chip_sw_otbn_op
       desc: '''Verify an OTBN operation.
 
             - SW test directs the OTBN engine to perform an ECDSA operation.
@@ -1784,7 +1784,7 @@
       tests: []
     }
     {
-      name: chip_otbn_rnd_entropy
+      name: chip_sw_otbn_rnd_entropy
       desc: '''Verify OTBN can fetch RND numbers from the entropy src.
 
             - SW initializes the entropy subsystem to generate randomness.
@@ -1797,7 +1797,7 @@
       tests: []
     }
     {
-      name: chip_otbn_urnd_entropy
+      name: chip_sw_otbn_urnd_entropy
       desc: '''Verify OTBN can fetch URND numbers from the entropy src.
 
             - Similar to chip_otbn_rnd_entropy, but verifies the URND bits.
@@ -1806,7 +1806,7 @@
       tests: []
     }
     {
-      name: chip_otbn_idle
+      name: chip_sw_otbn_idle
       desc: '''Verify the OTBN idle signal to clkmgr.
 
             - Write the OTBN clk hint to 1 within clkmgr to indicate OTBN clk is ready to be gated.
@@ -1841,7 +1841,7 @@
       tests: []
     }
     {
-      name: chip_otbn_mem_scramble
+      name: chip_sw_otbn_mem_scramble
       desc: '''Verify the OTBN can receive keys from the OTP to scramble the OTBN imem and dmem.
 
             - Have OTBN fetch a new key and nonce from the OTP_CTRL.
@@ -1860,7 +1860,7 @@
 
     // ROM_CTRL (pre-verified IP) integration tests:
     {
-      name: chip_rom_access
+      name: chip_sw_rom_access
       desc: '''Verify that the CPU can access the rom contents.
 
             - Verify that the CPU can fetch instructions from the ROM.
@@ -1878,7 +1878,7 @@
       tests: []
     }
     {
-      name: chip_rom_ctrl_integrity_check
+      name: chip_sw_rom_ctrl_integrity_check
       desc: '''Verify that the ROM ctrl performs the integrity check of the ROM on power up.
 
             - In non-PROD LC state, the computed digest does not have to match the top 8 words in
@@ -1890,7 +1890,7 @@
       tests: []
     }
     {
-      name: chip_rom_ctrl_reset_glitch
+      name: chip_sw_rom_ctrl_reset_glitch
       desc: '''Verify that a glitch on the ROM ctrl's reset input is triggered as a fatal alert.
 
             - In normal boot up from POR, the ROM contents are checked for validity using KMAC.
@@ -1909,7 +1909,7 @@
 
     // SRAM (pre-verified IP) integration tests:
     {
-      name: chip_sram_scrambled_access
+      name: chip_sw_sram_scrambled_access
       desc: '''Verify scrambled memory accesses to both main and retention SRAMs.
 
             - Trigger both SRAMs to fetch a new key and nonce from the OTP_CTRL
@@ -1922,7 +1922,7 @@
       tests: []
     }
     {
-      name: chip_sleep_sram_ret_contents
+      name: chip_sw_sleep_sram_ret_contents
       desc: '''Verify that the data within the retention SRAM survives low power entry-exit.
 
             Ensure that the data within the retention SRAM survives ALL low power entry-exit
@@ -1934,7 +1934,7 @@
       tests: []
     }
     {
-      name: chip_sram_execution
+      name: chip_sw_sram_execution
       desc: '''Verify that CPU can fetch data from both SRAMs when in executable mode.
 
             - Load instruction data into the SRAMs.
@@ -1946,7 +1946,7 @@
       tests: []
     }
     {
-      name: chip_sram_lc_escalation
+      name: chip_sw_sram_lc_escalation
       desc: '''Verify the LC escalation path to the SRAMs.
 
             - Configure the LC_CTRL to trigger an escalation request to the SRAMs.
@@ -1974,7 +1974,7 @@
       tests: []
     }
     {
-      name: chip_otp_ctrl_keys
+      name: chip_sw_otp_ctrl_keys
       desc: '''Verify the proliferation of keys to security peripherals.
 
             - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl, keymgr,
@@ -1986,7 +1986,7 @@
       tests: []
     }
     {
-      name: chip_otp_ctrl_entropy
+      name: chip_sw_otp_ctrl_entropy
       desc: '''Verify the entropy interface from OTP ctrl to EDN.
 
             This is X-ref'ed with the chip_otp_ctrl_keys test, which needs to handshake with the EDN
@@ -1996,7 +1996,7 @@
       tests: []
     }
     {
-      name: chip_otp_ctrl_edn_reset
+      name: chip_sw_otp_ctrl_edn_reset
       desc: '''Verify the effect of putting the EDN domain in reset on OTP ctrl.
 
             Verify that the computed nonce for SRAM is reset?
@@ -2006,7 +2006,7 @@
       tests: []
     }
     {
-      name: chip_otp_ctrl_program
+      name: chip_sw_otp_ctrl_program
       desc: '''Verify the program request from lc_ctrl.
 
             - Verify that upon an LC state transition request, LC ctrl signals the OTP ctrl with a
@@ -2022,7 +2022,7 @@
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
-      name: chip_otp_ctrl_program_error
+      name: chip_sw_otp_ctrl_program_error
       desc: '''Verify the otp program error.
 
             - Initiate an illegal program request from LC ctrl to OTP ctrl (example: issue program
@@ -2034,7 +2034,7 @@
       tests: []
     }
     {
-      name: chip_otp_ctrl_hw_cfg
+      name: chip_sw_otp_ctrl_hw_cfg
       desc: '''Verify the correctness of otp_hw_cfg bus in all peripherals that receive it.
 
             Preload the OTP ctrl's `hw_cfg` partition with random data and verify that all
@@ -2046,7 +2046,7 @@
       tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
     }
     {
-      name: chip_otp_ctrl_lc_signals
+      name: chip_sw_otp_ctrl_lc_signals
       desc: '''Verify the broadcast signals from LC ctrl.
 
             - `lc_escalate_en_i`: read the error code CSR and verify that it reflects an FSM error
@@ -2063,7 +2063,7 @@
       tests: []
     }
     {
-      name: chip_otp_ctrl_ast
+      name: chip_sw_otp_ctrl_ast
       desc: '''Verify the power sequencing signals to AST, as well as the alert.
 
             Details TBD.
@@ -2094,7 +2094,7 @@
 
     // FLASH (pre-verified IP) integration tests:
     {
-      name: chip_flash_init
+      name: chip_sw_flash_init
       desc: '''Verify that flash initialization routine works correctly.
 
             - Initialize the flash ctrl by writing 1 to the INIT register.
@@ -2111,7 +2111,7 @@
       tests: []
     }
     {
-      name: chip_flash_host_access
+      name: chip_sw_flash_host_access
       desc: '''Verify that the flash memory contents can be read by the CPU.
 
             Nothing extra to do here - most SW based tests fetch code from flash.
@@ -2120,7 +2120,7 @@
       tests: ["chip_sw_flash_ctrl_access"]
     }
     {
-      name: chip_flash_ctrl_ops
+      name: chip_sw_flash_ctrl_ops
       desc: '''Verify the SW can initiate flash operations via the controller.
 
             Verify that the CPU can read / program and erase the flash mem. Pick an operation on
@@ -2131,7 +2131,7 @@
       tests: []
     }
     {
-      name: chip_flash_rma_unlocked
+      name: chip_sw_flash_rma_unlocked
       desc: '''Verify the flash memory contents can be accessed after in RMA unlock.
 
             - Provision an RMA_UNLOCK token in OTP.
@@ -2158,7 +2158,7 @@
       tests: []
     }
     {
-      name: chip_flash_scramble
+      name: chip_sw_flash_scramble
       desc: '''Verify flash scrambling via the controller.
 
             - Extends the chip_flash_init test.
@@ -2173,7 +2173,7 @@
       tests: []
     }
     {
-      name: chip_flash_idle_low_power
+      name: chip_sw_flash_idle_low_power
       desc: '''Verify flash_idle signaling to pwrmgr.
 
             - Initiate flash program or erase over the controller.
@@ -2185,7 +2185,7 @@
       tests: []
     }
     {
-      name: chip_flash_keymgr_seeds
+      name: chip_sw_flash_keymgr_seeds
       desc: '''Verify the creator and owner seeds are read on flash init provided lc_hw_seed_rd_en
             is set.
 
@@ -2195,7 +2195,7 @@
       tests: []
     }
     {
-      name: chip_flash_lc_creator_seed_sw_rw_en
+      name: chip_sw_flash_lc_creator_seed_sw_rw_en
       desc: '''Verify the lc_creator_seed_sw_rw_en signal from LC ctrl.
 
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
@@ -2206,7 +2206,7 @@
       tests: []
     }
     {
-      name: chip_flash_creator_seed_wipe_on_rma
+      name: chip_sw_flash_creator_seed_wipe_on_rma
       desc: '''Verify that the creator seed is wiped by the flash ctrl on RMA entry.
             '''
       milestone: V2
@@ -2214,7 +2214,7 @@
 
     }
     {
-      name: chip_flash_lc_owner_seed_sw_rw_en
+      name: chip_sw_flash_lc_owner_seed_sw_rw_en
       desc: '''Verify the lc_owner_seed_sw_rw_en signal from LC ctrl.
 
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
@@ -2225,7 +2225,7 @@
       tests: []
     }
     {
-      name: chip_flash_lc_iso_part_sw_rd_en
+      name: chip_sw_flash_lc_iso_part_sw_rd_en
       desc: '''Verify the lc_iso_part_sw_rd_en signal from LC ctrl.
 
             - Transition from DEV to PROD to ESCALATION/SCRAP state via OTP and verify
@@ -2236,7 +2236,7 @@
       tests: []
     }
     {
-      name: chip_flash_lc_iso_part_sw_wr_en
+      name: chip_sw_flash_lc_iso_part_sw_wr_en
       desc: '''Verify the lc_creator_seed_sw_wr_en signal from LC ctrl.
 
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
@@ -2247,7 +2247,7 @@
       tests: []
     }
     {
-      name: chip_flash_lc_seed_hw_rd_en
+      name: chip_sw_flash_lc_seed_hw_rd_en
       desc: '''Verify the lc_seed_hw_rd_en signal from LC ctrl.
 
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
@@ -2272,7 +2272,7 @@
       tests: []
     }
     {
-      name: chip_flash_prim_tl_access
+      name: chip_sw_flash_prim_tl_access
       desc: '''Verify that the SW can read / write the dummy memory in flash phy.
 
             - The dummy memory is a open source placeholder for the closed source CSRs that will be
@@ -2302,7 +2302,7 @@
       tests: []
     }
     {
-      name: chip_flash_ctrl_clock_freqs
+      name: chip_sw_flash_ctrl_clock_freqs
       desc: '''Verify flash program and erase operations over the ctrl over a range of clock freqs.
 
             - The range of clock freqs to test is TBD.
@@ -2330,7 +2330,7 @@
 
     // AST (pre-verified IP) integration tests:
     {
-      name: chip_ast_clk_outputs
+      name: chip_sw_ast_clk_outputs
       desc: '''Verify that the AST generates the 4 clocks when requested by the clkmgr.
 
             Verify the clock frequencies are reasonably accurate. Verify that when the clkmgr
@@ -2342,7 +2342,7 @@
       tests: []
     }
     {
-      name: chip_ast_clk_rst_inputs
+      name: chip_sw_ast_clk_rst_inputs
       desc: '''Verify the clk and rst inputs to AST (from `clkmgr`).
 
             Details TBD.
@@ -2351,7 +2351,7 @@
       tests: []
     }
     {
-      name: chip_ast_sys_clk_jitter
+      name: chip_sw_ast_sys_clk_jitter
       desc: '''Verify that the AST sys clk jitter control.
 
             Details TBD.
@@ -2360,7 +2360,7 @@
       tests: []
     }
     {
-      name: chip_ast_usb_clk_calib
+      name: chip_sw_ast_usb_clk_calib
       desc: '''Verify the USB clk calibration signaling.
 
             Details TBD.
@@ -2369,7 +2369,7 @@
       tests: []
     }
     {
-      name: chip_ast_alerts
+      name: chip_sw_ast_alerts
       desc: '''Verify the alerts from AST aggregating into the sensor_ctrl.
 
              X-ref'ed with `chip_sensor_ctrl_ast_alerts`.
@@ -2380,7 +2380,7 @@
 
     // SENSOR_CTRL tests:
     {
-      name: chip_sensor_ctrl_ast_alerts
+      name: chip_sw_sensor_ctrl_ast_alerts
       desc: '''Verify the alerts from AST aggregating into the sensor_ctrl.
 
              Details TBD.
@@ -2389,7 +2389,7 @@
       tests: []
     }
     {
-      name: chip_sensor_ctrl_ast_status
+      name: chip_sw_sensor_ctrl_ast_status
       desc: '''Verify the io power ok status from AST.
 
              Details TBD.
@@ -2411,26 +2411,26 @@
             work in DV as well.
             '''
       milestone: V2
-      tests: ["chip_aes_smoketest",
-              "chip_aon_timer_smoketest",
-              "chip_clkmgr_smoketest",
+      tests: ["chip_sw_aes_smoketest",
+              "chip_sw_aon_timer_smoketest",
+              "chip_sw_clkmgr_smoketest",
               // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
-              // "chip_csrng_smoketest",
-              "chip_entropy_src_smoketest",
-              "chip_gpio_smoketest",
-              "chip_hmac_smoketest",
-              "chip_kmac_smoketest",
-              "chip_otbn_smoketest",
-              "chip_otp_ctrl_smoketest",
-              "chip_rv_plic_smoketest",
-              "chip_pwrmgr_smoketest",
-              "chip_rv_timer_smoketest",
-              "chip_rstmgr_smoketest",
-              "chip_uart_smoketest",
+              // "chip_sw_csrng_smoketest",
+              "chip_sw_entropy_src_smoketest",
+              "chip_sw_gpio_smoketest",
+              "chip_sw_hmac_smoketest",
+              "chip_sw_kmac_smoketest",
+              "chip_sw_otbn_smoketest",
+              "chip_sw_otp_ctrl_smoketest",
+              "chip_sw_rv_plic_smoketest",
+              "chip_sw_pwrmgr_smoketest",
+              "chip_sw_rv_timer_smoketest",
+              "chip_sw_rstmgr_smoketest",
+              "chip_sw_uart_smoketest",
             ]
     }
     {
-      name: chip_coremark
+      name: chip_sw_coremark
       desc: '''Run the coremark benchmark on the full chip.'''
       milestone: V2
       tests: ["chip_sw_coremark"]
@@ -2452,7 +2452,7 @@
       tests: ["chip_sw_uart_tx_rx_bootstrap"]
     }
     {
-      name: chip_secure_boot
+      name: chip_sw_secure_boot
       desc: '''Verify the secure boot flow.
 
              Details TBD.
@@ -2461,7 +2461,7 @@
       tests: []
     }
     {
-      name: chip_lc_walkthrough
+      name: chip_sw_lc_walkthrough
       desc: '''Walk through the life cycle stages reseting the chip each time.
 
              Verify that the features that should indeed be disabled are indeed disabled.
@@ -2470,7 +2470,7 @@
       tests: []
     }
     {
-      name: chip_device_ownership
+      name: chip_sw_device_ownership
       desc: '''Walk through device ownership stages and flows.
 
              Details TBD.
@@ -2479,7 +2479,7 @@
       tests: []
     }
     {
-      name: chip_sram_nmi_wipe
+      name: chip_sw_sram_nmi_wipe
       desc: '''Verify SRAM behavior during an NMI escalation.
 
             - Trigger an NMI through the alert handler path to cause a system shutdown.

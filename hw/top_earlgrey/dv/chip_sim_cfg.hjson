@@ -245,13 +245,13 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_kmac_mode_cshake_test
+      name: chip_sw_kmac_mode_cshake_test
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/kmac_mode_cshake_test:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_kmac_mode_kmac_test
+      name: chip_sw_kmac_mode_kmac_test
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/kmac_mode_kmac_test:1"]
       en_run_modes: ["sw_test_mode"]
