@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen CSRNG DIF library
-sw_lib_dif_autogen_csrng = declare_dependency(
+# Autogen Key Manager DIF library
+sw_lib_dif_autogen_keymgr = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_csrng',
+    'sw_lib_dif_autogen_keymgr',
     sources: [
-      hw_ip_csrng_reg_h,
-      'dif_csrng_autogen.c',
+      hw_ip_keymgr_reg_h,
+      'dif_keymgr_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -37,6 +37,20 @@ sw_lib_dif_autogen_alert_handler = declare_dependency(
     sources: [
       hw_ip_alert_handler_reg_h,
       'dif_alert_handler_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen CSRNG DIF library
+sw_lib_dif_autogen_csrng = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_csrng',
+    sources: [
+      hw_ip_csrng_reg_h,
+      'dif_csrng_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
