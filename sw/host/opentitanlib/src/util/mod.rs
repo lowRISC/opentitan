@@ -5,6 +5,7 @@
 pub mod bitfield;
 pub mod file;
 pub mod parse_int;
+pub mod voltage;
 
 /// The `collection` macro provides syntax for hash and set literals.
 #[macro_export]

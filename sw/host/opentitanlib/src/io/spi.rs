@@ -3,11 +3,50 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use std::rc::Rc;
+use std::str::FromStr;
+use structopt::StructOpt;
 use thiserror::Error;
+
+use crate::transport::Transport;
+use crate::util::voltage::Voltage;
+
+#[derive(Debug, StructOpt)]
+pub struct SpiParams {
+    #[structopt(long, help = "SPI instance", default_value = "0")]
+    pub bus: u32,
+
+    #[structopt(long, help = "SPI bus speed")]
+    pub speed: Option<u32>,
+
+    #[structopt(long, help = "SPI bus voltage", parse(try_from_str = Voltage::from_str))]
+    pub voltage: Option<Voltage>,
+
+    #[structopt(long, help = "SPI polarity/phase mode", parse(try_from_str = TransferMode::from_str))]
+    pub mode: Option<TransferMode>,
+}
+
+impl SpiParams {
+    pub fn create(&self, transport: &dyn Transport) -> Result<Rc<dyn Target>> {
+        let spi = transport.spi(self.bus)?;
+        if let Some(speed) = self.speed {
+            spi.set_max_speed(speed)?;
+        }
+        if let Some(voltage) = self.voltage {
+            spi.set_voltage(voltage)?;
+        }
+        if let Some(mode) = self.mode {
+            spi.set_transfer_mode(mode)?;
+        }
+        Ok(spi)
+    }
+}
 
 /// Errors related to the SPI interface and SPI transactions.
 #[derive(Error, Debug)]
 pub enum SpiError {
+    #[error("Invalid option: {0}")]
+    InvalidOption(String),
     #[error("Invalid word size: {0}")]
     InvalidWordSize(u32),
     #[error("Invalid speed: {0}")]
@@ -16,6 +55,8 @@ pub enum SpiError {
     InvalidDataLength(usize),
     #[error("Mismatched data length: {0} != {1}")]
     MismatchedDataLength(usize, usize),
+    #[error("Invalid transfer mode: {0}")]
+    InvalidTransferMode(String),
 }
 
 /// Represents the SPI transfer mode.
@@ -31,6 +72,19 @@ pub enum TransferMode {
     Mode2,
     /// `Mode3` is CPOL=1, CPHA=1.
     Mode3,
+}
+
+impl FromStr for TransferMode {
+    type Err = SpiError;
+    fn from_str(s: &str) -> std::result::Result<TransferMode, Self::Err> {
+        match s {
+            "Mode0" | "mode0" | "0" => Ok(TransferMode::Mode0),
+            "Mode1" | "mode1" | "1" => Ok(TransferMode::Mode1),
+            "Mode2" | "mode2" | "2" => Ok(TransferMode::Mode2),
+            "Mode3" | "mode3" | "3" => Ok(TransferMode::Mode3),
+            _ => Err(SpiError::InvalidTransferMode(s.to_string())),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -89,6 +143,10 @@ pub trait Target {
 
     /// Maximum chunksize handled by this SPI device.
     fn max_chunk_size(&self) -> usize;
+
+    fn set_voltage(&self, _voltage: Voltage) -> Result<()> {
+        Err(SpiError::InvalidOption("This target does not support set_voltage".to_string()).into())
+    }
 
     /// Runs a SPI transaction composed from the slice of [`Transfer`] objects.
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()>;
