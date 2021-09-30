@@ -44,6 +44,8 @@ module chip_earlgrey_cw310 #(
   inout IO_UPHY_OE_N, // Manual Pad
   inout IO_UPHY_SENSE, // Manual Pad
   inout IO_UPHY_DPPULLUP, // Manual Pad
+  inout IO_UPHY_SPD, // Manual Pad
+  inout IO_UPHY_SUS, // Manual Pad
   inout IO_CLKOUT, // Manual Pad
   inout IO_TRIGGER, // Manual Pad
 
@@ -225,6 +227,8 @@ module chip_earlgrey_cw310 #(
   logic manual_in_io_uphy_oe_n, manual_out_io_uphy_oe_n, manual_oe_io_uphy_oe_n;
   logic manual_in_io_uphy_sense, manual_out_io_uphy_sense, manual_oe_io_uphy_sense;
   logic manual_in_io_uphy_dppullup, manual_out_io_uphy_dppullup, manual_oe_io_uphy_dppullup;
+  logic manual_in_io_uphy_spd, manual_out_io_uphy_spd, manual_oe_io_uphy_spd;
+  logic manual_in_io_uphy_sus, manual_out_io_uphy_sus, manual_oe_io_uphy_sus;
   logic manual_in_io_clkout, manual_out_io_clkout, manual_oe_io_clkout;
   logic manual_in_io_trigger, manual_out_io_trigger, manual_oe_io_trigger;
 
@@ -244,6 +248,8 @@ module chip_earlgrey_cw310 #(
   pad_attr_t manual_attr_io_uphy_oe_n;
   pad_attr_t manual_attr_io_uphy_sense;
   pad_attr_t manual_attr_io_uphy_dppullup;
+  pad_attr_t manual_attr_io_uphy_spd;
+  pad_attr_t manual_attr_io_uphy_sus;
   pad_attr_t manual_attr_io_clkout;
   pad_attr_t manual_attr_io_trigger;
 
@@ -326,11 +332,13 @@ module chip_earlgrey_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(28),
+    .NDioPads(30),
     .NMioPads(29),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
       BidirStd, // IO_CLKOUT
+      BidirStd, // IO_UPHY_SUS
+      BidirStd, // IO_UPHY_SPD
       BidirStd, // IO_UPHY_DPPULLUP
       BidirStd, // IO_UPHY_SENSE
       BidirStd, // IO_UPHY_OE_N
@@ -398,6 +406,8 @@ module chip_earlgrey_cw310 #(
     .dio_pad_io ({
       IO_TRIGGER,
       IO_CLKOUT,
+      IO_UPHY_SUS,
+      IO_UPHY_SPD,
       IO_UPHY_DPPULLUP,
       IO_UPHY_SENSE,
       IO_UPHY_OE_N,
@@ -462,6 +472,8 @@ module chip_earlgrey_cw310 #(
     .dio_in_o ({
         manual_in_io_trigger,
         manual_in_io_clkout,
+        manual_in_io_uphy_sus,
+        manual_in_io_uphy_spd,
         manual_in_io_uphy_dppullup,
         manual_in_io_uphy_sense,
         manual_in_io_uphy_oe_n,
@@ -492,6 +504,8 @@ module chip_earlgrey_cw310 #(
     .dio_out_i ({
         manual_out_io_trigger,
         manual_out_io_clkout,
+        manual_out_io_uphy_sus,
+        manual_out_io_uphy_spd,
         manual_out_io_uphy_dppullup,
         manual_out_io_uphy_sense,
         manual_out_io_uphy_oe_n,
@@ -522,6 +536,8 @@ module chip_earlgrey_cw310 #(
     .dio_oe_i ({
         manual_oe_io_trigger,
         manual_oe_io_clkout,
+        manual_oe_io_uphy_sus,
+        manual_oe_io_uphy_spd,
         manual_oe_io_uphy_dppullup,
         manual_oe_io_uphy_sense,
         manual_oe_io_uphy_oe_n,
@@ -552,6 +568,8 @@ module chip_earlgrey_cw310 #(
     .dio_attr_i ({
         manual_attr_io_trigger,
         manual_attr_io_clkout,
+        manual_attr_io_uphy_sus,
+        manual_attr_io_uphy_spd,
         manual_attr_io_uphy_dppullup,
         manual_attr_io_uphy_sense,
         manual_attr_io_uphy_oe_n,
@@ -723,6 +741,19 @@ module chip_earlgrey_cw310 #(
   logic unused_in_io_uphy_oe_n;
   assign unused_in_io_uphy_oe_n = manual_in_io_uphy_oe_n;
 
+  // Set SPD to full-speed
+  assign manual_oe_io_uphy_spd = 1'b1;
+  assign manual_out_io_uphy_spd = 1'b1;
+
+  logic unused_in_io_uphy_spd;
+  assign unused_in_io_uphy_spd = manual_in_io_uphy_spd;
+
+  // Disable TUSB1106 low-power mode (for now?)
+  assign manual_oe_io_uphy_sus = 1'b1;
+  assign manual_out_io_uphy_sus = 1'b0;
+
+  logic unused_in_io_uphy_sus;
+  assign unused_in_io_uphy_sus = manual_in_io_uphy_sus;
 
 
   //////////////////////////////////

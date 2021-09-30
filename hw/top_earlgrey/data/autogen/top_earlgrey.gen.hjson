@@ -11932,6 +11932,20 @@
             desc: Manual USB UPHY signal for FPGA target
           }
           {
+            name: IO_UPHY_SPD
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
+            name: IO_UPHY_SUS
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
             name: IO_CLKOUT
             type: BidirStd
             bank: VCC
