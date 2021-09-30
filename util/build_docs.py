@@ -96,6 +96,7 @@ config = {
         ],
         "top_earlgrey": [
             "hw/top_earlgrey/ip",
+            "hw/top_earlgrey/ip_autogen",
         ],
     },
 
