@@ -16,17 +16,17 @@ use std::time::{Duration, Instant};
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::io::uart::Uart;
+use opentitanlib::io::uart::{Uart, UartParams};
 use opentitanlib::transport::{Capability, Transport};
 use opentitanlib::util::file;
 
 #[derive(Debug, StructOpt)]
 pub struct Console {
+    #[structopt(flatten)]
+    params: UartParams,
+
     #[structopt(short, long, help = "Do not print console start end exit messages.")]
     quiet: bool,
-
-    #[structopt(short, long, help = "Which UART to connect", default_value = "0")]
-    uart: u32,
 
     #[structopt(short, long, help = "Log console output to a file")]
     logfile: Option<String>,
@@ -90,7 +90,7 @@ impl CommandDispatch for Console {
             } else {
                 None
             };
-            let uart = transport.uart(self.uart)?;
+            let uart = self.params.create(transport)?;
             console.interact(&*uart, &mut stdin, &mut stdout)?;
         }
         if !self.quiet {
