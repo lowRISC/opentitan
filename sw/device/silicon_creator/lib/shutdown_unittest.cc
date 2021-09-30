@@ -245,9 +245,9 @@ static_assert(ARRAYSIZE(kDefaultAlertClassification) <=
               "The default alert classification must be less than or equal to "
               "the number of reserved OTP words");
 
-static_assert(
-    kTopEarlgreyAlertIdLast < ARRAYSIZE(kDefaultAlertClassification),
-    "The number of alert sources must be smaller than the alert classification");
+static_assert(kTopEarlgreyAlertIdLast < ARRAYSIZE(kDefaultAlertClassification),
+              "The number of alert sources must be smaller than the alert "
+              "classification");
 
 constexpr DefaultAlertClassification kDefaultLocAlertClassification[] = {
     LOC_ALERTS(FULL)};
@@ -301,22 +301,20 @@ alert_escalate_t RomAlertClassEscalation(alert_class_t cls) {
 
 class ShutdownTest : public mask_rom_test::MaskRomTest {
  protected:
-
   void SetupOtpReads() {
     // Make OTP reads retrieve their values from `otp_config_`.
-    ON_CALL(otp_, read32(::testing::_))
-        .WillByDefault([this](uint32_t address) {
-          // Must be aligned and in the SW_CFG partition.
-          EXPECT_EQ(address % 4, 0);
-          EXPECT_GE(address, OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET);
-          EXPECT_LT(address, OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET +
-                                 sizeof(this->otp_config_));
-          // Convert the address to a word index.
-          uint32_t index = (address - OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET) / 4;
-          const uint32_t *words =
-              reinterpret_cast<const uint32_t *>(&this->otp_config_);
-          return words[index];
-        });
+    ON_CALL(otp_, read32(::testing::_)).WillByDefault([this](uint32_t address) {
+      // Must be aligned and in the SW_CFG partition.
+      EXPECT_EQ(address % 4, 0);
+      EXPECT_GE(address, OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET);
+      EXPECT_LT(address,
+                OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET + sizeof(this->otp_config_));
+      // Convert the address to a word index.
+      uint32_t index = (address - OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET) / 4;
+      const uint32_t *words =
+          reinterpret_cast<const uint32_t *>(&this->otp_config_);
+      return words[index];
+    });
   }
 
   void ExpectClassConfigure() {
@@ -360,12 +358,12 @@ class ShutdownTest : public mask_rom_test::MaskRomTest {
 
 TEST_F(ShutdownTest, InitializeProd) {
   SetupOtpReads();
-  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
+  for (size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
     const auto &c = kDefaultAlertClassification[i];
     alert_class_t cls = c.prod;
     alert_enable_t en = RomAlertClassEnable(cls);
-    EXPECT_CALL(alert_, alert_configure(i, cls, en))
-        .WillOnce(Return(kErrorOk));
+    EXPECT_CALL(alert_, alert_configure(i, cls, en)).WillOnce(Return(kErrorOk));
   }
   for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
        ++i) {
@@ -381,7 +379,8 @@ TEST_F(ShutdownTest, InitializeProd) {
 
 TEST_F(ShutdownTest, InitializeProdWithAlertError) {
   SetupOtpReads();
-  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
+  for (size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
     const auto &c = kDefaultAlertClassification[i];
     alert_class_t cls = c.prod;
     alert_enable_t en = RomAlertClassEnable(cls);
@@ -431,12 +430,12 @@ TEST_F(ShutdownTest, InitializeProdWithLocalAlertError) {
 
 TEST_F(ShutdownTest, InitializeProdEnd) {
   SetupOtpReads();
-  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
+  for (size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
     const auto &c = kDefaultAlertClassification[i];
     alert_class_t cls = c.prodend;
     alert_enable_t en = RomAlertClassEnable(cls);
-    EXPECT_CALL(alert_, alert_configure(i, cls, en))
-        .WillOnce(Return(kErrorOk));
+    EXPECT_CALL(alert_, alert_configure(i, cls, en)).WillOnce(Return(kErrorOk));
   }
   for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
        ++i) {
@@ -452,12 +451,12 @@ TEST_F(ShutdownTest, InitializeProdEnd) {
 
 TEST_F(ShutdownTest, InitializeDev) {
   SetupOtpReads();
-  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
+  for (size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
     const auto &c = kDefaultAlertClassification[i];
     alert_class_t cls = c.dev;
     alert_enable_t en = RomAlertClassEnable(cls);
-    EXPECT_CALL(alert_, alert_configure(i, cls, en))
-        .WillOnce(Return(kErrorOk));
+    EXPECT_CALL(alert_, alert_configure(i, cls, en)).WillOnce(Return(kErrorOk));
   }
   for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
        ++i) {
@@ -473,12 +472,12 @@ TEST_F(ShutdownTest, InitializeDev) {
 
 TEST_F(ShutdownTest, InitializeRma) {
   SetupOtpReads();
-  for(size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT; ++i) {
+  for (size_t i = 0; i < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
+       ++i) {
     const auto &c = kDefaultAlertClassification[i];
     alert_class_t cls = c.rma;
     alert_enable_t en = RomAlertClassEnable(cls);
-    EXPECT_CALL(alert_, alert_configure(i, cls, en))
-        .WillOnce(Return(kErrorOk));
+    EXPECT_CALL(alert_, alert_configure(i, cls, en)).WillOnce(Return(kErrorOk));
   }
   for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
        ++i) {

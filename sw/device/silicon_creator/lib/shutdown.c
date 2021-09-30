@@ -123,8 +123,9 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   // configuration for the current lifecycle state.
   for (size_t i = 0; i < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
        ++i) {
-    uint32_t value = otp_read32(OTP_CTRL_PARAM_ROM_LOCAL_ALERT_CLASSIFICATION_OFFSET +
-                                i * sizeof(uint32_t));
+    uint32_t value =
+        otp_read32(OTP_CTRL_PARAM_ROM_LOCAL_ALERT_CLASSIFICATION_OFFSET +
+                   i * sizeof(uint32_t));
     alert_class_t cls = (alert_class_t)bitfield_field32_read(
         value, (bitfield_field32_t){.mask = 0xff, .index = lc_shift});
     rom_error_t e = alert_local_configure(i, cls, enable[clsindex(cls)]);
