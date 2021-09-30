@@ -400,7 +400,7 @@ module prim_lfsr #(
     // Fill in the input vector in col-major order.
     logic [3:0][NumSboxes-1:0][LfsrIdxDw-1:0] matrix_indices;
     for (genvar j = 0; j < LfsrDw; j++) begin : gen_input_idx_map
-      assign matrix_indices[j / NumSboxes][j % NumSboxes] = LfsrIdxDw'(j);
+      assign matrix_indices[j / NumSboxes][j % NumSboxes] = j;
     end
     // Due to the LFSR shifting pattern, the above permutation has the property that the output of
     // SBox(n) is going to be equal to SBox(n+1) in the subsequent cycle (unless the LFSR polynomial
@@ -502,9 +502,18 @@ module prim_lfsr #(
 
   // Random output permutation, defined at compile time
   if (StatePermEn) begin : gen_state_perm
+
     for (genvar k = 0; k < StateOutDw; k++) begin : gen_perm_loop
       assign state_o[k] = sbox_out[StatePerm[k]];
     end
+
+    // if lfsr width is greater than the output, then by definition
+    // not every bit will be picked
+    if (LfsrDw > StateOutDw) begin : gen_tieoff_unused
+      logic unused_sbox_out;
+      assign unused_sbox_out = ^sbox_out;
+    end
+
   end else begin : gen_no_state_perm
     assign state_o = StateOutDw'(sbox_out);
   end
