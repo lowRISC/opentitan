@@ -162,7 +162,7 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
 1. Run the loading tool.
    ```console
    $ cd ${REPO_TOP}
-   $ ./util/fpga/cw310_loader.py --firmware build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin
+   $ ./util/fpga/cw310_loader.py --firmware build-bin/sw/device/examples/hello_world/hello_world_fpga_cw310.bin --set-pll-defaults
    ```
 
    This should report how the binary is split into frames:
