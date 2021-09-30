@@ -741,7 +741,7 @@ module spi_tpm
     end
   end
   assign xfer_bytes_d  = xfer_bytes_q + 6'h 1;
-  assign xfer_size_met = xfer_bytes_d == xfer_size;
+  assign xfer_size_met = xfer_bytes_q == xfer_size;
 
   // Output data mux
   always_comb begin
