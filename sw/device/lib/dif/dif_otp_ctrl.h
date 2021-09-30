@@ -14,28 +14,14 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+
+#include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
 
 // Header Extern Guard (so header can be used from C and C++)
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-/**
- * A toggle state: enabled, or disabled.
- *
- * This enum may be used instead of a `bool` when describing an enabled/disabled
- * state.
- */
-typedef enum dif_otp_ctrl_toggle {
-  /*
-   * The "enabled" state.
-   */
-  kDifOtpCtrlToggleEnabled,
-  /**
-   * The "disabled" state.
-   */
-  kDifOtpCtrlToggleDisabled,
-} dif_otp_ctrl_toggle_t;
 
 /**
  * A partition within OTP memory.
@@ -88,24 +74,6 @@ typedef enum dif_otp_ctrl_partition {
 } dif_otp_ctrl_partition_t;
 
 /**
- * Hardware instantiation parameters for OTP.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_otp_ctrl_params {
-  /**
-   * The base address for the OTP hardware registers.
-   */
-  mmio_region_t base_addr_core;
-  /**
-   * The base address for the OTP hardware test registers.
-   */
-  mmio_region_t base_addr_prim;
-} dif_otp_ctrl_params_t;
-
-/**
  * Runtime configuration for OTP.
  *
  * This struct describes runtime information for one-time configuration of the
@@ -141,149 +109,6 @@ typedef struct dif_otp_ctrl_config {
    */
   uint32_t consistency_period_mask;
 } dif_otp_ctrl_config_t;
-
-/**
- * A handle to OTP.
- *
- * This type should be treated as opaque by users.
- */
-typedef struct dif_otp_ctrl {
-  dif_otp_ctrl_params_t params;
-} dif_otp_ctrl_t;
-
-/**
- * The result of an OTP operation.
- */
-typedef enum dif_otp_ctrl_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifOtpCtrlOk = 0,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifOtpCtrlError = 1,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifOtpCtrlBadArg = 2,
-} dif_otp_ctrl_result_t;
-
-/**
- * The result of a lockable operation.
- */
-typedef enum dif_otp_ctrl_lockable_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifOtpCtrlLockableOk = kDifOtpCtrlOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifOtpCtrlLockableError = kDifOtpCtrlError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifOtpCtrlLockableBadArg = kDifOtpCtrlBadArg,
-  /**
-   * Indicates that this operation has been locked out, and can never
-   * succeed until hardware reset.
-   */
-  kDifOtpCtrlLockableLocked,
-} dif_otp_ctrl_lockable_result_t;
-
-/**
- * The result of a Direct Access Interface (DAI) operation.
- */
-typedef enum dif_otp_ctrl_dai_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifOtpCtrlDaiOk = kDifOtpCtrlOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifOtpCtrlDaiError = kDifOtpCtrlError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifOtpCtrlDaiBadArg = kDifOtpCtrlBadArg,
-  /**
-   * Indicates that the DAI is busy and can't accept another incomming command.
-   */
-  kDifOtpCtrlDaiBusy,
-  /**
-   * Indicates that the given partition does not support this operation.
-   */
-  kDifOtpCtrlDaiBadPartition,
-  /**
-   * Indicates that the attempted DAI operation would go out of range of the
-   * requested partition.
-   */
-  kDifOtpCtrlDaiOutOfRange,
-  /**
-   * Indicates that the given address was not correctly aligned.
-   */
-  kDifOtpCtrlDaiUnaligned,
-} dif_otp_ctrl_dai_result_t;
-
-/**
- * The result of a digest operation.
- */
-typedef enum dif_otp_ctrl_digest_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifOtpCtrlDigestOk = kDifOtpCtrlOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifOtpCtrlDigestError = kDifOtpCtrlError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifOtpCtrlDigestBadArg = kDifOtpCtrlBadArg,
-  /**
-   * Indicates that a digest lookup failed because the digest had not been
-   * programmed yet.
-   */
-  kDifOtpCtrlDigestMissing,
-} dif_otp_ctrl_digest_result_t;
-
-/**
- * An OTP interrupt request type.
- */
-typedef enum dif_otp_ctrl_irq {
-  /**
-   * Indicates that an asynchronous transaction completed.
-   */
-  kDifOtpCtrlIrqDone,
-  /**
-   * Indicates that an error has occurred in the OTP controller.
-   */
-  kDifOtpCtrlIrqError,
-} dif_otp_ctrl_irq_t;
-
-/**
- * A snapshot of the enablement state of the interrupts for OTP.
- *
- * This is an opaque type, to be used with the `dif_otp_ctrl_irq_disable_all()`
- * and
- * `dif_otp_ctrl_irq_restore_all()` functions.
- */
-typedef uint32_t dif_otp_ctrl_irq_snapshot_t;
 
 /**
  * A hardware-level status code.
@@ -469,13 +294,12 @@ typedef struct dif_otp_ctrl_status {
  *
  * This function does not actuate the hardware.
  *
- * @param params Hardware instantiation parameters.
+ * @param base_addr Hardware instantiation base address.
  * @param[out] otp Out param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_init(dif_otp_ctrl_params_t params,
-                                        dif_otp_ctrl_t *otp);
+dif_result_t dif_otp_ctrl_init(mmio_region_t base_addr, dif_otp_ctrl_t *otp);
 
 /**
  * Configures OTP with runtime information.
@@ -488,8 +312,8 @@ dif_otp_ctrl_result_t dif_otp_ctrl_init(dif_otp_ctrl_params_t params,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_lockable_result_t dif_otp_ctrl_configure(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_config_t config);
+dif_result_t dif_otp_ctrl_configure(const dif_otp_ctrl_t *otp,
+                                    dif_otp_ctrl_config_t config);
 
 /**
  * Runs an integrity check on the OTP hardware.
@@ -501,8 +325,7 @@ dif_otp_ctrl_lockable_result_t dif_otp_ctrl_configure(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_lockable_result_t dif_otp_ctrl_check_integrity(
-    const dif_otp_ctrl_t *otp);
+dif_result_t dif_otp_ctrl_check_integrity(const dif_otp_ctrl_t *otp);
 
 /**
  * Runs a consistency check on the OTP hardware.
@@ -514,8 +337,7 @@ dif_otp_ctrl_lockable_result_t dif_otp_ctrl_check_integrity(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_lockable_result_t dif_otp_ctrl_check_consistency(
-    const dif_otp_ctrl_t *otp);
+dif_result_t dif_otp_ctrl_check_consistency(const dif_otp_ctrl_t *otp);
 
 /**
  * Locks out `dif_otp_ctrl_configure()` and the
@@ -528,7 +350,7 @@ dif_otp_ctrl_lockable_result_t dif_otp_ctrl_check_consistency(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp);
+dif_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp);
 
 /**
  * Checks whether `dif_otp_ctrl_configure()` and the `dif_otp_ctrl_check_*()`
@@ -539,8 +361,8 @@ dif_otp_ctrl_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_config_is_locked(const dif_otp_ctrl_t *otp,
-                                                    bool *is_locked);
+dif_result_t dif_otp_ctrl_config_is_locked(const dif_otp_ctrl_t *otp,
+                                           bool *is_locked);
 
 /**
  * Locks out reads to a SW partition.
@@ -560,8 +382,8 @@ dif_otp_ctrl_result_t dif_otp_ctrl_config_is_locked(const dif_otp_ctrl_t *otp,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_lock_reading(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition);
+dif_result_t dif_otp_ctrl_lock_reading(const dif_otp_ctrl_t *otp,
+                                       dif_otp_ctrl_partition_t partition);
 
 /**
  * Checks whether reads to a SW partition are locked out.
@@ -575,98 +397,9 @@ dif_otp_ctrl_result_t dif_otp_ctrl_lock_reading(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_reading_is_locked(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    bool *is_locked);
-
-/**
- * Returns whether a particular interrupt is currently pending.
- *
- * @param otp An OTP handle.
- * @param irq An interrupt type.
- * @param[out] is_pending Out-param for whether the interrupt is pending.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_is_pending(const dif_otp_ctrl_t *otp,
-                                                  dif_otp_ctrl_irq_t irq,
-                                                  bool *is_pending);
-
-/**
- * Acknowledges a particular interrupt, indicating to the hardware that it has
- * been successfully serviced.
- *
- * @param otp An OTP handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_acknowledge(const dif_otp_ctrl_t *otp,
-                                                   dif_otp_ctrl_irq_t irq);
-
-/**
- * Checks whether a particular interrupt is currently enabled or disabled.
- *
- * @param otp An OTP handle.
- * @param irq An interrupt type.
- * @param[out] state Out-param toggle state of the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_get_enabled(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_irq_t irq,
-    dif_otp_ctrl_toggle_t *state);
-
-/**
- * Sets whether a particular interrupt is currently enabled or disabled.
- *
- * @param otp An OTP handle.
- * @param irq An interrupt type.
- * @param state The new toggle state for the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_set_enabled(const dif_otp_ctrl_t *otp,
-                                                   dif_otp_ctrl_irq_t irq,
-                                                   dif_otp_ctrl_toggle_t state);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param otp An OTP handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_force(const dif_otp_ctrl_t *otp,
-                                             dif_otp_ctrl_irq_t irq);
-
-/**
- * Disables all interrupts, optionally snapshotting all toggle state for later
- * restoration.
- *
- * @param otp An OTP handle.
- * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_disable_all(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_irq_snapshot_t *snapshot);
-
-/**
- * Restores interrupts from the given snapshot.
- *
- * This function can be used with `dif_otp_ctrl_irq_disable_all()` to temporary
- * interrupt save-and-restore.
- *
- * @param otp An OTP handle.
- * @param snapshot A snapshot to restore from.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_restore_all(
-    const dif_otp_ctrl_t *otp, const dif_otp_ctrl_irq_snapshot_t *snapshot);
+dif_result_t dif_otp_ctrl_reading_is_locked(const dif_otp_ctrl_t *otp,
+                                            dif_otp_ctrl_partition_t partition,
+                                            bool *is_locked);
 
 /**
  * Gets the current status of the OTP controller.
@@ -676,8 +409,8 @@ dif_otp_ctrl_result_t dif_otp_ctrl_irq_restore_all(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
-                                              dif_otp_ctrl_status_t *status);
+dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
+                                     dif_otp_ctrl_status_t *status);
 
 /**
  * Schedules a read on the Direct Access Interface.
@@ -696,9 +429,9 @@ dif_otp_ctrl_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read_start(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint32_t address);
+dif_result_t dif_otp_ctrl_dai_read_start(const dif_otp_ctrl_t *otp,
+                                         dif_otp_ctrl_partition_t partition,
+                                         uint32_t address);
 
 /**
  * Gets the result of a completed 32-bit read operation on the Direct Access
@@ -712,8 +445,8 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read_start(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read32_end(const dif_otp_ctrl_t *otp,
-                                                      uint32_t *value);
+dif_result_t dif_otp_ctrl_dai_read32_end(const dif_otp_ctrl_t *otp,
+                                         uint32_t *value);
 
 /**
  * Gets the result of a completed 64-bit read operation on the Direct Access
@@ -727,8 +460,8 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read32_end(const dif_otp_ctrl_t *otp,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
-                                                      uint64_t *value);
+dif_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
+                                         uint64_t *value);
 
 /**
  * Schedules a 32-bit write on the Direct Access Interface.
@@ -750,9 +483,9 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program32(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint32_t address, uint32_t value);
+dif_result_t dif_otp_ctrl_dai_program32(const dif_otp_ctrl_t *otp,
+                                        dif_otp_ctrl_partition_t partition,
+                                        uint32_t address, uint32_t value);
 
 /**
  * Schedules a 64-bit write on the Direct Access Interface.
@@ -771,9 +504,9 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program32(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program64(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint32_t address, uint64_t value);
+dif_result_t dif_otp_ctrl_dai_program64(const dif_otp_ctrl_t *otp,
+                                        dif_otp_ctrl_partition_t partition,
+                                        uint32_t address, uint64_t value);
 
 /**
  * Schedules a hardware digest operation on the Direct Access Interface.
@@ -794,9 +527,9 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program64(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_digest(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint64_t digest);
+dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
+                                     dif_otp_ctrl_partition_t partition,
+                                     uint64_t digest);
 
 /**
  * Gets the buffered digest value for the given partition.
@@ -814,9 +547,9 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_digest(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_digest_result_t dif_otp_ctrl_get_digest(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint64_t *digest);
+dif_result_t dif_otp_ctrl_get_digest(const dif_otp_ctrl_t *otp,
+                                     dif_otp_ctrl_partition_t partition,
+                                     uint64_t *digest);
 
 /**
  * Performs a memory-mapped read of the given partition, if it supports them.
@@ -838,47 +571,10 @@ dif_otp_ctrl_digest_result_t dif_otp_ctrl_get_digest(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_read_blocking(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint32_t address, uint32_t *buf, size_t len);
-
-/**
- * Performs a memory-mapped read of the TEST region.
- *
- * In particular, this function will read `len` words, starting at `address`.
- *
- * The same caveats for `dif_otp_ctrl_dai_read_start()` apply to `address`; in
- * addition, `address + len` must also be in-range and must not overflow.
- *
- * @param otp An OTP handle.
- * @param address The address to read from.
- * @param[out] buf A buffer of words to write read values to.
- * @param len The number of words to read.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_read_test(const dif_otp_ctrl_t *otp,
-                                             uint32_t address, uint32_t *buf,
-                                             size_t len);
-
-/**
- * Performs a memory-mapped write of the TEST region.
- *
- * In particular, this function will write `len` words, starting at `address`.
- *
- * The same caveats for `dif_otp_ctrl_dai_program32()` apply to `address`; in
- * addition, `address + len` must also be in-range and must not overflow.
- *
- * @param otp An OTP handle.
- * @param address An absolute address to write to.
- * @param buf A buffer of words to write write values from.
- * @param len The number of words to write.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_write_test(const dif_otp_ctrl_t *otp,
-                                              uint32_t address,
-                                              const uint32_t *buf, size_t len);
+dif_result_t dif_otp_ctrl_read_blocking(const dif_otp_ctrl_t *otp,
+                                        dif_otp_ctrl_partition_t partition,
+                                        uint32_t address, uint32_t *buf,
+                                        size_t len);
 
 #ifdef __cplusplus
 }  // extern "C"
