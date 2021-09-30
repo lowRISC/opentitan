@@ -33,9 +33,9 @@ static bool aes_output_valid(const dif_aes_t *aes) {
 
 // CLKMGR CFG and Definitions
 
-void test_aes_hint_set(const dif_clkmgr_t *clkmgr) {
+void set_aes_hint(const dif_clkmgr_t *clkmgr) {
   // Write the AES clk hint to 1 within clkmgr to indicate AES clk is ready to be gated.
-  //  Verify that the AES clk hint status within clkmgr reads 0 (AES is idle).p
+  //  Verify that the AES clk hint status within clkmgr reads 0 (AES is idle).
   //
   // Get the initial state of the hint for the clock The clock hint might be
   // enabled or disabled depending on reset behavior - either is fine for the
@@ -57,20 +57,20 @@ void test_aes_hint_set(const dif_clkmgr_t *clkmgr) {
   CHECK(enabled == expected);
 }
 
-void test_aes_hint_active(const dif_clkmgr_t *clkmgr) {
+void test_aes_active(const dif_clkmgr_t *clkmgr) {
   // Verify that the AES clk hint status within clkmgr now reads 1 (AES is not idle),
   //   before the AES operation is complete.
   bool enabled;
-  CHECK(dif_clkmgr_hintable_clock_get_hint(clkmgr, kTopEarlgreyHintableClocksMainAes, &enabled) ==
+  CHECK(dif_clkmgr_hintable_clock_get_enabled(clkmgr, kTopEarlgreyHintableClocksMainAes, &enabled) ==
         kDifClkmgrOk);
   CHECK(enabled == true);
 }
 
-void test_aes_hint_idle(const dif_clkmgr_t *clkmgr) {
+void test_aes_idle(const dif_clkmgr_t *clkmgr) {
   // Verify that the AES clk hint status within clkmgr now reads 0 again (AES is idle),
   //   after the AES operation is complete.
   bool enabled;
-  CHECK(dif_clkmgr_hintable_clock_get_hint(clkmgr, kTopEarlgreyHintableClocksMainAes, &enabled) ==
+  CHECK(dif_clkmgr_hintable_clock_get_enabled(clkmgr, kTopEarlgreyHintableClocksMainAes, &enabled) ==
         kDifClkmgrOk);
   CHECK(enabled == false);
 }
@@ -134,7 +134,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_aes_reset(&aes));
 
   LOG_INFO("Set AES hint");
-  test_aes_hint_set(&clkmgr);
+  set_aes_hint(&clkmgr);
 
   // Mask the key. Note that this should not be done manually. Software is
   // expected to get the key in two shares right from the beginning.
@@ -171,7 +171,7 @@ bool test_main(void) {
 
   //Verify that the AES clk hint status within clkmgr now reads 1 (AES is not
   //idle), before the AES operation is complete.
-  test_aes_hint_active(&clkmgr);
+  test_aes_active(&clkmgr);
 
   // Read out the produced cipher text.
   dif_aes_data_t out_data_cipher;
@@ -223,7 +223,7 @@ bool test_main(void) {
 
   //Verify that the AES clk hint status within clkmgr now reads 0 again (AES is
   //idle), after the AES operation is complete.
-  test_aes_hint_idle(&clkmgr);
+  test_aes_idle(&clkmgr);
 
   return true;
 }
