@@ -38,12 +38,9 @@ class OTBNState:
         # yielding in OTBNInsn.execute. For non instruction related stalls,
         # setting self.non_insn_stall will produce a stall.
         #
-        # As a special case, we stall until the URND reseed is completed then
-        # stall for one more cycle before fetching the first instruction (to
-        # match the behaviour of the RTL). This is modelled by setting
-        # self._start_stall, self._urnd_stall and self.non_insn_stall
+        # As a special case, we stall until the URND reseed is completed. This
+        # is modelled by setting self._urnd_stall and self.non_insn_stall
         self.non_insn_stall = False
-        self._start_stall = False
         self._urnd_stall = False
 
         self.loop_stack = LoopStack()
@@ -163,15 +160,10 @@ class OTBNState:
         if self._urnd_stall:
             if self._urnd_reseed_complete:
                 self._urnd_stall = False
-            return
+                self.non_insn_stall = False
+                self.ext_regs.commit()
 
-        # If self._start_stall, this is the end of the stall cycle at the start
-        # of a run. Clear self.non_insn_stall and self._start_stall
-        # and commit self.ext_regs (so the start flag becomes visible).
-        if self._start_stall:
-            self._start_stall = False
-            self.non_insn_stall = False
-            self.ext_regs.commit()
+            return
 
         # If we're stalled, there's nothing more to do: we only commit the rest
         # of the architectural state when we finish our stall cycles.
@@ -204,7 +196,6 @@ class OTBNState:
         self.ext_regs.write('STATUS', Status.BUSY_EXECUTE, True)
         self.ext_regs.write('INSN_CNT', 0, True)
         self.running = True
-        self._start_stall = True
         self._urnd_stall = True
         self.non_insn_stall = True
         self.pending_halt = False
