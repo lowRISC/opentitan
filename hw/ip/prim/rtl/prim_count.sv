@@ -116,11 +116,10 @@ module prim_count import prim_count_pkg::*; #(
     assign cnt_o = OutSelDnCnt ? down_cnt : up_cnt_q[0];
     assign err   = max_val != sum | msb;
 
-    // TODO: check if it covers counter overflow.
     `ASSERT(CrossCntErrForward_A,
-            (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != max_val) |-> err_o)
+            (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}) |-> err_o)
     `ASSERT(CrossCntErrBackward_A, err_o |->
-            (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != max_val))
+            (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}))
 
   end else if (CntStyle == DupCnt) begin : gen_dup_cnt_hardening
     // duplicate count compare is always valid
