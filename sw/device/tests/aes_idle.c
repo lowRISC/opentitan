@@ -123,9 +123,6 @@ bool test_main(void) {
 
   CHECK(dif_clkmgr_init(params, &clkmgr) == kDifClkmgrOk);
 
-  LOG_INFO("Set AES hint");
-  test_aes_hint_set(&clkmgr);
-
   LOG_INFO("Entropy complex ini...");
   // First of all, we need to get the entropy complex up and running.
   entropy_testutils_boot_mode_init();
@@ -135,6 +132,9 @@ bool test_main(void) {
   CHECK_DIF_OK(
       dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
   CHECK_DIF_OK(dif_aes_reset(&aes));
+
+  LOG_INFO("Set AES hint");
+  test_aes_hint_set(&clkmgr);
 
   // Mask the key. Note that this should not be done manually. Software is
   // expected to get the key in two shares right from the beginning.
