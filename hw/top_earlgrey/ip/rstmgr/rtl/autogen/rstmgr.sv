@@ -66,8 +66,6 @@ module rstmgr
 
 );
 
-  import rstmgr_reg_pkg::*;
-
   // receive POR and stretch
   // The por is at first stretched and synced on clk_aon
   // The rst_ni and pok_i input will be changed once AST is integrated
