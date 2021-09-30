@@ -141,7 +141,8 @@ static void init_flash(void) {
 /** Key manager configuration steps performed in mask ROM. */
 rom_error_t keymgr_rom_test(void) {
   ASSERT_OK(keymgr_check_state(kKeymgrStateReset));
-  keymgr_set_next_stage_inputs(&kBindingValueRomExt, kMaxVerRomExt);
+  keymgr_set_next_stage_inputs(&kBindingValueRomExt, &kBindingValueRomExt,
+                               kMaxVerRomExt);
   return kErrorOk;
 }
 
@@ -158,7 +159,8 @@ rom_error_t keymgr_rom_ext_test(void) {
   keymgr_advance_state();
   ASSERT_OK(keymgr_check_state(kKeymgrStateCreatorRootKey));
 
-  keymgr_set_next_stage_inputs(&kBindingValueBl0, kMaxVerBl0);
+  keymgr_set_next_stage_inputs(&kBindingValueBl0, &kBindingValueBl0,
+                               kMaxVerBl0);
 
   // FIXME: Check `kBindingValueBl0` before advancing state.
   keymgr_advance_state();
