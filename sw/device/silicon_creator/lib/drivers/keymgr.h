@@ -65,8 +65,10 @@ typedef enum keymgr_state {
  * @param max_key_version Maximum key version from the manifest of the next
  * stage.
  */
-void keymgr_set_next_stage_inputs(const keymgr_binding_value_t *binding_value,
-                                  uint32_t max_key_version);
+void keymgr_set_next_stage_inputs(
+    const keymgr_binding_value_t *binding_value_sealing,
+    const keymgr_binding_value_t *binding_value_attestation,
+    uint32_t max_key_version);
 
 /**
  * Initializes the key manager.

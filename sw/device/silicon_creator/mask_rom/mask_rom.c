@@ -144,6 +144,7 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest) {
 static rom_error_t mask_rom_boot(const manifest_t *manifest) {
   RETURN_IF_ERROR(keymgr_check_state(kKeymgrStateReset));
   keymgr_set_next_stage_inputs(&manifest->binding_value,
+                               &manifest->binding_value,
                                manifest->max_key_version);
 
   // Unlock execution of ROM_EXT executable code (text) sections.
