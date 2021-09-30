@@ -65,7 +65,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                               input bit                blocking     = $urandom_range(0, 1),
                               input bit                check_rdata  = 0,
                               input bit [TL_DW-1:0]    exp_rdata    = '0,
-                              input tlul_pkg::tl_type_e tl_type     = tlul_pkg::DataType,
+                              input mubi4_e            instr_type   = MuBi4False,
                               output logic [TL_DW-1:0] rdata);
     tl_access(.addr(addr),
               .data(rdata),
@@ -75,7 +75,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
               .check_exp_data(check_rdata),
               .exp_data(exp_rdata),
               .compare_mask(mask),
-              .tl_type(tl_type),
+              .instr_type(instr_type),
               .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
@@ -85,13 +85,13 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                                bit [TL_DW-1:0]  data,
                                bit [TL_DBW-1:0] mask        = get_rand_contiguous_mask(),
                                bit              blocking    = $urandom_range(0, 1),
-                               tlul_pkg::tl_type_e tl_type  = tlul_pkg::DataType);
+                               mubi4_e          instr_type  = MuBi4False);
     tl_access(.addr(addr),
               .data(data),
               .mask(mask),
               .write(1'b1),
               .blocking(blocking),
-              .tl_type(tl_type),
+              .instr_type(instr_type),
               .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
@@ -102,14 +102,14 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                              int num_stress_ops,
                              bit en_ifetch = 0);
     bit [TL_DW-1:0] data;
-    tlul_pkg::tl_type_e tl_type;
+    mubi4_e instr_type;
 
     repeat (num_stress_ops) begin
       // fully randomize data
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
 
       // never send InstrType transactions unless en_ifetch is enabled
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_type, !en_ifetch -> tl_type == tlul_pkg::DataType;)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_type, !en_ifetch -> instr_type == MuBi4False;)
 
       tl_access(.addr(addr),
                 .data(data),
@@ -117,7 +117,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                 .write($urandom_range(0, 1)),
                 .check_rsp(!en_ifetch),
                 .blocking(1'b0),
-                .tl_type(tl_type),
+                .instr_type(instr_type),
                 .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
     end
     csr_utils_pkg::wait_no_outstanding_access();
@@ -135,7 +135,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                            bit en_ifetch = 0);
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
-    tlul_pkg::tl_type_e tl_type;
+    mubi4_e instr_type;
     repeat (num_ops) begin
       bit completed, saw_err;
 
@@ -144,7 +144,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
 
       // never send InstrType transactions unless en_ifetch is enabled
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_type, !en_ifetch -> tl_type == tlul_pkg::DataType;)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_type, !en_ifetch -> instr_type == MuBi4False;)
 
       tl_access_w_abort(.addr(addr),
                         .data(data),
@@ -154,7 +154,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                         .write($urandom_range(0, 1)),
                         .blocking(blocking),
                         .check_rsp(!en_ifetch),
-                        .tl_type(tl_type),
+                        .instr_type(instr_type),
                         .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h),
                         .req_abort_pct((abort) ? 100 : 0));
     end

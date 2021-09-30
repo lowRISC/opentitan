@@ -300,7 +300,7 @@ module hmac
     .rst_ni,
     .tl_i        (tl_win_h2d),
     .tl_o        (tl_win_d2h),
-    .en_ifetch_i (tlul_pkg::InstrDis),
+    .en_ifetch_i (prim_mubi_pkg::MuBi4False),
     .req_o       (msg_fifo_req   ),
     .req_type_o  (               ),
     .gnt_i       (msg_fifo_gnt   ),

@@ -201,15 +201,16 @@
         hwaccess: "hro",
         regwen:   "EXEC_REGWEN"
         fields: [
-          { bits: "2:0",
+          { bits: "3:0",
             name: "EN",
+            mubi: true,
             desc: '''
-                  Write 0x5 to this field to enable execution from SRAM.
+                  Write kMubi4True to this field to enable execution from SRAM.
                   Note that this register only takes effect if the EN_SRAM_IFETCH chicken switch
-                  in the OTP HW_CFG partition is set to 0xA5. Otherwise execution from SRAM cannot be
+                  in the OTP HW_CFG partition is set to kMubi8True. Otherwise execution from SRAM cannot be
                   enabled via this register.
                   ''',
-            resval: 0
+            resval: false
           },
         ]
       },

@@ -781,7 +781,7 @@ module kmac
   ) u_tlul_adapter_msgfifo (
     .clk_i,
     .rst_ni,
-    .en_ifetch_i (tlul_pkg::InstrDis),
+    .en_ifetch_i (prim_mubi_pkg::MuBi4False),
     .tl_i        (tl_win_h2d[WinMsgFifo]),
     .tl_o        (tl_win_d2h[WinMsgFifo]),
 

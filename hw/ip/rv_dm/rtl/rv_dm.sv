@@ -309,7 +309,7 @@ module rv_dm
     .clk_i,
     .rst_ni,
     .req_i        (host_req),
-    .type_i       (tlul_pkg::DataType),
+    .instr_type_i (prim_mubi_pkg::MuBi4False),
     .gnt_o        (host_gnt),
     .addr_i       (host_add),
     .we_i         (host_we),
@@ -443,9 +443,10 @@ module rv_dm
   );
 `endif
 
-  tlul_pkg::tl_instr_en_e en_ifetch;
+  prim_mubi_pkg::mubi4_e en_ifetch;
   assign en_ifetch = (lc_hw_debug_en[EnFetch] == lc_ctrl_pkg::On) ?
-                     tlul_pkg::InstrEn : tlul_pkg::InstrDis;
+                     prim_mubi_pkg::MuBi4True :
+                     prim_mubi_pkg::MuBi4False;
 
   logic rom_en;
   assign rom_en = (lc_hw_debug_en[EnRom] == lc_ctrl_pkg::On);

@@ -195,6 +195,7 @@ module otp_ctrl
   logic [1:0]  tlul_rerror;
   logic [31:0] tlul_rdata;
 
+  import prim_mubi_pkg::MuBi4False;
   tlul_adapter_sram #(
     .SramAw      ( SwWindowAddrWidth ),
     .SramDw      ( 32 ),
@@ -204,7 +205,7 @@ module otp_ctrl
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
-    .en_ifetch_i ( tlul_pkg::InstrDis ),
+    .en_ifetch_i ( MuBi4False         ),
     .tl_i        ( tl_win_h2d         ),
     .tl_o        ( tl_win_d2h         ),
     .req_o       (  tlul_req          ),

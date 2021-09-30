@@ -143,7 +143,7 @@ module prim_generic_flash #(
     .rst_ni,
     .tl_i,
     .tl_o,
-    .en_ifetch_i(tlul_pkg::InstrDis),
+    .en_ifetch_i(prim_mubi_pkg::MuBi4False),
     .req_o(cfg_req),
     .req_type_o(),
     .gnt_i(1'b1),

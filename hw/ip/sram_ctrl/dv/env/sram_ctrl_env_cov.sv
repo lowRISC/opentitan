@@ -85,11 +85,11 @@ class sram_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(sram_ctrl_env_cfg));
                                        [lc_ctrl_pkg::On+1 : '1]};
     }
     csr_exec_cp : coverpoint csr_exec {
-      bins instr_en = {tlul_pkg::InstrEn};
-      bins instr_valid_dis = {tlul_pkg::InstrDis};
-      bins instr_invalid_dis = {[0 : tlul_pkg::InstrDis-1],
-                                [tlul_pkg::InstrDis+1 : tlul_pkg::InstrEn-1],
-                                [tlul_pkg::InstrEn+1 : '1]};
+      bins instr_en = {prim_mubi_pkg::MuBi4True};
+      bins instr_valid_dis = {prim_mubi_pkg::MuBi4False};
+      bins instr_invalid_dis = {[0 : prim_mubi_pkg::MuBi4False-1],
+                                [prim_mubi_pkg::MuBi4False+1 : prim_mubi_pkg::MuBi4True-1],
+                                [prim_mubi_pkg::MuBi4True+1 : '1]};
     }
     executable_cross: cross lc_hw_debug_en_cp, en_sram_ifetch_cp, csr_exec_cp {
       bins csr_exec_en = binsof(en_sram_ifetch_cp.sram_ifetch_enable) &&

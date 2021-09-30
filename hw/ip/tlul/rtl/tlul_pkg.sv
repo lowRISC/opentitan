@@ -24,19 +24,6 @@ package tlul_pkg;
     AccessAckData = 3'h 1
   } tl_d_op_e;
 
-  typedef enum logic [2:0] {
-    InstrEn       = 3'b101,
-    InstrDis      = 3'b010
-  } tl_instr_en_e;
-
-  // used for intermodule connections
-  typedef tl_instr_en_e tl_instr_en_t;
-
-  typedef enum logic [1:0] {
-    InstrType     = 2'b01,
-    DataType      = 2'b10
-  } tl_type_e;
-
   parameter int H2DCmdMaxWidth  = 57;
   parameter int H2DCmdIntgWidth = 7;
   parameter int H2DCmdFullWidth = H2DCmdMaxWidth + H2DCmdIntgWidth;
@@ -49,20 +36,20 @@ package tlul_pkg;
 
   typedef struct packed {
     logic [4:0]                 rsvd;
-    tl_type_e                   tl_type;
+    prim_mubi_pkg::mubi4_e      instr_type;
     logic [H2DCmdIntgWidth-1:0] cmd_intg;
     logic [DataIntgWidth-1:0]   data_intg;
   } tl_a_user_t;
 
   parameter tl_a_user_t TL_A_USER_DEFAULT = '{
     rsvd: '0,
-    tl_type: DataType,
+    instr_type: prim_mubi_pkg::MuBi4False,
     cmd_intg:  '0,
     data_intg: '0
   };
 
   typedef struct packed {
-    tl_type_e                     tl_type;
+    prim_mubi_pkg::mubi4_e        instr_type;
     logic   [top_pkg::TL_AW-1:0]  addr;
     tl_a_op_e                     opcode;
     logic  [top_pkg::TL_DBW-1:0]  mask;
@@ -137,7 +124,7 @@ package tlul_pkg;
     logic malformed_err;
     logic unused_user;
     unused_user = |user;
-    malformed_err = ~(user.tl_type inside {InstrType, DataType});
+    malformed_err = prim_mubi_pkg::mubi4_test_invalid(user.instr_type);
     return malformed_err;
   endfunction // tl_a_user_chk
 
@@ -149,7 +136,7 @@ package tlul_pkg;
     payload.addr = tl.a_address;
     payload.opcode = tl.a_opcode;
     payload.mask = tl.a_mask;
-    payload.tl_type = tl.a_user.tl_type;
+    payload.instr_type = tl.a_user.instr_type;
     return payload;
   endfunction // extract_h2d_payload
 

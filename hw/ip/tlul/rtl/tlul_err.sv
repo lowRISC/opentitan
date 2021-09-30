@@ -29,7 +29,7 @@ module tlul_err import tlul_pkg::*; (
 
   // An instruction type transaction cannot be write
   logic instr_wr_err;
-  assign instr_wr_err = (tl_i.a_user.tl_type == InstrType) &
+  assign instr_wr_err = prim_mubi_pkg::mubi4_test_true_strict(tl_i.a_user.instr_type) &
                         (op_full | op_partial);
 
   // Anything that doesn't fall into the permitted category, it raises an error

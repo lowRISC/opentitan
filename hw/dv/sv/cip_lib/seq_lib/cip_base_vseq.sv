@@ -158,12 +158,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit [BUS_DW-1:0]  compare_mask = '1,
                          input bit               check_exp_data = 1'b0,
                          input bit               blocking = csr_utils_pkg::default_csr_blocking,
-                         input tl_type_e         tl_type = DataType,
+                         input mubi4_e           instr_type = MuBi4False,
                          tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
                          input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
     bit completed, saw_err;
     tl_access_w_abort(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp, exp_data,
-                      compare_mask, check_exp_data, blocking, tl_type, tl_sequencer_h,
+                      compare_mask, check_exp_data, blocking, instr_type, tl_sequencer_h,
                       tl_intg_err_type);
   endtask
 
@@ -182,19 +182,19 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       input bit [BUS_DW-1:0]  compare_mask = '1,
       input bit               check_exp_data = 1'b0,
       input bit               blocking = csr_utils_pkg::default_csr_blocking,
-      input tl_type_e         tl_type = DataType,
+      input mubi4_e           instr_type = MuBi4False,
       tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
       input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone,
       input int               req_abort_pct = 0);
 
     if (blocking) begin
       tl_access_sub(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp, exp_data,
-                    compare_mask, check_exp_data, req_abort_pct, tl_type, tl_sequencer_h,
+                    compare_mask, check_exp_data, req_abort_pct, instr_type, tl_sequencer_h,
                     tl_intg_err_type);
     end else begin
       fork
         tl_access_sub(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp, exp_data,
-                      compare_mask, check_exp_data, req_abort_pct, tl_type, tl_sequencer_h,
+                      compare_mask, check_exp_data, req_abort_pct, instr_type, tl_sequencer_h,
                       tl_intg_err_type);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -214,14 +214,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              input bit [BUS_DW-1:0]  compare_mask = '1,
                              input bit               check_exp_data = 1'b0,
                              input int               req_abort_pct = 0,
-                             input tl_type_e         tl_type = DataType,
+                             input mubi4_e           instr_type = MuBi4False,
                              tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
                              input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
     `DV_SPINWAIT(
         // thread to read/write tlul
         cip_tl_host_single_seq tl_seq;
         `uvm_create_on(tl_seq, tl_sequencer_h)
-        tl_seq.tl_type = tl_type;
+        tl_seq.instr_type = instr_type;
         tl_seq.tl_intg_err_type = tl_intg_err_type;
         if (cfg.zero_delays) begin
           tl_seq.min_req_delay = 0;

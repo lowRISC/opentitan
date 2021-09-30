@@ -35,12 +35,12 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
   // The values detected from interface and EXEC csr writes - are not immediately valid
   // as they need to be "latched" by the internal scb logic whenever an addr_phase_write
   // is detected on the sram_tl_a_chan_fifo.
-  bit [2:0] detected_csr_exec = '0;
+  bit [3:0] detected_csr_exec = '0;
   bit [3:0] detected_hw_debug_en = '0;
   bit [7:0] detected_en_sram_ifetch = '0;
 
   // The values that are "latched" by sram_tl_a_chan_fifo and are assumed to be valid
-  bit [2:0] valid_csr_exec;
+  bit [3:0] valid_csr_exec;
   bit [3:0] valid_hw_debug_en;
   bit [7:0] valid_en_sram_ifetch;
 
@@ -200,7 +200,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
                         item.get_error_size_over_max()),
               UVM_HIGH)
 
-    if (item.a_user[15:14] == tlul_pkg::InstrType) begin
+    if (item.a_user[15:14] == prim_mubi_pkg::MuBi4True) begin
       // 2 error cases if an InstrType transaction is seen:
       // - if it is a write transaction
       // - if the SRAM is not configured in executable mode
@@ -404,7 +404,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
         valid_en_sram_ifetch = detected_en_sram_ifetch;
 
         allow_ifetch = (valid_en_sram_ifetch == otp_ctrl_pkg::Enabled) ?
-                       (valid_csr_exec == tlul_pkg::InstrEn)           :
+                       (valid_csr_exec == prim_mubi_pkg::MuBi4True)           :
                        (valid_hw_debug_en == lc_ctrl_pkg::On);
 
         if (!cfg.en_scb) continue;

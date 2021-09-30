@@ -378,7 +378,7 @@ module tb;
       force `CPU_HIER.u_ibus_trans.rst_ni = 1'b0;
       force `CPU_HIER.u_dbus_trans.rst_ni = 1'b0;
       // tl type is used to calculate ECC and we use DataType for cpu data interface
-      force cpu_d_tl_if.h2d.a_user.tl_type = tlul_pkg::DataType;
+      force cpu_d_tl_if.h2d.a_user.instr_type = prim_mubi_pkg::MuBi4False;
       force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
       force cpu_d_tl_if.d2h = `CPU_TL_ADAPT_D_HIER.tl_i;
     end else begin

@@ -64,7 +64,7 @@ module kmac_staterd
 
     .tl_i,
     .tl_o,
-    .en_ifetch_i (tlul_pkg::InstrDis),
+    .en_ifetch_i (prim_mubi_pkg::MuBi4False),
     .req_o       (tlram_req),
     .req_type_o  (),
     .gnt_i       (tlram_gnt),

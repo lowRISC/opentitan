@@ -160,7 +160,7 @@ module rom_ctrl
 
     .tl_i         (tl_rom_h2d),
     .tl_o         (tl_rom_d2h),
-    .en_ifetch_i  (tlul_pkg::InstrEn),
+    .en_ifetch_i  (prim_mubi_pkg::MuBi4True),
     .req_o        (bus_rom_req),
     .req_type_o   (),
     .gnt_i        (bus_rom_gnt),
