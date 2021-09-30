@@ -96,7 +96,7 @@ module rstmgr
         .clk_i(clk_aon_i),
         .rst_ni(rst_por_aon_n[i]),
         .lc_en_i(lc_ctrl_pkg::Off),
-        .lc_en_o(rst_en_o.rst_por_aon[i])
+        .lc_en_o(rst_en_o.por_aon[i])
       );
     end else begin : gen_rst_por_domain
       logic rst_por_aon_premux;
@@ -127,7 +127,7 @@ module rstmgr
         .clk_i(clk_aon_i),
         .rst_ni(rst_por_aon_n[i]),
         .lc_en_i(lc_ctrl_pkg::Off),
-        .lc_en_o(rst_en_o.rst_por_aon[i])
+        .lc_en_o(rst_en_o.por_aon[i])
       );
     end
   end
@@ -322,7 +322,6 @@ module rstmgr
   % for j, name in enumerate(names):
     % for domain in power_domains:
        % if domain in rst.domains:
-
   rstmgr_leaf_rst u_d${domain.lower()}_${name} (
     .clk_i,
     .rst_ni,
@@ -335,14 +334,14 @@ module rstmgr
          % endif
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[${i}] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_${name}[Domain${domain}Sel]),
+    .rst_en_o(rst_en_o.${name}[Domain${domain}Sel]),
     .leaf_rst_o(resets_o.rst_${name}_n[Domain${domain}Sel]),
     .err_o(${err_prefix[j]}cnsty_chk_errs[${i}][Domain${domain}Sel])
   );
       % else:
   assign resets_o.rst_${name}_n[Domain${domain}Sel] = '0;
   assign ${err_prefix[j]}cnsty_chk_errs[${i}][Domain${domain}Sel] = '0;
-  assign rst_en_o.rst_${name}[Domain${domain}Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.${name}[Domain${domain}Sel] = lc_ctrl_pkg::On;
       % endif
     % endfor
     % if len(names) == 1:

@@ -102,7 +102,7 @@ module rstmgr
         .clk_i(clk_aon_i),
         .rst_ni(rst_por_aon_n[i]),
         .lc_en_i(lc_ctrl_pkg::Off),
-        .lc_en_o(rst_en_o.rst_por_aon[i])
+        .lc_en_o(rst_en_o.por_aon[i])
       );
     end else begin : gen_rst_por_domain
       logic rst_por_aon_premux;
@@ -133,7 +133,7 @@ module rstmgr
         .clk_i(clk_aon_i),
         .rst_ni(rst_por_aon_n[i]),
         .lc_en_i(lc_ctrl_pkg::Off),
-        .lc_en_o(rst_en_o.rst_por_aon[i])
+        .lc_en_o(rst_en_o.por_aon[i])
       );
     end
   end
@@ -317,7 +317,6 @@ module rstmgr
   // Generating resets for por
   // Power Domains: ['Aon']
   // Shadowed: False
-
   rstmgr_leaf_rst u_daon_por (
     .clk_i,
     .rst_ni,
@@ -326,19 +325,18 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[0] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_por[DomainAonSel]),
+    .rst_en_o(rst_en_o.por[DomainAonSel]),
     .leaf_rst_o(resets_o.rst_por_n[DomainAonSel]),
     .err_o(cnsty_chk_errs[0][DomainAonSel])
   );
   assign resets_o.rst_por_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[0][Domain0Sel] = '0;
-  assign rst_en_o.rst_por[Domain0Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.por[Domain0Sel] = lc_ctrl_pkg::On;
   assign shadow_cnsty_chk_errs[0] = '0;
 
   // Generating resets for por_io
   // Power Domains: ['Aon']
   // Shadowed: False
-
   rstmgr_leaf_rst u_daon_por_io (
     .clk_i,
     .rst_ni,
@@ -347,19 +345,18 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[1] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_por_io[DomainAonSel]),
+    .rst_en_o(rst_en_o.por_io[DomainAonSel]),
     .leaf_rst_o(resets_o.rst_por_io_n[DomainAonSel]),
     .err_o(cnsty_chk_errs[1][DomainAonSel])
   );
   assign resets_o.rst_por_io_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[1][Domain0Sel] = '0;
-  assign rst_en_o.rst_por_io[Domain0Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.por_io[Domain0Sel] = lc_ctrl_pkg::On;
   assign shadow_cnsty_chk_errs[1] = '0;
 
   // Generating resets for por_io_div2
   // Power Domains: ['Aon']
   // Shadowed: False
-
   rstmgr_leaf_rst u_daon_por_io_div2 (
     .clk_i,
     .rst_ni,
@@ -368,19 +365,18 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[2] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_por_io_div2[DomainAonSel]),
+    .rst_en_o(rst_en_o.por_io_div2[DomainAonSel]),
     .leaf_rst_o(resets_o.rst_por_io_div2_n[DomainAonSel]),
     .err_o(cnsty_chk_errs[2][DomainAonSel])
   );
   assign resets_o.rst_por_io_div2_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[2][Domain0Sel] = '0;
-  assign rst_en_o.rst_por_io_div2[Domain0Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.por_io_div2[Domain0Sel] = lc_ctrl_pkg::On;
   assign shadow_cnsty_chk_errs[2] = '0;
 
   // Generating resets for por_io_div4
   // Power Domains: ['Aon', '0']
   // Shadowed: False
-
   rstmgr_leaf_rst u_daon_por_io_div4 (
     .clk_i,
     .rst_ni,
@@ -389,11 +385,10 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[3] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_por_io_div4[DomainAonSel]),
+    .rst_en_o(rst_en_o.por_io_div4[DomainAonSel]),
     .leaf_rst_o(resets_o.rst_por_io_div4_n[DomainAonSel]),
     .err_o(cnsty_chk_errs[3][DomainAonSel])
   );
-
   rstmgr_leaf_rst u_d0_por_io_div4 (
     .clk_i,
     .rst_ni,
@@ -402,7 +397,7 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[3] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_por_io_div4[Domain0Sel]),
+    .rst_en_o(rst_en_o.por_io_div4[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_por_io_div4_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[3][Domain0Sel])
   );
@@ -411,7 +406,6 @@ module rstmgr
   // Generating resets for por_usb
   // Power Domains: ['Aon']
   // Shadowed: False
-
   rstmgr_leaf_rst u_daon_por_usb (
     .clk_i,
     .rst_ni,
@@ -420,13 +414,13 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[4] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_por_usb[DomainAonSel]),
+    .rst_en_o(rst_en_o.por_usb[DomainAonSel]),
     .leaf_rst_o(resets_o.rst_por_usb_n[DomainAonSel]),
     .err_o(cnsty_chk_errs[4][DomainAonSel])
   );
   assign resets_o.rst_por_usb_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[4][Domain0Sel] = '0;
-  assign rst_en_o.rst_por_usb[Domain0Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.por_usb[Domain0Sel] = lc_ctrl_pkg::On;
   assign shadow_cnsty_chk_errs[4] = '0;
 
   // Generating resets for lc
@@ -434,8 +428,7 @@ module rstmgr
   // Shadowed: True
   assign resets_o.rst_lc_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[5][DomainAonSel] = '0;
-  assign rst_en_o.rst_lc[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.lc[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_lc (
     .clk_i,
     .rst_ni,
@@ -444,14 +437,13 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[5] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_lc[Domain0Sel]),
+    .rst_en_o(rst_en_o.lc[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_lc_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[5][Domain0Sel])
   );
   assign resets_o.rst_lc_shadowed_n[DomainAonSel] = '0;
   assign shadow_cnsty_chk_errs[5][DomainAonSel] = '0;
-  assign rst_en_o.rst_lc_shadowed[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.lc_shadowed[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_lc_shadowed (
     .clk_i,
     .rst_ni,
@@ -460,7 +452,7 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[5] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_lc_shadowed[Domain0Sel]),
+    .rst_en_o(rst_en_o.lc_shadowed[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_lc_shadowed_n[Domain0Sel]),
     .err_o(shadow_cnsty_chk_errs[5][Domain0Sel])
   );
@@ -468,7 +460,6 @@ module rstmgr
   // Generating resets for lc_io_div4
   // Power Domains: ['0', 'Aon']
   // Shadowed: True
-
   rstmgr_leaf_rst u_daon_lc_io_div4 (
     .clk_i,
     .rst_ni,
@@ -477,11 +468,10 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_lc_io_div4[DomainAonSel]),
+    .rst_en_o(rst_en_o.lc_io_div4[DomainAonSel]),
     .leaf_rst_o(resets_o.rst_lc_io_div4_n[DomainAonSel]),
     .err_o(cnsty_chk_errs[6][DomainAonSel])
   );
-
   rstmgr_leaf_rst u_d0_lc_io_div4 (
     .clk_i,
     .rst_ni,
@@ -490,11 +480,10 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_lc_io_div4[Domain0Sel]),
+    .rst_en_o(rst_en_o.lc_io_div4[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_lc_io_div4_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[6][Domain0Sel])
   );
-
   rstmgr_leaf_rst u_daon_lc_io_div4_shadowed (
     .clk_i,
     .rst_ni,
@@ -503,11 +492,10 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_lc_io_div4_shadowed[DomainAonSel]),
+    .rst_en_o(rst_en_o.lc_io_div4_shadowed[DomainAonSel]),
     .leaf_rst_o(resets_o.rst_lc_io_div4_shadowed_n[DomainAonSel]),
     .err_o(shadow_cnsty_chk_errs[6][DomainAonSel])
   );
-
   rstmgr_leaf_rst u_d0_lc_io_div4_shadowed (
     .clk_i,
     .rst_ni,
@@ -516,7 +504,7 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_lc_io_div4_shadowed[Domain0Sel]),
+    .rst_en_o(rst_en_o.lc_io_div4_shadowed[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_lc_io_div4_shadowed_n[Domain0Sel]),
     .err_o(shadow_cnsty_chk_errs[6][Domain0Sel])
   );
@@ -524,7 +512,6 @@ module rstmgr
   // Generating resets for lc_aon
   // Power Domains: ['Aon']
   // Shadowed: False
-
   rstmgr_leaf_rst u_daon_lc_aon (
     .clk_i,
     .rst_ni,
@@ -533,13 +520,13 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[7] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_lc_aon[DomainAonSel]),
+    .rst_en_o(rst_en_o.lc_aon[DomainAonSel]),
     .leaf_rst_o(resets_o.rst_lc_aon_n[DomainAonSel]),
     .err_o(cnsty_chk_errs[7][DomainAonSel])
   );
   assign resets_o.rst_lc_aon_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[7][Domain0Sel] = '0;
-  assign rst_en_o.rst_lc_aon[Domain0Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.lc_aon[Domain0Sel] = lc_ctrl_pkg::On;
   assign shadow_cnsty_chk_errs[7] = '0;
 
   // Generating resets for sys
@@ -547,8 +534,7 @@ module rstmgr
   // Shadowed: True
   assign resets_o.rst_sys_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[8][DomainAonSel] = '0;
-  assign rst_en_o.rst_sys[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.sys[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_sys (
     .clk_i,
     .rst_ni,
@@ -557,14 +543,13 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_sys[Domain0Sel]),
+    .rst_en_o(rst_en_o.sys[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_sys_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[8][Domain0Sel])
   );
   assign resets_o.rst_sys_shadowed_n[DomainAonSel] = '0;
   assign shadow_cnsty_chk_errs[8][DomainAonSel] = '0;
-  assign rst_en_o.rst_sys_shadowed[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.sys_shadowed[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_sys_shadowed (
     .clk_i,
     .rst_ni,
@@ -573,7 +558,7 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_sys_shadowed[Domain0Sel]),
+    .rst_en_o(rst_en_o.sys_shadowed[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_sys_shadowed_n[Domain0Sel]),
     .err_o(shadow_cnsty_chk_errs[8][Domain0Sel])
   );
@@ -581,7 +566,6 @@ module rstmgr
   // Generating resets for sys_io_div4
   // Power Domains: ['0', 'Aon']
   // Shadowed: False
-
   rstmgr_leaf_rst u_daon_sys_io_div4 (
     .clk_i,
     .rst_ni,
@@ -590,11 +574,10 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_sys_io_div4[DomainAonSel]),
+    .rst_en_o(rst_en_o.sys_io_div4[DomainAonSel]),
     .leaf_rst_o(resets_o.rst_sys_io_div4_n[DomainAonSel]),
     .err_o(cnsty_chk_errs[9][DomainAonSel])
   );
-
   rstmgr_leaf_rst u_d0_sys_io_div4 (
     .clk_i,
     .rst_ni,
@@ -603,7 +586,7 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_sys_io_div4[Domain0Sel]),
+    .rst_en_o(rst_en_o.sys_io_div4[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_sys_io_div4_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[9][Domain0Sel])
   );
@@ -612,7 +595,6 @@ module rstmgr
   // Generating resets for sys_aon
   // Power Domains: ['0', 'Aon']
   // Shadowed: False
-
   rstmgr_leaf_rst u_daon_sys_aon (
     .clk_i,
     .rst_ni,
@@ -621,11 +603,10 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[10] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_sys_aon[DomainAonSel]),
+    .rst_en_o(rst_en_o.sys_aon[DomainAonSel]),
     .leaf_rst_o(resets_o.rst_sys_aon_n[DomainAonSel]),
     .err_o(cnsty_chk_errs[10][DomainAonSel])
   );
-
   rstmgr_leaf_rst u_d0_sys_aon (
     .clk_i,
     .rst_ni,
@@ -634,7 +615,7 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[10] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_sys_aon[Domain0Sel]),
+    .rst_en_o(rst_en_o.sys_aon[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_sys_aon_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[10][Domain0Sel])
   );
@@ -645,8 +626,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_spi_device_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[11][DomainAonSel] = '0;
-  assign rst_en_o.rst_spi_device[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.spi_device[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_spi_device (
     .clk_i,
     .rst_ni,
@@ -655,7 +635,7 @@ module rstmgr
     .sw_rst_req_ni(sw_rst_ctrl_n[SPI_DEVICE]),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[11] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_spi_device[Domain0Sel]),
+    .rst_en_o(rst_en_o.spi_device[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_spi_device_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[11][Domain0Sel])
   );
@@ -666,8 +646,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_spi_host0_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[12][DomainAonSel] = '0;
-  assign rst_en_o.rst_spi_host0[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.spi_host0[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_spi_host0 (
     .clk_i,
     .rst_ni,
@@ -676,7 +655,7 @@ module rstmgr
     .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST0]),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[12] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_spi_host0[Domain0Sel]),
+    .rst_en_o(rst_en_o.spi_host0[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_spi_host0_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[12][Domain0Sel])
   );
@@ -687,8 +666,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_spi_host0_core_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[13][DomainAonSel] = '0;
-  assign rst_en_o.rst_spi_host0_core[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.spi_host0_core[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_spi_host0_core (
     .clk_i,
     .rst_ni,
@@ -697,7 +675,7 @@ module rstmgr
     .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST0_CORE]),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[13] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_spi_host0_core[Domain0Sel]),
+    .rst_en_o(rst_en_o.spi_host0_core[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_spi_host0_core_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[13][Domain0Sel])
   );
@@ -708,8 +686,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_spi_host1_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[14][DomainAonSel] = '0;
-  assign rst_en_o.rst_spi_host1[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.spi_host1[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_spi_host1 (
     .clk_i,
     .rst_ni,
@@ -718,7 +695,7 @@ module rstmgr
     .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST1]),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[14] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_spi_host1[Domain0Sel]),
+    .rst_en_o(rst_en_o.spi_host1[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_spi_host1_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[14][Domain0Sel])
   );
@@ -729,8 +706,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_spi_host1_core_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[15][DomainAonSel] = '0;
-  assign rst_en_o.rst_spi_host1_core[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.spi_host1_core[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_spi_host1_core (
     .clk_i,
     .rst_ni,
@@ -739,7 +715,7 @@ module rstmgr
     .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST1_CORE]),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[15] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_spi_host1_core[Domain0Sel]),
+    .rst_en_o(rst_en_o.spi_host1_core[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_spi_host1_core_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[15][Domain0Sel])
   );
@@ -750,8 +726,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_usb_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[16][DomainAonSel] = '0;
-  assign rst_en_o.rst_usb[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.usb[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_usb (
     .clk_i,
     .rst_ni,
@@ -760,7 +735,7 @@ module rstmgr
     .sw_rst_req_ni(sw_rst_ctrl_n[USB]),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[16] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_usb[Domain0Sel]),
+    .rst_en_o(rst_en_o.usb[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_usb_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[16][Domain0Sel])
   );
@@ -771,8 +746,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_usbif_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[17][DomainAonSel] = '0;
-  assign rst_en_o.rst_usbif[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.usbif[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_usbif (
     .clk_i,
     .rst_ni,
@@ -781,7 +755,7 @@ module rstmgr
     .sw_rst_req_ni(sw_rst_ctrl_n[USBIF]),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[17] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_usbif[Domain0Sel]),
+    .rst_en_o(rst_en_o.usbif[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_usbif_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[17][Domain0Sel])
   );
@@ -792,8 +766,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_i2c0_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[18][DomainAonSel] = '0;
-  assign rst_en_o.rst_i2c0[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.i2c0[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_i2c0 (
     .clk_i,
     .rst_ni,
@@ -802,7 +775,7 @@ module rstmgr
     .sw_rst_req_ni(sw_rst_ctrl_n[I2C0]),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[18] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_i2c0[Domain0Sel]),
+    .rst_en_o(rst_en_o.i2c0[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_i2c0_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[18][Domain0Sel])
   );
@@ -813,8 +786,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_i2c1_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[19][DomainAonSel] = '0;
-  assign rst_en_o.rst_i2c1[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.i2c1[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_i2c1 (
     .clk_i,
     .rst_ni,
@@ -823,7 +795,7 @@ module rstmgr
     .sw_rst_req_ni(sw_rst_ctrl_n[I2C1]),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[19] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_i2c1[Domain0Sel]),
+    .rst_en_o(rst_en_o.i2c1[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_i2c1_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[19][Domain0Sel])
   );
@@ -834,8 +806,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_i2c2_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[20][DomainAonSel] = '0;
-  assign rst_en_o.rst_i2c2[DomainAonSel] = lc_ctrl_pkg::On;
-
+  assign rst_en_o.i2c2[DomainAonSel] = lc_ctrl_pkg::On;
   rstmgr_leaf_rst u_d0_i2c2 (
     .clk_i,
     .rst_ni,
@@ -844,7 +815,7 @@ module rstmgr
     .sw_rst_req_ni(sw_rst_ctrl_n[I2C2]),
     .scan_rst_ni,
     .scan_sel(leaf_rst_scanmode[20] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.rst_i2c2[Domain0Sel]),
+    .rst_en_o(rst_en_o.i2c2[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_i2c2_n[Domain0Sel]),
     .err_o(cnsty_chk_errs[20][Domain0Sel])
   );
