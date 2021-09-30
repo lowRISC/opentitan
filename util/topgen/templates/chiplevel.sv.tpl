@@ -530,6 +530,21 @@ module chip_${top["name"]}_${target["name"]} (
   assign unused_in_io_uphy_oe_n = manual_in_io_uphy_oe_n;
 
 % endif
+% if target["name"] == "cw310":
+  // Set SPD to full-speed
+  assign manual_oe_io_uphy_spd = 1'b1;
+  assign manual_out_io_uphy_spd = 1'b1;
+
+  logic unused_in_io_uphy_spd;
+  assign unused_in_io_uphy_spd = manual_in_io_uphy_spd;
+
+  // Disable TUSB1106 low-power mode (for now?)
+  assign manual_oe_io_uphy_sus = 1'b1;
+  assign manual_out_io_uphy_sus = 1'b0;
+
+  logic unused_in_io_uphy_sus;
+  assign unused_in_io_uphy_sus = manual_in_io_uphy_sus;
+% endif
 
 ###################################################################
 ## AST For all targets                                           ##

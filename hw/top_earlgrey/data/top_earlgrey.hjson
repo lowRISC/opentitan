@@ -1339,6 +1339,8 @@
           { name: 'IO_UPHY_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_SENSE',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_DPPULLUP', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_UPHY_SPD',      type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_UPHY_SUS',      type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           // ChipWhisperer IO
           { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual clock output for SCA setup'}
           { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual trigger output for SCA setup'}

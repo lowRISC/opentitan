@@ -86,8 +86,20 @@ set_property -dict { PACKAGE_PIN AF14  IOSTANDARD LVCMOS18 } [get_ports { IO_UPH
 set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports { IO_UPHY_SENSE }]; #USRUSB_VBUS_DETECT
 set_property -dict { PACKAGE_PIN AE15  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_OE_N }]; #USRUSB_OE
 set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_D_RX }]; #USRUSB_RCV
-#set_property -dict { PACKAGE_PIN AE16  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_SPD  }]; #USRUSB_SPD
-#set_property -dict { PACKAGE_PIN AF15  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_SUS  }]; #USRUSB_SUS
+set_property -dict { PACKAGE_PIN AE16  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_SPD  }]; #USRUSB_SPD
+set_property -dict { PACKAGE_PIN AF15  IOSTANDARD LVCMOS18 } [get_ports { IO_UPHY_SUS  }]; #USRUSB_SUS
+
+## USB input delay to accommodate T_FST (full-speed transition time) and the
+## PHY's sampling logic. The PHY expects to only see up to one transient / fake
+## SE0. The phase relationship with the PHY's sampling clock is arbitrary, but
+## for simplicity, constrain the maximum path delay to something smaller than
+## `T_sample - T_FST(max)` to help keep the P/N skew from slipping beyond one
+## sample period.
+set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
+set_input_delay -clock ${clks_48_unbuf} -min 3 [get_ports {IO_UPHY_DP_RX IO_UPHY_DN_RX IO_UPHY_D_RX}]
+set_input_delay -clock ${clks_48_unbuf} -add_delay -max 17 [get_ports {IO_UPHY_DP_RX IO_UPHY_DN_RX IO_UPHY_D_RX}]
+set_output_delay -min -clock ${clks_48_unbuf} 0 [get_ports {IO_UPHY_DP_TX IO_UPHY_DN_TX IO_UPHY_OE_N}]
+set_output_delay -max -clock ${clks_48_unbuf} 7 [get_ports {IO_UPHY_DP_TX IO_UPHY_DN_TX IO_UPHY_OE_N}] -add_delay
 
 ## Not used - route to header for now?
 set_property -dict { PACKAGE_PIN A10   IOSTANDARD LVCMOS33 } [get_ports { USB_P }]; #USERIOB-19
