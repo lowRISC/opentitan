@@ -97,6 +97,10 @@ interface alert_esc_if(input clk, input rst_n);
     get_alert = (alert_tx_final.alert_p === 1'b1 && alert_tx_final.alert_n === 1'b0);
   endfunction : get_alert
 
+  function automatic bit is_alert_handshaking();
+    return alert_tx_final.alert_p === 1'b1 || alert_rx_final.ack_p === 1'b1;
+  endfunction : is_alert_handshaking
+
   // this task wait for alert_ping request.
   // alert_ping request is detected by level triggered "alert_rx.ping_p/n" signals pairs
   // and no sig_int_err

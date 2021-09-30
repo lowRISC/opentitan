@@ -507,11 +507,15 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endtask
 
-  virtual task wait_alert_trigger(string alert_name, int max_wait_cycle = 2, bit wait_complete = 0);
-    `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
+  // if alerts are triggered continuously, there are 6 cycles gap between 2 alerts. 2-3 cycles for
+  // clock domain crossing, 2 for pauses, 1 for idle state.
+  // So use 7 cycle for default max_wait_cycle.
+  virtual task wait_alert_trigger(string alert_name, int max_wait_cycle = 7, bit wait_complete = 0);
+    `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.is_alert_handshaking())
                       cfg.clk_rst_vif.wait_clks(1);,
-                      cfg.clk_rst_vif.wait_clks(max_wait_cycle);,
-                      $sformatf("expect alert:%0s to fire", alert_name))
+                      // another thread to wait for given cycles. If timeout, report an error.
+                      cfg.clk_rst_vif.wait_clks(max_wait_cycle);
+                      `uvm_error(`gfn, $sformatf("expect alert:%0s to fire", alert_name)))
     if (wait_complete) begin
       `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
                    $sformatf("timeout wait for alert handshake:%0s", alert_name))
