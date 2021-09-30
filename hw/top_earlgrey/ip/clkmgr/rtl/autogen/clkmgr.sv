@@ -228,70 +228,70 @@
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.clk_io_div4_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.io_div4_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_aon_powerup_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.clk_aon_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.aon_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_main_powerup_buf (
     .clk_i(clk_main_i),
     .clk_o(clocks_o.clk_main_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.clk_main_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.main_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_io_powerup_buf (
     .clk_i(clk_io_i),
     .clk_o(clocks_o.clk_io_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.clk_io_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.io_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_usb_powerup_buf (
     .clk_i(clk_usb_i),
     .clk_o(clocks_o.clk_usb_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.clk_usb_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.usb_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_io_div2_powerup_buf (
     .clk_i(clk_io_div2_i),
     .clk_o(clocks_o.clk_io_div2_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.clk_io_div2_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.io_div2_powerup = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_aon_infra_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_infra)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.clk_aon_infra = lc_ctrl_pkg::Off;
+  assign cg_en_o.aon_infra = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_aon_secure_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_secure)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.clk_aon_secure = lc_ctrl_pkg::Off;
+  assign cg_en_o.aon_secure = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_aon_peri_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_peri)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.clk_aon_peri = lc_ctrl_pkg::Off;
+  assign cg_en_o.aon_peri = lc_ctrl_pkg::Off;
   prim_clock_buf u_clk_aon_timers_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_timers)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.clk_aon_timers = lc_ctrl_pkg::Off;
+  assign cg_en_o.aon_timers = lc_ctrl_pkg::Off;
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -643,7 +643,7 @@
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
     .lc_en_i(((clk_io_div4_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_io_div4_infra)
+    .lc_en_o(cg_en_o.io_div4_infra)
   );
   assign clocks_o.clk_main_infra = clk_main_root;
 
@@ -652,7 +652,7 @@
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .lc_en_i(((clk_main_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_main_infra)
+    .lc_en_o(cg_en_o.main_infra)
   );
   assign clocks_o.clk_io_div4_secure = clk_io_div4_root;
 
@@ -661,7 +661,7 @@
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
     .lc_en_i(((clk_io_div4_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_io_div4_secure)
+    .lc_en_o(cg_en_o.io_div4_secure)
   );
   assign clocks_o.clk_main_secure = clk_main_root;
 
@@ -670,7 +670,7 @@
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .lc_en_i(((clk_main_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_main_secure)
+    .lc_en_o(cg_en_o.main_secure)
   );
   assign clocks_o.clk_usb_secure = clk_usb_root;
 
@@ -679,7 +679,7 @@
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
     .lc_en_i(((clk_usb_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_usb_secure)
+    .lc_en_o(cg_en_o.usb_secure)
   );
   assign clocks_o.clk_io_div4_timers = clk_io_div4_root;
 
@@ -688,7 +688,7 @@
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
     .lc_en_i(((clk_io_div4_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_io_div4_timers)
+    .lc_en_o(cg_en_o.io_div4_timers)
   );
 
   ////////////////////////////////////////////////////
@@ -738,7 +738,7 @@
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
     .lc_en_i(((clk_io_div4_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_io_div4_peri)
+    .lc_en_o(cg_en_o.io_div4_peri)
   );
 
   prim_flop_2sync #(
@@ -779,7 +779,7 @@
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_io_div2_ni),
     .lc_en_i(((clk_io_div2_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_io_div2_peri)
+    .lc_en_o(cg_en_o.io_div2_peri)
   );
 
   prim_flop_2sync #(
@@ -820,7 +820,7 @@
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
     .lc_en_i(((clk_io_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_io_peri)
+    .lc_en_o(cg_en_o.io_peri)
   );
 
   prim_flop_2sync #(
@@ -861,7 +861,7 @@
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
     .lc_en_i(((clk_usb_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_usb_peri)
+    .lc_en_o(cg_en_o.usb_peri)
   );
 
 
@@ -928,7 +928,7 @@
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .lc_en_i(((clk_main_aes_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_main_aes)
+    .lc_en_o(cg_en_o.main_aes)
   );
 
   assign clk_main_hmac_en = clk_main_hmac_hint | ~idle_i[HintMainHmac];
@@ -977,7 +977,7 @@
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .lc_en_i(((clk_main_hmac_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_main_hmac)
+    .lc_en_o(cg_en_o.main_hmac)
   );
 
   assign clk_main_kmac_en = clk_main_kmac_hint | ~idle_i[HintMainKmac];
@@ -1026,7 +1026,7 @@
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .lc_en_i(((clk_main_kmac_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_main_kmac)
+    .lc_en_o(cg_en_o.main_kmac)
   );
 
   assign clk_main_otbn_en = clk_main_otbn_hint | ~idle_i[HintMainOtbn];
@@ -1075,7 +1075,7 @@
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .lc_en_i(((clk_main_otbn_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_main_otbn)
+    .lc_en_o(cg_en_o.main_otbn)
   );
 
   assign clk_io_div4_otbn_en = clk_io_div4_otbn_hint | ~idle_i[HintIoDiv4Otbn];
@@ -1124,7 +1124,7 @@
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
     .lc_en_i(((clk_io_div4_otbn_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.clk_io_div4_otbn)
+    .lc_en_o(cg_en_o.io_div4_otbn)
   );
 
 
