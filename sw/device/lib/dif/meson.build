@@ -758,8 +758,28 @@ sw_lib_dif_pinmux = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_pinmux,
     ],
   )
+)
+
+test('dif_pinmux_unittest', executable(
+    'dif_pinmux_unittest',
+    sources: [
+      'autogen/dif_pinmux_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_pinmux.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_pinmux_autogen.c',
+      hw_top_earlgrey_pinmux_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )
 
 # SRAM Controller library

@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/dif/dif_pinmux.h"
 
+#include "sw/device/lib/dif/dif_base.h"
+
 #include "pinmux_regs.h"  // Generated.
 
 // This just exists to check that the header compiles for now. The actual
