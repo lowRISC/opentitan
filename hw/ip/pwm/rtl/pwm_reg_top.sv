@@ -103,13 +103,16 @@ module pwm_reg_top (
 
   // cdc oversampling signals
     logic sync_core_update;
-  prim_pulse_sync u_core_tgl (
+  prim_sync_reqack u_core_tgl (
     .clk_src_i(clk_core_i),
     .rst_src_ni(rst_core_ni),
-    .src_pulse_i(1'b1),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(sync_core_update)
+    .req_chk_i(1'b1),
+    .src_req_i(1'b1),
+    .src_ack_o(),
+    .dst_req_o(sync_core_update),
+    .dst_ack_i(sync_core_update)
   );
 
   assign reg_rdata = reg_rdata_next ;
