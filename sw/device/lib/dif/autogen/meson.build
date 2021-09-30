@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen Power Manager DIF library
-sw_lib_dif_autogen_pwrmgr = declare_dependency(
+# Autogen Pin Multiplexer DIF library
+sw_lib_dif_autogen_pinmux = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_pwrmgr',
+    'sw_lib_dif_autogen_pinmux',
     sources: [
-      hw_ip_pwrmgr_reg_h,
-      'dif_pwrmgr_autogen.c',
+      hw_top_earlgrey_pinmux_reg_h,
+      'dif_pinmux_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -191,6 +191,20 @@ sw_lib_dif_autogen_otp_ctrl = declare_dependency(
     sources: [
       hw_ip_otp_ctrl_reg_h,
       'dif_otp_ctrl_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen Power Manager DIF library
+sw_lib_dif_autogen_pwrmgr = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_pwrmgr',
+    sources: [
+      hw_ip_pwrmgr_reg_h,
+      'dif_pwrmgr_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
