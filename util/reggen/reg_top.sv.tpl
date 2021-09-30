@@ -295,13 +295,16 @@ module ${mod_name} (
     rname = clock.reset
   %>\
   logic sync_${clk_name}_update;
-  prim_pulse_sync u_${tgl_expr} (
+  prim_sync_reqack u_${tgl_expr} (
     .clk_src_i(${cname}),
     .rst_src_ni(${rname}),
-    .src_pulse_i(1'b1),
     .clk_dst_i(${reg_clk_expr}),
     .rst_dst_ni(${reg_rst_expr}),
-    .dst_pulse_o(sync_${clk_name}_update)
+    .req_chk_i(1'b1),
+    .src_req_i(1'b1),
+    .src_ack_o(),
+    .dst_req_o(sync_${clk_name}_update),
+    .dst_ack_i(sync_${clk_name}_update)
   );
   % endfor
 % endif
