@@ -152,6 +152,7 @@ class dv_base_reg extends uvm_reg;
     if (is_shadowed) begin
       if (shadow_wr_staged) `uvm_info(`gfn, "clear shadow_wr_staged", UVM_HIGH)
       shadow_wr_staged = 0;
+      clear_shadow_update_err();
     end
   endfunction
 
@@ -332,13 +333,6 @@ class dv_base_reg extends uvm_reg;
     foreach (flds[i]) begin
       get_committed_val |= flds[i].get_committed_val() << flds[i].get_lsb_pos();
     end
-  endfunction
-
-  // Callback function to update shadowed values according to specific design.
-  // Should only be called after post-write.
-  // If a shadow reg is locked due to fatal error, this function will return without updates
-  virtual function void update_shadowed_val(uvm_reg_data_t val, bit do_predict = 1);
-    // TODO: find a better way to support for AES.
   endfunction
 
   virtual function void reset(string kind = "HARD");

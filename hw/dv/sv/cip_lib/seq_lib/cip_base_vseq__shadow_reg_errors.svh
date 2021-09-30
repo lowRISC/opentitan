@@ -22,24 +22,46 @@ virtual function bit [BUS_DW-1:0] get_shadow_reg_diff_val(dv_base_reg      csr,
   end
 endfunction
 
-// Alert triggers as soon as design accept the TLUL transaction, if wait until csr_wr() finishes
-// then check alert, the alert transaction might already finished.
-// This task can be overridden in block level common_vseq for specific shadow_regs.
-virtual task shadow_reg_wr(dv_base_reg csr, uvm_reg_data_t wdata);
+// Wrap this shadow register csr_wr task with predict option so extended IPs can override it with
+// their customerized prediction. For example: AES's ctrl_shadow register needs to update `mode`
+// and `key_len` fields before calling the RAL predict function.
+virtual task csr_wr_for_shadow_reg_predict(dv_base_reg csr, uvm_reg_data_t wdata, bit predict = 1);
+  csr_wr(.ptr(csr), .value(wdata), .en_shadow_wr(0), .predict(predict));
+endtask
+
+// Alert triggers as soon as design accept the TLUL transaction, if wait until
+// csr_wr_for_shadow_reg_predict() finishes then check alert, the alert transaction might already
+// finished.
+virtual task shadow_reg_wr(dv_base_reg    csr,
+                           uvm_reg_data_t wdata,
+                           bit            en_shadow_wr = 1,
+                           bit            predict = 1);
+  // Sequence does not know if this write will trigger update error, so set the initial value to
+  // 1 to trigger alert check. Update this value once the write is complete.
+  // If no update_err_alert is expected, exit the alert handshake check.
+  bit exp_update_err_alert = 1;
   fork
     begin
-      csr_wr(.ptr(csr), .value(wdata), .en_shadow_wr(0), .predict(1));
+      repeat (en_shadow_wr ? 2 : 1) csr_wr_for_shadow_reg_predict(csr, wdata, predict);
+      exp_update_err_alert = csr.get_shadow_update_err();
     end
     begin
       string alert_name = csr.get_update_err_alert_name();
       // This logic gates alert_handler testbench because it does not have outgoing alert.
       if (cfg.m_alert_agent_cfg.exists(alert_name)) begin
-        `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert()) begin
-                       cfg.clk_rst_vif.wait_clks(1);
-                     end,
-                     $sformatf("%0s update_err alert not detected", csr.get_name()))
-        `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
-                     $sformatf("timeout for alert:%0s", alert_name))
+        fork
+          begin
+            `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert()) begin
+                           cfg.clk_rst_vif.wait_clks(1);
+                         end
+                         cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
+                         $sformatf("%0s update_err alert timeout", csr.get_name()))
+          end
+          begin
+            wait (exp_update_err_alert == 0);
+          end
+        join_any
+        disable fork;
       end
     end
   join
@@ -81,9 +103,9 @@ virtual task write_and_check_update_error(dv_base_reg shadowed_csr);
   `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
   err_wdata = get_shadow_reg_diff_val(shadowed_csr, wdata);
 
-  csr_wr(.ptr(shadowed_csr), .value(wdata), .en_shadow_wr(0), .predict(1));
+  shadow_reg_wr(.csr(shadowed_csr), .wdata(wdata), .en_shadow_wr(0));
 
-  shadow_reg_wr(shadowed_csr, err_wdata);
+  shadow_reg_wr(.csr(shadowed_csr), .wdata(err_wdata), .en_shadow_wr(0));
   // If the shadow register is external register, writing two different value might not actually
   // trigger update error. So we trigger dv_base_reg function to double check.
   predict_shadow_reg_status(.predict_update_err(shadowed_csr.get_shadow_update_err()));
@@ -107,10 +129,10 @@ virtual task check_csr_read_clear_staged_val(dv_base_reg shadowed_csr);
   `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
 
   `uvm_info(`gfn, $sformatf("%0s check csr read clear", shadowed_csr.get_name()), UVM_HIGH);
-  csr_wr(.ptr(shadowed_csr), .value(wdata), .en_shadow_wr(0), .predict(1));
+  shadow_reg_wr(.csr(shadowed_csr), .wdata(wdata), .en_shadow_wr(0));
   csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
   wdata = get_shadow_reg_diff_val(shadowed_csr, wdata);
-  csr_wr(.ptr(shadowed_csr), .value(wdata), .en_shadow_wr(1), .predict(1));
+  shadow_reg_wr(.csr(shadowed_csr), .wdata(wdata), .en_shadow_wr(1));
 
   if (cfg.m_alert_agent_cfg.exists(alert_name)) begin
     `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 0,
@@ -149,7 +171,7 @@ virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
 
   // Check if CSR write is blocked.
   `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val);
-  csr_wr(.ptr(shadowed_csr), .value(rand_val), .en_shadow_wr(1), .predict(1));
+  shadow_reg_wr(.csr(shadowed_csr), .wdata(rand_val), .en_shadow_wr(1));
   csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
 
   // Backdoor write back to original value and ensure the fatal alert is continuously firing.
