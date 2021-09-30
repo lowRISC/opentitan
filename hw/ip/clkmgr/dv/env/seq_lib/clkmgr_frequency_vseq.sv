@@ -71,9 +71,11 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
 
     // Set the thresholds to get no error.
     foreach (expected_ratios[clk]) begin
-      enable_frequency_measurement(clk, expected_ratios[clk] - 1, expected_ratios[clk] + 1);
+      enable_frequency_measurement(clk, expected_ratios[clk] - 2, expected_ratios[clk] + 2);
     end
-    cfg.aon_clk_rst_vif.wait_clks(4);
+
+    // Check over a period of many clocks to ensure no errors
+    cfg.aon_clk_rst_vif.wait_clks(10);
     csr_rd_check(.ptr(ral.recov_err_code), .compare_value('0),
                  .err_msg("Expected no measurement errors"));
     // And clear errors.
