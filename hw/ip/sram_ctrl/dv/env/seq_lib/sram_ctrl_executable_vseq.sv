@@ -15,7 +15,7 @@ class sram_ctrl_executable_vseq extends sram_ctrl_multiple_keys_vseq;
 
   bit [3:0] hw_debug_en;
   bit [7:0] en_sram_ifetch;
-  bit [2:0] en_exec_csr;
+  mubi4_e en_exec_csr;
 
   // These bits are used to create pseudo-weights for the constraint distributions
   // of the above values
@@ -44,13 +44,13 @@ class sram_ctrl_executable_vseq extends sram_ctrl_multiple_keys_vseq;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(en_exec_csr,
         // 50% chance to enable
         if (is_valid) {
-          en_exec_csr == tlul_pkg::InstrEn;
+          en_exec_csr == MuBi4True;
         } else {
           // 75% chance to set garbage invalid data
           if (is_off == 0) {
-            en_exec_csr == tlul_pkg::InstrDis;
+            en_exec_csr == MuBi4False;
           } else {
-            !(en_exec_csr inside {tlul_pkg::InstrEn, tlul_pkg::InstrDis});
+            !(en_exec_csr inside {MuBi4True, MuBi4False});
           }
         }
     )

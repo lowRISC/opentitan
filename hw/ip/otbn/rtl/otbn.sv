@@ -283,6 +283,7 @@ module otbn
   // Always grant to bus accesses, when OTBN is running a dummy response is returned
   assign imem_gnt_bus = imem_req_bus;
 
+  import prim_mubi_pkg::MuBi4False;
   tlul_adapter_sram #(
     .SramAw      (ImemIndexWidth),
     .SramDw      (32),
@@ -295,7 +296,7 @@ module otbn
     .rst_ni      (rst_n                  ),
     .tl_i        (tl_win_h2d[TlWinImem]  ),
     .tl_o        (tl_win_d2h[TlWinImem]  ),
-    .en_ifetch_i (tlul_pkg::InstrDis     ),
+    .en_ifetch_i (MuBi4False             ),
     .req_o       (imem_req_bus           ),
     .req_type_o  (                       ),
     .gnt_i       (imem_gnt_bus           ),
@@ -493,7 +494,7 @@ module otbn
     .rst_ni      (rst_n                  ),
     .tl_i        (tl_win_h2d[TlWinDmem]  ),
     .tl_o        (tl_win_d2h[TlWinDmem]  ),
-    .en_ifetch_i (tlul_pkg::InstrDis     ),
+    .en_ifetch_i (MuBi4False             ),
     .req_o       (dmem_req_bus           ),
     .req_type_o  (                       ),
     .gnt_i       (dmem_gnt_bus           ),

@@ -120,8 +120,8 @@ module sram_ctrl_regs_reg_top (
   logic exec_regwen_qs;
   logic exec_regwen_wd;
   logic exec_we;
-  logic [2:0] exec_qs;
-  logic [2:0] exec_wd;
+  logic [3:0] exec_qs;
+  logic [3:0] exec_wd;
   logic ctrl_regwen_we;
   logic ctrl_regwen_qs;
   logic ctrl_regwen_wd;
@@ -325,9 +325,9 @@ module sram_ctrl_regs_reg_top (
 
   // R[exec]: V(False)
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h0)
+    .RESVAL  (4'h5)
   ) u_exec (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -459,7 +459,7 @@ module sram_ctrl_regs_reg_top (
   assign exec_regwen_wd = reg_wdata[0];
   assign exec_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign exec_wd = reg_wdata[2:0];
+  assign exec_wd = reg_wdata[3:0];
   assign ctrl_regwen_we = addr_hit[4] & reg_we & !reg_error;
 
   assign ctrl_regwen_wd = reg_wdata[0];
@@ -491,7 +491,7 @@ module sram_ctrl_regs_reg_top (
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[2:0] = exec_qs;
+        reg_rdata_next[3:0] = exec_qs;
       end
 
       addr_hit[4]: begin

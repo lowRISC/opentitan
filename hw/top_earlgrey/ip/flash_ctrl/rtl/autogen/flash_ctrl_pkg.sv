@@ -393,7 +393,7 @@ package flash_ctrl_pkg;
     logic                 alert_ack;
     jtag_pkg::jtag_req_t  jtag_req;
     logic                 intg_err;
-    prim_mubi_pkg::mubi4_t flash_disable;
+    prim_mubi_pkg::mubi4_e flash_disable;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)

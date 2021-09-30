@@ -76,7 +76,7 @@ package flash_phy_pkg;
     logic [BankAddrW-1:0] addr;
     logic descramble;
     logic ecc;
-    tlul_pkg::tl_type_e req_type;
+    prim_mubi_pkg::mubi4_e instr_type;
   } rd_attr_t;
 
   // Flash Operations Supported

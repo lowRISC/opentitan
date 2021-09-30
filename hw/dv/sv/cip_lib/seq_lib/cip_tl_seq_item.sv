@@ -7,15 +7,15 @@ class cip_tl_seq_item extends tl_seq_item;
 
   `uvm_object_new
 
-  tlul_pkg::tl_type_e tl_type = DataType;
+  mubi4_e instr_type = MuBi4False;
   tl_intg_err_e       tl_intg_err_type = TlIntgErrNone;
   // the max errors that we can detect
   int                 max_ecc_errors = MAX_TL_ECC_ERRORS;
 
   `uvm_object_utils_begin(cip_tl_seq_item)
-    `uvm_field_enum(tlul_pkg::tl_type_e, tl_type,          UVM_DEFAULT)
-    `uvm_field_enum(tl_intg_err_e,       tl_intg_err_type, UVM_DEFAULT)
-    `uvm_field_int(max_ecc_errors,                         UVM_DEFAULT)
+    `uvm_field_enum(prim_mubi_pkg::mubi4_e, instr_type,       UVM_DEFAULT)
+    `uvm_field_enum(tl_intg_err_e,          tl_intg_err_type, UVM_DEFAULT)
+    `uvm_field_int(max_ecc_errors,                            UVM_DEFAULT)
   `uvm_object_utils_end
 
   function void post_randomize();
@@ -32,7 +32,7 @@ class cip_tl_seq_item extends tl_seq_item;
     logic [D2HRspFullWidth - 1 : 0] data_with_intg;
 
     // construct command integrity
-    cmd_intg_payload.tl_type = tl_type;
+    cmd_intg_payload.instr_type = instr_type;
     cmd_intg_payload.addr = a_addr;
     cmd_intg_payload.opcode = tl_a_op_e'(a_opcode);
     cmd_intg_payload.mask = a_mask;
@@ -42,7 +42,7 @@ class cip_tl_seq_item extends tl_seq_item;
     data_with_intg = prim_secded_pkg::prim_secded_39_32_enc(DataMaxWidth'(a_data));
 
     user.rsvd = '0;
-    user.tl_type = tl_type;
+    user.instr_type = instr_type;
     user.cmd_intg = cmd_with_intg[H2DCmdFullWidth -1 -: H2DCmdIntgWidth];
     user.data_intg = data_with_intg[DataFullWidth -1 -: DataIntgWidth];
     return user;
@@ -83,15 +83,15 @@ class cip_tl_seq_item extends tl_seq_item;
                    $sformatf("\t a_addr: 0x%0x\n", a_addr), " -> 0x%0x",
                    $sformatf("\t a_opcode: 0x%0x\n", a_opcode), " -> 0x%0x",
                    $sformatf("\t a_mask: 0x%0x\n", a_mask), " -> 0x%0x",
-                   $sformatf("\t tl_type: 0x%0x\n", l_a_user.tl_type), " -> 0x%0x",
+                   $sformatf("\t instr_type: 0x%0x\n", l_a_user.instr_type), " -> 0x%0x",
                    $sformatf("\t cmd_intg: 0x%0x\n", l_a_user.cmd_intg), " -> 0x%0x"};
 
       // Flip cmd or intg ecc
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cmd_and_intg_err_mask,
           $countones(cmd_and_intg_err_mask) inside {[1 : max_ecc_errors]};)
-      {a_addr, a_opcode, a_mask, l_a_user.tl_type, l_a_user.cmd_intg} ^= cmd_and_intg_err_mask;
+      {a_addr, a_opcode, a_mask, l_a_user.instr_type, l_a_user.cmd_intg} ^= cmd_and_intg_err_mask;
 
-      str = $sformatf(str, a_addr, a_opcode, a_mask, l_a_user.tl_type, l_a_user.cmd_intg);
+      str = $sformatf(str, a_addr, a_opcode, a_mask, l_a_user.instr_type, l_a_user.cmd_intg);
       `uvm_info(`gfn, str, UVM_LOW)
     end
 

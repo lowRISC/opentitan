@@ -18,6 +18,7 @@ package sram_ctrl_env_pkg;
   import lc_ctrl_pkg::*;
   import crypto_dpi_prince_pkg::*;
   import mem_bkdr_util_pkg::*;
+  import prim_mubi_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

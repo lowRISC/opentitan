@@ -9,14 +9,17 @@
 // scramble, ECC, security and arbitration logic.
 // Most of the items are TODO, at the moment only arbitration logic exists.
 
-module flash_phy_core import flash_phy_pkg::*; #(
+module flash_phy_core
+  import flash_phy_pkg::*;
+  import prim_mubi_pkg::mubi4_e;
+#(
   parameter int unsigned ArbCnt = 4
 ) (
   input                              clk_i,
   input                              rst_ni,
   input                              intg_err_i,
   input                              host_req_i,   // host request - read only
-  input tlul_pkg::tl_type_e          host_req_type_i,
+  input mubi4_e                      host_instr_type_i,
   input                              host_scramble_en_i,
   input                              host_ecc_en_i,
   input [BusBankAddrW-1:0]           host_addr_i,
@@ -73,7 +76,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   logic [PhyOps-1:0] reqs;
 
   // the type of transaction to flash macro
-  tlul_pkg::tl_type_e muxed_req_type;
+  mubi4_e muxed_instr_type;
 
   // host select for address
   logic host_sel;
@@ -136,6 +139,9 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
   assign host_req_done_o = host_rsp & rd_stage_data_valid;
 
+  import prim_mubi_pkg::mubi4_test_false_strict;
+  import prim_mubi_pkg::mubi4_test_true_loose;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       state_q <= StIdle;
@@ -159,7 +165,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
       StIdle: begin
         // escalation handling is always done gracefully after an
         // existing transaction terminates, otherwise we may risk damaging flash
-        if (~prim_mubi_pkg::mubi4_test_false_strict(flash_disable_i)) begin
+        if (prim_mubi_pkg::mubi4_test_true_loose(flash_disable_i)) begin
           state_d = StDisable;
         end else if (host_req_masked) begin
           reqs[PhyRead] = 1'b1;
@@ -191,7 +197,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
       StHostRead: begin
         host_rsp = 1'b1;
         // if escalation occurs, do not accept more read transactions
-        if (host_req_masked && (prim_mubi_pkg::mubi4_test_false_strict(flash_disable_i))) begin
+        if (host_req_masked && (mubi4_test_false_strict(flash_disable_i))) begin
           reqs[PhyRead] = 1'b1;
           host_sel = 1'b1;
           host_req_rdy_o = rd_stage_rdy;
@@ -241,7 +247,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   end // always_comb
 
   // transactions coming from flash controller are always data type
-  assign muxed_req_type = host_sel ? host_req_type_i : tlul_pkg::DataType;
+  assign muxed_instr_type = host_sel ? host_instr_type_i : prim_mubi_pkg::MuBi4False;
   assign muxed_addr = host_sel ? host_addr_i : addr_i;
   assign muxed_part = host_sel ? flash_ctrl_pkg::FlashPartData : part_i;
   assign muxed_scramble_en = host_sel ? host_scramble_en_i : scramble_en_i;
@@ -268,7 +274,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .buf_en_i(rd_buf_en_i),
     .ecc_multi_err_en_i,
     .req_i(reqs[PhyRead]),
-    .req_type_i(muxed_req_type),
+    .instr_type_i(muxed_instr_type),
     .descramble_i(muxed_scramble_en),
     .ecc_i(muxed_ecc_en),
     .prog_i(reqs[PhyProg]),
@@ -373,7 +379,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .clk_i,
     .rst_ni,
     // both escalation and and integrity error cause the scramble keys to change
-    .intg_err_i(intg_err_i | prim_mubi_pkg::mubi4_test_true_loose(flash_disable_i)),
+    .intg_err_i(intg_err_i | mubi4_test_true_loose(flash_disable_i)),
     .calc_req_i(prog_calc_req | rd_calc_req),
     .op_req_i(prog_op_req | rd_op_req),
     .op_type_i(prog_op_req ? ScrambleOp : DeScrambleOp),

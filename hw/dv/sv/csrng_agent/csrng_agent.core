@@ -10,6 +10,7 @@ filesets:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
       - lowrisc:dv:push_pull_agent
+      - lowrisc:ip:csrng_pkg
     files:
       - csrng_agent_pkg.sv
       - csrng_if.sv

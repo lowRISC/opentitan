@@ -83,6 +83,7 @@ module flash_ctrl
 );
 
   import flash_ctrl_reg_pkg::*;
+  import prim_mubi_pkg::mubi4_e;
 
   flash_ctrl_core_reg2hw_t reg2hw;
   flash_ctrl_core_hw2reg_t hw2reg;
@@ -460,7 +461,7 @@ module flash_ctrl
     .rst_ni,
     .tl_i        (tl_win_h2d[0]),
     .tl_o        (tl_win_d2h[0]),
-    .en_ifetch_i (tlul_pkg::InstrDis),
+    .en_ifetch_i (prim_mubi_pkg::MuBi4False),
     .req_o       (sw_wvalid),
     .req_type_o  (),
     .gnt_i       (sw_wready),
@@ -549,7 +550,7 @@ module flash_ctrl
     .rst_ni,
     .tl_i        (tl_win_h2d[1]),
     .tl_o        (tl_win_d2h[1]),
-    .en_ifetch_i (tlul_pkg::InstrDis),
+    .en_ifetch_i (prim_mubi_pkg::MuBi4False),
     .req_o       (rd_fifo_ren),
     .req_type_o  (),
     .gnt_i       (rd_fifo_rvalid),
@@ -1071,18 +1072,13 @@ module flash_ctrl
   // flash phy module
   //////////////////////////////////////
   logic flash_host_req;
-  tlul_pkg::tl_type_e flash_host_req_type;
+  mubi4_e flash_host_instr_type;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
   logic flash_host_rderr;
   logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
   logic flash_host_intg_err;
-  // convert to mubi later directly
-  tlul_pkg::tl_instr_en_t exec_en;
-  assign exec_en = prim_mubi_pkg::mubi4_test_true_strict(flash_exec_en) ?
-                   tlul_pkg::InstrEn :
-                   tlul_pkg::InstrDis;
 
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
@@ -1098,9 +1094,9 @@ module flash_ctrl
     .rst_ni,
     .tl_i        (mem_tl_i),
     .tl_o        (mem_tl_o),
-    .en_ifetch_i (exec_en),
+    .en_ifetch_i (flash_exec_en),
     .req_o       (flash_host_req),
-    .req_type_o  (flash_host_req_type),
+    .req_type_o  (flash_host_instr_type),
     .gnt_i       (flash_host_req_rdy),
     .we_o        (),
     .addr_o      (flash_host_addr),
@@ -1117,7 +1113,7 @@ module flash_ctrl
     .rst_ni,
     .host_req_i        (flash_host_req),
     .host_intg_err_i   (flash_host_intg_err),
-    .host_req_type_i   (flash_host_req_type),
+    .host_instr_type_i (flash_host_instr_type),
     .host_addr_i       (flash_host_addr),
     .host_req_rdy_o    (flash_host_req_rdy),
     .host_req_done_o   (flash_host_req_done),

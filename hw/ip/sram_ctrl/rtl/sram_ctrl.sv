@@ -275,17 +275,21 @@ module sram_ctrl
   // SRAM Execution //
   ////////////////////
 
-  tlul_pkg::tl_instr_en_e en_ifetch;
+  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::MuBi4False;
+
+  mubi4_e en_ifetch;
   if (InstrExec) begin : gen_instr_ctrl
-    tlul_pkg::tl_instr_en_e lc_ifetch_en;
-    tlul_pkg::tl_instr_en_e reg_ifetch_en;
-    assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? tlul_pkg::InstrEn :
-                                                                  tlul_pkg::InstrDis;
-    assign reg_ifetch_en = tlul_pkg::tl_instr_en_e'(reg2hw.exec.q);
+    mubi4_e lc_ifetch_en;
+    mubi4_e reg_ifetch_en;
+    assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? MuBi4True :
+                                                                  MuBi4False;
+    assign reg_ifetch_en = mubi4_e'(reg2hw.exec.q);
     assign en_ifetch = (otp_en_sram_ifetch_i == otp_ctrl_pkg::Enabled) ? reg_ifetch_en :
                                                                          lc_ifetch_en;
   end else begin : gen_tieoff
-    assign en_ifetch = tlul_pkg::InstrDis;
+    assign en_ifetch = MuBi4False;
 
     // tie off unused signals
     logic unused_sigs;

@@ -21,7 +21,10 @@
 
 `include "prim_assert.sv"
 
-module tlul_adapter_host import tlul_pkg::*; #(
+module tlul_adapter_host
+  import tlul_pkg::*;
+  import prim_mubi_pkg::mubi4_e;
+#(
   parameter int unsigned MAX_REQS = 2,
   // TODO(#7966) disable data intgrity overwrite once dv support available
   parameter bit EnableDataIntgGen = 1
@@ -36,7 +39,7 @@ module tlul_adapter_host import tlul_pkg::*; #(
   input  logic [top_pkg::TL_DW-1:0]  wdata_i,
   input  logic [DataIntgWidth-1:0]   wdata_intg_i,
   input  logic [top_pkg::TL_DBW-1:0] be_i,
-  input  tl_type_e                   type_i,
+  input  mubi4_e                     instr_type_i,
 
   output logic                       valid_o,
   output logic [top_pkg::TL_DW-1:0]  rdata_o,
@@ -100,7 +103,7 @@ module tlul_adapter_host import tlul_pkg::*; #(
     a_source:  tl_source,
     a_address: {addr_i[31:WordSize], {WordSize{1'b0}}},
     a_data:    wdata_i,
-    a_user:    '{default: '0, data_intg: wdata_intg_i, tl_type: type_i},
+    a_user:    '{default: '0, data_intg: wdata_intg_i, instr_type: instr_type_i},
     d_ready:   1'b1
   };
 

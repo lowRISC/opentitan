@@ -29,12 +29,12 @@ class otbn_common_vseq extends otbn_base_vseq;
                          input bit [BUS_DW-1:0]    compare_mask = '1,
                          input bit                 check_exp_data = 1'b0,
                          input bit                 blocking = csr_utils_pkg::default_csr_blocking,
-                         input tlul_pkg::tl_type_e tl_type = tlul_pkg::DataType,
+                         input mubi4_e             instr_type = MuBi4False,
                          tl_sequencer              tl_sequencer_h = p_sequencer.tl_sequencer_h,
                          input tl_intg_err_e       tl_intg_err_type = TlIntgErrNone,
                          input int                 req_abort_pct = 0);
     super.tl_access_w_abort(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp,
-                            exp_data, compare_mask, check_exp_data, blocking, tl_type,
+                            exp_data, compare_mask, check_exp_data, blocking, instr_type,
                             tl_sequencer_h, tl_intg_err_type, req_abort_pct);
 
     // If we see a write which causes an integrity error AND we've disabled the scoreboard (which

@@ -15,6 +15,7 @@ package cip_base_pkg;
   import alert_esc_agent_pkg::*;
   import push_pull_agent_pkg::*;
   import mem_model_pkg::*;
+  import prim_mubi_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

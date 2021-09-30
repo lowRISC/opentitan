@@ -60,6 +60,8 @@ module prim_generic_otp
   output err_e                   err_o
 );
 
+  import prim_mubi_pkg::MuBi4False;
+
   // This is only restricted by the supported ECC poly further
   // below, and is straightforward to extend, if needed.
   localparam int EccWidth = 6;
@@ -107,7 +109,7 @@ module prim_generic_otp
     .rst_ni,
     .tl_i        ( test_tl_i          ),
     .tl_o        ( test_tl_o          ),
-    .en_ifetch_i ( tlul_pkg::InstrDis ),
+    .en_ifetch_i ( MuBi4False         ),
     .req_o       ( tlul_req           ),
     .gnt_i       ( tlul_req           ),
     .we_o        ( tlul_wren          ),

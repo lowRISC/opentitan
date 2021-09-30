@@ -17,7 +17,10 @@
  *   no stored integrity AND another entity upstream is already generating returning integrity.
  *   There is however no case where EnableDataIntgGen and EnableDataIntgPt are both true.
  */
-module tlul_adapter_sram import tlul_pkg::*; #(
+module tlul_adapter_sram
+  import tlul_pkg::*;
+  import prim_mubi_pkg::mubi4_e;
+#(
   parameter int SramAw            = 12,
   parameter int SramDw            = 32, // Must be multiple of the TL width
   parameter int Outstanding       = 1,  // Only one request is accepted
@@ -40,11 +43,11 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   output  tl_d2h_t          tl_o,
 
   // control interface
-  input   tl_instr_en_e     en_ifetch_i,
+  input   mubi4_e en_ifetch_i,
 
   // SRAM interface
   output logic                req_o,
-  output tl_type_e            req_type_o,
+  output mubi4_e              req_type_o,
   input                       gnt_i,
   output logic                we_o,
   output logic [SramAw-1:0]   addr_o,
@@ -227,7 +230,7 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   //    dropped and returned error response to the host. So, error to be pushed to reqfifo.
   //    In this case, it is assumed the request is granted (may cause ordering issue later?)
   assign req_o      = tl_i_int.a_valid & reqfifo_wready & ~error_internal;
-  assign req_type_o = tl_i_int.a_user.tl_type;
+  assign req_type_o = tl_i_int.a_user.instr_type;
   assign we_o       = tl_i_int.a_valid & (tl_i_int.a_opcode inside {PutFullData, PutPartialData});
   assign addr_o     = (tl_i_int.a_valid) ? tl_i_int.a_address[DataBitWidth+:SramAw] : '0;
 
@@ -307,8 +310,8 @@ module tlul_adapter_sram import tlul_pkg::*; #(
                            : 1'b0;
 
   // An instruction type transaction is only valid if en_ifetch is enabled
-  assign instr_error = tl_i_int.a_user.tl_type == InstrType &
-                       en_ifetch_i != InstrEn;
+  assign instr_error = prim_mubi_pkg::mubi4_test_true_strict(tl_i_int.a_user.instr_type) &
+                       prim_mubi_pkg::mubi4_test_false_loose(en_ifetch_i);
 
   if (ErrOnWrite == 1) begin : gen_no_writes
     assign wr_vld_error = tl_i_int.a_opcode != Get;

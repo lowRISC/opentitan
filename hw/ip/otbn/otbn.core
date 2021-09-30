@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:util
       - lowrisc:prim:lfsr
       - lowrisc:prim:cipher_pkg
+      - lowrisc:prim:mubi
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:otbn_pkg
     files:

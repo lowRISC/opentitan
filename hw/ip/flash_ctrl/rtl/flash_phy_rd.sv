@@ -26,7 +26,10 @@
 // also kicked off. When the galois multiply stage AND read stage completes, the
 // de-scramble is then kicked off.
 
-module flash_phy_rd import flash_phy_pkg::*; (
+module flash_phy_rd
+  import flash_phy_pkg::*;
+  import prim_mubi_pkg::mubi4_e;
+(
   input clk_i,
   input rst_ni,
 
@@ -36,7 +39,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // interface with arbitration unit
   input req_i,
-  input tlul_pkg::tl_type_e req_type_i,
+  input mubi4_e instr_type_i,
   input descramble_i,
   input ecc_i,
   input prog_i,
@@ -309,7 +312,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
       rd_attrs.addr <= addr_i[BusBankAddrW-1:LsbAddrBit];
       rd_attrs.descramble <= descramble_i;
       rd_attrs.ecc <= ecc_i;
-      rd_attrs.req_type <= req_type_i;
+      rd_attrs.instr_type <= instr_type_i;
     end else if (rd_done) begin
       rd_busy <= 1'b0;
     end
@@ -363,7 +366,8 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // For instruction type accesses, always return the transaction error
   // For data type accesses, allow the error return to be configurable, as the actual data may
   // need to be debugged
-  assign ecc_multi_err = (rd_attrs.req_type == tlul_pkg::InstrType) ?
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  assign ecc_multi_err = mubi4_test_true_strict(rd_attrs.instr_type) ?
                          ecc_multi_err_raw :
                          ecc_multi_err_raw & ecc_multi_err_en_i;
 
