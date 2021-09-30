@@ -53,6 +53,16 @@ typedef enum dif_result {
    * Indicates that the Ip's FIFO (if it has one or more of) is full.
    */
   kDifIpFifoFull = 5,
+  /**
+   * Indicates that the attempted operation would attempt a read/write to an
+   * address that would go out of range.
+   */
+  kDifOutOfRange = 6,
+  /**
+   * Indicates that the attempted operation would attempt a read/write to an
+   * address that is not aligned.
+   */
+  kDifUnaligned = 7,
 } dif_result_t;
 
 /**

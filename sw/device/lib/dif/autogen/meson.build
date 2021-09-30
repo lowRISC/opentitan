@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen Clock Manager DIF library
-sw_lib_dif_autogen_clkmgr = declare_dependency(
+# Autogen OTP Controller DIF library
+sw_lib_dif_autogen_otp_ctrl = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_clkmgr',
+    'sw_lib_dif_autogen_otp_ctrl',
     sources: [
-      hw_ip_clkmgr_reg_h,
-      'dif_clkmgr_autogen.c',
+      hw_ip_otp_ctrl_reg_h,
+      'dif_otp_ctrl_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -37,6 +37,20 @@ sw_lib_dif_autogen_alert_handler = declare_dependency(
     sources: [
       hw_ip_alert_handler_reg_h,
       'dif_alert_handler_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen Clock Manager DIF library
+sw_lib_dif_autogen_clkmgr = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_clkmgr',
+    sources: [
+      hw_ip_clkmgr_reg_h,
+      'dif_clkmgr_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,

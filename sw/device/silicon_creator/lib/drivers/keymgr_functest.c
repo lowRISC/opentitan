@@ -181,7 +181,7 @@ static dif_otp_ctrl_t otp;
 static void wait_for_dai(void) {
   while (true) {
     dif_otp_ctrl_status_t status;
-    CHECK(dif_otp_ctrl_get_status(&otp, &status) == kDifOtpCtrlOk);
+    CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp, &status));
     if (bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiIdle)) {
       return;
     }
@@ -195,17 +195,10 @@ static void wait_for_dai(void) {
  */
 static void lock_otp_secret_partition2(void) {
   // initialize otp
-  mmio_region_t otp_reg_core =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
-  mmio_region_t otp_reg_prim =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR);
-  CHECK(
-      dif_otp_ctrl_init((dif_otp_ctrl_params_t){.base_addr_core = otp_reg_core,
-                                                .base_addr_prim = otp_reg_prim},
-                        &otp) == kDifOtpCtrlOk);
+  CHECK_DIF_OK(dif_otp_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
-  CHECK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2, 0) ==
-        kDifOtpCtrlDaiOk);
+  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2, 0));
 
   wait_for_dai();
 }

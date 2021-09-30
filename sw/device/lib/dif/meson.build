@@ -567,7 +567,7 @@ test('dif_keymgr_unittest', executable(
   suite: 'dif',
 )
 
-# OTP controller library
+# OTP Controller library
 sw_lib_dif_otp_ctrl = declare_dependency(
   link_with: static_library(
     'sw_lib_dif_otp_ctrl',
@@ -578,6 +578,7 @@ sw_lib_dif_otp_ctrl = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_otp_ctrl,
     ],
   )
 )
@@ -585,9 +586,11 @@ sw_lib_dif_otp_ctrl = declare_dependency(
 test('dif_otp_ctrl_unittest', executable(
     'dif_otp_ctrl_unittest',
     sources: [
-      hw_ip_otp_ctrl_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_otp_ctrl.c',
       'dif_otp_ctrl_unittest.cc',
+      'autogen/dif_otp_ctrl_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_otp_ctrl.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.c',
+      hw_ip_otp_ctrl_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

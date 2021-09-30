@@ -29,7 +29,7 @@ const uint8_t OTP_DAI_TIMEOUT = 10;
 static void wait_for_dai(void) {
   for (int i = 0; i < OTP_DAI_TIMEOUT; i++) {
     dif_otp_ctrl_status_t status;
-    CHECK(dif_otp_ctrl_get_status(&otp, &status) == kDifOtpCtrlOk);
+    CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp, &status));
     if (status.codes == (1 << kDifOtpCtrlStatusCodeDaiIdle)) {
       return;
     }
@@ -45,17 +45,11 @@ static void wait_for_dai(void) {
 static void otp_ctrl_dai_read_32(const dif_otp_ctrl_t *otp,
                                  dif_otp_ctrl_partition_t partition,
                                  uint32_t address, uint32_t *buf) {
-  dif_otp_ctrl_dai_result_t read_start_err =
-      dif_otp_ctrl_dai_read_start(otp, partition, address);
-  CHECK(read_start_err == kDifOtpCtrlDaiOk,
-        "Failed to perform OTP DAI read start.");
+  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(otp, partition, address));
 
   wait_for_dai();
 
-  dif_otp_ctrl_dai_result_t read_end_err =
-      dif_otp_ctrl_dai_read32_end(otp, buf);
-  CHECK(read_end_err == kDifOtpCtrlDaiOk,
-        "Failed to perform OTP DAI read end.");
+  CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(otp, buf));
 }
 
 /**
@@ -63,14 +57,8 @@ static void otp_ctrl_dai_read_32(const dif_otp_ctrl_t *otp,
  */
 // TODO: needs to support other recipients besides LC_CTRL.
 bool test_main(void) {
-  mmio_region_t otp_reg_core =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
-  mmio_region_t otp_reg_prim =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR);
-  CHECK(
-      dif_otp_ctrl_init((dif_otp_ctrl_params_t){.base_addr_core = otp_reg_core,
-                                                .base_addr_prim = otp_reg_prim},
-                        &otp) == kDifOtpCtrlOk);
+  CHECK_DIF_OK(dif_otp_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
   mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
@@ -80,7 +68,7 @@ bool test_main(void) {
       .integrity_period_mask = 0x3ffff,
       .consistency_period_mask = 0x3ffffff,
   };
-  CHECK(dif_otp_ctrl_configure(&otp, config) == kDifOtpCtrlLockableOk);
+  CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
 
   // Read out Device ID from LC_CTRL's `device_id` registers.
   dif_lc_ctrl_device_id_t lc_device_id;
