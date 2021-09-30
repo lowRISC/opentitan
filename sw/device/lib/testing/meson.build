@@ -7,7 +7,22 @@ sw_lib_testing_rand_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_rand_testutils',
     sources: ['rand_testutils.c'],
-  )
+  ),
+)
+
+# aon_timer test utilities.
+sw_lib_testing_aon_timer_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_aon_timer_testutils',
+    sources: [
+      'aon_timer_testutils.c'
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_aon_timer,
+      top_earlgrey,
+    ],
+  ),
 )
 
 # hardware entropy complex (entropy_src, csrng, edn) test utilities.

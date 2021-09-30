@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
 
@@ -30,28 +30,9 @@ bool compare_wakeup_reasons(const dif_pwrmgr_wakeup_reason_t *lhs,
          lhs->request_sources == rhs->request_sources;
 }
 
-void aon_timer_wakeup_config(dif_aon_timer_t *aon_timer,
-                             uint32_t wakeup_threshold) {
-  // Make sure that wake-up timer is stopped.
-  CHECK(dif_aon_timer_wakeup_stop(aon_timer) == kDifAonTimerOk);
-
-  // Make sure the wake-up IRQ is cleared to avoid false positive.
-  CHECK(dif_aon_timer_irq_acknowledge(
-            aon_timer, kDifAonTimerIrqWakeupThreshold) == kDifAonTimerOk);
-
-  bool is_pending;
-  CHECK(dif_aon_timer_irq_is_pending(aon_timer, kDifAonTimerIrqWakeupThreshold,
-                                     &is_pending) == kDifAonTimerOk);
-  CHECK(!is_pending);
-
-  CHECK(dif_aon_timer_wakeup_start(aon_timer, wakeup_threshold, 0) ==
-        kDifAonTimerOk);
-}
-
 bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
   dif_rstmgr_t rstmgr;
-  dif_aon_timer_t aon_timer;
 
   // Initialize pwrmgr
   CHECK(dif_pwrmgr_init(
@@ -82,13 +63,6 @@ bool test_main(void) {
     // Clear reset_info.
     CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
 
-    // Initialize aon_timer
-    dif_aon_timer_params_t params = {
-        .base_addr =
-            mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
-    };
-    CHECK(dif_aon_timer_init(params, &aon_timer) == kDifAonTimerOk);
-
     // Issue a wakeup signal in ~150us through the AON timer.
     //
     // At 200kHz, threshold of 30 is equal to 150us. There is an additional
@@ -102,7 +76,14 @@ bool test_main(void) {
     if (kDeviceType == kDeviceSimVerilator) {
       wakeup_threshold = 300;
     }
-    aon_timer_wakeup_config(&aon_timer, wakeup_threshold);
+    dif_aon_timer_t aon_timer;
+    CHECK(dif_aon_timer_init(
+              (dif_aon_timer_params_t){
+                  .base_addr = mmio_region_from_addr(
+                      TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
+              },
+              &aon_timer) == kDifAonTimerOk);
+    aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
 
     // Enable low power on the next WFI with default settings.
     // All clocks and power domains are turned off during low power.
