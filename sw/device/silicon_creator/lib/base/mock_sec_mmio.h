@@ -62,6 +62,14 @@ using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
   EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), \
               Write32Shadowed(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
+/**
+ * Expect a write counter increment with a given 32-bit increment value.
+ *
+ * @param val Increment value.
+ */
+#define EXPECT_SEC_WRITE_INCREMENT(val) \
+  EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), WriteIncrement(val));
+
 extern "C" {
 
 void sec_mmio_init(sec_mmio_shutdown_handler callee) {
