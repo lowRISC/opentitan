@@ -1,0 +1,7 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# primitives: prim_generic_clock_buf
+waive -rules PARAM_NOT_USED -location {prim_generic_clock_buf.sv} -msg {Parameter 'NoFpgaBuf' not used} \
+      -comment "parameter unused but required to maintain uniform interface"
