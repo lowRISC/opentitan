@@ -8,6 +8,7 @@
 # Global configuration options.
 ARG VERILATOR_VERSION=4.210
 ARG OPENOCD_VERSION=0.11.0
+ARG VERIBLE_VERSION=v0.0-1213-g9e5c085
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20210412-1
 ARG RUST_VERSION=1.55.0
@@ -16,6 +17,7 @@ ARG RUST_VERSION=1.55.0
 FROM ubuntu:18.04 AS opentitan
 ARG VERILATOR_VERSION
 ARG OPENOCD_VERSION
+ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
 ARG RUST_VERSION
 
@@ -76,6 +78,13 @@ RUN echo "verilator-${VERILATOR_VERSION}" >>/tmp/apt-requirements.txt \
 COPY util/get-toolchain.py /tmp/get-toolchain.py
 RUN /tmp/get-toolchain.py -r ${RISCV_TOOLCHAIN_TAR_VERSION} \
     && rm -f /tmp/get-toolchain.py
+
+# Install Verible
+RUN curl -f -Ls -o verible.tar.gz \
+        https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz \
+    && mkdir -p /tools/verible \
+    && tar -C /tools/verible -xf verible.tar.gz --strip-components=1
+ENV PATH "/tools/verible/bin:${PATH}"
 
 # Set Locale to utf-8 everywhere
 ENV LC_ALL en_US.UTF-8
