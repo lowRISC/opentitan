@@ -52,6 +52,7 @@ interface otbn_trace_if
   input logic [31:0]              insn_fetch_resp_data,
   input logic [ImemAddrWidth-1:0] insn_fetch_resp_addr,
   input logic                     insn_fetch_resp_valid,
+  input logic                     insn_fetch_err,
 
   input logic                         dmem_req_o,
   input logic                         dmem_write_o,
@@ -86,10 +87,10 @@ interface otbn_trace_if
   logic [31:0] insn_data;
   logic        insn_stall;
 
-  assign insn_valid = insn_fetch_resp_valid;
-  assign insn_addr  = {{(32-ImemAddrWidth){1'b0}}, insn_fetch_resp_addr};
-  assign insn_data  = insn_fetch_resp_data;
-  assign insn_stall = u_otbn_core.u_otbn_controller.state_d == OtbnStateStall;
+  assign insn_valid     = insn_fetch_resp_valid;
+  assign insn_addr      = {{(32-ImemAddrWidth){1'b0}}, insn_fetch_resp_addr};
+  assign insn_data      = insn_fetch_resp_data;
+  assign insn_stall     = u_otbn_core.u_otbn_controller.state_d == OtbnStateStall;
 
   logic [31:0] rf_base_rd_data_a;
   logic [31:0] rf_base_rd_data_b;
