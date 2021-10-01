@@ -124,7 +124,7 @@ namespace {
     // All interrupt CSRs are 32 bit so interrupt 32 will be invalid.
     EXPECT_EQ(dif_${ip.name_snake}_irq_is_pending(
         &${ip.name_snake}_, 
-        (dif_${ip.name_snake}_irq_t)32,
+        static_cast<dif_${ip.name_snake}_irq_t>(32),
         &is_pending),
       kDifBadArg);
   }
@@ -151,6 +151,7 @@ namespace {
       kDifOk);
     EXPECT_TRUE(irq_state);
 
+  % if len(irqs) > 1 or irqs[0].width > 1:
     // Get the last IRQ state.
     irq_state = true;
     EXPECT_READ32(${ip.name_upper}_INTR_STATE_REG_OFFSET,
@@ -169,6 +170,7 @@ namespace {
         &irq_state),
       kDifOk);
     EXPECT_FALSE(irq_state);
+  % endif
   }
 
   class IrqAcknowledgeTest : public ${ip.name_camel}Test {};
@@ -187,7 +189,7 @@ namespace {
   TEST_F(IrqAcknowledgeTest, BadIrq) {
     EXPECT_EQ(dif_${ip.name_snake}_irq_acknowledge(
         nullptr, 
-        (dif_${ip.name_snake}_irq_t)32),
+        static_cast<dif_${ip.name_snake}_irq_t>(32)),
       kDifBadArg);
   }
 
@@ -208,6 +210,7 @@ namespace {
       % endif
       kDifOk);
 
+  % if len(irqs) > 1 or irqs[0].width > 1:
     // Clear the last IRQ state.
     EXPECT_WRITE32(${ip.name_upper}_INTR_STATE_REG_OFFSET,
       % if irqs[0].width > 1:
@@ -223,6 +226,7 @@ namespace {
         kDif${ip.name_camel}Irq${irqs[-1].name_camel}),
       % endif
       kDifOk);
+  % endif
   }
 
   class IrqGetEnabledTest : public ${ip.name_camel}Test {};
@@ -266,7 +270,7 @@ namespace {
 
     EXPECT_EQ(dif_${ip.name_snake}_irq_get_enabled(
         &${ip.name_snake}_, 
-        (dif_${ip.name_snake}_irq_t)32,
+        static_cast<dif_${ip.name_snake}_irq_t>(32),
         &irq_state),
       kDifBadArg);
   }
@@ -293,6 +297,7 @@ namespace {
       kDifOk);
     EXPECT_EQ(irq_state, kDifToggleEnabled);
 
+  % if len(irqs) > 1 or irqs[0].width > 1:
     // Last IRQ is disabled.
     irq_state = kDifToggleEnabled;
     EXPECT_READ32(${ip.name_upper}_INTR_ENABLE_REG_OFFSET,
@@ -311,6 +316,7 @@ namespace {
         &irq_state),
       kDifOk);
     EXPECT_EQ(irq_state, kDifToggleDisabled);
+  % endif
   }
 
   class IrqSetEnabledTest : public ${ip.name_camel}Test {};
@@ -334,7 +340,7 @@ namespace {
 
     EXPECT_EQ(dif_${ip.name_snake}_irq_set_enabled(
         &${ip.name_snake}_, 
-        (dif_${ip.name_snake}_irq_t)32,
+        static_cast<dif_${ip.name_snake}_irq_t>(32),
         irq_state),
       kDifBadArg);
   }
@@ -360,6 +366,7 @@ namespace {
         irq_state),
       kDifOk);
 
+  % if len(irqs) > 1 or irqs[0].width > 1:
     // Disable last IRQ.
     irq_state = kDifToggleDisabled;
     EXPECT_MASK32(${ip.name_upper}_INTR_ENABLE_REG_OFFSET,
@@ -377,6 +384,7 @@ namespace {
       % endif
         irq_state),
       kDifOk);
+  % endif
   }
 
   class IrqForceTest : public ${ip.name_camel}Test {};
@@ -395,7 +403,7 @@ namespace {
   TEST_F(IrqForceTest, BadIrq) {
     EXPECT_EQ(dif_${ip.name_snake}_irq_force(
         nullptr, 
-        (dif_${ip.name_snake}_irq_t)32),
+        static_cast<dif_${ip.name_snake}_irq_t>(32)),
       kDifBadArg);
   }
 
@@ -416,6 +424,7 @@ namespace {
       % endif
       kDifOk);
 
+  % if len(irqs) > 1 or irqs[0].width > 1:
     // Force last IRQ.
     EXPECT_WRITE32(${ip.name_upper}_INTR_TEST_REG_OFFSET,
       % if irqs[0].width > 1:
@@ -431,6 +440,7 @@ namespace {
         kDif${ip.name_camel}Irq${irqs[-1].name_camel}),
       % endif
       kDifOk);
+  % endif
   }
 
   class IrqDisableAllTest : public ${ip.name_camel}Test {};

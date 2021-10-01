@@ -73,9 +73,9 @@ TEST_F(IrqIsPendingTest, NullArgs) {
 TEST_F(IrqIsPendingTest, BadIrq) {
   bool is_pending;
   // All interrupt CSRs are 32 bit so interrupt 32 will be invalid.
-  EXPECT_EQ(
-      dif_keymgr_irq_is_pending(&keymgr_, (dif_keymgr_irq_t)32, &is_pending),
-      kDifBadArg);
+  EXPECT_EQ(dif_keymgr_irq_is_pending(
+                &keymgr_, static_cast<dif_keymgr_irq_t>(32), &is_pending),
+            kDifBadArg);
 }
 
 TEST_F(IrqIsPendingTest, Success) {
@@ -89,15 +89,6 @@ TEST_F(IrqIsPendingTest, Success) {
       dif_keymgr_irq_is_pending(&keymgr_, kDifKeymgrIrqOpDone, &irq_state),
       kDifOk);
   EXPECT_TRUE(irq_state);
-
-  // Get the last IRQ state.
-  irq_state = true;
-  EXPECT_READ32(KEYMGR_INTR_STATE_REG_OFFSET,
-                {{KEYMGR_INTR_STATE_OP_DONE_BIT, false}});
-  EXPECT_EQ(
-      dif_keymgr_irq_is_pending(&keymgr_, kDifKeymgrIrqOpDone, &irq_state),
-      kDifOk);
-  EXPECT_FALSE(irq_state);
 }
 
 class IrqAcknowledgeTest : public KeymgrTest {};
@@ -108,17 +99,13 @@ TEST_F(IrqAcknowledgeTest, NullArgs) {
 }
 
 TEST_F(IrqAcknowledgeTest, BadIrq) {
-  EXPECT_EQ(dif_keymgr_irq_acknowledge(nullptr, (dif_keymgr_irq_t)32),
-            kDifBadArg);
+  EXPECT_EQ(
+      dif_keymgr_irq_acknowledge(nullptr, static_cast<dif_keymgr_irq_t>(32)),
+      kDifBadArg);
 }
 
 TEST_F(IrqAcknowledgeTest, Success) {
   // Clear the first IRQ state.
-  EXPECT_WRITE32(KEYMGR_INTR_STATE_REG_OFFSET,
-                 {{KEYMGR_INTR_STATE_OP_DONE_BIT, true}});
-  EXPECT_EQ(dif_keymgr_irq_acknowledge(&keymgr_, kDifKeymgrIrqOpDone), kDifOk);
-
-  // Clear the last IRQ state.
   EXPECT_WRITE32(KEYMGR_INTR_STATE_REG_OFFSET,
                  {{KEYMGR_INTR_STATE_OP_DONE_BIT, true}});
   EXPECT_EQ(dif_keymgr_irq_acknowledge(&keymgr_, kDifKeymgrIrqOpDone), kDifOk);
@@ -143,9 +130,9 @@ TEST_F(IrqGetEnabledTest, NullArgs) {
 TEST_F(IrqGetEnabledTest, BadIrq) {
   dif_toggle_t irq_state;
 
-  EXPECT_EQ(
-      dif_keymgr_irq_get_enabled(&keymgr_, (dif_keymgr_irq_t)32, &irq_state),
-      kDifBadArg);
+  EXPECT_EQ(dif_keymgr_irq_get_enabled(
+                &keymgr_, static_cast<dif_keymgr_irq_t>(32), &irq_state),
+            kDifBadArg);
 }
 
 TEST_F(IrqGetEnabledTest, Success) {
@@ -159,15 +146,6 @@ TEST_F(IrqGetEnabledTest, Success) {
       dif_keymgr_irq_get_enabled(&keymgr_, kDifKeymgrIrqOpDone, &irq_state),
       kDifOk);
   EXPECT_EQ(irq_state, kDifToggleEnabled);
-
-  // Last IRQ is disabled.
-  irq_state = kDifToggleEnabled;
-  EXPECT_READ32(KEYMGR_INTR_ENABLE_REG_OFFSET,
-                {{KEYMGR_INTR_ENABLE_OP_DONE_BIT, false}});
-  EXPECT_EQ(
-      dif_keymgr_irq_get_enabled(&keymgr_, kDifKeymgrIrqOpDone, &irq_state),
-      kDifOk);
-  EXPECT_EQ(irq_state, kDifToggleDisabled);
 }
 
 class IrqSetEnabledTest : public KeymgrTest {};
@@ -182,9 +160,9 @@ TEST_F(IrqSetEnabledTest, NullArgs) {
 TEST_F(IrqSetEnabledTest, BadIrq) {
   dif_toggle_t irq_state = kDifToggleEnabled;
 
-  EXPECT_EQ(
-      dif_keymgr_irq_set_enabled(&keymgr_, (dif_keymgr_irq_t)32, irq_state),
-      kDifBadArg);
+  EXPECT_EQ(dif_keymgr_irq_set_enabled(
+                &keymgr_, static_cast<dif_keymgr_irq_t>(32), irq_state),
+            kDifBadArg);
 }
 
 TEST_F(IrqSetEnabledTest, Success) {
@@ -197,14 +175,6 @@ TEST_F(IrqSetEnabledTest, Success) {
   EXPECT_EQ(
       dif_keymgr_irq_set_enabled(&keymgr_, kDifKeymgrIrqOpDone, irq_state),
       kDifOk);
-
-  // Disable last IRQ.
-  irq_state = kDifToggleDisabled;
-  EXPECT_MASK32(KEYMGR_INTR_ENABLE_REG_OFFSET,
-                {{KEYMGR_INTR_ENABLE_OP_DONE_BIT, 0x1, false}});
-  EXPECT_EQ(
-      dif_keymgr_irq_set_enabled(&keymgr_, kDifKeymgrIrqOpDone, irq_state),
-      kDifOk);
 }
 
 class IrqForceTest : public KeymgrTest {};
@@ -214,16 +184,12 @@ TEST_F(IrqForceTest, NullArgs) {
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_keymgr_irq_force(nullptr, (dif_keymgr_irq_t)32), kDifBadArg);
+  EXPECT_EQ(dif_keymgr_irq_force(nullptr, static_cast<dif_keymgr_irq_t>(32)),
+            kDifBadArg);
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
-  EXPECT_WRITE32(KEYMGR_INTR_TEST_REG_OFFSET,
-                 {{KEYMGR_INTR_TEST_OP_DONE_BIT, true}});
-  EXPECT_EQ(dif_keymgr_irq_force(&keymgr_, kDifKeymgrIrqOpDone), kDifOk);
-
-  // Force last IRQ.
   EXPECT_WRITE32(KEYMGR_INTR_TEST_REG_OFFSET,
                  {{KEYMGR_INTR_TEST_OP_DONE_BIT, true}});
   EXPECT_EQ(dif_keymgr_irq_force(&keymgr_, kDifKeymgrIrqOpDone), kDifOk);
