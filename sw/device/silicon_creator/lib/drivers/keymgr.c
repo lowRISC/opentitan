@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/freestanding/assert.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "keymgr_regs.h"  // Generated.
@@ -34,7 +35,7 @@ enum {
  * @return `kErrorOk` if the key manager is at the `expected_state` and the
  * status is idle or success.
  */
-static rom_error_t check_expected_state(uint32_t expected_state) {
+static rom_error_t expected_state_check(uint32_t expected_state) {
   // Read and clear the status register by writing back the read value,
   // polling until the status is non-WIP.
   uint32_t op_status;
@@ -51,7 +52,9 @@ static rom_error_t check_expected_state(uint32_t expected_state) {
   uint32_t error_code = abs_mmio_read32(kBase + KEYMGR_ERR_CODE_REG_OFFSET);
   abs_mmio_write32(kBase + KEYMGR_ERR_CODE_REG_OFFSET, error_code);
 
-  uint32_t got_state = abs_mmio_read32(kBase + KEYMGR_WORKING_STATE_REG_OFFSET);
+  // Read the working state with sec_mmio so that we can check the expected
+  // value periodically.
+  uint32_t got_state = sec_mmio_read32(kBase + KEYMGR_WORKING_STATE_REG_OFFSET);
   if (op_status_field == KEYMGR_OP_STATUS_STATUS_VALUE_IDLE &&
       error_code == 0u && got_state == expected_state) {
     return kErrorOk;
@@ -60,37 +63,54 @@ static rom_error_t check_expected_state(uint32_t expected_state) {
 }
 
 rom_error_t keymgr_init(uint16_t entropy_reseed_interval) {
-  RETURN_IF_ERROR(check_expected_state(kKeymgrStateReset));
+  RETURN_IF_ERROR(expected_state_check(kKeymgrStateReset));
   uint32_t reg = bitfield_field32_write(
       0, KEYMGR_RESEED_INTERVAL_SHADOWED_VAL_FIELD, entropy_reseed_interval);
-  abs_mmio_write32_shadowed(kBase + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
+  sec_mmio_write32_shadowed(kBase + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
                             reg);
+  sec_mmio_write_increment(/*value=*/1);
   return kErrorOk;
 }
 
-void keymgr_set_next_stage_inputs(
+void keymgr_sw_binding_set(
     const keymgr_binding_value_t *binding_value_sealing,
-    const keymgr_binding_value_t *binding_value_attestation,
-    uint32_t max_key_ver) {
+    const keymgr_binding_value_t *binding_value_attestation) {
   // Write and lock (rw0c) the software binding value. This register is unlocked
   // by hardware upon a successful state transition.
-  // FIXME: Consider using sec_mmio module for the following register writes.
   for (size_t i = 0; i < ARRAYSIZE(binding_value_sealing->data); ++i) {
-    abs_mmio_write32(
+    sec_mmio_write32(
         kBase + KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + i * sizeof(uint32_t),
         binding_value_sealing->data[i]);
   }
   for (size_t i = 0; i < ARRAYSIZE(binding_value_attestation->data); ++i) {
-    abs_mmio_write32(
+    sec_mmio_write32(
         kBase + KEYMGR_ATTEST_SW_BINDING_0_REG_OFFSET + i * sizeof(uint32_t),
         binding_value_attestation->data[i]);
   }
-  abs_mmio_write32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
+  sec_mmio_write32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
+  sec_mmio_write_increment(/*value=*/17);
+}
 
+void keymgr_sw_binding_unlock_wait(void) {
+  while (!abs_mmio_read32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET)) {
+  }
+  sec_mmio_read32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET);
+}
+
+void keymgr_creator_max_ver_set(uint32_t max_key_ver) {
   // Write and lock (rw0c) the max key version.
-  abs_mmio_write32_shadowed(
+  sec_mmio_write32_shadowed(
       kBase + KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
-  abs_mmio_write32(kBase + KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET, 0);
+  sec_mmio_write32(kBase + KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET, 0);
+  sec_mmio_write_increment(/*value=*/2);
+}
+
+void keymgr_owner_int_max_ver_set(uint32_t max_key_ver) {
+  // Write and lock (rw0c) the max key version.
+  sec_mmio_write32_shadowed(
+      kBase + KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
+  sec_mmio_write32(kBase + KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_REG_OFFSET, 0);
+  sec_mmio_write_increment(/*value=*/2);
 }
 
 void keymgr_advance_state(void) {
@@ -102,6 +122,6 @@ void keymgr_advance_state(void) {
   abs_mmio_write32(kBase + KEYMGR_CONTROL_REG_OFFSET, reg);
 }
 
-rom_error_t keymgr_check_state(keymgr_state_t expected_state) {
-  return check_expected_state(expected_state);
+rom_error_t keymgr_state_check(keymgr_state_t expected_state) {
+  return expected_state_check(expected_state);
 }

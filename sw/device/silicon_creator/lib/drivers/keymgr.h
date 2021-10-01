@@ -58,17 +58,38 @@ typedef enum keymgr_state {
 } keymgr_state_t;
 
 /**
- * Sets the key manager inputs.
+ * Sets the key manager software binding inputs.
  *
- * @param binding_value Software binding value from the manifest of the next
- * stage.
- * @param max_key_version Maximum key version from the manifest of the next
- * stage.
+ * @param binding_value_sealing Software binding for sealing value.
+ * @param binding_value_attestation Software binding for attestation value.
  */
-void keymgr_set_next_stage_inputs(
+void keymgr_sw_binding_set(
     const keymgr_binding_value_t *binding_value_sealing,
-    const keymgr_binding_value_t *binding_value_attestation,
-    uint32_t max_key_version);
+    const keymgr_binding_value_t *binding_value_attestation);
+
+/**
+ * Blocks until the software binding registers are unlocked.
+ *
+ * This function can be called after `keymgr_advance_state()` to wait for the
+ * software binding registers to become available for writing.
+ */
+void keymgr_sw_binding_unlock_wait(void);
+
+/**
+ * Sets the Silicon Creator max key version.
+ *
+ * @param max_key_ver Maximum key version associated with the Silicon Creator
+ * key manager stage.
+ */
+void keymgr_creator_max_ver_set(uint32_t max_key_ver);
+
+/**
+ * Sets the Silicon Owner Intermediate max key version.
+ *
+ * @param max_key_ver Maximum key version associated with the Silicon Onwer
+ * Intermediate key manager stage.
+ */
+void keymgr_owner_int_max_ver_set(uint32_t max_key_ver);
 
 /**
  * Initializes the key manager.
@@ -88,12 +109,16 @@ rom_error_t keymgr_init(uint16_t entropy_reseed_interval);
 /**
  * Advances the state of the key manager.
  *
- * The `keymgr_check_state()` function must be called before this function to
+ * The `keymgr_state_check()` function must be called before this function to
  * ensure the key manager is in the expected state and ready to receive op
  * commands.
  *
- * The caller is responsible for calling the `keymgr_check_state()` at a later
+ * The caller is responsible for calling the `keymgr_state_check()` at a later
  * time to ensure the advance transition completed without errors.
+ *
+ * Note: It is recommended to call `keymgr_sw_binding_unlock_wait()` before the
+ * secure mmio `sec_mmio_check_values()` function to make sure the internal
+ * state of the key manager is updated in the secure mmio expectations table.
  */
 void keymgr_advance_state(void);
 
@@ -104,7 +129,7 @@ void keymgr_advance_state(void);
  * @return `kErrorOk` if the key manager is in `expected_state` and the status
  * is idle or success; otherwise returns `kErrorKeymgrInternal`.
  */
-rom_error_t keymgr_check_state(keymgr_state_t expected_state);
+rom_error_t keymgr_state_check(keymgr_state_t expected_state);
 
 #ifdef __cplusplus
 }
