@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
 
 #include "clkmgr_regs.h"  // Generated
 
@@ -27,10 +28,10 @@ static bool clkmgr_valid_hintable_clock(dif_clkmgr_params_t params,
          (params.last_hintable_clock < CLKMGR_PARAM_REG_WIDTH);
 }
 
-dif_clkmgr_result_t dif_clkmgr_init(dif_clkmgr_params_t params,
-                                    dif_clkmgr_t *handle) {
-  if (handle == NULL) {
-    return kDifClkmgrBadArg;
+dif_result_t dif_clkmgr_init(mmio_region_t base_addr,
+                             dif_clkmgr_params_t params, dif_clkmgr_t *clkmgr) {
+  if (clkmgr == NULL) {
+    return kDifBadArg;
   }
 
   // TODO: For the moment, `last_hintable_clock` and `last_gateable_clock` has
@@ -38,111 +39,112 @@ dif_clkmgr_result_t dif_clkmgr_init(dif_clkmgr_params_t params,
   // https://github.com/lowRISC/opentitan/issues/4201
   if (params.last_gateable_clock >= CLKMGR_PARAM_REG_WIDTH ||
       params.last_hintable_clock >= CLKMGR_PARAM_REG_WIDTH) {
-    return kDifClkmgrBadArg;
+    return kDifBadArg;
   }
 
-  handle->params = params;
-  return kDifClkmgrOk;
+  clkmgr->base_addr = base_addr;
+
+  return kDifOk;
 }
 
-dif_clkmgr_result_t dif_clkmgr_gateable_clock_get_enabled(
-    const dif_clkmgr_t *handle, dif_clkmgr_gateable_clock_t clock,
-    bool *is_enabled) {
-  if (handle == NULL || is_enabled == NULL ||
-      !clkmgr_valid_gateable_clock(handle->params, clock)) {
-    return kDifClkmgrBadArg;
+dif_result_t dif_clkmgr_gateable_clock_get_enabled(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
+    dif_clkmgr_gateable_clock_t clock, bool *is_enabled) {
+  if (clkmgr == NULL || is_enabled == NULL ||
+      !clkmgr_valid_gateable_clock(params, clock)) {
+    return kDifBadArg;
   }
 
-  uint32_t clk_enables_val = mmio_region_read32(handle->params.base_addr,
-                                                CLKMGR_CLK_ENABLES_REG_OFFSET);
+  uint32_t clk_enables_val =
+      mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_ENABLES_REG_OFFSET);
   *is_enabled = bitfield_bit32_read(clk_enables_val, clock);
 
-  return kDifClkmgrOk;
+  return kDifOk;
 }
 
-dif_clkmgr_result_t dif_clkmgr_gateable_clock_set_enabled(
-    const dif_clkmgr_t *handle, dif_clkmgr_gateable_clock_t clock,
-    dif_clkmgr_toggle_t new_state) {
-  if (handle == NULL || !clkmgr_valid_gateable_clock(handle->params, clock)) {
-    return kDifClkmgrBadArg;
+dif_result_t dif_clkmgr_gateable_clock_set_enabled(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
+    dif_clkmgr_gateable_clock_t clock, dif_toggle_t new_state) {
+  if (clkmgr == NULL || !clkmgr_valid_gateable_clock(params, clock)) {
+    return kDifBadArg;
   }
 
   bool new_clk_enables_bit;
   switch (new_state) {
-    case kDifClkmgrToggleEnabled:
+    case kDifToggleEnabled:
       new_clk_enables_bit = true;
       break;
-    case kDifClkmgrToggleDisabled:
+    case kDifToggleDisabled:
       new_clk_enables_bit = false;
       break;
     default:
-      return kDifClkmgrBadArg;
+      return kDifBadArg;
   }
 
-  uint32_t clk_enables_val = mmio_region_read32(handle->params.base_addr,
-                                                CLKMGR_CLK_ENABLES_REG_OFFSET);
+  uint32_t clk_enables_val =
+      mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_ENABLES_REG_OFFSET);
   clk_enables_val =
       bitfield_bit32_write(clk_enables_val, clock, new_clk_enables_bit);
-  mmio_region_write32(handle->params.base_addr, CLKMGR_CLK_ENABLES_REG_OFFSET,
+  mmio_region_write32(clkmgr->base_addr, CLKMGR_CLK_ENABLES_REG_OFFSET,
                       clk_enables_val);
 
-  return kDifClkmgrOk;
+  return kDifOk;
 }
 
-dif_clkmgr_result_t dif_clkmgr_hintable_clock_get_enabled(
-    const dif_clkmgr_t *handle, dif_clkmgr_hintable_clock_t clock,
-    bool *is_enabled) {
-  if (handle == NULL || is_enabled == NULL ||
-      !clkmgr_valid_hintable_clock(handle->params, clock)) {
-    return kDifClkmgrBadArg;
+dif_result_t dif_clkmgr_hintable_clock_get_enabled(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
+    dif_clkmgr_hintable_clock_t clock, bool *is_enabled) {
+  if (clkmgr == NULL || is_enabled == NULL ||
+      !clkmgr_valid_hintable_clock(params, clock)) {
+    return kDifBadArg;
   }
 
-  uint32_t clk_hints_val = mmio_region_read32(
-      handle->params.base_addr, CLKMGR_CLK_HINTS_STATUS_REG_OFFSET);
+  uint32_t clk_hints_val =
+      mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_HINTS_STATUS_REG_OFFSET);
   *is_enabled = bitfield_bit32_read(clk_hints_val, clock);
 
-  return kDifClkmgrOk;
+  return kDifOk;
 }
 
-dif_clkmgr_result_t dif_clkmgr_hintable_clock_set_hint(
-    const dif_clkmgr_t *handle, dif_clkmgr_hintable_clock_t clock,
-    dif_clkmgr_toggle_t new_state) {
-  if (handle == NULL || !clkmgr_valid_hintable_clock(handle->params, clock)) {
-    return kDifClkmgrBadArg;
+dif_result_t dif_clkmgr_hintable_clock_set_hint(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
+    dif_clkmgr_hintable_clock_t clock, dif_toggle_t new_state) {
+  if (clkmgr == NULL || !clkmgr_valid_hintable_clock(params, clock)) {
+    return kDifBadArg;
   }
 
   bool new_clk_hints_bit;
   switch (new_state) {
-    case kDifClkmgrToggleEnabled:
+    case kDifToggleEnabled:
       new_clk_hints_bit = true;
       break;
-    case kDifClkmgrToggleDisabled:
+    case kDifToggleDisabled:
       new_clk_hints_bit = false;
       break;
     default:
-      return kDifClkmgrBadArg;
+      return kDifBadArg;
   }
 
   uint32_t clk_hints_val =
-      mmio_region_read32(handle->params.base_addr, CLKMGR_CLK_HINTS_REG_OFFSET);
+      mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_HINTS_REG_OFFSET);
   clk_hints_val = bitfield_bit32_write(clk_hints_val, clock, new_clk_hints_bit);
-  mmio_region_write32(handle->params.base_addr, CLKMGR_CLK_HINTS_REG_OFFSET,
+  mmio_region_write32(clkmgr->base_addr, CLKMGR_CLK_HINTS_REG_OFFSET,
                       clk_hints_val);
 
-  return kDifClkmgrOk;
+  return kDifOk;
 }
 
-dif_clkmgr_result_t dif_clkmgr_hintable_clock_get_hint(
-    const dif_clkmgr_t *handle, dif_clkmgr_hintable_clock_t clock,
-    bool *hinted_is_enabled) {
-  if (handle == NULL || hinted_is_enabled == NULL ||
-      !clkmgr_valid_hintable_clock(handle->params, clock)) {
-    return kDifClkmgrBadArg;
+dif_result_t dif_clkmgr_hintable_clock_get_hint(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
+    dif_clkmgr_hintable_clock_t clock, bool *hinted_is_enabled) {
+  if (clkmgr == NULL || hinted_is_enabled == NULL ||
+      !clkmgr_valid_hintable_clock(params, clock)) {
+    return kDifBadArg;
   }
 
   uint32_t clk_hints_val =
-      mmio_region_read32(handle->params.base_addr, CLKMGR_CLK_HINTS_REG_OFFSET);
+      mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_HINTS_REG_OFFSET);
   *hinted_is_enabled = bitfield_bit32_read(clk_hints_val, clock);
 
-  return kDifClkmgrOk;
+  return kDifOk;
 }
