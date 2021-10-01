@@ -27,6 +27,9 @@ filesets:
       - seq_lib/pattgen_perf_vseq.sv: {is_include_file: true}
       - seq_lib/pattgen_error_vseq.sv: {is_include_file: true}
       - seq_lib/pattgen_stress_all_vseq.sv: {is_include_file: true}
+      - /wdc/proj/cto/top/work/alex.sapozhnikov/opentitan/hw/ip/pattgen/dv/cov/contr_cg.sv: {is_include_file: true}
+      - /wdc/proj/cto/top/work/alex.sapozhnikov/opentitan/hw/ip/pattgen/dv/cov/cnt_roll.sv: {is_include_file: true}
+      - /wdc/proj/cto/top/work/alex.sapozhnikov/opentitan/hw/ip/pattgen/dv/cov/intr_cg.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

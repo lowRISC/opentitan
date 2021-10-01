@@ -68,3 +68,6 @@ sw/host/**/target
 
 # Bazel-related cache and output directories
 bazel-*
+hw/ip/pattgen/dv/.tb.sv.swo
+hw/ip/pattgen/dv/.tb.sv.swp
+hw/ip/pattgen/dv/cov/.pattgen_cov.core.swp

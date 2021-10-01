@@ -33,6 +33,7 @@ module tb;
   `DV_ALERT_IF_CONNECT
 
   // dut
+
   pattgen dut (
     .clk_i                (clk           ),
     .rst_ni               (rst_n         ),
@@ -50,6 +51,9 @@ module tb;
     .intr_done_ch0_o      (intr_done_ch0 ),
     .intr_done_ch1_o      (intr_done_ch1 )
   );
+
+
+
 
   assign pattgen_if.rst_ni   = rst_n;
   assign pattgen_if.clk_i    = clk;

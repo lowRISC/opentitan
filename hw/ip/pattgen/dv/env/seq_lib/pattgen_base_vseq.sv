@@ -106,9 +106,17 @@ class pattgen_base_vseq extends cip_base_vseq #(
         !channel_start[1]) begin   // ch1 is not under start (avoid re-programming regs)
       wait_for_channel_ready(Channel0);
       channel_cfg[0] = get_random_channel_config(.channel(0));
+      ral.size.len_ch0.set(channel_cfg[0].len_top);
+      csr_update(ral.size);
+      cfg.clk_rst_vif.wait_clks(5);
       ral.size.len_ch0.set(channel_cfg[0].len);
+      ral.size.reps_ch0.set(channel_cfg[0].reps_top);
+      csr_update(ral.size);
+      cfg.clk_rst_vif.wait_clks(5);
       ral.size.reps_ch0.set(channel_cfg[0].reps);
       csr_update(ral.size);
+      csr_wr(.ptr(ral.prediv_ch0), .value(channel_cfg[0].prediv_max));
+      cfg.clk_rst_vif.wait_clks(5);
       csr_wr(.ptr(ral.prediv_ch0), .value(channel_cfg[0].prediv));
       csr_wr(.ptr(ral.data_ch0[0]), .value(channel_cfg[0].data[31:0]));
       csr_wr(.ptr(ral.data_ch0[1]), .value(channel_cfg[0].data[63:32]));
@@ -118,8 +126,12 @@ class pattgen_base_vseq extends cip_base_vseq #(
       channel_setup[0] = 1'b1;
       void'(right_rotation(channel_grant));
       `uvm_info(`gfn, "\n  channel 0: programmed", UVM_DEBUG)
+          `uvm_info(`gfn, $sformatf("\n  channel 0 reps: request %0d/%0d\n%s",
+              num_pattern_req, num_trans, channel_cfg[0].convert2string()), UVM_NONE)
     end
   endtask : setup_pattgen_channel_0
+
+  // Maximum values of data, prediv, reps and len are written to csr for coverage.
 
   virtual task setup_pattgen_channel_1();
     if (num_pattern_req < num_trans &&
@@ -128,9 +140,17 @@ class pattgen_base_vseq extends cip_base_vseq #(
         !channel_start[0]) begin   // ch0 is not under start (avoid re-programming regs)
       wait_for_channel_ready(Channel1);
       channel_cfg[1] = get_random_channel_config(.channel(1));
+      ral.size.len_ch1.set(channel_cfg[1].len_top);
+      csr_update(ral.size);
+      cfg.clk_rst_vif.wait_clks(5);
       ral.size.len_ch1.set(channel_cfg[1].len);
+      ral.size.reps_ch1.set(channel_cfg[1].reps_top);
+      csr_update(ral.size);
+      cfg.clk_rst_vif.wait_clks(5);
       ral.size.reps_ch1.set(channel_cfg[1].reps);
       csr_update(ral.size);
+      csr_wr(.ptr(ral.prediv_ch1), .value(channel_cfg[1].prediv_max_1));
+      cfg.clk_rst_vif.wait_clks(5);
       csr_wr(.ptr(ral.prediv_ch1), .value(channel_cfg[1].prediv));
       csr_wr(.ptr(ral.data_ch1[0]), .value(channel_cfg[1].data[31:0]));
       csr_wr(.ptr(ral.data_ch1[1]), .value(channel_cfg[1].data[63:32]));
@@ -335,6 +355,8 @@ class pattgen_base_vseq extends cip_base_vseq #(
     end
   endtask : clear_interrupts
 
+  //Upper ranges of data, prediv, reps and len are added for coverage
+
   // this function randomizes the channel config
   virtual function pattgen_channel_cfg get_random_channel_config(uint channel);
     pattgen_channel_cfg ch_cfg;
@@ -344,11 +366,23 @@ class pattgen_base_vseq extends cip_base_vseq #(
         1'b0 :/ cfg.seq_cfg.pattgen_low_polarity_pct,
         1'b1 :/ (100 - cfg.seq_cfg.pattgen_low_polarity_pct)
       };
+      ch_cfg.data[31:0] dist {
+        cfg.seq_cfg.data_top_0_32 :/ cfg.seq_cfg.data_top_pct,
+        cfg.seq_cfg.data_bottom_0_32 :/ cfg.seq_cfg.data_bottom_pct,
+        [cfg.seq_cfg.data_low_0_32:cfg.seq_cfg.data_high_0_32] :/ cfg.seq_cfg.data_middle_pct
+      };
+      ch_cfg.data[63:32] dist {
+        cfg.seq_cfg.data_top_32_64 :/ cfg.seq_cfg.data_top_pct,
+        cfg.seq_cfg.data_bottom_32_64 :/ cfg.seq_cfg.data_bottom_pct,
+        [cfg.seq_cfg.data_low_32_64:cfg.seq_cfg.data_high_32_64] :/ cfg.seq_cfg.data_middle_pct
+      };
       ch_cfg.prediv inside {[cfg.seq_cfg.pattgen_min_prediv : cfg.seq_cfg.pattgen_max_prediv]};
       ch_cfg.len    inside {[cfg.seq_cfg.pattgen_min_len    : cfg.seq_cfg.pattgen_max_len]};
+      ch_cfg.len_top    inside {[cfg.seq_cfg.pattgen_min_len_top    : cfg.seq_cfg.pattgen_max_len_top]};
       ch_cfg.reps   inside {[cfg.seq_cfg.pattgen_min_reps   : cfg.seq_cfg.pattgen_max_reps]};
-      solve ch_cfg.len before ch_cfg.data;
-      ch_cfg.data   inside {[0 : (1 << (ch_cfg.len + 1)) - 1]};
+      ch_cfg.reps_top   inside {[cfg.seq_cfg.pattgen_min_reps_top   : cfg.seq_cfg.pattgen_max_reps_top]};
+      ch_cfg.prediv_max inside {[ cfg.seq_cfg.pattgen_min_prediv_min : cfg.seq_cfg.pattgen_max_prediv_max]};
+      ch_cfg.prediv_max_1 inside {[ cfg.seq_cfg.pattgen_min_prediv_min : cfg.seq_cfg.pattgen_max_prediv_max]};
     )
     return ch_cfg;
   endfunction : get_random_channel_config
