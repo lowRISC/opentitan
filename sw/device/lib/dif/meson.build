@@ -14,6 +14,7 @@ sw_lib_dif_clkmgr = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
+      sw_lib_dif_autogen_clkmgr,
     ],
   )
 )
@@ -21,9 +22,10 @@ sw_lib_dif_clkmgr = declare_dependency(
 test('dif_clkmgr_unittest', executable(
     'dif_clkmgr_unittest',
     sources: [
-      hw_ip_clkmgr_reg_h,
+      'autogen/dif_clkmgr_autogen_unittest.cc',
       meson.source_root() / 'sw/device/lib/dif/dif_clkmgr.c',
-      'dif_clkmgr_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_clkmgr_autogen.c',
+      hw_ip_clkmgr_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen Reset Manager DIF library
-sw_lib_dif_autogen_rstmgr = declare_dependency(
+# Autogen Clock Manager DIF library
+sw_lib_dif_autogen_clkmgr = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_rstmgr',
+    'sw_lib_dif_autogen_clkmgr',
     sources: [
-      hw_ip_rstmgr_reg_h,
-      'dif_rstmgr_autogen.c',
+      hw_ip_clkmgr_reg_h,
+      'dif_clkmgr_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -163,6 +163,20 @@ sw_lib_dif_autogen_otbn = declare_dependency(
     sources: [
       hw_ip_otbn_reg_h,
       'dif_otbn_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen Reset Manager DIF library
+sw_lib_dif_autogen_rstmgr = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_rstmgr',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'dif_rstmgr_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
