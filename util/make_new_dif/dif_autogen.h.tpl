@@ -94,8 +94,7 @@ typedef struct dif_${ip.name_snake} {
    * Returns whether a particular interrupt is currently pending.
    *
    * @param ${ip.name_snake} A ${ip.name_snake} handle.
-   * @param irq An interrupt request.
-   * @param[out] is_pending Out-param for whether the interrupt is pending.
+   * @param[out] snapshot Out-param for interrupt state snapshot.
    * @return The result of the operation.
    */
   OT_WARN_UNUSED_RESULT

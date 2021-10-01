@@ -72,7 +72,8 @@ TEST_F(IrqIsPendingTest, NullArgs) {
 TEST_F(IrqIsPendingTest, BadIrq) {
   bool is_pending;
   // All interrupt CSRs are 32 bit so interrupt 32 will be invalid.
-  EXPECT_EQ(dif_otbn_irq_is_pending(&otbn_, (dif_otbn_irq_t)32, &is_pending),
+  EXPECT_EQ(dif_otbn_irq_is_pending(&otbn_, static_cast<dif_otbn_irq_t>(32),
+                                    &is_pending),
             kDifBadArg);
 }
 
@@ -85,14 +86,6 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_EQ(dif_otbn_irq_is_pending(&otbn_, kDifOtbnIrqDone, &irq_state),
             kDifOk);
   EXPECT_TRUE(irq_state);
-
-  // Get the last IRQ state.
-  irq_state = true;
-  EXPECT_READ32(OTBN_INTR_STATE_REG_OFFSET,
-                {{OTBN_INTR_STATE_DONE_BIT, false}});
-  EXPECT_EQ(dif_otbn_irq_is_pending(&otbn_, kDifOtbnIrqDone, &irq_state),
-            kDifOk);
-  EXPECT_FALSE(irq_state);
 }
 
 class IrqAcknowledgeTest : public OtbnTest {};
@@ -102,16 +95,12 @@ TEST_F(IrqAcknowledgeTest, NullArgs) {
 }
 
 TEST_F(IrqAcknowledgeTest, BadIrq) {
-  EXPECT_EQ(dif_otbn_irq_acknowledge(nullptr, (dif_otbn_irq_t)32), kDifBadArg);
+  EXPECT_EQ(dif_otbn_irq_acknowledge(nullptr, static_cast<dif_otbn_irq_t>(32)),
+            kDifBadArg);
 }
 
 TEST_F(IrqAcknowledgeTest, Success) {
   // Clear the first IRQ state.
-  EXPECT_WRITE32(OTBN_INTR_STATE_REG_OFFSET,
-                 {{OTBN_INTR_STATE_DONE_BIT, true}});
-  EXPECT_EQ(dif_otbn_irq_acknowledge(&otbn_, kDifOtbnIrqDone), kDifOk);
-
-  // Clear the last IRQ state.
   EXPECT_WRITE32(OTBN_INTR_STATE_REG_OFFSET,
                  {{OTBN_INTR_STATE_DONE_BIT, true}});
   EXPECT_EQ(dif_otbn_irq_acknowledge(&otbn_, kDifOtbnIrqDone), kDifOk);
@@ -135,7 +124,8 @@ TEST_F(IrqGetEnabledTest, NullArgs) {
 TEST_F(IrqGetEnabledTest, BadIrq) {
   dif_toggle_t irq_state;
 
-  EXPECT_EQ(dif_otbn_irq_get_enabled(&otbn_, (dif_otbn_irq_t)32, &irq_state),
+  EXPECT_EQ(dif_otbn_irq_get_enabled(&otbn_, static_cast<dif_otbn_irq_t>(32),
+                                     &irq_state),
             kDifBadArg);
 }
 
@@ -149,14 +139,6 @@ TEST_F(IrqGetEnabledTest, Success) {
   EXPECT_EQ(dif_otbn_irq_get_enabled(&otbn_, kDifOtbnIrqDone, &irq_state),
             kDifOk);
   EXPECT_EQ(irq_state, kDifToggleEnabled);
-
-  // Last IRQ is disabled.
-  irq_state = kDifToggleEnabled;
-  EXPECT_READ32(OTBN_INTR_ENABLE_REG_OFFSET,
-                {{OTBN_INTR_ENABLE_DONE_BIT, false}});
-  EXPECT_EQ(dif_otbn_irq_get_enabled(&otbn_, kDifOtbnIrqDone, &irq_state),
-            kDifOk);
-  EXPECT_EQ(irq_state, kDifToggleDisabled);
 }
 
 class IrqSetEnabledTest : public OtbnTest {};
@@ -171,7 +153,8 @@ TEST_F(IrqSetEnabledTest, NullArgs) {
 TEST_F(IrqSetEnabledTest, BadIrq) {
   dif_toggle_t irq_state = kDifToggleEnabled;
 
-  EXPECT_EQ(dif_otbn_irq_set_enabled(&otbn_, (dif_otbn_irq_t)32, irq_state),
+  EXPECT_EQ(dif_otbn_irq_set_enabled(&otbn_, static_cast<dif_otbn_irq_t>(32),
+                                     irq_state),
             kDifBadArg);
 }
 
@@ -184,13 +167,6 @@ TEST_F(IrqSetEnabledTest, Success) {
                 {{OTBN_INTR_ENABLE_DONE_BIT, 0x1, true}});
   EXPECT_EQ(dif_otbn_irq_set_enabled(&otbn_, kDifOtbnIrqDone, irq_state),
             kDifOk);
-
-  // Disable last IRQ.
-  irq_state = kDifToggleDisabled;
-  EXPECT_MASK32(OTBN_INTR_ENABLE_REG_OFFSET,
-                {{OTBN_INTR_ENABLE_DONE_BIT, 0x1, false}});
-  EXPECT_EQ(dif_otbn_irq_set_enabled(&otbn_, kDifOtbnIrqDone, irq_state),
-            kDifOk);
 }
 
 class IrqForceTest : public OtbnTest {};
@@ -200,15 +176,12 @@ TEST_F(IrqForceTest, NullArgs) {
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_otbn_irq_force(nullptr, (dif_otbn_irq_t)32), kDifBadArg);
+  EXPECT_EQ(dif_otbn_irq_force(nullptr, static_cast<dif_otbn_irq_t>(32)),
+            kDifBadArg);
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
-  EXPECT_WRITE32(OTBN_INTR_TEST_REG_OFFSET, {{OTBN_INTR_TEST_DONE_BIT, true}});
-  EXPECT_EQ(dif_otbn_irq_force(&otbn_, kDifOtbnIrqDone), kDifOk);
-
-  // Force last IRQ.
   EXPECT_WRITE32(OTBN_INTR_TEST_REG_OFFSET, {{OTBN_INTR_TEST_DONE_BIT, true}});
   EXPECT_EQ(dif_otbn_irq_force(&otbn_, kDifOtbnIrqDone), kDifOk);
 }
