@@ -19,7 +19,7 @@ targets:
   default: &default_target
     # note, this setting is just used
     # to generate a file list for jg
-    formal: icarus
+    default_tool: icarus
     filesets:
       - files_formal
     toplevel:
