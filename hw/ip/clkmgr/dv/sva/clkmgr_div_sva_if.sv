@@ -11,7 +11,7 @@
 //
 // All checks at negedges for simplicity.
 interface clkmgr_div_sva_if #(
-  parameter int DIV
+  parameter int DIV = 2
 ) (
   input logic clk,
   input logic rst_n,
@@ -26,8 +26,15 @@ interface clkmgr_div_sva_if #(
   logic step_down;
   always_comb step_down = (lc_step_down || sw_step_down) && !scanmode;
 
+  sequence WholeLeadHigh_S;
+    step_down || maybe_divided_clk ##1 step_down || !maybe_divided_clk;
+  endsequence
+
+  sequence WholeLeadLow_S;
+    step_down || !maybe_divided_clk ##1 step_down || maybe_divided_clk;
+  endsequence
+
   if (DIV == 2) begin : g_div2
-    `define _DIV Div2
 
     sequence TracksClk_S;
       !step_down || maybe_divided_clk ##1 !step_down || maybe_divided_clk;
@@ -37,9 +44,11 @@ interface clkmgr_div_sva_if #(
     // tracking.
     `ASSERT(Div2Stepped_A, $rose(step_down) ##1 step_down [* WAIT_CYCLES] |-> TracksClk_S, !clk,
             !rst_n)
+  `ASSERT(Div2Whole_A,
+          $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |-> WholeLeadLow_S or WholeLeadHigh_S,
+          !clk, !rst_n)
 
   end else begin : g_div4
-    `define _DIV Div4
 
     sequence StepLeadHigh_S;
       !step_down || maybe_divided_clk ##1 !step_down || !maybe_divided_clk;
@@ -52,19 +61,9 @@ interface clkmgr_div_sva_if #(
     `ASSERT(Div4Stepped_A,
             $rose(step_down) ##1 step_down [* WAIT_CYCLES] |-> StepLeadLow_S or StepLeadHigh_S,
             !clk, !rst_n)
-
-  end
-
-  sequence WholeLeadHigh_S;
-    step_down || maybe_divided_clk ##1 step_down || !maybe_divided_clk;
-  endsequence
-
-  sequence WholeLeadLow_S;
-    step_down || !maybe_divided_clk ##1 step_down || maybe_divided_clk;
-  endsequence
-
-  `ASSERT(`_DIV``Whole_A,
+  `ASSERT(Div4Whole_A,
           $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |-> WholeLeadLow_S or WholeLeadHigh_S,
           !clk, !rst_n)
-  `undef _DIV
+
+  end
 endinterface

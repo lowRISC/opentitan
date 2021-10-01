@@ -192,11 +192,13 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       "recov_err_code": begin
+        do_read_check = 1'b0;
         if (cfg.en_cov) begin
           // TODO(maturana) Insert coverage.
         end
       end
       "fatal_err_code": begin
+        do_read_check = 1'b0;
         if (cfg.en_cov) begin
           // TODO(maturana) Insert coverage.
         end

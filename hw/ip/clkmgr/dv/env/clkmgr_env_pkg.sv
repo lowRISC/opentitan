@@ -70,12 +70,12 @@ package clkmgr_env_pkg;
 
   localparam int ClkInHz[ClkMesrUsb+1] = {IoClkHz, IoClkHz / 2, IoClkHz / 4, MainClkHz, UsbClkHz};
 
-  localparam int ExpectedClkMeasurement[ClkMesrUsb+1] = {
-    ClkInHz[ClkMesrIo] / AonClkHz,
-    ClkInHz[ClkMesrIoDiv2] / AonClkHz,
-    ClkInHz[ClkMesrIoDiv4] / AonClkHz,
-    ClkInHz[ClkMesrMain] / AonClkHz,
-    ClkInHz[ClkMesrUsb] / AonClkHz
+  localparam int ExpectedCounts[ClkMesrUsb+1] = {
+    ClkInHz[ClkMesrIo] / AonClkHz - 1,
+    ClkInHz[ClkMesrIoDiv2] / AonClkHz - 1,
+    ClkInHz[ClkMesrIoDiv4] / AonClkHz - 1,
+    ClkInHz[ClkMesrMain] / AonClkHz - 1,
+    ClkInHz[ClkMesrUsb] / AonClkHz - 1
   };
 
   // functions
