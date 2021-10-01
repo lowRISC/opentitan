@@ -120,8 +120,9 @@ class OTBNSim:
             # Zero INSN_CNT the cycle after we are told to start (and every
             # cycle after that until we start executing instructions, but that
             # doesn't really matter)
+            changes = self._on_stall(verbose, fetch_next=False)
             self.state.ext_regs.write('INSN_CNT', 0, True)
-            return (None, self._on_stall(verbose, fetch_next=False))
+            return (None, changes)
 
         insn = self._next_insn
         if insn is None:

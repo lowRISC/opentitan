@@ -42,11 +42,20 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   // array, mapping the transaction source ID (a_source in the TL transaction) to an expected value.
   otbn_exp_read_data_t exp_read_values [tl_source_t];
 
-  bit saw_start_tl_trans = 1'b0;
-  bit waiting_for_model = 1'b0;
+  // A flag that tracks the fact that we've seen a TL write to the CMD register that we expect to
+  // start OTBN. We track this because we derive the "start" signal in the model from an internal
+  // DUT signal, so need to make sure it stays in sync with the TL side.
+  //
+  // If false, there are no transactions pending. This gets set in process_tl_addr when we see a
+  // write to CMD. This runs on a posedge of the clock. We expect to see the model start on the
+  // following negedge. When we process a change to model status that shows things starting (in
+  // process_model_fifo), we check that the flag is set and then clear it. When setting the flag, we
+  // queue a check to run on the following posedge of the clock to make sure the flag isn't still
+  // set.
+  bit pending_start_tl_trans = 1'b0;
 
   // The mirrored STATUS register from the ISS.
-  bit [7:0] model_status = 1'b0;
+  bit [7:0] model_status = 8'd0;
 
   // The "locked" field is used to track whether OTBN is "locked". For most operational state
   // tracking, we go through the ISS, but OTBN can become locked without actually starting an
@@ -72,7 +81,6 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     fork
       process_model_fifo();
       process_trace_fifo();
-      check_start();
     join_none
   endtask
 
@@ -83,15 +91,8 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // transaction, the reset will have caused them to be forgotten.
     exp_read_values.delete();
 
-    // Clear waiting_for_model. This handles a corner case where a TL transaction comes in to start
-    // OTBN just before a reset and the reset hits after the negedge of the clock (so we have set
-    // waiting_for_model) but before the following clock cycle (which would have generated the
-    // OtbnModelStart transaction).
-    waiting_for_model = 1'b0;
-
-    // Clear saw_start_tl_trans. Any "start" TL transaction will have been discarded by the reset,
-    // so we shouldn't still be tracking it.
-    saw_start_tl_trans = 1'b0;
+    model_status = otbn_pkg::StatusIdle;
+    pending_start_tl_trans = 1'b0;
 
     // Clear the locked bit (this is modelling RTL state that should be cleared on reset)
     locked = 1'b0;
@@ -128,17 +129,22 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       end
 
       case (csr.get_name())
-        // Spot writes to the "cmd" register, which tell us to start
-        // These start the processor. We don't pass those to the model through UVM, because it's
-        // difficult to get the timing right (you only recognise the transaction on the clock edge
-        // after you needed to set the signal!), so the testbench actually grabs the model's start
-        // signal from the DUT internals. Of course, we need to check this is true exactly when we
-        // expect it to be. Here, we set a flag to say that we expect the "start" signal to be high.
-        // See the check_start() task, which checks it's true at the right time.
+        // Spot writes to the "cmd" register that tell us to start
         "cmd": begin
-          // We start the execution when we see a write of the EXECUTE command.
+          // We start the execution when we see a write of the EXECUTE command. See the comment
+          // above pending_start_tl_trans to see how this tracking works.
           if (item.a_data == otbn_pkg::CmdExecute) begin
-            saw_start_tl_trans = 1'b1;
+            // Set a flag: we're expecting the model to start on the next negedge. Also, spawn off a
+            // checking thread that will make sure it has been cleared again by the next posedge.
+            // Note that the reset() method is only called in the DV base class on the following
+            // posedge of rst_n, so we have to check whether we're still in reset here.
+            pending_start_tl_trans = 1'b1;
+            fork begin
+              @(cfg.clk_rst_vif.cb);
+              `DV_CHECK_FATAL(!cfg.clk_rst_vif.rst_n || !pending_start_tl_trans,
+                              "Model ignored a write of EXECUTE to the CMD register.")
+            end
+            join_none;
           end
         end
 
@@ -257,14 +263,18 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, $sformatf("received model transaction:\n%0s", item.sprint()), UVM_HIGH)
 
       case (item.item_type)
-        OtbnModelStart: begin
-          // We should only see the model start if it was started by a TL transaction on the
-          // previous cycle.
-          `DV_CHECK_FATAL(waiting_for_model, "model started unbidden!")
-          waiting_for_model = 1'b0;
-        end
-
         OtbnModelStatus: begin
+          // Has the status changed from idle to busy? If so, we should have seen a write to the
+          // command register on the previous posedge. See comment above pending_start_tl_trans for
+          // the details.
+          if (model_status == otbn_pkg::StatusIdle &&
+              item.status inside {otbn_pkg::StatusBusyExecute,
+                                  otbn_pkg::StatusBusySecWipeDmem,
+                                  otbn_pkg::StatusBusySecWipeImem}) begin
+            `DV_CHECK_FATAL(pending_start_tl_trans,
+                            "Saw start transaction without corresponding write to CMD")
+            pending_start_tl_trans = 1'b0;
+          end
           model_status = item.status;
         end
 
@@ -297,36 +307,6 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
       rtl_trace_queue.push_back(item);
       pop_trace_queues();
-    end
-  endtask
-
-  // We track TL writes that should start the processor and the model transaction that says it has
-  // started. There should be a single cycle delay between the two: on the negedge of each clock,
-  // convert a "there was a TL write" event (saw_start_tl_trans) to "we expect to see the model
-  // start" (waiting_for_model).
-  //
-  // If we get to a negedge where waiting_for_model is true, that means that the model didn't start
-  // when we expected it to.
-  task check_start();
-    forever begin
-      @(cfg.clk_rst_vif.cbn);
-
-      if (!cfg.clk_rst_vif.rst_n) begin
-        // We're in reset. Wait until we start again.
-        @(posedge cfg.clk_rst_vif.rst_n);
-      end else begin
-        // We're not in reset. Check that waiting_for_model is false. If not, we've had a cycle
-        // since the model should have started.
-        `DV_CHECK(!waiting_for_model, "model didn't start when we expected it to")
-
-        // If we've just seen a write to the CMD register that should start OTBN, set the
-        // waiting_for_model flag. This gives a single cycle delay (on the next cycle, we'll check
-        // it worked properly using the DV_CHECK above).
-        if (saw_start_tl_trans) begin
-          waiting_for_model = 1'b1;
-          saw_start_tl_trans = 1'b0;
-        end
-      end
     end
   endtask
 

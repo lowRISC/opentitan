@@ -12,7 +12,6 @@ package otbn_model_agent_pkg;
     otbn_trace_checker_pop_iss_insn(output bit [31:0] insn_addr, output string mnemonic);
 
   typedef enum {
-    OtbnModelStart,
     OtbnModelStatus,
     OtbnModelInsn
   } otbn_model_item_type_e;

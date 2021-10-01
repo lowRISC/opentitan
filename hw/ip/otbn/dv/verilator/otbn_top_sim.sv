@@ -282,9 +282,9 @@ module otbn_top_sim (
 
   localparam string DesignScope = "..u_otbn_core";
 
-  logic      otbn_model_done;
   err_bits_t otbn_model_err_bits;
   bit [31:0] otbn_model_insn_cnt;
+  bit        otbn_model_done_r;
   bit        otbn_model_err;
 
   otbn_core_model #(
@@ -299,7 +299,6 @@ module otbn_top_sim (
     .rst_edn_ni            ( IO_RST_N ),
 
     .start_i               ( otbn_start ),
-    .done_o                ( otbn_model_done ),
 
     .err_bits_o            ( otbn_model_err_bits ),
 
@@ -307,8 +306,10 @@ module otbn_top_sim (
     .edn_rnd_cdc_done_i    ( edn_rnd_data_valid ),
     .edn_urnd_data_valid_i ( edn_urnd_data_valid ),
 
-    .status_o              (),
+    .status_o              ( ),
     .insn_cnt_o            ( otbn_model_insn_cnt ),
+
+    .done_r_o              ( otbn_model_done_r ),
 
     .err_o                 ( otbn_model_err )
   );
@@ -323,12 +324,17 @@ module otbn_top_sim (
       cnt_mismatch_latched      <= 1'b0;
       model_err_latched         <= 1'b0;
     end else begin
-      if (otbn_done_q != otbn_model_done) begin
-        $display("ERROR: At time %0t, otbn_done_q != otbn_model_done (%0d != %0d).",
-                 $time, otbn_done_q, otbn_model_done);
+      // Check that the 'done_o' output from the RTL matches the 'done_r_o' output from the model
+      // (with one cycle delay).
+      if (otbn_done_q && !otbn_model_done_r) begin
+        $display("ERROR: At time %0t, RTL done on previous cycle, but model still busy.", $time);
         done_mismatch_latched <= 1'b1;
       end
-      if (otbn_done_q && otbn_model_done) begin
+      if (otbn_model_done_r && !otbn_done_q) begin
+        $display("ERROR: At time %0t, model finished, but RTL not done in time.", $time);
+        done_mismatch_latched <= 1'b1;
+      end
+      if (otbn_model_done_r && otbn_done_q) begin
         if (otbn_err_bits_q != otbn_model_err_bits) begin
           $display("ERROR: At time %0t, otbn_err_bits != otbn_model_err_bits (0x%0x != 0x%0x).",
                    $time, otbn_err_bits_q, otbn_model_err_bits);
