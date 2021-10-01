@@ -109,15 +109,20 @@ TEST_F(SecMmioTest, CheckValues) {
   EXPECT_ABS_READ32(8, 0);
   sec_mmio_write32(8, 0);
 
+  // Test an expected value modification which gets updated by a read.
+  EXPECT_ABS_READ32(8, 0xa5a5a5a5);
+  EXPECT_ABS_READ32(8, 0xa5a5a5a5);
+  EXPECT_EQ(sec_mmio_read32(8), 0xa5a5a5a5);
+
   // The expected permutation order for rnd_offset=0 is {1, 2, 0}.
   EXPECT_ABS_READ32(4, 0x87654321);
-  EXPECT_ABS_READ32(8, 0);
+  EXPECT_ABS_READ32(8, 0xa5a5a5a5);
   EXPECT_ABS_READ32(0, 0x12345678);
   sec_mmio_check_values(/*rnd_offset=*/0);
   EXPECT_EQ(ctx_->check_count, 1);
 
   // The expected permutation order for rnd_offset=1 is {2, 0, 1}.
-  EXPECT_ABS_READ32(8, 0);
+  EXPECT_ABS_READ32(8, 0xa5a5a5a5);
   EXPECT_ABS_READ32(0, 0x12345678);
   EXPECT_ABS_READ32(4, 0x87654321);
   sec_mmio_check_values(/*rnd_offset=*/1);
@@ -126,7 +131,7 @@ TEST_F(SecMmioTest, CheckValues) {
   // The expected permutation order for rnd_offset=32 is {0, 1, 2}.
   EXPECT_ABS_READ32(0, 0x12345678);
   EXPECT_ABS_READ32(4, 0x87654321);
-  EXPECT_ABS_READ32(8, 0);
+  EXPECT_ABS_READ32(8, 0xa5a5a5a5);
   sec_mmio_check_values(/*rnd_offset=*/32);
   EXPECT_EQ(ctx_->check_count, 3);
 }

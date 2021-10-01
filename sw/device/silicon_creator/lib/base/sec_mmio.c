@@ -70,7 +70,7 @@ uint32_t sec_mmio_read32(uint32_t addr) {
   uint32_t value = abs_mmio_read32(addr);
   uint32_t masked_value = value ^ kSecMmioMaskVal;
 
-  upsert_register(addr, value);
+  upsert_register(addr, masked_value);
 
   if ((abs_mmio_read32(addr) ^ kSecMmioMaskVal) != masked_value) {
     sec_mmio_shutdown_cb(kErrorSecMmioReadFault);
