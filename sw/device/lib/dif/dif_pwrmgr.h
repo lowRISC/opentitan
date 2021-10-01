@@ -15,50 +15,13 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+
+#include "sw/device/lib/dif/autogen/dif_pwrmgr_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-/**
- * Enumeration for enabling/disabling various functionality.
- */
-typedef enum dif_pwrmgr_toggle {
-  /**
-   * Enabled state.
-   */
-  kDifPwrmgrToggleEnabled,
-  /**
-   * Disabled state.
-   */
-  kDifPwrmgrToggleDisabled,
-} dif_pwrmgr_toggle_t;
-
-/**
- * Hardware instantiation parameters for power manager.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_pwrmgr_params {
-  /**
-   * Base address of power manager registers.
-   */
-  mmio_region_t base_addr;
-} dif_pwrmgr_params_t;
-
-/**
- * A handle to power manager.
- *
- * This type should be treated as opaque by users.
- */
-typedef struct dif_pwrmgr {
-  /**
-   * Hardware instantiation parameters.
-   */
-  dif_pwrmgr_params_t params;
-} dif_pwrmgr_t;
 
 /**
  * A request type, i.e. wakeup or reset.
@@ -210,75 +173,6 @@ typedef struct dif_pwrmgr_wakeup_reason {
 } dif_pwrmgr_wakeup_reason_t;
 
 /**
- * Result of a power manager operation.
- */
-typedef enum dif_pwrmgr_result {
-  /**
-   * The call succeeded.
-   */
-  kDifPwrmgrOk = 0,
-  /**
-   * A non-specific error occurred and the hardware is in an invalid or
-   * irrecoverable state.
-   */
-  kDifPwrmgrError = 1,
-  /**
-   * The caller supplied invalid arguments but the call did not cause any
-   * side-effects and the hardware is in a valid and recoverable state.
-   */
-  kDifPwrmgrBadArg = 2,
-} dif_pwrmgr_result_t;
-
-/**
- * Result of a power manager operation that writes to lockable configuration
- * registers.
- */
-typedef enum dif_pwrmgr_config_result {
-  /**
-   * The call succeeded.
-   */
-  kDifPwrmgrConfigOk = kDifPwrmgrOk,
-  /**
-   * A non-specific error occurred and the hardware is in an invalid or
-   * irrecoverable state.
-   */
-  kDifPwrmgrConfigError = kDifPwrmgrError,
-  /**
-   * The caller supplied invalid arguments but the call did not cause any
-   * side-effects and the hardware is in a valid and recoverable state.
-   */
-  kDifPwrmgrConfigBadArg = kDifPwrmgrBadArg,
-  /**
-   * The register that needs to be written to is locked.
-   */
-  kDifPwrMgrConfigLocked,
-} dif_pwrmgr_config_result_t;
-
-/**
- * Power manager interrupts.
- */
-typedef enum dif_pwrmgr_irq {
-  /**
-   * The device woke up from low power state.
-   *
-   * Note: This interrupt is not triggered during power-on reset.
-   */
-  kDifPwrmgrIrqWakeup = 0,
-  /**
-   * \internal Last power manager interrupt.
-   */
-  kDifPwrmgrIrqLast = kDifPwrmgrIrqWakeup,
-} dif_pwrmgr_irq_t;
-
-/**
- * A snapshot of the enablement state of power manager interrupts.
- *
- * This is an opaque type, to be used with the `dif_pwrmgr_irq_disable_all()`
- * and `dif_pwrmgr_irq_restore_all()` functions.
- */
-typedef uint32_t dif_pwrmgr_irq_snapshot_t;
-
-/**
  * Power manager alerts.
  */
 typedef enum dif_pwrmgr_alert {
@@ -294,13 +188,12 @@ typedef enum dif_pwrmgr_alert {
  *
  * This function does not actuate the hardware.
  *
- * @param params Hardware instantiation parameters.
+ * @param base_addr Hardware instantiation base address.
  * @param[out] pwrmgr Out-param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_init(dif_pwrmgr_params_t params,
-                                    dif_pwrmgr_t *pwrmgr);
+dif_result_t dif_pwrmgr_init(mmio_region_t base_addr, dif_pwrmgr_t *pwrmgr);
 
 /**
  * Enables or disables low power state.
@@ -318,8 +211,8 @@ dif_pwrmgr_result_t dif_pwrmgr_init(dif_pwrmgr_params_t params,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_config_result_t dif_pwrmgr_low_power_set_enabled(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_toggle_t new_state);
+dif_result_t dif_pwrmgr_low_power_set_enabled(const dif_pwrmgr_t *pwrmgr,
+                                              dif_toggle_t new_state);
 
 /**
  * Checks whether low power state is enabled.
@@ -329,8 +222,8 @@ dif_pwrmgr_config_result_t dif_pwrmgr_low_power_set_enabled(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_low_power_get_enabled(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_toggle_t *cur_state);
+dif_result_t dif_pwrmgr_low_power_get_enabled(const dif_pwrmgr_t *pwrmgr,
+                                              dif_toggle_t *cur_state);
 
 /**
  * Configures power manager to enable/disable various clock and power domains in
@@ -344,8 +237,8 @@ dif_pwrmgr_result_t dif_pwrmgr_low_power_get_enabled(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_config_result_t dif_pwrmgr_set_domain_config(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_domain_config_t config);
+dif_result_t dif_pwrmgr_set_domain_config(const dif_pwrmgr_t *pwrmgr,
+                                          dif_pwrmgr_domain_config_t config);
 
 /**
  * Gets current power manager configuration.
@@ -355,8 +248,8 @@ dif_pwrmgr_config_result_t dif_pwrmgr_set_domain_config(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_get_domain_config(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_domain_config_t *config);
+dif_result_t dif_pwrmgr_get_domain_config(const dif_pwrmgr_t *pwrmgr,
+                                          dif_pwrmgr_domain_config_t *config);
 
 /**
  * Sets sources enabled for a request type.
@@ -374,7 +267,7 @@ dif_pwrmgr_result_t dif_pwrmgr_get_domain_config(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_config_result_t dif_pwrmgr_set_request_sources(
+dif_result_t dif_pwrmgr_set_request_sources(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
     dif_pwrmgr_request_sources_t sources);
 
@@ -391,7 +284,7 @@ dif_pwrmgr_config_result_t dif_pwrmgr_set_request_sources(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_get_request_sources(
+dif_result_t dif_pwrmgr_get_request_sources(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
     dif_pwrmgr_request_sources_t *sources);
 
@@ -405,7 +298,7 @@ dif_pwrmgr_result_t dif_pwrmgr_get_request_sources(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_get_current_request_sources(
+dif_result_t dif_pwrmgr_get_current_request_sources(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
     dif_pwrmgr_request_sources_t *sources);
 
@@ -420,8 +313,8 @@ dif_pwrmgr_result_t dif_pwrmgr_get_current_request_sources(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_request_sources_lock(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type);
+dif_result_t dif_pwrmgr_request_sources_lock(const dif_pwrmgr_t *pwrmgr,
+                                             dif_pwrmgr_req_type_t req_type);
 
 /**
  * Checks whether sources of a request type is locked.
@@ -432,7 +325,7 @@ dif_pwrmgr_result_t dif_pwrmgr_request_sources_lock(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_request_sources_is_locked(
+dif_result_t dif_pwrmgr_request_sources_is_locked(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
     bool *is_locked);
 
@@ -448,8 +341,8 @@ dif_pwrmgr_result_t dif_pwrmgr_request_sources_is_locked(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_wakeup_request_recording_set_enabled(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_toggle_t new_state);
+dif_result_t dif_pwrmgr_wakeup_request_recording_set_enabled(
+    const dif_pwrmgr_t *pwrmgr, dif_toggle_t new_state);
 
 /**
  * Checks whether wakeup requests are being recorded.
@@ -459,8 +352,8 @@ dif_pwrmgr_result_t dif_pwrmgr_wakeup_request_recording_set_enabled(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_wakeup_request_recording_get_enabled(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_toggle_t *cur_state);
+dif_result_t dif_pwrmgr_wakeup_request_recording_get_enabled(
+    const dif_pwrmgr_t *pwrmgr, dif_toggle_t *cur_state);
 
 /**
  * Gets wakeup reason and source requests since the last time recording
@@ -477,8 +370,8 @@ dif_pwrmgr_result_t dif_pwrmgr_wakeup_request_recording_get_enabled(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_wakeup_reason_get(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_wakeup_reason_t *reason);
+dif_result_t dif_pwrmgr_wakeup_reason_get(const dif_pwrmgr_t *pwrmgr,
+                                          dif_pwrmgr_wakeup_reason_t *reason);
 
 /**
  * Clears wakeup reason(s) recorded since the last time recording started.
@@ -487,96 +380,7 @@ dif_pwrmgr_result_t dif_pwrmgr_wakeup_reason_get(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_wakeup_reason_clear(const dif_pwrmgr_t *pwrmgr);
-
-/**
- * Returns whether a particular interrupt is currently pending.
- *
- * @param pwrmgr A power manager handle.
- * @param irq An interrupt type.
- * @param[out] is_pending Out-param for whether the interrupt is pending.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_irq_is_pending(const dif_pwrmgr_t *pwrmgr,
-                                              dif_pwrmgr_irq_t irq,
-                                              bool *is_pending);
-
-/**
- * Acknowledges a particular interrupt, indicating to the hardware that it has
- * been successfully serviced.
- *
- * @param pwrmgr A power manager handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_irq_acknowledge(const dif_pwrmgr_t *pwrmgr,
-                                               dif_pwrmgr_irq_t irq);
-
-/**
- * Checks whether a particular interrupt is currently enabled or disabled.
- *
- * @param pwrmgr A power manager handle.
- * @param irq An interrupt type.
- * @param[out] state Out-param toggle state of the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_irq_get_enabled(const dif_pwrmgr_t *pwrmgr,
-                                               dif_pwrmgr_irq_t irq,
-                                               dif_pwrmgr_toggle_t *state);
-
-/**
- * Sets whether a particular interrupt is currently enabled or disabled.
- *
- * @param pwrmgr A power manager handle.
- * @param irq An interrupt type.
- * @param state The new toggle state for the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_irq_set_enabled(const dif_pwrmgr_t *pwrmgr,
-                                               dif_pwrmgr_irq_t irq,
-                                               dif_pwrmgr_toggle_t state);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param pwrmgr A power manager handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_irq_force(const dif_pwrmgr_t *pwrmgr,
-                                         dif_pwrmgr_irq_t irq);
-
-/**
- * Disables all interrupts, optionally snapshotting all toggle state for later
- * restoration.
- *
- * @param pwrmgr A power manager handle.
- * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_irq_disable_all(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_irq_snapshot_t *snapshot);
-
-/**
- * Restores interrupts from the given snapshot.
- *
- * This function can be used with `dif_pwrmgr_irq_disable_all()` to temporary
- * interrupt save-and-restore.
- *
- * @param pwrmgr A power manager handle.
- * @param snapshot A snapshot to restore from.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_irq_restore_all(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_irq_snapshot_t snapshot);
+dif_result_t dif_pwrmgr_wakeup_reason_clear(const dif_pwrmgr_t *pwrmgr);
 
 /**
  * Forces a particular alert, causing it to be serviced as if hardware had
@@ -587,8 +391,8 @@ dif_pwrmgr_result_t dif_pwrmgr_irq_restore_all(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
-                                           dif_pwrmgr_alert_t alert);
+dif_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
+                                    dif_pwrmgr_alert_t alert);
 
 #ifdef __cplusplus
 }  // extern "C"
