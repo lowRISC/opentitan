@@ -31,19 +31,11 @@ def main():
                         type=int,
                         default=16,
                         help='Width of accumulator')
-    parser.add_argument('--async_on',
-                        type=str,
-                        default="'0",
-                        help="""Enables asynchronous signalling between specific
-                        alert RX/TX pairs""")
-    parser.add_argument('--n_lpg',
-                        type=int,
-                        default=1,
-                        help='Number of LPGs')
-    parser.add_argument('--lpg_map',
-                        type=str,
-                        default="'0",
-                        help="""Encodes the alert to LPG mapping""")
+
+    # can currently not be overridden with this script
+    n_lpg = 1
+    lpg_map = ["1'b0"]
+    async_on = ["'0"]
 
     args = parser.parse_args()
 
@@ -55,9 +47,9 @@ def main():
         reg_tpl.render(n_alerts=args.n_alerts,
                        esc_cnt_dw=args.esc_cnt_dw,
                        accu_cnt_dw=args.accu_cnt_dw,
-                       async_on=args.async_on,
-                       n_lpg=args.n_lpg,
-                       lpg_map=args.lpg_map,
+                       async_on=async_on,
+                       n_lpg=n_lpg,
+                       lpg_map=lpg_map,
                        n_classes=4))  # leave this constant for now
 
     print(out.getvalue())

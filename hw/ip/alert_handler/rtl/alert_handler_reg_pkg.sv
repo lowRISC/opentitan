@@ -10,10 +10,14 @@ package alert_handler_reg_pkg;
   parameter int NAlerts = 4;
   parameter int NLpg = 1;
   parameter int NLpgWidth = 1;
-  parameter logic [NAlerts-1:0][NLpgWidth-1:0] LpgMap = '0;
+  parameter logic [NAlerts-1:0][NLpgWidth-1:0] LpgMap = {
+  1'b0
+};
   parameter int EscCntDw = 32;
   parameter int AccuCntDw = 16;
-  parameter logic [NAlerts-1:0] AsyncOn = '0;
+  parameter logic [NAlerts-1:0] AsyncOn = {
+  '0
+};
   parameter int N_CLASSES = 4;
   parameter int N_ESC_SEV = 4;
   parameter int N_PHASES = 4;
