@@ -10,7 +10,6 @@ filesets:
     depend:
       - lowrisc:prim:all
     files:
-      - ../rtl/prim_packer.sv
       - tb/prim_packer_fpv.sv
     file_type: systemVerilogSource
 

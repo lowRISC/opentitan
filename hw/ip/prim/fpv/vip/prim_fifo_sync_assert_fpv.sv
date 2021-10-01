@@ -73,7 +73,7 @@ module prim_fifo_sync_assert_fpv #(
 
       if (Pass) begin : gen_pass
         assign ref_rdata = (ref_depth == 0) ? wdata_i : fifo;
-      end else begin : no_pass
+      end else begin : gen_no_pass
         assign ref_rdata = fifo;
       end
 
@@ -119,7 +119,7 @@ module prim_fifo_sync_assert_fpv #(
 
       if (Pass) begin : gen_pass
         assign ref_rdata = (ref_depth == 0) ? wdata_i : fifo[rptr];
-      end else begin : no_pass
+      end else begin : gen_no_pass
         assign ref_rdata = fifo[rptr];
       end
 
@@ -150,7 +150,8 @@ module prim_fifo_sync_assert_fpv #(
   // this is unreachable in depth 1 no-pass through mode
   if (Depth == 1 && Pass) begin : gen_d1_passthru
     // check simultaneous write and read
-    `ASSERT(WriteAndRead_A, wready_o && wvalid_i && rvalid_o && rready_i |=> depth_o == $past(depth_o),
+    `ASSERT(WriteAndRead_A,
+        wready_o && wvalid_i && rvalid_o && rready_i |=> depth_o == $past(depth_o),
         clk_i, !rst_ni || clr_i)
   end
 
