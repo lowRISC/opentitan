@@ -91,6 +91,11 @@ const uint32_t kMaxVerBl0 = 2;
 
 const test_config_t kTestConfig;
 
+/** SEC MMIO error handler. */
+static void error_handler_cb(rom_error_t e) {
+  LOG_ERROR("Secure MMIO error: 0x%x", e);
+}
+
 /**
  * Writes `size` words of `data` into flash info page.
  *
@@ -136,36 +141,6 @@ static void init_flash(void) {
                   ARRAYSIZE(kCreatorSecret));
   write_info_page(kFlashInfoPageIdOwnerSecret, kOwnerSecret,
                   ARRAYSIZE(kOwnerSecret));
-}
-
-/** Key manager configuration steps performed in mask ROM. */
-rom_error_t keymgr_rom_test(void) {
-  ASSERT_OK(keymgr_check_state(kKeymgrStateReset));
-  keymgr_set_next_stage_inputs(&kBindingValueRomExt, &kBindingValueRomExt,
-                               kMaxVerRomExt);
-  return kErrorOk;
-}
-
-/** Key manager configuration steps performed in ROM_EXT. */
-rom_error_t keymgr_rom_ext_test(void) {
-  ASSERT_OK(keymgr_check_state(kKeymgrStateReset));
-
-  const uint16_t kEntropyReseedInterval = 0x1234;
-  ASSERT_OK(keymgr_init(kEntropyReseedInterval));
-  keymgr_advance_state();
-  ASSERT_OK(keymgr_check_state(kKeymgrStateInit));
-
-  // FIXME: Check `kBindingValueRomExt` before advancing state.
-  keymgr_advance_state();
-  ASSERT_OK(keymgr_check_state(kKeymgrStateCreatorRootKey));
-
-  keymgr_set_next_stage_inputs(&kBindingValueBl0, &kBindingValueBl0,
-                               kMaxVerBl0);
-
-  // FIXME: Check `kBindingValueBl0` before advancing state.
-  keymgr_advance_state();
-  ASSERT_OK(keymgr_check_state(kKeymgrStateOwnerIntermediateKey));
-  return kErrorOk;
 }
 
 static const dif_pwrmgr_wakeup_reason_t kWakeUpReasonPor = {
@@ -269,6 +244,47 @@ static void soft_reboot(dif_pwrmgr_t *pwrmgr, dif_aon_timer_t *aon_timer) {
   wait_for_interrupt();
 }
 
+/** Key manager configuration steps performed in mask ROM. */
+rom_error_t keymgr_rom_test(void) {
+  ASSERT_OK(keymgr_state_check(kKeymgrStateReset));
+  keymgr_sw_binding_set(&kBindingValueRomExt, &kBindingValueRomExt);
+  keymgr_creator_max_ver_set(kMaxVerRomExt);
+  sec_mmio_check_values(/*rnd_offset=*/0);
+  sec_mmio_check_counters(/*expected_check_count=*/1);
+  return kErrorOk;
+}
+
+/** Key manager configuration steps performed in ROM_EXT. */
+rom_error_t keymgr_rom_ext_test(void) {
+  ASSERT_OK(keymgr_state_check(kKeymgrStateReset));
+
+  const uint16_t kEntropyReseedInterval = 0x1234;
+  ASSERT_OK(keymgr_init(kEntropyReseedInterval));
+
+  sec_mmio_check_values(/*rnd_offset=*/0);
+  keymgr_advance_state();
+  ASSERT_OK(keymgr_state_check(kKeymgrStateInit));
+
+  keymgr_advance_state();
+  ASSERT_OK(keymgr_state_check(kKeymgrStateCreatorRootKey));
+
+  // The software binding register lock is reset after advancing the key
+  // manager, so we need to call this function to update sec_mmio expectation
+  // table.
+  keymgr_sw_binding_unlock_wait();
+  sec_mmio_check_values(/*rnd_offset=*/0);
+
+  keymgr_sw_binding_set(&kBindingValueBl0, &kBindingValueBl0);
+  keymgr_owner_int_max_ver_set(kMaxVerBl0);
+  sec_mmio_check_values(/*rnd_offset=*/0);
+
+  keymgr_advance_state();
+  ASSERT_OK(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+
+  sec_mmio_check_counters(/*expected_check_count=*/5);
+  return kErrorOk;
+}
+
 bool test_main(void) {
   rom_error_t result = kErrorOk;
 
@@ -311,7 +327,7 @@ bool test_main(void) {
   } else {
     LOG_INFO("Powered up for the second time, actuate keymgr");
 
-    // Initialize kmac for key manager
+    sec_mmio_init(error_handler_cb);
     init_kmac_for_keymgr();
 
     EXECUTE_TEST(result, keymgr_rom_test);
