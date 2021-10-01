@@ -35,9 +35,8 @@ module otbn_core_model
   input  logic                     rst_edn_ni,
 
   input  logic                     start_i, // start the operation
-  output bit                       done_o,  // operation done
 
-  output err_bits_t                err_bits_o, // valid when done_o is asserted
+  output err_bits_t                err_bits_o, // updated when STATUS switches to idle
 
   input  edn_pkg::edn_rsp_t        edn_rnd_i, // EDN response interface
   input  logic                     edn_rnd_cdc_done_i, // RND from EDN is valid (DUT perspective)
@@ -45,6 +44,8 @@ module otbn_core_model
 
   output bit [7:0]       status_o,   // STATUS register
   output bit [31:0]      insn_cnt_o, // INSN_CNT register
+
+  output bit             done_r_o,
 
   output bit             err_o // something went wrong
 );
@@ -101,9 +102,7 @@ module otbn_core_model
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      if (model_state != 0) begin
-        otbn_model_reset(model_handle);
-      end
+      otbn_model_reset(model_handle);
       model_state <= 0;
       status_q <= 0;
       insn_cnt_q <= 0;
@@ -140,17 +139,6 @@ module otbn_core_model
   assign status_o = status_q;
   assign insn_cnt_o = insn_cnt_q;
 
-  // Track negedges of running_q and expose that as a "done" output.
-  bit running_r = 1'b0;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      running_r <= 1'b0;
-    end else begin
-      running_r <= running;
-    end
-  end
-  assign done_o = running_r & ~running;
-
   // If DesignScope is not empty, we have a design to check. Bind a copy of otbn_rf_snooper_if into
   // each register file. The otbn_model_check() function will use these to extract memory contents.
   if (DesignScope != "") begin: g_check_design
@@ -181,6 +169,20 @@ module otbn_core_model
   end
 
   assign err_o = failed_step | failed_cmp;
+
+  // Derive a "done" signal. This should trigger for a single cycle when OTBN finishes its work.
+  // It's analogous to the done_o signal on otbn_core, but this signal is delayed by a single cycle
+  // (hence its name is done_r_o).
+  bit otbn_model_busy, otbn_model_busy_r;
+  assign otbn_model_busy = (status_q != StatusIdle) && (status_q != StatusLocked);
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      otbn_model_busy_r <= 1'b0;
+    end else begin
+      otbn_model_busy_r <= otbn_model_busy;
+    end
+  end
+  assign done_r_o = otbn_model_busy_r & ~otbn_model_busy;
 
   // Make stop_pc available over DPI. This is handy for Verilator simulations (where the top-level
   // is in C++).

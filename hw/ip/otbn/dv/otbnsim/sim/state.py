@@ -157,8 +157,9 @@ class OTBNState:
         if self.rnd_cdc_pending:
             self.rnd_cdc_counter += 1
 
+        self.ext_regs.commit()
+
         if self._urnd_stall:
-            self.ext_regs.commit()
             if self._urnd_reseed_complete:
                 self._urnd_stall = False
                 self.non_insn_stall = False

@@ -158,7 +158,7 @@ module tb;
   // to grab the decoded signal from TL transactions on the cycle it happens. We have an explicit
   // check in the scoreboard to ensure that this gets asserted at the time we expect (to spot any
   // decoding errors).
-  assign model_if.start = dut.start_q;
+  assign model_if.start = dut.start_d;
 
   // Valid signals below are set when DUT finishes processing incoming 32b packages and constructs
   // 256b EDN data. Model checks if the processing of the packages are done in maximum of 5 cycles
@@ -183,7 +183,6 @@ module tb;
     .rst_edn_ni   (edn_rst_n),
 
     .start_i      (model_if.start),
-    .done_o       (model_if.done),
 
     .err_bits_o   (),
 
@@ -194,6 +193,8 @@ module tb;
 
     .status_o     (model_if.status),
     .insn_cnt_o   (model_insn_cnt),
+
+    .done_r_o     (),
 
     .err_o        (model_if.err)
   );
@@ -224,12 +225,11 @@ module tb;
   // These are the sort of checks that are easier to state at the design level than in terms of UVM
   // transactions.
 
-  // Check that the idle output from the DUT is the inverse of the model's "done" signal.
-  // Separately, the code in otbn_idle_checker.sv checks that the idle output from the DUT is also
-  // the inverse of the "done" signal that we expect. Combining the two tells us that the RTL and
-  // model agree about whether they are running or not.
-  `ASSERT(MatchingDone_A, idle == !model_if.done, clk, rst_n)
-
+  // Check that the status output from the model exactly matches the register from the dut. In
+  // theory, we could see mismatches by probing the STATUS register over the TL bus, but we have to
+  // be lucky with exactly when the reads happen if we want to see off-by-one cycle errors. This
+  // assertion gives a continuous check.
+  `ASSERT(MatchingStatus_A, dut.hw2reg.status.d == model_if.status, clk, !rst_n)
 
   initial begin
     mem_bkdr_util imem_util, dmem_util;
