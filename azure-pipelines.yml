@@ -89,6 +89,9 @@ jobs:
   - bash: ci/scripts/verible-lint.sh dv
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Style-Lint DV Verilog source files with Verible
+  - bash: ci/scripts/verible-lint.sh fpv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint FPV Verilog source files with Verible
   - bash: ci/scripts/build-docs.sh
     displayName: Render documentation
   - bash: ci/scripts/build-site.sh
