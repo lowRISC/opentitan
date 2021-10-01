@@ -9,12 +9,12 @@
 `include "prim_assert.sv"
 
 module ast #(
-  parameter int AdcChannels     = 2,
-  parameter int AdcDataWidth    = 10,
-  parameter int EntropyStreams  = 4,
-  parameter int UsbCalibWidth   = 20,
-  parameter int Ast2PadOutWidth = 9,
-  parameter int Pad2AstInWidth  = 6
+  parameter int unsigned AdcChannels     = 2,
+  parameter int unsigned AdcDataWidth    = 10,
+  parameter int unsigned EntropyStreams  = 4,
+  parameter int unsigned UsbCalibWidth   = 20,
+  parameter int unsigned Ast2PadOutWidth = 9,
+  parameter int unsigned Pad2AstInWidth  = 6
 ) (
   // tlul if
   input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D
@@ -183,6 +183,8 @@ assign vcc_pok = vcc_pok_int && vcc_supp_i;
 assign vcc_pok_h = vcc_pok;     // "Level Shifter"
 assign ast_pwst_h_o.vcc_pok = vcc_pok_h;
 
+// TODO: double check this.
+assign ast_pwst_o.vcc_pok = vcc_pok;
 
 ///////////////////////////////////////
 // VCAON POK (Always ON)

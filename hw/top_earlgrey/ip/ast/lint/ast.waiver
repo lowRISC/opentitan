@@ -12,6 +12,14 @@ waive -rules IFDEF_CODE -location {ast.sv} \
       -msg {Assignment to 'unused_analog_sigs' contained within `ifndef 'ANALOGSIM' block at} \
       -comment {This ifdef statement is used for assigning "unused" signals and is OK.}
 
+waive -rules IFDEF_CODE -location {ast.sv} \
+      -regexp {Assignment to 'clk_(sys|usb|aon|io)_ext' contained within `ifdef 'AST_BYPASS_CLK' block at} \
+      -comment {This ifdef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
+
+waive -rules IFDEF_CODE -location {aon_osc.sv io_osc.sv sys_osc.sv usb_osc.sv} \
+      -regexp {Assignment to '(sys|usb|aon|io)_clk_dly' contained within `else block at} \
+      -comment {This ifdef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
+
 waive -rules CLOCK_EDGE -location {aon_osc.sv io_osc.sv sys_osc.sv usb_osc.sv} \
       -msg {Falling edge of clock 'clk' used here, should use rising edge} \
       -comment {This negedge trigger is done on purpose.}
@@ -30,6 +38,10 @@ waive -rules CLOCK_USE -location {ast.sv} \
 
 waive -rules RESET_DRIVER -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
       -msg {'rst_val_n' is driven here, and used as an asynchronous reset} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
+waive -rules RESET_DRIVER -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
+      -regexp {'(aon|io|sys|usb)_clk_en' is driven here, and used as an asynchronous reset} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {rng.sv} \
@@ -103,6 +115,10 @@ waive -rules RESET_USE -location {ast.sv} \
 waive -rules RESET_USE -location {ast.sv} \
       -regexp {('rst_sys_clk_n'|'rst_usb_clk_n') is connected to ('sys_clk'|'usb_clk') port ('rst_sys_clk_ni'|'rst_usb_clk_ni'), and used as an asynchronous reset or set} \
       -comment {This is a valid reset connection.}
+
+waive -rules RESET_USE -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
+      -regexp {'(aon|io|sys|usb)_clk_en' is connected to '(aon|io|sys|usb)_osc' port '(aon|io|sys|usb)_en_i', and used as an asynchronous reset or set} \
+      -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
 
 waive -rules {TRI_DRIVER} -location {ast.sv} \
       -regexp {'ast2pad_(t0|t1)_ao' is driven by a tristate driver} \
