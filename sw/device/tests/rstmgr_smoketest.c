@@ -14,13 +14,11 @@ static dif_rstmgr_t rstmgr;
 const test_config_t kTestConfig;
 
 bool test_main(void) {
-  dif_rstmgr_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
-  };
-  CHECK(dif_rstmgr_init(params, &rstmgr) == kDifRstmgrOk);
+  CHECK_DIF_OK(dif_rstmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   dif_rstmgr_reset_info_bitfield_t info;
-  CHECK(dif_rstmgr_reset_info_get(&rstmgr, &info) == kDifRstmgrOk);
+  CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &info));
 
   // Only POR reset cause should be set (assuming normal power-up).
   CHECK((info & kDifRstmgrResetInfoPor) == info);

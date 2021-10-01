@@ -435,6 +435,7 @@ sw_lib_dif_rstmgr = declare_dependency(
     dependencies: [
       sw_lib_bitfield,
       sw_lib_mmio,
+      sw_lib_dif_autogen_rstmgr,
     ],
   )
 )
@@ -443,7 +444,9 @@ test('dif_rstmgr_unittest', executable(
     'dif_rstmgr_unittest',
     sources: [
       'dif_rstmgr_unittest.cc',
+      'autogen/dif_rstmgr_autogen_unittest.cc',
       meson.source_root() / 'sw/device/lib/dif/dif_rstmgr.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_rstmgr_autogen.c',
       hw_ip_rstmgr_reg_h,
     ],
     dependencies: [

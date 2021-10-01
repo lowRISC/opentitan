@@ -62,12 +62,8 @@ bool test_main(void) {
             &pwrmgr) == kDifPwrmgrOk);
 
   // Initialize rstmgr since this will check some registers.
-  CHECK(dif_rstmgr_init(
-            (dif_rstmgr_params_t){
-                .base_addr =
-                    mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
-            },
-            &rstmgr) == kDifRstmgrOk);
+  CHECK_DIF_OK(dif_rstmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
   // Notice we are clear rstmgr's RESET_INFO, so after the aon wakeup there
@@ -80,11 +76,11 @@ bool test_main(void) {
 
     LOG_INFO("Check the rstmgr reset_info is POR");
     dif_rstmgr_reset_info_bitfield_t info;
-    CHECK(dif_rstmgr_reset_info_get(&rstmgr, &info) == kDifRstmgrOk);
+    CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &info));
     CHECK(info == (dif_rstmgr_reset_info_bitfield_t)(kDifRstmgrResetInfoPor));
 
     // Clear reset_info.
-    CHECK(dif_rstmgr_reset_info_clear(&rstmgr) == kDifRstmgrOk);
+    CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
 
     // Initialize aon_timer
     dif_aon_timer_params_t params = {
@@ -128,7 +124,7 @@ bool test_main(void) {
     LOG_INFO("Aon timer wakeup detected");
     LOG_INFO("Check the rstmgr reset_info is LOW_POWER timer wakeup detected");
     dif_rstmgr_reset_info_bitfield_t info;
-    CHECK(dif_rstmgr_reset_info_get(&rstmgr, &info) == kDifRstmgrOk);
+    CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &info));
     CHECK(info ==
           (dif_rstmgr_reset_info_bitfield_t)(kDifRstmgrResetInfoLowPowerExit));
     return true;

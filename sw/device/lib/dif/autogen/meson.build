@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen EDN DIF library
-sw_lib_dif_autogen_edn = declare_dependency(
+# Autogen Reset Manager DIF library
+sw_lib_dif_autogen_rstmgr = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_edn',
+    'sw_lib_dif_autogen_rstmgr',
     sources: [
-      hw_ip_edn_reg_h,
-      'dif_edn_autogen.c',
+      hw_ip_rstmgr_reg_h,
+      'dif_rstmgr_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -51,6 +51,20 @@ sw_lib_dif_autogen_csrng = declare_dependency(
     sources: [
       hw_ip_csrng_reg_h,
       'dif_csrng_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen EDN DIF library
+sw_lib_dif_autogen_edn = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_edn',
+    sources: [
+      hw_ip_edn_reg_h,
+      'dif_edn_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
