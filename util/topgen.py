@@ -137,12 +137,12 @@ def generate_alert_handler(top, out_path):
     # default values
     esc_cnt_dw = 32
     accu_cnt_dw = 16
-    async_on = "'0"
+    async_on = []
     # leave this constant
     n_classes = 4
     # low power groups
     n_lpg = 1
-    lpg_map = "'0"
+    lpg_map = []
 
     topname = top["name"]
 
@@ -150,8 +150,9 @@ def generate_alert_handler(top, out_path):
     n_alerts = sum([x["width"] if "width" in x else 1 for x in top["alert"]])
     n_lpg = len(top['alert_lpgs'])
     n_lpg_width = n_lpg.bit_length()
-    # format used to print out LPG map indices in binary format
-    lpg_idx_format = str(n_lpg_width) + "'d{:d},\n"
+    # format used to print out indices in binary format
+    async_on_format = "1'b{:01b}"
+    lpg_idx_format = str(n_lpg_width) + "'d{:d}"
 
     # Double check that all these values are greated than 0
     if esc_cnt_dw < 1:
@@ -167,15 +168,12 @@ def generate_alert_handler(top, out_path):
         n_alerts = 1
         log.warning("no alerts are defined in the system")
     else:
-        async_on = ""
-        lpg_map = ""
+        async_on = []
+        lpg_map = []
         for alert in top['alert']:
             for k in range(alert['width']):
-                async_on = str(alert['async']) + async_on
-                lpg_map = lpg_idx_format.format(alert['lpg_idx']) + lpg_map
-        # convert to hexstring to shorten line length
-        async_on = ("%d'h" % n_alerts) + hex(int(async_on, 2))[2:]
-        lpg_map = '{' + lpg_map[:-2] + '}'
+                async_on.append(async_on_format.format(int(alert['async'])))
+                lpg_map.append(lpg_idx_format.format(int(alert['lpg_idx'])))
 
     log.info("alert handler parameterization:")
     log.info("NAlerts   = %d" % n_alerts)

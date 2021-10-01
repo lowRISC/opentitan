@@ -63,7 +63,9 @@
             '''
       type: "logic [NAlerts-1:0][NLpgWidth-1:0]",
       default: '''
-'0
+               {
+                 1'b0
+               }
                ''',
       local: "true"
     },
@@ -85,7 +87,11 @@
             defines whether the protocol is synchronous (0) or asynchronous (1).
             '''
       type: "logic [NAlerts-1:0]",
-      default: "'0",
+      default: '''
+               {
+                 '0
+               }
+               '''
       local: "true"
     },
     { name: "N_CLASSES",

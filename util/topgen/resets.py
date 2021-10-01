@@ -155,7 +155,6 @@ class Resets:
 
         return path
 
-
     def get_lpg_path(self, name: str, domain: Optional[str]) -> str:
         '''Get path to lpg indication signals'''
 
@@ -164,14 +163,13 @@ class Resets:
             raise ValueError(f'Reset {name} is not a reset exported from rstmgr')
 
         if reset.rst_type == 'ext':
-            raise ValueError(f'External reset cannot be associated with an LPG')
+            raise ValueError(f'External reset {name} cannot be associated with an LPG')
 
         path = reset.lpg_path
         if domain:
             path += f'[rstmgr_pkg::Domain{domain}Sel]'
 
         return path
-
 
     def get_unused_resets(self, domains: list) -> Dict[str, str]:
         '''Get unused resets'''

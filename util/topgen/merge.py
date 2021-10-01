@@ -8,7 +8,7 @@ import re
 from collections import OrderedDict
 from copy import deepcopy
 from math import ceil, log2
-from typing import Dict, List
+from typing import Dict, List, Union, Tuple
 
 from topgen import c, lib
 from .clocks import Clocks
@@ -521,6 +521,26 @@ def _find_module_name(modules, module_type):
     return None
 
 
+def _get_clock_group_name(clk: Union[str, OrderedDict], default_ep_grp) -> Tuple[str, str]:
+    """Return the clock group of a particular clock connection
+
+    Checks whether there is a specific clock group associated with this
+    connection and returns its name. If not, this returns the default clock
+    group of the clock end point.
+    """
+    # If the value of a particular connection is a dict,
+    # there are additional attributes to explore
+    if isinstance(clk, str):
+        group_name = default_ep_grp
+        src_name = clk
+    else:
+        assert isinstance(clk, Dict)
+        group_name = clk.get('group', default_ep_grp)
+        src_name = clk['clock']
+
+    return group_name, src_name
+
+
 def extract_clocks(top: OrderedDict):
     '''Add clock exports to top and connections to endpoints
 
@@ -559,15 +579,7 @@ def extract_clocks(top: OrderedDict):
 
         for port, clk in ep['clock_srcs'].items():
 
-            # If the value of a particular connection is a dict,
-            # there are additional attributes to explore
-            if isinstance(clk, str):
-                group_name = ep_grp
-                src_name = clk
-            else:
-                assert isinstance(clk, Dict)
-                group_name = clk.get('group', ep_grp)
-                src_name = clk['clock']
+            group_name, src_name = _get_clock_group_name(clk, ep_grp)
 
             group = clocks.groups[group_name]
 
@@ -767,7 +779,8 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
     top['alert_lpgs'] = []
     for module in top["module"]:
         # the alert senders are attached to the primary clock of this block,
-        # so let's start by getting that primary clock.
+        # so let's start by getting that primary clock port of an IP (we need
+        # that to look up the clock connection at the top-level).
         block = name_to_block[module['type']]
         block_clock = block.get_primary_clock()
         primary_reset = module['reset_connections'][block_clock.reset]
@@ -776,7 +789,13 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
         #   1) the clock group of the primary clock
         #   2) the primary reset name
         #   3) the domain of the primary reset
-        clock_group = module['clock_group']
+        #
+        # 1) need to figure out whether the primary clock has a
+        #    specific clock group assignment or not
+        clk = module['clock_srcs'][block_clock.clock]
+        clock_group, _ = _get_clock_group_name(clk, module['clock_group'])
+
+        # 2-3) get reset info
         reset_name = primary_reset['name']
         reset_domain = primary_reset['domain']
 
