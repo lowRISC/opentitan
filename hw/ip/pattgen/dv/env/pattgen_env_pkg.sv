@@ -51,5 +51,6 @@ package pattgen_env_pkg;
   `include "pattgen_scoreboard.sv"
   `include "pattgen_env.sv"
   `include "pattgen_vseq_list.sv"
+  //`include "/wdc/proj/cto/top/work/alex.sapozhnikov/opentitan/hw/ip/pattgen/dv/cov/contr_cg.sv"
 
 endpackage : pattgen_env_pkg

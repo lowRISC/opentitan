@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
     files:
+      #- contr_cg.sv
       - pattgen_cov_if.sv
       - pattgen_cov_bind.sv
     file_type: systemVerilogSource

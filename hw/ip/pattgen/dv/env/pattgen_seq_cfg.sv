@@ -8,8 +8,8 @@ class pattgen_seq_cfg extends uvm_object;
   `uvm_object_new
 
   // knobs for number of requests sent to dut
-  uint pattgen_min_num_trans         = 20;
-  uint pattgen_max_num_trans         = 30;
+  uint pattgen_min_num_trans        = 20;
+  uint pattgen_max_num_trans        = 30;
 
   // knobs for number of retry after reset
   // for stress_all, stress_all_with_rand_reset
@@ -26,14 +26,35 @@ class pattgen_seq_cfg extends uvm_object;
   uint pattgen_max_prediv            = 20;
   uint pattgen_min_len               = 0;
   uint pattgen_max_len               = 10;
-  uint pattgen_min_reps              = 0;
-  uint pattgen_max_reps              = 10;
+  uint pattgen_min_len_top               = 6'h3c;
+  uint pattgen_max_len_top               = 6'h3f;
+  uint pattgen_min_reps              = 20;
+  uint pattgen_max_reps              = 30;
+  uint pattgen_min_reps_top          = 10'h3fc;
+  uint pattgen_max_reps_top          = 10'h3ff;
+  uint pattgen_max_prediv_max        = 32'hffffffff;
+  uint pattgen_min_prediv_min        = 32'hfffffffc;
 
   uint pattgen_low_polarity_pct      = 50;  // in percentage
   uint pattgen_sync_channels_pct     = 30;  // in percentage
 
   // for error_vseq
   bit  error_injected_enb            = 1'b0;
-  uint error_injected_pct            = 50;  // in percentage
+  uint error_injected_pct            = 100;  // in percentage
+  uint64 data_top                    = 64'hffffffffffffffff;
+  uint64 data_high                   = 64'hffffffffffffffff;
+  uint64 data_low                    = 64'hfffffffffffffffb;
+  uint64 data_bottom                 = 64'hfffffffffffffffb;
+  uint data_top_0_32                 = 32'hffffffff;
+  uint data_high_0_32                = 20;
+  uint data_low_0_32                 = 0;
+  uint data_bottom_0_32              = 32'hfffffffb;
+  uint data_top_32_64                = 32'hffffffff;
+  uint data_high_32_64               = 32'hffffffff;
+  uint data_low_32_64                = 32'hfffffffb;
+  uint data_bottom_32_64             = 32'hfffffffb;
+  uint data_top_pct                  = 40;
+  uint data_bottom_pct               = 40;
+  uint data_middle_pct               = 20;
 
 endclass : pattgen_seq_cfg
