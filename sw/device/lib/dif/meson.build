@@ -509,6 +509,7 @@ sw_lib_dif_pwrmgr = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_pwrmgr,
     ],
   )
 )
@@ -516,9 +517,11 @@ sw_lib_dif_pwrmgr = declare_dependency(
 test('dif_pwrmgr_unittest', executable(
     'dif_pwrmgr_unittest',
     sources: [
-      hw_ip_pwrmgr_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_pwrmgr.c',
       'dif_pwrmgr_unittest.cc',
+      'autogen/dif_pwrmgr_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_pwrmgr.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_pwrmgr_autogen.c',
+      hw_ip_pwrmgr_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

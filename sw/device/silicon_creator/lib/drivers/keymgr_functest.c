@@ -225,12 +225,10 @@ static void soft_reboot(dif_pwrmgr_t *pwrmgr, dif_aon_timer_t *aon_timer) {
   dif_pwrmgr_domain_config_t config;
   config = kDifPwrmgrDomainOptionUsbClockInActivePower;
 
-  CHECK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeWakeup,
-                                       kDifPwrmgrWakeupRequestSourceFive) ==
-        kDifPwrmgrConfigOk);
-  CHECK(dif_pwrmgr_set_domain_config(pwrmgr, config) == kDifPwrmgrConfigOk);
-  CHECK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifPwrmgrToggleEnabled) ==
-        kDifPwrmgrConfigOk);
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceFive));
+  CHECK_DIF_OK(dif_pwrmgr_set_domain_config(pwrmgr, config));
+  CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifToggleEnabled));
 
   // Enter low power mode.
   LOG_INFO("Entering low power");
@@ -287,12 +285,8 @@ bool test_main(void) {
 
   // Initialize pwrmgr
   dif_pwrmgr_t pwrmgr;
-  CHECK(dif_pwrmgr_init(
-            (dif_pwrmgr_params_t){
-                .base_addr =
-                    mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR),
-            },
-            &pwrmgr) == kDifPwrmgrOk);
+  CHECK_DIF_OK(dif_pwrmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Initialize aon_timer
   dif_aon_timer_t aon_timer;
@@ -303,7 +297,7 @@ bool test_main(void) {
 
   // Get wakeup reason
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
-  CHECK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason) == kDifPwrmgrOk);
+  CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
 
   if (compare_wakeup_reasons(&wakeup_reason, &kWakeUpReasonPor)) {
     LOG_INFO("Powered up for the first time, program flash");

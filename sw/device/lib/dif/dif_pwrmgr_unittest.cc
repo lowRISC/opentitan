@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
 
 #include "pwrmgr_regs.h"  // Generated
 
@@ -21,13 +22,12 @@ uint32_t AllOnesExcept(uint32_t index) { return ~(1u << index); }
 /**
  * Common constants used in tests.
  */
-static constexpr std::array<dif_pwrmgr_toggle_t, 2> kAllToggles = {
-    kDifPwrmgrToggleEnabled, kDifPwrmgrToggleDisabled};
+static constexpr std::array<dif_toggle_t, 2> kAllToggles = {
+    kDifToggleDisabled,
+    kDifToggleEnabled,
+};
 static constexpr std::array<bool, 2> kAllBools = {true, false};
-static constexpr dif_pwrmgr_toggle_t kBadToggle =
-    static_cast<dif_pwrmgr_toggle_t>(kDifPwrmgrToggleDisabled + 1);
-static constexpr dif_pwrmgr_irq_t kBadIrq =
-    static_cast<dif_pwrmgr_irq_t>(kDifPwrmgrIrqLast + 1);
+static constexpr dif_toggle_t kBadToggle = static_cast<dif_toggle_t>(2);
 static constexpr dif_pwrmgr_req_type_t kBadReqType =
     static_cast<dif_pwrmgr_req_type_t>(kDifPwrmgrReqTypeReset + 1);
 static constexpr dif_pwrmgr_domain_config_t kBadConfig =
@@ -35,23 +35,17 @@ static constexpr dif_pwrmgr_domain_config_t kBadConfig =
 static constexpr dif_pwrmgr_request_sources_t kBadSources =
     std::numeric_limits<uint32_t>::max();
 
-class DifPwrmgrTest : public testing::Test, public mock_mmio::MmioTest {
- protected:
-  /**
-   * Parameters for initializing a `dif_pwrmgr_t`.
-   */
-  const dif_pwrmgr_params_t params_ = {.base_addr = dev().region()};
-};
+class DifPwrmgrTest : public testing::Test, public mock_mmio::MmioTest {};
 
 class InitTest : public DifPwrmgrTest {};
 
 TEST_F(InitTest, BadArgs) {
-  EXPECT_EQ(dif_pwrmgr_init(params_, nullptr), kDifPwrmgrBadArg);
+  EXPECT_EQ(dif_pwrmgr_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Init) {
   dif_pwrmgr_t pwrmgr;
-  EXPECT_EQ(dif_pwrmgr_init(params_, &pwrmgr), kDifPwrmgrOk);
+  EXPECT_EQ(dif_pwrmgr_init(dev().region(), &pwrmgr), kDifOk);
 }
 
 // Base class for the rest of the tests in this file, provides a
@@ -77,18 +71,16 @@ class DifPwrmgrInitialized : public DifPwrmgrTest {
   /**
    * Initialized `dif_pwrmgr_t` used in tests.
    */
-  const dif_pwrmgr_t pwrmgr_ = {.params = params_};
+  const dif_pwrmgr_t pwrmgr_ = {.base_addr = dev().region()};
 };
 
 class LowPowerTest : public DifPwrmgrInitialized {};
 
 TEST_F(LowPowerTest, SetBadArgs) {
-  EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(nullptr, kDifPwrmgrToggleEnabled),
-            kDifPwrmgrConfigBadArg);
-  EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(&pwrmgr_, kBadToggle),
-            kDifPwrmgrConfigBadArg);
-  EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(nullptr, kBadToggle),
-            kDifPwrmgrConfigBadArg);
+  EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(nullptr, kDifToggleEnabled),
+            kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(&pwrmgr_, kBadToggle), kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(nullptr, kBadToggle), kDifBadArg);
 }
 
 TEST_F(LowPowerTest, SetLocked) {
@@ -96,8 +88,7 @@ TEST_F(LowPowerTest, SetLocked) {
     EXPECT_READ32(PWRMGR_CTRL_CFG_REGWEN_REG_OFFSET,
                   AllOnesExcept(PWRMGR_CTRL_CFG_REGWEN_EN_BIT));
 
-    EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(&pwrmgr_, toggle),
-              kDifPwrMgrConfigLocked);
+    EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(&pwrmgr_, toggle), kDifLocked);
   }
 }
 
@@ -112,37 +103,33 @@ TEST_F(LowPowerTest, Set) {
                   {{
                       .offset = PWRMGR_CONTROL_LOW_POWER_HINT_BIT,
                       .mask = 1,
-                      .value = (toggle == kDifPwrmgrToggleEnabled),
+                      .value = (toggle == kDifToggleEnabled),
                   }});
     ExpectSync();
 
-    EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(&pwrmgr_, toggle),
-              kDifPwrmgrConfigOk);
+    EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(&pwrmgr_, toggle), kDifOk);
   }
 }
 
 TEST_F(LowPowerTest, GetBadArgs) {
-  dif_pwrmgr_toggle_t state;
+  dif_toggle_t state;
 
-  EXPECT_EQ(dif_pwrmgr_low_power_get_enabled(nullptr, &state),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_low_power_get_enabled(&pwrmgr_, nullptr),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_low_power_get_enabled(nullptr, nullptr),
-            kDifPwrmgrBadArg);
+  EXPECT_EQ(dif_pwrmgr_low_power_get_enabled(nullptr, &state), kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_low_power_get_enabled(&pwrmgr_, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_low_power_get_enabled(nullptr, nullptr), kDifBadArg);
 }
 
 TEST_F(LowPowerTest, Get) {
   for (auto toggle : kAllToggles) {
-    dif_pwrmgr_toggle_t state;
+    dif_toggle_t state;
 
     EXPECT_READ32(PWRMGR_CONTROL_REG_OFFSET,
                   {{
                       .offset = PWRMGR_CONTROL_LOW_POWER_HINT_BIT,
-                      .value = (toggle == kDifPwrmgrToggleEnabled),
+                      .value = (toggle == kDifToggleEnabled),
                   }});
 
-    EXPECT_EQ(dif_pwrmgr_low_power_get_enabled(&pwrmgr_, &state), kDifPwrmgrOk);
+    EXPECT_EQ(dif_pwrmgr_low_power_get_enabled(&pwrmgr_, &state), kDifOk);
     EXPECT_EQ(state, toggle);
   }
 }
@@ -182,18 +169,16 @@ class DomainConfig : public DifPwrmgrInitialized {
 constexpr std::array<dif_pwrmgr_domain_config_t, 4> DomainConfig::kConfigs;
 
 TEST_F(DomainConfig, SetBadArgs) {
-  EXPECT_EQ(dif_pwrmgr_set_domain_config(nullptr, 0), kDifPwrmgrConfigBadArg);
-  EXPECT_EQ(dif_pwrmgr_set_domain_config(&pwrmgr_, kBadConfig),
-            kDifPwrmgrConfigBadArg);
-  EXPECT_EQ(dif_pwrmgr_set_domain_config(nullptr, kBadConfig),
-            kDifPwrmgrConfigBadArg);
+  EXPECT_EQ(dif_pwrmgr_set_domain_config(nullptr, 0), kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_set_domain_config(&pwrmgr_, kBadConfig), kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_set_domain_config(nullptr, kBadConfig), kDifBadArg);
 }
 
 TEST_F(DomainConfig, SetLocked) {
   EXPECT_READ32(PWRMGR_CTRL_CFG_REGWEN_REG_OFFSET,
                 AllOnesExcept(PWRMGR_WAKEUP_EN_REGWEN_EN_BIT));
 
-  EXPECT_EQ(dif_pwrmgr_set_domain_config(&pwrmgr_, 0), kDifPwrMgrConfigLocked);
+  EXPECT_EQ(dif_pwrmgr_set_domain_config(&pwrmgr_, 0), kDifLocked);
 }
 
 TEST_F(DomainConfig, Set) {
@@ -211,18 +196,15 @@ TEST_F(DomainConfig, Set) {
                   }});
     ExpectSync();
 
-    EXPECT_EQ(dif_pwrmgr_set_domain_config(&pwrmgr_, config), kDifPwrmgrOk);
+    EXPECT_EQ(dif_pwrmgr_set_domain_config(&pwrmgr_, config), kDifOk);
   }
 }
 
 TEST_F(DomainConfig, GetBadArgs) {
   dif_pwrmgr_domain_config_t config;
-  EXPECT_EQ(dif_pwrmgr_get_domain_config(nullptr, &config),
-            kDifPwrmgrConfigBadArg);
-  EXPECT_EQ(dif_pwrmgr_get_domain_config(&pwrmgr_, nullptr),
-            kDifPwrmgrConfigBadArg);
-  EXPECT_EQ(dif_pwrmgr_get_domain_config(nullptr, nullptr),
-            kDifPwrmgrConfigBadArg);
+  EXPECT_EQ(dif_pwrmgr_get_domain_config(nullptr, &config), kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_get_domain_config(&pwrmgr_, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_get_domain_config(nullptr, nullptr), kDifBadArg);
 }
 
 TEST_F(DomainConfig, Get) {
@@ -234,8 +216,7 @@ TEST_F(DomainConfig, Get) {
                   }});
 
     dif_pwrmgr_domain_config_t act_config;
-    EXPECT_EQ(dif_pwrmgr_get_domain_config(&pwrmgr_, &act_config),
-              kDifPwrmgrOk);
+    EXPECT_EQ(dif_pwrmgr_get_domain_config(&pwrmgr_, &act_config), kDifOk);
     EXPECT_EQ(act_config, exp_config);
   }
 }
@@ -268,23 +249,23 @@ constexpr std::array<dif_pwrmgr_request_sources_t, 2>
 TEST_F(RequestSources, SetBadArgs) {
   EXPECT_EQ(dif_pwrmgr_set_request_sources(nullptr, kDifPwrmgrReqTypeWakeup,
                                            kDifPwrmgrWakeupRequestSourceOne),
-            kDifPwrmgrConfigBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_set_request_sources(&pwrmgr_, kBadReqType,
                                            kDifPwrmgrWakeupRequestSourceOne),
-            kDifPwrmgrConfigBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_set_request_sources(&pwrmgr_, kDifPwrmgrReqTypeWakeup,
                                            kBadSources),
-            kDifPwrmgrConfigBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_set_request_sources(nullptr, kBadReqType,
                                            kDifPwrmgrWakeupRequestSourceOne),
-            kDifPwrmgrConfigBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_set_request_sources(nullptr, kDifPwrmgrReqTypeWakeup,
                                            kBadSources),
-            kDifPwrmgrConfigBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_set_request_sources(&pwrmgr_, kBadReqType, kBadSources),
-            kDifPwrmgrConfigBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_set_request_sources(nullptr, kBadReqType, kBadSources),
-            kDifPwrmgrConfigBadArg);
+            kDifBadArg);
 }
 
 TEST_F(RequestSources, SetWakeupLocked) {
@@ -293,7 +274,7 @@ TEST_F(RequestSources, SetWakeupLocked) {
 
   EXPECT_EQ(dif_pwrmgr_set_request_sources(&pwrmgr_, kDifPwrmgrReqTypeWakeup,
                                            kDifPwrmgrWakeupRequestSourceOne),
-            kDifPwrMgrConfigLocked);
+            kDifLocked);
 }
 
 TEST_F(RequestSources, SetResetLocked) {
@@ -302,7 +283,7 @@ TEST_F(RequestSources, SetResetLocked) {
 
   EXPECT_EQ(dif_pwrmgr_set_request_sources(&pwrmgr_, kDifPwrmgrReqTypeReset,
                                            kDifPwrmgrResetRequestSourceOne),
-            kDifPwrMgrConfigLocked);
+            kDifLocked);
 }
 
 TEST_F(RequestSources, SetWakeup) {
@@ -316,7 +297,7 @@ TEST_F(RequestSources, SetWakeup) {
 
   EXPECT_EQ(dif_pwrmgr_set_request_sources(&pwrmgr_, kDifPwrmgrReqTypeWakeup,
                                            kDifPwrmgrWakeupRequestSourceOne),
-            kDifPwrmgrConfigOk);
+            kDifOk);
 }
 
 TEST_F(RequestSources, SetReset) {
@@ -330,7 +311,7 @@ TEST_F(RequestSources, SetReset) {
 
   EXPECT_EQ(dif_pwrmgr_set_request_sources(&pwrmgr_, kDifPwrmgrReqTypeReset,
                                            kDifPwrmgrResetRequestSourceOne),
-            kDifPwrmgrConfigOk);
+            kDifOk);
 }
 
 TEST_F(RequestSources, GetBadArgs) {
@@ -338,21 +319,21 @@ TEST_F(RequestSources, GetBadArgs) {
 
   EXPECT_EQ(dif_pwrmgr_get_request_sources(nullptr, kDifPwrmgrReqTypeWakeup,
                                            &sources),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_get_request_sources(&pwrmgr_, kBadReqType, &sources),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_get_request_sources(&pwrmgr_, kDifPwrmgrReqTypeWakeup,
                                            nullptr),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_get_request_sources(nullptr, kBadReqType, &sources),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_get_request_sources(nullptr, kDifPwrmgrReqTypeWakeup, nullptr),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_get_request_sources(&pwrmgr_, kBadReqType, nullptr),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_get_request_sources(nullptr, kBadReqType, nullptr),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
 }
 
 TEST_F(RequestSources, GetWakeup) {
@@ -362,7 +343,7 @@ TEST_F(RequestSources, GetWakeup) {
     dif_pwrmgr_request_sources_t act_sources = 0;
     EXPECT_EQ(dif_pwrmgr_get_request_sources(&pwrmgr_, kDifPwrmgrReqTypeWakeup,
                                              &act_sources),
-              kDifPwrmgrOk);
+              kDifOk);
     EXPECT_EQ(act_sources, exp_sources);
   }
 }
@@ -374,7 +355,7 @@ TEST_F(RequestSources, GetReset) {
     dif_pwrmgr_request_sources_t act_sources = 0;
     EXPECT_EQ(dif_pwrmgr_get_request_sources(&pwrmgr_, kDifPwrmgrReqTypeReset,
                                              &act_sources),
-              kDifPwrmgrOk);
+              kDifOk);
     EXPECT_EQ(act_sources, exp_sources);
   }
 }
@@ -384,25 +365,25 @@ TEST_F(RequestSources, GetCurrentBadArgs) {
 
   EXPECT_EQ(dif_pwrmgr_get_current_request_sources(
                 nullptr, kDifPwrmgrReqTypeWakeup, &sources),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_get_current_request_sources(&pwrmgr_, kBadReqType, &sources),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_get_current_request_sources(
                 &pwrmgr_, kDifPwrmgrReqTypeWakeup, nullptr),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_get_current_request_sources(nullptr, kBadReqType, &sources),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_get_current_request_sources(
                 nullptr, kDifPwrmgrReqTypeWakeup, nullptr),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_get_current_request_sources(&pwrmgr_, kBadReqType, nullptr),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_get_current_request_sources(nullptr, kBadReqType, nullptr),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
 }
 
 TEST_F(RequestSources, GetCurrentWakeup) {
@@ -412,7 +393,7 @@ TEST_F(RequestSources, GetCurrentWakeup) {
     dif_pwrmgr_request_sources_t act_sources = 0;
     EXPECT_EQ(dif_pwrmgr_get_current_request_sources(
                   &pwrmgr_, kDifPwrmgrReqTypeWakeup, &act_sources),
-              kDifPwrmgrOk);
+              kDifOk);
     EXPECT_EQ(act_sources, exp_sources);
   }
 }
@@ -424,32 +405,30 @@ TEST_F(RequestSources, GetCurrentReset) {
     dif_pwrmgr_request_sources_t act_sources = 0;
     EXPECT_EQ(dif_pwrmgr_get_current_request_sources(
                   &pwrmgr_, kDifPwrmgrReqTypeReset, &act_sources),
-              kDifPwrmgrOk);
+              kDifOk);
     EXPECT_EQ(act_sources, exp_sources);
   }
 }
 
 TEST_F(RequestSources, LockBadArgs) {
   EXPECT_EQ(dif_pwrmgr_request_sources_lock(nullptr, kDifPwrmgrReqTypeWakeup),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_request_sources_lock(&pwrmgr_, kBadReqType),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_request_sources_lock(nullptr, kBadReqType),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_request_sources_lock(&pwrmgr_, kBadReqType), kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_request_sources_lock(nullptr, kBadReqType), kDifBadArg);
 }
 
 TEST_F(RequestSources, LockWakeup) {
   EXPECT_WRITE32(PWRMGR_WAKEUP_EN_REGWEN_REG_OFFSET, 0);
 
   EXPECT_EQ(dif_pwrmgr_request_sources_lock(&pwrmgr_, kDifPwrmgrReqTypeWakeup),
-            kDifPwrmgrOk);
+            kDifOk);
 }
 
 TEST_F(RequestSources, LockReset) {
   EXPECT_WRITE32(PWRMGR_RESET_EN_REGWEN_REG_OFFSET, 0);
 
   EXPECT_EQ(dif_pwrmgr_request_sources_lock(&pwrmgr_, kDifPwrmgrReqTypeReset),
-            kDifPwrmgrOk);
+            kDifOk);
 }
 
 TEST_F(RequestSources, IsLockedBadArgs) {
@@ -457,24 +436,24 @@ TEST_F(RequestSources, IsLockedBadArgs) {
 
   EXPECT_EQ(dif_pwrmgr_request_sources_is_locked(
                 nullptr, kDifPwrmgrReqTypeWakeup, &is_locked),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_request_sources_is_locked(&pwrmgr_, kBadReqType, &is_locked),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_request_sources_is_locked(
                 &pwrmgr_, kDifPwrmgrReqTypeWakeup, nullptr),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_request_sources_is_locked(nullptr, kBadReqType, &is_locked),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_request_sources_is_locked(
                 nullptr, kDifPwrmgrReqTypeWakeup, nullptr),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_request_sources_is_locked(&pwrmgr_, kBadReqType, nullptr),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_request_sources_is_locked(nullptr, kBadReqType, nullptr),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
 }
 
 TEST_F(RequestSources, IsLockedWakeup) {
@@ -488,7 +467,7 @@ TEST_F(RequestSources, IsLockedWakeup) {
     bool is_locked = !exp_val;
     EXPECT_EQ(dif_pwrmgr_request_sources_is_locked(
                   &pwrmgr_, kDifPwrmgrReqTypeWakeup, &is_locked),
-              kDifPwrmgrOk);
+              kDifOk);
     EXPECT_EQ(is_locked, exp_val);
   }
 }
@@ -504,7 +483,7 @@ TEST_F(RequestSources, IsLockedReset) {
     bool is_locked = !exp_val;
     EXPECT_EQ(dif_pwrmgr_request_sources_is_locked(
                   &pwrmgr_, kDifPwrmgrReqTypeReset, &is_locked),
-              kDifPwrmgrOk);
+              kDifOk);
     EXPECT_EQ(is_locked, exp_val);
   }
 }
@@ -512,15 +491,15 @@ TEST_F(RequestSources, IsLockedReset) {
 class WakeupRecording : public DifPwrmgrInitialized {};
 
 TEST_F(WakeupRecording, SetEnabledBadArgs) {
-  EXPECT_EQ(dif_pwrmgr_wakeup_request_recording_set_enabled(
-                nullptr, kDifPwrmgrToggleEnabled),
-            kDifPwrmgrBadArg);
+  EXPECT_EQ(dif_pwrmgr_wakeup_request_recording_set_enabled(nullptr,
+                                                            kDifToggleEnabled),
+            kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_wakeup_request_recording_set_enabled(&pwrmgr_, kBadToggle),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_wakeup_request_recording_set_enabled(nullptr, kBadToggle),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
 }
 
 TEST_F(WakeupRecording, SetEnabled) {
@@ -528,25 +507,25 @@ TEST_F(WakeupRecording, SetEnabled) {
     EXPECT_WRITE32(PWRMGR_WAKE_INFO_CAPTURE_DIS_REG_OFFSET,
                    {{
                        .offset = PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL_BIT,
-                       .value = (new_state == kDifPwrmgrToggleDisabled),
+                       .value = (new_state == kDifToggleDisabled),
                    }});
 
     EXPECT_EQ(
         dif_pwrmgr_wakeup_request_recording_set_enabled(&pwrmgr_, new_state),
-        kDifPwrmgrOk);
+        kDifOk);
   }
 }
 
 TEST_F(WakeupRecording, GetEnabledBadArgs) {
-  dif_pwrmgr_toggle_t is_enabled;
+  dif_toggle_t is_enabled;
 
   EXPECT_EQ(
       dif_pwrmgr_wakeup_request_recording_get_enabled(nullptr, &is_enabled),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_wakeup_request_recording_get_enabled(&pwrmgr_, nullptr),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(dif_pwrmgr_wakeup_request_recording_get_enabled(nullptr, nullptr),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
 }
 
 TEST_F(WakeupRecording, GetEnabled) {
@@ -554,15 +533,14 @@ TEST_F(WakeupRecording, GetEnabled) {
     EXPECT_READ32(PWRMGR_WAKE_INFO_CAPTURE_DIS_REG_OFFSET,
                   {{
                       .offset = PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL_BIT,
-                      .value = (exp_val == kDifPwrmgrToggleDisabled),
+                      .value = (exp_val == kDifToggleDisabled),
                   }});
 
-    dif_pwrmgr_toggle_t is_enabled = (exp_val == kDifPwrmgrToggleEnabled)
-                                         ? kDifPwrmgrToggleDisabled
-                                         : kDifPwrmgrToggleEnabled;
+    dif_toggle_t is_enabled =
+        (exp_val == kDifToggleEnabled) ? kDifToggleDisabled : kDifToggleEnabled;
     EXPECT_EQ(
         dif_pwrmgr_wakeup_request_recording_get_enabled(&pwrmgr_, &is_enabled),
-        kDifPwrmgrOk);
+        kDifOk);
     EXPECT_EQ(is_enabled, exp_val);
   }
 }
@@ -570,10 +548,9 @@ TEST_F(WakeupRecording, GetEnabled) {
 TEST_F(WakeupRecording, GetReasonBadArgs) {
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
 
-  EXPECT_EQ(dif_pwrmgr_wakeup_reason_get(nullptr, &wakeup_reason),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_wakeup_reason_get(&pwrmgr_, nullptr), kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_wakeup_reason_get(nullptr, nullptr), kDifPwrmgrBadArg);
+  EXPECT_EQ(dif_pwrmgr_wakeup_reason_get(nullptr, &wakeup_reason), kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_wakeup_reason_get(&pwrmgr_, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_wakeup_reason_get(nullptr, nullptr), kDifBadArg);
 }
 
 /**
@@ -754,233 +731,37 @@ TEST_F(WakeupRecording, GetReason) {
     EXPECT_READ32(PWRMGR_WAKE_INFO_REG_OFFSET, test_case.read_val);
 
     dif_pwrmgr_wakeup_reason_t wakeup_reason;
-    EXPECT_EQ(dif_pwrmgr_wakeup_reason_get(&pwrmgr_, &wakeup_reason),
-              kDifPwrmgrOk);
+    EXPECT_EQ(dif_pwrmgr_wakeup_reason_get(&pwrmgr_, &wakeup_reason), kDifOk);
     EXPECT_THAT(wakeup_reason, Eq(test_case.exp_output));
   }
 }
 
 TEST_F(WakeupRecording, ClearReasonBadArgs) {
-  EXPECT_EQ(dif_pwrmgr_wakeup_reason_clear(nullptr), kDifPwrmgrBadArg);
+  EXPECT_EQ(dif_pwrmgr_wakeup_reason_clear(nullptr), kDifBadArg);
 }
 
 TEST_F(WakeupRecording, ClearReason) {
   EXPECT_WRITE32(PWRMGR_WAKE_INFO_REG_OFFSET,
                  std::numeric_limits<uint32_t>::max());
 
-  EXPECT_EQ(dif_pwrmgr_wakeup_reason_clear(&pwrmgr_), kDifPwrmgrOk);
-}
-
-class IrqTest : public DifPwrmgrInitialized {};
-
-TEST_F(IrqTest, IsPendingBadArgs) {
-  bool is_pending;
-
-  EXPECT_EQ(
-      dif_pwrmgr_irq_is_pending(nullptr, kDifPwrmgrIrqWakeup, &is_pending),
-      kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_is_pending(&pwrmgr_, kBadIrq, &is_pending),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_is_pending(&pwrmgr_, kDifPwrmgrIrqWakeup, nullptr),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_is_pending(nullptr, kBadIrq, &is_pending),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_is_pending(nullptr, kDifPwrmgrIrqWakeup, nullptr),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_is_pending(&pwrmgr_, kBadIrq, nullptr),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_is_pending(nullptr, kBadIrq, nullptr),
-            kDifPwrmgrBadArg);
-}
-
-TEST_F(IrqTest, IsPending) {
-  for (std::underlying_type<dif_pwrmgr_irq_t>::type irq = 0;
-       irq <= kDifPwrmgrIrqLast; ++irq) {
-    for (auto exp_val : kAllBools) {
-      EXPECT_READ32(PWRMGR_INTR_STATE_REG_OFFSET, {{
-                                                      .offset = irq,
-                                                      .value = exp_val,
-                                                  }});
-
-      bool is_pending = !exp_val;
-      EXPECT_EQ(dif_pwrmgr_irq_is_pending(
-                    &pwrmgr_, static_cast<dif_pwrmgr_irq_t>(irq), &is_pending),
-                kDifPwrmgrOk);
-      EXPECT_EQ(is_pending, exp_val);
-    }
-  }
-}
-
-TEST_F(IrqTest, AckBadArgs) {
-  EXPECT_EQ(dif_pwrmgr_irq_acknowledge(nullptr, kDifPwrmgrIrqWakeup),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_acknowledge(&pwrmgr_, kBadIrq), kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_acknowledge(nullptr, kBadIrq), kDifPwrmgrBadArg);
-}
-
-TEST_F(IrqTest, Ack) {
-  for (std::underlying_type<dif_pwrmgr_irq_t>::type irq = 0;
-       irq <= kDifPwrmgrIrqLast; ++irq) {
-    EXPECT_WRITE32(PWRMGR_INTR_STATE_REG_OFFSET, (1u << irq));
-
-    EXPECT_EQ(dif_pwrmgr_irq_acknowledge(&pwrmgr_,
-                                         static_cast<dif_pwrmgr_irq_t>(irq)),
-              kDifPwrmgrOk);
-  }
-}
-
-TEST_F(IrqTest, GetEnabledBadArgs) {
-  dif_pwrmgr_toggle_t is_enabled;
-
-  EXPECT_EQ(
-      dif_pwrmgr_irq_get_enabled(nullptr, kDifPwrmgrIrqWakeup, &is_enabled),
-      kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_get_enabled(&pwrmgr_, kBadIrq, &is_enabled),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_get_enabled(&pwrmgr_, kDifPwrmgrIrqWakeup, nullptr),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_get_enabled(nullptr, kBadIrq, &is_enabled),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_get_enabled(nullptr, kDifPwrmgrIrqWakeup, nullptr),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_get_enabled(&pwrmgr_, kBadIrq, nullptr),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_get_enabled(nullptr, kBadIrq, nullptr),
-            kDifPwrmgrBadArg);
-}
-
-TEST_F(IrqTest, GetEnabled) {
-  for (std::underlying_type<dif_pwrmgr_irq_t>::type irq = 0;
-       irq <= kDifPwrmgrIrqLast; ++irq) {
-    for (auto exp_val : kAllToggles) {
-      EXPECT_READ32(PWRMGR_INTR_ENABLE_REG_OFFSET,
-                    {{
-                        .offset = irq,
-                        .value = (exp_val == kDifPwrmgrToggleEnabled),
-                    }});
-
-      dif_pwrmgr_toggle_t is_enabled = (exp_val == kDifPwrmgrToggleEnabled)
-                                           ? kDifPwrmgrToggleDisabled
-                                           : kDifPwrmgrToggleEnabled;
-      EXPECT_EQ(dif_pwrmgr_irq_get_enabled(
-                    &pwrmgr_, static_cast<dif_pwrmgr_irq_t>(irq), &is_enabled),
-                kDifPwrmgrOk);
-      EXPECT_EQ(is_enabled, exp_val);
-    }
-  }
-}
-
-TEST_F(IrqTest, SetEnabledBadArgs) {
-  EXPECT_EQ(dif_pwrmgr_irq_set_enabled(nullptr, kDifPwrmgrIrqWakeup,
-                                       kDifPwrmgrToggleEnabled),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(
-      dif_pwrmgr_irq_set_enabled(&pwrmgr_, kBadIrq, kDifPwrmgrToggleEnabled),
-      kDifPwrmgrBadArg);
-  EXPECT_EQ(
-      dif_pwrmgr_irq_set_enabled(&pwrmgr_, kDifPwrmgrIrqWakeup, kBadToggle),
-      kDifPwrmgrBadArg);
-  EXPECT_EQ(
-      dif_pwrmgr_irq_set_enabled(nullptr, kBadIrq, kDifPwrmgrToggleEnabled),
-      kDifPwrmgrBadArg);
-  EXPECT_EQ(
-      dif_pwrmgr_irq_set_enabled(nullptr, kDifPwrmgrIrqWakeup, kBadToggle),
-      kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_set_enabled(&pwrmgr_, kBadIrq, kBadToggle),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_set_enabled(nullptr, kBadIrq, kBadToggle),
-            kDifPwrmgrBadArg);
-}
-
-TEST_F(IrqTest, SetEnabled) {
-  for (std::underlying_type<dif_pwrmgr_irq_t>::type irq = 0;
-       irq <= kDifPwrmgrIrqLast; ++irq) {
-    for (auto new_state : kAllToggles) {
-      EXPECT_MASK32(PWRMGR_INTR_ENABLE_REG_OFFSET,
-                    {{
-                        .offset = irq,
-                        .mask = 1,
-                        .value = (new_state == kDifPwrmgrToggleEnabled),
-                    }});
-
-      EXPECT_EQ(dif_pwrmgr_irq_set_enabled(
-                    &pwrmgr_, static_cast<dif_pwrmgr_irq_t>(irq), new_state),
-                kDifPwrmgrOk);
-    }
-  }
-}
-
-TEST_F(IrqTest, ForceBadArgs) {
-  EXPECT_EQ(dif_pwrmgr_irq_force(nullptr, kDifPwrmgrIrqWakeup),
-            kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_force(&pwrmgr_, kBadIrq), kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_force(nullptr, kBadIrq), kDifPwrmgrBadArg);
-}
-
-TEST_F(IrqTest, Force) {
-  for (std::underlying_type<dif_pwrmgr_irq_t>::type irq = 0;
-       irq <= kDifPwrmgrIrqLast; ++irq) {
-    EXPECT_WRITE32(PWRMGR_INTR_TEST_REG_OFFSET, {{
-                                                    .offset = irq,
-                                                    .value = 1,
-                                                }});
-
-    EXPECT_EQ(
-        dif_pwrmgr_irq_force(&pwrmgr_, static_cast<dif_pwrmgr_irq_t>(irq)),
-        kDifPwrmgrOk);
-  }
-}
-
-TEST_F(IrqTest, DisableAllBadArgs) {
-  dif_pwrmgr_irq_snapshot_t snapshot;
-
-  // `snapshot` is optional.
-  EXPECT_EQ(dif_pwrmgr_irq_disable_all(nullptr, &snapshot), kDifPwrmgrBadArg);
-  EXPECT_EQ(dif_pwrmgr_irq_disable_all(nullptr, nullptr), kDifPwrmgrBadArg);
-}
-TEST_F(IrqTest, DisableAll) {
-  uint32_t exp_snapshot = 0xA5A5A5A5;
-
-  // With `snapshot`.
-  EXPECT_READ32(PWRMGR_INTR_ENABLE_REG_OFFSET, exp_snapshot);
-  EXPECT_WRITE32(PWRMGR_INTR_ENABLE_REG_OFFSET, 0);
-
-  dif_pwrmgr_irq_snapshot_t act_snapshot = 0;
-  EXPECT_EQ(dif_pwrmgr_irq_disable_all(&pwrmgr_, &act_snapshot), kDifPwrmgrOk);
-  EXPECT_EQ(act_snapshot, exp_snapshot);
-
-  // Without `snapshot`.
-  EXPECT_WRITE32(PWRMGR_INTR_ENABLE_REG_OFFSET, 0);
-  EXPECT_EQ(dif_pwrmgr_irq_disable_all(&pwrmgr_, nullptr), kDifPwrmgrOk);
-}
-
-TEST_F(IrqTest, RestoreAllBadArgs) {
-  EXPECT_EQ(dif_pwrmgr_irq_restore_all(nullptr, 0), kDifPwrmgrBadArg);
-}
-
-TEST_F(IrqTest, RestoreAll) {
-  dif_pwrmgr_irq_snapshot_t snapshot = 0xA5A5A5A5;
-
-  EXPECT_WRITE32(PWRMGR_INTR_ENABLE_REG_OFFSET, snapshot);
-
-  EXPECT_EQ(dif_pwrmgr_irq_restore_all(&pwrmgr_, snapshot), kDifPwrmgrOk);
+  EXPECT_EQ(dif_pwrmgr_wakeup_reason_clear(&pwrmgr_), kDifOk);
 }
 
 class AlertTest : public DifPwrmgrInitialized {};
 
 TEST_F(AlertTest, ForceBadArgs) {
   EXPECT_EQ(dif_pwrmgr_alert_force(nullptr, kDifPwrmgrAlertFatalFault),
-            kDifPwrmgrBadArg);
+            kDifBadArg);
   EXPECT_EQ(
       dif_pwrmgr_alert_force(&pwrmgr_, static_cast<dif_pwrmgr_alert_t>(1)),
-      kDifPwrmgrBadArg);
+      kDifBadArg);
 }
 
 TEST_F(AlertTest, Force) {
   EXPECT_WRITE32(PWRMGR_ALERT_TEST_REG_OFFSET, {{0, true}});
 
   EXPECT_EQ(dif_pwrmgr_alert_force(&pwrmgr_, kDifPwrmgrAlertFatalFault),
-            kDifPwrmgrOk);
+            kDifOk);
 }
 
 }  // namespace

@@ -35,12 +35,8 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
 
   // Initialize pwrmgr
-  CHECK(dif_pwrmgr_init(
-            (dif_pwrmgr_params_t){
-                .base_addr =
-                    mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR),
-            },
-            &pwrmgr) == kDifPwrmgrOk);
+  CHECK_DIF_OK(dif_pwrmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Initialize rstmgr since this will check some registers.
   CHECK_DIF_OK(dif_rstmgr_init(
@@ -50,7 +46,7 @@ bool test_main(void) {
   // Notice we are clear rstmgr's RESET_INFO, so after the aon wakeup there
   // is only one bit set.
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
-  CHECK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason) == kDifPwrmgrOk);
+  CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
 
   if (compare_wakeup_reasons(&wakeup_reason, &kWakeUpReasonPor)) {
     LOG_INFO("Powered up for the first time, begin test");
@@ -91,12 +87,10 @@ bool test_main(void) {
     // Issue #6504: USB clock in active power must be left enabled.
     config = kDifPwrmgrDomainOptionUsbClockInActivePower;
 
-    CHECK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeWakeup,
-                                         kDifPwrmgrWakeupRequestSourceFive) ==
-          kDifPwrmgrConfigOk);
-    CHECK(dif_pwrmgr_set_domain_config(&pwrmgr, config) == kDifPwrmgrConfigOk);
-    CHECK(dif_pwrmgr_low_power_set_enabled(&pwrmgr, kDifPwrmgrToggleEnabled) ==
-          kDifPwrmgrConfigOk);
+    CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+        &pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceFive));
+    CHECK_DIF_OK(dif_pwrmgr_set_domain_config(&pwrmgr, config));
+    CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(&pwrmgr, kDifToggleEnabled));
 
     // Enter low power mode.
     wait_for_interrupt();
