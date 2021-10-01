@@ -162,6 +162,7 @@ module sha3pad_fpv
   `ASSUME(AbcInputMask_A, msg_strb_i == 8'b 0000_0111)
 
   `ASSERT(AbcVector_A, absorbed_o |->
-  256'({<<8{state[0][255:0]}}) == 256'h 3a985da74fe225b2_045c172d6bd390bd_855f086e3e9d525b_46bfe24511431532)
+      256'({<<8{state[0][255:0]}})
+          == 256'h 3a985da74fe225b2_045c172d6bd390bd_855f086e3e9d525b_46bfe24511431532)
 
 endmodule
