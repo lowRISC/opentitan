@@ -112,49 +112,64 @@ module clkmgr_reg_top (
 
   // cdc oversampling signals
     logic sync_io_update;
-  prim_pulse_sync u_io_tgl (
+  prim_sync_reqack u_io_tgl (
     .clk_src_i(clk_io_i),
     .rst_src_ni(rst_io_ni),
-    .src_pulse_i(1'b1),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(sync_io_update)
+    .req_chk_i(1'b1),
+    .src_req_i(1'b1),
+    .src_ack_o(),
+    .dst_req_o(sync_io_update),
+    .dst_ack_i(sync_io_update)
   );
     logic sync_io_div2_update;
-  prim_pulse_sync u_io_div2_tgl (
+  prim_sync_reqack u_io_div2_tgl (
     .clk_src_i(clk_io_div2_i),
     .rst_src_ni(rst_io_div2_ni),
-    .src_pulse_i(1'b1),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(sync_io_div2_update)
+    .req_chk_i(1'b1),
+    .src_req_i(1'b1),
+    .src_ack_o(),
+    .dst_req_o(sync_io_div2_update),
+    .dst_ack_i(sync_io_div2_update)
   );
     logic sync_io_div4_update;
-  prim_pulse_sync u_io_div4_tgl (
+  prim_sync_reqack u_io_div4_tgl (
     .clk_src_i(clk_io_div4_i),
     .rst_src_ni(rst_io_div4_ni),
-    .src_pulse_i(1'b1),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(sync_io_div4_update)
+    .req_chk_i(1'b1),
+    .src_req_i(1'b1),
+    .src_ack_o(),
+    .dst_req_o(sync_io_div4_update),
+    .dst_ack_i(sync_io_div4_update)
   );
     logic sync_main_update;
-  prim_pulse_sync u_main_tgl (
+  prim_sync_reqack u_main_tgl (
     .clk_src_i(clk_main_i),
     .rst_src_ni(rst_main_ni),
-    .src_pulse_i(1'b1),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(sync_main_update)
+    .req_chk_i(1'b1),
+    .src_req_i(1'b1),
+    .src_ack_o(),
+    .dst_req_o(sync_main_update),
+    .dst_ack_i(sync_main_update)
   );
     logic sync_usb_update;
-  prim_pulse_sync u_usb_tgl (
+  prim_sync_reqack u_usb_tgl (
     .clk_src_i(clk_usb_i),
     .rst_src_ni(rst_usb_ni),
-    .src_pulse_i(1'b1),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(sync_usb_update)
+    .req_chk_i(1'b1),
+    .src_req_i(1'b1),
+    .src_ack_o(),
+    .dst_req_o(sync_usb_update),
+    .dst_ack_i(sync_usb_update)
   );
 
   assign reg_rdata = reg_rdata_next ;
