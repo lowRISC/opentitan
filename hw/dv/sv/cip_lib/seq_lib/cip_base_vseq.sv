@@ -88,6 +88,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     if (en_auto_alerts_response && cfg.list_of_alerts.size()) run_alert_rsp_seq_nonblocking();
+
+    // Wait for alert init done, then start the sequence.
+    foreach (cfg.list_of_alerts[i]) begin
+      if (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].is_active) begin
+        wait (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].alert_init_done == 1);
+      end
+    end
   endtask
 
   task pre_start();
