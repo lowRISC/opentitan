@@ -20,3 +20,7 @@ waive -rules {HIER_BRANCH_NOT_READ} -location {tlul_fifo_sync.sv} -regexp {Conne
 #
 #waive -rules NOT_READ -location {prim_ram_*_wrapper*} -regexp {(a|b)_rdata_(q|d)\[38} \
 #      -comment "Syndrome is not going out to the interface"
+
+# prim_sram_arbiter
+waive -rules CONST_OUTPUT -location {prim_sram_arbiter.sv} -regexp {rsp_error.* is driven by constant} \
+      -comment "SRAM protection is not yet implemented"
