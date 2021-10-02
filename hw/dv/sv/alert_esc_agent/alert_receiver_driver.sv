@@ -21,11 +21,13 @@ class alert_receiver_driver extends alert_esc_base_driver;
 
   virtual task reset_signals();
     do_reset();
+    do_alert_rx_init();
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
       do_reset();
       @(posedge cfg.vif.rst_n);
+      do_alert_rx_init();
       under_reset = 0;
     end
   endtask
@@ -174,7 +176,9 @@ class alert_receiver_driver extends alert_esc_base_driver;
     cfg.vif.alert_rx_int.ping_n <= 1'b1;
     cfg.vif.alert_rx_int.ack_p <= 1'b0;
     cfg.vif.alert_rx_int.ack_n <= 1'b1;
+  endtask
 
+  virtual task do_alert_rx_init();
     // Drive alert init signal integrity error handshake.
     repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
     cfg.vif.alert_rx_int.ping_n <= 1'b0;
