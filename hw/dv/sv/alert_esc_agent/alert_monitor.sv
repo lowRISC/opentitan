@@ -31,6 +31,7 @@ class alert_monitor extends alert_esc_base_monitor;
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
+      cfg.alert_init_done = 0;
       @(posedge cfg.vif.rst_n);
       // Reset signals at posedge rst_n to avoid race condition at negedge rst_n
       reset_signals();
@@ -48,6 +49,7 @@ class alert_monitor extends alert_esc_base_monitor;
     wait (cfg.vif.monitor_cb.alert_tx_final.alert_p != cfg.vif.monitor_cb.alert_tx_final.alert_n);
     `uvm_info("alert_monitor", "Alert init done!", UVM_HIGH)
     under_reset = 0;
+    cfg.alert_init_done = 1;
   endtask
 
   virtual task ping_thread();

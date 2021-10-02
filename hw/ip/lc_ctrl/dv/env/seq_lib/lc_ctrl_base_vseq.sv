@@ -26,7 +26,10 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     // OTP inputs `lc_state` and `lc_cnt` need to be stable before lc_ctrl's reset is deasserted
-    if (do_lc_ctrl_init) drive_otp_i();
+    if (do_lc_ctrl_init) begin
+      drive_otp_i();
+      cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 0);
+    end
     super.dut_init();
     if (do_lc_ctrl_init) lc_ctrl_init();
   endtask
