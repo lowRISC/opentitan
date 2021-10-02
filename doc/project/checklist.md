@@ -410,6 +410,14 @@ Any waiver files have been reviewed.
 
 Sub-modules that are pre-verified with their own testbenches have already reached V2 or a higher stage.
 
+### SEC_CM_PLANNED
+
+<!-- TODO, add the link to security hardening guidelines doc -->
+Security countermeasures are planned and documented.
+- Common countermeasure features (such as shadowed reg, hardened counter etc) can be tested by importing common sec_cm testplans, tests and adding the bind file `cm_sec_bind`.
+- Additional checks and sequences may be needed to verify those features. Document those in the individual testplan.
+- Create testplan for non-common countermeasures.
+
 ### NO_HIGH_PRIORITY_ISSUES_PENDING
 
 All high priority (tagged P0 and P1) design bugs have been addressed and closed.
@@ -435,6 +443,13 @@ In addition, the fully implemented functional coverage plan, the observed covera
 ### V3_CHECKLIST_SCOPED
 
 The V3 checklist has been reviewed to understand the scope and estimate effort.
+
+## V2S
+
+### SEC_CM_VERIFIED
+
+<!-- TODO, add the link to cm verif methodology doc -->
+Security countermeasures are verified.
 
 ## V3
 
