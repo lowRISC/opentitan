@@ -37,3 +37,8 @@ waive -rules VAR_INDEX -location {alert_handler_esc_timer.sv} -regexp {phase_cyc
 waive -rules VAR_INDEX -location {alert_handler_ping_timer.sv} -regexp {enable_mask\[id_to_ping\]} \
       -comment "This indexing expression is correct."
 
+waive -rules CLOCK_USE -location {alert_handler_lpg_ctrl.sv} -msg {'clk_i' is connected to 'prim_lc_sync' port 'clk_i', and used as} \
+      -comment "This clock connection is only used for assertions internal to the prim module."
+
+waive -rules RESET_USE -location {alert_handler_lpg_ctrl.sv} -msg {'rst_ni' is connected to 'prim_lc_sync' port 'rst_ni', and used as} \
+      -comment "This reset connection is only used for assertions internal to the prim module."
