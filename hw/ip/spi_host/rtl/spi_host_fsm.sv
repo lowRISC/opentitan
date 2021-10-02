@@ -126,8 +126,8 @@ module spi_host_fsm
   // approach of breaking this combinational logic loop with a second FSM state register.
   //
   // That said there are then two copies of the FSM state variable
-  // Actual:   The true state of the FSM, which controls the peripheral IOs and the interactions with
-  //           the other blocks.
+  // Actual:   The true state of the FSM, which controls the peripheral IOs and the interactions
+  //           with the other blocks.
   // Prestall: The "tentative" state of the FSM, which can be overridden by stall events. Normally
   //           this matches the actual state. However when a stall event is recieved, the actual
   //           state remains unchanged.  Once the stall event is resolved, the actual state is
