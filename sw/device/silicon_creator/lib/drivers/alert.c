@@ -22,30 +22,38 @@ rom_error_t alert_configure(size_t index, alert_class_t cls,
   }
   index *= 4;
 
+  uint32_t reg_wr_count = 0;
+
   switch (cls) {
     case kAlertClassA:
       sec_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSA);
+      ++reg_wr_count;
       break;
     case kAlertClassB:
       sec_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSB);
+      ++reg_wr_count;
       break;
     case kAlertClassC:
       sec_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSC);
+      ++reg_wr_count;
       break;
     case kAlertClassD:
       sec_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSD);
+      ++reg_wr_count;
       break;
     case kAlertClassX:
+      sec_mmio_write_increment(reg_wr_count);
       return kErrorOk;
     default:
+      sec_mmio_write_increment(reg_wr_count);
       return kErrorAlertBadClass;
   }
 
@@ -58,15 +66,18 @@ rom_error_t alert_configure(size_t index, alert_class_t cls,
           kBase + ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
       sec_mmio_write32(kBase + ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + index,
                        0);
+      reg_wr_count += 2;
       break;
     case kAlertEnableEnabled:
       sec_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
+      ++reg_wr_count;
       break;
     default:
+      sec_mmio_write_increment(reg_wr_count);
       return kErrorAlertBadEnable;
   }
-
+  sec_mmio_write_increment(reg_wr_count);
   return kErrorOk;
 }
 
@@ -77,30 +88,38 @@ rom_error_t alert_local_configure(size_t index, alert_class_t cls,
   }
   index *= 4;
 
+  uint32_t reg_wr_count = 0;
+
   switch (cls) {
     case kAlertClassA:
       sec_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSA);
+      ++reg_wr_count;
       break;
     case kAlertClassB:
       sec_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSB);
+      ++reg_wr_count;
       break;
     case kAlertClassC:
       sec_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSC);
+      ++reg_wr_count;
       break;
     case kAlertClassD:
       sec_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSD);
+      ++reg_wr_count;
       break;
     case kAlertClassX:
+      sec_mmio_write_increment(reg_wr_count);
       return kErrorOk;
     default:
+      sec_mmio_write_increment(reg_wr_count);
       return kErrorAlertBadClass;
   }
 
@@ -113,15 +132,18 @@ rom_error_t alert_local_configure(size_t index, alert_class_t cls,
           kBase + ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
       sec_mmio_write32(
           kBase + ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET + index, 0);
+      reg_wr_count += 2;
       break;
     case kAlertEnableEnabled:
       sec_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
+      ++reg_wr_count;
       break;
     default:
+      sec_mmio_write_increment(reg_wr_count);
       return kErrorAlertBadEnable;
   }
-
+  sec_mmio_write_increment(reg_wr_count);
   return kErrorOk;
 }
 
@@ -201,6 +223,7 @@ rom_error_t alert_class_configure(alert_class_t cls,
       return kErrorAlertBadEscalation;
   }
 
+  uint32_t reg_wr_count = 0;
   sec_mmio_write32_shadowed(
       kBase + ALERT_HANDLER_CLASSA_CTRL_SHADOWED_REG_OFFSET + offset, reg);
   sec_mmio_write32_shadowed(
@@ -215,11 +238,16 @@ rom_error_t alert_class_configure(alert_class_t cls,
             i * 4,
         config->phase_cycles[i]);
   }
+  reg_wr_count += 7;
+
   if (config->enabled == kAlertEnableLocked) {
     // Lock the alert configuration if it is configured to be locked.
     sec_mmio_write32(kBase + ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET + offset,
                      0);
+    ++reg_wr_count;
   }
+
+  sec_mmio_write_increment(reg_wr_count);
   return kErrorOk;
 }
 
@@ -228,5 +256,6 @@ rom_error_t alert_ping_enable(void) {
   sec_mmio_write32_shadowed(
       kBase + ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET, 1);
   sec_mmio_write32(kBase + ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
+  sec_mmio_write_increment(/*value=*/2);
   return kErrorOk;
 }
