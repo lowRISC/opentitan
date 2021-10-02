@@ -202,9 +202,9 @@ module prim_alert_receiver
           state_d = InitAckWait;
         end
       end
-      // We get here if the sender has responded with alert_sigint, and init_trig_i==lc_ctrl_pkg::On has been
-      // deasserted. At this point, we need to wait for the alert_sigint to drop again before
-      // resuming normal operation.
+      // We get here if the sender has responded with alert_sigint, and init_trig_i==lc_ctrl_pkg::On
+      // has been deasserted. At this point, we need to wait for the alert_sigint to drop again
+      // before resuming normal operation.
       InitAckWait: begin
         if (!alert_sigint) begin
           state_d = Pause0;
