@@ -232,10 +232,9 @@ class IpBlockRenderer(IpTemplateRendererBase):
         template_path = self.ip_template.template_path
 
         try:
-            # Copy everything but the templates.
-            shutil.copytree(template_path,
-                            output_dir_staging,
-                            ignore=shutil.ignore_patterns('*.tpl'))
+            # Copy everything but the templates and the template description.
+            ignore = shutil.ignore_patterns('*.tpl', '*.tpldesc.hjson')
+            shutil.copytree(template_path, output_dir_staging, ignore=ignore)
 
             # Render templates.
             for template_filepath in template_path.glob('**/*.tpl'):
