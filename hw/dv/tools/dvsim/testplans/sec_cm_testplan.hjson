@@ -18,7 +18,7 @@
             - Check that err_code/fault_status is updated correctly and preserved until reset.
             - Check the following operation should be failed if applicable.'''
       milestone: V2
-      tests: ["{name}_harden_countermeasures"]
+      tests: ["{name}_sec_cm"]
     }
     {
       name: redundant_coding_fsm_check
@@ -31,7 +31,7 @@
 
             Same checks as `one_hot_check`'''
       milestone: V2
-      tests: ["{name}_harden_countermeasures"]
+      tests: ["{name}_sec_cm"]
     }
     {
       name: hardened_counter_check
@@ -45,7 +45,7 @@
 
             Same checks as `one_hot_check`'''
       milestone: V2
-      tests: ["{name}_harden_countermeasures"]
+      tests: ["{name}_sec_cm"]
     }
   ]
 }

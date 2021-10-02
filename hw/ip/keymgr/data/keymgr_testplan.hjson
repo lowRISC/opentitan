@@ -8,7 +8,7 @@
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/harden_countermeasures_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
   testpoints: [
     {
@@ -177,6 +177,21 @@
             '''
       milestone: V2
       tests: ["keymgr_sync_async_fault_cross"]
+    }
+    {
+      name: sec_cm_check
+      desc: '''
+            Verify the outcome after injecting faults to security countermeasures.
+
+            Stimulus:
+            As mentioned in `sec_cm_testplan`.
+
+            Checks:
+            - Besides checking alert and `fault_status`, issue an operation after injecting faults,
+              then ensure that `op_status` is failed and design enters `StInvalid`.
+            '''
+      milestone: V2
+      tests: ["keymgr_sec_cm"]
     }
     {
       name: stress_all
