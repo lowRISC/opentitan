@@ -57,6 +57,7 @@ module pwm_core #(
   logic [PhaseCntDw-1:0] phase_ctr_d;
   logic [PhaseCntDw-1:0] phase_ctr_incr;
   logic [PhaseCntDw-1:0] phase_ctr_next;
+  logic [3:0]            phase_ctr_shift;
   logic                  phase_ctr_overflow;
   logic                  phase_ctr_en;
   logic                  cycle_end;
@@ -86,7 +87,8 @@ module pwm_core #(
   // Only update phase_ctr at the end of each beat
   // Exception: allow reset to zero whenever not enabled
   assign phase_ctr_en = beat_end & (clr_phase_cntr | cntr_en);
-  assign phase_ctr_incr =  (PhaseCntDw)'('h1) << (4'd15 - dc_resn);
+  assign phase_ctr_shift = 4'd15 - dc_resn;
+  assign phase_ctr_incr =  (PhaseCntDw)'(1'b1) << phase_ctr_shift;
   assign {phase_ctr_overflow, phase_ctr_next} = phase_ctr_q + phase_ctr_incr;
   assign phase_ctr_d = clr_phase_cntr ? '0 : phase_ctr_next;
   assign cycle_end = beat_end & phase_ctr_overflow;
