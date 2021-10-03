@@ -20,16 +20,84 @@ set -e
 
 . util/build_consts.sh
 
+function usage() {
+  cat << USAGE
+Utility script to load ROM contents into the FPGA bitstream.
+
+Usage: $0 [-t TARGET_BOARD] [-T TARGET_TOP] [-b DV | PROD]
+
+  - t: Target board: cw310, nexysvideo.
+  - T: Target top: earlgrey.
+  - b: Mask ROM binary, set to either DV or PROD.
+
+Mask ROM binary targets (-b):
+  - DV: sw/device/boot_rom
+  - PROD: sw/device/silicon_creator/mask_rom
+
+USAGE
+}
+
 # Change these variables when using the script for a different top level and/or FPGA board.
-TARGET_BOARD="cw310"
-TARGET_TOP="earlgrey"
+FLAGS_TARGET_BOARD="cw310"
+FLAGS_TARGET_TOP="earlgrey"
+FLAGS_BIN="DV"
+
+# `getopts` usage
+# - The initial colon in the optstring is to suppress the default error
+#   handling.
+# - The remaining options are specified in alphabetical order, and the case
+#   statement should match this order.
+# - Only options that take an argument should have a following colon.
+# - The case statement contains two additional cases:
+#   - when `$flag` = `?`, this is an unexpected option.
+#   - when `$flag` = `:`, this is the case that a flag which requires an
+#     argument is not provided one. In both cases, `$OPTARG` contains the
+#     relevant parsed option.
+# - After option parsing is finished, we `shift` by `$OPTIND - 1` so that the
+#   remaining (unprocessed) arguments are in `$@` (and $1, $2, $3 etc.).
+while getopts ':b:t:T:' flag; do
+  case "${flag}" in
+    b) FLAGS_BIN="${OPTARG}";;
+    t) FLAGS_TARGET_BOARD="${OPTARG}";;
+    T) FLAGS_TARGET_TOP="${OPTARG}";;
+    \?) echo "Unexpected option: -${OPTARG}" >&2
+        usage
+        exit 1
+        ;;
+    :) echo "Option -${OPTARG} requires an argument" >&2
+       usage
+       exit 1
+       ;;
+    *) echo "Internal Error: Unhandled option: -${flag}" >&2
+       exit 1
+       ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+# We do not accept additional arguments.
+if [[ "$#" -gt 0 ]]; then
+  echo "Unexpected arguments:" "$@" >&2
+  exit 1
+fi
+
+TARGET_PREFIX=""
+if [[ ${FLAGS_BIN} == "DV" ]]; then
+  TARGET_PREFIX="sw/device/boot_rom/boot_rom"
+elif [[ ${FLAGS_BIN} == "PROD" ]]; then
+  TARGET_PREFIX="sw/device/silicon_creator/mask_rom/mask_rom"
+else
+  echo "Invalid -b option: ${FLAGS_BIN}; expected DV or PROD." >&2
+  exit 1
+fi
+
+TARGET_BOARD="${FLAGS_TARGET_BOARD}"
+TARGET_TOP="${FLAGS_TARGET_TOP}"
 TARGET_FILE_EXT=".scr.39.vmem"
+TARGET_EXPORT="${TARGET_PREFIX}_export_fpga_${TARGET_BOARD}"
+TARGET="${BIN_DIR}/${TARGET_PREFIX}_fpga_${TARGET_BOARD}"
 
-TARGET_PREFIX="sw/device/boot_rom"
-TARGET_EXPORT="${TARGET_PREFIX}/boot_rom_export_fpga_${TARGET_BOARD}"
-TARGET="${BIN_DIR}/${TARGET_PREFIX}/boot_rom_fpga_${TARGET_BOARD}"
-
-FPGA_BUILD_DIR=build/lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOARD}_0.1/synth-vivado
+FPGA_BUILD_DIR=${OBJ_DIR}/hw/synth-vivado
 FPGA_MMI_PATH=${FPGA_BUILD_DIR}/lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOARD}_0.1.runs/impl_1
 FPGA_BIT_NAME=lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOARD}_0.1
 
