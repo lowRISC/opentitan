@@ -38,7 +38,7 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   // symbolic vars for phase map check
   logic [1:0] esc_sel;
   logic [1:0] phase_sel;
-  localparam cstate_e phases [4] = {Phase0, Phase1, Phase2, Phase3};
+  localparam cstate_e Phases [4] = {Phase0, Phase1, Phase2, Phase3};
 
   // set regs
   logic esc_has_triggered_q;
@@ -81,7 +81,7 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
       esc_has_triggered_q, clk_i, !rst_ni || clr_i || accu_fail_i)
 
   // check escalation cnt and state out
-  parameter logic [alert_handler_esc_timer.StateWidth-1:0] state_encodings [0:7] = '{
+  parameter logic [alert_handler_esc_timer.StateWidth-1:0] StateEncodings [8] = '{
     alert_handler_esc_timer.IdleSt,
     alert_handler_esc_timer.TimeoutSt,
     alert_handler_esc_timer.FsmErrorSt,
@@ -91,7 +91,7 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
     alert_handler_esc_timer.Phase2St,
     alert_handler_esc_timer.Phase3St
   };
-  `ASSERT(EscStateOut_A, alert_handler_esc_timer.state_q == state_encodings[esc_state_o])
+  `ASSERT(EscStateOut_A, alert_handler_esc_timer.state_q == StateEncodings[esc_state_o])
   `ASSERT(EscCntOut_A, alert_handler_esc_timer.cnt_q[0] == esc_cnt_o)
 
   // check clr input
@@ -100,7 +100,7 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
       esc_state_o == Idle)
 
   // check escalation map
-  `ASSERT(PhaseEscMap_A, esc_state_o == phases[phase_sel] && esc_map_i[esc_sel] == phase_sel &&
+  `ASSERT(PhaseEscMap_A, esc_state_o == Phases[phase_sel] && esc_map_i[esc_sel] == phase_sel &&
       esc_en_i[esc_sel] |-> esc_sig_req_o[esc_sel])
 
   // check terminal state is reached eventually if triggered and not cleared
@@ -130,7 +130,7 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   `ASSERT(EscBkwd_A, esc_sig_req_o[esc_sel] |-> esc_en_i[esc_sel] &&
       esc_has_triggered_q || esc_state_o == FsmError)
   `ASSERT(NoEscBkwd_A, !esc_sig_req_o[esc_sel] |-> !esc_en_i[esc_sel] ||
-      esc_state_o != phases[esc_map_i[esc_sel]] && esc_state_o != FsmError,
+      esc_state_o != Phases[esc_map_i[esc_sel]] && esc_state_o != FsmError,
       clk_i, !rst_ni || clr_i)
 
   //////////////////////
