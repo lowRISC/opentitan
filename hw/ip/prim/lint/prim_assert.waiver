@@ -1,0 +1,12 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_assert
+
+waive -rules {UNDEF_MACRO_REF} -location {prim_assert.sv} -regexp {Macro definition for 'ASSERT_RPT' includes expansion of undefined macro '__(FILE|LINE)__'} \
+      -comment "This is an UVM specific macro inside our assertion shortcuts"
+# unfortunately most tools do not support line wrapping within the declaration of macro functions, hence we have to waive
+# line length violations.
+waive -rules {LINE_LENGTH} -location {prim_assert.sv} -msg {Line length of} \
+      -comment "Some macros cannot be line-wrapped, as some tools do not support that."
