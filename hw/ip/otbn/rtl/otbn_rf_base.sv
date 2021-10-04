@@ -37,6 +37,7 @@ module otbn_rf_base
   input  logic                     rst_ni,
 
   input  logic                     state_reset_i,
+  input  logic                     sec_wipe_stack_reset_i,
 
   input  logic [4:0]               wr_addr_i,
   input  logic                     wr_en_i,
@@ -87,6 +88,9 @@ module otbn_rf_base
   logic [BaseIntgWidth-1:0] stack_data_intg;
   logic                     stack_data_valid;
 
+  logic state_reset;
+
+  assign state_reset = state_reset_i | sec_wipe_stack_reset_i;
 
   assign pop_stack_a     = rd_en_a_i & (rd_addr_a_i == CallStackRegIndex[4:0]);
   assign pop_stack_b     = rd_en_b_i & (rd_addr_b_i == CallStackRegIndex[4:0]);
@@ -133,7 +137,7 @@ module otbn_rf_base
 
     .full_o        (stack_full),
 
-    .clear_i       (state_reset_i),
+    .clear_i       (state_reset),
 
     .push_i        (push_stack),
     .push_data_i   (wr_data_intg_mux_out),

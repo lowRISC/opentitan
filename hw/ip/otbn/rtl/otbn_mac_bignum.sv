@@ -17,6 +17,10 @@ module otbn_mac_bignum
   output flags_t          operation_flags_o,
   output flags_t          operation_flags_en_o,
 
+  input logic [WLEN-1:0] urnd_data_i,
+  input logic            sec_wipe_acc_urnd_i,
+  input logic            sec_wipe_zero_i,
+
   output logic [WLEN-1:0] ispr_acc_o,
   input  logic [WLEN-1:0] ispr_acc_wr_data_i,
   input  logic            ispr_acc_wr_en_i
@@ -128,15 +132,22 @@ module otbn_mac_bignum
   assign operation_flags_o.C    = 1'b0;
   assign operation_flags_en_o.C = 1'b0;
 
-  // If performing an ACC ISPR write the next accumulator value is taken from the ISPR write data,
-  // otherwise it is drawn from the adder result. The new accumulator can be optionally shifted
-  // right by one half-word (shift_acc).
-  assign acc_d = ispr_acc_wr_en_i      ? ispr_acc_wr_data_i                                :
-                 operation_i.shift_acc ? {{QWLEN*2{1'b0}}, adder_result[QWLEN*2+:QWLEN*2]} :
-                                         adder_result;
+  always_comb begin
+    unique case(1'b1)
+    sec_wipe_acc_urnd_i: acc_d = urnd_data_i;
+    sec_wipe_zero_i:     acc_d = '0;
+    // If performing an ACC ISPR write the next accumulator value is taken from the ISPR write data,
+    // otherwise it is drawn from the adder result. The new accumulator can be optionally shifted
+    // right by one half-word (shift_acc).
+    default:  acc_d = ispr_acc_wr_en_i      ? ispr_acc_wr_data_i                                :
+                      operation_i.shift_acc ? {{QWLEN*2{1'b0}}, adder_result[QWLEN*2+:QWLEN*2]} :
+                                              adder_result;
+    endcase
+  end
 
-  // Only write to accumulator if the MAC is enabled or an ACC ISPR write is occuring.
-  assign acc_en = mac_en_i | ispr_acc_wr_en_i;
+  // Only write to accumulator if the MAC is enabled or an ACC ISPR write is occuring or secure
+  // wipe of the internal state is occuring.
+  assign acc_en = mac_en_i | ispr_acc_wr_en_i | sec_wipe_acc_urnd_i | sec_wipe_zero_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

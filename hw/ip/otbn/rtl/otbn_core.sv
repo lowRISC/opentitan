@@ -19,6 +19,8 @@ module otbn_core
   parameter int ImemSizeByte = 4096,
   // Size of the data memory, in bytes
   parameter int DmemSizeByte = 4096,
+  // Enable internal secure wipe
+  parameter bit SecWipeEn  = 1'b0,
 
   // Default seed and permutation for URND LFSR
   parameter urnd_lfsr_seed_t       RndCnstUrndLfsrSeed      = RndCnstUrndLfsrSeedDefault,
@@ -99,9 +101,13 @@ module otbn_core
   insn_dec_shared_t         insn_dec_shared;
 
   logic [4:0]               rf_base_wr_addr;
+  logic [4:0]               rf_base_wr_addr_ctrl;
   logic                     rf_base_wr_en;
+  logic                     rf_base_wr_en_ctrl;
   logic                     rf_base_wr_commit;
+  logic                     rf_base_wr_commit_ctrl;
   logic [31:0]              rf_base_wr_data_no_intg;
+  logic [31:0]              rf_base_wr_data_no_intg_ctrl;
   logic [BaseIntgWidth-1:0] rf_base_wr_data_intg;
   logic                     rf_base_wr_data_intg_sel;
   logic [4:0]               rf_base_rd_addr_a;
@@ -132,8 +138,11 @@ module otbn_core
   logic                     lsu_rdata_err;
 
   logic [WdrAw-1:0]   rf_bignum_wr_addr;
+  logic [WdrAw-1:0]   rf_bignum_wr_addr_ctrl;
   logic [1:0]         rf_bignum_wr_en;
+  logic [1:0]         rf_bignum_wr_en_ctrl;
   logic [WLEN-1:0]    rf_bignum_wr_data_no_intg;
+  logic [WLEN-1:0]    rf_bignum_wr_data_no_intg_ctrl;
   logic [ExtWLEN-1:0] rf_bignum_wr_data_intg;
   logic               rf_bignum_wr_data_intg_sel;
   logic [WdrAw-1:0]   rf_bignum_rd_addr_a;
@@ -180,20 +189,48 @@ module otbn_core
   logic        state_reset;
   logic [31:0] insn_cnt;
 
+  logic start_secure_wipe;
+  logic secure_wipe_running;
+
+  logic sec_wipe_wdr;
+  logic sec_wipe_wdr_urnd;
+  logic sec_wipe_base;
+  logic sec_wipe_base_urnd;
+  logic [4:0] sec_wipe_addr;
+
+  logic sec_wipe_acc_urnd;
+  logic sec_wipe_mod_urnd;
+  logic sec_wipe_zero;
+
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
-  otbn_start_stop_control u_otbn_start_stop_control (
+  otbn_start_stop_control #(
+    .SecWipeEn(SecWipeEn)
+  ) u_otbn_start_stop_control (
     .clk_i,
     .rst_ni,
 
     .start_i,
 
     .controller_start_o (controller_start),
-    .controller_done_i  (done_o),
 
     .urnd_reseed_req_o  (urnd_reseed_req),
     .urnd_reseed_busy_i (urnd_reseed_busy),
     .urnd_advance_o     (urnd_advance),
+
+    .start_secure_wipe_i (start_secure_wipe),
+    .secure_wipe_running_o (secure_wipe_running),
+    .done_o,
+
+    .sec_wipe_wdr_o (sec_wipe_wdr),
+    .sec_wipe_wdr_urnd_o (sec_wipe_wdr_urnd),
+    .sec_wipe_base_o (sec_wipe_base),
+    .sec_wipe_base_urnd_o (sec_wipe_base_urnd),
+    .sec_wipe_addr_o (sec_wipe_addr),
+
+    .sec_wipe_acc_urnd_o (sec_wipe_acc_urnd),
+    .sec_wipe_mod_urnd_o (sec_wipe_mod_urnd),
+    .sec_wipe_zero_o (sec_wipe_zero),
 
     .ispr_init_o   (ispr_init),
     .state_reset_o (state_reset)
@@ -254,13 +291,13 @@ module otbn_core
   // operand sources), and post-process their outputs as needed.
   otbn_controller #(
     .ImemSizeByte(ImemSizeByte),
-    .DmemSizeByte(DmemSizeByte)
+    .DmemSizeByte(DmemSizeByte),
+    .SecWipeEn(SecWipeEn)
   ) u_otbn_controller (
     .clk_i,
     .rst_ni,
 
     .start_i (controller_start),
-    .done_o,
     .locked_o,
 
     .err_bits_o,
@@ -282,10 +319,10 @@ module otbn_core
     .insn_dec_shared_i (insn_dec_shared),
 
     // To/from base register file
-    .rf_base_wr_addr_o          (rf_base_wr_addr),
-    .rf_base_wr_en_o            (rf_base_wr_en),
-    .rf_base_wr_commit_o        (rf_base_wr_commit),
-    .rf_base_wr_data_no_intg_o  (rf_base_wr_data_no_intg),
+    .rf_base_wr_addr_o          (rf_base_wr_addr_ctrl),
+    .rf_base_wr_en_o            (rf_base_wr_en_ctrl),
+    .rf_base_wr_commit_o        (rf_base_wr_commit_ctrl),
+    .rf_base_wr_data_no_intg_o  (rf_base_wr_data_no_intg_ctrl),
     .rf_base_wr_data_intg_o     (rf_base_wr_data_intg),
     .rf_base_wr_data_intg_sel_o (rf_base_wr_data_intg_sel),
     .rf_base_rd_addr_a_o        (rf_base_rd_addr_a),
@@ -299,9 +336,9 @@ module otbn_core
     .rf_base_rd_data_err_i      (rf_base_rd_data_err),
 
     // To/from bignunm register file
-    .rf_bignum_wr_addr_o          (rf_bignum_wr_addr),
-    .rf_bignum_wr_en_o            (rf_bignum_wr_en),
-    .rf_bignum_wr_data_no_intg_o  (rf_bignum_wr_data_no_intg),
+    .rf_bignum_wr_addr_o          (rf_bignum_wr_addr_ctrl),
+    .rf_bignum_wr_en_o            (rf_bignum_wr_en_ctrl),
+    .rf_bignum_wr_data_no_intg_o  (rf_bignum_wr_data_no_intg_ctrl),
     .rf_bignum_wr_data_intg_o     (rf_bignum_wr_data_intg),
     .rf_bignum_wr_data_intg_sel_o (rf_bignum_wr_data_intg_sel),
     .rf_bignum_rd_addr_a_o        (rf_bignum_rd_addr_a),
@@ -353,6 +390,11 @@ module otbn_core
     .rnd_prefetch_req_o (rnd_prefetch_req),
     .rnd_valid_i        (rnd_valid),
 
+    // Secure wipe
+    .secure_wipe_running_i (secure_wipe_running),
+    .start_secure_wipe_o (start_secure_wipe),
+    .sec_wipe_zero_i (sec_wipe_zero),
+
     .state_reset_i      (state_reset),
     .insn_cnt_o         (insn_cnt),
     .bus_intg_violation_i,
@@ -401,6 +443,7 @@ module otbn_core
     .rst_ni,
 
     .state_reset_i (state_reset),
+    .sec_wipe_stack_reset_i (sec_wipe_zero),
 
     .wr_addr_i          (rf_base_wr_addr),
     .wr_en_i            (rf_base_wr_en),
@@ -420,6 +463,24 @@ module otbn_core
     .call_stack_err_o (rf_base_call_stack_err),
     .rd_data_err_o    (rf_base_rd_data_err)
   );
+
+  assign rf_base_wr_addr         = sec_wipe_base ? sec_wipe_addr : rf_base_wr_addr_ctrl;
+  assign rf_base_wr_en           = sec_wipe_base ? 1'b1          : rf_base_wr_en_ctrl;
+  assign rf_base_wr_commit       = sec_wipe_base ? 1'b1          : rf_base_wr_commit_ctrl;
+
+  // Write data to Base RF
+  always_comb begin
+    if (sec_wipe_base) begin
+      // Wipe the Base RF with either random numbers or zeroes.
+      if (sec_wipe_base_urnd) begin
+        rf_base_wr_data_no_intg = urnd_data[31:0];
+      end else begin
+        rf_base_wr_data_no_intg = 32'b0;
+      end
+    end else begin
+      rf_base_wr_data_no_intg = rf_base_wr_data_no_intg_ctrl;
+    end
+  end
 
   otbn_alu_base u_otbn_alu_base (
     .clk_i,
@@ -453,6 +514,23 @@ module otbn_core
     .rd_data_err_o (rf_bignum_rd_data_err)
   );
 
+  assign rf_bignum_wr_addr         = sec_wipe_wdr ? sec_wipe_addr : rf_bignum_wr_addr_ctrl;
+  assign rf_bignum_wr_en           = sec_wipe_wdr ? 2'b11         : rf_bignum_wr_en_ctrl;
+
+  // Write data to WDR
+  always_comb begin
+    if (sec_wipe_wdr) begin
+      // Wipe the WDR with either random numbers or zeroes.
+      if (sec_wipe_wdr_urnd) begin
+        rf_bignum_wr_data_no_intg = urnd_data;
+      end else begin
+        rf_bignum_wr_data_no_intg = 256'b0;
+      end
+    end else begin
+      rf_bignum_wr_data_no_intg = rf_bignum_wr_data_no_intg_ctrl;
+    end
+  end
+
   otbn_alu_bignum u_otbn_alu_bignum (
     .clk_i,
     .rst_ni,
@@ -473,6 +551,9 @@ module otbn_core
     .ispr_acc_wr_data_o       (ispr_acc_wr_data),
     .ispr_acc_wr_en_o         (ispr_acc_wr_en),
 
+    .sec_wipe_mod_urnd_i      (sec_wipe_mod_urnd),
+    .sec_wipe_zero_i          (sec_wipe_zero),
+
     .mac_operation_flags_i    (mac_bignum_operation_flags),
     .mac_operation_flags_en_i (mac_bignum_operation_flags_en),
 
@@ -488,6 +569,10 @@ module otbn_core
     .operation_result_o   (mac_bignum_operation_result),
     .operation_flags_o    (mac_bignum_operation_flags),
     .operation_flags_en_o (mac_bignum_operation_flags_en),
+
+    .urnd_data_i (urnd_data),
+    .sec_wipe_acc_urnd_i (sec_wipe_acc_urnd),
+    .sec_wipe_zero_i (sec_wipe_zero),
 
     .mac_en_i           (mac_bignum_en),
 
