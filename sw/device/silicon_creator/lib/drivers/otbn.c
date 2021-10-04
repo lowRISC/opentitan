@@ -117,3 +117,21 @@ void otbn_zero_dmem(void) {
     abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + i, 0u);
   }
 }
+
+rom_error_t otbn_set_ctrl_software_errs_fatal(bool enable) {
+  // Only one bit in the CTRL register so no need to read current value.
+  uint32_t new_ctrl;
+
+  if (enable) {
+    new_ctrl = 1;
+  } else {
+    new_ctrl = 0;
+  }
+
+  abs_mmio_write32(kBase + OTBN_CTRL_REG_OFFSET, new_ctrl);
+  if (abs_mmio_read32(kBase + OTBN_CTRL_REG_OFFSET) != new_ctrl) {
+    return kErrorOtbnUnavailable;
+  }
+
+  return kErrorOk;
+}

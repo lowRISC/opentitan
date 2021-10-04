@@ -149,5 +149,21 @@ TEST_F(DmemReadTest, SuccessWithOffset) {
   EXPECT_THAT(test_data, ElementsAre(0x12345678, 0xabcdef01));
 }
 
+class ControlSoftwareErrorsFatalTest : public OtbnTest {};
+
+TEST_F(ControlSoftwareErrorsFatalTest, Success) {
+  EXPECT_ABS_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
+  EXPECT_ABS_READ32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
+
+  EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(true), kErrorOk);
+}  // namespace
+
+TEST_F(ControlSoftwareErrorsFatalTest, Failure) {
+  EXPECT_ABS_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x0);
+  EXPECT_ABS_READ32(base_ + OTBN_CTRL_REG_OFFSET, 0x1);
+
+  EXPECT_EQ(otbn_set_ctrl_software_errs_fatal(false), kErrorOtbnUnavailable);
+}
+
 }  // namespace
 }  // namespace otbn_unittest
