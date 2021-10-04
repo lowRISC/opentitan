@@ -200,6 +200,20 @@ dif_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
                                 void *dest, size_t len_bytes);
 
 /**
+ * Sets the software errors are fatal bit in the control register.
+ *
+ * When set any software error becomes a fatal error. The bit can only be
+ * changed when the OTBN status is IDLE.
+ *
+ * @param otbn OTBN instance
+ * @param enable Enable or disable whether software errors are fatal.
+ * @return The result of the operation, `kDifUnavailable` is returned when the
+ * requested change cannot be made.
+ */
+dif_result_t dif_otbn_set_ctrl_software_errs_fatal(const dif_otbn_t *otbn,
+                                                   bool enable);
+
+/**
  * Get the size of OTBN's data memory in bytes.
  *
  * @param otbn OTBN instance

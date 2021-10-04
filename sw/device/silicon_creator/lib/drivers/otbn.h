@@ -48,7 +48,7 @@ typedef enum otbn_status {
 /**
  * Start the execution of the application loaded into OTBN
  *
- * @return `kErrorOtbInvalidArgument` if `start_addr` is invalid, `kErrorOk`
+ * @return `kErrorOtbnInvalidArgument` if `start_addr` is invalid, `kErrorOk`
  *         otherwise.
  */
 rom_error_t otbn_execute(void);
@@ -147,6 +147,18 @@ rom_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest, size_t len);
  * Zero out the contents of OTBN's data memory (DMEM).
  */
 void otbn_zero_dmem(void);
+
+/**
+ * Sets the software errors are fatal bit in the control register.
+ *
+ * When set any software error becomes a fatal error. The bit can only be
+ * changed when the OTBN status is IDLE.
+ *
+ * @param enable Enable or disable whether software errors are fatal.
+ * @return `kErrorOtbnUnavailable` if the requested change cannot be made or
+ * `kErrorOk` otherwise.
+ */
+rom_error_t otbn_set_ctrl_software_errs_fatal(bool enable);
 
 #ifdef __cplusplus
 }

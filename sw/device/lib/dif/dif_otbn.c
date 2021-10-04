@@ -186,6 +186,29 @@ dif_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
   return kDifOk;
 }
 
+dif_result_t dif_otbn_set_ctrl_software_errs_fatal(const dif_otbn_t *otbn,
+                                                   bool enable) {
+  if (otbn == NULL) {
+    return kDifBadArg;
+  }
+
+  // Only one bit in the CTRL register so no need to read current value.
+  uint32_t new_ctrl;
+
+  if (enable) {
+    new_ctrl = 1;
+  } else {
+    new_ctrl = 0;
+  }
+
+  mmio_region_write32(otbn->base_addr, OTBN_CTRL_REG_OFFSET, new_ctrl);
+  if (mmio_region_read32(otbn->base_addr, OTBN_CTRL_REG_OFFSET) != new_ctrl) {
+    return kDifUnavailable;
+  }
+
+  return kDifOk;
+}
+
 size_t dif_otbn_get_dmem_size_bytes(const dif_otbn_t *otbn) {
   return OTBN_DMEM_SIZE_BYTES;
 }

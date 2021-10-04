@@ -386,5 +386,26 @@ TEST_F(DmemReadTest, SuccessWithOffset) {
   EXPECT_EQ(test_data[1], 0xabcdef01);
 }
 
+class ControlSoftwareErrorsFatalTest : public OtbnTest {};
+
+TEST_F(ControlSoftwareErrorsFatalTest, NullArgs) {
+  EXPECT_EQ(dif_otbn_set_ctrl_software_errs_fatal(nullptr, false), kDifBadArg);
+}
+
+TEST_F(ControlSoftwareErrorsFatalTest, Success) {
+  EXPECT_WRITE32(OTBN_CTRL_REG_OFFSET, 0x1);
+  EXPECT_READ32(OTBN_CTRL_REG_OFFSET, 0x1);
+
+  EXPECT_EQ(dif_otbn_set_ctrl_software_errs_fatal(&dif_otbn_, true), kDifOk);
+}
+
+TEST_F(ControlSoftwareErrorsFatalTest, Failure) {
+  EXPECT_WRITE32(OTBN_CTRL_REG_OFFSET, 0x0);
+  EXPECT_READ32(OTBN_CTRL_REG_OFFSET, 0x1);
+
+  EXPECT_EQ(dif_otbn_set_ctrl_software_errs_fatal(&dif_otbn_, false),
+            kDifUnavailable);
+}
+
 }  // namespace
 }  // namespace dif_otbn_unittest
