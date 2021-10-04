@@ -265,15 +265,16 @@ module alert_handler
   ////////////////
 
   // check whether all outputs have a good known state after reset
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(IrqAKnownO_A, intr_classa_o)
-  `ASSERT_KNOWN(IrqBKnownO_A, intr_classb_o)
-  `ASSERT_KNOWN(IrqCKnownO_A, intr_classc_o)
-  `ASSERT_KNOWN(IrqDKnownO_A, intr_classd_o)
+  `ASSERT_KNOWN(TlDValidKnownO_A,  tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A,  tl_o.a_ready)
+  `ASSERT_KNOWN(IrqAKnownO_A,      intr_classa_o)
+  `ASSERT_KNOWN(IrqBKnownO_A,      intr_classb_o)
+  `ASSERT_KNOWN(IrqCKnownO_A,      intr_classc_o)
+  `ASSERT_KNOWN(IrqDKnownO_A,      intr_classd_o)
   `ASSERT_KNOWN(CrashdumpKnownO_A, crashdump_o)
-  `ASSERT_KNOWN(AckPKnownO_A, alert_rx_o)
-  `ASSERT_KNOWN(EscPKnownO_A, esc_tx_o)
+  `ASSERT_KNOWN(AckPKnownO_A,      alert_rx_o)
+  `ASSERT_KNOWN(EscPKnownO_A,      esc_tx_o)
+  `ASSERT_KNOWN(EdnKnownO_A,       edn_o)
 
   // this restriction is due to specifics in the ping selection mechanism
   `ASSERT_INIT(CheckNAlerts,   NAlerts  < (256 - N_CLASSES))
