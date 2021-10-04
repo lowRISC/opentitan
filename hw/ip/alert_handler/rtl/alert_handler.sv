@@ -137,13 +137,13 @@ module alert_handler
   // Low-power group control //
   /////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t [NAlerts-1:0] lp_init_trig;
-  alert_handler_lp_ctrl u_alert_handler_lp_ctrl (
+  lc_ctrl_pkg::lc_tx_t [NAlerts-1:0] alert_init_trig;
+  alert_handler_lpg_ctrl u_alert_handler_lpg_ctrl (
     .clk_i,
     .rst_ni,
     .lpg_cg_en_i,
     .lpg_rst_en_i,
-    .init_trig_o ( lp_init_trig )
+    .alert_init_trig_o ( alert_init_trig )
   );
 
   /////////////////////
@@ -160,7 +160,7 @@ module alert_handler
     ) u_alert_receiver (
       .clk_i,
       .rst_ni,
-      .init_trig_i  ( lp_init_trig[k]    ),
+      .init_trig_i  ( alert_init_trig[k] ),
       .ping_req_i   ( alert_ping_req[k]  ),
       .ping_ok_o    ( alert_ping_ok[k]   ),
       .integ_fail_o ( alert_integfail[k] ),

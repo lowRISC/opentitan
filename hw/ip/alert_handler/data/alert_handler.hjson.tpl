@@ -61,12 +61,14 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       default: "${n_lpg.bit_length()}",
       local: "true"
     },
-    { name: "AlertLpgMap",
+    { name: "LpgMap",
       desc: '''
             Defines a mapping from alerts to LPGs.
             '''
       type: "logic [NAlerts-1:0][NLpgWidth-1:0]",
-      default: "${lpg_map}",
+      default: '''
+${lpg_map}
+               ''',
       local: "true"
     },
     { name: "EscCntDw",
