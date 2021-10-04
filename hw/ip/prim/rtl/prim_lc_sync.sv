@@ -19,7 +19,10 @@ module prim_lc_sync #(
   // This instantiates the synchronizer flops if set to 1.
   // In special cases where the receiver is in the same clock domain as the sender,
   // this can be set to 0. However, it is recommended to leave this at 1.
-  parameter bit AsyncOn = 1
+  parameter bit AsyncOn = 1,
+  // 0: reset value is lc_ctrl_pkg::Off
+  // 1: reset value is lc_ctrl_pkg::On
+  parameter bit ResetValueIsOn = 0
 ) (
   input                                       clk_i,
   input                                       rst_ni,
@@ -27,13 +30,16 @@ module prim_lc_sync #(
   output lc_ctrl_pkg::lc_tx_t [NumCopies-1:0] lc_en_o
 );
 
+  localparam lc_ctrl_pkg::lc_tx_t ResetValue = (ResetValueIsOn) ? lc_ctrl_pkg::On :
+                                                                  lc_ctrl_pkg::Off;
+
   `ASSERT_INIT(NumCopiesMustBeGreaterZero_A, NumCopies > 0)
 
   logic [lc_ctrl_pkg::TxWidth-1:0] lc_en;
   if (AsyncOn) begin : gen_flops
     prim_flop_2sync #(
       .Width(lc_ctrl_pkg::TxWidth),
-      .ResetValue(lc_ctrl_pkg::TxWidth'(lc_ctrl_pkg::Off))
+      .ResetValue(lc_ctrl_pkg::TxWidth'(ResetValue))
     ) u_prim_flop_2sync (
       .clk_i,
       .rst_ni,
