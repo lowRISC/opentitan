@@ -42,3 +42,17 @@ sw_lib_hardened = declare_dependency(
     ],
   )
 )
+
+test('base_hardened_unittest', executable(
+    'base_hardened_unittest',
+    sources: [
+      'hardened.c',
+      'hardened_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+  ),
+  suite: 'base',
+)
