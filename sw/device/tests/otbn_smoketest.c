@@ -102,7 +102,10 @@ static void test_barrett384(otbn_t *otbn_ctx) {
   CHECK_DIF_OK(
       dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/320, &u, sizeof(u)));
 
+  CHECK(dif_otbn_set_ctrl_software_errs_fatal(&otbn_ctx->dif, true) == kDifOk);
   CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
+  CHECK(dif_otbn_set_ctrl_software_errs_fatal(&otbn_ctx->dif, false) ==
+        kDifUnavailable);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Reading back result (c).
@@ -130,6 +133,10 @@ static void test_barrett384(otbn_t *otbn_ctx) {
 static void test_err_test(otbn_t *otbn_ctx) {
   CHECK(otbn_load_app(otbn_ctx, kAppErrTest) == kOtbnOk);
 
+  // TODO: Turn on software_errs_fatal for err_test. Currently the model doesn't
+  // support this feature so turning it on leads to a failure when run with the
+  // model.
+  CHECK(dif_otbn_set_ctrl_software_errs_fatal(&otbn_ctx->dif, false) == kDifOk);
   CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOperationFailed);
 
