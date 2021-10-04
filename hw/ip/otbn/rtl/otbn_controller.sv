@@ -126,11 +126,13 @@ module otbn_controller
   output logic [31:0] insn_cnt_o,
   input  logic        bus_intg_violation_i,
   input  logic        illegal_bus_access_i,
-  input  logic        lifecycle_escalation_i
+  input  logic        lifecycle_escalation_i,
+  input  logic        software_errs_fatal_i
 );
   otbn_state_e state_q, state_d;
 
   logic err;
+  logic software_err;
   logic fatal_err;
   logic done_complete;
   logic executing;
@@ -361,8 +363,7 @@ module otbn_controller
   // or illegal WSR/CSR referenced).
   assign illegal_insn_static = insn_illegal_i | ispr_err;
 
-  // TODO: Implement fatal error on software error mode
-  assign err_bits_o.fatal_software       = 1'b0;
+  assign err_bits_o.fatal_software       = software_err & software_errs_fatal_i;
   assign err_bits_o.lifecycle_escalation = lifecycle_escalation_i;
   assign err_bits_o.illegal_bus_access   = illegal_bus_access_i;
   assign err_bits_o.bus_intg_violation   = bus_intg_violation_i;
@@ -375,7 +376,12 @@ module otbn_controller
   assign err_bits_o.call_stack           = rf_base_call_stack_err_i;
   assign err_bits_o.bad_insn_addr        = imem_addr_err;
 
-  assign err = |err_bits_o;
+  assign software_err = |{err_bits_o.illegal_insn,
+                          err_bits_o.bad_data_addr,
+                          err_bits_o.loop,
+                          err_bits_o.call_stack,
+                          err_bits_o.bad_insn_addr};
+
   assign fatal_err = |{err_bits_o.fatal_software,
                        err_bits_o.lifecycle_escalation,
                        err_bits_o.illegal_bus_access,
@@ -383,6 +389,8 @@ module otbn_controller
                        err_bits_o.reg_intg_violation,
                        err_bits_o.dmem_intg_violation,
                        err_bits_o.imem_intg_violation};
+
+  assign err = software_err | fatal_err;
 
   // Instructions must not execute if there is an error
   assign insn_executing = insn_valid_i & ~err;

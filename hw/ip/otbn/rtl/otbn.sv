@@ -93,6 +93,8 @@ module otbn
 
   err_bits_t err_bits;
 
+  logic software_errs_fatal_q, software_errs_fatal_d;
+
   otbn_reg2hw_t reg2hw;
   otbn_hw2reg_t hw2reg;
 
@@ -595,7 +597,20 @@ module otbn
 
   `ASSERT(OtbnStatesOneHot, $onehot0({busy_execute_q, locked}))
 
-  assign hw2reg.ctrl.d = 1'b0;
+  // CTRL register
+  assign software_errs_fatal_d =
+    reg2hw.ctrl.qe && (hw2reg.status.d == StatusIdle) ? reg2hw.ctrl.q :
+                                                        software_errs_fatal_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      software_errs_fatal_q <= 1'b0;
+    end else begin
+      software_errs_fatal_q <= software_errs_fatal_d;
+    end
+  end
+
+  assign hw2reg.ctrl.d = software_errs_fatal_q;
 
   // ERR_BITS register
   // The error bits for an OTBN operation get stored on the cycle that done is
@@ -634,7 +649,7 @@ module otbn
   assign hw2reg.err_bits.lifecycle_escalation.d = err_bits.lifecycle_escalation;
 
   assign hw2reg.err_bits.fatal_software.de = done;
-  assign hw2reg.err_bits.fatal_software.d = 1'b0;
+  assign hw2reg.err_bits.fatal_software.d = err_bits.fatal_software;
 
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
@@ -651,8 +666,8 @@ module otbn
   assign hw2reg.fatal_alert_cause.illegal_bus_access.d  = illegal_bus_access_d;
   assign hw2reg.fatal_alert_cause.lifecycle_escalation.de = lifecycle_escalation;
   assign hw2reg.fatal_alert_cause.lifecycle_escalation.d  = lifecycle_escalation;
-  assign hw2reg.fatal_alert_cause.fatal_software.de = 0;
-  assign hw2reg.fatal_alert_cause.fatal_software.d  = 0;
+  assign hw2reg.fatal_alert_cause.fatal_software.de = done;
+  assign hw2reg.fatal_alert_cause.fatal_software.d  = err_bits.fatal_software;
 
   // INSN_CNT register
   logic [31:0] insn_cnt;
@@ -671,7 +686,8 @@ module otbn
                               dmem_rerror          |
                               bus_intg_violation   |
                               illegal_bus_access_d |
-                              lifecycle_escalation;
+                              lifecycle_escalation |
+                              err_bits.fatal_software;
 
   assign alerts[AlertRecov] = 1'b0; // TODO: Implement
 
@@ -851,7 +867,9 @@ module otbn
 
       .bus_intg_violation_i   (bus_intg_violation),
       .illegal_bus_access_i   (illegal_bus_access_q),
-      .lifecycle_escalation_i (lifecycle_escalation)
+      .lifecycle_escalation_i (lifecycle_escalation),
+
+      .software_errs_fatal_i  (software_errs_fatal_q)
     );
   `else
     otbn_core #(
@@ -899,7 +917,9 @@ module otbn
 
       .bus_intg_violation_i   (bus_intg_violation),
       .illegal_bus_access_i   (illegal_bus_access_q),
-      .lifecycle_escalation_i (lifecycle_escalation)
+      .lifecycle_escalation_i (lifecycle_escalation),
+
+      .software_errs_fatal_i  (software_errs_fatal_q)
     );
   `endif
 
