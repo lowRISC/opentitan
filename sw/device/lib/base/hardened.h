@@ -195,4 +195,113 @@ inline uint32_t launder32(uint32_t val) {
   return val;
 }
 
+/**
+ * Launders the pointer-sized value `val`.
+ *
+ * See `launder32()` for detailed semantics.
+ *
+ * @param val A 32-bit integer to launder.
+ * @return A 32-bit integer which will happen to have the same value as `val` at
+ *         runtime.
+ */
+inline uintptr_t launderw(uintptr_t val) {
+  asm("" : "+r"(val));
+  return val;
+}
+
+/**
+ * Creates a reordering barrier for `val`.
+ *
+ * `barrier32()` takes an argument and discards it, while introducing an
+ * "impure" dependency on that value. This forces the compiler to schedule
+ * instructions such that the intermediate `val` actually appears in a
+ * register. Because it is impure, `barrier32()` operations will not be
+ * reordered past each other or MMIO operations, although they can be reordered
+ * past functions if LTO inlines them.
+ *
+ * Most compilers will try to reorder arithmetic operations in such a way
+ * that they form large basic blocks, since modern microarchitectures can
+ * take advantage of instruction-level parallelism. Unfortunately, this means
+ * that instructions that we want to interleave with other instructions are
+ * likely to get separated; this includes static interleavings,
+ * loop-invariant code motion, and some kinds of unroll-and-jam.
+ *
+ * For example, given
+ *
+ * ```
+ * uint32_t product = 5;
+ *
+ * foo();
+ * product *= product;
+ * foo();
+ * product *= product;
+ * foo();
+ * product *= product;
+ * ```
+ *
+ * A compiler will likely reorder this as
+ *
+ * ```
+ * uint32_t product = 5;
+ *
+ * foo();
+ * foo();
+ * foo();
+ * product *= product;
+ * product *= product;
+ * product *= product;
+ * ```
+ *
+ * The compiler is further entitled to constant-propagate `product`.
+ * `barrier32()` can be used to avoid this:
+ *
+ * ```
+ * uint32_t product = 5;
+ * barrier32(product);
+ *
+ * barrier32(foo());
+ * product *= product;
+ * barrier32(product);
+ *
+ * barrier32(foo());
+ * product *= product;
+ * barrier32(product);
+ *
+ * barrier32(foo());
+ * product *= product;
+ * barrier32(product);
+ * ```
+ *
+ * Note that we must place barriers on the result of the function calls,
+ * too, so that the compiler believes that there is a potential dependency
+ * between the return value of the function, and the followup value of
+ * `product`.
+ *
+ * This is also useful for avoiding loop reordering:
+ *
+ * ```
+ * for (int i = 0; i != n - 1; i = (i + kPrime) % n) {
+ *   barrier32(i);
+ *
+ *   // Stuff.
+ * }
+ * ```
+ *
+ * A sufficiently intelligent compiler might notice that it can linearize this
+ * loop; however, the barriers in each loop iteration force a particular order
+ * is observed.
+ *
+ * @param val A value to create a barrier for.
+ */
+inline void barrier32(uint32_t val) { asm volatile("" ::"r"(val)); }
+
+/**
+ * Creates a reordering barrier for `val`.
+ *
+ * See `barrier32()` for detailed semantics.
+ *
+ * @param val A value to create a barrier for.
+ */
+inline void barrierw(uintptr_t val) { asm volatile("" ::"r"(val)); }
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_H_
