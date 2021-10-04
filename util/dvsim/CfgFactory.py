@@ -4,6 +4,7 @@
 
 import logging as log
 import sys
+import os
 
 from CfgJson import load_hjson
 
@@ -82,7 +83,10 @@ def make_cfg(path, args, proj_root):
     of the project.
 
     '''
-    initial_values = {'proj_root': proj_root}
+    initial_values = {
+        'proj_root': proj_root,
+        'self_dir': os.path.dirname(path),
+    }
     if args.tool is not None:
         initial_values['tool'] = args.tool
 
