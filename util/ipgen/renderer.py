@@ -105,13 +105,15 @@ class IpTemplateRendererBase:
                 strict_undefined=True)
         return self._lookup
 
-    def _tplfunc_instance_vlnv(self, template_vlnv_str: str):
-        template_vlnv = template_vlnv_str.split(':', 3)
-        if len(template_vlnv) < 3:
+    def _tplfunc_instance_vlnv(self, template_vlnv_str: str) -> str:
+        template_vlnv = template_vlnv_str.split(':')
+        if len(template_vlnv) != 3 and len(template_vlnv) != 4:
             raise TemplateRenderError(
                 f"{template_vlnv_str} isn't a valid FuseSoC VLNV. "
-                "Required format: 'vendor:library:name:version'")
+                "Required format: 'vendor:library:name[:version]'")
         template_core_name = template_vlnv[2]
+        template_core_version = (template_vlnv[3]
+                                 if len(template_vlnv) == 4 else None)
 
         # Remove the template name from the start of the core name.
         # For example, a core name `rv_plic_component` will result in an
@@ -121,8 +123,13 @@ class IpTemplateRendererBase:
             template_core_name = template_core_name[len(self.ip_template.name):]
 
         instance_core_name = self.ip_config.instance_name + template_core_name
-        instance_vlnv = 'lowrisc:opentitan:' + instance_core_name
-        return instance_vlnv
+        instance_vlnv = ['lowrisc', 'opentitan', instance_core_name]
+
+        # Keep the version component if it was present before.
+        if template_core_version is not None:
+            instance_vlnv.append(template_core_version)
+
+        return ':'.join(instance_vlnv)
 
     def _render_mako_template_to_str(self, template_filepath: Path) -> str:
         """ Render a template and return the rendered text. """
