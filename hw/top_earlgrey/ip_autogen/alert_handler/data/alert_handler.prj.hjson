@@ -8,9 +8,9 @@
     dv_doc:             "../doc/dv",
     hw_checklist:       "../doc/checklist",
     sw_checklist:       "/sw/device/lib/dif/dif_alert_handler"
-    version:            "0.5",
+    version:            "1.0",
     life_stage:         "L1",
-    design_stage:       "D1",
+    design_stage:       "D2",
     verification_stage: "V1",
     dif_stage:          "S0",
     notes:              "Use both FPV and DV to perform block level verification.",
