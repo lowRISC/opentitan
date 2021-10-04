@@ -14,6 +14,10 @@
  * @brief Data Types for use in Hardened Code.
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * This is a boolean type for use in hardened contexts.
  *
@@ -472,5 +476,9 @@ inline ct_boolw_t ct_seqw(uintptr_t a, uintptr_t b) { return ct_seqzw(a ^ b); }
 inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
   return (launderw(c) & a) | (launderw(~c) & b);
 }
+
+#ifdef __cplusplus
+}
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_H_
