@@ -388,10 +388,14 @@ package otbn_pkg;
     OtbnStateLocked
   } otbn_state_e;
 
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     OtbnStartStopStateHalt,
     OtbnStartStopStateUrndRefresh,
-    OtbnStartStopStateRunning
+    OtbnStartStopStateRunning,
+    OtbnStartStopSecureWipeWdrUrnd,
+    OtbnStartStopSecureWipeAccModBaseUrnd,
+    OtbnStartStopSecureWipeAllZero,
+    OtbnStartStopSecureWipeComplete
   } otbn_start_stop_state_e;
 
   // URNG PRNG default LFSR seed and permutation

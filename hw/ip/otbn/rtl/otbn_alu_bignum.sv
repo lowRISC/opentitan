@@ -86,6 +86,9 @@ module otbn_alu_bignum
   output logic [WLEN-1:0]             ispr_acc_wr_data_o,
   output logic                        ispr_acc_wr_en_o,
 
+  input logic                         sec_wipe_mod_urnd_i,
+  input logic                         sec_wipe_zero_i,
+
   input  flags_t                      mac_operation_flags_i,
   input  flags_t                      mac_operation_flags_en_i,
 
@@ -130,7 +133,8 @@ module otbn_alu_bignum
       if (!rst_ni) begin
         flags_q[i_fg] <= '{Z : 1'b0, L : 1'b0, M : 1'b0, C : 1'b0};
       end else if (flags_en[i_fg]) begin
-        flags_q[i_fg] <= flags_d[i_fg];
+        flags_q[i_fg] <= sec_wipe_zero_i ? '{Z : 1'b0, L : 1'b0, M : 1'b0, C : 1'b0} :
+                                           flags_d[i_fg];
       end
     end
 
@@ -156,7 +160,8 @@ module otbn_alu_bignum
     assign flags_en[i_fg] = ispr_init_i | ispr_update_flags_en |
       (adder_update_flags_en & is_operation_flag_group[i_fg]) |
       (logic_update_flags_en & is_operation_flag_group[i_fg]) |
-      (mac_update_flags_en   & is_operation_flag_group[i_fg]);
+      (mac_update_flags_en   & is_operation_flag_group[i_fg]) |
+      sec_wipe_zero_i;
   end
 
 
@@ -174,7 +179,14 @@ module otbn_alu_bignum
     end
 
     always_comb begin
-      mod_d[i_word*32+:32] = ispr_bignum_wdata_i[i_word*32+:32];
+
+      unique case(1'b1)
+        sec_wipe_mod_urnd_i: mod_d[i_word*32+:32] = urnd_data_i[i_word*32+:32];
+        sec_wipe_zero_i:     mod_d[i_word*32+:32] = 32'd0;
+        default:             mod_d[i_word*32+:32] = ispr_bignum_wdata_i[i_word*32+:32];
+      endcase
+
+    `ASSERT(ModSecWipeSelOneHot, $onehot0({sec_wipe_mod_urnd_i, sec_wipe_zero_i}))
 
       unique case (1'b1)
         ispr_init_i:               mod_d[i_word*32+:32] = '0;
@@ -186,7 +198,8 @@ module otbn_alu_bignum
     `ASSERT(ModWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[i_word]}))
 
     assign mod_wr_en[i_word] = ispr_init_i |
-      ((ispr_addr_i == IsprMod) & (ispr_base_wr_en_i[i_word] | ispr_bignum_wr_en_i));
+      ((ispr_addr_i == IsprMod) & (ispr_base_wr_en_i[i_word] | ispr_bignum_wr_en_i)) |
+      sec_wipe_mod_urnd_i | sec_wipe_zero_i;
   end
 
   assign ispr_acc_wr_en_o   = ((ispr_addr_i == IsprAcc) & ispr_bignum_wr_en_i) | ispr_init_i;
