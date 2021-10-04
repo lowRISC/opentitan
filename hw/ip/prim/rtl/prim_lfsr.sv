@@ -424,7 +424,7 @@ module prim_lfsr #(
     typedef logic [NumSboxes-1:0][LfsrIdxDw-1:0] matrix_col_t;
 
     // left-rotates a matrix column by the shift amount
-    function automatic matrix_col_t lrotcol(matrix_col_t col, int shift);
+    function automatic matrix_col_t lrotcol(matrix_col_t col, integer shift);
       matrix_col_t out;
       for (int k = 0; k < NumSboxes; k++) begin
         out[(k + shift) % NumSboxes] = col[k];
