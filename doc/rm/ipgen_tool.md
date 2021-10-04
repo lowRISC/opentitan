@@ -75,6 +75,7 @@ Furthermore, the following functions are available:
 
 * `instance_vlnv(vlnv)`: Transform a FuseSoC core name, expressed as VLNV string, into an instance-specific name.
   The `vendor` is set to `lowrisc`, the `library` is set to `opentitan`, and the `name` is prefixed with the instance name.
+  The optional version segment is retained.
   Use this function on the `name` of all FuseSoC cores which contain sources generated from templates and which export symbols into the global namespace.
 
 ### Templating FuseSoC core files
