@@ -80,7 +80,7 @@ module tb;
     .intr_classb_o        ( interrupts[1] ),
     .intr_classc_o        ( interrupts[2] ),
     .intr_classd_o        ( interrupts[3] ),
-    // TODO(#8174): top-level integration for LPGs
+    // TODO: need to exercise LPGs
     .lpg_cg_en_i          ( {alert_pkg::NLpg{lc_ctrl_pkg::Off}} ),
     .lpg_rst_en_i         ( {alert_pkg::NLpg{lc_ctrl_pkg::Off}} ),
     .crashdump_o          ( crashdump     ),

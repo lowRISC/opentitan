@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // This module gathers and synchronizes the clock gating and reset indication signals for all
-// low-power groups (LPGs), synchronizes them to the alert handler clock domain.
-// The clock gating and reset indication signals are then logically OR'ed to produce one multibit
-// value for each LPG. The LPG multibit values are then mapped to the alert channels using
-// the AlertLpgMap parameter, and each multibit output value is buffered independently.
+// low-power groups (LPGs), synchronizes them to the alert handler clock domain. The clock gating
+// and reset indication signals are then logically OR'ed to produce one multibit value for each
+// LPG. The LPG multibit values are then mapped to the alert channels using the LpgMap parameter,
+// and each multibit output value is buffered independently.
 //
 
 `include "prim_assert.sv"
 
-module alert_handler_lp_ctrl import alert_pkg::*; (
+module alert_handler_lpg_ctrl import alert_pkg::*; (
   input  clk_i,
   input  rst_ni,
   // Low power clk and rst indication signals.
@@ -77,4 +77,4 @@ module alert_handler_lp_ctrl import alert_pkg::*; (
     );
   end
 
-endmodule : alert_handler_lp_ctrl
+endmodule : alert_handler_lpg_ctrl

@@ -20,7 +20,7 @@ filesets:
     files:
       - rtl/alert_pkg.sv
       - rtl/alert_handler_reg_wrap.sv
-      - rtl/alert_handler_lp_ctrl.sv
+      - rtl/alert_handler_lpg_ctrl.sv
       - rtl/alert_handler_class.sv
       - rtl/alert_handler_ping_timer.sv
       - rtl/alert_handler_esc_timer.sv

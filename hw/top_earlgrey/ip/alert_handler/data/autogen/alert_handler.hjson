@@ -65,12 +65,14 @@
       default: "1",
       local: "true"
     },
-    { name: "AlertLpgMap",
+    { name: "LpgMap",
       desc: '''
             Defines a mapping from alerts to LPGs.
             '''
       type: "logic [NAlerts-1:0][NLpgWidth-1:0]",
-      default: "'0",
+      default: '''
+'0
+               ''',
       local: "true"
     },
     { name: "EscCntDw",
