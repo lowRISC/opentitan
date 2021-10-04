@@ -98,7 +98,8 @@ module otbn_top_sim (
 
     .bus_intg_violation_i   ( 1'b0             ),
     .illegal_bus_access_i   ( 1'b0             ),
-    .lifecycle_escalation_i ( 1'b0             )
+    .lifecycle_escalation_i ( 1'b0             ),
+    .software_errs_fatal_i  ( 1'b0             )
   );
 
   // The top bits of IMEM rdata aren't currently used (they will eventually be used for integrity

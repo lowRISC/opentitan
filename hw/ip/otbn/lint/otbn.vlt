@@ -12,3 +12,5 @@ lint_off -rule UNUSED -file "*/rtl/otbn_decoder.sv" -match "Bits of signal are n
 
 // imem_wmask_bus is only used in an assertion (which Verilator doesn't see).
 lint_off -rule UNUSED -file "*/rtl/otbn.sv" -match "Signal is not used: 'imem_wmask_bus'"
+
+split_var -module "otbn_controller" -var "err_bits_o"
