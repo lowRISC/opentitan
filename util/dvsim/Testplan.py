@@ -177,7 +177,7 @@ class Testpoint(Element):
             self.test_results = [Result(name=self.name, passing=0, total=0)]
 
 
-class Testplan():
+class Testplan:
     """The full testplan
 
     The list of Testpoints and Covergroups make up the testplan.
@@ -192,7 +192,7 @@ class Testplan():
         try:
             return hjson.load(open(filename, 'rU'))
         except IOError as e:
-            print(f"IO Error when opening fie {filename}\n{e}")
+            print(f"IO Error when opening file {filename}\n{e}")
         except hjson.scanner.HjsonDecodeError as e:
             print(f"Error: Unable to decode HJSON with file {filename}:\n{e}")
         sys.exit(1)
