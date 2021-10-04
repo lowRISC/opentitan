@@ -145,13 +145,13 @@
     {
       name: roll_cg
       desc: '''
-            Covers that all valid enable and polarity settings
-            for the Pattgen control register have been tested.
-            Individual enable and polarity settings that will be covered include:
-            - Enable pattern generator functionality for Channel 0 (ENABLE_CH0)
-            - Enable pattern generator functionality for Channel 1 (ENABLE_CH1)
-            - Clock (pcl) polarity for Channel 0 (POLARITY_CH0)
-            - Clock (pcl) polarity for Channel 1 (POLARITY_CH1)
+            Covers that all counters revert to zero when they reach
+            the maximum value.
+            Individual initial and maximum counter values
+            that will be covered include:
+            - Initial and maximum values of clock divide counter
+            - Initial and maximum values of length counter
+            - Initial and maxim values of repetition counter
             All valid combinations of the above will also be crossed.
             '''
     }
@@ -179,7 +179,7 @@
             '''
     }
     {
-      name: event_inter_cg
+      name: inter_cg
       desc: '''
             Covers that all valid settings of Interrupt Enable Register
             and Interrupt State Register register have been tested.
