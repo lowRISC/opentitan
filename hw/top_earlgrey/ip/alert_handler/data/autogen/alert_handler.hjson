@@ -365,7 +365,7 @@
 # register lock for ping timeout counter
     { name: "PING_TIMER_REGWEN",
       desc: '''
-            Register write enable for !!PING_TIMEOUT_CYC and !!PING_TIMER_EN.
+            Register write enable for !!PING_TIMEOUT_CYC_SHADOWED and !!PING_TIMER_EN_SHADOWED.
             ''',
       swaccess: "rw0c",
       hwaccess: "none",
@@ -373,7 +373,7 @@
         {
             bits:   "0",
             desc: '''
-            When true, the !!PING_TIMEOUT_CYC and !!PING_TIMER_EN registers can be modified.
+            When true, the !!PING_TIMEOUT_CYC_SHADOWED and !!PING_TIMER_EN_SHADOWED registers can be modified.
             When false, they become read-only. Defaults true, write one to clear.
             This should be cleared once the alert handler has been configured and the ping
             timer mechanism has been kicked off.
@@ -393,10 +393,11 @@
       fields: [
         {
           bits: "PING_CNT_DW-1:0",
-          resval:   32,
+          resval:   256,
           desc: '''
-          Timeout value in cycles. If an alert receiver or an escalation sender does not
-          respond to a ping within this timeout window, a pingfail alert will be raised.
+          Timeout value in cycles.
+          If an alert receiver or an escalation sender does not respond to a ping within this timeout window, a pingfail alert will be raised.
+          It is recommended to set this value to the equivalent of 256 cycles of the slowest alert sender clock domain in the system (or greater).
           '''
         }
       ]
@@ -436,7 +437,7 @@
                       name:   "EN",
                       desc:   '''
                               Alert configuration write enable bit.
-                              If this is cleared to 0, the corresponding !!ALERT_EN
+                              If this is cleared to 0, the corresponding !!ALERT_EN_SHADOWED0
                               and !!ALERT_CLASS bits are not writable anymore.
 
                               Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
@@ -527,8 +528,8 @@
                       name:   "EN",
                       desc:   '''
                               Alert configuration write enable bit.
-                              If this is cleared to 0, the corresponding !!LOC_ALERT_EN
-                              and !!LOC_ALERT_CLASS bits are not writable anymore.
+                              If this is cleared to 0, the corresponding !!LOC_ALERT_EN_SHADOWED0
+                              and !!LOC_ALERT_CLASS_SHADOWED0 bits are not writable anymore.
 
                               Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
                               ''',
@@ -683,7 +684,6 @@
           resval: 1,
           desc: "Enable escalation signal 3 for Class A",
         }
-        # TODO: bitwidth should be parameterized with PHASE_DW
         { bits: "7:6",
           name: "MAP_E0",
           resval: 0,
@@ -716,7 +716,7 @@
       {   bits:   "0",
           desc:   '''Register defaults to true, can only be cleared. This register is set
           to false by the hardware if the escalation protocol has been triggered and the bit
-          !!CLASSA_CTRL.LOCK is true.
+          !!CLASSA_CTRL_SHADOWED.LOCK is true.
           ''',
           resval: 1,
         }
@@ -746,7 +746,7 @@
     { name:     "CLASSA_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class A. Software can clear this register
-                with a write to !!CLASSA_CLR register unless !!CLASSA_CLR_REGWEN is false.
+                with a write to !!CLASSA_CLR_SHADOWED register unless !!CLASSA_CLR_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -891,8 +891,8 @@
           corresponding interrupt bit.
 
           If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASSA_CLR. Note however that has no effect if !!CLASSA_REGWEN
-          is set to false (either by SW or by HW via the !!CLASSA_CTRL.LOCK feature).
+          aborted by writing to !!CLASSA_CLR_SHADOWED. Note however that has no effect if !!CLASSA_REGWEN
+          is set to false (either by SW or by HW via the !!CLASSA_CTRL_SHADOWED.LOCK feature).
           '''
         }
       ],
@@ -987,7 +987,6 @@
           resval: 1,
           desc: "Enable escalation signal 3 for Class B",
         }
-        # TODO: bitwidth should be parameterized with PHASE_DW
         { bits: "7:6",
           name: "MAP_E0",
           resval: 0,
@@ -1020,7 +1019,7 @@
       {   bits:   "0",
           desc:   '''Register defaults to true, can only be cleared. This register is set
           to false by the hardware if the escalation protocol has been triggered and the bit
-          !!CLASSB_CTRL.LOCK is true.
+          !!CLASSB_CTRL_SHADOWED.LOCK is true.
           ''',
           resval: 1,
         }
@@ -1050,7 +1049,7 @@
     { name:     "CLASSB_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class B. Software can clear this register
-                with a write to !!CLASSB_CLR register unless !!CLASSB_CLR_REGWEN is false.
+                with a write to !!CLASSB_CLR_SHADOWED register unless !!CLASSB_CLR_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1195,8 +1194,8 @@
           corresponding interrupt bit.
 
           If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASSB_CLR. Note however that has no effect if !!CLASSB_REGWEN
-          is set to false (either by SW or by HW via the !!CLASSB_CTRL.LOCK feature).
+          aborted by writing to !!CLASSB_CLR_SHADOWED. Note however that has no effect if !!CLASSB_REGWEN
+          is set to false (either by SW or by HW via the !!CLASSB_CTRL_SHADOWED.LOCK feature).
           '''
         }
       ],
@@ -1291,7 +1290,6 @@
           resval: 1,
           desc: "Enable escalation signal 3 for Class C",
         }
-        # TODO: bitwidth should be parameterized with PHASE_DW
         { bits: "7:6",
           name: "MAP_E0",
           resval: 0,
@@ -1324,7 +1322,7 @@
       {   bits:   "0",
           desc:   '''Register defaults to true, can only be cleared. This register is set
           to false by the hardware if the escalation protocol has been triggered and the bit
-          !!CLASSC_CTRL.LOCK is true.
+          !!CLASSC_CTRL_SHADOWED.LOCK is true.
           ''',
           resval: 1,
         }
@@ -1354,7 +1352,7 @@
     { name:     "CLASSC_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class C. Software can clear this register
-                with a write to !!CLASSC_CLR register unless !!CLASSC_CLR_REGWEN is false.
+                with a write to !!CLASSC_CLR_SHADOWED register unless !!CLASSC_CLR_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1499,8 +1497,8 @@
           corresponding interrupt bit.
 
           If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASSC_CLR. Note however that has no effect if !!CLASSC_REGWEN
-          is set to false (either by SW or by HW via the !!CLASSC_CTRL.LOCK feature).
+          aborted by writing to !!CLASSC_CLR_SHADOWED. Note however that has no effect if !!CLASSC_REGWEN
+          is set to false (either by SW or by HW via the !!CLASSC_CTRL_SHADOWED.LOCK feature).
           '''
         }
       ],
@@ -1595,7 +1593,6 @@
           resval: 1,
           desc: "Enable escalation signal 3 for Class D",
         }
-        # TODO: bitwidth should be parameterized with PHASE_DW
         { bits: "7:6",
           name: "MAP_E0",
           resval: 0,
@@ -1628,7 +1625,7 @@
       {   bits:   "0",
           desc:   '''Register defaults to true, can only be cleared. This register is set
           to false by the hardware if the escalation protocol has been triggered and the bit
-          !!CLASSD_CTRL.LOCK is true.
+          !!CLASSD_CTRL_SHADOWED.LOCK is true.
           ''',
           resval: 1,
         }
@@ -1658,7 +1655,7 @@
     { name:     "CLASSD_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class D. Software can clear this register
-                with a write to !!CLASSD_CLR register unless !!CLASSD_CLR_REGWEN is false.
+                with a write to !!CLASSD_CLR_SHADOWED register unless !!CLASSD_CLR_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1803,8 +1800,8 @@
           corresponding interrupt bit.
 
           If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASSD_CLR. Note however that has no effect if !!CLASSD_REGWEN
-          is set to false (either by SW or by HW via the !!CLASSD_CTRL.LOCK feature).
+          aborted by writing to !!CLASSD_CLR_SHADOWED. Note however that has no effect if !!CLASSD_REGWEN
+          is set to false (either by SW or by HW via the !!CLASSD_CTRL_SHADOWED.LOCK feature).
           '''
         }
       ],
