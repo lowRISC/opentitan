@@ -1611,7 +1611,7 @@ module alert_handler_reg_top (
   prim_subreg_shadow #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h20)
+    .RESVAL  (16'h100)
   ) u_ping_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

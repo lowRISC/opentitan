@@ -248,7 +248,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 # register lock for ping timeout counter
     { name: "PING_TIMER_REGWEN",
       desc: '''
-            Register write enable for !!PING_TIMEOUT_CYC and !!PING_TIMER_EN.
+            Register write enable for !!PING_TIMEOUT_CYC_SHADOWED and !!PING_TIMER_EN_SHADOWED.
             ''',
       swaccess: "rw0c",
       hwaccess: "none",
@@ -256,7 +256,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         {
             bits:   "0",
             desc: '''
-            When true, the !!PING_TIMEOUT_CYC and !!PING_TIMER_EN registers can be modified.
+            When true, the !!PING_TIMEOUT_CYC_SHADOWED and !!PING_TIMER_EN_SHADOWED registers can be modified.
             When false, they become read-only. Defaults true, write one to clear.
             This should be cleared once the alert handler has been configured and the ping
             timer mechanism has been kicked off.
@@ -276,10 +276,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       fields: [
         {
           bits: "PING_CNT_DW-1:0",
-          resval:   32,
+          resval:   256,
           desc: '''
-          Timeout value in cycles. If an alert receiver or an escalation sender does not
-          respond to a ping within this timeout window, a pingfail alert will be raised.
+          Timeout value in cycles.
+          If an alert receiver or an escalation sender does not respond to a ping within this timeout window, a pingfail alert will be raised.
+          It is recommended to set this value to the equivalent of 256 cycles of the slowest alert sender clock domain in the system (or greater).
           '''
         }
       ]
@@ -320,7 +321,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                       name:   "EN",
                       desc:   '''
                               Alert configuration write enable bit.
-                              If this is cleared to 0, the corresponding !!ALERT_EN
+                              If this is cleared to 0, the corresponding !!ALERT_EN_SHADOWED0
                               and !!ALERT_CLASS bits are not writable anymore.
 
                               Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
@@ -411,8 +412,8 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                       name:   "EN",
                       desc:   '''
                               Alert configuration write enable bit.
-                              If this is cleared to 0, the corresponding !!LOC_ALERT_EN
-                              and !!LOC_ALERT_CLASS bits are not writable anymore.
+                              If this is cleared to 0, the corresponding !!LOC_ALERT_EN_SHADOWED0
+                              and !!LOC_ALERT_CLASS_SHADOWED0 bits are not writable anymore.
 
                               Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
                               ''',
@@ -568,7 +569,6 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
           resval: 1,
           desc: "Enable escalation signal 3 for Class ${chars[i]}",
         }
-        # TODO: bitwidth should be parameterized with PHASE_DW
         { bits: "7:6",
           name: "MAP_E0",
           resval: 0,
@@ -601,7 +601,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       {   bits:   "0",
           desc:   '''Register defaults to true, can only be cleared. This register is set
           to false by the hardware if the escalation protocol has been triggered and the bit
-          !!CLASS${chars[i]}_CTRL.LOCK is true.
+          !!CLASS${chars[i]}_CTRL_SHADOWED.LOCK is true.
           ''',
           resval: 1,
         }
@@ -631,7 +631,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name:     "CLASS${chars[i]}_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class ${chars[i]}. Software can clear this register
-                with a write to !!CLASS${chars[i]}_CLR register unless !!CLASS${chars[i]}_CLR_REGWEN is false.
+                with a write to !!CLASS${chars[i]}_CLR_SHADOWED register unless !!CLASS${chars[i]}_CLR_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -733,8 +733,8 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
           corresponding interrupt bit.
 
           If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASS${chars[i]}_CLR. Note however that has no effect if !!CLASS${chars[i]}_REGWEN
-          is set to false (either by SW or by HW via the !!CLASS${chars[i]}_CTRL.LOCK feature).
+          aborted by writing to !!CLASS${chars[i]}_CLR_SHADOWED. Note however that has no effect if !!CLASS${chars[i]}_REGWEN
+          is set to false (either by SW or by HW via the !!CLASS${chars[i]}_CTRL_SHADOWED.LOCK feature).
           '''
         }
       ],
