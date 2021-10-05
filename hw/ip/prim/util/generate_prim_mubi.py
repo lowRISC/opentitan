@@ -10,11 +10,13 @@ MUBI_PKG_TPL_PATH = "data/prim_mubi_pkg.sv.tpl"
 MUBI_CORE_TPL_PATH = "data/prim_mubi.core.tpl"
 MUBI_SENDER_TPL_PATH = "data/prim_mubi_sender.sv.tpl"
 MUBI_SYNC_TPL_PATH = "data/prim_mubi_sync.sv.tpl"
+MUBI_DEC_TPL_PATH = "data/prim_mubi_dec.sv.tpl"
 
 MUBI_PKG_OUT_PATH = "rtl/prim_mubi_pkg.sv"
 MUBI_CORE_OUT_PATH = "./prim_mubi.core"
 MUBI_SENDER_OUT_PATH = "rtl/prim_mubi{}_sender.sv"
 MUBI_SYNC_OUT_PATH = "rtl/prim_mubi{}_sync.sv"
+MUBI_DEC_OUT_PATH = "rtl/prim_mubi{}_dec.sv"
 
 N_MAX_NIBBLES = 4
 
@@ -33,7 +35,8 @@ def main():
 
     tpls = [
         (MUBI_SENDER_TPL_PATH, MUBI_SENDER_OUT_PATH),
-        (MUBI_SYNC_TPL_PATH, MUBI_SYNC_OUT_PATH)
+        (MUBI_SYNC_TPL_PATH, MUBI_SYNC_OUT_PATH),
+        (MUBI_DEC_TPL_PATH, MUBI_DEC_OUT_PATH)
     ]
     for tpl, out in tpls:
         with open(tpl) as inf:
