@@ -145,8 +145,6 @@ module entropy_src_reg_top (
   logic [3:0] conf_enable_wd;
   logic [3:0] conf_entropy_data_reg_enable_qs;
   logic [3:0] conf_entropy_data_reg_enable_wd;
-  logic [3:0] conf_lfsr_enable_qs;
-  logic [3:0] conf_lfsr_enable_wd;
   logic [3:0] conf_boot_bypass_disable_qs;
   logic [3:0] conf_boot_bypass_disable_wd;
   logic [3:0] conf_health_test_clr_qs;
@@ -155,9 +153,6 @@ module entropy_src_reg_top (
   logic [3:0] conf_rng_bit_enable_wd;
   logic [1:0] conf_rng_bit_sel_qs;
   logic [1:0] conf_rng_bit_sel_wd;
-  logic rate_we;
-  logic [15:0] rate_qs;
-  logic [15:0] rate_wd;
   logic entropy_control_we;
   logic [3:0] entropy_control_es_route_qs;
   logic [3:0] entropy_control_es_route_wd;
@@ -308,10 +303,25 @@ module entropy_src_reg_top (
   logic debug_status_sha3_err_qs;
   logic debug_status_main_sm_idle_qs;
   logic [7:0] debug_status_main_sm_state_qs;
-  logic seed_we;
-  logic [3:0] seed_qs;
-  logic [3:0] seed_wd;
   logic recov_alert_sts_we;
+  logic recov_alert_sts_enable_field_alert_qs;
+  logic recov_alert_sts_enable_field_alert_wd;
+  logic recov_alert_sts_entropy_data_reg_en_field_alert_qs;
+  logic recov_alert_sts_entropy_data_reg_en_field_alert_wd;
+  logic recov_alert_sts_boot_bypass_disable_field_alert_qs;
+  logic recov_alert_sts_boot_bypass_disable_field_alert_wd;
+  logic recov_alert_sts_health_test_clr_field_alert_qs;
+  logic recov_alert_sts_health_test_clr_field_alert_wd;
+  logic recov_alert_sts_rng_bit_enable_field_alert_qs;
+  logic recov_alert_sts_rng_bit_enable_field_alert_wd;
+  logic recov_alert_sts_fw_ov_mode_field_alert_qs;
+  logic recov_alert_sts_fw_ov_mode_field_alert_wd;
+  logic recov_alert_sts_fw_ov_entropy_insert_field_alert_qs;
+  logic recov_alert_sts_fw_ov_entropy_insert_field_alert_wd;
+  logic recov_alert_sts_es_route_field_alert_qs;
+  logic recov_alert_sts_es_route_field_alert_wd;
+  logic recov_alert_sts_es_type_field_alert_qs;
+  logic recov_alert_sts_es_type_field_alert_wd;
   logic recov_alert_sts_es_main_sm_alert_qs;
   logic recov_alert_sts_es_main_sm_alert_wd;
   logic recov_alert_sts_es_bus_cmp_alert_qs;
@@ -712,31 +722,6 @@ module entropy_src_reg_top (
     .qs     (conf_entropy_data_reg_enable_qs)
   );
 
-  //   F[lfsr_enable]: 11:8
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
-  ) u_conf_lfsr_enable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (conf_we & regwen_qs),
-    .wd     (conf_lfsr_enable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.conf.lfsr_enable.q),
-
-    // to register interface (read)
-    .qs     (conf_lfsr_enable_qs)
-  );
-
   //   F[boot_bypass_disable]: 15:12
   prim_subreg #(
     .DW      (4),
@@ -835,32 +820,6 @@ module entropy_src_reg_top (
 
     // to register interface (read)
     .qs     (conf_rng_bit_sel_qs)
-  );
-
-
-  // R[rate]: V(False)
-  prim_subreg #(
-    .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h4)
-  ) u_rate (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rate_we),
-    .wd     (rate_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rate.q),
-
-    // to register interface (read)
-    .qs     (rate_qs)
   );
 
 
@@ -2077,33 +2036,232 @@ module entropy_src_reg_top (
   );
 
 
-  // R[seed]: V(False)
+  // R[recov_alert_sts]: V(False)
+  //   F[enable_field_alert]: 0:0
   prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'hb)
-  ) u_seed (
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (seed_we & regwen_qs),
-    .wd     (seed_wd),
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_enable_field_alert_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
+    .de     (hw2reg.recov_alert_sts.enable_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.enable_field_alert.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.seed.q),
+    .q      (),
 
     // to register interface (read)
-    .qs     (seed_qs)
+    .qs     (recov_alert_sts_enable_field_alert_qs)
   );
 
+  //   F[entropy_data_reg_en_field_alert]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_entropy_data_reg_en_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  // R[recov_alert_sts]: V(False)
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_entropy_data_reg_en_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_entropy_data_reg_en_field_alert_qs)
+  );
+
+  //   F[boot_bypass_disable_field_alert]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_boot_bypass_disable_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_boot_bypass_disable_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.boot_bypass_disable_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.boot_bypass_disable_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_boot_bypass_disable_field_alert_qs)
+  );
+
+  //   F[health_test_clr_field_alert]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_health_test_clr_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_health_test_clr_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.health_test_clr_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.health_test_clr_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_health_test_clr_field_alert_qs)
+  );
+
+  //   F[rng_bit_enable_field_alert]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_rng_bit_enable_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_rng_bit_enable_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.rng_bit_enable_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.rng_bit_enable_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_rng_bit_enable_field_alert_qs)
+  );
+
+  //   F[fw_ov_mode_field_alert]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_fw_ov_mode_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_fw_ov_mode_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.fw_ov_mode_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.fw_ov_mode_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_fw_ov_mode_field_alert_qs)
+  );
+
+  //   F[fw_ov_entropy_insert_field_alert]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_fw_ov_entropy_insert_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_fw_ov_entropy_insert_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.fw_ov_entropy_insert_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.fw_ov_entropy_insert_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_fw_ov_entropy_insert_field_alert_qs)
+  );
+
+  //   F[es_route_field_alert]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_es_route_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_es_route_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.es_route_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.es_route_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_es_route_field_alert_qs)
+  );
+
+  //   F[es_type_field_alert]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_es_type_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_es_type_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.es_type_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.es_type_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_es_type_field_alert_qs)
+  );
+
   //   F[es_main_sm_alert]: 12:12
   prim_subreg #(
     .DW      (1),
@@ -2384,7 +2542,7 @@ module entropy_src_reg_top (
 
 
 
-  logic [50:0] addr_hit;
+  logic [48:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == ENTROPY_SRC_INTR_STATE_OFFSET);
@@ -2394,50 +2552,48 @@ module entropy_src_reg_top (
     addr_hit[ 4] = (reg_addr == ENTROPY_SRC_REGWEN_OFFSET);
     addr_hit[ 5] = (reg_addr == ENTROPY_SRC_REV_OFFSET);
     addr_hit[ 6] = (reg_addr == ENTROPY_SRC_CONF_OFFSET);
-    addr_hit[ 7] = (reg_addr == ENTROPY_SRC_RATE_OFFSET);
-    addr_hit[ 8] = (reg_addr == ENTROPY_SRC_ENTROPY_CONTROL_OFFSET);
-    addr_hit[ 9] = (reg_addr == ENTROPY_SRC_ENTROPY_DATA_OFFSET);
-    addr_hit[10] = (reg_addr == ENTROPY_SRC_HEALTH_TEST_WINDOWS_OFFSET);
-    addr_hit[11] = (reg_addr == ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET);
-    addr_hit[12] = (reg_addr == ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET);
-    addr_hit[13] = (reg_addr == ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET);
-    addr_hit[14] = (reg_addr == ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET);
-    addr_hit[15] = (reg_addr == ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET);
-    addr_hit[16] = (reg_addr == ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET);
-    addr_hit[17] = (reg_addr == ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET);
-    addr_hit[18] = (reg_addr == ENTROPY_SRC_EXTHT_HI_THRESHOLDS_OFFSET);
-    addr_hit[19] = (reg_addr == ENTROPY_SRC_EXTHT_LO_THRESHOLDS_OFFSET);
-    addr_hit[20] = (reg_addr == ENTROPY_SRC_REPCNT_HI_WATERMARKS_OFFSET);
-    addr_hit[21] = (reg_addr == ENTROPY_SRC_REPCNTS_HI_WATERMARKS_OFFSET);
-    addr_hit[22] = (reg_addr == ENTROPY_SRC_ADAPTP_HI_WATERMARKS_OFFSET);
-    addr_hit[23] = (reg_addr == ENTROPY_SRC_ADAPTP_LO_WATERMARKS_OFFSET);
-    addr_hit[24] = (reg_addr == ENTROPY_SRC_EXTHT_HI_WATERMARKS_OFFSET);
-    addr_hit[25] = (reg_addr == ENTROPY_SRC_EXTHT_LO_WATERMARKS_OFFSET);
-    addr_hit[26] = (reg_addr == ENTROPY_SRC_BUCKET_HI_WATERMARKS_OFFSET);
-    addr_hit[27] = (reg_addr == ENTROPY_SRC_MARKOV_HI_WATERMARKS_OFFSET);
-    addr_hit[28] = (reg_addr == ENTROPY_SRC_MARKOV_LO_WATERMARKS_OFFSET);
-    addr_hit[29] = (reg_addr == ENTROPY_SRC_REPCNT_TOTAL_FAILS_OFFSET);
-    addr_hit[30] = (reg_addr == ENTROPY_SRC_REPCNTS_TOTAL_FAILS_OFFSET);
-    addr_hit[31] = (reg_addr == ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS_OFFSET);
-    addr_hit[32] = (reg_addr == ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS_OFFSET);
-    addr_hit[33] = (reg_addr == ENTROPY_SRC_BUCKET_TOTAL_FAILS_OFFSET);
-    addr_hit[34] = (reg_addr == ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS_OFFSET);
-    addr_hit[35] = (reg_addr == ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS_OFFSET);
-    addr_hit[36] = (reg_addr == ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS_OFFSET);
-    addr_hit[37] = (reg_addr == ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS_OFFSET);
-    addr_hit[38] = (reg_addr == ENTROPY_SRC_ALERT_THRESHOLD_OFFSET);
-    addr_hit[39] = (reg_addr == ENTROPY_SRC_ALERT_SUMMARY_FAIL_COUNTS_OFFSET);
-    addr_hit[40] = (reg_addr == ENTROPY_SRC_ALERT_FAIL_COUNTS_OFFSET);
-    addr_hit[41] = (reg_addr == ENTROPY_SRC_EXTHT_FAIL_COUNTS_OFFSET);
-    addr_hit[42] = (reg_addr == ENTROPY_SRC_FW_OV_CONTROL_OFFSET);
-    addr_hit[43] = (reg_addr == ENTROPY_SRC_FW_OV_RD_DATA_OFFSET);
-    addr_hit[44] = (reg_addr == ENTROPY_SRC_FW_OV_WR_DATA_OFFSET);
-    addr_hit[45] = (reg_addr == ENTROPY_SRC_OBSERVE_FIFO_THRESH_OFFSET);
-    addr_hit[46] = (reg_addr == ENTROPY_SRC_DEBUG_STATUS_OFFSET);
-    addr_hit[47] = (reg_addr == ENTROPY_SRC_SEED_OFFSET);
-    addr_hit[48] = (reg_addr == ENTROPY_SRC_RECOV_ALERT_STS_OFFSET);
-    addr_hit[49] = (reg_addr == ENTROPY_SRC_ERR_CODE_OFFSET);
-    addr_hit[50] = (reg_addr == ENTROPY_SRC_ERR_CODE_TEST_OFFSET);
+    addr_hit[ 7] = (reg_addr == ENTROPY_SRC_ENTROPY_CONTROL_OFFSET);
+    addr_hit[ 8] = (reg_addr == ENTROPY_SRC_ENTROPY_DATA_OFFSET);
+    addr_hit[ 9] = (reg_addr == ENTROPY_SRC_HEALTH_TEST_WINDOWS_OFFSET);
+    addr_hit[10] = (reg_addr == ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET);
+    addr_hit[11] = (reg_addr == ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET);
+    addr_hit[12] = (reg_addr == ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET);
+    addr_hit[13] = (reg_addr == ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET);
+    addr_hit[14] = (reg_addr == ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET);
+    addr_hit[15] = (reg_addr == ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET);
+    addr_hit[16] = (reg_addr == ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET);
+    addr_hit[17] = (reg_addr == ENTROPY_SRC_EXTHT_HI_THRESHOLDS_OFFSET);
+    addr_hit[18] = (reg_addr == ENTROPY_SRC_EXTHT_LO_THRESHOLDS_OFFSET);
+    addr_hit[19] = (reg_addr == ENTROPY_SRC_REPCNT_HI_WATERMARKS_OFFSET);
+    addr_hit[20] = (reg_addr == ENTROPY_SRC_REPCNTS_HI_WATERMARKS_OFFSET);
+    addr_hit[21] = (reg_addr == ENTROPY_SRC_ADAPTP_HI_WATERMARKS_OFFSET);
+    addr_hit[22] = (reg_addr == ENTROPY_SRC_ADAPTP_LO_WATERMARKS_OFFSET);
+    addr_hit[23] = (reg_addr == ENTROPY_SRC_EXTHT_HI_WATERMARKS_OFFSET);
+    addr_hit[24] = (reg_addr == ENTROPY_SRC_EXTHT_LO_WATERMARKS_OFFSET);
+    addr_hit[25] = (reg_addr == ENTROPY_SRC_BUCKET_HI_WATERMARKS_OFFSET);
+    addr_hit[26] = (reg_addr == ENTROPY_SRC_MARKOV_HI_WATERMARKS_OFFSET);
+    addr_hit[27] = (reg_addr == ENTROPY_SRC_MARKOV_LO_WATERMARKS_OFFSET);
+    addr_hit[28] = (reg_addr == ENTROPY_SRC_REPCNT_TOTAL_FAILS_OFFSET);
+    addr_hit[29] = (reg_addr == ENTROPY_SRC_REPCNTS_TOTAL_FAILS_OFFSET);
+    addr_hit[30] = (reg_addr == ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS_OFFSET);
+    addr_hit[31] = (reg_addr == ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS_OFFSET);
+    addr_hit[32] = (reg_addr == ENTROPY_SRC_BUCKET_TOTAL_FAILS_OFFSET);
+    addr_hit[33] = (reg_addr == ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS_OFFSET);
+    addr_hit[34] = (reg_addr == ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS_OFFSET);
+    addr_hit[35] = (reg_addr == ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS_OFFSET);
+    addr_hit[36] = (reg_addr == ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS_OFFSET);
+    addr_hit[37] = (reg_addr == ENTROPY_SRC_ALERT_THRESHOLD_OFFSET);
+    addr_hit[38] = (reg_addr == ENTROPY_SRC_ALERT_SUMMARY_FAIL_COUNTS_OFFSET);
+    addr_hit[39] = (reg_addr == ENTROPY_SRC_ALERT_FAIL_COUNTS_OFFSET);
+    addr_hit[40] = (reg_addr == ENTROPY_SRC_EXTHT_FAIL_COUNTS_OFFSET);
+    addr_hit[41] = (reg_addr == ENTROPY_SRC_FW_OV_CONTROL_OFFSET);
+    addr_hit[42] = (reg_addr == ENTROPY_SRC_FW_OV_RD_DATA_OFFSET);
+    addr_hit[43] = (reg_addr == ENTROPY_SRC_FW_OV_WR_DATA_OFFSET);
+    addr_hit[44] = (reg_addr == ENTROPY_SRC_OBSERVE_FIFO_THRESH_OFFSET);
+    addr_hit[45] = (reg_addr == ENTROPY_SRC_DEBUG_STATUS_OFFSET);
+    addr_hit[46] = (reg_addr == ENTROPY_SRC_RECOV_ALERT_STS_OFFSET);
+    addr_hit[47] = (reg_addr == ENTROPY_SRC_ERR_CODE_OFFSET);
+    addr_hit[48] = (reg_addr == ENTROPY_SRC_ERR_CODE_TEST_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2493,9 +2649,7 @@ module entropy_src_reg_top (
                (addr_hit[45] & (|(ENTROPY_SRC_PERMIT[45] & ~reg_be))) |
                (addr_hit[46] & (|(ENTROPY_SRC_PERMIT[46] & ~reg_be))) |
                (addr_hit[47] & (|(ENTROPY_SRC_PERMIT[47] & ~reg_be))) |
-               (addr_hit[48] & (|(ENTROPY_SRC_PERMIT[48] & ~reg_be))) |
-               (addr_hit[49] & (|(ENTROPY_SRC_PERMIT[49] & ~reg_be))) |
-               (addr_hit[50] & (|(ENTROPY_SRC_PERMIT[50] & ~reg_be)))));
+               (addr_hit[48] & (|(ENTROPY_SRC_PERMIT[48] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -2538,8 +2692,6 @@ module entropy_src_reg_top (
 
   assign conf_entropy_data_reg_enable_wd = reg_wdata[7:4];
 
-  assign conf_lfsr_enable_wd = reg_wdata[11:8];
-
   assign conf_boot_bypass_disable_wd = reg_wdata[15:12];
 
   assign conf_health_test_clr_wd = reg_wdata[19:16];
@@ -2547,122 +2699,134 @@ module entropy_src_reg_top (
   assign conf_rng_bit_enable_wd = reg_wdata[23:20];
 
   assign conf_rng_bit_sel_wd = reg_wdata[25:24];
-  assign rate_we = addr_hit[7] & reg_we & !reg_error;
-
-  assign rate_wd = reg_wdata[15:0];
-  assign entropy_control_we = addr_hit[8] & reg_we & !reg_error;
+  assign entropy_control_we = addr_hit[7] & reg_we & !reg_error;
 
   assign entropy_control_es_route_wd = reg_wdata[3:0];
 
   assign entropy_control_es_type_wd = reg_wdata[7:4];
-  assign entropy_data_re = addr_hit[9] & reg_re & !reg_error;
-  assign health_test_windows_we = addr_hit[10] & reg_we & !reg_error;
+  assign entropy_data_re = addr_hit[8] & reg_re & !reg_error;
+  assign health_test_windows_we = addr_hit[9] & reg_we & !reg_error;
 
   assign health_test_windows_fips_window_wd = reg_wdata[15:0];
 
   assign health_test_windows_bypass_window_wd = reg_wdata[31:16];
-  assign repcnt_thresholds_re = addr_hit[11] & reg_re & !reg_error;
-  assign repcnt_thresholds_we = addr_hit[11] & reg_we & !reg_error;
+  assign repcnt_thresholds_re = addr_hit[10] & reg_re & !reg_error;
+  assign repcnt_thresholds_we = addr_hit[10] & reg_we & !reg_error;
 
   assign repcnt_thresholds_fips_thresh_wd = reg_wdata[15:0];
 
   assign repcnt_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign repcnts_thresholds_re = addr_hit[12] & reg_re & !reg_error;
-  assign repcnts_thresholds_we = addr_hit[12] & reg_we & !reg_error;
+  assign repcnts_thresholds_re = addr_hit[11] & reg_re & !reg_error;
+  assign repcnts_thresholds_we = addr_hit[11] & reg_we & !reg_error;
 
   assign repcnts_thresholds_fips_thresh_wd = reg_wdata[15:0];
 
   assign repcnts_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign adaptp_hi_thresholds_re = addr_hit[13] & reg_re & !reg_error;
-  assign adaptp_hi_thresholds_we = addr_hit[13] & reg_we & !reg_error;
+  assign adaptp_hi_thresholds_re = addr_hit[12] & reg_re & !reg_error;
+  assign adaptp_hi_thresholds_we = addr_hit[12] & reg_we & !reg_error;
 
   assign adaptp_hi_thresholds_fips_thresh_wd = reg_wdata[15:0];
 
   assign adaptp_hi_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign adaptp_lo_thresholds_re = addr_hit[14] & reg_re & !reg_error;
-  assign adaptp_lo_thresholds_we = addr_hit[14] & reg_we & !reg_error;
+  assign adaptp_lo_thresholds_re = addr_hit[13] & reg_re & !reg_error;
+  assign adaptp_lo_thresholds_we = addr_hit[13] & reg_we & !reg_error;
 
   assign adaptp_lo_thresholds_fips_thresh_wd = reg_wdata[15:0];
 
   assign adaptp_lo_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign bucket_thresholds_re = addr_hit[15] & reg_re & !reg_error;
-  assign bucket_thresholds_we = addr_hit[15] & reg_we & !reg_error;
+  assign bucket_thresholds_re = addr_hit[14] & reg_re & !reg_error;
+  assign bucket_thresholds_we = addr_hit[14] & reg_we & !reg_error;
 
   assign bucket_thresholds_fips_thresh_wd = reg_wdata[15:0];
 
   assign bucket_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign markov_hi_thresholds_re = addr_hit[16] & reg_re & !reg_error;
-  assign markov_hi_thresholds_we = addr_hit[16] & reg_we & !reg_error;
+  assign markov_hi_thresholds_re = addr_hit[15] & reg_re & !reg_error;
+  assign markov_hi_thresholds_we = addr_hit[15] & reg_we & !reg_error;
 
   assign markov_hi_thresholds_fips_thresh_wd = reg_wdata[15:0];
 
   assign markov_hi_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign markov_lo_thresholds_re = addr_hit[17] & reg_re & !reg_error;
-  assign markov_lo_thresholds_we = addr_hit[17] & reg_we & !reg_error;
+  assign markov_lo_thresholds_re = addr_hit[16] & reg_re & !reg_error;
+  assign markov_lo_thresholds_we = addr_hit[16] & reg_we & !reg_error;
 
   assign markov_lo_thresholds_fips_thresh_wd = reg_wdata[15:0];
 
   assign markov_lo_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign extht_hi_thresholds_re = addr_hit[18] & reg_re & !reg_error;
-  assign extht_hi_thresholds_we = addr_hit[18] & reg_we & !reg_error;
+  assign extht_hi_thresholds_re = addr_hit[17] & reg_re & !reg_error;
+  assign extht_hi_thresholds_we = addr_hit[17] & reg_we & !reg_error;
 
   assign extht_hi_thresholds_fips_thresh_wd = reg_wdata[15:0];
 
   assign extht_hi_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign extht_lo_thresholds_re = addr_hit[19] & reg_re & !reg_error;
-  assign extht_lo_thresholds_we = addr_hit[19] & reg_we & !reg_error;
+  assign extht_lo_thresholds_re = addr_hit[18] & reg_re & !reg_error;
+  assign extht_lo_thresholds_we = addr_hit[18] & reg_we & !reg_error;
 
   assign extht_lo_thresholds_fips_thresh_wd = reg_wdata[15:0];
 
   assign extht_lo_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign repcnt_hi_watermarks_re = addr_hit[20] & reg_re & !reg_error;
-  assign repcnts_hi_watermarks_re = addr_hit[21] & reg_re & !reg_error;
-  assign adaptp_hi_watermarks_re = addr_hit[22] & reg_re & !reg_error;
-  assign adaptp_lo_watermarks_re = addr_hit[23] & reg_re & !reg_error;
-  assign extht_hi_watermarks_re = addr_hit[24] & reg_re & !reg_error;
-  assign extht_lo_watermarks_re = addr_hit[25] & reg_re & !reg_error;
-  assign bucket_hi_watermarks_re = addr_hit[26] & reg_re & !reg_error;
-  assign markov_hi_watermarks_re = addr_hit[27] & reg_re & !reg_error;
-  assign markov_lo_watermarks_re = addr_hit[28] & reg_re & !reg_error;
-  assign repcnt_total_fails_re = addr_hit[29] & reg_re & !reg_error;
-  assign repcnts_total_fails_re = addr_hit[30] & reg_re & !reg_error;
-  assign adaptp_hi_total_fails_re = addr_hit[31] & reg_re & !reg_error;
-  assign adaptp_lo_total_fails_re = addr_hit[32] & reg_re & !reg_error;
-  assign bucket_total_fails_re = addr_hit[33] & reg_re & !reg_error;
-  assign markov_hi_total_fails_re = addr_hit[34] & reg_re & !reg_error;
-  assign markov_lo_total_fails_re = addr_hit[35] & reg_re & !reg_error;
-  assign extht_hi_total_fails_re = addr_hit[36] & reg_re & !reg_error;
-  assign extht_lo_total_fails_re = addr_hit[37] & reg_re & !reg_error;
-  assign alert_threshold_we = addr_hit[38] & reg_we & !reg_error;
+  assign repcnt_hi_watermarks_re = addr_hit[19] & reg_re & !reg_error;
+  assign repcnts_hi_watermarks_re = addr_hit[20] & reg_re & !reg_error;
+  assign adaptp_hi_watermarks_re = addr_hit[21] & reg_re & !reg_error;
+  assign adaptp_lo_watermarks_re = addr_hit[22] & reg_re & !reg_error;
+  assign extht_hi_watermarks_re = addr_hit[23] & reg_re & !reg_error;
+  assign extht_lo_watermarks_re = addr_hit[24] & reg_re & !reg_error;
+  assign bucket_hi_watermarks_re = addr_hit[25] & reg_re & !reg_error;
+  assign markov_hi_watermarks_re = addr_hit[26] & reg_re & !reg_error;
+  assign markov_lo_watermarks_re = addr_hit[27] & reg_re & !reg_error;
+  assign repcnt_total_fails_re = addr_hit[28] & reg_re & !reg_error;
+  assign repcnts_total_fails_re = addr_hit[29] & reg_re & !reg_error;
+  assign adaptp_hi_total_fails_re = addr_hit[30] & reg_re & !reg_error;
+  assign adaptp_lo_total_fails_re = addr_hit[31] & reg_re & !reg_error;
+  assign bucket_total_fails_re = addr_hit[32] & reg_re & !reg_error;
+  assign markov_hi_total_fails_re = addr_hit[33] & reg_re & !reg_error;
+  assign markov_lo_total_fails_re = addr_hit[34] & reg_re & !reg_error;
+  assign extht_hi_total_fails_re = addr_hit[35] & reg_re & !reg_error;
+  assign extht_lo_total_fails_re = addr_hit[36] & reg_re & !reg_error;
+  assign alert_threshold_we = addr_hit[37] & reg_we & !reg_error;
 
   assign alert_threshold_alert_threshold_wd = reg_wdata[15:0];
 
   assign alert_threshold_alert_threshold_inv_wd = reg_wdata[31:16];
-  assign alert_summary_fail_counts_re = addr_hit[39] & reg_re & !reg_error;
-  assign alert_fail_counts_re = addr_hit[40] & reg_re & !reg_error;
-  assign extht_fail_counts_re = addr_hit[41] & reg_re & !reg_error;
-  assign fw_ov_control_we = addr_hit[42] & reg_we & !reg_error;
+  assign alert_summary_fail_counts_re = addr_hit[38] & reg_re & !reg_error;
+  assign alert_fail_counts_re = addr_hit[39] & reg_re & !reg_error;
+  assign extht_fail_counts_re = addr_hit[40] & reg_re & !reg_error;
+  assign fw_ov_control_we = addr_hit[41] & reg_we & !reg_error;
 
   assign fw_ov_control_fw_ov_mode_wd = reg_wdata[3:0];
 
   assign fw_ov_control_fw_ov_entropy_insert_wd = reg_wdata[7:4];
-  assign fw_ov_rd_data_re = addr_hit[43] & reg_re & !reg_error;
-  assign fw_ov_wr_data_we = addr_hit[44] & reg_we & !reg_error;
+  assign fw_ov_rd_data_re = addr_hit[42] & reg_re & !reg_error;
+  assign fw_ov_wr_data_we = addr_hit[43] & reg_we & !reg_error;
 
   assign fw_ov_wr_data_wd = reg_wdata[31:0];
-  assign observe_fifo_thresh_we = addr_hit[45] & reg_we & !reg_error;
+  assign observe_fifo_thresh_we = addr_hit[44] & reg_we & !reg_error;
 
   assign observe_fifo_thresh_wd = reg_wdata[6:0];
-  assign debug_status_re = addr_hit[46] & reg_re & !reg_error;
-  assign seed_we = addr_hit[47] & reg_we & !reg_error;
+  assign debug_status_re = addr_hit[45] & reg_re & !reg_error;
+  assign recov_alert_sts_we = addr_hit[46] & reg_we & !reg_error;
 
-  assign seed_wd = reg_wdata[3:0];
-  assign recov_alert_sts_we = addr_hit[48] & reg_we & !reg_error;
+  assign recov_alert_sts_enable_field_alert_wd = reg_wdata[0];
+
+  assign recov_alert_sts_entropy_data_reg_en_field_alert_wd = reg_wdata[1];
+
+  assign recov_alert_sts_boot_bypass_disable_field_alert_wd = reg_wdata[3];
+
+  assign recov_alert_sts_health_test_clr_field_alert_wd = reg_wdata[4];
+
+  assign recov_alert_sts_rng_bit_enable_field_alert_wd = reg_wdata[5];
+
+  assign recov_alert_sts_fw_ov_mode_field_alert_wd = reg_wdata[8];
+
+  assign recov_alert_sts_fw_ov_entropy_insert_field_alert_wd = reg_wdata[9];
+
+  assign recov_alert_sts_es_route_field_alert_wd = reg_wdata[10];
+
+  assign recov_alert_sts_es_type_field_alert_wd = reg_wdata[11];
 
   assign recov_alert_sts_es_main_sm_alert_wd = reg_wdata[12];
 
   assign recov_alert_sts_es_bus_cmp_alert_wd = reg_wdata[13];
-  assign err_code_test_we = addr_hit[50] & reg_we & !reg_error;
+  assign err_code_test_we = addr_hit[48] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
 
@@ -2709,7 +2873,6 @@ module entropy_src_reg_top (
       addr_hit[6]: begin
         reg_rdata_next[3:0] = conf_enable_qs;
         reg_rdata_next[7:4] = conf_entropy_data_reg_enable_qs;
-        reg_rdata_next[11:8] = conf_lfsr_enable_qs;
         reg_rdata_next[15:12] = conf_boot_bypass_disable_qs;
         reg_rdata_next[19:16] = conf_health_test_clr_qs;
         reg_rdata_next[23:20] = conf_rng_bit_enable_qs;
@@ -2717,159 +2880,155 @@ module entropy_src_reg_top (
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[15:0] = rate_qs;
-      end
-
-      addr_hit[8]: begin
         reg_rdata_next[3:0] = entropy_control_es_route_qs;
         reg_rdata_next[7:4] = entropy_control_es_type_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[8]: begin
         reg_rdata_next[31:0] = entropy_data_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[9]: begin
         reg_rdata_next[15:0] = health_test_windows_fips_window_qs;
         reg_rdata_next[31:16] = health_test_windows_bypass_window_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[10]: begin
         reg_rdata_next[15:0] = repcnt_thresholds_fips_thresh_qs;
         reg_rdata_next[31:16] = repcnt_thresholds_bypass_thresh_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[11]: begin
         reg_rdata_next[15:0] = repcnts_thresholds_fips_thresh_qs;
         reg_rdata_next[31:16] = repcnts_thresholds_bypass_thresh_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[12]: begin
         reg_rdata_next[15:0] = adaptp_hi_thresholds_fips_thresh_qs;
         reg_rdata_next[31:16] = adaptp_hi_thresholds_bypass_thresh_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[13]: begin
         reg_rdata_next[15:0] = adaptp_lo_thresholds_fips_thresh_qs;
         reg_rdata_next[31:16] = adaptp_lo_thresholds_bypass_thresh_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[14]: begin
         reg_rdata_next[15:0] = bucket_thresholds_fips_thresh_qs;
         reg_rdata_next[31:16] = bucket_thresholds_bypass_thresh_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[15]: begin
         reg_rdata_next[15:0] = markov_hi_thresholds_fips_thresh_qs;
         reg_rdata_next[31:16] = markov_hi_thresholds_bypass_thresh_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[16]: begin
         reg_rdata_next[15:0] = markov_lo_thresholds_fips_thresh_qs;
         reg_rdata_next[31:16] = markov_lo_thresholds_bypass_thresh_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[17]: begin
         reg_rdata_next[15:0] = extht_hi_thresholds_fips_thresh_qs;
         reg_rdata_next[31:16] = extht_hi_thresholds_bypass_thresh_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[18]: begin
         reg_rdata_next[15:0] = extht_lo_thresholds_fips_thresh_qs;
         reg_rdata_next[31:16] = extht_lo_thresholds_bypass_thresh_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[19]: begin
         reg_rdata_next[15:0] = repcnt_hi_watermarks_fips_watermark_qs;
         reg_rdata_next[31:16] = repcnt_hi_watermarks_bypass_watermark_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[20]: begin
         reg_rdata_next[15:0] = repcnts_hi_watermarks_fips_watermark_qs;
         reg_rdata_next[31:16] = repcnts_hi_watermarks_bypass_watermark_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[21]: begin
         reg_rdata_next[15:0] = adaptp_hi_watermarks_fips_watermark_qs;
         reg_rdata_next[31:16] = adaptp_hi_watermarks_bypass_watermark_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[22]: begin
         reg_rdata_next[15:0] = adaptp_lo_watermarks_fips_watermark_qs;
         reg_rdata_next[31:16] = adaptp_lo_watermarks_bypass_watermark_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[23]: begin
         reg_rdata_next[15:0] = extht_hi_watermarks_fips_watermark_qs;
         reg_rdata_next[31:16] = extht_hi_watermarks_bypass_watermark_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[24]: begin
         reg_rdata_next[15:0] = extht_lo_watermarks_fips_watermark_qs;
         reg_rdata_next[31:16] = extht_lo_watermarks_bypass_watermark_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[25]: begin
         reg_rdata_next[15:0] = bucket_hi_watermarks_fips_watermark_qs;
         reg_rdata_next[31:16] = bucket_hi_watermarks_bypass_watermark_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[26]: begin
         reg_rdata_next[15:0] = markov_hi_watermarks_fips_watermark_qs;
         reg_rdata_next[31:16] = markov_hi_watermarks_bypass_watermark_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[27]: begin
         reg_rdata_next[15:0] = markov_lo_watermarks_fips_watermark_qs;
         reg_rdata_next[31:16] = markov_lo_watermarks_bypass_watermark_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[28]: begin
         reg_rdata_next[31:0] = repcnt_total_fails_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[29]: begin
         reg_rdata_next[31:0] = repcnts_total_fails_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[30]: begin
         reg_rdata_next[31:0] = adaptp_hi_total_fails_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[31]: begin
         reg_rdata_next[31:0] = adaptp_lo_total_fails_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[32]: begin
         reg_rdata_next[31:0] = bucket_total_fails_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[33]: begin
         reg_rdata_next[31:0] = markov_hi_total_fails_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[34]: begin
         reg_rdata_next[31:0] = markov_lo_total_fails_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[35]: begin
         reg_rdata_next[31:0] = extht_hi_total_fails_qs;
       end
 
-      addr_hit[37]: begin
+      addr_hit[36]: begin
         reg_rdata_next[31:0] = extht_lo_total_fails_qs;
       end
 
-      addr_hit[38]: begin
+      addr_hit[37]: begin
         reg_rdata_next[15:0] = alert_threshold_alert_threshold_qs;
         reg_rdata_next[31:16] = alert_threshold_alert_threshold_inv_qs;
       end
 
-      addr_hit[39]: begin
+      addr_hit[38]: begin
         reg_rdata_next[15:0] = alert_summary_fail_counts_qs;
       end
 
-      addr_hit[40]: begin
+      addr_hit[39]: begin
         reg_rdata_next[7:4] = alert_fail_counts_repcnt_fail_count_qs;
         reg_rdata_next[11:8] = alert_fail_counts_adaptp_hi_fail_count_qs;
         reg_rdata_next[15:12] = alert_fail_counts_adaptp_lo_fail_count_qs;
@@ -2879,29 +3038,29 @@ module entropy_src_reg_top (
         reg_rdata_next[31:28] = alert_fail_counts_repcnts_fail_count_qs;
       end
 
-      addr_hit[41]: begin
+      addr_hit[40]: begin
         reg_rdata_next[3:0] = extht_fail_counts_extht_hi_fail_count_qs;
         reg_rdata_next[7:4] = extht_fail_counts_extht_lo_fail_count_qs;
       end
 
-      addr_hit[42]: begin
+      addr_hit[41]: begin
         reg_rdata_next[3:0] = fw_ov_control_fw_ov_mode_qs;
         reg_rdata_next[7:4] = fw_ov_control_fw_ov_entropy_insert_qs;
       end
 
-      addr_hit[43]: begin
+      addr_hit[42]: begin
         reg_rdata_next[31:0] = fw_ov_rd_data_qs;
       end
 
-      addr_hit[44]: begin
+      addr_hit[43]: begin
         reg_rdata_next[31:0] = '0;
       end
 
-      addr_hit[45]: begin
+      addr_hit[44]: begin
         reg_rdata_next[6:0] = observe_fifo_thresh_qs;
       end
 
-      addr_hit[46]: begin
+      addr_hit[45]: begin
         reg_rdata_next[2:0] = debug_status_entropy_fifo_depth_qs;
         reg_rdata_next[5:3] = debug_status_sha3_fsm_qs;
         reg_rdata_next[6] = debug_status_sha3_block_pr_qs;
@@ -2912,16 +3071,21 @@ module entropy_src_reg_top (
         reg_rdata_next[31:24] = debug_status_main_sm_state_qs;
       end
 
-      addr_hit[47]: begin
-        reg_rdata_next[3:0] = seed_qs;
-      end
-
-      addr_hit[48]: begin
+      addr_hit[46]: begin
+        reg_rdata_next[0] = recov_alert_sts_enable_field_alert_qs;
+        reg_rdata_next[1] = recov_alert_sts_entropy_data_reg_en_field_alert_qs;
+        reg_rdata_next[3] = recov_alert_sts_boot_bypass_disable_field_alert_qs;
+        reg_rdata_next[4] = recov_alert_sts_health_test_clr_field_alert_qs;
+        reg_rdata_next[5] = recov_alert_sts_rng_bit_enable_field_alert_qs;
+        reg_rdata_next[8] = recov_alert_sts_fw_ov_mode_field_alert_qs;
+        reg_rdata_next[9] = recov_alert_sts_fw_ov_entropy_insert_field_alert_qs;
+        reg_rdata_next[10] = recov_alert_sts_es_route_field_alert_qs;
+        reg_rdata_next[11] = recov_alert_sts_es_type_field_alert_qs;
         reg_rdata_next[12] = recov_alert_sts_es_main_sm_alert_qs;
         reg_rdata_next[13] = recov_alert_sts_es_bus_cmp_alert_qs;
       end
 
-      addr_hit[49]: begin
+      addr_hit[47]: begin
         reg_rdata_next[0] = err_code_sfifo_esrng_err_qs;
         reg_rdata_next[1] = err_code_sfifo_observe_err_qs;
         reg_rdata_next[2] = err_code_sfifo_esfinal_err_qs;
@@ -2932,7 +3096,7 @@ module entropy_src_reg_top (
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
       end
 
-      addr_hit[50]: begin
+      addr_hit[48]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
       end
 

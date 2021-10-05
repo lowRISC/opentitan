@@ -37,11 +37,6 @@ static void set_config_register(const dif_entropy_src_t *entropy_src,
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD,
                                rng_bit_sel);
 
-  // Configure lfsr
-  uint32_t lfsr_sel = config->mode == kDifEntropySrcModeLfsr ? 0xa : 0x5;
-  reg =
-      bitfield_field32_write(reg, ENTROPY_SRC_CONF_LFSR_ENABLE_FIELD, lfsr_sel);
-
   // Enable configuration
   uint32_t enable_val = config->mode != kDifEntropySrcModeDisabled ? 0xa : 0x5;
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_ENABLE_FIELD, enable_val);
@@ -63,16 +58,6 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
     return kDifBadArg;
   }
 
-  if (config.lfsr_seed > ENTROPY_SRC_SEED_LFSR_SEED_MASK) {
-    return kDifBadArg;
-  }
-
-  uint32_t seed = config.mode == kDifEntropySrcModeLfsr ? config.lfsr_seed : 0;
-  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_SEED_REG_OFFSET,
-                      seed);
-
-  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_RATE_REG_OFFSET,
-                      (uint32_t)config.sample_rate);
 
   // Conditioning bypass is hardcoded to enabled. Bypass is not intended as
   // a regular mode of operation.
@@ -88,7 +73,7 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
 
   // TODO: Add support for FIFO mode.
   mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0);
+                      ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET, 0x55);
 
   set_config_register(entropy_src, &config);
   return kDifOk;

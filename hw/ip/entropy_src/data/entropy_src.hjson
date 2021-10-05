@@ -11,9 +11,6 @@
       desc: "Asserted when entropy source bits are available."}
     { name: "es_health_test_failed"
       desc: "Asserted when the alert count has been met."}
-// TODO: add introp
-//    { name: "es_ebus_check_failed"
-//      desc: "Asserted when the entropy bus integrity check has failed."}
     { name: "es_observe_fifo_ready"
       desc: "Asserted when the observe FIFO has filled to the threshold level."}
     { name: "es_fatal_err"
@@ -130,8 +127,6 @@
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they cause side affects.
              "excl:CsrAllTests:CsrExclAll"]
-// TODO: fix up exclusions after env is fixed
-//             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "3:0",
           name: "ENABLE",
@@ -150,14 +145,6 @@
                 input is set.
                 '''
           resval: "false"
-        },
-        { bits: "11:8",
-          name: "LFSR_ENABLE",
-          mubi: true,
-          desc: '''
-                Setting this field to 0xA will enable the ENTROPY_SRC LFSR mode.
-                '''
-          resval: false
         },
         { bits: "15:12",
           name: "BOOT_BYPASS_DISABLE",
@@ -198,21 +185,6 @@
         }
       ]
     },
-    { name: "RATE",
-      desc: "Entropy rate register",
-      swaccess: "rw",
-      fields: [
-        { bits: "15:0",
-          name: "ENTROPY_RATE",
-          desc: '''This register determines the rate that entropy bits will be supplied.
-                   In LFSR mode, this is the rate that the LFSR value will be advanced.
-                   The number in this register represents how many clocks there are between
-                   each newLFSR value generation.
-                '''
-          resval: "0x00000004"
-        }
-      ]
-    },
     { name: "ENTROPY_CONTROL",
       desc: "Entropy control register",
       swaccess: "rw",
@@ -220,7 +192,6 @@
       regwen:   "REGWEN",
       tags: [// Exclude from writes to these field because they cause side affects.
              "excl:CsrAllTests:CsrExclAll"]
-// TODO: remove above tag when working
       fields: [
         { bits: "3:0",
           name: "ES_ROUTE",
@@ -1015,6 +986,8 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they cause side affects.
+             "excl:CsrAllTests:CsrExclAll"]
       fields: [
         { bits: "3:0",
           name: "FW_OV_MODE",
@@ -1124,30 +1097,89 @@
         }
       ]
     },
-    { name: "SEED",
-      desc: "ENTROPY_SRC seed register",
-      swaccess: "rw",
-      regwen:   "REGWEN",
-      fields: [
-        { bits: "3:0",
-          name: "LFSR_SEED",
-          desc: "Seed used to load into the LFSR for the initial state. This field will not update if the REGWEN bit 0 is cleared.",
-          resval: "0xb"
-       }
-      ]
-    },
     {
       name: "RECOV_ALERT_STS",
       desc: "Recoverable alert status register",
       swaccess: "rw0c",
       hwaccess: "hwo",
       fields: [
+        { bits: "0",
+          name: "ENABLE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the ENABLE field in the !!CONF register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "1",
+          name: "ENTROPY_DATA_REG_EN_FIELD_ALERT",
+          desc: '''
+                This bit is set when the ENTROPY_DATA_REG_ENABLE field in the !!CONF register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "3",
+          name: "BOOT_BYPASS_DISABLE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the BOOT_BYPASS_DISABLE field in the !!CONF register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "4",
+          name: "HEALTH_TEST_CLR_FIELD_ALERT",
+          desc: '''
+                This bit is set when the HEALTH_TEST_CLR field in the !!CONF register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "5",
+          name: "RNG_BIT_ENABLE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the RNG_BIT_ENABLE field in the !!CONF register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "8",
+          name: "FW_OV_MODE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the FW_OV_MODE field in the !!FW_OV_CONTROL register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "9",
+          name: "FW_OV_ENTROPY_INSERT_FIELD_ALERT",
+          desc: '''
+                This bit is set when the FW_OV_ENTROPY_INSERT field in the !!FW_OV_CONTROL register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "10",
+          name: "ES_ROUTE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the ES_ROUTE field in the !!ENTROPY_CONTROL register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "11",
+          name: "ES_TYPE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the ES_TYPE field in the !!ENTROPY_CONTROL register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
         { bits: "12",
           name: "ES_MAIN_SM_ALERT",
           desc: '''
-                This bit is set when the health check alert threshold is exceeded.
-                See !!ALERT_THRESHOLD for more details.
-                Writing a zero to this register resets the status bits.
+                This bit is set when the main state machine detects a threshhold failure state.
+                Writing a zero resets this status bit.
                 '''
         }
         { bits: "13",
@@ -1155,7 +1187,7 @@
           desc: '''
                 This bit is set when the interal entropy bus value is equal to the prior
                 valid value on the bus, indicating a possible attack.
-                Writing a zero to this register resets the status bits.
+                Writing a zero resets this status bit.
                 '''
         }
       ]
