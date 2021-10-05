@@ -294,7 +294,7 @@
           desc: '''
                 This bit is set when the ENABLE field in the !!CTRL register is set to
                 a value other than 0x5 or 0xA.
-                Writing a zero to this register resets the status bits.
+                Writing a zero resets this status bit.
                 '''
         }
         { bits: "1",
@@ -302,7 +302,7 @@
           desc: '''
                 This bit is set when the SW_APP_ENABLE field in the !!CTRL register is set to
                 a value other than 0x5 or 0xA.
-                Writing a zero to this register resets the status bits.
+                Writing a zero resets this status bit.
                 '''
         }
         { bits: "2",
@@ -310,7 +310,7 @@
           desc: '''
                 This bit is set when the READ_INT_STATE field in the !!CTRL register is set to
                 a value other than 0x5 or 0xA.
-                Writing a zero to this register resets the status bits.
+                Writing a zero resets this status bit.
                 '''
         }
       ]
