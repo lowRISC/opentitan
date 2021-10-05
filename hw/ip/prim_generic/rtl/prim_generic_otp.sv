@@ -25,8 +25,8 @@ module prim_generic_otp
   // VMEM file to initialize the memory with
   parameter      MemInitFile   = "",
   // Vendor test partition offset and size (both in bytes)
-  parameter  int VendorTestOffset,
-  parameter  int VendorTestSize
+  parameter  int VendorTestOffset = 0,
+  parameter  int VendorTestSize   = 0
 ) (
   input                          clk_i,
   input                          rst_ni,
