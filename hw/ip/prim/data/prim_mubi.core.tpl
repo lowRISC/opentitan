@@ -21,6 +21,7 @@ filesets:
 % for n in range(1, n_max_nibbles+1):
       - rtl/prim_mubi${4*n}_sender.sv
       - rtl/prim_mubi${4*n}_sync.sv
+      - rtl/prim_mubi${4*n}_dec.sv
 % endfor
     file_type: systemVerilogSource
 

@@ -20,12 +20,16 @@ filesets:
       - rtl/prim_mubi_pkg.sv
       - rtl/prim_mubi4_sender.sv
       - rtl/prim_mubi4_sync.sv
+      - rtl/prim_mubi4_dec.sv
       - rtl/prim_mubi8_sender.sv
       - rtl/prim_mubi8_sync.sv
+      - rtl/prim_mubi8_dec.sv
       - rtl/prim_mubi12_sender.sv
       - rtl/prim_mubi12_sync.sv
+      - rtl/prim_mubi12_dec.sv
       - rtl/prim_mubi16_sender.sv
       - rtl/prim_mubi16_sync.sv
+      - rtl/prim_mubi16_dec.sv
     file_type: systemVerilogSource
 
 targets:
