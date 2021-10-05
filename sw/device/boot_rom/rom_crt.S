@@ -83,7 +83,7 @@ _start:
 
   // Enable entropy complex - this is not the full enable
   li   a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
-  li   t0, 0xa0a
+  li   t0, 0x55505a
   sw   t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
 
   li   a0, TOP_EARLGREY_CSRNG_BASE_ADDR
