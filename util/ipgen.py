@@ -37,9 +37,8 @@ def action_generate(ip_template: IpTemplate, args: argparse.Namespace) -> None:
     renderer = IpBlockRenderer(ip_template, ip_config)
     renderer.render(output_path, overwrite_output_dir)
 
-    print(
-        f"Wrote IP block {ip_config.instance_name!r} from template {ip_template.name!r} to '{output_path}'."
-    )
+    print(f"Wrote IP block {ip_config.instance_name!r} "
+          f"from template {ip_template.name!r} to '{output_path}'.")
 
 
 def action_describe(ip_template: IpTemplate, args: argparse.Namespace) -> None:
