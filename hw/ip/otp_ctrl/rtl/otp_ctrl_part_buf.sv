@@ -410,8 +410,8 @@ module otp_ctrl_part_buf
         // This is the only way the buffer regs can get unlocked.
         end else begin
           state_d = IdleSt;
-          if (mubi8_tst_hi_strict(dout_locked_q)) begin
-            dout_locked_d = mubi8_lo_value();
+          if (mubi8_test_true_strict(dout_locked_q)) begin
+            dout_locked_d = mubi8_false_value();
           end
         end
       end
@@ -507,8 +507,8 @@ module otp_ctrl_part_buf
             state_d = IdleSt;
             // If the partition is still locked, this is the first integrity check after
             // initialization. This is the only way the buffer regs can get unlocked.
-            if (mubi8_tst_hi_strict(dout_locked_q)) begin
-              dout_locked_d = mubi8_lo_value();
+            if (mubi8_test_true_strict(dout_locked_q)) begin
+              dout_locked_d = mubi8_false_value();
             // Otherwise, this integrity check has requested by the LFSR timer, and we have
             // to acknowledge its completion.
             end else begin
@@ -528,7 +528,7 @@ module otp_ctrl_part_buf
       // Make sure the partition signals an error state if no error
       // code has been latched so far, and lock the buffer regs down.
       ErrorSt: begin
-        dout_locked_d = mubi8_hi_value();
+        dout_locked_d = mubi8_true_value();
         if (error_q == NoError) begin
           error_d = FsmStateError;
         end
@@ -612,7 +612,7 @@ module otp_ctrl_part_buf
   );
 
   // We have successfully initialized the partition once it has been unlocked.
-  assign init_done_o = mubi8_tst_lo_strict(dout_locked_q);
+  assign init_done_o = mubi8_test_false_strict(dout_locked_q);
   // Hardware output gating.
   // Note that this is decoupled from the DAI access rules further below.
   assign data_o = (init_done_o) ? data : DataDefault;
@@ -631,18 +631,18 @@ module otp_ctrl_part_buf
 
   if (Info.write_lock) begin : gen_digest_write_lock
     mubi8_t digest_locked;
-    assign digest_locked = (digest_o != '0) ? mubi8_hi_value() : mubi8_lo_value();
+    assign digest_locked = (digest_o != '0) ? mubi8_true_value() : mubi8_false_value();
     assign access.write_lock = mubi8_and_lo(access_pre.write_lock, digest_locked);
-    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_tst_hi_loose(access.write_lock))
+    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_test_true_loose(access.write_lock))
   end else begin : gen_no_digest_write_lock
     assign access.write_lock = access_pre.write_lock;
   end
 
   if (Info.read_lock) begin : gen_digest_read_lock
     mubi8_t digest_locked;
-    assign digest_locked = (digest_o != '0) ? mubi8_hi_value() : mubi8_lo_value();
+    assign digest_locked = (digest_o != '0) ? mubi8_true_value() : mubi8_false_value();
     assign access.read_lock = mubi8_and_lo(access_pre.read_lock, digest_locked);
-    `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_tst_hi_loose(access.read_lock))
+    `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_test_true_loose(access.read_lock))
   end else begin : gen_no_digest_read_lock
     assign access.read_lock = access_pre.read_lock;
   end
@@ -682,7 +682,7 @@ module otp_ctrl_part_buf
       error_q       <= NoError;
       cnt_q         <= '0;
       // data output is locked by default
-      dout_locked_q <= mubi8_hi_value();
+      dout_locked_q <= mubi8_true_value();
     end else begin
       error_q       <= error_d;
       cnt_q         <= cnt_d;
@@ -716,22 +716,22 @@ module otp_ctrl_part_buf
 
   // Uninitialized partitions should always be locked, no matter what.
   `ASSERT(InitWriteLocksPartition_A,
-      mubi8_tst_hi_loose(dout_locked_q)
+      mubi8_test_true_loose(dout_locked_q)
       |->
-      mubi8_tst_hi_loose(access_o.write_lock))
+      mubi8_test_true_loose(access_o.write_lock))
   `ASSERT(InitReadLocksPartition_A,
-      mubi8_tst_hi_loose(dout_locked_q)
+      mubi8_test_true_loose(dout_locked_q)
       |->
-      mubi8_tst_hi_loose(access_o.read_lock))
+      mubi8_test_true_loose(access_o.read_lock))
   // Incoming Lock propagation
   `ASSERT(WriteLockPropagation_A,
-      mubi8_tst_hi_loose(access_i.write_lock)
+      mubi8_test_true_loose(access_i.write_lock)
       |->
-      mubi8_tst_hi_loose(access_o.write_lock))
+      mubi8_test_true_loose(access_o.write_lock))
   `ASSERT(ReadLockPropagation_A,
-      mubi8_tst_hi_loose(access_i.read_lock)
+      mubi8_test_true_loose(access_i.read_lock)
       |->
-      mubi8_tst_hi_loose(access_o.read_lock))
+      mubi8_test_true_loose(access_o.read_lock))
   // ECC error in buffer regs
   `ASSERT(EccErrorState_A,
       ecc_err

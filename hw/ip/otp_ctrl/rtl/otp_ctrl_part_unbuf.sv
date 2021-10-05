@@ -215,7 +215,7 @@ module otp_ctrl_part_unbuf
         // Double check the address range.
         if ({tlul_addr_q, 2'b00} >= Info.offset &&
             {1'b0, tlul_addr_q, 2'b00} < PartEnd &&
-             mubi8_tst_lo_strict(access.read_lock)) begin
+             mubi8_test_false_strict(access.read_lock)) begin
           otp_req_o = 1'b1;
           otp_addr_sel = DataAddr;
           if (otp_gnt_i) begin
@@ -342,7 +342,7 @@ module otp_ctrl_part_unbuf
   ////////////////////////
 
   mubi8_t init_locked;
-  assign init_locked = (~init_done_o) ? mubi8_hi_value() : mubi8_lo_value();
+  assign init_locked = (~init_done_o) ? mubi8_true_value() : mubi8_false_value();
 
   // Aggregate all possible DAI write locks. The partition is also locked when uninitialized.
   // Note that the locks are redundantly encoded values.
@@ -352,18 +352,18 @@ module otp_ctrl_part_unbuf
 
   if (Info.write_lock) begin : gen_digest_write_lock
     mubi8_t digest_locked;
-    assign digest_locked = (digest_o != '0) ? mubi8_hi_value() : mubi8_lo_value();
+    assign digest_locked = (digest_o != '0) ? mubi8_true_value() : mubi8_false_value();
     assign access.write_lock = mubi8_and_lo(access_pre.write_lock, digest_locked);
-    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_tst_hi_loose(access.write_lock))
+    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_test_true_loose(access.write_lock))
   end else begin : gen_no_digest_write_lock
     assign access.write_lock = access_pre.write_lock;
   end
 
   if (Info.read_lock) begin : gen_digest_read_lock
     mubi8_t digest_locked;
-    assign digest_locked = (digest_o != '0) ? mubi8_hi_value() : mubi8_lo_value();
+    assign digest_locked = (digest_o != '0) ? mubi8_true_value() : mubi8_false_value();
     assign access.read_lock = mubi8_and_lo(access_pre.read_lock, digest_locked);
-    `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_tst_hi_loose(access.read_lock))
+    `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_test_true_loose(access.read_lock))
   end else begin : gen_no_digest_read_lock
     assign access.read_lock = access_pre.read_lock;
   end
@@ -435,23 +435,23 @@ module otp_ctrl_part_unbuf
   `ASSERT(InitWriteLocksPartition_A,
       ~init_done_o
       |->
-      mubi8_tst_hi_loose(access_o.write_lock))
+      mubi8_test_true_loose(access_o.write_lock))
   `ASSERT(InitReadLocksPartition_A,
       ~init_done_o
       |->
-      mubi8_tst_hi_loose(access_o.read_lock))
+      mubi8_test_true_loose(access_o.read_lock))
   // Incoming Lock propagation
   `ASSERT(WriteLockPropagation_A,
-      mubi8_tst_hi_loose(access_i.write_lock)
+      mubi8_test_true_loose(access_i.write_lock)
       |->
-      mubi8_tst_hi_loose(access_o.write_lock))
+      mubi8_test_true_loose(access_o.write_lock))
   `ASSERT(ReadLockPropagation_A,
-      mubi8_tst_hi_loose(access_i.read_lock)
+      mubi8_test_true_loose(access_i.read_lock)
       |->
-      mubi8_tst_hi_loose(access_o.read_lock))
+      mubi8_test_true_loose(access_o.read_lock))
   // If the partition is read locked, the TL-UL access must error out
   `ASSERT(TlulReadOnReadLock_A,
-      tlul_req_i && tlul_gnt_o ##1 mubi8_tst_hi_loose(access_o.read_lock)
+      tlul_req_i && tlul_gnt_o ##1 mubi8_test_true_loose(access_o.read_lock)
       |->
       tlul_rerror_o > '0 && tlul_rvalid_o)
   // ECC error in buffer regs.
