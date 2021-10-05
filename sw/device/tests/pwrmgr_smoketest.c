@@ -3,32 +3,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/pwrmgr_testutils.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static const dif_pwrmgr_wakeup_reason_t kWakeUpReasonTest = {
-    .types = kDifPwrmgrWakeupTypeRequest,
-    .request_sources = kDifPwrmgrWakeupRequestSourceFive,
-};
-
-static const dif_pwrmgr_wakeup_reason_t kWakeUpReasonPor = {
-    .types = 0,
-    .request_sources = 0,
-};
-
 const test_config_t kTestConfig;
-
-bool compare_wakeup_reasons(const dif_pwrmgr_wakeup_reason_t *lhs,
-                            const dif_pwrmgr_wakeup_reason_t *rhs) {
-  return lhs->types == rhs->types &&
-         lhs->request_sources == rhs->request_sources;
-}
 
 bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
@@ -43,19 +30,13 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
-  // Notice we are clear rstmgr's RESET_INFO, so after the aon wakeup there
-  // is only one bit set.
-  dif_pwrmgr_wakeup_reason_t wakeup_reason;
-  CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
 
-  if (compare_wakeup_reasons(&wakeup_reason, &kWakeUpReasonPor)) {
+  // Notice we are clearing rstmgr's RESET_INFO, so after the aon wakeup there
+  // is only one bit set.
+  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     LOG_INFO("Powered up for the first time, begin test");
 
-    LOG_INFO("Check the rstmgr reset_info is POR");
-    dif_rstmgr_reset_info_bitfield_t info;
-    CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &info));
-    CHECK(info == (dif_rstmgr_reset_info_bitfield_t)(kDifRstmgrResetInfoPor));
-
+    CHECK(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor));
     // Clear reset_info.
     CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
 
@@ -80,31 +61,22 @@ bool test_main(void) {
               },
               &aon_timer) == kDifAonTimerOk);
     aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
-
-    // Enable low power on the next WFI with default settings.
-    // All clocks and power domains are turned off during low power.
-    dif_pwrmgr_domain_config_t config;
-    // Issue #6504: USB clock in active power must be left enabled.
-    config = kDifPwrmgrDomainOptionUsbClockInActivePower;
-
-    CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
-        &pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceFive));
-    CHECK_DIF_OK(dif_pwrmgr_set_domain_config(&pwrmgr, config));
-    CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(&pwrmgr, kDifToggleEnabled));
-
+    pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
+        kDifPwrmgrDomainOptionUsbClockInActivePower);
     // Enter low power mode.
     wait_for_interrupt();
 
-  } else if (compare_wakeup_reasons(&wakeup_reason, &kWakeUpReasonTest)) {
+  } else if (pwrmgr_testutils_is_wakeup_reason(
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
     LOG_INFO("Aon timer wakeup detected");
-    LOG_INFO("Check the rstmgr reset_info is LOW_POWER timer wakeup detected");
-    dif_rstmgr_reset_info_bitfield_t info;
-    CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &info));
-    CHECK(info ==
-          (dif_rstmgr_reset_info_bitfield_t)(kDifRstmgrResetInfoLowPowerExit));
+    CHECK(rstmgr_testutils_is_reset_info(&rstmgr,
+                                         kDifRstmgrResetInfoLowPowerExit));
     return true;
 
   } else {
+    dif_pwrmgr_wakeup_reason_t wakeup_reason;
+    CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
     LOG_ERROR("Unexpected wakeup detected: type = %d, request_source = %d",
               wakeup_reason.types, wakeup_reason.request_sources);
     return false;
