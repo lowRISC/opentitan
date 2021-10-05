@@ -282,7 +282,7 @@ module otp_ctrl_dai
       // that is the case, we immediately bail out. Otherwise, we
       // request a block of data from OTP.
       ReadSt: begin
-        if (mubi8_tst_lo_strict(part_access_i[part_idx].read_lock) ||
+        if (mubi8_test_false_strict(part_access_i[part_idx].read_lock) ||
             // HW digests always remain readable.
             PartInfo[part_idx].hw_digest && otp_addr_o == digest_addr_lut[part_idx]) begin
           otp_req_o = 1'b1;
@@ -303,7 +303,7 @@ module otp_ctrl_dai
       // terminal error state.
       ReadWaitSt: begin
         // Continuously check read access and bail out if this is not consistent.
-        if (mubi8_tst_lo_strict(part_access_i[part_idx].read_lock) ||
+        if (mubi8_test_false_strict(part_access_i[part_idx].read_lock) ||
             // HW digests always remain readable.
             PartInfo[part_idx].hw_digest && otp_addr_o == digest_addr_lut[part_idx]) begin
           if (otp_rvalid_i) begin
@@ -370,7 +370,7 @@ module otp_ctrl_dai
       // permanently write locked and can hence not be written via the DAI.
       WriteSt: begin
         dai_prog_idle_o = 1'b0;
-        if (mubi8_tst_lo_strict(part_access_i[part_idx].write_lock) &&
+        if (mubi8_test_false_strict(part_access_i[part_idx].write_lock) &&
             // If this is a HW digest write to a buffered partition.
             ((PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].hw_digest &&
               base_sel_q == PartOffset && otp_addr_o == digest_addr_lut[part_idx]) ||
@@ -399,7 +399,7 @@ module otp_ctrl_dai
       WriteWaitSt: begin
         dai_prog_idle_o = 1'b0;
         // Continuously check write access and bail out if this is not consistent.
-        if (mubi8_tst_lo_strict(part_access_i[part_idx].write_lock) &&
+        if (mubi8_test_false_strict(part_access_i[part_idx].write_lock) &&
             // If this is a HW digest write to a buffered partition.
             ((PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].hw_digest &&
               base_sel_q == PartOffset && otp_addr_o == digest_addr_lut[part_idx]) ||
@@ -441,7 +441,7 @@ module otp_ctrl_dai
       ScrSt: begin
         scrmbl_mtx_req_o = 1'b1;
         // Check write access and bail out if this is not consistent.
-        if (mubi8_tst_lo_strict(part_access_i[part_idx].write_lock) &&
+        if (mubi8_test_false_strict(part_access_i[part_idx].write_lock) &&
             // If this is a non HW digest write to a buffered partition.
             (PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].secret &&
              PartInfo[part_idx].hw_digest && base_sel_q == DaiOffset &&
@@ -465,7 +465,7 @@ module otp_ctrl_dai
       ScrWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
         // Continously check write access and bail out if this is not consistent.
-        if (mubi8_tst_lo_strict(part_access_i[part_idx].write_lock) &&
+        if (mubi8_test_false_strict(part_access_i[part_idx].write_lock) &&
             // If this is a non HW digest write to a buffered partition.
             (PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].secret &&
              PartInfo[part_idx].hw_digest && base_sel_q == DaiOffset &&
@@ -499,8 +499,8 @@ module otp_ctrl_dai
       // We also check here whether the partition has been write locked.
       DigReadSt: begin
         scrmbl_mtx_req_o = 1'b1;
-        if (mubi8_tst_lo_strict(part_access_i[part_idx].read_lock) &&
-            mubi8_tst_lo_strict(part_access_i[part_idx].write_lock)) begin
+        if (mubi8_test_false_strict(part_access_i[part_idx].read_lock) &&
+            mubi8_test_false_strict(part_access_i[part_idx].write_lock)) begin
           otp_req_o = 1'b1;
           otp_cmd_o = prim_otp_pkg::Read;
           if (otp_gnt_i) begin
