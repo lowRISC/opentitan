@@ -172,6 +172,24 @@ dif_result_t dif_gpio_irq_acknowledge(const dif_gpio_t *gpio,
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_gpio_irq_force(const dif_gpio_t *gpio, dif_gpio_irq_t irq) {
+  if (gpio == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!gpio_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  mmio_region_write32(gpio->base_addr, GPIO_INTR_TEST_REG_OFFSET,
+                      intr_test_reg);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_gpio_irq_get_enabled(const dif_gpio_t *gpio,
                                       dif_gpio_irq_t irq, dif_toggle_t *state) {
   if (gpio == NULL || state == NULL) {
@@ -211,24 +229,6 @@ dif_result_t dif_gpio_irq_set_enabled(const dif_gpio_t *gpio,
   intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
   mmio_region_write32(gpio->base_addr, GPIO_INTR_ENABLE_REG_OFFSET,
                       intr_enable_reg);
-
-  return kDifOk;
-}
-
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_gpio_irq_force(const dif_gpio_t *gpio, dif_gpio_irq_t irq) {
-  if (gpio == NULL) {
-    return kDifBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!gpio_get_irq_bit_index(irq, &index)) {
-    return kDifBadArg;
-  }
-
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(gpio->base_addr, GPIO_INTR_TEST_REG_OFFSET,
-                      intr_test_reg);
 
   return kDifOk;
 }

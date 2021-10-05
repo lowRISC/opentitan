@@ -58,15 +58,6 @@ typedef enum dif_edn_irq {
 typedef uint32_t dif_edn_irq_state_snapshot_t;
 
 /**
- * A snapshot of the enablement state of the interrupts for this IP.
- *
- * This is an opaque type, to be used with the
- * `dif_edn_irq_disable_all()` and `dif_edn_irq_restore_all()`
- * functions.
- */
-typedef uint32_t dif_edn_irq_enable_snapshot_t;
-
-/**
  * Returns whether a particular interrupt is currently pending.
  *
  * @param edn A edn handle.
@@ -101,6 +92,26 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_edn_irq_acknowledge(const dif_edn_t *edn, dif_edn_irq_t irq);
 
 /**
+ * Forces a particular interrupt, causing it to be serviced as if hardware had
+ * asserted it.
+ *
+ * @param edn A edn handle.
+ * @param irq An interrupt request.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_edn_irq_force(const dif_edn_t *edn, dif_edn_irq_t irq);
+
+/**
+ * A snapshot of the enablement state of the interrupts for this IP.
+ *
+ * This is an opaque type, to be used with the
+ * `dif_edn_irq_disable_all()` and `dif_edn_irq_restore_all()`
+ * functions.
+ */
+typedef uint32_t dif_edn_irq_enable_snapshot_t;
+
+/**
  * Checks whether a particular interrupt is currently enabled or disabled.
  *
  * @param edn A edn handle.
@@ -123,17 +134,6 @@ dif_result_t dif_edn_irq_get_enabled(const dif_edn_t *edn, dif_edn_irq_t irq,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_edn_irq_set_enabled(const dif_edn_t *edn, dif_edn_irq_t irq,
                                      dif_toggle_t state);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param edn A edn handle.
- * @param irq An interrupt request.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_edn_irq_force(const dif_edn_t *edn, dif_edn_irq_t irq);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

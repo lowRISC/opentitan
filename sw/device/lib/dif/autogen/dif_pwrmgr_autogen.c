@@ -80,6 +80,25 @@ dif_result_t dif_pwrmgr_irq_acknowledge(const dif_pwrmgr_t *pwrmgr,
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_irq_force(const dif_pwrmgr_t *pwrmgr,
+                                  dif_pwrmgr_irq_t irq) {
+  if (pwrmgr == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!pwrmgr_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  mmio_region_write32(pwrmgr->base_addr, PWRMGR_INTR_TEST_REG_OFFSET,
+                      intr_test_reg);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_irq_get_enabled(const dif_pwrmgr_t *pwrmgr,
                                         dif_pwrmgr_irq_t irq,
                                         dif_toggle_t *state) {
@@ -121,25 +140,6 @@ dif_result_t dif_pwrmgr_irq_set_enabled(const dif_pwrmgr_t *pwrmgr,
   intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
   mmio_region_write32(pwrmgr->base_addr, PWRMGR_INTR_ENABLE_REG_OFFSET,
                       intr_enable_reg);
-
-  return kDifOk;
-}
-
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_pwrmgr_irq_force(const dif_pwrmgr_t *pwrmgr,
-                                  dif_pwrmgr_irq_t irq) {
-  if (pwrmgr == NULL) {
-    return kDifBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!pwrmgr_get_irq_bit_index(irq, &index)) {
-    return kDifBadArg;
-  }
-
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(pwrmgr->base_addr, PWRMGR_INTR_TEST_REG_OFFSET,
-                      intr_test_reg);
 
   return kDifOk;
 }

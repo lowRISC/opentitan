@@ -79,15 +79,6 @@ typedef enum dif_spi_device_irq {
 typedef uint32_t dif_spi_device_irq_state_snapshot_t;
 
 /**
- * A snapshot of the enablement state of the interrupts for this IP.
- *
- * This is an opaque type, to be used with the
- * `dif_spi_device_irq_disable_all()` and `dif_spi_device_irq_restore_all()`
- * functions.
- */
-typedef uint32_t dif_spi_device_irq_enable_snapshot_t;
-
-/**
  * Returns whether a particular interrupt is currently pending.
  *
  * @param spi_device A spi_device handle.
@@ -125,6 +116,27 @@ dif_result_t dif_spi_device_irq_acknowledge(const dif_spi_device_t *spi_device,
                                             dif_spi_device_irq_t irq);
 
 /**
+ * Forces a particular interrupt, causing it to be serviced as if hardware had
+ * asserted it.
+ *
+ * @param spi_device A spi_device handle.
+ * @param irq An interrupt request.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_irq_force(const dif_spi_device_t *spi_device,
+                                      dif_spi_device_irq_t irq);
+
+/**
+ * A snapshot of the enablement state of the interrupts for this IP.
+ *
+ * This is an opaque type, to be used with the
+ * `dif_spi_device_irq_disable_all()` and `dif_spi_device_irq_restore_all()`
+ * functions.
+ */
+typedef uint32_t dif_spi_device_irq_enable_snapshot_t;
+
+/**
  * Checks whether a particular interrupt is currently enabled or disabled.
  *
  * @param spi_device A spi_device handle.
@@ -149,18 +161,6 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_set_enabled(const dif_spi_device_t *spi_device,
                                             dif_spi_device_irq_t irq,
                                             dif_toggle_t state);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param spi_device A spi_device handle.
- * @param irq An interrupt request.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_irq_force(const dif_spi_device_t *spi_device,
-                                      dif_spi_device_irq_t irq);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

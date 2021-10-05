@@ -120,6 +120,29 @@ TEST_F(IrqAcknowledgeTest, Success) {
   EXPECT_EQ(dif_kmac_irq_acknowledge(&kmac_, kDifKmacIrqKmacErr), kDifOk);
 }
 
+class IrqForceTest : public KmacTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_EQ(dif_kmac_irq_force(nullptr, kDifKmacIrqKmacDone), kDifBadArg);
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_EQ(dif_kmac_irq_force(nullptr, static_cast<dif_kmac_irq_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(KMAC_INTR_TEST_REG_OFFSET,
+                 {{KMAC_INTR_TEST_KMAC_DONE_BIT, true}});
+  EXPECT_EQ(dif_kmac_irq_force(&kmac_, kDifKmacIrqKmacDone), kDifOk);
+
+  // Force last IRQ.
+  EXPECT_WRITE32(KMAC_INTR_TEST_REG_OFFSET,
+                 {{KMAC_INTR_TEST_KMAC_ERR_BIT, true}});
+  EXPECT_EQ(dif_kmac_irq_force(&kmac_, kDifKmacIrqKmacErr), kDifOk);
+}
+
 class IrqGetEnabledTest : public KmacTest {};
 
 TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -196,29 +219,6 @@ TEST_F(IrqSetEnabledTest, Success) {
                 {{KMAC_INTR_ENABLE_KMAC_ERR_BIT, 0x1, false}});
   EXPECT_EQ(dif_kmac_irq_set_enabled(&kmac_, kDifKmacIrqKmacErr, irq_state),
             kDifOk);
-}
-
-class IrqForceTest : public KmacTest {};
-
-TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_kmac_irq_force(nullptr, kDifKmacIrqKmacDone), kDifBadArg);
-}
-
-TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_kmac_irq_force(nullptr, static_cast<dif_kmac_irq_t>(32)),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, Success) {
-  // Force first IRQ.
-  EXPECT_WRITE32(KMAC_INTR_TEST_REG_OFFSET,
-                 {{KMAC_INTR_TEST_KMAC_DONE_BIT, true}});
-  EXPECT_EQ(dif_kmac_irq_force(&kmac_, kDifKmacIrqKmacDone), kDifOk);
-
-  // Force last IRQ.
-  EXPECT_WRITE32(KMAC_INTR_TEST_REG_OFFSET,
-                 {{KMAC_INTR_TEST_KMAC_ERR_BIT, true}});
-  EXPECT_EQ(dif_kmac_irq_force(&kmac_, kDifKmacIrqKmacErr), kDifOk);
 }
 
 class IrqDisableAllTest : public KmacTest {};

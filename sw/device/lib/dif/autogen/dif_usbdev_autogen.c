@@ -128,6 +128,25 @@ dif_result_t dif_usbdev_irq_acknowledge(const dif_usbdev_t *usbdev,
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_irq_force(const dif_usbdev_t *usbdev,
+                                  dif_usbdev_irq_t irq) {
+  if (usbdev == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!usbdev_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  mmio_region_write32(usbdev->base_addr, USBDEV_INTR_TEST_REG_OFFSET,
+                      intr_test_reg);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_irq_get_enabled(const dif_usbdev_t *usbdev,
                                         dif_usbdev_irq_t irq,
                                         dif_toggle_t *state) {
@@ -169,25 +188,6 @@ dif_result_t dif_usbdev_irq_set_enabled(const dif_usbdev_t *usbdev,
   intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
   mmio_region_write32(usbdev->base_addr, USBDEV_INTR_ENABLE_REG_OFFSET,
                       intr_enable_reg);
-
-  return kDifOk;
-}
-
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_usbdev_irq_force(const dif_usbdev_t *usbdev,
-                                  dif_usbdev_irq_t irq) {
-  if (usbdev == NULL) {
-    return kDifBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!usbdev_get_irq_bit_index(irq, &index)) {
-    return kDifBadArg;
-  }
-
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(usbdev->base_addr, USBDEV_INTR_TEST_REG_OFFSET,
-                      intr_test_reg);
 
   return kDifOk;
 }

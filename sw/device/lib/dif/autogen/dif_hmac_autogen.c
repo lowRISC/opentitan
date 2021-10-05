@@ -85,6 +85,24 @@ dif_result_t dif_hmac_irq_acknowledge(const dif_hmac_t *hmac,
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_hmac_irq_force(const dif_hmac_t *hmac, dif_hmac_irq_t irq) {
+  if (hmac == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!hmac_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  mmio_region_write32(hmac->base_addr, HMAC_INTR_TEST_REG_OFFSET,
+                      intr_test_reg);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_irq_get_enabled(const dif_hmac_t *hmac,
                                       dif_hmac_irq_t irq, dif_toggle_t *state) {
   if (hmac == NULL || state == NULL) {
@@ -124,24 +142,6 @@ dif_result_t dif_hmac_irq_set_enabled(const dif_hmac_t *hmac,
   intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
   mmio_region_write32(hmac->base_addr, HMAC_INTR_ENABLE_REG_OFFSET,
                       intr_enable_reg);
-
-  return kDifOk;
-}
-
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_hmac_irq_force(const dif_hmac_t *hmac, dif_hmac_irq_t irq) {
-  if (hmac == NULL) {
-    return kDifBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!hmac_get_irq_bit_index(irq, &index)) {
-    return kDifBadArg;
-  }
-
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(hmac->base_addr, HMAC_INTR_TEST_REG_OFFSET,
-                      intr_test_reg);
 
   return kDifOk;
 }

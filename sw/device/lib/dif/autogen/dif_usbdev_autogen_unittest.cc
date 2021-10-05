@@ -129,6 +129,30 @@ TEST_F(IrqAcknowledgeTest, Success) {
             kDifOk);
 }
 
+class IrqForceTest : public UsbdevTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_EQ(dif_usbdev_irq_force(nullptr, kDifUsbdevIrqPktReceived),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_EQ(dif_usbdev_irq_force(nullptr, static_cast<dif_usbdev_irq_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(USBDEV_INTR_TEST_REG_OFFSET,
+                 {{USBDEV_INTR_TEST_PKT_RECEIVED_BIT, true}});
+  EXPECT_EQ(dif_usbdev_irq_force(&usbdev_, kDifUsbdevIrqPktReceived), kDifOk);
+
+  // Force last IRQ.
+  EXPECT_WRITE32(USBDEV_INTR_TEST_REG_OFFSET,
+                 {{USBDEV_INTR_TEST_LINK_OUT_ERR_BIT, true}});
+  EXPECT_EQ(dif_usbdev_irq_force(&usbdev_, kDifUsbdevIrqLinkOutErr), kDifOk);
+}
+
 class IrqGetEnabledTest : public UsbdevTest {};
 
 TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -213,30 +237,6 @@ TEST_F(IrqSetEnabledTest, Success) {
   EXPECT_EQ(
       dif_usbdev_irq_set_enabled(&usbdev_, kDifUsbdevIrqLinkOutErr, irq_state),
       kDifOk);
-}
-
-class IrqForceTest : public UsbdevTest {};
-
-TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_usbdev_irq_force(nullptr, kDifUsbdevIrqPktReceived),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_usbdev_irq_force(nullptr, static_cast<dif_usbdev_irq_t>(32)),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, Success) {
-  // Force first IRQ.
-  EXPECT_WRITE32(USBDEV_INTR_TEST_REG_OFFSET,
-                 {{USBDEV_INTR_TEST_PKT_RECEIVED_BIT, true}});
-  EXPECT_EQ(dif_usbdev_irq_force(&usbdev_, kDifUsbdevIrqPktReceived), kDifOk);
-
-  // Force last IRQ.
-  EXPECT_WRITE32(USBDEV_INTR_TEST_REG_OFFSET,
-                 {{USBDEV_INTR_TEST_LINK_OUT_ERR_BIT, true}});
-  EXPECT_EQ(dif_usbdev_irq_force(&usbdev_, kDifUsbdevIrqLinkOutErr), kDifOk);
 }
 
 class IrqDisableAllTest : public UsbdevTest {};

@@ -123,6 +123,23 @@ dif_result_t dif_i2c_irq_acknowledge(const dif_i2c_t *i2c, dif_i2c_irq_t irq) {
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_force(const dif_i2c_t *i2c, dif_i2c_irq_t irq) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!i2c_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  mmio_region_write32(i2c->base_addr, I2C_INTR_TEST_REG_OFFSET, intr_test_reg);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_irq_get_enabled(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
                                      dif_toggle_t *state) {
   if (i2c == NULL || state == NULL) {
@@ -162,23 +179,6 @@ dif_result_t dif_i2c_irq_set_enabled(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
   intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
   mmio_region_write32(i2c->base_addr, I2C_INTR_ENABLE_REG_OFFSET,
                       intr_enable_reg);
-
-  return kDifOk;
-}
-
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_irq_force(const dif_i2c_t *i2c, dif_i2c_irq_t irq) {
-  if (i2c == NULL) {
-    return kDifBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!i2c_get_irq_bit_index(irq, &index)) {
-    return kDifBadArg;
-  }
-
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(i2c->base_addr, I2C_INTR_TEST_REG_OFFSET, intr_test_reg);
 
   return kDifOk;
 }
