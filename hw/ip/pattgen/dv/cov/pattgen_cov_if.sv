@@ -81,28 +81,28 @@ interface pattgen_cov_if (
     wire ch1_cnt_match_reps = (reps_q1 == rep_cnt_q1);
     wire ch1_cnt_reset_reps = (rep_cnt_q1 == 0);
 
-  covergroup roll_cg @(posedge clk_i);
+  covergroup ch0_cnt_reset_cg @(posedge clk_i);
 
-    option.name         = "roll_cg";
+    option.name         = "ch0_cnt_reset_cg";
     option.comment      = "Counters reset after match";
 
     cp_reps_trans_ch0: coverpoint {ch0_cnt_match_reps, ch0_cnt_reset_reps, rep_cnt_en_ch0}{
-      bins trans2Zero_reps[] = (3'b100 => 3'b101 => 3'b010);
+      bins trans2Zero_reps = (3'b100 => 3'b101 => 3'b010);
       bins others = default;
     }
 
     cp_reps_reset_trans_ch0: coverpoint {ch0_cnt_match_reps, ch0_cnt_reset_reps}{
-      bins trans2Zero_reps[] = (2'b10 => 2'b01);
+      bins trans2Zero_reps = (2'b10 => 2'b01);
       bins others = default;
     }
 
     cp_len_reset_trans_ch0: coverpoint {ch0_cnt_match_len, ch0_cnt_len_reset}{
-      bins trans2Zero_len[] = (2'b10 => 2'b01);
+      bins trans2Zero_len = (2'b10 => 2'b01);
       bins others = default;
     }
 
     cp_prediv_reset_trans_ch0: coverpoint {ch0_cnt_match_prediv, ch0_cnt_reset}{
-      bins trans2Zero_prediv[] = (2'b10 => 2'b01);
+      bins trans2Zero_prediv = (2'b10 => 2'b01);
       bins others = default;
     }
 
@@ -124,32 +124,32 @@ interface pattgen_cov_if (
       bins one2zero = (1'b1 => 1'b0);
     }
 
-  endgroup : roll_cg
+  endgroup : ch0_cnt_reset_cg
 
- `DV_FCOV_INSTANTIATE_CG(roll_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(ch0_cnt_reset_cg, en_full_cov)
 
-  covergroup roll_cg_ch1 @(posedge clk_i);
+  covergroup ch1_cnt_reset_cg @(posedge clk_i);
 
-    option.name         = "roll_cg_ch1";
+    option.name         = "ch1_cnt_reset_cg";
     option.comment      = "Counters reset after match";
 
     cp_reps_trans_ch1: coverpoint {ch1_cnt_match_reps, ch1_cnt_reset_reps, rep_cnt_en_ch1}{
-      bins trans2Zero_reps[] = (3'b100 => 3'b101 => 3'b010);
+      bins trans2Zero_reps = (3'b100 => 3'b101 => 3'b010);
       bins others = default;
     }
 
     cp_reps_reset_trans_ch1: coverpoint {ch1_cnt_match_reps, ch1_cnt_reset_reps}{
-      bins trans2Zero_reps[] = (2'b10 => 2'b01);
+      bins trans2Zero_reps = (2'b10 => 2'b01);
       bins others = default;
     }
 
     cp_len_reset_trans_ch1: coverpoint {ch1_cnt_match_len, ch1_cnt_len_reset}{
-      bins trans2Zero_len[] = (2'b10 => 2'b01);
+      bins trans2Zero_len = (2'b10 => 2'b01);
       bins others = default;
     }
 
     cp_prediv_reset_trans_ch1: coverpoint {ch1_cnt_match_prediv, ch1_cnt_reset}{
-      bins trans2Zero_prediv[] = (2'b10 => 2'b01);
+      bins trans2Zero_prediv = (2'b10 => 2'b01);
       bins others = default;
     }
 
@@ -171,9 +171,9 @@ interface pattgen_cov_if (
       bins one2zero = (1'b1 => 1'b0);
     }
 
-  endgroup : roll_cg_ch1
+  endgroup : ch1_cnt_reset_cg
 
- `DV_FCOV_INSTANTIATE_CG(roll_cg_ch1, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(ch1_cnt_reset_cg, en_full_cov)
 
   covergroup intr_cg @(posedge clk_i);
 
