@@ -229,6 +229,63 @@ namespace {
   % endif
   }
 
+  class IrqForceTest : public ${ip.name_camel}Test {};
+
+  TEST_F(IrqForceTest, NullArgs) {
+    EXPECT_EQ(dif_${ip.name_snake}_irq_force(
+        nullptr, 
+      % if irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${irqs[0].name_camel}0),
+      % else:
+        kDif${ip.name_camel}Irq${irqs[0].name_camel}),
+      % endif
+      kDifBadArg);
+  }
+
+  TEST_F(IrqForceTest, BadIrq) {
+    EXPECT_EQ(dif_${ip.name_snake}_irq_force(
+        nullptr, 
+        static_cast<dif_${ip.name_snake}_irq_t>(32)),
+      kDifBadArg);
+  }
+
+  TEST_F(IrqForceTest, Success) {
+    // Force first IRQ.
+    EXPECT_WRITE32(${ip.name_upper}_INTR_TEST_REG_OFFSET,
+      % if irqs[0].width > 1:
+         {{0, true}});
+      % else:
+         {{${ip.name_upper}_INTR_TEST_${irqs[0].name_upper}_BIT, true}});
+      % endif
+    EXPECT_EQ(dif_${ip.name_snake}_irq_force(
+        &${ip.name_snake}_,
+      % if irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${irqs[0].name_camel}0),
+      % else:
+        kDif${ip.name_camel}Irq${irqs[0].name_camel}),
+      % endif
+      kDifOk);
+
+  % if len(irqs) > 1 or irqs[0].width > 1:
+    // Force last IRQ.
+    EXPECT_WRITE32(${ip.name_upper}_INTR_TEST_REG_OFFSET,
+      % if irqs[0].width > 1:
+        {{${irqs[0].width - 1}, true}});
+      % else:
+        {{${ip.name_upper}_INTR_TEST_${irqs[-1].name_upper}_BIT, true}});
+      % endif
+    EXPECT_EQ(dif_${ip.name_snake}_irq_force(
+        &${ip.name_snake}_,
+      % if irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${irqs[-1].name_camel}${irqs[0].width - 1}),
+      % else:
+        kDif${ip.name_camel}Irq${irqs[-1].name_camel}),
+      % endif
+      kDifOk);
+  % endif
+  }
+
+% if ip.name_snake != "aon_timer":
   class IrqGetEnabledTest : public ${ip.name_camel}Test {};
 
   TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -387,62 +444,6 @@ namespace {
   % endif
   }
 
-  class IrqForceTest : public ${ip.name_camel}Test {};
-
-  TEST_F(IrqForceTest, NullArgs) {
-    EXPECT_EQ(dif_${ip.name_snake}_irq_force(
-        nullptr, 
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0),
-      % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}),
-      % endif
-      kDifBadArg);
-  }
-
-  TEST_F(IrqForceTest, BadIrq) {
-    EXPECT_EQ(dif_${ip.name_snake}_irq_force(
-        nullptr, 
-        static_cast<dif_${ip.name_snake}_irq_t>(32)),
-      kDifBadArg);
-  }
-
-  TEST_F(IrqForceTest, Success) {
-    // Force first IRQ.
-    EXPECT_WRITE32(${ip.name_upper}_INTR_TEST_REG_OFFSET,
-      % if irqs[0].width > 1:
-         {{0, true}});
-      % else:
-         {{${ip.name_upper}_INTR_TEST_${irqs[0].name_upper}_BIT, true}});
-      % endif
-    EXPECT_EQ(dif_${ip.name_snake}_irq_force(
-        &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0),
-      % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}),
-      % endif
-      kDifOk);
-
-  % if len(irqs) > 1 or irqs[0].width > 1:
-    // Force last IRQ.
-    EXPECT_WRITE32(${ip.name_upper}_INTR_TEST_REG_OFFSET,
-      % if irqs[0].width > 1:
-        {{${irqs[0].width - 1}, true}});
-      % else:
-        {{${ip.name_upper}_INTR_TEST_${irqs[-1].name_upper}_BIT, true}});
-      % endif
-    EXPECT_EQ(dif_${ip.name_snake}_irq_force(
-        &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[-1].name_camel}${irqs[0].width - 1}),
-      % else:
-        kDif${ip.name_camel}Irq${irqs[-1].name_camel}),
-      % endif
-      kDifOk);
-  % endif
-  }
-
   class IrqDisableAllTest : public ${ip.name_camel}Test {};
 
   TEST_F(IrqDisableAllTest, NullArgs) {
@@ -534,6 +535,7 @@ namespace {
         &irq_snapshot),
       kDifOk);
   }
+% endif
 
 % endif
 

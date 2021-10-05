@@ -111,6 +111,24 @@ TEST_F(IrqAcknowledgeTest, Success) {
   EXPECT_EQ(dif_keymgr_irq_acknowledge(&keymgr_, kDifKeymgrIrqOpDone), kDifOk);
 }
 
+class IrqForceTest : public KeymgrTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_EQ(dif_keymgr_irq_force(nullptr, kDifKeymgrIrqOpDone), kDifBadArg);
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_EQ(dif_keymgr_irq_force(nullptr, static_cast<dif_keymgr_irq_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(KEYMGR_INTR_TEST_REG_OFFSET,
+                 {{KEYMGR_INTR_TEST_OP_DONE_BIT, true}});
+  EXPECT_EQ(dif_keymgr_irq_force(&keymgr_, kDifKeymgrIrqOpDone), kDifOk);
+}
+
 class IrqGetEnabledTest : public KeymgrTest {};
 
 TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -175,24 +193,6 @@ TEST_F(IrqSetEnabledTest, Success) {
   EXPECT_EQ(
       dif_keymgr_irq_set_enabled(&keymgr_, kDifKeymgrIrqOpDone, irq_state),
       kDifOk);
-}
-
-class IrqForceTest : public KeymgrTest {};
-
-TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_keymgr_irq_force(nullptr, kDifKeymgrIrqOpDone), kDifBadArg);
-}
-
-TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_keymgr_irq_force(nullptr, static_cast<dif_keymgr_irq_t>(32)),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, Success) {
-  // Force first IRQ.
-  EXPECT_WRITE32(KEYMGR_INTR_TEST_REG_OFFSET,
-                 {{KEYMGR_INTR_TEST_OP_DONE_BIT, true}});
-  EXPECT_EQ(dif_keymgr_irq_force(&keymgr_, kDifKeymgrIrqOpDone), kDifOk);
 }
 
 class IrqDisableAllTest : public KeymgrTest {};

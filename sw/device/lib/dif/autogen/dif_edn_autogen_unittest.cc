@@ -122,6 +122,29 @@ TEST_F(IrqAcknowledgeTest, Success) {
   EXPECT_EQ(dif_edn_irq_acknowledge(&edn_, kDifEdnIrqEdnFatalErr), kDifOk);
 }
 
+class IrqForceTest : public EdnTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_EQ(dif_edn_irq_force(nullptr, kDifEdnIrqEdnCmdReqDone), kDifBadArg);
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_EQ(dif_edn_irq_force(nullptr, static_cast<dif_edn_irq_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(EDN_INTR_TEST_REG_OFFSET,
+                 {{EDN_INTR_TEST_EDN_CMD_REQ_DONE_BIT, true}});
+  EXPECT_EQ(dif_edn_irq_force(&edn_, kDifEdnIrqEdnCmdReqDone), kDifOk);
+
+  // Force last IRQ.
+  EXPECT_WRITE32(EDN_INTR_TEST_REG_OFFSET,
+                 {{EDN_INTR_TEST_EDN_FATAL_ERR_BIT, true}});
+  EXPECT_EQ(dif_edn_irq_force(&edn_, kDifEdnIrqEdnFatalErr), kDifOk);
+}
+
 class IrqGetEnabledTest : public EdnTest {};
 
 TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -200,29 +223,6 @@ TEST_F(IrqSetEnabledTest, Success) {
                 {{EDN_INTR_ENABLE_EDN_FATAL_ERR_BIT, 0x1, false}});
   EXPECT_EQ(dif_edn_irq_set_enabled(&edn_, kDifEdnIrqEdnFatalErr, irq_state),
             kDifOk);
-}
-
-class IrqForceTest : public EdnTest {};
-
-TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_edn_irq_force(nullptr, kDifEdnIrqEdnCmdReqDone), kDifBadArg);
-}
-
-TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_edn_irq_force(nullptr, static_cast<dif_edn_irq_t>(32)),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, Success) {
-  // Force first IRQ.
-  EXPECT_WRITE32(EDN_INTR_TEST_REG_OFFSET,
-                 {{EDN_INTR_TEST_EDN_CMD_REQ_DONE_BIT, true}});
-  EXPECT_EQ(dif_edn_irq_force(&edn_, kDifEdnIrqEdnCmdReqDone), kDifOk);
-
-  // Force last IRQ.
-  EXPECT_WRITE32(EDN_INTR_TEST_REG_OFFSET,
-                 {{EDN_INTR_TEST_EDN_FATAL_ERR_BIT, true}});
-  EXPECT_EQ(dif_edn_irq_force(&edn_, kDifEdnIrqEdnFatalErr), kDifOk);
 }
 
 class IrqDisableAllTest : public EdnTest {};

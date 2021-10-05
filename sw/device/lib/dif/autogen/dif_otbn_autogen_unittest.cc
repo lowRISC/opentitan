@@ -106,6 +106,23 @@ TEST_F(IrqAcknowledgeTest, Success) {
   EXPECT_EQ(dif_otbn_irq_acknowledge(&otbn_, kDifOtbnIrqDone), kDifOk);
 }
 
+class IrqForceTest : public OtbnTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_EQ(dif_otbn_irq_force(nullptr, kDifOtbnIrqDone), kDifBadArg);
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_EQ(dif_otbn_irq_force(nullptr, static_cast<dif_otbn_irq_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(OTBN_INTR_TEST_REG_OFFSET, {{OTBN_INTR_TEST_DONE_BIT, true}});
+  EXPECT_EQ(dif_otbn_irq_force(&otbn_, kDifOtbnIrqDone), kDifOk);
+}
+
 class IrqGetEnabledTest : public OtbnTest {};
 
 TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -167,23 +184,6 @@ TEST_F(IrqSetEnabledTest, Success) {
                 {{OTBN_INTR_ENABLE_DONE_BIT, 0x1, true}});
   EXPECT_EQ(dif_otbn_irq_set_enabled(&otbn_, kDifOtbnIrqDone, irq_state),
             kDifOk);
-}
-
-class IrqForceTest : public OtbnTest {};
-
-TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_otbn_irq_force(nullptr, kDifOtbnIrqDone), kDifBadArg);
-}
-
-TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_otbn_irq_force(nullptr, static_cast<dif_otbn_irq_t>(32)),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, Success) {
-  // Force first IRQ.
-  EXPECT_WRITE32(OTBN_INTR_TEST_REG_OFFSET, {{OTBN_INTR_TEST_DONE_BIT, true}});
-  EXPECT_EQ(dif_otbn_irq_force(&otbn_, kDifOtbnIrqDone), kDifOk);
 }
 
 class IrqDisableAllTest : public OtbnTest {};

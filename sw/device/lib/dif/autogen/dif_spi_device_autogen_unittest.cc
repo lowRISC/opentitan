@@ -132,6 +132,34 @@ TEST_F(IrqAcknowledgeTest, Success) {
             kDifOk);
 }
 
+class IrqForceTest : public SpiDeviceTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_EQ(dif_spi_device_irq_force(nullptr, kDifSpiDeviceIrqRxFull),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_EQ(
+      dif_spi_device_irq_force(nullptr, static_cast<dif_spi_device_irq_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
+                 {{SPI_DEVICE_INTR_TEST_RX_FULL_BIT, true}});
+  EXPECT_EQ(dif_spi_device_irq_force(&spi_device_, kDifSpiDeviceIrqRxFull),
+            kDifOk);
+
+  // Force last IRQ.
+  EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
+                 {{SPI_DEVICE_INTR_TEST_TPM_HEADER_NOT_EMPTY_BIT, true}});
+  EXPECT_EQ(
+      dif_spi_device_irq_force(&spi_device_, kDifSpiDeviceIrqTpmHeaderNotEmpty),
+      kDifOk);
+}
+
 class IrqGetEnabledTest : public SpiDeviceTest {};
 
 TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -218,34 +246,6 @@ TEST_F(IrqSetEnabledTest, Success) {
   EXPECT_EQ(dif_spi_device_irq_set_enabled(
                 &spi_device_, kDifSpiDeviceIrqTpmHeaderNotEmpty, irq_state),
             kDifOk);
-}
-
-class IrqForceTest : public SpiDeviceTest {};
-
-TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_spi_device_irq_force(nullptr, kDifSpiDeviceIrqRxFull),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(
-      dif_spi_device_irq_force(nullptr, static_cast<dif_spi_device_irq_t>(32)),
-      kDifBadArg);
-}
-
-TEST_F(IrqForceTest, Success) {
-  // Force first IRQ.
-  EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
-                 {{SPI_DEVICE_INTR_TEST_RX_FULL_BIT, true}});
-  EXPECT_EQ(dif_spi_device_irq_force(&spi_device_, kDifSpiDeviceIrqRxFull),
-            kDifOk);
-
-  // Force last IRQ.
-  EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
-                 {{SPI_DEVICE_INTR_TEST_TPM_HEADER_NOT_EMPTY_BIT, true}});
-  EXPECT_EQ(
-      dif_spi_device_irq_force(&spi_device_, kDifSpiDeviceIrqTpmHeaderNotEmpty),
-      kDifOk);
 }
 
 class IrqDisableAllTest : public SpiDeviceTest {};

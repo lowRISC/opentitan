@@ -122,6 +122,29 @@ TEST_F(IrqAcknowledgeTest, Success) {
   EXPECT_EQ(dif_uart_irq_acknowledge(&uart_, kDifUartIrqRxParityErr), kDifOk);
 }
 
+class IrqForceTest : public UartTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_EQ(dif_uart_irq_force(nullptr, kDifUartIrqTxWatermark), kDifBadArg);
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_EQ(dif_uart_irq_force(nullptr, static_cast<dif_uart_irq_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(UART_INTR_TEST_REG_OFFSET,
+                 {{UART_INTR_TEST_TX_WATERMARK_BIT, true}});
+  EXPECT_EQ(dif_uart_irq_force(&uart_, kDifUartIrqTxWatermark), kDifOk);
+
+  // Force last IRQ.
+  EXPECT_WRITE32(UART_INTR_TEST_REG_OFFSET,
+                 {{UART_INTR_TEST_RX_PARITY_ERR_BIT, true}});
+  EXPECT_EQ(dif_uart_irq_force(&uart_, kDifUartIrqRxParityErr), kDifOk);
+}
+
 class IrqGetEnabledTest : public UartTest {};
 
 TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -202,29 +225,6 @@ TEST_F(IrqSetEnabledTest, Success) {
                 {{UART_INTR_ENABLE_RX_PARITY_ERR_BIT, 0x1, false}});
   EXPECT_EQ(dif_uart_irq_set_enabled(&uart_, kDifUartIrqRxParityErr, irq_state),
             kDifOk);
-}
-
-class IrqForceTest : public UartTest {};
-
-TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_uart_irq_force(nullptr, kDifUartIrqTxWatermark), kDifBadArg);
-}
-
-TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_uart_irq_force(nullptr, static_cast<dif_uart_irq_t>(32)),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, Success) {
-  // Force first IRQ.
-  EXPECT_WRITE32(UART_INTR_TEST_REG_OFFSET,
-                 {{UART_INTR_TEST_TX_WATERMARK_BIT, true}});
-  EXPECT_EQ(dif_uart_irq_force(&uart_, kDifUartIrqTxWatermark), kDifOk);
-
-  // Force last IRQ.
-  EXPECT_WRITE32(UART_INTR_TEST_REG_OFFSET,
-                 {{UART_INTR_TEST_RX_PARITY_ERR_BIT, true}});
-  EXPECT_EQ(dif_uart_irq_force(&uart_, kDifUartIrqRxParityErr), kDifOk);
 }
 
 class IrqDisableAllTest : public UartTest {};

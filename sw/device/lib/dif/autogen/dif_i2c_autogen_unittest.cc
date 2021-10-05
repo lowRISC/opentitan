@@ -122,6 +122,29 @@ TEST_F(IrqAcknowledgeTest, Success) {
   EXPECT_EQ(dif_i2c_irq_acknowledge(&i2c_, kDifI2cIrqHostTimeout), kDifOk);
 }
 
+class IrqForceTest : public I2cTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_EQ(dif_i2c_irq_force(nullptr, kDifI2cIrqFmtWatermark), kDifBadArg);
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_EQ(dif_i2c_irq_force(nullptr, static_cast<dif_i2c_irq_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(I2C_INTR_TEST_REG_OFFSET,
+                 {{I2C_INTR_TEST_FMT_WATERMARK_BIT, true}});
+  EXPECT_EQ(dif_i2c_irq_force(&i2c_, kDifI2cIrqFmtWatermark), kDifOk);
+
+  // Force last IRQ.
+  EXPECT_WRITE32(I2C_INTR_TEST_REG_OFFSET,
+                 {{I2C_INTR_TEST_HOST_TIMEOUT_BIT, true}});
+  EXPECT_EQ(dif_i2c_irq_force(&i2c_, kDifI2cIrqHostTimeout), kDifOk);
+}
+
 class IrqGetEnabledTest : public I2cTest {};
 
 TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -199,29 +222,6 @@ TEST_F(IrqSetEnabledTest, Success) {
                 {{I2C_INTR_ENABLE_HOST_TIMEOUT_BIT, 0x1, false}});
   EXPECT_EQ(dif_i2c_irq_set_enabled(&i2c_, kDifI2cIrqHostTimeout, irq_state),
             kDifOk);
-}
-
-class IrqForceTest : public I2cTest {};
-
-TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_i2c_irq_force(nullptr, kDifI2cIrqFmtWatermark), kDifBadArg);
-}
-
-TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_i2c_irq_force(nullptr, static_cast<dif_i2c_irq_t>(32)),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, Success) {
-  // Force first IRQ.
-  EXPECT_WRITE32(I2C_INTR_TEST_REG_OFFSET,
-                 {{I2C_INTR_TEST_FMT_WATERMARK_BIT, true}});
-  EXPECT_EQ(dif_i2c_irq_force(&i2c_, kDifI2cIrqFmtWatermark), kDifOk);
-
-  // Force last IRQ.
-  EXPECT_WRITE32(I2C_INTR_TEST_REG_OFFSET,
-                 {{I2C_INTR_TEST_HOST_TIMEOUT_BIT, true}});
-  EXPECT_EQ(dif_i2c_irq_force(&i2c_, kDifI2cIrqHostTimeout), kDifOk);
 }
 
 class IrqDisableAllTest : public I2cTest {};

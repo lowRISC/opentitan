@@ -100,6 +100,25 @@ dif_result_t dif_spi_device_irq_acknowledge(const dif_spi_device_t *spi_device,
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_irq_force(const dif_spi_device_t *spi_device,
+                                      dif_spi_device_irq_t irq) {
+  if (spi_device == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t index;
+  if (!spi_device_get_irq_bit_index(irq, &index)) {
+    return kDifBadArg;
+  }
+
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  mmio_region_write32(spi_device->base_addr, SPI_DEVICE_INTR_TEST_REG_OFFSET,
+                      intr_test_reg);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_get_enabled(const dif_spi_device_t *spi_device,
                                             dif_spi_device_irq_t irq,
                                             dif_toggle_t *state) {
@@ -141,25 +160,6 @@ dif_result_t dif_spi_device_irq_set_enabled(const dif_spi_device_t *spi_device,
   intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
   mmio_region_write32(spi_device->base_addr, SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
                       intr_enable_reg);
-
-  return kDifOk;
-}
-
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_irq_force(const dif_spi_device_t *spi_device,
-                                      dif_spi_device_irq_t irq) {
-  if (spi_device == NULL) {
-    return kDifBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!spi_device_get_irq_bit_index(irq, &index)) {
-    return kDifBadArg;
-  }
-
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(spi_device->base_addr, SPI_DEVICE_INTR_TEST_REG_OFFSET,
-                      intr_test_reg);
 
   return kDifOk;
 }

@@ -68,15 +68,6 @@ typedef enum dif_entropy_src_irq {
 typedef uint32_t dif_entropy_src_irq_state_snapshot_t;
 
 /**
- * A snapshot of the enablement state of the interrupts for this IP.
- *
- * This is an opaque type, to be used with the
- * `dif_entropy_src_irq_disable_all()` and `dif_entropy_src_irq_restore_all()`
- * functions.
- */
-typedef uint32_t dif_entropy_src_irq_enable_snapshot_t;
-
-/**
  * Returns whether a particular interrupt is currently pending.
  *
  * @param entropy_src A entropy_src handle.
@@ -114,6 +105,27 @@ dif_result_t dif_entropy_src_irq_acknowledge(
     const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t irq);
 
 /**
+ * Forces a particular interrupt, causing it to be serviced as if hardware had
+ * asserted it.
+ *
+ * @param entropy_src A entropy_src handle.
+ * @param irq An interrupt request.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_irq_force(const dif_entropy_src_t *entropy_src,
+                                       dif_entropy_src_irq_t irq);
+
+/**
+ * A snapshot of the enablement state of the interrupts for this IP.
+ *
+ * This is an opaque type, to be used with the
+ * `dif_entropy_src_irq_disable_all()` and `dif_entropy_src_irq_restore_all()`
+ * functions.
+ */
+typedef uint32_t dif_entropy_src_irq_enable_snapshot_t;
+
+/**
  * Checks whether a particular interrupt is currently enabled or disabled.
  *
  * @param entropy_src A entropy_src handle.
@@ -138,18 +150,6 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_set_enabled(
     const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t irq,
     dif_toggle_t state);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param entropy_src A entropy_src handle.
- * @param irq An interrupt request.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_irq_force(const dif_entropy_src_t *entropy_src,
-                                       dif_entropy_src_irq_t irq);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

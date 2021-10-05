@@ -131,6 +131,32 @@ TEST_F(IrqAcknowledgeTest, Success) {
             kDifOk);
 }
 
+class IrqForceTest : public OtpCtrlTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_EQ(dif_otp_ctrl_irq_force(nullptr, kDifOtpCtrlIrqOtpOperationDone),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_EQ(
+      dif_otp_ctrl_irq_force(nullptr, static_cast<dif_otp_ctrl_irq_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(OTP_CTRL_INTR_TEST_REG_OFFSET,
+                 {{OTP_CTRL_INTR_TEST_OTP_OPERATION_DONE_BIT, true}});
+  EXPECT_EQ(dif_otp_ctrl_irq_force(&otp_ctrl_, kDifOtpCtrlIrqOtpOperationDone),
+            kDifOk);
+
+  // Force last IRQ.
+  EXPECT_WRITE32(OTP_CTRL_INTR_TEST_REG_OFFSET,
+                 {{OTP_CTRL_INTR_TEST_OTP_ERROR_BIT, true}});
+  EXPECT_EQ(dif_otp_ctrl_irq_force(&otp_ctrl_, kDifOtpCtrlIrqOtpError), kDifOk);
+}
+
 class IrqGetEnabledTest : public OtpCtrlTest {};
 
 TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -215,32 +241,6 @@ TEST_F(IrqSetEnabledTest, Success) {
   EXPECT_EQ(dif_otp_ctrl_irq_set_enabled(&otp_ctrl_, kDifOtpCtrlIrqOtpError,
                                          irq_state),
             kDifOk);
-}
-
-class IrqForceTest : public OtpCtrlTest {};
-
-TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_otp_ctrl_irq_force(nullptr, kDifOtpCtrlIrqOtpOperationDone),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(
-      dif_otp_ctrl_irq_force(nullptr, static_cast<dif_otp_ctrl_irq_t>(32)),
-      kDifBadArg);
-}
-
-TEST_F(IrqForceTest, Success) {
-  // Force first IRQ.
-  EXPECT_WRITE32(OTP_CTRL_INTR_TEST_REG_OFFSET,
-                 {{OTP_CTRL_INTR_TEST_OTP_OPERATION_DONE_BIT, true}});
-  EXPECT_EQ(dif_otp_ctrl_irq_force(&otp_ctrl_, kDifOtpCtrlIrqOtpOperationDone),
-            kDifOk);
-
-  // Force last IRQ.
-  EXPECT_WRITE32(OTP_CTRL_INTR_TEST_REG_OFFSET,
-                 {{OTP_CTRL_INTR_TEST_OTP_ERROR_BIT, true}});
-  EXPECT_EQ(dif_otp_ctrl_irq_force(&otp_ctrl_, kDifOtpCtrlIrqOtpError), kDifOk);
 }
 
 class IrqDisableAllTest : public OtpCtrlTest {};

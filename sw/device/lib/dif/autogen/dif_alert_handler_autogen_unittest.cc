@@ -137,6 +137,35 @@ TEST_F(IrqAcknowledgeTest, Success) {
             kDifOk);
 }
 
+class IrqForceTest : public AlertHandlerTest {};
+
+TEST_F(IrqForceTest, NullArgs) {
+  EXPECT_EQ(dif_alert_handler_irq_force(nullptr, kDifAlertHandlerIrqClassa),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, BadIrq) {
+  EXPECT_EQ(dif_alert_handler_irq_force(
+                nullptr, static_cast<dif_alert_handler_irq_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(IrqForceTest, Success) {
+  // Force first IRQ.
+  EXPECT_WRITE32(ALERT_HANDLER_INTR_TEST_REG_OFFSET,
+                 {{ALERT_HANDLER_INTR_TEST_CLASSA_BIT, true}});
+  EXPECT_EQ(
+      dif_alert_handler_irq_force(&alert_handler_, kDifAlertHandlerIrqClassa),
+      kDifOk);
+
+  // Force last IRQ.
+  EXPECT_WRITE32(ALERT_HANDLER_INTR_TEST_REG_OFFSET,
+                 {{ALERT_HANDLER_INTR_TEST_CLASSD_BIT, true}});
+  EXPECT_EQ(
+      dif_alert_handler_irq_force(&alert_handler_, kDifAlertHandlerIrqClassd),
+      kDifOk);
+}
+
 class IrqGetEnabledTest : public AlertHandlerTest {};
 
 TEST_F(IrqGetEnabledTest, NullArgs) {
@@ -223,35 +252,6 @@ TEST_F(IrqSetEnabledTest, Success) {
   EXPECT_EQ(dif_alert_handler_irq_set_enabled(
                 &alert_handler_, kDifAlertHandlerIrqClassd, irq_state),
             kDifOk);
-}
-
-class IrqForceTest : public AlertHandlerTest {};
-
-TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_EQ(dif_alert_handler_irq_force(nullptr, kDifAlertHandlerIrqClassa),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_alert_handler_irq_force(
-                nullptr, static_cast<dif_alert_handler_irq_t>(32)),
-            kDifBadArg);
-}
-
-TEST_F(IrqForceTest, Success) {
-  // Force first IRQ.
-  EXPECT_WRITE32(ALERT_HANDLER_INTR_TEST_REG_OFFSET,
-                 {{ALERT_HANDLER_INTR_TEST_CLASSA_BIT, true}});
-  EXPECT_EQ(
-      dif_alert_handler_irq_force(&alert_handler_, kDifAlertHandlerIrqClassa),
-      kDifOk);
-
-  // Force last IRQ.
-  EXPECT_WRITE32(ALERT_HANDLER_INTR_TEST_REG_OFFSET,
-                 {{ALERT_HANDLER_INTR_TEST_CLASSD_BIT, true}});
-  EXPECT_EQ(
-      dif_alert_handler_irq_force(&alert_handler_, kDifAlertHandlerIrqClassd),
-      kDifOk);
 }
 
 class IrqDisableAllTest : public AlertHandlerTest {};

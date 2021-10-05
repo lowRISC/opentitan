@@ -122,6 +122,27 @@
   }
 
   OT_WARN_UNUSED_RESULT
+  dif_result_t dif_${ip.name_snake}_irq_force(
+    const dif_${ip.name_snake}_t *${ip.name_snake},
+    dif_${ip.name_snake}_irq_t irq) {
+
+    if (${ip.name_snake} == NULL) {
+      return kDifBadArg;
+    }
+
+    bitfield_bit32_index_t index;
+    if (!${ip.name_snake}_get_irq_bit_index(irq, &index)) {
+      return kDifBadArg;
+    }
+
+    uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+    ${mmio_region_write32("TEST", "intr_test_reg")}
+
+    return kDifOk;
+  }
+
+% if ip.name_snake != "aon_timer":
+  OT_WARN_UNUSED_RESULT
   dif_result_t dif_${ip.name_snake}_irq_get_enabled(
     const dif_${ip.name_snake}_t *${ip.name_snake},
     dif_${ip.name_snake}_irq_t irq,
@@ -168,26 +189,6 @@
   }
 
   OT_WARN_UNUSED_RESULT
-  dif_result_t dif_${ip.name_snake}_irq_force(
-    const dif_${ip.name_snake}_t *${ip.name_snake},
-    dif_${ip.name_snake}_irq_t irq) {
-
-    if (${ip.name_snake} == NULL) {
-      return kDifBadArg;
-    }
-
-    bitfield_bit32_index_t index;
-    if (!${ip.name_snake}_get_irq_bit_index(irq, &index)) {
-      return kDifBadArg;
-    }
-
-    uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
-    ${mmio_region_write32("TEST", "intr_test_reg")}
-
-    return kDifOk;
-  }
-
-  OT_WARN_UNUSED_RESULT
   dif_result_t dif_${ip.name_snake}_irq_disable_all(
     const dif_${ip.name_snake}_t *${ip.name_snake},
     dif_${ip.name_snake}_irq_enable_snapshot_t *snapshot) {
@@ -220,5 +221,6 @@
 
     return kDifOk;
   }
+% endif
 
 % endif
