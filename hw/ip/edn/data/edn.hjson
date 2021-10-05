@@ -264,7 +264,7 @@
           desc: '''
                 This bit is set when the EDN_ENABLE field is set to an illegal value,
                 something other than 0x5 or 0xA.
-                Writing a zero to this register resets the status bits.
+                Writing a zero resets this status bit.
                 '''
         }
         { bits: "1",
@@ -272,7 +272,7 @@
           desc: '''
                 This bit is set when the BOOT_REQ_MODE field is set to an illegal value,
                 something other than 0x5 or 0xA.
-                Writing a zero to this register resets the status bits.
+                Writing a zero resets this status bit.
                 '''
         }
         { bits: "2",
@@ -280,7 +280,7 @@
           desc: '''
                 This bit is set when the AUTO_REQ_MODE field is set to an illegal value,
                 something other than 0x5 or 0xA.
-                Writing a zero to this register resets the status bits.
+                Writing a zero resets this status bit.
                 '''
         }
         { bits: "3",
@@ -288,7 +288,7 @@
           desc: '''
                 This bit is set when the CMD_FIFO_RST field is set to an illegal value,
                 something other than 0x5 or 0xA.
-                Writing a zero to this register resets the status bits.
+                Writing a zero resets this status bit.
                 '''
         }
         { bits: "12",
@@ -296,7 +296,7 @@
           desc: '''
                 This bit is set when the interal entropy bus value is equal to the prior
                 valid value on the bus, indicating a possible attack.
-                Writing a zero to this register resets the status bits.
+                Writing a zero resets this status bit.
                 '''
         }
       ]
