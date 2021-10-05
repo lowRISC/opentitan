@@ -1,0 +1,114 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_AON_TIMER_AUTOGEN_H_
+#define OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_AON_TIMER_AUTOGEN_H_
+
+// This file is auto-generated.
+
+/**
+ * @file
+ * @brief <a href="/hw/ip/aon_timer/doc/">AON_TIMER</a> Device Interface
+ * Functions
+ */
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
+/**
+ * A handle to aon_timer.
+ *
+ * This type should be treated as opaque by users.
+ */
+typedef struct dif_aon_timer {
+  /**
+   * The base address for the aon_timer hardware registers.
+   */
+  mmio_region_t base_addr;
+} dif_aon_timer_t;
+
+/**
+ * A aon_timer interrupt request type.
+ */
+typedef enum dif_aon_timer_irq {
+  /**
+   * Raised if the wakeup timer has hit the specified threshold
+   */
+  kDifAonTimerIrqWkupTimerExpired = 0,
+  /**
+   * Raised if the watchdog timer has hit the bark threshold
+   */
+  kDifAonTimerIrqWdogTimerBark = 1,
+} dif_aon_timer_irq_t;
+
+/**
+ * A snapshot of the state of the interrupts for this IP.
+ *
+ * This is an opaque type, to be used with the `dif_aon_timer_irq_get_state()`
+ * function.
+ */
+typedef uint32_t dif_aon_timer_irq_state_snapshot_t;
+
+/**
+ * Returns whether a particular interrupt is currently pending.
+ *
+ * @param aon_timer A aon_timer handle.
+ * @param[out] snapshot Out-param for interrupt state snapshot.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_irq_get_state(
+    const dif_aon_timer_t *aon_timer,
+    dif_aon_timer_irq_state_snapshot_t *snapshot);
+
+/**
+ * Returns whether a particular interrupt is currently pending.
+ *
+ * @param aon_timer A aon_timer handle.
+ * @param irq An interrupt request.
+ * @param[out] is_pending Out-param for whether the interrupt is pending.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_irq_is_pending(const dif_aon_timer_t *aon_timer,
+                                          dif_aon_timer_irq_t irq,
+                                          bool *is_pending);
+
+/**
+ * Acknowledges a particular interrupt, indicating to the hardware that it has
+ * been successfully serviced.
+ *
+ * @param aon_timer A aon_timer handle.
+ * @param irq An interrupt request.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_irq_acknowledge(const dif_aon_timer_t *aon_timer,
+                                           dif_aon_timer_irq_t irq);
+
+/**
+ * Forces a particular interrupt, causing it to be serviced as if hardware had
+ * asserted it.
+ *
+ * @param aon_timer A aon_timer handle.
+ * @param irq An interrupt request.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_irq_force(const dif_aon_timer_t *aon_timer,
+                                     dif_aon_timer_irq_t irq);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_AON_TIMER_AUTOGEN_H_
