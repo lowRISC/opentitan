@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
 {
   name: "pattgen"
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
@@ -145,7 +146,7 @@
     {
       name: roll_cg
       desc: '''
-            Covers that all counters revert to zero when they reach
+            Covers that all the counters revert to zero when they reach
             the maximum value.
             Individual initial and maximum counter values
             that will be covered include:
