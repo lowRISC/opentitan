@@ -1,0 +1,28 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  testpoints: [
+    {
+      name: prim_fsm_check
+      desc: ''' Verify that entering to an undefined state generates a fatal alert.
+
+            Stimulus:
+            - Backdoor force the FSM to any of the undefined values.
+            - Randomly force the FSM back to a defined state to ensure the error is latched and
+              won't go away until reset.
+            - Within the next few cycles, the FSM landing in an invalid state should trigger a
+              fatal alert.
+            - Repeat for ALL prim_fsm instances in the DUT.
+
+            Checks:
+            - Check that fatal alert is triggered.
+            - Check that err_code/fault_status is updated correctly and preserved until reset.
+            - Verify any operations that follow fail (as applicable).
+            '''
+      milestone: V2S
+      tests: ["{name}_sec_cm"]
+    }
+  ]
+}
+
