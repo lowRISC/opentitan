@@ -42,6 +42,34 @@ sw_lib_testing_entropy_testutils = declare_dependency(
   ),
 )
 
+# pwrmgr test utilities.
+sw_lib_testing_pwrmgr_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_pwrmgr_testutils',
+    sources: [
+      'pwrmgr_testutils.c'
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_pwrmgr,
+    ],
+  ),
+)
+
+# rstmgr test utilities.
+sw_lib_testing_rstmgr_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_rstmgr_testutils',
+    sources: [
+      'rstmgr_testutils.c'
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_rstmgr,
+    ],
+  ),
+)
+
 sw_lib_testing_rv_plic_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_rv_plic_testutils',
