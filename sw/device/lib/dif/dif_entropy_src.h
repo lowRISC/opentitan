@@ -101,16 +101,6 @@ typedef enum dif_entropy_src_mode {
    */
   kDifEntropySrcModePtrng = 1,
 
-  /**
-   * The Linear Feedback Shift Register (LFSR) mode.
-   *
-   * This mode is digital, and as such is only pseudo-random and intended
-   * for test purposes only.
-   *
-   * In this mode, the `dif_entropy_src_config.lfsr_seed` value is used to
-   * initialize the internal state of the LFSR.
-   */
-  kDifEntropySrcModeLfsr = 2,
 } dif_entropy_src_mode_t;
 
 /**
@@ -241,17 +231,6 @@ typedef struct dif_entropy_src_config {
    * Configuration parameters for health tests.
    */
   dif_entropy_src_test_config_t test_config;
-
-  /**
-   * The rate at which the entropy bits are generated, in clock cycles.
-   */
-  uint16_t sample_rate;
-
-  /**
-   * Seed used to load into the LFSR initial state. The maximum allowable value
-   * is 15. See `dif_entropy_src_mode.kDifEntropySrcModeLfsr` for more details.
-   */
-  uint16_t lfsr_seed;
 } dif_entropy_src_config_t;
 
 /**

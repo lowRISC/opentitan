@@ -74,9 +74,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int Sha3Share = (Sha3EnMasking) ? 2 : 1;
 
   // signals
-  logic [RngBusWidth-1:0] lfsr_value;
-  logic [RngBusWidth-1:0] seed_value;
-  logic       load_seed;
   logic       fw_ov_mode;
   logic       fw_ov_mode_pfe;
   logic       fw_ov_mode_pfd;
@@ -93,29 +90,23 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       es_enable_pfd;
   logic       es_enable_pfa;
   logic       es_enable_early;
-  logic       es_enable_lfsr;
+
   logic       es_enable_rng;
   logic       rng_bit_en;
   logic       rng_bit_enable_pfe;
   logic       rng_bit_enable_pfd;
   logic       rng_bit_enable_pfa;
   logic [1:0] rng_bit_sel;
-  logic       lfsr_incr;
-  logic       lfsr_enable_pfe;
-  logic       lfsr_enable_pfd;
-  logic       lfsr_enable_pfa;
-  logic       entropy_data_reg_enable_pfe;
-  logic       entropy_data_reg_enable_pfd;
-  logic       entropy_data_reg_enable_pfa;
+  logic       entropy_data_reg_en_pfe;
+  logic       entropy_data_reg_en_pfd;
+  logic       entropy_data_reg_en_pfa;
   logic       es_data_reg_rd_en;
   logic       sw_es_rd_pulse;
   logic       event_es_entropy_valid;
   logic       event_es_health_test_failed;
   logic       event_es_observe_fifo_ready;
   logic       event_es_fatal_err;
-  logic [15:0] es_rate;
-  logic        es_rate_entropy_pulse;
-  logic        es_rng_src_valid;
+  logic       es_rng_src_valid;
   logic [RngBusWidth-1:0] es_rng_bus;
 
   logic [RngBusWidth-1:0] sfifo_esrng_wdata;
@@ -186,9 +177,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     rst_bypass_mode;
   logic                     rst_alert_cntr;
   logic                     boot_bypass_disable;
-  logic                     boot_bypass_dis_pfe;
-  logic                     boot_bypass_dis_pfd;
-  logic                     boot_bypass_dis_pfa;
+  logic                     boot_bypass_disable_pfe;
+  logic                     boot_bypass_disable_pfd;
+  logic                     boot_bypass_disable_pfa;
   logic                     fips_compliance;
 
   logic [HalfRegWidth-1:0] health_test_fips_window;
@@ -319,7 +310,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic                     pfifo_esbit_wdata;
   logic [RngBusWidth-1:0]   pfifo_esbit_rdata;
-  logic                     pfifo_esbit_not_empty;
   logic                     pfifo_esbit_push;
   logic                     pfifo_esbit_clr;
   logic                     pfifo_esbit_pop;
@@ -399,22 +389,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_sha3_state;
   logic                    unused_entropy_data;
   logic                    unused_fw_ov_rd_data;
-  // TODO: remove below after connecting up
-  logic                    unused_es_enable_pfa;
-  logic                    unused_lfsr_enable_pfa;
-  logic                    unused_entropy_data_reg_enable_pfa;
-  logic                    unused_fw_ov_mode_pfa;
-  logic                    unused_fw_ov_entropy_insert_pfa;
-  logic                    unused_rng_bit_enable_pfa;
-  logic                    unused_health_test_clr_pfa;
-  logic                    unused_es_route_pfa;
-  logic                    unused_es_type_pfa;
-  logic                    unused_boot_bypass_dis_pfa;
 
 
   // flops
-  logic [15:0] es_rate_cntr_q, es_rate_cntr_d;
-  logic        lfsr_incr_dly_q, lfsr_incr_dly_d;
   logic [RngBusWidth-1:0] ht_esbus_dly_q, ht_esbus_dly_d;
   logic        ht_esbus_vld_dly_q, ht_esbus_vld_dly_d;
   logic        ht_esbus_vld_dly2_q, ht_esbus_vld_dly2_d;
@@ -426,14 +403,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    sha3_msg_rdy_q, sha3_msg_rdy_d;
   logic                    sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
-  logic [1:0]  es_enable_q, es_enable_d;
+  logic        es_enable_q, es_enable_d;
   logic [63:0] es_rdata_capt_q, es_rdata_capt_d;
   logic        es_rdata_capt_vld_q, es_rdata_capt_vld_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      es_rate_cntr_q        <= 16'h0001;
-      lfsr_incr_dly_q       <= '0;
       boot_bypass_q         <= 1'b1;
       ht_failed_q           <= '0;
       ht_failed_pulse_q     <= '0;
@@ -449,8 +424,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       es_rdata_capt_q       <= '0;
       es_rdata_capt_vld_q   <= '0;
     end else begin
-      es_rate_cntr_q        <= es_rate_cntr_d;
-      lfsr_incr_dly_q       <= lfsr_incr_dly_d;
       boot_bypass_q         <= boot_bypass_d;
       ht_failed_q           <= ht_failed_d;
       ht_failed_pulse_q     <= ht_failed_pulse_d;
@@ -476,55 +449,37 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_enable_pfe = (es_enb_e'(reg2hw.conf.enable.q) == ES_FIELD_ON);
   assign es_enable_pfd = (es_enb_e'(reg2hw.conf.enable.q) == ~ES_FIELD_ON);
   assign es_enable_pfa = !(es_enable_pfe || es_enable_pfd);
-  // TODO: connect to recov alert reg after it has been created
-  assign unused_es_enable_pfa = es_enable_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.de = es_enable_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.d  = es_enable_pfa;
+  assign hw2reg.recov_alert_sts.enable_field_alert.de = es_enable_pfa;
+  assign hw2reg.recov_alert_sts.enable_field_alert.d  = es_enable_pfa;
 
-  assign lfsr_enable_pfe = (es_enb_e'(reg2hw.conf.lfsr_enable.q) == ES_FIELD_ON);
-  assign lfsr_enable_pfd = (es_enb_e'(reg2hw.conf.lfsr_enable.q) == ~ES_FIELD_ON);
-  assign lfsr_enable_pfa = !(lfsr_enable_pfe || lfsr_enable_pfd);
-  // TODO: connect to recov alert reg after it has been created
-  assign unused_lfsr_enable_pfa = lfsr_enable_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.de = lfsr_enable_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.d  = lfsr_enable_pfa;
-
-  assign entropy_data_reg_enable_pfe =
+  assign entropy_data_reg_en_pfe =
          (es_enb_e'(reg2hw.conf.entropy_data_reg_enable.q) == ES_FIELD_ON);
-  assign entropy_data_reg_enable_pfd =
+  assign entropy_data_reg_en_pfd =
          (es_enb_e'(reg2hw.conf.entropy_data_reg_enable.q) == ~ES_FIELD_ON);
-  assign entropy_data_reg_enable_pfa =
-         !(entropy_data_reg_enable_pfe || entropy_data_reg_enable_pfd);
-  // TODO: connect to recov alert reg after it has been created
-  assign unused_entropy_data_reg_enable_pfa = entropy_data_reg_enable_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.de = entropy_data_reg_enable_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.d  = entropy_data_reg_enable_pfa;
+  assign entropy_data_reg_en_pfa =
+         !(entropy_data_reg_en_pfe || entropy_data_reg_en_pfd);
+  assign hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.de = entropy_data_reg_en_pfa;
+  assign hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.d =  entropy_data_reg_en_pfa;
 
-  assign es_enable_d = {lfsr_enable_pfe,es_enable_pfe};
-  assign es_enable_early = lfsr_enable_pfe || es_enable_pfe;
-  assign es_enable = (|es_enable_q);
-  assign es_enable_lfsr = es_enable_q[1];
-  assign es_enable_rng = es_enable_q[0];
-  assign load_seed = !es_enable;
+  assign es_enable_d = es_enable_pfe;
+  assign es_enable_early = es_enable_pfe;
+  assign es_enable = (es_enable_q);
+  assign es_enable_rng = es_enable_q;
   assign observe_fifo_thresh = reg2hw.observe_fifo_thresh.q;
 
   assign fw_ov_mode_pfe = (es_enb_e'(reg2hw.fw_ov_control.fw_ov_mode.q) == ES_FIELD_ON);
   assign fw_ov_mode_pfd = (es_enb_e'(reg2hw.fw_ov_control.fw_ov_mode.q) == ~ES_FIELD_ON);
   assign fw_ov_mode_pfa = !(fw_ov_mode_pfe || fw_ov_mode_pfd);
-  // TODO: connect to recov alert reg after it has been created
-  assign unused_fw_ov_mode_pfa = fw_ov_mode_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.de = fw_ov_mode_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.d  = fw_ov_mode_pfa;
+  assign hw2reg.recov_alert_sts.fw_ov_mode_field_alert.de = fw_ov_mode_pfa;
+  assign hw2reg.recov_alert_sts.fw_ov_mode_field_alert.d  = fw_ov_mode_pfa;
 
   assign fw_ov_entropy_insert_pfe =
          (es_enb_e'(reg2hw.fw_ov_control.fw_ov_entropy_insert.q) == ES_FIELD_ON);
   assign fw_ov_entropy_insert_pfd =
          (es_enb_e'(reg2hw.fw_ov_control.fw_ov_entropy_insert.q) == ~ES_FIELD_ON);
   assign fw_ov_entropy_insert_pfa = !(fw_ov_entropy_insert_pfe || fw_ov_entropy_insert_pfd);
-  // TODO: connect to recov alert reg after it has been created
-  assign unused_fw_ov_entropy_insert_pfa = fw_ov_entropy_insert_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.de = fw_ov_entropy_insert_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.d  = fw_ov_entropy_insert_pfa;
+  assign hw2reg.recov_alert_sts.fw_ov_entropy_insert_field_alert.de = fw_ov_entropy_insert_pfa;
+  assign hw2reg.recov_alert_sts.fw_ov_entropy_insert_field_alert.d  = fw_ov_entropy_insert_pfa;
 
   // firmware override controls
   assign fw_ov_mode = efuse_es_sw_ov_en_i && fw_ov_mode_pfe;
@@ -606,53 +561,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   //--------------------------------------------
-  // lfsr - a version of a entropy source
-  //--------------------------------------------
-
-  assign lfsr_incr = es_enable_lfsr && es_rate_entropy_pulse;
-  assign lfsr_incr_dly_d =
-         !es_enable ? 1'b0 :
-         lfsr_incr;
-
-  prim_lfsr #(
-    .LfsrDw(RngBusWidth),
-    .EntropyDw(RngBusWidth),
-    .StateOutDw(RngBusWidth),
-    .DefaultSeed(1),
-    .CustomCoeffs('0)
-  ) u_prim_lfsr (
-    .clk_i          (clk_i),
-    .rst_ni         (rst_ni),
-    .seed_en_i      (load_seed),
-    .seed_i         (seed_value),
-    .lfsr_en_i      (lfsr_incr_dly_q),
-    .entropy_i      ('0),
-    .state_o        (lfsr_value)
-  );
-
-  // entropy rate limiter
-
-  assign es_rate_cntr_d =
-         !es_enable ? 16'h0001 :
-         (es_rate == '0) ? 16'h0000 :
-         es_rate_entropy_pulse ? es_rate :
-         (es_rate_cntr_q - 1);
-
-  assign es_rate_entropy_pulse =
-         !es_enable ? 1'b0 :
-         (es_rate == '0) ? 1'b0 :
-         (es_rate_cntr_q == 16'h0001);
-
-  //--------------------------------------------
   // tlul register settings
   //--------------------------------------------
 
-
-  // seed register
-  assign seed_value = reg2hw.seed.q;
-
-  // es rate register
-  assign es_rate = reg2hw.rate.q;
 
   // set the interrupt event when enabled
   assign event_es_entropy_valid = pfifo_swread_not_empty;
@@ -798,10 +709,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign rng_bit_enable_pfe = (es_enb_e'(reg2hw.conf.rng_bit_enable.q) == ES_FIELD_ON);
   assign rng_bit_enable_pfd = (es_enb_e'(reg2hw.conf.rng_bit_enable.q) == ~ES_FIELD_ON);
   assign rng_bit_enable_pfa = !(rng_bit_enable_pfe || rng_bit_enable_pfd);
-  // TODO: connect to recov alert reg after it has been created
-  assign unused_rng_bit_enable_pfa = rng_bit_enable_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.de = rng_bit_enable_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.d  = rng_bit_enable_pfa;
+  assign hw2reg.recov_alert_sts.rng_bit_enable_field_alert.de = rng_bit_enable_pfa;
+  assign hw2reg.recov_alert_sts.rng_bit_enable_field_alert.d  = rng_bit_enable_pfa;
 
   assign rng_bit_en = rng_bit_enable_pfe;
   assign rng_bit_sel = reg2hw.conf.rng_bit_sel.q;
@@ -816,15 +725,15 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .wvalid_i   (pfifo_esbit_push),
     .wdata_i    (pfifo_esbit_wdata),
     .wready_o   (),
-    .rvalid_o   (pfifo_esbit_not_empty),
+    .rvalid_o   (), // TODO: may need this output for rng bit mode
     .rdata_o    (pfifo_esbit_rdata),
     .rready_i   (pfifo_esbit_pop),
     .depth_o    ()
   );
 
-  assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_pop && es_rate_entropy_pulse;
+  assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_pop;
   assign pfifo_esbit_clr = !es_enable;
-  assign pfifo_esbit_pop = es_rate_entropy_pulse && pfifo_esbit_not_empty;
+  assign pfifo_esbit_pop = sfifo_esrng_push;
   assign pfifo_esbit_wdata =
          (rng_bit_sel == 2'h0) ? sfifo_esrng_rdata[0] :
          (rng_bit_sel == 2'h1) ? sfifo_esrng_rdata[1] :
@@ -834,11 +743,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // select source for health testing
 
-  assign health_test_esbus = es_enable_lfsr ? lfsr_value :
+  assign health_test_esbus =
          (es_enable_rng && rng_bit_en) ? pfifo_esbit_rdata :
          sfifo_esrng_rdata;
 
-  assign health_test_esbus_vld = es_enable_lfsr ? es_rate_entropy_pulse :
+  assign health_test_esbus_vld =
          (es_enable_rng && rng_bit_en) ? pfifo_esbit_pop :
          sfifo_esrng_pop;
 
@@ -856,10 +765,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign health_test_clr_pfe = (es_enb_e'(reg2hw.conf.health_test_clr.q) == ES_FIELD_ON);
   assign health_test_clr_pfd = (es_enb_e'(reg2hw.conf.health_test_clr.q) == ~ES_FIELD_ON);
   assign health_test_clr_pfa = !(health_test_clr_pfe || health_test_clr_pfd);
-  // TODO: connect to recov alert reg after it has been created
-  assign unused_health_test_clr_pfa = health_test_clr_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.de = health_test_clr_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.d  = health_test_clr_pfa;
+  assign hw2reg.recov_alert_sts.health_test_clr_field_alert.de = health_test_clr_pfa;
+  assign hw2reg.recov_alert_sts.health_test_clr_field_alert.d  = health_test_clr_pfa;
 
 
   assign health_test_clr = health_test_clr_pfe;
@@ -1234,30 +1141,24 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_route_pfe = (es_enb_e'(reg2hw.entropy_control.es_route.q) == ES_FIELD_ON);
   assign es_route_pfd = (es_enb_e'(reg2hw.entropy_control.es_route.q) == ~ES_FIELD_ON);
   assign es_route_pfa = !(es_route_pfe || es_route_pfd);
-  // TODO: connect to recov alert reg after it has been created
-  assign unused_es_route_pfa = es_route_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.de = es_route_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.d  = es_route_pfa;
+  assign hw2reg.recov_alert_sts.es_route_field_alert.de = es_route_pfa;
+  assign hw2reg.recov_alert_sts.es_route_field_alert.d  = es_route_pfa;
 
   assign es_type_pfe = (es_enb_e'(reg2hw.entropy_control.es_type.q) == ES_FIELD_ON);
   assign es_type_pfd = (es_enb_e'(reg2hw.entropy_control.es_type.q) == ~ES_FIELD_ON);
   assign es_type_pfa = !(es_type_pfe || es_type_pfd);
-  // TODO: connect to recov alert reg after it has been created
-  assign unused_es_type_pfa = es_type_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.de = es_type_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.d  = es_type_pfa;
+  assign hw2reg.recov_alert_sts.es_type_field_alert.de = es_type_pfa;
+  assign hw2reg.recov_alert_sts.es_type_field_alert.d  = es_type_pfa;
 
-  assign boot_bypass_dis_pfe = (es_enb_e'(reg2hw.conf.boot_bypass_disable.q) == ES_FIELD_ON);
-  assign boot_bypass_dis_pfd = (es_enb_e'(reg2hw.conf.boot_bypass_disable.q) == ~ES_FIELD_ON);
-  assign boot_bypass_dis_pfa = !(boot_bypass_dis_pfe || boot_bypass_dis_pfd);
-  // TODO: connect to recov alert reg after it has been created
-  assign unused_boot_bypass_dis_pfa = boot_bypass_dis_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.de = boot_bypass_dis_pfa;
-  //  assign hw2reg.recov_alert_sts.enable_field_alert.d  = boot_bypass_dis_pfa;
+  assign boot_bypass_disable_pfe = (es_enb_e'(reg2hw.conf.boot_bypass_disable.q) == ES_FIELD_ON);
+  assign boot_bypass_disable_pfd = (es_enb_e'(reg2hw.conf.boot_bypass_disable.q) == ~ES_FIELD_ON);
+  assign boot_bypass_disable_pfa = !(boot_bypass_disable_pfe || boot_bypass_disable_pfd);
+  assign hw2reg.recov_alert_sts.boot_bypass_disable_field_alert.de = boot_bypass_disable_pfa;
+  assign hw2reg.recov_alert_sts.boot_bypass_disable_field_alert.d  = boot_bypass_disable_pfa;
 
   assign es_route_to_sw = es_route_pfe;
   assign es_bypass_to_sw = es_type_pfe;
-  assign boot_bypass_disable = boot_bypass_dis_pfe;
+  assign boot_bypass_disable = boot_bypass_disable_pfe;
 
   assign boot_bypass_d =
          (!es_enable_early) ? 1'b1 :  // special case for reset
@@ -1836,7 +1737,18 @@ module entropy_src_core import entropy_src_pkg::*; #(
          ((any_fail_count >= ~alert_threshold_inv) && (~alert_threshold_inv != '0)) ||
          (any_fail_count >= alert_threshold) && (alert_threshold != '0);
 
-  assign recov_alert_o = es_main_sm_alert || es_bus_cmp_alert;
+  assign recov_alert_o =
+         es_enable_pfa ||
+         entropy_data_reg_en_pfa ||
+         boot_bypass_disable_pfa ||
+         health_test_clr_pfa ||
+         rng_bit_enable_pfa ||
+         fw_ov_mode_pfa ||
+         fw_ov_entropy_insert_pfa ||
+         es_route_pfa ||
+         es_type_pfa ||
+         es_main_sm_alert ||
+         es_bus_cmp_alert;
 
   assign hw2reg.recov_alert_sts.es_main_sm_alert.de = es_main_sm_alert;
   assign hw2reg.recov_alert_sts.es_main_sm_alert.d  = es_main_sm_alert;
@@ -2230,7 +2142,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o        (sfifo_esfinal_depth)
   );
 
-  assign fips_compliance = !es_bypass_mode && es_enable_rng && !es_enable_lfsr && !rng_bit_en;
+  assign fips_compliance = !es_bypass_mode && es_enable_rng && !rng_bit_en;
 
   // fifo controls
   assign sfifo_esfinal_push = sfifo_esfinal_not_full &&
@@ -2313,7 +2225,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_swread_pop =  es_enable && sw_es_rd_pulse;
 
   // set the es entropy to the read reg
-  assign es_data_reg_rd_en = es_enable && efuse_es_sw_reg_en_i && entropy_data_reg_enable_pfe;
+  assign es_data_reg_rd_en = es_enable && efuse_es_sw_reg_en_i && entropy_data_reg_en_pfe;
   assign hw2reg.entropy_data.d = es_data_reg_rd_en ? pfifo_swread_rdata : '0;
   assign sw_es_rd_pulse = es_data_reg_rd_en && reg2hw.entropy_data.re;
 
