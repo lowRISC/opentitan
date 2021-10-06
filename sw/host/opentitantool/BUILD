@@ -11,6 +11,7 @@ rust_binary(
     name = "opentitantool",
     srcs = [
         "src/backend/cw310.rs",
+        "src/backend/hyperdebug.rs",
         "src/backend/mod.rs",
         "src/backend/ultradebug.rs",
         "src/backend/verilator.rs",
