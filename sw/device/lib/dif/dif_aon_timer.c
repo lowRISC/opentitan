@@ -15,15 +15,15 @@
 static_assert(AON_TIMER_INTR_STATE_WKUP_TIMER_EXPIRED_BIT ==
                   AON_TIMER_INTR_TEST_WKUP_TIMER_EXPIRED_BIT,
               "Wake-up IRQ have different indexes in different registers!");
-static_assert(AON_TIMER_INTR_STATE_WDOG_TIMER_EXPIRED_BIT ==
-                  AON_TIMER_INTR_TEST_WDOG_TIMER_EXPIRED_BIT,
+static_assert(AON_TIMER_INTR_STATE_WDOG_TIMER_BARK_BIT ==
+                  AON_TIMER_INTR_TEST_WDOG_TIMER_BARK_BIT,
               "Watchdog IRQ have different indexes in different registers!");
 
 const size_t kAonTimerWakeupIrqIndex =
     AON_TIMER_INTR_STATE_WKUP_TIMER_EXPIRED_BIT;
 
 const size_t kAonTimerWatchdogIrqIndex =
-    AON_TIMER_INTR_STATE_WDOG_TIMER_EXPIRED_BIT;
+    AON_TIMER_INTR_STATE_WDOG_TIMER_BARK_BIT;
 
 static void aon_timer_wakeup_clear_counter(const dif_aon_timer_t *aon) {
   mmio_region_write32(aon->params.base_addr, AON_TIMER_WKUP_COUNT_REG_OFFSET,
