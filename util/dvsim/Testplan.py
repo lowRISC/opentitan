@@ -99,7 +99,7 @@ class Testpoint(Element):
     fields = Element.fields + ("milestone", "tests")
 
     # Verification milestones.
-    milestones = ("N.A.", "V1", "V2", "V3")
+    milestones = ("N.A.", "V1", "V2", "V2S", "V3")
 
     def __init__(self, raw_dict):
         super().__init__(raw_dict)

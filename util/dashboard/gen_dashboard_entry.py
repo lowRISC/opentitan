@@ -37,6 +37,7 @@ STAGE_STRINGS = {
     'V0': 'Initial Work',
     'V1': 'Under Test',
     'V2': 'Testing Complete',
+    'V2S': 'Testing Complete, With Security Countermeasures Verified',
     'V3': 'Verification Complete',
     # DIF Stages (S for Software)
     'S0': 'Initial Work',

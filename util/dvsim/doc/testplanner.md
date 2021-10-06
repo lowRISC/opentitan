@@ -30,7 +30,7 @@ The following attributes are used to define each testpoint, at minimum:
 
 * **milestone: targeted verification milestone**
 
-    This is either `V1`, `V2` or `V3`.
+    This is either `V1`, `V2`, `V2S` or `V3`.
     It helps us track whether all of the testing requirements of a milestone have been achieved.
 
 * **desc: testpoint description**
