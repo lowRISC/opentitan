@@ -27,27 +27,27 @@ dif_spi_device_result_t dif_spi_device_init(dif_spi_device_params_t params,
  * Computes the required value of the control register from a given
  * configuration.
  */
-static uint32_t build_control_word(dif_spi_device_config_t config) {
+static uint32_t build_control_word(const dif_spi_device_config_t *config) {
   uint32_t val = 0;
 
   val =
       bitfield_bit32_write(val, SPI_DEVICE_CFG_CPOL_BIT,
-                           config.clock_polarity == kDifSpiDeviceEdgeNegative);
+                           config->clock_polarity == kDifSpiDeviceEdgeNegative);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_CPHA_BIT,
-                             config.data_phase == kDifSpiDeviceEdgePositive);
+                             config->data_phase == kDifSpiDeviceEdgePositive);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_TX_ORDER_BIT,
-                             config.tx_order == kDifSpiDeviceBitOrderLsbToMsb);
+                             config->tx_order == kDifSpiDeviceBitOrderLsbToMsb);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_RX_ORDER_BIT,
-                             config.rx_order == kDifSpiDeviceBitOrderLsbToMsb);
+                             config->rx_order == kDifSpiDeviceBitOrderLsbToMsb);
   val = bitfield_field32_write(val, SPI_DEVICE_CFG_TIMER_V_FIELD,
-                               config.rx_fifo_timeout);
+                               config->rx_fifo_timeout);
 
   return val;
 }
 
 dif_spi_device_result_t dif_spi_device_configure(
-    dif_spi_device_t *spi, dif_spi_device_config_t config) {
-  if (spi == NULL) {
+    const dif_spi_device_t *spi, const dif_spi_device_config_t *config) {
+  if (spi == NULL || config == NULL) {
     return kDifSpiDeviceBadArg;
   }
 
@@ -57,9 +57,9 @@ dif_spi_device_result_t dif_spi_device_configure(
   uint32_t device_config = build_control_word(config);
 
   uint16_t rx_fifo_start = 0x0;
-  uint16_t rx_fifo_end = config.rx_fifo_len - 1;
+  uint16_t rx_fifo_end = config->rx_fifo_len - 1;
   uint16_t tx_fifo_start = rx_fifo_end + 1;
-  uint16_t tx_fifo_end = tx_fifo_start + config.tx_fifo_len - 1;
+  uint16_t tx_fifo_end = tx_fifo_start + config->tx_fifo_len - 1;
   if (tx_fifo_end >= kDifSpiDeviceBufferLen) {
     // We've overflown the SRAM region...
     return kDifSpiDeviceBadArg;
@@ -76,9 +76,6 @@ dif_spi_device_result_t dif_spi_device_configure(
       tx_fifo_bounds, SPI_DEVICE_TXF_ADDR_BASE_FIELD, tx_fifo_start);
   tx_fifo_bounds = bitfield_field32_write(
       tx_fifo_bounds, SPI_DEVICE_TXF_ADDR_LIMIT_FIELD, tx_fifo_end);
-
-  spi->rx_fifo_len = config.rx_fifo_len;
-  spi->tx_fifo_len = config.tx_fifo_len;
 
   mmio_region_write32(spi->params.base_addr, SPI_DEVICE_CFG_REG_OFFSET,
                       device_config);
@@ -470,26 +467,28 @@ static uint16_t fifo_bytes_in_use(fifo_ptrs_t ptrs, uint16_t fifo_len) {
   return fifo_len - (ptrs.read_ptr.offset - ptrs.write_ptr.offset);
 }
 
-dif_spi_device_result_t dif_spi_device_rx_pending(const dif_spi_device_t *spi,
-                                                  size_t *bytes_pending) {
-  if (spi == NULL || bytes_pending == NULL) {
+dif_spi_device_result_t dif_spi_device_rx_pending(
+    const dif_spi_device_t *spi, const dif_spi_device_config_t *config,
+    size_t *bytes_pending) {
+  if (spi == NULL || config == NULL || bytes_pending == NULL) {
     return kDifSpiDeviceBadArg;
   }
 
   fifo_ptrs_t ptrs = decompress_ptrs(spi, kRxFifoParams);
-  *bytes_pending = fifo_bytes_in_use(ptrs, spi->rx_fifo_len);
+  *bytes_pending = fifo_bytes_in_use(ptrs, config->rx_fifo_len);
 
   return kDifSpiDeviceOk;
 }
 
-dif_spi_device_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
-                                                  size_t *bytes_pending) {
-  if (spi == NULL || bytes_pending == NULL) {
+dif_spi_device_result_t dif_spi_device_tx_pending(
+    const dif_spi_device_t *spi, const dif_spi_device_config_t *config,
+    size_t *bytes_pending) {
+  if (spi == NULL || config == NULL || bytes_pending == NULL) {
     return kDifSpiDeviceBadArg;
   }
 
   fifo_ptrs_t ptrs = decompress_ptrs(spi, kTxFifoParams);
-  *bytes_pending = fifo_bytes_in_use(ptrs, spi->tx_fifo_len);
+  *bytes_pending = fifo_bytes_in_use(ptrs, config->tx_fifo_len);
 
   return kDifSpiDeviceOk;
 }
@@ -565,19 +564,18 @@ static size_t spi_memcpy(const dif_spi_device_t *spi, fifo_ptrs_t *fifo,
   return total_bytes;
 }
 
-dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
-                                            void *buf, size_t buf_len,
-                                            size_t *bytes_received) {
-  if (spi == NULL || buf == NULL) {
+dif_spi_device_result_t dif_spi_device_recv(
+    const dif_spi_device_t *spi, const dif_spi_device_config_t *config,
+    void *buf, size_t buf_len, size_t *bytes_received) {
+  if (spi == NULL || config == NULL || buf == NULL) {
     return kDifSpiDeviceBadArg;
   }
 
   uint16_t fifo_base = 0;
-  uint16_t fifo_len = spi->rx_fifo_len;
   fifo_ptrs_t fifo = decompress_ptrs(spi, kRxFifoParams);
 
-  size_t bytes = spi_memcpy(spi, &fifo, fifo_base, fifo_len, (uint8_t *)buf,
-                            buf_len, /*is_recv=*/true);
+  size_t bytes = spi_memcpy(spi, &fifo, fifo_base, config->rx_fifo_len,
+                            (uint8_t *)buf, buf_len, /*is_recv=*/true);
   if (bytes_received != NULL) {
     *bytes_received = bytes;
   }
@@ -588,20 +586,19 @@ dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
   return kDifSpiDeviceOk;
 }
 
-dif_spi_device_result_t dif_spi_device_send(const dif_spi_device_t *spi,
-                                            const void *buf, size_t buf_len,
-                                            size_t *bytes_sent) {
-  if (spi == NULL || buf == NULL) {
+dif_spi_device_result_t dif_spi_device_send(
+    const dif_spi_device_t *spi, const dif_spi_device_config_t *config,
+    const void *buf, size_t buf_len, size_t *bytes_sent) {
+  if (spi == NULL || config == NULL || buf == NULL) {
     return kDifSpiDeviceBadArg;
   }
 
   // Start of the TX FIFO is the end of the RX FIFO.
-  uint16_t fifo_base = spi->rx_fifo_len;
-  uint16_t fifo_len = spi->tx_fifo_len;
   fifo_ptrs_t fifo = decompress_ptrs(spi, kTxFifoParams);
 
-  size_t bytes = spi_memcpy(spi, &fifo, fifo_base, fifo_len, (uint8_t *)buf,
-                            buf_len, /*is_recv=*/false);
+  size_t bytes =
+      spi_memcpy(spi, &fifo, config->rx_fifo_len, config->tx_fifo_len,
+                 (uint8_t *)buf, buf_len, /*is_recv=*/false);
   if (bytes_sent != NULL) {
     *bytes_sent = bytes;
   }

@@ -62,14 +62,15 @@ uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state) {
   return gpio_state;
 }
 
-void demo_spi_to_log_echo(const dif_spi_device_t *spi) {
+void demo_spi_to_log_echo(const dif_spi_device_t *spi,
+                          const dif_spi_device_config_t *spi_config) {
   uint32_t spi_buf[8];
   size_t spi_len;
-  CHECK(dif_spi_device_recv(spi, spi_buf, sizeof(spi_buf), &spi_len) ==
-        kDifSpiDeviceOk);
+  CHECK(dif_spi_device_recv(spi, spi_config, spi_buf, sizeof(spi_buf),
+                            &spi_len) == kDifSpiDeviceOk);
   if (spi_len > 0) {
     uint32_t echo_word = spi_buf[0] ^ 0x01010101;
-    CHECK(dif_spi_device_send(spi, &echo_word, sizeof(uint32_t),
+    CHECK(dif_spi_device_send(spi, spi_config, &echo_word, sizeof(uint32_t),
                               /*bytes_sent=*/NULL) == kDifSpiDeviceOk);
     LOG_INFO("SPI: %z", spi_len, spi_buf);
   }

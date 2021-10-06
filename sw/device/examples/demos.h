@@ -41,7 +41,8 @@ uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state);
  * Attempts to read at most 32 bytes from SPI, and echo them as printable
  * characters to LOG.
  */
-void demo_spi_to_log_echo(const dif_spi_device_t *spi);
+void demo_spi_to_log_echo(const dif_spi_device_t *spi,
+                          const dif_spi_device_config_t *spi_config);
 
 /**
  * Attempts to read characters from UART and immediately echo them back,

@@ -113,8 +113,6 @@ typedef struct dif_spi_device_config {
  */
 typedef struct dif_spi_device {
   dif_spi_device_params_t params;
-  uint16_t rx_fifo_len;
-  uint16_t tx_fifo_len;
 } dif_spi_device_t;
 
 /**
@@ -209,7 +207,7 @@ dif_spi_device_result_t dif_spi_device_init(dif_spi_device_params_t params,
  */
 OT_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_configure(
-    dif_spi_device_t *spi, dif_spi_device_config_t config);
+    const dif_spi_device_t *spi, const dif_spi_device_config_t *config);
 
 /**
  * Issues an "abort" to the given SPI device, causing all in-progress IO to
@@ -341,8 +339,9 @@ dif_spi_device_result_t dif_spi_device_set_irq_levels(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_spi_device_result_t dif_spi_device_rx_pending(const dif_spi_device_t *spi,
-                                                  size_t *bytes_pending);
+dif_spi_device_result_t dif_spi_device_rx_pending(
+    const dif_spi_device_t *spi, const dif_spi_device_config_t *config,
+    size_t *bytes_pending);
 
 /**
  * Returns the number of bytes still pending transmission by hardware in the TX
@@ -353,8 +352,9 @@ dif_spi_device_result_t dif_spi_device_rx_pending(const dif_spi_device_t *spi,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_spi_device_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
-                                                  size_t *bytes_pending);
+dif_spi_device_result_t dif_spi_device_tx_pending(
+    const dif_spi_device_t *spi, const dif_spi_device_config_t *config,
+    size_t *bytes_pending);
 
 /**
  * Reads at most `buf_len` bytes from the RX FIFO; the number of bytes read
@@ -368,9 +368,9 @@ dif_spi_device_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
-                                            void *buf, size_t buf_len,
-                                            size_t *bytes_received);
+dif_spi_device_result_t dif_spi_device_recv(
+    const dif_spi_device_t *spi, const dif_spi_device_config_t *config,
+    void *buf, size_t buf_len, size_t *bytes_received);
 
 /**
  * Writes at most `buf_len` bytes to the TX FIFO; the number of bytes actually
@@ -383,9 +383,9 @@ dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_spi_device_result_t dif_spi_device_send(const dif_spi_device_t *spi,
-                                            const void *buf, size_t buf_len,
-                                            size_t *bytes_sent);
+dif_spi_device_result_t dif_spi_device_send(
+    const dif_spi_device_t *spi, const dif_spi_device_config_t *config,
+    const void *buf, size_t buf_len, size_t *bytes_sent);
 
 #ifdef __cplusplus
 }  // extern "C"
