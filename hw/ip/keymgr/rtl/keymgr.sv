@@ -493,12 +493,33 @@ module keymgr
   );
 
   for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
-    assign hw2reg.sw_share0_output[i].d  = ~data_en | wipe_key ? data_rand[0] :
-                                                                 kmac_data[0][i*32 +: 32];
-    assign hw2reg.sw_share1_output[i].d  = ~data_en | wipe_key ? data_rand[1] :
-                                                                 kmac_data[1][i*32 +: 32];
-    assign hw2reg.sw_share0_output[i].de = wipe_key | data_valid & (key_sel == SwKey);
-    assign hw2reg.sw_share1_output[i].de = wipe_key | data_valid & (key_sel == SwKey);
+    prim_sec_anchor_buf #(
+     .Width(32)
+    ) u_prim_buf_share0_d (
+      .in_i(~data_en | wipe_key ? data_rand[0] : kmac_data[0][i*32 +: 32]),
+      .out_o(hw2reg.sw_share0_output[i].d)
+    );
+
+    prim_sec_anchor_buf #(
+     .Width(32)
+    ) u_prim_buf_share1_d (
+      .in_i(~data_en | wipe_key ? data_rand[1] : kmac_data[1][i*32 +: 32]),
+      .out_o(hw2reg.sw_share1_output[i].d)
+    );
+
+    prim_sec_anchor_buf #(
+     .Width(1)
+    ) u_prim_buf_share0_de (
+      .in_i(wipe_key | data_valid & (key_sel == SwKey)),
+      .out_o(hw2reg.sw_share0_output[i].de)
+    );
+
+    prim_sec_anchor_buf #(
+     .Width(1)
+    ) u_prim_buf_share1_de (
+      .in_i(wipe_key | data_valid & (key_sel == SwKey)),
+      .out_o(hw2reg.sw_share1_output[i].de)
+    );
   end
 
   /////////////////////////////////////

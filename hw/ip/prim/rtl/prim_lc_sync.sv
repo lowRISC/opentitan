@@ -57,7 +57,7 @@ module prim_lc_sync #(
   for (genvar j = 0; j < NumCopies; j++) begin : gen_buffs
     logic [lc_ctrl_pkg::TxWidth-1:0] lc_en_out;
     for (genvar k = 0; k < lc_ctrl_pkg::TxWidth; k++) begin : gen_bits
-      prim_buf u_prim_buf (
+      prim_sec_anchor_buf u_prim_buf (
         .in_i(lc_en[k]),
         .out_o(lc_en_out[k])
       );

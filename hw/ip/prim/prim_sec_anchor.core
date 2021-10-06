@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim:sec_anchor:0.1"
+description: "Secure anchor primitives.  These are nothing more than wrappers with special names"
+filesets:
+  files_rtl:
+    files:
+        - rtl/prim_sec_anchor_buf.sv
+        - rtl/prim_sec_anchor_flop.sv
+
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

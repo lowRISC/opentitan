@@ -51,8 +51,14 @@ module sensor_ctrl
   logic [NumAlertEvents-1:0] async_alert_event_n, alert_event_n;
 
   for (genvar i = 0; i < NumAlertEvents; i++) begin : gen_alert_sync_assign
-    assign async_alert_event_p[i] = ast_alert_i.alerts[i].p;
-    assign async_alert_event_n[i] = ast_alert_i.alerts[i].n;
+    prim_sec_anchor_buf #(
+      .Width(2)
+    ) u_alert_in_buf (
+      .in_i({ast_alert_i.alerts[i].p,
+             ast_alert_i.alerts[i].n}),
+      .out_o({async_alert_event_p[i],
+              async_alert_event_n[i]})
+    );
   end
 
   prim_flop_2sync #(

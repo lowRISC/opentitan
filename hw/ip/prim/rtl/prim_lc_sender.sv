@@ -27,7 +27,7 @@ module prim_lc_sender #(
   logic [lc_ctrl_pkg::TxWidth-1:0] lc_en, lc_en_out;
   assign lc_en = lc_ctrl_pkg::TxWidth'(lc_en_i);
 
-  prim_flop #(
+  prim_sec_anchor_flop #(
     .Width(lc_ctrl_pkg::TxWidth),
     .ResetValue(lc_ctrl_pkg::TxWidth'(ResetValue))
   ) u_prim_flop (

@@ -62,9 +62,9 @@ module prim_alert_receiver
   logic alert_level, alert_sigint, alert_p, alert_n;
 
   // This prevents further tool optimizations of the differential signal.
-  prim_buf #(
+  prim_sec_anchor_buf #(
     .Width(2)
-  ) u_prim_buf (
+  ) u_prim_buf_in (
     .in_i({alert_tx_i.alert_n,
            alert_tx_i.alert_p}),
     .out_o({alert_n,
@@ -109,7 +109,7 @@ module prim_alert_receiver
   assign ping_tog_dn = (send_init) ? ping_tog_pd : ~ping_tog_pd;
 
   // This prevents further tool optimizations of the differential signal.
-  prim_generic_flop #(
+  prim_sec_anchor_flop #(
     .Width     (2),
     .ResetValue(2'b10)
   ) u_prim_generic_flop_ack (
@@ -121,7 +121,7 @@ module prim_alert_receiver
           ack_pq})
   );
 
-  prim_generic_flop #(
+  prim_sec_anchor_flop #(
     .Width     (2),
     .ResetValue(2'b10)
   ) u_prim_generic_flop_ping (
