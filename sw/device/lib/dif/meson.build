@@ -682,6 +682,7 @@ sw_lib_dif_aon_timer = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_aon_timer,
     ],
   )
 )
@@ -689,9 +690,11 @@ sw_lib_dif_aon_timer = declare_dependency(
 test('dif_aon_timer_unittest', executable(
     'dif_aon_timer_unittest',
     sources: [
-      hw_ip_aon_timer_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_aon_timer.c',
       'dif_aon_timer_unittest.cc',
+      'autogen/dif_aon_timer_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_aon_timer.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_aon_timer_autogen.c',
+      hw_ip_aon_timer_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

@@ -30,6 +30,20 @@ sw_lib_dif_autogen_alert_handler = declare_dependency(
   )
 )
 
+# Autogen Always-On Timer DIF library
+sw_lib_dif_autogen_aon_timer = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_aon_timer',
+    sources: [
+      hw_ip_aon_timer_reg_h,
+      'dif_aon_timer_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen Clock Manager DIF library
 sw_lib_dif_autogen_clkmgr = declare_dependency(
   link_with: static_library(

@@ -16,107 +16,25 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+
+#include "sw/device/lib/dif/autogen/dif_aon_timer_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
 
 /**
- * Hardware instantiation parameters for Always-On Timer.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_aon_timer_params {
-  /**
-   * The base address for the Always-On Timer hardware registers.
-   */
-  mmio_region_t base_addr;
-} dif_aon_timer_params_t;
-
-/**
- * A handle to Always-On Timer.
- *
- * This type should be treated as opaque by users.
- */
-typedef struct dif_aon_timer {
-  dif_aon_timer_params_t params;
-} dif_aon_timer_t;
-
-/**
- * The result of a Always-On Timer operation.
- */
-typedef enum dif_aon_timer_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifAonTimerOk = 0,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifAonTimerError = 1,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifAonTimerBadArg = 2,
-} dif_aon_timer_result_t;
-
-/**
- * The result of a Always-On Timer (watchdog timer) operation.
- */
-typedef enum dif_aon_timer_watchdog_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifAonTimerWatchdogOk = kDifAonTimerOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifAonTimerWatchdogError = kDifAonTimerError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifAonTimerWatchdogBadArg = kDifAonTimerBadArg,
-  /**
-   * Indicates that this operation has been locked out, and can never
-   * succeed until hardware reset.
-   */
-  kDifAonTimerWatchdogLocked = 3,
-} dif_aon_timer_watchdog_result_t;
-
-/**
- * An Always-On Timer interrupt request type.
- */
-typedef enum dif_aon_timer_irq {
-  /**
-   * Wake-up timer has expired.
-   */
-  kDifAonTimerIrqWakeupThreshold = 0,
-  /**
-   * Watchdog timer "Bark" threshold has expired.
-   */
-  kDifAonTimerIrqWatchdogBarkThreshold,
-} dif_aon_timer_irq_t;
-
-/**
  * Creates a new handle for Always-On Timer.
  *
  * This function does not actuate the hardware.
  *
- * @param params Hardware instantiation parameters.
+ * @param base_addr Hardware instantiation base address.
  * @param[out] aon Out param for the initialised handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_init(dif_aon_timer_params_t params,
-                                          dif_aon_timer_t *aon);
+dif_result_t dif_aon_timer_init(mmio_region_t base_addr, dif_aon_timer_t *aon);
 
 /**
  * Starts Always-On Timer (wake-up timer).
@@ -132,9 +50,8 @@ dif_aon_timer_result_t dif_aon_timer_init(dif_aon_timer_params_t params,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_wakeup_start(const dif_aon_timer_t *aon,
-                                                  uint32_t threshold,
-                                                  uint32_t prescaler);
+dif_result_t dif_aon_timer_wakeup_start(const dif_aon_timer_t *aon,
+                                        uint32_t threshold, uint32_t prescaler);
 
 /** Stops Always-On Timer (wake-up timer).
  *
@@ -145,7 +62,7 @@ dif_aon_timer_result_t dif_aon_timer_wakeup_start(const dif_aon_timer_t *aon,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_wakeup_stop(const dif_aon_timer_t *aon);
+dif_result_t dif_aon_timer_wakeup_stop(const dif_aon_timer_t *aon);
 
 /** Restarts Always-On Timer (wake-up timer).
  *
@@ -155,7 +72,7 @@ dif_aon_timer_result_t dif_aon_timer_wakeup_stop(const dif_aon_timer_t *aon);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_wakeup_restart(const dif_aon_timer_t *aon);
+dif_result_t dif_aon_timer_wakeup_restart(const dif_aon_timer_t *aon);
 
 /** Retrieves Always-On Timer (wake-up timer) tick count.
  *
@@ -164,8 +81,8 @@ dif_aon_timer_result_t dif_aon_timer_wakeup_restart(const dif_aon_timer_t *aon);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_wakeup_get_count(
-    const dif_aon_timer_t *aon, uint32_t *count);
+dif_result_t dif_aon_timer_wakeup_get_count(const dif_aon_timer_t *aon,
+                                            uint32_t *count);
 
 /** Starts Always-On Timer (watchdog timer).
  *
@@ -182,9 +99,10 @@ dif_aon_timer_result_t dif_aon_timer_wakeup_get_count(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_start(
-    const dif_aon_timer_t *aon, uint32_t bark_threshold,
-    uint32_t bite_threshold, bool pause_in_sleep, bool lock);
+dif_result_t dif_aon_timer_watchdog_start(const dif_aon_timer_t *aon,
+                                          uint32_t bark_threshold,
+                                          uint32_t bite_threshold,
+                                          bool pause_in_sleep, bool lock);
 
 /** Stops Always-On Timer (watchdog timer).
  *
@@ -195,8 +113,7 @@ dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_start(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_stop(
-    const dif_aon_timer_t *aon);
+dif_result_t dif_aon_timer_watchdog_stop(const dif_aon_timer_t *aon);
 
 /** Restarts Always-On Timer (watchdog timer).
  *
@@ -206,8 +123,7 @@ dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_stop(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_restart(
-    const dif_aon_timer_t *aon);
+dif_result_t dif_aon_timer_watchdog_restart(const dif_aon_timer_t *aon);
 
 /** Retrieves Always-On Timer (watchdog timer) tick count.
  *
@@ -216,8 +132,8 @@ dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_restart(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_watchdog_get_count(
-    const dif_aon_timer_t *aon, uint32_t *count);
+dif_result_t dif_aon_timer_watchdog_get_count(const dif_aon_timer_t *aon,
+                                              uint32_t *count);
 
 /** Clears Always-On Timer (watchdog timer).
  *
@@ -230,7 +146,7 @@ dif_aon_timer_result_t dif_aon_timer_watchdog_get_count(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_watchdog_pet(const dif_aon_timer_t *aon);
+dif_result_t dif_aon_timer_watchdog_pet(const dif_aon_timer_t *aon);
 
 /**
  * Locks Always-On Timer (watchdog timer).
@@ -243,8 +159,7 @@ dif_aon_timer_result_t dif_aon_timer_watchdog_pet(const dif_aon_timer_t *aon);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_lock(
-    const dif_aon_timer_t *aon);
+dif_result_t dif_aon_timer_watchdog_lock(const dif_aon_timer_t *aon);
 
 /**
  * Checks whether this Always-On Timer (watchdog timer) is locked.
@@ -254,47 +169,8 @@ dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_lock(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_watchdog_is_locked(
-    const dif_aon_timer_t *aon, bool *is_locked);
-
-/**
- * Returns whether a particular interrupt is currently pending.
- *
- * @param aon An Always-On Timer handle.
- * @param irq An interrupt type.
- * @param[out] is_pending Out-param for whether the interrupt is pending.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_irq_is_pending(const dif_aon_timer_t *aon,
-                                                    dif_aon_timer_irq_t irq,
-                                                    bool *is_pending);
-
-/**
- * Acknowledges a particular interrupt.
- *
- * This operation indicates to the hardware that the interrupt has been
- * successfully serviced.
- *
- * @param aon An Always-On Timer handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_irq_acknowledge(const dif_aon_timer_t *aon,
-                                                     dif_aon_timer_irq_t irq);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param aon An Always-On Timer handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_aon_timer_result_t dif_aon_timer_irq_force(const dif_aon_timer_t *aon,
-                                               dif_aon_timer_irq_t irq);
+dif_result_t dif_aon_timer_watchdog_is_locked(const dif_aon_timer_t *aon,
+                                              bool *is_locked);
 
 #ifdef __cplusplus
 }  // extern "C"

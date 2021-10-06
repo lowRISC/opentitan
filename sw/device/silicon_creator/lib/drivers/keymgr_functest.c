@@ -158,19 +158,18 @@ static bool compare_wakeup_reasons(const dif_pwrmgr_wakeup_reason_t *lhs,
 static void aon_timer_wakeup_config(dif_aon_timer_t *aon_timer,
                                     uint32_t wakeup_threshold) {
   // Make sure that wake-up timer is stopped.
-  CHECK(dif_aon_timer_wakeup_stop(aon_timer) == kDifAonTimerOk);
+  CHECK_DIF_OK(dif_aon_timer_wakeup_stop(aon_timer));
 
   // Make sure the wake-up IRQ is cleared to avoid false positive.
-  CHECK(dif_aon_timer_irq_acknowledge(
-            aon_timer, kDifAonTimerIrqWakeupThreshold) == kDifAonTimerOk);
+  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(aon_timer,
+                                             kDifAonTimerIrqWkupTimerExpired));
 
   bool is_pending;
-  CHECK(dif_aon_timer_irq_is_pending(aon_timer, kDifAonTimerIrqWakeupThreshold,
-                                     &is_pending) == kDifAonTimerOk);
+  CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
+      aon_timer, kDifAonTimerIrqWkupTimerExpired, &is_pending));
   CHECK(!is_pending);
 
-  CHECK(dif_aon_timer_wakeup_start(aon_timer, wakeup_threshold, 0) ==
-        kDifAonTimerOk);
+  CHECK_DIF_OK(dif_aon_timer_wakeup_start(aon_timer, wakeup_threshold, 0));
 }
 
 /**
@@ -289,10 +288,8 @@ bool test_main(void) {
 
   // Initialize aon_timer
   dif_aon_timer_t aon_timer;
-  dif_aon_timer_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
-  };
-  CHECK(dif_aon_timer_init(params, &aon_timer) == kDifAonTimerOk);
+  CHECK_DIF_OK(dif_aon_timer_init(
+      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
   // Get wakeup reason
   dif_pwrmgr_wakeup_reason_t wakeup_reason;

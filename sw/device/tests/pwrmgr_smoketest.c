@@ -54,12 +54,9 @@ bool test_main(void) {
       wakeup_threshold = 300;
     }
     dif_aon_timer_t aon_timer;
-    CHECK(dif_aon_timer_init(
-              (dif_aon_timer_params_t){
-                  .base_addr = mmio_region_from_addr(
-                      TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
-              },
-              &aon_timer) == kDifAonTimerOk);
+    CHECK_DIF_OK(dif_aon_timer_init(
+        mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
+        &aon_timer));
     aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
     pwrmgr_testutils_enable_low_power(
         &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
