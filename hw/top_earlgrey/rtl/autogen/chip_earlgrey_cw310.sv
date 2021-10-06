@@ -852,6 +852,12 @@ module chip_earlgrey_cw310 #(
   };
 
 
+  logic vcc_supply     = 1'b1;
+  logic vcaon_supply   = 1'b1;
+  logic vcmain_asupply = 1'b1;
+  logic vioa_supply    = 1'b1;
+  logic viob_supply    = 1'b1;
+
   ast #(
     .EntropyStreams(ast_pkg::EntropyStreams),
     .AdcChannels(ast_pkg::AdcChannels),
@@ -904,11 +910,11 @@ module chip_earlgrey_cw310 #(
     .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
-    .vcc_supp_i            ( 1'b1 ),
-    .vcaon_supp_i          ( 1'b1 ),
-    .vcmain_supp_i         ( 1'b1 ),
-    .vioa_supp_i           ( 1'b1 ),
-    .viob_supp_i           ( 1'b1 ),
+    .vcc_supp_i            ( vcc_supply     ),
+    .vcaon_supp_i          ( vcaon_supply   ),
+    .vcmain_supp_i         ( vcmain_asupply ),
+    .vioa_supp_i           ( vioa_supply    ),
+    .viob_supp_i           ( viob_supply    ),
     // pok
     .ast_pwst_o            ( ast_pwst ),
     .ast_pwst_h_o          ( ast_pwst_h ),
