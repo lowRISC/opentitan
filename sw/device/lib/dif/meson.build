@@ -402,6 +402,7 @@ sw_lib_dif_otbn = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
+      sw_lib_dif_autogen_otbn,
     ],
   )
 )
@@ -423,7 +424,7 @@ test('dif_otbn_unittest', executable(
     c_args: ['-DMOCK_MMIO'],
     cpp_args: ['-DMOCK_MMIO'],
   ),
-  suite: 'dif',  
+  suite: 'dif',
 )
 
 # Reset Manager DIF library (dif_rstmgr)
@@ -672,7 +673,7 @@ test('dif_aon_timer_unittest', executable(
     c_args: ['-DMOCK_MMIO'],
     cpp_args: ['-DMOCK_MMIO'],
   ),
-  suite: 'dif',  
+  suite: 'dif',
 )
 
 # Entropy Source
