@@ -23,10 +23,19 @@ typedef struct pinmux_input {
  */
 static const pinmux_input_t kPinmuxInputs[] = {
     /**
+     * Bootstrap pin.
+     */
+    {
+        .periph = kTopEarlgreyPinmuxPeripheralInGpioGpio17,
+        .pad = kTopEarlgreyPinmuxInselIob8,
+    },
+    /**
      * UART
      */
-    {.periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
-     .pad = kTopEarlgreyPinmuxInselIoc10},
+    {
+        .periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
+        .pad = kTopEarlgreyPinmuxInselIoc10,
+    },
 };
 
 /**

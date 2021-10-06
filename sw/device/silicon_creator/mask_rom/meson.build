@@ -158,6 +158,23 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   )
 endforeach
 
+# TODO(lowrisc/opentitan#1513): Switch to EEPROM SPI device bootstrap protocol.
+# Primitive Bootstrap
+primitive_bootstrap_lib = declare_dependency(
+  link_with: static_library (
+    'primitive_bootstrap_lib',
+    sources: [
+      'primitive_bootstrap.c'
+    ],
+    dependencies: [
+      sw_lib_flash_ctrl,
+      sw_lib_dif_gpio,
+      sw_lib_dif_spi_device,
+      sw_silicon_creator_lib_driver_hmac,
+    ],
+  ),
+)
+
 # MaskROM library.
 mask_rom_lib = declare_dependency(
   sources: [
@@ -171,6 +188,7 @@ mask_rom_lib = declare_dependency(
     link_args: rom_link_args,
     dependencies: [
       freestanding_headers,
+      primitive_bootstrap_lib,
       sw_silicon_creator_lib_driver_hmac,
       sw_silicon_creator_lib_driver_flash_ctrl,
       sw_silicon_creator_lib_driver_keymgr,
