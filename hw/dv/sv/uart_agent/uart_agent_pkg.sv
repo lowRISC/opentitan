@@ -44,7 +44,7 @@ package uart_agent_pkg;
       BaudRate256Kbps: return 3906.25;
       BaudRate1Mbps :  return 1000;
       BaudRate1p5Mbps: return 666.667;
-      default: `uvm_fatal("uart_agent_pkg", {"Unsupported baud_rate: ", baud_rate.name})
+      default: `uvm_fatal("uart_agent_pkg", $sformatf("Unsupported baud_rate: %0d", baud_rate))
     endcase
   endfunction
 

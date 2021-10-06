@@ -84,9 +84,14 @@ extern const uint64_t kUartBaudrate;
  * A helper macro to calculate NCO values.
  * NOTE: the left shift value is dependent on the UART hardware.
  * The NCO width is 16 bits and the NCO calculates a 16x oversampling clock.
+ * If uart baud rate is 1.5Mbps and IO is 24Mhz, NCO is 0x10000, which is over
+ * the NCO width, use NCO = 0xffff for this case since the error is tolerable.
+ * Refer to #4263
  */
-#define CALCULATE_UART_NCO(baudrate, peripheral_clock) \
-  (((baudrate) << (16 + 4)) / (peripheral_clock))
+#define CALCULATE_UART_NCO(baudrate, peripheral_clock)  \
+  (baudrate == 1500000 && peripheral_clock == 24000000) \
+      ? 0xffff                                          \
+      : (((baudrate) << (16 + 4)) / (peripheral_clock))
 
 /**
  * The pre-calculated UART NCO value based on the Baudrate and Peripheral clock.
