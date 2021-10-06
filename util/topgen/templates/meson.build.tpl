@@ -5,19 +5,18 @@ ${gencmd.replace("//", "#")}
 
 <%
 irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals})
-enabled_peripherals = ['aes', 'alert_handler', 'gpio', 'hmac', 'lc_ctrl',
-                       'uart', 'i2c']
-templated_peripherals =  sorted(
-    {p.name for p in helper.irq_peripherals
-     if p.is_templated and p.name in enabled_peripherals}
-)
+enabled_peripherals = ['aes', 'alert_handler', 'clkmgr', 'csrng', 'edn',
+                       'entropy_src', 'gpio', 'hmac', 'i2c', 'keymgr',
+                       'lc_ctrl', 'otbn', 'otp_ctrl', 'pwrmgr', 'rstmgr',
+                       'sram_ctrl',  'uart']
+parameterized_peripherals = ['alert_handler']
 %>\
 # IP Integration Tests
 plic_all_irqs_test_lib = declare_dependency(
   link_with: static_library(
     'plic_all_irqs_test_lib',
     sources: [
-% for p in templated_peripherals:
+% for p in parameterized_peripherals:
       hw_ip_${p}_reg_h,
 % endfor
       'plic_all_irqs_test.c',
