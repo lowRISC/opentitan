@@ -35,12 +35,8 @@ int main(int argc, char **argv) {
 
   pinmux_init();
 
-  CHECK(dif_spi_device_init(
-            (dif_spi_device_params_t){
-                .base_addr =
-                    mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR),
-            },
-            &spi) == kDifSpiDeviceOk);
+  CHECK_DIF_OK(dif_spi_device_init(
+      mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi));
   spi_config.clock_polarity = kDifSpiDeviceEdgePositive;
   spi_config.data_phase = kDifSpiDeviceEdgeNegative;
   spi_config.tx_order = kDifSpiDeviceBitOrderMsbToLsb;
@@ -48,7 +44,7 @@ int main(int argc, char **argv) {
   spi_config.rx_fifo_timeout = 63;
   spi_config.rx_fifo_len = kDifSpiDeviceBufferLen / 2;
   spi_config.tx_fifo_len = kDifSpiDeviceBufferLen / 2;
-  CHECK(dif_spi_device_configure(&spi, &spi_config) == kDifSpiDeviceOk);
+  CHECK_DIF_OK(dif_spi_device_configure(&spi, &spi_config));
 
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
@@ -68,8 +64,8 @@ int main(int argc, char **argv) {
   LOG_INFO("or type anything into the console window.");
   LOG_INFO("The LEDs show the ASCII code of the last character.");
 
-  CHECK(dif_spi_device_send(&spi, &spi_config, "SPI!", 4,
-                            /*bytes_sent=*/NULL) == kDifSpiDeviceOk);
+  CHECK_DIF_OK(dif_spi_device_send(&spi, &spi_config, "SPI!", 4,
+                                   /*bytes_sent=*/NULL));
 
   uint32_t gpio_state = 0;
   while (true) {
