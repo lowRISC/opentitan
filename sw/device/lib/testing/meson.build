@@ -38,6 +38,20 @@ sw_lib_testing_aon_timer_testutils = declare_dependency(
   ),
 )
 
+sw_lib_testing_clkmgr_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_clkmgr_testutils',
+    sources: [
+      hw_ip_clkmgr_reg_h,
+      'clkmgr_testutils.c'
+    ],
+    dependencies: [
+      sw_lib_dif_clkmgr,
+      sw_lib_runtime_ibex,
+    ],
+  ),
+)
+
 # hardware entropy complex (entropy_src, csrng, edn) test utilities.
 sw_lib_testing_entropy_testutils = declare_dependency(
   link_with: static_library(
