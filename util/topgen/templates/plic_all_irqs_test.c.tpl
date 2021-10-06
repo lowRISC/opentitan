@@ -4,20 +4,16 @@
 ${gencmd}
 <%
 irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals})
-enabled_peripherals = ['aes', 'alert_handler', 'gpio', 'hmac', 'lc_ctrl',
-                       'uart', 'i2c']
+enabled_peripherals = ['aes', 'alert_handler', 'clkmgr', 'csrng', 'edn',
+                       'entropy_src', 'gpio', 'hmac', 'i2c', 'keymgr',
+                       'lc_ctrl', 'otbn', 'otp_ctrl', 'pwrmgr', 'rstmgr',
+                       'sram_ctrl',  'uart']
+parameterized_peripherals = ['alert_handler']
 
 def comment(n):
     return '' if n in enabled_peripherals else '// '
 %>\
 
-% for p in helper.irq_peripherals:
-<%
-  if not p.is_templated:
-      continue
-%>\
-${comment(p.name)}#include "${p.name}_regs.h"  // Generated.
-% endfor
 #include "sw/device/lib/base/freestanding/limits.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -32,7 +28,9 @@ ${comment(n)}#include "sw/device/lib/dif/dif_${n}.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 #include "sw/device/tests/plic_all_irqs_test_helper.h"
-
+% for p in parameterized_peripherals:
+${comment(p)}#include "${p}_regs.h"  // Generated.
+% endfor
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 % for p in helper.irq_peripherals:
@@ -103,7 +101,7 @@ static void peripherals_init(void) {
     .escalation_signal_count = ALERT_HANDLER_PARAM_N_ESC_SEV};
 
   % for p in helper.irq_peripherals:
-  % if p.is_templated:
+  % if p.name in parameterized_peripherals:
   ${comment(p.name)}PERIPHERAL_INIT_WITH_PARAMS(${p.name}, ${p.name}_params, ${p.inst_name}, ${p.base_addr_name});
   % else:
   ${comment(p.name)}PERIPHERAL_INIT(${p.name}, ${p.inst_name}, ${p.base_addr_name});
@@ -114,6 +112,15 @@ static void peripherals_init(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   CHECK(dif_rv_plic_init((dif_rv_plic_params_t){.base_addr = base_addr},
                          &plic) == kDifRvPlicOk);
+}
+
+/**
+ * Clears pending IRQs in all peripherals.
+ */
+static void peripheral_irqs_clear(void) {
+  % for p in helper.irq_peripherals:
+  ${comment(p.name)}PERIPHERAL_IRQS_CLEAR(${p.inst_name});
+  % endfor
 }
 
 /**
@@ -148,6 +155,7 @@ bool test_main(void) {
   peripherals_init();
   rv_plic_testutils_irq_range_enable(&plic, kHart,
       kTopEarlgreyPlicIrqIdNone + 1, kTopEarlgreyPlicIrqIdLast);
+  peripheral_irqs_clear();
   peripheral_irqs_enable();
   peripheral_irqs_trigger();
   return true;

@@ -55,6 +55,16 @@
   } while (0)
 
 /**
+ * Clears all previous interrupt invocations.
+ */
+#define PERIPHERAL_IRQS_CLEAR(handle)                                         \
+  do {                                                                        \
+    /* TODO(#8142): Replace with dif_<ip>_irq_acknowledge_all when available. \
+     */                                                                       \
+    mmio_region_write32(handle.base_addr, 0, (uint32_t)ULONG_MAX);            \
+  } while (0)
+
+/**
  * Enables all IRQs in the given peripheral instance.
  */
 #define PERIPHERAL_IRQS_ENABLE(peripheral, handle)                        \
