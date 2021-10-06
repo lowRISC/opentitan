@@ -23,6 +23,11 @@ def _load_cfg(path, initial_values):
     failure.
 
     '''
+    # Set the `self_dir` template variable to the path of the currently
+    # processed Hjson file.
+    assert 'self_dir' in initial_values
+    initial_values['self_dir'] = os.path.dirname(path)
+
     # Start by loading up the hjson file and any included files
     hjson_data = load_hjson(path, initial_values)
 
