@@ -117,9 +117,12 @@ module prim_esc_receiver
   // - requested via the escalation sender/receiver path,
   // - the ping monitor timeout is reached,
   // - the two ping monitor counters are in an inconsistent state.
-  assign esc_req_o = esc_req     ||
-                     (&cnt_q[0]) ||
-                     (cnt_q[0] != cnt_q[1]);
+  prim_sec_anchor_buf #(
+    .Width(1)
+  ) u_prim_buf_esc_req (
+    .in_i(esc_req | (&cnt_q[0]) | (cnt_q[0] != cnt_q[1])),
+    .out_o(esc_req_o)
+  );
 
   /////////////////
   // RX/TX Logic //
@@ -131,10 +134,10 @@ module prim_esc_receiver
   logic resp_nd, resp_nq;
 
   // This prevents further tool optimizations of the differential signal.
-  prim_generic_flop #(
+  prim_sec_anchor_flop #(
     .Width(2),
     .ResetValue(2'b10)
-  ) u_prim_generic_flop (
+  ) u_prim_flop_esc (
     .clk_i,
     .rst_ni,
     .d_i({resp_nd, resp_pd}),

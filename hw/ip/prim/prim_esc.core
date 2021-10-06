@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:diff_decode
       - lowrisc:prim:buf
       - lowrisc:prim:flop
+      - lowrisc:prim:sec_anchor
     files:
       - rtl/prim_esc_pkg.sv
       - rtl/prim_esc_receiver.sv

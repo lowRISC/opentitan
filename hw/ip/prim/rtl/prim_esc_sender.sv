@@ -46,7 +46,7 @@ module prim_esc_sender
   logic resp, resp_n, resp_p, sigint_detected;
 
   // This prevents further tool optimizations of the differential signal.
-  prim_buf #(
+  prim_sec_anchor_buf #(
     .Width(2)
   ) u_prim_buf_resp (
     .in_i({esc_rx_i.resp_n,
@@ -85,7 +85,7 @@ module prim_esc_sender
   assign esc_p = esc_req_i | esc_req_q | (ping_req_d & ~ping_req_q);
 
   // This prevents further tool optimizations of the differential signal.
-  prim_buf #(
+  prim_sec_anchor_buf #(
     .Width(2)
   ) u_prim_buf_esc (
     .in_i({~esc_p,

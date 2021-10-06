@@ -72,7 +72,7 @@ module prim_alert_sender
   logic ping_sigint, ping_event, ping_n, ping_p;
 
   // This prevents further tool optimizations of the differential signal.
-  prim_buf #(
+  prim_sec_anchor_buf #(
     .Width(2)
   ) u_prim_buf_ping (
     .in_i({alert_rx_i.ping_n,
@@ -98,7 +98,7 @@ module prim_alert_sender
   logic ack_sigint, ack_level, ack_n, ack_p;
 
   // This prevents further tool optimizations of the differential signal.
-  prim_buf #(
+  prim_sec_anchor_buf #(
     .Width(2)
   ) u_prim_buf_ack (
     .in_i({alert_rx_i.ack_n,
@@ -152,7 +152,15 @@ module prim_alert_sender
   logic alert_req_trigger, alert_test_trigger, ping_trigger;
 
   // if handshake is ongoing, capture additional alert requests.
-  assign alert_req_trigger = alert_req_i | alert_set_q;
+  logic alert_req;
+  prim_sec_anchor_buf #(
+    .Width(1)
+  ) u_prim_buf_in_req (
+    .in_i(alert_req_i),
+    .out_o(alert_req)
+  );
+
+  assign alert_req_trigger = alert_req | alert_set_q;
   if (IsFatal) begin : gen_fatal
     assign alert_set_d = alert_req_trigger;
   end else begin : gen_recov
@@ -254,10 +262,10 @@ module prim_alert_sender
   end
 
   // This prevents further tool optimizations of the differential signal.
-  prim_generic_flop #(
+  prim_sec_anchor_flop #(
     .Width     (2),
     .ResetValue(2'b10)
-  ) u_prim_generic_flop (
+  ) u_prim_flop_alert (
     .clk_i,
     .rst_ni,
     .d_i({alert_nd, alert_pd}),
