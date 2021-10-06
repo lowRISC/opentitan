@@ -40,6 +40,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   int ok_to_end_delay_ns = 1000;
 
   function void initialize(bit [31:0] csr_base_addr = '1);
+    has_edn = 1;
     // Tell the CIP base code not to look for a "devmode" interface. OTBN doesn't have one.
     has_devmode = 0;
 

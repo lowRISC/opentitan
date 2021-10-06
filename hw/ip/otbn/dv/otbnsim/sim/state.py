@@ -76,11 +76,12 @@ class OTBNState:
         # Take the new data
         assert 0 <= rnd_data < (1 << 32)
 
-        # There should not be a pending RND result before an EDN step. 
+        # There should not be a pending RND result before an EDN step.
         assert not self.rnd_cdc_pending
 
         # Collect 32b packages in a 256b variable
-        self.rnd_256b = ((self.rnd_256b << 32) | rnd_data) & ((1 << 256) - 1)
+        shift_num = 32 * self.rnd_256b_counter
+        self.rnd_256b = (self.rnd_256b | (rnd_data << shift_num)) & ((1 << 256) - 1)
 
         if self.rnd_256b_counter == 7:
             # Reset the 32b package counter and wait until receiving done

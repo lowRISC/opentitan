@@ -36,19 +36,16 @@ module tb;
     .rst_ni (rst_n)
   );
 
+  // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
+  `DV_EDN_IF_CONNECT
+
   `DV_ALERT_IF_CONNECT
 
   // Mock up EDN & OTP that just instantly return fixed data when requested
   // TODO: Provide proper EDN and OTP agents
-  edn_req_t edn_rnd_req;
-  edn_rsp_t edn_rnd_rsp;
 
   edn_req_t edn_urnd_req;
   edn_rsp_t edn_urnd_rsp;
-
-  assign edn_rnd_rsp.edn_ack  = edn_rnd_req.edn_req;
-  assign edn_rnd_rsp.edn_fips = 1'b0;
-  assign edn_rnd_rsp.edn_bus =  32'h99999999;
 
   assign edn_urnd_rsp.edn_ack  = edn_urnd_req.edn_req;
   assign edn_urnd_rsp.edn_fips = 1'b0;
@@ -99,10 +96,10 @@ module tb;
 
     .ram_cfg_i('0),
 
-    .clk_edn_i (clk),
-    .rst_edn_ni(rst_n),
-    .edn_rnd_o (edn_rnd_req),
-    .edn_rnd_i (edn_rnd_rsp),
+    .clk_edn_i (edn_clk),
+    .rst_edn_ni(edn_rst_n),
+    .edn_rnd_o (edn_if.req),
+    .edn_rnd_i ({edn_if.ack, edn_if.d_data}),
 
     .edn_urnd_o(edn_urnd_req),
     .edn_urnd_i(edn_urnd_rsp),
@@ -180,16 +177,16 @@ module tb;
     .DesignScope  ("..dut.u_otbn_core")
   ) u_model (
     .clk_i        (model_if.clk_i),
-    .clk_edn_i    (model_if.clk_i),
+    .clk_edn_i    (edn_clk),
     .rst_ni       (model_if.rst_ni),
-    .rst_edn_ni   (model_if.rst_ni),
+    .rst_edn_ni   (edn_rst_n),
 
     .start_i      (model_if.start),
     .done_o       (model_if.done),
 
     .err_bits_o   (),
 
-    .edn_rnd_i             (edn_rnd_rsp),
+    .edn_rnd_i             ({edn_if.ack, edn_if.d_data}),
     .edn_rnd_cdc_done_i    (edn_rnd_cdc_done),
 
     .edn_urnd_data_valid_i (edn_urnd_data_valid),
