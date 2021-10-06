@@ -160,6 +160,7 @@ bool test_main() {
 
   // Intialize KMAC hardware.
   dif_kmac_t kmac;
+  dif_kmac_operation_state_t kmac_operation_state;
   CHECK(dif_kmac_init((dif_kmac_params_t){.base_addr = mmio_region_from_addr(
                                               TOP_EARLGREY_KMAC_BASE_ADDR)},
                       &kmac) == kDifKmacOk);
@@ -176,15 +177,17 @@ bool test_main() {
   for (int i = 0; i < ARRAYSIZE(sha3_tests); ++i) {
     sha3_test_t test = sha3_tests[i];
 
-    CHECK(dif_kmac_mode_sha3_start(&kmac, test.mode) == kDifKmacOk);
+    CHECK(dif_kmac_mode_sha3_start(&kmac, &kmac_operation_state, test.mode) ==
+          kDifKmacOk);
     if (test.message_len > 0) {
-      CHECK(dif_kmac_absorb(&kmac, test.message, test.message_len, NULL) ==
-            kDifKmacOk);
+      CHECK(dif_kmac_absorb(&kmac, &kmac_operation_state, test.message,
+                            test.message_len, NULL) == kDifKmacOk);
     }
     uint32_t out[DIGEST_LEN_SHA3_MAX];
     CHECK(DIGEST_LEN_SHA3_MAX >= test.digest_len);
-    CHECK(dif_kmac_squeeze(&kmac, out, test.digest_len, NULL) == kDifKmacOk);
-    CHECK(dif_kmac_end(&kmac) == kDifKmacOk);
+    CHECK(dif_kmac_squeeze(&kmac, &kmac_operation_state, out, test.digest_len,
+                           NULL) == kDifKmacOk);
+    CHECK(dif_kmac_end(&kmac, &kmac_operation_state) == kDifKmacOk);
 
     for (int j = 0; j < test.digest_len; ++j) {
       CHECK(out[j] == test.digest[j],
@@ -197,15 +200,17 @@ bool test_main() {
   for (int i = 0; i < ARRAYSIZE(shake_tests); ++i) {
     shake_test_t test = shake_tests[i];
 
-    CHECK(dif_kmac_mode_shake_start(&kmac, test.mode) == kDifKmacOk);
+    CHECK(dif_kmac_mode_shake_start(&kmac, &kmac_operation_state, test.mode) ==
+          kDifKmacOk);
     if (test.message_len > 0) {
-      CHECK(dif_kmac_absorb(&kmac, test.message, test.message_len, NULL) ==
-            kDifKmacOk);
+      CHECK(dif_kmac_absorb(&kmac, &kmac_operation_state, test.message,
+                            test.message_len, NULL) == kDifKmacOk);
     }
     uint32_t out[DIGEST_LEN_SHAKE_MAX];
     CHECK(DIGEST_LEN_SHAKE_MAX >= test.digest_len);
-    CHECK(dif_kmac_squeeze(&kmac, out, test.digest_len, NULL) == kDifKmacOk);
-    CHECK(dif_kmac_end(&kmac) == kDifKmacOk);
+    CHECK(dif_kmac_squeeze(&kmac, &kmac_operation_state, out, test.digest_len,
+                           NULL) == kDifKmacOk);
+    CHECK(dif_kmac_end(&kmac, &kmac_operation_state) == kDifKmacOk);
 
     for (int j = 0; j < test.digest_len; ++j) {
       CHECK(out[j] == test.digest[j],

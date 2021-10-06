@@ -194,6 +194,7 @@ bool test_main() {
 
   // Intialize KMAC hardware.
   dif_kmac_t kmac;
+  dif_kmac_operation_state_t kmac_operation_state;
   CHECK(dif_kmac_init((dif_kmac_params_t){.base_addr = mmio_region_from_addr(
                                               TOP_EARLGREY_KMAC_BASE_ADDR)},
                       &kmac) == kDifKmacOk);
@@ -221,14 +222,15 @@ bool test_main() {
         test.customization_string_len == 0 ? NULL : &s;
 
     size_t l = test.digest_len_is_fixed ? test.digest_len : 0;
-    CHECK(dif_kmac_mode_kmac_start(&kmac, test.mode, l, &test.key, sp) ==
-          kDifKmacOk);
-    CHECK(dif_kmac_absorb(&kmac, test.message, test.message_len, NULL) ==
-          kDifKmacOk);
+    CHECK(dif_kmac_mode_kmac_start(&kmac, &kmac_operation_state, test.mode, l,
+                                   &test.key, sp) == kDifKmacOk);
+    CHECK(dif_kmac_absorb(&kmac, &kmac_operation_state, test.message,
+                          test.message_len, NULL) == kDifKmacOk);
     uint32_t out[DIGEST_LEN_KMAC_MAX];
     CHECK(DIGEST_LEN_KMAC_MAX >= test.digest_len);
-    CHECK(dif_kmac_squeeze(&kmac, out, test.digest_len, NULL) == kDifKmacOk);
-    CHECK(dif_kmac_end(&kmac) == kDifKmacOk);
+    CHECK(dif_kmac_squeeze(&kmac, &kmac_operation_state, out, test.digest_len,
+                           NULL) == kDifKmacOk);
+    CHECK(dif_kmac_end(&kmac, &kmac_operation_state) == kDifKmacOk);
 
     for (int j = 0; j < test.digest_len; ++j) {
       CHECK(out[j] == test.digest[j],
