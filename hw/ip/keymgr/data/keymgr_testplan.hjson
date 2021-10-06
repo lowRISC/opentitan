@@ -181,7 +181,7 @@
     {
       name: sec_cm_check
       desc: '''
-            Verify the outcome after injecting faults to security countermeasures.
+            Verify the outcome after injecting faults into security countermeasures.
 
             Stimulus:
             As mentioned in `sec_cm_testplan`.
@@ -190,7 +190,7 @@
             - Besides checking alert and `fault_status`, issue an operation after injecting faults,
               then ensure that `op_status` is failed and design enters `StInvalid`.
             '''
-      milestone: V2
+      milestone: V2S
       tests: ["keymgr_sec_cm"]
     }
     {
