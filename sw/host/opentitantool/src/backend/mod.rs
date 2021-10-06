@@ -14,6 +14,7 @@ use opentitanlib::util::parse_int::ParseInt;
 
 pub mod cw310;
 pub mod ultradebug;
+pub mod hyperdebug;
 pub mod verilator;
 
 #[derive(Debug, StructOpt)]
@@ -49,6 +50,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         "" => create_empty_transport(),
         "verilator" => verilator::create(&args.verilator_opts),
         "ultradebug" => ultradebug::create(args),
+        "hyperdebug" => hyperdebug::create(args),
         "cw310" => cw310::create(args),
         _ => Err(Error::UnknownInterface(args.interface.clone()).into()),
     }?);
