@@ -559,7 +559,7 @@
          x="-25.656269"
          y="139.95572"
          style="text-align:end;text-anchor:end;stroke:none;stroke-width:0.264583px"
-         id="tspan2985">intr_wdog_timer_expired_o</tspan></text>
+         id="tspan2985">intr_wdog_timer_bark_o</tspan></text>
     <path
        style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.529167;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker3325);stop-color:#000000;stop-opacity:1"
        d="m 150.8125,142.875 1e-5,44.97921 -29.10418,-5e-5"

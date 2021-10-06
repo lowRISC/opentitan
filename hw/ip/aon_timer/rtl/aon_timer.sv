@@ -193,17 +193,17 @@ module aon_timer import aon_timer_reg_pkg::*;
 
   // Registers to interrupt
   assign intr_test_qe           = reg2hw.intr_test.wkup_timer_expired.qe |
-                                  reg2hw.intr_test.wdog_timer_expired.qe;
+                                  reg2hw.intr_test.wdog_timer_bark.qe;
   assign intr_test_q [AON_WKUP] = reg2hw.intr_test.wkup_timer_expired.q;
   assign intr_state_q[AON_WKUP] = reg2hw.intr_state.wkup_timer_expired.q;
-  assign intr_test_q [AON_WDOG] = reg2hw.intr_test.wdog_timer_expired.q;
-  assign intr_state_q[AON_WDOG] = reg2hw.intr_state.wdog_timer_expired.q;
+  assign intr_test_q [AON_WDOG] = reg2hw.intr_test.wdog_timer_bark.q;
+  assign intr_state_q[AON_WDOG] = reg2hw.intr_state.wdog_timer_bark.q;
 
   // Interrupts to registers
   assign hw2reg.intr_state.wkup_timer_expired.d  = intr_state_d[AON_WKUP];
   assign hw2reg.intr_state.wkup_timer_expired.de = intr_state_de;
-  assign hw2reg.intr_state.wdog_timer_expired.d  = intr_state_d[AON_WDOG];
-  assign hw2reg.intr_state.wdog_timer_expired.de = intr_state_de;
+  assign hw2reg.intr_state.wdog_timer_bark.d  = intr_state_d[AON_WDOG];
+  assign hw2reg.intr_state.wdog_timer_bark.de = intr_state_de;
 
   prim_intr_hw #(
     .Width (2)

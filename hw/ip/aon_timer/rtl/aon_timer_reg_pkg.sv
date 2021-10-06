@@ -65,7 +65,7 @@ package aon_timer_reg_pkg;
     } wkup_timer_expired;
     struct packed {
       logic        q;
-    } wdog_timer_expired;
+    } wdog_timer_bark;
   } aon_timer_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
@@ -76,7 +76,7 @@ package aon_timer_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } wdog_timer_expired;
+    } wdog_timer_bark;
   } aon_timer_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -101,7 +101,7 @@ package aon_timer_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } wdog_timer_expired;
+    } wdog_timer_bark;
   } aon_timer_hw2reg_intr_state_reg_t;
 
   typedef struct packed {

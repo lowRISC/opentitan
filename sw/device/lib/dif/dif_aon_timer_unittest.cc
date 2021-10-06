@@ -403,8 +403,7 @@ TEST_F(IrqIsPendingTest, SuccessPending) {
             kDifAonTimerOk);
   EXPECT_EQ(is_pending, true);
 
-  reg = bitfield_bit32_write(0, AON_TIMER_INTR_STATE_WDOG_TIMER_EXPIRED_BIT,
-                             true);
+  reg = bitfield_bit32_write(0, AON_TIMER_INTR_STATE_WDOG_TIMER_BARK_BIT, true);
   EXPECT_READ32(AON_TIMER_INTR_STATE_REG_OFFSET, reg);
 
   is_pending = false;
@@ -438,8 +437,7 @@ TEST_F(IrqAcknowledgeTest, Success) {
       dif_aon_timer_irq_acknowledge(&aon_, kDifAonTimerIrqWakeupThreshold),
       kDifAonTimerOk);
 
-  reg = bitfield_bit32_write(0, AON_TIMER_INTR_STATE_WDOG_TIMER_EXPIRED_BIT,
-                             true);
+  reg = bitfield_bit32_write(0, AON_TIMER_INTR_STATE_WDOG_TIMER_BARK_BIT, true);
   EXPECT_WRITE32(AON_TIMER_INTR_STATE_REG_OFFSET, reg);
 
   EXPECT_EQ(dif_aon_timer_irq_acknowledge(&aon_,
@@ -469,8 +467,7 @@ TEST_F(IrqForceTest, Success) {
   EXPECT_EQ(dif_aon_timer_irq_force(&aon_, kDifAonTimerIrqWakeupThreshold),
             kDifAonTimerOk);
 
-  reg =
-      bitfield_bit32_write(0, AON_TIMER_INTR_TEST_WDOG_TIMER_EXPIRED_BIT, true);
+  reg = bitfield_bit32_write(0, AON_TIMER_INTR_TEST_WDOG_TIMER_BARK_BIT, true);
   EXPECT_WRITE32(AON_TIMER_INTR_TEST_REG_OFFSET, reg);
 
   EXPECT_EQ(

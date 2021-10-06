@@ -151,11 +151,11 @@ module aon_timer_reg_top (
   logic intr_state_we;
   logic intr_state_wkup_timer_expired_qs;
   logic intr_state_wkup_timer_expired_wd;
-  logic intr_state_wdog_timer_expired_qs;
-  logic intr_state_wdog_timer_expired_wd;
+  logic intr_state_wdog_timer_bark_qs;
+  logic intr_state_wdog_timer_bark_wd;
   logic intr_test_we;
   logic intr_test_wkup_timer_expired_wd;
-  logic intr_test_wdog_timer_expired_wd;
+  logic intr_test_wdog_timer_bark_wd;
   logic wkup_cause_we;
   logic [0:0] wkup_cause_qs;
   logic wkup_cause_busy;
@@ -751,29 +751,29 @@ module aon_timer_reg_top (
     .qs     (intr_state_wkup_timer_expired_qs)
   );
 
-  //   F[wdog_timer_expired]: 1:1
+  //   F[wdog_timer_bark]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_wdog_timer_expired (
+  ) u_intr_state_wdog_timer_bark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_wdog_timer_expired_wd),
+    .wd     (intr_state_wdog_timer_bark_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.wdog_timer_expired.de),
-    .d      (hw2reg.intr_state.wdog_timer_expired.d),
+    .de     (hw2reg.intr_state.wdog_timer_bark.de),
+    .d      (hw2reg.intr_state.wdog_timer_bark.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.wdog_timer_expired.q),
+    .q      (reg2hw.intr_state.wdog_timer_bark.q),
 
     // to register interface (read)
-    .qs     (intr_state_wdog_timer_expired_qs)
+    .qs     (intr_state_wdog_timer_bark_qs)
   );
 
 
@@ -792,17 +792,17 @@ module aon_timer_reg_top (
     .qs     ()
   );
 
-  //   F[wdog_timer_expired]: 1:1
+  //   F[wdog_timer_bark]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_wdog_timer_expired (
+  ) u_intr_test_wdog_timer_bark (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_wdog_timer_expired_wd),
+    .wd     (intr_test_wdog_timer_bark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.wdog_timer_expired.qe),
-    .q      (reg2hw.intr_test.wdog_timer_expired.q),
+    .qe     (reg2hw.intr_test.wdog_timer_bark.qe),
+    .q      (reg2hw.intr_test.wdog_timer_bark.q),
     .qs     ()
   );
 
@@ -895,12 +895,12 @@ module aon_timer_reg_top (
 
   assign intr_state_wkup_timer_expired_wd = reg_wdata[0];
 
-  assign intr_state_wdog_timer_expired_wd = reg_wdata[1];
+  assign intr_state_wdog_timer_bark_wd = reg_wdata[1];
   assign intr_test_we = addr_hit[10] & reg_we & !reg_error;
 
   assign intr_test_wkup_timer_expired_wd = reg_wdata[0];
 
-  assign intr_test_wdog_timer_expired_wd = reg_wdata[1];
+  assign intr_test_wdog_timer_bark_wd = reg_wdata[1];
   assign wkup_cause_we = addr_hit[11] & reg_we & !reg_error;
 
 
@@ -939,7 +939,7 @@ module aon_timer_reg_top (
       end
       addr_hit[9]: begin
         reg_rdata_next[0] = intr_state_wkup_timer_expired_qs;
-        reg_rdata_next[1] = intr_state_wdog_timer_expired_qs;
+        reg_rdata_next[1] = intr_state_wdog_timer_bark_qs;
       end
 
       addr_hit[10]: begin
