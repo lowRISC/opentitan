@@ -507,7 +507,7 @@ OTBN is connected to the [Entropy Distribution Network (EDN)]({{< relref "hw/ip/
 `RND` provides bits taken directly from the EDN connected via `edn_rnd`.
 The EDN interface provides 32b of entropy per transaction and comes from a different clock domain to the OTBN core.
 A FIFO is used to synchronize the incoming package to the OTBN clock domain.
-Synchronized packages are then stacked up to a single `WLEN` value of 256b.
+Synchronized packages are then set starting from bottom up to a single `WLEN` value of 256b.
 In order to service a single EDN request, a total of 8 transactions are required from EDN interface.
 
 As an EDN request can take time, `RND` is backed by a single-entry cache containing the result of the most recent EDN request in OTBN core level.
@@ -516,7 +516,7 @@ A prefetch into the cache, which can be used to hide the EDN latency, is trigger
 Writes to `RND_PREFETCH` will be ignored whilst a prefetch is in progress or when the cache is already full.
 OTBN will stall until the request provides bits.
 Both the `RND` CSR and WSR take their bits from the same cache.
-`RND` CSR reads simply discard the other 192 bits on a read.
+`RND` CSR reads get bottom 32b and simply discard the other 192b on a read.
 When stalling on an `RND` read, OTBN will unstall on the cycle after it receives WLEN RND data from the EDN.
 
 `URND` provides bits from an LFSR within OTBN; reads from it never stall.
