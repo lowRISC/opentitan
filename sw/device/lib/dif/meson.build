@@ -218,16 +218,21 @@ sw_lib_dif_spi_device = declare_dependency(
       hw_ip_spi_device_reg_h,
       'dif_spi_device.c',
     ],
-    dependencies: [sw_lib_mmio],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_autogen_spi_device,
+    ],
   )
 )
 
 test('dif_spi_device_unittest', executable(
     'dif_spi_device_unittest',
     sources: [
-      hw_ip_spi_device_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_spi_device.c',
       'dif_spi_device_unittest.cc',
+      'autogen/dif_spi_device_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_spi_device.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_spi_device_autogen.c',
+      hw_ip_spi_device_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

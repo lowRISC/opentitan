@@ -240,13 +240,13 @@ sw_lib_dif_autogen_rstmgr = declare_dependency(
   )
 )
 
-# Autogen UART DIF library
-sw_lib_dif_autogen_uart = declare_dependency(
+# Autogen SPI Device DIF library
+sw_lib_dif_autogen_spi_device = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_uart',
+    'sw_lib_dif_autogen_spi_device',
     sources: [
-      hw_ip_uart_reg_h,
-      'dif_uart_autogen.c',
+      hw_ip_spi_device_reg_h,
+      'dif_spi_device_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -261,6 +261,20 @@ sw_lib_dif_autogen_sram_ctrl = declare_dependency(
     sources: [
       hw_ip_sram_ctrl_reg_h,
       'dif_sram_ctrl_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen UART DIF library
+sw_lib_dif_autogen_uart = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_uart',
+    sources: [
+      hw_ip_uart_reg_h,
+      'dif_uart_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,

@@ -84,29 +84,29 @@ void handler_irq_external(void) {
   dif_spi_device_irq_t spi_device_irq = 0;
   switch (plic_irq_id) {
     case kTopEarlgreyPlicIrqIdSpiDeviceRxf:
-      spi_device_irq = kDifSpiDeviceIrqRxFull;
+      spi_device_irq = kDifSpiDeviceIrqRxf;
       CHECK(expected_irqs[spi_device_irq], "Unexpected RX full interrupt");
       break;
     case kTopEarlgreyPlicIrqIdSpiDeviceRxlvl:
-      spi_device_irq = kDifSpiDeviceIrqRxAboveLevel;
+      spi_device_irq = kDifSpiDeviceIrqRxlvl;
       CHECK(expected_irqs[spi_device_irq],
             "Unexpected RX above level interrupt");
       break;
     case kTopEarlgreyPlicIrqIdSpiDeviceTxlvl:
-      spi_device_irq = kDifSpiDeviceIrqTxBelowLevel;
+      spi_device_irq = kDifSpiDeviceIrqTxlvl;
       CHECK(expected_irqs[spi_device_irq],
             "Unexpected TX below level interrupt");
       break;
     case kTopEarlgreyPlicIrqIdSpiDeviceRxerr:
-      spi_device_irq = kDifSpiDeviceIrqRxError;
+      spi_device_irq = kDifSpiDeviceIrqRxerr;
       CHECK(expected_irqs[spi_device_irq], "Unexpected RX error interrupt");
       break;
     case kTopEarlgreyPlicIrqIdSpiDeviceRxoverflow:
-      spi_device_irq = kDifSpiDeviceIrqRxOverflow;
+      spi_device_irq = kDifSpiDeviceIrqRxoverflow;
       CHECK(expected_irqs[spi_device_irq], "Unexpected RX overflow interrupt");
       break;
     case kTopEarlgreyPlicIrqIdSpiDeviceTxunderflow:
-      spi_device_irq = kDifSpiDeviceIrqTxUnderflow;
+      spi_device_irq = kDifSpiDeviceIrqTxunderflow;
       CHECK(expected_irqs[spi_device_irq], "Unexpected TX underflow interrupt");
       break;
     default:
@@ -117,16 +117,13 @@ void handler_irq_external(void) {
 
   // Check if the same interrupt fired at SPI DEVICE as well.
   bool flag_out;
-  CHECK(dif_spi_device_irq_is_pending(&spi_device, spi_device_irq, &flag_out) ==
-            kDifSpiDeviceOk,
-        "dif_spi_device_irq_state_get failed");
+  CHECK_DIF_OK(
+      dif_spi_device_irq_is_pending(&spi_device, spi_device_irq, &flag_out));
   CHECK(flag_out,
         "SPI_DEVICE interrupt fired at PLIC did not fire at SPI_DEVICE");
 
   // Clear the interrupt at SPI DEVICE.
-  CHECK(dif_spi_device_irq_acknowledge(&spi_device, spi_device_irq) ==
-            kDifSpiDeviceOk,
-        "dif_spi_device_irq_state_clear failed");
+  CHECK_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device, spi_device_irq));
 
   // Complete the IRQ at PLIC.
   CHECK(dif_rv_plic_irq_complete(&plic0, kTopEarlgreyPlicTargetIbex0,
@@ -141,38 +138,21 @@ static void spi_device_init_with_irqs(
     mmio_region_t base_addr, dif_spi_device_t *spi_device,
     const dif_spi_device_config_t *spi_device_config) {
   LOG_INFO("Initializing the SPI_DEVICE.");
-  CHECK(dif_spi_device_init((dif_spi_device_params_t){base_addr}, spi_device) ==
-            kDifSpiDeviceOk,
-        "spi device init failed");
+  CHECK_DIF_OK(dif_spi_device_init(base_addr, spi_device));
+  CHECK_DIF_OK(dif_spi_device_configure(spi_device, spi_device_config));
 
-  CHECK(dif_spi_device_configure(spi_device, spi_device_config) ==
-            kDifSpiDeviceOk,
-        "spi device init failed");
-
-  CHECK(dif_spi_device_irq_set_enabled(spi_device, kDifSpiDeviceIrqRxFull,
-                                       kDifSpiDeviceToggleEnabled) ==
-            kDifSpiDeviceOk,
-        "dif_spi_device_irq_enable RxFull failed");
-  CHECK(dif_spi_device_irq_set_enabled(spi_device, kDifSpiDeviceIrqRxAboveLevel,
-                                       kDifSpiDeviceToggleEnabled) ==
-            kDifSpiDeviceOk,
-        "dif_spi_device_irq_enable RxAboveLevel failed");
-  CHECK(dif_spi_device_irq_set_enabled(spi_device, kDifSpiDeviceIrqTxBelowLevel,
-                                       kDifSpiDeviceToggleEnabled) ==
-            kDifSpiDeviceOk,
-        "dif_spi_device_irq_enable TxBelowLevel failed");
-  CHECK(dif_spi_device_irq_set_enabled(spi_device, kDifSpiDeviceIrqRxError,
-                                       kDifSpiDeviceToggleEnabled) ==
-            kDifSpiDeviceOk,
-        "dif_spi_device_irq_enable RxError failed");
-  CHECK(dif_spi_device_irq_set_enabled(spi_device, kDifSpiDeviceIrqRxOverflow,
-                                       kDifSpiDeviceToggleEnabled) ==
-            kDifSpiDeviceOk,
-        "dif_spi_device_irq_enable RxOverflow failed");
-  CHECK(dif_spi_device_irq_set_enabled(spi_device, kDifSpiDeviceIrqTxUnderflow,
-                                       kDifSpiDeviceToggleEnabled) ==
-            kDifSpiDeviceOk,
-        "dif_spi_device_irq_enable TxUnderflow failed");
+  CHECK_DIF_OK(dif_spi_device_irq_set_enabled(spi_device, kDifSpiDeviceIrqRxf,
+                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_spi_device_irq_set_enabled(spi_device, kDifSpiDeviceIrqRxlvl,
+                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_spi_device_irq_set_enabled(spi_device, kDifSpiDeviceIrqTxlvl,
+                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_spi_device_irq_set_enabled(spi_device, kDifSpiDeviceIrqRxerr,
+                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
+      spi_device, kDifSpiDeviceIrqRxoverflow, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
+      spi_device, kDifSpiDeviceIrqTxunderflow, kDifToggleEnabled));
 
   // Initialize the volatile irq variables.
   for (int i = 0; i < SPI_DEVICE_NUM_IRQS; i++) {
@@ -253,11 +233,11 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
 }
 
 static bool exp_irqs_fired(void) {
-  return fired_irqs[kDifSpiDeviceIrqRxAboveLevel] &&
-         fired_irqs[kDifSpiDeviceIrqTxBelowLevel] &&
-         fired_irqs[kDifSpiDeviceIrqRxOverflow] &&
-         fired_irqs[kDifSpiDeviceIrqTxUnderflow] &&
-         fired_irqs[kDifSpiDeviceIrqRxFull];
+  return fired_irqs[kDifSpiDeviceIrqRxlvl] &&
+         fired_irqs[kDifSpiDeviceIrqTxlvl] &&
+         fired_irqs[kDifSpiDeviceIrqRxoverflow] &&
+         fired_irqs[kDifSpiDeviceIrqTxunderflow] &&
+         fired_irqs[kDifSpiDeviceIrqRxf];
 }
 
 static bool execute_test(const dif_spi_device_t *spi_device,
@@ -265,9 +245,9 @@ static bool execute_test(const dif_spi_device_t *spi_device,
   LOG_INFO("Executing the test.");
 
   size_t bytes_transferred = 0;
-  CHECK(dif_spi_device_send(spi_device, spi_device_config, spi_device_tx_data,
-                            SPI_DEVICE_DATASET_SIZE,
-                            &bytes_transferred) == kDifSpiDeviceOk);
+  CHECK_DIF_OK(dif_spi_device_send(spi_device, spi_device_config,
+                                   spi_device_tx_data, SPI_DEVICE_DATASET_SIZE,
+                                   &bytes_transferred));
   if (bytes_transferred != SPI_DEVICE_DATASET_SIZE) {
     LOG_ERROR(
         "SPI_DEVICE TX_FIFO transferred bytes mismatched: {act: %0d, exp: %0d}",
@@ -276,38 +256,37 @@ static bool execute_test(const dif_spi_device_t *spi_device,
     LOG_INFO("Transferred %0d bytes to SPI_DEVICE TX_FIFO.", bytes_transferred);
   }
 
-  CHECK(dif_spi_device_set_irq_levels(spi_device, SPI_DEVICE_DATASET_SIZE,
-                                      SPI_DEVICE_DATASET_SIZE / 2) ==
-        kDifSpiDeviceOk);
-  expected_irqs[kDifSpiDeviceIrqTxBelowLevel] = true;
+  CHECK_DIF_OK(dif_spi_device_set_irq_levels(
+      spi_device, SPI_DEVICE_DATASET_SIZE, SPI_DEVICE_DATASET_SIZE / 2));
+  expected_irqs[kDifSpiDeviceIrqTxlvl] = true;
 
   bool read_rx_fifo_done = false;
   while (!read_rx_fifo_done || !exp_irqs_fired()) {
     // set rx tx level back to default value so TxBelowLevel irq won't trigger
-    if (fired_irqs[kDifSpiDeviceIrqTxBelowLevel] &&
-        expected_irqs[kDifSpiDeviceIrqTxBelowLevel]) {
-      CHECK(dif_spi_device_set_irq_levels(spi_device, SPI_DEVICE_DATASET_SIZE,
-                                          0) == kDifSpiDeviceOk);
-      expected_irqs[kDifSpiDeviceIrqTxBelowLevel] = false;
-      expected_irqs[kDifSpiDeviceIrqRxAboveLevel] = true;
+    if (fired_irqs[kDifSpiDeviceIrqTxlvl] &&
+        expected_irqs[kDifSpiDeviceIrqTxlvl]) {
+      CHECK_DIF_OK(dif_spi_device_set_irq_levels(spi_device,
+                                                 SPI_DEVICE_DATASET_SIZE, 0));
+      expected_irqs[kDifSpiDeviceIrqTxlvl] = false;
+      expected_irqs[kDifSpiDeviceIrqRxlvl] = true;
       LOG_INFO("SPI_DEVICE tx_below_level interrupt fired.");
     }
 
     // wait for SPI_HOST to send 128 bytes and trigger RxAboveLevel irq
-    if (fired_irqs[kDifSpiDeviceIrqRxAboveLevel] &&
-        expected_irqs[kDifSpiDeviceIrqRxAboveLevel]) {
-      expected_irqs[kDifSpiDeviceIrqRxAboveLevel] = false;
+    if (fired_irqs[kDifSpiDeviceIrqRxlvl] &&
+        expected_irqs[kDifSpiDeviceIrqRxlvl]) {
+      expected_irqs[kDifSpiDeviceIrqRxlvl] = false;
       LOG_INFO("SPI_DEVICE rx_above_level interrupt fired.");
     }
 
     // when 128 bytes received in RX_FIFO from SPI_HOST,
     // read out and compare against the expected data
-    if (fired_irqs[kDifSpiDeviceIrqRxAboveLevel] && !read_rx_fifo_done) {
+    if (fired_irqs[kDifSpiDeviceIrqRxlvl] && !read_rx_fifo_done) {
       size_t bytes_recved = 0;
       uint8_t spi_device_rx_data[SPI_DEVICE_DATASET_SIZE];
-      CHECK(dif_spi_device_recv(spi_device, spi_device_config,
-                                spi_device_rx_data, SPI_DEVICE_DATASET_SIZE,
-                                &bytes_recved) == kDifSpiDeviceOk);
+      CHECK_DIF_OK(dif_spi_device_recv(spi_device, spi_device_config,
+                                       spi_device_rx_data,
+                                       SPI_DEVICE_DATASET_SIZE, &bytes_recved));
       if (bytes_recved == SPI_DEVICE_DATASET_SIZE) {
         LOG_INFO("Received %0d bytes from SPI_DEVICE RX_FIFO.", bytes_recved);
         read_rx_fifo_done = true;
@@ -317,8 +296,8 @@ static bool execute_test(const dif_spi_device_t *spi_device,
             bytes_recved, SPI_DEVICE_DATASET_SIZE);
       }
       // expect SPI_HOST to send another 1024 bytes to fill RX SRAM FIFO
-      expected_irqs[kDifSpiDeviceIrqTxUnderflow] = true;
-      fired_irqs[kDifSpiDeviceIrqRxAboveLevel] = false;
+      expected_irqs[kDifSpiDeviceIrqTxunderflow] = true;
+      fired_irqs[kDifSpiDeviceIrqRxlvl] = false;
 
       // Check data consistency.
       LOG_INFO("Checking the received SPI_HOST RX_FIFO data for consistency.");
@@ -329,28 +308,26 @@ static bool execute_test(const dif_spi_device_t *spi_device,
       }
     }
 
-    if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqTxUnderflow]) {
-      expected_irqs[kDifSpiDeviceIrqRxAboveLevel] = true;
+    if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqTxunderflow]) {
+      expected_irqs[kDifSpiDeviceIrqRxlvl] = true;
       // TxUnderflow will fire every cycle, so disable this interrupt once fired
-      CHECK(dif_spi_device_irq_set_enabled(
-                spi_device, kDifSpiDeviceIrqTxUnderflow,
-                kDifSpiDeviceToggleDisabled) == kDifSpiDeviceOk,
-            "dif_spi_device_irq_disable TxBelowLevel failed");
-      expected_irqs[kDifSpiDeviceIrqTxUnderflow] = false;
+      CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
+          spi_device, kDifSpiDeviceIrqTxunderflow, kDifToggleDisabled));
+      expected_irqs[kDifSpiDeviceIrqTxunderflow] = false;
       LOG_INFO("SPI_DEVICE Tx Below level interrupt fired.");
     }
 
-    if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqRxAboveLevel]) {
-      expected_irqs[kDifSpiDeviceIrqRxAboveLevel] = false;
-      expected_irqs[kDifSpiDeviceIrqRxFull] = true;
+    if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqRxlvl]) {
+      expected_irqs[kDifSpiDeviceIrqRxlvl] = false;
+      expected_irqs[kDifSpiDeviceIrqRxf] = true;
       LOG_INFO("SPI_DEVICE RX Above level interrupt fired.");
     }
 
     // After RX SRAM FIFO full, expect RX async FIFO overflow irq
-    if (fired_irqs[kDifSpiDeviceIrqRxFull] &&
-        !fired_irqs[kDifSpiDeviceIrqRxOverflow]) {
-      expected_irqs[kDifSpiDeviceIrqRxFull] = false;
-      expected_irqs[kDifSpiDeviceIrqRxOverflow] = true;
+    if (fired_irqs[kDifSpiDeviceIrqRxf] &&
+        !fired_irqs[kDifSpiDeviceIrqRxoverflow]) {
+      expected_irqs[kDifSpiDeviceIrqRxf] = false;
+      expected_irqs[kDifSpiDeviceIrqRxoverflow] = true;
       LOG_INFO("SPI_DEVICE RX_FIFO full interrupt fired.");
     }
 
