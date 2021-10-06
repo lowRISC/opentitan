@@ -8,10 +8,11 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::io::gpio::Gpio;
+use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::{Capabilities, Capability, Transport, TransportError};
+use crate::util::parse_int::ParseInt;
 
 pub mod gpio;
 pub mod spi;
@@ -21,7 +22,7 @@ pub mod usb;
 #[derive(Default)]
 struct Inner {
     spi: Option<Rc<dyn Target>>,
-    gpio: Option<Rc<dyn Gpio>>,
+    gpio: HashMap<String, Rc<dyn GpioPin>>,
     uart: HashMap<u32, Rc<dyn Uart>>,
 }
 
@@ -73,8 +74,9 @@ impl Transport for CW310 {
         )
     }
 
-    fn uart(&self, instance: u32) -> Result<Rc<dyn Uart>> {
+    fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         let mut inner = self.inner.borrow_mut();
+        let instance = u32::from_str(instance)?;
         let uart = match inner.uart.entry(instance) {
             Entry::Vacant(v) => {
                 let u = v.insert(Rc::new(uart::CW310Uart::open(
@@ -88,18 +90,24 @@ impl Transport for CW310 {
         Ok(uart)
     }
 
-    fn gpio(&self) -> Result<Rc<dyn Gpio>> {
+    fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         let mut inner = self.inner.borrow_mut();
-        if inner.gpio.is_none() {
-            inner.gpio = Some(Rc::new(gpio::CW310Gpio::open(Rc::clone(&self.device))?));
-        }
-        Ok(Rc::clone(inner.gpio.as_ref().unwrap()))
+        Ok(match inner.gpio.entry(pinname.to_string()) {
+            Entry::Vacant(v) => {
+                let u = v.insert(Rc::new(gpio::CW310GpioPin::open(
+                    Rc::clone(&self.device),
+                    pinname.to_string(),
+                )?));
+                Rc::clone(u)
+            }
+            Entry::Occupied(o) => Rc::clone(o.get()),
+        })
     }
 
-    fn spi(&self, instance: u32) -> Result<Rc<dyn Target>> {
+    fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         ensure!(
-            instance == 0,
-            TransportError::InvalidInstance("spi", instance)
+            instance == "0",
+            TransportError::InvalidInstance("spi", instance.to_string())
         );
         let mut inner = self.inner.borrow_mut();
         if inner.spi.is_none() {

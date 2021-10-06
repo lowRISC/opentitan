@@ -9,8 +9,9 @@ use std::fs;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::transport::{Capability, Transport};
+use opentitanlib::transport::Capability;
 
 /// Read data from a SPI EEPROM.
 #[derive(Debug, StructOpt)]
@@ -23,7 +24,7 @@ impl CommandDispatch for LoadBitstream {
     fn run(
         &self,
         _context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport
             .capabilities()

@@ -8,13 +8,13 @@ use std::str::FromStr;
 use structopt::StructOpt;
 use thiserror::Error;
 
-use crate::transport::Transport;
+use crate::app::TransportWrapper;
 use crate::util::voltage::Voltage;
 
 #[derive(Debug, StructOpt)]
 pub struct SpiParams {
     #[structopt(long, help = "SPI instance", default_value = "0")]
-    pub bus: u32,
+    pub bus: String,
 
     #[structopt(long, help = "SPI bus speed")]
     pub speed: Option<u32>,
@@ -27,8 +27,8 @@ pub struct SpiParams {
 }
 
 impl SpiParams {
-    pub fn create(&self, transport: &dyn Transport) -> Result<Rc<dyn Target>> {
-        let spi = transport.spi(self.bus)?;
+    pub fn create(&self, transport: &TransportWrapper) -> Result<Rc<dyn Target>> {
+        let spi = transport.spi(&self.bus)?;
         if let Some(speed) = self.speed {
             spi.set_max_speed(speed)?;
         }

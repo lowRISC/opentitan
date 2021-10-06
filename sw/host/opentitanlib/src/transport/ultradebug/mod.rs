@@ -8,7 +8,7 @@ use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::gpio::Gpio;
+use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::{Capabilities, Capability, Transport, TransportError};
@@ -31,7 +31,7 @@ pub struct Ultradebug {
 
 #[derive(Default)]
 struct Inner {
-    gpio: Option<Rc<dyn Gpio>>,
+    gpio: Option<Rc<gpio::UltradebugGpio>>,
     spi: Option<Rc<dyn Target>>,
     uart: Option<Rc<dyn Uart>>,
 }
@@ -116,10 +116,10 @@ impl Transport for Ultradebug {
         Capabilities::new(Capability::UART | Capability::GPIO | Capability::SPI)
     }
 
-    fn uart(&self, instance: u32) -> Result<Rc<dyn Uart>> {
+    fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         ensure!(
-            instance == 0,
-            TransportError::InvalidInstance("uart", instance)
+            instance == "0",
+            TransportError::InvalidInstance("uart", instance.to_string())
         );
         let mut inner = self.inner.borrow_mut();
         if inner.uart.is_none() {
@@ -128,18 +128,18 @@ impl Transport for Ultradebug {
         Ok(Rc::clone(inner.uart.as_ref().unwrap()))
     }
 
-    fn gpio(&self) -> Result<Rc<dyn Gpio>> {
+    fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
         let mut inner = self.inner.borrow_mut();
         if inner.gpio.is_none() {
             inner.gpio = Some(Rc::new(gpio::UltradebugGpio::open(self)?));
         }
-        Ok(Rc::clone(inner.gpio.as_ref().unwrap()))
+        Ok(Rc::new(inner.gpio.as_ref().unwrap().pin(instance)?))
     }
 
-    fn spi(&self, instance: u32) -> Result<Rc<dyn Target>> {
+    fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         ensure!(
-            instance == 0,
-            TransportError::InvalidInstance("spi", instance)
+            instance == "0",
+            TransportError::InvalidInstance("spi", instance.to_string())
         );
         let mut inner = self.inner.borrow_mut();
         if inner.spi.is_none() {

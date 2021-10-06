@@ -74,7 +74,7 @@ fn dispatch_enum(name: &Ident, e: &DataEnum) -> TokenStream {
                 fn run(
                     &self,
                     context: &dyn std::any::Any,
-                    backend: &mut dyn opentitanlib::transport::Transport
+                    backend: &opentitanlib::app::TransportWrapper,
                 ) -> anyhow::Result<Option<Box<dyn erased_serde::Serialize>>> {
                     match self {
                         #(#arms),*

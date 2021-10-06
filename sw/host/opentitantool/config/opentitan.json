@@ -1,0 +1,30 @@
+{
+  "strappings": [
+    {
+      "name": "None",
+      "pins": [
+        {
+          "name": "BOOTSTRAP",
+          "level": false
+        }
+      ]
+    },
+    {
+      "name": "RomBootstrap",
+      "pins": [
+        {
+          "name": "BOOTSTRAP",
+          "level": true
+        }
+      ]
+    }
+  ],
+  "uarts": [
+    {
+      "name": "console",
+      "baudrate": 115200,
+      "parity": "None",
+      "stopbits": "Stop1"
+    }
+  ]
+}

@@ -85,10 +85,10 @@ impl Transport for Verilator {
         Capabilities::new(Capability::UART)
     }
 
-    fn uart(&self, instance: u32) -> Result<Rc<dyn Uart>> {
+    fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         ensure!(
-            instance == 0,
-            TransportError::InvalidInstance("uart", instance)
+            instance == "0",
+            TransportError::InvalidInstance("uart", instance.to_string())
         );
         let mut inner = self.inner.borrow_mut();
         if inner.uart.is_none() {

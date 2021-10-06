@@ -12,8 +12,8 @@ use erased_serde::Serialize;
 use std::any::Any;
 use structopt::StructOpt;
 
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::transport::Transport;
 
 #[derive(Debug, StructOpt)]
 /// The `hello world` command accepts an command option of `--cruel`.
@@ -32,7 +32,7 @@ impl CommandDispatch for HelloWorld {
     fn run(
         &self,
         _context: &dyn Any,
-        _transport: &mut dyn Transport,
+        _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         // Is the world cruel or not?
         let msg = if self.cruel {
@@ -56,7 +56,7 @@ impl CommandDispatch for HelloPeople {
     fn run(
         &self,
         _context: &dyn Any,
-        _transport: &mut dyn Transport,
+        _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         // The `hello people` command produces no result.
         Ok(None)
@@ -87,7 +87,7 @@ impl CommandDispatch for GoodbyeCommand {
     fn run(
         &self,
         _context: &dyn Any,
-        _transport: &mut dyn Transport,
+        _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         Ok(Some(Box::new(GoodbyeMessage {
             message: "Goodbye!".to_owned(),

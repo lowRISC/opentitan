@@ -7,20 +7,20 @@ use std::rc::Rc;
 use std::time::Duration;
 use structopt::StructOpt;
 
-use crate::transport::Transport;
+use crate::app::TransportWrapper;
 
 #[derive(Debug, StructOpt)]
 pub struct UartParams {
-    #[structopt(long, help = "UART instance", default_value = "0")]
-    uart: u32,
+    #[structopt(long, help = "UART instance", default_value = "CONSOLE")]
+    uart: String,
 
     #[structopt(long, help = "UART baudrate")]
     baudrate: Option<u32>,
 }
 
 impl UartParams {
-    pub fn create(&self, transport: &dyn Transport) -> Result<Rc<dyn Uart>> {
-        let uart = transport.uart(self.uart)?;
+    pub fn create(&self, transport: &TransportWrapper) -> Result<Rc<dyn Uart>> {
+        let uart = transport.uart(&self.uart)?;
         if let Some(baudrate) = self.baudrate {
             uart.set_baudrate(baudrate)?;
         }
