@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::transport::Transport;
+use crate::app::TransportWrapper;
 use anyhow::Result;
 use erased_serde::Serialize;
 pub use opentitantool_derive::*;
@@ -20,6 +20,6 @@ pub trait CommandDispatch {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>>;
 }

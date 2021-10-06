@@ -10,10 +10,11 @@ use std::path::PathBuf;
 use std::time::Duration;
 use structopt::StructOpt;
 
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::bootstrap::{Bootstrap, BootstrapOptions, BootstrapProtocol};
 use opentitanlib::io::spi::SpiParams;
-use opentitanlib::transport::{Capability, Transport};
+use opentitanlib::transport::Capability;
 
 /// Bootstrap the target device.
 #[derive(Debug, StructOpt)]
@@ -43,7 +44,7 @@ impl CommandDispatch for BootstrapCommand {
     fn run(
         &self,
         _context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport
             .capabilities()
@@ -58,9 +59,10 @@ impl CommandDispatch for BootstrapCommand {
         let bootstrap = Bootstrap::new(self.protocol, options)?;
 
         let spi = self.params.create(transport)?;
-        let gpio = transport.gpio()?;
+        let reset_pin = transport.gpio_pin("RESET")?;
+        let bootstrap_pin = transport.gpio_pin("BOOTSTRAP")?;
         let payload = std::fs::read(&self.filename)?;
-        bootstrap.update(&*spi, &*gpio, &payload)?;
+        bootstrap.update(&*spi, &*reset_pin, &*bootstrap_pin, &payload)?;
         Ok(None)
     }
 }

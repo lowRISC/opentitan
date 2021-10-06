@@ -7,9 +7,10 @@ use erased_serde::Serialize;
 use std::any::Any;
 use structopt::StructOpt;
 
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::gpio::PinDirection;
-use opentitanlib::transport::{Capability, Transport};
+use opentitanlib::transport::{Capability};
 
 #[derive(Debug, StructOpt)]
 /// Reads a GPIO pin.
@@ -28,11 +29,11 @@ impl CommandDispatch for GpioRead {
     fn run(
         &self,
         _context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::GPIO).ok()?;
-        let gpio = transport.gpio()?;
-        let value = gpio.read(&self.pin)?;
+        let gpio_pin = transport.gpio_pin(&self.pin)?;
+        let value = gpio_pin.read()?;
         Ok(Some(Box::new(GpioReadResult {
             pin: self.pin.clone(),
             value,
@@ -57,12 +58,12 @@ impl CommandDispatch for GpioWrite {
     fn run(
         &self,
         _context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::GPIO).ok()?;
-        let gpio = transport.gpio()?;
+        let gpio_pin = transport.gpio_pin(&self.pin)?;
 
-        gpio.write(&self.pin, self.value)?;
+        gpio_pin.write(self.value)?;
         Ok(None)
     }
 }
@@ -85,11 +86,11 @@ impl CommandDispatch for GpioSetDirection {
     fn run(
         &self,
         _context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::GPIO).ok()?;
-        let gpio = transport.gpio()?;
-        gpio.set_direction(&self.pin, self.direction)?;
+        let gpio_pin = transport.gpio_pin(&self.pin)?;
+        gpio_pin.set_direction(self.direction)?;
         Ok(None)
     }
 }

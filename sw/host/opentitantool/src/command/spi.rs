@@ -12,10 +12,11 @@ use std::path::PathBuf;
 use std::time::Instant;
 use structopt::StructOpt;
 
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::spi::{SpiParams, Transfer};
 use opentitanlib::spiflash::SpiFlash;
-use opentitanlib::transport::{Capability, Transport};
+use opentitanlib::transport::Capability;
 
 /// Read and parse an SFDP table.
 #[derive(Debug, StructOpt)]
@@ -73,7 +74,7 @@ impl CommandDispatch for SpiSfdp {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
@@ -115,7 +116,7 @@ impl CommandDispatch for SpiReadId {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
@@ -164,7 +165,7 @@ impl CommandDispatch for SpiRead {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
@@ -214,7 +215,7 @@ impl CommandDispatch for SpiErase {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
@@ -256,7 +257,7 @@ impl CommandDispatch for SpiProgram {
     fn run(
         &self,
         context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
@@ -303,7 +304,7 @@ impl CommandDispatch for SpiCommand {
     fn run(
         &self,
         _context: &dyn Any,
-        transport: &mut dyn Transport,
+        transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         // None of the SPI commands care about the prior context, but they do
         // care about the `bus` parameter in the current node.

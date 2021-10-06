@@ -45,9 +45,9 @@ fn main() -> Result<()> {
         .filter(None, opts.logging)
         .init();
 
-    let mut interface = backend::create(&opts.backend_opts)?;
+    let transport = backend::create(&opts.backend_opts)?;
 
-    if let Some(value) = opts.command.run(&opts, &mut *interface)? {
+    if let Some(value) = opts.command.run(&opts, &transport)? {
         println!("{}", serde_json::to_string_pretty(&value)?);
     }
     Ok(())
