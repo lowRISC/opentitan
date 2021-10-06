@@ -70,6 +70,7 @@ static size_t usb_chars_recved_total;
 
 static dif_gpio_t gpio;
 static dif_spi_device_t spi;
+static dif_spi_device_config_t spi_config;
 static dif_uart_t uart;
 
 /**
@@ -127,16 +128,14 @@ int main(int argc, char **argv) {
                     mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR),
             },
             &spi) == kDifSpiDeviceOk);
-  CHECK(dif_spi_device_configure(
-            &spi, (dif_spi_device_config_t){
-                      .clock_polarity = kDifSpiDeviceEdgePositive,
-                      .data_phase = kDifSpiDeviceEdgeNegative,
-                      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
-                      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
-                      .rx_fifo_timeout = 63,
-                      .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
-                      .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
-                  }) == kDifSpiDeviceOk);
+  spi_config.clock_polarity = kDifSpiDeviceEdgePositive;
+  spi_config.data_phase = kDifSpiDeviceEdgeNegative;
+  spi_config.tx_order = kDifSpiDeviceBitOrderMsbToLsb;
+  spi_config.rx_order = kDifSpiDeviceBitOrderMsbToLsb;
+  spi_config.rx_fifo_timeout = 63;
+  spi_config.rx_fifo_len = kDifSpiDeviceBufferLen / 2;
+  spi_config.tx_fifo_len = kDifSpiDeviceBufferLen / 2;
+  CHECK(dif_spi_device_configure(&spi, &spi_config) == kDifSpiDeviceOk);
 
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
@@ -166,8 +165,8 @@ int main(int argc, char **argv) {
   usb_simpleserial_init(&simple_serial0, &usbdev, 1, usb_receipt_callback_0);
   usb_simpleserial_init(&simple_serial1, &usbdev, 2, usb_receipt_callback_1);
 
-  CHECK(dif_spi_device_send(&spi, "SPI!", 4, /*bytes_sent=*/NULL) ==
-        kDifSpiDeviceOk);
+  CHECK(dif_spi_device_send(&spi, &spi_config, "SPI!", 4,
+                            /*bytes_sent=*/NULL) == kDifSpiDeviceOk);
 
   bool say_hello = true;
   bool pass_signaled = false;
@@ -175,7 +174,7 @@ int main(int argc, char **argv) {
     usbdev_poll(&usbdev);
 
     gpio_state = demo_gpio_to_log_echo(&gpio, gpio_state);
-    demo_spi_to_log_echo(&spi);
+    demo_spi_to_log_echo(&spi, &spi_config);
 
     while (true) {
       size_t chars_available;

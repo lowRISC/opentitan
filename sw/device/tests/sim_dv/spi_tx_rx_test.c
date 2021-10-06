@@ -137,19 +137,10 @@ void handler_irq_external(void) {
 /**
  * Initializes SPI_DEVICE and enables the relevant interrupts.
  */
-static void spi_device_init_with_irqs(mmio_region_t base_addr,
-                                      dif_spi_device_t *spi_device) {
+static void spi_device_init_with_irqs(
+    mmio_region_t base_addr, dif_spi_device_t *spi_device,
+    const dif_spi_device_config_t *spi_device_config) {
   LOG_INFO("Initializing the SPI_DEVICE.");
-  dif_spi_device_config_t spi_device_config = {
-      .clock_polarity = kDifSpiDeviceEdgePositive,
-      .data_phase = kDifSpiDeviceEdgeNegative,
-      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
-      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
-      .rx_fifo_timeout = 63,
-      .rx_fifo_len = kFifoLen,
-      .tx_fifo_len = kFifoLen,
-  };
-
   CHECK(dif_spi_device_init((dif_spi_device_params_t){base_addr}, spi_device) ==
             kDifSpiDeviceOk,
         "spi device init failed");
@@ -269,11 +260,12 @@ static bool exp_irqs_fired(void) {
          fired_irqs[kDifSpiDeviceIrqRxFull];
 }
 
-static bool execute_test(const dif_spi_device_t *spi_device) {
+static bool execute_test(const dif_spi_device_t *spi_device,
+                         const dif_spi_device_config_t *spi_device_config) {
   LOG_INFO("Executing the test.");
 
   size_t bytes_transferred = 0;
-  CHECK(dif_spi_device_send(spi_device, spi_device_tx_data,
+  CHECK(dif_spi_device_send(spi_device, spi_device_config, spi_device_tx_data,
                             SPI_DEVICE_DATASET_SIZE,
                             &bytes_transferred) == kDifSpiDeviceOk);
   if (bytes_transferred != SPI_DEVICE_DATASET_SIZE) {
@@ -313,8 +305,8 @@ static bool execute_test(const dif_spi_device_t *spi_device) {
     if (fired_irqs[kDifSpiDeviceIrqRxAboveLevel] && !read_rx_fifo_done) {
       size_t bytes_recved = 0;
       uint8_t spi_device_rx_data[SPI_DEVICE_DATASET_SIZE];
-      CHECK(dif_spi_device_recv(spi_device, spi_device_rx_data,
-                                SPI_DEVICE_DATASET_SIZE,
+      CHECK(dif_spi_device_recv(spi_device, spi_device_config,
+                                spi_device_rx_data, SPI_DEVICE_DATASET_SIZE,
                                 &bytes_recved) == kDifSpiDeviceOk);
       if (bytes_recved == SPI_DEVICE_DATASET_SIZE) {
         LOG_INFO("Received %0d bytes from SPI_DEVICE RX_FIFO.", bytes_recved);
@@ -373,8 +365,19 @@ const test_config_t kTestConfig;
 bool test_main(void) {
   mmio_region_t spi_device_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
+  dif_spi_device_config_t spi_device_config = {
+      .clock_polarity = kDifSpiDeviceEdgePositive,
+      .data_phase = kDifSpiDeviceEdgeNegative,
+      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_fifo_timeout = 63,
+      .rx_fifo_len = kFifoLen,
+      .tx_fifo_len = kFifoLen,
+  };
+
   // Initialize SPI_DEVICE
-  spi_device_init_with_irqs(spi_device_base_addr, &spi_device);
+  spi_device_init_with_irqs(spi_device_base_addr, &spi_device,
+                            &spi_device_config);
 
   mmio_region_t plic_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
@@ -385,5 +388,5 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  return execute_test(&spi_device);
+  return execute_test(&spi_device, &spi_device_config);
 }
