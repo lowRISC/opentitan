@@ -142,7 +142,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
     op_readonly_on_info_partition = 0;
     op_readonly_on_info1_partition = 0;
 
-    op_erase_type_bank_pc = 0;
+    op_erase_type_bank_pc = 20;
     op_max_words = 512;
     op_allow_invalid = 1'b0;
 
