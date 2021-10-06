@@ -167,12 +167,15 @@ typedef struct dif_kmac_config {
  * A handle to KMAC.
  *
  * This type should be treated as opaque by users.
- *
- * Note: contains mutable information about the state.
  */
 typedef struct dif_kmac {
   dif_kmac_params_t params;
+} dif_kmac_t;
 
+/**
+ * A KMAC operation state context.
+ */
+typedef struct dif_kmac_operation_state {
   /**
    * Whether the 'squeezing' phase has been started.
    */
@@ -204,7 +207,7 @@ typedef struct dif_kmac {
    * `d - offset` always accurately reflects the number of words remaining.
    */
   size_t d;
-} dif_kmac_t;
+} dif_kmac_operation_state_t;
 
 /**
  * The result of a KMAC operation.
@@ -555,12 +558,14 @@ dif_kmac_result_t dif_kmac_function_name_init(const char *data, size_t len,
  * See NIST FIPS 202 [1] for more information about SHA-3.
  *
  * @param kmac A KMAC handle.
+ * @param operation_state A KMAC operation state context.
  * @param mode The SHA-3 mode of operation.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_mode_sha3_start(dif_kmac_t *kmac,
-                                           dif_kmac_mode_sha3_t mode);
+dif_kmac_result_t dif_kmac_mode_sha3_start(
+    const dif_kmac_t *kmac, dif_kmac_operation_state_t *operation_state,
+    dif_kmac_mode_sha3_t mode);
 
 /**
  * Start a SHAKE operation.
@@ -570,12 +575,14 @@ dif_kmac_result_t dif_kmac_mode_sha3_start(dif_kmac_t *kmac,
  * See NIST FIPS 202 [1] for more information about SHAKE.
  *
  * @param kmac A KMAC handle.
+ * @param operation_state A KMAC operation state context.
  * @param mode The mode of operation.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_mode_shake_start(dif_kmac_t *kmac,
-                                            dif_kmac_mode_shake_t mode);
+dif_kmac_result_t dif_kmac_mode_shake_start(
+    const dif_kmac_t *kmac, dif_kmac_operation_state_t *operation_state,
+    dif_kmac_mode_shake_t mode);
 
 /**
  * Start a cSHAKE operation.
@@ -585,6 +592,7 @@ dif_kmac_result_t dif_kmac_mode_shake_start(dif_kmac_t *kmac,
  * See NIST Special Publication 800-185 [2] for more information about cSHAKE.
  *
  * @param kmac A KMAC handle.
+ * @param operation_state A KMAC operation state context.
  * @param mode The mode of operation.
  * @param n Function name (optional).
  * @param s Customization string (optional).
@@ -592,8 +600,8 @@ dif_kmac_result_t dif_kmac_mode_shake_start(dif_kmac_t *kmac,
  */
 OT_WARN_UNUSED_RESULT
 dif_kmac_result_t dif_kmac_mode_cshake_start(
-    dif_kmac_t *kmac, dif_kmac_mode_cshake_t mode,
-    const dif_kmac_function_name_t *n,
+    const dif_kmac_t *kmac, dif_kmac_operation_state_t *operation_state,
+    dif_kmac_mode_cshake_t mode, const dif_kmac_function_name_t *n,
     const dif_kmac_customization_string_t *s);
 
 /**
@@ -609,6 +617,7 @@ dif_kmac_result_t dif_kmac_mode_cshake_start(
  * See NIST Special Publication 800-185 [2] for more information about KMAC.
  *
  * @param kmac A KMAC handle.
+ * @param operation_state A KMAC operation state context.
  * @param mode The mode of operation.
  * @param l Output length (number of 32-bit words that will be 'squeezed').
  * @param k Pointer to secret key.
@@ -617,8 +626,9 @@ dif_kmac_result_t dif_kmac_mode_cshake_start(
  */
 OT_WARN_UNUSED_RESULT
 dif_kmac_result_t dif_kmac_mode_kmac_start(
-    dif_kmac_t *kmac, dif_kmac_mode_kmac_t mode, size_t l,
-    const dif_kmac_key_t *k, const dif_kmac_customization_string_t *s);
+    const dif_kmac_t *kmac, dif_kmac_operation_state_t *operation_state,
+    dif_kmac_mode_kmac_t mode, size_t l, const dif_kmac_key_t *k,
+    const dif_kmac_customization_string_t *s);
 
 /**
  * Absorb bytes from the message provided.
@@ -632,13 +642,16 @@ dif_kmac_result_t dif_kmac_mode_kmac_start(
  * message has been processed or an error occurs.
  *
  * @param kmac A KMAC handle.
+ * @param operation_state A KMAC operation state context.
  * @param msg Pointer to data to absorb.
  * @param len Number of bytes of data to absorb.
  * @param[out] processed Number of bytes processed (optional).
  * @preturn The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_absorb(dif_kmac_t *kmac, const void *msg, size_t len,
+dif_kmac_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
+                                  dif_kmac_operation_state_t *operation_state,
+                                  const void *msg, size_t len,
                                   size_t *processed);
 
 /**
@@ -656,6 +669,7 @@ dif_kmac_result_t dif_kmac_absorb(dif_kmac_t *kmac, const void *msg, size_t len,
  * bytes have been written to `out` or an error occurs.
  *
  * @param kmac A KMAC handle.
+ * @param operation_state A KMAC operation state context.
  * @param[out] out Pointer to output buffer.
  * @param[out] len Number of 32-bit words to write to output buffer.
  * @param[out] processed Number of 32-bit words written to output buffer
@@ -663,7 +677,9 @@ dif_kmac_result_t dif_kmac_absorb(dif_kmac_t *kmac, const void *msg, size_t len,
  * @preturn The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_squeeze(dif_kmac_t *kmac, uint32_t *out, size_t len,
+dif_kmac_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
+                                   dif_kmac_operation_state_t *operation_state,
+                                   uint32_t *out, size_t len,
                                    size_t *processed);
 
 /**
@@ -671,10 +687,12 @@ dif_kmac_result_t dif_kmac_squeeze(dif_kmac_t *kmac, uint32_t *out, size_t len,
  * operation.
  *
  * @param kmac A KMAC handle.
+ * @param operation_state A KMAC operation state context.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_end(dif_kmac_t *kmac);
+dif_kmac_result_t dif_kmac_end(const dif_kmac_t *kmac,
+                               dif_kmac_operation_state_t *operation_state);
 
 /**
  * Get the current error code.
@@ -695,10 +713,12 @@ dif_kmac_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
  * need to be restarted.
  *
  * @param kmac A KMAC handle.
+ * @param operation_state A KMAC operation state context.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_reset(dif_kmac_t *kmac);
+dif_kmac_result_t dif_kmac_reset(const dif_kmac_t *kmac,
+                                 dif_kmac_operation_state_t *operation_state);
 
 /**
  * Fetch the current status of the message FIFO used to buffer absorbed data.
@@ -710,7 +730,7 @@ dif_kmac_result_t dif_kmac_reset(dif_kmac_t *kmac);
  */
 OT_WARN_UNUSED_RESULT
 dif_kmac_result_t dif_kmac_get_fifo_state(const dif_kmac_t *kmac,
-                                          dif_kmac_fifo_state_t *state,
+                                          dif_kmac_fifo_state_t *fifo_state,
                                           uint32_t *depth);
 
 /**
