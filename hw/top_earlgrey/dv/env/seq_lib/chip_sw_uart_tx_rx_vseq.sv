@@ -22,7 +22,11 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_base_vseq;
     uart_rx_data.size() == UART_DATASET_SIZE;
   }
 
-  bit [7:0] uart_idx = 0;
+  rand int uart_idx;
+
+  constraint uart_idx_c {
+    uart_idx inside {[0 : NUM_UARTS-1]};
+  }
 
   task pre_start();
     void'($value$plusargs("uart_idx=%0d", uart_idx));

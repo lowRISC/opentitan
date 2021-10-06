@@ -166,6 +166,7 @@
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode"]
+      run_opts: ["+uart_idx=0"]
       reseed: 5
     }
     {
@@ -198,6 +199,13 @@
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode"]
       run_opts: ["+use_spi_load_bootstrap=1"]
+    }
+    {
+      name: chip_sw_uart_rand_baudrate
+      uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
+      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode"]
+      reseed: 20
     }
     {
       name: chip_sw_spi_device_tx_rx
