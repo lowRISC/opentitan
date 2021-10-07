@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_lfsr
+
+# TODO: this lint waiver may not be necessary in future AscentLint versions. check and remove if possible.
+waive -rules {LOOP_VAR_OP} -location {prim_lfsr.sv} -msg {Loop variable 'k' is in arithmetic expression '(k + shift) % gen_out_non_linear.NumSboxes' with non-constant terms} \
+      -comment "This message is a false positive in this context, since the function inputs are constant."
