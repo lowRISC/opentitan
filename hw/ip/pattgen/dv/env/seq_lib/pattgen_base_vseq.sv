@@ -344,11 +344,31 @@ class pattgen_base_vseq extends cip_base_vseq #(
         1'b0 :/ cfg.seq_cfg.pattgen_low_polarity_pct,
         1'b1 :/ (100 - cfg.seq_cfg.pattgen_low_polarity_pct)
       };
-      ch_cfg.prediv inside {[cfg.seq_cfg.pattgen_min_prediv : cfg.seq_cfg.pattgen_max_prediv]};
-      ch_cfg.len    inside {[cfg.seq_cfg.pattgen_min_len    : cfg.seq_cfg.pattgen_max_len]};
-      ch_cfg.reps   inside {[cfg.seq_cfg.pattgen_min_reps   : cfg.seq_cfg.pattgen_max_reps]};
-      solve ch_cfg.len before ch_cfg.data;
-      ch_cfg.data   inside {[0 : (1 << (ch_cfg.len + 1)) - 1]};
+      ch_cfg.data[31:0] dist {
+        DataMax :/ cfg.seq_cfg.data_top_pct,
+        DataMin :/ cfg.seq_cfg.data_bottom_pct,
+        [DataMin + 1:DataMax - 1] :/ cfg.seq_cfg.data_middle_pct
+      };
+      ch_cfg.data[63:32] dist {
+        DataMax :/ cfg.seq_cfg.data_top_pct,
+        DataMin :/ cfg.seq_cfg.data_bottom_pct,
+        [DataMin:DataMax] :/ cfg.seq_cfg.data_middle_pct
+      };
+      ch_cfg.prediv dist {
+        cfg.seq_cfg.pattgen_max_prediv :/ cfg.seq_cfg.data_top_pct,
+        cfg.seq_cfg.pattgen_min_prediv :/ cfg.seq_cfg.data_bottom_pct,
+        [cfg.seq_cfg.pattgen_min_prediv + 1:cfg.seq_cfg.pattgen_max_prediv - 1] :/ cfg.seq_cfg.data_middle_pct
+      };
+      ch_cfg.reps dist {
+        cfg.seq_cfg.pattgen_max_reps :/ cfg.seq_cfg.data_top_pct,
+        cfg.seq_cfg.pattgen_min_reps :/ cfg.seq_cfg.data_bottom_pct,
+        [cfg.seq_cfg.pattgen_min_reps:cfg.seq_cfg.pattgen_max_reps] :/ cfg.seq_cfg.data_middle_pct
+      };
+      ch_cfg.len dist {
+        cfg.seq_cfg.pattgen_max_len :/ cfg.seq_cfg.data_top_pct,
+        cfg.seq_cfg.pattgen_min_len :/ cfg.seq_cfg.data_bottom_pct,
+        [cfg.seq_cfg.pattgen_min_len:cfg.seq_cfg.pattgen_max_len] :/ cfg.seq_cfg.data_middle_pct
+      };
     )
     return ch_cfg;
   endfunction : get_random_channel_config

@@ -9,22 +9,13 @@ interface pattgen_cov_if (
 
   import uvm_pkg::*;
   import dv_utils_pkg::*;
+  import pattgen_env_pkg::*;
   `include "dv_fcov_macros.svh"
   `include "uvm_macros.svh"
 
   `define CH0_PATH u_pattgen_core.chan0
   `define CH1_PATH u_pattgen_core.chan1
 
-  localparam uint DataMax = 32'hffffffff;
-  localparam uint DataMin = 32'hfffffffb;
-  localparam uint DataMax_low = 20;
-  localparam uint DataMin_low = 0;
-  localparam uint PredivMaxValue = 32'hffffffff;
-  localparam uint PredivMinValue = 32'hfffffffc;
-  localparam uint RepsMaxValue = 10'h3ff;
-  localparam uint RepsMinValue = 10'h3fc;
-  localparam uint LenMaxValue = 10'h3f;
-  localparam uint LenMinValue = 10'h3c;
 
   wire rep_cnt_en_ch0 = `CH0_PATH.rep_cnt_en;
   wire rep_cnt_en_ch1 = `CH1_PATH.rep_cnt_en;
@@ -204,7 +195,7 @@ interface pattgen_cov_if (
 
     cp_data_ch0: coverpoint {tb.dut.u_pattgen_core.ch0_ctrl.data[31:0]}{
       bins maxim = {DataMax};
-      bins mid[] = {[DataMin + 1:DataMax - 1]};
+      bins mid = {[DataMin + 1:DataMax - 1]};
       bins minim = {DataMin};
     }
 
@@ -219,7 +210,7 @@ interface pattgen_cov_if (
 
     cp_data_ch1: coverpoint {tb.dut.u_pattgen_core.ch0_ctrl.data[63:32]}{
       bins maxim = {DataMax};
-      bins mid[] = {[DataMin +1:DataMax - 1]};
+      bins mid = {[DataMin +1:DataMax - 1]};
       bins minim = {DataMin};
     }
 
@@ -234,7 +225,7 @@ interface pattgen_cov_if (
 
     cp_data_ch10: coverpoint {tb.dut.u_pattgen_core.ch1_ctrl.data[31:0]}{
       bins maxim = {DataMax};
-      bins mid[] = {[DataMin +1 : DataMax - 1]};
+      bins mid = {[DataMin +1 : DataMax - 1]};
       bins minim = {DataMin};
     }
 
@@ -249,7 +240,7 @@ interface pattgen_cov_if (
 
     cp_data_ch1: coverpoint {tb.dut.u_pattgen_core.ch1_ctrl.data[63:32]}{
       bins maxim = {DataMax};
-      bins mid[] = {[DataMin + 1:DataMax - 1]};
+      bins mid = {[DataMin + 1:DataMax - 1]};
       bins minim = {DataMin};
     }
 
@@ -264,7 +255,7 @@ interface pattgen_cov_if (
 
     cp_prediv_ch0: coverpoint {prediv_q0}{
       bins maxim = {PredivMaxValue};
-      bins mid[] = {[PredivMinValue + 1:PredivMaxValue - 1]};
+      bins mid = {[PredivMinValue + 1:PredivMaxValue - 1]};
       bins minim = {PredivMinValue};
     }
 
@@ -279,7 +270,7 @@ interface pattgen_cov_if (
 
     cp_prediv_ch1: coverpoint {prediv_q1}{
       bins maxim = {PredivMaxValue};
-      bins mid[] = {[PredivMinValue + 1:PredivMaxValue - 1]};
+      bins mid = {[PredivMinValue + 1:PredivMaxValue - 1]};
       bins minim = {PredivMinValue};
     }
 
@@ -294,7 +285,7 @@ interface pattgen_cov_if (
 
     cp_reps_ch0: coverpoint {reps_q0}{
       bins maxim = {RepsMaxValue};
-      bins mid[] = {[RepsMinValue + 1:RepsMaxValue - 1]};
+      bins mid = {[RepsMinValue + 1:RepsMaxValue - 1]};
       bins minim = {RepsMinValue};
     }
 
@@ -309,7 +300,7 @@ interface pattgen_cov_if (
 
     cp_reps_ch1: coverpoint {reps_q1}{
       bins maxim_1 = {RepsMaxValue};
-      bins mid_1[] = {[RepsMinValue + 1:RepsMaxValue - 1]};
+      bins mid_1 = {[RepsMinValue + 1:RepsMaxValue - 1]};
       bins minim_1 = {RepsMinValue};
 
     }
@@ -325,7 +316,7 @@ interface pattgen_cov_if (
 
     cp_len_ch0: coverpoint {len_q0}{
       bins maxim = {LenMaxValue};
-      bins middle[] = {[LenMinValue + 1:LenMaxValue - 1]};
+      bins middle = {[LenMinValue + 1:LenMaxValue - 1]};
       bins minim = {LenMinValue};
     }
 
@@ -340,7 +331,7 @@ interface pattgen_cov_if (
 
     cp_len_ch1: coverpoint {len_q1}{
       bins maxim_1 = {LenMaxValue};
-      bins middle_1[] = {[LenMinValue + 1:LenMaxValue - 1]};
+      bins middle_1 = {[LenMinValue + 1:LenMaxValue - 1]};
       bins minim_1 = {LenMinValue};
 
     }
