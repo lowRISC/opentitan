@@ -23,7 +23,6 @@ filesets:
       - lowrisc:ip:sram_ctrl
       # Instantiated by topgen
       - lowrisc:ip:uart:0.1
-      - lowrisc:ip:alert_handler
       - lowrisc:ip:gpio
       - lowrisc:ip:pinmux_component
       - lowrisc:ip:rv_timer
