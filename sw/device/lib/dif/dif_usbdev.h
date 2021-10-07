@@ -106,7 +106,6 @@ typedef struct dif_usbdev_buffer {
  */
 typedef struct dif_usbdev {
   mmio_region_t base_addr;
-  dif_usbdev_buffer_pool_t buffer_pool;
 } dif_usbdev_t;
 
 /**
@@ -185,7 +184,7 @@ typedef enum dif_usbdev_result {
  * functions in this library.
  *
  * @param base_addr Hardware instantiation base address.
- * @param[out] usbdev Internal state of the initialized USB device.
+ * @param[out] usbdev The initialized USB device handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -198,11 +197,13 @@ dif_usbdev_result_t dif_usbdev_init(mmio_region_t base_addr,
  * This function should need to be called once for the lifetime of `handle`.
  *
  * @param usbdev A USB device.
+ * @param buffer_pool A USB device buffer pool.
  * @param config Runtime configuration parameters for a USB device.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
+                                         dif_usbdev_buffer_pool_t *buffer_pool,
                                          dif_usbdev_config_t config);
 
 /**
@@ -218,10 +219,12 @@ dif_usbdev_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
  * empty by calling this function periodically.
  *
  * @param usbdev A USB device.
+ * @param buffer_pool A USB device buffer pool.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_usbdev_result_t dif_usbdev_fill_available_fifo(dif_usbdev_t *usbdev);
+dif_usbdev_result_t dif_usbdev_fill_available_fifo(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool);
 
 /**
  * Enable or disable reception of SETUP packets for an endpoint.
@@ -420,6 +423,7 @@ typedef enum dif_usbdev_buffer_read_result {
  * See also: `dif_usbdev_recv`.
  *
  * @param usbdev A USB device.
+ * @param buffer_pool A USB device buffer pool.
  * @param buffer A buffer provided by `dif_usbdev_recv`.
  * @param[out] dst Destination buffer.
  * @param dst_len Length of the destination buffer.
@@ -428,8 +432,9 @@ typedef enum dif_usbdev_buffer_read_result {
  */
 OT_WARN_UNUSED_RESULT
 dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
-    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer, uint8_t *dst,
-    size_t dst_len, size_t *bytes_written);
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    dif_usbdev_buffer_t *buffer, uint8_t *dst, size_t dst_len,
+    size_t *bytes_written);
 
 /**
  * Return a buffer to the free buffer pool.
@@ -444,13 +449,15 @@ dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
  * See also: `dif_usbdev_recv`, `dif_usbdev_buffer_request`.
  *
  * @param usbdev A USB device.
+ * @param buffer_pool A USB device buffer pool.
  * @param buffer A buffer provided by `dif_usbdev_recv` or
  *               `dif_usbdev_buffer_request`.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_usbdev_result_t dif_usbdev_buffer_return(dif_usbdev_t *usbdev,
-                                             dif_usbdev_buffer_t *buffer);
+dif_usbdev_result_t dif_usbdev_buffer_return(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    dif_usbdev_buffer_t *buffer);
 
 /**
  * Return codes for `dif_usbdev_buffer_request`.
@@ -506,12 +513,14 @@ typedef enum dif_usbdev_buffer_request_result {
  * `dif_usbdev_get_tx_status`, `dif_usbdev_buffer_return`.
  *
  * @param usbdev A USB device.
+ * @param buffer_pool A USB device buffer pool.
  * @param[out] buffer A buffer for writing outgoing packet payload.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_usbdev_buffer_request_result_t dif_usbdev_buffer_request(
-    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer);
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    dif_usbdev_buffer_t *buffer);
 
 typedef enum dif_usbdev_buffer_write_result {
   /**
@@ -627,14 +636,15 @@ typedef enum dif_usbdev_tx_status {
  * due to an incoming SETUP packet or a link reset.
  *
  * @param usbdev A USB device.
+ * @param buffer_pool A USB device buffer pool.
  * @param endpoint An endpoint.
  * @param[out] status Status of the packet.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_usbdev_result_t dif_usbdev_get_tx_status(dif_usbdev_t *usbdev,
-                                             uint8_t endpoint,
-                                             dif_usbdev_tx_status_t *status);
+dif_usbdev_result_t dif_usbdev_get_tx_status(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    uint8_t endpoint, dif_usbdev_tx_status_t *status);
 
 /**
  * Set the address of a USB device.

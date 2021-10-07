@@ -267,24 +267,24 @@ dif_usbdev_result_t dif_usbdev_init(mmio_region_t base_addr,
     return kDifUsbdevBadArg;
   }
 
-  // Store base address
   usbdev->base_addr = base_addr;
-
-  // Initialize the free buffer pool
-  if (!buffer_pool_init(&usbdev->buffer_pool)) {
-    return kDifUsbdevError;
-  }
 
   return kDifUsbdevOK;
 }
 
 dif_usbdev_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
+                                         dif_usbdev_buffer_pool_t *buffer_pool,
                                          dif_usbdev_config_t config) {
-  if (usbdev == NULL) {
+  if (usbdev == NULL || buffer_pool == NULL) {
     return kDifUsbdevBadArg;
   }
 
-  // Check enum fields
+  // Configure the free buffer pool.
+  if (!buffer_pool_init(buffer_pool)) {
+    return kDifUsbdevError;
+  }
+
+  // Check enum fields.
   if (!is_valid_toggle(config.differential_rx) ||
       !is_valid_toggle(config.differential_tx) ||
       !is_valid_toggle(config.single_bit_eop) ||
@@ -380,17 +380,18 @@ dif_usbdev_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_fill_available_fifo(dif_usbdev_t *usbdev) {
-  if (usbdev == NULL) {
+dif_usbdev_result_t dif_usbdev_fill_available_fifo(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool) {
+  if (usbdev == NULL || buffer_pool == NULL) {
     return kDifUsbdevBadArg;
   }
 
   // Remove buffers from the pool and write them to the AV FIFO until it is full
   while (!mmio_region_get_bit32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET,
                                 USBDEV_USBSTAT_AV_FULL_BIT) &&
-         !buffer_pool_is_empty(&usbdev->buffer_pool)) {
+         !buffer_pool_is_empty(buffer_pool)) {
     uint8_t buffer_id;
-    if (!buffer_pool_remove(&usbdev->buffer_pool, &buffer_id)) {
+    if (!buffer_pool_remove(buffer_pool, &buffer_id)) {
       return kDifUsbdevError;
     }
     mmio_region_write_only_set_field32(usbdev->base_addr,
@@ -491,17 +492,18 @@ dif_usbdev_recv_result_t dif_usbdev_recv(dif_usbdev_t *usbdev,
 }
 
 dif_usbdev_buffer_request_result_t dif_usbdev_buffer_request(
-    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer) {
-  if (usbdev == NULL || buffer == NULL) {
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    dif_usbdev_buffer_t *buffer) {
+  if (usbdev == NULL || buffer_pool == NULL || buffer == NULL) {
     return kDifUsbdevBufferRequestResultBadArg;
   }
 
-  if (buffer_pool_is_empty(&usbdev->buffer_pool)) {
+  if (buffer_pool_is_empty(buffer_pool)) {
     return kDifUsbdevBufferRequestResultNoBuffers;
   }
 
   uint8_t buffer_id;
-  if (!buffer_pool_remove(&usbdev->buffer_pool, &buffer_id)) {
+  if (!buffer_pool_remove(buffer_pool, &buffer_id)) {
     return kDifUsbdevBufferRequestResultError;
   }
 
@@ -515,9 +517,10 @@ dif_usbdev_buffer_request_result_t dif_usbdev_buffer_request(
   return kDifUsbdevBufferRequestResultOK;
 }
 
-dif_usbdev_result_t dif_usbdev_buffer_return(dif_usbdev_t *usbdev,
-                                             dif_usbdev_buffer_t *buffer) {
-  if (usbdev == NULL || buffer == NULL) {
+dif_usbdev_result_t dif_usbdev_buffer_return(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    dif_usbdev_buffer_t *buffer) {
+  if (usbdev == NULL || buffer_pool == NULL || buffer == NULL) {
     return kDifUsbdevBadArg;
   }
 
@@ -525,7 +528,7 @@ dif_usbdev_result_t dif_usbdev_buffer_return(dif_usbdev_t *usbdev,
     case kDifUsbdevBufferTypeRead:
     case kDifUsbdevBufferTypeWrite:
       // Return the buffer to the free buffer pool
-      if (!buffer_pool_add(&usbdev->buffer_pool, buffer->id)) {
+      if (!buffer_pool_add(buffer_pool, buffer->id)) {
         return kDifUsbdevError;
       }
       // Mark the buffer as stale
@@ -537,9 +540,10 @@ dif_usbdev_result_t dif_usbdev_buffer_return(dif_usbdev_t *usbdev,
 }
 
 dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
-    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer, uint8_t *dst,
-    size_t dst_len, size_t *bytes_written) {
-  if (usbdev == NULL || buffer == NULL ||
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    dif_usbdev_buffer_t *buffer, uint8_t *dst, size_t dst_len,
+    size_t *bytes_written) {
+  if (usbdev == NULL || buffer_pool == NULL || buffer == NULL ||
       buffer->type != kDifUsbdevBufferTypeRead || dst == NULL) {
     return kDifUsbdevBufferReadResultBadArg;
   }
@@ -567,7 +571,7 @@ dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
   }
 
   // Return the buffer to the free buffer pool
-  if (!buffer_pool_add(&usbdev->buffer_pool, buffer->id)) {
+  if (!buffer_pool_add(buffer_pool, buffer->id)) {
     return kDifUsbdevBufferReadResultError;
   }
   // Mark the buffer as stale
@@ -642,10 +646,11 @@ dif_usbdev_result_t dif_usbdev_send(dif_usbdev_t *usbdev, uint8_t endpoint,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_get_tx_status(dif_usbdev_t *usbdev,
-                                             uint8_t endpoint,
-                                             dif_usbdev_tx_status_t *status) {
-  if (usbdev == NULL || status == NULL || !is_valid_endpoint(endpoint)) {
+dif_usbdev_result_t dif_usbdev_get_tx_status(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    uint8_t endpoint, dif_usbdev_tx_status_t *status) {
+  if (usbdev == NULL || buffer_pool == NULL || status == NULL ||
+      !is_valid_endpoint(endpoint)) {
     return kDifUsbdevBadArg;
   }
 
@@ -677,7 +682,7 @@ dif_usbdev_result_t dif_usbdev_get_tx_status(dif_usbdev_t *usbdev,
     mmio_region_write_only_set_bit32(
         usbdev->base_addr, USBDEV_IN_SENT_REG_OFFSET, endpoint_bit_index);
     // Return the buffer back to the free buffer pool
-    if (!buffer_pool_add(&usbdev->buffer_pool, buffer)) {
+    if (!buffer_pool_add(buffer_pool, buffer)) {
       return kDifUsbdevError;
     }
     *status = kDifUsbdevTxStatusSent;
@@ -691,7 +696,7 @@ dif_usbdev_result_t dif_usbdev_get_tx_status(dif_usbdev_t *usbdev,
     mmio_region_write_only_set_bit32(usbdev->base_addr, config_in_reg_offset,
                                      USBDEV_CONFIGIN_0_PEND_0_BIT);
     // Return the buffer back to the free buffer pool
-    if (!buffer_pool_add(&usbdev->buffer_pool, buffer)) {
+    if (!buffer_pool_add(buffer_pool, buffer)) {
       return kDifUsbdevError;
     }
     *status = kDifUsbdevTxStatusCancelled;
