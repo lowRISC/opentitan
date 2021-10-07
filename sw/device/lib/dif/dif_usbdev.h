@@ -131,10 +131,6 @@ typedef enum dif_usbdev_power_sense_override {
  */
 typedef struct dif_usbdev_config {
   /**
-   * Base address of the USB device.
-   */
-  mmio_region_t base_addr;
-  /**
    * Use the differential rx signal instead of the single-ended signals.
    */
   dif_usbdev_toggle_t differential_rx;
@@ -188,13 +184,26 @@ typedef enum dif_usbdev_result {
  * A USB device must first be initialized by this function before calling other
  * functions in this library.
  *
- * @param config Configuration for initializing a USB device.
+ * @param base_addr Hardware instantiation base address.
  * @param[out] usbdev Internal state of the initialized USB device.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
+dif_usbdev_result_t dif_usbdev_init(mmio_region_t base_addr,
                                     dif_usbdev_t *usbdev);
+
+/**
+ * Configures a USB device with runtime information.
+ *
+ * This function should need to be called once for the lifetime of `handle`.
+ *
+ * @param usbdev A USB device.
+ * @param config Runtime configuration parameters for a USB device.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_usbdev_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
+                                         dif_usbdev_config_t config);
 
 /**
  * Fill the available buffer FIFO of a USB device.

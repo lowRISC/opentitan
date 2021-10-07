@@ -261,34 +261,43 @@ static uint32_t get_buffer_addr(uint8_t buffer_id, size_t offset) {
  * USBDEV DIF library functions.
  */
 
-dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
+dif_usbdev_result_t dif_usbdev_init(mmio_region_t base_addr,
                                     dif_usbdev_t *usbdev) {
-  if (usbdev == NULL || config == NULL) {
-    return kDifUsbdevBadArg;
-  }
-
-  // Check enum fields
-  if (!is_valid_toggle(config->differential_rx) ||
-      !is_valid_toggle(config->differential_tx) ||
-      !is_valid_toggle(config->single_bit_eop) ||
-      !is_valid_power_sense_override(config->power_sense_override) ||
-      !is_valid_toggle(config->pin_flip) ||
-      !is_valid_toggle(config->clock_sync_signals)) {
+  if (usbdev == NULL) {
     return kDifUsbdevBadArg;
   }
 
   // Store base address
-  usbdev->base_addr = config->base_addr;
+  usbdev->base_addr = base_addr;
 
   // Initialize the free buffer pool
   if (!buffer_pool_init(&usbdev->buffer_pool)) {
     return kDifUsbdevError;
   }
 
+  return kDifUsbdevOK;
+}
+
+dif_usbdev_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
+                                         dif_usbdev_config_t config) {
+  if (usbdev == NULL) {
+    return kDifUsbdevBadArg;
+  }
+
+  // Check enum fields
+  if (!is_valid_toggle(config.differential_rx) ||
+      !is_valid_toggle(config.differential_tx) ||
+      !is_valid_toggle(config.single_bit_eop) ||
+      !is_valid_power_sense_override(config.power_sense_override) ||
+      !is_valid_toggle(config.pin_flip) ||
+      !is_valid_toggle(config.clock_sync_signals)) {
+    return kDifUsbdevBadArg;
+  }
+
   // Determine the value of the PHY_CONFIG register.
   uint32_t phy_config_val = 0;
 
-  if (config->differential_rx == kDifUsbdevToggleEnable) {
+  if (config.differential_rx == kDifUsbdevToggleEnable) {
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
@@ -298,7 +307,7 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
         1);
   }
 
-  if (config->differential_tx == kDifUsbdevToggleEnable) {
+  if (config.differential_tx == kDifUsbdevToggleEnable) {
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
@@ -308,7 +317,7 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
         1);
   }
 
-  if (config->single_bit_eop == kDifUsbdevToggleEnable) {
+  if (config.single_bit_eop == kDifUsbdevToggleEnable) {
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
@@ -318,7 +327,7 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
         1);
   }
 
-  if (config->power_sense_override == kDifUsbdevPowerSenseOverridePresent) {
+  if (config.power_sense_override == kDifUsbdevPowerSenseOverridePresent) {
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
@@ -333,7 +342,7 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
             .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_VAL_BIT,
         },
         1);
-  } else if (config->power_sense_override ==
+  } else if (config.power_sense_override ==
              kDifUsbdevPowerSenseOverrideNotPresent) {
     phy_config_val = bitfield_field32_write(
         phy_config_val,
@@ -344,7 +353,7 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
         1);
   }
 
-  if (config->pin_flip == kDifUsbdevToggleEnable) {
+  if (config.pin_flip == kDifUsbdevToggleEnable) {
     phy_config_val =
         bitfield_field32_write(phy_config_val,
                                (bitfield_field32_t){
@@ -354,7 +363,7 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
                                1);
   }
 
-  if (config->clock_sync_signals == kDifUsbdevToggleDisable) {
+  if (config.clock_sync_signals == kDifUsbdevToggleDisable) {
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
