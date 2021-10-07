@@ -9,6 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
+      - lowrisc:dv:pattgen_env
     files:
       - pattgen_cov_if.sv
       - pattgen_cov_bind.sv

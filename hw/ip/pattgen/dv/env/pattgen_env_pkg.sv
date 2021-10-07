@@ -42,6 +42,18 @@ package pattgen_env_pkg;
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  //Due to simulation time limits, the range of constraints
+  // is selected to be within such time limits
+  parameter uint DataMax = 32'hffffffff;
+  parameter uint DataMin = 0;
+  parameter uint PredivMaxValue = 20;
+  parameter uint PredivMinValue = 0;
+  parameter uint RepsMaxValue = 30;
+  parameter uint RepsMinValue = 0;
+  parameter uint LenMaxValue = 10;
+  parameter uint LenMinValue = 0;
+
+
 
   // package sources
   `include "pattgen_seq_cfg.sv"
