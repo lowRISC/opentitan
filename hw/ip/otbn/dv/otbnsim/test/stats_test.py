@@ -11,7 +11,7 @@ import testutil
 
 
 def _run_sim_for_stats(sim: OTBNSim) -> ExecutionStats:
-    sim.run(verbose=False, collect_stats=True)
+    sim.run(verbose=False)
 
     # Ensure that the execution was successful.
     assert sim.state.ext_regs.read('ERR_BITS', False) == 0
@@ -23,12 +23,12 @@ def _run_sim_for_stats(sim: OTBNSim) -> ExecutionStats:
 def _simulate_asm_file(asm_file: str, tmpdir: py.path.local) -> ExecutionStats:
     '''Run the OTBN simulator, collect statistics, and return them.'''
 
-    sim = testutil.prepare_sim_for_asm_file(asm_file, tmpdir)
+    sim = testutil.prepare_sim_for_asm_file(asm_file, tmpdir, True)
     return _run_sim_for_stats(sim)
 
 
 def _simulate_asm_str(assembly: str, tmpdir: py.path.local) -> ExecutionStats:
-    sim = testutil.prepare_sim_for_asm_str(assembly, tmpdir)
+    sim = testutil.prepare_sim_for_asm_str(assembly, tmpdir, True)
     return _run_sim_for_stats(sim)
 
 

@@ -37,17 +37,17 @@ class OTBNSim:
     def load_data(self, data: bytes) -> None:
         self.state.dmem.load_le_words(data)
 
-    def start(self) -> None:
+    def start(self, collect_stats: bool) -> None:
         '''Prepare to start the execution.
 
         Use run() or step() to actually execute the program.
 
         '''
-        self.stats = ExecutionStats(self.program)
+        self.stats = ExecutionStats(self.program) if collect_stats else None
         self._execute_generator = None
         self.state.start()
 
-    def run(self, verbose: bool, collect_stats: bool) -> int:
+    def run(self, verbose: bool) -> int:
         '''Run until ECALL.
 
         Return the number of cycles taken.
@@ -58,7 +58,7 @@ class OTBNSim:
         # valid when in free running mode as nothing else will.
         self.state.set_urnd_reseed_complete()
         while self.state.running:
-            self.step(verbose, collect_stats)
+            self.step(verbose)
             insn_count += 1
 
             if self.state.wsrs.RND.pending_request:
@@ -68,9 +68,7 @@ class OTBNSim:
 
         return insn_count
 
-    def step(self,
-             verbose: bool,
-             collect_stats: bool) -> Tuple[Optional[OTBNInsn], List[Trace]]:
+    def step(self, verbose: bool) -> Tuple[Optional[OTBNInsn], List[Trace]]:
         '''Run a single cycle.
 
         Returns the instruction, together with a list of the architectural
@@ -80,8 +78,6 @@ class OTBNSim:
         '''
         if not self.state.running:
             return (None, [])
-
-        assert self.stats is not None
 
         # Program counter before commit
         pc_before = self.state.pc
@@ -127,13 +123,13 @@ class OTBNSim:
             disasm = '(stall)'
             changes = []
 
-            if collect_stats:
+            if self.stats is not None:
                 self.stats.record_stall()
         else:
             assert self._execute_generator is None
             self.state.post_insn(self.loop_warps.get(self.state.pc, {}))
 
-            if collect_stats:
+            if self.stats is not None:
                 self.stats.record_insn(insn, self.state)
 
             if self.state.pending_halt:
