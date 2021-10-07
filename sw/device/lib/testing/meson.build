@@ -7,7 +7,22 @@ sw_lib_testing_rand_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_rand_testutils',
     sources: ['rand_testutils.c'],
-  )
+  ),
+)
+
+# aon_timer test utilities.
+sw_lib_testing_aon_timer_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_aon_timer_testutils',
+    sources: [
+      'aon_timer_testutils.c'
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_aon_timer,
+      top_earlgrey,
+    ],
+  ),
 )
 
 # hardware entropy complex (entropy_src, csrng, edn) test utilities.
@@ -23,6 +38,34 @@ sw_lib_testing_entropy_testutils = declare_dependency(
       sw_lib_dif_entropy_src,
       sw_lib_dif_csrng,
       top_earlgrey,
+    ],
+  ),
+)
+
+# pwrmgr test utilities.
+sw_lib_testing_pwrmgr_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_pwrmgr_testutils',
+    sources: [
+      'pwrmgr_testutils.c'
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_pwrmgr,
+    ],
+  ),
+)
+
+# rstmgr test utilities.
+sw_lib_testing_rstmgr_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_rstmgr_testutils',
+    sources: [
+      'rstmgr_testutils.c'
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_rstmgr,
     ],
   ),
 )

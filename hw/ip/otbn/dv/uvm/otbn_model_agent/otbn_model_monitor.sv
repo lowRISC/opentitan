@@ -22,7 +22,7 @@ class otbn_model_monitor extends dv_base_monitor #(
   protected task collect_trans(uvm_phase phase);
     fork
       collect_start();
-      collect_done();
+      collect_status();
       // TODO: Only run when coverage is enabled.
       collect_insns();
     join
@@ -38,6 +38,7 @@ class otbn_model_monitor extends dv_base_monitor #(
         if (cfg.vif.start) begin
           trans = otbn_model_item::type_id::create("trans");
           trans.item_type = OtbnModelStart;
+          trans.status    = 0;
           trans.err       = 0;
           trans.mnemonic  = "";
           analysis_port.write(trans);
@@ -46,23 +47,23 @@ class otbn_model_monitor extends dv_base_monitor #(
     end
   endtask
 
-  protected task collect_done();
+  protected task collect_status();
     otbn_model_item trans;
 
     forever begin
-      // wait until vif signals done (or we are in reset)
-      cfg.vif.wait_done();
+      // Wait until vif signals a change in status (or we are in reset)
+      cfg.vif.wait_status();
 
       if (cfg.vif.rst_ni === 1'b1) begin
         // We aren't in reset, so we've just seen the done signal go high.
         trans = otbn_model_item::type_id::create("trans");
-        trans.item_type = OtbnModelDone;
+        trans.item_type = OtbnModelStatus;
+        trans.status    = cfg.vif.status;
         trans.err       = cfg.vif.err;
         trans.mnemonic  = "";
         analysis_port.write(trans);
-        cfg.vif.wait_not_done();
       end else begin
-        // We are in reset. Wait until we aren't (we need to do this because wait_done() returns
+        // We are in reset. Wait until we aren't (we need to do this because wait_status() returns
         // immediately in reset)
         wait(cfg.vif.rst_ni);
       end
@@ -89,6 +90,7 @@ class otbn_model_monitor extends dv_base_monitor #(
         if (otbn_trace_checker_pop_iss_insn(insn_addr, insn_mnemonic)) begin
           trans = otbn_model_item::type_id::create("trans");
           trans.item_type = OtbnModelInsn;
+          trans.status    = 0;
           trans.err       = 0;
           trans.insn_addr = insn_addr;
           trans.mnemonic  = insn_mnemonic;

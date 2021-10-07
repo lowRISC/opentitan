@@ -19,6 +19,7 @@ class TemplateParameter(BaseParam):
     VALID_PARAM_TYPES = (
         'int',
         'string',
+        'object',
     )
 
     def __init__(self, name: str, desc: Optional[str], param_type: str,
@@ -61,6 +62,8 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
             'default field of {}, (an integer parameter)'.format(name))
     elif param_type == 'string':
         default = check_str(r_default, 'default field of ' + where)
+    elif param_type == 'object':
+        default = IpConfig._check_object(r_default, 'default field of ' + where)
     else:
         assert False, f"Unknown parameter type found: {param_type!r}"
 
@@ -168,6 +171,31 @@ class IpConfig:
             template_params, param_values)
 
     @staticmethod
+    def _check_object(obj: object, what: str) -> object:
+        """Check that obj is a Hjson-serializable object.
+
+        If not, raise a ValueError; the what argument names the object.
+
+        """
+        try:
+            # Round-trip objects through the JSON encoder to get the
+            # same representation no matter if we load the config from
+            # file, or directly pass it on to the template. Also, catch
+            # encoding/decoding errors when setting the object.
+            json = hjson.dumps(obj,
+                               ensure_ascii=False,
+                               use_decimal=True,
+                               for_json=True,
+                               encoding='UTF-8')
+            obj_checked = hjson.loads(json,
+                                      use_decimal=True,
+                                      encoding='UTF-8')
+        except TypeError as e:
+            raise ValueError('{} cannot be serialized as Hjson: {}'
+                             .format(what, str(e))) from None
+        return obj_checked
+
+    @staticmethod
     def _check_param_values(template_params: TemplateParams,
                             param_values: Any) -> Dict[str, Union[str, int]]:
         """Check if parameter values are valid.
@@ -192,6 +220,9 @@ class IpConfig:
                     value, f"the key {key} of the IP configuration")
             elif template_params[key].param_type == 'int':
                 param_value_typed = check_int(
+                    value, f"the key {key} of the IP configuration")
+            elif template_params[key].param_type == 'object':
+                param_value_typed = IpConfig._check_object(
                     value, f"the key {key} of the IP configuration")
             else:
                 assert True, "Unexpeced parameter type found, expand this check"

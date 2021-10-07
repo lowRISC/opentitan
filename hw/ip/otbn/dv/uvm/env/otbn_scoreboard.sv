@@ -45,10 +45,15 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   bit saw_start_tl_trans = 1'b0;
   bit waiting_for_model = 1'b0;
 
-  // The "running" field uses the OtbnModelStart and OtbnModelDone items on the model FIFO to track
-  // whether we think OTBN is running at the moment. We know that this is in sync with the RTL
-  // because of the MatchingDone_A assertion at testbench level.
-  bit running = 1'b0;
+  // The mirrored STATUS register from the ISS.
+  bit [7:0] model_status = 1'b0;
+
+  // The "locked" field is used to track whether OTBN is "locked". For most operational state
+  // tracking, we go through the ISS, but OTBN can become locked without actually starting an
+  // operation (for example, there might be a malformed TL transaction). We spot that sort of thing
+  // here, updating the "locked" flag if either the ISS says to do so OR if we see something 'out of
+  // band'.
+  bit locked = 1'b0;
 
   `uvm_component_new
 
@@ -87,6 +92,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // Clear saw_start_tl_trans. Any "start" TL transaction will have been discarded by the reset,
     // so we shouldn't still be tracking it.
     saw_start_tl_trans = 1'b0;
+
+    // Clear the locked bit (this is modelling RTL state that should be cleared on reset)
+    locked = 1'b0;
   endfunction
 
   task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -152,8 +160,12 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       end
 
       "status": begin
-        // Status register
-        exp_read_data = '{upd: 1'b1, chk: 1'b1, val: {31'd0, running}};
+        // Status register. If we're locked, this should read 0xff. Otherwise, fall back to the
+        // expected operational state (IDLE = 0; BUSY_EXECUTE = 1; BUSY_SEC_WIPE_DMEM = 2;
+        // BUSY_SEC_WIPE_IMEM = 3).
+        //
+        // TODO: Track states other than IDLE and BUSY_EXECUTE.
+        exp_read_data = '{upd: 1'b1, chk: 1'b1, val: locked ? 32'hff : model_status};
       end
 
       "err_bits": begin
@@ -198,10 +210,13 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     uvm_reg_addr_t       csr_addr;
     otbn_exp_read_data_t exp_read_data;
 
-    // We're only interested in reads. Ignore any acks for memory or register writes that came in on
-    // the A channel.
-    if (item.is_write())
+    // The data-channel response to a write is just an ack, which isn't particularly interesting.
+    // Check for integrity errors (which should lock the block), but otherwise there's nothing to
+    // do.
+    if (item.is_write()) begin
+      if (item.d_error) locked = 1'b1;
       return;
+    end
 
     // We're also only interested in registers; the scoreboard doesn't explicitly model memories in
     // the RAL. Look to see if this is a valid register address. If not, it was to a memory and we
@@ -247,18 +262,20 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           // previous cycle.
           `DV_CHECK_FATAL(waiting_for_model, "model started unbidden!")
           waiting_for_model = 1'b0;
-          running = 1'b1;
         end
 
-        OtbnModelDone: begin
-          `DV_CHECK_FATAL(running, "Got done signal when we didn't think model was running.")
-          running = 1'b0;
+        OtbnModelStatus: begin
+          model_status = item.status;
         end
 
         OtbnModelInsn: begin
           // The model agent's monitor should be configured to only emit OtbnModelInsn items if
           // coverage is enabled.
           `DV_CHECK_FATAL(cfg.en_cov)
+          // We don't expect any instructions unless we're currently running something.
+          `DV_CHECK_EQ_FATAL(model_status, 1 /* BUSY_EXECUTE */,
+                             "Saw instruction when not in BUSY_EXECUTE operational state.")
+
           iss_trace_queue.push_back(item);
           pop_trace_queues();
         end

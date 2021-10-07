@@ -2,13 +2,34 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
+#
+# ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+# PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+#
+#    hw/ip/prim/util/generate_prim_mubi.py
+#
 name: "lowrisc:prim:mubi:0.1"
 description: "Multibit types and functions"
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:prim:buf
+      - lowrisc:prim:flop
     files:
       - rtl/prim_mubi_pkg.sv
+      - rtl/prim_mubi4_sender.sv
+      - rtl/prim_mubi4_sync.sv
+      - rtl/prim_mubi4_dec.sv
+      - rtl/prim_mubi8_sender.sv
+      - rtl/prim_mubi8_sync.sv
+      - rtl/prim_mubi8_dec.sv
+      - rtl/prim_mubi12_sender.sv
+      - rtl/prim_mubi12_sync.sv
+      - rtl/prim_mubi12_dec.sv
+      - rtl/prim_mubi16_sender.sv
+      - rtl/prim_mubi16_sync.sv
+      - rtl/prim_mubi16_dec.sv
     file_type: systemVerilogSource
 
 targets:

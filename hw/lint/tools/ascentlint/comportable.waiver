@@ -18,4 +18,5 @@ waive -rules CASE_SEL_CONST       -location {*_reg_top*} \
       -comment "addr_hit is one hot encoded."
 waive -rules LINE_LENGTH          -location {*_reg_top*} -regexp {Line length of .* exceeds .* character limit} \
       -comment "These files are one-liners in order to comply with our SV style guide."
-
+waive -rules CONST_FF             -location {*_reg_top*} -regexp {Flip-flop '(shadow_|)rst_done' is driven by constant one} \
+      -comment "This flop implements a reset done indication and is therefore driven by a constant 1."

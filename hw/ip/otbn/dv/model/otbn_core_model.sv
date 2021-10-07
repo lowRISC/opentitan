@@ -14,6 +14,7 @@
 module otbn_core_model
   import otbn_pkg::*;
   import otbn_model_pkg::*;
+  import edn_pkg::*;
 #(
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = 4096,
@@ -28,18 +29,21 @@ module otbn_core_model
   // real implementation running alongside and we check DMEM contents on completion.
   parameter string DesignScope = ""
 )(
-  input  logic  clk_i,
-  input  logic  rst_ni,
+  input  logic                     clk_i,
+  input  logic                     clk_edn_i,
+  input  logic                     rst_ni,
+  input  logic                     rst_edn_ni,
 
-  input  logic  start_i, // start the operation
-  output bit    done_o,  // operation done
+  input  logic                     start_i, // start the operation
+  output bit                       done_o,  // operation done
 
-  output err_bits_t err_bits_o, // valid when done_o is asserted
+  output err_bits_t                err_bits_o, // valid when done_o is asserted
 
-  input logic            edn_rnd_data_valid_i, // provide RND data from EDN
-  input logic [WLEN-1:0] edn_rnd_data_i,
-  input logic            edn_urnd_data_valid_i, // URND reseed from EDN is valid
+  input  edn_pkg::edn_rsp_t        edn_rnd_i, // EDN response interface
+  input  logic                     edn_rnd_cdc_done_i, // RND from EDN is valid (DUT perspective)
+  input  logic                     edn_urnd_data_valid_i, // URND reseed from EDN is valid
 
+  output bit [7:0]       status_o,   // STATUS register
   output bit [31:0]      insn_cnt_o, // INSN_CNT register
 
   output bit             err_o // something went wrong
@@ -58,13 +62,13 @@ module otbn_core_model
     otbn_model_destroy(model_handle);
   end
 
-  // A packed "status" value. This gets assigned by DPI function calls that need to update both
-  // whether we're running and also error flags at the same time. The contents are magic simulation
-  // values, so get initialized before reset (to avoid stopping the simulation before it even
-  // starts).
-  int unsigned status = 0;
+  // A packed set of bits representing the state of the model. This gets assigned by DPI function
+  // calls that need to update both whether we're running and also error flags at the same time. The
+  // contents are magic simulation values, so get initialized before reset (to avoid stopping the
+  // simulation before it even starts).
+  int unsigned model_state = 0;
 
-  // Extract particular bits of the status value.
+  // Extract particular bits of the model_state value.
   //
   //   [0]     running:      The ISS is currently running
   //   [1]     check_due:    The ISS just finished but still needs to check results
@@ -72,45 +76,68 @@ module otbn_core_model
   //   [3]     failed_cmp:   The consistency check at the end of run failed.
 
   bit failed_cmp, failed_step, check_due, running;
-  assign {failed_cmp, failed_step, check_due, running} = status[3:0];
+  assign {failed_cmp, failed_step, check_due, running} = model_state[3:0];
 
+  bit [7:0] status_d, status_q;
+  bit [31:0] insn_cnt_d, insn_cnt_q;
   bit [31:0] raw_err_bits_d, raw_err_bits_q;
+  bit [31:0] stop_pc_d, stop_pc_q;
+
   bit unused_raw_err_bits;
 
-  bit [31:0] stop_pc_d, stop_pc_q;
-  bit [31:0] insn_cnt_d, insn_cnt_q;
+  logic unused_rnd_rsp_fips;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      if (status != 0) begin
-        otbn_model_reset(model_handle);
-      end
-      status <= 0;
-      raw_err_bits_q <= 0;
-      stop_pc_q <= 0;
-      insn_cnt_q <= 0;
+  // EDN Stepping is done with the EDN clock for also asserting the CDC measures in the design.
+  always_ff @(posedge clk_edn_i or negedge rst_edn_ni) begin
+    if (!rst_edn_ni) begin
+      // If we are in reset there is nothing to do.
     end else begin
-      if (start_i | running | check_due) begin
-        status <= otbn_model_step(model_handle,
-                                  start_i,
-                                  status,
-                                  edn_rnd_data_valid_i, edn_rnd_data_i,
-                                  edn_urnd_data_valid_i,
-                                  insn_cnt_d,
-                                  raw_err_bits_d,
-                                  stop_pc_d);
-        raw_err_bits_q <= raw_err_bits_d;
-        stop_pc_q <= stop_pc_d;
-        insn_cnt_q <= insn_cnt_d;
-      end else begin
-        // If we're not running and we're not being told to start, there's nothing to do.
+      if (edn_rnd_i.edn_ack) begin
+        edn_model_step(model_handle,
+                       edn_rnd_i.edn_bus);
       end
     end
   end
 
-  assign err_bits_o = raw_err_bits_q[$bits(err_bits_t)-1:0];
-  assign unused_raw_err_bits = ^raw_err_bits_q[31:$bits(err_bits_t)];
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      if (model_state != 0) begin
+        otbn_model_reset(model_handle);
+      end
+      model_state <= 0;
+      status_q <= 0;
+      insn_cnt_q <= 0;
+      raw_err_bits_q <= 0;
+      stop_pc_q <= 0;
+    end else begin
+      if (start_i | running | check_due) begin
+        model_state <= otbn_model_step(model_handle,
+                                       start_i,
+                                       model_state,
+                                       edn_urnd_data_valid_i,
+                                       status_d,
+                                       insn_cnt_d,
+                                       raw_err_bits_d,
+                                       stop_pc_d);
+        status_q <= status_d;
+        insn_cnt_q <= insn_cnt_d;
+        raw_err_bits_q <= raw_err_bits_d;
+        stop_pc_q <= stop_pc_d;
+      end else begin
+        // If we're not running and we're not being told to start, there's nothing to do.
+      end
+      if (edn_rnd_cdc_done_i) begin
+        edn_model_rnd_cdc_done(model_handle);
+      end
+    end
+  end
 
+  assign unused_raw_err_bits = ^raw_err_bits_q[31:$bits(err_bits_t)];
+  assign unused_rnd_rsp_fips = edn_rnd_i.edn_fips;
+
+  assign err_bits_o = raw_err_bits_q[$bits(err_bits_t)-1:0];
+
+  assign status_o = status_q;
   assign insn_cnt_o = insn_cnt_q;
 
   // Track negedges of running_q and expose that as a "done" output.

@@ -27,12 +27,8 @@ module pwm
   output logic [NOutputs-1:0] cio_pwm_en_o
 );
 
-  // TODO: Deal with Regen in this block, on TLUL clock domain
-  logic                     unused_regen;
   pwm_reg_pkg::pwm_reg2hw_t reg2hw;
   logic [NumAlerts-1:0] alert_test, alerts;
-
-  assign unused_regen = reg2hw.regen.q;
 
   pwm_reg_top u_reg (
     .clk_i,

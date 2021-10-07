@@ -63,8 +63,7 @@ For the peripherals, this is done by invoking `util/reggen/validate.py`, while t
 The peripheral and xbar components are then validated through `topgen/validate.py`, which checks for interrupt, pinmux, clock and reset consistency.
 
 Once all validation is passed, the final Hjson is created.
-This Hjson is then used to generate the final top rtl in the top-specific [autogen directory](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/rtl/autogen).
-The other top specific modules are generated in the top ip-specific autogen directories, for example [plic](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/ip/rv_plic), [xbar](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/ip/xbar) and [pinmux](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/ip/pinmux).
+This Hjson is then used to generate the final top RTL.
 
 As part of this process, topgen invokes other tools, please see the documentation for [`reggen`](register_tool.md) and [`tlgen`](crossbar_tool.md) for more tool specific details.
 

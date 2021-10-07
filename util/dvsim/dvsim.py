@@ -157,7 +157,7 @@ def get_proj_root():
             "But this command has failed:\n"
             "{}".format(' '.join(cmd), result.stderr.decode("utf-8")))
         sys.exit(1)
-    return (proj_root)
+    return proj_root
 
 
 def resolve_proj_root(args):

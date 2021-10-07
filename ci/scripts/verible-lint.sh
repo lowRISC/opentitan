@@ -26,6 +26,10 @@ case "$flavour" in
         human_desc=DV
         dvsim_cfg=hw/top_earlgrey/lint/top_earlgrey_dv_lint_cfgs.hjson
         ;;
+    fpv)
+        human_desc=FPV
+        dvsim_cfg=hw/top_earlgrey/lint/top_earlgrey_fpv_lint_cfgs.hjson
+        ;;
 
     *)
         echo >&2 "Unknown lint flavour: $flavour"

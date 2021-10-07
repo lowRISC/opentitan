@@ -198,7 +198,7 @@
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.${k} = lc_ctrl_pkg::Off;
+  assign cg_en_o.${k.split('clk_')[-1]} = lc_ctrl_pkg::Off;
 % endfor
 
   ////////////////////////////////////////////////////
@@ -355,7 +355,7 @@
     .clk_i(clk_${v.src.name}_i),
     .rst_ni(rst_${v.src.name}_ni),
     .lc_en_i(((clk_${v.src.name}_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.${k})
+    .lc_en_o(cg_en_o.${k.split('clk_')[-1]})
   );
 % endfor
 
@@ -406,7 +406,7 @@
     .clk_i(clk_${v.src.name}_i),
     .rst_ni(rst_${v.src.name}_ni),
     .lc_en_i(((${k}_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.${k})
+    .lc_en_o(cg_en_o.${k.split('clk_')[-1]})
   );
 
 % endfor
@@ -469,7 +469,7 @@
     .clk_i(clk_${sig.src.name}_i),
     .rst_ni(rst_${sig.src.name}_ni),
     .lc_en_i(((${clk}_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.${clk})
+    .lc_en_o(cg_en_o.${clk.split('clk_')[-1]})
   );
 
 % endfor

@@ -14,6 +14,7 @@ sw_lib_dif_clkmgr = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
+      sw_lib_dif_autogen_clkmgr,
     ],
   )
 )
@@ -21,9 +22,10 @@ sw_lib_dif_clkmgr = declare_dependency(
 test('dif_clkmgr_unittest', executable(
     'dif_clkmgr_unittest',
     sources: [
-      hw_ip_clkmgr_reg_h,
+      'autogen/dif_clkmgr_autogen_unittest.cc',
       meson.source_root() / 'sw/device/lib/dif/dif_clkmgr.c',
-      'dif_clkmgr_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_clkmgr_autogen.c',
+      hw_ip_clkmgr_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,
@@ -435,6 +437,7 @@ sw_lib_dif_rstmgr = declare_dependency(
     dependencies: [
       sw_lib_bitfield,
       sw_lib_mmio,
+      sw_lib_dif_autogen_rstmgr,
     ],
   )
 )
@@ -443,7 +446,9 @@ test('dif_rstmgr_unittest', executable(
     'dif_rstmgr_unittest',
     sources: [
       'dif_rstmgr_unittest.cc',
+      'autogen/dif_rstmgr_autogen_unittest.cc',
       meson.source_root() / 'sw/device/lib/dif/dif_rstmgr.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_rstmgr_autogen.c',
       hw_ip_rstmgr_reg_h,
     ],
     dependencies: [
@@ -504,6 +509,7 @@ sw_lib_dif_pwrmgr = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_pwrmgr,
     ],
   )
 )
@@ -511,9 +517,11 @@ sw_lib_dif_pwrmgr = declare_dependency(
 test('dif_pwrmgr_unittest', executable(
     'dif_pwrmgr_unittest',
     sources: [
-      hw_ip_pwrmgr_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_pwrmgr.c',
       'dif_pwrmgr_unittest.cc',
+      'autogen/dif_pwrmgr_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_pwrmgr.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_pwrmgr_autogen.c',
+      hw_ip_pwrmgr_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,
@@ -562,7 +570,7 @@ test('dif_keymgr_unittest', executable(
   suite: 'dif',
 )
 
-# OTP controller library
+# OTP Controller library
 sw_lib_dif_otp_ctrl = declare_dependency(
   link_with: static_library(
     'sw_lib_dif_otp_ctrl',
@@ -573,6 +581,7 @@ sw_lib_dif_otp_ctrl = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_otp_ctrl,
     ],
   )
 )
@@ -580,9 +589,11 @@ sw_lib_dif_otp_ctrl = declare_dependency(
 test('dif_otp_ctrl_unittest', executable(
     'dif_otp_ctrl_unittest',
     sources: [
-      hw_ip_otp_ctrl_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_otp_ctrl.c',
       'dif_otp_ctrl_unittest.cc',
+      'autogen/dif_otp_ctrl_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_otp_ctrl.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.c',
+      hw_ip_otp_ctrl_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,
@@ -755,8 +766,29 @@ sw_lib_dif_sram_ctrl = declare_dependency(
   link_with: static_library(
     'sw_lib_dif_sram_ctrl',
     sources: [
+      hw_ip_sram_ctrl_reg_h,
       'dif_sram_ctrl.c',
     ],
     dependencies: [sw_lib_mmio],
   )
+)
+
+test('dif_sram_ctrl_unittest', executable(
+    'dif_sram_ctrl_unittest',
+    sources: [
+      'dif_sram_ctrl_unittest.cc',
+      'autogen/dif_sram_ctrl_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_sram_ctrl.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_sram_ctrl_autogen.c',
+      hw_ip_sram_ctrl_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )

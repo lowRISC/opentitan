@@ -61,12 +61,22 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       default: "${n_lpg.bit_length()}",
       local: "true"
     },
-    { name: "AlertLpgMap",
+    { name: "LpgMap",
       desc: '''
             Defines a mapping from alerts to LPGs.
             '''
       type: "logic [NAlerts-1:0][NLpgWidth-1:0]",
-      default: "${lpg_map}",
+      default: '''
+% if lpg_map:
+               {
+  % for l in list(reversed(lpg_map)):
+                 ${l}${"" if loop.last else ","}
+  % endfor
+               }
+% else:
+               '0
+% endif
+               ''',
       local: "true"
     },
     { name: "EscCntDw",
@@ -87,7 +97,17 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
             defines whether the protocol is synchronous (0) or asynchronous (1).
             '''
       type: "logic [NAlerts-1:0]",
-      default: "${async_on}",
+      default: '''
+% if async_on:
+               {
+  % for a in list(reversed(async_on)):
+                 ${a}${"" if loop.last else ","}
+  % endfor
+               }
+% else:
+               '0
+% endif
+               '''
       local: "true"
     },
     { name: "N_CLASSES",

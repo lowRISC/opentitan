@@ -72,7 +72,8 @@ TEST_F(IrqIsPendingTest, NullArgs) {
 TEST_F(IrqIsPendingTest, BadIrq) {
   bool is_pending;
   // All interrupt CSRs are 32 bit so interrupt 32 will be invalid.
-  EXPECT_EQ(dif_hmac_irq_is_pending(&hmac_, (dif_hmac_irq_t)32, &is_pending),
+  EXPECT_EQ(dif_hmac_irq_is_pending(&hmac_, static_cast<dif_hmac_irq_t>(32),
+                                    &is_pending),
             kDifBadArg);
 }
 
@@ -103,7 +104,8 @@ TEST_F(IrqAcknowledgeTest, NullArgs) {
 }
 
 TEST_F(IrqAcknowledgeTest, BadIrq) {
-  EXPECT_EQ(dif_hmac_irq_acknowledge(nullptr, (dif_hmac_irq_t)32), kDifBadArg);
+  EXPECT_EQ(dif_hmac_irq_acknowledge(nullptr, static_cast<dif_hmac_irq_t>(32)),
+            kDifBadArg);
 }
 
 TEST_F(IrqAcknowledgeTest, Success) {
@@ -136,7 +138,8 @@ TEST_F(IrqGetEnabledTest, NullArgs) {
 TEST_F(IrqGetEnabledTest, BadIrq) {
   dif_toggle_t irq_state;
 
-  EXPECT_EQ(dif_hmac_irq_get_enabled(&hmac_, (dif_hmac_irq_t)32, &irq_state),
+  EXPECT_EQ(dif_hmac_irq_get_enabled(&hmac_, static_cast<dif_hmac_irq_t>(32),
+                                     &irq_state),
             kDifBadArg);
 }
 
@@ -172,7 +175,8 @@ TEST_F(IrqSetEnabledTest, NullArgs) {
 TEST_F(IrqSetEnabledTest, BadIrq) {
   dif_toggle_t irq_state = kDifToggleEnabled;
 
-  EXPECT_EQ(dif_hmac_irq_set_enabled(&hmac_, (dif_hmac_irq_t)32, irq_state),
+  EXPECT_EQ(dif_hmac_irq_set_enabled(&hmac_, static_cast<dif_hmac_irq_t>(32),
+                                     irq_state),
             kDifBadArg);
 }
 
@@ -201,7 +205,8 @@ TEST_F(IrqForceTest, NullArgs) {
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_EQ(dif_hmac_irq_force(nullptr, (dif_hmac_irq_t)32), kDifBadArg);
+  EXPECT_EQ(dif_hmac_irq_force(nullptr, static_cast<dif_hmac_irq_t>(32)),
+            kDifBadArg);
 }
 
 TEST_F(IrqForceTest, Success) {

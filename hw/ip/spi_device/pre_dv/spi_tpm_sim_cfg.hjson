@@ -1,0 +1,37 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: spi_tpm
+  dut:  spi_tpm
+  tb:   spi_tpm_tb
+  tool: vcs
+  fusesoc_core: lowrisc:dv:spi_tpm_sim:0.1
+  import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
+  reseed: 1
+
+  build_modes: [
+    {
+      name: spi_tpm_locality_1
+      build_opts: []
+    }
+  ]
+
+  tests: [
+    {
+      name: spi_tpm_smoke
+      //build_mode: spi_tpm_locality_1
+    }
+  ]
+
+  regressions: [
+    {
+      name: smoke
+      tests: ["spi_tpm_smoke"]
+    }
+    {
+      name: nightly
+      tests: ["spi_tpm_smoke"]
+    }
+  ]
+}

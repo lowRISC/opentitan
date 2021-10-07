@@ -181,7 +181,7 @@ static dif_otp_ctrl_t otp;
 static void wait_for_dai(void) {
   while (true) {
     dif_otp_ctrl_status_t status;
-    CHECK(dif_otp_ctrl_get_status(&otp, &status) == kDifOtpCtrlOk);
+    CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp, &status));
     if (bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiIdle)) {
       return;
     }
@@ -195,17 +195,10 @@ static void wait_for_dai(void) {
  */
 static void lock_otp_secret_partition2(void) {
   // initialize otp
-  mmio_region_t otp_reg_core =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
-  mmio_region_t otp_reg_prim =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR);
-  CHECK(
-      dif_otp_ctrl_init((dif_otp_ctrl_params_t){.base_addr_core = otp_reg_core,
-                                                .base_addr_prim = otp_reg_prim},
-                        &otp) == kDifOtpCtrlOk);
+  CHECK_DIF_OK(dif_otp_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
-  CHECK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2, 0) ==
-        kDifOtpCtrlDaiOk);
+  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2, 0));
 
   wait_for_dai();
 }
@@ -232,12 +225,10 @@ static void soft_reboot(dif_pwrmgr_t *pwrmgr, dif_aon_timer_t *aon_timer) {
   dif_pwrmgr_domain_config_t config;
   config = kDifPwrmgrDomainOptionUsbClockInActivePower;
 
-  CHECK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeWakeup,
-                                       kDifPwrmgrWakeupRequestSourceFive) ==
-        kDifPwrmgrConfigOk);
-  CHECK(dif_pwrmgr_set_domain_config(pwrmgr, config) == kDifPwrmgrConfigOk);
-  CHECK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifPwrmgrToggleEnabled) ==
-        kDifPwrmgrConfigOk);
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceFive));
+  CHECK_DIF_OK(dif_pwrmgr_set_domain_config(pwrmgr, config));
+  CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifToggleEnabled));
 
   // Enter low power mode.
   LOG_INFO("Entering low power");
@@ -294,12 +285,8 @@ bool test_main(void) {
 
   // Initialize pwrmgr
   dif_pwrmgr_t pwrmgr;
-  CHECK(dif_pwrmgr_init(
-            (dif_pwrmgr_params_t){
-                .base_addr =
-                    mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR),
-            },
-            &pwrmgr) == kDifPwrmgrOk);
+  CHECK_DIF_OK(dif_pwrmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Initialize aon_timer
   dif_aon_timer_t aon_timer;
@@ -310,7 +297,7 @@ bool test_main(void) {
 
   // Get wakeup reason
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
-  CHECK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason) == kDifPwrmgrOk);
+  CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
 
   if (compare_wakeup_reasons(&wakeup_reason, &kWakeUpReasonPor)) {
     LOG_INFO("Powered up for the first time, program flash");

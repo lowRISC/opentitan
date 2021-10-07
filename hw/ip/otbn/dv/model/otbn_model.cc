@@ -249,28 +249,31 @@ int OtbnModel::start() {
   return 0;
 }
 
-int OtbnModel::step(svLogic edn_rnd_data_valid,
-                    svLogicVecVal *edn_rnd_data, /* logic [255:0] */
-                    svLogic edn_urnd_data_valid,
+void OtbnModel::edn_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */) {
+  ISSWrapper *iss = ensure_wrapper();
+
+  iss->edn_step(edn_rnd_data->aval);
+}
+
+void OtbnModel::edn_rnd_cdc_done() {
+  ISSWrapper *iss = ensure_wrapper();
+  iss->edn_rnd_cdc_done();
+}
+
+int OtbnModel::step(svLogic edn_urnd_data_valid,
+                    svBitVecVal *status /* bit [7:0] */,
                     svBitVecVal *insn_cnt /* bit [31:0] */,
                     svBitVecVal *err_bits /* bit [31:0] */,
                     svBitVecVal *stop_pc /* bit [31:0] */) {
-  assert(err_bits);
+  assert(insn_cnt && err_bits && stop_pc);
 
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
     return -1;
 
-  assert(!is_xz(edn_rnd_data_valid));
   assert(!is_xz(edn_urnd_data_valid));
 
   try {
-    if (edn_rnd_data_valid) {
-      uint32_t int_edn_rnd_data[8];
-      set_rnd_data(int_edn_rnd_data, edn_rnd_data);
-      iss->edn_rnd_data(int_edn_rnd_data);
-    }
-
     if (edn_urnd_data_valid) {
       iss->edn_urnd_reseed_complete();
     }
@@ -282,15 +285,25 @@ int OtbnModel::step(svLogic edn_rnd_data_valid,
         return -1;
 
       case 1:
-        // The simulation has stopped. Fill in insn_cnt, err_bits and stop_pc.
-        set_sv_u32(insn_cnt, iss->get_insn_cnt());
-        set_sv_u32(err_bits, iss->get_err_bits());
-        set_sv_u32(stop_pc, iss->get_stop_pc());
+        // The simulation has stopped. Fill in status, insn_cnt, err_bits and
+        // stop_pc. Note that status should never have anything in its top 24
+        // bits.
+        if (iss->get_mirrored().status >> 8) {
+          throw std::runtime_error("STATUS register had non-empty top bits.");
+        }
+        set_sv_u8(status, iss->get_mirrored().status);
+        set_sv_u32(insn_cnt, iss->get_mirrored().insn_cnt);
+        set_sv_u32(err_bits, iss->get_mirrored().err_bits);
+        set_sv_u32(stop_pc, iss->get_mirrored().stop_pc);
         return 1;
 
       case 0:
-        // The simulation is still running. Update insn_cnt.
-        set_sv_u32(insn_cnt, iss->get_insn_cnt());
+        // The simulation is still running. Update status and insn_cnt.
+        if (iss->get_mirrored().status >> 8) {
+          throw std::runtime_error("STATUS register had non-empty top bits.");
+        }
+        set_sv_u8(status, iss->get_mirrored().status);
+        set_sv_u32(insn_cnt, iss->get_mirrored().insn_cnt);
         return 0;
 
       default:
@@ -537,18 +550,24 @@ OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
 
 void otbn_model_destroy(OtbnModel *model) { delete model; }
 
-unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned status,
-                         svLogic edn_rnd_data_valid,
-                         svLogicVecVal *edn_rnd_data, /* logic [255:0] */
+void edn_model_step(OtbnModel *model,
+                    svLogicVecVal *edn_rnd_data /* logic [31:0] */) {
+  model->edn_step(edn_rnd_data);
+}
+
+void edn_model_rnd_cdc_done(OtbnModel *model) { model->edn_rnd_cdc_done(); }
+
+unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
                          svLogic edn_urnd_data_valid,
+                         svBitVecVal *status /* bit [7:0] */,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
                          svBitVecVal *err_bits /* bit [31:0] */,
                          svBitVecVal *stop_pc /* bit [31:0] */) {
-  assert(model && insn_cnt && err_bits && stop_pc);
+  assert(model && status && insn_cnt && err_bits && stop_pc);
 
   // Run model checks if needed. This usually happens just after an operation
   // has finished.
-  if (model->has_rtl() && (status & CHECK_DUE_BIT)) {
+  if (model->has_rtl() && (model_state & CHECK_DUE_BIT)) {
     switch (model->check()) {
       case 1:
         // Match (success)
@@ -556,14 +575,14 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned status,
 
       case 0:
         // Mismatch
-        status |= FAILED_CMP_BIT;
+        model_state |= FAILED_CMP_BIT;
         break;
 
       default:
         // Something went wrong
-        return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
+        return (model_state & ~RUNNING_BIT) | FAILED_STEP_BIT;
     }
-    status &= ~CHECK_DUE_BIT;
+    model_state &= ~CHECK_DUE_BIT;
   }
 
   assert(!is_xz(start));
@@ -573,39 +592,39 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned status,
     switch (model->start()) {
       case 0:
         // All good
-        status |= RUNNING_BIT;
+        model_state |= RUNNING_BIT;
         break;
 
       default:
         // Something went wrong.
-        return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
+        return (model_state & ~RUNNING_BIT) | FAILED_STEP_BIT;
     }
   }
 
   // If the model isn't running, there's nothing more to do.
-  if (!(status & RUNNING_BIT))
-    return status;
+  if (!(model_state & RUNNING_BIT))
+    return model_state;
 
   // Step the model once
-  switch (model->step(edn_rnd_data_valid, edn_rnd_data, edn_urnd_data_valid,
-                      insn_cnt, err_bits, stop_pc)) {
+  switch (
+      model->step(edn_urnd_data_valid, status, insn_cnt, err_bits, stop_pc)) {
     case 0:
       // Still running: no change
       break;
 
     case 1:
       // Finished
-      status = (status & ~RUNNING_BIT) | CHECK_DUE_BIT;
+      model_state = (model_state & ~RUNNING_BIT) | CHECK_DUE_BIT;
       break;
 
     default:
       // Something went wrong
-      return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
+      return (model_state & ~RUNNING_BIT) | FAILED_STEP_BIT;
   }
 
   // If we're still running, there's nothing more to do.
-  if (status & RUNNING_BIT)
-    return status;
+  if (model_state & RUNNING_BIT)
+    return model_state;
 
   // If we've just stopped running and there's no RTL, load the contents of
   // DMEM back from the ISS
@@ -617,11 +636,11 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned status,
 
       default:
         // Failed to load DMEM
-        return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
+        return (model_state & ~RUNNING_BIT) | FAILED_STEP_BIT;
     }
   }
 
-  return status;
+  return model_state;
 }
 
 void otbn_model_reset(OtbnModel *model) {

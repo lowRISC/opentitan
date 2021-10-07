@@ -28,7 +28,7 @@ const test_config_t kTestConfig;
 static void wait_for_dai(void) {
   while (true) {
     dif_otp_ctrl_status_t status;
-    CHECK(dif_otp_ctrl_get_status(&otp, &status) == kDifOtpCtrlOk);
+    CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp, &status));
     if (bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiIdle)) {
       return;
     }
@@ -41,38 +41,30 @@ static void wait_for_dai(void) {
  * value can then be read out exactly through the blocking read interface.
  */
 bool test_main(void) {
-  mmio_region_t otp_reg_core =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
-  mmio_region_t otp_reg_prim =
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR);
-  CHECK(
-      dif_otp_ctrl_init((dif_otp_ctrl_params_t){.base_addr_core = otp_reg_core,
-                                                .base_addr_prim = otp_reg_prim},
-                        &otp) == kDifOtpCtrlOk);
+  CHECK_DIF_OK(dif_otp_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
   dif_otp_ctrl_config_t config = {
       .check_timeout = 100000,
       .integrity_period_mask = 0x3ffff,
       .consistency_period_mask = 0x3ffffff,
   };
-  CHECK(dif_otp_ctrl_configure(&otp, config) == kDifOtpCtrlLockableOk);
+  CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
 
   for (int i = 0; i < ARRAYSIZE(kTestData); i += sizeof(uint32_t)) {
     uint32_t word;
     memcpy(&word, &kTestData[i], sizeof(word));
 
     wait_for_dai();
-    dif_otp_ctrl_dai_result_t err = dif_otp_ctrl_dai_program32(
-        &otp, kDifOtpCtrlPartitionOwnerSwCfg, 0x100 + i, word);
-    CHECK(err == kDifOtpCtrlDaiOk,
-          "Failed to program word kTestData[%d] = 0x%8x.", i, word);
+    CHECK_DIF_OK(dif_otp_ctrl_dai_program32(
+                     &otp, kDifOtpCtrlPartitionOwnerSwCfg, 0x100 + i, word),
+                 "Failed to program word kTestData[%d] = 0x%8x.", i, word);
   }
 
   uint32_t readout[ARRAYSIZE(kTestData) / sizeof(uint32_t)] = {0};
-  dif_otp_ctrl_dai_result_t err =
-      dif_otp_ctrl_read_blocking(&otp, kDifOtpCtrlPartitionOwnerSwCfg, 0x100,
-                                 readout, ARRAYSIZE(kTestData));
-  CHECK(err == kDifOtpCtrlDaiOk, "Failed to perform OTP blocking readout.");
+  CHECK_DIF_OK(dif_otp_ctrl_read_blocking(&otp, kDifOtpCtrlPartitionOwnerSwCfg,
+                                          0x100, readout, ARRAYSIZE(kTestData)),
+               "Failed to perform OTP blocking readout.");
 
   CHECK(memcmp(kTestData, readout, ARRAYSIZE(kTestData)) == 0);
 

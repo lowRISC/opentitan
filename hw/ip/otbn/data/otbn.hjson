@@ -213,6 +213,11 @@
             the IDLE state (see !!STATUS). Any writes to this field when OTBN
             isn't in the IDLE state are ignored.
           '''
+          tags: [
+            // Don't write this field in the automated CSR tests as it is
+            // currently unimplemented
+            "excl:CsrAllTests:CsrExclWrite",
+          ]
         }
       ],
     }

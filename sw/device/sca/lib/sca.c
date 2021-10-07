@@ -169,39 +169,40 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
 
   // Disable HMAC, KMAC, OTBN and USB clocks through CLKMGR DIF.
   const dif_clkmgr_params_t clkmgr_params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
       .last_gateable_clock = CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
       .last_hintable_clock = CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_OTBN_VAL_BIT};
   dif_clkmgr_t clkmgr;
-  IGNORE_RESULT(dif_clkmgr_init(clkmgr_params, &clkmgr));
+  IGNORE_RESULT(
+      dif_clkmgr_init(mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
+                      clkmgr_params, &clkmgr));
 
   if (disable & kScaPeripheralAes) {
     IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
-        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT,
-        kDifClkmgrToggleDisabled));
+        &clkmgr, clkmgr_params, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT,
+        kDifToggleDisabled));
   }
   if (disable & kScaPeripheralHmac) {
     IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
-        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT,
-        kDifClkmgrToggleDisabled));
+        &clkmgr, clkmgr_params, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT,
+        kDifToggleDisabled));
   }
   if (disable & kScaPeripheralKmac) {
     IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
-        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_KMAC_HINT_BIT,
-        kDifClkmgrToggleDisabled));
+        &clkmgr, clkmgr_params, CLKMGR_CLK_HINTS_CLK_MAIN_KMAC_HINT_BIT,
+        kDifToggleDisabled));
   }
   if (disable & kScaPeripheralOtbn) {
     IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
-        &clkmgr, CLKMGR_CLK_HINTS_CLK_IO_DIV4_OTBN_HINT_BIT,
-        kDifClkmgrToggleDisabled));
+        &clkmgr, clkmgr_params, CLKMGR_CLK_HINTS_CLK_IO_DIV4_OTBN_HINT_BIT,
+        kDifToggleDisabled));
     IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
-        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT,
-        kDifClkmgrToggleDisabled));
+        &clkmgr, clkmgr_params, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT,
+        kDifToggleDisabled));
   }
   if (disable & kScaPeripheralUsb) {
     IGNORE_RESULT(dif_clkmgr_gateable_clock_set_enabled(
-        &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
-        kDifClkmgrToggleDisabled));
+        &clkmgr, clkmgr_params, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
+        kDifToggleDisabled));
   }
 }
 

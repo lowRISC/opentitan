@@ -315,6 +315,12 @@ def get_reset_path(top: object, reset: str, shadow_sel = False):
     return top['resets'].get_path(reset['name'], reset['domain'], shadow_sel)
 
 
+def get_reset_lpg_path(top: object, reset: str):
+    """Return the appropriate LPG reset path given name
+    """
+    return top['resets'].get_lpg_path(reset['name'], reset['domain'])
+
+
 def get_unused_resets(top):
     """Return dict of unused resets and associated domain
     """

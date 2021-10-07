@@ -4,14 +4,6 @@
 #
 # waiver file for prim
 
-# prim_assert
-waive -rules {UNDEF_MACRO_REF} -location {prim_assert.sv} -regexp {Macro definition for 'ASSERT_RPT' includes expansion of undefined macro '__(FILE|LINE)__'} \
-      -comment "This is an UVM specific macro inside our assertion shortcuts"
-# unfortunately most tools do not support line wrapping within the declaration of macro functions, hence we have to waive
-# line length violations.
-waive -rules {LINE_LENGTH} -location {prim_assert.sv} -msg {Line length of} \
-      -comment "Some macros cannot be line-wrapped, as some tools do not support that."
-
 # prim_packer
 waive -rules INTEGER           -location {prim_packer.sv} -msg {'i' of type int used as a non-constant value} \
       -comment "This assigns int i (signed) to a multibit logic variable (unsigned), which is fine"
@@ -28,3 +20,7 @@ waive -rules {HIER_BRANCH_NOT_READ} -location {tlul_fifo_sync.sv} -regexp {Conne
 #
 #waive -rules NOT_READ -location {prim_ram_*_wrapper*} -regexp {(a|b)_rdata_(q|d)\[38} \
 #      -comment "Syndrome is not going out to the interface"
+
+# prim_sram_arbiter
+waive -rules CONST_OUTPUT -location {prim_sram_arbiter.sv} -regexp {rsp_error.* is driven by constant} \
+      -comment "SRAM protection is not yet implemented"

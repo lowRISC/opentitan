@@ -7,7 +7,8 @@ class otbn_model_item extends uvm_sequence_item;
   // What sort of transaction is this?
   otbn_model_item_type_e item_type;
 
-  // Only valid when item_type == OtbnModelDone.
+  // Only valid when item_type == OtbnModelStatus.
+  bit [7:0]              status;
   bit                    err;
 
   // Only valid when item_type == OtbnModelInsn
@@ -16,6 +17,7 @@ class otbn_model_item extends uvm_sequence_item;
 
   `uvm_object_utils_begin(otbn_model_item)
     `uvm_field_enum   (otbn_model_item_type_e, item_type, UVM_DEFAULT)
+    `uvm_field_int    (status, UVM_DEFAULT)
     `uvm_field_int    (err, UVM_DEFAULT)
     `uvm_field_int    (insn_addr, UVM_DEFAULT | UVM_HEX)
     `uvm_field_string (mnemonic, UVM_DEFAULT)

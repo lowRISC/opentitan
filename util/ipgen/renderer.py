@@ -60,7 +60,7 @@ class IpTemplateRendererBase:
             if name not in self.ip_template.params:
                 raise KeyError("No parameter named {!r} exists.".format(name))
 
-    def get_template_parameter_values(self) -> Dict[str, Union[str, int]]:
+    def get_template_parameter_values(self) -> Dict[str, Union[str, int, object]]:
         """ Get a typed mapping of all template parameters and their values.
         """
         ret = {}
@@ -75,12 +75,14 @@ class IpTemplateRendererBase:
             assert template_param.param_type in TemplateParameter.VALID_PARAM_TYPES
             try:
                 if template_param.param_type == 'string':
-                    val_typed = str(val)  # type: Union[int, str]
+                    val_typed = str(val)  # type: Union[int, str, object]
                 elif template_param.param_type == 'int':
                     if not isinstance(val, int):
                         val_typed = int(val, 0)
                     else:
                         val_typed = val
+                elif template_param.param_type == 'object':
+                    val_typed = val
             except (ValueError, TypeError):
                 raise TemplateRenderError(
                     "For parameter {} cannot convert value {!r} "
@@ -105,13 +107,15 @@ class IpTemplateRendererBase:
                 strict_undefined=True)
         return self._lookup
 
-    def _tplfunc_instance_vlnv(self, template_vlnv_str: str):
-        template_vlnv = template_vlnv_str.split(':', 3)
-        if len(template_vlnv) < 3:
+    def _tplfunc_instance_vlnv(self, template_vlnv_str: str) -> str:
+        template_vlnv = template_vlnv_str.split(':')
+        if len(template_vlnv) != 3 and len(template_vlnv) != 4:
             raise TemplateRenderError(
                 f"{template_vlnv_str} isn't a valid FuseSoC VLNV. "
-                "Required format: 'vendor:library:name:version'")
+                "Required format: 'vendor:library:name[:version]'")
         template_core_name = template_vlnv[2]
+        template_core_version = (template_vlnv[3]
+                                 if len(template_vlnv) == 4 else None)
 
         # Remove the template name from the start of the core name.
         # For example, a core name `rv_plic_component` will result in an
@@ -121,8 +125,13 @@ class IpTemplateRendererBase:
             template_core_name = template_core_name[len(self.ip_template.name):]
 
         instance_core_name = self.ip_config.instance_name + template_core_name
-        instance_vlnv = 'lowrisc:opentitan:' + instance_core_name
-        return instance_vlnv
+        instance_vlnv = ['lowrisc', 'opentitan', instance_core_name]
+
+        # Keep the version component if it was present before.
+        if template_core_version is not None:
+            instance_vlnv.append(template_core_version)
+
+        return ':'.join(instance_vlnv)
 
     def _render_mako_template_to_str(self, template_filepath: Path) -> str:
         """ Render a template and return the rendered text. """
@@ -232,10 +241,9 @@ class IpBlockRenderer(IpTemplateRendererBase):
         template_path = self.ip_template.template_path
 
         try:
-            # Copy everything but the templates.
-            shutil.copytree(template_path,
-                            output_dir_staging,
-                            ignore=shutil.ignore_patterns('*.tpl'))
+            # Copy everything but the templates and the template description.
+            ignore = shutil.ignore_patterns('*.tpl', '*.tpldesc.hjson')
+            shutil.copytree(template_path, output_dir_staging, ignore=ignore)
 
             # Render templates.
             for template_filepath in template_path.glob('**/*.tpl'):

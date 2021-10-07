@@ -18,6 +18,9 @@ waive -rules CLOCK_USE -location {rv_dm.sv} \
 waive -rules CLOCK_USE -location {rv_dm.sv} \
       -msg {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i',} \
       -comment "This clock usage is OK and is due to hand instantiated primitives on the clock line."
+waive -rules RESET_MUX -location {rv_dm.sv} \
+      -msg {Asynchronous reset 'trst_n_muxed' is driven by a multiplexer here, used as a reset 'trst_ni' at} \
+      -comment "This is needed such that the reset can be properly controlled during scanmode."
 
 # dmi_jtag_tap
 waive -rules CLOCK_MUX -location {dmi_jtag_tap.sv} -regexp {Clock 'tck_n' is driven by a multiplexer here, used as a clock at dmi_jtag_tap.sv} \

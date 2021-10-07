@@ -18,7 +18,7 @@ module alert_handler_lp_ctrl import alert_pkg::*; (
   input  lc_ctrl_pkg::lc_tx_t [NLpg-1:0]    lpg_cg_en_i,
   input  lc_ctrl_pkg::lc_tx_t [NLpg-1:0]    lpg_rst_en_i,
   // Init requests going to the individual alert channels.
-  output lc_ctrl_pkg::lc_tx_t [NAlerts-1:0] init_trig_o
+  output lc_ctrl_pkg::lc_tx_t [NAlerts-1:0] alert_init_trig_o
 );
 
   ///////////////////////////////////////////////////
@@ -29,14 +29,18 @@ module alert_handler_lp_ctrl import alert_pkg::*; (
   for (genvar k = 0; k < NLpg; k++) begin : gen_lpgs
 
     lc_ctrl_pkg::lc_tx_t [0:0] lpg_cg_en;
-    prim_lc_sync u_prim_lc_sync_clk_en (
+    prim_lc_sync #(
+      .ResetValueIsOn(1)
+    ) u_prim_lc_sync_cg_en (
       .clk_i,
       .rst_ni,
       .lc_en_i(lpg_cg_en_i[k]),
       .lc_en_o(lpg_cg_en)
     );
     lc_ctrl_pkg::lc_tx_t [0:0] lpg_rst_en;
-    prim_lc_sync u_prim_lc_sync_rst_en (
+    prim_lc_sync #(
+      .ResetValueIsOn(1)
+    ) u_prim_lc_sync_rst_en (
       .clk_i,
       .rst_ni,
       .lc_en_i(lpg_rst_en_i[k]),
@@ -68,8 +72,8 @@ module alert_handler_lp_ctrl import alert_pkg::*; (
     ) u_prim_lc_sync_lpg_en (
       .clk_i,
       .rst_ni,
-      .lc_en_i(lpg_init_trig[AlertLpgMap[j]]),
-      .lc_en_o({init_trig_o[j]})
+      .lc_en_i(lpg_init_trig[LpgMap[j]]),
+      .lc_en_o({alert_init_trig_o[j]})
     );
   end
 

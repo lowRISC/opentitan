@@ -25,7 +25,7 @@ package clkmgr_pkg;
   typedef struct packed {
 <% n_clk = 0 %>\
 % for clk in typed_clocks.all_clocks():
-    lc_ctrl_pkg::lc_tx_t ${clk};<% n_clk += 1 %>
+    lc_ctrl_pkg::lc_tx_t ${clk.split('clk_')[-1]};<% n_clk += 1 %>
 % endfor
   } clkmgr_cg_en_t;
 

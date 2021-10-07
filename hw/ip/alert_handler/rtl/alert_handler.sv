@@ -137,13 +137,13 @@ module alert_handler
   // Low-power group control //
   /////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t [NAlerts-1:0] lp_init_trig;
-  alert_handler_lp_ctrl u_alert_handler_lp_ctrl (
+  lc_ctrl_pkg::lc_tx_t [NAlerts-1:0] alert_init_trig;
+  alert_handler_lpg_ctrl u_alert_handler_lpg_ctrl (
     .clk_i,
     .rst_ni,
     .lpg_cg_en_i,
     .lpg_rst_en_i,
-    .init_trig_o ( lp_init_trig )
+    .alert_init_trig_o ( alert_init_trig )
   );
 
   /////////////////////
@@ -160,7 +160,7 @@ module alert_handler
     ) u_alert_receiver (
       .clk_i,
       .rst_ni,
-      .init_trig_i  ( lp_init_trig[k]    ),
+      .init_trig_i  ( alert_init_trig[k] ),
       .ping_req_i   ( alert_ping_req[k]  ),
       .ping_ok_o    ( alert_ping_ok[k]   ),
       .integ_fail_o ( alert_integfail[k] ),
@@ -265,15 +265,16 @@ module alert_handler
   ////////////////
 
   // check whether all outputs have a good known state after reset
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(IrqAKnownO_A, intr_classa_o)
-  `ASSERT_KNOWN(IrqBKnownO_A, intr_classb_o)
-  `ASSERT_KNOWN(IrqCKnownO_A, intr_classc_o)
-  `ASSERT_KNOWN(IrqDKnownO_A, intr_classd_o)
+  `ASSERT_KNOWN(TlDValidKnownO_A,  tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A,  tl_o.a_ready)
+  `ASSERT_KNOWN(IrqAKnownO_A,      intr_classa_o)
+  `ASSERT_KNOWN(IrqBKnownO_A,      intr_classb_o)
+  `ASSERT_KNOWN(IrqCKnownO_A,      intr_classc_o)
+  `ASSERT_KNOWN(IrqDKnownO_A,      intr_classd_o)
   `ASSERT_KNOWN(CrashdumpKnownO_A, crashdump_o)
-  `ASSERT_KNOWN(AckPKnownO_A, alert_rx_o)
-  `ASSERT_KNOWN(EscPKnownO_A, esc_tx_o)
+  `ASSERT_KNOWN(AckPKnownO_A,      alert_rx_o)
+  `ASSERT_KNOWN(EscPKnownO_A,      esc_tx_o)
+  `ASSERT_KNOWN(EdnKnownO_A,       edn_o)
 
   // this restriction is due to specifics in the ping selection mechanism
   `ASSERT_INIT(CheckNAlerts,   NAlerts  < (256 - N_CLASSES))

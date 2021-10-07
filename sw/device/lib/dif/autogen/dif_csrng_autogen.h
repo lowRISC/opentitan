@@ -80,8 +80,7 @@ typedef uint32_t dif_csrng_irq_enable_snapshot_t;
  * Returns whether a particular interrupt is currently pending.
  *
  * @param csrng A csrng handle.
- * @param irq An interrupt request.
- * @param[out] is_pending Out-param for whether the interrupt is pending.
+ * @param[out] snapshot Out-param for interrupt state snapshot.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT

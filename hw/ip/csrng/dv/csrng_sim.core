@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:csrng_test
       - lowrisc:dv:csrng_sva
+      - lowrisc:dv:csrng_cov
     files:
       - tb.sv
     file_type: systemVerilogSource

@@ -31,16 +31,12 @@ static bool compare_wakeup_reasons(dif_pwrmgr_wakeup_reason_t lhs,
 }
 
 bool test_main(void) {
-  CHECK(dif_pwrmgr_init(
-            (dif_pwrmgr_params_t){
-                .base_addr =
-                    mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR),
-            },
-            &pwrmgr) == kDifPwrmgrOk);
+  CHECK_DIF_OK(dif_pwrmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
-  CHECK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason) == kDifPwrmgrOk);
+  CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
 
   const dif_pwrmgr_wakeup_reason_t exp_por_wakeup_reason = {
       .types = 0,
@@ -73,14 +69,11 @@ bool test_main(void) {
     usbdev_force_dx_pullup(kDnSel, true);
 
     // Enable low power on the next WFI with default settings.
-    CHECK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeWakeup,
-                                         kDifPwrmgrWakeupRequestSourceThree) ==
-          kDifPwrmgrConfigOk);
-    CHECK(dif_pwrmgr_set_domain_config(
-              &pwrmgr, kDifPwrmgrDomainOptionUsbClockInActivePower) ==
-          kDifPwrmgrConfigOk);
-    CHECK(dif_pwrmgr_low_power_set_enabled(&pwrmgr, kDifPwrmgrToggleEnabled) ==
-          kDifPwrmgrConfigOk);
+    CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+        &pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceThree));
+    CHECK_DIF_OK(dif_pwrmgr_set_domain_config(
+        &pwrmgr, kDifPwrmgrDomainOptionUsbClockInActivePower));
+    CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(&pwrmgr, kDifToggleEnabled));
 
     // Enter low power mode.
     wait_for_interrupt();

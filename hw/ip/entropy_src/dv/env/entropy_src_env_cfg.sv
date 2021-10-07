@@ -19,36 +19,55 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual pins_if#(8)   otp_en_es_fw_over_vif;
 
   // Knobs & Weights
-  uint          enable_pct, route_software_pct,
+  uint          enable_pct, route_software_pct, regwen_pct,
                 otp_en_es_fw_read_pct, otp_en_es_fw_over_pct,
-                type_bypass_pct, boot_bypass_disable_pct;
-  rand bit      enable, route_software, type_bypass,
-                boot_bypass_disable;
+                type_bypass_pct, boot_bypass_disable_pct,
+                entropy_data_reg_enable_pct, rng_bit_enable_pct;
 
-  rand otp_ctrl_pkg::otp_en_t   otp_en_es_fw_read, otp_en_es_fw_over;
+  rand bit      regwen;
+
+  rand entropy_src_pkg::es_enb_e   enable, route_software, type_bypass,
+                                   boot_bypass_disable, entropy_data_reg_enable,
+                                   rng_bit_enable;
+
+  rand otp_ctrl_pkg::enable_e      otp_en_es_fw_read, otp_en_es_fw_over;
 
   // Constraints
+  constraint c_regwen {regwen dist {
+      1 :/ regwen_pct,
+      0 :/ (100 - regwen_pct) };}
+
   constraint c_otp_en_es_fw_read {otp_en_es_fw_read dist {
-                                  otp_ctrl_pkg::Enabled  :/ otp_en_es_fw_read_pct,
-                                  otp_ctrl_pkg::Disabled :/ (100 - otp_en_es_fw_read_pct) };}
+      otp_ctrl_pkg::Enabled  :/ otp_en_es_fw_read_pct,
+      otp_ctrl_pkg::Disabled :/ (100 - otp_en_es_fw_read_pct) };}
 
   constraint c_otp_en_es_fw_over {otp_en_es_fw_over dist {
-                                  otp_ctrl_pkg::Enabled  :/ otp_en_es_fw_over_pct,
-                                  otp_ctrl_pkg::Disabled :/ (100 - otp_en_es_fw_over_pct) };}
+      otp_ctrl_pkg::Enabled  :/ otp_en_es_fw_over_pct,
+      otp_ctrl_pkg::Disabled :/ (100 - otp_en_es_fw_over_pct) };}
 
-  constraint c_enable {enable dist { 1 :/ enable_pct,
-                                     0 :/ 100 - enable_pct };
-  }
+  constraint c_enable {enable dist {
+      entropy_src_pkg::ES_FIELD_ON  :/ enable_pct,
+      entropy_src_pkg::ES_FIELD_OFF :/ 100 - enable_pct };}
 
-  constraint c_route {route_software dist { 1 :/ route_software_pct,
-                                            0 :/ (100 - route_software_pct) };}
+  constraint c_route {route_software dist {
+      entropy_src_pkg::ES_FIELD_ON  :/ route_software_pct,
+      entropy_src_pkg::ES_FIELD_OFF :/ (100 - route_software_pct) };}
 
-  constraint c_bypass {type_bypass dist { 1 :/ type_bypass_pct,
-                                          0 :/ (100 - type_bypass_pct) };}
+  constraint c_bypass {type_bypass dist {
+      entropy_src_pkg::ES_FIELD_ON  :/ type_bypass_pct,
+      entropy_src_pkg::ES_FIELD_OFF :/ (100 - type_bypass_pct) };}
 
-  constraint c_boot_bypass_disable {boot_bypass_disable dist { 1 :/ boot_bypass_disable_pct,
-                                                               0 :/ (100 - boot_bypass_disable_pct)
-                                                             };}
+  constraint c_boot_bypass_disable {boot_bypass_disable dist {
+      entropy_src_pkg::ES_FIELD_ON  :/ boot_bypass_disable_pct,
+      entropy_src_pkg::ES_FIELD_OFF :/ (100 - boot_bypass_disable_pct)};}
+
+  constraint c_entropy_data_reg_enable {entropy_data_reg_enable dist {
+      entropy_src_pkg::ES_FIELD_ON  :/ entropy_data_reg_enable_pct,
+      entropy_src_pkg::ES_FIELD_OFF :/ (100 - entropy_data_reg_enable_pct)};}
+
+  constraint c_rng_bit_enable {rng_bit_enable dist {
+      entropy_src_pkg::ES_FIELD_ON  :/ rng_bit_enable_pct,
+      entropy_src_pkg::ES_FIELD_OFF :/ (100 - rng_bit_enable_pct)};}
 
   // Functions
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
@@ -74,21 +93,25 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual function string convert2string();
     string str = "";
     str = {str, "\n"};
-    str = {str,  $sformatf("\n\t |************ entropy_src_env_cfg ****************| \t")                    };
-    str = {str,  $sformatf("\n\t |***** enable                   : %10d *****| \t", enable)                  };
-    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_read        : %10d *****| \t", otp_en_es_fw_read)       };
-    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_over        : %10d *****| \t", otp_en_es_fw_over)       };
-    str = {str,  $sformatf("\n\t |***** route_software           : %10d *****| \t", route_software)          };
-    str = {str,  $sformatf("\n\t |***** type_bypass              : %10d *****| \t", type_bypass)             };
-    str = {str,  $sformatf("\n\t |***** boot_bypass_disable      : %10d *****| \t", boot_bypass_disable)     };
-    str = {str,  $sformatf("\n\t |------------ knobs ------------------------------| \t")                    };
-    str = {str,  $sformatf("\n\t |***** enable_pct               : %10d *****| \t", enable_pct)              };
-    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_read_pct    : %10d *****| \t", otp_en_es_fw_read_pct)   };
-    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_over_pct    : %10d *****| \t", otp_en_es_fw_over_pct)   };
-    str = {str,  $sformatf("\n\t |***** route_software_pct       : %10d *****| \t", route_software_pct)      };
-    str = {str,  $sformatf("\n\t |***** type_bypass_pct          : %10d *****| \t", type_bypass_pct)         };
-    str = {str,  $sformatf("\n\t |***** boot_bypass_disable_pct  : %10d *****| \t", boot_bypass_disable_pct) };
-    str = {str,  $sformatf("\n\t |*************************************************| \t")                    };
+    str = {str,  $sformatf("\n\t |**************** entropy_src_env_cfg *****************| \t")                         };
+    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_read           : %12s *****| \t", otp_en_es_fw_read.name())       };
+    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_over           : %12s *****| \t", otp_en_es_fw_over.name())       };
+    str = {str,  $sformatf("\n\t |***** enable                      : %12s *****| \t", enable.name())                  };
+    str = {str,  $sformatf("\n\t |***** route_software              : %12s *****| \t", route_software.name())          };
+    str = {str,  $sformatf("\n\t |***** type_bypass                 : %12s *****| \t", type_bypass.name())             };
+    str = {str,  $sformatf("\n\t |***** entropy_data_reg_enable     : %12s *****| \t", entropy_data_reg_enable.name()) };
+    str = {str,  $sformatf("\n\t |***** boot_bypass_disable         : %12s *****| \t", boot_bypass_disable.name())     };
+    str = {str,  $sformatf("\n\t |***** rng_bit_enable              : %12s *****| \t", rng_bit_enable.name())          };
+    str = {str,  $sformatf("\n\t |----------------- knobs ------------------------------| \t")                         };
+    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_read_pct       : %12d *****| \t", otp_en_es_fw_read_pct)          };
+    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_over_pct       : %12d *****| \t", otp_en_es_fw_over_pct)          };
+    str = {str,  $sformatf("\n\t |***** enable_pct                  : %12d *****| \t", enable_pct)                     };
+    str = {str,  $sformatf("\n\t |***** route_software_pct          : %12d *****| \t", route_software_pct)             };
+    str = {str,  $sformatf("\n\t |***** type_bypass_pct             : %12d *****| \t", type_bypass_pct)                };
+    str = {str,  $sformatf("\n\t |***** entropy_data_reg_enable_pct : %12d *****| \t", entropy_data_reg_enable_pct)    };
+    str = {str,  $sformatf("\n\t |***** boot_bypass_disable_pct     : %12d *****| \t", boot_bypass_disable_pct)        };
+    str = {str,  $sformatf("\n\t |***** rng_bit_enable_pct          : %12d *****| \t", rng_bit_enable_pct)             };
+    str = {str,  $sformatf("\n\t |******************************************************| \t")                         };
     str = {str, "\n"};
     return str;
   endfunction

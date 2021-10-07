@@ -8,17 +8,18 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/dif/dif_base.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 
-dif_otp_ctrl_result_t dif_otp_ctrl_init(dif_otp_ctrl_params_t params,
-                                        dif_otp_ctrl_t *otp) {
+dif_result_t dif_otp_ctrl_init(mmio_region_t base_addr, dif_otp_ctrl_t *otp) {
   if (otp == NULL) {
-    return kDifOtpCtrlBadArg;
+    return kDifBadArg;
   }
 
-  otp->params = params;
-  return kDifOtpCtrlOk;
+  otp->base_addr = base_addr;
+
+  return kDifOk;
 }
 
 /**
@@ -28,87 +29,82 @@ dif_otp_ctrl_result_t dif_otp_ctrl_init(dif_otp_ctrl_params_t params,
  * functions that can be locked out by this register.
  */
 static bool checks_are_locked(const dif_otp_ctrl_t *otp) {
-  uint32_t locked = mmio_region_read32(otp->params.base_addr_core,
-                                       OTP_CTRL_CHECK_REGWEN_REG_OFFSET);
+  uint32_t locked =
+      mmio_region_read32(otp->base_addr, OTP_CTRL_CHECK_REGWEN_REG_OFFSET);
   return !bitfield_bit32_read(locked, OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT);
 }
 
-dif_otp_ctrl_lockable_result_t dif_otp_ctrl_configure(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_config_t config) {
+dif_result_t dif_otp_ctrl_configure(const dif_otp_ctrl_t *otp,
+                                    dif_otp_ctrl_config_t config) {
   if (otp == NULL) {
-    return kDifOtpCtrlLockableBadArg;
+    return kDifBadArg;
   }
   if (checks_are_locked(otp)) {
-    return kDifOtpCtrlLockableLocked;
+    return kDifLocked;
   }
 
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_CHECK_TIMEOUT_REG_OFFSET, config.check_timeout);
-  mmio_region_write32(otp->params.base_addr_core,
+  mmio_region_write32(otp->base_addr, OTP_CTRL_CHECK_TIMEOUT_REG_OFFSET,
+                      config.check_timeout);
+  mmio_region_write32(otp->base_addr,
                       OTP_CTRL_INTEGRITY_CHECK_PERIOD_REG_OFFSET,
                       config.integrity_period_mask);
-  mmio_region_write32(otp->params.base_addr_core,
+  mmio_region_write32(otp->base_addr,
                       OTP_CTRL_CONSISTENCY_CHECK_PERIOD_REG_OFFSET,
                       config.consistency_period_mask);
 
-  return kDifOtpCtrlLockableOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_lockable_result_t dif_otp_ctrl_check_integrity(
-    const dif_otp_ctrl_t *otp) {
+dif_result_t dif_otp_ctrl_check_integrity(const dif_otp_ctrl_t *otp) {
   if (otp == NULL) {
-    return kDifOtpCtrlLockableBadArg;
+    return kDifBadArg;
   }
   if (checks_are_locked(otp)) {
-    return kDifOtpCtrlLockableLocked;
+    return kDifLocked;
   }
 
   uint32_t reg =
       bitfield_bit32_write(0, OTP_CTRL_CHECK_TRIGGER_INTEGRITY_BIT, true);
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_CHECK_TRIGGER_REG_OFFSET, reg);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_CHECK_TRIGGER_REG_OFFSET, reg);
 
-  return kDifOtpCtrlLockableOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_lockable_result_t dif_otp_ctrl_check_consistency(
-    const dif_otp_ctrl_t *otp) {
+dif_result_t dif_otp_ctrl_check_consistency(const dif_otp_ctrl_t *otp) {
   if (otp == NULL) {
-    return kDifOtpCtrlLockableBadArg;
+    return kDifBadArg;
   }
   if (checks_are_locked(otp)) {
-    return kDifOtpCtrlLockableLocked;
+    return kDifLocked;
   }
 
   uint32_t reg =
       bitfield_bit32_write(0, OTP_CTRL_CHECK_TRIGGER_CONSISTENCY_BIT, true);
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_CHECK_TRIGGER_REG_OFFSET, reg);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_CHECK_TRIGGER_REG_OFFSET, reg);
 
-  return kDifOtpCtrlLockableOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp) {
+dif_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp) {
   if (otp == NULL) {
-    return kDifOtpCtrlBadArg;
+    return kDifBadArg;
   }
 
   uint32_t reg =
       bitfield_bit32_write(0, OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT, true);
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_CHECK_REGWEN_REG_OFFSET, reg);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_CHECK_REGWEN_REG_OFFSET, reg);
 
-  return kDifOtpCtrlOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_result_t dif_otp_ctrl_config_is_locked(const dif_otp_ctrl_t *otp,
-                                                    bool *is_locked) {
+dif_result_t dif_otp_ctrl_config_is_locked(const dif_otp_ctrl_t *otp,
+                                           bool *is_locked) {
   if (otp == NULL || is_locked == NULL) {
-    return kDifOtpCtrlBadArg;
+    return kDifBadArg;
   }
 
   *is_locked = checks_are_locked(otp);
-  return kDifOtpCtrlOk;
+  return kDifOk;
 }
 
 static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
@@ -133,195 +129,46 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
   return true;
 }
 
-dif_otp_ctrl_result_t dif_otp_ctrl_lock_reading(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition) {
+dif_result_t dif_otp_ctrl_lock_reading(const dif_otp_ctrl_t *otp,
+                                       dif_otp_ctrl_partition_t partition) {
   if (otp == NULL) {
-    return kDifOtpCtrlBadArg;
+    return kDifBadArg;
   }
 
   ptrdiff_t offset;
   bitfield_bit32_index_t index;
   if (!sw_read_lock_reg_offset(partition, &offset, &index)) {
-    return kDifOtpCtrlBadArg;
+    return kDifBadArg;
   }
 
   uint32_t reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(otp->params.base_addr_core, offset, reg);
+  mmio_region_write32(otp->base_addr, offset, reg);
 
-  return kDifOtpCtrlOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_result_t dif_otp_ctrl_reading_is_locked(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    bool *is_locked) {
+dif_result_t dif_otp_ctrl_reading_is_locked(const dif_otp_ctrl_t *otp,
+                                            dif_otp_ctrl_partition_t partition,
+                                            bool *is_locked) {
   if (otp == NULL || is_locked == NULL) {
-    return kDifOtpCtrlBadArg;
+    return kDifBadArg;
   }
 
   ptrdiff_t offset;
   bitfield_bit32_index_t index;
   if (!sw_read_lock_reg_offset(partition, &offset, &index)) {
-    return kDifOtpCtrlBadArg;
+    return kDifBadArg;
   }
 
-  uint32_t reg = mmio_region_read32(otp->params.base_addr_core, offset);
+  uint32_t reg = mmio_region_read32(otp->base_addr, offset);
   *is_locked = !bitfield_bit32_read(reg, index);
-  return kDifOtpCtrlOk;
+  return kDifOk;
 }
 
-static bool irq_index(dif_otp_ctrl_irq_t irq, bitfield_bit32_index_t *index) {
-  switch (irq) {
-    case kDifOtpCtrlIrqDone:
-      *index = OTP_CTRL_INTR_COMMON_OTP_OPERATION_DONE_BIT;
-      break;
-    case kDifOtpCtrlIrqError:
-      *index = OTP_CTRL_INTR_COMMON_OTP_ERROR_BIT;
-      break;
-    default:
-      return false;
-  }
-  return true;
-}
-
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_is_pending(const dif_otp_ctrl_t *otp,
-                                                  dif_otp_ctrl_irq_t irq,
-                                                  bool *is_pending) {
-  if (otp == NULL || is_pending == NULL) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!irq_index(irq, &index)) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  uint32_t reg = mmio_region_read32(otp->params.base_addr_core,
-                                    OTP_CTRL_INTR_STATE_REG_OFFSET);
-  *is_pending = bitfield_bit32_read(reg, index);
-
-  return kDifOtpCtrlOk;
-}
-
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_acknowledge(const dif_otp_ctrl_t *otp,
-                                                   dif_otp_ctrl_irq_t irq) {
-  if (otp == NULL) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!irq_index(irq, &index)) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  uint32_t reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_INTR_STATE_REG_OFFSET, reg);
-
-  return kDifOtpCtrlOk;
-}
-
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_get_enabled(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_irq_t irq,
-    dif_otp_ctrl_toggle_t *state) {
-  if (otp == NULL || state == NULL) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!irq_index(irq, &index)) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  uint32_t reg = mmio_region_read32(otp->params.base_addr_core,
-                                    OTP_CTRL_INTR_ENABLE_REG_OFFSET);
-  *state = bitfield_bit32_read(reg, index) ? kDifOtpCtrlToggleEnabled
-                                           : kDifOtpCtrlToggleDisabled;
-
-  return kDifOtpCtrlOk;
-}
-
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_set_enabled(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_irq_t irq,
-    dif_otp_ctrl_toggle_t state) {
-  if (otp == NULL) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!irq_index(irq, &index)) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  bool flag;
-  switch (state) {
-    case kDifOtpCtrlToggleEnabled:
-      flag = true;
-      break;
-    case kDifOtpCtrlToggleDisabled:
-      flag = false;
-      break;
-    default:
-      return kDifOtpCtrlBadArg;
-  }
-
-  uint32_t reg = mmio_region_read32(otp->params.base_addr_core,
-                                    OTP_CTRL_INTR_ENABLE_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, index, flag);
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_INTR_ENABLE_REG_OFFSET, reg);
-
-  return kDifOtpCtrlOk;
-}
-
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_force(const dif_otp_ctrl_t *otp,
-                                             dif_otp_ctrl_irq_t irq) {
-  if (otp == NULL) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  if (!irq_index(irq, &index)) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  uint32_t reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(otp->params.base_addr_core, OTP_CTRL_INTR_TEST_REG_OFFSET,
-                      reg);
-
-  return kDifOtpCtrlOk;
-}
-
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_disable_all(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_irq_snapshot_t *snapshot) {
-  if (otp == NULL) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  if (snapshot != NULL) {
-    *snapshot = mmio_region_read32(otp->params.base_addr_core,
-                                   OTP_CTRL_INTR_ENABLE_REG_OFFSET);
-  }
-
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_INTR_ENABLE_REG_OFFSET, 0);
-  return kDifOtpCtrlOk;
-}
-
-dif_otp_ctrl_result_t dif_otp_ctrl_irq_restore_all(
-    const dif_otp_ctrl_t *otp, const dif_otp_ctrl_irq_snapshot_t *snapshot) {
-  if (otp == NULL || snapshot == NULL) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_INTR_ENABLE_REG_OFFSET, *snapshot);
-  return kDifOtpCtrlOk;
-}
-
-dif_otp_ctrl_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
-                                              dif_otp_ctrl_status_t *status) {
+dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
+                                     dif_otp_ctrl_status_t *status) {
   if (otp == NULL || status == NULL) {
-    return kDifOtpCtrlBadArg;
+    return kDifBadArg;
   }
 
   static const bitfield_bit32_index_t kIndices[] = {
@@ -351,10 +198,10 @@ dif_otp_ctrl_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
   };
 
   status->codes = 0;
-  uint32_t status_code = mmio_region_read32(otp->params.base_addr_core,
-                                            OTP_CTRL_STATUS_REG_OFFSET);
-  uint32_t error_codes = mmio_region_read32(otp->params.base_addr_core,
-                                            OTP_CTRL_ERR_CODE_REG_OFFSET);
+  uint32_t status_code =
+      mmio_region_read32(otp->base_addr, OTP_CTRL_STATUS_REG_OFFSET);
+  uint32_t error_codes =
+      mmio_region_read32(otp->base_addr, OTP_CTRL_ERR_CODE_REG_OFFSET);
   for (int i = 0; i < ARRAYSIZE(kIndices); ++i) {
     // If the error is not present at all, we clear its cause bit if relevant,
     // and bail immediately.
@@ -461,12 +308,12 @@ dif_otp_ctrl_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
         err = kDifOtpCtrlErrorFsmBadState;
         break;
       default:
-        return kDifOtpCtrlError;
+        return kDifError;
     }
     status->causes[i] = err;
   }
 
-  return kDifOtpCtrlOk;
+  return kDifOk;
 }
 
 typedef struct partition_info {
@@ -552,84 +399,84 @@ static const partition_info_t kPartitions[] = {
         },
 };
 
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read_start(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint32_t address) {
+dif_result_t dif_otp_ctrl_dai_read_start(const dif_otp_ctrl_t *otp,
+                                         dif_otp_ctrl_partition_t partition,
+                                         uint32_t address) {
   if (otp == NULL || partition >= ARRAYSIZE(kPartitions)) {
-    return kDifOtpCtrlDaiBadArg;
+    return kDifBadArg;
   }
 
   if ((address & kPartitions[partition].align_mask) != 0) {
-    return kDifOtpCtrlDaiUnaligned;
+    return kDifUnaligned;
   }
 
   if (address >= kPartitions[partition].len) {
-    return kDifOtpCtrlDaiOutOfRange;
+    return kDifOutOfRange;
   }
 
-  uint32_t busy = mmio_region_read32(otp->params.base_addr_core,
+  uint32_t busy = mmio_region_read32(otp->base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
           busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifOtpCtrlDaiBusy;
+    return kDifUnavailable;
   }
 
   address += kPartitions[partition].start_addr;
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, address);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                      address);
 
   uint32_t cmd =
       bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true);
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                      cmd);
 
-  return kDifOtpCtrlDaiOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read32_end(const dif_otp_ctrl_t *otp,
-                                                      uint32_t *value) {
+dif_result_t dif_otp_ctrl_dai_read32_end(const dif_otp_ctrl_t *otp,
+                                         uint32_t *value) {
   if (otp == NULL || value == NULL) {
-    return kDifOtpCtrlDaiBadArg;
+    return kDifBadArg;
   }
 
-  uint32_t busy = mmio_region_read32(otp->params.base_addr_core,
+  uint32_t busy = mmio_region_read32(otp->base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
           busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifOtpCtrlDaiBusy;
+    return kDifUnavailable;
   }
 
-  *value = mmio_region_read32(otp->params.base_addr_core,
+  *value = mmio_region_read32(otp->base_addr,
                               OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET);
-  return kDifOtpCtrlDaiOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
-                                                      uint64_t *value) {
+dif_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
+                                         uint64_t *value) {
   if (otp == NULL || value == NULL) {
-    return kDifOtpCtrlDaiBadArg;
+    return kDifBadArg;
   }
 
-  uint32_t busy = mmio_region_read32(otp->params.base_addr_core,
+  uint32_t busy = mmio_region_read32(otp->base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
           busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifOtpCtrlDaiBusy;
+    return kDifUnavailable;
   }
 
-  *value = mmio_region_read32(otp->params.base_addr_core,
+  *value = mmio_region_read32(otp->base_addr,
                               OTP_CTRL_DIRECT_ACCESS_RDATA_1_REG_OFFSET);
   *value <<= 32;
-  *value |= mmio_region_read32(otp->params.base_addr_core,
+  *value |= mmio_region_read32(otp->base_addr,
                                OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET);
-  return kDifOtpCtrlDaiOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program32(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint32_t address, uint32_t value) {
+dif_result_t dif_otp_ctrl_dai_program32(const dif_otp_ctrl_t *otp,
+                                        dif_otp_ctrl_partition_t partition,
+                                        uint32_t address, uint32_t value) {
   if (otp == NULL || partition >= ARRAYSIZE(kPartitions)) {
-    return kDifOtpCtrlDaiBadArg;
+    return kDifBadArg;
   }
 
   // Ensure that we are writing to a 32-bit-access partition by checking that
@@ -639,129 +486,128 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program32(
   // here.
   if (kPartitions[partition].align_mask != 0x3 ||
       partition == kDifOtpCtrlPartitionLifeCycle) {
-    return kDifOtpCtrlDaiBadPartition;
+    return kDifError;
   }
 
   if ((address & kPartitions[partition].align_mask) != 0) {
-    return kDifOtpCtrlDaiUnaligned;
+    return kDifUnaligned;
   }
 
   // NOTE: The bounds check is tightened here, since we disallow writing the
   // digest directly.
   size_t digest_size = sizeof(uint64_t);
   if (address >= kPartitions[partition].len - digest_size) {
-    return kDifOtpCtrlDaiOutOfRange;
+    return kDifOutOfRange;
   }
 
-  uint32_t busy = mmio_region_read32(otp->params.base_addr_core,
+  uint32_t busy = mmio_region_read32(otp->base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
           busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifOtpCtrlDaiBusy;
+    return kDifUnavailable;
   }
 
   address += kPartitions[partition].start_addr;
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, address);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                      address);
 
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, value);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                      value);
 
   uint32_t cmd =
       bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true);
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                      cmd);
 
-  return kDifOtpCtrlDaiOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program64(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint32_t address, uint64_t value) {
+dif_result_t dif_otp_ctrl_dai_program64(const dif_otp_ctrl_t *otp,
+                                        dif_otp_ctrl_partition_t partition,
+                                        uint32_t address, uint64_t value) {
   if (otp == NULL || partition >= ARRAYSIZE(kPartitions)) {
-    return kDifOtpCtrlDaiBadArg;
+    return kDifBadArg;
   }
 
-  // Ensure that we are writing to a 32-bit-access partition by checking that
-  // the alignment mask is 0b11.
+  // Ensure that we are writing to a 64-bit-access partition by checking that
+  // the alignment mask is 0b111.
   if (kPartitions[partition].align_mask != 0x7) {
-    return kDifOtpCtrlDaiBadPartition;
+    return kDifError;
   }
 
   if ((address & kPartitions[partition].align_mask) != 0) {
-    return kDifOtpCtrlDaiUnaligned;
+    return kDifUnaligned;
   }
 
   // NOTE: The bounds check is tightened here, since we disallow writing the
   // digest directly.
   size_t digest_size = sizeof(uint64_t);
   if (address >= kPartitions[partition].len - digest_size) {
-    return kDifOtpCtrlDaiOutOfRange;
+    return kDifOutOfRange;
   }
 
-  uint32_t busy = mmio_region_read32(otp->params.base_addr_core,
+  uint32_t busy = mmio_region_read32(otp->base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
           busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifOtpCtrlDaiBusy;
+    return kDifUnavailable;
   }
 
   address += kPartitions[partition].start_addr;
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, address);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                      address);
 
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
                       value & UINT32_MAX);
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET, value >> 32);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET,
+                      value >> 32);
 
   uint32_t cmd =
       bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true);
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                      cmd);
 
-  return kDifOtpCtrlDaiOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_digest(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint64_t digest) {
+dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
+                                     dif_otp_ctrl_partition_t partition,
+                                     uint64_t digest) {
   if (otp == NULL || partition >= ARRAYSIZE(kPartitions)) {
-    return kDifOtpCtrlDaiBadArg;
+    return kDifBadArg;
   }
 
   // The LC partition does not have a digest.
   if (partition == kDifOtpCtrlPartitionLifeCycle) {
-    return kDifOtpCtrlDaiBadPartition;
+    return kDifError;
   }
 
   // For software partitions, the digest must be nonzero; for all other
   // partitions it must be zero.
   bool is_sw = kPartitions[partition].is_software;
   if (is_sw == (digest == 0)) {
-    return kDifOtpCtrlDaiBadArg;
+    return kDifBadArg;
   }
 
-  uint32_t busy = mmio_region_read32(otp->params.base_addr_core,
+  uint32_t busy = mmio_region_read32(otp->base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
           busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
-    return kDifOtpCtrlDaiBusy;
+    return kDifUnavailable;
   }
 
   uint32_t address = kPartitions[partition].start_addr;
   if (is_sw) {
     address += kPartitions[partition].len - sizeof(digest);
   }
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, address);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                      address);
 
   if (digest != 0) {
-    mmio_region_write32(otp->params.base_addr_core,
+    mmio_region_write32(otp->base_addr,
                         OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
                         digest & 0xffffffff);
-    mmio_region_write32(otp->params.base_addr_core,
+    mmio_region_write32(otp->base_addr,
                         OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET,
                         digest >> 32);
   }
@@ -770,22 +616,22 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_digest(
                                        ? OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT
                                        : OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_BIT;
   uint32_t cmd = bitfield_bit32_write(0, cmd_bit, true);
-  mmio_region_write32(otp->params.base_addr_core,
-                      OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                      cmd);
 
-  return kDifOtpCtrlDaiOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_digest_result_t dif_otp_ctrl_get_digest(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint64_t *digest) {
+dif_result_t dif_otp_ctrl_get_digest(const dif_otp_ctrl_t *otp,
+                                     dif_otp_ctrl_partition_t partition,
+                                     uint64_t *digest) {
   if (otp == NULL || digest == NULL) {
-    return kDifOtpCtrlDigestBadArg;
+    return kDifBadArg;
   }
 
   // The LC partition does not have a digest.
   if (partition == kDifOtpCtrlPartitionLifeCycle) {
-    return kDifOtpCtrlDigestBadArg;
+    return kDifBadArg;
   }
 
   ptrdiff_t reg0, reg1;
@@ -819,67 +665,44 @@ dif_otp_ctrl_digest_result_t dif_otp_ctrl_get_digest(
       reg1 = OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET;
       break;
     default:
-      return kDifOtpCtrlDigestBadArg;
+      return kDifBadArg;
   }
 
-  uint64_t value = mmio_region_read32(otp->params.base_addr_core, reg1);
+  uint64_t value = mmio_region_read32(otp->base_addr, reg1);
   value <<= 32;
-  value |= mmio_region_read32(otp->params.base_addr_core, reg0);
+  value |= mmio_region_read32(otp->base_addr, reg0);
 
   if (value == 0) {
-    return kDifOtpCtrlDigestMissing;
+    return kDifError;
   }
   *digest = value;
 
-  return kDifOtpCtrlDigestOk;
+  return kDifOk;
 }
 
-dif_otp_ctrl_dai_result_t dif_otp_ctrl_read_blocking(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint32_t address, uint32_t *buf, size_t len) {
+dif_result_t dif_otp_ctrl_read_blocking(const dif_otp_ctrl_t *otp,
+                                        dif_otp_ctrl_partition_t partition,
+                                        uint32_t address, uint32_t *buf,
+                                        size_t len) {
   if (otp == NULL || partition >= ARRAYSIZE(kPartitions) || buf == NULL) {
-    return kDifOtpCtrlDaiBadArg;
+    return kDifBadArg;
   }
 
   if (!kPartitions[partition].is_software) {
-    return kDifOtpCtrlDaiBadPartition;
+    return kDifError;
   }
 
   if ((address & kPartitions[partition].align_mask) != 0) {
-    return kDifOtpCtrlDaiUnaligned;
+    return kDifUnaligned;
   }
 
   if (address + len >= kPartitions[partition].len) {
-    return kDifOtpCtrlDaiOutOfRange;
+    return kDifOutOfRange;
   }
 
   ptrdiff_t reg_offset = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
                          kPartitions[partition].start_addr + address;
-  mmio_region_memcpy_from_mmio32(otp->params.base_addr_core, reg_offset, buf,
+  mmio_region_memcpy_from_mmio32(otp->base_addr, reg_offset, buf,
                                  len * sizeof(uint32_t));
-  return kDifOtpCtrlDaiOk;
-}
-
-dif_otp_ctrl_result_t dif_otp_ctrl_read_test(const dif_otp_ctrl_t *otp,
-                                             uint32_t address, uint32_t *buf,
-                                             size_t len) {
-  if (otp == NULL || buf == NULL) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  mmio_region_memcpy_from_mmio32(otp->params.base_addr_prim, address, buf,
-                                 len * sizeof(uint32_t));
-  return kDifOtpCtrlOk;
-}
-
-dif_otp_ctrl_result_t dif_otp_ctrl_write_test(const dif_otp_ctrl_t *otp,
-                                              uint32_t address,
-                                              const uint32_t *buf, size_t len) {
-  if (otp == NULL || buf == NULL) {
-    return kDifOtpCtrlBadArg;
-  }
-
-  mmio_region_memcpy_to_mmio32(otp->params.base_addr_prim, address, buf,
-                               len * sizeof(uint32_t));
-  return kDifOtpCtrlOk;
+  return kDifOk;
 }

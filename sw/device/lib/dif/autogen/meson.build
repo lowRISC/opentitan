@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen EDN DIF library
-sw_lib_dif_autogen_edn = declare_dependency(
+# Autogen Power Manager DIF library
+sw_lib_dif_autogen_pwrmgr = declare_dependency(
   link_with: static_library(
-    'sw_lib_dif_autogen_edn',
+    'sw_lib_dif_autogen_pwrmgr',
     sources: [
-      hw_ip_edn_reg_h,
-      'dif_edn_autogen.c',
+      hw_ip_pwrmgr_reg_h,
+      'dif_pwrmgr_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -44,6 +44,20 @@ sw_lib_dif_autogen_alert_handler = declare_dependency(
   )
 )
 
+# Autogen Clock Manager DIF library
+sw_lib_dif_autogen_clkmgr = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_clkmgr',
+    sources: [
+      hw_ip_clkmgr_reg_h,
+      'dif_clkmgr_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen CSRNG DIF library
 sw_lib_dif_autogen_csrng = declare_dependency(
   link_with: static_library(
@@ -51,6 +65,20 @@ sw_lib_dif_autogen_csrng = declare_dependency(
     sources: [
       hw_ip_csrng_reg_h,
       'dif_csrng_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen EDN DIF library
+sw_lib_dif_autogen_edn = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_edn',
+    sources: [
+      hw_ip_edn_reg_h,
+      'dif_edn_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -156,6 +184,34 @@ sw_lib_dif_autogen_otbn = declare_dependency(
   )
 )
 
+# Autogen OTP Controller DIF library
+sw_lib_dif_autogen_otp_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_otp_ctrl',
+    sources: [
+      hw_ip_otp_ctrl_reg_h,
+      'dif_otp_ctrl_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen Reset Manager DIF library
+sw_lib_dif_autogen_rstmgr = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_rstmgr',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'dif_rstmgr_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen UART DIF library
 sw_lib_dif_autogen_uart = declare_dependency(
   link_with: static_library(
@@ -163,6 +219,20 @@ sw_lib_dif_autogen_uart = declare_dependency(
     sources: [
       hw_ip_uart_reg_h,
       'dif_uart_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen SRAM Controller DIF library
+sw_lib_dif_autogen_sram_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_sram_ctrl',
+    sources: [
+      hw_ip_sram_ctrl_reg_h,
+      'dif_sram_ctrl_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
