@@ -69,7 +69,7 @@ static int erase_flash(void) {
 static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
                            dif_hmac_digest_t *digest) {
   const dif_hmac_transaction_t config = {
-      .digest_endianness = kDifHmacEndiannessLittle,
+      .digest_endianness = kDifHmacEndiannessBig,
       .message_endianness = kDifHmacEndiannessLittle,
   };
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(hmac, config));
@@ -93,6 +93,14 @@ static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
     digest_result = dif_hmac_finish(hmac, digest);
   }
   CHECK_DIF_OK(digest_result);
+
+  // Swap word order to keep hashes consistent with those generated in the
+  // MaskROM (little-endian).
+  for (size_t i = 0; i < 4; ++i) {
+    uint32_t tmp = digest->digest[i];
+    digest->digest[i] = digest->digest[7 - i];
+    digest->digest[7 - i] = tmp;
+  }
 }
 
 /**
