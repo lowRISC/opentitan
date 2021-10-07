@@ -19,3 +19,6 @@ uint32_t ibex_mtval_read(void) {
   CSR_READ(CSR_REG_MTVAL, &mtval);
   return mtval;
 }
+
+extern ibex_timeout_t ibex_timeout_init(uint32_t timeout_usec);
+extern bool ibex_timeout_check(const ibex_timeout_t *timeout);
