@@ -370,6 +370,7 @@ sw_lib_dif_kmac = declare_dependency(
     dependencies: [
       sw_lib_bitfield,
       sw_lib_mmio,
+      sw_lib_dif_autogen_kmac,
     ],
   )
 )
@@ -378,7 +379,9 @@ test('dif_kmac_unittest', executable(
     'dif_kmac_unittest',
     sources: [
       'dif_kmac_unittest.cc',
+      'autogen/dif_kmac_autogen_unittest.cc',
       meson.source_root() / 'sw/device/lib/dif/dif_kmac.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_kmac_autogen.c',
       hw_ip_kmac_reg_h,
     ],
     dependencies: [

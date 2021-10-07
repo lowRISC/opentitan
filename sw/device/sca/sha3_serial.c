@@ -79,7 +79,7 @@ static void kmac_block_until_idle(void) {
   // TODO(#7842): Remove when `dif_kmac_get_status()` is implemented.
   uint32_t reg;
   do {
-    reg = mmio_region_read32(kmac.params.base_addr, KMAC_STATUS_REG_OFFSET);
+    reg = mmio_region_read32(kmac.base_addr, KMAC_STATUS_REG_OFFSET);
   } while (!bitfield_bit32_read(reg, KMAC_STATUS_SHA3_IDLE_BIT));
 }
 
@@ -89,7 +89,7 @@ static void kmac_block_until_idle(void) {
 static void kmac_reset(void) {
   // TODO(#7842): Remove when `dif_kmac_reset()` is implemented.
   mmio_region_write32(
-      kmac.params.base_addr, KMAC_CMD_REG_OFFSET,
+      kmac.base_addr, KMAC_CMD_REG_OFFSET,
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_DONE));
   kmac_block_until_idle();
 }
@@ -102,8 +102,8 @@ static void kmac_reset(void) {
  * @param params Hardware parameters.
  * @returns Whether the hardware is currently idle or not.
  */
-static bool is_state_idle(dif_kmac_params_t params) {
-  uint32_t reg = mmio_region_read32(params.base_addr, KMAC_STATUS_REG_OFFSET);
+static bool is_state_idle(void) {
+  uint32_t reg = mmio_region_read32(kmac.base_addr, KMAC_STATUS_REG_OFFSET);
   return bitfield_bit32_read(reg, KMAC_STATUS_SHA3_IDLE_BIT);
 }
 
@@ -131,11 +131,11 @@ static uint32_t calculate_rate_bits(uint32_t security_level) {
  * command to the hardware, i.e., just the key is provided and the initial setup
  * for starting a new message is performed.
  */
-static dif_kmac_result_t kmac_msg_start(
-    dif_kmac_mode_kmac_t mode, size_t l, const dif_kmac_key_t *k,
-    const dif_kmac_customization_string_t *s) {
+static dif_result_t kmac_msg_start(dif_kmac_mode_kmac_t mode, size_t l,
+                                   const dif_kmac_key_t *k,
+                                   const dif_kmac_customization_string_t *s) {
   if (k == NULL || l > kDifKmacMaxOutputLenWords) {
-    return kDifKmacBadArg;
+    return kDifBadArg;
   }
 
   // Set key strength and calculate rate (r).
@@ -150,7 +150,7 @@ static dif_kmac_result_t kmac_msg_start(
       kmac_operation_state.r = calculate_rate_bits(256) / 32;
       break;
     default:
-      return kDifKmacBadArg;
+      return kDifBadArg;
   }
   kmac_operation_state.offset = 0;
   kmac_operation_state.d = l;
@@ -174,34 +174,33 @@ static dif_kmac_result_t kmac_msg_start(
       key_len = KMAC_KEY_LEN_LEN_VALUE_KEY512;
       break;
     default:
-      return kDifKmacBadArg;
+      return kDifBadArg;
   }
 
   // Hardware must be idle to start an operation.
-  if (!is_state_idle(kmac.params)) {
-    return kDifKmacError;
+  if (!is_state_idle()) {
+    return kDifError;
   }
 
   // Set key length and shares.
-  mmio_region_write32(kmac.params.base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
+  mmio_region_write32(kmac.base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
   for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {
-    mmio_region_write32(kmac.params.base_addr,
+    mmio_region_write32(kmac.base_addr,
                         KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t),
                         k->share0[i]);
-    mmio_region_write32(kmac.params.base_addr,
+    mmio_region_write32(kmac.base_addr,
                         KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t),
                         k->share1[i]);
   }
 
   // Configure cSHAKE mode with the given strength and enable KMAC mode.
-  uint32_t cfg_reg =
-      mmio_region_read32(kmac.params.base_addr, KMAC_CFG_REG_OFFSET);
+  uint32_t cfg_reg = mmio_region_read32(kmac.base_addr, KMAC_CFG_REG_OFFSET);
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_KMAC_EN_BIT, true);
   cfg_reg =
       bitfield_field32_write(cfg_reg, KMAC_CFG_KSTRENGTH_FIELD, kstrength);
   cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
                                    KMAC_CFG_MODE_VALUE_CSHAKE);
-  mmio_region_write32(kmac.params.base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+  mmio_region_write32(kmac.base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
 
   // Initialize prefix registers with function name ("KMAC") and empty
   // customization string. The empty customization string will be overwritten if
@@ -222,7 +221,7 @@ static dif_kmac_result_t kmac_msg_start(
   }
 
   // Write PREFIX register values.
-  const mmio_region_t base = kmac.params.base_addr;
+  const mmio_region_t base = kmac.base_addr;
   mmio_region_write32(base, KMAC_PREFIX_0_REG_OFFSET, prefix_regs[0]);
   mmio_region_write32(base, KMAC_PREFIX_1_REG_OFFSET, prefix_regs[1]);
   mmio_region_write32(base, KMAC_PREFIX_2_REG_OFFSET, prefix_regs[2]);
@@ -235,7 +234,7 @@ static dif_kmac_result_t kmac_msg_start(
   mmio_region_write32(base, KMAC_PREFIX_9_REG_OFFSET, prefix_regs[9]);
   mmio_region_write32(base, KMAC_PREFIX_10_REG_OFFSET, prefix_regs[10]);
 
-  return kDifKmacOk;
+  return kDifOk;
 }
 
 /**
@@ -248,20 +247,20 @@ static dif_kmac_result_t kmac_msg_start(
  * FIFO, and 2) appends the output length afterwards (normally done as
  * part of dif_kmac_squeeze()).
  */
-static dif_kmac_result_t kmac_msg_write(const void *msg, size_t msg_len,
-                                        size_t *processed) {
+static dif_result_t kmac_msg_write(const void *msg, size_t msg_len,
+                                   size_t *processed) {
   // Set the number of bytes processed to 0.
   if (processed != NULL) {
     *processed = 0;
   }
 
   if (msg == NULL && msg_len != 0) {
-    return kDifKmacBadArg;
+    return kDifBadArg;
   }
 
   // Check that an operation has been started.
   if (kmac_operation_state.r == 0) {
-    return kDifKmacError;
+    return kDifError;
   }
 
   // Copy the message one byte at a time.
@@ -269,7 +268,7 @@ static dif_kmac_result_t kmac_msg_write(const void *msg, size_t msg_len,
   // about message endianness (e.g. only copy a word at a time when in
   // little-endian mode).
   for (size_t i = 0; i < msg_len; ++i) {
-    mmio_region_write8(kmac.params.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+    mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
                        ((const uint8_t *)msg)[i]);
   }
 
@@ -286,17 +285,16 @@ static dif_kmac_result_t kmac_msg_write(const void *msg, size_t msg_len,
   int out_len = 1 + (d > 0xFF) + (d > 0xFFFF) + (d > 0xFFFFFF);
   int shift = (out_len - 1) * 8;
   while (shift >= 8) {
-    mmio_region_write8(kmac.params.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+    mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
                        (uint8_t)(d >> shift));
     shift -= 8;
   }
-  mmio_region_write8(kmac.params.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
-                     (uint8_t)d);
-  mmio_region_write8(kmac.params.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+  mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET, (uint8_t)d);
+  mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
                      (uint8_t)out_len);
   kmac_operation_state.squeezing = true;
 
-  return kDifKmacOk;
+  return kDifOk;
 }
 
 /**
@@ -308,12 +306,12 @@ static void kmac_msg_proc(void) {
   // Issue START command.
   uint32_t cmd_reg =
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
-  mmio_region_write32(kmac.params.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+  mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
   // Issue PROCESS command.
   cmd_reg =
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_PROCESS);
-  mmio_region_write32(kmac.params.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+  mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 }
 
 /**
@@ -326,7 +324,7 @@ static void kmac_msg_done(void) {
   // TODO(#7841, #7842): Remove when we finalize the way we capture traces.
   uint32_t reg;
   do {
-    reg = mmio_region_read32(kmac.params.base_addr, KMAC_STATUS_REG_OFFSET);
+    reg = mmio_region_read32(kmac.base_addr, KMAC_STATUS_REG_OFFSET);
   } while (!bitfield_bit32_read(reg, KMAC_STATUS_SHA3_SQUEEZE_BIT));
 }
 
@@ -339,9 +337,9 @@ static void kmac_msg_done(void) {
  * enters the 'squeeze' state, 2) doesn't append the output length, 3) doesn't
  * support the generation of more state.
  */
-static dif_kmac_result_t kmac_get_digest(uint32_t *out, size_t len) {
+static dif_result_t kmac_get_digest(uint32_t *out, size_t len) {
   if (out == NULL && len != 0) {
-    return kDifKmacBadArg;
+    return kDifBadArg;
   }
 
   while (len > 0) {
@@ -358,23 +356,23 @@ static dif_kmac_result_t kmac_get_digest(uint32_t *out, size_t len) {
       // Normally, the hardware would now have to generate more state. But
       // since at this point, the power measurement is already stopped, we don't
       // support that here.
-      return kDifKmacError;
+      return kDifError;
     }
 
     uint32_t offset =
         KMAC_STATE_REG_OFFSET + kmac_operation_state.offset * sizeof(uint32_t);
     for (size_t i = 0; i < n; ++i) {
       // Read both shares from state register and combine using XOR.
-      uint32_t share0 = mmio_region_read32(kmac.params.base_addr, offset);
-      uint32_t share1 = mmio_region_read32(kmac.params.base_addr,
-                                           offset + kDifKmacStateShareOffset);
+      uint32_t share0 = mmio_region_read32(kmac.base_addr, offset);
+      uint32_t share1 =
+          mmio_region_read32(kmac.base_addr, offset + kDifKmacStateShareOffset);
       *out++ = share0 ^ share1;
       offset += sizeof(uint32_t);
     }
     kmac_operation_state.offset += n;
     len -= n;
   }
-  return kDifKmacOk;
+  return kDifOk;
 }
 
 /**
@@ -383,17 +381,15 @@ static dif_kmac_result_t kmac_get_digest(uint32_t *out, size_t len) {
  * This function configures KMAC to use software entropy.
  */
 static void kmac_init(void) {
-  dif_kmac_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR),
-  };
-  CHECK(dif_kmac_init(params, &kmac) == kDifKmacOk);
+  CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,
       .entropy_seed = 0xffff,
       .entropy_fast_process = true,
   };
-  CHECK(dif_kmac_configure(&kmac, config) == kDifKmacOk);
+  CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   kmac_block_until_idle();
 }
@@ -427,9 +423,9 @@ static void sha3_serial_set_key(const uint8_t *key, size_t key_len) {
  */
 static void sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
   // Start a new message and write data to message FIFO.
-  SS_CHECK(kmac_msg_start(kDifKmacModeKmacLen128, kDigestLength, &kmac_key,
-                          NULL) == kDifKmacOk);
-  SS_CHECK(kmac_msg_write(msg, msg_len, NULL) == kDifKmacOk);
+  SS_CHECK_DIF_OK(
+      kmac_msg_start(kDifKmacModeKmacLen128, kDigestLength, &kmac_key, NULL));
+  SS_CHECK_DIF_OK(kmac_msg_write(msg, msg_len, NULL));
 
   // Start the SHA3 processing (this triggers the capture) and go to sleep.
   // Using the SecCmdDelay hardware parameter, the KMAC unit is
@@ -462,7 +458,7 @@ static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
 
   // Read the digest and send it to the host for verification.
   uint32_t out[kDigestLength];
-  SS_CHECK(kmac_get_digest(out, kDigestLength) == kDifKmacOk);
+  SS_CHECK_DIF_OK(kmac_get_digest(out, kDigestLength));
   simple_serial_send_packet('r', (uint8_t *)out, kDigestLength * 4);
 
   // Reset before the next absorb since KMAC must be idle before starting

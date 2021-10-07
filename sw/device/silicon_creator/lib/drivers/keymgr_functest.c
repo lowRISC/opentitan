@@ -206,15 +206,14 @@ static void lock_otp_secret_partition2(void) {
 /** Place kmac into sideload mode for correct keymgr operation */
 static void init_kmac_for_keymgr(void) {
   dif_kmac_t kmac;
-  CHECK(dif_kmac_init((dif_kmac_params_t){.base_addr = mmio_region_from_addr(
-                                              TOP_EARLGREY_KMAC_BASE_ADDR)},
-                      &kmac) == kDifKmacOk);
+  CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 
   // Configure KMAC hardware using software entropy.
   dif_kmac_config_t config = (dif_kmac_config_t){
       .sideload = true,
   };
-  CHECK(dif_kmac_configure(&kmac, config) == kDifKmacOk);
+  CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 }
 
 /** Soft reboot device */

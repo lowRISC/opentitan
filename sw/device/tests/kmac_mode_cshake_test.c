@@ -94,45 +94,43 @@ bool test_main() {
   // Intialize KMAC hardware.
   dif_kmac_t kmac;
   dif_kmac_operation_state_t kmac_operation_state;
-  CHECK(dif_kmac_init((dif_kmac_params_t){.base_addr = mmio_region_from_addr(
-                                              TOP_EARLGREY_KMAC_BASE_ADDR)},
-                      &kmac) == kDifKmacOk);
+  CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 
   // Configure KMAC hardware using software entropy.
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,
       .entropy_seed = 0xffff,
-      .entropy_fast_process = kDifKmacToggleEnabled,
+      .entropy_fast_process = kDifToggleEnabled,
   };
-  CHECK(dif_kmac_configure(&kmac, config) == kDifKmacOk);
+  CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   // Run cSHAKE test cases using single blocking absorb/squeeze operations.
   for (int i = 0; i < ARRAYSIZE(cshake_tests); ++i) {
     cshake_test_t test = cshake_tests[i];
 
     dif_kmac_function_name_t n;
-    CHECK(dif_kmac_function_name_init(
-              test.function_name, test.function_name_len, &n) == kDifKmacOk);
+    CHECK_DIF_OK(dif_kmac_function_name_init(test.function_name,
+                                             test.function_name_len, &n));
 
     dif_kmac_customization_string_t s;
-    CHECK(dif_kmac_customization_string_init(test.customization_string,
-                                             test.customization_string_len,
-                                             &s) == kDifKmacOk);
+    CHECK_DIF_OK(dif_kmac_customization_string_init(
+        test.customization_string, test.customization_string_len, &s));
 
     // Use NULL for empty strings to exercise that code path.
     dif_kmac_function_name_t *np = test.function_name_len == 0 ? NULL : &n;
     dif_kmac_customization_string_t *sp =
         test.customization_string_len == 0 ? NULL : &s;
 
-    CHECK(dif_kmac_mode_cshake_start(&kmac, &kmac_operation_state, test.mode,
-                                     np, sp) == kDifKmacOk);
-    CHECK(dif_kmac_absorb(&kmac, &kmac_operation_state, test.message,
-                          test.message_len, NULL) == kDifKmacOk);
+    CHECK_DIF_OK(dif_kmac_mode_cshake_start(&kmac, &kmac_operation_state,
+                                            test.mode, np, sp));
+    CHECK_DIF_OK(dif_kmac_absorb(&kmac, &kmac_operation_state, test.message,
+                                 test.message_len, NULL));
     uint32_t out[DIGEST_LEN_CSHAKE_MAX];
     CHECK(DIGEST_LEN_CSHAKE_MAX >= test.digest_len);
-    CHECK(dif_kmac_squeeze(&kmac, &kmac_operation_state, out, test.digest_len,
-                           NULL) == kDifKmacOk);
-    CHECK(dif_kmac_end(&kmac, &kmac_operation_state) == kDifKmacOk);
+    CHECK_DIF_OK(dif_kmac_squeeze(&kmac, &kmac_operation_state, out,
+                                  test.digest_len, NULL));
+    CHECK_DIF_OK(dif_kmac_end(&kmac, &kmac_operation_state));
 
     for (int j = 0; j < test.digest_len; ++j) {
       CHECK(out[j] == test.digest[j],

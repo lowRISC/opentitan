@@ -2,20 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Autogen Pin Multiplexer DIF library
-sw_lib_dif_autogen_pinmux = declare_dependency(
-  link_with: static_library(
-    'sw_lib_dif_autogen_pinmux',
-    sources: [
-      hw_top_earlgrey_pinmux_reg_h,
-      'dif_pinmux_autogen.c',
-    ],
-    dependencies: [
-      sw_lib_mmio,
-    ],
-  )
-)
-
 # Autogen AES DIF library
 sw_lib_dif_autogen_aes = declare_dependency(
   link_with: static_library(
@@ -156,6 +142,20 @@ sw_lib_dif_autogen_keymgr = declare_dependency(
   )
 )
 
+# Autogen KMAC DIF library
+sw_lib_dif_autogen_kmac = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_kmac',
+    sources: [
+      hw_ip_kmac_reg_h,
+      'dif_kmac_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen Lifecycle Controller DIF library
 sw_lib_dif_autogen_lc_ctrl = declare_dependency(
   link_with: static_library(
@@ -191,6 +191,20 @@ sw_lib_dif_autogen_otp_ctrl = declare_dependency(
     sources: [
       hw_ip_otp_ctrl_reg_h,
       'dif_otp_ctrl_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
+# Autogen Pin Multiplexer DIF library
+sw_lib_dif_autogen_pinmux = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_pinmux',
+    sources: [
+      hw_top_earlgrey_pinmux_reg_h,
+      'dif_pinmux_autogen.c',
     ],
     dependencies: [
       sw_lib_mmio,
