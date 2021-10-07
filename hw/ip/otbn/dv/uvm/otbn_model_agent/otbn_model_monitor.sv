@@ -21,10 +21,30 @@ class otbn_model_monitor extends dv_base_monitor #(
 
   protected task collect_trans(uvm_phase phase);
     fork
+      collect_start();
       collect_status();
       // TODO: Only run when coverage is enabled.
       collect_insns();
     join
+  endtask
+
+  protected task collect_start();
+    otbn_model_item trans;
+
+    forever begin
+      // Collect transactions on each clock edge when reset is high.
+      @(posedge cfg.vif.clk_i);
+      if (cfg.vif.rst_ni === 1'b1) begin
+        if (cfg.vif.start) begin
+          trans = otbn_model_item::type_id::create("trans");
+          trans.item_type = OtbnModelStart;
+          trans.status    = 0;
+          trans.err       = 0;
+          trans.mnemonic  = "";
+          analysis_port.write(trans);
+        end
+      end
+    end
   endtask
 
   protected task collect_status();
