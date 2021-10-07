@@ -148,23 +148,23 @@ typedef void (*sca_callee)(void);
 void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles);
 
 /**
- * Prints an error message over UART if the given condition evaluates to false.
- * TODO: Remove once there is a CHECK version that does not require test
+ * Prints an error message over UART if the given DIF evaluates to anthing but
+ * kDifOk.
+ * TODO: Remove once there is a CHECK_DIF_OK version that does not require test
  * library dependencies.
  */
-#define CHECK(condition, ...)                             \
+#define CHECK_DIF_OK(dif_call, ...)                       \
   do {                                                    \
-    if (!(condition)) {                                   \
+    if (dif_call != kDifOk) {                             \
       /* NOTE: because the condition in this if           \
          statement can be statically determined,          \
          only one of the below string constants           \
          will be included in the final binary.*/          \
       if (GET_NUM_VARIABLE_ARGS(_, ##__VA_ARGS__) == 0) { \
-        LOG_ERROR("CHECK-fail: " #condition);             \
+        LOG_ERROR("DIF-fail: " #dif_call);                \
       } else {                                            \
-        LOG_ERROR("CHECK-fail: " __VA_ARGS__);            \
+        LOG_ERROR("DIF-fail: " __VA_ARGS__);              \
       }                                                   \
     }                                                     \
   } while (false)
-
 #endif  // OPENTITAN_SW_DEVICE_SCA_LIB_SCA_H_

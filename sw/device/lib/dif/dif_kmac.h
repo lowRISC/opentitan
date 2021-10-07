@@ -14,6 +14,9 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+
+#include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,37 +67,6 @@ extern "C" {
  *       SHA-3 Derived Functions: cSHAKE, KMAC, TupleHash and ParallelHash
  *       https://doi.org/10.6028/NIST.SP.800-185
  */
-
-/**
- * A toggle state: enabled, or disabled.
- *
- * This enum may be used instead of a `bool` when describing an enabled/disabled
- * state.
- */
-typedef enum dif_kmac_toggle {
-  /*
-   * The "enabled" state.
-   */
-  kDifKmacToggleEnabled,
-  /**
-   * The "disabled" state.
-   */
-  kDifKmacToggleDisabled,
-} dif_kmac_toggle_t;
-
-/**
- * Hardware instantiation parameters for KMAC.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_kmac_params {
-  /**
-   * The base address for the KMAC hardware registers.
-   */
-  mmio_region_t base_addr;
-} dif_kmac_params_t;
 
 /**
  * Supported entropy modes.
@@ -164,15 +136,6 @@ typedef struct dif_kmac_config {
 } dif_kmac_config_t;
 
 /**
- * A handle to KMAC.
- *
- * This type should be treated as opaque by users.
- */
-typedef struct dif_kmac {
-  dif_kmac_params_t params;
-} dif_kmac_t;
-
-/**
  * A KMAC operation state context.
  */
 typedef struct dif_kmac_operation_state {
@@ -208,66 +171,6 @@ typedef struct dif_kmac_operation_state {
    */
   size_t d;
 } dif_kmac_operation_state_t;
-
-/**
- * The result of a KMAC operation.
- */
-typedef enum dif_kmac_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifKmacOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifKmacError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifKmacBadArg,
-
-  /**
-   * The operation failed because writes to a required register are
-   * disabled.
-   */
-  kDifKmacLocked,
-
-  /**
-   * The operation did not fully complete. Input and/or output parameters may
-   * have only been partially processed. See the function description for more
-   * information about how to retry or continue the operation.
-   */
-  kDifKmacIncomplete,
-} dif_kmac_result_t;
-
-/**
- * A KMAC interrupt request type.
- */
-typedef enum dif_kmac_irq {
-  /**
-   * KMAC/SHA3 absorbing has been completed.
-   *
-   * Associated with the `kmac.INTR_STATE.kmac_done` hardware interrupt.
-   */
-  kDifKmacIrqDone = 0,
-
-  /**
-   * Message FIFO empty condition.
-   *
-   * Associated with the `kmac.INTR_STATE.fifo_empty` hardware interrupt.
-   */
-  kDifKmacIrqFifoEmpty,
-
-  /**
-   * KMAC/SHA3 error occurred.
-   *
-   * Associated with the `kmac.INTR_STATE.kmac_err` hardware interrupt.
-   */
-  kDifKmacIrqError,
-} dif_kmac_irq_t;
 
 /**
  * Supported SHA-3 modes of operation.
@@ -433,39 +336,39 @@ typedef enum dif_kmac_error {
   /**
    * No error has occured.
    */
-  kDifKmacErrorNone,
+  kDifErrorNone,
 
   /**
    * The Key Manager has raised an error because the secret key is not valid.
    */
-  kDifKmacErrorKeyNotValid,
+  kDifErrorKeyNotValid,
 
   /**
    * An attempt was made to write data into the message FIFO but the KMAC unit
    * was not in the correct state to receive the data.
    */
-  kDifKmacErrorSoftwarePushedMessageFifo,
+  kDifErrorSoftwarePushedMessageFifo,
 
   /**
    * An invalid state transition was attempted (e.g. idle -> run without
    * intermediate process state).
    */
-  kDifKmacErrorSoftwarePushedWrongCommand,
+  kDifErrorSoftwarePushedWrongCommand,
 
   /**
    * The entropy wait timer has expired.
    */
-  kDifKmacErrorEntropyWaitTimerExpired,
+  kDifErrorEntropyWaitTimerExpired,
 
   /**
    * Incorrect entropy mode when entropy is ready.
    */
-  kDifKmacErrorEntropyModeIncorrect,
+  kDifErrorEntropyModeIncorrect,
 
   /**
    * An error was encountered but the cause is unknown.
    */
-  kDifKmacErrorUnknownError,
+  kDifErrorUnknownError,
 } dif_kmac_error_t;
 
 /**
@@ -481,24 +384,16 @@ typedef enum dif_kmac_fifo_state {
 } dif_kmac_fifo_state_t;
 
 /**
- * A snapshot of the enablement state of the interrupts for KMAC.
- *
- * This is an opaque type, to be used with the `dif_kmac_irq_disable_all()` and
- * `dif_kmac_irq_restore_all()` functions.
- */
-typedef uint32_t dif_kmac_irq_snapshot_t;
-
-/**
  * Creates a new handle for KMAC.
  *
  * This function does not actuate the hardware.
  *
- * @param params Hardware instantiation parameters.
+ * @param base_addr Hardware instantiation base address.
  * @param[out] kmac Out param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_init(dif_kmac_params_t params, dif_kmac_t *kmac);
+dif_result_t dif_kmac_init(mmio_region_t base_addr, dif_kmac_t *kmac);
 
 /**
  * Configures KMAC with runtime information.
@@ -507,8 +402,8 @@ dif_kmac_result_t dif_kmac_init(dif_kmac_params_t params, dif_kmac_t *kmac);
  * @param config Runtime configuration parameters.
  * @return The result of the operation.
  */
-OT_WARN_UNUSED_RESULT dif_kmac_result_t
-dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config);
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config);
 
 /**
  * Encode a customization string (S).
@@ -527,7 +422,7 @@ dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_customization_string_init(
+dif_result_t dif_kmac_customization_string_init(
     const char *data, size_t len, dif_kmac_customization_string_t *out);
 
 /**
@@ -547,8 +442,8 @@ dif_kmac_result_t dif_kmac_customization_string_init(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_function_name_init(const char *data, size_t len,
-                                              dif_kmac_function_name_t *out);
+dif_result_t dif_kmac_function_name_init(const char *data, size_t len,
+                                         dif_kmac_function_name_t *out);
 
 /**
  * Start a SHA-3 operation.
@@ -563,7 +458,7 @@ dif_kmac_result_t dif_kmac_function_name_init(const char *data, size_t len,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_mode_sha3_start(
+dif_result_t dif_kmac_mode_sha3_start(
     const dif_kmac_t *kmac, dif_kmac_operation_state_t *operation_state,
     dif_kmac_mode_sha3_t mode);
 
@@ -580,7 +475,7 @@ dif_kmac_result_t dif_kmac_mode_sha3_start(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_mode_shake_start(
+dif_result_t dif_kmac_mode_shake_start(
     const dif_kmac_t *kmac, dif_kmac_operation_state_t *operation_state,
     dif_kmac_mode_shake_t mode);
 
@@ -599,7 +494,7 @@ dif_kmac_result_t dif_kmac_mode_shake_start(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_mode_cshake_start(
+dif_result_t dif_kmac_mode_cshake_start(
     const dif_kmac_t *kmac, dif_kmac_operation_state_t *operation_state,
     dif_kmac_mode_cshake_t mode, const dif_kmac_function_name_t *n,
     const dif_kmac_customization_string_t *s);
@@ -625,7 +520,7 @@ dif_kmac_result_t dif_kmac_mode_cshake_start(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_mode_kmac_start(
+dif_result_t dif_kmac_mode_kmac_start(
     const dif_kmac_t *kmac, dif_kmac_operation_state_t *operation_state,
     dif_kmac_mode_kmac_t mode, size_t l, const dif_kmac_key_t *k,
     const dif_kmac_customization_string_t *s);
@@ -649,10 +544,9 @@ dif_kmac_result_t dif_kmac_mode_kmac_start(
  * @preturn The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
-                                  dif_kmac_operation_state_t *operation_state,
-                                  const void *msg, size_t len,
-                                  size_t *processed);
+dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
+                             dif_kmac_operation_state_t *operation_state,
+                             const void *msg, size_t len, size_t *processed);
 
 /**
  * Squeeze bytes into the output buffer provided.
@@ -677,10 +571,9 @@ dif_kmac_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
  * @preturn The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
-                                   dif_kmac_operation_state_t *operation_state,
-                                   uint32_t *out, size_t len,
-                                   size_t *processed);
+dif_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
+                              dif_kmac_operation_state_t *operation_state,
+                              uint32_t *out, size_t len, size_t *processed);
 
 /**
  * Ends a squeeze operation and resets the hardware so it is ready for a new
@@ -691,8 +584,8 @@ dif_kmac_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_end(const dif_kmac_t *kmac,
-                               dif_kmac_operation_state_t *operation_state);
+dif_result_t dif_kmac_end(const dif_kmac_t *kmac,
+                          dif_kmac_operation_state_t *operation_state);
 
 /**
  * Get the current error code.
@@ -702,8 +595,8 @@ dif_kmac_result_t dif_kmac_end(const dif_kmac_t *kmac,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
-                                     dif_kmac_error_t *error);
+dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
+                                dif_kmac_error_t *error);
 
 /**
  * Clear the current error code and reset the state machine to the idle state
@@ -717,8 +610,8 @@ dif_kmac_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_reset(const dif_kmac_t *kmac,
-                                 dif_kmac_operation_state_t *operation_state);
+dif_result_t dif_kmac_reset(const dif_kmac_t *kmac,
+                            dif_kmac_operation_state_t *operation_state);
 
 /**
  * Fetch the current status of the message FIFO used to buffer absorbed data.
@@ -729,9 +622,9 @@ dif_kmac_result_t dif_kmac_reset(const dif_kmac_t *kmac,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_get_fifo_state(const dif_kmac_t *kmac,
-                                          dif_kmac_fifo_state_t *fifo_state,
-                                          uint32_t *depth);
+dif_result_t dif_kmac_get_fifo_state(const dif_kmac_t *kmac,
+                                     dif_kmac_fifo_state_t *fifo_state,
+                                     uint32_t *depth);
 
 /**
  * Reports whether or not the KMAC configuration register is locked.
@@ -746,96 +639,7 @@ dif_kmac_result_t dif_kmac_get_fifo_state(const dif_kmac_t *kmac,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_config_is_locked(const dif_kmac_t *kmac,
-                                            bool *is_locked);
-
-/**
- * Returns whether a particular interrupt is currently pending.
- *
- * @param kmac A KMAC handle.
- * @param irq An interrupt type.
- * @param[out] is_pending Out-param for whether the interrupt is pending.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_irq_is_pending(const dif_kmac_t *kmac,
-                                          dif_kmac_irq_t irq, bool *is_pending);
-
-/**
- * Acknowledges a particular interrupt, indicating to the hardware that it has
- * been successfully serviced.
- *
- * @param kmac A KMAC handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_irq_acknowledge(const dif_kmac_t *kmac,
-                                           dif_kmac_irq_t irq);
-
-/**
- * Checks whether a particular interrupt is currently enabled or disabled.
- *
- * @param kmac A KMAC handle.
- * @param irq An interrupt type.
- * @param[out] state Out-param toggle state of the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_irq_get_enabled(const dif_kmac_t *kmac,
-                                           dif_kmac_irq_t irq,
-                                           dif_kmac_toggle_t *state);
-
-/**
- * Sets whether a particular interrupt is currently enabled or disabled.
- *
- * @param kmac A KMAC handle.
- * @param irq An interrupt type.
- * @param state The new toggle state for the interrupt.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_irq_set_enabled(const dif_kmac_t *kmac,
-                                           dif_kmac_irq_t irq,
-                                           dif_kmac_toggle_t state);
-
-/**
- * Forces a particular interrupt, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param kmac A KMAC handle.
- * @param irq An interrupt type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_irq_force(const dif_kmac_t *kmac,
-                                     dif_kmac_irq_t irq);
-
-/**
- * Disables all interrupts, optionally snapshotting all toggle state for later
- * restoration.
- *
- * @param kmac A KMAC handle.
- * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_irq_disable_all(const dif_kmac_t *kmac,
-                                           dif_kmac_irq_snapshot_t *snapshot);
-
-/**
- * Restores interrupts from the given snapshot.
- *
- * This function can be used with `dif_kmac_irq_disable_all()` to temporary
- * interrupt save-and-restore.
- *
- * @param kmac A KMAC handle.
- * @param snapshot A snapshot to restore from.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_irq_restore_all(
-    const dif_kmac_t *kmac, const dif_kmac_irq_snapshot_t *snapshot);
+dif_result_t dif_kmac_config_is_locked(const dif_kmac_t *kmac, bool *is_locked);
 
 #ifdef __cplusplus
 }  // extern "C"
