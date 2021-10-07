@@ -18,18 +18,7 @@
   // Different dashboard output path for each tool
   rel_path: "hw/top_englishbreakfast/lint/{tool}"
 
-  use_cfgs: [{    name: alert_handler
-                  fusesoc_core: lowrisc:ip:alert_handler
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/alert_handler/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
-             },
-             {    name: flash_ctrl
+  use_cfgs: [{    name: flash_ctrl
                   fusesoc_core: lowrisc:ip:flash_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/flash_ctrl/lint/{tool}"
