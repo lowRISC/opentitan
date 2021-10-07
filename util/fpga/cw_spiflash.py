@@ -83,11 +83,14 @@ class _SpiFlashFrame:
         padding = self.PAYLOAD_SIZE - len(self._payload)
         if padding > 0:
             self._payload = b''.join([self._payload, b'\xFF' * padding])
+
+        # Reverse the order of the bytes to make them little-endian and be
+        # consistent with the code signing tool.
         self._digest = self.HASH_FUNCTION(b''.join([
             self._frame_number,
             self._flash_offset,
             self._payload,
-        ])).digest()
+        ])).digest()[::-1]
 
     def __bytes__(self):
         return b''.join([
@@ -109,7 +112,9 @@ class _SpiFlashFrame:
     @property
     def expected_ack(self):
         """Expected acknowledgement value for the frame."""
-        return self.HASH_FUNCTION(bytes(self)).digest()
+        # Reverse the order of the bytes to make them little-endian and be
+        # consistent with the code signing tool.
+        return self.HASH_FUNCTION(bytes(self)).digest()[::-1]
 
 
 class _Bootstrap:

@@ -52,7 +52,12 @@ void HashFrame(Frame *f) {
   SHA256_update(&sha256, &f->hdr.offset, sizeof(f->hdr.offset));
   SHA256_update(&sha256, f->data, f->PayloadSize());
   const uint8_t *result = SHA256_final(&sha256);
+
   memcpy(f->hdr.hash, result, SHA256_DIGEST_SIZE);
+
+  // Reverse the order of the bytes to make them little-endian and be consistent
+  // with the code signing tool.
+  std::reverse(f->hdr.hash, f->hdr.hash + SHA256_DIGEST_SIZE);
 }
 
 }  // namespace
