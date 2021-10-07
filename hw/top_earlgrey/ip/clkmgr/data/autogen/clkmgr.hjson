@@ -584,7 +584,7 @@
     { name: "RECOV_ERR_CODE",
       desc: "Recoverable Error code ",
       swaccess: "rw1c",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
       fields: [
         {
           bits: "0",

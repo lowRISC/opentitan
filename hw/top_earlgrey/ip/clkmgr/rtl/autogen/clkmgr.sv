@@ -173,9 +173,17 @@
     reg2hw.alert_test.recov_fault.q & reg2hw.alert_test.recov_fault.qe
   };
 
+  logic recov_alert;
+  assign recov_alert =
+    hw2reg.recov_err_code.io_measure_err.de |
+    hw2reg.recov_err_code.io_div2_measure_err.de |
+    hw2reg.recov_err_code.io_div4_measure_err.de |
+    hw2reg.recov_err_code.main_measure_err.de |
+    hw2reg.recov_err_code.usb_measure_err.de;
+
   assign alerts = {
     |reg2hw.fatal_err_code,
-    |reg2hw.recov_err_code
+    recov_alert
   };
 
   localparam logic [NumAlerts-1:0] AlertFatal = {1'b1, 1'b0};
