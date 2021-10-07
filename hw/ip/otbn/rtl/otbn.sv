@@ -756,7 +756,7 @@ module otbn
     end
 
     // Mux between model and RTL implementation at runtime.
-    logic         done_r_model, done_rtl;
+    logic         done_model, done_rtl;
     logic         locked_model, locked_rtl;
     logic         start_model, start_rtl;
     err_bits_t    err_bits_model, err_bits_rtl;
@@ -764,9 +764,7 @@ module otbn
     logic         edn_rnd_data_valid;
     logic         edn_urnd_data_valid;
 
-    // Note that the "done" signal will come a cycle later when using the model as a core than it
-    // does when using the RTL
-    assign done = otbn_use_model ? done_r_model : done_rtl;
+    assign done = otbn_use_model ? done_model : done_rtl;
     assign locked = otbn_use_model ? locked_model : locked_rtl;
     assign err_bits = otbn_use_model ? err_bits_model : err_bits_rtl;
     assign insn_cnt = otbn_use_model ? insn_cnt_model : insn_cnt_rtl;
@@ -790,6 +788,7 @@ module otbn
       .rst_edn_ni,
 
       .start_i               (start_model),
+      .done_o                (done_model),
 
       .err_bits_o            (err_bits_model),
 
@@ -799,8 +798,6 @@ module otbn
       .edn_urnd_data_valid_i (edn_urnd_data_valid),
 
       .insn_cnt_o            (insn_cnt_model),
-
-      .done_r_o (done_r_model),
 
       .err_o ()
     );

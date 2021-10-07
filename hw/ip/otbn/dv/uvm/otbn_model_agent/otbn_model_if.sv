@@ -16,6 +16,7 @@ interface otbn_model_if #(
   logic                     start;        // Start the operation
 
   // Outputs from DUT
+  bit                       done;         // Operation done
   bit                       err;          // Something went wrong
   bit [31:0]                stop_pc;      // PC at end of operation
 
