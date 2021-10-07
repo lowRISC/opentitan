@@ -268,6 +268,20 @@ sw_lib_dif_autogen_sram_ctrl = declare_dependency(
   )
 )
 
+# Autogen USB Device DIF library
+sw_lib_dif_autogen_usbdev = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_usbdev',
+    sources: [
+      hw_ip_usbdev_reg_h,
+      'dif_usbdev_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen UART DIF library
 sw_lib_dif_autogen_uart = declare_dependency(
   link_with: static_library(
