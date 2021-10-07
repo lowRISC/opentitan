@@ -229,7 +229,7 @@ static bool is_valid_irq(dif_usbdev_irq_t irq) {
  */
 OT_WARN_UNUSED_RESULT
 static dif_usbdev_result_t endpoint_functionality_enable(
-    dif_usbdev_t *usbdev, uint32_t reg_offset, uint8_t endpoint,
+    const dif_usbdev_t *usbdev, uint32_t reg_offset, uint8_t endpoint,
     dif_usbdev_toggle_t new_state) {
   if (usbdev == NULL || !is_valid_endpoint(endpoint) ||
       !is_valid_toggle(new_state)) {
@@ -381,7 +381,7 @@ dif_usbdev_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
 }
 
 dif_usbdev_result_t dif_usbdev_fill_available_fifo(
-    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool) {
+    const dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool) {
   if (usbdev == NULL || buffer_pool == NULL) {
     return kDifUsbdevBadArg;
   }
@@ -403,24 +403,27 @@ dif_usbdev_result_t dif_usbdev_fill_available_fifo(
 }
 
 dif_usbdev_result_t dif_usbdev_endpoint_setup_enable(
-    dif_usbdev_t *usbdev, uint8_t endpoint, dif_usbdev_toggle_t new_state) {
+    const dif_usbdev_t *usbdev, uint8_t endpoint,
+    dif_usbdev_toggle_t new_state) {
   return endpoint_functionality_enable(usbdev, USBDEV_RXENABLE_SETUP_REG_OFFSET,
                                        endpoint, new_state);
 }
 
 dif_usbdev_result_t dif_usbdev_endpoint_out_enable(
-    dif_usbdev_t *usbdev, uint8_t endpoint, dif_usbdev_toggle_t new_state) {
+    const dif_usbdev_t *usbdev, uint8_t endpoint,
+    dif_usbdev_toggle_t new_state) {
   return endpoint_functionality_enable(usbdev, USBDEV_RXENABLE_OUT_REG_OFFSET,
                                        endpoint, new_state);
 }
 
 dif_usbdev_result_t dif_usbdev_endpoint_stall_enable(
-    dif_usbdev_t *usbdev, uint8_t endpoint, dif_usbdev_toggle_t new_state) {
+    const dif_usbdev_t *usbdev, uint8_t endpoint,
+    dif_usbdev_toggle_t new_state) {
   return endpoint_functionality_enable(usbdev, USBDEV_STALL_REG_OFFSET,
                                        endpoint, new_state);
 }
 
-dif_usbdev_result_t dif_usbdev_endpoint_stall_get(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_endpoint_stall_get(const dif_usbdev_t *usbdev,
                                                   uint8_t endpoint,
                                                   bool *state) {
   if (usbdev == NULL || state == NULL || !is_valid_endpoint(endpoint)) {
@@ -434,12 +437,13 @@ dif_usbdev_result_t dif_usbdev_endpoint_stall_get(dif_usbdev_t *usbdev,
 }
 
 dif_usbdev_result_t dif_usbdev_endpoint_iso_enable(
-    dif_usbdev_t *usbdev, uint8_t endpoint, dif_usbdev_toggle_t new_state) {
+    const dif_usbdev_t *usbdev, uint8_t endpoint,
+    dif_usbdev_toggle_t new_state) {
   return endpoint_functionality_enable(usbdev, USBDEV_ISO_REG_OFFSET, endpoint,
                                        new_state);
 }
 
-dif_usbdev_result_t dif_usbdev_interface_enable(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_interface_enable(const dif_usbdev_t *usbdev,
                                                 dif_usbdev_toggle_t new_state) {
   if (usbdev == NULL || !is_valid_toggle(new_state)) {
     return kDifUsbdevBadArg;
@@ -458,7 +462,7 @@ dif_usbdev_result_t dif_usbdev_interface_enable(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_recv_result_t dif_usbdev_recv(dif_usbdev_t *usbdev,
+dif_usbdev_recv_result_t dif_usbdev_recv(const dif_usbdev_t *usbdev,
                                          dif_usbdev_rx_packet_info_t *info,
                                          dif_usbdev_buffer_t *buffer) {
   if (usbdev == NULL || info == NULL || buffer == NULL) {
@@ -492,7 +496,7 @@ dif_usbdev_recv_result_t dif_usbdev_recv(dif_usbdev_t *usbdev,
 }
 
 dif_usbdev_buffer_request_result_t dif_usbdev_buffer_request(
-    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    const dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
     dif_usbdev_buffer_t *buffer) {
   if (usbdev == NULL || buffer_pool == NULL || buffer == NULL) {
     return kDifUsbdevBufferRequestResultBadArg;
@@ -518,7 +522,7 @@ dif_usbdev_buffer_request_result_t dif_usbdev_buffer_request(
 }
 
 dif_usbdev_result_t dif_usbdev_buffer_return(
-    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    const dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
     dif_usbdev_buffer_t *buffer) {
   if (usbdev == NULL || buffer_pool == NULL || buffer == NULL) {
     return kDifUsbdevBadArg;
@@ -540,7 +544,7 @@ dif_usbdev_result_t dif_usbdev_buffer_return(
 }
 
 dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
-    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    const dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
     dif_usbdev_buffer_t *buffer, uint8_t *dst, size_t dst_len,
     size_t *bytes_written) {
   if (usbdev == NULL || buffer_pool == NULL || buffer == NULL ||
@@ -580,7 +584,7 @@ dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
 }
 
 dif_usbdev_buffer_write_result_t dif_usbdev_buffer_write(
-    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer, uint8_t *src,
+    const dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer, uint8_t *src,
     size_t src_len, size_t *bytes_written) {
   if (usbdev == NULL || buffer == NULL ||
       buffer->type != kDifUsbdevBufferTypeWrite || src == NULL) {
@@ -612,7 +616,8 @@ dif_usbdev_buffer_write_result_t dif_usbdev_buffer_write(
   return kDifUsbdevBufferWriteResultOK;
 }
 
-dif_usbdev_result_t dif_usbdev_send(dif_usbdev_t *usbdev, uint8_t endpoint,
+dif_usbdev_result_t dif_usbdev_send(const dif_usbdev_t *usbdev,
+                                    uint8_t endpoint,
                                     dif_usbdev_buffer_t *buffer) {
   if (usbdev == NULL || !is_valid_endpoint(endpoint) || buffer == NULL ||
       buffer->type != kDifUsbdevBufferTypeWrite) {
@@ -647,7 +652,7 @@ dif_usbdev_result_t dif_usbdev_send(dif_usbdev_t *usbdev, uint8_t endpoint,
 }
 
 dif_usbdev_result_t dif_usbdev_get_tx_status(
-    dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
+    const dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool,
     uint8_t endpoint, dif_usbdev_tx_status_t *status) {
   if (usbdev == NULL || buffer_pool == NULL || status == NULL ||
       !is_valid_endpoint(endpoint)) {
@@ -708,7 +713,8 @@ dif_usbdev_result_t dif_usbdev_get_tx_status(
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_address_set(dif_usbdev_t *usbdev, uint8_t addr) {
+dif_usbdev_result_t dif_usbdev_address_set(const dif_usbdev_t *usbdev,
+                                           uint8_t addr) {
   if (usbdev == NULL) {
     return kDifUsbdevBadArg;
   }
@@ -720,7 +726,7 @@ dif_usbdev_result_t dif_usbdev_address_set(dif_usbdev_t *usbdev, uint8_t addr) {
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_address_get(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_address_get(const dif_usbdev_t *usbdev,
                                            uint8_t *addr) {
   if (usbdev == NULL || addr == NULL) {
     return kDifUsbdevBadArg;
@@ -734,7 +740,7 @@ dif_usbdev_result_t dif_usbdev_address_get(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_status_get_frame(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_status_get_frame(const dif_usbdev_t *usbdev,
                                                 uint16_t *frame_index) {
   if (usbdev == NULL || frame_index == NULL) {
     return kDifUsbdevBadArg;
@@ -748,7 +754,7 @@ dif_usbdev_result_t dif_usbdev_status_get_frame(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_status_get_host_lost(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_status_get_host_lost(const dif_usbdev_t *usbdev,
                                                     bool *host_lost) {
   if (usbdev == NULL || host_lost == NULL) {
     return kDifUsbdevBadArg;
@@ -762,7 +768,7 @@ dif_usbdev_result_t dif_usbdev_status_get_host_lost(dif_usbdev_t *usbdev,
 }
 
 dif_usbdev_result_t dif_usbdev_status_get_link_state(
-    dif_usbdev_t *usbdev, dif_usbdev_link_state_t *link_state) {
+    const dif_usbdev_t *usbdev, dif_usbdev_link_state_t *link_state) {
   if (usbdev == NULL || link_state == NULL) {
     return kDifUsbdevBadArg;
   }
@@ -794,7 +800,7 @@ dif_usbdev_result_t dif_usbdev_status_get_link_state(
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_status_get_sense(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_status_get_sense(const dif_usbdev_t *usbdev,
                                                 bool *sense) {
   if (usbdev == NULL || sense == NULL) {
     return kDifUsbdevBadArg;
@@ -807,7 +813,7 @@ dif_usbdev_result_t dif_usbdev_status_get_sense(dif_usbdev_t *usbdev,
 }
 
 dif_usbdev_result_t dif_usbdev_status_get_available_fifo_depth(
-    dif_usbdev_t *usbdev, uint8_t *depth) {
+    const dif_usbdev_t *usbdev, uint8_t *depth) {
   if (usbdev == NULL || depth == NULL) {
     return kDifUsbdevBadArg;
   }
@@ -821,7 +827,7 @@ dif_usbdev_result_t dif_usbdev_status_get_available_fifo_depth(
 }
 
 dif_usbdev_result_t dif_usbdev_status_get_available_fifo_full(
-    dif_usbdev_t *usbdev, bool *is_full) {
+    const dif_usbdev_t *usbdev, bool *is_full) {
   if (usbdev == NULL || is_full == NULL) {
     return kDifUsbdevBadArg;
   }
@@ -832,8 +838,8 @@ dif_usbdev_result_t dif_usbdev_status_get_available_fifo_full(
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_depth(dif_usbdev_t *usbdev,
-                                                        uint8_t *depth) {
+dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_depth(
+    const dif_usbdev_t *usbdev, uint8_t *depth) {
   if (usbdev == NULL || depth == NULL) {
     return kDifUsbdevBadArg;
   }
@@ -846,8 +852,8 @@ dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_depth(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_empty(dif_usbdev_t *usbdev,
-                                                        bool *is_full) {
+dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_empty(
+    const dif_usbdev_t *usbdev, bool *is_full) {
   if (usbdev == NULL || is_full == NULL) {
     return kDifUsbdevBadArg;
   }
@@ -858,7 +864,7 @@ dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_empty(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_irq_enable(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_irq_enable(const dif_usbdev_t *usbdev,
                                           dif_usbdev_irq_t irq,
                                           dif_usbdev_toggle_t state) {
   if (usbdev == NULL || !is_valid_irq(irq) || !is_valid_toggle(state)) {
@@ -878,7 +884,7 @@ dif_usbdev_result_t dif_usbdev_irq_enable(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_irq_get(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_irq_get(const dif_usbdev_t *usbdev,
                                        dif_usbdev_irq_t irq, bool *state) {
   if (usbdev == NULL || state == NULL || !is_valid_irq(irq)) {
     return kDifUsbdevBadArg;
@@ -890,7 +896,7 @@ dif_usbdev_result_t dif_usbdev_irq_get(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_irq_clear(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_irq_clear(const dif_usbdev_t *usbdev,
                                          dif_usbdev_irq_t irq) {
   if (usbdev == NULL || !is_valid_irq(irq)) {
     return kDifUsbdevBadArg;
@@ -902,7 +908,7 @@ dif_usbdev_result_t dif_usbdev_irq_clear(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_irq_clear_all(dif_usbdev_t *usbdev) {
+dif_usbdev_result_t dif_usbdev_irq_clear_all(const dif_usbdev_t *usbdev) {
   if (usbdev == NULL) {
     return kDifUsbdevBadArg;
   }
@@ -913,7 +919,7 @@ dif_usbdev_result_t dif_usbdev_irq_clear_all(dif_usbdev_t *usbdev) {
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_irq_disable_all(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_irq_disable_all(const dif_usbdev_t *usbdev,
                                                uint32_t *cur_config) {
   if (usbdev == NULL) {
     return kDifUsbdevBadArg;
@@ -929,7 +935,7 @@ dif_usbdev_result_t dif_usbdev_irq_disable_all(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_irq_restore(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_irq_restore(const dif_usbdev_t *usbdev,
                                            uint32_t new_config) {
   if (usbdev == NULL) {
     return kDifUsbdevBadArg;
@@ -941,7 +947,7 @@ dif_usbdev_result_t dif_usbdev_irq_restore(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_irq_test(dif_usbdev_t *usbdev,
+dif_usbdev_result_t dif_usbdev_irq_test(const dif_usbdev_t *usbdev,
                                         dif_usbdev_irq_t irq) {
   if (usbdev == NULL || !is_valid_irq(irq)) {
     return kDifUsbdevBadArg;
