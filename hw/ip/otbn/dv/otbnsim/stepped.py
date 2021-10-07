@@ -85,7 +85,7 @@ def on_start(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
     print('START')
     sim.state.ext_regs.commit()
-    sim.start()
+    sim.start(collect_stats=False)
 
     return None
 
@@ -99,7 +99,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     pc = sim.state.pc
     assert 0 == pc & 3
 
-    insn, changes = sim.step(verbose=False, collect_stats=False)
+    insn, changes = sim.step(verbose=False)
 
     if insn is None:
         print('STALL')
@@ -123,7 +123,7 @@ def on_run(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
     print('RUN')
 
-    sim.run(verbose=False, collect_stats=False)
+    sim.run(verbose=False)
 
     print(' INSN_CNT = {:#x}'.format(sim.state.ext_regs.read('INSN_CNT', False)))
     print(' ERR_BITS = {:#x}'.format(sim.state.ext_regs.read('ERR_BITS', False)))

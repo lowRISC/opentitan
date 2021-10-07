@@ -32,7 +32,9 @@ def asm_and_link_one_file(asm_path: str, work_dir: py.path.local) -> str:
     return elf_path
 
 
-def prepare_sim_for_asm_file(asm_file: str, tmpdir: py.path.local) -> OTBNSim:
+def prepare_sim_for_asm_file(asm_file: str,
+                             tmpdir: py.path.local,
+                             collect_stats: bool) -> OTBNSim:
     '''Set up the simulation of a single assembly file.
 
     The returned simulation is ready to be run through the run() method.
@@ -45,11 +47,13 @@ def prepare_sim_for_asm_file(asm_file: str, tmpdir: py.path.local) -> OTBNSim:
     load_elf(sim, elf_file)
 
     sim.state.ext_regs.commit()
-    sim.start()
+    sim.start(collect_stats)
     return sim
 
 
-def prepare_sim_for_asm_str(assembly: str, tmpdir: py.path.local) -> OTBNSim:
+def prepare_sim_for_asm_str(assembly: str,
+                            tmpdir: py.path.local,
+                            collect_stats: bool) -> OTBNSim:
     '''Set up the simulation for an assembly snippet passed as string.
 
     The returned simulation is ready to be run through the run() method.
@@ -58,4 +62,4 @@ def prepare_sim_for_asm_str(assembly: str, tmpdir: py.path.local) -> OTBNSim:
     with tempfile.NamedTemporaryFile('w', dir=tmpdir) as fp:
         fp.write(assembly)
         fp.flush()
-        return prepare_sim_for_asm_file(fp.name, tmpdir)
+        return prepare_sim_for_asm_file(fp.name, tmpdir, collect_stats)
