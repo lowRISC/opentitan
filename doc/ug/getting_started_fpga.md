@@ -58,8 +58,36 @@ $ fusesoc --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:c
 ```
 The `fileset_top` flag used above is specific to the OpenTitan project to select the correct fileset.
 
-The resulting bitstream is located at `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
+The resulting bitstream is located at the following location:
+
+```console
+build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
+```
+
 See the [reference manual]({{< relref "ref_manual_fpga.md" >}}) for more information.
+
+### Build the FPGA with the CI Build Script
+
+The `ci/scripts/build-chip-fpga.sh` script can be used to build the bitstreams for multiple FPGA board targets.
+
+Recommended configurations:
+
+| Top Level Design | FPGA  |
+| ---------------- | ------|
+| earlgrey         | cw310 |
+| englishbreakfast | cw305 |
+
+Example build steps:
+
+```console
+$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+$ cd $REPO_TOP
+$ ./meson_init.sh
+$ ninja -C build-out all
+$ ci/scripts/build-chip-fpga.sh --top earlgrey --fpga cw310
+```
+
+The bitstream output is available in the `build-bin/hw/` folder.
 
 ### Dealing with FPGA Congestion Issues
 
