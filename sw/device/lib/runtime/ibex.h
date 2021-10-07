@@ -5,8 +5,10 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_
 #define OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_
 
+#include <stdbool.h>
 #include <stddef.h>
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
 
 /**
@@ -14,6 +16,20 @@
  * @brief This header provides Ibex-specific functions, such as cycle-accurate
  * busy loops.
  */
+
+/**
+ * A spinwait timeout type.
+ */
+typedef struct ibex_timeout {
+  /**
+   * The number of cycles to timeout.
+   */
+  uint64_t cycles;
+  /**
+   * The initial cycle count.
+   */
+  uint64_t start;
+} ibex_timeout_t;
 
 /**
  * Read the cycle counter.
@@ -74,5 +90,43 @@ uint32_t ibex_mcause_read(void);
  * - For all other exceptions, mtval is 0.
  */
 uint32_t ibex_mtval_read(void);
+
+/**
+ * Initializes the ibex timeout based on current mcycle count.
+ *
+ * @param timeout_usec Timeout in microseconds.
+ * @return The initialized timeout value.
+ */
+inline ibex_timeout_t ibex_timeout_init(uint32_t timeout_usec) {
+  return (ibex_timeout_t){.cycles = kClockFreqCpuHz * timeout_usec / 1000000,
+                          .start = ibex_mcycle_read()};
+}
+
+/**
+ * Returns boolean indicating the timeout expired waiting for an expression to
+ * be true.
+ *
+ * @param timeout The `ibex_timeout_t` value.
+ * @return Boolean indicating the timeout expired.
+ */
+inline bool ibex_timeout_check(const ibex_timeout_t *timeout) {
+  return ibex_mcycle_read() - timeout->start < timeout->cycles;
+}
+
+/**
+ * Convenience macro to spin with timeout in microseconds.
+ *
+ * @param expr An expression that is evaluated multiple times until true.
+ * @param timeout_usec Timeout in microseconds.
+ */
+#define IBEX_SPIN_FOR(expr, timeout_usec)                                 \
+  do {                                                                    \
+    const ibex_timeout_t timeout_ = ibex_timeout_init(timeout_usec);      \
+    while (!(expr)) {                                                     \
+      CHECK(!ibex_timeout_check(&timeout_),                               \
+            "Timed out after %d usec (%d CPU cycles) waiting for " #expr, \
+            timeout_usec, (uint32_t)timeout_.cycles);                     \
+    }                                                                     \
+  } while (0)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_
