@@ -135,24 +135,6 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_usb_measure_ctrl_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } io_measure_err;
-    struct packed {
-      logic        q;
-    } io_div2_measure_err;
-    struct packed {
-      logic        q;
-    } io_div4_measure_err;
-    struct packed {
-      logic        q;
-    } main_measure_err;
-    struct packed {
-      logic        q;
-    } usb_measure_err;
-  } clkmgr_reg2hw_recov_err_code_reg_t;
-
-  typedef struct packed {
     logic        q;
   } clkmgr_reg2hw_fatal_err_code_reg_t;
 
@@ -209,17 +191,16 @@ package clkmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    clkmgr_reg2hw_alert_test_reg_t alert_test; // [124:121]
-    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [120:113]
-    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [112:112]
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [111:108]
-    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [107:103]
-    clkmgr_reg2hw_io_measure_ctrl_reg_t io_measure_ctrl; // [102:82]
-    clkmgr_reg2hw_io_div2_measure_ctrl_reg_t io_div2_measure_ctrl; // [81:63]
-    clkmgr_reg2hw_io_div4_measure_ctrl_reg_t io_div4_measure_ctrl; // [62:46]
-    clkmgr_reg2hw_main_measure_ctrl_reg_t main_measure_ctrl; // [45:25]
-    clkmgr_reg2hw_usb_measure_ctrl_reg_t usb_measure_ctrl; // [24:6]
-    clkmgr_reg2hw_recov_err_code_reg_t recov_err_code; // [5:1]
+    clkmgr_reg2hw_alert_test_reg_t alert_test; // [119:116]
+    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [115:108]
+    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [107:107]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [106:103]
+    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [102:98]
+    clkmgr_reg2hw_io_measure_ctrl_reg_t io_measure_ctrl; // [97:77]
+    clkmgr_reg2hw_io_div2_measure_ctrl_reg_t io_div2_measure_ctrl; // [76:58]
+    clkmgr_reg2hw_io_div4_measure_ctrl_reg_t io_div4_measure_ctrl; // [57:41]
+    clkmgr_reg2hw_main_measure_ctrl_reg_t main_measure_ctrl; // [40:20]
+    clkmgr_reg2hw_usb_measure_ctrl_reg_t usb_measure_ctrl; // [19:1]
     clkmgr_reg2hw_fatal_err_code_reg_t fatal_err_code; // [0:0]
   } clkmgr_reg2hw_t;
 

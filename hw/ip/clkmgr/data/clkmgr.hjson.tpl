@@ -344,7 +344,7 @@
     { name: "RECOV_ERR_CODE",
       desc: "Recoverable Error code ",
       swaccess: "rw1c",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
       fields: [
 % for src in typed_clocks.rg_srcs:
         {

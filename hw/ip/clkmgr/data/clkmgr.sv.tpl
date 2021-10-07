@@ -142,9 +142,15 @@
     reg2hw.alert_test.recov_fault.q & reg2hw.alert_test.recov_fault.qe
   };
 
+  logic recov_alert;
+  assign recov_alert =
+% for src in typed_clocks.rg_srcs:
+    hw2reg.recov_err_code.${src}_measure_err.de${";" if loop.last else " |"}
+% endfor
+
   assign alerts = {
     |reg2hw.fatal_err_code,
-    |reg2hw.recov_err_code
+    recov_alert
   };
 
   localparam logic [NumAlerts-1:0] AlertFatal = {1'b1, 1'b0};

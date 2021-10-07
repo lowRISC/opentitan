@@ -1372,7 +1372,7 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.recov_err_code.io_measure_err.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (recov_err_code_io_measure_err_qs)
@@ -1397,7 +1397,7 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.recov_err_code.io_div2_measure_err.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (recov_err_code_io_div2_measure_err_qs)
@@ -1422,7 +1422,7 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.recov_err_code.io_div4_measure_err.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (recov_err_code_io_div4_measure_err_qs)
@@ -1447,7 +1447,7 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.recov_err_code.main_measure_err.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (recov_err_code_main_measure_err_qs)
@@ -1472,7 +1472,7 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.recov_err_code.usb_measure_err.q),
+    .q      (),
 
     // to register interface (read)
     .qs     (recov_err_code_usb_measure_err_qs)
