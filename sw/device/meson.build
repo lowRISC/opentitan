@@ -135,6 +135,16 @@ scramble_image_depend_files = [
     scramble_image_hjson
 ]
 
+# Signing keys for ROM_EXT images.
+signing_keys = {
+  'fpga_key_0': {
+    'path': meson.source_root() / 'sw/device/silicon_creator/keys/fpga_key_0.private.der',
+  },
+  'fpga_key_1': {
+    'path': meson.source_root() / 'sw/device/silicon_creator/keys/fpga_key_1.private.der',
+  },
+}
+
 subdir('boot_rom')
 subdir('otp_img')
 subdir('silicon_creator')

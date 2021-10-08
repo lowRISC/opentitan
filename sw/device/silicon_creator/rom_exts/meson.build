@@ -100,30 +100,55 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       input: rom_ext_elf,
       kwargs: elf_to_bin_custom_target_args,
     )
-  
-    rom_ext_vmem32 = custom_target(
-      target_name.format('vmem32'),
-      input: rom_ext_bin,
-      kwargs: bin_to_vmem32_custom_target_args,
-    )
-  
-    rom_ext_vmem64 = custom_target(
-      target_name.format('vmem64'),
-      input: rom_ext_bin,
-      kwargs: bin_to_vmem64_custom_target_args,
-    )
+
+    targets_to_export = [
+      rom_ext_elf,
+      rom_ext_dis,
+      rom_ext_bin,
+    ]
+
+    foreach key_name, key_info : signing_keys
+      signed_target_name = '_'.join(['rom_ext', slot, key_name, 'signed', '@0@', device_name])
+
+      rom_ext_signed_bin = custom_target(
+        signed_target_name.format('bin'),
+        input: rom_ext_bin,
+        output: '@BASENAME@.@0@.signed.bin'.format(key_name),
+        command: [
+          rom_ext_signer_export.full_path(),
+          '@INPUT@',
+          key_info['path'],
+          rom_ext_elf.full_path(),
+          '@OUTPUT@',
+        ],
+        depends: rom_ext_signer_export,
+        build_by_default: true,
+      )
+
+      rom_ext_signed_vmem32 = custom_target(
+        signed_target_name.format('vmem32'),
+        input: rom_ext_signed_bin,
+        kwargs: bin_to_vmem32_custom_target_args,
+      )
+
+      rom_ext_signed_vmem64 = custom_target(
+        signed_target_name.format('vmem64'),
+        input: rom_ext_signed_bin,
+        kwargs: bin_to_vmem64_custom_target_args,
+      )
+
+      targets_to_export += [
+        rom_ext_signed_bin,
+        rom_ext_signed_vmem32,
+        rom_ext_signed_vmem64,
+      ]
+    endforeach
 
     custom_target(
       target_name.format('export'),
       command: export_target_command,
       depend_files: [export_target_depend_files,],
-      input: [
-        rom_ext_elf, 
-        rom_ext_dis,
-        rom_ext_bin,
-        rom_ext_vmem32,
-        rom_ext_vmem64,
-      ],
+      input: targets_to_export,
       output: target_name.format('export'),
       build_always_stale: true,
       build_by_default: true,
