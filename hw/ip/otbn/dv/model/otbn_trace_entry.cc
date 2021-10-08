@@ -24,6 +24,8 @@ void OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
       writes_.push_back(line);
   }
   std::sort(writes_.begin(), writes_.end());
+  auto last = std::unique(writes_.begin(), writes_.end());
+  writes_.erase(last, writes_.end());
 }
 
 bool OtbnTraceEntry::operator==(const OtbnTraceEntry &other) const {
@@ -43,6 +45,8 @@ void OtbnTraceEntry::take_writes(const OtbnTraceEntry &other) {
       writes_.push_back(write);
     }
     std::sort(writes_.begin(), writes_.end());
+    auto last = std::unique(writes_.begin(), writes_.end());
+    writes_.erase(last, writes_.end());
   }
 }
 

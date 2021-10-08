@@ -17,6 +17,7 @@ static std::unique_ptr<OtbnTraceChecker> trace_checker;
 OtbnTraceChecker::OtbnTraceChecker()
     : rtl_pending_(false),
       rtl_stall_(false),
+      iss_started_(false),
       iss_pending_(false),
       done_(true),
       seen_err_(false),
@@ -146,7 +147,7 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
     return false;
   }
 
-  // Ignore STALL entries
+  // Ignore STALL entries that don't have any changes
   if (lines.size() == 1 && lines[0] == "STALL") {
     return true;
   }
@@ -159,7 +160,11 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
   }
 
   done_ = false;
+
   if (iss_pending_) {
+    // An instruction finished execution on the ISS and its trace entry is
+    // stored in iss_entry_. Another one has just started, but we haven't
+    // seen an RTL trace entry in the intervening time.
     std::cerr
         << ("ERROR: Two back-to-back ISS "
             "trace entries with no RTL entry.\n"
@@ -170,8 +175,20 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
     seen_err_ = true;
     return false;
   }
-  iss_pending_ = true;
+
+  if (iss_started_) {
+    // We have some changes associated with a stall. Merge in the changes that
+    // we've just seen. We do it "backwards" so that if trace_entry is an
+    // execute entry, so is the result.
+    trace_entry.take_writes(iss_entry_);
+  }
+
+  iss_started_ = true;
   iss_entry_ = trace_entry;
+
+  if (iss_entry_.is_exec()) {
+    iss_pending_ = true;
+  }
 
   return MatchPair();
 }
@@ -180,6 +197,7 @@ void OtbnTraceChecker::Flush() {
   rtl_pending_ = false;
   rtl_stall_ = false;
   iss_pending_ = false;
+  iss_started_ = false;
 }
 
 bool OtbnTraceChecker::Finish() {
@@ -221,6 +239,7 @@ bool OtbnTraceChecker::MatchPair() {
   }
   rtl_pending_ = false;
   iss_pending_ = false;
+  iss_started_ = false;
   if (!(rtl_entry_ == iss_entry_)) {
     std::cerr
         << ("ERROR: Mismatch between RTL and ISS trace entries.\n"

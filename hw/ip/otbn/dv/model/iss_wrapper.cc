@@ -339,23 +339,7 @@ void ISSWrapper::dump_d(const std::string &path) const {
   run_command(oss.str(), nullptr);
 }
 
-void ISSWrapper::start() {
-  std::ostringstream oss;
-  oss << "start "
-      << "\n";
-  run_command(oss.str(), nullptr);
-
-  // Zero our mirror of INSN_CNT. This gets zeroed on this cycle in the Python
-  // model, but the text-based interface doesn't expose the change (and doing
-  // so would require some complicated rejigging). We'll get valid numbers as
-  // soon as an instruction executes, but zeroing here avoids having an old
-  // number for the stall cycles at the start of the second and subsequent
-  // runs.
-  mirrored_.insn_cnt = 0;
-
-  // Set our mirror of STATUS to BUSY_EXECUTE (= 1).
-  mirrored_.status = 1;
-}
+void ISSWrapper::start() { run_command("start\n", nullptr); }
 
 void ISSWrapper::edn_rnd_cdc_done() {
   run_command("edn_rnd_cdc_done\n", nullptr);
@@ -402,7 +386,13 @@ int ISSWrapper::step(bool gen_trace) {
 void ISSWrapper::reset(bool gen_trace) {
   if (gen_trace)
     OtbnTraceChecker::get().Flush();
+
   run_command("reset\n", nullptr);
+
+  // Zero our mirror of INSN_CNT. We'll get the corresponding zero value from
+  // the ISS one cycle *after* start, but clearing it here avoids a glitch
+  // before that.
+  mirrored_.insn_cnt = 0;
 }
 
 void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,

@@ -158,10 +158,10 @@ class OTBNState:
             self.rnd_cdc_counter += 1
 
         if self._urnd_stall:
+            self.ext_regs.commit()
             if self._urnd_reseed_complete:
                 self._urnd_stall = False
                 self.non_insn_stall = False
-                self.ext_regs.commit()
 
             return
 
@@ -194,7 +194,6 @@ class OTBNState:
     def start(self) -> None:
         '''Set the running flag and the ext_reg busy flag; perform state init'''
         self.ext_regs.write('STATUS', Status.BUSY_EXECUTE, True)
-        self.ext_regs.write('INSN_CNT', 0, True)
         self.running = True
         self._urnd_stall = True
         self.non_insn_stall = True
