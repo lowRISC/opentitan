@@ -664,11 +664,9 @@
       name: chip_sw_clk_idle_trans
       desc: '''Verify the ability to turn off the transactional clock via SW.
 
-            Ensure that activity in any of the IPs running on this clock prevents the clock from
-            actually being turned off until the activity is completed, at which point the clock is
-            turned off.  Verify it is off via spinwait in hints_status CSR, and then check the state
-            of the transactional unit to correspond to a completed activity.  Verify that turning
-            off this clock does not affect the other derived clocks.
+            Ensure that the clock to transactional units can be turned off regardless of any
+            activity in the transactional IP.  Verify it is off via spinwait in hints_status CSR.
+            Verify that turning off this clock does not affect the other derived clocks.
             '''
       milestone: V2
       tests: []
@@ -704,21 +702,34 @@
       desc: '''Verify clk division logic is working correctly.
 
             This can be easily verified if we implement clock cycle counters.
-            The IP level checks the divided clocks on each parent clock cycle.
+            The IP level checks the divided clocks via SVA, and these are also bound at chip level.
 
-            Add formal connectivity tests to check peripherals are connected to
-            the clock they expect.
+            Add formal connectivity tests to check peripherals are connected to the clock they
+            expect.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_sw_clkmgr_external_clk_src
+      name: chip_sw_clkmgr_external_clk_src_for_lc
       desc: '''Verify the clkmgr requests ext clk src during certain LC states.
 
             On POR lc asserts lc_clk_byp_req on some LC states, and de-asserts
-            it when lc_program completes. It may be best to verify this via SVA,
-            unless we implement clock cycle counters.
+            it when lc_program completes. This also triggers divided clocks to step down. It may be
+            best to verify this via SVA, unless we implement clock cycle counters.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sw_clkmgr_external_clk_src_for_sw
+      desc: '''Verify SW causes the clkmgr requests ext clk src during certain LC states.
+
+            In RMA and TEST_UNLOCKED lc states the external clock is enabled in response to
+            `extclk_ctrl.sel` CSR writes. In addition `extclk_ctrl.step_down` CSR causes the divided
+            clocks to step down. It may be best to verify this via SVA, unless we implement clock
+            cycle counters. X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with
+            this as well.
             '''
       milestone: V2
       tests: []
@@ -727,9 +738,9 @@
       name: chip_sw_clkmgr_jitter_enable
       desc: '''Verify the chip operates correctly when clock jitter is enabled.
 
-            Run a full regression with the chip configured with jittery clocks.
-            This can be done in the custom boot ROM for DV tests, and provide a
-            SW knob in case some tests need to disable jitter.
+            Enable main clock jitter setting the clkmgr `jitter_enable` CSR high. This causes the
+            jitter_o clkmgr output to toggle. Verify this output is connected to AST's
+            clk_src_sys_jen_i input using formal.
             '''
       milestone: V2
       tests: []
@@ -1159,7 +1170,7 @@
               - lc_iso_part_sw_rd_en_o: impacts flash ctrl
               - lc_iso_part_sw_wr_en_o: impacts flash ctrl
               - lc_seed_hw_rd_en_o: impacts flash ctrl & OTP ctrl
-
+            - These outputs are enabled per the [life cycle architecture spec]({{< relref "doc/security/specs/device_life_cycle/#architecture" >}}).
             X-ref'ed with the respective IP tests that consume these signals.
             '''
       milestone: V2
