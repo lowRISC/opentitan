@@ -261,22 +261,26 @@
 
     // USB (pre-verified IP) integration tests:
     {
-      name: chip_sw_usb_fs_se_tx_rx
+      name: chip_usb_fs_tx_rx
       desc: '''Verify the transmission of single-ended data over the USB at full speed. As a part of
             this test, the enablement of USB pullup is also expected to be verified.
 
-            Details TBD.
+            - Set `tx_differential_mode` to single-ended and `rx_differential_mode` to
+              differential. The other modes are not supported in OpenTitan.
+            - configure Link state to `Active`.
+            - Send and receive packets to fill the entire buffer. Ensure all the packets are
+              correct.
+            - Check interrupts (connected, pkt_received, pkt_sent, av_empty, rx_full) are triggered
+              correcly.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_sw_usb_fs_df_tx_rx
-      desc: '''Verify the transmission of data over the USB at full speed. As a part of this test,
-            the enablement of USB pullup is also expected to be verified. In this test, the USB is
-            configured in differential mode.
+      name: chip_usb_ls_tx_rx
+      desc: '''Verify the transmission of single-ended data over the USB at low speed.
 
-            Details TBD.
+            - Similar to `chip_usb_fs_df_tx_rx`, except testing USB at Low-Speed (1.5 Mbps).
             '''
       milestone: V2
       tests: []
@@ -285,7 +289,12 @@
       name: chip_sw_usb_vbus
       desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
 
-            TBD.
+            - This test extends from `chip_usb_fs_df_tx_rx`, add below at the end of the sequence.
+            - VBUS is controlled by SW, through programming CSRs (`override_pwr_sense_en` and
+              `override_pwr_sense_val`) to connect / disconnect the USB.
+            - Disconnect the USB to trigger `disconnected` interrupt.
+            - Then reconnect it and check the `connected` interrupt.
+            - Re-enable data transfer and ensure data correctness.
             '''
       milestone: V2
       tests: []
@@ -294,16 +303,59 @@
       name: chip_sw_usb_suspend
       desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
 
-            TBD.
+            - This test extends from `chip_usb_fs_df_tx_rx`, add below at the end of the sequence.
+            - Configure USB device to enter `Suspend` state and ensure `link_suspend` interrupt is
+              triggered.
+            - Test these 2 power modes.
+              - Normal sleep:
+                - Configure pwrmgr to enter normal sleep mode, then clocks are disable while powers
+                  are kept on.
+                - Resume the device through pinmux and check the `link_resume` interrupt.
+                - Ensure that previously enumerated information is kept.
+              - Deep sleep:
+                - Before entering deep sleep, store previously enumerated information in retention
+                  RAM. (optional)
+                - Configure pwrmgr to enter deep sleep mode, and powers are turned off.
+                - Resume the device through pinmux and check the `link_resume` interrupt.
+                - Ensure that previously enumerated information and configuration (non-default
+                  values) are wiped, as USB has been reset before wakeup.
+                - Restore previously enumerated information (if it's stored) or re-enumerate the
+                  USB.
+            - Re-enable data transfer and ensure data correctness.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_sw_sleep_usb_suspend
-      desc: '''Same as the above, but tested with low power entry/exit.
+      name: chip_usb_sof
+      desc: '''Verify that USB can detect SOF and respond with `usb_ref_pulse_o` and
+            `usb_ref_val_o`.
 
-            TBD.
+            - Configure to enable `usb_ref_disable`.
+            - Send a frame with the same frame number as the USB device to trigger `frame`
+              interrupt.
+            - Ensure `usb_ref_pulse_o` and `usb_ref_val_o` behave correctly.
+            - Stop sending any frame and check the `host_lost` interrupt. Ensure `use_ref_*` behave
+              correctly.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_usb_wake_debug
+      desc: '''Verify that `usb_state_debug_i` can be read from the CSR
+
+            - Drive random value on `usb_state_debug_i`.
+            - Ensure the CSR `wake_debug` returns correctly value.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_usb_enumeration
+      desc: '''Verify USB enumeration. Details are not clear.
+
+            - TODO
             '''
       milestone: V2
       tests: []
