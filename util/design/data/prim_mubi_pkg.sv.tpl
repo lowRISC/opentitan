@@ -12,14 +12,12 @@
 
 package prim_mubi_pkg;
 
-% for n in range(1, n_max_nibbles + 1):
 <%
-  nbits = n * 4
-  true_val = ''
-  false_val = ''
-  for k in range(1,n+1):
-    true_val = ('A' if (k % 2) else '5') + true_val
-    false_val = ('5' if (k % 2) else 'A') + false_val
+import prim_mubi as prim_mubi
+%>\
+% for n in range(1, N_MAX_NIBBLES + 1):
+<%
+   nbits = n * 4
 %>\
   //////////////////////////////////////////////
   // ${nbits} Bit Multibit Type and Functions //
@@ -27,8 +25,8 @@ package prim_mubi_pkg;
 
   parameter int MuBi${nbits}Width = ${nbits};
   typedef enum logic [MuBi${nbits}Width-1:0] {
-    MuBi${nbits}True = ${nbits}'h${true_val}, // enabled
-    MuBi${nbits}False = ${nbits}'h${false_val}  // disabled
+    MuBi${nbits}True = ${nbits}'h${prim_mubi.mubi_value(True, nbits)}, // enabled
+    MuBi${nbits}False = ${nbits}'h${prim_mubi.mubi_value(False, nbits)}  // disabled
   } mubi${nbits}_e;
 
   // make a typedef such that this can be used as an intersignal type as well
