@@ -6,6 +6,7 @@ module tb;
   // dep packages (test)
   import uvm_pkg::*;
   import dv_utils_pkg::*;
+  import mem_bkdr_util_pkg::mem_bkdr_util;
   import otbn_env_pkg::*;
   import otbn_test_pkg::*;
 
@@ -231,6 +232,8 @@ module tb;
 
 
   initial begin
+    mem_bkdr_util imem_util, dmem_util;
+
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
 
@@ -257,6 +260,23 @@ module tb;
     uvm_config_db#(virtual otbn_rf_base_if)::set(
       null, "*.env", "rf_base_vif",
       dut.u_otbn_core.u_otbn_rf_base.i_otbn_rf_base_if);
+
+    // Instantiate mem_bkdr_util objects to allow access to IMEM and DMEM
+    imem_util = new(.name ("imem_util"),
+                    .path ({"tb.dut.u_imem.u_prim_ram_1p_adv.",
+                            "u_mem.gen_generic.u_impl_generic.mem"}),
+                    .depth (otbn_reg_pkg::OTBN_IMEM_SIZE / 4),
+                    .n_bits (8 * otbn_reg_pkg::OTBN_IMEM_SIZE),
+                    .err_detection_scheme (mem_bkdr_util_pkg::Ecc_39_32));
+    dmem_util = new(.name ("dmem_util"),
+                    .path ({"tb.dut.u_dmem.u_prim_ram_1p_adv.",
+                            "u_mem.gen_generic.u_impl_generic.mem"}),
+                    .depth (otbn_reg_pkg::OTBN_DMEM_SIZE / 32),
+                    .n_bits (8 * otbn_reg_pkg::OTBN_DMEM_SIZE),
+                    .err_detection_scheme (mem_bkdr_util_pkg::Ecc_39_32));
+
+    uvm_config_db#(mem_bkdr_util)::set(null, "*.env", imem_util.get_name(), imem_util);
+    uvm_config_db#(mem_bkdr_util)::set(null, "*.env", dmem_util.get_name(), dmem_util);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
