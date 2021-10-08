@@ -9,8 +9,6 @@ from .state import OTBNState
 from .stats import ExecutionStats
 from .trace import Trace
 
-_TEST_RND_DATA = \
-    0x99999999_99999999_99999999_99999999_99999999_99999999_99999999_99999999
 
 # A dictionary that defines a function of the form "address -> from -> to". If
 # PC is the current PC and cnt is the count for the innermost loop then
@@ -48,27 +46,6 @@ class OTBNSim:
         self._execute_generator = None
         self._next_insn = None
         self.state.start()
-
-    def run(self, verbose: bool) -> int:
-        '''Run until ECALL.
-
-        Return the number of cycles taken.
-
-        '''
-        insn_count = 0
-        # ISS will stall at start until URND data is valid, immediately set it
-        # valid when in free running mode as nothing else will.
-        self.state.set_urnd_reseed_complete()
-        while self.state.running:
-            self.step(verbose)
-            insn_count += 1
-
-            if self.state.wsrs.RND.pending_request:
-                # If an instruction requests RND data, make it available
-                # immediately.
-                self.state.wsrs.RND.set_unsigned(_TEST_RND_DATA)
-
-        return insn_count
 
     def _fetch(self, pc: int) -> OTBNInsn:
         word_pc = pc >> 2

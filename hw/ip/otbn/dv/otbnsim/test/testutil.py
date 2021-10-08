@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 
 from sim.elf import load_elf
-from sim.sim import OTBNSim
+from sim.standalonesim import StandaloneSim
 
 
 OTBN_DIR = os.path.join(os.path.dirname(__file__), '../../..')
@@ -34,7 +34,7 @@ def asm_and_link_one_file(asm_path: str, work_dir: py.path.local) -> str:
 
 def prepare_sim_for_asm_file(asm_file: str,
                              tmpdir: py.path.local,
-                             collect_stats: bool) -> OTBNSim:
+                             collect_stats: bool) -> StandaloneSim:
     '''Set up the simulation of a single assembly file.
 
     The returned simulation is ready to be run through the run() method.
@@ -43,7 +43,7 @@ def prepare_sim_for_asm_file(asm_file: str,
     assert os.path.exists(asm_file)
     elf_file = asm_and_link_one_file(asm_file, tmpdir)
 
-    sim = OTBNSim()
+    sim = StandaloneSim()
     load_elf(sim, elf_file)
 
     sim.state.ext_regs.commit()
@@ -53,7 +53,7 @@ def prepare_sim_for_asm_file(asm_file: str,
 
 def prepare_sim_for_asm_str(assembly: str,
                             tmpdir: py.path.local,
-                            collect_stats: bool) -> OTBNSim:
+                            collect_stats: bool) -> StandaloneSim:
     '''Set up the simulation for an assembly snippet passed as string.
 
     The returned simulation is ready to be run through the run() method.

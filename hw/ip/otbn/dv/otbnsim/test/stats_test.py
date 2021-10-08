@@ -5,12 +5,12 @@
 import py
 import os
 
-from sim.sim import OTBNSim
+from sim.standalonesim import StandaloneSim
 from sim.stats import ExecutionStats
 import testutil
 
 
-def _run_sim_for_stats(sim: OTBNSim) -> ExecutionStats:
+def _run_sim_for_stats(sim: StandaloneSim) -> ExecutionStats:
     sim.run(verbose=False)
 
     # Ensure that the execution was successful.
