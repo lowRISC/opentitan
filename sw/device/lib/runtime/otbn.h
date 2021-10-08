@@ -168,7 +168,7 @@ typedef struct otbn {
 otbn_result_t otbn_init(otbn_t *ctx, mmio_region_t base_addr);
 
 /**
- * (Re-)loads the RSA application into OTBN.
+ * (Re-)loads the application into OTBN.
  *
  * Load the application image with both instruction and data segments into OTBN.
  *
