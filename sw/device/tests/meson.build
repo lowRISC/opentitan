@@ -647,16 +647,6 @@ foreach sw_test_name, sw_test_info : sw_tests
   endforeach
 endforeach
 
-# Signing keys for ROM_EXT images.
-signing_keys = {
-  'fpga_key_0': {
-    'path': meson.source_root() / 'sw/device/silicon_creator/keys/fpga_key_0.private.der',
-  },
-  'fpga_key_1': {
-    'path': meson.source_root() / 'sw/device/silicon_creator/keys/fpga_key_1.private.der',
-  },
-}
-
 # (signed) test binaries loaded with ROM from sw/device/silicon_creator/
 foreach sw_test_name, sw_test_info : sw_rom_ext_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
