@@ -295,18 +295,31 @@ class Register(RegBase):
                                 'fields for {} register'.format(name))
         if not raw_fields:
             raise ValueError('Register {} has no fields.'.format(name))
-        fields = [Field.from_raw(name,
-                                 idx,
-                                 len(raw_fields),
-                                 swaccess,
-                                 hwaccess,
-                                 resval,
-                                 reg_width,
-                                 params,
-                                 hwext,
-                                 shadowed,
-                                 rf)
-                  for idx, rf in enumerate(raw_fields)]
+
+        fields = []
+        used_bits = 0
+        for idx, rf in enumerate(raw_fields):
+
+            field = (Field.from_raw(name,
+                                    idx,
+                                    len(raw_fields),
+                                    swaccess,
+                                    hwaccess,
+                                    resval,
+                                    reg_width,
+                                    params,
+                                    hwext,
+                                    shadowed,
+                                    rf))
+
+            overlap_bits = used_bits & field.bits.bitmask()
+            if overlap_bits:
+                raise ValueError(f'Field {field.name} uses bits '
+                                 f'{overlap_bits:#x} that appear in other '
+                                 f'fields.')
+
+            used_bits |= field.bits.bitmask()
+            fields.append(field)
 
         raw_uea = rd.get('update_err_alert')
         if raw_uea is None:

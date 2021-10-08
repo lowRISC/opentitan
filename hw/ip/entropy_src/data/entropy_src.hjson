@@ -135,49 +135,55 @@
       fields: [
         { bits: "3:0",
           name: "ENABLE",
+          mubi: true,
           desc: '''
                 Setting this field to 0xA will enable the ENTROPY_SRC module.
                 '''
-          resval: "0x5"
+          resval: false,
         },
         { bits: "7:4",
           name: "ENTROPY_DATA_REG_ENABLE",
+          mubi: true,
           desc: '''
                 Setting this field to 0xA will enable reading entropy values from the
                 ENTROPY_DATA register. This function also requires that the efuse_es_sw_reg_en
                 input is set.
                 '''
-          resval: "0x5"
+          resval: "false"
         },
         { bits: "11:8",
           name: "LFSR_ENABLE",
+          mubi: true,
           desc: '''
                 Setting this field to 0xA will enable the ENTROPY_SRC LFSR mode.
                 '''
-          resval: "0x5"
+          resval: false
         },
         { bits: "15:12",
           name: "BOOT_BYPASS_DISABLE",
+          mubi: true,
           desc: '''
                 Setting this field to 0xA will disables the initial generation of non-FIPS entropy.
                 '''
-          resval: "0x5"
+          resval: false
         },
         { bits: "19:16",
           name: "HEALTH_TEST_CLR",
+          mubi: true,
           desc: '''
                 Setting this field to 0xA will clear all registers related to the
                 health test operations.
                 '''
-          resval: "0x5"
+          resval: false
         },
         { bits: "23:20",
           name: "RNG_BIT_ENABLE",
+          mubi: true,
           desc: '''
                 Setting this field to 0xA enables the single RNG bit mode, where only
                 one bit is sampled.
                 '''
-          resval: "0x5"
+          resval: false
         },
         { bits: "25:24",
           name: "RNG_BIT_SEL",
@@ -218,21 +224,23 @@
       fields: [
         { bits: "3:0",
           name: "ES_ROUTE",
+          mubi: true,
           desc: '''
                 Setting this field to 0xA routes the generated entropy value to the ENTROPY_DATA
                 register to be read by firmware. When this field is 0x5, the generated
                 entropy will be forwarded out of this module to the hardware interface.
                 '''
-          resval: "0x5"
+          resval: false
         },
         { bits: "7:4",
           name: "ES_TYPE",
+          mubi: true,
           desc: '''
                 Setting this field to 0xA will bypass the conditioning logic and bring raw entropy
                 data to the ENTROPY_DATA register. When 0x5, FIPS compliant entropy
                 will be brought the ENTROPY_DATA register, after being conditioned.
                 '''
-          resval: "0x5"
+          resval: false
         },
       ]
     },
