@@ -17,9 +17,6 @@ prefixed with "0x" if they are hexadecimal.
     step                 Run one instruction. Print trace information to
                          stdout.
 
-    run                  Run instructions until ecall or error. No trace
-                         information.
-
     load_elf <path>      Load the ELF file at <path>, replacing current
                          contents of DMEM and IMEM.
 
@@ -111,22 +108,6 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
         entry = change.rtl_trace()
         if entry is not None:
             print(entry)
-
-    return None
-
-
-def on_run(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    '''Run until ecall or error'''
-    if len(args):
-        raise ValueError('run expects zero arguments. Got {}.'
-                         .format(args))
-
-    print('RUN')
-
-    sim.run(verbose=False)
-
-    print(' INSN_CNT = {:#x}'.format(sim.state.ext_regs.read('INSN_CNT', False)))
-    print(' ERR_BITS = {:#x}'.format(sim.state.ext_regs.read('ERR_BITS', False)))
 
     return None
 
@@ -294,7 +275,6 @@ def on_reset(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 _HANDLERS = {
     'start': on_start,
     'step': on_step,
-    'run': on_run,
     'load_elf': on_load_elf,
     'add_loop_warp': on_add_loop_warp,
     'clear_loop_warps': on_clear_loop_warps,

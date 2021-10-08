@@ -19,6 +19,8 @@ from typing import Any, Dict, List, Tuple
 from testutil import asm_and_link_one_file, SIM_DIR
 
 _REG_RE = re.compile(r'\s*([a-zA-Z0-9_]+)\s*=\s*((:?0x[0-9a-f]+)|([0-9]+))$')
+_STR_RE = re.compile(r'[^|]*\|[^|]*\|\s*\[([^\]]*)\]$')
+_SPLIT_RE = re.compile(r'([a-zA-Z_.0-9]*) ([|=]+) (0x[0-9a-f]+)')
 
 
 def find_simple_tests() -> List[Tuple[str, str]]:
@@ -84,30 +86,32 @@ def get_reg_dump(stdout: str) -> Dict[str, int]:
     value that register ended up with.
 
     '''
-    mode = None
 
     ret = {}
     for line in stdout.split('\n'):
-        if line in ['RUN', 'PRINT_REGS']:
-            if mode is not None:
-                raise RuntimeError('Opened {} when in {} mode.'
-                                   .format(line, mode))
-            mode = line
+        if not line:
             continue
+        if '|' in line:
+            m = _STR_RE.match(line)
+            if m is None:
+                raise RuntimeError('Bad format of register dump')
+            raw_str = m.group(1)
+            if raw_str:
+                for each in raw_str.split(', '):
+                    m = _SPLIT_RE.match(each)
+                    if m is None:
+                        continue
+                    name, operator, value = m.groups()
+                    if name in ['otbn.ERR_BITS', 'otbn.INSN_CNT']:
+                        assert operator == '='
+                        ret[name[5:]] = int(value, 0)
+        else:
+            m = _REG_RE.match(line)
+            if not m:
+                raise RuntimeError('Failed to parse line after dump_regs ({!r}).'
+                                   .format(line))
 
-        if mode is None:
-            continue
-
-        if line == '.':
-            mode = None
-            continue
-
-        m = _REG_RE.match(line)
-        if not m:
-            raise RuntimeError('Failed to parse line after PRINT_REGS ({!r}).'
-                               .format(line))
-
-        ret[m.group(1)] = int(m.group(2), 0)
+            ret[m.group(1)] = int(m.group(2), 0)
 
     return ret
 
@@ -149,9 +153,8 @@ def test_count(tmpdir: py.path.local,
 
     # Run the simulation. We can just pass a list of commands to stdin, and
     # don't need to do anything clever to track what's going on.
-    stepped_py = os.path.join(SIM_DIR, 'stepped.py')
-    commands = 'load_elf {}\nstart\nrun\nprint_regs\n'.format(elf_file)
-    sim_proc = subprocess.run([stepped_py], check=True, input=commands,
+    standalone_py = os.path.join(SIM_DIR, 'standalone.py')
+    sim_proc = subprocess.run([standalone_py, '--dump-regs', '-', '-v', elf_file], check=True,
                               stdout=subprocess.PIPE, universal_newlines=True)
 
     regs_seen = get_reg_dump(sim_proc.stdout)
