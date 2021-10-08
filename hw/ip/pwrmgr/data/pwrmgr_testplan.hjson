@@ -68,8 +68,7 @@
               - Set `wakeups_i` so at least one is enabled.
             - Checks `ip_clk_en` output has a low transition.
             - Checks the `wakeup_info` and `wakeup_status` CSRs.
-            - Checks the output `pwr_rst_req.reset_cause` matches a low power
-              cause.
+            - Checks the output `pwr_rst_req.reset_cause` is `Wake` (1).
             - Check that `intr_wakeup_o` is set according to `intr_enable` CSR.
             - Coverage collected by `wakeup_cg` and `wakeup_intr_cg`.
             '''
@@ -132,46 +131,26 @@
       desc: '''
             Test random reset and reset_en.
 
-            The different reset inputs can be disabled via bits in the
-            `reset_en` CSR. Resets can be triggered either in active or
-            low power state.
+            Conditional reset inputs can be disabled via bits in the `reset_en`
+            CSR, while escalation and main power are unconditional. Resets can
+            be triggered either in active or low power state.
 
             **Stimulus**:
             - Sets `reset_en` randomly.
             - Randomly choose whether to put the unit in low power mode.
-            - Set `rstreqs_i` inputs randomly, both in value and in time.
+            - Generate resets randomly in value and time:
+              - Conditionals via rstreqs_i,
+              - Main power glitch via rst_main_ni.
+              - Escalation via `esc_rst_tx_i`.
 
             **Checks**:
             - Waits for fast fsm to become active reading `ctrl_cfg_regwen`
               until it becomes 1.
             - Checks the `reset_status` CSRs.
             - Checks `ip_clk_en` output has a low transition.
-            - Checks the output `pwr_rst_req.reset_cause` matches a reset
-              cause.
-            - Checks the output `pwr_rst_req.rstreqs` matches the enabled
-              resets.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: escalation_reset
-      desc: '''
-            Test escalation reset.
-
-            An escalation reset cannot be disabled.
-
-            **Stimulus**:
-            - Set `esc_rst_tx_i` inputs randomly.
-
-            **Checks**:
-            - Waits for fast fsm to become active reading `ctrl_cfg_regwen`
-              until it becomes 1.
-            - Checks the `reset_status` CSRs.
-            - Checks the output `pwr_rst_req.reset_cause` matches a reset
-              cause.
-            - Checks the output `pwr_rst_req.rstreqs` is not set.
-            - Check the output `esc_rst_rx_o` indicates an alert escalation.
+            - SVA that when `pwr_rst_req.reset_cause` is HwReq, and the output
+             `pwr_rst_req.rstreqs` matches the unconditional and enabled
+             conditional resets inputs.
             '''
       milestone: V2
       tests: []
@@ -260,10 +239,10 @@
       desc: '''
             Collects coverage related to reset reporting.
 
-            Covergroup contains coverpoints for the `rstreqs_i` and alert
-            escalation inputs, `reset_en`, `reset_status`,
-            `escalate_reset_status` and whether reset or escalation is asserted
-            during low power state, and suitable crosses.
+            Covergroup contains coverpoints for the `rstreqs_i`, alert
+            escalation and power glitch inputs, `reset_en`, `reset_status`,
+            `escalate_reset_status`, output `pwr_rst_o.rstreqs`, and whether
+            reset is asserted during low power state, and suitable crosses.
             '''
     }
     {
