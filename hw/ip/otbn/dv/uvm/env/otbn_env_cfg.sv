@@ -19,6 +19,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   virtual otbn_rf_base_if    rf_base_vif;
   virtual otbn_controller_if controller_vif;
 
+  mem_bkdr_util imem_util;
+  mem_bkdr_util dmem_util;
+
   // The directory in which to look for ELF files (set by the test in build_phase; controlled by the
   // +otbn_elf_dir plusarg).
   string otbn_elf_dir;
