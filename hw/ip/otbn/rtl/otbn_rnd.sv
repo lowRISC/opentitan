@@ -170,6 +170,5 @@ module otbn_rnd import otbn_pkg::*;
     end
   end
 
-  `ASSERT(rnd_req_stable, rnd_req_i & ~rnd_valid_o |=> rnd_req_i)
   `ASSERT(rnd_clear_on_req_complete, rnd_req_complete |=> ~rnd_valid_q)
 endmodule
