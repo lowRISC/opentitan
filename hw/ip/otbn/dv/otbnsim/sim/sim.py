@@ -86,15 +86,17 @@ class OTBNSim:
 
     def _on_stall(self,
                   verbose: bool,
-                  fetch_next: bool) -> None:
+                  fetch_next: bool) -> List[Trace]:
         '''This is run on a stall cycle'''
+        changes = self.state.changes()
         self.state.commit(sim_stalled=True)
         if fetch_next:
             self._next_insn = self._fetch(self.state.pc)
         if self.stats is not None:
             self.stats.record_stall()
         if verbose:
-            self._print_trace(self.state.pc, '(stall)', [])
+            self._print_trace(self.state.pc, '(stall)', changes)
+        return changes
 
     def _on_retire(self,
                    verbose: bool,
@@ -138,13 +140,15 @@ class OTBNSim:
             return (None, [])
 
         if self.state.non_insn_stall:
-            self._on_stall(verbose, fetch_next=False)
-            return (None, [])
+            # Zero INSN_CNT the cycle after we are told to start (and every
+            # cycle after that until we start executing instructions, but that
+            # doesn't really matter)
+            self.state.ext_regs.write('INSN_CNT', 0, True)
+            return (None, self._on_stall(verbose, fetch_next=False))
 
         insn = self._next_insn
         if insn is None:
-            self._on_stall(verbose, fetch_next=True)
-            return (None, [])
+            return (None, self._on_stall(verbose, fetch_next=True))
 
         if self._execute_generator is None:
             # This is the first cycle for an instruction. Run any setup for
@@ -170,8 +174,7 @@ class OTBNSim:
         if not sim_stalled:
             return (insn, self._on_retire(verbose, insn))
 
-        self._on_stall(verbose, fetch_next=True)
-        return (None, [])
+        return (None, self._on_stall(verbose, fetch_next=True))
 
     def dump_data(self) -> bytes:
         return self.state.dmem.dump_le_words()
