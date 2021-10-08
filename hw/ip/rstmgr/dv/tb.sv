@@ -107,10 +107,10 @@ module tb;
 
     .cpu_dump_i(rstmgr_if.cpu_dump_i),
 
-    .rst_en_o( ),
+    .rst_en_o(),
 
     .scan_rst_ni(rstmgr_if.scan_rst_ni),
-    .scanmode_i (rstmgr_if.scanmode_i),
+    .scanmode_i(rstmgr_if.scanmode_i),
     .resets_o(rstmgr_if.resets_o)
   );
 

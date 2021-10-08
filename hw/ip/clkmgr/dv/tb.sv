@@ -105,7 +105,7 @@ module tb;
     .lc_clk_byp_req_i (clkmgr_if.lc_clk_byp_req),
     .lc_clk_byp_ack_o (clkmgr_if.lc_clk_byp_ack),
 
-    .cg_en_o    ( ),
+    .cg_en_o(),
 
     .jitter_en_o(clkmgr_if.jitter_en_o),
     .clocks_o   (clkmgr_if.clocks_o)
