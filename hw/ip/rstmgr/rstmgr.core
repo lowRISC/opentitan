@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:lc_sender
       - lowrisc:prim:lc_sync
+      - lowrisc:ip:alert_handler_component
       - "fileset_ip     ? (lowrisc:ip:rstmgr_pkg)"
       - "fileset_top    ? (lowrisc:systems:rstmgr_pkg)"
       - "fileset_top    ? (lowrisc:systems:rstmgr)"
