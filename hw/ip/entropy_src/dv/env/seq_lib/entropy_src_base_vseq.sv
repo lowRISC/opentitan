@@ -48,6 +48,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.conf.enable.set(cfg.enable);
     ral.conf.entropy_data_reg_enable.set(cfg.entropy_data_reg_enable);
     ral.conf.boot_bypass_disable.set(cfg.boot_bypass_disable);
+    ral.conf.rng_bit_enable.set(cfg.rng_bit_enable);
+    ral.conf.rng_bit_sel.set(cfg.rng_bit_sel);
     csr_update(.csr(ral.conf));
 
   endtask

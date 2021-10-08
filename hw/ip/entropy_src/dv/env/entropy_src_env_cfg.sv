@@ -24,7 +24,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
                 type_bypass_pct, boot_bypass_disable_pct,
                 entropy_data_reg_enable_pct, rng_bit_enable_pct;
 
-  rand bit      regwen;
+  rand bit         regwen;
+  rand bit [1:0]   rng_bit_sel;
 
   rand entropy_src_pkg::es_enb_e   enable, route_software, type_bypass,
                                    boot_bypass_disable, entropy_data_reg_enable,
@@ -102,6 +103,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     str = {str,  $sformatf("\n\t |***** entropy_data_reg_enable     : %12s *****| \t", entropy_data_reg_enable.name()) };
     str = {str,  $sformatf("\n\t |***** boot_bypass_disable         : %12s *****| \t", boot_bypass_disable.name())     };
     str = {str,  $sformatf("\n\t |***** rng_bit_enable              : %12s *****| \t", rng_bit_enable.name())          };
+    str = {str,  $sformatf("\n\t |***** rng_bit_sel                 : %12d *****| \t", rng_bit_sel)                    };
     str = {str,  $sformatf("\n\t |----------------- knobs ------------------------------| \t")                         };
     str = {str,  $sformatf("\n\t |***** otp_en_es_fw_read_pct       : %12d *****| \t", otp_en_es_fw_read_pct)          };
     str = {str,  $sformatf("\n\t |***** otp_en_es_fw_over_pct       : %12d *****| \t", otp_en_es_fw_over_pct)          };
