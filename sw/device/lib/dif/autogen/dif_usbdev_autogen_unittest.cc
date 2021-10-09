@@ -4,11 +4,10 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_usbdev.h"
-
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_usbdev.h"
 
 #include "usbdev_regs.h"  // Generated.
 

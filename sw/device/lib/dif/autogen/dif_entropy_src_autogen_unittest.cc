@@ -4,11 +4,10 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_entropy_src.h"
-
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/lib/dif/dif_entropy_src.h"
 
 #include "entropy_src_regs.h"  // Generated.
 
