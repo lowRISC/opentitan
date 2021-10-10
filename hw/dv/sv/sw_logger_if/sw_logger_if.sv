@@ -2,42 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// shortcuts for use in switching # of args to insert in formatted string
-`define _USE_STR_ARG(n) (sw_log.str_arg.exists(``n``) ? sw_log.str_arg[``n``] : sw_log.arg[``n``])
-`define _1_ARGS         `_USE_STR_ARG(0)
-`define _2_ARGS         `_1_ARGS, `_USE_STR_ARG(1)
-`define _3_ARGS         `_2_ARGS, `_USE_STR_ARG(2)
-`define _4_ARGS         `_3_ARGS, `_USE_STR_ARG(3)
-`define _5_ARGS         `_4_ARGS, `_USE_STR_ARG(4)
-`define _6_ARGS         `_5_ARGS, `_USE_STR_ARG(5)
-`define _7_ARGS         `_6_ARGS, `_USE_STR_ARG(6)
-`define _8_ARGS         `_7_ARGS, `_USE_STR_ARG(7)
-`define _9_ARGS         `_8_ARGS, `_USE_STR_ARG(8)
-`define _10_ARGS        `_9_ARGS, `_USE_STR_ARG(9)
-`define _11_ARGS        `_10_ARGS, `_USE_STR_ARG(10)
-`define _12_ARGS        `_11_ARGS, `_USE_STR_ARG(11)
-`define _13_ARGS        `_12_ARGS, `_USE_STR_ARG(12)
-`define _14_ARGS        `_13_ARGS, `_USE_STR_ARG(13)
-`define _15_ARGS        `_14_ARGS, `_USE_STR_ARG(14)
-`define _16_ARGS        `_15_ARGS, `_USE_STR_ARG(15)
-`define _17_ARGS        `_16_ARGS, `_USE_STR_ARG(16)
-`define _18_ARGS        `_17_ARGS, `_USE_STR_ARG(17)
-`define _19_ARGS        `_18_ARGS, `_USE_STR_ARG(18)
-`define _20_ARGS        `_19_ARGS, `_USE_STR_ARG(19)
-`define _21_ARGS        `_20_ARGS, `_USE_STR_ARG(20)
-`define _22_ARGS        `_21_ARGS, `_USE_STR_ARG(21)
-`define _23_ARGS        `_22_ARGS, `_USE_STR_ARG(22)
-`define _24_ARGS        `_23_ARGS, `_USE_STR_ARG(23)
-`define _25_ARGS        `_24_ARGS, `_USE_STR_ARG(24)
-`define _26_ARGS        `_25_ARGS, `_USE_STR_ARG(25)
-`define _27_ARGS        `_26_ARGS, `_USE_STR_ARG(26)
-`define _28_ARGS        `_27_ARGS, `_USE_STR_ARG(27)
-`define _29_ARGS        `_28_ARGS, `_USE_STR_ARG(28)
-`define _30_ARGS        `_29_ARGS, `_USE_STR_ARG(29)
-`define _31_ARGS        `_30_ARGS, `_USE_STR_ARG(30)
-`define _32_ARGS        `_31_ARGS, `_USE_STR_ARG(31)
-`define _ADD_ARGS(n)    `_``n``_ARGS
-
 interface sw_logger_if #(
   // width of the data bus
   parameter int unsigned AddrDataWidth = 32
@@ -64,11 +28,11 @@ interface sw_logger_if #(
   logic data_valid;
   assign data_valid = wr_valid && (addr == sw_log_addr);
 
-  // Enable signal to turn on/off logging at runtime.
+  // Enable signal to turn the logging on/off at runtime.
   bit enable = 1'b1;
 
   // types
-  // log & rodata database files for parsing, associated with the sw_name
+  // Log & rodata database files for parsing, associated with the sw_name.
   string sw_log_db_files[string];
   string sw_rodata_db_files[string];
 
@@ -91,17 +55,23 @@ interface sw_logger_if #(
     LogVerbosityDebug
   } log_verbosity_e;
 
-  // struct to hold the complete log data
+  // Max number of args as format specifiers supported.
+  localparam int unsigned MAX_ARGS = 32;
+
+  // Use 1024 byte packed array for storing args (integral data or string).
+  typedef bit [1024*8-1:0] arg_t;
+
+  // Holds the log data structure.
   typedef struct {
-    string          name;         // Name of the SW image.
-    log_severity_e  severity;
-    log_verbosity_e verbosity;
-    string          file;         // Name of the C file invoking the log.
-    int             line;         // Line no in the C file from where the log originated.
-    int             nargs;        // Number of args provided to the format string.
-    addr_data_t     arg[];        // actual arg values
-    string          str_arg[int]; // some args are strings - this AA holds it
-    string          format;       // formatted string
+    string             name;         // Name of the SW image.
+    log_severity_e     severity;     // There are 4 - info, warining, error and fatal.
+    log_verbosity_e    verbosity;    // Verbosity of info logs - currently unsupported.
+    string             file;         // Name of the C file invoking the log.
+    int                line;         // Line no in the C file from where the log originated.
+    int                nargs;        // Number of args provided to the format string.
+    arg_t              arg[];        // Actual arg values
+    bit [MAX_ARGS-1:0] str_arg_idx;  // Indicates which arg indices are string (%s).
+    string             format;       // Format string.
   } sw_log_t;
 
   // bit to enable writing the logs to a separate file (disabled by default)
@@ -202,19 +172,12 @@ interface sw_logger_if #(
         sw_log.line = field.atoi();
         void'(get_sw_log_field(fd, "nargs", field));
         sw_log.nargs = field.atoi();
+        `DV_CHECK_LE_FATAL(sw_log.nargs, MAX_ARGS, , $sformatf("%m"))
         sw_log.arg = new[sw_log.nargs];
         void'(get_sw_log_field(fd, "format", field));
-        // Replace CRs in the middle of the string with NLs.
         sw_log.format = replace_cr_with_nl(field);
         void'(get_sw_log_field(fd, "str_arg_idx", field));
-
-        begin
-          int indices[$];
-          get_str_arg_indices(field, indices);
-          foreach (indices[i]) begin
-            sw_log.str_arg[indices[i]] = "";
-          end
-        end
+        sw_log.str_arg_idx = get_str_arg_indices(field);
 
         if (sw_logs.exists(sw) && sw_logs[sw].exists(addr)) begin
           `dv_warning($sformatf("Log entry for addr %0x already exists:\nOld: %p\nNew: %p",
@@ -300,13 +263,14 @@ interface sw_logger_if #(
     return 1'b0;
   endfunction
 
-  // Parse list if indices that have string args (in string format as space separated values
-  // and return a queue of corresponding integers.
-  function automatic void get_str_arg_indices(string list, ref int indices[$]);
+  // Parse list of indices that have string args (in string format as space separated values.
+  //
+  // Returns a 33-bit vector indicting the bit indices which contain string args.
+  function automatic bit [MAX_ARGS-1:0] get_str_arg_indices(string list);
     int i;
     int start = 0;
-    indices.delete();
-    if (list == "") return;
+    bit [MAX_ARGS-1:0] indices;
+    if (list == "") return indices;
     for (i = 0; i < list.len(); i++) begin
       if (list.getc(i) == " " && i == start) begin
         start++;
@@ -314,14 +278,15 @@ interface sw_logger_if #(
       end
       else if (list.getc(i) == " ") begin
         string index = list.substr(start, i - 1);
-        indices.push_back(index.atoi());
+        indices[index.atoi()] = 1'b1;
         start = i + 1;
       end
     end
     if (start < i) begin
       string index = list.substr(start, i - 1);
-      indices.push_back(index.atoi());
+      indices[index.atoi()] = 1'b1;
     end
+    return indices;
   endfunction
 
   // replace carriage return in the middle of the string with newline.
@@ -384,18 +349,20 @@ interface sw_logger_if #(
         if (sw_logs[sw].exists(addr)) begin
           bit rst_occurred;
           fork
-            begin
+            begin: isolation_thread
               fork
                 // get args
                 for (int i = 0; i < sw_logs[sw][addr].nargs; i++) begin
+                  addr_data_t addr_data;
                   wait(addr_data_q.size() > 0);
-                  sw_logs[sw][addr].arg[i] = addr_data_q.pop_front();
-                  // Check if this is an str arg
-                  if (sw_logs[sw][addr].str_arg.exists(i)) begin
-                    // The arg[i] received is the addr in rodata where the string resides.
-                    sw_logs[sw][addr].str_arg[i] = get_str_at_addr(sw, sw_logs[sw][addr].arg[i]);
-                    `dv_info($sformatf("String arg at addr %0h: %0s", sw_logs[sw][addr].arg[i],
-                                       sw_logs[sw][addr].str_arg[i]), UVM_DEBUG)
+                  addr_data = addr_data_q.pop_front();
+                  if (sw_logs[sw][addr].str_arg_idx[i]) begin
+                    // addr_data is the address of the string in rodata. Retrieve it.
+                    sw_logs[sw][addr].arg[i] = arg_t'(get_str_at_addr(sw, addr_data));
+                    `dv_info($sformatf("String arg at addr %0h: %0s", addr_data,
+                                       sw_logs[sw][addr].arg[i]), UVM_LOW)
+                  end else begin
+                    sw_logs[sw][addr].arg[i] = addr_data;
                   end
                 end
                 begin
@@ -405,7 +372,7 @@ interface sw_logger_if #(
                 end
               join_any
               disable fork;
-            end
+            end: isolation_thread
           join
           if (rst_occurred) continue;
           print_sw_log(sw_logs[sw][addr]);
@@ -422,6 +389,42 @@ interface sw_logger_if #(
       log_header = {log_header, "(", sw_log.file, ":",
                     $sformatf("%0d", sw_log.line), ")"};
     end
+
+    // Shortcuts for use in switching # of args to insert in formatted string.
+    `define _USE_STR_ARG(n) sw_log.arg[``n``]
+    `define _1_ARGS         `_USE_STR_ARG(0)
+    `define _2_ARGS         `_1_ARGS, `_USE_STR_ARG(1)
+    `define _3_ARGS         `_2_ARGS, `_USE_STR_ARG(2)
+    `define _4_ARGS         `_3_ARGS, `_USE_STR_ARG(3)
+    `define _5_ARGS         `_4_ARGS, `_USE_STR_ARG(4)
+    `define _6_ARGS         `_5_ARGS, `_USE_STR_ARG(5)
+    `define _7_ARGS         `_6_ARGS, `_USE_STR_ARG(6)
+    `define _8_ARGS         `_7_ARGS, `_USE_STR_ARG(7)
+    `define _9_ARGS         `_8_ARGS, `_USE_STR_ARG(8)
+    `define _10_ARGS        `_9_ARGS, `_USE_STR_ARG(9)
+    `define _11_ARGS        `_10_ARGS, `_USE_STR_ARG(10)
+    `define _12_ARGS        `_11_ARGS, `_USE_STR_ARG(11)
+    `define _13_ARGS        `_12_ARGS, `_USE_STR_ARG(12)
+    `define _14_ARGS        `_13_ARGS, `_USE_STR_ARG(13)
+    `define _15_ARGS        `_14_ARGS, `_USE_STR_ARG(14)
+    `define _16_ARGS        `_15_ARGS, `_USE_STR_ARG(15)
+    `define _17_ARGS        `_16_ARGS, `_USE_STR_ARG(16)
+    `define _18_ARGS        `_17_ARGS, `_USE_STR_ARG(17)
+    `define _19_ARGS        `_18_ARGS, `_USE_STR_ARG(18)
+    `define _20_ARGS        `_19_ARGS, `_USE_STR_ARG(19)
+    `define _21_ARGS        `_20_ARGS, `_USE_STR_ARG(20)
+    `define _22_ARGS        `_21_ARGS, `_USE_STR_ARG(21)
+    `define _23_ARGS        `_22_ARGS, `_USE_STR_ARG(22)
+    `define _24_ARGS        `_23_ARGS, `_USE_STR_ARG(23)
+    `define _25_ARGS        `_24_ARGS, `_USE_STR_ARG(24)
+    `define _26_ARGS        `_25_ARGS, `_USE_STR_ARG(25)
+    `define _27_ARGS        `_26_ARGS, `_USE_STR_ARG(26)
+    `define _28_ARGS        `_27_ARGS, `_USE_STR_ARG(27)
+    `define _29_ARGS        `_28_ARGS, `_USE_STR_ARG(28)
+    `define _30_ARGS        `_29_ARGS, `_USE_STR_ARG(29)
+    `define _31_ARGS        `_30_ARGS, `_USE_STR_ARG(30)
+    `define _32_ARGS        `_31_ARGS, `_USE_STR_ARG(31)
+    `define _ADD_ARGS(n)    `_``n``_ARGS
 
     // construct formatted string based on args
     case (sw_log.nargs)
@@ -461,6 +464,41 @@ interface sw_logger_if #(
       default: `dv_fatal($sformatf("UNSUPPORTED: nargs = %0d (only 0:32 allowed)", sw_log.nargs))
     endcase
 
+    `undef _USE_STR_ARG
+    `undef _1_ARGS
+    `undef _2_ARGS
+    `undef _3_ARGS
+    `undef _4_ARGS
+    `undef _5_ARGS
+    `undef _6_ARGS
+    `undef _7_ARGS
+    `undef _8_ARGS
+    `undef _9_ARGS
+    `undef _10_ARGS
+    `undef _11_ARGS
+    `undef _12_ARGS
+    `undef _13_ARGS
+    `undef _14_ARGS
+    `undef _15_ARGS
+    `undef _16_ARGS
+    `undef _17_ARGS
+    `undef _18_ARGS
+    `undef _19_ARGS
+    `undef _20_ARGS
+    `undef _21_ARGS
+    `undef _22_ARGS
+    `undef _23_ARGS
+    `undef _24_ARGS
+    `undef _25_ARGS
+    `undef _26_ARGS
+    `undef _27_ARGS
+    `undef _28_ARGS
+    `undef _29_ARGS
+    `undef _30_ARGS
+    `undef _31_ARGS
+    `undef _32_ARGS
+    `undef _ADD_ARGS
+
     begin
 `ifdef UVM
       uvm_verbosity level;
@@ -493,39 +531,3 @@ interface sw_logger_if #(
   endfunction
 
 endinterface
-
-// undefine previously defined macros
-`undef _USE_STR_ARG
-`undef _1_ARGS
-`undef _2_ARGS
-`undef _3_ARGS
-`undef _4_ARGS
-`undef _5_ARGS
-`undef _6_ARGS
-`undef _7_ARGS
-`undef _8_ARGS
-`undef _9_ARGS
-`undef _10_ARGS
-`undef _11_ARGS
-`undef _12_ARGS
-`undef _13_ARGS
-`undef _14_ARGS
-`undef _15_ARGS
-`undef _16_ARGS
-`undef _17_ARGS
-`undef _18_ARGS
-`undef _19_ARGS
-`undef _20_ARGS
-`undef _21_ARGS
-`undef _22_ARGS
-`undef _23_ARGS
-`undef _24_ARGS
-`undef _25_ARGS
-`undef _26_ARGS
-`undef _27_ARGS
-`undef _28_ARGS
-`undef _29_ARGS
-`undef _30_ARGS
-`undef _31_ARGS
-`undef _32_ARGS
-`undef _ADD_ARGS
