@@ -981,8 +981,6 @@ These *milestone signals* mark the progress of each command segment.
 The coordination of the milestone signals and the shift register controls are shown in the following waveform.
 Since the milestone signal pulses coincide with *entering* particular FSM states, they are derived from the state register *inputs* (i.e., `state_d`), as opposed to the state register outputs (`state_q`).
 
-***TODO***: Revisit the name of the `state_q` register in the following wavedrom and the previous paragraph.
-
 {{< wavejson >}}
 {signal: [
   {name: 'clk', wave: 'p........................'},
@@ -1233,9 +1231,11 @@ In the SPI_HOST FSM this is realized by disabling all flop updates whenever a st
 
 Furthermore, all control signals out of the FSM are suppressed during a stall condition.
 
-*TODO*: See if we can simplify the current scheme for "Actual" vs. "Prestall" state machine registers
+From an implementation standpoint, the presence of a stall condition has two effects on the SPI_HOST FSM:
+1. No flops or registers may be updated during a stall condition.
+Thus the FSM may not progress while stalled.
 
-#### Special consideration: State machine transactions
+2. All handshaking or control signals to other blocks must be surpressed during a stall condition, placing backpressure on the rest the blocks within the IP to also stop operations until the stall is resolved.
 
 ## Config/Command CDC
 
