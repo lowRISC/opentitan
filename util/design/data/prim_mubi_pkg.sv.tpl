@@ -25,8 +25,8 @@ import prim_mubi as prim_mubi
 
   parameter int MuBi${nbits}Width = ${nbits};
   typedef enum logic [MuBi${nbits}Width-1:0] {
-    MuBi${nbits}True = ${nbits}'h${prim_mubi.mubi_value(True, nbits)}, // enabled
-    MuBi${nbits}False = ${nbits}'h${prim_mubi.mubi_value(False, nbits)}  // disabled
+    MuBi${nbits}True = ${nbits}'h${prim_mubi.mubi_value_as_hexstr(True, nbits)}, // enabled
+    MuBi${nbits}False = ${nbits}'h${prim_mubi.mubi_value_as_hexstr(False, nbits)}  // disabled
   } mubi${nbits}_e;
 
   // make a typedef such that this can be used as an intersignal type as well

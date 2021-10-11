@@ -25,7 +25,7 @@ def is_width_valid(width):
     return width % 4 == 0
 
 
-def mubi_value(sel: bool, width: int):
+def mubi_value_as_hexstr(sel: bool, width: int):
 
     if is_width_valid(width):
         nibble = int(width / 4)
@@ -40,6 +40,10 @@ def mubi_value(sel: bool, width: int):
         false_val = ('5' if (k % 2) else 'A') + false_val
 
     return true_val if sel else false_val
+
+
+def mubi_value_as_int(sel: bool, width: int):
+    return int(mubi_value_as_hexstr(sel, width), 16)
 
 
 def main():

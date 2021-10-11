@@ -10,7 +10,7 @@ from .enum_entry import EnumEntry
 from .lib import (check_keys, check_str, check_name, check_bool,
                   check_list, check_str_list, check_xint)
 from .params import ReggenParams
-from design.prim_mubi import is_width_valid, mubi_value #type: ignore
+from design.prim_mubi import is_width_valid, mubi_value_as_int  # type: ignore
 
 
 REQUIRED_FIELDS = {
@@ -137,7 +137,7 @@ class Field:
                                  f'of {bits.width()}')
 
             # Get actual integer value based on mubi selection
-            raw_resval = mubi_value(chk_resval, bits.width())
+            raw_resval = mubi_value_as_int(chk_resval, bits.width())
 
         if raw_resval is None:
             # The field doesn't define a reset value. Use bits from reg_resval
