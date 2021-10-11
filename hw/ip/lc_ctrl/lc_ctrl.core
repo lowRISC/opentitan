@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lc_sender
+      - lowrisc:prim:mubi
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:tlul
       - lowrisc:ip:pwrmgr_pkg

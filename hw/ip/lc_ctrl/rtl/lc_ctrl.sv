@@ -93,6 +93,11 @@ module lc_ctrl
   input  otp_ctrl_pkg::otp_device_id_t               otp_manuf_state_i
 );
 
+  import prim_mubi_pkg::mubi8_t;
+  import prim_mubi_pkg::mubi8_false_value;
+  import prim_mubi_pkg::mubi8_test_true_strict;
+  import prim_mubi_pkg::mubi8_test_false_loose;
+
   ////////////////////////
   // Integration Checks //
   ////////////////////////
@@ -253,8 +258,8 @@ module lc_ctrl
   logic          otp_prog_error_d, fatal_prog_error_q;
   logic          state_invalid_error_d, fatal_state_error_q;
   logic          otp_part_error_q;
-  logic [7:0]    sw_claim_transition_if_d, sw_claim_transition_if_q;
-  logic [7:0]    tap_claim_transition_if_d, tap_claim_transition_if_q;
+  mubi8_t        sw_claim_transition_if_d, sw_claim_transition_if_q;
+  mubi8_t        tap_claim_transition_if_d, tap_claim_transition_if_q;
   logic          transition_cmd;
   lc_token_t     transition_token_d, transition_token_q;
   dec_lc_state_e transition_target_d, transition_target_q;
@@ -294,7 +299,7 @@ module lc_ctrl
 
     // Assignments gated by mutex.
     hw2reg.claim_transition_if = sw_claim_transition_if_q;
-    if (sw_claim_transition_if_q == 8'hA5) begin
+    if (mubi8_test_true_strict(sw_claim_transition_if_q)) begin
       hw2reg.transition_ctrl   = use_ext_clock_q;
       hw2reg.transition_token  = transition_token_q;
       hw2reg.transition_target = transition_target_q;
@@ -304,7 +309,7 @@ module lc_ctrl
     end
 
     tap_hw2reg.claim_transition_if = tap_claim_transition_if_q;
-    if (tap_claim_transition_if_q == 8'hA5) begin
+    if (mubi8_test_true_strict(tap_claim_transition_if_q)) begin
       tap_hw2reg.transition_ctrl   = use_ext_clock_q;
       tap_hw2reg.transition_token  = transition_token_q;
       tap_hw2reg.transition_target = transition_target_q;
@@ -324,19 +329,19 @@ module lc_ctrl
     use_ext_clock_d           = use_ext_clock_q;
 
     // SW mutex claim.
-    if (tap_claim_transition_if_q != 8'hA5 &&
+    if (mubi8_test_false_loose(tap_claim_transition_if_q) &&
         reg2hw.claim_transition_if.qe) begin
-      sw_claim_transition_if_d = reg2hw.claim_transition_if.q;
+      sw_claim_transition_if_d = mubi8_t'(reg2hw.claim_transition_if.q);
     end
     // TAP mutex claim. This has prio over SW above.
-    if (sw_claim_transition_if_q != 8'hA5 &&
+    if (mubi8_test_false_loose(sw_claim_transition_if_q) &&
         tap_reg2hw.claim_transition_if.qe) begin
-      tap_claim_transition_if_d = tap_reg2hw.claim_transition_if.q;
+      tap_claim_transition_if_d = mubi8_t'(tap_reg2hw.claim_transition_if.q);
     end
 
     // The idle signal serves as the REGWEN in this case.
     if (lc_idle_d) begin
-      if (tap_claim_transition_if_q == 8'hA5) begin
+      if (mubi8_test_true_strict(tap_claim_transition_if_q)) begin
         transition_cmd = tap_reg2hw.transition_cmd.q &
                          tap_reg2hw.transition_cmd.qe;
 
@@ -357,7 +362,7 @@ module lc_ctrl
         if (tap_reg2hw.otp_vendor_test_ctrl.qe) begin
           otp_vendor_test_ctrl_d = tap_reg2hw.otp_vendor_test_ctrl.q;
         end
-      end else if (sw_claim_transition_if_q == 8'hA5) begin
+      end else if (mubi8_test_true_strict(sw_claim_transition_if_q)) begin
         transition_cmd = reg2hw.transition_cmd.q &
                          reg2hw.transition_cmd.qe;
 
@@ -391,8 +396,8 @@ module lc_ctrl
       flash_rma_error_q         <= 1'b0;
       fatal_prog_error_q        <= 1'b0;
       fatal_state_error_q       <= 1'b0;
-      sw_claim_transition_if_q  <= '0;
-      tap_claim_transition_if_q <= '0;
+      sw_claim_transition_if_q  <= mubi8_false_value();
+      tap_claim_transition_if_q <= mubi8_false_value();
       transition_token_q        <= '0;
       transition_target_q       <= DecLcStRaw;
       otp_part_error_q          <= 1'b0;
