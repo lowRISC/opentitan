@@ -1,10 +1,16 @@
 .git/
+
 *~
 *.bak
+tags
 __pycache__
+/.vscode
 opentitan-docs
 
-# fusesoc results and build directories with special suffixes
+# fusesoc result
+build/
+
+# build directories with special suffixes
 build*/
 
 # Generated register headers
@@ -15,6 +21,9 @@ jgproject/
 
 # FPGA splice intermediate files
 *.jou
+
+# Environment configuration (produced by Meson)
+.env
 
 # Simulation Results
 *.log
@@ -38,3 +47,23 @@ ascentlint.rpt
 # verilator/gtkwave waveforms and wave lists
 *.fst
 *.gtkw
+
+# Foundry library
+hw/foundry/
+
+# ROM_EXT signer vendored in dependencies
+sw/host/rom_ext_image_signer/vendored_dependencies
+
+# Autogen files for non-Earlgrey tops
+hw/top_englishbreakfast/**/autogen/
+hw/top_englishbreakfast/ip/alert_handler/dv/alert_handler_env_pkg__params.sv
+hw/top_englishbreakfast/ip/sensor_ctrl/rtl/*
+hw/top_englishbreakfast/ip/xbar_main/xbar_main.core
+hw/top_englishbreakfast/ip/xbar_peri/xbar_peri.core
+
+# Rust Cargo build system files.
+Cargo.lock
+sw/host/**/target
+
+# Bazel-related cache and output directories
+bazel-*
