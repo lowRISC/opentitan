@@ -78,6 +78,9 @@
 
 );
 
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4True;
+
   ////////////////////////////////////////////////////
   // Divided clocks
   ////////////////////////////////////////////////////
@@ -236,70 +239,70 @@
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.io_div4_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.io_div4_powerup = MuBi4False;
   prim_clock_buf u_clk_aon_powerup_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.aon_powerup = MuBi4False;
   prim_clock_buf u_clk_main_powerup_buf (
     .clk_i(clk_main_i),
     .clk_o(clocks_o.clk_main_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.main_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.main_powerup = MuBi4False;
   prim_clock_buf u_clk_io_powerup_buf (
     .clk_i(clk_io_i),
     .clk_o(clocks_o.clk_io_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.io_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.io_powerup = MuBi4False;
   prim_clock_buf u_clk_usb_powerup_buf (
     .clk_i(clk_usb_i),
     .clk_o(clocks_o.clk_usb_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.usb_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.usb_powerup = MuBi4False;
   prim_clock_buf u_clk_io_div2_powerup_buf (
     .clk_i(clk_io_div2_i),
     .clk_o(clocks_o.clk_io_div2_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.io_div2_powerup = lc_ctrl_pkg::Off;
+  assign cg_en_o.io_div2_powerup = MuBi4False;
   prim_clock_buf u_clk_aon_infra_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_infra)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_infra = lc_ctrl_pkg::Off;
+  assign cg_en_o.aon_infra = MuBi4False;
   prim_clock_buf u_clk_aon_secure_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_secure)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_secure = lc_ctrl_pkg::Off;
+  assign cg_en_o.aon_secure = MuBi4False;
   prim_clock_buf u_clk_aon_peri_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_peri)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_peri = lc_ctrl_pkg::Off;
+  assign cg_en_o.aon_peri = MuBi4False;
   prim_clock_buf u_clk_aon_timers_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_timers)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_timers = lc_ctrl_pkg::Off;
+  assign cg_en_o.aon_timers = MuBi4False;
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -647,56 +650,68 @@
   assign clocks_o.clk_io_div4_infra = clk_io_div4_root;
 
   // clock gated indication for alert handler
-  prim_lc_sender u_prim_lc_sender_clk_io_div4_infra (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_io_div4_infra (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
-    .lc_en_i(((clk_io_div4_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.io_div4_infra)
+    .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_div4_infra)
   );
   assign clocks_o.clk_main_infra = clk_main_root;
 
   // clock gated indication for alert handler
-  prim_lc_sender u_prim_lc_sender_clk_main_infra (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_main_infra (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .lc_en_i(((clk_main_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.main_infra)
+    .mubi_i(((clk_main_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.main_infra)
   );
   assign clocks_o.clk_io_div4_secure = clk_io_div4_root;
 
   // clock gated indication for alert handler
-  prim_lc_sender u_prim_lc_sender_clk_io_div4_secure (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_io_div4_secure (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
-    .lc_en_i(((clk_io_div4_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.io_div4_secure)
+    .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_div4_secure)
   );
   assign clocks_o.clk_main_secure = clk_main_root;
 
   // clock gated indication for alert handler
-  prim_lc_sender u_prim_lc_sender_clk_main_secure (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_main_secure (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .lc_en_i(((clk_main_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.main_secure)
+    .mubi_i(((clk_main_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.main_secure)
   );
   assign clocks_o.clk_usb_secure = clk_usb_root;
 
   // clock gated indication for alert handler
-  prim_lc_sender u_prim_lc_sender_clk_usb_secure (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_usb_secure (
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
-    .lc_en_i(((clk_usb_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.usb_secure)
+    .mubi_i(((clk_usb_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.usb_secure)
   );
   assign clocks_o.clk_io_div4_timers = clk_io_div4_root;
 
   // clock gated indication for alert handler
-  prim_lc_sender u_prim_lc_sender_clk_io_div4_timers (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_io_div4_timers (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
-    .lc_en_i(((clk_io_div4_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.io_div4_timers)
+    .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_div4_timers)
   );
 
   ////////////////////////////////////////////////////
@@ -740,13 +755,13 @@
   );
 
   // clock gated indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_clk_io_div4_peri (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_io_div4_peri (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
-    .lc_en_i(((clk_io_div4_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.io_div4_peri)
+    .mubi_i(((clk_io_div4_peri_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_div4_peri)
   );
 
   prim_flop_2sync #(
@@ -781,13 +796,13 @@
   );
 
   // clock gated indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_clk_io_div2_peri (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_io_div2_peri (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_io_div2_ni),
-    .lc_en_i(((clk_io_div2_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.io_div2_peri)
+    .mubi_i(((clk_io_div2_peri_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_div2_peri)
   );
 
   prim_flop_2sync #(
@@ -822,13 +837,13 @@
   );
 
   // clock gated indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_clk_io_peri (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_io_peri (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
-    .lc_en_i(((clk_io_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.io_peri)
+    .mubi_i(((clk_io_peri_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_peri)
   );
 
   prim_flop_2sync #(
@@ -863,13 +878,13 @@
   );
 
   // clock gated indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_clk_usb_peri (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_usb_peri (
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
-    .lc_en_i(((clk_usb_peri_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.usb_peri)
+    .mubi_i(((clk_usb_peri_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.usb_peri)
   );
 
 
@@ -930,13 +945,13 @@
   );
 
   // clock gated indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_clk_main_aes (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_main_aes (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .lc_en_i(((clk_main_aes_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.main_aes)
+    .mubi_i(((clk_main_aes_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.main_aes)
   );
 
   assign clk_main_hmac_en = clk_main_hmac_hint | ~idle_i[HintMainHmac];
@@ -979,13 +994,13 @@
   );
 
   // clock gated indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_clk_main_hmac (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_main_hmac (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .lc_en_i(((clk_main_hmac_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.main_hmac)
+    .mubi_i(((clk_main_hmac_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.main_hmac)
   );
 
   assign clk_main_kmac_en = clk_main_kmac_hint | ~idle_i[HintMainKmac];
@@ -1028,13 +1043,13 @@
   );
 
   // clock gated indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_clk_main_kmac (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_main_kmac (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .lc_en_i(((clk_main_kmac_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.main_kmac)
+    .mubi_i(((clk_main_kmac_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.main_kmac)
   );
 
   assign clk_main_otbn_en = clk_main_otbn_hint | ~idle_i[HintMainOtbn];
@@ -1077,13 +1092,13 @@
   );
 
   // clock gated indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_clk_main_otbn (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_main_otbn (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .lc_en_i(((clk_main_otbn_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.main_otbn)
+    .mubi_i(((clk_main_otbn_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.main_otbn)
   );
 
   assign clk_io_div4_otbn_en = clk_io_div4_otbn_hint | ~idle_i[HintIoDiv4Otbn];
@@ -1126,13 +1141,13 @@
   );
 
   // clock gated indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_clk_io_div4_otbn (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_io_div4_otbn (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
-    .lc_en_i(((clk_io_div4_otbn_combined_en) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On)),
-    .lc_en_o(cg_en_o.io_div4_otbn)
+    .mubi_i(((clk_io_div4_otbn_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_div4_otbn)
   );
 
 

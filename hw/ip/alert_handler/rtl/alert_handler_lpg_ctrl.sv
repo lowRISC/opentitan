@@ -15,49 +15,43 @@ module alert_handler_lpg_ctrl import alert_pkg::*; (
   input  clk_i,
   input  rst_ni,
   // Low power clk and rst indication signals.
-  input  lc_ctrl_pkg::lc_tx_t [NLpg-1:0]    lpg_cg_en_i,
-  input  lc_ctrl_pkg::lc_tx_t [NLpg-1:0]    lpg_rst_en_i,
+  input  prim_mubi_pkg::mubi4_t [NLpg-1:0]    lpg_cg_en_i,
+  input  prim_mubi_pkg::mubi4_t [NLpg-1:0]    lpg_rst_en_i,
   // Init requests going to the individual alert channels.
-  output lc_ctrl_pkg::lc_tx_t [NAlerts-1:0] alert_init_trig_o
+  output prim_mubi_pkg::mubi4_t [NAlerts-1:0] alert_init_trig_o
 );
+
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi4_or_hi;
+  import prim_mubi_pkg::MuBi4True;
 
   ///////////////////////////////////////////////////
   // Aggregate multibit indication signals per LPG //
   ///////////////////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t [NLpg-1:0] lpg_init_trig;
+  mubi4_t [NLpg-1:0] synced_lpg_cg_en, synced_lpg_rst_en, lpg_init_trig;
   for (genvar k = 0; k < NLpg; k++) begin : gen_lpgs
-
-    lc_ctrl_pkg::lc_tx_t [0:0] lpg_cg_en;
-    prim_lc_sync #(
-      .ResetValueIsOn(1)
-    ) u_prim_lc_sync_cg_en (
+    prim_mubi4_sync #(
+      .ResetValue(MuBi4True)
+    ) u_prim_mubi4_sync_cg_en (
       .clk_i,
       .rst_ni,
-      .lc_en_i(lpg_cg_en_i[k]),
-      .lc_en_o(lpg_cg_en)
+      .mubi_i(lpg_cg_en_i[k]),
+      .mubi_o(synced_lpg_cg_en[k:k])
     );
-    lc_ctrl_pkg::lc_tx_t [0:0] lpg_rst_en;
-    prim_lc_sync #(
-      .ResetValueIsOn(1)
-    ) u_prim_lc_sync_rst_en (
+    prim_mubi4_sync #(
+      .ResetValue(MuBi4True)
+    ) u_prim_mubi4_sync_rst_en (
       .clk_i,
       .rst_ni,
-      .lc_en_i(lpg_rst_en_i[k]),
-      .lc_en_o(lpg_rst_en)
+      .mubi_i(lpg_rst_en_i[k]),
+      .mubi_o(synced_lpg_rst_en[k:k])
     );
 
     // Perform a logical OR operation of the multibit life cycle signals.
     // I.e., if any of the incoming multibit signals is On, the output will also be On.
     // Otherwise, the output may have any value other than On.
-    prim_lc_combine #(
-      .ActiveLow(0),  // Active Value is "On"
-      .CombineMode(0) // Combo mode is "OR"
-    ) u_prim_lc_combine (
-      .lc_en_a_i(lpg_cg_en[0]),
-      .lc_en_b_i(lpg_rst_en[0]),
-      .lc_en_o  (lpg_init_trig[k])
-    );
+    assign lpg_init_trig[k] = mubi4_or_hi(synced_lpg_cg_en[k], synced_lpg_rst_en[k]);
   end
 
   //////////////////////////////////
@@ -67,13 +61,13 @@ module alert_handler_lpg_ctrl import alert_pkg::*; (
   // select the correct lpg for the alert channel at index j and buffer the multibit signal for each
   // alert channel.
   for (genvar j=0; j < NAlerts; j++) begin : gen_alert_map
-    prim_lc_sync #(
+    prim_mubi4_sync #(
       .AsyncOn(0) // no sync flops
-    ) u_prim_lc_sync_lpg_en (
+    ) u_prim_mubi4_sync_lpg_en (
       .clk_i,
       .rst_ni,
-      .lc_en_i(lpg_init_trig[LpgMap[j]]),
-      .lc_en_o({alert_init_trig_o[j]})
+      .mubi_i(lpg_init_trig[LpgMap[j]]),
+      .mubi_o({alert_init_trig_o[j]})
     );
   end
 

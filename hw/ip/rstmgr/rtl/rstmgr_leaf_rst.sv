@@ -10,6 +10,7 @@
 module rstmgr_leaf_rst
   import rstmgr_pkg::*;
   import rstmgr_reg_pkg::*;
+  import prim_mubi_pkg::mubi4_t;
 (
   input clk_i,
   input rst_ni,
@@ -18,7 +19,7 @@ module rstmgr_leaf_rst
   input sw_rst_req_ni,
   input scan_rst_ni,
   input scan_sel,
-  output lc_ctrl_pkg::lc_tx_t rst_en_o,
+  output mubi4_t rst_en_o,
   output logic leaf_rst_o,
   output logic err_o
 );
@@ -54,14 +55,13 @@ module rstmgr_leaf_rst
   );
 
   // reset asserted indication for alert handler
-  prim_lc_sender #(
-    .ResetValueIsOn(1)
-  ) u_prim_lc_sender_rst (
+  prim_mubi4_sender #(
+    .ResetValue(prim_mubi_pkg::MuBi4True)
+  ) u_prim_mubi4_sender (
     .clk_i(leaf_clk_i),
     .rst_ni(leaf_rst_o),
-    .lc_en_i(lc_ctrl_pkg::Off),
-    .lc_en_o(rst_en_o)
+    .mubi_i(prim_mubi_pkg::MuBi4False),
+    .mubi_o(rst_en_o)
   );
-
 
 endmodule // rstmgr_leaf_rst

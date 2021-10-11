@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:prim:mubi
       - lowrisc:systems:clkmgr_pkg
       - lowrisc:prim:measure
     files:

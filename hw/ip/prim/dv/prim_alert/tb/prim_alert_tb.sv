@@ -92,7 +92,7 @@ module prim_alert_tb;
     .clk_i(clk),
     .rst_ni(rst_n),
     // TODO: randomly trigger this
-    .init_trig_i(lc_ctrl_pkg::Off),
+    .init_trig_i(prim_mubi_pkg::MuBi4False),
     .ping_req_i(ping_req),
     .ping_ok_o(ping_ok),
     .integ_fail_o(integ_fail),

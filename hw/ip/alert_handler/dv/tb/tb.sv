@@ -81,8 +81,8 @@ module tb;
     .intr_classc_o        ( interrupts[2] ),
     .intr_classd_o        ( interrupts[3] ),
     // TODO: need to exercise LPGs
-    .lpg_cg_en_i          ( {alert_pkg::NLpg{lc_ctrl_pkg::Off}} ),
-    .lpg_rst_en_i         ( {alert_pkg::NLpg{lc_ctrl_pkg::Off}} ),
+    .lpg_cg_en_i          ( {alert_pkg::NLpg{prim_mubi_pkg::MuBi4False}} ),
+    .lpg_rst_en_i         ( {alert_pkg::NLpg{prim_mubi_pkg::MuBi4False}} ),
     .crashdump_o          ( crashdump     ),
     .edn_o                ( edn_if.req    ),
     .edn_i                ( {edn_if.ack, edn_if.d_data} ),

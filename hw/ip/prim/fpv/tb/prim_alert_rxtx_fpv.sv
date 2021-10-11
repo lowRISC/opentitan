@@ -7,6 +7,7 @@
 
 module prim_alert_rxtx_fpv
   import prim_alert_pkg::*;
+  import prim_mubi_pkg::mubi4_t;
 (
   input        clk_i,
   input        rst_ni,
@@ -20,7 +21,7 @@ module prim_alert_rxtx_fpv
   // normal I/Os
   input        alert_test_i,
   input        alert_req_i,
-  input  lc_ctrl_pkg::lc_tx_t init_trig_i,
+  input  mubi4_t init_trig_i,
   input        ping_req_i,
   output logic alert_ack_o,
   output logic alert_state_o,
