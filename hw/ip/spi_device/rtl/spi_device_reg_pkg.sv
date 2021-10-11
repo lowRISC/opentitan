@@ -22,80 +22,80 @@ package spi_device_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } rxf;
+    } rx_full;
     struct packed {
       logic        q;
-    } rxlvl;
+    } rx_watermark;
     struct packed {
       logic        q;
-    } txlvl;
+    } tx_watermark;
     struct packed {
       logic        q;
-    } rxerr;
+    } rx_error;
     struct packed {
       logic        q;
-    } rxoverflow;
+    } rx_overflow;
     struct packed {
       logic        q;
-    } txunderflow;
+    } tx_underflow;
     struct packed {
       logic        q;
-    } tpm_cmdaddr_notempty;
+    } tpm_header_not_empty;
   } spi_device_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } rxf;
+    } rx_full;
     struct packed {
       logic        q;
-    } rxlvl;
+    } rx_watermark;
     struct packed {
       logic        q;
-    } txlvl;
+    } tx_watermark;
     struct packed {
       logic        q;
-    } rxerr;
+    } rx_error;
     struct packed {
       logic        q;
-    } rxoverflow;
+    } rx_overflow;
     struct packed {
       logic        q;
-    } txunderflow;
+    } tx_underflow;
     struct packed {
       logic        q;
-    } tpm_cmdaddr_notempty;
+    } tpm_header_not_empty;
   } spi_device_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } rxf;
+    } rx_full;
     struct packed {
       logic        q;
       logic        qe;
-    } rxlvl;
+    } rx_watermark;
     struct packed {
       logic        q;
       logic        qe;
-    } txlvl;
+    } tx_watermark;
     struct packed {
       logic        q;
       logic        qe;
-    } rxerr;
+    } rx_error;
     struct packed {
       logic        q;
       logic        qe;
-    } rxoverflow;
+    } rx_overflow;
     struct packed {
       logic        q;
       logic        qe;
-    } txunderflow;
+    } tx_underflow;
     struct packed {
       logic        q;
       logic        qe;
-    } tpm_cmdaddr_notempty;
+    } tpm_header_not_empty;
   } spi_device_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -353,31 +353,31 @@ package spi_device_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } rxf;
+    } rx_full;
     struct packed {
       logic        d;
       logic        de;
-    } rxlvl;
+    } rx_watermark;
     struct packed {
       logic        d;
       logic        de;
-    } txlvl;
+    } tx_watermark;
     struct packed {
       logic        d;
       logic        de;
-    } rxerr;
+    } rx_error;
     struct packed {
       logic        d;
       logic        de;
-    } rxoverflow;
+    } rx_overflow;
     struct packed {
       logic        d;
       logic        de;
-    } txunderflow;
+    } tx_underflow;
     struct packed {
       logic        d;
       logic        de;
-    } tpm_cmdaddr_notempty;
+    } tpm_header_not_empty;
   } spi_device_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -644,13 +644,13 @@ package spi_device_reg_pkg;
 
   // Reset values for hwext registers and their fields
   parameter logic [6:0] SPI_DEVICE_INTR_TEST_RESVAL = 7'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RXF_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RXLVL_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TXLVL_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RXERR_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RXOVERFLOW_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TXUNDERFLOW_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TPM_CMDADDR_NOTEMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RX_FULL_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RX_WATERMARK_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TX_WATERMARK_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RX_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RX_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TX_UNDERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TPM_HEADER_NOT_EMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [23:0] SPI_DEVICE_ASYNC_FIFO_LEVEL_RESVAL = 24'h 0;

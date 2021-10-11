@@ -59,12 +59,13 @@ module tb;
 
     .cio_tpm_csb_i  (1'b 1     ), // TODO: Add TPM agent
 
-    .intr_rxf_o     (intr_rxf  ),
-    .intr_rxlvl_o   (intr_rxlvl),
-    .intr_txlvl_o   (intr_txlvl),
-    .intr_rxerr_o   (intr_rxerr),
-    .intr_rxoverflow_o (intr_rxoverflow),
-    .intr_txunderflow_o(intr_txunderflow),
+    .intr_rx_full_o             (intr_rxf  ),
+    .intr_rx_watermark_o        (intr_rxlvl),
+    .intr_tx_watermark_o        (intr_txlvl),
+    .intr_rx_error_o            (intr_rxerr),
+    .intr_rx_overflow_o         (intr_rxoverflow),
+    .intr_tx_underflow_o        (intr_txunderflow),
+    .intr_tpm_header_not_empty_o(),
     .mbist_en_i     (1'b0),
     .scanmode_i     (lc_ctrl_pkg::Off)
   );

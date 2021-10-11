@@ -16,26 +16,26 @@
 static bool spi_device_get_irq_bit_index(dif_spi_device_irq_t irq,
                                          bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifSpiDeviceIrqRxf:
-      *index_out = SPI_DEVICE_INTR_STATE_RXF_BIT;
+    case kDifSpiDeviceIrqRxFull:
+      *index_out = SPI_DEVICE_INTR_STATE_RX_FULL_BIT;
       break;
-    case kDifSpiDeviceIrqRxlvl:
-      *index_out = SPI_DEVICE_INTR_STATE_RXLVL_BIT;
+    case kDifSpiDeviceIrqRxWatermark:
+      *index_out = SPI_DEVICE_INTR_STATE_RX_WATERMARK_BIT;
       break;
-    case kDifSpiDeviceIrqTxlvl:
-      *index_out = SPI_DEVICE_INTR_STATE_TXLVL_BIT;
+    case kDifSpiDeviceIrqTxWatermark:
+      *index_out = SPI_DEVICE_INTR_STATE_TX_WATERMARK_BIT;
       break;
-    case kDifSpiDeviceIrqRxerr:
-      *index_out = SPI_DEVICE_INTR_STATE_RXERR_BIT;
+    case kDifSpiDeviceIrqRxError:
+      *index_out = SPI_DEVICE_INTR_STATE_RX_ERROR_BIT;
       break;
-    case kDifSpiDeviceIrqRxoverflow:
-      *index_out = SPI_DEVICE_INTR_STATE_RXOVERFLOW_BIT;
+    case kDifSpiDeviceIrqRxOverflow:
+      *index_out = SPI_DEVICE_INTR_STATE_RX_OVERFLOW_BIT;
       break;
-    case kDifSpiDeviceIrqTxunderflow:
-      *index_out = SPI_DEVICE_INTR_STATE_TXUNDERFLOW_BIT;
+    case kDifSpiDeviceIrqTxUnderflow:
+      *index_out = SPI_DEVICE_INTR_STATE_TX_UNDERFLOW_BIT;
       break;
-    case kDifSpiDeviceIrqTpmCmdaddrNotempty:
-      *index_out = SPI_DEVICE_INTR_STATE_TPM_CMDADDR_NOTEMPTY_BIT;
+    case kDifSpiDeviceIrqTpmHeaderNotEmpty:
+      *index_out = SPI_DEVICE_INTR_STATE_TPM_HEADER_NOT_EMPTY_BIT;
       break;
     default:
       return false;

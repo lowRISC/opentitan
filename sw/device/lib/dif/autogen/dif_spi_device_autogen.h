@@ -43,31 +43,31 @@ typedef enum dif_spi_device_irq {
   /**
    * RX SRAM FIFO Full
    */
-  kDifSpiDeviceIrqRxf = 0,
+  kDifSpiDeviceIrqRxFull = 0,
   /**
    * RX SRAM FIFO is above the level
    */
-  kDifSpiDeviceIrqRxlvl = 1,
+  kDifSpiDeviceIrqRxWatermark = 1,
   /**
    * TX SRAM FIFO is under the level
    */
-  kDifSpiDeviceIrqTxlvl = 2,
+  kDifSpiDeviceIrqTxWatermark = 2,
   /**
    * SDI in FwMode has error
    */
-  kDifSpiDeviceIrqRxerr = 3,
+  kDifSpiDeviceIrqRxError = 3,
   /**
    * RX Async FIFO overflow
    */
-  kDifSpiDeviceIrqRxoverflow = 4,
+  kDifSpiDeviceIrqRxOverflow = 4,
   /**
    * TX Async FIFO underflow
    */
-  kDifSpiDeviceIrqTxunderflow = 5,
+  kDifSpiDeviceIrqTxUnderflow = 5,
   /**
-   * TPM Command/Address buffer available
+   * TPM Header(Command/Address) buffer available
    */
-  kDifSpiDeviceIrqTpmCmdaddrNotempty = 6,
+  kDifSpiDeviceIrqTpmHeaderNotEmpty = 6,
 } dif_spi_device_irq_t;
 
 /**

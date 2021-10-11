@@ -391,13 +391,13 @@ module top_earlgrey #(
   logic intr_uart3_rx_timeout;
   logic intr_uart3_rx_parity_err;
   logic [31:0] intr_gpio_gpio;
-  logic intr_spi_device_rxf;
-  logic intr_spi_device_rxlvl;
-  logic intr_spi_device_txlvl;
-  logic intr_spi_device_rxerr;
-  logic intr_spi_device_rxoverflow;
-  logic intr_spi_device_txunderflow;
-  logic intr_spi_device_tpm_cmdaddr_notempty;
+  logic intr_spi_device_rx_full;
+  logic intr_spi_device_rx_watermark;
+  logic intr_spi_device_tx_watermark;
+  logic intr_spi_device_rx_error;
+  logic intr_spi_device_rx_overflow;
+  logic intr_spi_device_tx_underflow;
+  logic intr_spi_device_tpm_header_not_empty;
   logic intr_spi_host0_error;
   logic intr_spi_host0_spi_event;
   logic intr_spi_host1_error;
@@ -1036,13 +1036,13 @@ module top_earlgrey #(
       .cio_sd_en_o      (cio_spi_device_sd_en_d2p),
 
       // Interrupt
-      .intr_rxf_o                  (intr_spi_device_rxf),
-      .intr_rxlvl_o                (intr_spi_device_rxlvl),
-      .intr_txlvl_o                (intr_spi_device_txlvl),
-      .intr_rxerr_o                (intr_spi_device_rxerr),
-      .intr_rxoverflow_o           (intr_spi_device_rxoverflow),
-      .intr_txunderflow_o          (intr_spi_device_txunderflow),
-      .intr_tpm_cmdaddr_notempty_o (intr_spi_device_tpm_cmdaddr_notempty),
+      .intr_rx_full_o              (intr_spi_device_rx_full),
+      .intr_rx_watermark_o         (intr_spi_device_rx_watermark),
+      .intr_tx_watermark_o         (intr_spi_device_tx_watermark),
+      .intr_rx_error_o             (intr_spi_device_rx_error),
+      .intr_rx_overflow_o          (intr_spi_device_rx_overflow),
+      .intr_tx_underflow_o         (intr_spi_device_tx_underflow),
+      .intr_tpm_header_not_empty_o (intr_spi_device_tpm_header_not_empty),
       // [5]: fatal_fault
       .alert_tx_o  ( alert_tx[5:5] ),
       .alert_rx_i  ( alert_rx[5:5] ),
@@ -2522,13 +2522,13 @@ module top_earlgrey #(
       intr_spi_host1_error, // IDs [74 +: 1]
       intr_spi_host0_spi_event, // IDs [73 +: 1]
       intr_spi_host0_error, // IDs [72 +: 1]
-      intr_spi_device_tpm_cmdaddr_notempty, // IDs [71 +: 1]
-      intr_spi_device_txunderflow, // IDs [70 +: 1]
-      intr_spi_device_rxoverflow, // IDs [69 +: 1]
-      intr_spi_device_rxerr, // IDs [68 +: 1]
-      intr_spi_device_txlvl, // IDs [67 +: 1]
-      intr_spi_device_rxlvl, // IDs [66 +: 1]
-      intr_spi_device_rxf, // IDs [65 +: 1]
+      intr_spi_device_tpm_header_not_empty, // IDs [71 +: 1]
+      intr_spi_device_tx_underflow, // IDs [70 +: 1]
+      intr_spi_device_rx_overflow, // IDs [69 +: 1]
+      intr_spi_device_rx_error, // IDs [68 +: 1]
+      intr_spi_device_tx_watermark, // IDs [67 +: 1]
+      intr_spi_device_rx_watermark, // IDs [66 +: 1]
+      intr_spi_device_rx_full, // IDs [65 +: 1]
       intr_gpio_gpio, // IDs [33 +: 32]
       intr_uart3_rx_parity_err, // IDs [32 +: 1]
       intr_uart3_rx_timeout, // IDs [31 +: 1]

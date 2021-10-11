@@ -219,7 +219,7 @@ void handler_irq_external(void) {
     //   kTopEarlgreyPlicIrqIdRvTimerTimerExpired0_0); break;
     // case kTopEarlgreyPlicPeripheralSpiDevice:
     //   PERIPHERAL_ISR(spi_device, spi_device,
-    //   kTopEarlgreyPlicIrqIdSpiDeviceRxf); break;
+    //   kTopEarlgreyPlicIrqIdSpiDeviceRxFull); break;
     // case kTopEarlgreyPlicPeripheralSpiHost0:
     //   PERIPHERAL_ISR(spi_host, spi_host0,
     //   kTopEarlgreyPlicIrqIdSpiHost0Error); break;
@@ -437,8 +437,8 @@ static void peripheral_irqs_trigger(void) {
   //                         kDifRvTimerIrqTimerExpired0_0);
   // PERIPHERAL_IRQS_TRIGGER(spi_device, spi_device,
   // kTopEarlgreyPlicPeripheralSpiDevice,
-  //                         kDifSpiDeviceIrqRxf,
-  //                         kDifSpiDeviceIrqTpmCmdaddrNotempty);
+  //                         kDifSpiDeviceIrqRxFull,
+  //                         kDifSpiDeviceIrqTpmHeaderNotEmpty);
   // PERIPHERAL_IRQS_TRIGGER(spi_host, spi_host0,
   // kTopEarlgreyPlicPeripheralSpiHost0,
   //                         kDifSpiHostIrqError, kDifSpiHostIrqSpiEvent);

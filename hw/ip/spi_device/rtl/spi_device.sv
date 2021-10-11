@@ -37,13 +37,13 @@ module spi_device
   input  spi_device_pkg::passthrough_rsp_t passthrough_i,
 
   // Interrupts
-  output logic intr_rxf_o,                  // RX FIFO Full
-  output logic intr_rxlvl_o,                // RX FIFO above level
-  output logic intr_txlvl_o,                // TX FIFO below level
-  output logic intr_rxerr_o,                // RX Frame error
-  output logic intr_rxoverflow_o,           // RX Async FIFO Overflow
-  output logic intr_txunderflow_o,          // TX Async FIFO Underflow
-  output logic intr_tpm_cmdaddr_notempty_o, // TPM Command/Address buffer
+  output logic intr_rx_full_o,              // RX FIFO Full
+  output logic intr_rx_watermark_o,         // RX FIFO above level
+  output logic intr_tx_watermark_o,         // TX FIFO below level
+  output logic intr_rx_error_o,             // RX Frame error
+  output logic intr_rx_overflow_o,          // RX Async FIFO Overflow
+  output logic intr_tx_underflow_o,         // TX Async FIFO Underflow
+  output logic intr_tpm_header_not_empty_o, // TPM Command/Address buffer
 
   // Memory configuration
   input prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg_i,
@@ -438,92 +438,92 @@ module spi_device
   prim_intr_hw #(.Width(1)) u_intr_rxf (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (intr_sram_rxf_full      ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rxf.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rxf.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rxf.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rxf.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.rxf.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rxf.d ),
-    .intr_o                 (intr_rxf_o              )
+    .event_intr_i           (intr_sram_rxf_full          ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_full.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_full.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rx_full.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rx_full.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rx_full.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rx_full.d ),
+    .intr_o                 (intr_rx_full_o              )
   );
 
   prim_intr_hw #(.Width(1)) u_intr_rxlvl (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (intr_fwm_rxlvl            ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rxlvl.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rxlvl.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rxlvl.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rxlvl.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.rxlvl.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rxlvl.d ),
-    .intr_o                 (intr_rxlvl_o              )
+    .event_intr_i           (intr_fwm_rxlvl                   ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_watermark.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_watermark.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rx_watermark.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rx_watermark.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rx_watermark.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rx_watermark.d ),
+    .intr_o                 (intr_rx_watermark_o              )
   );
 
   prim_intr_hw #(.Width(1)) u_intr_txlvl (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (intr_fwm_txlvl            ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.txlvl.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.txlvl.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.txlvl.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.txlvl.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.txlvl.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.txlvl.d ),
-    .intr_o                 (intr_txlvl_o              )
+    .event_intr_i           (intr_fwm_txlvl                   ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_watermark.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_watermark.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tx_watermark.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tx_watermark.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_watermark.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_watermark.d ),
+    .intr_o                 (intr_tx_watermark_o              )
   );
 
   prim_intr_hw #(.Width(1)) u_intr_rxerr (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (intr_fwm_rxerr            ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rxerr.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rxerr.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rxerr.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rxerr.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.rxerr.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rxerr.d ),
-    .intr_o                 (intr_rxerr_o              )
+    .event_intr_i           (intr_fwm_rxerr               ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_error.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_error.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rx_error.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rx_error.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rx_error.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rx_error.d ),
+    .intr_o                 (intr_rx_error_o              )
   );
 
   prim_intr_hw #(.Width(1)) u_intr_rxoverflow (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (intr_fwm_rxoverflow            ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rxoverflow.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rxoverflow.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rxoverflow.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rxoverflow.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.rxoverflow.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rxoverflow.d ),
-    .intr_o                 (intr_rxoverflow_o              )
+    .event_intr_i           (intr_fwm_rxoverflow             ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_overflow.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_overflow.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rx_overflow.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rx_overflow.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rx_overflow.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rx_overflow.d ),
+    .intr_o                 (intr_rx_overflow_o              )
   );
 
   prim_intr_hw #(.Width(1)) u_intr_txunderflow (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (intr_fwm_txunderflow            ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.txunderflow.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.txunderflow.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.txunderflow.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.txunderflow.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.txunderflow.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.txunderflow.d ),
-    .intr_o                 (intr_txunderflow_o              )
+    .event_intr_i           (intr_fwm_txunderflow             ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_underflow.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_underflow.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tx_underflow.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tx_underflow.q ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_underflow.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_underflow.d ),
+    .intr_o                 (intr_tx_underflow_o              )
   );
 
   prim_intr_hw #(.Width(1)) u_intr_tpm_cmdaddr_notempty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_tpm_cmdaddr_notempty                ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tpm_cmdaddr_notempty.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tpm_cmdaddr_notempty.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tpm_cmdaddr_notempty.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tpm_cmdaddr_notempty.q ),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tpm_cmdaddr_notempty.d ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.tpm_cmdaddr_notempty.de),
-    .intr_o                 (intr_tpm_cmdaddr_notempty_o              )
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tpm_header_not_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tpm_header_not_empty.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tpm_header_not_empty.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tpm_header_not_empty.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tpm_header_not_empty.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.tpm_header_not_empty.de),
+    .intr_o                 (intr_tpm_header_not_empty_o              )
   );
 
   // SPI Flash commands registers
@@ -1642,12 +1642,13 @@ module spi_device
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
   `ASSERT_KNOWN(CioSdoEnOKnown, cio_sd_en_o)
 
-  `ASSERT_KNOWN(IntrRxfOKnown,         intr_rxf_o        )
-  `ASSERT_KNOWN(IntrRxlvlOKnown,       intr_rxlvl_o      )
-  `ASSERT_KNOWN(IntrTxlvlOKnown,       intr_txlvl_o      )
-  `ASSERT_KNOWN(IntrRxerrOKnown,       intr_rxerr_o      )
-  `ASSERT_KNOWN(IntrRxoverflowOKnown,  intr_rxoverflow_o )
-  `ASSERT_KNOWN(IntrTxunderflowOKnown, intr_txunderflow_o)
+  `ASSERT_KNOWN(IntrRxfOKnown,         intr_rx_full_o     )
+  `ASSERT_KNOWN(IntrRxlvlOKnown,       intr_rx_watermark_o)
+  `ASSERT_KNOWN(IntrTxlvlOKnown,       intr_tx_watermark_o)
+  `ASSERT_KNOWN(IntrRxerrOKnown,       intr_rx_error_o    )
+  `ASSERT_KNOWN(IntrRxoverflowOKnown,  intr_rx_overflow_o )
+  `ASSERT_KNOWN(IntrTxunderflowOKnown, intr_tx_underflow_o)
+  `ASSERT_KNOWN(IntrTpmHeaderNotEmptyOKnown, intr_tpm_header_not_empty_o)
 
   `ASSERT_KNOWN(AlertKnownO_A,         alert_tx_o)
 

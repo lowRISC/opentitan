@@ -12373,43 +12373,43 @@
       module_name: gpio
     }
     {
-      name: spi_device_rxf
+      name: spi_device_rx_full
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_rxlvl
+      name: spi_device_rx_watermark
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_txlvl
+      name: spi_device_tx_watermark
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_rxerr
+      name: spi_device_rx_error
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_rxoverflow
+      name: spi_device_rx_overflow
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_txunderflow
+      name: spi_device_tx_underflow
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_tpm_cmdaddr_notempty
+      name: spi_device_tpm_header_not_empty
       width: 1
       type: interrupt
       module_name: spi_device

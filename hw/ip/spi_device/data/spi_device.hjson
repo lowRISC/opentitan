@@ -25,13 +25,27 @@
     }
   ]
   interrupt_list: [
-    { name: "rxf",         desc: "RX SRAM FIFO Full" },
-    { name: "rxlvl",       desc: "RX SRAM FIFO is above the level" },
-    { name: "txlvl",       desc: "TX SRAM FIFO is under the level" },
-    { name: "rxerr",       desc: "SDI in FwMode has error" },
-    { name: "rxoverflow",  desc: "RX Async FIFO overflow" },
-    { name: "txunderflow", desc: "TX Async FIFO underflow" },
-    { name: "tpm_cmdaddr_notempty", desc: "TPM Command/Address buffer available" }
+    { name: "rx_full"
+      desc: "RX SRAM FIFO Full"
+    }
+    { name: "rx_watermark"
+      desc: "RX SRAM FIFO is above the level"
+    }
+    { name: "tx_watermark"
+      desc: "TX SRAM FIFO is under the level"
+    }
+    { name: "rx_error"
+      desc: "SDI in FwMode has error"
+    }
+    { name: "rx_overflow"
+      desc: "RX Async FIFO overflow"
+    }
+    { name: "tx_underflow"
+      desc: "TX Async FIFO underflow"
+    }
+    { name: "tpm_header_not_empty"
+      desc: "TPM Header(Command/Address) buffer available"
+    }
   ],
   alert_list: [
     { name: "fatal_fault",
