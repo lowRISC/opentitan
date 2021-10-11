@@ -81,6 +81,7 @@ OT_DEP_PACKAGES=(
     "$LR_SYNTH_SRC_DIR"/../lc_ctrl/rtl/*_pkg.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/*_pkg.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/*_pkg.sv
+    "$LR_SYNTH_SRC_DIR"/../keymgr/rtl/*_pkg.sv
 )
 
 # Convert OpenTitan dependency sources.
