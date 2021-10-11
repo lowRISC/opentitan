@@ -16,5 +16,9 @@
       name: xcelium_otbn_tracer_build_opts
       build_opts: ["-I{otbn_tracer_inc_dir}"]
     }
+    {
+      name: dsim_otbn_tracer_build_opts
+      build_opts: ["-c-opts -I{otbn_tracer_inc_dir}"]
+    }
   ]
 }
