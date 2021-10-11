@@ -804,6 +804,8 @@ module top_earlgrey #(
   // Wire up alert handler LPGs
   lc_ctrl_pkg::lc_tx_t [alert_pkg::NLpg-1:0] lpg_cg_en;
   lc_ctrl_pkg::lc_tx_t [alert_pkg::NLpg-1:0] lpg_rst_en;
+
+
   // peri_sys_io_div4_0
   assign lpg_cg_en[0] = clkmgr_aon_cg_en.io_div4_peri;
   assign lpg_rst_en[0] = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
@@ -864,6 +866,114 @@ module top_earlgrey #(
   // infra_sys_0
   assign lpg_cg_en[19] = clkmgr_aon_cg_en.main_infra;
   assign lpg_rst_en[19] = rstmgr_aon_rst_en.sys[rstmgr_pkg::Domain0Sel];
+
+// tie-off unused connections
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_0;
+    assign unused_cg_en_0 = clkmgr_aon_cg_en.aon_powerup;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_1;
+    assign unused_cg_en_1 = clkmgr_aon_cg_en.main_powerup;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_2;
+    assign unused_cg_en_2 = clkmgr_aon_cg_en.io_powerup;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_3;
+    assign unused_cg_en_3 = clkmgr_aon_cg_en.usb_powerup;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_4;
+    assign unused_cg_en_4 = clkmgr_aon_cg_en.io_div2_powerup;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_5;
+    assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_infra;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_6;
+    assign unused_cg_en_6 = clkmgr_aon_cg_en.aon_secure;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_7;
+    assign unused_cg_en_7 = clkmgr_aon_cg_en.aon_peri;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_8;
+    assign unused_cg_en_8 = clkmgr_aon_cg_en.aon_timers;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_9;
+    assign unused_cg_en_9 = clkmgr_aon_cg_en.main_hmac;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_10;
+    assign unused_cg_en_10 = clkmgr_aon_cg_en.main_kmac;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_11;
+    assign unused_cg_en_11 = clkmgr_aon_cg_en.main_otbn;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_12;
+    assign unused_cg_en_12 = clkmgr_aon_cg_en.io_div4_otbn;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_13;
+    assign unused_cg_en_13 = clkmgr_aon_cg_en.usb_secure;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_14;
+    assign unused_cg_en_14 = clkmgr_aon_cg_en.io_div2_peri;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_15;
+    assign unused_cg_en_15 = clkmgr_aon_cg_en.io_peri;
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_16;
+    assign unused_cg_en_16 = clkmgr_aon_cg_en.usb_peri;
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_0;
+    assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_1;
+    assign unused_rst_en_1 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_2;
+    assign unused_rst_en_2 = rstmgr_aon_rst_en.por[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_3;
+    assign unused_rst_en_3 = rstmgr_aon_rst_en.por[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_4;
+    assign unused_rst_en_4 = rstmgr_aon_rst_en.por_io[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_5;
+    assign unused_rst_en_5 = rstmgr_aon_rst_en.por_io[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_6;
+    assign unused_rst_en_6 = rstmgr_aon_rst_en.por_io_div2[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_7;
+    assign unused_rst_en_7 = rstmgr_aon_rst_en.por_io_div2[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_8;
+    assign unused_rst_en_8 = rstmgr_aon_rst_en.por_io_div4[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_9;
+    assign unused_rst_en_9 = rstmgr_aon_rst_en.por_usb[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_10;
+    assign unused_rst_en_10 = rstmgr_aon_rst_en.por_usb[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_11;
+    assign unused_rst_en_11 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_12;
+    assign unused_rst_en_12 = rstmgr_aon_rst_en.lc[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_13;
+    assign unused_rst_en_13 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_14;
+    assign unused_rst_en_14 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_15;
+    assign unused_rst_en_15 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_16;
+    assign unused_rst_en_16 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_17;
+    assign unused_rst_en_17 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_18;
+    assign unused_rst_en_18 = rstmgr_aon_rst_en.sys_shadowed[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_19;
+    assign unused_rst_en_19 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_20;
+    assign unused_rst_en_20 = rstmgr_aon_rst_en.sys_shadowed[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_21;
+    assign unused_rst_en_21 = rstmgr_aon_rst_en.sys_aon[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_22;
+    assign unused_rst_en_22 = rstmgr_aon_rst_en.sys_aon[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_23;
+    assign unused_rst_en_23 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_24;
+    assign unused_rst_en_24 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_25;
+    assign unused_rst_en_25 = rstmgr_aon_rst_en.spi_host0_core[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_26;
+    assign unused_rst_en_26 = rstmgr_aon_rst_en.spi_host0_core[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_27;
+    assign unused_rst_en_27 = rstmgr_aon_rst_en.spi_host1[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_28;
+    assign unused_rst_en_28 = rstmgr_aon_rst_en.spi_host1_core[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_29;
+    assign unused_rst_en_29 = rstmgr_aon_rst_en.spi_host1_core[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_30;
+    assign unused_rst_en_30 = rstmgr_aon_rst_en.usb[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_31;
+    assign unused_rst_en_31 = rstmgr_aon_rst_en.usbif[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_32;
+    assign unused_rst_en_32 = rstmgr_aon_rst_en.usbif[rstmgr_pkg::Domain0Sel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_33;
+    assign unused_rst_en_33 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_34;
+    assign unused_rst_en_34 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_35;
+    assign unused_rst_en_35 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
 
   // Peripheral Instantiation
 

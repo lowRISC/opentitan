@@ -5,6 +5,8 @@ ${gencmd}
 <%
 import re
 import topgen.lib as lib
+from topgen.clocks import Clocks
+from topgen.resets import Resets
 
 num_mio_inputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
                  top['pinmux']['io_counts']['muxed']['inputs']
@@ -299,15 +301,62 @@ module top_${top["name"]} #(
   // Wire up alert handler LPGs
   lc_ctrl_pkg::lc_tx_t [alert_pkg::NLpg-1:0] lpg_cg_en;
   lc_ctrl_pkg::lc_tx_t [alert_pkg::NLpg-1:0] lpg_rst_en;
+
+<%
+# get all known typed clocks and add them to a dict
+# this is used to generate the tie-off assignments further below
+clocks = top['clocks']
+assert isinstance(clocks, Clocks)
+typed_clocks = clocks.typed_clocks()
+known_clocks = {}
+for clk in typed_clocks.all_clocks():
+  known_clocks.update({top['clocks'].hier_paths['lpg'] + clk.split('clk_')[-1]: 1})
+
+# get all known resets and add them to a dict
+# this is used to generate the tie-off assignments further below
+resets = top['resets']
+assert isinstance(resets, Resets)
+output_rsts = resets.get_top_resets()
+known_resets = {}
+for rst in output_rsts:
+  for dom in top['power']['domains']:
+    if rst.shadowed:
+      path = lib.get_reset_lpg_path(top, resets.get_reset_by_name(rst.name)._asdict(), True, dom)
+      known_resets.update({
+        path: 1
+      })
+    path = lib.get_reset_lpg_path(top, resets.get_reset_by_name(rst.name)._asdict(), False, dom)
+    known_resets.update({
+      path: 1
+    })
+%>\
+
 % for k, lpg in enumerate(top['alert_lpgs']):
   // ${lpg['name']}
 <%
-  ## TODO: need to find a better way to assemble the clock path here.
   cg_en = top['clocks'].hier_paths['lpg'] + lpg['clock_connection'].split('.clk_')[-1]
   rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'])
+  known_clocks[cg_en] = 0
+  known_resets[rst_en] = 0
 %>\
   assign lpg_cg_en[${k}] = ${cg_en};
   assign lpg_rst_en[${k}] = ${rst_en};
+% endfor
+
+// tie-off unused connections
+<% k = 0 %>\
+% for clk, unused in known_clocks.items():
+  % if unused:
+    lc_ctrl_pkg::lc_tx_t unused_cg_en_${k};
+    assign unused_cg_en_${k} = ${clk};<% k += 1 %>
+  % endif
+% endfor
+<% k = 0 %>\
+% for rst, unused in known_resets.items():
+  % if unused:
+    lc_ctrl_pkg::lc_tx_t unused_rst_en_${k};
+    assign unused_rst_en_${k} = ${rst};<% k += 1 %>
+  % endif
 % endfor
 
   // Peripheral Instantiation
