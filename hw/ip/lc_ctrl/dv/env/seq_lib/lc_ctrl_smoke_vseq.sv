@@ -101,7 +101,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
     end else begin
       // 50% chance to input other token data, 50% chance let push-pull agent drive random data
       if ($urandom_range(0, 1)) begin
-        token_idx = $urandom_range(0, TokenIdxWidth-2);
+        token_idx = token_idx_e'($urandom_range(0, TokenIdxWidth-2));
         cfg.m_otp_token_pull_agent_cfg.add_d_user_data(tokens_a[token_idx]);
       end
     end
