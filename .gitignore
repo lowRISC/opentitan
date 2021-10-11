@@ -11,9 +11,6 @@ build/
 # build directories with special suffixes
 build*/
 
-# Sphinx result
-_build/
-
 # Generated register headers
 hw/ip/*/sw
 
