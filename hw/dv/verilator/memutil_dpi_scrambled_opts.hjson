@@ -40,5 +40,14 @@
                    "-I{build_dir}/src/{scramble_model_dir}",
                    "-lelf"]
     }
+
+    {
+      name: dsim_memutil_dpi_scrambled_build_opts
+      build_opts: ["-c-opts -I{build_dir}/src/{memutil_dpi_src_dir}/cpp",
+                   "-c-opts -I{build_dir}/src/{memutil_dpi_scrambled_src_dir}/cpp",
+                   "-c-opts -I{build_dir}/src/{prince_ref_src_dir}",
+                   "-c-opts -I{build_dir}/src/{scramble_model_dir}",
+                   "-ld-opts -lelf"]
+    }
   ]
 }

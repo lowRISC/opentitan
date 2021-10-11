@@ -14,7 +14,9 @@
                "+incdir+{UVM_HOME}/src",
                "{UVM_HOME}/src/uvm_pkg.sv",
                // Add dpi/vpi include path.
-               "-c-opts -I{DSIM_HOME}/include",
+               "-c-opts -I{DSIM_HOME}/../../include",
+               // Needed for including "secded_enc.h".
+               "-c-opts -I{build_dir}/src/lowrisc_dv_secded_enc_0",
                "-timescale 1ns/1ps",
                "-f {sv_flist}",
                // List multiple tops for the simulation. Prepend each top level with `-top`.
