@@ -309,16 +309,19 @@ def shadow_name(name: str) -> str:
         return 'rst_shadowed_ni'
 
 
-def get_reset_path(top: object, reset: str, shadow_sel = False):
+def get_reset_path(top: object, reset: str, shadow_sel: bool = False):
     """Return the appropriate reset path given name
     """
     return top['resets'].get_path(reset['name'], reset['domain'], shadow_sel)
 
 
-def get_reset_lpg_path(top: object, reset: str):
+def get_reset_lpg_path(top: object, reset: str, shadow_sel: bool = False, domain: bool = None):
     """Return the appropriate LPG reset path given name
     """
-    return top['resets'].get_lpg_path(reset['name'], reset['domain'])
+    if domain is not None:
+        return top['resets'].get_lpg_path(reset['name'], domain, shadow_sel)
+    else:
+        return top['resets'].get_lpg_path(reset['name'], reset['domain'], shadow_sel)
 
 
 def get_unused_resets(top):

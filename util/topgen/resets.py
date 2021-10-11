@@ -26,6 +26,7 @@ class ResetItem:
         self.shadow_path = ""
         if self.rst_type == 'top':
             self.shadow_path = f"{hier['top']}rst_{self.name}_shadowed_n"
+            self.shadow_lpg_path = f"{hier['lpg']}{self.name}_shadowed"
 
         # to be constructed later
         self.domains = []
@@ -155,7 +156,7 @@ class Resets:
 
         return path
 
-    def get_lpg_path(self, name: str, domain: Optional[str]) -> str:
+    def get_lpg_path(self, name: str, domain: Optional[str], shadow = False) -> str:
         '''Get path to lpg indication signals'''
 
         reset = self.get_reset_by_name(name)
@@ -165,7 +166,11 @@ class Resets:
         if reset.rst_type == 'ext':
             raise ValueError(f'External reset {name} cannot be associated with an LPG')
 
-        path = reset.lpg_path
+        if shadow:
+            path = reset.shadow_lpg_path
+        else:
+            path = reset.lpg_path
+
         if domain:
             path += f'[rstmgr_pkg::Domain{domain}Sel]'
 
