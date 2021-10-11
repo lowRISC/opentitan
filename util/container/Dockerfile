@@ -102,11 +102,12 @@ RUN groupadd dev \
     && passwd -u dev
 
 # All subsequent steps are performed as user.
-USER dev
+USER dev:dev
 
 # Install Rust plus packages.
-COPY sw/vendor/rustup/rustup-init.sh /tmp/rustup-init.sh
-RUN /tmp/rustup-init.sh -y --default-toolchain ${RUST_VERSION}
+COPY --chown=dev:dev sw/vendor/rustup/rustup-init.sh /tmp/rustup-init.sh
+RUN /tmp/rustup-init.sh -y --default-toolchain ${RUST_VERSION} \
+    && rm -f /tmp/rustup-init.sh
 
 # Install Python plus packages.
 #
@@ -116,11 +117,12 @@ RUN /tmp/rustup-init.sh -y --default-toolchain ${RUST_VERSION}
 # Python version. If that information is not read, pip installs the latest
 # version, which then fails to run.
 ENV PATH "/home/dev/.local/bin:${PATH}"
-COPY python-requirements.txt /tmp/python-requirements.txt
+COPY --chown=dev:dev python-requirements.txt /tmp/python-requirements.txt
 RUN python3 -m pip install --user -U pip setuptools \
     && python3 -m pip install --user -r /tmp/python-requirements.txt \
-        --no-warn-script-location
+        --no-warn-script-location \
+    && rm -f /tmp/python-requirements.txt
 
-USER root
+USER root:root
 
 ENTRYPOINT [ "/start.sh" ]
