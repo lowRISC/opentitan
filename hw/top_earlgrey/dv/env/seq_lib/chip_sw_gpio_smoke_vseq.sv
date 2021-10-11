@@ -28,9 +28,12 @@ class chip_sw_gpio_smoke_vseq extends chip_sw_base_vseq;
   endfunction
 
   virtual task cpu_init();
+    bit [7:0] byte_gpio_vals[];
     super.cpu_init();
     // Need to convert integer array to byte array.
-    sw_symbol_backdoor_overwrite(SW_SYM_GPIO_VALS, {<<byte{{<<int{gpio_vals}}}});
+    byte_gpio_vals = new[4 * num_gpio_vals];
+    {<<byte{byte_gpio_vals}} = {<<byte{{<<int{gpio_vals}}}};
+    sw_symbol_backdoor_overwrite(SW_SYM_GPIO_VALS, byte_gpio_vals);
   endtask
 
   virtual task body();
