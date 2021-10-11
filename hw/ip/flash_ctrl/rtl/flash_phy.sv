@@ -164,7 +164,8 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign flash_ctrl_o.ecc_single_err = ecc_single_err;
   assign flash_ctrl_o.ecc_addr = ecc_addr;
 
-  logic [NumBanks-1:0][prim_mubi_pkg::MuBi4Width-1:0] flash_disable, flash_disable_raw;
+  logic [NumBanks-1:0][prim_mubi_pkg::MuBi4Width-1:0] flash_disable_raw;
+  prim_mubi_pkg::mubi4_t [NumBanks-1:0] flash_disable;
 
   for (genvar i=0; i < NumBanks; i++) begin : gen_flash_disable_buf
     prim_buf #(
