@@ -12,9 +12,6 @@ start:
   li    x3, 1
   beq   x2, x3, rsa_encrypt
 
-  li    x3, 2
-  beq   x2, x3, rsa_decrypt
-
   /* Mode is neither 1 (= encrypt) nor 2 (= decrypt). Fail. */
   unimp
 
@@ -25,14 +22,6 @@ start:
 rsa_encrypt:
   jal      x1, modload
   jal      x1, modexp_65537
-  ecall
-
-/**
- * RSA decryption
- */
-rsa_decrypt:
-  jal      x1, modload
-  jal      x1, modexp
   ecall
 
 
