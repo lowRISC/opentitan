@@ -347,14 +347,14 @@ for rst in output_rsts:
 <% k = 0 %>\
 % for clk, unused in known_clocks.items():
   % if unused:
-    lc_ctrl_pkg::lc_tx_t unused_cg_en_${k};
+    prim_mubi_pkg::mubi4_t unused_cg_en_${k};
     assign unused_cg_en_${k} = ${clk};<% k += 1 %>
   % endif
 % endfor
 <% k = 0 %>\
 % for rst, unused in known_resets.items():
   % if unused:
-    lc_ctrl_pkg::lc_tx_t unused_rst_en_${k};
+    prim_mubi_pkg::mubi4_t unused_rst_en_${k};
     assign unused_rst_en_${k} = ${rst};<% k += 1 %>
   % endif
 % endfor

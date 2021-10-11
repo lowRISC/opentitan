@@ -37,9 +37,9 @@ package rstmgr_pkg;
 <% n_rst = 0 %>\
 % for rst in output_rsts:
   % if rst.shadowed:
-    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] ${rst.name}_shadowed;<% n_rst += 1 %>
+    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] ${rst.name}_shadowed;<% n_rst += 1 %>
   % endif
-    lc_ctrl_pkg::lc_tx_t [PowerDomains-1:0] ${rst.name};<% n_rst += 1 %>
+    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] ${rst.name};<% n_rst += 1 %>
 % endfor
   } rstmgr_rst_en_t;
 

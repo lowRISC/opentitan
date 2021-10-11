@@ -66,6 +66,9 @@ module rstmgr
 
 );
 
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4True;
+
   // receive POR and stretch
   // The por is at first stretched and synced on clk_aon
   // The rst_ni and pok_i input will be changed once AST is integrated
@@ -94,13 +97,13 @@ module rstmgr
       );
 
       // reset asserted indication for alert handler
-      prim_lc_sender #(
-        .ResetValueIsOn(1)
-      ) u_prim_lc_sender (
+      prim_mubi4_sender #(
+        .ResetValue(MuBi4True)
+      ) u_prim_mubi4_sender (
         .clk_i(clk_aon_i),
         .rst_ni(rst_por_aon_n[i]),
-        .lc_en_i(lc_ctrl_pkg::Off),
-        .lc_en_o(rst_en_o.por_aon[i])
+        .mubi_i(MuBi4False),
+        .mubi_o(rst_en_o.por_aon[i])
       );
     end else begin : gen_rst_por_domain
       logic rst_por_aon_premux;
@@ -125,13 +128,13 @@ module rstmgr
       );
 
       // reset asserted indication for alert handler
-      prim_lc_sender #(
-        .ResetValueIsOn(1)
-      ) u_prim_lc_sender (
+      prim_mubi4_sender #(
+        .ResetValue(MuBi4True)
+      ) u_prim_mubi4_sender (
         .clk_i(clk_aon_i),
         .rst_ni(rst_por_aon_n[i]),
-        .lc_en_i(lc_ctrl_pkg::Off),
-        .lc_en_o(rst_en_o.por_aon[i])
+        .mubi_i(MuBi4False),
+        .mubi_o(rst_en_o.por_aon[i])
       );
     end
   end
@@ -329,7 +332,7 @@ module rstmgr
   );
   assign resets_o.rst_por_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[0][Domain0Sel] = '0;
-  assign rst_en_o.por[Domain0Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.por[Domain0Sel] = MuBi4True;
   assign shadow_cnsty_chk_errs[0] = '0;
 
   // Generating resets for por_io
@@ -349,7 +352,7 @@ module rstmgr
   );
   assign resets_o.rst_por_io_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[1][Domain0Sel] = '0;
-  assign rst_en_o.por_io[Domain0Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.por_io[Domain0Sel] = MuBi4True;
   assign shadow_cnsty_chk_errs[1] = '0;
 
   // Generating resets for por_io_div2
@@ -369,7 +372,7 @@ module rstmgr
   );
   assign resets_o.rst_por_io_div2_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[2][Domain0Sel] = '0;
-  assign rst_en_o.por_io_div2[Domain0Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.por_io_div2[Domain0Sel] = MuBi4True;
   assign shadow_cnsty_chk_errs[2] = '0;
 
   // Generating resets for por_io_div4
@@ -418,7 +421,7 @@ module rstmgr
   );
   assign resets_o.rst_por_usb_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[4][Domain0Sel] = '0;
-  assign rst_en_o.por_usb[Domain0Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.por_usb[Domain0Sel] = MuBi4True;
   assign shadow_cnsty_chk_errs[4] = '0;
 
   // Generating resets for lc
@@ -426,7 +429,7 @@ module rstmgr
   // Shadowed: True
   assign resets_o.rst_lc_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[5][DomainAonSel] = '0;
-  assign rst_en_o.lc[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.lc[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_lc (
     .clk_i,
     .rst_ni,
@@ -441,7 +444,7 @@ module rstmgr
   );
   assign resets_o.rst_lc_shadowed_n[DomainAonSel] = '0;
   assign shadow_cnsty_chk_errs[5][DomainAonSel] = '0;
-  assign rst_en_o.lc_shadowed[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.lc_shadowed[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_lc_shadowed (
     .clk_i,
     .rst_ni,
@@ -524,7 +527,7 @@ module rstmgr
   );
   assign resets_o.rst_lc_aon_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[7][Domain0Sel] = '0;
-  assign rst_en_o.lc_aon[Domain0Sel] = lc_ctrl_pkg::On;
+  assign rst_en_o.lc_aon[Domain0Sel] = MuBi4True;
   assign shadow_cnsty_chk_errs[7] = '0;
 
   // Generating resets for sys
@@ -532,7 +535,7 @@ module rstmgr
   // Shadowed: True
   assign resets_o.rst_sys_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[8][DomainAonSel] = '0;
-  assign rst_en_o.sys[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.sys[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_sys (
     .clk_i,
     .rst_ni,
@@ -547,7 +550,7 @@ module rstmgr
   );
   assign resets_o.rst_sys_shadowed_n[DomainAonSel] = '0;
   assign shadow_cnsty_chk_errs[8][DomainAonSel] = '0;
-  assign rst_en_o.sys_shadowed[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.sys_shadowed[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_sys_shadowed (
     .clk_i,
     .rst_ni,
@@ -624,7 +627,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_spi_device_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[11][DomainAonSel] = '0;
-  assign rst_en_o.spi_device[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.spi_device[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_spi_device (
     .clk_i,
     .rst_ni,
@@ -644,7 +647,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_spi_host0_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[12][DomainAonSel] = '0;
-  assign rst_en_o.spi_host0[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.spi_host0[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_spi_host0 (
     .clk_i,
     .rst_ni,
@@ -664,7 +667,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_spi_host0_core_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[13][DomainAonSel] = '0;
-  assign rst_en_o.spi_host0_core[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.spi_host0_core[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_spi_host0_core (
     .clk_i,
     .rst_ni,
@@ -684,7 +687,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_spi_host1_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[14][DomainAonSel] = '0;
-  assign rst_en_o.spi_host1[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.spi_host1[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_spi_host1 (
     .clk_i,
     .rst_ni,
@@ -704,7 +707,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_spi_host1_core_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[15][DomainAonSel] = '0;
-  assign rst_en_o.spi_host1_core[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.spi_host1_core[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_spi_host1_core (
     .clk_i,
     .rst_ni,
@@ -724,7 +727,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_usb_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[16][DomainAonSel] = '0;
-  assign rst_en_o.usb[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.usb[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_usb (
     .clk_i,
     .rst_ni,
@@ -744,7 +747,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_usbif_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[17][DomainAonSel] = '0;
-  assign rst_en_o.usbif[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.usbif[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_usbif (
     .clk_i,
     .rst_ni,
@@ -764,7 +767,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_i2c0_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[18][DomainAonSel] = '0;
-  assign rst_en_o.i2c0[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.i2c0[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_i2c0 (
     .clk_i,
     .rst_ni,
@@ -784,7 +787,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_i2c1_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[19][DomainAonSel] = '0;
-  assign rst_en_o.i2c1[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.i2c1[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_i2c1 (
     .clk_i,
     .rst_ni,
@@ -804,7 +807,7 @@ module rstmgr
   // Shadowed: False
   assign resets_o.rst_i2c2_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[20][DomainAonSel] = '0;
-  assign rst_en_o.i2c2[DomainAonSel] = lc_ctrl_pkg::On;
+  assign rst_en_o.i2c2[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_i2c2 (
     .clk_i,
     .rst_ni,

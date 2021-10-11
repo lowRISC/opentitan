@@ -127,8 +127,8 @@ Signal                   | Direction        | Type                      | Descri
 `alert_rx_o[<number>]`   | `output`         | packed `alert_rx_t` array | Outgoing alert acknowledgment and ping requests, differentially encoded. Index range: `[NAlerts-1:0]`
 `esc_tx_o[<sev>]`        | `output`         | packed `esc_tx_t` array   | Escalation or ping request, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
 `esc_rx_i[<sev>]`        | `input`          | packed `esc_rx_t` array   | Escalation ping response, differentially encoded. Index corresponds to severity level, and ranges from 0 to 3.
-`lpg_cg_en_i[<lpg>]`     | `input`          | packed `lc_tx_t` array    | Incoming clock gated indication from clock manager. Index range: `[NLpg-1:0]`
-`lpg_rst_en_i[<lpg>]`    | `output`         | packed `lc_tx_t` array    | Incoming reset asserted indication from reset manager. Index range: `[NLpg-1:0]`
+`lpg_cg_en_i[<lpg>]`     | `input`          | packed `mubi4_t` array    | Incoming clock gated indication from clock manager. Index range: `[NLpg-1:0]`
+`lpg_rst_en_i[<lpg>]`    | `output`         | packed `mubi4_t` array    | Incoming reset asserted indication from reset manager. Index range: `[NLpg-1:0]`
 `crashdump_o`            | `output`         | packed `struct`           | This is a collection of alert handler state registers that can be latched by hardware debugging circuitry, if needed.
 
 #### Entropy Network Connections

@@ -31,6 +31,7 @@
 
 module prim_alert_receiver
   import prim_alert_pkg::*;
+  import prim_mubi_pkg::mubi4_t;
 #(
   // enables additional synchronization logic
   parameter bit AsyncOn = 1'b0
@@ -39,7 +40,7 @@ module prim_alert_receiver
   input             rst_ni,
   // if set to lc_ctrl_pkg::On, this triggers the in-band alert channel
   // reset, which resets both the sender and receiver FSMs into IDLE.
-  input lc_ctrl_pkg::lc_tx_t init_trig_i,
+  input mubi4_t     init_trig_i,
   // this triggers a ping test. keep asserted
   // until ping_ok_o is asserted.
   input             ping_req_i,
@@ -55,6 +56,8 @@ module prim_alert_receiver
   input alert_tx_t  alert_tx_i
 );
 
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_false_loose;
 
   /////////////////////////////////
   // decode differential signals //
@@ -194,7 +197,7 @@ module prim_alert_receiver
         // ping requests. As soon as the init request is dropped however, ping requests are not
         // acked anymore such that the ping mechanism can also flag alert channels that got stuck
         // in the initialization sequence.
-        if (init_trig_i == lc_ctrl_pkg::On) begin
+        if (mubi4_test_true_strict(init_trig_i)) begin
           ping_ok_o = ping_pending_q;
         // the sender will respond to the sigint error above with a sigint error on the alert lines.
         // hence we treat the alert_sigint like an acknowledgement in this case.
@@ -217,7 +220,7 @@ module prim_alert_receiver
     // overrides are not allowed anymore until the initialization has been completed.
     if (!(state_q inside {InitReq, InitAckWait})) begin
       // in this case, abort and jump into the initialization sequence
-      if (init_trig_i == lc_ctrl_pkg::On) begin
+      if (mubi4_test_true_strict(init_trig_i)) begin
         state_d      = InitReq;
         ack_pd       = 1'b0;
         ping_ok_o    = 1'b0;
@@ -278,7 +281,7 @@ module prim_alert_receiver
     `ASSERT(SigInt_A,
         alert_tx_i.alert_p == alert_tx_i.alert_n [*2] ##2
         !(state_q inside {InitReq, InitAckWait}) &&
-        init_trig_i != lc_ctrl_pkg::On
+        mubi4_test_false_loose(init_trig_i)
         |->
         integ_fail_o)
     // TODO: need to add skewed cases as well, the assertions below assume no skew at the moment
@@ -289,7 +292,7 @@ module prim_alert_receiver
         state_q == Idle && ping_pending_q
         |->
         ping_ok_o,
-        clk_i, !rst_ni || integ_fail_o || init_trig_i == lc_ctrl_pkg::On)
+        clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
     // alert
     `ASSERT(Alert_A,
         ##1 $rose(alert_tx_i.alert_p) &&
@@ -298,13 +301,13 @@ module prim_alert_receiver
         !ping_pending_q
         |->
         alert_o,
-        clk_i, !rst_ni || integ_fail_o || init_trig_i == lc_ctrl_pkg::On)
+        clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
   end else begin : gen_sync_assert
     // signal integrity check propagation
     `ASSERT(SigInt_A,
         alert_tx_i.alert_p == alert_tx_i.alert_n &&
         !(state_q inside {InitReq, InitAckWait}) &&
-        init_trig_i != lc_ctrl_pkg::On
+        mubi4_test_false_loose(init_trig_i)
         |->
         integ_fail_o)
     // ping response
@@ -314,7 +317,7 @@ module prim_alert_receiver
         ping_pending_q
         |->
         ping_ok_o,
-        clk_i, !rst_ni || integ_fail_o || init_trig_i == lc_ctrl_pkg::On)
+        clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
     // alert
     `ASSERT(Alert_A,
         ##1 $rose(alert_tx_i.alert_p) &&
@@ -322,34 +325,34 @@ module prim_alert_receiver
         !ping_pending_q
         |->
         alert_o,
-        clk_i, !rst_ni || integ_fail_o || init_trig_i == lc_ctrl_pkg::On)
+        clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
   end
 
   // check in-band init request is always accepted
   `ASSERT(InBandInitRequest_A,
-      init_trig_i == lc_ctrl_pkg::On &&
+      mubi4_test_true_strict(init_trig_i) &&
       state_q != InitAckWait
       |=>
       state_q == InitReq)
   // check in-band init sequence moves FSM into IDLE state
   `ASSERT(InBandInitSequence_A,
       (state_q == InitReq &&
-      init_trig_i == lc_ctrl_pkg::On [*1:$]) ##1
+      mubi4_test_true_strict(init_trig_i) [*1:$]) ##1
       (alert_sigint &&
-      init_trig_i != lc_ctrl_pkg::On) [*1:$] ##1
+      mubi4_test_false_loose(init_trig_i)) [*1:$] ##1
       (!alert_sigint &&
-      init_trig_i != lc_ctrl_pkg::On) [*3]
+      mubi4_test_false_loose(init_trig_i)) [*3]
       |=>
       state_q == Idle)
   // check there are no spurious alerts during init
   `ASSERT(NoSpuriousAlertsDuringInit_A,
-      init_trig_i == lc_ctrl_pkg::On ||
+      mubi4_test_true_strict(init_trig_i) ||
       (state_q inside {InitReq, InitAckWait})
       |->
       !alert_o)
   // check that there are no spurious ping OKs
   `ASSERT(NoSpuriousPingOksDuringInit_A,
-      (init_trig_i == lc_ctrl_pkg::On ||
+      (mubi4_test_true_strict(init_trig_i) ||
       (state_q inside {InitReq, InitAckWait})) &&
       !ping_pending_q
       |->
@@ -358,7 +361,7 @@ module prim_alert_receiver
   `ASSERT(PingOkBypassDuringInit_A,
       $rose(ping_req_i) ##1
       state_q == InitReq &&
-      init_trig_i == lc_ctrl_pkg::On
+      mubi4_test_true_strict(init_trig_i)
       |->
       ping_ok_o)
 
