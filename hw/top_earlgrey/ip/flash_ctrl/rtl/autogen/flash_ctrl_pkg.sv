@@ -424,7 +424,7 @@ package flash_ctrl_pkg;
     alert_ack:     1'b0,
     jtag_req:      '0,
     intg_err:      '0,
-    flash_disable: prim_mubi_pkg::mubi4_false_value()
+    flash_disable: prim_mubi_pkg::MuBi4False
   };
 
   // memory to flash controller

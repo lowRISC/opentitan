@@ -94,7 +94,7 @@ module lc_ctrl
 );
 
   import prim_mubi_pkg::mubi8_t;
-  import prim_mubi_pkg::mubi8_false_value;
+  import prim_mubi_pkg::MuBi8False;
   import prim_mubi_pkg::mubi8_test_true_strict;
   import prim_mubi_pkg::mubi8_test_false_loose;
 
@@ -396,8 +396,8 @@ module lc_ctrl
       flash_rma_error_q         <= 1'b0;
       fatal_prog_error_q        <= 1'b0;
       fatal_state_error_q       <= 1'b0;
-      sw_claim_transition_if_q  <= mubi8_false_value();
-      tap_claim_transition_if_q <= mubi8_false_value();
+      sw_claim_transition_if_q  <= MuBi8False;
+      tap_claim_transition_if_q <= MuBi8False;
       transition_token_q        <= '0;
       transition_target_q       <= DecLcStRaw;
       otp_part_error_q          <= 1'b0;

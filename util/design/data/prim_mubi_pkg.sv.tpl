@@ -15,7 +15,7 @@ package prim_mubi_pkg;
 <%
 import prim_mubi as prim_mubi
 %>\
-% for n in range(1, N_MAX_NIBBLES + 1):
+% for n in range(1, n_max_nibbles + 1):
 <%
    nbits = n * 4
 %>\
@@ -32,41 +32,31 @@ import prim_mubi as prim_mubi
   // make a typedef such that this can be used as an intersignal type as well
   typedef mubi${nbits}_e mubi${nbits}_t;
 
-  // Return the multibit value to signal "enabled".
-  function automatic mubi${nbits}_e mubi${nbits}_true_value();
-    return MuBi${nbits}True;
-  endfunction : mubi${nbits}_true_value
-
-  // Return the multibit value to signal "disabled".
-  function automatic mubi${nbits}_e mubi${nbits}_false_value();
-    return MuBi${nbits}False;
-  endfunction : mubi${nbits}_false_value
-
   // Test whether the multibit value signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
-  function automatic logic mubi${nbits}_test_true_strict(mubi${nbits}_e val);
+  function automatic logic mubi${nbits}_test_true_strict(mubi${nbits}_t val);
     return MuBi${nbits}True == val;
   endfunction : mubi${nbits}_test_true_strict
 
   // Test whether the multibit value signals a "disabled" condition.
   // The strict version of this function requires
   // the multibit value to equal False.
-  function automatic logic mubi${nbits}_test_false_strict(mubi${nbits}_e val);
+  function automatic logic mubi${nbits}_test_false_strict(mubi${nbits}_t val);
     return MuBi${nbits}False == val;
   endfunction : mubi${nbits}_test_false_strict
 
   // Test whether the multibit value signals an "enabled" condition.
   // The loose version of this function interprets all
   // values other than False as "enabled".
-  function automatic logic mubi${nbits}_test_true_loose(mubi${nbits}_e val);
+  function automatic logic mubi${nbits}_test_true_loose(mubi${nbits}_t val);
     return MuBi${nbits}False != val;
   endfunction : mubi${nbits}_test_true_loose
 
   // Test whether the multibit value signals a "disabled" condition.
   // The loose version of this function interprets all
   // values other than True as "disabled".
-  function automatic logic mubi${nbits}_test_false_loose(mubi${nbits}_e val);
+  function automatic logic mubi${nbits}_test_false_loose(mubi${nbits}_t val);
     return MuBi${nbits}True != val;
   endfunction : mubi${nbits}_test_false_loose
 
@@ -82,7 +72,7 @@ import prim_mubi as prim_mubi
   // !act | act  | act
   // act  | act  | act
   //
-  function automatic mubi${nbits}_e mubi${nbits}_or(mubi${nbits}_e a, mubi${nbits}_e b, mubi${nbits}_e act);
+  function automatic mubi${nbits}_t mubi${nbits}_or(mubi${nbits}_t a, mubi${nbits}_t b, mubi${nbits}_t act);
     logic [MuBi${nbits}Width-1:0] a_in, b_in, act_in, out;
     a_in = a;
     b_in = b;
@@ -94,7 +84,7 @@ import prim_mubi as prim_mubi
         out[k] = a_in[k] && b_in[k];
       end
     end
-    return mubi${nbits}_e'(out);
+    return mubi${nbits}_t'(out);
   endfunction : mubi${nbits}_or
 
   // Performs a logical AND operation between two multibit values.
@@ -108,7 +98,7 @@ import prim_mubi as prim_mubi
   // !act | act  | !act
   // act  | act  | act
   //
-  function automatic mubi${nbits}_e mubi${nbits}_and(mubi${nbits}_e a, mubi${nbits}_e b, mubi${nbits}_e act);
+  function automatic mubi${nbits}_t mubi${nbits}_and(mubi${nbits}_t a, mubi${nbits}_t b, mubi${nbits}_t act);
     logic [MuBi${nbits}Width-1:0] a_in, b_in, act_in, out;
     a_in = a;
     b_in = b;
@@ -120,34 +110,34 @@ import prim_mubi as prim_mubi
         out[k] = a_in[k] || b_in[k];
       end
     end
-    return mubi${nbits}_e'(out);
+    return mubi${nbits}_t'(out);
   endfunction : mubi${nbits}_and
 
   // Performs a logical OR operation between two multibit values.
   // This treats "True" as logical 1, and all other values are
   // treated as 0.
-  function automatic mubi${nbits}_e mubi${nbits}_or_hi(mubi${nbits}_e a, mubi${nbits}_e b);
+  function automatic mubi${nbits}_t mubi${nbits}_or_hi(mubi${nbits}_t a, mubi${nbits}_t b);
     return mubi${nbits}_or(a, b, MuBi${nbits}True);
   endfunction : mubi${nbits}_or_hi
 
   // Performs a logical AND operation between two multibit values.
   // This treats "True" as logical 1, and all other values are
   // treated as 0.
-  function automatic mubi${nbits}_e mubi${nbits}_and_hi(mubi${nbits}_e a, mubi${nbits}_e b);
+  function automatic mubi${nbits}_t mubi${nbits}_and_hi(mubi${nbits}_t a, mubi${nbits}_t b);
     return mubi${nbits}_and(a, b, MuBi${nbits}True);
   endfunction : mubi${nbits}_and_hi
 
   // Performs a logical OR operation between two multibit values.
   // This treats "False" as logical 1, and all other values are
   // treated as 0.
-  function automatic mubi${nbits}_e mubi${nbits}_or_lo(mubi${nbits}_e a, mubi${nbits}_e b);
+  function automatic mubi${nbits}_t mubi${nbits}_or_lo(mubi${nbits}_t a, mubi${nbits}_t b);
     return mubi${nbits}_or(a, b, MuBi${nbits}False);
   endfunction : mubi${nbits}_or_lo
 
   // Performs a logical AND operation between two multibit values.
   // Tlos treats "False" as logical 1, and all other values are
   // treated as 0.
-  function automatic mubi${nbits}_e mubi${nbits}_and_lo(mubi${nbits}_e a, mubi${nbits}_e b);
+  function automatic mubi${nbits}_t mubi${nbits}_and_lo(mubi${nbits}_t a, mubi${nbits}_t b);
     return mubi${nbits}_and(a, b, MuBi${nbits}False);
   endfunction : mubi${nbits}_and_lo
 

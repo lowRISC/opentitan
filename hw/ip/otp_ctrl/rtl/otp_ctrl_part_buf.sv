@@ -411,7 +411,7 @@ module otp_ctrl_part_buf
         end else begin
           state_d = IdleSt;
           if (mubi8_test_true_strict(dout_locked_q)) begin
-            dout_locked_d = mubi8_false_value();
+            dout_locked_d = MuBi8False;
           end
         end
       end
@@ -508,7 +508,7 @@ module otp_ctrl_part_buf
             // If the partition is still locked, this is the first integrity check after
             // initialization. This is the only way the buffer regs can get unlocked.
             if (mubi8_test_true_strict(dout_locked_q)) begin
-              dout_locked_d = mubi8_false_value();
+              dout_locked_d = MuBi8False;
             // Otherwise, this integrity check has requested by the LFSR timer, and we have
             // to acknowledge its completion.
             end else begin
@@ -528,7 +528,7 @@ module otp_ctrl_part_buf
       // Make sure the partition signals an error state if no error
       // code has been latched so far, and lock the buffer regs down.
       ErrorSt: begin
-        dout_locked_d = mubi8_true_value();
+        dout_locked_d = MuBi8True;
         if (error_q == NoError) begin
           error_d = FsmStateError;
         end
@@ -631,7 +631,7 @@ module otp_ctrl_part_buf
 
   if (Info.write_lock) begin : gen_digest_write_lock
     mubi8_t digest_locked;
-    assign digest_locked = (digest_o != '0) ? mubi8_true_value() : mubi8_false_value();
+    assign digest_locked = (digest_o != '0) ? MuBi8True : MuBi8False;
     assign access.write_lock = mubi8_and_lo(access_pre.write_lock, digest_locked);
     `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_test_true_loose(access.write_lock))
   end else begin : gen_no_digest_write_lock
@@ -640,7 +640,7 @@ module otp_ctrl_part_buf
 
   if (Info.read_lock) begin : gen_digest_read_lock
     mubi8_t digest_locked;
-    assign digest_locked = (digest_o != '0) ? mubi8_true_value() : mubi8_false_value();
+    assign digest_locked = (digest_o != '0) ? MuBi8True : MuBi8False;
     assign access.read_lock = mubi8_and_lo(access_pre.read_lock, digest_locked);
     `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_test_true_loose(access.read_lock))
   end else begin : gen_no_digest_read_lock
@@ -682,7 +682,7 @@ module otp_ctrl_part_buf
       error_q       <= NoError;
       cnt_q         <= '0;
       // data output is locked by default
-      dout_locked_q <= mubi8_true_value();
+      dout_locked_q <= MuBi8True;
     end else begin
       error_q       <= error_d;
       cnt_q         <= cnt_d;
