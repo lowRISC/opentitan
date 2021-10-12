@@ -41,17 +41,17 @@
       act:     "req",
       package: "entropy_src_pkg",
     }
-    { struct:  "otp_en"
+    { struct:  "mubi8"
       type:    "uni"
       name:    "otp_en_entropy_src_fw_read"
       act:     "rcv"
-      package: "otp_ctrl_pkg"
+      package: "prim_mubi_pkg"
     }
-    { struct:  "otp_en"
+    { struct:  "mubi8"
       type:    "uni"
       name:    "otp_en_entropy_src_fw_over"
       act:     "rcv"
-      package: "otp_ctrl_pkg"
+      package: "prim_mubi_pkg"
     }
     { struct:  "logic"
       type:    "uni"
@@ -132,7 +132,7 @@
           name: "ENABLE",
           mubi: true,
           desc: '''
-                Setting this field to 0xA will enable the ENTROPY_SRC module.
+                Setting this field to kMuBi4True will enable the ENTROPY_SRC module.
                 '''
           resval: false,
         },
@@ -140,7 +140,7 @@
           name: "ENTROPY_DATA_REG_ENABLE",
           mubi: true,
           desc: '''
-                Setting this field to 0xA will enable reading entropy values from the
+                Setting this field to kMuBi4True will enable reading entropy values from the
                 ENTROPY_DATA register. This function also requires that the efuse_es_sw_reg_en
                 input is set.
                 '''
@@ -150,7 +150,7 @@
           name: "BOOT_BYPASS_DISABLE",
           mubi: true,
           desc: '''
-                Setting this field to 0xA will disables the initial generation of non-FIPS entropy.
+                Setting this field to kMuBi4True will disable the initial generation of non-FIPS entropy.
                 '''
           resval: false
         },
@@ -158,7 +158,7 @@
           name: "HEALTH_TEST_CLR",
           mubi: true,
           desc: '''
-                Setting this field to 0xA will clear all registers related to the
+                Setting this field to kMuBi4True will clear all registers related to the
                 health test operations.
                 '''
           resval: false
@@ -167,7 +167,7 @@
           name: "RNG_BIT_ENABLE",
           mubi: true,
           desc: '''
-                Setting this field to 0xA enables the single RNG bit mode, where only
+                Setting this field to kMuBi4True enables the single RNG bit mode, where only
                 one bit is sampled.
                 '''
           resval: false
@@ -197,8 +197,8 @@
           name: "ES_ROUTE",
           mubi: true,
           desc: '''
-                Setting this field to 0xA routes the generated entropy value to the ENTROPY_DATA
-                register to be read by firmware. When this field is 0x5, the generated
+                Setting this field to kMuBi4True routes the generated entropy value to the ENTROPY_DATA
+                register to be read by firmware. When this field is kMuBi4False, the generated
                 entropy will be forwarded out of this module to the hardware interface.
                 '''
           resval: false
@@ -207,8 +207,8 @@
           name: "ES_TYPE",
           mubi: true,
           desc: '''
-                Setting this field to 0xA will bypass the conditioning logic and bring raw entropy
-                data to the ENTROPY_DATA register. When 0x5, FIPS compliant entropy
+                Setting this field to kMuBi4True will bypass the conditioning logic and bring raw entropy
+                data to the ENTROPY_DATA register. When kMuBi4False, FIPS compliant entropy
                 will be brought the ENTROPY_DATA register, after being conditioned.
                 '''
           resval: false

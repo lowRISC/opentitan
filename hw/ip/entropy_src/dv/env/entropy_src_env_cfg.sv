@@ -27,11 +27,11 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   rand bit         regwen;
   rand bit [1:0]   rng_bit_sel;
 
-  rand entropy_src_pkg::es_enb_e   enable, route_software, type_bypass,
-                                   boot_bypass_disable, entropy_data_reg_enable,
-                                   rng_bit_enable;
+  rand prim_mubi_pkg::mubi4_e   enable, route_software, type_bypass,
+                                boot_bypass_disable, entropy_data_reg_enable,
+                                rng_bit_enable;
 
-  rand otp_ctrl_pkg::enable_e      otp_en_es_fw_read, otp_en_es_fw_over;
+  rand prim_mubi_pkg::mubi8_e   otp_en_es_fw_read, otp_en_es_fw_over;
 
   // Constraints
   constraint c_regwen {regwen dist {
@@ -39,36 +39,36 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
       0 :/ (100 - regwen_pct) };}
 
   constraint c_otp_en_es_fw_read {otp_en_es_fw_read dist {
-      otp_ctrl_pkg::Enabled  :/ otp_en_es_fw_read_pct,
-      otp_ctrl_pkg::Disabled :/ (100 - otp_en_es_fw_read_pct) };}
+      prim_mubi_pkg::MuBi8True  :/ otp_en_es_fw_read_pct,
+      prim_mubi_pkg::MuBi8False :/ (100 - otp_en_es_fw_read_pct) };}
 
   constraint c_otp_en_es_fw_over {otp_en_es_fw_over dist {
-      otp_ctrl_pkg::Enabled  :/ otp_en_es_fw_over_pct,
-      otp_ctrl_pkg::Disabled :/ (100 - otp_en_es_fw_over_pct) };}
+      prim_mubi_pkg::MuBi8True  :/ otp_en_es_fw_over_pct,
+      prim_mubi_pkg::MuBi8False :/ (100 - otp_en_es_fw_over_pct) };}
 
   constraint c_enable {enable dist {
-      entropy_src_pkg::ES_FIELD_ON  :/ enable_pct,
-      entropy_src_pkg::ES_FIELD_OFF :/ 100 - enable_pct };}
+      prim_mubi_pkg::MuBi4True  :/ enable_pct,
+      prim_mubi_pkg::MuBi4False :/ 100 - enable_pct };}
 
   constraint c_route {route_software dist {
-      entropy_src_pkg::ES_FIELD_ON  :/ route_software_pct,
-      entropy_src_pkg::ES_FIELD_OFF :/ (100 - route_software_pct) };}
+      prim_mubi_pkg::MuBi4True  :/ route_software_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - route_software_pct) };}
 
   constraint c_bypass {type_bypass dist {
-      entropy_src_pkg::ES_FIELD_ON  :/ type_bypass_pct,
-      entropy_src_pkg::ES_FIELD_OFF :/ (100 - type_bypass_pct) };}
+      prim_mubi_pkg::MuBi4True  :/ type_bypass_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - type_bypass_pct) };}
 
   constraint c_boot_bypass_disable {boot_bypass_disable dist {
-      entropy_src_pkg::ES_FIELD_ON  :/ boot_bypass_disable_pct,
-      entropy_src_pkg::ES_FIELD_OFF :/ (100 - boot_bypass_disable_pct)};}
+      prim_mubi_pkg::MuBi4True  :/ boot_bypass_disable_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - boot_bypass_disable_pct)};}
 
   constraint c_entropy_data_reg_enable {entropy_data_reg_enable dist {
-      entropy_src_pkg::ES_FIELD_ON  :/ entropy_data_reg_enable_pct,
-      entropy_src_pkg::ES_FIELD_OFF :/ (100 - entropy_data_reg_enable_pct)};}
+      prim_mubi_pkg::MuBi4True  :/ entropy_data_reg_enable_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - entropy_data_reg_enable_pct)};}
 
   constraint c_rng_bit_enable {rng_bit_enable dist {
-      entropy_src_pkg::ES_FIELD_ON  :/ rng_bit_enable_pct,
-      entropy_src_pkg::ES_FIELD_OFF :/ (100 - rng_bit_enable_pct)};}
+      prim_mubi_pkg::MuBi4True  :/ rng_bit_enable_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - rng_bit_enable_pct)};}
 
   // Functions
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
