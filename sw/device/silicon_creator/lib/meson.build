@@ -33,6 +33,23 @@ sw_silicon_creator_lib_fake_deps = declare_dependency(
   ),
 )
 
+# Boot data stored in the flash info partition.
+sw_silicon_creator_lib_boot_data = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_boot_data',
+    sources: [
+      hw_ip_flash_ctrl_reg_h,
+      'boot_data.c',
+    ],
+    dependencies: [
+      #TODO(#8777): Replace with silicon_creator version.
+      #sw_silicon_creator_lib_driver_flash_ctrl,
+      sw_lib_flash_ctrl,
+      sw_silicon_creator_lib_driver_hmac,
+    ],
+  ),
+)
+
 # Manifest section for boot stage images stored in flash.
 sw_silicon_creator_lib_manifest_section = declare_dependency(
   # Using link_whole so that the .manifest section is created even if a boot
