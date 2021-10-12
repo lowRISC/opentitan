@@ -142,7 +142,17 @@ class csr_hw_reset_seq extends csr_base_seq;
                                 test_csrs[i].get_full_name()), UVM_MEDIUM)
 
       compare_mask = get_mask_excl_fields(test_csrs[i], CsrExclInitCheck, CsrHwResetTest);
+      // Read twice, one from backdoor, the other from frontdoor.
+      // Reading from backdoor can ensure that we deposit value into the storage rather than just
+      // a net. If we mistakenly deposit to a net, reset can't clear it and this check will fail.
       csr_rd_check(.ptr           (test_csrs[i]),
+                   .backdoor      (1),
+                   .compare       (!external_checker),
+                   .compare_vs_ral(1'b1),
+                   .compare_mask  (compare_mask));
+      // same read but using frontdoor
+      csr_rd_check(.ptr           (test_csrs[i]),
+                   .backdoor      (0),
                    .blocking      (0),
                    .compare       (!external_checker),
                    .compare_vs_ral(1'b1),
@@ -208,7 +218,25 @@ class csr_write_seq extends csr_base_seq;
                                            backdoor dist {0 :/ 7, 1 :/ 3};)
       end
 
-      csr_wr(.ptr(test_csrs[i]), .value(wdata), .blocking(0), .backdoor(backdoor));
+      if (backdoor) begin
+        string str_kinds[$];
+
+        test_csrs[i].get_hdl_path_kinds(str_kinds);
+        str_kinds.shuffle();
+
+        foreach (str_kinds[j]) begin
+          bkdr_reg_path_e enum_kind;
+          // Convert string name to an enum
+          `DV_CHECK_FATAL(uvm_enum_wrapper#(bkdr_reg_path_e)::from_name(str_kinds[j], enum_kind))
+
+          csr_poke(.ptr(test_csrs[i]), .value(wdata), .kind(enum_kind));
+
+          `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
+          wdata = get_csr_wdata_with_write_excl(test_csrs[i], wdata, CsrHwResetTest);
+        end
+      end else begin
+        csr_wr(.ptr(test_csrs[i]), .value(wdata), .blocking(0));
+      end
     end
   endtask
 

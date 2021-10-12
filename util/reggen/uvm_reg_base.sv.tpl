@@ -133,7 +133,6 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
       end
 % if rb.flat_regs:
       set_hdl_path_root("tb.dut", "BkdrRegPathRtl");
-      set_hdl_path_root("tb.dut", "BkdrRegPathRtlCommitted");
       set_hdl_path_root("tb.dut", "BkdrRegPathRtlShadow");
       // create registers
   % for r in rb.all_regs:
@@ -535,7 +534,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
 %>\
       ${reg_inst}.add_hdl_path_slice(
           "${shadowed_reg_path}.committed_reg.q",
-          ${field.bits.lsb}, ${field.bits.width()}, 0, "BkdrRegPathRtlCommitted");
+          ${field.bits.lsb}, ${field.bits.width()}, 0, "BkdrRegPathRtl");
       ${reg_inst}.add_hdl_path_slice(
           "${shadowed_reg_path}.shadow_reg.q",
           ${field.bits.lsb}, ${field.bits.width()}, 0, "BkdrRegPathRtlShadow");
@@ -560,7 +559,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
       ${reg_inst}.add_hdl_path_slice(
           "${reg_block_path}.${reg_field_name}_qs",
           ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
-%   else:
+%   elif not reg.shadowed:
       ${reg_inst}.add_hdl_path_slice(
           "${reg_block_path}.u_${reg_field_name}.q${"s" if reg.hwext else ""}",
           ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
@@ -568,7 +567,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
 %   if reg.shadowed and not reg.hwext:
       ${reg_inst}.add_hdl_path_slice(
           "${reg_block_path}.u_${reg_field_name}.committed_reg.q",
-          ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
+          ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
       ${reg_inst}.add_hdl_path_slice(
           "${reg_block_path}.u_${reg_field_name}.shadow_reg.q",
           ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
