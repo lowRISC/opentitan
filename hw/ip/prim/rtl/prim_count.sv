@@ -45,6 +45,17 @@ module prim_count import prim_count_pkg::*; #(
 
   localparam int CntCopies = (CntStyle == DupCnt) ? 2 : 1;
 
+  // clear up count whenever there is an explicit clear, or
+  // when the max value is re-set during cross count.
+  logic clr_up_cnt;
+  assign clr_up_cnt = clr_i |
+                      set_i & CntStyle == CrossCnt;
+
+  // set up count to desired value only during duplicate counts.
+  logic set_up_cnt;
+  assign set_up_cnt = set_i & CntStyle == DupCnt;
+
+
   cmp_valid_e cmp_valid;
   logic [CntCopies-1:0][Width-1:0] up_cnt_d, up_cnt_d_buf;
   logic [CntCopies-1:0][Width-1:0] up_cnt_q;
@@ -61,8 +72,8 @@ module prim_count import prim_count_pkg::*; #(
 
   for (genvar i = 0; i < CntCopies; i++) begin : gen_cnts
     // up-count
-    assign up_cnt_d[i] = (clr_i)                        ? '0 :
-                         (set_i & CntStyle == DupCnt)   ? set_cnt_i :
+    assign up_cnt_d[i] = (clr_up_cnt)                   ? '0 :
+                         (set_up_cnt)                   ? set_cnt_i :
                          (en_i & up_cnt_q[i] < max_val) ? up_cnt_q[i] + step_i :
                                                           up_cnt_q[i];
 
