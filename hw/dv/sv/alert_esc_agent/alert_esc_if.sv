@@ -85,7 +85,9 @@ interface alert_esc_if(input clk, input rst_n);
   assign esc_rx   = (if_mode == dv_utils_pkg::Device && !is_alert) ? esc_rx_int   : 'z;
 
   task automatic wait_ack_complete();
+    while(alert_tx_final.alert_p === 1'b0) @(monitor_cb);
     while (alert_tx_final.alert_p === 1'b1) @(monitor_cb);
+    while(alert_rx_final.ack_p === 1'b0) @(monitor_cb);
     while (alert_rx_final.ack_p === 1'b1)   @(monitor_cb);
   endtask : wait_ack_complete
 
