@@ -52,6 +52,7 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:prim:all
       - lowrisc:prim:usb_diff_rx
+      - lowrisc:prim:mubi
       - lowrisc:systems:top_earlgrey_pkg
     files:
       - rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
