@@ -24,6 +24,9 @@ class entropy_src_env extends cip_base_env #(
                   (this, "m_rng_agent*", "cfg", cfg.m_rng_agent_cfg);
     cfg.m_rng_agent_cfg.agent_type = push_pull_agent_pkg::PushAgent;
     cfg.m_rng_agent_cfg.if_mode    = dv_utils_pkg::Host;
+
+    // To correctly model ast/rng behavior, back-to-back entropy is not allowed
+    cfg.m_rng_agent_cfg.zero_delays = 0;
     cfg.m_rng_agent_cfg.host_delay_min = 6;
     cfg.m_rng_agent_cfg.host_delay_max = 12;
 
