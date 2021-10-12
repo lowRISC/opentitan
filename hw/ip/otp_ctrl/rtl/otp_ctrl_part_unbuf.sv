@@ -342,7 +342,7 @@ module otp_ctrl_part_unbuf
   ////////////////////////
 
   mubi8_t init_locked;
-  assign init_locked = (~init_done_o) ? mubi8_true_value() : mubi8_false_value();
+  assign init_locked = (~init_done_o) ? MuBi8True : MuBi8False;
 
   // Aggregate all possible DAI write locks. The partition is also locked when uninitialized.
   // Note that the locks are redundantly encoded values.
@@ -352,7 +352,7 @@ module otp_ctrl_part_unbuf
 
   if (Info.write_lock) begin : gen_digest_write_lock
     mubi8_t digest_locked;
-    assign digest_locked = (digest_o != '0) ? mubi8_true_value() : mubi8_false_value();
+    assign digest_locked = (digest_o != '0) ? MuBi8True : MuBi8False;
     assign access.write_lock = mubi8_and_lo(access_pre.write_lock, digest_locked);
     `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_test_true_loose(access.write_lock))
   end else begin : gen_no_digest_write_lock
@@ -361,7 +361,7 @@ module otp_ctrl_part_unbuf
 
   if (Info.read_lock) begin : gen_digest_read_lock
     mubi8_t digest_locked;
-    assign digest_locked = (digest_o != '0) ? mubi8_true_value() : mubi8_false_value();
+    assign digest_locked = (digest_o != '0) ? MuBi8True : MuBi8False;
     assign access.read_lock = mubi8_and_lo(access_pre.read_lock, digest_locked);
     `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_test_true_loose(access.read_lock))
   end else begin : gen_no_digest_read_lock

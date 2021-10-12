@@ -858,14 +858,14 @@ module flash_ctrl
   // flash functional disable
   prim_mubi_pkg::mubi4_t flash_disable;
   assign flash_disable = lc_escalate_en == lc_ctrl_pkg::On ?
-                         prim_mubi_pkg::mubi4_true_value() :
+                         prim_mubi_pkg::MuBi4True :
                          prim_mubi_pkg::mubi4_e'(reg2hw.dis.q);
 
   assign flash_phy_req.flash_disable = flash_disable;
 
   prim_mubi_pkg::mubi4_t flash_exec_en;
   assign flash_exec_en = lc_escalate_en == lc_ctrl_pkg::On ?
-                         prim_mubi_pkg::mubi4_false_value() :
+                         prim_mubi_pkg::MuBi4False :
                          prim_mubi_pkg::mubi4_e'(reg2hw.exec.q);
 
   //////////////////////////////////////

@@ -42,7 +42,7 @@ module prim_mubi4_sync
     ) u_prim_flop_2sync (
       .clk_i,
       .rst_ni,
-      .d_i(mubi_i),
+      .d_i(MuBi4Width'(mubi_i)),
       .q_o(mubi)
     );
   end else begin : gen_no_flops
@@ -50,7 +50,7 @@ module prim_mubi4_sync
     logic unused_rst;
     assign unused_clk = clk_i;
     assign unused_rst = rst_ni;
-    assign mubi = mubi_i;
+    assign mubi = MuBi4Width'(mubi_i);
   end
 
   for (genvar j = 0; j < NumCopies; j++) begin : gen_buffs
