@@ -61,18 +61,13 @@ module spi_host_fsm
 
   logic [2:0]       bit_cntr_d, bit_cntr_q;
   logic [8:0]       byte_cntr_d, byte_cntr_q;
-  // TODO: merge lead, trail * idle counters to match documentation
-  logic [3:0]       lead_cntr_d, idle_cntr_d, trail_cntr_d;
-  logic [3:0]       lead_cntr_q, idle_cntr_q, trail_cntr_q;
+  logic [3:0]       wait_cntr_d, wait_cntr_q;
   logic             last_bit, last_byte;
 
   logic             state_changing;
   logic             byte_starting, byte_starting_cpha0, byte_starting_cpha1;
   logic             bit_shifting, bit_shifting_cpha0, bit_shifting_cpha1;
   logic             byte_ending, byte_ending_cpha0, byte_ending_cpha1;
-  logic             lead_starting;
-  logic             trail_starting;
-  logic             idle_starting;
 
   logic             sample_en_d, sample_en_q, sample_en_q2;
 
@@ -239,7 +234,7 @@ module spi_host_fsm
         end
         WaitLead: begin
           // Transaction lead: CSB is low, waiting to start sck pulses.
-          if (lead_cntr_q == 4'h0) begin
+          if (wait_cntr_q == 4'h0) begin
             state_d = InternalClkHigh;
           end
         end
@@ -263,13 +258,13 @@ module spi_host_fsm
         end
         WaitTrail: begin
           // Prepare to enter CSB high idle state by waiting csntrail cycles.
-          if (trail_cntr_q == 4'h0) begin
+          if (wait_cntr_q == 4'h0) begin
             state_d = WaitIdle;
           end
         end
         WaitIdle: begin
           // Once CSB is high, wait for the designated number of cycles before accepting commands.
-          if (idle_cntr_q == 4'h0) begin
+          if (wait_cntr_q == 4'h0) begin
             // ready to accept new command
             command_ready_int = 1'b1;
             state_d = next_state_after_idle;
@@ -279,7 +274,7 @@ module spi_host_fsm
           // Insert extra idle cycles when swtiching between CSID, this allows time to switch CPHA,
           // CPOL and clkdiv settings, as well as guarantee that the idle delay requirements have
           // been observed for the new device.
-          if (idle_cntr_q == 4'h0) begin
+          if (wait_cntr_q == 4'h0) begin
             state_d = WaitLead;
           end else begin
             state_d = WaitIdle;
@@ -398,45 +393,47 @@ module spi_host_fsm
                        byte_ending ? byte_cntr_q - 1 :
                        byte_cntr_q;
 
-  assign lead_starting = state_changing && state_d == WaitLead;
-
-  assign lead_cntr_d = sw_rst_i         ? 4'h0 :
-                       !fsm_en          ? lead_cntr_q :
-                       lead_starting    ? csnlead :
-                       lead_cntr_q == 0 ? 4'h0 :
-                       lead_cntr_q - 1;
-
-  assign trail_starting = state_changing && state_d == WaitTrail;
-
-  assign trail_cntr_d = sw_rst_i          ? 4'h0 :
-                        !fsm_en           ? trail_cntr_q :
-                        trail_starting    ? csntrail :
-                        trail_cntr_q == 0 ? 4'h0 :
-                        trail_cntr_q - 1;
-
-  assign idle_starting = state_changing &&
-                        (state_d == WaitIdle ||
-                         state_d == CSBSwitch);
-
-  assign idle_cntr_d = sw_rst_i         ? 4'h0 :
-                       !fsm_en          ? idle_cntr_q :
-                       idle_starting    ? csnidle :
-                       idle_cntr_q == 0 ? 4'h0 :
-                       idle_cntr_q - 1;
+  always_comb begin
+    if(sw_rst_i) begin
+      wait_cntr_d = 4'b0;
+    end else if (!fsm_en) begin
+      wait_cntr_d = wait_cntr_q;
+    end else if (state_changing) begin
+      unique case (state_d)
+         WaitLead: begin
+           wait_cntr_d = csnlead;
+         end
+         WaitTrail: begin
+           wait_cntr_d = csntrail;
+         end
+         WaitIdle: begin
+           wait_cntr_d = csnidle;
+         end
+         CSBSwitch: begin
+           wait_cntr_d = csnidle;
+         end
+         default: begin
+           // Hold wait cntr to zero
+           // for states that don't use it
+           wait_cntr_d = 4'b0;
+         end
+      endcase
+    end else if (wait_cntr_q == 0) begin
+      wait_cntr_d = 4'h0;
+    end else begin
+      wait_cntr_d = wait_cntr_q - 1;
+    end
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       bit_cntr_q   <= 3'h0;
       byte_cntr_q  <= 9'h0;
-      idle_cntr_q  <= 4'h0;
-      lead_cntr_q  <= 4'h0;
-      trail_cntr_q <= 4'h0;
+      wait_cntr_q  <= 4'h0;
     end else begin
       bit_cntr_q   <= stall ? bit_cntr_q   : bit_cntr_d;
       byte_cntr_q  <= stall ? byte_cntr_q  : byte_cntr_d;
-      idle_cntr_q  <= stall ? idle_cntr_q  : idle_cntr_d;
-      lead_cntr_q  <= stall ? lead_cntr_q  : lead_cntr_d;
-      trail_cntr_q <= stall ? trail_cntr_q : trail_cntr_d;
+      wait_cntr_q  <= stall ? wait_cntr_q  : wait_cntr_d;
     end
   end
 
