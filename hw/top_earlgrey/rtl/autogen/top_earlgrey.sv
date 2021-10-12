@@ -719,8 +719,8 @@ module top_earlgrey #(
   jtag_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
   otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
   otp_ctrl_pkg::otp_en_t       csrng_otp_en_csrng_sw_app_read;
-  otp_ctrl_pkg::otp_en_t       entropy_src_otp_en_entropy_src_fw_read;
-  otp_ctrl_pkg::otp_en_t       entropy_src_otp_en_entropy_src_fw_over;
+  prim_mubi_pkg::mubi8_t       entropy_src_otp_en_entropy_src_fw_read;
+  prim_mubi_pkg::mubi8_t       entropy_src_otp_en_entropy_src_fw_over;
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
@@ -761,8 +761,10 @@ module top_earlgrey #(
   // TODO(#6713): The actual struct breakout and mapping currently needs to
   // be performed by hand.
   assign csrng_otp_en_csrng_sw_app_read = otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read;
-  assign entropy_src_otp_en_entropy_src_fw_read = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read;
-  assign entropy_src_otp_en_entropy_src_fw_over = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_over;
+  assign entropy_src_otp_en_entropy_src_fw_read =
+    prim_mubi_pkg::mubi8_e'(otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read);
+  assign entropy_src_otp_en_entropy_src_fw_over =
+    prim_mubi_pkg::mubi8_e'(otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_over);
   assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
   assign lc_ctrl_otp_manuf_state = otp_ctrl_otp_hw_cfg.data.manuf_state;

@@ -74,11 +74,4 @@ package entropy_src_pkg;
   parameter entropy_src_xht_req_t ENTROPY_SRC_XHT_REQ_DEFAULT = '{default: '0};
   parameter entropy_src_xht_rsp_t ENTROPY_SRC_XHT_RSP_DEFAULT = '{default: '0};
 
-  // Sparse four-value signal type
-  parameter int ES_MODE_WIDTH = 4;
-  typedef enum logic [ES_MODE_WIDTH-1:0] {
-    ES_FIELD_ON  = 4'b1010,
-    ES_FIELD_OFF = 4'b0101
-  } es_enb_e;
-
 endpackage : entropy_src_pkg
