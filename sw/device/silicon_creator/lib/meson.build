@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 subdir('base')
 subdir('drivers')
+subdir('crypto')
 
 # Mask ROM fake dependencies.  These are temporary dependencies until we
 # refactor or copy the other libraries we need (e.g. `runtime`).
