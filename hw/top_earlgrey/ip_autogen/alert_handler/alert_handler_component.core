@@ -11,7 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:esc
-      - lowrisc:prim:lfsr
+      - lowrisc:prim:double_lfsr
       - lowrisc:prim:edn_req
       - lowrisc:prim:buf
       - lowrisc:prim:mubi
