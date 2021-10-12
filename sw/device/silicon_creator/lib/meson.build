@@ -276,6 +276,25 @@ test('sw_silicon_creator_lib_log_unittest', executable(
   suite: 'mask_rom',
 )
 
+sw_silicon_creator_lib_boot_data_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_boot_data_functest',
+    sources: [
+      hw_ip_flash_ctrl_reg_h,
+      'boot_data_functest.c'
+    ],
+    dependencies: [
+      sw_lib_flash_ctrl,
+      sw_silicon_creator_lib_boot_data,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_boot_data_functest': {
+    'library': sw_silicon_creator_lib_boot_data_functest,
+  }
+}
+
 sw_silicon_creator_lib_sigverify_functest = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_lib_sigverify_functest',
