@@ -64,7 +64,10 @@ def resolve_scratch_root(arg_scratch_root, proj_root):
                                                  timeout=1,
                                                  exit_on_failure=0)
             if status == 0 and out != "":
-                arg_scratch_root = scratch_root
+                # Add a proj_root folder name in case the local workspace has different
+                # copies of the repos.
+                proj_root_folder = proj_root.split("/")[-1]
+                arg_scratch_root = os.path.join(scratch_root, proj_root_folder)
             else:
                 arg_scratch_root = default_scratch_root
                 log.warning(
