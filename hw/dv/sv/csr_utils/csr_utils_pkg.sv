@@ -75,7 +75,7 @@ package csr_utils_pkg;
     return mem.get_access();
   endfunction
 
-  // This fucntion return mirrored value of reg/field of given RAL
+  // This function return mirrored value of reg/field of given RAL
   function automatic uvm_reg_data_t get_reg_fld_mirror_value(uvm_reg_block ral,
                                                              string        reg_name,
                                                              string        field_name  = "");

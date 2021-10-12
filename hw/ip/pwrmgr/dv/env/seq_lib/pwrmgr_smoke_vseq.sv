@@ -14,9 +14,6 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
   constraint cycles_before_otp_done_c {cycles_before_otp_done inside {[1 : 2]};}
   constraint cycles_before_lc_done_c {cycles_before_lc_done inside {[1 : 2]};}
 
-  rand bit [pwrmgr_reg_pkg::NumWkups-1:0]   wakeups;
-  rand bit [pwrmgr_reg_pkg::NumRstReqs-1:0] resets;
-
   constraint wakeups_c {wakeups != 0;}
   constraint resets_c {resets != 0;}
 
