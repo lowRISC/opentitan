@@ -331,7 +331,7 @@ The actions performed by each command, as well as which flags are supported, are
           <tbody>
             <tr><td>0</td><td>0</td><td>Only entropy source seed is used.</td></tr>
             <tr><td>0</td><td>1-12</td><td>Entropy source seed is xor'ed with provided additional data.</td></tr>
-            <tr><td>1</td><td>0</td><td></td>Seed of zero is used (no entropy source seed used).</tr>
+            <tr><td>1</td><td>0</td><td>Seed of zero is used (no entropy source seed used).</td></tr>
             <tr><td>1</td><td>1-12</td><td>Only provided additional data will be used as seed.</td></tr>
           </tbody>
         </table>
