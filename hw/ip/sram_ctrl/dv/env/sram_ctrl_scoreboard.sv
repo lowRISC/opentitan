@@ -567,9 +567,10 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
           // if we have an address collision (read address is the same as the pending write address)
           // return data based on the `held_data`
           if (eq_sram_addr(data_trans.addr, held_trans.addr)) begin
-            bit [TL_DW-1:0] exp_masked_rdata = held_data & expand_bit_mask(item.a_mask);
+            bit [TL_DW-1:0] bit_mask = expand_bit_mask(item.a_mask);
+            bit [TL_DW-1:0] exp_masked_rdata = held_data & bit_mask;
             `uvm_info(`gfn, $sformatf("exp_masked_rdata: 0x%0x", exp_masked_rdata), UVM_HIGH)
-            `DV_CHECK_EQ_FATAL(exp_masked_rdata, item.d_data)
+            `DV_CHECK_EQ_FATAL(exp_masked_rdata, item.d_data & bit_mask)
           end else begin
             // in this case we do not have a strict RAW hazard on the same address,
             // so we can check the read transaction normally, as it will complete
