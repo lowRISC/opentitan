@@ -254,6 +254,20 @@ sw_lib_dif_autogen_rstmgr = declare_dependency(
   )
 )
 
+# Autogen RV PLIC DIF library
+sw_lib_dif_autogen_rv_plic = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_rv_plic',
+    sources: [
+      hw_top_earlgrey_rv_plic_reg_h,
+      'dif_rv_plic_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen SPI Device DIF library
 sw_lib_dif_autogen_spi_device = declare_dependency(
   link_with: static_library(

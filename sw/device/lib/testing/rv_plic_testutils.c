@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
@@ -17,10 +18,10 @@ void rv_plic_testutils_irq_range_enable(dif_rv_plic_t *plic,
        ++irq_id) {
     uint32_t priority = rand_testutils_gen32_range(kDifRvPlicMinPriority + 1,
                                                    kDifRvPlicMaxPriority);
-    CHECK(dif_rv_plic_irq_set_priority(plic, irq_id, priority) == kDifRvPlicOk);
-    CHECK(dif_rv_plic_irq_set_enabled(plic, irq_id, target,
-                                      kDifRvPlicToggleEnabled) == kDifRvPlicOk);
+    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, irq_id, priority));
+    CHECK_DIF_OK(
+        dif_rv_plic_irq_set_enabled(plic, irq_id, target, kDifToggleEnabled));
   }
-  CHECK(dif_rv_plic_target_set_threshold(plic, target, kDifRvPlicMinPriority) ==
-        kDifRvPlicOk);
+  CHECK_DIF_OK(
+      dif_rv_plic_target_set_threshold(plic, target, kDifRvPlicMinPriority));
 }

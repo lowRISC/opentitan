@@ -72,9 +72,7 @@ static void handle_uart_isr(const dif_rv_plic_irq_id_t interrupt_id) {
 void handler_irq_external(void) {
   // Claim the IRQ by reading the Ibex specific CC register.
   dif_rv_plic_irq_id_t interrupt_id;
-  CHECK(
-      dif_rv_plic_irq_claim(&plic0, kPlicTarget, &interrupt_id) == kDifRvPlicOk,
-      "ISR is not implemented!");
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic0, kPlicTarget, &interrupt_id));
 
   // Check if the interrupted peripheral is UART.
   top_earlgrey_plic_peripheral_t peripheral_id =
@@ -85,9 +83,7 @@ void handler_irq_external(void) {
 
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
-  CHECK(dif_rv_plic_irq_complete(&plic0, kPlicTarget, interrupt_id) ==
-            kDifRvPlicOk,
-        "Unable to complete the IRQ request!");
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic0, kPlicTarget, interrupt_id));
 }
 
 static void uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
@@ -99,12 +95,6 @@ static void uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
                                    .parity_enable = kDifToggleDisabled,
                                    .parity = kDifUartParityEven,
                                }));
-}
-
-static void plic_initialise(mmio_region_t base_addr, dif_rv_plic_t *plic) {
-  CHECK(dif_rv_plic_init((dif_rv_plic_params_t){.base_addr = base_addr},
-                         plic) == kDifRvPlicOk,
-        "PLIC init failed!");
 }
 
 /**
@@ -122,29 +112,23 @@ static void uart_configure_irqs(dif_uart_t *uart) {
  */
 static void plic_configure_irqs(dif_rv_plic_t *plic) {
   // Set IRQ priorities to MAX
-  CHECK(dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
-                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
-        "priority set for RX overflow failed!");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      plic, kTopEarlgreyPlicIrqIdUart0RxOverflow, kDifRvPlicMaxPriority));
 
-  CHECK(dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
-                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
-        "priority set for TX empty failed!");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      plic, kTopEarlgreyPlicIrqIdUart0TxEmpty, kDifRvPlicMaxPriority));
 
   // Set Ibex IRQ priority threshold level
-  CHECK(dif_rv_plic_target_set_threshold(&plic0, kPlicTarget,
-                                         kDifRvPlicMinPriority) == kDifRvPlicOk,
-        "threshold set failed!");
+  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&plic0, kPlicTarget,
+                                                kDifRvPlicMinPriority));
 
   // Enable IRQs in PLIC
-  CHECK(dif_rv_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
-                                    kPlicTarget,
-                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
-        "interrupt Enable for RX overflow failed!");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic,
+                                           kTopEarlgreyPlicIrqIdUart0RxOverflow,
+                                           kPlicTarget, kDifToggleEnabled));
 
-  CHECK(dif_rv_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
-                                    kPlicTarget,
-                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
-        "interrupt Enable for TX empty failed!");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      plic, kTopEarlgreyPlicIrqIdUart0TxEmpty, kPlicTarget, kDifToggleEnabled));
 }
 
 static void execute_test(dif_uart_t *uart) {
@@ -183,7 +167,7 @@ bool test_main(void) {
 
   mmio_region_t plic_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  plic_initialise(plic_base_addr, &plic0);
+  CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &plic0));
 
   uart_configure_irqs(&uart0);
   plic_configure_irqs(&plic0);

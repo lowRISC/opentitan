@@ -144,7 +144,7 @@ static volatile dif_usbdev_irq_t usbdev_irq_serviced;
 void handler_irq_external(void) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK(dif_rv_plic_irq_claim(&plic, kHart, &plic_irq_id) == kDifRvPlicOk);
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kHart, &plic_irq_id));
 
   // Check if it is the right peripheral.
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
@@ -251,7 +251,7 @@ void handler_irq_external(void) {
   }
 
   // Complete the IRQ at PLIC.
-  CHECK(dif_rv_plic_irq_complete(&plic, kHart, plic_irq_id) == kDifRvPlicOk);
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kHart, plic_irq_id));
 }
 
 /**
@@ -300,8 +300,7 @@ static void peripherals_init(void) {
 
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK(dif_rv_plic_init((dif_rv_plic_params_t){.base_addr = base_addr},
-                         &plic) == kDifRvPlicOk);
+  CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 }
 
 /**
