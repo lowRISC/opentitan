@@ -13,7 +13,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:ram_1p
       - lowrisc:prim:otp
-      - lowrisc:prim:lfsr
+      - lowrisc:prim:double_lfsr
       - lowrisc:prim:lc_sync
       - lowrisc:prim:buf
       - lowrisc:prim:flop

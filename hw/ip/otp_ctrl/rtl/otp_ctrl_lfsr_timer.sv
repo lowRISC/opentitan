@@ -81,58 +81,32 @@ module otp_ctrl_lfsr_timer
   // Tandem LFSR Instances //
   ///////////////////////////
 
-  logic lfsr_en_unbuf;
-  logic [LfsrWidth-1:0] entropy_unbuf;
-  logic [1:0][LfsrWidth-1:0] lfsr_state;
-
-  assign lfsr_en_unbuf = reseed_en || lfsr_en;
-  assign entropy_unbuf = (reseed_en) ? edn_data_i[LfsrWidth-1:0] : '0;
+  logic lfsr_err;
+  logic [LfsrWidth-1:0] entropy;
+  logic [LfsrWidth-1:0] lfsr_state;
+  assign entropy = (reseed_en) ? edn_data_i[LfsrWidth-1:0] : '0;
 
   // We employ two redundant LFSRs to guard against FI attacks.
   // If any of the two is glitched and the two LFSR states do not agree,
   // the FSM below is moved into a terminal error state.
-  for (genvar k = 0; k < 2; k++) begin : gen_double_lfsr
-    // Instantiate size_only buffers to prevent
-    // optimization / merging of redundant logic.
-    logic lfsr_en_buf;
-    logic [LfsrWidth-1:0] entropy_buf, lfsr_state_unbuf;
-    prim_buf #(
-      .Width(LfsrWidth)
-    ) u_prim_buf_entropy (
-      .in_i(entropy_unbuf),
-      .out_o(entropy_buf)
-    );
-
-    prim_buf u_prim_buf_lfsr_en (
-      .in_i(lfsr_en_unbuf),
-      .out_o(lfsr_en_buf)
-    );
-
-    prim_buf #(
-      .Width(LfsrWidth)
-    ) u_prim_buf_state (
-      .in_i(lfsr_state_unbuf),
-      .out_o(lfsr_state[k])
-    );
-
-    prim_lfsr #(
-      .LfsrDw      ( LfsrWidth      ),
-      .EntropyDw   ( LfsrWidth      ),
-      .StateOutDw  ( LfsrWidth      ),
-      .DefaultSeed ( RndCnstLfsrSeed ),
-      .StatePermEn ( 1'b1            ),
-      .StatePerm   ( RndCnstLfsrPerm ),
-      .ExtSeedSVA  ( 1'b0            ) // ext seed is unused
-    ) u_prim_lfsr (
-      .clk_i,
-      .rst_ni,
-      .seed_en_i  ( 1'b0             ),
-      .seed_i     ( '0               ),
-      .lfsr_en_i  ( lfsr_en_buf      ),
-      .entropy_i  ( entropy_buf      ),
-      .state_o    ( lfsr_state_unbuf )
-    );
-  end
+  prim_double_lfsr #(
+    .LfsrDw      ( LfsrWidth      ),
+    .EntropyDw   ( LfsrWidth      ),
+    .StateOutDw  ( LfsrWidth      ),
+    .DefaultSeed ( RndCnstLfsrSeed ),
+    .StatePermEn ( 1'b1            ),
+    .StatePerm   ( RndCnstLfsrPerm ),
+    .ExtSeedSVA  ( 1'b0            )
+  ) u_prim_double_lfsr (
+    .clk_i,
+    .rst_ni,
+    .seed_en_i  ( 1'b0                 ),
+    .seed_i     ( '0                   ),
+    .lfsr_en_i  ( reseed_en || lfsr_en ),
+    .entropy_i  ( entropy              ),
+    .state_o    ( lfsr_state           ),
+    .err_o      ( lfsr_err             )
+  );
 
   // Not all entropy bits are used.
   logic unused_seed;
@@ -186,16 +160,16 @@ module otp_ctrl_lfsr_timer
 
     logic [LfsrWidth-1:0] integ_cnt_d;
     logic [LfsrWidth-1:0] cnsty_cnt_d;
-    assign integ_cnt_d = (integ_load_period_buf)  ? lfsr_state[k] & integ_mask :
-                         (integ_load_timeout_buf) ? LfsrWidth'(timeout_i)      :
-                         (integ_cnt_q[k] == '0)   ? '0                         :
+    assign integ_cnt_d = (integ_load_period_buf)  ? lfsr_state & integ_mask :
+                         (integ_load_timeout_buf) ? LfsrWidth'(timeout_i)   :
+                         (integ_cnt_q[k] == '0)   ? '0                      :
                                                     integ_cnt_q[k] - 1'b1;
 
 
-    assign cnsty_cnt_d = (cnsty_load_period_buf)  ? lfsr_state[k] & cnsty_mask :
-                         (cnsty_load_timeout_buf) ? LfsrWidth'(timeout_i)      :
-                         (cnsty_cnt_q[k] == '0)   ? '0                         :
-                         (cnsty_cnt_pause_buf)    ? cnsty_cnt_q[k]             :
+    assign cnsty_cnt_d = (cnsty_load_period_buf)  ? lfsr_state & cnsty_mask :
+                         (cnsty_load_timeout_buf) ? LfsrWidth'(timeout_i)   :
+                         (cnsty_cnt_q[k] == '0)   ? '0                      :
+                         (cnsty_cnt_pause_buf)    ? cnsty_cnt_q[k]          :
                                                     cnsty_cnt_q[k] - 1'b1;
 
     prim_flop #(
@@ -383,7 +357,7 @@ module otp_ctrl_lfsr_timer
 
     // Unconditionally jump into the terminal error state in case of escalation,
     // or if the two LFSR or counter states do not agree.
-    if (lfsr_state[0] != lfsr_state[1] ||
+    if (lfsr_err ||
         integ_cnt_q[0] != integ_cnt_q[1] ||
         cnsty_cnt_q[0] != cnsty_cnt_q[1] ||
         escalate_en_i != lc_ctrl_pkg::Off) begin
