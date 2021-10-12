@@ -22,71 +22,13 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+
+#include "sw/device/lib/dif/autogen/dif_rv_plic_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-/**
- * A toggle state: enabled, or disabled.
- *
- * This enum may be used instead of a `bool` when describing an enabled/disabled
- * state.
- */
-typedef enum dif_rv_plic_toggle {
-  /*
-   * The "enabled" state.
-   */
-  kDifRvPlicToggleEnabled,
-  /**
-   * The "disabled" state.
-   */
-  kDifRvPlicToggleDisabled,
-} dif_rv_plic_toggle_t;
-
-/**
- * Hardware instantiation parameters for PLIC.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_rv_plic_params {
-  /**
-   * The base address for the PLIC hardware registers.
-   */
-  mmio_region_t base_addr;
-} dif_rv_plic_params_t;
-
-/**
- * A handle to PLIC.
- *
- * This type should be treated as opaque by users.
- */
-typedef struct dif_rv_plic {
-  dif_rv_plic_params_t params;
-} dif_rv_plic_t;
-
-/**
- * The result of a PLIC operation.
- */
-typedef enum dif_rv_plic_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifRvPlicOk = 0,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifRvPlicError = 1,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifRvPlicBadArg = 2,
-} dif_rv_plic_result_t;
 
 /**
  * The lowest interrupt priority.
@@ -133,8 +75,7 @@ typedef uint32_t dif_rv_plic_target_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_init(dif_rv_plic_params_t params,
-                                      dif_rv_plic_t *plic);
+dif_result_t dif_rv_plic_init(mmio_region_t base_addr, dif_rv_plic_t *plic);
 
 /**
  * Returns whether a particular interrupt is currently pending.
@@ -145,9 +86,9 @@ dif_rv_plic_result_t dif_rv_plic_init(dif_rv_plic_params_t params,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_irq_is_pending(const dif_rv_plic_t *plic,
-                                                dif_rv_plic_irq_id_t irq,
-                                                bool *is_pending);
+dif_result_t dif_rv_plic_irq_is_pending(const dif_rv_plic_t *plic,
+                                        dif_rv_plic_irq_id_t irq,
+                                        bool *is_pending);
 
 /**
  * Checks whether a particular interrupt is currently enabled or disabled.
@@ -159,10 +100,10 @@ dif_rv_plic_result_t dif_rv_plic_irq_is_pending(const dif_rv_plic_t *plic,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_irq_get_enabled(const dif_rv_plic_t *plic,
-                                                 dif_rv_plic_irq_id_t irq,
-                                                 dif_rv_plic_target_t target,
-                                                 dif_rv_plic_toggle_t *state);
+dif_result_t dif_rv_plic_irq_get_enabled(const dif_rv_plic_t *plic,
+                                         dif_rv_plic_irq_id_t irq,
+                                         dif_rv_plic_target_t target,
+                                         dif_toggle_t *state);
 
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
@@ -177,10 +118,10 @@ dif_rv_plic_result_t dif_rv_plic_irq_get_enabled(const dif_rv_plic_t *plic,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_irq_set_enabled(const dif_rv_plic_t *plic,
-                                                 dif_rv_plic_irq_id_t irq,
-                                                 dif_rv_plic_target_t target,
-                                                 dif_rv_plic_toggle_t state);
+dif_result_t dif_rv_plic_irq_set_enabled(const dif_rv_plic_t *plic,
+                                         dif_rv_plic_irq_id_t irq,
+                                         dif_rv_plic_target_t target,
+                                         dif_toggle_t state);
 
 /**
  * Sets IRQ source priority (0-3).
@@ -195,9 +136,9 @@ dif_rv_plic_result_t dif_rv_plic_irq_set_enabled(const dif_rv_plic_t *plic,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_irq_set_priority(const dif_rv_plic_t *plic,
-                                                  dif_rv_plic_irq_id_t irq,
-                                                  uint32_t priority);
+dif_result_t dif_rv_plic_irq_set_priority(const dif_rv_plic_t *plic,
+                                          dif_rv_plic_irq_id_t irq,
+                                          uint32_t priority);
 
 /**
  * Sets the target priority threshold.
@@ -212,8 +153,9 @@ dif_rv_plic_result_t dif_rv_plic_irq_set_priority(const dif_rv_plic_t *plic,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_target_set_threshold(
-    const dif_rv_plic_t *plic, dif_rv_plic_target_t target, uint32_t threshold);
+dif_result_t dif_rv_plic_target_set_threshold(const dif_rv_plic_t *plic,
+                                              dif_rv_plic_target_t target,
+                                              uint32_t threshold);
 
 /**
  * Claims an IRQ and gets the information about the source.
@@ -240,9 +182,9 @@ dif_rv_plic_result_t dif_rv_plic_target_set_threshold(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_irq_claim(const dif_rv_plic_t *plic,
-                                           dif_rv_plic_target_t target,
-                                           dif_rv_plic_irq_id_t *claim_data);
+dif_result_t dif_rv_plic_irq_claim(const dif_rv_plic_t *plic,
+                                   dif_rv_plic_target_t target,
+                                   dif_rv_plic_irq_id_t *claim_data);
 
 /**
  * Completes the claimed IRQ.
@@ -263,9 +205,9 @@ dif_rv_plic_result_t dif_rv_plic_irq_claim(const dif_rv_plic_t *plic,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_irq_complete(
-    const dif_rv_plic_t *plic, dif_rv_plic_target_t target,
-    dif_rv_plic_irq_id_t complete_data);
+dif_result_t dif_rv_plic_irq_complete(const dif_rv_plic_t *plic,
+                                      dif_rv_plic_target_t target,
+                                      dif_rv_plic_irq_id_t complete_data);
 
 /**
  * Forces the software interrupt for a particular target.
@@ -282,11 +224,11 @@ dif_rv_plic_result_t dif_rv_plic_irq_complete(
  *
  * @param plic PLIC state data.
  * @param target Target HART.
- * @return `dif_rv_plic_result_t`.
+ * @return `dif_result_t`.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_software_irq_force(
-    const dif_rv_plic_t *plic, dif_rv_plic_target_t target);
+dif_result_t dif_rv_plic_software_irq_force(const dif_rv_plic_t *plic,
+                                            dif_rv_plic_target_t target);
 
 /**
  * Acknowledges the software interrupt for a particular target.
@@ -297,11 +239,11 @@ dif_rv_plic_result_t dif_rv_plic_software_irq_force(
  *
  * @param plic PLIC state data.
  * @param target Target HART.
- * @return `dif_rv_plic_result_t`.
+ * @return `dif_result_t`.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_software_irq_acknowledge(
-    const dif_rv_plic_t *plic, dif_rv_plic_target_t target);
+dif_result_t dif_rv_plic_software_irq_acknowledge(const dif_rv_plic_t *plic,
+                                                  dif_rv_plic_target_t target);
 
 /**
  * Returns software interrupt pending state for a particular target.
@@ -309,11 +251,12 @@ dif_rv_plic_result_t dif_rv_plic_software_irq_acknowledge(
  * @param plic PLIC state data.
  * @param target Target HART.
  * @param[out] is_pending Flag indicating whether the interrupt is pending.
- * @return `dif_rv_plic_result_t`.
+ * @return `dif_result_t`.
  */
 OT_WARN_UNUSED_RESULT
-dif_rv_plic_result_t dif_rv_plic_software_irq_is_pending(
-    const dif_rv_plic_t *plic, dif_rv_plic_target_t target, bool *is_pending);
+dif_result_t dif_rv_plic_software_irq_is_pending(const dif_rv_plic_t *plic,
+                                                 dif_rv_plic_target_t target,
+                                                 bool *is_pending);
 
 #ifdef __cplusplus
 }  // extern "C"

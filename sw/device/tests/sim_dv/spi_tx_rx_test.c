@@ -70,9 +70,8 @@ static volatile bool fired_irqs[SPI_DEVICE_NUM_IRQS];
 void handler_irq_external(void) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK(dif_rv_plic_irq_claim(&plic0, kTopEarlgreyPlicTargetIbex0,
-                              &plic_irq_id) == kDifRvPlicOk,
-        "dif_rv_plic_irq_claim failed");
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(&plic0, kTopEarlgreyPlicTargetIbex0, &plic_irq_id));
 
   // Check if it is the right peripheral.
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
@@ -126,9 +125,8 @@ void handler_irq_external(void) {
   CHECK_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device, spi_device_irq));
 
   // Complete the IRQ at PLIC.
-  CHECK(dif_rv_plic_irq_complete(&plic0, kTopEarlgreyPlicTargetIbex0,
-                                 plic_irq_id) == kDifRvPlicOk,
-        "dif_rv_plic_irq_complete failed");
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic0, kTopEarlgreyPlicTargetIbex0,
+                                        plic_irq_id));
 }
 
 /**
@@ -167,74 +165,50 @@ static void spi_device_init_with_irqs(
 static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
   LOG_INFO("Initializing the PLIC.");
 
-  CHECK(dif_rv_plic_init((dif_rv_plic_params_t){.base_addr = base_addr},
-                         plic) == kDifRvPlicOk,
-        "dif_rv_plic_init failed");
+  CHECK_DIF_OK(dif_rv_plic_init(base_addr, plic));
 
   // Set the priority of SPI DEVICE interrupts at PLIC to be >=1 (so ensure the
   // target does get interrupted).
-  CHECK(dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxFull,
-                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_priority failed");
-  CHECK(dif_rv_plic_irq_set_priority(plic,
-                                     kTopEarlgreyPlicIrqIdSpiDeviceRxWatermark,
-                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_priority failed");
-  CHECK(dif_rv_plic_irq_set_priority(plic,
-                                     kTopEarlgreyPlicIrqIdSpiDeviceTxWatermark,
-                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
-        , "dif_rv_plic_irq_set_priority failed");
-  CHECK(
-      dif_rv_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxError,
-                                   kDifRvPlicMaxPriority) == kDifRvPlicOk,
-      "dif_rv_plic_irq_set_priority failed");
-  CHECK(dif_rv_plic_irq_set_priority(plic,
-                                     kTopEarlgreyPlicIrqIdSpiDeviceRxOverflow,
-                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_priority failed");
-  CHECK(dif_rv_plic_irq_set_priority(plic,
-                                     kTopEarlgreyPlicIrqIdSpiDeviceTxUnderflow,
-                                     kDifRvPlicMaxPriority) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_priority failed");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxFull, kDifRvPlicMaxPriority));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxWatermark, kDifRvPlicMaxPriority));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceTxWatermark, kDifRvPlicMaxPriority));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxError, kDifRvPlicMaxPriority));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxOverflow, kDifRvPlicMaxPriority));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceTxUnderflow, kDifRvPlicMaxPriority));
 
   // Set the threshold for the Ibex to 0.
-  CHECK(dif_rv_plic_target_set_threshold(plic, kTopEarlgreyPlicTargetIbex0,
-                                         0x0) == kDifRvPlicOk,
-        "dif_rv_plic_target_set_threshold failed");
+  CHECK_DIF_OK(
+      dif_rv_plic_target_set_threshold(plic, kTopEarlgreyPlicTargetIbex0, 0x0));
 
-  CHECK(dif_rv_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxFull,
-                                    kTopEarlgreyPlicTargetIbex0,
-                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_enabled failed");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxFull, kTopEarlgreyPlicTargetIbex0,
+      kDifToggleEnabled));
 
-  CHECK(dif_rv_plic_irq_set_enabled(plic,
-                                    kTopEarlgreyPlicIrqIdSpiDeviceRxWatermark,
-                                    kTopEarlgreyPlicTargetIbex0,
-                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_enabled failed");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxWatermark,
+      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
 
-  CHECK(dif_rv_plic_irq_set_enabled(plic,
-                                    kTopEarlgreyPlicIrqIdSpiDeviceTxWatermark,
-                                    kTopEarlgreyPlicTargetIbex0,
-                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_enabled failed");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceTxWatermark,
+      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
 
-  CHECK(dif_rv_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdSpiDeviceRxError,
-                                    kTopEarlgreyPlicTargetIbex0,
-                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_enabled failed");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxError, kTopEarlgreyPlicTargetIbex0,
+      kDifToggleEnabled));
 
-  CHECK(dif_rv_plic_irq_set_enabled(plic,
-                                    kTopEarlgreyPlicIrqIdSpiDeviceRxOverflow,
-                                    kTopEarlgreyPlicTargetIbex0,
-                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_enabled failed");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxOverflow,
+      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
 
-  CHECK(dif_rv_plic_irq_set_enabled(plic,
-                                    kTopEarlgreyPlicIrqIdSpiDeviceTxUnderflow,
-                                    kTopEarlgreyPlicTargetIbex0,
-                                    kDifRvPlicToggleEnabled) == kDifRvPlicOk,
-        "dif_rv_plic_irq_set_enabled failed");
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceTxUnderflow,
+      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
 }
 
 static bool exp_irqs_fired(void) {

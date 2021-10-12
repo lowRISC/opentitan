@@ -68,28 +68,22 @@ static volatile bool expected_irq_edge;
 static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
   LOG_INFO("Initializing the PLIC.");
 
-  CHECK(dif_rv_plic_init((dif_rv_plic_params_t){.base_addr = base_addr},
-                         plic) == kDifRvPlicOk,
-        "dif_rv_plic_init failed");
+  CHECK_DIF_OK(dif_rv_plic_init(base_addr, plic));
 
   for (uint32_t i = 0; i < kNumGpios; ++i) {
     dif_rv_plic_irq_id_t plic_irq_id = i + kTopEarlgreyPlicIrqIdGpioGpio0;
 
     // Set the priority of GPIO interrupts at PLIC to be >=1
-    CHECK(dif_rv_plic_irq_set_priority(plic, plic_irq_id, 0x1) == kDifRvPlicOk,
-          "dif_rv_plic_irq_set_priority failed");
+    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, plic_irq_id, 0x1));
 
     // Enable all GPIO interrupts at the PLIC.
-    CHECK(dif_rv_plic_irq_set_enabled(plic, plic_irq_id,
-                                      kTopEarlgreyPlicTargetIbex0,
-                                      kDifRvPlicToggleEnabled) == kDifRvPlicOk,
-          "dif_rv_plic_irq_set_enabled failed");
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+        plic, plic_irq_id, kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
   }
 
   // Set the threshold for the Ibex to 0.
-  CHECK(dif_rv_plic_target_set_threshold(plic, kTopEarlgreyPlicTargetIbex0,
-                                         0x0) == kDifRvPlicOk,
-        "dif_rv_plic_target_set_threshold failed");
+  CHECK_DIF_OK(
+      dif_rv_plic_target_set_threshold(plic, kTopEarlgreyPlicTargetIbex0, 0x0));
 }
 
 /**
@@ -206,9 +200,8 @@ static void gpio_input_test(const dif_gpio_t *gpio) {
 void handler_irq_external(void) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK(dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0,
-                              &plic_irq_id) == kDifRvPlicOk,
-        "dif_rv_plic_irq_claim failed");
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &plic_irq_id));
 
   // Check if it is the right peripheral.
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
@@ -244,9 +237,8 @@ void handler_irq_external(void) {
   CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio, gpio_pin_irq_fired));
 
   // Complete the IRQ at PLIC.
-  CHECK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
-                                 plic_irq_id) == kDifRvPlicOk,
-        "dif_rv_plic_irq_complete failed");
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
+                                        plic_irq_id));
 }
 
 const test_config_t kTestConfig;
@@ -260,9 +252,8 @@ bool test_main(void) {
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
 
   // Initialize the PLIC.
-  mmio_region_t plic_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  plic_init_with_irqs(plic_base_addr, &plic);
+  plic_init_with_irqs(mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR),
+                      &plic);
 
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);

@@ -153,6 +153,7 @@ sw_lib_dif_rv_plic = declare_dependency(
     dependencies: [
       sw_lib_mmio,
       sw_lib_bitfield,
+      sw_lib_dif_autogen_rv_plic,
     ],
   )
 )
@@ -160,9 +161,11 @@ sw_lib_dif_rv_plic = declare_dependency(
 test('dif_rv_plic_unittest', executable(
     'dif_rv_plic_unittest',
     sources: [
-      hw_top_earlgrey_rv_plic_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_rv_plic.c',
       'dif_rv_plic_unittest.cc',
+      'autogen/dif_rv_plic_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_rv_plic.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_rv_plic_autogen.c',
+      hw_top_earlgrey_rv_plic_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

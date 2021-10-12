@@ -128,7 +128,7 @@ static void plic_reset(const dif_rv_plic_t *plic) {
   // Clear all of the priority registers.
   for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     ptrdiff_t offset = plic_priority_reg_offset(i);
-    mmio_region_write32(plic->params.base_addr, offset, 0);
+    mmio_region_write32(plic->base_addr, offset, 0);
   }
 
   // Clear all of the target related registers.
@@ -138,189 +138,187 @@ static void plic_reset(const dif_rv_plic_t *plic) {
     ptrdiff_t offset = plic_irq_enable_base_for_target(target);
     for (int i = 0; i < RV_PLIC_IE0_MULTIREG_COUNT; ++i) {
       ptrdiff_t multireg_offset = offset + (i * sizeof(uint32_t));
-      mmio_region_write32(plic->params.base_addr, multireg_offset, 0);
+      mmio_region_write32(plic->base_addr, multireg_offset, 0);
     }
 
     // Clear threshold registers.
     offset = plic_threshold_base_for_target(target);
-    mmio_region_write32(plic->params.base_addr, offset, 0);
+    mmio_region_write32(plic->base_addr, offset, 0);
 
     // Clear software interrupt registers.
     offset = plic_software_irq_base_for_target(target);
-    mmio_region_write32(plic->params.base_addr, offset, 0);
+    mmio_region_write32(plic->base_addr, offset, 0);
   }
 }
 
-dif_rv_plic_result_t dif_rv_plic_init(dif_rv_plic_params_t params,
-                                      dif_rv_plic_t *plic) {
+dif_result_t dif_rv_plic_init(mmio_region_t base_addr, dif_rv_plic_t *plic) {
   if (plic == NULL) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
-  plic->params = params;
+  plic->base_addr = base_addr;
 
   // TODO: Move this out into its own function.
   plic_reset(plic);
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
 
-dif_rv_plic_result_t dif_rv_plic_irq_get_enabled(const dif_rv_plic_t *plic,
-                                                 dif_rv_plic_irq_id_t irq,
-                                                 dif_rv_plic_target_t target,
-                                                 dif_rv_plic_toggle_t *state) {
+dif_result_t dif_rv_plic_irq_get_enabled(const dif_rv_plic_t *plic,
+                                         dif_rv_plic_irq_id_t irq,
+                                         dif_rv_plic_target_t target,
+                                         dif_toggle_t *state) {
   if (plic == NULL || irq >= RV_PLIC_PARAM_NUM_SRC ||
       target >= RV_PLIC_PARAM_NUM_TARGET) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
   plic_reg_info_t reg_info = plic_irq_enable_reg_info(irq, target);
 
-  uint32_t reg = mmio_region_read32(plic->params.base_addr, reg_info.offset);
+  uint32_t reg = mmio_region_read32(plic->base_addr, reg_info.offset);
   bool is_enabled = bitfield_bit32_read(reg, reg_info.bit_index);
-  *state = is_enabled ? kDifRvPlicToggleEnabled : kDifRvPlicToggleDisabled;
+  *state = is_enabled ? kDifToggleEnabled : kDifToggleDisabled;
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
 
-dif_rv_plic_result_t dif_rv_plic_irq_set_enabled(const dif_rv_plic_t *plic,
-                                                 dif_rv_plic_irq_id_t irq,
-                                                 dif_rv_plic_target_t target,
-                                                 dif_rv_plic_toggle_t state) {
+dif_result_t dif_rv_plic_irq_set_enabled(const dif_rv_plic_t *plic,
+                                         dif_rv_plic_irq_id_t irq,
+                                         dif_rv_plic_target_t target,
+                                         dif_toggle_t state) {
   if (plic == NULL || irq >= RV_PLIC_PARAM_NUM_SRC ||
       target >= RV_PLIC_PARAM_NUM_TARGET) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
   bool flag;
   switch (state) {
-    case kDifRvPlicToggleEnabled:
+    case kDifToggleEnabled:
       flag = true;
       break;
-    case kDifRvPlicToggleDisabled:
+    case kDifToggleDisabled:
       flag = false;
       break;
     default:
-      return kDifRvPlicBadArg;
+      return kDifBadArg;
   }
 
   plic_reg_info_t reg_info = plic_irq_enable_reg_info(irq, target);
 
-  uint32_t reg = mmio_region_read32(plic->params.base_addr, reg_info.offset);
+  uint32_t reg = mmio_region_read32(plic->base_addr, reg_info.offset);
   reg = bitfield_bit32_write(reg, reg_info.bit_index, flag);
-  mmio_region_write32(plic->params.base_addr, reg_info.offset, reg);
+  mmio_region_write32(plic->base_addr, reg_info.offset, reg);
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
 
-dif_rv_plic_result_t dif_rv_plic_irq_set_priority(const dif_rv_plic_t *plic,
-                                                  dif_rv_plic_irq_id_t irq,
-                                                  uint32_t priority) {
+dif_result_t dif_rv_plic_irq_set_priority(const dif_rv_plic_t *plic,
+                                          dif_rv_plic_irq_id_t irq,
+                                          uint32_t priority) {
   if (plic == NULL || irq >= RV_PLIC_PARAM_NUM_SRC ||
       priority > kDifRvPlicMaxPriority) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
   ptrdiff_t offset = plic_priority_reg_offset(irq);
-  mmio_region_write32(plic->params.base_addr, offset, priority);
+  mmio_region_write32(plic->base_addr, offset, priority);
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
 
-dif_rv_plic_result_t dif_rv_plic_target_set_threshold(
-    const dif_rv_plic_t *plic, dif_rv_plic_target_t target,
-    uint32_t threshold) {
+dif_result_t dif_rv_plic_target_set_threshold(const dif_rv_plic_t *plic,
+                                              dif_rv_plic_target_t target,
+                                              uint32_t threshold) {
   if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET ||
       threshold > kDifRvPlicMaxPriority) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
   ptrdiff_t threshold_offset = plic_threshold_base_for_target(target);
-  mmio_region_write32(plic->params.base_addr, threshold_offset, threshold);
+  mmio_region_write32(plic->base_addr, threshold_offset, threshold);
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
 
-dif_rv_plic_result_t dif_rv_plic_irq_is_pending(const dif_rv_plic_t *plic,
-                                                dif_rv_plic_irq_id_t irq,
-                                                bool *is_pending) {
+dif_result_t dif_rv_plic_irq_is_pending(const dif_rv_plic_t *plic,
+                                        dif_rv_plic_irq_id_t irq,
+                                        bool *is_pending) {
   if (plic == NULL || irq >= RV_PLIC_PARAM_NUM_SRC || is_pending == NULL) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
   plic_reg_info_t reg_info = plic_irq_pending_reg_info(irq);
-  uint32_t reg = mmio_region_read32(plic->params.base_addr, reg_info.offset);
+  uint32_t reg = mmio_region_read32(plic->base_addr, reg_info.offset);
   *is_pending = bitfield_bit32_read(reg, reg_info.bit_index);
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
 
-dif_rv_plic_result_t dif_rv_plic_irq_claim(const dif_rv_plic_t *plic,
-                                           dif_rv_plic_target_t target,
-                                           dif_rv_plic_irq_id_t *claim_data) {
+dif_result_t dif_rv_plic_irq_claim(const dif_rv_plic_t *plic,
+                                   dif_rv_plic_target_t target,
+                                   dif_rv_plic_irq_id_t *claim_data) {
   if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET ||
       claim_data == NULL) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
   ptrdiff_t claim_complete_reg = plic_claim_complete_base_for_target(target);
-  *claim_data = mmio_region_read32(plic->params.base_addr, claim_complete_reg);
+  *claim_data = mmio_region_read32(plic->base_addr, claim_complete_reg);
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
 
-dif_rv_plic_result_t dif_rv_plic_irq_complete(
-    const dif_rv_plic_t *plic, dif_rv_plic_target_t target,
-    dif_rv_plic_irq_id_t complete_data) {
+dif_result_t dif_rv_plic_irq_complete(const dif_rv_plic_t *plic,
+                                      dif_rv_plic_target_t target,
+                                      dif_rv_plic_irq_id_t complete_data) {
   if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
   // Write back the claimed IRQ ID to the target specific CC register,
   // to notify the PLIC of the IRQ completion.
   ptrdiff_t claim_complete_reg = plic_claim_complete_base_for_target(target);
-  mmio_region_write32(plic->params.base_addr, claim_complete_reg,
-                      complete_data);
+  mmio_region_write32(plic->base_addr, claim_complete_reg, complete_data);
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
 
-dif_rv_plic_result_t dif_rv_plic_software_irq_force(
-    const dif_rv_plic_t *plic, dif_rv_plic_target_t target) {
+dif_result_t dif_rv_plic_software_irq_force(const dif_rv_plic_t *plic,
+                                            dif_rv_plic_target_t target) {
   if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
   ptrdiff_t msip_offset = plic_software_irq_base_for_target(target);
-  mmio_region_write32(plic->params.base_addr, msip_offset, 1);
+  mmio_region_write32(plic->base_addr, msip_offset, 1);
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
 
-dif_rv_plic_result_t dif_rv_plic_software_irq_acknowledge(
-    const dif_rv_plic_t *plic, dif_rv_plic_target_t target) {
+dif_result_t dif_rv_plic_software_irq_acknowledge(const dif_rv_plic_t *plic,
+                                                  dif_rv_plic_target_t target) {
   if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
   ptrdiff_t msip_offset = plic_software_irq_base_for_target(target);
-  mmio_region_write32(plic->params.base_addr, msip_offset, 0);
+  mmio_region_write32(plic->base_addr, msip_offset, 0);
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
 
-dif_rv_plic_result_t dif_rv_plic_software_irq_is_pending(
-    const dif_rv_plic_t *plic, dif_rv_plic_target_t target, bool *is_pending) {
+dif_result_t dif_rv_plic_software_irq_is_pending(const dif_rv_plic_t *plic,
+                                                 dif_rv_plic_target_t target,
+                                                 bool *is_pending) {
   if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET ||
       is_pending == NULL) {
-    return kDifRvPlicBadArg;
+    return kDifBadArg;
   }
 
   ptrdiff_t msip_offset = plic_software_irq_base_for_target(target);
-  uint32_t register_value =
-      mmio_region_read32(plic->params.base_addr, msip_offset);
+  uint32_t register_value = mmio_region_read32(plic->base_addr, msip_offset);
 
   *is_pending = (register_value == 1) ? true : false;
 
-  return kDifRvPlicOk;
+  return kDifOk;
 }
