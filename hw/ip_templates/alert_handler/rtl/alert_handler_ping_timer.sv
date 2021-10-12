@@ -83,64 +83,38 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // Tandem LFSR Instances //
   ///////////////////////////
 
-  logic lfsr_en, lfsr_en_unbuf;
-  logic [LfsrWidth-1:0] entropy_unbuf;
-  logic [1:0][LfsrWidth-1:0] lfsr_state;
-
-  assign lfsr_en_unbuf = reseed_en | lfsr_en;
-  assign entropy_unbuf = (reseed_en) ? edn_data_i[LfsrWidth-1:0] : '0;
+  logic lfsr_en, lfsr_err;
+  logic [LfsrWidth-1:0] entropy;
+  logic [PING_CNT_DW + IdDw - 1:0] lfsr_state;
+  assign entropy = (reseed_en) ? edn_data_i[LfsrWidth-1:0] : '0;
 
   // We employ two redundant LFSRs to guard against FI attacks.
   // If any of the two is glitched and the two LFSR states do not agree,
   // the FSM below is moved into a terminal error state and all ping alerts
   // are permanently asserted.
-  for (genvar k = 0; k < 2; k++) begin : gen_double_lfsr
-    // Instantiate size_only buffers to prevent
-    // optimization / merging of redundant logic.
-    logic lfsr_en_buf;
-    logic [LfsrWidth-1:0] entropy_buf, lfsr_state_unbuf;
-    prim_buf #(
-      .Width(LfsrWidth)
-    ) u_prim_buf_entropy (
-      .in_i(entropy_unbuf),
-      .out_o(entropy_buf)
-    );
-
-    prim_buf u_prim_buf_lfsr_en (
-      .in_i(lfsr_en_unbuf),
-      .out_o(lfsr_en_buf)
-    );
-
-    prim_buf #(
-      .Width(LfsrWidth)
-    ) u_prim_buf_state (
-      .in_i(lfsr_state_unbuf),
-      .out_o(lfsr_state[k])
-    );
-
-    prim_lfsr #(
-      .LfsrDw      ( LfsrWidth       ),
-      .EntropyDw   ( LfsrWidth       ),
-      .StateOutDw  ( LfsrWidth       ),
-      .DefaultSeed ( RndCnstLfsrSeed ),
-      .StatePermEn ( 1'b1            ),
-      .StatePerm   ( RndCnstLfsrPerm ),
-      .MaxLenSVA   ( MaxLenSVA       ),
-      .LockupSVA   ( LockupSVA       ),
-      .ExtSeedSVA  ( 1'b0            ) // ext seed is unused
-    ) u_prim_lfsr (
-      .clk_i,
-      .rst_ni,
-      .seed_en_i  ( 1'b0             ),
-      .seed_i     ( '0               ),
-      .lfsr_en_i  ( lfsr_en_buf      ),
-      .entropy_i  ( entropy_buf      ),
-      .state_o    ( lfsr_state_unbuf )
-    );
-  end
+  prim_double_lfsr #(
+    .LfsrDw      ( LfsrWidth          ),
+    .EntropyDw   ( LfsrWidth          ),
+    .StateOutDw  ( PING_CNT_DW + IdDw ),
+    .DefaultSeed ( RndCnstLfsrSeed    ),
+    .StatePermEn ( 1'b1               ),
+    .StatePerm   ( RndCnstLfsrPerm    ),
+    .MaxLenSVA   ( MaxLenSVA          ),
+    .LockupSVA   ( LockupSVA          ),
+    .ExtSeedSVA  ( 1'b0               ) // ext seed is unused
+  ) u_prim_double_lfsr (
+    .clk_i,
+    .rst_ni,
+    .seed_en_i  ( 1'b0                 ),
+    .seed_i     ( '0                   ),
+    .lfsr_en_i  ( reseed_en || lfsr_en ),
+    .entropy_i  ( entropy              ),
+    .state_o    ( lfsr_state           ),
+    .err_o      ( lfsr_err             )
+  );
 
   logic [IdDw-1:0] id_to_ping;
-  assign id_to_ping = lfsr_state[0][PING_CNT_DW +: IdDw];
+  assign id_to_ping = lfsr_state[PING_CNT_DW +: IdDw];
 
   // align the enable mask with powers of two for the indexing operation below.
   logic [2**IdDw-1:0] enable_mask;
@@ -220,8 +194,10 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   for (genvar k = 0; k < 2; k++) begin : gen_double_cnt
 
     // the constant offset ensures a minimum cycle spacing between pings.
+    logic unused_bits;
     logic [PING_CNT_DW-1:0] wait_cyc;
-    assign wait_cyc = (lfsr_state[k][PING_CNT_DW-1:0] | PING_CNT_DW'(3'b100));
+    assign wait_cyc = (lfsr_state[PING_CNT_DW-1:0] | PING_CNT_DW'(3'b100));
+    assign unused_bits = lfsr_state[2];
 
     // note that the masks are used for DV/FPV only in order to reduce the state space.
     logic [PING_CNT_DW-1:0] cnt_d;
@@ -374,8 +350,8 @@ module alert_handler_ping_timer import alert_pkg::*; #(
 
     // if the two LFSR or counter states do not agree,
     // we move into the terminal state.
-    if (lfsr_state[0] != lfsr_state[1] ||
-        cnt_q[0]      != cnt_q[1]      ||
+    if (lfsr_err                  ||
+        cnt_q[0]      != cnt_q[1] ||
         esc_cnt_q[0]  != esc_cnt_q[1]) begin
        state_d = FsmErrorSt;
     end
