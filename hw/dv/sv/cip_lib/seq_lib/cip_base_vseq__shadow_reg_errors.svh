@@ -154,7 +154,7 @@ virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
   string          alert_name = shadowed_csr.get_storage_err_alert_name();
 
   `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(
-      kind, kind inside {BkdrRegPathRtlCommitted, BkdrRegPathRtlShadow};)
+      kind, kind inside {BkdrRegPathRtl, BkdrRegPathRtlShadow};)
   csr_peek(.ptr(shadowed_csr), .value(origin_val), .kind(kind));
   err_val = get_shadow_reg_diff_val(shadowed_csr, origin_val);
 

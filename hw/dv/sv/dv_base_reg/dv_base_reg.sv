@@ -318,7 +318,7 @@ class dv_base_reg extends uvm_reg;
       if (kind == "BkdrRegPathRtlShadow") begin
         flds[i].update_shadowed_val(get_field_val(flds[i], value));
         backdoor_write_shadow_val = 1;
-      end else if (kind == "BkdrRegPathRtlCommitted") begin
+      end else if (kind == "BkdrRegPathRtl") begin
         flds[i].update_committed_val(get_field_val(flds[i], value));
         backdoor_write_shadow_val = 1;
       end
