@@ -26,23 +26,70 @@ interface clk_rst_if #(
   import uvm_pkg::*;
 `endif
 
-  bit drive_clk;              // enable clk generation
-  logic o_clk;                // output clk
+  // Enables clock to be generated and driven by this interface.
+  bit drive_clk;
 
-  bit drive_rst_n;            // enable rst_n generation
-  logic o_rst_n;              // output rst_n
+  // The internal output clock value.
+  logic o_clk;
 
-  // clk params
-  bit clk_gate      = 1'b0;   // clk gate signal
-  int clk_period_ps = 20_000; // 50MHz default
-  real clk_freq_mhz = 50;     // 50MHz default
-  int duty_cycle    = 50;     // 50% default
-  int max_jitter_ps = 1000;   // 1ns default
-  bit recompute     = 1'b1;   // compute half periods when period/freq/duty are changed
-  int clk_hi_ps;              // half period hi in ps
-  int clk_lo_ps;              // half period lo in ps
-  int jitter_chance_pc = 0;   // jitter chance in percentage on clock edge - disabled by default
-  bit sole_clock = 1'b0;      // if true, this is the only clock in the system
+  // Enables the rst_n to be generated and driven by this interface.
+  bit drive_rst_n;
+
+  // The internal output reset value.
+  logic o_rst_n;
+
+  // Applies clock gating.
+  bit clk_gate = 1'b0;
+
+  // The nominal (chosen) frequency (as period in ps) of the driven clock (50MHz by default).
+  int clk_period_ps = 20_000;
+
+  // The variation of clock period (mimics uncalibrated clocks), to scale the nominal frequency
+  // down. If set to non-zero value, the clock frequency is scaled randomly on every edge.
+  int clk_freq_scaling_pc = 0;
+
+  // The percentage chance of freq scaled down randomly on each edge.
+  int clk_freq_scaling_chance_pc = 50;
+
+  // Clock frequency is scaled down. This enables the frequency to be randomly scaled up as well.
+  //
+  // Note: If set, the randomness of the clock frequency being scaled up or down may result in a
+  // bigger frequency distribution than the intended clk_freq_scaling_pc setting. For example, 50MHz
+  // with 10% scaling may result in pulses that are < 45MHz and > 55MHz wide as well.
+  bit clk_freq_scale_up = 1'b0;
+
+  // The computed clock frequency in MHz.
+  real clk_freq_mhz = 50;
+
+  // The duty cycle of the clock period as percentage. If jitter and scaling is applied, then the
+  // duty cycle will not be maintained.
+  int duty_cycle = 50;
+
+  // Maximum jitter applied to each period of the clock - this is expected to be about 20% or less
+  // than the clock period. The computed jitter is added or subtracted to each edge.
+  //         _________
+  // _____:_| :     : |_:_______
+  //
+  // The actual jitter value is picked randomly within the window {[-max_jitter_ps:max_jitter_ps]}
+  // and is added to the time to next edge.
+  int max_jitter_ps = 1000;
+
+  // The percentage chance of jitter occurring on each edge. If 0 (default value), then jitter is
+  // disabled altogether. If 100, jitter is computed and applied at every edge.
+  int jitter_chance_pc = 0;
+
+  // Internal signal indicating the clock half periods  need to be recomputed.
+  bit recompute = 1'b1;
+
+  // Internal signal indicating the amount of time for which the clock stays high / lo in the next
+  // cycle.
+  int clk_hi_ps;
+  int clk_lo_ps;
+  real clk_hi_modified_ps;
+  real clk_lo_modified_ps;
+
+  // If true, this is the only clock in the system; there is no need to add initial jitter.
+  bit sole_clock = 1'b0;
 
   // use IfName as a part of msgs to indicate which clk_rst_vif instance
   string msg_id = {"clk_rst_if::", IfName};
@@ -81,6 +128,22 @@ interface clk_rst_if #(
     set_freq_khz(freq_mhz * 1000);
   endfunction
 
+  // Set the clk frequency scaling, chance in percentage and scaling up.
+  //
+  // freq_scaling_pc is a positive integer that determines by what amount (as percentage of the
+  // nominal frequency) is the frequency scaled (jittered) down.
+  // freq_scaling_chance_pc is a percentage number between 0 and 100 that determines how often is
+  // the scaling randomly recomputed and applied.
+  // freq_scale_up is a bit that enables the random scaling up of the frequency as well.
+  function automatic void set_freq_scaling(int freq_scaling_pc, int freq_scaling_chance_pc = 50,
+                                           bit freq_scale_up = 1'b0);
+    `DV_CHECK_FATAL(freq_scaling_pc >= 0, , msg_id)
+    `DV_CHECK_FATAL(freq_scaling_chance_pc inside {[0:100]}, , msg_id)
+    clk_freq_scaling_pc = freq_scaling_pc;
+    clk_freq_scaling_chance_pc = freq_scaling_chance_pc;
+    clk_freq_scale_up = freq_scale_up;
+  endfunction
+
   // call this function at t=0 (from tb top) to enable clk and rst_n to be driven
   function automatic void set_active(bit drive_clk_val = 1'b1, bit drive_rst_n_val = 1'b1);
     time t = $time;
@@ -89,11 +152,7 @@ interface clk_rst_if #(
       drive_rst_n = drive_rst_n_val;
     end
     else begin
-`ifdef VERILATOR
-      $error({msg_id, "this function can only be called at t=0"});
-`else
-      `uvm_fatal(msg_id, "this function can only be called at t=0")
-`endif
+      `dv_fatal("This function can only be called at t=0", msg_id)
     end
   endfunction
 
@@ -106,13 +165,7 @@ interface clk_rst_if #(
 
   // set the duty cycle (1-99)
   function automatic void set_duty_cycle(int duty);
-    if (!(duty inside {[1:99]})) begin
-`ifdef VERILATOR
-      $error({msg_id, $sformatf("duty cycle %0d is not inside [1:99]", duty)});
-`else
-      `uvm_fatal(msg_id, $sformatf("duty cycle %0d is not inside [1:99]", duty))
-`endif
-    end
+    `DV_CHECK_FATAL(duty inside {[1:99]}, , msg_id)
     duty_cycle = duty;
     recompute = 1'b1;
   endfunction
@@ -125,13 +178,7 @@ interface clk_rst_if #(
   // set jitter chance in percentage (0 - 100)
   // 0 - dont add any jitter; 100 - add jitter on every clock edge
   function automatic void set_jitter_chance_pc(int jitter_chance);
-    if (!(jitter_chance inside {[0:100]})) begin
-`ifdef VERILATOR
-      $error({msg_id, $sformatf("jitter_chance %0d is not inside [0:100]", jitter_chance)});
-`else
-      `uvm_fatal(msg_id, $sformatf("jitter_chance %0d is not inside [0:100]", jitter_chance))
-`endif
-    end
+    `DV_CHECK_FATAL(jitter_chance inside {[0:100]}, , msg_id)
     jitter_chance_pc = jitter_chance;
   endfunction
 
@@ -153,22 +200,30 @@ interface clk_rst_if #(
     clk_gate = 1'b1;
   endfunction
 
-  // add jitter to clk_hi and clk_lo half periods based on jitter_chance_pc
-  function automatic void add_jitter();
-    int jitter_ps;
+  // Scales the clock frequency up and down on every edge.
+  function automatic void apply_freq_scaling();
+    real scaling;
+    real mult = $urandom_range(0, clk_freq_scale_up) ? 1.0 : -1.0;
+
+    if ($urandom_range(1, 100) <= clk_freq_scaling_chance_pc) begin
+      scaling = 1.0 + mult * real'($urandom_range(0, clk_freq_scaling_pc)) / 100;
+      clk_hi_modified_ps = clk_hi_ps * scaling;
+      scaling = 1.0 + mult * real'($urandom_range(0, clk_freq_scaling_pc)) / 100;
+      clk_lo_modified_ps = clk_lo_ps * scaling;
+    end
+  endfunction
+
+  // Applies jitter to clk_hi and clk_lo half periods based on jitter_chance_pc.
+  function automatic void apply_jitter();
+    int jitter;
+
     if ($urandom_range(1, 100) <= jitter_chance_pc) begin
-`ifndef VERILATOR
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(jitter_ps,
-          jitter_ps inside {[-1*max_jitter_ps:max_jitter_ps]};, "", msg_id)
-`endif
-      clk_hi_ps += jitter_ps;
+      jitter = ($urandom_range(0, 1) ? 1 : -1) * $urandom_range(0, max_jitter_ps);
+      clk_hi_modified_ps = clk_hi_ps + jitter;
     end
     if ($urandom_range(1, 100) <= jitter_chance_pc) begin
-`ifndef VERILATOR
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(jitter_ps,
-          jitter_ps inside {[-1*max_jitter_ps:max_jitter_ps]};, "", msg_id)
-`endif
-      clk_lo_ps += jitter_ps;
+      jitter = ($urandom_range(0, 1) ? 1 : -1) * $urandom_range(0, max_jitter_ps);
+      clk_lo_modified_ps = clk_lo_ps + jitter;
     end
   endfunction
 
@@ -215,11 +270,7 @@ interface clk_rst_if #(
         o_rst_n <= 1'b1;
       end
       default: begin
-`ifdef VERILATOR
-        $error({msg_id, $sformatf("rst_n_scheme %0d not supported", rst_n_scheme)});
-`else
-        `uvm_fatal(msg_id, $sformatf("rst_n_scheme %0d not supported", rst_n_scheme))
-`endif
+        `dv_fatal($sformatf("rst_n_scheme %0d not supported", rst_n_scheme), msg_id)
       end
     endcase
     wait_clks(post_reset_dly_clks);
@@ -252,13 +303,15 @@ interface clk_rst_if #(
       if (recompute) begin
         clk_hi_ps = clk_period_ps * duty_cycle / 100;
         clk_lo_ps = clk_period_ps - clk_hi_ps;
+        clk_hi_modified_ps = clk_hi_ps;
+        clk_lo_modified_ps = clk_lo_ps;
         recompute = 1'b0;
       end
-      if (jitter_chance_pc != 0) add_jitter();
-      #(clk_lo_ps * 1ps);
-      // wiggle output clk if not gated
+      if (clk_freq_scaling_pc && clk_freq_scaling_chance_pc) apply_freq_scaling();
+      if (jitter_chance_pc) apply_jitter();
+      #(clk_lo_modified_ps * 1ps);
       if (!clk_gate) o_clk = 1'b1;
-      #(clk_hi_ps * 1ps);
+      #(clk_hi_modified_ps * 1ps);
       o_clk = 1'b0;
     end
   end
