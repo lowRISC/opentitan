@@ -18,6 +18,11 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   localparam int PropagationToSlowTimeoutInNanoSeconds = 15_000;
   localparam int FetchEnTimeoutNs = 40_000;
 
+  // Random wakeups and resets.
+  rand bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeups;
+  rand bit [pwrmgr_reg_pkg::NumRstReqs-1:0] resets;
+
+  // Random delays.
   rand int cycles_before_pwrok;
   rand int cycles_before_clks_ok;
   rand int cycles_between_clks_ok;
@@ -66,7 +71,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     end
     ++sequence_depth;
     super.pre_start();
-    start_slow_fsm();
   endtask
 
   task post_apply_reset(string reset_kind = "HARD");
@@ -247,19 +251,11 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_rstmgr_sva_vif.disable_sva = !enable;
   endfunction
 
-  // This enables main_pok so the slow fsm can get started.
-  task start_slow_fsm();
-    `uvm_info(`gfn, "start of start_slow_fsm", UVM_MEDIUM)
-    cfg.slow_clk_rst_vif.wait_clks(cycles_before_pwrok);
-    cfg.pwrmgr_vif.update_ast_main_pok(1'b1);
-    `uvm_info(`gfn, "out of start_slow_fsm", UVM_MEDIUM)
-    control_assertions(1);
-  endtask
-
   // This enables the fast fsm to transition to low power after the transition is enabled by
   // software and cpu WFI.
   // FIXME Allow some units not being idle to defeat or postpone transition to low power.
   virtual task fast_to_low_power();
+    `uvm_info(`gfn, "Setting nvms idle", UVM_MEDIUM)
     cfg.pwrmgr_vif.update_otp_idle(1'b1);
     cfg.pwrmgr_vif.update_lc_idle(1'b1);
     cfg.pwrmgr_vif.update_flash_idle(1'b1);
