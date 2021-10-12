@@ -17,9 +17,6 @@ class entropy_src_smoke_test extends entropy_src_base_test;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 
-    // To correctly model ast/rng behavior, back-to-back entropy is not allowed
-    cfg.m_rng_agent_cfg.zero_delays = 0;
-
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
   endfunction
 endclass : entropy_src_smoke_test
