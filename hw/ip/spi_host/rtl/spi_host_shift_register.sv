@@ -17,7 +17,8 @@ module spi_host_shift_register (
   input              shift_en_i,
   input              sample_en_i,
   input              full_cyc_i,
-  input              cmd_end_i,
+  input              last_read_i,
+  input              last_write_i,
 
   input        [7:0] tx_data_i,
   input              tx_valid_i,
@@ -43,7 +44,7 @@ module spi_host_shift_register (
   logic        [7:0] sr_shifted;
 
   // 9-bit buffer to hold shift register data
-  // and the cmd_end bit to indicate whether
+  // and the last_read bit to indicate whether
   // it is the last in a series.
   logic        [8:0] rx_buf_q;
   logic        [8:0] rx_buf_d;
@@ -69,7 +70,7 @@ module spi_host_shift_register (
   assign rx_valid_o             = rx_buf_valid_q;
 
   assign rx_buf_d               = sw_rst_i                ? 9'h0 :
-                                  (rd_en_i && rd_ready_o) ? {cmd_end_i, sr_shifted} :
+                                  (rd_en_i && rd_ready_o) ? {last_read_i, sr_shifted} :
                                   rx_buf_q;
 
   assign rx_buf_valid_d         = sw_rst_i                  ? 1'b0 :
@@ -88,7 +89,7 @@ module spi_host_shift_register (
   // last-needed byte.
   assign wr_ready_o         = tx_valid_i;
   assign tx_ready_o         = wr_en_i;
-  assign tx_flush_o         = cmd_end_i;
+  assign tx_flush_o         = last_write_i;
 
   assign sr_d = sw_rst_i               ? 8'h0 :
                 (wr_en_i & wr_ready_o) ? tx_data_i :
