@@ -87,16 +87,6 @@ static void write_vector_to_file(const std::string &path,
   }
 }
 
-// Extract 256-bit RND EDN data from a 4 state logic value. RND data is placed
-// into 8 element uint32_t array dst.
-static void set_rnd_data(uint32_t dst[8], const svLogicVecVal src[8]) {
-  for (int i = 0; i < 8; ++i) {
-    // All bits should be known
-    assert(src[i].bval == 0);
-    dst[i] = src[i].aval;
-  }
-}
-
 static bool is_xz(svLogic l) { return l == sv_x || l == sv_z; }
 
 template <typename T>
