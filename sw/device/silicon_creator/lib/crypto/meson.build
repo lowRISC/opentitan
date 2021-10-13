@@ -29,7 +29,7 @@ sw_lib_crypto_otbn_sources = {}
 
 # All subdirectories add the objects they want to build to the
 # sw_lib_crypto_otbn_sources dictionary.
-subdir('ecdsa-p256')
+subdir('ecdsa_p256')
 
 prog_otbn_build = meson.source_root() / 'util/otbn_build.py'
 
