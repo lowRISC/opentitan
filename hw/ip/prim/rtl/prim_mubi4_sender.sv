@@ -39,4 +39,11 @@ module prim_mubi4_sender
 
   assign mubi_o = mubi4_t'(mubi_out);
 
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // The outputs should be known at all times.
+  `ASSERT_KNOWN(OutputsKnown_A, mubi_o)
+
 endmodule : prim_mubi4_sender
