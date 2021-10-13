@@ -70,11 +70,29 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     if (class_en[3]) `RAND_WRITE_CLASS_CTRL(d, lock_bit[3])
   endtask
 
-  virtual task alert_handler_wr_regwen_regs(bit [NUM_ALERT_CLASSES-1:0] regwen);
-    if (!regwen[0]) csr_wr(.ptr(ral.classa_clr_regwen), .value($urandom_range(0, 1)));
-    if (!regwen[1]) csr_wr(.ptr(ral.classb_clr_regwen), .value($urandom_range(0, 1)));
-    if (!regwen[2]) csr_wr(.ptr(ral.classc_clr_regwen), .value($urandom_range(0, 1)));
-    if (!regwen[3]) csr_wr(.ptr(ral.classd_clr_regwen), .value($urandom_range(0, 1)));
+  virtual task alert_handler_wr_regwen_regs(bit [NUM_ALERT_CLASSES-1:0] regwen = 0,
+                                            bit [NUM_ALERTS-1:0]        alert_regwen = 0,
+                                            bit [NUM_LOCAL_ALERTS-1:0]  loc_alert_regwen = 0,
+                                            bit                         ping_timer_regwen = 0,
+                                            bit [NUM_ALERT_CLASSES-1:0] class_regwen = 0);
+
+    csr_wr(.ptr(ral.classa_clr_regwen), .value(regwen[0]));
+    csr_wr(.ptr(ral.classb_clr_regwen), .value(regwen[1]));
+    csr_wr(.ptr(ral.classc_clr_regwen), .value(regwen[2]));
+    csr_wr(.ptr(ral.classd_clr_regwen), .value(regwen[3]));
+
+    foreach (alert_regwen[i]) csr_wr(.ptr(ral.alert_regwen[i]), .value(alert_regwen[i]));
+
+    foreach (loc_alert_regwen[i]) begin
+      csr_wr(.ptr(ral.loc_alert_regwen[i]), .value(loc_alert_regwen[i]));
+    end
+
+    csr_wr(.ptr(ral.ping_timer_regwen), .value(ping_timer_regwen));
+
+    csr_wr(.ptr(ral.classa_regwen), .value(class_regwen[0]));
+    csr_wr(.ptr(ral.classb_regwen), .value(class_regwen[1]));
+    csr_wr(.ptr(ral.classc_regwen), .value(class_regwen[2]));
+    csr_wr(.ptr(ral.classd_regwen), .value(class_regwen[3]));
   endtask
 
   // If do_lock_config is set, write value 1 to ping_timer_en register.

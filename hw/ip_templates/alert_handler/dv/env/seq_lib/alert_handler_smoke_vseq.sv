@@ -9,19 +9,24 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
   `uvm_object_new
 
   rand bit [NUM_ALERT_CLASSES-1:0]                       intr_en;
+  rand bit [NUM_ALERT_CLASSES-1:0]                       clr_regwen;
+  rand bit [NUM_ALERT_CLASSES-1:0]                       class_regwen;
   rand bit [NUM_ALERT_CLASSES-1:0]                       clr_en;
   rand bit [NUM_ALERT_CLASSES-1:0]                       lock_bit_en;
+  rand bit [NUM_ALERTS-1:0]                              alert_regwen;
   rand bit [NUM_ALERTS-1:0]                              alert_trigger;
   rand bit [NUM_ALERTS-1:0]                              alert_int_err;
   rand bit [NUM_ALERTS-1:0]                              alert_en;
   rand bit [NUM_ALERTS-1:0]                              alert_ping_timeout;
   rand bit [NUM_ALERT_CLASSES-1:0][NUM_ALERTS-1:0]       alert_class_map;
+  rand bit [NUM_LOCAL_ALERTS-1:0]                        local_alert_regwen;
   rand bit [NUM_LOCAL_ALERTS-1:0]                        local_alert_en;
   rand bit [NUM_ALERT_CLASSES-1:0][NUM_LOCAL_ALERTS-1:0] local_alert_class_map;
   rand bit [NUM_ESCS-1:0]                                esc_int_err;
   rand bit [NUM_ESCS-1:0]                                esc_standalone_int_err;
   rand bit [NUM_ESCS-1:0]                                esc_ping_timeout;
 
+  rand bit ping_timer_regwen;
   rand bit do_clr_esc;
   rand bit do_wr_phases_cyc;
   rand bit do_esc_intr_timeout;
@@ -41,8 +46,15 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
   }
 
   constraint clr_and_lock_en_c {
-    clr_en      dist {[0:'b1110] :/ 4, '1         :/ 6};
-    lock_bit_en dist {0          :/ 6, [1:'b1111] :/ 4};
+    lock_bit_en dist {0 :/ 6, [1:'b1111] :/ 4};
+  }
+
+  constraint regwen_c {
+    clr_regwen         dist {[0:'1-1] :/ 4, '1 :/ 6};
+    class_regwen       dist {[0:'1-1] :/ 4, '1 :/ 6};
+    alert_regwen       dist {[0:'1-1] :/ 4, '1 :/ 6};
+    local_alert_regwen dist {[0:'1-1] :/ 4, '1 :/ 6};
+    ping_timer_regwen  dist { 0 :/ 4      ,  1 :/ 6};
   }
 
   constraint enable_one_alert_c {
@@ -122,7 +134,8 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
 
       // write class_ctrl and clren_reg
       alert_handler_rand_wr_class_ctrl(lock_bit_en);
-      alert_handler_wr_regwen_regs(clr_en);
+      alert_handler_wr_regwen_regs(clr_regwen, alert_regwen, local_alert_regwen, ping_timer_regwen,
+                                   class_regwen);
 
       // randomize crashdump triggered phases
       alert_handler_crashdump_phases();
