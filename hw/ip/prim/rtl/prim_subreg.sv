@@ -64,7 +64,7 @@ module prim_subreg
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       q <= RESVAL;
-    end else if (wr_en) begin
+    end else if (wr_en_buf) begin
       q <= wr_data;
     end
   end
