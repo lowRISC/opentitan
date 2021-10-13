@@ -310,6 +310,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_${src}_i",
+      // random updates to this CSR can cause recoverable errors which the
+      // CSR tests will not predict correctly.
+      tags: ["excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         {
           bits: "0",
@@ -322,20 +325,14 @@
           bits: "${max_msb}:4",
           name: "MAX_THRESH",
           desc: "Max threshold for ${src} measurement",
-          resval: "${ratio + 10}",
-          // random updates to this field if measurements are turned on can
-          // cause the results to fail
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+          resval: "${ratio + 10}"
         },
 
         {
           bits: "${min_msb}:${max_msb+1}",
           name: "MIN_THRESH",
           desc: "Min threshold for ${src} measurement",
-          resval: "${ratio - 10}",
-          // random updates to this field if measurements are turned on can
-          // cause the results to fail
-          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+          resval: "${ratio - 10}"
         },
       ]
     },
