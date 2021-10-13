@@ -58,7 +58,8 @@ module spi_host_core #(
   logic       shift_en;
   logic [1:0] speed;
   logic       full_cyc;
-  logic       cmd_end;
+  logic       last_read;
+  logic       last_write;
 
   spi_host_byte_merge u_merge (
     .clk_i,
@@ -90,26 +91,27 @@ module spi_host_core #(
   spi_host_shift_register u_shift_reg (
     .clk_i,
     .rst_ni,
-    .wr_en_i     (wr_en),
-    .wr_ready_o  (wr_ready),
-    .rd_en_i     (rd_en),
-    .rd_ready_o  (rd_ready),
-    .speed_i     (speed),
-    .shift_en_i  (shift_en),
-    .sample_en_i (sample_en),
-    .cmd_end_i   (cmd_end),
-    .full_cyc_i  (full_cyc),
-    .tx_data_i   (tx_data_sr),
-    .tx_valid_i  (tx_valid_sr),
-    .tx_ready_o  (tx_ready_sr),
-    .tx_flush_o  (tx_flush_sr),
-    .rx_data_o   (rx_data_sr),
-    .rx_valid_o  (rx_valid_sr),
-    .rx_ready_i  (rx_ready_sr),
-    .rx_last_o   (rx_last_sr),
+    .wr_en_i      (wr_en),
+    .wr_ready_o   (wr_ready),
+    .rd_en_i      (rd_en),
+    .rd_ready_o   (rd_ready),
+    .speed_i      (speed),
+    .shift_en_i   (shift_en),
+    .sample_en_i  (sample_en),
+    .last_read_i  (last_read),
+    .last_write_i (last_write),
+    .full_cyc_i   (full_cyc),
+    .tx_data_i    (tx_data_sr),
+    .tx_valid_i   (tx_valid_sr),
+    .tx_ready_o   (tx_ready_sr),
+    .tx_flush_o   (tx_flush_sr),
+    .rx_data_o    (rx_data_sr),
+    .rx_valid_o   (rx_valid_sr),
+    .rx_ready_i   (rx_ready_sr),
+    .rx_last_o    (rx_last_sr),
     .sw_rst_i,
-    .sd_o        (sd_o),
-    .sd_i        (sd_i)
+    .sd_o         (sd_o),
+    .sd_i         (sd_i)
   );
 
   spi_host_fsm #(
@@ -124,7 +126,8 @@ module spi_host_core #(
     .sck_o,
     .csb_o,
     .sd_en_o,
-    .cmd_end_o        (cmd_end),
+    .last_read_o      (last_read),
+    .last_write_o     (last_write),
     .wr_en_o          (wr_en),
     .sr_wr_ready_i    (wr_ready),
     .rd_en_o          (rd_en),

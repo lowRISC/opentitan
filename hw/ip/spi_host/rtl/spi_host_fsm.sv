@@ -19,7 +19,8 @@ module spi_host_fsm
   output logic                       sck_o,
   output logic [NumCS-1:0]           csb_o,
   output logic [3:0]                 sd_en_o,
-  output logic                       cmd_end_o,
+  output logic                       last_read_o,
+  output logic                       last_write_o,
   output logic                       wr_en_o,
   input                              sr_wr_ready_i,
   output logic                       rd_en_o,
@@ -445,7 +446,8 @@ module spi_host_fsm
   assign speed_o           = cmd_speed;
   assign sample_en_d       = byte_starting | shift_en_o;
   assign full_cyc_o        = full_cyc;
-  assign cmd_end_o         = (byte_cntr_q == 'h1) & wr_en_o & sr_wr_ready_i;
+  assign last_read_o       = (byte_cntr_q == 'h1) & rd_en_o & sr_rd_ready_i;
+  assign last_write_o      = (byte_cntr_q == 'h0) & wr_en_o & sr_wr_ready_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
