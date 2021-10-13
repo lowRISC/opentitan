@@ -14,7 +14,6 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -23,6 +22,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/log.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/boot_policy.h"
@@ -92,10 +92,6 @@ static void mask_rom_init(void) {
   pinmux_init();
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
-  base_set_stdout((buffer_sink_t){
-      .data = NULL,
-      .sink = uart_sink,
-  });
 
   // TODO(lowRISC/opentitan#8536): Integrate RND driver.
   sec_mmio_check_values(/*rnd_offset=*/0);
@@ -162,7 +158,7 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest) {
 
   // Jump to ROM_EXT entry point.
   uintptr_t entry_point = manifest_entry_point_get(manifest);
-  base_printf("rom_ext_entry: %p\r\n", entry_point);
+  log_printf("rom_ext_entry: 0x%x\r\n", (unsigned int)entry_point);
   ((rom_ext_entry_point *)entry_point)();
 
   return kErrorMaskRomBootFailed;
@@ -195,8 +191,8 @@ void mask_rom_main(void) {
 
   // TODO(lowrisc/opentitan#7894): What (if anything) should we print at
   // startup?
-  base_printf("OpenTitan: \"version-tag\"\r\n");
-  base_printf("lc_state: %s\r\n", lifecycle_state_name[lc_state]);
+  log_printf("OpenTitan: \"version-tag\"\r\n");
+  log_printf("lc_state: %s\r\n", lifecycle_state_name[lc_state]);
 
   // TODO(lowrisc/opentitan#1513): Switch to EEPROM SPI device bootstrap
   // protocol.

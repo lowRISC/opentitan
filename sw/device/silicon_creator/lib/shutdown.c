@@ -10,11 +10,11 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/log.h"
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
@@ -255,8 +255,8 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   // that we won't jump to a different function.
   uint32_t redacted_error = shutdown_redact_inline(reason, policy);
 
-  // TODO(lowRISC/opentitan#8236): base_printf is in the .text section.
-  base_printf("boot_fault: 0x%08x\n", redacted_error);
+  // TODO(lowRISC/opentitan#8236): log_printf is in the .text section.
+  log_printf("boot_fault: 0x%x\n", (unsigned int)redacted_error);
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {

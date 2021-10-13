@@ -133,6 +133,19 @@ sw_silicon_creator_lib_irq_asm = declare_dependency(
   ),
 )
 
+# Logging library.
+sw_silicon_creator_lib_log = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_log',
+    sources: [
+      'log.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_driver_uart,
+    ],
+  ),
+)
+
 test('sw_silicon_creator_lib_shutdown_unittest', executable(
     'sw_silicon_creator_lib_shutdown_unittest',
     sources: [
@@ -227,6 +240,20 @@ test('sw_silicon_creator_lib_epmp_unittest', executable(
     c_args: ['-DMOCK_CSR'],
     cpp_args: ['-DMOCK_CSR'],
     ),
+  suite: 'mask_rom',
+)
+
+test('sw_silicon_creator_lib_log_unittest', executable(
+    'sw_silicon_creator_lib_log_unittest',
+    sources: [
+      'log.c',
+      'log_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+  ),
   suite: 'mask_rom',
 )
 

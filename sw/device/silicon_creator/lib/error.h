@@ -41,6 +41,7 @@ enum module_ {
   kModuleBootPolicy =   MODULE_CODE('B', 'P'),
   kModuleRetSram =      MODULE_CODE('R', 'S'),
   kModuleBootstrap =    MODULE_CODE('B', 'S'),
+  kModuleLog =          MODULE_CODE('L', 'G'),
   // clang-format on
 };
 
@@ -113,6 +114,7 @@ enum module_ {
   X(kErrorBootstrapWrite,             ERROR_(5, kModuleBootstrap, kInternal)), \
   X(kErrorBootstrapGpio,              ERROR_(6, kModuleBootstrap, kInternal)), \
   X(kErrorBootstrapUnknown,           ERROR_(7, kModuleBootstrap, kInternal)), \
+  X(kErrorLogBadFormatSpecifier,      ERROR_(1, kModuleLog, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 
