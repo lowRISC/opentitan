@@ -24,7 +24,7 @@ module csrng
   output tlul_pkg::tl_d2h_t tl_o,
 
    // OTP Interface
-  input  otp_ctrl_pkg::otp_en_t otp_en_csrng_sw_app_read_i,
+  input  prim_mubi_pkg::mubi8_t otp_en_csrng_sw_app_read_i,
 
   // Lifecycle broadcast inputs
   input  lc_ctrl_pkg::lc_tx_t  lc_hw_debug_en_i,
@@ -56,7 +56,7 @@ module csrng
   import csrng_reg_pkg::*;
 
   logic efuse_sw_app_enable;
-  assign efuse_sw_app_enable = (otp_en_csrng_sw_app_read_i == otp_ctrl_pkg::Enabled);
+  assign efuse_sw_app_enable = prim_mubi_pkg::mubi8_test_true_strict(otp_en_csrng_sw_app_read_i);
 
   csrng_reg2hw_t reg2hw;
   csrng_hw2reg_t hw2reg;
