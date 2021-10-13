@@ -41,64 +41,42 @@ typedef uint32_t dif_clkmgr_gateable_clock_t;
 typedef uint32_t dif_clkmgr_hintable_clock_t;
 
 /**
- * Hardware instantiation parameters for a clock manager.
- *
- * This struct describes information about the underlying hardware instance that
- * is not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_clkmgr_params {
-  /**
-   * The last index of gateable clocks being managed by this clock manager.
-   */
-  dif_clkmgr_gateable_clock_t last_gateable_clock;
-  /**
-   * The last index of of hintable clocks being managed by this clock manager.
-   */
-  dif_clkmgr_hintable_clock_t last_hintable_clock;
-} dif_clkmgr_params_t;
-
-/**
  * Creates a new handle for a clock manager.
  *
  * This function does not actuate the hardware.
  *
  * @param base_addr Hardware instantiation base address.
- * @param params Hardware instance parameters.
  * @param[out] clkmgr Out param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_clkmgr_init(mmio_region_t base_addr,
-                             dif_clkmgr_params_t params, dif_clkmgr_t *clkmgr);
+dif_result_t dif_clkmgr_init(mmio_region_t base_addr, dif_clkmgr_t *clkmgr);
 
 /**
  * Check if a Gateable Clock is Enabled or Disabled.
  *
  * @param clkmgr Clock Manager Handle.
- * @param params Hardware instance parameters.
  * @param clock Gateable Clock ID.
  * @param[out] is_enabled whether the clock is enabled or not.
  * @returns The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_gateable_clock_get_enabled(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_gateable_clock_t clock, bool *is_enabled);
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_gateable_clock_t clock,
+    bool *is_enabled);
 
 /**
  * Enable or Disable a Gateable Clock.
  *
  * @param clkmgr Clock Manager Handle.
- * @param params Hardware instance parameters.
  * @param clock Gateable Clock ID.
  * @param new_state whether to enable or disable the clock.
  * @returns The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_gateable_clock_set_enabled(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_gateable_clock_t clock, dif_toggle_t new_state);
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_gateable_clock_t clock,
+    dif_toggle_t new_state);
 
 /**
  * Check if a Hintable Clock is Enabled or Disabled.
@@ -111,15 +89,14 @@ dif_result_t dif_clkmgr_gateable_clock_set_enabled(
  * #dif_clkmgr_hintable_clock_get_hint.
  *
  * @param clkmgr Clock Manager Handle.
- * @param params Hardware instance parameters.
  * @param clock Hintable Clock ID.
  * @param[out] is_enabled whether the clock is enabled or not.
  * @returns The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_hintable_clock_get_enabled(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_hintable_clock_t clock, bool *is_enabled);
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
+    bool *is_enabled);
 
 /**
  * Enable or Disable a Hintable Clock.
@@ -133,15 +110,14 @@ dif_result_t dif_clkmgr_hintable_clock_get_enabled(
  * enabled or disabled, use #dif_clkmgr_hintable_clock_get_enabled.
  *
  * @param clkmgr Clock Manager Handle.
- * @param params Hardware instance parameters.
  * @param clock Hintable Clock ID.
  * @param new_state whether to enable or disable the clock.
  * @returns The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_hintable_clock_set_hint(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_hintable_clock_t clock, dif_toggle_t new_state);
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
+    dif_toggle_t new_state);
 
 /**
  * Read the current Hint for a Hintable Clock.
@@ -154,7 +130,6 @@ dif_result_t dif_clkmgr_hintable_clock_set_hint(
  * #dif_clkmgr_hintable_clock_get_enabled.
  *
  * @param clkmgr Clock Manager Handle.
- * @param params Hardware instance parameters.
  * @param clock Hintable Clock ID.
  * @param[out] hinted_is_enabled the current software request (hint) for this
  * clock.
@@ -162,8 +137,8 @@ dif_result_t dif_clkmgr_hintable_clock_set_hint(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_hintable_clock_get_hint(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_hintable_clock_t clock, bool *hinted_is_enabled);
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
+    bool *hinted_is_enabled);
 
 #ifdef __cplusplus
 }  // extern "C"

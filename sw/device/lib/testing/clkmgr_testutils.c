@@ -7,10 +7,8 @@
 #include "sw/device/lib/dif/dif_clkmgr.h"
 
 extern bool clkmgr_testutils_get_trans_clock_status(
-    dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_hintable_clock_t clock);
+    dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock);
 
 extern void clkmgr_testutils_check_trans_clock_gating(
-    dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_hintable_clock_t clock, bool exp_clock_enabled,
-    uint32_t timeout_usec);
+    dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
+    bool exp_clock_enabled, uint32_t timeout_usec);
