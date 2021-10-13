@@ -18,11 +18,10 @@
  * @return The transactional block's clock status.
  */
 inline bool clkmgr_testutils_get_trans_clock_status(
-    dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_hintable_clock_t clock) {
+    dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock) {
   bool clock_enabled;
-  CHECK_DIF_OK(dif_clkmgr_hintable_clock_get_enabled(clkmgr, params, clock,
-                                                     &clock_enabled));
+  CHECK_DIF_OK(
+      dif_clkmgr_hintable_clock_get_enabled(clkmgr, clock, &clock_enabled));
   return clock_enabled;
 }
 
@@ -41,16 +40,15 @@ inline bool clkmgr_testutils_get_trans_clock_status(
  * @param timeout_usec Timeout in microseconds.
  */
 inline void clkmgr_testutils_check_trans_clock_gating(
-    dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_hintable_clock_t clock, bool exp_clock_enabled,
-    uint32_t timeout_usec) {
-  CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(clkmgr, params, clock, 0x0));
+    dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
+    bool exp_clock_enabled, uint32_t timeout_usec) {
+  CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, 0x0));
 
-  IBEX_SPIN_FOR(clkmgr_testutils_get_trans_clock_status(
-                    clkmgr, params, clock) == exp_clock_enabled,
+  IBEX_SPIN_FOR(clkmgr_testutils_get_trans_clock_status(clkmgr, clock) ==
+                    exp_clock_enabled,
                 timeout_usec);
 
-  CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(clkmgr, params, clock, 0x1));
+  CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, 0x1));
 }
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_

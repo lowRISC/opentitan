@@ -11,13 +11,6 @@
 // Generated.
 #include "clkmgr_regs.h"
 
-// Last bits are not provided by the generated header.
-// TODO: https://github.com/lowRISC/opentitan/issues/3932
-#define CLKMGR_CLK_ENABLES_LAST_BIT CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT
-#define CLKMGR_CLK_HINTS_LAST_BIT CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT
-#define CLKMGR_CLK_HINTS_STATUS_LAST_BIT \
-  CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_OTBN_VAL_BIT
-
 namespace dif_clkmgr_unittest {
 namespace {
 using mock_mmio::MmioTest;
@@ -26,55 +19,15 @@ using testing::Test;
 
 class ClkMgrTest : public Test, public MmioTest {
  protected:
-  const dif_clkmgr_params_t params_ = {
-      .last_gateable_clock = CLKMGR_CLK_ENABLES_LAST_BIT,
-      .last_hintable_clock = CLKMGR_CLK_HINTS_LAST_BIT};
   dif_clkmgr_t clkmgr_ = {.base_addr = dev().region()};
-  ClkMgrTest() {
-    EXPECT_EQ(CLKMGR_CLK_HINTS_LAST_BIT, CLKMGR_CLK_HINTS_STATUS_LAST_BIT);
-    EXPECT_EQ(dif_clkmgr_init(dev().region(), params_, &clkmgr_), kDifOk);
-  }
+  ClkMgrTest() { EXPECT_EQ(dif_clkmgr_init(dev().region(), &clkmgr_), kDifOk); }
 };
 
 class InitTest : public ClkMgrTest {};
 
-TEST_F(InitTest, Error) {
+TEST_F(InitTest, NullArgs) {
   // Null handle.
-  EXPECT_EQ(dif_clkmgr_init(dev().region(), params_, nullptr), kDifBadArg);
-
-  // Out-of-bounds last gateable clock.
-  {
-    dif_clkmgr_t clkmgr;
-    dif_clkmgr_params_t bad_gateable = params_;
-    bad_gateable.last_gateable_clock = CLKMGR_PARAM_REG_WIDTH;
-    EXPECT_EQ(dif_clkmgr_init(dev().region(), bad_gateable, &clkmgr),
-              kDifBadArg);
-  }
-  {
-    dif_clkmgr_t clkmgr;
-    dif_clkmgr_params_t bad_gateable = params_;
-    bad_gateable.last_gateable_clock =
-        std::numeric_limits<dif_clkmgr_gateable_clock_t>::max();
-    EXPECT_EQ(dif_clkmgr_init(dev().region(), bad_gateable, &clkmgr),
-              kDifBadArg);
-  }
-
-  // Out-of-bounds last hintable clock.
-  {
-    dif_clkmgr_t clkmgr;
-    dif_clkmgr_params_t bad_hintable = params_;
-    bad_hintable.last_hintable_clock = CLKMGR_PARAM_REG_WIDTH;
-    EXPECT_EQ(dif_clkmgr_init(dev().region(), bad_hintable, &clkmgr),
-              kDifBadArg);
-  }
-  {
-    dif_clkmgr_t clkmgr;
-    dif_clkmgr_params_t bad_hintable = params_;
-    bad_hintable.last_hintable_clock =
-        std::numeric_limits<dif_clkmgr_hintable_clock_t>::max();
-    EXPECT_EQ(dif_clkmgr_init(dev().region(), bad_hintable, &clkmgr),
-              kDifBadArg);
-  }
+  EXPECT_EQ(dif_clkmgr_init(dev().region(), nullptr), kDifBadArg);
 }
 
 class GateableClockTest : public ClkMgrTest {};
@@ -112,10 +65,10 @@ TEST_F(GateableClockTest, SetEnabledError) {
             kDifBadArg);
 
   // Out-of-bounds index [last+1].
-  EXPECT_EQ(dif_clkmgr_gateable_clock_set_enabled(
-                &clkmgr_, params_, CLKMGR_CLK_ENABLES_LAST_BIT + 1,
-                kDifToggleDisabled),
-            kDifBadArg);
+  EXPECT_EQ(
+      dif_clkmgr_gateable_clock_set_enabled(
+          &clkmgr_, CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS, kDifToggleDisabled),
+      kDifBadArg);
 }
 
 TEST_F(GateableClockTest, GetEnabled) {
@@ -168,7 +121,7 @@ TEST_F(GateableClockTest, GetEnabledError) {
 
   // Out-of-bounds index [last+1].
   EXPECT_EQ(dif_clkmgr_gateable_clock_get_enabled(
-                &clkmgr_, params_, CLKMGR_CLK_ENABLES_LAST_BIT + 1, &enabled),
+                &clkmgr_, CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS, &enabled),
             kDifBadArg);
 }
 
@@ -178,17 +131,17 @@ TEST_F(HintableClockTest, SetHint) {
   // Disable hint.
   EXPECT_MASK32(CLKMGR_CLK_HINTS_REG_OFFSET,
                 {{CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT, 0x1, false}});
-  EXPECT_EQ(dif_clkmgr_hintable_clock_set_hint(
-                &clkmgr_, params_, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT,
-                kDifToggleDisabled),
-            kDifOk);
+  EXPECT_EQ(
+      dif_clkmgr_hintable_clock_set_hint(
+          &clkmgr_, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT, kDifToggleDisabled),
+      kDifOk);
 
   // Enable hint.
   EXPECT_MASK32(CLKMGR_CLK_HINTS_REG_OFFSET,
-                {{CLKMGR_CLK_HINTS_LAST_BIT, 0x1, true}});
+                {{CLKMGR_PARAM_NUM_HINTABLE_CLOCKS - 1, 0x1, true}});
   EXPECT_EQ(
       dif_clkmgr_hintable_clock_set_hint(
-          &clkmgr_, params_, CLKMGR_CLK_HINTS_LAST_BIT, kDifToggleEnabled),
+          &clkmgr_, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS - 1, kDifToggleEnabled),
       kDifOk);
 }
 
@@ -207,10 +160,9 @@ TEST_F(HintableClockTest, SetHintError) {
             kDifBadArg);
 
   // Out-of-bounds index [last+1].
-  EXPECT_EQ(
-      dif_clkmgr_hintable_clock_set_hint(
-          &clkmgr_, params_, CLKMGR_CLK_HINTS_LAST_BIT + 1, kDifToggleDisabled),
-      kDifBadArg);
+  EXPECT_EQ(dif_clkmgr_hintable_clock_set_hint(
+                &clkmgr_, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS, kDifToggleDisabled),
+            kDifBadArg);
 }
 
 TEST_F(HintableClockTest, GetHint) {
@@ -263,7 +215,7 @@ TEST_F(HintableClockTest, GetHintError) {
 
   // Out-of-bounds index [last+1].
   EXPECT_EQ(dif_clkmgr_hintable_clock_get_hint(
-                &clkmgr_, params_, CLKMGR_CLK_HINTS_LAST_BIT + 1, &enabled),
+                &clkmgr_, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS, &enabled),
             kDifBadArg);
 }
 
@@ -316,10 +268,9 @@ TEST_F(HintableClockTest, GetEnabledError) {
       kDifBadArg);
 
   // Out-of-bounds index [last+1].
-  EXPECT_EQ(
-      dif_clkmgr_hintable_clock_get_enabled(
-          &clkmgr_, params_, CLKMGR_CLK_HINTS_STATUS_LAST_BIT + 1, &enabled),
-      kDifBadArg);
+  EXPECT_EQ(dif_clkmgr_hintable_clock_get_enabled(
+                &clkmgr_, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS, &enabled),
+            kDifBadArg);
 }
 
 }  // namespace

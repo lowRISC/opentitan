@@ -10,35 +10,24 @@
 
 #include "clkmgr_regs.h"  // Generated
 
-static bool clkmgr_valid_gateable_clock(dif_clkmgr_params_t params,
-                                        dif_clkmgr_gateable_clock_t clock) {
+static bool clkmgr_valid_gateable_clock(dif_clkmgr_gateable_clock_t clock) {
   // TODO For the moment, last_gateable_clocks has to be less than 32, as we
   // only support one enable register for gateable clocks.
   // https://github.com/lowRISC/opentitan/issues/4201
-  return (clock <= params.last_gateable_clock) &&
-         (params.last_gateable_clock < CLKMGR_PARAM_REG_WIDTH);
+  return (clock < CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS) &&
+         (CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS <= CLKMGR_PARAM_REG_WIDTH);
 }
 
-static bool clkmgr_valid_hintable_clock(dif_clkmgr_params_t params,
-                                        dif_clkmgr_hintable_clock_t clock) {
+static bool clkmgr_valid_hintable_clock(dif_clkmgr_hintable_clock_t clock) {
   // TODO: For the moment, last_hintable_clocks has to be less than 32, as we
   // only support one enable/hint_status register for hintable clocks.
   // https://github.com/lowRISC/opentitan/issues/4201
-  return (clock <= params.last_hintable_clock) &&
-         (params.last_hintable_clock < CLKMGR_PARAM_REG_WIDTH);
+  return (clock < CLKMGR_PARAM_NUM_HINTABLE_CLOCKS) &&
+         (CLKMGR_PARAM_NUM_HINTABLE_CLOCKS < CLKMGR_PARAM_REG_WIDTH);
 }
 
-dif_result_t dif_clkmgr_init(mmio_region_t base_addr,
-                             dif_clkmgr_params_t params, dif_clkmgr_t *clkmgr) {
+dif_result_t dif_clkmgr_init(mmio_region_t base_addr, dif_clkmgr_t *clkmgr) {
   if (clkmgr == NULL) {
-    return kDifBadArg;
-  }
-
-  // TODO: For the moment, `last_hintable_clock` and `last_gateable_clock` has
-  // to be less than 32, as we only support one register of bits for each.
-  // https://github.com/lowRISC/opentitan/issues/4201
-  if (params.last_gateable_clock >= CLKMGR_PARAM_REG_WIDTH ||
-      params.last_hintable_clock >= CLKMGR_PARAM_REG_WIDTH) {
     return kDifBadArg;
   }
 
@@ -48,10 +37,10 @@ dif_result_t dif_clkmgr_init(mmio_region_t base_addr,
 }
 
 dif_result_t dif_clkmgr_gateable_clock_get_enabled(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_gateable_clock_t clock, bool *is_enabled) {
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_gateable_clock_t clock,
+    bool *is_enabled) {
   if (clkmgr == NULL || is_enabled == NULL ||
-      !clkmgr_valid_gateable_clock(params, clock)) {
+      !clkmgr_valid_gateable_clock(clock)) {
     return kDifBadArg;
   }
 
@@ -63,9 +52,9 @@ dif_result_t dif_clkmgr_gateable_clock_get_enabled(
 }
 
 dif_result_t dif_clkmgr_gateable_clock_set_enabled(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_gateable_clock_t clock, dif_toggle_t new_state) {
-  if (clkmgr == NULL || !clkmgr_valid_gateable_clock(params, clock)) {
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_gateable_clock_t clock,
+    dif_toggle_t new_state) {
+  if (clkmgr == NULL || !clkmgr_valid_gateable_clock(clock)) {
     return kDifBadArg;
   }
 
@@ -92,10 +81,10 @@ dif_result_t dif_clkmgr_gateable_clock_set_enabled(
 }
 
 dif_result_t dif_clkmgr_hintable_clock_get_enabled(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_hintable_clock_t clock, bool *is_enabled) {
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
+    bool *is_enabled) {
   if (clkmgr == NULL || is_enabled == NULL ||
-      !clkmgr_valid_hintable_clock(params, clock)) {
+      !clkmgr_valid_hintable_clock(clock)) {
     return kDifBadArg;
   }
 
@@ -107,9 +96,9 @@ dif_result_t dif_clkmgr_hintable_clock_get_enabled(
 }
 
 dif_result_t dif_clkmgr_hintable_clock_set_hint(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_hintable_clock_t clock, dif_toggle_t new_state) {
-  if (clkmgr == NULL || !clkmgr_valid_hintable_clock(params, clock)) {
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
+    dif_toggle_t new_state) {
+  if (clkmgr == NULL || !clkmgr_valid_hintable_clock(clock)) {
     return kDifBadArg;
   }
 
@@ -135,10 +124,10 @@ dif_result_t dif_clkmgr_hintable_clock_set_hint(
 }
 
 dif_result_t dif_clkmgr_hintable_clock_get_hint(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_params_t params,
-    dif_clkmgr_hintable_clock_t clock, bool *hinted_is_enabled) {
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
+    bool *hinted_is_enabled) {
   if (clkmgr == NULL || hinted_is_enabled == NULL ||
-      !clkmgr_valid_hintable_clock(params, clock)) {
+      !clkmgr_valid_hintable_clock(clock)) {
     return kDifBadArg;
   }
 

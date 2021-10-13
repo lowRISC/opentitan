@@ -1,5 +1,5 @@
 diff --git a/sw/device/boot_rom/rom_crt.S b/sw/device/boot_rom/rom_crt.S
-index acff1a477..1c8e29d86 100644
+index 99485c5ff..1c8e29d86 100644
 --- a/sw/device/boot_rom/rom_crt.S
 +++ b/sw/device/boot_rom/rom_crt.S
 @@ -81,19 +81,6 @@ _reset_start:
@@ -75,7 +75,7 @@ index 5dc1286af..1e2dced96 100644
      simple_serial_process_packet();
    }
 diff --git a/sw/device/sca/lib/sca.c b/sw/device/sca/lib/sca.c
-index 4a431b9ea..fcfcee1ab 100644
+index 592e09547..37a172411 100644
 --- a/sw/device/sca/lib/sca.c
 +++ b/sw/device/sca/lib/sca.c
 @@ -56,7 +56,6 @@ enum {
@@ -102,7 +102,7 @@ index 4a431b9ea..fcfcee1ab 100644
  }
 
  /**
-@@ -148,29 +143,10 @@ void handler_irq_timer(void) {
+@@ -148,25 +143,6 @@ void handler_irq_timer(void) {
   * @param disable Set of peripherals to disable.
   */
  void sca_disable_peripherals(sca_peripherals_t disable) {
@@ -126,33 +126,26 @@ index 4a431b9ea..fcfcee1ab 100644
 -  }
 -
    // Disable HMAC, KMAC, OTBN and USB clocks through CLKMGR DIF.
-   const dif_clkmgr_params_t clkmgr_params = {
-       .last_gateable_clock = CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
--      .last_hintable_clock = CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_OTBN_VAL_BIT};
-+      .last_hintable_clock = CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT};
    dif_clkmgr_t clkmgr;
-   IGNORE_RESULT(
-       dif_clkmgr_init(mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
-@@ -186,19 +162,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
-         &clkmgr, clkmgr_params, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT,
-         kDifToggleDisabled));
+   IGNORE_RESULT(dif_clkmgr_init(
+@@ -180,17 +156,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
+     IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
+         &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT, kDifToggleDisabled));
    }
 -  if (disable & kScaPeripheralKmac) {
 -    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
--        &clkmgr, clkmgr_params, CLKMGR_CLK_HINTS_CLK_MAIN_KMAC_HINT_BIT,
--        kDifToggleDisabled));
+-        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_KMAC_HINT_BIT, kDifToggleDisabled));
 -  }
 -  if (disable & kScaPeripheralOtbn) {
 -    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
--        &clkmgr, clkmgr_params, CLKMGR_CLK_HINTS_CLK_IO_DIV4_OTBN_HINT_BIT,
+-        &clkmgr, CLKMGR_CLK_HINTS_CLK_IO_DIV4_OTBN_HINT_BIT,
 -        kDifToggleDisabled));
 -    IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
--        &clkmgr, clkmgr_params, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT,
--        kDifToggleDisabled));
+-        &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT, kDifToggleDisabled));
 -  }
    if (disable & kScaPeripheralUsb) {
      IGNORE_RESULT(dif_clkmgr_gateable_clock_set_enabled(
-         &clkmgr, clkmgr_params, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT,
+         &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT, kDifToggleDisabled));
 diff --git a/sw/device/tests/aes_smoketest.c b/sw/device/tests/aes_smoketest.c
 index 1a5fef16c..214e08151 100644
 --- a/sw/device/tests/aes_smoketest.c
@@ -176,7 +169,7 @@ index 1a5fef16c..214e08151 100644
    CHECK_DIF_OK(
        dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
-index 96803744e..27e3e2727 100644
+index 230bbb613..5e5676718 100644
 --- a/sw/device/tests/meson.build
 +++ b/sw/device/tests/meson.build
 @@ -207,7 +207,6 @@ aes_smoketest_lib = declare_dependency(
