@@ -5,4 +5,5 @@
 pub mod console;
 pub mod gpio;
 pub mod hello;
+pub mod load_bitstream;
 pub mod spi;
