@@ -32,6 +32,11 @@ import prim_mubi as prim_mubi
   // make a typedef such that this can be used as an intersignal type as well
   typedef mubi${nbits}_e mubi${nbits}_t;
 
+  // Test whether the value is supplied is one of the valid enumerations
+  function automatic logic mubi${nbits}_test_invalid(mubi${nbits}_e val);
+    return ~(val inside {MuBi${nbits}True, MuBi${nbits}False});
+  endfunction : mubi${nbits}_test_invalid
+
   // Test whether the multibit value signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
