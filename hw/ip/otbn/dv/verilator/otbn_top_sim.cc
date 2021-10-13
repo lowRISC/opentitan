@@ -206,39 +206,44 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-// This is executed over DPI on every negedge of the clock and is in charge of
-// updating the top of the loop stack if necessary to match loop warp symbols
-// in the ELF file.
-extern "C" int OtbnTopApplyLoopWarp() {
-  static bool warps_initialised = false;
-  static std::vector<uint32_t> loop_count_stack;
-
+// This is executed over DPI on the first posedge of the clock after each
+// reset. It's in charge of telling the model about any loop warp symbols in
+// the ELF file.
+extern "C" int OtbnTopInstallLoopWarps() {
   // Cast to the right base class of otbn_top_sim. Otherwise, you can't access
   // the "otbn_top_sim" member because you get the derived class's constructor
   // by accident.
   Votbn_top_sim &top = *verilator_top;
 
-  if (!warps_initialised) {
-    // Grab the model handle from the otbn_core_model module. This should have
-    // been initialised by now because it gets set up in an initial block and
-    // this code doesn't run until the first clock negedge.
-    auto sv_model_handle = top.otbn_top_sim->u_otbn_core_model->model_handle;
+  // Grab the model handle from the otbn_core_model module. This should have
+  // been initialised by now because it gets set up in an initial block and
+  // this code doesn't run until the first clock edge.
+  auto sv_model_handle = top.otbn_top_sim->u_otbn_core_model->model_handle;
 
-    // sv_model_handle will be some integer type. Check it's nonzero and, if
-    // so, convert it to an OtbnModel*.
-    assert(sv_model_handle != 0);
+  // sv_model_handle will be some integer type. Check it's nonzero and, if so,
+  // convert it to an OtbnModel*.
+  assert(sv_model_handle != 0);
 
-    OtbnModel *model_handle = (OtbnModel *)sv_model_handle;
+  OtbnModel *model_handle = (OtbnModel *)sv_model_handle;
 
-    if (model_handle->take_loop_warps(otbn_memutil) != 0) {
-      // Something went wrong when trying to update the model. We've
-      // already written to something to stderr, so should just pass
-      // the non-zero return value up the stack.
-      return -1;
-    }
-
-    warps_initialised = true;
+  if (model_handle->take_loop_warps(otbn_memutil) != 0) {
+    // Something went wrong when trying to update the model. We've already
+    // written to something to stderr, so should just pass the non-zero return
+    // value up the stack.
+    return -1;
   }
+
+  return 0;
+}
+
+// This is executed over DPI on every negedge of the clock and is in charge of
+// updating the top of the loop stack if necessary to match loop warp symbols
+// in the ELF file.
+extern "C" void OtbnTopApplyLoopWarp() {
+  static std::vector<uint32_t> loop_count_stack;
+
+  // See not in OtbnTopInstallLoopWarps for why this upcast is needed.
+  Votbn_top_sim &top = *verilator_top;
 
   auto loop_controller =
       top.otbn_top_sim->u_otbn_core->u_otbn_controller->u_otbn_loop_controller;
@@ -295,6 +300,4 @@ extern "C" int OtbnTopApplyLoopWarp() {
           ((loop_controller->current_loop_d >> 32) << 32) | new_iters_d;
     }
   }
-
-  return 0;
 }
