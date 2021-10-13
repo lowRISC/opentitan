@@ -5,9 +5,9 @@ ${gencmd}
 <%
 irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals})
 enabled_peripherals = ['aes', 'alert_handler', 'clkmgr', 'csrng', 'edn',
-                       'entropy_src', 'gpio', 'hmac', 'i2c', 'keymgr',
-                       'lc_ctrl', 'otbn', 'otp_ctrl', 'pwrmgr', 'rstmgr',
-                       'sram_ctrl',  'uart']
+                       'entropy_src', 'gpio', 'hmac', 'i2c', 'keymgr', 'kmac',
+                       'lc_ctrl', 'otbn', 'otp_ctrl', 'pinmux', 'pwrmgr',
+                       'rstmgr', 'spi_device', 'sram_ctrl', 'uart', 'usbdev']
 parameterized_peripherals = ['alert_handler']
 
 def comment(n):

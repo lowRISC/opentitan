@@ -21,17 +21,17 @@
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
-// #include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 // #include "sw/device/lib/dif/dif_pattgen.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 // #include "sw/device/lib/dif/dif_rv_timer.h"
-// #include "sw/device/lib/dif/dif_spi_device.h"
+#include "sw/device/lib/dif/dif_spi_device.h"
 // #include "sw/device/lib/dif/dif_spi_host.h"
 // #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
-// #include "sw/device/lib/dif/dif_usbdev.h"
+#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/log.h"
@@ -57,13 +57,13 @@ static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
 static dif_keymgr_t keymgr;
-// static dif_kmac_t kmac;
+static dif_kmac_t kmac;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
 // static dif_pattgen_t pattgen;
 static dif_pwrmgr_t pwrmgr_aon;
 // static dif_rv_timer_t rv_timer;
-// static dif_spi_device_t spi_device;
+static dif_spi_device_t spi_device;
 // static dif_spi_host_t spi_host0;
 // static dif_spi_host_t spi_host1;
 // static dif_sysrst_ctrl_t sysrst_ctrl_aon;
@@ -71,7 +71,7 @@ static dif_uart_t uart0;
 static dif_uart_t uart1;
 static dif_uart_t uart2;
 static dif_uart_t uart3;
-// static dif_usbdev_t usbdev;
+static dif_usbdev_t usbdev;
 static dif_rv_plic_t plic;
 static const top_earlgrey_plic_target_t kHart = kTopEarlgreyPlicTargetIbex0;
 
@@ -112,8 +112,8 @@ static volatile dif_i2c_irq_t i2c_irq_expected;
 static volatile dif_i2c_irq_t i2c_irq_serviced;
 static volatile dif_keymgr_irq_t keymgr_irq_expected;
 static volatile dif_keymgr_irq_t keymgr_irq_serviced;
-// static volatile dif_kmac_irq_t kmac_irq_expected;
-// static volatile dif_kmac_irq_t kmac_irq_serviced;
+static volatile dif_kmac_irq_t kmac_irq_expected;
+static volatile dif_kmac_irq_t kmac_irq_serviced;
 static volatile dif_otbn_irq_t otbn_irq_expected;
 static volatile dif_otbn_irq_t otbn_irq_serviced;
 static volatile dif_otp_ctrl_irq_t otp_ctrl_irq_expected;
@@ -124,16 +124,16 @@ static volatile dif_pwrmgr_irq_t pwrmgr_irq_expected;
 static volatile dif_pwrmgr_irq_t pwrmgr_irq_serviced;
 // static volatile dif_rv_timer_irq_t rv_timer_irq_expected;
 // static volatile dif_rv_timer_irq_t rv_timer_irq_serviced;
-// static volatile dif_spi_device_irq_t spi_device_irq_expected;
-// static volatile dif_spi_device_irq_t spi_device_irq_serviced;
+static volatile dif_spi_device_irq_t spi_device_irq_expected;
+static volatile dif_spi_device_irq_t spi_device_irq_serviced;
 // static volatile dif_spi_host_irq_t spi_host_irq_expected;
 // static volatile dif_spi_host_irq_t spi_host_irq_serviced;
 // static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_expected;
 // static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_serviced;
 static volatile dif_uart_irq_t uart_irq_expected;
 static volatile dif_uart_irq_t uart_irq_serviced;
-// static volatile dif_usbdev_irq_t usbdev_irq_expected;
-// static volatile dif_usbdev_irq_t usbdev_irq_serviced;
+static volatile dif_usbdev_irq_t usbdev_irq_expected;
+static volatile dif_usbdev_irq_t usbdev_irq_serviced;
 
 /**
  * Provides external IRQ handling for this test.
@@ -198,9 +198,9 @@ void handler_irq_external(void) {
     case kTopEarlgreyPlicPeripheralKeymgr:
       PERIPHERAL_ISR(keymgr, keymgr, kTopEarlgreyPlicIrqIdKeymgrOpDone);
       break;
-    // case kTopEarlgreyPlicPeripheralKmac:
-    //   PERIPHERAL_ISR(kmac, kmac, kTopEarlgreyPlicIrqIdKmacKmacDone);
-    //   break;
+    case kTopEarlgreyPlicPeripheralKmac:
+      PERIPHERAL_ISR(kmac, kmac, kTopEarlgreyPlicIrqIdKmacKmacDone);
+      break;
     case kTopEarlgreyPlicPeripheralOtbn:
       PERIPHERAL_ISR(otbn, otbn, kTopEarlgreyPlicIrqIdOtbnDone);
       break;
@@ -217,9 +217,10 @@ void handler_irq_external(void) {
     // case kTopEarlgreyPlicPeripheralRvTimer:
     //   PERIPHERAL_ISR(rv_timer, rv_timer,
     //   kTopEarlgreyPlicIrqIdRvTimerTimerExpired0_0); break;
-    // case kTopEarlgreyPlicPeripheralSpiDevice:
-    //   PERIPHERAL_ISR(spi_device, spi_device,
-    //   kTopEarlgreyPlicIrqIdSpiDeviceRxFull); break;
+    case kTopEarlgreyPlicPeripheralSpiDevice:
+      PERIPHERAL_ISR(spi_device, spi_device,
+                     kTopEarlgreyPlicIrqIdSpiDeviceRxFull);
+      break;
     // case kTopEarlgreyPlicPeripheralSpiHost0:
     //   PERIPHERAL_ISR(spi_host, spi_host0,
     //   kTopEarlgreyPlicIrqIdSpiHost0Error); break;
@@ -241,9 +242,9 @@ void handler_irq_external(void) {
     case kTopEarlgreyPlicPeripheralUart3:
       PERIPHERAL_ISR(uart, uart3, kTopEarlgreyPlicIrqIdUart3TxWatermark);
       break;
-    // case kTopEarlgreyPlicPeripheralUsbdev:
-    //   PERIPHERAL_ISR(usbdev, usbdev, kTopEarlgreyPlicIrqIdUsbdevPktReceived);
-    //   break;
+    case kTopEarlgreyPlicPeripheralUsbdev:
+      PERIPHERAL_ISR(usbdev, usbdev, kTopEarlgreyPlicIrqIdUsbdevPktReceived);
+      break;
     default:
       LOG_FATAL("ISR is not implemented!");
       test_status_set(kTestStatusFailed);
@@ -280,13 +281,13 @@ static void peripherals_init(void) {
   PERIPHERAL_INIT(i2c, i2c1, TOP_EARLGREY_I2C1_BASE_ADDR);
   PERIPHERAL_INIT(i2c, i2c2, TOP_EARLGREY_I2C2_BASE_ADDR);
   PERIPHERAL_INIT(keymgr, keymgr, TOP_EARLGREY_KEYMGR_BASE_ADDR);
-  // PERIPHERAL_INIT(kmac, kmac, TOP_EARLGREY_KMAC_BASE_ADDR);
+  PERIPHERAL_INIT(kmac, kmac, TOP_EARLGREY_KMAC_BASE_ADDR);
   PERIPHERAL_INIT(otbn, otbn, TOP_EARLGREY_OTBN_BASE_ADDR);
   PERIPHERAL_INIT(otp_ctrl, otp_ctrl, TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
   // PERIPHERAL_INIT(pattgen, pattgen, TOP_EARLGREY_PATTGEN_BASE_ADDR);
   PERIPHERAL_INIT(pwrmgr, pwrmgr_aon, TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
   // PERIPHERAL_INIT(rv_timer, rv_timer, TOP_EARLGREY_RV_TIMER_BASE_ADDR);
-  // PERIPHERAL_INIT(spi_device, spi_device, TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
+  PERIPHERAL_INIT(spi_device, spi_device, TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
   // PERIPHERAL_INIT(spi_host, spi_host0, TOP_EARLGREY_SPI_HOST0_BASE_ADDR);
   // PERIPHERAL_INIT(spi_host, spi_host1, TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
   // PERIPHERAL_INIT(sysrst_ctrl, sysrst_ctrl_aon,
@@ -295,7 +296,7 @@ static void peripherals_init(void) {
   PERIPHERAL_INIT(uart, uart1, TOP_EARLGREY_UART1_BASE_ADDR);
   PERIPHERAL_INIT(uart, uart2, TOP_EARLGREY_UART2_BASE_ADDR);
   PERIPHERAL_INIT(uart, uart3, TOP_EARLGREY_UART3_BASE_ADDR);
-  // PERIPHERAL_INIT(usbdev, usbdev, TOP_EARLGREY_USBDEV_BASE_ADDR);
+  PERIPHERAL_INIT(usbdev, usbdev, TOP_EARLGREY_USBDEV_BASE_ADDR);
 
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
@@ -321,13 +322,13 @@ static void peripheral_irqs_clear(void) {
   PERIPHERAL_IRQS_CLEAR(i2c1);
   PERIPHERAL_IRQS_CLEAR(i2c2);
   PERIPHERAL_IRQS_CLEAR(keymgr);
-  // PERIPHERAL_IRQS_CLEAR(kmac);
+  PERIPHERAL_IRQS_CLEAR(kmac);
   PERIPHERAL_IRQS_CLEAR(otbn);
   PERIPHERAL_IRQS_CLEAR(otp_ctrl);
   // PERIPHERAL_IRQS_CLEAR(pattgen);
   PERIPHERAL_IRQS_CLEAR(pwrmgr_aon);
   // PERIPHERAL_IRQS_CLEAR(rv_timer);
-  // PERIPHERAL_IRQS_CLEAR(spi_device);
+  PERIPHERAL_IRQS_CLEAR(spi_device);
   // PERIPHERAL_IRQS_CLEAR(spi_host0);
   // PERIPHERAL_IRQS_CLEAR(spi_host1);
   // PERIPHERAL_IRQS_CLEAR(sysrst_ctrl_aon);
@@ -335,7 +336,7 @@ static void peripheral_irqs_clear(void) {
   PERIPHERAL_IRQS_CLEAR(uart1);
   PERIPHERAL_IRQS_CLEAR(uart2);
   PERIPHERAL_IRQS_CLEAR(uart3);
-  // PERIPHERAL_IRQS_CLEAR(usbdev);
+  PERIPHERAL_IRQS_CLEAR(usbdev);
 }
 
 /**
@@ -356,13 +357,13 @@ static void peripheral_irqs_enable(void) {
   PERIPHERAL_IRQS_ENABLE(i2c, i2c1);
   PERIPHERAL_IRQS_ENABLE(i2c, i2c2);
   PERIPHERAL_IRQS_ENABLE(keymgr, keymgr);
-  // PERIPHERAL_IRQS_ENABLE(kmac, kmac);
+  PERIPHERAL_IRQS_ENABLE(kmac, kmac);
   PERIPHERAL_IRQS_ENABLE(otbn, otbn);
   PERIPHERAL_IRQS_ENABLE(otp_ctrl, otp_ctrl);
   // PERIPHERAL_IRQS_ENABLE(pattgen, pattgen);
   PERIPHERAL_IRQS_ENABLE(pwrmgr, pwrmgr_aon);
   // PERIPHERAL_IRQS_ENABLE(rv_timer, rv_timer);
-  // PERIPHERAL_IRQS_ENABLE(spi_device, spi_device);
+  PERIPHERAL_IRQS_ENABLE(spi_device, spi_device);
   // PERIPHERAL_IRQS_ENABLE(spi_host, spi_host0);
   // PERIPHERAL_IRQS_ENABLE(spi_host, spi_host1);
   // PERIPHERAL_IRQS_ENABLE(sysrst_ctrl, sysrst_ctrl_aon);
@@ -370,7 +371,7 @@ static void peripheral_irqs_enable(void) {
   PERIPHERAL_IRQS_ENABLE(uart, uart1);
   PERIPHERAL_IRQS_ENABLE(uart, uart2);
   PERIPHERAL_IRQS_ENABLE(uart, uart3);
-  // PERIPHERAL_IRQS_ENABLE(usbdev, usbdev);
+  PERIPHERAL_IRQS_ENABLE(usbdev, usbdev);
 }
 
 /**
@@ -418,8 +419,8 @@ static void peripheral_irqs_trigger(void) {
                           kDifI2cIrqFmtWatermark, kDifI2cIrqHostTimeout);
   PERIPHERAL_IRQS_TRIGGER(keymgr, keymgr, kTopEarlgreyPlicPeripheralKeymgr,
                           kDifKeymgrIrqOpDone, kDifKeymgrIrqOpDone);
-  // PERIPHERAL_IRQS_TRIGGER(kmac, kmac, kTopEarlgreyPlicPeripheralKmac,
-  //                         kDifKmacIrqKmacDone, kDifKmacIrqKmacErr);
+  PERIPHERAL_IRQS_TRIGGER(kmac, kmac, kTopEarlgreyPlicPeripheralKmac,
+                          kDifKmacIrqKmacDone, kDifKmacIrqKmacErr);
   PERIPHERAL_IRQS_TRIGGER(otbn, otbn, kTopEarlgreyPlicPeripheralOtbn,
                           kDifOtbnIrqDone, kDifOtbnIrqDone);
   PERIPHERAL_IRQS_TRIGGER(otp_ctrl, otp_ctrl, kTopEarlgreyPlicPeripheralOtpCtrl,
@@ -435,10 +436,9 @@ static void peripheral_irqs_trigger(void) {
   // kTopEarlgreyPlicPeripheralRvTimer,
   //                         kDifRvTimerIrqTimerExpired0_0,
   //                         kDifRvTimerIrqTimerExpired0_0);
-  // PERIPHERAL_IRQS_TRIGGER(spi_device, spi_device,
-  // kTopEarlgreyPlicPeripheralSpiDevice,
-  //                         kDifSpiDeviceIrqRxFull,
-  //                         kDifSpiDeviceIrqTpmHeaderNotEmpty);
+  PERIPHERAL_IRQS_TRIGGER(
+      spi_device, spi_device, kTopEarlgreyPlicPeripheralSpiDevice,
+      kDifSpiDeviceIrqRxFull, kDifSpiDeviceIrqTpmHeaderNotEmpty);
   // PERIPHERAL_IRQS_TRIGGER(spi_host, spi_host0,
   // kTopEarlgreyPlicPeripheralSpiHost0,
   //                         kDifSpiHostIrqError, kDifSpiHostIrqSpiEvent);
@@ -457,8 +457,8 @@ static void peripheral_irqs_trigger(void) {
                           kDifUartIrqTxWatermark, kDifUartIrqRxParityErr);
   PERIPHERAL_IRQS_TRIGGER(uart, uart3, kTopEarlgreyPlicPeripheralUart3,
                           kDifUartIrqTxWatermark, kDifUartIrqRxParityErr);
-  // PERIPHERAL_IRQS_TRIGGER(usbdev, usbdev, kTopEarlgreyPlicPeripheralUsbdev,
-  //                         kDifUsbdevIrqPktReceived, kDifUsbdevIrqLinkOutErr);
+  PERIPHERAL_IRQS_TRIGGER(usbdev, usbdev, kTopEarlgreyPlicPeripheralUsbdev,
+                          kDifUsbdevIrqPktReceived, kDifUsbdevIrqLinkOutErr);
 }
 
 const test_config_t kTestConfig;
