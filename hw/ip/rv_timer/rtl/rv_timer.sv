@@ -19,7 +19,7 @@ module rv_timer import rv_timer_reg_pkg::*;
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
-  output logic intr_timer_expired_0_0_o
+  output logic intr_timer_expired_hart0_timer0_o
 );
 
   import rv_timer_reg_pkg::*;
@@ -67,7 +67,7 @@ module rv_timer import rv_timer_reg_pkg::*;
   assign mtimecmp = '{'{{reg2hw.compare_upper0_0.q,reg2hw.compare_lower0_0.q}}};
   assign mtimecmp_update[0][0] = reg2hw.compare_upper0_0.qe | reg2hw.compare_lower0_0.qe;
 
-  assign intr_timer_expired_0_0_o = intr_out[0];
+  assign intr_timer_expired_hart0_timer0_o = intr_out[0];
   assign intr_timer_en            = reg2hw.intr_enable0[0].q;
   assign intr_timer_state_q       = reg2hw.intr_state0[0].q;
   assign intr_timer_test_q        = reg2hw.intr_test0[0].q;
@@ -158,6 +158,6 @@ module rv_timer import rv_timer_reg_pkg::*;
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  `ASSERT_KNOWN(IntrTimerExpired00Known, intr_timer_expired_0_0_o)
+  `ASSERT_KNOWN(IntrTimerExpiredHart0Timer0Known, intr_timer_expired_hart0_timer0_o)
 
 endmodule

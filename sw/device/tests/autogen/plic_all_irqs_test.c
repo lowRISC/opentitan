@@ -215,7 +215,7 @@ void handler_irq_external(void) {
       break;
     // case kTopEarlgreyPlicPeripheralRvTimer:
     //   PERIPHERAL_ISR(rv_timer, rv_timer,
-    //   kTopEarlgreyPlicIrqIdRvTimerTimerExpired0_0); break;
+    //   kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0); break;
     case kTopEarlgreyPlicPeripheralSpiDevice:
       PERIPHERAL_ISR(spi_device, spi_device,
                      kTopEarlgreyPlicIrqIdSpiDeviceRxFull);
@@ -427,8 +427,8 @@ static void peripheral_irqs_trigger(void) {
                           kDifPwrmgrIrqWakeup, kDifPwrmgrIrqWakeup);
   // PERIPHERAL_IRQS_TRIGGER(rv_timer, rv_timer,
   // kTopEarlgreyPlicPeripheralRvTimer,
-  //                         kDifRvTimerIrqTimerExpired0_0,
-  //                         kDifRvTimerIrqTimerExpired0_0);
+  //                         kDifRvTimerIrqTimerExpiredHart0Timer0,
+  //                         kDifRvTimerIrqTimerExpiredHart0Timer0);
   PERIPHERAL_IRQS_TRIGGER(
       spi_device, spi_device, kTopEarlgreyPlicPeripheralSpiDevice,
       kDifSpiDeviceIrqRxFull, kDifSpiDeviceIrqTpmHeaderNotEmpty);

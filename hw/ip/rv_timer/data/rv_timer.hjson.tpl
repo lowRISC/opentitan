@@ -17,8 +17,8 @@
   interrupt_list: [
 % for i in range(harts):
 % for j in range(timers):
-    { name: "timer_expired_${i}_${j}",
-      desc: "raised if the timer ${i}_${j} expired (mtimecmp >= mtime)"
+    { name: "timer_expired_hart${i}_timer${j}",
+      desc: "raised if hart${i}'s timer${j} expired (mtimecmp >= mtime)"
     },
 % endfor
 % endfor
