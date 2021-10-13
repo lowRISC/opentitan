@@ -12,7 +12,7 @@ filesets:
     files:
       - vip/prim_esc_rxtx_assert_fpv.sv
       - tb/prim_esc_rxtx_bind_fpv.sv
-      - tb/prim_esc_rxtx_fpv.sv
+      - tb/prim_esc_rxtx_tb.sv
     file_type: systemVerilogSource
 
 targets:
@@ -23,7 +23,7 @@ targets:
     filesets:
       - files_formal
     toplevel:
-      - prim_esc_rxtx_fpv
+      - prim_esc_rxtx_tb
 
   formal:
     <<: *default_target

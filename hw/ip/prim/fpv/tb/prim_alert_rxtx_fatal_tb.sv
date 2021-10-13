@@ -5,7 +5,7 @@
 // Testbench module for alert sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_alert_rxtx_fatal_fpv
+module prim_alert_rxtx_fatal_tb
   import prim_alert_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 (
@@ -73,4 +73,4 @@ module prim_alert_rxtx_fatal_fpv
     .alert_tx_i ( alert_tx_in  )
   );
 
-endmodule : prim_alert_rxtx_fatal_fpv
+endmodule : prim_alert_rxtx_fatal_tb

@@ -4,7 +4,7 @@
 //
 // Testbench module for prim_lfsr. Intended to be used with a formal tool.
 
-module prim_lfsr_fpv #(
+module prim_lfsr_tb #(
   // LFSR entropy and output bitwidths (set to 1 here as they are unused)
   parameter int unsigned EntropyDw        = 1,
   parameter int unsigned StateOutDw       = 1,
@@ -120,4 +120,4 @@ module prim_lfsr_fpv #(
     );
   end
 
-endmodule : prim_lfsr_fpv
+endmodule : prim_lfsr_tb

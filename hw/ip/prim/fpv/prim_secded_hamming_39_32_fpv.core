@@ -11,7 +11,7 @@ filesets:
       - lowrisc:prim:secded
     files:
       - vip/prim_secded_hamming_39_32_assert_fpv.sv
-      - tb/prim_secded_hamming_39_32_fpv.sv
+      - tb/prim_secded_hamming_39_32_tb.sv
       - tb/prim_secded_hamming_39_32_bind_fpv.sv
     file_type: systemVerilogSource
 
@@ -23,7 +23,7 @@ targets:
     filesets:
       - files_formal
     toplevel:
-      - prim_secded_hamming_39_32_fpv
+      - prim_secded_hamming_39_32_tb
 
   formal:
     <<: *default_target

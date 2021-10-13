@@ -12,7 +12,7 @@ filesets:
     files:
       - vip/alert_handler_ping_timer_assert_fpv.sv
       - tb/alert_handler_ping_timer_bind_fpv.sv
-      - tb/alert_handler_ping_timer_fpv.sv
+      - tb/alert_handler_ping_timer_tb.sv
     file_type: systemVerilogSource
 
 targets:
@@ -22,4 +22,4 @@ targets:
     default_tool: icarus
     filesets:
       - files_fpv
-    toplevel: alert_handler_ping_timer_fpv
+    toplevel: alert_handler_ping_timer_tb

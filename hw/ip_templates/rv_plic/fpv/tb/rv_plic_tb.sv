@@ -4,7 +4,7 @@
 //
 // Testbench module for rv_plic. Intended to use with a formal tool.
 
-module rv_plic_fpv import rv_plic_reg_pkg::*; #(
+module rv_plic_tb import rv_plic_reg_pkg::*; #(
   // test all implementations
   localparam int unsigned NumInstances = 1
 ) (
@@ -37,4 +37,4 @@ module rv_plic_fpv import rv_plic_reg_pkg::*; #(
     .msip_o     (msip_o[0])
   );
 
-endmodule : rv_plic_fpv
+endmodule : rv_plic_tb

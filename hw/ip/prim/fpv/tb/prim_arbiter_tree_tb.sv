@@ -5,7 +5,7 @@
 // Testbench module for prim_arbiter_tree.
 // Intended to be used with a formal tool.
 
-module prim_arbiter_tree_fpv #(
+module prim_arbiter_tree_tb #(
   parameter int N = 8,
   parameter int DW = 32,
   parameter bit EnDataPort = 1,
@@ -15,12 +15,10 @@ module prim_arbiter_tree_fpv #(
   input rst_ni,
 
   input                    req_chk_i,
-
   input        [ N-1:0]    req_i,
   input        [DW-1:0]    data_i [N],
   output logic [ N-1:0]    gnt_o,
   output logic [IdxW-1:0]  idx_o,
-
   output logic             valid_o,
   output logic [DW-1:0]    data_o,
   input                    ready_i
@@ -45,4 +43,4 @@ module prim_arbiter_tree_fpv #(
   );
 
 
-endmodule : prim_arbiter_tree_fpv
+endmodule : prim_arbiter_tree_tb

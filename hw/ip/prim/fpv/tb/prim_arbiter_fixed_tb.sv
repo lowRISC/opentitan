@@ -5,7 +5,7 @@
 // Testbench module for prim_arbiter_fixed.
 // Intended to be used with a formal tool.
 
-module prim_arbiter_fixed_fpv #(
+module prim_arbiter_fixed_tb #(
   parameter int N = 8,
   parameter int DW = 32,
   parameter bit EnDataPort = 1,
@@ -40,4 +40,4 @@ module prim_arbiter_fixed_fpv #(
   );
 
 
-endmodule : prim_arbiter_fixed_fpv
+endmodule : prim_arbiter_fixed_tb

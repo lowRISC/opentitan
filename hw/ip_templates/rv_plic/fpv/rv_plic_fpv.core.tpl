@@ -14,7 +14,7 @@ filesets:
       - lowrisc:fpv:csr_assert_gen
     files:
       - tb/rv_plic_bind_fpv.sv
-      - tb/rv_plic_fpv.sv
+      - tb/rv_plic_tb.sv
       - vip/rv_plic_assert_fpv.sv
     file_type: systemVerilogSource
 
@@ -35,7 +35,7 @@ targets:
       - files_formal
     generate:
       - csr_assert_gen
-    toplevel: rv_plic_fpv
+    toplevel: rv_plic_tb
 
   formal:
     <<: *default_target

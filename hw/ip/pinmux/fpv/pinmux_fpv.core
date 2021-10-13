@@ -14,7 +14,7 @@ filesets:
     files:
       - vip/pinmux_assert_fpv.sv
       - tb/pinmux_bind_fpv.sv
-      - tb/pinmux_fpv.sv
+      - tb/pinmux_tb.sv
     file_type: systemVerilogSource
 
 generate:
@@ -30,7 +30,7 @@ targets:
       - files_formal
     generate:
       - csr_assert_gen
-    toplevel: pinmux_fpv
+    toplevel: pinmux_tb
 
   formal:
     <<: *default_target

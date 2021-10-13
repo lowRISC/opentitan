@@ -5,7 +5,7 @@
 // Testbench module for alert sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_alert_rxtx_async_fpv
+module prim_alert_rxtx_async_tb
   import prim_alert_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 (
@@ -117,4 +117,4 @@ module prim_alert_rxtx_async_fpv
     end
   end
 
-endmodule : prim_alert_rxtx_async_fpv
+endmodule : prim_alert_rxtx_async_tb

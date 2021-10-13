@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:all
     files:
-      - tb/prim_arbiter_tree_fpv.sv
+      - tb/prim_arbiter_tree_tb.sv
     file_type: systemVerilogSource
 
 targets:
@@ -19,7 +19,7 @@ targets:
     default_tool: icarus
     filesets:
       - files_formal
-    toplevel: prim_arbiter_tree_fpv
+    toplevel: prim_arbiter_tree_tb
 
   formal:
     <<: *default_target

@@ -5,7 +5,7 @@
 // Testbench module for prim_packer. Intended to be used with a formal tool.
 // To reduce the runtime for prim_packer, we limited the width parameter.
 
-module prim_packer_fpv #(
+module prim_packer_tb #(
   parameter int unsigned MaxInW = 64,
   parameter int unsigned MaxOutW = 64
 ) (
@@ -60,4 +60,4 @@ module prim_packer_fpv #(
       .flush_done_o
   );
 
-endmodule : prim_packer_fpv
+endmodule : prim_packer_tb
