@@ -10,7 +10,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:ram_2p_async_adv
     files:
-      - tb/prim_fifo_async_sram_adapter_fpv.sv
+      - tb/prim_fifo_async_sram_adapter_tb.sv
     file_type: systemVerilogSource
 
 targets:
@@ -18,7 +18,7 @@ targets:
     default_tool: icarus
     filesets:
       - files_formal
-    toplevel: prim_fifo_async_sram_adapter_fpv
+    toplevel: prim_fifo_async_sram_adapter_tb
 
   formal:
     <<: *default_target

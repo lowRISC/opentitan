@@ -10,7 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:all
     files:
-      - tb/prim_packer_fpv.sv
+      - tb/prim_packer_tb.sv
     file_type: systemVerilogSource
 
 targets:
@@ -20,7 +20,7 @@ targets:
     default_tool: icarus
     filesets:
       - files_formal
-    toplevel: prim_packer_fpv
+    toplevel: prim_packer_tb
 
   formal:
     <<: *default_target

@@ -4,7 +4,7 @@
 //
 // Testbench module for prim_keccak. Intended to be used with a formal tool.
 
-module prim_keccak_fpv #(
+module prim_keccak_tb #(
   parameter int Width = 1600
 ) (
   input                    clk_i,

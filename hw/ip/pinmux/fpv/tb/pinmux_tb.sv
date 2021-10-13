@@ -4,7 +4,7 @@
 //
 // Testbench module for pinmux. Intended to use with a formal tool.
 
-module pinmux_fpv (
+module pinmux_tb (
   input                                            clk_i,
   input                                            rst_ni,
   input  tlul_pkg::tl_h2d_t                        tl_i,
@@ -33,4 +33,4 @@ module pinmux_fpv (
     .mio_in_i
   );
 
-endmodule : pinmux_fpv
+endmodule : pinmux_tb

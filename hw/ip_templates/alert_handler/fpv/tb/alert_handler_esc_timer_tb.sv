@@ -5,7 +5,7 @@
 // Testbench module for alert_handler_esc_timer.
 // Intended to be used with a formal tool.
 
-module alert_handler_esc_timer_fpv import alert_pkg::*; (
+module alert_handler_esc_timer_tb import alert_pkg::*; (
   input  clk_i,
   input  rst_ni,
   input  en_i,
@@ -46,4 +46,4 @@ module alert_handler_esc_timer_fpv import alert_pkg::*; (
   );
 
 
-endmodule : alert_handler_esc_timer_fpv
+endmodule : alert_handler_esc_timer_tb

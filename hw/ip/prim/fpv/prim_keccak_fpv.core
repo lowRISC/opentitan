@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:all
     files:
-      - tb/prim_keccak_fpv.sv
+      - tb/prim_keccak_tb.sv
     file_type: systemVerilogSource
 
 targets:
@@ -20,7 +20,7 @@ targets:
     filesets:
       - files_fpv
     toplevel:
-      - prim_keccak_fpv
+      - prim_keccak_tb
 
   lint:
     <<: *default_target

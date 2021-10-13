@@ -14,7 +14,7 @@
 // Data/depth value checks are enabled up to depth 8 in order to constrain the
 // runtime.
 
-module prim_fifo_sync_fpv #(
+module prim_fifo_sync_tb #(
   // number of DUTs instantiated in this FPV testbench
   parameter int unsigned NumDuts = 11,
   // fifo params
@@ -233,4 +233,4 @@ module prim_fifo_sync_fpv #(
     .depth_o(depth_o[10][4:0])
   );
 
-endmodule : prim_fifo_sync_fpv
+endmodule : prim_fifo_sync_tb

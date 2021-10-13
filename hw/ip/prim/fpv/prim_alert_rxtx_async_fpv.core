@@ -11,7 +11,7 @@ filesets:
       - lowrisc:prim:alert
     files:
       - vip/prim_alert_rxtx_async_assert_fpv.sv
-      - tb/prim_alert_rxtx_async_fpv.sv
+      - tb/prim_alert_rxtx_async_tb.sv
       - tb/prim_alert_rxtx_async_bind_fpv.sv
     file_type: systemVerilogSource
 
@@ -23,7 +23,7 @@ targets:
     filesets:
       - files_formal
     toplevel:
-      - prim_alert_rxtx_async_fpv
+      - prim_alert_rxtx_async_tb
 
   formal:
     <<: *default_target

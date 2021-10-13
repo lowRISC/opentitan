@@ -4,7 +4,7 @@
 //
 // Testbench module for prim_fifo_sram_async
 
-module prim_fifo_async_sram_adapter_fpv #(
+module prim_fifo_async_sram_adapter_tb #(
   parameter int unsigned Width = 32,
   parameter int unsigned Depth = 16,
 
@@ -201,4 +201,4 @@ end // !FpgaSram
           clk_rd_i, !rst_ni)
 `endif // FPV_ON
 
-endmodule : prim_fifo_async_sram_adapter_fpv
+endmodule : prim_fifo_async_sram_adapter_tb

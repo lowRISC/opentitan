@@ -5,7 +5,7 @@
 // Testbench module for escalation sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_esc_rxtx_fpv
+module prim_esc_rxtx_tb
   import prim_esc_pkg::*;
 (
   input        clk_i,
@@ -54,4 +54,4 @@ module prim_esc_rxtx_fpv
     .esc_tx_i     ( esc_tx_in  )
   );
 
-endmodule : prim_esc_rxtx_fpv
+endmodule : prim_esc_rxtx_tb

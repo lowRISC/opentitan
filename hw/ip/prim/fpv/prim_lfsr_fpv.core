@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:lfsr
     files:
-      - tb/prim_lfsr_fpv.sv
+      - tb/prim_lfsr_tb.sv
     file_type: systemVerilogSource
 
 targets:
@@ -20,7 +20,7 @@ targets:
     filesets:
       - files_formal
     toplevel:
-      - prim_lfsr_fpv
+      - prim_lfsr_tb
 
   formal:
     <<: *default_target
