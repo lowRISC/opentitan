@@ -364,16 +364,26 @@ module otbn_top_sim (
   end
 
   // Defined in otbn_top_sim.cc
-  import "DPI-C" context function int OtbnTopApplyLoopWarp();
+  import "DPI-C" context function int OtbnTopInstallLoopWarps();
+  import "DPI-C" context function void OtbnTopApplyLoopWarp();
+  bit warps_installed;
 
   always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
     if (!IO_RST_N) begin
-      loop_warp_model_err <= 1'b0;
+      warps_installed <= 1'b0;
     end else begin
-      if (OtbnTopApplyLoopWarp() != 0) begin
-        $display("ERROR: At time %0t, OtbnTopApplyLoopWarp() failed.", $time);
-        loop_warp_model_err <= 1'b1;
+      if (!warps_installed) begin
+        if (OtbnTopInstallLoopWarps() != 0) begin
+          $display("ERROR: At time %0t, OtbnTopInstallLoopWarps() failed.", $time);
+          loop_warp_model_err <= 1'b1;
+        end
       end
+      warps_installed <= 1'b1;
+    end
+  end
+  always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
+    if (IO_RST_N) begin
+      OtbnTopApplyLoopWarp();
     end
   end
 
