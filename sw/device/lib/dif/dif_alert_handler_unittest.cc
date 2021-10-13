@@ -28,41 +28,20 @@ constexpr uint32_t kAllZeros = 0;
 class AlertHandlerTest : public testing::Test, public MmioTest {
  protected:
   dif_alert_handler_t alert_handler_ = {.base_addr = dev().region()};
-
-  dif_alert_handler_params_t params_ = {
-      .alert_count = kAlerts,
-      .escalation_signal_count = 4,
-  };
 };
 
 class InitTest : public AlertHandlerTest,
                  public testing::WithParamInterface<uint32_t> {};
 
-TEST_P(InitTest, Success) {
-  dif_alert_handler_params_t params = {
-      .alert_count = GetParam(),
-      .escalation_signal_count = 4,
-  };
-
+TEST_F(InitTest, Success) {
   dif_alert_handler_t alert_handler;
 
-  EXPECT_EQ(dif_alert_handler_init(dev().region(), params, &alert_handler),
-            kDifOk);
+  EXPECT_EQ(dif_alert_handler_init(dev().region(), &alert_handler), kDifOk);
 }
 
-TEST_P(InitTest, NullArgs) {
-  dif_alert_handler_params_t params = {
-      .alert_count = GetParam(),
-      .escalation_signal_count = 4,
-  };
-
-  EXPECT_EQ(dif_alert_handler_init(dev().region(), params, nullptr),
-            kDifBadArg);
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_alert_handler_init(dev().region(), nullptr), kDifBadArg);
 }
-
-INSTANTIATE_TEST_SUITE_P(InitTestSignalCounts, InitTest,
-                         testing::Values(1, 2, 12, 16, 24, 32, 48,
-                                         ALERT_HANDLER_PARAM_N_ALERTS));
 
 class ConfigTest : public AlertHandlerTest {
   // We provide our own dev_ member variable in this fixture, in order to
@@ -101,8 +80,7 @@ TEST_F(ConfigTest, Locked) {
       {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
         true}});
 
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifLocked);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifLocked);
 }
 
 TEST_F(ConfigTest, NoClassInit) {
@@ -120,8 +98,7 @@ TEST_F(ConfigTest, NoClassInit) {
       {{ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_OFFSET,
         50}});
 
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifOk);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifOk);
 }
 
 TEST_F(ConfigTest, TimeoutTooBig) {
@@ -131,8 +108,7 @@ TEST_F(ConfigTest, TimeoutTooBig) {
           1,
   };
 
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifBadArg);
 }
 
 TEST_F(ConfigTest, BadClassPtr) {
@@ -142,8 +118,7 @@ TEST_F(ConfigTest, BadClassPtr) {
       .classes_len = 2,
   };
 
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifBadArg);
 }
 
 TEST_F(ConfigTest, ClassInit) {
@@ -348,8 +323,7 @@ TEST_F(ConfigTest, ClassInit) {
       {{ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_OFFSET,
         50}});
 
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifOk);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifOk);
 }
 
 TEST_F(ConfigTest, BadAlert) {
@@ -392,8 +366,7 @@ TEST_F(ConfigTest, BadAlert) {
       .classes_len = classes.size(),
   };
 
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifError);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifError);
 }
 
 TEST_F(ConfigTest, BadSignalPhase) {
@@ -436,8 +409,7 @@ TEST_F(ConfigTest, BadSignalPhase) {
       .classes_len = classes.size(),
   };
 
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifError);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifError);
 }
 
 TEST_F(ConfigTest, BadDurationPhase) {
@@ -480,8 +452,7 @@ TEST_F(ConfigTest, BadDurationPhase) {
       .classes_len = classes.size(),
   };
 
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifError);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifError);
 }
 
 TEST_F(ConfigTest, BadPointers) {
@@ -525,23 +496,19 @@ TEST_F(ConfigTest, BadPointers) {
   };
 
   classes[0].alerts = nullptr;
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifError);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifError);
   classes[0].alerts = alerts_a.data();
 
   classes[0].local_alerts = nullptr;
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifError);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifError);
   classes[0].local_alerts = locals_a.data();
 
   classes[0].phase_signals = nullptr;
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifError);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifError);
   classes[0].phase_signals = signals_a.data();
 
   classes[0].phase_durations = nullptr;
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifError);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifError);
 }
 
 TEST_F(ConfigTest, BadClass) {
@@ -584,12 +551,11 @@ TEST_F(ConfigTest, BadClass) {
       .classes_len = classes.size(),
   };
 
-  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, params_, config),
-            kDifError);
+  EXPECT_EQ(dif_alert_handler_configure(&alert_handler_, config), kDifError);
 }
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_EQ(dif_alert_handler_configure(nullptr, params_, {}), kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_configure(nullptr, {}), kDifBadArg);
 }
 
 class LockTest : public AlertHandlerTest {};
@@ -634,38 +600,32 @@ TEST_F(CauseTest, IsCause) {
   bool flag;
 
   EXPECT_READ32(ALERT_HANDLER_ALERT_CAUSE_5_REG_OFFSET, {{0, true}});
-  EXPECT_EQ(
-      dif_alert_handler_alert_is_cause(&alert_handler_, params_, 5, &flag),
-      kDifOk);
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, 5, &flag),
+            kDifOk);
   EXPECT_TRUE(flag);
 
   EXPECT_READ32(ALERT_HANDLER_ALERT_CAUSE_6_REG_OFFSET, {{0, false}});
-  EXPECT_EQ(
-      dif_alert_handler_alert_is_cause(&alert_handler_, params_, 6, &flag),
-      kDifOk);
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, 6, &flag),
+            kDifOk);
   EXPECT_FALSE(flag);
 }
 
 TEST_F(CauseTest, Ack) {
   EXPECT_WRITE32(ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET,
                  {{ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT, true}});
-  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, params_, 0),
-            kDifOk);
+  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, 0), kDifOk);
 
   EXPECT_WRITE32(ALERT_HANDLER_ALERT_CAUSE_11_REG_OFFSET,
                  {{ALERT_HANDLER_ALERT_CAUSE_11_A_11_BIT, true}});
-  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, params_, 11),
-            kDifOk);
+  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, 11), kDifOk);
 }
 
 TEST_F(CauseTest, BadAlert) {
   bool flag;
-  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, params_, kAlerts,
-                                             &flag),
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, kAlerts, &flag),
             kDifBadArg);
-  EXPECT_EQ(
-      dif_alert_handler_alert_acknowledge(&alert_handler_, params_, kAlerts),
-      kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_alert_acknowledge(&alert_handler_, kAlerts),
+            kDifBadArg);
 }
 
 TEST_F(CauseTest, IsCauseLocal) {
@@ -713,13 +673,10 @@ TEST_F(CauseTest, AckLocal) {
 
 TEST_F(CauseTest, NullArgs) {
   bool flag;
-  EXPECT_EQ(dif_alert_handler_alert_is_cause(nullptr, params_, 5, &flag),
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(nullptr, 5, &flag), kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_alert_is_cause(&alert_handler_, 5, nullptr),
             kDifBadArg);
-  EXPECT_EQ(
-      dif_alert_handler_alert_is_cause(&alert_handler_, params_, 5, nullptr),
-      kDifBadArg);
-  EXPECT_EQ(dif_alert_handler_alert_acknowledge(nullptr, params_, 11),
-            kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_alert_acknowledge(nullptr, 11), kDifBadArg);
   EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
                 nullptr, kDifAlertHandlerLocalAlertEscalationPingFail, &flag),
             kDifBadArg);

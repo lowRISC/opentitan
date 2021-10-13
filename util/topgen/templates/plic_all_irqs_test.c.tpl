@@ -8,7 +8,6 @@ enabled_peripherals = ['aes', 'alert_handler', 'clkmgr', 'csrng', 'edn',
                        'entropy_src', 'gpio', 'hmac', 'i2c', 'keymgr', 'kmac',
                        'lc_ctrl', 'otbn', 'otp_ctrl', 'pinmux', 'pwrmgr',
                        'rstmgr', 'spi_device', 'sram_ctrl', 'uart', 'usbdev']
-parameterized_peripherals = ['alert_handler']
 
 def comment(n):
     return '' if n in enabled_peripherals else '// '
@@ -28,9 +27,6 @@ ${comment(n)}#include "sw/device/lib/dif/dif_${n}.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 #include "sw/device/tests/plic_all_irqs_test_helper.h"
-% for p in parameterized_peripherals:
-${comment(p)}#include "${p}_regs.h"  // Generated.
-% endfor
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 % for p in helper.irq_peripherals:
@@ -96,16 +92,8 @@ void handler_irq_external(void) {
  * Initializes the handles to all peripherals.
  */
 static void peripherals_init(void) {
-  dif_alert_handler_params_t alert_handler_params = {
-    .alert_count = ALERT_HANDLER_PARAM_N_ALERTS,
-    .escalation_signal_count = ALERT_HANDLER_PARAM_N_ESC_SEV};
-
   % for p in helper.irq_peripherals:
-  % if p.name in parameterized_peripherals:
-  ${comment(p.name)}PERIPHERAL_INIT_WITH_PARAMS(${p.name}, ${p.name}_params, ${p.inst_name}, ${p.base_addr_name});
-  % else:
   ${comment(p.name)}PERIPHERAL_INIT(${p.name}, ${p.inst_name}, ${p.base_addr_name});
-  % endif
   % endfor
 
   mmio_region_t base_addr =

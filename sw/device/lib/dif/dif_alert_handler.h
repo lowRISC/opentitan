@@ -24,30 +24,6 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Hardware instantiation parameters for the alert handler.
- *
- * This struct describes information about the underlying hardware that is
- * not determined until the hardware design is used as part of a top-level
- * design.
- */
-typedef struct dif_alert_handler_params {
-  /**
-   * The configured number of alerts.
-   *
-   * This value is fixed by the hardware, but not known to this library.
-   */
-  uint32_t alert_count;
-  /**
-   * The configured number of escalation signals.
-   *
-   * This value is fixed by the hardware, but not known to this library.
-   */
-  // It's actually fixed at 4 right now but this is likely to become
-  // configurable too.
-  uint32_t escalation_signal_count;
-} dif_alert_handler_params_t;
-
-/**
  * An alert class.
  *
  * An alert class roughly specifies how to deal with an alert. The class
@@ -343,13 +319,11 @@ typedef struct dif_alert_handler_config {
  * This function does not actuate the hardware.
  *
  * @param base_addr Hardware instantiation base address.
- * @param params Hardware instantiation parameters.
  * @param handler Out param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_init(mmio_region_t base_addr,
-                                    dif_alert_handler_params_t params,
                                     dif_alert_handler_t *alert_handler);
 
 /**
@@ -365,7 +339,7 @@ dif_result_t dif_alert_handler_init(mmio_region_t base_addr,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_configure(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_params_t params,
+    const dif_alert_handler_t *alert_handler,
     dif_alert_handler_config_t config);
 /**
  * Locks out alert handler configuration functionality.
@@ -410,8 +384,8 @@ dif_result_t dif_alert_handler_is_locked(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_alert_is_cause(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_params_t params,
-    dif_alert_handler_alert_t alert, bool *is_cause);
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert,
+    bool *is_cause);
 
 /**
  * Clears an alert from the cause vector, similar to an IRQ acknowledgement.
@@ -422,8 +396,7 @@ dif_result_t dif_alert_handler_alert_is_cause(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_alert_acknowledge(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_params_t params,
-    dif_alert_handler_alert_t alert);
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert);
 
 /**
  * Checks whether a local alert is one of the causes for an alert IRQ.

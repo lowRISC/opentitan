@@ -40,7 +40,6 @@
 #include "sw/device/lib/testing/test_framework/test_main.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 #include "sw/device/tests/plic_all_irqs_test_helper.h"
-#include "alert_handler_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // static dif_adc_ctrl_t adc_ctrl_aon;
@@ -258,15 +257,10 @@ void handler_irq_external(void) {
  * Initializes the handles to all peripherals.
  */
 static void peripherals_init(void) {
-  dif_alert_handler_params_t alert_handler_params = {
-      .alert_count = ALERT_HANDLER_PARAM_N_ALERTS,
-      .escalation_signal_count = ALERT_HANDLER_PARAM_N_ESC_SEV};
-
   // PERIPHERAL_INIT(adc_ctrl, adc_ctrl_aon,
   // TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
-  PERIPHERAL_INIT_WITH_PARAMS(alert_handler, alert_handler_params,
-                              alert_handler,
-                              TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+  PERIPHERAL_INIT(alert_handler, alert_handler,
+                  TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
   // PERIPHERAL_INIT(aon_timer, aon_timer_aon,
   // TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
   PERIPHERAL_INIT(csrng, csrng, TOP_EARLGREY_CSRNG_BASE_ADDR);

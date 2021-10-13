@@ -46,15 +46,6 @@
   } while (0)
 
 /**
- * Initializes the handle to a parameterized peripheral instance.
- */
-#define PERIPHERAL_INIT_WITH_PARAMS(peripheral, params, handle, base_addr) \
-  do {                                                                     \
-    mmio_region_t addr = mmio_region_from_addr(base_addr);                 \
-    CHECK_DIF_OK(dif_##peripheral##_init(addr, params, &handle));          \
-  } while (0)
-
-/**
  * Clears all previous interrupt invocations.
  */
 #define PERIPHERAL_IRQS_CLEAR(handle)                                         \
