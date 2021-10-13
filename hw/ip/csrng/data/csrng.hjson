@@ -71,11 +71,11 @@
       act:     "rsp"
       package: "entropy_src_pkg"
     }
-    { struct:  "otp_en"
+    { struct:  "mubi8"
       type:    "uni"
       name:    "otp_en_csrng_sw_app_read"
       act:     "rcv"
-      package: "otp_ctrl_pkg"
+      package: "prim_mubi_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
@@ -112,30 +112,33 @@
         {
             bits: "3:0",
             name: "ENABLE",
+            mubi: true
             desc: '''
-                  Setting this field to 0xA will enable the CSRNG module.
+                  Setting this field to kMuBi4True will enable the CSRNG module.
                   '''
-          resval: "0x5"
+          resval: false
         },
         {
             bits: "7:4",
             name: "SW_APP_ENABLE",
+            mubi: true
             desc: '''
-                  Setting this field to 0xA will enable reading from the !!GENBITS register.
+                  Setting this field to kMuBi4True will enable reading from the !!GENBITS register.
                   This application interface for software (register based) will be enabled
                   only if the efuse_sw_app_enable input is set.
                   '''
-          resval: "0x5"
+          resval: false
         },
         {
             bits: "11:8",
             name: "READ_INT_STATE",
+            mubi: true
             desc: '''
-                  Setting this field to 0xA will enable reading from the INT_STATE_VAL register.
+                  Setting this field to kMuBi4True will enable reading from the INT_STATE_VAL register.
                   Reading the internal state of the enable instances will be enabled
                   only if the efuse_sw_app_enable input is set.
                   '''
-          resval: "0x5"
+          resval: false
         },
       ]
     },
