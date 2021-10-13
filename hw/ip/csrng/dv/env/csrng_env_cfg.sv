@@ -23,8 +23,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
          chk_int_state_pct;
 
   rand bit                      chk_int_state, regwen;
-  rand bit [3:0]                enable, sw_app_enable, read_int_state;
-  rand otp_ctrl_pkg::otp_en_t   otp_en_cs_sw_app_read;
+  rand mubi4_e                  enable, sw_app_enable, read_int_state;
+  rand mubi8_e                  otp_en_cs_sw_app_read;
 
   // Variables
   bit                                    compliance[NUM_HW_APPS], status[NUM_HW_APPS];
@@ -33,24 +33,24 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   reseed_counter[NUM_HW_APPS];
 
   constraint c_otp_en_cs_sw_app_read {otp_en_cs_sw_app_read dist {
-                                      otp_ctrl_pkg::Enabled  :/ otp_en_cs_sw_app_read_pct,
-                                      otp_ctrl_pkg::Disabled :/ (100 - otp_en_cs_sw_app_read_pct) };}
+                                      MuBi8True  :/ otp_en_cs_sw_app_read_pct,
+                                      MuBi8False :/ (100 - otp_en_cs_sw_app_read_pct) };}
 
   constraint c_regwen { regwen dist {
                         1 :/ regwen_pct,
                         0 :/ (100 - regwen_pct) };}
 
   constraint c_enable { enable dist {
-                        csrng_pkg::CS_FIELD_ON  :/ enable_pct,
-                        ~csrng_pkg::CS_FIELD_ON :/ (100 - enable_pct) };}
+                        MuBi4True  :/ enable_pct,
+                        MuBi4False :/ (100 - enable_pct) };}
 
   constraint c_sw_app_enable { sw_app_enable dist {
-                               csrng_pkg::CS_FIELD_ON  :/ sw_app_enable_pct,
-                               ~csrng_pkg::CS_FIELD_ON :/ (100 - sw_app_enable_pct) };}
+                               MuBi4True  :/ sw_app_enable_pct,
+                               MuBi4False :/ (100 - sw_app_enable_pct) };}
 
   constraint c_read_int_state { read_int_state dist {
-                                csrng_pkg::CS_FIELD_ON  :/ read_int_state_pct,
-                                ~csrng_pkg::CS_FIELD_ON :/ (100 - read_int_state_pct) };}
+                                MuBi4True  :/ read_int_state_pct,
+                                MuBi4False :/ (100 - read_int_state_pct) };}
 
   constraint c_chk_int_state { chk_int_state dist {
                                1 :/ chk_int_state_pct,

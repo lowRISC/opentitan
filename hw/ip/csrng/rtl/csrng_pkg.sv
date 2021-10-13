@@ -47,10 +47,4 @@ package csrng_pkg;
   parameter int CsKeymgrDivWidth = 384;
   typedef logic [CsKeymgrDivWidth-1:0] cs_keymgr_div_t;
 
-  // Sparse four-value signal type
-  parameter int CS_MODE_WIDTH = 4;
-  typedef enum logic [CS_MODE_WIDTH-1:0] {
-    CS_FIELD_ON = 4'b1010
-  } cs_enb_e;
-
 endpackage : csrng_pkg
