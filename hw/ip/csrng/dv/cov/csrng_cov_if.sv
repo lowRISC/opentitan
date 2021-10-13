@@ -37,9 +37,9 @@ interface csrng_cov_if (
     }
 
     cp_clen: coverpoint clen {
-      bins zero     = { 0 };
-      bins add_data = { [1:12] };
-      bins invalid  = { [13:15] };
+      bins zero            = { 0 };
+      bins additional_data = { [1:12] };
+      bins invalid         = { [13:15] };
     }
 
     cp_flags: coverpoint flags {
