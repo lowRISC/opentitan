@@ -39,6 +39,18 @@
       default: "${len(clocks.groups)}",
       local: "true"
     },
+    { name: "NumSwGateableClocks",
+      desc: "Number of SW gateable clocks",
+      type: "int",
+      default: "${len(typed_clocks.sw_clks)}",
+      local: "true"
+    },
+    { name: "NumHintableClocks",
+      desc: "Number of hintable clocks",
+      type: "int",
+      default: "${len(hint_names)}",
+      local: "true"
+    },
   ],
 
   inter_signal_list: [
@@ -194,7 +206,7 @@
     { name: "CLK_ENABLES",
       desc: '''
         Clock enable for software gateable clocks.
-        These clocks are direclty controlled by software.
+        These clocks are directly controlled by software.
       ''',
       swaccess: "rw",
       hwaccess: "hro",

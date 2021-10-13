@@ -8,6 +8,8 @@ package clkmgr_reg_pkg;
 
   // Param list
   parameter int NumGroups = 7;
+  parameter int NumSwGateableClocks = 4;
+  parameter int NumHintableClocks = 5;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
