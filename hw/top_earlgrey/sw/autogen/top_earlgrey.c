@@ -138,7 +138,7 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdI2c2HostTimeout] = kTopEarlgreyPlicPeripheralI2c2,
   [kTopEarlgreyPlicIrqIdPattgenDoneCh0] = kTopEarlgreyPlicPeripheralPattgen,
   [kTopEarlgreyPlicIrqIdPattgenDoneCh1] = kTopEarlgreyPlicPeripheralPattgen,
-  [kTopEarlgreyPlicIrqIdRvTimerTimerExpired0_0] = kTopEarlgreyPlicPeripheralRvTimer,
+  [kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0] = kTopEarlgreyPlicPeripheralRvTimer,
   [kTopEarlgreyPlicIrqIdUsbdevPktReceived] = kTopEarlgreyPlicPeripheralUsbdev,
   [kTopEarlgreyPlicIrqIdUsbdevPktSent] = kTopEarlgreyPlicPeripheralUsbdev,
   [kTopEarlgreyPlicIrqIdUsbdevDisconnected] = kTopEarlgreyPlicPeripheralUsbdev,

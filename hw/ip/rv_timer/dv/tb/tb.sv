@@ -38,7 +38,7 @@ module tb;
     .alert_rx_i            (alert_rx   ),
     .alert_tx_o            (alert_tx   ),
 
-    .intr_timer_expired_0_0_o(intr_timer_expired[0][0] )
+    .intr_timer_expired_hart0_timer0_o(intr_timer_expired[0][0])
   );
 
   assign interrupts[0] = intr_timer_expired[0][0];

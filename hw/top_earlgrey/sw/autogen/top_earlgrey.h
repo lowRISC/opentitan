@@ -1140,7 +1140,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c2HostTimeout = 123, /**< i2c2_host_timeout */
   kTopEarlgreyPlicIrqIdPattgenDoneCh0 = 124, /**< pattgen_done_ch0 */
   kTopEarlgreyPlicIrqIdPattgenDoneCh1 = 125, /**< pattgen_done_ch1 */
-  kTopEarlgreyPlicIrqIdRvTimerTimerExpired0_0 = 126, /**< rv_timer_timer_expired_0_0 */
+  kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0 = 126, /**< rv_timer_timer_expired_hart0_timer0 */
   kTopEarlgreyPlicIrqIdUsbdevPktReceived = 127, /**< usbdev_pkt_received */
   kTopEarlgreyPlicIrqIdUsbdevPktSent = 128, /**< usbdev_pkt_sent */
   kTopEarlgreyPlicIrqIdUsbdevDisconnected = 129, /**< usbdev_disconnected */

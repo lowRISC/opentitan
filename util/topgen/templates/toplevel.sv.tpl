@@ -272,7 +272,7 @@ module top_${top["name"]} #(
 
   // ibex specific assignments
   // TODO: This should be further automated in the future.
-  assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_0_0;
+  assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_hart0_timer0;
   assign rv_core_ibex_hart_id = '0;
 
   ## Not all top levels have a rom controller.

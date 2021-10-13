@@ -12,8 +12,8 @@
   available_output_list: [
   ],
   interrupt_list: [
-    { name: "timer_expired_0_0",
-      desc: "raised if the timer 0_0 expired (mtimecmp >= mtime)"
+    { name: "timer_expired_hart0_timer0",
+      desc: "raised if hart0's timer0 expired (mtimecmp >= mtime)"
     },
   ],
   alert_list: [

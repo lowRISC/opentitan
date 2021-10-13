@@ -452,7 +452,7 @@ module top_earlgrey #(
   logic intr_i2c2_host_timeout;
   logic intr_pattgen_done_ch0;
   logic intr_pattgen_done_ch1;
-  logic intr_rv_timer_timer_expired_0_0;
+  logic intr_rv_timer_timer_expired_hart0_timer0;
   logic intr_usbdev_pkt_received;
   logic intr_usbdev_pkt_sent;
   logic intr_usbdev_disconnected;
@@ -787,7 +787,7 @@ module top_earlgrey #(
 
   // ibex specific assignments
   // TODO: This should be further automated in the future.
-  assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_0_0;
+  assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_hart0_timer0;
   assign rv_core_ibex_hart_id = '0;
 
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
@@ -1408,7 +1408,7 @@ module top_earlgrey #(
   ) u_rv_timer (
 
       // Interrupt
-      .intr_timer_expired_0_0_o (intr_rv_timer_timer_expired_0_0),
+      .intr_timer_expired_hart0_timer0_o (intr_rv_timer_timer_expired_hart0_timer0),
       // [12]: fatal_fault
       .alert_tx_o  ( alert_tx[12:12] ),
       .alert_rx_i  ( alert_rx[12:12] ),
@@ -2581,7 +2581,7 @@ module top_earlgrey #(
       intr_usbdev_disconnected, // IDs [129 +: 1]
       intr_usbdev_pkt_sent, // IDs [128 +: 1]
       intr_usbdev_pkt_received, // IDs [127 +: 1]
-      intr_rv_timer_timer_expired_0_0, // IDs [126 +: 1]
+      intr_rv_timer_timer_expired_hart0_timer0, // IDs [126 +: 1]
       intr_pattgen_done_ch1, // IDs [125 +: 1]
       intr_pattgen_done_ch0, // IDs [124 +: 1]
       intr_i2c2_host_timeout, // IDs [123 +: 1]

@@ -12769,7 +12769,7 @@
       module_name: pattgen
     }
     {
-      name: rv_timer_timer_expired_0_0
+      name: rv_timer_timer_expired_hart0_timer0
       width: 1
       type: interrupt
       module_name: rv_timer
