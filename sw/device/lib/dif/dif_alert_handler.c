@@ -20,19 +20,8 @@ static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
               "Expected seven local alerts!");
 
 dif_result_t dif_alert_handler_init(mmio_region_t base_addr,
-                                    dif_alert_handler_params_t params,
                                     dif_alert_handler_t *alert_handler) {
   if (alert_handler == NULL) {
-    return kDifBadArg;
-  }
-
-  // Check we do not exceed maximum number of alerts supported by the hardware.
-  if (params.alert_count > ALERT_HANDLER_PARAM_N_ALERTS) {
-    return kDifBadArg;
-  }
-
-  // For now, the hardware is hardwired to four signals.
-  if (params.escalation_signal_count != ALERT_HANDLER_PARAM_N_ESC_SEV) {
     return kDifBadArg;
   }
 
@@ -47,14 +36,13 @@ dif_result_t dif_alert_handler_init(mmio_region_t base_addr,
  */
 OT_WARN_UNUSED_RESULT
 static bool classify_alerts(const dif_alert_handler_t *alert_handler,
-                            dif_alert_handler_params_t params,
                             const dif_alert_handler_class_config_t *class) {
   if (class->alerts == NULL && class->alerts_len != 0) {
     return false;
   }
 
   for (int i = 0; i < class->alerts_len; ++i) {
-    if (class->alerts[i] >= params.alert_count) {
+    if (class->alerts[i] >= ALERT_HANDLER_PARAM_N_ALERTS) {
       return false;
     }
 
@@ -246,7 +234,6 @@ static bool toggle_to_bool(dif_toggle_t toggle, bool *flag) {
  */
 OT_WARN_UNUSED_RESULT
 static bool configure_class(const dif_alert_handler_t *alert_handler,
-                            dif_alert_handler_params_t params,
                             const dif_alert_handler_class_config_t *class) {
   ptrdiff_t reg_offset;
   switch (class->alert_class) {
@@ -298,7 +285,7 @@ static bool configure_class(const dif_alert_handler_t *alert_handler,
   // Configure the escalation signals for each escalation phase. In particular,
   // if an escalation phase is configured, it is also enabled.
   for (int i = 0; i < class->phase_signals_len; ++i) {
-    if (class->phase_signals[i].signal >= params.escalation_signal_count) {
+    if (class->phase_signals[i].signal >= ALERT_HANDLER_PARAM_N_ESC_SEV) {
       return false;
     }
 
@@ -445,7 +432,7 @@ static bool configure_phase_durations(
 }
 
 dif_result_t dif_alert_handler_configure(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_params_t params,
+    const dif_alert_handler_t *alert_handler,
     dif_alert_handler_config_t config) {
   if (alert_handler == NULL) {
     return kDifBadArg;
@@ -470,13 +457,13 @@ dif_result_t dif_alert_handler_configure(
   }
 
   for (int i = 0; i < config.classes_len; ++i) {
-    if (!classify_alerts(alert_handler, params, &config.classes[i])) {
+    if (!classify_alerts(alert_handler, &config.classes[i])) {
       return kDifError;
     }
     if (!classify_local_alerts(alert_handler, &config.classes[i])) {
       return kDifError;
     }
-    if (!configure_class(alert_handler, params, &config.classes[i])) {
+    if (!configure_class(alert_handler, &config.classes[i])) {
       return kDifError;
     }
     if (!configure_phase_durations(alert_handler, &config.classes[i])) {
@@ -530,10 +517,10 @@ dif_result_t dif_alert_handler_is_locked(
 }
 
 dif_result_t dif_alert_handler_alert_is_cause(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_params_t params,
-    dif_alert_handler_alert_t alert, bool *is_cause) {
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert,
+    bool *is_cause) {
   if (alert_handler == NULL || is_cause == NULL ||
-      alert >= params.alert_count) {
+      alert >= ALERT_HANDLER_PARAM_N_ALERTS) {
     return kDifBadArg;
   }
 
@@ -550,9 +537,8 @@ dif_result_t dif_alert_handler_alert_is_cause(
 }
 
 dif_result_t dif_alert_handler_alert_acknowledge(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_params_t params,
-    dif_alert_handler_alert_t alert) {
-  if (alert_handler == NULL || alert >= params.alert_count) {
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert) {
+  if (alert_handler == NULL || alert >= ALERT_HANDLER_PARAM_N_ALERTS) {
     return kDifBadArg;
   }
 
