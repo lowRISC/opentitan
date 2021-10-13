@@ -343,6 +343,26 @@ sw_tests += {
   }
 }
 
+pwrmgr_power_glitch_test_lib = declare_dependency(
+  link_with: static_library(
+    'pwrmgr_power_glitch_test_lib',
+    sources: ['pwrmgr_power_glitch_test.c'],
+    dependencies: [
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_rstmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+      sw_lib_testing_pwrmgr_testutils,
+      sw_lib_testing_rstmgr_testutils,
+    ],
+  ),
+)
+sw_tests += {
+  'pwrmgr_power_glitch_test': {
+    'library': pwrmgr_power_glitch_test_lib,
+  }
+}
+
 pmp_smoketest_napot_lib = declare_dependency(
   link_with: static_library(
     'pmp_smoketest_napot_lib',

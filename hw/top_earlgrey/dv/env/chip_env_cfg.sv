@@ -56,6 +56,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   uint                sw_test_timeout_ns = 5_000_000; // 5ms
   sw_logger_vif       sw_logger_vif;
   sw_test_status_vif  sw_test_status_vif;
+  ast_supply_vif      ast_supply_vif;
 
   // ext component cfgs
   rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];

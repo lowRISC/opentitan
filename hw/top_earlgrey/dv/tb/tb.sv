@@ -66,6 +66,11 @@ module tb;
   uart_if uart_if[NUM_UARTS-1:0]();
   jtag_if jtag_if();
 
+  bind dut ast_supply_if ast_supply_if (
+    .clk(top_earlgrey.clk_aon_i),
+    .trigger(top_earlgrey.rv_core_ibex_pwrmgr.core_sleeping)
+  );
+
   // TODO: Replace with correct interfaces once
   // pinmux/padring and pinout have been updated.
   wire [23:0] tie_off;
@@ -263,6 +268,10 @@ module tb;
         null, "*.env", "sw_test_status_vif", `SIM_SRAM_IF.u_sw_test_status_if);
     uvm_config_db#(virtual sw_logger_if)::set(
         null, "*.env", "sw_logger_vif", `SIM_SRAM_IF.u_sw_logger_if);
+
+    // AST supply interface.
+    uvm_config_db#(virtual ast_supply_if)::set(
+        null, "*.env", "ast_supply_vif", dut.ast_supply_if);
 
     // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
     // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion

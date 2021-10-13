@@ -577,7 +577,7 @@
       name: chip_sw_aon_timer_wakeup_irq
       desc: '''Verify the AON timer wake up interrupt in normal operating state.
 
-            - Program the PLIC to let the AON time wake up interrupt the CPU.
+            - Program the PLIC to let the AON timer wake up interrupt the CPU.
             - Program the AON timer to generate the wake up timeout interrupt after some time.
             - Issue a WFI to wait for the interrupt to trigger.
             - Service the interrupt when it triggers; verify that it came from AON timer.
@@ -886,13 +886,23 @@
       tests: []
     }
     {
-      name: chip_sw_pwrmgr_bad_main_pok
-      desc: '''Verify the effect of main_pok de-assertion in the middle of low power entry / exit
-            FSM transition.
+      name: chip_sw_pwrmgr_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail.
 
-            The main_pok from AST is randomly forced to flip while in the middle of a FSM
-            transition. This is done on all normal / deep sleep / reset request tests. The check
-            that flipping during POR results in a stretched reset is done at IP level.
+            The vcmain_supp_i AST input is forced to drop once the test is running. This triggers
+            a MainPwr reset request, which is checked reading the reset_info CSR when the test
+            restarts and the POR bit is not set.
+            '''
+      milestone: V2
+      tests: ["chip_sw_pwrmgr_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_sleep_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail in deep sleep.
+
+            The vcmain_supp_i AST input is forced to drop after putting the chip to sleep. This
+            triggers a MainPwr reset request, which is checked reading the reset_info CSR when the
+            test restarts and the POR bit is not set.
             '''
       milestone: V2
       tests: []

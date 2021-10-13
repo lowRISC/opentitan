@@ -64,7 +64,7 @@ typedef enum dif_rstmgr_reset_info {
    */
   kDifRstmgrResetInfoPor = 0x1,
   /**
-   * Device has reset due to lowe power exit.
+   * Device has reset due to low power exit.
    */
   kDifRstmgrResetInfoLowPowerExit = (0x1 << 1),
   /**

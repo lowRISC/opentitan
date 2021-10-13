@@ -61,6 +61,12 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get sw_test_status_vif from uvm_config_db")
     end
 
+    // get the handle to the ast supply interface.
+    if (!uvm_config_db#(virtual ast_supply_if)::get(this, "", "ast_supply_vif",
+        cfg.ast_supply_vif)) begin
+      `uvm_fatal(`gfn, "failed to get ast_supply_vif from uvm_config_db")
+    end
+
     // create components
     foreach (m_uart_agents[i]) begin
       m_uart_agents[i] = uart_agent::type_id::create($sformatf("m_uart_agent%0d", i), this);
