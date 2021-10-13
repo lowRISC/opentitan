@@ -18,6 +18,7 @@ enum RootCommandHierarchy {
     Console(command::console::Console),
 
     Gpio(command::gpio::GpioCommand),
+    LoadBitstream(command::load_bitstream::LoadBitstream),
     Spi(command::spi::SpiCommand),
 
     // Flattened because `Greetings` is a subcommand hierarchy.

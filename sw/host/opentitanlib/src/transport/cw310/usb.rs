@@ -18,6 +18,8 @@ use crate::util::parse_int::ParseInt;
 pub enum Error {
     #[error("Could not find device {0}")]
     NotFound(String),
+    #[error("FPGA programming failed: {0}")]
+    FpgaProgramFailed(String),
 }
 
 /// The `UsbBackend` provides low-level USB access to the CW310 board.
@@ -131,6 +133,16 @@ impl UsbBackend {
                 0xC1, cmd, value, 0, data);
         Ok(len)
     }
+
+    pub fn read_bulk(&self, endpoint: u8, data: &mut [u8]) -> Result<usize> {
+        let len = self.handle.read_bulk(endpoint, data, self.timeout)?;
+        Ok(len)
+    }
+
+    pub fn write_bulk(&self, endpoint: u8, data: &[u8]) -> Result<usize> {
+        let len = self.handle.write_bulk(endpoint, data, self.timeout)?;
+        Ok(len)
+    }
 }
 
 /// The `Backend` struct provides high-level access to the CW310 board.
@@ -174,6 +186,19 @@ impl Backend {
     pub const REQ_CS_LOW: u16 = 0xA2;
     pub const REQ_CS_HIGH: u16 = 0xA3;
     pub const REQ_SEND_DATA: u16 = 0xA4;
+
+    /// Commands for programming the bitstream into the FPGA.
+    pub const CMD_FPGA_STATUS: u8 = 0x15;
+    pub const CMD_FPGA_PROGRAM: u8 = 0x16;
+    // The names init, prepare and exit are not official; they are inferred
+    // from how the constants are used in the python implementation.
+    pub const PROGRAM_INIT: u16 = 0xA0;
+    pub const PROGRAM_PREPARE: u16 = 0xA1;
+    pub const PROGRAM_EXIT: u16 = 0xA2;
+
+    /// Bulk endpoint numbers for the CW310 board.
+    pub const BULK_IN_EP: u8 = 0x81;
+    pub const BULK_OUT_EP: u8 = 0x02;
 
     const LAST_PIN_NUMBER: u8 = 106;
 
@@ -357,6 +382,72 @@ impl Backend {
             self.spi1_tx_rx(wchunk, rchunk)?;
         }
         Ok(())
+    }
+
+    /// Query whether the FPGA is programmed.
+    pub fn fpga_is_programmed(&self) -> Result<bool> {
+        let mut status = [0u8; 4];
+        self.usb
+            .read_ctrl(Backend::CMD_FPGA_STATUS, 0, &mut status)?;
+        Ok(status[0] & 0x01 != 0)
+    }
+
+    // Erase the FPGA and prepare for programming.
+    fn fpga_erase(&self) -> Result<()> {
+        self.usb
+            .send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_INIT, &[])?;
+        std::thread::sleep(Duration::from_millis(1));
+        self.usb
+            .send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_PREPARE, &[])?;
+        std::thread::sleep(Duration::from_millis(1));
+        Ok(())
+    }
+
+    fn fpga_download(&self, bitstream: &[u8]) -> Result<()> {
+        // This isn't really documented well in the python implementation:
+        // There appears to be a header on the bitstream which we do not
+        // want to send to the board.
+        let mut stream = bitstream[0x7C..].to_vec();
+
+        // Then, we need to extend the buffer a little to make sure we send
+        // enough clocks at the end to finish programming.  Apparently, we
+        // cannot end with a multiple of 64 bytes.
+        let newlen = stream.len() + if stream.len() % 32 != 0 { 32 } else { 33 };
+        stream.resize(newlen, 0xFF);
+
+        // Finally, chunk the payload into 2k chunks and send it to the
+        // bulk endpoint.
+        for chunk in stream.chunks(2048) {
+            self.usb.write_bulk(Backend::BULK_OUT_EP, chunk)?;
+        }
+        Ok(())
+    }
+
+    /// Program a bitstream into the FPGA.
+    pub fn fpga_program(&self, bitstream: &[u8]) -> Result<()> {
+        self.fpga_erase()?;
+        let result = self.fpga_download(bitstream);
+
+        let mut status = false;
+        if result.is_ok() {
+            for _ in 0..5 {
+                status = self.fpga_is_programmed()?;
+                if status {
+                    break;
+                }
+                std::thread::sleep(Duration::from_millis(1));
+            }
+        }
+        self.usb
+            .send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_EXIT, &[])?;
+
+        if result.is_err() {
+            Err(Error::FpgaProgramFailed(result.unwrap_err().to_string()).into())
+        } else if !status {
+            Err(Error::FpgaProgramFailed("unknown error".to_string()).into())
+        } else {
+            Ok(())
+        }
     }
 
     /// Given a CW310 pin name, return its pin number.

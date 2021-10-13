@@ -22,6 +22,7 @@ bitflags! {
         const UART = 0x00000001;
         const SPI = 0x00000002;
         const GPIO = 0x00000004;
+        const FPGA_PROGRAM = 0x00000008;
     }
 }
 
@@ -85,6 +86,10 @@ pub trait Transport {
     }
     /// Returns a [`Gpio`] implementation.
     fn gpio(&self) -> Result<Rc<dyn Gpio>> {
+        unimplemented!();
+    }
+    /// Programs a bitstream into an FPGA.
+    fn fpga_program(&self, _bitstream: &[u8]) -> Result<()> {
         unimplemented!();
     }
 }

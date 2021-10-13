@@ -68,7 +68,9 @@ impl CW310 {
 
 impl Transport for CW310 {
     fn capabilities(&self) -> Capabilities {
-        Capabilities::new(Capability::SPI | Capability::GPIO | Capability::UART)
+        Capabilities::new(
+            Capability::SPI | Capability::GPIO | Capability::UART | Capability::FPGA_PROGRAM,
+        )
     }
 
     fn uart(&self, instance: u32) -> Result<Rc<dyn Uart>> {
@@ -104,5 +106,12 @@ impl Transport for CW310 {
             inner.spi = Some(Rc::new(spi::CW310Spi::open(Rc::clone(&self.device))?));
         }
         Ok(Rc::clone(inner.spi.as_ref().unwrap()))
+    }
+
+    fn fpga_program(&self, bitstream: &[u8]) -> Result<()> {
+        let usb = self.device.borrow();
+        usb.spi1_enable(false)?;
+        usb.pin_set_state(CW310::PIN_JTAG, true)?;
+        usb.fpga_program(bitstream)
     }
 }
