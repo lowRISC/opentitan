@@ -6,7 +6,7 @@
 // Intended to be used with a formal tool.
 
 % if len(dut.pkgs) > 0:
-module ${dut.name}_fpv
+module ${dut.name}_tb
 % for pkg in dut.pkgs:
   import ${pkg};
 % endfor
@@ -17,9 +17,9 @@ module ${dut.name}_fpv
 % endif
 % else:
 % if dut.params:
-module ${dut.name}_fpv #(
+module ${dut.name}_tb #(
 % else:
-module ${dut.name}_fpv (
+module ${dut.name}_tb (
 % endif
 % endif
 % if dut.params:
@@ -49,4 +49,4 @@ module ${dut.name}_fpv (
   );
 
 
-endmodule : ${dut.name}_fpv
+endmodule : ${dut.name}_tb

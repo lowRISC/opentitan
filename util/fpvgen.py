@@ -101,8 +101,8 @@ def main():
         dut.deps += ["lowrisc:ip:" + parentpath.stem]
 
     # define template files to iterate over
-    template_files = [(Path(__file__).parent.joinpath("fpvgen/fpv.sv.tpl"),                  \
-                       outpath.joinpath("tb").joinpath(mod_path.stem + "_fpv.sv")),          \
+    template_files = [(Path(__file__).parent.joinpath("fpvgen/tb.sv.tpl"),                  \
+                       outpath.joinpath("tb").joinpath(mod_path.stem + "_tb.sv")),          \
                       (Path(__file__).parent.joinpath("fpvgen/bind_fpv.sv.tpl"),             \
                         outpath.joinpath("tb").joinpath(mod_path.stem + "_bind_fpv.sv")),    \
                       (Path(__file__).parent.joinpath("fpvgen/assert_fpv.sv.tpl"),           \

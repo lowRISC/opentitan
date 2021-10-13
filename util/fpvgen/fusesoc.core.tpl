@@ -17,7 +17,7 @@ filesets:
     files:
       - vip/${dut.name}_assert_fpv.sv
       - tb/${dut.name}_bind_fpv.sv
-      - tb/${dut.name}_fpv.sv
+      - tb/${dut.name}_tb.sv
     file_type: systemVerilogSource
 
 % if dut.is_cip:
@@ -40,7 +40,7 @@ targets:
     generate:
       - csr_assert_gen
 % endif
-    toplevel: ${dut.name}_fpv
+    toplevel: ${dut.name}_tb
 
   formal:
     <<: *default_target
