@@ -15,6 +15,7 @@ package csrng_env_pkg;
   import csr_utils_pkg::*;
   import csrng_ral_pkg::*;
   import aes_model_dpi_pkg::*;
+  import prim_mubi_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
