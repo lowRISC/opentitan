@@ -374,6 +374,48 @@ Reads never stall.
         The accumulator register used by the {{< otbnInsnRef "BN.MULQACC" >}} instruction.
       </td>
     </tr>
+    <tr>
+      <td>0x4</td>
+      <td>RO</td>
+      <td>KEY_S0_L</td>
+      <td>
+Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager]({{< relref "/hw/ip/keymgr/doc" >}}).
+
+A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+      </td>
+    </tr>
+    <tr>
+      <td>0x5</td>
+      <td>RO</td>
+      <td>KEY_S0_H</td>
+      <td>
+Bits [255:128] of this register are always zero.
+Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager]({{< relref "/hw/ip/keymgr/doc" >}}).
+
+A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+      </td>
+    </tr>
+    <tr>
+      <td>0x6</td>
+      <td>RO</td>
+      <td>KEY_S1_L</td>
+      <td>
+Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager]({{< relref "/hw/ip/keymgr/doc" >}}).
+
+A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+      </td>
+    </tr>
+    <tr>
+      <td>0x7</td>
+      <td>RO</td>
+      <td>KEY_S1_H</td>
+      <td>
+Bits [255:128] of this register are always zero.
+Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager]({{< relref "/hw/ip/keymgr/doc" >}}).
+
+A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -448,6 +490,15 @@ Refer to the [Secure Wipe]({{<relref "#design-details-secure-wipe">}}) section f
 ## Instruction Counter
 
 In order to detect and mitigate fault injection attacks on the OTBN, the host CPU can read the number of executed instructions from {{< regref "INSN_CNT">}} and verify whether it matches the expectation.
+
+## Key Sideloading
+
+OTBN software can make use of a single 384b wide key provided by the [Key Manager]({{<relref "/hw/ip/keymgr/doc" >}}), which is made available in two shares.
+The key is passed through a dedicated connection between the Key Manager and OTBN to avoid exposing it to other components.
+Software can access the first share of the key through the [`KEY_S0_L` and `KEY_S0_H` WSRs](#wsrs), and the second share of the key through the [`KEY_S1_L` and `KEY_S1_H` WSRs](#wsrs).
+
+It is up to host software to configure the Key Manager so that it provides the right key to OTBN at the start of the operation, and to remove the key again once the operation on OTBN has completed.
+A `KEY_INVALID` software error is raised if the Key Manager does not present a valid key when OTBN software accesses any of the `KEY_*` WSRs.
 
 # Theory of Operations
 
@@ -671,6 +722,13 @@ This way, no alert is generated without setting an error code somewhere.
       <td>software</td>
       <td>
         A loop stack-related error was detected.
+      </td>
+    </tr>
+    <tr>
+      <td><code>KEY_INVALID<code></td>
+      <td>software</td>
+      <td>
+        An attempt to read a `KEY_*` WSR was detected, but no valid key was provided by the key manager.
       </td>
     </tr>
     <tr>
