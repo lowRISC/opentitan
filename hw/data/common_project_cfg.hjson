@@ -20,7 +20,7 @@
   // Workaround for gsutil to fall back to using python2.7.
   results_server_prefix:      "gs://"
   results_server_url_prefix:  "https://"
-  results_server_cmd:         "CLOUDSDK_PYTHON=/usr/bin/python2.7 /usr/bin/gsutil"
+  results_server_cmd:         "/usr/bin/gsutil"
 
   results_server_path: "{results_server_prefix}{results_server}/{rel_path}"
   results_server_dir:  "{results_server_path}/latest"
