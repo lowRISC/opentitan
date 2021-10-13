@@ -20,8 +20,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   // Knobs & Weights
   uint   otp_en_cs_sw_app_read_pct, regwen_pct,
          enable_pct, sw_app_enable_pct, read_int_state_pct,
-         chk_int_state_pct;
+         chk_int_state_pct,
+         num_cmds_min, num_cmds_max;
 
+  rand uint                     num_cmds;
   rand bit                      chk_int_state, regwen;
   rand mubi4_e                  enable, sw_app_enable, read_int_state;
   rand mubi8_e                  otp_en_cs_sw_app_read;
@@ -55,6 +57,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   constraint c_chk_int_state { chk_int_state dist {
                                1 :/ chk_int_state_pct,
                                0 :/ (100 - chk_int_state_pct) };}
+
+  constraint c_num_cmds { num_cmds inside { [num_cmds_min:num_cmds_max] };}
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = csrng_env_pkg::LIST_OF_ALERTS;
@@ -145,6 +149,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     str = {str,  $sformatf("\n\t |***** read_int_state            : 0x%4h *****| \t", read_int_state)            };
     str = {str,  $sformatf("\n\t |***** regwen                    :   %4d *****| \t", regwen)                    };
     str = {str,  $sformatf("\n\t |***** chk_int_state             :   %4d *****| \t", chk_int_state)             };
+    str = {str,  $sformatf("\n\t |***** num_cmds                  :   %4d *****| \t", num_cmds)                  };
     str = {str,  $sformatf("\n\t |-------------- knobs -------------------------| \t")                           };
     str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_pct :   %4d *****| \t", otp_en_cs_sw_app_read_pct) };
     str = {str,  $sformatf("\n\t |***** regwen_pct                :   %4d *****| \t", regwen_pct)                };
@@ -152,6 +157,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     str = {str,  $sformatf("\n\t |***** sw_app_enable_pct         :   %4d *****| \t", sw_app_enable_pct)         };
     str = {str,  $sformatf("\n\t |***** read_int_state_pct        :   %4d *****| \t", read_int_state_pct)        };
     str = {str,  $sformatf("\n\t |***** chk_int_state_pct         :   %4d *****| \t", chk_int_state_pct)         };
+    str = {str,  $sformatf("\n\t |***** num_cmds_min              :   %4d *****| \t", num_cmds_min)              };
+    str = {str,  $sformatf("\n\t |***** num_cmds_max              :   %4d *****| \t", num_cmds_max)              };
     str = {str,  $sformatf("\n\t |**********************************************| \t")                           };
     str = {str, "\n"};
     return str;

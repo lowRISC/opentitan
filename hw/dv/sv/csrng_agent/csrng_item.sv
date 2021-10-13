@@ -52,9 +52,9 @@ class csrng_item extends uvm_sequence_item;
     string str = "";
     str = {str, "\n"};
     str = {str,  $sformatf("\n\t |********* csrng_item **********| \t")                   };
-    str = {str,  $sformatf("\n\t |* acmd           :      %5s *| \t", acmd.name())       };
-    str = {str,  $sformatf("\n\t |* clen           :      %5d *| \t", clen)           };
-    str = {str,  $sformatf("\n\t |* flags          :     0b%4b *| \t", flags)          };
+    str = {str,  $sformatf("\n\t |* acmd           :      %5s *| \t", acmd.name())        };
+    str = {str,  $sformatf("\n\t |* clen           :      %5d *| \t", clen)               };
+    str = {str,  $sformatf("\n\t |* flags[0]       :      %5d *| \t", flags[0])           };
     str = {str,  $sformatf("\n\t |* glen           :      %5d *| \t", glen)               };
     if (cmd_data_q.size()) begin
       for (int i = 0; i < cmd_data_q.size(); i++) begin

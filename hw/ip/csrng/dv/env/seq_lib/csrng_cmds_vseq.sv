@@ -7,28 +7,27 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
   `uvm_object_new
 
-  bit [entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH-1:0]   entropy_val;
-  csrng_item                                        cs_item, cs_item_clone, cs_item_q[NUM_HW_APPS][$];
-  uint                                              cmds_gen, cmds_sent;
-  bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0]            genbits;
+  bit                                          fips;
+  bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   entropy_val;
+  csrng_item                                   cs_item, cs_item_clone, cs_item_q[NUM_HW_APPS][$];
+  uint                                         cmds_gen, cmds_sent;
+  bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0]       genbits;
 
   function void create_cmds(uint hwapp);
     bit   uninstantiate;
 
     // Start with instantiate command
     `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                   cs_item.acmd == csrng_pkg::INS;
-                                  )
+                                   cs_item.acmd == csrng_pkg::INS;)
     `downcast(cs_item_clone, cs_item.clone());
     cs_item_q[hwapp].push_back(cs_item_clone);
 
     // Generate other commands
-    for (int i = 0; i < 10; i++) begin
+    for (int i = 0; i < cfg.num_cmds; i++) begin
       `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
                                      cs_item.acmd inside { csrng_pkg::GEN,
                                                            csrng_pkg::RES,
-                                                           csrng_pkg::UPD
-                                                         };)
+                                                           csrng_pkg::UPD };)
       `downcast(cs_item_clone, cs_item.clone());
       cs_item_q[hwapp].push_back(cs_item_clone);
     end
@@ -38,16 +37,13 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
     if (uninstantiate) begin
       `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
-                                     cs_item.acmd  == csrng_pkg::UNI;
-                                    )
+                                     cs_item.acmd  == csrng_pkg::UNI;)
       `downcast(cs_item_clone, cs_item.clone());
       cs_item_q[hwapp].push_back(cs_item_clone);
     end
   endfunction
 
   task body();
-    // TODO: Add/randomize other commands. Use/add prediction for entropy from entropy_src agent.
-
     // Create entropy_src sequence
     m_entropy_src_pull_seq = push_pull_device_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::type_id::
          create("m_entropy_src_pull_seq");
@@ -67,8 +63,8 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       foreach (cs_item_q[i][j]) begin
         cmds_gen += 1;
-        `uvm_info(`gfn, $sformatf("cs_item_q[%0d][%0d]: %s", i, j, cs_item_q[i][j].convert2string()),
-             UVM_DEBUG)
+        `uvm_info(`gfn, $sformatf("cs_item_q[%0d][%0d]: %s", i, j,
+            cs_item_q[i][j].convert2string()), UVM_DEBUG)
       end
     end
 
@@ -77,7 +73,9 @@ class csrng_cmds_vseq extends csrng_base_vseq;
       begin
         // TODO: randomize entropy/fips
         for (int i = 0; i < 32; i++) begin
-          cfg.m_entropy_src_agent_cfg.add_d_user_data('h0);
+          `DV_CHECK_STD_RANDOMIZE_FATAL(fips)
+          `DV_CHECK_STD_RANDOMIZE_FATAL(entropy_val)
+          cfg.m_entropy_src_agent_cfg.add_d_user_data({fips, entropy_val});
         end
         m_entropy_src_pull_seq.start(p_sequencer.entropy_src_sequencer_h);
       end
