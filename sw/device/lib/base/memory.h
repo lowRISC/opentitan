@@ -22,6 +22,14 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Computes how many bytes `addr` is ahead of the previous 32-bit word alignment
+ * boundary.
+ */
+inline ptrdiff_t misalignment32_of(uintptr_t addr) {
+  return addr % alignof(uint32_t);
+}
+
+/**
  * Load a word from memory directly, bypassing aliasing rules.
  *
  * ISO C forbids, in general, casting a pointer to non-character types and
@@ -54,6 +62,38 @@ inline uint32_t read_32(const void *ptr) {
 }
 
 /**
+ * Load a 64-bit word from memory directly, bypassing aliasing rules.
+ *
+ * ISO C forbids, in general, casting a pointer to non-character types and
+ * reading them, though it is frequently necessary to read exactly one 64-bit
+ * word out of a `void *`. This function performs that action in a manner which
+ * is well-defined.
+ *
+ * Of course, `ptr` must point to word-aligned memory that is at least one
+ * 64-bit word wide. To do otherwise is Undefined Behavior. It goes eithout
+ * saying that the memory this function intents to read must be initialized.
+ *
+ * This function has reordering properties as weak as a normal, non-atomic,
+ * non-volatile load.
+ *
+ * @param ptr a word-aligned pointer pointed to at least four bytes of memory.
+ * @return the word `ptr` points to.
+ */
+inline uint64_t read_64(const void *ptr) {
+  // Both GCC and Clang optimize the code below into a single word-load on most
+  // platforms. It is necessary and sufficient to indicate to the compiler that
+  // the pointer points to four bytes of four-byte-aligned memory.
+  //
+  // Failing to get that particular codegen in either GCC or Clang with -O2 or
+  // -Os set shall be considred a bug in this function. The same applies to
+  // `write32()`.
+  ptr = __builtin_assume_aligned(ptr, alignof(uint64_t));
+  uint64_t val;
+  __builtin_memcpy(&val, ptr, sizeof(uint64_t));
+  return val;
+}
+
+/**
  * Store a word to memory directly, bypassing aliasing rules.
  *
  * ISO C forbids, in general, casting a pointer to non-character types and
@@ -76,6 +116,32 @@ inline void write_32(uint32_t value, void *ptr) {
   // information.
   ptr = __builtin_assume_aligned(ptr, alignof(uint32_t));
   __builtin_memcpy(ptr, &value, sizeof(uint32_t));
+}
+
+/**
+ * Store a 64-bit word to memory directly, bypassing aliasing rules.
+ *
+ * ISO C forbids, in general, casting a pointer to non-character types and
+ * reading them, though it is frequently necessary to write exactly one 64-bit
+ * word to a `void *`. This function performs that action in a manner which is
+ * well-defined.
+ *
+ * Of course, `ptr` must point to word-aligned memory that is at least one
+ * 64-bit word wide. To do otherwise is Undefined Behavior.
+ *
+ * This function has reordering properties as weak as a normal, non-atomic,
+ * non-volatile load.
+ *
+ * @param value the value to store.
+ * @param ptr a word-aligned pointer pointed to at least four bytes of memory.
+ */
+
+inline void write_64(uint64_t value, void *ptr) {
+  // Both GCC and Clang optimize the code below into a single word-store on most
+  // platforms. See the comment in `read_64()` for more implementation-private
+  // information.
+  ptr = __builtin_assume_aligned(ptr, alignof(uint64_t));
+  __builtin_memcpy(ptr, &value, sizeof(uint64_t));
 }
 
 /**

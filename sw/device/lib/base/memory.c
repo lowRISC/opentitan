@@ -100,5 +100,8 @@ void *memrchr(const void *ptr, int value, size_t len) {
 // `extern` declarations to give the inline functions in the corresponding
 // header a link location.
 
+extern ptrdiff_t misalignment32_of(uintptr_t);
 extern uint32_t read_32(const void *);
 extern void write_32(uint32_t, void *);
+extern uint64_t read_64(const void *);
+extern void write_64(uint64_t, void *);
