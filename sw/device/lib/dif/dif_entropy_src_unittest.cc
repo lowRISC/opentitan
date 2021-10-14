@@ -6,6 +6,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
@@ -92,34 +93,44 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
       ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
       {
           {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET,
-           (uint32_t)(config_.fw_override.enable ? 0xa : 0x5)},
+           (uint32_t)(config_.fw_override.enable ? kMultiBitBool4True
+                                                 : kMultiBitBool4False)},
           {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
-           (uint32_t)(config_.fw_override.entropy_insert_enable ? 0xa : 0x5)},
+           (uint32_t)(config_.fw_override.entropy_insert_enable
+                          ? kMultiBitBool4True
+                          : kMultiBitBool4False)},
       });
 
-  EXPECT_WRITE32(ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
-                 {
-                     {ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_OFFSET,
-                      (uint32_t)(test_param.route_to_firmware ? 0xa : 0x5)},
-                     {ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_OFFSET, 0x5},
-                 });
+  EXPECT_WRITE32(
+      ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
+      {
+          {ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_OFFSET,
+           (uint32_t)(test_param.route_to_firmware ? kMultiBitBool4True
+                                                   : kMultiBitBool4False)},
+          {ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_OFFSET, kMultiBitBool4False},
+      });
 
   // Current dif does not perform a read modified write
   // EXPECT_READ32(ENTROPY_SRC_CONF_REG_OFFSET, 0);
 
-  uint32_t rng_bit_enable = test_param.expected_rng_bit_en ? 0xa : 0x5;
-  uint32_t route_to_fw = test_param.route_to_firmware ? 0xa : 0x5;
-  uint32_t enable =
-      test_param.expected_mode != kDifEntropySrcModeDisabled ? 0xa : 0x5;
+  uint32_t rng_bit_enable =
+      test_param.expected_rng_bit_en ? kMultiBitBool4True : kMultiBitBool4False;
+  uint32_t route_to_fw =
+      test_param.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
+  uint32_t enable = test_param.expected_mode != kDifEntropySrcModeDisabled
+                        ? kMultiBitBool4True
+                        : kMultiBitBool4False;
 
-  uint32_t reset_ht = test_param.reset_health_test_registers ? 0xa : 0x5;
+  uint32_t reset_ht = test_param.reset_health_test_registers
+                          ? kMultiBitBool4True
+                          : kMultiBitBool4False;
   EXPECT_WRITE32(
       ENTROPY_SRC_CONF_REG_OFFSET,
       {
           {ENTROPY_SRC_CONF_RNG_BIT_SEL_OFFSET, test_param.expected_rng_sel},
           {ENTROPY_SRC_CONF_RNG_BIT_ENABLE_OFFSET, rng_bit_enable},
           {ENTROPY_SRC_CONF_HEALTH_TEST_CLR_OFFSET, reset_ht},
-          {ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_OFFSET, 0x5},
+          {ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_OFFSET, kMultiBitBool4False},
           {ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET, route_to_fw},
           {ENTROPY_SRC_CONF_ENABLE_OFFSET, enable},
       });

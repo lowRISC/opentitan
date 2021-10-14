@@ -10,7 +10,7 @@ from .enum_entry import EnumEntry
 from .lib import (check_keys, check_str, check_name, check_bool,
                   check_list, check_str_list, check_xint)
 from .params import ReggenParams
-from design.prim_mubi import is_width_valid, mubi_value_as_int  # type: ignore
+from design.mubi.prim_mubi import is_width_valid, mubi_value_as_int  # type: ignore
 
 
 REQUIRED_FIELDS = {
