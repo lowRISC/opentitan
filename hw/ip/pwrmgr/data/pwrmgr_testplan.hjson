@@ -177,6 +177,8 @@
             - Checks the output `pwr_rst_req.rstreqs` matches the enabled
               resets.
             '''
+      milestone: V2
+      tests: []
     }
     {
       name: reset_wakeup_race
