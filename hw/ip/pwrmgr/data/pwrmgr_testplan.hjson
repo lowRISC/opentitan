@@ -55,6 +55,7 @@
             **Stimulus**:
             - Sets `wakeup_en` randomly but don't set it to zero, or the
               test will timeout.
+            - Set `wake_info_capture_dis` randomly on and off.
             - Bring pwrmgr to low power.
             - Set `wakeups_i` inputs randomly.
             - Set `intr_enable` randomly.
@@ -67,7 +68,9 @@
                 state remains inactive.
               - Set `wakeups_i` so at least one is enabled.
             - Checks `ip_clk_en` output has a low transition.
-            - Checks the `wakeup_info` and `wakeup_status` CSRs.
+            - Checks `wakeup_status` CSR during transition to active state
+              since the reset involved will clear the wakeups_i input.
+            - Checks the `wakeup_info` CSR.
             - Checks the output `pwr_rst_req.reset_cause` is `Wake` (1).
             - Check that `intr_wakeup_o` is set according to `intr_enable` CSR.
             - Coverage collected by `wakeup_cg` and `wakeup_intr_cg`.
@@ -154,6 +157,26 @@
             '''
       milestone: V2
       tests: []
+    }
+    {
+      name: main_power_glitch_reset
+      desc: '''
+            Test reset due to a glitch in main power.
+
+            A power glitch causes an unconditional reset.
+
+            **Stimulus**:
+            - Set the input from AST indicating a main power glitch.
+
+            **Checks**:
+            - Waits for fast fsm to become active reading `ctrl_cfg_regwen`
+              until it becomes 1.
+            - Checks the `reset_status` CSRs.
+            - Checks `ip_clk_en` output has a low transition.
+            - Checks the output `pwr_rst_req.reset_cause` matches HwReq.
+            - Checks the output `pwr_rst_req.rstreqs` matches the enabled
+              resets.
+            '''
     }
     {
       name: reset_wakeup_race
