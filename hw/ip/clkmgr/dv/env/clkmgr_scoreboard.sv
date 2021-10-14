@@ -35,6 +35,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     fork
       monitor_ast_clk_byp();
       monitor_jitter_en();
+      sample_peri_covs();
+      sample_trans_covs();
     join_none
   endtask
 
@@ -86,6 +88,76 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           end
         end
     join
+  endtask
+
+  task sample_peri_covs();
+    fork
+      forever
+        @cfg.clkmgr_vif.peri_io_cb begin
+          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
+            cov.peri_cg_wrap[PeriIo].sample(cfg.clkmgr_vif.peri_io_cb.clk_enable,
+                                            cfg.clkmgr_vif.peri_io_cb.ip_clk_en,
+                                            cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+          end
+        end
+      forever
+        @cfg.clkmgr_vif.peri_div2_cb begin
+          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
+            cov.peri_cg_wrap[PeriDiv2].sample(cfg.clkmgr_vif.peri_div2_cb.clk_enable,
+                                            cfg.clkmgr_vif.peri_div2_cb.ip_clk_en,
+                                            cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+          end
+        end
+      forever
+        @cfg.clkmgr_vif.peri_div4_cb begin
+          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
+            cov.peri_cg_wrap[PeriDiv4].sample(cfg.clkmgr_vif.peri_div4_cb.clk_enable,
+                                            cfg.clkmgr_vif.peri_div4_cb.ip_clk_en,
+                                            cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+          end
+        end
+      forever
+        @cfg.clkmgr_vif.peri_usb_cb begin
+          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
+            cov.peri_cg_wrap[PeriUsb].sample(cfg.clkmgr_vif.peri_usb_cb.clk_enable,
+                                            cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
+                                            cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+          end
+        end
+    join
+  endtask
+
+  task sample_trans_cov(int trans_index);
+    logic hint, clk_en, idle, src_rst_en;
+    trans_e trans = trans_e'(trans_index);
+    forever begin
+      if (trans == TransOtbnIoDiv4) begin
+        @cfg.clkmgr_vif.peri_div4_cb;
+        hint = cfg.clkmgr_vif.peri_div4_cb.clk_hint_otbn;
+        idle = cfg.clkmgr_vif.peri_div4_cb.otbn_idle;
+        clk_en = cfg.clkmgr_vif.peri_div4_cb.ip_clk_en;
+        src_rst_en = cfg.io_clk_rst_vif.rst_n;
+      end else begin
+        @cfg.clkmgr_vif.trans_cb;
+        hint = cfg.clkmgr_vif.trans_cb.clk_hints[trans_index];
+        idle = cfg.clkmgr_vif.trans_cb.idle_i[trans_index];
+        clk_en = cfg.clkmgr_vif.trans_cb.ip_clk_en;
+        src_rst_en = cfg.main_clk_rst_vif.rst_n;
+      end
+      if (src_rst_en && cfg.en_cov) begin
+        logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+        cov.trans_cg_wrap[trans].sample(hint, clk_en, scan_en, idle);
+      end
+    end
+  endtask
+
+  task sample_trans_covs();
+    for (int i = 0; i < NUM_TRANS; ++i) begin
+      fork
+        automatic int trans_index = i;
+        sample_trans_cov(trans_index);
+      join_none
+    end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
