@@ -77,6 +77,7 @@ class spi_monitor extends dv_base_monitor#(
               host_item.data.push_back(host_byte);
               device_item.data.push_back(device_byte);
 
+
               // sending transactions when collect a word data
               if (host_item.data.size == cfg.num_bytes_per_trans_in_mon &&
                   device_item.data.size == cfg.num_bytes_per_trans_in_mon) begin
@@ -104,6 +105,7 @@ class spi_monitor extends dv_base_monitor#(
   endtask : collect_curr_trans
 
   virtual task monitor_ready_to_end();
+    ok_to_end = cfg.vif.csb ;
     forever begin
       @(cfg.vif.csb);
       ok_to_end = cfg.vif.csb;
