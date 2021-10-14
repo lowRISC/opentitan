@@ -13,7 +13,7 @@
 package prim_mubi_pkg;
 
 <%
-import prim_mubi as prim_mubi
+from mubi import prim_mubi
 %>\
 % for n in range(1, n_max_nibbles + 1):
 <%

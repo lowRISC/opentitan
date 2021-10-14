@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
 
 #include "entropy_src_regs.h"  // Generated.
@@ -20,20 +21,23 @@ static void config_register_set(const dif_entropy_src_t *entropy_src,
                                 const dif_entropy_src_config_t *config) {
   // TODO: Make this configurable at the API level.
   uint32_t reg = bitfield_field32_write(
-      0, ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_FIELD, 0x5);
+      0, ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_FIELD, kMultiBitBool4False);
 
-  uint32_t health_clr_sel = config->reset_health_test_registers ? 0xa : 0x5;
+  uint32_t health_clr_sel = config->reset_health_test_registers
+                                ? kMultiBitBool4True
+                                : kMultiBitBool4False;
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_HEALTH_TEST_CLR_FIELD,
                                health_clr_sel);
 
-  reg = bitfield_field32_write(reg,
-                               ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
-                               config->route_to_firmware ? 0xa : 0x5);
+  reg = bitfield_field32_write(
+      reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
+      config->route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False);
 
   // Configure single RNG bit mode
   uint32_t rng_bit_en =
-      (config->single_bit_mode == kDifEntropySrcSingleBitModeDisabled) ? 0x5
-                                                                       : 0xa;
+      (config->single_bit_mode == kDifEntropySrcSingleBitModeDisabled)
+          ? kMultiBitBool4False
+          : kMultiBitBool4True;
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
                                rng_bit_en);
 
@@ -41,12 +45,15 @@ static void config_register_set(const dif_entropy_src_t *entropy_src,
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD,
                                rng_bit_sel);
 
-  uint32_t sw_rd_en = config->route_to_firmware ? 0xa : 0x5;
+  uint32_t sw_rd_en =
+      config->route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
   reg = bitfield_field32_write(
       reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD, sw_rd_en);
 
   // Enable configuration
-  uint32_t enable_val = config->mode != kDifEntropySrcModeDisabled ? 0xa : 0x5;
+  uint32_t enable_val = config->mode != kDifEntropySrcModeDisabled
+                            ? kMultiBitBool4True
+                            : kMultiBitBool4False;
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_ENABLE_FIELD, enable_val);
   mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET, reg);
 }
@@ -104,13 +111,15 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
 
   // Conditioning bypass is hardcoded to disabled. Conditioning bypass is not
   // intended as a regular mode of operation.
-  uint32_t es_route_val = config.route_to_firmware ? 0xa : 0x5;
+  uint32_t es_route_val =
+      config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
   uint32_t reg = bitfield_field32_write(
       0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, es_route_val);
   reg = bitfield_field32_write(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
-                               0x5);
+                               kMultiBitBool4False);
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET, reg);
+
   config_register_set(entropy_src, &config);
   return kDifOk;
 }
