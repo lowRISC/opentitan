@@ -16,10 +16,9 @@ module otbn_idle_checker
   input logic         idle_o_i
 );
 
-  // Detect writes of 1 to CMD.START (the "start" bit has been eaten by reggen because the register
-  // only contains the one bit).
+  // Detect writes of CmdExecute to CMD
   logic cmd_start;
-  assign cmd_start = reg2hw.cmd.qe & reg2hw.cmd.q;
+  assign cmd_start = reg2hw.cmd.qe && (reg2hw.cmd.q == otbn_pkg::CmdExecute);
 
   // Our model of whether OTBN is running or not. We start on cmd_start if we're not already running
   // and stop on done if we are. Note that the "running" signal includes the cycle that we see
