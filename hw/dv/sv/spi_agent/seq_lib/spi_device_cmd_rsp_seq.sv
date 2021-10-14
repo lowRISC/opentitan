@@ -87,9 +87,9 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
                 ReadDual: `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 16;)
                 default:  `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 32;)
               endcase // case (cmd)
-              `downcast(rsp, rsp_clone);
+              `downcast(rsp_clone, rsp.clone());
               rsp_q.push_back(rsp_clone);
-              req = new();
+              rsp = new();
               // offload input queue
               get_nxt_req(item);
               if (item.first_byte) begin
@@ -115,7 +115,6 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
             end
 
             default: begin
-              get_nxt_req(item);
               `uvm_fatal(`gfn, $sformatf("UNSUPPORTED COMMAND"))
             end
           endcase
@@ -131,5 +130,6 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
   function spi_cmd_e cmd_check(bit[7:0] data);
     spi_cmd_e cmd;
     `downcast(cmd, data, "Illegal Command seen")
+    return cmd;
   endfunction
 endclass : spi_device_cmd_rsp_seq
