@@ -4,26 +4,34 @@
 
 #include "sw/device/lib/dif/dif_clkmgr.h"
 
+#include <assert.h>
+
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
 #include "clkmgr_regs.h"  // Generated
 
+// TODO: For the moment, CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS has to be <= than
+// 32, as we only support one enable register for gateable clocks.
+// https://github.com/lowRISC/opentitan/issues/4201
+static_assert(
+    CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS <= CLKMGR_PARAM_REG_WIDTH,
+    "Expected the number of gateable clocks to be <= the width of a CSR.");
+
+// TODO: For the moment, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS has to be <= than
+// 32, as we only support one enable/hint_status register for hintable clocks.
+// https://github.com/lowRISC/opentitan/issues/4201
+static_assert(
+    CLKMGR_PARAM_NUM_HINTABLE_CLOCKS <= CLKMGR_PARAM_REG_WIDTH,
+    "Expected the number of hintable clocks to be <= the width of a CSR.");
+
 static bool clkmgr_valid_gateable_clock(dif_clkmgr_gateable_clock_t clock) {
-  // TODO For the moment, last_gateable_clocks has to be less than 32, as we
-  // only support one enable register for gateable clocks.
-  // https://github.com/lowRISC/opentitan/issues/4201
-  return (clock < CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS) &&
-         (CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS <= CLKMGR_PARAM_REG_WIDTH);
+  return clock < CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS;
 }
 
 static bool clkmgr_valid_hintable_clock(dif_clkmgr_hintable_clock_t clock) {
-  // TODO: For the moment, last_hintable_clocks has to be less than 32, as we
-  // only support one enable/hint_status register for hintable clocks.
-  // https://github.com/lowRISC/opentitan/issues/4201
-  return (clock < CLKMGR_PARAM_NUM_HINTABLE_CLOCKS) &&
-         (CLKMGR_PARAM_NUM_HINTABLE_CLOCKS < CLKMGR_PARAM_REG_WIDTH);
+  return clock < CLKMGR_PARAM_NUM_HINTABLE_CLOCKS;
 }
 
 dif_result_t dif_clkmgr_init(mmio_region_t base_addr, dif_clkmgr_t *clkmgr) {
