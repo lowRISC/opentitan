@@ -997,6 +997,17 @@
       milestone: V2
       tests: []
     }
+    {
+      name: chip_sw_alert_handler_ping_timeout
+      desc: '''Verify the alert senders' ping timeout.
+
+            Set alert_handler's ping timeout cycle to 1 and enable alert_senders. Verify that
+            alert_handler detects the ping timeout and reflects it on the `loc_alert_cause`
+            register.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // LC_CTRL (pre-verified IP) integration tests:
     {
