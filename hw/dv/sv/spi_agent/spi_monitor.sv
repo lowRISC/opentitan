@@ -118,9 +118,10 @@ class spi_monitor extends dv_base_monitor#(
   endtask : collect_curr_trans
 
   virtual task monitor_ready_to_end();
+    ok_to_end = cfg.vif.csb[cfg.csb_sel];
     forever begin
-      @(cfg.vif.csb);
-      ok_to_end = cfg.vif.csb;
+      @(cfg.vif.csb[cfg.csb_sel]);
+      ok_to_end = cfg.vif.csb[cfg.csb_sel];
     end
   endtask : monitor_ready_to_end
 
