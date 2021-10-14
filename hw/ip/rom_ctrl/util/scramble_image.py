@@ -15,7 +15,7 @@ from Crypto.Hash import cSHAKE256
 from mem import MemChunk, MemFile
 
 ROM_BASE_WORD = 0x8000 // 4
-ROM_SIZE_WORDS = 4096
+ROM_SIZE_WORDS = 8192
 
 PRINCE_SBOX4 = [
     0xb, 0xf, 0x3, 0x2,

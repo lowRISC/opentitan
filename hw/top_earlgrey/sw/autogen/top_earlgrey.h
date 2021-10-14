@@ -905,7 +905,7 @@ extern "C" {
  * address between #TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR and
  * `TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x4000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x8000u
 
 /**
  * Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
@@ -964,7 +964,7 @@ extern "C" {
 /**
  * Memory size for rom in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_SIZE_BYTES 0x4000u
+#define TOP_EARLGREY_ROM_SIZE_BYTES 0x8000u
 
 
 /**

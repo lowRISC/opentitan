@@ -498,7 +498,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for rom device on rom_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h4000;
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h8000;
 
   /**
    * Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
@@ -548,7 +548,7 @@ package top_earlgrey_pkg;
   /**
    * Memory size for rom in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_SIZE_BYTES = 32'h4000;
+  parameter int unsigned TOP_EARLGREY_ROM_SIZE_BYTES = 32'h8000;
 
 
   // Enumeration of IO power domains.

@@ -14,7 +14,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h00010000, 32'h00010fff}
     }},
     '{"rom_ctrl__rom", '{
-        '{32'h00008000, 32'h0000bfff}
+        '{32'h00008000, 32'h0000ffff}
     }},
     '{"rom_ctrl__regs", '{
         '{32'h411e0000, 32'h411e0fff}
