@@ -310,6 +310,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic                     pfifo_esbit_wdata;
   logic [RngBusWidth-1:0]   pfifo_esbit_rdata;
+  logic                     pfifo_esbit_not_empty;
   logic                     pfifo_esbit_push;
   logic                     pfifo_esbit_clr;
   logic                     pfifo_esbit_pop;
@@ -736,7 +737,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .wvalid_i   (pfifo_esbit_push),
     .wdata_i    (pfifo_esbit_wdata),
     .wready_o   (),
-    .rvalid_o   (), // TODO: may need this output for rng bit mode
+    .rvalid_o   (pfifo_esbit_not_empty),
     .rdata_o    (pfifo_esbit_rdata),
     .rready_i   (pfifo_esbit_pop),
     .depth_o    ()
@@ -744,7 +745,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_pop;
   assign pfifo_esbit_clr = !es_enable;
-  assign pfifo_esbit_pop = sfifo_esrng_push;
+  assign pfifo_esbit_pop = rng_bit_en && pfifo_esbit_not_empty && sfifo_esrng_push;
   assign pfifo_esbit_wdata =
          (rng_bit_sel == 2'h0) ? sfifo_esrng_rdata[0] :
          (rng_bit_sel == 2'h1) ? sfifo_esrng_rdata[1] :
