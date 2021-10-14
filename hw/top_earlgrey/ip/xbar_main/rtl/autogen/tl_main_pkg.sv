@@ -32,7 +32,7 @@ package tl_main_pkg;
 
   localparam logic [31:0] ADDR_MASK_RV_DM__REGS          = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RV_DM__ROM           = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_ROM_CTRL__ROM        = 32'h 00003fff;
+  localparam logic [31:0] ADDR_MASK_ROM_CTRL__ROM        = 32'h 00007fff;
   localparam logic [31:0] ADDR_MASK_ROM_CTRL__REGS       = 32'h 00000fff;
   localparam logic [0:0][31:0] ADDR_MASK_PERI                 = {
     32'h 007fffff

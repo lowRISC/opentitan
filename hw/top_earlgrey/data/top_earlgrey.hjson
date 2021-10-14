@@ -644,7 +644,7 @@
           swaccess:   "ro",
           exec:       "True",
           byte_write: "False",
-          size:       "0x4000"
+          size:       "0x8000"
         }
       },
       param_decl: {

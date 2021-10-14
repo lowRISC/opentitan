@@ -159,7 +159,7 @@
       // two in sync.
       { window: {
           name: "ROM"
-          items: "4096" // 16 KiB
+          items: "8192" // 32 KiB
           swaccess: "ro",
           desc: '''ROM data'''
         }
