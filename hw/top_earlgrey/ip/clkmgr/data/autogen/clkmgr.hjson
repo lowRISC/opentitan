@@ -391,15 +391,17 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_io_i",
-      // random updates to this CSR can cause recoverable errors which the
-      // CSR tests will not predict correctly.
-      tags: ["excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         {
           bits: "0",
           name: "EN",
           desc: "Enable measurement for io",
-          resval: "0"
+          resval: "0",
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which the CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
@@ -428,15 +430,17 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_io_div2_i",
-      // random updates to this CSR can cause recoverable errors which the
-      // CSR tests will not predict correctly.
-      tags: ["excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         {
           bits: "0",
           name: "EN",
           desc: "Enable measurement for io_div2",
-          resval: "0"
+          resval: "0",
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which the CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
@@ -465,15 +469,17 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_io_div4_i",
-      // random updates to this CSR can cause recoverable errors which the
-      // CSR tests will not predict correctly.
-      tags: ["excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         {
           bits: "0",
           name: "EN",
           desc: "Enable measurement for io_div4",
-          resval: "0"
+          resval: "0",
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which the CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
@@ -502,15 +508,17 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_main_i",
-      // random updates to this CSR can cause recoverable errors which the
-      // CSR tests will not predict correctly.
-      tags: ["excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         {
           bits: "0",
           name: "EN",
           desc: "Enable measurement for main",
-          resval: "0"
+          resval: "0",
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which the CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
@@ -539,15 +547,17 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_usb_i",
-      // random updates to this CSR can cause recoverable errors which the
-      // CSR tests will not predict correctly.
-      tags: ["excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         {
           bits: "0",
           name: "EN",
           desc: "Enable measurement for usb",
-          resval: "0"
+          resval: "0",
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which the CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {

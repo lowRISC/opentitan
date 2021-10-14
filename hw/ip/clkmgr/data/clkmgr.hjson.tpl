@@ -310,15 +310,17 @@
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_${src}_i",
-      // random updates to this CSR can cause recoverable errors which the
-      // CSR tests will not predict correctly.
-      tags: ["excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         {
           bits: "0",
           name: "EN",
           desc: "Enable measurement for ${src}",
-          resval: "0"
+          resval: "0",
+          // Measurements can cause recoverable errors depending on the
+          // thresholds which the CSR tests will not predict correctly.
+          // To provide better CSR coverage we allow writing the threshold
+          // fields, but not enabling the counters.
+          tags: ["excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         {
