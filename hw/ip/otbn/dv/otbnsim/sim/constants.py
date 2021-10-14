@@ -7,9 +7,9 @@ from enum import IntEnum
 
 class Cmd(IntEnum):
     '''Permitted values of the CMD register.'''
-    EXECUTE = 0x01
-    SEC_WIPE_DMEM = 0x02
-    SEC_WIPE_IMEM = 0x03
+    EXECUTE = 0xd8
+    SEC_WIPE_DMEM = 0xc3
+    SEC_WIPE_IMEM = 0x1e
 
 
 class Status(IntEnum):

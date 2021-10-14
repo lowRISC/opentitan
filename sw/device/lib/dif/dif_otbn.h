@@ -26,9 +26,9 @@ extern "C" {
  * OTBN commands
  */
 typedef enum dif_otbn_cmd {
-  kDifOtbnCmdExecute = 0x01,
-  kDifOtbnCmdSecWipeDmem = 0x02,
-  kDifOtbnCmdSecWipeImem = 0x03,
+  kDifOtbnCmdExecute = 0xd8,
+  kDifOtbnCmdSecWipeDmem = 0xc3,
+  kDifOtbnCmdSecWipeImem = 0x1e,
 } dif_otbn_cmd_t;
 
 /**
