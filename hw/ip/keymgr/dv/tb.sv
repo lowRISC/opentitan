@@ -13,12 +13,13 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk, rst_n;
+  wire clk, rst_n, rst_shadowed_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  rst_shadowed_if rst_shadowed_if(.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
@@ -41,11 +42,11 @@ module tb;
 
   // dut
   keymgr dut (
-    .clk_i                (clk        ),
-    .rst_ni               (rst_n      ),
-    .rst_shadowed_ni      (rst_n      ),
-    .clk_edn_i            (edn_clk    ),
-    .rst_edn_ni           (edn_rst_n  ),
+    .clk_i                (clk           ),
+    .rst_ni               (rst_n         ),
+    .rst_shadowed_ni      (rst_shadowed_n),
+    .clk_edn_i            (edn_clk       ),
+    .rst_edn_ni           (edn_rst_n     ),
     .aes_key_o            (keymgr_if.aes_key),
     .otbn_key_o           (keymgr_if.otbn_key),
     .kmac_key_o           (keymgr_if.kmac_key),
@@ -77,6 +78,8 @@ module tb;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif",
+                                                 rst_shadowed_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
