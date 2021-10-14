@@ -29,9 +29,9 @@ extern const size_t kOtbnIMemSizeBytes;
  * OTBN commands
  */
 typedef enum dif_otbn_cmd {
-  kOtbnCmdExecute = 0x01,
-  kOtbnCmdSecWipeDmem = 0x02,
-  kOtbnCmdSecWipeImem = 0x03,
+  kOtbnCmdExecute = 0xd8,
+  kOtbnCmdSecWipeDmem = 0xc3,
+  kOtbnCmdSecWipeImem = 0x1e,
 } otbn_cmd_t;
 
 /**

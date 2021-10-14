@@ -52,9 +52,9 @@ package otbn_pkg;
 
   // Command to execute. See the CMD register description in otbn.hjson for details.
   typedef enum logic [7:0] {
-    CmdExecute     = 8'h01,
-    CmdSecWipeDmem = 8'h02,
-    CmdSecWipeImem = 8'h03
+    CmdExecute     = 8'hd8,
+    CmdSecWipeDmem = 8'hc3,
+    CmdSecWipeImem = 8'h1e
   } cmd_e;
 
   // Status register values. See the STATUS register description in otbn.hjson for details.

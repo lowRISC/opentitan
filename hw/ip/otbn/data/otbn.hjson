@@ -132,6 +132,13 @@
 
   regwidth: "32"
   registers: [
+    // The magic values for EXECUTE, SEC_WIPE_DMEM and SEC_WIPE_IMEM in the CMD
+    // register below were generated with the sparse-fsm-encode.py script:
+    //
+    //   util/design/sparse-fsm-encode.py -d 4 -m 3 -n 8 --avoid-zero -s 1
+    //
+    // and have a hamming distance of at least 4 from one another and the zero
+    // word.
     { name: "CMD"
       desc: "command register",
       swaccess: "wo",
@@ -167,7 +174,7 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>0x01</td>
+                  <td>0xd8</td>
                   <td>EXECUTE</td>
                   <td>
                     Start the execution of the program stored in the
@@ -175,12 +182,12 @@
                   </td>
                 </tr>
                 <tr>
-                  <td>0x02</td>
+                  <td>0xc3</td>
                   <td>SEC_WIPE_DMEM</td>
                   <td>Securely remove all contents from the data memory.</td>
                 </tr>
                 <tr>
-                  <td>0x03</td>
+                  <td>0x1e</td>
                   <td>SEC_WIPE_IMEM</td>
                   <td>
                     Securely remove all contents from the instruction memory.
