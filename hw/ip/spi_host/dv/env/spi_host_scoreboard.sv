@@ -8,123 +8,315 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     .COV_T(spi_host_env_cov)
   );
   `uvm_component_utils(spi_host_scoreboard)
-
-  // TODO: WiP
+  `uvm_component_new
 
   virtual spi_if  spi_vif;
 
-  // TLM agent fifos
-  uvm_tlm_analysis_fifo #(spi_item) host_spi_data_fifo;
-  uvm_tlm_analysis_fifo #(spi_item) device_spi_data_fifo;
+  // TLM fifos hold the transactions sent from monitor
+  uvm_tlm_analysis_fifo #(spi_item) host_data_fifo;
+  uvm_tlm_analysis_fifo #(spi_item) device_data_fifo;
+
+  // hold expected transactions
+  spi_segment_item host_segment;
+  spi_item device_item;
 
   // local variables
-  // tx/rx fifo, size is 2 words to hold incoming packets pending comparison
-  local bit [31:0] tx_word_q[$];
-  local bit [31:0] rx_word_q[$];
+  // queues hold expected read and write transactions issued by tl_ul
+  local spi_segment_item  write_segment_q[$];
+  local spi_segment_item  read_segment_q[$];
+  local bit [7:0]         rx_data_q[$];
+
   // interrupt bit vector
   local bit [NumSpiHostIntr-1:0] intr_exp;
+  // hold dut registers
+  local spi_host_command_t  spi_cmd_reg;
+  local spi_host_ctrl_t     spi_ctrl_reg;
+  spi_host_configopts_t  spi_configopts;
+  // control bits
+  local bit            spien       = 1'b0;
+  local bit            sw_rst      = 1'b0;
 
-  `uvm_component_new
+  int                  in_tx_seg_cnt = 0;
+  int                  checked_tx_seg_cnt = 0;
+  int                  in_rx_seq_cnt = 0;
+  int                  checked_rx_seq_cnt = 0;
+
+
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    host_spi_data_fifo = new("host_spi_data_fifo", this);
-    device_spi_data_fifo = new("device_spi_data_fifo", this);
-  endfunction
-
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
+    host_data_fifo   = new("host_data_fifo", this);
+    device_data_fifo = new("device_data_fifo", this);
+    host_segment     = new("host_segment");
+    device_item      = new("device_item");
   endfunction
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    fork
-      process_host_spi_fifo();
-    join_none
-  endtask
-
-  virtual task process_host_spi_fifo();
-    spi_item hst_item;
     forever begin
-      host_spi_data_fifo.get(hst_item);
-      `uvm_info(`gfn, $sformatf("received spi_host item:\n%0s", hst_item.sprint()), UVM_HIGH)
+      `DV_SPINWAIT_EXIT(
+        fork
+          compare_tx_trans();
+          compare_rx_trans();
+        join,
+        @(negedge cfg.clk_rst_vif.rst_n),
+      )
     end
-  endtask
+  endtask : run_phase
 
-  virtual task process_device_spi_fifo();
-    spi_item dev_item;
+  virtual task compare_rx_trans();
+    // TODO implement Rx seg cnt
+    spi_segment_item   exp_segment = new();
+    string             txt = "";
+    bit [7:0]          read_data;
+    // get bytes from the spi monitor
+    txt = "\n\t byte      actual     expected";
+
     forever begin
-      device_spi_data_fifo.get(dev_item);
-      `uvm_info(`gfn, $sformatf("received spi_device item:\n%0s", dev_item.sprint()), UVM_HIGH)
+      wait (read_segment_q.size() > 0);
+      exp_segment = read_segment_q.pop_front();
+
+
+      for ( int i = 0; i < exp_segment.command_reg.len+1; i++) begin
+          read_data = rx_data_q.pop_back();
+
+          if (read_data != exp_segment.spi_data[i]) begin
+            txt = {txt, $sformatf("\n \t [%d] \t %0h \t %0h", i, read_data, exp_segment.spi_data[i])};
+            `uvm_fatal(`gfn, $sformatf("\n\tREAD:  actual data %0h did not match exp data %0h \n len %d %s",
+                                       read_data, exp_segment.spi_data[i], exp_segment.command_reg.len+1, txt))
+          end else begin
+            txt = {txt, $sformatf("\n \t [%d] \t %0h \t %0h", i, read_data, exp_segment.spi_data[i])};
+          end
+      end
+      `uvm_info(`gfn, $sformatf("\n successfully compared read transaction of %d ",
+                                            exp_segment.command_reg.len+1), UVM_LOW)
     end
-  endtask : process_device_spi_fifo
+
+  endtask // compare_rx_trans
+
+
+  virtual task compare_tx_trans();
+    spi_segment_item   exp_segment = new();
+    spi_item           dut_item, device_item;
+    // indicatin that this is a new transaction
+    bit                prev_csaat = 0;
+
+    string             txt = "";
+
+    forever begin
+      // Get predicted item
+      wait (write_segment_q.size > 0);
+      exp_segment = write_segment_q.pop_front();
+      in_tx_seg_cnt += 1;
+      `uvm_info(`gfn, $sformatf("got predicted item \n %s",
+                                            exp_segment.convert2string()), UVM_LOW)
+      // get bytes from the spi monitor
+      txt = "\n\t byte      actual     expected";
+      for (int i=0; i < exp_segment.command_reg.len+1; i++) begin
+        host_data_fifo.get(dut_item);
+        device_data_fifo.get(device_item);
+        // process tx part of the transaction
+        `uvm_info(`gfn, $sformatf("dut item %s", dut_item.convert2string()), UVM_LOW)
+        if (exp_segment.command_reg.direction inside {TxOnly, Bidir}) begin
+          // check this was the first item in transaction
+          if ( (i == 0) && !dut_item.first_byte && ~prev_csaat) begin
+            `uvm_fatal(`gfn, $sformatf("FIRST SPI_ITEM DIDN'T CONTAIN FIRST BYE INDICATION"))
+          end else if (dut_item.first_byte && i != 0) begin
+            `uvm_fatal(`gfn, $sformatf("FIRST BYTE SET PREMATURELY - STILL MISSING %d",
+                                        exp_segment.command_reg.len+1 - i))
+          end
+
+          if (dut_item.data[0] != exp_segment.spi_data[i]) begin
+            txt = {txt, $sformatf("\n \t [%d] \t %0h \t %0h",
+                        i, dut_item.data[0], exp_segment.spi_data[i])};
+            `uvm_fatal(`gfn,
+                       $sformatf("\n\t WRITE: actual data did not match exp data %s \n len %d %s",
+                           txt, exp_segment.command_reg.len+1, txt))
+          end else begin
+            txt = {txt, $sformatf("\n \t [%d] \t %0h \t %0h",
+                                  i, dut_item.data[0], exp_segment.spi_data[i])};
+          end
+        end
+
+        // process rx part of transaction
+        // sorting step - will drop everything that is not stored in rx fifo
+        if (exp_segment.command_reg.direction inside {RxOnly, Bidir}) begin
+          rx_data_q.push_front(device_item.data[0]);
+        end
+      end
+
+
+      // store CSAAT so we now if we are starting a new transaction
+      prev_csaat = exp_segment.command_reg.csaat;
+      // update number of ok segments
+      checked_tx_seg_cnt += 1;
+      `uvm_info(`gfn, $sformatf("\n successfully compared write transaction of %d ",
+                                            exp_segment.command_reg.len+1), UVM_LOW)
+
+    end
+  endtask : compare_trans
+
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
+    string csr_name = "";
+    bit do_read_check = 1'b1;
+    bit write = item.is_write();
+    bit [TL_AW-1:0] csr_addr_mask = ral.get_addr_mask();
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
+    spi_segment_item rd_segment;
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel  == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel  == DataChannel);
+    bit cmd_phase_write = (write && channel  == AddrChannel);
+    bit data_phase_read  = (!write && channel == DataChannel);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else begin
-      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
-    end
+      csr_name = csr.get_name();
 
-    // if incoming access is a write to a valid csr, then make updates right away
-    if (addr_phase_write) begin
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      // if incoming access is a write to a valid csr, then make updates right away
+      if (cmd_phase_write) begin
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      end
+    end else if ((csr_addr & csr_addr_mask) inside {[SPI_HOST_FIFO_START :
+                                                     SPI_HOST_FIFO_END]}) begin
+      // write to data fifo
+
+      bit [7:0] tl_byte[TL_DBW];
+
+      // packed vector to bytes
+      tl_byte = {<< 8{item.a_data}};
+      // store data in data queues
+      foreach (tl_byte[i]) begin
+        if (cmd_phase_write || data_phase_read) begin
+          // collect write data
+          host_segment.spi_data.push_back(tl_byte[i]);
+        end
+      end
+
+      if (data_phase_read) begin
+        //push to queue
+        `downcast(rd_segment, host_segment.clone());
+        read_segment_q.push_back(rd_segment);
+        `uvm_info("spi_scoreboard", $sformatf("\n  created expeted read segment item %s",
+                                              rd_segment.convert2string()), UVM_LOW)
+      end
+
+    end else begin
+      `uvm_fatal(`gfn, $sformatf("\n  scb: access unexpected addr 0x%0h", csr_addr))
     end
 
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
-    case (csr.get_name())
-      // add individual case item for each csr
-      "intr_state": begin
-        // FIXME
-        do_read_check = 1'b0;
-      end
-      "intr_enable": begin
-        // FIXME
-      end
-      "intr_test": begin
-        // FIXME
-      end
-      "control": begin
-        // FIXME
-      end
-      default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
-      end
-    endcase
+    if (cmd_phase_write) begin
+      case (csr_name)
+        // add individual case item for each csr
+        "control": begin
+          spien  = bit'(get_field_val(ral.control.spien,  item.a_data));
+          sw_rst = bit'(get_field_val(ral.control.sw_rst, item.a_data));
+          if (sw_rst || spien) begin
+            write_segment_q.delete();
+            rx_data_q.delete();
+          end
+        end
 
-    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (data_phase_read) begin
-      if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
-      end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+        "configopts_0", "configopts_1", "configopts_2", "configopts_3": begin
+          string      csr_str;
+          int         csr_idx;
+
+          csr_str = csr_name.getc(csr_name.len());
+          csr_idx = csr_str.atoi();
+          spi_configopts.cpol[csr_idx]     = get_field_val(ral.configopts[csr_idx].cpol,
+                                                           item.a_data);
+          spi_configopts.cpha[csr_idx]     = get_field_val(ral.configopts[csr_idx].cpha,
+                                                           item.a_data);
+          spi_configopts.fullcyc[csr_idx]  = get_field_val(ral.configopts[csr_idx].fullcyc,
+                                                           item.a_data);
+          spi_configopts.csnlead[csr_idx]  = get_field_val(ral.configopts[csr_idx].csnlead,
+                                                           item.a_data);
+          spi_configopts.csnidle[csr_idx]  = get_field_val(ral.configopts[csr_idx].csnidle,
+                                                           item.a_data);
+          spi_configopts.clkdiv[csr_idx]   = get_field_val(ral.configopts[csr_idx].clkdiv,
+                                                           item.a_data);
+          spi_configopts.csntrail[csr_idx] = get_field_val(ral.configopts[csr_idx].csntrail,
+                                                           item.a_data);
+        end
+
+        "command": begin
+          spi_segment_item    wr_segment;
+
+          spi_cmd_reg.direction = get_field_val(ral.command.direction, item.a_data);
+          spi_cmd_reg.mode     = spi_mode_e'(get_field_val(ral.command.speed, item.a_data));
+          spi_cmd_reg.csaat     = get_field_val(ral.command.csaat, item.a_data);
+          spi_cmd_reg.len       = get_field_val(ral.command.len, item.a_data);
+
+          // add global spi seetings to individual transaction
+          host_segment.command_reg.len       = spi_cmd_reg.len;
+          host_segment.command_reg.direction = spi_cmd_reg.direction;
+          host_segment.command_reg.mode      = spi_cmd_reg.mode;
+          host_segment.command_reg.csaat     = spi_cmd_reg.csaat;
+          `downcast(wr_segment, host_segment.clone());
+          if (write) begin
+            write_segment_q.push_back(wr_segment);
+            `uvm_info(`gfn, $sformatf("\n  created expeted segment item %s",
+                                        wr_segment.convert2string()), UVM_HIGH)
+          end
+          // clear item
+          host_segment = new();
+        end
+        "intr_state": begin
+          // TODO
+          do_read_check = 1'b0;
+        end
+        "intr_enable": begin
+          // TODO
+        end
+        "intr_test": begin
+          // TODO
+        end
+        "control": begin
+          // TODO
+        end
+        "status": begin
+          // TODO
+        end
+        "csid": begin
+          spi_ctrl_reg.csid = item.a_data;
+        end
+        "error_enable": begin
+          // TODO
+        end
+      endcase
     end
-  endtask
+  endtask : process_tl_access
+
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
-  endfunction
+    host_data_fifo.flush();
+    device_data_fifo.flush();
+    write_segment_q.delete();
+    read_segment_q.delete();
+    rx_data_q.delete();
+    host_segment = new();
+    device_item.clear_all();
+    spien  = 1'b0;
+    sw_rst = 1'b0;
+  endfunction : reset
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
-  endfunction
+    if ( in_tx_seg_cnt != checked_tx_seg_cnt)
+      `uvm_fatal(`gfn, $sformatf("Didn't check all segments - expected %d actual %d", in_tx_seg_cnt, checked_tx_seg_cnt))
+
+    `DV_EOT_PRINT_Q_CONTENTS(spi_segment_item, write_segment_q)
+    `DV_EOT_PRINT_Q_CONTENTS(spi_segment_item, read_segment_q)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, host_data_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, device_data_fifo)
+  endfunction : check_phase
 
 endclass : spi_host_scoreboard

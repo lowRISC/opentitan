@@ -10,7 +10,6 @@ filesets:
     depend:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
-      - lowrisc:ip:lc_ctrl
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device_pkg
     files:

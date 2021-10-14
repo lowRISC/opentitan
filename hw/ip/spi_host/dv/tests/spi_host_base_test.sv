@@ -23,4 +23,12 @@ class spi_host_base_test extends cip_base_test #(
     super.build_phase(phase);
   endfunction : build_phase
 
+
+
+  virtual function void end_of_elaboration_phase(uvm_phase phase);
+    super.end_of_elaboration_phase(phase);
+    if (uvm_top.get_report_verbosity_level() > UVM_LOW) begin
+      uvm_top.print_topology();
+    end
+  endfunction // end_of_elaboration
 endclass : spi_host_base_test

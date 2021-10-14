@@ -106,6 +106,7 @@ class spi_device_extended_seq extends spi_device_seq;
                 spi_state = SPI_ADDR;
               end
               data[31-8*addr_cnt[1:0] -: 8] = item.data.pop_front();
+              addr_cnt += 1;
               // potential TODO add associative array for read back of write data
             end
 

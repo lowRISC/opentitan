@@ -16,11 +16,14 @@ filesets:
       - spi_host_seq_cfg.sv: {is_include_file: true}
       - spi_host_env_cfg.sv: {is_include_file: true}
       - spi_host_env_cov.sv: {is_include_file: true}
+      - spi_segment_item.sv: {is_include_file: true}
+      - spi_transaction_item.sv:  {is_include_file: true}
       - spi_host_virtual_sequencer.sv: {is_include_file: true}
       - spi_host_scoreboard.sv: {is_include_file: true}
       - spi_host_env.sv: {is_include_file: true}
       - seq_lib/spi_host_vseq_list.sv: {is_include_file: true}
       - seq_lib/spi_host_base_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_host_tx_rx_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_common_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_smoke_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource

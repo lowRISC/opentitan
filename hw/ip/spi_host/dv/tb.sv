@@ -12,6 +12,9 @@ module tb;
   import spi_host_reg_pkg::*;
   import lc_ctrl_pkg::*;
 
+  import spi_device_pkg::passthrough_req_t;
+  import spi_device_pkg::passthrough_rsp_t;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -22,15 +25,18 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   lc_tx_t           scanmode_i;
-  wire              cio_sck_o;
-  wire              cio_sck_en_o;
-  wire  [MaxCS-1:0] cio_csb_o;
-  wire  [MaxCS-1:0] cio_csb_en_o;
+  logic             cio_sck_o;
+  logic             cio_sck_en_o;
+  logic [NumCS-1:0] cio_csb_o;
+  logic [NumCS-1:0] cio_csb_en_o;
   logic [3:0]       cio_sd_o;
   logic [3:0]       cio_sd_en_o;
   logic [3:0]       cio_sd_i;
   logic             intr_error;
   logic             intr_event;
+
+  passthrough_req_t passthrough_i;
+  passthrough_rsp_t passthrough_o;
 
   // interfaces
   clk_rst_if   clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -43,7 +49,7 @@ module tb;
   `DV_ALERT_IF_CONNECT
 
   // dut
-  spi_host spi_host (
+  spi_host dut (
     .clk_i                (clk),
     .rst_ni               (rst_n),
 
@@ -65,21 +71,42 @@ module tb;
     .cio_sd_o             (cio_sd_o),
     .cio_sd_en_o          (cio_sd_en_o),
     .cio_sd_i             (cio_sd_i),
+    // passthrough i/o
+    .passthrough_i        (passthrough_i),
+    .passthrough_o        (passthrough_o),
     // intr i/f
     .intr_error_o         (intr_error),
     .intr_spi_event_o     (intr_event)
   );
 
-  assign spi_if.sck = (cio_sck_en_o) ? cio_sck_o : 1'b0;
-  initial begin
-    for (int i = 0; i < 4; i++) begin
-      if (cio_sd_en_o[i] == 1'b1) begin
-        spi_if.sio[i] = cio_sd_o[i];
-      end else begin
-        cio_sd_i[i] = spi_if.sio[i];
-      end
-      spi_if.csb[i] = (cio_csb_en_o == 1'b1 && i < MaxCS) ? cio_csb_o[i] : 1'b1;
+  // configure passthrough i/o
+  assign passthrough_i.sck = clk;
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      passthrough_i.passthrough_en <= 1'b0;
+      passthrough_i.sck_en <= 1'b0;
+      passthrough_i.csb_en <= 1'b0;
+      passthrough_i.s_en   <= 1'b0;
+      passthrough_i.sck_gate_en <= 1'b0;
+      passthrough_i.csb    <= 1'b1;
+      passthrough_i.s      <= '0;
+    end else begin
+      passthrough_i.passthrough_en <= 1'b0;
+      passthrough_i.sck_en <= 1'b1;
+      passthrough_i.csb_en <= 1'b1;
+      passthrough_i.s_en   <= 1'b1;
+      passthrough_i.csb    <= 1'b0;
+      passthrough_i.s      <= ~passthrough_i.s;
     end
+  end
+
+  // configure spi_if i/o
+  assign spi_if.sck = (cio_sck_en_o) ? cio_sck_o : 1'bz;
+  for (genvar i = 0; i < 4; i++) begin : gen_tri_state
+    bufif1 ts1(spi_if.sio[i], cio_sd_o[i], cio_sd_en_o[i]);
+    bufif1 ts0(cio_sd_i[i], spi_if.sio[i], ~cio_sd_en_o[i]);
+
+    assign spi_if.csb[i] = (i < NumCS && cio_csb_en_o[i]) ? cio_csb_o[i] : 1'b1;
   end
 
   assign interrupts[SpiHostError] = intr_error;

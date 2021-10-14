@@ -29,6 +29,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
@@ -46,12 +47,27 @@
   uvm_test: spi_host_base_test
   uvm_test_seq: spi_host_base_vseq
 
+  component_a: "uvm_test_top.env.scoreboard"
+  id_a: _ALL_
+  verbosity_a: UVM_MEDIUM
+  phase_a: run
+
+  run_modes: [
+    {
+      name: set_verbosity_comp_a_uvm_debug
+      run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
+    }
+  ]
+
+
+  run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
+
   // List of test specifications.
   tests: [
-//    {
-//      name: spi_host_smoke
-//      uvm_test_seq: spi_host_smoke_vseq
-//    }
+    {
+      name: spi_host_smoke
+      uvm_test_seq: spi_host_smoke_vseq
+    }
     // TODO: add more tests here
   ]
 
