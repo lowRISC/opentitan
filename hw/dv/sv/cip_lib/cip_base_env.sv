@@ -33,6 +33,11 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
                                                              cfg.devmode_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get devmode_vif from uvm_config_db")
     end
+    if (cfg.has_shadowed_regs &&
+        !uvm_config_db#(rst_shadowed_vif)::get(this, "", "rst_shadowed_vif", cfg.rst_shadowed_vif))
+        begin
+      `uvm_fatal(get_full_name(), "failed to get rst_shadowed_vif from uvm_config_db")
+    end
 
     // Create & configure the TL agent.
     foreach (cfg.m_tl_agent_cfgs[i]) begin

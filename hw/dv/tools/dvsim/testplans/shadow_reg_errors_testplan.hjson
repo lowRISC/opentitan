@@ -51,5 +51,22 @@
       milestone: V1
       tests: ["{name}_shadow_reg_errors"]
     }
+
+    {
+      name: shadowed_reset_glitch
+      desc: '''Verify toggle shadowed_rst_n pin can trigger storage error.
+
+            - Randomly drive `shadowed_rst_n` pin to low or `rst_n` pin to low.
+            - check if any registers have been written before the reset. If so check if storage
+              error fatal alert is triggered.
+            - Check status register.
+            - Drive `shadowed_rst_n` pin or `rst_n` pin back to high.
+            - If fatal alert is triggered, reset the DUT.
+            - Read all CSRs to ensure the DUT is properly reset.
+            - Repeat the above steps a bunch of times.
+            '''
+      milestone: V1
+      tests: ["{name}_shadow_reg_errors"]
+    }
   ]
 }

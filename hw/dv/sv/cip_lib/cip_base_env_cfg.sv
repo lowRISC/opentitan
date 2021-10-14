@@ -37,8 +37,9 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   rand clk_freq_diff_e tlul_and_edn_clk_freq_diff;
 
   // Common interfaces - intrrupts, alerts, edn clk.
-  intr_vif    intr_vif;
-  devmode_vif devmode_vif;
+  intr_vif            intr_vif;
+  devmode_vif         devmode_vif;
+  rst_shadowed_vif    rst_shadowed_vif;
   virtual clk_rst_if  edn_clk_rst_vif;
 
   // en_devmode default sets to 1 because all IPs' devmode_i is tied off internally to 1
@@ -46,6 +47,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   bit  has_devmode = 1;
   bit  en_devmode = 1;
   bit  has_edn = 0;
+  bit  has_shadowed_regs = 0;
 
   uint num_interrupts;
 

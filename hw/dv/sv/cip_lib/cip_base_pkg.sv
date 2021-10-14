@@ -41,6 +41,7 @@ package cip_base_pkg;
   } tl_intg_err_e;
 
   typedef class cip_tl_seq_item;
+  typedef virtual rst_shadowed_if rst_shadowed_vif;
 
   // functions
   function automatic tl_intg_err_e get_tl_intg_err_type(bit is_cmd_ok, bit is_data_ok);

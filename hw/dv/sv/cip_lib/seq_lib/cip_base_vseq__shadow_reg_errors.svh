@@ -90,9 +90,56 @@ virtual task run_shadow_reg_errors(int num_times);
           1: write_and_check_update_error(shadowed_csrs[i]);
           1: check_csr_read_clear_staged_val(shadowed_csrs[i]);
           1: poke_and_check_storage_error(shadowed_csrs[i]);
+          1: glitch_shadowed_reset(shadowed_csrs);
         endcase
       end
     end
+  end
+endtask
+
+virtual task glitch_shadowed_reset(ref dv_base_reg shadowed_csr[$]);
+  string alert_name;
+
+  // If any of the shadowed registers have been written with a different value than its reset
+  // value, glitch reset pins will trigger alerts.
+  foreach (shadowed_csr[i]) begin
+    if (shadowed_csr[i].get_reset() != `gmv(shadowed_csr[i])) begin
+      alert_name = shadowed_csr[i].get_storage_err_alert_name();
+      predict_shadow_reg_status(.predict_storage_err(1));
+      `uvm_info(`gfn, $sformatf("Expect reset storage error %0s", shadowed_csr[i].get_name()),
+                UVM_HIGH)
+      break;
+    end
+  end
+
+  // Randomly choose to glitch `rst_n` or `shadowed_rst_n` pin.
+  if ($urandom_range(0, 1)) begin
+    cfg.rst_shadowed_vif.drive_shadow_rst_pin(0);
+    `uvm_info(`gfn, "toggle shadow reset pin", UVM_HIGH)
+  end else begin
+    cfg.rst_shadowed_vif.drive_shadow_rst_pin(1);
+    dut_init();
+  end
+
+  // Check if shadow reset will trigger fatal storage error.
+  //
+  // - First check if alert_name exists in alert_agent_cfg because alert_handler IP won't trigger
+  // external alert, it triggers it as a local alert instead.
+  // - Wait for the first alert to trigger then check if the alert is firing continuously, because
+  // `dut_init` is a blocking task and alert is firing once alert_init is done.
+  if (cfg.m_alert_agent_cfg.exists(alert_name) && alert_name != "") begin
+    `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
+                 cfg.clk_rst_vif.wait_clks(1);,
+                 $sformatf("expect fatal alert:%0s to fire after rst_ni glitched", alert_name))
+    check_fatal_alert_nonblocking(alert_name);
+  end
+
+  // Wait for random cycles and reconnect `shadowed_rst_n` with `rst_n`.
+  cfg.clk_rst_vif.wait_clks($urandom_range(50, 200));
+  cfg.rst_shadowed_vif.reconnect_shadowed_rst_n_to_rst_n();
+  if (alert_name != "") begin
+    dut_init();
+    read_check_shadow_reg_status("Glitch_shadow_reset_pin task");
   end
 endtask
 

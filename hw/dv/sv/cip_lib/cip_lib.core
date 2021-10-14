@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_lib
       - lowrisc:tlul:headers
+      - lowrisc:dv:rst_shadowed_if
       - lowrisc:dv:tl_agent
       - lowrisc:dv:alert_esc_agent
       - lowrisc:dv:push_pull_agent
