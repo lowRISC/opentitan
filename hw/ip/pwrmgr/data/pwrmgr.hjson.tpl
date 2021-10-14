@@ -22,7 +22,6 @@
     }
   ],
 
-  // Define flash_ctrl <-> flash_phy struct package
   inter_signal_list: [
     { struct:  "pwr_ast",
       type:    "req_rsp",
@@ -129,6 +128,13 @@
       name:    "fetch_en",
       act:     "req",
       package: "lc_ctrl_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "sw_rst_req",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
     },
   ],
 

@@ -110,6 +110,9 @@ module rstmgr_reg_top (
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic alert_test_we;
   logic alert_test_wd;
+  logic reset_req_we;
+  logic [3:0] reset_req_qs;
+  logic [3:0] reset_req_wd;
   logic reset_info_we;
   logic reset_info_por_qs;
   logic reset_info_por_wd;
@@ -117,6 +120,8 @@ module rstmgr_reg_top (
   logic reset_info_low_power_exit_wd;
   logic reset_info_ndm_reset_qs;
   logic reset_info_ndm_reset_wd;
+  logic reset_info_sw_reset_qs;
+  logic reset_info_sw_reset_wd;
   logic [3:0] reset_info_hw_req_qs;
   logic [3:0] reset_info_hw_req_wd;
   logic alert_regwen_we;
@@ -208,6 +213,32 @@ module rstmgr_reg_top (
   );
 
 
+  // R[reset_req]: V(False)
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h5)
+  ) u_reset_req (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (reset_req_we),
+    .wd     (reset_req_wd),
+
+    // from internal hardware
+    .de     (hw2reg.reset_req.de),
+    .d      (hw2reg.reset_req.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.reset_req.q),
+
+    // to register interface (read)
+    .qs     (reset_req_qs)
+  );
+
+
   // R[reset_info]: V(False)
   //   F[por]: 0:0
   prim_subreg #(
@@ -284,7 +315,32 @@ module rstmgr_reg_top (
     .qs     (reset_info_ndm_reset_qs)
   );
 
-  //   F[hw_req]: 6:3
+  //   F[sw_reset]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_reset_info_sw_reset (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (reset_info_we),
+    .wd     (reset_info_sw_reset_wd),
+
+    // from internal hardware
+    .de     (hw2reg.reset_info.sw_reset.de),
+    .d      (hw2reg.reset_info.sw_reset.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.reset_info.sw_reset.q),
+
+    // to register interface (read)
+    .qs     (reset_info_sw_reset_qs)
+  );
+
+  //   F[hw_req]: 7:4
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -975,22 +1031,23 @@ module rstmgr_reg_top (
 
 
 
-  logic [12:0] addr_hit;
+  logic [13:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == RSTMGR_ALERT_TEST_OFFSET);
-    addr_hit[ 1] = (reg_addr == RSTMGR_RESET_INFO_OFFSET);
-    addr_hit[ 2] = (reg_addr == RSTMGR_ALERT_REGWEN_OFFSET);
-    addr_hit[ 3] = (reg_addr == RSTMGR_ALERT_INFO_CTRL_OFFSET);
-    addr_hit[ 4] = (reg_addr == RSTMGR_ALERT_INFO_ATTR_OFFSET);
-    addr_hit[ 5] = (reg_addr == RSTMGR_ALERT_INFO_OFFSET);
-    addr_hit[ 6] = (reg_addr == RSTMGR_CPU_REGWEN_OFFSET);
-    addr_hit[ 7] = (reg_addr == RSTMGR_CPU_INFO_CTRL_OFFSET);
-    addr_hit[ 8] = (reg_addr == RSTMGR_CPU_INFO_ATTR_OFFSET);
-    addr_hit[ 9] = (reg_addr == RSTMGR_CPU_INFO_OFFSET);
-    addr_hit[10] = (reg_addr == RSTMGR_SW_RST_REGWEN_OFFSET);
-    addr_hit[11] = (reg_addr == RSTMGR_SW_RST_CTRL_N_OFFSET);
-    addr_hit[12] = (reg_addr == RSTMGR_ERR_CODE_OFFSET);
+    addr_hit[ 1] = (reg_addr == RSTMGR_RESET_REQ_OFFSET);
+    addr_hit[ 2] = (reg_addr == RSTMGR_RESET_INFO_OFFSET);
+    addr_hit[ 3] = (reg_addr == RSTMGR_ALERT_REGWEN_OFFSET);
+    addr_hit[ 4] = (reg_addr == RSTMGR_ALERT_INFO_CTRL_OFFSET);
+    addr_hit[ 5] = (reg_addr == RSTMGR_ALERT_INFO_ATTR_OFFSET);
+    addr_hit[ 6] = (reg_addr == RSTMGR_ALERT_INFO_OFFSET);
+    addr_hit[ 7] = (reg_addr == RSTMGR_CPU_REGWEN_OFFSET);
+    addr_hit[ 8] = (reg_addr == RSTMGR_CPU_INFO_CTRL_OFFSET);
+    addr_hit[ 9] = (reg_addr == RSTMGR_CPU_INFO_ATTR_OFFSET);
+    addr_hit[10] = (reg_addr == RSTMGR_CPU_INFO_OFFSET);
+    addr_hit[11] = (reg_addr == RSTMGR_SW_RST_REGWEN_OFFSET);
+    addr_hit[12] = (reg_addr == RSTMGR_SW_RST_CTRL_N_OFFSET);
+    addr_hit[13] = (reg_addr == RSTMGR_ERR_CODE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1010,12 +1067,16 @@ module rstmgr_reg_top (
                (addr_hit[ 9] & (|(RSTMGR_PERMIT[ 9] & ~reg_be))) |
                (addr_hit[10] & (|(RSTMGR_PERMIT[10] & ~reg_be))) |
                (addr_hit[11] & (|(RSTMGR_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(RSTMGR_PERMIT[12] & ~reg_be)))));
+               (addr_hit[12] & (|(RSTMGR_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(RSTMGR_PERMIT[13] & ~reg_be)))));
   end
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign reset_info_we = addr_hit[1] & reg_we & !reg_error;
+  assign reset_req_we = addr_hit[1] & reg_we & !reg_error;
+
+  assign reset_req_wd = reg_wdata[3:0];
+  assign reset_info_we = addr_hit[2] & reg_we & !reg_error;
 
   assign reset_info_por_wd = reg_wdata[0];
 
@@ -1023,28 +1084,30 @@ module rstmgr_reg_top (
 
   assign reset_info_ndm_reset_wd = reg_wdata[2];
 
-  assign reset_info_hw_req_wd = reg_wdata[6:3];
-  assign alert_regwen_we = addr_hit[2] & reg_we & !reg_error;
+  assign reset_info_sw_reset_wd = reg_wdata[3];
+
+  assign reset_info_hw_req_wd = reg_wdata[7:4];
+  assign alert_regwen_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_regwen_wd = reg_wdata[0];
-  assign alert_info_ctrl_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_info_ctrl_we = addr_hit[4] & reg_we & !reg_error;
 
   assign alert_info_ctrl_en_wd = reg_wdata[0];
 
   assign alert_info_ctrl_index_wd = reg_wdata[7:4];
-  assign alert_info_attr_re = addr_hit[4] & reg_re & !reg_error;
-  assign alert_info_re = addr_hit[5] & reg_re & !reg_error;
-  assign cpu_regwen_we = addr_hit[6] & reg_we & !reg_error;
+  assign alert_info_attr_re = addr_hit[5] & reg_re & !reg_error;
+  assign alert_info_re = addr_hit[6] & reg_re & !reg_error;
+  assign cpu_regwen_we = addr_hit[7] & reg_we & !reg_error;
 
   assign cpu_regwen_wd = reg_wdata[0];
-  assign cpu_info_ctrl_we = addr_hit[7] & reg_we & !reg_error;
+  assign cpu_info_ctrl_we = addr_hit[8] & reg_we & !reg_error;
 
   assign cpu_info_ctrl_en_wd = reg_wdata[0];
 
   assign cpu_info_ctrl_index_wd = reg_wdata[7:4];
-  assign cpu_info_attr_re = addr_hit[8] & reg_re & !reg_error;
-  assign cpu_info_re = addr_hit[9] & reg_re & !reg_error;
-  assign sw_rst_regwen_we = addr_hit[10] & reg_we & !reg_error;
+  assign cpu_info_attr_re = addr_hit[9] & reg_re & !reg_error;
+  assign cpu_info_re = addr_hit[10] & reg_re & !reg_error;
+  assign sw_rst_regwen_we = addr_hit[11] & reg_we & !reg_error;
 
   assign sw_rst_regwen_en_0_wd = reg_wdata[0];
 
@@ -1065,8 +1128,8 @@ module rstmgr_reg_top (
   assign sw_rst_regwen_en_8_wd = reg_wdata[8];
 
   assign sw_rst_regwen_en_9_wd = reg_wdata[9];
-  assign sw_rst_ctrl_n_re = addr_hit[11] & reg_re & !reg_error;
-  assign sw_rst_ctrl_n_we = addr_hit[11] & reg_we & !reg_error;
+  assign sw_rst_ctrl_n_re = addr_hit[12] & reg_re & !reg_error;
+  assign sw_rst_ctrl_n_we = addr_hit[12] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_val_0_wd = reg_wdata[0];
 
@@ -1087,7 +1150,7 @@ module rstmgr_reg_top (
   assign sw_rst_ctrl_n_val_8_wd = reg_wdata[8];
 
   assign sw_rst_ctrl_n_val_9_wd = reg_wdata[9];
-  assign err_code_we = addr_hit[12] & reg_we & !reg_error;
+  assign err_code_we = addr_hit[13] & reg_we & !reg_error;
 
   assign err_code_reg_intg_err_wd = reg_wdata[0];
 
@@ -1102,47 +1165,52 @@ module rstmgr_reg_top (
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = reset_info_por_qs;
-        reg_rdata_next[1] = reset_info_low_power_exit_qs;
-        reg_rdata_next[2] = reset_info_ndm_reset_qs;
-        reg_rdata_next[6:3] = reset_info_hw_req_qs;
+        reg_rdata_next[3:0] = reset_req_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[0] = alert_regwen_qs;
+        reg_rdata_next[0] = reset_info_por_qs;
+        reg_rdata_next[1] = reset_info_low_power_exit_qs;
+        reg_rdata_next[2] = reset_info_ndm_reset_qs;
+        reg_rdata_next[3] = reset_info_sw_reset_qs;
+        reg_rdata_next[7:4] = reset_info_hw_req_qs;
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = alert_regwen_qs;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[0] = alert_info_ctrl_en_qs;
         reg_rdata_next[7:4] = alert_info_ctrl_index_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[3:0] = alert_info_attr_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[31:0] = alert_info_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = cpu_regwen_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = cpu_info_ctrl_en_qs;
         reg_rdata_next[7:4] = cpu_info_ctrl_index_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[3:0] = cpu_info_attr_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[31:0] = cpu_info_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = sw_rst_regwen_en_0_qs;
         reg_rdata_next[1] = sw_rst_regwen_en_1_qs;
         reg_rdata_next[2] = sw_rst_regwen_en_2_qs;
@@ -1155,7 +1223,7 @@ module rstmgr_reg_top (
         reg_rdata_next[9] = sw_rst_regwen_en_9_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[12]: begin
         reg_rdata_next[0] = sw_rst_ctrl_n_val_0_qs;
         reg_rdata_next[1] = sw_rst_ctrl_n_val_1_qs;
         reg_rdata_next[2] = sw_rst_ctrl_n_val_2_qs;
@@ -1168,7 +1236,7 @@ module rstmgr_reg_top (
         reg_rdata_next[9] = sw_rst_ctrl_n_val_9_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[13]: begin
         reg_rdata_next[0] = err_code_reg_intg_err_qs;
         reg_rdata_next[1] = err_code_reset_consistency_err_qs;
       end

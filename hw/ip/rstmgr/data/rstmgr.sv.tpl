@@ -10,6 +10,7 @@
 module rstmgr
   import rstmgr_pkg::*;
   import rstmgr_reg_pkg::*;
+  import prim_mubi_pkg::mubi4_t;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -34,6 +35,9 @@ module rstmgr
   // pwrmgr interface
   input pwrmgr_pkg::pwr_rst_req_t pwr_i,
   output pwrmgr_pkg::pwr_rst_rsp_t pwr_o,
+
+  // software initiated reset request
+  output mubi4_t sw_rst_req_o,
 
   // cpu related inputs
   input logic rst_cpu_n_i,
@@ -375,6 +379,14 @@ module rstmgr
   assign rst_low_power = ~first_reset & pwrmgr_rst_req &
                          (pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry);
 
+  // software initiated reset request
+  assign sw_rst_req_o = prim_mubi_pkg::mubi4_e'(reg2hw.reset_req.q);
+
+  // when pwrmgr reset request is received (reset is imminent), clear software
+  // request so we are not in an infinite reset loop.
+  assign hw2reg.reset_req.de = pwrmgr_rst_req;
+  assign hw2reg.reset_req.d  = prim_mubi_pkg::MuBi4False;
+
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -401,9 +413,16 @@ module rstmgr
   assign hw2reg.reset_info.ndm_reset.d  = 1'b1;
   assign hw2reg.reset_info.ndm_reset.de = rst_ndm;
 
+  // software issued request triggers the same response as hardware, although it is
+  // accounted for differently.
+  assign hw2reg.reset_info.sw_reset.d = prim_mubi_pkg::mubi4_test_true_strict(sw_rst_req_o) |
+                                        reg2hw.reset_info.sw_reset.q;
+  assign hw2reg.reset_info.sw_reset.de = rst_hw_req;
+
   // HW reset requests most likely will be multi-bit, so OR in whatever reasons
   // that are already set.
-  assign hw2reg.reset_info.hw_req.d  = pwr_i.rstreqs | reg2hw.reset_info.hw_req.q;
+  assign hw2reg.reset_info.hw_req.d  = pwr_i.rstreqs[pwrmgr_pkg::HwResetWidth-1:0] |
+                                       reg2hw.reset_info.hw_req.q;
   assign hw2reg.reset_info.hw_req.de = rst_hw_req;
 
   ////////////////////////////////////////////////////
@@ -466,7 +485,7 @@ module rstmgr
   // Assertions                                     //
   ////////////////////////////////////////////////////
 
-  `ASSERT_INIT(ParameterMatch_A, NumHwResets == pwrmgr_pkg::TotalResetWidth)
+  `ASSERT_INIT(ParameterMatch_A, NumHwResets == pwrmgr_pkg::HwResetWidth)
 
   // when upstream resets, downstream must also reset
 

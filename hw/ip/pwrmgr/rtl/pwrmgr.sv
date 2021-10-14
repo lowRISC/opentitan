@@ -68,6 +68,9 @@ module pwrmgr
   // rom_ctrl interface
   input rom_ctrl_pkg::pwrmgr_data_t rom_ctrl_i,
 
+  // software issued reset request
+  input prim_mubi_pkg::mubi4_t sw_rst_req_i,
+
   // escalation interface
   input prim_esc_pkg::esc_tx_t esc_rst_tx_i,
   output prim_esc_pkg::esc_rx_t esc_rst_rx_o,
@@ -97,10 +100,28 @@ module pwrmgr
   ///  async declarations
   ////////////////////////////
   pwr_peri_t peri_reqs_raw;
+  logic slow_rst_req;
 
   assign peri_reqs_raw.wakeups = wakeups_i;
   assign peri_reqs_raw.rstreqs[NumRstReqs-1:0] = rstreqs_i;
+  assign peri_reqs_raw.rstreqs[ResetMainPwrIdx] = slow_rst_req;
   assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req;
+
+  ////////////////////////////
+  ///  Software reset request
+  ////////////////////////////
+  logic sw_rst_req;
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_sw_req_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(prim_mubi_pkg::mubi4_test_true_strict(sw_rst_req_i)),
+    .q_o(sw_rst_req)
+  );
+
+  assign peri_reqs_raw.rstreqs[ResetSwReqIdx] = sw_rst_req;
 
   ////////////////////////////
   ///  clk_i domain declarations
@@ -147,7 +168,6 @@ module pwrmgr
   logic slow_ack_pwrup;
   logic slow_req_pwrdn;
   logic slow_ack_pwrdn;
-  logic slow_rst_req;
   logic slow_fsm_invalid;
   logic slow_main_pd_n;
   logic slow_io_clk_en;
@@ -156,7 +176,7 @@ module pwrmgr
   logic slow_usb_clk_en_active;
   logic slow_clr_req;
 
-  assign peri_reqs_raw.rstreqs[ResetMainPwrIdx] = slow_rst_req;
+
 
   ////////////////////////////
   ///  Register module
@@ -318,9 +338,13 @@ module pwrmgr
   // and that would be very undesirable.
 
   assign slow_peri_reqs_masked.wakeups = slow_peri_reqs.wakeups & slow_wakeup_en;
-  // msb is escalation reset
+  // msb is software request
+  // the internal requests include escalation and internal requests
+  // the lsbs are the software enabled peripheral requests.
   assign slow_peri_reqs_masked.rstreqs = slow_peri_reqs.rstreqs &
-                                         {{IntReqLastIdx{1'b1}}, slow_reset_en};
+                                         {{NumSwRstReq{1'b1}},
+                                          {IntReqLastIdx{1'b1}},
+                                          slow_reset_en};
 
   for (genvar i = 0; i < NumWkups; i++) begin : gen_wakeup_status
     assign hw2reg.wake_status[i].de = 1'b1;

@@ -287,3 +287,14 @@ dif_result_t dif_rstmgr_software_reset_is_held(
 
   return kDifOk;
 }
+
+dif_result_t dif_rstmgr_software_device_reset(const dif_rstmgr_t *handle) {
+  if (handle == NULL) {
+    return kDifBadArg;
+  }
+
+  // TODO, convert to MultiBitBool when available
+  mmio_region_write32(handle->base_addr, RSTMGR_RESET_REQ_REG_OFFSET, 0xa);
+
+  return kDifOk;
+}

@@ -11,7 +11,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
 
   rand ibex_pkg::crash_dump_t cpu_dump;
   rand alert_pkg::alert_crashdump_t alert_dump;
-  rand logic [pwrmgr_pkg::TotalResetWidth-1:0] rstreqs;
+  rand logic [pwrmgr_pkg::HwResetWidth-1:0] rstreqs;
   rand logic [NumSwResets-1:0] sw_rst_regwen;
   rand logic [NumSwResets-1:0] sw_rst_ctrl_n;
 
@@ -49,7 +49,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     send_reset(pwrmgr_pkg::HwReq, rstreqs);
-    csr_rd_check(.ptr(ral.reset_info), .compare_value({rstreqs, 3'h0}),
+    csr_rd_check(.ptr(ral.reset_info), .compare_value({rstreqs, 4'h0}),
                  .err_msg("Expected reset_info to match pwrmgr_rstreqs"));
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
 

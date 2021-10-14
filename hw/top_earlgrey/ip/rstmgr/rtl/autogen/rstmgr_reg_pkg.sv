@@ -26,6 +26,13 @@ package rstmgr_reg_pkg;
   } rstmgr_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
+    logic [3:0]  q;
+  } rstmgr_reg2hw_reset_req_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } sw_reset;
     struct packed {
       logic [3:0]  q;
     } hw_req;
@@ -59,6 +66,11 @@ package rstmgr_reg_pkg;
   } rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t;
 
   typedef struct packed {
+    logic [3:0]  d;
+    logic        de;
+  } rstmgr_hw2reg_reset_req_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
@@ -67,6 +79,10 @@ package rstmgr_reg_pkg;
       logic        d;
       logic        de;
     } ndm_reset;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sw_reset;
     struct packed {
       logic [3:0]  d;
       logic        de;
@@ -120,8 +136,9 @@ package rstmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    rstmgr_reg2hw_alert_test_reg_t alert_test; // [45:44]
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [43:40]
+    rstmgr_reg2hw_alert_test_reg_t alert_test; // [50:49]
+    rstmgr_reg2hw_reset_req_reg_t reset_req; // [48:45]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [44:40]
     rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [39:35]
     rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [34:30]
     rstmgr_reg2hw_sw_rst_regwen_mreg_t [9:0] sw_rst_regwen; // [29:20]
@@ -130,7 +147,8 @@ package rstmgr_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [98:90]
+    rstmgr_hw2reg_reset_req_reg_t reset_req; // [105:101]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [100:90]
     rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [89:88]
     rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [87:84]
     rstmgr_hw2reg_alert_info_reg_t alert_info; // [83:52]
@@ -143,18 +161,19 @@ package rstmgr_reg_pkg;
 
   // Register offsets
   parameter logic [BlockAw-1:0] RSTMGR_ALERT_TEST_OFFSET = 6'h 0;
-  parameter logic [BlockAw-1:0] RSTMGR_RESET_INFO_OFFSET = 6'h 4;
-  parameter logic [BlockAw-1:0] RSTMGR_ALERT_REGWEN_OFFSET = 6'h 8;
-  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 6'h c;
-  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 6'h 10;
-  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_OFFSET = 6'h 14;
-  parameter logic [BlockAw-1:0] RSTMGR_CPU_REGWEN_OFFSET = 6'h 18;
-  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_CTRL_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_ATTR_OFFSET = 6'h 20;
-  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_OFFSET = 6'h 24;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGWEN_OFFSET = 6'h 28;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 6'h 2c;
-  parameter logic [BlockAw-1:0] RSTMGR_ERR_CODE_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] RSTMGR_RESET_REQ_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] RSTMGR_RESET_INFO_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_REGWEN_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_REGWEN_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_CTRL_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_ATTR_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_OFFSET = 6'h 28;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGWEN_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] RSTMGR_ERR_CODE_OFFSET = 6'h 34;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] RSTMGR_ALERT_TEST_RESVAL = 1'h 0;
@@ -182,6 +201,7 @@ package rstmgr_reg_pkg;
   // Register index
   typedef enum int {
     RSTMGR_ALERT_TEST,
+    RSTMGR_RESET_REQ,
     RSTMGR_RESET_INFO,
     RSTMGR_ALERT_REGWEN,
     RSTMGR_ALERT_INFO_CTRL,
@@ -197,20 +217,21 @@ package rstmgr_reg_pkg;
   } rstmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] RSTMGR_PERMIT [13] = '{
+  parameter logic [3:0] RSTMGR_PERMIT [14] = '{
     4'b 0001, // index[ 0] RSTMGR_ALERT_TEST
-    4'b 0001, // index[ 1] RSTMGR_RESET_INFO
-    4'b 0001, // index[ 2] RSTMGR_ALERT_REGWEN
-    4'b 0001, // index[ 3] RSTMGR_ALERT_INFO_CTRL
-    4'b 0001, // index[ 4] RSTMGR_ALERT_INFO_ATTR
-    4'b 1111, // index[ 5] RSTMGR_ALERT_INFO
-    4'b 0001, // index[ 6] RSTMGR_CPU_REGWEN
-    4'b 0001, // index[ 7] RSTMGR_CPU_INFO_CTRL
-    4'b 0001, // index[ 8] RSTMGR_CPU_INFO_ATTR
-    4'b 1111, // index[ 9] RSTMGR_CPU_INFO
-    4'b 0011, // index[10] RSTMGR_SW_RST_REGWEN
-    4'b 0011, // index[11] RSTMGR_SW_RST_CTRL_N
-    4'b 0001  // index[12] RSTMGR_ERR_CODE
+    4'b 0001, // index[ 1] RSTMGR_RESET_REQ
+    4'b 0001, // index[ 2] RSTMGR_RESET_INFO
+    4'b 0001, // index[ 3] RSTMGR_ALERT_REGWEN
+    4'b 0001, // index[ 4] RSTMGR_ALERT_INFO_CTRL
+    4'b 0001, // index[ 5] RSTMGR_ALERT_INFO_ATTR
+    4'b 1111, // index[ 6] RSTMGR_ALERT_INFO
+    4'b 0001, // index[ 7] RSTMGR_CPU_REGWEN
+    4'b 0001, // index[ 8] RSTMGR_CPU_INFO_CTRL
+    4'b 0001, // index[ 9] RSTMGR_CPU_INFO_ATTR
+    4'b 1111, // index[10] RSTMGR_CPU_INFO
+    4'b 0011, // index[11] RSTMGR_SW_RST_REGWEN
+    4'b 0011, // index[12] RSTMGR_SW_RST_CTRL_N
+    4'b 0001  // index[13] RSTMGR_ERR_CODE
   };
 
 endpackage

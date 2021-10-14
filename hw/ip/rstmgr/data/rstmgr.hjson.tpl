@@ -4,6 +4,8 @@
 
 <%
   crash_dump_srcs = ['alert', 'cpu']
+  # long term change this to a method where the generating function
+  # can query the pwrmgr for how many internal resets it has
   total_hw_resets = num_rstreqs+2
 %>
 
@@ -116,6 +118,13 @@
       package: "ibex_pkg",
     },
 
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "sw_rst_req",
+      act:     "req",
+      package: "prim_mubi_pkg",
+    },
+
     // Exported resets
 % for intf in export_rsts:
     { struct:  "rstmgr_${intf}_out",
@@ -128,6 +137,27 @@
   ],
 
   registers: [
+
+    { name: "RESET_REQ",
+      desc: '''
+        Software requested system reset.
+      ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "3:0",
+          mubi: true
+          name: "VAL",
+          desc: '''
+            When set to kMultiBitBool4True, a reset to power manager is requested.
+            Upon completion of reset, this bit is automatically cleared by hardware.
+          '''
+          resval: false
+        },
+      ],
+      tags: [// This register will cause a system reset, directed test only
+        "excl:CsrAllTests:CsrExclWrite"]
+    },
 
     { name: "RESET_INFO",
       desc: '''
@@ -161,8 +191,17 @@
           resval: "0"
         },
 
+        { bits: "3",
+          hwaccess: "hrw",
+          name: "SW_RESET",
+          desc: '''
+            Indicates when a device has reset due to !!RESET_REQ.
+            '''
+          resval: "0"
+        },
+
         // reset requests include escalation reset + peripheral requests
-        { bits: "${3 + total_hw_resets - 1}:3",
+        { bits: "${4 + total_hw_resets - 1}:4",
           hwaccess: "hrw",
           name: "HW_REQ",
           desc: '''

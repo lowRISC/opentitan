@@ -2583,6 +2583,18 @@
           index: -1
         }
         {
+          name: sw_rst_req
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: pwrmgr_aon
+          default: ""
+          top_signame: rstmgr_aon_sw_rst_req
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -2737,6 +2749,20 @@
           inst_name: rstmgr_aon
           default: ""
           top_signame: rv_core_ibex_crash_dump
+          index: -1
+        }
+        {
+          name: sw_rst_req
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rstmgr_aon
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rstmgr_aon_sw_rst_req
           index: -1
         }
         {
@@ -7283,6 +7309,10 @@
       rv_dm.ndmreset_req:
       [
         rstmgr_aon.ndmreset_req
+      ]
+      rstmgr_aon.sw_rst_req:
+      [
+        pwrmgr_aon.sw_rst_req
       ]
       pwrmgr_aon.wakeups:
       [
@@ -15138,6 +15168,18 @@
         index: -1
       }
       {
+        name: sw_rst_req
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: pwrmgr_aon
+        default: ""
+        top_signame: rstmgr_aon_sw_rst_req
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -15245,6 +15287,20 @@
         inst_name: rstmgr_aon
         default: ""
         top_signame: rv_core_ibex_crash_dump
+        index: -1
+      }
+      {
+        name: sw_rst_req
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rstmgr_aon
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rstmgr_aon_sw_rst_req
         index: -1
       }
       {
@@ -19616,6 +19672,17 @@
         act: req
         suffix: ""
         default: "'0"
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: rstmgr_aon_sw_rst_req
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: prim_mubi_pkg::MUBI4_DEFAULT
       }
       {
         package: ""
