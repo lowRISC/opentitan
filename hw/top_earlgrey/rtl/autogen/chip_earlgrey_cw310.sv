@@ -21,6 +21,12 @@ module chip_earlgrey_cw310 #(
   inout POR_N, // Manual Pad
   inout USB_P, // Manual Pad
   inout USB_N, // Manual Pad
+  inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_D3, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_CLK, // Dedicated Pad for spi_host0_sck
+  inout SPI_HOST_CS_L, // Dedicated Pad for spi_host0_csb
   inout SPI_DEV_D0, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_D1, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
@@ -246,18 +252,6 @@ module chip_earlgrey_cw310 #(
 
   // Only signals going to non-custom pads need to be tied off.
   logic [69:0] unused_sig;
-  assign dio_in[DioSpiHost0Sd0] = 1'b0;
-  assign unused_sig[9] = dio_out[DioSpiHost0Sd0] ^ dio_oe[DioSpiHost0Sd0];
-  assign dio_in[DioSpiHost0Sd1] = 1'b0;
-  assign unused_sig[10] = dio_out[DioSpiHost0Sd1] ^ dio_oe[DioSpiHost0Sd1];
-  assign dio_in[DioSpiHost0Sd2] = 1'b0;
-  assign unused_sig[11] = dio_out[DioSpiHost0Sd2] ^ dio_oe[DioSpiHost0Sd2];
-  assign dio_in[DioSpiHost0Sd3] = 1'b0;
-  assign unused_sig[12] = dio_out[DioSpiHost0Sd3] ^ dio_oe[DioSpiHost0Sd3];
-  assign dio_in[DioSpiHost0Sck] = 1'b0;
-  assign unused_sig[13] = dio_out[DioSpiHost0Sck] ^ dio_oe[DioSpiHost0Sck];
-  assign dio_in[DioSpiHost0Csb] = 1'b0;
-  assign unused_sig[14] = dio_out[DioSpiHost0Csb] ^ dio_oe[DioSpiHost0Csb];
   assign dio_in[DioSpiDeviceSd2] = 1'b0;
   assign unused_sig[17] = dio_out[DioSpiDeviceSd2] ^ dio_oe[DioSpiDeviceSd2];
   assign dio_in[DioSpiDeviceSd3] = 1'b0;
@@ -331,7 +325,7 @@ module chip_earlgrey_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(22),
+    .NDioPads(28),
     .NMioPads(29),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
@@ -353,6 +347,12 @@ module chip_earlgrey_cw310 #(
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D1
       BidirStd, // SPI_DEV_D0
+      BidirStd, // SPI_HOST_CS_L
+      BidirStd, // SPI_HOST_CLK
+      BidirStd, // SPI_HOST_D3
+      BidirStd, // SPI_HOST_D2
+      BidirStd, // SPI_HOST_D1
+      BidirStd, // SPI_HOST_D0
       BidirTol, // USB_N
       BidirTol, // USB_P
       InputStd  // POR_N
@@ -414,6 +414,12 @@ module chip_earlgrey_cw310 #(
       SPI_DEV_CLK,
       SPI_DEV_D1,
       SPI_DEV_D0,
+      SPI_HOST_CS_L,
+      SPI_HOST_CLK,
+      SPI_HOST_D3,
+      SPI_HOST_D2,
+      SPI_HOST_D1,
+      SPI_HOST_D0,
       USB_N,
       USB_P,
       POR_N
@@ -472,6 +478,12 @@ module chip_earlgrey_cw310 #(
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd1],
         dio_in[DioSpiDeviceSd0],
+        dio_in[DioSpiHost0Csb],
+        dio_in[DioSpiHost0Sck],
+        dio_in[DioSpiHost0Sd3],
+        dio_in[DioSpiHost0Sd2],
+        dio_in[DioSpiHost0Sd1],
+        dio_in[DioSpiHost0Sd0],
         manual_in_usb_n,
         manual_in_usb_p,
         manual_in_por_n
@@ -496,6 +508,12 @@ module chip_earlgrey_cw310 #(
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd1],
         dio_out[DioSpiDeviceSd0],
+        dio_out[DioSpiHost0Csb],
+        dio_out[DioSpiHost0Sck],
+        dio_out[DioSpiHost0Sd3],
+        dio_out[DioSpiHost0Sd2],
+        dio_out[DioSpiHost0Sd1],
+        dio_out[DioSpiHost0Sd0],
         manual_out_usb_n,
         manual_out_usb_p,
         manual_out_por_n
@@ -520,6 +538,12 @@ module chip_earlgrey_cw310 #(
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd1],
         dio_oe[DioSpiDeviceSd0],
+        dio_oe[DioSpiHost0Csb],
+        dio_oe[DioSpiHost0Sck],
+        dio_oe[DioSpiHost0Sd3],
+        dio_oe[DioSpiHost0Sd2],
+        dio_oe[DioSpiHost0Sd1],
+        dio_oe[DioSpiHost0Sd0],
         manual_oe_usb_n,
         manual_oe_usb_p,
         manual_oe_por_n
@@ -544,6 +568,12 @@ module chip_earlgrey_cw310 #(
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd1],
         dio_attr[DioSpiDeviceSd0],
+        dio_attr[DioSpiHost0Csb],
+        dio_attr[DioSpiHost0Sck],
+        dio_attr[DioSpiHost0Sd3],
+        dio_attr[DioSpiHost0Sd2],
+        dio_attr[DioSpiHost0Sd1],
+        dio_attr[DioSpiHost0Sd0],
         manual_attr_usb_n,
         manual_attr_usb_p,
         manual_attr_por_n

@@ -287,6 +287,7 @@ sw_lib_dif_spi_host = declare_dependency(
     'sw_lib_dif_spi_host',
     sources: [
       hw_ip_spi_host_reg_h,
+      'dif_spi_host.c',
     ],
     dependencies: [
       sw_lib_mmio,
