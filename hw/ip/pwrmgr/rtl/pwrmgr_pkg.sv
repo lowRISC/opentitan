@@ -22,10 +22,14 @@ package pwrmgr_pkg;
     IntReqLastIdx
   } pwr_int_rst_req_e;
 
+  parameter int NumSwRstReq = 1;
+
   // position of escalation request
-  parameter int TotalResetWidth = pwrmgr_reg_pkg::NumRstReqs + IntReqLastIdx;
+  parameter int HwResetWidth = pwrmgr_reg_pkg::NumRstReqs + IntReqLastIdx;
+  parameter int TotalResetWidth = HwResetWidth + NumSwRstReq;
   parameter int ResetMainPwrIdx = pwrmgr_reg_pkg::NumRstReqs + IntReqMainPwr;
   parameter int ResetEscIdx = pwrmgr_reg_pkg::NumRstReqs + IntReqEsc;
+  parameter int ResetSwReqIdx = TotalResetWidth - 1;
 
   // pwrmgr to ast
   typedef struct packed {
@@ -75,7 +79,7 @@ package pwrmgr_pkg;
   typedef struct packed {
     logic [PowerDomains-1:0] rst_lc_req;
     logic [PowerDomains-1:0] rst_sys_req;
-    logic [TotalResetWidth-1:0] rstreqs;
+    logic [HwResetWidth-1:0] rstreqs;
     reset_cause_e reset_cause;
   } pwr_rst_req_t;
 

@@ -412,7 +412,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   assign pwr_rst_o.rst_lc_req = rst_lc_req_q;
   assign pwr_rst_o.rst_sys_req = rst_sys_req_q;
   assign pwr_rst_o.reset_cause = reset_cause_q;
-  assign pwr_rst_o.rstreqs = reset_reqs_i;
+  assign pwr_rst_o.rstreqs = reset_reqs_i[HwResetWidth-1:0];
 
   assign ips_clk_en_o = ip_clk_en_q;
 

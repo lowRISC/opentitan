@@ -890,7 +890,10 @@
       'spi_device.passthrough'     : ['spi_host0.passthrough']
 
       // Debug module reset request to reset manager
-      'rv_dm.ndmreset_req' : ['rstmgr_aon.ndmreset_req']
+      'rv_dm.ndmreset_req' : ['rstmgr_aon.ndmreset_req'],
+
+      // Reset manager software reset request to pwrmgr
+      'rstmgr_aon.sw_rst_req' : ['pwrmgr_aon.sw_rst_req'],
     }
 
     // top is to connect to top net/struct.

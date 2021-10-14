@@ -72,10 +72,14 @@ typedef enum dif_rstmgr_reset_info {
    */
   kDifRstmgrResetInfoNdm = (0x1 << 2),
   /**
+   * Device has reset due to software request.
+   */
+  kDifRstmgrResetInfoSw = (0x1 << 3),
+  /**
    * Device has reset due to a peripheral request. This can be an alert
    * escalation, watchdog or anything else.
    */
-  kDifRstmgrResetInfoHwReq = (0xf << 3),
+  kDifRstmgrResetInfoHwReq = (0xf << 4),
 } dif_rstmgr_reset_info_t;
 
 /**
@@ -265,6 +269,15 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_rstmgr_software_reset_is_held(
     const dif_rstmgr_t *handle, dif_rstmgr_peripheral_t peripheral,
     bool *asserted);
+
+/**
+ * Software request for system reset
+ *
+ * @param handle A Reset Manager handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rstmgr_software_device_reset(const dif_rstmgr_t *handle);
 
 #ifdef __cplusplus
 }  // extern "C"

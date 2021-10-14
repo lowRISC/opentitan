@@ -143,6 +143,23 @@ sw_tests += {
   }
 }
 
+rstmgr_sw_req_test_lib = declare_dependency(
+  link_with: static_library(
+    'rstmgr_sw_req_lib',
+    sources: ['rstmgr_sw_req_test.c'],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'rstmgr_sw_req_test': {
+    'library': rstmgr_sw_req_test_lib,
+  }
+}
+
 otbn_smoketest_lib = declare_dependency(
   link_with: static_library(
     'otbn_smoketest_lib',

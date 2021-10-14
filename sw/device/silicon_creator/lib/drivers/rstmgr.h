@@ -50,17 +50,22 @@ typedef enum rstmgr_reason {
   kRstmgrReasonNonDebugModule = 2,
 
   /**
+   * Software issued request (SW).
+   */
+  kRstmgrReasonSoftwareRequest = 3,
+
+  /**
    * Hardware requests (HW_REQ).
    */
-  kRstmgrReasonSysrstCtrl = 3,
-  kRstmgrReasonWatchdog = 4,
-  kRstmgrReasonPowerUnstable = 5,
-  kRstmgrReasonEscalation = 6,
+  kRstmgrReasonSysrstCtrl = 4,
+  kRstmgrReasonWatchdog = 5,
+  kRstmgrReasonPowerUnstable = 6,
+  kRstmgrReasonEscalation = 7,
 
   /**
    * Last used bit index (inclusive).
    */
-  kRstmgrReasonLast = 6,
+  kRstmgrReasonLast = 7,
 } rstmgr_reason_t;
 
 /**

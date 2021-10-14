@@ -900,6 +900,18 @@
       tests: []
     }
     {
+      name: chip_sw_rstrmgr_sw_req_reset
+      desc: '''Verify software requested device reset.
+
+            Generate a reset request by directly writing the `reset_req` CSR.
+            The reset created should be identical to those caused by hardware sources.
+            After reset, the `reset_info` CSR should reflect that a software request was
+            the reset cause.
+            '''
+      milestone: V2
+      tests: ["chip_sw_rstmgr_sw_req"]
+    }
+    {
       name: chip_sw_rstrmgr_alert_info
       desc: '''Verify the expected values from the `alert_info` CSR on reset.
 

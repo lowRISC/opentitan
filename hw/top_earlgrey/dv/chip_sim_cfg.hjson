@@ -240,6 +240,12 @@
       reseed: 15
     }
     {
+      name: chip_sw_rstmgr_sw_req
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/rstmgr_sw_req_test:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
       name: chip_sw_pwrmgr_usbdev_wakeup
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/pwrmgr_usbdev_smoketest:1"]

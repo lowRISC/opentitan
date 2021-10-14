@@ -600,6 +600,7 @@ module top_earlgrey #(
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic       rv_dm_ndmreset_req;
+  prim_mubi_pkg::mubi4_t       rstmgr_aon_sw_rst_req;
   logic [5:0] pwrmgr_aon_wakeups;
   logic [1:0] pwrmgr_aon_rstreqs;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
@@ -1679,6 +1680,7 @@ module top_earlgrey #(
       .low_power_o(pwrmgr_aon_low_power),
       .rom_ctrl_i(rom_ctrl_pwrmgr_data),
       .fetch_en_o(pwrmgr_aon_fetch_en),
+      .sw_rst_req_i(rstmgr_aon_sw_rst_req),
       .tl_i(pwrmgr_aon_tl_req),
       .tl_o(pwrmgr_aon_tl_rsp),
 
@@ -1708,6 +1710,7 @@ module top_earlgrey #(
       .ndmreset_req_i(rv_dm_ndmreset_req),
       .alert_dump_i(alert_handler_crashdump),
       .cpu_dump_i(rv_core_ibex_crash_dump),
+      .sw_rst_req_o(rstmgr_aon_sw_rst_req),
       .tl_i(rstmgr_aon_tl_req),
       .tl_o(rstmgr_aon_tl_rsp),
       .scanmode_i,

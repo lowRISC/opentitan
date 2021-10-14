@@ -82,7 +82,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.rstmgr_vif.pwr_i.rst_sys_req = {rstmgr_pkg::PowerDomains{rst_sys_req}};
   endfunction
 
-  function void set_rstreqs(logic [pwrmgr_pkg::TotalResetWidth:0] rstreqs);
+  function void set_rstreqs(logic [pwrmgr_pkg::HwResetWidth:0] rstreqs);
     cfg.rstmgr_vif.pwr_i.rstreqs = rstreqs;
   endfunction
 

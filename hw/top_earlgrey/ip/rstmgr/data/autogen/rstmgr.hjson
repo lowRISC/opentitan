@@ -122,10 +122,38 @@
       package: "ibex_pkg",
     },
 
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "sw_rst_req",
+      act:     "req",
+      package: "prim_mubi_pkg",
+    },
+
     // Exported resets
   ],
 
   registers: [
+
+    { name: "RESET_REQ",
+      desc: '''
+        Software requested system reset.
+      ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "3:0",
+          mubi: true
+          name: "VAL",
+          desc: '''
+            When set to kMultiBitBool4True, a reset to power manager is requested.
+            Upon completion of reset, this bit is automatically cleared by hardware.
+          '''
+          resval: false
+        },
+      ],
+      tags: [// This register will cause a system reset, directed test only
+        "excl:CsrAllTests:CsrExclWrite"]
+    },
 
     { name: "RESET_INFO",
       desc: '''
@@ -159,8 +187,17 @@
           resval: "0"
         },
 
+        { bits: "3",
+          hwaccess: "hrw",
+          name: "SW_RESET",
+          desc: '''
+            Indicates when a device has reset due to !!RESET_REQ.
+            '''
+          resval: "0"
+        },
+
         // reset requests include escalation reset + peripheral requests
-        { bits: "6:3",
+        { bits: "7:4",
           hwaccess: "hrw",
           name: "HW_REQ",
           desc: '''
