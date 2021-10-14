@@ -87,6 +87,10 @@ def main():
                         choices=['sv', 'c', 'rust'],
                         default='sv',
                         help='Choose the language of the generated enum.')
+    parser.add_argument('--avoid-zero',
+                        action='store_true',
+                        help=('Also enforce a minimum hamming '
+                              'distance from the zero word.'))
 
     args = parser.parse_args()
 
@@ -144,14 +148,17 @@ def main():
     num_draws = 0
     num_restarts = 0
     rnd = random.getrandbits(args.n)
-    encodings = [format(rnd, '0' + str(args.n) + 'b')]
+    encodings = []
+
+    min_popcnt = args.d if args.avoid_zero else 1
+
     while len(encodings) < args.m:
         # if we iterate for too long, start over.
         if num_draws >= MAX_DRAWS:
             num_draws = 0
             num_restarts += 1
             rnd = random.getrandbits(args.n)
-            encodings = [format(rnd, '0' + str(args.n) + 'b')]
+            encodings = []
         # if we restarted for too many times, abort.
         if num_restarts >= MAX_RESTARTS:
             log.error(
@@ -169,7 +176,7 @@ def main():
         cand = format(rnd, '0' + str(args.n) + 'b')
         # disallow all-zero and all-one states
         pop_cnt = cand.count('1')
-        if pop_cnt < args.n and pop_cnt > 0:
+        if pop_cnt < args.n and pop_cnt >= min_popcnt:
             for k in encodings:
                 # disallow candidates that are the complement of other states
                 if int(cand, 2) == ~int(k, 2):
@@ -187,10 +194,11 @@ def main():
         print(SV_INSTRUCTIONS)
         print("// Encoding generated with:\n"
               "// $ ./util/design/sparse-fsm-encode.py -d {} -m {} -n {} \\\n"
-              "//      -s {} --language=sv\n"
+              "//      -s {} --language=sv{}\n"
               "//\n"
               "// Hamming distance histogram:\n"
-              "//".format(args.d, args.m, args.n, args.s))
+              "//".format(args.d, args.m, args.n, args.s,
+                          ' --avoid-zero' if args.avoid_zero else ''))
         for bar in stats['bars']:
             print('// ' + bar)
         print("//\n"
