@@ -13,7 +13,6 @@
   tool:             "jaspergold"
 
   // Default directory structure for the output
-  dut:              "{name}"
   build_dir:        "{scratch_path}/{build_mode}"
   build_log:        "{build_dir}/{sub_flow}.log"
 
