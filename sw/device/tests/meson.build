@@ -687,6 +687,7 @@ sw_tests += {
   }
 }
 
+
 # SRAM Controller scrambled access test.
 sram_ctrl_scrambled_access_test_lib = declare_dependency(
   link_with: static_library(
@@ -934,6 +935,25 @@ hmac_enc_irq_test_lib = declare_dependency(
 sw_tests += {
   'hmac_enc_irq_test': {
     'library': hmac_enc_irq_test_lib,
+  }
+}
+
+# SPI_HOST test
+spi_host_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'spi_host_smoketest_lib',
+    sources: ['spi_host_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_spi_host,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'spi_host_smoketest': {
+    'library': spi_host_smoketest_lib,
   }
 }
 
