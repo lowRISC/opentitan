@@ -404,7 +404,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_${k}_cg (
-    .clk_i(clk_${v.src.name}_root),
+    .clk_i(clk_${v.src.name}_i),
     .en_i(${k}_combined_en),
     .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${k})
@@ -467,7 +467,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_${clk}_cg (
-    .clk_i(clk_${sig.src.name}_root),
+    .clk_i(clk_${sig.src.name}_i),
     .en_i(${clk}_combined_en),
     .test_en_i(${clk}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${clk})

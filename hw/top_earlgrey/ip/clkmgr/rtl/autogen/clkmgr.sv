@@ -748,7 +748,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div4_peri_cg (
-    .clk_i(clk_io_div4_root),
+    .clk_i(clk_io_div4_i),
     .en_i(clk_io_div4_peri_combined_en),
     .test_en_i(clk_io_div4_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div4_peri)
@@ -789,7 +789,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div2_peri_cg (
-    .clk_i(clk_io_div2_root),
+    .clk_i(clk_io_div2_i),
     .en_i(clk_io_div2_peri_combined_en),
     .test_en_i(clk_io_div2_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div2_peri)
@@ -830,7 +830,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_peri_cg (
-    .clk_i(clk_io_root),
+    .clk_i(clk_io_i),
     .en_i(clk_io_peri_combined_en),
     .test_en_i(clk_io_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_peri)
@@ -871,7 +871,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_usb_peri_cg (
-    .clk_i(clk_usb_root),
+    .clk_i(clk_usb_i),
     .en_i(clk_usb_peri_combined_en),
     .test_en_i(clk_usb_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_usb_peri)
@@ -938,7 +938,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_aes_cg (
-    .clk_i(clk_main_root),
+    .clk_i(clk_main_i),
     .en_i(clk_main_aes_combined_en),
     .test_en_i(clk_main_aes_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_aes)
@@ -987,7 +987,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_hmac_cg (
-    .clk_i(clk_main_root),
+    .clk_i(clk_main_i),
     .en_i(clk_main_hmac_combined_en),
     .test_en_i(clk_main_hmac_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_hmac)
@@ -1036,7 +1036,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_kmac_cg (
-    .clk_i(clk_main_root),
+    .clk_i(clk_main_i),
     .en_i(clk_main_kmac_combined_en),
     .test_en_i(clk_main_kmac_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_kmac)
@@ -1085,7 +1085,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_otbn_cg (
-    .clk_i(clk_main_root),
+    .clk_i(clk_main_i),
     .en_i(clk_main_otbn_combined_en),
     .test_en_i(clk_main_otbn_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_otbn)
@@ -1134,7 +1134,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_io_div4_otbn_cg (
-    .clk_i(clk_io_div4_root),
+    .clk_i(clk_io_div4_i),
     .en_i(clk_io_div4_otbn_combined_en),
     .test_en_i(clk_io_div4_otbn_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div4_otbn)
