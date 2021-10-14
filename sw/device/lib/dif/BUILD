@@ -322,6 +322,10 @@ cc_library(
     srcs = [
         "autogen/dif_spi_host_autogen.c",
         "autogen/dif_spi_host_autogen.h",
+        "dif_spi_host.c",
+    ],
+    hdrs = [
+        "dif_spi_host.h",
     ],
     deps = [
         ":base",
@@ -336,6 +340,9 @@ cc_test(
         "autogen/dif_spi_host_autogen.c",
         "autogen/dif_spi_host_autogen.h",
         "autogen/dif_spi_host_autogen_unittest.cc",
+        "dif_spi_host.c",
+        "dif_spi_host.h",
+        "dif_spi_host_unittest.cc",
     ],
     defines = [
         "MOCK_MMIO=1",
@@ -345,6 +352,7 @@ cc_test(
         "//hw/ip/spi_host/data:spi_host_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
+        "//sw/device/lib/base/testing:global_mock",
         "@googletest//:gtest_main",
     ],
 )

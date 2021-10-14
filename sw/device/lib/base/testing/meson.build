@@ -59,6 +59,7 @@ sw_lib_base_testing_mock_mmio = declare_dependency(
     dependencies: [
       sw_vendor_gtest,
       sw_lib_testing_bitfield,
+      sw_lib_testing_memory,
     ],
     native: true,
     c_args: ['-DMOCK_MMIO'],

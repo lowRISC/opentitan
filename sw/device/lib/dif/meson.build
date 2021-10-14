@@ -298,9 +298,11 @@ sw_lib_dif_spi_host = declare_dependency(
     'sw_lib_dif_spi_host',
     sources: [
       hw_ip_spi_host_reg_h,
+      'dif_spi_host.c',
     ],
     dependencies: [
       sw_lib_mmio,
+      sw_lib_mem,
       sw_lib_dif_autogen_spi_host,
     ],
   )
@@ -309,8 +311,10 @@ sw_lib_dif_spi_host = declare_dependency(
 test('dif_spi_host_unittest', executable(
     'dif_spi_host_unittest',
     sources: [
+      'dif_spi_host_unittest.cc',
       'autogen/dif_spi_host_autogen_unittest.cc',
       meson.project_source_root() / 'sw/device/lib/dif/autogen/dif_spi_host_autogen.c',
+      meson.project_source_root() / 'sw/device/lib/dif/dif_spi_host.c',
       hw_ip_spi_host_reg_h,
     ],
     dependencies: [

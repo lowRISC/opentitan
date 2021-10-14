@@ -153,3 +153,12 @@ opentitan_functest(
     name = "uart_smoketest",
     srcs = ["uart_smoketest.c"],
 )
+
+opentitan_functest(
+    name = "spi_host_smoketest",
+    targets = ["cw310"],  # Can only run on CW310 board right now.
+    srcs = ["spi_host_smoketest.c"],
+    deps = [
+        "//sw/device/lib/dif:spi_host",
+    ],
+)

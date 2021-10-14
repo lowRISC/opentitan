@@ -9,14 +9,6 @@
 #include "sw/device/lib/base/memory.h"
 
 /**
- * Computes how many bytes `addr` is ahead of the previous 32-bit word alignment
- * boundary.
- */
-static ptrdiff_t misalignment32_of(uintptr_t addr) {
-  return addr % alignof(uint32_t);
-}
-
-/**
  * Copies a block of memory between MMIO and main memory while ensuring that
  * MMIO accesses are word-aligned.
  *

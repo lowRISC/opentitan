@@ -164,4 +164,10 @@
  */
 #define OT_UNREACHABLE() __builtin_unreachable()
 
+/**
+ * Attribute for weak alias that can be overridden, e.g., Mock overrides in
+ * DIFs.
+ */
+#define OT_ALIAS(name) __attribute__((alias(name)))
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
