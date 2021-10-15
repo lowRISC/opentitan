@@ -305,184 +305,127 @@
   assign cg_en_o.aon_timers = MuBi4False;
 
   ////////////////////////////////////////////////////
+  // Distribute pwrmgr ip_clk_en requests to each family
+  ////////////////////////////////////////////////////
+  // clk_main family
+  logic pwrmgr_main_en;
+  assign pwrmgr_main_en = pwr_i.main_ip_clk_en;
+
+  // clk_io family
+  logic pwrmgr_io_en;
+  logic pwrmgr_io_div2_en;
+  logic pwrmgr_io_div4_en;
+  assign pwrmgr_io_en = pwr_i.io_ip_clk_en;
+  assign pwrmgr_io_div2_en = pwr_i.io_ip_clk_en;
+  assign pwrmgr_io_div4_en = pwr_i.io_ip_clk_en;
+
+  // clk_usb family
+  logic pwrmgr_usb_en;
+  assign pwrmgr_usb_en = pwr_i.usb_ip_clk_en;
+
+
+  ////////////////////////////////////////////////////
   // Root gating
   ////////////////////////////////////////////////////
 
-  logic wait_enable;
-  logic wait_disable;
-  logic en_status_d;
-  logic dis_status_d;
-  logic [1:0] en_status_q;
-  logic [1:0] dis_status_q;
-  logic clk_status;
-  logic clk_io_root;
-  logic clk_io_en;
-  logic clk_io_div2_root;
-  logic clk_io_div2_en;
-  logic clk_io_div4_root;
-  logic clk_io_div4_en;
-  logic clk_main_root;
+  // clk_main family
+  logic [0:0] main_ens;
+
   logic clk_main_en;
-  logic clk_usb_root;
-  logic clk_usb_en;
-
-  lc_tx_t io_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_io_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(io_scanmode)
-  );
-
-  prim_clock_gating_sync u_io_cg (
-    .clk_i(clk_io_i),
-    .rst_ni(rst_io_ni),
-    .test_en_i(io_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
-    .en_o(clk_io_en),
-    .clk_o(clk_io_root)
-  );
-
-  lc_tx_t io_div2_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_io_div2_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(io_div2_scanmode)
-  );
-
-  prim_clock_gating_sync u_io_div2_cg (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(rst_io_div2_ni),
-    .test_en_i(io_div2_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
-    .en_o(clk_io_div2_en),
-    .clk_o(clk_io_div2_root)
-  );
-
-  lc_tx_t io_div4_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_io_div4_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(io_div4_scanmode)
-  );
-
-  prim_clock_gating_sync u_io_div4_cg (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_io_div4_ni),
-    .test_en_i(io_div4_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
-    .en_o(clk_io_div4_en),
-    .clk_o(clk_io_div4_root)
-  );
-
-  lc_tx_t main_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_main_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(main_scanmode)
-  );
-
-  prim_clock_gating_sync u_main_cg (
+  logic clk_main_root;
+  clkmgr_root_ctrl u_main_root_ctrl (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .test_en_i(main_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
+    .scanmode_i,
+    .async_en_i(pwrmgr_main_en),
     .en_o(clk_main_en),
     .clk_o(clk_main_root)
   );
+  assign main_ens[0] = clk_main_en;
 
-  lc_tx_t usb_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_usb_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(usb_scanmode)
+  // create synchronized status
+  clkmgr_clk_status #(
+    .NumClocks(1)
+  ) u_main_status (
+    .clk_i,
+    .rst_ni,
+    .ens_i(main_ens),
+    .status_o(pwr_o.main_status)
   );
 
-  prim_clock_gating_sync u_usb_cg (
+  // clk_io family
+  logic [2:0] io_ens;
+
+  logic clk_io_en;
+  logic clk_io_root;
+  clkmgr_root_ctrl u_io_root_ctrl (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .scanmode_i,
+    .async_en_i(pwrmgr_io_en),
+    .en_o(clk_io_en),
+    .clk_o(clk_io_root)
+  );
+  assign io_ens[0] = clk_io_en;
+
+  logic clk_io_div2_en;
+  logic clk_io_div2_root;
+  clkmgr_root_ctrl u_io_div2_root_ctrl (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_io_div2_ni),
+    .scanmode_i,
+    .async_en_i(pwrmgr_io_div2_en),
+    .en_o(clk_io_div2_en),
+    .clk_o(clk_io_div2_root)
+  );
+  assign io_ens[1] = clk_io_div2_en;
+
+  logic clk_io_div4_en;
+  logic clk_io_div4_root;
+  clkmgr_root_ctrl u_io_div4_root_ctrl (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .scanmode_i,
+    .async_en_i(pwrmgr_io_div4_en),
+    .en_o(clk_io_div4_en),
+    .clk_o(clk_io_div4_root)
+  );
+  assign io_ens[2] = clk_io_div4_en;
+
+  // create synchronized status
+  clkmgr_clk_status #(
+    .NumClocks(3)
+  ) u_io_status (
+    .clk_i,
+    .rst_ni,
+    .ens_i(io_ens),
+    .status_o(pwr_o.io_status)
+  );
+
+  // clk_usb family
+  logic [0:0] usb_ens;
+
+  logic clk_usb_en;
+  logic clk_usb_root;
+  clkmgr_root_ctrl u_usb_root_ctrl (
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
-    .test_en_i(usb_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
+    .scanmode_i,
+    .async_en_i(pwrmgr_usb_en),
     .en_o(clk_usb_en),
     .clk_o(clk_usb_root)
   );
+  assign usb_ens[0] = clk_usb_en;
 
-  // an async AND of all the synchronized enables
-  // return feedback to pwrmgr only when all clocks are enabled
-  assign wait_enable =
-    clk_io_en &
-    clk_io_div2_en &
-    clk_io_div4_en &
-    clk_main_en &
-    clk_usb_en;
-
-  // an async OR of all the synchronized enables
-  // return feedback to pwrmgr only when all clocks are disabled
-  assign wait_disable =
-    clk_io_en |
-    clk_io_div2_en |
-    clk_io_div4_en |
-    clk_main_en |
-    clk_usb_en;
-
-  // Sync clkmgr domain for feedback to pwrmgr.
-  // Since the signal is combo / converged on the other side, de-bounce
-  // the signal prior to output
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_roots_en_status_sync (
+  // create synchronized status
+  clkmgr_clk_status #(
+    .NumClocks(1)
+  ) u_usb_status (
     .clk_i,
     .rst_ni,
-    .d_i(wait_enable),
-    .q_o(en_status_d)
+    .ens_i(usb_ens),
+    .status_o(pwr_o.usb_status)
   );
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_roots_or_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(wait_disable),
-    .q_o(dis_status_d)
-  );
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      en_status_q <= '0;
-      dis_status_q <= '0;
-      clk_status <= '0;
-    end else begin
-      en_status_q <= {en_status_q[0], en_status_d};
-      dis_status_q <= {dis_status_q[0], dis_status_d};
-
-      if (&en_status_q) begin
-        clk_status <= 1'b1;
-      end else if (|dis_status_q == '0) begin
-        clk_status <= 1'b0;
-      end
-    end
-  end
-
-  assign pwr_o.clk_status = clk_status;
 
   ////////////////////////////////////////////////////
   // Clock Measurement for the roots

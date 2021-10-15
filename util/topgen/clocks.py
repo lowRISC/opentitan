@@ -156,6 +156,13 @@ class TypedClocks(NamedTuple):
     # don't bother gating the upstream source).
     rg_srcs: List[str]
 
+    # A diction of the clock families.
+    # The key for each is root clock, while the list contains all the clocks
+    # of the family, inclusive of itself.
+    # For example
+    # 'io': ['io', 'io_div2', 'io_div4']
+    parent_child_clks: Dict[str, List]
+
     def all_clocks(self) -> Dict[str, ClockSignal]:
         ret = {}
         ret.update(self.ft_clks)
@@ -270,6 +277,7 @@ class Clocks:
         sw_clks = {}
         hint_clks = {}
         rg_srcs_set = set()
+        parent_child_clks = {}
 
         for grp in self.groups.values():
             if grp.name == 'powerup':
@@ -308,12 +316,22 @@ class Clocks:
         # Define a canonical ordering for rg_srcs
         rg_srcs = list(sorted(rg_srcs_set))
 
+        # Define a list for each "family" of clocks
+        for name, clk in self.srcs.items():
+            if not clk.aon:
+                parent_child_clks[name] = [name];
+
+        for name, clk in self.derived_srcs.items():
+            parent_child_clks[clk.src.name].append(name)
+
+
         return TypedClocks(ast_clks=ast_clks,
                            ft_clks=ft_clks,
                            rg_clks=rg_clks,
                            sw_clks=sw_clks,
                            hint_clks=hint_clks,
-                           rg_srcs=rg_srcs)
+                           rg_srcs=rg_srcs,
+                           parent_child_clks=parent_child_clks)
 
     def make_clock_to_group(self) -> Dict[str, Group]:
         '''Return a map from clock name to the group containing the clock'''
