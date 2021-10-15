@@ -63,6 +63,17 @@ void sec_mmio_init(sec_mmio_shutdown_handler cb) {
   sec_mmio_ctx.expected_write_count = 0;
   for (size_t i = 0; i < ARRAYSIZE(sec_mmio_ctx.addrs); ++i) {
     sec_mmio_ctx.addrs[i] = UINT32_MAX;
+    sec_mmio_ctx.values[i] = UINT32_MAX;
+  }
+}
+
+void sec_mmio_next_stage_init(sec_mmio_shutdown_handler cb) {
+  sec_mmio_shutdown_cb = cb;
+  sec_mmio_ctx.check_count = 0;
+  for (size_t i = sec_mmio_ctx.last_index; i < ARRAYSIZE(sec_mmio_ctx.addrs);
+       ++i) {
+    sec_mmio_ctx.addrs[i] = UINT32_MAX;
+    sec_mmio_ctx.values[i] = UINT32_MAX;
   }
 }
 
