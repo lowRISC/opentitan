@@ -31,4 +31,5 @@ otbn_build_depend_files = [
 ]
 
 subdir('ecdsa_p256')
+subdir('rsa_3072')
 subdir('tests')
