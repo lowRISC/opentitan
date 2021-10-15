@@ -11,7 +11,7 @@ use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::transport::Capability;
+use opentitanlib::transport::cw310;
 
 /// Read data from a SPI EEPROM.
 #[derive(Debug, StructOpt)]
@@ -26,13 +26,8 @@ impl CommandDispatch for LoadBitstream {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
-        transport
-            .capabilities()
-            .request(Capability::FPGA_PROGRAM)
-            .ok()?;
-
-        let bitstream = fs::read(&self.filename)?;
-        transport.fpga_program(&bitstream)?;
-        Ok(None)
+        transport.dispatch(&mut cw310::FpgaProgram {
+            bitstream: fs::read(&self.filename)?,
+        })
     }
 }

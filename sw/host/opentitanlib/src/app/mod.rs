@@ -11,6 +11,8 @@ use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
 use anyhow::Result;
+use erased_serde::Serialize;
+use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -64,9 +66,9 @@ impl TransportWrapper {
             .gpio_pin(Self::map_name(&self.pin_map, name).as_str())
     }
 
-    /// Programs a bitstream into an FPGA.
-    pub fn fpga_program(&self, bitstream: &[u8]) -> Result<()> {
-        self.transport.borrow().fpga_program(bitstream)
+    /// Invoke non-standard functionality of some Transport implementations.
+    pub fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Serialize>>> {
+        self.transport.borrow().dispatch(action)
     }
 
     /// Given an pin/uart/spi port name, if the name is a known alias,

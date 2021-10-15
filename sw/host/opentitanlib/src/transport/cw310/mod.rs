@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Result};
+use erased_serde::Serialize;
+use std::any::Any;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -70,7 +72,7 @@ impl CW310 {
 impl Transport for CW310 {
     fn capabilities(&self) -> Capabilities {
         Capabilities::new(
-            Capability::SPI | Capability::GPIO | Capability::UART | Capability::FPGA_PROGRAM,
+            Capability::SPI | Capability::GPIO | Capability::UART,
         )
     }
 
@@ -116,10 +118,20 @@ impl Transport for CW310 {
         Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
 
-    fn fpga_program(&self, bitstream: &[u8]) -> Result<()> {
-        let usb = self.device.borrow();
-        usb.spi1_enable(false)?;
-        usb.pin_set_state(CW310::PIN_JTAG, true)?;
-        usb.fpga_program(bitstream)
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Serialize>>> {
+        if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
+            let usb = self.device.borrow();
+            usb.spi1_enable(false)?;
+            usb.pin_set_state(CW310::PIN_JTAG, true)?;
+            usb.fpga_program(&fpga_program.bitstream)?;
+            Ok(None)
+        } else {
+            Err(TransportError::UnsupportedOperation.into())
+        }
     }
+}
+
+/// Command for Transport::dispatch().
+pub struct FpgaProgram {
+    pub bitstream: Vec<u8>,
 }
