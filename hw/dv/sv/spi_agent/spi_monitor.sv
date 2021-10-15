@@ -9,8 +9,8 @@ class spi_monitor extends dv_base_monitor#(
   );
   `uvm_component_utils(spi_monitor)
 
-  spi_item host_item;
-  spi_item device_item;
+  spi_item host_item, host_clone;
+  spi_item device_item, device_clone;
 
   // Analysis port for the collected transfer.
   uvm_analysis_port #(spi_item) host_analysis_port;
@@ -35,6 +35,8 @@ class spi_monitor extends dv_base_monitor#(
 
     forever begin
       @(negedge cfg.vif.csb);
+      // indicate that this the first byte in a spi transaction
+      host_item.first_byte = 1;
       collect_curr_trans();
     end
   endtask : collect_trans
@@ -79,11 +81,17 @@ class spi_monitor extends dv_base_monitor#(
               if (host_item.data.size == cfg.num_bytes_per_trans_in_mon &&
                   device_item.data.size == cfg.num_bytes_per_trans_in_mon) begin
                 `uvm_info(`gfn, $sformatf("spi_monitor: host packet:\n%0s", host_item.sprint()),
-                          UVM_HIGH)
+                          UVM_DEBUG)
                 `uvm_info(`gfn, $sformatf("spi_monitor: device packet:\n%0s", device_item.sprint()),
-                          UVM_HIGH)
-                host_analysis_port.write(host_item);
-                device_analysis_port.write(device_item);
+                          UVM_DEBUG)
+                `downcast(host_clone, host_item.clone());
+                `downcast(device_clone, device_item.clone());
+                host_analysis_port.write(host_clone);
+                device_analysis_port.write(device_clone);
+                // write to fifo for re-active env
+                req_analysis_port.write(host_clone);
+                rsp_analysis_port.write(device_clone);
+                // clean items
                 host_item   = spi_item::type_id::create("host_item", this);
                 device_item = spi_item::type_id::create("device_item", this);
               end
@@ -98,7 +106,7 @@ class spi_monitor extends dv_base_monitor#(
   virtual task monitor_ready_to_end();
     forever begin
       @(cfg.vif.csb);
-      ok_to_end = !cfg.vif.csb;
+      ok_to_end = cfg.vif.csb;
     end
   endtask : monitor_ready_to_end
 
