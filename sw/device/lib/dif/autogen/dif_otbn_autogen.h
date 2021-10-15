@@ -40,7 +40,7 @@ typedef struct dif_otbn {
  */
 typedef enum dif_otbn_irq {
   /**
-   * OTBN has completed the operation
+   * OTBN has completed the operation.
    */
   kDifOtbnIrqDone = 0,
 } dif_otbn_irq_t;
