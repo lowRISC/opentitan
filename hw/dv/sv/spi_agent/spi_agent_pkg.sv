@@ -12,12 +12,15 @@ package spi_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // local types
+  // parameter
+  parameter uint MAX_CS = 4;      // set to the maximum valid value
+
   // transaction type
   typedef enum {
+    // device dut
     SpiTransNormal,    // normal SPI trans
-    SpiTransSckNoCsb,  // bad SPI trans with clk but no sb
-    SpiTransCsbNoScb   // bad SPI trans with csb but no clk
+    SpiTransSckNoCsb,  // bad SPI trans with sck but no csb
+    SpiTransCsbNoSck   // bad SPI trans with csb but no sck
   } spi_trans_type_e;
 
   // sck edge type - used by driver and monitor
@@ -29,35 +32,22 @@ package spi_agent_pkg;
   } sck_edge_type_e;
 
   // spi mode
-  typedef enum {
-    Single = 0,  // Full duplex, tx: sio[0], rx: sio[1]
-    Dual   = 1,  // Half duplex, tx and rx: sio[1:0]
-    Quad   = 2   // Half duplex, tx and rx: sio[3:0]
+  typedef enum bit [1:0] {
+    Standard = 2'b00,  // Full duplex, tx: sio[0], rx: sio[1]
+    Dual     = 2'b01,  // Half duplex, tx and rx: sio[1:0]
+    Quad     = 2'b10,  // Half duplex, tx and rx: sio[3:0]
+    RsvdSpd  = 2'b11   // RFU
   } spi_mode_e;
 
-  // spi config
-  typedef struct {
-    // CONTROL register field
-    rand bit [8:0]  tx_watermark;
-    rand bit [6:0]  rx_watermark;
-    // CONFIGOPTS register field
-    rand bit        cpol;
-    rand bit        cpha;
-    rand bit        fullcyc;
-    rand bit        csaat;
-    rand bit [3:0]  csnlead;
-    rand bit [3:0]  csntrail;
-    rand bit [3:0]  csnidle;
-    rand bit [15:0] clkdiv;
-    // COMMAND register field
-    rand bit        fulldplx;
-    rand bit        highz;
-    rand bit        speed;
-    rand bit [3:0]  tx1_cnt;
-    rand bit [8:0]  txn_cnt;
-    rand bit [8:0]  rx_cnt;
-    rand bit [3:0]  dummy_cycles;
-  } spi_regs_t;
+  typedef enum bit [7:0] {
+    ReadStd    = 8'b11001100,
+    WriteStd   = 8'b11111100,
+    ReadDual   = 8'b00000011,
+    WriteDual  = 8'b00001100,
+    ReadQuad   = 8'b00001111,
+    WriteQuad  = 8'b11110000,
+    CmdOnly    = 8'b10000001
+  } spi_cmd_e;
 
   // forward declare classes to allow typedefs below
   typedef class spi_item;

@@ -125,8 +125,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
       cfg.m_spi_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps * core_spi_freq_ratio;
     end
     // update host agent
-    cfg.m_spi_agent_cfg.sck_polarity = sck_polarity;
-    cfg.m_spi_agent_cfg.sck_phase = sck_phase;
+    cfg.m_spi_agent_cfg.sck_polarity[0] = sck_polarity;
+    cfg.m_spi_agent_cfg.sck_phase[0] = sck_phase;
     cfg.m_spi_agent_cfg.host_bit_dir = host_bit_dir;
     cfg.m_spi_agent_cfg.device_bit_dir = device_bit_dir;
     cfg.m_spi_agent_cfg.csb_sel = 0;
