@@ -524,6 +524,21 @@ module otbn_core
 
   // Asserts =======================================================================================
 
-  `ASSERT(edn_req_stable, edn_rnd_req_o & ~edn_rnd_ack_i |=> edn_rnd_req_o)
+  // All outputs should be known.
   `ASSERT_KNOWN(DoneOKnown_A, done_o)
+  `ASSERT_KNOWN(ImemReqOKnown_A, imem_req_o)
+  `ASSERT_KNOWN(ImemAddrOKnown_A, imem_addr_o)
+  `ASSERT_KNOWN(ImemWdataOKnown_A, imem_wdata_o)
+  `ASSERT_KNOWN(DmemReqOKnown_A, dmem_req_o)
+  `ASSERT_KNOWN(DmemWriteOKnown_A, dmem_write_o)
+  `ASSERT_KNOWN(DmemAddrOKnown_A, dmem_addr_o)
+  `ASSERT_KNOWN(DmemWdataOKnown_A, dmem_wdata_o)
+  `ASSERT_KNOWN(DmemRmaskOKnown_A, dmem_rmask_o)
+  `ASSERT_KNOWN(EdnRndReqOKnown_A, edn_rnd_req_o)
+  `ASSERT_KNOWN(EdnUrndReqOKnown_A, edn_urnd_req_o)
+  `ASSERT_KNOWN(InsnCntOKnown_A, insn_cnt_o)
+
+  // Keep the EDN requests active until they are acknowledged.
+  `ASSERT(EdnRndReqStable_A, edn_rnd_req_o & ~edn_rnd_ack_i |=> edn_rnd_req_o)
+  `ASSERT(EdnUrndReqStable_A, edn_urnd_req_o & ~edn_urnd_ack_i |=> edn_urnd_req_o)
 endmodule
