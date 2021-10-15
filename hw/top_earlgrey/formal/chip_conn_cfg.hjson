@@ -9,7 +9,12 @@
 
   fusesoc_core: lowrisc:systems:chip_earlgrey_asic:0.1
 
-  csv_path: "{proj_root}/hw/top_earlgrey/formal/conn_csvs/top_earlgrey_conn.csv"
+  conn_csvs_dir: "{proj_root}/hw/top_earlgrey/formal/conn_csvs"
+  conn_csvs: ["{conn_csvs_dir}/clkmgr_idle.csv",
+              "{conn_csvs_dir}/clkmgr_peri.csv",
+              "{conn_csvs_dir}/clkmgr_trans.csv",
+              "{conn_csvs_dir}/pwrmgr_rstmgr.csv",
+              "{conn_csvs_dir}/ast_mem_cfg.csv"]
 
   // TODO: reduce run time and turn on coverage
   cov: false

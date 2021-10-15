@@ -2,17 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Run these checks with
-#  cd hw/top_earlgrey/formal
-#  ../../../util/dvsim/dvsim.py chip_conn_cfg.hjson
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
 
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
-# clkmgr idle connectivity
-CONNECTION,CLKMGR_IDLE0,top_earlgrey.u_clkmgr_aon,idle_i[0],top_earlgrey.u_aes,idle_o
-CONNECTION,CLKMGR_IDLE1,top_earlgrey.u_clkmgr_aon,idle_i[1],top_earlgrey.u_hmac,idle_o
-CONNECTION,CLKMGR_IDLE2,top_earlgrey.u_clkmgr_aon,idle_i[2],top_earlgrey.u_kmac,idle_o
-CONNECTION,CLKMGR_IDLE3,top_earlgrey.u_clkmgr_aon,idle_i[3],top_earlgrey.u_otbn,idle_o
 # clkmgr peri clock connectivity
 CONNECTION,CLKMGR_PERI_CLK0_GPIO,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_gpio,clk_i
 CONNECTION,CLKMGR_PERI_CLK0_SPI_DEVICE,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri,top_earlgrey.u_spi_device,clk_i
@@ -32,16 +26,3 @@ CONNECTION,CLKMGR_PERI_CLK1_SPI_DEVICE,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io
 CONNECTION,CLKMGR_PERI_CLK1_SPI_HOST0,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_peri,top_earlgrey.u_spi_host0,clk_core_i
 CONNECTION,CLKMGR_PERI_CLK1_SPI_HOST1,top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div2_peri,top_earlgrey.u_spi_host1,clk_core_i
 CONNECTION,CLKMGR_PERI_CLK2_USBDEV,top_earlgrey.u_clkmgr_aon,clocks_o.clk_usb_peri,top_earlgrey.u_usbdev,clk_usb_48mhz_i
-# clkmgr trans clock connectivity
-CONNECTION,CLKMGR_AES,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_aes,top_earlgrey.u_aes,clk_i
-CONNECTION,CLKMGR_AES_EDN,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_aes,top_earlgrey.u_aes,clk_edn_i
-CONNECTION,CLKMGR_HMAC,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_hmac,top_earlgrey.u_hmac,clk_i
-CONNECTION,CLKMGR_KMAC,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_kmac,top_earlgrey.u_kmac,clk_i
-CONNECTION,CLKMGR_KMAC_EDN,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_kmac,top_earlgrey.u_kmac,clk_edn_i
-CONNECTION,CLKMGR_OTBN,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_otbn,top_earlgrey.u_otbn,clk_i
-CONNECTION,CLKMGR_OTBN_EDN,top_earlgrey.u_clkmgr_aon,clocks_o.clk_main_otbn,top_earlgrey.u_otbn,clk_edn_i
-# pwrmgr rstmgr connections
-CONNECTION,CLKMGR_RST_LC_REQ,top_earlgrey.u_pwrmgr_aon,pwr_rst_o.rst_lc_req,top_earlgrey.u_rstmgr_aon,pwr_i.rst_lc_req
-CONNECTION,CLKMGR_RST_SYS_REQ,top_earlgrey.u_pwrmgr_aon,pwr_rst_o.rst_sys_req,top_earlgrey.u_rstmgr_aon,pwr_i.rst_sys_req
-CONNECTION,CLKMGR_RST_LC_SRC_N,top_earlgrey.u_pwrmgr_aon,pwr_rst_i.rst_lc_src_n,top_earlgrey.u_rstmgr_aon,pwr_o.rst_lc_src_n
-CONNECTION,CLKMGR_RST_SYS_SRC_N,top_earlgrey.u_pwrmgr_aon,pwr_rst_i.rst_sys_src_n,top_earlgrey.u_rstmgr_aon,pwr_o.rst_sys_src_n
