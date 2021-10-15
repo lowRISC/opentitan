@@ -3,6 +3,21 @@
 # SPDX-License-Identifier: Apache-2.0
 subdir('base')
 subdir('drivers')
+
+# Otbn utilities.
+sw_silicon_creator_lib_otbn_util = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_otbn_util',
+    sources: [
+      'otbn_util.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_driver_otbn,
+    ],
+  ),
+)
+
+# Must be declared after otbn_util, which is used in the crypto library.
 subdir('crypto')
 
 # Mask ROM fake dependencies.  These are temporary dependencies until we
@@ -36,19 +51,6 @@ sw_silicon_creator_lib_manifest = declare_dependency(
     'sw_silicon_creator_lib_manifest',
     sources: [
       'manifest.c',
-    ],
-  ),
-)
-
-# Otbn utilities.
-sw_silicon_creator_lib_otbn_util = declare_dependency(
-  link_with: static_library(
-    'sw_silicon_creator_lib_otbn_util',
-    sources: [
-      'otbn_util.c',
-    ],
-    dependencies: [
-      sw_silicon_creator_lib_driver_otbn,
     ],
   ),
 )
