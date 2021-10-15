@@ -366,8 +366,10 @@ int ISSWrapper::step(bool gen_trace) {
 
   // Try to read STATUS, which is written when execution ends. Execution has
   // finished if status_ is either 0 (IDLE) or 0xff (LOCKED)
+  bool was_stopped = mirrored_.stopped();
   read_ext_reg("STATUS", lines, &mirrored_.status, false);
-  bool done = (mirrored_.status == 0) || (mirrored_.status == 0xff);
+  bool is_stopped = mirrored_.stopped();
+  bool done = is_stopped && !was_stopped;
 
   // Always try to read INSN_CNT
   read_ext_reg("INSN_CNT", lines, &mirrored_.insn_cnt, false);
