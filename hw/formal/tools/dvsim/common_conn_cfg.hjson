@@ -4,6 +4,7 @@
 {
   sub_flow:    conn
   import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_formal_cfg.hjson"]
+  dut:         "{name}"
 
   // Vars that need to exported to the env
   exports: [
