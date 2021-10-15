@@ -178,7 +178,6 @@ module otbn_reg_top (
   logic ctrl_we;
   logic ctrl_qs;
   logic ctrl_wd;
-  logic status_re;
   logic [7:0] status_qs;
   logic err_bits_bad_data_addr_qs;
   logic err_bits_bad_insn_addr_qs;
@@ -330,17 +329,28 @@ module otbn_reg_top (
   );
 
 
-  // R[status]: V(True)
-  prim_subreg_ext #(
-    .DW    (8)
+  // R[status]: V(False)
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (8'h0)
   ) u_status (
-    .re     (status_re),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (1'b0),
     .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.status.de),
     .d      (hw2reg.status.d),
-    .qre    (),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_qs)
   );
 
@@ -892,7 +902,6 @@ module otbn_reg_top (
   assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
 
   assign ctrl_wd = reg_wdata[0];
-  assign status_re = addr_hit[6] & reg_re & !reg_error;
   assign insn_cnt_re = addr_hit[9] & reg_re & !reg_error;
 
   // Read data return

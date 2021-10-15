@@ -200,7 +200,7 @@ module tb;
 
     .invalidate_imem_i (model_if.invalidate_imem),
 
-    .done_r_o     (),
+    .done_rr_o    (),
 
     .err_o        (model_if.err)
   );
@@ -235,7 +235,7 @@ module tb;
   // theory, we could see mismatches by probing the STATUS register over the TL bus, but we have to
   // be lucky with exactly when the reads happen if we want to see off-by-one cycle errors. This
   // assertion gives a continuous check.
-  `ASSERT(MatchingStatus_A, dut.hw2reg.status.d == model_if.status, clk, !rst_n)
+  `ASSERT(MatchingStatus_A, dut.u_reg.u_status.q == model_if.status, clk, !rst_n)
 
   initial begin
     mem_bkdr_util imem_util, dmem_util;
