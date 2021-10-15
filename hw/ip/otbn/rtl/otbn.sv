@@ -942,4 +942,12 @@ module otbn
   `ASSERT_KNOWN(EdnRndOKnown_A, edn_rnd_o)
   `ASSERT_KNOWN(EdnUrndOKnown_A, edn_urnd_o)
 
+  // In locked state, the readable registers INSN_CNT, IMEM, and DMEM are expected to always read 0
+  // when accessed from the bus.
+  `ASSERT(LockedInsnCntReadsZero_A, (hw2reg.status.d == StatusLocked) |-> insn_cnt == 'd0)
+  `ASSERT(NonIdleImemReadsZero_A,
+      (hw2reg.status.d != StatusIdle) & imem_rvalid_bus |-> imem_rdata_bus == 'd0)
+  `ASSERT(NonIdleDmemReadsZero_A,
+      (hw2reg.status.d != StatusIdle) & dmem_rvalid_bus |-> dmem_rdata_bus == 'd0)
+
 endmodule
