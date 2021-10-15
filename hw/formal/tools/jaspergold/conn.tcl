@@ -11,6 +11,13 @@ if {$env(COV) == 1} {
   check_cov -init -model {branch statement functional} \
   -enable_prove_based_proof_core
 }
+
+set conn_csvs [regexp -all -inline {\S+} $env(CONN_CSVS)]
+if {$conn_csvs eq ""} {
+  puts "ERROR: CONN_CSVS environment variable is empty."
+  quit
+}
+
 #-------------------------------------------------------------------------
 # read design
 #-------------------------------------------------------------------------
@@ -20,12 +27,14 @@ if {$env(COV) == 1} {
 analyze -sv09     \
   +define+FPV_ON  \
   -f [glob *.scr] \
-  -bbox_m ast     \
-  -bbox_m ast_dft
+  -bbox_m aon_osc \
+  -bbox_m io_osc  \
+  -bbox_m sys_osc \
+  -bbox_m usb_osc
 
 # Black-box assistant will blackbox the modules which are not needed by looking at
 # the connectivity csv.
-blackbox_assistant -config -connectivity_Map $env(CSV_PATH)
+blackbox_assistant -config -connectivity_map $conn_csvs
 
 # This is jg work-around when black-boxing with inout ports
 set_port_direction_handling coercion_weak_bbox
@@ -48,13 +57,15 @@ if {$env(DUT_TOP) == "chip_earlgrey_asic"} {
 # configure proofgrid
 #-------------------------------------------------------------------------
 set_proofgrid_mode local
-set_proofgrid_per_engine_max_local_jobs 2
+set_proofgrid_per_engine_max_local_jobs 16
 
 # Uncomment below 2 lines when using LSF:
 # set_proofgrid_mode lsf
 # set_proofgrid_per_engine_max_jobs 16
 
-check_conn -load $env(CSV_PATH)
+foreach i $conn_csvs {
+  check_conn -load $i
+}
 
 #-------------------------------------------------------------------------
 # prove all assertions & report

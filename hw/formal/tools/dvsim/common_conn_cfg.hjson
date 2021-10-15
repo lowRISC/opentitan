@@ -8,7 +8,7 @@
 
   // Vars that need to exported to the env
   exports: [
-    {CSV_PATH: "{csv_path}"}
+    {CONN_CSVS: "'{conn_csvs}'"}
   ]
 
   overrides: [
