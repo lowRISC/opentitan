@@ -98,31 +98,10 @@ different hardware parameters.
 
 At the moment, we have a good approach to being able to address separate
 hardware instances instantiated at separate addresses, as long as they have the
-same hardware parameters (see the `base_addr` member in `dif_<ip>_params_t`).
-Most other parameters come from the specific IP on a case-by-case basis.
-
-As much as possible, we would like to hide these parameters underneath the
-interface of the DIF, but this is not always possible, especially where
-particular functionality requires the DIF caller to allocate memory. This should
-be done even if the current DIF implementation does not support changing
-parameters, so we can add this parameterization later.
-
-In order to support exposing these parameters to callers, DIFs should provide
-query functions which take a `dif_<ip>_params_t`, rather than `#define`s or
-global variable definitions. These functions do not have to return
-`dif_<ip>_result_t` if they do not error.
-
-An example of such a query function is provided in the template, called
-`dif_<ip>_get_size`, but we are not placing restrictions on the naming of these
-functions.
-
-One implication of this decision is that we will not always be able to provide
-struct definitions containing fixed-size buffers, which we have relied upon in
-the past. These structs should instead use a pointer and a size member to safely
-store the buffer outside the struct and use it without overflows. From the DIF's
-perspective, these buffers are dynamically allocated, even if we get static
-information about their size from other information (e.g. topgen).
-
+same hardware parameters (see the `base_addr` member in `dif_<ip>_t`).
+Most other parameters come from the specific IP on a case-by-case basis, and are
+extracted from the IP's auto-generated register header file, e.g.,
+`<ip>_regs.h`.
 
 #### Base Types
 
@@ -135,10 +114,6 @@ otherwise specified).
   This type is usually passed by `const` pointer, except when it is
   being initialized (see `dif_<ip>_init()` below).
   This type is always passed by value.
-* `dif_<ip>_params_t` is a *manually-defined* struct representing hardware
-  instantiation parameters that a DIF library cannot know in advance. This type
-  is optional, and may not be defined for IPs that do not have hardware
-  instantiation parameters outside their instantiation specific base address.
 * `dif_<ip>_config_t` is a *manually-defined* struct representing runtime
   configuration parameters. It is only present when `dif_<ip>_configure()` is
   defined. This type is always passed by value.
@@ -172,11 +147,6 @@ handling the lifetime of a handle.
   initializes `handle` in an implementation-defined way, but does not perform any
   hardware operations. `handle` may point to uninitialized data on function entry,
   but if the function returns `Ok`, then `handle` must point to initialized data.
-
-  Additionally, this function may take an additional argument, of type
-  `dif_<ip>_params_t`, for parameter validation. This argument will only be
-  provided for peripherals that have additional hardware instantiation
-  parameters besides a base address (e.g., the alert handler).
 
 * `result_t dif_<ip>_configure(const dif_<ip>_t *handle, dif_<ip>_config_t
   config);` configures the hardware managed by `handle` with runtime parameters
