@@ -132,6 +132,21 @@ typedef void (*sec_mmio_shutdown_handler)(rom_error_t);
 void sec_mmio_init(sec_mmio_shutdown_handler cb);
 
 /**
+ * Executes sec_mmio next boot stage initialization.
+ *
+ * Registers the `cb` callback handler, and performs the following operations to
+ * the internal `sec_mmio_ctx_t` context:
+ *
+ * - Clear the check count. This allows the caller to reset the
+ *   `sec_mmio_check_counters()` expected count argument.
+ * - Reset all expected address and values in the expectations table starting at
+ *   the last_index.
+ *
+ * @param cb Shutdown module callback handler.
+ */
+void sec_mmio_next_stage_init(sec_mmio_shutdown_handler cb);
+
+/**
  * Reads an aligned uint32_t from the MMIO region `addr`.
  *
  * This function implements a read-read-comparison operation. The first read
