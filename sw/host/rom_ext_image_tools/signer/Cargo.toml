@@ -27,6 +27,7 @@ debug = true
 anyhow = "1.0.40"
 object = "0.25.3"
 rom_ext_image = { path = "image" }
+thiserror = "1.0.24"
 zerocopy = "0.5.0"
 
 [dependencies.mundane]

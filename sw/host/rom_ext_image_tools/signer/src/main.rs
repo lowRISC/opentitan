@@ -105,12 +105,17 @@ fn update_image_manifest(
             addr.checked_sub(manifest_addr).context("Overflow")?
         },
         code_end: {
-            let text = elf
-                .section_by_name(".text")
-                .context("Could not find the `.text` section.")?;
+            // TODO: Consider requiring all binaries signed by this tool to have a .shutdown section.
+            let section = elf
+                .section_by_name(".shutdown")
+                .or(elf.section_by_name(".text"))
+                .context(
+                    "Could not find the `.shutdown` or `.text` section.",
+                )?;
             let addr = u32::try_from(
-                text.address()
-                    .checked_add(text.size())
+                section
+                    .address()
+                    .checked_add(section.size())
                     .context("Overflow")?,
             )?;
             addr.checked_sub(manifest_addr).context("Overflow")?
@@ -171,7 +176,8 @@ fn update_image_manifest(
         "`entry_point` is outside the code region."
     );
     ensure!(
-        (manifest::MANIFEST_LENGTH_FIELD_MIN..=manifest::MANIFEST_LENGTH_FIELD_MAX)
+        (manifest::MANIFEST_LENGTH_FIELD_MIN
+            ..=manifest::MANIFEST_LENGTH_FIELD_MAX)
             .contains(&image.manifest.length),
         "`length` is outside the allowed range."
     );
