@@ -50,7 +50,7 @@ module otbn_start_stop_control
     ispr_init_o       = 1'b0;
     state_reset_o     = 1'b0;
 
-    unique case(state_q)
+    unique case (state_q)
       OtbnStartStopStateHalt: begin
         if (start_i) begin
           urnd_reseed_req_o = 1'b1;
