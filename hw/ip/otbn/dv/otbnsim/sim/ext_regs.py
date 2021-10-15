@@ -189,7 +189,7 @@ class OTBNExtRegs:
     intervening commit.
 
     '''
-    double_flopped_regs = []
+    double_flopped_regs = ['STATUS']
 
     def __init__(self) -> None:
         _, reg_block = load_registers()
@@ -214,7 +214,7 @@ class OTBNExtRegs:
         # simulation to help track whether RIG-generated binaries finished
         # where they expected to finish.
         self.regs['STOP_PC'] = RGReg([RGField('STOP_PC', 32, 0, 0, 'ro')],
-                                     False)
+                                     True)
 
     def _get_reg(self, reg_name: str) -> RGReg:
         reg = self.regs.get(reg_name)

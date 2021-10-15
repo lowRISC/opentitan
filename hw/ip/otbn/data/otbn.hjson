@@ -228,7 +228,6 @@
       desc: "Status Register",
       swaccess: "ro",
       hwaccess: "hwo",
-      hwext: "true",
       fields: [
         { bits: "7:0",
           name: "status",

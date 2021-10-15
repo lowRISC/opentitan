@@ -594,6 +594,7 @@ module otbn
       default:        hw2reg.status.d = StatusIdle;
     endcase
   end
+  assign hw2reg.status.de = 1'b1;
 
   `ASSERT(OtbnStatesOneHot, $onehot0({busy_execute_q, locked}))
 
@@ -773,7 +774,7 @@ module otbn
     end
 
     // Mux between model and RTL implementation at runtime.
-    logic         done_r_model, done_rtl;
+    logic         done_rr_model, done_rtl;
     logic         locked_model, locked_rtl;
     logic         start_model, start_rtl;
     err_bits_t    err_bits_model, err_bits_rtl;
@@ -781,9 +782,9 @@ module otbn
     logic         edn_rnd_data_valid;
     logic         edn_urnd_data_valid;
 
-    // Note that the "done" signal will come a cycle later when using the model as a core than it
+    // Note that the "done" signal will come two cycles later when using the model as a core than it
     // does when using the RTL
-    assign done = otbn_use_model ? done_r_model : done_rtl;
+    assign done = otbn_use_model ? done_rr_model : done_rtl;
     assign locked = otbn_use_model ? locked_model : locked_rtl;
     assign err_bits = otbn_use_model ? err_bits_model : err_bits_rtl;
     assign insn_cnt = otbn_use_model ? insn_cnt_model : insn_cnt_rtl;
@@ -817,7 +818,7 @@ module otbn
 
       .insn_cnt_o            (insn_cnt_model),
 
-      .done_r_o (done_r_model),
+      .done_rr_o (done_rr_model),
 
       .err_o ()
     );
