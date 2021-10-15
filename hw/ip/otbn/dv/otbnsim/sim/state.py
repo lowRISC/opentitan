@@ -24,10 +24,10 @@ class FsmState(IntEnum):
 
     The FSM diagram looks like:
 
-        IDLE  ->  PRE_EXEC  ->  EXEC  -\
-                                       |
-          ^                            |
-          +----------------------------/
+        IDLE  ->  PRE_EXEC  ->  EXEC  ->  POST_EXEC  -\
+                                                      |
+          ^                                           |
+          +-------------------------------------------/
           v
 
         LOCKED
@@ -36,10 +36,11 @@ class FsmState(IntEnum):
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
     there has been a fatal error. It matches Status.LOCKED.
 
-    PRE_EXEC and EXEC correspond to Status.BUSY_EXECUTE. PRE_EXEC is the period
-    after starting OTBN where we're still waiting for an EDN value to seed
-    URND. EXEC is the period where we start fetching and executing
-    instructions.
+    PRE_EXEC, EXEC and POST_EXEC correspond to Status.BUSY_EXECUTE. PRE_EXEC is
+    the period after starting OTBN where we're still waiting for an EDN value
+    to seed URND. EXEC is the period where we start fetching and executing
+    instructions. POST_EXEC is the single cycle after we finish executing where
+    the STATUS register gets updated.
 
     This is a refinement of the Status enum and the integer values are picked
     so that you can divide by 10 to get the corresponding Status entry. (This
@@ -50,6 +51,7 @@ class FsmState(IntEnum):
     IDLE = 0
     PRE_EXEC = 10
     EXEC = 11
+    POST_EXEC = 12
     LOCKED = 2550
 
 
@@ -198,17 +200,25 @@ class OTBNState:
 
             return
 
+        # If we are in POST_EXEC mode, this is the single cycle after the end
+        # of execution. Commit external registers (to update STATUS) and then
+        # switch to IDLE or LOCKED, depending on whether there are any bits set
+        # in the upper half of _err_bits.
+        if self.fsm_state == FsmState.POST_EXEC:
+            self.ext_regs.commit()
+            self.fsm_state = (FsmState.LOCKED
+                              if self._err_bits >> 16 else FsmState.IDLE)
+            return
+
         # Otherwise, we're in EXEC mode.
         assert self.fsm_state == FsmState.EXEC
 
         # In case of a pending halt, commit the external registers, which
-        # contain e.g. the ERR_BITS field, but nothing else. Then switch to
-        # IDLE or LOCKED, depending on whether there are any bits set in the
-        # upper half of _err_bits.
+        # contain e.g. the ERR_BITS field, but nothing else. Switch to
+        # POST_EXEC to allow one more cycle.
         if self.pending_halt:
             self.ext_regs.commit()
-            self.fsm_state = (FsmState.LOCKED
-                              if self._err_bits >> 16 else FsmState.IDLE)
+            self.fsm_state = FsmState.POST_EXEC
             return
 
         # As pending_halt wasn't set, there shouldn't be any pending error bits

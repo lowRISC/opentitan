@@ -9,27 +9,32 @@ from shared.otbn_reggen import Field, Register, RegBlock, load_registers
 from .trace import Trace
 
 
-class TraceExtRegChange(Trace):
-    def __init__(self, name: str, op: str, written: int, from_hw: bool, new_value: int):
-        self.name = name
+class ExtRegChange(Trace):
+    def __init__(self, op: str, written: int, from_hw: bool, new_value: int):
         self.op = op
         self.written = written
         self.from_hw = from_hw
         self.new_value = new_value
 
+
+class TraceExtRegChange(Trace):
+    def __init__(self, name: str, erc: ExtRegChange):
+        self.name = name
+        self.erc = erc
+
     def trace(self) -> str:
         suff = (''
-                if self.new_value == self.written
-                else ' (now {:#010x})'.format(self.new_value))
+                if self.erc.new_value == self.erc.written
+                else ' (now {:#010x})'.format(self.erc.new_value))
         return ("otbn.{} {} {:#010x}{}{}"
                 .format(self.name,
-                        self.op,
-                        self.written,
-                        ' (from SW)' if not self.from_hw else '',
+                        self.erc.op,
+                        self.erc.written,
+                        ' (from SW)' if not self.erc.from_hw else '',
                         suff))
 
     def rtl_trace(self) -> str:
-        return '! otbn.{}: {:#010x}'.format(self.name, self.new_value)
+        return '! otbn.{}: {:#010x}'.format(self.name, self.erc.new_value)
 
 
 class RGField:
@@ -116,12 +121,16 @@ class RGField:
 
 class RGReg:
     '''A wrapper around a register as parsed by reggen'''
-    def __init__(self, fields: List[RGField]):
+    def __init__(self, fields: List[RGField], double_flopped: bool):
         self.fields = fields
+        self.double_flopped = double_flopped
+        self._trace = []  # type: List[ExtRegChange]
+        self._next_trace = []  # type: List[ExtRegChange]
 
     @staticmethod
-    def from_register(reg: Register) -> 'RGReg':
-        return RGReg([RGField.from_field(fd) for fd in reg.fields])
+    def from_register(reg: Register, double_flopped: bool) -> 'RGReg':
+        return RGReg([RGField.from_field(fd) for fd in reg.fields],
+                     double_flopped)
 
     def _apply_fields(self,
                       func: Callable[[RGField, int], int],
@@ -132,25 +141,23 @@ class RGReg:
             new_val |= field_new_val << field.lsb
         return new_val
 
-    def write(self, value: int, from_hw: bool) -> int:
+    def write(self, value: int, from_hw: bool) -> None:
         '''Stage the effects of writing a value.
 
         If from_hw is true, this write is from OTBN hardware (rather than the
-        bus). Returns the new value visible to software (which will take effect
-        after calling commit).
+        bus).
 
         '''
         assert value >= 0
-        return self._apply_fields(lambda fld, fv: fld.write(fv, from_hw),
-                                  value)
+        now = self._apply_fields(lambda fld, fv: fld.write(fv, from_hw), value)
+        trace = self._next_trace if self.double_flopped else self._trace
+        trace.append(ExtRegChange('=', value, from_hw, now))
 
-    def set_bits(self, value: int) -> int:
+    def set_bits(self, value: int) -> None:
         assert value >= 0
-        return self._apply_fields(lambda fld, fv: fld.set_bits(fv), value)
-
-    def clear_bits(self, value: int) -> int:
-        assert value >= 0
-        return self._apply_fields(lambda fld, fv: fld.clear_bits(fv), value)
+        now = self._apply_fields(lambda fld, fv: fld.set_bits(fv), value)
+        trace = self._next_trace if self.double_flopped else self._trace
+        trace.append(ExtRegChange('=', value, False, now))
 
     def read(self, from_hw: bool) -> int:
         value = 0
@@ -161,18 +168,34 @@ class RGReg:
     def commit(self) -> None:
         for field in self.fields:
             field.commit()
+        self._trace = self._next_trace
+        self._next_trace = []
 
     def abort(self) -> None:
         for field in self.fields:
             field.abort()
+        self._trace = []
+        self._next_trace = []
+
+    def changes(self) -> List[ExtRegChange]:
+        return self._trace
 
 
 class OTBNExtRegs:
+    '''A class representing OTBN's externally visible CSRs
+
+    This models an extra flop between the core and some of the externally
+    visible registers by ensuring that a write only becomes visible after an
+    intervening commit.
+
+    '''
+    double_flopped_regs = []
+
     def __init__(self) -> None:
         _, reg_block = load_registers()
 
         self.regs = {}  # type: Dict[str, RGReg]
-        self.trace = []  # type: List[TraceExtRegChange]
+        self._dirty = 0
 
         assert isinstance(reg_block, RegBlock)
         for entry in reg_block.flat_regs:
@@ -181,7 +204,8 @@ class OTBNExtRegs:
             # reggen's validation should have checked that we have no
             # duplicates.
             assert entry.name not in self.regs
-            self.regs[entry.name] = RGReg.from_register(entry)
+            double_flopped = entry.name in self.double_flopped_regs
+            self.regs[entry.name] = RGReg.from_register(entry, double_flopped)
 
         # Add a fake "STOP_PC" register.
         #
@@ -189,7 +213,8 @@ class OTBNExtRegs:
         # the future (see issue #4327) but, for now, it's just used in
         # simulation to help track whether RIG-generated binaries finished
         # where they expected to finish.
-        self.regs['STOP_PC'] = RGReg([RGField('STOP_PC', 32, 0, 0, 'ro')])
+        self.regs['STOP_PC'] = RGReg([RGField('STOP_PC', 32, 0, 0, 'ro')],
+                                     True)
 
     def _get_reg(self, reg_name: str) -> RGReg:
         reg = self.regs.get(reg_name)
@@ -200,32 +225,22 @@ class OTBNExtRegs:
     def write(self, reg_name: str, value: int, from_hw: bool) -> None:
         '''Stage the effects of writing a value to a register'''
         assert value >= 0
-        new_val = self._get_reg(reg_name).write(value, from_hw)
-        self.trace.append(TraceExtRegChange(reg_name, '=',
-                                            value, from_hw, new_val))
+        self._get_reg(reg_name).write(value, from_hw)
+        self._dirty = 2
 
     def set_bits(self, reg_name: str, value: int) -> None:
         '''Set some bits of a register (HW access only)'''
         assert value >= 0
-        new_val = self._get_reg(reg_name).set_bits(value)
-        self.trace.append(TraceExtRegChange(reg_name, '|=',
-                                            value, True, new_val))
-
-    def clear_bits(self, reg_name: str, value: int) -> None:
-        '''Clear some bits of a register (HW access only)'''
-        assert value >= 0
-        new_val = self._get_reg(reg_name).clear_bits(value)
-        self.trace.append(TraceExtRegChange(reg_name, '&= ~',
-                                            value, True, new_val))
+        self._get_reg(reg_name).set_bits(value)
+        self._dirty = 2
 
     def increment_insn_cnt(self) -> None:
         '''Increment the INSN_CNT register'''
         reg = self._get_reg('INSN_CNT')
         assert len(reg.fields) == 1
         fld = reg.fields[0]
-        new_val = reg.write(min(fld.value + 1, (1 << 32) - 1), True)
-        self.trace.append(TraceExtRegChange('INSN_CNT', '=',
-                                            new_val, True, new_val))
+        reg.write(min(fld.value + 1, (1 << 32) - 1), True)
+        self._dirty = 2
 
     def read(self, reg_name: str, from_hw: bool) -> int:
         reg = self.regs.get(reg_name)
@@ -234,19 +249,23 @@ class OTBNExtRegs:
         return reg.read(from_hw)
 
     def changes(self) -> Sequence[Trace]:
-        return self.trace
+        if self._dirty == 0:
+            return []
+
+        trace = []
+        for name, reg in self.regs.items():
+            trace += [TraceExtRegChange(name, erc) for erc in reg.changes()]
+        return trace
 
     def commit(self) -> None:
-        # We know that we'll only have any pending changes if self.trace is
-        # nonempty, so needn't bother calling commit on each register if not.
-        if not self.trace:
-            return
-
-        for reg in self.regs.values():
-            reg.commit()
-        self.trace = []
+        # We know that we'll only have any pending changes if self._dirty is
+        # positive, so needn't bother calling commit on each register if not.
+        if self._dirty > 0:
+            for reg in self.regs.values():
+                reg.commit()
+            self._dirty = max(0, self._dirty - 1)
 
     def abort(self) -> None:
         for reg in self.regs.values():
             reg.abort()
-        self.trace = []
+        self._dirty = 0
