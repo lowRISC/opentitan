@@ -214,7 +214,7 @@ class OTBNExtRegs:
         # simulation to help track whether RIG-generated binaries finished
         # where they expected to finish.
         self.regs['STOP_PC'] = RGReg([RGField('STOP_PC', 32, 0, 0, 'ro')],
-                                     True)
+                                     False)
 
     def _get_reg(self, reg_name: str) -> RGReg:
         reg = self.regs.get(reg_name)

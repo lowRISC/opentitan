@@ -28,6 +28,9 @@ class MirroredRegs {
 
   // The final PC from the most recent run
   uint32_t stop_pc;
+
+  // Execution is stopped if status is either 0 (IDLE) or 0xff (LOCKED)
+  bool stopped() const { return status == 0 || status == 0xff; }
 };
 
 // An object wrapping the ISS subprocess.
