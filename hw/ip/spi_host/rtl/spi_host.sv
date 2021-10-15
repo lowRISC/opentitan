@@ -45,6 +45,33 @@ module spi_host
 
   import spi_host_cmd_pkg::*;
 
+  // TODO: Make this an actual parameter
+  localparam int CmdDepth = 4;
+
+
+  // TODO:
+  // This CDC FIFO is the first step in moving the entire IP
+  // into the "core" clock domain. As such this is temporary.
+  // Once the IP has been confirmed to work with this scheme
+  // we can work make changes to top-level and DV to
+  // move this FIFO outside this IP and top_earlgrey
+  tlul_pkg::tl_h2d_t tl_core_in;
+  tlul_pkg::tl_d2h_t tl_core_out;
+
+  tlul_fifo_async #(
+    .ReqDepth(4),
+    .RspDepth(4)
+  ) cdc (
+    .clk_h_i  ( clk_i       ),
+    .rst_h_ni ( rst_ni      ),
+    .clk_d_i  ( clk_core_i  ),
+    .rst_d_ni ( rst_core_ni ),
+    .tl_h_i   ( tl_i        ),
+    .tl_h_o   ( tl_o        ),
+    .tl_d_o   ( tl_core_in  ),
+    .tl_d_i   ( tl_core_out )
+  );
+
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
 
@@ -54,10 +81,10 @@ module spi_host
   // Register module
   logic [NumAlerts-1:0] alert_test, alerts;
   spi_host_reg_top u_reg (
-    .clk_i,
-    .rst_ni,
-    .tl_i       (tl_i),
-    .tl_o       (tl_o),
+    .clk_i      (clk_core_i),
+    .rst_ni     (rst_core_ni),
+    .tl_i       (tl_core_in),
+    .tl_o       (tl_core_out),
     .tl_win_o   (fifo_win_h2d),
     .tl_win_i   (fifo_win_d2h),
     .reg2hw,
@@ -77,8 +104,8 @@ module spi_host
       .AsyncOn(AlertAsyncOn[i]),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
-      .clk_i,
-      .rst_ni,
+      .clk_i         ( clk_core_i    ),
+      .rst_ni        ( rst_core_ni   ),
       .alert_test_i  ( alert_test[i] ),
       .alert_req_i   ( alerts[0]     ),
       .alert_ack_o   (               ),
@@ -122,7 +149,7 @@ module spi_host
   end                   : gen_passthrough_implementation
   else begin            : gen_passthrough_ignore
      // Passthrough only supported for instances with one CSb line
-    `ASSERT(PassthroughNumCSCompat_A, !passthrough_i.passthrough_en, clk_i, rst_ni)
+    `ASSERT(PassthroughNumCSCompat_A, !passthrough_i.passthrough_en, clk_core_i, rst_core_ni)
 
     assign cio_sck_o    = sck;
     assign cio_sck_en_o = 1'b1;
@@ -256,11 +283,11 @@ module spi_host
   // some cases, the writes to COMMAND are not atomic.
   //
   // Disabling this assertion for now
-  //`ASSERT(CmdAtomicity_A, &cmd_qes ^ |cmd_qes, clk_i, rst_ni);
+  //`ASSERT(CmdAtomicity_A, &cmd_qes ^ |cmd_qes, clk_core_i, rst_core_ni);
 
-  logic active, core_active;
-  logic rx_stall, core_rx_stall;
-  logic tx_stall, core_tx_stall;
+  logic active;
+  logic rx_stall;
+  logic tx_stall;
 
   assign hw2reg.status.ready.d    = ~command_busy;
   assign hw2reg.status.active.d   = active;
@@ -272,13 +299,13 @@ module spi_host
   assign hw2reg.status.rxstall.de = 1'b1;
   assign hw2reg.status.txstall.de = 1'b1;
 
-  logic sw_rst, core_sw_rst;
+  logic sw_rst;
 
-  spi_host_command_cdc u_cmd_cdc (
-    .clk_i,
-    .rst_ni,
-    .clk_core_i,
-    .rst_core_ni,
+  spi_host_command_queue #(
+    .CmdDepth(CmdDepth)
+  ) u_cmd_queue (
+    .clk_i                (clk_core_i),
+    .rst_ni               (rst_core_ni),
     .command_i            (command),
     .command_valid_i      (command_valid),
     .command_busy_o       (command_busy),
@@ -286,9 +313,7 @@ module spi_host
     .core_command_valid_o (core_command_valid),
     .core_command_ready_i (core_command_ready),
     .error_busy_o         (error_busy),
-
-    .sw_rst_i             (sw_rst),
-    .core_sw_rst_i        (core_sw_rst)
+    .sw_rst_i             (sw_rst)
   );
 
   logic [31:0] tx_data;
@@ -301,8 +326,8 @@ module spi_host
   logic        rx_ready;
 
   spi_host_window u_window (
-    .clk_i,
-    .rst_ni,
+    .clk_i      (clk_core_i),
+    .rst_ni     (rst_core_ni),
     .win_i      (fifo_win_h2d),
     .win_o      (fifo_win_d2h),
     .tx_data_o  (tx_data),
@@ -352,25 +377,22 @@ module spi_host
 
   logic error_overflow, error_underflow;
 
-  // Since the CDC FIFOs are essentially directly connected to SW registers, it is an error if
+  // Since the DATA FIFOs are essentially directly connected to SW registers, it is an error if
   // there is ever a need for flow control.
   assign error_overflow  = tx_valid & ~tx_ready;
   assign error_underflow = rx_ready & ~rx_valid;
 
-
   // Note on ByteOrder and ByteSwapping.
-  // ByteOrder == 1 is for Little-Endian transmission (i.e. LSB first), which is acheived by default
-  // with the prim_packer_fifo implementation.  Thus we have to swap if Big-Endian transmission
-  // is required (i.e. if ByteOrder == 0).
-  spi_host_data_cdc #(
+  // ByteOrder == 1 is for Little-Endian transmission (i.e. LSB first), which is acheived by
+  // default with the prim_packer_fifo implementation.  Thus we have to swap if Big-Endian
+  // transmission is required (i.e. if ByteOrder == 0).
+  spi_host_data_fifos #(
     .TxDepth(TxDepth),
     .RxDepth(RxDepth),
     .SwapBytes(~ByteOrder)
-  ) u_data_cdc (
-    .clk_i,
-    .rst_ni,
-    .clk_core_i,
-    .rst_core_ni,
+  ) u_data_fifos (
+    .clk_i             (clk_core_i),
+    .rst_ni            (rst_core_ni),
 
     .tx_data_i         (tx_data),
     .tx_be_i           (tx_be),
@@ -401,36 +423,16 @@ module spi_host
     .rx_qd_o           (rx_qd),
     .rx_wm_o           (rx_wm),
 
-    .sw_rst_i          (sw_rst),
-    .core_sw_rst_i     (core_sw_rst)
+    .sw_rst_i          (sw_rst)
 );
 
-  // CDCs for a handful of continuous or pulsed control and status signals
   logic en_sw;
   logic enb_error;
-  logic en, core_en;
+  logic en;
 
-  assign en         = en_sw & ~enb_error;
-  assign sw_rst     = reg2hw.control.sw_rst.q;
-  assign en_sw      = reg2hw.control.spien.q;
-
-  prim_flop_2sync #(
-    .Width(3)
-  ) u_sync_stat_from_core (
-    .clk_i,
-    .rst_ni,
-    .d_i      ({core_rx_stall, core_tx_stall, core_active}),
-    .q_o      ({     rx_stall,      tx_stall,      active})
-  );
-
-  prim_flop_2sync #(
-    .Width(2)
-  ) u_sync_en_to_core (
-    .clk_i    (clk_core_i),
-    .rst_ni   (rst_core_ni),
-    .d_i      ({en,      sw_rst}),
-    .q_o      ({core_en, core_sw_rst})
-  );
+  assign en     = en_sw & ~enb_error;
+  assign sw_rst = reg2hw.control.sw_rst.q;
+  assign en_sw  = reg2hw.control.spien.q;
 
   spi_host_core #(
     .NumCS(NumCS)
@@ -441,7 +443,7 @@ module spi_host
     .command_i       (core_command),
     .command_valid_i (core_command_valid),
     .command_ready_o (core_command_ready),
-    .en_i            (core_en),
+    .en_i            (en),
     .tx_data_i       (core_tx_data),
     .tx_be_i         (core_tx_be),
     .tx_valid_i      (core_tx_valid),
@@ -454,10 +456,10 @@ module spi_host
     .sd_o            (sd_out),
     .sd_en_o         (sd_en),
     .sd_i,
-    .rx_stall_o      (core_rx_stall),
-    .tx_stall_o      (core_tx_stall),
-    .sw_rst_i        (core_sw_rst),
-    .active_o        (core_active)
+    .rx_stall_o      (rx_stall),
+    .tx_stall_o      (tx_stall),
+    .sw_rst_i        (sw_rst),
+    .active_o        (active)
   );
 
   logic event_error;
@@ -504,8 +506,8 @@ module spi_host
   assign enb_error     = |sw_error_status;
 
   prim_intr_hw #(.Width(1)) intr_hw_error (
-    .clk_i,
-    .rst_ni,
+    .clk_i                  (clk_core_i),
+    .rst_ni                 (rst_core_ni),
     .event_intr_i           (event_error),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.error.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.error.q),
@@ -557,8 +559,8 @@ module spi_host
   assign event_rx_full  = rx_full_d & ~rx_full_q;
   assign rx_full_d      = rx_full;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
+    if (!rst_core_ni) begin
       idle_q     <= 1'b0;
       ready_q    <= 1'b0;
       tx_wm_q    <= 1'b0;
@@ -576,8 +578,8 @@ module spi_host
   end
 
   prim_intr_hw #(.Width(1)) intr_hw_spi_event (
-    .clk_i,
-    .rst_ni,
+    .clk_i                  (clk_core_i),
+    .rst_ni                 (rst_core_ni),
     .event_intr_i           (event_spi_event),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.spi_event.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.spi_event.q),

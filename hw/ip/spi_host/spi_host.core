@@ -21,8 +21,8 @@ filesets:
       - rtl/spi_host_byte_merge.sv
       - rtl/spi_host_fsm.sv
       - rtl/spi_host_core.sv
-      - rtl/spi_host_command_cdc.sv
-      - rtl/spi_host_data_cdc.sv
+      - rtl/spi_host_command_queue.sv
+      - rtl/spi_host_data_fifos.sv
       - rtl/spi_host_reg_top.sv
       - rtl/spi_host_window.sv
       - rtl/spi_host.sv
