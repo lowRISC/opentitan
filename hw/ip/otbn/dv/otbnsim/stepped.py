@@ -256,7 +256,19 @@ def on_edn_urnd_reseed_complete(sim: OTBNSim, args: List[str]) -> Optional[OTBNS
         raise ValueError('edn_urnd_reseed_complete expects zero arguments. Got {}.'
                          .format(args))
 
-    sim.state.set_urnd_reseed_complete()
+    # TODO: The set_urnd_reseed_complete() method asserts that we are in state
+    # PRE_EXEC when it is called. However, when the model is used in a
+    # system-level simulation, the edn_urnd_data_valid_i input (which
+    # eventually causes this to be called) is unconditionally true.
+    #
+    # Removing the assertion would drop the check that we only leave PRE_EXEC
+    # by calling this function, so we don't really want to do that. Instead,
+    # let's probe an internal field to keep everything working. This should be
+    # sorted out as part of implementing URND in the ISS properly (at which
+    # point, we should be able to pass the equivalent of edn_urnd_data_valid_i
+    # properly).
+    if not sim.state._urnd_reseed_complete:
+        sim.state.set_urnd_reseed_complete()
 
     return None
 
