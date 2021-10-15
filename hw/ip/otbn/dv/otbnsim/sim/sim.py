@@ -6,7 +6,7 @@ from typing import Dict, Iterator, List, Optional, Tuple
 
 from .decode import EmptyInsn
 from .isa import OTBNInsn
-from .state import OTBNState
+from .state import OTBNState, FsmState
 from .stats import ExecutionStats
 from .trace import Trace
 
@@ -117,16 +117,18 @@ class OTBNSim:
         returns no instruction and no changes.
 
         '''
-        if not self.state.running:
+        if not self.state.running():
             return (None, [])
 
-        if self.state.non_insn_stall:
+        if self.state.fsm_state == FsmState.PRE_EXEC:
             # Zero INSN_CNT the cycle after we are told to start (and every
             # cycle after that until we start executing instructions, but that
             # doesn't really matter)
             changes = self._on_stall(verbose, fetch_next=False)
             self.state.ext_regs.write('INSN_CNT', 0, True)
             return (None, changes)
+
+        assert self.state.fsm_state == FsmState.EXEC
 
         insn = self._next_insn
         if insn is None:
