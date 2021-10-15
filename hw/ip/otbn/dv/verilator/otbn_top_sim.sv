@@ -21,8 +21,8 @@ module otbn_top_sim (
   localparam logic [127:0] TestScrambleKey   = 128'h48ecf6c738f0f108a5b08620695ffd4d;
   localparam logic [63:0]  TestScrambleNonce = 64'hf88c2578fa4cd123;
 
-  logic      otbn_done_d, otbn_done_q;
-  err_bits_t otbn_err_bits_d, otbn_err_bits_q;
+  logic      otbn_done, otbn_done_r, otbn_done_rr;
+  err_bits_t otbn_err_bits, otbn_err_bits_r, otbn_err_bits_rr;
   logic      otbn_start;
 
   // Intialise otbn_start_done to 1 so that we only signal otbn_start after we have seen a reset. If
@@ -64,10 +64,10 @@ module otbn_top_sim (
     .rst_ni                 ( IO_RST_N         ),
 
     .start_i                ( otbn_start       ),
-    .done_o                 ( otbn_done_d      ),
+    .done_o                 ( otbn_done        ),
     .locked_o               (                  ),
 
-    .err_bits_o             ( otbn_err_bits_d  ),
+    .err_bits_o             ( otbn_err_bits    ),
 
     .imem_req_o             ( imem_req         ),
     .imem_addr_o            ( imem_addr        ),
@@ -157,10 +157,12 @@ module otbn_top_sim (
   // Flop `done_o` from otbn_core to match up with model done signal.
   always @(posedge IO_CLK or negedge IO_RST_N) begin
     if (!IO_RST_N) begin
-      otbn_start      <= 1'b0;
-      otbn_start_done <= 1'b0;
-      otbn_done_q     <= 1'b0;
-      otbn_err_bits_q <= '0;
+      otbn_start       <= 1'b0;
+      otbn_start_done  <= 1'b0;
+      otbn_done_r      <= 1'b0;
+      otbn_done_rr     <= 1'b0;
+      otbn_err_bits_r  <= '0;
+      otbn_err_bits_rr <= '0;
     end else begin
       if (!otbn_start_done) begin
         otbn_start      <= 1'b1;
@@ -169,8 +171,10 @@ module otbn_top_sim (
         otbn_start <= 1'b0;
       end
 
-      otbn_done_q <= otbn_done_d;
-      otbn_err_bits_q <= otbn_err_bits_d;
+      otbn_done_r <= otbn_done;
+      otbn_done_rr <= otbn_done_r;
+      otbn_err_bits_r <= otbn_err_bits;
+      otbn_err_bits_rr <= otbn_err_bits_r;
     end
   end
 
@@ -262,7 +266,7 @@ module otbn_top_sim (
     if (!IO_RST_N) begin
       finish_counter <= 2'd0;
     end else begin
-      if (otbn_done_q) begin
+      if (otbn_done_r) begin
         finish_counter <= 2'd1;
       end
 
@@ -284,7 +288,7 @@ module otbn_top_sim (
 
   err_bits_t otbn_model_err_bits;
   bit [31:0] otbn_model_insn_cnt;
-  bit        otbn_model_done_r;
+  bit        otbn_model_done_rr;
   bit        otbn_model_err;
 
   otbn_core_model #(
@@ -311,7 +315,7 @@ module otbn_top_sim (
 
     .invalidate_imem_i     ( 1'b0 ),
 
-    .done_r_o              ( otbn_model_done_r ),
+    .done_rr_o             ( otbn_model_done_rr ),
 
     .err_o                 ( otbn_model_err )
   );
@@ -326,20 +330,20 @@ module otbn_top_sim (
       cnt_mismatch_latched      <= 1'b0;
       model_err_latched         <= 1'b0;
     end else begin
-      // Check that the 'done_o' output from the RTL matches the 'done_r_o' output from the model
-      // (with one cycle delay).
-      if (otbn_done_q && !otbn_model_done_r) begin
+      // Check that the 'done_o' output from the RTL matches the 'done_rr_o' output from the model
+      // (with two cycles' delay).
+      if (otbn_done_rr && !otbn_model_done_rr) begin
         $display("ERROR: At time %0t, RTL done on previous cycle, but model still busy.", $time);
         done_mismatch_latched <= 1'b1;
       end
-      if (otbn_model_done_r && !otbn_done_q) begin
+      if (otbn_model_done_rr && !otbn_done_rr) begin
         $display("ERROR: At time %0t, model finished, but RTL not done in time.", $time);
         done_mismatch_latched <= 1'b1;
       end
-      if (otbn_model_done_r && otbn_done_q) begin
-        if (otbn_err_bits_q != otbn_model_err_bits) begin
+      if (otbn_model_done_rr && otbn_done_rr) begin
+        if (otbn_err_bits_rr != otbn_model_err_bits) begin
           $display("ERROR: At time %0t, otbn_err_bits != otbn_model_err_bits (0x%0x != 0x%0x).",
-                   $time, otbn_err_bits_q, otbn_model_err_bits);
+                   $time, otbn_err_bits_rr, otbn_model_err_bits);
           err_bits_mismatch_latched <= 1'b1;
         end
       end

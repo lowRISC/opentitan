@@ -61,6 +61,7 @@ package otbn_reg_pkg;
 
   typedef struct packed {
     logic [7:0]  d;
+    logic        de;
   } otbn_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -161,9 +162,9 @@ package otbn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [80:79]
-    otbn_hw2reg_ctrl_reg_t ctrl; // [78:78]
-    otbn_hw2reg_status_reg_t status; // [77:70]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [81:80]
+    otbn_hw2reg_ctrl_reg_t ctrl; // [79:79]
+    otbn_hw2reg_status_reg_t status; // [78:70]
     otbn_hw2reg_err_bits_reg_t err_bits; // [69:46]
     otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [45:32]
     otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [31:0]
@@ -191,8 +192,6 @@ package otbn_reg_pkg;
   parameter logic [7:0] OTBN_CMD_CMD_RESVAL = 8'h 0;
   parameter logic [0:0] OTBN_CTRL_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_CTRL_SOFTWARE_ERRS_FATAL_RESVAL = 1'h 0;
-  parameter logic [7:0] OTBN_STATUS_RESVAL = 8'h 0;
-  parameter logic [7:0] OTBN_STATUS_STATUS_RESVAL = 8'h 0;
   parameter logic [31:0] OTBN_INSN_CNT_RESVAL = 32'h 0;
   parameter logic [31:0] OTBN_INSN_CNT_INSN_CNT_RESVAL = 32'h 0;
 
