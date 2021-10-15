@@ -14,19 +14,35 @@ class spi_device_seq extends spi_base_seq;
 
   virtual task body();
     fork
-      forever begin
-        spi_item  req;
-        p_sequencer.req_analysis_fifo.get(req);
-        req_q.push_back(req);
-      end
-      forever begin
-        spi_item  rsp;
-        wait(req_q.size > 0);
-        rsp = req_q.pop_front();
-        start_item(rsp);
-        finish_item(rsp);
-      end
+      get_req();
+      send_rsp(req_q);
     join
   endtask : body
-  
+
+
+  virtual task get_req();
+    forever begin
+      spi_item req;
+      p_sequencer.req_analysis_fifo.get(req);
+      req_q.push_back(req);
+    end
+  endtask
+
+
+  virtual task send_rsp(ref spi_item item_q[$]);
+    forever begin
+      spi_item  rsp;
+      wait(item_q.size > 0);
+      rsp = item_q.pop_front();
+      start_item(rsp);
+      finish_item(rsp);
+    end
+  endtask
+
+
+  virtual task get_nxt_req(ref spi_item item);
+    wait  (req_q.size > 0);
+    item = req_q.pop_front();
+  endtask
+
 endclass : spi_device_seq

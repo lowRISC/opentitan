@@ -10,7 +10,7 @@ class spi_host_dummy_seq extends spi_base_seq;
     req = spi_item::type_id::create("req");
     start_item(req);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-                                   item_type inside {SpiTransSckNoCsb, SpiTransCsbNoScb};
+                                   item_type inside {SpiTransSckNoCsb, SpiTransCsbNoSck};
                                    data.size() == 1; // no used, set to 1 to simpify randomization
                                    )
     finish_item(req);

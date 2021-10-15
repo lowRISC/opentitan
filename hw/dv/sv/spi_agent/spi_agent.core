@@ -10,8 +10,8 @@ filesets:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
     files:
-      - spi_if.sv
       - spi_agent_pkg.sv
+      - spi_if.sv
       - spi_item.sv: {is_include_file: true}
       - spi_agent_cfg.sv: {is_include_file: true}
       - spi_agent_cov.sv: {is_include_file: true}
@@ -26,6 +26,7 @@ filesets:
       - seq_lib/spi_host_seq.sv: {is_include_file: true}
       - seq_lib/spi_host_dummy_seq.sv: {is_include_file: true}
       - seq_lib/spi_device_seq.sv: {is_include_file: true}
+      - seq_lib/spi_device_cmd_rsp_seq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
