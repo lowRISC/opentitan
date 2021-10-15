@@ -15,6 +15,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::bootstrap::{Bootstrap, BootstrapOptions, BootstrapProtocol};
 use opentitanlib::io::spi::SpiParams;
 use opentitanlib::transport::Capability;
+use opentitanlib::transport;
 
 /// Bootstrap the target device.
 #[derive(Debug, StructOpt)]
@@ -46,6 +47,10 @@ impl CommandDispatch for BootstrapCommand {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
+        if self.protocol == BootstrapProtocol::Emulator {
+            return self.bootstrap_using_direct_emulator_integration(transport);
+        }
+        
         transport
             .capabilities()
             .request(Capability::GPIO | Capability::SPI)
@@ -64,5 +69,16 @@ impl CommandDispatch for BootstrapCommand {
         let payload = std::fs::read(&self.filename)?;
         bootstrap.update(&*spi, &*reset_pin, &*bootstrap_pin, &payload)?;
         Ok(None)
+    }
+}
+
+impl BootstrapCommand {
+    fn bootstrap_using_direct_emulator_integration(
+        &self,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Serialize>>> {
+        transport.dispatch(&mut transport::Bootstrap {
+            image_path: self.filename.clone()
+        })
     }
 }

@@ -4,6 +4,9 @@
 
 use anyhow::{anyhow, Result};
 use bitflags::bitflags;
+use erased_serde::Serialize;
+use std::any::Any;
+use std::path::PathBuf;
 use std::rc::Rc;
 use thiserror::Error;
 
@@ -22,7 +25,6 @@ bitflags! {
         const UART = 0x00000001;
         const SPI = 0x00000002;
         const GPIO = 0x00000004;
-        const FPGA_PROGRAM = 0x00000008;
     }
 }
 
@@ -67,6 +69,8 @@ impl Capabilities {
 pub enum TransportError {
     #[error("This transport does not support {0} instance {1}")]
     InvalidInstance(&'static str, String),
+    #[error("This transport does not support the requested operation")]
+    UnsupportedOperation,
 }
 
 /// A transport object is a factory for the low-level interfaces provided
@@ -88,10 +92,19 @@ pub trait Transport {
     fn gpio_pin(&self, _instance: &str) -> Result<Rc<dyn GpioPin>> {
         unimplemented!();
     }
-    /// Programs a bitstream into an FPGA.
-    fn fpga_program(&self, _bitstream: &[u8]) -> Result<()> {
-        unimplemented!();
+    /// Invoke non-standard functionality of some Transport implementations.
+    fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn Serialize>>> {
+        Err(TransportError::UnsupportedOperation.into())
     }
+}
+
+/// Used by Transport implementations dealing with emulated OpenTitan
+/// chips, allowing e.g. more efficient direct means of programming
+/// emulated flash storage.  (As opposed to running an actual
+/// bootloater on the emulated target, which would receive data via
+/// SPI to be flashed.)
+pub struct Bootstrap {
+    pub image_path: PathBuf,
 }
 
 /// An `EmptyTransport` provides no communications backend.

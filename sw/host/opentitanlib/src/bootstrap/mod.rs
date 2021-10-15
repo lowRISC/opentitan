@@ -23,11 +23,15 @@ arg_enum! {
     /// The `Primitive` protocol is used by OpenTitan during development.
     /// The `Legacy` protocol is used by previous generations of Google Titan-class chips.
     /// The `Eeprom` protocol is planned to be implemented for OpenTitan.
+    /// The 'Emulator' value indicates that this tool has a direct way
+    /// of communicating with the OpenTitan emulator, to replace the
+    /// contents of the emulated flash storage.
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     pub enum BootstrapProtocol {
         Primitive,
         Legacy,
         Eeprom,
+        Emulator,
     }
 }
 
@@ -66,6 +70,10 @@ impl Bootstrap {
                 unimplemented!();
             }
             BootstrapProtocol::Eeprom => {
+                unimplemented!();
+            }
+            BootstrapProtocol::Emulator => {
+                // Not intended to be implemented by this struct.
                 unimplemented!();
             }
         };
