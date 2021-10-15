@@ -223,7 +223,7 @@ static bool read_ext_reg(const std::string &reg_name,
 
   if (required && !found) {
     std::cerr << "ERROR: Expected register `" << reg_name
-              << "' not found in output.";
+              << "' not found in output.\n";
     return false;
   }
   return true;
