@@ -11,18 +11,17 @@
     Note, this template requires the following Python objects to be passed:
 
     1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
-    2. list[irq]: See util/make_new_dif.py for the definition of the `irq` obj.
 </%doc>
 
-<%def name="mmio_region_read32(intr_reg_upper)">mmio_region_read32(
-  ${ip.name_snake}->base_addr, 
-  ${ip.name_upper}_INTR_${intr_reg_upper}_REG_OFFSET);
+<%def name="mmio_region_read32(intr_reg_offet)">mmio_region_read32(
+    ${ip.name_snake}->base_addr,
+    ${intr_reg_offet});
 </%def>
 
-<%def name="mmio_region_write32(intr_reg_upper, value)">mmio_region_write32(
-  ${ip.name_snake}->base_addr, 
-  ${ip.name_upper}_INTR_${intr_reg_upper}_REG_OFFSET,
-  ${value});
+<%def name="mmio_region_write32(intr_reg_offet, value)">mmio_region_write32(
+    ${ip.name_snake}->base_addr,
+    ${intr_reg_offet},
+    ${value});
 </%def>
 
 // This file is auto-generated.
@@ -31,7 +30,7 @@
 
 #include "${ip.name_snake}_regs.h"  // Generated.
 
-% if len(irqs) > 0:
+% if len(ip.irqs) > 0:
 
   /**
    * Get the corresponding interrupt register bit offset. INTR_STATE,
@@ -43,7 +42,7 @@
     bitfield_bit32_index_t *index_out) {
 
     switch (irq) {
-  % for irq in irqs:
+  % for irq in ip.irqs:
     ## This handles the GPIO IP case where there is a multi-bit interrupt.
     % if irq.width > 1:
       % for irq_idx in range(irq.width):
@@ -74,7 +73,7 @@
       return kDifBadArg;
     }
 
-    *snapshot = ${mmio_region_read32("STATE")}
+    *snapshot = ${mmio_region_read32(ip.name_upper + "_INTR_STATE_REG_OFFSET")}
 
     return kDifOk;
   }
@@ -94,7 +93,8 @@
       return kDifBadArg;
     }
 
-    uint32_t intr_state_reg = ${mmio_region_read32("STATE")}
+    uint32_t intr_state_reg = ${mmio_region_read32(ip.name_upper + "_INTR_STATE_REG_OFFSET")}
+
     *is_pending = bitfield_bit32_read(intr_state_reg, index);
 
     return kDifOk;
@@ -116,7 +116,7 @@
 
     // Writing to the register clears the corresponding bits (Write-one clear).
     uint32_t intr_state_reg = bitfield_bit32_write(0, index, true);
-    ${mmio_region_write32("STATE", "intr_state_reg")}
+    ${mmio_region_write32(ip.name_upper + "_INTR_STATE_REG_OFFSET", "intr_state_reg")}
 
     return kDifOk;
   }
@@ -136,7 +136,7 @@
     }
 
     uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
-    ${mmio_region_write32("TEST", "intr_test_reg")}
+    ${mmio_region_write32(ip.name_upper + "_INTR_TEST_REG_OFFSET", "intr_test_reg")}
 
     return kDifOk;
   }
@@ -157,7 +157,8 @@
       return kDifBadArg;
     }
 
-    uint32_t intr_enable_reg = ${mmio_region_read32("ENABLE")}
+    uint32_t intr_enable_reg = ${mmio_region_read32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET")}
+
     bool is_enabled = bitfield_bit32_read(intr_enable_reg, index);
     *state = is_enabled ? 
       kDifToggleEnabled : kDifToggleDisabled;
@@ -180,10 +181,11 @@
       return kDifBadArg;
     }
 
-    uint32_t intr_enable_reg = ${mmio_region_read32("ENABLE")}
+    uint32_t intr_enable_reg = ${mmio_region_read32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET")}
+
     bool enable_bit = (state == kDifToggleEnabled) ? true : false;
     intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
-    ${mmio_region_write32("ENABLE", "intr_enable_reg")}
+    ${mmio_region_write32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET", "intr_enable_reg")}
 
     return kDifOk;
   }
@@ -199,11 +201,11 @@
 
     // Pass the current interrupt state to the caller, if requested.
     if (snapshot != NULL) {
-      *snapshot = ${mmio_region_read32("ENABLE")}
+      *snapshot = ${mmio_region_read32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET")}
     }
 
     // Disable all interrupts.
-    ${mmio_region_write32("ENABLE", "0u")}
+    ${mmio_region_write32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET", "0u")}
 
     return kDifOk;
   }
@@ -217,7 +219,7 @@
       return kDifBadArg;
     }
 
-    ${mmio_region_write32("ENABLE", "*snapshot")}
+    ${mmio_region_write32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET", "*snapshot")}
 
     return kDifOk;
   }

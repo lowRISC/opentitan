@@ -15,7 +15,6 @@
     Note, this template requires the following Python objects to be passed:
 
     1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
-    2. list[irq]: See util/make_new_dif.py for the definition of the `irq` obj.
 </%doc>
 
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
@@ -51,13 +50,13 @@ typedef struct dif_${ip.name_snake} {
   mmio_region_t base_addr;
 } dif_${ip.name_snake}_t;
 
-% if len(irqs) > 0:
+% if len(ip.irqs) > 0:
 
   /**
    * A ${ip.name_snake} interrupt request type.
    */
   typedef enum dif_${ip.name_snake}_irq {
-  % for irq in irqs:
+  % for irq in ip.irqs:
     /**
      * ${irq.description}
      */

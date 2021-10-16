@@ -36,7 +36,7 @@ namespace {
     dif_${ip.name_snake}_t ${ip.name_snake}_ = {.base_addr = dev().region()};
   };
 
-% if len(irqs) > 0:
+% if len(ip.irqs) > 0:
   using ::testing::Eq;
 
   class IrqGetStateTest : public ${ip.name_camel}Test {};
@@ -90,30 +90,30 @@ namespace {
 
     EXPECT_EQ(dif_${ip.name_snake}_irq_is_pending(
         nullptr, 
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         &is_pending),
       kDifBadArg);
 
     EXPECT_EQ(dif_${ip.name_snake}_irq_is_pending(
         &${ip.name_snake}_, 
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         nullptr),
       kDifBadArg);
 
     EXPECT_EQ(dif_${ip.name_snake}_irq_is_pending(
         nullptr,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         nullptr),
       kDifBadArg);
@@ -135,37 +135,37 @@ namespace {
     // Get the first IRQ state.
     irq_state = false;
     EXPECT_READ32(${ip.name_upper}_INTR_STATE_REG_OFFSET,
-      % if irqs[0].width > 1:
+      % if ip.irqs[0].width > 1:
         {{0, true}});
       % else:
-        {{${ip.name_upper}_INTR_STATE_${irqs[0].name_upper}_BIT, true}});
+        {{${ip.name_upper}_INTR_STATE_${ip.irqs[0].name_upper}_BIT, true}});
       % endif
     EXPECT_EQ(dif_${ip.name_snake}_irq_is_pending(
         &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         &irq_state),
       kDifOk);
     EXPECT_TRUE(irq_state);
 
-  % if len(irqs) > 1 or irqs[0].width > 1:
+  % if len(ip.irqs) > 1 or ip.irqs[0].width > 1:
     // Get the last IRQ state.
     irq_state = true;
     EXPECT_READ32(${ip.name_upper}_INTR_STATE_REG_OFFSET,
-      % if irqs[0].width > 1:
-        {{${irqs[0].width - 1}, false}});
+      % if ip.irqs[0].width > 1:
+        {{${ip.irqs[0].width - 1}, false}});
       % else:
-        {{${ip.name_upper}_INTR_STATE_${irqs[-1].name_upper}_BIT, false}});
+        {{${ip.name_upper}_INTR_STATE_${ip.irqs[-1].name_upper}_BIT, false}});
       % endif
     EXPECT_EQ(dif_${ip.name_snake}_irq_is_pending(
         &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}${irqs[0].width - 1},
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}${ip.irqs[0].width - 1},
       % else:
-        kDif${ip.name_camel}Irq${irqs[-1].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel},
       % endif
         &irq_state),
       kDifOk);
@@ -178,10 +178,10 @@ namespace {
   TEST_F(IrqAcknowledgeTest, NullArgs) {
     EXPECT_EQ(dif_${ip.name_snake}_irq_acknowledge(
         nullptr, 
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0),
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0),
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}),
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}),
       % endif
       kDifBadArg);
   }
@@ -196,34 +196,34 @@ namespace {
   TEST_F(IrqAcknowledgeTest, Success) {
     // Clear the first IRQ state.
     EXPECT_WRITE32(${ip.name_upper}_INTR_STATE_REG_OFFSET,
-      % if irqs[0].width > 1:
+      % if ip.irqs[0].width > 1:
          {{0, true}});
       % else:
-        {{${ip.name_upper}_INTR_STATE_${irqs[0].name_upper}_BIT, true}});
+        {{${ip.name_upper}_INTR_STATE_${ip.irqs[0].name_upper}_BIT, true}});
       % endif
     EXPECT_EQ(dif_${ip.name_snake}_irq_acknowledge(
         &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0),
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0),
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}),
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}),
       % endif
       kDifOk);
 
-  % if len(irqs) > 1 or irqs[0].width > 1:
+  % if len(ip.irqs) > 1 or ip.irqs[0].width > 1:
     // Clear the last IRQ state.
     EXPECT_WRITE32(${ip.name_upper}_INTR_STATE_REG_OFFSET,
-      % if irqs[0].width > 1:
-        {{${irqs[0].width - 1}, true}});
+      % if ip.irqs[0].width > 1:
+        {{${ip.irqs[0].width - 1}, true}});
       % else:
-        {{${ip.name_upper}_INTR_STATE_${irqs[-1].name_upper}_BIT, true}});
+        {{${ip.name_upper}_INTR_STATE_${ip.irqs[-1].name_upper}_BIT, true}});
       % endif
     EXPECT_EQ(dif_${ip.name_snake}_irq_acknowledge(
         &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}${irqs[0].width - 1}),
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}${ip.irqs[0].width - 1}),
       % else:
-        kDif${ip.name_camel}Irq${irqs[-1].name_camel}),
+        kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}),
       % endif
       kDifOk);
   % endif
@@ -234,10 +234,10 @@ namespace {
   TEST_F(IrqForceTest, NullArgs) {
     EXPECT_EQ(dif_${ip.name_snake}_irq_force(
         nullptr, 
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0),
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0),
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}),
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}),
       % endif
       kDifBadArg);
   }
@@ -252,34 +252,34 @@ namespace {
   TEST_F(IrqForceTest, Success) {
     // Force first IRQ.
     EXPECT_WRITE32(${ip.name_upper}_INTR_TEST_REG_OFFSET,
-      % if irqs[0].width > 1:
+      % if ip.irqs[0].width > 1:
          {{0, true}});
       % else:
-         {{${ip.name_upper}_INTR_TEST_${irqs[0].name_upper}_BIT, true}});
+         {{${ip.name_upper}_INTR_TEST_${ip.irqs[0].name_upper}_BIT, true}});
       % endif
     EXPECT_EQ(dif_${ip.name_snake}_irq_force(
         &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0),
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0),
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}),
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}),
       % endif
       kDifOk);
 
-  % if len(irqs) > 1 or irqs[0].width > 1:
+  % if len(ip.irqs) > 1 or ip.irqs[0].width > 1:
     // Force last IRQ.
     EXPECT_WRITE32(${ip.name_upper}_INTR_TEST_REG_OFFSET,
-      % if irqs[0].width > 1:
-        {{${irqs[0].width - 1}, true}});
+      % if ip.irqs[0].width > 1:
+        {{${ip.irqs[0].width - 1}, true}});
       % else:
-        {{${ip.name_upper}_INTR_TEST_${irqs[-1].name_upper}_BIT, true}});
+        {{${ip.name_upper}_INTR_TEST_${ip.irqs[-1].name_upper}_BIT, true}});
       % endif
     EXPECT_EQ(dif_${ip.name_snake}_irq_force(
         &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[-1].name_camel}${irqs[0].width - 1}),
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}${ip.irqs[0].width - 1}),
       % else:
-        kDif${ip.name_camel}Irq${irqs[-1].name_camel}),
+        kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}),
       % endif
       kDifOk);
   % endif
@@ -293,30 +293,30 @@ namespace {
 
     EXPECT_EQ(dif_${ip.name_snake}_irq_get_enabled(
         nullptr, 
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         &irq_state),
       kDifBadArg);
 
     EXPECT_EQ(dif_${ip.name_snake}_irq_get_enabled(
         &${ip.name_snake}_, 
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         nullptr),
       kDifBadArg);
 
     EXPECT_EQ(dif_${ip.name_snake}_irq_get_enabled(
         nullptr, 
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         nullptr),
       kDifBadArg);
@@ -338,37 +338,37 @@ namespace {
     // First IRQ is enabled.
     irq_state = kDifToggleDisabled;
     EXPECT_READ32(${ip.name_upper}_INTR_ENABLE_REG_OFFSET,
-      % if irqs[0].width > 1:
+      % if ip.irqs[0].width > 1:
         {{0, true}});
       % else:
-        {{${ip.name_upper}_INTR_ENABLE_${irqs[0].name_upper}_BIT, true}});
+        {{${ip.name_upper}_INTR_ENABLE_${ip.irqs[0].name_upper}_BIT, true}});
       % endif
     EXPECT_EQ(dif_${ip.name_snake}_irq_get_enabled(
         &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         &irq_state),
       kDifOk);
     EXPECT_EQ(irq_state, kDifToggleEnabled);
 
-  % if len(irqs) > 1 or irqs[0].width > 1:
+  % if len(ip.irqs) > 1 or ip.irqs[0].width > 1:
     // Last IRQ is disabled.
     irq_state = kDifToggleEnabled;
     EXPECT_READ32(${ip.name_upper}_INTR_ENABLE_REG_OFFSET,
-      % if irqs[0].width > 1:
-        {{${irqs[0].width - 1}, false}});
+      % if ip.irqs[0].width > 1:
+        {{${ip.irqs[0].width - 1}, false}});
       % else:
-        {{${ip.name_upper}_INTR_ENABLE_${irqs[-1].name_upper}_BIT, false}});
+        {{${ip.name_upper}_INTR_ENABLE_${ip.irqs[-1].name_upper}_BIT, false}});
       % endif
     EXPECT_EQ(dif_${ip.name_snake}_irq_get_enabled(
         &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}${irqs[0].width - 1},
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}${ip.irqs[0].width - 1},
       % else:
-        kDif${ip.name_camel}Irq${irqs[-1].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel},
       % endif
         &irq_state),
       kDifOk);
@@ -383,10 +383,10 @@ namespace {
 
     EXPECT_EQ(dif_${ip.name_snake}_irq_set_enabled(
         nullptr, 
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         irq_state),
       kDifBadArg);
@@ -408,36 +408,36 @@ namespace {
     // Enable first IRQ.
     irq_state = kDifToggleEnabled;
     EXPECT_MASK32(${ip.name_upper}_INTR_ENABLE_REG_OFFSET,
-      % if irqs[0].width > 1:
+      % if ip.irqs[0].width > 1:
         {{0, 0x1, true}});
       % else:
-        {{${ip.name_upper}_INTR_ENABLE_${irqs[0].name_upper}_BIT, 0x1, true}});
+        {{${ip.name_upper}_INTR_ENABLE_${ip.irqs[0].name_upper}_BIT, 0x1, true}});
       % endif
     EXPECT_EQ(dif_${ip.name_snake}_irq_set_enabled(
         &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}0,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         irq_state),
       kDifOk);
 
-  % if len(irqs) > 1 or irqs[0].width > 1:
+  % if len(ip.irqs) > 1 or ip.irqs[0].width > 1:
     // Disable last IRQ.
     irq_state = kDifToggleDisabled;
     EXPECT_MASK32(${ip.name_upper}_INTR_ENABLE_REG_OFFSET,
-      % if irqs[0].width > 1:
-        {{${irqs[0].width - 1}, 0x1, false}});
+      % if ip.irqs[0].width > 1:
+        {{${ip.irqs[0].width - 1}, 0x1, false}});
       % else:
-        {{${ip.name_upper}_INTR_ENABLE_${irqs[-1].name_upper}_BIT, 0x1, false}});
+        {{${ip.name_upper}_INTR_ENABLE_${ip.irqs[-1].name_upper}_BIT, 0x1, false}});
       % endif
     EXPECT_EQ(dif_${ip.name_snake}_irq_set_enabled(
         &${ip.name_snake}_,
-      % if irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${irqs[0].name_camel}${irqs[0].width - 1},
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}${ip.irqs[0].width - 1},
       % else:
-        kDif${ip.name_camel}Irq${irqs[-1].name_camel},
+        kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel},
       % endif
         irq_state),
       kDifOk);
