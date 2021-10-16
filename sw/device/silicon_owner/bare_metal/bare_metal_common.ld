@@ -4,9 +4,9 @@
 
 /**
  * NOTE:
- * This is an incomplete common portion of ROM_EXT linker file, and should not
- * be used directly. Instead it should be included by a top level ROM_EXT slot
- * linker file.
+ * This is an incomplete common portion of the first Silicon Owner stage linker
+ * file, and should not be used directly. Instead it should be included by a
+ * top level slot linker file.
  */
 
 OUTPUT_ARCH(riscv)
@@ -20,9 +20,9 @@ __DYNAMIC = 0;
 /**
  * Marking the entry point correctly for the ELF file. The signer tool will
  * transfer this value to the `entry_point` field of the manifest, which will
- * then be used by `mask_rom_boot` to handover execution to ROM_EXT.
+ * then be used by the ROM_EXT to handover execution to ROM_EXT.
  */
-ENTRY(_rom_ext_start_boot)
+ENTRY(_start_boot)
 
 /**
  * NOTE: We have to align each section to word boundaries as our current
@@ -63,20 +63,6 @@ SECTIONS {
   } > eflash
 
   /**
-   * Shutdown text section, containing shutdown function(s).
-   *
-   * This must be the last executable section in the ROM_EXT flash image.
-   */
-  .shutdown : ALIGN(4) {
-    *(.shutdown)
-    *(.shutdown.*)
-
-    /* Ensure section end is word-aligned. */
-    . = ALIGN(4);
-    _text_end = .;
-  } > eflash
-
-  /**
    * Read-only data section, containing all large compile-time constants, like
    * strings.
    */
@@ -88,20 +74,6 @@ SECTIONS {
     *(.rodata)
     *(.rodata.*)
   } > eflash
-
-  /**
-   * Critical static data that is accessible by both the mask ROM and the ROM
-   * extension.
-   *
-   * Each variable added to .static_critical must be in its own subsection
-   * named after the variable.
-   *
-   * This data is not initialized during CRT (hence NOLOAD). Instead it will
-   * be initialized by the mask ROM.
-   */
-  .static_critical ORIGIN(ram_main) (NOLOAD) : ALIGN(4) {
-    INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
-  } > ram_main
 
   /**
    * Mutable data section, at the bottom of ram_main. This will be initialized
@@ -165,6 +137,8 @@ SECTIONS {
     _bss_end = .;
   } > ram_main
 
+  /* TODO(#9044): Switch to info_sections.ld once DV dependencies are factored
+   * out. */
   /* ELF-internal Sections. */
   .symtab 0x0 : { *(.symtab) }
   .strtab 0x0 : { *(.strtab) }
