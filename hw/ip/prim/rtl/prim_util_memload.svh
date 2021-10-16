@@ -69,6 +69,12 @@
 `endif
 
 initial begin
+  bit show_mem_paths;
+
+  // Print the hierarchical path to the memory to help make formal connectivity checks easy.
+  void'($value$plusargs("show_mem_paths=%0b", show_mem_paths));
+  if (show_mem_paths) $display("%m");
+
   if (MemInitFile != "") begin : gen_meminit
       $display("Initializing memory %m from file '%s'.", MemInitFile);
       $readmemh(MemInitFile, mem);
