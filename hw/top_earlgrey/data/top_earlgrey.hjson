@@ -151,10 +151,8 @@
       { name: "sys_io_div4",    gen: true,  type: "top", parent: "sys_src", clk: "io_div4" }
       { name: "sys_aon",        gen: true,  type: "top", parent: "sys_src", clk: "aon"     }
       { name: "spi_device",     gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
-      { name: "spi_host0",      gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
-      { name: "spi_host0_core", gen: true,  type: "top", parent: "sys_src", clk: "io",      sw: true }
-      { name: "spi_host1",      gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
-      { name: "spi_host1_core", gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true }
+      { name: "spi_host0",      gen: true,  type: "top", parent: "sys_src", clk: "io",      sw: true }
+      { name: "spi_host1",      gen: true,  type: "top", parent: "sys_src", clk: "io_div2", sw: true }
       { name: "usb",            gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true }
       { name: "usbif",          gen: true,  type: "top", parent: "sys_src", clk: "usb",     sw: true }
       { name: "i2c0",           gen: true,  type: "top", parent: "sys_src", clk: "io_div4", sw: true },
@@ -253,16 +251,16 @@
     },
     { name: "spi_host0",
       type: "spi_host",
-      clock_srcs: {clk_i: "io_div4", clk_core_i: "io"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "spi_host0", rst_core_ni: "spi_host0_core"},
+      reset_connections: {rst_ni: "spi_host0"},
       base_addr: "0x40060000",
     },
     { name: "spi_host1",
       type: "spi_host",
-      clock_srcs: {clk_i: "io_div4", clk_core_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div2"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "spi_host1", rst_core_ni: "spi_host1_core"},
+      reset_connections: {rst_ni: "spi_host1"},
       base_addr: "0x40070000",
     },
     { name: "i2c0",
@@ -985,10 +983,12 @@
       reset_connections: {rst_main_ni: "sys", rst_fixed_ni: "sys_io_div4"}
     },
     { name: "peri",
-      clock_srcs: {clk_peri_i: "io_div4"},
+      clock_srcs: {clk_peri_i: "io_div4", clk_spi_host0_i: "io", clk_spi_host1_i: "io_div2"},
       clock_group: "infra",
       reset: "sys_io_div4",
-      reset_connections: {rst_peri_ni: "sys_io_div4"},
+      reset_connections: {rst_peri_ni:      "sys_io_div4",
+                          rst_spi_host0_ni: "spi_host0",
+                          rst_spi_host1_ni: "spi_host1"},
     }
   ],
 

@@ -1632,15 +1632,13 @@ typedef enum top_earlgrey_power_manager_wake_ups {
 typedef enum top_earlgrey_reset_manager_sw_resets {
   kTopEarlgreyResetManagerSwResetsSpiDevice = 0, /**<  */
   kTopEarlgreyResetManagerSwResetsSpiHost0 = 1, /**<  */
-  kTopEarlgreyResetManagerSwResetsSpiHost0Core = 2, /**<  */
-  kTopEarlgreyResetManagerSwResetsSpiHost1 = 3, /**<  */
-  kTopEarlgreyResetManagerSwResetsSpiHost1Core = 4, /**<  */
-  kTopEarlgreyResetManagerSwResetsUsb = 5, /**<  */
-  kTopEarlgreyResetManagerSwResetsUsbif = 6, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c0 = 7, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c1 = 8, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c2 = 9, /**<  */
-  kTopEarlgreyResetManagerSwResetsLast = 9, /**< \internal Last valid rstmgr software reset request */
+  kTopEarlgreyResetManagerSwResetsSpiHost1 = 2, /**<  */
+  kTopEarlgreyResetManagerSwResetsUsb = 3, /**<  */
+  kTopEarlgreyResetManagerSwResetsUsbif = 4, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c0 = 5, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c1 = 6, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c2 = 7, /**<  */
+  kTopEarlgreyResetManagerSwResetsLast = 7, /**< \internal Last valid rstmgr software reset request */
 } top_earlgrey_reset_manager_sw_resets_t;
 
 /**

@@ -817,10 +817,10 @@ module top_earlgrey #(
   assign lpg_cg_en[1] = clkmgr_aon_cg_en.io_div4_peri;
   assign lpg_rst_en[1] = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::Domain0Sel];
   // peri_spi_host0_0
-  assign lpg_cg_en[2] = clkmgr_aon_cg_en.io_div4_peri;
+  assign lpg_cg_en[2] = clkmgr_aon_cg_en.io_peri;
   assign lpg_rst_en[2] = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::Domain0Sel];
   // peri_spi_host1_0
-  assign lpg_cg_en[3] = clkmgr_aon_cg_en.io_div4_peri;
+  assign lpg_cg_en[3] = clkmgr_aon_cg_en.io_div2_peri;
   assign lpg_rst_en[3] = rstmgr_aon_rst_en.spi_host1[rstmgr_pkg::Domain0Sel];
   // peri_i2c0_0
   assign lpg_cg_en[4] = clkmgr_aon_cg_en.io_div4_peri;
@@ -899,11 +899,11 @@ module top_earlgrey #(
     prim_mubi_pkg::mubi4_t unused_cg_en_12;
     assign unused_cg_en_12 = clkmgr_aon_cg_en.io_div4_otbn;
     prim_mubi_pkg::mubi4_t unused_cg_en_13;
-    assign unused_cg_en_13 = clkmgr_aon_cg_en.usb_secure;
+    assign unused_cg_en_13 = clkmgr_aon_cg_en.io_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_14;
-    assign unused_cg_en_14 = clkmgr_aon_cg_en.io_div2_peri;
+    assign unused_cg_en_14 = clkmgr_aon_cg_en.io_div2_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_15;
-    assign unused_cg_en_15 = clkmgr_aon_cg_en.io_peri;
+    assign unused_cg_en_15 = clkmgr_aon_cg_en.usb_secure;
     prim_mubi_pkg::mubi4_t unused_cg_en_16;
     assign unused_cg_en_16 = clkmgr_aon_cg_en.usb_peri;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
@@ -957,27 +957,19 @@ module top_earlgrey #(
     prim_mubi_pkg::mubi4_t unused_rst_en_24;
     assign unused_rst_en_24 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_25;
-    assign unused_rst_en_25 = rstmgr_aon_rst_en.spi_host0_core[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_25 = rstmgr_aon_rst_en.spi_host1[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_26;
-    assign unused_rst_en_26 = rstmgr_aon_rst_en.spi_host0_core[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_26 = rstmgr_aon_rst_en.usb[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_27;
-    assign unused_rst_en_27 = rstmgr_aon_rst_en.spi_host1[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_27 = rstmgr_aon_rst_en.usbif[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_28;
-    assign unused_rst_en_28 = rstmgr_aon_rst_en.spi_host1_core[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_28 = rstmgr_aon_rst_en.usbif[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_29;
-    assign unused_rst_en_29 = rstmgr_aon_rst_en.spi_host1_core[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_29 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_30;
-    assign unused_rst_en_30 = rstmgr_aon_rst_en.usb[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_30 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_31;
-    assign unused_rst_en_31 = rstmgr_aon_rst_en.usbif[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_32;
-    assign unused_rst_en_32 = rstmgr_aon_rst_en.usbif[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_33;
-    assign unused_rst_en_33 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_34;
-    assign unused_rst_en_34 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_35;
-    assign unused_rst_en_35 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_31 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
 
   // Peripheral Instantiation
 
@@ -1206,10 +1198,8 @@ module top_earlgrey #(
       .tl_o(spi_host0_tl_rsp),
 
       // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
-      .clk_core_i (clkmgr_aon_clocks.clk_io_peri),
-      .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]),
-      .rst_core_ni (rstmgr_aon_resets.rst_spi_host0_core_n[rstmgr_pkg::Domain0Sel])
+      .clk_i (clkmgr_aon_clocks.clk_io_peri),
+      .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel])
   );
   spi_host #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[7:7])
@@ -1240,10 +1230,8 @@ module top_earlgrey #(
       .tl_o(spi_host1_tl_rsp),
 
       // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
-      .clk_core_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel]),
-      .rst_core_ni (rstmgr_aon_resets.rst_spi_host1_core_n[rstmgr_pkg::Domain0Sel])
+      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
+      .rst_ni (rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel])
   );
   i2c #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[8:8])
@@ -2787,7 +2775,11 @@ module top_earlgrey #(
   );
   xbar_peri u_xbar_peri (
     .clk_peri_i (clkmgr_aon_clocks.clk_io_div4_infra),
+    .clk_spi_host0_i (clkmgr_aon_clocks.clk_io_infra),
+    .clk_spi_host1_i (clkmgr_aon_clocks.clk_io_div2_infra),
     .rst_peri_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_spi_host0_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]),
+    .rst_spi_host1_ni (rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel]),
 
     // port: tl_main
     .tl_main_i(main_tl_peri_req),

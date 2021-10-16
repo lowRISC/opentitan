@@ -4,7 +4,6 @@
 { name: "spi_host",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
-    {clock: "clk_core_i", reset: "rst_core_ni"}
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }

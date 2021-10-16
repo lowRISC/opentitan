@@ -4,7 +4,9 @@
 { name: "peri",
   type: "xbar",
   clock_primary: "clk_peri_i", // Main clock, used in sockets
+  other_clock_list: [ "clk_spi_host0_i" ] // Secondary clocks used by specific nodes
   reset_primary: "rst_peri_ni", // Main reset, used in sockets
+  other_reset_list: [ "rst_spi_host0_ni" ] // Secondary resets used by specific nodes
 
   nodes: [
     { name:  "main",
@@ -35,8 +37,8 @@
     },
     { name:      "spi_host0",
       type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
+      clock:     "clk_spi_host0_i",
+      reset:     "rst_spi_host0_ni",
       pipeline:  "false"
     },
     { name:      "rv_timer",

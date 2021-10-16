@@ -209,9 +209,9 @@
     },
     { name: "spi_host0",
       type: "spi_host",
-      clock_srcs: {clk_i: "io_div4", clk_core_i: "io"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "spi_host0", rst_core_ni: "spi_host0"},
+      reset_connections: {rst_ni: "spi_host0"},
       base_addr: "0x40060000",
     },
     { name: "rv_timer",
@@ -666,10 +666,10 @@
       reset_connections: {rst_main_ni: "sys", rst_fixed_ni: "sys_io_div4"}
     },
     { name: "peri",
-      clock_srcs: {clk_peri_i: "io_div4"},
+      clock_srcs: {clk_peri_i: "io_div4", clk_spi_host0_i: "io"},
       clock_group: "infra",
       reset: "sys_io_div4",
-      reset_connections: {rst_peri_ni: "sys_io_div4"},
+      reset_connections: {rst_peri_ni: "sys_io_div4", rst_spi_host0_ni: "spi_host0"},
     }
   ],
 

@@ -61,7 +61,7 @@
     { name: "NumSwResets",
       desc: "Number of software resets",
       type: "int",
-      default: "10",
+      default: "8",
       local: "true"
     },
 

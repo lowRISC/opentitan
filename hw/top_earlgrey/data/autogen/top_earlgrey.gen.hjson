@@ -131,6 +131,8 @@
           clk_io_div4_infra: io_div4
           clk_aon_infra: aon
           clk_main_infra: main
+          clk_io_infra: io
+          clk_io_div2_infra: io_div2
         }
       }
       {
@@ -401,20 +403,6 @@
         sw: true
         path: rstmgr_aon_resets.rst_spi_host0_n
         parent: sys_src
-        clock: io_div4
-      }
-      {
-        name: spi_host0_core
-        gen: true
-        type: top
-        domains:
-        [
-          "0"
-        ]
-        shadowed: false
-        sw: true
-        path: rstmgr_aon_resets.rst_spi_host0_core_n
-        parent: sys_src
         clock: io
       }
       {
@@ -428,20 +416,6 @@
         shadowed: false
         sw: true
         path: rstmgr_aon_resets.rst_spi_host1_n
-        parent: sys_src
-        clock: io_div4
-      }
-      {
-        name: spi_host1_core
-        gen: true
-        type: top
-        domains:
-        [
-          "0"
-        ]
-        shadowed: false
-        sw: true
-        path: rstmgr_aon_resets.rst_spi_host1_core_n
         parent: sys_src
         clock: io_div2
       }
@@ -856,8 +830,7 @@
       type: spi_host
       clock_srcs:
       {
-        clk_i: io_div4
-        clk_core_i: io
+        clk_i: io
       }
       clock_group: peri
       reset_connections:
@@ -867,16 +840,10 @@
           name: spi_host0
           domain: "0"
         }
-        rst_core_ni:
-        {
-          name: spi_host0_core
-          domain: "0"
-        }
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-        clk_core_i: clkmgr_aon_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
       }
       domain:
       [
@@ -922,8 +889,7 @@
       type: spi_host
       clock_srcs:
       {
-        clk_i: io_div4
-        clk_core_i: io_div2
+        clk_i: io_div2
       }
       clock_group: peri
       reset_connections:
@@ -933,16 +899,10 @@
           name: spi_host1
           domain: "0"
         }
-        rst_core_ni:
-        {
-          name: spi_host1_core
-          domain: "0"
-        }
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-        clk_core_i: clkmgr_aon_clocks.clk_io_div2_peri
+        clk_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
       domain:
       [
@@ -8403,6 +8363,8 @@
       clock_srcs:
       {
         clk_peri_i: io_div4
+        clk_spi_host0_i: io
+        clk_spi_host1_i: io_div2
       }
       clock_group: infra
       reset: rst_peri_ni
@@ -8413,10 +8375,22 @@
           name: sys_io_div4
           domain: "0"
         }
+        rst_spi_host0_ni:
+        {
+          name: spi_host0
+          domain: "0"
+        }
+        rst_spi_host1_ni:
+        {
+          name: spi_host1
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
+        clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
+        clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
       }
       domain:
       [
@@ -8672,8 +8646,8 @@
         {
           name: spi_host0
           type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
+          clock: clk_spi_host0_i
+          reset: rst_spi_host0_ni
           pipeline: "false"
           inst_type: spi_host
           addr_range:
@@ -8690,8 +8664,8 @@
         {
           name: spi_host1
           type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
+          clock: clk_spi_host1_i
+          reset: rst_spi_host1_ni
           pipeline: "false"
           inst_type: spi_host
           addr_range:
@@ -13694,7 +13668,7 @@
     {
       name: peri_spi_host0_0
       clock_group: peri
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      clock_connection: clkmgr_aon_clocks.clk_io_peri
       reset_connection:
       {
         name: spi_host0
@@ -13704,7 +13678,7 @@
     {
       name: peri_spi_host1_0
       clock_group: peri
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      clock_connection: clkmgr_aon_clocks.clk_io_div2_peri
       reset_connection:
       {
         name: spi_host1

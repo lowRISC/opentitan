@@ -169,13 +169,9 @@ interface rstmgr_cascading_sva_if (
   `CASCADED_ASSERTS(CascadeSysToSpiDevice, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
                     resets_o.rst_spi_device_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div4_i)
   `CASCADED_ASSERTS(CascadeSysToSpiHost0, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_spi_host0_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div4_i)
-  `CASCADED_ASSERTS(CascadeSysToSpiHost0Core, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_spi_host0_core_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_i)
+                    resets_o.rst_spi_host0_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_i)
   `CASCADED_ASSERTS(CascadeSysToSpiHost1, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_spi_host1_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div4_i)
-  `CASCADED_ASSERTS(CascadeSysToSpiHost1Core, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_spi_host1_core_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_i)
+                    resets_o.rst_spi_host1_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div2_i)
   `CASCADED_ASSERTS(CascadeSysToUsb, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
                     resets_o.rst_usb_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_io_div4_i)
   `CASCADED_ASSERTS(CascadeSysToUsbIf, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
