@@ -5,6 +5,8 @@
   build_cmd:  "{job_prefix} xrun"
   run_cmd:    "{job_prefix} xrun"
 
+  build_db_dir: "{build_dir}/xcelium.d"
+
   build_opts: ["-elaborate -64bit -sv",
                "-licqueue",
                // TODO: duplicate primitives between OT and Ibex #1231
@@ -13,7 +15,7 @@
                "-timescale 1ns/1ps",
                "-f {sv_flist}",
                "-uvmhome CDNS-1.2",
-               "-xmlibdirname {build_dir}/xcelium.d",
+               "-xmlibdirname {build_db_dir}",
                // List multiple tops for the simulation. Prepend each top level with `-top`.
                "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
                // Set the top level elaborated entity (snapshot name) correctly since there are
@@ -37,7 +39,7 @@
 
   run_opts:   ["-input {run_script}",
                "-licqueue",
-               "-64bit -xmlibdirname {build_dir}/xcelium.d",
+               "-64bit -xmlibdirname {build_db_dir}",
                // Use the same snapshot name set during the build step.
                "-r {tb}",
                "+SVSEED={seed}",
@@ -145,7 +147,7 @@
                      // what metrics to use
                      "-jg_coverage {cov_metrics}",
                      "-64bit",
-                     "-xmlibdirname {build_dir}/xcelium.d",
+                     "-xmlibdirname {build_db_dir}",
                      // overwrite previous results
                      "-covoverwrite",
                      "-inst_top {dut_instance}",
