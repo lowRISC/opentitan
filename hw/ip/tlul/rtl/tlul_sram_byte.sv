@@ -35,8 +35,9 @@ module tlul_sram_byte import tlul_pkg::*; #(
 );
 
   // state enumeration
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     StPassThru,
+    StFlush,
     StWaitRd,
     StWriteCmd,
     StWait
@@ -64,6 +65,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
   // transaction qualifying signals
   logic a_ack;  // upstream a channel acknowledgement
+  logic d_ack;  // upstream d channel acknowledgement
   logic sram_a_ack; // downstream a channel acknowledgement
   logic sram_d_ack; // downstream d channel acknowledgement
   logic wr_txn;
@@ -72,10 +74,22 @@ module tlul_sram_byte import tlul_pkg::*; #(
   logic a_ack_q;
 
   assign a_ack = tl_i.a_valid & tl_o.a_ready;
+  assign d_ack = tl_o.d_valid & tl_i.d_ready;
   assign sram_a_ack = tl_sram_o.a_valid & tl_sram_i.a_ready;
   assign sram_d_ack = tl_sram_i.d_valid & tl_sram_o.d_ready;
   assign wr_txn = (tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData);
   assign byte_req_ack = byte_wr_txn & a_ack & ~error_i;
+
+  logic [3:0] txn_cnt;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      txn_cnt <= '0;
+    end else if (a_ack && !d_ack) begin
+      txn_cnt <= txn_cnt + 1'b1;
+    end else if (!a_ack && d_ack) begin
+      txn_cnt <= txn_cnt - 1'b1;
+    end
+  end
 
   // when to select internal signals instead of passthru
   if (EnableIntg) begin : gen_dyn_sel
@@ -103,15 +117,38 @@ module tlul_sram_byte import tlul_pkg::*; #(
     state_d = state_q;
 
     unique case (state_q)
+      //StPassThru: begin
+      //  // TODO(#7461): remove the first if condition once all RAW corner cases are handled in DV.
+      //  // This introduces an artificial bubble before entering a read modify write operation
+      //  // in case there was another transaction right before this one. This ensures that the
+      //  // previous operation can complete.
+      //  if (byte_wr_txn && a_ack_q) begin
+      //    stall_host = 1'b1;
+      //  end else if (byte_req_ack) begin
+      //    state_d = StWaitRd;
+      //  end
+      //end
+
       StPassThru: begin
-        // TODO(#7461): remove the first if condition once all RAW corner cases are handled in DV.
-        // This introduces an artificial bubble before entering a read modify write operation
-        // in case there was another transaction right before this one. This ensures that the
-        // previous operation can complete.
         if (byte_wr_txn && a_ack_q) begin
           stall_host = 1'b1;
         end else if (byte_req_ack) begin
-          state_d = StWaitRd;
+          state_d = (txn_cnt == '0) ?  StWaitRd : StFlush;
+        end
+      end
+
+      // Flush is required if there are many outstanding transactions before
+      // the partial write.  Due to the way things are serialized, there is
+      // no way for the logic to tell which read belongs to the partial read
+      // unless it flushes all prior transactions.
+      StFlush: begin
+        stall_host = 1'b1;
+        if (txn_cnt == 4'h1) begin
+          rd_wait = 1'b1;
+
+          if (sram_d_ack) begin
+            state_d = StWriteCmd;
+          end
         end
       end
 
@@ -136,9 +173,15 @@ module tlul_sram_byte import tlul_pkg::*; #(
       // TODO(#7461): remove this once all RAW corner cases are handled in DV.
       // This state artificially introduces a bubble after each read modify write
       // operation such that it can complete.
+
+      // The new wait is primarily here to handle back to back partial writes.
+      // If we do not wait this one out, the new "write" issues a read that is
+      // immediately accepted. This causes the read response to pop out up the
+      // upstream host, which is incorrect behavior.  There are cleaner ways
+      // to solve this, but this is the most convenient for now.
       StWait: begin
         stall_host = 1'b1;
-        state_d = StPassThru;
+        state_d = d_ack ? StPassThru : StWait;
       end
 
       default:;
@@ -266,7 +309,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
       .wready_o(),
       .wdata_i(tl_i.a_size),
       .rvalid_o(),
-      .rready_i(tl_o.d_valid & tl_i.d_ready),
+      .rready_i(d_ack),
       .rdata_o(a_size),
       .full_o(),
       .depth_o()
@@ -280,7 +323,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
       // when internal logic has taken over, do not show response to host during
       // read phase.  During write phase, allow the host to see the completion.
-      // TODO(#7461): change rd_wait back to stall_host once the issue is resolved.
       tl_o.d_valid = tl_sram_i.d_valid & ~rd_wait;
 
       // the size returned by tl_sram_i does not always correspond to the actual
@@ -304,7 +346,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
   // byte access should trigger state change
   if (EnableIntg) begin : gen_intg_asserts
     // when byte access detected, go to wait read
-    `ASSERT(ByteAccessStateChange_A, a_ack & wr_txn & ~&tl_i.a_mask |=> state_q == StWaitRd)
+    `ASSERT(ByteAccessStateChange_A, a_ack & wr_txn & ~&tl_i.a_mask |=>
+      state_q inside {StWaitRd, StFlush})
 
     // when in wait for read, a successful response should move to write phase
     `ASSERT(ReadCompleteStateChange_A, (state_q == StWaitRd) & sram_d_ack |=> state_q == StWriteCmd)
