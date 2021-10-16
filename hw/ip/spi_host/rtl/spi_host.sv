@@ -15,8 +15,6 @@ module spi_host
 ) (
   input              clk_i,
   input              rst_ni,
-  input              clk_core_i,
-  input              rst_core_ni,
 
   // Register interface
   input              tlul_pkg::tl_h2d_t tl_i,
@@ -48,30 +46,6 @@ module spi_host
   // TODO: Make this an actual parameter
   localparam int CmdDepth = 4;
 
-
-  // TODO:
-  // This CDC FIFO is the first step in moving the entire IP
-  // into the "core" clock domain. As such this is temporary.
-  // Once the IP has been confirmed to work with this scheme
-  // we can work make changes to top-level and DV to
-  // move this FIFO outside this IP and top_earlgrey
-  tlul_pkg::tl_h2d_t tl_core_in;
-  tlul_pkg::tl_d2h_t tl_core_out;
-
-  tlul_fifo_async #(
-    .ReqDepth(4),
-    .RspDepth(4)
-  ) cdc (
-    .clk_h_i  ( clk_i       ),
-    .rst_h_ni ( rst_ni      ),
-    .clk_d_i  ( clk_core_i  ),
-    .rst_d_ni ( rst_core_ni ),
-    .tl_h_i   ( tl_i        ),
-    .tl_h_o   ( tl_o        ),
-    .tl_d_o   ( tl_core_in  ),
-    .tl_d_i   ( tl_core_out )
-  );
-
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
 
@@ -81,10 +55,10 @@ module spi_host
   // Register module
   logic [NumAlerts-1:0] alert_test, alerts;
   spi_host_reg_top u_reg (
-    .clk_i      (clk_core_i),
-    .rst_ni     (rst_core_ni),
-    .tl_i       (tl_core_in),
-    .tl_o       (tl_core_out),
+    .clk_i,
+    .rst_ni,
+    .tl_i       (tl_i),
+    .tl_o       (tl_o),
     .tl_win_o   (fifo_win_h2d),
     .tl_win_i   (fifo_win_d2h),
     .reg2hw,
@@ -104,8 +78,8 @@ module spi_host
       .AsyncOn(AlertAsyncOn[i]),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
-      .clk_i         ( clk_core_i    ),
-      .rst_ni        ( rst_core_ni   ),
+      .clk_i,
+      .rst_ni,
       .alert_test_i  ( alert_test[i] ),
       .alert_req_i   ( alerts[0]     ),
       .alert_ack_o   (               ),
@@ -149,7 +123,7 @@ module spi_host
   end                   : gen_passthrough_implementation
   else begin            : gen_passthrough_ignore
      // Passthrough only supported for instances with one CSb line
-    `ASSERT(PassthroughNumCSCompat_A, !passthrough_i.passthrough_en, clk_core_i, rst_core_ni)
+    `ASSERT(PassthroughNumCSCompat_A, !passthrough_i.passthrough_en, clk_i, rst_ni)
 
     assign cio_sck_o    = sck;
     assign cio_sck_en_o = 1'b1;
@@ -283,7 +257,7 @@ module spi_host
   // some cases, the writes to COMMAND are not atomic.
   //
   // Disabling this assertion for now
-  //`ASSERT(CmdAtomicity_A, &cmd_qes ^ |cmd_qes, clk_core_i, rst_core_ni);
+  //`ASSERT(CmdAtomicity_A, &cmd_qes ^ |cmd_qes, clk_i, rst_ni);
 
   logic active;
   logic rx_stall;
@@ -304,8 +278,8 @@ module spi_host
   spi_host_command_queue #(
     .CmdDepth(CmdDepth)
   ) u_cmd_queue (
-    .clk_i                (clk_core_i),
-    .rst_ni               (rst_core_ni),
+    .clk_i,
+    .rst_ni,
     .command_i            (command),
     .command_valid_i      (command_valid),
     .command_busy_o       (command_busy),
@@ -326,8 +300,8 @@ module spi_host
   logic        rx_ready;
 
   spi_host_window u_window (
-    .clk_i      (clk_core_i),
-    .rst_ni     (rst_core_ni),
+    .clk_i,
+    .rst_ni,
     .win_i      (fifo_win_h2d),
     .win_o      (fifo_win_d2h),
     .tx_data_o  (tx_data),
@@ -391,8 +365,8 @@ module spi_host
     .RxDepth(RxDepth),
     .SwapBytes(~ByteOrder)
   ) u_data_fifos (
-    .clk_i             (clk_core_i),
-    .rst_ni            (rst_core_ni),
+    .clk_i,
+    .rst_ni,
 
     .tx_data_i         (tx_data),
     .tx_be_i           (tx_be),
@@ -437,8 +411,8 @@ module spi_host
   spi_host_core #(
     .NumCS(NumCS)
   ) u_spi_core (
-    .clk_i           (clk_core_i),
-    .rst_ni          (rst_core_ni),
+    .clk_i,
+    .rst_ni,
 
     .command_i       (core_command),
     .command_valid_i (core_command_valid),
@@ -506,8 +480,8 @@ module spi_host
   assign enb_error     = |sw_error_status;
 
   prim_intr_hw #(.Width(1)) intr_hw_error (
-    .clk_i                  (clk_core_i),
-    .rst_ni                 (rst_core_ni),
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_error),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.error.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.error.q),
@@ -559,8 +533,8 @@ module spi_host
   assign event_rx_full  = rx_full_d & ~rx_full_q;
   assign rx_full_d      = rx_full;
 
-  always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
-    if (!rst_core_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       idle_q     <= 1'b0;
       ready_q    <= 1'b0;
       tx_wm_q    <= 1'b0;
@@ -578,8 +552,8 @@ module spi_host
   end
 
   prim_intr_hw #(.Width(1)) intr_hw_spi_event (
-    .clk_i                  (clk_core_i),
-    .rst_ni                 (rst_core_ni),
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_spi_event),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.spi_event.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.spi_event.q),

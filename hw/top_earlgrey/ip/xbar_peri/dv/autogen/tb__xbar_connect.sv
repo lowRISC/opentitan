@@ -7,11 +7,17 @@
 xbar_peri dut();
 
 `DRIVE_CLK(clk_peri_i)
+`DRIVE_CLK(clk_spi_host0_i)
+`DRIVE_CLK(clk_spi_host1_i)
 
 initial force dut.clk_peri_i = clk_peri_i;
+initial force dut.clk_spi_host0_i = clk_spi_host0_i;
+initial force dut.clk_spi_host1_i = clk_spi_host1_i;
 
 // TODO, all resets tie together
 initial force dut.rst_peri_ni = rst_n;
+initial force dut.rst_spi_host0_ni = rst_n;
+initial force dut.rst_spi_host1_ni = rst_n;
 
 // Host TileLink interface connections
 `CONNECT_TL_HOST_IF(main, dut, clk_peri_i, rst_n)
@@ -28,8 +34,8 @@ initial force dut.rst_peri_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(pwm_aon, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(gpio, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(spi_device, dut, clk_peri_i, rst_n)
-`CONNECT_TL_DEVICE_IF(spi_host0, dut, clk_peri_i, rst_n)
-`CONNECT_TL_DEVICE_IF(spi_host1, dut, clk_peri_i, rst_n)
+`CONNECT_TL_DEVICE_IF(spi_host0, dut, clk_spi_host0_i, rst_n)
+`CONNECT_TL_DEVICE_IF(spi_host1, dut, clk_spi_host1_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rv_timer, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(usbdev, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(pwrmgr_aon, dut, clk_peri_i, rst_n)

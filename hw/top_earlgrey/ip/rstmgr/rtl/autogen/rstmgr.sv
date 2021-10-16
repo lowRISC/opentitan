@@ -169,8 +169,8 @@ module rstmgr
   ////////////////////////////////////////////////////
 
   // consistency check errors
-  logic [20:0][PowerDomains-1:0] cnsty_chk_errs;
-  logic [20:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
+  logic [18:0][PowerDomains-1:0] cnsty_chk_errs;
+  logic [18:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
 
   assign hw2reg.err_code.reg_intg_err.d  = 1'b1;
   assign hw2reg.err_code.reg_intg_err.de = reg_intg_err;
@@ -308,9 +308,9 @@ module rstmgr
   // To simplify generation, each reset generates all associated power domain outputs.
   // If a reset does not support a particular power domain, that reset is always hard-wired to 0.
 
-  lc_ctrl_pkg::lc_tx_t [20:0] leaf_rst_scanmode;
+  lc_ctrl_pkg::lc_tx_t [18:0] leaf_rst_scanmode;
   prim_lc_sync #(
-    .NumCopies(21),
+    .NumCopies(19),
     .AsyncOn(0)
     ) u_leaf_rst_scanmode_sync  (
     .clk_i(1'b0),  // unused clock
@@ -655,7 +655,7 @@ module rstmgr
   rstmgr_leaf_rst u_d0_spi_host0 (
     .clk_i,
     .rst_ni,
-    .leaf_clk_i(clk_io_div4_i),
+    .leaf_clk_i(clk_io_i),
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
     .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST0]),
     .scan_rst_ni,
@@ -666,71 +666,31 @@ module rstmgr
   );
   assign shadow_cnsty_chk_errs[12] = '0;
 
-  // Generating resets for spi_host0_core
-  // Power Domains: ['0']
-  // Shadowed: False
-  assign resets_o.rst_spi_host0_core_n[DomainAonSel] = '0;
-  assign cnsty_chk_errs[13][DomainAonSel] = '0;
-  assign rst_en_o.spi_host0_core[DomainAonSel] = MuBi4True;
-  rstmgr_leaf_rst u_d0_spi_host0_core (
-    .clk_i,
-    .rst_ni,
-    .leaf_clk_i(clk_io_i),
-    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
-    .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST0_CORE]),
-    .scan_rst_ni,
-    .scan_sel(leaf_rst_scanmode[13] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.spi_host0_core[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_spi_host0_core_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[13][Domain0Sel])
-  );
-  assign shadow_cnsty_chk_errs[13] = '0;
-
   // Generating resets for spi_host1
   // Power Domains: ['0']
   // Shadowed: False
   assign resets_o.rst_spi_host1_n[DomainAonSel] = '0;
-  assign cnsty_chk_errs[14][DomainAonSel] = '0;
+  assign cnsty_chk_errs[13][DomainAonSel] = '0;
   assign rst_en_o.spi_host1[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_spi_host1 (
     .clk_i,
     .rst_ni,
-    .leaf_clk_i(clk_io_div4_i),
+    .leaf_clk_i(clk_io_div2_i),
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
     .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST1]),
     .scan_rst_ni,
-    .scan_sel(leaf_rst_scanmode[14] == lc_ctrl_pkg::On),
+    .scan_sel(leaf_rst_scanmode[13] == lc_ctrl_pkg::On),
     .rst_en_o(rst_en_o.spi_host1[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_spi_host1_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[14][Domain0Sel])
+    .err_o(cnsty_chk_errs[13][Domain0Sel])
   );
-  assign shadow_cnsty_chk_errs[14] = '0;
-
-  // Generating resets for spi_host1_core
-  // Power Domains: ['0']
-  // Shadowed: False
-  assign resets_o.rst_spi_host1_core_n[DomainAonSel] = '0;
-  assign cnsty_chk_errs[15][DomainAonSel] = '0;
-  assign rst_en_o.spi_host1_core[DomainAonSel] = MuBi4True;
-  rstmgr_leaf_rst u_d0_spi_host1_core (
-    .clk_i,
-    .rst_ni,
-    .leaf_clk_i(clk_io_div2_i),
-    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
-    .sw_rst_req_ni(sw_rst_ctrl_n[SPI_HOST1_CORE]),
-    .scan_rst_ni,
-    .scan_sel(leaf_rst_scanmode[15] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.spi_host1_core[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_spi_host1_core_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[15][Domain0Sel])
-  );
-  assign shadow_cnsty_chk_errs[15] = '0;
+  assign shadow_cnsty_chk_errs[13] = '0;
 
   // Generating resets for usb
   // Power Domains: ['0']
   // Shadowed: False
   assign resets_o.rst_usb_n[DomainAonSel] = '0;
-  assign cnsty_chk_errs[16][DomainAonSel] = '0;
+  assign cnsty_chk_errs[14][DomainAonSel] = '0;
   assign rst_en_o.usb[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_usb (
     .clk_i,
@@ -739,18 +699,18 @@ module rstmgr
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
     .sw_rst_req_ni(sw_rst_ctrl_n[USB]),
     .scan_rst_ni,
-    .scan_sel(leaf_rst_scanmode[16] == lc_ctrl_pkg::On),
+    .scan_sel(leaf_rst_scanmode[14] == lc_ctrl_pkg::On),
     .rst_en_o(rst_en_o.usb[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_usb_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[16][Domain0Sel])
+    .err_o(cnsty_chk_errs[14][Domain0Sel])
   );
-  assign shadow_cnsty_chk_errs[16] = '0;
+  assign shadow_cnsty_chk_errs[14] = '0;
 
   // Generating resets for usbif
   // Power Domains: ['0']
   // Shadowed: False
   assign resets_o.rst_usbif_n[DomainAonSel] = '0;
-  assign cnsty_chk_errs[17][DomainAonSel] = '0;
+  assign cnsty_chk_errs[15][DomainAonSel] = '0;
   assign rst_en_o.usbif[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_usbif (
     .clk_i,
@@ -759,18 +719,18 @@ module rstmgr
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
     .sw_rst_req_ni(sw_rst_ctrl_n[USBIF]),
     .scan_rst_ni,
-    .scan_sel(leaf_rst_scanmode[17] == lc_ctrl_pkg::On),
+    .scan_sel(leaf_rst_scanmode[15] == lc_ctrl_pkg::On),
     .rst_en_o(rst_en_o.usbif[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_usbif_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[17][Domain0Sel])
+    .err_o(cnsty_chk_errs[15][Domain0Sel])
   );
-  assign shadow_cnsty_chk_errs[17] = '0;
+  assign shadow_cnsty_chk_errs[15] = '0;
 
   // Generating resets for i2c0
   // Power Domains: ['0']
   // Shadowed: False
   assign resets_o.rst_i2c0_n[DomainAonSel] = '0;
-  assign cnsty_chk_errs[18][DomainAonSel] = '0;
+  assign cnsty_chk_errs[16][DomainAonSel] = '0;
   assign rst_en_o.i2c0[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_i2c0 (
     .clk_i,
@@ -779,18 +739,18 @@ module rstmgr
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
     .sw_rst_req_ni(sw_rst_ctrl_n[I2C0]),
     .scan_rst_ni,
-    .scan_sel(leaf_rst_scanmode[18] == lc_ctrl_pkg::On),
+    .scan_sel(leaf_rst_scanmode[16] == lc_ctrl_pkg::On),
     .rst_en_o(rst_en_o.i2c0[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_i2c0_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[18][Domain0Sel])
+    .err_o(cnsty_chk_errs[16][Domain0Sel])
   );
-  assign shadow_cnsty_chk_errs[18] = '0;
+  assign shadow_cnsty_chk_errs[16] = '0;
 
   // Generating resets for i2c1
   // Power Domains: ['0']
   // Shadowed: False
   assign resets_o.rst_i2c1_n[DomainAonSel] = '0;
-  assign cnsty_chk_errs[19][DomainAonSel] = '0;
+  assign cnsty_chk_errs[17][DomainAonSel] = '0;
   assign rst_en_o.i2c1[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_i2c1 (
     .clk_i,
@@ -799,18 +759,18 @@ module rstmgr
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
     .sw_rst_req_ni(sw_rst_ctrl_n[I2C1]),
     .scan_rst_ni,
-    .scan_sel(leaf_rst_scanmode[19] == lc_ctrl_pkg::On),
+    .scan_sel(leaf_rst_scanmode[17] == lc_ctrl_pkg::On),
     .rst_en_o(rst_en_o.i2c1[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_i2c1_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[19][Domain0Sel])
+    .err_o(cnsty_chk_errs[17][Domain0Sel])
   );
-  assign shadow_cnsty_chk_errs[19] = '0;
+  assign shadow_cnsty_chk_errs[17] = '0;
 
   // Generating resets for i2c2
   // Power Domains: ['0']
   // Shadowed: False
   assign resets_o.rst_i2c2_n[DomainAonSel] = '0;
-  assign cnsty_chk_errs[20][DomainAonSel] = '0;
+  assign cnsty_chk_errs[18][DomainAonSel] = '0;
   assign rst_en_o.i2c2[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst u_d0_i2c2 (
     .clk_i,
@@ -819,12 +779,12 @@ module rstmgr
     .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
     .sw_rst_req_ni(sw_rst_ctrl_n[I2C2]),
     .scan_rst_ni,
-    .scan_sel(leaf_rst_scanmode[20] == lc_ctrl_pkg::On),
+    .scan_sel(leaf_rst_scanmode[18] == lc_ctrl_pkg::On),
     .rst_en_o(rst_en_o.i2c2[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_i2c2_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[20][Domain0Sel])
+    .err_o(cnsty_chk_errs[18][Domain0Sel])
   );
-  assign shadow_cnsty_chk_errs[20] = '0;
+  assign shadow_cnsty_chk_errs[18] = '0;
 
 
   ////////////////////////////////////////////////////
