@@ -19,7 +19,6 @@
     }
   ]
   regwidth: "32",
-  scan: "true",
   param_list: [
     { name: "ByteOrder",
       desc: '''Byte order to use when transmitting or receiving data.  If ByteOrder = 0,

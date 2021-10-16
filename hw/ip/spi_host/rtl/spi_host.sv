@@ -18,8 +18,6 @@ module spi_host
   input              clk_core_i,
   input              rst_core_ni,
 
-  input              lc_ctrl_pkg::lc_tx_t scanmode_i,
-
   // Register interface
   input              tlul_pkg::tl_h2d_t tl_i,
   output             tlul_pkg::tl_d2h_t tl_o,
@@ -156,12 +154,6 @@ module spi_host
 
   assign passthrough_o.s = cio_sd_i;
   assign sd_i            = cio_sd_i;
-
-  // TODO: REMOVE THIS CODE
-  // Temp tie-offs to silence lint warnings
-  logic unused_scan;
-
-  assign unused_scan = ^scanmode_i;
 
   assign hw2reg.status.byteorder.d  = ByteOrder;
   assign hw2reg.status.byteorder.de = 1'b1;
