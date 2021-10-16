@@ -390,7 +390,7 @@
 // SCOPE_ : Hierarchical string path to the testbench where this macro is invoked, example: %m.
 // ID_    : Identifier string used for UVM logs.
 `ifndef DV_ASSERT_CTRL
-`define DV_ASSERT_CTRL(LABEL_, HIER_, LEVELS_ = 0, SCOPE_ = "", ID_ = "%m") \
+`define DV_ASSERT_CTRL(LABEL_, HIER_, LEVELS_ = 0, SCOPE_ = "", ID_ = $sformatf("%m")) \
   initial begin \
     bit assert_en; \
     forever begin \
