@@ -90,9 +90,22 @@ module tlul_adapter_sram
   // or other downstream effects
   assign intg_error_o = intg_error | intg_error_q;
 
-  // byte handling for integrity
+  // from sram_byte to adapter logic
   tl_h2d_t tl_i_int;
+  // from adapter logic to sram_byte
   tl_d2h_t tl_o_int;
+  // from sram_byte to rsp_gen
+  tl_d2h_t tl_out;
+
+  tlul_rsp_intg_gen #(
+    .EnableRspIntgGen(EnableRspIntgGen),
+    .EnableDataIntgGen(EnableDataIntgGen)
+  ) u_rsp_gen (
+    .tl_i(tl_out),
+    .tl_o
+  );
+
+  // byte handling for integrity
   tlul_sram_byte #(
     .EnableIntg(ByteAccess & CmdIntgCheck & !ErrOnWrite),
     .Outstanding(Outstanding)
@@ -100,7 +113,7 @@ module tlul_adapter_sram
     .clk_i,
     .rst_ni,
     .tl_i,
-    .tl_o,
+    .tl_o(tl_out),
     .tl_sram_o(tl_i_int),
     .tl_sram_i(tl_o_int),
     .error_i(intg_error)
@@ -182,6 +195,8 @@ module tlul_adapter_sram
     end
   end
 
+
+
   always_comb begin
     d_error = 1'b0;
 
@@ -196,31 +211,22 @@ module tlul_adapter_sram
     end
   end
 
-
-  tl_d2h_t tl_out;
-  assign tl_out = '{
+  logic vld_rd_rsp;
+  assign vld_rd_rsp = reqfifo_rvalid & rspfifo_rvalid & (reqfifo_rdata.op == OpRead);
+  assign tl_o_int = '{
       d_valid  : d_valid ,
       d_opcode : (d_valid && reqfifo_rdata.op != OpRead) ? AccessAck : AccessAckData,
       d_param  : '0,
       d_size   : (d_valid) ? reqfifo_rdata.size : '0,
       d_source : (d_valid) ? reqfifo_rdata.source : '0,
       d_sink   : 1'b0,
-      d_data   : (d_valid && rspfifo_rvalid && reqfifo_rdata.op == OpRead)
+      d_data   : (d_valid && vld_rd_rsp)
                  ? rspfifo_rdata.data : '0,
-      d_user   : '{default: '1, data_intg: d_valid ? rspfifo_rdata.data_intg : '1},
+      d_user   : '{default: '1, data_intg: d_valid && vld_rd_rsp ? rspfifo_rdata.data_intg : '0},
       d_error  : d_valid && d_error,
 
       a_ready  : (gnt_i | error_internal) & reqfifo_wready & sramreqfifo_wready
   };
-
-
-  tlul_rsp_intg_gen #(
-    .EnableRspIntgGen(EnableRspIntgGen),
-    .EnableDataIntgGen(EnableDataIntgGen)
-  ) u_rsp_gen (
-    .tl_i(tl_out),
-    .tl_o(tl_o_int)
-  );
 
   // a_ready depends on the FIFO full condition and grant from SRAM (or SRAM arbiter)
   // assemble response, including read response, write response, and error for unsupported stuff
