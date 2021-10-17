@@ -9,7 +9,12 @@ if {[catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_
  && [catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_o_reg_1" && PRIMITIVE_TYPE =~ BMEM.*.* }]]\
  && [catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_o_reg_2" && PRIMITIVE_TYPE =~ BMEM.*.* }]]\
  && [catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_o_reg_3" && PRIMITIVE_TYPE =~ BMEM.*.* }]]\
- && [catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_o_reg_4" && PRIMITIVE_TYPE =~ BMEM.*.* }]] } {
+ && [catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_o_reg_4" && PRIMITIVE_TYPE =~ BMEM.*.* }]]\
+ && [catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_o_reg_5" && PRIMITIVE_TYPE =~ BMEM.*.* }]]\
+ && [catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_o_reg_6" && PRIMITIVE_TYPE =~ BMEM.*.* }]]\
+ && [catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_o_reg_7" && PRIMITIVE_TYPE =~ BMEM.*.* }]]\
+ && [catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_o_reg_8" && PRIMITIVE_TYPE =~ BMEM.*.* }]]\
+ && [catch [get_cells -hierarchical -filter { NAME =~  "*u_rom_ctrl*u_rom*rdata_o_reg_9" && PRIMITIVE_TYPE =~ BMEM.*.* }]] } {
   send_msg "Designcheck 2-2" INFO "BRAM implementation found for Boot ROM."
 } else {
   send_msg "Designcheck 2-3" ERROR "BRAM implementation not found for Boot ROM."
