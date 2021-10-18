@@ -388,6 +388,10 @@ void ISSWrapper::reset(bool gen_trace) {
   // the ISS one cycle *after* start, but clearing it here avoids a glitch
   // before that.
   mirrored_.insn_cnt = 0;
+
+  // Zero our mirror of STATUS: the initial zero value for the next run doesn't
+  // get reported by the ISS.
+  mirrored_.status = 0;
 }
 
 void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,
