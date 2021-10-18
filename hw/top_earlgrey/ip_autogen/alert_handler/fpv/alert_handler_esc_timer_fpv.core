@@ -5,7 +5,7 @@ CAPI=2:
 name: lowrisc:opentitan:top_earlgrey_alert_handler_esc_timer_fpv:0.1
 description: "alert_handler_esc_timer FPV target"
 filesets:
-  files_fpv:
+  files_formal:
     depend:
       - lowrisc:prim:all
       - lowrisc:opentitan:top_earlgrey_alert_handler
@@ -16,10 +16,16 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default:
+  default: &default_target
     # note, this setting is just used
     # to generate a file list for jg
     default_tool: icarus
     filesets:
-      - files_fpv
+      - files_formal
     toplevel: alert_handler_esc_timer_tb
+
+  formal:
+    <<: *default_target
+
+  lint:
+    <<: *default_target
