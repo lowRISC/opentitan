@@ -6,7 +6,7 @@
 
 module prim_secded_39_32_bind_fpv;
 
-  bind prim_secded_39_32_fpv
+  bind prim_secded_39_32_tb
     prim_secded_39_32_assert_fpv prim_secded_39_32_assert_fpv (
     .clk_i,
     .rst_ni,
