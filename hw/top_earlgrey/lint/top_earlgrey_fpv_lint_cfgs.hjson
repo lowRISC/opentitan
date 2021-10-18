@@ -21,55 +21,103 @@
                name: prim_arbiter_ppc_fpv
                fusesoc_core: lowrisc:fpv:prim_arbiter_ppc_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+               rel_path: "hw/ip/prim/prim_arbiter_ppc_fpv/lint/{tool}"
              }
              {
                name: prim_arbiter_tree_fpv
                fusesoc_core: lowrisc:fpv:prim_arbiter_tree_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+               rel_path: "hw/ip/prim/prim_arbiter_tree_fpv/lint/{tool}"
              }
              {
                name: prim_arbiter_fixed_fpv
                fusesoc_core: lowrisc:fpv:prim_arbiter_fixed_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+               rel_path: "hw/ip/prim/prim_arbiter_fixed_fpv/lint/{tool}"
              }
              {
                name: prim_lfsr_fpv
                fusesoc_core: lowrisc:fpv:prim_lfsr_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+               rel_path: "hw/ip/prim/prim_lfsr_fpv/lint/{tool}"
              }
              {
                name: prim_fifo_sync_fpv
                fusesoc_core: lowrisc:fpv:prim_fifo_sync_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+               rel_path: "hw/ip/prim/prim_fifo_sync_fpv/lint/{tool}"
              }
              {
                name: prim_alert_rxtx_fpv
                fusesoc_core: lowrisc:fpv:prim_alert_rxtx_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+               rel_path: "hw/ip/prim/prim_alert_rxtx_fpv/lint/{tool}"
              }
              {
                name: prim_alert_rxtx_async_fpv
                fusesoc_core: lowrisc:fpv:prim_alert_rxtx_async_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+               rel_path: "hw/ip/prim/prim_alert_rxtx_async_fpv/lint/{tool}"
              }
              {
                name: prim_esc_rxtx_fpv
                fusesoc_core: lowrisc:fpv:prim_esc_rxtx_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+               rel_path: "hw/ip/prim/prim_esc_rxtx_fpv/lint/{tool}"
+             }
+             {
+               name: prim_secded_22_16_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_22_16_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_22_16_fpv/lint/{tool}"
+             }
+             {
+               name: prim_secded_28_22_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_28_22_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_28_22_fpv/lint/{tool}"
+             }
+             {
+               name: prim_secded_39_32_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_39_32_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_39_32_fpv/lint/{tool}"
+             }
+             {
+               name: prim_secded_64_57_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_64_57_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_64_57_fpv/lint/{tool}"
+             }
+             {
+               name: prim_secded_72_64_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_72_64_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_72_64_fpv/lint/{tool}"
+             }
+             {
+               name: prim_secded_hamming_22_16_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_hamming_22_16_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_hamming_22_16_fpv/lint/{tool}"
+             }
+             {
+               name: prim_secded_hamming_39_32_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_hamming_39_32_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_hamming_39_32_fpv/lint/{tool}"
+             }
+             {
+               name: prim_secded_hamming_72_64_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_hamming_72_64_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_hamming_72_64_fpv/lint/{tool}"
              }
              {
                name: prim_packer_fpv
                fusesoc_core: lowrisc:fpv:prim_packer_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+               rel_path: "hw/ip/prim/prim_packer_fpv/lint/{tool}"
              }
              {
                name: pinmux_fpv
