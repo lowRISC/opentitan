@@ -58,7 +58,7 @@ class BadBranch(SnippetGen):
                     self.weights.append(weight)
                     self.insns.append(insn)
 
-        # Check that at least one instruction has a positive weight
+        # Check that at least one instruction has a positive weight.
         assert len(self.insns) == len(self.weights)
         if not self.weights:
             self.disabled = True
@@ -68,13 +68,11 @@ class BadBranch(SnippetGen):
             model: Model,
             program: Program) -> Optional[GenRet]:
 
-        # Max/Min Offsets for BXX (-2048 * 2, 2047 * 2)
-        # We give 0 to get_op_val_range method because it tries to calculate
-        # range with regards to given PC.
+        # Pick maximum and minimum address range for the current PC.
         imm_rng = self.imm_op_type.get_op_val_range(model.pc)
         assert imm_rng is not None
 
-        min_offset, max_offset = imm_rng
+        min_addr, max_addr = imm_rng
 
         # Get known registers. We always have x0.
         # So it should never fail.
@@ -99,24 +97,26 @@ class BadBranch(SnippetGen):
         assert op_val_grs1 is not None
 
         # We need to pick an out of bounds offset from all available values (A)
-        # Best way to solve this is exclude the set of valid choices (B)
-        # We know tgt_addr can be max : pc + max_offset (A_max)
-        # We know tgt_addr can be min : pc + min_offset (A_min)
-        # Aim: (PC + min_offset, PC + max_offset) - (0, imem_size)
+        # mode is a random variable to ensure that all the bins are hit
+        # for offset range. It gives equal weight to all address ranges.
 
-        # Choose target from (A_min, A_max-B_max)
-        local_max = max_offset - program.imem_size
-        tgt_addr = random.randrange(min_offset, local_max, 2)
-
-        # If chosen value is in B, push it out by adding B_max
-        if tgt_addr >= 0:
-            tgt_addr += program.imem_size
-        assert tgt_addr < 0 or tgt_addr > program.imem_size
-
+        mode = random.randint(0, 4)
+        if mode == 0 and min_addr <= -4:
+            tgt_addr = random.randrange(min_addr, -4, 4)
+        elif mode <= 1 and program.imem_size <= max_addr:
+            tgt_addr = random.randrange(program.imem_size, max_addr, 4)
+        elif mode <= 2 and min_addr <= -4:
+            tgt_addr = min_addr
+        elif mode <= 3 and program.imem_size <= max_addr:
+            tgt_addr = max_addr
+        else:
+            assert mode <= 3
+            tgt_addr = random.randrange(min_addr + 2, max_addr, 4)
         off_enc = self.imm_op_type.op_val_to_enc_val(tgt_addr, model.pc)
+
         assert off_enc is not None
 
-        # Pick the instruction from the weighted list
+        # Pick the instruction from the weighted list.
         if not_equals:
             chosen_insn = random.choices(self.insns, weights=self.weights)[0]
         else:
