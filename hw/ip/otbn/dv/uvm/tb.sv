@@ -30,6 +30,10 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if    (interrupts);
   assign interrupts[0] = {intr_done};
 
+  // A hook to allow sequences to enable or disable the MatchingStatus_A assertion below. This is
+  // needed for sequences that trigger alerts (locking OTBN) without telling the model.
+  `DV_ASSERT_CTRL("otbn_status_assert_en", tb.MatchingStatus_A)
+
   otbn_model_if #(
     .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE)
   ) model_if (
