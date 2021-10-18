@@ -18,6 +18,18 @@
   rel_path: "hw/top_earlgrey/fpv/lint/{tool}"
 
   use_cfgs: [{
+              name: alert_handler_esc_timer_fpv
+              fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_esc_timer_fpv
+              import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+              rel_path: "hw/ip/alert_handler/alert_handler_esc_timer_fpv/lint/{tool}"
+             }
+             {
+              name: alert_handler_ping_timer_fpv
+              fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_ping_timer_fpv
+              import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+              rel_path: "hw/ip/alert_handler/alert_handler_ping_timer_fpv/lint/{tool}"
+             }
+            {
                name: prim_arbiter_ppc_fpv
                fusesoc_core: lowrisc:fpv:prim_arbiter_ppc_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
