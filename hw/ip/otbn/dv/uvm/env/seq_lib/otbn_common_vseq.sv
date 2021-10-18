@@ -45,4 +45,14 @@ class otbn_common_vseq extends otbn_base_vseq;
     end
   endtask
 
+  // Overridden from cip_base_vseq. Disable the MatchingStatus_A assertion from the testbench for
+  // this sequence. This assertion checks that the model's STATUS register matches the DUT. Since we
+  // don't actually start the processor or model (or, indeed, tell the model about the error), this
+  // assertion will be false.
+  task run_tl_intg_err_vseq(int num_times = 1);
+    `DV_ASSERT_CTRL_REQ("otbn_status_assert_en", 1'b0)
+    super.run_tl_intg_err_vseq(num_times);
+    `DV_ASSERT_CTRL_REQ("otbn_status_assert_en", 1'b1)
+  endtask
+
 endclass
