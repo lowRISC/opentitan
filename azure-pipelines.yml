@@ -299,6 +299,7 @@ jobs:
 - job: execute_verilated_tests
   displayName: Execute tests on the Verilated system (excl. slow tests)
   pool: ci-public
+  timeoutInMinutes: 120
   dependsOn:
     - chip_earlgrey_verilator
     - sw_build
