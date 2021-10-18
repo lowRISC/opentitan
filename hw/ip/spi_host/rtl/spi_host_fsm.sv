@@ -277,7 +277,7 @@ module spi_host_fsm
           if (wait_cntr_q == 4'h0) begin
             state_d = WaitLead;
           end else begin
-            state_d = WaitIdle;
+            state_d = CSBSwitch;
           end
         end
         IdleCSBActive: begin
@@ -443,8 +443,8 @@ module spi_host_fsm
   assign speed_o           = cmd_speed;
   assign sample_en_d       = byte_starting | shift_en_o;
   assign full_cyc_o        = full_cyc;
-  assign last_read_o       = (byte_cntr_q == 'h1) & rd_en_o & sr_rd_ready_i;
-  assign last_write_o      = (byte_cntr_q == 'h0) & wr_en_o & sr_wr_ready_i;
+  assign last_read_o       = (byte_cntr_q == 'h0) & rd_en_o & sr_rd_ready_i;
+  assign last_write_o      = (byte_cntr_d == 'h0) & wr_en_o & sr_wr_ready_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
