@@ -21,17 +21,17 @@
              {
               name: alert_handler_esc_timer_fpv
               dut: alert_handler_esc_timer_tb
-              fusesoc_core:lowrisc:fpv:alert_handler_esc_timer_fpv
+              fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_esc_timer_fpv
               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-              rel_path: "hw/ip/alert_handler/alert_handler_esc_timer/{sub_flow}/{tool}"
+              rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/alert_handler_esc_timer/{sub_flow}/{tool}"
               cov: true
              }
              {
               name: alert_handler_ping_timer_fpv
               tb: alert_handler_ping_timer_tb
-              fusesoc_core:lowrisc:fpv:alert_handler_ping_timer_fpv
+              fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_ping_timer_fpv
               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-              rel_path: "hw/ip/alert_handler/alert_handler/ping_timer/{sub_flow}/{tool}"
+              rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/alert_handler/ping_timer/{sub_flow}/{tool}"
               cov: true
              }
              {
