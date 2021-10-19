@@ -17,6 +17,10 @@ jobs:
       - name: Copy event file
         run: cp "$GITHUB_EVENT_PATH" ./event.json
 
+      - name: preview
+        run: |
+          cat verible_config
+          cat event.json
       # If this workflow is triggered by a PR from a fork
       # it won't have sufficient access rights to make a review
       # so we just save the file needed to do the review
