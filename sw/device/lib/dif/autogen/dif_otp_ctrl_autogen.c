@@ -9,18 +9,19 @@
 #include "otp_ctrl_regs.h"  // Generated.
 
 /**
- * Get the corresponding interrupt register bit offset. INTR_STATE,
- * INTR_ENABLE and INTR_TEST registers have the same bit offsets, so this
- * routine can be reused.
+ * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
+ * HJSON does NOT have a field "no_auto_intr_regs = true", then the
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
+ * exist, as templated below.
  */
 static bool otp_ctrl_get_irq_bit_index(dif_otp_ctrl_irq_t irq,
                                        bitfield_bit32_index_t *index_out) {
   switch (irq) {
     case kDifOtpCtrlIrqOtpOperationDone:
-      *index_out = OTP_CTRL_INTR_STATE_OTP_OPERATION_DONE_BIT;
+      *index_out = OTP_CTRL_INTR_COMMON_OTP_OPERATION_DONE_BIT;
       break;
     case kDifOtpCtrlIrqOtpError:
-      *index_out = OTP_CTRL_INTR_STATE_OTP_ERROR_BIT;
+      *index_out = OTP_CTRL_INTR_COMMON_OTP_ERROR_BIT;
       break;
     default:
       return false;

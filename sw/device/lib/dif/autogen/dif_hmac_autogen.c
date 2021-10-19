@@ -9,21 +9,22 @@
 #include "hmac_regs.h"  // Generated.
 
 /**
- * Get the corresponding interrupt register bit offset. INTR_STATE,
- * INTR_ENABLE and INTR_TEST registers have the same bit offsets, so this
- * routine can be reused.
+ * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
+ * HJSON does NOT have a field "no_auto_intr_regs = true", then the
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
+ * exist, as templated below.
  */
 static bool hmac_get_irq_bit_index(dif_hmac_irq_t irq,
                                    bitfield_bit32_index_t *index_out) {
   switch (irq) {
     case kDifHmacIrqHmacDone:
-      *index_out = HMAC_INTR_STATE_HMAC_DONE_BIT;
+      *index_out = HMAC_INTR_COMMON_HMAC_DONE_BIT;
       break;
     case kDifHmacIrqFifoEmpty:
-      *index_out = HMAC_INTR_STATE_FIFO_EMPTY_BIT;
+      *index_out = HMAC_INTR_COMMON_FIFO_EMPTY_BIT;
       break;
     case kDifHmacIrqHmacErr:
-      *index_out = HMAC_INTR_STATE_HMAC_ERR_BIT;
+      *index_out = HMAC_INTR_COMMON_HMAC_ERR_BIT;
       break;
     default:
       return false;

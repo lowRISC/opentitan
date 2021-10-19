@@ -32,10 +32,66 @@
 
 % if len(ip.irqs) > 0:
 
+% if ip.name_snake == "aon_timer":
+  #include <assert.h>
+  % for irq in ip.irqs:
+    static_assert(${ip.name_upper}_INTR_STATE_${irq.name_upper}_BIT == 
+                  ${ip.name_upper}_INTR_TEST_${irq.name_upper}_BIT,
+                  "Expected IRQ bit offsets to match across STATE/TEST regs.");
+  % endfor
+
+% elif ip.name_snake == "rv_timer":
+  #include <assert.h>
+  % for irq in ip.irqs:
+    static_assert(${ip.name_upper}_INTR_STATE0_IS_${loop.index}_BIT == 
+                  ${ip.name_upper}_INTR_ENABLE0_IE_${loop.index}_BIT,
+                  "Expected IRQ bit offsets to match across STATE/ENABLE regs.");
+    static_assert(${ip.name_upper}_INTR_STATE0_IS_${loop.index}_BIT == 
+                  ${ip.name_upper}_INTR_TEST0_T_${loop.index}_BIT,
+                  "Expected IRQ bit offsets to match across STATE/ENABLE regs.");
+  % endfor
+
+  typedef enum dif_${ip.name_snake}_intr_reg {
+    kDif${ip.name_camel}IntrRegState = 0,
+    kDif${ip.name_camel}IntrRegEnable = 1,
+    kDif${ip.name_camel}IntrRegTest = 2,
+  } dif_${ip.name_snake}_intr_reg_t;
+
+  static bool ${ip.name_snake}_get_irq_reg_offset(
+    dif_${ip.name_snake}_intr_reg_t intr_reg,
+    dif_${ip.name_snake}_irq_t irq,
+    uint32_t *intr_reg_offset) {
+
+    switch (intr_reg) {
+
+    % for intr_reg_str in ["State", "Enable", "Test"]:
+      case kDif${ip.name_camel}IntrReg${intr_reg_str}:
+        switch (irq) {
+        % for hart_id in range(int(ip.parameters["N_HARTS"].default)):
+          % for timer_id in range(int(ip.parameters["N_TIMERS"].default)):
+            case kDif${ip.name_camel}IrqTimerExpiredHart${hart_id}Timer${timer_id}:
+              *intr_reg_offset = ${ip.name_upper}_INTR_${intr_reg_str.upper()}${hart_id}_REG_OFFSET;
+              break;
+          % endfor
+        % endfor
+          default:
+            return false;
+        }
+        break;
+    % endfor
+      default:
+        return false;
+    }
+
+    return true;
+  }
+% endif
+
   /**
-   * Get the corresponding interrupt register bit offset. INTR_STATE,
-   * INTR_ENABLE and INTR_TEST registers have the same bit offsets, so this
-   * routine can be reused.
+   * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
+   * HJSON does NOT have a field "no_auto_intr_regs = true", then the
+   * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
+   * exist, as templated below.
    */
   static bool ${ip.name_snake}_get_irq_bit_index(
     dif_${ip.name_snake}_irq_t irq,
@@ -53,7 +109,17 @@
     ## This handles all other IPs.
     % else:
       case kDif${ip.name_camel}Irq${irq.name_camel}:
+      ## This handles the RV Timer IP.
+      % if ip.name_snake == "aon_timer":
         *index_out = ${ip.name_upper}_INTR_STATE_${irq.name_upper}_BIT;
+      ## This handles the RV Timer IP.
+      % elif ip.name_snake == "rv_timer":
+        *index_out = ${ip.name_upper}_INTR_STATE0_IS_${loop.index}_BIT;
+      ## This handles all other IPs that do not have the "no_auto_intr_regs" in
+      ## their HJSON files.
+      % else:
+        *index_out = ${ip.name_upper}_INTR_COMMON_${irq.name_upper}_BIT;
+      % endif
         break;
     % endif
   % endfor
@@ -67,13 +133,28 @@
   OT_WARN_UNUSED_RESULT
   dif_result_t dif_${ip.name_snake}_irq_get_state(
     const dif_${ip.name_snake}_t *${ip.name_snake},
+  % if ip.name_snake == "rv_timer":
+    uint32_t hart_id,
+  % endif
     dif_${ip.name_snake}_irq_state_snapshot_t *snapshot) {
 
     if (${ip.name_snake} == NULL || snapshot == NULL) {
       return kDifBadArg;
     }
 
+  % if ip.name_snake == "rv_timer":
+    switch (hart_id) {
+      % for hart_id in range(int(ip.parameters["N_HARTS"].default)):
+        case ${hart_id}:
+          *snapshot = ${mmio_region_read32("RV_TIMER_INTR_STATE%d_REG_OFFSET" % hart_id)}
+          break;
+      % endfor
+      default:
+        return kDifBadArg;
+    }
+  % else:
     *snapshot = ${mmio_region_read32(ip.name_upper + "_INTR_STATE_REG_OFFSET")}
+  % endif
 
     return kDifOk;
   }
@@ -93,7 +174,17 @@
       return kDifBadArg;
     }
 
+  % if ip.name_snake == "rv_timer":
+    uint32_t reg_offset = 0;
+    if (!${ip.name_snake}_get_irq_reg_offset(kDif${ip.name_camel}IntrRegState,
+                                             irq,
+                                             &reg_offset)) {
+      return kDifBadArg;
+    }
+    uint32_t intr_state_reg = ${mmio_region_read32("reg_offset")}
+  % else:
     uint32_t intr_state_reg = ${mmio_region_read32(ip.name_upper + "_INTR_STATE_REG_OFFSET")}
+  % endif
 
     *is_pending = bitfield_bit32_read(intr_state_reg, index);
 
@@ -116,7 +207,17 @@
 
     // Writing to the register clears the corresponding bits (Write-one clear).
     uint32_t intr_state_reg = bitfield_bit32_write(0, index, true);
+  % if ip.name_snake == "rv_timer":
+    uint32_t reg_offset = 0;
+    if (!${ip.name_snake}_get_irq_reg_offset(kDif${ip.name_camel}IntrRegState,
+                                             irq,
+                                             &reg_offset)) {
+      return kDifBadArg;
+    }
+    ${mmio_region_write32("reg_offset", "intr_state_reg")}
+  % else:
     ${mmio_region_write32(ip.name_upper + "_INTR_STATE_REG_OFFSET", "intr_state_reg")}
+  % endif
 
     return kDifOk;
   }
@@ -136,7 +237,17 @@
     }
 
     uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  % if ip.name_snake == "rv_timer":
+    uint32_t reg_offset = 0;
+    if (!${ip.name_snake}_get_irq_reg_offset(kDif${ip.name_camel}IntrRegTest,
+                                             irq,
+                                             &reg_offset)) {
+      return kDifBadArg;
+    }
+    ${mmio_region_write32("reg_offset", "intr_test_reg")}
+  % else:
     ${mmio_region_write32(ip.name_upper + "_INTR_TEST_REG_OFFSET", "intr_test_reg")}
+  % endif
 
     return kDifOk;
   }
@@ -157,7 +268,17 @@
       return kDifBadArg;
     }
 
+  % if ip.name_snake == "rv_timer":
+    uint32_t reg_offset = 0;
+    if (!${ip.name_snake}_get_irq_reg_offset(kDif${ip.name_camel}IntrRegEnable,
+                                             irq,
+                                             &reg_offset)) {
+      return kDifBadArg;
+    }
+    uint32_t intr_enable_reg = ${mmio_region_read32("reg_offset")}
+  % else:
     uint32_t intr_enable_reg = ${mmio_region_read32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET")}
+  % endif
 
     bool is_enabled = bitfield_bit32_read(intr_enable_reg, index);
     *state = is_enabled ? 
@@ -181,11 +302,25 @@
       return kDifBadArg;
     }
 
+  % if ip.name_snake == "rv_timer":
+    uint32_t reg_offset = 0;
+    if (!${ip.name_snake}_get_irq_reg_offset(kDif${ip.name_camel}IntrRegEnable,
+                                             irq,
+                                             &reg_offset)) {
+      return kDifBadArg;
+    }
+    uint32_t intr_enable_reg = ${mmio_region_read32("reg_offset")}
+  % else:
     uint32_t intr_enable_reg = ${mmio_region_read32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET")}
+  % endif
 
     bool enable_bit = (state == kDifToggleEnabled) ? true : false;
     intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
+  % if ip.name_snake == "rv_timer":
+    ${mmio_region_write32("reg_offset", "intr_enable_reg")}
+  % else:
     ${mmio_region_write32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET", "intr_enable_reg")}
+  % endif
 
     return kDifOk;
   }
@@ -193,6 +328,9 @@
   OT_WARN_UNUSED_RESULT
   dif_result_t dif_${ip.name_snake}_irq_disable_all(
     const dif_${ip.name_snake}_t *${ip.name_snake},
+  % if ip.name_snake == "rv_timer":
+    uint32_t hart_id,
+  % endif
     dif_${ip.name_snake}_irq_enable_snapshot_t *snapshot) {
 
     if (${ip.name_snake} == NULL) {
@@ -201,11 +339,35 @@
 
     // Pass the current interrupt state to the caller, if requested.
     if (snapshot != NULL) {
+    % if ip.name_snake == "rv_timer":
+      switch (hart_id) {
+        % for hart_id in range(int(ip.parameters["N_HARTS"].default)):
+          case ${hart_id}:
+            *snapshot = ${mmio_region_read32("RV_TIMER_INTR_ENABLE%d_REG_OFFSET" % hart_id)}
+            break;
+        % endfor
+        default:
+          return kDifBadArg;
+      }
+    % else:
       *snapshot = ${mmio_region_read32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET")}
+    % endif
     }
 
     // Disable all interrupts.
+  % if ip.name_snake == "rv_timer":
+    switch (hart_id) {
+      % for hart_id in range(int(ip.parameters["N_HARTS"].default)):
+        case ${hart_id}:
+          ${mmio_region_write32("RV_TIMER_INTR_ENABLE%d_REG_OFFSET" % hart_id, "0u")}
+          break;
+      % endfor
+      default:
+        return kDifBadArg;
+    }
+  % else:
     ${mmio_region_write32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET", "0u")}
+  % endif
 
     return kDifOk;
   }
@@ -213,13 +375,28 @@
   OT_WARN_UNUSED_RESULT
   dif_result_t dif_${ip.name_snake}_irq_restore_all(
     const dif_${ip.name_snake}_t *${ip.name_snake},
+  % if ip.name_snake == "rv_timer":
+    uint32_t hart_id,
+  % endif
     const dif_${ip.name_snake}_irq_enable_snapshot_t *snapshot) {
 
     if (${ip.name_snake} == NULL || snapshot == NULL) {
       return kDifBadArg;
     }
 
+  % if ip.name_snake == "rv_timer":
+    switch (hart_id) {
+      % for hart_id in range(int(ip.parameters["N_HARTS"].default)):
+        case ${hart_id}:
+          ${mmio_region_write32("RV_TIMER_INTR_ENABLE%d_REG_OFFSET" % hart_id, "*snapshot")}
+          break;
+      % endfor
+      default:
+        return kDifBadArg;
+    }
+  % else:
     ${mmio_region_write32(ip.name_upper + "_INTR_ENABLE_REG_OFFSET", "*snapshot")}
+  % endif
 
     return kDifOk;
   }

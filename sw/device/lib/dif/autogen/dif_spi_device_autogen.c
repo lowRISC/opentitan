@@ -9,33 +9,34 @@
 #include "spi_device_regs.h"  // Generated.
 
 /**
- * Get the corresponding interrupt register bit offset. INTR_STATE,
- * INTR_ENABLE and INTR_TEST registers have the same bit offsets, so this
- * routine can be reused.
+ * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
+ * HJSON does NOT have a field "no_auto_intr_regs = true", then the
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
+ * exist, as templated below.
  */
 static bool spi_device_get_irq_bit_index(dif_spi_device_irq_t irq,
                                          bitfield_bit32_index_t *index_out) {
   switch (irq) {
     case kDifSpiDeviceIrqRxFull:
-      *index_out = SPI_DEVICE_INTR_STATE_RX_FULL_BIT;
+      *index_out = SPI_DEVICE_INTR_COMMON_RX_FULL_BIT;
       break;
     case kDifSpiDeviceIrqRxWatermark:
-      *index_out = SPI_DEVICE_INTR_STATE_RX_WATERMARK_BIT;
+      *index_out = SPI_DEVICE_INTR_COMMON_RX_WATERMARK_BIT;
       break;
     case kDifSpiDeviceIrqTxWatermark:
-      *index_out = SPI_DEVICE_INTR_STATE_TX_WATERMARK_BIT;
+      *index_out = SPI_DEVICE_INTR_COMMON_TX_WATERMARK_BIT;
       break;
     case kDifSpiDeviceIrqRxError:
-      *index_out = SPI_DEVICE_INTR_STATE_RX_ERROR_BIT;
+      *index_out = SPI_DEVICE_INTR_COMMON_RX_ERROR_BIT;
       break;
     case kDifSpiDeviceIrqRxOverflow:
-      *index_out = SPI_DEVICE_INTR_STATE_RX_OVERFLOW_BIT;
+      *index_out = SPI_DEVICE_INTR_COMMON_RX_OVERFLOW_BIT;
       break;
     case kDifSpiDeviceIrqTxUnderflow:
-      *index_out = SPI_DEVICE_INTR_STATE_TX_UNDERFLOW_BIT;
+      *index_out = SPI_DEVICE_INTR_COMMON_TX_UNDERFLOW_BIT;
       break;
     case kDifSpiDeviceIrqTpmHeaderNotEmpty:
-      *index_out = SPI_DEVICE_INTR_STATE_TPM_HEADER_NOT_EMPTY_BIT;
+      *index_out = SPI_DEVICE_INTR_COMMON_TPM_HEADER_NOT_EMPTY_BIT;
       break;
     default:
       return false;
