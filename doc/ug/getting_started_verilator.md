@@ -15,7 +15,7 @@ _Make sure you followed the install instructions to [prepare the system]({{< rel
 
 ## Simulating a design with Verilator
 
-First the simulation needs to built itself.
+First the simulation needs to be built.
 
 ```console
 $ cd $REPO_TOP
@@ -52,7 +52,7 @@ $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
 ```
 
-To stop the simulation press CTRL-c.
+To stop the simulation press CTRL-C.
 
 ## Interact with the simulated UART
 
