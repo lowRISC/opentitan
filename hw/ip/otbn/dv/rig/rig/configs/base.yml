@@ -13,6 +13,7 @@ gen-weights:
   SmallVal: 0.2
   StraightLineInsn: 1.0
   KnownWDR: 0.05
+  UntakenBranch: 0.05
 
   # Generators that end the program
   ECall: 1
