@@ -12,6 +12,8 @@ class adc_ctrl_common_vseq extends adc_ctrl_base_vseq;
 
   virtual task body();
     run_common_vseq_wrapper(num_trans);
+    // Short delay to prevent register CDC assertions triggering at the end of test
+    cfg.clk_aon_rst_vif.wait_clks(3);
   endtask : body
 
 endclass

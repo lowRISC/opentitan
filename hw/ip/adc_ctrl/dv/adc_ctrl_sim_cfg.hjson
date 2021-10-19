@@ -59,7 +59,7 @@
     {
       // TODO: Create smoke test and add back
       name: smoke
-      tests: []
+      tests: ["adc_ctrl_smoke"]
     }
   ]
 }
