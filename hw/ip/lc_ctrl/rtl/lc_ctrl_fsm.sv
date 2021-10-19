@@ -21,7 +21,7 @@ module lc_ctrl_fsm
   output logic                  init_done_o,
   output logic                  idle_o,
   // Escalatio input
-  input                         esc_scrap_state0_i,
+  input                         esc_Scrap_State0_i,
   input                         esc_scrap_state1_i,
   // Life cycle state vector from OTP.
   input                         lc_state_valid_i,
@@ -31,9 +31,9 @@ module lc_ctrl_fsm
   // Defines whether we switch to an external clock when initiating a transition.
   input                         use_ext_clock_i,
   // Token input from OTP (these are all hash post-images).
-  input  lc_token_t             test_unlock_token_i,
-  input  lc_token_t             test_exit_token_i,
-  input  lc_tx_t                test_tokens_valid_i,
+  input  lc_token_t             test_unlock_token_o,
+  input  lc_token_t             test_exit_token_io,
+  input  lc_tx_t                test_tokens_valid_iaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
   input  lc_token_t             rma_token_i,
   input  lc_tx_t                rma_token_valid_i,
   // Transition trigger interface.
