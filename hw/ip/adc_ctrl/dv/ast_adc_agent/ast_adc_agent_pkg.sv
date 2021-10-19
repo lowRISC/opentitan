@@ -7,7 +7,7 @@ package ast_adc_agent_pkg;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
-  // Imports from AST package 
+  // Imports from AST package
   import ast_pkg::AdcChannels, ast_pkg::AdcDataWidth;
 
   // macro includes
@@ -30,23 +30,23 @@ package ast_adc_agent_pkg;
                               .CFG_T (ast_adc_agent_cfg)) ast_adc_sequencer;
 
   // functions
-  
+
   // Number of ADC channels
   // parameter int AdcChannels     = 2;
   // Width of ADC data
   // parameter int AdcDataWidth    = 10;
-  // Maximum outstanding transactions 
+  // Maximum outstanding transactions
   parameter int MaxOutstandingTrans = 4;
-  
+
   // Single ADC value
   typedef logic unsigned [AdcDataWidth - 1 : 0] ast_adc_value_t;
   // Logic version of above
   typedef bit unsigned [AdcDataWidth - 1 : 0] ast_adc_value_logic_t;
   // Static array of ADC values for all the channels
   typedef ast_adc_value_t ast_adc_value_sarray_t [ AdcChannels ];
-  // Logic version of above 
+  // Logic version of above
   typedef ast_adc_value_logic_t ast_adc_value_logic_sarray_t [ AdcChannels ];
-  
+
   // Dynamic array of ADC values
   typedef ast_adc_value_t ast_adc_value_array_t [];
 

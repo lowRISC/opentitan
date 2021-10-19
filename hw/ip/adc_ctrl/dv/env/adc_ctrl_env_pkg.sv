@@ -25,15 +25,15 @@ package adc_ctrl_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
   // Number of ADC channels
-  parameter AdcCtrlChannels =2;
+  parameter int unsigned AdcCtrlChannels = ast_pkg::AdcChannels;
 
   // Number of filters in the ADC Ctrl block
-  parameter AdcCtrlFilters = 8;
+  parameter int unsigned AdcCtrlFilters = 8;
 
   // types
   // Type of test we are executing
   typedef enum {
-    AdcCtrlOnehot, 
+    AdcCtrlOnehot,
     AdcCtrlNormal,
     AdcCtrlLowpower
   } adc_ctrl_testmode_e;
@@ -65,7 +65,7 @@ package adc_ctrl_env_pkg;
       '{min_v: 116, max_v: 954, cond: AdcCtrlOut, en: 1}
       };
   // functions and tasks
- 
+
 
   // package sources
   `include "adc_ctrl_env_cfg.sv"

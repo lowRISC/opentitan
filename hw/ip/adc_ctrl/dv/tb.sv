@@ -35,7 +35,7 @@ module tb;
     .rst_n(rst_n)
   );
 
-  // AST ADC agent interface - emulates AST ADC data 
+  // AST ADC agent interface - emulates AST ADC data
   ast_adc_if ast_adc_if (
     .clk_i(clk_aon),
     .rst_ni(rst_aon_n)
