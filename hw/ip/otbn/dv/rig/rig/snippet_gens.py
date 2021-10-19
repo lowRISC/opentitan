@@ -33,6 +33,7 @@ from .gens.bad_giant_loop import BadGiantLoop
 from .gens.bad_load_store import BadLoadStore
 from .gens.bad_zero_loop import BadZeroLoop
 from .gens.misaligned_load_store import MisalignedLoadStore
+from .gens.untaken_branch import UntakenBranch
 
 
 class SnippetGens:
@@ -47,6 +48,7 @@ class SnippetGens:
         SmallVal,
         StraightLineInsn,
         KnownWDR,
+        UntakenBranch,
 
         ECall,
         BadAtEnd,
