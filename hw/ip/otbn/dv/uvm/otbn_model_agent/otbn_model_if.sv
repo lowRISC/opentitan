@@ -27,6 +27,9 @@ interface otbn_model_if #(
 
   chandle                   handle;       // Handle for DPI calls to C model
 
+  clocking cb @(posedge clk_i);
+  endclocking
+
   // Wait until reset or change of status.
   task automatic wait_status();
     automatic bit [7:0] old_status = status;
