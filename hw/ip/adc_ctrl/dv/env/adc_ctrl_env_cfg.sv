@@ -50,16 +50,15 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
       m_adc_push_pull_cfg[idx].agent_type = push_pull_agent_pkg::PullAgent;
       m_adc_push_pull_cfg[idx].pull_handshake_type = push_pull_agent_pkg::FourPhase;
 
+      // We never want zero delays for the ADC as this is not possible
       `DV_CHECK_RANDOMIZE_WITH_FATAL(m_adc_push_pull_cfg[idx],
-                                     if(local::zero_delays) {
-            zero_delays      == 1;
-          } else {
-            zero_delays      == 0;
-            ack_lo_delay_min == 0;
-            ack_lo_delay_max == 2;
-            device_delay_min == 0;
-            device_delay_max == 16;
-          })
+                                     zero_delays      == 0;
+          ack_lo_delay_min == 1;
+          ack_lo_delay_max == 2;
+          req_lo_delay_min == 1;
+          req_lo_delay_max == 2;
+          device_delay_min == 12;
+          device_delay_max == 16;)
     end
 
     // set num_interrupts & num_alerts
@@ -86,19 +85,20 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
   constraint valid_c {
     pwrup_time inside {[0 : 2 ** 4 - 1]};
     wakeup_time inside {[0 : 2 ** 24 - 1]};
-    np_sample_cnt inside {[0 : 2 ** 16 - 1]};
-    lp_sample_cnt inside {[0 : 2 ** 8 - 1]};
+    np_sample_cnt inside {[1 : 2 ** 16 - 1]};
+    lp_sample_cnt inside {[1 : 2 ** 16 - 1]};
   }
+
 
   // Test defaults
   constraint defaults_c {
 
     // Power / wake up - different values to reset
     soft pwrup_time == 5;
-    soft wakeup_time == 1599;
+    soft wakeup_time == 11;
     // Debouncing sample counts for normal and low power mode - different values to reset
-    soft np_sample_cnt == 111;
-    soft lp_sample_cnt == 3;
+    soft np_sample_cnt inside {[3 : 7]};
+    soft lp_sample_cnt inside {[3 : 7]};
 
     // Default filter configuration
     // This is the one assumed for normal use

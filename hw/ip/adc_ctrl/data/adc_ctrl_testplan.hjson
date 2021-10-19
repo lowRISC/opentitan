@@ -51,7 +51,7 @@
           - Ensure that only one ADC channel is selected at a time.
           '''
       milestone: V2
-      tests: []
+      tests: ["adc_ctrl_filters_polled"]
     }
     {
       name: filters_polled_fixed

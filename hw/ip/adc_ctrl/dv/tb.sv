@@ -25,6 +25,11 @@ module tb;
   wire [ADC_CTRL_CHANNELS - 1 : 0][ADC_CTRL_DATA_WIDTH - 1 : 0] adc_data;
   wire ast_pkg::adc_ast_req_t adc_o;
   ast_pkg::adc_ast_rsp_t adc_i;
+  adc_ctrl_env_cfg cfg;
+  // Auxiliary logic to time power up -> first channel request
+  int pwrup_time, cfg_pwrup_time;
+  bit pwrup_time_en;
+
 
   `DV_ALERT_IF_CONNECT
 
@@ -84,6 +89,17 @@ module tb;
     run_test();
   end
 
+  initial begin
+    #1ps;
+    if (!uvm_config_db#(adc_ctrl_env_cfg)::get(
+            null, "uvm_test_top.env", "cfg", cfg
+        ) || cfg == null) begin
+      `uvm_fatal("TB", "Couldn't find the environment config")
+    end
+    `uvm_info("TB", "Found environment config", UVM_MEDIUM)
+    cfg_pwrup_time = cfg.pwrup_time;
+  end
+
   // Push pull agents
   // Need to use generate loop as idx must be an elaborataion time constant
   for (genvar idx = 0; idx < ADC_CTRL_CHANNELS; idx++) begin : g_adc_if_connections
@@ -139,10 +155,34 @@ module tb;
     end
   end
 
-  `ASSERT(ChannelSelOnehot_A, (adc_o.channel_sel != 0) -> $onehot(adc_o.channel_sel), clk_aon,
-          ~rst_aon_n)
+  // Auxiliary logic to time clocks since power down deasserted
+  always @(posedge clk_aon or negedge rst_aon_n) begin
+    if (!rst_aon_n) begin
+      pwrup_time <= 0;
+      pwrup_time_en <= 1;
+    end else begin
+      if (adc_o.pd == 1) begin
+        pwrup_time <= 0;
+        pwrup_time_en <= 1;
+      end else begin
+        if (|adc_o.channel_sel) pwrup_time_en <= 0;
+        else if (pwrup_time_en) pwrup_time <= pwrup_time + 1;
+      end
+    end
+  end
+  // Pulse to check power up counter
+  wire pwrup_time_chk = |adc_o.channel_sel & pwrup_time_en;
+
+  // Assertions
+  `ASSERT(ChannelSelOnehot_A, $onehot0(adc_o.channel_sel), clk_aon, ~rst_aon_n)
   `ASSERT_KNOWN(ChannelSelKnown_A, adc_o.channel_sel, clk_aon, ~rst_aon_n)
   `ASSERT_KNOWN(PdKnown_A, adc_o.pd, clk_aon, ~rst_aon_n)
+  `ASSERT(PwrupTime_A, $rose(pwrup_time_chk) |-> pwrup_time == cfg_pwrup_time, clk_aon, ~rst_aon_n)
+
+  // Assertion controls
+  `DV_ASSERT_CTRL("ADC_IF_A_CTRL", adc_if[0])
+  `DV_ASSERT_CTRL("ADC_IF_A_CTRL", adc_if[1])
+  `DV_ASSERT_CTRL("PwrupTime_A_CTRL", PwrupTime_A)
 
 
 endmodule
