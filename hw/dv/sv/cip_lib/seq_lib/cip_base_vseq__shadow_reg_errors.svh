@@ -67,7 +67,7 @@ virtual task shadow_reg_wr(dv_base_reg    csr,
   join
 endtask
 
-virtual task run_shadow_reg_errors(int num_times);
+virtual task run_shadow_reg_errors(int num_times, bit en_csr_rw_seq = 0);
   dv_base_reg shadowed_csrs[$];
 
   // Verify that status register fields are set in CFG.
@@ -78,6 +78,28 @@ virtual task run_shadow_reg_errors(int num_times);
 
   foreach (cfg.ral_models[i]) cfg.ral_models[i].get_shadowed_regs(shadowed_csrs);
 
+  // Add exclusions for shadow regs and their status regs in csr_rw sequence.
+  if (en_csr_rw_seq) begin
+    foreach (shadowed_csrs[i]) begin
+      csr_excl_item csr_excl = get_excl_item(shadowed_csrs[i]);
+      csr_excl.add_excl(shadowed_csrs[i].get_full_name(), CsrExclAll, CsrRwTest);
+    end
+
+    foreach (cfg.shadow_update_err_status_fields[status_field]) begin
+      // CSR write exclusion is based on register, so find the field's parent register first, then
+      // apply the write exclusion.
+      dv_base_reg status_reg = status_field.get_dv_base_reg_parent();
+      csr_excl_item csr_excl = get_excl_item(status_reg);
+      csr_excl.add_excl(status_reg.get_full_name(), CsrExclAll, CsrRwTest);
+    end
+
+    foreach (cfg.shadow_storage_err_status_fields[status_field]) begin
+      dv_base_reg status_reg = status_field.get_dv_base_reg_parent();
+      csr_excl_item csr_excl = get_excl_item(status_reg);
+      csr_excl.add_excl(status_reg.get_full_name(), CsrExclAll, CsrRwTest);
+    end
+  end
+
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running shadow reg error test iteration %0d/%0d", trans,
                               num_times), UVM_LOW)
@@ -86,18 +108,52 @@ virtual task run_shadow_reg_errors(int num_times);
 
     foreach (shadowed_csrs[i]) begin
       repeat(5) begin
-        randcase
-          1: write_and_check_update_error(shadowed_csrs[i]);
-          1: check_csr_read_clear_staged_val(shadowed_csrs[i]);
-          1: poke_and_check_storage_error(shadowed_csrs[i]);
-          1: glitch_shadowed_reset(shadowed_csrs);
-        endcase
-      end
+        bit ready_to_trigger_csr_rw = 0;
+        bit has_fatal_alert = 0;
+        fork
+          begin
+            randcase
+              1: begin
+                ready_to_trigger_csr_rw = 1;
+                write_and_check_update_error(shadowed_csrs[i]);
+              end
+              1: begin
+                ready_to_trigger_csr_rw = 1;
+                check_csr_read_clear_staged_val(shadowed_csrs[i]);
+              end
+              1: begin
+                ready_to_trigger_csr_rw = 1;
+                poke_and_check_storage_error(shadowed_csrs[i]);
+                has_fatal_alert = 1;
+              end
+              1: begin
+                glitch_shadowed_reset(shadowed_csrs, ready_to_trigger_csr_rw, has_fatal_alert);
+              end
+            endcase
+          end
+          begin
+            if (en_csr_rw_seq) begin
+              wait (ready_to_trigger_csr_rw == 1);
+              // CSR_RW sequence is nonblocking but shadow_reg_error sequence's csr read/write is
+              // blocking. So we randomly wait a few clock cycles before starting csr_rw sequence.
+              cfg.clk_rst_vif.wait_clks($urandom_range(0, 50));
+              run_csr_vseq("rw");
+            end
+          end
+       join
+
+       if (has_fatal_alert) begin
+         dut_init();
+         read_and_check_all_csrs_after_reset();
+       end
+      end // repeat(5)
     end
   end
 endtask
 
-virtual task glitch_shadowed_reset(ref dv_base_reg shadowed_csr[$]);
+virtual task glitch_shadowed_reset(ref dv_base_reg shadowed_csr[$],
+                                   ref bit ready_to_trigger_csr_rw,
+                                   ref bit has_fatal_alert);
   string alert_name;
 
   // If any of the shadowed registers have been written with a different value than its reset
@@ -116,16 +172,18 @@ virtual task glitch_shadowed_reset(ref dv_base_reg shadowed_csr[$]);
 
   // Randomly choose to glitch `rst_n` or `shadowed_rst_n` pin.
   if ($urandom_range(0, 1)) begin
-    cfg.rst_shadowed_vif.drive_shadow_rst_pin(0);
+    ready_to_trigger_csr_rw = 1;
     `uvm_info(`gfn, "toggle shadow reset pin", UVM_HIGH)
+     cfg.rst_shadowed_vif.drive_shadow_rst_pin(0);
   end else begin
     cfg.rst_shadowed_vif.drive_shadow_rst_pin(1);
-    dut_init();
     `uvm_info(`gfn, "toggle IP reset pin", UVM_HIGH)
+    dut_init();
+    // Wait until dut reset is done then allow csr_rw sequence to issue.
+    ready_to_trigger_csr_rw = 1;
   end
 
   // Check if shadow reset will trigger fatal storage error.
-  //
   // - First check if alert_name exists in alert_agent_cfg because alert_handler IP won't trigger
   // external alert, it triggers it as a local alert instead.
   // - Wait for the first alert to trigger then check if the alert is firing continuously, because
@@ -139,11 +197,9 @@ virtual task glitch_shadowed_reset(ref dv_base_reg shadowed_csr[$]);
 
   // Wait for random cycles and reconnect `shadowed_rst_n` with `rst_n`.
   cfg.clk_rst_vif.wait_clks($urandom_range(50, 200));
+
   cfg.rst_shadowed_vif.reconnect_shadowed_rst_n_to_rst_n();
-  if (alert_name != "") begin
-    dut_init();
-    read_check_shadow_reg_status("Glitch_shadow_reset_pin task");
-  end
+  has_fatal_alert = alert_name != "";
 endtask
 
 // Write shadow register twice with different value and expect a shadow register update alert.
@@ -229,9 +285,6 @@ virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
 
   read_check_shadow_reg_status("Poke_and_check_storage_error task");
   cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
-
-  dut_init();
-  read_and_check_all_csrs_after_reset();
 endtask
 
 virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,
