@@ -68,5 +68,19 @@
       milestone: V1
       tests: ["{name}_shadow_reg_errors"]
     }
+
+    {
+      // this testplan should be imported by all IPs containing shadowed CSRs
+      name: shadow_reg_update_error_with_csr_rw
+      desc: '''Run shadow_reg_update_error sequence in parallel with csr_rw sequence.
+
+            - Randomly select one of the above sequences.
+            - Apply csr_rw sequence in parallel but disable the `csr_access_abort` to ensure all
+              shadowed registers' write/read to be executed without aborting.
+            - Repeat the above steps a bunch of times.
+            '''
+      milestone: V1
+      tests: ["{name}_shadow_reg_errors_with_csr_rw"]
+    }
   ]
 }

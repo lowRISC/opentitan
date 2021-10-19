@@ -1,6 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
+// this hjson should be imported by all IPs containing shadowed CSRs
 {
   build_modes: [
     {
@@ -18,11 +20,18 @@
 
   tests: [
     {
-      // this hjson should be imported by all IPs containing shadowed CSRs
       name: "{name}_shadow_reg_errors"
       build_mode: "cover_reg_top"
       run_opts: ["+run_shadow_reg_errors"]
       en_run_modes: ["csr_tests_mode"]
+      reseed: 20
+    }
+    {
+      name: "{name}_shadow_reg_errors_with_csr_rw"
+      build_mode: "cover_reg_top"
+      run_opts: ["+run_shadow_reg_errors_with_csr_rw"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 20
     }
   ]
 

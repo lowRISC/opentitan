@@ -97,6 +97,15 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endtask
 
+  function void pre_randomize();
+    super.pre_randomize();
+    // Disable csr_access_abort because shadow_reg sequence requires all shadow registers'
+    // read/write to be executed into design without aborting.
+    if (common_seq_type inside {"shadow_reg_errors", "shadow_reg_errors_with_csr_rw"}) begin
+      csr_access_abort_pct.rand_mode(0);
+    end
+  endfunction
+
   task pre_start();
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
     if (common_seq_type == "alert_test") en_auto_alerts_response = 0;
@@ -362,19 +371,20 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
     // check which test type
     case (common_seq_type)
-      "intr_test":                  run_intr_test_vseq(num_times);
-      "alert_test":                 run_alert_test_vseq(num_times);
-      "tl_errors":                  run_tl_errors_vseq(num_times);
+      "intr_test":                     run_intr_test_vseq(num_times);
+      "alert_test":                    run_alert_test_vseq(num_times);
+      "tl_errors":                     run_tl_errors_vseq(num_times);
       // Each iteration only sends 1 item with TL integrity error. Increase to send at least
       // 10 x num_times integrity errors
-      "tl_intg_err":                run_tl_intg_err_vseq(10 * num_times);
-      "stress_all_with_rand_reset": run_stress_all_with_rand_reset_vseq(num_times);
-      "same_csr_outstanding":       run_same_csr_outstanding_vseq(num_times);
-      "shadow_reg_errors":          run_shadow_reg_errors(num_times);
-      "mem_partial_access":         run_mem_partial_access_vseq(num_times);
-      "csr_mem_rw_with_rand_reset": run_csr_mem_rw_with_rand_reset_vseq(num_times);
-      "csr_mem_rw":                 run_csr_mem_rw_vseq(num_times);
-      default:                      run_csr_vseq_wrapper(num_times);
+      "tl_intg_err":                   run_tl_intg_err_vseq(10 * num_times);
+      "stress_all_with_rand_reset":    run_stress_all_with_rand_reset_vseq(num_times);
+      "same_csr_outstanding":          run_same_csr_outstanding_vseq(num_times);
+      "shadow_reg_errors":             run_shadow_reg_errors(num_times);
+      "shadow_reg_errors_with_csr_rw": run_shadow_reg_errors(num_times, 1);
+      "mem_partial_access":            run_mem_partial_access_vseq(num_times);
+      "csr_mem_rw_with_rand_reset":    run_csr_mem_rw_with_rand_reset_vseq(num_times);
+      "csr_mem_rw":                    run_csr_mem_rw_vseq(num_times);
+      default:                         run_csr_vseq_wrapper(num_times);
     endcase
   endtask
 
@@ -546,7 +556,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                             int    num_test_csrs = 0,
                             bit    do_rand_wr_and_reset = 1);
 
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_access_abort_pct)
+    if (csr_access_abort_pct.rand_mode()) begin
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_access_abort_pct)
+    end else begin
+      csr_access_abort_pct = 0;
+    end
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       cfg.m_tl_agent_cfgs[i].csr_access_abort_pct_in_adapter = csr_access_abort_pct;
     end
