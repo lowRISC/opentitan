@@ -46,15 +46,6 @@ dif_result_t dif_hmac_init(mmio_region_t base_addr, dif_hmac_t *hmac) {
 
   hmac->base_addr = base_addr;
 
-  // Clear the config, stopping the SHA engine.
-  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, 0);
-
-  // Clear INTER.
-  mmio_region_write32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
-                      (1 << HMAC_INTR_STATE_HMAC_DONE_BIT) |
-                          (1 << HMAC_INTR_STATE_FIFO_EMPTY_BIT) |
-                          (1 << HMAC_INTR_STATE_HMAC_ERR_BIT));
-
   return kDifOk;
 }
 
