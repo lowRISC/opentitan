@@ -9,63 +9,64 @@
 #include "usbdev_regs.h"  // Generated.
 
 /**
- * Get the corresponding interrupt register bit offset. INTR_STATE,
- * INTR_ENABLE and INTR_TEST registers have the same bit offsets, so this
- * routine can be reused.
+ * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
+ * HJSON does NOT have a field "no_auto_intr_regs = true", then the
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
+ * exist, as templated below.
  */
 static bool usbdev_get_irq_bit_index(dif_usbdev_irq_t irq,
                                      bitfield_bit32_index_t *index_out) {
   switch (irq) {
     case kDifUsbdevIrqPktReceived:
-      *index_out = USBDEV_INTR_STATE_PKT_RECEIVED_BIT;
+      *index_out = USBDEV_INTR_COMMON_PKT_RECEIVED_BIT;
       break;
     case kDifUsbdevIrqPktSent:
-      *index_out = USBDEV_INTR_STATE_PKT_SENT_BIT;
+      *index_out = USBDEV_INTR_COMMON_PKT_SENT_BIT;
       break;
     case kDifUsbdevIrqDisconnected:
-      *index_out = USBDEV_INTR_STATE_DISCONNECTED_BIT;
+      *index_out = USBDEV_INTR_COMMON_DISCONNECTED_BIT;
       break;
     case kDifUsbdevIrqHostLost:
-      *index_out = USBDEV_INTR_STATE_HOST_LOST_BIT;
+      *index_out = USBDEV_INTR_COMMON_HOST_LOST_BIT;
       break;
     case kDifUsbdevIrqLinkReset:
-      *index_out = USBDEV_INTR_STATE_LINK_RESET_BIT;
+      *index_out = USBDEV_INTR_COMMON_LINK_RESET_BIT;
       break;
     case kDifUsbdevIrqLinkSuspend:
-      *index_out = USBDEV_INTR_STATE_LINK_SUSPEND_BIT;
+      *index_out = USBDEV_INTR_COMMON_LINK_SUSPEND_BIT;
       break;
     case kDifUsbdevIrqLinkResume:
-      *index_out = USBDEV_INTR_STATE_LINK_RESUME_BIT;
+      *index_out = USBDEV_INTR_COMMON_LINK_RESUME_BIT;
       break;
     case kDifUsbdevIrqAvEmpty:
-      *index_out = USBDEV_INTR_STATE_AV_EMPTY_BIT;
+      *index_out = USBDEV_INTR_COMMON_AV_EMPTY_BIT;
       break;
     case kDifUsbdevIrqRxFull:
-      *index_out = USBDEV_INTR_STATE_RX_FULL_BIT;
+      *index_out = USBDEV_INTR_COMMON_RX_FULL_BIT;
       break;
     case kDifUsbdevIrqAvOverflow:
-      *index_out = USBDEV_INTR_STATE_AV_OVERFLOW_BIT;
+      *index_out = USBDEV_INTR_COMMON_AV_OVERFLOW_BIT;
       break;
     case kDifUsbdevIrqLinkInErr:
-      *index_out = USBDEV_INTR_STATE_LINK_IN_ERR_BIT;
+      *index_out = USBDEV_INTR_COMMON_LINK_IN_ERR_BIT;
       break;
     case kDifUsbdevIrqRxCrcErr:
-      *index_out = USBDEV_INTR_STATE_RX_CRC_ERR_BIT;
+      *index_out = USBDEV_INTR_COMMON_RX_CRC_ERR_BIT;
       break;
     case kDifUsbdevIrqRxPidErr:
-      *index_out = USBDEV_INTR_STATE_RX_PID_ERR_BIT;
+      *index_out = USBDEV_INTR_COMMON_RX_PID_ERR_BIT;
       break;
     case kDifUsbdevIrqRxBitstuffErr:
-      *index_out = USBDEV_INTR_STATE_RX_BITSTUFF_ERR_BIT;
+      *index_out = USBDEV_INTR_COMMON_RX_BITSTUFF_ERR_BIT;
       break;
     case kDifUsbdevIrqFrame:
-      *index_out = USBDEV_INTR_STATE_FRAME_BIT;
+      *index_out = USBDEV_INTR_COMMON_FRAME_BIT;
       break;
     case kDifUsbdevIrqConnected:
-      *index_out = USBDEV_INTR_STATE_CONNECTED_BIT;
+      *index_out = USBDEV_INTR_COMMON_CONNECTED_BIT;
       break;
     case kDifUsbdevIrqLinkOutErr:
-      *index_out = USBDEV_INTR_STATE_LINK_OUT_ERR_BIT;
+      *index_out = USBDEV_INTR_COMMON_LINK_OUT_ERR_BIT;
       break;
     default:
       return false;

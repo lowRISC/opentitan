@@ -9,60 +9,61 @@
 #include "i2c_regs.h"  // Generated.
 
 /**
- * Get the corresponding interrupt register bit offset. INTR_STATE,
- * INTR_ENABLE and INTR_TEST registers have the same bit offsets, so this
- * routine can be reused.
+ * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
+ * HJSON does NOT have a field "no_auto_intr_regs = true", then the
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
+ * exist, as templated below.
  */
 static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
                                   bitfield_bit32_index_t *index_out) {
   switch (irq) {
     case kDifI2cIrqFmtWatermark:
-      *index_out = I2C_INTR_STATE_FMT_WATERMARK_BIT;
+      *index_out = I2C_INTR_COMMON_FMT_WATERMARK_BIT;
       break;
     case kDifI2cIrqRxWatermark:
-      *index_out = I2C_INTR_STATE_RX_WATERMARK_BIT;
+      *index_out = I2C_INTR_COMMON_RX_WATERMARK_BIT;
       break;
     case kDifI2cIrqFmtOverflow:
-      *index_out = I2C_INTR_STATE_FMT_OVERFLOW_BIT;
+      *index_out = I2C_INTR_COMMON_FMT_OVERFLOW_BIT;
       break;
     case kDifI2cIrqRxOverflow:
-      *index_out = I2C_INTR_STATE_RX_OVERFLOW_BIT;
+      *index_out = I2C_INTR_COMMON_RX_OVERFLOW_BIT;
       break;
     case kDifI2cIrqNak:
-      *index_out = I2C_INTR_STATE_NAK_BIT;
+      *index_out = I2C_INTR_COMMON_NAK_BIT;
       break;
     case kDifI2cIrqSclInterference:
-      *index_out = I2C_INTR_STATE_SCL_INTERFERENCE_BIT;
+      *index_out = I2C_INTR_COMMON_SCL_INTERFERENCE_BIT;
       break;
     case kDifI2cIrqSdaInterference:
-      *index_out = I2C_INTR_STATE_SDA_INTERFERENCE_BIT;
+      *index_out = I2C_INTR_COMMON_SDA_INTERFERENCE_BIT;
       break;
     case kDifI2cIrqStretchTimeout:
-      *index_out = I2C_INTR_STATE_STRETCH_TIMEOUT_BIT;
+      *index_out = I2C_INTR_COMMON_STRETCH_TIMEOUT_BIT;
       break;
     case kDifI2cIrqSdaUnstable:
-      *index_out = I2C_INTR_STATE_SDA_UNSTABLE_BIT;
+      *index_out = I2C_INTR_COMMON_SDA_UNSTABLE_BIT;
       break;
     case kDifI2cIrqTransComplete:
-      *index_out = I2C_INTR_STATE_TRANS_COMPLETE_BIT;
+      *index_out = I2C_INTR_COMMON_TRANS_COMPLETE_BIT;
       break;
     case kDifI2cIrqTxEmpty:
-      *index_out = I2C_INTR_STATE_TX_EMPTY_BIT;
+      *index_out = I2C_INTR_COMMON_TX_EMPTY_BIT;
       break;
     case kDifI2cIrqTxNonempty:
-      *index_out = I2C_INTR_STATE_TX_NONEMPTY_BIT;
+      *index_out = I2C_INTR_COMMON_TX_NONEMPTY_BIT;
       break;
     case kDifI2cIrqTxOverflow:
-      *index_out = I2C_INTR_STATE_TX_OVERFLOW_BIT;
+      *index_out = I2C_INTR_COMMON_TX_OVERFLOW_BIT;
       break;
     case kDifI2cIrqAcqOverflow:
-      *index_out = I2C_INTR_STATE_ACQ_OVERFLOW_BIT;
+      *index_out = I2C_INTR_COMMON_ACQ_OVERFLOW_BIT;
       break;
     case kDifI2cIrqAckStop:
-      *index_out = I2C_INTR_STATE_ACK_STOP_BIT;
+      *index_out = I2C_INTR_COMMON_ACK_STOP_BIT;
       break;
     case kDifI2cIrqHostTimeout:
-      *index_out = I2C_INTR_STATE_HOST_TIMEOUT_BIT;
+      *index_out = I2C_INTR_COMMON_HOST_TIMEOUT_BIT;
       break;
     default:
       return false;

@@ -9,24 +9,25 @@
 #include "entropy_src_regs.h"  // Generated.
 
 /**
- * Get the corresponding interrupt register bit offset. INTR_STATE,
- * INTR_ENABLE and INTR_TEST registers have the same bit offsets, so this
- * routine can be reused.
+ * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
+ * HJSON does NOT have a field "no_auto_intr_regs = true", then the
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
+ * exist, as templated below.
  */
 static bool entropy_src_get_irq_bit_index(dif_entropy_src_irq_t irq,
                                           bitfield_bit32_index_t *index_out) {
   switch (irq) {
     case kDifEntropySrcIrqEsEntropyValid:
-      *index_out = ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT;
+      *index_out = ENTROPY_SRC_INTR_COMMON_ES_ENTROPY_VALID_BIT;
       break;
     case kDifEntropySrcIrqEsHealthTestFailed:
-      *index_out = ENTROPY_SRC_INTR_STATE_ES_HEALTH_TEST_FAILED_BIT;
+      *index_out = ENTROPY_SRC_INTR_COMMON_ES_HEALTH_TEST_FAILED_BIT;
       break;
     case kDifEntropySrcIrqEsObserveFifoReady:
-      *index_out = ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT;
+      *index_out = ENTROPY_SRC_INTR_COMMON_ES_OBSERVE_FIFO_READY_BIT;
       break;
     case kDifEntropySrcIrqEsFatalErr:
-      *index_out = ENTROPY_SRC_INTR_STATE_ES_FATAL_ERR_BIT;
+      *index_out = ENTROPY_SRC_INTR_COMMON_ES_FATAL_ERR_BIT;
       break;
     default:
       return false;

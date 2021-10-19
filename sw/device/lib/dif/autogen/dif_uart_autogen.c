@@ -9,36 +9,37 @@
 #include "uart_regs.h"  // Generated.
 
 /**
- * Get the corresponding interrupt register bit offset. INTR_STATE,
- * INTR_ENABLE and INTR_TEST registers have the same bit offsets, so this
- * routine can be reused.
+ * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
+ * HJSON does NOT have a field "no_auto_intr_regs = true", then the
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
+ * exist, as templated below.
  */
 static bool uart_get_irq_bit_index(dif_uart_irq_t irq,
                                    bitfield_bit32_index_t *index_out) {
   switch (irq) {
     case kDifUartIrqTxWatermark:
-      *index_out = UART_INTR_STATE_TX_WATERMARK_BIT;
+      *index_out = UART_INTR_COMMON_TX_WATERMARK_BIT;
       break;
     case kDifUartIrqRxWatermark:
-      *index_out = UART_INTR_STATE_RX_WATERMARK_BIT;
+      *index_out = UART_INTR_COMMON_RX_WATERMARK_BIT;
       break;
     case kDifUartIrqTxEmpty:
-      *index_out = UART_INTR_STATE_TX_EMPTY_BIT;
+      *index_out = UART_INTR_COMMON_TX_EMPTY_BIT;
       break;
     case kDifUartIrqRxOverflow:
-      *index_out = UART_INTR_STATE_RX_OVERFLOW_BIT;
+      *index_out = UART_INTR_COMMON_RX_OVERFLOW_BIT;
       break;
     case kDifUartIrqRxFrameErr:
-      *index_out = UART_INTR_STATE_RX_FRAME_ERR_BIT;
+      *index_out = UART_INTR_COMMON_RX_FRAME_ERR_BIT;
       break;
     case kDifUartIrqRxBreakErr:
-      *index_out = UART_INTR_STATE_RX_BREAK_ERR_BIT;
+      *index_out = UART_INTR_COMMON_RX_BREAK_ERR_BIT;
       break;
     case kDifUartIrqRxTimeout:
-      *index_out = UART_INTR_STATE_RX_TIMEOUT_BIT;
+      *index_out = UART_INTR_COMMON_RX_TIMEOUT_BIT;
       break;
     case kDifUartIrqRxParityErr:
-      *index_out = UART_INTR_STATE_RX_PARITY_ERR_BIT;
+      *index_out = UART_INTR_COMMON_RX_PARITY_ERR_BIT;
       break;
     default:
       return false;

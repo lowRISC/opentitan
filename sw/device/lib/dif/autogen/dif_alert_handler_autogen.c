@@ -9,24 +9,25 @@
 #include "alert_handler_regs.h"  // Generated.
 
 /**
- * Get the corresponding interrupt register bit offset. INTR_STATE,
- * INTR_ENABLE and INTR_TEST registers have the same bit offsets, so this
- * routine can be reused.
+ * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
+ * HJSON does NOT have a field "no_auto_intr_regs = true", then the
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
+ * exist, as templated below.
  */
 static bool alert_handler_get_irq_bit_index(dif_alert_handler_irq_t irq,
                                             bitfield_bit32_index_t *index_out) {
   switch (irq) {
     case kDifAlertHandlerIrqClassa:
-      *index_out = ALERT_HANDLER_INTR_STATE_CLASSA_BIT;
+      *index_out = ALERT_HANDLER_INTR_COMMON_CLASSA_BIT;
       break;
     case kDifAlertHandlerIrqClassb:
-      *index_out = ALERT_HANDLER_INTR_STATE_CLASSB_BIT;
+      *index_out = ALERT_HANDLER_INTR_COMMON_CLASSB_BIT;
       break;
     case kDifAlertHandlerIrqClassc:
-      *index_out = ALERT_HANDLER_INTR_STATE_CLASSC_BIT;
+      *index_out = ALERT_HANDLER_INTR_COMMON_CLASSC_BIT;
       break;
     case kDifAlertHandlerIrqClassd:
-      *index_out = ALERT_HANDLER_INTR_STATE_CLASSD_BIT;
+      *index_out = ALERT_HANDLER_INTR_COMMON_CLASSD_BIT;
       break;
     default:
       return false;
