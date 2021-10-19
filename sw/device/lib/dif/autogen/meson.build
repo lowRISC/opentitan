@@ -268,6 +268,20 @@ sw_lib_dif_autogen_rv_plic = declare_dependency(
   )
 )
 
+# Autogen RV Timer DIF library
+sw_lib_dif_autogen_rv_timer = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_rv_timer',
+    sources: [
+      hw_ip_rv_timer_reg_h,
+      'dif_rv_timer_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen SPI Device DIF library
 sw_lib_dif_autogen_spi_device = declare_dependency(
   link_with: static_library(

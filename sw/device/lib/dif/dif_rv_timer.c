@@ -4,11 +4,17 @@
 
 #include "sw/device/lib/dif/dif_rv_timer.h"
 
+#include <assert.h>
 #include <stddef.h>
 
 #include "sw/device/lib/base/bitfield.h"
 
 #include "rv_timer_regs.h"  // Generated.
+
+static_assert(RV_TIMER_PARAM_N_HARTS > 0,
+              "RV Timer must support at least one hart.");
+static_assert(RV_TIMER_PARAM_N_TIMERS > 0,
+              "RV Timer must support at least one timer per hart.");
 
 /**
  * The factor to multiply by to find the registers for the Nth hart.
@@ -30,16 +36,13 @@ static ptrdiff_t reg_for_hart(uint32_t hart, ptrdiff_t reg_offset) {
   return kHartRegisterSpacing * hart + reg_offset;
 }
 
-dif_rv_timer_result_t dif_rv_timer_init(mmio_region_t base_addr,
-                                        dif_rv_timer_config_t config,
-                                        dif_rv_timer_t *timer_out) {
-  if (timer_out == NULL || config.hart_count < 1 ||
-      config.comparator_count < 1) {
-    return kDifRvTimerBadArg;
+dif_result_t dif_rv_timer_init(mmio_region_t base_addr,
+                               dif_rv_timer_t *timer_out) {
+  if (timer_out == NULL) {
+    return kDifBadArg;
   }
 
   timer_out->base_addr = base_addr;
-  timer_out->config = config;
 
   return dif_rv_timer_reset(timer_out);
 }
@@ -59,11 +62,11 @@ static uint64_t euclidean_gcd(uint64_t a, uint64_t b) {
   return a;
 }
 
-dif_rv_timer_approximate_tick_params_result_t
-dif_rv_timer_approximate_tick_params(uint64_t clock_freq, uint64_t counter_freq,
-                                     dif_rv_timer_tick_params_t *out) {
+dif_result_t dif_rv_timer_approximate_tick_params(
+    uint64_t clock_freq, uint64_t counter_freq,
+    dif_rv_timer_tick_params_t *out) {
   if (out == NULL) {
-    return kDifRvTimerApproximateTickParamsBadArg;
+    return kDifBadArg;
   }
 
   // We have the following relation:
@@ -78,20 +81,20 @@ dif_rv_timer_approximate_tick_params(uint64_t clock_freq, uint64_t counter_freq,
 
   if (prescale > RV_TIMER_CFG0_PRESCALE_MASK ||
       step > RV_TIMER_CFG0_STEP_MASK) {
-    return kDifRvTimerApproximateTickParamsUnrepresentable;
+    return kDifBadArg;
   }
 
   out->prescale = (uint16_t)prescale;
   out->tick_step = (uint8_t)step;
 
-  return kDifRvTimerApproximateTickParamsOk;
+  return kDifOk;
 }
 
-dif_rv_timer_result_t dif_rv_timer_set_tick_params(
-    const dif_rv_timer_t *timer, uint32_t hart_id,
-    dif_rv_timer_tick_params_t params) {
-  if (timer == NULL || hart_id >= timer->config.hart_count) {
-    return kDifRvTimerBadArg;
+dif_result_t dif_rv_timer_set_tick_params(const dif_rv_timer_t *timer,
+                                          uint32_t hart_id,
+                                          dif_rv_timer_tick_params_t params) {
+  if (timer == NULL || hart_id >= RV_TIMER_PARAM_N_HARTS) {
+    return kDifBadArg;
   }
 
   uint32_t config_value = 0;
@@ -103,37 +106,36 @@ dif_rv_timer_result_t dif_rv_timer_set_tick_params(
                       reg_for_hart(hart_id, RV_TIMER_CFG0_REG_OFFSET),
                       config_value);
 
-  return kDifRvTimerOk;
+  return kDifOk;
 }
 
-dif_rv_timer_result_t dif_rv_timer_counter_set_enabled(
-    const dif_rv_timer_t *timer, uint32_t hart_id,
-    dif_rv_timer_enabled_t state) {
-  if (timer == NULL || hart_id >= timer->config.hart_count) {
-    return kDifRvTimerBadArg;
+dif_result_t dif_rv_timer_counter_set_enabled(const dif_rv_timer_t *timer,
+                                              uint32_t hart_id,
+                                              dif_toggle_t state) {
+  if (timer == NULL || hart_id >= RV_TIMER_PARAM_N_HARTS) {
+    return kDifBadArg;
   }
 
   switch (state) {
-    case kDifRvTimerEnabled:
+    case kDifToggleEnabled:
       mmio_region_nonatomic_set_bit32(timer->base_addr,
                                       RV_TIMER_CTRL_REG_OFFSET, hart_id);
       break;
-    case kDifRvTimerDisabled:
+    case kDifToggleDisabled:
       mmio_region_nonatomic_clear_bit32(timer->base_addr,
                                         RV_TIMER_CTRL_REG_OFFSET, hart_id);
       break;
     default:
-      return kDifRvTimerBadArg;
+      return kDifBadArg;
   }
 
-  return kDifRvTimerOk;
+  return kDifOk;
 }
 
-dif_rv_timer_result_t dif_rv_timer_counter_read(const dif_rv_timer_t *timer,
-                                                uint32_t hart_id,
-                                                uint64_t *out) {
-  if (timer == NULL || out == NULL || hart_id >= timer->config.hart_count) {
-    return kDifRvTimerBadArg;
+dif_result_t dif_rv_timer_counter_read(const dif_rv_timer_t *timer,
+                                       uint32_t hart_id, uint64_t *out) {
+  if (timer == NULL || out == NULL || hart_id >= RV_TIMER_PARAM_N_HARTS) {
+    return kDifBadArg;
   }
 
   // We need to read a monotonically increasing, volatile uint64. To do so,
@@ -154,16 +156,15 @@ dif_rv_timer_result_t dif_rv_timer_counter_read(const dif_rv_timer_t *timer,
 
     if (upper == overflow_check) {
       *out = (((uint64_t)upper) << 32) | lower;
-      return kDifRvTimerOk;
+      return kDifOk;
     }
   }
 }
 
-dif_rv_timer_result_t dif_rv_timer_counter_write(const dif_rv_timer_t *timer,
-                                                 uint32_t hart_id,
-                                                 uint64_t count) {
-  if (timer == NULL || hart_id >= timer->config.hart_count) {
-    return kDifRvTimerBadArg;
+dif_result_t dif_rv_timer_counter_write(const dif_rv_timer_t *timer,
+                                        uint32_t hart_id, uint64_t count) {
+  if (timer == NULL || hart_id >= RV_TIMER_PARAM_N_HARTS) {
+    return kDifBadArg;
   }
 
   // Disable the counter.
@@ -186,15 +187,14 @@ dif_rv_timer_result_t dif_rv_timer_counter_write(const dif_rv_timer_t *timer,
   // Re-enable the counter (if it was previously enabled).
   mmio_region_write32(timer->base_addr, RV_TIMER_CTRL_REG_OFFSET, ctrl_reg);
 
-  return kDifRvTimerOk;
+  return kDifOk;
 }
 
-dif_rv_timer_result_t dif_rv_timer_arm(const dif_rv_timer_t *timer,
-                                       uint32_t hart_id, uint32_t comp_id,
-                                       uint64_t threshold) {
-  if (timer == NULL || hart_id >= timer->config.hart_count ||
-      comp_id >= timer->config.comparator_count) {
-    return kDifRvTimerBadArg;
+dif_result_t dif_rv_timer_arm(const dif_rv_timer_t *timer, uint32_t hart_id,
+                              uint32_t comp_id, uint64_t threshold) {
+  if (timer == NULL || hart_id >= RV_TIMER_PARAM_N_HARTS ||
+      comp_id >= RV_TIMER_PARAM_N_TIMERS) {
+    return kDifBadArg;
   }
 
   uint32_t lower = threshold;
@@ -217,7 +217,7 @@ dif_rv_timer_result_t dif_rv_timer_arm(const dif_rv_timer_t *timer,
   // Finish writing the new value; this may set off an alarm immediately.
   mmio_region_write32(timer->base_addr, upper_reg, upper);
 
-  return kDifRvTimerOk;
+  return kDifOk;
 }
 
 /**
@@ -252,140 +252,28 @@ static ptrdiff_t irq_reg_for_hart(uint32_t hart_id, uint32_t comparators,
   return reg_for_hart(hart_id, reg_offset) + extra_comparator_offset;
 }
 
-dif_rv_timer_result_t dif_rv_timer_irq_enable(const dif_rv_timer_t *timer,
-                                              uint32_t hart_id,
-                                              uint32_t comp_id,
-                                              dif_rv_timer_enabled_t state) {
-  if (timer == NULL || hart_id >= timer->config.hart_count ||
-      comp_id >= timer->config.comparator_count) {
-    return kDifRvTimerBadArg;
-  }
-
-  ptrdiff_t reg = irq_reg_for_hart(hart_id, timer->config.comparator_count,
-                                   RV_TIMER_INTR_ENABLE0_REG_OFFSET);
-
-  switch (state) {
-    case kDifRvTimerEnabled:
-      mmio_region_nonatomic_set_bit32(timer->base_addr, reg, comp_id);
-      break;
-    case kDifRvTimerDisabled:
-      mmio_region_nonatomic_clear_bit32(timer->base_addr, reg, comp_id);
-      break;
-    default:
-      return kDifRvTimerBadArg;
-  }
-
-  return kDifRvTimerOk;
-}
-
-dif_rv_timer_result_t dif_rv_timer_irq_get(const dif_rv_timer_t *timer,
-                                           uint32_t hart_id, uint32_t comp_id,
-                                           bool *flag_out) {
-  if (timer == NULL || flag_out == NULL ||
-      hart_id >= timer->config.hart_count ||
-      comp_id >= timer->config.comparator_count) {
-    return kDifRvTimerBadArg;
-  }
-
-  ptrdiff_t reg = irq_reg_for_hart(hart_id, timer->config.comparator_count,
-                                   RV_TIMER_INTR_STATE0_REG_OFFSET);
-
-  *flag_out = mmio_region_get_bit32(timer->base_addr, reg, comp_id);
-
-  return kDifRvTimerOk;
-}
-
-dif_rv_timer_result_t dif_rv_timer_irq_clear(const dif_rv_timer_t *timer,
-                                             uint32_t hart_id,
-                                             uint32_t comp_id) {
-  if (timer == NULL || hart_id >= timer->config.hart_count ||
-      comp_id >= timer->config.comparator_count) {
-    return kDifRvTimerBadArg;
-  }
-
-  ptrdiff_t reg = irq_reg_for_hart(hart_id, timer->config.comparator_count,
-                                   RV_TIMER_INTR_STATE0_REG_OFFSET);
-
-  mmio_region_write32(timer->base_addr, reg, 1 << comp_id);
-
-  return kDifRvTimerOk;
-}
-
-dif_rv_timer_result_t dif_rv_timer_irq_disable(const dif_rv_timer_t *timer,
-                                               uint32_t hart_id,
-                                               uint32_t *state) {
-  if (timer == NULL || hart_id >= timer->config.hart_count) {
-    return kDifRvTimerBadArg;
-  }
-
-  ptrdiff_t reg = irq_reg_for_hart(hart_id, timer->config.comparator_count,
-                                   RV_TIMER_INTR_ENABLE0_REG_OFFSET);
-
-  if (state != NULL) {
-    *state = mmio_region_read32(timer->base_addr, reg);
-  }
-
-  mmio_region_write32(timer->base_addr, reg, 0);
-
-  return kDifRvTimerOk;
-}
-
-dif_rv_timer_result_t dif_rv_timer_irq_restore(const dif_rv_timer_t *timer,
-                                               uint32_t hart_id,
-                                               uint32_t state) {
-  if (timer == NULL || hart_id >= timer->config.hart_count) {
-    return kDifRvTimerBadArg;
-  }
-
-  ptrdiff_t reg = irq_reg_for_hart(hart_id, timer->config.comparator_count,
-                                   RV_TIMER_INTR_ENABLE0_REG_OFFSET);
-
-  mmio_region_write32(timer->base_addr, reg, state);
-
-  return kDifRvTimerOk;
-}
-
-dif_rv_timer_result_t dif_rv_timer_irq_force(const dif_rv_timer_t *timer,
-                                             uint32_t hart_id,
-                                             uint32_t comp_id) {
-  if (timer == NULL || hart_id >= timer->config.hart_count ||
-      comp_id >= timer->config.comparator_count) {
-    return kDifRvTimerBadArg;
-  }
-
-  ptrdiff_t reg = irq_reg_for_hart(hart_id, timer->config.comparator_count,
-                                   RV_TIMER_INTR_TEST0_REG_OFFSET);
-
-  mmio_region_write32(timer->base_addr, reg, 1 << comp_id);
-
-  return kDifRvTimerOk;
-}
-
-dif_rv_timer_result_t dif_rv_timer_reset(const dif_rv_timer_t *timer) {
+dif_result_t dif_rv_timer_reset(const dif_rv_timer_t *timer) {
   if (timer == NULL) {
-    return kDifRvTimerBadArg;
+    return kDifBadArg;
   }
 
   // Disable all counters.
   mmio_region_write32(timer->base_addr, RV_TIMER_CTRL_REG_OFFSET, 0x0);
 
-  for (uint32_t hart_id = 0; hart_id < timer->config.hart_count; ++hart_id) {
+  for (uint32_t hart_id = 0; hart_id < RV_TIMER_PARAM_N_HARTS; ++hart_id) {
     // Clear and disable all interrupts.
-    ptrdiff_t irq_status =
-        irq_reg_for_hart(hart_id, timer->config.comparator_count,
-                         RV_TIMER_INTR_STATE0_REG_OFFSET);
-    ptrdiff_t irq_enable =
-        irq_reg_for_hart(hart_id, timer->config.comparator_count,
-                         RV_TIMER_INTR_ENABLE0_REG_OFFSET);
+    ptrdiff_t irq_status = irq_reg_for_hart(hart_id, RV_TIMER_PARAM_N_TIMERS,
+                                            RV_TIMER_INTR_STATE0_REG_OFFSET);
+    ptrdiff_t irq_enable = irq_reg_for_hart(hart_id, RV_TIMER_PARAM_N_TIMERS,
+                                            RV_TIMER_INTR_ENABLE0_REG_OFFSET);
     mmio_region_write32(timer->base_addr, irq_enable, 0x0);
     mmio_region_write32(timer->base_addr, irq_status, UINT32_MAX);
 
     // Reset all comparators to their default all-ones state.
-    for (uint32_t comp_id = 0; comp_id < timer->config.comparator_count;
-         ++comp_id) {
-      dif_rv_timer_result_t error =
+    for (uint32_t comp_id = 0; comp_id < RV_TIMER_PARAM_N_TIMERS; ++comp_id) {
+      dif_result_t error =
           dif_rv_timer_arm(timer, hart_id, comp_id, UINT64_MAX);
-      if (error != kDifRvTimerOk) {
+      if (error != kDifOk) {
         return error;
       }
     }
@@ -399,5 +287,5 @@ dif_rv_timer_result_t dif_rv_timer_reset(const dif_rv_timer_t *timer) {
         reg_for_hart(hart_id, RV_TIMER_TIMER_V_UPPER0_REG_OFFSET), 0x0);
   }
 
-  return kDifRvTimerOk;
+  return kDifOk;
 }

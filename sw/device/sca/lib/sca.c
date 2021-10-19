@@ -109,15 +109,14 @@ static void sca_init_gpio(sca_trigger_source_t trigger) {
  */
 static void sca_init_timer(void) {
   IGNORE_RESULT(dif_rv_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR),
-      (dif_rv_timer_config_t){.hart_count = 1, .comparator_count = 1}, &timer));
+      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
   dif_rv_timer_tick_params_t tick_params;
   IGNORE_RESULT(dif_rv_timer_approximate_tick_params(
       kClockFreqPeripheralHz, kClockFreqCpuHz, &tick_params));
   IGNORE_RESULT(
       dif_rv_timer_set_tick_params(&timer, kRvTimerHart, tick_params));
-  IGNORE_RESULT(dif_rv_timer_irq_enable(
-      &timer, kRvTimerHart, kRvTimerComparator, kDifRvTimerEnabled));
+  IGNORE_RESULT(dif_rv_timer_irq_set_enabled(
+      &timer, kDifRvTimerIrqTimerExpiredHart0Timer0, kDifToggleEnabled));
   irq_timer_ctrl(true);
   irq_global_ctrl(true);
 }
@@ -131,9 +130,9 @@ void handler_irq_timer(void) {
   // Return values of below functions are ignored to improve capture
   // performance.
   IGNORE_RESULT(dif_rv_timer_counter_set_enabled(&timer, kRvTimerHart,
-                                                 kDifRvTimerDisabled));
-  IGNORE_RESULT(
-      dif_rv_timer_irq_clear(&timer, kRvTimerHart, kRvTimerComparator));
+                                                 kDifToggleDisabled));
+  IGNORE_RESULT(dif_rv_timer_irq_acknowledge(
+      &timer, kDifRvTimerIrqTimerExpiredHart0Timer0));
 }
 
 /**
@@ -224,7 +223,7 @@ void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {
   IGNORE_RESULT(dif_rv_timer_arm(&timer, kRvTimerHart, kRvTimerComparator,
                                  current_time + sleep_cycles));
   IGNORE_RESULT(dif_rv_timer_counter_set_enabled(&timer, kRvTimerHart,
-                                                 kDifRvTimerEnabled));
+                                                 kDifToggleEnabled));
 
   callee();
 
