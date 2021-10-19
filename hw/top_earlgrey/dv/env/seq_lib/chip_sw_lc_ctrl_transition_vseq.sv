@@ -63,7 +63,6 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       if (trans_i > 0) begin
         apply_reset();
         backdoor_override_otp();
-        cfg.sw_test_status_vif.set_sw_test_last_iteration(trans_i == num_trans);
       end
 
       // Override the C test kLcExitToken with random data.
