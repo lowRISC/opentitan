@@ -20,6 +20,8 @@ filesets:
       - seq_lib/adc_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/adc_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/adc_ctrl_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/adc_ctrl_random_ramp_vseq.sv: {is_include_file: true}
+      - seq_lib/adc_ctrl_filters_polled_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

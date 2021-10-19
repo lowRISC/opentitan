@@ -8,7 +8,6 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   .COV_T(adc_ctrl_env_cov)
 );
 
-  `uvm_component_utils(adc_ctrl_scoreboard)
 
   // Analysis FIFOs for ADC push pull monitor transactions
   adc_push_pull_fifo_t m_adc_push_pull_fifo[ADC_CTRL_CHANNELS];
@@ -27,6 +26,26 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Interrupt asserted this ADC sample
   protected logic m_interrupt_posedge;
+
+  // ADC Model variables
+  // Filter match for each filter of each channel
+  protected bit [ADC_CTRL_CHANNELS - 1 : 0][ADC_CTRL_NUM_FILTERS-1 : 0] m_chn_match;
+  // Combined matches from all channels
+  protected bit [ADC_CTRL_NUM_FILTERS-1 : 0] m_match, m_match_prev;
+  // Normal power and low power sample match counters
+  protected uint16_t m_np_counter, m_lp_counter;
+  // Expected filter status bits
+  protected bit [ADC_CTRL_NUM_FILTERS - 1 : 0] m_expected_filter_status;
+  // Debounce detected
+  protected bit m_debounced;
+
+  `uvm_component_utils(adc_ctrl_scoreboard)
+
+  // local variables
+
+  // TLM agent fifos
+
+  // local queues to hold incoming packets pending comparison
 
   `uvm_component_new
 
@@ -90,10 +109,14 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       cfg.trigger_adc_rx_event(channel);
       // Set latest value
       m_adc_latest_values[channel] = item.d_data;
+
+      // Send data to filter model
+      process_filter_data(channel, item.d_data);
+
       `uvm_info(
           `gfn, $sformatf(
           "adc_push_pull_fifo_proc channel %0d: %s", channel, item.sprint(uvm_default_line_printer)
-          ), UVM_LOW)
+          ), UVM_MEDIUM)
     end
   endtask
 
@@ -123,6 +146,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     bit            addr_phase_write = (write && channel == AddrChannel);
     bit            data_phase_read = (!write && channel == DataChannel);
     bit            data_phase_write = (write && channel == DataChannel);
+    uvm_reg_data_t write_data;
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -161,7 +185,21 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       "adc_en_ctl": begin
         // FIXME
       end
+      "filter_status": begin
+        do_read_check = 1;
+        if (addr_phase_read) begin
+          // Latest ADC value
+          void'(ral.filter_status.predict(
+              .value(m_expected_filter_status), .kind(UVM_PREDICT_READ)
+          ));
+        end
+        // Reg model should have implemented the W1C functionality
+        // Need to update the expected value
+        if (addr_phase_write) begin
+          m_expected_filter_status = ral.filter_status.get();
+        end
 
+      end
       "adc_chn0_filter_ctl_0", "adc_chn0_filter_ctl_1", "adc_chn0_filter_ctl_2",
           "adc_chn0_filter_ctl_3", "adc_chn0_filter_ctl_4", "adc_chn0_filter_ctl_5",
           "adc_chn0_filter_ctl_6", "adc_chn0_filter_ctl_7", "adc_chn1_filter_ctl_0",
@@ -216,7 +254,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
 
       default: begin
-        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        //`uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
     endcase
 
@@ -230,12 +268,94 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  // Process ADC CTRL filter model data
+  virtual function void process_filter_data(int channel, adc_value_logic_t val);
+    bit filter_match;
+    // Perform the basic match against filter config
+    for (int filter_idx = 0; filter_idx < ADC_CTRL_NUM_FILTERS; filter_idx++) begin
+      // Extract appropriate configuration for this channel/filter
+      adc_ctrl_filter_cfg_t filter_cfg = cfg.filter_cfg[channel][filter_idx];
+      // Check value against configured range of values
+      bit inside_range = val inside {[filter_cfg.min_v : filter_cfg.max_v]};
+      // Set match flag for this channel/filter considering inside/outside config
+      m_chn_match[channel][filter_idx] = (filter_cfg.cond == ADC_CTRL_FILTER_IN) ?
+          inside_range : ~inside_range;
+
+      // Combine channel matches for this filter
+      filter_match = 1;
+      for (int channel_idx = 0; channel_idx < ADC_CTRL_CHANNELS; channel_idx++) begin
+        filter_match &= (m_chn_match[channel_idx][filter_idx] &
+            cfg.filter_cfg[channel_idx][filter_idx].en);
+      end
+      m_match[filter_idx] = filter_match;
+    end
+
+    // If this was data from the last channel process debounce model
+    if (channel == (ADC_CTRL_CHANNELS - 1)) process_debounce();
+  endfunction
+
+  // Process debounce
+  // From the spec:
+  // All pairs of filters that are enabled in adc_chn0_filter_ctl[7:0] and adc_chn1_filter_ctl[7:0] are evaluated
+  // after each pair of samples has been taken. The filter result is passed to the periodic scan counter if enabled and not at its limit
+  // otherwise the result is passed to the debounce counter. The list below describes how the counters interpret the filter results:
+  // If no filters are hit then the counter will reset to zero.
+  // If one or more filters are hit but the set hit differs from the previous evaluation the counter resets to zero.
+  // If one or more filters are hit and either none was hit in the previous evaluation or the same set was hit in the previous
+  // evaluation and the counter is not at its limit then the counter will increment.
+  // If the counter is the periodic scan counter and it reaches its limit then continuous scanning is enabled and the debounce
+  // counter will be used for future evaluations.
+  // If the counter is the debounce counter and it reaches its limit then:
+  // If an interrupt is not already being raised then the current sample values are latched into adc_chn_val[0].adc_chn_value_intr
+  // and adc_chn_val[1].adc_chn_value_intr. i.e. these registers only record the value of the first debounced hit.
+  // The adc_intr_status register is updated by setting the bits corresponding to filters that are hit (note that bits that
+  // are already set will not be cleared). This will cause the block to raise an interrupt if it was not already doing so.
+  // If any filters are hit that are enabled in adc_wakeup_ctl the corresponding bits in the adc_wakeup_status register are set
+  // which may initiate a wakeup.
+  // Note that the debounce counter will remain at its limit until the set of filters that are set changes when it will be
+  // reset to zero and start to debounce the next event.
+
+  virtual function void process_debounce();
+    if (m_match != 0) begin
+      if ((m_match == m_match_prev) || (m_match_prev == 0)) begin
+        // If one or more filters are hit and either none was hit in the previous evaluation
+        // or the same set was hit in the previous evaluation and the counter is not
+        // at its limit then the counter will increment.
+        if (m_np_counter < (cfg.np_sample_cnt - 1)) begin
+          // Not at it's limit
+          m_np_counter++;
+        end else if (!m_debounced) begin
+          // Capture matches
+          m_expected_filter_status = m_expected_filter_status | m_match;
+          m_debounced = 1;
+        end
+      end else begin
+        // Pervious matched set different to current
+        m_np_counter = 0;
+        m_debounced = 0;
+      end
+    end else begin
+      // No filters hit
+      m_np_counter = 0;
+      m_debounced = 0;
+    end
+    m_match_prev = m_match;
+  endfunction
+
+
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
     // Latest values
     m_adc_latest_values.delete();
     m_adc_interrupt_values.delete();
+    // Clear all match flags
+    m_match = 0;
+    m_match_prev = 0;
+    m_chn_match = 0;
+    m_np_counter = 0;
+    m_lp_counter = 0;
+    m_expected_filter_status = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);

@@ -49,8 +49,13 @@
     {
       name: adc_ctrl_smoke
       uvm_test_seq: adc_ctrl_smoke_vseq
+      run_opts: ["+pwrup_time_chk=0"]
     }
 
+    {
+      name: adc_ctrl_filters_polled
+      uvm_test_seq: adc_ctrl_filters_polled_vseq
+    }
     // TODO: add more tests here
   ]
 

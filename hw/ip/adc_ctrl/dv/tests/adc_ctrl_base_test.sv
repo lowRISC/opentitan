@@ -18,6 +18,7 @@ class adc_ctrl_base_test extends cip_base_test #(
   // the run_phase; as such, nothing more needs to be done
   virtual function void build_phase(uvm_phase phase);
     bit print_ral = 0;
+    bit pwrup_time_chk = 1;
 
     // Defaults - can be overridden by plusargs
     test_timeout_ns = 600_000_000;  // 600ms
@@ -27,15 +28,14 @@ class adc_ctrl_base_test extends cip_base_test #(
     // Enable RAL printout
     void'($value$plusargs("print_ral=%0b", print_ral));
 
-    // Set zero delays if requested
-    if (cfg.zero_delays) begin
-      foreach (cfg.m_adc_push_pull_cfg[idx]) cfg.m_adc_push_pull_cfg[idx].zero_delays = 1;
-    end
-
     // Print RAL if requested
     if (print_ral) begin
       `uvm_info(`gfn, cfg.ral.sprint(), UVM_LOW)
     end
+
+    // Enable power up check
+    void'($value$plusargs("pwrup_time_chk=%0b", pwrup_time_chk));
+    `DV_ASSERT_CTRL_REQ("PwrupTime_A_CTRL", pwrup_time_chk)
 
     // Print test config
     `uvm_info(`gfn, cfg.sprint(), UVM_LOW)
