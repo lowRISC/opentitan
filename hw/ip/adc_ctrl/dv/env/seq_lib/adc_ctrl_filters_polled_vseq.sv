@@ -2,29 +2,27 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// smoke test vseq
-class adc_ctrl_smoke_vseq extends adc_ctrl_base_vseq;
-  //ast_adc_all_random_seq all_random_seq;
+// Polled filters test sequence
+class adc_ctrl_filters_polled_vseq extends adc_ctrl_base_vseq;
   
-
-  `uvm_object_utils(adc_ctrl_smoke_vseq)
+  `uvm_object_utils(adc_ctrl_filters_polled_vseq)
 
 
   `uvm_object_new
   
   task body();
     uvm_reg_data_t rdata;
-    // Vector with onehot interrupt status bit position = 1
-    const uvm_reg_data_t OnehotIntr = 
-      1 << ral.adc_intr_status.oneshot.get_lsb_pos();
 
     // Make sure ADC is off
     csr_wr(ral.adc_en_ctl,'h0);
 
+    // Set up filters from config object values
+    configure_filters();
+
     // Set one shot interrupt enable
-    csr_wr(ral.adc_intr_ctl, OnehotIntr);
+    //csr_wr(ral.adc_intr_ctl, onehot_intr);
     
-    repeat(20) begin
+    repeat(1) begin
 
       // Clear interrupt status reg
       csr_wr(ral.adc_intr_status, '1);
@@ -35,16 +33,36 @@ class adc_ctrl_smoke_vseq extends adc_ctrl_base_vseq;
         `uvm_error(`gfn, $sformatf("Interrupt status not cleared (%x)", rdata))
       `uvm_info(`gfn, ral.adc_intr_status.sprint(), UVM_HIGH)
 
-      // Trigger oneshot sample
+
+      // Start ADC 
       ral.adc_en_ctl.adc_enable.set(1);
-      ral.adc_en_ctl.oneshot_mode.set(1);
+      ral.adc_en_ctl.oneshot_mode.set(0);
       csr_wr(ral.adc_en_ctl, ral.adc_en_ctl.get());
 
       // Send random data via AST ADC agent
-      `uvm_do_on(m_ast_adc_all_random_seq, p_sequencer.ast_adc_sequencer_h)
-  
+      `uvm_do_on_with(m_ast_adc_random_ramp_seq, 
+        p_sequencer.ast_adc_sequencer_h,{
+        ramp_min      == 0;
+        ramp_max      == ast_adc_value_t'('1);
+        // ramp_max == 100;
+        ramp_step_min == 1;
+        ramp_step_max == 20;
+        ramp_rising   == 1;
+      })
+
+      // Send random data via AST ADC agent
+      `uvm_do_on_with(m_ast_adc_random_ramp_seq, 
+        p_sequencer.ast_adc_sequencer_h,{
+        ramp_min      == 0;
+        ramp_max      == ast_adc_value_t'('1);
+        // ramp_max == 100;
+        ramp_step_min == 1;
+        ramp_step_max == 20;
+        ramp_rising   == 0;
+      })
+
       // Give time to settle
-      #10us;
+      #500us;
       `uvm_info(`gfn, $sformatf("adc_en_ctl=%0x", 
             ral.adc_en_ctl.get()),UVM_HIGH)
 
@@ -54,10 +72,10 @@ class adc_ctrl_smoke_vseq extends adc_ctrl_base_vseq;
       `uvm_info(`gfn,ral.adc_intr_status.sprint(),UVM_HIGH)
 
       
-      if(ral.adc_intr_status.get() != OnehotIntr)
-        `uvm_error(`gfn, 
-          $sformatf("Interrupt status error - expected %x got %x", 
-            OnehotIntr[31:0], rdata[31:0]))
+      // if(ral.adc_intr_status.get() != onehot_intr)
+      //   `uvm_error(`gfn, 
+      //     $sformatf("Interrupt status error - expected %x got %x", 
+      //       onehot_intr[31:0], rdata[31:0]))
 
 
       // Read and check ADC value registers
@@ -72,6 +90,8 @@ class adc_ctrl_smoke_vseq extends adc_ctrl_base_vseq;
       `uvm_info(`gfn, ral.adc_chn_val[0].sprint(),UVM_HIGH)
       `uvm_info(`gfn, ral.adc_chn_val[1].sprint(),UVM_HIGH)
 
+      `uvm_info(`gfn, cfg.m_ast_adc_agent_cfg.sprint(),UVM_HIGH)
+
       // Turn off ADC 
       csr_wr(ral.adc_en_ctl,'h0);
 
@@ -81,4 +101,4 @@ class adc_ctrl_smoke_vseq extends adc_ctrl_base_vseq;
     #100us;
   endtask : body
 
-endclass : adc_ctrl_smoke_vseq
+endclass : adc_ctrl_filters_polled_vseq

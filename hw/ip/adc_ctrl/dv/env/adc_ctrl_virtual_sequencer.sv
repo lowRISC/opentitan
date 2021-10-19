@@ -6,6 +6,10 @@ class adc_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
   .CFG_T(adc_ctrl_env_cfg),
   .COV_T(adc_ctrl_env_cov)
 );
+
+  // Handle to ast_adc_sequencer
+  ast_adc_sequencer ast_adc_sequencer_h;
+  
   `uvm_component_utils(adc_ctrl_virtual_sequencer)
 
 

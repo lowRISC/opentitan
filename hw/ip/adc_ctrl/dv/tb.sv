@@ -35,6 +35,11 @@ module tb;
     .rst_n(rst_n)
   );
 
+  // AST ADC agent interface - emulates AST ADC data 
+  ast_adc_if ast_adc_if (
+    .clk_i(clk_aon),
+    .rst_ni(rst_aon_n)
+  );
 
   // dut
   adc_ctrl dut (
@@ -46,8 +51,9 @@ module tb;
     .tl_o                (tl_if.d2h),
     .alert_rx_i          (alert_rx),
     .alert_tx_o          (alert_tx),
-    .adc_o               (),
-    .adc_i               ('0),
+    .adc_o               (ast_adc_if.adc_o),
+    .adc_i               (ast_adc_if.adc_i),
+    //.adc_i               (0),
     .intr_debug_cable_o  (interrupts[0]),
     .wkup_req_o          ()
   );
@@ -62,6 +68,7 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual ast_adc_if)::set(null, "*.env.m_ast_adc_agent*", "vif", ast_adc_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

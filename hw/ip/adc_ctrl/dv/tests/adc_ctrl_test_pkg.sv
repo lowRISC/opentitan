@@ -7,6 +7,8 @@ package adc_ctrl_test_pkg;
   import uvm_pkg::*;
   import cip_base_pkg::*;
   import adc_ctrl_env_pkg::*;
+  import ast_adc_agent_pkg::*;
+  
 
   // macro includes
   `include "uvm_macros.svh"
