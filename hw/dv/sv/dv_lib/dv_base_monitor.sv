@@ -77,7 +77,7 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
       end
 
       // Start the timer only when ok_to_end is asserted.
-      wait(ok_to_end);
+      wait (ok_to_end);
       `uvm_info(`gfn, $sformatf("watchdog_ok_to_end: starting the timer (count: %0d)",
                                 watchdog_restart_count++), UVM_MEDIUM)
       fork
@@ -88,15 +88,11 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
               #(cfg.ok_to_end_delay_ns * 1ns);
               watchdog_done = 1'b1;
             end
-            @(ok_to_end);
+            wait (!ok_to_end);
           join_any
           disable fork;
         end: isolation_fork
       join
-
-      // The #0 delay ensures that we sample the stabilized value of ok_to_end in the condition
-      // below in case it toggles more than once in the same simulation time-step.
-      #0;
 
       // If ok_to_end stayed high throughout the watchdog timer expiry, then drop the objection.
       if (ok_to_end && watchdog_done) begin
@@ -105,7 +101,7 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
         objection_raised = 1'b0;
 
         // Wait for ok_to_end to de-assert again in future.
-        wait(!ok_to_end);
+        wait (!ok_to_end);
       end
     end
   endtask
