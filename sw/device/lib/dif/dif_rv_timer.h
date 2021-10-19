@@ -13,18 +13,13 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_base.h"
+
+#include "sw/device/lib/dif/autogen/dif_rv_timer_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-/**
- * Represents an "enabled" state for a timer.
- */
-typedef enum dif_rv_timer_enabled {
-  kDifRvTimerDisabled = 0,
-  kDifRvTimerEnabled,
-} dif_rv_timer_enabled_t;
 
 /**
  * Represents timekeeping parameters for a particular timer.
@@ -63,29 +58,6 @@ typedef struct dif_rv_timer_tick_params {
 } dif_rv_timer_tick_params_t;
 
 /**
- * Represents the result of an RV timer operation..
- */
-typedef enum dif_rv_timer_result {
-  kDifRvTimerOk = 0,
-  kDifRvTimerBadArg = 1,
-  kDifRvTimerError = 2,
-} dif_rv_timer_result_t;
-
-/**
- * Errors returned by `dif_rv_timer_approximate_tick_params()`.
- */
-typedef enum dif_rv_timer_approximate_tick_params_result {
-  kDifRvTimerApproximateTickParamsOk = kDifRvTimerOk,
-  kDifRvTimerApproximateTickParamsBadArg = kDifRvTimerBadArg,
-  kDifRvTimerApproximateTickParamsError = kDifRvTimerError,
-  /**
-   * Indicates that the requested counter frequency cannot be represented
-   * without loss in precission.
-   */
-  kDifRvTimerApproximateTickParamsUnrepresentable,
-} dif_rv_timer_approximate_tick_params_result_t;
-
-/**
  * Generates an aproximate `dif_rv_timer_tick_params_t` given the device
  * clock frequency and desired counter frequency (both given in Hertz).
  *
@@ -108,40 +80,9 @@ typedef enum dif_rv_timer_approximate_tick_params_result {
  *         counter frequency.
  * @return The result of the operation.
  */
-dif_rv_timer_approximate_tick_params_result_t
-dif_rv_timer_approximate_tick_params(uint64_t clock_freq, uint64_t counter_freq,
-                                     dif_rv_timer_tick_params_t *out);
-/**
- * Configuration for initializing the RISC-V timer device.
- */
-typedef struct dif_rv_timer_config {
-  /**
-   * The number of harts that this device supports time counters for.
-   * Must be at least one.
-   *
-   * This value is determined entirely by the hardware configuration.
-   */
-  uint32_t hart_count;
-
-  /**
-   * The number of comparators (i.e, timers that can be set) associated
-   * with each hart. Must be at least one.
-   *
-   * This value is determined entirely by the hardware configuration.
-   */
-  uint32_t comparator_count;
-} dif_rv_timer_config_t;
-
-/**
- * State for a RISC-V timer, associated with a particular hardware thread.
- *
- * Its member variables should be considered private, and are only provided so
- * that callers can allocate it.
- */
-typedef struct dif_rv_timer {
-  mmio_region_t base_addr;
-  dif_rv_timer_config_t config;
-} dif_rv_timer_t;
+dif_result_t dif_rv_timer_approximate_tick_params(
+    uint64_t clock_freq, uint64_t counter_freq,
+    dif_rv_timer_tick_params_t *out);
 
 /**
  * Initialize a RISC-V timer device with the given configuration.
@@ -150,13 +91,11 @@ typedef struct dif_rv_timer {
  * each be configured and turned on manually after this function returns.
  *
  * @param base_addr MMIO region for the device hardware registers.
- * @param config Configuration for initializing a particular timer.
  * @param[out] timer_out The timer device.
  * @return The result of the operation.
  */
-dif_rv_timer_result_t dif_rv_timer_init(mmio_region_t base_addr,
-                                        dif_rv_timer_config_t config,
-                                        dif_rv_timer_t *timer_out);
+dif_result_t dif_rv_timer_init(mmio_region_t base_addr,
+                               dif_rv_timer_t *timer_out);
 
 /**
  * Completely resets a timer device, disabling all IRQs, counters, and
@@ -165,7 +104,7 @@ dif_rv_timer_result_t dif_rv_timer_init(mmio_region_t base_addr,
  * @param timer A timer device.
  * @return The result of the operation.
  */
-dif_rv_timer_result_t dif_rv_timer_reset(const dif_rv_timer_t *timer);
+dif_result_t dif_rv_timer_reset(const dif_rv_timer_t *timer);
 
 /**
  * Configures the tick params for a particular hart's counter.
@@ -180,9 +119,9 @@ dif_rv_timer_result_t dif_rv_timer_reset(const dif_rv_timer_t *timer);
  * @param params The timing parameters.
  * @return The result of the operation.
  */
-dif_rv_timer_result_t dif_rv_timer_set_tick_params(
-    const dif_rv_timer_t *timer, uint32_t hart_id,
-    dif_rv_timer_tick_params_t params);
+dif_result_t dif_rv_timer_set_tick_params(const dif_rv_timer_t *timer,
+                                          uint32_t hart_id,
+                                          dif_rv_timer_tick_params_t params);
 
 /**
  * Starts or stops a particular hart's counter.
@@ -195,9 +134,9 @@ dif_rv_timer_result_t dif_rv_timer_set_tick_params(
  * @param state The new enablement state.
  * @return The result of the operation.
  */
-dif_rv_timer_result_t dif_rv_timer_counter_set_enabled(
-    const dif_rv_timer_t *timer, uint32_t hart_id,
-    dif_rv_timer_enabled_t state);
+dif_result_t dif_rv_timer_counter_set_enabled(const dif_rv_timer_t *timer,
+                                              uint32_t hart_id,
+                                              dif_toggle_t state);
 
 /**
  * Reads the current value on a particular hart's timer.
@@ -207,9 +146,8 @@ dif_rv_timer_result_t dif_rv_timer_counter_set_enabled(
  * @param[out] out The counter value.
  * @return The result of the operation.
  */
-dif_rv_timer_result_t dif_rv_timer_counter_read(const dif_rv_timer_t *timer,
-                                                uint32_t hart_id,
-                                                uint64_t *out);
+dif_result_t dif_rv_timer_counter_read(const dif_rv_timer_t *timer,
+                                       uint32_t hart_id, uint64_t *out);
 
 /**
  * Writes the given value to a particular hart's timer.
@@ -219,9 +157,8 @@ dif_rv_timer_result_t dif_rv_timer_counter_read(const dif_rv_timer_t *timer,
  * @param count The counter value to write.
  * @return The result of the operation.
  */
-dif_rv_timer_result_t dif_rv_timer_counter_write(const dif_rv_timer_t *timer,
-                                                 uint32_t hart_id,
-                                                 uint64_t count);
+dif_result_t dif_rv_timer_counter_write(const dif_rv_timer_t *timer,
+                                        uint32_t hart_id, uint64_t count);
 
 /**
  * Arms the timer to go off once the counter value is greater than
@@ -251,88 +188,8 @@ dif_rv_timer_result_t dif_rv_timer_counter_write(const dif_rv_timer_t *timer,
  * @param threshold The value to go off at.
  * @return The result of the operation.
  */
-dif_rv_timer_result_t dif_rv_timer_arm(const dif_rv_timer_t *timer,
-                                       uint32_t hart_id, uint32_t comp_id,
-                                       uint64_t threshold);
-
-/**
- * Enables or disables a particular timer's IRQ. That is, this function controls
- * whether or not an IRQ is fired when the timer reaches its configured
- * threshold.
- *
- * @param timer A timer device.
- * @param hart_id The hart counter associated with the timer.
- * @param comp_id The comparator associated with the timer.
- * @param state The desired status.
- * @return the result of the operation.
- */
-dif_rv_timer_result_t dif_rv_timer_irq_enable(const dif_rv_timer_t *timer,
-                                              uint32_t hart_id,
-                                              uint32_t comp_id,
-                                              dif_rv_timer_enabled_t state);
-
-/**
- * Returns whether the IRQ for a particular timer is currently being serviced.
- *
- * @param timer A timer device.
- * @param hart_id The hart counter associated with the timer.
- * @param comp_id The comparator associated with the timer.
- * @param[out] flag_out The interrupt status.
- * @return the result of the operation.
- */
-dif_rv_timer_result_t dif_rv_timer_irq_get(const dif_rv_timer_t *timer,
-                                           uint32_t hart_id, uint32_t comp_id,
-                                           bool *flag_out);
-
-/**
- * Clears the IRQ for a particular timer.
- *
- * @param timer A timer device.
- * @param hart_id The hart counter associated with the timer.
- * @param comp_id The comparator associated with the timer.
- * @return the result of the operation.
- */
-dif_rv_timer_result_t dif_rv_timer_irq_clear(const dif_rv_timer_t *timer,
-                                             uint32_t hart_id,
-                                             uint32_t comp_id);
-
-/**
- * Forces the IRQ for a particular timer to fire.
- *
- * @param timer A timer device.
- * @param hart_id The hart counter associated with the timer.
- * @param comp_id The comparator associated with the timer.
- * @return the result of the operation.
- */
-dif_rv_timer_result_t dif_rv_timer_irq_force(const dif_rv_timer_t *timer,
-                                             uint32_t hart_id,
-                                             uint32_t comp_id);
-
-/**
- * Disables all IRQs for a particular hart.
- *
- * Optionally returns a `state` value containing the previous itnerrupt state.
- * `state` may be NULL. See `dif_rv_timer_irq_restore()`.
- *
- * @param timer a timer device.
- * @param[out] state IRQ state information for use with
- *                   `dif_rv_timer_irq_restore`.
- * @return the result of the operation.
- */
-dif_rv_timer_result_t dif_rv_timer_irq_disable(const dif_rv_timer_t *timer,
-                                               uint32_t hart_id,
-                                               uint32_t *state);
-
-/**
- * Restores IRQ state for a particular hart.
- *
- * @param timer a timer device.
- * @param state IRQ state information to restore.
- * @return the result of the operation.
- */
-dif_rv_timer_result_t dif_rv_timer_irq_restore(const dif_rv_timer_t *timer,
-                                               uint32_t hart_id,
-                                               uint32_t state);
+dif_result_t dif_rv_timer_arm(const dif_rv_timer_t *timer, uint32_t hart_id,
+                              uint32_t comp_id, uint64_t threshold);
 
 #ifdef __cplusplus
 }  // extern "C"

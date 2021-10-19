@@ -257,7 +257,8 @@ sw_lib_dif_rv_timer = declare_dependency(
       'dif_rv_timer.c',
     ],
     dependencies: [
-      sw_lib_mmio
+      sw_lib_mmio,
+      sw_lib_dif_autogen_rv_timer,
     ],
   )
 )
@@ -265,9 +266,11 @@ sw_lib_dif_rv_timer = declare_dependency(
 test('dif_rv_timer_unittest', executable(
     'dif_rv_timer_unittest',
     sources: [
-      hw_ip_rv_timer_reg_h,
-      meson.source_root() / 'sw/device/lib/dif/dif_rv_timer.c',
       'dif_rv_timer_unittest.cc',
+      'autogen/dif_rv_timer_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_rv_timer.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_rv_timer_autogen.c',
+      hw_ip_rv_timer_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,

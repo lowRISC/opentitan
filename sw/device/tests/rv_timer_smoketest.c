@@ -33,13 +33,14 @@ static void test_handler(void) {
   CHECK(!irq_fired, "Entered IRQ handler, but `irq_fired` was not false!");
 
   bool irq_flag;
-  CHECK(dif_rv_timer_irq_get(&timer, kHart, kComparator, &irq_flag) ==
-        kDifRvTimerOk);
+  CHECK_DIF_OK(dif_rv_timer_irq_is_pending(
+      &timer, kDifRvTimerIrqTimerExpiredHart0Timer0, &irq_flag));
   CHECK(irq_flag, "Entered IRQ handler but the expected IRQ flag wasn't set!");
 
-  CHECK(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifRvTimerDisabled) ==
-        kDifRvTimerOk);
-  CHECK(dif_rv_timer_irq_clear(&timer, kHart, kComparator) == kDifRvTimerOk);
+  CHECK_DIF_OK(
+      dif_rv_timer_counter_set_enabled(&timer, kHart, kDifToggleDisabled));
+  CHECK_DIF_OK(dif_rv_timer_irq_acknowledge(
+      &timer, kDifRvTimerIrqTimerExpiredHart0Timer0));
 
   irq_fired = true;
 }
@@ -57,21 +58,15 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_timer_ctrl(true);
 
-  mmio_region_t timer_reg =
-      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
-  CHECK(dif_rv_timer_init(
-            timer_reg,
-            (dif_rv_timer_config_t){.hart_count = 1, .comparator_count = 1},
-            &timer) == kDifRvTimerOk);
+  CHECK_DIF_OK(dif_rv_timer_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
 
   dif_rv_timer_tick_params_t tick_params;
-  CHECK(dif_rv_timer_approximate_tick_params(kClockFreqPeripheralHz,
-                                             kTickFreqHz, &tick_params) ==
-        kDifRvTimerApproximateTickParamsOk);
-  CHECK(dif_rv_timer_set_tick_params(&timer, kHart, tick_params) ==
-        kDifRvTimerOk);
-  CHECK(dif_rv_timer_irq_enable(&timer, kHart, kComparator,
-                                kDifRvTimerEnabled) == kDifRvTimerOk);
+  CHECK_DIF_OK(dif_rv_timer_approximate_tick_params(kClockFreqPeripheralHz,
+                                                    kTickFreqHz, &tick_params));
+  CHECK_DIF_OK(dif_rv_timer_set_tick_params(&timer, kHart, tick_params));
+  CHECK_DIF_OK(dif_rv_timer_irq_set_enabled(
+      &timer, kDifRvTimerIrqTimerExpiredHart0Timer0, kDifToggleEnabled));
 
   uint64_t current_time;
   // Logs over UART incur a large runtime overhead. To accommodate that, the
@@ -80,16 +75,15 @@ bool test_main(void) {
   // deadline (30 ms vs 100 us).
   uint64_t kDeadline =
       (kDeviceType == kDeviceSimDV) ? 100 /* 100 us */ : 30000 /* 30 ms */;
-  CHECK(dif_rv_timer_counter_read(&timer, kHart, &current_time) ==
-        kDifRvTimerOk);
+  CHECK_DIF_OK(dif_rv_timer_counter_read(&timer, kHart, &current_time));
   LOG_INFO("Current time: %d; timer theshold: %d", (uint32_t)current_time,
            (uint32_t)(current_time + kDeadline));
-  CHECK(dif_rv_timer_arm(&timer, kHart, kComparator,
-                         current_time + kDeadline) == kDifRvTimerOk);
+  CHECK_DIF_OK(
+      dif_rv_timer_arm(&timer, kHart, kComparator, current_time + kDeadline));
 
   irq_fired = false;
-  CHECK(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifRvTimerEnabled) ==
-        kDifRvTimerOk);
+  CHECK_DIF_OK(
+      dif_rv_timer_counter_set_enabled(&timer, kHart, kDifToggleEnabled));
 
   LOG_INFO("Waiting...");
   while (!irq_fired) {
