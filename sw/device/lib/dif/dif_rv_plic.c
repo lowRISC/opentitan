@@ -116,15 +116,11 @@ static ptrdiff_t plic_priority_reg_offset(dif_rv_plic_irq_id_t irq) {
   return RV_PLIC_PRIO0_REG_OFFSET + offset;
 }
 
-/**
- * Reset the requested PLIC peripheral.
- *
- * This function resets all the relevant PLIC registers, apart from the CC
- * register. There is no reliable way of knowing the ID of an IRQ that has
- * claimed the CC register, so we assume that the previous "owner" of the
- * resource has cleared/completed the CC access.
- */
-static void plic_reset(const dif_rv_plic_t *plic) {
+dif_result_t dif_rv_plic_reset(const dif_rv_plic_t *plic) {
+  if (plic == NULL) {
+    return kDifBadArg;
+  }
+
   // Clear all of the priority registers.
   for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     ptrdiff_t offset = plic_priority_reg_offset(i);
@@ -149,6 +145,8 @@ static void plic_reset(const dif_rv_plic_t *plic) {
     offset = plic_software_irq_base_for_target(target);
     mmio_region_write32(plic->base_addr, offset, 0);
   }
+
+  return kDifOk;
 }
 
 dif_result_t dif_rv_plic_init(mmio_region_t base_addr, dif_rv_plic_t *plic) {
@@ -157,9 +155,6 @@ dif_result_t dif_rv_plic_init(mmio_region_t base_addr, dif_rv_plic_t *plic) {
   }
 
   plic->base_addr = base_addr;
-
-  // TODO: Move this out into its own function.
-  plic_reset(plic);
 
   return kDifOk;
 }
