@@ -33,9 +33,19 @@ class PlicTest : public Test, public MmioTest {
   dif_rv_plic_t plic_ = {.base_addr = dev().region()};
 };
 
-class InitTest : public PlicTest {
+class InitTest : public PlicTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_rv_plic_init(dev().region(), nullptr), kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_rv_plic_init(dev().region(), &plic_), kDifOk);
+}
+
+class ResetTest : public PlicTest {
  protected:
-  void ExpectInitReset() {
+  void ExpectReset() {
     // Priority registers.
     for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
       ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (sizeof(uint32_t) * i);
@@ -58,14 +68,14 @@ class InitTest : public PlicTest {
   }
 };
 
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_rv_plic_init(dev().region(), nullptr), kDifBadArg);
+TEST_F(ResetTest, NullArgs) {
+  EXPECT_EQ(dif_rv_plic_reset(nullptr), kDifBadArg);
 }
 
-TEST_F(InitTest, Success) {
-  ExpectInitReset();
+TEST_F(ResetTest, Success) {
+  ExpectReset();
 
-  EXPECT_EQ(dif_rv_plic_init(dev().region(), &plic_), kDifOk);
+  EXPECT_EQ(dif_rv_plic_reset(&plic_), kDifOk);
 }
 
 class IrqTest : public PlicTest {
