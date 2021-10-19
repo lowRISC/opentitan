@@ -13,7 +13,6 @@ filesets:
     depend:
       - lowrisc:dv:adc_ctrl_test
       - lowrisc:dv:adc_ctrl_sva
-      
     files:
       - tb.sv
     file_type: systemVerilogSource
