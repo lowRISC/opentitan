@@ -11,13 +11,14 @@ module clkmgr_bind;
   bind clkmgr clkmgr_csr_assert_fpv clkmgr_csr_assert (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
   bind clkmgr clkmgr_pwrmgr_sva_if clkmgr_pwrmgr_sva_if (
-    .clk_i, .rst_ni, .ip_clk_en(pwr_i.ip_clk_en), .clk_status(pwr_o.clk_status), .idle(idle_i)
+    .clk_i, .rst_ni, .ip_clk_en(pwr_i.main_ip_clk_en),
+    .clk_status(pwr_o.main_status), .idle(idle_i)
   );
 
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_io_div4_peri_sva_if (
     .clk(clocks_o.clk_io_div4_powerup),
     .rst_n(rst_io_div4_ni),
-    .ip_clk_en(pwr_i.ip_clk_en),
+    .ip_clk_en(pwr_i.main_ip_clk_en),
     .sw_clk_en(reg2hw.clk_enables.clk_io_div4_peri_en.q),
     .scanmode(scanmode_i == lc_ctrl_pkg::On),
     .gated_clk(clocks_o.clk_io_div4_peri)
@@ -26,7 +27,7 @@ module clkmgr_bind;
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_io_div2_peri_sva_if (
     .clk(clocks_o.clk_io_div2_powerup),
     .rst_n(rst_io_div2_ni),
-    .ip_clk_en(pwr_i.ip_clk_en),
+    .ip_clk_en(pwr_i.main_ip_clk_en),
     .sw_clk_en(reg2hw.clk_enables.clk_io_div2_peri_en.q),
     .scanmode(scanmode_i == lc_ctrl_pkg::On),
     .gated_clk(clocks_o.clk_io_div2_peri)
@@ -35,7 +36,7 @@ module clkmgr_bind;
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_io_peri_sva_if (
     .clk(clocks_o.clk_io_powerup),
     .rst_n(rst_io_ni),
-    .ip_clk_en(pwr_i.ip_clk_en),
+    .ip_clk_en(pwr_i.main_ip_clk_en),
     .sw_clk_en(reg2hw.clk_enables.clk_io_peri_en.q),
     .scanmode(scanmode_i == lc_ctrl_pkg::On),
     .gated_clk(clocks_o.clk_io_peri)
@@ -44,7 +45,7 @@ module clkmgr_bind;
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_usb_peri_sva_if (
     .clk(clocks_o.clk_usb_powerup),
     .rst_n(rst_usb_ni),
-    .ip_clk_en(pwr_i.ip_clk_en),
+    .ip_clk_en(pwr_i.main_ip_clk_en),
     .sw_clk_en(reg2hw.clk_enables.clk_usb_peri_en.q),
     .scanmode(scanmode_i == lc_ctrl_pkg::On),
     .gated_clk(clocks_o.clk_usb_peri)
@@ -53,7 +54,7 @@ module clkmgr_bind;
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_aes_hintable_sva_if (
     .clk(clocks_o.clk_main_powerup),
     .rst_n(rst_main_ni),
-    .ip_clk_en(pwr_i.ip_clk_en),
+    .ip_clk_en(pwr_i.main_ip_clk_en),
     .sw_clk_en(reg2hw.clk_hints.clk_main_aes_hint.q || !idle_i[0]),
     .scanmode(scanmode_i == lc_ctrl_pkg::On),
     .gated_clk(clocks_o.clk_main_aes)
@@ -62,7 +63,7 @@ module clkmgr_bind;
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_hmac_hintable_sva_if (
     .clk(clocks_o.clk_main_powerup),
     .rst_n(rst_main_ni),
-    .ip_clk_en(pwr_i.ip_clk_en),
+    .ip_clk_en(pwr_i.main_ip_clk_en),
     .sw_clk_en(reg2hw.clk_hints.clk_main_hmac_hint.q || !idle_i[1]),
     .scanmode(scanmode_i == lc_ctrl_pkg::On),
     .gated_clk(clocks_o.clk_main_hmac)
@@ -71,7 +72,7 @@ module clkmgr_bind;
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_kmac_hintable_sva_if (
     .clk(clocks_o.clk_main_powerup),
     .rst_n(rst_main_ni),
-    .ip_clk_en(pwr_i.ip_clk_en),
+    .ip_clk_en(pwr_i.main_ip_clk_en),
     .sw_clk_en(reg2hw.clk_hints.clk_main_kmac_hint.q || !idle_i[2]),
     .scanmode(scanmode_i == lc_ctrl_pkg::On),
     .gated_clk(clocks_o.clk_main_kmac)
@@ -80,7 +81,7 @@ module clkmgr_bind;
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_io_div4_otbn_hintable_sva_if (
     .clk(clocks_o.clk_io_div4_powerup),
     .rst_n(rst_io_div4_ni),
-    .ip_clk_en(pwr_i.ip_clk_en),
+    .ip_clk_en(pwr_i.main_ip_clk_en),
     .sw_clk_en(reg2hw.clk_hints.clk_io_div4_otbn_hint.q || !idle_i[3]),
     .scanmode(scanmode_i == lc_ctrl_pkg::On),
     .gated_clk(clocks_o.clk_io_div4_otbn)
@@ -89,7 +90,7 @@ module clkmgr_bind;
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_otbn_hintable_sva_if (
     .clk(clocks_o.clk_main_powerup),
     .rst_n(rst_main_ni),
-    .ip_clk_en(pwr_i.ip_clk_en),
+    .ip_clk_en(pwr_i.main_ip_clk_en),
     .sw_clk_en(reg2hw.clk_hints.clk_main_otbn_hint.q || !idle_i[4]),
     .scanmode(scanmode_i == lc_ctrl_pkg::On),
     .gated_clk(clocks_o.clk_main_otbn)

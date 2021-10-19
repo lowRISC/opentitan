@@ -125,7 +125,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   // and can be configured to keep the usb clk off on rising transitions.
   task control_ip_clocks();
     // Do nothing if nothing interesting changed.
-    if (cfg.clkmgr_vif.pwr_i.ip_clk_en == ip_clk_en &&
+    if (cfg.clkmgr_vif.pwr_i.main_ip_clk_en == ip_clk_en &&
         (!ip_clk_en || (usb_clk_en_active == prev_usb_clk_en_active)))
       return;
     `uvm_info(`gfn, $sformatf(
@@ -134,8 +134,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
               usb_clk_en_active
               ), UVM_LOW)
     if (!ip_clk_en) begin
-      cfg.clkmgr_vif.pwr_i.ip_clk_en = ip_clk_en;
-      @(negedge cfg.clkmgr_vif.pwr_o.clk_status);
+      cfg.clkmgr_vif.pwr_i.main_ip_clk_en = ip_clk_en;
+      @(negedge cfg.clkmgr_vif.pwr_o.main_status);
       cfg.io_clk_rst_vif.stop_clk();
       cfg.main_clk_rst_vif.stop_clk();
       cfg.usb_clk_rst_vif.stop_clk();
@@ -146,8 +146,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
       if (usb_clk_en_active) cfg.usb_clk_rst_vif.start_clk();
       prev_usb_clk_en_active = usb_clk_en_active;
       `uvm_info(`gfn, "started clocks", UVM_MEDIUM)
-      cfg.clkmgr_vif.pwr_i.ip_clk_en = ip_clk_en;
-      @(posedge cfg.clkmgr_vif.pwr_o.clk_status);
+      cfg.clkmgr_vif.pwr_i.main_ip_clk_en = ip_clk_en;
+      @(posedge cfg.clkmgr_vif.pwr_o.main_status);
     end
     `uvm_info(`gfn, "controlling clocks done", UVM_LOW)
   endtask
