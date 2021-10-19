@@ -16,5 +16,30 @@ class adc_ctrl_base_test extends cip_base_test #(
 
   // the base class also looks up UVM_TEST_SEQ plusarg to create and run that seq in
   // the run_phase; as such, nothing more needs to be done
+  virtual function void build_phase(uvm_phase phase);
+    bit print_ral = 0;
+
+    // Defaults - can be overridden by plusargs
+    test_timeout_ns = 600_000_000;  // 600ms
+
+    super.build_phase(phase);
+
+    // Enable RAL printout
+    void'($value$plusargs("print_ral=%0b", print_ral));
+
+    // Set zero delays if requested
+    if (cfg.zero_delays) begin
+      foreach (cfg.m_adc_push_pull_cfg[idx]) cfg.m_adc_push_pull_cfg[idx].zero_delays = 1;
+    end
+
+    // Print RAL if requested
+    if (print_ral) begin
+      `uvm_info(`gfn, cfg.ral.sprint(), UVM_LOW)
+    end
+
+    // Print test config
+    `uvm_info(`gfn, cfg.sprint(), UVM_LOW)
+
+  endfunction
 
 endclass : adc_ctrl_base_test

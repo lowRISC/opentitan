@@ -7,8 +7,5 @@ class adc_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
   .COV_T(adc_ctrl_env_cov)
 );
   `uvm_component_utils(adc_ctrl_virtual_sequencer)
-
-
   `uvm_component_new
-
 endclass

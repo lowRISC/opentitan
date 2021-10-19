@@ -8,6 +8,7 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
   .COV_T              (adc_ctrl_env_cov),
   .VIRTUAL_SEQUENCER_T(adc_ctrl_virtual_sequencer)
 );
+
   `uvm_object_utils(adc_ctrl_base_vseq)
 
   // various knobs to enable certain routines
@@ -43,4 +44,61 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
     cfg.clk_aon_rst_vif.drive_rst_pin(1);
   endtask
 
+  // Configure the filter registers using values in the config object
+  virtual task configure_filters();
+    uvm_reg r;
+    uvm_reg_field min_v_fld, max_v_fld, cond_fld, en_fld;
+    string regname;
+    for (int channel = 0; channel < ADC_CTRL_CHANNELS; channel++) begin
+      for (int filter = 0; filter < ADC_CTRL_NUM_FILTERS; filter++) begin
+        regname = $sformatf("adc_chn%0d_filter_ctl_%0d", channel, filter);
+        r = ral.get_reg_by_name(regname);
+        if (r == null) `uvm_fatal(`gfn, {"configure_filters: Couldn't find register ", regname})
+        // Get fields
+        min_v_fld = r.get_field_by_name("min_v");
+        max_v_fld = r.get_field_by_name("max_v");
+        cond_fld  = r.get_field_by_name("cond");
+        en_fld    = r.get_field_by_name("en");
+        // Check valid
+        if (min_v_fld == null) `uvm_fatal(`gfn, "configure_filters: Couldn't find field min_v")
+        if (max_v_fld == null) `uvm_fatal(`gfn, "configure_filters: Couldn't find field max_v")
+        if (cond_fld == null) `uvm_fatal(`gfn, "configure_filters: Couldn't find field cond")
+        if (en_fld == null) `uvm_fatal(`gfn, "configure_filters: Couldn't find field en")
+        // Set values from config object
+        min_v_fld.set(cfg.filter_cfg[channel][filter].min_v);
+        max_v_fld.set(cfg.filter_cfg[channel][filter].max_v);
+        cond_fld.set(cfg.filter_cfg[channel][filter].cond);
+        en_fld.set(cfg.filter_cfg[channel][filter].en);
+        // Write register
+        csr_wr(r, r.get());
+      end
+    end
+  endtask
+
+  //
+  // Wait for RX on all ADC channels by monitoring channel rx event
+  // these are triggered in the scoreboard as items are received
+  virtual task wait_all_rx;
+    fork
+      begin : guard_proc
+        for (int idx = 0; idx < ADC_CTRL_CHANNELS; idx++) begin
+          // Local copy see LRM 9.3.2 for details
+          int idx_local = idx;
+          fork
+            cfg.wait_adc_rx_event(idx_local);
+          join_none
+        end
+        wait fork;
+      end
+    join
+  endtask
+
+  // Create a string with "called from (filename:line number)" to be used in csr checks etc.
+  virtual function string called_from(string filename, int lineno);
+    return $sformatf("called from (%s:%0d)", filename, lineno);
+  endfunction
+
 endclass : adc_ctrl_base_vseq
+
+
+

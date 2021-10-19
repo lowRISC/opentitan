@@ -119,6 +119,28 @@
       tests: []
     }
     {
+      name: filters_both
+      desc: '''
+          Verify filter wakeup and interrupt function correctly together
+
+          **Stimulus**:
+
+          For a number of iterations:
+          - Configure DUT with randomized filter parameters, filters,
+          interrupt and wakeup enabled, randomized low/high power sampling mode.
+          - Generate ADC data stream.
+
+          **Checks**:
+
+          - From monitored ADC data predict when filters should be triggered.
+          - Confirm this by reading the filter status register and interrupt status register.
+          - Check wakeup signal operates as expected.
+          - Check interrupt signal operates as expected.
+          '''
+      milestone: V2
+      tests: []
+    }
+    {
       name: clock_gating
       desc: '''
           Verify filter wakeup and interrupts function correctly when fast clock is
