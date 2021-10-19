@@ -69,7 +69,7 @@
 `endif
 
 initial begin
-  bit show_mem_paths;
+  logic show_mem_paths;
 
   // Print the hierarchical path to the memory to help make formal connectivity checks easy.
   void'($value$plusargs("show_mem_paths=%0b", show_mem_paths));
