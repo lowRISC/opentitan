@@ -30,7 +30,7 @@ sw_silicon_creator_mask_rom_sigverify = declare_dependency(
   ),
 )
 
-# ROM_EXT image.
+# Mask ROM boot policy.
 sw_silicon_creator_mask_rom_boot_policy = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_mask_rom_boot_policy',

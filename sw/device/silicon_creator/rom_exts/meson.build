@@ -7,6 +7,32 @@
 # See sw/device/exts/common/flash_link.ld for additional info about these
 # parameters.
 
+# ROM_EXT boot policy.
+sw_silicon_creator_rom_ext_boot_policy = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_rom_ext_boot_policy',
+    sources: [
+      'rom_ext_boot_policy.c',
+    ],
+  ),
+)
+
+test('sw_silicon_creator_rom_ext_boot_policy_unittest', executable(
+    'sw_silicon_creator_rom_ext_boot_policy_unittest',
+    sources: [
+      'rom_ext_boot_policy_unittest.cc',
+      'rom_ext_boot_policy.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+    c_args: ['-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DOT_OFF_TARGET_TEST'],
+  ),
+  suite: 'rom_ext',
+)
+
 rom_ext_linkfile_slot_a = files(['rom_ext_slot_a.ld'])
 rom_ext_linkfile_slot_b = files(['rom_ext_slot_b.ld'])
 
@@ -53,6 +79,7 @@ foreach slot, slot_link_args : rom_ext_link_info
         sw_lib_runtime_print,
         sw_silicon_creator_lib_base_sec_mmio,
         sw_silicon_creator_lib_manifest_section,
+        sw_silicon_creator_rom_ext_boot_policy,
 
         # TODO: ePMP test status dependency should be removed from
         # production ROM_EXT. Tests should unlock the test status
