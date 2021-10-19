@@ -82,7 +82,7 @@
   // Vars that need to exported to the env.
   exports: [
     { PATH: "{DSIM_HOME}:{PATH}" }
-    { LD_LIBRARY_PATH: "{DSIM_HOME}/lib:{DSIM_HOME}/system_lib:{LD_LIBRARY_PATH}" }
+    { LD_LIBRARY_PATH: "{DSIM_HOME}/lib:{LD_LIBRARY_PATH}" }
   ]
 
   // Defaults for DSim
