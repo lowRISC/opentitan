@@ -6,6 +6,7 @@ Class describing simulation configuration object
 """
 
 import collections
+import fnmatch
 import logging as log
 import os
 import shutil
@@ -20,7 +21,6 @@ from SimResults import SimResults
 from tabulate import tabulate
 from Testplan import Testplan
 from utils import VERBOSE, rm_path
-
 
 # This affects the bucketizer failure report.
 _MAX_UNIQUE_TESTS = 5
@@ -313,77 +313,62 @@ class SimCfg(FlowCfg):
                 log.error("Item %s does not exist!", list_item)
 
     def _create_build_and_run_list(self):
-        # Walk through the list of items to run and create the build and run
-        # objects.
-        # Allow multiple regressions to run as long as the do not enable
-        # sim_modes or run_modes
-        def get_overlapping_tests(tests, run_list_names):
-            overlapping_tests = []
-            for test in tests:
-                if test.name in run_list_names:
-                    overlapping_tests.append(test)
-            return overlapping_tests
+        '''Generates a list of deployable objects from the provided items.
 
-        def prune_items(items, marked_items):
-            pruned_items = []
-            for item in items:
-                if item not in marked_items:
-                    pruned_items.append(item)
-            return pruned_items
+        Tests to be run are provided with --items switch. These can be glob-
+        style patterns. This method finds regressions and tests that match
+        these patterns.
+        '''
+        def _match_items(items: list, patterns: list):
+            hits = []
+            matched = set()
+            for pattern in patterns:
+                item_hits = fnmatch.filter(items, pattern)
+                if item_hits:
+                    hits += item_hits
+                    matched.add(pattern)
+            return hits, matched
 
-        # Check if there are items to run
-        if self.items == []:
-            log.error(
-                "No items provided for running this simulation / regression")
-            sys.exit(1)
+        # Process regressions first.
+        regr_map = {regr.name: regr for regr in self.regressions}
+        regr_hits, items_matched = _match_items(regr_map.keys(), self.items)
+        regrs = [regr_map[regr] for regr in regr_hits]
+        for regr in regrs:
+            overlap = bool([t for t in regr.tests if t in self.run_list])
+            if overlap:
+                log.warning(
+                    f"Regression {regr.name} added to be run has tests that "
+                    "overlap with other regressions also being run. This can "
+                    "result in conflicting build / run time opts to be set, "
+                    "resulting in unexpected results. Skipping.")
+                continue
 
-        items_list = self.items
-        run_list_names = []
-        marked_items = []
-        # Process regressions first
-        for regression in self.regressions:
-            if regression.name in items_list:
-                overlapping_tests = get_overlapping_tests(
-                    regression.tests, run_list_names)
-                if overlapping_tests != []:
-                    log.error(
-                        "Regression \"%s\" added for run contains tests that overlap with "
-                        "other regressions added. This can result in conflicting "
-                        "build / run_opts to be set causing unexpected results.",
-                        regression.name)
-                    sys.exit(1)
+            self.run_list += regr.tests
+            # Merge regression's build and run opts with its tests and their
+            # build_modes.
+            regr.merge_regression_opts()
 
-                self.run_list.extend(regression.tests)
-                # Merge regression's build and run opts with its tests and their
-                # build_modes
-                regression.merge_regression_opts()
-                run_list_names.extend(regression.test_names)
-                marked_items.append(regression.name)
-        items_list = prune_items(items_list, marked_items)
+        # Process individual tests, skipping the ones already added from
+        # regressions.
+        test_map = {
+            test.name: test
+            for test in self.tests if test not in self.run_list
+        }
+        test_hits, items_matched_ = _match_items(test_map.keys(), self.items)
+        self.run_list += [test_map[test] for test in test_hits]
+        items_matched |= items_matched_
 
-        # Process individual tests
-        for test in self.tests:
-            if test.name in items_list:
-                overlapping_tests = get_overlapping_tests([test],
-                                                          run_list_names)
-                if overlapping_tests == []:
-                    self.run_list.append(test)
-                    run_list_names.append(test.name)
-                    marked_items.append(test.name)
-        items_list = prune_items(items_list, marked_items)
+        # Check if all items have been processed.
+        for item in set(self.items) - items_matched:
+            log.warning(f"Item {item} did not match any regressions or "
+                        f"tests in {self.flow_cfg_file}.")
+
 
         # Merge the global build and run opts
         Tests.merge_global_opts(self.run_list, self.pre_build_cmds,
                                 self.post_build_cmds, self.build_opts,
                                 self.pre_run_cmds, self.post_run_cmds,
                                 self.run_opts, self.sw_images)
-
-        # Check if all items have been processed
-        if items_list != []:
-            log.error(
-                "The items %s added for run were not found in \n%s!\n "
-                "Use the --list switch to see a list of available "
-                "tests / regressions.", items_list, self.flow_cfg_file)
 
         # Process reseed override and create the build_list
         build_list_names = []
