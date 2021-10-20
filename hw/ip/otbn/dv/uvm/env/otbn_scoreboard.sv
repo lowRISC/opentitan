@@ -134,13 +134,13 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           // We start the execution when we see a write of the EXECUTE command. See the comment
           // above pending_start_tl_trans to see how this tracking works.
           if (item.a_data == otbn_pkg::CmdExecute) begin
-            // Set a flag: we're expecting the model to start on the next negedge. Also, spawn off a
-            // checking thread that will make sure it has been cleared again by the next posedge.
-            // Note that the reset() method is only called in the DV base class on the following
-            // posedge of rst_n, so we have to check whether we're still in reset here.
+            // Set a flag: we're expecting the model to start on the next posedge. Also, spawn off a
+            // checking thread that will make sure the flag has been cleared again by the following
+            // posedge. Note that the reset() method is only called in the DV base class on the
+            // following posedge of rst_n, so we have to check whether we're still in reset here.
             pending_start_tl_trans = 1'b1;
             fork begin
-              @(cfg.clk_rst_vif.cb);
+              repeat (2) @(cfg.clk_rst_vif.cb);
               `DV_CHECK_FATAL(!cfg.clk_rst_vif.rst_n || !pending_start_tl_trans,
                               "Model ignored a write of EXECUTE to the CMD register.")
             end

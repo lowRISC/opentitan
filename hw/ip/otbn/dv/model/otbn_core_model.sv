@@ -47,7 +47,7 @@ module otbn_core_model
 
   input logic            invalidate_imem_i, // Trash contents of IMEM (causing integrity errors)
 
-  output bit             done_r_o,
+  output bit             done_rr_o,
 
   output bit             err_o // something went wrong
 );
@@ -191,7 +191,7 @@ module otbn_core_model
       otbn_model_busy_r <= otbn_model_busy;
     end
   end
-  assign done_r_o = otbn_model_busy_r & ~otbn_model_busy;
+  assign done_rr_o = otbn_model_busy_r & ~otbn_model_busy;
 
   // Make stop_pc available over DPI. This is handy for Verilator simulations (where the top-level
   // is in C++).
