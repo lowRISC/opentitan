@@ -380,7 +380,7 @@ module rstmgr
   assign shadow_cnsty_chk_errs[2] = '0;
 
   // Generating resets for por_io_div4
-  // Power Domains: ['Aon', '0']
+  // Power Domains: ['Aon']
   // Shadowed: False
   rstmgr_leaf_rst u_daon_por_io_div4 (
     .clk_i,
@@ -394,18 +394,9 @@ module rstmgr
     .leaf_rst_o(resets_o.rst_por_io_div4_n[DomainAonSel]),
     .err_o(cnsty_chk_errs[3][DomainAonSel])
   );
-  rstmgr_leaf_rst u_d0_por_io_div4 (
-    .clk_i,
-    .rst_ni,
-    .leaf_clk_i(clk_io_div4_i),
-    .parent_rst_ni(rst_por_aon_n[Domain0Sel]),
-    .sw_rst_req_ni(1'b1),
-    .scan_rst_ni,
-    .scan_sel(leaf_rst_scanmode[3] == lc_ctrl_pkg::On),
-    .rst_en_o(rst_en_o.por_io_div4[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_por_io_div4_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[3][Domain0Sel])
-  );
+  assign resets_o.rst_por_io_div4_n[Domain0Sel] = '0;
+  assign cnsty_chk_errs[3][Domain0Sel] = '0;
+  assign rst_en_o.por_io_div4[Domain0Sel] = MuBi4True;
   assign shadow_cnsty_chk_errs[3] = '0;
 
   // Generating resets for por_usb

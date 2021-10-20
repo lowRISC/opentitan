@@ -459,13 +459,32 @@
       },
       clock_group: "secure",
       reset_connections: {
-        rst_ast_tlul_ni: "lc_io_div4",
-        rst_ast_adc_ni: "sys_aon",
-        rst_ast_alert_ni: "lc_io_div4",
-        rst_ast_es_ni: "sys",
-        rst_ast_rng_ni: "sys",
-        rst_ast_usb_ni: "usbif"
+        rst_ast_tlul_ni: {
+          name: "lc_io_div4",
+          domain: "0",
+        }
+        rst_ast_adc_ni: {
+          name: "sys_aon",
+          domain: "Aon"
+        },
+        rst_ast_alert_ni: {
+          name: "lc_io_div4",
+          domain: "0",
+        },
+        rst_ast_es_ni: {
+          name: "sys",
+          domain: "0",
+        },
+        rst_ast_rng_ni: {
+          name: "sys",
+          domain: "0",
+        },
+        rst_ast_usb_ni: {
+          name: "usbif",
+          domain: "0"
+        }
       },
+      domain: ["Aon", "0"],
       base_addr: "0x40480000",
       attr: "reggen_only",
     },

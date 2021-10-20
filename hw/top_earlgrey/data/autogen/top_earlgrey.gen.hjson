@@ -191,8 +191,8 @@
         type: top
         domains:
         [
-          Aon
           "0"
+          Aon
         ]
         shadowed: false
         sw: false
@@ -268,7 +268,6 @@
         domains:
         [
           Aon
-          "0"
         ]
         shadowed: false
         sw: false
@@ -3586,7 +3585,7 @@
         rst_ast_adc_ni:
         {
           name: sys_aon
-          domain: "0"
+          domain: Aon
         }
         rst_ast_alert_ni:
         {
@@ -3609,6 +3608,11 @@
           domain: "0"
         }
       }
+      domain:
+      [
+        Aon
+        "0"
+      ]
       attr: reggen_only
       clock_connections:
       {
@@ -3619,10 +3623,6 @@
         clk_ast_rng_i: clkmgr_aon_clocks.clk_main_secure
         clk_ast_usb_i: clkmgr_aon_clocks.clk_usb_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
