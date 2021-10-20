@@ -12,8 +12,8 @@ use std::path::PathBuf;
 use std::time::Instant;
 use structopt::StructOpt;
 
-use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::spi::{SpiParams, Transfer};
 use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::transport::Capability;

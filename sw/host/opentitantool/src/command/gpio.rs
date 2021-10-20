@@ -7,10 +7,10 @@ use erased_serde::Serialize;
 use std::any::Any;
 use structopt::StructOpt;
 
-use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::gpio::PinDirection;
-use opentitanlib::transport::{Capability};
+use opentitanlib::transport::Capability;
 
 #[derive(Debug, StructOpt)]
 /// Reads a GPIO pin.

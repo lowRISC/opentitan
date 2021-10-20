@@ -45,31 +45,34 @@ impl TransportWrapper {
 
     /// Returns a SPI [`Target`] implementation.
     pub fn spi(&self, name: &str) -> Result<Rc<dyn Target>> {
-        self.transport.borrow().spi(Self::map_name(&self.spi_map, name).as_str())
+        self.transport
+            .borrow()
+            .spi(Self::map_name(&self.spi_map, name).as_str())
     }
 
     /// Returns a [`Uart`] implementation.
     pub fn uart(&self, name: &str) -> Result<Rc<dyn Uart>> {
-        self.transport.borrow().uart(Self::map_name(&self.uart_map, name).as_str())
+        self.transport
+            .borrow()
+            .uart(Self::map_name(&self.uart_map, name).as_str())
     }
 
     /// Returns a [`GpioPin`] implementation.
     pub fn gpio_pin(&self, name: &str) -> Result<Rc<dyn GpioPin>> {
-        self.transport.borrow().gpio_pin(Self::map_name(&self.pin_map, name).as_str())
+        self.transport
+            .borrow()
+            .gpio_pin(Self::map_name(&self.pin_map, name).as_str())
     }
 
     /// Programs a bitstream into an FPGA.
     pub fn fpga_program(&self, bitstream: &[u8]) -> Result<()> {
         self.transport.borrow().fpga_program(bitstream)
     }
-    
+
     /// Given an pin/uart/spi port name, if the name is a known alias,
     /// return the underlying name/number, otherwise return the string
     /// as is.
-    fn map_name(
-        map: &HashMap<String, String>,
-        name: &str
-    ) -> String {
+    fn map_name(map: &HashMap<String, String>, name: &str) -> String {
         let name = name.to_uppercase();
         // TODO(#8769): Support multi-level aliasing, either by
         // flattening after parsing all files, or by repeated lookup
@@ -89,13 +92,15 @@ impl TransportWrapper {
         }
         for uart_conf in file.uarts {
             if let Some(alias_of) = uart_conf.alias_of {
-                self.uart_map.insert(uart_conf.name.to_uppercase(), alias_of);
+                self.uart_map
+                    .insert(uart_conf.name.to_uppercase(), alias_of);
             }
             // TODO(#8769): Record baud / parity configration for later
             // use when opening uart.
         }
         for flash_conf in file.flash {
-            self.flash_map.insert(flash_conf.name.clone(), flash_conf.clone());
+            self.flash_map
+                .insert(flash_conf.name.clone(), flash_conf.clone());
         }
         Ok(())
     }

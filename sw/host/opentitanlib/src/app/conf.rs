@@ -86,7 +86,6 @@ pub enum FlashAddressMode {
     Mode4b,
 }
 
-
 /// Chip programmed via an EEPROM-like SPI protocol.
 #[derive(Deserialize, Clone, Debug)]
 pub struct SpiEeprom {
@@ -115,7 +114,7 @@ pub enum FlashDriver {
     /// Chip programmed via an EEPROM-like SPI protocol.
     SpiEeprom(SpiEeprom),
     /// Temporary measure to allow external program to implement SPI protocol.
-    SpiExternalDriver(SpiExternalDriver)
+    SpiExternalDriver(SpiExternalDriver),
 }
 
 /// Defines the way to reach and program flash storage.
@@ -151,4 +150,3 @@ pub struct ConfigurationFile {
     #[serde(default)]
     pub flash: Vec<FlashConfiguration>,
 }
-

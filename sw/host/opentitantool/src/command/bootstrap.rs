@@ -10,8 +10,8 @@ use std::path::PathBuf;
 use std::time::Duration;
 use structopt::StructOpt;
 
-use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::bootstrap::{Bootstrap, BootstrapOptions, BootstrapProtocol};
 use opentitanlib::io::spi::SpiParams;
 use opentitanlib::transport::Capability;

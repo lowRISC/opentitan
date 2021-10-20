@@ -7,7 +7,7 @@ use std::time::Duration;
 use structopt::clap::arg_enum;
 use thiserror::Error;
 
-use crate::io::gpio::{GpioPin};
+use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 
 mod primitive;
@@ -78,7 +78,13 @@ impl Bootstrap {
 
     /// Perform the update, sending the firmware `payload` to the `spi` target,
     /// using `gpio` to sequence the reset and bootstrap pins.
-    pub fn update(&self, spi: &dyn Target, reset: &dyn GpioPin, bootstrap: &dyn GpioPin, payload: &[u8]) -> Result<()> {
+    pub fn update(
+        &self,
+        spi: &dyn Target,
+        reset: &dyn GpioPin,
+        bootstrap: &dyn GpioPin,
+        payload: &[u8],
+    ) -> Result<()> {
         log::info!("Asserting bootstrap pins...");
         bootstrap.write(true)?;
 
