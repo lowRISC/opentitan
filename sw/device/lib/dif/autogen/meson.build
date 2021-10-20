@@ -310,6 +310,20 @@ sw_lib_dif_autogen_sram_ctrl = declare_dependency(
   )
 )
 
+# Autogen System Reset Control DIF library
+sw_lib_dif_autogen_sysrst_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_sysrst_ctrl',
+    sources: [
+      hw_ip_sysrst_ctrl_reg_h,
+      'dif_sysrst_ctrl_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen USB Device DIF library
 sw_lib_dif_autogen_usbdev = declare_dependency(
   link_with: static_library(
