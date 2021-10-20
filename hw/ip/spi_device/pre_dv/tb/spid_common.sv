@@ -48,7 +48,7 @@ package spid_common;
   } spi_fifo_t;
 
   // spi_transaction: Send/ Receive data using data fifo.
-  task spi_transaction(
+  task automatic spi_transaction(
     virtual spi_if.tb sif,
     ref spi_fifo_t d_in  [$],
     ref spi_data_t d_out [$]
@@ -112,14 +112,14 @@ package spid_common;
   endtask : spi_transaction
 
   // spi_start: assert CSb to start transaction
-  task spi_start(virtual spi_if.tb sif);
+  task automatic spi_start(virtual spi_if.tb sif);
     // wait until negedge of SCK
     @(negedge sif.clk);
     sif.csb = 1'b 0;
   endtask : spi_start
 
   // spi_end: de-assert CSb to end SPI transaction
-  task spi_end(virtual spi_if.tb sif);
+  task automatic spi_end(virtual spi_if.tb sif);
     // It is always assumed to call `spi_end()` at the negedge of SCK
     // Wait then deassert
     @(posedge sif.clk);
@@ -127,7 +127,7 @@ package spid_common;
   endtask : spi_end
 
   // spi_sendbyte: Send 8bit byte to DUT
-  task spi_sendbyte(
+  task automatic spi_sendbyte(
     virtual spi_if.tb sif,
     input spi_data_t  data,
     input mode_e      mode
@@ -163,7 +163,7 @@ package spid_common;
     $display("SPI Byte sent!: %x", data);
   endtask: spi_sendbyte
 
-  task spi_highz(virtual spi_if.tb sif, input mode_e mode);
+  task automatic spi_highz(virtual spi_if.tb sif, input mode_e mode);
     automatic int unsigned loop;
 
     sif.sd_in[3:0] = 4'h z;
@@ -174,7 +174,7 @@ package spid_common;
     repeat(loop) @(negedge sif.clk);
   endtask : spi_highz
 
-  task spi_sendandreceive(
+  task automatic spi_sendandreceive(
     virtual spi_if.tb sif,
     input  spi_data_t send_byte,
     output spi_data_t rcv_byte
@@ -190,7 +190,7 @@ package spid_common;
 
   endtask : spi_sendandreceive
 
-  task spi_receivebyte(
+  task automatic spi_receivebyte(
     virtual spi_if.tb sif,
     output spi_data_t rcv_byte,
     input mode_e      mode
@@ -231,7 +231,7 @@ package spid_common;
   ////////////////////////
   // SPI Flash Commands //
   ////////////////////////
-  task spiflash_readstatus(
+  task automatic spiflash_readstatus(
     virtual spi_if.tb sif,
     input spi_data_t  opcode,
     output spi_data_t status
@@ -251,5 +251,35 @@ package spid_common;
     $display("Status Received: %x", status);
 
   endtask : spiflash_readstatus
+
+  task automatic spiflash_readjedec(
+    virtual spi_if.tb  sif,
+    input spi_data_t   opcode,
+    ref   logic [23:0] jedec_id // [23:16] Manufacurer ID, [15:0] ID
+  );
+    automatic spi_fifo_t send_data [$];
+    automatic spi_data_t rcv_data  [$];
+
+    assert(opcode == 8'h 9F);
+
+    send_data.push_back('{data: opcode, dir: DirIn,  mode: IoSingle});
+
+    // Receive 3 bytes from DUT
+    repeat (3) begin
+      send_data.push_back('{data: '0, dir: DirOut, mode: IoNone});
+    end
+
+    spi_transaction(sif, send_data, rcv_data);
+
+    assert(rcv_data.size() == 3);
+
+    jedec_id[23:16] = rcv_data.pop_front();
+    jedec_id[15:8]  = rcv_data.pop_front();
+    jedec_id[7:0]   = rcv_data.pop_front();
+
+    $display("Jedec ID Received: Manufacturer ID [%x], JEDEC_ID [%x]",
+      jedec_id[23:16], jedec_id[15:0]);
+
+  endtask : spiflash_readjedec
 
 endpackage : spid_common
