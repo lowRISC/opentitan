@@ -22,6 +22,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   mem_bkdr_util imem_util;
   mem_bkdr_util dmem_util;
 
+  // A handle to the scoreboard, used to flag expected errors.
+  otbn_scoreboard scoreboard;
+
   // The directory in which to look for ELF files (set by the test in build_phase; controlled by the
   // +otbn_elf_dir plusarg).
   string otbn_elf_dir;
