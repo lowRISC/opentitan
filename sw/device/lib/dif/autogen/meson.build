@@ -310,6 +310,20 @@ sw_lib_dif_autogen_spi_device = declare_dependency(
   )
 )
 
+# Autogen SPI Host DIF library
+sw_lib_dif_autogen_spi_host = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_spi_host',
+    sources: [
+      hw_ip_spi_host_reg_h,
+      'dif_spi_host_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen SRAM Controller DIF library
 sw_lib_dif_autogen_sram_ctrl = declare_dependency(
   link_with: static_library(

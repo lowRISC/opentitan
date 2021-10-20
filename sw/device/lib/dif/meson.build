@@ -245,7 +245,7 @@ test('dif_gpio_unittest', executable(
   suite: 'dif',
 )
 
-# SPI DIF library
+# SPI Device DIF library
 sw_lib_dif_spi_device = declare_dependency(
   link_with: static_library(
     'sw_lib_dif_spi_device',
@@ -268,6 +268,38 @@ test('dif_spi_device_unittest', executable(
       meson.source_root() / 'sw/device/lib/dif/dif_spi_device.c',
       meson.source_root() / 'sw/device/lib/dif/autogen/dif_spi_device_autogen.c',
       hw_ip_spi_device_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
+# SPI Host DIF library
+sw_lib_dif_spi_host = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_spi_host',
+    sources: [
+      hw_ip_spi_host_reg_h,
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_autogen_spi_host,
+    ],
+  )
+)
+
+test('dif_spi_host_unittest', executable(
+    'dif_spi_host_unittest',
+    sources: [
+      'autogen/dif_spi_host_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_spi_host_autogen.c',
+      hw_ip_spi_host_reg_h,
     ],
     dependencies: [
       sw_vendor_gtest,
