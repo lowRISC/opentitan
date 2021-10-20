@@ -21,29 +21,37 @@ class BootPolicyTest : public mask_rom_test::MaskRomTest {
 
 TEST_F(BootPolicyTest, ManifestCheck) {
   manifest_t manifest{};
-  manifest.identifier = kBootPolicyRomExtIdentifier;
+  manifest.identifier = MANIFEST_IDENTIFIER_ROM_EXT;
 
+  manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MIN;
   EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
-
   EXPECT_EQ(boot_policy_manifest_check(&manifest), kErrorOk);
-}
 
-TEST_F(BootPolicyTest, ManifestCheckOutOfBounds) {
-  manifest_t manifest{};
+  manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MAX >> 1;
+  EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
+  EXPECT_EQ(boot_policy_manifest_check(&manifest), kErrorOk);
 
-  EXPECT_CALL(mock_manifest_, Check(&manifest))
-      .WillOnce(Return(kErrorManifestBadLength));
-
-  EXPECT_EQ(boot_policy_manifest_check(&manifest), kErrorManifestBadLength);
+  manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MAX;
+  EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
+  EXPECT_EQ(boot_policy_manifest_check(&manifest), kErrorOk);
 }
 
 TEST_F(BootPolicyTest, ManifestCheckBadIdentifier) {
   manifest_t manifest{};
 
-  EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
-
   EXPECT_EQ(boot_policy_manifest_check(&manifest),
             kErrorBootPolicyBadIdentifier);
+}
+
+TEST_F(BootPolicyTest, ManifestCheckBadLength) {
+  manifest_t manifest{};
+  manifest.identifier = MANIFEST_IDENTIFIER_ROM_EXT;
+
+  manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MIN - 1;
+  EXPECT_EQ(boot_policy_manifest_check(&manifest), kErrorBootPolicyBadLength);
+
+  manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MAX + 1;
+  EXPECT_EQ(boot_policy_manifest_check(&manifest), kErrorBootPolicyBadLength);
 }
 
 struct ManifestOrderTestCase {

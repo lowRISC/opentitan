@@ -51,14 +51,6 @@ TEST_F(ManifestTest, EntryPointGet) {
             reinterpret_cast<uintptr_t>(&manifest_) + manifest_.entry_point);
 }
 
-TEST_F(ManifestTest, BadLength) {
-  manifest_.length = MANIFEST_LENGTH_FIELD_MAX + 1;
-  EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadLength);
-
-  manifest_.length = MANIFEST_LENGTH_FIELD_MIN - 1;
-  EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadLength);
-}
-
 TEST_F(ManifestTest, CodeRegionEmpty) {
   manifest_.code_start = manifest_.code_end;
   EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadCodeRegion);

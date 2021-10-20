@@ -12,13 +12,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-enum {
-  /**
-   * ROM_EXT manifest identifier (ASCII "OTRE").
-   */
-  kBootPolicyRomExtIdentifier = 0x4552544f,
-};
-
 /**
  * Type alias for the ROM_EXT entry point.
  *

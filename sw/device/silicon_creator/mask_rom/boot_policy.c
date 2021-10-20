@@ -21,10 +21,14 @@ boot_policy_manifests_t boot_policy_manifests_get(void) {
 }
 
 rom_error_t boot_policy_manifest_check(const manifest_t *manifest) {
-  RETURN_IF_ERROR(manifest_check(manifest));
-  if (manifest->identifier != kBootPolicyRomExtIdentifier) {
+  if (manifest->identifier != MANIFEST_IDENTIFIER_ROM_EXT) {
     return kErrorBootPolicyBadIdentifier;
   }
+  if (manifest->length < MANIFEST_LENGTH_FIELD_ROM_EXT_MIN ||
+      manifest->length > MANIFEST_LENGTH_FIELD_ROM_EXT_MAX) {
+    return kErrorBootPolicyBadLength;
+  }
+  RETURN_IF_ERROR(manifest_check(manifest));
   // TODO(#7879): Implement anti-rollback.
   uint32_t min_security_version = 0;
   if (manifest->security_version < min_security_version) {
