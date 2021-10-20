@@ -4,6 +4,6 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_lc_ctrl.h"
+#include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.h"
 
 #include "lc_ctrl_regs.h"  // Generated.

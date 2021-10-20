@@ -4,7 +4,7 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_alert_handler.h"
+#include "sw/device/lib/dif/autogen/dif_alert_handler_autogen.h"
 
 #include "alert_handler_regs.h"  // Generated.
 

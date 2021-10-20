@@ -4,7 +4,7 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_spi_device.h"
+#include "sw/device/lib/dif/autogen/dif_spi_device_autogen.h"
 
 #include "spi_device_regs.h"  // Generated.
 

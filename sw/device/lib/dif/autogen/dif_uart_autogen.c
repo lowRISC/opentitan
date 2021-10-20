@@ -4,7 +4,7 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/dif/autogen/dif_uart_autogen.h"
 
 #include "uart_regs.h"  // Generated.
 
