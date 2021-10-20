@@ -187,8 +187,8 @@ module clkmgr_reg_top (
   logic extclk_ctrl_we;
   logic [3:0] extclk_ctrl_sel_qs;
   logic [3:0] extclk_ctrl_sel_wd;
-  logic [3:0] extclk_ctrl_step_down_qs;
-  logic [3:0] extclk_ctrl_step_down_wd;
+  logic [3:0] extclk_ctrl_low_speed_sel_qs;
+  logic [3:0] extclk_ctrl_low_speed_sel_wd;
   logic jitter_enable_we;
   logic [3:0] jitter_enable_qs;
   logic [3:0] jitter_enable_wd;
@@ -533,18 +533,18 @@ module clkmgr_reg_top (
     .qs     (extclk_ctrl_sel_qs)
   );
 
-  //   F[step_down]: 7:4
+  //   F[low_speed_sel]: 7:4
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h5)
-  ) u_extclk_ctrl_step_down (
+  ) u_extclk_ctrl_low_speed_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (extclk_ctrl_we & extclk_ctrl_regwen_qs),
-    .wd     (extclk_ctrl_step_down_wd),
+    .wd     (extclk_ctrl_low_speed_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -552,10 +552,10 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.extclk_ctrl.step_down.q),
+    .q      (reg2hw.extclk_ctrl.low_speed_sel.q),
 
     // to register interface (read)
-    .qs     (extclk_ctrl_step_down_qs)
+    .qs     (extclk_ctrl_low_speed_sel_qs)
   );
 
 
@@ -1559,7 +1559,7 @@ module clkmgr_reg_top (
 
   assign extclk_ctrl_sel_wd = reg_wdata[3:0];
 
-  assign extclk_ctrl_step_down_wd = reg_wdata[7:4];
+  assign extclk_ctrl_low_speed_sel_wd = reg_wdata[7:4];
   assign jitter_enable_we = addr_hit[3] & reg_we & !reg_error;
 
   assign jitter_enable_wd = reg_wdata[3:0];
@@ -1633,7 +1633,7 @@ module clkmgr_reg_top (
 
       addr_hit[2]: begin
         reg_rdata_next[3:0] = extclk_ctrl_sel_qs;
-        reg_rdata_next[7:4] = extclk_ctrl_step_down_qs;
+        reg_rdata_next[7:4] = extclk_ctrl_low_speed_sel_qs;
       end
 
       addr_hit[3]: begin

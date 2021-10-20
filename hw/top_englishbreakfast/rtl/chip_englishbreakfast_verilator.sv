@@ -149,7 +149,8 @@ module chip_englishbreakfast_verilator (
   };
 
 
-  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
+  prim_mubi_pkg::mubi4_t all_clk_bypass;
+  prim_mubi_pkg::mubi4_t io_clk_bypass;
   // Top-level design
   top_englishbreakfast #(
     .AesMasking(1'b1),
@@ -177,8 +178,10 @@ module chip_englishbreakfast_verilator (
     .flash_bist_enable_i          ( lc_ctrl_pkg::Off ),
     .flash_power_down_h_i         ( 1'b0             ),
     .flash_power_ready_h_i        ( 1'b1             ),
-    .ast_clk_byp_req_o            ( lc_clk_bypass    ),
-    .ast_clk_byp_ack_i            ( lc_clk_bypass    ),
+    .all_clk_byp_req_o            ( all_clk_bypass    ),
+    .all_clk_byp_ack_i            ( all_clk_bypass    ),
+    .io_clk_byp_req_o             ( io_clk_bypass    ),
+    .io_clk_byp_ack_i             ( io_clk_bypass    ),
 
     // Multiplexed I/O
     .mio_in_i                     (mio_in),

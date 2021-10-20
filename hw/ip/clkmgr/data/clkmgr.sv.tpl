@@ -10,6 +10,7 @@
     import clkmgr_pkg::*;
     import clkmgr_reg_pkg::*;
     import lc_ctrl_pkg::lc_tx_t;
+    import prim_mubi_pkg::mubi4_t;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -52,11 +53,16 @@
   // life cycle state output
   input lc_tx_t lc_dft_en_i,
 
-  // clock bypass control
+  // clock bypass control with lc_ctrl
   input lc_tx_t lc_clk_byp_req_i,
-  output lc_tx_t ast_clk_byp_req_o,
-  input lc_tx_t ast_clk_byp_ack_i,
   output lc_tx_t lc_clk_byp_ack_o,
+
+  // clock bypass control with ast
+  output mubi4_t io_clk_byp_req_o,
+  input mubi4_t io_clk_byp_ack_i,
+  output mubi4_t all_clk_byp_req_o,
+  input mubi4_t all_clk_byp_ack_i,
+  output logic hi_speed_sel_o,
 
   // jittery enable
   output logic jitter_en_o,
@@ -74,20 +80,32 @@
 
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
-  import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi4_test_true_loose;
+  import prim_mubi_pkg::mubi4_test_false_loose;
 
   ////////////////////////////////////////////////////
   // Divided clocks
   ////////////////////////////////////////////////////
 
-  lc_tx_t step_down_req;
+  logic step_down_req;
   logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
 
 % for src_name in clocks.derived_srcs:
   logic clk_${src_name}_i;
 % endfor
 
+% for src_name in clocks.all_derived_srcs():
+  logic ${src_name}_step_down_req;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_${src_name}_step_down_req_sync (
+    .clk_i(clk_${src_name}_i),
+    .rst_ni(rst_${src_name}_ni),
+    .d_i(step_down_req),
+    .q_o(${src_name}_step_down_req)
+  );
+
+% endfor
 % for src in clocks.derived_srcs.values():
 
   lc_tx_t ${src.name}_div_scanmode;
@@ -106,7 +124,7 @@
   ) u_no_scan_${src.name}_div (
     .clk_i(clk_${src.src.name}_i),
     .rst_ni(rst_${src.src.name}_ni),
-    .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
+    .step_down_req_i(${src.src.name}_step_down_req),
     .step_down_ack_o(step_down_acks[${loop.index}]),
     .test_en_i(${src.name}_div_scanmode == lc_ctrl_pkg::On),
     .clk_o(clk_${src.name}_i)
@@ -180,20 +198,36 @@
   // Clock bypass request
   ////////////////////////////////////////////////////
 
+  mubi4_t low_speed_sel;
+  assign low_speed_sel = mubi4_t'(reg2hw.extclk_ctrl.low_speed_sel.q);
   clkmgr_byp #(
     .NumDivClks(${len(clocks.derived_srcs)})
   ) u_clkmgr_byp (
     .clk_i,
     .rst_ni,
     .en_i(lc_dft_en_i),
-    .byp_req_i(lc_tx_t'(reg2hw.extclk_ctrl.sel.q)),
-    .step_down_req_i(lc_tx_t'(reg2hw.extclk_ctrl.step_down.q)),
-    .ast_clk_byp_req_o,
-    .ast_clk_byp_ack_i,
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
+    .byp_req_i(mubi4_t'(reg2hw.extclk_ctrl.sel.q)),
+    .low_speed_sel_i(low_speed_sel),
+    .all_clk_byp_req_o,
+    .all_clk_byp_ack_i,
+    .io_clk_byp_req_o,
+    .io_clk_byp_ack_i,
+
+    // divider step down controls
     .step_down_acks_i(step_down_acks),
     .step_down_req_o(step_down_req)
+  );
+
+  // the external consumer of this signal requires the opposite polarity
+  prim_flop #(
+    .ResetValue(1'b1)
+  ) u_high_speed_sel (
+    .clk_i,
+    .rst_ni,
+    .d_i(mubi4_test_false_loose(low_speed_sel)),
+    .q_o(hi_speed_sel_o)
   );
 
   ////////////////////////////////////////////////////
@@ -462,7 +496,8 @@
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
-  `ASSERT_KNOWN(AstClkBypReqKnownO_A, ast_clk_byp_req_o)
+  `ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
+  `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
 % for intf in cfg['exported_clks']:

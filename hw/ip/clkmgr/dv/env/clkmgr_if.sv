@@ -35,8 +35,8 @@ interface clkmgr_if (
   lc_ctrl_pkg::lc_tx_t lc_clk_byp_req;
   lc_ctrl_pkg::lc_tx_t lc_clk_byp_ack;
   // clkmgr clock bypass request and ast ack.
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t io_clk_byp_req;
+  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
 
   logic jitter_en_o;
   clkmgr_pkg::clkmgr_out_t clocks_o;
@@ -110,8 +110,8 @@ interface clkmgr_if (
     lc_clk_byp_req = value;
   endfunction
 
-  function automatic void update_ast_clk_byp_ack(lc_ctrl_pkg::lc_tx_t value);
-    ast_clk_byp_ack = value;
+  function automatic void update_io_clk_byp_ack(prim_mubi_pkg::mubi4_t value);
+    io_clk_byp_ack = value;
   endfunction
 
   // TODO:: this fix is not right since there are now 3 status
@@ -134,8 +134,8 @@ interface clkmgr_if (
   task automatic init(logic [NUM_TRANS-1:0] idle, lc_ctrl_pkg::lc_tx_t scanmode,
                       lc_ctrl_pkg::lc_tx_t lc_dft_en = lc_ctrl_pkg::Off,
                       lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off,
-                      lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack = lc_ctrl_pkg::Off);
-    update_ast_clk_byp_ack(ast_clk_byp_ack);
+                      prim_mubi_pkg::mubi4_t io_clk_byp_ack = prim_mubi_pkg::MuBi4False);
+    update_io_clk_byp_ack(io_clk_byp_ack);
     update_idle(idle);
     update_lc_clk_byp_req(lc_clk_byp_req);
     update_lc_dft_en(lc_dft_en);
@@ -249,7 +249,7 @@ interface clkmgr_if (
   logic step_down_ff;
   always @(posedge clk) begin
     if (rst_n) begin
-      step_down_ff <= ast_clk_byp_ack == lc_ctrl_pkg::On;
+      step_down_ff <= io_clk_byp_ack == prim_mubi_pkg::MuBi4True;
     end else begin
       step_down_ff <= 1'b0;
     end
@@ -258,7 +258,7 @@ interface clkmgr_if (
   clocking clk_cb @(posedge clk);
     input extclk_ctrl_csr_sel;
     input lc_dft_en_i;
-    input ast_clk_byp_req;
+    input io_clk_byp_req;
     input lc_clk_byp_req;
     input step_down = step_down_ff;
     input jitter_enable_csr;

@@ -4,64 +4,54 @@
 //
 // Handle clock manager bypass requests
 
-module clkmgr_byp import clkmgr_pkg::*; import lc_ctrl_pkg::lc_tx_t; # (
+module clkmgr_byp
+  import clkmgr_pkg::*;
+  import lc_ctrl_pkg::lc_tx_t;
+  import prim_mubi_pkg::mubi4_t;
+# (
   parameter int NumDivClks = 1
 ) (
   input                   clk_i,
   input                   rst_ni,
+  // interaction with lc_ctrl
   input  lc_tx_t          en_i,
-  input  lc_tx_t          byp_req_i,
-  input  lc_tx_t          step_down_req_i,
-  output lc_tx_t          ast_clk_byp_req_o,
-  input  lc_tx_t          ast_clk_byp_ack_i,
   input  lc_tx_t          lc_clk_byp_req_i,
   output lc_tx_t          lc_clk_byp_ack_o,
+  // interaction with software
+  input  mubi4_t          byp_req_i,
+  input  mubi4_t          low_speed_sel_i,
+  // interaction with ast
+  output mubi4_t          all_clk_byp_req_o,
+  input  mubi4_t          all_clk_byp_ack_i,
+  output mubi4_t          io_clk_byp_req_o,
+  input  mubi4_t          io_clk_byp_ack_i,
+  // interaction with dividers
   input  [NumDivClks-1:0] step_down_acks_i,
-  output lc_tx_t          step_down_req_o
+  output logic            step_down_req_o
 );
 
-  lc_tx_t reg_clk_byp_req;
-  lc_tx_t on_val;
-  assign on_val = lc_ctrl_pkg::On;
+  import prim_mubi_pkg::MuBi4Width;
+  import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::mubi4_and_hi;
+  import prim_mubi_pkg::mubi4_or_hi;
+  import prim_mubi_pkg::mubi4_test_false_strict;
+  import prim_mubi_pkg::mubi4_test_true_strict;
 
-  // Generate qualified reg clk bypass request
-  for (genvar i = 0; i < $bits(lc_tx_t); i++) begin : gen_clk_byp
-    prim_buf u_buf (
-      .in_i(on_val[i] ? byp_req_i[i] & en_i[i] : byp_req_i[i] | en_i[i]),
-      .out_o(reg_clk_byp_req[i])
-    );
-  end
+  // life cycle handling
+  mubi4_t io_clk_byp_req_d;
+  assign io_clk_byp_req_d = (lc_clk_byp_req_i == lc_ctrl_pkg::On) ?
+                            MuBi4True :
+                            MuBi4False;
 
-  lc_tx_t ast_clk_byp_req;
-  always_comb begin
-    ast_clk_byp_req = lc_ctrl_pkg::Off;
-    if (lc_clk_byp_req_i == lc_ctrl_pkg::On) begin
-      ast_clk_byp_req = lc_ctrl_pkg::On;
-    end else if (reg_clk_byp_req == lc_ctrl_pkg::On) begin
-      ast_clk_byp_req = lc_ctrl_pkg::On;
-    end
-  end
-
-  prim_lc_sender u_clk_byp_req (
-   .clk_i,
-   .rst_ni,
-   .lc_en_i(ast_clk_byp_req),
-   .lc_en_o(ast_clk_byp_req_o)
-  );
-
-  lc_tx_t ast_clk_byp_ack;
-  prim_lc_sync u_rcv (
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4False)
+  ) u_io_byp_req (
     .clk_i,
     .rst_ni,
-    .lc_en_i(ast_clk_byp_ack_i),
-    .lc_en_o(ast_clk_byp_ack)
+    .mubi_i(io_clk_byp_req_d),
+    .mubi_o(io_clk_byp_req_o)
   );
-
-  // if switch request came from software, let software dictate whether to step down
-  assign step_down_req_o =
-    lc_clk_byp_req_i == lc_ctrl_pkg::On ? ast_clk_byp_ack :
-    reg_clk_byp_req == lc_ctrl_pkg::On  ? ast_clk_byp_ack & step_down_req_i :
-                                          lc_ctrl_pkg::Off;
 
   // only ack the lc_ctrl if it made a request.
   prim_lc_sender u_send (
@@ -70,6 +60,82 @@ module clkmgr_byp import clkmgr_pkg::*; import lc_ctrl_pkg::lc_tx_t; # (
    .lc_en_i((&step_down_acks_i) ? lc_clk_byp_req_i : lc_ctrl_pkg::Off),
    .lc_en_o(lc_clk_byp_ack_o)
   );
+
+  // software switch request handling
+  mubi4_t dft_en;
+  assign dft_en = (en_i == lc_ctrl_pkg::On) ? MuBi4True : MuBi4False;
+
+  mubi4_t all_clk_byp_req_d;
+  assign all_clk_byp_req_d = mubi4_and_hi(byp_req_i, dft_en);
+
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4False)
+  ) u_all_byp_req (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(all_clk_byp_req_d),
+    .mubi_o(all_clk_byp_req_o)
+  );
+
+  // divider step down handling
+  mubi4_t io_clk_byp_ack;
+  mubi4_t all_clk_byp_ack;
+
+  prim_mubi4_sync #(
+    .AsyncOn(1),
+    .ResetValue(MuBi4False)
+  ) u_io_ack_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(io_clk_byp_ack_i),
+    .mubi_o(io_clk_byp_ack)
+  );
+
+  prim_mubi4_sync #(
+    .AsyncOn(1),
+    .ResetValue(MuBi4False)
+  ) u_all_ack_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(all_clk_byp_ack_i),
+    .mubi_o(all_clk_byp_ack)
+  );
+
+  // create individual requests
+  mubi4_t lc_step_down_req;
+  assign lc_step_down_req = mubi4_and_hi(io_clk_byp_req_o, io_clk_byp_ack);
+
+  // When requesting a switch, the low speed indication is used to determine step down.
+  // Once switched, the low speed indication is not looked at again until software request
+  // is de-asserted.
+  mubi4_t sw_step_down_en;
+  mubi4_t sw_step_down_req;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sw_step_down_en <= MuBi4False;
+    end else if (mubi4_test_true_strict(all_clk_byp_req_o) &&
+                 mubi4_test_true_strict(all_clk_byp_ack)) begin
+      sw_step_down_en <= MuBi4True;
+    end else if (
+      mubi4_test_true_strict(sw_step_down_en) &&
+      mubi4_test_false_strict(all_clk_byp_req_o) &&
+      mubi4_test_false_strict(all_clk_byp_ack)) begin
+      sw_step_down_en <= MuBi4False;
+    end
+  end
+  // when in external clock state, allow low speed select to directly control
+  // clock divider.
+  assign sw_step_down_req = mubi4_and_hi(sw_step_down_en, low_speed_sel_i);
+
+  // combine requests
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      step_down_req_o <= '0;
+    end else begin
+      step_down_req_o <=
+        mubi4_test_true_strict(mubi4_or_hi(lc_step_down_req, sw_step_down_req));
+    end
+  end
 
 
 endmodule // clkmgr_byp

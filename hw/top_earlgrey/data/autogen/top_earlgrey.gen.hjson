@@ -2863,29 +2863,68 @@
           index: -1
         }
         {
-          name: ast_clk_byp_req
-          struct: lc_tx
-          package: lc_ctrl_pkg
+          name: io_clk_byp_req
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: req
           width: 1
           inst_name: clkmgr_aon
           default: ""
           external: true
-          top_signame: ast_clk_byp_req
+          top_signame: io_clk_byp_req
           index: -1
         }
         {
-          name: ast_clk_byp_ack
-          struct: lc_tx
-          package: lc_ctrl_pkg
+          name: io_clk_byp_ack
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: rcv
           width: 1
           inst_name: clkmgr_aon
           default: ""
           external: true
-          top_signame: ast_clk_byp_ack
+          top_signame: io_clk_byp_ack
+          index: -1
+        }
+        {
+          name: all_clk_byp_req
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: all_clk_byp_req
+          index: -1
+        }
+        {
+          name: all_clk_byp_ack
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: all_clk_byp_ack
+          index: -1
+        }
+        {
+          name: hi_speed_sel
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          package: ""
+          external: true
+          top_signame: hi_speed_sel
           index: -1
         }
         {
@@ -7529,8 +7568,11 @@
       ast.ram_2p_cfg: ram_2p_cfg
       ast.rom_cfg: rom_cfg
       clkmgr_aon.jitter_en: clk_main_jitter_en
-      clkmgr_aon.ast_clk_byp_req: ast_clk_byp_req
-      clkmgr_aon.ast_clk_byp_ack: ast_clk_byp_ack
+      clkmgr_aon.io_clk_byp_req: io_clk_byp_req
+      clkmgr_aon.io_clk_byp_ack: io_clk_byp_ack
+      clkmgr_aon.all_clk_byp_req: all_clk_byp_req
+      clkmgr_aon.all_clk_byp_ack: all_clk_byp_ack
+      clkmgr_aon.hi_speed_sel: hi_speed_sel
       flash_ctrl.flash_alert: flash_alert
       flash_ctrl.flash_bist_enable: flash_bist_enable
       flash_ctrl.flash_power_down_h: flash_power_down_h
@@ -15351,29 +15393,68 @@
         index: -1
       }
       {
-        name: ast_clk_byp_req
-        struct: lc_tx
-        package: lc_ctrl_pkg
+        name: io_clk_byp_req
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: req
         width: 1
         inst_name: clkmgr_aon
         default: ""
         external: true
-        top_signame: ast_clk_byp_req
+        top_signame: io_clk_byp_req
         index: -1
       }
       {
-        name: ast_clk_byp_ack
-        struct: lc_tx
-        package: lc_ctrl_pkg
+        name: io_clk_byp_ack
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: rcv
         width: 1
         inst_name: clkmgr_aon
         default: ""
         external: true
-        top_signame: ast_clk_byp_ack
+        top_signame: io_clk_byp_ack
+        index: -1
+      }
+      {
+        name: all_clk_byp_req
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: all_clk_byp_req
+        index: -1
+      }
+      {
+        name: all_clk_byp_ack
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: all_clk_byp_ack
+        index: -1
+      }
+      {
+        name: hi_speed_sel
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        package: ""
+        external: true
+        top_signame: hi_speed_sel
         index: -1
       }
       {
@@ -18363,28 +18444,64 @@
         netname: clk_main_jitter_en
       }
       {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: ast_clk_byp_req_o
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: io_clk_byp_req_o
         width: 1
         type: uni
         default: ""
         direction: out
         conn_type: false
         index: -1
-        netname: ast_clk_byp_req
+        netname: io_clk_byp_req
       }
       {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: ast_clk_byp_ack_i
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: io_clk_byp_ack_i
         width: 1
         type: uni
         default: ""
         direction: in
         conn_type: false
         index: -1
-        netname: ast_clk_byp_ack
+        netname: io_clk_byp_ack
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: all_clk_byp_req_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: all_clk_byp_req
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        signame: all_clk_byp_ack_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: all_clk_byp_ack
+      }
+      {
+        package: ""
+        struct: logic
+        signame: hi_speed_sel_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: hi_speed_sel
       }
       {
         package: ast_pkg

@@ -783,9 +783,12 @@ module chip_earlgrey_cw310 #(
   logic flash_power_down_h;
   logic flash_power_ready_h;
 
-  // Life cycle clock bypass req/ack
-  prim_mubi_pkg::mubi4_t ast_clk_byp_req;
-  prim_mubi_pkg::mubi4_t ast_clk_byp_ack;
+  // clock bypass req/ack
+  prim_mubi_pkg::mubi4_t io_clk_byp_req;
+  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t all_clk_byp_req;
+  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
+  logic hi_speed_sel;
 
   // DFT connections
   logic scan_en;
@@ -994,11 +997,11 @@ module chip_earlgrey_cw310 #(
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-    .ext_freq_is_96m_i     ( 1'b0 ),                       // TODO Tim
-    .all_clk_byp_req_i     ( prim_mubi_pkg::MuBi4False ),  // TODO Tim
-    .all_clk_byp_ack_o     (  ),                           // TODO Tim
-    .io_clk_byp_req_i      ( ast_clk_byp_req   ),          // TODO Tim
-    .io_clk_byp_ack_o      ( ast_clk_byp_ack   ),          // TODO Tim
+    .ext_freq_is_96m_i     ( hi_speed_sel ),
+    .all_clk_byp_req_i     ( all_clk_byp_req  ),
+    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
+    .io_clk_byp_req_i      ( io_clk_byp_req   ),
+    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
     .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
@@ -1095,8 +1098,11 @@ module chip_earlgrey_cw310 #(
     .flash_bist_enable_i          ( prim_mubi_pkg::MuBi4False ),
     .flash_power_down_h_i         ( 1'b0                  ),
     .flash_power_ready_h_i        ( 1'b1                  ),
-    .ast_clk_byp_req_o            ( ast_clk_byp_req       ),
-    .ast_clk_byp_ack_i            ( ast_clk_byp_ack       ),
+    .io_clk_byp_req_o             ( io_clk_byp_req        ),
+    .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
+    .all_clk_byp_req_o            ( all_clk_byp_req       ),
+    .all_clk_byp_ack_i            ( all_clk_byp_ack       ),
+    .hi_speed_sel_o               ( hi_speed_sel          ),
 
     .ast_tl_req_o                 ( base_ast_bus               ),
     .ast_tl_rsp_i                 ( ast_base_bus               ),

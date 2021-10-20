@@ -36,7 +36,7 @@ package clkmgr_reg_pkg;
     } sel;
     struct packed {
       logic [3:0]  q;
-    } step_down;
+    } low_speed_sel;
   } clkmgr_reg2hw_extclk_ctrl_reg_t;
 
   typedef struct packed {

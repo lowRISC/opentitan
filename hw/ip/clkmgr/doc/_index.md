@@ -200,18 +200,32 @@ Unlike the life cycle controller, a software request for external clocks switche
 Software request for external clocks is not always valid.
 Software is only able to request for external clocks when dft functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#dft_en" >}}).
 
-When software requests the external clock switch, it also provides an indication how fast the external clock is.
+When software requests the external clock switch, it also provides an indication how fast the external clock is through {{< regref "EXTCLK_CTRL.LOW_SPEED_SEL" >}}.
 There are two supported clock speeds:
 * High speed - external clock is close to nominal speeds (e.g. external clock is 96MHz and nominal frequency is 96MHz-100MHz)
 * Low speed - external clock is half of nominal speeds (e.g. external clock is 48MHz and nominal frequency is 96MHz-100MHz)
 
-When software requests external clock, the register bit {{< regref "EXTCLK_CTRL" >}} is written.
+When software requests external clock, the register bit {{< regref "EXTCLK_CTRL.SEL" >}} is written.
 If dft functions are allowed, the `clkmgr` sends a request signal `all_clk_byp_req_o` to `ast` and is acknowledged through `all_clk_byp_ack_i`.
 
 If software requests a low speed external clock, at the completion of the switch, internal dividers are also stepped down.
 When the divider is stepped down, a divide-by-4 clock becomes divide-by-2 clock , and a divide-by-2 becomes a divide-by-1 clock.
 
 If software requests a high speed external clock, the dividers are kept as is.
+
+#### Clock Frequency Summary
+
+The table below summarises the valid modes and the settings required.
+
+| Mode                         | `lc_ctrl_clk_byp_req`  | `extclk_ctrl.sel` | `extclk_ctrl.low_speed_sel` | life cycle state        |
+| -------------                | ---------------------  | ----------------- | ----------------------------| ----------------------- |
+| Life cycle transition        | `lc_ctrl_pkg::On`      | Don't care        | Don't care                  | Controlled by `lc_ctrl` |
+| Internal Clocks              | `lc_ctrl_pkg::Off`     | `kMultiBit4False` | Don't care                  | All                     |
+| Software external high speed | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4False`           | TEST_UNLOCKED, RMA      |
+| Software external low speed  | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4True`            | TEST_UNLOCKED, RMA      |
+
+
+
 
 ### Clock Frequency Measurements
 

@@ -108,10 +108,12 @@ module clkmgr_bind;
     .clk(clocks_o.clk_io_powerup),
     .rst_n(rst_ni),
     .maybe_divided_clk(clocks_o.clk_io_div2_powerup),
-    .lc_step_down(ast_clk_byp_ack_i == lc_ctrl_pkg::On && lc_clk_byp_req_i == lc_ctrl_pkg::On),
-    .sw_step_down(ast_clk_byp_ack_i == lc_ctrl_pkg::On && lc_dft_en_i == lc_ctrl_pkg::On &&
-                  reg2hw.extclk_ctrl.sel.q == lc_ctrl_pkg::On &&
-                  reg2hw.extclk_ctrl.step_down.q == lc_ctrl_pkg::On),
+    .lc_step_down(io_clk_byp_ack_i == prim_mubi_pkg::MuBi4True &&
+                  lc_clk_byp_req_i == lc_ctrl_pkg::On),
+    .sw_step_down(io_clk_byp_ack_i == prim_mubi_pkg::MuBi4True &&
+                  lc_dft_en_i == lc_ctrl_pkg::On &&
+                  reg2hw.extclk_ctrl.sel.q == prim_mubi_pkg::MuBi4True &&
+                  reg2hw.extclk_ctrl.low_speed_sel.q == prim_mubi_pkg::MuBi4True),
     .scanmode(scanmode_i == lc_ctrl_pkg::On)
   );
 
@@ -122,10 +124,12 @@ module clkmgr_bind;
     .clk(clocks_o.clk_io_div2_powerup),
     .rst_n(rst_ni),
     .maybe_divided_clk(clocks_o.clk_io_div4_powerup),
-    .lc_step_down(ast_clk_byp_ack_i == lc_ctrl_pkg::On && lc_clk_byp_req_i == lc_ctrl_pkg::On),
-    .sw_step_down(ast_clk_byp_ack_i == lc_ctrl_pkg::On && lc_dft_en_i == lc_ctrl_pkg::On &&
-                  reg2hw.extclk_ctrl.sel.q == lc_ctrl_pkg::On &&
-                  reg2hw.extclk_ctrl.step_down.q == lc_ctrl_pkg::On),
+    .lc_step_down(io_clk_byp_ack_i == prim_mubi_pkg::MuBi4True &&
+                  lc_clk_byp_req_i == lc_ctrl_pkg::On),
+    .sw_step_down(io_clk_byp_ack_i == prim_mubi_pkg::MuBi4True &&
+                  lc_dft_en_i == lc_ctrl_pkg::On &&
+                  reg2hw.extclk_ctrl.sel.q == prim_mubi_pkg::MuBi4True &&
+                  reg2hw.extclk_ctrl.low_speed_sel.q == prim_mubi_pkg::MuBi4True),
     .scanmode(scanmode_i == lc_ctrl_pkg::On)
   );
 
