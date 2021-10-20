@@ -43,7 +43,7 @@ impl CW310Uart {
 
         let port = ports
             .get(instance as usize)
-            .ok_or(TransportError::InvalidInstance("uart", instance.to_string()))?;
+            .ok_or_else(|| TransportError::InvalidInstance("uart", instance.to_string()))?;
         Ok(CW310Uart {
             port: RefCell::new(serialport::new(&port.port_name, 115200).open()?),
         })
