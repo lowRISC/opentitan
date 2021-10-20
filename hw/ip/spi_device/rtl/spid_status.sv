@@ -285,7 +285,10 @@ module spid_status
         // deadend state
         // Everytime a byte sent out, shift to next.
 
-        // TODO: Check if the byte_sel_inc to be delayed a cycle
+        // Check if the byte_sel_inc to be delayed a cycle
+        // p2s_sent is asserted at 7th beat not 8th beat.
+        // But the spi_p2s module stores prev data into its 8bit register.
+        // So increasing the selection signal does not affect current SPI byte.
         if (outclk_p2s_sent_i) byte_sel_inc = 1'b 1;
       end
 
