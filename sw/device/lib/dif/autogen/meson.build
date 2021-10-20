@@ -114,6 +114,20 @@ sw_lib_dif_autogen_entropy_src = declare_dependency(
   )
 )
 
+# Autogen Flash Controller DIF library
+sw_lib_dif_autogen_flash_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_flash_ctrl',
+    sources: [
+      hw_ip_flash_ctrl_reg_h,
+      'dif_flash_ctrl_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen GPIO DIF library
 sw_lib_dif_autogen_gpio = declare_dependency(
   link_with: static_library(

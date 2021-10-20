@@ -946,3 +946,35 @@ test('dif_sysrst_ctrl_unittest', executable(
   ),
   suite: 'dif',
 )
+
+# Flash Controller library
+sw_lib_dif_flash_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_flash_ctrl',
+    sources: [
+      hw_ip_flash_ctrl_reg_h,
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_autogen_flash_ctrl,
+    ],
+  )
+)
+
+test('dif_flash_ctrl_unittest', executable(
+    'dif_flash_ctrl_unittest',
+    sources: [
+      'autogen/dif_flash_ctrl_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.c',
+      hw_ip_flash_ctrl_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
