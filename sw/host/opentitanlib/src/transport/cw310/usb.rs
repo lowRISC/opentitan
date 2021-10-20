@@ -441,8 +441,8 @@ impl Backend {
         self.usb
             .send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_EXIT, &[])?;
 
-        if result.is_err() {
-            Err(Error::FpgaProgramFailed(result.unwrap_err().to_string()).into())
+        if let Err(e) = result {
+            Err(Error::FpgaProgramFailed(e.to_string()).into())
         } else if !status {
             Err(Error::FpgaProgramFailed("unknown error".to_string()).into())
         } else {
