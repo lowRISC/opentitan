@@ -13,10 +13,12 @@ def find_tool(tool_name: str) -> str:
 
     1. Use the path set in the RV32_TOOL_<tool_name> environment variable.
     2. Use the path set in $TOOLCHAIN_PATH/bin/riscv32-unknown-elf-<tool_name>.
-    3. Use riscv32-unknown-elf-<tool_name> and expect it to be in PATH.
+    3. Look for riscv32-unknown-elf-<tool_name> in the system PATH.
+    4. Look in the default toolchain install location, /tools/riscv/bin.
 
-    In cases (1) and (2), the file path is checked if it exists, and if not, an
-    error message is printed.
+    For methods (1) and (2), if the expected environment variable is set but
+    the tool isn't found, an error is printed. An error is also printed if
+    neither environment variables is set and methods (3) and (4) fail.
     '''
     tool_env_var = 'RV32_TOOL_' + tool_name.upper()
     configured_tool_path = os.environ.get(tool_env_var)
@@ -31,14 +33,24 @@ def find_tool(tool_name: str) -> str:
 
     expanded = 'riscv32-unknown-elf-' + tool_name
     toolchain_path = os.environ.get('TOOLCHAIN_PATH')
-    if toolchain_path is None:
-        return expanded
+    if toolchain_path is not None:
+        tool_path = os.path.join(toolchain_path, 'bin', expanded)
+        if not os.path.exists(tool_path):
+            raise RuntimeError('No such file: {!r} (derived from the '
+                               'TOOLCHAIN_PATH environment variable when trying '
+                               'to find the {!r} tool).'
+                               .format(tool_path, tool_name))
+        return tool_path
 
-    tool_path = os.path.join(toolchain_path, 'bin', expanded)
-    if not os.path.exists(tool_path):
-        raise RuntimeError('No such file: {!r} (derived from the '
-                           'TOOLCHAIN_PATH environment variable when trying '
-                           'to find the {!r} tool).'
-                           .format(tool_path, tool_name))
+    default_location = '/tools/riscv/bin'
+    paths = os.get_exec_path() + [default_location]
+    for exec_path in paths:
+        tool_path = os.path.join(exec_path, expanded)
+        if os.path.exists(tool_path):
+            return tool_path
 
-    return tool_path
+    raise RuntimeError('Unable to find {!r} in PATH or in {!r}. Set the {!r} '
+                       'or TOOLCHAIN_PATH environment variable if you '
+                       'installed your RISC-V toolchain in an alternate '
+                       'location.'
+                       .format(expanded, default_location, tool_env_var))
