@@ -78,9 +78,8 @@ enum module_ {
   X(kErrorSigverifyBadOtpValue,       ERROR_(4, kModuleSigverify, kInternal)), \
   X(kErrorSigverifyBadLcState,        ERROR_(5, kModuleSigverify, kInternal)), \
   X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
-  X(kErrorManifestBadLength,          ERROR_(1, kModuleManifest, kInternal)), \
-  X(kErrorManifestBadEntryPoint,      ERROR_(2, kModuleManifest, kInternal)), \
-  X(kErrorManifestBadCodeRegion,      ERROR_(3, kModuleManifest, kInternal)), \
+  X(kErrorManifestBadEntryPoint,      ERROR_(1, kModuleManifest, kInternal)), \
+  X(kErrorManifestBadCodeRegion,      ERROR_(2, kModuleManifest, kInternal)), \
   X(kErrorAlertBadIndex,              ERROR_(1, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadClass,              ERROR_(2, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadEnable,             ERROR_(3, kModuleAlertHandler, kInvalidArgument)), \
@@ -104,7 +103,8 @@ enum module_ {
   X(kErrorSecMmioWriteCountFault,     ERROR_(5, kModuleSecMmio, kInternal)), \
   X(kErrorSecMmioCheckCountFault,     ERROR_(6, kModuleSecMmio, kInternal)), \
   X(kErrorBootPolicyBadIdentifier,    ERROR_(1, kModuleBootPolicy, kInternal)), \
-  X(kErrorBootPolicyRollback,         ERROR_(2, kModuleBootPolicy, kInternal)), \
+  X(kErrorBootPolicyBadLength,        ERROR_(2, kModuleBootPolicy, kInternal)), \
+  X(kErrorBootPolicyRollback,         ERROR_(3, kModuleBootPolicy, kInternal)), \
   X(kErrorRetSramLocked,              ERROR_(1, kModuleRetSram, kInternal)), \
   X(kErrorBootstrapSpiDevice,         ERROR_(1, KModuleBootstrap, kInternal)), \
   X(kErrorBootstrapErase,             ERROR_(2, KModuleBootstrap, kInternal)), \

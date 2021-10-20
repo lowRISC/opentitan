@@ -243,18 +243,33 @@ typedef struct manifest_digest_region {
 } manifest_digest_region_t;
 
 /**
- * Allowed bounds for the `length` field.
+ * ROM_EXT manifest identifier (ASCII "OTRE").
+ */
+#define MANIFEST_IDENTIFIER_ROM_EXT 0x4552544f
+
+/**
+ * First owner boot stage manifest identifier (ASCII "OTSO").
+ */
+#define MANIFEST_IDENTIFIER_OWNER_STAGE 0x4f53544f
+
+/**
+ * Allowed bounds for the `length` field of a ROM_EXT manifest.
  */
 // FIXME: Update min value after we have a fairly representative ROM_EXT.
-#define MANIFEST_LENGTH_FIELD_MIN MANIFEST_SIZE
-#define MANIFEST_LENGTH_FIELD_MAX 65536
+#define MANIFEST_LENGTH_FIELD_ROM_EXT_MIN MANIFEST_SIZE
+#define MANIFEST_LENGTH_FIELD_ROM_EXT_MAX 0x10000
+
+/**
+ * Allowed bounds for the `length` field of a first owner boot stage manifest.
+ */
+#define MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN MANIFEST_SIZE
+#define MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX 0x70000
 
 #ifndef OT_OFF_TARGET_TEST
 /**
  * Checks the fields of a manifest.
  *
  * This function performs several basic checks to ensure that
- * - Length of the image is within a reasonable range,
  * - Executable region is non-empty, inside the image, located after the
  * manifest, and word aligned, and
  * - Entry point is inside the executable region and word aligned.
@@ -263,12 +278,6 @@ typedef struct manifest_digest_region {
  * @return Result of the operation.
  */
 inline rom_error_t manifest_check(const manifest_t *manifest) {
-  // Length of the image must be within bounds.
-  if (manifest->length < MANIFEST_LENGTH_FIELD_MIN ||
-      manifest->length > MANIFEST_LENGTH_FIELD_MAX) {
-    return kErrorManifestBadLength;
-  }
-
   // Executable region must be empty, inside the image, located after the
   // manifest, and word aligned.
   if (manifest->code_start >= manifest->code_end ||

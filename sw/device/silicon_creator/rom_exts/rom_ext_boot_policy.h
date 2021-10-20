@@ -12,13 +12,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-enum {
-  /**
-   * First owner boot stage manifest identifier (ASCII "OTSO").
-   */
-  kRomExtBootPolicyOwnerStageIdentifier = 0x4f53544f,
-};
-
 /**
  * Type alias for the first owner boot stage entry point.
  *

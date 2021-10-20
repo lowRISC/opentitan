@@ -21,30 +21,39 @@ class RomExtBootPolicyTest : public mask_rom_test::MaskRomTest {
 
 TEST_F(RomExtBootPolicyTest, ManifestCheck) {
   manifest_t manifest{};
-  manifest.identifier = kRomExtBootPolicyOwnerStageIdentifier;
+  manifest.identifier = MANIFEST_IDENTIFIER_OWNER_STAGE;
 
+  manifest.length = MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN;
   EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
-
   EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest), kErrorOk);
-}
 
-TEST_F(RomExtBootPolicyTest, ManifestCheckOutOfBounds) {
-  manifest_t manifest{};
+  manifest.length = MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX >> 1;
+  EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest), kErrorOk);
 
-  EXPECT_CALL(mock_manifest_, Check(&manifest))
-      .WillOnce(Return(kErrorManifestBadLength));
-
-  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest),
-            kErrorManifestBadLength);
+  manifest.length = MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX;
+  EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest), kErrorOk);
 }
 
 TEST_F(RomExtBootPolicyTest, ManifestCheckBadIdentifier) {
   manifest_t manifest{};
 
-  EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
-
   EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest),
             kErrorBootPolicyBadIdentifier);
+}
+
+TEST_F(RomExtBootPolicyTest, ManifestCheckBadLength) {
+  manifest_t manifest{};
+  manifest.identifier = MANIFEST_IDENTIFIER_OWNER_STAGE;
+
+  manifest.length = MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN - 1;
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest),
+            kErrorBootPolicyBadLength);
+
+  manifest.length = MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX + 1;
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest),
+            kErrorBootPolicyBadLength);
 }
 
 struct ManifestOrderTestCase {
