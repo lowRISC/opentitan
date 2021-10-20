@@ -49,8 +49,8 @@ module spi_host
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
 
-  tlul_pkg::tl_h2d_t fifo_win_h2d;
-  tlul_pkg::tl_d2h_t fifo_win_d2h;
+  tlul_pkg::tl_h2d_t fifo_win_h2d [2];
+  tlul_pkg::tl_d2h_t fifo_win_d2h [2];
 
   // Register module
   logic [NumAlerts-1:0] alert_test, alerts;
@@ -297,8 +297,10 @@ module spi_host
   spi_host_window u_window (
     .clk_i,
     .rst_ni,
-    .win_i      (fifo_win_h2d),
-    .win_o      (fifo_win_d2h),
+    .rx_win_i   (fifo_win_h2d[0]),
+    .rx_win_o   (fifo_win_d2h[0]),
+    .tx_win_i   (fifo_win_h2d[1]),
+    .tx_win_o   (fifo_win_d2h[1]),
     .tx_data_o  (tx_data),
     .tx_be_o    (tx_be),
     .tx_valid_o (tx_valid),

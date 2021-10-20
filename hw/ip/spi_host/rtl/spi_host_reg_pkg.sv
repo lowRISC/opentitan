@@ -294,9 +294,9 @@ package spi_host_reg_pkg;
   parameter logic [BlockAw-1:0] SPI_HOST_CONFIGOPTS_OFFSET = 6'h 18;
   parameter logic [BlockAw-1:0] SPI_HOST_CSID_OFFSET = 6'h 1c;
   parameter logic [BlockAw-1:0] SPI_HOST_COMMAND_OFFSET = 6'h 20;
-  parameter logic [BlockAw-1:0] SPI_HOST_ERROR_ENABLE_OFFSET = 6'h 28;
-  parameter logic [BlockAw-1:0] SPI_HOST_ERROR_STATUS_OFFSET = 6'h 2c;
-  parameter logic [BlockAw-1:0] SPI_HOST_EVENT_ENABLE_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] SPI_HOST_ERROR_ENABLE_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] SPI_HOST_ERROR_STATUS_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] SPI_HOST_EVENT_ENABLE_OFFSET = 6'h 34;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] SPI_HOST_INTR_TEST_RESVAL = 2'h 0;
@@ -311,8 +311,10 @@ package spi_host_reg_pkg;
   parameter logic [1:0] SPI_HOST_COMMAND_DIRECTION_RESVAL = 2'h 0;
 
   // Window parameters
-  parameter logic [BlockAw-1:0] SPI_HOST_DATA_OFFSET = 6'h 24;
-  parameter int unsigned        SPI_HOST_DATA_SIZE   = 'h 4;
+  parameter logic [BlockAw-1:0] SPI_HOST_RXDATA_OFFSET = 6'h 24;
+  parameter int unsigned        SPI_HOST_RXDATA_SIZE   = 'h 4;
+  parameter logic [BlockAw-1:0] SPI_HOST_TXDATA_OFFSET = 6'h 28;
+  parameter int unsigned        SPI_HOST_TXDATA_SIZE   = 'h 4;
 
   // Register index
   typedef enum int {
