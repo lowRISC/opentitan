@@ -92,6 +92,7 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
     end
 
     cfg.model_agent_cfg.vif.invalidate_imem <= 1'b1;
+    cfg.scoreboard.set_exp_alert(.alert_name("fatal"), .is_fatal(1'b1));
     @(cfg.clk_rst_vif.cb);
     cfg.model_agent_cfg.vif.invalidate_imem <= 1'b0;
 

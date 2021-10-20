@@ -91,6 +91,9 @@ package otbn_env_pkg;
     AccessSoftwareWrite
   } access_e;
 
+  // Forward declaration to allow the config to hold a scoreboard handle.
+  typedef class otbn_scoreboard;
+
   parameter int ImemIndexWidth = vbits(int'(otbn_reg_pkg::OTBN_IMEM_SIZE) / 4);
   parameter int DmemIndexWidth = vbits(int'(otbn_reg_pkg::OTBN_DMEM_SIZE) / 32);
 

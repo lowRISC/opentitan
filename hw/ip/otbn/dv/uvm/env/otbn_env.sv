@@ -63,6 +63,7 @@ class otbn_env extends cip_base_env #(
     super.connect_phase(phase);
     model_agent.monitor.analysis_port.connect(scoreboard.model_fifo.analysis_export);
     trace_monitor.analysis_port.connect(scoreboard.trace_fifo.analysis_export);
+    cfg.scoreboard = scoreboard;
   endfunction
 
   function void final_phase(uvm_phase phase);
