@@ -110,6 +110,7 @@ static void sca_init_gpio(sca_trigger_source_t trigger) {
 static void sca_init_timer(void) {
   IGNORE_RESULT(dif_rv_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
+  IGNORE_RESULT(dif_rv_timer_reset(&timer));
   dif_rv_timer_tick_params_t tick_params;
   IGNORE_RESULT(dif_rv_timer_approximate_tick_params(
       kClockFreqPeripheralHz, kClockFreqCpuHz, &tick_params));

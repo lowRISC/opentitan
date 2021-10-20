@@ -44,7 +44,7 @@ dif_result_t dif_rv_timer_init(mmio_region_t base_addr,
 
   timer_out->base_addr = base_addr;
 
-  return dif_rv_timer_reset(timer_out);
+  return kDifOk;
 }
 
 /**

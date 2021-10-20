@@ -75,7 +75,7 @@ index 5dc1286af..1e2dced96 100644
      simple_serial_process_packet();
    }
 diff --git a/sw/device/sca/lib/sca.c b/sw/device/sca/lib/sca.c
-index 770b830eb..ec3e3be22 100644
+index 30ca7e0a4..a46911701 100644
 --- a/sw/device/sca/lib/sca.c
 +++ b/sw/device/sca/lib/sca.c
 @@ -56,7 +56,6 @@ enum {
@@ -102,7 +102,7 @@ index 770b830eb..ec3e3be22 100644
  }
 
  /**
-@@ -147,25 +142,6 @@ void handler_irq_timer(void) {
+@@ -148,25 +143,6 @@ void handler_irq_timer(void) {
   * @param disable Set of peripherals to disable.
   */
  void sca_disable_peripherals(sca_peripherals_t disable) {
@@ -128,7 +128,7 @@ index 770b830eb..ec3e3be22 100644
    // Disable HMAC, KMAC, OTBN and USB clocks through CLKMGR DIF.
    dif_clkmgr_t clkmgr;
    IGNORE_RESULT(dif_clkmgr_init(
-@@ -179,17 +155,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
+@@ -180,17 +156,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
      IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
          &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT, kDifToggleDisabled));
    }

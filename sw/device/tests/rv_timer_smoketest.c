@@ -60,6 +60,7 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_rv_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
+  CHECK_DIF_OK(dif_rv_timer_reset(&timer));
 
   dif_rv_timer_tick_params_t tick_params;
   CHECK_DIF_OK(dif_rv_timer_approximate_tick_params(kClockFreqPeripheralHz,
