@@ -116,19 +116,6 @@ constexpr uint32_t kAllOnes = std::numeric_limits<uint32_t>::max();
 class InitTest : public TimerTest {};
 
 TEST_F(InitTest, Success) {
-  EXPECT_WRITE32(RV_TIMER_CTRL_REG_OFFSET, 0x0);
-
-  EXPECT_WRITE32(IrqRegForHart(0, 1, RV_TIMER_INTR_ENABLE0_REG_OFFSET), 0x0);
-  EXPECT_WRITE32(IrqRegForHart(0, 1, RV_TIMER_INTR_STATE0_REG_OFFSET),
-                 kAllOnes);
-
-  EXPECT_WRITE32(RegForHart(0, RV_TIMER_COMPARE_UPPER0_0_REG_OFFSET), kAllOnes);
-  EXPECT_WRITE32(RegForHart(0, RV_TIMER_COMPARE_LOWER0_0_REG_OFFSET), kAllOnes);
-  EXPECT_WRITE32(RegForHart(0, RV_TIMER_COMPARE_UPPER0_0_REG_OFFSET), kAllOnes);
-
-  EXPECT_WRITE32(RegForHart(0, RV_TIMER_TIMER_V_LOWER0_REG_OFFSET), 0x0);
-  EXPECT_WRITE32(RegForHart(0, RV_TIMER_TIMER_V_UPPER0_REG_OFFSET), 0x0);
-
   EXPECT_EQ(dif_rv_timer_init(dev().region(), &rv_timer_), kDifOk);
 }
 

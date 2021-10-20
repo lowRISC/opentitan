@@ -25,6 +25,7 @@ static dif_rv_timer_t timer;
 void test_main(void *result) {
   CHECK_DIF_OK(dif_rv_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
+  CHECK_DIF_OK(dif_rv_timer_reset(&timer));
   uint64_t current_time;
   const uint32_t kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
 

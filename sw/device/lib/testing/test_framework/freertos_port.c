@@ -51,6 +51,7 @@ void vPortSetupTimerInterrupt(void) {
   // Initialize and reset the timer.
   CHECK_DIF_OK(dif_rv_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
+  CHECK_DIF_OK(dif_rv_timer_reset(&timer));
 
   // Compute and set tick parameters (i.e., step, prescale, etc.).
   dif_rv_timer_tick_params_t tick_params;
