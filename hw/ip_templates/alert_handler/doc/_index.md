@@ -877,12 +877,12 @@ To initialize the block, software running at a high privilege levels (early in t
 1. For each alert and each local alert:
 
     - Determine if alert is enabled (should only be false if alert is known to be faulty).
-      Set {{< regref "ALERT_EN.EN_A0" >}} and {{< regref "LOC_ALERT_EN.EN_LA0" >}} accordingly.
+      Set {{< regref "ALERT_EN_SHADOWED_0.EN_A_0" >}} and {{< regref "LOC_ALERT_EN_SHADOWED_0.EN_LA_0" >}} accordingly.
 
     - Determine which class (A..D) the alert is associated with.
-      Set {{< regref "ALERT_CLASS.CLASS_A" >}} and {{< regref "LOC_ALERT_CLASS.CLASS_LA" >}} accordingly.
+      Set {{< regref "ALERT_CLASS_SHADOWED_0.CLASS_A_0" >}} and {{< regref "LOC_ALERT_CLASS_SHADOWED_0.CLASS_LA_0" >}} accordingly.
 
-    - Optionally lock each alert configuration by writing 0 to {{< regref "ALERT_EN_REGWEN.EN0" >}} or {{< regref "LOC_ALERT_EN_REGWEN.EN0" >}}.
+    - Optionally lock each alert configuration by writing 0 to {{< regref "ALERT_REGWEN_0.EN_0" >}} or {{< regref "LOC_ALERT_REGWEN_0.EN_0" >}}.
       Note however that only **locked and enabled** alerts are going to be pinged using the ping mechanism.
       This ensures that spurious ping failures cannot occur when previously enabled alerts are being disabled again (before locking).
 
