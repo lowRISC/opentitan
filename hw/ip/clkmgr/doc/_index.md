@@ -187,20 +187,31 @@ There are two occasions where this is required:
 -  Life cycle transition from `Raw` / `Test_locked` to `Test_unlocked` [states]({{< relref "hw/ip/lc_ctrl/doc/_index.md#clk_byp_req" >}}).
 -  Software request for external clocks during normal functional mode.
 
-Software request for external clocks is not always valid.
-Software is only able to request for external clocks when dft functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#dft_en" >}}).
-When software requests the external clock switch, it also has the option to request whether the clock divider should be stepped down by a factor of 2.
+#### Life Cycle Requested External Clock
 
-
+The life cycle controller only requests the io clock input to be switched.
 When the life cycle controller requests external clock, a request signal `lc_clk_byp_req_i` is sent from `lc_ctrl` to `clkmgr`.
-`clkmgr` then forwards the request to `ast` through `ast_clk_byp_req_o`, which performs the actual clock switch.
+`clkmgr` then forwards the request to `ast` through `io_clk_byp_req_o`, which performs the actual clock switch and is acknowledged through `io_clk_byp_ack_i`.
 When the clock switch is complete, the clock dividers are stepped down by a factor of 2 and the life cycle controller is acknowledged through `lc_clk_byp_ack_o`.
 
-When software requests external clock, the register bit {{< regref "EXTCLK_CTRL" >}} is written.
-If dft functions are allowed, the `clkmgr` sends a request signal `ast_clk_byp_req_o` to `ast`.
+#### Software Requested External Clocks
 
+Unlike the life cycle controller, a software request for external clocks switches all clock sources to an external source.
+Software request for external clocks is not always valid.
+Software is only able to request for external clocks when dft functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#dft_en" >}}).
+
+When software requests the external clock switch, it also provides an indication how fast the external clock is.
+There are two supported clock speeds:
+* High speed - external clock is close to nominal speeds (e.g. external clock is 96MHz and nominal frequency is 96MHz-100MHz)
+* Low speed - external clock is half of nominal speeds (e.g. external clock is 48MHz and nominal frequency is 96MHz-100MHz)
+
+When software requests external clock, the register bit {{< regref "EXTCLK_CTRL" >}} is written.
+If dft functions are allowed, the `clkmgr` sends a request signal `all_clk_byp_req_o` to `ast` and is acknowledged through `all_clk_byp_ack_i`.
+
+If software requests a low speed external clock, at the completion of the switch, internal dividers are also stepped down.
 When the divider is stepped down, a divide-by-4 clock becomes divide-by-2 clock , and a divide-by-2 becomes a divide-by-1 clock.
-This allows external connection to be either nominal frequencies or nominal divided-by-2.
+
+If software requests a high speed external clock, the dividers are kept as is.
 
 ### Clock Frequency Measurements
 
