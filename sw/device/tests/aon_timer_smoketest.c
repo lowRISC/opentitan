@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-//#include "sw/device/lib/base/memory.h"
+#include <stdint.h>
+
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
 
@@ -15,24 +17,15 @@
 const test_config_t kTestConfig;
 
 static void aon_timer_test_wakeup_timer(dif_aon_timer_t *aon) {
-  // Make sure that wake-up timer is stopped.
-  CHECK_DIF_OK(dif_aon_timer_wakeup_stop(aon));
-
-  // Make sure the wake-up IRQ is cleared to avoid false positive.
-  CHECK_DIF_OK(
-      dif_aon_timer_irq_acknowledge(aon, kDifAonTimerIrqWkupTimerExpired));
-  bool is_pending;
-  CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
-      aon, kDifAonTimerIrqWkupTimerExpired, &is_pending));
-  CHECK(!is_pending);
-
   // Test the wake-up timer functionality by setting a single cycle counter.
   // Delay to compensate for AON Timer 200kHz clock (less should suffice, but
   // to be on a cautious side - lets keep it at 100 for now).
-  CHECK_DIF_OK(dif_aon_timer_wakeup_start(aon, 1, 0));
+  aon_timer_testutils_wakeup_config(aon, 1);
+
   usleep(100);
 
   // Make sure that the timer has expired.
+  bool is_pending;
   CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
       aon, kDifAonTimerIrqWkupTimerExpired, &is_pending));
   CHECK(is_pending);
@@ -44,24 +37,14 @@ static void aon_timer_test_wakeup_timer(dif_aon_timer_t *aon) {
 }
 
 static void aon_timer_test_watchdog_timer(dif_aon_timer_t *aon) {
-  // Make sure that watchdog timer is stopped.
-  CHECK_DIF_OK(dif_aon_timer_watchdog_stop(aon));
-
-  // Make sure the watchdog IRQ is cleared to avoid false positive.
-  CHECK_DIF_OK(
-      dif_aon_timer_irq_acknowledge(aon, kDifAonTimerIrqWdogTimerBark));
-  bool is_pending;
-  CHECK_DIF_OK(dif_aon_timer_irq_is_pending(aon, kDifAonTimerIrqWdogTimerBark,
-                                            &is_pending));
-  CHECK(!is_pending);
-
   // Test the watchdog timer functionality by setting a single cycle "bark"
   // counter. Delay to compensate for AON Timer 200kHz clock (less should
   // suffice, but to be on a cautious side - lets keep it at 100 for now).
-  CHECK_DIF_OK(dif_aon_timer_watchdog_start(aon, 1, 0xffffffff, false, false));
+  aon_timer_testutils_watchdog_config(aon, 1, UINT32_MAX);
   usleep(100);
 
   // Make sure that the timer has expired.
+  bool is_pending;
   CHECK_DIF_OK(dif_aon_timer_irq_is_pending(aon, kDifAonTimerIrqWdogTimerBark,
                                             &is_pending));
   CHECK(is_pending);
