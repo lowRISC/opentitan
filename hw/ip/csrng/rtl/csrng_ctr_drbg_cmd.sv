@@ -157,8 +157,9 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .depth_o        ()
   );
 
-  assign fips_modified = (ctr_drbg_cmd_ccmd_i == INS) ? ctr_drbg_cmd_entropy_fips_i :
-         ctr_drbg_cmd_fips_i;
+  assign fips_modified = ((ctr_drbg_cmd_ccmd_i == INS) ||
+                          (ctr_drbg_cmd_ccmd_i == RES)) ? ctr_drbg_cmd_entropy_fips_i :
+                         ctr_drbg_cmd_fips_i;
 
   assign sfifo_cmdreq_wdata = {ctr_drbg_cmd_key_i,ctr_drbg_cmd_v_i,
                                ctr_drbg_cmd_rc_i,fips_modified,

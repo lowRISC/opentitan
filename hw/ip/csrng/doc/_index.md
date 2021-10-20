@@ -341,7 +341,7 @@ The actions performed by each command, as well as which flags are supported, are
     <td>Reseed</td>
     <td>0x2</td>
     <td> Reseeds an existing instance in CSRNG.
-         The flag0 and clen table in the <tt>Instance<tt> command description above also applies to the <tt>Reseed<tt> command.
+         The flag0 and clen table in the <tt>Instance</tt> command description above also applies to the <tt>Reseed</tt> command.
          Note that the last table entry (<tt>flag0</tt> is set and <tt>clen</tt> is set to non-zero) is intended for known answer testing (KAT).
          The reseed command only takes in one group (a maximum of twelve 32 bit words) of generic additional data.
          In that case that both a seed and additional data must be provided to the reseed call, the seed and additional data must be xor'ed first.

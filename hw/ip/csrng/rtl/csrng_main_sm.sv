@@ -172,10 +172,15 @@ module csrng_main_sm import csrng_pkg::*; (
         if (!enable_i) begin
           state_d = Idle;
         end else begin
-          cmd_entropy_req_o = 1'b1;
-          // assumes all adata is present now
-          if (cmd_entropy_avail_i) begin
-            state_d = ReseedReq;
+          if (flag0_i) begin
+            // assumes all adata is present now
+            state_d = InstantReq;
+          end else begin
+            // delay one clock to fix timing issue
+            cmd_entropy_req_o = 1'b1;
+            if (cmd_entropy_avail_i) begin
+              state_d = ReseedReq;
+            end
           end
         end
       end
