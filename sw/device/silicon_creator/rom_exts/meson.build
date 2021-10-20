@@ -2,6 +2,19 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# ROM_EXT ePMP library
+sw_silicon_creator_rom_ext_epmp = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_rom_ext_epmp',
+    sources: [
+      'rom_ext_epmp.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_epmp,
+    ],
+  )
+)
+
 # Mask ROM Linker Parameters
 #
 # See sw/device/exts/common/flash_link.ld for additional info about these
