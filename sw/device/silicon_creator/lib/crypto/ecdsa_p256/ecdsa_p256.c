@@ -133,6 +133,9 @@ rom_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
   RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
                                            kOtbnVarEcdsaS, result->S));
 
+  // TODO: try to verify the signature, and return an error if verification
+  // fails.
+
   return kErrorOk;
 }
 
