@@ -94,19 +94,6 @@ typedef enum dif_sram_ctrl_lock {
 } dif_sram_ctrl_lock_t;
 
 /**
- * Creates a new handle for SRAM Controller.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr The MMIO base address of the IP.
- * @param[out] sram_ctrl Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_sram_ctrl_init(mmio_region_t base_addr,
-                                dif_sram_ctrl_t *sram_ctrl);
-
-/**
  * Performs SRAM scrambling.
  *
  * This function should only be called when the data is no longer used.

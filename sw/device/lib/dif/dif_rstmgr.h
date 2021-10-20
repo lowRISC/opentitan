@@ -88,18 +88,6 @@ typedef enum dif_rstmgr_reset_info {
 typedef uint32_t dif_rstmgr_peripheral_t;
 
 /**
- * Creates a new handle for Reset Manager.
- *
- * This function does not actuate the hardware.
- *
- * @param params Hardware instantiation parameters.
- * @param handle Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_rstmgr_init(mmio_region_t base_addr, dif_rstmgr_t *handle);
-
-/**
  * Resets the Reset Manager registers to sane defaults.
  *
  * Note that software reset enable registers cannot be cleared once have been

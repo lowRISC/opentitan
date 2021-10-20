@@ -16,6 +16,7 @@ namespace dif_otbn_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class OtbnTest : public Test, public MmioTest {
@@ -23,7 +24,15 @@ class OtbnTest : public Test, public MmioTest {
   dif_otbn_t otbn_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public OtbnTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_otbn_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_otbn_init({.base_addr = dev().region()}, &otbn_), kDifOk);
+}
 
 class IrqGetStateTest : public OtbnTest {};
 

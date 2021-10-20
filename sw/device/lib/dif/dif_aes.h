@@ -173,18 +173,6 @@ typedef enum dif_aes_alert {
 } dif_aes_alert_t;
 
 /**
- * Creates a new handle for AES.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] aes Out param for the initialised handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_aes_init(mmio_region_t base_addr, dif_aes_t *aes);
-
-/**
  * Resets an instance of AES.
  *
  * Clears the internal state along with the interface registers.

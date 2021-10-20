@@ -35,22 +35,9 @@ static constexpr dif_pwrmgr_domain_config_t kBadConfig =
 static constexpr dif_pwrmgr_request_sources_t kBadSources =
     std::numeric_limits<uint32_t>::max();
 
-class DifPwrmgrTest : public testing::Test, public mock_mmio::MmioTest {};
-
-class InitTest : public DifPwrmgrTest {};
-
-TEST_F(InitTest, BadArgs) {
-  EXPECT_EQ(dif_pwrmgr_init(dev().region(), nullptr), kDifBadArg);
-}
-
-TEST_F(InitTest, Init) {
-  dif_pwrmgr_t pwrmgr;
-  EXPECT_EQ(dif_pwrmgr_init(dev().region(), &pwrmgr), kDifOk);
-}
-
 // Base class for the rest of the tests in this file, provides a
 // `dif_pwrmgr_t` instance.
-class DifPwrmgrInitialized : public DifPwrmgrTest {
+class DifPwrmgrInitialized : public testing::Test, public mock_mmio::MmioTest {
  protected:
   /**
    * Expectations for functions that need to sync data to slow clock domain.

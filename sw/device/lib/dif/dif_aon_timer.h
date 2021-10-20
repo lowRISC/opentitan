@@ -25,18 +25,6 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Creates a new handle for Always-On Timer.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] aon Out param for the initialised handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_aon_timer_init(mmio_region_t base_addr, dif_aon_timer_t *aon);
-
-/**
  * Starts Always-On Timer (wake-up timer).
  *
  * This operation starts the wake-up timer with the provided configuration.

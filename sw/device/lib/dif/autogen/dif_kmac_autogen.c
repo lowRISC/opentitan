@@ -8,6 +8,17 @@
 
 #include "kmac_regs.h"  // Generated.
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_init(mmio_region_t base_addr, dif_kmac_t *kmac) {
+  if (kmac == NULL) {
+    return kDifBadArg;
+  }
+
+  kmac->base_addr = base_addr;
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

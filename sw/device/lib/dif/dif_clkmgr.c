@@ -34,16 +34,6 @@ static bool clkmgr_valid_hintable_clock(dif_clkmgr_hintable_clock_t clock) {
   return clock < CLKMGR_PARAM_NUM_HINTABLE_CLOCKS;
 }
 
-dif_result_t dif_clkmgr_init(mmio_region_t base_addr, dif_clkmgr_t *clkmgr) {
-  if (clkmgr == NULL) {
-    return kDifBadArg;
-  }
-
-  clkmgr->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_clkmgr_gateable_clock_get_enabled(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_gateable_clock_t clock,
     bool *is_enabled) {

@@ -50,8 +50,21 @@ typedef struct dif_${ip.name_snake} {
   mmio_region_t base_addr;
 } dif_${ip.name_snake}_t;
 
-% if len(ip.irqs) > 0:
+/**
+ * Creates a new handle for a(n) ${ip.name_snake} peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the ${ip.name_snake} peripheral.
+ * @param[out] ${ip.name_snake} Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_init(
+  mmio_region_t base_addr,
+  dif_${ip.name_snake}_t *${ip.name_snake});
 
+% if len(ip.irqs) > 0:
   /**
    * A ${ip.name_snake} interrupt request type.
    */

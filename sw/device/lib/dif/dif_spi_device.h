@@ -87,19 +87,6 @@ typedef struct dif_spi_device_config {
 extern const uint16_t kDifSpiDeviceBufferLen;
 
 /**
- * Creates a new handle for SPI.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] spi Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_init(mmio_region_t base_addr,
-                                 dif_spi_device_t *spi);
-
-/**
  * Configures SPI with runtime information.
  *
  * This function should need to be called once for the lifetime of `handle`.

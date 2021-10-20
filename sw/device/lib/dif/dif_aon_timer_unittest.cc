@@ -25,17 +25,6 @@ class AonTimerTest : public Test, public MmioTest {
   dif_aon_timer_t aon_ = {.base_addr = dev().region()};
 };
 
-class InitTest : public AonTimerTest {};
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_aon_timer_init(dev().region(), nullptr), kDifBadArg);
-}
-
-TEST_F(InitTest, Success) {
-  dif_aon_timer_t aon;
-  EXPECT_EQ(dif_aon_timer_init(dev().region(), &aon), kDifOk);
-}
-
 class WakeupStartTest : public AonTimerTest {};
 
 TEST_F(WakeupStartTest, NullArgs) {

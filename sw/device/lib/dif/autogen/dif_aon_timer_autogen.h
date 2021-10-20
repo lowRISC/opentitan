@@ -37,6 +37,19 @@ typedef struct dif_aon_timer {
 } dif_aon_timer_t;
 
 /**
+ * Creates a new handle for a(n) aon_timer peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the aon_timer peripheral.
+ * @param[out] aon_timer Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_init(mmio_region_t base_addr,
+                                dif_aon_timer_t *aon_timer);
+
+/**
  * A aon_timer interrupt request type.
  */
 typedef enum dif_aon_timer_irq {

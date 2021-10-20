@@ -16,6 +16,7 @@ namespace dif_spi_device_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class SpiDeviceTest : public Test, public MmioTest {
@@ -23,7 +24,17 @@ class SpiDeviceTest : public Test, public MmioTest {
   dif_spi_device_t spi_device_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public SpiDeviceTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_spi_device_init({.base_addr = dev().region()}, nullptr),
+            kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_spi_device_init({.base_addr = dev().region()}, &spi_device_),
+            kDifOk);
+}
 
 class IrqGetStateTest : public SpiDeviceTest {};
 

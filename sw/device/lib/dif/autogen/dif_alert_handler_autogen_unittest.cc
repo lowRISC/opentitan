@@ -16,6 +16,7 @@ namespace dif_alert_handler_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class AlertHandlerTest : public Test, public MmioTest {
@@ -23,7 +24,18 @@ class AlertHandlerTest : public Test, public MmioTest {
   dif_alert_handler_t alert_handler_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public AlertHandlerTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_alert_handler_init({.base_addr = dev().region()}, nullptr),
+            kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(
+      dif_alert_handler_init({.base_addr = dev().region()}, &alert_handler_),
+      kDifOk);
+}
 
 class IrqGetStateTest : public AlertHandlerTest {};
 

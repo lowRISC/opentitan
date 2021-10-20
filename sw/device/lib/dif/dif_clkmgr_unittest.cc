@@ -20,15 +20,7 @@ using testing::Test;
 class ClkMgrTest : public Test, public MmioTest {
  protected:
   dif_clkmgr_t clkmgr_ = {.base_addr = dev().region()};
-  ClkMgrTest() { EXPECT_EQ(dif_clkmgr_init(dev().region(), &clkmgr_), kDifOk); }
 };
-
-class InitTest : public ClkMgrTest {};
-
-TEST_F(InitTest, NullArgs) {
-  // Null handle.
-  EXPECT_EQ(dif_clkmgr_init(dev().region(), nullptr), kDifBadArg);
-}
 
 class GateableClockTest : public ClkMgrTest {};
 

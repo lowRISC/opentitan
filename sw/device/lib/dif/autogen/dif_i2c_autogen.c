@@ -8,6 +8,17 @@
 
 #include "i2c_regs.h"  // Generated.
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_init(mmio_region_t base_addr, dif_i2c_t *i2c) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  i2c->base_addr = base_addr;
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

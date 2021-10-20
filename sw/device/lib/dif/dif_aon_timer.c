@@ -57,16 +57,6 @@ static bool aon_timer_watchdog_is_locked(const dif_aon_timer_t *aon) {
   return !bitfield_bit32_read(reg, AON_TIMER_WDOG_REGWEN_REGWEN_BIT);
 }
 
-dif_result_t dif_aon_timer_init(mmio_region_t base_addr, dif_aon_timer_t *aon) {
-  if (aon == NULL) {
-    return kDifBadArg;
-  }
-
-  aon->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_aon_timer_wakeup_start(const dif_aon_timer_t *aon,
                                         uint32_t threshold,
                                         uint32_t prescaler) {

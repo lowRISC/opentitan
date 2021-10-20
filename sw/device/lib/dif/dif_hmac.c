@@ -39,16 +39,6 @@ static uint32_t get_fifo_available_space(const dif_hmac_t *hmac) {
   return HMAC_MSG_FIFO_SIZE_WORDS - get_fifo_entry_count(hmac);
 }
 
-dif_result_t dif_hmac_init(mmio_region_t base_addr, dif_hmac_t *hmac) {
-  if (hmac == NULL) {
-    return kDifBadArg;
-  }
-
-  hmac->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 /**
  * Sets up the CFG value for a given per-transaction configuration.
  *

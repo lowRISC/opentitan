@@ -16,6 +16,7 @@ namespace dif_keymgr_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class KeymgrTest : public Test, public MmioTest {
@@ -23,7 +24,16 @@ class KeymgrTest : public Test, public MmioTest {
   dif_keymgr_t keymgr_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public KeymgrTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_keymgr_init({.base_addr = dev().region()}, nullptr),
+            kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_keymgr_init({.base_addr = dev().region()}, &keymgr_), kDifOk);
+}
 
 class IrqGetStateTest : public KeymgrTest {};
 

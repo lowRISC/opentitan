@@ -25,18 +25,6 @@ uint32_t AllOnesExcept(uint32_t index) { return ~AllZerosExcept(index); }
 // Base class for the test fixtures in this file.
 class GpioTest : public testing::Test, public mock_mmio::MmioTest {};
 
-// Init tests
-class InitTest : public GpioTest {};
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_gpio_init(dev().region(), nullptr), kDifBadArg);
-}
-
-TEST_F(InitTest, Init) {
-  dif_gpio_t gpio;
-  EXPECT_EQ(dif_gpio_init(dev().region(), &gpio), kDifOk);
-}
-
 // Base class for the rest of the tests in this file, provides a
 // `dif_gpio_t` instance.
 class GpioTestInitialized : public GpioTest {

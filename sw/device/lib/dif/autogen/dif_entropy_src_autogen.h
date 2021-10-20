@@ -37,6 +37,19 @@ typedef struct dif_entropy_src {
 } dif_entropy_src_t;
 
 /**
+ * Creates a new handle for a(n) entropy_src peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the entropy_src peripheral.
+ * @param[out] entropy_src Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_init(mmio_region_t base_addr,
+                                  dif_entropy_src_t *entropy_src);
+
+/**
  * A entropy_src interrupt request type.
  */
 typedef enum dif_entropy_src_irq {

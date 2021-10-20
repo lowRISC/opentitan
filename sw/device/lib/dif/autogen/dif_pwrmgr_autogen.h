@@ -36,6 +36,18 @@ typedef struct dif_pwrmgr {
 } dif_pwrmgr_t;
 
 /**
+ * Creates a new handle for a(n) pwrmgr peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the pwrmgr peripheral.
+ * @param[out] pwrmgr Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_init(mmio_region_t base_addr, dif_pwrmgr_t *pwrmgr);
+
+/**
  * A pwrmgr interrupt request type.
  */
 typedef enum dif_pwrmgr_irq {

@@ -242,16 +242,6 @@ static bool request_sources_is_locked(const dif_pwrmgr_t *pwrmgr,
   return !bitfield_bit32_read(reg_val, reg_info.write_enable_bit_index);
 }
 
-dif_result_t dif_pwrmgr_init(mmio_region_t base_addr, dif_pwrmgr_t *pwrmgr) {
-  if (pwrmgr == NULL) {
-    return kDifBadArg;
-  }
-
-  pwrmgr->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_pwrmgr_low_power_set_enabled(const dif_pwrmgr_t *pwrmgr,
                                               dif_toggle_t new_state) {
   if (pwrmgr == NULL) {

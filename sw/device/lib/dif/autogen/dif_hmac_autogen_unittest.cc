@@ -16,6 +16,7 @@ namespace dif_hmac_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class HmacTest : public Test, public MmioTest {
@@ -23,7 +24,15 @@ class HmacTest : public Test, public MmioTest {
   dif_hmac_t hmac_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public HmacTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_hmac_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_hmac_init({.base_addr = dev().region()}, &hmac_), kDifOk);
+}
 
 class IrqGetStateTest : public HmacTest {};
 

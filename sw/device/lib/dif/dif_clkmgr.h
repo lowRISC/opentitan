@@ -41,18 +41,6 @@ typedef uint32_t dif_clkmgr_gateable_clock_t;
 typedef uint32_t dif_clkmgr_hintable_clock_t;
 
 /**
- * Creates a new handle for a clock manager.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] clkmgr Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_clkmgr_init(mmio_region_t base_addr, dif_clkmgr_t *clkmgr);
-
-/**
  * Check if a Gateable Clock is Enabled or Disabled.
  *
  * @param clkmgr Clock Manager Handle.

@@ -16,6 +16,7 @@ namespace dif_i2c_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class I2cTest : public Test, public MmioTest {
@@ -23,7 +24,15 @@ class I2cTest : public Test, public MmioTest {
   dif_i2c_t i2c_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public I2cTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_i2c_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_i2c_init({.base_addr = dev().region()}, &i2c_), kDifOk);
+}
 
 class IrqGetStateTest : public I2cTest {};
 

@@ -66,18 +66,6 @@ typedef uint32_t dif_rv_plic_irq_id_t;
 typedef uint32_t dif_rv_plic_target_t;
 
 /**
- * Creates a new handle for PLIC.
- *
- * This function does not actuate the hardware.
- *
- * @param params Hardware instantiation parameters.
- * @param[out] plic Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_rv_plic_init(mmio_region_t base_addr, dif_rv_plic_t *plic);
-
-/**
  * Resets the PLIC to a clean state.
  *
  *

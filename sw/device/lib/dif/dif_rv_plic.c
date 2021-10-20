@@ -149,16 +149,6 @@ dif_result_t dif_rv_plic_reset(const dif_rv_plic_t *plic) {
   return kDifOk;
 }
 
-dif_result_t dif_rv_plic_init(mmio_region_t base_addr, dif_rv_plic_t *plic) {
-  if (plic == NULL) {
-    return kDifBadArg;
-  }
-
-  plic->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_rv_plic_irq_get_enabled(const dif_rv_plic_t *plic,
                                          dif_rv_plic_irq_id_t irq,
                                          dif_rv_plic_target_t target,

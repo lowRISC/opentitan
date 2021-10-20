@@ -37,6 +37,19 @@ typedef struct dif_spi_device {
 } dif_spi_device_t;
 
 /**
+ * Creates a new handle for a(n) spi_device peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the spi_device peripheral.
+ * @param[out] spi_device Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_init(mmio_region_t base_addr,
+                                 dif_spi_device_t *spi_device);
+
+/**
  * A spi_device interrupt request type.
  */
 typedef enum dif_spi_device_irq {

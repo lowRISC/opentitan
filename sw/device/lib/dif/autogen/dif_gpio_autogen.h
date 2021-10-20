@@ -36,6 +36,18 @@ typedef struct dif_gpio {
 } dif_gpio_t;
 
 /**
+ * Creates a new handle for a(n) gpio peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the gpio peripheral.
+ * @param[out] gpio Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_gpio_init(mmio_region_t base_addr, dif_gpio_t *gpio);
+
+/**
  * A gpio interrupt request type.
  */
 typedef enum dif_gpio_irq {

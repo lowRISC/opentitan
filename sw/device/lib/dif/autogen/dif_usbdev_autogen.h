@@ -36,6 +36,18 @@ typedef struct dif_usbdev {
 } dif_usbdev_t;
 
 /**
+ * Creates a new handle for a(n) usbdev peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the usbdev peripheral.
+ * @param[out] usbdev Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_init(mmio_region_t base_addr, dif_usbdev_t *usbdev);
+
+/**
  * A usbdev interrupt request type.
  */
 typedef enum dif_usbdev_irq {

@@ -129,16 +129,6 @@ dif_result_t dif_i2c_compute_timing(dif_i2c_timing_config_t timing_config,
   return kDifOk;
 }
 
-dif_result_t dif_i2c_init(mmio_region_t base_addr, dif_i2c_t *i2c) {
-  if (i2c == NULL) {
-    return kDifBadArg;
-  }
-
-  i2c->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_i2c_configure(const dif_i2c_t *i2c, dif_i2c_config_t config) {
   if (i2c == NULL) {
     return kDifBadArg;

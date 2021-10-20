@@ -27,17 +27,6 @@ class LcCtrlTest : public Test, public MmioTest {
   dif_lc_ctrl_t lc_ = {.base_addr = dev().region()};
 };
 
-class InitTest : public LcCtrlTest {};
-
-TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_lc_ctrl_init({.base_addr = dev().region()}, &lc_), kDifOk);
-}
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_lc_ctrl_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
-}
-
 class StateTest : public LcCtrlTest {};
 
 TEST_F(StateTest, GetState) {

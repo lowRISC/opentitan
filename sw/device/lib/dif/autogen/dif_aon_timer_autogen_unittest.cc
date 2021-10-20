@@ -16,6 +16,7 @@ namespace dif_aon_timer_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class AonTimerTest : public Test, public MmioTest {
@@ -23,7 +24,17 @@ class AonTimerTest : public Test, public MmioTest {
   dif_aon_timer_t aon_timer_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public AonTimerTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_aon_timer_init({.base_addr = dev().region()}, nullptr),
+            kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_aon_timer_init({.base_addr = dev().region()}, &aon_timer_),
+            kDifOk);
+}
 
 class IrqGetStateTest : public AonTimerTest {};
 

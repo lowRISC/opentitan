@@ -27,17 +27,6 @@ class RstmgrTest : public Test, public MmioTest {
   dif_rstmgr_t rstmgr_ = {.base_addr = dev().region()};
 };
 
-class InitTest : public RstmgrTest {};
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_init(dev().region(), nullptr), kDifBadArg);
-}
-
-TEST_F(InitTest, Success) {
-  dif_rstmgr_t rstmgr;
-  EXPECT_EQ(dif_rstmgr_init(dev().region(), &rstmgr), kDifOk);
-}
-
 class ResetTest : public RstmgrTest {};
 
 TEST_F(ResetTest, NullArgs) {

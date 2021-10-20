@@ -23,15 +23,6 @@ enum {
   kLcCtrlMutexRelease = 0,
 };
 
-dif_result_t dif_lc_ctrl_init(mmio_region_t base_addr, dif_lc_ctrl_t *lc) {
-  if (lc == NULL) {
-    return kDifBadArg;
-  }
-
-  lc->base_addr = base_addr;
-  return kDifOk;
-}
-
 dif_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
                                    dif_lc_ctrl_state_t *state) {
   if (lc == NULL || state == NULL) {

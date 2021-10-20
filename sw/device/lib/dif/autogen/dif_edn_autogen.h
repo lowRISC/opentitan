@@ -36,6 +36,18 @@ typedef struct dif_edn {
 } dif_edn_t;
 
 /**
+ * Creates a new handle for a(n) edn peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the edn peripheral.
+ * @param[out] edn Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_edn_init(mmio_region_t base_addr, dif_edn_t *edn);
+
+/**
  * A edn interrupt request type.
  */
 typedef enum dif_edn_irq {

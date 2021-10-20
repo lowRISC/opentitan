@@ -87,15 +87,6 @@ static dif_result_t fw_override_set(
   return kDifOk;
 }
 
-dif_result_t dif_entropy_src_init(mmio_region_t base_addr,
-                                  dif_entropy_src_t *entropy_src) {
-  if (entropy_src == NULL) {
-    return kDifBadArg;
-  }
-  entropy_src->base_addr = base_addr;
-  return kDifOk;
-}
-
 dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
                                        dif_entropy_src_config_t config) {
   if (entropy_src == NULL) {

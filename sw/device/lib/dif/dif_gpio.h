@@ -89,18 +89,6 @@ typedef uint32_t dif_gpio_state_t;
 typedef uint32_t dif_gpio_mask_t;
 
 /**
- * Creates a new handle for GPIO.
- *
- * This function does not actuate the hardware.
- *
- * @param params Hardware instantiation parameters.
- * @param[out] gpio Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_gpio_init(mmio_region_t base_addr, dif_gpio_t *gpio);
-
-/**
  * Resets a GPIO device.
  *
  * Resets the given GPIO device by setting its configuration registers to

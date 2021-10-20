@@ -8,6 +8,18 @@
 
 #include "entropy_src_regs.h"  // Generated.
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_init(mmio_region_t base_addr,
+                                  dif_entropy_src_t *entropy_src) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  entropy_src->base_addr = base_addr;
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

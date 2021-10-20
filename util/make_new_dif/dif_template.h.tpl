@@ -68,20 +68,6 @@ typedef struct dif_${ip.name_snake}_output {
 } dif_${ip.name_snake}_output_t;
 
 /**
- * Creates a new handle for ${ip.name_long_lower}.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr The MMIO base address of the IP.
- * @param[out] ${ip.name_snake} Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_${ip.name_snake}_init(
-  mmio_region_t base_addr,
-  dif_${ip.name_snake}_t *${ip.name_snake});
-
-/**
  * Configures ${ip.name_long_lower} with runtime information.
  *
  * This function should only need to be called once for the lifetime of

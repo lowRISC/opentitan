@@ -86,15 +86,6 @@ static size_t uart_bytes_receive(const dif_uart_t *uart, size_t bytes_requested,
   return bytes_read;
 }
 
-dif_result_t dif_uart_init(mmio_region_t base_addr, dif_uart_t *uart) {
-  if (uart == NULL) {
-    return kDifBadArg;
-  }
-
-  uart->base_addr = base_addr;
-  return kDifOk;
-}
-
 dif_result_t dif_uart_configure(const dif_uart_t *uart,
                                 dif_uart_config_t config) {
   if (uart == NULL) {

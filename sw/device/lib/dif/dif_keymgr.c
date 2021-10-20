@@ -256,16 +256,6 @@ static dif_toggle_t bool_to_toggle(bool val) {
   return val ? kDifToggleEnabled : kDifToggleDisabled;
 }
 
-dif_result_t dif_keymgr_init(mmio_region_t base_addr, dif_keymgr_t *keymgr) {
-  if (keymgr == NULL) {
-    return kDifBadArg;
-  }
-
-  keymgr->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_keymgr_configure(const dif_keymgr_t *keymgr,
                                   dif_keymgr_config_t config) {
   if (keymgr == NULL) {

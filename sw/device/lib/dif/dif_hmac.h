@@ -61,20 +61,6 @@ typedef struct dif_hmac_digest {
 } dif_hmac_digest_t;
 
 /**
- * Initializes the HMAC device described by `config`, writing internal state to
- * `hmac_out`.
- *
- * This function *must* be called on a particular `mmio_region_t` before calling
- * any other functions in this header with that `mmio_region_t`.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] hmac_out The location at which to write HMAC state. This location
- *                 must be valid to write to.
- * @return The result of the operation.
- */
-dif_result_t dif_hmac_init(mmio_region_t base_addr, dif_hmac_t *hmac_out);
-
-/**
  * Resets the HMAC engine and readies it to receive a new message to process an
  * HMAC digest.
  *

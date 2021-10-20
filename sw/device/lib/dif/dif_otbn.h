@@ -78,19 +78,6 @@ typedef enum dif_otbn_err_bits {
 } dif_otbn_err_bits_t;
 
 /**
- * Initialize a OTBN device using `config` and return its internal state.
- *
- * A particular OTBN device must first be initialized by this function
- * before calling other functions of this library.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] otbn OTBN instance that will store the internal state of the
- *             initialized OTBN device.
- * @return The result of the operation.
- */
-dif_result_t dif_otbn_init(mmio_region_t base_addr, dif_otbn_t *otbn);
-
-/**
  * Reset OTBN device.
  *
  * Resets the given OTBN device by setting its configuration registers to

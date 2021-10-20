@@ -384,18 +384,6 @@ typedef enum dif_kmac_fifo_state {
 } dif_kmac_fifo_state_t;
 
 /**
- * Creates a new handle for KMAC.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] kmac Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_kmac_init(mmio_region_t base_addr, dif_kmac_t *kmac);
-
-/**
  * Configures KMAC with runtime information.
  *
  * @param kmac A KMAC handle.
