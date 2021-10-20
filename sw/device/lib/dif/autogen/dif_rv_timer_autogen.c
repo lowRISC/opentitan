@@ -4,7 +4,7 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_rv_timer.h"
+#include "sw/device/lib/dif/autogen/dif_rv_timer_autogen.h"
 
 #include "rv_timer_regs.h"  // Generated.
 
