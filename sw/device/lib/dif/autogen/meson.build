@@ -2,6 +2,20 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Autogen ADC Control Interface DIF library
+sw_lib_dif_autogen_adc_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_adc_ctrl',
+    sources: [
+      hw_ip_adc_ctrl_reg_h,
+      'dif_adc_ctrl_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen AES DIF library
 sw_lib_dif_autogen_aes = declare_dependency(
   link_with: static_library(
