@@ -18,6 +18,10 @@ class otbn_base_vseq extends cip_base_vseq #(
   // "Running" flag to detect concurrent executions of run_otbn()
   protected bit running_ = 1'b0;
 
+  // The longest run seen in calls to start_running_otbn. This gets reset to zero by load_elf (since
+  // we assume we've got a new program, which might take a different amount of time)
+  protected int unsigned longest_run_ = 0;
+
   // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
   // is true) or with TL transactions. Also, pass loop warp rules to the ISS through the model.
   protected task load_elf(string path, bit backdoor);
@@ -26,8 +30,13 @@ class otbn_base_vseq extends cip_base_vseq #(
     end else begin
       load_elf_over_bus(path);
     end
+
     // Pass loop warp rules that we've just loaded into otbn_memutil into the model.
     otbn_take_loop_warps(cfg.model_agent_cfg.vif.handle, cfg.mem_util);
+
+    // We're loading a new program, so the tracking that we've been doing for how long runs take is
+    // no longer valid.
+    longest_run_ = 0;
   endtask
 
   // Load the contents of an ELF file into the DUT's memories by a DPI backdoor
@@ -237,5 +246,72 @@ class otbn_base_vseq extends cip_base_vseq #(
 
     return elf_path;
   endfunction
+
+  // Start running OTBN (forking off a run_otbn task) and return when it's still going.
+  //
+  // This works by guessing the number of cycles to run and then returning after that time. Of
+  // course, the run_otbn task might actually finish in less time than that! If so, we run a second
+  // time and guess a smaller value.
+  //
+  // This can be used to implement things like the reset test where we want to inject some sort of
+  // error part-way into a run.
+  task start_running_otbn(bit check_end_addr);
+    bit timed_out = 1'b0;
+
+    for (int i = 0; i < 10; i++) begin
+      int cycle_counter;
+      int unsigned max_wait_cycles;
+      int unsigned wait_cycles;
+
+      // Guess the number of cycles until error is injected. The maximum wait is "75% of the longest
+      // we've seen the program run before terminating". This should avoid problems where we keep
+      // picking times that occur after the program has finished.
+      max_wait_cycles = ((longest_run_ > 0) ? longest_run_ : 1000) * 3 / 4;
+      wait_cycles = $urandom_range(max_wait_cycles) + 1;
+      fork: isolation_fork
+      begin
+        fork
+          run_otbn(.check_end_addr(check_end_addr));
+          begin
+            wait (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute);
+            repeat (wait_cycles) begin
+              @(cfg.clk_rst_vif.cbn);
+              cycle_counter++;
+            end
+          end
+        join_any
+
+        // When we get here, we know that either the OTBN sequence finished or we timed out
+        // and it's still going. We can see whether OTBN is still going by looking at the status
+        // from the model (which is also in sync with the RTL). Because we wait on the negedge
+        // when updating cycle_counter above, we know we've got the "new version" of the status at
+        // this point.
+        if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute) begin
+          timed_out = 1'b1;
+        end else begin
+          timed_out = 1'b0;
+          // The OTBN sequence finished so update wait_cycles. cycle_counter should always be less
+          // than wait_cycles (because of how we calculate wait cycles).
+          `DV_CHECK_FATAL(cycle_counter < wait_cycles);
+          longest_run_ = cycle_counter;
+
+          // Wait for the run_otbn thread to finish. This will usually be instant, but might take
+          // a couple of cycles if we happen to have timed out exactly at the end of the run (when
+          // the status has switched, but before run_otbn finishes)
+          wait (!running_);
+
+          // Kill the counter thread
+          disable fork;
+        end
+      end
+      join
+      if (timed_out) break;
+    end
+
+    // If we get here and timed_out is false then something weird has happened: we've run the binary
+    // 10 times and each run has taken less than 75% of the time of the previous run. This shouldn't
+    // happen!
+    `DV_CHECK_FATAL(timed_out, "Failed to pick a working time-out")
+  endtask
 
 endclass : otbn_base_vseq
