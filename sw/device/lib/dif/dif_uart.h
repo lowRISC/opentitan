@@ -123,18 +123,6 @@ typedef enum dif_uart_loopback {
 extern const uint32_t kDifUartFifoSizeBytes;
 
 /**
- * Creates a new handle for UART.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Base address of the UART peripheral.
- * @param[out] uart Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_uart_init(mmio_region_t base_addr, dif_uart_t *uart);
-
-/**
  * Configures UART with runtime information.
  *
  * This function should need to be called once for the lifetime of `handle`.

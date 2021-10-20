@@ -19,17 +19,6 @@ static_assert(ALERT_HANDLER_PARAM_N_PHASES == 4,
 static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
               "Expected seven local alerts!");
 
-dif_result_t dif_alert_handler_init(mmio_region_t base_addr,
-                                    dif_alert_handler_t *alert_handler) {
-  if (alert_handler == NULL) {
-    return kDifBadArg;
-  }
-
-  alert_handler->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 /**
  * Classifies alerts for a single alert class. Returns `false` if any of the
  * provided configuration is invalid.

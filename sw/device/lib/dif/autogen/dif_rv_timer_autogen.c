@@ -14,6 +14,18 @@ static_assert(RV_TIMER_INTR_STATE0_IS_0_BIT == RV_TIMER_INTR_ENABLE0_IE_0_BIT,
 static_assert(RV_TIMER_INTR_STATE0_IS_0_BIT == RV_TIMER_INTR_TEST0_T_0_BIT,
               "Expected IRQ bit offsets to match across STATE/ENABLE regs.");
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_timer_init(mmio_region_t base_addr,
+                               dif_rv_timer_t *rv_timer) {
+  if (rv_timer == NULL) {
+    return kDifBadArg;
+  }
+
+  rv_timer->base_addr = base_addr;
+
+  return kDifOk;
+}
+
 typedef enum dif_rv_timer_intr_reg {
   kDifRvTimerIntrRegState = 0,
   kDifRvTimerIntrRegEnable = 1,

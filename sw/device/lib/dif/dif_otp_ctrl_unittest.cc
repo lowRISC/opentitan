@@ -27,17 +27,6 @@ class OtpTest : public testing::Test, public MmioTest {
   dif_otp_ctrl_t otp_ = {.base_addr = dev().region()};
 };
 
-class InitTest : public OtpTest {};
-
-TEST_F(InitTest, Success) {
-  dif_otp_ctrl_t handler;
-  EXPECT_EQ(dif_otp_ctrl_init(dev().region(), &handler), kDifOk);
-}
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_otp_ctrl_init(dev().region(), nullptr), kDifBadArg);
-}
-
 class ConfigTest : public OtpTest {};
 
 TEST_F(ConfigTest, Basic) {

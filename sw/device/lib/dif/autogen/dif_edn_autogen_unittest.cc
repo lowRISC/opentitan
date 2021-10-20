@@ -16,6 +16,7 @@ namespace dif_edn_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class EdnTest : public Test, public MmioTest {
@@ -23,7 +24,15 @@ class EdnTest : public Test, public MmioTest {
   dif_edn_t edn_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public EdnTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_edn_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_edn_init({.base_addr = dev().region()}, &edn_), kDifOk);
+}
 
 class IrqGetStateTest : public EdnTest {};
 

@@ -22,12 +22,6 @@ class SramCtrlTest : public Test, public MmioTest {
   dif_sram_ctrl_t sram_ctrl_ = {.base_addr = dev().region()};
 };
 
-class InitTest : public SramCtrlTest {};
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_sram_ctrl_init(dev().region(), nullptr), kDifBadArg);
-}
-
 class RequestNewKeyTest : public SramCtrlTest {};
 
 TEST_F(RequestNewKeyTest, NullArgs) {

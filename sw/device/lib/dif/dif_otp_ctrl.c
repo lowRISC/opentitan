@@ -12,16 +12,6 @@
 
 #include "otp_ctrl_regs.h"  // Generated.
 
-dif_result_t dif_otp_ctrl_init(mmio_region_t base_addr, dif_otp_ctrl_t *otp) {
-  if (otp == NULL) {
-    return kDifBadArg;
-  }
-
-  otp->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 /**
  * Checks if integrity/consistency-check-related operations are locked.
  *

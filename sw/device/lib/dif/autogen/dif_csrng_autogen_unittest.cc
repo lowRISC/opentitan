@@ -16,6 +16,7 @@ namespace dif_csrng_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class CsrngTest : public Test, public MmioTest {
@@ -23,7 +24,15 @@ class CsrngTest : public Test, public MmioTest {
   dif_csrng_t csrng_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public CsrngTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_csrng_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_csrng_init({.base_addr = dev().region()}, &csrng_), kDifOk);
+}
 
 class IrqGetStateTest : public CsrngTest {};
 

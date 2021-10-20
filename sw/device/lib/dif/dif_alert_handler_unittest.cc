@@ -30,19 +30,6 @@ class AlertHandlerTest : public testing::Test, public MmioTest {
   dif_alert_handler_t alert_handler_ = {.base_addr = dev().region()};
 };
 
-class InitTest : public AlertHandlerTest,
-                 public testing::WithParamInterface<uint32_t> {};
-
-TEST_F(InitTest, Success) {
-  dif_alert_handler_t alert_handler;
-
-  EXPECT_EQ(dif_alert_handler_init(dev().region(), &alert_handler), kDifOk);
-}
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_alert_handler_init(dev().region(), nullptr), kDifBadArg);
-}
-
 class ConfigTest : public AlertHandlerTest {
   // We provide our own dev_ member variable in this fixture, in order to
   // support IgnoreMmioCalls().

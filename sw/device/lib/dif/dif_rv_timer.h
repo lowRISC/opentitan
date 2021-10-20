@@ -85,19 +85,6 @@ dif_result_t dif_rv_timer_approximate_tick_params(
     dif_rv_timer_tick_params_t *out);
 
 /**
- * Initialize a RISC-V timer device with the given configuration.
- *
- * This function will deactivate all counters and reset all timers, which should
- * each be configured and turned on manually after this function returns.
- *
- * @param base_addr MMIO region for the device hardware registers.
- * @param[out] timer_out The timer device.
- * @return The result of the operation.
- */
-dif_result_t dif_rv_timer_init(mmio_region_t base_addr,
-                               dif_rv_timer_t *timer_out);
-
-/**
  * Completely resets a timer device, disabling all IRQs, counters, and
  * comparators.
  *

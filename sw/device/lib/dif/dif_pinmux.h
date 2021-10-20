@@ -269,18 +269,6 @@ typedef struct dif_pinmux_wakeup_timed_config {
 } dif_pinmux_wakeup_timed_config_t;
 
 /**
- * Creates a new handle for a Pin Multiplexer.
- *
- * This function does not actuate the hardware.
- *
- * @param params Hardware instantiation parameters.
- * @param[out] pinmux Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_pinmux_init(mmio_region_t base_addr, dif_pinmux_t *pinmux);
-
-/**
  * Locks out Pin Multiplexer functionality based on the `target` and `index`.
  *
  * This function allows for a fine grained locking of the Pin Multiplexer

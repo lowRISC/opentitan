@@ -16,12 +16,24 @@ namespace dif_lc_ctrl_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class LcCtrlTest : public Test, public MmioTest {
  protected:
   dif_lc_ctrl_t lc_ctrl_ = {.base_addr = dev().region()};
 };
+
+class InitTest : public LcCtrlTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_lc_ctrl_init({.base_addr = dev().region()}, nullptr),
+            kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_lc_ctrl_init({.base_addr = dev().region()}, &lc_ctrl_), kDifOk);
+}
 
 }  // namespace
 }  // namespace dif_lc_ctrl_autogen_unittest

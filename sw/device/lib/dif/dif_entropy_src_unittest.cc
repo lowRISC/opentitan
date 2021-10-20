@@ -20,17 +20,6 @@ class DifEntropySrcTest : public testing::Test, public mock_mmio::MmioTest {
   const dif_entropy_src_t entropy_src_ = {.base_addr = dev().region()};
 };
 
-class InitTest : public DifEntropySrcTest {};
-
-TEST_F(InitTest, BadArgs) {
-  EXPECT_EQ(dif_entropy_src_init(dev().region(), nullptr), kDifBadArg);
-}
-
-TEST_F(InitTest, Init) {
-  dif_entropy_src_t entropy;
-  EXPECT_EQ(dif_entropy_src_init(dev().region(), &entropy), kDifOk);
-}
-
 class ConfigTest : public DifEntropySrcTest {
  protected:
   dif_entropy_src_config_t config_ = {

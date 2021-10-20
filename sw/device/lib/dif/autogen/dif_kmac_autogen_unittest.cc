@@ -16,6 +16,7 @@ namespace dif_kmac_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class KmacTest : public Test, public MmioTest {
@@ -23,7 +24,15 @@ class KmacTest : public Test, public MmioTest {
   dif_kmac_t kmac_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public KmacTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_kmac_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_kmac_init({.base_addr = dev().region()}, &kmac_), kDifOk);
+}
 
 class IrqGetStateTest : public KmacTest {};
 

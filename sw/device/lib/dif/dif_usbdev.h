@@ -140,19 +140,6 @@ typedef struct dif_usbdev_config {
 } dif_usbdev_config_t;
 
 /**
- * Initialize a USB device.
- *
- * A USB device must first be initialized by this function before calling other
- * functions in this library.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] usbdev The initialized USB device handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_usbdev_init(mmio_region_t base_addr, dif_usbdev_t *usbdev);
-
-/**
  * Configures a USB device with runtime information.
  *
  * This function should need to be called once for the lifetime of `handle`.

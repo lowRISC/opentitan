@@ -99,16 +99,6 @@ static dif_result_t gpio_masked_bit_write(const dif_gpio_t *gpio,
   return kDifOk;
 }
 
-dif_result_t dif_gpio_init(mmio_region_t base_addr, dif_gpio_t *gpio) {
-  if (gpio == NULL) {
-    return kDifBadArg;
-  }
-
-  gpio->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_gpio_reset(const dif_gpio_t *gpio) {
   if (gpio == NULL) {
     return kDifBadArg;

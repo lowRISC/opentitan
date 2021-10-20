@@ -258,17 +258,6 @@ typedef enum dif_i2c_fmt {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_compute_timing(dif_i2c_timing_config_t timing_config,
                                     dif_i2c_config_t *config);
-/**
- * Creates a new handle for I2C.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] i2c Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_init(mmio_region_t base_addr, dif_i2c_t *i2c);
 
 /**
  * Configures I2C with runtime information.

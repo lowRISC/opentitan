@@ -16,6 +16,18 @@ static_assert(AON_TIMER_INTR_STATE_WDOG_TIMER_BARK_BIT ==
                   AON_TIMER_INTR_TEST_WDOG_TIMER_BARK_BIT,
               "Expected IRQ bit offsets to match across STATE/TEST regs.");
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_init(mmio_region_t base_addr,
+                                dif_aon_timer_t *aon_timer) {
+  if (aon_timer == NULL) {
+    return kDifBadArg;
+  }
+
+  aon_timer->base_addr = base_addr;
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

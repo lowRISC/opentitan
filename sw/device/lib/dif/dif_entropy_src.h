@@ -337,19 +337,6 @@ typedef enum dif_entropy_src_alert {
 } dif_entropy_src_alert_t;
 
 /**
- * Creates a new handle for entropy source.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation parameters.
- * @param[out] entropy Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_init(mmio_region_t base_addr,
-                                  dif_entropy_src_t *entropy_src);
-
-/**
  * Configures entropy source with runtime information.
  *
  * This function should need to be called once for the lifetime of `handle`.

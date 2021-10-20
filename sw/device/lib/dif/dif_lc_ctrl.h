@@ -318,18 +318,6 @@ typedef enum dif_lc_ctrl_alert {
 } dif_lc_ctrl_alert_t;
 
 /**
- * Creates a new handle for the lifecycle controller.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Base address of the UART peripheral.
- * @param[out] lc Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_lc_ctrl_init(mmio_region_t base_addr, dif_lc_ctrl_t *lc);
-
-/**
  * Returns the current state of the lifecycle controller.
  *
  * @param lc A lifecycle handle.

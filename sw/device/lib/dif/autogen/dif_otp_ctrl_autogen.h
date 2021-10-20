@@ -36,6 +36,19 @@ typedef struct dif_otp_ctrl {
 } dif_otp_ctrl_t;
 
 /**
+ * Creates a new handle for a(n) otp_ctrl peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the otp_ctrl peripheral.
+ * @param[out] otp_ctrl Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otp_ctrl_init(mmio_region_t base_addr,
+                               dif_otp_ctrl_t *otp_ctrl);
+
+/**
  * A otp_ctrl interrupt request type.
  */
 typedef enum dif_otp_ctrl_irq {

@@ -116,16 +116,6 @@ static bool is_output_ready(const dif_csrng_t *csrng) {
   return status.valid_data;
 }
 
-dif_result_t dif_csrng_init(mmio_region_t base_addr, dif_csrng_t *csrng) {
-  if (csrng == NULL) {
-    return kDifBadArg;
-  }
-
-  csrng->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_csrng_configure(const dif_csrng_t *csrng) {
   if (csrng == NULL) {
     return kDifBadArg;

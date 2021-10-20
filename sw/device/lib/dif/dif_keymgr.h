@@ -24,6 +24,27 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * A typical usage of this library during different secure boot
+ * stages is as follows:
+ *
+ * - In Mask ROM:
+ *   - Create a new handle: `dif_keymgr_init()`.
+ *   - Configure hardware: `dif_keymgr_configure()`.
+ *   - Initialize state: `dif_keymgr_advance_state()`,
+ *   `dif_keymgr_get_status_codes()`, `dif_keymgr_get_state()`.
+ *   - Advance state: `dif_keymgr_advance_state()`,
+ *     `dif_keymgr_get_status_codes()`, `dif_keymgr_get_state()`.
+ * - In subsequent boot stages, i.e. ROM_EXT, BL0, kernel:
+ *   - Create a new handle: `dif_keymgr_init()`.
+ *   - Generate keys and/or identity seeds:
+ *     `dif_keymgr_generate_versioned_key()`,
+ *     `dif_keymgr_generate_identity_seed()`, `dif_keymgr_get_status_codes()`.
+ *   - Read output (if applicable): `dif_keymgr_read_output()`.
+ *   - Advance state: `dif_keymgr_advance_state()`,
+ *     `dif_keymgr_get_status_codes()`, `dif_keymgr_get_state()`.
+ */
+
+/**
  * Enumeration for side load slot clearing.
  */
 typedef enum dif_keymgr_sideload_clr {
@@ -159,37 +180,6 @@ typedef enum dif_keymgr_state {
    */
   kDifKeymgrStateInvalid,
 } dif_keymgr_state_t;
-
-/**
- * Creates a new handle for key manager.
- *
- * This function does not actuate the hardware and must be called to initialize
- * the handle that must be passed to other functions in this library in each
- * boot stage. A typical usage of this library during different secure boot
- * stages is as follows:
- *
- * - In Mask ROM:
- *   - Create a new handle: `dif_keymgr_init()`.
- *   - Configure hardware: `dif_keymgr_configure()`.
- *   - Initialize state: `dif_keymgr_advance_state()`,
- *   `dif_keymgr_get_status_codes()`, `dif_keymgr_get_state()`.
- *   - Advance state: `dif_keymgr_advance_state()`,
- *     `dif_keymgr_get_status_codes()`, `dif_keymgr_get_state()`.
- * - In subsequent boot stages, i.e. ROM_EXT, BL0, kernel:
- *   - Create a new handle: `dif_keymgr_init()`.
- *   - Generate keys and/or identity seeds:
- *     `dif_keymgr_generate_versioned_key()`,
- *     `dif_keymgr_generate_identity_seed()`, `dif_keymgr_get_status_codes()`.
- *   - Read output (if applicable): `dif_keymgr_read_output()`.
- *   - Advance state: `dif_keymgr_advance_state()`,
- *     `dif_keymgr_get_status_codes()`, `dif_keymgr_get_state()`.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] keymgr Out-param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_keymgr_init(mmio_region_t base_addr, dif_keymgr_t *keymgr);
 
 /**
  * Configures key manager with runtime information.

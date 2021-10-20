@@ -5,13 +5,3 @@
 #include "sw/device/lib/dif/dif_edn.h"
 
 #include "edn_regs.h"  // Generated
-
-dif_result_t dif_edn_init(mmio_region_t base_addr, dif_edn_t *edn) {
-  if (edn == NULL) {
-    return kDifBadArg;
-  }
-
-  edn->base_addr = base_addr;
-
-  return kDifOk;
-}

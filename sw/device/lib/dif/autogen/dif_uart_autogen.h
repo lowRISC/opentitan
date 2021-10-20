@@ -36,6 +36,18 @@ typedef struct dif_uart {
 } dif_uart_t;
 
 /**
+ * Creates a new handle for a(n) uart peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the uart peripheral.
+ * @param[out] uart Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_uart_init(mmio_region_t base_addr, dif_uart_t *uart);
+
+/**
  * A uart interrupt request type.
  */
 typedef enum dif_uart_irq {

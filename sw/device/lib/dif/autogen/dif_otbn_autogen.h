@@ -36,6 +36,18 @@ typedef struct dif_otbn {
 } dif_otbn_t;
 
 /**
+ * Creates a new handle for a(n) otbn peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the otbn peripheral.
+ * @param[out] otbn Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otbn_init(mmio_region_t base_addr, dif_otbn_t *otbn);
+
+/**
  * A otbn interrupt request type.
  */
 typedef enum dif_otbn_irq {

@@ -113,16 +113,6 @@ ptrdiff_t IrqRegForHart(uint32_t hart, uint32_t comparators,
 
 constexpr uint32_t kAllOnes = std::numeric_limits<uint32_t>::max();
 
-class InitTest : public TimerTest {};
-
-TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_rv_timer_init(dev().region(), &rv_timer_), kDifOk);
-}
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_rv_timer_init(dev().region(), nullptr), kDifBadArg);
-}
-
 class ResetTest : public TimerTest {};
 
 TEST_F(ResetTest, Success) {

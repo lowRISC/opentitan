@@ -232,16 +232,6 @@ static uint32_t get_buffer_addr(uint8_t buffer_id, size_t offset) {
  * USBDEV DIF library functions.
  */
 
-dif_result_t dif_usbdev_init(mmio_region_t base_addr, dif_usbdev_t *usbdev) {
-  if (usbdev == NULL) {
-    return kDifBadArg;
-  }
-
-  usbdev->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
                                   dif_usbdev_buffer_pool_t *buffer_pool,
                                   dif_usbdev_config_t config) {

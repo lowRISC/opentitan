@@ -8,6 +8,17 @@
 
 #include "usbdev_regs.h"  // Generated.
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_init(mmio_region_t base_addr, dif_usbdev_t *usbdev) {
+  if (usbdev == NULL) {
+    return kDifBadArg;
+  }
+
+  usbdev->base_addr = base_addr;
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

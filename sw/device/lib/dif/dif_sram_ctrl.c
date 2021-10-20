@@ -28,17 +28,6 @@ static uint32_t sram_ctrl_get_status(const dif_sram_ctrl_t *sram_ctrl) {
   return mmio_region_read32(sram_ctrl->base_addr, SRAM_CTRL_STATUS_REG_OFFSET);
 }
 
-dif_result_t dif_sram_ctrl_init(mmio_region_t base_addr,
-                                dif_sram_ctrl_t *sram_ctrl) {
-  if (sram_ctrl == NULL) {
-    return kDifBadArg;
-  }
-
-  sram_ctrl->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_sram_ctrl_request_new_key(const dif_sram_ctrl_t *sram_ctrl) {
   if (sram_ctrl == NULL) {
     return kDifBadArg;

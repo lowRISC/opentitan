@@ -36,6 +36,18 @@ typedef struct dif_csrng {
 } dif_csrng_t;
 
 /**
+ * Creates a new handle for a(n) csrng peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the csrng peripheral.
+ * @param[out] csrng Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_init(mmio_region_t base_addr, dif_csrng_t *csrng);
+
+/**
  * A csrng interrupt request type.
  */
 typedef enum dif_csrng_irq {

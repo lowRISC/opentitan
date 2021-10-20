@@ -187,18 +187,6 @@ typedef struct dif_csrng_internal_state {
 } dif_csrng_internal_state_t;
 
 /**
- * Creates a new handle for CSRNG.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] csrng Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_csrng_init(mmio_region_t base_addr, dif_csrng_t *csrng);
-
-/**
  * Configures CSRNG.
  *
  * This function should need to be called once for the lifetime of `csrng`.

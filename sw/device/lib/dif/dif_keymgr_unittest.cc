@@ -142,17 +142,6 @@ INSTANTIATE_TEST_SUITE_P(
       return ss.str();
     });
 
-class InitTest : public DifKeymgrTest {};
-
-TEST_F(InitTest, BadArgs) {
-  EXPECT_EQ(dif_keymgr_init(dev().region(), nullptr), kDifBadArg);
-}
-
-TEST_F(InitTest, Init) {
-  dif_keymgr_t keymgr;
-  EXPECT_EQ(dif_keymgr_init(dev().region(), &keymgr), kDifOk);
-}
-
 /**
  * Base class for the rest of the tests in this file, provides a
  * `dif_keymgr_t` instance and some methods for common expectations.

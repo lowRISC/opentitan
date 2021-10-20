@@ -138,16 +138,6 @@ static bool is_state_squeeze(const dif_kmac_t *kmac) {
   return bitfield_bit32_read(reg, KMAC_STATUS_SHA3_SQUEEZE_BIT);
 }
 
-dif_result_t dif_kmac_init(mmio_region_t base_addr, dif_kmac_t *kmac) {
-  if (kmac == NULL) {
-    return kDifBadArg;
-  }
-
-  kmac->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
   if (kmac == NULL) {
     return kDifBadArg;

@@ -314,19 +314,6 @@ typedef struct dif_alert_handler_config {
 } dif_alert_handler_config_t;
 
 /**
- * Creates a new handle for alert handler.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param handler Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_alert_handler_init(mmio_region_t base_addr,
-                                    dif_alert_handler_t *alert_handler);
-
-/**
  * Configures alert handler with runtime information.
  *
  * This function should need to be called once for the lifetime of `handle`.

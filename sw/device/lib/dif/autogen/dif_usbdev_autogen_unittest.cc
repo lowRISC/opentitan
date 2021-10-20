@@ -16,6 +16,7 @@ namespace dif_usbdev_autogen_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
 using ::mock_mmio::MockDevice;
+using ::testing::Eq;
 using ::testing::Test;
 
 class UsbdevTest : public Test, public MmioTest {
@@ -23,7 +24,16 @@ class UsbdevTest : public Test, public MmioTest {
   dif_usbdev_t usbdev_ = {.base_addr = dev().region()};
 };
 
-using ::testing::Eq;
+class InitTest : public UsbdevTest {};
+
+TEST_F(InitTest, NullArgs) {
+  EXPECT_EQ(dif_usbdev_init({.base_addr = dev().region()}, nullptr),
+            kDifBadArg);
+}
+
+TEST_F(InitTest, Success) {
+  EXPECT_EQ(dif_usbdev_init({.base_addr = dev().region()}, &usbdev_), kDifOk);
+}
 
 class IrqGetStateTest : public UsbdevTest {};
 

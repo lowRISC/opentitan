@@ -36,17 +36,6 @@ static ptrdiff_t reg_for_hart(uint32_t hart, ptrdiff_t reg_offset) {
   return kHartRegisterSpacing * hart + reg_offset;
 }
 
-dif_result_t dif_rv_timer_init(mmio_region_t base_addr,
-                               dif_rv_timer_t *timer_out) {
-  if (timer_out == NULL) {
-    return kDifBadArg;
-  }
-
-  timer_out->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 /**
  * A naive implementation of the Euclidean algorithm by repeated remainder.
  */

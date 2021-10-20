@@ -67,17 +67,6 @@ static bool check_offset_len(uint32_t offset_bytes, size_t len_bytes,
           offset_bytes + len_bytes <= mem_size);
 }
 
-dif_result_t dif_otbn_init(mmio_region_t base_addr, dif_otbn_t *otbn) {
-  if (otbn == NULL) {
-    return kDifBadArg;
-  }
-
-  otbn->base_addr = base_addr;
-  dif_otbn_reset(otbn);
-
-  return kDifOk;
-}
-
 dif_result_t dif_otbn_reset(const dif_otbn_t *otbn) {
   if (otbn == NULL) {
     return kDifBadArg;

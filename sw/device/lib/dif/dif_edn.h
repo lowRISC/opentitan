@@ -102,18 +102,6 @@ typedef struct dif_edn_auto_params {
 } dif_edn_auto_params_t;
 
 /**
- * Creates a new handle for Entropy Distribution Network.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] edn Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_edn_init(mmio_region_t base_addr, dif_edn_t *edn);
-
-/**
  * Configures Entropy Distribution Network with runtime information.
  *
  * This function should need to be called once for the lifetime of `handle`.

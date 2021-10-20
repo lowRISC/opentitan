@@ -33,16 +33,6 @@ class PlicTest : public Test, public MmioTest {
   dif_rv_plic_t plic_ = {.base_addr = dev().region()};
 };
 
-class InitTest : public PlicTest {};
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_rv_plic_init(dev().region(), nullptr), kDifBadArg);
-}
-
-TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_rv_plic_init(dev().region(), &plic_), kDifOk);
-}
-
 class ResetTest : public PlicTest {
  protected:
   void ExpectReset() {

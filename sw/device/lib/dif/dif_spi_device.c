@@ -12,17 +12,6 @@
 
 const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
 
-dif_result_t dif_spi_device_init(mmio_region_t base_addr,
-                                 dif_spi_device_t *spi) {
-  if (spi == NULL) {
-    return kDifBadArg;
-  }
-
-  spi->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 /**
  * Computes the required value of the control register from a given
  * configuration.

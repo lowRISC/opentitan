@@ -184,18 +184,6 @@ typedef enum dif_pwrmgr_alert {
 } dif_pwrmgr_alert_t;
 
 /**
- * Creates a new handle for power manager.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] pwrmgr Out-param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_pwrmgr_init(mmio_region_t base_addr, dif_pwrmgr_t *pwrmgr);
-
-/**
  * Enables or disables low power state.
  *
  * When enabled, the power manager transitions to low power state on the next

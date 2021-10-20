@@ -190,16 +190,6 @@ static void aes_set_multireg(const dif_aes_t *aes, const uint32_t *data,
   }
 }
 
-dif_result_t dif_aes_init(mmio_region_t base_addr, dif_aes_t *aes) {
-  if (aes == NULL) {
-    return kDifBadArg;
-  }
-
-  aes->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_aes_reset(const dif_aes_t *aes) {
   if (aes == NULL) {
     return kDifBadArg;

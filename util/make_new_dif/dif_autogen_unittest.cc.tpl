@@ -12,7 +12,6 @@
     This template requires the following Python objects to be passed:
 
     1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
-    2. list[irq]: See util/make_new_dif.py for the definition of the `irq` obj.
 </%doc>
 
 // This file is auto-generated.
@@ -29,6 +28,7 @@ namespace dif_${ip.name_snake}_autogen_unittest {
 namespace {
   using ::mock_mmio::MmioTest;
   using ::mock_mmio::MockDevice;
+  using ::testing::Eq;
   using ::testing::Test;
 
   class ${ip.name_camel}Test : public Test, public MmioTest {
@@ -36,9 +36,23 @@ namespace {
     dif_${ip.name_snake}_t ${ip.name_snake}_ = {.base_addr = dev().region()};
   };
 
-% if len(ip.irqs) > 0:
-  using ::testing::Eq;
+  class InitTest : public ${ip.name_camel}Test {};
 
+  TEST_F(InitTest, NullArgs) {
+    EXPECT_EQ(dif_${ip.name_snake}_init(
+        {.base_addr = dev().region()},
+        nullptr),
+      kDifBadArg);
+  }
+
+  TEST_F(InitTest, Success) {
+    EXPECT_EQ(dif_${ip.name_snake}_init(
+        {.base_addr = dev().region()},
+        &${ip.name_snake}_),
+      kDifOk);
+  }
+
+% if len(ip.irqs) > 0:
   class IrqGetStateTest : public ${ip.name_camel}Test {};
 
   TEST_F(IrqGetStateTest, NullArgs) {

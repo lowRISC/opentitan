@@ -37,6 +37,19 @@ typedef struct dif_alert_handler {
 } dif_alert_handler_t;
 
 /**
+ * Creates a new handle for a(n) alert_handler peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param base_addr The MMIO base address of the alert_handler peripheral.
+ * @param[out] alert_handler Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_init(mmio_region_t base_addr,
+                                    dif_alert_handler_t *alert_handler);
+
+/**
  * A alert_handler interrupt request type.
  */
 typedef enum dif_alert_handler_irq {

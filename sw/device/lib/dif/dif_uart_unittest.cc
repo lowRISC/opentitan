@@ -55,12 +55,6 @@ class UartTest : public Test, public MmioTest {
   };
 };
 
-class InitTest : public UartTest {};
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_uart_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
-}
-
 class ConfigTest : public UartTest {};
 
 TEST_F(ConfigTest, NullArgs) {

@@ -290,18 +290,6 @@ typedef struct dif_otp_ctrl_status {
 } dif_otp_ctrl_status_t;
 
 /**
- * Creates a new handle for OTP.
- *
- * This function does not actuate the hardware.
- *
- * @param base_addr Hardware instantiation base address.
- * @param[out] otp Out param for the initialized handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_otp_ctrl_init(mmio_region_t base_addr, dif_otp_ctrl_t *otp);
-
-/**
  * Configures OTP with runtime information.
  *
  * This function should need to be called at most once for the lifetime of

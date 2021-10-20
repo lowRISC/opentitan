@@ -88,16 +88,6 @@ static void rstmgr_reset_info_clear(mmio_region_t base_addr) {
   mmio_region_write32(base_addr, RSTMGR_RESET_INFO_REG_OFFSET, UINT32_MAX);
 }
 
-dif_result_t dif_rstmgr_init(mmio_region_t base_addr, dif_rstmgr_t *handle) {
-  if (handle == NULL) {
-    return kDifBadArg;
-  }
-
-  handle->base_addr = base_addr;
-
-  return kDifOk;
-}
-
 dif_result_t dif_rstmgr_reset(const dif_rstmgr_t *handle) {
   if (handle == NULL) {
     return kDifBadArg;

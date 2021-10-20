@@ -27,23 +27,8 @@ class OtbnTest : public Test, public MmioTest {
                    std::numeric_limits<uint32_t>::max());
   }
 
-  mmio_region_t base_addr_ = dev().region();
-  dif_otbn_t dif_otbn_ = {
-      /* base_addr = */ base_addr_,
-  };
+  dif_otbn_t dif_otbn_ = {.base_addr = dev().region()};
 };
-
-class InitTest : public OtbnTest {};
-
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_otbn_init(base_addr_, nullptr), kDifBadArg);
-}
-
-TEST_F(InitTest, Default) {
-  ExpectDeviceReset();
-
-  EXPECT_EQ(dif_otbn_init(base_addr_, &dif_otbn_), kDifOk);
-}
 
 class ResetTest : public OtbnTest {};
 

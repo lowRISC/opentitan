@@ -23,17 +23,6 @@ class DifCsrngTest : public testing::Test, public mock_mmio::MmioTest {
   const dif_csrng_t csrng_ = {.base_addr = dev().region()};
 };
 
-class InitTest : public DifCsrngTest {};
-
-TEST_F(InitTest, BadArgs) {
-  EXPECT_EQ(dif_csrng_init(dev().region(), nullptr), kDifBadArg);
-}
-
-TEST_F(InitTest, InitOk) {
-  dif_csrng_t csrng;
-  EXPECT_EQ(dif_csrng_init(dev().region(), &csrng), kDifOk);
-}
-
 class ConfigTest : public DifCsrngTest {};
 
 TEST_F(ConfigTest, NullArgs) {
