@@ -12,8 +12,8 @@ use erased_serde::Serialize;
 use std::any::Any;
 use structopt::StructOpt;
 
-use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::app::TransportWrapper;
 
 #[derive(Debug, StructOpt)]
 /// The `hello world` command accepts an command option of `--cruel`.

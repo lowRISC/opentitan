@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::collection;
-use crate::io::gpio::{GpioPin, GpioError, PinDirection};
+use crate::io::gpio::{GpioError, GpioPin, PinDirection};
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
 use crate::util::parse_int::ParseInt;

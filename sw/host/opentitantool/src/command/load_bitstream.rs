@@ -9,8 +9,8 @@ use std::fs;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::transport::Capability;
 
 /// Read data from a SPI EEPROM.

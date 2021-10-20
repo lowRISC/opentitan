@@ -16,7 +16,10 @@ pub struct CW310GpioPin {
 
 impl CW310GpioPin {
     pub fn open(backend: Rc<RefCell<Backend>>, pinname: String) -> Result<Self> {
-        Ok(Self { device: backend, pinname })
+        Ok(Self {
+            device: backend,
+            pinname,
+        })
     }
 }
 
