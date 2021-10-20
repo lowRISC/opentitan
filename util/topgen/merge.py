@@ -740,11 +740,10 @@ def amend_resets(top, name_to_block):
             top_resets.mark_reset_shadowed(primary_reset['name'])
 
         # domain determination
-        for d in module["domain"]:
-            for r in block.clocking.items:
-                if r.reset:
-                    reset = module['reset_connections'][r.reset]
-                    top_resets.add_reset_domain(reset['name'], d)
+        for r in block.clocking.items:
+            if r.reset:
+                reset = module['reset_connections'][r.reset]
+                top_resets.add_reset_domain(reset['name'], reset['domain'])
 
         # This code is here to ensure if amend_clocks/resets switched order
         # everything would still work

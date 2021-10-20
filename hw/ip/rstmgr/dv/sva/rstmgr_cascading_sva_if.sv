@@ -113,12 +113,14 @@ interface rstmgr_cascading_sva_if (
   always_comb
     local_rst_n = {rstmgr_pkg::PowerDomains{resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]}};
 
-  for (genvar pd = 0; pd < rstmgr_pkg::PowerDomains; ++pd) begin : g_power_domains
-    // The AON reset triggers the various POR reset for the different clock domains through
-    // synchronizers.
-    `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst[pd],
-                      resets_o.rst_por_io_div4_n[pd], SyncCycles, clk_io_div4_i)
+   // The AON reset triggers the various POR reset for the different clock domains through
+   // synchronizers.
+   // The current system doesn ot have any consumers of domain 1 por_io_div4, and thus only domain 0
+   // cascading is checked here.
+   `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst[0],
+                     resets_o.rst_por_io_div4_n[0], SyncCycles, clk_io_div4_i)
 
+  for (genvar pd = 0; pd < rstmgr_pkg::PowerDomains; ++pd) begin : g_power_domains
     // The root lc reset is triggered either by the internal reset, or by the pwr_i.rst_lc_req
     // input. The latter is checked independently in pwrmgr_rstmgr_sva_if.
     `CASCADED_ASSERTS(CascadeLocalRstToLc, local_rst_n[pd] && !rst_lc_req[pd], rst_lc_src_n[pd],
