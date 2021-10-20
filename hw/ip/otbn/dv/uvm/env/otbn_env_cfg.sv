@@ -36,6 +36,15 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   // than generating memory transactions?
   int unsigned backdoor_load_pct = 50;
 
+  // How often should sequences enable interrupts?
+  int unsigned enable_interrupts_pct = 50;
+
+  // If a previous sequence triggered an interrupt, should we clear it again before we start?
+  int unsigned clear_irq_pct = 90;
+
+  // How often should we poll STATUS to detect completion, even though interrupts are enabled?
+  int unsigned poll_despite_interrupts_pct = 10;
+
   // The hierarchical scope of the DUT instance in the testbench. This is used when constructing the
   // DPI wrapper (in otbn_env::build_phase) to tell it where to find the DUT for backdoor loading
   // memories. The default value matches the block-level testbench, but it can be overridden in a

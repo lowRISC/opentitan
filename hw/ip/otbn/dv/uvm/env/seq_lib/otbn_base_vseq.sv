@@ -151,24 +151,58 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
 
     running_ = 1'b0;
-   endtask
+  endtask
 
   // The guts of the run_otbn task. Writes to the CMD register to start OTBN and polls the status
   // register until completion. On reset, this returns immediately.
   protected task _run_otbn();
     // Start OTBN by writing EXECUTE to the CMD register.
-    `uvm_info(`gfn, $sformatf("\n\t ----| Starting OTBN"), UVM_MEDIUM)
+    `uvm_info(`gfn, "\n\t ----| Starting OTBN", UVM_MEDIUM)
     csr_utils_pkg::csr_wr(ral.cmd, otbn_pkg::CmdExecute);
 
-    // Now wait until OTBN has finished
-    `uvm_info(`gfn, $sformatf("\n\t ----| Waiting for OTBN to finish"), UVM_MEDIUM)
-    csr_utils_pkg::csr_spinwait(.ptr(ral.status),
-                                .exp_data(otbn_pkg::StatusBusyExecute),
-                                .compare_op(CompareOpNe));
+    // Wait for OTBN to finish, either by polling or by waiting on the interrupt pins
+    if (_pick_use_interrupt()) begin
+      `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (interrupt)", UVM_MEDIUM)
+      wait_for_interrupt();
+    end else begin
+      `uvm_info(`gfn, "\n\t ----| Waiting for OTBN to finish (polling)", UVM_MEDIUM)
+      csr_utils_pkg::csr_spinwait(.ptr(ral.status),
+                                  .exp_data(otbn_pkg::StatusBusyExecute),
+                                  .compare_op(CompareOpNe));
+    end
 
-    `uvm_info(`gfn, $sformatf("\n\t ----| OTBN finished"), UVM_MEDIUM)
-
+    if (cfg.clk_rst_vif.rst_n) begin
+      `uvm_info(`gfn, "\n\t ----| OTBN finished", UVM_MEDIUM)
+    end else begin
+      `uvm_info(`gfn, "\n\t ----| OTBN reset", UVM_MEDIUM)
+    end
   endtask
+
+  // How should we wait until OTBN has finished?
+  //
+  // Use polling if the interrupt is disabled or if the interrupt pin is already high. If enabled,
+  // wait on the interrupt pin except occasionally (poll_despite_interrupts_pct). This exceptional
+  // case is to spot any weirdness in updating the STATUS register when interrupts are enabled.
+  protected function bit _pick_use_interrupt();
+    uvm_status_e peek_status;
+    uvm_reg_data_t peek_value;
+
+    // We can just use the RAL prediction for the enable register (since it's only updated by TL
+    // accesses).
+    if (ral.intr_enable.done.get() == 0) begin
+      return 1'b0;
+    end
+
+    // The interrupt is enabled, but maybe its state is already high. In that case, we can't use it
+    // to spot whether we've finished.
+    if (cfg.intr_vif.pins[0]) begin
+      return 1'b0;
+    end
+
+    // The interrupt is enabled and not currently triggered. Use the interrupt except
+    // poll_despite_interrupts_pct percent of the time.
+    return $urandom_range(100) > cfg.poll_despite_interrupts_pct;
+  endfunction
 
   // Monitor the bound-in loop controller interface to take action on loop warp events. Runs
   // forever, but is spawned by run_otbn(), which will kill it when the OTBN run completes or the
@@ -314,4 +348,10 @@ class otbn_base_vseq extends cip_base_vseq #(
     `DV_CHECK_FATAL(timed_out, "Failed to pick a working time-out")
   endtask
 
+  // Wait for (the one and only) interrupt to strike. Returns early on reset
+  task wait_for_interrupt();
+    if (cfg.clk_rst_vif.rst_n && !cfg.intr_vif.pins[0]) begin
+      @(negedge cfg.clk_rst_vif.rst_n or posedge cfg.intr_vif.pins[0]);
+    end
+  endtask
 endclass : otbn_base_vseq

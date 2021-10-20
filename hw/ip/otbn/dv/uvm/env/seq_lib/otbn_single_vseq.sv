@@ -19,10 +19,14 @@ class otbn_single_vseq extends otbn_base_vseq;
 
   task body();
     string elf_path = pick_elf_path();
+    bit    enable_interrupts = $urandom_range(100) < cfg.enable_interrupts_pct;
 
-    // Actually load the binary
+    // Load the binary and (if required) enable interrupts. These run in parallel
     `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
-    load_elf(elf_path, do_backdoor_load);
+    fork
+      load_elf(elf_path, do_backdoor_load);
+      cfg_interrupts(enable_interrupts);
+    join
 
     // We've loaded the binary. Run the processor to see what happens!
     run_otbn();
