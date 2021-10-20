@@ -105,6 +105,8 @@ virtual task glitch_shadowed_reset(ref dv_base_reg shadowed_csr[$]);
   foreach (shadowed_csr[i]) begin
     if (shadowed_csr[i].get_reset() != `gmv(shadowed_csr[i])) begin
       alert_name = shadowed_csr[i].get_storage_err_alert_name();
+      // Set alert_name manually because alert_handler module does not trigger alerts.
+      if (alert_name == "") alert_name = "fatal_err";
       predict_shadow_reg_status(.predict_storage_err(1));
       `uvm_info(`gfn, $sformatf("Expect reset storage error %0s", shadowed_csr[i].get_name()),
                 UVM_HIGH)
@@ -119,6 +121,7 @@ virtual task glitch_shadowed_reset(ref dv_base_reg shadowed_csr[$]);
   end else begin
     cfg.rst_shadowed_vif.drive_shadow_rst_pin(1);
     dut_init();
+    `uvm_info(`gfn, "toggle IP reset pin", UVM_HIGH)
   end
 
   // Check if shadow reset will trigger fatal storage error.
