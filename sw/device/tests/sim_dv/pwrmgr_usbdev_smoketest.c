@@ -14,6 +14,7 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
@@ -45,7 +46,7 @@ bool test_main(void) {
 
   const dif_pwrmgr_wakeup_reason_t exp_test_wakeup_reason = {
       .types = kDifPwrmgrWakeupTypeRequest,
-      .request_sources = kDifPwrmgrWakeupRequestSourceThree,
+      .request_sources = kDifPwrmgrWakeupRequestSourceFour,
   };
 
   bool low_power_exit = false;
@@ -66,11 +67,14 @@ bool test_main(void) {
     usbdev_wake(true);
     usbdev_force_suspend();
     usbdev_force_dx_pullup(kDpSel, true);
-    usbdev_force_dx_pullup(kDnSel, true);
+    usbdev_force_dx_pullup(kDnSel, false);
+
+    // give the hardware a chance to recognize the wakeup values are the same
+    usleep(20);  // 20us
 
     // Enable low power on the next WFI with default settings.
     CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
-        &pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceThree));
+        &pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceFour));
     CHECK_DIF_OK(dif_pwrmgr_set_domain_config(
         &pwrmgr, kDifPwrmgrDomainOptionUsbClockInActivePower));
     CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(&pwrmgr, kDifToggleEnabled));
