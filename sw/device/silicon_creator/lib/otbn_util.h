@@ -16,6 +16,16 @@ extern "C" {
 #endif
 
 /**
+ * Constants related to OTBN wide words
+ */
+enum {
+  /* Length of an OTBN wide word in bits */
+  kOtbnWideWordNumBits = 256,
+  /* Length of an OTBN wide word in words */
+  kOtbnWideWordNumWords = kOtbnWideWordNumBits / (sizeof(uint32_t) * 8),
+};
+
+/**
  * Information about an embedded OTBN application image.
  *
  * All pointers reference data in the normal CPU address space.
