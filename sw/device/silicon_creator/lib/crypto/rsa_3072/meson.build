@@ -4,7 +4,8 @@
 
 # Create otbn sources dictionary
 sw_lib_crypto_rsa_3072_otbn_sources = {
-  'rsa_3072': files(
+  'rsa_3072_verify': files(
+    'rsa_3072_verify.s',
     'rsa_3072.s',
   ),
 }
@@ -59,3 +60,17 @@ foreach app_name, app_sources : sw_lib_crypto_rsa_3072_otbn_sources
   )
 
 endforeach
+
+# C wrapper for RSA-3072 verify
+sw_silicon_creator_lib_crypto_rsa_3072_verify = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_crypto_rsa_3072_verify',
+    sources: [
+      'rsa_3072_verify.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_otbn_util,
+      sw_lib_crypto_rsa_3072_otbn['rsa_3072_verify']['rv32embed_dependency'],
+    ],
+  ),
+)
