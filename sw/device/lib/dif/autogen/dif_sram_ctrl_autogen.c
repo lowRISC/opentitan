@@ -4,6 +4,6 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_sram_ctrl.h"
+#include "sw/device/lib/dif/autogen/dif_sram_ctrl_autogen.h"
 
 #include "sram_ctrl_regs.h"  // Generated.

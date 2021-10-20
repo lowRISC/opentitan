@@ -4,7 +4,7 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_entropy_src.h"
+#include "sw/device/lib/dif/autogen/dif_entropy_src_autogen.h"
 
 #include "entropy_src_regs.h"  // Generated.
 

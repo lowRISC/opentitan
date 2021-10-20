@@ -4,7 +4,7 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
 
 #include "kmac_regs.h"  // Generated.
 

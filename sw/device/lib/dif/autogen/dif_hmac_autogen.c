@@ -4,7 +4,7 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_hmac.h"
+#include "sw/device/lib/dif/autogen/dif_hmac_autogen.h"
 
 #include "hmac_regs.h"  // Generated.
 

@@ -4,7 +4,7 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
 
 #include "keymgr_regs.h"  // Generated.
 

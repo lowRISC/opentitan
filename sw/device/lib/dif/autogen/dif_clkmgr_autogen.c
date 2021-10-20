@@ -4,6 +4,6 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_clkmgr.h"
+#include "sw/device/lib/dif/autogen/dif_clkmgr_autogen.h"
 
 #include "clkmgr_regs.h"  // Generated.

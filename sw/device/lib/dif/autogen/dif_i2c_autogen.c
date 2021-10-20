@@ -4,7 +4,7 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_i2c.h"
+#include "sw/device/lib/dif/autogen/dif_i2c_autogen.h"
 
 #include "i2c_regs.h"  // Generated.
 

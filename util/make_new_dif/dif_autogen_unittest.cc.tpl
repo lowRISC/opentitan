@@ -17,7 +17,7 @@
 
 // This file is auto-generated.
 
-#include "sw/device/lib/dif/dif_${ip.name_snake}.h"
+#include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
