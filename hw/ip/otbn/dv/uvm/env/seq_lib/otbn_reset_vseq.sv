@@ -12,50 +12,23 @@ class otbn_reset_vseq extends otbn_base_vseq;
   `uvm_object_new
 
   task body();
-    int max_cycles;
-    string elf_path;
-
-    elf_path = pick_elf_path();
-    max_cycles = 1000;
+    string elf_path = pick_elf_path();
 
     for (int i = 0; i < num_iters; i++) begin
-      int cycle_counter;
-      int reset_wait;
-      bit timed_out = 1'b0;
+      int unsigned longest_run_mirror;
 
+      // Load up the binary. Since we always load the same binary, we take a copy of longest_run_,
+      // which would otherwise be splatted by load_elf.
+      longest_run_mirror = longest_run_;
       `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
       load_elf(elf_path, 1'b1);
+      longest_run_ = longest_run_mirror;
 
-      // Guess the number of cycles until reset. The first time around, we pick any number between 1
-      // and 1,000. After that, we replace "1,000" with "75% of the longest we've seen the sequence
-      // run before terminating". This should avoid problems where we keep resetting after the
-      // sequence has finished.
-      reset_wait = $urandom_range(max_cycles * 3 / 4) + 1;
+      // Start OTBN. When the task returns, we'll be part-way through a run.
+      start_running_otbn(.check_end_addr(1'b1));
 
-      fork
-        run_otbn();
-        begin
-          repeat (reset_wait) begin
-            @(cfg.clk_rst_vif.cb);
-            cycle_counter++;
-          end
-          timed_out = 1'b1;
-        end
-      join_any
-
-      // When we get here, we know that either the OTBN sequence finished (in which case timed_out =
-      // 1'b0) or we timed out. If the OTBN sequence finished, kill the counter process. We don't
-      // kill the run_otbn task: it will spot a reset and terminate on its own.
-      if (!timed_out) begin
-        // If the OTBN sequence finished, update max_cycles. cycle_counter should always be less
-        // than max_cycles (because of how we calculate reset_wait).
-        `DV_CHECK_FATAL(cycle_counter < max_cycles);
-        max_cycles = cycle_counter;
-        disable fork;
-      end
-
-      // If this isn't the last iteration, or if we timed out, reset the DUT
-      if (timed_out || i + 1 < num_iters) begin
+      // If this isn't the last iteration, reset the DUT
+      if (i + 1 < num_iters) begin
         dut_init("HARD");
       end
     end
