@@ -378,7 +378,7 @@ class FlowCfg():
             deploy.extend(item.deploy)
 
         if not deploy:
-            log.fatal("Nothing to run!")
+            log.error("Nothing to run!")
             sys.exit(1)
 
         return Scheduler(deploy, get_launcher_cls()).run()

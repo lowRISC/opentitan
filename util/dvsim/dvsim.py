@@ -692,7 +692,7 @@ def main():
         sys.exit(0)
 
     # Deploy the builds and runs
-    if args.items != []:
+    if args.items:
         # Create deploy objects.
         cfg.create_deploy_objects()
         results = cfg.deploy_objects()
@@ -705,7 +705,8 @@ def main():
             cfg.publish_results()
 
     else:
-        log.info("No items specified to be run.")
+        log.error("Nothing to run!")
+        sys.exit(1)
 
     # Exit with non-zero status if there were errors or failures.
     if cfg.has_errors():
