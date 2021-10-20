@@ -978,3 +978,35 @@ test('dif_flash_ctrl_unittest', executable(
   ),
   suite: 'dif',
 )
+
+# PATTGEN DIF library
+sw_lib_dif_pattgen = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_pattgen',
+    sources: [
+      hw_ip_pattgen_reg_h,
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_autogen_pattgen,
+    ],
+  )
+)
+
+test('dif_pattgen_unittest', executable(
+    'dif_pattgen_unittest',
+    sources: [
+      'autogen/dif_pattgen_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_pattgen_autogen.c',
+      hw_ip_pattgen_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)

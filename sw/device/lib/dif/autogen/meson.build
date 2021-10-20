@@ -240,6 +240,20 @@ sw_lib_dif_autogen_otp_ctrl = declare_dependency(
   )
 )
 
+# Autogen PATTGEN DIF library
+sw_lib_dif_autogen_pattgen = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_pattgen',
+    sources: [
+      hw_ip_pattgen_reg_h,
+      'dif_pattgen_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen Pin Multiplexer DIF library
 sw_lib_dif_autogen_pinmux = declare_dependency(
   link_with: static_library(
