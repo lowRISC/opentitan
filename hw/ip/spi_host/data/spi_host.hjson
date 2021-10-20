@@ -353,14 +353,40 @@
       ]
     },
     { window: {
-        name: "DATA",
+        name: "RXDATA",
         items: "1",
         validbits: "32",
         byte-write: "true",
-        desc: '''SPI Transmit and Receive Data.
+        desc: '''SPI Receive Data.
 
-                 Write data to this window to place it in the TXFIFO.
-                 Reads from this register pull data from the RXFIFO.
+                 Reads from this window pull data from the RXFIFO.
+                 Byte-enables are supported for writes.
+
+                 The serial order of bit transmission
+                 is chosen to match SPI flash devices. Individual bytes
+                 are always transmitted with the most significant bit first.
+                 Multi-byte writes are also supported, and if ByteOrder = 0,
+                 the first byte received is packed in the MSB of !!RXDATA.
+                 For some processor architectures, this could lead to shuffling
+                 of flash data as compared to how it is written in memory.
+                 In which case, choosing ByteOrder = 1 can reverse the
+                 byte-order of multi-byte data read, causing the first byte
+                 received to be packed into the LSB of !!RXDATA. (Though within
+                 each byte the most significant bit is always pulled
+                 from the bus first.)
+                 '''
+        swaccess: "ro",
+        unusual: "false"
+      }
+    },
+    { window: {
+        name: "TXDATA",
+        items: "1",
+        validbits: "32",
+        byte-write: "true",
+        desc: '''SPI Transmit Data.
+
+                 Data written to this window is placed into the TXFIFO.
                  Byte-enables are supported for writes.
 
                  The serial order of bit transmission
