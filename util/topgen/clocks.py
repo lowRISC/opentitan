@@ -340,3 +340,14 @@ class Clocks:
             for clk_name in grp.clocks.keys():
                 c2g[clk_name] = grp
         return c2g
+
+    def all_derived_srcs(self) -> List[str]:
+        '''Return a list of all the clocks used as the source for derived clocks'''
+
+        srcs = []
+
+        for derived in self.derived_srcs.values():
+            if derived.src.name not in srcs:
+                srcs.append(derived.src.name)
+
+        return srcs

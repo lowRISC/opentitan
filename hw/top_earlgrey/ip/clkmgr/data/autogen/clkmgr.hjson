@@ -81,18 +81,39 @@
       package: "lc_ctrl_pkg",
     },
 
-    { struct:  "lc_tx",
+    { struct:  "mubi4",
       type:    "uni",
-      name:    "ast_clk_byp_req",
+      name:    "io_clk_byp_req",
       act:     "req",
-      package: "lc_ctrl_pkg",
+      package: "prim_mubi_pkg",
     },
 
-    { struct:  "lc_tx",
+    { struct:  "mubi4",
       type:    "uni",
-      name:    "ast_clk_byp_ack",
+      name:    "io_clk_byp_ack",
       act:     "rcv",
-      package: "lc_ctrl_pkg",
+      package: "prim_mubi_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "all_clk_byp_req",
+      act:     "req",
+      package: "prim_mubi_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "all_clk_byp_ack",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "hi_speed_sel",
+      act:     "req",
+      package: "",
     },
 
     { struct:  "lc_tx",
@@ -162,25 +183,28 @@
         {
           bits: "3:0",
           name: "SEL",
+          mubi: true,
           desc: '''
-            A value of b1010 selects external clock as clock for the system.
+            A value of kMultiBitBool4True selects external clock as clock for the system.
             While this register can always be programmed, it only takes effect when the system is in
             life cycle TEST or RMA states when DFT is enabled.
 
             All other values are invalid and keep clocks on internal sources.
           '''
-          resval: "0x5"
+          resval: "false"
         },
         {
           bits: "7:4",
-          name: "STEP_DOWN",
+          name: "LOW_SPEED_SEL",
+          mubi: true,
           desc: '''
-            A value of b1010 steps down the clock dividers by a factor of 2 if the !!EXTCLK_CTRL.SEL
-            field is also set to b1010.
+            A value of kMultiBitBool4True selects low speed external clocks.
+            All other values selects nominal speed clocks.
 
-            All other values have no effect.
+            Note this field only has an effect when the !!EXTCLK_CTRL.SEL field is set to
+            kMultiBitBool4True.
           '''
-          resval: "0x5"
+          resval: false
         }
       ]
     },
