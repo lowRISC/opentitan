@@ -46,6 +46,21 @@ module tb;
 
   `DV_ALERT_IF_CONNECT
 
+  // TODO(#8758): This disables an assertion that fires if we happen to drop the edn_rst_n line
+  // before rst_n when the EDN is providing data to the DUT. The proper fix is either to change the
+  // design, change the assertion, or change the DV code so this doesn't happen.
+  always @(negedge edn_rst_n or posedge edn_rst_n) begin
+    if (!edn_rst_n) begin
+      $assertoff(0,
+                 dut.u_prim_edn_rnd_req.u_prim_sync_reqack_data.
+                 gen_assert_data_dst2src.SyncReqAckDataHoldDst2Src);
+    end else begin
+      $asserton(0,
+                dut.u_prim_edn_rnd_req.u_prim_sync_reqack_data.
+                gen_assert_data_dst2src.SyncReqAckDataHoldDst2Src);
+    end
+  end
+
   // Mock up EDN & OTP that just instantly return fixed data when requested
   // TODO: Provide proper EDN and OTP agents
 
