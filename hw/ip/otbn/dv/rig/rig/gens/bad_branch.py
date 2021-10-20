@@ -110,7 +110,7 @@ class BadBranch(SnippetGen):
         elif mode <= 3 and program.imem_size <= max_addr:
             tgt_addr = max_addr
         else:
-            assert mode <= 3
+            assert mode <= 4
             tgt_addr = random.randrange(min_addr + 2, max_addr, 4)
         off_enc = self.imm_op_type.op_val_to_enc_val(tgt_addr, model.pc)
 
