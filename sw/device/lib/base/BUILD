@@ -19,6 +19,7 @@ cc_library(
         "macros.h",
         "memory.h",
         "mmio.h",
+        "multibits.h",
         "stdasm.h",
     ],
     copts = [
