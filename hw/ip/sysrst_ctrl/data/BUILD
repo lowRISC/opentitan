@@ -7,15 +7,8 @@ package(default_visibility = ["//visibility:public"])
 load("//rules:autogen.bzl", "autogen_hjson_header")
 
 autogen_hjson_header(
-    name = "rv_plic_regs",
+    name = "sysrst_ctrl_regs",
     srcs = [
-        "ip_autogen/rv_plic/data/rv_plic.hjson",
-    ],
-)
-
-autogen_hjson_header(
-    name = "alert_handler_regs",
-    srcs = [
-        "ip_autogen/alert_handler/data/alert_handler.hjson",
+        "sysrst_ctrl.hjson",
     ],
 )

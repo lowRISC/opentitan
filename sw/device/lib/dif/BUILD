@@ -12,6 +12,38 @@ cc_library(
 )
 
 cc_library(
+    name = "adc_ctrl",
+    hdrs = [
+        "autogen/dif_adc_ctrl_autogen.c",
+        "autogen/dif_adc_ctrl_autogen.h",
+    ],
+    deps = [
+        ":base",
+        "//sw/device/lib/base",
+        "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
+    ]
+)
+
+cc_test(
+    name = "adc_ctrl_unittest",
+    srcs = [
+        "autogen/dif_adc_ctrl_autogen.c",
+        "autogen/dif_adc_ctrl_autogen.h",
+        "autogen/dif_adc_ctrl_autogen_unittest.cc",
+    ],
+    defines = [
+        "MOCK_MMIO=1",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "@googletest//:gtest_main",
+    ]
+)
+
+cc_library(
     name = "clkmgr",
     srcs = [
         "autogen/dif_clkmgr_autogen.c",
@@ -29,12 +61,12 @@ cc_library(
 cc_test(
     name = "clkmgr_unittest",
     srcs = [
+        "dif_clkmgr_unittest.cc",
         "autogen/dif_clkmgr_autogen.c",
         "autogen/dif_clkmgr_autogen.h",
         "autogen/dif_clkmgr_autogen_unittest.cc",
         "dif_clkmgr.c",
         "dif_clkmgr.h",
-        "dif_clkmgr_unittest.cc",
     ],
     defines = [
         "MOCK_MMIO=1",
@@ -165,12 +197,15 @@ cc_test(
 cc_library(
     name = "rv_plic",
     srcs = [
+        "autogen/dif_rv_plic_autogen.c",
+        "autogen/dif_rv_plic_autogen.h",
         "dif_rv_plic.c",
     ],
     hdrs = [
         "dif_rv_plic.h",
     ],
     deps = [
+        ":base",
         "//hw/top_earlgrey:rv_plic_regs",
         "//sw/device/lib/base",
     ],
@@ -179,6 +214,9 @@ cc_library(
 cc_test(
     name = "rv_plic_unittest",
     srcs = [
+        "autogen/dif_rv_plic_autogen.c",
+        "autogen/dif_rv_plic_autogen.h",
+        "autogen/dif_rv_plic_autogen_unittest.cc",
         "dif_rv_plic.c",
         "dif_rv_plic.h",
         "dif_rv_plic_unittest.cc",
@@ -187,6 +225,7 @@ cc_test(
         "MOCK_MMIO=1",
     ],
     deps = [
+        ":base",
         "//hw/top_earlgrey:rv_plic_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
@@ -236,12 +275,15 @@ cc_test(
 cc_library(
     name = "spi_device",
     srcs = [
+        "autogen/dif_spi_device_autogen.c",
+        "autogen/dif_spi_device_autogen.h",
         "dif_spi_device.c",
     ],
     hdrs = [
         "dif_spi_device.h",
     ],
     deps = [
+        ":base",
         "//hw/ip/spi_device/data:spi_device_regs",
         "//sw/device/lib/base",
     ],
@@ -250,6 +292,9 @@ cc_library(
 cc_test(
     name = "spi_device_unittest",
     srcs = [
+        "autogen/dif_spi_device_autogen.c",
+        "autogen/dif_spi_device_autogen.h",
+        "autogen/dif_spi_device_autogen_unittest.cc",
         "dif_spi_device.c",
         "dif_spi_device.h",
         "dif_spi_device_unittest.cc",
@@ -258,7 +303,40 @@ cc_test(
         "MOCK_MMIO=1",
     ],
     deps = [
+        ":base",
         "//hw/ip/spi_device/data:spi_device_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "spi_host",
+    srcs = [
+        "autogen/dif_spi_host_autogen.c",
+        "autogen/dif_spi_host_autogen.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/spi_host/data:spi_host_regs",
+        "//sw/device/lib/base",
+    ],
+)
+
+cc_test(
+    name = "spi_host_unittest",
+    srcs = [
+        "autogen/dif_spi_host_autogen.c",
+        "autogen/dif_spi_host_autogen.h",
+        "autogen/dif_spi_host_autogen_unittest.cc",
+    ],
+    defines = [
+        "MOCK_MMIO=1",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/spi_host/data:spi_host_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
         "@googletest//:gtest_main",
@@ -268,12 +346,15 @@ cc_test(
 cc_library(
     name = "rv_timer",
     srcs = [
+        "autogen/dif_rv_timer_autogen.c",
+        "autogen/dif_rv_timer_autogen.h",
         "dif_rv_timer.c",
     ],
     hdrs = [
         "dif_rv_timer.h",
     ],
     deps = [
+        ":base",
         "//hw/ip/rv_timer/data:rv_timer_regs",
         "//sw/device/lib/base",
     ],
@@ -282,6 +363,9 @@ cc_library(
 cc_test(
     name = "rv_timer_unittest",
     srcs = [
+        "autogen/dif_rv_timer_autogen.c",
+        "autogen/dif_rv_timer_autogen.h",
+        "autogen/dif_rv_timer_autogen_unittest.cc",
         "dif_rv_timer.c",
         "dif_rv_timer.h",
         "dif_rv_timer_unittest.cc",
@@ -290,6 +374,7 @@ cc_test(
         "MOCK_MMIO=1",
     ],
     deps = [
+        ":base",
         "//hw/ip/rv_timer/data:rv_timer_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
@@ -339,14 +424,38 @@ cc_test(
 cc_library(
     name = "usbdev",
     srcs = [
+        "autogen/dif_usbdev_autogen.c",
+        "autogen/dif_usbdev_autogen.h",
         "dif_usbdev.c",
     ],
     hdrs = [
         "dif_usbdev.h",
     ],
     deps = [
+        ":base",
         "//hw/ip/usbdev/data:usbdev_regs",
         "//sw/device/lib/base",
+    ],
+)
+
+cc_test(
+    name = "usbdev_unittest",
+    srcs = [
+        "autogen/dif_usbdev_autogen.c",
+        "autogen/dif_usbdev_autogen.h",
+        "autogen/dif_usbdev_autogen_unittest.cc",
+        "dif_usbdev.c",
+        "dif_usbdev.h",
+    ],
+    defines = [
+        "MOCK_MMIO=1",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/usbdev/data:usbdev_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -391,12 +500,15 @@ cc_test(
 cc_library(
     name = "kmac",
     srcs = [
+        "autogen/dif_kmac_autogen.c",
+        "autogen/dif_kmac_autogen.h",
         "dif_kmac.c",
     ],
     hdrs = [
         "dif_kmac.h",
     ],
     deps = [
+        ":base",
         "//hw/ip/kmac/data:kmac_regs",
         "//sw/device/lib/base",
     ],
@@ -405,6 +517,9 @@ cc_library(
 cc_test(
     name = "kmac_unittest",
     srcs = [
+        "autogen/dif_kmac_autogen.c",
+        "autogen/dif_kmac_autogen.h",
+        "autogen/dif_kmac_autogen_unittest.cc",
         "dif_kmac.c",
         "dif_kmac.h",
         "dif_kmac_unittest.cc",
@@ -413,6 +528,7 @@ cc_test(
         "MOCK_MMIO=1",
     ],
     deps = [
+        ":base",
         "//hw/ip/kmac/data:kmac_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
@@ -510,7 +626,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip/alert_handler/data/autogen:alert_handler_regs",
+        "//hw/top_earlgrey:alert_handler_regs",
         "//sw/device/lib/base",
     ],
 )
@@ -530,7 +646,7 @@ cc_test(
     ],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip/alert_handler/data/autogen:alert_handler_regs",
+        "//hw/top_earlgrey:alert_handler_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
         "@googletest//:gtest_main",
@@ -655,6 +771,38 @@ cc_test(
 )
 
 cc_library(
+    name = "pattgen",
+    srcs = [
+        "autogen/dif_pattgen_autogen.c",
+        "autogen/dif_pattgen_autogen.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/pattgen/data:pattgen_regs",
+        "//sw/device/lib/base",
+    ],
+)
+
+cc_test(
+    name = "pattgen_unittest",
+    srcs = [
+        "autogen/dif_pattgen_autogen.c",
+        "autogen/dif_pattgen_autogen.h",
+        "autogen/dif_pattgen_autogen_unittest.cc",
+    ],
+    defines = [
+        "MOCK_MMIO=1",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/pattgen/data:pattgen_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "lc_ctrl",
     srcs = [
         "autogen/dif_lc_ctrl_autogen.c",
@@ -696,12 +844,15 @@ cc_test(
 cc_library(
     name = "aon_timer",
     srcs = [
+        "autogen/dif_aon_timer_autogen.c",
+        "autogen/dif_aon_timer_autogen.h",
         "dif_aon_timer.c",
     ],
     hdrs = [
         "dif_aon_timer.h",
     ],
     deps = [
+        ":base",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//sw/device/lib/base",
     ],
@@ -710,6 +861,9 @@ cc_library(
 cc_test(
     name = "aon_timer_unittest",
     srcs = [
+        "autogen/dif_aon_timer_autogen.c",
+        "autogen/dif_aon_timer_autogen.h",
+        "autogen/dif_aon_timer_autogen_unittest.cc",
         "dif_aon_timer.c",
         "dif_aon_timer.h",
         "dif_aon_timer_unittest.cc",
@@ -718,6 +872,7 @@ cc_test(
         "MOCK_MMIO=1",
     ],
     deps = [
+        ":base",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
@@ -758,6 +913,38 @@ cc_test(
     deps = [
         ":base",
         "//hw/ip/entropy_src/data:entropy_src_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "flash_ctrl",
+    srcs = [
+        "autogen/dif_flash_ctrl_autogen.c",
+        "autogen/dif_flash_ctrl_autogen.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//sw/device/lib/base",
+    ],
+)
+
+cc_test(
+    name = "flash_ctrl_unittest",
+    srcs = [
+        "autogen/dif_flash_ctrl_autogen.c",
+        "autogen/dif_flash_ctrl_autogen.h",
+        "autogen/dif_flash_ctrl_autogen_unittest.cc",
+    ],
+    defines = [
+        "MOCK_MMIO=1",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
         "@googletest//:gtest_main",
@@ -820,6 +1007,27 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "pinmux_unittest",
+    srcs = [
+        "autogen/dif_pinmux_autogen.c",
+        "autogen/dif_pinmux_autogen.h",
+        "autogen/dif_pinmux_autogen_unittest.cc",
+        "dif_pinmux.c",
+        "dif_pinmux.h",
+    ],
+    defines = [
+        "MOCK_MMIO=1",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/pinmux/data:pinmux_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "sram_ctrl",
     srcs = [
@@ -834,5 +1042,59 @@ cc_library(
         ":base",
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//sw/device/lib/base",
+    ],
+)
+
+cc_test(
+    name = "sram_ctrl_unittest",
+    srcs = [
+        "autogen/dif_sram_ctrl_autogen.c",
+        "autogen/dif_sram_ctrl_autogen.h",
+        "autogen/dif_sram_ctrl_autogen_unittest.cc",
+        "dif_sram_ctrl.c",
+        "dif_sram_ctrl.h",
+        "dif_sram_ctrl_unittest.cc",
+    ],
+    defines = [
+        "MOCK_MMIO=1",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "sysrst_ctrl",
+    srcs = [
+        "autogen/dif_sysrst_ctrl_autogen.c",
+        "autogen/dif_sysrst_ctrl_autogen.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_regs",
+        "//sw/device/lib/base",
+    ],
+)
+
+cc_test(
+    name = "sysrst_ctrl_unittest",
+    srcs = [
+        "autogen/dif_sysrst_ctrl_autogen.c",
+        "autogen/dif_sysrst_ctrl_autogen.h",
+        "autogen/dif_sysrst_ctrl_autogen_unittest.cc",
+    ],
+    defines = [
+        "MOCK_MMIO=1",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "@googletest//:gtest_main",
     ],
 )
