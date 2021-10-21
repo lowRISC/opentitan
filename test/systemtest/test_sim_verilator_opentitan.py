@@ -20,8 +20,8 @@ class VerilatorSimOpenTitan:
                  rom_vmem_path: Path,
                  otp_img_path: Path,
                  work_dir: Path,
-                 boot_timeout: int = 120,
-                 test_timeout: int = 600):
+                 boot_timeout: int = 4*60,
+                 test_timeout: int = 20*60):
         """ A verilator simulation of an OpenTitan toplevel """
         assert sim_path.is_file()
         self._sim_path = sim_path
