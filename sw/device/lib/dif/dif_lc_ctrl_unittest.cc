@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
 
 #include "lc_ctrl_regs.h"  // Generated.
@@ -165,21 +166,21 @@ TEST_F(AlertTest, NullArgs) {
 class MutexTest : public LcCtrlTest {};
 
 TEST_F(MutexTest, Acquire) {
-  EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, 0xa5);
-  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, 0xa5);
+  EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
+  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
   EXPECT_EQ(dif_lc_ctrl_mutex_try_acquire(&lc_), kDifOk);
 
-  EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, 0xa5);
-  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, 0);
+  EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
+  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8False);
   EXPECT_EQ(dif_lc_ctrl_mutex_try_acquire(&lc_), kDifUnavailable);
 }
 
 TEST_F(MutexTest, Release) {
-  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, 0xa5);
-  EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, 0);
+  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
+  EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8False);
   EXPECT_EQ(dif_lc_ctrl_mutex_release(&lc_), kDifOk);
 
-  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, 0);
+  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8False);
   EXPECT_EQ(dif_lc_ctrl_mutex_release(&lc_), kDifError);
 }
 

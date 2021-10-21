@@ -5,23 +5,9 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/multibits.h"
 
 #include "lc_ctrl_regs.h"  // Generated.
-
-enum {
-  /**
-   * To claim the hardware mutex, SW can write 0xa5 to register
-   * `CLAIM_TRANSITION_IF`. See
-   * https://docs.opentitan.org/hw/ip/lc_ctrl/doc/index.html#Reg_claim_transition_if
-   * for details.
-   */
-  kLcCtrlMutexAcquire = 0xa5,
-  /**
-   * To release the hardware mutex, SW can write 0 to register
-   * `CLAIM_TRANSITION_IF`.
-   */
-  kLcCtrlMutexRelease = 0,
-};
 
 dif_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
                                    dif_lc_ctrl_state_t *state) {
@@ -263,12 +249,12 @@ dif_result_t dif_lc_ctrl_mutex_try_acquire(const dif_lc_ctrl_t *lc) {
   }
 
   mmio_region_write32(lc->base_addr, LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET,
-                      kLcCtrlMutexAcquire);
+                      kMultiBitBool8True);
   uint32_t reg =
       mmio_region_read32(lc->base_addr, LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET);
-  // If the register is zero, that means we failed to take the mutex for
-  // whatever reason.
-  if (reg == kLcCtrlMutexRelease) {
+  // If the register is not `kMultiBitBool8True`, that means we failed to take
+  // the mutex for whatever reason.
+  if (reg != kMultiBitBool8True) {
     return kDifUnavailable;
   } else {
     return kDifOk;
@@ -282,13 +268,13 @@ dif_result_t dif_lc_ctrl_mutex_release(const dif_lc_ctrl_t *lc) {
 
   uint32_t reg =
       mmio_region_read32(lc->base_addr, LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET);
-  if (reg == kLcCtrlMutexRelease) {
+  if (reg != kMultiBitBool8True) {
     // We're not holding the mutex, which is a programmer error.
     return kDifError;
   }
 
   mmio_region_write32(lc->base_addr, LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET,
-                      kLcCtrlMutexRelease);
+                      kMultiBitBool8False);
   return kDifOk;
 }
 
