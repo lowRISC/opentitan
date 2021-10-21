@@ -25,10 +25,10 @@ package pwrmgr_pkg;
   parameter int NumSwRstReq = 1;
 
   // position of escalation request
-  parameter int HwResetWidth = pwrmgr_reg_pkg::NumRstReqs + IntReqLastIdx;
+  parameter int HwResetWidth = pwrmgr_reg_pkg::NumRstReqs + int'(IntReqLastIdx);
   parameter int TotalResetWidth = HwResetWidth + NumSwRstReq;
-  parameter int ResetMainPwrIdx = pwrmgr_reg_pkg::NumRstReqs + IntReqMainPwr;
-  parameter int ResetEscIdx = pwrmgr_reg_pkg::NumRstReqs + IntReqEsc;
+  parameter int ResetMainPwrIdx = pwrmgr_reg_pkg::NumRstReqs + int'(IntReqMainPwr);
+  parameter int ResetEscIdx = pwrmgr_reg_pkg::NumRstReqs + int'(IntReqEsc);
   parameter int ResetSwReqIdx = TotalResetWidth - 1;
 
   // pwrmgr to ast
