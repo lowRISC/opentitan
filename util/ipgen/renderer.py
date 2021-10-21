@@ -203,7 +203,7 @@ class IpDescriptionOnlyRenderer(IpTemplateRendererBase):
             with open(hjson_path, 'r') as f:
                 return f.read()
         except FileNotFoundError:
-            raise FileNotFoundError(
+            raise TemplateRenderError(
                 "Neither a IP description template at {}, "
                 "nor an IP description at {} exist!".format(
                     hjson_tpl_path, hjson_path))
