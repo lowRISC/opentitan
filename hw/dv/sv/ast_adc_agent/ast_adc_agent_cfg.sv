@@ -18,7 +18,7 @@ class ast_adc_agent_cfg extends dv_base_agent_cfg;
 
   `uvm_object_new
 
-  // Defaults 
+  // Defaults
   constraint defaults_c {
     soft resp_dly_min == 0;
     soft resp_dly_max == 25;

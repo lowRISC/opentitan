@@ -43,15 +43,15 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
       seq_item_port.get_next_item(req);
       accept_tr(req);
       `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
-      
+
       if(req.channel < AdcChannels) begin
         // Put request on the queue if there is room
         // otherwise wait
         wait(m_active_requests[req.channel].size() < MaxOutstandingTrans);
-        m_active_requests[req.channel].push_back(req); 
+        m_active_requests[req.channel].push_back(req);
       end
-      else begin // Out of range 
-        `uvm_error(get_full_name(), 
+      else begin // Out of range
+        `uvm_error(get_full_name(),
           $sformatf("Invalid channel in request %0d maximum %0d", req.channel, AdcChannels-1))
       end
 
@@ -75,13 +75,13 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
         @(cfg.vif.driver_cb);
       end
 
-      // Wait for channel_sel[x] asserted 
-      while((cfg.vif.driver_cb.adc_o.pd === 0) && 
+      // Wait for channel_sel[x] asserted
+      while((cfg.vif.driver_cb.adc_o.pd === 0) &&
         ((|cfg.vif.driver_cb.adc_o.channel_sel) !== 1)) begin
         driver_msg("Wait Selected");
         @(cfg.vif.driver_cb);
       end
-      
+
       // Start again if power goes down
       if(cfg.vif.driver_cb.adc_o.pd !== 0)
         continue;
@@ -90,7 +90,7 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
       m_channel = $clog2(cfg.vif.driver_cb.adc_o.channel_sel);
 
       driver_msg($sformatf("Selected %0d waiting random delay", m_channel));
-      
+
       // Random delay
       // Maximum and minimum delays defined in config object
       repeat($urandom_range(cfg.resp_dly_max, cfg.resp_dly_min))
@@ -100,9 +100,9 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
         driver_msg($sformatf("Selected %0d waiting for request", m_channel));
       end
 
-      // wait for a request for this channel 
-      while((!m_active_requests[m_channel].size()) && 
-        (cfg.vif.driver_cb.adc_o.pd === 0)) begin       
+      // wait for a request for this channel
+      while((!m_active_requests[m_channel].size()) &&
+        (cfg.vif.driver_cb.adc_o.pd === 0)) begin
         @(cfg.vif.driver_cb);
       end
 
@@ -111,7 +111,7 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
           drive_req = m_active_requests[m_channel].pop_front();
 
         if(drive_req != null) begin
-          
+
           // Drive the interface
           cfg.vif.driver_cb.adc_i <= '{data: drive_req.data, data_valid:1};
 
@@ -121,7 +121,7 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
       end
 
       // Wait for channel_sel to go inactive
-      while((cfg.vif.driver_cb.adc_o.pd === 0) && 
+      while((cfg.vif.driver_cb.adc_o.pd === 0) &&
         ((|cfg.vif.driver_cb.adc_o.channel_sel) === 1)) begin
         @(cfg.vif.driver_cb);
       end
@@ -143,6 +143,6 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
       drive_req = null;
 
     end
-  endtask 
+  endtask
 
 endclass
