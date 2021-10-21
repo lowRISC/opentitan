@@ -44,13 +44,30 @@ module rstmgr_leaf_rst
     .clk_o(leaf_rst_o)
   );
 
+  // once software requests a reset, hold on to the request until all the following
+  // are true
+  // 1. software de-asserts its request
+  // 2. the de-asserted request gets through the synchronization pipeline
+  // 3. there is currently a captured reset request
+
+  logic latched_sw_rst_req;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+       latched_sw_rst_req <= '0;
+    end else if (latched_sw_rst_req && sw_rst_req_ni && leaf_rst_sync) begin
+       latched_sw_rst_req <= '0;
+    end else if (!latched_sw_rst_req && !sw_rst_req_ni) begin
+       latched_sw_rst_req <= 1'b1;
+    end
+  end
+
   rstmgr_cnsty_chk u_rst_chk (
     .clk_i,
     .rst_ni,
     .child_clk_i(leaf_clk_i),
     .child_rst_ni(leaf_rst_o),
     .parent_rst_ni,
-    .sw_rst_req_i(~sw_rst_req_ni),
+    .sw_rst_req_i(latched_sw_rst_req),
     .err_o
   );
 
