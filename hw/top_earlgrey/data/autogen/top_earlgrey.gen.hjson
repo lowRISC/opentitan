@@ -11625,7 +11625,16 @@
       pinout:
       {
         remove_pads: []
-        add_pads: []
+        add_pads:
+        [
+          {
+            name: AST_MISC
+            type: InputStd
+            bank: VCC
+            connection: manual
+            desc: Extra infrastructure pad for AST
+          }
+        ]
       }
       pinmux:
       {
