@@ -216,8 +216,8 @@ _rom_ext_start_boot:
   /**
    * Jump to C Code
    */
-  .extern rom_ext_boot
-  tail rom_ext_boot
+  .extern rom_ext_main
+  tail rom_ext_main
 
   // Set size so this function can be disassembled.
   .size _rom_ext_start_boot, .-_rom_ext_start_boot

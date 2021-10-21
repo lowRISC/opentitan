@@ -27,6 +27,9 @@ sw_silicon_creator_rom_ext_boot_policy = declare_dependency(
     sources: [
       'rom_ext_boot_policy.c',
     ],
+    dependencies: [
+      sw_silicon_creator_lib_manifest,
+    ],
   ),
 )
 
@@ -86,18 +89,19 @@ foreach slot, slot_link_args : rom_ext_link_info
       link_args: slot_link_args[0],
       dependencies: [
         freestanding_headers,
-        sw_lib_crt,
-        sw_lib_dif_uart,
-        sw_lib_runtime_hart,
-        sw_lib_runtime_print,
         sw_silicon_creator_lib_base_sec_mmio,
+        sw_silicon_creator_lib_driver_hmac,
+        sw_silicon_creator_lib_driver_pinmux,
+        sw_silicon_creator_lib_driver_uart,
+        sw_silicon_creator_lib_fake_deps,
+        sw_silicon_creator_lib_log,
+        sw_silicon_creator_lib_shutdown,
         sw_silicon_creator_lib_manifest_section,
+        sw_silicon_creator_mask_rom_sigverify,
+        sw_silicon_creator_rom_ext_epmp,
         sw_silicon_creator_rom_ext_boot_policy,
+        sw_lib_crt,
 
-        # TODO: ePMP test status dependency should be removed from
-        # production ROM_EXT. Tests should unlock the test status
-        # address themselves (via a library or similar).
-        sw_silicon_creator_lib_epmp_test_unlock,
       ],
       link_with: static_library(
         slot + '_rom_ext_lib',
@@ -119,12 +123,6 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
         device_lib,
         slot_lib,
       ],
-      # TODO: at the moment we are not looking past "Silicon Creator" code,
-      # however eventually there will be a transition to BL0 and/or kernel.
-      # At this point we are assuming that the entry point will be `main`.
-      sources: [
-        'dummy_main.c',
-      ]
     )
 
     target_name = slot + '_@0@_' + device_name
@@ -134,7 +132,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       input: rom_ext_elf,
       kwargs: elf_to_dis_custom_target_args,
     )
-  
+
     rom_ext_bin = custom_target(
       target_name.format('bin'),
       input: rom_ext_elf,

@@ -43,6 +43,7 @@ SECTIONS {
    * Ibex. This section includes the ROM_EXT entry address.
    */
   .vectors : ALIGN(256) {
+    _text_start = .;
     KEEP(*(.vectors))
   } > eflash
 
@@ -78,6 +79,7 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
+    _text_end = .;
   } > eflash
 
   /**

@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-noreturn void rom_ext_boot(void);
+noreturn void rom_ext_main(void);
 
 #ifdef __cplusplus
 }  // extern "C"
