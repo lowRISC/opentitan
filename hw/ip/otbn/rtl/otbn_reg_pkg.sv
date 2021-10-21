@@ -51,6 +51,10 @@ package otbn_reg_pkg;
   } otbn_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
+    logic [31:0] q;
+  } otbn_reg2hw_load_checksum_reg_t;
+
+  typedef struct packed {
     logic        d;
     logic        de;
   } otbn_hw2reg_intr_state_reg_t;
@@ -150,24 +154,31 @@ package otbn_reg_pkg;
     logic [31:0] d;
   } otbn_hw2reg_insn_cnt_reg_t;
 
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } otbn_hw2reg_load_checksum_reg_t;
+
   // Register -> HW type
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [18:18]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [17:17]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [16:15]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [14:11]
-    otbn_reg2hw_cmd_reg_t cmd; // [10:2]
-    otbn_reg2hw_ctrl_reg_t ctrl; // [1:0]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [50:50]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [49:49]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [48:47]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [46:43]
+    otbn_reg2hw_cmd_reg_t cmd; // [42:34]
+    otbn_reg2hw_ctrl_reg_t ctrl; // [33:32]
+    otbn_reg2hw_load_checksum_reg_t load_checksum; // [31:0]
   } otbn_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [81:80]
-    otbn_hw2reg_ctrl_reg_t ctrl; // [79:79]
-    otbn_hw2reg_status_reg_t status; // [78:70]
-    otbn_hw2reg_err_bits_reg_t err_bits; // [69:46]
-    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [45:32]
-    otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [31:0]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [114:113]
+    otbn_hw2reg_ctrl_reg_t ctrl; // [112:112]
+    otbn_hw2reg_status_reg_t status; // [111:103]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [102:79]
+    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [78:65]
+    otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [64:33]
+    otbn_hw2reg_load_checksum_reg_t load_checksum; // [32:0]
   } otbn_hw2reg_t;
 
   // Register offsets
@@ -181,6 +192,7 @@ package otbn_reg_pkg;
   parameter logic [BlockAw-1:0] OTBN_ERR_BITS_OFFSET = 16'h 1c;
   parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
   parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 24;
+  parameter logic [BlockAw-1:0] OTBN_LOAD_CHECKSUM_OFFSET = 16'h 28;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] OTBN_INTR_TEST_RESVAL = 1'h 0;
@@ -212,21 +224,23 @@ package otbn_reg_pkg;
     OTBN_STATUS,
     OTBN_ERR_BITS,
     OTBN_FATAL_ALERT_CAUSE,
-    OTBN_INSN_CNT
+    OTBN_INSN_CNT,
+    OTBN_LOAD_CHECKSUM
   } otbn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTBN_PERMIT [10] = '{
-    4'b 0001, // index[0] OTBN_INTR_STATE
-    4'b 0001, // index[1] OTBN_INTR_ENABLE
-    4'b 0001, // index[2] OTBN_INTR_TEST
-    4'b 0001, // index[3] OTBN_ALERT_TEST
-    4'b 0001, // index[4] OTBN_CMD
-    4'b 0001, // index[5] OTBN_CTRL
-    4'b 0001, // index[6] OTBN_STATUS
-    4'b 0111, // index[7] OTBN_ERR_BITS
-    4'b 0001, // index[8] OTBN_FATAL_ALERT_CAUSE
-    4'b 1111  // index[9] OTBN_INSN_CNT
+  parameter logic [3:0] OTBN_PERMIT [11] = '{
+    4'b 0001, // index[ 0] OTBN_INTR_STATE
+    4'b 0001, // index[ 1] OTBN_INTR_ENABLE
+    4'b 0001, // index[ 2] OTBN_INTR_TEST
+    4'b 0001, // index[ 3] OTBN_ALERT_TEST
+    4'b 0001, // index[ 4] OTBN_CMD
+    4'b 0001, // index[ 5] OTBN_CTRL
+    4'b 0001, // index[ 6] OTBN_STATUS
+    4'b 0111, // index[ 7] OTBN_ERR_BITS
+    4'b 0001, // index[ 8] OTBN_FATAL_ALERT_CAUSE
+    4'b 1111, // index[ 9] OTBN_INSN_CNT
+    4'b 1111  // index[10] OTBN_LOAD_CHECKSUM
   };
 
 endpackage
