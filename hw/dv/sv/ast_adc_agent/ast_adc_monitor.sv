@@ -24,7 +24,7 @@ class ast_adc_monitor extends dv_base_monitor #(
 
   // Send a message via the IF
   virtual function void monitor_msg(string msg);
-    cfg.vif.monitor_msg = msg;
+    cfg.vif.send_monitor_msg(msg);
   endfunction
 
   // Perform the address phase monitoring

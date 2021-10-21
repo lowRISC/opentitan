@@ -6,7 +6,6 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
                                               .CFG_T (ast_adc_agent_cfg));
 
   protected ITEM_T m_active_requests [AdcChannels] [$];
-  protected int unsigned m_channel;
 
   // Most recent ADC value sent for each channel
   bit [AdcDataWidth-1 : 0]   m_ast_adc_value [AdcChannels];
@@ -25,11 +24,10 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
     super.run_phase(phase);
   endtask
 
-    // Send a message via the IF
+  // Send a message via the IF
   virtual function void driver_msg(string msg);
-    cfg.vif.driver_msg = msg;
+    cfg.vif.send_driver_msg(msg);
   endfunction
-
 
   // reset signals
   virtual task reset_signals();
@@ -61,9 +59,9 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
     end
   endtask
 
-
   // Drive the signals
   protected virtual task drive_signals();
+    int unsigned channel;
     ITEM_T drive_req;
     forever begin
       // Clock event
@@ -87,28 +85,28 @@ class ast_adc_driver extends dv_base_driver #(.ITEM_T(ast_adc_item),
         continue;
 
       // Decode channel_sel into an index
-      m_channel = $clog2(cfg.vif.driver_cb.adc_o.channel_sel);
+      channel = $clog2(cfg.vif.driver_cb.adc_o.channel_sel);
 
-      driver_msg($sformatf("Selected %0d waiting random delay", m_channel));
+      driver_msg($sformatf("Selected %0d waiting random delay", channel));
 
       // Random delay
       // Maximum and minimum delays defined in config object
       repeat($urandom_range(cfg.resp_dly_max, cfg.resp_dly_min))
         @(cfg.vif.driver_cb);
 
-      if(!m_active_requests[m_channel].size()) begin
-        driver_msg($sformatf("Selected %0d waiting for request", m_channel));
+      if(!m_active_requests[channel].size()) begin
+        driver_msg($sformatf("Selected %0d waiting for request", channel));
       end
 
       // wait for a request for this channel
-      while((!m_active_requests[m_channel].size()) &&
+      while((!m_active_requests[channel].size()) &&
         (cfg.vif.driver_cb.adc_o.pd === 0)) begin
         @(cfg.vif.driver_cb);
       end
 
-      driver_msg($sformatf("Driving data for channel %0d", m_channel));
+      driver_msg($sformatf("Driving data for channel %0d", channel));
       if(cfg.vif.driver_cb.adc_o.pd === 0) begin
-          drive_req = m_active_requests[m_channel].pop_front();
+          drive_req = m_active_requests[channel].pop_front();
 
         if(drive_req != null) begin
 

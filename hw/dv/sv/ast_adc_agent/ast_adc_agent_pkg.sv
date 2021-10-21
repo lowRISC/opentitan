@@ -7,8 +7,6 @@ package ast_adc_agent_pkg;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
-  // Imports from AST package
-  import ast_pkg::AdcChannels, ast_pkg::AdcDataWidth;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -32,11 +30,27 @@ package ast_adc_agent_pkg;
   // functions
 
   // Number of ADC channels
-  // parameter int AdcChannels     = 2;
+  parameter int AdcChannels     = 2;
   // Width of ADC data
-  // parameter int AdcDataWidth    = 10;
+  parameter int AdcDataWidth    = 10;
   // Maximum outstanding transactions
   parameter int MaxOutstandingTrans = 4;
+
+  // Mirror of typedef in ast_pkg
+  // TODO Make agent parameterized
+    // ADC Interface
+  typedef struct packed {
+    logic [AdcChannels-1:0] channel_sel;
+    logic pd;
+  } adc_ast_req_t;
+
+  typedef struct packed {
+    logic [AdcDataWidth-1:0] data;
+    logic data_valid;
+  } adc_ast_rsp_t;
+
+
+
 
   // Single ADC value
   typedef logic unsigned [AdcDataWidth - 1 : 0] ast_adc_value_t;
