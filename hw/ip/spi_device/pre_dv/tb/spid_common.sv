@@ -47,6 +47,419 @@ package spid_common;
     dir_e       dir;
   } spi_fifo_t;
 
+  // Command list parameters
+  import spi_device_pkg::cmd_info_t;
+  import spi_device_pkg::payload_dir_e;
+  import spi_device_pkg::PayloadIn;
+  import spi_device_pkg::PayloadOut;
+
+  parameter spi_device_pkg::cmd_info_t [23:0] CmdInfo = {
+    // 23:
+    '{
+      valid:            1'b 0,
+      opcode:           8'h E6,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 22:
+    '{
+      valid:            1'b 0,
+      opcode:           8'h E7,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 21:
+    '{
+      valid:            1'b 0,
+      opcode:           8'h E8,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 20:
+    '{
+      valid:            1'b 0,
+      opcode:           8'h E9,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 19:
+    '{
+      valid:            1'b 0,
+      opcode:           8'h EA,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 18:
+    '{
+      valid:            1'b 0,
+      opcode:           8'h EB,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 17:
+    '{
+      valid:            1'b 0,
+      opcode:           8'h EC,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 16:
+    '{
+      valid:            1'b 0,
+      opcode:           8'h EF,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 15:
+    '{
+      valid:            1'b 0,
+      opcode:           8'h F0,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 14:
+    '{
+      valid:            1'b 0,
+      opcode:           8'h F1,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 13: Upload Cmd & Addr & Payload
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 02,
+      addr_en:          1'b 1,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 1,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0001, // MISO
+      payload_dir:      PayloadIn,
+      upload:           1'b 1,
+      busy:             1'b 1
+    },
+
+    // 12: Upload Cmd & Addr
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 52, // block erase (32kB)
+      addr_en:          1'b 1,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 1,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0000, // MISO
+      payload_dir:      PayloadIn,
+      upload:           1'b 1,
+      busy:             1'b 1
+    },
+
+    // 11: Upload Cmd Only
+    '{
+      valid:            1'b 1,
+      opcode:           8'h C7, // chip erase
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0000, // MISO
+      payload_dir:      PayloadIn,
+      upload:           1'b 1,
+      busy:             1'b 1
+    },
+
+    // 10: ReadCmd 6 TODO
+    '{
+      valid:            1'b 0,
+      opcode:           8'h F5,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 9: ReadCmd 5 TODO
+    '{
+      valid:            1'b 0,
+      opcode:           8'h F6,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 8: ReadCmd 4 TODO
+    '{
+      valid:            1'b 0,
+      opcode:           8'h F7,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 7: ReadCmd 3 TODO
+    '{
+      valid:            1'b 0,
+      opcode:           8'h F8,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 6: ReadCmd 2 TODO
+    '{
+      valid:            1'b 0,
+      opcode:           8'h F9,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 5: ReadCmd 1 TODO
+    '{
+      valid:            1'b 0,
+      opcode:           8'h FA,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 4: ReadSfdp
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 5A,
+      addr_en:          1'b 1,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 1,
+      dummy_size:       3'h 7,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 3: CmdInfoReadJedecId
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 9F,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 2: CmdInfoReadStatus3
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 15,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 1: CmdInfoReadStatus2
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 35,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 0: CmdInfoReadStatus1
+    '{
+      valid:            1'b 1,
+      opcode:           8'h 05,
+      addr_en:          1'b 0,
+      addr_swap_en:     1'b 0,
+      addr_4b_affected: 1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      upload:           1'b 0,
+      busy:             1'b 0
+    }
+  };
+
+  // Temporarily only two cmds specified here
+  parameter logic [7:0] OpcodeCmdOnly [2] = '{
+    8'h C7, // Chip Erase
+    8'h 06  // Write Enable
+  };
+
+  parameter logic [7:0] OpcodeCmdAddr [2] = '{
+    8'h 52, // Block Erase (32kB)
+    8'h D8  // Block Erase (64kB)
+  };
+
+  parameter logic [7:0] OpcodeCmdAddrPayload [2] = '{
+    8'h 02, // Page Program
+    8'h 42  // Program Security Register
+  };
+
+  parameter logic [7:0] OpcodeCmdPayload [2] = '{
+    8'h 01, // Write Status 1
+    8'h 11  // Write Status 3
+  };
+
   // spi_transaction: Send/ Receive data using data fifo.
   task automatic spi_transaction(
     virtual spi_if.tb sif,
@@ -281,5 +694,87 @@ package spid_common;
       jedec_id[23:16], jedec_id[15:0]);
 
   endtask : spiflash_readjedec
+
+  task automatic spiflash_chiperase(
+    virtual spi_if.tb  sif,
+    input spi_data_t   opcode
+  );
+    automatic spi_fifo_t send_data [$];
+    automatic spi_data_t rcv_data  [$];
+
+    send_data.push_back('{data: opcode, dir: DirIn,  mode: IoSingle});
+
+    spi_transaction(sif, send_data, rcv_data);
+
+    $display("Chip Erase (%x) is sent", opcode);
+
+  endtask : spiflash_chiperase
+
+  task automatic spiflash_blockerase(
+    virtual spi_if.tb  sif,
+    input spi_data_t   opcode,
+    input logic [31:0] addr,
+    input bit          addr_4b_en
+  );
+    automatic spi_fifo_t send_data [$];
+    automatic spi_data_t rcv_data  [$];
+
+    send_data.push_back('{data: opcode, dir: DirIn, mode: IoSingle});
+    if (addr_4b_en) begin
+      send_data.push_back('{data: addr[31:24], dir: DirNone, mode: IoNone});
+    end
+    for (int i = 2 ; i >= 0; i--) begin
+      send_data.push_back('{data: addr[8*i+:8], dir: DirNone, mode: IoNone});
+    end
+
+    spi_transaction(sif, send_data, rcv_data);
+
+    if (addr_4b_en) begin
+      $display("Block Erase (%Xh) command is sent. 32bit addr (%Xh)",
+        opcode, addr);
+    end else begin
+      $display("Block Erase (%Xh) command is sent. 24bit addr (%Xh)",
+        opcode, addr[23:0]);
+    end
+
+  endtask : spiflash_blockerase
+
+  task automatic spiflash_program(
+    virtual spi_if.tb sif,
+    input spi_data_t  opcode,
+    input logic [31:0] addr,
+    input bit          addr_4b_en,
+    input spi_data_t   payload [$]
+  );
+    automatic spi_fifo_t send_data [$];
+    automatic spi_data_t rcv_data  [$];
+
+    send_data.push_back('{data: opcode, dir: DirIn, mode: IoSingle});
+    if (addr_4b_en) begin
+      send_data.push_back('{data: addr[31:24], dir: DirNone, mode: IoNone});
+    end
+    for (int i = 2 ; i >= 0; i--) begin
+      send_data.push_back('{data: addr[8*i+:8], dir: DirNone, mode: IoNone});
+    end
+
+    // Payload
+    foreach (payload[i]) begin
+      send_data.push_back('{
+        data: payload[i],
+        dir:  DirNone,
+        mode: IoNone
+      });
+    end
+
+    spi_transaction(sif, send_data, rcv_data);
+
+    $display("Program cmd (%Xh) to Addr (%Xh) is sent.",
+      opcode, (addr_4b_en) ? addr : addr[23:0]);
+
+    foreach (payload[i]) begin
+      $display("Payload %d : %Xh", i, payload[i]);
+    end
+
+  endtask : spiflash_program
 
 endpackage : spid_common
