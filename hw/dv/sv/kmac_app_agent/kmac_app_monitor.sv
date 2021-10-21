@@ -52,17 +52,21 @@ class kmac_app_monitor extends dv_base_monitor #(
         // before the full data has been sent from the connected App host (KeyMgr/ROM/LC).
         // As a result, we need to set `ok_to_end` here otherwise the monitor's corresponding
         // objection will never drop in this scenario.
+        // TODO, we can consider to handle premature ending better. Once sequence ends transaction
+        // prematurely, issue a reset to get out of this while-loop, so that we can keep
+        // ok_to_end = 0 for the entire transaction.
         ok_to_end = 1;
         data_fifo.get(data_item);
         {data, strb, last} = data_item.h_data;
-        ok_to_end = 0;
 
-        while (strb > 0) begin
-          if (strb[0]) req.byte_data_q.push_back(data[7:0]);
-          data = data >> 8;
-          strb = strb >> 1;
+        for (int i = 0; i < KmacDataIfWidth/8; i++) begin
+          if (strb[i]) req.byte_data_q.push_back(data[i*8+:8]);
         end
-        if (last) break;
+
+        if (last) begin
+          ok_to_end = 0;
+          break;
+        end
       end
       req_analysis_port.write(req);
       `uvm_info(`gfn, $sformatf("Write req item:\n%0s", req.sprint()), UVM_HIGH)
