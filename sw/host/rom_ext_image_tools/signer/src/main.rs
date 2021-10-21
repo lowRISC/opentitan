@@ -11,6 +11,7 @@ use std::env;
 use std::fs;
 use std::mem::size_of;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use mundane::hash::Sha256;
 use mundane::public::rsa::RsaPkcs1v15;
@@ -39,8 +40,27 @@ type ImageSignature =
     mundane::public::rsa::RsaSignature<B3072, RsaPkcs1v15, Sha256>;
 type PrivateKey = mundane::public::rsa::RsaPrivKey<B3072>;
 
+#[derive(Copy, Clone)]
+enum ImageType {
+    RomExt,
+    OwnerStage,
+}
+
+impl FromStr for ImageType {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "rom_ext" => Ok(ImageType::RomExt),
+            "owner" => Ok(ImageType::OwnerStage),
+            _ => bail!("Unexpected image type: {}", s),
+        }
+    }
+}
+
 // TODO: Remove this struct when this functionality is integrated into `opentitantool`.
 struct Args {
+    image_type: ImageType,
     input_image: PathBuf,
     priv_key: PathBuf,
     elf_file: PathBuf,
@@ -51,13 +71,16 @@ impl Args {
     pub fn new(args: env::ArgsOs) -> Result<Args> {
         let args = args.skip(1).collect::<Vec<_>>();
         match args.as_slice() {
-            [input_image, priv_key, elf_file, output_image] => Ok(Args {
+            [image_type, input_image, priv_key, elf_file, output_image] => Ok(Args {
+                    image_type: ImageType::from_str(&image_type.to_string_lossy())?,
                     input_image: PathBuf::from(input_image),
                     priv_key: PathBuf::from(priv_key),
                     elf_file: PathBuf::from(elf_file),
                     output_image: PathBuf::from(output_image),
                 }),
-            args => bail!("Expected exactly 4 positional arguments: input image, private key, elf file, and output image, got: {}.", args.len()),
+            args => bail!("Expected exactly 5 positional arguments: \
+                          image type, input image, private key, elf file, and output image, \
+                          got: {}.", args.len()),
         }
     }
 }
@@ -84,6 +107,7 @@ fn _parse_hex_str(hex_str: &str) -> Result<Vec<u8>> {
 // TODO: This function must use a public key.
 fn update_image_manifest(
     image: &mut Image,
+    image_type: ImageType,
     key: &PrivateKey,
     elf: &ElfFile32,
 ) -> Result<()> {
@@ -93,8 +117,21 @@ fn update_image_manifest(
             .address(),
     )?;
 
+    let (identifier, allowed_lengths) = match image_type {
+        ImageType::RomExt => (
+            manifest::MANIFEST_IDENTIFIER_ROM_EXT,
+            manifest::MANIFEST_LENGTH_FIELD_ROM_EXT_MIN
+                ..=manifest::MANIFEST_LENGTH_FIELD_ROM_EXT_MAX,
+        ),
+        ImageType::OwnerStage => (
+            manifest::MANIFEST_IDENTIFIER_OWNER_STAGE,
+            manifest::MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN
+                ..=manifest::MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX,
+        ),
+    };
+
     *image.manifest = Manifest {
-        identifier: 0x4552544f,
+        identifier,
         length: u32::try_from(image.bytes().len())?,
         code_start: {
             let addr = u32::try_from(
@@ -176,9 +213,7 @@ fn update_image_manifest(
         "`entry_point` is outside the code region."
     );
     ensure!(
-        (manifest::MANIFEST_LENGTH_FIELD_MIN
-            ..=manifest::MANIFEST_LENGTH_FIELD_MAX)
-            .contains(&image.manifest.length),
+        allowed_lengths.contains(&image.manifest.length),
         "`length` is outside the allowed range."
     );
 
@@ -232,7 +267,7 @@ fn main() -> Result<()> {
     let elf = fs::read(&args.elf_file)?;
     let elf = ElfFile32::parse(elf.as_slice())?;
 
-    update_image_manifest(&mut image, &key, &elf)?;
+    update_image_manifest(&mut image, args.image_type, &key, &elf)?;
     let sig = calculate_image_signature(&image, &key)?;
     update_image_signature(&mut image, sig)?;
 

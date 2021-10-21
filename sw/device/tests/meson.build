@@ -726,6 +726,7 @@ foreach sw_test_name, sw_test_info : sw_rom_ext_tests
         output: '@BASENAME@.@0@.signed.bin'.format(key_name),
         command: [
           rom_ext_signer_export.full_path(),
+          'rom_ext',
           '@INPUT@',
           key_info['path'],
           sw_test_elf.full_path(),
