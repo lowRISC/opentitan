@@ -33,7 +33,7 @@ package ast_pkg;
   parameter int AdcDataWidth    = 10;
   parameter int UsbCalibWidth   = 16;
   parameter int Ast2PadOutWidth = 9;
-  parameter int Pad2AstInWidth  = 6;
+  parameter int Pad2AstInWidth  = 7;
 
   // These LFSR parameters have been generated with
   // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""

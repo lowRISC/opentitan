@@ -660,7 +660,7 @@ module chip_${top["name"]}_${target["name"]} (
   // external clock comes in at a fixed position
   assign ext_clk = mio_in_raw[MioPadIoc6];
 
-  assign pad2ast = {
+  assign pad2ast = { manual_in_ast_misc,
                      mio_in_raw[MioPadIoc3],
                      mio_in_raw[MioPadIob8],
                      mio_in_raw[MioPadIob7],
@@ -857,6 +857,14 @@ module chip_${top["name"]}_${target["name"]} (
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
 
+  assign manual_out_ast_misc = 1'b0;
+  assign manual_oe_ast_misc = 1'b0;
+  always_comb begin
+    // constantly enable pull-down
+    manual_attr_ast_misc = '0;
+    manual_attr_ast_misc.pull_select = 1'b0;
+    manual_attr_ast_misc.pull_en = 1'b1;
+  end
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
 
