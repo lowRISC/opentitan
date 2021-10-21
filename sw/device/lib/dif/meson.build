@@ -54,6 +54,7 @@ sw_lib_dif_clkmgr = declare_dependency(
 test('dif_clkmgr_unittest', executable(
     'dif_clkmgr_unittest',
     sources: [
+      'dif_clkmgr_unittest.cc',
       'autogen/dif_clkmgr_autogen_unittest.cc',
       meson.source_root() / 'sw/device/lib/dif/dif_clkmgr.c',
       meson.source_root() / 'sw/device/lib/dif/autogen/dif_clkmgr_autogen.c',
