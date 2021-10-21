@@ -312,6 +312,9 @@
                 '''
             },
           ]
+          tags: [// Turning off USB clock in active state impacts other CSRs
+                 // at the chip level (in other blocks, such as clkmgr).
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         { bits: "8",
