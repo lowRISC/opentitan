@@ -102,6 +102,29 @@ static const rsa_3072_int_t kMessage = {
              0x55555555, 0x55555555, 0x55555555, 0x55555555, 0x55555555,
              0x55555555}};
 
+rom_error_t precomp_test(void) {
+  rsa_3072_constants_t act_constants;
+
+  // Precompute constants
+  RETURN_IF_ERROR(rsa_3072_precomp(&kPublicKey, &act_constants));
+
+  // Check that RR matches expected value
+  for (int i = 0; i < kRsa3072NumWords; i++) {
+    CHECK(act_constants.rr.data[i] == kExpConstants.rr.data[i],
+          "Mismatch at word %d of R^2: expected=0x%x, actual=0x%x", i,
+          kExpConstants.rr.data[i], act_constants.rr.data[i]);
+  }
+
+  // Check that m0_inv matches expected value
+  for (int i = 0; i < kOtbnWideWordNumWords; i++) {
+    CHECK(act_constants.m0_inv[i] == kExpConstants.m0_inv[i],
+          "Mismatch at word %d of m0_inv: expected=0x%x, actual=0x%x", i,
+          kExpConstants.m0_inv[i], act_constants.m0_inv[i]);
+  }
+
+  return kErrorOk;
+}
+
 rom_error_t verify_test(void) {
   hardened_bool_t result;
 
@@ -119,6 +142,8 @@ bool test_main(void) {
   rom_error_t result = kErrorOk;
 
   entropy_testutils_boot_mode_init();
+
+  EXECUTE_TEST(result, precomp_test);
 
   EXECUTE_TEST(result, verify_test);
 
