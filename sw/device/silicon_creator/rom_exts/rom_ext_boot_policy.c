@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/rom_exts/rom_ext_boot_policy.h"
 
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/rom_exts/rom_ext_boot_policy_ptrs.h"
 
 rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(void) {

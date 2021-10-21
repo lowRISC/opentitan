@@ -5,67 +5,134 @@
 #include "sw/device/silicon_creator/rom_exts/rom_ext.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
-#include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/pinmux.h"
+#include "sw/device/silicon_creator/lib/drivers/uart.h"
+#include "sw/device/silicon_creator/lib/log.h"
+#include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/shutdown.h"
+#include "sw/device/silicon_creator/lib/sigverify.h"
+#include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/rom_exts/rom_ext_boot_policy.h"
+#include "sw/device/silicon_creator/rom_exts/rom_ext_epmp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 // Secure MMIO context.
 //
 // This is placed at a fixed location in memory within the .static_critical
-// section. It will be populated by the mask ROM before the jump to ROM_EXT.
+// section. It will be populated by the ROM_EXT before the jump to ROM_EXT.
 __attribute__((section(".static_critical.sec_mmio_ctx")))  //
 volatile sec_mmio_ctx_t sec_mmio_ctx;
 
-static dif_uart_t uart;
+// In-memory copy of the ePMP register configuration.
+epmp_state_t epmp;
+// Life cycle state of the chip.
+lifecycle_state_t lc_state = kLcStateProd;
 
-int main(int argc, char *argv[]);
-
-// TODO - need to decide what happens to the peripherals during the
-//        Mask ROM to ROM_EXT handover (for example, does UART need
-//        re-configuring, etc...). It is possible that the signature of
-//        this function will change to pass the relevant information from
-//        the Mask ROM.
-void rom_ext_boot(void) {
-  // Unlock the DV address space so that test results can be written out.
-  // TODO: move to a test library.
-  if (!epmp_unlock_test_status(NULL)) {
-    abort();
-  }
-
-  dif_result_t init_result =
-      dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart);
-
-  if (init_result != kDifOk) {
-    abort();
-  }
-
-  dif_result_t config_result =
-      dif_uart_configure(&uart, (dif_uart_config_t){
-                                    .baudrate = kUartBaudrate,
-                                    .clk_freq_hz = kClockFreqPeripheralHz,
-                                    .parity_enable = kDifToggleDisabled,
-                                    .parity = kDifUartParityEven,
-                                });
-
-  if (config_result != kDifOk) {
-    abort();
-  }
-
-  base_uart_stdout(&uart);
-
-  base_printf("Hello World!\n");
-
-  // TODO - there might be another level before jumping into main.
-  (void)main(0, NULL);
-
-  // TODO - is this a correct way of handling the "return"?
-  while (true) {
-    wait_for_interrupt();
-  }
+static inline rom_error_t rom_ext_irq_error(void) {
+  uint32_t mcause;
+  CSR_READ(CSR_REG_MCAUSE, &mcause);
+  // Shuffle the mcause bits into the uppermost byte of the word and report
+  // the cause as kErrorInterrupt.
+  // Based on the ibex verilog, it appears that the most significant bit
+  // indicates whether the cause is an exception (0) or external interrupt (1),
+  // and the 5 least significant bits indicate which exception/interrupt.
+  //
+  // Preserve the MSB and shift the 7 LSBs into the upper byte.
+  // (we preserve 7 instead of 5 because the verilog hardcodes the unused bits
+  // as zero and those would be the next bits used should the number of
+  // interrupt causes increase).
+  mcause = (mcause & 0x80000000) | ((mcause & 0x7f) << 24);
+  return kErrorInterrupt + mcause;
 }
+
+void rom_ext_init(void) {
+  sec_mmio_next_stage_init(shutdown_finalize);
+
+  lc_state = lifecycle_state_get();
+
+  // TODO: Verify ePMP expectations from ROM.
+
+  pinmux_init();
+  // Configure UART0 as stdout.
+  uart_init(kUartNCOValue);
+}
+
+static rom_error_t rom_ext_verify(const manifest_t *manifest) {
+  RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest));
+  const sigverify_rsa_key_t *key;
+  RETURN_IF_ERROR(sigverify_rsa_key_get(
+      sigverify_rsa_key_id_get(&manifest->modulus), lc_state, &key));
+
+  hmac_sha256_init();
+  // Hash usage constraints.
+  manifest_usage_constraints_t usage_constraints_from_hw;
+  sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits,
+                                  &usage_constraints_from_hw);
+  RETURN_IF_ERROR(hmac_sha256_update(&usage_constraints_from_hw,
+                                     sizeof(usage_constraints_from_hw)));
+  // Hash the remaining part of the image.
+  manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
+  RETURN_IF_ERROR(
+      hmac_sha256_update(digest_region.start, digest_region.length));
+  // Verify signature
+  hmac_digest_t act_digest;
+  RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
+  RETURN_IF_ERROR(
+      sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state));
+  return kErrorOk;
+}
+
+static rom_error_t rom_ext_boot(const manifest_t *manifest) {
+  // Unlock execution of owner stage executable code (text) sections.
+  rom_ext_epmp_unlock_owner_stage_rx(&epmp, manifest_code_region_get(manifest));
+
+  // Jump to BL0 entry point.
+  uintptr_t entry_point = manifest_entry_point_get(manifest);
+  log_printf("entry: 0x%x\r\n", entry_point);
+  ((owner_stage_entry_point *)entry_point)();
+
+  return kErrorMaskRomBootFailed;
+}
+
+static rom_error_t rom_ext_try_boot(void) {
+  rom_ext_boot_policy_manifests_t manifests =
+      rom_ext_boot_policy_manifests_get();
+  rom_error_t error = kErrorMaskRomBootFailed;
+  for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
+    error = rom_ext_verify(manifests.ordered[i]);
+    if (error != kErrorOk) {
+      continue;
+    }
+    // Boot fails if a verified ROM_EXT cannot be booted.
+    RETURN_IF_ERROR(rom_ext_boot(manifests.ordered[i]));
+    // `rom_ext_boot()` should never return `kErrorOk`, but if it does
+    // we must shut down the chip instead of trying the next ROM_EXT.
+    return kErrorMaskRomBootFailed;
+  }
+  return error;
+}
+
+void rom_ext_main(void) {
+  rom_ext_init();
+  log_printf("starting rom_ext\r\n");
+  shutdown_finalize(rom_ext_try_boot());
+}
+
+void rom_ext_interrupt_handler(void) { shutdown_finalize(rom_ext_irq_error()); }
+
+// We only need a single handler for all ROM_EXT interrupts, but we want to
+// keep distinct symbols to make writing tests easier.  In the ROM_EXT,
+// alias all interrupt handler symbols to the single handler.
+void rom_ext_exception_handler(void)
+    __attribute__((alias("rom_ext_interrupt_handler")));
+
+void rom_ext_nmi_handler(void)
+    __attribute__((alias("rom_ext_interrupt_handler")));
