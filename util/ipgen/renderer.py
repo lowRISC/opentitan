@@ -266,6 +266,7 @@ class IpBlockRenderer(IpTemplateRendererBase):
                     "Invalid template: The IP description file "
                     f"{str(hjson_path)!r} does not exist.")
             rtl_path = output_dir_staging / 'rtl'
+            rtl_path.mkdir(exist_ok=True)
             # TODO: Pass on template parameters to reggen? Or enable the user
             # to set a different set of parameters in the renderer?
             reggen.gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []),
