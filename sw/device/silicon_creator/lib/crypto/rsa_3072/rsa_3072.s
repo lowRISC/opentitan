@@ -438,6 +438,311 @@ modexp_var_3072_f4:
 
   ret
 
+/**
+ * Doubles a number and reduces modulo M in-place.
+ *
+ *   Returns: C = (A + A) mod M
+ *
+ * Requires that A < M < 2^3072. Writes output to the A buffer in DMEM. This
+ * routine runs in variable time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x16: dmem pointer to first limb of modulus M
+ * @param[in]  [w4:w15]: operand A
+ * @param[in]  w31: all-zero
+ * @param[out] [w4:w15]: result C
+ *
+ * clobbered registers: x2, x3, x7 to x12, w2 to w27
+ * clobbered Flag Groups: FG0
+ */
+double_mod_var:
+  /* Save copy of pointer to modulus. */
+  addi      x12, x16, 0
+
+  /* Clear flags. */
+  bn.add    w31, w31, w31
+
+  /* Compute aa=(A + A).
+       [w4:w15] <= (A+A) mod 2^3072 = aa[0:3071]*/
+  li        x9, 2
+  li        x10, 4
+  loopi     12, 3
+    /* w2 <= a[i] */
+    bn.movr   x9, x10
+    /* w2 <= w2 + w2 */
+    bn.addc   w2, w2, w2
+    /* aa[i] <= w2 */
+    bn.movr   x10++, x9
+
+  /* Extract final carry bit from flags register.
+       x2 <= aa[3072] */
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 1
+
+  /* Clear flags. */
+  bn.add    w31, w31, w31
+
+  /* Conditionally subtract modulus; since A < M, at most one subtraction.
+       [w16:w27] <= (aa[0:3071] - M) mod 3072 */
+  li        x8, 4
+  li        x9, 2
+  li        x10, 3
+  li        x11, 16
+  loopi     12, 4
+    /* w2 <= aa[i] */
+    bn.movr   x9, x8++
+    /* w3 <= M[i] */
+    bn.lid    x10, 0(x12++)
+    /* w2 <= w2 - w3 */
+    bn.subb   w2, w2, w3
+    /* out[i] <= w2 */
+    bn.movr   x11++, x9
+
+  /* Extract final borrow bit from flags register. */
+  csrrs     x3, 0x7c0, x0
+  andi      x3, x3, 1
+
+  /**
+   * Select either aa or aa' based on carry/borrow bits.
+   *
+   * If aa < M, it follows that the carry bit aa[3072] = 0 (since M < 2^3072).
+   * It also follows that the borrow from subtracting M must be 1. In this
+   * case, select aa; otherwise, select aa-M.
+   */
+
+  /* x2 <= (!x2) & x3 */
+  xori      x2, x2, 1
+  and       x2, x2, x3
+
+  /* Select aa if x2 = 0, otherwise aa-M. */
+  bne       x2, x0, sel_aa
+
+  /* Copy subtraction result to w4:w15. */
+  li        x8, 4
+  li        x11, 16
+  loopi     12, 2
+    bn.movr   x8, x11++
+    addi      x8, x8, 1
+
+sel_aa:
+
+  ret
+
+/**
+ * Computes the R^2 Montgomery constant and stores it in DMEM.
+ *
+ *   Returns RR = (2^3072)^2 mod M
+ *
+ * This implementation is based on section 2.3 of "Montgomery Arithmetic from a
+ * Software Perspective" (https://eprint.iacr.org/2017/1057). For the purposes
+ * of RSA 3072, the parameters w and n from the paper are fixed (w=256, n=12).
+ *
+ * The algorithm from the paper assumes that 2^wn-1 <= M < 2^wn; we lightly
+ * adapt the implementation to accept 2 <= M < 2^wn by starting with c0=1 and
+ * performing 2*wn modular doublings instead of wn+1.
+ *
+ * The result is stored in dmem[in_rr]. This routine runs in variable time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[in_mod] pointer to first limb of modulus M in dmem
+ *
+ * clobbered registers: x2, x3, x7 to x11, x16, w2 to w27, w31
+ * clobbered Flag Groups: FG0
+ */
+ .globl precomp_rr
+precomp_rr:
+  /* Prepare all-zero register. */
+  bn.xor    w31, w31, w31
+
+  /* Set pointer to modulus. */
+  la        x16, in_mod
+
+  /* Zero [w4:w15]. */
+  li        x9, 4
+  li        x10, 31
+  loopi     12, 1
+    bn.movr   x9++, x10
+
+  /* c0 = [w4:w15] <= 1 */
+  bn.addi   w4, w4, 1
+
+
+  /* Compute (2^3072)^2 mod M by performing 2*3072=6144 modular doublings.
+     Loop is nested only because #iterations must be < 1024 */
+  loopi     24, 4
+    loopi     256, 2
+      jal     x1, double_mod_var
+      /* Nop because inner loopi can't end on a jump instruction. */
+      nop
+    /* Nop because outer loopi can't end on a loop instruction. */
+    nop
+
+  /* Store result in dmem[in_rr]. */
+  li        x9, 4
+  la        x26, in_rr
+  loopi     12, 2
+    bn.sid    x9, 0(x26++)
+    addi      x9, x9, 1
+
+  ret
+
+/**
+ * Computes least significant 256 bits of a 256x256 bit product.
+ *
+ * Returns c = (a x b) mod (2^256).
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in] w2: a, first operand
+ * @param[in] w5: b, second operand
+ * @param[out] w27: c, result
+ *
+ * clobbered registers: w27
+ * clobbered flag groups: FG0
+ */
+mul256_low_w2xw5:
+  bn.mulqacc.z          w2.0, w5.0,  0
+  bn.mulqacc            w2.1, w5.0, 64
+  bn.mulqacc.so  w27.L, w2.0, w5.1, 64
+  bn.mulqacc            w2.2, w5.0,  0
+  bn.mulqacc            w2.1, w5.1,  0
+  bn.mulqacc            w2.0, w5.2,  0
+  bn.mulqacc            w2.3, w5.0, 64
+  bn.mulqacc            w2.2, w5.1, 64
+  bn.mulqacc            w2.1, w5.2, 64
+  bn.mulqacc.so  w27.U, w2.0, w5.3, 64
+
+  ret
+
+/**
+ * Checks whether two wide registers have equal values.
+ *
+ *   Returns c = 1 if a = b, 0 otherwise.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w6: a, first operand
+ * @param[in]  w27: b, second operand
+ * @param[out] x4: c, result
+ *
+ * clobbered registers: x3, x4
+ * clobbered Flag Groups: FG0
+ *
+ */
+check_eq_w6w27:
+    /* Check if b < a. */
+    bn.cmp    w27, w6
+
+    /* Get value from flag register.
+         x3 <= (b < a) */
+    csrrs     x3, 0x7c0, x0
+    andi      x3, x3, 1
+
+    /* Check if a < b. */
+    bn.cmp    w6, w27
+
+    /* Get value from flag register.
+         x4 <= (a < b) */
+    csrrs     x4, 0x7c0, x0
+    andi      x4, x4, 1
+
+    /* If b < a or a < b, then a != b; otherwise a = b.
+         x4 <= !(b < a | a < b) = (a == b)*/
+    or        x4, x4, x3
+    xori      x4, x4, 1
+
+    ret
+
+/**
+ * Computes the m0_inv Montgomery constant and stores it in DMEM.
+ *
+ *   Returns m0_inv = (- M') mod (2^256)
+ *                    where M' is the modular multiplicative inverse of M.
+ *
+ * This implementation is based on ALgorithm 3 of "Montgomery Arithmetic from a
+ * Software Perspective" (https://eprint.iacr.org/2017/1057). For the purposes
+ * of RSA 3072, the parameters w and n from the paper are fixed (w=256, n=12).
+ *
+ * The result is stored in dmem[in_m0inv]. This routine runs in variable time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[in_mod] pointer to first limb of modulus M in dmem
+ *
+ * clobbered registers: x2 to x4, x9, x16, x26, w2 to w6, w27, w31
+ * clobbered Flag Groups: FG0
+ */
+ .globl precomp_m0_inv
+precomp_m0_inv:
+  /* Prepare all-zero register. */
+  bn.xor    w31, w31, w31
+
+  /* y = w2 <= 1 */
+  bn.addi   w2, w31, 1
+
+  /* i = x2 <= 1 */
+  addi   x2, x0, 1
+
+  /* pow2i = w3 <= 2^i = 2 */
+  bn.addi   w3, w31, 2
+
+  /* maski = w4 <= 2^(i+1) - 1 = 3 */
+  bn.addi   w4, w31, 3
+
+  /* w5 <= M[0] = M mod (2^256) */
+  li        x3, 5
+  la        x16, in_mod
+  bn.lid    x3, 0(x16)
+
+  /* w6 <= 1 */
+  bn.addi   w6, w31, 1
+
+  /**
+   * Main loop from i=1 to i=255.
+   *
+   * Invariants:
+   *   x2 = i
+   *   w2 = y
+   *   w3 = 2^i (powi)
+   *   w4 = 2^(i+1)-1 (maski)
+   *   w5 = M[0] (constant)
+   *   w6 = 1    (constant)
+   *   y < 2^i
+   */
+  loopi 255, 8
+    /* w27 <= (w2 * w5) mod (2^256)
+            = (y * M[0]) mod (2^256) = (M * y) mod (2^256) */
+    jal       x1, mul256_low_w2xw5
+    /* w27 <= w27 & maski = (M * y) mod (2^(i+1)) */
+    bn.and    w27, w27, w4
+    /* x4 <= 1 if w27 = 1, 0 otherwise */
+    jal       x1, check_eq_w6w27
+    /* skip addition if w27 == 1*/
+    bne       x4, x0, skip_add
+    /* y = w2 <= y + pow2i */
+    bn.add    w2, w2, w3
+    skip_add:
+    /* i = x2 <= i + 1 */
+    addi      x2, x2, 1
+    /* pow2i = w3 <= pow2i * 2 = 2^i */
+    bn.add    w3, w3, w3
+    /* maski = w4 <= maski + pow2i = 2^(i+1) - 1 */
+    bn.add    w4, w4, w3
+
+  /* m0_inv = w2 <= 2^256 - y = (0 - y) mod 2^256  */
+  bn.sub    w2, w31, w2
+
+  /* Store result in dmem[in_m0inv]. */
+  li        x9, 2
+  la        x26, in_m0inv
+  bn.sid    x9, 0(x26)
+
+  ret
+
 /* Output buffer for the resulting, recovered message. */
 .section .data.out_buf
 .weak out_buf

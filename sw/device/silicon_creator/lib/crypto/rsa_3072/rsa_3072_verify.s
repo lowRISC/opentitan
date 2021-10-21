@@ -30,8 +30,13 @@ run_rsa_3072:
  * in_rr and in_m0_inv.
  */
 precomp:
-  /* TODO: not yet implemented */
-  unimp
+  /* compute Montgomery constant R^2 */
+  jal      x1, precomp_rr
+
+  /* compute Montgomery constant m0_inv */
+  jal      x1, precomp_m0_inv
+
+  ecall
 
 /**
  * RSA-3072 signature verification.
