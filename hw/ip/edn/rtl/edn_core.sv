@@ -55,11 +55,9 @@ module edn_core import edn_pkg::*;
   logic event_edn_fatal_err;
   logic edn_enable;
   logic edn_enable_pfe;
-  logic edn_enable_pfd;
   logic edn_enable_pfa;
   logic cmd_fifo_rst;
   logic cmd_fifo_rst_pfe;
-  logic cmd_fifo_rst_pfd;
   logic cmd_fifo_rst_pfa;
   logic packer_arb_valid;
   logic packer_arb_ready;
@@ -67,7 +65,6 @@ module edn_core import edn_pkg::*;
   logic [NumEndPoints-1:0] packer_arb_gnt;
   logic                    auto_req_mode;
   logic                    auto_req_mode_pfe;
-  logic                    auto_req_mode_pfd;
   logic                    auto_req_mode_pfa;
   logic                    seq_auto_req_mode;
   logic                    auto_req_mode_end;
@@ -96,7 +93,6 @@ module edn_core import edn_pkg::*;
   logic [CSGenBitsWidth-1:0] packer_cs_rdata;
   logic                      boot_request;
   logic                      boot_req_mode_pfe;
-  logic                      boot_req_mode_pfd;
   logic                      boot_req_mode_pfa;
   logic                      boot_wr_cmd_reg;
   logic                      boot_wr_cmd_genfifo;
@@ -312,16 +308,21 @@ module edn_core import edn_pkg::*;
   };
 
   // check for illegal enable field states, and set alert if detected
+  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_invalid;
 
-  assign edn_enable_pfe = (edn_enb_e'(reg2hw.ctrl.edn_enable.q) == EDN_FIELD_ON);
-  assign edn_enable_pfd = (edn_enb_e'(reg2hw.ctrl.edn_enable.q) == ~EDN_FIELD_ON);
-  assign edn_enable_pfa = !(edn_enable_pfe || edn_enable_pfd);
+  mubi4_e mubi_edn_enable;
+  assign mubi_edn_enable = mubi4_e'(reg2hw.ctrl.edn_enable.q);
+  assign edn_enable_pfe = mubi4_test_true_strict(mubi_edn_enable);
+  assign edn_enable_pfa = mubi4_test_invalid(mubi_edn_enable);
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.de = edn_enable_pfa;
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.d  = edn_enable_pfa;
 
-  assign cmd_fifo_rst_pfe = (edn_enb_e'(reg2hw.ctrl.cmd_fifo_rst.q) == EDN_FIELD_ON);
-  assign cmd_fifo_rst_pfd = (edn_enb_e'(reg2hw.ctrl.cmd_fifo_rst.q) == ~EDN_FIELD_ON);
-  assign cmd_fifo_rst_pfa = !(cmd_fifo_rst_pfe || cmd_fifo_rst_pfd);
+  mubi4_e mubi_cmd_fifo_rst;
+  assign mubi_cmd_fifo_rst = mubi4_e'(reg2hw.ctrl.cmd_fifo_rst.q);
+  assign cmd_fifo_rst_pfe = mubi4_test_true_strict(mubi_cmd_fifo_rst);
+  assign cmd_fifo_rst_pfa = mubi4_test_invalid(mubi_cmd_fifo_rst);
   assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.de = cmd_fifo_rst_pfa;
   assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.d  = cmd_fifo_rst_pfa;
 
@@ -332,10 +333,10 @@ module edn_core import edn_pkg::*;
   //--------------------------------------------
   // sw register interface
   //--------------------------------------------
-
-  assign auto_req_mode_pfe = (edn_enb_e'(reg2hw.ctrl.auto_req_mode.q) == EDN_FIELD_ON);
-  assign auto_req_mode_pfd = (edn_enb_e'(reg2hw.ctrl.auto_req_mode.q) == ~EDN_FIELD_ON);
-  assign auto_req_mode_pfa = !(auto_req_mode_pfe || auto_req_mode_pfd);
+  mubi4_e mubi_auto_req_mode;
+  assign mubi_auto_req_mode = mubi4_e'(reg2hw.ctrl.auto_req_mode.q);
+  assign auto_req_mode_pfe = mubi4_test_true_strict(mubi_auto_req_mode);
+  assign auto_req_mode_pfa = mubi4_test_invalid(mubi_auto_req_mode);
   assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.de = auto_req_mode_pfa;
   assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.d  = auto_req_mode_pfa;
 
@@ -522,10 +523,10 @@ module edn_core import edn_pkg::*;
 
   assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1));
 
-
-  assign boot_req_mode_pfe = (edn_enb_e'(reg2hw.ctrl.boot_req_mode.q) == EDN_FIELD_ON);
-  assign boot_req_mode_pfd = (edn_enb_e'(reg2hw.ctrl.boot_req_mode.q) == ~EDN_FIELD_ON);
-  assign boot_req_mode_pfa = !(boot_req_mode_pfe || boot_req_mode_pfd);
+  mubi4_e mubi_boot_req_mode;
+  assign mubi_boot_req_mode = mubi4_e'(reg2hw.ctrl.boot_req_mode.q);
+  assign boot_req_mode_pfe = mubi4_test_true_strict(mubi_boot_req_mode);
+  assign boot_req_mode_pfa = mubi4_test_invalid(mubi_boot_req_mode);
   assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.de = boot_req_mode_pfa;
   assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.d  = boot_req_mode_pfa;
 
