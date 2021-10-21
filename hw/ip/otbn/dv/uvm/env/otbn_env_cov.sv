@@ -72,7 +72,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `DEF_MNEM(mnem_bn_wsrr,       "bn.wsrr");
   `DEF_MNEM(mnem_bn_wsrw,       "bn.wsrw");
   // A fake mnemonic, used for bits that don't decode to a real instruction
-  `DEF_MNEM(mnem_dummy,         "dummy-insn");
+  `DEF_MNEM(mnem_dummy,         "??");
 `undef DEF_MNEM
 
   // A macro used for coverpoints for mnemonics. This expands to entries like
