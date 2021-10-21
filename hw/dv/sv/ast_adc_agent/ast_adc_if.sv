@@ -30,10 +30,10 @@ interface ast_adc_if #(
   // Messages from driver and monitor
 
   // Make these static for easy wave dumping
-  bit [7:0][39:0] driver_msg  = "";
+  bit [39:0][7:0] driver_msg  = "";
 
   // Messages from monitor
-  bit [7:0][39:0] monitor_msg  = "";
+  bit [39:0][7:0] monitor_msg  = "";
 
   // clocking blocks
 
