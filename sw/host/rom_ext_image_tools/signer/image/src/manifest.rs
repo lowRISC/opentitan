@@ -25,11 +25,16 @@ use zerocopy::FromBytes;
 //      --no-doc-comments --no-layout-tests \
 //      sw/device/silicon_creator/lib/manifest.h \
 //      -- -I./ -Isw/device/lib/base/freestanding
+// TODO: Generate some constants as hex if possible, replacing manually for now.
 
 pub const MANIFEST_SIZE: u32 = 896;
-pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xA5A5A5A5;
-pub const MANIFEST_LENGTH_FIELD_MIN: u32 = 896;
-pub const MANIFEST_LENGTH_FIELD_MAX: u32 = 65536;
+pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xa5a5a5a5;
+pub const MANIFEST_IDENTIFIER_ROM_EXT: u32 = 0x4552544f;
+pub const MANIFEST_IDENTIFIER_OWNER_STAGE: u32 = 0x4f53544f;
+pub const MANIFEST_LENGTH_FIELD_ROM_EXT_MIN: u32 = 896;
+pub const MANIFEST_LENGTH_FIELD_ROM_EXT_MAX: u32 = 0x10000;
+pub const MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN: u32 = 896;
+pub const MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX: u32 = 0x70000;
 
 /// Manifest for boot stage images stored in flash.
 #[repr(C)]
@@ -88,7 +93,8 @@ impl Default for ManifestUsageConstraints {
         Self {
             selector_bits: 0,
             device_id: LifecycleDeviceId {
-                device_id: [MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL; 8usize],
+                device_id: [MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL;
+                    8usize],
             },
             manuf_state_creator: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
             manuf_state_owner: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,

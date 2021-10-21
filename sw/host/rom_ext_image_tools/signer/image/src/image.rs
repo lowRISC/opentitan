@@ -45,7 +45,8 @@ impl<'a> Image<'a> {
     }
 
     pub fn signed_bytes(&self) -> Vec<u8> {
-        self.bytes().split_off(self.manifest.signature.as_bytes().len())
+        self.bytes()
+            .split_off(self.manifest.signature.as_bytes().len())
     }
 }
 
