@@ -104,24 +104,24 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         @cfg.clkmgr_vif.peri_div2_cb begin
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriDiv2].sample(cfg.clkmgr_vif.peri_div2_cb.clk_enable,
-                                            cfg.clkmgr_vif.peri_div2_cb.ip_clk_en,
-                                            cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                              cfg.clkmgr_vif.peri_div2_cb.ip_clk_en,
+                                              cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
           end
         end
       forever
         @cfg.clkmgr_vif.peri_div4_cb begin
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriDiv4].sample(cfg.clkmgr_vif.peri_div4_cb.clk_enable,
-                                            cfg.clkmgr_vif.peri_div4_cb.ip_clk_en,
-                                            cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                              cfg.clkmgr_vif.peri_div4_cb.ip_clk_en,
+                                              cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
           end
         end
       forever
         @cfg.clkmgr_vif.peri_usb_cb begin
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriUsb].sample(cfg.clkmgr_vif.peri_usb_cb.clk_enable,
-                                            cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
-                                            cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                             cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
+                                             cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
           end
         end
     join
