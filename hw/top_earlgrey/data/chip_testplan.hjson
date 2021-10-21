@@ -2505,6 +2505,15 @@
       milestone: V2
       tests: []
     }
+    {
+      name: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
+      desc: '''Verify the sensor control is able to wake the device
+               from sleep mode when an alert event is triggered from
+               AST. X-ref'ed chip_sw_pwrmgr_sleep_all_wake_ups.
+             '''
+      milestone: V2
+      tests: []
+    }
 
     ////////////////////////////
     // System level scenarios //
