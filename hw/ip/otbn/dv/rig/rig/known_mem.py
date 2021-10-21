@@ -360,3 +360,25 @@ class KnownMem:
 
         assert addr == ibase_addr + offset
         return addr, offset
+
+    def pick_bad_addr(self) -> Optional[int]:
+        '''Pick bad addresses from gaps present in known addresses.'''
+
+        gap_list = []
+        gap_vma = 0
+        for low, high in self.known_ranges:
+            assert gap_vma <= low
+            if gap_vma < low:
+                gap_list.append((gap_vma, low - 1))
+            gap_vma = high + 1
+
+        if gap_vma <= self.top_addr:
+            gap_list.append((gap_vma, self.top_addr))
+
+        if not gap_list:
+            return None
+
+        gap_len = [1 + hi - lo for lo, hi in gap_list]
+        bad_addr_lo, bad_addr_hi = random.choices(gap_list, weights=gap_len)[0]
+
+        return random.randint(bad_addr_lo, bad_addr_hi)
