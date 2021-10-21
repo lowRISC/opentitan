@@ -27,3 +27,4 @@ gen-weights:
   BadGiantLoop: 1
   BadZeroLoop: 1
   MisalignedLoadStore: 1
+  BadIspr: 1

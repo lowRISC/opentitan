@@ -1055,3 +1055,6 @@ class Model:
             self._generic_update_for_insn(prog_insn)
 
         self.consume_fuel()
+
+    def pick_bad_addr(self, mem_type: str) -> Optional[int]:
+        return self._known_mem[mem_type].pick_bad_addr()

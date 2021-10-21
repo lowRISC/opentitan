@@ -32,6 +32,7 @@ from .gens.bad_insn import BadInsn
 from .gens.bad_giant_loop import BadGiantLoop
 from .gens.bad_load_store import BadLoadStore
 from .gens.bad_zero_loop import BadZeroLoop
+from .gens.bad_ispr import BadIspr
 from .gens.misaligned_load_store import MisalignedLoadStore
 from .gens.untaken_branch import UntakenBranch
 
@@ -60,6 +61,7 @@ class SnippetGens:
         BadGiantLoop,
         BadLoadStore,
         BadZeroLoop,
+        BadIspr,
         MisalignedLoadStore
     ]
 
