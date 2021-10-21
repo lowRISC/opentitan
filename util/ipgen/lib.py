@@ -203,6 +203,8 @@ class IpConfig:
         Returns the parameter values in typed form if successful, and throws
         a ValueError otherwise.
         """
+        VALID_PARAM_TYPES = ('string', 'int', 'object')
+
         param_values_typed = {}
         for key, value in param_values.items():
             if not isinstance(key, str):
@@ -215,17 +217,23 @@ class IpConfig:
                     f"The IP configuration has a key {key!r} which is a "
                     "valid parameter.")
 
-            if template_params[key].param_type == 'string':
+            param_type = template_params[key].param_type
+            if param_type not in VALID_PARAM_TYPES:
+                raise ValueError(
+                    f"Unknown template parameter type {param_type!r}. "
+                    "Allowed types: " + ', '.join(VALID_PARAM_TYPES))
+
+            if param_type == 'string':
                 param_value_typed = check_str(
                     value, f"the key {key} of the IP configuration")
-            elif template_params[key].param_type == 'int':
+            elif param_type == 'int':
                 param_value_typed = check_int(
                     value, f"the key {key} of the IP configuration")
-            elif template_params[key].param_type == 'object':
+            elif param_type == 'object':
                 param_value_typed = IpConfig._check_object(
                     value, f"the key {key} of the IP configuration")
             else:
-                assert True, "Unexpeced parameter type found, expand this check"
+                assert False, "Unexpected parameter type found, expand check"
 
             param_values_typed[key] = param_value_typed
 
