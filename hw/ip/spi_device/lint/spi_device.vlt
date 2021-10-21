@@ -16,3 +16,8 @@ lint_off -rule UNUSED -file "*/rtl/spi_fwm_txf_ctrl.sv" -match "Signal is not us
 // Waive a warning caused by the fact that our "abort" register
 // matches a C++ common word.
 lint_off -rule SYMRSVDWORD -file "*/rtl/spi_device_reg_pkg.sv" -match "Symbol matches C++ common word: 'abort'"
+
+// Width mismatch when comparing a slice from fifoptr with an int. The slice is sized as
+// [0+:$clog2(SubWordW)] so can represent values up to SubWordW-1. The loop runs with i from zero to
+// SubWordW - 1.
+lint_off -rule WIDTH -file "*/rtl/spid_fifo2sram_adapter.sv" -match "Operator EQ expects 32 bits*LHS's SEL generates*"
