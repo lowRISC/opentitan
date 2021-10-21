@@ -1283,9 +1283,7 @@ module spi_device
   /////////////////////
   // SPI Passthrough //
   /////////////////////
-  spi_passthrough #(
-    .NumCmdInfo(spi_device_reg_pkg::NumCmdInfo)
-  ) u_passthrough (
+  spi_passthrough u_passthrough (
     .clk_i     (clk_spi_in_buf),
     .rst_ni    (rst_spi_n),
     .clk_out_i (clk_spi_out_buf),

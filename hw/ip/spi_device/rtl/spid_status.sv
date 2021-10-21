@@ -18,8 +18,7 @@ module spid_status
     spi_device_pkg::CmdInfoReadStatus1,
     spi_device_pkg::CmdInfoReadStatus2,
     spi_device_pkg::CmdInfoReadStatus3
-  },
-  parameter int unsigned CmdInfoIdxW = spi_device_pkg::CmdInfoIdxW
+  }
 ) (
   input clk_i,
   input rst_ni,
