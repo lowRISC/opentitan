@@ -368,7 +368,10 @@ static void test_unlock_exec_eflash(epmp_state_t *epmp) {
 void mask_rom_main(void) {
   // Initialize pinmux configuration so we can use the UART.
   pinmux_init();
+
+  // Enable execution of code in flash.
   flash_ctrl_init();
+  flash_ctrl_exec_set(kFlashCtrlExecEnable);
 
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);

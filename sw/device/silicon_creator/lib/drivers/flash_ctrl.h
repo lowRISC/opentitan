@@ -4,6 +4,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_FLASH_CTRL_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_FLASH_CTRL_H_
 
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -110,6 +111,23 @@ rom_error_t flash_ctrl_read_start(uint32_t addr, uint32_t word_count,
  * @return The number of words read from the FIFO.
  */
 size_t flash_ctrl_fifo_read(size_t word_count, uint32_t *data_out);
+
+typedef enum flash_ctrl_exec {
+  kFlashCtrlExecDisable = kMultiBitBool4False,
+  kFlashCtrlExecEnable = kMultiBitBool4True,
+} flash_ctrl_exec_t;
+
+/**
+ * Enable execution from flash.
+ *
+ * Note: a ePMP region must also be configured in order to execute code in
+ * flash.
+ *
+ * @param `enable` Value to write to the `flash_ctrl.EXEC` register. The
+ *                value `0xa` will enable execution, all other values will
+ *                disable execution.
+ */
+void flash_ctrl_exec_set(flash_ctrl_exec_t enable);
 
 #ifdef __cplusplus
 }
