@@ -1184,10 +1184,9 @@ def main():
                            check=True,
                            cwd=str(SRCTREE_TOP))  # yapf: disable
 
-        # generate chip level xbar and alert_handler TB
+        # generate chip level xbar TB
         tb_files = [
-            "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
-            "tb__alert_handler_connect.sv", "xbar_tgl_excl.cfg"
+            "xbar_env_pkg__params.sv", "tb__xbar_connect.sv", "xbar_tgl_excl.cfg"
         ]
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)

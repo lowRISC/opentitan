@@ -49,12 +49,9 @@ module tb;
   // cpu clock cannot reference cpu_hier since cpu clocks are forced off in stub_cpu mode
   wire cpu_clk = `CPU_HIER.clk_i;
   wire cpu_rst_n = `CPU_HIER.rst_ni;
-  wire alert_handler_clk = `ALERT_HANDLER_HIER.clk_i;
-  wire alert_handler_rst_n = `ALERT_HANDLER_HIER.rst_ni;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk, .rst_n);
-  alert_esc_if alert_if[NUM_ALERTS](.clk(alert_handler_clk), .rst_n(alert_handler_rst_n));
   pins_if #(NUM_GPIOS) gpio_if(.pins(gpio_pins));
   pins_if #(1) srst_n_if(.pins(srst_n));
   pins_if #(2) tap_straps_if(.pins(tap_straps));
@@ -228,15 +225,6 @@ module tb;
     .*
   );
 
-  // connect alert rx/tx to alert_if
-  for (genvar k = 0; k < NUM_ALERTS; k++) begin : gen_connect_alerts_pins
-    assign alert_if[k].alert_rx = `ALERT_HANDLER_HIER.alert_rx_o[k];
-    initial begin
-      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
-          LIST_OF_ALERTS[k]), "vif", alert_if[k]);
-    end
-  end : gen_connect_alerts_pins
-
   initial begin
     // Set clk_rst_vifs.
     clk_rst_if.set_active();
@@ -406,6 +394,5 @@ module tb;
   `DV_ASSERT_CTRL("dut_assert_en", tb.dut)
 
   `include "../autogen/tb__xbar_connect.sv"
-  `include "../autogen/tb__alert_handler_connect.sv"
 
 endmodule

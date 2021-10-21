@@ -79,7 +79,6 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
 
     has_devmode = 0;
-    list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;
 
     super.initialize(csr_base_addr);
 
@@ -164,4 +163,8 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     end
   endfunction
 
+  // Override shadow register naming checks. Top-level does not extend any alert_esc_agent.
+  virtual function void check_shadow_reg_alerts();
+    // Nothing to check.
+  endfunction
 endclass
