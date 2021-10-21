@@ -68,11 +68,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     uvm_reg csr;
     bit     do_read_check   = 1'b0; // TODO: fixme
     bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
+    uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = ral.default_map.get_reg_by_offset(csr_addr);
+      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end
     else if (item.a_addr inside {[cfg.sram_start_addr:cfg.sram_end_addr]}) begin

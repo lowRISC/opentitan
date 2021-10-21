@@ -168,7 +168,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     uvm_reg csr;
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
+    uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
     bit addr_phase_read   = (!write && channel == AddrChannel);
     bit addr_phase_write  = (write && channel == AddrChannel);
@@ -182,7 +182,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
       return;
     // if access was to a valid csr, get the csr handle
     end else if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = ral.default_map.get_reg_by_offset(csr_addr);
+      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
