@@ -440,6 +440,22 @@
         }
       ]
     }
+    { name: "LOAD_CHECKSUM",
+      desc: '''
+        A 32-bit CRC checksum of data written to memory
+
+        See the "Memory Load Integrity" section of the manual for full details.
+      '''
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "31:0",
+          name: "checksum",
+          resval: 0,
+          desc: "Checksum accumulator"
+        }
+      ]
+    }
 
     // Give IMEM and DMEM 16 KiB address space, each, to allow for easy expansion
     // of the actual IMEM and DMEM sizes without changing the address map.

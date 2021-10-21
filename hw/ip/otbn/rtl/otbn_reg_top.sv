@@ -200,6 +200,9 @@ module otbn_reg_top (
   logic fatal_alert_cause_fatal_software_qs;
   logic insn_cnt_re;
   logic [31:0] insn_cnt_qs;
+  logic load_checksum_we;
+  logic [31:0] load_checksum_qs;
+  logic [31:0] load_checksum_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -849,20 +852,47 @@ module otbn_reg_top (
   );
 
 
+  // R[load_checksum]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_load_checksum (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [9:0] addr_hit;
+    // from register interface
+    .we     (load_checksum_we),
+    .wd     (load_checksum_wd),
+
+    // from internal hardware
+    .de     (hw2reg.load_checksum.de),
+    .d      (hw2reg.load_checksum.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.load_checksum.q),
+
+    // to register interface (read)
+    .qs     (load_checksum_qs)
+  );
+
+
+
+  logic [10:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == OTBN_INTR_STATE_OFFSET);
-    addr_hit[1] = (reg_addr == OTBN_INTR_ENABLE_OFFSET);
-    addr_hit[2] = (reg_addr == OTBN_INTR_TEST_OFFSET);
-    addr_hit[3] = (reg_addr == OTBN_ALERT_TEST_OFFSET);
-    addr_hit[4] = (reg_addr == OTBN_CMD_OFFSET);
-    addr_hit[5] = (reg_addr == OTBN_CTRL_OFFSET);
-    addr_hit[6] = (reg_addr == OTBN_STATUS_OFFSET);
-    addr_hit[7] = (reg_addr == OTBN_ERR_BITS_OFFSET);
-    addr_hit[8] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
-    addr_hit[9] = (reg_addr == OTBN_INSN_CNT_OFFSET);
+    addr_hit[ 0] = (reg_addr == OTBN_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == OTBN_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == OTBN_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == OTBN_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == OTBN_CMD_OFFSET);
+    addr_hit[ 5] = (reg_addr == OTBN_CTRL_OFFSET);
+    addr_hit[ 6] = (reg_addr == OTBN_STATUS_OFFSET);
+    addr_hit[ 7] = (reg_addr == OTBN_ERR_BITS_OFFSET);
+    addr_hit[ 8] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
+    addr_hit[ 9] = (reg_addr == OTBN_INSN_CNT_OFFSET);
+    addr_hit[10] = (reg_addr == OTBN_LOAD_CHECKSUM_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -870,16 +900,17 @@ module otbn_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(OTBN_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(OTBN_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(OTBN_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(OTBN_PERMIT[3] & ~reg_be))) |
-               (addr_hit[4] & (|(OTBN_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(OTBN_PERMIT[5] & ~reg_be))) |
-               (addr_hit[6] & (|(OTBN_PERMIT[6] & ~reg_be))) |
-               (addr_hit[7] & (|(OTBN_PERMIT[7] & ~reg_be))) |
-               (addr_hit[8] & (|(OTBN_PERMIT[8] & ~reg_be))) |
-               (addr_hit[9] & (|(OTBN_PERMIT[9] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(OTBN_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(OTBN_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(OTBN_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(OTBN_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(OTBN_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(OTBN_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(OTBN_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(OTBN_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(OTBN_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(OTBN_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(OTBN_PERMIT[10] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -903,6 +934,9 @@ module otbn_reg_top (
 
   assign ctrl_wd = reg_wdata[0];
   assign insn_cnt_re = addr_hit[9] & reg_re & !reg_error;
+  assign load_checksum_we = addr_hit[10] & reg_we & !reg_error;
+
+  assign load_checksum_wd = reg_wdata[31:0];
 
   // Read data return
   always_comb begin
@@ -964,6 +998,10 @@ module otbn_reg_top (
 
       addr_hit[9]: begin
         reg_rdata_next[31:0] = insn_cnt_qs;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[31:0] = load_checksum_qs;
       end
 
       default: begin

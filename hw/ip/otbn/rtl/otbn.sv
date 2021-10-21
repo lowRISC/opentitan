@@ -107,6 +107,11 @@ module otbn
   tlul_pkg::tl_h2d_t tl_win_h2d [2];
   tlul_pkg::tl_d2h_t tl_win_d2h [2];
 
+  // TODO: Implement LOAD_CHECKSUM register
+  logic unused_load_checksum;
+  assign unused_load_checksum = ^reg2hw.load_checksum;
+  assign hw2reg.load_checksum.d = '0;
+  assign hw2reg.load_checksum.de = 1'b0;
 
   // Inter-module signals ======================================================
 
