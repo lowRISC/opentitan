@@ -147,6 +147,9 @@ static rom_error_t mask_rom_boot(const manifest_t *manifest) {
   keymgr_sw_binding_set(&manifest->binding_value, &manifest->binding_value);
   keymgr_creator_max_ver_set(manifest->max_key_version);
 
+  // Enable execution of code from flash.
+  flash_ctrl_exec_set(kFlashCtrlExecEnable);
+
   // TODO(lowRISC/opentitan#8536): Integrate RND driver.
   sec_mmio_check_values(/*rnd_offset=*/0);
   sec_mmio_check_counters(/*expected_check_count=*/3);

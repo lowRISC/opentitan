@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/testing/mock_mmio_test_utils.h"
 #include "sw/device/silicon_creator/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -27,8 +28,6 @@ class InitTest : public FlashCtrlTest {};
 TEST_F(InitTest, Initialize) {
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
-
-  EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, 0xa);
 
   flash_ctrl_init();
 }
@@ -142,6 +141,19 @@ TEST_F(ReadTest, ReadAll) {
   EXPECT_EQ(flash_ctrl_fifo_read(words_.size(), &words_out.front()),
             words_.size());
   EXPECT_EQ(words_out, words_);
+}
+
+class ExecTest : public FlashCtrlTest {};
+
+TEST_F(ExecTest, Enable) {
+  EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, kMultiBitBool4True);
+  flash_ctrl_exec_set(kFlashCtrlExecEnable);
+}
+
+TEST_F(ExecTest, Disable) {
+  // Note: any value that is not `0xa` will disable execution.
+  EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, kMultiBitBool4False);
+  flash_ctrl_exec_set(kFlashCtrlExecDisable);
 }
 
 }  // namespace
