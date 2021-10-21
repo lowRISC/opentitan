@@ -261,6 +261,10 @@ class IpBlockRenderer(IpTemplateRendererBase):
             # Generate register interface through reggen.
             hjson_path = (output_dir_staging / 'data' /
                           (self.ip_template.name + '.hjson'))
+            if not hjson_path.exists():
+                raise TemplateRenderError(
+                    "Invalid template: The IP description file "
+                    f"{str(hjson_path)!r} does not exist.")
             rtl_path = output_dir_staging / 'rtl'
             # TODO: Pass on template parameters to reggen? Or enable the user
             # to set a different set of parameters in the renderer?
