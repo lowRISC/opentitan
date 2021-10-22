@@ -155,8 +155,9 @@ class OTBNState:
         assert not self.rnd_cdc_pending
 
         # Collect 32b packages in a 256b variable
-        shift_num = 32 * self.rnd_256b_counter
-        self.rnd_256b = (self.rnd_256b | (rnd_data << shift_num)) & ((1 << 256) - 1)
+        new_word = rnd_data << (32 * self.rnd_256b_counter)
+        assert new_word < (1 << 256)
+        self.rnd_256b = self.rnd_256b | new_word
 
         if self.rnd_256b_counter == 7:
             # Reset the 32b package counter and wait until receiving done
@@ -245,7 +246,8 @@ class OTBNState:
         c = []  # type: List[Trace]
         c += self.gprs.changes()
         if self._pc_next_override is not None:
-            # Only append the next program counter to the trace if it is special
+            # Only append the next program counter to the trace if it has
+            # been set explicitly.
             c.append(TracePC(self.get_next_pc()))
         c += self.dmem.changes()
         c += self.loop_stack.changes()
@@ -400,7 +402,8 @@ class OTBNState:
         '''
 
         if self._err_bits:
-            # Abort all pending changes, including changes to external registers.
+            # Abort all pending changes, including changes to external
+            # registers.
             self._abort()
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being

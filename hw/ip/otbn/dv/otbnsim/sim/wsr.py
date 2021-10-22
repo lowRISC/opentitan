@@ -90,9 +90,10 @@ class RandWSR(WSR):
 
     RND is special as OTBN can stall on reads to it. A read from RND either
     immediately returns data from a cache of a previous EDN request (triggered
-    by writing to the RND_PREFETCH CSR) or waits for data from the EDN. To model
-    this anything reading from RND must first call `request_value` which returns
-    True if the value is available.
+    by writing to the RND_PREFETCH CSR) or waits for data from the EDN. To
+    model this, anything reading from RND must first call `request_value` which
+    returns True if the value is available.
+
     '''
     def __init__(self, name: str):
         super().__init__(name)

@@ -674,7 +674,8 @@ class Model:
                             for idx, value in indices
                             if value % base_align == 0]
 
-            # If there are no known aligned indices for this operand, give up now.
+            # If there are no known aligned indices for this operand, give up
+            # now.
             if not aligned_regs:
                 return None
 
@@ -758,8 +759,9 @@ class Model:
         if src_val is None:
             result = None
         else:
-            # op_vals[2] is the immediate, but is already "encoded" as an unsigned
-            # value. Turn it back into the signed operand that actually gets added.
+            # op_vals[2] is the immediate, but is already "encoded" as an
+            # unsigned value. Turn it back into the signed operand that
+            # actually gets added.
             imm_op = insn.operands[2]
             imm_val = imm_op.op_type.enc_val_to_op_val(op_vals[2], self.pc)
             assert imm_val is not None

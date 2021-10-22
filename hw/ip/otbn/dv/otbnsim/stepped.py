@@ -74,7 +74,8 @@ def read_word(arg_name: str, word_data: str, bits: int) -> int:
                          .format(word_data, arg_name)) from None
 
     if value < 0 or value >> bits:
-        raise ValueError('<{}> argument is {!r}: not representable in {!r} bits.'
+        raise ValueError('<{}> argument is {!r}: '
+                         'not representable in {!r} bits.'
                          .format(arg_name, word_data, bits))
 
     return value

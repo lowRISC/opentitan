@@ -77,7 +77,8 @@ class GPRs(RegFile):
     def get_reg(self, idx: int) -> Reg:
         if idx == 0:
             # If idx == 0, this is a zeros register that should ignore writes.
-            # Return a fresh Reg with no parent, so writes to it have no effect.
+            # Return a fresh Reg with no parent, so writes to it have no
+            # effect.
             return Reg(None, 0, 32, 0)
         elif idx == 1:
             # If idx == 1, we return self._x1: element 1 of the underlying
