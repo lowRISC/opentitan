@@ -580,6 +580,28 @@ sw_tests += {
   }
 }
 
+# SRAM Controller execution from Main SRAM test.
+sram_ctrl_execution_test_main_lib = declare_dependency(
+  link_with: static_library(
+    'sram_ctrl_execution_test_main_lib',
+    sources: ['sram_ctrl_execution_test_main.c'],
+    dependencies: [
+      sw_lib_bitfield,
+      sw_lib_dif_sram_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_testing_lc_ctrl_testutils,
+      sw_lib_testing_otp_ctrl_testutils,
+      sw_lib_testing_sram_ctrl_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'sram_ctrl_execution_test_main': {
+    'library': sram_ctrl_execution_test_main_lib,
+  }
+}
+
 ###############################################################################
 # Auto-generated tests
 ###############################################################################
