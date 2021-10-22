@@ -20,11 +20,11 @@ module aes_core
 
   localparam int         NumShares            = Masking ? 2 : 1, // derived parameter
 
-  parameter clearing_lfsr_seed_t   RndCnstClearingLfsrSeed  = RndCnstClearingLfsrSeedDefault,
-  parameter clearing_lfsr_perm_t   RndCnstClearingLfsrPerm  = RndCnstClearingLfsrPermDefault,
-  parameter clearing_lfsr_perm_t   RndCnstClearingSharePerm = RndCnstClearingSharePermDefault,
-  parameter masking_lfsr_seed_t    RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
-  parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
+  parameter clearing_lfsr_seed_t RndCnstClearingLfsrSeed  = RndCnstClearingLfsrSeedDefault,
+  parameter clearing_lfsr_perm_t RndCnstClearingLfsrPerm  = RndCnstClearingLfsrPermDefault,
+  parameter clearing_lfsr_perm_t RndCnstClearingSharePerm = RndCnstClearingSharePermDefault,
+  parameter masking_lfsr_seed_t  RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
+  parameter masking_lfsr_perm_t  RndCnstMaskingLfsrPerm   = RndCnstMaskingLfsrPermDefault
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
@@ -394,13 +394,13 @@ module aes_core
 
   // Cipher core
   aes_cipher_core #(
-    .AES192Enable             ( AES192Enable             ),
-    .Masking                  ( Masking                  ),
-    .SBoxImpl                 ( SBoxImpl                 ),
-    .SecAllowForcingMasks     ( SecAllowForcingMasks     ),
-    .SecSkipPRNGReseeding     ( SecSkipPRNGReseeding     ),
-    .RndCnstMaskingLfsrSeed   ( RndCnstMaskingLfsrSeed   ),
-    .RndCnstMskgChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
+    .AES192Enable           ( AES192Enable           ),
+    .Masking                ( Masking                ),
+    .SBoxImpl               ( SBoxImpl               ),
+    .SecAllowForcingMasks   ( SecAllowForcingMasks   ),
+    .SecSkipPRNGReseeding   ( SecSkipPRNGReseeding   ),
+    .RndCnstMaskingLfsrSeed ( RndCnstMaskingLfsrSeed ),
+    .RndCnstMaskingLfsrPerm ( RndCnstMaskingLfsrPerm )
   ) u_aes_cipher_core (
     .clk_i              ( clk_i                      ),
     .rst_ni             ( rst_ni                     ),

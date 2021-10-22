@@ -103,8 +103,8 @@ module aes_cipher_core import aes_pkg::*;
 
   localparam int         NumShares            = Masking ? 2 : 1, // derived parameter
 
-  parameter masking_lfsr_seed_t    RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
-  parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
+  parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeed = RndCnstMaskingLfsrSeedDefault,
+  parameter masking_lfsr_perm_t RndCnstMaskingLfsrPerm = RndCnstMaskingLfsrPermDefault
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
@@ -290,13 +290,13 @@ module aes_cipher_core import aes_pkg::*;
     // - the pseudo-random data (PRD) required by SubBytes,
     // - the PRD required by the key expand module (has 4 S-Boxes internally).
     aes_prng_masking #(
-      .Width                ( WidthPRDMasking          ),
-      .ChunkSize            ( ChunkSizePRDMasking      ),
-      .EntropyWidth         ( EntropyWidth             ),
-      .SecAllowForcingMasks ( SecAllowForcingMasks     ),
-      .SecSkipPRNGReseeding ( SecSkipPRNGReseeding     ),
-      .RndCnstLfsrSeed      ( RndCnstMaskingLfsrSeed   ),
-      .RndCnstChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
+      .Width                ( WidthPRDMasking        ),
+      .ChunkSize            ( ChunkSizePRDMasking    ),
+      .EntropyWidth         ( EntropyWidth           ),
+      .SecAllowForcingMasks ( SecAllowForcingMasks   ),
+      .SecSkipPRNGReseeding ( SecSkipPRNGReseeding   ),
+      .RndCnstLfsrSeed      ( RndCnstMaskingLfsrSeed ),
+      .RndCnstLfsrPerm      ( RndCnstMaskingLfsrPerm )
     ) u_aes_prng_masking (
       .clk_i              ( clk_i               ),
       .rst_ni             ( rst_ni              ),

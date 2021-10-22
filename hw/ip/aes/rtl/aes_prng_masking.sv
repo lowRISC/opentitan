@@ -4,9 +4,10 @@
 //
 // AES high-bandwidth pseudo-random number generator for masking
 //
-// This module uses multiple parallel LFSRs each one of them followed by an aligned permutation,
-// a non-linear layer (PRINCE S-Boxes) and another permutation to generate pseudo-random data for
-// masking the AES cipher core. The LFSRs can be reseeded using an external interface.
+// This module uses multiple parallel LFSRs each one of them followed by an aligned permutation, a
+// non-linear layer (PRINCE S-Boxes) and another permutation layer spanning across all LFSRs to
+// generate pseudo-random data for masking the AES cipher core. The LFSRs can be reseeded using an
+// external interface.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // IMPORTANT NOTE:                                                                               //
@@ -34,8 +35,8 @@ module aes_prng_masking import aes_pkg::*;
 
   localparam int unsigned NumChunks = Width/ChunkSize, // derived parameter
 
-  parameter masking_lfsr_seed_t    RndCnstLfsrSeed      = RndCnstMaskingLfsrSeedDefault,
-  parameter mskg_chunk_lfsr_perm_t RndCnstChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
+  parameter masking_lfsr_seed_t RndCnstLfsrSeed = RndCnstMaskingLfsrSeedDefault,
+  parameter masking_lfsr_perm_t RndCnstLfsrPerm = RndCnstMaskingLfsrPermDefault
 ) (
   input  logic                    clk_i,
   input  logic                    rst_ni,
@@ -59,7 +60,8 @@ module aes_prng_masking import aes_pkg::*;
   logic                    [Width-1:0] seed;
   logic [NumChunks-1:0][ChunkSize-1:0] prng_seed;
   logic                                prng_en;
-  logic [NumChunks-1:0][ChunkSize-1:0] prng_state;
+  logic [NumChunks-1:0][ChunkSize-1:0] prng_state, perm;
+  logic                    [Width-1:0] prng_b, perm_b;
   logic                                phase_q;
 
   // Upsizing of entropy input to correct width for PRNG reseeding.
@@ -118,8 +120,7 @@ module aes_prng_masking import aes_pkg::*;
       .LfsrDw       ( ChunkSize                                   ),
       .StateOutDw   ( ChunkSize                                   ),
       .DefaultSeed  ( RndCnstLfsrSeed[c * ChunkSize +: ChunkSize] ),
-      .StatePermEn  ( 1'b1                                        ),
-      .StatePerm    ( RndCnstChunkLfsrPerm                        ),
+      .StatePermEn  ( 1'b0                                        ),
       .NonLinearOut ( 1'b1                                        )
     ) u_lfsr_chunk (
       .clk_i     ( clk_i         ),
@@ -132,6 +133,13 @@ module aes_prng_masking import aes_pkg::*;
     );
   end
 
+  // Add a permutation layer spanning across all LFSRs to break linear shift patterns.
+  assign prng_b = prng_state;
+  for (genvar b = 0; b < Width; b++) begin : gen_perm
+    assign perm_b[b] = prng_b[RndCnstLfsrPerm[b]];
+  end
+  assign perm = perm_b;
+
   /////////////
   // Outputs //
   /////////////
@@ -139,9 +147,8 @@ module aes_prng_masking import aes_pkg::*;
   // To achieve independence of input and output masks (the output mask of round X is the input
   // mask of round X+1), we assign the scrambled chunks to the output data in alternating fashion.
   assign data_o =
-      (SecAllowForcingMasks && force_zero_masks_i) ? '0                                         :
-       phase_q                                     ? {prng_state[0], prng_state[NumChunks-1:1]} :
-          prng_state;
+      (SecAllowForcingMasks && force_zero_masks_i) ? '0                             :
+       phase_q                                     ? {perm[0], perm[NumChunks-1:1]} : perm;
 
   if (!SecAllowForcingMasks) begin : gen_unused_force_masks
     logic unused_force_zero_masks;
@@ -164,5 +171,20 @@ module aes_prng_masking import aes_pkg::*;
   `ASSERT_INIT(AesPrngMaskingWidthByChunk, Width % ChunkSize == 0)
   // Width must be divisible by 8
   `ASSERT_INIT(AesPrngMaskingWidthBy8, Width % 8 == 0)
+
+// the code below is not meant to be synthesized,
+// but it is intended to be used in simulation and FPV
+`ifndef SYNTHESIS
+  // Check that the supplied permutation is valid.
+  logic [Width-1:0] perm_test;
+  initial begin : p_perm_check
+    perm_test = '0;
+    for (int k = 0; k < Width; k++) begin
+      perm_test[RndCnstLfsrPerm[k]] = 1'b1;
+    end
+    // All bit positions must be marked with 1.
+    `ASSERT_I(PermutationCheck_A, &perm_test)
+  end
+`endif
 
 endmodule

@@ -107,12 +107,12 @@
       randcount: "160",
       randtype:  "data"
     },
-    { name:    "RndCnstMskgChunkLfsrPerm",
-      type:    "aes_pkg::mskg_chunk_lfsr_perm_t",
+    { name:    "RndCnstMaskingLfsrPerm",
+      type:    "aes_pkg::masking_lfsr_perm_t",
       desc:    '''
-        Permutation applied to the LFSR chunks of the PRNG used for masking.
+        Permutation applied to the concatenated LFSRs of the PRNG used for masking.
       '''
-      randcount: "32",
+      randcount: "160",
       randtype:  "perm"
     },
     # Note: All parameters below are local, they are not actually configurable.
