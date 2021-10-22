@@ -90,6 +90,12 @@
     {
       name: abort
       desc: '''
+            Fill the TX_FIFO(async), then abort pending jobs
+
+            Verify that bit 4 of the SPI Device status register is asserted
+
+            Verify that TXF control returns to Idle state
+            
             TODO: Need to clarify the behavior in spec'''
       milestone: V2
       tests: []
@@ -127,7 +133,20 @@
     }
     {
       name: mode
-      desc: '''TODO :only support fw mode now'''
+      desc: '''
+            Configure spi device for passthrough mode
+            - Perform passthrough mode transactions, monitor and verify
+            - TODO: Requires specification update
+
+            Configure spi device for flash mode
+            - Perform flash mode transactions, monitor and verify
+            - TODO: Requires specification update
+
+            Configure spi device for TPM mode
+            - Check that the return-by-HW register values come from the SW read-writable CSRs
+            - Verify that the module latches the CSRs from the SYS_CLK domain into the SPI SCK domain when CSb is asserted
+            - Verify that the SW is allowed to modify the return-by-HW registers only when CSb is not active
+            '''
       milestone: V2
       tests: []
     }
@@ -143,6 +162,39 @@
     {
       name: perf
       desc: '''Run spi_device_fifi_full_vseq with very small delays'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: tpm_read
+      desc: '''
+            Perform a TPM read:
+            - Verify that the TPM submodule returns appropriate data for read commands depending on the current read FIFO status, the address, and Locality
+            - Confirm that the module sends bytes from the return-by-HW registers to the parallel-to-serial logic right after the address phase.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: tpm_write
+      desc: '''
+            Perform a TPM write:
+            - Verify that the TPM submodule parses the incoming SPI MOSI line and stacks the stream up to the SW accessible registers
+            - The SW must decode the command and the address
+            - SW reads the data from the write FIFO or pushes data into the read FIFO depending on the command'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: tpm_invalid
+      desc: '''
+            Write a 1 to bit 4 of the TPM configuration register
+            - Verify that the TPM submodule returns the invalid data (0xFF) for the out of the max Locality request
+            - If it is a write request, confirm that it discards the request
+
+            Write a 0 to bit 4 of the TPM configuration register
+            - Verify that the TPM submodule uploads the TPM command and address, the SW is able to write 0xFF to the read FIFO
+
+            Verify that the TPM submodule uploads the TPM commands that do not fall into the FIFO registers (0xD4_XXXX) regardless of invalid_locality bit'''
       milestone: V2
       tests: []
     }
