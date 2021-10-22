@@ -4,9 +4,9 @@
 //
 // AES low-bandwidth pseudo-random number generator for register clearing
 //
-// This module uses an LFSR connected to a PRINCE S-Box and PRESENT permutation to generate
-// pseudo-random data for the AES module for clearing registers. The LFSR can be reseeded
-// using an external interface.
+// This module uses an LFSR followed by an aligned permutation, a non-linear layer (PRINCE S-Boxes)
+// and another permutation to generate pseudo-random data for the AES module for clearing
+// registers (secure wipe). The LFSR can be reseeded using an external interface.
 
 `include "prim_assert.sv"
 
@@ -43,7 +43,7 @@ module aes_prng_clearing import aes_pkg::*;
   logic             seed_en;
   logic [Width-1:0] seed;
   logic             lfsr_en;
-  logic [Width-1:0] lfsr_state, lfsr_state_scrambled;
+  logic [Width-1:0] lfsr_state;
 
   // The data requests are fed from the LFSR, reseed requests have the highest priority.
   assign data_ack_o = reseed_req_i ? 1'b0 : data_req_i;
@@ -81,12 +81,13 @@ module aes_prng_clearing import aes_pkg::*;
 
   // LFSR instance
   prim_lfsr #(
-    .LfsrType    ( "GAL_XOR"       ),
-    .LfsrDw      ( Width           ),
-    .StateOutDw  ( Width           ),
-    .DefaultSeed ( RndCnstLfsrSeed ),
-    .StatePermEn ( 1'b1            ),
-    .StatePerm   ( RndCnstLfsrPerm )
+    .LfsrType     ( "GAL_XOR"       ),
+    .LfsrDw       ( Width           ),
+    .StateOutDw   ( Width           ),
+    .DefaultSeed  ( RndCnstLfsrSeed ),
+    .StatePermEn  ( 1'b1            ),
+    .StatePerm    ( RndCnstLfsrPerm ),
+    .NonLinearOut ( 1'b1            )
   ) u_lfsr (
     .clk_i     ( clk_i      ),
     .rst_ni    ( rst_ni     ),
@@ -96,15 +97,12 @@ module aes_prng_clearing import aes_pkg::*;
     .entropy_i (         '0 ),
     .state_o   ( lfsr_state )
   );
+  assign data_o[0] = lfsr_state;
 
-  // "Scramble" the LFSR state to break linear shift patterns.
-  assign lfsr_state_scrambled = prim_cipher_pkg::sbox4_64bit(lfsr_state,
-      prim_cipher_pkg::PRINCE_SBOX4);
-  assign data_o[0]            = lfsr_state_scrambled;
   // A seperate permutation is applied to obtain the pseudo-random data for clearing the second
   // share of registers (e.g. key registers or state registers in case masking is enabled).
   for (genvar i = 0; i < Width; i++) begin : gen_share_perm
-    assign data_o[1][i] = lfsr_state_scrambled[RndCnstSharePerm[i]];
+    assign data_o[1][i] = lfsr_state[RndCnstSharePerm[i]];
   end
 
   // Width must be 64.
