@@ -2112,7 +2112,7 @@ module top_earlgrey #(
     .RndCnstClearingLfsrPerm(RndCnstAesClearingLfsrPerm),
     .RndCnstClearingSharePerm(RndCnstAesClearingSharePerm),
     .RndCnstMaskingLfsrSeed(RndCnstAesMaskingLfsrSeed),
-    .RndCnstMskgChunkLfsrPerm(RndCnstAesMskgChunkLfsrPerm)
+    .RndCnstMaskingLfsrPerm(RndCnstAesMaskingLfsrPerm)
   ) u_aes (
       // [36]: recov_ctrl_update_err
       // [37]: fatal_fault

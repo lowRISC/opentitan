@@ -30,11 +30,11 @@ module aes
                                                     // need to skip reseeding requests.
                                                     // Useful for SCA only.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter clearing_lfsr_seed_t   RndCnstClearingLfsrSeed  = RndCnstClearingLfsrSeedDefault,
-  parameter clearing_lfsr_perm_t   RndCnstClearingLfsrPerm  = RndCnstClearingLfsrPermDefault,
-  parameter clearing_lfsr_perm_t   RndCnstClearingSharePerm = RndCnstClearingSharePermDefault,
-  parameter masking_lfsr_seed_t    RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
-  parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
+  parameter clearing_lfsr_seed_t RndCnstClearingLfsrSeed  = RndCnstClearingLfsrSeedDefault,
+  parameter clearing_lfsr_perm_t RndCnstClearingLfsrPerm  = RndCnstClearingLfsrPermDefault,
+  parameter clearing_lfsr_perm_t RndCnstClearingSharePerm = RndCnstClearingSharePermDefault,
+  parameter masking_lfsr_seed_t  RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
+  parameter masking_lfsr_perm_t  RndCnstMaskingLfsrPerm   = RndCnstMaskingLfsrPermDefault
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
@@ -157,7 +157,7 @@ module aes
     .RndCnstClearingLfsrPerm  ( RndCnstClearingLfsrPerm  ),
     .RndCnstClearingSharePerm ( RndCnstClearingSharePerm ),
     .RndCnstMaskingLfsrSeed   ( RndCnstMaskingLfsrSeed   ),
-    .RndCnstMskgChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
+    .RndCnstMaskingLfsrPerm   ( RndCnstMaskingLfsrPerm   )
   ) u_aes_core (
     .clk_i                  ( clk_i                ),
     .rst_ni                 ( rst_ni               ),
