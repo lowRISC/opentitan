@@ -76,29 +76,24 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // signals
   logic       fw_ov_mode;
   logic       fw_ov_mode_pfe;
-  logic       fw_ov_mode_pfd;
   logic       fw_ov_mode_pfa;
   logic       fw_ov_entropy_insert;
   logic       fw_ov_entropy_insert_pfe;
-  logic       fw_ov_entropy_insert_pfd;
   logic       fw_ov_entropy_insert_pfa;
   logic [ObserveFifoWidth-1:0] fw_ov_wr_data;
   logic       fw_ov_fifo_rd_pulse;
   logic       fw_ov_fifo_wr_pulse;
   logic       es_enable;
   logic       es_enable_pfe;
-  logic       es_enable_pfd;
   logic       es_enable_pfa;
   logic       es_enable_early;
 
   logic       es_enable_rng;
   logic       rng_bit_en;
   logic       rng_bit_enable_pfe;
-  logic       rng_bit_enable_pfd;
   logic       rng_bit_enable_pfa;
   logic [1:0] rng_bit_sel;
   logic       entropy_data_reg_en_pfe;
-  logic       entropy_data_reg_en_pfd;
   logic       entropy_data_reg_en_pfa;
   logic       es_data_reg_rd_en;
   logic       sw_es_rd_pulse;
@@ -160,16 +155,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     alert_cntrs_clr;
   logic                     health_test_clr;
   logic                     health_test_clr_pfe;
-  logic                     health_test_clr_pfd;
   logic                     health_test_clr_pfa;
   logic                     health_test_done_pulse;
   logic [RngBusWidth-1:0]   health_test_esbus;
   logic                     health_test_esbus_vld;
   logic                     es_route_pfe;
-  logic                     es_route_pfd;
   logic                     es_route_pfa;
   logic                     es_type_pfe;
-  logic                     es_type_pfd;
   logic                     es_type_pfa;
   logic                     es_route_to_sw;
   logic                     es_bypass_to_sw;
@@ -178,7 +170,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     rst_alert_cntr;
   logic                     boot_bypass_disable;
   logic                     boot_bypass_disable_pfe;
-  logic                     boot_bypass_disable_pfd;
   logic                     boot_bypass_disable_pfa;
   logic                     fips_compliance;
 
@@ -446,26 +437,20 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
   import prim_mubi_pkg::mubi4_e;
   import prim_mubi_pkg::mubi4_test_true_strict;
-  import prim_mubi_pkg::mubi4_test_false_strict;
   import prim_mubi_pkg::mubi4_test_invalid;
 
   // check for illegal enable field states, and set alert if detected
   mubi4_e mubi_conf_en;
   assign mubi_conf_en  = mubi4_e'(reg2hw.conf.enable.q);
   assign es_enable_pfe = mubi4_test_true_strict(mubi_conf_en);
-  assign es_enable_pfd = mubi4_test_false_strict(mubi_conf_en);
   assign es_enable_pfa = mubi4_test_invalid(mubi_conf_en);
   assign hw2reg.recov_alert_sts.enable_field_alert.de = es_enable_pfa;
   assign hw2reg.recov_alert_sts.enable_field_alert.d  = es_enable_pfa;
 
   mubi4_e mubi_entropy_reg_en;
   assign mubi_entropy_reg_en = mubi4_e'(reg2hw.conf.entropy_data_reg_enable.q);
-  assign entropy_data_reg_en_pfe =
-         mubi4_test_true_strict(mubi_entropy_reg_en);
-  assign entropy_data_reg_en_pfd =
-         mubi4_test_false_strict(mubi_entropy_reg_en);
-  assign entropy_data_reg_en_pfa =
-         mubi4_test_invalid(mubi_entropy_reg_en);
+  assign entropy_data_reg_en_pfe = mubi4_test_true_strict(mubi_entropy_reg_en);
+  assign entropy_data_reg_en_pfa = mubi4_test_invalid(mubi_entropy_reg_en);
   assign hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.de = entropy_data_reg_en_pfa;
   assign hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.d =  entropy_data_reg_en_pfa;
 
@@ -478,7 +463,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   mubi4_e mubi_fw_ov_mode;
   assign mubi_fw_ov_mode = mubi4_e'(reg2hw.fw_ov_control.fw_ov_mode.q);
   assign fw_ov_mode_pfe = mubi4_test_true_strict(mubi_fw_ov_mode);
-  assign fw_ov_mode_pfd = mubi4_test_false_strict(mubi_fw_ov_mode);
   assign fw_ov_mode_pfa = mubi4_test_invalid(mubi_fw_ov_mode);
   assign hw2reg.recov_alert_sts.fw_ov_mode_field_alert.de = fw_ov_mode_pfa;
   assign hw2reg.recov_alert_sts.fw_ov_mode_field_alert.d  = fw_ov_mode_pfa;
@@ -486,7 +470,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   mubi4_e mubi_fw_ov_entropy_insert;
   assign mubi_fw_ov_entropy_insert = mubi4_e'(reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
   assign fw_ov_entropy_insert_pfe = mubi4_test_true_strict(mubi_fw_ov_entropy_insert);
-  assign fw_ov_entropy_insert_pfd = mubi4_test_false_strict(mubi_fw_ov_entropy_insert);
   assign fw_ov_entropy_insert_pfa = mubi4_test_invalid(mubi_fw_ov_entropy_insert);
   assign hw2reg.recov_alert_sts.fw_ov_entropy_insert_field_alert.de = fw_ov_entropy_insert_pfa;
   assign hw2reg.recov_alert_sts.fw_ov_entropy_insert_field_alert.d  = fw_ov_entropy_insert_pfa;
@@ -718,7 +701,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   mubi4_e mubi_rng_bit_en;
   assign mubi_rng_bit_en = mubi4_e'(reg2hw.conf.rng_bit_enable.q);
   assign rng_bit_enable_pfe = mubi4_test_true_strict(mubi_rng_bit_en);
-  assign rng_bit_enable_pfd = mubi4_test_false_strict(mubi_rng_bit_en);
   assign rng_bit_enable_pfa = mubi4_test_invalid(mubi_rng_bit_en);
   assign hw2reg.recov_alert_sts.rng_bit_enable_field_alert.de = rng_bit_enable_pfa;
   assign hw2reg.recov_alert_sts.rng_bit_enable_field_alert.d  = rng_bit_enable_pfa;
@@ -777,7 +759,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   mubi4_e mubi_ht_clr;
   assign mubi_ht_clr = mubi4_e'(reg2hw.conf.health_test_clr.q);
   assign health_test_clr_pfe = mubi4_test_true_strict(mubi_ht_clr);
-  assign health_test_clr_pfd = mubi4_test_false_strict(mubi_ht_clr);
   assign health_test_clr_pfa = mubi4_test_invalid(mubi_ht_clr);
   assign hw2reg.recov_alert_sts.health_test_clr_field_alert.de = health_test_clr_pfa;
   assign hw2reg.recov_alert_sts.health_test_clr_field_alert.d  = health_test_clr_pfa;
@@ -1154,7 +1135,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   mubi4_e mubi_es_route;
   assign mubi_es_route = mubi4_e'(reg2hw.entropy_control.es_route.q);
   assign es_route_pfe = mubi4_test_true_strict(mubi_es_route);
-  assign es_route_pfd = mubi4_test_false_strict(mubi_es_route);
   assign es_route_pfa = mubi4_test_invalid(mubi_es_route);
   assign hw2reg.recov_alert_sts.es_route_field_alert.de = es_route_pfa;
   assign hw2reg.recov_alert_sts.es_route_field_alert.d  = es_route_pfa;
@@ -1162,7 +1142,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   mubi4_e mubi_es_type;
   assign mubi_es_type = mubi4_e'(reg2hw.entropy_control.es_type.q);
   assign es_type_pfe = mubi4_test_true_strict(mubi_es_type);
-  assign es_type_pfd = mubi4_test_false_strict(mubi_es_type);
   assign es_type_pfa = mubi4_test_invalid(mubi_es_type);
   assign hw2reg.recov_alert_sts.es_type_field_alert.de = es_type_pfa;
   assign hw2reg.recov_alert_sts.es_type_field_alert.d  = es_type_pfa;
@@ -1170,7 +1149,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   mubi4_e mubi_boot_byp_dis;
   assign mubi_boot_byp_dis = mubi4_e'(reg2hw.conf.boot_bypass_disable.q);
   assign boot_bypass_disable_pfe = mubi4_test_true_strict(mubi_boot_byp_dis);
-  assign boot_bypass_disable_pfd = mubi4_test_false_strict(mubi_boot_byp_dis);
   assign boot_bypass_disable_pfa = mubi4_test_invalid(mubi_boot_byp_dis);
   assign hw2reg.recov_alert_sts.boot_bypass_disable_field_alert.de = boot_bypass_disable_pfa;
   assign hw2reg.recov_alert_sts.boot_bypass_disable_field_alert.d  = boot_bypass_disable_pfa;
