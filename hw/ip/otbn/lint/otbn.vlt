@@ -13,4 +13,8 @@ lint_off -rule UNUSED -file "*/rtl/otbn_decoder.sv" -match "Bits of signal are n
 // imem_wmask_bus is only used in an assertion (which Verilator doesn't see).
 lint_off -rule UNUSED -file "*/rtl/otbn.sv" -match "Signal is not used: 'imem_wmask_bus'"
 
+// TODO: Remove this waiver once Verilator #3177
+// (https://github.com/verilator/verilator/issues/3177) is fixed in a version we depend on.
+lint_off -rule UNOPTFLAT -file "*/rtl/otbn_controller.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*.u_otbn_controller.software_err'"
+
 split_var -module "otbn_controller" -var "err_bits_o"
