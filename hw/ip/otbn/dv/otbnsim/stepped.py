@@ -77,10 +77,21 @@ def end_command() -> None:
     sys.stdout.flush()
 
 
+def check_arg_count(cmd: str, cnt: int, args: List[str]) -> None:
+    if len(args) != cnt:
+        if cnt == 0:
+            txt_cnt = 'no arguments'
+        elif cnt == 1:
+            txt_cnt = 'exactly one argument'
+        else:
+            txt_cnt = f'exactly {cnt} arguments'
+
+        raise ValueError(f'{cmd} expects {txt_cnt} arguments. Got {args}.')
+
+
 def on_start(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Jump to an address given as the (only) argument and start running'''
-    if len(args) != 0:
-        raise ValueError('start expects zero arguments. Got {}.'.format(args))
+    check_arg_count('start', 0, args)
 
     print('START')
     sim.state.ext_regs.commit()
@@ -91,9 +102,7 @@ def on_start(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Step one instruction'''
-    if len(args):
-        raise ValueError('step expects zero arguments. Got {}.'
-                         .format(args))
+    check_arg_count('step', 0, args)
 
     pc = sim.state.pc
     assert 0 == pc & 3
@@ -111,9 +120,8 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_load_elf(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Load contents of ELF at path given by only argument'''
-    if len(args) != 1:
-        raise ValueError('load_elf expects exactly 1 argument. Got {}.'
-                         .format(args))
+    check_arg_count('load_elf', 1, args)
+
     path = args[0]
 
     print('LOAD_ELF {!r}'.format(path))
@@ -124,9 +132,7 @@ def on_load_elf(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_add_loop_warp(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Add a loop warp to the simulation'''
-    if len(args) != 3:
-        raise ValueError('add_loop_warp expects exactly 3 arguments. Got {}.'
-                         .format(args))
+    check_arg_count('add_loop_warp', 3, args)
 
     try:
         addr = int(args[0], 0)
@@ -150,9 +156,7 @@ def on_add_loop_warp(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_clear_loop_warps(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Run until ecall or error'''
-    if len(args):
-        raise ValueError('clear_loop_warps expects zero arguments. Got {}.'
-                         .format(args))
+    check_arg_count('clear_loop_warps', 0, args)
 
     sim.loop_warps = {}
 
@@ -161,9 +165,8 @@ def on_clear_loop_warps(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_load_d(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Load contents of data memory from file at path given by only argument'''
-    if len(args) != 1:
-        raise ValueError('load_d expects exactly 1 argument. Got {}.'
-                         .format(args))
+    check_arg_count('load_d', 1, args)
+
     path = args[0]
 
     print('LOAD_D {!r}'.format(path))
@@ -175,9 +178,8 @@ def on_load_d(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_load_i(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Load contents of insn memory from file at path given by only argument'''
-    if len(args) != 1:
-        raise ValueError('load_i expects exactly 1 argument. Got {}.'
-                         .format(args))
+    check_arg_count('load_i', 1, args)
+
     path = args[0]
 
     print('LOAD_I {!r}'.format(path))
@@ -188,9 +190,8 @@ def on_load_i(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_dump_d(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Dump contents of data memory to file at path given by only argument'''
-    if len(args) != 1:
-        raise ValueError('dump_d expects exactly 1 argument. Got {}.'
-                         .format(args))
+    check_arg_count('dump_d', 1, args)
+
     path = args[0]
 
     print('DUMP_D {!r}'.format(path))
@@ -203,9 +204,7 @@ def on_dump_d(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_print_regs(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Print registers to stdout'''
-    if len(args):
-        raise ValueError('print_regs expects zero arguments. Got {}.'
-                         .format(args))
+    check_arg_count('print_regs', 0, args)
 
     print('PRINT_REGS')
     for idx, value in enumerate(sim.state.gprs.peek_unsigned_values()):
@@ -218,9 +217,7 @@ def on_print_regs(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_print_call_stack(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     '''Print call stack to stdout. First element is the bottom of the stack'''
-    if len(args):
-        raise ValueError('print_call_stack expects zero arguments. Got {}.'
-                         .format(args))
+    check_arg_count('print_call_stack', 0, args)
 
     print('PRINT_CALL_STACK')
     for value in sim.state.peek_call_stack():
@@ -230,9 +227,7 @@ def on_print_call_stack(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 
 def on_edn_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if len(args) != 1:
-        raise ValueError('edn_step expects exactly 1 argument. Got {}.'
-                         .format(args))
+    check_arg_count('edn_step', 1, args)
 
     edn_rnd_data = read_word('edn_step', args[0], 32)
 
@@ -242,9 +237,7 @@ def on_edn_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 
 def on_edn_rnd_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if len(args) != 0:
-        raise ValueError('edn_rnd_cdc_done expects zero arguments. Got {}.'
-                         .format(args))
+    check_arg_count('edn_rnd_cdc_done', 0, args)
 
     sim.state.rnd_completed()
 
@@ -252,9 +245,7 @@ def on_edn_rnd_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 
 def on_edn_urnd_reseed_complete(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if args:
-        raise ValueError('edn_urnd_reseed_complete expects zero arguments. Got {}.'
-                         .format(args))
+    check_arg_count('edn_urnd_reseed_complete', 0, args)
 
     # TODO: The set_urnd_reseed_complete() method asserts that we are in state
     # PRE_EXEC when it is called. However, when the model is used in a
@@ -274,9 +265,7 @@ def on_edn_urnd_reseed_complete(sim: OTBNSim, args: List[str]) -> Optional[OTBNS
 
 
 def on_invalidate_imem(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if args:
-        raise ValueError('invalidate_imem expects zero arguments. Got {}.'
-                         .format(args))
+    check_arg_count('invalidate_imem', 0, args)
 
     sim.state.invalidated_imem = True
 
