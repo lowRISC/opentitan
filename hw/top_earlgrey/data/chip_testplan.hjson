@@ -49,6 +49,17 @@
               "chip_sw_uart_tx_rx_idx3"]
     }
     {
+      name: chip_sw_uart_rand_baudrate
+      desc: '''Verify UART transmission of data at various speeds.
+
+            Randomly pick one of the UART instances and configure it to run with any of these baud
+            rates - 9600bps, 115200bps, 230400bps, 128Kbps, 256Kbps, 1Mkbps, 1.5Mkbps.
+
+            '''
+      milestone: V1
+      tests: ["chip_sw_uart_rand_baudrate"]
+    }
+    {
       name: chip_sw_uart_tx_rx_alt_clk_freq
       desc: '''Verify the transmission of UART while randomizing the core clock frequency.
 
