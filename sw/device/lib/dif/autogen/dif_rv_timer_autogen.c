@@ -5,6 +5,7 @@
 // This file is auto-generated.
 
 #include "sw/device/lib/dif/autogen/dif_rv_timer_autogen.h"
+#include <stdint.h>
 
 #include "rv_timer_regs.h"  // Generated.
 
@@ -130,6 +131,27 @@ dif_result_t dif_rv_timer_irq_is_pending(const dif_rv_timer_t *rv_timer,
   uint32_t intr_state_reg = mmio_region_read32(rv_timer->base_addr, reg_offset);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_timer_irq_acknowledge_all(const dif_rv_timer_t *rv_timer,
+                                              uint32_t hart_id) {
+  if (rv_timer == NULL) {
+    return kDifBadArg;
+  }
+
+  // Writing to the register clears the corresponding bits (Write-one clear).
+  switch (hart_id) {
+    case 0:
+      mmio_region_write32(rv_timer->base_addr, RV_TIMER_INTR_STATE0_REG_OFFSET,
+                          UINT32_MAX);
+
+      break;
+    default:
+      return kDifBadArg;
+  }
 
   return kDifOk;
 }

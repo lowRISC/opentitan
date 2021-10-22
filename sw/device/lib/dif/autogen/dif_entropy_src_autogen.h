@@ -106,6 +106,17 @@ dif_result_t dif_entropy_src_irq_is_pending(
     bool *is_pending);
 
 /**
+ * Acknowledges all interrupts, indicating to the hardware that all
+ * interrupts have been successfully serviced.
+ *
+ * @param entropy_src A entropy_src handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_irq_acknowledge_all(
+    const dif_entropy_src_t *entropy_src);
+
+/**
  * Acknowledges a particular interrupt, indicating to the hardware that it has
  * been successfully serviced.
  *

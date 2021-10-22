@@ -107,6 +107,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_FALSE(irq_state);
 }
 
+class AcknowledgeAllTest : public EdnTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_edn_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(EDN_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_edn_irq_acknowledge_all(&edn_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public EdnTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

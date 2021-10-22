@@ -5,6 +5,7 @@
 // This file is auto-generated.
 
 #include "sw/device/lib/dif/autogen/dif_rv_plic_autogen.h"
+#include <stdint.h>
 
 #include "rv_plic_regs.h"  // Generated.
 

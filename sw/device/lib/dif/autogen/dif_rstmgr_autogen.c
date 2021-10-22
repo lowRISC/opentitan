@@ -5,6 +5,7 @@
 // This file is auto-generated.
 
 #include "sw/device/lib/dif/autogen/dif_rstmgr_autogen.h"
+#include <stdint.h>
 
 #include "rstmgr_regs.h"  // Generated.
 

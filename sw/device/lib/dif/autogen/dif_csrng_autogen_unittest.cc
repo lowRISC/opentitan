@@ -111,6 +111,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_FALSE(irq_state);
 }
 
+class AcknowledgeAllTest : public CsrngTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_csrng_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(CSRNG_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_csrng_irq_acknowledge_all(&csrng_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public CsrngTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

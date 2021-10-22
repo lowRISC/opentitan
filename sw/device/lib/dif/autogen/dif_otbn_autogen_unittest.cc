@@ -97,6 +97,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_TRUE(irq_state);
 }
 
+class AcknowledgeAllTest : public OtbnTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_otbn_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(OTBN_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_otbn_irq_acknowledge_all(&otbn_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public OtbnTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

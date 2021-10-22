@@ -130,6 +130,21 @@ dif_result_t dif_${ip.name_snake}_init(
     bool *is_pending);
 
   /**
+   * Acknowledges all interrupts, indicating to the hardware that all
+   * interrupts have been successfully serviced.
+   *
+   * @param ${ip.name_snake} A ${ip.name_snake} handle.
+   * @return The result of the operation.
+   */
+  OT_WARN_UNUSED_RESULT
+  dif_result_t dif_${ip.name_snake}_irq_acknowledge_all(
+    const dif_${ip.name_snake}_t *${ip.name_snake}
+  % if ip.name_snake == "rv_timer":
+    , uint32_t hart_id
+  % endif
+    );
+
+  /**
    * Acknowledges a particular interrupt, indicating to the hardware that it has
    * been successfully serviced.
    *

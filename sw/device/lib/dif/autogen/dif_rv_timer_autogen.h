@@ -93,6 +93,17 @@ dif_result_t dif_rv_timer_irq_is_pending(const dif_rv_timer_t *rv_timer,
                                          bool *is_pending);
 
 /**
+ * Acknowledges all interrupts, indicating to the hardware that all
+ * interrupts have been successfully serviced.
+ *
+ * @param rv_timer A rv_timer handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_timer_irq_acknowledge_all(const dif_rv_timer_t *rv_timer,
+                                              uint32_t hart_id);
+
+/**
  * Acknowledges a particular interrupt, indicating to the hardware that it has
  * been successfully serviced.
  *

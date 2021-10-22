@@ -116,6 +116,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_FALSE(irq_state);
 }
 
+class AcknowledgeAllTest : public EntropySrcTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_entropy_src_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_entropy_src_irq_acknowledge_all(&entropy_src_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public EntropySrcTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

@@ -109,6 +109,17 @@ dif_result_t dif_alert_handler_irq_is_pending(
     bool *is_pending);
 
 /**
+ * Acknowledges all interrupts, indicating to the hardware that all
+ * interrupts have been successfully serviced.
+ *
+ * @param alert_handler A alert_handler handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_irq_acknowledge_all(
+    const dif_alert_handler_t *alert_handler);
+
+/**
  * Acknowledges a particular interrupt, indicating to the hardware that it has
  * been successfully serviced.
  *

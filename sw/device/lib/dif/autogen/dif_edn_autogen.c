@@ -5,6 +5,7 @@
 // This file is auto-generated.
 
 #include "sw/device/lib/dif/autogen/dif_edn_autogen.h"
+#include <stdint.h>
 
 #include "edn_regs.h"  // Generated.
 
@@ -69,6 +70,18 @@ dif_result_t dif_edn_irq_is_pending(const dif_edn_t *edn, dif_edn_irq_t irq,
       mmio_region_read32(edn->base_addr, EDN_INTR_STATE_REG_OFFSET);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_edn_irq_acknowledge_all(const dif_edn_t *edn) {
+  if (edn == NULL) {
+    return kDifBadArg;
+  }
+
+  // Writing to the register clears the corresponding bits (Write-one clear).
+  mmio_region_write32(edn->base_addr, EDN_INTR_STATE_REG_OFFSET, UINT32_MAX);
 
   return kDifOk;
 }

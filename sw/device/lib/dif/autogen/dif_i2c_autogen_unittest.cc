@@ -107,6 +107,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_FALSE(irq_state);
 }
 
+class AcknowledgeAllTest : public I2cTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_i2c_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(I2C_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_i2c_irq_acknowledge_all(&i2c_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public I2cTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

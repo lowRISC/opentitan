@@ -101,6 +101,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_TRUE(irq_state);
 }
 
+class AcknowledgeAllTest : public PwrmgrTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_pwrmgr_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(PWRMGR_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_pwrmgr_irq_acknowledge_all(&pwrmgr_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public PwrmgrTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

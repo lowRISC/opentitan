@@ -5,6 +5,7 @@
 // This file is auto-generated.
 
 #include "sw/device/lib/dif/autogen/dif_spi_host_autogen.h"
+#include <stdint.h>
 
 #include "spi_host_regs.h"  // Generated.
 
@@ -73,6 +74,19 @@ dif_result_t dif_spi_host_irq_is_pending(const dif_spi_host_t *spi_host,
       mmio_region_read32(spi_host->base_addr, SPI_HOST_INTR_STATE_REG_OFFSET);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_irq_acknowledge_all(const dif_spi_host_t *spi_host) {
+  if (spi_host == NULL) {
+    return kDifBadArg;
+  }
+
+  // Writing to the register clears the corresponding bits (Write-one clear).
+  mmio_region_write32(spi_host->base_addr, SPI_HOST_INTR_STATE_REG_OFFSET,
+                      UINT32_MAX);
 
   return kDifOk;
 }

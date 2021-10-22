@@ -221,6 +221,43 @@ namespace {
   % endif
   }
 
+  class AcknowledgeAllTest : public ${ip.name_camel}Test {};
+
+  TEST_F(AcknowledgeAllTest, NullArgs) {
+    EXPECT_EQ(dif_${ip.name_snake}_irq_acknowledge_all(
+        nullptr 
+      % if ip.name_snake == "rv_timer":
+        , 0
+      % endif
+        ),
+      kDifBadArg);
+  }
+
+  % if ip.name_snake == "rv_timer":
+  TEST_F(AcknowledgeAllTest, BadHartId) {
+    EXPECT_EQ(dif_${ip.name_snake}_irq_acknowledge_all(
+        nullptr, ${ip.parameters["N_HARTS"].default}),
+      kDifBadArg);
+  }
+  % endif
+
+  TEST_F(AcknowledgeAllTest, Success) {
+  % if ip.name_snake == "rv_timer":
+    EXPECT_WRITE32(${ip.name_upper}_INTR_STATE0_REG_OFFSET, 
+  % else:
+    EXPECT_WRITE32(${ip.name_upper}_INTR_STATE_REG_OFFSET,
+  % endif
+      std::numeric_limits<uint32_t>::max());
+
+    EXPECT_EQ(dif_${ip.name_snake}_irq_acknowledge_all(
+        &${ip.name_snake}_ 
+      % if ip.name_snake == "rv_timer":
+        , 0
+      % endif
+        ),
+      kDifOk);
+  }
+
   class IrqAcknowledgeTest : public ${ip.name_camel}Test {};
 
   TEST_F(IrqAcknowledgeTest, NullArgs) {

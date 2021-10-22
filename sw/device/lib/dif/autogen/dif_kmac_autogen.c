@@ -5,6 +5,7 @@
 // This file is auto-generated.
 
 #include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
+#include <stdint.h>
 
 #include "kmac_regs.h"  // Generated.
 
@@ -72,6 +73,18 @@ dif_result_t dif_kmac_irq_is_pending(const dif_kmac_t *kmac, dif_kmac_irq_t irq,
       mmio_region_read32(kmac->base_addr, KMAC_INTR_STATE_REG_OFFSET);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_irq_acknowledge_all(const dif_kmac_t *kmac) {
+  if (kmac == NULL) {
+    return kDifBadArg;
+  }
+
+  // Writing to the register clears the corresponding bits (Write-one clear).
+  mmio_region_write32(kmac->base_addr, KMAC_INTR_STATE_REG_OFFSET, UINT32_MAX);
 
   return kDifOk;
 }

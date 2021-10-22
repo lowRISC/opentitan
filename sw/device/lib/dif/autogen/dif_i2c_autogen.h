@@ -152,6 +152,16 @@ dif_result_t dif_i2c_irq_is_pending(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
                                     bool *is_pending);
 
 /**
+ * Acknowledges all interrupts, indicating to the hardware that all
+ * interrupts have been successfully serviced.
+ *
+ * @param i2c A i2c handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_acknowledge_all(const dif_i2c_t *i2c);
+
+/**
  * Acknowledges a particular interrupt, indicating to the hardware that it has
  * been successfully serviced.
  *
