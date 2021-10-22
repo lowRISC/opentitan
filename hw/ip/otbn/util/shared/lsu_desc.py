@@ -62,7 +62,8 @@ class LSUDesc:
         if lsu_type.startswith('mem-'):
             if 'bytes' not in yd:
                 raise ValueError('{} defines a memory operation, so requires '
-                                 'a bytes field (how many bytes does this touch?)'
+                                 'a bytes field (how many bytes does this '
+                                 'operation touch?)'
                                  .format(what))
             idx_width = check_int(yd['bytes'], 'bytes field for ' + what)
         else:

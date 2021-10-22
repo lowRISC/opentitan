@@ -91,33 +91,36 @@ class ExecutionStats:
                 'iterations': iterations,
             })
 
-        is_last_insn_in_loop_body = state_bc.loop_stack.is_last_insn_in_loop_body(pc)
+        last_in_loop_body = state_bc.loop_stack.is_last_insn_in_loop_body(pc)
 
         # Basic blocks
+        #
         # A basic block is a linear sequence of code ending with an instruction
         # that can potentially change the control flow: a jump, a branch, the
         # last instruction in a loop (LOOP or LOOPI) body, or an ECALL. The
-        # length of the basic block equals the number of instructions within the
-        # basic block.
+        # length of the basic block equals the number of instructions within
+        # the basic block.
         self._current_basic_block_len += 1
-        if (is_jump or is_branch or is_last_insn_in_loop_body or
+        if (is_jump or is_branch or last_in_loop_body or
                 isinstance(insn, ECALL)):
 
             self.basic_block_histo[self._current_basic_block_len] += 1
             self._current_basic_block_len = 0
 
         # Extended basic blocks
+        #
         # An extended basic block is a sequence of one or more basic blocks
-        # which can be statically determined at compile time.
-        # Extended basic blocks end with a branch, the last instruction in a
-        # LOOP body, or an ECALL instruction.
+        # which can be statically determined at compile time. Extended basic
+        # blocks end with a branch, the last instruction in a LOOP body, or an
+        # ECALL instruction.
 
-        # Determine if the current instruction is the last instruction in a LOOP
-        # body (only LOOP, not LOOPI!).
+        # Determine if the current instruction is the last instruction in a
+        # LOOP body (only LOOP, not LOOPI!).
         finishing_loop = False
-        if is_last_insn_in_loop_body:
+        if last_in_loop_body:
             loop_insn_addr = state_bc.loop_stack.stack[-1].get_loop_insn_addr()
-            finishing_loop = isinstance(self._insn_at_addr(loop_insn_addr), LOOP)
+            last_insn = self._insn_at_addr(loop_insn_addr)
+            finishing_loop = isinstance(last_insn, LOOP)
 
         self._current_ext_basic_block_len += 1
         if is_branch or finishing_loop or isinstance(insn, ECALL):
@@ -143,8 +146,10 @@ def _dwarf_decode_file_line(dwarf_info: DWARFInfo,
                 continue
             # Looking for a range of addresses in two consecutive states that
             # contain the required address.
-            if prevstate and prevstate.address <= address < entry.state.address:
-                filename = lineprog['file_entry'][prevstate.file - 1].name.decode('utf-8')
+            if ((prevstate and
+                 prevstate.address <= address < entry.state.address)):
+                raw_name = lineprog['file_entry'][prevstate.file - 1].name
+                filename = raw_name.decode('utf-8')
                 line = prevstate.line
                 return filename, line
             prevstate = entry.state
@@ -180,7 +185,8 @@ class ExecutionStatAnalyzer:
             for sym_addr in self._addr_symbol_map.keys():
                 if sym_addr <= address and sym_addr > func_addr:
                     func_addr = sym_addr
-            symbol_name = self._addr_symbol_map[func_addr] + f"+{address - func_addr:#x}"
+            func_name = self._addr_symbol_map[func_addr]
+            symbol_name = func_name + f"+{address - func_addr:#x}"
 
         file_line = None
         if self._elf_file.has_dwarf_info():
@@ -267,8 +273,10 @@ class ExecutionStatAnalyzer:
 
         # Build function call graphs and a call site index
         # caller-indexed == forward, callee-indexed == reverse
-        # The call graphs are on function granularity; the call sites dictionary
-        # is indexed by the called function, but uses the call site as value.
+        #
+        # The call graphs are on function granularity; the call sites
+        # dictionary is indexed by the called function, but uses the call site
+        # as value.
         callgraph = {}  # type: Dict[int, typing.Counter[int]]
         rev_callgraph = {}  # type: Dict[int, typing.Counter[int]]
         rev_callsites = {}  # type: Dict[int, typing.Counter[int]]
@@ -297,8 +305,8 @@ class ExecutionStatAnalyzer:
                 func = self._describe_imem_addr(rev_caller_func)
                 out += f"    * {cnt} times by function {func}\n"
             out += "  from the following call sites\n"
-            for rev_callsite, cnt in rev_callsites[rev_callee_func].most_common():
-                func = self._describe_imem_addr(rev_callsite)
+            for rc, cnt in rev_callsites[rev_callee_func].most_common():
+                func = self._describe_imem_addr(rc)
                 out += f"    * {cnt} times from {func}\n"
 
             has_one_callsite = len(rev_callsites[rev_callee_func]) == 1
@@ -308,9 +316,9 @@ class ExecutionStatAnalyzer:
                 out += "    no other function (leaf function).\n"
 
                 if not has_one_callsite:
-                    # We don't count it as leaf function call if it has only one
-                    # call site to prevent double-counting these as optimization
-                    # opportunity.
+                    # We don't count it as leaf function call if it has only
+                    # one call site to prevent double-counting these as
+                    # optimization opportunity.
                     total_leaf_calls += sum(rev_caller_funcs.values())
             else:
                 caller_funcs = callgraph[rev_callee_func]

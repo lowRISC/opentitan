@@ -54,7 +54,8 @@ class CallStackRW(SnippetGen):
                 weight = cfg.insn_weights.get(insn.mnemonic)
                 if weight > 0:
                     self.insns.append(insn)
-                    self.indices.append((gpr_dsts[0], gpr_srcs[0], gpr_srcs[1]))
+                    self.indices.append((gpr_dsts[0],
+                                         gpr_srcs[0], gpr_srcs[1]))
                     self.weights.append(weight)
 
         if not self.insns:
@@ -81,7 +82,8 @@ class CallStackRW(SnippetGen):
         '''
 
         # Pick an instruction
-        insn_idx = random.choices(range(len(self.weights)), weights=self.weights)[0]
+        insn_idx = random.choices(range(len(self.weights)),
+                                  weights=self.weights)[0]
 
         grd_idx, grs1_idx, grs2_idx = self.indices[insn_idx]
         insn = self.insns[insn_idx]

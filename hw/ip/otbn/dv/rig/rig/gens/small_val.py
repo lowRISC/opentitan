@@ -39,7 +39,7 @@ class SmallVal(SnippetGen):
                 self.insn.operands[1].op_type.reg_type == 'gpr' and
                 isinstance(self.insn.operands[2].op_type, ImmOperandType) and
                 self.insn.operands[2].op_type.signed):
-            raise RuntimeError('ADDI instruction from instructions file is not '
+            raise RuntimeError('ADDI instruction from instructions file not '
                                'the shape expected by the SmallVal generator.')
 
         self.grd_op_type = self.insn.operands[0].op_type

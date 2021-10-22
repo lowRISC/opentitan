@@ -340,12 +340,13 @@ class Program:
 
         seg_descs = []
         for idx, (addr, values) in enumerate(sorted(dsegs.items())):
+            top_addr = addr + 4 * len(values) - 1
             seg_descs.append(('dseg{:04}'.format(idx),
                               addr,
                               addr + self.dmem_lma,
                               '.data.sec{:04}'.format(idx),
                               ('/* Data section {} ({:#06x}-{:#06x}) */'
-                               .format(idx, addr, addr + 4 * len(values) - 1))))
+                               .format(idx, addr, top_addr))))
         for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
             seg_descs.append(('iseg{:04}'.format(idx),
                               addr,

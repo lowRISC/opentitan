@@ -424,7 +424,8 @@ class StraightLineInsn(SnippetGen):
                                        type(tgt_op.op_type).__name__))
 
         # We have a list of register operands, together with their types. Get a
-        # list of registers with known values for each register type we've seen.
+        # list of registers with known values for each register type we've
+        # seen.
         known_regs_by_type = {rtype: model.regs_with_known_vals(rtype)
                               for rtype in lsu_reg_types}
 

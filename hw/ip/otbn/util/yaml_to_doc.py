@@ -269,7 +269,8 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
 
     # If this came from the RV32I instruction set, say so.
     if insn.rv32i:
-        parts.append('This instruction is defined in the RV32I instruction set.\n\n')
+        parts.append('This instruction is defined in the '
+                     'RV32I instruction set.\n\n')
 
     # A list of errors that the instruction might cause.
     if insn.errs is not None:

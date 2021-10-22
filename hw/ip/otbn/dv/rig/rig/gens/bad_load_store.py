@@ -70,16 +70,17 @@ class BadLoadStore(SnippetGen):
         if len(self.bnlid.operands) != 5:
             raise RuntimeError('Unexpected number of operands for bn.lid')
 
-        if not (isinstance(self.bnlid.operands[0].op_type, RegOperandType) and
-                (self.bnlid.operands[0].op_type.reg_type == 'gpr' and
-                not self.bnlid.operands[0].op_type.is_dest() and
-                isinstance(self.bnlid.operands[1].op_type, RegOperandType) and
-                self.bnlid.operands[1].op_type.reg_type == 'gpr' and
-                not self.bnlid.operands[1].op_type.is_dest() and
-                isinstance(self.bnlid.operands[2].op_type, ImmOperandType) and
-                self.bnlid.operands[2].op_type.signed and
-                isinstance(self.bnlid.operands[3].op_type, OptionOperandType) and
-                isinstance(self.bnlid.operands[4].op_type, OptionOperandType))):
+        ops = self.bnlid.operands
+        if not (isinstance(ops[0].op_type, RegOperandType) and
+                (ops[0].op_type.reg_type == 'gpr' and
+                not ops[0].op_type.is_dest() and
+                isinstance(ops[1].op_type, RegOperandType) and
+                ops[1].op_type.reg_type == 'gpr' and
+                not ops[1].op_type.is_dest() and
+                isinstance(ops[2].op_type, ImmOperandType) and
+                ops[2].op_type.signed and
+                isinstance(ops[3].op_type, OptionOperandType) and
+                isinstance(ops[4].op_type, OptionOperandType))):
             raise RuntimeError('BN.LID instruction from instructions file is '
                                'not the shape expected by the BadLoadStore'
                                'generator.')
@@ -92,16 +93,17 @@ class BadLoadStore(SnippetGen):
         if len(self.bnsid.operands) != 5:
             raise RuntimeError('Unexpected number of operands for bn.sid')
 
-        if not (isinstance(self.bnsid.operands[0].op_type, RegOperandType) and
-                self.bnsid.operands[0].op_type.reg_type == 'gpr' and
-                not self.bnsid.operands[0].op_type.is_dest() and
-                isinstance(self.bnsid.operands[1].op_type, RegOperandType) and
-                self.bnsid.operands[1].op_type.reg_type == 'gpr' and
-                not self.bnsid.operands[1].op_type.is_dest() and
-                isinstance(self.bnsid.operands[2].op_type, ImmOperandType) and
-                self.bnsid.operands[2].op_type.signed and
-                isinstance(self.bnsid.operands[3].op_type, OptionOperandType) and
-                isinstance(self.bnsid.operands[4].op_type, OptionOperandType)):
+        ops = self.bnsid.operands
+        if not (isinstance(ops[0].op_type, RegOperandType) and
+                ops[0].op_type.reg_type == 'gpr' and
+                not ops[0].op_type.is_dest() and
+                isinstance(ops[1].op_type, RegOperandType) and
+                ops[1].op_type.reg_type == 'gpr' and
+                not ops[1].op_type.is_dest() and
+                isinstance(ops[2].op_type, ImmOperandType) and
+                ops[2].op_type.signed and
+                isinstance(ops[3].op_type, OptionOperandType) and
+                isinstance(ops[4].op_type, OptionOperandType)):
             raise RuntimeError('BN.LID instruction from instructions file is '
                                'not the shape expected by the BadLoadStore'
                                'generator.')
@@ -256,8 +258,9 @@ class BadLoadStore(SnippetGen):
 
         elif insn.mnemonic == 'sw':
             # Any known register is okay for grs2 operand since it will be
-            # guaranteed to have an out of bounds address to store the value from
-            # We definitely have a known register (x0), so this should never fail
+            # guaranteed to have an out of bounds address to store the value
+            # from We definitely have a known register (x0), so this should
+            # never fail
             op_val_grs2 = random.choice(known_regs)[0]
 
             op_val = [op_val_grs2, offset_val, op_val_grs1]
@@ -305,15 +308,16 @@ class BadLoadStore(SnippetGen):
         if insn.mnemonic == 'bn.lid':
             # Pick grd randomly. Since we can write to any register
             # (including x0) this should always succeed.
-            op_val_grd = model.pick_operand_value(self.bnlid.operands[0].op_type)
+            op_val_grd = model.pick_operand_value(insn.operands[0].op_type)
             assert op_val_grd is not None
 
             op_val = [op_val_grd, op_val_grs1, bn_offset_val, 0, 0]
 
         elif insn.mnemonic == 'bn.sid':
             # Any known register is okay for grs2 operand since it will be
-            # guaranteed to have an out of bounds address to store the value from.
-            # We definitely have a known register (x0), so this should never fail
+            # guaranteed to have an out of bounds address to store the value
+            # from. We definitely have a known register (x0), so this should
+            # never fail
             op_val_grs2 = random.choice(known_regs)[0]
 
             op_val = [op_val_grs1, op_val_grs2, bn_offset_val, 0, 0]

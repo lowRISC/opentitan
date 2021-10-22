@@ -358,8 +358,8 @@ class ImmOperandType(OperandType):
         if self.enc_offset:
             acc = '{} + {}'.format(acc, self.enc_offset)
             if shift:
-                # Although a + b << c is logically the same as (a + b) << c, we add
-                # the parentheses to make it easier to read.
+                # Although a + b << c is logically the same as (a + b) << c, we
+                # add the parentheses to make it easier to read.
                 acc = '({}) << {}'.format(acc, self.shift)
                 acc_prec = 0
         else:
@@ -447,7 +447,8 @@ class ImmOperandType(OperandType):
                                      doc_lo, doc_hi))
 
         if self.signed:
-            encoded = (1 << self.width) + offset_val if offset_val < 0 else offset_val
+            encoded = ((1 << self.width) + offset_val
+                       if offset_val < 0 else offset_val)
         else:
             assert offset_val >= 0
             encoded = offset_val
@@ -657,7 +658,8 @@ def parse_operand_type(fmt: str,
                              'set, which is only allowed for immediates.'
                              .format(what, fmt))
         reg_type, is_src, is_dest = reg_match
-        return RegOperandType.make(reg_type, is_src, is_dest, what, scheme_field)
+        return RegOperandType.make(reg_type, is_src, is_dest,
+                                   what, scheme_field)
 
     # CSR and WSR indices. These are treated like unsigned immediates, with
     # width 12 and 8, respectively.
@@ -680,13 +682,14 @@ def parse_operand_type(fmt: str,
         # where BASE is 'simm' or 'uimm', WIDTH is a positive integer and
         # ENC_OFFSET and SHIFT are non-negative integers. The regex below
         # captures WIDTH as group 1, OFFSET as group 2 and SHIFT as group 3.
-        m = re.match(base + r'([1-9][0-9]*)?(?:\+([0-9]+))?(?:<<([0-9]+))?$', fmt)
+        m = re.match(base + r'([1-9][0-9]*)?(?:\+([0-9]+))?(?:<<([0-9]+))?$',
+                     fmt)
         if m is not None:
             width = int(m.group(1)) if m.group(1) is not None else None
             enc_offset = int(m.group(2)) if m.group(2) is not None else 0
             shift = int(m.group(3)) if m.group(3) is not None else 0
-            return ImmOperandType.make(width, enc_offset, shift, signed, pc_rel,
-                                       what, scheme_field)
+            return ImmOperandType.make(width, enc_offset, shift,
+                                       signed, pc_rel, what, scheme_field)
 
     m = re.match(r'enum\(([^\)]+)\)$', fmt)
     if m:

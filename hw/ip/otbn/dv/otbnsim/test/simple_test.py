@@ -108,7 +108,7 @@ def get_reg_dump(stdout: str) -> Dict[str, int]:
         else:
             m = _REG_RE.match(line)
             if not m:
-                raise RuntimeError('Failed to parse line after dump_regs ({!r}).'
+                raise RuntimeError('Failed to parse dump_regs line ({!r}).'
                                    .format(line))
 
             ret[m.group(1)] = int(m.group(2), 0)
@@ -138,7 +138,7 @@ def get_reg_expected(exp_path: str) -> Dict[str, int]:
 
             m = _REG_RE.match(line)
             if m is None:
-                raise RuntimeError('{}:{}: Bad format for line in expected.txt.'
+                raise RuntimeError('{}:{}: Bad format for line.'
                                    .format(exp_path, idx + 1))
             ret[m.group(1)] = int(m.group(2), 0)
 
@@ -153,8 +153,9 @@ def test_count(tmpdir: py.path.local,
 
     # Run the simulation. We can just pass a list of commands to stdin, and
     # don't need to do anything clever to track what's going on.
-    standalone_py = os.path.join(SIM_DIR, 'standalone.py')
-    sim_proc = subprocess.run([standalone_py, '--dump-regs', '-', '-v', elf_file], check=True,
+    cmd = [os.path.join(SIM_DIR, 'standalone.py'),
+           '--dump-regs', '-', '-v', elf_file]
+    sim_proc = subprocess.run(cmd, check=True,
                               stdout=subprocess.PIPE, universal_newlines=True)
 
     regs_seen = get_reg_dump(sim_proc.stdout)

@@ -66,7 +66,8 @@ class Encoding:
         what = 'encoding mapping for instruction {!r}'.format(mnemonic)
 
         # Check we've got exactly the right fields for the scheme
-        ydm = check_keys(yd['mapping'], what, list(scheme_fields.op_fields), [])
+        ydm = check_keys(yd['mapping'], what,
+                         list(scheme_fields.op_fields), [])
 
         # Build a map from operand name to the name of a field that uses it.
         self.op_to_field_name = {}  # type: Dict[str, str]
@@ -80,9 +81,9 @@ class Encoding:
                               'encoding for instruction {!r}'
                               .format(field_name, mnemonic))
                 ef_val = check_str(ydm[field_name], field_what)
+                scheme_field = scheme_fields.fields[field_name]
                 field = EncodingField.from_yaml(ef_val,
-                                                scheme_fields.fields[field_name],
-                                                field_what)
+                                                scheme_field, field_what)
 
                 # If the field's value has type str, the field uses an operand
                 # rather than a literal. Check for linearity and store the
@@ -186,8 +187,8 @@ class Encoding:
         '''Extract the encoded operand values from an encoded instruction'''
         ret = {}
         for field in self.fields.values():
-            # The operand fields (rather than fixed ones) have the operand name as
-            # their value.
+            # The operand fields (rather than fixed ones) have the operand name
+            # as their value.
             if not isinstance(field.value, str):
                 continue
 

@@ -49,8 +49,8 @@ class UntakenBranch(BranchGen):
             if not bne_weight:
                 return None
 
-        # Generates instructions having registers with unequal values for beq and
-        # registers with equal values for bne.
+        # Generates instructions having registers with unequal values for beq
+        # and registers with equal values for bne.
         grs2_choices = not_equals if chosen_insn.mnemonic == 'beq' else equals
         assert grs2_choices
 
@@ -63,4 +63,3 @@ class UntakenBranch(BranchGen):
                         prog_insn: ProgInsn) -> None:
         model.update_for_insn(prog_insn)
         model.pc += 4
-
