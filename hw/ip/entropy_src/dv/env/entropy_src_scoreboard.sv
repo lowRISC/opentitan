@@ -169,7 +169,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
 
   task collect_entropy();
     bit [15:0]   window_size;
-    bit [entropy_src_pkg::RNG_BUS_WIDTH-1:0]   rng_data_q[$];
+    bit [entropy_src_pkg::RNG_BUS_WIDTH-1:0]   rng_data, rng_data_q[$];
 
     // TODO: Read window size from register
     if (cfg.type_bypass)
@@ -178,8 +178,17 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
       window_size = 2048;
 
     forever begin
-      rng_fifo.get(rng_item);
-      rng_data_q.push_back(rng_item.h_data);
+      if (cfg.rng_bit_enable == prim_mubi_pkg::MuBi4True) begin
+        for (int i = 0; i < entropy_src_pkg::RNG_BUS_WIDTH; i++) begin
+          rng_fifo.get(rng_item);
+          rng_data[i] = rng_item.h_data[cfg.rng_bit_sel];
+        end
+      end
+      else begin
+        rng_fifo.get(rng_item);
+        rng_data = rng_item.h_data;
+      end
+      rng_data_q.push_back(rng_data);
       if (rng_data_q.size() == entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH) begin
         fips_csrng_q.push_back(predict_fips_csrng(rng_data_q[0:entropy_src_pkg::CSRNG_BUS_WIDTH-1]));
         for (int i = 0; i < entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH; i++) begin

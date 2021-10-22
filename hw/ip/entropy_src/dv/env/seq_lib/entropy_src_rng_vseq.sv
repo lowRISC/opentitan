@@ -14,7 +14,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
          create("m_rng_push_seq");
     // TODO: num_reqs > 4 (fifo_full). Will drop without reqs, need to predict.
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_reqs, num_reqs inside {[1:4]};)
-    m_rng_push_seq.num_trans = num_reqs * entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH;
+    if (cfg.rng_bit_enable == prim_mubi_pkg::MuBi4True) begin
+      m_rng_push_seq.num_trans = (4 * num_reqs *
+           (entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH + 1));
+    end
+    else begin
+      m_rng_push_seq.num_trans =  num_reqs *
+           entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH;
+    end
     for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(rng_val);
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
