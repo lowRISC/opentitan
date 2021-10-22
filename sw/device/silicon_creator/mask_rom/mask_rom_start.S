@@ -133,18 +133,25 @@ _mask_rom_start_boot:
 
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
-  // FIXME: Enable entropy complex - this is not the full enable.
-  // TODO(#7221): Switch entropy source mode from LFSR to PTRNG.
   li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
-  li t0, (0x55505a) // Enable
+  li t0, (0xa << ENTROPY_SRC_CONF_ENABLE_OFFSET) | \
+         (0x5 << ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET) | \
+         (0x5 << ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_OFFSET) | \
+         (0x5 << ENTROPY_SRC_CONF_HEALTH_TEST_CLR_OFFSET) | \
+         (0x5 << ENTROPY_SRC_CONF_RNG_BIT_ENABLE_OFFSET)
   sw t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
 
   li a0, TOP_EARLGREY_CSRNG_BASE_ADDR
-  li t0, (0xa << CSRNG_CTRL_ENABLE_OFFSET) | (0xa << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | (0xa << CSRNG_CTRL_READ_INT_STATE_OFFSET)
+  li t0, (0xa << CSRNG_CTRL_ENABLE_OFFSET) | \
+         (0xa << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \
+         (0xa << CSRNG_CTRL_READ_INT_STATE_OFFSET)
   sw t0, CSRNG_CTRL_REG_OFFSET(a0)
 
   li a0, TOP_EARLGREY_EDN0_BASE_ADDR
-  li t0, (0xa << EDN_CTRL_EDN_ENABLE_OFFSET) | (0xa << EDN_CTRL_BOOT_REQ_MODE_OFFSET) | (0x5 << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | (0x5 << EDN_CTRL_CMD_FIFO_RST_OFFSET)
+  li t0, (0xa << EDN_CTRL_EDN_ENABLE_OFFSET) | \
+         (0xa << EDN_CTRL_BOOT_REQ_MODE_OFFSET) | \
+         (0x5 << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | \
+         (0x5 << EDN_CTRL_CMD_FIFO_RST_OFFSET)
   sw t0, EDN_CTRL_REG_OFFSET(a0)
 
   // Scramble and initialize main memory (main SRAM).
