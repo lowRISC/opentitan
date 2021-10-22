@@ -772,7 +772,8 @@ Obfuscation makes passive probing more difficult, while diffusion makes active f
 
 The scrambling mechanism is described in detail in the [section "Scrambling Primitive" of the SRAM Controller Technical Specification](/hw/ip/sram_ctrl/doc/#scrambling-primitive).
 
-The scrambling keys are rotated regularly, refer to the sections below for more details.
+When OTBN comes out of reset, its memories have default scrambling keys.
+The host processor can request new keys for each memory by issuing a [secure wipe of DMEM]({{<relref "#design-details-secure-wipe-dmem">}}) and a [secure wipe of IMEM]({{<relref "#design-details-secure-wipe-imem">}}).
 
 #### Actions on Integrity Errors
 
