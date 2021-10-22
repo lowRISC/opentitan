@@ -13,8 +13,8 @@ module spi_host_reg_top (
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o,
-  input  tlul_pkg::tl_d2h_t tl_win_i,
+  output tlul_pkg::tl_h2d_t tl_win_o  [2],
+  input  tlul_pkg::tl_d2h_t tl_win_i  [2],
 
   // To HW
   output spi_host_reg_pkg::spi_host_reg2hw_t reg2hw, // Write
@@ -81,29 +81,31 @@ module spi_host_reg_top (
     .tl_o(tl_o)
   );
 
-  tlul_pkg::tl_h2d_t tl_socket_h2d [2];
-  tlul_pkg::tl_d2h_t tl_socket_d2h [2];
+  tlul_pkg::tl_h2d_t tl_socket_h2d [3];
+  tlul_pkg::tl_d2h_t tl_socket_d2h [3];
 
   logic [1:0] reg_steer;
 
   // socket_1n connection
-  assign tl_reg_h2d = tl_socket_h2d[1];
-  assign tl_socket_d2h[1] = tl_reg_d2h;
+  assign tl_reg_h2d = tl_socket_h2d[2];
+  assign tl_socket_d2h[2] = tl_reg_d2h;
 
-  assign tl_win_o = tl_socket_h2d[0];
-  assign tl_socket_d2h[0] = tl_win_i;
+  assign tl_win_o[0] = tl_socket_h2d[0];
+  assign tl_socket_d2h[0] = tl_win_i[0];
+  assign tl_win_o[1] = tl_socket_h2d[1];
+  assign tl_socket_d2h[1] = tl_win_i[1];
 
   // Create Socket_1n
   tlul_socket_1n #(
-    .N          (2),
+    .N          (3),
     .HReqPass   (1'b1),
     .HRspPass   (1'b1),
-    .DReqPass   ({2{1'b1}}),
-    .DRspPass   ({2{1'b1}}),
+    .DReqPass   ({3{1'b1}}),
+    .DRspPass   ({3{1'b1}}),
     .HReqDepth  (4'h0),
     .HRspDepth  (4'h0),
-    .DReqDepth  ({2{4'h0}}),
-    .DRspDepth  ({2{4'h0}})
+    .DReqDepth  ({3{4'h0}}),
+    .DRspDepth  ({3{4'h0}})
   ) u_socket (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -116,14 +118,17 @@ module spi_host_reg_top (
 
   // Create steering logic
   always_comb begin
-    reg_steer = 1;       // Default set to register
+    reg_steer = 2;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
     if (tl_i.a_address[AW-1:0] >= 36 && tl_i.a_address[AW-1:0] < 40) begin
       reg_steer = 0;
     end
-    if (intg_err) begin
+    if (tl_i.a_address[AW-1:0] >= 40 && tl_i.a_address[AW-1:0] < 44) begin
       reg_steer = 1;
+    end
+    if (intg_err) begin
+      reg_steer = 2;
     end
   end
 
