@@ -120,6 +120,16 @@ dif_result_t dif_gpio_irq_is_pending(const dif_gpio_t *gpio, dif_gpio_irq_t irq,
                                      bool *is_pending);
 
 /**
+ * Acknowledges all interrupts, indicating to the hardware that all
+ * interrupts have been successfully serviced.
+ *
+ * @param gpio A gpio handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_gpio_irq_acknowledge_all(const dif_gpio_t *gpio);
+
+/**
  * Acknowledges a particular interrupt, indicating to the hardware that it has
  * been successfully serviced.
  *

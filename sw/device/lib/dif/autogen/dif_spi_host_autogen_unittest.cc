@@ -112,6 +112,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_FALSE(irq_state);
 }
 
+class AcknowledgeAllTest : public SpiHostTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_spi_host_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(SPI_HOST_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_spi_host_irq_acknowledge_all(&spi_host_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public SpiHostTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

@@ -96,6 +96,16 @@ dif_result_t dif_spi_host_irq_is_pending(const dif_spi_host_t *spi_host,
                                          bool *is_pending);
 
 /**
+ * Acknowledges all interrupts, indicating to the hardware that all
+ * interrupts have been successfully serviced.
+ *
+ * @param spi_host A spi_host handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_irq_acknowledge_all(const dif_spi_host_t *spi_host);
+
+/**
  * Acknowledges a particular interrupt, indicating to the hardware that it has
  * been successfully serviced.
  *

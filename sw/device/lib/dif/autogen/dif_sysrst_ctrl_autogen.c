@@ -5,6 +5,7 @@
 // This file is auto-generated.
 
 #include "sw/device/lib/dif/autogen/dif_sysrst_ctrl_autogen.h"
+#include <stdint.h>
 
 #include "sysrst_ctrl_regs.h"  // Generated.
 
@@ -70,6 +71,20 @@ dif_result_t dif_sysrst_ctrl_irq_is_pending(
       sysrst_ctrl->base_addr, SYSRST_CTRL_INTR_STATE_REG_OFFSET);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_irq_acknowledge_all(
+    const dif_sysrst_ctrl_t *sysrst_ctrl) {
+  if (sysrst_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  // Writing to the register clears the corresponding bits (Write-one clear).
+  mmio_region_write32(sysrst_ctrl->base_addr, SYSRST_CTRL_INTR_STATE_REG_OFFSET,
+                      UINT32_MAX);
 
   return kDifOk;
 }

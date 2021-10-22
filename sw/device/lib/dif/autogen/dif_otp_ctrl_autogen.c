@@ -5,6 +5,7 @@
 // This file is auto-generated.
 
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
+#include <stdint.h>
 
 #include "otp_ctrl_regs.h"  // Generated.
 
@@ -73,6 +74,19 @@ dif_result_t dif_otp_ctrl_irq_is_pending(const dif_otp_ctrl_t *otp_ctrl,
       mmio_region_read32(otp_ctrl->base_addr, OTP_CTRL_INTR_STATE_REG_OFFSET);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otp_ctrl_irq_acknowledge_all(const dif_otp_ctrl_t *otp_ctrl) {
+  if (otp_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  // Writing to the register clears the corresponding bits (Write-one clear).
+  mmio_region_write32(otp_ctrl->base_addr, OTP_CTRL_INTR_STATE_REG_OFFSET,
+                      UINT32_MAX);
 
   return kDifOk;
 }

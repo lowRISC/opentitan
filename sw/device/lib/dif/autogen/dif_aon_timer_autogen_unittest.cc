@@ -113,6 +113,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_FALSE(irq_state);
 }
 
+class AcknowledgeAllTest : public AonTimerTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_aon_timer_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(AON_TIMER_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_aon_timer_irq_acknowledge_all(&aon_timer_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public AonTimerTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

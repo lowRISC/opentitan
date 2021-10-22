@@ -103,6 +103,16 @@ dif_result_t dif_csrng_irq_is_pending(const dif_csrng_t *csrng,
                                       dif_csrng_irq_t irq, bool *is_pending);
 
 /**
+ * Acknowledges all interrupts, indicating to the hardware that all
+ * interrupts have been successfully serviced.
+ *
+ * @param csrng A csrng handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_irq_acknowledge_all(const dif_csrng_t *csrng);
+
+/**
  * Acknowledges a particular interrupt, indicating to the hardware that it has
  * been successfully serviced.
  *

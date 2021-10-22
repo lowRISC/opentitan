@@ -26,6 +26,7 @@
 
 // This file is auto-generated.
 
+#include <stdint.h>
 #include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
 #include "${ip.name_snake}_regs.h"  // Generated.
@@ -201,6 +202,36 @@ dif_result_t dif_${ip.name_snake}_init(
   % endif
 
     *is_pending = bitfield_bit32_read(intr_state_reg, index);
+
+    return kDifOk;
+  }
+
+  OT_WARN_UNUSED_RESULT
+  dif_result_t dif_${ip.name_snake}_irq_acknowledge_all(
+    const dif_${ip.name_snake}_t *${ip.name_snake}
+  % if ip.name_snake == "rv_timer":
+    , uint32_t hart_id
+  % endif
+    ) {
+
+    if (${ip.name_snake} == NULL) {
+      return kDifBadArg;
+    }
+
+    // Writing to the register clears the corresponding bits (Write-one clear).
+  % if ip.name_snake == "rv_timer":
+    switch (hart_id) {
+      % for hart_id in range(int(ip.parameters["N_HARTS"].default)):
+        case ${hart_id}:
+          ${mmio_region_write32("RV_TIMER_INTR_STATE%d_REG_OFFSET" % hart_id, "UINT32_MAX")}
+          break;
+      % endfor
+      default:
+        return kDifBadArg;
+    }
+  % else:
+    ${mmio_region_write32(ip.name_upper + "_INTR_STATE_REG_OFFSET", "UINT32_MAX")}
+  % endif
 
     return kDifOk;
   }

@@ -5,6 +5,7 @@
 // This file is auto-generated.
 
 #include "sw/device/lib/dif/autogen/dif_entropy_src_autogen.h"
+#include <stdint.h>
 
 #include "entropy_src_regs.h"  // Generated.
 
@@ -79,6 +80,20 @@ dif_result_t dif_entropy_src_irq_is_pending(
       entropy_src->base_addr, ENTROPY_SRC_INTR_STATE_REG_OFFSET);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_irq_acknowledge_all(
+    const dif_entropy_src_t *entropy_src) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  // Writing to the register clears the corresponding bits (Write-one clear).
+  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                      UINT32_MAX);
 
   return kDifOk;
 }

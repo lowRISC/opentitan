@@ -103,6 +103,23 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_TRUE(irq_state);
 }
 
+class AcknowledgeAllTest : public RvTimerTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_rv_timer_irq_acknowledge_all(nullptr, 0), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, BadHartId) {
+  EXPECT_EQ(dif_rv_timer_irq_acknowledge_all(nullptr, 1), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(RV_TIMER_INTR_STATE0_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_rv_timer_irq_acknowledge_all(&rv_timer_, 0), kDifOk);
+}
+
 class IrqAcknowledgeTest : public RvTimerTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

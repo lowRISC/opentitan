@@ -5,6 +5,7 @@
 // This file is auto-generated.
 
 #include "sw/device/lib/dif/autogen/dif_pinmux_autogen.h"
+#include <stdint.h>
 
 #include "pinmux_regs.h"  // Generated.
 

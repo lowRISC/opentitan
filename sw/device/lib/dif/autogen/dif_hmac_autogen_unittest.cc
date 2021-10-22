@@ -106,6 +106,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_FALSE(irq_state);
 }
 
+class AcknowledgeAllTest : public HmacTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_hmac_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(HMAC_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_hmac_irq_acknowledge_all(&hmac_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public HmacTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

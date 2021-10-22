@@ -114,6 +114,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_FALSE(irq_state);
 }
 
+class AcknowledgeAllTest : public FlashCtrlTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_flash_ctrl_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(FLASH_CTRL_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_flash_ctrl_irq_acknowledge_all(&flash_ctrl_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public FlashCtrlTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {

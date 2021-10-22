@@ -119,6 +119,19 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_FALSE(irq_state);
 }
 
+class AcknowledgeAllTest : public AlertHandlerTest {};
+
+TEST_F(AcknowledgeAllTest, NullArgs) {
+  EXPECT_EQ(dif_alert_handler_irq_acknowledge_all(nullptr), kDifBadArg);
+}
+
+TEST_F(AcknowledgeAllTest, Success) {
+  EXPECT_WRITE32(ALERT_HANDLER_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_EQ(dif_alert_handler_irq_acknowledge_all(&alert_handler_), kDifOk);
+}
+
 class IrqAcknowledgeTest : public AlertHandlerTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {
