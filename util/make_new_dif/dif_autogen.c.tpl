@@ -33,6 +33,7 @@
 
 % if ip.name_snake == "aon_timer":
   #include <assert.h>
+
   % for irq in ip.irqs:
     static_assert(${ip.name_upper}_INTR_STATE_${irq.name_upper}_BIT == 
                   ${ip.name_upper}_INTR_TEST_${irq.name_upper}_BIT,
@@ -41,6 +42,7 @@
 
 % elif ip.name_snake == "rv_timer":
   #include <assert.h>
+
   % for irq in ip.irqs:
     static_assert(${ip.name_upper}_INTR_STATE0_IS_${loop.index}_BIT == 
                   ${ip.name_upper}_INTR_ENABLE0_IE_${loop.index}_BIT,
@@ -105,8 +107,8 @@ dif_result_t dif_${ip.name_snake}_init(
   /**
    * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
    * HJSON does NOT have a field "no_auto_intr_regs = true", then the
-   * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
-   * exist, as templated below.
+   * "<ip>_INTR_COMMON_<irq>_BIT" macro can be used. Otherwise, special cases
+   * will exist, as templated below.
    */
   static bool ${ip.name_snake}_get_irq_bit_index(
     dif_${ip.name_snake}_irq_t irq,

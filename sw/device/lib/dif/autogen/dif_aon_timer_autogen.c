@@ -10,6 +10,7 @@
 #include "aon_timer_regs.h"  // Generated.
 
 #include <assert.h>
+
 static_assert(AON_TIMER_INTR_STATE_WKUP_TIMER_EXPIRED_BIT ==
                   AON_TIMER_INTR_TEST_WKUP_TIMER_EXPIRED_BIT,
               "Expected IRQ bit offsets to match across STATE/TEST regs.");
@@ -32,8 +33,8 @@ dif_result_t dif_aon_timer_init(mmio_region_t base_addr,
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the
- * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
- * exist, as templated below.
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can be used. Otherwise, special cases
+ * will exist, as templated below.
  */
 static bool aon_timer_get_irq_bit_index(dif_aon_timer_irq_t irq,
                                         bitfield_bit32_index_t *index_out) {
