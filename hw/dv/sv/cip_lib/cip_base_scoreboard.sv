@@ -23,6 +23,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // alert checking related parameters
   bit do_alert_check = 1;
+  bit check_alert_sig_int_err = 1;
   local bit under_alert_handshake[string];
   local bit exp_alert[string];
   local bit is_fatal_alert[string];
@@ -179,8 +180,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           if (item.alert_esc_type == AlertEscSigTrans && !item.ping_timeout &&
               item.alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
             process_alert(alert_name, item);
-          // IP level alert protocol does not drive any sig_int_err or ping response
-          end else if (item.alert_esc_type == AlertEscIntFail) begin
+          // IP level alert protocol does not drive any sig_int_err or ping response.
+          // However, `lpg_en` or `alert_init` will trigger signal integrity error, user can
+          // disable signal integrity checking via `check_alert_sig_int_err` flag.
+          end else if (check_alert_sig_int_err && item.alert_esc_type == AlertEscIntFail) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected signal int error", alert_name))
           end else if (item.ping_timeout) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected timeout error", alert_name))
