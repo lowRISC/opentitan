@@ -95,7 +95,7 @@ typedef enum dif_uart_irq {
 typedef uint32_t dif_uart_irq_state_snapshot_t;
 
 /**
- * Returns whether a particular interrupt is currently pending.
+ * Returns the state of all interrupts (i.e., pending or not) for this IP.
  *
  * @param uart A uart handle.
  * @param[out] snapshot Out-param for interrupt state snapshot.

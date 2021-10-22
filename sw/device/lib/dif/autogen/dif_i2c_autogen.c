@@ -23,8 +23,8 @@ dif_result_t dif_i2c_init(mmio_region_t base_addr, dif_i2c_t *i2c) {
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the
- * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
- * exist, as templated below.
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can be used. Otherwise, special cases
+ * will exist, as templated below.
  */
 static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
                                   bitfield_bit32_index_t *index_out) {

@@ -67,7 +67,7 @@ typedef enum dif_rv_timer_irq {
 typedef uint32_t dif_rv_timer_irq_state_snapshot_t;
 
 /**
- * Returns whether a particular interrupt is currently pending.
+ * Returns the state of all interrupts (i.e., pending or not) for this IP.
  *
  * @param rv_timer A rv_timer handle.
  * @param hart_id The hart to manipulate.

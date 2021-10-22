@@ -98,7 +98,7 @@ dif_result_t dif_${ip.name_snake}_init(
   typedef uint32_t dif_${ip.name_snake}_irq_state_snapshot_t;
 
   /**
-   * Returns whether a particular interrupt is currently pending.
+   * Returns the state of all interrupts (i.e., pending or not) for this IP.
    *
    * @param ${ip.name_snake} A ${ip.name_snake} handle.
   % if ip.name_snake == "rv_timer":

@@ -66,7 +66,7 @@ typedef enum dif_otbn_irq {
 typedef uint32_t dif_otbn_irq_state_snapshot_t;
 
 /**
- * Returns whether a particular interrupt is currently pending.
+ * Returns the state of all interrupts (i.e., pending or not) for this IP.
  *
  * @param otbn A otbn handle.
  * @param[out] snapshot Out-param for interrupt state snapshot.

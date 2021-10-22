@@ -10,6 +10,7 @@
 #include "rv_timer_regs.h"  // Generated.
 
 #include <assert.h>
+
 static_assert(RV_TIMER_INTR_STATE0_IS_0_BIT == RV_TIMER_INTR_ENABLE0_IE_0_BIT,
               "Expected IRQ bit offsets to match across STATE/ENABLE regs.");
 static_assert(RV_TIMER_INTR_STATE0_IS_0_BIT == RV_TIMER_INTR_TEST0_T_0_BIT,
@@ -74,8 +75,8 @@ static bool rv_timer_get_irq_reg_offset(dif_rv_timer_intr_reg_t intr_reg,
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the
- * "<ip>_INTR_COMMON_<irq>_BIT" macro can used. Otherwise, special cases will
- * exist, as templated below.
+ * "<ip>_INTR_COMMON_<irq>_BIT" macro can be used. Otherwise, special cases
+ * will exist, as templated below.
  */
 static bool rv_timer_get_irq_bit_index(dif_rv_timer_irq_t irq,
                                        bitfield_bit32_index_t *index_out) {

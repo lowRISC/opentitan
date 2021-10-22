@@ -74,7 +74,7 @@ typedef enum dif_kmac_irq {
 typedef uint32_t dif_kmac_irq_state_snapshot_t;
 
 /**
- * Returns whether a particular interrupt is currently pending.
+ * Returns the state of all interrupts (i.e., pending or not) for this IP.
  *
  * @param kmac A kmac handle.
  * @param[out] snapshot Out-param for interrupt state snapshot.

@@ -84,7 +84,7 @@ typedef enum dif_alert_handler_irq {
 typedef uint32_t dif_alert_handler_irq_state_snapshot_t;
 
 /**
- * Returns whether a particular interrupt is currently pending.
+ * Returns the state of all interrupts (i.e., pending or not) for this IP.
  *
  * @param alert_handler A alert_handler handle.
  * @param[out] snapshot Out-param for interrupt state snapshot.
