@@ -16,8 +16,8 @@ class keymgr_common_vseq extends keymgr_base_vseq;
 
   // override this delay for keymgr_stress_all_with_rand_reset, as most of vseq finishes less than
   // 10k cycles
-  constraint delay_to_reset_c {
-    delay_to_reset dist {
+  constraint rand_reset_delay_c {
+    rand_reset_delay dist {
         [1     : 100]     :/ 1,
         [101   : 2_000]   :/ 6,
         [2_001 : 10_000]  :/ 1

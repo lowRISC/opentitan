@@ -57,9 +57,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // mask out bits out of the csr/mem range and LSB 2 bits
   bit [BUS_AW-1:0] csr_addr_mask[string];
 
-  rand uint delay_to_reset;
-  constraint delay_to_reset_c {
-    delay_to_reset dist {
+  // This knob is used in run_stress_all_with_rand_reset_vseq to control how long we wait before
+  // injecting a reset.
+  rand uint rand_reset_delay;
+  constraint rand_reset_delay_c {
+    rand_reset_delay dist {
         [1         :1000]       :/ 1,
         [1001      :100_000]    :/ 2,
         [100_001   :1_000_000]  :/ 6,
@@ -574,7 +576,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
 
   // task to insert random reset within the input vseqs list, then check all CSR values
-  virtual task run_stress_all_with_rand_reset_vseq(int num_times = 1, bit do_tl_err = 1,
+  virtual task run_stress_all_with_rand_reset_vseq(int          num_times = 1,
+                                                   bit          do_tl_err = 1,
+                                                   uint         reset_delay_bound = 10_000_000,
                                                    uvm_sequence seq = null);
     string stress_seq_name;
     void'($value$plusargs("stress_seq=%0s", stress_seq_name));
@@ -614,8 +618,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               `uvm_info(`gfn, $sformatf("\nFinished run %0d/%0d w/o reset", i, num_times), UVM_LOW)
             end
             begin : issue_rand_reset
-              `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay_to_reset)
-              cfg.clk_rst_vif.wait_clks(delay_to_reset);
+              `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(
+                  rand_reset_delay,
+                  rand_reset_delay inside {[1:reset_delay_bound]};)
+
+              cfg.clk_rst_vif.wait_clks(rand_reset_delay);
               #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
@@ -828,8 +835,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     `downcast(cip_seq, this.clone())
     cip_seq.common_seq_type = "csr_mem_rw";
     `uvm_info(`gfn, "Running run_csr_mem_rw_with_rand_reset_vseq", UVM_HIGH)
+
+    // The reset_delay_bound of 1000 here ensures that we don't pick an enormous delay before
+    // injecting a reset. Since the IP block is otherwise quiescent, we only really care about what
+    // point in a TL transaction the reset occurs. Each TL transaction takes roughly 10 cycles, so
+    // there's no need to wait longer than 1000 cycles (which would be ~100 TL transactions).
     run_stress_all_with_rand_reset_vseq(.num_times(num_times), .do_tl_err(1),
-                                        .seq(cip_seq));
+                                        .reset_delay_bound(1000), .seq(cip_seq));
   endtask
 
   virtual task run_alert_rsp_seq_nonblocking();
