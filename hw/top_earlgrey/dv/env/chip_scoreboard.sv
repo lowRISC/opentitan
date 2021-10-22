@@ -31,6 +31,9 @@ class chip_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   task run_phase(uvm_phase phase);
+    // Disable alert signal integrity check to avoid false alert on low_power_group_en or
+    // alert_init. Alert signal integrity can be checked by assertions.
+    check_alert_sig_int_err = 0;
     super.run_phase(phase);
     fork
       process_jtag_fifo();
