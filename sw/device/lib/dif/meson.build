@@ -892,7 +892,10 @@ sw_lib_dif_sram_ctrl = declare_dependency(
       hw_ip_sram_ctrl_reg_h,
       'dif_sram_ctrl.c',
     ],
-    dependencies: [sw_lib_mmio],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_autogen_sram_ctrl,
+    ],
   )
 )
 
