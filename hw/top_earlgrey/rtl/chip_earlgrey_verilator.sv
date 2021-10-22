@@ -17,12 +17,20 @@ module chip_earlgrey_verilator (
   output logic cio_uart_tx_d2p_o,
   output logic cio_uart_tx_en_d2p_o,
 
-  // communication with SPI
+  // communication with external SPI host
   input cio_spi_device_sck_p2d_i,
   input cio_spi_device_csb_p2d_i,
   input cio_spi_device_sdi_p2d_i,
   output logic cio_spi_device_sdo_d2p_o,
   output logic cio_spi_device_sdo_en_d2p_o,
+
+  // communication with external SPI device BFM
+  // TODO: expand to quad devices
+  output logic cio_spi_host0_sck_d2p_o,
+  output logic cio_spi_host0_csb_d2p_o,
+  input cio_spi_host0_sdi_p2d_i,
+  output logic cio_spi_host0_sdo_d2p_o,
+  output logic cio_spi_host0_sdo_en_d2p_o,
 
   // communication with USB
   input cio_usbdev_sense_p2d_i,
@@ -59,11 +67,12 @@ module chip_earlgrey_verilator (
     dio_in = '0;
     dio_in[DioSpiDeviceSck] = cio_spi_device_sck_p2d_i;
     dio_in[DioSpiDeviceCsb] = cio_spi_device_csb_p2d_i;
-    dio_in[DioSpiDeviceSd0] = cio_spi_device_sdi_p2d_i;
+    dio_in[DioSpiDeviceSd1] = cio_spi_device_sdi_p2d_i;
     dio_in[DioUsbdevSense] = cio_usbdev_sense_p2d_i;
     dio_in[DioUsbdevD] = cio_usbdev_d_p2d_i;
     dio_in[DioUsbdevDp] = cio_usbdev_dp_p2d_i;
     dio_in[DioUsbdevDn] = cio_usbdev_dn_p2d_i;
+    dio_in[DioSpiHost0Sd1] = cio_spi_host0_sdi_p2d_i;
   end
 
   assign cio_usbdev_dn_d2p_o = dio_out[DioUsbdevDn];
@@ -75,6 +84,9 @@ module chip_earlgrey_verilator (
   assign cio_usbdev_dp_pullup_d2p_o = dio_out[DioUsbdevDpPullup];
   assign cio_usbdev_se0_d2p_o = dio_out[DioUsbdevSe0];
   assign cio_spi_device_sdo_d2p_o = dio_out[DioSpiDeviceSd1];
+  assign cio_spi_host0_sck_d2p_o = dio_out[DioSpiHost0Sck];
+  assign cio_spi_host0_csb_d2p_o = dio_out[DioSpiHost0Csb];
+  assign cio_spi_host0_sdo_d2p_o = dio_out[DioSpiHost0Sd0];
 
   assign cio_usbdev_dn_en_d2p_o = dio_oe[DioUsbdevDn];
   assign cio_usbdev_dp_en_d2p_o = dio_oe[DioUsbdevDp];
@@ -85,6 +97,7 @@ module chip_earlgrey_verilator (
   assign cio_usbdev_dp_pullup_en_d2p_o = dio_oe[DioUsbdevDpPullup];
   assign cio_usbdev_se0_en_d2p_o = dio_oe[DioUsbdevSe0];
   assign cio_spi_device_sdo_en_d2p_o = dio_oe[DioSpiDeviceSd1];
+  assign cio_spi_host0_sdo_en_d2p_o = dio_oe[DioSpiHost0Sd0];
 
   logic [pinmux_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_pkg::NMioPads-1:0] mio_out;

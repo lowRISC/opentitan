@@ -15,6 +15,10 @@ module chip_sim_tb (
   logic cio_spi_device_sdi_p2d;
   logic cio_spi_device_sdo_d2p, cio_spi_device_sdo_en_d2p;
 
+  logic cio_spi_host0_sck_d2p, cio_spi_host0_csb_d2p;
+  logic cio_spi_host0_sdi_p2d;
+  logic cio_spi_host0_sdo_d2p, cio_spi_host0_sdo_en_d2p;
+
   logic cio_usbdev_sense_p2d;
   logic cio_usbdev_se0_d2p, cio_usbdev_se0_en_d2p;
   logic cio_usbdev_dp_pullup_d2p, cio_usbdev_dp_pullup_en_d2p;
@@ -44,6 +48,13 @@ module chip_sim_tb (
     .cio_spi_device_sdi_p2d_i(cio_spi_device_sdi_p2d),
     .cio_spi_device_sdo_d2p_o(cio_spi_device_sdo_d2p),
     .cio_spi_device_sdo_en_d2p_o(cio_spi_device_sdo_en_d2p),
+
+    // SPI communication with EEPROM BFM
+    .cio_spi_host0_sck_d2p_o(cio_spi_host0_sck_d2p),
+    .cio_spi_host0_csb_d2p_o(cio_spi_host0_csb_d2p),
+    .cio_spi_host0_sdi_p2d_i(cio_spi_host0_sdi_p2d),
+    .cio_spi_host0_sdo_d2p_o(cio_spi_host0_sdo_d2p),
+    .cio_spi_host0_sdo_en_d2p_o(cio_spi_host0_sdo_en_d2p),
 
     // communication with USB
     .cio_usbdev_sense_p2d_i(cio_usbdev_sense_p2d),
@@ -133,6 +144,24 @@ module chip_sim_tb (
     .spi_device_sdi_o     (cio_spi_device_sdi_p2d),
     .spi_device_sdo_i     (cio_spi_device_sdo_d2p),
     .spi_device_sdo_en_i  (cio_spi_device_sdo_en_d2p)
+  );
+
+
+  // SPI EEPROM BFM
+  //
+  // TODO: Manage bidirectional IO
+  // For now assume that sd[0] is always host-to-EEPROM
+  // and sd[1] is always EEPROM-to-host
+
+  logic unused_spi_host0_sdo_en;
+  assign unused_spi_host0_sdo_en = cio_spi_host0_sdo_en_d2p;
+
+  spi_eeprom_bfm u_spi_eeprom (
+    .rst_ni (rst_ni),
+    .sck_i  (cio_spi_host0_sck_d2p),
+    .csb_i  (cio_spi_host0_csb_d2p),
+    .sd_i   (cio_spi_host0_sdo_d2p),
+    .sd_o   (cio_spi_host0_sdi_p2d)
   );
 
   // USB DPI

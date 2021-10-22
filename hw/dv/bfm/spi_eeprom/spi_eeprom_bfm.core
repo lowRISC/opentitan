@@ -1,0 +1,30 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:spi_eeprom_bfm:0.1"
+description: "Simple SPI EPPROM BFM for testing SPI_HOST"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim_generic:rom
+    files:
+      - spi_eeprom_bfm.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

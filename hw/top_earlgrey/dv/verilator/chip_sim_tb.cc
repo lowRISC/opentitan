@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
   std::string ram1p_adv_scope(
       "u_prim_ram_1p_adv.u_mem."
       "gen_generic.u_impl_generic");
+  std::string eeprom_scope("TOP.chip_sim_tb.u_spi_eeprom");
 
   MemArea rom(top_scope + (".u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom."
                            "u_prim_rom.gen_generic.u_impl_generic"),
@@ -34,11 +35,14 @@ int main(int argc, char **argv) {
   MemArea otp(top_scope + ".u_otp_ctrl.u_otp.gen_generic.u_impl_generic." +
                   ram1p_adv_scope,
               0x4000 / 4, 4);
+  MemArea eepromsfdp(eeprom_scope + ".u_sfdp_rom", 0x100, 1);
 
   memutil.RegisterMemoryArea("rom", 0x8000, &rom);
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);
   memutil.RegisterMemoryArea("flash", 0x20000000u, &flash);
   memutil.RegisterMemoryArea("otp", 0x40000000u /* (bogus LMA) */, &otp);
+  memutil.RegisterMemoryArea("eepromsfdp", 0x40010000u /* (bogus LMA) */,
+                             &eepromsfdp);
   simctrl.RegisterExtension(&memutil);
 
   // The initial reset delay must be long enough such that pwr/rst/clkmgr will
