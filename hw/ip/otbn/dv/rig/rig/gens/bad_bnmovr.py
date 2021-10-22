@@ -63,45 +63,61 @@ class BadBNMovr(SnippetGen):
             model: Model,
             program: Program) -> Optional[GenRet]:
 
-        # Get known registers
+        # Get known registers and split them up as "good" or "bad" depending on
+        # whether their values are valid register indices.
         known_regs = model.regs_with_known_vals('gpr')
         bad_regs = []
         good_regs = []
-
-        # Make sure there is at least one out of bounds value
         for reg_idx, reg_val in known_regs:
-            if 31 < reg_val:
-                bad_regs.append(reg_idx)
-            else:
+            if reg_val <= 31:
                 good_regs.append(reg_idx)
+            else:
+                bad_regs.append(reg_idx)
 
-        # We have 4 different options for increments * 4 different options for
-        # out of bound register values.
-        # reg_val_choice[1:0] ->   grd_val, grs_val
-        # inc_choice[1:0]     ->   grd_inc, grs_inc
-        # bad = 1, good = 0
-        # choices[3:0] = {reg_val_choice, inc_choice}
-
-        # We always have an element (x0) in good_regs but if bad_regs is empty
-        # hard-code grd_val/grs_val = Good/Good and we have to use two incr.
-        # for producing an error.
+        # We have 4 different options for increments and 4 different options
+        # for out of bound register values.
+        #
+        # For increments, the "inc_choice" variable uses the mapping:
+        #
+        #    0 => (don't increment anything)
+        #    1 => increment grs
+        #    2 => increment grd
+        #    3 => increment both
+        #
+        # For register values, we have to pick whether they should be out of
+        # bounds or not. "reg_val_choice" follows the mapping:
+        #
+        #    0 => All in bounds
+        #    1 => grs out of bounds
+        #    2 => grd out of bounds
+        #    3 => both registers out of bounds
+        #
+        # Concatenate the 2-bit numbers as {reg_val_choice, inc_choice} to get
+        # a value between 0 and 15. We want to generate an instruction that
+        # will cause an error so either inc_choice has to be 3 (double
+        # increment) or reg_val_choice has to be nonzero (at least one
+        # out-of-bound register value). These conditions hold iff the combined
+        # value is at least 3.
+        #
+        # bad_regs might be empty. In this case, we can still generate an
+        # instruction (note that good_regs will always be nonempty because it
+        # contains x0, with a known value of zero). However, this forces
+        # reg_val_choice to zero, so we must pick inc_choice = 3.
         choices = 3 if not bad_regs else random.randint(3, 15)
 
         reg_val_choice = choices // 4
         inc_choice = choices % 4
 
-        bad_grd = reg_val_choice in [2, 3]  # grd_val/grs_val = Bad/Good or Bad/Bad
-        bad_grs = reg_val_choice in [1, 3]  # grd_val/grs_val = Good/Bad or Bad/Bad
+        bad_grd = reg_val_choice in [2, 3]
+        bad_grs = reg_val_choice in [1, 3]
 
-        # If grs_val/grd_val = good/good, we have to force +/+ for a fault
-        grd_inc = int(inc_choice in [2, 3])
-        grs_inc = int(inc_choice in [1, 3])
+        grd_inc = inc_choice in [2, 3]
+        grs_inc = inc_choice in [1, 3]
 
         op_val_grs = random.choice(bad_regs if bad_grs else good_regs)
-
         op_val_grd = random.choice(bad_regs if bad_grd else good_regs)
 
-        op_val = [op_val_grd, op_val_grs, grd_inc, grs_inc]
+        op_val = [op_val_grd, op_val_grs, int(grd_inc), int(grs_inc)]
 
         prog_insn = ProgInsn(self.insn, op_val, None)
 
