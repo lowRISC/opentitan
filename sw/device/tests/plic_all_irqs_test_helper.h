@@ -48,11 +48,9 @@
 /**
  * Clears all previous interrupt invocations.
  */
-#define PERIPHERAL_IRQS_CLEAR(handle)                                         \
-  do {                                                                        \
-    /* TODO(#8142): Replace with dif_<ip>_irq_acknowledge_all when available. \
-     */                                                                       \
-    mmio_region_write32(handle.base_addr, 0, (uint32_t)ULONG_MAX);            \
+#define PERIPHERAL_IRQS_CLEAR(peripheral, handle)                  \
+  do {                                                             \
+    CHECK_DIF_OK(dif_##peripheral##_irq_acknowledge_all(&handle)); \
   } while (0)
 
 /**

@@ -301,35 +301,35 @@ static void peripherals_init(void) {
  * Clears pending IRQs in all peripherals.
  */
 static void peripheral_irqs_clear(void) {
-  // PERIPHERAL_IRQS_CLEAR(adc_ctrl_aon);
-  PERIPHERAL_IRQS_CLEAR(alert_handler);
-  // PERIPHERAL_IRQS_CLEAR(aon_timer_aon);
-  PERIPHERAL_IRQS_CLEAR(csrng);
-  PERIPHERAL_IRQS_CLEAR(edn0);
-  PERIPHERAL_IRQS_CLEAR(edn1);
-  PERIPHERAL_IRQS_CLEAR(entropy_src);
-  // PERIPHERAL_IRQS_CLEAR(flash_ctrl);
-  PERIPHERAL_IRQS_CLEAR(gpio);
-  PERIPHERAL_IRQS_CLEAR(hmac);
-  PERIPHERAL_IRQS_CLEAR(i2c0);
-  PERIPHERAL_IRQS_CLEAR(i2c1);
-  PERIPHERAL_IRQS_CLEAR(i2c2);
-  PERIPHERAL_IRQS_CLEAR(keymgr);
-  PERIPHERAL_IRQS_CLEAR(kmac);
-  PERIPHERAL_IRQS_CLEAR(otbn);
-  PERIPHERAL_IRQS_CLEAR(otp_ctrl);
-  // PERIPHERAL_IRQS_CLEAR(pattgen);
-  PERIPHERAL_IRQS_CLEAR(pwrmgr_aon);
-  // PERIPHERAL_IRQS_CLEAR(rv_timer);
-  PERIPHERAL_IRQS_CLEAR(spi_device);
-  // PERIPHERAL_IRQS_CLEAR(spi_host0);
-  // PERIPHERAL_IRQS_CLEAR(spi_host1);
-  // PERIPHERAL_IRQS_CLEAR(sysrst_ctrl_aon);
-  PERIPHERAL_IRQS_CLEAR(uart0);
-  PERIPHERAL_IRQS_CLEAR(uart1);
-  PERIPHERAL_IRQS_CLEAR(uart2);
-  PERIPHERAL_IRQS_CLEAR(uart3);
-  PERIPHERAL_IRQS_CLEAR(usbdev);
+  // PERIPHERAL_IRQS_CLEAR(adc_ctrl, adc_ctrl_aon);
+  PERIPHERAL_IRQS_CLEAR(alert_handler, alert_handler);
+  // PERIPHERAL_IRQS_CLEAR(aon_timer, aon_timer_aon);
+  PERIPHERAL_IRQS_CLEAR(csrng, csrng);
+  PERIPHERAL_IRQS_CLEAR(edn, edn0);
+  PERIPHERAL_IRQS_CLEAR(edn, edn1);
+  PERIPHERAL_IRQS_CLEAR(entropy_src, entropy_src);
+  // PERIPHERAL_IRQS_CLEAR(flash_ctrl, flash_ctrl);
+  PERIPHERAL_IRQS_CLEAR(gpio, gpio);
+  PERIPHERAL_IRQS_CLEAR(hmac, hmac);
+  PERIPHERAL_IRQS_CLEAR(i2c, i2c0);
+  PERIPHERAL_IRQS_CLEAR(i2c, i2c1);
+  PERIPHERAL_IRQS_CLEAR(i2c, i2c2);
+  PERIPHERAL_IRQS_CLEAR(keymgr, keymgr);
+  PERIPHERAL_IRQS_CLEAR(kmac, kmac);
+  PERIPHERAL_IRQS_CLEAR(otbn, otbn);
+  PERIPHERAL_IRQS_CLEAR(otp_ctrl, otp_ctrl);
+  // PERIPHERAL_IRQS_CLEAR(pattgen, pattgen);
+  PERIPHERAL_IRQS_CLEAR(pwrmgr, pwrmgr_aon);
+  // PERIPHERAL_IRQS_CLEAR(rv_timer, rv_timer);
+  PERIPHERAL_IRQS_CLEAR(spi_device, spi_device);
+  // PERIPHERAL_IRQS_CLEAR(spi_host, spi_host0);
+  // PERIPHERAL_IRQS_CLEAR(spi_host, spi_host1);
+  // PERIPHERAL_IRQS_CLEAR(sysrst_ctrl, sysrst_ctrl_aon);
+  PERIPHERAL_IRQS_CLEAR(uart, uart0);
+  PERIPHERAL_IRQS_CLEAR(uart, uart1);
+  PERIPHERAL_IRQS_CLEAR(uart, uart2);
+  PERIPHERAL_IRQS_CLEAR(uart, uart3);
+  PERIPHERAL_IRQS_CLEAR(usbdev, usbdev);
 }
 
 /**
