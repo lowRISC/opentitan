@@ -42,6 +42,8 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     kmac_app_item kmac_req;
     forever begin
       kmac_req_fifo.get(kmac_req);
+      if (!cfg.en_scb) continue;
+
       `uvm_info(`gfn, $sformatf("Detected a KMAC req:\n%0s", kmac_req.sprint()), UVM_HIGH)
       // We shouldn't see any further requests one the check has completed
       `DV_CHECK_EQ(rom_check_complete, 1'b0, "Spurious ROM request received")
@@ -80,6 +82,8 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     kmac_app_item kmac_rsp;
     forever begin
       kmac_rsp_fifo.get(kmac_rsp);
+      if (!cfg.en_scb) continue;
+
       `uvm_info(`gfn, $sformatf("Detected a KMAC response:\n%0s", kmac_rsp.sprint()), UVM_HIGH)
       // We shouldn't see any further responses one the check has completed
       `DV_CHECK_EQ(rom_check_complete, 1'b0, "Spurious ROM response received")
@@ -123,6 +127,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Montitor and check outputs sent to pwrmgr and keymgr
   virtual task monitor_rom_ctrl_if();
+    if (!cfg.en_scb) return;
     forever begin
       @(cfg.rom_ctrl_vif.pwrmgr_data or cfg.rom_ctrl_vif.keymgr_data or cfg.under_reset);
       if (cfg.under_reset) continue;
@@ -232,9 +237,11 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
-    `DV_CHECK_EQ(rom_check_complete, 1'b1, "rom check didn't finish")
-    `DV_CHECK_EQ(pwrmgr_complete, 1'b1, "pwrmgr signals never checked")
-    `DV_CHECK_EQ(keymgr_complete, 1'b1, "keymgr signals never checked")
+    if (cfg.en_scb) begin
+      `DV_CHECK_EQ(rom_check_complete, 1'b1, "rom check didn't finish")
+      `DV_CHECK_EQ(pwrmgr_complete, 1'b1, "pwrmgr signals never checked")
+      `DV_CHECK_EQ(keymgr_complete, 1'b1, "keymgr signals never checked")
+    end
   endfunction
 
 endclass
