@@ -86,7 +86,7 @@ This full cycle mode has no effect on any of the signals transmitted, only on th
 
 {{< wavejson >}}
 {signal: [
-  {name: "clk_core_i", wave: "p.................."},
+  {name: "clk_i", wave: "p.................."},
   {name: "SCK (CPOL=0)", wave: "0.1010101010101010."},
   {name: "SCK (CPOL=1)", wave: "1.0101010101010101."},
   {name: "CSB", wave: "10................1"},
@@ -126,7 +126,7 @@ The SPI_HOST command interface allows the user to specify any number of command 
 
 {{< wavejson >}}
 {signal: [
-  {name: "clk_core_i", wave: "p................................"},
+  {name: "clk_i",        wave: "p................................"},
   {name: "SCK (CPOL=0)", wave: "0.101010101010101010101010101010."},
   {name: "CSB", wave: "10..............................1"},
   {name: "SD[0]", wave: "22.2.2.2.2.2.2.2.2.2.z.....2.2.x.", data: ["","cmd7", "cmd6", "cmd5", "cmd4", "cmd3", "cmd2", "cmd1", "cmd0",
@@ -168,7 +168,7 @@ Issuing a command then consists of the following steps:
 The {{< regref "CONFIGOPTS" >}} multi-register holds separate sets of configuration settings, one for each CSB line.
 In principle, the configuration of these device-specific options only needs to be done/performed once at initialization.
 
-2. Load the TX FIFO with the instructions and data to be transmitted to the remote device by writing to the {{< regref "DATA" >}} memory window.
+2. Load the TX FIFO with the instructions and data to be transmitted to the remote device by writing to the {{< regref "TXDATA" >}} memory window.
 3. Specify which device should receive the next command using the {{< regref "CSID" >}} register.
 4. Wait for {{< regref "STATUS.READY" >}} before continuing.
 5. Issue speed, direction, and length details for the next command segment using the {{< regref "COMMAND" >}} register.
@@ -176,7 +176,7 @@ If a command consists of multiple segments, then set {{< regref "COMMAND.CSAAT" 
 Setting {{< regref "COMMAND.CSAAT" >}} to zero indicates the end of a transaction, prompting the IP to raise CSB at the end of the segment.
 
 6. Repeat steps 4 and 5 until all segments have been described.
-7. Read any peripheral response data from the RX FIFO by reading from the {{< regref "DATA" >}} memory window.
+7. Read any peripheral response data from the RX FIFO by reading from the {{< regref "RXDATA" >}} memory window.
 
 ### About Command Segments
 
@@ -202,7 +202,7 @@ Breaking the command up this way potentially simplifies the job of writing softw
 
 {{< wavejson >}}
 {signal: [
-  {name: "clk_core_i",     wave: "p....................|.............."},
+  {name: "clk_i",          wave: "p....................|.............."},
   {name: "SCK (CPOL=0)",   wave: "0.1010101010101010101|01010101010101"},
   {name: "CSB",            wave: "10...................|.............."},
   {name: "SD[0]",          wave: "00.0.0.0.0.0.1.1.2.2.|2.2.x.........", data: ["a[23]", "a[22]", "a[1]", "a[0]"]},
@@ -225,7 +225,7 @@ A standard-mode Fast Read (with 3 byte addressing) command then requires *three*
 
 {{< wavejson >}}
 {signal: [
-  {name: "clk_core_i",     wave: "p....................|.............................."},
+  {name: "clk_i",          wave: "p....................|.............................."},
   {name: "SCK (CPOL=0)",   wave: "0.1010101010101010101|010101010101010101010101010101"},
   {name: "CSB",            wave: "10...................|.............................."},
   {name: "SD[0]",          wave: "00.0.0.0.1.0.1.1.2.2.|2.2.x.........................", data: ["a[23]", "a[22]", "a[1]", "a[0]"]},
@@ -286,21 +286,15 @@ Likewise, as also described in the previous section, if device setup times requi
 #### Clock rate selection
 
 The SPI clock rate for each peripheral is set by two factors:
-- The SPI_HOST core clock (which may be generated independently from the TL-UL interface clock)
-- An additional 16-bit clock divider
+- The SPI_HOST input clock
+- A 16-bit clock divider
 
 The SPI protocol usually requires activity (either sampling or asserting data) on either edge of the SCK clock.
 For this reason the maximum SCK frequency is at most one half the SPI_HOST core frequency.
-In order to support a broader range of SPI clock frequencies, the SPI_HOST core operates on a separate clock domain, which may be independent from the TL-UL bus clock.
-This arrangement allows gives more flexibility in setting the serial clock frequency by means of an external PLL, and in principle the SCK frequency could even be configured to *exceed* the bus clock.
-For example, if the TL-UL bus is operating at 100MHz, a 200MHz SPI core clock can be fed to the SPI_HOST IP, in order to achieve data rates of 100 MTransfers/s (near the maximum clock rate of the Winbond flash device).
 
 Since some peripheral devices attached to the same SPI_HOST may require different clock frequencies, there is also the option to divide the core clock by an additional factor when dealing with slower peripherals.
 
-$$T_{\textrm{SCK},0}=\frac{1}{2}\frac{T_\textrm{core}}{\textrm{CONFIGOPTS.CLKDIV}+1}$$
-
-Alternatively, this clock-divide feature can also be used to entirely bypass the need for an independent core clock.
-Instead the core can be driven by the TL-UL bus clock, and the SCK period can be adjusted using the {{< regref CONFIGOPTS.CLKDIV >}} setting.
+$$T_{\textrm{SCK},0}=\frac{1}{2}\frac{T_\textrm{clk}}{\textrm{CONFIGOPTS.CLKDIV}+1}$$
 
 #### Chip-select Timing Control
 
@@ -343,7 +337,7 @@ This time delay is a half SCK cycle by default but can be extended to as long as
     text: ["tspan", "All ticks are in units of &#xbd;T",
            ["tspan", {'baseline-shift':'sub'}, "SCK"],
           "=&#xbd;T",
-           ["tspan", {'baseline-shift':'sub'}, "core"],
+           ["tspan", {'baseline-shift':'sub'}, "clk"],
           "&#xd7;(CLKDIV+1)"]
   }
 }
@@ -395,10 +389,9 @@ For instance, even in a SPI_HOST configured for one device, changes to {{< regre
 
 ### Special Command Fields
 
-The {{< regref "COMMAND" >}} register must be written every time a command is issued.
-Whenever a command segment is written to {{< regref "COMMAND" >}}, the contents of the {{< regref "CONFIGOPTS" >}} and {{< regref "COMMAND" >}} registers are passed through the Config/Command CDC to the SPI_HOST core FSM, along with a Chip Select mask signal, indicating which device should receive the command (for example CSB[0])
+The {{< regref "COMMAND" >}} register must be written once for each command segment.
+Whenever a command segment is written to {{< regref "COMMAND" >}}, the contents of the {{< regref "CONFIGOPTS" >}}, {{< regref "CSID" >}}, and {{< regref "COMMAND" >}} registers are passed through the Config/Command FIFO to the SPI_HOST core FSM.
 Once the command is issued, the core will immediately deassert {{< regref "STATUS.READY" >}}, and once the command has started {{< regref "STATUS.ACTIVE" >}} will go high.
-The {{< regref "STATUS.ACTIVE" >}} line takes a few cycles to assert, due to CDC delays.
 The command is complete when {{< regref "STATUS.ACTIVE" >}} goes low.
 A `spi_event` interrupt can also be triggered to go off on completion by setting {{< regref "EVENT_ENABLE.IDLE" >}}.
 
@@ -433,23 +426,23 @@ Based on the requirements for our chosen flash devices, this IP follows these co
 
 The programming model for the IP should meanwhile make it easy to quickly program the peripheral device, with a minimum amount of byte shuffling.
 It should be intuitive to program the specific flash devices we are targeting, while following the conventions above:
-- When reading the data in and out of the {{< regref "DATA" >}} memory window, the IP should fully utilize the TL-UL bus, using 32-bit I/O instructions.
+- When transferring data in from the {{< regref "RXDATA" >}} memory window or out to the {{< regref "TXDATA" >}} window, the IP should fully utilize the TL-UL bus, using 32-bit I/O instructions.
 - The SPI_HOST should make it easy to arrange transaction data in processor memory, meaning that bytes should be sequentially transmitted in order of ascending memory address.
   - When using 32-bit I/O instructions, this requires some knowledge of the processor byte-order.
 
-Based on these requirements, data placed in or read from {{< regref "DATA" >}} are handled as follows:
-- 32-bit words placed in {{< regref "DATA" >}} are transmitted in first-in-first-out order.
-Likewise, words received from the SPI data lines are made available for reading from in {{< regref "DATA" >}} in first-in-first-out order.
+Based on these requirements, data read from {{< regref "RXDATA" >}} or placed in {{< regref "TXDATA" >}} are handled as follows:
+- 32-bit words placed in {{< regref "TXDATA" >}} are transmitted in first-in-first-out order.
+Likewise, words received from the SPI data lines are made available for reading from {{< regref "RXDATA" >}} in first-in-first-out order.
 - Within a 32-bit word, the `ByteOrder` parameter controls the order in which bytes are transmitted, and also the manner in which received bytes are eventually arranged in the 32-bit {{< regref "RXDATA" >}} register.
-By default (`ByteOrder` = 1, for Little-Endian processors), the LSB of {{< regref "DATA" >}} (i.e bits 7 though 0) is transmitted first, and the other bytes follow in order of increasing significance.
-Similarly, the first byte received is packed into the LSB of {{< regref "DATA" >}}, and the subsequent bytes read from {{< regref "DATA" >}} are filled in order of increasing significance.
+By default (`ByteOrder` = 1, for Little-Endian processors), the LSB of {{< regref "TXDATA" >}} (i.e bits 7 though 0) is transmitted first, and the other bytes follow in order of increasing significance.
+Similarly, the first byte received is packed into the LSB of {{< regref "RXDATA" >}}, and the subsequent bytes of each {{< regref "RXDATA" >}} word are packed in order of increasing significance.
 
-On the other hand, if `ByteOrder` is set to 0 (for Big-Endian processors), the MSB is transmitted first from {{< regref "DATA" >}}, and received data is loaded first into the MSB of {{< regref "DATA" >}}.
+On the other hand, if `ByteOrder` is set to 0 (for Big-Endian processors), the MSB is transmitted first from {{< regref "TXDATA" >}}, and received data is loaded first into the MSB of {{< regref "RXDATA" >}}.
    - The default choice of Little-Endian reflects native byte-order of the Ibex processor.
 - Finally *within a given byte*, the most significant bits are transmitted and received first.
 For Dual and Quad transactions the least significant bit in any instantaneous pair or nibble is transmitted or received on SD[0], and the remaining SD bits (1 though 3) are populated in order of increasing significance.
 
-The following figure shows how data appears on the serial data bus when it is written to or read from {{< regref "DATA" >}}.
+The following figure shows how data appears on the serial data bus when the hardware reads it from {{< regref "TXDATA" >}} or writes it to {{< regref "RXDATA" >}}.
 
 {{< wavejson >}}
  {signal: [
@@ -507,14 +500,14 @@ However many bits of similar significance are packed into multiple parallel SD d
 
 ### Command Length and Alignment in DATA
 
-Even though the {{< regref "DATA" >}} memory window typically accepts 32-bit words, command segments do not need to use all the bytes from every word.
+Even though the {{< regref "TXDATA" >}} memory window typically accepts 32-bit words, command segments do not need to use all the bytes from every word.
 
 For TX (or Bidirectional) segments, unused bytes from the latest TX FIFO word are simply ignored at the end of a segment.
 For RX (or Bidirectional) segments, if the last few bytes received do not fill an entire DATA word, the partial word will be zero-padded and inserted into the RX FIFO once the segment is completed.
 If ByteOrder=1 (the default, Little-Endian case), this padding will fill the unused most-significant bytes of the final RX DATA word, otherwise the padding will fill the unused least-significant bytes.
 
 The following waveform illustrates an example SPI transaction, where neither the data transmitted nor the data received in each segment fit into an even number of 32-bit words.
-In this example, the values `I[31:0]`, `A[31:0]` and `B[31:0]`, have been previously written into {{< regref "DATA" >}} via firmware, and afterwards one word, `X[31:0]`, is available for reading from {{< regref "DATA" >}}.
+In this example, the values `I[31:0]`, `A[31:0]` and `B[31:0]`, have been previously written into {{< regref "TXDATA" >}} via firmware, and afterwards one word, `X[31:0]`, is available for reading from {{< regref "RXDATA" >}}.
 All data in the waveform is transferred using 32-bit instructions.
 
 {{< wavejson >}}
@@ -548,8 +541,8 @@ All data in the waveform is transferred using 32-bit instructions.
 }
 {{< /wavejson >}}
 
-When packing data into the TX FIFO, there are also no restrictions on the alignment of the data written to the {{< regref "DATA" >}} memory window, as it supports byte-enable signals.
-This means that when copying bytes into {{< regref "DATA" >}} from unaligned firmware memory addresses, it is possible to use byte or half-word instructions.
+When packing data into the TX FIFO, there are also no restrictions on the alignment of the data written to the {{< regref "TXDATA" >}} memory window, as it supports byte-enable signals.
+This means that when copying bytes into {{< regref "TXDATA" >}} from unaligned firmware memory addresses, it is possible to use byte or half-word instructions.
 Full-word instructions should however be used whenever possible, because each write consumes a full word of data in the TX FIFO regardless of the instruction size.
 Smaller writes will thus make inefficient use of the TX FIFO.
 
@@ -557,11 +550,14 @@ Filtering out disabled bytes consumes clock cycles in the data pipeline, and can
 In the worst case, such bubbles can also be interpreted as transient underflow conditions in the TX FIFO, and could trigger spurious interrupts.
 The longest delays occur whenever a word is loaded into the TX FIFO with only one byte enabled.
 
-Zero-byte writes to the {{< regref "DATA" >}} window are not expected.
-Should such transactions ever occur in verification, they will trigger a block level assertion.
+When writing to the {{< regref "TXDATA" >}} window, only three types of data are expected: individual bytes, half-words, and full-words.
+Other types of write transactions (i.e., non-contiguous, zero-byte and three-byte writes) are not supported by most processors.
+Therefore it is assumed that if such transactions do appear, it is likely a sign of a system integrity error, and so these other classes of writes are not supported.
+
+If such transactions ever occur, they trigger an "Invalid Access" error event, which suspends the processing of future commands until the error has been cleared by setting the {{< regref "ERROR_STATUS.ACCESSINVAL" >}} bit.
 
 The RX FIFO has no special provisions for packing received data in any unaligned fashion.
-Depending on the ByteOrder parameter, the first byte received is always packed into either the most- or least-significant byte read from the {{< regref "DATA" >}} memory window.
+Depending on the `ByteOrder` parameter, the first byte received is always packed into either the most- or least-significant byte read from the {{< regref "RXDATA" >}} memory window.
 
 
 ## Pass-through Mode
@@ -614,19 +610,26 @@ The exact conditions for these *transient* stall conditions are implementation d
 
 ### Error Interrupt Conditions
 
-An error interrupt is usually caused by a violation of the SPI_HOST programming model:
+There are six types of error events which each represent a violation of the SPI_HOST programming model:
 - If {{< regref "COMMAND" >}} is written when {{< regref "STATUS.READY">}} is zero, the IP will assert {{< regref "ERROR_STATUS.CMDERR" >}}.
 - The IP asserts {{< regref "ERROR_STATUS.OVERFLOW" >}} if it receives a write to {{< regref "TXDATA" >}} when the TX FIFO is full.
-- The IP asserts {{< regref "ERROR_STATUS.UNDERFLOW" >}} if it software attempts to read {{< regref "RXDATA" >}} when the RXFIFO is empty.
+- The IP asserts {{< regref "ERROR_STATUS.UNDERFLOW" >}} if it software attempts to read {{< regref "RXDATA" >}} when the RX FIFO is empty.
+- Specifying a command segment with an invalid width (speed), or making a request for a Bidirectional Dual- or Quad-width segement will trigger a {{< regref "ERROR_STATUS.CMDINVAL" >}} error event.
+- Submitting a command segment to an invalid CSID (one larger or equal to `NumCS`) will trigger a {{< regref "ERROR_STATUS.CSIDINVAL" >}} event.
+- {{< regref "ERROR_STATUS.ACCESSINVAL" >}} is asserted if the IP receives a write event to the {{< regref "TXDATA" >}} window that does not correspond to any known processor data type (byte, half- or full-word).
 
-By default all of these programming violations will cause an `error` interrupt when they occur.
+All of these programming violations will create an error event when they occur.
 They will also halt the IP until the corresponding bit is cleared in the {{< regref "ERROR_STATUS" >}} register.
+Whenever an error event occurs, the error must be acknowledged by clearing (write 1 to clear) the corresponding bit in {{< regref "ERROR_STATUS" >}}.
 
-Each of these errors can be optionally ignored by clearing the corresponding bit in {{< regref "ERROR_ENABLE" >}}.
-Clearing an error-enable bit will suppress interrupts for that class of violation and will allow the IP to proceed even if one of these errors has occurred.
-The {{< regref "ERROR_STATUS" >}} register will continue to report all of these violations even if one of the corresponding bits in {{< regref "ERROR_ENABLE" >}} is zero.
+By default all error events will trigger an `error` interrupt.
+Clearing the bit corresponding bit in the {{< regref "ERROR_ENABLE" >}} register in the suppresses interrupts for that class of error event and allows the IP to proceed even if one of these errors has occurred.
+The {{< regref "ERROR_STATUS" >}} register will continue to report all violations even if a particular class of error event has been disabled.
 
-The {{< regref "ERROR_STATUS" >}} bit should be cleared *before* clearing the error interrupt in the {{< regref "INTR_STATE" >}} register.
+Of the six error event classes, `ACCESSINVAL` error events are the only ones which cannot be disabled.
+This is because `ACCESSINVAL` events are caused by anomolous TLUL byte-enable masks that do not correspond to any known software instructions, and can only occur through a fault in the hardware integration.
+
+When handling SPI_HOST `error` interrupts, the {{< regref "ERROR_STATUS" >}} bit should be cleared *before* clearing the error interrupt in the {{< regref "INTR_STATE" >}} register.
 Failure do to so may result in a repeated interrupt.
 
 ## Status Indicators
@@ -634,10 +637,10 @@ Failure do to so may result in a repeated interrupt.
 The {{< regref "STATUS" >}} register contains a number of fields that should be queried for successful operation or troubleshooting.
 
 The register {{< regref "STATUS.ACTIVE" >}} indicates whether a command segment is currently being processed by the FSM.
-Even if {{< regref "STATUS.ACTIVE" >}} is high it is often still possible to insert another command segment into the CDC, allowing for the possibility of back-to-back processing of multiple segments.
-So the register {{< regref "STATUS.READY" >}} indicates that there is room to submit another segment into {{< regref "COMMAND" >}}.
+Even if {{< regref "STATUS.ACTIVE" >}} is high it is often still possible to insert another command segment into the command FIFO.
+The register {{< regref "STATUS.READY" >}} indicates that there is room in the command FIFO.
 
-The {{< regref "STATUS.BYTEORDER" >}} field indicates the fixed value of the `ByteOrder` parameter, which is presented to software to confirm the byte ordering used in the {{< regref "DATA" >}} register.
+The {{< regref "STATUS.BYTEORDER" >}} field indicates the fixed value of the `ByteOrder` parameter, which is presented to software to confirm the byte ordering used in the {{< regref "RXDATA" >}} and {{< regref "TXDATA" >}} windows.
 
 The 8-bit fields {{< regref "STATUS.RXQD" >}} and {{< regref "STATUS.TXQD" >}} respectively indicate the number of words currently stored in the RX and TX FIFOs.
 
@@ -652,7 +655,7 @@ Before any commands are processed, the block must be enabled by writing one to t
 Writing a zero to this register temporarily suspends any previously submitted transactions.
 If the block is re-enabled by writing a one to {{< regref "CONTROL.SPIEN" >}}, any previously executing commands will continue from wherever they left off.
 
-An unacknowledged error interrupt will also suspend the core state machine.
+An unacknowledged error event suspends the core state machine.
 
 ### Component reset
 
@@ -689,16 +692,11 @@ It also controls the shift register: dictating the correct timing for sending ou
 
 ## RX and TX FIFOs
 
-The RX and TX FIFOs store the transmitted and received data, while also serving as the clock domain crossing for SPI data.
-So in each direction there is at least one asynchronous FIFO, which serves as the CDC.
+The RX and TX FIFOs store the transmitted and received data, which are stored in synchronous FIFOs.
 The RX FIFO is 32 bits wide, matching the width of the TLUL register bus.
 The TX FIFO on the other hand is 36 bits wide, with 32 bits of SPI data (again to match the TLUL bus width) plus 4 byte enable-bits, which are passed into the core to allow the processing of unaligned writes.
 
 The depth of these FIFOs is controlled by two independent parameters for the RX and TX queues.
-Since the depth of asynchronous FIFOs is usually limited to powers of two, the RX or TX queue may consist of *two* FIFO components: an mandatory asynchronous FIFO and a possible synchronous component, connected in series.
-The depth of each asynchronous FIFO is rounded down to the nearest power of two.
-Any additional capacity is provided by the second synchronous FIFO if needed.
-For example, if the `TxDepth` parameter is set to 72 words, then the TX queue will consist of a 64-word asynchronous FIFO, which then feeds a second, synchronous FIFO to hold the 8 words needed to realize a total depth of 72 words.
 
 ## Byte Select
 
@@ -721,7 +719,7 @@ The following waveform illustrates the operation of the Byte Select module, high
 
 {{< wavejson >}}
 {signal: [
-  {name: "clk_core_i", wave:      "p............."},
+  {name: "clk_i", wave:           "p............."},
   {name: "word_i[31:0]", wave:    "x2..x2...x....", data: ["32'hBEADCAFE", "32'hDAD5F00D"]},
   {name: "word_be_i[31:0]", wave: "x2..x2...x....", data: ["4'b1111", "4'b0011"]},
   {name: "word_valid_i", wave:    "0..101...0...."},
@@ -757,7 +755,7 @@ Any ByteOrder swapping is performed at the other end of the RX FIFO.
 
 {{< wavejson >}}
 {signal: [
-  {name: "clk_core_i",   wave: "p.............."},
+  {name: "clk_i",        wave: "p.............."},
   {name: "byte_i[7:0]",  wave: "x22222.2....22x", data: ["01", "02", "03", "04", "05", "06", "07", "08"]},
   {name: "byte_valid_i", wave: "01............."},
   {name: "byte_last_i",  wave: "0....1.0......."},
@@ -781,6 +779,7 @@ The SPI_HOST shift register serially transmits and receives all bytes to the `sd
 This is usually the first signal issued to the shift register in command segments with data to transmit (i.e., TX only, or bidirectional segments)
    - There is also a `wr_ready_o` output to tell the FSM that there is no data currently available.
      If `wr_ready_o` is deasserted when the FSM asserts `wr_en_i`, the FSM will stall.
+- `last_write_i`: When asserted at the same time as `wr_en_i`, this indicates that the current byte is the last of its command segment, and thus the `tx_flush_o` signal should be asserted when requesting this byte from the Byte Select block.
 - `shift_en_i`: Advances the shift register by 1, 2, or 4 bits, depending on the value of `speed_i`
 - `full_cyc_i`: Indicates full-cycle operation (i.e., input data are sampled from `sd_i` whenever new data is shifted out to `sd_o`)
 - `sample_en_i`: Samples `sd_i[3:0]` into a temporary register, `sd_i_q[3:0]` so it can be loaded into the shift register with the next assertion of `shift_en_i`
@@ -789,11 +788,11 @@ For consistency in timing, the `sd_i_q` buffer is used in all other modes as wel
 The `sample_en_i` signal is ignored during full-cycle operation, in which case data is copied directly into the shift register during shift operations.
 - `rd_en_i`: Indicates that the current byte from the shift register should be transferred on to the Byte Merge block
    - The `rd_ready_o` output informs the FSM whenever all data storage (the RX FIFO plus any intervening buffers) is full and no further data can be acquired.
-- `cmd_end_i`: When asserted at the same time as rd_en_i, this indicates that the current byte is the last of its command segment, and thus the `rx_last_o` signal should be asserted when passing this byte to the Byte Merge block.
+- `last_read_i`: When asserted at the same time as `rd_en_i`, this indicates that the current byte is the last of its command segment, and thus the `rx_last_o` signal should be asserted when passing this byte to the Byte Merge block.
 
 {{< wavejson >}}
 {signal: [
-  {name: "clk_core_i",         wave: "p.........................."},
+  {name: "clk_i",                   wave: "p.........................."},
  [ "External signals",
   {name: "TX DATA[31:0] (TX FIFO)", wave: "2..........................", data:"0x123456XX"},
   {name: "cio_sck_o (FSM)",         wave: "0...1010101010101010101010."},
@@ -867,11 +866,11 @@ Please refer to the [the Appendix]({{< relref "#analysis-of-transient-datapath-s
 The SPI_HOST FSM is responsible for parsing the input command segments and configuration settings, which it uses to control the timing of the `sck` and `csb` signals.
 It also controls the timing of shift register operations, coordinating I/O on the `sd` bus with the other SPI signals.
 
-This section describes the SPI_HOST FSM and its control of the `sck` and `csb` lines as well as its interactions with the Shift Register and the Config/Command CDC.
+This section describes the SPI_HOST FSM and its control of the `sck` and `csb` lines as well as its interactions with the Shift Register and the Command FIFO.
 
 ### Clock Divider
 
-The SPI_HOST FSM is driven by rising edge of the core clock, however the FSM state registers are not *enabled* during every cycle.
+The SPI_HOST FSM is driven by the rising edge of the input clock, however the FSM state registers are not *enabled* during every cycle.
 There is an internal clock counter `clk_cntr_q` which repeatedly counts down from {{< regref "CONFIGOPTS.CLKDIV" >}} to 0, and the FSM is only enabled when `clk_cntr_q == 0`.
 
 The exception is when the FSM is one of the two possible Idle states (`Idle` or `IdleCSBActive`), in which case `clk_cntr_q` is constantly held at zero, making it possible to immediately transition out of the idle state as soon as a new command appears.
@@ -879,7 +878,7 @@ Once the FSM transitions out of the idle state, `clk_cntr_q` resets to {{< regre
 
 As shown in the waveform below, this has the effect of limiting the FSM transitions to only occur at discrete *timeslices* of duration:
 
-$$T_\textrm{timeslice} = \frac{T_{\textrm{clk},\textrm{core}}}{\texttt{clkdiv}+1}.$$
+$$T_\textrm{timeslice} = \frac{T_{\textrm{clk},\textrm{clk}}}{\texttt{clkdiv}+1}.$$
 
 {{< wavejson >}}
 {signal: [
@@ -964,7 +963,7 @@ This state transitions to `Idle` when `wait_cntr` reaches zero.
 
 ### Milestone Signals, Serial Data Lines & Shift Register Control
 
-The FSM manages I/O on the `sd` bus by controlling the timing of the shift register control signals: `shift_en_o`, `sample_en_o`, `rd_en_o`, `wr_en_o`, and `cmd_end_o`.
+The FSM manages I/O on the `sd` bus by controlling the timing of the shift register control signals: `shift_en_o`, `sample_en_o`, `rd_en_o`, `last_read_o`, `wr_en_o`, and `last_write_o`.
 
 The shift register control signals are managed through the use of three intermediate signals:
 - `byte_starting`: This signal indicates the start of a new byte on the `sd` bus in the *following* clock cycle.
@@ -1236,55 +1235,6 @@ Thus the FSM may not progress while stalled.
 
 2. All handshaking or control signals to other blocks must be surpressed during a stall condition, placing backpressure on the rest the blocks within the IP to also stop operations until the stall is resolved.
 
-## Config/Command CDC
-
-***TODO***: Discuss needs for this CDC, it probably needs to change to the new implementaton.
-
-Highlights for this unit:
-- New commands can always be written to {{< regref "COMMAND" >}} or {{< regref "CONFIGOPTS" >}}
-- It is an error however to write a segment to {{< regref "COMMAND" >}} unless {{< regref "STATUS.READY" >}} is one.
-- Writing a segment to {{< regref "COMMAND" >}} triggers a four-phase synchronizer, which copies the relevant multi-registers and `csb` masks to `coreCmdConf`.
-- {{<regref "STATUS.READY" >}} is low while this synchronizer is in operation
-- The core FSM is responsible for issuing the `cc_ack` signal.
-- `coreCmdCnf` is only updated and acknowledged (using `cc_ack`) when the FSM is not busy.
-
-{{< wavejson >}}
-{signal: [
-  {name: "command_i", wave: "x3x..........|4x.|........."},
-  {name: "command_valid_i", wave: "010..........|10.|........."},
-  {name: "command_q", wave: "x.3..........|.4.|........."},
-  {name: "req_q", wave: "0.1....0.....|.1.|...0....."},
-  {name: "core_req", wave: "0...1....0...|..1|.....0..."},
-  {name: "core_command_ready_i", wave: "1....0.......|...|10......."},
-  {name: "core_command_valid_o (core_req & ~core_ack_q)", wave: "0...10.......|...|10......."},
-  {name: "core_command_ack", wave: "0...10.......|...|10......."},
-  {name: "core_ack_q", wave: "0....1....0..|...|.1....0.."},
-  {name: "core_ack = core_command_ack | ack_core_q", wave: "0...1.....0..|...|1.....0.."},
-  {name: "ack", wave: "0.....1.....0|...|..1.....0"},
-  {name: "cs_ready_bus_o", wave: "10..........1|0..|........1"},
-]
-}
-{{< /wavejson >}}
-
-{{< wavejson >}}
-{ signal: [
-  {name: "clk", wave: "p..............................."},
-  {name: "READY",         wave: "1.0..........1|.0..|...........1"},
-  {name: "COMMAND, CONFIGOPTS", wave: "x3............|4...|............"},
-  {name: "GO.q && GO.qe", wave: "010...........|10..|............"},
-  {name: "cc_req",        wave: "01.....0......|1...|.....0......"},
-  {name: "cc_req_syncd",  wave: "0..1.....0....|..1.|.......0...."},
-  {name: "cc_ack",        wave: "0...1.....0...|....|..1.....0..."},
-  {name: "cc_ack_ayncd",  wave: "0.....1.....0.|....|....1.....0."},
-  {name: "core_cmd_cnf", wave: "x...3.........|....|..4........."},
-  {name: "core_active",   wave: "0...1.........|....|.01........."},
-],
-  head: {text: 'Command and Config Synchronizer Operation'},
-  foot: {text: "Synchronizer delay uncertainties are not illustrated."}
-}
-{{< /wavejson >}}
-
-
 # Programmer's Guide
 
 The operation of the SPI_HOST IP proceeds in seven general steps.
@@ -1296,11 +1246,11 @@ To initialize the IP:
 
 Then for each command:
 
-4. Load the data to be transmitted into the FIFO using the {{< regref "DATA" >}} memory window.
+4. Load the data to be transmitted into the FIFO using the {{< regref "TXDATA" >}} memory window.
 5. Specify the target device by programming the {{< regref "CSID" >}}
 6. Specify the structure of the command by writing each segment into the {{< regref "COMMAND" >}} register
    - For multi-segment transactions, be sure to assert {{< regref "COMMAND.CSAAT" >}} for all but the last command segment
-7. For transactions which expect to receive a reply, the data can then be read back from the {{< regref "DATA" >}} window.
+7. For transactions which expect to receive a reply, the data can then be read back from the {{< regref "RXDATA" >}} window.
 
 These latter four steps are then repeated for each command.
 Each step is covered in detail in the following sections.
@@ -1347,7 +1297,7 @@ In this instance, the programming sequence will consist of at least four iterati
 ### Loading TX data
 
 SPI transactions expect each command to start with some command sequence from the host, and so usually data will be transmitted at least in the first command segment.
-The {{< regref "DATA" >}} window provides a simple interface to the TX FIFO.
+The {{< regref "TXDATA" >}} window provides a simple interface to the TX FIFO.
 Data can be written to the window using 8-, 16- or 32-bit instructions.
 
 Some attention, however, should be paid to byte-ordering and segmenting conventions.
@@ -1356,12 +1306,12 @@ Some attention, however, should be paid to byte-ordering and segmenting conventi
 
 For SPI flash applications, it is generally assumed that most of the *payload* data will be directly copied from embedded SRAM to the flash device.
 
-If this data is to copied to the {{< regref "DATA" >}} window using 32-bit instructions, the SPI_HOST should be parameterized such that the `ByteOrder` parameter matches the byte order of the embedded CPU (i.e., for Ibex, `ByteOrder` should be left set to `1` to indicate a Little-Endian CPU).
+If this data is to copied to the {{< regref "TXDATA" >}} window using 32-bit instructions, the SPI_HOST should be parameterized such that the `ByteOrder` parameter matches the byte order of the embedded CPU (i.e., for Ibex, `ByteOrder` should be left set to `1` to indicate a Little-Endian CPU).
 This will ensure that data is transmitted to the flash (and thus also stored in flash) in address-ascending order.
-For example, consider the transfer of four bytes, `D[3:0][7:0]`, to SPI via the {{< regref "DATA" >}} window.
+For example, consider the transfer of four bytes, `D[3:0][7:0]`, to SPI via the {{< regref "TXDATA" >}} window.
 - It is assumed for this example that all four bytes are contiguously stored in SRAM at a word-aligned address, with `D[0]` at the lowest byte-address.
 - When these bytes are loaded into the Ibex CPU they are arranged as the 32-bit word: `W[31:0] = {D[3][7:0], D[2][7:0], D[1][7:0], D[0][7:0]}`.
-- After this word are loaded into the {{< regref "DATA" >}} window, the LSB (i.e., `W[7:0] = D[0][7:0]`) is transmitted first, by virtue of the `ByteOrder == 1` configuration.
+- After this word are loaded into the {{< regref "TXDATA" >}} window, the LSB (i.e., `W[7:0] = D[0][7:0]`) is transmitted first, by virtue of the `ByteOrder == 1` configuration.
 
 In this way, configuring `ByteOrder` to match the CPU ensures that data is transmitted in memory-address order.
 
@@ -1397,14 +1347,14 @@ Assuming that `ByteOrder` is set to `1` for Little-Endian devices such as Ibex, 
  foot: {text: "Addresses are transmitted MSB first, and data is returned in order of increasing peripheral byte address."}}
 {{< /wavejson >}}
 
-Byte ordering on the bus can also be managed by writing {{< regref "DATA" >}} as a sequence of discrete bytes using 8-bit transactions, since partially-filled data-words are always sent in the order they are received.
+Byte ordering on the bus can also be managed by writing {{< regref "TXDATA" >}} as a sequence of discrete bytes using 8-bit transactions, since partially-filled data-words are always sent in the order they are received.
 
 A few examples related to using SPI flash devices on a Little-Endian platform:
 - A 4-byte address can be loaded into the TX FIFO as four individual bytes using 8-bit I/O instructions.
-- The above read command (with 4-byte address) can be loaded into the FIFO by first loading the command code into {{< regref "DATA" >}} as a single byte, and the address can be loaded into {{< regref "DATA" >}} using 32-bit instructions, provided the byte order is swapped before loading.
+- The above read command (with 4-byte address) can be loaded into the FIFO by first loading the command code into {{< regref "TXDATA" >}} as a single byte, and the address can be loaded into {{< regref "TXDATA" >}} using 32-bit instructions, provided the byte order is swapped before loading.
 - Flash transactions with 3-byte addressing require some care, as there are no 24-bit I/O instructions, though there are a several options:
     - After the 8-bit command code is sent, the address can either be sent in several I/O operations (e.g., the MSB is sent as an 8-bit command, and the remaining 16-bits can be sent after swapping)
-    - If bandwidth efficiency is a priority, the address, `A[23:0]`, and command code, `C[7:0]`, can all be packed together into a single 4-byte quantity `W[31:0] = {A[7:0], A[15:8], A[23:16], C[7:0]}`, which when loaded into {{< regref "DATA" >}} will ensure that the command code is sent first, followed by the address in MSB-first order.
+    - If bandwidth efficiency is a priority, the address, `A[23:0]`, and command code, `C[7:0]`, can all be packed together into a single 4-byte quantity `W[31:0] = {A[7:0], A[15:8], A[23:16], C[7:0]}`, which when loaded into {{< regref "TXDATA" >}} will ensure that the command code is sent first, followed by the address in MSB-first order.
 
 #### Segmenting Considerations
 
