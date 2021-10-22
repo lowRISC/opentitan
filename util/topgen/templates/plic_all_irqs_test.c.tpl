@@ -106,7 +106,7 @@ static void peripherals_init(void) {
  */
 static void peripheral_irqs_clear(void) {
   % for p in helper.irq_peripherals:
-  ${comment(p.name)}PERIPHERAL_IRQS_CLEAR(${p.inst_name});
+  ${comment(p.name)}PERIPHERAL_IRQS_CLEAR(${p.name}, ${p.inst_name});
   % endfor
 }
 
