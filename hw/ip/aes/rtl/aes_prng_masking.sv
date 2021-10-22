@@ -4,9 +4,9 @@
 //
 // AES high-bandwidth pseudo-random number generator for masking
 //
-// This module uses multiple parallel LFSRs connected to PRINCE S-Boxes and PRESENT permutations
-// to generate pseudo-random data for masking the AES cipher core. The LFSRs can be reseeded using
-// an external interface.
+// This module uses multiple parallel LFSRs each one of them followed by an aligned permutation,
+// a non-linear layer (PRINCE S-Boxes) and another permutation to generate pseudo-random data for
+// masking the AES cipher core. The LFSRs can be reseeded using an external interface.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // IMPORTANT NOTE:                                                                               //
@@ -54,15 +54,12 @@ module aes_prng_masking import aes_pkg::*;
   input  logic [EntropyWidth-1:0] entropy_i
 );
 
-  localparam int unsigned NumBytes  = Width/8;
-
   logic                                seed_en;
   logic                                seed_valid;
   logic                    [Width-1:0] seed;
   logic [NumChunks-1:0][ChunkSize-1:0] prng_seed;
   logic                                prng_en;
-  logic [NumChunks-1:0][ChunkSize-1:0] prng_state, sub;
-  logic            [NumBytes-1:0][7:0] prng_b, sub_b;
+  logic [NumChunks-1:0][ChunkSize-1:0] prng_state;
   logic                                phase_q;
 
   // Upsizing of entropy input to correct width for PRNG reseeding.
@@ -117,12 +114,13 @@ module aes_prng_masking import aes_pkg::*;
     assign prng_seed[c] = seed[c * ChunkSize +: ChunkSize];
 
     prim_lfsr #(
-      .LfsrType    ( "GAL_XOR"                                   ),
-      .LfsrDw      ( ChunkSize                                   ),
-      .StateOutDw  ( ChunkSize                                   ),
-      .DefaultSeed ( RndCnstLfsrSeed[c * ChunkSize +: ChunkSize] ),
-      .StatePermEn ( 1'b1                                        ),
-      .StatePerm   ( RndCnstChunkLfsrPerm                        )
+      .LfsrType     ( "GAL_XOR"                                   ),
+      .LfsrDw       ( ChunkSize                                   ),
+      .StateOutDw   ( ChunkSize                                   ),
+      .DefaultSeed  ( RndCnstLfsrSeed[c * ChunkSize +: ChunkSize] ),
+      .StatePermEn  ( 1'b1                                        ),
+      .StatePerm    ( RndCnstChunkLfsrPerm                        ),
+      .NonLinearOut ( 1'b1                                        )
     ) u_lfsr_chunk (
       .clk_i     ( clk_i         ),
       .rst_ni    ( rst_ni        ),
@@ -134,13 +132,6 @@ module aes_prng_masking import aes_pkg::*;
     );
   end
 
-  // Further "scramble" the LFSR state at the byte level to break linear shift patterns.
-  assign prng_b = prng_state;
-  for (genvar b = 0; b < NumBytes; b++) begin : gen_sub
-    assign sub_b[b] = prim_cipher_pkg::sbox4_8bit(prng_b[b], prim_cipher_pkg::PRINCE_SBOX4);
-  end
-  assign sub = sub_b;
-
   /////////////
   // Outputs //
   /////////////
@@ -148,8 +139,9 @@ module aes_prng_masking import aes_pkg::*;
   // To achieve independence of input and output masks (the output mask of round X is the input
   // mask of round X+1), we assign the scrambled chunks to the output data in alternating fashion.
   assign data_o =
-      (SecAllowForcingMasks && force_zero_masks_i) ? '0                           :
-       phase_q                                     ? {sub[0], sub[NumChunks-1:1]} : sub;
+      (SecAllowForcingMasks && force_zero_masks_i) ? '0                                         :
+       phase_q                                     ? {prng_state[0], prng_state[NumChunks-1:1]} :
+          prng_state;
 
   if (!SecAllowForcingMasks) begin : gen_unused_force_masks
     logic unused_force_zero_masks;
