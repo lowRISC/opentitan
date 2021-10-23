@@ -304,6 +304,11 @@ package spi_host_reg_pkg;
   parameter logic [0:0] SPI_HOST_INTR_TEST_SPI_EVENT_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_HOST_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_HOST_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [13:0] SPI_HOST_COMMAND_RESVAL = 14'h 0;
+  parameter logic [8:0] SPI_HOST_COMMAND_LEN_RESVAL = 9'h 0;
+  parameter logic [0:0] SPI_HOST_COMMAND_CSAAT_RESVAL = 1'h 0;
+  parameter logic [1:0] SPI_HOST_COMMAND_SPEED_RESVAL = 2'h 0;
+  parameter logic [1:0] SPI_HOST_COMMAND_DIRECTION_RESVAL = 2'h 0;
 
   // Window parameters
   parameter logic [BlockAw-1:0] SPI_HOST_DATA_OFFSET = 6'h 24;

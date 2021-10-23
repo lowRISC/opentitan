@@ -212,13 +212,9 @@ module spi_host_reg_top (
   logic [31:0] csid_qs;
   logic [31:0] csid_wd;
   logic command_we;
-  logic [8:0] command_len_qs;
   logic [8:0] command_len_wd;
-  logic command_csaat_qs;
   logic command_csaat_wd;
-  logic [1:0] command_speed_qs;
   logic [1:0] command_speed_wd;
-  logic [1:0] command_direction_qs;
   logic [1:0] command_direction_wd;
   logic error_enable_we;
   logic error_enable_cmdbusy_qs;
@@ -1039,105 +1035,61 @@ module spi_host_reg_top (
   );
 
 
-  // R[command]: V(False)
+  // R[command]: V(True)
   //   F[len]: 8:0
-  prim_subreg #(
-    .DW      (9),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (9'h0)
+  prim_subreg_ext #(
+    .DW    (9)
   ) u_command_len (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (1'b0),
     .we     (command_we),
     .wd     (command_len_wd),
-
-    // from internal hardware
-    .de     (1'b0),
     .d      ('0),
-
-    // to internal hardware
+    .qre    (),
     .qe     (reg2hw.command.len.qe),
     .q      (reg2hw.command.len.q),
-
-    // to register interface (read)
-    .qs     (command_len_qs)
+    .qs     ()
   );
 
   //   F[csaat]: 9:9
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_command_csaat (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (1'b0),
     .we     (command_we),
     .wd     (command_csaat_wd),
-
-    // from internal hardware
-    .de     (1'b0),
     .d      ('0),
-
-    // to internal hardware
+    .qre    (),
     .qe     (reg2hw.command.csaat.qe),
     .q      (reg2hw.command.csaat.q),
-
-    // to register interface (read)
-    .qs     (command_csaat_qs)
+    .qs     ()
   );
 
   //   F[speed]: 11:10
-  prim_subreg #(
-    .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0)
+  prim_subreg_ext #(
+    .DW    (2)
   ) u_command_speed (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (1'b0),
     .we     (command_we),
     .wd     (command_speed_wd),
-
-    // from internal hardware
-    .de     (1'b0),
     .d      ('0),
-
-    // to internal hardware
+    .qre    (),
     .qe     (reg2hw.command.speed.qe),
     .q      (reg2hw.command.speed.q),
-
-    // to register interface (read)
-    .qs     (command_speed_qs)
+    .qs     ()
   );
 
   //   F[direction]: 13:12
-  prim_subreg #(
-    .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0)
+  prim_subreg_ext #(
+    .DW    (2)
   ) u_command_direction (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (1'b0),
     .we     (command_we),
     .wd     (command_direction_wd),
-
-    // from internal hardware
-    .de     (1'b0),
     .d      ('0),
-
-    // to internal hardware
+    .qre    (),
     .qe     (reg2hw.command.direction.qe),
     .q      (reg2hw.command.direction.q),
-
-    // to register interface (read)
-    .qs     (command_direction_qs)
+    .qs     ()
   );
 
 
@@ -1734,10 +1686,10 @@ module spi_host_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[8:0] = command_len_qs;
-        reg_rdata_next[9] = command_csaat_qs;
-        reg_rdata_next[11:10] = command_speed_qs;
-        reg_rdata_next[13:12] = command_direction_qs;
+        reg_rdata_next[8:0] = '0;
+        reg_rdata_next[9] = '0;
+        reg_rdata_next[11:10] = '0;
+        reg_rdata_next[13:12] = '0;
       end
 
       addr_hit[9]: begin
