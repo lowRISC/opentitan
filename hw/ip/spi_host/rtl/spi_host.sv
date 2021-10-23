@@ -347,11 +347,35 @@ module spi_host
   assign hw2reg.status.txfull.de  = 1'b1;
 
   logic error_overflow, error_underflow;
+  logic error_access_inval;
 
   // Since the DATA FIFOs are essentially directly connected to SW registers, it is an error if
   // there is ever a need for flow control.
-  assign error_overflow  = tx_valid & ~tx_ready;
-  assign error_underflow = rx_ready & ~rx_valid;
+  assign error_overflow    = tx_valid & ~tx_ready;
+  assign error_underflow   = rx_ready & ~rx_valid;
+  logic access_valid;
+  assign error_access_inval = tx_valid & ~access_valid;
+
+  always_comb begin
+    unique case (tx_be)
+      4'b1000,
+      4'b0100,
+      4'b0010,
+      4'b0001,
+      4'b1100,
+      4'b0110,
+      4'b0011,
+      4'b1111: begin
+        access_valid = 1'b1;
+      end
+      default: begin
+        access_valid = 1'b0;
+      end
+    endcase
+  end
+
+  logic tx_valid_checked;
+  assign tx_valid_checked = tx_valid & ~error_overflow & ~error_access_inval;
 
   // Note on ByteOrder and ByteSwapping.
   // ByteOrder == 1 is for Little-Endian transmission (i.e. LSB first), which is acheived by
@@ -367,7 +391,7 @@ module spi_host
 
     .tx_data_i         (tx_data),
     .tx_be_i           (tx_be),
-    .tx_valid_i        (tx_valid),
+    .tx_valid_i        (tx_valid_checked),
     .tx_ready_o        (tx_ready),
     .tx_watermark_i    (tx_watermark),
 
@@ -435,11 +459,12 @@ module spi_host
 
   logic event_error;
 
-  logic [4:0] error_vec;
-  logic [4:0] error_mask;
-  logic [4:0] sw_error_status;
+  logic [5:0] error_vec;
+  logic [5:0] error_mask;
+  logic [5:0] sw_error_status;
 
   assign error_vec  = {
+      error_access_inval,
       error_csid_inval,
       error_cmd_inval,
       error_underflow,
@@ -447,7 +472,13 @@ module spi_host
       error_busy
   };
 
+  // This mask dictates what classes of error events are to be escalated to error interrupts.
+  // (Assume here that error interrupts will be enabled)
+  // Software generated errors can be configured to _not_ generate error events.
+  // Bus errors (such as invalid write access) always generate error events and therefore
+  // interrupts.
   assign error_mask = {
+      1'b1, // invalid access: always an error event
       reg2hw.error_enable.csidinval.q,
       reg2hw.error_enable.cmdinval.q,
       reg2hw.error_enable.underflow.q,
@@ -455,18 +486,23 @@ module spi_host
       reg2hw.error_enable.cmdbusy.q
   };
 
-  assign hw2reg.error_status.csidinval.d = error_csid_inval;
-  assign hw2reg.error_status.cmdinval.d  = error_cmd_inval;
-  assign hw2reg.error_status.underflow.d = error_underflow;
-  assign hw2reg.error_status.overflow.d  = error_overflow;
-  assign hw2reg.error_status.cmdbusy.d   = error_busy;
+  assign hw2reg.error_status.accessinval.d  = error_access_inval;
+  assign hw2reg.error_status.csidinval.d    = error_csid_inval;
+  assign hw2reg.error_status.cmdinval.d     = error_cmd_inval;
+  assign hw2reg.error_status.underflow.d    = error_underflow;
+  assign hw2reg.error_status.overflow.d     = error_overflow;
+  assign hw2reg.error_status.cmdbusy.d      = error_busy;
 
-  assign hw2reg.error_status.csidinval.de = 1'b1;
-  assign hw2reg.error_status.cmdinval.de  = 1'b1;
-  assign hw2reg.error_status.underflow.de = 1'b1;
-  assign hw2reg.error_status.overflow.de  = 1'b1;
-  assign hw2reg.error_status.cmdbusy.de   = 1'b1;
+  // Write the status register whenever the corresponding event occurs.
+  // Only clear them from software.
+  assign hw2reg.error_status.accessinval.de = error_access_inval;
+  assign hw2reg.error_status.csidinval.de   = error_csid_inval;
+  assign hw2reg.error_status.cmdinval.de    = error_cmd_inval;
+  assign hw2reg.error_status.underflow.de   = error_underflow;
+  assign hw2reg.error_status.overflow.de    = error_overflow;
+  assign hw2reg.error_status.cmdbusy.de     = error_busy;
 
+  assign sw_error_status[5] = reg2hw.error_status.accessinval.q;
   assign sw_error_status[4] = reg2hw.error_status.csidinval.q;
   assign sw_error_status[3] = reg2hw.error_status.cmdinval.q;
   assign sw_error_status[2] = reg2hw.error_status.underflow.q;
