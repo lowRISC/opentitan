@@ -9,14 +9,13 @@
 
 #include "sw/device/lib/base/freestanding/limits.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
-// #include "sw/device/lib/dif/dif_adc_ctrl.h"
+#include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
-// #include "sw/device/lib/dif/dif_aon_timer.h"
+#include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-// #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
@@ -24,12 +23,13 @@
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-// #include "sw/device/lib/dif/dif_pattgen.h"
+#include "sw/device/lib/dif/dif_pattgen.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
-// #include "sw/device/lib/dif/dif_rv_timer.h"
+#include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
-// #include "sw/device/lib/dif/dif_spi_host.h"
-// #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
+#include "sw/device/lib/dif/dif_spi_host.h"
+#include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/handler.h"
@@ -39,17 +39,16 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
-#include "sw/device/tests/plic_all_irqs_test_helper.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// static dif_adc_ctrl_t adc_ctrl_aon;
+static dif_adc_ctrl_t adc_ctrl_aon;
 static dif_alert_handler_t alert_handler;
-// static dif_aon_timer_t aon_timer_aon;
+static dif_aon_timer_t aon_timer_aon;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
-// static dif_flash_ctrl_t flash_ctrl;
+static dif_flash_ctrl_t flash_ctrl;
 static dif_gpio_t gpio;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
@@ -59,13 +58,13 @@ static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
-// static dif_pattgen_t pattgen;
+static dif_pattgen_t pattgen;
 static dif_pwrmgr_t pwrmgr_aon;
-// static dif_rv_timer_t rv_timer;
+static dif_rv_timer_t rv_timer;
 static dif_spi_device_t spi_device;
-// static dif_spi_host_t spi_host0;
-// static dif_spi_host_t spi_host1;
-// static dif_sysrst_ctrl_t sysrst_ctrl_aon;
+static dif_spi_host_t spi_host0;
+static dif_spi_host_t spi_host1;
+static dif_sysrst_ctrl_t sysrst_ctrl_aon;
 static dif_uart_t uart0;
 static dif_uart_t uart1;
 static dif_uart_t uart2;
@@ -89,20 +88,20 @@ static volatile top_earlgrey_plic_peripheral_t peripheral_expected;
  * Declared volatile because it is referenced in the main program flow as well
  * as the ISR.
  */
-// static volatile dif_adc_ctrl_irq_t adc_ctrl_irq_expected;
-// static volatile dif_adc_ctrl_irq_t adc_ctrl_irq_serviced;
+static volatile dif_adc_ctrl_irq_t adc_ctrl_irq_expected;
+static volatile dif_adc_ctrl_irq_t adc_ctrl_irq_serviced;
 static volatile dif_alert_handler_irq_t alert_handler_irq_expected;
 static volatile dif_alert_handler_irq_t alert_handler_irq_serviced;
-// static volatile dif_aon_timer_irq_t aon_timer_irq_expected;
-// static volatile dif_aon_timer_irq_t aon_timer_irq_serviced;
+static volatile dif_aon_timer_irq_t aon_timer_irq_expected;
+static volatile dif_aon_timer_irq_t aon_timer_irq_serviced;
 static volatile dif_csrng_irq_t csrng_irq_expected;
 static volatile dif_csrng_irq_t csrng_irq_serviced;
 static volatile dif_edn_irq_t edn_irq_expected;
 static volatile dif_edn_irq_t edn_irq_serviced;
 static volatile dif_entropy_src_irq_t entropy_src_irq_expected;
 static volatile dif_entropy_src_irq_t entropy_src_irq_serviced;
-// static volatile dif_flash_ctrl_irq_t flash_ctrl_irq_expected;
-// static volatile dif_flash_ctrl_irq_t flash_ctrl_irq_serviced;
+static volatile dif_flash_ctrl_irq_t flash_ctrl_irq_expected;
+static volatile dif_flash_ctrl_irq_t flash_ctrl_irq_serviced;
 static volatile dif_gpio_irq_t gpio_irq_expected;
 static volatile dif_gpio_irq_t gpio_irq_serviced;
 static volatile dif_hmac_irq_t hmac_irq_expected;
@@ -117,18 +116,18 @@ static volatile dif_otbn_irq_t otbn_irq_expected;
 static volatile dif_otbn_irq_t otbn_irq_serviced;
 static volatile dif_otp_ctrl_irq_t otp_ctrl_irq_expected;
 static volatile dif_otp_ctrl_irq_t otp_ctrl_irq_serviced;
-// static volatile dif_pattgen_irq_t pattgen_irq_expected;
-// static volatile dif_pattgen_irq_t pattgen_irq_serviced;
+static volatile dif_pattgen_irq_t pattgen_irq_expected;
+static volatile dif_pattgen_irq_t pattgen_irq_serviced;
 static volatile dif_pwrmgr_irq_t pwrmgr_irq_expected;
 static volatile dif_pwrmgr_irq_t pwrmgr_irq_serviced;
-// static volatile dif_rv_timer_irq_t rv_timer_irq_expected;
-// static volatile dif_rv_timer_irq_t rv_timer_irq_serviced;
+static volatile dif_rv_timer_irq_t rv_timer_irq_expected;
+static volatile dif_rv_timer_irq_t rv_timer_irq_serviced;
 static volatile dif_spi_device_irq_t spi_device_irq_expected;
 static volatile dif_spi_device_irq_t spi_device_irq_serviced;
-// static volatile dif_spi_host_irq_t spi_host_irq_expected;
-// static volatile dif_spi_host_irq_t spi_host_irq_serviced;
-// static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_expected;
-// static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_serviced;
+static volatile dif_spi_host_irq_t spi_host_irq_expected;
+static volatile dif_spi_host_irq_t spi_host_irq_serviced;
+static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_expected;
+static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_serviced;
 static volatile dif_uart_irq_t uart_irq_expected;
 static volatile dif_uart_irq_t uart_irq_serviced;
 static volatile dif_usbdev_irq_t usbdev_irq_expected;
@@ -139,13 +138,19 @@ static volatile dif_usbdev_irq_t usbdev_irq_serviced;
  *
  * This function overrides the default external IRQ handler in
  * `sw/device/lib/handler.h`.
+ *
+ * For each IRQ, it performs the following:
+ * 1. Claims the IRQ fired (finds PLIC IRQ index).
+ * 2. Checks that the index belongs to the expected peripheral.
+ * 3. Checks that the correct and the only IRQ from the expected peripheral
+ *    triggered.
+ * 4. Clears the IRQ at the peripheral.
+ * 5. Completes the IRQ service at PLIC.
  */
 void handler_irq_external(void) {
-  // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kHart, &plic_irq_id));
 
-  // Check if it is the right peripheral.
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
   CHECK(peripheral == peripheral_expected,
@@ -153,97 +158,585 @@ void handler_irq_external(void) {
         peripheral_expected, peripheral);
 
   switch (peripheral) {
-    // case kTopEarlgreyPlicPeripheralAdcCtrlAon:
-    //   PERIPHERAL_ISR(adc_ctrl, adc_ctrl_aon,
-    //   kTopEarlgreyPlicIrqIdAdcCtrlAonDebugCable); break;
-    case kTopEarlgreyPlicPeripheralAlertHandler:
-      PERIPHERAL_ISR(alert_handler, alert_handler,
-                     kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+    case kTopEarlgreyPlicPeripheralAdcCtrlAon: {
+      dif_adc_ctrl_irq_t irq = (dif_adc_ctrl_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAdcCtrlAonDebugCable);
+      CHECK(irq == adc_ctrl_irq_expected,
+            "Incorrect adc_ctrl_aon IRQ triggered: exp = %d, obs = %d",
+            adc_ctrl_irq_expected, irq);
+      adc_ctrl_irq_serviced = irq;
+
+      dif_adc_ctrl_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_adc_ctrl_irq_get_state(&adc_ctrl_aon, &snapshot));
+      CHECK(snapshot == (dif_adc_ctrl_irq_state_snapshot_t)(1 << irq),
+            "Only adc_ctrl_aon IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_aon, irq));
       break;
-    // case kTopEarlgreyPlicPeripheralAonTimerAon:
-    //   PERIPHERAL_ISR(aon_timer, aon_timer_aon,
-    //   kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired); break;
-    case kTopEarlgreyPlicPeripheralCsrng:
-      PERIPHERAL_ISR(csrng, csrng, kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
+    }
+
+    case kTopEarlgreyPlicPeripheralAlertHandler: {
+      dif_alert_handler_irq_t irq = (dif_alert_handler_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+      CHECK(irq == alert_handler_irq_expected,
+            "Incorrect alert_handler IRQ triggered: exp = %d, obs = %d",
+            alert_handler_irq_expected, irq);
+      alert_handler_irq_serviced = irq;
+
+      dif_alert_handler_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_alert_handler_irq_get_state(&alert_handler, &snapshot));
+      CHECK(snapshot == (dif_alert_handler_irq_state_snapshot_t)(1 << irq),
+            "Only alert_handler IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
       break;
-    case kTopEarlgreyPlicPeripheralEdn0:
-      PERIPHERAL_ISR(edn, edn0, kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone);
+    }
+
+    case kTopEarlgreyPlicPeripheralAonTimerAon: {
+      dif_aon_timer_irq_t irq = (dif_aon_timer_irq_t)(
+          plic_irq_id - (dif_rv_plic_irq_id_t)
+                            kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+      CHECK(irq == aon_timer_irq_expected,
+            "Incorrect aon_timer_aon IRQ triggered: exp = %d, obs = %d",
+            aon_timer_irq_expected, irq);
+      aon_timer_irq_serviced = irq;
+
+      dif_aon_timer_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_aon_timer_irq_get_state(&aon_timer_aon, &snapshot));
+      CHECK(snapshot == (dif_aon_timer_irq_state_snapshot_t)(1 << irq),
+            "Only aon_timer_aon IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer_aon, irq));
       break;
-    case kTopEarlgreyPlicPeripheralEdn1:
-      PERIPHERAL_ISR(edn, edn1, kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone);
+    }
+
+    case kTopEarlgreyPlicPeripheralCsrng: {
+      dif_csrng_irq_t irq = (dif_csrng_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
+      CHECK(irq == csrng_irq_expected,
+            "Incorrect csrng IRQ triggered: exp = %d, obs = %d",
+            csrng_irq_expected, irq);
+      csrng_irq_serviced = irq;
+
+      dif_csrng_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_csrng_irq_get_state(&csrng, &snapshot));
+      CHECK(snapshot == (dif_csrng_irq_state_snapshot_t)(1 << irq),
+            "Only csrng IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
       break;
-    case kTopEarlgreyPlicPeripheralEntropySrc:
-      PERIPHERAL_ISR(entropy_src, entropy_src,
-                     kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid);
+    }
+
+    case kTopEarlgreyPlicPeripheralEdn0: {
+      dif_edn_irq_t irq = (dif_edn_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone);
+      CHECK(irq == edn_irq_expected,
+            "Incorrect edn0 IRQ triggered: exp = %d, obs = %d",
+            edn_irq_expected, irq);
+      edn_irq_serviced = irq;
+
+      dif_edn_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_edn_irq_get_state(&edn0, &snapshot));
+      CHECK(snapshot == (dif_edn_irq_state_snapshot_t)(1 << irq),
+            "Only edn0 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn0, irq));
       break;
-    // case kTopEarlgreyPlicPeripheralFlashCtrl:
-    //   PERIPHERAL_ISR(flash_ctrl, flash_ctrl,
-    //   kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty); break;
-    case kTopEarlgreyPlicPeripheralGpio:
-      PERIPHERAL_ISR(gpio, gpio, kTopEarlgreyPlicIrqIdGpioGpio0);
+    }
+
+    case kTopEarlgreyPlicPeripheralEdn1: {
+      dif_edn_irq_t irq = (dif_edn_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone);
+      CHECK(irq == edn_irq_expected,
+            "Incorrect edn1 IRQ triggered: exp = %d, obs = %d",
+            edn_irq_expected, irq);
+      edn_irq_serviced = irq;
+
+      dif_edn_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_edn_irq_get_state(&edn1, &snapshot));
+      CHECK(snapshot == (dif_edn_irq_state_snapshot_t)(1 << irq),
+            "Only edn1 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn1, irq));
       break;
-    case kTopEarlgreyPlicPeripheralHmac:
-      PERIPHERAL_ISR(hmac, hmac, kTopEarlgreyPlicIrqIdHmacHmacDone);
+    }
+
+    case kTopEarlgreyPlicPeripheralEntropySrc: {
+      dif_entropy_src_irq_t irq = (dif_entropy_src_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid);
+      CHECK(irq == entropy_src_irq_expected,
+            "Incorrect entropy_src IRQ triggered: exp = %d, obs = %d",
+            entropy_src_irq_expected, irq);
+      entropy_src_irq_serviced = irq;
+
+      dif_entropy_src_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_entropy_src_irq_get_state(&entropy_src, &snapshot));
+      CHECK(snapshot == (dif_entropy_src_irq_state_snapshot_t)(1 << irq),
+            "Only entropy_src IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_entropy_src_irq_acknowledge(&entropy_src, irq));
       break;
-    case kTopEarlgreyPlicPeripheralI2c0:
-      PERIPHERAL_ISR(i2c, i2c0, kTopEarlgreyPlicIrqIdI2c0FmtWatermark);
+    }
+
+    case kTopEarlgreyPlicPeripheralFlashCtrl: {
+      dif_flash_ctrl_irq_t irq = (dif_flash_ctrl_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty);
+      CHECK(irq == flash_ctrl_irq_expected,
+            "Incorrect flash_ctrl IRQ triggered: exp = %d, obs = %d",
+            flash_ctrl_irq_expected, irq);
+      flash_ctrl_irq_serviced = irq;
+
+      dif_flash_ctrl_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_flash_ctrl_irq_get_state(&flash_ctrl, &snapshot));
+      CHECK(snapshot == (dif_flash_ctrl_irq_state_snapshot_t)(1 << irq),
+            "Only flash_ctrl IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge(&flash_ctrl, irq));
       break;
-    case kTopEarlgreyPlicPeripheralI2c1:
-      PERIPHERAL_ISR(i2c, i2c1, kTopEarlgreyPlicIrqIdI2c1FmtWatermark);
+    }
+
+    case kTopEarlgreyPlicPeripheralGpio: {
+      dif_gpio_irq_t irq = (dif_gpio_irq_t)(
+          plic_irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdGpioGpio0);
+      CHECK(irq == gpio_irq_expected,
+            "Incorrect gpio IRQ triggered: exp = %d, obs = %d",
+            gpio_irq_expected, irq);
+      gpio_irq_serviced = irq;
+
+      dif_gpio_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_gpio_irq_get_state(&gpio, &snapshot));
+      CHECK(snapshot == (dif_gpio_irq_state_snapshot_t)(1 << irq),
+            "Only gpio IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio, irq));
       break;
-    case kTopEarlgreyPlicPeripheralI2c2:
-      PERIPHERAL_ISR(i2c, i2c2, kTopEarlgreyPlicIrqIdI2c2FmtWatermark);
+    }
+
+    case kTopEarlgreyPlicPeripheralHmac: {
+      dif_hmac_irq_t irq = (dif_hmac_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdHmacHmacDone);
+      CHECK(irq == hmac_irq_expected,
+            "Incorrect hmac IRQ triggered: exp = %d, obs = %d",
+            hmac_irq_expected, irq);
+      hmac_irq_serviced = irq;
+
+      dif_hmac_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_hmac_irq_get_state(&hmac, &snapshot));
+      CHECK(snapshot == (dif_hmac_irq_state_snapshot_t)(1 << irq),
+            "Only hmac IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_hmac_irq_acknowledge(&hmac, irq));
       break;
-    case kTopEarlgreyPlicPeripheralKeymgr:
-      PERIPHERAL_ISR(keymgr, keymgr, kTopEarlgreyPlicIrqIdKeymgrOpDone);
+    }
+
+    case kTopEarlgreyPlicPeripheralI2c0: {
+      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c0FmtWatermark);
+      CHECK(irq == i2c_irq_expected,
+            "Incorrect i2c0 IRQ triggered: exp = %d, obs = %d",
+            i2c_irq_expected, irq);
+      i2c_irq_serviced = irq;
+
+      dif_i2c_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c0, &snapshot));
+      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
+            "Only i2c0 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c0, irq));
       break;
-    case kTopEarlgreyPlicPeripheralKmac:
-      PERIPHERAL_ISR(kmac, kmac, kTopEarlgreyPlicIrqIdKmacKmacDone);
+    }
+
+    case kTopEarlgreyPlicPeripheralI2c1: {
+      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c1FmtWatermark);
+      CHECK(irq == i2c_irq_expected,
+            "Incorrect i2c1 IRQ triggered: exp = %d, obs = %d",
+            i2c_irq_expected, irq);
+      i2c_irq_serviced = irq;
+
+      dif_i2c_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c1, &snapshot));
+      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
+            "Only i2c1 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c1, irq));
       break;
-    case kTopEarlgreyPlicPeripheralOtbn:
-      PERIPHERAL_ISR(otbn, otbn, kTopEarlgreyPlicIrqIdOtbnDone);
+    }
+
+    case kTopEarlgreyPlicPeripheralI2c2: {
+      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c2FmtWatermark);
+      CHECK(irq == i2c_irq_expected,
+            "Incorrect i2c2 IRQ triggered: exp = %d, obs = %d",
+            i2c_irq_expected, irq);
+      i2c_irq_serviced = irq;
+
+      dif_i2c_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c2, &snapshot));
+      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
+            "Only i2c2 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c2, irq));
       break;
-    case kTopEarlgreyPlicPeripheralOtpCtrl:
-      PERIPHERAL_ISR(otp_ctrl, otp_ctrl,
-                     kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone);
+    }
+
+    case kTopEarlgreyPlicPeripheralKeymgr: {
+      dif_keymgr_irq_t irq = (dif_keymgr_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdKeymgrOpDone);
+      CHECK(irq == keymgr_irq_expected,
+            "Incorrect keymgr IRQ triggered: exp = %d, obs = %d",
+            keymgr_irq_expected, irq);
+      keymgr_irq_serviced = irq;
+
+      dif_keymgr_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_keymgr_irq_get_state(&keymgr, &snapshot));
+      CHECK(snapshot == (dif_keymgr_irq_state_snapshot_t)(1 << irq),
+            "Only keymgr IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_keymgr_irq_acknowledge(&keymgr, irq));
       break;
-    // case kTopEarlgreyPlicPeripheralPattgen:
-    //   PERIPHERAL_ISR(pattgen, pattgen, kTopEarlgreyPlicIrqIdPattgenDoneCh0);
-    //   break;
-    case kTopEarlgreyPlicPeripheralPwrmgrAon:
-      PERIPHERAL_ISR(pwrmgr, pwrmgr_aon, kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+    }
+
+    case kTopEarlgreyPlicPeripheralKmac: {
+      dif_kmac_irq_t irq = (dif_kmac_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdKmacKmacDone);
+      CHECK(irq == kmac_irq_expected,
+            "Incorrect kmac IRQ triggered: exp = %d, obs = %d",
+            kmac_irq_expected, irq);
+      kmac_irq_serviced = irq;
+
+      dif_kmac_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_kmac_irq_get_state(&kmac, &snapshot));
+      CHECK(snapshot == (dif_kmac_irq_state_snapshot_t)(1 << irq),
+            "Only kmac IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_kmac_irq_acknowledge(&kmac, irq));
       break;
-    // case kTopEarlgreyPlicPeripheralRvTimer:
-    //   PERIPHERAL_ISR(rv_timer, rv_timer,
-    //   kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0); break;
-    case kTopEarlgreyPlicPeripheralSpiDevice:
-      PERIPHERAL_ISR(spi_device, spi_device,
-                     kTopEarlgreyPlicIrqIdSpiDeviceRxFull);
+    }
+
+    case kTopEarlgreyPlicPeripheralOtbn: {
+      dif_otbn_irq_t irq = (dif_otbn_irq_t)(
+          plic_irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtbnDone);
+      CHECK(irq == otbn_irq_expected,
+            "Incorrect otbn IRQ triggered: exp = %d, obs = %d",
+            otbn_irq_expected, irq);
+      otbn_irq_serviced = irq;
+
+      dif_otbn_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_otbn_irq_get_state(&otbn, &snapshot));
+      CHECK(snapshot == (dif_otbn_irq_state_snapshot_t)(1 << irq),
+            "Only otbn IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, irq));
       break;
-    // case kTopEarlgreyPlicPeripheralSpiHost0:
-    //   PERIPHERAL_ISR(spi_host, spi_host0,
-    //   kTopEarlgreyPlicIrqIdSpiHost0Error); break;
-    // case kTopEarlgreyPlicPeripheralSpiHost1:
-    //   PERIPHERAL_ISR(spi_host, spi_host1,
-    //   kTopEarlgreyPlicIrqIdSpiHost1Error); break;
-    // case kTopEarlgreyPlicPeripheralSysrstCtrlAon:
-    //   PERIPHERAL_ISR(sysrst_ctrl, sysrst_ctrl_aon,
-    //   kTopEarlgreyPlicIrqIdSysrstCtrlAonSysrstCtrl); break;
-    case kTopEarlgreyPlicPeripheralUart0:
-      PERIPHERAL_ISR(uart, uart0, kTopEarlgreyPlicIrqIdUart0TxWatermark);
+    }
+
+    case kTopEarlgreyPlicPeripheralOtpCtrl: {
+      dif_otp_ctrl_irq_t irq = (dif_otp_ctrl_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone);
+      CHECK(irq == otp_ctrl_irq_expected,
+            "Incorrect otp_ctrl IRQ triggered: exp = %d, obs = %d",
+            otp_ctrl_irq_expected, irq);
+      otp_ctrl_irq_serviced = irq;
+
+      dif_otp_ctrl_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_otp_ctrl_irq_get_state(&otp_ctrl, &snapshot));
+      CHECK(snapshot == (dif_otp_ctrl_irq_state_snapshot_t)(1 << irq),
+            "Only otp_ctrl IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge(&otp_ctrl, irq));
       break;
-    case kTopEarlgreyPlicPeripheralUart1:
-      PERIPHERAL_ISR(uart, uart1, kTopEarlgreyPlicIrqIdUart1TxWatermark);
+    }
+
+    case kTopEarlgreyPlicPeripheralPattgen: {
+      dif_pattgen_irq_t irq = (dif_pattgen_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdPattgenDoneCh0);
+      CHECK(irq == pattgen_irq_expected,
+            "Incorrect pattgen IRQ triggered: exp = %d, obs = %d",
+            pattgen_irq_expected, irq);
+      pattgen_irq_serviced = irq;
+
+      dif_pattgen_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_pattgen_irq_get_state(&pattgen, &snapshot));
+      CHECK(snapshot == (dif_pattgen_irq_state_snapshot_t)(1 << irq),
+            "Only pattgen IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_pattgen_irq_acknowledge(&pattgen, irq));
       break;
-    case kTopEarlgreyPlicPeripheralUart2:
-      PERIPHERAL_ISR(uart, uart2, kTopEarlgreyPlicIrqIdUart2TxWatermark);
+    }
+
+    case kTopEarlgreyPlicPeripheralPwrmgrAon: {
+      dif_pwrmgr_irq_t irq = (dif_pwrmgr_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+      CHECK(irq == pwrmgr_irq_expected,
+            "Incorrect pwrmgr_aon IRQ triggered: exp = %d, obs = %d",
+            pwrmgr_irq_expected, irq);
+      pwrmgr_irq_serviced = irq;
+
+      dif_pwrmgr_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_pwrmgr_irq_get_state(&pwrmgr_aon, &snapshot));
+      CHECK(snapshot == (dif_pwrmgr_irq_state_snapshot_t)(1 << irq),
+            "Only pwrmgr_aon IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr_aon, irq));
       break;
-    case kTopEarlgreyPlicPeripheralUart3:
-      PERIPHERAL_ISR(uart, uart3, kTopEarlgreyPlicIrqIdUart3TxWatermark);
+    }
+
+    case kTopEarlgreyPlicPeripheralRvTimer: {
+      dif_rv_timer_irq_t irq = (dif_rv_timer_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)
+              kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0);
+      CHECK(irq == rv_timer_irq_expected,
+            "Incorrect rv_timer IRQ triggered: exp = %d, obs = %d",
+            rv_timer_irq_expected, irq);
+      rv_timer_irq_serviced = irq;
+
+      dif_rv_timer_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_rv_timer_irq_get_state(&rv_timer, kHart, &snapshot));
+      CHECK(snapshot == (dif_rv_timer_irq_state_snapshot_t)(1 << irq),
+            "Only rv_timer IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_rv_timer_irq_acknowledge(&rv_timer, irq));
       break;
-    case kTopEarlgreyPlicPeripheralUsbdev:
-      PERIPHERAL_ISR(usbdev, usbdev, kTopEarlgreyPlicIrqIdUsbdevPktReceived);
+    }
+
+    case kTopEarlgreyPlicPeripheralSpiDevice: {
+      dif_spi_device_irq_t irq = (dif_spi_device_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiDeviceRxFull);
+      CHECK(irq == spi_device_irq_expected,
+            "Incorrect spi_device IRQ triggered: exp = %d, obs = %d",
+            spi_device_irq_expected, irq);
+      spi_device_irq_serviced = irq;
+
+      dif_spi_device_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_spi_device_irq_get_state(&spi_device, &snapshot));
+      CHECK(snapshot == (dif_spi_device_irq_state_snapshot_t)(1 << irq),
+            "Only spi_device IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device, irq));
       break;
+    }
+
+    case kTopEarlgreyPlicPeripheralSpiHost0: {
+      dif_spi_host_irq_t irq = (dif_spi_host_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiHost0Error);
+      CHECK(irq == spi_host_irq_expected,
+            "Incorrect spi_host0 IRQ triggered: exp = %d, obs = %d",
+            spi_host_irq_expected, irq);
+      spi_host_irq_serviced = irq;
+
+      dif_spi_host_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host0, &snapshot));
+      CHECK(snapshot == (dif_spi_host_irq_state_snapshot_t)(1 << irq),
+            "Only spi_host0 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host0, irq));
+      break;
+    }
+
+    case kTopEarlgreyPlicPeripheralSpiHost1: {
+      dif_spi_host_irq_t irq = (dif_spi_host_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiHost1Error);
+      CHECK(irq == spi_host_irq_expected,
+            "Incorrect spi_host1 IRQ triggered: exp = %d, obs = %d",
+            spi_host_irq_expected, irq);
+      spi_host_irq_serviced = irq;
+
+      dif_spi_host_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host1, &snapshot));
+      CHECK(snapshot == (dif_spi_host_irq_state_snapshot_t)(1 << irq),
+            "Only spi_host1 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host1, irq));
+      break;
+    }
+
+    case kTopEarlgreyPlicPeripheralSysrstCtrlAon: {
+      dif_sysrst_ctrl_irq_t irq = (dif_sysrst_ctrl_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSysrstCtrlAonSysrstCtrl);
+      CHECK(irq == sysrst_ctrl_irq_expected,
+            "Incorrect sysrst_ctrl_aon IRQ triggered: exp = %d, obs = %d",
+            sysrst_ctrl_irq_expected, irq);
+      sysrst_ctrl_irq_serviced = irq;
+
+      dif_sysrst_ctrl_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_sysrst_ctrl_irq_get_state(&sysrst_ctrl_aon, &snapshot));
+      CHECK(snapshot == (dif_sysrst_ctrl_irq_state_snapshot_t)(1 << irq),
+            "Only sysrst_ctrl_aon IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl_aon, irq));
+      break;
+    }
+
+    case kTopEarlgreyPlicPeripheralUart0: {
+      dif_uart_irq_t irq = (dif_uart_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart0TxWatermark);
+      CHECK(irq == uart_irq_expected,
+            "Incorrect uart0 IRQ triggered: exp = %d, obs = %d",
+            uart_irq_expected, irq);
+      uart_irq_serviced = irq;
+
+      dif_uart_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_uart_irq_get_state(&uart0, &snapshot));
+      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
+            "Only uart0 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart0, irq));
+      break;
+    }
+
+    case kTopEarlgreyPlicPeripheralUart1: {
+      dif_uart_irq_t irq = (dif_uart_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart1TxWatermark);
+      CHECK(irq == uart_irq_expected,
+            "Incorrect uart1 IRQ triggered: exp = %d, obs = %d",
+            uart_irq_expected, irq);
+      uart_irq_serviced = irq;
+
+      dif_uart_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_uart_irq_get_state(&uart1, &snapshot));
+      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
+            "Only uart1 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart1, irq));
+      break;
+    }
+
+    case kTopEarlgreyPlicPeripheralUart2: {
+      dif_uart_irq_t irq = (dif_uart_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart2TxWatermark);
+      CHECK(irq == uart_irq_expected,
+            "Incorrect uart2 IRQ triggered: exp = %d, obs = %d",
+            uart_irq_expected, irq);
+      uart_irq_serviced = irq;
+
+      dif_uart_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_uart_irq_get_state(&uart2, &snapshot));
+      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
+            "Only uart2 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart2, irq));
+      break;
+    }
+
+    case kTopEarlgreyPlicPeripheralUart3: {
+      dif_uart_irq_t irq = (dif_uart_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart3TxWatermark);
+      CHECK(irq == uart_irq_expected,
+            "Incorrect uart3 IRQ triggered: exp = %d, obs = %d",
+            uart_irq_expected, irq);
+      uart_irq_serviced = irq;
+
+      dif_uart_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_uart_irq_get_state(&uart3, &snapshot));
+      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
+            "Only uart3 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart3, irq));
+      break;
+    }
+
+    case kTopEarlgreyPlicPeripheralUsbdev: {
+      dif_usbdev_irq_t irq = (dif_usbdev_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUsbdevPktReceived);
+      CHECK(irq == usbdev_irq_expected,
+            "Incorrect usbdev IRQ triggered: exp = %d, obs = %d",
+            usbdev_irq_expected, irq);
+      usbdev_irq_serviced = irq;
+
+      dif_usbdev_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_usbdev_irq_get_state(&usbdev, &snapshot));
+      CHECK(snapshot == (dif_usbdev_irq_state_snapshot_t)(1 << irq),
+            "Only usbdev IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_usbdev_irq_acknowledge(&usbdev, irq));
+      break;
+    }
+
     default:
       LOG_FATAL("ISR is not implemented!");
       test_status_set(kTestStatusFailed);
@@ -257,43 +750,96 @@ void handler_irq_external(void) {
  * Initializes the handles to all peripherals.
  */
 static void peripherals_init(void) {
-  // PERIPHERAL_INIT(adc_ctrl, adc_ctrl_aon,
-  // TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
-  PERIPHERAL_INIT(alert_handler, alert_handler,
-                  TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
-  // PERIPHERAL_INIT(aon_timer, aon_timer_aon,
-  // TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
-  PERIPHERAL_INIT(csrng, csrng, TOP_EARLGREY_CSRNG_BASE_ADDR);
-  PERIPHERAL_INIT(edn, edn0, TOP_EARLGREY_EDN0_BASE_ADDR);
-  PERIPHERAL_INIT(edn, edn1, TOP_EARLGREY_EDN1_BASE_ADDR);
-  PERIPHERAL_INIT(entropy_src, entropy_src, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
-  // PERIPHERAL_INIT(flash_ctrl, flash_ctrl,
-  // TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
-  PERIPHERAL_INIT(gpio, gpio, TOP_EARLGREY_GPIO_BASE_ADDR);
-  PERIPHERAL_INIT(hmac, hmac, TOP_EARLGREY_HMAC_BASE_ADDR);
-  PERIPHERAL_INIT(i2c, i2c0, TOP_EARLGREY_I2C0_BASE_ADDR);
-  PERIPHERAL_INIT(i2c, i2c1, TOP_EARLGREY_I2C1_BASE_ADDR);
-  PERIPHERAL_INIT(i2c, i2c2, TOP_EARLGREY_I2C2_BASE_ADDR);
-  PERIPHERAL_INIT(keymgr, keymgr, TOP_EARLGREY_KEYMGR_BASE_ADDR);
-  PERIPHERAL_INIT(kmac, kmac, TOP_EARLGREY_KMAC_BASE_ADDR);
-  PERIPHERAL_INIT(otbn, otbn, TOP_EARLGREY_OTBN_BASE_ADDR);
-  PERIPHERAL_INIT(otp_ctrl, otp_ctrl, TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
-  // PERIPHERAL_INIT(pattgen, pattgen, TOP_EARLGREY_PATTGEN_BASE_ADDR);
-  PERIPHERAL_INIT(pwrmgr, pwrmgr_aon, TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
-  // PERIPHERAL_INIT(rv_timer, rv_timer, TOP_EARLGREY_RV_TIMER_BASE_ADDR);
-  PERIPHERAL_INIT(spi_device, spi_device, TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
-  // PERIPHERAL_INIT(spi_host, spi_host0, TOP_EARLGREY_SPI_HOST0_BASE_ADDR);
-  // PERIPHERAL_INIT(spi_host, spi_host1, TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
-  // PERIPHERAL_INIT(sysrst_ctrl, sysrst_ctrl_aon,
-  // TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
-  PERIPHERAL_INIT(uart, uart0, TOP_EARLGREY_UART0_BASE_ADDR);
-  PERIPHERAL_INIT(uart, uart1, TOP_EARLGREY_UART1_BASE_ADDR);
-  PERIPHERAL_INIT(uart, uart2, TOP_EARLGREY_UART2_BASE_ADDR);
-  PERIPHERAL_INIT(uart, uart3, TOP_EARLGREY_UART3_BASE_ADDR);
-  PERIPHERAL_INIT(usbdev, usbdev, TOP_EARLGREY_USBDEV_BASE_ADDR);
+  mmio_region_t base_addr;
 
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+  CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer_aon));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
+  CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR);
+  CHECK_DIF_OK(dif_edn_init(base_addr, &edn0));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR);
+  CHECK_DIF_OK(dif_edn_init(base_addr, &edn1));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
+  CHECK_DIF_OK(dif_entropy_src_init(base_addr, &entropy_src));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_flash_ctrl_init(base_addr, &flash_ctrl));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR);
+  CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR);
+  CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c0));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR);
+  CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c1));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
+  CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c2));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
+  CHECK_DIF_OK(dif_keymgr_init(base_addr, &keymgr));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR);
+  CHECK_DIF_OK(dif_kmac_init(base_addr, &kmac));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
+  CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_otp_ctrl_init(base_addr, &otp_ctrl));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR);
+  CHECK_DIF_OK(dif_pattgen_init(base_addr, &pattgen));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
+  CHECK_DIF_OK(dif_rv_timer_init(base_addr, &rv_timer));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
+  CHECK_DIF_OK(dif_spi_device_init(base_addr, &spi_device));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR);
+  CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host0));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
+  CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host1));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
+  CHECK_DIF_OK(dif_uart_init(base_addr, &uart0));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR);
+  CHECK_DIF_OK(dif_uart_init(base_addr, &uart1));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART2_BASE_ADDR);
+  CHECK_DIF_OK(dif_uart_init(base_addr, &uart2));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART3_BASE_ADDR);
+  CHECK_DIF_OK(dif_uart_init(base_addr, &uart3));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR);
+  CHECK_DIF_OK(dif_usbdev_init(base_addr, &usbdev));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 }
 
@@ -301,157 +847,507 @@ static void peripherals_init(void) {
  * Clears pending IRQs in all peripherals.
  */
 static void peripheral_irqs_clear(void) {
-  // PERIPHERAL_IRQS_CLEAR(adc_ctrl, adc_ctrl_aon);
-  PERIPHERAL_IRQS_CLEAR(alert_handler, alert_handler);
-  // PERIPHERAL_IRQS_CLEAR(aon_timer, aon_timer_aon);
-  PERIPHERAL_IRQS_CLEAR(csrng, csrng);
-  PERIPHERAL_IRQS_CLEAR(edn, edn0);
-  PERIPHERAL_IRQS_CLEAR(edn, edn1);
-  PERIPHERAL_IRQS_CLEAR(entropy_src, entropy_src);
-  // PERIPHERAL_IRQS_CLEAR(flash_ctrl, flash_ctrl);
-  PERIPHERAL_IRQS_CLEAR(gpio, gpio);
-  PERIPHERAL_IRQS_CLEAR(hmac, hmac);
-  PERIPHERAL_IRQS_CLEAR(i2c, i2c0);
-  PERIPHERAL_IRQS_CLEAR(i2c, i2c1);
-  PERIPHERAL_IRQS_CLEAR(i2c, i2c2);
-  PERIPHERAL_IRQS_CLEAR(keymgr, keymgr);
-  PERIPHERAL_IRQS_CLEAR(kmac, kmac);
-  PERIPHERAL_IRQS_CLEAR(otbn, otbn);
-  PERIPHERAL_IRQS_CLEAR(otp_ctrl, otp_ctrl);
-  // PERIPHERAL_IRQS_CLEAR(pattgen, pattgen);
-  PERIPHERAL_IRQS_CLEAR(pwrmgr, pwrmgr_aon);
-  // PERIPHERAL_IRQS_CLEAR(rv_timer, rv_timer);
-  PERIPHERAL_IRQS_CLEAR(spi_device, spi_device);
-  // PERIPHERAL_IRQS_CLEAR(spi_host, spi_host0);
-  // PERIPHERAL_IRQS_CLEAR(spi_host, spi_host1);
-  // PERIPHERAL_IRQS_CLEAR(sysrst_ctrl, sysrst_ctrl_aon);
-  PERIPHERAL_IRQS_CLEAR(uart, uart0);
-  PERIPHERAL_IRQS_CLEAR(uart, uart1);
-  PERIPHERAL_IRQS_CLEAR(uart, uart2);
-  PERIPHERAL_IRQS_CLEAR(uart, uart3);
-  PERIPHERAL_IRQS_CLEAR(usbdev, usbdev);
+  CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge_all(&adc_ctrl_aon));
+  CHECK_DIF_OK(dif_alert_handler_irq_acknowledge_all(&alert_handler));
+  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge_all(&aon_timer_aon));
+  CHECK_DIF_OK(dif_csrng_irq_acknowledge_all(&csrng));
+  CHECK_DIF_OK(dif_edn_irq_acknowledge_all(&edn0));
+  CHECK_DIF_OK(dif_edn_irq_acknowledge_all(&edn1));
+  CHECK_DIF_OK(dif_entropy_src_irq_acknowledge_all(&entropy_src));
+  CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge_all(&flash_ctrl));
+  CHECK_DIF_OK(dif_gpio_irq_acknowledge_all(&gpio));
+  CHECK_DIF_OK(dif_hmac_irq_acknowledge_all(&hmac));
+  CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c0));
+  CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c1));
+  CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c2));
+  CHECK_DIF_OK(dif_keymgr_irq_acknowledge_all(&keymgr));
+  CHECK_DIF_OK(dif_kmac_irq_acknowledge_all(&kmac));
+  CHECK_DIF_OK(dif_otbn_irq_acknowledge_all(&otbn));
+  CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge_all(&otp_ctrl));
+  CHECK_DIF_OK(dif_pattgen_irq_acknowledge_all(&pattgen));
+  CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge_all(&pwrmgr_aon));
+  CHECK_DIF_OK(dif_rv_timer_irq_acknowledge_all(&rv_timer, kHart));
+  CHECK_DIF_OK(dif_spi_device_irq_acknowledge_all(&spi_device));
+  CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host0));
+  CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host1));
+  CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge_all(&sysrst_ctrl_aon));
+  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart0));
+  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart1));
+  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart2));
+  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart3));
+  CHECK_DIF_OK(dif_usbdev_irq_acknowledge_all(&usbdev));
 }
 
 /**
  * Enables all IRQs in all peripherals.
  */
 static void peripheral_irqs_enable(void) {
-  // PERIPHERAL_IRQS_ENABLE(adc_ctrl, adc_ctrl_aon);
-  PERIPHERAL_IRQS_ENABLE(alert_handler, alert_handler);
-  // PERIPHERAL_IRQS_ENABLE(aon_timer, aon_timer_aon);
-  PERIPHERAL_IRQS_ENABLE(csrng, csrng);
-  PERIPHERAL_IRQS_ENABLE(edn, edn0);
-  PERIPHERAL_IRQS_ENABLE(edn, edn1);
-  PERIPHERAL_IRQS_ENABLE(entropy_src, entropy_src);
-  // PERIPHERAL_IRQS_ENABLE(flash_ctrl, flash_ctrl);
-  PERIPHERAL_IRQS_ENABLE(gpio, gpio);
-  PERIPHERAL_IRQS_ENABLE(hmac, hmac);
-  PERIPHERAL_IRQS_ENABLE(i2c, i2c0);
-  PERIPHERAL_IRQS_ENABLE(i2c, i2c1);
-  PERIPHERAL_IRQS_ENABLE(i2c, i2c2);
-  PERIPHERAL_IRQS_ENABLE(keymgr, keymgr);
-  PERIPHERAL_IRQS_ENABLE(kmac, kmac);
-  PERIPHERAL_IRQS_ENABLE(otbn, otbn);
-  PERIPHERAL_IRQS_ENABLE(otp_ctrl, otp_ctrl);
-  // PERIPHERAL_IRQS_ENABLE(pattgen, pattgen);
-  PERIPHERAL_IRQS_ENABLE(pwrmgr, pwrmgr_aon);
-  // PERIPHERAL_IRQS_ENABLE(rv_timer, rv_timer);
-  PERIPHERAL_IRQS_ENABLE(spi_device, spi_device);
-  // PERIPHERAL_IRQS_ENABLE(spi_host, spi_host0);
-  // PERIPHERAL_IRQS_ENABLE(spi_host, spi_host1);
-  // PERIPHERAL_IRQS_ENABLE(sysrst_ctrl, sysrst_ctrl_aon);
-  PERIPHERAL_IRQS_ENABLE(uart, uart0);
-  PERIPHERAL_IRQS_ENABLE(uart, uart1);
-  PERIPHERAL_IRQS_ENABLE(uart, uart2);
-  PERIPHERAL_IRQS_ENABLE(uart, uart3);
-  PERIPHERAL_IRQS_ENABLE(usbdev, usbdev);
+  dif_adc_ctrl_irq_state_snapshot_t adc_ctrl_irq_snapshot =
+      (dif_adc_ctrl_irq_state_snapshot_t)UINT_MAX;
+  dif_alert_handler_irq_state_snapshot_t alert_handler_irq_snapshot =
+      (dif_alert_handler_irq_state_snapshot_t)UINT_MAX;
+  dif_csrng_irq_state_snapshot_t csrng_irq_snapshot =
+      (dif_csrng_irq_state_snapshot_t)UINT_MAX;
+  dif_edn_irq_state_snapshot_t edn_irq_snapshot =
+      (dif_edn_irq_state_snapshot_t)UINT_MAX;
+  dif_entropy_src_irq_state_snapshot_t entropy_src_irq_snapshot =
+      (dif_entropy_src_irq_state_snapshot_t)UINT_MAX;
+  dif_flash_ctrl_irq_state_snapshot_t flash_ctrl_irq_snapshot =
+      (dif_flash_ctrl_irq_state_snapshot_t)UINT_MAX;
+  dif_gpio_irq_state_snapshot_t gpio_irq_snapshot =
+      (dif_gpio_irq_state_snapshot_t)UINT_MAX;
+  dif_hmac_irq_state_snapshot_t hmac_irq_snapshot =
+      (dif_hmac_irq_state_snapshot_t)UINT_MAX;
+  dif_i2c_irq_state_snapshot_t i2c_irq_snapshot =
+      (dif_i2c_irq_state_snapshot_t)UINT_MAX;
+  dif_keymgr_irq_state_snapshot_t keymgr_irq_snapshot =
+      (dif_keymgr_irq_state_snapshot_t)UINT_MAX;
+  dif_kmac_irq_state_snapshot_t kmac_irq_snapshot =
+      (dif_kmac_irq_state_snapshot_t)UINT_MAX;
+  dif_otbn_irq_state_snapshot_t otbn_irq_snapshot =
+      (dif_otbn_irq_state_snapshot_t)UINT_MAX;
+  dif_otp_ctrl_irq_state_snapshot_t otp_ctrl_irq_snapshot =
+      (dif_otp_ctrl_irq_state_snapshot_t)UINT_MAX;
+  dif_pattgen_irq_state_snapshot_t pattgen_irq_snapshot =
+      (dif_pattgen_irq_state_snapshot_t)UINT_MAX;
+  dif_pwrmgr_irq_state_snapshot_t pwrmgr_irq_snapshot =
+      (dif_pwrmgr_irq_state_snapshot_t)UINT_MAX;
+  dif_rv_timer_irq_state_snapshot_t rv_timer_irq_snapshot =
+      (dif_rv_timer_irq_state_snapshot_t)UINT_MAX;
+  dif_spi_device_irq_state_snapshot_t spi_device_irq_snapshot =
+      (dif_spi_device_irq_state_snapshot_t)UINT_MAX;
+  dif_spi_host_irq_state_snapshot_t spi_host_irq_snapshot =
+      (dif_spi_host_irq_state_snapshot_t)UINT_MAX;
+  dif_sysrst_ctrl_irq_state_snapshot_t sysrst_ctrl_irq_snapshot =
+      (dif_sysrst_ctrl_irq_state_snapshot_t)UINT_MAX;
+  dif_uart_irq_state_snapshot_t uart_irq_snapshot =
+      (dif_uart_irq_state_snapshot_t)UINT_MAX;
+  dif_usbdev_irq_state_snapshot_t usbdev_irq_snapshot =
+      (dif_usbdev_irq_state_snapshot_t)UINT_MAX;
+
+  CHECK_DIF_OK(
+      dif_adc_ctrl_irq_restore_all(&adc_ctrl_aon, &adc_ctrl_irq_snapshot));
+  CHECK_DIF_OK(dif_alert_handler_irq_restore_all(&alert_handler,
+                                                 &alert_handler_irq_snapshot));
+  CHECK_DIF_OK(dif_csrng_irq_restore_all(&csrng, &csrng_irq_snapshot));
+  CHECK_DIF_OK(dif_edn_irq_restore_all(&edn0, &edn_irq_snapshot));
+  CHECK_DIF_OK(dif_edn_irq_restore_all(&edn1, &edn_irq_snapshot));
+  CHECK_DIF_OK(
+      dif_entropy_src_irq_restore_all(&entropy_src, &entropy_src_irq_snapshot));
+  CHECK_DIF_OK(
+      dif_flash_ctrl_irq_restore_all(&flash_ctrl, &flash_ctrl_irq_snapshot));
+  CHECK_DIF_OK(dif_gpio_irq_restore_all(&gpio, &gpio_irq_snapshot));
+  CHECK_DIF_OK(dif_hmac_irq_restore_all(&hmac, &hmac_irq_snapshot));
+  CHECK_DIF_OK(dif_i2c_irq_restore_all(&i2c0, &i2c_irq_snapshot));
+  CHECK_DIF_OK(dif_i2c_irq_restore_all(&i2c1, &i2c_irq_snapshot));
+  CHECK_DIF_OK(dif_i2c_irq_restore_all(&i2c2, &i2c_irq_snapshot));
+  CHECK_DIF_OK(dif_keymgr_irq_restore_all(&keymgr, &keymgr_irq_snapshot));
+  CHECK_DIF_OK(dif_kmac_irq_restore_all(&kmac, &kmac_irq_snapshot));
+  CHECK_DIF_OK(dif_otbn_irq_restore_all(&otbn, &otbn_irq_snapshot));
+  CHECK_DIF_OK(dif_otp_ctrl_irq_restore_all(&otp_ctrl, &otp_ctrl_irq_snapshot));
+  CHECK_DIF_OK(dif_pattgen_irq_restore_all(&pattgen, &pattgen_irq_snapshot));
+  CHECK_DIF_OK(dif_pwrmgr_irq_restore_all(&pwrmgr_aon, &pwrmgr_irq_snapshot));
+  CHECK_DIF_OK(
+      dif_rv_timer_irq_restore_all(&rv_timer, kHart, &rv_timer_irq_snapshot));
+  CHECK_DIF_OK(
+      dif_spi_device_irq_restore_all(&spi_device, &spi_device_irq_snapshot));
+  CHECK_DIF_OK(
+      dif_spi_host_irq_restore_all(&spi_host0, &spi_host_irq_snapshot));
+  CHECK_DIF_OK(
+      dif_spi_host_irq_restore_all(&spi_host1, &spi_host_irq_snapshot));
+  CHECK_DIF_OK(dif_sysrst_ctrl_irq_restore_all(&sysrst_ctrl_aon,
+                                               &sysrst_ctrl_irq_snapshot));
+  CHECK_DIF_OK(dif_uart_irq_restore_all(&uart0, &uart_irq_snapshot));
+  CHECK_DIF_OK(dif_uart_irq_restore_all(&uart1, &uart_irq_snapshot));
+  CHECK_DIF_OK(dif_uart_irq_restore_all(&uart2, &uart_irq_snapshot));
+  CHECK_DIF_OK(dif_uart_irq_restore_all(&uart3, &uart_irq_snapshot));
+  CHECK_DIF_OK(dif_usbdev_irq_restore_all(&usbdev, &usbdev_irq_snapshot));
 }
 
 /**
  * Triggers all IRQs in all peripherals one by one.
  *
  * Walks through all instances of all peripherals and triggers an interrupt one
- * by one. Instead of invoking WFI, it waits for a couple of cycles with nops,
- * and then checks if the right interrupt was handled. The ISR which the CPU
- * jumps into checks if the correct interrupt from the right instance triggered.
+ * by one, by forcing with the `intr_test` CSR. On trigger, the CPU instantly
+ * jumps into the ISR. The main flow of execution thus proceeds to check that
+ * the correct IRQ was serviced immediately. The ISR, in turn checks if the
+ * expected IRQ from the expected peripheral triggered.
  */
 static void peripheral_irqs_trigger(void) {
-  // PERIPHERAL_IRQS_TRIGGER(adc_ctrl, adc_ctrl_aon,
-  // kTopEarlgreyPlicPeripheralAdcCtrlAon,
-  //                         kDifAdcCtrlIrqDebugCable,
-  //                         kDifAdcCtrlIrqDebugCable);
-  PERIPHERAL_IRQS_TRIGGER(alert_handler, alert_handler,
-                          kTopEarlgreyPlicPeripheralAlertHandler,
-                          kDifAlertHandlerIrqClassa, kDifAlertHandlerIrqClassd);
-  // PERIPHERAL_IRQS_TRIGGER(aon_timer, aon_timer_aon,
-  // kTopEarlgreyPlicPeripheralAonTimerAon,
-  //                         kDifAonTimerIrqWkupTimerExpired,
-  //                         kDifAonTimerIrqWdogTimerBark);
-  PERIPHERAL_IRQS_TRIGGER(csrng, csrng, kTopEarlgreyPlicPeripheralCsrng,
-                          kDifCsrngIrqCsCmdReqDone, kDifCsrngIrqCsFatalErr);
-  PERIPHERAL_IRQS_TRIGGER(edn, edn0, kTopEarlgreyPlicPeripheralEdn0,
-                          kDifEdnIrqEdnCmdReqDone, kDifEdnIrqEdnFatalErr);
-  PERIPHERAL_IRQS_TRIGGER(edn, edn1, kTopEarlgreyPlicPeripheralEdn1,
-                          kDifEdnIrqEdnCmdReqDone, kDifEdnIrqEdnFatalErr);
-  PERIPHERAL_IRQS_TRIGGER(
-      entropy_src, entropy_src, kTopEarlgreyPlicPeripheralEntropySrc,
-      kDifEntropySrcIrqEsEntropyValid, kDifEntropySrcIrqEsFatalErr);
-  // PERIPHERAL_IRQS_TRIGGER(flash_ctrl, flash_ctrl,
-  // kTopEarlgreyPlicPeripheralFlashCtrl,
-  //                         kDifFlashCtrlIrqProgEmpty,
-  //                         kDifFlashCtrlIrqCorrErr);
-  PERIPHERAL_IRQS_TRIGGER(gpio, gpio, kTopEarlgreyPlicPeripheralGpio,
-                          kDifGpioIrqGpio0, kDifGpioIrqGpio31);
-  PERIPHERAL_IRQS_TRIGGER(hmac, hmac, kTopEarlgreyPlicPeripheralHmac,
-                          kDifHmacIrqHmacDone, kDifHmacIrqHmacErr);
-  PERIPHERAL_IRQS_TRIGGER(i2c, i2c0, kTopEarlgreyPlicPeripheralI2c0,
-                          kDifI2cIrqFmtWatermark, kDifI2cIrqHostTimeout);
-  PERIPHERAL_IRQS_TRIGGER(i2c, i2c1, kTopEarlgreyPlicPeripheralI2c1,
-                          kDifI2cIrqFmtWatermark, kDifI2cIrqHostTimeout);
-  PERIPHERAL_IRQS_TRIGGER(i2c, i2c2, kTopEarlgreyPlicPeripheralI2c2,
-                          kDifI2cIrqFmtWatermark, kDifI2cIrqHostTimeout);
-  PERIPHERAL_IRQS_TRIGGER(keymgr, keymgr, kTopEarlgreyPlicPeripheralKeymgr,
-                          kDifKeymgrIrqOpDone, kDifKeymgrIrqOpDone);
-  PERIPHERAL_IRQS_TRIGGER(kmac, kmac, kTopEarlgreyPlicPeripheralKmac,
-                          kDifKmacIrqKmacDone, kDifKmacIrqKmacErr);
-  PERIPHERAL_IRQS_TRIGGER(otbn, otbn, kTopEarlgreyPlicPeripheralOtbn,
-                          kDifOtbnIrqDone, kDifOtbnIrqDone);
-  PERIPHERAL_IRQS_TRIGGER(otp_ctrl, otp_ctrl, kTopEarlgreyPlicPeripheralOtpCtrl,
-                          kDifOtpCtrlIrqOtpOperationDone,
-                          kDifOtpCtrlIrqOtpError);
-  // PERIPHERAL_IRQS_TRIGGER(pattgen, pattgen,
-  // kTopEarlgreyPlicPeripheralPattgen,
-  //                         kDifPattgenIrqDoneCh0, kDifPattgenIrqDoneCh1);
-  PERIPHERAL_IRQS_TRIGGER(pwrmgr, pwrmgr_aon,
-                          kTopEarlgreyPlicPeripheralPwrmgrAon,
-                          kDifPwrmgrIrqWakeup, kDifPwrmgrIrqWakeup);
-  // PERIPHERAL_IRQS_TRIGGER(rv_timer, rv_timer,
-  // kTopEarlgreyPlicPeripheralRvTimer,
-  //                         kDifRvTimerIrqTimerExpiredHart0Timer0,
-  //                         kDifRvTimerIrqTimerExpiredHart0Timer0);
-  PERIPHERAL_IRQS_TRIGGER(
-      spi_device, spi_device, kTopEarlgreyPlicPeripheralSpiDevice,
-      kDifSpiDeviceIrqRxFull, kDifSpiDeviceIrqTpmHeaderNotEmpty);
-  // PERIPHERAL_IRQS_TRIGGER(spi_host, spi_host0,
-  // kTopEarlgreyPlicPeripheralSpiHost0,
-  //                         kDifSpiHostIrqError, kDifSpiHostIrqSpiEvent);
-  // PERIPHERAL_IRQS_TRIGGER(spi_host, spi_host1,
-  // kTopEarlgreyPlicPeripheralSpiHost1,
-  //                         kDifSpiHostIrqError, kDifSpiHostIrqSpiEvent);
-  // PERIPHERAL_IRQS_TRIGGER(sysrst_ctrl, sysrst_ctrl_aon,
-  // kTopEarlgreyPlicPeripheralSysrstCtrlAon,
-  //                         kDifSysrstCtrlIrqSysrstCtrl,
-  //                         kDifSysrstCtrlIrqSysrstCtrl);
-  PERIPHERAL_IRQS_TRIGGER(uart, uart0, kTopEarlgreyPlicPeripheralUart0,
-                          kDifUartIrqTxWatermark, kDifUartIrqRxParityErr);
-  PERIPHERAL_IRQS_TRIGGER(uart, uart1, kTopEarlgreyPlicPeripheralUart1,
-                          kDifUartIrqTxWatermark, kDifUartIrqRxParityErr);
-  PERIPHERAL_IRQS_TRIGGER(uart, uart2, kTopEarlgreyPlicPeripheralUart2,
-                          kDifUartIrqTxWatermark, kDifUartIrqRxParityErr);
-  PERIPHERAL_IRQS_TRIGGER(uart, uart3, kTopEarlgreyPlicPeripheralUart3,
-                          kDifUartIrqTxWatermark, kDifUartIrqRxParityErr);
-  PERIPHERAL_IRQS_TRIGGER(usbdev, usbdev, kTopEarlgreyPlicPeripheralUsbdev,
-                          kDifUsbdevIrqPktReceived, kDifUsbdevIrqLinkOutErr);
+  peripheral_expected = kTopEarlgreyPlicPeripheralAdcCtrlAon;
+  for (dif_adc_ctrl_irq_t irq = kDifAdcCtrlIrqDebugCable;
+       irq <= kDifAdcCtrlIrqDebugCable; ++irq) {
+    adc_ctrl_irq_expected = irq;
+    LOG_INFO("Triggering adc_ctrl_aon IRQ %d.", irq);
+    CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq));
+
+    CHECK(adc_ctrl_irq_serviced == irq,
+          "Incorrect adc_ctrl_aon IRQ serviced: exp = %d, obs = %d", irq,
+          adc_ctrl_irq_serviced);
+    LOG_INFO("IRQ %d from adc_ctrl_aon is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralAlertHandler;
+  for (dif_alert_handler_irq_t irq = kDifAlertHandlerIrqClassa;
+       irq <= kDifAlertHandlerIrqClassd; ++irq) {
+    alert_handler_irq_expected = irq;
+    LOG_INFO("Triggering alert_handler IRQ %d.", irq);
+    CHECK_DIF_OK(dif_alert_handler_irq_force(&alert_handler, irq));
+
+    CHECK(alert_handler_irq_serviced == irq,
+          "Incorrect alert_handler IRQ serviced: exp = %d, obs = %d", irq,
+          alert_handler_irq_serviced);
+    LOG_INFO("IRQ %d from alert_handler is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralAonTimerAon;
+  for (dif_aon_timer_irq_t irq = kDifAonTimerIrqWkupTimerExpired;
+       irq <= kDifAonTimerIrqWdogTimerBark; ++irq) {
+    aon_timer_irq_expected = irq;
+    LOG_INFO("Triggering aon_timer_aon IRQ %d.", irq);
+    CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq));
+
+    CHECK(aon_timer_irq_serviced == irq,
+          "Incorrect aon_timer_aon IRQ serviced: exp = %d, obs = %d", irq,
+          aon_timer_irq_serviced);
+    LOG_INFO("IRQ %d from aon_timer_aon is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralCsrng;
+  for (dif_csrng_irq_t irq = kDifCsrngIrqCsCmdReqDone;
+       irq <= kDifCsrngIrqCsFatalErr; ++irq) {
+    csrng_irq_expected = irq;
+    LOG_INFO("Triggering csrng IRQ %d.", irq);
+    CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq));
+
+    CHECK(csrng_irq_serviced == irq,
+          "Incorrect csrng IRQ serviced: exp = %d, obs = %d", irq,
+          csrng_irq_serviced);
+    LOG_INFO("IRQ %d from csrng is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralEdn0;
+  for (dif_edn_irq_t irq = kDifEdnIrqEdnCmdReqDone;
+       irq <= kDifEdnIrqEdnFatalErr; ++irq) {
+    edn_irq_expected = irq;
+    LOG_INFO("Triggering edn0 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_edn_irq_force(&edn0, irq));
+
+    CHECK(edn_irq_serviced == irq,
+          "Incorrect edn0 IRQ serviced: exp = %d, obs = %d", irq,
+          edn_irq_serviced);
+    LOG_INFO("IRQ %d from edn0 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralEdn1;
+  for (dif_edn_irq_t irq = kDifEdnIrqEdnCmdReqDone;
+       irq <= kDifEdnIrqEdnFatalErr; ++irq) {
+    edn_irq_expected = irq;
+    LOG_INFO("Triggering edn1 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_edn_irq_force(&edn1, irq));
+
+    CHECK(edn_irq_serviced == irq,
+          "Incorrect edn1 IRQ serviced: exp = %d, obs = %d", irq,
+          edn_irq_serviced);
+    LOG_INFO("IRQ %d from edn1 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralEntropySrc;
+  for (dif_entropy_src_irq_t irq = kDifEntropySrcIrqEsEntropyValid;
+       irq <= kDifEntropySrcIrqEsFatalErr; ++irq) {
+    entropy_src_irq_expected = irq;
+    LOG_INFO("Triggering entropy_src IRQ %d.", irq);
+    CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq));
+
+    CHECK(entropy_src_irq_serviced == irq,
+          "Incorrect entropy_src IRQ serviced: exp = %d, obs = %d", irq,
+          entropy_src_irq_serviced);
+    LOG_INFO("IRQ %d from entropy_src is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralFlashCtrl;
+  for (dif_flash_ctrl_irq_t irq = kDifFlashCtrlIrqProgEmpty;
+       irq <= kDifFlashCtrlIrqCorrErr; ++irq) {
+    flash_ctrl_irq_expected = irq;
+    LOG_INFO("Triggering flash_ctrl IRQ %d.", irq);
+    CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq));
+
+    CHECK(flash_ctrl_irq_serviced == irq,
+          "Incorrect flash_ctrl IRQ serviced: exp = %d, obs = %d", irq,
+          flash_ctrl_irq_serviced);
+    LOG_INFO("IRQ %d from flash_ctrl is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralGpio;
+  for (dif_gpio_irq_t irq = kDifGpioIrqGpio0; irq <= kDifGpioIrqGpio31; ++irq) {
+    gpio_irq_expected = irq;
+    LOG_INFO("Triggering gpio IRQ %d.", irq);
+    CHECK_DIF_OK(dif_gpio_irq_force(&gpio, irq));
+
+    CHECK(gpio_irq_serviced == irq,
+          "Incorrect gpio IRQ serviced: exp = %d, obs = %d", irq,
+          gpio_irq_serviced);
+    LOG_INFO("IRQ %d from gpio is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralHmac;
+  for (dif_hmac_irq_t irq = kDifHmacIrqHmacDone; irq <= kDifHmacIrqHmacErr;
+       ++irq) {
+    hmac_irq_expected = irq;
+    LOG_INFO("Triggering hmac IRQ %d.", irq);
+    CHECK_DIF_OK(dif_hmac_irq_force(&hmac, irq));
+
+    CHECK(hmac_irq_serviced == irq,
+          "Incorrect hmac IRQ serviced: exp = %d, obs = %d", irq,
+          hmac_irq_serviced);
+    LOG_INFO("IRQ %d from hmac is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralI2c0;
+  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark; irq <= kDifI2cIrqHostTimeout;
+       ++irq) {
+    i2c_irq_expected = irq;
+    LOG_INFO("Triggering i2c0 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq));
+
+    CHECK(i2c_irq_serviced == irq,
+          "Incorrect i2c0 IRQ serviced: exp = %d, obs = %d", irq,
+          i2c_irq_serviced);
+    LOG_INFO("IRQ %d from i2c0 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralI2c1;
+  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark; irq <= kDifI2cIrqHostTimeout;
+       ++irq) {
+    i2c_irq_expected = irq;
+    LOG_INFO("Triggering i2c1 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq));
+
+    CHECK(i2c_irq_serviced == irq,
+          "Incorrect i2c1 IRQ serviced: exp = %d, obs = %d", irq,
+          i2c_irq_serviced);
+    LOG_INFO("IRQ %d from i2c1 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralI2c2;
+  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark; irq <= kDifI2cIrqHostTimeout;
+       ++irq) {
+    i2c_irq_expected = irq;
+    LOG_INFO("Triggering i2c2 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq));
+
+    CHECK(i2c_irq_serviced == irq,
+          "Incorrect i2c2 IRQ serviced: exp = %d, obs = %d", irq,
+          i2c_irq_serviced);
+    LOG_INFO("IRQ %d from i2c2 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralKeymgr;
+  for (dif_keymgr_irq_t irq = kDifKeymgrIrqOpDone; irq <= kDifKeymgrIrqOpDone;
+       ++irq) {
+    keymgr_irq_expected = irq;
+    LOG_INFO("Triggering keymgr IRQ %d.", irq);
+    CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq));
+
+    CHECK(keymgr_irq_serviced == irq,
+          "Incorrect keymgr IRQ serviced: exp = %d, obs = %d", irq,
+          keymgr_irq_serviced);
+    LOG_INFO("IRQ %d from keymgr is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralKmac;
+  for (dif_kmac_irq_t irq = kDifKmacIrqKmacDone; irq <= kDifKmacIrqKmacErr;
+       ++irq) {
+    kmac_irq_expected = irq;
+    LOG_INFO("Triggering kmac IRQ %d.", irq);
+    CHECK_DIF_OK(dif_kmac_irq_force(&kmac, irq));
+
+    CHECK(kmac_irq_serviced == irq,
+          "Incorrect kmac IRQ serviced: exp = %d, obs = %d", irq,
+          kmac_irq_serviced);
+    LOG_INFO("IRQ %d from kmac is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralOtbn;
+  for (dif_otbn_irq_t irq = kDifOtbnIrqDone; irq <= kDifOtbnIrqDone; ++irq) {
+    otbn_irq_expected = irq;
+    LOG_INFO("Triggering otbn IRQ %d.", irq);
+    CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq));
+
+    CHECK(otbn_irq_serviced == irq,
+          "Incorrect otbn IRQ serviced: exp = %d, obs = %d", irq,
+          otbn_irq_serviced);
+    LOG_INFO("IRQ %d from otbn is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralOtpCtrl;
+  for (dif_otp_ctrl_irq_t irq = kDifOtpCtrlIrqOtpOperationDone;
+       irq <= kDifOtpCtrlIrqOtpError; ++irq) {
+    otp_ctrl_irq_expected = irq;
+    LOG_INFO("Triggering otp_ctrl IRQ %d.", irq);
+    CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq));
+
+    CHECK(otp_ctrl_irq_serviced == irq,
+          "Incorrect otp_ctrl IRQ serviced: exp = %d, obs = %d", irq,
+          otp_ctrl_irq_serviced);
+    LOG_INFO("IRQ %d from otp_ctrl is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralPattgen;
+  for (dif_pattgen_irq_t irq = kDifPattgenIrqDoneCh0;
+       irq <= kDifPattgenIrqDoneCh1; ++irq) {
+    pattgen_irq_expected = irq;
+    LOG_INFO("Triggering pattgen IRQ %d.", irq);
+    CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq));
+
+    CHECK(pattgen_irq_serviced == irq,
+          "Incorrect pattgen IRQ serviced: exp = %d, obs = %d", irq,
+          pattgen_irq_serviced);
+    LOG_INFO("IRQ %d from pattgen is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralPwrmgrAon;
+  for (dif_pwrmgr_irq_t irq = kDifPwrmgrIrqWakeup; irq <= kDifPwrmgrIrqWakeup;
+       ++irq) {
+    pwrmgr_irq_expected = irq;
+    LOG_INFO("Triggering pwrmgr_aon IRQ %d.", irq);
+    CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq));
+
+    CHECK(pwrmgr_irq_serviced == irq,
+          "Incorrect pwrmgr_aon IRQ serviced: exp = %d, obs = %d", irq,
+          pwrmgr_irq_serviced);
+    LOG_INFO("IRQ %d from pwrmgr_aon is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralRvTimer;
+  for (dif_rv_timer_irq_t irq = kDifRvTimerIrqTimerExpiredHart0Timer0;
+       irq <= kDifRvTimerIrqTimerExpiredHart0Timer0; ++irq) {
+    rv_timer_irq_expected = irq;
+    LOG_INFO("Triggering rv_timer IRQ %d.", irq);
+    CHECK_DIF_OK(dif_rv_timer_irq_force(&rv_timer, irq));
+
+    CHECK(rv_timer_irq_serviced == irq,
+          "Incorrect rv_timer IRQ serviced: exp = %d, obs = %d", irq,
+          rv_timer_irq_serviced);
+    LOG_INFO("IRQ %d from rv_timer is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralSpiDevice;
+  for (dif_spi_device_irq_t irq = kDifSpiDeviceIrqRxFull;
+       irq <= kDifSpiDeviceIrqTpmHeaderNotEmpty; ++irq) {
+    spi_device_irq_expected = irq;
+    LOG_INFO("Triggering spi_device IRQ %d.", irq);
+    CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq));
+
+    CHECK(spi_device_irq_serviced == irq,
+          "Incorrect spi_device IRQ serviced: exp = %d, obs = %d", irq,
+          spi_device_irq_serviced);
+    LOG_INFO("IRQ %d from spi_device is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralSpiHost0;
+  for (dif_spi_host_irq_t irq = kDifSpiHostIrqError;
+       irq <= kDifSpiHostIrqSpiEvent; ++irq) {
+    spi_host_irq_expected = irq;
+    LOG_INFO("Triggering spi_host0 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq));
+
+    CHECK(spi_host_irq_serviced == irq,
+          "Incorrect spi_host0 IRQ serviced: exp = %d, obs = %d", irq,
+          spi_host_irq_serviced);
+    LOG_INFO("IRQ %d from spi_host0 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralSpiHost1;
+  for (dif_spi_host_irq_t irq = kDifSpiHostIrqError;
+       irq <= kDifSpiHostIrqSpiEvent; ++irq) {
+    spi_host_irq_expected = irq;
+    LOG_INFO("Triggering spi_host1 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq));
+
+    CHECK(spi_host_irq_serviced == irq,
+          "Incorrect spi_host1 IRQ serviced: exp = %d, obs = %d", irq,
+          spi_host_irq_serviced);
+    LOG_INFO("IRQ %d from spi_host1 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralSysrstCtrlAon;
+  for (dif_sysrst_ctrl_irq_t irq = kDifSysrstCtrlIrqSysrstCtrl;
+       irq <= kDifSysrstCtrlIrqSysrstCtrl; ++irq) {
+    sysrst_ctrl_irq_expected = irq;
+    LOG_INFO("Triggering sysrst_ctrl_aon IRQ %d.", irq);
+    CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq));
+
+    CHECK(sysrst_ctrl_irq_serviced == irq,
+          "Incorrect sysrst_ctrl_aon IRQ serviced: exp = %d, obs = %d", irq,
+          sysrst_ctrl_irq_serviced);
+    LOG_INFO("IRQ %d from sysrst_ctrl_aon is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralUart0;
+  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
+       irq <= kDifUartIrqRxParityErr; ++irq) {
+    uart_irq_expected = irq;
+    LOG_INFO("Triggering uart0 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq));
+
+    CHECK(uart_irq_serviced == irq,
+          "Incorrect uart0 IRQ serviced: exp = %d, obs = %d", irq,
+          uart_irq_serviced);
+    LOG_INFO("IRQ %d from uart0 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralUart1;
+  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
+       irq <= kDifUartIrqRxParityErr; ++irq) {
+    uart_irq_expected = irq;
+    LOG_INFO("Triggering uart1 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq));
+
+    CHECK(uart_irq_serviced == irq,
+          "Incorrect uart1 IRQ serviced: exp = %d, obs = %d", irq,
+          uart_irq_serviced);
+    LOG_INFO("IRQ %d from uart1 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralUart2;
+  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
+       irq <= kDifUartIrqRxParityErr; ++irq) {
+    uart_irq_expected = irq;
+    LOG_INFO("Triggering uart2 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq));
+
+    CHECK(uart_irq_serviced == irq,
+          "Incorrect uart2 IRQ serviced: exp = %d, obs = %d", irq,
+          uart_irq_serviced);
+    LOG_INFO("IRQ %d from uart2 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralUart3;
+  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
+       irq <= kDifUartIrqRxParityErr; ++irq) {
+    uart_irq_expected = irq;
+    LOG_INFO("Triggering uart3 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq));
+
+    CHECK(uart_irq_serviced == irq,
+          "Incorrect uart3 IRQ serviced: exp = %d, obs = %d", irq,
+          uart_irq_serviced);
+    LOG_INFO("IRQ %d from uart3 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralUsbdev;
+  for (dif_usbdev_irq_t irq = kDifUsbdevIrqPktReceived;
+       irq <= kDifUsbdevIrqLinkOutErr; ++irq) {
+    usbdev_irq_expected = irq;
+    LOG_INFO("Triggering usbdev IRQ %d.", irq);
+    CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq));
+
+    CHECK(usbdev_irq_serviced == irq,
+          "Incorrect usbdev IRQ serviced: exp = %d, obs = %d", irq,
+          usbdev_irq_serviced);
+    LOG_INFO("IRQ %d from usbdev is serviced.", irq);
+  }
 }
 
 const test_config_t kTestConfig;
