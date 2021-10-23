@@ -252,12 +252,7 @@ module spi_host
   // Any qe pin from COMMAND will suffice.
   assign command_valid = |cmd_qes;
 
-  // TODO: Determine the correct way to trigger a command.
-  // The following assertion confirms that at lease in
-  // some cases, the writes to COMMAND are not atomic.
-  //
-  // Disabling this assertion for now
-  //`ASSERT(CmdAtomicity_A, &cmd_qes ^ |cmd_qes, clk_i, rst_ni);
+  `ASSERT(CmdAtomicity_A, ~(&cmd_qes ^ |cmd_qes), clk_i, rst_ni);
 
   logic active;
   logic rx_stall;

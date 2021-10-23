@@ -94,8 +94,6 @@ module spi_host_data_fifos #(
 
   assign rx_qd_o = 8'(rx_depth);
 
-  // TODO: update fifo_sync prim to allow unknown data
-  // (potentially optionally)
   prim_fifo_sync #(
     .Width(32),
     .Pass(1),

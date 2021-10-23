@@ -308,8 +308,9 @@
 
                Parameters specific to each command segment.  Unlike the `CONFIGOPTS` multi-register,
                there is only one command register for controlling all attached SPI devices''',
-      swaccess: "rw",
+      swaccess: "wo",
       hwaccess: "hro",
+      hwext: "true",
       hwqe: "true",
       fields: [
         { bits: "13:12",
