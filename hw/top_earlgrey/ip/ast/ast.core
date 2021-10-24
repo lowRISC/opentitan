@@ -18,6 +18,7 @@ filesets:
       - lowrisc:ip:pinmux_reg
       - lowrisc:ip:pinmux_component
       - lowrisc:prim:prim_pkg
+      - lowrisc:prim:mubi
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:rstmgr_pkg
@@ -40,6 +41,7 @@ filesets:
       - rtl/vio_pgd.sv
       - rtl/vcaon_pgd.sv
       - rtl/vcmain_pgd.sv
+      - rtl/gfr_clk_mux2.sv
       - rtl/io_clk.sv
       - rtl/io_osc.sv
       - rtl/rglts_pdm_3p3v.sv
@@ -48,7 +50,6 @@ filesets:
       - rtl/sys_osc.sv
       - rtl/usb_clk.sv
       - rtl/usb_osc.sv
-
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -79,6 +80,9 @@ parameters:
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
+  ANALOGSIM:
+    datatype: bool
+    paramtype: vlogdefine
 
 
 targets:
@@ -92,6 +96,7 @@ targets:
     parameters:
      - SYNTHESIS
      - AST_BYPASS_CLK
+     - ANALOGSIM
 
 
   lint:

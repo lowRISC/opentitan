@@ -189,13 +189,13 @@ module chip_earlgrey_verilator (
   ast_pkg::ast_alert_req_t ast_alert_req;
 
   // Flash connections
-  lc_ctrl_pkg::lc_tx_t flash_bist_enable;
+  prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
 
   // Life cycle clock bypass req/ack
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t ast_clk_byp_req;
+  prim_mubi_pkg::mubi4_t ast_clk_byp_ack;
 
   // DFT connections
   logic scan_en;
@@ -339,8 +339,11 @@ module chip_earlgrey_verilator (
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-    .lc_clk_byp_req_i      ( ast_clk_byp_req   ),
-    .lc_clk_byp_ack_o      ( ast_clk_byp_ack   ),
+    .ext_freq_is_96m_i     ( 1'b0 ),                       // TODO Tim
+    .all_clk_byp_req_i     ( prim_mubi_pkg::MuBi4False ),  // TODO Tim
+    .all_clk_byp_ack_o     (  ),                           // TODO Tim
+    .io_clk_byp_req_i      ( ast_clk_byp_req   ),          // TODO Tim
+    .io_clk_byp_ack_o      ( ast_clk_byp_ack   ),          // TODO Tim
     .flash_bist_en_o       ( flash_bist_enable ),
     // scan
     .dft_scan_md_o         ( scanmode ),
@@ -377,7 +380,7 @@ module chip_earlgrey_verilator (
     mio_pad_type: {pinmux_reg_pkg::NMioPads{prim_pad_wrapper_pkg::BidirStd}}
   };
 
-  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
+  prim_mubi_pkg::mubi4_t lc_clk_bypass;
 
 
   // Top-level design

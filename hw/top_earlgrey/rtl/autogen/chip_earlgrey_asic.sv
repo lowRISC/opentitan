@@ -246,7 +246,7 @@ module chip_earlgrey_asic (
 
   // AST signals needed in padring
   logic scan_rst_n;
-  lc_ctrl_pkg::lc_tx_t scanmode;
+   prim_mubi_pkg::mubi4_t scanmode;
 
   padring #(
     // Padring specific counts may differ from pinmux config due
@@ -734,13 +734,13 @@ module chip_earlgrey_asic (
   ast_pkg::ast_alert_req_t ast_alert_req;
 
   // Flash connections
-  lc_ctrl_pkg::lc_tx_t flash_bist_enable;
+  prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
 
   // Life cycle clock bypass req/ack
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t ast_clk_byp_req;
+  prim_mubi_pkg::mubi4_t ast_clk_byp_ack;
 
   // DFT connections
   logic scan_en;
@@ -946,8 +946,11 @@ module chip_earlgrey_asic (
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-    .lc_clk_byp_req_i      ( ast_clk_byp_req   ),
-    .lc_clk_byp_ack_o      ( ast_clk_byp_ack   ),
+    .ext_freq_is_96m_i     ( 1'b0 ),                       // TODO Tim
+    .all_clk_byp_req_i     ( prim_mubi_pkg::MuBi4False ),  // TODO Tim
+    .all_clk_byp_ack_o     (  ),                           // TODO Tim
+    .io_clk_byp_req_i      ( ast_clk_byp_req   ),          // TODO Tim
+    .io_clk_byp_ack_o      ( ast_clk_byp_ack   ),          // TODO Tim
     .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
