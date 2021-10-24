@@ -14,7 +14,7 @@ module ast #(
   parameter int unsigned EntropyStreams  = 4,
   parameter int unsigned UsbCalibWidth   = 20,
   parameter int unsigned Ast2PadOutWidth = 9,
-  parameter int unsigned Pad2AstInWidth  = 6
+  parameter int unsigned Pad2AstInWidth  = 7
 ) (
   // tlul if
   input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D
@@ -129,10 +129,13 @@ module ast #(
   output ast_pkg::awire_t ast2pad_t0_ao,      // AST_2_PAD Analog T0 Output Signal
   output ast_pkg::awire_t ast2pad_t1_ao,      // AST_2_PAD Analog T1 Output Signal
 
-  // flash and otp clock
-  input  lc_ctrl_pkg::lc_tx_t lc_clk_byp_req_i, // External clock mux override for OTP bootstrap
-  output lc_ctrl_pkg::lc_tx_t lc_clk_byp_ack_o, // Switch clocks to External clock
-  output lc_ctrl_pkg::lc_tx_t flash_bist_en_o,  // Flush BIST (TAP) Enable
+  // flash and external clocks
+  input ext_freq_is_96m_i,                          // External clock frequecy is 96MHz
+  input prim_mubi_pkg::mubi4_t all_clk_byp_req_i,   // All clocks bypass request
+  output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o,  // Switch all clocks to External clocks
+  input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // IO clock bypass request (for OTP bootstrap)
+  output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,   // Switch IO clock to External clockn
+  output prim_mubi_pkg::mubi4_t flash_bist_en_o,    // Flush BIST (TAP) Enable
 
   // memories read-write margins
   output ast_pkg::dpm_rm_t dpram_rmf_o,       // Dual Port RAM Read-write Margin Fast
@@ -142,9 +145,9 @@ module ast #(
   output ast_pkg::spm_rm_t sprom_rm_o,        // Single Port ROM Read-write Margin
 
   // Scan interface
-  output lc_ctrl_pkg::lc_tx_t dft_scan_md_o,  // Scan Mode output
-  output scan_shift_en_o,                     // Scan Shift Enable output
-  output scan_reset_no                        // Scan Reset output
+  output prim_mubi_pkg::mubi4_t dft_scan_md_o,  // Scan Mode output
+  output scan_shift_en_o,                       // Scan Shift Enable output
+  output scan_reset_no                          // Scan Reset output
 );
 
 import ast_pkg::* ;
@@ -158,9 +161,9 @@ logic vcmain_pok, vcmain_pok_h, vcaon_pok_por;
 assign scan_reset_n = scan_reset_no;
 
 
-assign flash_bist_en_o  = lc_ctrl_pkg::Off;
+assign flash_bist_en_o  = prim_mubi_pkg::MuBi4False;
 //
-assign dft_scan_md_o    = lc_ctrl_pkg::Off;
+assign dft_scan_md_o    = prim_mubi_pkg::MuBi4False;
 assign scan_mode        = 1'b0;
 assign scan_shift_en_o  = 1'b0;
 assign scan_reset_no    = 1'b1;
@@ -181,10 +184,10 @@ vcc_pgd u_vcc_pok (
 
 assign vcc_pok = vcc_pok_int && vcc_supp_i;
 assign vcc_pok_h = vcc_pok;     // "Level Shifter"
+
+assign ast_pwst_o.vcc_pok   = vcc_pok;
 assign ast_pwst_h_o.vcc_pok = vcc_pok_h;
 
-// TODO: double check this.
-assign ast_pwst_o.vcc_pok = vcc_pok;
 
 ///////////////////////////////////////
 // VCAON POK (Always ON)
@@ -231,11 +234,11 @@ vcmain_pgd u_vcmain_pok (
 
 assign vcmain_pok = vcmain_pok_int && vcmain_supp_i && main_pwr_dly_o ;
 assign vcmain_pok_h = vcmain_pok;   // Level Shifter
-assign ast_pwst_h_o.main_pok = vcmain_pok_h;
 
 // assign ast_pwst_o.main_pok = ast_pwst_o.aon_pok && vcmain_pok && pwr_switch_done_i;
 assign vcmain_pok_por = vcaon_pok_por && vcmain_pok;
-assign ast_pwst_o.main_pok = vcmain_pok_por;
+assign ast_pwst_o.main_pok   = vcmain_pok_por;
+assign ast_pwst_h_o.main_pok = vcmain_pok_h;
 
 
 ///////////////////////////////////////
@@ -297,6 +300,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
 // System Clock (Always ON)
 ///////////////////////////////////////
 logic rst_sys_clk_n, clk_sys_pd_n;
+logic clk_osc_sys, clk_osc_sys_val;
 `ifdef AST_BYPASS_CLK
 logic clk_sys_ext;
 
@@ -316,8 +320,8 @@ sys_clk u_sys_clk (
 `ifdef AST_BYPASS_CLK
   .clk_sys_ext_i ( clk_sys_ext ),
 `endif
-  .clk_src_sys_o ( clk_src_sys_o ),
-  .clk_src_sys_val_o ( clk_src_sys_val_o )
+  .clk_src_sys_o ( clk_osc_sys ),
+  .clk_src_sys_val_o ( clk_osc_sys_val )
 );  // of u_sys_clk
 
 // Local (AST) System clock buffer
@@ -337,6 +341,7 @@ prim_clock_buf u_clk_sys_buf (
 // USB Clock (Always ON)
 ///////////////////////////////////////
 logic rst_usb_clk_n, clk_usb_pd_n;
+logic clk_osc_usb, clk_osc_usb_val;
 `ifdef AST_BYPASS_CLK
 logic clk_usb_ext;
 
@@ -357,8 +362,8 @@ usb_clk u_usb_clk (
 `ifdef AST_BYPASS_CLK
   .clk_usb_ext_i ( clk_usb_ext ),
 `endif
-  .clk_src_usb_o ( clk_src_usb_o ),
-  .clk_src_usb_val_o ( clk_src_usb_val_o )
+  .clk_src_usb_o ( clk_osc_usb ),
+  .clk_src_usb_val_o ( clk_osc_usb_val )
 );  // of u_usb_clk
 
 
@@ -366,6 +371,7 @@ usb_clk u_usb_clk (
 // AON Clock (Always ON)
 ///////////////////////////////////////
 logic rst_aon_clk_n;
+logic  clk_osc_aon, clk_osc_aon_val;
 `ifdef AST_BYPASS_CLK
 logic clk_aon_ext;
 
@@ -383,8 +389,8 @@ aon_clk  u_aon_clk (
 `ifdef AST_BYPASS_CLK
   .clk_aon_ext_i ( clk_aon_ext ),
 `endif
-  .clk_src_aon_o ( clk_src_aon_o ),
-  .clk_src_aon_val_o ( clk_src_aon_val_o )
+  .clk_src_aon_o ( clk_osc_aon ),
+  .clk_src_aon_val_o ( clk_osc_aon_val )
 );  // of u_aon_clk
 
 // Local (AST) AON clock buffer
@@ -414,7 +420,8 @@ assign rst_vcmpp_aon_n = scan_mode ? scan_reset_n : vcmpp_aon_sync_n;
 ///////////////////////////////////////
 // IO Clock (Always ON)
 ///////////////////////////////////////
-logic clk_io_osc, clk_io_osc_val, rst_io_clk_n, clk_io_pd_n;
+logic rst_io_clk_n, clk_io_pd_n;
+logic clk_osc_io, clk_osc_io_val;
 `ifdef AST_BYPASS_CLK
 logic clk_io_ext;
 
@@ -433,8 +440,8 @@ io_clk u_io_clk (
 `ifdef AST_BYPASS_CLK
   .clk_io_ext_i ( clk_io_ext ),
 `endif
-  .clk_src_io_o ( clk_io_osc ),
-  .clk_src_io_val_o ( clk_io_osc_val )
+  .clk_src_io_o ( clk_osc_io ),
+  .clk_src_io_val_o ( clk_osc_io_val )
 );  // of u_io_clk
 
 
@@ -741,14 +748,29 @@ assign usb_io_pu_cal_o = (1 << (UsbCalibWidth[5-1:0]/2));
 ast_dft u_ast_dft (
   .clk_i ( clk_ast_tlul_i ),
   .rst_ni ( rst_ast_tlul_ni ),
-  .clk_io_osc_i ( clk_io_osc ),
-  .clk_io_osc_val_i ( clk_io_osc_val ),
-  .rst_io_clk_ni ( rst_io_clk_n ),
+  .vcaon_pok_i ( vcaon_pok ),
+  .clk_osc_sys_i ( clk_osc_sys ),
+  .clk_osc_sys_val_i ( clk_osc_sys_val ),
+  .clk_osc_io_i ( clk_osc_io ),
+  .clk_osc_io_val_i ( clk_osc_io_val ),
+  .clk_osc_usb_i ( clk_osc_usb ),
+  .clk_osc_usb_val_i ( clk_osc_usb_val ),
+  .clk_osc_aon_i ( clk_osc_aon ),
+  .clk_osc_aon_val_i ( clk_osc_aon_val ),
+  .all_clk_byp_req_i ( all_clk_byp_req_i ),
+  .io_clk_byp_req_i ( io_clk_byp_req_i ),
+  .ext_freq_is_96m_i ( ext_freq_is_96m_i ),
   .clk_ast_ext_i ( clk_ast_ext_i ),
-  .lc_clk_byp_req_i ( lc_clk_byp_req_i ),
+  .clk_src_sys_o ( clk_src_sys_o ),
+  .clk_src_sys_val_o ( clk_src_sys_val_o ),
   .clk_src_io_o ( clk_src_io_o ),
   .clk_src_io_val_o ( clk_src_io_val_o ),
-  .lc_clk_byp_ack_o ( lc_clk_byp_ack_o ),
+  .clk_src_usb_o ( clk_src_usb_o ),
+  .clk_src_usb_val_o ( clk_src_usb_val_o ),
+  .clk_src_aon_o ( clk_src_aon_o ),
+  .clk_src_aon_val_o ( clk_src_aon_val_o ),
+  .io_clk_byp_ack_o ( io_clk_byp_ack_o ),
+  .all_clk_byp_ack_o ( all_clk_byp_ack_o ),
   .dpram_rmf_o ( dpram_rmf_o ),
   .dpram_rml_o ( dpram_rml_o ),
   .spram_rm_o ( spram_rm_o ),
@@ -810,7 +832,7 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(EntropyReeqKnownO_A, entropy_req_o, clk_ast_es_i, rst_ast_es_ni)
 `ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
 `ASSERT_KNOWN(Ast2PadmuxKnownO_A, ast2padmux_o, clk_ast_tlul_i, rst_ast_tlul_ni)
-`ASSERT_KNOWN(LcClkBypAckEnKnownO_A, lc_clk_byp_ack_o, clk_ast_tlul_i, rst_ast_tlul_ni)  //TODO
+`ASSERT_KNOWN(LcClkBypAckEnKnownO_A, io_clk_byp_ack_o, clk_ast_tlul_i, rst_ast_tlul_ni)  //TODO
 `ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, rst_ast_tlul_ni)     //TODO
 `ASSERT_KNOWN(DpramRmfKnownO_A, dpram_rmf_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(DpramRmlKnownO_A, dpram_rml_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
@@ -839,7 +861,7 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         sns_rsts_i,
                         intg_err,
                         rst_vcmpp_aon_n,
-                        padmux2ast_i[5:0],
+                        padmux2ast_i[Pad2AstInWidth-1:0],
                         dft_strap_test_i.valid,
                         dft_strap_test_i.straps[1:0],
                         lc_dft_en_i[3:0],

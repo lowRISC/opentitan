@@ -12,28 +12,28 @@
 package ast_pkg;
 
   // Alerts
-  parameter int NumAlerts  = 13;
-  parameter int NumIoRails = 2;
-  parameter int AsSel      = 0;
-  parameter int CgSel      = 1;
-  parameter int GdSel      = 2;
-  parameter int TsHiSel    = 3;
-  parameter int TsLoSel    = 4;
-  parameter int FlaSel     = 5;
-  parameter int OtpSel     = 6;
-  parameter int Ot0Sel     = 7;
-  parameter int Ot1Sel     = 8;
-  parameter int Ot2Sel     = 9;
-  parameter int Ot3Sel     = 10;
-  parameter int Ot4Sel     = 11;
-  parameter int Ot5Sel     = 12;
+  parameter int unsigned NumAlerts  = 13;
+  parameter int unsigned NumIoRails = 2;
+  parameter int unsigned AsSel      = 0;
+  parameter int unsigned CgSel      = 1;
+  parameter int unsigned GdSel      = 2;
+  parameter int unsigned TsHiSel    = 3;
+  parameter int unsigned TsLoSel    = 4;
+  parameter int unsigned FlaSel     = 5;
+  parameter int unsigned OtpSel     = 6;
+  parameter int unsigned Ot0Sel     = 7;
+  parameter int unsigned Ot1Sel     = 8;
+  parameter int unsigned Ot2Sel     = 9;
+  parameter int unsigned Ot3Sel     = 10;
+  parameter int unsigned Ot4Sel     = 11;
+  parameter int unsigned Ot5Sel     = 12;
   //
-  parameter int EntropyStreams  = 4;
-  parameter int AdcChannels     = 2;
-  parameter int AdcDataWidth    = 10;
-  parameter int UsbCalibWidth   = 16;
-  parameter int Ast2PadOutWidth = 9;
-  parameter int Pad2AstInWidth  = 7;
+  parameter int unsigned EntropyStreams  = 4;
+  parameter int unsigned AdcChannels     = 2;
+  parameter int unsigned AdcDataWidth    = 10;
+  parameter int unsigned UsbCalibWidth   = 20;
+  parameter int unsigned Ast2PadOutWidth = 9;
+  parameter int unsigned Pad2AstInWidth  = 7;
 
   // These LFSR parameters have been generated with
   // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""

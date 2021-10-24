@@ -383,7 +383,7 @@ module chip_earlgrey_nexysvideo #(
   ) u_padring (
   // This is only used for scan and DFT purposes
     .clk_scan_i   ( 1'b0                  ),
-    .scanmode_i   ( lc_ctrl_pkg::Off      ),
+    .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
     .dio_in_raw_o ( ),
     // Chip IOs
     .dio_pad_io ({
@@ -730,13 +730,13 @@ module chip_earlgrey_nexysvideo #(
   ast_pkg::ast_alert_req_t ast_alert_req;
 
   // Flash connections
-  lc_ctrl_pkg::lc_tx_t flash_bist_enable;
+  prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
 
   // Life cycle clock bypass req/ack
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t ast_clk_byp_req;
+  prim_mubi_pkg::mubi4_t ast_clk_byp_ack;
 
   // DFT connections
   logic scan_en;
@@ -945,8 +945,11 @@ module chip_earlgrey_nexysvideo #(
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-    .lc_clk_byp_req_i      ( ast_clk_byp_req   ),
-    .lc_clk_byp_ack_o      ( ast_clk_byp_ack   ),
+    .ext_freq_is_96m_i     ( 1'b0 ),                       // TODO Tim
+    .all_clk_byp_req_i     ( prim_mubi_pkg::MuBi4False ),  // TODO Tim
+    .all_clk_byp_ack_o     (  ),                           // TODO Tim
+    .io_clk_byp_req_i      ( ast_clk_byp_req   ),          // TODO Tim
+    .io_clk_byp_ack_o      ( ast_clk_byp_ack   ),          // TODO Tim
     .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
@@ -999,7 +1002,7 @@ module chip_earlgrey_nexysvideo #(
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
-  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
+  prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
 
 // TODO: align this with ASIC version to minimize the duplication.
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
@@ -1040,7 +1043,7 @@ module chip_earlgrey_nexysvideo #(
     .usbdev_usb_ref_pulse_o       ( usb_ref_val           ),
     .ast_edn_req_i                ( ast_edn_edn_req       ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
-    .flash_bist_enable_i          ( lc_ctrl_pkg::Off      ),
+    .flash_bist_enable_i          ( prim_mubi_pkg::MuBi4False ),
     .flash_power_down_h_i         ( 1'b0                  ),
     .flash_power_ready_h_i        ( 1'b1                  ),
     .ast_clk_byp_req_o            ( ast_clk_byp_req       ),
@@ -1085,7 +1088,7 @@ module chip_earlgrey_nexysvideo #(
     .dft_hold_tap_sel_i ( '0               ),
     .scan_rst_ni        ( 1'b1             ),
     .scan_en_i          ( 1'b0             ),
-    .scanmode_i         ( lc_ctrl_pkg::Off )
+    .scanmode_i         ( prim_mubi_pkg::MuBi4False )
   );
 
 
