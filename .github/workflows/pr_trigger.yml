@@ -13,15 +13,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: concatenate verible configs
         run: |
-          find . -type f -name '*.vbl' -exec cat {} \; > verible_config_raw
-      - name: preprocess configs
-        run: |
-          grep --color=never -v "^#\|^$" verible_config_raw > verible_config_stripped
-          # extract waivers
-          grep --color=never "waive" verible_config_stripped > verible_waiver
-          # extract configs
-          grep --color=never -v "waive" verible_config_stripped > verible_config
-      - name: Show config
+          find . -type f -name '*.rules.verible_lint' -exec cat {} \; > verible_config
+          find . -type f -name '*.vbl' -exec cat {} \; > verible_waiver
+      - name: Show config (rules)
         run: |
           cat verible_config
       - name: Show waiver
