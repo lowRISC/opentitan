@@ -1,11 +1,12 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+// clang-format off
 //
-// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !!
-// -------------------// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN
-// AUTO-GENERATED WITH THE FOLLOWING COMMAND: util/topgen.py -t
-// hw/top_earlgrey/data/top_earlgrey.hjson -o hw/top_earlgrey
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
+// -o hw/top_earlgrey
 
 #include "sw/device/lib/base/freestanding/limits.h"
 #include "sw/device/lib/base/mmio.h"
@@ -154,15 +155,14 @@ void handler_irq_external(void) {
 
   switch (peripheral) {
     // case kTopEarlgreyPlicPeripheralAdcCtrlAon:
-    //   PERIPHERAL_ISR(adc_ctrl, adc_ctrl_aon,
-    //   kTopEarlgreyPlicIrqIdAdcCtrlAonDebugCable); break;
+    //   PERIPHERAL_ISR(adc_ctrl, adc_ctrl_aon, kTopEarlgreyPlicIrqIdAdcCtrlAonDebugCable);
+    //   break;
     case kTopEarlgreyPlicPeripheralAlertHandler:
-      PERIPHERAL_ISR(alert_handler, alert_handler,
-                     kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+      PERIPHERAL_ISR(alert_handler, alert_handler, kTopEarlgreyPlicIrqIdAlertHandlerClassa);
       break;
     // case kTopEarlgreyPlicPeripheralAonTimerAon:
-    //   PERIPHERAL_ISR(aon_timer, aon_timer_aon,
-    //   kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired); break;
+    //   PERIPHERAL_ISR(aon_timer, aon_timer_aon, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+    //   break;
     case kTopEarlgreyPlicPeripheralCsrng:
       PERIPHERAL_ISR(csrng, csrng, kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
       break;
@@ -173,12 +173,11 @@ void handler_irq_external(void) {
       PERIPHERAL_ISR(edn, edn1, kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone);
       break;
     case kTopEarlgreyPlicPeripheralEntropySrc:
-      PERIPHERAL_ISR(entropy_src, entropy_src,
-                     kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid);
+      PERIPHERAL_ISR(entropy_src, entropy_src, kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid);
       break;
     // case kTopEarlgreyPlicPeripheralFlashCtrl:
-    //   PERIPHERAL_ISR(flash_ctrl, flash_ctrl,
-    //   kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty); break;
+    //   PERIPHERAL_ISR(flash_ctrl, flash_ctrl, kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty);
+    //   break;
     case kTopEarlgreyPlicPeripheralGpio:
       PERIPHERAL_ISR(gpio, gpio, kTopEarlgreyPlicIrqIdGpioGpio0);
       break;
@@ -204,8 +203,7 @@ void handler_irq_external(void) {
       PERIPHERAL_ISR(otbn, otbn, kTopEarlgreyPlicIrqIdOtbnDone);
       break;
     case kTopEarlgreyPlicPeripheralOtpCtrl:
-      PERIPHERAL_ISR(otp_ctrl, otp_ctrl,
-                     kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone);
+      PERIPHERAL_ISR(otp_ctrl, otp_ctrl, kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone);
       break;
     // case kTopEarlgreyPlicPeripheralPattgen:
     //   PERIPHERAL_ISR(pattgen, pattgen, kTopEarlgreyPlicIrqIdPattgenDoneCh0);
@@ -214,21 +212,20 @@ void handler_irq_external(void) {
       PERIPHERAL_ISR(pwrmgr, pwrmgr_aon, kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
       break;
     // case kTopEarlgreyPlicPeripheralRvTimer:
-    //   PERIPHERAL_ISR(rv_timer, rv_timer,
-    //   kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0); break;
+    //   PERIPHERAL_ISR(rv_timer, rv_timer, kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0);
+    //   break;
     case kTopEarlgreyPlicPeripheralSpiDevice:
-      PERIPHERAL_ISR(spi_device, spi_device,
-                     kTopEarlgreyPlicIrqIdSpiDeviceRxFull);
+      PERIPHERAL_ISR(spi_device, spi_device, kTopEarlgreyPlicIrqIdSpiDeviceRxFull);
       break;
     // case kTopEarlgreyPlicPeripheralSpiHost0:
-    //   PERIPHERAL_ISR(spi_host, spi_host0,
-    //   kTopEarlgreyPlicIrqIdSpiHost0Error); break;
+    //   PERIPHERAL_ISR(spi_host, spi_host0, kTopEarlgreyPlicIrqIdSpiHost0Error);
+    //   break;
     // case kTopEarlgreyPlicPeripheralSpiHost1:
-    //   PERIPHERAL_ISR(spi_host, spi_host1,
-    //   kTopEarlgreyPlicIrqIdSpiHost1Error); break;
+    //   PERIPHERAL_ISR(spi_host, spi_host1, kTopEarlgreyPlicIrqIdSpiHost1Error);
+    //   break;
     // case kTopEarlgreyPlicPeripheralSysrstCtrlAon:
-    //   PERIPHERAL_ISR(sysrst_ctrl, sysrst_ctrl_aon,
-    //   kTopEarlgreyPlicIrqIdSysrstCtrlAonSysrstCtrl); break;
+    //   PERIPHERAL_ISR(sysrst_ctrl, sysrst_ctrl_aon, kTopEarlgreyPlicIrqIdSysrstCtrlAonSysrstCtrl);
+    //   break;
     case kTopEarlgreyPlicPeripheralUart0:
       PERIPHERAL_ISR(uart, uart0, kTopEarlgreyPlicIrqIdUart0TxWatermark);
       break;
@@ -257,18 +254,14 @@ void handler_irq_external(void) {
  * Initializes the handles to all peripherals.
  */
 static void peripherals_init(void) {
-  // PERIPHERAL_INIT(adc_ctrl, adc_ctrl_aon,
-  // TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
-  PERIPHERAL_INIT(alert_handler, alert_handler,
-                  TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
-  // PERIPHERAL_INIT(aon_timer, aon_timer_aon,
-  // TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
+  // PERIPHERAL_INIT(adc_ctrl, adc_ctrl_aon, TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
+  PERIPHERAL_INIT(alert_handler, alert_handler, TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+  // PERIPHERAL_INIT(aon_timer, aon_timer_aon, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
   PERIPHERAL_INIT(csrng, csrng, TOP_EARLGREY_CSRNG_BASE_ADDR);
   PERIPHERAL_INIT(edn, edn0, TOP_EARLGREY_EDN0_BASE_ADDR);
   PERIPHERAL_INIT(edn, edn1, TOP_EARLGREY_EDN1_BASE_ADDR);
   PERIPHERAL_INIT(entropy_src, entropy_src, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
-  // PERIPHERAL_INIT(flash_ctrl, flash_ctrl,
-  // TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
+  // PERIPHERAL_INIT(flash_ctrl, flash_ctrl, TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
   PERIPHERAL_INIT(gpio, gpio, TOP_EARLGREY_GPIO_BASE_ADDR);
   PERIPHERAL_INIT(hmac, hmac, TOP_EARLGREY_HMAC_BASE_ADDR);
   PERIPHERAL_INIT(i2c, i2c0, TOP_EARLGREY_I2C0_BASE_ADDR);
@@ -284,8 +277,7 @@ static void peripherals_init(void) {
   PERIPHERAL_INIT(spi_device, spi_device, TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
   // PERIPHERAL_INIT(spi_host, spi_host0, TOP_EARLGREY_SPI_HOST0_BASE_ADDR);
   // PERIPHERAL_INIT(spi_host, spi_host1, TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
-  // PERIPHERAL_INIT(sysrst_ctrl, sysrst_ctrl_aon,
-  // TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
+  // PERIPHERAL_INIT(sysrst_ctrl, sysrst_ctrl_aon, TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
   PERIPHERAL_INIT(uart, uart0, TOP_EARLGREY_UART0_BASE_ADDR);
   PERIPHERAL_INIT(uart, uart1, TOP_EARLGREY_UART1_BASE_ADDR);
   PERIPHERAL_INIT(uart, uart2, TOP_EARLGREY_UART2_BASE_ADDR);
@@ -376,30 +368,22 @@ static void peripheral_irqs_enable(void) {
  * jumps into checks if the correct interrupt from the right instance triggered.
  */
 static void peripheral_irqs_trigger(void) {
-  // PERIPHERAL_IRQS_TRIGGER(adc_ctrl, adc_ctrl_aon,
-  // kTopEarlgreyPlicPeripheralAdcCtrlAon,
-  //                         kDifAdcCtrlIrqDebugCable,
-  //                         kDifAdcCtrlIrqDebugCable);
-  PERIPHERAL_IRQS_TRIGGER(alert_handler, alert_handler,
-                          kTopEarlgreyPlicPeripheralAlertHandler,
+  // PERIPHERAL_IRQS_TRIGGER(adc_ctrl, adc_ctrl_aon, kTopEarlgreyPlicPeripheralAdcCtrlAon,
+  //                         kDifAdcCtrlIrqDebugCable, kDifAdcCtrlIrqDebugCable);
+  PERIPHERAL_IRQS_TRIGGER(alert_handler, alert_handler, kTopEarlgreyPlicPeripheralAlertHandler,
                           kDifAlertHandlerIrqClassa, kDifAlertHandlerIrqClassd);
-  // PERIPHERAL_IRQS_TRIGGER(aon_timer, aon_timer_aon,
-  // kTopEarlgreyPlicPeripheralAonTimerAon,
-  //                         kDifAonTimerIrqWkupTimerExpired,
-  //                         kDifAonTimerIrqWdogTimerBark);
+  // PERIPHERAL_IRQS_TRIGGER(aon_timer, aon_timer_aon, kTopEarlgreyPlicPeripheralAonTimerAon,
+  //                         kDifAonTimerIrqWkupTimerExpired, kDifAonTimerIrqWdogTimerBark);
   PERIPHERAL_IRQS_TRIGGER(csrng, csrng, kTopEarlgreyPlicPeripheralCsrng,
                           kDifCsrngIrqCsCmdReqDone, kDifCsrngIrqCsFatalErr);
   PERIPHERAL_IRQS_TRIGGER(edn, edn0, kTopEarlgreyPlicPeripheralEdn0,
                           kDifEdnIrqEdnCmdReqDone, kDifEdnIrqEdnFatalErr);
   PERIPHERAL_IRQS_TRIGGER(edn, edn1, kTopEarlgreyPlicPeripheralEdn1,
                           kDifEdnIrqEdnCmdReqDone, kDifEdnIrqEdnFatalErr);
-  PERIPHERAL_IRQS_TRIGGER(
-      entropy_src, entropy_src, kTopEarlgreyPlicPeripheralEntropySrc,
-      kDifEntropySrcIrqEsEntropyValid, kDifEntropySrcIrqEsFatalErr);
-  // PERIPHERAL_IRQS_TRIGGER(flash_ctrl, flash_ctrl,
-  // kTopEarlgreyPlicPeripheralFlashCtrl,
-  //                         kDifFlashCtrlIrqProgEmpty,
-  //                         kDifFlashCtrlIrqCorrErr);
+  PERIPHERAL_IRQS_TRIGGER(entropy_src, entropy_src, kTopEarlgreyPlicPeripheralEntropySrc,
+                          kDifEntropySrcIrqEsEntropyValid, kDifEntropySrcIrqEsFatalErr);
+  // PERIPHERAL_IRQS_TRIGGER(flash_ctrl, flash_ctrl, kTopEarlgreyPlicPeripheralFlashCtrl,
+  //                         kDifFlashCtrlIrqProgEmpty, kDifFlashCtrlIrqCorrErr);
   PERIPHERAL_IRQS_TRIGGER(gpio, gpio, kTopEarlgreyPlicPeripheralGpio,
                           kDifGpioIrqGpio0, kDifGpioIrqGpio31);
   PERIPHERAL_IRQS_TRIGGER(hmac, hmac, kTopEarlgreyPlicPeripheralHmac,
@@ -417,31 +401,21 @@ static void peripheral_irqs_trigger(void) {
   PERIPHERAL_IRQS_TRIGGER(otbn, otbn, kTopEarlgreyPlicPeripheralOtbn,
                           kDifOtbnIrqDone, kDifOtbnIrqDone);
   PERIPHERAL_IRQS_TRIGGER(otp_ctrl, otp_ctrl, kTopEarlgreyPlicPeripheralOtpCtrl,
-                          kDifOtpCtrlIrqOtpOperationDone,
-                          kDifOtpCtrlIrqOtpError);
-  // PERIPHERAL_IRQS_TRIGGER(pattgen, pattgen,
-  // kTopEarlgreyPlicPeripheralPattgen,
+                          kDifOtpCtrlIrqOtpOperationDone, kDifOtpCtrlIrqOtpError);
+  // PERIPHERAL_IRQS_TRIGGER(pattgen, pattgen, kTopEarlgreyPlicPeripheralPattgen,
   //                         kDifPattgenIrqDoneCh0, kDifPattgenIrqDoneCh1);
-  PERIPHERAL_IRQS_TRIGGER(pwrmgr, pwrmgr_aon,
-                          kTopEarlgreyPlicPeripheralPwrmgrAon,
+  PERIPHERAL_IRQS_TRIGGER(pwrmgr, pwrmgr_aon, kTopEarlgreyPlicPeripheralPwrmgrAon,
                           kDifPwrmgrIrqWakeup, kDifPwrmgrIrqWakeup);
-  // PERIPHERAL_IRQS_TRIGGER(rv_timer, rv_timer,
-  // kTopEarlgreyPlicPeripheralRvTimer,
-  //                         kDifRvTimerIrqTimerExpiredHart0Timer0,
-  //                         kDifRvTimerIrqTimerExpiredHart0Timer0);
-  PERIPHERAL_IRQS_TRIGGER(
-      spi_device, spi_device, kTopEarlgreyPlicPeripheralSpiDevice,
-      kDifSpiDeviceIrqRxFull, kDifSpiDeviceIrqTpmHeaderNotEmpty);
-  // PERIPHERAL_IRQS_TRIGGER(spi_host, spi_host0,
-  // kTopEarlgreyPlicPeripheralSpiHost0,
+  // PERIPHERAL_IRQS_TRIGGER(rv_timer, rv_timer, kTopEarlgreyPlicPeripheralRvTimer,
+  //                         kDifRvTimerIrqTimerExpiredHart0Timer0, kDifRvTimerIrqTimerExpiredHart0Timer0);
+  PERIPHERAL_IRQS_TRIGGER(spi_device, spi_device, kTopEarlgreyPlicPeripheralSpiDevice,
+                          kDifSpiDeviceIrqRxFull, kDifSpiDeviceIrqTpmHeaderNotEmpty);
+  // PERIPHERAL_IRQS_TRIGGER(spi_host, spi_host0, kTopEarlgreyPlicPeripheralSpiHost0,
   //                         kDifSpiHostIrqError, kDifSpiHostIrqSpiEvent);
-  // PERIPHERAL_IRQS_TRIGGER(spi_host, spi_host1,
-  // kTopEarlgreyPlicPeripheralSpiHost1,
+  // PERIPHERAL_IRQS_TRIGGER(spi_host, spi_host1, kTopEarlgreyPlicPeripheralSpiHost1,
   //                         kDifSpiHostIrqError, kDifSpiHostIrqSpiEvent);
-  // PERIPHERAL_IRQS_TRIGGER(sysrst_ctrl, sysrst_ctrl_aon,
-  // kTopEarlgreyPlicPeripheralSysrstCtrlAon,
-  //                         kDifSysrstCtrlIrqSysrstCtrl,
-  //                         kDifSysrstCtrlIrqSysrstCtrl);
+  // PERIPHERAL_IRQS_TRIGGER(sysrst_ctrl, sysrst_ctrl_aon, kTopEarlgreyPlicPeripheralSysrstCtrlAon,
+  //                         kDifSysrstCtrlIrqSysrstCtrl, kDifSysrstCtrlIrqSysrstCtrl);
   PERIPHERAL_IRQS_TRIGGER(uart, uart0, kTopEarlgreyPlicPeripheralUart0,
                           kDifUartIrqTxWatermark, kDifUartIrqRxParityErr);
   PERIPHERAL_IRQS_TRIGGER(uart, uart1, kTopEarlgreyPlicPeripheralUart1,
@@ -460,10 +434,12 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
   peripherals_init();
-  rv_plic_testutils_irq_range_enable(
-      &plic, kHart, kTopEarlgreyPlicIrqIdNone + 1, kTopEarlgreyPlicIrqIdLast);
+  rv_plic_testutils_irq_range_enable(&plic, kHart,
+      kTopEarlgreyPlicIrqIdNone + 1, kTopEarlgreyPlicIrqIdLast);
   peripheral_irqs_clear();
   peripheral_irqs_enable();
   peripheral_irqs_trigger();
   return true;
 }
+
+// clang-format on

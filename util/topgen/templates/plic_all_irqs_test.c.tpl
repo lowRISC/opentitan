@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+// clang-format off
 ${gencmd}
 <%
 irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals})
@@ -147,3 +148,5 @@ bool test_main(void) {
   peripheral_irqs_trigger();
   return true;
 }
+
+// clang-format on
