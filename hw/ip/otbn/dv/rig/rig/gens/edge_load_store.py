@@ -97,7 +97,7 @@ class EdgeLoadStore(SnippetGen):
         snippet.insert_into_program(program)
         model.update_for_insn(prog_insn)
         model.pc += 4
-        return (snippet, False, model)
+        return (snippet, model)
 
     def fill_insn(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
         '''Try to pick one of BN.SID or SW instructions

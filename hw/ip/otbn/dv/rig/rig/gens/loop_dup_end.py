@@ -12,7 +12,7 @@ from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
 from ..snippet import Snippet
-from ..snippet_gen import GenCont, GenRet, SimpleGenRet
+from ..snippet_gen import GenCont, GenRet
 
 
 class LoopDupEndInner(Loop):
@@ -90,7 +90,7 @@ class LoopDupEnd(Loop):
                   bogus_insn: ProgInsn,
                   cont: GenCont,
                   model: Model,
-                  program: Program) -> Optional[SimpleGenRet]:
+                  program: Program) -> Optional[GenRet]:
         loop_end = model.pc + 4 * (bodysize - 1)
         cont = cont
         self.stack.append((loop_end, cont))
@@ -124,8 +124,7 @@ class LoopDupEnd(Loop):
         if ret is None:
             return None
 
-        snippet, done, model = ret
-        assert not done
+        snippet, model = ret
 
         # Add a bogus extra copy of the loop end address to model's loop stack
         # here. Then Loop's _gen_body implementation will pop the top one off,

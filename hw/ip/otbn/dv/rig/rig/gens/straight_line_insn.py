@@ -73,7 +73,7 @@ class StraightLineInsn(SnippetGen):
         snippet = ProgSnippet(pc, [prog_insn])
         snippet.insert_into_program(program)
 
-        return (snippet, False, model)
+        return (snippet, model)
 
     def gen_some(self,
                  count: int,

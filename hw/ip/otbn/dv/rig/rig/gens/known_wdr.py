@@ -121,4 +121,4 @@ class KnownWDR(SnippetGen):
 
         model.pc += 8
 
-        return (snippet, False, model)
+        return (snippet, model)

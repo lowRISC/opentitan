@@ -14,7 +14,7 @@ from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import LoopStack, Model
 from ..snippet import LoopSnippet, ProgSnippet, Snippet
-from ..snippet_gen import GenCont, GenRet, SimpleGenRet, SnippetGen
+from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class Loop(SnippetGen):
@@ -336,7 +336,7 @@ class Loop(SnippetGen):
                   bogus_insn: ProgInsn,
                   cont: GenCont,
                   model: Model,
-                  program: Program) -> Optional[SimpleGenRet]:
+                  program: Program) -> Optional[GenRet]:
         '''Generate the body of a loop
 
         The model is currently sitting at the start of the loop body.
@@ -680,4 +680,4 @@ class Loop(SnippetGen):
         snippet = LoopSnippet(hd_addr, hd_insn, body_snippet, warp)
         snippet.insert_into_program(program)
 
-        return (snippet, False, model)
+        return (snippet, model)

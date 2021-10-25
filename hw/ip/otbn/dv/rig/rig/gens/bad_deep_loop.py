@@ -254,4 +254,4 @@ class BadDeepLoop(SnippetGen):
 
         # At this point, we *should* be able to make the loop unconditionally.
         snippet, model = self._gen_loop_stack(model, program)
-        return (snippet, True, model)
+        return (snippet, model)

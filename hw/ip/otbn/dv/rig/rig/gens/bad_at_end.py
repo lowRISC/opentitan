@@ -138,8 +138,7 @@ class BadAtEnd(Loop):
         # the "done" flag should be true (since this is supposed to cause a
         # fault) and the final PC should be 4 less, pointing just before the
         # last instruction in the loop.
-        snippet, done, model = ret
-        assert not done
+        snippet, model = ret
 
         model.pc -= 4
-        return (snippet, True, model)
+        return (snippet, model)
