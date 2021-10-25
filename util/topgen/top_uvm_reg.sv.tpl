@@ -54,7 +54,7 @@
   dv_base_my_prefix = "ast_base"
 %>\
 %endif
-${make_ral_pkg(dv_base_prefix, top.regwidth, reg_block_path, rb, esc_if_name)}
+${make_ral_pkg(dv_base_my_prefix, top.regwidth, reg_block_path, rb, esc_if_name)}
 %   endfor
 % endfor
 ##
