@@ -33,3 +33,11 @@ split_var -module "aes_masked_inverse_gf2p4*" -var "b1_inv"
 split_var -module "aes_masked_inverse_gf2p4*" -var "b1_inv_buf"
 split_var -module "aes_masked_inverse_gf2p4*" -var "b0_inv"
 split_var -module "aes_masked_inverse_gf2p4*" -var "b0_inv_buf"
+
+// Similarly, there are no circular dependencies in the signals below but here the split_var technique doesn't seem to work in Verilator 4.210 - 4.214.
+// TODO: Remove these waivers once we upgrade to a Verilator version > 4.214.
+// For details, see https://github.com/verilator/verilator/issues/3177
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_control.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_control.sp2v_sig[59:48]'"
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_control.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_control.sp2v_sig[23:12]'"
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_control.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_control.sp2v_sig[11:0]'"
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_cipher_control.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_cipher_control.sp2v_sig[23:12]'"
