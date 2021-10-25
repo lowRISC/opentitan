@@ -131,6 +131,10 @@ class OTBNSim:
         if self.state.fsm_state == FsmState.POST_EXEC:
             return (None, self._on_stall(verbose, fetch_next=False))
 
+        if self.state.fsm_state == FsmState.LOCKING:
+            self.state.ext_regs.write('INSN_CNT', 0, True)
+            return (None, self._on_stall(verbose, fetch_next=False))
+
         assert self.state.fsm_state == FsmState.EXEC
 
         insn = self._next_insn

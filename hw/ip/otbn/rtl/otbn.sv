@@ -945,8 +945,9 @@ module otbn
   `ASSERT_KNOWN(OtbnOtpKeyO_A, otbn_otp_key_o, clk_otp_i, !rst_otp_ni)
 
   // In locked state, the readable registers INSN_CNT, IMEM, and DMEM are expected to always read 0
-  // when accessed from the bus.
-  `ASSERT(LockedInsnCntReadsZero_A, (hw2reg.status.d == StatusLocked) |-> insn_cnt == 'd0)
+  // when accessed from the bus. For INSN_CNT, we use "|=>" so that the assertion lines up with
+  // "status.q" (a signal that isn't directly accessible here).
+  `ASSERT(LockedInsnCntReadsZero_A, (hw2reg.status.d == StatusLocked) |=> insn_cnt == 'd0)
   `ASSERT(NonIdleImemReadsZero_A,
       (hw2reg.status.d != StatusIdle) & imem_rvalid_bus |-> imem_rdata_bus == 'd0)
   `ASSERT(NonIdleDmemReadsZero_A,
