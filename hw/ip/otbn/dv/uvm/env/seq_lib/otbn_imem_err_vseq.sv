@@ -37,13 +37,36 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
       cfg.write_imem_word(i, bad_data, key, nonce);
     end
 
+    // We're expecting to see an alert as a result of poking things. We have to allow a large delay,
+    // because we might have just started and be still waiting for URND data to come in: OTBN
+    // doesn't actually fetch anything until that happens. This isn't as lax as it looks, though. We
+    // know that the alert is supposed to go out at the same time as STATUS changes, so can add a
+    // timeout there.
+    cfg.scoreboard.set_exp_alert(.alert_name("fatal"), .is_fatal(1'b1), .max_delay(10000));
+
     cfg.model_agent_cfg.vif.invalidate_imem <= 1'b1;
-    cfg.scoreboard.set_exp_alert(.alert_name("fatal"), .is_fatal(1'b1));
     @(cfg.clk_rst_vif.cb);
     cfg.model_agent_cfg.vif.invalidate_imem <= 1'b0;
 
     wait (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);
-    wait_alert_trigger("fatal", .wait_complete(1));
+
+    // At this point, our status has changed. We're probably actually seeing the alert now, but make
+    // sure that it has gone out in at most 10 cycles.
+    fork : isolation_fork
+      begin
+        bit seen_alert = 1'b0;
+        fork
+          begin
+            wait_alert_trigger("fatal", .wait_complete(1));
+            seen_alert = 1'b1;
+          end
+          repeat (10) @(cfg.clk_rst_vif.cb);
+        join_any
+        `DV_CHECK_FATAL(seen_alert, "No alert after 10 cycles")
+        disable fork;
+      end
+    join
+
     fork
       begin
         csr_utils_pkg::csr_rd(.ptr(ral.status), .value(act_val));
