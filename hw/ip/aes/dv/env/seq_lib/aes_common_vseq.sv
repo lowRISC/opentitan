@@ -49,6 +49,17 @@ class aes_common_vseq extends aes_base_vseq;
     val[12] = 0;
   endfunction
 
+  // Discussed in Issue #8460, fatal storage error will clear storage error status bit.
+  virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,
+                                                  bit predict_storage_err = 0);
+    super.predict_shadow_reg_status(predict_update_err, predict_storage_err);
+    if (predict_storage_err) begin
+      foreach (cfg.shadow_update_err_status_fields[status_field]) begin
+        void'(status_field.predict(~cfg.shadow_update_err_status_fields[status_field]));
+      end
+    end
+  endfunction
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body
