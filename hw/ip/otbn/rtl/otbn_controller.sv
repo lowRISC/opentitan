@@ -223,7 +223,6 @@ module otbn_controller
 
   logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
 
-  logic insn_cnt_en;
   logic [31:0] insn_cnt_d, insn_cnt_q;
 
   logic [4:0] ld_insn_bignum_wr_addr_q;
@@ -467,17 +466,25 @@ module otbn_controller
     end
   end
 
-  assign insn_cnt_d = state_reset_i ? 32'd0 : (insn_cnt_q + 32'd1);
-  assign insn_cnt_en = (insn_executing & ~stall & (insn_cnt_q != 32'hffffffff)) | state_reset_i;
-  assign insn_cnt_o = insn_cnt_q;
+  always_comb begin
+    if (state_reset_i || state_q == OtbnStateLocked) begin
+      insn_cnt_d = 32'd0;
+    end else if (insn_executing & ~stall & (insn_cnt_q != 32'hffffffff)) begin
+      insn_cnt_d = insn_cnt_q + 32'd1;
+    end else begin
+      insn_cnt_d = insn_cnt_q;
+    end
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       insn_cnt_q <= 32'd0;
-    end else if (insn_cnt_en) begin
+    end else begin
       insn_cnt_q <= insn_cnt_d;
     end
   end
+
+  assign insn_cnt_o = insn_cnt_q;
 
   assign loop_reset = state_reset_i | sec_wipe_zero_i;
 

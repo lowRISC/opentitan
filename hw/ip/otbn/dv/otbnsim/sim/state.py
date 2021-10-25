@@ -24,23 +24,29 @@ class FsmState(IntEnum):
 
     The FSM diagram looks like:
 
-        IDLE  ->  PRE_EXEC  ->  EXEC  ->  POST_EXEC  -\
-                                                      |
-          ^                                           |
-          +-------------------------------------------/
+          /---------------------------------------------\
+          |                                             |
+          v                            /->  POST_EXEC --/
+        IDLE  ->  PRE_EXEC  ->  EXEC  <
+                                       \->  LOCKING   --\
+                                                        |
+          /---------------------------------------------/
+          |
           v
-
         LOCKED
 
     IDLE represents the state when nothing is going on but there have been no
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
     there has been a fatal error. It matches Status.LOCKED.
 
-    PRE_EXEC, EXEC and POST_EXEC correspond to Status.BUSY_EXECUTE. PRE_EXEC is
-    the period after starting OTBN where we're still waiting for an EDN value
-    to seed URND. EXEC is the period where we start fetching and executing
-    instructions. POST_EXEC is the single cycle after we finish executing where
-    the STATUS register gets updated.
+    PRE_EXEC, EXEC, POST_EXEC and LOCKING correspond to Status.BUSY_EXECUTE.
+    PRE_EXEC is the period after starting OTBN where we're still waiting for an
+    EDN value to seed URND. EXEC is the period where we start fetching and
+    executing instructions.
+
+    POST_EXEC and LOCKING are both used for the single cycle after we finish
+    executing where the STATUS register gets updated. The difference between
+    them is that POST_EXEC goes back to IDLE and LOCKING goes to LOCKED.
 
     This is a refinement of the Status enum and the integer values are picked
     so that you can divide by 10 to get the corresponding Status entry. (This
@@ -52,6 +58,7 @@ class FsmState(IntEnum):
     PRE_EXEC = 10
     EXEC = 11
     POST_EXEC = 12
+    LOCKING = 13
     LOCKED = 2550
 
 
@@ -201,13 +208,19 @@ class OTBNState:
             return
 
         # If we are in POST_EXEC mode, this is the single cycle after the end
-        # of execution. Commit external registers (to update STATUS) and then
-        # switch to IDLE or LOCKED, depending on whether there are any bits set
-        # in the upper half of _err_bits.
+        # of execution after either completion or a recoverable error. Commit
+        # external registers (to update STATUS) and then switch to IDLE.
         if self.fsm_state == FsmState.POST_EXEC:
             self.ext_regs.commit()
-            self.fsm_state = (FsmState.LOCKED
-                              if self._err_bits >> 16 else FsmState.IDLE)
+            self.fsm_state = FsmState.IDLE
+            return
+
+        # If we are in LOCKING mode, this is the single cycle after the end of
+        # execution after a fatal error. Commit external registers (to update
+        # STATUS) and then switch to LOCKED.
+        if self.fsm_state == FsmState.LOCKING:
+            self.ext_regs.commit()
+            self.fsm_state = FsmState.LOCKED
             return
 
         # Otherwise, we're in EXEC mode.
@@ -218,7 +231,8 @@ class OTBNState:
         # POST_EXEC to allow one more cycle.
         if self.pending_halt:
             self.ext_regs.commit()
-            self.fsm_state = FsmState.POST_EXEC
+            self.fsm_state = (FsmState.LOCKING
+                              if self._err_bits >> 16 else FsmState.POST_EXEC)
             return
 
         # As pending_halt wasn't set, there shouldn't be any pending error bits
