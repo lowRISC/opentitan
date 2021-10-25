@@ -35,10 +35,10 @@ module tb;
   // edn_clk, edn_rst_n and edn_if are defined and driven in below macro
   `DV_EDN_IF_CONNECT
 
-  assign keymgr_if.edn_clk   = edn_if.clk;
-  assign keymgr_if.edn_rst_n = edn_if.rst_n;
-  assign keymgr_if.edn_req   = edn_if.req;
-  assign keymgr_if.edn_ack   = edn_if.ack;
+  assign keymgr_if.edn_clk   = edn_if[0].clk;
+  assign keymgr_if.edn_rst_n = edn_if[0].rst_n;
+  assign keymgr_if.edn_req   = edn_if[0].req;
+  assign keymgr_if.edn_ack   = edn_if[0].ack;
 
   // dut
   keymgr dut (
@@ -58,8 +58,8 @@ module tb;
     .otp_key_i            (keymgr_if.otp_key),
     .otp_device_id_i      (keymgr_if.otp_device_id),
     .rom_digest_i         (keymgr_if.rom_digest),
-    .edn_o                (edn_if.req),
-    .edn_i                ({edn_if.ack, edn_if.d_data}),
+    .edn_o                (edn_if[0].req),
+    .edn_i                ({edn_if[0].ack, edn_if[0].d_data}),
     .flash_i              (keymgr_if.flash),
     .intr_op_done_o       (interrupts[0]),
     .alert_rx_i           (alert_rx   ),

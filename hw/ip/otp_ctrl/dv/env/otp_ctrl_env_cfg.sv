@@ -55,7 +55,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = otp_ctrl_env_pkg::LIST_OF_ALERTS;
-    has_edn = 1;
+    num_edn = 1;
     tl_intg_alert_name = "fatal_bus_integ_error";
     super.initialize(csr_base_addr);
 

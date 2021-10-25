@@ -723,7 +723,7 @@ class kmac_base_vseq extends cip_base_vseq #(
       if (cfg.enable_masking) begin
         // If masked, wait for some time past the max latency of the EDN agent in case
         // an EDN request is sent right as CmdProcess is seen by the KMAC.
-        cfg.edn_clk_rst_vif.wait_clks(2 * cfg.m_edn_pull_agent_cfg.device_delay_max);
+        cfg.edn_clk_rst_vif.wait_clks(2 * cfg.m_edn_pull_agent_cfg[0].device_delay_max);
         cfg.clk_rst_vif.wait_clks(1000);
       end else begin
         cfg.clk_rst_vif.wait_clks(150);

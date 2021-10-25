@@ -210,7 +210,7 @@ class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends dv_base_env_cov 
       intr_test_cg = new(cfg.num_interrupts);
       intr_pins_cg = new(cfg.num_interrupts);
     end
-    if (cfg.has_edn) resets_cg = new("dut_and_edn_rsts");
+    if (cfg.num_edn) resets_cg = new("dut_and_edn_rsts");
   endfunction
 
 endclass

@@ -86,8 +86,8 @@ module tb;
     // edn
     .clk_edn_i                  (edn_clk    ),
     .rst_edn_ni                 (edn_rst_n  ),
-    .edn_o                      (edn_if.req ),
-    .edn_i                      ({edn_if.ack, edn_if.d_data}),
+    .edn_o                      (edn_if[0].req ),
+    .edn_i                      ({edn_if[0].ack, edn_if[0].d_data}),
     // bus interfaces
     .core_tl_i                  (tl_if.h2d  ),
     .core_tl_o                  (tl_if.d2h  ),

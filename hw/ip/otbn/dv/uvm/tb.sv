@@ -51,25 +51,22 @@ module tb;
   // design, change the assertion, or change the DV code so this doesn't happen.
 `define RND_REQ_PATH \
     dut.u_prim_edn_rnd_req.u_prim_sync_reqack_data.gen_assert_data_dst2src
+
+`define URND_REQ_PATH \
+    dut.u_prim_edn_urnd_req.u_prim_sync_reqack_data.gen_assert_data_dst2src
   always @(negedge edn_rst_n or posedge edn_rst_n) begin
     if (!edn_rst_n) begin
       $assertoff(0, `RND_REQ_PATH.SyncReqAckDataHoldDst2SrcA);
+      $assertoff(0, `URND_REQ_PATH.SyncReqAckDataHoldDst2SrcA);
       $assertoff(0, `RND_REQ_PATH.SyncReqAckDataHoldDst2SrcB);
+      $assertoff(0, `URND_REQ_PATH.SyncReqAckDataHoldDst2SrcB);
     end else begin
       $asserton(0, `RND_REQ_PATH.SyncReqAckDataHoldDst2SrcA);
+      $asserton(0, `URND_REQ_PATH.SyncReqAckDataHoldDst2SrcA);
       $asserton(0, `RND_REQ_PATH.SyncReqAckDataHoldDst2SrcB);
+      $asserton(0, `URND_REQ_PATH.SyncReqAckDataHoldDst2SrcB);
     end
   end
-
-  // Mock up EDN & OTP that just instantly return fixed data when requested
-  // TODO: Provide proper EDN and OTP agents
-
-  edn_req_t edn_urnd_req;
-  edn_rsp_t edn_urnd_rsp;
-
-  assign edn_urnd_rsp.edn_ack  = edn_urnd_req.edn_req;
-  assign edn_urnd_rsp.edn_fips = 1'b0;
-  assign edn_urnd_rsp.edn_bus  = 32'h99999999;
 
   otbn_otp_key_req_t otp_key_req;
   otbn_otp_key_rsp_t otp_key_rsp;
@@ -118,11 +115,11 @@ module tb;
 
     .clk_edn_i (edn_clk),
     .rst_edn_ni(edn_rst_n),
-    .edn_rnd_o (edn_if.req),
-    .edn_rnd_i ({edn_if.ack, edn_if.d_data}),
+    .edn_rnd_o (edn_if[0].req),
+    .edn_rnd_i ({edn_if[0].ack, edn_if[0].d_data}),
 
-    .edn_urnd_o(edn_urnd_req),
-    .edn_urnd_i(edn_urnd_rsp),
+    .edn_urnd_o(edn_if[1].req),
+    .edn_urnd_i({edn_if[1].ack, edn_if[1].d_data}),
 
     .clk_otp_i     (clk),
     .rst_otp_ni    (rst_n),
@@ -205,7 +202,7 @@ module tb;
 
     .err_bits_o   (),
 
-    .edn_rnd_i             ({edn_if.ack, edn_if.d_data}),
+    .edn_rnd_i             ({edn_if[0].ack, edn_if[0].d_data}),
     .edn_rnd_cdc_done_i    (edn_rnd_cdc_done),
 
     .edn_urnd_data_valid_i (edn_urnd_data_valid),

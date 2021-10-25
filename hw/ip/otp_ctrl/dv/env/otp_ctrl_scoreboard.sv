@@ -316,7 +316,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   virtual task process_edn_req();
     forever begin
       push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH)) edn_item;
-      edn_fifo.get(edn_item);
+      edn_fifos[0].get(edn_item);
       edn_data_q.push_back(edn_item.d_data[EDN_BUS_WIDTH-1:0]);
     end
   endtask

@@ -27,9 +27,6 @@ class ${name}_env_cfg extends dv_base_env_cfg;
 % if has_alerts:
     list_of_alerts = ${name}_env_pkg::LIST_OF_ALERTS;
 % endif
-% if has_edn:
-    cfg.has_edn = 1;
-% endif
 % if has_ral:
     super.initialize(csr_base_addr);
 % endif

@@ -40,23 +40,23 @@ module tb;
     .Masking  ( 0                    ),
     .SBoxImpl ( aes_pkg::SBoxImplLut )
   ) dut (
-    .clk_i            ( clk                           ),
-    .rst_ni           ( rst_n                         ),
-    .rst_shadowed_ni  ( rst_shadowed_n                ),
+    .clk_i            ( clk                               ),
+    .rst_ni           ( rst_n                             ),
+    .rst_shadowed_ni  ( rst_shadowed_n                    ),
 
-    .idle_o           (                               ),
-    .lc_escalate_en_i ( lc_ctrl_pkg::Off              ),
-    .clk_edn_i        ( edn_clk                       ),
-    .rst_edn_ni       ( edn_rst_n                     ),
-    .edn_o            ( edn_if.req                    ),
-    .edn_i            ( {edn_if.ack, edn_if.d_data}   ),
-    .keymgr_key_i     ( keymgr_key                    ),
+    .idle_o           (                                   ),
+    .lc_escalate_en_i ( lc_ctrl_pkg::Off                  ),
+    .clk_edn_i        ( edn_clk                           ),
+    .rst_edn_ni       ( edn_rst_n                         ),
+    .edn_o            ( edn_if[0].req                     ),
+    .edn_i            ( {edn_if[0].ack, edn_if[0].d_data} ),
+    .keymgr_key_i     ( keymgr_key                        ),
 
-    .tl_i             ( tl_if.h2d                     ),
-    .tl_o             ( tl_if.d2h                     ),
+    .tl_i             ( tl_if.h2d                         ),
+    .tl_o             ( tl_if.d2h                         ),
 
-    .alert_rx_i       ( alert_rx                      ),
-    .alert_tx_o       ( alert_tx                      )
+    .alert_rx_i       ( alert_rx                          ),
+    .alert_tx_o       ( alert_tx                          )
   );
 
   initial begin

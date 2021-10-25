@@ -37,7 +37,7 @@ module tb;
 % if has_alerts:
   `DV_ALERT_IF_CONNECT
 % endif
-% if has_edn:
+% if num_edn:
   // edn_clk, edn_rst_n and edn_if are defined and driven in below macro
   `DV_EDN_IF_CONNECT
 % endif
@@ -49,12 +49,12 @@ module tb;
     .rst_ni               (rst_n    )${"," if is_cip else ""}
 
     .tl_i                 (tl_if.h2d),
-    .tl_o                 (tl_if.d2h)${"," if has_alerts or has_edn else ""}
+    .tl_o                 (tl_if.d2h)${"," if has_alerts or num_edn else ""}
   % if has_alerts:
     .alert_rx_i           (alert_rx ),
-    .alert_tx_o           (alert_tx )${"," if has_edn else ""}
+    .alert_tx_o           (alert_tx )${"," if num_edn else ""}
   % endif
-  % if has_edn:
+  % if num_edn:
     .clk_edn_i            (edn_clk    ),
     .rst_edn_ni           (edn_rst_n  ),
     .edn_o                (edn_if.req),
