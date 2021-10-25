@@ -281,6 +281,15 @@
               </tbody>
             </table>
           '''
+          tags: [
+            // Don't write this field in the automated CSR tests. Despite this being RO for software
+            // (so you might think we couldn't write it), the csr_hw_reset test does write this by
+            // by default (using a backdoor access). The idea of that test is to write bogus values
+            // to registers, reset the block and then check that everything has its reset value.
+            // Doing this causes various assertions to fire and it isn't really necessary: we
+            // already have strong checks between this register and the output of the model.
+            "excl:CsrAllTests:CsrExclWrite"
+          ]
         }
       ]
     }
