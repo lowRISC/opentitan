@@ -227,6 +227,8 @@ module otbn_controller
 
   logic [4:0] ld_insn_bignum_wr_addr_q;
   err_bits_t err_bits;
+  // Only used with SecWipeEn == 1
+  logic      err_bits_en;
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -275,6 +277,7 @@ module otbn_controller
     // considered.
     insn_fetch_req_valid_raw = 1'b0;
     insn_fetch_req_addr_o    = '0;
+    err_bits_en              = 1'b0;
 
     // TODO: Harden state machine
     // TODO: Jumps/branches
@@ -285,6 +288,9 @@ module otbn_controller
 
           insn_fetch_req_addr_o    = '0;
           insn_fetch_req_valid_raw = 1'b1;
+
+          // Enable error bits to zero them on start
+          err_bits_en = 1'b1;
         end
       end
       OtbnStateRun: begin
@@ -335,10 +341,17 @@ module otbn_controller
 
     // On any error immediately halt, either going to OtbnStateLocked or OtbnStateHalt depending on
     // whether it was a fatal error.
-    if (fatal_err) begin
-      state_d = OtbnStateLocked;
-    end else if (err) begin
-      state_d = OtbnStateHalt;
+    if (err) begin
+      if (!secure_wipe_running_i) begin
+        // Capture error bits on error unless a secure wipe is in progress
+        err_bits_en = 1'b1;
+      end
+
+      if (fatal_err) begin
+        state_d = OtbnStateLocked;
+      end else begin
+        state_d = OtbnStateHalt;
+      end
     end
 
     // Regardless of what happens above enforce staying in OtnbStateLocked.
@@ -412,11 +425,9 @@ module otbn_controller
 
   if (SecWipeEn) begin: gen_sec_wipe
     err_bits_t err_bits_d, err_bits_q;
-    logic err_bits_en;
 
     assign err_bits_d = err_bits;
     assign err_bits_o = err_bits_q;
-    assign err_bits_en = (err & ~secure_wipe_running_i) | (state_q == OtbnStateHalt & start_i);
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
@@ -439,6 +450,9 @@ module otbn_controller
 
   end
   else begin: gen_bypass_sec_wipe
+    logic unused_err_bits_en;
+
+    assign unused_err_bits_en = err_bits_en;
     assign err_bits_o = err_bits;
   end
 
