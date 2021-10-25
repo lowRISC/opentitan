@@ -70,7 +70,7 @@ static void erase_boot_data_pages(void) {
  * back from the flash.
  *
  * @param page_base Page base address in bytes.
- * @param index Index of the entry to read in the given page.
+ * @param index Index of the entry to write in the given page.
  * @param boot_data A boot data entry.
  */
 static void write_boot_data(uint32_t page_base, size_t index,
@@ -85,6 +85,22 @@ static void write_boot_data(uint32_t page_base, size_t index,
         "Flash read failed.");
   CHECK(memcmp(buf, boot_data, sizeof(boot_data_t)) == 0,
         "Flash write failed.");
+}
+
+/**
+ * Reads the boot data entry at the given page and index.
+ *
+ * @param page_base Page base address in bytes.
+ * @param index Index of the entry to read in the given page.
+ * @param boot_data A boot data entry.
+ */
+static void read_boot_data(uint32_t page_base, size_t index,
+                           boot_data_t *boot_data) {
+  const uint32_t addr = page_base + index * sizeof(boot_data_t);
+  uint32_t buf[kBootDataNumWords];
+  CHECK(flash_read(addr, kInfoPartition, kBootDataNumWords, buf) == 0,
+        "Flash read failed.");
+  memcpy(boot_data, buf, sizeof(boot_data_t));
 }
 
 /**
@@ -126,16 +142,24 @@ static rom_error_t compare_boot_data(const boot_data_t *lhs,
 /**
  * Checks whether a boot data entry is valid.
  *
+ * This function checks the `identifier`, `digest`, and counter fields of a boot
+ * data entry.
+ *
  * @param boot_data A boot data entry.
  * @return The result of the operation.
  */
-static rom_error_t check_boot_data(const boot_data_t *boot_data) {
+static rom_error_t check_boot_data(const boot_data_t *boot_data,
+                                   uint32_t counter) {
   enum {
     kDigestRegionOffset = sizeof(boot_data->digest),
     kDigestRegionSize = sizeof(boot_data_t) - sizeof(boot_data->digest),
   };
 
   if (boot_data->identifier != kBootDataIdentifier) {
+    return kErrorUnknown;
+  }
+
+  if (boot_data->counter != counter) {
     return kErrorUnknown;
   }
 
@@ -151,7 +175,7 @@ static rom_error_t check_boot_data(const boot_data_t *boot_data) {
 }
 
 rom_error_t check_test_data_test(void) {
-  RETURN_IF_ERROR(check_boot_data(&kTestBootData));
+  RETURN_IF_ERROR(check_boot_data(&kTestBootData, kTestBootData.counter));
   return kErrorOk;
 }
 
@@ -160,7 +184,7 @@ rom_error_t read_empty_default_allowed_test(void) {
 
   boot_data_t boot_data;
   RETURN_IF_ERROR(boot_data_read(kLcStateTestUnlocked0, &boot_data));
-  RETURN_IF_ERROR(check_boot_data(&boot_data));
+  RETURN_IF_ERROR(check_boot_data(&boot_data, 5));
   return kErrorOk;
 }
 
@@ -232,6 +256,70 @@ rom_error_t read_full_page_1_test(void) {
   return kErrorOk;
 }
 
+rom_error_t write_empty_test(void) {
+  erase_boot_data_pages();
+  RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+  boot_data_t boot_data;
+  RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));
+  RETURN_IF_ERROR(compare_boot_data(&kTestBootData, &boot_data));
+  return kErrorOk;
+}
+
+rom_error_t write_page_switch_test(void) {
+  erase_boot_data_pages();
+  boot_data_t boot_data_act;
+  boot_data_t boot_data_exp;
+  // Counter value starts from `kBootDataDefault.counter` defined in
+  // `boot_data.c` and is incremented before each write.
+  uint32_t counter_exp = 5;
+
+  // Write `kBootDataEntriesPerPage` + 1 entries to test the switch from page 0
+  // to page 1.
+  for (size_t i = 0; i < kBootDataEntriesPerPage + 1; ++i) {
+    RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+    // Check `identifier`, `digest`, and `counter` fields.
+    RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data_act));
+    RETURN_IF_ERROR(check_boot_data(&boot_data_act, ++counter_exp));
+    if (i > 0) {
+      // Previous entry must be invalidated.
+      boot_data_t prev_entry;
+      read_boot_data(kBootDataPage0Base, i - 1, &prev_entry);
+      if (prev_entry.identifier != kBootDataInvalidatedIdentifier) {
+        return kErrorUnknown;
+      }
+    }
+  }
+  // Last written entry must be at entry 0 in page 1.
+  read_boot_data(kBootDataPage1Base, 0, &boot_data_exp);
+  if (memcmp(&boot_data_act, &boot_data_exp, sizeof(boot_data_t)) != 0) {
+    LOG_ERROR("Page 0 -> 1 switch failed.");
+    return kErrorUnknown;
+  }
+
+  // Write `kBootDataEntriesPerPage` entries to test the switch from page 1 to
+  // page 0.
+  for (size_t i = 1; i < kBootDataEntriesPerPage + 1; ++i) {
+    RETURN_IF_ERROR(boot_data_write(&kTestBootData));
+    // Check `identifier`, `digest`, and `counter` fields.
+    RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data_act));
+    RETURN_IF_ERROR(check_boot_data(&boot_data_act, ++counter_exp));
+    // Previous entry must be invalidated.
+    boot_data_t prev_entry;
+    read_boot_data(kBootDataPage1Base, i - 1, &prev_entry);
+    if (prev_entry.identifier != kBootDataInvalidatedIdentifier) {
+      return kErrorUnknown;
+    }
+  }
+  // Last written entry must be at entry 0 in page 0.
+  read_boot_data(kBootDataPage0Base, 0, &boot_data_exp);
+  if (memcmp(&boot_data_act, &boot_data_exp, sizeof(boot_data_t)) != 0) {
+    LOG_ERROR("Page 1 -> 0 switch failed.");
+    return kErrorUnknown;
+  }
+
+  return kErrorOk;
+}
+
 bool test_main(void) {
   rom_error_t result = kErrorOk;
 
@@ -245,6 +333,8 @@ bool test_main(void) {
   EXECUTE_TEST(result, read_single_page_1_test);
   EXECUTE_TEST(result, read_full_page_0_test);
   EXECUTE_TEST(result, read_full_page_1_test);
+  EXECUTE_TEST(result, write_empty_test);
+  EXECUTE_TEST(result, write_page_switch_test);
 
   return result == kErrorOk;
 }
