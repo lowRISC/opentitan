@@ -1292,8 +1292,6 @@
         remove_pads: [
           'CC1', 'CC2',
           'SPI_DEV_D2', 'SPI_DEV_D3'
-          'SPI_HOST_CLK', 'SPI_HOST_CS_L',
-          'SPI_HOST_D0', 'SPI_HOST_D1', 'SPI_HOST_D2', 'SPI_HOST_D3',
           'FLASH_TEST_VOLT', 'OTP_EXT_VOLT'
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
           'IOB10', 'IOB11', 'IOB12',
