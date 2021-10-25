@@ -20,6 +20,7 @@ package alert_handler_env_pkg;
 
   // parameters
   parameter uint NUM_ALERTS                = alert_handler_reg_pkg::NAlerts;
+  parameter uint NUM_EDN                   = 1;
   parameter uint NUM_ESCS                  = 4;
   parameter uint NUM_MAX_ESC_SEV           = 8;
   parameter uint NUM_ESC_SIGNALS           = 4;

@@ -32,6 +32,7 @@ package otp_ctrl_env_pkg;
                                             "fatal_check_error",
                                             "fatal_bus_integ_error"};
   parameter uint NUM_ALERTS              = 3;
+  parameter uint NUM_EDN                 = 1;
 
   parameter uint DIGEST_SIZE             = 8;
   parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;

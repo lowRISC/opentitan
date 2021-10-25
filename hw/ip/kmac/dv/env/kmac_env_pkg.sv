@@ -66,6 +66,8 @@ package kmac_env_pkg;
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
+  parameter uint NUM_EDN = 1;
+
   /////////////////////////////
   // Timing Model Parameters //
   /////////////////////////////

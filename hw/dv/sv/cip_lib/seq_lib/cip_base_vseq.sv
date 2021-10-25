@@ -138,23 +138,23 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
       fork
-        if (cfg.has_edn) apply_edn_reset(kind);
+        if (cfg.num_edn) apply_edn_reset(kind);
         super.apply_reset(kind);
       join
     end
   endtask
 
   virtual task apply_edn_reset(string kind = "HARD");
-    if (cfg.has_edn && kind == "HARD") cfg.edn_clk_rst_vif.apply_reset();
+    if (cfg.num_edn && kind == "HARD") cfg.edn_clk_rst_vif.apply_reset();
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
-    if (cfg.has_edn) begin
+    if (cfg.num_edn) begin
       cfg.edn_clk_rst_vif.drive_rst_pin(0);
       reset_duration_ps = max2(reset_duration_ps, cfg.edn_clk_rst_vif.clk_period_ps);
     end
     super.apply_resets_concurrently(reset_duration_ps);
-    if (cfg.has_edn) cfg.edn_clk_rst_vif.drive_rst_pin(1);
+    if (cfg.num_edn) cfg.edn_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   // tl_access task: does a single BUS_DW-bit write or read transaction to the specified address

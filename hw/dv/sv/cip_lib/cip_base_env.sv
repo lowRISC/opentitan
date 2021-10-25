@@ -13,7 +13,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
   tl_agent                                           m_tl_agents[string];
   tl_reg_adapter #(tl_seq_item)                      m_tl_reg_adapters[string];
   alert_esc_agent                                    m_alert_agent[string];
-  push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent;
+  push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent[];
 
   `uvm_component_new
 
@@ -63,13 +63,16 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     end
 
     // Create and configure the EDN agent if available.
-    if (cfg.has_edn) begin
-      m_edn_pull_agent = push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH))::type_id::create(
-                         "m_edn_pull_agent", this);
-      uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)))::set(
-                     this, "m_edn_pull_agent", "cfg", cfg.m_edn_pull_agent_cfg);
-      cfg.m_edn_pull_agent_cfg.en_cov = cfg.en_cov;
-
+    if (cfg.num_edn) begin
+      m_edn_pull_agent = new[cfg.num_edn];
+      foreach (m_edn_pull_agent[i]) begin
+        string agent_name = $sformatf("m_edn_pull_agent[%0d]", i);
+        m_edn_pull_agent[i] = push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH))::
+                              type_id::create(agent_name, this);
+        uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)))::
+                      set(this, agent_name, "cfg", cfg.m_edn_pull_agent_cfg[i]);
+        cfg.m_edn_pull_agent_cfg[i].en_cov = cfg.en_cov;
+      end
       if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "edn_clk_rst_vif",
           cfg.edn_clk_rst_vif)) begin
         `uvm_fatal(get_full_name(), "failed to get edn_clk_rst_vif from uvm_config_db")
@@ -94,7 +97,9 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
         cfg.m_alert_agent_cfg[i].alert_delay_min = 0;
         cfg.m_alert_agent_cfg[i].alert_delay_max = 0;
       end
-      if (cfg.has_edn) cfg.m_edn_pull_agent_cfg.zero_delays = 1;
+      foreach (cfg.m_edn_pull_agent_cfg[i]) begin
+        cfg.m_edn_pull_agent_cfg[i].zero_delays = 1;
+      end
     end
 
     // Set the synchronise_ports flag on each of the TL agents configs
@@ -131,9 +136,8 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
       end
     end
 
-    if (cfg.has_edn) begin
-      virtual_sequencer.edn_pull_sequencer_h = m_edn_pull_agent.sequencer;
-      m_edn_pull_agent.monitor.analysis_port.connect(scoreboard.edn_fifo.analysis_export);
+    foreach (m_edn_pull_agent[i]) begin
+      m_edn_pull_agent[i].monitor.analysis_port.connect(scoreboard.edn_fifos[i].analysis_export);
     end
   endfunction
 

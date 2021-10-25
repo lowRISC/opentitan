@@ -45,19 +45,19 @@ module tb;
   // dut
 
   kmac #(.EnMasking(`EN_MASKING), .ReuseShare(`REUSE_SHARE)) dut (
-    .clk_i              (clk                          ),
-    .rst_ni             (rst_n                        ),
+    .clk_i              (clk   ),
+    .rst_ni             (rst_n ),
 
     // TLUL interface
-    .tl_i               (tl_if.h2d                    ),
-    .tl_o               (tl_if.d2h                    ),
+    .tl_i               (tl_if.h2d ),
+    .tl_o               (tl_if.d2h ),
 
     // Alerts
-    .alert_rx_i         (alert_rx                     ),
-    .alert_tx_o         (alert_tx                     ),
+    .alert_rx_i         (alert_rx ),
+    .alert_tx_o         (alert_tx ),
 
     // KeyMgr sideload key interface
-    .keymgr_key_i       (sideload_if.sideload_key     ),
+    .keymgr_key_i       (sideload_if.sideload_key ),
 
     // KeyMgr KDF datapath
     //
@@ -67,18 +67,18 @@ module tb;
     .app_o       (app_rsp ),
 
     // Interrupts
-    .intr_kmac_done_o   (interrupts[KmacDone]         ),
-    .intr_fifo_empty_o  (interrupts[KmacFifoEmpty]    ),
-    .intr_kmac_err_o    (interrupts[KmacErr]          ),
+    .intr_kmac_done_o   (interrupts[KmacDone]      ),
+    .intr_fifo_empty_o  (interrupts[KmacFifoEmpty] ),
+    .intr_kmac_err_o    (interrupts[KmacErr]       ),
 
     // Idle interface
-    .idle_o             (idle                         ),
+    .idle_o             (idle),
 
     // EDN interface
-    .clk_edn_i          (edn_clk                      ),
-    .rst_edn_ni         (edn_rst_n                    ),
-    .entropy_o          (edn_if.req                   ),
-    .entropy_i          ({edn_if.ack, edn_if.d_data}  )
+    .clk_edn_i          (edn_clk                           ),
+    .rst_edn_ni         (edn_rst_n                         ),
+    .entropy_o          (edn_if[0].req                     ),
+    .entropy_i          ({edn_if[0].ack, edn_if[0].d_data} )
   );
 
   for (genvar i = 0; i < kmac_pkg::NumAppIntf; i++) begin : gen_kmac_app_intf
