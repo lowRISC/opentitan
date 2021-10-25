@@ -45,9 +45,13 @@ jobs:
       - name: Show config
         run: |
           cat verible_config
+      - name: Show waiver
+        run: |
+          cat verible_waiver
       - name: Run Verible linter action
         uses: chipsalliance/verible-linter-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           suggest_fixes: 'false'
           config_file: 'verible_config'
+          extra_args: "--waiver_files=verible_waiver"
