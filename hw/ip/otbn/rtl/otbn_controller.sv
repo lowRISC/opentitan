@@ -139,6 +139,7 @@ module otbn_controller
 
   logic err;
   logic software_err;
+  logic non_insn_addr_software_err;
   logic fatal_err;
   logic done_complete;
   logic executing;
@@ -383,7 +384,16 @@ module otbn_controller
   assign err_bits.bad_data_addr        = dmem_addr_err;
   assign err_bits.loop                 = loop_err;
   assign err_bits.call_stack           = rf_base_call_stack_err_i;
-  assign err_bits.bad_insn_addr        = imem_addr_err;
+  assign err_bits.bad_insn_addr        = imem_addr_err & ~non_insn_addr_software_err;
+
+  // All software errors that aren't bad_insn_addr. Factored into bad_insn_addr so it is only raised
+  // if other software errors haven't ocurred. As bad_insn_addr relates to the next instruction
+  // begin fetched it cannot occur if the current instruction has seen an error and failed to
+  // execute.
+  assign non_insn_addr_software_err = |{err_bits.illegal_insn,
+                                        err_bits.bad_data_addr,
+                                        err_bits.loop,
+                                        err_bits.call_stack};
 
   assign software_err = |{err_bits.illegal_insn,
                           err_bits.bad_data_addr,
@@ -440,6 +450,7 @@ module otbn_controller
 
   `ASSERT(ErrBitSetOnErr, err |-> |err_bits_o)
   `ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
+  `ASSERT(SoftwareErrIfNonInsnAddrSoftwareErr, non_insn_addr_software_err |-> software_err)
 
   `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun,
                                                 OtbnStateStall, OtbnStateLocked})
