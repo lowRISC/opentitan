@@ -46,7 +46,7 @@ class BadInsn(SnippetGen):
         prog_insn = DummyProgInsn(self._get_badbits())
         snippet = ProgSnippet(model.pc, [prog_insn])
         snippet.insert_into_program(program)
-        return (snippet, True, model)
+        return (snippet, model)
 
     def pick_weight(self,
                     model: Model,

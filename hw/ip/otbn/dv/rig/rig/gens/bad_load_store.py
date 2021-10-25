@@ -145,7 +145,7 @@ class BadLoadStore(SnippetGen):
         snippet = ProgSnippet(model.pc, [prog_insn])
         snippet.insert_into_program(program)
 
-        return (snippet, True, model)
+        return (snippet, model)
 
     def fill_insn(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
         '''Try to pick one of BN.XID or XW instructions

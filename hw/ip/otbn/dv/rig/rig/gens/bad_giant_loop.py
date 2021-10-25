@@ -106,4 +106,4 @@ class BadGiantLoop(Loop):
         assert body_snippet is not None
 
         loop_snippet = LoopSnippet(hd_addr, hd_insn, body_snippet, None)
-        return (loop_snippet, True, end_model)
+        return (loop_snippet, end_model)

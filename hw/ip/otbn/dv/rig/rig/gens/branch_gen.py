@@ -110,7 +110,7 @@ class BranchGen(SnippetGen):
 
         self.update_for_insn(model, prog_insn)
 
-        return (snippet, self.ends_program, model)
+        return (snippet, model)
 
     def pick_offset(self,
                     min_addr: int,

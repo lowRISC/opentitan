@@ -150,7 +150,7 @@ class CallStackRW(SnippetGen):
         model.update_for_insn(prog_insn)
         model.pc += 4
 
-        return (snippet, False, model)
+        return (snippet, model)
 
 
 class BadCallStackRW(CallStackRW):
@@ -232,4 +232,4 @@ class BadCallStackRW(CallStackRW):
         # instruction.
         model.pc += 4 * (len(prog_insns) - 1)
 
-        return (snippet, True, model)
+        return (snippet, model)

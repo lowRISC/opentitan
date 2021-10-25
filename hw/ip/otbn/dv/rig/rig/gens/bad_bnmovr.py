@@ -124,4 +124,4 @@ class BadBNMovr(SnippetGen):
         snippet = ProgSnippet(model.pc, [prog_insn])
         snippet.insert_into_program(program)
 
-        return (snippet, True, model)
+        return (snippet, model)

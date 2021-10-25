@@ -219,11 +219,10 @@ class SnippetGens:
                     children.append(self._gen_ecall(model.pc, program))
                 break
 
-            snippet, done, model = gen_res
+            snippet, model = gen_res
             children.append(snippet)
 
-            if done:
-                assert end
+            if end:
                 break
 
             assert model.fuel < old_fuel

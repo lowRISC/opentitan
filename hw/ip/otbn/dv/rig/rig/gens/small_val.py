@@ -103,4 +103,4 @@ class SmallVal(SnippetGen):
         model.update_for_insn(prog_insn)
         model.pc += 4
 
-        return (snippet, False, model)
+        return (snippet, model)

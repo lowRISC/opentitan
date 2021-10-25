@@ -79,4 +79,4 @@ class BadZeroLoop(Loop):
 
         # Return with the initial model (because the head instruction is bad,
         # we'll stop at it)
-        return (snippet, True, model_before)
+        return (snippet, model_before)

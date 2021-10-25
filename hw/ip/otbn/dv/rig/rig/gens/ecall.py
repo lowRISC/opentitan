@@ -49,7 +49,7 @@ class ECall(SnippetGen):
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
-        return (self.gen_at(model.pc, program), True, model)
+        return (self.gen_at(model.pc, program), model)
 
     def pick_weight(self,
                     model: Model,
