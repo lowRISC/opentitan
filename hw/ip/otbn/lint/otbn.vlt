@@ -15,6 +15,7 @@ lint_off -rule UNUSED -file "*/rtl/otbn.sv" -match "Signal is not used: 'imem_wm
 
 // TODO: Remove this waiver once Verilator #3177
 // (https://github.com/verilator/verilator/issues/3177) is fixed in a version we depend on.
-lint_off -rule UNOPTFLAT -file "*/rtl/otbn_controller.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*.u_otbn_controller.software_err'"
+// split_var of err_bits below should fix this but doesn't.
+lint_off -rule UNOPTFLAT -file "*/rtl/otbn_controller.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*.u_otbn_controller.non_insn_addr_software_err'"
 
-split_var -module "otbn_controller" -var "err_bits_o"
+split_var -module "otbn_controller" -var "err_bits"
