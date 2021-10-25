@@ -224,6 +224,11 @@ module aes_control
         count_q <= count_d;
       end
     end
+
+    // Create a lint error to reduce the risk of accidentally enabling this feature.
+    logic sec_start_trigger_delay;
+    assign sec_start_trigger_delay = count_q[0];
+
   end else begin : gen_no_start_delay
     // Directly forward the manual start trigger input.
     assign start_trigger = start_i;
