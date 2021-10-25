@@ -4,19 +4,55 @@
 
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 
+#include "sw/device/lib/base/multibits.h"
+
 #include "sram_ctrl_regs.h"  // Generated.
 
 /**
  * Obtains the lock state of the "Control" register.
  *
- * When locked - new scrambling key and SRAM pseudo-random data overwriting
+ * When locked, new scrambling key and SRAM pseudo-random data overwriting
  * requests are not available.
  */
-static dif_toggle_t sram_ctrl_lock_state(const dif_sram_ctrl_t *sram_ctrl) {
+static bool sram_ctrl_locked_ctrl(const dif_sram_ctrl_t *sram_ctrl) {
   return mmio_region_read32(sram_ctrl->base_addr,
                             SRAM_CTRL_CTRL_REGWEN_REG_OFFSET)
-             ? kDifToggleDisabled
-             : kDifToggleEnabled;
+             ? false
+             : true;
+}
+
+/**
+ * Obtains the lock state of the "Exec enable" register.
+ *
+ * When locked, execution from SRAM is disabled, and an attempt to do so
+ * will result in an access violation.
+ */
+static bool sram_ctrl_exec_locked(const dif_sram_ctrl_t *sram_ctrl) {
+  return mmio_region_read32(sram_ctrl->base_addr,
+                            SRAM_CTRL_EXEC_REGWEN_REG_OFFSET)
+             ? false
+             : true;
+}
+
+/**
+ * Locks SRAM Controller "Control" functionality.
+ *
+ * SRAM Scrambling and RAM wiping is no longer available.
+ */
+static void sram_ctrl_lock_ctrl(const dif_sram_ctrl_t *sram_ctrl) {
+  mmio_region_write32(sram_ctrl->base_addr, SRAM_CTRL_CTRL_REGWEN_REG_OFFSET,
+                      0);
+}
+
+/**
+ * Locks SRAM Controller "Execute" functionality.
+ *
+ * Execution from SRAM cannot be changed (when enabled - it stays enabled, and
+ * vice versa).
+ */
+static void sram_ctrl_lock_exec(const dif_sram_ctrl_t *sram_ctrl) {
+  mmio_region_write32(sram_ctrl->base_addr, SRAM_CTRL_EXEC_REGWEN_REG_OFFSET,
+                      0);
 }
 
 /**
@@ -33,7 +69,7 @@ dif_result_t dif_sram_ctrl_request_new_key(const dif_sram_ctrl_t *sram_ctrl) {
     return kDifBadArg;
   }
 
-  if (sram_ctrl_lock_state(sram_ctrl) == kDifToggleEnabled) {
+  if (sram_ctrl_locked_ctrl(sram_ctrl)) {
     return kDifLocked;
   }
 
@@ -55,6 +91,78 @@ dif_result_t dif_sram_ctrl_get_status(const dif_sram_ctrl_t *sram_ctrl,
   }
 
   *status = sram_ctrl_get_status(sram_ctrl);
+
+  return kDifOk;
+}
+
+dif_result_t dif_sram_ctrl_exec_get_enabled(const dif_sram_ctrl_t *sram_ctrl,
+                                            dif_toggle_t *state) {
+  if (sram_ctrl == NULL || state == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg =
+      mmio_region_read32(sram_ctrl->base_addr, SRAM_CTRL_EXEC_REG_OFFSET);
+
+  *state = (reg == kMultiBitBool4True) ? kDifToggleEnabled : kDifToggleDisabled;
+
+  return kDifOk;
+}
+
+dif_result_t dif_sram_ctrl_exec_set_enabled(const dif_sram_ctrl_t *sram_ctrl,
+                                            dif_toggle_t state) {
+  if (sram_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  if (sram_ctrl_exec_locked(sram_ctrl)) {
+    return kDifLocked;
+  }
+
+  uint32_t value =
+      (state == kDifToggleEnabled) ? kMultiBitBool4True : kMultiBitBool4False;
+  mmio_region_write32(sram_ctrl->base_addr, SRAM_CTRL_EXEC_REG_OFFSET, value);
+
+  return kDifOk;
+}
+
+dif_result_t dif_sram_ctrl_lock(const dif_sram_ctrl_t *sram_ctrl,
+                                dif_sram_ctrl_lock_t lock) {
+  if (sram_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  switch (lock) {
+    case kDifSramCtrlLockCtrl:
+      sram_ctrl_lock_ctrl(sram_ctrl);
+      break;
+    case kDifSramCtrlLockExec:
+      sram_ctrl_lock_exec(sram_ctrl);
+      break;
+    default:
+      return kDifError;
+  }
+
+  return kDifOk;
+}
+
+dif_result_t dif_sram_ctrl_is_locked(const dif_sram_ctrl_t *sram_ctrl,
+                                     dif_sram_ctrl_lock_t lock,
+                                     bool *is_locked) {
+  if (sram_ctrl == NULL || is_locked == NULL) {
+    return kDifBadArg;
+  }
+
+  switch (lock) {
+    case kDifSramCtrlLockCtrl:
+      *is_locked = sram_ctrl_locked_ctrl(sram_ctrl);
+      break;
+    case kDifSramCtrlLockExec:
+      *is_locked = sram_ctrl_exec_locked(sram_ctrl);
+      break;
+    default:
+      return kDifError;
+  }
 
   return kDifOk;
 }

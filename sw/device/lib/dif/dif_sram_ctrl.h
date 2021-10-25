@@ -223,7 +223,7 @@ dif_result_t dif_sram_ctrl_get_status(const dif_sram_ctrl_t *sram_ctrl,
  * Locks out requested SRAM Controller functionality.
  *
  * This function is reentrant: calling it while functionality is locked will
- * have no effect and return `kDifSramCtrlOk`.
+ * have no effect and return `kDifOk`.
  *
  * @param sram_ctrl A SRAM Controller handle.
  * @param lock SRAM functionality to lock.
