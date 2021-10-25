@@ -3,11 +3,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Returns 0 if there are no changes or untracked files, 1 otherwise
+# Returns 0 if there are no changes or untracked files, 1 otherwise.
+# Show the diff on STDOUT if there's deviation.
 is_clean() {
     local output
     output="$(git status --porcelain)" || return 1
     test -z "$output" && return 0
+    echo Diff between the regenerated content and the content in this PR/the repository:
+    git diff
     return 1
 }
 
