@@ -77,6 +77,11 @@ module aes_prng_masking import aes_pkg::*;
   // the SecSkipPRNGReseeding parameter is set. Performing the reseeding without proper entropy
   // provided from CSRNG would result in quickly repeating, fully deterministic PRNG output,
   // which prevents meaningful SCA resistance evaluations.
+  if (SecSkipPRNGReseeding) begin : gen_skip_prng_reseeding
+    // Create a lint error to reduce the risk of accidentally enabling this feature.
+    logic sec_skip_prng_reseeding;
+    assign sec_skip_prng_reseeding = SecSkipPRNGReseeding;
+  end
 
   // PRNG control
   assign prng_en = data_update_i;
@@ -186,7 +191,12 @@ module aes_prng_masking import aes_pkg::*;
       (SecAllowForcingMasks && force_zero_masks_i) ? '0                             :
        phase_q                                     ? {perm[0], perm[NumChunks-1:1]} : perm;
 
-  if (!SecAllowForcingMasks) begin : gen_unused_force_masks
+  // Create a lint error to reduce the risk of accidentally enabling this feature.
+  if (SecAllowForcingMasks) begin : gen_allow_forcing_masks
+    logic sec_allow_forcing_masks;
+    assign sec_allow_forcing_masks = force_zero_masks_i;
+
+  end else begin : gen_unused_force_masks
     logic unused_force_zero_masks;
     assign unused_force_zero_masks = force_zero_masks_i;
   end
