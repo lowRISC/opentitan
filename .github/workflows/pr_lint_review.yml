@@ -42,6 +42,9 @@ jobs:
             fs.writeFileSync('${{github.workspace}}/verible_input.zip', Buffer.from(download.data));
       - run: |
           unzip verible_input.zip
+      - name: Show config
+        run: |
+          cat verible_config
       - name: Run Verible linter action
         uses: chipsalliance/verible-linter-action@main
         with:

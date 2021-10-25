@@ -14,6 +14,9 @@ jobs:
       - name: concatenate verible configs
         run: |
           find . -type f -name '*.vbl' -exec cat {} \; > verible_config
+      - name: Show config
+        run: |
+          cat verible_config
       - name: Copy event file
         run: cp "$GITHUB_EVENT_PATH" ./event.json
 
