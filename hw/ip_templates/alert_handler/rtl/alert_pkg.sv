@@ -57,7 +57,7 @@ package alert_pkg;
     loc_alert_cause: '0,
     class_accum_cnt: '0,
     class_esc_cnt: '0,
-    class_esc_state: '0
+    class_esc_state: Idle
   };
 
   // breakout wrapper structs
