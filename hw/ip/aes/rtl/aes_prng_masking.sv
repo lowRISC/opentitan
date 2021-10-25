@@ -55,37 +55,18 @@ module aes_prng_masking import aes_pkg::*;
   input  logic [EntropyWidth-1:0] entropy_i
 );
 
-  logic                                seed_en;
-  logic                                seed_valid;
-  logic                    [Width-1:0] seed;
+  logic                [NumChunks-1:0] prng_seed_en;
   logic [NumChunks-1:0][ChunkSize-1:0] prng_seed;
   logic                                prng_en;
   logic [NumChunks-1:0][ChunkSize-1:0] prng_state, perm;
   logic                    [Width-1:0] prng_b, perm_b;
   logic                                phase_q;
 
-  // Upsizing of entropy input to correct width for PRNG reseeding.
-  prim_packer_fifo #(
-    .InW  ( EntropyWidth ),
-    .OutW ( Width        )
-  ) u_prim_packer_fifo (
-    .clk_i    ( clk_i         ),
-    .rst_ni   ( rst_ni        ),
-    .clr_i    ( 1'b0          ), // Not needed.
-    .wvalid_i ( entropy_ack_i ),
-    .wdata_i  ( entropy_i     ),
-    .wready_o (               ), // Not needed, we're always ready to sink data at this point.
-    .rvalid_o ( seed_valid    ),
-    .rdata_o  ( seed          ),
-    .rready_i ( 1'b1          ), // We're always ready to receive the packed output word.
-    .depth_o  (               )  // Not needed.
-  );
-
   /////////////
   // Control //
   /////////////
 
-  // The data requests are fed from the LFSRs. Reseed requests take precedence interally to the
+  // The data requests are fed from the LFSRs. Reseed requests take precedence internally to the
   // LFSRs. If there is an outstanding reseed request, the PRNG can keep updating and providing
   // pseudo-random data (using the old seed). If the reseeding is taking place, the LFSRs will
   // provide fresh pseudo-random data (the new seed) in the next cycle anyway. This means the
@@ -97,24 +78,79 @@ module aes_prng_masking import aes_pkg::*;
   // provided from CSRNG would result in quickly repeating, fully deterministic PRNG output,
   // which prevents meaningful SCA resistance evaluations.
 
-  // Stop requesting entropy once the desired amount is available.
-  assign entropy_req_o = SecSkipPRNGReseeding ? 1'b0         : reseed_req_i & ~seed_valid;
-  assign reseed_ack_o  = SecSkipPRNGReseeding ? reseed_req_i : seed_valid;
-
   // PRNG control
   assign prng_en = data_update_i;
-  assign seed_en = SecSkipPRNGReseeding ? 1'b0 : seed_valid;
+
+  // Width adaption for reseeding interface. We get EntropyWidth bits at a time.
+  if (ChunkSize == EntropyWidth) begin : gen_counter
+    // We can reseed chunk by chunk as we get fresh entropy. Need to keep track of which chunk to
+    // reseed next.
+    localparam int unsigned ChunkIdxWidth = prim_util_pkg::vbits(NumChunks);
+    logic [ChunkIdxWidth-1:0] chunk_idx_d, chunk_idx_q;
+    logic                     prng_reseed_done;
+
+    // Stop requesting entropy once every chunk got reseeded.
+    assign entropy_req_o = SecSkipPRNGReseeding ? 1'b0         : reseed_req_i;
+    assign reseed_ack_o  = SecSkipPRNGReseeding ? reseed_req_i : prng_reseed_done;
+
+    // Counter
+    assign prng_reseed_done =
+        (chunk_idx_q == ChunkIdxWidth'(NumChunks - 1)) & entropy_req_o & entropy_ack_i;
+    assign chunk_idx_d = prng_reseed_done ? '0                              :
+        entropy_req_o && entropy_ack_i    ? chunk_idx_q + ChunkIdxWidth'(1) : chunk_idx_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : reg_chunk_idx
+      if (!rst_ni) begin
+        chunk_idx_q <= '0;
+      end else begin
+        chunk_idx_q <= chunk_idx_d;
+      end
+    end
+
+    // The entropy input is forwarded to all chunks, we just control the seed enable.
+    for (genvar c = 0; c < NumChunks; c++) begin : gen_seeds
+      assign prng_seed[c]    = entropy_i;
+      assign prng_seed_en[c] = (c == chunk_idx_q) ? entropy_req_o & entropy_ack_i : 1'b0;
+    end
+
+  end else begin : gen_packer
+    // Upsizing of entropy input to correct width for reseeding the full PRNG in one shot.
+    logic [Width-1:0] seed;
+    logic             seed_valid;
+
+    // Stop requesting entropy once the desired amount is available.
+    assign entropy_req_o = SecSkipPRNGReseeding ? 1'b0         : reseed_req_i & ~seed_valid;
+    assign reseed_ack_o  = SecSkipPRNGReseeding ? reseed_req_i : seed_valid;
+
+    prim_packer_fifo #(
+      .InW  ( EntropyWidth ),
+      .OutW ( Width        )
+    ) u_prim_packer_fifo (
+      .clk_i    ( clk_i         ),
+      .rst_ni   ( rst_ni        ),
+      .clr_i    ( 1'b0          ), // Not needed.
+      .wvalid_i ( entropy_ack_i ),
+      .wdata_i  ( entropy_i     ),
+      .wready_o (               ), // Not needed, we're always ready to sink data at this point.
+      .rvalid_o ( seed_valid    ),
+      .rdata_o  ( seed          ),
+      .rready_i ( 1'b1          ), // We're always ready to receive the packed output word.
+      .depth_o  (               )  // Not needed.
+    );
+
+    // Extract chunk seeds. All chunks get reseeded together.
+    for (genvar c = 0; c < NumChunks; c++) begin : gen_seeds
+      assign prng_seed[c]    = seed[c * ChunkSize +: ChunkSize];
+      assign prng_seed_en[c] = SecSkipPRNGReseeding ? 1'b0 : seed_valid;
+    end
+  end
 
   ///////////
   // LFSRs //
   ///////////
 
   // We use multiple LFSR instances each having a width of ChunkSize.
-  for (genvar c = 0; c < NumChunks; c++) begin : gen_chunks
-
-    // Extract entropy input.
-    assign prng_seed[c] = seed[c * ChunkSize +: ChunkSize];
-
+  for (genvar c = 0; c < NumChunks; c++) begin : gen_lfsrs
     prim_lfsr #(
       .LfsrType     ( "GAL_XOR"                                   ),
       .LfsrDw       ( ChunkSize                                   ),
@@ -123,13 +159,13 @@ module aes_prng_masking import aes_pkg::*;
       .StatePermEn  ( 1'b0                                        ),
       .NonLinearOut ( 1'b1                                        )
     ) u_lfsr_chunk (
-      .clk_i     ( clk_i         ),
-      .rst_ni    ( rst_ni        ),
-      .seed_en_i ( seed_en       ),
-      .seed_i    ( prng_seed[c]  ),
-      .lfsr_en_i ( prng_en       ),
-      .entropy_i ( '0            ),
-      .state_o   ( prng_state[c] )
+      .clk_i     ( clk_i           ),
+      .rst_ni    ( rst_ni          ),
+      .seed_en_i ( prng_seed_en[c] ),
+      .seed_i    ( prng_seed[c]    ),
+      .lfsr_en_i ( prng_en         ),
+      .entropy_i ( '0              ),
+      .state_o   ( prng_state[c]   )
     );
   end
 
