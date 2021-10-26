@@ -500,6 +500,9 @@ These accesses are ignored if OTBN is busy.
 A host processor can check whether OTBN is busy by reading the {{< regref "STATUS">}} register.
 All memory accesses through the register interface must be word-aligned 32b word accesses.
 
+While DMEM is 4kiB, only the first 2kiB (at addresses `0x0` to `0x7ff`) is visible through the register interface.
+This is to allow OTBN applications to store sensitive information in the other half, making it harder for that information to leak back to Ibex.
+
 Each memory write through the register interface updates a checksum.
 See the [Memory Load Integrity]({{< relref "#mem-load-integrity" >}}) section for more details.
 
@@ -942,7 +945,7 @@ The high-level sequence by which the host processor should use OTBN is as follow
 
 1. Optional: Initialise {{< regref "LOAD_CHECKSUM" >}}.
 1. Write the OTBN application binary to {{< regref "IMEM" >}}, starting at address 0.
-1. Optional: Write constants and input arguments, as mandated by the calling convention of the loaded application, to {{< regref "DMEM" >}}.
+1. Optional: Write constants and input arguments, as mandated by the calling convention of the loaded application, to the half of DMEM accessible through the {{< regref "DMEM" >}} window.
 1. Optional: Read back {{< regref "LOAD_CHECKSUM" >}} and perform an integrity check.
 1. Start the operation on OTBN by [issuing the `EXECUTE` command](#design-details-commands).
    Now neither data nor instruction memory may be accessed from the host CPU.
@@ -1000,7 +1003,7 @@ Other tools from the RV32 toolchain can be used directly, such as objcopy.
 
 ## Passing of data between the host CPU and OTBN {#writing-otbn-applications-datapassing}
 
-Passing data between the host CPU and OTBN is done through the data memory (DMEM).
+Passing data between the host CPU and OTBN is done through the first 2kiB of data memory (DMEM).
 No standard or required calling convention exists, every application is free to pass data in and out of OTBN in whatever format it finds convenient.
 All data passing must be done when OTBN [is idle](#design-details-operational-states); otherwise both the instruction and the data memory are inaccessible from the host CPU.
 
@@ -1015,7 +1018,7 @@ Once OTBN has executed the {{< otbnInsnRef "ECALL" >}} instruction, the followin
 - The {{< regref "ERR_BITS" >}} register is set to 0, indicating a successful operation.
 - The current operation is marked as complete by setting {{< regref "INTR_STATE.done" >}} and clearing {{< regref "STATUS" >}}.
 
-The DMEM can be used to pass data back to the host processor, e.g. a "return value" or an "exit code".
+The first 2kiB of DMEM can be used to pass data back to the host processor, e.g. a "return value" or an "exit code".
 Refer to the section [Passing of data between the host CPU and OTBN]({{<relref "#writing-otbn-applications-datapassing" >}}) for more information.
 
 ## Using hardware loops
