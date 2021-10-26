@@ -138,7 +138,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     // Set the thresholds to get no error.
     foreach (ExpectedCounts[clk]) begin
       clk_mesr_e clk_mesr = clk_mesr_e'(clk);
-      enable_frequency_measurement(clk_mesr, ExpectedCounts[clk] - 1, ExpectedCounts[clk]);
+      enable_frequency_measurement(clk_mesr, ExpectedCounts[clk] - 1, ExpectedCounts[clk] + 1);
     end
     wait_before_read_recov_err_code();
     csr_rd_check(.ptr(ral.recov_err_code), .compare_value('0),
@@ -170,7 +170,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
           end
         end else begin
           min_threshold = expected - 1;
-          max_threshold = expected;
+          max_threshold = expected + 1;
         end
         enable_frequency_measurement(clk_mesr, min_threshold, max_threshold);
       end
