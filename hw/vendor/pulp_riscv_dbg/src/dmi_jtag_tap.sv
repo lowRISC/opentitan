@@ -219,7 +219,8 @@ module dmi_jtag_tap #(
   logic tck_n;
 
   prim_clock_inv #(
-    .HasScanMode(1'b1)
+    .HasScanMode(1'b1),
+    .NoFpgaBufG(1'b1)
   ) i_tck_inv (
     .clk_i      ( tck_i      ),
     .clk_no     ( tck_n      ),
