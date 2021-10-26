@@ -2,8 +2,7 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-
-.text
+.section .text.start
 
 /**
  * Standalone test for 3072 bit RSA signature verification
@@ -15,34 +14,6 @@
  * w0). See comment at the end of the file for expected values.
  */
 run_rsa_verify_3072:
-
-  /* copy modulus to input buffer */
-  la x2, in_mod
-  la x3, test_mod
-  loopi    12, 2
-    bn.lid x0, 0(x3++)
-    bn.sid x0, 0(x2++)
-
-  /* copy signature to input buffer */
-  la x2, in_buf
-  la x3, test_sig
-  loopi    12, 2
-    bn.lid x0, 0(x3++)
-    bn.sid x0, 0(x2++)
-
-  /* copy RR to input buffer */
-  la x2, in_rr
-  la x3, test_rr
-  loopi    12, 2
-    bn.lid x0, 0(x3++)
-    bn.sid x0, 0(x2++)
-
-  /* copy m0inv to input buffer */
-  la x2, in_m0inv
-  la x3, test_m0inv
-  bn.lid x0, 0(x3)
-  bn.sid x0, 0(x2)
-
   /* run modular exponentiation */
   jal      x1, modexp_var_3072_f4
 
@@ -59,7 +30,8 @@ run_rsa_verify_3072:
 .data
 
 /* Modulus of test key */
-test_mod:
+.globl in_mod
+in_mod:
   .word 0x6a6a75e1
   .word 0xa018ddc5
   .word 0x687bb168
@@ -158,7 +130,8 @@ test_mod:
   .word 0xe1df9be8
 
 /* Montgomery constant m0' */
-test_m0inv:
+.globl in_m0inv
+in_m0inv:
 .word 0xf09b71df
 .word 0xfd3e34f7
 .word 0x0b908e3b
@@ -177,7 +150,8 @@ test_m0inv:
 .word 0x7da9803a
 
 /* Squared Mongomery Radix RR = (2^3072)^2 mod N */
-test_rr:
+.globl in_rr
+in_rr:
 .word 0xa3eb77fa
 .word 0x9db9a2ac
 .word 0x2c19d4ae
@@ -276,7 +250,8 @@ test_rr:
 .word 0x9e2dcea8
 
 /* signature */
-test_sig:
+.globl in_buf
+in_buf:
 .word 0xceb7e983
 .word 0xe693b200
 .word 0xf9153989
