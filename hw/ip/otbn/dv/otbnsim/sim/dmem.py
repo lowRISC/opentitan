@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import struct
-from typing import List, Sequence
+from typing import List, Sequence, Optional
 
 from shared.mem_layout import get_memory_layout
 
@@ -59,7 +59,7 @@ class Dmem:
         # more helpful to generate something recognisable for now.
         uninit = 0xdeadbeef
 
-        self.data = [uninit] * num_words
+        self.data = [uninit] * num_words  # type: List[Optional[int]]
         self.trace = []  # type: List[TraceDmemStore]
 
     def _load_5byte_le_words(self, data: bytes) -> None:
@@ -138,7 +138,10 @@ class Dmem:
         '''
         ret = b''
         for u32 in self.data:
-            ret += struct.pack('<BI', 1, u32)
+            if u32 is None:
+                ret += struct.pack('<BI', 0, 0)
+            else:
+                ret += struct.pack('<BI', 1, u32)
 
         return ret
 
@@ -154,13 +157,15 @@ class Dmem:
 
         return True
 
-    def load_u256(self, addr: int) -> int:
+    def load_u256(self, addr: int) -> Optional[int]:
         '''Read a u256 little-endian value from an aligned address'''
         assert addr >= 0
         assert self.is_valid_256b_addr(addr)
         ret_data = 0
         for i in range(256 // 32):
             rd_data = self.data[(addr // 4) + i]
+            if rd_data is None:
+                return None
             ret_data = ret_data | (rd_data << (i * 32))
 
         return ret_data
@@ -184,7 +189,7 @@ class Dmem:
 
         return True
 
-    def load_u32(self, addr: int) -> int:
+    def load_u32(self, addr: int) -> Optional[int]:
         '''Read a 32-bit value from memory.
 
         addr should be 4-byte aligned. The result is returned as an unsigned
@@ -219,11 +224,9 @@ class Dmem:
                 wr_data = (item.value >> (i * 32)) & mask
                 self.data[(item.addr // 4) + i] = wr_data
 
-            return
         else:
+            assert 0 <= item.value <= (1 << 32) - 1
             self.data[item.addr // 4] = item.value
-
-        assert 0 <= item.value <= (1 << 32) - 1
 
     def commit(self) -> None:
         for item in self.trace:
@@ -232,3 +235,6 @@ class Dmem:
 
     def abort(self) -> None:
         self.trace = []
+
+    def empty_dmem(self) -> None:
+        self.data = [None] * len(self.data)

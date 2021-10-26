@@ -456,6 +456,21 @@ int OtbnModel::invalidate_imem() {
   return 0;
 }
 
+int OtbnModel::invalidate_dmem() {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    iss->invalidate_dmem();
+  } catch (const std::exception &err) {
+    std::cerr << "Error when invalidating DMEM in ISS: " << err.what() << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
 int OtbnModel::step_crc(const svBitVecVal *item /* bit [47:0] */,
                         svBitVecVal *state /* bit [31:0] */) {
   ISSWrapper *iss = ensure_wrapper();
@@ -786,6 +801,11 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
 int otbn_model_invalidate_imem(OtbnModel *model) {
   assert(model);
   return model->invalidate_imem();
+}
+
+int otbn_model_invalidate_dmem(OtbnModel *model) {
+  assert(model);
+  return model->invalidate_dmem();
 }
 
 int otbn_model_step_crc(OtbnModel *model, svBitVecVal *item /* bit [47:0] */,

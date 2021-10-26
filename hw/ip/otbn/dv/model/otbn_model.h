@@ -74,6 +74,10 @@ class OtbnModel {
   // error. Returns 0 on success; -1 on failure.
   int invalidate_imem();
 
+  // Mark all of DMEM as invalid so that any load causes an integrity
+  // error. Returns 0 on success; -1 on failure.
+  int invalidate_dmem();
+
   // Step CRC by consuming 48 bits of data.
   //
   // This doesn't actually update any internal state: we're just using the
