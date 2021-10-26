@@ -124,7 +124,7 @@ module otbn_reg_top (
     if (tl_i.a_address[AW-1:0] >= 16384 && tl_i.a_address[AW-1:0] < 20480) begin
       reg_steer = 0;
     end
-    if (tl_i.a_address[AW-1:0] >= 32768 && tl_i.a_address[AW-1:0] < 36864) begin
+    if (tl_i.a_address[AW-1:0] >= 32768 && tl_i.a_address[AW-1:0] < 34816) begin
       reg_steer = 1;
     end
     if (intg_err) begin

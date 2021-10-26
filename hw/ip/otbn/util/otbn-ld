@@ -24,13 +24,18 @@ from shared.toolchain import find_tool
 
 def interpolate_linker_script(in_path: str, out_path: str) -> None:
     mems = get_memory_layout()
+    imem_lma, imem_length = mems['IMEM']
+    dmem_lma, dmem_bus_length = mems['DMEM']
+
+    dmem_length = dmem_bus_length * 2
 
     try:
         template = Template(filename=in_path)
-        rendered = template.render(imem_lma = mems['IMEM'][0],
-                                   imem_length = mems['IMEM'][1],
-                                   dmem_lma = mems['DMEM'][0],
-                                   dmem_length = mems['DMEM'][1])
+        rendered = template.render(imem_lma=imem_lma,
+                                   imem_length=imem_length,
+                                   dmem_lma=dmem_lma,
+                                   dmem_length=dmem_length,
+                                   dmem_bus_length=dmem_bus_length)
     except OSError as err:
         raise RuntimeError(str(err)) from None
     except:  # noqa: 722
