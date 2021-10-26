@@ -13,11 +13,18 @@
 MEMORY
 {
     imem (x)  : ORIGIN = 0, LENGTH = ${imem_length}
-    dmem (rw) : ORIGIN = 0, LENGTH = ${dmem_length}
+    dmem (rw) : ORIGIN = 0, LENGTH = ${dmem_length // 2}
+    dmem_scratch (rw) : ORIGIN = ${dmem_length // 2}, LENGTH = ${dmem_length // 2}
 
-    /* LMA addresses (for VMAs in imem/dmem, respectively) */
-    imem_load (rw) : ORIGIN = ${imem_lma}, LENGTH = ${imem_length}
-    dmem_load (rw) : ORIGIN = ${dmem_lma}, LENGTH = ${dmem_length}
+    /*
+      LMA addresses (for VMAs in imem/dmem, respectively)
+
+      Note that the DMEM load region is half the size of DMEM itself,
+      to model the fact that OTBN can write to the whole region but
+      only the first ${dmem_length // 2} bytes are bus-accessible.
+    */
+    imem_load (rw)    : ORIGIN = ${imem_lma}, LENGTH = ${imem_length}
+    dmem_load (rw)    : ORIGIN = ${dmem_lma}, LENGTH = ${dmem_length // 2}
 }
 
 SECTIONS
@@ -52,4 +59,9 @@ SECTIONS
 
         _dmem_end = .;
     } >dmem AT>dmem_load
+
+    .scratchpad ORIGIN(dmem_scratch) (NOLOAD) : ALIGN(32)
+    {
+        *(.scratch*)
+    } >dmem
 }
