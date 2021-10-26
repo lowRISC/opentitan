@@ -50,6 +50,25 @@ IPS_USING_IPGEN = [
 ]
 
 
+class Alert:
+    """Holds alert information for populating DIF code templates.
+
+    Attributes:
+        name_snake (str): Alert short name in lower snake case.
+        name_upper (str): Alert short name in upper snake case.
+        name_camel (str): Alert short name in camel case.
+        description (str): Full description of the alert.
+
+    """
+    def __init__(self, alert: OrderedDict) -> None:
+        self.name_snake = alert["name"]
+        self.name_upper = self.name_snake.upper()
+        self.name_camel = "".join(
+            [word.capitalize() for word in self.name_snake.split("_")])
+        _multiline_description = alert["desc"][0].upper() + alert["desc"][1:]
+        self.description = _multiline_description.replace("\n", " ")
+
+
 class Irq:
     """Holds IRQ information for populating DIF code templates.
 
@@ -96,7 +115,8 @@ class Ip:
         name_camel (str): IP short name in camel case.
         name_long_lower (str): IP full name in lower case.
         name_long_upper (str): IP full name with first letter capitalized.
-        irqs (List[Irq]): List of Irq objects constructed from hjson_data.
+        alerts (List[alerts]): List of Alert objs constructed from HSJON data.
+        irqs (List[Irq]): List of Irq objs constructed from HJSON data.
 
     """
     def __init__(self, name_snake: str, name_long_lower: str) -> None:
@@ -127,14 +147,25 @@ class Ip:
         with _hjson_file.open("r") as f:
             _hjson_str = f.read()
         self._hjson_data = hjson.loads(_hjson_str)
+        # Load Alert data from HJSON.
+        self.alerts = self._load_alerts()
         # Load IRQ data from HJSON.
         self.irqs = self._load_irqs()
         # Load Parameters from HJSON
         self.parameters = self._load_parameters()
 
+    def _load_alerts(self):
+        assert (self._hjson_data and
+                "ERROR: must load IP HJSON before loading Alerts")
+        alerts = []
+        if "alert_list" in self._hjson_data:
+            for alert in self._hjson_data["alert_list"]:
+                alerts.append(Alert(alert))
+        return alerts
+
     def _load_irqs(self):
         assert (self._hjson_data and
-                "ERROR: must load IP HJSON before loarding IRQs")
+                "ERROR: must load IP HJSON before loading IRQs")
         irqs = []
         if "interrupt_list" in self._hjson_data:
             for irq in self._hjson_data["interrupt_list"]:
