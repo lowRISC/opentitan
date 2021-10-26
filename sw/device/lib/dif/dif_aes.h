@@ -245,6 +245,59 @@ dif_result_t dif_aes_start_ctr(const dif_aes_t *aes,
                                dif_aes_key_share_t key, dif_aes_iv_t iv);
 
 /**
+ * Begins an AES transaction in OFB mode.
+ *
+ * In OFB cipher mode, the same key can be used for all messages, and the
+ * Initialization Vector (IV) need NOT be unpredictable. The following
+ * conditions must be true:
+ *     OFB mode requires a unique initialization vector for every message that
+ *     is ever encrypted under a given key, across all messages.
+ *
+ * With key length less than 256 bits, the excess portion of the `key` can be
+ * written with any data (preferably random).
+ *
+ * The peripheral must be in IDLE state for this operation to take effect, and
+ * will return `kDifAesStartBusy` if this condition is not met.
+ *
+ * @param aes AES state data.
+ * @param transaction Configuration data.
+ * @param key Masked AES key.
+ * @param iv AES Initialization vector.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aes_start_ofb(const dif_aes_t *aes,
+                               const dif_aes_transaction_t *transaction,
+                               dif_aes_key_share_t key, dif_aes_iv_t iv);
+
+/**
+ * Begins an AES transaction in CFB mode.
+ *
+ * In CFB cipher mode, the same key can be used for all messages, however
+ * new Initialisation Vector (IV) must be generated for any new message. The
+ * following condition must be true:
+ *     The IV must be unpredictable (it must not be possible to predict the IV
+ *     that will be associated to the plaintext in advance of the generation of
+ *     the IV).
+ *
+ * With key length less than 256 bits, the excess portion of the `key` can be
+ * written with any data (preferably random).
+ *
+ * The peripheral must be in IDLE state for this operation to take effect, and
+ * will return `kDifAesStartBusy` if this condition is not met.
+ *
+ * @param aes AES state data.
+ * @param transaction Configuration data.
+ * @param key Masked AES key.
+ * @param iv AES Initialization vector.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aes_start_cfb(const dif_aes_t *aes,
+                               const dif_aes_transaction_t *transaction,
+                               dif_aes_key_share_t key, dif_aes_iv_t iv);
+
+/**
  * Ends an AES transaction.
  *
  * This function must be called at the end of every `dif_aes_<mode>_start`
