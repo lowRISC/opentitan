@@ -215,8 +215,12 @@ def main():
         if "header" in args.only:
             header_template_file = (REPO_TOP /
                                     "util/make_new_dif/dif_template.h.tpl")
-            header_template = Template(header_template_file.read_text())
             header_out_file = dif_dir / "dif_{}.h".format(ip.name_snake)
+            if header_out_file.is_file():
+                raise FileExistsError(
+                    """DIF header already exists for the IP. To overwrite, """
+                    """delete existing header and try again.""")
+            header_template = Template(header_template_file.read_text())
             header_out_file.write_text(header_template.render(ip=ip))
             print("DIF header successfully written to {}.".format(
                 str(header_out_file)))
@@ -253,8 +257,12 @@ def main():
 
         if "checklist" in args.only:
             checklist_template_file = REPO_TOP / "doc/project/sw_checklist.md.tpl"
-            markdown_template = Template(checklist_template_file.read_text())
             checklist_out_file = dif_dir / "dif_{}.md".format(ip.name_snake)
+            if checklist_out_file.is_file():
+                raise FileExistsError(
+                    """DIF checklist already exists for the IP. To """
+                    """overwrite, delete existing checklist and try again.""")
+            markdown_template = Template(checklist_template_file.read_text())
             checklist_out_file.write_text(markdown_template.render(ip=ip))
             print("DIF Checklist successfully written to {}.".format(
                 str(checklist_out_file)))
