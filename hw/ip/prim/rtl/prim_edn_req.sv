@@ -71,7 +71,8 @@ module prim_edn_req
 
   prim_packer_fifo #(
     .InW(edn_pkg::ENDPOINT_BUS_WIDTH),
-    .OutW(OutWidth)
+    .OutW(OutWidth),
+    .ClearOnRead(1'b0)
   ) u_prim_packer_fifo (
     .clk_i,
     .rst_ni,
