@@ -34,6 +34,24 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_hmac_init({.base_addr = dev().region()}, &hmac_), kDifOk);
 }
 
+class AlertForceTest : public HmacTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_hmac_alert_force(nullptr, kDifHmacAlertFatalFault), kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_hmac_alert_force(nullptr, static_cast<dif_hmac_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(HMAC_ALERT_TEST_REG_OFFSET,
+                 {{HMAC_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_hmac_alert_force(&hmac_, kDifHmacAlertFatalFault), kDifOk);
+}
+
 class IrqGetStateTest : public HmacTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

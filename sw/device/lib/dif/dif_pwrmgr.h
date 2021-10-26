@@ -173,17 +173,6 @@ typedef struct dif_pwrmgr_wakeup_reason {
 } dif_pwrmgr_wakeup_reason_t;
 
 /**
- * Power manager alerts.
- */
-typedef enum dif_pwrmgr_alert {
-  /**
-   * A fatal alert is triggered when a fatal TL-UL bus integrity fault is
-   * detected.
-   */
-  kDifPwrmgrAlertFatalFault = 0,
-} dif_pwrmgr_alert_t;
-
-/**
  * Enables or disables low power state.
  *
  * When enabled, the power manager transitions to low power state on the next
@@ -369,18 +358,6 @@ dif_result_t dif_pwrmgr_wakeup_reason_get(const dif_pwrmgr_t *pwrmgr,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_wakeup_reason_clear(const dif_pwrmgr_t *pwrmgr);
-
-/**
- * Forces a particular alert, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param pwrmgr A power manager handle.
- * @param alert A power manager alert type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
-                                    dif_pwrmgr_alert_t alert);
 
 #ifdef __cplusplus
 }  // extern "C"

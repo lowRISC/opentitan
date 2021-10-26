@@ -35,6 +35,27 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_usbdev_init({.base_addr = dev().region()}, &usbdev_), kDifOk);
 }
 
+class AlertForceTest : public UsbdevTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_usbdev_alert_force(nullptr, kDifUsbdevAlertFatalFault),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_usbdev_alert_force(nullptr, static_cast<dif_usbdev_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(USBDEV_ALERT_TEST_REG_OFFSET,
+                 {{USBDEV_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_usbdev_alert_force(&usbdev_, kDifUsbdevAlertFatalFault),
+            kDifOk);
+}
+
 class IrqGetStateTest : public UsbdevTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

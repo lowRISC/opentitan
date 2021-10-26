@@ -36,6 +36,27 @@ TEST_F(InitTest, Success) {
             kDifOk);
 }
 
+class AlertForceTest : public AdcCtrlTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_adc_ctrl_alert_force(nullptr, kDifAdcCtrlAlertFatalFault),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_adc_ctrl_alert_force(nullptr, static_cast<dif_adc_ctrl_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(ADC_CTRL_ALERT_TEST_REG_OFFSET,
+                 {{ADC_CTRL_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_adc_ctrl_alert_force(&adc_ctrl_, kDifAdcCtrlAlertFatalFault),
+            kDifOk);
+}
+
 class IrqGetStateTest : public AdcCtrlTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

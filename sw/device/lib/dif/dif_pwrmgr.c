@@ -479,24 +479,3 @@ dif_result_t dif_pwrmgr_wakeup_reason_clear(const dif_pwrmgr_t *pwrmgr) {
 
   return kDifOk;
 }
-
-dif_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
-                                    dif_pwrmgr_alert_t alert) {
-  if (pwrmgr == NULL) {
-    return kDifBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  switch (alert) {
-    case kDifPwrmgrAlertFatalFault:
-      index = PWRMGR_ALERT_TEST_FATAL_FAULT_BIT;
-      break;
-    default:
-      return kDifBadArg;
-  }
-
-  uint32_t reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(pwrmgr->base_addr, PWRMGR_ALERT_TEST_REG_OFFSET, reg);
-
-  return kDifOk;
-}

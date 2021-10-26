@@ -150,19 +150,6 @@ TEST_F(StateTest, NullArgs) {
   EXPECT_EQ(dif_lc_ctrl_get_id_state(&lc_, nullptr), kDifBadArg);
 }
 
-class AlertTest : public LcCtrlTest {};
-
-TEST_F(AlertTest, Force) {
-  EXPECT_WRITE32(LC_CTRL_ALERT_TEST_REG_OFFSET,
-                 {{LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_BIT, true}});
-  EXPECT_EQ(dif_lc_ctrl_alert_force(&lc_, kDifLcCtrlAlertOtp), kDifOk);
-}
-
-TEST_F(AlertTest, NullArgs) {
-  EXPECT_EQ(dif_lc_ctrl_alert_force(nullptr, kDifLcCtrlAlertCorrupt),
-            kDifBadArg);
-}
-
 class MutexTest : public LcCtrlTest {};
 
 TEST_F(MutexTest, Acquire) {

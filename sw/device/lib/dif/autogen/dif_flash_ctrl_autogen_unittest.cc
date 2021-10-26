@@ -36,6 +36,35 @@ TEST_F(InitTest, Success) {
             kDifOk);
 }
 
+class AlertForceTest : public FlashCtrlTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_flash_ctrl_alert_force(nullptr, kDifFlashCtrlAlertRecovErr),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_flash_ctrl_alert_force(nullptr,
+                                       static_cast<dif_flash_ctrl_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(FLASH_CTRL_ALERT_TEST_REG_OFFSET,
+                 {{FLASH_CTRL_ALERT_TEST_RECOV_ERR_BIT, true}});
+  EXPECT_EQ(
+      dif_flash_ctrl_alert_force(&flash_ctrl_, kDifFlashCtrlAlertRecovErr),
+      kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(FLASH_CTRL_ALERT_TEST_REG_OFFSET,
+                 {{FLASH_CTRL_ALERT_TEST_FATAL_ERR_BIT, true}});
+  EXPECT_EQ(
+      dif_flash_ctrl_alert_force(&flash_ctrl_, kDifFlashCtrlAlertFatalErr),
+      kDifOk);
+}
+
 class IrqGetStateTest : public FlashCtrlTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

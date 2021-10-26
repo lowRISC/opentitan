@@ -50,6 +50,34 @@ dif_result_t dif_entropy_src_init(mmio_region_t base_addr,
                                   dif_entropy_src_t *entropy_src);
 
 /**
+ * A entropy_src alert type.
+ */
+typedef enum dif_entropy_src_alert {
+  /**
+   * This alert is triggered upon the alert health test threshold criteria not
+   * met.
+   */
+  kDifEntropySrcAlertRecovAlert = 0,
+  /**
+   * This alert triggers (i) if an illegal state machine state is reached, or
+   * (ii) if a fatal integrity failure is detected on the TL-UL bus.
+   */
+  kDifEntropySrcAlertFatalAlert = 1,
+} dif_entropy_src_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param entropy_src A entropy_src handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_alert_force(const dif_entropy_src_t *entropy_src,
+                                         dif_entropy_src_alert_t alert);
+
+/**
  * A entropy_src interrupt request type.
  */
 typedef enum dif_entropy_src_irq {

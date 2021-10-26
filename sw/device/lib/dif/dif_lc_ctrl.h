@@ -300,24 +300,6 @@ typedef struct dif_lc_ctrl_device_id {
 } dif_lc_ctrl_device_id_t;
 
 /**
- * An alert that can be raised by the hardware.
- */
-typedef enum dif_lc_ctrl_alert {
-  /**
-   * The alert triggered by a `kDifLcCtrlStatusCodeOtpError`.
-   */
-  kDifLcCtrlAlertOtp,
-  /**
-   * The alert triggered by a `kDifLcCtrlStatusCodeCorrupt`.
-   */
-  kDifLcCtrlAlertCorrupt,
-  /**
-   * The alert triggered by a `kDifLcCtrlStatusCodeBusIntegError`.
-   */
-  kDifLcCtrlAlertBus,
-} dif_lc_ctrl_alert_t;
-
-/**
  * Returns the current state of the lifecycle controller.
  *
  * @param lc A lifecycle handle.
@@ -372,18 +354,6 @@ dif_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_lc_ctrl_get_device_id(const dif_lc_ctrl_t *lc,
                                        dif_lc_ctrl_device_id_t *device_id);
-
-/**
- * Forces a particular alert, causing it to be escalated as if the hardware had
- * raised it.
- *
- * @param lc A lifecycle handle.
- * @param alert The alert to force.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
-                                     dif_lc_ctrl_alert_t alert);
 
 /**
  * Attempts to acquire the lifecycle controller's HW mutex.

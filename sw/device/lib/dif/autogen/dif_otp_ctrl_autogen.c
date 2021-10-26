@@ -21,6 +21,34 @@ dif_result_t dif_otp_ctrl_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+dif_result_t dif_otp_ctrl_alert_force(const dif_otp_ctrl_t *otp_ctrl,
+                                      dif_otp_ctrl_alert_t alert) {
+  if (otp_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifOtpCtrlAlertFatalMacroError:
+      alert_idx = OTP_CTRL_ALERT_TEST_FATAL_MACRO_ERROR_BIT;
+      break;
+    case kDifOtpCtrlAlertFatalCheckError:
+      alert_idx = OTP_CTRL_ALERT_TEST_FATAL_CHECK_ERROR_BIT;
+      break;
+    case kDifOtpCtrlAlertFatalBusIntegError:
+      alert_idx = OTP_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(otp_ctrl->base_addr, OTP_CTRL_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

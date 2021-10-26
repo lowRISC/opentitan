@@ -50,6 +50,32 @@ dif_result_t dif_flash_ctrl_init(mmio_region_t base_addr,
                                  dif_flash_ctrl_t *flash_ctrl);
 
 /**
+ * A flash_ctrl alert type.
+ */
+typedef enum dif_flash_ctrl_alert {
+  /**
+   * Flash recoverable errors
+   */
+  kDifFlashCtrlAlertRecovErr = 0,
+  /**
+   * Flash fatal errors
+   */
+  kDifFlashCtrlAlertFatalErr = 1,
+} dif_flash_ctrl_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param flash_ctrl A flash_ctrl handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_flash_ctrl_alert_force(const dif_flash_ctrl_t *flash_ctrl,
+                                        dif_flash_ctrl_alert_t alert);
+
+/**
  * A flash_ctrl interrupt request type.
  */
 typedef enum dif_flash_ctrl_irq {

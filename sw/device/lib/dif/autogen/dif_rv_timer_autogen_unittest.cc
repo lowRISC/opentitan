@@ -36,6 +36,27 @@ TEST_F(InitTest, Success) {
             kDifOk);
 }
 
+class AlertForceTest : public RvTimerTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_rv_timer_alert_force(nullptr, kDifRvTimerAlertFatalFault),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_rv_timer_alert_force(nullptr, static_cast<dif_rv_timer_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(RV_TIMER_ALERT_TEST_REG_OFFSET,
+                 {{RV_TIMER_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_rv_timer_alert_force(&rv_timer_, kDifRvTimerAlertFatalFault),
+            kDifOk);
+}
+
 class IrqGetStateTest : public RvTimerTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

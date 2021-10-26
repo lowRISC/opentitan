@@ -35,6 +35,33 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_keymgr_init({.base_addr = dev().region()}, &keymgr_), kDifOk);
 }
 
+class AlertForceTest : public KeymgrTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_keymgr_alert_force(nullptr, kDifKeymgrAlertFatalFaultErr),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_keymgr_alert_force(nullptr, static_cast<dif_keymgr_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(KEYMGR_ALERT_TEST_REG_OFFSET,
+                 {{KEYMGR_ALERT_TEST_FATAL_FAULT_ERR_BIT, true}});
+  EXPECT_EQ(dif_keymgr_alert_force(&keymgr_, kDifKeymgrAlertFatalFaultErr),
+            kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(KEYMGR_ALERT_TEST_REG_OFFSET,
+                 {{KEYMGR_ALERT_TEST_RECOV_OPERATION_ERR_BIT, true}});
+  EXPECT_EQ(dif_keymgr_alert_force(&keymgr_, kDifKeymgrAlertRecovOperationErr),
+            kDifOk);
+}
+
 class IrqGetStateTest : public KeymgrTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

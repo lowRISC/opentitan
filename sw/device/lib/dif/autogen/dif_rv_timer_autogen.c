@@ -28,6 +28,28 @@ dif_result_t dif_rv_timer_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+dif_result_t dif_rv_timer_alert_force(const dif_rv_timer_t *rv_timer,
+                                      dif_rv_timer_alert_t alert) {
+  if (rv_timer == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifRvTimerAlertFatalFault:
+      alert_idx = RV_TIMER_ALERT_TEST_FATAL_FAULT_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(rv_timer->base_addr, RV_TIMER_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}
+
 typedef enum dif_rv_timer_intr_reg {
   kDifRvTimerIntrRegState = 0,
   kDifRvTimerIntrRegEnable = 1,

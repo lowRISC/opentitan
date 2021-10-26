@@ -48,6 +48,29 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_init(mmio_region_t base_addr, dif_pattgen_t *pattgen);
 
 /**
+ * A pattgen alert type.
+ */
+typedef enum dif_pattgen_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifPattgenAlertFatalFault = 0,
+} dif_pattgen_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param pattgen A pattgen handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pattgen_alert_force(const dif_pattgen_t *pattgen,
+                                     dif_pattgen_alert_t alert);
+
+/**
  * A pattgen interrupt request type.
  */
 typedef enum dif_pattgen_irq {

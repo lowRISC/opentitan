@@ -20,6 +20,28 @@ dif_result_t dif_gpio_init(mmio_region_t base_addr, dif_gpio_t *gpio) {
   return kDifOk;
 }
 
+dif_result_t dif_gpio_alert_force(const dif_gpio_t *gpio,
+                                  dif_gpio_alert_t alert) {
+  if (gpio == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifGpioAlertFatalFault:
+      alert_idx = GPIO_ALERT_TEST_FATAL_FAULT_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(gpio->base_addr, GPIO_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

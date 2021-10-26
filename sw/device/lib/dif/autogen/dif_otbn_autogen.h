@@ -48,6 +48,33 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_init(mmio_region_t base_addr, dif_otbn_t *otbn);
 
 /**
+ * A otbn alert type.
+ */
+typedef enum dif_otbn_alert {
+  /**
+   * A fatal error. Fatal alerts are non-recoverable and will be asserted until
+   * a hard reset.
+   */
+  kDifOtbnAlertFatal = 0,
+  /**
+   * A recoverable error. Just sent once (as the processor stops).
+   */
+  kDifOtbnAlertRecov = 1,
+} dif_otbn_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param otbn A otbn handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otbn_alert_force(const dif_otbn_t *otbn,
+                                  dif_otbn_alert_t alert);
+
+/**
  * A otbn interrupt request type.
  */
 typedef enum dif_otbn_irq {

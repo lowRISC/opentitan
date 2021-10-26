@@ -48,6 +48,29 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_gpio_init(mmio_region_t base_addr, dif_gpio_t *gpio);
 
 /**
+ * A gpio alert type.
+ */
+typedef enum dif_gpio_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifGpioAlertFatalFault = 0,
+} dif_gpio_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param gpio A gpio handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_gpio_alert_force(const dif_gpio_t *gpio,
+                                  dif_gpio_alert_t alert);
+
+/**
  * A gpio interrupt request type.
  */
 typedef enum dif_gpio_irq {

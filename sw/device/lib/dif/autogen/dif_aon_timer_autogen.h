@@ -50,6 +50,29 @@ dif_result_t dif_aon_timer_init(mmio_region_t base_addr,
                                 dif_aon_timer_t *aon_timer);
 
 /**
+ * A aon_timer alert type.
+ */
+typedef enum dif_aon_timer_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifAonTimerAlertFatalFault = 0,
+} dif_aon_timer_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param aon_timer A aon_timer handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_alert_force(const dif_aon_timer_t *aon_timer,
+                                       dif_aon_timer_alert_t alert);
+
+/**
  * A aon_timer interrupt request type.
  */
 typedef enum dif_aon_timer_irq {

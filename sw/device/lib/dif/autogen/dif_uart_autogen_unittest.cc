@@ -34,6 +34,24 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_uart_init({.base_addr = dev().region()}, &uart_), kDifOk);
 }
 
+class AlertForceTest : public UartTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_uart_alert_force(nullptr, kDifUartAlertFatalFault), kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_uart_alert_force(nullptr, static_cast<dif_uart_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(UART_ALERT_TEST_REG_OFFSET,
+                 {{UART_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_uart_alert_force(&uart_, kDifUartAlertFatalFault), kDifOk);
+}
+
 class IrqGetStateTest : public UartTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

@@ -64,7 +64,34 @@ dif_result_t dif_${ip.name_snake}_init(
   mmio_region_t base_addr,
   dif_${ip.name_snake}_t *${ip.name_snake});
 
-% if len(ip.irqs) > 0:
+% if ip.alerts:
+  /**
+   * A ${ip.name_snake} alert type.
+   */
+  typedef enum dif_${ip.name_snake}_alert {
+  % for alert in ip.alerts:
+    /**
+     * ${alert.description}
+     */
+      kDif${ip.name_camel}Alert${alert.name_camel} = ${loop.index},
+  % endfor
+  } dif_${ip.name_snake}_alert_t;
+
+  /**
+   * Forces a particular alert, causing it to be escalated as if the hardware
+   * had raised it.
+   *
+   * @param ${ip.name_snake} A ${ip.name_snake} handle.
+   * @param alert The alert to force.
+   * @return The result of the operation.
+   */
+  OT_WARN_UNUSED_RESULT
+  dif_result_t dif_${ip.name_snake}_alert_force(
+    const dif_${ip.name_snake}_t *${ip.name_snake},
+    dif_${ip.name_snake}_alert_t alert);
+% endif
+
+% if ip.irqs:
   /**
    * A ${ip.name_snake} interrupt request type.
    */

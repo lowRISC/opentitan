@@ -34,6 +34,24 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_kmac_init({.base_addr = dev().region()}, &kmac_), kDifOk);
 }
 
+class AlertForceTest : public KmacTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_kmac_alert_force(nullptr, kDifKmacAlertFatalFault), kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_kmac_alert_force(nullptr, static_cast<dif_kmac_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(KMAC_ALERT_TEST_REG_OFFSET,
+                 {{KMAC_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_kmac_alert_force(&kmac_, kDifKmacAlertFatalFault), kDifOk);
+}
+
 class IrqGetStateTest : public KmacTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

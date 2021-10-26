@@ -734,22 +734,5 @@ TEST_F(WakeupRecording, ClearReason) {
   EXPECT_EQ(dif_pwrmgr_wakeup_reason_clear(&pwrmgr_), kDifOk);
 }
 
-class AlertTest : public DifPwrmgrInitialized {};
-
-TEST_F(AlertTest, ForceBadArgs) {
-  EXPECT_EQ(dif_pwrmgr_alert_force(nullptr, kDifPwrmgrAlertFatalFault),
-            kDifBadArg);
-  EXPECT_EQ(
-      dif_pwrmgr_alert_force(&pwrmgr_, static_cast<dif_pwrmgr_alert_t>(1)),
-      kDifBadArg);
-}
-
-TEST_F(AlertTest, Force) {
-  EXPECT_WRITE32(PWRMGR_ALERT_TEST_REG_OFFSET, {{0, true}});
-
-  EXPECT_EQ(dif_pwrmgr_alert_force(&pwrmgr_, kDifPwrmgrAlertFatalFault),
-            kDifOk);
-}
-
 }  // namespace
 }  // namespace dif_pwrmgr_unittest

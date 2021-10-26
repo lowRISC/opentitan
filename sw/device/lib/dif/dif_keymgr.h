@@ -74,38 +74,6 @@ typedef struct dif_keymgr_config {
 } dif_keymgr_config_t;
 
 /**
- * Key manager alerts.
- *
- * Key manager generates alerts when it encounters a hardware or software
- * error. Clients can use `dif_keymgr_get_status_codes()` to determine the type
- * of error that occurred.
- */
-typedef enum dif_keymgr_alert {
-  /**
-   * A hardware error occurred.
-   *
-   * This alert is triggered when the hardware encounters an error condition
-   * that cannot be caused by the software, e.g. invalid KMAC commands, states,
-   * or outputs.
-   */
-  kDifKeymgrAlertHardware,
-  /**
-   * A software error occurred.
-   *
-   * This alert is triggered when the software attempts to start an invalid
-   * operation, e.g. attempting to generate keys when the key manager is at
-   * Initialized state, or use invalid inputs, e.g. a key with a forbidden
-   * version.
-   */
-  kDifKeymgrAlertSoftware,
-
-  /**
-   * \internal Last key manager alert.
-   */
-  kDifKeymgrAlertLast = kDifKeymgrAlertSoftware,
-} dif_keymgr_alert_t;
-
-/**
  * Key manager states.
  *
  * Key manager has seven states that control its operation. During secure boot,
@@ -476,17 +444,6 @@ typedef struct dif_keymgr_output {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_read_output(const dif_keymgr_t *keymgr,
                                     dif_keymgr_output_t *output);
-
-/**
- * Forces a particular alert as if hardware had asserted it.
- *
- * @param keymgr A key manager handle.
- * @param alert An alert type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
-                                    dif_keymgr_alert_t alert);
 
 #ifdef __cplusplus
 }  // extern "C"

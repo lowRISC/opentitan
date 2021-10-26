@@ -20,6 +20,30 @@ dif_result_t dif_edn_init(mmio_region_t base_addr, dif_edn_t *edn) {
   return kDifOk;
 }
 
+dif_result_t dif_edn_alert_force(const dif_edn_t *edn, dif_edn_alert_t alert) {
+  if (edn == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifEdnAlertRecovAlert:
+      alert_idx = EDN_ALERT_TEST_RECOV_ALERT_BIT;
+      break;
+    case kDifEdnAlertFatalAlert:
+      alert_idx = EDN_ALERT_TEST_FATAL_ALERT_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(edn->base_addr, EDN_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

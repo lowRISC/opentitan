@@ -36,6 +36,35 @@ TEST_F(InitTest, Success) {
             kDifOk);
 }
 
+class AlertForceTest : public EntropySrcTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_entropy_src_alert_force(nullptr, kDifEntropySrcAlertRecovAlert),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_entropy_src_alert_force(
+                nullptr, static_cast<dif_entropy_src_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(ENTROPY_SRC_ALERT_TEST_REG_OFFSET,
+                 {{ENTROPY_SRC_ALERT_TEST_RECOV_ALERT_BIT, true}});
+  EXPECT_EQ(
+      dif_entropy_src_alert_force(&entropy_src_, kDifEntropySrcAlertRecovAlert),
+      kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(ENTROPY_SRC_ALERT_TEST_REG_OFFSET,
+                 {{ENTROPY_SRC_ALERT_TEST_FATAL_ALERT_BIT, true}});
+  EXPECT_EQ(
+      dif_entropy_src_alert_force(&entropy_src_, kDifEntropySrcAlertFatalAlert),
+      kDifOk);
+}
+
 class IrqGetStateTest : public EntropySrcTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

@@ -48,6 +48,35 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_init(mmio_region_t base_addr, dif_csrng_t *csrng);
 
 /**
+ * A csrng alert type.
+ */
+typedef enum dif_csrng_alert {
+  /**
+   * This alert is triggered when a recoverable alert occurs.  Check the
+   * !!RECOV_ALERT_STS register to get more information.
+   */
+  kDifCsrngAlertRecovAlert = 0,
+  /**
+   * This alert triggers (i) if an illegal state machine state is reached, or
+   * (ii) if an AES fatal alert condition occurs, or (iii) if a fatal integrity
+   * failure is detected on the TL-UL bus.
+   */
+  kDifCsrngAlertFatalAlert = 1,
+} dif_csrng_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param csrng A csrng handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_alert_force(const dif_csrng_t *csrng,
+                                   dif_csrng_alert_t alert);
+
+/**
  * A csrng interrupt request type.
  */
 typedef enum dif_csrng_irq {

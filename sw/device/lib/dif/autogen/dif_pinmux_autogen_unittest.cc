@@ -35,5 +35,26 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_pinmux_init({.base_addr = dev().region()}, &pinmux_), kDifOk);
 }
 
+class AlertForceTest : public PinmuxTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_pinmux_alert_force(nullptr, kDifPinmuxAlertFatalFault),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_pinmux_alert_force(nullptr, static_cast<dif_pinmux_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(PINMUX_ALERT_TEST_REG_OFFSET,
+                 {{PINMUX_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_pinmux_alert_force(&pinmux_, kDifPinmuxAlertFatalFault),
+            kDifOk);
+}
+
 }  // namespace
 }  // namespace dif_pinmux_autogen_unittest

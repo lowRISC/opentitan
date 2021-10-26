@@ -48,6 +48,29 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_uart_init(mmio_region_t base_addr, dif_uart_t *uart);
 
 /**
+ * A uart alert type.
+ */
+typedef enum dif_uart_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifUartAlertFatalFault = 0,
+} dif_uart_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param uart A uart handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_uart_alert_force(const dif_uart_t *uart,
+                                  dif_uart_alert_t alert);
+
+/**
  * A uart interrupt request type.
  */
 typedef enum dif_uart_irq {

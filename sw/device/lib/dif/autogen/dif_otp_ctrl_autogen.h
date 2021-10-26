@@ -49,6 +49,39 @@ dif_result_t dif_otp_ctrl_init(mmio_region_t base_addr,
                                dif_otp_ctrl_t *otp_ctrl);
 
 /**
+ * A otp_ctrl alert type.
+ */
+typedef enum dif_otp_ctrl_alert {
+  /**
+   * This alert triggers if hardware detects an ECC or digest error in the
+   * buffered partitions.
+   */
+  kDifOtpCtrlAlertFatalMacroError = 0,
+  /**
+   * This alert triggers if the digest over the buffered registers does not
+   * match with the digest stored in OTP.
+   */
+  kDifOtpCtrlAlertFatalCheckError = 1,
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifOtpCtrlAlertFatalBusIntegError = 2,
+} dif_otp_ctrl_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param otp_ctrl A otp_ctrl handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otp_ctrl_alert_force(const dif_otp_ctrl_t *otp_ctrl,
+                                      dif_otp_ctrl_alert_t alert);
+
+/**
  * A otp_ctrl interrupt request type.
  */
 typedef enum dif_otp_ctrl_irq {

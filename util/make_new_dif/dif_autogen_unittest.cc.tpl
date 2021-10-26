@@ -52,7 +52,46 @@ namespace {
       kDifOk);
   }
 
-% if len(ip.irqs) > 0:
+% if ip.alerts:
+  class AlertForceTest : public ${ip.name_camel}Test {};
+
+  TEST_F(AlertForceTest, NullArgs) {
+    EXPECT_EQ(dif_${ip.name_snake}_alert_force(
+        nullptr, 
+        kDif${ip.name_camel}Alert${ip.alerts[0].name_camel}),
+      kDifBadArg);
+  }
+
+  TEST_F(AlertForceTest, BadAlert) {
+    EXPECT_EQ(dif_${ip.name_snake}_alert_force(
+        nullptr, 
+        static_cast<dif_${ip.name_snake}_alert_t>(32)),
+      kDifBadArg);
+  }
+
+  TEST_F(AlertForceTest, Success) {
+    // Force first alert.
+    EXPECT_WRITE32(${ip.name_upper}_ALERT_TEST_REG_OFFSET,
+      {{${ip.name_upper}_ALERT_TEST_${ip.alerts[0].name_upper}_BIT, true}});
+    EXPECT_EQ(dif_${ip.name_snake}_alert_force(
+        &${ip.name_snake}_,
+        kDif${ip.name_camel}Alert${ip.alerts[0].name_camel}),
+      kDifOk);
+
+  % if len(ip.alerts) > 1:
+    // Force last alert.
+    EXPECT_WRITE32(${ip.name_upper}_ALERT_TEST_REG_OFFSET,
+        {{${ip.name_upper}_ALERT_TEST_${ip.alerts[-1].name_upper}_BIT, true}});
+    EXPECT_EQ(dif_${ip.name_snake}_alert_force(
+        &${ip.name_snake}_,
+        kDif${ip.name_camel}Alert${ip.alerts[-1].name_camel}),
+      kDifOk);
+  % endif
+  }
+
+% endif
+
+% if ip.irqs:
   class IrqGetStateTest : public ${ip.name_camel}Test {};
 
   TEST_F(IrqGetStateTest, NullArgs) {

@@ -34,6 +34,29 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_otbn_init({.base_addr = dev().region()}, &otbn_), kDifOk);
 }
 
+class AlertForceTest : public OtbnTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_otbn_alert_force(nullptr, kDifOtbnAlertFatal), kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_otbn_alert_force(nullptr, static_cast<dif_otbn_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(OTBN_ALERT_TEST_REG_OFFSET,
+                 {{OTBN_ALERT_TEST_FATAL_BIT, true}});
+  EXPECT_EQ(dif_otbn_alert_force(&otbn_, kDifOtbnAlertFatal), kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(OTBN_ALERT_TEST_REG_OFFSET,
+                 {{OTBN_ALERT_TEST_RECOV_BIT, true}});
+  EXPECT_EQ(dif_otbn_alert_force(&otbn_, kDifOtbnAlertRecov), kDifOk);
+}
+
 class IrqGetStateTest : public OtbnTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {
