@@ -1,0 +1,10 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// waiver file for prim_xoshiro256pp
+
+`verilator_config
+
+// In the following array some members may depend on others.
+split_var -module "prim_xoshiro256pp" -var "unrolled_state"
