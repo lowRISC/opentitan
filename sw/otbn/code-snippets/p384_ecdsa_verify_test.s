@@ -11,7 +11,7 @@
  * See comment at the end of the file for expected values of result.
  */
 
-.section .text
+.section .text.start
 
 p384_ecdsa_verify_test:
 

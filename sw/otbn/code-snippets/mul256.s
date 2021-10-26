@@ -6,15 +6,16 @@
    Multiplies usings BN.MULQACC with the result placed into w3, w2 (upper half
    in w3). */
 
-.section .text
+.section .text.start
 
 /* Load operands into WDRs */
 li x2, 0
-li x3, 1
-li x4, 32
+la x3, operand1
+bn.lid x2, 0(x3)
 
-bn.lid x2, 0(x0)
-bn.lid x3, 0(x4)
+li x2, 1
+la x3, operand2
+bn.lid x2, 0(x3)
 
 /* Perform the multiply, limbs are 64-bit. Each instance of `mulqacc` will
    operate on two limbs as a 64-bit multiply produces a 128-bit result. */

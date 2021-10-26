@@ -10,7 +10,7 @@
  * See comment at the end of the file for expected values of result.
  */
 
-.text
+.section .text.start
 
 p256_oncurve_test:
 

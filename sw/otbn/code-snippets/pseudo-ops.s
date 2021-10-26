@@ -4,6 +4,7 @@
 /*
     An example of the pseudo-operations supported by the OTBN ISA
 */
+.section .text.start
 
 nop_example:
     /* NOP is a no-op, and expands to addi x0, x0, 0 */

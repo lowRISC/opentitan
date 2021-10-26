@@ -11,7 +11,7 @@
  *   of resulting point.
  */
 
-.section .text
+.section .text.start
 
 p384_proj_add_test:
 

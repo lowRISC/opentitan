@@ -3,7 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 
-.text
+.section .text.start
 
 /**
  * Standalone RSA 1024 decrypt
@@ -30,6 +30,15 @@
 
 
 .data
+
+/*
+ * The words below are used by the code above, but the linker can't tell
+ * because we reference them by absolute address. Make a global symbol
+ * (cfg_data), which will refer to the whole lot and ensure that gc-sections
+ * doesn't discard them.
+ */
+.globl cfg_data
+cfg_data:
 
 /* reserved */
 .word 0x00000000

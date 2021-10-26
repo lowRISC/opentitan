@@ -15,7 +15,7 @@
  * comment at the end of the file for expected values.
  */
 
-.text
+.section .text.start
 
 ecdsa_sign_test:
 

@@ -13,7 +13,7 @@
  * are identical.
  */
 
-.text
+.section .text.start
 
 ecdsa_verify_test:
 
