@@ -44,6 +44,7 @@
 module prim_packer_fifo #(
   parameter int InW  = 32,
   parameter int OutW = 8,
+  parameter bit ClearOnRead = 1'b1, // if == 1 always output 0 after read
   // derived parameters
   localparam int MaxW = (InW > OutW) ? InW : OutW,
   localparam int MinW = (InW < OutW) ? InW : OutW,
@@ -69,6 +70,7 @@ module prim_packer_fifo #(
   // signals
   logic  load_data;
   logic  clear_data;
+  logic  clear_status;
 
   // flops
   logic [DepthW:0] depth_q, depth_d;
@@ -96,10 +98,11 @@ module prim_packer_fifo #(
     logic [MaxW-1:0] wdata_shifted;
 
     assign wdata_shifted = {{OutW - InW{1'b0}}, wdata_i} << (depth_q*InW);
-    assign clear_data = (rready_i && rvalid_o) || clr_q;
+    assign clear_status = (rready_i && rvalid_o) || clr_q;
+    assign clear_data = (ClearOnRead && clear_status) || clr_q;
     assign load_data = wvalid_i && wready_o;
 
-    assign depth_d =  clear_data ? '0 :
+    assign depth_d =  clear_status ? '0 :
            load_data ? depth_q+1 :
            depth_q;
 
@@ -130,16 +133,17 @@ module prim_packer_fifo #(
     assign lsb_is_one = {{DepthW{1'b0}},1'b1};
     assign max_value = FullDepth;
     assign rdata_shifted = data_q >> ptr_q*OutW;
-    assign clear_data = (rready_i && (depth_q == lsb_is_one)) || clr_q;
+    assign clear_status = (rready_i && (depth_q == lsb_is_one)) || clr_q;
+    assign clear_data = (ClearOnRead && clear_status) || clr_q;
     assign load_data = wvalid_i && wready_o;
     assign pull_data = rvalid_o && rready_i;
 
-    assign depth_d =  clear_data ? '0 :
+    assign depth_d =  clear_status ? '0 :
            load_data ? max_value :
            pull_data ? depth_q-1 :
            depth_q;
 
-    assign ptr_d =  clear_data ? '0 :
+    assign ptr_d =  clear_status ? '0 :
            pull_data ? ptr_q+1 :
            ptr_q;
 

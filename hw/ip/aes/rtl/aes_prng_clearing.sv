@@ -100,8 +100,9 @@ module aes_prng_clearing import aes_pkg::*;
     assign reseed_ack_o  = SecSkipPRNGReseeding ? reseed_req_i : seed_valid;
 
     prim_packer_fifo #(
-      .InW  ( EntropyWidth ),
-      .OutW ( Width        )
+      .InW         ( EntropyWidth ),
+      .OutW        ( Width        ),
+      .ClearOnRead ( 1'b0         )
     ) u_prim_packer_fifo (
       .clk_i    ( clk_i         ),
       .rst_ni   ( rst_ni        ),
