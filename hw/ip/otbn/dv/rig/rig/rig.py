@@ -43,7 +43,11 @@ def gen_program(config: Config,
     # Generate some initialised data to start with. Otherwise, it takes a while
     # before we start issuing loads (because we need stores to happen first).
     # Tell the model that we've done so.
-    init_data = InitData.gen(dmem_size)
+    #
+    # Note that we only use the first half of DMEM for initialised data,
+    # because it needs to be loaded over the bus and only the first half is
+    # visible.
+    init_data = InitData.gen(dmem_size // 2)
     for addr in init_data.keys():
         model.touch_mem('dmem', addr, 4)
 
