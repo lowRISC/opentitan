@@ -13,7 +13,7 @@
  * of resulting point.
  */
 
-.section .text
+.section .text.start
 
 p384_scalar_mult_test:
 

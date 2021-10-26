@@ -7,21 +7,18 @@
    128-bits in higher register number). Multiplies usings BN.MULQACC with the
    result placed into w6, w5, w4 (higher register numbers are higher bits). */
 
-.section .text
+.section .text.start
 
-# Load operands into WDRs
+/* Load operands into WDRs */
 li x2, 0
-li x3, 1
-li x4, 2
-li x5, 3
-li x6, 32
-li x7, 64
-li x8, 96
+la x3, operand1
+bn.lid x2++, 0(x3)
+bn.lid x2, 32(x3)
 
-bn.lid x2, 0(x0)
-bn.lid x3, 0(x6)
-bn.lid x4, 0(x7)
-bn.lid x5, 0(x8)
+li x2, 2
+la x3, operand2
+bn.lid x2++, 0(x3)
+bn.lid x2, 32(x3)
 
 /* Perform the multiply, limbs are 64-bit. Each instance of `mulqacc` will
    operate on two limbs as a 64-bit multiply produces a 128-bit result. */

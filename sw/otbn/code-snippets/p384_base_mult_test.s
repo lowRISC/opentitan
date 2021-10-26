@@ -12,7 +12,7 @@
  *   of resulting point.
  */
 
-.section .text
+.section .text.start
 
 p384_base_mult_test:
 

@@ -4,6 +4,7 @@
 /*
     An example of how hardware loops work in OTBN
 */
+.section .text.start
 
     /* The basic loop instruction (running 2 instructions 3 times) */
     li  x2, 3

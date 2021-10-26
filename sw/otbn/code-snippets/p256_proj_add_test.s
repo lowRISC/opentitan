@@ -12,7 +12,7 @@
  * of resulting point.
  */
 
-.section .text
+.section .text.start
 
 p256_proj_add_test:
 

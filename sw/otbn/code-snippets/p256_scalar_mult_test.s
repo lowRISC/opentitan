@@ -13,7 +13,7 @@
  * registers. See comment at the end of the file for expected values.
  */
 
-.text
+.section .text.start
 
 scalar_mult_test:
 
