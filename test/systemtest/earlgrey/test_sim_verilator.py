@@ -7,7 +7,7 @@ import re
 
 import pytest
 
-from . import config, silicon_creator_config, roms_config
+from . import config, roms_config
 from .. import utils
 from .. import test_sim_verilator_opentitan as ot
 
@@ -83,39 +83,6 @@ def app_selfchecking(request, bin_dir):
 
     test_filename = binary_name + '_sim_verilator.elf'
     bin_path = bin_dir / test_dir / test_filename
-    assert bin_path.is_file()
-
-    return (bin_path, verilator_extra_args)
-
-
-@pytest.fixture(
-    params=silicon_creator_config.TEST_SILICON_CREATOR_APPS_SELFCHECKING,
-    ids=lambda param: param['name'])
-def app_silicon_creator_selfchecking(request, bin_dir):
-    """ A self-checking device application for Verilator simulation
-
-    Returns:
-        A set (elf_path, verilator_extra_args)
-    """
-
-    app_config = request.param
-
-    if not all(key in app_config for key in ('name', 'signing_key')):
-        raise RuntimeError(
-            "One or more required keys ('name', 'signing_key') not found in"
-            " TEST_APPS_SILICON_CREATOR_SELFCHECKING")
-
-    if 'targets' in app_config and 'sim_verilator' not in app_config['targets']:
-        pytest.skip("Test %s skipped on Verilator." % app_config['name'])
-
-    if 'verilator_extra_args' in app_config:
-        verilator_extra_args = app_config['verilator_extra_args']
-    else:
-        verilator_extra_args = []
-
-    test_filename = 'rom_ext_{}_sim_verilator.{}.signed.64.vmem'.format(
-        app_config['name'], app_config['signing_key'])
-    bin_path = bin_dir / 'sw/device/tests' / test_filename
     assert bin_path.is_file()
 
     return (bin_path, verilator_extra_args)

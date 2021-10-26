@@ -349,33 +349,6 @@ jobs:
         --napoleon-docstrings
     displayName: Execute tests
 
-# This test is in a separate job becuase it takes longer to complete.
-- job: execute_silicon_creator_verilated_test
-  displayName: Execute silicon_creator test on the Verilated system
-  pool: ci-public
-  dependsOn:
-    - chip_earlgrey_verilator
-    - sw_build
-  steps:
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_verilator
-        - sw_build
-  - bash: |
-      # Install an additional pytest dependency for result upload.
-      pip3 install pytest-azurepipelines
-
-      . util/build_consts.sh
-      pytest --version
-      pytest test/systemtest/earlgrey/test_sim_verilator.py \
-        -k test_apps_selfchecking_silicon_creator[uart_smoketest] \
-        --log-cli-level=DEBUG \
-        --test-run-title="Run silicon_creator system test with Verilator simulation" \
-        --napoleon-docstrings
-    displayName: Execute silicon_creator test
-
 - template: ci/run-riscv-compliance.yml
   parameters:
     rvc_test_suites:
