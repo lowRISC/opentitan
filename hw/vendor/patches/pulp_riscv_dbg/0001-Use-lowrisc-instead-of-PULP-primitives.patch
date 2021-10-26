@@ -1,4 +1,4 @@
-From 5caf3a335f38d4cd27d9d00a1947776acebdf10a Mon Sep 17 00:00:00 2001
+From 3a39c34f70c7181b58d09f0b5fbcb992f296cd4f Mon Sep 17 00:00:00 2001
 From: Philipp Wagner <phw@lowrisc.org>
 Date: Fri, 22 Feb 2019 14:48:46 +0000
 Subject: [PATCH] Use lowrisc instead of PULP primitives
@@ -156,10 +156,10 @@ index 4665c91..1299b09 100644
  
  endmodule : dmi_cdc
 diff --git a/src/dmi_jtag_tap.sv b/src/dmi_jtag_tap.sv
-index c2e8d6e..5f10e6c 100644
+index c2e8d6e..809d4a6 100644
 --- a/src/dmi_jtag_tap.sv
 +++ b/src/dmi_jtag_tap.sv
-@@ -216,18 +216,14 @@ module dmi_jtag_tap #(
+@@ -216,18 +216,15 @@ module dmi_jtag_tap #(
    // ----------------
    // DFT
    // ----------------
@@ -178,7 +178,8 @@ index c2e8d6e..5f10e6c 100644
 +  logic tck_n;
 +
 +  prim_clock_inv #(
-+    .HasScanMode(1'b1)
++    .HasScanMode(1'b1),
++    .NoFpgaBufG(1'b1)
 +  ) i_tck_inv (
 +    .clk_i      ( tck_i      ),
 +    .clk_no     ( tck_n      ),
