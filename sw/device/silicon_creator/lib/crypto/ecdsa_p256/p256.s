@@ -49,8 +49,8 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  w24: a, first 256 bit operand (a < p)
- * @param[in]  w25: b, second 256 bit operand with (b < p)
+ * @param[in]  w24: a, first 256 bit operand (a * b < 2^256 * p)
+ * @param[in]  w25: b, second 256 bit operand (a * b < 2^256 * p)
  * @param[in]  w29: p, modulus of P-256 underlying finite field
  * @param[in]  w28: u, lower 256 bit of Barrett constant for curve P-256
  * @param[in]  w31: all-zero
@@ -1106,6 +1106,12 @@ scalar_mult_int:
  *
  * This routine runs in constant time.
  *
+ * Note: Some versions of the ECDSA spec suggest that msg must be reduced
+ * modulo n (e.g. RFC 6979, section 2.4). However, for this implementation, it
+ * is sufficient that msg < 2^256, because the message is multiplied with
+ * k^(-1) mod n, and our Barrett multiplication implementation accepts any
+ * operands a and b such that a * b < 2^256 * p and fully reduces the result.
+ *
  * @param[in]  dmem[0]: dptr_k, pointer to a 256 bit random secret in dmem
  * @param[in]  dmem[4]: dptr_rnd, pointer to location in dmem containing random
  *                                number for blinding
@@ -1152,7 +1158,7 @@ p256_sign:
   la        x23, dptr_d
   lw        x23, 0(x23)
 
-  /* load private key d from dmem: w0 = dmem[dptr_d] */
+  /* load secret random scalar k from dmem: w0 = dmem[dptr_k] */
   li        x2, 0
   bn.lid    x2, 0(x16)
 
@@ -1161,7 +1167,7 @@ p256_sign:
   bn.lid    x2, 0(x17)
 
   /* scalar multiplication with base point
-     (x_1, y_1) = (w11, w12) <= d*G = w0*(dmem[dptr_x], dmem[dptr_y]) */
+     (x_1, y_1) = (w11, w12) <= k*G = w0*(dmem[p256_gx], dmem[p256_gy]) */
   la        x21, p256_gx
   la        x22, p256_gy
   jal       x1, scalar_mult_int
@@ -1176,7 +1182,7 @@ p256_sign:
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
 
-  /* load secret random number k from dmem: w0 <= k = dmem[dptr_k] */
+  /* re-load secret random number k from dmem: w0 <= k = dmem[dptr_k] */
   li        x2, 0
   bn.lid    x2, 0(x16)
 
@@ -1210,7 +1216,7 @@ p256_sign:
   bn.mov    w25, w1
   jal       x1, mod_mul_256x256
 
-  /* w0 = s <= w19 + w0 = d*msg + r*d  mod n */
+  /* w0 = s <= w19 + w0 = k^-1*msg + r*k^-1*d  mod n */
   bn.addm   w0, w19, w0
 
   /* store s of signature in dmem: dmem[dptr_s] <= s = w0 */
