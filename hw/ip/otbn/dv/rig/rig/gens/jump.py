@@ -223,6 +223,10 @@ class Jump(SnippetGen):
 
         base_reg_idx, base_reg_val = random.choice(known_regs)
 
+        # Convert base_reg_val to a signed integer
+        if base_reg_val >> 31:
+            base_reg_val -= 1 << 32
+
         jmp_data = self._pick_jump(base_reg_val, offset_optype,
                                    model, program, tgt_addr)
         if jmp_data is None:
