@@ -4,13 +4,18 @@
 /*
     Checks for "la" pseudo-instruction support where the symbol is too big to
     fit in a signed immediate for addi.
+
+    Rather awkwardly, this means we need to pick an address that's
+    bigger than the DMEM region that's accessible over the bus. Use an
+    IMEM location instead, and check it by branching through the
+    pointer with JALR.
+
 */
 .text
   la x2, foo
-  lw x3, 0(x2)
-  ecall
+  jalr x3, x2, 0
 
-.data
-.org 2048
+.org 4088
 foo:
-  .word 0x1234
+  addi x4, x0, 1
+  ecall
