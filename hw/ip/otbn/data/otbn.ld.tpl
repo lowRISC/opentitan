@@ -13,8 +13,8 @@
 MEMORY
 {
     imem (x)  : ORIGIN = 0, LENGTH = ${imem_length}
-    dmem (rw) : ORIGIN = 0, LENGTH = ${dmem_length // 2}
-    dmem_scratch (rw) : ORIGIN = ${dmem_length // 2}, LENGTH = ${dmem_length // 2}
+    dmem (rw) : ORIGIN = 0, LENGTH = ${dmem_bus_length}
+    dmem_scratch (rw) : ORIGIN = ${dmem_bus_length}, LENGTH = ${dmem_length - dmem_bus_length}
 
     /*
       LMA addresses (for VMAs in imem/dmem, respectively)
@@ -23,8 +23,8 @@ MEMORY
       to model the fact that OTBN can write to the whole region but
       only the first ${dmem_length // 2} bytes are bus-accessible.
     */
-    imem_load (rw)    : ORIGIN = ${imem_lma}, LENGTH = ${imem_length}
-    dmem_load (rw)    : ORIGIN = ${dmem_lma}, LENGTH = ${dmem_length // 2}
+    imem_load (rw) : ORIGIN = ${imem_lma}, LENGTH = ${imem_length}
+    dmem_load (rw) : ORIGIN = ${dmem_lma}, LENGTH = ${dmem_bus_length}
 }
 
 SECTIONS

@@ -498,7 +498,7 @@
     // Dmem size (given as `items` below) must be a power of two.
     { window: {
         name: "DMEM",
-        items: "1024", // 4 kB
+        items: "512", // 2 kB visible over the bus
         swaccess: "rw",
         data-intg-passthru: "true",
         byte-write: "false",
@@ -512,6 +512,9 @@
           are ignored.
           If OTBN is busy, any access additionally triggers an
           ILLEGAL_BUS_ACCESS fatal error.
+
+          Note that DMEM is actually 4kiB in size, but only the first 2kiB of
+          the memory is visible through this register interface.
         '''
       }
     }
