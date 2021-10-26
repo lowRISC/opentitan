@@ -47,6 +47,8 @@ endif
 otbn-code-snippets-as ?= $(otbn-code-snippets-util-dir)/otbn-as
 otbn-code-snippets-ld ?= $(otbn-code-snippets-util-dir)/otbn-ld
 
+otbn-ldflags = -gc-sections -gc-keep-exported
+
 # Get the list of all assembly files in this directory. Strip away directory
 # and extension to get basenames (used for objects and binaries).
 otbn-code-snippets-path      := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
