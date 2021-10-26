@@ -44,12 +44,29 @@ class alert_monitor extends alert_esc_base_monitor;
     under_ping_rsp = 0;
   endfunction : reset_signals
 
+  // This task called inside forever loop in the `reset_thread` task, intended to be a nonblocking
+  // process. However, it can still block alert handshake via the `cfg.alert_init_done` flag.
+  // To handle the scenario where reset is issued during alert init, we use a fork join_any thread.
   virtual task wait_alert_init_done();
-    wait (cfg.vif.monitor_cb.alert_tx_final.alert_p == cfg.vif.monitor_cb.alert_tx_final.alert_n);
-    wait (cfg.vif.monitor_cb.alert_tx_final.alert_p != cfg.vif.monitor_cb.alert_tx_final.alert_n);
-    `uvm_info("alert_monitor", "Alert init done!", UVM_HIGH)
-    under_reset = 0;
-    cfg.alert_init_done = 1;
+    fork
+      begin
+        fork
+          begin
+            wait (cfg.vif.monitor_cb.alert_tx_final.alert_p ==
+                  cfg.vif.monitor_cb.alert_tx_final.alert_n);
+            wait (cfg.vif.monitor_cb.alert_tx_final.alert_p !=
+                  cfg.vif.monitor_cb.alert_tx_final.alert_n);
+            `uvm_info("alert_monitor", "Alert init done!", UVM_HIGH)
+            under_reset = 0;
+            cfg.alert_init_done = 1;
+          end
+          begin
+            @(negedge cfg.vif.rst_n);
+          end
+        join_any
+        disable fork;
+      end
+    join_none
   endtask
 
   virtual task ping_thread();
