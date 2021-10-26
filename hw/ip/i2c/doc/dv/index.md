@@ -64,17 +64,43 @@ It can be created manually by invoking [`regtool`]({{< relref "util/reggen/READM
 #### Test sequences
 All test sequences reside in `hw/ip/i2c/dv/env/seq_lib`.
 The `i2c_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
-All test sequences are extended from `i2c_base_vseq`.
+The `i2c_rx_tx_vseq` is extended from `i2c_base_vseq`. All test sequences are extended from `i2c_rx_tx_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
-Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+The required sequences are the following:
+* i2c_stretching
+* i2c_data_acquisition
+* i2c_byte_formatting
+* i2c_timing 
+* i2c_override
+* i2c_smoke
+* i2c_error_intr
+* i2c_stress_all
+* i2c_stress_all_with_rand_reset
+* i2c_perf
+* i2c_fifo_watermark
+* i2c_fifo_overflow
+* i2c_fifo_empty
+* i2c_fifo_reset
+* itc_fifo_full
+* i2c_timeout
+* i2c_oversample
+* i2c_loopback
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+The following covergroups will be developed to prove that the test intent has been adequately met:
+* timing parameters ranges covergroup
+* format indicators driven transitions covergroup
+* fifo buffers corner cases cover group
+* clock stretching scenarios cover group
+* timeout events covegroup
+* formatted data acquisition covergroup
+* override events covergroup
+* errors covergroup
+* oversample covergroup
+* loopback covergroup
+* override covergroup
+
 
 ### Self-checking strategy
 #### Scoreboard
