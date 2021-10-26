@@ -48,6 +48,28 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_init(mmio_region_t base_addr, dif_i2c_t *i2c);
 
 /**
+ * A i2c alert type.
+ */
+typedef enum dif_i2c_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifI2cAlertFatalFault = 0,
+} dif_i2c_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param i2c A i2c handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert);
+
+/**
  * A i2c interrupt request type.
  */
 typedef enum dif_i2c_irq {

@@ -20,6 +20,31 @@ dif_result_t dif_otbn_init(mmio_region_t base_addr, dif_otbn_t *otbn) {
   return kDifOk;
 }
 
+dif_result_t dif_otbn_alert_force(const dif_otbn_t *otbn,
+                                  dif_otbn_alert_t alert) {
+  if (otbn == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifOtbnAlertFatal:
+      alert_idx = OTBN_ALERT_TEST_FATAL_BIT;
+      break;
+    case kDifOtbnAlertRecov:
+      alert_idx = OTBN_ALERT_TEST_RECOV_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(otbn->base_addr, OTBN_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

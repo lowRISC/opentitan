@@ -30,6 +30,28 @@ dif_result_t dif_aon_timer_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+dif_result_t dif_aon_timer_alert_force(const dif_aon_timer_t *aon_timer,
+                                       dif_aon_timer_alert_t alert) {
+  if (aon_timer == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifAonTimerAlertFatalFault:
+      alert_idx = AON_TIMER_ALERT_TEST_FATAL_FAULT_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(aon_timer->base_addr, AON_TIMER_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

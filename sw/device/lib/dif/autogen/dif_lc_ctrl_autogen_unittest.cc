@@ -35,5 +35,33 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_lc_ctrl_init({.base_addr = dev().region()}, &lc_ctrl_), kDifOk);
 }
 
+class AlertForceTest : public LcCtrlTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_lc_ctrl_alert_force(nullptr, kDifLcCtrlAlertFatalProgError),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_lc_ctrl_alert_force(nullptr, static_cast<dif_lc_ctrl_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(LC_CTRL_ALERT_TEST_REG_OFFSET,
+                 {{LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_BIT, true}});
+  EXPECT_EQ(dif_lc_ctrl_alert_force(&lc_ctrl_, kDifLcCtrlAlertFatalProgError),
+            kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(LC_CTRL_ALERT_TEST_REG_OFFSET,
+                 {{LC_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_BIT, true}});
+  EXPECT_EQ(
+      dif_lc_ctrl_alert_force(&lc_ctrl_, kDifLcCtrlAlertFatalBusIntegError),
+      kDifOk);
+}
+
 }  // namespace
 }  // namespace dif_lc_ctrl_autogen_unittest

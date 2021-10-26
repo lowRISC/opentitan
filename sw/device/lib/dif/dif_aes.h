@@ -158,21 +158,6 @@ typedef struct dif_aes_transaction {
 } dif_aes_transaction_t;
 
 /**
- * An AES alert type.
- */
-typedef enum dif_aes_alert {
-  /**
-   * Fatal alert conditions include i) storage errors in the Control Register,
-   * and ii) if any internal FSM enters an invalid state.
-   */
-  kDifAlertFatalFault = 0,
-  /**
-   * Recoverable alert conditions include update errors in the Control Register.
-   */
-  kDifAlertRecovCtrlUpdateErr,
-} dif_aes_alert_t;
-
-/**
  * Resets an instance of AES.
  *
  * Clears the internal state along with the interface registers.
@@ -391,17 +376,6 @@ typedef enum dif_aes_status {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aes_get_status(const dif_aes_t *aes, dif_aes_status_t flag,
                                 bool *set);
-
-/**
- * Forces a particular alert, causing it to be serviced as if hardware had
- * asserted it.
- *
- * @param aes AES state data.
- * @param alert An alert type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_aes_alert_force(const dif_aes_t *aes, dif_aes_alert_t alert);
 
 #ifdef __cplusplus
 }  // extern "C"

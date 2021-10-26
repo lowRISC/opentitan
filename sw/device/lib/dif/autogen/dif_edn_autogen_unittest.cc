@@ -34,6 +34,29 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_edn_init({.base_addr = dev().region()}, &edn_), kDifOk);
 }
 
+class AlertForceTest : public EdnTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_edn_alert_force(nullptr, kDifEdnAlertRecovAlert), kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_edn_alert_force(nullptr, static_cast<dif_edn_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(EDN_ALERT_TEST_REG_OFFSET,
+                 {{EDN_ALERT_TEST_RECOV_ALERT_BIT, true}});
+  EXPECT_EQ(dif_edn_alert_force(&edn_, kDifEdnAlertRecovAlert), kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(EDN_ALERT_TEST_REG_OFFSET,
+                 {{EDN_ALERT_TEST_FATAL_ALERT_BIT, true}});
+  EXPECT_EQ(dif_edn_alert_force(&edn_, kDifEdnAlertFatalAlert), kDifOk);
+}
+
 class IrqGetStateTest : public EdnTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

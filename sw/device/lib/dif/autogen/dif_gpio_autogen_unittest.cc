@@ -34,6 +34,24 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_gpio_init({.base_addr = dev().region()}, &gpio_), kDifOk);
 }
 
+class AlertForceTest : public GpioTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_gpio_alert_force(nullptr, kDifGpioAlertFatalFault), kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_gpio_alert_force(nullptr, static_cast<dif_gpio_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(GPIO_ALERT_TEST_REG_OFFSET,
+                 {{GPIO_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_gpio_alert_force(&gpio_, kDifGpioAlertFatalFault), kDifOk);
+}
+
 class IrqGetStateTest : public GpioTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

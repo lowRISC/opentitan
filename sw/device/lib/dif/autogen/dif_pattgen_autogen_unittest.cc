@@ -35,6 +35,27 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_pattgen_init({.base_addr = dev().region()}, &pattgen_), kDifOk);
 }
 
+class AlertForceTest : public PattgenTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_pattgen_alert_force(nullptr, kDifPattgenAlertFatalFault),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_pattgen_alert_force(nullptr, static_cast<dif_pattgen_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(PATTGEN_ALERT_TEST_REG_OFFSET,
+                 {{PATTGEN_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_pattgen_alert_force(&pattgen_, kDifPattgenAlertFatalFault),
+            kDifOk);
+}
+
 class IrqGetStateTest : public PattgenTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

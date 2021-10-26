@@ -36,6 +36,35 @@ TEST_F(InitTest, Success) {
             kDifOk);
 }
 
+class AlertForceTest : public OtpCtrlTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_otp_ctrl_alert_force(nullptr, kDifOtpCtrlAlertFatalMacroError),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_otp_ctrl_alert_force(nullptr, static_cast<dif_otp_ctrl_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(OTP_CTRL_ALERT_TEST_REG_OFFSET,
+                 {{OTP_CTRL_ALERT_TEST_FATAL_MACRO_ERROR_BIT, true}});
+  EXPECT_EQ(
+      dif_otp_ctrl_alert_force(&otp_ctrl_, kDifOtpCtrlAlertFatalMacroError),
+      kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(OTP_CTRL_ALERT_TEST_REG_OFFSET,
+                 {{OTP_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_BIT, true}});
+  EXPECT_EQ(
+      dif_otp_ctrl_alert_force(&otp_ctrl_, kDifOtpCtrlAlertFatalBusIntegError),
+      kDifOk);
+}
+
 class IrqGetStateTest : public OtpCtrlTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

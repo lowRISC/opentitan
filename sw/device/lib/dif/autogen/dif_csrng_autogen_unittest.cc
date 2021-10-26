@@ -34,6 +34,30 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_csrng_init({.base_addr = dev().region()}, &csrng_), kDifOk);
 }
 
+class AlertForceTest : public CsrngTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_csrng_alert_force(nullptr, kDifCsrngAlertRecovAlert),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_csrng_alert_force(nullptr, static_cast<dif_csrng_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(CSRNG_ALERT_TEST_REG_OFFSET,
+                 {{CSRNG_ALERT_TEST_RECOV_ALERT_BIT, true}});
+  EXPECT_EQ(dif_csrng_alert_force(&csrng_, kDifCsrngAlertRecovAlert), kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(CSRNG_ALERT_TEST_REG_OFFSET,
+                 {{CSRNG_ALERT_TEST_FATAL_ALERT_BIT, true}});
+  EXPECT_EQ(dif_csrng_alert_force(&csrng_, kDifCsrngAlertFatalAlert), kDifOk);
+}
+
 class IrqGetStateTest : public CsrngTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

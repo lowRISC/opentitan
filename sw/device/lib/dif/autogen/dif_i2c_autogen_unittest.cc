@@ -34,6 +34,24 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_i2c_init({.base_addr = dev().region()}, &i2c_), kDifOk);
 }
 
+class AlertForceTest : public I2cTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_i2c_alert_force(nullptr, kDifI2cAlertFatalFault), kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_i2c_alert_force(nullptr, static_cast<dif_i2c_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(I2C_ALERT_TEST_REG_OFFSET,
+                 {{I2C_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_i2c_alert_force(&i2c_, kDifI2cAlertFatalFault), kDifOk);
+}
+
 class IrqGetStateTest : public I2cTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

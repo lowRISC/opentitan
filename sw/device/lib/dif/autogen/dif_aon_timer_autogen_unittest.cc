@@ -36,6 +36,27 @@ TEST_F(InitTest, Success) {
             kDifOk);
 }
 
+class AlertForceTest : public AonTimerTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_aon_timer_alert_force(nullptr, kDifAonTimerAlertFatalFault),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_aon_timer_alert_force(nullptr,
+                                      static_cast<dif_aon_timer_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(AON_TIMER_ALERT_TEST_REG_OFFSET,
+                 {{AON_TIMER_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_aon_timer_alert_force(&aon_timer_, kDifAonTimerAlertFatalFault),
+            kDifOk);
+}
+
 class IrqGetStateTest : public AonTimerTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

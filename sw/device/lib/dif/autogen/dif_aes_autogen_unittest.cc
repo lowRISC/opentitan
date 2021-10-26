@@ -34,5 +34,29 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_aes_init({.base_addr = dev().region()}, &aes_), kDifOk);
 }
 
+class AlertForceTest : public AesTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_aes_alert_force(nullptr, kDifAesAlertRecovCtrlUpdateErr),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_aes_alert_force(nullptr, static_cast<dif_aes_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(AES_ALERT_TEST_REG_OFFSET,
+                 {{AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, true}});
+  EXPECT_EQ(dif_aes_alert_force(&aes_, kDifAesAlertRecovCtrlUpdateErr), kDifOk);
+
+  // Force last alert.
+  EXPECT_WRITE32(AES_ALERT_TEST_REG_OFFSET,
+                 {{AES_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_aes_alert_force(&aes_, kDifAesAlertFatalFault), kDifOk);
+}
+
 }  // namespace
 }  // namespace dif_aes_autogen_unittest

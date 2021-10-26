@@ -813,43 +813,5 @@ TEST_F(ReadOutputTest, Read) {
   }
 }
 
-TEST_P(BadArgsTwo, AlertForce) {
-  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
-  auto alert = GetGoodBadEnumArg<dif_keymgr_alert_t>(std::get<1>(GetParam()),
-                                                     kDifKeymgrAlertLast);
-
-  EXPECT_EQ(dif_keymgr_alert_force(keymgr, alert), kDifBadArg);
-}
-
-struct AlertTestCase {
-  dif_keymgr_alert_t alert;
-  bitfield_bit32_index_t bit_index;
-};
-
-class AlertForce : public DifKeymgrInitialized,
-                   public testing::WithParamInterface<AlertTestCase> {};
-
-TEST_P(AlertForce, Success) {
-  EXPECT_WRITE32(KEYMGR_ALERT_TEST_REG_OFFSET,
-                 {{
-                     .offset = GetParam().bit_index,
-                     .value = 1,
-                 }});
-
-  EXPECT_EQ(dif_keymgr_alert_force(&keymgr_, GetParam().alert), kDifOk);
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    AlertForceAll, AlertForce,
-    testing::Values(
-        AlertTestCase{
-            .alert = kDifKeymgrAlertHardware,
-            .bit_index = KEYMGR_ALERT_TEST_FATAL_FAULT_ERR_BIT,
-        },
-        AlertTestCase{
-            .alert = kDifKeymgrAlertSoftware,
-            .bit_index = KEYMGR_ALERT_TEST_RECOV_OPERATION_ERR_BIT,
-        }));
-
 }  // namespace
 }  // namespace dif_keymgr_unittest

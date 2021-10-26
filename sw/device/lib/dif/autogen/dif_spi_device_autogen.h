@@ -50,6 +50,29 @@ dif_result_t dif_spi_device_init(mmio_region_t base_addr,
                                  dif_spi_device_t *spi_device);
 
 /**
+ * A spi_device alert type.
+ */
+typedef enum dif_spi_device_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifSpiDeviceAlertFatalFault = 0,
+} dif_spi_device_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param spi_device A spi_device handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_alert_force(const dif_spi_device_t *spi_device,
+                                        dif_spi_device_alert_t alert);
+
+/**
  * A spi_device interrupt request type.
  */
 typedef enum dif_spi_device_irq {

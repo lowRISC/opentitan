@@ -401,27 +401,3 @@ dif_result_t dif_aes_get_status(const dif_aes_t *aes, dif_aes_status_t flag,
 
   return kDifOk;
 }
-
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_aes_alert_force(const dif_aes_t *aes, dif_aes_alert_t alert) {
-  if (aes == NULL) {
-    return kDifBadArg;
-  }
-
-  bitfield_bit32_index_t index;
-  switch (alert) {
-    case kDifAlertFatalFault:
-      index = AES_ALERT_TEST_FATAL_FAULT_BIT;
-      break;
-    case kDifAlertRecovCtrlUpdateErr:
-      index = AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT;
-      break;
-    default:
-      return kDifError;
-  }
-
-  uint32_t reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(aes->base_addr, AES_ALERT_TEST_REG_OFFSET, reg);
-
-  return kDifOk;
-}

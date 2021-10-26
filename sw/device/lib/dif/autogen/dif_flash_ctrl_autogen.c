@@ -21,6 +21,31 @@ dif_result_t dif_flash_ctrl_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+dif_result_t dif_flash_ctrl_alert_force(const dif_flash_ctrl_t *flash_ctrl,
+                                        dif_flash_ctrl_alert_t alert) {
+  if (flash_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifFlashCtrlAlertRecovErr:
+      alert_idx = FLASH_CTRL_ALERT_TEST_RECOV_ERR_BIT;
+      break;
+    case kDifFlashCtrlAlertFatalErr:
+      alert_idx = FLASH_CTRL_ALERT_TEST_FATAL_ERR_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(flash_ctrl->base_addr, FLASH_CTRL_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

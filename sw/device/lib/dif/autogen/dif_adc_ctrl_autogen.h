@@ -49,6 +49,29 @@ dif_result_t dif_adc_ctrl_init(mmio_region_t base_addr,
                                dif_adc_ctrl_t *adc_ctrl);
 
 /**
+ * A adc_ctrl alert type.
+ */
+typedef enum dif_adc_ctrl_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifAdcCtrlAlertFatalFault = 0,
+} dif_adc_ctrl_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param adc_ctrl A adc_ctrl handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_adc_ctrl_alert_force(const dif_adc_ctrl_t *adc_ctrl,
+                                      dif_adc_ctrl_alert_t alert);
+
+/**
  * A adc_ctrl interrupt request type.
  */
 typedef enum dif_adc_ctrl_irq {

@@ -19,3 +19,25 @@ dif_result_t dif_pinmux_init(mmio_region_t base_addr, dif_pinmux_t *pinmux) {
 
   return kDifOk;
 }
+
+dif_result_t dif_pinmux_alert_force(const dif_pinmux_t *pinmux,
+                                    dif_pinmux_alert_t alert) {
+  if (pinmux == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifPinmuxAlertFatalFault:
+      alert_idx = PINMUX_ALERT_TEST_FATAL_FAULT_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(pinmux->base_addr, PINMUX_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}

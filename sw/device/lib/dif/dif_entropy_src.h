@@ -322,21 +322,6 @@ typedef struct dif_entropy_src_test_stats {
 } dif_entropy_src_test_stats_t;
 
 /**
- * An entropy source alert type.
- */
-typedef enum dif_entropy_src_alert {
-  /**
-   * Indicates that the health test criteria were not met.
-   */
-  kDifEntropySrcAlert,
-
-  /**
-   * Indicates that an internal error occurred.
-   */
-  kDifEntropySrcFatal,
-} dif_entropy_src_alert_t;
-
-/**
  * Configures entropy source with runtime information.
  *
  * This function should need to be called once for the lifetime of `handle`.
@@ -417,18 +402,6 @@ dif_result_t dif_entropy_src_avail(const dif_entropy_src_t *entropy_src);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_read(const dif_entropy_src_t *entropy_src,
                                   uint32_t *word);
-
-/**
- * Forces a particular alert, causing it to be emitted as if the hardware had
- * done so.
- *
- * @param entropy An entropy source handle.
- * @param alert An alert type.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_alert_force(const dif_entropy_src_t *entropy_src,
-                                         dif_entropy_src_alert_t alert);
 
 /**
  * Performs an override read from the entropy pipeline.

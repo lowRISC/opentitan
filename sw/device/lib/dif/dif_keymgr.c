@@ -560,27 +560,3 @@ dif_result_t dif_keymgr_read_output(const dif_keymgr_t *keymgr,
 
   return kDifOk;
 }
-
-dif_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
-                                    dif_keymgr_alert_t alert) {
-  if (keymgr == NULL) {
-    return kDifBadArg;
-  }
-
-  bitfield_bit32_index_t bit_index;
-  switch (alert) {
-    case kDifKeymgrAlertHardware:
-      bit_index = KEYMGR_ALERT_TEST_FATAL_FAULT_ERR_BIT;
-      break;
-    case kDifKeymgrAlertSoftware:
-      bit_index = KEYMGR_ALERT_TEST_RECOV_OPERATION_ERR_BIT;
-      break;
-    default:
-      return kDifBadArg;
-  }
-
-  mmio_region_write32(keymgr->base_addr, KEYMGR_ALERT_TEST_REG_OFFSET,
-                      bitfield_bit32_write(0, bit_index, true));
-
-  return kDifOk;
-}

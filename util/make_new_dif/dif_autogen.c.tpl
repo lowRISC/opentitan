@@ -66,7 +66,33 @@ dif_result_t dif_${ip.name_snake}_init(
   return kDifOk;
 }
 
-% if len(ip.irqs) > 0:
+% if ip.alerts:
+  dif_result_t dif_${ip.name_snake}_alert_force(
+    const dif_${ip.name_snake}_t *${ip.name_snake},
+    dif_${ip.name_snake}_alert_t alert) {
+  if (${ip.name_snake} == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+  % for alert in ip.alerts:
+    case kDif${ip.name_camel}Alert${alert.name_camel}:
+      alert_idx = ${ip.name_upper}_ALERT_TEST_${alert.name_upper}_BIT;
+      break;
+  % endfor
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  ${mmio_region_write32(ip.name_upper + "_ALERT_TEST_REG_OFFSET", "alert_test_reg")}
+
+  return kDifOk;
+}
+% endif
+
+% if ip.irqs:
   % if ip.name_snake == "rv_timer":
     typedef enum dif_${ip.name_snake}_intr_reg {
       kDif${ip.name_camel}IntrRegState = 0,

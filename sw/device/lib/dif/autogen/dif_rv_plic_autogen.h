@@ -47,6 +47,29 @@ typedef struct dif_rv_plic {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_plic_init(mmio_region_t base_addr, dif_rv_plic_t *rv_plic);
 
+/**
+ * A rv_plic alert type.
+ */
+typedef enum dif_rv_plic_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifRvPlicAlertFatalFault = 0,
+} dif_rv_plic_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param rv_plic A rv_plic handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_plic_alert_force(const dif_rv_plic_t *rv_plic,
+                                     dif_rv_plic_alert_t alert);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

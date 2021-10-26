@@ -49,6 +49,29 @@ dif_result_t dif_spi_host_init(mmio_region_t base_addr,
                                dif_spi_host_t *spi_host);
 
 /**
+ * A spi_host alert type.
+ */
+typedef enum dif_spi_host_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifSpiHostAlertFatalFault = 0,
+} dif_spi_host_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param spi_host A spi_host handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_alert_force(const dif_spi_host_t *spi_host,
+                                      dif_spi_host_alert_t alert);
+
+/**
  * A spi_host interrupt request type.
  */
 typedef enum dif_spi_host_irq {

@@ -216,33 +216,6 @@ dif_result_t dif_lc_ctrl_get_device_id(const dif_lc_ctrl_t *lc,
   return kDifOk;
 }
 
-dif_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
-                                     dif_lc_ctrl_alert_t alert) {
-  if (lc == NULL) {
-    return kDifBadArg;
-  }
-
-  bitfield_bit32_index_t alert_idx;
-  switch (alert) {
-    case kDifLcCtrlAlertOtp:
-      alert_idx = LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_BIT;
-      break;
-    case kDifLcCtrlAlertCorrupt:
-      alert_idx = LC_CTRL_ALERT_TEST_FATAL_STATE_ERROR_BIT;
-      break;
-    case kDifLcCtrlAlertBus:
-      alert_idx = LC_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_BIT;
-      break;
-    default:
-      return kDifBadArg;
-  }
-
-  uint32_t reg = bitfield_bit32_write(0, alert_idx, true);
-  mmio_region_write32(lc->base_addr, LC_CTRL_ALERT_TEST_REG_OFFSET, reg);
-
-  return kDifOk;
-}
-
 dif_result_t dif_lc_ctrl_mutex_try_acquire(const dif_lc_ctrl_t *lc) {
   if (lc == NULL) {
     return kDifBadArg;

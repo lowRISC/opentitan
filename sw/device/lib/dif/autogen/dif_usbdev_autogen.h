@@ -48,6 +48,29 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_init(mmio_region_t base_addr, dif_usbdev_t *usbdev);
 
 /**
+ * A usbdev alert type.
+ */
+typedef enum dif_usbdev_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifUsbdevAlertFatalFault = 0,
+} dif_usbdev_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param usbdev A usbdev handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_alert_force(const dif_usbdev_t *usbdev,
+                                    dif_usbdev_alert_t alert);
+
+/**
  * A usbdev interrupt request type.
  */
 typedef enum dif_usbdev_irq {

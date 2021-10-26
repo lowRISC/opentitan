@@ -49,6 +49,29 @@ dif_result_t dif_rv_timer_init(mmio_region_t base_addr,
                                dif_rv_timer_t *rv_timer);
 
 /**
+ * A rv_timer alert type.
+ */
+typedef enum dif_rv_timer_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected inside the RV_TIMER unit.
+   */
+  kDifRvTimerAlertFatalFault = 0,
+} dif_rv_timer_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param rv_timer A rv_timer handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_timer_alert_force(const dif_rv_timer_t *rv_timer,
+                                      dif_rv_timer_alert_t alert);
+
+/**
  * A rv_timer interrupt request type.
  */
 typedef enum dif_rv_timer_irq {

@@ -36,5 +36,26 @@ TEST_F(InitTest, Success) {
             kDifOk);
 }
 
+class AlertForceTest : public SramCtrlTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_sram_ctrl_alert_force(nullptr, kDifSramCtrlAlertFatalError),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(dif_sram_ctrl_alert_force(nullptr,
+                                      static_cast<dif_sram_ctrl_alert_t>(32)),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(SRAM_CTRL_ALERT_TEST_REG_OFFSET,
+                 {{SRAM_CTRL_ALERT_TEST_FATAL_ERROR_BIT, true}});
+  EXPECT_EQ(dif_sram_ctrl_alert_force(&sram_ctrl_, kDifSramCtrlAlertFatalError),
+            kDifOk);
+}
+
 }  // namespace
 }  // namespace dif_sram_ctrl_autogen_unittest

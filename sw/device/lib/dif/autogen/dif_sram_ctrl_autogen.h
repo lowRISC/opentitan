@@ -49,6 +49,29 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sram_ctrl_init(mmio_region_t base_addr,
                                 dif_sram_ctrl_t *sram_ctrl);
 
+/**
+ * A sram_ctrl alert type.
+ */
+typedef enum dif_sram_ctrl_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected, or if the initialization mechanism has reached an invalid state.
+   */
+  kDifSramCtrlAlertFatalError = 0,
+} dif_sram_ctrl_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param sram_ctrl A sram_ctrl handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sram_ctrl_alert_force(const dif_sram_ctrl_t *sram_ctrl,
+                                       dif_sram_ctrl_alert_t alert);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

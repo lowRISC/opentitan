@@ -220,15 +220,6 @@ dif_result_t dif_sram_ctrl_get_status(const dif_sram_ctrl_t *sram_ctrl,
                                       dif_sram_ctrl_status_bitfield_t *status);
 
 /**
- * Forces a fatal error.
- *
- * @param sram_ctrl A SRAM Controller handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_sram_ctrl_alert_test(const dif_sram_ctrl_t *sram_ctrl);
-
-/**
  * Locks out requested SRAM Controller functionality.
  *
  * This function is reentrant: calling it while functionality is locked will

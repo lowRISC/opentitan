@@ -36,6 +36,27 @@ TEST_F(InitTest, Success) {
             kDifOk);
 }
 
+class AlertForceTest : public SpiHostTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_spi_host_alert_force(nullptr, kDifSpiHostAlertFatalFault),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_spi_host_alert_force(nullptr, static_cast<dif_spi_host_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(SPI_HOST_ALERT_TEST_REG_OFFSET,
+                 {{SPI_HOST_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_spi_host_alert_force(&spi_host_, kDifSpiHostAlertFatalFault),
+            kDifOk);
+}
+
 class IrqGetStateTest : public SpiHostTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

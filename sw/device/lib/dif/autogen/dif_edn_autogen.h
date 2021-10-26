@@ -48,6 +48,33 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_edn_init(mmio_region_t base_addr, dif_edn_t *edn);
 
 /**
+ * A edn alert type.
+ */
+typedef enum dif_edn_alert {
+  /**
+   * This alert is triggered when entropy bus data matches on consecutive clock
+   * cycles.
+   */
+  kDifEdnAlertRecovAlert = 0,
+  /**
+   * This alert triggers (i) if an illegal state machine state is reached, or
+   * (ii) if a fatal integrity failure is detected on the TL-UL bus.
+   */
+  kDifEdnAlertFatalAlert = 1,
+} dif_edn_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param edn A edn handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_edn_alert_force(const dif_edn_t *edn, dif_edn_alert_t alert);
+
+/**
  * A edn interrupt request type.
  */
 typedef enum dif_edn_irq {

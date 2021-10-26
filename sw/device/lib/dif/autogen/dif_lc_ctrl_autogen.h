@@ -47,6 +47,39 @@ typedef struct dif_lc_ctrl {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_lc_ctrl_init(mmio_region_t base_addr, dif_lc_ctrl_t *lc_ctrl);
 
+/**
+ * A lc_ctrl alert type.
+ */
+typedef enum dif_lc_ctrl_alert {
+  /**
+   * This alert triggers if an error occurred during an OTP programming
+   * operation.
+   */
+  kDifLcCtrlAlertFatalProgError = 0,
+  /**
+   * This alert triggers if an error in the life cycle state or life cycle
+   * controller FSM is detected.
+   */
+  kDifLcCtrlAlertFatalStateError = 1,
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifLcCtrlAlertFatalBusIntegError = 2,
+} dif_lc_ctrl_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param lc_ctrl A lc_ctrl handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc_ctrl,
+                                     dif_lc_ctrl_alert_t alert);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

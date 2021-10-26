@@ -48,6 +48,29 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_init(mmio_region_t base_addr, dif_hmac_t *hmac);
 
 /**
+ * A hmac alert type.
+ */
+typedef enum dif_hmac_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifHmacAlertFatalFault = 0,
+} dif_hmac_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param hmac A hmac handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_hmac_alert_force(const dif_hmac_t *hmac,
+                                  dif_hmac_alert_t alert);
+
+/**
  * A hmac interrupt request type.
  */
 typedef enum dif_hmac_irq {

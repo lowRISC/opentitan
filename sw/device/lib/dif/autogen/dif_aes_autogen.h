@@ -47,6 +47,41 @@ typedef struct dif_aes {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aes_init(mmio_region_t base_addr, dif_aes_t *aes);
 
+/**
+ * A aes alert type.
+ */
+typedef enum dif_aes_alert {
+  /**
+   * This recoverable alert is triggered upon detecting an update error in the
+   * shadowed Control Register. The content of the Control Register is not
+   * modified (See Control Register). The AES unit can be recovered from such a
+   * condition by restarting the AES operation, i.e., by re-writing the Control
+   * Register. This should be monitored by the system.
+   */
+  kDifAesAlertRecovCtrlUpdateErr = 0,
+  /**
+   * This fatal alert is triggered upon detecting a fatal fault inside the AES
+   * unit. Examples for such faults include i) storage errors in the shadowed
+   * Control Register, ii) any internal FSM entering an invalid state, iii) any
+   * sparsely encoded signal taking on an invalid value, iv) errors in the
+   * internal round counter, v) escalations triggered by the life cycle
+   * controller, and vi) fatal integrity failures on the TL-UL bus. The AES unit
+   * cannot recover from such an error and needs to be reset.
+   */
+  kDifAesAlertFatalFault = 1,
+} dif_aes_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param aes A aes handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aes_alert_force(const dif_aes_t *aes, dif_aes_alert_t alert);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

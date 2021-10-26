@@ -20,6 +20,28 @@ dif_result_t dif_hmac_init(mmio_region_t base_addr, dif_hmac_t *hmac) {
   return kDifOk;
 }
 
+dif_result_t dif_hmac_alert_force(const dif_hmac_t *hmac,
+                                  dif_hmac_alert_t alert) {
+  if (hmac == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifHmacAlertFatalFault:
+      alert_idx = HMAC_ALERT_TEST_FATAL_FAULT_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(hmac->base_addr, HMAC_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

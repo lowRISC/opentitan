@@ -20,6 +20,27 @@ dif_result_t dif_i2c_init(mmio_region_t base_addr, dif_i2c_t *i2c) {
   return kDifOk;
 }
 
+dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  bitfield_bit32_index_t alert_idx;
+  switch (alert) {
+    case kDifI2cAlertFatalFault:
+      alert_idx = I2C_ALERT_TEST_FATAL_FAULT_BIT;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  mmio_region_write32(i2c->base_addr, I2C_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
  * HJSON does NOT have a field "no_auto_intr_regs = true", then the

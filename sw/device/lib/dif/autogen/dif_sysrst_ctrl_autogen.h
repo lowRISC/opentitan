@@ -50,6 +50,29 @@ dif_result_t dif_sysrst_ctrl_init(mmio_region_t base_addr,
                                   dif_sysrst_ctrl_t *sysrst_ctrl);
 
 /**
+ * A sysrst_ctrl alert type.
+ */
+typedef enum dif_sysrst_ctrl_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifSysrstCtrlAlertFatalFault = 0,
+} dif_sysrst_ctrl_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param sysrst_ctrl A sysrst_ctrl handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sysrst_ctrl_alert_force(const dif_sysrst_ctrl_t *sysrst_ctrl,
+                                         dif_sysrst_ctrl_alert_t alert);
+
+/**
  * A sysrst_ctrl interrupt request type.
  */
 typedef enum dif_sysrst_ctrl_irq {

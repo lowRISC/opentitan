@@ -47,6 +47,29 @@ typedef struct dif_pinmux {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pinmux_init(mmio_region_t base_addr, dif_pinmux_t *pinmux);
 
+/**
+ * A pinmux alert type.
+ */
+typedef enum dif_pinmux_alert {
+  /**
+   * This fatal alert is triggered when a fatal TL-UL bus integrity fault is
+   * detected.
+   */
+  kDifPinmuxAlertFatalFault = 0,
+} dif_pinmux_alert_t;
+
+/**
+ * Forces a particular alert, causing it to be escalated as if the hardware
+ * had raised it.
+ *
+ * @param pinmux A pinmux handle.
+ * @param alert The alert to force.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pinmux_alert_force(const dif_pinmux_t *pinmux,
+                                    dif_pinmux_alert_t alert);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

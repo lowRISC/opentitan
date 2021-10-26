@@ -35,5 +35,26 @@ TEST_F(InitTest, Success) {
   EXPECT_EQ(dif_rv_plic_init({.base_addr = dev().region()}, &rv_plic_), kDifOk);
 }
 
+class AlertForceTest : public RvPlicTest {};
+
+TEST_F(AlertForceTest, NullArgs) {
+  EXPECT_EQ(dif_rv_plic_alert_force(nullptr, kDifRvPlicAlertFatalFault),
+            kDifBadArg);
+}
+
+TEST_F(AlertForceTest, BadAlert) {
+  EXPECT_EQ(
+      dif_rv_plic_alert_force(nullptr, static_cast<dif_rv_plic_alert_t>(32)),
+      kDifBadArg);
+}
+
+TEST_F(AlertForceTest, Success) {
+  // Force first alert.
+  EXPECT_WRITE32(RV_PLIC_ALERT_TEST_REG_OFFSET,
+                 {{RV_PLIC_ALERT_TEST_FATAL_FAULT_BIT, true}});
+  EXPECT_EQ(dif_rv_plic_alert_force(&rv_plic_, kDifRvPlicAlertFatalFault),
+            kDifOk);
+}
+
 }  // namespace
 }  // namespace dif_rv_plic_autogen_unittest
