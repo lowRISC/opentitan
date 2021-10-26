@@ -107,7 +107,7 @@ def call_otbn_ld(src_files: List[Path], out_file: Path, linker_script: Optional[
     otbn_ld_cmd = os.environ.get('OTBN_LD',
                                  str(REPO_TOP / 'hw/ip/otbn/util/otbn-ld'))
 
-    args = []
+    args = ['-gc-sections', '-gc-keep-exported']
     if linker_script:
         args += ['-T', linker_script]
     args += src_files
