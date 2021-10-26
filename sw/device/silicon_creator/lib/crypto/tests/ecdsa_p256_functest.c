@@ -39,7 +39,6 @@ rom_error_t compute_digest(void) {
   RETURN_IF_ERROR(hmac_sha256_update(&kMessage, sizeof(kMessage) - 1));
   RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
 
-  // TODO: digest should be reduced modulo n
   for (i = 0; i < kP256ScalarNumWords; i++) {
     digest.h[i] = act_digest.digest[i];
   };
