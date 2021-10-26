@@ -405,6 +405,10 @@ void ISSWrapper::invalidate_imem() {
   run_command("invalidate_imem\n", nullptr);
 }
 
+void ISSWrapper::invalidate_dmem() {
+  run_command("invalidate_dmem\n", nullptr);
+}
+
 uint32_t ISSWrapper::step_crc(const std::array<uint8_t, 6> &item,
                               uint32_t state) const {
   std::vector<std::string> lines;

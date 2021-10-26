@@ -80,7 +80,7 @@
             Inject ECC errors into DMEM and IMEM and expect an alert
             '''
       milestone: V2
-      tests: ["otbn_imem_err"]
+      tests: ["otbn_imem_err", "otbn_dmem_err"]
     }
     {
       name: back_to_back

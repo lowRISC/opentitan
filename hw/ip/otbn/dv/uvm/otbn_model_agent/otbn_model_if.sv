@@ -57,6 +57,16 @@ interface otbn_model_if
                     "Failed to invalidate IMEM", "otbn_model_if")
   endfunction
 
+  // Mark the entirety of DMEM as invalid
+  //
+  // Call this on a negedge of clk_i to ensure sequencing with the otbn_model_step on the following
+  // posedge.
+  function automatic void invalidate_dmem();
+    `uvm_info("otbn_model_if", "Invalidating DMEM", UVM_HIGH)
+    `DV_CHECK_FATAL(otbn_model_pkg::otbn_model_invalidate_dmem(handle) == 0,
+                    "Failed to invalidate DMEM", "otbn_model_if")
+  endfunction
+
   // Ask the Python model to compute a CRC step for a memory write
   //
   // This doesn't actually update any model state (we pass in the old state and delta, and the

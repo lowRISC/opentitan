@@ -263,6 +263,10 @@ class LW(OTBNInsn):
         # Stall for a single cycle for memory to respond
         yield
 
+        if result is None:
+            state.stop_at_end_of_cycle(ErrBits.DMEM_INTG_VIOLATION)
+            return
+
         state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
@@ -1080,6 +1084,10 @@ class BNLID(OTBNInsn):
 
         # Stall for a single cycle for memory to respond
         yield
+
+        if value is None:
+            state.stop_at_end_of_cycle(ErrBits.DMEM_INTG_VIOLATION)
+            return
 
         state.wdrs.get_reg(wrd).write_unsigned(value)
 
