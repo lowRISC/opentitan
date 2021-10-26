@@ -107,16 +107,8 @@ dptr_exp:
 dptr_out:
   .word work_buf
 
+/* (End of fixed-layout section) */
 
-/* Freely available DMEM space. */
-
-m0d:
-  /* filled by modload */
-  .zero 512
-
-RR:
-  /* filled by modload */
-  .zero 512
 
 /* Modulus (n) */
 .globl modulus
@@ -133,7 +125,16 @@ exp:
 inout:
   .zero 512
 
+
+.section .scratchpad
+m0d:
+  /* filled by modload */
+  .zero 512
+
+RR:
+  /* filled by modload */
+  .zero 512
+
 /* working data */
-.globl work_buf
 work_buf:
   .zero 512
