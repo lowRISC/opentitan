@@ -45,6 +45,10 @@ _TOP_LEVEL_IPS = {"ast", "sensor_ctrl"}
 # Indicates that the DIF work has not yet started.
 _NOT_STARTED = colored("NOT STARTED", "red")
 
+# This file is $REPO_TOP/util/make_new_dif/ip.py, so it takes two parent()
+# calls to get back to the top.
+REPO_TOP = Path(__file__).resolve().parent.parent
+
 
 class _OTComponent(Enum):
     """Type of OpenTitan component."""
@@ -78,13 +82,12 @@ class DIFStatus:
         funcs_unimplemented (Set[str]): Set of unimplemted DIF functions.
 
     """
-    def __init__(self, repo_top, top_level, difs_root_path, dif_name):
+    def __init__(self, top_level, difs_root_path, dif_name):
         """Mines metadata to populate this DIFStatus object.
 
         Args:
-            repo_top: Relative path of local OpenTitan repository.
             top_level: Name of the top level design.
-            difs_root_path: Path to DIF source code from repo_top.
+            difs_root_path: Path to DIF source code from REPO_TOP.
             dif_name: Full name of the DIF including the IP name.
 
         Raises:
@@ -111,7 +114,7 @@ class DIFStatus:
 
         # Determine last date HW was updated.
         self.hw_last_modified = self._get_last_commit_date(
-            repo_top, os.path.join(self.hw_path, "rtl"), [""])
+            os.path.join(self.hw_path, "rtl"), [""])
 
         # Determine the main contributor of the HW.
         self.hw_main_contributors = self._get_main_contributor_emails(
@@ -119,7 +122,7 @@ class DIFStatus:
         if has_started:
             # Determine last date DIF was updated.
             self.dif_last_modified = self._get_last_commit_date(
-                repo_top, self.dif_path, [".h", ".c"])
+                self.dif_path, [".h", ".c"])
             # Determine the main contributor of the DIF.
             self.dif_main_contributors = self._get_main_contributor_emails(
                 _OTComponent.DIF)
@@ -191,14 +194,14 @@ class DIFStatus:
                 sys.exit(1)
         return contributor_stats
 
-    def _get_last_commit_date(self, repo_top, file_path, exts):
+    def _get_last_commit_date(self, file_path, exts):
         last_dif_commit_date = None
         for ext in exts:
             # Check the file exists.
             full_file_path = file_path + ext
             if os.path.isfile(full_file_path) or os.path.isdir(full_file_path):
                 repo = pydriller.Repository(
-                    repo_top, filepath=full_file_path).traverse_commits()
+                    str(REPO_TOP), filepath=full_file_path).traverse_commits()
                 for commit in repo:
                     if last_dif_commit_date is None:
                         last_dif_commit_date = commit.author_date
@@ -235,7 +238,7 @@ class DIFStatus:
         return self._get_funcs(c_file)
 
     def _get_funcs(self, file_path):
-        func_pattern = re.compile(r"^dif_.*_result_t (dif_.*)\(.*")
+        func_pattern = re.compile(r"^dif_result_t (dif_.*)\(.*")
         funcs = set()
         with open(file_path, "r") as fp:
             for line in fp:
@@ -406,13 +409,9 @@ def main(argv):
         prog="check_dif_statuses",
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
-        "repo_top",
-        help=
-        """Relative path to where the OpenTitan repository is checked out.""")
-    parser.add_argument(
         "--top-hjson",
-        help="""Path to the top-level HJson configuration file relative to
-        repo_top.""")
+        help="""Path to the top-level HJSON configuration file relative to
+        REPO_TOP.""")
     parser.add_argument(
         "--show-unimplemented",
         action="store_true",
@@ -436,12 +435,12 @@ def main(argv):
 
     if args.top_hjson:
         # Get the list of IP blocks by invoking the topgen tool.
-        topgen_tool = os.path.join(args.repo_top, "util", "topgen.py")
-        top_hjson = os.path.join(args.repo_top, args.top_hjson)
+        topgen_tool = os.path.join(REPO_TOP, "util", "topgen.py")
+        top_hjson = os.path.join(REPO_TOP, args.top_hjson)
         top_level = Path(top_hjson).stem
         # yapf: disable
         topgen_process = subprocess.run([topgen_tool, "-t", top_hjson,
-                                         "--get_blocks", "-o", args.repo_top],
+                                         "--get_blocks", "-o", REPO_TOP],
                                         text=True,
                                         universal_newlines=True,
                                         stdout=subprocess.PIPE,
@@ -466,8 +465,7 @@ def main(argv):
                                      desc="Analyzing statuses of DIFs ...",
                                      unit="DIFs")
     for dif in difs:
-        dif_statuses.append(
-            DIFStatus(args.repo_top, top_level, difs_root_path, dif))
+        dif_statuses.append(DIFStatus(top_level, difs_root_path, dif))
         progress_bar.update()
 
     # Build table and print it to STDOUT.
