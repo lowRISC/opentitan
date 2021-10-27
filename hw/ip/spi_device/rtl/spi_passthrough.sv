@@ -531,11 +531,13 @@ module spi_passthrough
     cmd_info_7th_d = {CmdInfoInput, CmdInfoInput};
     if (cmd_7th) begin
       for(int unsigned i = 0 ; i < NumCmdInfo ; i++) begin
-        if (cmd_info_i[i].opcode == {opcode_d[6:0], 1'b1}) begin
-          cmd_info_7th_d[1] = cmd_info_i[i];
-        end else if (cmd_info_i[i].opcode == {opcode_d[6:0], 1'b0}) begin
-          cmd_info_7th_d[0] = cmd_info_i[i];
-        end
+        if (cmd_info_i[i].valid) begin
+          if (cmd_info_i[i].opcode == {opcode_d[6:0], 1'b1}) begin
+            cmd_info_7th_d[1] = cmd_info_i[i];
+          end else if (cmd_info_i[i].opcode == {opcode_d[6:0], 1'b0}) begin
+            cmd_info_7th_d[0] = cmd_info_i[i];
+          end
+        end // cmd_info_i[i].valid
       end
     end
   end
@@ -736,7 +738,7 @@ module spi_passthrough
           filter = 1'b 1;
 
           // Send notification event to SW
-        end else if (cmd_8th) begin
+        end else if (cmd_8th && cmd_info_d.valid) begin
           cmd_info_latch = 1'b 1;
 
           // Divert to multiple states.
@@ -764,6 +766,11 @@ module spi_passthrough
               st_d = StDriving;
             end
           end
+        end // cmd_8th && cmd_info_d.valid
+        else if (cmd_8th) begin
+          // cmd_info_d.valid is 0. Skip current transaction
+          st_d = StFilter;
+          filter = 1'b 1;
         end
       end
 

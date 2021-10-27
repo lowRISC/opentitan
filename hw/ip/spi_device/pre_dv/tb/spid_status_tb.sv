@@ -55,6 +55,7 @@ module spid_status_tb;
 
   cmd_info_t [NumCmdInfo-1:0] cmd_info_list;
   assign cmd_info_list[CmdInfoReadStatus1] = '{
+    valid:            1'b 1,
     opcode:           8'h 05,
     addr_en:          1'b 0,
     addr_swap_en:     1'b 0,
@@ -68,6 +69,7 @@ module spid_status_tb;
     busy:             1'b 0
   };
   assign cmd_info_list[CmdInfoReadStatus2] = '{
+    valid:            1'b 1,
     opcode:           8'h 35,
     addr_en:          1'b 0,
     addr_swap_en:     1'b 0,
@@ -81,6 +83,7 @@ module spid_status_tb;
     busy:             1'b 0
   };
   assign cmd_info_list[CmdInfoReadStatus3] = '{
+    valid:            1'b 1,
     opcode:           8'h 15,
     addr_en:          1'b 0,
     addr_swap_en:     1'b 0,
@@ -96,6 +99,7 @@ module spid_status_tb;
 
   for (genvar i = CmdInfoReadStatus3 + 1; i < NumCmdInfo ; i++) begin: g_cmd_info
     assign cmd_info_list[i] = '{
+      valid:            1'b 0,
       opcode:           (8'h FF - i),
       addr_en:          1'b 0,
       addr_swap_en:     1'b 0,

@@ -564,6 +564,7 @@ module spi_device
   always_comb begin
     for (int unsigned i = 0 ; i < spi_device_reg_pkg::NumCmdInfo ; i++) begin
       cmd_info[i] = '{
+        valid:            reg2hw.cmd_info[i].valid.q,
         opcode:           reg2hw.cmd_info[i].opcode.q,
         addr_en:          reg2hw.cmd_info[i].addr_en.q,
         addr_swap_en:     reg2hw.cmd_info[i].addr_swap_en.q,

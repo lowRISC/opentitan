@@ -94,6 +94,9 @@ package spi_device_pkg;
   //
   // These fields are SW programmable via CSR interface.
   typedef struct packed {
+    // If 1, the cmd_info slot is in active and contains valid config.
+    logic valid;
+
     // opcode: Each cmd_info type has 8bit opcode. SPI_DEVICE has 16 command
     // slots. The logic compares the opcode and uses the command info when
     // opcode is matched. If same opcode exists, SPI_DEVICE uses the command
@@ -149,6 +152,7 @@ package spi_device_pkg;
   // CmdInfoInput parameter is the default value if no opcode in the cmd info
   // slot is matched to the received command opcode.
   parameter cmd_info_t CmdInfoInput = '{
+    valid:            1'b 0,
     opcode:           8'h 00,
     addr_en:          1'b 0,
     addr_swap_en:     1'b 0,

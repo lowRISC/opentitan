@@ -832,6 +832,8 @@ module spi_device_reg_top (
   logic cmd_info_0_upload_0_wd;
   logic cmd_info_0_busy_0_qs;
   logic cmd_info_0_busy_0_wd;
+  logic cmd_info_0_valid_0_qs;
+  logic cmd_info_0_valid_0_wd;
   logic cmd_info_1_we;
   logic [7:0] cmd_info_1_opcode_1_qs;
   logic [7:0] cmd_info_1_opcode_1_wd;
@@ -855,6 +857,8 @@ module spi_device_reg_top (
   logic cmd_info_1_upload_1_wd;
   logic cmd_info_1_busy_1_qs;
   logic cmd_info_1_busy_1_wd;
+  logic cmd_info_1_valid_1_qs;
+  logic cmd_info_1_valid_1_wd;
   logic cmd_info_2_we;
   logic [7:0] cmd_info_2_opcode_2_qs;
   logic [7:0] cmd_info_2_opcode_2_wd;
@@ -878,6 +882,8 @@ module spi_device_reg_top (
   logic cmd_info_2_upload_2_wd;
   logic cmd_info_2_busy_2_qs;
   logic cmd_info_2_busy_2_wd;
+  logic cmd_info_2_valid_2_qs;
+  logic cmd_info_2_valid_2_wd;
   logic cmd_info_3_we;
   logic [7:0] cmd_info_3_opcode_3_qs;
   logic [7:0] cmd_info_3_opcode_3_wd;
@@ -901,6 +907,8 @@ module spi_device_reg_top (
   logic cmd_info_3_upload_3_wd;
   logic cmd_info_3_busy_3_qs;
   logic cmd_info_3_busy_3_wd;
+  logic cmd_info_3_valid_3_qs;
+  logic cmd_info_3_valid_3_wd;
   logic cmd_info_4_we;
   logic [7:0] cmd_info_4_opcode_4_qs;
   logic [7:0] cmd_info_4_opcode_4_wd;
@@ -924,6 +932,8 @@ module spi_device_reg_top (
   logic cmd_info_4_upload_4_wd;
   logic cmd_info_4_busy_4_qs;
   logic cmd_info_4_busy_4_wd;
+  logic cmd_info_4_valid_4_qs;
+  logic cmd_info_4_valid_4_wd;
   logic cmd_info_5_we;
   logic [7:0] cmd_info_5_opcode_5_qs;
   logic [7:0] cmd_info_5_opcode_5_wd;
@@ -947,6 +957,8 @@ module spi_device_reg_top (
   logic cmd_info_5_upload_5_wd;
   logic cmd_info_5_busy_5_qs;
   logic cmd_info_5_busy_5_wd;
+  logic cmd_info_5_valid_5_qs;
+  logic cmd_info_5_valid_5_wd;
   logic cmd_info_6_we;
   logic [7:0] cmd_info_6_opcode_6_qs;
   logic [7:0] cmd_info_6_opcode_6_wd;
@@ -970,6 +982,8 @@ module spi_device_reg_top (
   logic cmd_info_6_upload_6_wd;
   logic cmd_info_6_busy_6_qs;
   logic cmd_info_6_busy_6_wd;
+  logic cmd_info_6_valid_6_qs;
+  logic cmd_info_6_valid_6_wd;
   logic cmd_info_7_we;
   logic [7:0] cmd_info_7_opcode_7_qs;
   logic [7:0] cmd_info_7_opcode_7_wd;
@@ -993,6 +1007,8 @@ module spi_device_reg_top (
   logic cmd_info_7_upload_7_wd;
   logic cmd_info_7_busy_7_qs;
   logic cmd_info_7_busy_7_wd;
+  logic cmd_info_7_valid_7_qs;
+  logic cmd_info_7_valid_7_wd;
   logic cmd_info_8_we;
   logic [7:0] cmd_info_8_opcode_8_qs;
   logic [7:0] cmd_info_8_opcode_8_wd;
@@ -1016,6 +1032,8 @@ module spi_device_reg_top (
   logic cmd_info_8_upload_8_wd;
   logic cmd_info_8_busy_8_qs;
   logic cmd_info_8_busy_8_wd;
+  logic cmd_info_8_valid_8_qs;
+  logic cmd_info_8_valid_8_wd;
   logic cmd_info_9_we;
   logic [7:0] cmd_info_9_opcode_9_qs;
   logic [7:0] cmd_info_9_opcode_9_wd;
@@ -1039,6 +1057,8 @@ module spi_device_reg_top (
   logic cmd_info_9_upload_9_wd;
   logic cmd_info_9_busy_9_qs;
   logic cmd_info_9_busy_9_wd;
+  logic cmd_info_9_valid_9_qs;
+  logic cmd_info_9_valid_9_wd;
   logic cmd_info_10_we;
   logic [7:0] cmd_info_10_opcode_10_qs;
   logic [7:0] cmd_info_10_opcode_10_wd;
@@ -1062,6 +1082,8 @@ module spi_device_reg_top (
   logic cmd_info_10_upload_10_wd;
   logic cmd_info_10_busy_10_qs;
   logic cmd_info_10_busy_10_wd;
+  logic cmd_info_10_valid_10_qs;
+  logic cmd_info_10_valid_10_wd;
   logic cmd_info_11_we;
   logic [7:0] cmd_info_11_opcode_11_qs;
   logic [7:0] cmd_info_11_opcode_11_wd;
@@ -1085,6 +1107,8 @@ module spi_device_reg_top (
   logic cmd_info_11_upload_11_wd;
   logic cmd_info_11_busy_11_qs;
   logic cmd_info_11_busy_11_wd;
+  logic cmd_info_11_valid_11_qs;
+  logic cmd_info_11_valid_11_wd;
   logic cmd_info_12_we;
   logic [7:0] cmd_info_12_opcode_12_qs;
   logic [7:0] cmd_info_12_opcode_12_wd;
@@ -1108,6 +1132,8 @@ module spi_device_reg_top (
   logic cmd_info_12_upload_12_wd;
   logic cmd_info_12_busy_12_qs;
   logic cmd_info_12_busy_12_wd;
+  logic cmd_info_12_valid_12_qs;
+  logic cmd_info_12_valid_12_wd;
   logic cmd_info_13_we;
   logic [7:0] cmd_info_13_opcode_13_qs;
   logic [7:0] cmd_info_13_opcode_13_wd;
@@ -1131,6 +1157,8 @@ module spi_device_reg_top (
   logic cmd_info_13_upload_13_wd;
   logic cmd_info_13_busy_13_qs;
   logic cmd_info_13_busy_13_wd;
+  logic cmd_info_13_valid_13_qs;
+  logic cmd_info_13_valid_13_wd;
   logic cmd_info_14_we;
   logic [7:0] cmd_info_14_opcode_14_qs;
   logic [7:0] cmd_info_14_opcode_14_wd;
@@ -1154,6 +1182,8 @@ module spi_device_reg_top (
   logic cmd_info_14_upload_14_wd;
   logic cmd_info_14_busy_14_qs;
   logic cmd_info_14_busy_14_wd;
+  logic cmd_info_14_valid_14_qs;
+  logic cmd_info_14_valid_14_wd;
   logic cmd_info_15_we;
   logic [7:0] cmd_info_15_opcode_15_qs;
   logic [7:0] cmd_info_15_opcode_15_wd;
@@ -1177,6 +1207,8 @@ module spi_device_reg_top (
   logic cmd_info_15_upload_15_wd;
   logic cmd_info_15_busy_15_qs;
   logic cmd_info_15_busy_15_wd;
+  logic cmd_info_15_valid_15_qs;
+  logic cmd_info_15_valid_15_wd;
   logic cmd_info_16_we;
   logic [7:0] cmd_info_16_opcode_16_qs;
   logic [7:0] cmd_info_16_opcode_16_wd;
@@ -1200,6 +1232,8 @@ module spi_device_reg_top (
   logic cmd_info_16_upload_16_wd;
   logic cmd_info_16_busy_16_qs;
   logic cmd_info_16_busy_16_wd;
+  logic cmd_info_16_valid_16_qs;
+  logic cmd_info_16_valid_16_wd;
   logic cmd_info_17_we;
   logic [7:0] cmd_info_17_opcode_17_qs;
   logic [7:0] cmd_info_17_opcode_17_wd;
@@ -1223,6 +1257,8 @@ module spi_device_reg_top (
   logic cmd_info_17_upload_17_wd;
   logic cmd_info_17_busy_17_qs;
   logic cmd_info_17_busy_17_wd;
+  logic cmd_info_17_valid_17_qs;
+  logic cmd_info_17_valid_17_wd;
   logic cmd_info_18_we;
   logic [7:0] cmd_info_18_opcode_18_qs;
   logic [7:0] cmd_info_18_opcode_18_wd;
@@ -1246,6 +1282,8 @@ module spi_device_reg_top (
   logic cmd_info_18_upload_18_wd;
   logic cmd_info_18_busy_18_qs;
   logic cmd_info_18_busy_18_wd;
+  logic cmd_info_18_valid_18_qs;
+  logic cmd_info_18_valid_18_wd;
   logic cmd_info_19_we;
   logic [7:0] cmd_info_19_opcode_19_qs;
   logic [7:0] cmd_info_19_opcode_19_wd;
@@ -1269,6 +1307,8 @@ module spi_device_reg_top (
   logic cmd_info_19_upload_19_wd;
   logic cmd_info_19_busy_19_qs;
   logic cmd_info_19_busy_19_wd;
+  logic cmd_info_19_valid_19_qs;
+  logic cmd_info_19_valid_19_wd;
   logic cmd_info_20_we;
   logic [7:0] cmd_info_20_opcode_20_qs;
   logic [7:0] cmd_info_20_opcode_20_wd;
@@ -1292,6 +1332,8 @@ module spi_device_reg_top (
   logic cmd_info_20_upload_20_wd;
   logic cmd_info_20_busy_20_qs;
   logic cmd_info_20_busy_20_wd;
+  logic cmd_info_20_valid_20_qs;
+  logic cmd_info_20_valid_20_wd;
   logic cmd_info_21_we;
   logic [7:0] cmd_info_21_opcode_21_qs;
   logic [7:0] cmd_info_21_opcode_21_wd;
@@ -1315,6 +1357,8 @@ module spi_device_reg_top (
   logic cmd_info_21_upload_21_wd;
   logic cmd_info_21_busy_21_qs;
   logic cmd_info_21_busy_21_wd;
+  logic cmd_info_21_valid_21_qs;
+  logic cmd_info_21_valid_21_wd;
   logic cmd_info_22_we;
   logic [7:0] cmd_info_22_opcode_22_qs;
   logic [7:0] cmd_info_22_opcode_22_wd;
@@ -1338,6 +1382,8 @@ module spi_device_reg_top (
   logic cmd_info_22_upload_22_wd;
   logic cmd_info_22_busy_22_qs;
   logic cmd_info_22_busy_22_wd;
+  logic cmd_info_22_valid_22_qs;
+  logic cmd_info_22_valid_22_wd;
   logic cmd_info_23_we;
   logic [7:0] cmd_info_23_opcode_23_qs;
   logic [7:0] cmd_info_23_opcode_23_wd;
@@ -1361,6 +1407,8 @@ module spi_device_reg_top (
   logic cmd_info_23_upload_23_wd;
   logic cmd_info_23_busy_23_qs;
   logic cmd_info_23_busy_23_wd;
+  logic cmd_info_23_valid_23_qs;
+  logic cmd_info_23_valid_23_wd;
   logic [7:0] tpm_cap_rev_qs;
   logic tpm_cap_locality_qs;
   logic [2:0] tpm_cap_max_xfer_size_qs;
@@ -9631,6 +9679,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_0_busy_0_qs)
   );
 
+  //   F[valid_0]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_0_valid_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_0_we),
+    .wd     (cmd_info_0_valid_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[0].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_0_valid_0_qs)
+  );
+
 
   // Subregister 1 of Multireg cmd_info
   // R[cmd_info_1]: V(False)
@@ -9907,6 +9980,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_1_busy_1_qs)
+  );
+
+  //   F[valid_1]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_1_valid_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_1_we),
+    .wd     (cmd_info_1_valid_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[1].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_1_valid_1_qs)
   );
 
 
@@ -10187,6 +10285,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_2_busy_2_qs)
   );
 
+  //   F[valid_2]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_2_valid_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_2_we),
+    .wd     (cmd_info_2_valid_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[2].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_2_valid_2_qs)
+  );
+
 
   // Subregister 3 of Multireg cmd_info
   // R[cmd_info_3]: V(False)
@@ -10463,6 +10586,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_3_busy_3_qs)
+  );
+
+  //   F[valid_3]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_3_valid_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_3_we),
+    .wd     (cmd_info_3_valid_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[3].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_3_valid_3_qs)
   );
 
 
@@ -10743,6 +10891,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_4_busy_4_qs)
   );
 
+  //   F[valid_4]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_4_valid_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_4_we),
+    .wd     (cmd_info_4_valid_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[4].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_4_valid_4_qs)
+  );
+
 
   // Subregister 5 of Multireg cmd_info
   // R[cmd_info_5]: V(False)
@@ -11019,6 +11192,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_5_busy_5_qs)
+  );
+
+  //   F[valid_5]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_5_valid_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_5_we),
+    .wd     (cmd_info_5_valid_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[5].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_5_valid_5_qs)
   );
 
 
@@ -11299,6 +11497,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_6_busy_6_qs)
   );
 
+  //   F[valid_6]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_6_valid_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_6_we),
+    .wd     (cmd_info_6_valid_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[6].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_6_valid_6_qs)
+  );
+
 
   // Subregister 7 of Multireg cmd_info
   // R[cmd_info_7]: V(False)
@@ -11575,6 +11798,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_7_busy_7_qs)
+  );
+
+  //   F[valid_7]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_7_valid_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_7_we),
+    .wd     (cmd_info_7_valid_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[7].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_7_valid_7_qs)
   );
 
 
@@ -11855,6 +12103,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_8_busy_8_qs)
   );
 
+  //   F[valid_8]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_8_valid_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_8_we),
+    .wd     (cmd_info_8_valid_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[8].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_8_valid_8_qs)
+  );
+
 
   // Subregister 9 of Multireg cmd_info
   // R[cmd_info_9]: V(False)
@@ -12131,6 +12404,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_9_busy_9_qs)
+  );
+
+  //   F[valid_9]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_9_valid_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_9_we),
+    .wd     (cmd_info_9_valid_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[9].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_9_valid_9_qs)
   );
 
 
@@ -12411,6 +12709,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_10_busy_10_qs)
   );
 
+  //   F[valid_10]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_10_valid_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_10_we),
+    .wd     (cmd_info_10_valid_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[10].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_10_valid_10_qs)
+  );
+
 
   // Subregister 11 of Multireg cmd_info
   // R[cmd_info_11]: V(False)
@@ -12687,6 +13010,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_11_busy_11_qs)
+  );
+
+  //   F[valid_11]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_11_valid_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_11_we),
+    .wd     (cmd_info_11_valid_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[11].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_11_valid_11_qs)
   );
 
 
@@ -12967,6 +13315,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_12_busy_12_qs)
   );
 
+  //   F[valid_12]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_12_valid_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_12_we),
+    .wd     (cmd_info_12_valid_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[12].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_12_valid_12_qs)
+  );
+
 
   // Subregister 13 of Multireg cmd_info
   // R[cmd_info_13]: V(False)
@@ -13243,6 +13616,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_13_busy_13_qs)
+  );
+
+  //   F[valid_13]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_13_valid_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_13_we),
+    .wd     (cmd_info_13_valid_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[13].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_13_valid_13_qs)
   );
 
 
@@ -13523,6 +13921,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_14_busy_14_qs)
   );
 
+  //   F[valid_14]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_14_valid_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_14_we),
+    .wd     (cmd_info_14_valid_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[14].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_14_valid_14_qs)
+  );
+
 
   // Subregister 15 of Multireg cmd_info
   // R[cmd_info_15]: V(False)
@@ -13799,6 +14222,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_15_busy_15_qs)
+  );
+
+  //   F[valid_15]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_15_valid_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_15_we),
+    .wd     (cmd_info_15_valid_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[15].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_15_valid_15_qs)
   );
 
 
@@ -14079,6 +14527,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_16_busy_16_qs)
   );
 
+  //   F[valid_16]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_16_valid_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_16_we),
+    .wd     (cmd_info_16_valid_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[16].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_16_valid_16_qs)
+  );
+
 
   // Subregister 17 of Multireg cmd_info
   // R[cmd_info_17]: V(False)
@@ -14355,6 +14828,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_17_busy_17_qs)
+  );
+
+  //   F[valid_17]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_17_valid_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_17_we),
+    .wd     (cmd_info_17_valid_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[17].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_17_valid_17_qs)
   );
 
 
@@ -14635,6 +15133,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_18_busy_18_qs)
   );
 
+  //   F[valid_18]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_18_valid_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_18_we),
+    .wd     (cmd_info_18_valid_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[18].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_18_valid_18_qs)
+  );
+
 
   // Subregister 19 of Multireg cmd_info
   // R[cmd_info_19]: V(False)
@@ -14911,6 +15434,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_19_busy_19_qs)
+  );
+
+  //   F[valid_19]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_19_valid_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_19_we),
+    .wd     (cmd_info_19_valid_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[19].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_19_valid_19_qs)
   );
 
 
@@ -15191,6 +15739,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_20_busy_20_qs)
   );
 
+  //   F[valid_20]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_20_valid_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_20_we),
+    .wd     (cmd_info_20_valid_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[20].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_20_valid_20_qs)
+  );
+
 
   // Subregister 21 of Multireg cmd_info
   // R[cmd_info_21]: V(False)
@@ -15467,6 +16040,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_21_busy_21_qs)
+  );
+
+  //   F[valid_21]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_21_valid_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_21_we),
+    .wd     (cmd_info_21_valid_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[21].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_21_valid_21_qs)
   );
 
 
@@ -15747,6 +16345,31 @@ module spi_device_reg_top (
     .qs     (cmd_info_22_busy_22_qs)
   );
 
+  //   F[valid_22]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_22_valid_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_22_we),
+    .wd     (cmd_info_22_valid_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[22].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_22_valid_22_qs)
+  );
+
 
   // Subregister 23 of Multireg cmd_info
   // R[cmd_info_23]: V(False)
@@ -16023,6 +16646,31 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_23_busy_23_qs)
+  );
+
+  //   F[valid_23]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_23_valid_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_23_we),
+    .wd     (cmd_info_23_valid_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[23].valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_23_valid_23_qs)
   );
 
 
@@ -17548,6 +18196,8 @@ module spi_device_reg_top (
   assign cmd_info_0_upload_0_wd = reg_wdata[24];
 
   assign cmd_info_0_busy_0_wd = reg_wdata[25];
+
+  assign cmd_info_0_valid_0_wd = reg_wdata[31];
   assign cmd_info_1_we = addr_hit[32] & reg_we & !reg_error;
 
   assign cmd_info_1_opcode_1_wd = reg_wdata[7:0];
@@ -17571,6 +18221,8 @@ module spi_device_reg_top (
   assign cmd_info_1_upload_1_wd = reg_wdata[24];
 
   assign cmd_info_1_busy_1_wd = reg_wdata[25];
+
+  assign cmd_info_1_valid_1_wd = reg_wdata[31];
   assign cmd_info_2_we = addr_hit[33] & reg_we & !reg_error;
 
   assign cmd_info_2_opcode_2_wd = reg_wdata[7:0];
@@ -17594,6 +18246,8 @@ module spi_device_reg_top (
   assign cmd_info_2_upload_2_wd = reg_wdata[24];
 
   assign cmd_info_2_busy_2_wd = reg_wdata[25];
+
+  assign cmd_info_2_valid_2_wd = reg_wdata[31];
   assign cmd_info_3_we = addr_hit[34] & reg_we & !reg_error;
 
   assign cmd_info_3_opcode_3_wd = reg_wdata[7:0];
@@ -17617,6 +18271,8 @@ module spi_device_reg_top (
   assign cmd_info_3_upload_3_wd = reg_wdata[24];
 
   assign cmd_info_3_busy_3_wd = reg_wdata[25];
+
+  assign cmd_info_3_valid_3_wd = reg_wdata[31];
   assign cmd_info_4_we = addr_hit[35] & reg_we & !reg_error;
 
   assign cmd_info_4_opcode_4_wd = reg_wdata[7:0];
@@ -17640,6 +18296,8 @@ module spi_device_reg_top (
   assign cmd_info_4_upload_4_wd = reg_wdata[24];
 
   assign cmd_info_4_busy_4_wd = reg_wdata[25];
+
+  assign cmd_info_4_valid_4_wd = reg_wdata[31];
   assign cmd_info_5_we = addr_hit[36] & reg_we & !reg_error;
 
   assign cmd_info_5_opcode_5_wd = reg_wdata[7:0];
@@ -17663,6 +18321,8 @@ module spi_device_reg_top (
   assign cmd_info_5_upload_5_wd = reg_wdata[24];
 
   assign cmd_info_5_busy_5_wd = reg_wdata[25];
+
+  assign cmd_info_5_valid_5_wd = reg_wdata[31];
   assign cmd_info_6_we = addr_hit[37] & reg_we & !reg_error;
 
   assign cmd_info_6_opcode_6_wd = reg_wdata[7:0];
@@ -17686,6 +18346,8 @@ module spi_device_reg_top (
   assign cmd_info_6_upload_6_wd = reg_wdata[24];
 
   assign cmd_info_6_busy_6_wd = reg_wdata[25];
+
+  assign cmd_info_6_valid_6_wd = reg_wdata[31];
   assign cmd_info_7_we = addr_hit[38] & reg_we & !reg_error;
 
   assign cmd_info_7_opcode_7_wd = reg_wdata[7:0];
@@ -17709,6 +18371,8 @@ module spi_device_reg_top (
   assign cmd_info_7_upload_7_wd = reg_wdata[24];
 
   assign cmd_info_7_busy_7_wd = reg_wdata[25];
+
+  assign cmd_info_7_valid_7_wd = reg_wdata[31];
   assign cmd_info_8_we = addr_hit[39] & reg_we & !reg_error;
 
   assign cmd_info_8_opcode_8_wd = reg_wdata[7:0];
@@ -17732,6 +18396,8 @@ module spi_device_reg_top (
   assign cmd_info_8_upload_8_wd = reg_wdata[24];
 
   assign cmd_info_8_busy_8_wd = reg_wdata[25];
+
+  assign cmd_info_8_valid_8_wd = reg_wdata[31];
   assign cmd_info_9_we = addr_hit[40] & reg_we & !reg_error;
 
   assign cmd_info_9_opcode_9_wd = reg_wdata[7:0];
@@ -17755,6 +18421,8 @@ module spi_device_reg_top (
   assign cmd_info_9_upload_9_wd = reg_wdata[24];
 
   assign cmd_info_9_busy_9_wd = reg_wdata[25];
+
+  assign cmd_info_9_valid_9_wd = reg_wdata[31];
   assign cmd_info_10_we = addr_hit[41] & reg_we & !reg_error;
 
   assign cmd_info_10_opcode_10_wd = reg_wdata[7:0];
@@ -17778,6 +18446,8 @@ module spi_device_reg_top (
   assign cmd_info_10_upload_10_wd = reg_wdata[24];
 
   assign cmd_info_10_busy_10_wd = reg_wdata[25];
+
+  assign cmd_info_10_valid_10_wd = reg_wdata[31];
   assign cmd_info_11_we = addr_hit[42] & reg_we & !reg_error;
 
   assign cmd_info_11_opcode_11_wd = reg_wdata[7:0];
@@ -17801,6 +18471,8 @@ module spi_device_reg_top (
   assign cmd_info_11_upload_11_wd = reg_wdata[24];
 
   assign cmd_info_11_busy_11_wd = reg_wdata[25];
+
+  assign cmd_info_11_valid_11_wd = reg_wdata[31];
   assign cmd_info_12_we = addr_hit[43] & reg_we & !reg_error;
 
   assign cmd_info_12_opcode_12_wd = reg_wdata[7:0];
@@ -17824,6 +18496,8 @@ module spi_device_reg_top (
   assign cmd_info_12_upload_12_wd = reg_wdata[24];
 
   assign cmd_info_12_busy_12_wd = reg_wdata[25];
+
+  assign cmd_info_12_valid_12_wd = reg_wdata[31];
   assign cmd_info_13_we = addr_hit[44] & reg_we & !reg_error;
 
   assign cmd_info_13_opcode_13_wd = reg_wdata[7:0];
@@ -17847,6 +18521,8 @@ module spi_device_reg_top (
   assign cmd_info_13_upload_13_wd = reg_wdata[24];
 
   assign cmd_info_13_busy_13_wd = reg_wdata[25];
+
+  assign cmd_info_13_valid_13_wd = reg_wdata[31];
   assign cmd_info_14_we = addr_hit[45] & reg_we & !reg_error;
 
   assign cmd_info_14_opcode_14_wd = reg_wdata[7:0];
@@ -17870,6 +18546,8 @@ module spi_device_reg_top (
   assign cmd_info_14_upload_14_wd = reg_wdata[24];
 
   assign cmd_info_14_busy_14_wd = reg_wdata[25];
+
+  assign cmd_info_14_valid_14_wd = reg_wdata[31];
   assign cmd_info_15_we = addr_hit[46] & reg_we & !reg_error;
 
   assign cmd_info_15_opcode_15_wd = reg_wdata[7:0];
@@ -17893,6 +18571,8 @@ module spi_device_reg_top (
   assign cmd_info_15_upload_15_wd = reg_wdata[24];
 
   assign cmd_info_15_busy_15_wd = reg_wdata[25];
+
+  assign cmd_info_15_valid_15_wd = reg_wdata[31];
   assign cmd_info_16_we = addr_hit[47] & reg_we & !reg_error;
 
   assign cmd_info_16_opcode_16_wd = reg_wdata[7:0];
@@ -17916,6 +18596,8 @@ module spi_device_reg_top (
   assign cmd_info_16_upload_16_wd = reg_wdata[24];
 
   assign cmd_info_16_busy_16_wd = reg_wdata[25];
+
+  assign cmd_info_16_valid_16_wd = reg_wdata[31];
   assign cmd_info_17_we = addr_hit[48] & reg_we & !reg_error;
 
   assign cmd_info_17_opcode_17_wd = reg_wdata[7:0];
@@ -17939,6 +18621,8 @@ module spi_device_reg_top (
   assign cmd_info_17_upload_17_wd = reg_wdata[24];
 
   assign cmd_info_17_busy_17_wd = reg_wdata[25];
+
+  assign cmd_info_17_valid_17_wd = reg_wdata[31];
   assign cmd_info_18_we = addr_hit[49] & reg_we & !reg_error;
 
   assign cmd_info_18_opcode_18_wd = reg_wdata[7:0];
@@ -17962,6 +18646,8 @@ module spi_device_reg_top (
   assign cmd_info_18_upload_18_wd = reg_wdata[24];
 
   assign cmd_info_18_busy_18_wd = reg_wdata[25];
+
+  assign cmd_info_18_valid_18_wd = reg_wdata[31];
   assign cmd_info_19_we = addr_hit[50] & reg_we & !reg_error;
 
   assign cmd_info_19_opcode_19_wd = reg_wdata[7:0];
@@ -17985,6 +18671,8 @@ module spi_device_reg_top (
   assign cmd_info_19_upload_19_wd = reg_wdata[24];
 
   assign cmd_info_19_busy_19_wd = reg_wdata[25];
+
+  assign cmd_info_19_valid_19_wd = reg_wdata[31];
   assign cmd_info_20_we = addr_hit[51] & reg_we & !reg_error;
 
   assign cmd_info_20_opcode_20_wd = reg_wdata[7:0];
@@ -18008,6 +18696,8 @@ module spi_device_reg_top (
   assign cmd_info_20_upload_20_wd = reg_wdata[24];
 
   assign cmd_info_20_busy_20_wd = reg_wdata[25];
+
+  assign cmd_info_20_valid_20_wd = reg_wdata[31];
   assign cmd_info_21_we = addr_hit[52] & reg_we & !reg_error;
 
   assign cmd_info_21_opcode_21_wd = reg_wdata[7:0];
@@ -18031,6 +18721,8 @@ module spi_device_reg_top (
   assign cmd_info_21_upload_21_wd = reg_wdata[24];
 
   assign cmd_info_21_busy_21_wd = reg_wdata[25];
+
+  assign cmd_info_21_valid_21_wd = reg_wdata[31];
   assign cmd_info_22_we = addr_hit[53] & reg_we & !reg_error;
 
   assign cmd_info_22_opcode_22_wd = reg_wdata[7:0];
@@ -18054,6 +18746,8 @@ module spi_device_reg_top (
   assign cmd_info_22_upload_22_wd = reg_wdata[24];
 
   assign cmd_info_22_busy_22_wd = reg_wdata[25];
+
+  assign cmd_info_22_valid_22_wd = reg_wdata[31];
   assign cmd_info_23_we = addr_hit[54] & reg_we & !reg_error;
 
   assign cmd_info_23_opcode_23_wd = reg_wdata[7:0];
@@ -18077,6 +18771,8 @@ module spi_device_reg_top (
   assign cmd_info_23_upload_23_wd = reg_wdata[24];
 
   assign cmd_info_23_busy_23_wd = reg_wdata[25];
+
+  assign cmd_info_23_valid_23_wd = reg_wdata[31];
   assign tpm_cfg_we = addr_hit[56] & reg_we & !reg_error;
 
   assign tpm_cfg_en_wd = reg_wdata[0];
@@ -18562,6 +19258,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_0_payload_dir_0_qs;
         reg_rdata_next[24] = cmd_info_0_upload_0_qs;
         reg_rdata_next[25] = cmd_info_0_busy_0_qs;
+        reg_rdata_next[31] = cmd_info_0_valid_0_qs;
       end
 
       addr_hit[32]: begin
@@ -18576,6 +19273,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_1_payload_dir_1_qs;
         reg_rdata_next[24] = cmd_info_1_upload_1_qs;
         reg_rdata_next[25] = cmd_info_1_busy_1_qs;
+        reg_rdata_next[31] = cmd_info_1_valid_1_qs;
       end
 
       addr_hit[33]: begin
@@ -18590,6 +19288,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_2_payload_dir_2_qs;
         reg_rdata_next[24] = cmd_info_2_upload_2_qs;
         reg_rdata_next[25] = cmd_info_2_busy_2_qs;
+        reg_rdata_next[31] = cmd_info_2_valid_2_qs;
       end
 
       addr_hit[34]: begin
@@ -18604,6 +19303,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_3_payload_dir_3_qs;
         reg_rdata_next[24] = cmd_info_3_upload_3_qs;
         reg_rdata_next[25] = cmd_info_3_busy_3_qs;
+        reg_rdata_next[31] = cmd_info_3_valid_3_qs;
       end
 
       addr_hit[35]: begin
@@ -18618,6 +19318,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_4_payload_dir_4_qs;
         reg_rdata_next[24] = cmd_info_4_upload_4_qs;
         reg_rdata_next[25] = cmd_info_4_busy_4_qs;
+        reg_rdata_next[31] = cmd_info_4_valid_4_qs;
       end
 
       addr_hit[36]: begin
@@ -18632,6 +19333,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_5_payload_dir_5_qs;
         reg_rdata_next[24] = cmd_info_5_upload_5_qs;
         reg_rdata_next[25] = cmd_info_5_busy_5_qs;
+        reg_rdata_next[31] = cmd_info_5_valid_5_qs;
       end
 
       addr_hit[37]: begin
@@ -18646,6 +19348,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_6_payload_dir_6_qs;
         reg_rdata_next[24] = cmd_info_6_upload_6_qs;
         reg_rdata_next[25] = cmd_info_6_busy_6_qs;
+        reg_rdata_next[31] = cmd_info_6_valid_6_qs;
       end
 
       addr_hit[38]: begin
@@ -18660,6 +19363,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_7_payload_dir_7_qs;
         reg_rdata_next[24] = cmd_info_7_upload_7_qs;
         reg_rdata_next[25] = cmd_info_7_busy_7_qs;
+        reg_rdata_next[31] = cmd_info_7_valid_7_qs;
       end
 
       addr_hit[39]: begin
@@ -18674,6 +19378,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_8_payload_dir_8_qs;
         reg_rdata_next[24] = cmd_info_8_upload_8_qs;
         reg_rdata_next[25] = cmd_info_8_busy_8_qs;
+        reg_rdata_next[31] = cmd_info_8_valid_8_qs;
       end
 
       addr_hit[40]: begin
@@ -18688,6 +19393,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_9_payload_dir_9_qs;
         reg_rdata_next[24] = cmd_info_9_upload_9_qs;
         reg_rdata_next[25] = cmd_info_9_busy_9_qs;
+        reg_rdata_next[31] = cmd_info_9_valid_9_qs;
       end
 
       addr_hit[41]: begin
@@ -18702,6 +19408,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_10_payload_dir_10_qs;
         reg_rdata_next[24] = cmd_info_10_upload_10_qs;
         reg_rdata_next[25] = cmd_info_10_busy_10_qs;
+        reg_rdata_next[31] = cmd_info_10_valid_10_qs;
       end
 
       addr_hit[42]: begin
@@ -18716,6 +19423,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_11_payload_dir_11_qs;
         reg_rdata_next[24] = cmd_info_11_upload_11_qs;
         reg_rdata_next[25] = cmd_info_11_busy_11_qs;
+        reg_rdata_next[31] = cmd_info_11_valid_11_qs;
       end
 
       addr_hit[43]: begin
@@ -18730,6 +19438,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_12_payload_dir_12_qs;
         reg_rdata_next[24] = cmd_info_12_upload_12_qs;
         reg_rdata_next[25] = cmd_info_12_busy_12_qs;
+        reg_rdata_next[31] = cmd_info_12_valid_12_qs;
       end
 
       addr_hit[44]: begin
@@ -18744,6 +19453,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_13_payload_dir_13_qs;
         reg_rdata_next[24] = cmd_info_13_upload_13_qs;
         reg_rdata_next[25] = cmd_info_13_busy_13_qs;
+        reg_rdata_next[31] = cmd_info_13_valid_13_qs;
       end
 
       addr_hit[45]: begin
@@ -18758,6 +19468,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_14_payload_dir_14_qs;
         reg_rdata_next[24] = cmd_info_14_upload_14_qs;
         reg_rdata_next[25] = cmd_info_14_busy_14_qs;
+        reg_rdata_next[31] = cmd_info_14_valid_14_qs;
       end
 
       addr_hit[46]: begin
@@ -18772,6 +19483,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_15_payload_dir_15_qs;
         reg_rdata_next[24] = cmd_info_15_upload_15_qs;
         reg_rdata_next[25] = cmd_info_15_busy_15_qs;
+        reg_rdata_next[31] = cmd_info_15_valid_15_qs;
       end
 
       addr_hit[47]: begin
@@ -18786,6 +19498,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_16_payload_dir_16_qs;
         reg_rdata_next[24] = cmd_info_16_upload_16_qs;
         reg_rdata_next[25] = cmd_info_16_busy_16_qs;
+        reg_rdata_next[31] = cmd_info_16_valid_16_qs;
       end
 
       addr_hit[48]: begin
@@ -18800,6 +19513,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_17_payload_dir_17_qs;
         reg_rdata_next[24] = cmd_info_17_upload_17_qs;
         reg_rdata_next[25] = cmd_info_17_busy_17_qs;
+        reg_rdata_next[31] = cmd_info_17_valid_17_qs;
       end
 
       addr_hit[49]: begin
@@ -18814,6 +19528,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_18_payload_dir_18_qs;
         reg_rdata_next[24] = cmd_info_18_upload_18_qs;
         reg_rdata_next[25] = cmd_info_18_busy_18_qs;
+        reg_rdata_next[31] = cmd_info_18_valid_18_qs;
       end
 
       addr_hit[50]: begin
@@ -18828,6 +19543,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_19_payload_dir_19_qs;
         reg_rdata_next[24] = cmd_info_19_upload_19_qs;
         reg_rdata_next[25] = cmd_info_19_busy_19_qs;
+        reg_rdata_next[31] = cmd_info_19_valid_19_qs;
       end
 
       addr_hit[51]: begin
@@ -18842,6 +19558,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_20_payload_dir_20_qs;
         reg_rdata_next[24] = cmd_info_20_upload_20_qs;
         reg_rdata_next[25] = cmd_info_20_busy_20_qs;
+        reg_rdata_next[31] = cmd_info_20_valid_20_qs;
       end
 
       addr_hit[52]: begin
@@ -18856,6 +19573,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_21_payload_dir_21_qs;
         reg_rdata_next[24] = cmd_info_21_upload_21_qs;
         reg_rdata_next[25] = cmd_info_21_busy_21_qs;
+        reg_rdata_next[31] = cmd_info_21_valid_21_qs;
       end
 
       addr_hit[53]: begin
@@ -18870,6 +19588,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_22_payload_dir_22_qs;
         reg_rdata_next[24] = cmd_info_22_upload_22_qs;
         reg_rdata_next[25] = cmd_info_22_busy_22_qs;
+        reg_rdata_next[31] = cmd_info_22_valid_22_qs;
       end
 
       addr_hit[54]: begin
@@ -18884,6 +19603,7 @@ module spi_device_reg_top (
         reg_rdata_next[20] = cmd_info_23_payload_dir_23_qs;
         reg_rdata_next[24] = cmd_info_23_upload_23_qs;
         reg_rdata_next[25] = cmd_info_23_busy_23_qs;
+        reg_rdata_next[31] = cmd_info_23_valid_23_qs;
       end
 
       addr_hit[55]: begin

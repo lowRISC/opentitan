@@ -713,6 +713,11 @@
               set.
               '''
           } // f: busy
+          { bits: "31"
+            name: "valid"
+            desc: '''Set to 1 if the config in the register is valid
+            '''
+          } // f: valid
         ]
       }
     }

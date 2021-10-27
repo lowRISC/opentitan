@@ -170,7 +170,7 @@ module spi_cmdparse
     cmd_info_idx_d = '0;
     if ((st == StIdle) && module_active && data_valid_i) begin
       for (int unsigned i = 0 ; i < NumCmdInfo ; i++ ) begin
-        if (data_i == cmd_info_i[i].opcode) begin
+        if (cmd_info_i[i].valid && (data_i == cmd_info_i[i].opcode)) begin
           cmd_info_d     = cmd_info_i[i];
           cmd_info_idx_d = CmdInfoIdxW'(i);
         end
@@ -207,7 +207,7 @@ module spi_cmdparse
 
     unique case (st)
       StIdle: begin
-        if (module_active && data_valid_i) begin
+        if (module_active && data_valid_i && cmd_info_d.valid) begin
           // 8th bit is valid here
           latch_cmdinfo = 1'b 1;
 
