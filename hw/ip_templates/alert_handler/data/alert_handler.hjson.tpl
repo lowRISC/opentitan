@@ -3,15 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 # ALERT_HANDLER register template
-#
-# Parameter (given by Python tool)
-#  - n_alerts:    Number of alert sources
-#  - esc_cnt_dw:  Width of escalation counter
-#  - accu_cnt_dw: Width of accumulator
-#  - async_on:    Enables asynchronous sygnalling between specific alert RX/TX pairs
-#  - n_classes:   Number of supported classes (leave this at 4 at the moment)
-#  - n_lpg:       Number of low-power groups (LPGs)
-#  - lpg_map:     Defines a mapping from alerts to LPGs.
 <%
 import math
 chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
