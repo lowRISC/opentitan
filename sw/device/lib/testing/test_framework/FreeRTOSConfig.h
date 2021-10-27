@@ -43,7 +43,7 @@
 #define configMAX_PRIORITIES 5
 #define configTICK_RATE_HZ ((TickType_t)10)  // 100ms tick rate
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
-#define configUSE_PREEMPTION 1
+#define configUSE_PREEMPTION 0
 #define configUSE_TIME_SLICING 0
 #define configUSE_16_BIT_TICKS 0
 
