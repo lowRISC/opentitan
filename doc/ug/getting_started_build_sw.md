@@ -46,7 +46,12 @@ Building an executable `foo` destined to run on the OpenTitan device `$DEVICE` w
 * `foo_$DEVICE.dis`: the disassembled program with inline source code.
 * `foo_$DEVICE.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code.
 
-In general, this executable is built by building the `foo_export_$DEVICE` target.
+In general, this executable is built by the `foo_export_$DEVICE` target.
+For example, this builds the `pwrmgr_smoketest` test binary for DEVICE `sim_dv`:
+
+```console
+$ ninja -C build-out sw/device/tests/pwrmgr_smoketest_export_sim_dv
+```
 
 Building an executable destined to run on a host machine (i.e., under `sw/host`) will output a host excecutable under `build-bin/sw/host`, which can be run directly.
 
