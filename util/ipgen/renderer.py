@@ -4,6 +4,7 @@
 
 import os
 import shutil
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
@@ -149,10 +150,13 @@ class IpTemplateRendererBase:
         # we have converted more IP blocks to ipgen.
         tpl_args = {
             "instance_name": self.ip_config.instance_name,  # type: ignore
+            "params": self.get_template_parameter_values(), # type: ignore
             **helper_funcs,  # type: ignore
             **self.get_template_parameter_values()  # type: ignore
         }
         try:
+            # TODO: HACK. Needs more thinking.
+            sys.path.append(str((template_filepath.parent / '../util').absolute()))
             return template.render(**tpl_args)
         except Exception:
             raise TemplateRenderError(
