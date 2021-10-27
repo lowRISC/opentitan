@@ -150,9 +150,6 @@ package spi_host_reg_pkg;
     struct packed {
       logic        q;
     } csidinval;
-    struct packed {
-      logic        q;
-    } accessinval;
   } spi_host_reg2hw_error_status_reg_t;
 
   typedef struct packed {
@@ -263,32 +260,28 @@ package spi_host_reg_pkg;
       logic        d;
       logic        de;
     } csidinval;
-    struct packed {
-      logic        d;
-      logic        de;
-    } accessinval;
   } spi_host_hw2reg_error_status_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    spi_host_reg2hw_intr_state_reg_t intr_state; // [125:124]
-    spi_host_reg2hw_intr_enable_reg_t intr_enable; // [123:122]
-    spi_host_reg2hw_intr_test_reg_t intr_test; // [121:118]
-    spi_host_reg2hw_alert_test_reg_t alert_test; // [117:116]
-    spi_host_reg2hw_control_reg_t control; // [115:98]
-    spi_host_reg2hw_configopts_mreg_t [0:0] configopts; // [97:67]
-    spi_host_reg2hw_csid_reg_t csid; // [66:35]
-    spi_host_reg2hw_command_reg_t command; // [34:17]
-    spi_host_reg2hw_error_enable_reg_t error_enable; // [16:12]
-    spi_host_reg2hw_error_status_reg_t error_status; // [11:6]
+    spi_host_reg2hw_intr_state_reg_t intr_state; // [124:123]
+    spi_host_reg2hw_intr_enable_reg_t intr_enable; // [122:121]
+    spi_host_reg2hw_intr_test_reg_t intr_test; // [120:117]
+    spi_host_reg2hw_alert_test_reg_t alert_test; // [116:115]
+    spi_host_reg2hw_control_reg_t control; // [114:97]
+    spi_host_reg2hw_configopts_mreg_t [0:0] configopts; // [96:66]
+    spi_host_reg2hw_csid_reg_t csid; // [65:34]
+    spi_host_reg2hw_command_reg_t command; // [33:16]
+    spi_host_reg2hw_error_enable_reg_t error_enable; // [15:11]
+    spi_host_reg2hw_error_status_reg_t error_status; // [10:6]
     spi_host_reg2hw_event_enable_reg_t event_enable; // [5:0]
   } spi_host_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    spi_host_hw2reg_intr_state_reg_t intr_state; // [55:52]
-    spi_host_hw2reg_status_reg_t status; // [51:12]
-    spi_host_hw2reg_error_status_reg_t error_status; // [11:0]
+    spi_host_hw2reg_intr_state_reg_t intr_state; // [53:50]
+    spi_host_hw2reg_status_reg_t status; // [49:10]
+    spi_host_hw2reg_error_status_reg_t error_status; // [9:0]
   } spi_host_hw2reg_t;
 
   // Register offsets
