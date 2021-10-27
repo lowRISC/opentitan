@@ -72,6 +72,7 @@ cc_library(
     # This library defines memcpy(), so we can't have LLVM rewriting memcpy
     # into a call to itself.
     copts = ["-fno-builtin"],
+    deps = [":macros"],
 )
 
 cc_library(
@@ -103,6 +104,29 @@ cc_library(
     hdrs = ["random_order.h"],
     deps = [":bitfield"],
 )
+
+cc_library(
+    name = "hardened_memory",
+    srcs = ["hardened_memory.c"],
+    hdrs = ["hardened_memory.h"],
+    deps = [
+        ":hardened",
+        ":macros",
+        ":memory",
+        ":random_order",
+    ],
+)
+
+cc_test(
+    name = "hardened_memory_unittest",
+    srcs = ["hardened_memory_unittest.cc"],
+    deps = [
+        ":hardened_memory",
+        ":random_order",
+        "@googletest//:gtest_main",
+    ],
+)
+
 
 # TODO: Until Meson is removed, these files need to stay in a different
 # directory, but eventually they will be hoisted to live alongside the

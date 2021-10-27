@@ -17,6 +17,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -157,7 +159,7 @@ inline void write_64(uint64_t value, void *ptr) {
  * @param len the number of bytes to copy.
  * @return the value of `dest`.
  */
-void *memcpy(void *restrict dest, const void *restrict src, size_t len);
+void *memcpy(void *OT_RESTRICT dest, const void *OT_RESTRICT src, size_t len);
 
 /**
  * Set a region of memory to a particular byte value.
