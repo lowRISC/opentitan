@@ -17,12 +17,3 @@ void vApplicationMallocFailedHook(void) {
   taskDISABLE_INTERRUPTS();
   abort();
 }
-
-void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName) {
-  // TODO: communicate this event back to the host.
-  LOG_INFO("Stack Overflow.");
-  (void)pcTaskName;
-  (void)pxTask;
-  taskDISABLE_INTERRUPTS();
-  abort();
-}
