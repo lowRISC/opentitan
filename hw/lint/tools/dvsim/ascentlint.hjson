@@ -5,7 +5,7 @@
   tool: "ascentlint"
 
   // Ascentlint-specific results parsing script that is called after running lint
-  report_cmd: "{lint_root}/tools/{tool}/parse-lint-report.py "
+  report_cmd: "{proj_root}/util/dvsim/{tool}-report-parser.py "
   report_opts: ["--repdir={build_dir}",
-                "--outdir={build_dir}"]
+                "--outfile={build_dir}/results.hjson"]
 }
