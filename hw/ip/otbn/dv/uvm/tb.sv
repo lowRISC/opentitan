@@ -178,12 +178,11 @@ module tb;
 
   // Valid signals below are set when DUT finishes processing incoming 32b packages and constructs
   // 256b EDN data. Model checks if the processing of the packages are done in maximum of 5 cycles
-  logic edn_urnd_data_valid;
   logic edn_rnd_cdc_done;
+  logic edn_urnd_cdc_done;
 
   assign edn_rnd_cdc_done = dut.edn_rnd_req & dut.edn_rnd_ack;
-
-  assign edn_urnd_data_valid = dut.edn_urnd_req & dut.edn_urnd_ack;
+  assign edn_urnd_cdc_done = dut.edn_urnd_req & dut.edn_urnd_ack;
 
   bit [31:0] model_insn_cnt;
 
@@ -205,7 +204,8 @@ module tb;
     .edn_rnd_i             ({edn_if[0].ack, edn_if[0].d_data}),
     .edn_rnd_cdc_done_i    (edn_rnd_cdc_done),
 
-    .edn_urnd_data_valid_i (edn_urnd_data_valid),
+    .edn_urnd_i             ({edn_if[1].ack, edn_if[1].d_data}),
+    .edn_urnd_cdc_done_i    (edn_urnd_cdc_done),
 
     .status_o     (model_if.status),
     .insn_cnt_o   (model_insn_cnt),

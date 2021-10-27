@@ -33,16 +33,25 @@ class OtbnModel {
   // zero. Returns 0 on success; -1 on failure.
   int start();
 
+  // Flush EDN data from model because of edn_rst_n
+  void edn_flush();
+
   // EDN Step sends ISS the RND data when ACK signal is high.
-  void edn_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+  void edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+
+  // EDN Step sends ISS the URND related EDN data when ACK signal is high.
+  void edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */);
 
   // Signals that RTL is finished processing RND data from EDN
   void edn_rnd_cdc_done();
 
+  // Signals that RTL is finished processing data from EDN for URND
+  void edn_urnd_cdc_done();
+
   // Step once in the model. Returns 1 if the model has finished, 0 if not and
   // -1 on failure. If gen_trace is true, pass trace entries to the trace
   // checker. If the model has finished, writes otbn.ERR_BITS to *err_bits.
-  int step(svLogic edn_urnd_data_valid, svBitVecVal *status /* bit [7:0] */,
+  int step(svBitVecVal *status /* bit [7:0] */,
            svBitVecVal *insn_cnt /* bit [31:0] */,
            svBitVecVal *err_bits /* bit [31:0] */,
            svBitVecVal *stop_pc /* bit [31:0] */);

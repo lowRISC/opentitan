@@ -29,18 +29,20 @@ module otbn_core_model
   // real implementation running alongside and we check DMEM contents on completion.
   parameter string DesignScope = ""
 )(
-  input  logic                     clk_i,
-  input  logic                     clk_edn_i,
-  input  logic                     rst_ni,
-  input  logic                     rst_edn_ni,
+  input  logic               clk_i,
+  input  logic               clk_edn_i,
+  input  logic               rst_ni,
+  input  logic               rst_edn_ni,
 
-  input  logic                     start_i, // start the operation
+  input  logic               start_i, // start the operation
 
-  output err_bits_t                err_bits_o, // updated when STATUS switches to idle
+  output err_bits_t          err_bits_o, // updated when STATUS switches to idle
 
-  input  edn_pkg::edn_rsp_t        edn_rnd_i, // EDN response interface
-  input  logic                     edn_rnd_cdc_done_i, // RND from EDN is valid (DUT perspective)
-  input  logic                     edn_urnd_data_valid_i, // URND reseed from EDN is valid
+  input  edn_pkg::edn_rsp_t  edn_rnd_i, // EDN response interface for RND
+  input  logic               edn_rnd_cdc_done_i, // RND from EDN is valid (DUT perspective)
+
+  input  edn_pkg::edn_rsp_t  edn_urnd_i, // EDN response interface for URND seed
+  input  logic               edn_urnd_cdc_done_i, // URND seed from EDN is valid (DUT perspective)
 
   output bit [7:0]       status_o,   // STATUS register
   output bit [31:0]      insn_cnt_o, // INSN_CNT register
@@ -89,16 +91,20 @@ module otbn_core_model
   bit failed_invalidate_imem;
 
   bit unused_raw_err_bits;
-  logic unused_rnd_rsp_fips;
+  logic unused_edn_rsp_fips;
 
   // EDN Stepping is done with the EDN clock for also asserting the CDC measures in the design.
   always_ff @(posedge clk_edn_i or negedge rst_edn_ni) begin
     if (!rst_edn_ni) begin
-      // If we are in reset there is nothing to do.
+      edn_model_flush(model_handle);
     end else begin
       if (edn_rnd_i.edn_ack) begin
-        edn_model_step(model_handle,
-                       edn_rnd_i.edn_bus);
+        edn_model_rnd_step(model_handle,
+                           edn_rnd_i.edn_bus);
+      end
+      if (edn_urnd_i.edn_ack) begin
+        edn_model_urnd_step(model_handle,
+                             edn_urnd_i.edn_bus);
       end
     end
   end
@@ -118,11 +124,16 @@ module otbn_core_model
           failed_invalidate_imem <= 1'b1;
         end
       end
+      if (edn_urnd_cdc_done_i) begin
+        edn_model_urnd_cdc_done(model_handle);
+      end
+      if (edn_rnd_cdc_done_i) begin
+        edn_model_rnd_cdc_done(model_handle);
+      end
       if (start_i | running | check_due) begin
         model_state <= otbn_model_step(model_handle,
                                        start_i,
                                        model_state,
-                                       edn_urnd_data_valid_i,
                                        status_d,
                                        insn_cnt_d,
                                        raw_err_bits_d,
@@ -134,14 +145,11 @@ module otbn_core_model
       end else begin
         // If we're not running and we're not being told to start, there's nothing to do.
       end
-      if (edn_rnd_cdc_done_i) begin
-        edn_model_rnd_cdc_done(model_handle);
-      end
     end
   end
 
   assign unused_raw_err_bits = ^raw_err_bits_q[31:$bits(err_bits_t)];
-  assign unused_rnd_rsp_fips = edn_rnd_i.edn_fips;
+  assign unused_edn_rsp_fips = edn_rnd_i.edn_fips & edn_urnd_i.edn_fips;
 
   assign err_bits_o = raw_err_bits_q[$bits(err_bits_t)-1:0];
 

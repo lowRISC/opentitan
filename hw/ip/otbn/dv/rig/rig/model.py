@@ -240,9 +240,11 @@ class Model:
         csrs.touch_range(0x7d0, 8)  # MOD0 - MOD7
         csrs.touch_addr(0x7d8)      # RND_PREFETCH
         csrs.touch_addr(0xfc0)      # RND
+        csrs.touch_addr(0xfc1)      # URND
 
         wsrs.touch_addr(0x0)        # MOD
         wsrs.touch_addr(0x1)        # RND
+        wsrs.touch_addr(0x2)        # URND
         wsrs.touch_addr(0x3)        # ACC
 
         # The current PC (the address of the next instruction that needs

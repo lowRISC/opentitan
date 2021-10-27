@@ -60,16 +60,24 @@ struct ISSWrapper {
   // Jump to address zero and start running
   void start();
 
+  // Flush EDN related content in model because of edn_rst_n
+  void edn_flush();
+
   // Provide data for RND. ISS will stall when RND is read and RND data isn't
   // available. RND data is available only when 8 32b packages are sent and
   // also RTL signals CDC is done.
-  void edn_step(uint32_t edn_rnd_data);
+  void edn_rnd_step(uint32_t edn_rnd_data);
 
-  // Signals 256b EDN random number is valid in the RTL.
+  // Provide data for URND seed. ISS will stall until reseeding of URND is
+  // complete. URND seed data is available only when 8 32b packages are sent and
+  // also RTL signals CDC is done.
+  void edn_urnd_step(uint32_t edn_urnd_data);
+
+  // Signals 256b EDN random number for RND is valid in the RTL.
   void edn_rnd_cdc_done();
 
-  // Signal URND reseed at beginning of execution is complete
-  void edn_urnd_reseed_complete();
+  // Signals 256b EDN random number for URND seed is valid in the RTL.
+  void edn_urnd_cdc_done();
 
   // Run simulation for a single cycle.
   //

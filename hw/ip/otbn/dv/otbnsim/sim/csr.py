@@ -19,6 +19,7 @@ class CSRFile:
             self._known_indices.add(idx)  # MODi
         self._known_indices.add(0x7d8)  # RND_PREFETCH
         self._known_indices.add(0xfc0)  # RND
+        self._known_indices.add(0xfc1)  # URND
 
     @staticmethod
     def _get_field(field_idx: int, field_size: int, val: int) -> int:
@@ -60,6 +61,10 @@ class CSRFile:
             # RND register
             return wsrs.RND.read_u32()
 
+        if idx == 0xfc1:
+            # URND register
+            return wsrs.URND.read_u32()
+
         raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))
 
     def write_unsigned(self, wsrs: WSRFile, idx: int, value: int) -> None:
@@ -91,6 +96,10 @@ class CSRFile:
 
         if idx == 0xfc0:
             # RND register (which ignores writes)
+            return
+
+        if idx == 0xfc1:
+            # URND register (which ignores writes)
             return
 
         raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))

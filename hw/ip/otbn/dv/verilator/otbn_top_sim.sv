@@ -108,7 +108,7 @@ module otbn_top_sim (
   assign unused_imem_top_rdata = &{1'b0, imem_rdata[38:32]};
 
   localparam logic [WLEN-1:0] FixedEdnVal = {{(WLEN / 4){4'h9}}};
- 
+
   edn_req_t rnd_req;
   edn_rsp_t rnd_rsp;
 
@@ -129,8 +129,9 @@ module otbn_top_sim (
   );
 
   assign edn_rnd_data_valid = edn_rnd_req & edn_rnd_ack;
- 
+
   edn_req_t urnd_req;
+  edn_rsp_t urnd_rsp;
 
   assign urnd_req.edn_req = edn_urnd_req;
 
@@ -142,7 +143,7 @@ module otbn_top_sim (
     .rst_ni     ( IO_RST_N     ),
 
     .edn_req_i  ( urnd_req ),
-    .edn_rsp_o  (  ),
+    .edn_rsp_o  ( urnd_rsp ),
 
     .edn_ack_o  ( edn_urnd_ack  ),
     .edn_data_o ( edn_urnd_data )
@@ -308,7 +309,9 @@ module otbn_top_sim (
 
     .edn_rnd_i             ( rnd_rsp ),
     .edn_rnd_cdc_done_i    ( edn_rnd_data_valid ),
-    .edn_urnd_data_valid_i ( edn_urnd_data_valid ),
+
+    .edn_urnd_i            ( urnd_rsp ),
+    .edn_urnd_cdc_done_i   ( edn_urnd_data_valid ),
 
     .status_o              ( ),
     .insn_cnt_o            ( otbn_model_insn_cnt ),

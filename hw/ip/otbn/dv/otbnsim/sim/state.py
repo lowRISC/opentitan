@@ -86,14 +86,20 @@ class OTBNState:
         self._err_bits = 0
         self.pending_halt = False
 
-        self._urnd_reseed_complete = False
-
         self.rnd_256b_counter = 0
+        self.urnd_256b_counter = 0
+
+        self.rnd_set_flag = False
+
         self.rnd_cdc_pending = False
+        self.urnd_cdc_pending = False
+
         self.rnd_cdc_counter = 0
+        self.urnd_cdc_counter = 0
+
         self.rnd_256b = 0
-        self.rnd_cached_tmp = None  # type: Optional[int]
-        self.counter = 0
+        self.urnd_256b = 4 * [0]
+        self.urnd_64b = 0
 
         # This flag is set to true if we've injected integrity errors, trashing
         # the whole of IMEM. The next fetch should fail.
@@ -109,7 +115,37 @@ class OTBNState:
         assert(self.is_pc_valid(next_pc))
         self._pc_next_override = next_pc
 
-    def step_edn(self, rnd_data: int) -> None:
+    def edn_urnd_step(self, urnd_data: int) -> None:
+        # Take the new data
+        assert 0 <= urnd_data < (1 << 32)
+
+        # There should not be a pending URND result before an EDN step.
+        assert not self.urnd_cdc_pending
+
+        # Collect 32b packages in a 64b array of 4 elements
+        shift_num = 32 * (self.urnd_256b_counter % 2)
+        self.urnd_64b = self.urnd_64b | (urnd_data << shift_num)
+
+        if self.urnd_256b_counter % 2:
+            idx = self.urnd_256b_counter // 2
+            self.urnd_256b[idx] = self.urnd_64b
+            self.urnd_64b = 0
+
+        if self.urnd_256b_counter == 7:
+            # Reset the 32b package counter and wait until receiving done
+            # signal from RTL
+            self.urnd_256b_counter = 0
+            self.urnd_cdc_pending = True
+        else:
+            # Count until 8 valid packages are received
+            self.urnd_256b_counter += 1
+            return
+
+        # Reset the 32b package counter and wait until receiving done
+        # signal from RTL
+        self.urnd_256b_counter = 0
+
+    def edn_rnd_step(self, rnd_data: int) -> None:
         # Take the new data
         assert 0 <= rnd_data < (1 << 32)
 
@@ -133,7 +169,33 @@ class OTBNState:
         # Reset the 32b package counter and wait until receiving done
         # signal from RTL
         self.rnd_256b_counter = 0
-        self.rnd_cdc_pending = True
+
+    def edn_flush(self) -> None:
+        # EDN Flush gets called after a reset signal from EDN clock domain
+        # arrives. It clears out internals of the model regarding EDN data
+        # processing on both RND and URND side.
+        self.rnd_256b = 0
+        self.rnd_cdc_pending = False
+        self.rnd_cdc_counter = 0
+        self.rnd_256b_counter = 0
+
+        self.urnd_64b = 0
+        self.urnd_256b = 4 * [0]
+        self.urnd_256b_counter = 0
+        self.urnd_cdc_pending = False
+        self.urnd_cdc_counter = 0
+
+    def rnd_reg_set(self) -> None:
+        # This sets RND register inside WSR immediately. Calling this with
+        # using DPI causes timing problems so it is best to it when we want
+        # to actually set RND register (at commit method and at the start if
+        # RND processing is completed after OTBN stopped running)
+        if self.rnd_set_flag:
+            self.wsrs.RND.set_unsigned(self.rnd_256b)
+            self.rnd_256b = 0
+            self.rnd_cdc_pending = False
+            self.rnd_set_flag = False
+            self.rnd_cdc_counter = 0
 
     def rnd_completed(self) -> None:
         # This will be called when all the packages are received and processed
@@ -143,17 +205,25 @@ class OTBNState:
         # These must be true since model calculates RND data faster than RTL.
         # But the synchronisation of the data should not take more than
         # 5 cycles ideally.
-        assert self.rnd_cdc_pending
         assert self.rnd_cdc_counter < 6
 
-        self.wsrs.RND.set_unsigned(self.rnd_256b)
-        self.rnd_256b = 0
-        self.rnd_cdc_pending = False
-        self.rnd_cdc_counter = 0
+        # TODO: Assert rnd_cdc_pending when request is correctly modelled.
+        self.rnd_set_flag = True
 
-    def set_urnd_reseed_complete(self) -> None:
-        assert self.fsm_state == FsmState.PRE_EXEC
-        self._urnd_reseed_complete = True
+    def urnd_completed(self) -> None:
+        # URND completed gets called after RTL signals that the processing
+        # of incoming EDN data is done. This also sets up EXEC state of the
+        # FSM of the model. This includes a dirty hack which disables
+        # fsm_state assertion because we are always calling this method
+        # while we are doing system level tests. This will be removed after
+        # request modelling of EDN is done.
+        assert self.urnd_cdc_counter < 6
+
+        # TODO: Assert urnd_cdc_pending when request is correctly modelled.
+        self.wsrs.URND.set_seed(self.urnd_256b)
+        self.urnd_256b = 4 * [0]
+        self.urnd_cdc_pending = False
+        self.urnd_cdc_counter = 0
 
     def loop_start(self, iterations: int, bodysize: int) -> None:
         self.loop_stack.start_loop(self.pc + 4, iterations, bodysize)
@@ -190,21 +260,33 @@ class OTBNState:
         # We shouldn't be running commit() in IDLE or LOCKED mode
         assert self.running()
 
+        # Check if we processed the RND data, if so set the register. This is
+        # done seperately from the rnd_completed method because in other case
+        # we are exiting stall caused by RND waiting by one cycle too early.
+        self.rnd_reg_set()
+
         # If model is waiting for the RND register to cross CDC, increment a
         # counter to say how long we've waited. This lets us spot if the CDC
         # gets stuck for some reason.
         if self.rnd_cdc_pending:
             self.rnd_cdc_counter += 1
 
+        # If model is waiting for the RND register to cross CDC, increment a
+        # counter to say how long we've waited. This lets us spot if the CDC
+        # gets stuck for some reason.
+        if self.urnd_cdc_pending:
+            self.urnd_cdc_counter += 1
+
         # If we are in PRE_EXEC mode, we should commit external registers
         # (which lets us reflect things like the update to the STATUS
-        # register). Then we wait until _urnd_reseed_complete, at which point,
-        # we'll switch to EXEC mode.
+        # register). Then we wait until URND processing is done, at which
+        # point, we'll switch to EXEC mode.
         if self.fsm_state == FsmState.PRE_EXEC:
             self.ext_regs.commit()
-            if self._urnd_reseed_complete:
+            if self.wsrs.URND.running:
+                # This part is strictly for standalone simulation. Otherwise
+                # we would set fsm_state before commit (at urnd_completed)
                 self.fsm_state = FsmState.EXEC
-
             return
 
         # If we are in POST_EXEC mode, this is the single cycle after the end
@@ -271,7 +353,6 @@ class OTBNState:
         self.ext_regs.write('STATUS', Status.BUSY_EXECUTE, True)
         self.pending_halt = False
         self._err_bits = 0
-        self._urnd_reseed_complete = False
 
         self.fsm_state = FsmState.PRE_EXEC
 
@@ -282,6 +363,7 @@ class OTBNState:
 
         # Save the RND value when starting another run because when a SW
         # run finishes we still keep RND data.
+        self.rnd_reg_set()
         old_rnd = self.wsrs.RND._random_value
 
         self.wsrs = WSRFile()
