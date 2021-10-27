@@ -6,7 +6,7 @@
 import argparse
 import sys
 
-from sim.elf import load_elf
+from sim.load_elf import load_elf
 from sim.standalonesim import StandaloneSim
 from sim.stats import ExecutionStatAnalyzer
 

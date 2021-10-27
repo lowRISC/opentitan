@@ -52,7 +52,7 @@ import sys
 from typing import List, Optional
 
 from sim.decode import decode_file
-from sim.elf import load_elf
+from sim.load_elf import load_elf
 from sim.sim import OTBNSim
 
 
