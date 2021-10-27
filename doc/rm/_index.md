@@ -18,3 +18,4 @@ title: "Reference Manuals"
   * [C/C++ Style Guide]({{< relref "c_cpp_coding_style.md" >}})
   * [RISC-V Assembly Style Guide]({{< relref "asm_coding_style.md" >}})
 * [FPGA Reference Manual]({{< relref "ref_manual_fpga.md" >}})
+* [OpenTitan Continuous Integration]({{< relref "continuous_integration.md" >}})
