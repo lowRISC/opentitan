@@ -39,22 +39,16 @@ bool test_main(void) {
   if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
     LOG_INFO("Powered up for the first time, begin test");
 
-    // Clear reset_info.
-    CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
+    rstmgr_testutils_pre_reset(&rstmgr);
 
     // This causes core_sleeping to rise and triggers the injection of the
-    // power glitch.
+    // power glitch. Notice it does not by itself trigger a low power
+    // transition.
     wait_for_interrupt();
 
-  } else if (rstmgr_testutils_is_reset_info(&rstmgr,
-                                            1 << kResetInfoMainPower)) {
-    LOG_INFO("Reset received for power glitch.");
-    return true;
-
   } else {
-    dif_rstmgr_reset_info_bitfield_t actual_info;
-    CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &actual_info));
-    LOG_INFO("Unexpected reset_info contents: 0x%x", actual_info);
+    LOG_INFO("Checking reset status.");
+    rstmgr_testutils_post_reset(&rstmgr, 1 << kResetInfoMainPower, 0, 0, 0, 0);
   }
-  return false;
+  return true;
 }

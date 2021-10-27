@@ -50,7 +50,7 @@
 /**
  * Compare `num_items_` of `actual_` against `expected_` buffer.
  *
- * Prints differences between `actual_` and `expected_` before assiging the
+ * Prints differences between `actual_` and `expected_` before assigning the
  * comparison `result_` value.
  *
  * @param[out] result_ Result of the comparison.

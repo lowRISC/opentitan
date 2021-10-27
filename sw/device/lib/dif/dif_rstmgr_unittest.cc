@@ -186,6 +186,11 @@ TEST_F(AlertInfoSetTest, NullArgs) {
 }
 
 TEST_F(AlertInfoSetTest, Success) {
+  // Expect a read of regwen.
+  uint32_t alert_regwen =
+      bitfield_bit32_write(std::numeric_limits<uint32_t>::max(), 0, true);
+  EXPECT_READ32(RSTMGR_ALERT_REGWEN_REG_OFFSET, alert_regwen);
+
   // Enable.
   EXPECT_WRITE32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
                  {
@@ -195,6 +200,7 @@ TEST_F(AlertInfoSetTest, Success) {
             kDifOk);
 
   // Disable.
+  EXPECT_READ32(RSTMGR_ALERT_REGWEN_REG_OFFSET, alert_regwen);
   EXPECT_WRITE32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
                  {
                      {RSTMGR_ALERT_INFO_CTRL_EN_BIT, false},
@@ -350,6 +356,185 @@ TEST_F(AlertInfoDumpReadTest, SuccessDumpSmaller) {
   EXPECT_EQ(
       dif_rstmgr_alert_info_dump_read(
           &rstmgr_, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read),
+      kDifOk);
+  EXPECT_EQ(segments_read, dump_size);
+  EXPECT_THAT(dump, IsSubsetOf(src_));
+}
+
+class CpuInfoSetTest : public RstmgrTest {};
+
+TEST_F(CpuInfoSetTest, NullArgs) {
+  EXPECT_EQ(dif_rstmgr_cpu_info_set_enabled(nullptr, kDifToggleEnabled),
+            kDifBadArg);
+}
+
+TEST_F(CpuInfoSetTest, Success) {
+  // Expect a read of regwen.
+  uint32_t cpu_regwen =
+      bitfield_bit32_write(std::numeric_limits<uint32_t>::max(), 0, true);
+  EXPECT_READ32(RSTMGR_CPU_REGWEN_REG_OFFSET, cpu_regwen);
+
+  // Enable.
+  EXPECT_WRITE32(RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
+                 {
+                     {RSTMGR_CPU_INFO_CTRL_EN_BIT, true},
+                 });
+  EXPECT_EQ(dif_rstmgr_cpu_info_set_enabled(&rstmgr_, kDifToggleEnabled),
+            kDifOk);
+
+  // Disable.
+  EXPECT_READ32(RSTMGR_CPU_REGWEN_REG_OFFSET, cpu_regwen);
+  EXPECT_WRITE32(RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
+                 {
+                     {RSTMGR_CPU_INFO_CTRL_EN_BIT, false},
+                 });
+  EXPECT_EQ(dif_rstmgr_cpu_info_set_enabled(&rstmgr_, kDifToggleDisabled),
+            kDifOk);
+}
+
+class CpuInfoGetTest : public RstmgrTest {};
+
+TEST_F(CpuInfoGetTest, NullArgs) {
+  EXPECT_EQ(dif_rstmgr_cpu_info_get_enabled(nullptr, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_rstmgr_cpu_info_get_enabled(&rstmgr_, nullptr), kDifBadArg);
+  dif_toggle_t state;
+  EXPECT_EQ(dif_rstmgr_cpu_info_get_enabled(nullptr, &state), kDifBadArg);
+}
+
+TEST_F(CpuInfoGetTest, Success) {
+  // Enabled.
+  EXPECT_READ32(RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
+                {
+                    {RSTMGR_CPU_INFO_CTRL_EN_BIT, true},
+                });
+
+  dif_toggle_t state = kDifToggleDisabled;
+  EXPECT_EQ(dif_rstmgr_cpu_info_get_enabled(&rstmgr_, &state), kDifOk);
+  EXPECT_EQ(state, kDifToggleEnabled);
+
+  // Disabled.
+  //
+  // Make sure that the only relevant `enabled` bit is read - set all bits
+  // high apart from the `enabled` bit.
+  uint32_t register_value = bitfield_bit32_write(
+      std::numeric_limits<uint32_t>::max(), RSTMGR_CPU_INFO_CTRL_EN_BIT, false);
+  EXPECT_READ32(RSTMGR_CPU_INFO_CTRL_REG_OFFSET, register_value);
+
+  state = kDifToggleEnabled;
+  EXPECT_EQ(dif_rstmgr_cpu_info_get_enabled(&rstmgr_, &state), kDifOk);
+  EXPECT_EQ(state, kDifToggleDisabled);
+}
+
+class CpuInfoDumpReadTest : public RstmgrTest {
+ protected:
+  CpuInfoDumpReadTest() {
+    for (uint32_t i = 0; i < DIF_RSTMGR_CPU_INFO_MAX_SIZE; ++i) {
+      src_[i] = dev().GarbageMemory<uint32_t>();
+    }
+  }
+
+  dif_rstmgr_cpu_info_dump_segment_t src_[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
+};
+
+TEST_F(CpuInfoDumpReadTest, NullArgs) {
+  EXPECT_EQ(dif_rstmgr_cpu_info_dump_read(
+                nullptr, nullptr, DIF_RSTMGR_CPU_INFO_MAX_SIZE, nullptr),
+            kDifBadArg);
+
+  size_t segments_read;
+  EXPECT_EQ(dif_rstmgr_cpu_info_dump_read(
+                nullptr, nullptr, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read),
+            kDifBadArg);
+
+  dif_rstmgr_cpu_info_dump_segment_t dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
+  EXPECT_EQ(dif_rstmgr_cpu_info_dump_read(
+                nullptr, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, nullptr),
+            kDifBadArg);
+
+  EXPECT_EQ(
+      dif_rstmgr_cpu_info_dump_read(
+          nullptr, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read),
+      kDifBadArg);
+
+  EXPECT_EQ(
+      dif_rstmgr_cpu_info_dump_read(
+          &rstmgr_, nullptr, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read),
+      kDifBadArg);
+
+  EXPECT_EQ(dif_rstmgr_cpu_info_dump_read(
+                &rstmgr_, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, nullptr),
+            kDifBadArg);
+}
+
+TEST_F(CpuInfoDumpReadTest, BadDumpSize) {
+  EXPECT_READ32(RSTMGR_CPU_INFO_ATTR_REG_OFFSET, DIF_RSTMGR_CPU_INFO_MAX_SIZE);
+
+  size_t segments_read = 0xA5A5A5A5;
+  dif_rstmgr_cpu_info_dump_segment_t dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
+  EXPECT_EQ(
+      dif_rstmgr_cpu_info_dump_read(
+          &rstmgr_, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE - 1, &segments_read),
+      kDifError);
+  EXPECT_EQ(segments_read, 0xA5A5A5A5);
+}
+
+TEST_F(CpuInfoDumpReadTest, SuccessFullBuffer) {
+  EXPECT_READ32(RSTMGR_CPU_INFO_ATTR_REG_OFFSET, DIF_RSTMGR_CPU_INFO_MAX_SIZE);
+  EXPECT_READ32(RSTMGR_CPU_INFO_CTRL_REG_OFFSET, 1);
+
+  for (uint32_t i = 0; i < DIF_RSTMGR_CPU_INFO_MAX_SIZE; ++i) {
+    EXPECT_WRITE32(RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
+                   {
+                       {
+                           RSTMGR_CPU_INFO_CTRL_EN_BIT,
+                           true,
+                       },
+                       {
+                           RSTMGR_CPU_INFO_CTRL_INDEX_OFFSET,
+                           i,
+                       },
+                   });
+
+    EXPECT_READ32(RSTMGR_CPU_INFO_REG_OFFSET, src_[i]);
+  }
+
+  size_t segments_read = 0;
+  dif_rstmgr_cpu_info_dump_segment_t dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
+  EXPECT_EQ(
+      dif_rstmgr_cpu_info_dump_read(
+          &rstmgr_, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read),
+      kDifOk);
+  EXPECT_EQ(segments_read, DIF_RSTMGR_CPU_INFO_MAX_SIZE);
+  EXPECT_THAT(src_, ElementsAreArray(dump));
+}
+
+TEST_F(CpuInfoDumpReadTest, SuccessDumpSmaller) {
+  constexpr uint32_t dump_size = DIF_RSTMGR_CPU_INFO_MAX_SIZE - 1;
+
+  EXPECT_READ32(RSTMGR_CPU_INFO_ATTR_REG_OFFSET, dump_size);
+  EXPECT_READ32(RSTMGR_CPU_INFO_CTRL_REG_OFFSET, 1);
+
+  for (uint32_t i = 0; i < dump_size; ++i) {
+    EXPECT_WRITE32(RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
+                   {
+                       {
+                           RSTMGR_CPU_INFO_CTRL_EN_BIT,
+                           true,
+                       },
+                       {
+                           RSTMGR_CPU_INFO_CTRL_INDEX_OFFSET,
+                           i,
+                       },
+                   });
+
+    EXPECT_READ32(RSTMGR_CPU_INFO_REG_OFFSET, src_[i]);
+  }
+
+  size_t segments_read = 0;
+  dif_rstmgr_cpu_info_dump_segment_t dump[dump_size];
+  EXPECT_EQ(
+      dif_rstmgr_cpu_info_dump_read(
+          &rstmgr_, &dump[0], DIF_RSTMGR_CPU_INFO_MAX_SIZE, &segments_read),
       kDifOk);
   EXPECT_EQ(segments_read, dump_size);
   EXPECT_THAT(dump, IsSubsetOf(src_));
