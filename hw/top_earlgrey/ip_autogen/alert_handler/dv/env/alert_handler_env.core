@@ -7,7 +7,6 @@ description: "ALERT_HANDLER DV UVM environment"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
     files:
       - alert_handler_env_pkg.sv
