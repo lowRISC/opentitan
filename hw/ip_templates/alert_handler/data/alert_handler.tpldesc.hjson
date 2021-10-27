@@ -35,13 +35,13 @@
     },
     {
       "name": "n_lpg",
-      "desc": "Number of LPGs"
+      "desc": "Number of low-power groups (LPGs)"
       "type": "int"
       "default": 1
     },
     {
       "name": "lpg_map",
-      "desc": "Encodes the alert to LPG mapping"
+      "desc": "Defines a mapping from alerts to LPGs"
       "type": "object"
       "default": []
     },
