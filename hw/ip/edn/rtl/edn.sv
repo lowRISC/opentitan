@@ -39,8 +39,6 @@ module edn
   output logic      intr_edn_fatal_err_o
 );
 
-  import edn_reg_pkg::*;
-
   edn_reg2hw_t reg2hw;
   edn_hw2reg_t hw2reg;
 

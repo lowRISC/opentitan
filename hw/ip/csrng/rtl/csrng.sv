@@ -52,9 +52,6 @@ module csrng
   output logic    intr_cs_fatal_err_o
 );
 
-
-  import csrng_reg_pkg::*;
-
   logic efuse_sw_app_enable;
   assign efuse_sw_app_enable = prim_mubi_pkg::mubi8_test_true_strict(otp_en_csrng_sw_app_read_i);
 

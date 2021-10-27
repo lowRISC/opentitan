@@ -72,8 +72,6 @@ module keymgr
   output prim_alert_pkg::alert_tx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_tx_o
 );
 
-  import keymgr_reg_pkg::*;
-
   `ASSERT_INIT(AdvDataWidth_A, AdvDataWidth <= KDFMaxWidth)
   `ASSERT_INIT(IdDataWidth_A,  IdDataWidth  <= KDFMaxWidth)
   `ASSERT_INIT(GenDataWidth_A, GenDataWidth <= KDFMaxWidth)

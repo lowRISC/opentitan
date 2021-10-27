@@ -23,7 +23,6 @@ module aes_sbox import aes_pkg::*;
   output logic              [7:0] mask_o
 );
 
-  import aes_pkg::*;
   localparam bit SBoxMasked = (SBoxImpl == SBoxImplCanrightMasked ||
                                SBoxImpl == SBoxImplCanrightMaskedNoreuse ||
                                SBoxImpl == SBoxImplDom) ? 1'b1 : 1'b0;

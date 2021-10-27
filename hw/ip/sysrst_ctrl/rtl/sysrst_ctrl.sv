@@ -59,8 +59,6 @@ module sysrst_ctrl
   // Alerts and CSR Node //
   /////////////////////////
 
-  import sysrst_ctrl_reg_pkg::*;
-
   sysrst_ctrl_reg2hw_t reg2hw;
   sysrst_ctrl_hw2reg_t hw2reg;
 
