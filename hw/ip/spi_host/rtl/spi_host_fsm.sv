@@ -449,7 +449,7 @@ module spi_host_fsm
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       sample_en_q <= 1'b0;
-      sample_en_q2 <= 1'b00;
+      sample_en_q2 <= 1'b0;
     end else begin
       sample_en_q  <= (fsm_en && !stall) ? sample_en_d : sample_en_q;
       sample_en_q2 <= (fsm_en && !stall) ? sample_en_q : sample_en_q2;
