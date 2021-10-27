@@ -730,12 +730,14 @@
         { bits: "7:0"
           name: "rev"
           desc: "Revision of the TPM submodule"
+          resval: "0"
         } // f: rev
         { bits: "8"
           name: "locality"
           desc: '''If 1, the TPM submodule supports 5 Locality.
             If 0, only one Locality is provided
             '''
+          resval: "1"
         } // f: locality
         { bits: "18:16"
           name: "max_xfer_size"
@@ -753,6 +755,7 @@
             If the SW reports the transfer size more than the value described in this field,
             the SW must read the data from the write FIFO before the FIFO becomes full in order not to make FIFO overflow.
             '''
+          resval: "2"
         } // f: max_xfer_size
       ]
       tags: [

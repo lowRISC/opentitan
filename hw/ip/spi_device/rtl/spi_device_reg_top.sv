@@ -16056,7 +16056,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h1)
   ) u_tpm_cap_locality (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16081,7 +16081,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h0)
+    .RESVAL  (3'h2)
   ) u_tpm_cap_max_xfer_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

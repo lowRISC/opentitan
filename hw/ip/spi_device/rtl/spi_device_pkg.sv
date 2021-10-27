@@ -224,6 +224,7 @@ package spi_device_pkg;
     DualIO   = 2'h 1,
     QuadIO   = 2'h 2
   } io_mode_e;
+
   typedef enum int unsigned {
     IoModeFw       = 0,
     IoModeCmdParse = 1,
