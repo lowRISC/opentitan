@@ -22,8 +22,6 @@ module rv_timer import rv_timer_reg_pkg::*;
   output logic intr_timer_expired_hart0_timer0_o
 );
 
-  import rv_timer_reg_pkg::*;
-
   rv_timer_reg2hw_t reg2hw;
   rv_timer_hw2reg_t hw2reg;
 

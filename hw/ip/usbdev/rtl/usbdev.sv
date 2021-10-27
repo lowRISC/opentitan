@@ -92,8 +92,6 @@ module usbdev
   output logic       intr_frame_o
 );
 
-  import usbdev_reg_pkg::*;
-
   // Could make SramDepth, MaxPktSizeByte, AVFifoDepth and RXFifoDepth
   // module parameters but may need to fix register def for the first two
   localparam int SramDw = 32; // Places packing bytes to SRAM assume this

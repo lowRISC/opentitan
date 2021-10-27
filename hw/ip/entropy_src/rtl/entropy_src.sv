@@ -57,8 +57,6 @@ module entropy_src
   output logic    intr_es_fatal_err_o
 );
 
-  import entropy_src_reg_pkg::*;
-
   // common signals
   entropy_src_hw2reg_t hw2reg;
   entropy_src_reg2hw_t reg2hw;

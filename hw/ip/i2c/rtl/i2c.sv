@@ -49,8 +49,6 @@ module i2c
   output logic              intr_host_timeout_o
 );
 
-  import i2c_reg_pkg::*;
-
   i2c_reg2hw_t reg2hw;
   i2c_hw2reg_t hw2reg;
 

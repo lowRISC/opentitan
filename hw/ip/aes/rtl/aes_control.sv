@@ -111,8 +111,6 @@ module aes_control
   output logic                      input_ready_we_o
 );
 
-  import aes_pkg::*;
-
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
   //      -s 31468618 --language=sv

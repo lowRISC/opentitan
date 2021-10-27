@@ -38,8 +38,6 @@ module uart
   output logic    intr_rx_parity_err_o
 );
 
-  import uart_reg_pkg::*;
-
   logic [NumAlerts-1:0] alert_test, alerts;
   uart_reg2hw_t reg2hw;
   uart_hw2reg_t hw2reg;

@@ -36,8 +36,6 @@ module aon_timer import aon_timer_reg_pkg::*;
   input  logic                sleep_mode_i
 );
 
-  import aon_timer_reg_pkg::*;
-
   localparam int AON_WKUP = 0;
   localparam int AON_WDOG = 1;
 

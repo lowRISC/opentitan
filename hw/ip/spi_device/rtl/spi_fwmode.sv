@@ -79,8 +79,6 @@ module spi_fwmode
 
 );
 
-  import spi_device_pkg::*;
-
   /////////////
   // Signals //
   /////////////
