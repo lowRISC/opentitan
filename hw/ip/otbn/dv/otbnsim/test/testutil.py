@@ -7,7 +7,7 @@ import os
 import subprocess
 import tempfile
 
-from sim.elf import load_elf
+from sim.load_elf import load_elf
 from sim.standalonesim import StandaloneSim
 
 
