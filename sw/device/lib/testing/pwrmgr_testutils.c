@@ -16,10 +16,6 @@ void pwrmgr_testutils_enable_low_power(
     dif_pwrmgr_domain_config_t domain_config) {
   // Enable low power on the next WFI with clocks and power domains configured
   // per domain_config.
-
-  // Issue #6504: USB clock in active power must be left enabled.
-  domain_config |= kDifPwrmgrDomainOptionUsbClockInActivePower;
-
   CHECK_DIF_OK(
       dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeWakeup, wakeups));
   CHECK_DIF_OK(dif_pwrmgr_set_domain_config(pwrmgr, domain_config));

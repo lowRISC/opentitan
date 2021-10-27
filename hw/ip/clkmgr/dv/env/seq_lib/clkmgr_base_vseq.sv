@@ -33,16 +33,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     endcase
   endfunction
 
-  rand bit ip_clk_en;
-  rand bit usb_clk_en_active;
-
-  // This is used to detect a transition. Initialized to 1 since it only matters when
-  // it drops.
-  bit      prev_usb_clk_en_active = 1'b1;
-
-  // This constraint is a workaround for https://github.com/lowRISC/opentitan/issues/6504.
-  // TODO(maturana) Remove this constraint when the issue above is fixed.
-  constraint usb_clk_en_active_c {usb_clk_en_active == 1'b1;}
+  rand bit                 io_ip_clk_en;
+  rand bit                 main_ip_clk_en;
+  rand bit                 usb_ip_clk_en;
 
   rand bit [NUM_TRANS-1:0] idle;
 
@@ -91,15 +84,18 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     idle = '1;
     scanmode = Off;
     cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_dft_en(Off));
-    ip_clk_en = 1'b1;
-    usb_clk_en_active = 1'b1;
+    io_ip_clk_en   = 1'b1;
+    main_ip_clk_en = 1'b1;
+    usb_ip_clk_en  = 1'b1;
     control_ip_clocks();
   endtask
 
   task pre_start();
     update_csrs_with_reset_values();
     cfg.clkmgr_vif.init(.idle('1), .scanmode(scanmode), .lc_dft_en(Off));
-    cfg.clkmgr_vif.update_ip_clk_en(1'b0);
+    cfg.clkmgr_vif.update_io_ip_clk_en(1'b0);
+    cfg.clkmgr_vif.update_main_ip_clk_en(1'b0);
+    cfg.clkmgr_vif.update_usb_ip_clk_en(1'b0);
     clkmgr_init();
     super.pre_start();
   endtask
@@ -121,35 +117,60 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   // This turns on or off the actual input clocks, as the pwrmgr would.
-  // It pessimistically turning all clocks off on falling transitions,
-  // and can be configured to keep the usb clk off on rising transitions.
   task control_ip_clocks();
+    fork
+      control_io_ip_clock();
+      control_main_ip_clock();
+      control_usb_ip_clock();
+    join
+  endtask
+
+  task control_io_ip_clock();
     // Do nothing if nothing interesting changed.
-    if (cfg.clkmgr_vif.pwr_i.ip_clk_en == ip_clk_en &&
-        (!ip_clk_en || (usb_clk_en_active == prev_usb_clk_en_active)))
-      return;
-    `uvm_info(`gfn, $sformatf(
-              "controlling clocks with ip_clk_en=%b usb_clk_en_active=%b",
-              ip_clk_en,
-              usb_clk_en_active
-              ), UVM_LOW)
-    if (!ip_clk_en) begin
-      cfg.clkmgr_vif.pwr_i.ip_clk_en = ip_clk_en;
-      @(negedge cfg.clkmgr_vif.pwr_o.clk_status);
+    if (cfg.clkmgr_vif.pwr_i.io_ip_clk_en == io_ip_clk_en) return;
+    `uvm_info(`gfn, $sformatf("controlling io clock with clk_en=%b", io_ip_clk_en), UVM_LOW)
+    if (!io_ip_clk_en) begin
+      cfg.clkmgr_vif.pwr_i.io_ip_clk_en = io_ip_clk_en;
+      @(negedge cfg.clkmgr_vif.pwr_o.io_status);
       cfg.io_clk_rst_vif.stop_clk();
-      cfg.main_clk_rst_vif.stop_clk();
-      cfg.usb_clk_rst_vif.stop_clk();
-      `uvm_info(`gfn, "stopped clocks", UVM_MEDIUM)
     end else begin
       cfg.io_clk_rst_vif.start_clk();
-      cfg.main_clk_rst_vif.start_clk();
-      if (usb_clk_en_active) cfg.usb_clk_rst_vif.start_clk();
-      prev_usb_clk_en_active = usb_clk_en_active;
-      `uvm_info(`gfn, "started clocks", UVM_MEDIUM)
-      cfg.clkmgr_vif.pwr_i.ip_clk_en = ip_clk_en;
-      @(posedge cfg.clkmgr_vif.pwr_o.clk_status);
+      cfg.clkmgr_vif.pwr_i.io_ip_clk_en = io_ip_clk_en;
+      @(posedge cfg.clkmgr_vif.pwr_o.io_status);
     end
-    `uvm_info(`gfn, "controlling clocks done", UVM_LOW)
+    `uvm_info(`gfn, "controlling io clock done", UVM_LOW)
+  endtask
+
+  task control_main_ip_clock();
+    // Do nothing if nothing interesting changed.
+    if (cfg.clkmgr_vif.pwr_i.main_ip_clk_en == main_ip_clk_en) return;
+    `uvm_info(`gfn, $sformatf("controlling main clock with clk_en=%b", main_ip_clk_en), UVM_LOW)
+    if (!main_ip_clk_en) begin
+      cfg.clkmgr_vif.pwr_i.main_ip_clk_en = main_ip_clk_en;
+      @(negedge cfg.clkmgr_vif.pwr_o.main_status);
+      cfg.main_clk_rst_vif.stop_clk();
+    end else begin
+      cfg.main_clk_rst_vif.start_clk();
+      cfg.clkmgr_vif.pwr_i.main_ip_clk_en = main_ip_clk_en;
+      @(posedge cfg.clkmgr_vif.pwr_o.main_status);
+    end
+    `uvm_info(`gfn, "controlling main clock done", UVM_LOW)
+  endtask
+
+  task control_usb_ip_clock();
+    // Do nothing if nothing interesting changed.
+    if (cfg.clkmgr_vif.pwr_i.usb_ip_clk_en == usb_ip_clk_en) return;
+    `uvm_info(`gfn, $sformatf("controlling usb clock with clk_en=%b", usb_ip_clk_en), UVM_LOW)
+    if (!usb_ip_clk_en) begin
+      cfg.clkmgr_vif.pwr_i.usb_ip_clk_en = usb_ip_clk_en;
+      @(negedge cfg.clkmgr_vif.pwr_o.usb_status);
+      cfg.usb_clk_rst_vif.stop_clk();
+    end else begin
+      cfg.usb_clk_rst_vif.start_clk();
+      cfg.clkmgr_vif.pwr_i.usb_ip_clk_en = usb_ip_clk_en;
+      @(posedge cfg.clkmgr_vif.pwr_o.usb_status);
+    end
+    `uvm_info(`gfn, "controlling usb clock done", UVM_LOW)
   endtask
 
   virtual task apply_reset(string kind = "HARD");
