@@ -336,7 +336,7 @@
                    complete SPI transactions, consisting of several separate
                    segments for issuing instructions, pausing for dummy cycles,
                    and transmitting or receiving data from the device.''',
-                   resval: "0x0"
+          resval: "0x0"
         },
         { bits: "8:0",
           name: "LEN",
@@ -351,7 +351,10 @@
                    ''',
           resval: "0x0"
         },
-      ]
+      ],
+      tags: [// Triggers exceptions if registers are improperly configured
+             // Exclude from RW tests
+             "excl:CsrAllTests:CsrExclWrite"]
     },
     { window: {
         name: "RXDATA",
