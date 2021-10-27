@@ -26,7 +26,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   rand int cycles_before_pwrok;
   rand int cycles_before_clks_ok;
   rand int cycles_between_clks_ok;
-  rand int cycles_before_clk_status;
+  rand int cycles_before_io_status;
+  rand int cycles_before_main_status;
+  rand int cycles_before_usb_status;
   rand int cycles_before_rst_lc_src;
   rand int cycles_before_rst_sys_src;
   rand int cycles_before_otp_done;
@@ -45,7 +47,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   constraint cycles_before_pwrok_c {cycles_before_pwrok inside {[3 : 10]};}
   constraint cycles_before_clks_ok_c {cycles_before_clks_ok inside {[3 : 10]};}
   constraint cycles_between_clks_ok_c {cycles_between_clks_ok inside {[3 : 10]};}
-  constraint cycles_before_clk_status_c {cycles_before_clk_status inside {[0 : 4]};}
+  constraint cycles_before_io_status_c {cycles_before_io_status inside {[0 : 4]};}
+  constraint cycles_before_main_status_c {cycles_before_main_status inside {[0 : 4]};}
+  constraint cycles_before_usb_status_c {cycles_before_usb_status inside {[0 : 4]};}
   constraint cycles_before_rst_lc_src_base_c {cycles_before_rst_lc_src inside {[0 : 4]};}
   constraint cycles_before_rst_sys_src_base_c {cycles_before_rst_sys_src inside {[0 : 4]};}
   constraint cycles_before_otp_done_base_c {cycles_before_otp_done inside {[0 : 4]};}
@@ -181,7 +185,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // Generates expected responses for the fast fsm.
   // - Completes the reset handshake with the rstmgr for lc and sys resets: soon after a
   //   reset is requested the corresponding active low reset src must go low.
-  // - Completes the handshake with the clkmgr: clk_status needs to track ip_clk_en.
+  // - Completes the handshake with the clkmgr for io, main, and usb clocks:
+  //   each status input needs to track the corresponding ip_clk_en output.
   // - Completes handshake with lc and otp: *_done needs to track *_init.
   // Macros for the same reason as the slow responder.
 
@@ -220,11 +225,27 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           drop_objection();
         end
       forever
-        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.ip_clk_en begin
+        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en begin
           raise_objection();
-          `FAST_RESPONSE_ACTION("clk_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.clk_status,
-                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.ip_clk_en,
-                                cycles_before_clk_status)
+          `FAST_RESPONSE_ACTION("io_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.io_status,
+                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en,
+                                cycles_before_io_status)
+          drop_objection();
+        end
+      forever
+        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en begin
+          raise_objection();
+          `FAST_RESPONSE_ACTION("main_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.main_status,
+                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en,
+                                cycles_before_main_status)
+          drop_objection();
+        end
+      forever
+        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en begin
+          raise_objection();
+          `FAST_RESPONSE_ACTION("usb_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.usb_status,
+                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en,
+                                cycles_before_usb_status)
           drop_objection();
         end
       forever

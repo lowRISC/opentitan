@@ -138,6 +138,8 @@ module pwrmgr
   logic fsm_invalid;
   logic clr_slow_req;
   logic clr_slow_ack;
+  logic usb_ip_clk_en;
+  logic usb_ip_clk_status;
   pwrup_cause_e pwrup_cause;
 
   logic low_power_fall_through;
@@ -175,6 +177,8 @@ module pwrmgr
   logic slow_usb_clk_en_lp;
   logic slow_usb_clk_en_active;
   logic slow_clr_req;
+  logic slow_usb_ip_clk_en;
+  logic slow_usb_ip_clk_status;
 
 
 
@@ -270,6 +274,8 @@ module pwrmgr
     .slow_peri_reqs_o(slow_peri_reqs),
     .slow_peri_reqs_masked_i(slow_peri_reqs_masked),
     .slow_clr_req_o(slow_clr_req),
+    .slow_usb_ip_clk_en_i(slow_usb_ip_clk_en),
+    .slow_usb_ip_clk_status_o(slow_usb_ip_clk_status),
 
     // fast domain signals
     .req_pwrdn_i(req_pwrdn),
@@ -290,6 +296,8 @@ module pwrmgr
     .peri_reqs_o(peri_reqs_masked),
     .clr_slow_req_i(clr_slow_req),
     .clr_slow_ack_o(clr_slow_ack),
+    .usb_ip_clk_en_o(usb_ip_clk_en),
+    .usb_ip_clk_status_i(usb_ip_clk_status),
 
     // AST signals
     .ast_i(pwr_ast_i),
@@ -380,6 +388,8 @@ module pwrmgr
     .rst_req_o            (slow_rst_req),
     .fsm_invalid_o        (slow_fsm_invalid),
     .clr_req_i            (slow_clr_req),
+    .usb_ip_clk_en_o      (slow_usb_ip_clk_en),
+    .usb_ip_clk_status_i  (slow_usb_ip_clk_status),
 
     .main_pd_ni           (slow_main_pd_n),
     .io_clk_en_i          (slow_io_clk_en),
@@ -399,23 +409,25 @@ module pwrmgr
 
   assign low_power_hint = reg2hw.control.low_power_hint.q == LowPower;
 
-  pwrmgr_fsm i_fsm (
+  pwrmgr_fsm u_fsm (
     .clk_i,
     .rst_ni,
     .clk_slow_i,
     .rst_slow_ni,
 
     // interface with slow_fsm
-    .req_pwrup_i       (req_pwrup),
-    .pwrup_cause_i     (pwrup_cause), // por, wake or reset request
-    .ack_pwrup_o       (ack_pwrup),
-    .req_pwrdn_o       (req_pwrdn),
-    .ack_pwrdn_i       (ack_pwrdn),
-    .low_power_entry_i (pwr_cpu_i.core_sleeping & low_power_hint),
-    .reset_reqs_i      (peri_reqs_masked.rstreqs),
-    .fsm_invalid_i     (fsm_invalid),
-    .clr_slow_req_o    (clr_slow_req),
-    .clr_slow_ack_i    (clr_slow_ack),
+    .req_pwrup_i         (req_pwrup),
+    .pwrup_cause_i       (pwrup_cause), // por, wake or reset request
+    .ack_pwrup_o         (ack_pwrup),
+    .req_pwrdn_o         (req_pwrdn),
+    .ack_pwrdn_i         (ack_pwrdn),
+    .low_power_entry_i   (pwr_cpu_i.core_sleeping & low_power_hint),
+    .reset_reqs_i        (peri_reqs_masked.rstreqs),
+    .fsm_invalid_i       (fsm_invalid),
+    .clr_slow_req_o      (clr_slow_req),
+    .clr_slow_ack_i      (clr_slow_ack),
+    .usb_ip_clk_en_i     (usb_ip_clk_en),
+    .usb_ip_clk_status_o (usb_ip_clk_status),
 
     // cfg
     .main_pd_ni        (reg2hw.control.main_pd_n.q),
@@ -432,8 +444,8 @@ module pwrmgr
     .pwr_rst_i         (pwr_rst_i),
 
     // clkmgr
-    .ips_clk_en_o      (pwr_clk_o.ip_clk_en),
-    .clk_en_status_i   (pwr_clk_i.clk_status),
+    .ips_clk_en_o      (pwr_clk_o),
+    .clk_en_status_i   (pwr_clk_i),
 
     // otp
     .otp_init_o        (pwr_otp_o.otp_init),

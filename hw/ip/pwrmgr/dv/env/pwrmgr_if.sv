@@ -71,7 +71,7 @@ interface pwrmgr_if (
 
   // Fast fsm state.
   pwrmgr_pkg::fast_pwr_state_e fast_state;
-  always_comb fast_state = `PATH_TO_DUT.i_fsm.state_q;
+  always_comb fast_state = `PATH_TO_DUT.u_fsm.state_q;
 
   // Wakeup_status ro CSR.
   logic [pwrmgr_reg_pkg::NumWkups-1:0] wake_status;
@@ -148,7 +148,7 @@ interface pwrmgr_if (
     // From AST.
     pwr_ast_rsp = '{default: '0};
     pwr_rst_rsp = '{default: '0};
-    pwr_clk_rsp.clk_status = 1'b0;
+    pwr_clk_rsp = '{default: '0};
     pwr_otp_rsp = '{default: '0};
     pwr_lc_rsp = '{default: '0};
     pwr_flash = '{default: '0};

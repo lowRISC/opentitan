@@ -8,7 +8,9 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-  constraint enable_ip_clk_en {ip_clk_en == 1'b1;}
+  constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
+  constraint main_ip_clk_en_on_c {main_ip_clk_en == 1'b1;}
+  constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1'b1;}
   constraint all_busy {idle == '0;}
 
   task body();

@@ -20,7 +20,9 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
   rand bit [NUM_TRANS-1:0] initial_hints;
 
   // The clk_hints CSR cannot be manipulated in low power mode.
-  constraint ip_clk_en_on_c {ip_clk_en == 1'b1;}
+  constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
+  constraint main_ip_clk_en_on_c {main_ip_clk_en == 1'b1;}
+  constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1'b1;}
 
   task body();
     update_csrs_with_reset_values();

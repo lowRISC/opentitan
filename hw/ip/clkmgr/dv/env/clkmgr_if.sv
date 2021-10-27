@@ -86,8 +86,16 @@ interface clkmgr_if (
     idle_i = value;
   endfunction
 
-  function automatic void update_ip_clk_en(bit value);
-    pwr_i.ip_clk_en = value;
+  function automatic void update_io_ip_clk_en(bit value);
+    pwr_i.io_ip_clk_en = value;
+  endfunction
+
+  function automatic void update_main_ip_clk_en(bit value);
+    pwr_i.main_ip_clk_en = value;
+  endfunction
+
+  function automatic void update_usb_ip_clk_en(bit value);
+    pwr_i.usb_ip_clk_en = value;
   endfunction
 
   function automatic void update_scanmode(lc_ctrl_pkg::lc_tx_t value);
@@ -106,8 +114,9 @@ interface clkmgr_if (
     ast_clk_byp_ack = value;
   endfunction
 
+  // TODO:: this fix is not right since there are now 3 status
   function automatic logic get_clk_status();
-    return pwr_o.clk_status;
+    return pwr_o.main_status;
   endfunction
 
   function automatic void update_jitter_enable(bit value);
@@ -153,7 +162,7 @@ interface clkmgr_if (
       clk_hint_otbn_div4_ffs <= {
         clk_hint_otbn_div4_ffs[PIPELINE_DEPTH-2:0], clk_hints_csr[TransOtbnIoDiv4]
       };
-      ip_clk_en_div4_ffs <= {ip_clk_en_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+      ip_clk_en_div4_ffs <= {ip_clk_en_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
     end else begin
       clk_enable_div4_ffs <= '0;
       clk_hint_otbn_div4_ffs <= '0;
@@ -174,7 +183,7 @@ interface clkmgr_if (
       clk_enable_div2_ffs <= {
         clk_enable_div2_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div2_peri_en
       };
-      ip_clk_en_div2_ffs <= {ip_clk_en_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+      ip_clk_en_div2_ffs <= {ip_clk_en_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
     end else begin
       clk_enable_div2_ffs <= '0;
       ip_clk_en_div2_ffs  <= '0;
@@ -190,7 +199,7 @@ interface clkmgr_if (
   always @(posedge clocks_o.clk_io_powerup or negedge rst_io_n) begin
     if (rst_io_n) begin
       clk_enable_io_ffs <= {clk_enable_io_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_peri_en};
-      ip_clk_en_io_ffs  <= {ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+      ip_clk_en_io_ffs  <= {ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
     end else begin
       clk_enable_io_ffs <= '0;
       ip_clk_en_io_ffs  <= '0;
@@ -206,7 +215,7 @@ interface clkmgr_if (
   always @(posedge clocks_o.clk_usb_powerup or negedge rst_usb_n) begin
     if (rst_usb_n) begin
       clk_enable_usb_ffs <= {clk_enable_usb_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.usb_peri_en};
-      ip_clk_en_usb_ffs  <= {ip_clk_en_usb_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+      ip_clk_en_usb_ffs  <= {ip_clk_en_usb_ffs[PIPELINE_DEPTH-2:0], pwr_i.usb_ip_clk_en};
     end else begin
       clk_enable_usb_ffs <= '0;
       ip_clk_en_usb_ffs  <= '0;
@@ -223,7 +232,7 @@ interface clkmgr_if (
   always @(posedge clocks_o.clk_main_powerup or negedge rst_main_n) begin
     if (rst_main_n) begin
       clk_hints_ffs <= {clk_hints_ffs[PIPELINE_DEPTH-2:0], clk_hints_csr};
-      trans_clk_en_ffs <= {trans_clk_en_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+      trans_clk_en_ffs <= {trans_clk_en_ffs[PIPELINE_DEPTH-2:0], pwr_i.main_ip_clk_en};
     end else begin
       clk_hints_ffs <= '0;
       trans_clk_en_ffs <= '0;

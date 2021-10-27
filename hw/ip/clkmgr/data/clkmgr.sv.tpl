@@ -211,105 +211,52 @@
 % endfor
 
   ////////////////////////////////////////////////////
+  // Distribute pwrmgr ip_clk_en requests to each family
+  ////////////////////////////////////////////////////
+% for root, clk_family in typed_clocks.parent_child_clks.items():
+  // clk_${root} family
+  % for clk in clk_family:
+  logic pwrmgr_${clk}_en;
+  % endfor
+  % for clk in clk_family:
+  assign pwrmgr_${clk}_en = pwr_i.${root}_ip_clk_en;
+  % endfor
+
+% endfor
+
+  ////////////////////////////////////////////////////
   // Root gating
   ////////////////////////////////////////////////////
 
-  logic wait_enable;
-  logic wait_disable;
-  logic en_status_d;
-  logic dis_status_d;
-  logic [1:0] en_status_q;
-  logic [1:0] dis_status_q;
-  logic clk_status;
-% for src in typed_clocks.rg_srcs:
-  logic clk_${src}_root;
+% for root, clk_family in typed_clocks.parent_child_clks.items():
+  // clk_${root} family
+  logic [${len(clk_family)-1}:0] ${root}_ens;
+
+  % for src in clk_family:
   logic clk_${src}_en;
-% endfor
-
-% for src in typed_clocks.rg_srcs:
-  lc_tx_t ${src}_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_${src}_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(${src}_scanmode)
-  );
-
-  prim_clock_gating_sync u_${src}_cg (
+  logic clk_${src}_root;
+  clkmgr_root_ctrl u_${src}_root_ctrl (
     .clk_i(clk_${src}_i),
     .rst_ni(rst_${src}_ni),
-    .test_en_i(${src}_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
+    .scanmode_i,
+    .async_en_i(pwrmgr_${src}_en),
     .en_o(clk_${src}_en),
     .clk_o(clk_${src}_root)
   );
+  assign ${root}_ens[${loop.index}] = clk_${src}_en;
 
-% endfor
-  // an async AND of all the synchronized enables
-  // return feedback to pwrmgr only when all clocks are enabled
-  assign wait_enable =
-% for src in typed_clocks.rg_srcs:
-    % if loop.last:
-    clk_${src}_en;
-    % else:
-    clk_${src}_en &
-    % endif
-% endfor
-
-  // an async OR of all the synchronized enables
-  // return feedback to pwrmgr only when all clocks are disabled
-  assign wait_disable =
-% for src in typed_clocks.rg_srcs:
-    % if loop.last:
-    clk_${src}_en;
-    % else:
-    clk_${src}_en |
-    % endif
-% endfor
-
-  // Sync clkmgr domain for feedback to pwrmgr.
-  // Since the signal is combo / converged on the other side, de-bounce
-  // the signal prior to output
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_roots_en_status_sync (
+  % endfor
+  // create synchronized status
+  clkmgr_clk_status #(
+    .NumClocks(${len(clk_family)})
+  ) u_${root}_status (
     .clk_i,
     .rst_ni,
-    .d_i(wait_enable),
-    .q_o(en_status_d)
+    .ens_i(${root}_ens),
+    .status_o(pwr_o.${root}_status)
   );
 
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_roots_or_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(wait_disable),
-    .q_o(dis_status_d)
-  );
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      en_status_q <= '0;
-      dis_status_q <= '0;
-      clk_status <= '0;
-    end else begin
-      en_status_q <= {en_status_q[0], en_status_d};
-      dis_status_q <= {dis_status_q[0], dis_status_d};
-
-      if (&en_status_q) begin
-        clk_status <= 1'b1;
-      end else if (|dis_status_q == '0) begin
-        clk_status <= 1'b0;
-      end
-    end
-  end
-
-  assign pwr_o.clk_status = clk_status;
-
+% endfor
   ////////////////////////////////////////////////////
   // Clock Measurement for the roots
   ////////////////////////////////////////////////////

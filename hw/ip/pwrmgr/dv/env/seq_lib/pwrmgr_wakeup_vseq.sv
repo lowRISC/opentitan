@@ -68,7 +68,7 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(enabled_wakeups),
                    .err_msg("failed wake_status check"));
       `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
-      wait(cfg.pwrmgr_vif.pwr_clk_req.ip_clk_en == 1'b1);
+      wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
       cfg.pwrmgr_vif.update_wakeups('0);
 
       wait_for_fast_fsm_active();
