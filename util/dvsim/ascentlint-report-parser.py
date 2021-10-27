@@ -24,7 +24,7 @@ def main():
         present.
         """)
     parser.add_argument('--repdir',
-                        type=lambda p: Path(p).resolve(),,
+                        type=lambda p: Path(p).resolve(),
                         default="./",
                         help="""The script searches the 'ascentlint.log' and
                         'ascentlint.rpt' files in this directory.

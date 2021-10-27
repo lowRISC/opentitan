@@ -8,4 +8,7 @@
   report_cmd: "{proj_root}/util/dvsim/{tool}-report-parser.py "
   report_opts: ["--repdir={build_dir}",
                 "--outfile={build_dir}/results.hjson"]
+
+  // This customizes the report format
+  is_style_lint: False
 }
