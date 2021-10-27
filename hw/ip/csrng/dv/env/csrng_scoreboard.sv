@@ -21,9 +21,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       entropy_src_fifo;
   uvm_tlm_analysis_fifo#(csrng_item)   csrng_cmd_fifo[NUM_HW_APPS];
 
-  // local queue to hold incoming packets pending comparison
-  bit [csrng_pkg::GENBITS_BUS_WIDTH-1 : 0]    genbits_q[NUM_HW_APPS][$];
-
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -152,11 +149,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     // post test checks - ensure that all local fifos and queues are empty
   endfunction
 
-  function void get_genbits(bit [NUM_HW_APPS-1:0] hwapp,
-                            bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0] genbits);
-    genbits_q[hwapp].push_back(genbits);
-  endfunction
-
   // From NIST.SP.800-90Ar1
   function bit [BLOCK_LEN-1:0] block_encrypt(
       bit [KEY_LEN-1:0]   key,
@@ -244,7 +236,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   function void ctr_drbg_generate(uint hwapp,
-                                  bit [18:0] requested_genbits,
+                                  csrng_item cs_item,
                                   bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
                                       additional_input = 'h0);
 
@@ -256,8 +248,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     if (additional_input != 0)
       ctr_drbg_update(hwapp, additional_input);
-    requested_bits = requested_genbits * csrng_pkg::GENBITS_BUS_WIDTH;
-    for (int i = 0; i < requested_genbits; i++) begin
+    requested_bits = cs_item.glen * csrng_pkg::GENBITS_BUS_WIDTH;
+    for (int i = 0; i < cs_item.glen; i++) begin
       if (CTR_LEN < BLOCK_LEN) begin
         inc = (cfg.v[hwapp][CTR_LEN-1:0] + 1);
         mod_val = 2**CTR_LEN;
@@ -271,9 +263,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       output_block = block_encrypt(cfg.key[hwapp], cfg.v[hwapp]);
       genbits      = output_block;
-      `uvm_info(`gfn, $sformatf("genbits[%0d]      = %h", hwapp, genbits), UVM_DEBUG)
-      `uvm_info(`gfn, $sformatf("genbits_q[%0d][0] = %h", hwapp, genbits_q[hwapp][0]), UVM_DEBUG)
-      hw_genbits = genbits_q[hwapp].pop_front();
+      `uvm_info(`gfn, $sformatf("genbits[%0d]    = %h", hwapp, genbits), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("hw_genbits[%0d] = %h", hwapp, cs_item.genbits_q[0]), UVM_DEBUG)
+      hw_genbits = cs_item.genbits_q.pop_front();
       `DV_CHECK_EQ_FATAL(genbits, hw_genbits)
     end
     ctr_drbg_update(hwapp, additional_input);
@@ -307,20 +299,13 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             es_data = es_item.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
             fips    = es_item.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
           end
-          @(posedge cfg.m_edn_agent_cfg[hwapp].vif.mon_cb.cmd_rsp.csrng_rsp_ack);
           `uvm_info(`gfn, $sformatf("es_data = %0h, cs_data = %0h, fips = %0d", es_data, cs_data, fips), UVM_DEBUG)
           ctr_drbg_instantiate(hwapp, es_data, cs_data, fips);
         end
         csrng_pkg::GEN: begin
-          for (int i = 0; i < cs_item.glen; i++) begin
-            @(posedge cfg.m_edn_agent_cfg[hwapp].vif.mon_cb.cmd_rsp.genbits_valid);
-            get_genbits(hwapp, cfg.m_edn_agent_cfg[hwapp].vif.mon_cb.cmd_rsp.genbits_bus);
-          end
-          @(posedge cfg.m_edn_agent_cfg[hwapp].vif.mon_cb.cmd_rsp.csrng_rsp_ack);
-          ctr_drbg_generate(hwapp, cs_item.glen, cs_data);
+          ctr_drbg_generate(hwapp, cs_item, cs_data);
         end
         csrng_pkg::UNI: begin
-          @(posedge cfg.m_edn_agent_cfg[hwapp].vif.mon_cb.cmd_rsp.csrng_rsp_ack);
           ctr_drbg_uninstantiate(hwapp);
         end
         csrng_pkg::RES: begin
@@ -330,11 +315,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             es_data = es_item.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
             fips    = es_item.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
           end
-          @(posedge cfg.m_edn_agent_cfg[hwapp].vif.mon_cb.cmd_rsp.csrng_rsp_ack);
           ctr_drbg_reseed(hwapp, es_data, cs_data, fips);
         end
         csrng_pkg::UPD: begin
-          @(posedge cfg.m_edn_agent_cfg[hwapp].vif.mon_cb.cmd_rsp.csrng_rsp_ack);
           ctr_drbg_update(hwapp, cs_data);
         end
       endcase

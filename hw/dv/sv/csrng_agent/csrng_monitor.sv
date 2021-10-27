@@ -59,7 +59,7 @@ class csrng_monitor extends dv_base_monitor #(
     forever begin
       for (int i = 0; i <= cs_item.clen; i++) begin
         csrng_cmd_fifo.get(item);
-	if (i == 0) begin
+        if (i == 0) begin
           cs_item.acmd  = item.h_data[3:0];
           cs_item.clen  = item.h_data[7:4];
           cs_item.flags = item.h_data[11:8];
@@ -70,6 +70,13 @@ class csrng_monitor extends dv_base_monitor #(
           cs_item.cmd_data_q.push_back(item.h_data);
         end
       end
+      if (cs_item.acmd == csrng_pkg::GEN) begin
+        for (int i = 0; i < cs_item.glen; i++) begin
+          @(posedge cfg.vif.mon_cb.cmd_rsp.genbits_valid);
+          cs_item.genbits_q.push_back(cfg.vif.mon_cb.cmd_rsp.genbits_bus);
+        end
+      end
+      cfg.vif.wait_cmd_ack();
       `uvm_info(`gfn, $sformatf("Captured cs_item: %s", cs_item.convert2string()), UVM_HIGH)
       analysis_port.write(cs_item);
     end
@@ -88,7 +95,7 @@ class csrng_monitor extends dv_base_monitor #(
       @(cfg.vif.cmd_push_if.mon_cb);
       if (cfg.vif.cmd_push_if.mon_cb.valid) begin
         // TODO: sample any covergroups
-	// TODO: Implement suggestion in PR #5456
+        // TODO: Implement suggestion in PR #5456
         item = csrng_item::type_id::create("item");
         item.acmd = cfg.vif.mon_cb.cmd_req.csrng_req_bus[3:0];
         `uvm_info(`gfn, $sformatf("Captured item: %s", item.convert2string()), UVM_HIGH)
