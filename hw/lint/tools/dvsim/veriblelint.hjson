@@ -10,6 +10,6 @@
   report_opts: ["--repfile={build_log}",
                 "--outfile={build_dir}/results.hjson"]
 
-  // This customizes the report format for style lint
+  // This customizes the report format
   is_style_lint: True
 }

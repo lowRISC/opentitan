@@ -415,7 +415,7 @@ def htmc_color_pc_cells(text):
     fp_patterns = r"[\+\-]?\d+\.?\d*"
 
     patterns = fp_patterns + '|' + na_list_patterns
-    indicators = "%|%u|G|B|E|W|EN|WN"
+    indicators = "%|%u|G|B|E|W|I|EN|WN"
     match = re.findall(
         r"(<td.*>\s*(" + patterns + r")\s+(" + indicators + r")\s*</td>)",
         text)
@@ -476,6 +476,9 @@ def htmc_color_pc_cells(text):
                 # Bad: red
                 elif indicator == "B":
                     subst = color_cell(cell, "c0", indicator)
+                # Info, uncolored.
+                elif indicator == "I":
+                    subst = cell.replace("I", "")
                 # Bad if positive: red for errors, yellow for warnings,
                 # otherwise green.
                 elif indicator in ["E", "W"]:
@@ -612,3 +615,27 @@ def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
         shutil.rmtree(old, ignore_errors=True)
 
     return [] if max_odirs == 0 else dirs[:max_odirs - 1]
+
+
+def check_bool(x):
+    """check_bool checks if input 'x' either a bool or
+       one of the following strings: ["true", "false"]
+        It returns value as Bool type.
+    """
+    if isinstance(x, bool):
+        return x
+    if not x.lower() in ["true", "false"]:
+        raise RuntimeError("{} is not a boolean value.".format(x))
+    else:
+        return (x.lower() == "true")
+
+
+def check_int(x):
+    """check_int checks if input 'x' is decimal integer.
+        It returns value as an int type.
+    """
+    if isinstance(x, int):
+        return x
+    if not x.isdecimal():
+        raise RuntimeError("{} is not a decimal number".format(x))
+    return int(x)

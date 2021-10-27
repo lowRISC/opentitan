@@ -6,19 +6,19 @@
   lint_root:        "{proj_root}/hw/lint"
   flow_makefile:    "{lint_root}/tools/dvsim/lint.mk"
 
-  import_cfgs:      [// common server configuration for results upload
+  import_cfgs:      [// Common server configuration for results upload
                      "{proj_root}/hw/data/common_project_cfg.hjson"
-                     // tool-specific configuration
+                     // Tool-specific configuration
                      "{lint_root}/tools/dvsim/{tool}.hjson"]
 
-  // Name of the DUT / top-level to be run through lint
+  // Name of the DUT / top-level to be run through lint.
   dut:        "{name}"
 
-  // Default directory structure for the output
+  // Default directory structure for the output.
   build_dir:  "{scratch_path}/{build_mode}"
   build_log:  "{build_dir}/{tool}.log"
 
-  // We rely on fusesoc to run lint for us
+  // We rely on fusesoc to run lint for us.
   build_cmd:  "{job_prefix} fusesoc"
   build_opts: ["--cores-root {proj_root}",
                "run",
@@ -28,11 +28,23 @@
                "--build-root={build_dir}",
                "{fusesoc_core}"]
 
-  // Common fail patterns.
-  build_fail_patterns: [// FuseSoC build error
-                        "^ERROR:.*$"]
+  // Determines which message severities to print into report summaries.
+  report_severities: ["warning", "error"]
+  // Determines which message severities lead to a pass/fail.
+  fail_severities: ["warning", "error"]
+  // Define message bucket categories and severities.
+  message_buckets: [
+    {category: "flow", severity: "warning",  label: ""},
+    {category: "flow", severity: "error",    label: ""},
+    {category: "lint", severity: "info",     label: ""},
+    {category: "lint", severity: "warning",  label: ""},
+    {category: "lint", severity: "error",    label: ""}
+  ]
 
-  // these are not needed currently, but have to be defined
+  // TODO(#9079): Need to align with new parser mechanism.
+  build_fail_patterns: []
+
+  // These are not needed currently.
   sv_flist_gen_cmd:   ""
   sv_flist_gen_opts:  []
   sv_flist_gen_dir:   ""

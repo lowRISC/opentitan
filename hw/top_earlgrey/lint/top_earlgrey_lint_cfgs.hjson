@@ -18,6 +18,9 @@
   // Different dashboard output path for each tool
   rel_path: "hw/top_earlgrey/lint/{tool}"
 
+  // Severities to be printed in the summary report
+  report_severities: ["warning", "error"]
+
   use_cfgs: [{    name: aes
                   fusesoc_core: lowrisc:ip:aes
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
