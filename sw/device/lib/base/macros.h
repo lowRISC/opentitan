@@ -43,6 +43,14 @@
 #define OT_ALWAYS_INLINE __attribute__((always_inline)) inline
 
 /**
+ * The `restrict` keyword is C specific, so we provide a C++-portable wrapper
+ * that uses the GCC name.
+ *
+ * It only needs to be used in headers; .c files can use `restrict` directly.
+ */
+#define OT_RESTRICT __restrict__
+
+/**
  * A variable-argument macro that expands to the number of arguments passed into
  * it, between 0 and 31 arguments.
  *
