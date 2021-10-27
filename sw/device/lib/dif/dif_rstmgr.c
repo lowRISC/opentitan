@@ -52,6 +52,28 @@ static_assert(
     "Alert info dump max size has grown, please update the public define!");
 
 /**
+ * Checks whether alert_info capture is disabled.
+ */
+static bool alert_capture_is_locked(mmio_region_t base_addr) {
+  uint32_t bitfield =
+      mmio_region_read32(base_addr, RSTMGR_ALERT_REGWEN_REG_OFFSET);
+
+  // When bit is cleared, alert capture is disabled.
+  return !bitfield_bit32_read(bitfield, RSTMGR_ALERT_REGWEN_EN_BIT);
+}
+
+/**
+ * Checks whether CPU info capture is disabled.
+ */
+static bool cpu_capture_is_locked(mmio_region_t base_addr) {
+  uint32_t bitfield =
+      mmio_region_read32(base_addr, RSTMGR_CPU_REGWEN_REG_OFFSET);
+
+  // When bit is cleared, APU capture is disabled.
+  return !bitfield_bit32_read(bitfield, RSTMGR_CPU_REGWEN_EN_BIT);
+}
+
+/**
  * Checks whether the software reset is disabled for a `peripheral`.
  */
 static bool rstmgr_software_reset_is_locked(
@@ -165,6 +187,10 @@ dif_result_t dif_rstmgr_alert_info_set_enabled(const dif_rstmgr_t *handle,
 
   mmio_region_t base_addr = handle->base_addr;
 
+  if (alert_capture_is_locked(base_addr)) {
+    return kDifLocked;
+  }
+
   uint32_t enabled = (state == kDifToggleEnabled) ? 0x1 : 0x0;
 
   // This will clobber the `ALERT_INFO_CTRL.INDEX` field. However, the index
@@ -224,6 +250,83 @@ dif_result_t dif_rstmgr_alert_info_dump_read(
 
     // Read the alert info crash dump 32bit data segment.
     dump[i] = mmio_region_read32(base_addr, RSTMGR_ALERT_INFO_REG_OFFSET);
+  }
+
+  *segments_read = dump_size_actual;
+
+  return kDifOk;
+}
+
+dif_result_t dif_rstmgr_cpu_info_set_enabled(const dif_rstmgr_t *handle,
+                                             dif_toggle_t state) {
+  if (handle == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_t base_addr = handle->base_addr;
+
+  if (cpu_capture_is_locked(base_addr)) {
+    return kDifLocked;
+  }
+
+  uint32_t enabled = (state == kDifToggleEnabled) ? 0x1 : 0x0;
+
+  // This will clobber the `CPU_INFO_CTRL.INDEX` field. However, the index
+  // field is only relevant during the crash dump read operation, and is
+  // set by the caller and not the hardware, so it is safe to clobber it.
+  mmio_region_write32(base_addr, RSTMGR_CPU_INFO_CTRL_REG_OFFSET, enabled);
+
+  return kDifOk;
+}
+
+dif_result_t dif_rstmgr_cpu_info_get_enabled(const dif_rstmgr_t *handle,
+                                             dif_toggle_t *state) {
+  if (handle == NULL || state == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_t base_addr = handle->base_addr;
+
+  uint32_t reg = mmio_region_read32(base_addr, RSTMGR_CPU_INFO_CTRL_REG_OFFSET);
+  bool enabled = bitfield_bit32_read(reg, RSTMGR_CPU_INFO_CTRL_EN_BIT);
+
+  *state = enabled ? kDifToggleEnabled : kDifToggleDisabled;
+
+  return kDifOk;
+}
+
+dif_result_t dif_rstmgr_cpu_info_dump_read(
+    const dif_rstmgr_t *handle, dif_rstmgr_cpu_info_dump_segment_t *dump,
+    size_t dump_size, size_t *segments_read) {
+  if (handle == NULL || dump == NULL || segments_read == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_t base_addr = handle->base_addr;
+
+  // The actual crash dump size (can be smaller than `dump_size`).
+  size_t dump_size_actual =
+      mmio_region_read32(base_addr, RSTMGR_CPU_INFO_ATTR_REG_OFFSET);
+
+  // Partial crash dump read is not allowed.
+  if (dump_size < dump_size_actual) {
+    return kDifError;
+  }
+
+  uint32_t control_reg =
+      mmio_region_read32(base_addr, RSTMGR_CPU_INFO_CTRL_REG_OFFSET);
+
+  // Read the entire cpu info crash dump, one 32bit data segment at the time.
+  for (int i = 0; i < dump_size_actual; ++i) {
+    control_reg = bitfield_field32_write(control_reg,
+                                         RSTMGR_CPU_INFO_CTRL_INDEX_FIELD, i);
+
+    // Set the index of the 32bit data segment to be read at `i`.
+    mmio_region_write32(base_addr, RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
+                        control_reg);
+
+    // Read the cpu info crash dump 32bit data segment.
+    dump[i] = mmio_region_read32(base_addr, RSTMGR_CPU_INFO_REG_OFFSET);
   }
 
   *segments_read = dump_size_actual;

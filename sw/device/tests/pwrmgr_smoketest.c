@@ -37,8 +37,9 @@ bool test_main(void) {
     LOG_INFO("Powered up for the first time, begin test");
 
     CHECK(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor));
-    // Clear reset_info.
-    CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
+
+    // Prepare rstmgr for a reset.
+    rstmgr_testutils_pre_reset(&rstmgr);
 
     // Issue a wakeup signal in ~150us through the AON timer.
     //
@@ -67,8 +68,8 @@ bool test_main(void) {
   } else if (pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
     LOG_INFO("Aon timer wakeup detected");
-    CHECK(rstmgr_testutils_is_reset_info(&rstmgr,
-                                         kDifRstmgrResetInfoLowPowerExit));
+    rstmgr_testutils_post_reset(&rstmgr, kDifRstmgrResetInfoLowPowerExit, 0, 0,
+                                0, 0);
     return true;
 
   } else {
