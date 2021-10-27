@@ -97,6 +97,13 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "random_order",
+    srcs = ["random_order.c"],
+    hdrs = ["random_order.h"],
+    deps = [":bitfield"],
+)
+
 # TODO: Until Meson is removed, these files need to stay in a different
 # directory, but eventually they will be hoisted to live alongside the
 # targets they mock.
