@@ -796,8 +796,12 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
                     ip_config = IpConfig(ip_template.params,
                                          f'top_{topname}_{ip_name}')
 
-                    ip_desc = IpDescriptionOnlyRenderer(
-                        ip_template, ip_config).render()
+                    try:
+                        ip_desc = IpDescriptionOnlyRenderer(
+                            ip_template, ip_config).render()
+                    except TemplateRenderError as e:
+                        log.error(e.verbose_str())
+                        sys.exit(1)
                     s = 'default description of IP template {}'.format(ip_name)
                     ip_objs.append(IpBlock.from_text(ip_desc, [], s))
                 else:
