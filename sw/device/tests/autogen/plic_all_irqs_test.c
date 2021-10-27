@@ -1,11 +1,12 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+// clang-format off
 //
-// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !!
-// -------------------// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN
-// AUTO-GENERATED WITH THE FOLLOWING COMMAND: util/topgen.py -t
-// hw/top_earlgrey/data/top_earlgrey.hjson -o hw/top_earlgrey
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
+// -o hw/top_earlgrey
 
 #include "sw/device/lib/base/freestanding/limits.h"
 #include "sw/device/lib/base/mmio.h"
@@ -200,8 +201,8 @@ void handler_irq_external(void) {
 
     case kTopEarlgreyPlicPeripheralAonTimerAon: {
       dif_aon_timer_irq_t irq = (dif_aon_timer_irq_t)(
-          plic_irq_id - (dif_rv_plic_irq_id_t)
-                            kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
       CHECK(irq == aon_timer_irq_expected,
             "Incorrect aon_timer_aon IRQ triggered: exp = %d, obs = %d",
             aon_timer_irq_expected, irq);
@@ -320,7 +321,8 @@ void handler_irq_external(void) {
 
     case kTopEarlgreyPlicPeripheralGpio: {
       dif_gpio_irq_t irq = (dif_gpio_irq_t)(
-          plic_irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdGpioGpio0);
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdGpioGpio0);
       CHECK(irq == gpio_irq_expected,
             "Incorrect gpio IRQ triggered: exp = %d, obs = %d",
             gpio_irq_expected, irq);
@@ -459,7 +461,8 @@ void handler_irq_external(void) {
 
     case kTopEarlgreyPlicPeripheralOtbn: {
       dif_otbn_irq_t irq = (dif_otbn_irq_t)(
-          plic_irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtbnDone);
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtbnDone);
       CHECK(irq == otbn_irq_expected,
             "Incorrect otbn IRQ triggered: exp = %d, obs = %d",
             otbn_irq_expected, irq);
@@ -539,8 +542,7 @@ void handler_irq_external(void) {
     case kTopEarlgreyPlicPeripheralRvTimer: {
       dif_rv_timer_irq_t irq = (dif_rv_timer_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)
-              kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0);
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0);
       CHECK(irq == rv_timer_irq_expected,
             "Incorrect rv_timer IRQ triggered: exp = %d, obs = %d",
             rv_timer_irq_expected, irq);
@@ -882,86 +884,105 @@ static void peripheral_irqs_clear(void) {
  * Enables all IRQs in all peripherals.
  */
 static void peripheral_irqs_enable(void) {
-  dif_adc_ctrl_irq_state_snapshot_t adc_ctrl_irq_snapshot =
+  dif_adc_ctrl_irq_state_snapshot_t adc_ctrl_irqs =
       (dif_adc_ctrl_irq_state_snapshot_t)UINT_MAX;
-  dif_alert_handler_irq_state_snapshot_t alert_handler_irq_snapshot =
+  dif_alert_handler_irq_state_snapshot_t alert_handler_irqs =
       (dif_alert_handler_irq_state_snapshot_t)UINT_MAX;
-  dif_csrng_irq_state_snapshot_t csrng_irq_snapshot =
+  dif_csrng_irq_state_snapshot_t csrng_irqs =
       (dif_csrng_irq_state_snapshot_t)UINT_MAX;
-  dif_edn_irq_state_snapshot_t edn_irq_snapshot =
+  dif_edn_irq_state_snapshot_t edn_irqs =
       (dif_edn_irq_state_snapshot_t)UINT_MAX;
-  dif_entropy_src_irq_state_snapshot_t entropy_src_irq_snapshot =
+  dif_entropy_src_irq_state_snapshot_t entropy_src_irqs =
       (dif_entropy_src_irq_state_snapshot_t)UINT_MAX;
-  dif_flash_ctrl_irq_state_snapshot_t flash_ctrl_irq_snapshot =
+  dif_flash_ctrl_irq_state_snapshot_t flash_ctrl_irqs =
       (dif_flash_ctrl_irq_state_snapshot_t)UINT_MAX;
-  dif_gpio_irq_state_snapshot_t gpio_irq_snapshot =
+  dif_gpio_irq_state_snapshot_t gpio_irqs =
       (dif_gpio_irq_state_snapshot_t)UINT_MAX;
-  dif_hmac_irq_state_snapshot_t hmac_irq_snapshot =
+  dif_hmac_irq_state_snapshot_t hmac_irqs =
       (dif_hmac_irq_state_snapshot_t)UINT_MAX;
-  dif_i2c_irq_state_snapshot_t i2c_irq_snapshot =
+  dif_i2c_irq_state_snapshot_t i2c_irqs =
       (dif_i2c_irq_state_snapshot_t)UINT_MAX;
-  dif_keymgr_irq_state_snapshot_t keymgr_irq_snapshot =
+  dif_keymgr_irq_state_snapshot_t keymgr_irqs =
       (dif_keymgr_irq_state_snapshot_t)UINT_MAX;
-  dif_kmac_irq_state_snapshot_t kmac_irq_snapshot =
+  dif_kmac_irq_state_snapshot_t kmac_irqs =
       (dif_kmac_irq_state_snapshot_t)UINT_MAX;
-  dif_otbn_irq_state_snapshot_t otbn_irq_snapshot =
+  dif_otbn_irq_state_snapshot_t otbn_irqs =
       (dif_otbn_irq_state_snapshot_t)UINT_MAX;
-  dif_otp_ctrl_irq_state_snapshot_t otp_ctrl_irq_snapshot =
+  dif_otp_ctrl_irq_state_snapshot_t otp_ctrl_irqs =
       (dif_otp_ctrl_irq_state_snapshot_t)UINT_MAX;
-  dif_pattgen_irq_state_snapshot_t pattgen_irq_snapshot =
+  dif_pattgen_irq_state_snapshot_t pattgen_irqs =
       (dif_pattgen_irq_state_snapshot_t)UINT_MAX;
-  dif_pwrmgr_irq_state_snapshot_t pwrmgr_irq_snapshot =
+  dif_pwrmgr_irq_state_snapshot_t pwrmgr_irqs =
       (dif_pwrmgr_irq_state_snapshot_t)UINT_MAX;
-  dif_rv_timer_irq_state_snapshot_t rv_timer_irq_snapshot =
+  dif_rv_timer_irq_state_snapshot_t rv_timer_irqs =
       (dif_rv_timer_irq_state_snapshot_t)UINT_MAX;
-  dif_spi_device_irq_state_snapshot_t spi_device_irq_snapshot =
+  dif_spi_device_irq_state_snapshot_t spi_device_irqs =
       (dif_spi_device_irq_state_snapshot_t)UINT_MAX;
-  dif_spi_host_irq_state_snapshot_t spi_host_irq_snapshot =
+  dif_spi_host_irq_state_snapshot_t spi_host_irqs =
       (dif_spi_host_irq_state_snapshot_t)UINT_MAX;
-  dif_sysrst_ctrl_irq_state_snapshot_t sysrst_ctrl_irq_snapshot =
+  dif_sysrst_ctrl_irq_state_snapshot_t sysrst_ctrl_irqs =
       (dif_sysrst_ctrl_irq_state_snapshot_t)UINT_MAX;
-  dif_uart_irq_state_snapshot_t uart_irq_snapshot =
+  dif_uart_irq_state_snapshot_t uart_irqs =
       (dif_uart_irq_state_snapshot_t)UINT_MAX;
-  dif_usbdev_irq_state_snapshot_t usbdev_irq_snapshot =
+  dif_usbdev_irq_state_snapshot_t usbdev_irqs =
       (dif_usbdev_irq_state_snapshot_t)UINT_MAX;
 
   CHECK_DIF_OK(
-      dif_adc_ctrl_irq_restore_all(&adc_ctrl_aon, &adc_ctrl_irq_snapshot));
-  CHECK_DIF_OK(dif_alert_handler_irq_restore_all(&alert_handler,
-                                                 &alert_handler_irq_snapshot));
-  CHECK_DIF_OK(dif_csrng_irq_restore_all(&csrng, &csrng_irq_snapshot));
-  CHECK_DIF_OK(dif_edn_irq_restore_all(&edn0, &edn_irq_snapshot));
-  CHECK_DIF_OK(dif_edn_irq_restore_all(&edn1, &edn_irq_snapshot));
+      dif_adc_ctrl_irq_restore_all(&adc_ctrl_aon, &adc_ctrl_irqs));
   CHECK_DIF_OK(
-      dif_entropy_src_irq_restore_all(&entropy_src, &entropy_src_irq_snapshot));
+      dif_alert_handler_irq_restore_all(&alert_handler, &alert_handler_irqs));
   CHECK_DIF_OK(
-      dif_flash_ctrl_irq_restore_all(&flash_ctrl, &flash_ctrl_irq_snapshot));
-  CHECK_DIF_OK(dif_gpio_irq_restore_all(&gpio, &gpio_irq_snapshot));
-  CHECK_DIF_OK(dif_hmac_irq_restore_all(&hmac, &hmac_irq_snapshot));
-  CHECK_DIF_OK(dif_i2c_irq_restore_all(&i2c0, &i2c_irq_snapshot));
-  CHECK_DIF_OK(dif_i2c_irq_restore_all(&i2c1, &i2c_irq_snapshot));
-  CHECK_DIF_OK(dif_i2c_irq_restore_all(&i2c2, &i2c_irq_snapshot));
-  CHECK_DIF_OK(dif_keymgr_irq_restore_all(&keymgr, &keymgr_irq_snapshot));
-  CHECK_DIF_OK(dif_kmac_irq_restore_all(&kmac, &kmac_irq_snapshot));
-  CHECK_DIF_OK(dif_otbn_irq_restore_all(&otbn, &otbn_irq_snapshot));
-  CHECK_DIF_OK(dif_otp_ctrl_irq_restore_all(&otp_ctrl, &otp_ctrl_irq_snapshot));
-  CHECK_DIF_OK(dif_pattgen_irq_restore_all(&pattgen, &pattgen_irq_snapshot));
-  CHECK_DIF_OK(dif_pwrmgr_irq_restore_all(&pwrmgr_aon, &pwrmgr_irq_snapshot));
+      dif_csrng_irq_restore_all(&csrng, &csrng_irqs));
   CHECK_DIF_OK(
-      dif_rv_timer_irq_restore_all(&rv_timer, kHart, &rv_timer_irq_snapshot));
+      dif_edn_irq_restore_all(&edn0, &edn_irqs));
   CHECK_DIF_OK(
-      dif_spi_device_irq_restore_all(&spi_device, &spi_device_irq_snapshot));
+      dif_edn_irq_restore_all(&edn1, &edn_irqs));
   CHECK_DIF_OK(
-      dif_spi_host_irq_restore_all(&spi_host0, &spi_host_irq_snapshot));
+      dif_entropy_src_irq_restore_all(&entropy_src, &entropy_src_irqs));
   CHECK_DIF_OK(
-      dif_spi_host_irq_restore_all(&spi_host1, &spi_host_irq_snapshot));
-  CHECK_DIF_OK(dif_sysrst_ctrl_irq_restore_all(&sysrst_ctrl_aon,
-                                               &sysrst_ctrl_irq_snapshot));
-  CHECK_DIF_OK(dif_uart_irq_restore_all(&uart0, &uart_irq_snapshot));
-  CHECK_DIF_OK(dif_uart_irq_restore_all(&uart1, &uart_irq_snapshot));
-  CHECK_DIF_OK(dif_uart_irq_restore_all(&uart2, &uart_irq_snapshot));
-  CHECK_DIF_OK(dif_uart_irq_restore_all(&uart3, &uart_irq_snapshot));
-  CHECK_DIF_OK(dif_usbdev_irq_restore_all(&usbdev, &usbdev_irq_snapshot));
+      dif_flash_ctrl_irq_restore_all(&flash_ctrl, &flash_ctrl_irqs));
+  CHECK_DIF_OK(
+      dif_gpio_irq_restore_all(&gpio, &gpio_irqs));
+  CHECK_DIF_OK(
+      dif_hmac_irq_restore_all(&hmac, &hmac_irqs));
+  CHECK_DIF_OK(
+      dif_i2c_irq_restore_all(&i2c0, &i2c_irqs));
+  CHECK_DIF_OK(
+      dif_i2c_irq_restore_all(&i2c1, &i2c_irqs));
+  CHECK_DIF_OK(
+      dif_i2c_irq_restore_all(&i2c2, &i2c_irqs));
+  CHECK_DIF_OK(
+      dif_keymgr_irq_restore_all(&keymgr, &keymgr_irqs));
+  CHECK_DIF_OK(
+      dif_kmac_irq_restore_all(&kmac, &kmac_irqs));
+  CHECK_DIF_OK(
+      dif_otbn_irq_restore_all(&otbn, &otbn_irqs));
+  CHECK_DIF_OK(
+      dif_otp_ctrl_irq_restore_all(&otp_ctrl, &otp_ctrl_irqs));
+  CHECK_DIF_OK(
+      dif_pattgen_irq_restore_all(&pattgen, &pattgen_irqs));
+  CHECK_DIF_OK(
+      dif_pwrmgr_irq_restore_all(&pwrmgr_aon, &pwrmgr_irqs));
+  CHECK_DIF_OK(
+      dif_rv_timer_irq_restore_all(&rv_timer, kHart, &rv_timer_irqs));
+  CHECK_DIF_OK(
+      dif_spi_device_irq_restore_all(&spi_device, &spi_device_irqs));
+  CHECK_DIF_OK(
+      dif_spi_host_irq_restore_all(&spi_host0, &spi_host_irqs));
+  CHECK_DIF_OK(
+      dif_spi_host_irq_restore_all(&spi_host1, &spi_host_irqs));
+  CHECK_DIF_OK(
+      dif_sysrst_ctrl_irq_restore_all(&sysrst_ctrl_aon, &sysrst_ctrl_irqs));
+  CHECK_DIF_OK(
+      dif_uart_irq_restore_all(&uart0, &uart_irqs));
+  CHECK_DIF_OK(
+      dif_uart_irq_restore_all(&uart1, &uart_irqs));
+  CHECK_DIF_OK(
+      dif_uart_irq_restore_all(&uart2, &uart_irqs));
+  CHECK_DIF_OK(
+      dif_uart_irq_restore_all(&uart3, &uart_irqs));
+  CHECK_DIF_OK(
+      dif_usbdev_irq_restore_all(&usbdev, &usbdev_irqs));
 }
 
 /**
@@ -1079,7 +1100,8 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralGpio;
-  for (dif_gpio_irq_t irq = kDifGpioIrqGpio0; irq <= kDifGpioIrqGpio31; ++irq) {
+  for (dif_gpio_irq_t irq = kDifGpioIrqGpio0;
+       irq <= kDifGpioIrqGpio31; ++irq) {
     gpio_irq_expected = irq;
     LOG_INFO("Triggering gpio IRQ %d.", irq);
     CHECK_DIF_OK(dif_gpio_irq_force(&gpio, irq));
@@ -1091,8 +1113,8 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralHmac;
-  for (dif_hmac_irq_t irq = kDifHmacIrqHmacDone; irq <= kDifHmacIrqHmacErr;
-       ++irq) {
+  for (dif_hmac_irq_t irq = kDifHmacIrqHmacDone;
+       irq <= kDifHmacIrqHmacErr; ++irq) {
     hmac_irq_expected = irq;
     LOG_INFO("Triggering hmac IRQ %d.", irq);
     CHECK_DIF_OK(dif_hmac_irq_force(&hmac, irq));
@@ -1104,8 +1126,8 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c0;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark; irq <= kDifI2cIrqHostTimeout;
-       ++irq) {
+  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark;
+       irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c0 IRQ %d.", irq);
     CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq));
@@ -1117,8 +1139,8 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c1;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark; irq <= kDifI2cIrqHostTimeout;
-       ++irq) {
+  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark;
+       irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq));
@@ -1130,8 +1152,8 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c2;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark; irq <= kDifI2cIrqHostTimeout;
-       ++irq) {
+  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark;
+       irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c2 IRQ %d.", irq);
     CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq));
@@ -1143,8 +1165,8 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralKeymgr;
-  for (dif_keymgr_irq_t irq = kDifKeymgrIrqOpDone; irq <= kDifKeymgrIrqOpDone;
-       ++irq) {
+  for (dif_keymgr_irq_t irq = kDifKeymgrIrqOpDone;
+       irq <= kDifKeymgrIrqOpDone; ++irq) {
     keymgr_irq_expected = irq;
     LOG_INFO("Triggering keymgr IRQ %d.", irq);
     CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq));
@@ -1156,8 +1178,8 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralKmac;
-  for (dif_kmac_irq_t irq = kDifKmacIrqKmacDone; irq <= kDifKmacIrqKmacErr;
-       ++irq) {
+  for (dif_kmac_irq_t irq = kDifKmacIrqKmacDone;
+       irq <= kDifKmacIrqKmacErr; ++irq) {
     kmac_irq_expected = irq;
     LOG_INFO("Triggering kmac IRQ %d.", irq);
     CHECK_DIF_OK(dif_kmac_irq_force(&kmac, irq));
@@ -1169,7 +1191,8 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralOtbn;
-  for (dif_otbn_irq_t irq = kDifOtbnIrqDone; irq <= kDifOtbnIrqDone; ++irq) {
+  for (dif_otbn_irq_t irq = kDifOtbnIrqDone;
+       irq <= kDifOtbnIrqDone; ++irq) {
     otbn_irq_expected = irq;
     LOG_INFO("Triggering otbn IRQ %d.", irq);
     CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq));
@@ -1207,8 +1230,8 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralPwrmgrAon;
-  for (dif_pwrmgr_irq_t irq = kDifPwrmgrIrqWakeup; irq <= kDifPwrmgrIrqWakeup;
-       ++irq) {
+  for (dif_pwrmgr_irq_t irq = kDifPwrmgrIrqWakeup;
+       irq <= kDifPwrmgrIrqWakeup; ++irq) {
     pwrmgr_irq_expected = irq;
     LOG_INFO("Triggering pwrmgr_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq));
@@ -1363,3 +1386,5 @@ bool test_main(void) {
   peripheral_irqs_trigger();
   return true;
 }
+
+// clang-format on
