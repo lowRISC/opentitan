@@ -7,27 +7,242 @@
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
   testpoints: [
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the dcd.
+            Verify datapath between AST ADC interface and ADC sample registers.
 
             **Stimulus**:
-            - TBD
 
-            **Checks**:
-            - TBD
+            For a number of iterations:
+            - Configure DUT no filters or events.
+            - Generate ADC data.
+            - Sample into capture registers using oneshot mode.
+
+            **Checks:**
+
+            - From monitored ADC data predict the value of the ADC sample register
+            - Compare sample registers against expected.
+            - Check oneshot bit of interrupt status register works as expected.
             '''
       milestone: V1
       tests: ["adc_ctrl_smoke"]
     }
     {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
-      milestone: V1
+      name: filters_polled
+      desc: '''
+          Verify filter functionality by polling filter status register.
+
+          **Stimulus**:
+
+          For a number of iterations:
+          - Configure DUT with randomized filter parameters, filters enabled
+          but no interrupts or wake events.
+          - Generate ADC data stream.
+
+          **Checks**:
+
+          - From monitored ADC data predict when filters should be triggered.
+          - Confirm this by reading the filter status register.
+          - Ensure that only one ADC channel is selected at a time.
+          '''
+      milestone: V2
       tests: []
+    }
+    {
+      name: filters_polled_fixed
+      desc: '''
+          As filters_polled but with filter parameters fixed during the test.
+          '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: filters_interrupt
+      desc: '''
+          Verify filter interrupt functionality.
+
+          **Stimulus**:
+
+          For a number of iterations:
+          - Configure DUT with randomized filter parameters, filters and interrupts enabled.
+          - Generate ADC data stream.
+
+
+          **Checks**:
+
+          - From monitored ADC data predict when filters should be triggered.
+          - Confirm this by reading the filter status register and interrupt status register.
+          - Confirm correct interrupt sample value has been captured in ADC sample registers(s)
+          - Check interrupt signal operates as expected.
+          '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: filters_interrupt_fixed
+      desc: '''
+          As filters_interrupt but with filter parameters fixed during the test.
+          '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: filters_wakeup
+      desc: '''
+          Verify filter wakeup functionality
+
+          **Stimulus**:
+          For a number of iterations:
+          - Configure DUT with randomized filter parameters,
+          filters and wakeup enabled, low power sampling mode.
+          - Generate ADC data stream.
+
+          **Checks**:
+
+          - From monitored ADC data predict when filters should be triggered.
+          - Confirm this by reading the filter status register.
+          - Check wakeup signal operates as expected.
+          '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: filters_wakeup_fixed
+      desc: '''
+          As filters_wakeup but with filter parameters fixed during the test.
+          '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: clock_gating
+      desc: '''
+          Verify filter wakeup and interrupts function correctly when fast clock is
+          turned off as would occur in the system.
+
+          **Stimulus**:
+
+          For a number of iterations:
+          - Configure DUT with randomized filter parameters, filters,
+          interrupt and wakeup enabled, low power sampling mode.
+          - Turn off fast clock.
+          - Generate ADC data stream.
+          - When wakeup occurs after a further random period turn fast clock back on.
+
+          **Checks**:
+
+          - From monitored ADC data predict when filters should be triggered.
+          - Confirm this by reading the filter status register and interrupt status register.
+          - Check wakeup signal operates as expected.
+          - Check interrupt signal operates as expected.
+          '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: poweron_counter
+      desc: '''
+          Verify ADC power on counter
+
+          **Stimulus**:
+
+          For a number of iterations:
+          - Configure DUT with a random ADC power on count.
+          - Enable ADC.
+          - Generate ADC data stream.
+
+          **Checks**:
+
+          - Confirm timing of power down and channel select signals to ADC.
+          '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: lowpower_counter
+      desc: '''
+          Verify ADC low power counter
+
+          **Stimulus**:
+
+          For a number of iterations:
+          - Configure DUT with a random low power sample count.
+          - Enable ADC in low power mode.
+          - Generate ADC data stream.
+
+          **Checks**:
+
+          - Confirm return to fast sampling happens as expected.
+        '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: fsm_reset
+      desc: '''
+          Verify ADC controller FSM software reset
+
+          **Stimulus**:
+
+          For a number of iterations:
+          - Configure DUT with a random low power sample count.
+          - Enable ADC randomly in low or high power mode.
+          - Generate ADC data stream.
+          - Trigger a software reset by writing to adc_fsm_rst register.
+
+          **Checks**:
+
+          - Ensure ADC controller FSM and counters are reset.
+        '''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: stress_all
+      desc: '''
+            Combine above sequences in one test then randomly select for running
+
+            Stimulus:
+              - Start sequences and randomly add reset between each sequence
+
+            Checking:
+              - All sequences should be finished and checked by the scoreboard
+      '''
+      milestone: V2
+      tests: ["adc_ctrl_stress_all"]
+    }
+
+  ]
+
+  covergroups: [
+    {
+      name: adc_ctrl_power_mode_cg
+      desc: '''
+        Cover power mode configuration
+      '''
+    }
+    {
+      name: adc_ctrl_filter_cg
+      desc: '''
+        Cover filter configuration (one instance per filter)
+      '''
+    }
+    {
+      name: adc_ctrl_fsm_reset_cg
+      desc: '''
+        Cover FSM state and counter values when fsm_reset is triggered
+      '''
+    }
+    {
+      name: adc_ctrl_hw_reset_cg
+      desc: '''
+        Cover FSM state and counter values when hardware reset is asserted
+      '''
     }
   ]
 }
