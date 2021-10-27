@@ -93,18 +93,6 @@ def ipgen_render(template_name: str, topname: str, params: Dict,
         sys.exit(1)
 
 
-def clang_format(outfile: Path) -> None:
-    """Formats auto-generated C sources with clang-format."""
-    assert shutil.which("clang-format"), log.error(
-        "clang-format is not installed!")
-
-    try:
-        subprocess.check_call(["clang-format", "-i", outfile])
-    except subprocess.CalledProcessError:
-        log.error(f"Failed to format {outfile} with clang-format.")
-        sys.exit(1)
-
-
 def generate_top(top, name_to_block, tpl_filename, **kwargs):
     top_tpl = Template(filename=tpl_filename)
 
@@ -1226,8 +1214,6 @@ def main():
                             outfile,
                             helper=c_helper,
                             gencmd=gencmd)
-            if str(outfile).endswith(C_FILE_EXTENSIONS):
-                clang_format(outfile)
 
 
 if __name__ == "__main__":

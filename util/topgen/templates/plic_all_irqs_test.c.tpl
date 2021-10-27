@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+// clang-format off
 ${gencmd}
 <%
 irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals})
@@ -11,8 +12,8 @@ def args(p):
     return f"&{p.inst_name}{extra_arg}"
 %>\
 
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/freestanding/limits.h"
+#include "sw/device/lib/base/mmio.h"
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
 #include "sw/device/lib/dif/dif_${n}.h"
 % endfor
@@ -79,7 +80,8 @@ void handler_irq_external(void) {
     % for p in helper.irq_peripherals:
     case ${p.plic_name}: {
       dif_${p.name}_irq_t irq = (dif_${p.name}_irq_t)(
-          plic_irq_id - (dif_rv_plic_irq_id_t)${p.plic_start_irq});
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)${p.plic_start_irq});
       CHECK(irq == ${p.name}_irq_expected,
             "Incorrect ${p.inst_name} IRQ triggered: exp = %d, obs = %d",
             ${p.name}_irq_expected, irq);
@@ -97,7 +99,6 @@ void handler_irq_external(void) {
     }
 
     % endfor
-
     default:
       LOG_FATAL("ISR is not implemented!");
       test_status_set(kTestStatusFailed);
@@ -118,7 +119,6 @@ static void peripherals_init(void) {
   CHECK_DIF_OK(dif_${p.name}_init(base_addr, &${p.inst_name}));
 
   % endfor
-
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 }
@@ -137,18 +137,19 @@ static void peripheral_irqs_clear(void) {
  */
 static void peripheral_irqs_enable(void) {
   % for n in irq_peripheral_names:
-  <%
-    if n == "aon_timer": continue
-  %>\
-  dif_${n}_irq_state_snapshot_t ${n}_irq_snapshot =
+<%
+  if n == "aon_timer": continue
+%>\
+  dif_${n}_irq_state_snapshot_t ${n}_irqs =
       (dif_${n}_irq_state_snapshot_t)UINT_MAX;
   % endfor
 
   % for p in helper.irq_peripherals:
-  <%
-    if p.name == "aon_timer": continue
-  %>\
-  CHECK_DIF_OK(dif_${p.name}_irq_restore_all(${args(p)}, &${p.name}_irq_snapshot));
+<%
+  if p.name == "aon_timer": continue
+%>\
+  CHECK_DIF_OK(
+      dif_${p.name}_irq_restore_all(${args(p)}, &${p.name}_irqs));
   % endfor
 }
 
@@ -164,7 +165,8 @@ static void peripheral_irqs_enable(void) {
 static void peripheral_irqs_trigger(void) {
   % for p in helper.irq_peripherals:
   peripheral_expected = ${p.plic_name};
-  for (dif_${p.name}_irq_t irq = ${p.start_irq}; irq <= ${p.end_irq}; ++irq) {
+  for (dif_${p.name}_irq_t irq = ${p.start_irq};
+       irq <= ${p.end_irq}; ++irq) {
     ${p.name}_irq_expected = irq;
     LOG_INFO("Triggering ${p.inst_name} IRQ %d.", irq);
     CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq));
@@ -174,7 +176,7 @@ static void peripheral_irqs_trigger(void) {
           ${p.name}_irq_serviced);
     LOG_INFO("IRQ %d from ${p.inst_name} is serviced.", irq);
   }
-
+${"" if loop.last else "\n"}\
   % endfor
 }
 
@@ -184,10 +186,12 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
   peripherals_init();
-  rv_plic_testutils_irq_range_enable(&plic, kHart,
-      kTopEarlgreyPlicIrqIdNone + 1, kTopEarlgreyPlicIrqIdLast);
+  rv_plic_testutils_irq_range_enable(
+      &plic, kHart, kTopEarlgreyPlicIrqIdNone + 1, kTopEarlgreyPlicIrqIdLast);
   peripheral_irqs_clear();
   peripheral_irqs_enable();
   peripheral_irqs_trigger();
   return true;
 }
+
+// clang-format on
