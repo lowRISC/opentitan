@@ -288,10 +288,27 @@ int OtbnModel::start() {
   return 0;
 }
 
-void OtbnModel::edn_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */) {
+void OtbnModel::edn_flush() {
   ISSWrapper *iss = ensure_wrapper();
 
-  iss->edn_step(edn_rnd_data->aval);
+  iss->edn_flush();
+}
+
+void OtbnModel::edn_rnd_step(svLogicVecVal *edn_rnd_data /* logic [31:0] */) {
+  ISSWrapper *iss = ensure_wrapper();
+
+  iss->edn_rnd_step(edn_rnd_data->aval);
+}
+
+void OtbnModel::edn_urnd_step(svLogicVecVal *edn_urnd_data /* logic [31:0] */) {
+  ISSWrapper *iss = ensure_wrapper();
+
+  iss->edn_urnd_step(edn_urnd_data->aval);
+}
+
+void OtbnModel::edn_urnd_cdc_done() {
+  ISSWrapper *iss = ensure_wrapper();
+  iss->edn_urnd_cdc_done();
 }
 
 void OtbnModel::edn_rnd_cdc_done() {
@@ -299,8 +316,7 @@ void OtbnModel::edn_rnd_cdc_done() {
   iss->edn_rnd_cdc_done();
 }
 
-int OtbnModel::step(svLogic edn_urnd_data_valid,
-                    svBitVecVal *status /* bit [7:0] */,
+int OtbnModel::step(svBitVecVal *status /* bit [7:0] */,
                     svBitVecVal *insn_cnt /* bit [31:0] */,
                     svBitVecVal *err_bits /* bit [31:0] */,
                     svBitVecVal *stop_pc /* bit [31:0] */) {
@@ -310,13 +326,7 @@ int OtbnModel::step(svLogic edn_urnd_data_valid,
   if (!iss)
     return -1;
 
-  assert(!is_xz(edn_urnd_data_valid));
-
   try {
-    if (edn_urnd_data_valid) {
-      iss->edn_urnd_reseed_complete();
-    }
-
     switch (iss->step(has_rtl())) {
       case -1:
         // Something went wrong, such as a trace mismatch. We've already printed
@@ -633,15 +643,23 @@ OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
 
 void otbn_model_destroy(OtbnModel *model) { delete model; }
 
-void edn_model_step(OtbnModel *model,
-                    svLogicVecVal *edn_rnd_data /* logic [31:0] */) {
-  model->edn_step(edn_rnd_data);
+void edn_model_flush(OtbnModel *model) { model->edn_flush(); }
+
+void edn_model_rnd_step(OtbnModel *model,
+                        svLogicVecVal *edn_rnd_data /* logic [31:0] */) {
+  model->edn_rnd_step(edn_rnd_data);
+}
+
+void edn_model_urnd_step(OtbnModel *model,
+                         svLogicVecVal *edn_urnd_data /* logic [31:0] */) {
+  model->edn_urnd_step(edn_urnd_data);
 }
 
 void edn_model_rnd_cdc_done(OtbnModel *model) { model->edn_rnd_cdc_done(); }
 
+void edn_model_urnd_cdc_done(OtbnModel *model) { model->edn_urnd_cdc_done(); }
+
 unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
-                         svLogic edn_urnd_data_valid,
                          svBitVecVal *status /* bit [7:0] */,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
                          svBitVecVal *err_bits /* bit [31:0] */,
@@ -689,8 +707,7 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
     return model_state;
 
   // Step the model once
-  switch (
-      model->step(edn_urnd_data_valid, status, insn_cnt, err_bits, stop_pc)) {
+  switch (model->step(status, insn_cnt, err_bits, stop_pc)) {
     case 0:
       // Still running: no change
       break;

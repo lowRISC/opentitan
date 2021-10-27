@@ -22,12 +22,22 @@ OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
 // Delete an OtbnModel
 void otbn_model_destroy(OtbnModel *model);
 
-// Call edn_step function of OtbnModel
-void edn_model_step(OtbnModel *model,
-                    svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+// Flush URND and RND EDN data from model because of edn_rst_n signal
+void edn_model_flush(OtbnModel *model);
+
+// Call edn_rnd_step function of OtbnModel
+void edn_model_rnd_step(OtbnModel *model,
+                        svLogicVecVal *edn_rnd_data /* logic [31:0] */);
+
+// Call edn_urnd_step function of OtbnModel
+void edn_model_urnd_step(OtbnModel *model,
+                         svLogicVecVal *edn_urnd_data /* logic [31:0] */);
 
 // Signal RTL is finished processing RND data to Model
 void edn_model_rnd_cdc_done(OtbnModel *model);
+
+// Signal RTL is finished processing EDN data for URND to Model
+void edn_model_urnd_cdc_done(OtbnModel *model);
 
 // The main entry point to the OTBN model, exported from here and used in
 // otbn_core_model.sv.
@@ -62,7 +72,6 @@ void edn_model_rnd_cdc_done(OtbnModel *model);
 // If start is true, we start the model and then step once (as
 // above).
 unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
-                         svLogic edn_urnd_data_valid,
                          svBitVecVal *status /* bit [7:0] */,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
                          svBitVecVal *err_bits /* bit [31:0] */,

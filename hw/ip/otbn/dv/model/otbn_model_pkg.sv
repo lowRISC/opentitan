@@ -16,8 +16,16 @@ package otbn_model_pkg;
 
   import "DPI-C" function void otbn_model_destroy(chandle model);
 
-  import "DPI-C" function void edn_model_step(chandle model,
-                                              logic [31:0] edn_rnd_data);
+  import "DPI-C" function void edn_model_flush(chandle model);
+
+  import "DPI-C" function void edn_model_rnd_step(chandle model,
+                                                  logic [31:0] edn_rnd_data);
+
+  import "DPI-C" function void edn_model_urnd_step(chandle model,
+                                                   logic [31:0] edn_urnd_data);
+
+  import "DPI-C" function
+    void edn_model_urnd_cdc_done(chandle model);
 
   import "DPI-C" function
     void edn_model_rnd_cdc_done(chandle model);
@@ -26,7 +34,6 @@ package otbn_model_pkg;
     int unsigned otbn_model_step(chandle          model,
                                  logic            start,
                                  int unsigned     model_state,
-                                 logic            edn_urnd_data_valid,
                                  inout bit [7:0]  status,
                                  inout bit [31:0] insn_cnt,
                                  inout bit [31:0] err_bits,

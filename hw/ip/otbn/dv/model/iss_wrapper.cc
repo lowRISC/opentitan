@@ -337,14 +337,22 @@ void ISSWrapper::edn_rnd_cdc_done() {
   run_command("edn_rnd_cdc_done\n", nullptr);
 }
 
-void ISSWrapper::edn_step(uint32_t edn_rnd_data) {
+void ISSWrapper::edn_urnd_cdc_done() {
+  run_command("edn_urnd_cdc_done\n", nullptr);
+}
+
+void ISSWrapper::edn_flush() { run_command("edn_flush\n", nullptr); }
+
+void ISSWrapper::edn_rnd_step(uint32_t edn_rnd_data) {
   std::ostringstream oss;
-  oss << "edn_step " << std::hex << "0x" << edn_rnd_data << "\n";
+  oss << "edn_rnd_step " << std::hex << "0x" << edn_rnd_data << "\n";
   run_command(oss.str(), nullptr);
 }
 
-void ISSWrapper::edn_urnd_reseed_complete() {
-  run_command("edn_urnd_reseed_complete\n", nullptr);
+void ISSWrapper::edn_urnd_step(uint32_t edn_urnd_data) {
+  std::ostringstream oss;
+  oss << "edn_urnd_step " << std::hex << "0x" << edn_urnd_data << "\n";
+  run_command(oss.str(), nullptr);
 }
 
 int ISSWrapper::step(bool gen_trace) {
