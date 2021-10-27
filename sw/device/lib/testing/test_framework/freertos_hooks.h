@@ -17,13 +17,4 @@
  */
 void vApplicationMallocFailedHook(void);
 
-/**
- * This is called if a stack overflow is detected, and
- * configCHECK_FOR_STACK_OVERFLOW is set to 1 or 2 in FreeRTOSConfig.h.
- *
- * @param pxTask FreeRTOS task handle.
- * @param pcTaskName
- */
-void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName);
-
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_FREERTOS_HOOKS_H_
