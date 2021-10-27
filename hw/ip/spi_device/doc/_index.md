@@ -52,7 +52,7 @@ The submodule also supports the SW by managing a certain set of the FIFO registe
 ## Compatibility
 
 The SPI device supports emulating an EEPROM (SPI flash mode in this document).
-The TPM submodule conforms to the [TPM over SPI 2.0][] specification.
+The TPM submodule conforms to the [TPM over SPI 2.0][] specification. The TPM operation follows [TCG PC Client Platform TPM Profile Specification Section 7](https://trustedcomputinggroup.org/resource/pc-client-platform-tpm-profile-ptp-specification/)
 
 [TPM over SPI 2.0]: https://trustedcomputinggroup.org/wp-content/uploads/Trusted-Platform-Module-Library-Family-2.0-Level-00-Revision-1.59_pub.zip
 
