@@ -243,6 +243,8 @@ module spi_host_reg_top (
   logic error_status_cmdinval_wd;
   logic error_status_csidinval_qs;
   logic error_status_csidinval_wd;
+  logic error_status_accessinval_qs;
+  logic error_status_accessinval_wd;
   logic event_enable_we;
   logic event_enable_rxfull_qs;
   logic event_enable_rxfull_wd;
@@ -1351,6 +1353,31 @@ module spi_host_reg_top (
     .qs     (error_status_csidinval_qs)
   );
 
+  //   F[accessinval]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_error_status_accessinval (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (error_status_we),
+    .wd     (error_status_accessinval_wd),
+
+    // from internal hardware
+    .de     (hw2reg.error_status.accessinval.de),
+    .d      (hw2reg.error_status.accessinval.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.error_status.accessinval.q),
+
+    // to register interface (read)
+    .qs     (error_status_accessinval_qs)
+  );
+
 
   // R[event_enable]: V(False)
   //   F[rxfull]: 0:0
@@ -1616,6 +1643,8 @@ module spi_host_reg_top (
   assign error_status_cmdinval_wd = reg_wdata[3];
 
   assign error_status_csidinval_wd = reg_wdata[4];
+
+  assign error_status_accessinval_wd = reg_wdata[5];
   assign event_enable_we = addr_hit[11] & reg_we & !reg_error;
 
   assign event_enable_rxfull_wd = reg_wdata[0];
@@ -1711,6 +1740,7 @@ module spi_host_reg_top (
         reg_rdata_next[2] = error_status_underflow_qs;
         reg_rdata_next[3] = error_status_cmdinval_qs;
         reg_rdata_next[4] = error_status_csidinval_qs;
+        reg_rdata_next[5] = error_status_accessinval_qs;
       end
 
       addr_hit[11]: begin

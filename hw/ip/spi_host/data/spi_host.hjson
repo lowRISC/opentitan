@@ -411,6 +411,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
+        # Bit 5 (Access Invalid) always triggers an error, so bit 5 is reserved.
         { bits: "4",
           name: "CSIDINVAL",
           desc: '''Invalid CSID: If this bit is set, the block sends an error interrupt whenever
@@ -454,6 +455,12 @@
       swaccess: "rw1c",
       hwaccess: "hrw",
       fields: [
+        { bits: "5",
+          name: "ACCESSINVAL",
+          desc: '''Indicates that TLUL attempted to write to TXDATA with no bytes enabled. Such
+                   'zero byte' writes are not supported.''',
+          resval: "0x0"
+        },
         { bits: "4",
           name: "CSIDINVAL",
           desc: '''Indicates a command was attempted with an invalid value for !!CSID.''',
