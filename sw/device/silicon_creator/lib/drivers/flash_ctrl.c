@@ -13,6 +13,24 @@
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+static_assert(kFlashCtrlRegionData == 0u,
+              "Incorrect enum value for kFlashCtrlRegionData");
+static_assert(kFlashCtrlRegionInfo0 ==
+                  1u << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT,
+              "Incorrect enum value for kFlashCtrlRegionInfo0");
+static_assert(kFlashCtrlRegionInfo1 ==
+                  (1u << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT |
+                   1u << FLASH_CTRL_CONTROL_INFO_SEL_OFFSET),
+              "Incorrect enum value for kFlashCtrlRegionInfo1");
+static_assert(kFlashCtrlRegionInfo2 ==
+                  (1u << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT |
+                   2u << FLASH_CTRL_CONTROL_INFO_SEL_OFFSET),
+              "Incorrect enum value for kFlashCtrlRegionInfo2");
+static_assert(kFlashCtrlErasePage == 0u,
+              "Incorrect enum value for kFlashCtrlErasePage");
+static_assert(kFlashCtrlEraseBank == 1u << FLASH_CTRL_CONTROL_ERASE_SEL_BIT,
+              "Incorrect enum value for kFlashCtrlEraseBank");
+
 enum {
   kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
 };
@@ -37,25 +55,6 @@ static rom_error_t transaction_start(uint32_t addr, uint32_t word_count,
   // Set the operation of the transaction: read, program, or erase.
   uint32_t control_reg_val =
       bitfield_field32_write(0, FLASH_CTRL_CONTROL_OP_FIELD, op);
-
-  // Ensure special enum values match register definitions.
-  static_assert(kFlashCtrlRegionData == 0u,
-                "Incorrect enum value for kFlashCtrlRegionData");
-  static_assert(
-      kFlashCtrlRegionInfo0 == 1u << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT,
-      "Incorrect enum value for kFlashCtrlRegionInfo0");
-  static_assert(
-      kFlashCtrlRegionInfo1 == (1u << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT |
-                                1u << FLASH_CTRL_CONTROL_INFO_SEL_OFFSET),
-      "Incorrect enum value for kFlashCtrlRegionInfo1");
-  static_assert(
-      kFlashCtrlRegionInfo2 == (1u << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT |
-                                2u << FLASH_CTRL_CONTROL_INFO_SEL_OFFSET),
-      "Incorrect enum value for kFlashCtrlRegionInfo2");
-  static_assert(kFlashCtrlErasePage == 0u,
-                "Incorrect enum value for kFlashCtrlErasePage");
-  static_assert(kFlashCtrlEraseBank == 1u << FLASH_CTRL_CONTROL_ERASE_SEL_BIT,
-                "Incorrect enum value for kFlashCtrlEraseBank");
 
   // Set the partition.
   control_reg_val |= (uint32_t)region;
