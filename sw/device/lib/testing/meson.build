@@ -140,4 +140,17 @@ sw_lib_testing_otp_ctrl_testutils = declare_dependency(
   ),
 )
 
+sw_lib_testing_lc_ctrl_testutils = declare_dependency(
+  link_with: static_library(
+    'sw_lib_testing_lc_ctrl_testutils',
+    sources: [
+      hw_ip_lc_ctrl_reg_h,
+      'lc_ctrl_testutils.c'
+    ],
+    dependencies: [
+      sw_lib_dif_lc_ctrl,
+    ],
+  ),
+)
+
 subdir('test_framework')
