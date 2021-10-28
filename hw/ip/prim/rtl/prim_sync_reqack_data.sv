@@ -100,11 +100,31 @@ module prim_sync_reqack_data #(
   end else if (DataSrc2Dst == 1'b0 && DataReg == 1'b0) begin : gen_assert_data_dst2src
     // DST domain shall not change data while waiting for SRC domain to latch it (together with
     // receiving ACK). It takes 2 SRC cycles for ACK to cross over from DST to SRC, and 1 SRC cycle
-    // for the next REQ to cross over from SRC to DST. Assert that the data is stable during that
-    // window, i.e. [-2,+1] SRC cycles around the SRC handshake.
-    `ASSERT(SyncReqAckDataHoldDst2Src,
-        src_req_i && src_ack_o |-> $past(data_o,2) == data_o && $stable(data_o) [*2],
-        clk_src_i, !rst_src_ni)
+    // for the next REQ to cross over from SRC to DST.
+    //
+    // Denote the src clock where REQ & ACK as time zero. The data flowing through the CDC could be
+    // corrupted if data_o was not stable over the previous 2 clock cycles (so we want to check time
+    // points -2, -1 and 0). Moreover, the DST domain cannot know that it is allowed to change value
+    // until at least one more SRC cycle (the time taken for REQ to cross back from SRC to DST).
+    //
+    // To make this assertion, we will sample at each of 4 time points (-2, -1, 0 and +1), asserting
+    // that data_o is equal at each of these times. Note this won't detect glitches at intermediate
+    // timepoints.
+    //
+    // The SVAs below are designed not to consume time, which means that they can be disabled with
+    // an $assertoff(..) and won't linger to fail later. This wouldn't work properly if we used
+    // something like |=> instead of the $past(...) function. That means that we have to trigger at
+    // the "end" of the window. To make sure we don't miss a situation where the value changed at
+    // time -1 (causing corruption), but reset was asserted between time 0 and 1, we split the
+    // assertion into two pieces. The first (SyncReqAckDataHoldDst2SrcA) checks that data doesn't
+    // change in a way that could cause data corruption. The second (SyncReqAckDataHoldDst2SrcB)
+    // checks that the DST side doesn't do anything that it shouldn't know is safe.
+    `ASSERT(SyncReqAckDataHoldDst2SrcA,
+            src_req_i && src_ack_o |-> $past(data_o, 2) == data_o && $past(data_o) == data_o,
+            clk_src_i, !rst_src_ni)
+    `ASSERT(SyncReqAckDataHoldDst2SrcB,
+            $past(src_req_i && src_ack_o) |-> $past(data_o) == data_o,
+            clk_src_i, !rst_src_ni)
   end
 
 endmodule
