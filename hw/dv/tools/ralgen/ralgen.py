@@ -7,6 +7,7 @@ topgen tools.
 """
 import os
 import subprocess
+import shlex
 import sys
 
 import yaml
@@ -58,16 +59,18 @@ def main():
     if ip_hjson:
         ral_spec = get_full_path(root_dir, ip_hjson)
         cmd = os.path.join(util_path, "regtool.py")
-        args = [cmd, "-s", "-t", ".", ral_spec]
+        args = [cmd, "-s", "-t", os.getcwd(), ral_spec]
     else:
         ral_spec = get_full_path(root_dir, top_hjson)
         cmd = os.path.join(util_path, "topgen.py")
-        args = [cmd, "-r", "-o", ".", "-t", ral_spec]
+        args = [cmd, "-r", "-o", os.getcwd(), "-t", ral_spec]
 
     if dv_base_prefix and dv_base_prefix != "dv_base":
         args.extend(["--dv-base-prefix", dv_base_prefix])
 
     try:
+        cmd_str = ' '.join([shlex.quote(arg) for arg in args])
+        print(f"Calling tool in ralgen.py: {cmd_str}")
         subprocess.run(args, check=True)
     except subprocess.CalledProcessError as e:
         print("Error: RAL pkg generation failed:\n{}".format(str(e)))
