@@ -60,7 +60,7 @@ class BadIspr(SnippetGen):
         snippet = ProgSnippet(pc, [prog_insn])
         snippet.insert_into_program(program)
 
-        return (snippet, True, model)
+        return (snippet, model)
 
     def _gen(self,
              model: Model,
