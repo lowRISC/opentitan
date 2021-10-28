@@ -40,6 +40,9 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   string class_name[] = {"a", "b", "c", "d"};
   bit [TL_DW-1:0] intr_state_val;
+
+  bit crashdump_triggered = 0;
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifo[NUM_ALERTS];
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_fifo[NUM_ESCS];
@@ -67,6 +70,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     fork
       process_alert_fifo();
       process_esc_fifo();
+      check_crashdump();
       check_intr_timeout_trigger_esc();
       esc_phase_signal_cnter();
       release_esc_signal();
@@ -388,6 +392,50 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  virtual task check_crashdump();
+    forever begin
+      wait (cfg.under_reset == 0 && cfg.en_scb == 1);
+      @(cfg.crashdump_vif.pins) begin
+        alert_pkg::alert_crashdump_t crashdump_val =
+            alert_pkg::alert_crashdump_t'(cfg.crashdump_vif.sample());
+
+        // If crashdump reached the phase programmed at `crashdump_trigger_shadowed`, `crashdump_o`
+        // value should keep stable until reset.
+        if (crashdump_triggered) begin
+          `uvm_fatal(`gfn, "crashdump value should not change after trigger condition is reached!")
+        end
+
+        // Wait two negedge clock cycles to make sure csr mirrored values are updated.
+        `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_n_clks(2);, wait (cfg.under_reset == 1);)
+
+        if (!cfg.under_reset) begin
+          foreach (crashdump_val.class_esc_state[i]) begin
+            uvm_reg crashdump_trigger_csr = ral.get_reg_by_name(
+                    $sformatf("class%0s_crashdump_trigger_shadowed", class_name[i]));
+            if (crashdump_val.class_esc_state[i] == (`gmv(crashdump_trigger_csr) + 3'b100)) begin
+              crashdump_triggered = 1;
+              break;
+             end
+          end
+
+          for (int i = 0; i < NUM_ALERTS; i++) begin
+            `DV_CHECK_EQ(crashdump_val.alert_cause[i], `gmv(ral.alert_cause[i]))
+          end
+          for (int i = 0; i < NUM_LOCAL_ALERTS; i++) begin
+            `DV_CHECK_EQ(crashdump_val.loc_alert_cause[i], `gmv(ral.loc_alert_cause[i]))
+          end
+          for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
+            // TODO: check the remaining field of crashdump without using cycle accurate model.
+            if (state_per_class[i] != 0) begin
+              `DV_CHECK_GT(crashdump_val.class_accum_cnt, 0)
+              `DV_CHECK_GT(crashdump_val.class_esc_cnt, 0)
+            end
+          end
+        end
+      end
+    end
+  endtask
+
   // a counter to count how long each interrupt pins stay high until it is being reset
   // if counter exceeds threshold, call predict_esc() function to calculate related esc
   virtual task check_intr_timeout_trigger_esc();
@@ -509,6 +557,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     accum_cnter_per_class = '{default:0};
     state_per_class       = '{default:EscStateIdle};
     clr_esc_under_intr    = 0;
+    crashdump_triggered   = 0;
     last_triggered_alert_per_class = '{default:$realtime};
   endfunction
 
