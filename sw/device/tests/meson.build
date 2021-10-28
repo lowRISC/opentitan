@@ -190,6 +190,7 @@ otp_ctrl_smoketest_lib = declare_dependency(
       sw_lib_runtime_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
+      sw_lib_testing_otp_ctrl_testutils,
     ],
   ),
 )
@@ -454,6 +455,7 @@ lc_ctrl_otp_hw_cfg_test_lib = declare_dependency(
       sw_lib_runtime_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
+      sw_lib_testing_otp_ctrl_testutils,
     ],
   ),
 )
