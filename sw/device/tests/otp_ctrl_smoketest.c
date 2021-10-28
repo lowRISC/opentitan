@@ -10,6 +10,7 @@
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -21,20 +22,6 @@ static_assert(ARRAYSIZE(kTestData) % sizeof(uint32_t) == 0,
               "kTestData must be a word array");
 
 const test_config_t kTestConfig;
-
-/**
- * Busy-wait until the DAI is done with whatever operation it is doing.
- */
-static void wait_for_dai(void) {
-  while (true) {
-    dif_otp_ctrl_status_t status;
-    CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp, &status));
-    if (bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiIdle)) {
-      return;
-    }
-    LOG_INFO("Waiting for DAI...");
-  }
-}
 
 /**
  * Tests that the OTP can be programed in a particular spot, and that the
@@ -55,7 +42,7 @@ bool test_main(void) {
     uint32_t word;
     memcpy(&word, &kTestData[i], sizeof(word));
 
-    wait_for_dai();
+    otp_ctrl_testutils_wait_for_dai(&otp);
     CHECK_DIF_OK(dif_otp_ctrl_dai_program32(
                      &otp, kDifOtpCtrlPartitionOwnerSwCfg, 0x100 + i, word),
                  "Failed to program word kTestData[%d] = 0x%8x.", i, word);
