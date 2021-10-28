@@ -10,6 +10,7 @@ import random
 import shutil
 import subprocess
 import sys
+import tempfile
 from collections import OrderedDict
 from copy import deepcopy
 from io import StringIO
@@ -891,11 +892,6 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # These modules are not templated, but are not in hw/ip
     generate_top_only(top_only_list, out_path, topname)
 
-    if pass_idx > 0 and args.top_ral:
-        exit_code = generate_top_ral(completecfg, name_to_block,
-                                     args.dv_base_prefix, out_path)
-        sys.exit(exit_code)
-
     return completecfg, name_to_block
 
 
@@ -1031,15 +1027,39 @@ def main():
     #
     # This fix is related to #2083
     process_dependencies = 1
+
+    # topgen generates IP blocks and associated Hjson configuration in multiple
+    # steps. After each step, the IP Hjson configuration is read back and then
+    # combined into the toplevel configuration. To generate the chip-level RAL,
+    # we need to run the full generation step, but ultimately only care about
+    # the toplevel configuration (a single Hjson file). Since we don't have a
+    # better way at the moment dump all output into a temporary directory, and
+    # delete it after the fact, retaining only the toplevel configuration.
+    if args.top_ral:
+        out_path_gen = Path(tempfile.mkdtemp())
+    else:
+        out_path_gen = out_path
+
     for pass_idx in range(process_dependencies + 1):
         log.debug("Generation pass {}".format(pass_idx))
         if pass_idx < process_dependencies:
             cfg_copy = deepcopy(topcfg)
-            _process_top(cfg_copy, args, cfg_path, out_path, pass_idx)
+            _process_top(cfg_copy, args, cfg_path, out_path_gen, pass_idx)
         else:
-            completecfg, name_to_block = _process_top(topcfg, args, cfg_path, out_path, pass_idx)
+            completecfg, name_to_block = _process_top(topcfg, args, cfg_path,
+                                                      out_path_gen, pass_idx)
 
     topname = topcfg["name"]
+
+    # Create the chip-level RAL only
+    if args.top_ral:
+        # See above: we only need `completeconfig` and `name_to_block`, not all
+        # the other files (e.g. RTL files) generated through topgen.
+        shutil.rmtree(out_path_gen, ignore_errors=True)
+
+        exit_code = generate_top_ral(completecfg, name_to_block,
+                                     args.dv_base_prefix, out_path)
+        sys.exit(exit_code)
 
     if args.get_blocks:
         print("\n".join(name_to_block.keys()))
