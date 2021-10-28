@@ -295,6 +295,7 @@
             - Disconnect the USB to trigger `disconnected` interrupt.
             - Then reconnect it and check the `connected` interrupt.
             - Re-enable data transfer and ensure data correctness.
+            - Observe valid reference pulse usb_ref_val/pulse_o.
             '''
       milestone: V2
       tests: []
