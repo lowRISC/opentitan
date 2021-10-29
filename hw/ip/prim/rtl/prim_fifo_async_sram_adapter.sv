@@ -218,9 +218,31 @@ module prim_fifo_async_sram_adapter #(
   assign r_full  = (r_wptr   == (r_rptr_q ^ XorMask));
   assign r_empty = (r_wptr   == r_rptr_q);
 
+  logic  unused_r_empty;
+  assign unused_r_empty = r_empty;
+
   assign r_full_o     = r_full;
-  assign r_notempty_o = !r_empty;
   assign w_full_o     = w_full;
+
+  // The notempty status !(wptr == rptr) assert one clock earlier than the
+  // actual `rvalid` signals.
+  //
+  // The reason is due to the SRAM read latency. The module uses SRAM FIFO
+  // interface. When the logic in producer domain pushes entries, the pointer
+  // is increased. This triggers the FIFO logic in the consumer clock domain
+  // fetches data from SRAM.
+  //
+  // The pointer crosses the clock boundary. It takes usually two cycles (in
+  // the consumer side). Then, as the read and write pointer in the read clock
+  // domain has a gap by 1, the FIFO not empty status is raised.
+  //
+  // At this time, the logic just sent the read request to the SRAM. The data
+  // is not yet read. The `rvalid` asserts when it receives data from the
+  // SRAM.
+  //
+  // So, if the consumer reads data at the same cycle when notempty status is
+  // raised, it reads incorrect data.
+  assign r_notempty_o = rvalid_o;
 
   assign rsram_ack = r_sram_req_o && r_sram_gnt_i;
   assign rfifo_ack = rvalid_o     && rready_i;
