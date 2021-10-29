@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "lc_ctrl"
+  // We have two interfaces to the registers TLUL (default) & JTAG TAP
+  intf: ["", "_jtag"]
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
@@ -42,7 +44,7 @@
             and check state count.
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_state_post_trans"]
     }
     {
       name: regwen_during_op
@@ -55,7 +57,7 @@
             - Check that accessing its locked CSRs is gated during the transition operation.
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_regwen_during_op"]
     }
     {
       name: lc_prog_failure
@@ -85,7 +87,7 @@
             - Check if lc_state moves to escalation state.
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_state_failure"]
     }
     {
       name: lc_errors
@@ -116,17 +118,7 @@
                upon next power cycle
             '''
       milestone: V2
-      tests: []
-    }
-    {
-      name: jtag_access
-      desc: '''
-            This test checks jtag debug interface in lc_ctrl.
-            This test will use both JTAG TAP and TLUL to access the CSR space.
-            All above CSR sequences should be accessible via both interfaces.
-            '''
-      milestone: V2
-      tests: []
+      tests: ["lc_ctrl_security_escalation"]
     }
     {
       name: jtag_priority
@@ -143,7 +135,18 @@
               interfaces.
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_jtag_priority"]
+    }
+    {
+      name: jtag_combined_access
+      desc: '''
+            This test checks JTAG TAP and TLUL interfaces can run concurrently without blocking.
+            - The standard CSR RW sequence will test the registers using the TLUL interface - but with some registers skipped
+            - A concurrent sequence, similar to the CSR RW sequence, will access the skipped registers via
+            the JTAG TAP interface.
+            '''
+      milestone: V3
+      tests: ["lc_ctrl_jtag_combined_access"]
     }
     {
       name: stress_all
@@ -151,8 +154,16 @@
             - Combine above sequences in one test to run sequentially, except csr sequence.
             - Randomly add reset between each sequence.
             '''
-      milestone: V2
-      tests: []
+      milestone: V3
+      tests: ["lc_ctrl_stress_all"]
+    }
+    {
+      name: random_parameters
+      desc: '''
+            Smoke test but with RTL parameters randomized
+            '''
+      milestone: V3
+      tests: ["lc_ctrl_random_parameters"]
     }
   ]
 }

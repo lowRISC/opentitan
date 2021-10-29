@@ -50,15 +50,106 @@
       name: lc_ctrl_smoke
       uvm_test_seq: lc_ctrl_smoke_vseq
     }
-
     {
       name: lc_ctrl_prog_failure
       uvm_test_seq: lc_ctrl_prog_failure_vseq
     }
-
     {
       name: lc_ctrl_errors
       uvm_test_seq: lc_ctrl_errors_vseq
+    }
+    {
+      name: lc_ctrl_regwen_during_op
+      uvm_test_seq: lc_ctrl_regwen_during_op_vseq
+    }
+    {
+      name: lc_ctrl_state_failure
+      uvm_test_seq: lc_ctrl_state_failure_vseq
+    }
+    {
+      name: lc_ctrl_state_post_trans
+      uvm_test_seq: lc_ctrl_regwen_during_op_vseq
+    }
+    {
+      name: lc_ctrl_security_escalation
+      uvm_test_seq: lc_ctrl_security_escalation_vseq
+    }
+    {
+      name: lc_ctrl_jtag_priority
+      uvm_test_seq: lc_ctrl_jtag_priority_vseq
+    }
+    {
+      name: lc_ctrl_jtag_combined_access
+      uvm_test_seq: lc_ctrl_jtag_combined_access_vseq
+    }
+    {
+      name: lc_ctrl_stress_all
+      uvm_test_seq: lc_ctrl_stress_all_vseq
+    }
+    {
+      name: lc_ctrl_random_parameters
+      uvm_test_seq: lc_ctrl_smoke_vseq
+    }
+    {
+      name: "lc_ctrl_jtag_csr_hw_reset"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+csr_hw_reset", "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 5
+    }
+
+    {
+      name: "lc_ctrl_jtag_csr_rw"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+csr_rw", "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 20
+    }
+
+    {
+      name: "lc_ctrl_jtag_csr_bit_bash"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+csr_bit_bash", "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 5
+    }
+
+    {
+      name: "lc_ctrl_jtag_csr_aliasing"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+csr_aliasing", "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 5
+    }
+
+    {
+      name: "lc_ctrl_jtag_same_csr_outstanding"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+run_same_csr_outstanding", "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 20
+    }
+
+    {
+      name: "lc_ctrl_jtag_csr_mem_rw_with_rand_reset"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+run_csr_mem_rw_with_rand_reset", "+test_timeout_ns=10000000000",  "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 20
+    }
+
+    {
+      name: "lc_ctrl_jtag_alert_test"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+run_alert_test", "+en_scb=0", "+jtag_csr=1"]
+      reseed: 50
     }
   ]
 
