@@ -168,6 +168,11 @@ The different configuration options are listed in the table below:
  != 0xA5              | ON                       | -        | Yes
  != 0xA5              | OFF                      | -        | No
 
+Note that the execute from SRAM feature may only be enabled on certain SRAM controller instances in the top-level design.
+If the feature is turned off via the `InstrExec` parameter, the execute from SRAM feature is permanently disabled, and the status of the OTP chicken bit, the life cycle state and the value of the EXEC register are irrelevant.
+
+As an example, the `top_earlgrey` design only enables this feature on the main SRAM, and permanently disables it on the retention SRAM.
+
 ### Read and Write Sequencing
 
 For timing reasons, the scrambling primitive instantiates a register halfway in the PRINCE block cipher.
