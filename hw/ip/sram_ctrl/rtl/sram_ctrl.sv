@@ -42,7 +42,7 @@ module sram_ctrl
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_hw_debug_en_i,
   // Otp configuration for sram execution
-  input  otp_ctrl_pkg::otp_en_t                      otp_en_sram_ifetch_i,
+  input  prim_mubi_pkg::mubi8_t                      otp_en_sram_ifetch_i,
   // Key request to OTP (running on clk_fixed)
   output otp_ctrl_pkg::sram_otp_key_req_t            sram_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i,
@@ -280,6 +280,7 @@ module sram_ctrl
   import prim_mubi_pkg::mubi4_e;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::mubi8_test_true_strict;
 
   mubi4_e en_ifetch;
   if (InstrExec) begin : gen_instr_ctrl
@@ -288,8 +289,8 @@ module sram_ctrl
     assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? MuBi4True :
                                                                   MuBi4False;
     assign reg_ifetch_en = mubi4_e'(reg2hw.exec.q);
-    assign en_ifetch = (otp_en_sram_ifetch_i == otp_ctrl_pkg::Enabled) ? reg_ifetch_en :
-                                                                         lc_ifetch_en;
+    assign en_ifetch = (mubi8_test_true_strict(otp_en_sram_ifetch_i)) ? reg_ifetch_en :
+                                                                        lc_ifetch_en;
   end else begin : gen_tieoff
     assign en_ifetch = MuBi4False;
 

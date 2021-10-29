@@ -169,7 +169,11 @@ package otp_ctrl_part_pkg;
       % if offset != item['offset'] + item['size']:
       logic [${(offset - item['size'] - item['offset']) * 8 - 1}:0] unallocated;<% offset = item['offset'] + item['size'] %>
       % endif
+      % if item['ismubi']:
+      prim_mubi_pkg::mubi${item["size"]*8}_t ${item["name"].lower()};<% offset -= item['size'] %>
+      % else:
       logic [${int(item["size"])*8-1}:0] ${item["name"].lower()};<% offset -= item['size'] %>
+      % endif
     % endfor
   } otp_${part["name"].lower()}_data_t;
 

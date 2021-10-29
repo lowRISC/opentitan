@@ -403,7 +403,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
         valid_hw_debug_en = detected_hw_debug_en;
         valid_en_sram_ifetch = detected_en_sram_ifetch;
 
-        allow_ifetch = (valid_en_sram_ifetch == otp_ctrl_pkg::Enabled) ?
+        allow_ifetch = (valid_en_sram_ifetch == prim_mubi_pkg::MuBi8True) ?
                        (valid_csr_exec == prim_mubi_pkg::MuBi4True)           :
                        (valid_hw_debug_en == lc_ctrl_pkg::On);
 
