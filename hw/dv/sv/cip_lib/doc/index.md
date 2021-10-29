@@ -221,8 +221,8 @@ Some examples:
   response (with `d_error` = 1), but also triggers a fatal alert and updates status CSRs
   such as `ERR_CODE`. The list of CSRs that are impacted by this alert event, maintained
   in `cfg.tl_intg_alert_fields`, are also checked for correctness.
-* **task run_stress_all_with_rand_reset_vseq**: This task runs 3 parallel threads,
-  which are ip_stress_all_vseq, run_tl_errors_vseq and reset sequence. After
+* **task run_seq_with_rand_reset_vseq**: This task runs 3 parallel threads,
+  which are a sequence provided, run_tl_errors_vseq and reset sequence. After
   reset occurs, the other threads will be killed and then all the CSRs will be read
   for check. This task runs multiple iterations to ensure DUT won't be broken after
   reset and TL errors.
