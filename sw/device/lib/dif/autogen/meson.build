@@ -296,6 +296,20 @@ sw_lib_dif_autogen_rstmgr = declare_dependency(
   )
 )
 
+# Autogen ROM Controller DIF library
+sw_lib_dif_autogen_rom_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_autogen_rom_ctrl',
+    sources: [
+      hw_ip_rom_ctrl_reg_h,
+      'dif_rom_ctrl_autogen.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Autogen RV PLIC DIF library
 sw_lib_dif_autogen_rv_plic = declare_dependency(
   link_with: static_library(
