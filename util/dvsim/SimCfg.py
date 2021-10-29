@@ -601,6 +601,9 @@ class SimCfg(FlowCfg):
             results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
 
+        # Generate results hjson
+        results_hjson = {}
+
         # Add path to testplan, only if it has entries (i.e., its not dummy).
         if self.testplan.testpoints:
             if hasattr(self, "testplan_doc_path"):
@@ -627,8 +630,13 @@ class SimCfg(FlowCfg):
 
             if self.map_full_testplan:
                 results_str += self.testplan.get_progress_table()
+                results_hjson["Status"] = self.testplan.progress
 
             self.results_summary = self.testplan.get_test_results_summary()
+
+            # Append passing rate to hjson
+            results_hjson["Pass_rate"] = self.results_summary["Pass Rate"]
+            results_hjson["Total_tests"] = self.results_summary["Total"]
 
             # Append coverage results if coverage was enabled.
             if self.cov_report_deploy is not None:
@@ -647,8 +655,10 @@ class SimCfg(FlowCfg):
                     results_str += self.cov_report_deploy.cov_results
                     self.results_summary[
                         "Coverage"] = self.cov_report_deploy.cov_total
+                    results_hjson["Coverage"] = self.cov_report_deploy.cov_total
                 else:
                     self.results_summary["Coverage"] = "--"
+                    results_hjson["Coverage"] = 0
 
             # append link of detail result to block name
             self.results_summary["Name"] = self._get_results_page_link(
@@ -659,6 +669,7 @@ class SimCfg(FlowCfg):
             results_str += "\n".join(create_bucket_report(results.buckets))
 
         self.results_md = results_str
+        self.results_hjson[self.timestamp] = results_hjson
         return results_str
 
     def gen_results_summary(self):

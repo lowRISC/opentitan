@@ -8,10 +8,11 @@ import os
 import pprint
 import subprocess
 import sys
-from shutil import which
+from shutil import which, move
 
 import hjson
 from CfgJson import set_target_attribute
+from collections import OrderedDict
 from LauncherFactory import get_launcher_cls
 from Scheduler import Scheduler
 from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards, md_results_to_html,
@@ -101,6 +102,8 @@ class FlowCfg():
 
         # Full results in md text
         self.results_md = ""
+        # Results in hjson
+        self.results_hjson = {}
         # Selectively sanitized md results to be mailed out or published
         self.email_results_md = ""
         self.publish_results_md = ""
@@ -404,6 +407,8 @@ class FlowCfg():
         for item in self.cfgs:
             result = item._gen_results(results)
             item.write_results_html("results.html", item.results_md)
+            if self.args.publish and item.results_hjson:
+                item.write_results_hjson(item.results_hjson)
             log.info("[results]: [%s]:\n%s\n", item.name, result)
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
             log.log(VERBOSE, "[results_path]: [%s] [%s]", item.name, item.results_path)
@@ -439,6 +444,36 @@ class FlowCfg():
         with open(result_path, "w") as results_file:
             results_file.write(text_html)
         log.log(VERBOSE, "[results page]: [%s][%s], self.name, results_path")
+
+        # Link the `/latest` folder with the latest reports.
+        mk_symlink(result_path, symlink_path)
+
+    def write_results_hjson(self, test_hjson):
+        ''' Merge and write test_hjson to results.hjson.
+
+        First check if there are existing `results.hjson` file. If exists, append the current
+        results to the list of previous results hjson. Remove the oldest timestamps if
+        `results.hjson` file contains more than 120 entries.
+        '''
+        result_path = os.path.join(self.results_path, "results.hjson")
+        symlink_path = os.path.join(self.symlink_path, "results.hjson")
+
+        # If `results.hjson` exists, append the current hjson result and remove
+        # older entries if more than 120 entries are in the file.
+        if os.path.exists(symlink_path):
+            move(symlink_path, result_path)
+            with open(result_path, 'r') as f:
+                text = f.read()
+                hjson_results_dict = hjson.loads(text, use_decimal=True)
+                hjson_ordered_results = OrderedDict(sorted(hjson_results_dict.items()))
+                while (len(hjson_ordered_results)) > 120:
+                    first_key = next(iter(hjson_ordered_results))
+                    del hjson_ordered_results[first_key]
+                hjson_ordered_results[self.timestamp] = test_hjson[self.timestamp]
+                test_hjson = hjson_ordered_results
+
+        with open(result_path, "w") as results_file:
+            hjson.dump(test_hjson, results_file)
 
         # Link the `/latest` folder with the latest reports.
         mk_symlink(result_path, symlink_path)
