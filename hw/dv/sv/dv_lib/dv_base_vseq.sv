@@ -140,7 +140,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   // This is called after apply_reset in this class and after apply_resets_concurrently
-  // in cip_base_vseq::run_stress_all_with_rand_reset_vseq.
+  // in cip_base_vseq::run_seq_with_rand_reset_vseq.
   virtual task post_apply_reset(string reset_kind = "HARD");
   endtask
 
