@@ -983,6 +983,41 @@ test('dif_flash_ctrl_unittest', executable(
   suite: 'dif',
 )
 
+# ROM Controller library
+sw_lib_dif_rom_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_rom_ctrl',
+    sources: [
+      hw_ip_rom_ctrl_reg_h,
+      'dif_rom_ctrl.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_dif_autogen_rom_ctrl,
+    ],
+  )
+)
+
+test('dif_rom_ctrl_unittest', executable(
+    'dif_rom_ctrl_unittest',
+    sources: [
+      'dif_rom_ctrl_unittest.cc',
+      'autogen/dif_rom_ctrl_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_rom_ctrl.c',
+      meson.source_root() / 'sw/device/lib/dif/autogen/dif_rom_ctrl_autogen.c',
+      hw_ip_rom_ctrl_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
 # PATTGEN DIF library
 sw_lib_dif_pattgen = declare_dependency(
   link_with: static_library(
