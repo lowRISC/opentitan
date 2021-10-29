@@ -60,6 +60,9 @@ module sram_ctrl
   // CSR Node and Mapping //
   //////////////////////////
 
+  // We've got two bus interfaces in this module, hence two integ failure sources.
+  logic [1:0] bus_integ_error;
+
   sram_ctrl_regs_reg2hw_t reg2hw;
   sram_ctrl_regs_hw2reg_t hw2reg;
 
@@ -70,7 +73,7 @@ module sram_ctrl
     .tl_o      (regs_tl_o),
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(bus_integ_error[0]),
     .devmode_i (1'b1)
    );
 
@@ -91,9 +94,8 @@ module sram_ctrl
   logic alert_test;
   assign alert_test = reg2hw.alert_test.q & reg2hw.alert_test.qe;
 
-  logic bus_integ_error;
   assign hw2reg.status.bus_integ_error.d  = 1'b1;
-  assign hw2reg.status.bus_integ_error.de = bus_integ_error;
+  assign hw2reg.status.bus_integ_error.de = |bus_integ_error;
 
   logic init_error;
   assign hw2reg.status.init_error.d  = 1'b1;
@@ -105,12 +107,12 @@ module sram_ctrl
   ) u_prim_alert_sender_parity (
     .clk_i,
     .rst_ni,
-    .alert_test_i  ( alert_test                   ),
-    .alert_req_i   ( bus_integ_error | init_error ),
-    .alert_ack_o   (                              ),
-    .alert_state_o (                              ),
-    .alert_rx_i    ( alert_rx_i[0]                ),
-    .alert_tx_o    ( alert_tx_o[0]                )
+    .alert_test_i  ( alert_test                    ),
+    .alert_req_i   ( |bus_integ_error | init_error ),
+    .alert_ack_o   (                               ),
+    .alert_state_o (                               ),
+    .alert_rx_i    ( alert_rx_i[0]                 ),
+    .alert_tx_o    ( alert_tx_o[0]                 )
   );
 
   /////////////////////////
@@ -137,7 +139,7 @@ module sram_ctrl
   logic local_esc;
   assign local_esc = escalate                   |
                      init_error                 |
-                     bus_integ_error            |
+                     |bus_integ_error           |
                      reg2hw.status.escalated.q  |
                      reg2hw.status.init_error.q |
                      reg2hw.status.bus_integ_error.q;
@@ -361,7 +363,7 @@ module sram_ctrl
     .addr_o      (tlul_addr),
     .wdata_o     (tlul_wdata),
     .wmask_o     (tlul_wmask),
-    .intg_error_o(bus_integ_error),
+    .intg_error_o(bus_integ_error[1]),
     .rdata_i     (sram_rdata),
     .rvalid_i    (sram_rvalid),
     .rerror_i    ('0)
