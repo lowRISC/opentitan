@@ -141,11 +141,16 @@ class Field:
 
         if raw_resval is None:
             # The field doesn't define a reset value. Use bits from reg_resval
-            # if it's defined, otherwise None (which means "x").
-            if reg_resval is None:
+            # if it's defined. If not, we assume that a hwext register comes up
+            # as "x" (because the reggen code doesn't have any way to predict
+            # it). That's represented as None. A non-hwext register is reset to
+            # zero.
+            if reg_resval is not None:
+                resval = bits.extract_field(reg_resval)  # type: Optional[int]
+            elif hwext:
                 resval = None
             else:
-                resval = bits.extract_field(reg_resval)
+                resval = 0
         else:
             # The field does define a reset value. It should be an integer or
             # 'x'. In the latter case, we set resval to None (as above).
