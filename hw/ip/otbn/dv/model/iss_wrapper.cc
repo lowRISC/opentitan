@@ -265,7 +265,8 @@ ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
       abort();
     }
     // Finally, exec the ISS
-    execl(model_path.c_str(), model_path.c_str(), NULL);
+    execl("/usr/bin/env", "/usr/bin/env", "python3", "-u", model_path.c_str(),
+          NULL);
   }
 
   // We are the parent process and pid is the PID of the child. Close the pipe
