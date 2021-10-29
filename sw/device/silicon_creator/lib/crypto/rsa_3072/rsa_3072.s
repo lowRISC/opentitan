@@ -5,11 +5,33 @@
  *
  * Derived from code in
  * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_bn.c
+ *
+ * The interface for this file can be accessed through the following symbols.
+ * All of them are declared weak in this file, so can be overridden by code
+ * that links against this object:
+ *
+ *   out_buf:  OUTPUT
+ *             384 bytes
+ *             The resulting recovered message
+ *
+ *   in_mod:   INPUT
+ *             384 bytes
+ *             The modulus
+ *
+ *   in_buf:   INPUT
+ *             384 bytes
+ *             The signature
+ *
+ *   in_rr:    INPUT
+ *             384 bytes
+ *             The Montgomery transformation constant R^2 = (2^3072)^2 mod N
+ *
+ *   in_m0inv: INPUT
+ *             384 bytes
+ *             The Montgomery constant
  */
 
-
 .text
-
 
 /**
  * Unrolled 512=256x256 bit multiplication.
@@ -416,29 +438,32 @@ modexp_var_3072_f4:
 
   ret
 
-.data
-
 /* Output buffer for the resulting, recovered message. */
-.globl out_buf
+.section .data.out_buf
+.weak out_buf
 out_buf:
   .zero 384
 
 /* Input buffer for the modulus. */
-.globl in_mod
+.section .data.in_mod
+.weak in_mod
 in_mod:
   .zero 384
 
 /* Input buffer for the signature. */
-.globl in_buf
+.section .data.in_buf
+.weak in_buf
 in_buf:
   .zero 384
 
 /* Input buffer for the Montgomery transformation constant R^2. */
-.globl in_rr
+.section .data.in_rr
+.weak in_rr
 in_rr:
   .zero 384
 
 /* The Montgomery constant. */
-.globl in_m0inv
+.section .data.in_m0inv
+.weak in_m0inv
 in_m0inv:
   .zero 32
