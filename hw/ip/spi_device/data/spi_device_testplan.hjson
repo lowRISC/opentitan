@@ -95,7 +95,7 @@
             Verify that bit 4 of the SPI Device status register is asserted
 
             Verify that TXF control returns to Idle state
-            
+
             TODO: Need to clarify the behavior in spec'''
       milestone: V2
       tests: []
@@ -166,35 +166,75 @@
       tests: []
     }
     {
-      name: tpm_read
+      name: tpm_fifo_read
       desc: '''
-            Perform a TPM read:
-            - Verify that the TPM submodule returns appropriate data for read commands depending on the current read FIFO status, the address, and Locality
-            - Confirm that the module sends bytes from the return-by-HW registers to the parallel-to-serial logic right after the address phase.'''
+            - Set TPM_CFG.TPM_MODE to 0.
+            - Set TPM_CFG.EN.
+            - Randomise other fields in TPM_CFG.
+            - Send TPM read command over the SPI bus with a randomised address.
+            - Check TPM_CMD_ADDR.
+            - Check TPM_STATUS.cmdaddr_notempty and INTR_STATE.tpm_header_notempty, they should be asserted if hw_reg_dis == 0.
+            - If hw_reg_dis == 0, the data is returned to the host via return-by-HW register, else the data is returned via read FIFO.
+            - Confirm that the TPM submodule sends WAIT until the read FIFO is available.
+            - When available, confirm that the TPM submodule sends START followed by the register value.
+            - Compare this value with the expected value.'''
       milestone: V2
       tests: []
     }
     {
       name: tpm_write
       desc: '''
-            Perform a TPM write:
-            - Verify that the TPM submodule parses the incoming SPI MOSI line and stacks the stream up to the SW accessible registers
-            - The SW must decode the command and the address
-            - SW reads the data from the write FIFO or pushes data into the read FIFO depending on the command'''
+            - Set TPM_CFG.TPM_MODE to 0.
+            - Set TPM_CFG.EN.
+            - Randomise other fields in TPM_CFG.
+            - Send TPM write command with a randomised address.
+            - Check TPM_CMD_ADDR.
+            - Based on FIFO status, check SPI bus to confirm WAIT or START sent.
+            - Check that the TPM submodule accepts write data without the WAIT state if the write FIFO is empty.
+            - Otherwise, check WAIT until the write FIFO becomes available (empty).'''
       milestone: V2
       tests: []
     }
     {
-      name: tpm_invalid
+      name: tpm_crb_read
       desc: '''
-            Write a 1 to bit 4 of the TPM configuration register
-            - Verify that the TPM submodule returns the invalid data (0xFF) for the out of the max Locality request
-            - If it is a write request, confirm that it discards the request
-
-            Write a 0 to bit 4 of the TPM configuration register
-            - Verify that the TPM submodule uploads the TPM command and address, the SW is able to write 0xFF to the read FIFO
-
-            Verify that the TPM submodule uploads the TPM commands that do not fall into the FIFO registers (0xD4_XXXX) regardless of invalid_locality bit'''
+            Set TPM_CFG.TPM_MODE to 1.
+            Set TPM_CFG.EN.
+            Randomise other fields in TPM_CFG.
+            Send TPM read command over the SPI bus with a randomised address.
+            Check TPM_STATUS.cmdaddr_notempty, INTR_STATE.tpm_header_notempty.
+            Confirm that invalid locality check still runs based on the invalid_locality configuration.
+            Confirm that the TPM submodule sends START followed by the register value.
+            Compare this value with the expected value.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: partial_txrx
+      desc: '''
+            - Verify that when timer expires while bytes are still in the
+              RXFIFO, the logic writes partial words to SRAM.
+            - Confirm read-modify-write operation is triggered to perform the
+              partial update.
+            - Perform multiple partial TX/RX.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: sck_config
+      desc: '''
+            - Verify that the SPI clock and phase (CFG.CPOL, CFG.CPHA) behave
+              as expected by performing a generic rw transaction with
+              combinations of polarity and phase.
+            - Verify that in the configuration (CFG.CPOL=1, CFG.CPHA=1), the
+              logic isn't able to pop the entry from the TX async FIFO after
+              the last bit in the last byte of a transaction.
+            - Confirm that if CSB is de-asserted in bit 1 to 6 position, the
+              FIFO entry isn't popped and that TX logic will re-send the byte
+              in next transaction.
+            - Confirm that if CSB is de-asserted in the 7th or 8th bit
+              position, the data is dropped and will re-commence with the next
+              byte in the next transaction.'''
       milestone: V2
       tests: []
     }
