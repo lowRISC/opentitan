@@ -19,8 +19,7 @@
 *.h                 @moidx
 
 # Utils: reggen, topgen, tlgen
-/util/              @imphil
-util/*.py           @imphil @asb
+util/*.py           @asb
 util/*gen/          @eunchan @msfschaffner @tjaychen
 util/uvmdvgen*      @sriyerg
 util/regtool.py     @eunchan @Jacob-Levy
@@ -40,8 +39,8 @@ util/build_docs.py  @moidx
 /hw/ip/padctrl/         @msfschaffner @tjaychen
 /hw/ip/pinmux/          @msfschaffner @tjaychen
 /hw/ip/prim*            @eunchan @tjaychen
-/hw/ip/rv_core_ibex/    @imphil @tjaychen
-/hw/ip/rv_dm/           @imphil @vogelpi
+/hw/ip/rv_core_ibex/    @tjaychen
+/hw/ip/rv_dm/           @vogelpi
 /hw/ip/spi_device/      @eunchan
 /hw/ip/tlul/            @eunchan @tjaychen
 # /hw/ip/usb*           # TBD
@@ -71,6 +70,6 @@ COPYING*            @asb
 /util/licence-checker.hjson  @asb
 
 # CI and testing
-/ci/                @mcy @imphil
-/test/              @mcy @imphil
-azure_pipelines.yml @mcy @imphil
+/ci/                @mcy
+/test/              @mcy
+azure_pipelines.yml @mcy
