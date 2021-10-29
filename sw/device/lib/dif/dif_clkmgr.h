@@ -41,6 +41,26 @@ typedef uint32_t dif_clkmgr_gateable_clock_t;
 typedef uint32_t dif_clkmgr_hintable_clock_t;
 
 /**
+ * Check if jitter is Enabled.
+ * @param clkmgr Clock Manager Handle.
+ * @param[out] is_enabled whether jitter is enabled or not.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
+                                           dif_toggle_t *state);
+
+/**
+ * Enable of Disable jitter.
+ * @param clkmgr Clock Manager Handle.
+ * @param new_state whether to enable or disable jitter.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr,
+                                           dif_toggle_t new_state);
+
+/**
  * Check if a Gateable Clock is Enabled or Disabled.
  *
  * @param clkmgr Clock Manager Handle.
@@ -51,7 +71,7 @@ typedef uint32_t dif_clkmgr_hintable_clock_t;
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_gateable_clock_get_enabled(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_gateable_clock_t clock,
-    bool *is_enabled);
+    dif_toggle_t *state);
 
 /**
  * Enable or Disable a Gateable Clock.
@@ -84,7 +104,7 @@ dif_result_t dif_clkmgr_gateable_clock_set_enabled(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_hintable_clock_get_enabled(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
-    bool *is_enabled);
+    dif_toggle_t *state);
 
 /**
  * Enable or Disable a Hintable Clock.
@@ -126,7 +146,7 @@ dif_result_t dif_clkmgr_hintable_clock_set_hint(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_hintable_clock_get_hint(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
-    bool *hinted_is_enabled);
+    dif_toggle_t *state);
 
 #ifdef __cplusplus
 }  // extern "C"

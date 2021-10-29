@@ -253,6 +253,23 @@ sw_tests += {
   }
 }
 
+clkmgr_jitter_test_lib = declare_dependency(
+  link_with: static_library(
+    'clkmgr_jitter_test_lib',
+    sources: ['clkmgr_jitter.c'],
+    dependencies: [
+      sw_lib_dif_clkmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'clkmgr_jitter_test': {
+    'library': clkmgr_jitter_test_lib,
+  }
+}
+
 csrng_smoketest_lib = declare_dependency(
   link_with: static_library(
     'csrng_smoketest_lib',

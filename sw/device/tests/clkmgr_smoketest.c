@@ -22,18 +22,19 @@ static void test_gateable_clocks(const dif_clkmgr_t *clkmgr) {
     // Get the initial state of the clock. The clock might be enabled or
     // disabled depending on reset behavior - either is fine for the purposes of
     // this test.
-    bool enabled;
-    CHECK_DIF_OK(
-        dif_clkmgr_gateable_clock_get_enabled(clkmgr, clock, &enabled));
+    dif_toggle_t state;
+    CHECK_DIF_OK(dif_clkmgr_gateable_clock_get_enabled(clkmgr, clock, &state));
 
     // Toggle the enable twice so that it ends up in its original state.
     for (int j = 0; j < 2; ++j) {
-      bool expected = !enabled;
-      CHECK_DIF_OK(dif_clkmgr_gateable_clock_set_enabled(
-          clkmgr, clock, expected ? kDifToggleEnabled : kDifToggleDisabled));
+      dif_toggle_t expected_state =
+          state == kDifToggleEnabled ? kDifToggleDisabled : kDifToggleEnabled;
+      dif_toggle_t actual_state = state;
       CHECK_DIF_OK(
-          dif_clkmgr_gateable_clock_get_enabled(clkmgr, clock, &enabled));
-      CHECK(enabled == expected);
+          dif_clkmgr_gateable_clock_set_enabled(clkmgr, clock, expected_state));
+      CHECK_DIF_OK(
+          dif_clkmgr_gateable_clock_get_enabled(clkmgr, clock, &actual_state));
+      CHECK(actual_state == expected_state);
     }
   }
 }
@@ -48,23 +49,27 @@ void test_hintable_clocks(const dif_clkmgr_t *clkmgr) {
     // Get the initial state of the hint for the clock The clock hint might be
     // enabled or disabled depending on reset behavior - either is fine for the
     // purposes of this test.
-    bool enabled;
-    CHECK_DIF_OK(dif_clkmgr_hintable_clock_get_hint(clkmgr, clock, &enabled));
+    dif_toggle_t state;
+    CHECK_DIF_OK(dif_clkmgr_hintable_clock_get_hint(clkmgr, clock, &state));
 
     // Toggle the hint twice so that it ends up in its original state.
     for (int j = 0; j < 2; ++j) {
-      bool expected = !enabled;
-      CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(
-          clkmgr, clock, expected ? kDifToggleEnabled : kDifToggleDisabled));
-      CHECK_DIF_OK(dif_clkmgr_hintable_clock_get_hint(clkmgr, clock, &enabled));
-      CHECK(enabled == expected);
+      dif_toggle_t expected_state =
+          state == kDifToggleEnabled ? kDifToggleDisabled : kDifToggleEnabled;
+      dif_toggle_t actual_state = state;
+      CHECK_DIF_OK(
+          dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, expected_state));
+      CHECK_DIF_OK(
+          dif_clkmgr_hintable_clock_get_hint(clkmgr, clock, &actual_state));
+      CHECK(actual_state == expected_state);
 
       // If the clock hint is enabled then the clock should always be enabled.
-      if (enabled) {
-        bool status = false;
+      if (actual_state == kDifToggleEnabled) {
+        dif_toggle_t state = kDifToggleDisabled;
         CHECK_DIF_OK(
-            dif_clkmgr_hintable_clock_get_enabled(clkmgr, clock, &status));
-        CHECK(status, "clock %u hint is enabled but status is disabled", clock);
+            dif_clkmgr_hintable_clock_get_enabled(clkmgr, clock, &state));
+        CHECK(state == kDifToggleEnabled,
+              "clock %u hint is enabled but status is disabled", clock);
       }
     }
   }

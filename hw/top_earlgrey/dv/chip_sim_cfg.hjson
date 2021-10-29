@@ -307,6 +307,12 @@
       sw_images: ["sw/device/tests/plic_all_irqs_test:1"]
       en_run_modes: ["sw_test_mode"]
     }
+    {
+      name: chip_sw_clkmgr_jitter
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/clkmgr_jitter_test:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
   ]
 
   // List of regressions.
