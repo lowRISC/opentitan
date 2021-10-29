@@ -19,10 +19,9 @@
  */
 inline bool clkmgr_testutils_get_trans_clock_status(
     dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock) {
-  bool clock_enabled;
-  CHECK_DIF_OK(
-      dif_clkmgr_hintable_clock_get_enabled(clkmgr, clock, &clock_enabled));
-  return clock_enabled;
+  dif_toggle_t state;
+  CHECK_DIF_OK(dif_clkmgr_hintable_clock_get_enabled(clkmgr, clock, &state));
+  return state == kDifToggleEnabled;
 }
 
 /**

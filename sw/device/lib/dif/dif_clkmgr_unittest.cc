@@ -22,6 +22,54 @@ class ClkMgrTest : public Test, public MmioTest {
   dif_clkmgr_t clkmgr_ = {.base_addr = dev().region()};
 };
 
+class JitterEnableTest : public ClkMgrTest {};
+
+// SetEnabled uses EXPECT_WRITE32 instead of EXPECT_MASK32 because
+// dif_clkmgr_jitter_set_enabled doesn't perform a read, just a write.
+TEST_F(JitterEnableTest, SetEnabled) {
+  // Disable jitter.
+  EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, 0);
+  EXPECT_EQ(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleDisabled),
+            kDifOk);
+
+  // Enable jitter.
+  EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, 1);
+  EXPECT_EQ(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleEnabled), kDifOk);
+}
+
+TEST_F(JitterEnableTest, SetEnabledError) {
+  // Null handle.
+  EXPECT_EQ(dif_clkmgr_jitter_set_enabled(nullptr, kDifToggleEnabled),
+            kDifBadArg);
+}
+
+TEST_F(JitterEnableTest, GetEnabled) {
+  // Get jitter (enabled).
+  {
+    dif_toggle_t state = kDifToggleDisabled;
+    EXPECT_READ32(CLKMGR_JITTER_ENABLE_REG_OFFSET,
+                  {{CLKMGR_JITTER_ENABLE_VAL_BIT, true}});
+    EXPECT_EQ(dif_clkmgr_jitter_get_enabled(&clkmgr_, &state), kDifOk);
+    EXPECT_EQ(state, kDifToggleEnabled);
+  }
+
+  // Get jitter (disabled).
+  {
+    dif_toggle_t state = kDifToggleEnabled;
+    EXPECT_READ32(CLKMGR_JITTER_ENABLE_REG_OFFSET,
+                  {{CLKMGR_JITTER_ENABLE_VAL_BIT, false}});
+    EXPECT_EQ(dif_clkmgr_jitter_get_enabled(&clkmgr_, &state), kDifOk);
+    EXPECT_EQ(state, kDifToggleDisabled);
+  }
+}
+
+TEST_F(JitterEnableTest, GetEnabledError) {
+  dif_toggle_t state = kDifToggleDisabled;
+
+  EXPECT_EQ(dif_clkmgr_jitter_get_enabled(nullptr, &state), kDifBadArg);
+  EXPECT_EQ(dif_clkmgr_jitter_get_enabled(&clkmgr_, nullptr), kDifBadArg);
+}
+
 class GateableClockTest : public ClkMgrTest {};
 
 TEST_F(GateableClockTest, SetEnabled) {
@@ -66,37 +114,33 @@ TEST_F(GateableClockTest, SetEnabledError) {
 TEST_F(GateableClockTest, GetEnabled) {
   // Get gateable clock status (enabled).
   {
-    bool enabled = false;
+    dif_toggle_t state = kDifToggleDisabled;
     EXPECT_READ32(CLKMGR_CLK_ENABLES_REG_OFFSET,
                   {{CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT, true}});
-    EXPECT_EQ(
-        dif_clkmgr_gateable_clock_get_enabled(
-            &clkmgr_, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT, &enabled),
-        kDifOk);
-    EXPECT_TRUE(enabled);
+    EXPECT_EQ(dif_clkmgr_gateable_clock_get_enabled(
+                  &clkmgr_, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT, &state),
+              kDifOk);
+    EXPECT_EQ(state, kDifToggleEnabled);
   }
 
   // Get gateable clock status (disabled).
   {
-    bool enabled = true;
+    dif_toggle_t state = kDifToggleEnabled;
     EXPECT_READ32(CLKMGR_CLK_ENABLES_REG_OFFSET,
                   {{CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT, false}});
     EXPECT_EQ(dif_clkmgr_gateable_clock_get_enabled(
-                  &clkmgr_, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT, &enabled),
+                  &clkmgr_, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT, &state),
               kDifOk);
-    EXPECT_FALSE(enabled);
+    EXPECT_EQ(state, kDifToggleDisabled);
   }
 }
 
 TEST_F(GateableClockTest, GetEnabledError) {
-  bool enabled = false;
+  dif_toggle_t state = kDifToggleDisabled;
 
-  // Null handle.
   EXPECT_EQ(dif_clkmgr_gateable_clock_get_enabled(
-                nullptr, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT, &enabled),
+                nullptr, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT, &state),
             kDifBadArg);
-
-  // Null result.
   EXPECT_EQ(dif_clkmgr_gateable_clock_get_enabled(
                 &clkmgr_, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT, nullptr),
             kDifBadArg);
@@ -105,12 +149,12 @@ TEST_F(GateableClockTest, GetEnabledError) {
   EXPECT_EQ(
       dif_clkmgr_gateable_clock_get_enabled(
           &clkmgr_, std::numeric_limits<dif_clkmgr_gateable_clock_t>::max(),
-          &enabled),
+          &state),
       kDifBadArg);
 
   // Out-of-bounds index [last+1].
   EXPECT_EQ(dif_clkmgr_gateable_clock_get_enabled(
-                &clkmgr_, CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS, &enabled),
+                &clkmgr_, CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS, &state),
             kDifBadArg);
 }
 
@@ -157,36 +201,34 @@ TEST_F(HintableClockTest, SetHintError) {
 TEST_F(HintableClockTest, GetHint) {
   // Get hint state (enabled).
   {
-    bool enabled = false;
+    dif_toggle_t state = kDifToggleDisabled;
     EXPECT_READ32(CLKMGR_CLK_HINTS_REG_OFFSET,
                   {{CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT, true}});
     EXPECT_EQ(dif_clkmgr_hintable_clock_get_hint(
-                  &clkmgr_, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT, &enabled),
+                  &clkmgr_, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT, &state),
               kDifOk);
-    EXPECT_TRUE(enabled);
+    EXPECT_EQ(state, kDifToggleEnabled);
   }
 
   // Get hint state (disabled).
   {
-    bool enabled = true;
+    dif_toggle_t state = kDifToggleEnabled;
     EXPECT_READ32(CLKMGR_CLK_HINTS_REG_OFFSET,
                   {{CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT, false}});
     EXPECT_EQ(dif_clkmgr_hintable_clock_get_hint(
-                  &clkmgr_, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT, &enabled),
+                  &clkmgr_, CLKMGR_CLK_HINTS_CLK_MAIN_OTBN_HINT_BIT, &state),
               kDifOk);
-    EXPECT_FALSE(enabled);
+    EXPECT_EQ(state, kDifToggleDisabled);
   }
 }
 
 TEST_F(HintableClockTest, GetHintError) {
-  bool enabled = false;
+  dif_toggle_t state = kDifToggleDisabled;
 
-  // Null handle.
   EXPECT_EQ(dif_clkmgr_hintable_clock_get_hint(
-                nullptr, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT, &enabled),
+                nullptr, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT, &state),
             kDifBadArg);
 
-  // Null result.
   EXPECT_EQ(dif_clkmgr_hintable_clock_get_hint(
                 &clkmgr_, CLKMGR_CLK_HINTS_CLK_MAIN_AES_HINT_BIT, nullptr),
             kDifBadArg);
@@ -195,51 +237,48 @@ TEST_F(HintableClockTest, GetHintError) {
   EXPECT_EQ(
       dif_clkmgr_hintable_clock_get_hint(
           &clkmgr_, std::numeric_limits<dif_clkmgr_hintable_clock_t>::max(),
-          &enabled),
+          &state),
       kDifBadArg);
 
   // Out-of-bounds index [last+1].
   EXPECT_EQ(dif_clkmgr_hintable_clock_get_hint(
-                &clkmgr_, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS, &enabled),
+                &clkmgr_, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS, &state),
             kDifBadArg);
 }
 
 TEST_F(HintableClockTest, GetEnabled) {
   // Get hintable clock status (enabled).
   {
-    bool enabled = true;
+    dif_toggle_t state = kDifToggleEnabled;
     EXPECT_READ32(CLKMGR_CLK_HINTS_STATUS_REG_OFFSET,
                   {{CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_AES_VAL_BIT, false}});
     EXPECT_EQ(
         dif_clkmgr_hintable_clock_get_enabled(
-            &clkmgr_, CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_AES_VAL_BIT, &enabled),
+            &clkmgr_, CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_AES_VAL_BIT, &state),
         kDifOk);
-    EXPECT_FALSE(enabled);
+    EXPECT_EQ(state, kDifToggleDisabled);
   }
 
   // Get hintable clock status (disabled).
   {
-    bool enabled = false;
+    dif_toggle_t state = kDifToggleDisabled;
     EXPECT_READ32(CLKMGR_CLK_HINTS_STATUS_REG_OFFSET,
                   {{CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_OTBN_VAL_BIT, true}});
     EXPECT_EQ(
         dif_clkmgr_hintable_clock_get_enabled(
-            &clkmgr_, CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_OTBN_VAL_BIT, &enabled),
+            &clkmgr_, CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_OTBN_VAL_BIT, &state),
         kDifOk);
-    EXPECT_TRUE(enabled);
+    EXPECT_EQ(state, kDifToggleEnabled);
   }
 }
 
 TEST_F(HintableClockTest, GetEnabledError) {
-  bool enabled = false;
+  dif_toggle_t state = kDifToggleDisabled;
 
-  // Null handle.
-  EXPECT_EQ(
-      dif_clkmgr_hintable_clock_get_enabled(
-          nullptr, CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_AES_VAL_BIT, &enabled),
-      kDifBadArg);
+  EXPECT_EQ(dif_clkmgr_hintable_clock_get_enabled(
+                nullptr, CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_AES_VAL_BIT, &state),
+            kDifBadArg);
 
-  // Null result.
   EXPECT_EQ(
       dif_clkmgr_hintable_clock_get_enabled(
           &clkmgr_, CLKMGR_CLK_HINTS_STATUS_CLK_MAIN_AES_VAL_BIT, nullptr),
@@ -249,12 +288,12 @@ TEST_F(HintableClockTest, GetEnabledError) {
   EXPECT_EQ(
       dif_clkmgr_hintable_clock_get_enabled(
           &clkmgr_, std::numeric_limits<dif_clkmgr_hintable_clock_t>::max(),
-          &enabled),
+          &state),
       kDifBadArg);
 
   // Out-of-bounds index [last+1].
   EXPECT_EQ(dif_clkmgr_hintable_clock_get_enabled(
-                &clkmgr_, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS, &enabled),
+                &clkmgr_, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS, &state),
             kDifBadArg);
 }
 
