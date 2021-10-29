@@ -47,19 +47,19 @@ enum { kBase = TOP_EARLGREY_OTBN_BASE_ADDR };
 /**
  * Ensures that `offset_bytes` and `len` are valid for a given `mem_size`.
  */
-static rom_error_t check_offset_len(uint32_t offset_bytes, size_t num_words,
-                                    size_t mem_size) {
+static otbn_error_t check_offset_len(uint32_t offset_bytes, size_t num_words,
+                                     size_t mem_size) {
   if (offset_bytes + num_words * sizeof(uint32_t) <
           num_words * sizeof(uint32_t) ||
       offset_bytes + num_words * sizeof(uint32_t) > mem_size) {
-    return kErrorOtbnBadOffsetLen;
+    return kOtbnErrorBadOffsetLen;
   }
-  return kErrorOk;
+  return kOtbnErrorOk;
 }
 
-rom_error_t otbn_execute(void) {
+otbn_error_t otbn_execute(void) {
   abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
-  return kErrorOk;
+  return kOtbnErrorOk;
 }
 
 bool otbn_is_busy() {
@@ -71,9 +71,9 @@ void otbn_get_err_bits(otbn_err_bits_t *err_bits) {
   *err_bits = abs_mmio_read32(kBase + OTBN_ERR_BITS_REG_OFFSET);
 }
 
-rom_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
-                            size_t num_words) {
-  RETURN_IF_ERROR(
+otbn_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
+                             size_t num_words) {
+  OTBN_RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnIMemSizeBytes));
 
   for (size_t i = 0; i < num_words; ++i) {
@@ -82,13 +82,13 @@ rom_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
         src[i]);
   }
 
-  return kErrorOk;
+  return kOtbnErrorOk;
 }
 
-rom_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
-                            size_t num_words) {
-  RETURN_IF_ERROR(
-      check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
+otbn_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
+                             size_t num_words) {
+  OTBN_RETURN_IF_ERROR(
+      check_offset_len(offset_bytes, num_words, kOtbnIMemSizeBytes));
 
   for (size_t i = 0; i < num_words; ++i) {
     abs_mmio_write32(
@@ -96,20 +96,20 @@ rom_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
         src[i]);
   }
 
-  return kErrorOk;
+  return kOtbnErrorOk;
 }
 
-rom_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest,
-                           size_t num_words) {
-  RETURN_IF_ERROR(
-      check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
+otbn_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest,
+                            size_t num_words) {
+  OTBN_RETURN_IF_ERROR(
+      check_offset_len(offset_bytes, num_words, kOtbnIMemSizeBytes));
 
   for (size_t i = 0; i < num_words; ++i) {
     dest[i] = abs_mmio_read32(kBase + OTBN_DMEM_REG_OFFSET + offset_bytes +
                               i * sizeof(uint32_t));
   }
 
-  return kErrorOk;
+  return kOtbnErrorOk;
 }
 
 void otbn_zero_dmem(void) {
@@ -118,7 +118,7 @@ void otbn_zero_dmem(void) {
   }
 }
 
-rom_error_t otbn_set_ctrl_software_errs_fatal(bool enable) {
+otbn_error_t otbn_set_ctrl_software_errs_fatal(bool enable) {
   // Only one bit in the CTRL register so no need to read current value.
   uint32_t new_ctrl;
 
@@ -130,8 +130,8 @@ rom_error_t otbn_set_ctrl_software_errs_fatal(bool enable) {
 
   abs_mmio_write32(kBase + OTBN_CTRL_REG_OFFSET, new_ctrl);
   if (abs_mmio_read32(kBase + OTBN_CTRL_REG_OFFSET) != new_ctrl) {
-    return kErrorOtbnUnavailable;
+    return kOtbnErrorUnavailable;
   }
 
-  return kErrorOk;
+  return kOtbnErrorOk;
 }

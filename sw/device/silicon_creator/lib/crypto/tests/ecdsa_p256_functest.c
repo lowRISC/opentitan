@@ -5,9 +5,11 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/crypto/ecdsa_p256/ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/sigverify.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/otbn.h"
+#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/otbn_util.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
 // Message
@@ -52,11 +54,11 @@ rom_error_t sign_then_verify_test(void) {
 
   // Generate a signature for the message
   LOG_INFO("Signing...");
-  RETURN_IF_ERROR(ecdsa_p256_sign(&digest, &kPrivateKey, &signature));
+  FOLD_OTBN_ERROR(ecdsa_p256_sign(&digest, &kPrivateKey, &signature));
 
   // Verify the signature
   LOG_INFO("Verifying...");
-  RETURN_IF_ERROR(
+  FOLD_OTBN_ERROR(
       ecdsa_p256_verify(&signature, &digest, &kPublicKey, &verificationResult));
 
   // Signature verification is expected to succeed

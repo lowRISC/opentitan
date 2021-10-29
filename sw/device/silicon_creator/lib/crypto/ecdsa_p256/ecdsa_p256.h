@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/drivers/otbn.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,9 +82,9 @@ typedef struct ecdsa_p256_message_digest_t {
  * @param result Buffer in which to store the generated signature.
  * @return Result of the operation (OK or error).
  */
-rom_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
-                            const ecdsa_p256_private_key_t *private_key,
-                            ecdsa_p256_signature_t *result);
+otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
+                             const ecdsa_p256_private_key_t *private_key,
+                             ecdsa_p256_signature_t *result);
 
 /**
  * Verifies an ECDSA/P-256 signature.
@@ -95,10 +95,10 @@ rom_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
  * @param result Buffer in which to store output (true iff signature is valid)
  * @return Result of the operation (OK or error).
  */
-rom_error_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
-                              const ecdsa_p256_message_digest_t *digest,
-                              const ecdsa_p256_public_key_t *public_key,
-                              hardened_bool_t *result);
+otbn_error_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
+                               const ecdsa_p256_message_digest_t *digest,
+                               const ecdsa_p256_public_key_t *public_key,
+                               hardened_bool_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"

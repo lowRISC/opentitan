@@ -64,8 +64,8 @@ typedef struct rsa_3072_constants_t {
  * @param result Buffer in which to store output
  * @return Result of the operation (OK or error).
  */
-rom_error_t rsa_3072_compute_rr(const rsa_3072_public_key_t *public_key,
-                                rsa_3072_int_t *result);
+otbn_error_t rsa_3072_compute_rr(const rsa_3072_public_key_t *public_key,
+                                 rsa_3072_int_t *result);
 
 /**
  * Computes Montgomery constant m0_inv for an RSA-3072 public key.
@@ -74,8 +74,8 @@ rom_error_t rsa_3072_compute_rr(const rsa_3072_public_key_t *public_key,
  * @param result Buffer in which to store output
  * @return Result of the operation (OK or error).
  */
-rom_error_t rsa_3072_compute_m0_inv(const rsa_3072_public_key_t *public_key,
-                                    uint32_t result[kOtbnWideWordNumWords]);
+otbn_error_t rsa_3072_compute_m0_inv(const rsa_3072_public_key_t *public_key,
+                                     uint32_t result[kOtbnWideWordNumWords]);
 
 /**
  * Computes Montgomery constants for an RSA-3072 public key.
@@ -84,8 +84,8 @@ rom_error_t rsa_3072_compute_m0_inv(const rsa_3072_public_key_t *public_key,
  * @param result Buffer in which to store output
  * @return Result of the operation (OK or error).
  */
-rom_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
-                                       rsa_3072_constants_t *result);
+otbn_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
+                                        rsa_3072_constants_t *result);
 
 /**
  * Verifies an RSA-3072 signature.
@@ -96,11 +96,11 @@ rom_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
  * @param result Buffer in which to store output (true iff signature is valid)
  * @return Result of the operation (OK or error).
  */
-rom_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
-                            const rsa_3072_int_t *message,
-                            const rsa_3072_public_key_t *public_key,
-                            const rsa_3072_constants_t *constants,
-                            hardened_bool_t *result);
+otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
+                             const rsa_3072_int_t *message,
+                             const rsa_3072_public_key_t *public_key,
+                             const rsa_3072_constants_t *constants,
+                             hardened_bool_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"
