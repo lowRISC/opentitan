@@ -369,6 +369,15 @@ dif_result_t dif_csrng_lock(const dif_csrng_t *csrng);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_is_locked(const dif_csrng_t *csrng, bool *is_locked);
 
+/**
+ * Disables the CSRNG module.
+ *
+ * @param csrng A CSRNG handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_stop(const dif_csrng_t *csrng);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
