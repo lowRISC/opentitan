@@ -58,11 +58,11 @@
                 },
                 {
                     name:  "EN_CSRNG_SW_APP_READ",
-                    value: "0xA5",
+                    value: false,
                 },
                 {
                     name:  "EN_ENTROPY_SRC_FW_READ",
-                    value: "0xA5",
+                    value: false,
                 },
             ],
         }

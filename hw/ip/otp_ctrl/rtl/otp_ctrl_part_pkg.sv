@@ -237,10 +237,10 @@ package otp_ctrl_part_pkg;
   typedef struct packed {
       logic [63:0] hw_cfg_digest;
       logic [31:0] unallocated;
-      logic [7:0] en_entropy_src_fw_over;
-      logic [7:0] en_entropy_src_fw_read;
-      logic [7:0] en_csrng_sw_app_read;
-      logic [7:0] en_sram_ifetch;
+      prim_mubi_pkg::mubi8_t en_entropy_src_fw_over;
+      prim_mubi_pkg::mubi8_t en_entropy_src_fw_read;
+      prim_mubi_pkg::mubi8_t en_csrng_sw_app_read;
+      prim_mubi_pkg::mubi8_t en_sram_ifetch;
       logic [255:0] manuf_state;
       logic [255:0] device_id;
   } otp_hw_cfg_data_t;
@@ -249,10 +249,10 @@ package otp_ctrl_part_pkg;
   parameter otp_hw_cfg_data_t OTP_HW_CFG_DATA_DEFAULT = '{
     hw_cfg_digest: 64'h2CD09F705F291B7A,
     unallocated: 32'h0,
-    en_entropy_src_fw_over: 8'h0,
-    en_entropy_src_fw_read: 8'h0,
-    en_csrng_sw_app_read: 8'h0,
-    en_sram_ifetch: 8'h0,
+    en_entropy_src_fw_over: 8'hA5,
+    en_entropy_src_fw_read: 8'hA5,
+    en_csrng_sw_app_read: 8'hA5,
+    en_sram_ifetch: 8'hA5,
     manuf_state: 256'h41389646B3968A3B128F4AF0AFFC1AAC77ADEFF42376E09D523D5C06786AAC34,
     device_id: 256'hFA53B8058E157CB69F1F413E87242971B6B52A656A1CAB7FEBF21E5BF1F45EDD
   };
@@ -295,10 +295,10 @@ package otp_ctrl_part_pkg;
     640'({
       64'h2CD09F705F291B7A,
       32'h0, // unallocated space
-      8'h0,
-      8'h0,
-      8'h0,
-      8'h0,
+      8'hA5,
+      8'hA5,
+      8'hA5,
+      8'hA5,
       256'h41389646B3968A3B128F4AF0AFFC1AAC77ADEFF42376E09D523D5C06786AAC34,
       256'hFA53B8058E157CB69F1F413E87242971B6B52A656A1CAB7FEBF21E5BF1F45EDD
     }),

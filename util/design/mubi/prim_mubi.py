@@ -24,7 +24,7 @@ N_MAX_NIBBLES = 4
 
 
 def is_width_valid(width):
-    return width % 4 == 0
+    return (width % 4 == 0) and (width // 4 <= N_MAX_NIBBLES) and (width > 0)
 
 
 def mubi_value_as_hexstr(sel: bool, width: int):

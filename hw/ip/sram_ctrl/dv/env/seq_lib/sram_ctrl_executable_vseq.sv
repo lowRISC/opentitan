@@ -61,13 +61,13 @@ class sram_ctrl_executable_vseq extends sram_ctrl_multiple_keys_vseq;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(en_sram_ifetch,
         // 50% chance to enable
         if (is_valid) {
-          en_sram_ifetch == otp_ctrl_pkg::Enabled;
+          en_sram_ifetch == MuBi8True;
         } else {
           // 75% chance to set garbage invalid data
           if (is_off == 0) {
-            en_sram_ifetch == otp_ctrl_pkg::Disabled;
+            en_sram_ifetch == MuBi8False;
           } else {
-            !(en_sram_ifetch inside {otp_ctrl_pkg::Enabled, otp_ctrl_pkg::Disabled});
+            !(en_sram_ifetch inside {MuBi8True, MuBi8False});
           }
         }
     )

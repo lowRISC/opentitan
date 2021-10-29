@@ -725,7 +725,7 @@ module top_earlgrey #(
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
-  otp_ctrl_pkg::otp_en_t       sram_ctrl_main_otp_en_sram_ifetch;
+  prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
 
   // define mixed connection to port
   assign edn0_edn_req[2] = ast_edn_req_i;
@@ -761,12 +761,9 @@ module top_earlgrey #(
   // OTP HW_CFG Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
   // be performed by hand.
-  assign csrng_otp_en_csrng_sw_app_read =
-    prim_mubi_pkg::mubi8_e'(otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read);
-  assign entropy_src_otp_en_entropy_src_fw_read =
-    prim_mubi_pkg::mubi8_e'(otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read);
-  assign entropy_src_otp_en_entropy_src_fw_over =
-    prim_mubi_pkg::mubi8_e'(otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_over);
+  assign csrng_otp_en_csrng_sw_app_read = otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read;
+  assign entropy_src_otp_en_entropy_src_fw_read = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read;
+  assign entropy_src_otp_en_entropy_src_fw_over = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_over;
   assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
   assign lc_ctrl_otp_manuf_state = otp_ctrl_otp_hw_cfg.data.manuf_state;
@@ -1973,7 +1970,7 @@ module top_earlgrey #(
       .cfg_i(ast_ram_1p_cfg),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
-      .otp_en_sram_ifetch_i('0),
+      .otp_en_sram_ifetch_i(prim_mubi_pkg::MuBi8False),
       .regs_tl_i(sram_ctrl_ret_aon_regs_tl_req),
       .regs_tl_o(sram_ctrl_ret_aon_regs_tl_rsp),
       .ram_tl_i(sram_ctrl_ret_aon_ram_tl_req),
