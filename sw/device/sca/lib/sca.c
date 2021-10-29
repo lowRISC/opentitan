@@ -7,6 +7,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
+#include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
@@ -60,6 +61,7 @@ static dif_uart_t uart0;
 static dif_uart_t uart1;
 static dif_gpio_t gpio;
 static dif_rv_timer_t timer;
+static dif_csrng_t csrng;
 
 // TODO(alphan): Handle return values as long as they don't affect capture rate.
 
@@ -123,6 +125,14 @@ static void sca_init_timer(void) {
 }
 
 /**
+ * Initializes the CSRNG handle.
+ */
+static void sca_init_csrng(void) {
+  IGNORE_RESULT(dif_csrng_init(
+      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
+}
+
+/**
  * Timer IRQ handler.
  *
  * Disables the counter and clears pending interrupts.
@@ -156,9 +166,7 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
                         EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
   }
   if (disable & kScaPeripheralCsrng) {
-    // TODO(#7837): Replace with `dif_csrng_stop()` when it is implemented.
-    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-                        CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+    IGNORE_RESULT(dif_csrng_stop(&csrng));
   }
   if (disable & kScaPeripheralEntropy) {
     dif_entropy_src_t entropy;
@@ -202,6 +210,7 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
   sca_init_uart();
   sca_init_gpio(trigger);
   sca_init_timer();
+  sca_init_csrng();
   sca_disable_peripherals(~enable);
 }
 

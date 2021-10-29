@@ -283,3 +283,14 @@ dif_result_t dif_csrng_get_internal_state(
 
   return kDifOk;
 }
+
+dif_result_t dif_csrng_stop(const dif_csrng_t *csrng) {
+  if (csrng == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(csrng->base_addr, CSRNG_CTRL_REG_OFFSET,
+                      CSRNG_CTRL_REG_RESVAL);
+
+  return kDifOk;
+}
