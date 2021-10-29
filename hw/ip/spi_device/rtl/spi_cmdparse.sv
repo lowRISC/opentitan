@@ -121,8 +121,8 @@ module spi_cmdparse
 
   // FSM asserts latching enable signal for cmd_info in 8th opcode cycle.
   logic                   latch_cmdinfo;
-  cmd_info_t              cmd_info_d;
-  logic [CmdInfoIdxW-1:0] cmd_info_idx_d;
+  cmd_info_t              cmd_info_d,     cmd_info_q;
+  logic [CmdInfoIdxW-1:0] cmd_info_idx_d, cmd_info_idx_q;
 
   // the logic operates only when module_active condition is met
   logic module_active;
@@ -157,11 +157,11 @@ module spi_cmdparse
   // compare with 1 logic depth.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      cmd_info_o     <= '{payload_dir: PayloadIn, default: '0};
-      cmd_info_idx_o <= '0;
+      cmd_info_q     <= '{payload_dir: PayloadIn, default: '0};
+      cmd_info_idx_q <= '0;
     end else if (latch_cmdinfo) begin
-      cmd_info_o     <= cmd_info_d;
-      cmd_info_idx_o <= cmd_info_idx_d;
+      cmd_info_q     <= cmd_info_d;
+      cmd_info_idx_q <= cmd_info_idx_d;
     end
   end
 
@@ -175,6 +175,26 @@ module spi_cmdparse
           cmd_info_idx_d = CmdInfoIdxW'(i);
         end
       end
+    end
+  end
+
+  // cmd_info & cmd_info_idx are registered output in the cmdparse module.
+  // The upload module in SPI_DEVICE uses cmd_info to determine if the address
+  // field exists or not.
+
+  // The cmd_info value arrives to the rest of the module one clock late. It
+  // results in the upload module to assume the command does not have the
+  // address field.
+
+  // This commit pulls in the cmd_info one clock early. It leads to longer
+  // datapath as cmdparse cannot register the data.
+  always_comb begin : cmd_info_output
+    cmd_info_o     = cmd_info_q;
+    cmd_info_idx_o = cmd_info_idx_q;
+
+    if ((st == StIdle) && module_active && data_valid_i) begin
+      cmd_info_o     = cmd_info_d;
+      cmd_info_idx_o = cmd_info_idx_d;
     end
   end
 
