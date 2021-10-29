@@ -2043,12 +2043,36 @@
     }
     {
       name: chip_sw_sram_execution
-      desc: '''Verify that CPU can fetch data from both SRAMs when in executable mode.
+      desc: '''Verify that CPU can fetch instructions from SRAM if enabled.
 
-            - Load instruction data into the SRAMs.
-            - Configure main/ret SRAMs to allow instruction execution.
-            - Have the CPU fetch the instruction data from the SRAMs and verify that SW can finish
-              the test successfully.
+            - Create the following combinations of 8 scenarios:
+              - The fetch enable bit in the HW_CFG partition of OTP controller set and not set.
+              - A life cycle state that enables (TEST_UNLOCKED, DEV or RMA) and disables (PROD)
+                hardware debug.
+              - The execution CSR programmed to be enabled and disabled.
+
+            - For both, main and the retention SRAM in each of these 8 scenarios:
+              - Load instruction data into the SRAMs.
+              - If the instruction execution is enabled, verfy that the CPU can fetch and execute
+                the instruction from the SRAM correctly.
+              - If the instruction execution is not enabled, verfy that the SRAM throws an error
+                response via an exception handler.
+
+            The following table indicates in which of these scenarios should the instruction
+            execution be enabled, for both, main and the retention SRAM instances.
+
+              | OTP HW_CFG[IFETCH] | HW_DEBUG_EN via LC state | EXEC CSR | MAIN SRAM | RET SRAM |
+              |:------------------:|:------------------------:|:--------:|:---------:|:--------:|
+              |          0         |             0            |     0    |  disabled | disabled |
+              |          0         |             0            |     1    |  disabled | disabled |
+              |          0         |             1            |     0    |  enabled  | disabled |
+              |          0         |             1            |     1    |  enabled  | disabled |
+              |          1         |             0            |     0    |  disabled | disabled |
+              |          1         |             0            |     1    |  enabled  | disabled |
+              |          1         |             1            |     0    |  disabled | disabled |
+              |          1         |             1            |     1    |  enabled  | disabled |
+
+            For the retention SRAM, instruction fetch is completely disabled via design parameter.
             '''
       milestone: V2
       tests: []
