@@ -327,6 +327,8 @@ module spid_upload
 
         if (addrcnt == '0) begin
           st_d = StPayload;
+
+          addrfifo_wvalid = 1'b 1;
         end
       end
 
