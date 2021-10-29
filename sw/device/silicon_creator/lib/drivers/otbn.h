@@ -9,8 +9,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/error.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,12 +44,41 @@ typedef enum otbn_status {
 } otbn_status_t;
 
 /**
+ * Error codes for the OTBN driver.
+ */
+typedef enum otbn_error_t {
+  /** No errors. */
+  kOtbnErrorOk = 0,
+  /** Invalid argument provided to OTBN interface function. */
+  kOtbnErrorInvalidArgument = 1,
+  /** Invalid offset provided. */
+  kOtbnErrorBadOffsetLen = 2,
+  /** OTBN internal error; use otbn_get_err_bits for specific error codes. */
+  kOtbnErrorExecutionFailed = 3,
+  /** Attempt to interact with OTBN while it was unavailable. */
+  kOtbnErrorUnavailable = 4,
+} otbn_error_t;
+
+/**
+ * Evaluate an expression and return if the result is an error.
+ *
+ * @param expr_ An expression which results in an otbn_error_t.
+ */
+#define OTBN_RETURN_IF_ERROR(expr_)     \
+  do {                                  \
+    otbn_error_t local_error_ = expr_;  \
+    if (local_error_ != kOtbnErrorOk) { \
+      return local_error_;              \
+    }                                   \
+  } while (0)
+
+/**
  * Start the execution of the application loaded into OTBN
  *
- * @return `kErrorOtbnInvalidArgument` if `start_addr` is invalid, `kErrorOk`
- *         otherwise.
+ * @return `kOtbnErrorInvalidArgument` if `start_addr` is invalid,
+ * `kOtbnErrorOk` otherwise.
  */
-rom_error_t otbn_execute(void);
+otbn_error_t otbn_execute(void);
 
 /**
  * Is OTBN busy executing an application?
@@ -61,7 +88,7 @@ rom_error_t otbn_execute(void);
 bool otbn_is_busy(void);
 
 /**
- * OTBN Errors
+ * OTBN Internal Errors
  *
  * OTBN uses a bitfield to indicate which errors have been seen. Multiple errors
  * can be seen at the same time. This enum gives the individual bits that may be
@@ -110,11 +137,11 @@ void otbn_get_err_bits(otbn_err_bits_t *err_bits);
  * @param offset_bytes the byte offset in IMEM the first word is written to
  * @param src the main memory location to start reading from.
  * @param len number of words to copy.
- * @return `kErrorOtbnBadOffset` if `offset_bytes` isn't word aligned,
- * `kErrorOtbnBadOffsetLen` if `len` is invalid , `kErrorOk` otherwise.
+ * @return `kOtbnErrorBadOffset` if `offset_bytes` isn't word aligned,
+ * `kOtbnErrorBadOffsetLen` if `len` is invalid , `kOtbnErrorOk` otherwise.
  */
-rom_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
-                            size_t len);
+otbn_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
+                             size_t len);
 
 /**
  * Write to OTBN's data memory (DMEM)
@@ -124,11 +151,11 @@ rom_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
  * @param offset_bytes the byte offset in DMEM the first word is written to
  * @param src the main memory location to start reading from.
  * @param len number of words to copy.
- * @return `kErrorOtbnBadOffset` if `offset_bytes` isn't word aligned,
- * `kErrorOtbnBadOffsetLen` if `len` is invalid , `kErrorOk` otherwise.
+ * @return `kOtbnErrorBadOffset` if `offset_bytes` isn't word aligned,
+ * `kOtbnErrorBadOffsetLen` if `len` is invalid , `kOtbnErrorOk` otherwise.
  */
-rom_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
-                            size_t len);
+otbn_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
+                             size_t len);
 
 /**
  * Read from OTBN's data memory (DMEM)
@@ -138,10 +165,10 @@ rom_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
  * @param offset_bytes the byte offset in DMEM the first word is read from
  * @param[out] dest the main memory location to copy the data to (preallocated)
  * @param len number of words to copy.
- * @return `kErrorOtbnBadOffset` if `offset_bytes` isn't word aligned,
- * `kErrorOtbnBadOffsetLen` if `len` is invalid , `kErrorOk` otherwise.
+ * @return `kOtbnErrorBadOffset` if `offset_bytes` isn't word aligned,
+ * `kOtbnErrorBadOffsetLen` if `len` is invalid , `kOtbnErrorOk` otherwise.
  */
-rom_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest, size_t len);
+otbn_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest, size_t len);
 
 /**
  * Zero out the contents of OTBN's data memory (DMEM).
@@ -155,10 +182,10 @@ void otbn_zero_dmem(void);
  * changed when the OTBN status is IDLE.
  *
  * @param enable Enable or disable whether software errors are fatal.
- * @return `kErrorOtbnUnavailable` if the requested change cannot be made or
- * `kErrorOk` otherwise.
+ * @return `kOtbnErrorUnavailable` if the requested change cannot be made or
+ * `kOtbnErrorOk` otherwise.
  */
-rom_error_t otbn_set_ctrl_software_errs_fatal(bool enable);
+otbn_error_t otbn_set_ctrl_software_errs_fatal(bool enable);
 
 #ifdef __cplusplus
 }

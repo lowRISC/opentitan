@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/drivers/otbn.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -159,7 +159,7 @@ void otbn_init(otbn_t *ctx);
  * @param app The application to load into OTBN.
  * @return The result of the operation.
  */
-rom_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
+otbn_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
 
 /**
  * Start the OTBN application.
@@ -169,7 +169,7 @@ rom_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
  * @param ctx The context object.
  * @return The result of the operation.
  */
-rom_error_t otbn_execute_app(otbn_t *ctx);
+otbn_error_t otbn_execute_app(otbn_t *ctx);
 
 /**
  * Busy waits for OTBN to be done with its operation.
@@ -177,7 +177,7 @@ rom_error_t otbn_execute_app(otbn_t *ctx);
  * @param ctx The context object.
  * @return The result of the operation.
  */
-rom_error_t otbn_busy_wait_for_done(otbn_t *ctx);
+otbn_error_t otbn_busy_wait_for_done(otbn_t *ctx);
 
 /**
  * Copies data from the CPU memory to OTBN data memory.
@@ -188,8 +188,8 @@ rom_error_t otbn_busy_wait_for_done(otbn_t *ctx);
  * @param src Source of the data to copy.
  * @return The result of the operation.
  */
-rom_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len, const uint32_t *src,
-                                   otbn_ptr_t dest);
+otbn_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len,
+                                    const uint32_t *src, otbn_ptr_t dest);
 
 /**
  * Copies data from OTBN's data memory to CPU memory.
@@ -201,8 +201,8 @@ rom_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len, const uint32_t *src,
  *                  (preallocated).
  * @return The result of the operation.
  */
-rom_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len,
-                                     const otbn_ptr_t src, uint32_t *dest);
+otbn_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len,
+                                      const otbn_ptr_t src, uint32_t *dest);
 
 /**
  * Gets the address in OTBN data memory referenced by `ptr`.
@@ -213,8 +213,22 @@ rom_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len,
  * @return The result of the operation; #kOtbnBadArg if `ptr` is not in the data
  *         memory space of the currently loaded application.
  */
-rom_error_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
-                                       uint32_t *dmem_addr_otbn);
+otbn_error_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
+                                        uint32_t *dmem_addr_otbn);
+
+/**
+ * Evaluate an expression and return a mask ROM error if the result is an
+ * OTBN error.
+ *
+ * @param expr_ An expression which results in an otbn_error_t.
+ */
+#define FOLD_OTBN_ERROR(expr_)          \
+  do {                                  \
+    otbn_error_t local_error_ = expr_;  \
+    if (local_error_ != kOtbnErrorOk) { \
+      return kErrorOtbnInternal;        \
+    }                                   \
+  } while (0)
 
 #ifdef __cplusplus
 }

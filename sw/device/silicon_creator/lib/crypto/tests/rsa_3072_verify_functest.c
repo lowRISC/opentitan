@@ -5,8 +5,8 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/crypto/rsa_3072/rsa_3072_verify.h"
+#include "sw/device/silicon_creator/lib/drivers/otbn.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
 static const rsa_3072_public_key_t kPublicKey = {
@@ -106,7 +106,7 @@ rom_error_t compute_constants_test(void) {
   rsa_3072_constants_t act_constants;
 
   // Precompute constants
-  RETURN_IF_ERROR(rsa_3072_compute_constants(&kPublicKey, &act_constants));
+  FOLD_OTBN_ERROR(rsa_3072_compute_constants(&kPublicKey, &act_constants));
 
   // Check that RR matches expected value
   for (int i = 0; i < kRsa3072NumWords; i++) {
@@ -128,7 +128,7 @@ rom_error_t compute_constants_test(void) {
 rom_error_t verify_test(void) {
   hardened_bool_t result;
 
-  RETURN_IF_ERROR(rsa_3072_verify(&kSignature, &kMessage, &kPublicKey,
+  FOLD_OTBN_ERROR(rsa_3072_verify(&kSignature, &kMessage, &kPublicKey,
                                   &kExpConstants, &result));
 
   CHECK(result == kHardenedBoolTrue);
