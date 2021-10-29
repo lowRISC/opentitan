@@ -405,10 +405,10 @@ module prim_fifo_async_sram_adapter #(
           clk_wr_i, !rst_wr_ni)
 
   `ASSERT(WptrIncrease_A,
-          w_wptr_inc |=> w_wptr_v == PtrVW'($past(w_wptr_v) + 1),
+          w_wptr_inc |=> w_wptr_v == PtrVW'($past(w_wptr_v,2) + 1),
           clk_wr_i, !rst_wr_ni)
   `ASSERT(WptrGrayOneBitAtATime_A,
-          w_wptr_inc |=> $countones(w_wptr_gray_q ^ $past(w_wptr_gray_q)) == 1,
+          w_wptr_inc |=> $countones(w_wptr_gray_q ^ $past(w_wptr_gray_q,2)) == 1,
           clk_wr_i, !rst_wr_ni)
 
   `ASSERT(NoRAckInEmpty_A, r_rptr_inc |-> !r_empty,

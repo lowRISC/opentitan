@@ -105,6 +105,14 @@
                cov: true
              }
              {
+               name: prim_fifo_async_sram_adapter_fpv
+               dut: prim_fifo_async_sram_adapter_tb
+               fusesoc_core: lowrisc:fpv_prim_fifo_async_sram_adapter_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_fifo_async_sram_adapter/{sub_flow}/{tool}"
+               cov: true
+             }
+             {
                name: prim_alert_rxtx_fpv
                dut: prim_alert_rxtx_tb
                fusesoc_core: lowrisc:fpv:prim_alert_rxtx_fpv
