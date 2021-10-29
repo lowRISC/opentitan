@@ -404,6 +404,7 @@ class FlowCfg():
         for item in self.cfgs:
             result = item._gen_results(results)
             item.write_results_html("results.html", item.results_md)
+            mk_symlink(self.results_path, self.symlink_path)
             log.info("[results]: [%s]:\n%s\n", item.name, result)
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
             log.log(VERBOSE, "[results_path]: [%s] [%s]", item.name, item.results_path)
@@ -412,6 +413,7 @@ class FlowCfg():
         if self.is_primary_cfg:
             self.gen_results_summary()
             self.write_results_html("summary.html", self.results_summary_md)
+            mk_symlink(self.results_path, self.symlink_path)
         self.gen_email_html_summary()
 
     def gen_results_summary(self):
@@ -428,20 +430,15 @@ class FlowCfg():
         if not (os.path.exists(self.results_path)):
             clean_odirs(odir=self.results_path, max_odirs=14)
         mk_path(self.results_path)
-        mk_path(self.symlink_path)
 
         # Prepare results and paths.
         text_html = md_results_to_html(self.results_title, self.css_file, text_md)
         result_path = os.path.join(self.results_path, filename)
-        symlink_path = os.path.join(self.symlink_path, filename)
 
         # Write results to the report area.
         with open(result_path, "w") as results_file:
             results_file.write(text_html)
         log.log(VERBOSE, "[results page]: [%s][%s], self.name, results_path")
-
-        # Link the `/latest` folder with the latest reports.
-        mk_symlink(result_path, symlink_path)
 
     def _get_results_page_link(self, link_text):
         if not self.args.publish:

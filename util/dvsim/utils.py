@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -576,6 +577,7 @@ def mk_symlink(path, link):
     create a new symlink with this given path.
     If it does not exist, the function creates the symlink with the given path.
     '''
+    mk_path(link)
     while True:
         try:
             os.symlink(path, link)
