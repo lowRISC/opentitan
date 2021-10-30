@@ -524,7 +524,8 @@ module spid_upload
   prim_sram_arbiter #(
     .N      (NumSramIntf),
     .SramDw (SramDw),
-    .SramAw (SramAw)
+    .SramAw (SramAw),
+    .EnMask (1'b 1)
   ) u_arbiter (
     .clk_i,
     .rst_ni,
