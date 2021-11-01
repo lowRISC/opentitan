@@ -27,7 +27,7 @@
   ]
 
   // Timing constraints for this module
-  sdc_file: "{proj_root}/hw/top_earlgrey/syn/asic.constraints.sdc"
+  sdc_file: "{proj_root}/hw/top_earlgrey/syn/chip_earlgrey_asic.sdc"
 
   // Technology specific timing constraints for this module
   foundry_sdc_file: "{foundry_root}/top_earlgrey/syn/foundry.constraints.sdc"
