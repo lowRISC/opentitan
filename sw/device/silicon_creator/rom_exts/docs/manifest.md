@@ -23,24 +23,29 @@ The following table lists the fields of the manifest along with their sizes,
 alignments, and offsets from the start of the manifest in bytes. The last
 column provides the corresponding C data type of each field for illustration
 purposes. All manifest fields are stored little-endian and the total size of
-the manifest is 848 bytes.
+the manifest is 896 bytes.
 
-| Field             | Size (bytes) | Alignment (bytes) | Offset (bytes) | C Data Type    |
-| ----------------- | ------------ | ----------------- | -------------- | -------------- |
-| `signature`       | 384          | 4                 | 0              | `uint32_t[96]` |
-| `modulus`         | 384          | 4                 | 384            | `uint32_t[96]` |
-| `exponent`        | 4            | 4                 | 768            | `uint32_t`     |
-| `identifier`      | 4            | 4                 | 772            | `uint32_t`     |
-| `length`          | 4            | 4                 | 776            | `uint32_t`     |
-| `version_major`   | 4            | 4                 | 780            | `uint32_t`     |
-| `version_minor`   | 4            | 4                 | 784            | `uint32_t`     |
-| `security_vesion` | 4            | 4                 | 788            | `uint32_t`     |
-| `timestamp`       | 8            | 8                 | 792            | `uint64_t`     |
-| `binding_value`   | 32           | 4                 | 800            | `uint32_t[8]`  |
-| `max_key_version` | 4            | 4                 | 832            | `uint32_t`     |
-| `code_start`      | 4            | 4                 | 836            | `uint32_t`     |
-| `code_end`        | 4            | 4                 | 840            | `uint32_t`     |
-| `entry_point`     | 4            | 4                 | 844            | `uint32_t`     |
+| Field                 | Size (bytes) | Alignment (bytes) | Offset (bytes) | C Data Type    |
+| --------------------- | ------------ | ----------------- | -------------- | -------------- |
+| `signature`           | 384          | 4                 | 0              | `uint32_t[96]` |
+| `selector_bits`       | 4            | 4                 | 384            | `uint32_t`     |
+| `device_id`           | 32           | 4                 | 388            | `uint32_t[8]`  |
+| `manuf_state_creator` | 4            | 4                 | 420            | `uint32_t`     |
+| `manuf_state_owner`   | 4            | 4                 | 424            | `uint32_t`     |
+| `life_cycle_state`    | 4            | 4                 | 428            | `uint32_t`     |
+| `modulus`             | 384          | 4                 | 432            | `uint32_t[96]` |
+| `exponent`            | 4            | 4                 | 816            | `uint32_t`     |
+| `identifier`          | 4            | 4                 | 820            | `uint32_t`     |
+| `length`              | 4            | 4                 | 824            | `uint32_t`     |
+| `version_major`       | 4            | 4                 | 828            | `uint32_t`     |
+| `version_minor`       | 4            | 4                 | 832            | `uint32_t`     |
+| `security_vesion`     | 4            | 4                 | 836            | `uint32_t`     |
+| `timestamp`           | 8            | 8                 | 840            | `uint64_t`     |
+| `binding_value`       | 32           | 4                 | 848            | `uint32_t[8]`  |
+| `max_key_version`     | 4            | 4                 | 880            | `uint32_t`     |
+| `code_start`          | 4            | 4                 | 884            | `uint32_t`     |
+| `code_end`            | 4            | 4                 | 888            | `uint32_t`     |
+| `entry_point`         | 4            | 4                 | 892            | `uint32_t`     |
 
 
 # Field Descriptions
@@ -49,6 +54,32 @@ the manifest is 848 bytes.
     image generated using a 3072-bit RSA private key and the SHA-256 hash
     function. The signed region of an image starts immediately after this
     field and extends to the end of the image.
+
+*   `selector_bits`: This field, along with the following four fields, is used
+    to constrain a boot stage image to a set of devices based on their device
+    IDs, creator and/or manufacturing states and life cycle states. Bits of
+    this field determine which fields (or individual words of a field as in
+    the case of `device_id`) must be read from the hardware during
+    verification. Unselected fields must be set to
+    `MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL` to be able to generate a
+    consistent value during verification. Bits 0-7 are mapped to words 0-7 of
+    `device_id` and bits 8-10 are mapped to `manuf_state_creator`,
+    `manuf_state_owner`, and `life_cycle_state`, respectively.
+
+*   `device_id`: Device identifier value which is compared against the
+    `DEVICE_ID` value stored in the `HW_CFG` partition in OTP. Mapped to bits
+     0-7 of `selector_bits`.
+
+*   `manuf_state_creator`: Device silicon creator manufacturing status compared
+    against the `CREATOR_SW_MANUF_STATUS` value stored in the `CREATOR_SW_CFG`
+    partition in OTP. Mapped to bit 8 of `selector_bits`.
+
+*   `manuf_state_owner`: Device silicon owner manufacturing status compared
+    against the `OWNER_SW_MANUF_STATUS` value stored in the `OWNER_SW_CFG`
+    partition in OTP. Mapped to bit 9 of `selector_bits`.
+
+*   `life_cycle_state`: Device life cycle state compared against the state
+    reported by the life cycle controller. Mapped to bit 9 of `selector_bits`.
 
 *   `modulus`:  Modulus of the signer's 3072-bit RSA public key.
 
