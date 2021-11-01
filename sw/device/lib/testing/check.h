@@ -22,8 +22,8 @@
  * Checks that the given condition is true. If the condition is false, this
  * function logs and then aborts.
  *
- * @param condition an expression to check.
- * @param ... arguments to a LOG_* macro, which are evaluated if the check
+ * @param condition An expression to check.
+ * @param ... Arguments to a LOG_* macro, which are evaluated if the check
  * fails.
  */
 #define CHECK(condition, ...)                             \
@@ -53,24 +53,32 @@
  * Prints differences between `actual_` and `expected_` before assigning the
  * comparison `result_` value.
  *
- * @param[out] result_ Result of the comparison.
  * @param actual_ Buffer containing actual values.
  * @param expected_ Buffer containing expected values.
  * @param num_items_ Number of items to compare.
+ * @param ... Arguments to a LOG_* macro, which are evaluated if the check.
  */
-#define CHECK_BUFFER(result_, actual_, expected_, num_items_)                 \
-  do {                                                                        \
-    /* `sizeof(actual_[0])` is used to determine the size of each item in the \
-     * buffer. */                                                             \
-    if (memcmp(actual_, expected_, num_items_ * sizeof(actual_[0])) != 0) {   \
-      for (size_t i = 0; i < num_items_; ++i) {                               \
-        LOG_ERROR("[%d] actual = 0x%x; expected = 0x%x", i, actual_[i],       \
-                  expected_[i]);                                              \
-      }                                                                       \
-      result_ = false;                                                        \
-    } else {                                                                  \
-      result_ = true;                                                         \
-    }                                                                         \
+#define CHECK_BUFFER(actual_, expected_, num_items_, ...)                      \
+  do {                                                                         \
+    /* `sizeof(actual_[0])` is used to determine the size of each item in the  \
+     * buffer. */                                                              \
+    if (memcmp(actual_, expected_, num_items_ * sizeof(actual_[0])) != 0) {    \
+      for (size_t i = 0; i < num_items_; ++i) {                                \
+        LOG_INFO("[%d] actual = 0x%x; expected = 0x%x", i, actual_[i],         \
+                 expected_[i]);                                                \
+      }                                                                        \
+      if (GET_NUM_VARIABLE_ARGS(_, ##__VA_ARGS__) == 0) {                      \
+        LOG_ERROR("CHECK-BUFFER-fail: " #actual_ "does not match" #expected_); \
+      } else {                                                                 \
+        LOG_ERROR("CHECK-BUFFER-fail: " __VA_ARGS__);                          \
+      }                                                                        \
+      /* Currently, this macro will call into                                  \
+          the test failure code, which logs                                    \
+          "FAIL" and aborts. In the future,                                    \
+          we will try to condition on whether                                  \
+          or not this is a test.*/                                             \
+      test_status_set(kTestStatusFailed);                                      \
+    }                                                                          \
   } while (false)
 
 /**
@@ -78,8 +86,8 @@
  * different dif_result_t value (defined in sw/device/lib/dif/dif_base.h), this
  * function logs and then aborts.
  *
- * @param DIF call to invoke and check its return value.
- * @param ... arguments to a LOG_* macro, which are evaluated if the check
+ * @param dif_call DIF call to invoke and check its return value.
+ * @param ... Arguments to a LOG_* macro, which are evaluated if the check
  * fails.
  */
 #define CHECK_DIF_OK(dif_call, ...)                       \
