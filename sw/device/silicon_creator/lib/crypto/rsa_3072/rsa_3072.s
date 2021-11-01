@@ -439,6 +439,48 @@ modexp_var_3072_f4:
   ret
 
 /**
+ * Subtracts the modulus M from A.
+ *
+ * Flags: After this subroutine, the C flag is set to 1 if the subtraction
+ * underflowed.
+ *
+ * This routine runs in variable time.
+ * @param[in]  x16: dmem pointer to first limb of modulus M
+ * @param[in]  [w4:w15]: operand A
+ * @param[in]  w31: all-zero
+ * @param[out] [w16:w27]: result
+ *
+ * clobbered registers: x8 to x12, w2, w3, w16 to w27
+ * clobbered Flag Groups: FG0
+ */
+subtract_modulus_var:
+
+  /* Prepare temporary registers. */
+  li        x8, 4
+  li        x9, 2
+  li        x10, 3
+  li        x11, 16
+
+  /* Copy pointer to modulus. */
+  addi      x12, x16, 0
+
+  /* Clear flags. */
+  bn.add    w31, w31, w31
+
+  /* Subtract M from A. */
+  loopi     12, 4
+    /* w2 <= A[i] */
+    bn.movr   x9, x8++
+    /* w3 <= M[i] */
+    bn.lid    x10, 0(x12++)
+    /* w2 <= w2 - w3 */
+    bn.subb   w2, w2, w3
+    /* out[i] <= w2 */
+    bn.movr   x11++, x9
+
+  ret
+
+/**
  * Doubles a number and reduces modulo M in-place.
  *
  *   Returns: C = (A + A) mod M
@@ -480,24 +522,7 @@ double_mod_var:
   csrrs     x2, 0x7c0, x0
   andi      x2, x2, 1
 
-  /* Clear flags. */
-  bn.add    w31, w31, w31
-
-  /* Conditionally subtract modulus; since A < M, at most one subtraction.
-       [w16:w27] <= (aa[0:3071] - M) mod 3072 */
-  li        x8, 4
-  li        x9, 2
-  li        x10, 3
-  li        x11, 16
-  loopi     12, 4
-    /* w2 <= aa[i] */
-    bn.movr   x9, x8++
-    /* w3 <= M[i] */
-    bn.lid    x10, 0(x12++)
-    /* w2 <= w2 - w3 */
-    bn.subb   w2, w2, w3
-    /* out[i] <= w2 */
-    bn.movr   x11++, x9
+  jal       x1, subtract_modulus_var
 
   /* Extract final borrow bit from flags register. */
   csrrs     x3, 0x7c0, x0
@@ -539,8 +564,8 @@ sel_aa:
  * of RSA 3072, the parameters w and n from the paper are fixed (w=256, n=12).
  *
  * The algorithm from the paper assumes that 2^wn-1 <= M < 2^wn; we lightly
- * adapt the implementation to accept 2 <= M < 2^wn by starting with c0=1 and
- * performing 2*wn modular doublings instead of wn+1.
+ * adapt the implementation to accept any positive M by subtracting M from c0
+ * until c0 < M.
  *
  * The result is stored in dmem[in_rr]. This routine runs in variable time.
  *
@@ -565,13 +590,49 @@ precomp_rr:
   loopi     12, 1
     bn.movr   x9++, x10
 
-  /* c0 = [w4:w15] <= 1 */
-  bn.addi   w4, w4, 1
+  /* w16 <= 1 */
+  bn.addi   w16, w31, 1
+
+  /* Initialize c0
+     c0 = [w4:w15] <= [w4:w16] >> 1 = 2^3701 */
+  bn.rshi   w15, w16, w15 >> 1
 
 
-  /* Compute (2^3072)^2 mod M by performing 2*3072=6144 modular doublings.
+precomp_rr_sub_start:
+
+  /* Repeatedly subtract M until c0 < M.
+       [w16:w27] <= (c0 - M) */
+  jal       x1, subtract_modulus_var
+
+  /* Extract borrow bit from flags register. */
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 1
+
+  /* If borrow is set, then subtraction underflowed, meaning c0 < M; done. */
+  bne       x2, x0, precomp_rr_sub_done
+
+  /* If we got here, then c0 > M; set c0 = c0 - M and repeat.
+       c0 = [w4:w15] <= [w16:w27] = c0 - M */
+  li        x8, 4
+  li        x11, 16
+  loopi     12, 2
+    bn.movr   x8, x11++
+    addi      x8, x8, 1
+
+  /* Jump back to start of subtractions. */
+  beq       x0, x0, precomp_rr_sub_start
+
+precomp_rr_sub_done:
+
+  /* Now, we know that c0 = [w4:w15] = (2^3071) mod M. */
+
+  /* One modular doubling to get c1 \equiv 2^3072 mod M.
+     c1 = [w4:w15] <= ([w4:w15] * 2) mod M = (2^3072) mod M */
+  jal     x1, double_mod_var
+
+  /* Compute (2^3072)^2 mod M by performing 3072 modular doublings.
      Loop is nested only because #iterations must be < 1024 */
-  loopi     24, 4
+  loopi     12, 4
     loopi     256, 2
       jal     x1, double_mod_var
       /* Nop because inner loopi can't end on a jump instruction. */
