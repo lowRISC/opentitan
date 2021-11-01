@@ -170,9 +170,9 @@ rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
     // buf = sig * R mod n
     mont_mul(key, sig, result, &buf);
     for (size_t i = 0; i < 8; ++i) {
-      // result = sig^{2*i+1} * R mod n (sig's exponent: 2, 8, 32, ..., 32768)
+      // result = sig^{2*4^i} * R mod n (sig's exponent: 2, 8, 32, ..., 32768)
       mont_mul(key, &buf, &buf, result);
-      // buf = sig^{4*i+2} * R mod n (sig's exponent: 4, 16, 64, ..., 65536)
+      // buf = sig^{4^{i+1}} * R mod n (sig's exponent: 4, 16, 64, ..., 65536)
       mont_mul(key, result, result, &buf);
     }
   } else {
