@@ -25,12 +25,12 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
   // This needs to be done outside the various CSR tests, since they update the jitter_enable
   // CSR, but the scoreboard is disabled for those tests.
   task test_jitter();
-    csr_wr(.ptr(ral.jitter_enable), .value(1'b1));
-    csr_rd_check(.ptr(ral.jitter_enable), .compare_value(1'b1));
+    csr_wr(.ptr(ral.jitter_enable), .value(prim_mubi_pkg::MuBi4True));
+    csr_rd_check(.ptr(ral.jitter_enable), .compare_value(prim_mubi_pkg::MuBi4True));
     // And set it back.
     cfg.clk_rst_vif.wait_clks(6);
-    csr_wr(.ptr(ral.jitter_enable), .value(1'b0));
-    csr_rd_check(.ptr(ral.jitter_enable), .compare_value(1'b0));
+    csr_wr(.ptr(ral.jitter_enable), .value('0));
+    csr_rd_check(.ptr(ral.jitter_enable), .compare_value('0));
   endtask
 
   // Flips all clk_enables bits from the reset value with all enabled. All is checked

@@ -74,6 +74,8 @@
 
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi4_test_true_loose;
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -438,7 +440,7 @@
   assign hw2reg.clk_hints_status.${clk}_val.d = ${clk}_en;
 % endfor
 
-  assign jitter_en_o = reg2hw.jitter_enable.q;
+  assign jitter_en_o = mubi4_test_true_loose(mubi4_t'(reg2hw.jitter_enable.q));
 
   ////////////////////////////////////////////////////
   // Exported clocks

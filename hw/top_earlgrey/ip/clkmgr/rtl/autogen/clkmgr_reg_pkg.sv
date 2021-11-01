@@ -40,7 +40,7 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_extclk_ctrl_reg_t;
 
   typedef struct packed {
-    logic        q;
+    logic [3:0]  q;
   } clkmgr_reg2hw_jitter_enable_reg_t;
 
   typedef struct packed {
@@ -193,9 +193,9 @@ package clkmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    clkmgr_reg2hw_alert_test_reg_t alert_test; // [119:116]
-    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [115:108]
-    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [107:107]
+    clkmgr_reg2hw_alert_test_reg_t alert_test; // [122:119]
+    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [118:111]
+    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [110:107]
     clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [106:103]
     clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [102:98]
     clkmgr_reg2hw_io_measure_ctrl_reg_t io_measure_ctrl; // [97:77]

@@ -195,10 +195,15 @@
       hwaccess: "hro",
       fields: [
         {
-          bits: "0",
+          mubi: true,
+          bits: "3:0",
           name: "VAL",
-          desc: "Enable jittery clock"
-          resval: "0"
+          desc: '''
+            Enable jittery clock.
+            A value of kMultiBitBool4False disables the jittery clock,
+            while all other values enable jittery clock.
+          ''',
+          resval: false
         }
       ]
     },

@@ -190,8 +190,8 @@ module clkmgr_reg_top (
   logic [3:0] extclk_ctrl_step_down_qs;
   logic [3:0] extclk_ctrl_step_down_wd;
   logic jitter_enable_we;
-  logic jitter_enable_qs;
-  logic jitter_enable_wd;
+  logic [3:0] jitter_enable_qs;
+  logic [3:0] jitter_enable_wd;
   logic clk_enables_we;
   logic clk_enables_clk_io_div4_peri_en_qs;
   logic clk_enables_clk_io_div4_peri_en_wd;
@@ -561,9 +561,9 @@ module clkmgr_reg_top (
 
   // R[jitter_enable]: V(False)
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (4'h5)
   ) u_jitter_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1562,7 +1562,7 @@ module clkmgr_reg_top (
   assign extclk_ctrl_step_down_wd = reg_wdata[7:4];
   assign jitter_enable_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign jitter_enable_wd = reg_wdata[0];
+  assign jitter_enable_wd = reg_wdata[3:0];
   assign clk_enables_we = addr_hit[4] & reg_we & !reg_error;
 
   assign clk_enables_clk_io_div4_peri_en_wd = reg_wdata[0];
@@ -1637,7 +1637,7 @@ module clkmgr_reg_top (
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = jitter_enable_qs;
+        reg_rdata_next[3:0] = jitter_enable_qs;
       end
 
       addr_hit[4]: begin

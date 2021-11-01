@@ -58,11 +58,11 @@ interface clkmgr_if (
   } clk_hints_t;
 
   // The CSR values from the testbench side.
-  clk_enables_t        clk_enables_csr;
-  clk_hints_t          clk_hints_csr;
-  lc_ctrl_pkg::lc_tx_t extclk_ctrl_csr_sel;
-  lc_ctrl_pkg::lc_tx_t extclk_ctrl_csr_step_down;
-  logic                jitter_enable_csr;
+  clk_enables_t          clk_enables_csr;
+  clk_hints_t            clk_hints_csr;
+  lc_ctrl_pkg::lc_tx_t   extclk_ctrl_csr_sel;
+  lc_ctrl_pkg::lc_tx_t   extclk_ctrl_csr_step_down;
+  prim_mubi_pkg::mubi4_t jitter_enable_csr;
 
   // The expected and actual divided io clocks.
   logic                exp_clk_io_div2;
@@ -119,7 +119,7 @@ interface clkmgr_if (
     return pwr_o.main_status;
   endfunction
 
-  function automatic void update_jitter_enable(bit value);
+  function automatic void update_jitter_enable(prim_mubi_pkg::mubi4_t value);
     jitter_enable_csr = value;
   endfunction
 
