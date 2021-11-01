@@ -53,7 +53,7 @@
     // Add formal sub_flow to the scratch path
     {
       name:  scratch_path
-      value: "{scratch_base_path}/{dut}-{flow}-{sub_flow}-{tool}"
+      value: "{scratch_base_path}/{name}-{flow}-{sub_flow}-{tool}"
     }
   ]
 }
