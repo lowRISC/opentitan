@@ -187,6 +187,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task post_apply_reset(string reset_kind = "HARD");
+    super.post_apply_reset(reset_kind);
     cfg.io_clk_rst_vif.wait_clks(POST_APPLY_RESET_CYCLES);
   endtask
 

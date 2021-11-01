@@ -27,7 +27,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   bit do_clear_all_interrupts = 1'b1;
 
   // knobs to enable alert auto reponse, once disabled it won't be able to enable again unless
-  // dut_init is issued
+  // reset is issued
   bit en_auto_alerts_response = 1'b1;
 
   // knobs to lock shadow register write access if fatal storage error occurred
@@ -84,10 +84,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   `include "cip_base_vseq__tl_errors.svh"
   `include "cip_base_vseq__shadow_reg_errors.svh"
-
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init(reset_kind);
-  endtask
 
   virtual task post_apply_reset(string reset_kind = "HARD");
     super.post_apply_reset(reset_kind);
