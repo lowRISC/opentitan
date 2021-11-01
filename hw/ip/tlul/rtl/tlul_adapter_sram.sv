@@ -64,9 +64,16 @@ module tlul_adapter_sram
   localparam int WoffsetWidth = (SramByte == top_pkg::TL_DBW) ? 1 :
                                 DataBitWidth - prim_util_pkg::vbits(top_pkg::TL_DBW);
 
-  // integrity check
+  logic error_det; // Internal protocol error checker
+  logic error_internal; // Internal protocol error checker
+  logic wr_attr_error;
+  logic instr_error;
+  logic wr_vld_error;
+  logic rd_vld_error;
   logic intg_error;
+  logic tlul_error;
 
+  // integrity check
   if (CmdIntgCheck) begin : gen_cmd_intg_check
     tlul_cmd_intg_chk u_cmd_intg_chk (
       .tl_i(tl_i),
@@ -90,12 +97,52 @@ module tlul_adapter_sram
   // or other downstream effects
   assign intg_error_o = intg_error | intg_error_q;
 
+  // wr_attr_error: Check if the request size,mask are permitted.
+  //    Basic check of size, mask, addr align is done in tlul_err module.
+  //    Here it checks any partial write if ByteAccess isn't allowed.
+  assign wr_attr_error = (tl_i.a_opcode == PutFullData || tl_i.a_opcode == PutPartialData)
+                         ? ((ByteAccess == 0) ?
+                           (tl_i.a_mask != '1 || tl_i.a_size != 2'h2) : 1'b0)
+                           : 1'b0;
+
+  // An instruction type transaction is only valid if en_ifetch is enabled
+  assign instr_error = prim_mubi_pkg::mubi4_test_true_strict(tl_i.a_user.instr_type) &
+                       prim_mubi_pkg::mubi4_test_false_loose(en_ifetch_i);
+
+  if (ErrOnWrite == 1) begin : gen_no_writes
+    assign wr_vld_error = tl_i.a_opcode != Get;
+  end else begin : gen_writes_allowed
+    assign wr_vld_error = 1'b0;
+  end
+
+  if (ErrOnRead == 1) begin: gen_no_reads
+    assign rd_vld_error = tl_i.a_opcode == Get;
+  end else begin : gen_reads_allowed
+    assign rd_vld_error = 1'b0;
+  end
+
+  // tlul protocol check
+  tlul_err u_err (
+    .clk_i,
+    .rst_ni,
+    .tl_i(tl_i),
+    .err_o (tlul_error)
+  );
+
+  // error return is transactional and thus does not used the "latched" intg_err signal
+  assign error_det = wr_attr_error | wr_vld_error | rd_vld_error | instr_error |
+                     tlul_error    | intg_error;
+
   // from sram_byte to adapter logic
   tl_h2d_t tl_i_int;
   // from adapter logic to sram_byte
   tl_d2h_t tl_o_int;
   // from sram_byte to rsp_gen
   tl_d2h_t tl_out;
+
+  // not all parts of tl_i_int are used
+  logic unused_tl_i_int;
+  assign unused_tl_i_int = ^tl_i_int;
 
   tlul_rsp_intg_gen #(
     .EnableRspIntgGen(EnableRspIntgGen),
@@ -116,7 +163,8 @@ module tlul_adapter_sram
     .tl_o(tl_out),
     .tl_sram_o(tl_i_int),
     .tl_sram_i(tl_o_int),
-    .error_i(intg_error)
+    .error_i(error_det),
+    .error_o(error_internal)
   );
 
   typedef struct packed {
@@ -162,13 +210,6 @@ module tlul_adapter_sram
   logic rspfifo_wvalid, rspfifo_wready;
   logic rspfifo_rvalid, rspfifo_rready;
   rsp_t rspfifo_wdata,  rspfifo_rdata;
-
-  logic error_internal; // Internal protocol error checker
-  logic wr_attr_error;
-  logic instr_error;
-  logic wr_vld_error;
-  logic rd_vld_error;
-  logic tlul_error;     // Error from `tlul_err` module
 
   logic a_ack, d_ack, sram_ack;
   assign a_ack    = tl_i_int.a_valid & tl_o_int.a_ready ;
@@ -303,45 +344,6 @@ module tlul_adapter_sram
 
   assign wmask_o = wmask_combined;
   assign wdata_o = wdata_combined;
-
-
-  // Begin: Request Error Detection
-
-  // wr_attr_error: Check if the request size,mask are permitted.
-  //    Basic check of size, mask, addr align is done in tlul_err module.
-  //    Here it checks any partial write if ByteAccess isn't allowed.
-  assign wr_attr_error = (tl_i_int.a_opcode == PutFullData || tl_i_int.a_opcode == PutPartialData)
-                         ? ((ByteAccess == 0) ?
-                           (tl_i_int.a_mask != '1 || tl_i_int.a_size != 2'h2) : 1'b0)
-                           : 1'b0;
-
-  // An instruction type transaction is only valid if en_ifetch is enabled
-  assign instr_error = prim_mubi_pkg::mubi4_test_true_strict(tl_i_int.a_user.instr_type) &
-                       prim_mubi_pkg::mubi4_test_false_loose(en_ifetch_i);
-
-  if (ErrOnWrite == 1) begin : gen_no_writes
-    assign wr_vld_error = tl_i_int.a_opcode != Get;
-  end else begin : gen_writes_allowed
-    assign wr_vld_error = 1'b0;
-  end
-
-  if (ErrOnRead == 1) begin: gen_no_reads
-    assign rd_vld_error = tl_i_int.a_opcode == Get;
-  end else begin : gen_reads_allowed
-    assign rd_vld_error = 1'b0;
-  end
-
-  tlul_err u_err (
-    .clk_i,
-    .rst_ni,
-    .tl_i(tl_i_int),
-    .err_o (tlul_error)
-  );
-
-  // error return is transactional and thus does not used the "latched" intg_err signal
-  assign error_internal = wr_attr_error | wr_vld_error | rd_vld_error | instr_error |
-                          tlul_error    | intg_error;
-  // End: Request Error Detection
 
   assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
   assign reqfifo_wdata  = '{

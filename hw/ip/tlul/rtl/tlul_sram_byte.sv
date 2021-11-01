@@ -28,10 +28,12 @@ module tlul_sram_byte import tlul_pkg::*; #(
   output tl_h2d_t tl_sram_o,
   input tl_d2h_t tl_sram_i,
 
-  // if incoming transaction already has an integrity error, do not
+  // if incoming transaction already has an error, do not
   // attempt to handle the byte-write access.  Instead treat as
-  // feedthrough and allow the system to directly error back
-  input error_i
+  // feedthrough and allow the system to directly error back.
+  // The error indication is also fed through
+  input error_i,
+  output logic error_o
 );
 
   // state enumeration
@@ -78,7 +80,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
   assign sram_a_ack = tl_sram_o.a_valid & tl_sram_i.a_ready;
   assign sram_d_ack = tl_sram_i.d_valid & tl_sram_o.d_ready;
   assign wr_txn = (tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData);
-  assign byte_req_ack = byte_wr_txn & a_ack & ~error_i;
+  assign byte_req_ack = byte_wr_txn & a_ack;
 
   logic [3:0] txn_cnt;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -93,7 +95,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
   // when to select internal signals instead of passthru
   if (EnableIntg) begin : gen_dyn_sel
-    assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn;
+    assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn & ~error_i;
     assign sel_int = byte_wr_txn | stall_host ? SelInt : SelPassThru;
     // TODO(#7461): remove this register, once this issue has been addressed.
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
@@ -294,6 +296,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
   if (EnableIntg) begin : gen_intg_hookup
     assign tl_sram_o = (sel_int == SelInt) ? tl_h2d_intg : tl_i;
+    assign error_o = (sel_int == SelInt) ? '0 : error_i;
 
     logic [top_pkg::TL_SZW-1:0] a_size;
     prim_fifo_sync #(
@@ -337,16 +340,17 @@ module tlul_sram_byte import tlul_pkg::*; #(
                            sel_int,
                            fifo_rdy,
                            byte_req_ack,
-                           wr_txn,
-                           error_i};
+                           wr_txn};
     assign tl_sram_o = tl_i;
     assign tl_o = tl_sram_i;
+    assign error_o = error_i;
+
   end
 
   // byte access should trigger state change
   if (EnableIntg) begin : gen_intg_asserts
     // when byte access detected, go to wait read
-    `ASSERT(ByteAccessStateChange_A, a_ack & wr_txn & ~&tl_i.a_mask |=>
+    `ASSERT(ByteAccessStateChange_A, a_ack & wr_txn & ~&tl_i.a_mask & ~error_i |=>
       state_q inside {StWaitRd, StFlush})
 
     // when in wait for read, a successful response should move to write phase

@@ -437,6 +437,7 @@ detail below.
 | `tlul_socket_1n` | Demultiplexing element that connects 1 TL-UL host to N TL-UL devices. TL-UL protocol is maintained on the host side and with all devices. Parameter settings control many of the features of the socket (see detailed description that follows). |
 | `tlul_socket_m1` | Multiplexing element that connects M TL-UL hosts to 1 TL-UL device. TL-UL protocol is maintained with all hosts and on the device side. Parameter settings control many of the features of the socket (see detailed description that follows). |
 | `tlul_xbar` | Crossbar that connects M TL-UL hosts with N TL-UL devices. The connectivity matrix may be sparse, and not all nodes are required to be the same clock or reset domain.  TL-UL protocol is maintained with all hosts and with all devices. Parameters and configuration settings control many of the features of the switch. This is not specified at this time, and will be done at a later date based upon project goals. |
+| `tlul_adapter_sram` | Adapter that connects a TL-UL host to an sram type interface. |
 
 #### A Note on Directions
 
@@ -619,3 +620,55 @@ TL `typedef` definitions.
 For details of the `tlul_xbar`, please refer to the [tlgen reference manual]({{< relref "doc/rm/crossbar_tool" >}}).
 In general, tlgen stitches together various components described in the previous sections to create a full blown fabric switch.
 Specifically, it implements the address to `dev_sel` steering logic and ensures the right connections are made from host to device.
+
+
+### `tlul_adapter_sram`
+
+The TL-UL sram adapter is a bus element that connects a TL-UL interface to a memory like itnerface.
+The memory interface is defined as follows:
+
+| name    | direction | description                            |
+| :---:   | :---:     | :---:                                  |
+| req     | `output`  | Memory interface transaction request   |
+| gnt     | `input`   | Memory interface trasnaction grant     |
+| we      | `output`  | Transaction write enable               |
+| addr    | `output`  | Transaction address                    |
+| wdata   | `output`  | Transaction write data                 |
+| wmask   | `output`  | Transaction write mask                 |
+| rvalid  | `input`   | Transaction read valid from downstream |
+| rdata   | `input`   | Transaction read data from downstream  |
+| rerror  | `input`   | Transaction read error from downstream |
+
+The diagram below is a block diagram that shows the construction of the adapter.
+![tlul_adapter_sram_block diagram](tlul_adapter_sram.svg)
+
+All incoming transactions are checked for protocol errors and integrity.
+The transactions are then forwarded to the `tlul_sram_byte` module, which determines whether the incoming transaction is a write, and whether the write transaction must be transformed to a read-modified-write.
+
+The transformation is done when integrity is enabled on the downstream storage and the incoming transaction is a legal partial write.
+During this scenario, in order to correctly compute the storage integrity, the adapter must first read back whatever is present in memory so that the full integrity can be computed.
+If an error is present during the protocol and integrity checks, or if the transaction is not a partial write (read or full write), then the transaction is passed through directly to the TL-UL-sram conversion.
+If the transaction is a legal partial write, the `tlul_sram_byte` instead transforms the transaction into two: a full read followed by a full write for a read-modified-write of the intended address.
+
+Once past the `tlul_sram_byte`, a transaction accepted by downstream consumers has some of its attributes (type of operation, presence of error, size, source) stored in the `request fifo`.
+This is needed to correctly construct the TL-UL d-channel response when the transaction is complete.
+
+The internally computed "read mask" is also stored in the `sramreqfifo` for read transactions.
+This is needed to correctly mask off uninteresting bytes during a partial read.
+
+Any returning read data from downstream is stored inside the `rspfifo`.
+This is needed in case the upstream TL-UL host back pressures the d-channel.
+
+#### Life of a Write Transaction
+When a write transaction is received, the above steps are followed; however, nothing is stored in the `sramreqfifo`.
+When downstream completes the write transaction, the stored `reqfifo` entry is used to construct the TL-UL response.
+When the response is accepted by an upstream TL-UL host, the `reqfifo` entry popped.
+
+#### Life of a Read Transaction
+When a read transaction is received, both the `reqfifo` and the `sramreqfifo` store a new entry.
+The former stores transaction attributes, while the latter stores the read mask and read offset (in case the downstream read is larger than TL-UL bus width).
+When downstream completes the read transaction through `rvalid_i`, the relevant data, as determined by the stored read mask and offset in `sramreqfifo`, is stored in the `rspfifo`.
+The act of storing into the `rspfifo` also pops `sramreqfifo` entry.
+
+The `reqfifo` entry is used to construct the TL-UL response.
+When the response is accepted by an upstream TL-UL host, the `reqfifo` and `rspfifo` entries are both popped.
