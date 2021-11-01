@@ -8,3 +8,7 @@ build --conlyopt='-std=c11'
 
 # Enable toolchain resolution with cc
 build --incompatible_enable_cc_toolchain_resolution
+
+# This lets us generate key/value pairs for the workspace which can be 
+# accessed like we do in util/BUILD
+build --workspace_status_command=util/get_workspace_status.sh

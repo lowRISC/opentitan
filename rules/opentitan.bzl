@@ -120,7 +120,7 @@ elf_to_scrambled = rule(
         "srcs": attr.label_list(allow_files = True),
         "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_tool": attr.label(default = "//hw/ip/rom_ctrl/util:scramble_image.py", allow_files = True),
-        "_config": attr.label(default = "//hw/top_earlgrey:data/autogen/top_earlgrey.gen.hjson", allow_files = True),
+        "_config": attr.label(default = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson", allow_files = True),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
