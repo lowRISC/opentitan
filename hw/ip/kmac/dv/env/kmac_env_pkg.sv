@@ -164,7 +164,7 @@ package kmac_env_pkg;
   } kmac_err_st_e;
 
   typedef virtual pins_if#(1)       idle_vif;
-  typedef virtual kmac_sideload_if  sideload_vif;
+  typedef virtual key_sideload_if   sideload_vif;
 
   // Helper functions that returns the KMAC key size in bytes/words/blocks
   function automatic int get_key_size_bytes(kmac_pkg::key_len_e len);
