@@ -74,6 +74,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task post_apply_reset(string reset_kind = "HARD");
+    super.post_apply_reset(reset_kind);
     `uvm_info(`gfn, "waiting for fast active after applying reset", UVM_MEDIUM)
     wait_for_fast_fsm_active();
   endtask
