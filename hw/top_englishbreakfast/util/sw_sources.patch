@@ -5,7 +5,7 @@ index 99485c5ff..1c8e29d86 100644
 @@ -81,19 +81,6 @@ _reset_start:
  _start:
    .globl _start
- 
+
 -  // Enable entropy complex - this is not the full enable
 -  li   a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
 -  li   t0, 0x55505a
@@ -22,45 +22,6 @@ index 99485c5ff..1c8e29d86 100644
    // Request memory scrambling and init
    li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
    li a1, (1<<SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT)|(1<<SRAM_CTRL_CTRL_INIT_BIT)
-diff --git a/sw/device/lib/dif/dif_csrng.c b/sw/device/lib/dif/dif_csrng.c
-index 0a9e35f17..2d6226860 100644
---- a/sw/device/lib/dif/dif_csrng.c
-+++ b/sw/device/lib/dif/dif_csrng.c
-@@ -282,14 +282,3 @@ dif_result_t dif_csrng_get_internal_state(
- 
-   return kDifOk;
- }
--
--dif_result_t dif_csrng_stop(const dif_csrng_t *csrng) {
--  if (csrng == NULL) {
--    return kDifBadArg;
--  }
--
--  mmio_region_write32(csrng->base_addr, CSRNG_CTRL_REG_OFFSET,
--                      CSRNG_CTRL_REG_RESVAL);
--
--  return kDifOk;
--}
-diff --git a/sw/device/lib/dif/dif_csrng.h b/sw/device/lib/dif/dif_csrng.h
-index 1a55f1479..e4da067e8 100644
---- a/sw/device/lib/dif/dif_csrng.h
-+++ b/sw/device/lib/dif/dif_csrng.h
-@@ -369,15 +369,6 @@ dif_result_t dif_csrng_lock(const dif_csrng_t *csrng);
- OT_WARN_UNUSED_RESULT
- dif_result_t dif_csrng_is_locked(const dif_csrng_t *csrng, bool *is_locked);
- 
--/**
-- * Disables the CSRNG module.
-- *
-- * @param csrng A CSRNG handle.
-- * @return The result of the operation.
-- */
--OT_WARN_UNUSED_RESULT
--dif_result_t dif_csrng_stop(const dif_csrng_t *csrng);
--
- #ifdef __cplusplus
- }  // extern "C"
- #endif  // __cplusplus
 diff --git a/sw/device/lib/pinmux.c b/sw/device/lib/pinmux.c
 index 8861f54ba..8442bb896 100644
 --- a/sw/device/lib/pinmux.c
@@ -97,7 +58,7 @@ index 5dc1286af..1e2dced96 100644
 @@ -198,18 +198,13 @@ int main(void) {
    sca_init(kScaTriggerSourceAes, kScaPeripheralAes);
    sca_get_uart(&uart1);
- 
+
 -  LOG_INFO("Running AES serial");
 -
 -  LOG_INFO("Initializing simple serial interface to capture board.");
@@ -105,53 +66,57 @@ index 5dc1286af..1e2dced96 100644
    simple_serial_register_handler('k', aes_serial_set_key);
    simple_serial_register_handler('p', aes_serial_single_encrypt);
    simple_serial_register_handler('b', aes_serial_batch_encrypt);
- 
+
 -  LOG_INFO("Initializing AES unit.");
    init_aes();
- 
+
 -  LOG_INFO("Starting simple serial packet handling.");
    while (true) {
      simple_serial_process_packet();
    }
 diff --git a/sw/device/sca/lib/meson.build b/sw/device/sca/lib/meson.build
-index dbf6bd0a9..8a107194c 100644
+index a6ce4d8af..8a107194c 100644
 --- a/sw/device/sca/lib/meson.build
 +++ b/sw/device/sca/lib/meson.build
-@@ -17,7 +17,6 @@ sw_sca_lib_sca  = declare_dependency(
+@@ -17,8 +17,6 @@ sw_sca_lib_sca  = declare_dependency(
        sw_lib_dif_gpio,
        sw_lib_dif_rv_timer,
        sw_lib_dif_uart,
 -      sw_lib_dif_csrng,
+-      sw_lib_dif_edn,
        sw_lib_irq,
        sw_lib_irq_handlers,
        sw_lib_mmio,
 diff --git a/sw/device/sca/lib/sca.c b/sw/device/sca/lib/sca.c
-index da6a2fef4..a46911701 100644
+index 7bce7a0c4..a46911701 100644
 --- a/sw/device/sca/lib/sca.c
 +++ b/sw/device/sca/lib/sca.c
-@@ -7,7 +7,6 @@
+@@ -7,8 +7,6 @@
  #include "sw/device/lib/arch/device.h"
  #include "sw/device/lib/base/bitfield.h"
  #include "sw/device/lib/dif/dif_clkmgr.h"
 -#include "sw/device/lib/dif/dif_csrng.h"
+-#include "sw/device/lib/dif/dif_edn.h"
  #include "sw/device/lib/dif/dif_entropy_src.h"
  #include "sw/device/lib/dif/dif_gpio.h"
  #include "sw/device/lib/dif/dif_rv_timer.h"
-@@ -57,11 +56,9 @@ enum {
+@@ -58,13 +56,9 @@ enum {
    kRvTimerHart = kTopEarlgreyPlicTargetIbex0,
  };
- 
+
 -static dif_uart_t uart0;
  static dif_uart_t uart1;
  static dif_gpio_t gpio;
  static dif_rv_timer_t timer;
 -static dif_csrng_t csrng;
+-static dif_edn_t edn0;
+-static dif_edn_t edn1;
  
  // TODO(alphan): Handle return values as long as they don't affect capture rate.
  
-@@ -77,13 +74,9 @@ static void sca_init_uart(void) {
+@@ -80,13 +74,9 @@ static void sca_init_uart(void) {
    };
- 
+
    IGNORE_RESULT(dif_uart_init(
 -      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
 -  IGNORE_RESULT(dif_uart_configure(&uart0, uart_config));
@@ -163,9 +128,9 @@ index da6a2fef4..a46911701 100644
    IGNORE_RESULT(dif_uart_configure(&uart1, uart_config));
 +  base_uart_stdout(&uart1);
  }
- 
+
  /**
-@@ -124,14 +117,6 @@ static void sca_init_timer(void) {
+@@ -127,25 +117,6 @@ static void sca_init_timer(void) {
    irq_global_ctrl(true);
  }
  
@@ -177,19 +142,27 @@ index da6a2fef4..a46911701 100644
 -      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
 -}
 -
+-/**
+- * Initializes the EDN handle.
+- */
+-static void sca_init_edn(void) {
+-  IGNORE_RESULT(dif_edn_init(
+-      mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
+-  
+-  IGNORE_RESULT(dif_edn_init(
+-      mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
+-}
+-
  /**
   * Timer IRQ handler.
   *
-@@ -158,23 +143,6 @@ void handler_irq_timer(void) {
+@@ -172,20 +143,6 @@ void handler_irq_timer(void) {
   * @param disable Set of peripherals to disable.
   */
  void sca_disable_peripherals(sca_peripherals_t disable) {
 -  if (disable & kScaPeripheralEdn) {
--    // TODO(#5465): Replace with `dif_edn_stop()` when it is implemented.
--    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
--                        EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
--    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
--                        EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
+-    IGNORE_RESULT(dif_edn_stop(&edn0));
+-    IGNORE_RESULT(dif_edn_stop(&edn1));
 -  }
 -  if (disable & kScaPeripheralCsrng) {
 -    IGNORE_RESULT(dif_csrng_stop(&csrng));
@@ -204,7 +177,7 @@ index da6a2fef4..a46911701 100644
    // Disable HMAC, KMAC, OTBN and USB clocks through CLKMGR DIF.
    dif_clkmgr_t clkmgr;
    IGNORE_RESULT(dif_clkmgr_init(
-@@ -188,17 +156,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
+@@ -199,17 +156,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
      IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
          &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT, kDifToggleDisabled));
    }
@@ -222,11 +195,12 @@ index da6a2fef4..a46911701 100644
    if (disable & kScaPeripheralUsb) {
      IGNORE_RESULT(dif_clkmgr_gateable_clock_set_enabled(
          &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT, kDifToggleDisabled));
-@@ -210,7 +167,6 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
+@@ -221,8 +167,6 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
    sca_init_uart();
    sca_init_gpio(trigger);
    sca_init_timer();
 -  sca_init_csrng();
+-  sca_init_edn();
    sca_disable_peripherals(~enable);
  }
  
@@ -240,12 +214,12 @@ index 1a5fef16c..214e08151 100644
  #include "sw/device/lib/testing/check.h"
 -#include "sw/device/lib/testing/entropy_testutils.h"
  #include "sw/device/lib/testing/test_framework/test_main.h"
- 
+
  #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 @@ -66,9 +65,6 @@ bool test_main(void) {
- 
+
    LOG_INFO("Running AES test");
- 
+
 -  // First of all, we need to get the entropy complex up and running.
 -  entropy_testutils_boot_mode_init();
 -
@@ -253,10 +227,10 @@ index 1a5fef16c..214e08151 100644
    CHECK_DIF_OK(
        dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
-index 2c9cf8049..65e845a02 100644
+index 25b6fa24d..da9429263 100644
 --- a/sw/device/tests/meson.build
 +++ b/sw/device/tests/meson.build
-@@ -224,7 +224,6 @@ aes_smoketest_lib = declare_dependency(
+@@ -261,7 +261,6 @@ aes_smoketest_lib = declare_dependency(
        sw_lib_dif_aes,
        sw_lib_mmio,
        sw_lib_runtime_log,

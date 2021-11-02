@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
@@ -62,6 +63,8 @@ static dif_uart_t uart1;
 static dif_gpio_t gpio;
 static dif_rv_timer_t timer;
 static dif_csrng_t csrng;
+static dif_edn_t edn0;
+static dif_edn_t edn1;
 
 // TODO(alphan): Handle return values as long as they don't affect capture rate.
 
@@ -133,6 +136,17 @@ static void sca_init_csrng(void) {
 }
 
 /**
+ * Initializes the EDN handle.
+ */
+static void sca_init_edn(void) {
+  IGNORE_RESULT(
+      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
+
+  IGNORE_RESULT(
+      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
+}
+
+/**
  * Timer IRQ handler.
  *
  * Disables the counter and clears pending interrupts.
@@ -159,11 +173,8 @@ void handler_irq_timer(void) {
  */
 void sca_disable_peripherals(sca_peripherals_t disable) {
   if (disable & kScaPeripheralEdn) {
-    // TODO(#5465): Replace with `dif_edn_stop()` when it is implemented.
-    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                        EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
-    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
-                        EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
+    IGNORE_RESULT(dif_edn_stop(&edn0));
+    IGNORE_RESULT(dif_edn_stop(&edn1));
   }
   if (disable & kScaPeripheralCsrng) {
     IGNORE_RESULT(dif_csrng_stop(&csrng));
@@ -211,6 +222,7 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
   sca_init_gpio(trigger);
   sca_init_timer();
   sca_init_csrng();
+  sca_init_edn();
   sca_disable_peripherals(~enable);
 }
 
