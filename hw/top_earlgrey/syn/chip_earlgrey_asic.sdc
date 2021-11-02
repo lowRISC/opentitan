@@ -52,11 +52,30 @@ set USB_TCK_PERIOD [expr $USB_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 create_clock -name USB_CLK -period ${USB_TCK_PERIOD} [get_pins ${USB_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
 
-set_max_delay 3 -from [get_ports USB_N] -to [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops[2]*.u_size_only_reg/D]
-set_max_delay 3 -from [get_ports USB_P] -to [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops[3]*.u_size_only_reg/D]
-set_max_delay 3 -from [get_ports USB_*] -to [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops[1]*.u_size_only_reg/D]
-set_max_delay 3 -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/usb_d_q_reg/Q] -to [get_ports USB_*]
-set_max_delay 3 -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/oe_q_reg/Q] -to [get_ports USB_*]
+set USBDEV_IOMUX_PATH top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*
+set USBDEV_OUTREG_PATH top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx
+# This requires knowledge of actual pin names, which are different depending on
+# whether we run this with tech libs or not.
+if {$FOUNDRY_ROOT != ""} {
+    set USB_N_PIN  gen_flops[2]*.u_size_only_reg/D
+    set USB_P_PIN  gen_flops[3]*.u_size_only_reg/D
+    set USB_PIN    gen_flops[1]*.u_size_only_reg/D
+    set USB_D_PIN  u_usb_d_flop/gen_*u_impl*/gen_flops[0]*.u_size_only_reg/Q
+    set USB_OE_PIN u_oe_flop_flop/gen_*u_impl*/gen_flops[0]*.u_size_only_reg/Q
+} else {
+    set USB_N_PIN  d_i[2]
+    set USB_P_PIN  d_i[3]
+    set USB_PIN    d_i[1]
+    set USB_D_PIN  u_usb_d_flop/gen_*u_impl*/q_o[0]
+    set USB_OE_PIN u_oe_flop_flop/gen_*u_impl*/q_o[0]
+}
+
+set_max_delay 3 -from [get_ports USB_N] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_N_PIN}]
+set_max_delay 3 -from [get_ports USB_P] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_P_PIN}]
+set_max_delay 3 -from [get_ports USB_*] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_PIN}]
+set_max_delay 3 -from [get_pins ${USBDEV_OUTREG_PATH}/${USB_D_PIN}] -to [get_ports USB_*]
+set_max_delay 3 -from [get_pins ${USBDEV_OUTREG_PATH}/${USB_OE_PIN}] -to [get_ports USB_*]
+
 #####################
 # IO clk            #
 #####################
