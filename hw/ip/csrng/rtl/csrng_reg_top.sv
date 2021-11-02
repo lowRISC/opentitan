@@ -190,6 +190,7 @@ module csrng_reg_top (
   logic err_code_drbg_updbe_sm_err_qs;
   logic err_code_drbg_updob_sm_err_qs;
   logic err_code_aes_cipher_sm_err_qs;
+  logic err_code_cmd_gen_cnt_err_qs;
   logic err_code_fifo_write_err_qs;
   logic err_code_fifo_read_err_qs;
   logic err_code_fifo_state_err_qs;
@@ -1417,6 +1418,31 @@ module csrng_reg_top (
     .qs     (err_code_aes_cipher_sm_err_qs)
   );
 
+  //   F[cmd_gen_cnt_err]: 26:26
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_err_code_cmd_gen_cnt_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.cmd_gen_cnt_err.de),
+    .d      (hw2reg.err_code.cmd_gen_cnt_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_code_cmd_gen_cnt_err_qs)
+  );
+
   //   F[fifo_write_err]: 28:28
   prim_subreg #(
     .DW      (1),
@@ -1862,6 +1888,7 @@ module csrng_reg_top (
         reg_rdata_next[23] = err_code_drbg_updbe_sm_err_qs;
         reg_rdata_next[24] = err_code_drbg_updob_sm_err_qs;
         reg_rdata_next[25] = err_code_aes_cipher_sm_err_qs;
+        reg_rdata_next[26] = err_code_cmd_gen_cnt_err_qs;
         reg_rdata_next[28] = err_code_fifo_write_err_qs;
         reg_rdata_next[29] = err_code_fifo_read_err_qs;
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
