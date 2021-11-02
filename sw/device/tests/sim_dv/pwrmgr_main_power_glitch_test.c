@@ -49,6 +49,7 @@ bool test_main(void) {
   } else {
     LOG_INFO("Checking reset status.");
     rstmgr_testutils_post_reset(&rstmgr, 1 << kResetInfoMainPower, 0, 0, 0, 0);
+    LOG_INFO("Reset status indicates a main power glitch reset");
   }
   return true;
 }

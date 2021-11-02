@@ -833,15 +833,14 @@
 
     // PWRMGR tests:
     {
-      name: chip_sw_pwrmgr_cold_boot
-      desc: '''Verify the cold boot sequence through the wiggling of `por_rst_n`.
+      name: chip_sw_pwrmgr_external_full_reset
+      desc: '''Verify the cold boot sequence by wiggling of chip's `POR_N`.
 
-            This mainly ensures that both FSMs are properly reset on the POR signal. The check
-            is that the processor ends up running. Also verify, the rstmgr records POR in
-            `reset_info` CSR.
+            This ensures that both FSMs are properly reset on the POR signal. The check  is that
+            the processor ends up running. Also verify, the rstmgr records POR in `reset_info` CSR.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_pwrmgr_full_aon_reset"]
     }
     {
       name: chip_sw_pwrmgr_sleep_all_wake_ups
@@ -908,7 +907,19 @@
       tests: []
     }
     {
-      name: chip_sw_pwrmgr_power_glitch_reset
+      name: chip_sw_pwrmgr_aon_power_glitch_reset
+      desc: '''Verify the cold boot sequence through an AON power glitch.
+
+
+            Pulsing the AST vcaon_supp_i input causes an AON power glitch which becomes a POR.
+            This ensures that both FSMs are properly reset on the POR signal. The check is that
+            the processor ends up running. Also verify, the rstmgr records POR in `reset_info` CSR.
+            '''
+      milestone: V2
+      tests: ["chip_sw_pwrmgr_full_aon_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_main_power_glitch_reset
       desc: '''Verify the effect of a glitch in main power rail.
 
             The vcmain_supp_i AST input is forced to drop once the test is running. This triggers
@@ -916,7 +927,7 @@
             restarts and the POR bit is not set.
             '''
       milestone: V2
-      tests: ["chip_sw_pwrmgr_power_glitch_reset"]
+      tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
     }
     {
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
