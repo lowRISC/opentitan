@@ -137,7 +137,7 @@ module prim_reg_cdc #(
   // If busy goes high, we must eventually see an ack
   `ASSERT(HungHandShake_A, $rose(src_busy_o) |-> strong(##[0:$] src_ack), clk_src_i, !rst_src_ni)
 
-  `ifdef SIMULATION
+  `ifdef INC_ASSERT
     logic async_flag;
     always_ff @(posedge clk_src_i or negedge rst_src_ni) begin
       if (!rst_src_ni) begin
