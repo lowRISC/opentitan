@@ -140,7 +140,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
     max_flash_ops_per_cfg = 50;
 
     op_readonly_on_info_partition = 0;
-    op_readonly_on_info1_partition = 0;
+    // info1 partition will be read-only by default
+    op_readonly_on_info1_partition = 1;
 
     op_erase_type_bank_pc = 20;
     op_max_words = 512;
