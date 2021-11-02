@@ -215,8 +215,7 @@ set_false_path -through [get_pins top_earlgrey/u_spi_device/cio_csb_i] \
 # During pre-layout, the SPI_HOST_CLK source latencies are estimanted to account for
 # pad and logic latencies.  After CTS, source latency must be removed as all clocks are propagated
 
-# TODO, this flop should be hand instantiated
-set CLK_DIV_PIN top_earlgrey/u_spi_host0/u_spi_core/u_fsm/sck_q_reg/Q
+set CLK_DIV_PIN top_earlgrey/u_spi_host0/u_spi_core/u_fsm/u_sck_flop/gen_*u_impl*/gen_flops[0]*.u_size_only_reg/Q
 
 # internal divided by 2 clock (fastest spi host configuration)
 create_generated_clock -name SPI_HOST_INT_CLK -source [get_pins ${IO_CLK_PIN}] \

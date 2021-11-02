@@ -472,16 +472,22 @@ module spi_host_fsm
 
   assign sck_o = sck_q;
 
+  prim_flop_en u_sck_flop (
+    .clk_i,
+    .rst_ni,
+    .en_i(~stall),
+    .d_i(sck_d),
+    .q_o(sck_q)
+  );
+
   for (genvar ii = 0; ii < NumCS; ii = ii + 1) begin : gen_csb_gen
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         csb_q[ii] <= 1'b1;
-        sck_q     <= 1'b0;
       end else begin
         csb_q[ii] <= (csid != ii) ? 1'b1 :
                      !stall       ? csb_single_d :
                      csb_q[ii];
-        sck_q     <= !stall ? sck_d : sck_q;
       end
     end
   end : gen_csb_gen
