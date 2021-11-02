@@ -50,6 +50,15 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     kwargs: bin_to_vmem64_custom_target_args,
   )
 
+  hello_world_scr_vmem64 = custom_target(
+    target_name.format('scrambled'),
+    input: hello_world_vmem64,
+    output: flash_image_outputs,
+    command: flash_image_command,
+    depend_files: flash_image_depend_files,
+    build_by_default: true,
+  )
+
   custom_target(
     target_name.format('export'),
     command: export_target_command,
@@ -60,6 +69,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       hello_world_bin,
       hello_world_vmem32,
       hello_world_vmem64,
+      hello_world_scr_vmem64,
     ],
     output: target_name.format('export'),
     build_always_stale: true,

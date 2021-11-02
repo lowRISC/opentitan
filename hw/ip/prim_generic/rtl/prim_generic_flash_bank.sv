@@ -362,13 +362,16 @@ module prim_generic_flash_bank #(
 
   end // always_comb
 
-  localparam int MemWidth = DataWidth - MetaDataWidth;
+  //localparam int MemWidth = DataWidth - MetaDataWidth;
+  localparam int MemWidth = DataWidth - MetaDataWidth + 4;
+  localparam int EccWidth = MetaDataWidth - 4;
+
 
   logic [DataWidth-1:0] rd_data_main, rd_data_info;
   logic [MemWidth-1:0] rd_nom_data_main;
-  logic [MetaDataWidth-1:0] rd_meta_data_main;
+  logic [EccWidth-1:0] rd_meta_data_main;
   logic [InfoTypes-1:0][MemWidth-1:0] rd_nom_data_info;
-  logic [InfoTypes-1:0][MetaDataWidth-1:0] rd_meta_data_info;
+  logic [InfoTypes-1:0][EccWidth-1:0] rd_meta_data_info;
 
   prim_ram_1p #(
     .Width(MemWidth),
@@ -386,16 +389,16 @@ module prim_generic_flash_bank #(
   );
 
   prim_ram_1p #(
-    .Width(MetaDataWidth),
+    .Width(EccWidth),
     .Depth(WordsPerBank),
-    .DataBitsPerMask(MetaDataWidth)
+    .DataBitsPerMask(EccWidth)
   ) u_mem_meta (
     .clk_i,
     .req_i    (mem_req & (mem_part == flash_ctrl_pkg::FlashPartData)),
     .write_i  (mem_wr),
     .addr_i   (mem_addr),
-    .wdata_i  (mem_wdata[MemWidth +: MetaDataWidth]),
-    .wmask_i  ({MetaDataWidth{1'b1}}),
+    .wdata_i  (mem_wdata[MemWidth +: EccWidth]),
+    .wmask_i  ({EccWidth{1'b1}}),
     .rdata_o  (rd_meta_data_main),
     .cfg_i    ('0)
   );
@@ -423,16 +426,16 @@ module prim_generic_flash_bank #(
     );
 
     prim_ram_1p #(
-      .Width(MetaDataWidth),
+      .Width(EccWidth),
       .Depth(WordsPerInfoBank),
-      .DataBitsPerMask(MetaDataWidth)
+      .DataBitsPerMask(EccWidth)
     ) u_info_mem_meta (
       .clk_i,
       .req_i    (info_mem_req),
       .write_i  (mem_wr),
       .addr_i   (mem_addr[0 +: InfoAddrW]),
-      .wdata_i  (mem_wdata[MemWidth +: MetaDataWidth]),
-      .wmask_i  ({MetaDataWidth{1'b1}}),
+      .wdata_i  (mem_wdata[MemWidth +: EccWidth]),
+      .wmask_i  ({EccWidth{1'b1}}),
       .rdata_o  (rd_meta_data_info[info_type]),
       .cfg_i    ('0)
     );

@@ -23,7 +23,9 @@ package flash_phy_pkg;
   parameter int NumBuf         = 4; // number of flash read buffers
   parameter int RspOrderDepth  = 2; // this should be DataWidth / BusWidth
                                     // will switch to this after bus widening
-  parameter int ScrDataWidth   = DataWidth + EccWidth;
+  parameter int PlainIntgWidth = MetaDataWidth - EccWidth;
+  parameter int PlainDataWidth = DataWidth + PlainIntgWidth;
+  //parameter int ScrDataWidth   = DataWidth + EccWidth;
   parameter int FullDataWidth  = DataWidth + MetaDataWidth;
   parameter int InfoTypes      = flash_ctrl_pkg::InfoTypes;
   parameter int InfoTypesWidth = flash_ctrl_pkg::InfoTypesWidth;
@@ -58,7 +60,7 @@ package flash_phy_pkg;
   } rd_buf_attr_e;
 
   typedef struct packed {
-    logic [DataWidth-1:0] data;
+    logic [PlainDataWidth-1:0] data;
     logic [BankAddrW-1:0] addr; // all address bits preserved to pick return portion
     logic part;
     logic [InfoTypesWidth-1:0] info_sel;
@@ -68,6 +70,7 @@ package flash_phy_pkg;
   typedef struct packed {
     logic [NumBuf-1:0] buf_sel;
     logic [WordSelW-1:0] word_sel;
+    logic intg_ecc_en;
   } rsp_fifo_entry_t;
 
   parameter int RspOrderFifoWidth = $bits(rsp_fifo_entry_t);

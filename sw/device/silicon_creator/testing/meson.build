@@ -53,6 +53,15 @@ foreach mask_rom_test_name, mask_rom_test_info : mask_rom_tests
       kwargs: bin_to_vmem64_custom_target_args,
     )
 
+    mask_rom_test_scr_vmem64 = custom_target(
+      target_name.format('scrambled'),
+      input: mask_rom_test_vmem64,
+      output: flash_image_outputs,
+      command: flash_image_command,
+      depend_files: flash_image_depend_files,
+      build_by_default: true,
+    )
+
     mask_rom_test_sim_dv_frames = []
     if device_name == 'sim_dv' and \
         mask_rom_test_info.has_key('dv_frames') and mask_rom_test_info['dv_frames']
@@ -112,6 +121,7 @@ foreach mask_rom_test_name, mask_rom_test_info : mask_rom_tests
         mask_rom_test_bin,
         mask_rom_test_vmem32,
         mask_rom_test_vmem64,
+        mask_rom_test_scr_vmem64,
         mask_rom_test_sim_dv_frames,
         mask_rom_test_sim_dv_logs,
       ],

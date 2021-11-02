@@ -52,6 +52,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
     StPrePack,
     StPackData,
     StPostPack,
+    StCalcPlainEcc,
     StReqFlash,
     StWaitFlash,
     StCalcMask,
@@ -77,6 +78,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   localparam int MaxIdx = WidthMultiple - 1;
 
   logic [WidthMultiple-1:0][BusWidth-1:0] packed_data;
+  logic plain_ecc_en;
 
   // selects empty data or real data
   assign pack_data  = (data_sel == Actual) ? data_i : {BusWidth{1'b1}};
@@ -117,6 +119,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
 
     pack_valid = 1'b0;
     data_sel = Filler;
+    plain_ecc_en = 1'b0;
     req_o = 1'b0;
     ack_o = 1'b0;
     last_o = 1'b0;
@@ -147,7 +150,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
 
         if (req_i && idx == MaxIdx) begin
           // last beat of a flash word
-          state_d = scramble_i ? StCalcMask : StReqFlash;
+          state_d = StCalcPlainEcc;
         end else if (req_i && last_i) begin
           // last beat is not aligned with the last entry of flash word
           state_d = StPostPack;
@@ -163,8 +166,13 @@ module flash_phy_prog import flash_phy_pkg::*; (
 
         // finish packing remaining entries
         if (idx == MaxIdx) begin
-          state_d = scramble_i ? StCalcMask : StReqFlash;
+          state_d = StCalcPlainEcc;
         end
+      end
+
+      StCalcPlainEcc: begin
+        plain_ecc_en = 1'b1;
+        state_d = scramble_i ? StCalcMask : StReqFlash;
       end
 
       StCalcMask: begin
@@ -236,15 +244,48 @@ module flash_phy_prog import flash_phy_pkg::*; (
   assign block_data_o = packed_data;
 
   // ECC handling
-  logic [ScrDataWidth-1:0] ecc_data;
+  localparam int PlainDataEccWidth = DataWidth + 8;
 
-  prim_secded_hamming_72_64_enc u_enc (
-    .data_i(packed_data),
+  logic [FullDataWidth-1:0] ecc_data;
+  logic [PlainDataEccWidth-1:0] plain_data_w_ecc;
+  logic [PlainIntgWidth-1:0] plain_data_ecc;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      plain_data_ecc <= '1;
+    end else if (plain_ecc_en) begin
+      plain_data_ecc <= plain_data_w_ecc[DataWidth +: PlainIntgWidth];
+    end
+  end
+
+  logic [PlainDataWidth-1:0] ecc_data_in;
+  assign ecc_data_in = {plain_data_ecc, packed_data};
+
+  // first ecc encoder used for overall data
+  prim_secded_hamming_76_68_enc u_enc (
+    .data_i(ecc_data_in),
     .data_o(ecc_data)
   );
 
-  // pad the remaining bits to '0', this effectively "programs" them.
-  assign data_o = ecc_i ? FullDataWidth'(ecc_data) : FullDataWidth'(packed_data);
+  // TODO
+  // second ecc encoder used for plain portion only
+  // the duplicated ecc encoder is a temporary work-around
+  // for prim_flash / dv which currently maintains a separate
+  // memory for the normal data portion and the metadata portion.
+  // Once that is addressed in a different PR, the two encoders
+  // will be merged.
+  // This is also related to how mem_bkdr is structured. The plain
+  // ECC for flash is truncated when used, so it does not fit neatly
+  // into the back door scheme.
+  prim_secded_hamming_72_64_enc u_plain_enc (
+    .data_i(packed_data),
+    .data_o(plain_data_w_ecc)
+  );
+
+  logic unused_data;
+  assign unused_data = |plain_data_w_ecc;
+
+  // pad the remaining bits with '1' if ecc is not used.
+  assign data_o = ecc_i ? ecc_data : {{EccWidth{1'b1}}, ecc_data_in};
 
   /////////////////////////////////
   // Assertions
@@ -276,6 +317,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   // Postpack states should never pack the first index (as it would be aligned in that case)
   `ASSERT(PostPackRule_A, state_q == StPostPack && pack_valid |-> idx != '0)
 
-
+  // The metadata width must always be greater than the ecc width
+  `ASSERT_INIT(WidthCheck_A, MetaDataWidth >= EccWidth)
 
 endmodule // flash_phy_prog

@@ -55,7 +55,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       spi_device_load_bootstrap({cfg.sw_images[SwTypeTest], ".frames.vmem"});
     end else begin
       cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
-          {cfg.sw_images[SwTypeTest], ".64.vmem"});
+          {cfg.sw_images[SwTypeTest], ".64.scr.vmem"});
     end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
 

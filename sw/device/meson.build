@@ -135,6 +135,25 @@ scramble_image_depend_files = [
     scramble_image_hjson
 ]
 
+# Generate proper flash image
+#
+
+flash_image_outputs = [
+  '@BASENAME@.scr.vmem',
+]
+
+flash_image_command = [
+    prog_python,
+    meson.source_root() / 'util/design/gen-flash-img.py',
+    '@INPUT@',
+    '@OUTPUT@',
+]
+
+flash_image_depend_files = [
+    meson.source_root() / 'util/design/gen-flash-img.py',
+]
+
+
 # Signing keys for ROM_EXT images.
 signing_keys = {
   'fpga_key_0': {

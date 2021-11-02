@@ -72,7 +72,7 @@ module flash_phy_rd
 
   // error status reporting
   // only single bit error is shown here as multi-bit errors are
-  // actual data errors are reflected in-band through data_err_o
+  // actual data errors and reflected in-band through data_err_o
   output logic ecc_single_err_o,
   output logic [BusBankAddrW-1:0] ecc_addr_o
   );
@@ -85,7 +85,7 @@ module flash_phy_rd
   logic buf_en_q;
 
   // muxed de-scrambled and plain-data
-  logic [DataWidth-1:0] muxed_data;
+  logic [PlainDataWidth-1:0] muxed_data;
   logic muxed_err;
 
   // muxed data valid signal that takes scrambling into consideration
@@ -277,6 +277,10 @@ module flash_phy_rd
     assign rsp_fifo_wdata.word_sel = addr_i[0 +: LsbAddrBit];
   end
 
+  // store the ecc configuration for this transaction until
+  // response is ready to be sent.
+  assign rsp_fifo_wdata.intg_ecc_en = ecc_i;
+
   // response order FIFO
   prim_fifo_sync #(
     .Width  (RspOrderFifoWidth),
@@ -335,7 +339,7 @@ module flash_phy_rd
   assign req_o = req_i & flash_rdy & rd_stages_rdy & no_match;
 
   /////////////////////////////////
-  // Handling ECC
+  // Handling Reliability ECC
   /////////////////////////////////
 
   // only uncorrectable errors are passed on to the fabric
@@ -346,18 +350,19 @@ module flash_phy_rd
   logic ecc_multi_err_raw;
   logic ecc_multi_err;
   logic ecc_single_err;
-  logic [DataWidth-1:0] data_ecc_chk;
-  logic [DataWidth-1:0] data_int;
+  logic [PlainDataWidth-1:0] data_ecc_chk;
+  logic [PlainDataWidth-1:0] data_int;
   logic data_erased;
 
+  // this ECC check is for reliability ECC
   assign valid_ecc = rd_done && rd_attrs.ecc;
 
   // When all bits are 1, the data has been erased
   // This check is only valid when read data returns.
   assign data_erased = rd_done & (data_i == {FullDataWidth{1'b1}});
 
-  prim_secded_hamming_72_64_dec u_dec (
-    .data_i(data_i[ScrDataWidth-1:0]),
+  prim_secded_hamming_76_68_dec u_dec (
+    .data_i(data_i),
     .data_o(data_ecc_chk),
     .syndrome_o(),
     .err_o({ecc_multi_err_raw, ecc_single_err})
@@ -377,7 +382,7 @@ module flash_phy_rd
   // return the raw data so that it can be debugged.
   assign data_int = data_err | ecc_single_err_o ?
                     data_ecc_chk :
-                    data_i[DataWidth-1:0];
+                    data_i[PlainDataWidth-1:0];
 
   assign data_err = valid_ecc & ecc_multi_err;
 
@@ -396,7 +401,7 @@ module flash_phy_rd
   logic fifo_data_ready;
   logic fifo_data_valid;
   logic mask_valid;
-  logic [DataWidth-1:0] fifo_data;
+  logic [PlainDataWidth-1:0] fifo_data;
   logic [DataWidth-1:0] mask;
   logic data_fifo_rdy;
   logic mask_fifo_rdy;
@@ -405,6 +410,7 @@ module flash_phy_rd
   logic hint_forward;
   logic hint_descram;
   logic data_err_q;
+  logic ecc_en_q; // this is used for the integrity ECC check
   logic [NumBuf-1:0] alloc_q2;
 
   assign scramble_stage_rdy = data_fifo_rdy & mask_fifo_rdy;
@@ -450,7 +456,7 @@ module flash_phy_rd
 
   //TODO: Cleanup the FIFO popping a bit more
   prim_fifo_sync #(
-    .Width   (DataWidth + 3 + NumBuf),
+    .Width   (PlainDataWidth + 4 + NumBuf),
     .Pass    (0),
     .Depth   (2),
     .OutputZeroIfEmpty (1)
@@ -460,12 +466,12 @@ module flash_phy_rd
     .clr_i   (1'b0),
     .wvalid_i(rd_done),
     .wready_o(data_fifo_rdy),
-    .wdata_i ({alloc_q, descram, forward, data_err, data_int}),
+    .wdata_i ({alloc_q, descram, forward, data_err, rd_attrs.ecc, data_int}),
     .depth_o (unused_rd_depth),
     .full_o (),
     .rvalid_o(fifo_data_valid),
     .rready_i(rd_and_mask_fifo_pop),
-    .rdata_o ({alloc_q2, descram_q, forward_q, data_err_q, fifo_data})
+    .rdata_o ({alloc_q2, descram_q, forward_q, data_err_q, ecc_en_q, fifo_data})
   );
 
   // storage for mask calculations
@@ -508,7 +514,7 @@ module flash_phy_rd
   assign descramble_req_o = fifo_data_valid & mask_valid & hint_descram;
 
   // scrambled data to de-scramble
-  assign scrambled_data_o = fifo_data ^ mask;
+  assign scrambled_data_o = fifo_data[DataWidth-1:0] ^ mask;
 
   // muxed responses
   // When "forward" is true, there is nothing ahead in the pipeline, directly feed data
@@ -516,7 +522,9 @@ module flash_phy_rd
   // When "forward" is not true, take the output from the descrmable stage, which is
   // dependent on the scramble hint.
   assign muxed_data = forward      ? data_int :
-                      hint_descram ? descrambled_data_i ^ mask : fifo_data;
+                      hint_descram ? {fifo_data[PlainDataWidth-1 -: PlainIntgWidth],
+                                      descrambled_data_i ^ mask} :
+                                     fifo_data;
   assign muxed_err  = forward      ? data_err : data_err_q;
 
   // muxed data valid
@@ -533,7 +541,7 @@ module flash_phy_rd
 
   logic flash_rsp_match;
   logic [NumBuf-1:0] buf_rsp_match;
-  logic [DataWidth-1:0] buf_rsp_data;
+  logic [PlainDataWidth-1:0] buf_rsp_data;
 
   // update buffers
   // When forwarding, update entry stored in alloc_q
@@ -563,24 +571,41 @@ module flash_phy_rd
     end
   end
 
+  logic [PlainDataWidth-1:0] data_out_muxed;
+  assign data_out_muxed = |buf_rsp_match ? buf_rsp_data : muxed_data;
+
   if (WidthMultiple == 1) begin : gen_width_one_rd
     // When multiple is 1, just pass the read through directly
     logic unused_word_sel;
-    assign data_o = data_err_o     ? {BusWidth{1'b1}} :
-                    |buf_rsp_match ? buf_rsp_data : muxed_data;
+    assign data_o = data_err_o ? {BusWidth{1'b1}} : data_out_muxed[DataWidth-1:0];
     assign unused_word_sel = rsp_fifo_rdata.word_sel;
 
   end else begin : gen_rd
     // Re-arrange data into packed array to pick the correct one
     logic [WidthMultiple-1:0][BusWidth-1:0] bus_words_packed;
-    assign bus_words_packed = |buf_rsp_match ? buf_rsp_data : muxed_data;
+    assign bus_words_packed = data_out_muxed[DataWidth-1:0];
     assign data_o = data_err_o ? {BusWidth{1'b1}} : bus_words_packed[rsp_fifo_rdata.word_sel];
 
   end
 
+  // add plaintext decoding here
+  // plaintext error
+  logic intg_err;
+  logic [DataWidth-1:0] unused_data;
+  logic [3:0] unused_intg;
+  logic [3:0] truncated_intg;
+
+  prim_secded_hamming_72_64_enc u_plain_enc (
+    .data_i(data_out_muxed[DataWidth-1:0]),
+    .data_o({unused_intg, truncated_intg, unused_data})
+  );
+  assign intg_err = rsp_fifo_rdata.intg_ecc_en ?
+                    truncated_intg != data_out_muxed[DataWidth +: PlainIntgWidth] :
+                    '0;
+
   // whenever the response is coming from the buffer, the error is never set
   assign data_valid_o = flash_rsp_match | |buf_rsp_match;
-  assign data_err_o   = muxed_err;
+  assign data_err_o   = muxed_err | intg_err;
 
   // the entire read pipeline is idle when there are no responses to return and no
   assign idle_o = ~rsp_fifo_vld;
