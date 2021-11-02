@@ -278,6 +278,9 @@ class mem_bkdr_util extends uvm_object;
       EccHamming_72_64: begin
         rw_data = prim_secded_pkg::prim_secded_hamming_72_64_enc(rw_data[63:0]);
       end
+      EccHamming_76_68: begin
+        rw_data = prim_secded_pkg::prim_secded_hamming_76_68_enc(rw_data[63:0]);
+      end
       default: begin
         `uvm_error(`gfn, $sformatf("ECC scheme %0s is unsupported.", err_detection_scheme))
       end

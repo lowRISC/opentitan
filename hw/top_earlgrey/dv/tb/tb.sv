@@ -310,7 +310,7 @@ module tb;
           .path  (`DV_STRINGIFY(`FLASH0_DATA_MEM_HIER)),
           .depth ($size(`FLASH0_DATA_MEM_HIER)),
           .n_bits($bits(`FLASH0_DATA_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_72_64));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Data], `FLASH0_DATA_MEM_HIER)
 
       `uvm_info("tb.sv", "Backdoor init flash 0 info", UVM_MEDIUM)
@@ -319,7 +319,7 @@ module tb;
           .path  (`DV_STRINGIFY(`FLASH0_INFO_MEM_HIER)),
           .depth ($size(`FLASH0_INFO_MEM_HIER)),
           .n_bits($bits(`FLASH0_INFO_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_72_64));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
 
       `uvm_info("tb.sv", "Backdoor init flash 1 data", UVM_MEDIUM)
@@ -328,7 +328,7 @@ module tb;
           .path  (`DV_STRINGIFY(`FLASH1_DATA_MEM_HIER)),
           .depth ($size(`FLASH1_DATA_MEM_HIER)),
           .n_bits($bits(`FLASH1_DATA_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_72_64));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH0_DATA_MEM_HIER)
 
       `uvm_info("tb.sv", "Backdoor init flash 0 info", UVM_MEDIUM)
@@ -337,7 +337,7 @@ module tb;
           .path  (`DV_STRINGIFY(`FLASH1_INFO_MEM_HIER)),
           .depth ($size(`FLASH1_INFO_MEM_HIER)),
           .n_bits($bits(`FLASH1_INFO_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_72_64));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
 
       `uvm_info("tb.sv", "Backdoor init OTP", UVM_MEDIUM)

@@ -176,10 +176,20 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
         kwargs: bin_to_vmem64_custom_target_args,
       )
 
+      rom_ext_signed_scr_vmem64 = custom_target(
+        signed_target_name.format('scrambled'),
+        input: rom_ext_signed_vmem64,
+        output: flash_image_outputs,
+        command: flash_image_command,
+        depend_files: flash_image_depend_files,
+        build_by_default: true,
+      )
+
       targets_to_export += [
         rom_ext_signed_bin,
         rom_ext_signed_vmem32,
         rom_ext_signed_vmem64,
+        rom_ext_signed_scr_vmem64,
       ]
     endforeach
 

@@ -47,6 +47,7 @@ static void test_basic_io(void) {
                              .rd_en = true,
                              .prog_en = true,
                              .erase_en = true,
+                             .ecc_en = true,
                              .scramble_en = true};
   flash_cfg_region(&info_region);
 
@@ -58,6 +59,7 @@ static void test_basic_io(void) {
                              .rd_en = true,
                              .prog_en = true,
                              .erase_en = true,
+                             .ecc_en = true,
                              .scramble_en = true};
   flash_cfg_region(&data_region);
 
@@ -135,6 +137,7 @@ static void test_memory_protection(void) {
                                    .rd_en = true,
                                    .prog_en = true,
                                    .erase_en = true,
+                                   .ecc_en = true,
                                    .scramble_en = false};
 
   uintptr_t ok_region_start =

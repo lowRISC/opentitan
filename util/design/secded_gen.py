@@ -78,8 +78,8 @@ PRINT_OPTIONS = {"logic": "assign ", "function": "  "}
 # secded configurations
 SECDED_CFG_FILE = "util/design/data/secded_cfg.hjson"
 
-PROJ_ROOT = Path(__file__).parent.joinpath('../../')
-SECDED_CFG_PATH = Path(PROJ_ROOT).joinpath(SECDED_CFG_FILE)
+PROJ_ROOT = Path(__file__).parent.parent.parent
+SECDED_CFG_PATH = Path(PROJ_ROOT) / SECDED_CFG_FILE
 
 # The seed we use to initialise the PRNG when running the randomised algorithm
 # to choose constants for Hsiao codes.
@@ -202,7 +202,7 @@ def print_fn(n, k, m, codes, suffix, codetype):
     enc_out = print_enc(n, k, m, codes)
     dec_out = print_dec(n, k, m, codes, codetype, "function")
 
-    typename = "secded_%d_%d_t" % (n, k)
+    typename = "secded%s_%d_%d_t" % (suffix, n, k)
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
     outstr = '''
@@ -326,8 +326,7 @@ def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
     log.info(f"Encoding ECC for {hex(dataword)}")
 
     # first check to see if bit width is supported among configuration
-    with open(SECDED_CFG_PATH, 'r') as infile:
-        config = hjson.load(infile)
+    config = hjson.load(SECDED_CFG_PATH.open())
 
     codes = None
     bitmasks = None
@@ -347,9 +346,9 @@ def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
     word_bin = format(dataword, '0' + str(k) + 'b')
 
     codeword = word_bin
-    for j, mask in enumerate(bitmasks):
+    for mask in bitmasks:
         bit = 0
-        log.debug(f'codword: {codeword}')
+        log.debug(f'codeword: {codeword}')
         log.debug(f'mask: {hex(mask)}')
         mask = (format(mask, '0' + str(k + m) + 'b'))
 

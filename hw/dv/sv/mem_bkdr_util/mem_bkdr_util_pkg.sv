@@ -25,6 +25,7 @@ package mem_bkdr_util_pkg;
     EccHamming_22_16 = prim_secded_pkg::SecdedHamming_22_16,
     EccHamming_39_32 = prim_secded_pkg::SecdedHamming_39_32,
     EccHamming_72_64 = prim_secded_pkg::SecdedHamming_72_64,
+    EccHamming_76_68 = prim_secded_pkg::SecdedHamming_76_68,
     ParityEven,
     ParityOdd
   } err_detection_e;
