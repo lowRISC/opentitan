@@ -524,6 +524,16 @@
                 This bit will stay set until firmware clears it.
                 '''
         }
+        { bits: "26",
+          name: "CMD_GEN_CNT_ERR",
+          desc: '''
+                This bit will be set to one when an Generate command counter fatal error
+                has been detected.
+                This error will signal a fatal alert, and also
+                an interrupt if enabled.
+                This bit will stay set until firmware clears it.
+                '''
+        }
         { bits: "28",
           name: "FIFO_WRITE_ERR",
           desc: '''

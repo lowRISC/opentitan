@@ -184,6 +184,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [2:0]             ctr_drbg_gen_sfifo_ggenbits_err;
   logic                   block_encrypt_sfifo_blkenc_err_sum;
   logic [2:0]             block_encrypt_sfifo_blkenc_err;
+  logic                   cmd_gen_cnt_err_sum;
   logic                   cmd_stage_sm_err_sum;
   logic                   main_sm_err_sum;
   logic                   main_sm_err;
@@ -288,6 +289,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_wr;
   logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_rd;
   logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_st;
+  logic [NApps-1:0]          cmd_gen_cnt_err;
   logic [NApps-1:0]          cmd_stage_sm_err;
 
   logic [NApps-1:0]          cmd_stage_vld;
@@ -517,6 +519,8 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[24];
   assign aes_cipher_sm_err_sum = aes_cipher_sm_err ||
          err_code_test_bit[25];
+  assign cmd_gen_cnt_err_sum = (|cmd_gen_cnt_err) ||
+         err_code_test_bit[26];
   assign fifo_write_err_sum =
          block_encrypt_sfifo_blkenc_err[2] ||
          ctr_drbg_gen_sfifo_ggenbits_err[2] ||
@@ -639,6 +643,9 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.err_code.aes_cipher_sm_err.d = 1'b1;
   assign hw2reg.err_code.aes_cipher_sm_err.de = cs_enable && aes_cipher_sm_err_sum;
 
+  assign hw2reg.err_code.cmd_gen_cnt_err.d = 1'b1;
+  assign hw2reg.err_code.cmd_gen_cnt_err.de = cs_enable && cmd_gen_cnt_err_sum;
+
 
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
@@ -748,6 +755,7 @@ module csrng_core import csrng_pkg::*; #(
       .genbits_fips_o      (genbits_stage_fips[ai]),
       .cmd_stage_sfifo_cmd_err_o (cmd_stage_sfifo_cmd_err[ai]),
       .cmd_stage_sfifo_genbits_err_o (cmd_stage_sfifo_genbits_err[ai]),
+      .cmd_gen_cnt_err_o  (cmd_gen_cnt_err[ai]),
       .cmd_stage_sm_err_o (cmd_stage_sm_err[ai])
     );
 
