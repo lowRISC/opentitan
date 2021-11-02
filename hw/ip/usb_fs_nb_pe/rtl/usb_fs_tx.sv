@@ -409,26 +409,41 @@ module usb_fs_tx (
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_diff_reg
     if (!rst_ni) begin
       dp_eop_q             <= 0;
-      oe_q                 <= 0;
-      usb_d_q              <= 1; // J state = idle state
-      usb_se0_q            <= 0;
       out_state_q          <= OsIdle;
     end else begin
       if (link_reset_i) begin
         dp_eop_q             <= 0;
-        oe_q                 <= 0;
-        usb_d_q              <= 1;
-        usb_se0_q            <= 0;
         out_state_q          <= OsIdle;
       end else begin
         dp_eop_q             <= dp_eop_d;
-        oe_q                 <= oe_d;
-        usb_d_q              <= usb_d_d;
-        usb_se0_q            <= usb_se0_d;
         out_state_q          <= out_state_d;
       end
     end
   end
+
+
+  prim_flop u_oe_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(link_reset_i ? 1'b0 : oe_d),
+    .q_o(oe_q)
+  );
+
+  prim_flop #(
+    .ResetValue(1) // J state = idle state
+  ) u_usb_d_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(link_reset_i ? 1'b0 : usb_d_d),
+    .q_o(usb_d_q)
+  );
+
+  prim_flop u_usb_se0_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(link_reset_i ? 1'b0 : usb_se0_d),
+    .q_o(usb_se0_q)
+  );
 
   assign usb_oe_o  = oe_q;
   assign usb_d_o   = usb_d_q;
