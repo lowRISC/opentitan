@@ -34,25 +34,23 @@
 ##
 ## Generate the RAL package for a device interface.
 ##
-##    dv_base_prefix   a string naming the base register type. If it is FOO,
-##                     then we will inherit from FOO_reg (assumed to
-##                     be a subclass of uvm_reg).
+##    dv_base_names     a DvBaseNames object that contains register base class names
 ##
-##    reg_width        an integer giving the width of registers in bits
+##    reg_width         an integer giving the width of registers in bits
 ##
-##    reg_block_path   the hierarchical path to the relevant register block in the
-##                     design
+##    reg_block_path    the hierarchical path to the relevant register block in the
+##                      design
 ##
-##    rb               a RegBlock object
+##    rb                a RegBlock object
 ##
-##    esc_if_name      a string giving the full, escaped, interface name. For
-##                     a device interface called FOO on block BAR,
-##                     this will be bar__foo. For an unnamed interface
-##                     on block BAR, this will be just bar.
+##    esc_if_name       a string giving the full, escaped, interface name. For
+##                      a device interface called FOO on block BAR,
+##                      this will be bar__foo. For an unnamed interface
+##                      on block BAR, this will be just bar.
 ##
-<%def name="make_ral_pkg(dv_base_prefix, reg_width, reg_block_path, rb, esc_if_name)">\
+<%def name="make_ral_pkg(dv_base_names, reg_width, reg_block_path, rb, esc_if_name)">\
 package ${esc_if_name}_ral_pkg;
-${make_ral_pkg_hdr(dv_base_prefix, [])}
+${make_ral_pkg_hdr(dv_base_names.pkg, [])}
 
 ${make_ral_pkg_fwd_decls(esc_if_name, rb.type_regs, rb.windows)}
 % for r in rb.all_regs:
@@ -69,18 +67,19 @@ ${make_ral_pkg_fwd_decls(esc_if_name, rb.type_regs, rb.windows)}
 %>\
   % for idx, reg in enumerate(regs):
 
-${make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, reg_block_path, reg, mr, idx)}
+${make_ral_pkg_reg_class(dv_base_names.reg, dv_base_names.field, reg_width, esc_if_name,
+reg_block_path, reg, mr, idx)}
   % endfor
 % endfor
 % for window in rb.windows:
 
-${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
+${make_ral_pkg_window_class(dv_base_names.mem, esc_if_name, window)}
 % endfor
 
 <%
   reg_block_name = gen_dv.bcname(esc_if_name)
 %>\
-  class ${reg_block_name} extends ${dv_base_prefix}_reg_block;
+  class ${reg_block_name} extends ${dv_base_names.block};
 % if rb.flat_regs:
     // registers
   % for r in rb.all_regs:
@@ -185,17 +184,17 @@ endpackage
 ##
 ## Generate the header for a RAL package
 ##
-##    dv_base_prefix   as for make_ral_pkg
+##    dv_base_reg_pkg_name   a string name for the base reg_pkg type
 ##
-##    deps             a list of names for packages that should be explicitly
-##                     imported
+##    deps                   a list of names for packages that should be explicitly
+##                           imported
 ##
-<%def name="make_ral_pkg_hdr(dv_base_prefix, deps)">\
+<%def name="make_ral_pkg_hdr(dv_base_reg_pkg_name, deps)">\
   // dep packages
   import uvm_pkg::*;
   import dv_base_reg_pkg::*;
-% if dv_base_prefix != "dv_base":
-  import ${dv_base_prefix}_reg_pkg::*;
+% if dv_base_reg_pkg_name != "dv_base_reg_pkg":
+  import ${dv_base_reg_pkg_name}::*;
 % endif
 % for dep in deps:
   import ${dep}::*;
@@ -236,22 +235,24 @@ endpackage
 ##
 ## Generate the classes for a register inside a RAL package
 ##
-##    dv_base_prefix   as for make_ral_pkg
+##    dv_base_reg_name     a string name for the base register type
 ##
-##    reg_width        as for make_ral_pkg
+##    dv_base_field_name   a string name for the base reg_field type
 ##
-##    esc_if_name      as for make_ral_pkg
+##    reg_width            as for make_ral_pkg
 ##
-##    reg_block_path   as for make_ral_pkg
+##    esc_if_name          as for make_ral_pkg
 ##
-##    reg              a Register object
+##    reg_block_path       as for make_ral_pkg
 ##
-##    mr               a MultiRegister object if this reg is from a MultiRegister
+##    reg                  a Register object
 ##
-##    reg_idx          the index location of this reg if this reg is from a MultiRegister,
-##                     or zero if not
-<%def name="make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, reg_block_path,
-reg, mr, reg_idx)">\
+##    mr                   a MultiRegister object if this reg is from a MultiRegister
+##
+##    reg_idx              the index location of this reg if this reg is from a MultiRegister,
+##                         or zero if not
+<%def name="make_ral_pkg_reg_class(dv_base_reg_name, dv_base_field_name, reg_width, esc_if_name,
+reg_block_path, reg, mr, reg_idx)">\
 <%
   reg_name = reg.name.lower()
 
@@ -264,7 +265,7 @@ reg, mr, reg_idx)">\
 
   class_name = gen_dv.rcname(esc_if_name, reg)
 %>\
-  class ${class_name} extends ${dv_base_prefix}_reg;
+  class ${class_name} extends ${dv_base_reg_name};
     // fields
 <%
   suffix = ""
@@ -304,10 +305,10 @@ reg, mr, reg_idx)">\
     // verilog_lint: waive unpacked-dimensions-range-ordering
 % endif
 % if compact_field_inst_name:
-    rand ${dv_base_prefix}_reg_field ${compact_field_inst_name}${suffix};
+    rand ${dv_base_field_name} ${compact_field_inst_name}${suffix};
 % else:
 %   for f in fields:
-    rand ${dv_base_prefix}_reg_field ${f.name.lower()};
+    rand ${dv_base_field_name} ${f.name.lower()};
 %   endfor
 % endif
 
@@ -334,7 +335,8 @@ reg, mr, reg_idx)">\
     else:
       reg_field_name = field.name.lower()
 %>\
-${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg.hwext, reg_field_name, field)}
+${_create_reg_field(dv_base_field_name, reg_width, reg_block_path, reg.shadowed, reg.hwext,
+reg_field_name, field)}
 % endfor
 % if is_ext:
       set_is_ext_reg(1);
@@ -350,20 +352,21 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
 ## Generate the code that creates a uvm_reg_field object for a field
 ## in a register.
 ##
-##    dv_base_prefix   as for make_ral_pkg
+##    dv_base_reg_field_name   as for make_ral_pkg_reg_class
 ##
-##    reg_width        as for make_ral_pkg
+##    reg_width                as for make_ral_pkg
 ##
-##    reg_block_path   as for make_ral_pkg
+##    reg_block_path           as for make_ral_pkg
 ##
-##    shadowed         true if the field's register is shadowed
+##    shadowed                 true if the field's register is shadowed
 ##
-##    hwext            true if the field's register is hwext
+##    hwext                    true if the field's register is hwext
 ##
-##    reg_field_name   a string with the name to give the field in the HDL
+##    reg_field_name           a string with the name to give the field in the HDL
 ##
-##    field            a Field object
-<%def name="_create_reg_field(dv_base_prefix, reg_width, reg_block_path, shadowed, hwext, reg_field_name, field)">\
+##    field                    a Field object
+<%def name="_create_reg_field(dv_base_reg_field_name, reg_width, reg_block_path, shadowed, hwext,
+reg_field_name, field)">\
 <%
   field_size = field.bits.width()
   field_access = field.swaccess.dv_rights()
@@ -377,7 +380,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
   fname = reg_field_name
   type_id_indent = ' ' * (len(fname) + 4)
 %>\
-      ${fname} = (${dv_base_prefix}_reg_field::
+      ${fname} = (${dv_base_reg_field_name}::
       ${type_id_indent}type_id::create("${field.name.lower()}"));
       ${fname}.configure(
         .parent(this),
@@ -410,12 +413,12 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
 ##
 ## Generate the classes for a window inside a RAL package
 ##
-##    dv_base_prefix   as for make_ral_pkg
+##    dv_base_window_name   a string name for the base windoe type
 ##
-##    esc_if_name      as for make_ral_pkg
+##    esc_if_name           as for make_ral_pkg
 ##
-##    window           a Window object
-<%def name="make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)">\
+##    window                a Window object
+<%def name="make_ral_pkg_window_class(dv_base_window_name, esc_if_name, window)">\
 <%
   mem_name = window.name.lower()
   mem_right = window.swaccess.dv_rights()
@@ -424,7 +427,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
 
   class_name = gen_dv.mcname(esc_if_name, window)
 %>\
-  class ${class_name} extends ${dv_base_prefix}_mem;
+  class ${class_name} extends ${dv_base_window_name};
 
     `uvm_object_utils(${class_name})
 
