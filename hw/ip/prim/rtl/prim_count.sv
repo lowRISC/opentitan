@@ -161,6 +161,7 @@ module prim_count import prim_count_pkg::*; #(
     `ASSUME(UpCntOverFlow_A, unused_incr_cnt |-> ~unused_cnt[Width])
   end
 
+  `ifdef INC_ASSERT
   // Helper variables to hold the previous valid `cnt_o` and `step_i` when `en_i` is set.
   logic [Width-1:0] past_cnt_o, past_step_i;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -172,6 +173,7 @@ module prim_count import prim_count_pkg::*; #(
       past_step_i <= step_i;
     end
   end
+  `endif
 
   // Clear and set should not be seen at the same time
   `ASSUME(SimulClrSet_A, clr_i || set_i |-> clr_i != set_i)
