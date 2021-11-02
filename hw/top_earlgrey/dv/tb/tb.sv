@@ -304,6 +304,7 @@ module tb;
     initial begin
       mem_bkdr_util m_mem_bkdr_util[chip_mem_e];
 
+      `uvm_info("tb.sv", "Backdoor init flash 0 data", UVM_MEDIUM)
       m_mem_bkdr_util[FlashBank0Data] = new(
           .name  ("mem_bkdr_util[FlashBank0Data]"),
           .path  (`DV_STRINGIFY(`FLASH0_DATA_MEM_HIER)),
@@ -312,6 +313,7 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Data], `FLASH0_DATA_MEM_HIER)
 
+      `uvm_info("tb.sv", "Backdoor init flash 0 info", UVM_MEDIUM)
       m_mem_bkdr_util[FlashBank0Info] = new(
           .name  ("mem_bkdr_util[FlashBank0Info]"),
           .path  (`DV_STRINGIFY(`FLASH0_INFO_MEM_HIER)),
@@ -320,6 +322,7 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
 
+      `uvm_info("tb.sv", "Backdoor init flash 1 data", UVM_MEDIUM)
       m_mem_bkdr_util[FlashBank1Data] = new(
           .name  ("mem_bkdr_util[FlashBank1Data]"),
           .path  (`DV_STRINGIFY(`FLASH1_DATA_MEM_HIER)),
@@ -328,6 +331,7 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH0_DATA_MEM_HIER)
 
+      `uvm_info("tb.sv", "Backdoor init flash 0 info", UVM_MEDIUM)
       m_mem_bkdr_util[FlashBank1Info] = new(
           .name  ("mem_bkdr_util[FlashBank1Info]"),
           .path  (`DV_STRINGIFY(`FLASH1_INFO_MEM_HIER)),
@@ -336,6 +340,7 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
 
+      `uvm_info("tb.sv", "Backdoor init OTP", UVM_MEDIUM)
       m_mem_bkdr_util[Otp] = new(.name  ("mem_bkdr_util[Otp]"),
                                  .path  (`DV_STRINGIFY(`OTP_MEM_HIER)),
                                  .depth ($size(`OTP_MEM_HIER)),
@@ -343,6 +348,7 @@ module tb;
                                  .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_22_16));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Otp], `OTP_MEM_HIER)
 
+      `uvm_info("tb.sv", "Backdoor init RAM", UVM_MEDIUM)
       m_mem_bkdr_util[RamMain] = new(.name  ("mem_bkdr_util[RamMain]"),
                                      .path  (`DV_STRINGIFY(`RAM_MAIN_MEM_HIER)),
                                      .depth ($size(`RAM_MAIN_MEM_HIER)),
@@ -350,6 +356,7 @@ module tb;
                                      .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMain], `RAM_MAIN_MEM_HIER)
 
+      `uvm_info("tb.sv", "Backdoor init RAM RET", UVM_MEDIUM)
       m_mem_bkdr_util[RamRet] = new(.name  ("mem_bkdr_util[RamRet]"),
                                     .path  (`DV_STRINGIFY(`RAM_RET_MEM_HIER)),
                                     .depth ($size(`RAM_RET_MEM_HIER)),
@@ -357,6 +364,7 @@ module tb;
                                     .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet], `RAM_RET_MEM_HIER)
 
+      `uvm_info("tb.sv", "Backdoor init ROM", UVM_MEDIUM)
       m_mem_bkdr_util[Rom] = new(.name  ("mem_bkdr_util[Rom]"),
                                  .path  (`DV_STRINGIFY(`ROM_MEM_HIER)),
                                  .depth ($size(`ROM_MEM_HIER)),
