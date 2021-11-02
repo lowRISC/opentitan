@@ -49,7 +49,7 @@ def main():
     name = gapi['parameters'].get('name')
     ip_hjson = gapi['parameters'].get('ip_hjson')
     top_hjson = gapi['parameters'].get('top_hjson')
-    dv_base_prefix = gapi['parameters'].get('dv_base_prefix')
+    dv_base_names = gapi['parameters'].get('dv_base_names')
     if not name or (bool(ip_hjson) == bool(top_hjson)):
         print("Error: ralgen requires the \"name\" and exactly one of "
               "{\"ip_hjson\" and \"top_hjson\"} parameters to be set.")
@@ -65,8 +65,8 @@ def main():
         cmd = os.path.join(util_path, "topgen.py")
         args = [cmd, "-r", "-o", os.getcwd(), "-t", ral_spec]
 
-    if dv_base_prefix and dv_base_prefix != "dv_base":
-        args.extend(["--dv-base-prefix", dv_base_prefix])
+    if dv_base_names and dv_base_names != "dv_base":
+        args.extend(["--dv-base-names", dv_base_names])
 
     try:
         cmd_str = ' '.join([shlex.quote(arg) for arg in args])

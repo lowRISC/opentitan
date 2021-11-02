@@ -32,7 +32,6 @@ from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, search_ips, validate_top
-from topgen.c import C_FILE_EXTENSIONS
 from topgen.c_test import TopGenCTest
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
@@ -171,7 +170,6 @@ def generate_alert_handler(top, out_path):
     # low power groups
     n_lpg = 1
     lpg_map = []
-
 
     # Count number of alerts and LPGs
     n_alerts = sum([x["width"] if "width" in x else 1 for x in top["alert"]])
@@ -603,7 +601,7 @@ def generate_top_only(top_only_list, out_path, topname):
 
 def generate_top_ral(top: Dict[str, object],
                      name_to_block: Dict[str, IpBlock],
-                     dv_base_prefix: str,
+                     dv_base_names: str,
                      out_path: str):
     # construct top ral block
 
@@ -677,7 +675,7 @@ def generate_top_ral(top: Dict[str, object],
     chip = Top(regwidth, name_to_block, inst_to_block, if_addrs, mems, attrs)
 
     # generate the top ral model with template
-    return gen_dv(chip, dv_base_prefix, str(out_path))
+    return gen_dv(chip, dv_base_names, str(out_path))
 
 
 def create_mem(item, addrsep, regwidth):
@@ -948,9 +946,9 @@ def main():
         default=False,
         action='store_true',
         help="If set, the tool generates top level RAL model for DV")
-    parser.add_argument('--dv-base-prefix',
+    parser.add_argument('--dv-base-names',
                         default='dv_base',
-                        help='Prefix for the DV register classes from which '
+                        help='Names or prefix for the DV register classes from which '
                         'the register models are derived.')
     # Generator options for compile time random netlist constants
     parser.add_argument(
@@ -1058,7 +1056,7 @@ def main():
         shutil.rmtree(out_path_gen, ignore_errors=True)
 
         exit_code = generate_top_ral(completecfg, name_to_block,
-                                     args.dv_base_prefix, out_path)
+                                     args.dv_base_names, out_path)
         sys.exit(exit_code)
 
     if args.get_blocks:

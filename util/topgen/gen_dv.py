@@ -20,7 +20,7 @@ def sv_base_addr(top: Top, if_name: Tuple[str, Optional[str]]) -> str:
 
 
 def gen_dv(top: Top,
-           dv_base_prefix: str,
+           dv_base_names: str,
            outdir: str) -> int:
     '''Generate DV RAL model for a Top'''
     # Read template
@@ -31,7 +31,7 @@ def gen_dv(top: Top,
     # Expand template
     try:
         to_write = uvm_reg_tpl.render(top=top,
-                                      dv_base_prefix=dv_base_prefix)
+                                      dv_base_names=dv_base_names)
     except:  # noqa: E722
         log.error(exceptions.text_error_template().render())
         return 1
@@ -41,6 +41,6 @@ def gen_dv(top: Top,
     with open(dest_path, 'w') as fout:
         fout.write(to_write)
 
-    gen_core_file(outdir, 'chip', dv_base_prefix, ['chip_ral_pkg.sv'])
+    gen_core_file(outdir, 'chip', dv_base_names, ['chip_ral_pkg.sv'])
 
     return 0

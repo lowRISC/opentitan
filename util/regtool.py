@@ -70,9 +70,9 @@ def main():
                         '-t',
                         help='Target directory for generated RTL; '
                         'tool uses ../rtl if blank.')
-    parser.add_argument('--dv-base-prefix',
+    parser.add_argument('--dv-base-names',
                         default='dv_base',
-                        help='Prefix for the DV register classes from which '
+                        help='Names or prefix for the DV register classes from which '
                         'the register models are derived.')
     parser.add_argument('--outfile',
                         '-o',
@@ -200,7 +200,7 @@ def main():
         if format == 'rtl':
             return gen_rtl.gen_rtl(obj, outdir)
         if format == 'dv':
-            return gen_dv.gen_dv(obj, args.dv_base_prefix, outdir)
+            return gen_dv.gen_dv(obj, args.dv_base_names, outdir)
         if format == 'fpv':
             return gen_fpv.gen_fpv(obj, outdir)
         src_lic = None

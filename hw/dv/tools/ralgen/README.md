@@ -15,10 +15,21 @@ The adjoining `ralgen.core` file registers the `ralgen` generator. The FuseSoC
 core file that 'calls' the generator adds it as a dependency. When calling the
 generator, the following parameters are set:
 * **name (mandatory)**: Name of the RAL package (typically, same is the IP).
-* **dv_base_prefix (optional)**: The prefix added to the base classes from
-  which the register classes are derived. Set this option to derive the register
-  classes not from the default `dv_base_reg`, but from user defined custom
-  class definitions.
+* **dv_base_names (optional)**: The base class names from which the register
+  classes are derived. Set this option to derive the register classes not from
+  the default `dv_base_reg`, but from user defined custom class definitions.
+  This argument follows the following format:
+  `--dv-base-names block:type:entity-name, ...`.
+  `block`: can be any block names, or use `default` to override all blocks
+  within the hjson.
+  `type`: can be `block`, `reg`, `field`, `pkg`, `mem`, or use `all` to override
+  all types within the block.
+  `entity_name`: the name of the base class / package. If the `type` is set to `all`,
+  then this represents the prefix of the bass class / package. The suffixes
+  `_reg_block`, `_reg`, `_reg_field`, `_mem`, `_reg_pkg` are applied to infer the
+  actual base class / package names from which the generated DV classes will extend.
+  Note that we assume the fusesoc core file naming convention follows the package
+  name without the `_pkg` suffix.
 * **ip_hjson**: Path to the hjson specification written for an IP which includes
   the register descriptions. This needs to be a valid input for `reggen`.
 * **top_hjson**: Path to the hjson specification for a top level design. This
@@ -35,7 +46,7 @@ generate:
     parameters:
       name: <name>
       ip_hjson|top_hjson: <path-to-hjson-spec>
-      [dv_base_prefix: my_base]
+      [dv_base_names: block_1:type:entity_name_1,block_2:type:entity_name_2]
 
 
 targets:
@@ -73,7 +84,7 @@ The generated core file adds **`lowrisc:dv:dv_base_reg`** as a dependency for
 the generated RAL package. This is required because our DV register block,
 register and field models are derived from the
 [DV library]({{< relref "hw/dv/sv/dv_lib/README.md" >}}) of classes. This
-ensures the right compilation order is maintained. If the `dv_base_prefix`
+ensures the right compilation order is maintained. If the `dv_base_names`
 argument is set, then it adds **`lowrisc:dv:my_base_reg`** as an extra
 dependency, where `my_base` is the value of the argument as shown in the
 example above. This core file and the associated sources are assumed to be
