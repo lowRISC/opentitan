@@ -283,6 +283,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task post_apply_reset(string reset_kind = "HARD");
+    super.post_apply_reset(reset_kind);
     wait_for_cpu_out_of_reset();
   endtask
 
