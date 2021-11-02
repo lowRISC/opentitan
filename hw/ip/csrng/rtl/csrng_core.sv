@@ -336,6 +336,9 @@ module csrng_core import csrng_pkg::*; #(
   logic [7:0]              track_sm[16];
   logic [1:0]              sel_track_sm_grp;
 
+  logic                    cs_rdata_capt_vld;
+  logic                    cs_bus_cmp_alert;
+
   logic                    unused_err_code_test_bit;
   logic                    unused_reg2hw_genbits;
   logic                    unused_int_state_val;
@@ -353,6 +356,8 @@ module csrng_core import csrng_pkg::*; #(
   logic           cs_aes_halt_q, cs_aes_halt_d;
   logic [SeedLen-1:0] entropy_src_seed_q, entropy_src_seed_d;
   logic               entropy_src_fips_q, entropy_src_fips_d;
+  logic [63:0]        cs_rdata_capt_q, cs_rdata_capt_d;
+  logic               cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -368,6 +373,8 @@ module csrng_core import csrng_pkg::*; #(
       cs_aes_halt_q <= '0;
       entropy_src_seed_q <= '0;
       entropy_src_fips_q <= '0;
+      cs_rdata_capt_q       <= '0;
+      cs_rdata_capt_vld_q   <= '0;
     end else begin
       acmd_q  <= acmd_d;
       shid_q  <= shid_d;
@@ -381,6 +388,8 @@ module csrng_core import csrng_pkg::*; #(
       cs_aes_halt_q <= cs_aes_halt_d;
       entropy_src_seed_q <= entropy_src_seed_d;
       entropy_src_fips_q <= entropy_src_fips_d;
+      cs_rdata_capt_q       <= cs_rdata_capt_d;
+      cs_rdata_capt_vld_q   <= cs_rdata_capt_vld_d;
     end
 
   //--------------------------------------------
@@ -676,7 +685,10 @@ module csrng_core import csrng_pkg::*; #(
   };
 
 
-  assign recov_alert_event = cs_enable_pfa || sw_app_enable_pfa || read_int_state_pfa;
+  assign recov_alert_event = cs_enable_pfa ||
+         sw_app_enable_pfa ||
+         read_int_state_pfa ||
+         cs_bus_cmp_alert;
 
   assign recov_alert_o = recov_alert_event;
 
@@ -803,6 +815,32 @@ module csrng_core import csrng_pkg::*; #(
          genbits_stage_fips_sw_q;
 
   assign genbits_stage_fips_sw = genbits_stage_fips_sw_q;
+
+
+  //--------------------------------------------
+  // data path integrity check
+  // - a counter measure to software genbits bus tampering
+  // - checks to make sure repeated data sets off
+  //   an alert for sw to handle
+  //--------------------------------------------
+
+  // capture a copy of the genbits data
+  assign cs_rdata_capt_vld = (genbits_stage_vld[NApps-1] && genbits_stage_rdy[NApps-1]);
+
+  assign cs_rdata_capt_d = cs_rdata_capt_vld ? genbits_stage_bus[NApps-1][63:0] : cs_rdata_capt_q;
+
+  assign cs_rdata_capt_vld_d =
+         !cs_enable ? 1'b0 :
+         cs_rdata_capt_vld ? 1'b1 :
+         cs_rdata_capt_vld_q;
+
+  // continuous compare of the entropy data for sw port
+  assign cs_bus_cmp_alert = cs_rdata_capt_vld && cs_rdata_capt_vld_q &&
+         (cs_rdata_capt_q == genbits_stage_bus[NApps-1][63:0]); // only look at 64 bits
+
+  assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.de = cs_bus_cmp_alert;
+  assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.d  = cs_bus_cmp_alert;
+
 
   // HW interface connections (up to 16, numbered 0-14)
   for (genvar hai = 0; hai < (NApps-1); hai = hai+1) begin : gen_app_if
