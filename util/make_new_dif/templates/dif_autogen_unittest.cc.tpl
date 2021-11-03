@@ -14,7 +14,7 @@
     1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
 </%doc>
 
-// This file is auto-generated.
+${autogen_banner}
 
 #include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
