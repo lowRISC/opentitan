@@ -19,5 +19,6 @@ package edn_test_pkg;
   // package sources
   `include "edn_base_test.sv"
   `include "edn_smoke_test.sv"
+  `include "edn_genbits_test.sv"
 
 endpackage
