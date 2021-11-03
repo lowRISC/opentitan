@@ -37,8 +37,10 @@ class LintCfg(OneShotCfg):
 
         super().__init__(flow_cfg_file, hjson_data, args, mk_config)
 
-        # Convert to boolean if needed.
-        self.is_style_lint = check_bool(self.is_style_lint)
+        if self.is_style_lint == '':
+            self.is_style_lint = False
+        else:
+            self.is_style_lint = check_bool(self.is_style_lint)
 
         # Set the title for lint results.
         if self.is_style_lint:

@@ -1,0 +1,72 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  flow:             cdc
+  cdc_root:         "{proj_root}/hw/cdc"
+  flow_makefile:    "{cdc_root}/tools/dvsim/cdc.mk"
+
+  import_cfgs:      [// Common server configuration for results upload
+                     "{proj_root}/hw/data/common_project_cfg.hjson",
+                     "{cdc_root}/tools/dvsim/{tool}.hjson"]
+
+  // Default directory structure for the output
+  dut:              "{name}"
+  params:           ""
+  build_dir:        "{scratch_path}/{build_mode}"
+  build_log:        "{build_dir}/cdc.log"
+
+  tool:             "verixcdc"
+
+  // We rely on Fusesoc to generate the file list for us
+  sv_flist_gen_cmd:   "fusesoc"
+  fusesoc_core_:      "{eval_cmd} echo \"{fusesoc_core}\" | tr ':' '_'"
+  sv_flist_gen_opts:  ["--cores-root {proj_root}",
+                       "run"
+                       "{sv_flist_gen_flags}",
+                       "--target=syn",
+                       "--tool icarus",
+                       "--build-root={build_dir}",
+                       "--setup",
+                       "{fusesoc_core}"]
+  sv_flist_gen_dir:   "{build_dir}/syn-icarus"
+  sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
+  sv_flist_gen_flags: ["--flag=fileset_{design_level}"]
+
+  // Determines which message severities to print into report summaries.
+  report_severities: ["review", "warning", "error"]
+  // Determines which message severities lead to a pass/fail.
+  fail_severities: ["review", "warning", "error"]
+  // Define message bucket categories and severities.
+  message_buckets: [
+    {category: "flow",  severity: "info",     label: ""},
+    {category: "flow",  severity: "warning",  label: ""},
+    {category: "flow",  severity: "error",    label: ""},
+    {category: "sdc",   severity: "info",     label: "SDC Infos"},
+    {category: "sdc",   severity: "review",   label: "SDC Reviews"},
+    {category: "sdc",   severity: "warning",  label: "SDC Warnings"},
+    {category: "sdc",   severity: "error",    label: "SDC Erros"}
+    {category: "setup", severity: "info",     label: ""},
+    {category: "setup", severity: "review",   label: ""},
+    {category: "setup", severity: "warning",  label: ""},
+    {category: "setup", severity: "error",    label: ""},
+    {category: "cdc",   severity: "info",     label: "CDC Infos"},
+    {category: "cdc",   severity: "review",   label: "CDC Reviews"},
+    {category: "cdc",   severity: "warning",  label: "CDC Warnings"},
+    {category: "cdc",   severity: "error",    label: "CDC Erros"}
+  ]
+  // Restrict the maximum message count in each bucket
+  max_msg_count: 1000
+
+  // TODO(#9079): Need to align with new parser mechanism.
+  build_fail_patterns: []
+
+  exports: [
+    { CDC_ROOT:     "{cdc_root}" },
+    { FOUNDRY_ROOT: "{foundry_root}" },
+    { BUILD_DIR:    "{build_dir}" },
+    { DUT:          "{dut}" },
+    { PARAMS:       "{params}" },
+    { SV_FLIST:     "{sv_flist}" }
+  ]
+}
