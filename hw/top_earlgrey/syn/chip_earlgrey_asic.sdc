@@ -17,12 +17,15 @@ puts "Applying constraints for top level"
 # Architectural CGs #
 #####################
 
-# in synthesis, we treat all clock networks as ideal nets.
-# architecturally insterted CGs however can be interpreted as
-# sequential cells by the tool, hence stopping automatic propagation
-# of ideal network attributes. therefore, we go through the design and
-# declare all architectural CG outputs as ideal.
-set_ideal_network [get_pins -hier u_clkgate/Q]
+# This is not needed by CDC runs
+if {!$IS_CDC_RUN} {
+    # in synthesis, we treat all clock networks as ideal nets.
+    # architecturally insterted CGs however can be interpreted as
+    # sequential cells by the tool, hence stopping automatic propagation
+    # of ideal network attributes. therefore, we go through the design and
+    # declare all architectural CG outputs as ideal.
+    set_ideal_network [get_pins -hier u_clkgate/Q]
+}
 
 #####################
 # main clock        #
@@ -55,7 +58,7 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
 set USBDEV_IOMUX_PATH top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*
 set USBDEV_OUTREG_PATH top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx
 # This requires knowledge of actual pin names, which are different depending on
-# whether we run this with tech libs or not.
+# whether we run this with tech lizbs or not.
 if {$FOUNDRY_ROOT != ""} {
     set USB_N_PIN  gen_flops[2]*.u_size_only_reg/D
     set USB_P_PIN  gen_flops[3]*.u_size_only_reg/D
@@ -87,14 +90,27 @@ set IO_TCK_PERIOD [expr $IO_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 create_clock -name IO_CLK -period ${IO_TCK_PERIOD} [get_pins ${IO_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 
-# generated clocks (div2/div4)
-create_generated_clock -name IO_DIV2_CLK -divide_by 2 \
-    -source [get_pins top_earlgrey/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_mux/gen_*u_impl*/u_size_only_mux2/D1] \
-    [get_pins top_earlgrey/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_mux/gen_*u_impl*/u_size_only_inv/${DRIVING_CELL_PIN}]
+# This requires knowledge of actual pin names, which are different depending on
+# whether we run this with tech libs or not.
+if {$FOUNDRY_ROOT != ""} {
+    set CLK_MUX_SRC_NAME u_size_only_mux2/D1
+    set CLK_MUX_DST_NAME u_size_only_inv/${DRIVING_CELL_PIN}
+} else {
+    # this is only used by SDC on generic views
+    set CLK_MUX_SRC_NAME clk0_i
+    set CLK_MUX_DST_NAME clk_o
+}
 
+# generated clocks (div2/div4)
+set CLK_MUX_PATH top_earlgrey/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_mux/gen_*u_impl*
+create_generated_clock -name IO_DIV2_CLK -divide_by 2 \
+    -source [get_pins ${CLK_MUX_PATH}/${CLK_MUX_SRC_NAME}] \
+            [get_pins ${CLK_MUX_PATH}/${CLK_MUX_DST_NAME}]
+
+set CLK_MUX_PATH top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div/u_clk_mux/gen_*u_impl*
 create_generated_clock -name IO_DIV4_CLK -divide_by 4 \
-    -source [get_pins top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div/u_clk_mux/gen_*u_impl*/u_size_only_mux2/D1] \
-    [get_pins top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div/u_clk_mux/gen_*u_impl*/u_size_only_inv/${DRIVING_CELL_PIN}]
+    -source [get_pins ${CLK_MUX_PATH}/${CLK_MUX_SRC_NAME}] \
+            [get_pins ${CLK_MUX_PATH}/${CLK_MUX_DST_NAME}]
 
 # TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
 # note that due to the muxing, additional timing views with set_case_analysis may be needed.
@@ -223,7 +239,7 @@ set_output_delay ${SPI_DEV_OUT_DEL} [get_ports SPI_DEV_D3]   -clock SPI_DEV_CLK
 set_false_path -through [get_pins top_earlgrey/u_spi_device/cio_csb_i] \
                -through [get_pins top_earlgrey/u_spi_device/cio_sd_en_o*]
 set_false_path -through [get_pins top_earlgrey/u_spi_device/cio_csb_i] \
-    -through [get_pins top_earlgrey/u_spi_device/cio_sd_o*]
+               -through [get_pins top_earlgrey/u_spi_device/cio_sd_o*]
 
 ##################
 # SPI HOST clock #
@@ -234,15 +250,23 @@ set_false_path -through [get_pins top_earlgrey/u_spi_device/cio_csb_i] \
 # During pre-layout, the SPI_HOST_CLK source latencies are estimanted to account for
 # pad and logic latencies.  After CTS, source latency must be removed as all clocks are propagated
 
-set CLK_DIV_PIN top_earlgrey/u_spi_host0/u_spi_core/u_fsm/u_sck_flop/gen_*u_impl*/gen_flops[0]*.u_size_only_reg/Q
+# This requires knowledge of actual pin names, which are different depending on
+# whether we run this with tech libs or not.
+if {$FOUNDRY_ROOT != ""} {
+    set REG_PIN  gen_flops[0]*.u_size_only_reg/Q
+} else {
+    set REG_PIN  q_o[0]
+}
+
+set CLK_DIV_PIN top_earlgrey/u_spi_host0/u_spi_core/u_fsm/u_sck_flop/gen_*u_impl*/${REG_PIN}
 
 # internal divided by 2 clock (fastest spi host configuration)
 create_generated_clock -name SPI_HOST_INT_CLK -source [get_pins ${IO_CLK_PIN}] \
-    -divide_by 2 [get_pins ${CLK_DIV_PIN}] -add
+                       -divide_by 2 [get_pins ${CLK_DIV_PIN}]
 
 # cascaded generated clock on the port
 create_generated_clock -name SPI_HOST_CLK -source [get_pins ${CLK_DIV_PIN}] \
-    -divide_by 1 [get_ports SPI_HOST_CLK] -add
+                       -divide_by 1 [get_ports SPI_HOST_CLK]
 
 # Approximate source latency
 # The following must be removed after CTS when clocks actually propagate
@@ -411,20 +435,24 @@ set_false_path -from [get_ports IOC7] -to [get_ports IOR*]
 # I/O drive/load    #
 #####################
 
-# attach load and drivers to IOs to get a more realistic estimate
-set_driving_cell -no_design_rule -lib_cell ${DRIVING_PAD} -pin ${DRIVING_PAD_PIN} [all_inputs]
-set_load [load_of ${LOAD_PAD_LIB}/${LOAD_PAD}/${LOAD_PAD_PIN}] [all_outputs]
+# This is not needed by CDC runs
+if {!$IS_CDC_RUN} {
+    # attach load and drivers to IOs to get a more realistic estimate
+    set_driving_cell -no_design_rule -lib_cell ${DRIVING_PAD} -pin ${DRIVING_PAD_PIN} [all_inputs]
+    set_load [load_of ${LOAD_PAD_LIB}/${LOAD_PAD}/${LOAD_PAD_PIN}] [all_outputs]
+}
 
 ###################################
 # Size Only and Don't touch Cells #
 ###################################
 
-# this is for architectural clock buffers, inverters and muxes
-set_size_only -all_instances [get_cells -h *u_size_only*] true
-
-# do not touch pad cells
-set_dont_touch [get_cells -h *u_pad_macro*]
-
+# This is not needed by CDC runs
+if {!$IS_CDC_RUN} {
+    # this is for architectural clock buffers, inverters and muxes
+    set_size_only -all_instances [get_cells -h *u_size_only*] true
+    # do not touch pad cells
+    set_dont_touch [get_cells -h *u_pad_macro*]
+}
 puts "Done applying constraints for top level"
 
 ##########################################
