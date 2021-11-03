@@ -20,14 +20,14 @@
 
 # Utils: reggen, topgen, tlgen
 util/*.py           @asb
-util/*gen/          @eunchan @msfschaffner @tjaychen
+util/*gen/          @msfschaffner @tjaychen
 util/uvmdvgen*      @sriyerg
-util/regtool.py     @eunchan @Jacob-Levy
-util/reggen/        @eunchan @Jacob-Levy
+util/regtool.py     @Jacob-Levy
+util/reggen/        @Jacob-Levy
 util/tlgen.py       @eunchan @msfschaffner @tjaychen
 util/tlgen/         @eunchan @msfschaffner @tjaychen
-util/topgen.py      @eunchan @msfschaffner @tjaychen @Jacob-Levy
-util/topgen/        @eunchan @msfschaffner @tjaychen @Jacob-Levy
+util/topgen.py      @msfschaffner @tjaychen @Jacob-Levy
+util/topgen/        @msfschaffner @tjaychen @Jacob-Levy
 util/build_docs.py  @moidx
 
 
@@ -35,17 +35,17 @@ util/build_docs.py  @moidx
 /hw/ip/aes/             @vogelpi
 /hw/ip/alert_handler/   @msfschaffner
 /hw/ip/flash_ctrl/      @tjaychen
-/hw/ip/kmac/            @eunchan
+/hw/ip/kmac/rtl/        @eunchan
 /hw/ip/padctrl/         @msfschaffner @tjaychen
 /hw/ip/pinmux/          @msfschaffner @tjaychen
-/hw/ip/prim*            @eunchan @tjaychen
+/hw/ip/prim*            @tjaychen
 /hw/ip/rv_core_ibex/    @tjaychen
 /hw/ip/rv_dm/           @vogelpi
-/hw/ip/spi_device/      @eunchan
-/hw/ip/tlul/            @eunchan @tjaychen
+/hw/ip/spi_device/rtl/  @eunchan
+/hw/ip/tlul/rtl/        @eunchan @tjaychen
 # /hw/ip/usb*           # TBD
-/hw/top_*/rtl           @eunchan @tjaychen
-/hw/top_*/doc/top_*     @eunchan @msfschaffner @tjaychen
+/hw/top_*/rtl           @tjaychen
+/hw/top_*/doc/top_*     @msfschaffner @tjaychen
 /hw/top_*/ip/ast        @Jacob-Levy
 
 
