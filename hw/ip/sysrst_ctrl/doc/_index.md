@@ -113,9 +113,9 @@ To this end, the hardware samples the raw input values of `pwrb_in`, `key[0,1,2]
 Software can optionally override all output signals, and change the signal polarity of some of the input and output signals.
 The output signal override feature always has higher priority than any of the combo pattern detection mechanisms described above.
 
-The selection of output signals to override, and the override values are programmable and lockable via the {{< regref PIN_LEGAL_CTL >}} register.
-For example, {{< regref PIN_LEGAL_CTL.EC_RST_L_0 >}} to 1 and {{< regref PIN_LEGAL_CTL.EC_RST_L_1 >}} to 0 means that software allows `ec_rst_out_l` to be overridden with logic 0, but not with logic 1.
-If the SW locks the configuration with {{< regref REGWEN >}}, {{< regref PIN_LEGAL_CTL >}} cannot be modified until the next OpenTitan reset.
+The selection of output signals to override, and the override values are programmable and lockable via the {{< regref PIN_ALLOWED_CTL >}} register.
+For example, {{< regref PIN_ALLOWED_CTL.EC_RST_L_0 >}} to 1 and {{< regref PIN_ALLOWED_CTL.EC_RST_L_1 >}} to 0 means that software allows `ec_rst_out_l` to be overridden with logic 0, but not with logic 1.
+If the SW locks the configuration with {{< regref REGWEN >}}, {{< regref PIN_ALLOWED_CTL >}} cannot be modified until the next OpenTitan reset.
 
 When the system is up and running, the software can modify {{< regref PIN_OUT_CTL >}} and {{< regref PIN_OUT_VALUE >}} to enable or disable the feature.
 For example, to release `ec_rst_out_l` after OpenTitan completes the reset, software can set {{< regref PIN_OUT_CTL >}} to 0 to stop the hardware from driving `ec_rst_out_l` to 0.
@@ -127,7 +127,7 @@ Input signals will be inverted before the combo detection logic, while output si
 
 OpenTitan and EC will be reset together during power-on.
 When OpenTitan is in reset, `ec_rst_out_l` will be asserted (active low).
-The power-on-reset value of {{< regref PIN_LEGAL_CTL.EC_RST_L_1 >}} and {{< regref PIN_OUT_CTL.EC_RST_L >}} will guarantee that `ec_rst_out_l` remains asserted after OpenTitan reset is released.
+The power-on-reset value of {{< regref PIN_ALLOWED_CTL.EC_RST_L_1 >}} and {{< regref PIN_OUT_CTL.EC_RST_L >}} will guarantee that `ec_rst_out_l` remains asserted after OpenTitan reset is released.
 The software can release `ec_rst_out_l` explicitly by setting {{< regref PIN_OUT_CTL.EC_RST_L >}} to 0 during boot in order to complete the OpenTitan and EC power-on-reset sequence.
 
 Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration]({{< relref "hw/ip/pinmux/doc/" >}}) before releasing `ec_rst_out_l`.
