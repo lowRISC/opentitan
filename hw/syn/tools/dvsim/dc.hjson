@@ -4,12 +4,8 @@
 {
   // Environment variables that are needed in the synthesis script
   exports: [
-    { DUT:                "{dut}" },
-    { PARAMS:             "{params}" },
     { CONSTRAINT:         "{sdc_file}" },
     { FOUNDRY_CONSTRAINT: "{foundry_sdc_file}" },
-    { BUILD_DIR:          "{build_dir}" },
-    { SV_FLIST:           "{sv_flist}" }
   ]
 
   // Tool invocation
@@ -32,7 +28,7 @@
   expand_depth: 1
 
   // Restrict the maximum message count in each category
-  max_msg_count: 20
+  max_msg_count: 100
   // Do not sanitize regression mails, but do sanitize the published report
   sanitize_email_results:   false
   sanitize_publish_results: true

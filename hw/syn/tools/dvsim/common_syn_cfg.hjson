@@ -48,7 +48,11 @@
                         "^ERROR:.*$"]
 
   exports: [
-    { syn_root: "{syn_root}" },
-    { foundry_root: "{foundry_root}" },
+    { SYN_ROOT:     "{syn_root}" },
+    { FOUNDRY_ROOT: "{foundry_root}" },
+    { BUILD_DIR:    "{build_dir}" },
+    { DUT:          "{dut}" },
+    { PARAMS:       "{params}" },
+    { SV_FLIST:     "{sv_flist}" }
   ]
 }
