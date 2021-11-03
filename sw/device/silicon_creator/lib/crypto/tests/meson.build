@@ -21,11 +21,13 @@ mask_rom_tests += {
   }
 }
 
+# Tests for RSA-3072 verify
 sw_silicon_creator_lib_crypto_rsa_3072_verify_functest = declare_dependency(
   link_with: static_library(
     'sw_silicon_creator_lib_crypto_rsa_3072_verify_functest',
     sources: [
-      'rsa_3072_verify_functest.c'
+      'rsa_3072_verify_functest.c',
+      'rsa_3072_verify_testvectors.h'
     ],
     dependencies: [
       sw_silicon_creator_lib_crypto_rsa_3072_verify,
