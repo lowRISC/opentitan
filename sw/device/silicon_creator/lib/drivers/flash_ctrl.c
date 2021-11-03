@@ -103,22 +103,31 @@ static rom_error_t transaction_start(transaction_params_t params) {
   return kErrorOk;
 }
 
+/**
+ * Copies `word_count` words from the read FIFO to the given buffer.
+ *
+ * Large reads may create back pressure.
+ *
+ * @param word_count Number of words to read from the FIFO.
+ * @param[out] data_out Output buffer.
+ */
 static void fifo_read(size_t word_count, uint32_t *data_out) {
-  // Keep reading until no words remain. For large reads this may create back
-  // pressure.
-  for (size_t words_read = 0; words_read < word_count; ++words_read) {
-    data_out[words_read] =
-        abs_mmio_read32(kBase + FLASH_CTRL_RD_FIFO_REG_OFFSET);
+  for (size_t i = 0; i < word_count; ++i) {
+    data_out[i] = abs_mmio_read32(kBase + FLASH_CTRL_RD_FIFO_REG_OFFSET);
   }
 }
 
-static void fifo_push(size_t word_count, const uint32_t *data) {
-  // Keep writing until no words remain. For large writes this may create back
-  // pressure.
-  for (size_t words_programmed = 0; words_programmed < word_count;
-       ++words_programmed) {
-    abs_mmio_write32(kBase + FLASH_CTRL_PROG_FIFO_REG_OFFSET,
-                     data[words_programmed]);
+/**
+ * Copies `word_count` words from the given buffer to the program FIFO.
+ *
+ * Large writes may create back pressure.
+ *
+ * @param word_count Number of words to write to the FIFO.
+ * @param data Input buffer.
+ */
+static void fifo_write(const uint32_t *data, size_t word_count) {
+  for (size_t i = 0; i < word_count; ++i) {
+    abs_mmio_write32(kBase + FLASH_CTRL_PROG_FIFO_REG_OFFSET, data[i]);
   }
 }
 
@@ -198,7 +207,7 @@ rom_error_t flash_ctrl_prog(uint32_t addr, uint32_t word_count,
         .erase_type = kFlashCtrlEraseTypePage,
     }));
 
-    fifo_push(write_size, data);
+    fifo_write(data, write_size);
     RETURN_IF_ERROR(wait_for_done());
 
     addr += write_size * sizeof(uint32_t);
