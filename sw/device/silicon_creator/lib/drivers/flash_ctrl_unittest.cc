@@ -76,10 +76,9 @@ class TransferTest : public FlashCtrlTest {
 
   void ExpectWaitForDone(bool done, bool error) {
     EXPECT_ABS_READ32(base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET,
-                      {{FLASH_CTRL_OP_STATUS_DONE_BIT, done}});
+                      {{FLASH_CTRL_OP_STATUS_DONE_BIT, done},
+                       {FLASH_CTRL_OP_STATUS_ERR_BIT, error}});
     if (done) {
-      EXPECT_ABS_READ32(base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET,
-                        {{FLASH_CTRL_OP_STATUS_ERR_BIT, error}});
       EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET, 0u);
     }
   }
