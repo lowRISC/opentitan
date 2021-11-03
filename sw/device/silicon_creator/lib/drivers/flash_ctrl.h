@@ -178,6 +178,13 @@ typedef enum flash_ctrl_exec {
  */
 void flash_ctrl_exec_set(flash_ctrl_exec_t enable);
 
+/**
+ * Read the internal error state from flash_ctrl.
+ *
+ * Primarilly used in tests; ROM does not act on this information.
+ */
+uint32_t flash_ctrl_read_internal_error(void);
+
 #ifdef __cplusplus
 }
 #endif

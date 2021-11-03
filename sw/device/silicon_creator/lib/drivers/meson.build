@@ -485,3 +485,21 @@ test('sw_silicon_creator_lib_driver_flash_ctrl_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+sw_silicon_creator_lib_driver_flash_ctrl_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_flash_ctrl_functest',
+    sources: [
+      'flash_ctrl_functest.c'
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_driver_flash_ctrl,
+      sw_lib_flash_ctrl,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_driver_flash_ctrl_functest': {
+    'library': sw_silicon_creator_lib_driver_flash_ctrl_functest,
+  }
+}

@@ -241,3 +241,7 @@ void flash_ctrl_exec_set(flash_ctrl_exec_t enable) {
   // Enable or disable flash execution.
   abs_mmio_write32(kBase + FLASH_CTRL_EXEC_REG_OFFSET, (uint32_t)enable);
 }
+
+uint32_t flash_ctrl_read_internal_error(void) {
+  return abs_mmio_read32(kBase + FLASH_CTRL_ERR_CODE_REG_OFFSET);
+}
