@@ -7,11 +7,11 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
   `uvm_object_new
 
-  bit                                          fips;
-  bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   entropy_val;
-  csrng_item                                   cs_item, cs_item_clone, cs_item_q[NUM_HW_APPS][$];
-  uint                                         cmds_gen, cmds_sent;
-  bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0]       genbits;
+  bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]     fips;
+  bit [entropy_src_pkg::CSRNG_BUS_WIDTH - 1:0]    entropy;
+  csrng_item                                      cs_item, cs_item_clone, cs_item_q[NUM_HW_APPS][$];
+  uint                                            cmds_gen, cmds_sent;
+  bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0]          genbits;
 
   function void create_cmds(uint hwapp);
     bit   uninstantiate;
@@ -71,11 +71,10 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     // Start entropy_src
     fork
       begin
-        // TODO: randomize entropy/fips
         for (int i = 0; i < 32; i++) begin
           `DV_CHECK_STD_RANDOMIZE_FATAL(fips)
-          `DV_CHECK_STD_RANDOMIZE_FATAL(entropy_val)
-          cfg.m_entropy_src_agent_cfg.add_d_user_data({fips, entropy_val});
+          `DV_CHECK_STD_RANDOMIZE_FATAL(entropy)
+          cfg.m_entropy_src_agent_cfg.add_d_user_data({fips, entropy});
         end
         m_entropy_src_pull_seq.start(p_sequencer.entropy_src_sequencer_h);
       end

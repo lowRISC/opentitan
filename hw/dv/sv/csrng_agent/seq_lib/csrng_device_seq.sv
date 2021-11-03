@@ -32,8 +32,6 @@ class csrng_device_seq extends csrng_base_seq;
                 create("m_genbits_seq");
             cfg.m_genbits_push_agent_cfg.host_delay_min = cfg.min_genbits_dly;
             cfg.m_genbits_push_agent_cfg.host_delay_max = cfg.max_genbits_dly;
-            // TODO: randomize genbits
-            cfg.m_genbits_push_agent_cfg.add_h_user_data(32'hdeadbeef);
             m_genbits_seq.start(p_sequencer.m_genbits_push_sequencer);
           end
         endcase

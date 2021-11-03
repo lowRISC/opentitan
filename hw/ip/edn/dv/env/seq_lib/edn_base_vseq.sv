@@ -16,7 +16,7 @@ class edn_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
-    `uvm_info("SEN:00", $sformatf("Base sequence body, do_edn_init = %0d", do_edn_init), UVM_NONE)
+
     if (do_edn_init) begin
       // Initialize DUT and start device sequence
       edn_init();
