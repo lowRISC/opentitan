@@ -95,26 +95,22 @@ static void fifo_push(size_t word_count, const uint32_t *data) {
   }
 }
 
-static rom_error_t check_errors(void) {
-  uint32_t op_status = abs_mmio_read32(kBase + FLASH_CTRL_OP_STATUS_REG_OFFSET);
-  if (bitfield_bit32_read(op_status, FLASH_CTRL_OP_STATUS_ERR_BIT)) {
-    return kErrorFlashCtrlInternal;
-  }
-  return kErrorOk;
-}
-
+/**
+ * Blocks until the current flash transaction is complete.
+ *
+ * @return The result of the operation.
+ */
 static rom_error_t wait_for_done(void) {
   uint32_t op_status;
   do {
     op_status = abs_mmio_read32(kBase + FLASH_CTRL_OP_STATUS_REG_OFFSET);
   } while (!bitfield_bit32_read(op_status, FLASH_CTRL_OP_STATUS_DONE_BIT));
-
-  rom_error_t res = check_errors();
-
-  // Clear OP_STATUS.
   abs_mmio_write32(kBase + FLASH_CTRL_OP_STATUS_REG_OFFSET, 0u);
 
-  return res;
+  if (bitfield_bit32_read(op_status, FLASH_CTRL_OP_STATUS_ERR_BIT)) {
+    return kErrorFlashCtrlInternal;
+  }
+  return kErrorOk;
 }
 
 void flash_ctrl_init(void) {
