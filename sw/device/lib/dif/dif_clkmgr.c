@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
 
 #include "clkmgr_regs.h"  // Generated
@@ -33,6 +34,13 @@ static dif_toggle_t bool_to_toggle(bool val) {
   return val ? kDifToggleEnabled : kDifToggleDisabled;
 }
 
+/**
+ * Converts a `multi_bit_bool_t` to `dif_toggle_t`.
+ */
+static dif_toggle_t mubi4_to_toggle(multi_bit_bool_t val) {
+  return (val == kMultiBitBool4True) ? kDifToggleEnabled : kDifToggleDisabled;
+}
+
 static bool clkmgr_valid_gateable_clock(dif_clkmgr_gateable_clock_t clock) {
   return clock < CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS;
 }
@@ -47,27 +55,26 @@ dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
     return kDifBadArg;
   }
 
-  uint32_t clk_jitter_val =
+  multi_bit_bool_t clk_jitter_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_JITTER_ENABLE_REG_OFFSET);
-  *state = bool_to_toggle(
-      bitfield_bit32_read(clk_jitter_val, CLKMGR_JITTER_ENABLE_VAL_BIT));
+  *state = mubi4_to_toggle(clk_jitter_val);
 
   return kDifOk;
 }
 
 dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr,
                                            dif_toggle_t new_state) {
-  uint32_t new_jitter_enable_val;
+  multi_bit_bool_t new_jitter_enable_val;
   if (clkmgr == NULL) {
     return kDifBadArg;
   }
 
   switch (new_state) {
     case kDifToggleEnabled:
-      new_jitter_enable_val = 1U;
+      new_jitter_enable_val = kMultiBitBool4True;
       break;
     case kDifToggleDisabled:
-      new_jitter_enable_val = 0U;
+      new_jitter_enable_val = kMultiBitBool4False;
       break;
     default:
       return kDifBadArg;

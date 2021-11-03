@@ -6,6 +6,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
 
 // Generated.
@@ -28,12 +29,12 @@ class JitterEnableTest : public ClkMgrTest {};
 // dif_clkmgr_jitter_set_enabled doesn't perform a read, just a write.
 TEST_F(JitterEnableTest, SetEnabled) {
   // Disable jitter.
-  EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, 0);
+  EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4False);
   EXPECT_EQ(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleDisabled),
             kDifOk);
 
   // Enable jitter.
-  EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, 1);
+  EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4True);
   EXPECT_EQ(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleEnabled), kDifOk);
 }
 
@@ -47,8 +48,7 @@ TEST_F(JitterEnableTest, GetEnabled) {
   // Get jitter (enabled).
   {
     dif_toggle_t state = kDifToggleDisabled;
-    EXPECT_READ32(CLKMGR_JITTER_ENABLE_REG_OFFSET,
-                  {{CLKMGR_JITTER_ENABLE_VAL_BIT, true}});
+    EXPECT_READ32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4True);
     EXPECT_EQ(dif_clkmgr_jitter_get_enabled(&clkmgr_, &state), kDifOk);
     EXPECT_EQ(state, kDifToggleEnabled);
   }
@@ -56,8 +56,7 @@ TEST_F(JitterEnableTest, GetEnabled) {
   // Get jitter (disabled).
   {
     dif_toggle_t state = kDifToggleEnabled;
-    EXPECT_READ32(CLKMGR_JITTER_ENABLE_REG_OFFSET,
-                  {{CLKMGR_JITTER_ENABLE_VAL_BIT, false}});
+    EXPECT_READ32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4False);
     EXPECT_EQ(dif_clkmgr_jitter_get_enabled(&clkmgr_, &state), kDifOk);
     EXPECT_EQ(state, kDifToggleDisabled);
   }
