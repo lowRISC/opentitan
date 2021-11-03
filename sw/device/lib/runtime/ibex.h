@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
