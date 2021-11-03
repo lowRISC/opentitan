@@ -114,20 +114,21 @@ class TransferTest : public FlashCtrlTest {
 
 TEST_F(TransferTest, ReadBusy) {
   ExpectCheckBusy(true);
-  EXPECT_EQ(flash_ctrl_read(0, 0, kFlashCtrlRegionData, NULL),
+  EXPECT_EQ(flash_ctrl_read(0, 0, kFlashCtrlPartitionData, NULL),
             kErrorFlashCtrlBusy);
 }
 
 TEST_F(TransferTest, ProgBusy) {
   ExpectCheckBusy(true);
-  EXPECT_EQ(flash_ctrl_prog(0, 4, kFlashCtrlRegionData, NULL),
+  EXPECT_EQ(flash_ctrl_prog(0, 4, kFlashCtrlPartitionData, NULL),
             kErrorFlashCtrlBusy);
 }
 
 TEST_F(TransferTest, EraseBusy) {
   ExpectCheckBusy(true);
-  EXPECT_EQ(flash_ctrl_erase(0, kFlashCtrlRegionData, kFlashCtrlErasePage),
-            kErrorFlashCtrlBusy);
+  EXPECT_EQ(
+      flash_ctrl_erase(0, kFlashCtrlPartitionData, kFlashCtrlEraseTypePage),
+      kErrorFlashCtrlBusy);
 }
 
 TEST_F(TransferTest, ReadDataOk) {
@@ -136,7 +137,7 @@ TEST_F(TransferTest, ReadDataOk) {
   ExpectReadData(words_);
   ExpectWaitForDone(true, false);
   std::vector<uint32_t> words_out(words_.size());
-  EXPECT_EQ(flash_ctrl_read(0x01234567, words_.size(), kFlashCtrlRegionData,
+  EXPECT_EQ(flash_ctrl_read(0x01234567, words_.size(), kFlashCtrlPartitionData,
                             &words_out.front()),
             kErrorOk);
   EXPECT_EQ(words_out, words_);
@@ -147,7 +148,7 @@ TEST_F(TransferTest, ProgDataOk) {
                       words_.size());
   ExpectProgData(words_);
   ExpectWaitForDone(true, false);
-  EXPECT_EQ(flash_ctrl_prog(0x01234567, words_.size(), kFlashCtrlRegionData,
+  EXPECT_EQ(flash_ctrl_prog(0x01234567, words_.size(), kFlashCtrlPartitionData,
                             &words_.front()),
             kErrorOk);
 }
@@ -156,9 +157,9 @@ TEST_F(TransferTest, EraseDataPageOk) {
   ExpectTransferStart(0, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_ERASE, 0x01234567,
                       1);
   ExpectWaitForDone(true, false);
-  EXPECT_EQ(
-      flash_ctrl_erase(0x01234567, kFlashCtrlRegionData, kFlashCtrlErasePage),
-      kErrorOk);
+  EXPECT_EQ(flash_ctrl_erase(0x01234567, kFlashCtrlPartitionData,
+                             kFlashCtrlEraseTypePage),
+            kErrorOk);
 }
 
 TEST_F(TransferTest, ProgAcrossWindows) {
@@ -196,7 +197,7 @@ TEST_F(TransferTest, ProgAcrossWindows) {
   EXPECT_EQ(iter + half_step, many_words.end());
 
   EXPECT_EQ(flash_ctrl_prog(kWinSize / 2, many_words.size(),
-                            kFlashCtrlRegionData, &many_words.front()),
+                            kFlashCtrlPartitionData, &many_words.front()),
             kErrorOk);
 }
 
@@ -206,7 +207,7 @@ TEST_F(TransferTest, TransferInternalError) {
   ExpectReadData(words_);
   ExpectWaitForDone(true, true);
   std::vector<uint32_t> words_out(words_.size());
-  EXPECT_EQ(flash_ctrl_read(0x01234567, words_.size(), kFlashCtrlRegionData,
+  EXPECT_EQ(flash_ctrl_read(0x01234567, words_.size(), kFlashCtrlPartitionData,
                             &words_out.front()),
             kErrorFlashCtrlInternal);
 }

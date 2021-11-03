@@ -65,19 +65,19 @@ typedef enum flash_crtl_partition {
   /**
    * Select the data partition.
    */
-  kFlashCtrlRegionData = 0x0000,
+  kFlashCtrlPartitionData = 0x0000,
   /**
    * Select the info partition of type 0.
    */
-  kFlashCtrlRegionInfo0 = 0x0100,
+  kFlashCtrlPartitionInfo0 = 0x0100,
   /**
    * Select the info partition of type 1.
    */
-  kFlashCtrlRegionInfo1 = 0x0300,
+  kFlashCtrlPartitionInfo1 = 0x0300,
   /**
    * Select the info partition of type 2.
    */
-  kFlashCtrlRegionInfo2 = 0x0500,
+  kFlashCtrlPartitionInfo2 = 0x0500,
 } flash_ctrl_partition_t;
 
 /**
@@ -103,18 +103,7 @@ typedef enum flash_crtl_partition {
  * otherwise.
  */
 rom_error_t flash_ctrl_read(uint32_t addr, uint32_t word_count,
-                            flash_ctrl_partition_t region, uint32_t *data);
-
-typedef enum flash_ctrl_erase_type {
-  /**
-   * Erase a page.
-   */
-  kFlashCtrlErasePage = 0x0000,
-  /**
-   * Erase a bank.
-   */
-  kFlashCtrlEraseBank = 0x0080,
-} flash_ctrl_erase_type_t;
+                            flash_ctrl_partition_t partition, uint32_t *data);
 
 /**
  * Perform a program transaction.
@@ -137,8 +126,19 @@ typedef enum flash_ctrl_erase_type {
  * otherwise.
  */
 rom_error_t flash_ctrl_prog(uint32_t addr, uint32_t word_count,
-                            flash_ctrl_partition_t region,
+                            flash_ctrl_partition_t partition,
                             const uint32_t *data);
+
+typedef enum flash_ctrl_erase_type {
+  /**
+   * Erase a page.
+   */
+  kFlashCtrlEraseTypePage = 0x0000,
+  /**
+   * Erase a bank.
+   */
+  kFlashCtrlEraseTypeBank = 0x0080,
+} flash_ctrl_erase_type_t;
 
 /**
  * Invoke a blocking erase transaction.
@@ -158,8 +158,8 @@ rom_error_t flash_ctrl_prog(uint32_t addr, uint32_t word_count,
  * transaction, `kErrorFlashCtrlInternal` if the operations fails, `kErrorOk`
  * otherwise.
  */
-rom_error_t flash_ctrl_erase(uint32_t addr, flash_ctrl_partition_t region,
-                             flash_ctrl_erase_type_t type);
+rom_error_t flash_ctrl_erase(uint32_t addr, flash_ctrl_partition_t partition,
+                             flash_ctrl_erase_type_t erase_type);
 
 typedef enum flash_ctrl_exec {
   kFlashCtrlExecDisable = kMultiBitBool4False,

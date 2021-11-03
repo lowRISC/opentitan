@@ -13,22 +13,22 @@
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static_assert(kFlashCtrlRegionData == 0u,
+static_assert(kFlashCtrlPartitionData == 0u,
               "Incorrect enum value for kFlashCtrlRegionData");
-static_assert(kFlashCtrlRegionInfo0 ==
+static_assert(kFlashCtrlPartitionInfo0 ==
                   1u << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT,
               "Incorrect enum value for kFlashCtrlRegionInfo0");
-static_assert(kFlashCtrlRegionInfo1 ==
+static_assert(kFlashCtrlPartitionInfo1 ==
                   (1u << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT |
                    1u << FLASH_CTRL_CONTROL_INFO_SEL_OFFSET),
               "Incorrect enum value for kFlashCtrlRegionInfo1");
-static_assert(kFlashCtrlRegionInfo2 ==
+static_assert(kFlashCtrlPartitionInfo2 ==
                   (1u << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT |
                    2u << FLASH_CTRL_CONTROL_INFO_SEL_OFFSET),
               "Incorrect enum value for kFlashCtrlRegionInfo2");
-static_assert(kFlashCtrlErasePage == 0u,
+static_assert(kFlashCtrlEraseTypePage == 0u,
               "Incorrect enum value for kFlashCtrlErasePage");
-static_assert(kFlashCtrlEraseBank == 1u << FLASH_CTRL_CONTROL_ERASE_SEL_BIT,
+static_assert(kFlashCtrlEraseTypeBank == 1u << FLASH_CTRL_CONTROL_ERASE_SEL_BIT,
               "Incorrect enum value for kFlashCtrlEraseBank");
 
 enum {
@@ -42,7 +42,7 @@ static bool is_busy(void) {
 }
 
 static rom_error_t transaction_start(uint32_t addr, uint32_t word_count,
-                                     flash_ctrl_partition_t region,
+                                     flash_ctrl_partition_t partition,
                                      flash_ctrl_erase_type_t erase_type,
                                      uint32_t op) {
   if (is_busy()) {
@@ -57,7 +57,7 @@ static rom_error_t transaction_start(uint32_t addr, uint32_t word_count,
       bitfield_field32_write(0, FLASH_CTRL_CONTROL_OP_FIELD, op);
 
   // Set the partition.
-  control_reg_val |= (uint32_t)region;
+  control_reg_val |= (uint32_t)partition;
 
   // Set the erase type.
   control_reg_val |= (uint32_t)erase_type;
@@ -137,17 +137,17 @@ void flash_ctrl_status_get(flash_ctrl_status_t *status) {
 }
 
 rom_error_t flash_ctrl_read(uint32_t addr, uint32_t word_count,
-                            flash_ctrl_partition_t region, uint32_t *data) {
+                            flash_ctrl_partition_t partition, uint32_t *data) {
   // Start the read transaction, the value of `erase_type` doesn't matter.
-  RETURN_IF_ERROR(transaction_start(addr, word_count, region,
-                                    kFlashCtrlErasePage,
+  RETURN_IF_ERROR(transaction_start(addr, word_count, partition,
+                                    kFlashCtrlEraseTypePage,
                                     FLASH_CTRL_CONTROL_OP_VALUE_READ));
   fifo_read(word_count, data);
   return wait_for_done();
 }
 
 rom_error_t flash_ctrl_prog(uint32_t addr, uint32_t word_count,
-                            flash_ctrl_partition_t region,
+                            flash_ctrl_partition_t partition,
                             const uint32_t *data) {
   uint32_t window_offset = addr % FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES;
 
@@ -159,8 +159,8 @@ rom_error_t flash_ctrl_prog(uint32_t addr, uint32_t word_count,
     window_offset = 0;
 
     // Start the program transaction, the value of `erase_type` doesn't matter.
-    RETURN_IF_ERROR(transaction_start(addr, write_size, region,
-                                      kFlashCtrlErasePage,
+    RETURN_IF_ERROR(transaction_start(addr, write_size, partition,
+                                      kFlashCtrlEraseTypePage,
                                       FLASH_CTRL_CONTROL_OP_VALUE_PROG));
 
     fifo_push(write_size, data);
@@ -174,10 +174,10 @@ rom_error_t flash_ctrl_prog(uint32_t addr, uint32_t word_count,
   return kErrorOk;
 }
 
-rom_error_t flash_ctrl_erase(uint32_t addr, flash_ctrl_partition_t region,
-                             flash_ctrl_erase_type_t type) {
+rom_error_t flash_ctrl_erase(uint32_t addr, flash_ctrl_partition_t partition,
+                             flash_ctrl_erase_type_t erase_type) {
   // Start the erase transaction, the value of `word_count` doesn't matter.
-  RETURN_IF_ERROR(transaction_start(addr, 1u, region, type,
+  RETURN_IF_ERROR(transaction_start(addr, 1u, partition, erase_type,
                                     FLASH_CTRL_CONTROL_OP_VALUE_ERASE));
 
   return wait_for_done();
