@@ -187,6 +187,7 @@ module spid_upload
 
   logic unused_cmdinfo;
   assign unused_cmdinfo = ^{
+    cmd_info_i.valid,         // cmdparse checks the valid bit
     cmd_info_i.addr_swap_en,
     cmd_info_i.dummy_en,
     cmd_info_i.dummy_size,

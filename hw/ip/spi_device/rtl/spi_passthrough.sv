@@ -567,14 +567,17 @@ module spi_passthrough
   // rely on the synthesis tool not to generate the unneeded flops but must explicitly waive lint
   // warnings about unused fields.
   logic unused_cmd_info_fields;
-  assign unused_cmd_info_fields = &{1'b0,
-                                    cmd_info.opcode,
-                                    cmd_info.addr_en,
-                                    cmd_info.addr_swap_en,
-                                    cmd_info.addr_4b_affected,
-                                    cmd_info.opcode,
-                                    cmd_info.upload,
-                                    cmd_info.busy};
+  assign unused_cmd_info_fields = &{
+    1'b0,
+    cmd_info.valid, // valid bit is checked before latching into cmd_info
+    cmd_info.opcode,
+    cmd_info.addr_en,
+    cmd_info.addr_swap_en,
+    cmd_info.addr_4b_affected,
+    cmd_info.opcode,
+    cmd_info.upload,
+    cmd_info.busy
+  };
 
   always_comb begin
     cmd_info_d = '0;

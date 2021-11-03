@@ -548,6 +548,8 @@ module spi_device
   assign mailbox_addr   = { reg2hw.mailbox_addr.q[31:MailboxAw],
                             {MailboxAw{1'b0}}
                           };
+  logic unused_mailbox_addr;
+  assign unused_mailbox_addr = ^reg2hw.mailbox_addr.q[MailboxAw-1:0];
 
   // Passthrough config: value shall be stable while SPI transaction is active
   //assign cmd_filter = reg2hw.cmd_filter.q;
