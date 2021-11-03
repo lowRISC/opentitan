@@ -11,6 +11,7 @@ filesets:
     files:
       - lc_ctrl_test_pkg.sv
       - lc_ctrl_base_test.sv: {is_include_file: true}
+      - lc_ctrl_report_catcher.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

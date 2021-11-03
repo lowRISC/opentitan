@@ -17,6 +17,7 @@ package lc_ctrl_test_pkg;
   // functions
 
   // package sources
+  `include "lc_ctrl_report_catcher.sv"
   `include "lc_ctrl_base_test.sv"
 
 endpackage

@@ -16,6 +16,10 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
   pwr_lc_vif  pwr_lc_vif;
   lc_ctrl_vif lc_ctrl_vif;
 
+  // Use JTAG for register accesses
+  // TODO: use multiple address maps
+  bit jtag_csr;
+
   `uvm_object_utils_begin(lc_ctrl_env_cfg)
   `uvm_object_utils_end
 
@@ -54,6 +58,8 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
 
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_jtag_riscv_agent_cfg)
+
+    jtag_csr = 0;
   endfunction
 
 endclass

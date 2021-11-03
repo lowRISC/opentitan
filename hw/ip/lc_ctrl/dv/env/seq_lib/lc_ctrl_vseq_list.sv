@@ -7,3 +7,4 @@
 `include "lc_ctrl_common_vseq.sv"
 `include "lc_ctrl_prog_failure_vseq.sv"
 `include "lc_ctrl_errors_vseq.sv"
+`include "lc_ctrl_jtag_reg_frontdoor_seq.sv"
