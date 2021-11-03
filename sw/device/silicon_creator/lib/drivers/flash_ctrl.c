@@ -189,30 +189,35 @@ rom_error_t flash_ctrl_read(uint32_t addr, uint32_t word_count,
 rom_error_t flash_ctrl_prog(uint32_t addr, uint32_t word_count,
                             flash_ctrl_partition_t partition,
                             const uint32_t *data) {
-  uint32_t window_offset = addr % FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES;
+  enum {
+    kWindowWordCount =
+        FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES / sizeof(uint32_t),
+  };
 
+  // Find the number of words that can be written in the first window.
+  uint32_t window_word_count =
+      kWindowWordCount - ((addr / sizeof(uint32_t)) % kWindowWordCount);
   while (word_count > 0) {
     // Program operations can't cross window boundaries.
-    uint32_t max_bytes = FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES - window_offset;
-    uint32_t write_size = max_bytes / sizeof(uint32_t);
-    write_size = word_count < write_size ? word_count : write_size;
-    window_offset = 0;
+    window_word_count =
+        word_count < window_word_count ? word_count : window_word_count;
 
     RETURN_IF_ERROR(transaction_start((transaction_params_t){
         .addr = addr,
         .op_type = FLASH_CTRL_CONTROL_OP_VALUE_PROG,
         .partition = partition,
-        .word_count = write_size,
+        .word_count = window_word_count,
         // Does not apply to program transactions.
         .erase_type = kFlashCtrlEraseTypePage,
     }));
 
-    fifo_write(data, write_size);
+    fifo_write(data, window_word_count);
     RETURN_IF_ERROR(wait_for_done());
 
-    addr += write_size * sizeof(uint32_t);
-    data += write_size;
-    word_count -= write_size;
+    addr += window_word_count * sizeof(uint32_t);
+    data += window_word_count;
+    word_count -= window_word_count;
+    window_word_count = kWindowWordCount;
   }
 
   return kErrorOk;
