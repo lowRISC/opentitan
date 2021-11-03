@@ -25,10 +25,117 @@
       tests: ["flash_ctrl_smoke"]
     }
     {
-      name: backpressure
+      name: smoke_hw_rd
       desc: '''
-            Sanity + randomly pick between back-pressured reads / writes and fifo status-polled
-            reads / writes via the controller.
+            Perform host direct read on the single page of one bank within Data partition.
+            '''
+      milestone: V1
+      tests: []
+    }
+    {
+      name: sw_op
+      desc: '''
+            Perform flash protocol controller read, program and erase on the single page of one
+            bank within Data partition. Finally perform read on same location in order to test
+            if previous operation was done successfully.
+            '''
+      milestone: V2
+      tests: []
+    }    
+    {
+      name: host_read_direct
+      desc: '''
+            Perform back-to-back direct reads via Host in order to test bandwidth of hardware host
+            interface. In addition, perform stalls to test pipeline structure. Enable scramble to
+            test pipeline structure.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: host_ctrl_hw_if
+      desc: '''
+            Perform read of seed materials via Hardware Interface of the Flash Protocol Controller.
+            Perform RMA entry request and check afterwards that software has no granted access.
+            During RMA entry, check if content of flash is wiped out via Host Interface direct
+            reads.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: host_controller_arb
+      desc: '''
+            Perform back-to-back operations via Software Interface and via Hardware Interface(key
+            manager,life cycle) in order to test arbitration within Flash Protocol Controller.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: erase_suspend
+      desc: '''
+            Perform erase suspend when erase is ongoing and also when erase is not ongoing.
+            Check if request is immediately cleared in case when no erase is ongoing.
+            Check if request is cleared in case when suspend is handled.
+            Read affected bank in order to verify erase suspension feature.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: full_memory_access
+      desc: '''
+            Entire memory is accessed by Controller and directly by Host. In addition, Data
+            partitions can be directly read by Software(Flash controller) and hardware hosts,
+            while Info partitions can be read only by the Flash controller. Test High Endurance
+            feature.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: fifo_eviction
+      desc: '''
+            Perform following sequences of operations: read/program/read and read/erase/read in
+            order to test fifo eviction properly. Read should be executed by both Software and
+            Host interface. All combinations should be tested. Covergroup for this hazardous
+            behavior is fifo_evict_cg.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: host_arb
+      desc: '''
+            Test arbitration within Flash Physical Controller by reading from both interfaces at
+            the same time. Perform continuously direct read data from host interface and at the
+            same time, perform all operations READ/PROGRAM/ERASE from the flash controller is in
+            progress. Perform parallel operations at addresses of different banks and also on same
+            bank. Expect that operations are successfully executed.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: host_interleave
+      desc: '''
+            At same time, perform two read operations and the same time via hardware host and via
+            controller. At same time, perform read operation via hardware host and program
+            operation via controller. Perform mentioned parallel operations at different addresses
+            and on the same address (i.e. seed material). Expect that operations are successfully
+            executed.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: memory_protection
+      desc: '''
+            Perform READ/ PROGRAM/ ERASE operations over protected regions and pages of data and
+            info partitions. Use set and reset values of corresponding read, program and erase
+            enable bits. Test boundary values of regions. Test overlap of regions in which lower
+            region wins arbitration. Covergroup is region_range_cg.
             '''
       milestone: V2
       tests: []
@@ -43,95 +150,105 @@
       tests: ["flash_ctrl_rand_ops"]
     }
     {
-      name: host_read_check
+      name: error_oob
       desc: '''
-            Sanity + the success of each operation is verified by randomly choosing
-            between backdoor and via the host interface.
+            Perform accesses in order to provoke error out of bound value. Test both, Software
+            interface and Hardware interface. Related covergroup is error_cg.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: host_illegal_access
+      name: error_mp
       desc: '''
-            Do a bunch of illegal accesses via host interface to ensure that an error response is
-            appropriately seen. This includes writes, out of bound reads, protocol violated reads
-            and all other unsupported accesses.
+            Perform accesses in order to provoke memory permission error. Test both, Software
+            interface and Hardware interface. Related covergroup is error_cg.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: host_outstanding_access
+      name: error_rd
       desc: '''
-            Drive back-to-back access to ensure coverage on the maximum supported outstanding
-            on this interface.
+            Perform accesses in order to provoke read data error. Test both, Software interface and
+            Hardware interface. Related covergroup is error_cg.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: intr_enabled
+      name: error_prog_win
       desc: '''
-            Sanity + enable all interrupts and verify correctness of assertion and de-assertion of
-            each pin. Replace polling with waits on interrrupts.
+            Perform accesses in order to provoke program resolution error. Test both, Software
+            interface and Hardware interface. Related covergroup is error_cg.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: host_ctrl_arb
+      name: error_prog_type
       desc: '''
-            Continuously read data from host interface while randomly programming or reading from
-            the flash controller. Ensure the expected bandwidths are seen on both interfaces. Also,
-            initiate reads from the host to all banks back and forth to ensure the responses arrive
-            in-order.
+            Perform accesses in order to provoke program type error. Test both, Software interface
+            and Hardware interface. Related covergroup is error_cg.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: host_read_collide
+      name: error_flash_phy
       desc: '''
-            Read LSB bus word via host and program or read the MSB bus word at the same time. This
-            will cause the internal flash word wide buffer to be updated. Then read the MSB bus word
-            within the same flash data word - it should read back the updated data, proving that the
-            internal buffer was cleared from the previous step.
+            Perform accesses in order to provoke native flash error. Test both, Software interface
+            and Hardware interface. Related covergroup is error_cg.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: en_mp_regions
+      name: error_lc
       desc: '''
-            Protect randomized and legal ranges of data and info partitions and ensure that the
-            corresponding read / program / erase enable bits are working. TBD - future support for
-            sub-page protection may be added - that will be tracked as a part of this test as well.
+            Perform accesses in order to provoke life cycle management interface error. Related
+            covergroup is error_cg.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: redundant_pages
+      name: secret_partition
       desc: '''
-            TBD - support for adding redundant pages may be added in future for yield recovery. THis
-            is a placeholder to verify that feature.
+            Verify values of secret information partitions. Enabling by life cycle and otp is
+            required. Pages are read upon flash controller initialization.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: lc_ctrl_if
+      name: isolation_partition
       desc: '''
-            TBD - verify the interface between flash controller and the life cycle controller.
+            Verify values of isolated information partitions. Accessablity is controlled by life
+            cycle and otp.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: key_mgr_if
+      name: interrupts
       desc: '''
-            TBD - verify the seed output to the key manager.
+            Perform accesses in order to raise all interrupts given in register map.
+            Check behaviour of Interrupt Enable and Status Registers.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: ecc
+      desc: '''
+            Randomly enable ECC for a randomly selected set of pages. Randomly corrupt a single bit
+            in the memory that is about to be read and ensure that the ECC works - the corrupted
+            bit should be fixed. Corrupt randomly either the data or the ECC bits. Randomly corrupt
+            2 bits in the same word and ensure that the read results in error. Ensure that pages
+            with ECC not enabled reads back corrupted data without any errors. Verify both types,
+            pre-scramble ECC(integrity ESS, 4-bits) and post-scramble ECC(reliability ECC, 8-bits).
+	    Test status and control ECC bits.
             '''
       milestone: V2
       tests: []
@@ -146,78 +263,87 @@
             the timing is correct (subsequent reads should be faster). When scrambling is not
             enabled, ensure that the raw data is written and read back.
             '''
-      milestone: V2
+      milestone: V3
       tests: []
     }
     {
-      name: ecc
+      name: robustness
       desc: '''
-            Randomly enable ECC for a randomly selected set of pages. Randomly corrupt a single bit
-            in the memory that is about to be read and ensure that the ECC works - the corrupted bit
-            should be fixed. Corrupt randomly either the data or the ECC bits. Randomly corrupt 2
-            bits in the same word and ensure that the read results in error. Ensure that pages with
-            ECC not enabled reads back corrupted data without any errors.
+            Enable full randomization in order to fully stress DUT. Perform illegal accesses in
+            order to gain robustness.
             '''
-      milestone: V2
+      milestone: V3
       tests: []
     }
+  ]
+
+  covergroups: [
     {
-      name: read_ecc_metadata
+      name: control_cg
       desc: '''
-            TBD - in futurem support for reading the metadata from the ECC bits may be supported -
-            this is a placeholder to verify that feature.
+            Covers that all operations READ/PROGRAM/ERASE/UNKNOWN have been tested.
+            Covers that ERASE operation is performed on a page and on entire bank.
+            Covers data and info partition selection.
+            Covers types of informational partitions.
+            Covers if request of erase suspension occured.
+            Covers High Endurance feature.
+            Covers scramble feature.
+            Covers ECC feature.
+            All valid combinations of the above will also be crossed.
             '''
-      milestone: V2
-      tests: []
     }
     {
-      name: error
+      name: flash_words_len_cg
       desc: '''
-            This test will attempt to generate flash error in all possible ways:
-            1. Read / program / erase a protected chunk
-            2. Set num words to 0 or out of bounds on read or program
-            3. Inject double bit errors when ECC is enabled
-            4. Program or read out-of-bounds info partition
-            5. Erase whole bank with bank erase not enabled
-            6. Randomly wiggle scramble enable in the middle of an op and ensure that the FSM does
-            not get locked up
+            Covers number of flash words for operations READ/PROGRAM.
+            The minimum tested number of words is 0 and the maximum length is 2^12-1.
+            Cover an acceptable distribution of lengths has been seen including corner cases
+            (length 0 and length 2^12-1).
             '''
-      milestone: V2
-      tests: []
     }
     {
-      name: flash_macro_timing
+      name: region_range_cg
       desc: '''
-            When verifying against the real flash macro (which will be in a closed source repo),
-            check that the read / program / erase timing parameters are correct.
+            Covers all possible numbers of region base pages abd region size pages which are given
+            in pages. Cover an acceptable distribution of lengths has been seen including corner
+            cases (value 0 and maximum value for which it makes sense to test it).
             '''
-      milestone: V2
-      tests: []
     }
     {
-      name: stress_all
+      name: msgfifo_level_cg
       desc: '''
-            This enables all of the above features to fully stress all the moving parts in the
-            design.
+            Covers that all possible fifo statuses generate interrupts for operations READ/PROGRAM.
+            Covers both boundary values 0 and 31. Also covers acceptable distributions within
+            ranges.
             '''
-      milestone: V2
-      tests: ["flash_ctrl_stress_all"]
     }
     {
-      name: flash_init
+      name: fifo_evict_cg
       desc: '''
-            TBD - if supported - verify flash initialization routine upon reset.
+            Covers that all possible combinations for following sequences of operations
+            READ/PROGRAM/READ and READ/ERASE/READ are executed. Software Interface can perform all
+            three operations READ/PROGRAM/ERASE while Host Interface can perform direct READ.
             '''
-      milestone: V2
-      tests: []
     }
     {
-      name: tlul_to_vendor
+      name: error_cg
       desc: '''
-            TBD - if supported - verify TLUL split to the vendor wrapper.
+            Covers following error scenarios given in Flash error code register:
+            - oob_err: The supplied address ADDR is invalid and out of bounds.
+            - mp_err: Flash access has encountered an access permission error.
+            - rd_err: Flash read has an uncorrectable data error.
+            - prog_win_err: Flash program has a window resolution error.
+            - prog_type_err: Flash program selected unavailable type.
+            - flash_phy_err: The flash access encountered a native flash error.            
+            Covers following error scenarios given in Flash fault status register:
+            - oob_err: The flash hardware interface supplied an out of bound value.
+            - mp_err: The flash hardware interface encountered a memory permission error.
+            - rd_err: The flash hardware interface encountered a read data error.
+            - prog_win_err: The flash hardware interface encountered a program resolution error.
+            - prog_type_err: The flash hardware interface encountered a program type error.
+            - flash_phy_err: The flash hardware interface encountered a native flash error.            
+            - lcmgr_err: The life cycle management interface has encountered a fatal error.            
             '''
-      milestone: V2
-      tests: []
     }
   ]
 }
