@@ -65,19 +65,19 @@ typedef enum flash_crtl_partition {
   /**
    * Select the data partition.
    */
-  kFlashCtrlPartitionData = 0x0000,
+  kFlashCtrlPartitionData = 0,
   /**
    * Select the info partition of type 0.
    */
-  kFlashCtrlPartitionInfo0 = 0x0100,
+  kFlashCtrlPartitionInfo0 = (0 << 1) | 1,
   /**
    * Select the info partition of type 1.
    */
-  kFlashCtrlPartitionInfo1 = 0x0300,
+  kFlashCtrlPartitionInfo1 = (1 << 1) | 1,
   /**
    * Select the info partition of type 2.
    */
-  kFlashCtrlPartitionInfo2 = 0x0500,
+  kFlashCtrlPartitionInfo2 = (2 << 1) | 1,
 } flash_ctrl_partition_t;
 
 /**
