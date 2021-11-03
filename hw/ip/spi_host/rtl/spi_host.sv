@@ -6,6 +6,8 @@
 //
 //
 
+// TODO: Implement CMDQD
+
 `include "prim_assert.sv"
 
 module spi_host
@@ -42,9 +44,6 @@ module spi_host
 );
 
   import spi_host_cmd_pkg::*;
-
-  // TODO: Make this an actual parameter
-  localparam int CmdDepth = 4;
 
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
@@ -270,6 +269,8 @@ module spi_host
 
   logic sw_rst;
 
+  logic [3:0]  cmd_qd;
+
   spi_host_command_queue #(
     .CmdDepth(CmdDepth)
   ) u_cmd_queue (
@@ -282,6 +283,7 @@ module spi_host
     .core_command_valid_o (core_command_valid),
     .core_command_ready_i (core_command_ready),
     .error_busy_o         (error_busy),
+    .qd_o                 (cmd_qd),
     .sw_rst_i             (sw_rst)
   );
 
@@ -330,6 +332,7 @@ module spi_host
 
   assign hw2reg.status.txqd.d    = tx_qd;
   assign hw2reg.status.rxqd.d    = rx_qd;
+  assign hw2reg.status.cmdqd.d   = cmd_qd;
   assign hw2reg.status.txwm.d    = tx_wm;
   assign hw2reg.status.rxwm.d    = rx_wm;
   assign hw2reg.status.rxempty.d = rx_empty;
@@ -339,6 +342,7 @@ module spi_host
 
   assign hw2reg.status.txqd.de    = 1'b1;
   assign hw2reg.status.rxqd.de    = 1'b1;
+  assign hw2reg.status.cmdqd.de   = 1'b1;
   assign hw2reg.status.txwm.de    = 1'b1;
   assign hw2reg.status.rxwm.de    = 1'b1;
   assign hw2reg.status.rxempty.de = 1'b1;

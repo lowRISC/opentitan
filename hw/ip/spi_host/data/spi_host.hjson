@@ -44,6 +44,11 @@
       type: "int",
       default: "64"
     },
+    { name: "CmdDepth",
+      desc: "The size of the Cmd FIFO (one segment descriptor per entry)",
+      type: "int",
+      default: "4"
+    }
   ],
   available_output_list: [
     { name:  "sck"
@@ -187,6 +192,12 @@
           name: "RXWM",
           desc: '''If high, the number of 32-bits in the RX FIFO now exceeds the
                    !!CONTROL.RX_WATERMARK entries (32b each).'''
+          resval: "0x0"
+        },
+        { bits: "19:16",
+          name: "CMDQD",
+          desc: '''Command queue depth. Indicates how many unread 32-bit words are
+                   currently in the command segment queue.''',
           resval: "0x0"
         },
         { bits: "15:8",
