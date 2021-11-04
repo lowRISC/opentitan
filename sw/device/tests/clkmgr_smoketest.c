@@ -35,6 +35,8 @@ static void test_gateable_clocks(const dif_clkmgr_t *clkmgr) {
       CHECK_DIF_OK(
           dif_clkmgr_gateable_clock_get_enabled(clkmgr, clock, &actual_state));
       CHECK(actual_state == expected_state);
+
+      state = actual_state;
     }
   }
 }
@@ -71,6 +73,8 @@ void test_hintable_clocks(const dif_clkmgr_t *clkmgr) {
         CHECK(state == kDifToggleEnabled,
               "clock %u hint is enabled but status is disabled", clock);
       }
+
+      state = actual_state;
     }
   }
 }
