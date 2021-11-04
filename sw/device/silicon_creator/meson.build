@@ -13,5 +13,5 @@ mask_rom_tests = {
 subdir('otbn')
 subdir('lib')
 subdir('mask_rom')
-subdir('rom_exts')
+subdir('rom_ext')
 subdir('testing')
