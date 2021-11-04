@@ -11624,6 +11624,11 @@
       name: asic
       pinout:
       {
+        remove_ports:
+        [
+          USB_P1
+          USB_N1
+        ]
         remove_pads: []
         add_pads:
         [
@@ -11633,6 +11638,20 @@
             bank: VCC
             connection: manual
             desc: Extra infrastructure pad for AST
+          }
+          {
+            name: USB_P1
+            type: BidirTol
+            bank: VCC
+            connection: manual
+            desc: USB P signal (second pad)
+          }
+          {
+            name: USB_N1
+            type: BidirTol
+            bank: VCC
+            connection: manual
+            desc: USB N signal (second pad)
           }
         ]
       }
@@ -11701,6 +11720,7 @@
       name: cw310
       pinout:
       {
+        remove_ports: []
         remove_pads:
         [
           CC1
@@ -11906,6 +11926,7 @@
       name: nexysvideo
       pinout:
       {
+        remove_ports: []
         remove_pads:
         [
           CC1

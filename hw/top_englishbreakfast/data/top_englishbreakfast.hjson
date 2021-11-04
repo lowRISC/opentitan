@@ -870,6 +870,7 @@
   targets: [
     { name: 'cw305',
       pinout: {
+        remove_ports: [],
         remove_pads: [
           'CC1', 'CC2',
           'SPI_DEV_D2', 'SPI_DEV_D3'
