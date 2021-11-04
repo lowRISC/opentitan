@@ -35,6 +35,18 @@ static void init_uart(void) {
   base_uart_stdout(&uart0);
 }
 
+static void freertos_test_task(void *task_parameters) {
+  bool result = test_main();
+
+  // Must happen before any debug output.
+  if (kTestConfig.can_clobber_uart) {
+    init_uart();
+  }
+
+  test_coverage_send_buffer();
+  test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
+}
+
 int main(int argc, char **argv) {
   test_status_set(kTestStatusInTest);
 
@@ -44,20 +56,9 @@ int main(int argc, char **argv) {
   }
 
   // Run the test, which is contained within `test_main()`, as a FreeRTOS task.
-  bool result = false;
-  LOG_INFO("Starting test (%s) in a FreeRTOS task ...", kTestConfig.test_name);
-  TaskHandle_t test_task_handle = NULL;
-  xTaskCreate(test_main, kTestConfig.test_name, configMINIMAL_STACK_SIZE,
-              &result, tskIDLE_PRIORITY + 1, &test_task_handle);
+  xTaskCreate(freertos_test_task, "OTTFTestTask", configMINIMAL_STACK_SIZE,
+              NULL, tskIDLE_PRIORITY + 1, NULL);
   vTaskStartScheduler();
-
-  // Must happen before any debug output.
-  if (kTestConfig.can_clobber_uart) {
-    init_uart();
-  }
-
-  test_coverage_send_buffer();
-  test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
 
   // Unreachable code.
   return 1;

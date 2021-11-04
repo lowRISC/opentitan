@@ -32,10 +32,6 @@ typedef struct test_config {
    * by resetting the UART device before printing debug information.
    */
   bool can_clobber_uart;
-  /**
-   * A short name for the test for debugging purposes within FreeRTOS.
-   */
-  char test_name[configMAX_TASK_NAME_LEN];
 } test_config_t;
 
 /**
@@ -63,6 +59,6 @@ extern const test_config_t kTestConfig;
  *
  * @return success or failure of the test as boolean.
  */
-extern void test_main(void *pvParameters);
+extern bool test_main(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_H_

@@ -79,7 +79,7 @@ freertos_portable_path = '@0@/@1@'.format(freertos_root, 'portable/GCC/RISC-V')
 ottf_sources = [
   'ottf.c',
   'ottf_isrs.c',
-  'example_earlgrey_test.c',
+  'example_ottf_test.c',
   'freertos_hooks.c',
   'freertos_port.S',
   'freertos_port.c',
