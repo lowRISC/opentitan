@@ -6,7 +6,8 @@
 // During the channels are operating (patterns are not fully generated),
 // this vseq can randomly disable channels that causes error patterns which
 // must be detected and dropped in scoreboard and agent_monitor
-class pattgen_error_vseq extends pattgen_base_vseq;
+//class pattgen_error_vseq extends pattgen_base_vseq;
+class pattgen_error_vseq extends pattgen_base_busy_vseq;
   `uvm_object_utils(pattgen_error_vseq)
   `uvm_object_new
 

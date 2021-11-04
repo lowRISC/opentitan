@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // basic perf test vseq
-class pattgen_perf_vseq extends pattgen_base_vseq;
+//class pattgen_perf_vseq extends pattgen_base_vseq;
+class pattgen_perf_vseq extends pattgen_base_busy_vseq;
   `uvm_object_utils(pattgen_perf_vseq)
   `uvm_object_new
 

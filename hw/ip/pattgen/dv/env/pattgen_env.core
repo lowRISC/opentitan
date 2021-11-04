@@ -22,6 +22,7 @@ filesets:
       - pattgen_env.sv: {is_include_file: true}
       - seq_lib/pattgen_vseq_list.sv: {is_include_file: true}
       - seq_lib/pattgen_base_vseq.sv: {is_include_file: true}
+      - seq_lib/pattgen_base_busy_vseq.sv: {is_include_file: true}
       - seq_lib/pattgen_common_vseq.sv: {is_include_file: true}
       - seq_lib/pattgen_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/pattgen_perf_vseq.sv: {is_include_file: true}

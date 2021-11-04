@@ -2,13 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class pattgen_base_vseq extends cip_base_vseq #(
+
+class pattgen_base_busy_vseq extends cip_base_vseq #(
     .RAL_T               (pattgen_reg_block),
     .CFG_T               (pattgen_env_cfg),
     .COV_T               (pattgen_env_cov),
     .VIRTUAL_SEQUENCER_T (pattgen_virtual_sequencer)
   );
-  `uvm_object_utils(pattgen_base_vseq)
+
+//class pattgen_base_busy_vseq extends pattgen_base_vseq; 
+  `uvm_object_utils(pattgen_base_busy_vseq)
   `uvm_object_new
 
   // variables
@@ -16,6 +19,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
   uint                                num_pattern_gen = 0;
   // channel config
   rand pattgen_channel_cfg            channel_cfg[NUM_PATTGEN_CHANNELS-1:0];
+  rand pattgen_channel_cfg            channel_busy_cfg[NUM_PATTGEN_CHANNELS-1:0];
 
   // indicate channels are setup before enabled
   bit [NUM_PATTGEN_CHANNELS-1:0]      channel_setup = 'h0;
@@ -93,11 +97,42 @@ class pattgen_base_vseq extends cip_base_vseq #(
         setup_pattgen_channel_0();
         setup_pattgen_channel_1();
         start_pattgen_channels();
+        //setup_pattgen_busy_channel_0();
         stop_pattgen_channels();
       join
     end
     `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
   endtask : body
+
+  virtual task setup_pattgen_busy_channel_0();
+    `uvm_info(`gfn, "\n--> busy started", UVM_LOW)
+    //if (num_pattern_req < num_trans &&
+       // channel_grant[0] 
+       //  &&       // ch0 setup is granted
+       // channel_setup[0] &&       // ch0 has not been programmed
+       //&& channel_start[0]) 
+       // begin   // ch1 is not under start (avoid re-programming regs)
+    `uvm_info(`gfn, "\n--> conditions are met", UVM_LOW)
+      //wait_for_channel_ready(Channel0);
+      channel_busy_cfg[0] = get_random_channel_config(.channel(0));
+    `uvm_info(`gfn, $sformatf("\n--> to registers/: data_busy %0d, prediv_busy %0b, length_busy %0d",
+        channel_busy_cfg[0].data[31:0], channel_busy_cfg[0].prediv,
+        channel_busy_cfg[0].len), UVM_LOW)
+      ral.size.len_ch0.set(channel_busy_cfg[0].len);
+      ral.size.reps_ch0.set(channel_busy_cfg[0].reps);
+      csr_update(ral.size);
+    `uvm_info(`gfn, "\n--> csr busy updated", UVM_LOW)
+      csr_wr(.ptr(ral.prediv_ch0), .value(channel_busy_cfg[0].prediv));
+      csr_wr(.ptr(ral.data_ch0[0]), .value(channel_busy_cfg[0].data[31:0]));
+      csr_wr(.ptr(ral.data_ch0[1]), .value(channel_busy_cfg[0].data[63:32]));
+      ral.ctrl.polarity_ch0.set(channel_busy_cfg[0].polarity);
+      update_pattgen_agent_cfg(.channel(0));
+      csr_update(ral.ctrl);
+      //channel_setup[0] = 1'b1;
+      void'(right_rotation(channel_grant));
+      `uvm_info(`gfn, "\n  channel 0 busy: programmed", UVM_DEBUG)
+    //end
+  endtask : setup_pattgen_busy_channel_0
 
   virtual task setup_pattgen_channel_0();
     if (num_pattern_req < num_trans &&
@@ -173,6 +208,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
             cfg.clk_rst_vif.wait_clks(b2b_pattern_dly);
             control_channels(ch_select, Enable);
             channel_start[i]= 1'b1;
+            setup_pattgen_busy_channel_0();
             `uvm_info(`gfn, $sformatf("\n  channel %0d: activated", i), UVM_DEBUG)
           end
         end
@@ -268,6 +304,19 @@ class pattgen_base_vseq extends cip_base_vseq #(
       end
     endcase
   endtask : wait_for_channel_ready
+
+  virtual task wait_for_channel_busy(channel_select_e ch_select);
+    case (ch_select)
+      Channel0: begin
+        csr_spinwait(.ptr(ral.ctrl.enable_ch0), .exp_data(1'b1));
+        `uvm_info(`gfn, $sformatf("\n  channel 0 is ready for programmed"), UVM_DEBUG)
+      end
+      Channel1: begin
+        csr_spinwait(.ptr(ral.ctrl.enable_ch1), .exp_data(1'b1));
+        `uvm_info(`gfn, $sformatf("\n  channel 1 is ready for programmed"), UVM_DEBUG)
+      end
+    endcase
+  endtask : wait_for_channel_busy
 
   // this task allows channels to be activated or stopped independently/simultaneously
   virtual task control_channels(channel_select_e ch_select, channel_status_e status);
@@ -401,4 +450,4 @@ class pattgen_base_vseq extends cip_base_vseq #(
     csr_spinwait(.ptr(ral.intr_state.done_ch1), .exp_data(1'b0));
   endtask : wait_host_for_idle
 
-endclass : pattgen_base_vseq
+endclass : pattgen_base_busy_vseq

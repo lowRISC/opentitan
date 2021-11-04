@@ -30,14 +30,15 @@ class pattgen_seq_cfg extends uvm_object;
   uint pattgen_min_reps              = RepsMinValue;
   uint pattgen_max_reps              = RepsMaxValue;
 
+
   uint pattgen_low_polarity_pct      = 50;  // in percentage
   uint pattgen_sync_channels_pct     = 30;  // in percentage
 
   // for error_vseq
   bit  error_injected_enb            = 1'b0;
   uint error_injected_pct            = 10;  // in percentage
-  uint data_top_pct                  = 10;
-  uint data_bottom_pct               = 80;
-  uint data_middle_pct               = 10;
+  uint data_top_pct                  = 20;
+  uint data_bottom_pct               = 20;
+  uint data_middle_pct               = 60;
 
 endclass : pattgen_seq_cfg

@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class pattgen_common_vseq extends pattgen_base_vseq;
+//class pattgen_common_vseq extends pattgen_base_vseq;
+class pattgen_common_vseq extends pattgen_base_busy_vseq;
   `uvm_object_utils(pattgen_common_vseq)
   `uvm_object_new
 

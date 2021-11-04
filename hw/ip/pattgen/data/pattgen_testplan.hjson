@@ -75,37 +75,18 @@
       tests: ["cnt_rollover"]
     }
     {
-      name: alert
-      desc: '''
-            Checking alert errors
-
-            Stimulus:
-            TODO: identify exactly what alerts are triggered, and for the V2
-            find out exactly what triggers alert, if anything
-            Checking:
-              - Check alert `fatal_fault_err` is triggered
-              and err_code is `INVALID_CMD`
-              - Check alert `recov_operation_err` is triggered
-              and err_code is `INVALID_DATA`
-              - Check that operations are not recoverable
-              after `fatal_fault_err` alert
-            '''
-      milestone: V2
-      tests: ["pattgen_alert"]
-    }
-    {
       name: error
       desc: '''
             Reset then re-start the output channel on the fly.
 
             Stimulus:
               - Programm the configuration registers of the output channels
-              - Randomly reset the in progress output channels
+              - Randomly re-enable the in progress output channels
               - Re-program the configuration registers of the output channels
 
             Checking:
               - Ensure patterns are dropped when reset
-              - Ensure the output channels get back normal after reset
+              - Ensure the output channels get back normal after re-enable
             '''
       milestone: V2
       tests: ["pattgen_error"]
@@ -113,14 +94,8 @@
     {
       name: stress_all
       desc: '''
-            Combine above sequences in one test then randomly select for running.
-
-            Stimulus:
-              - Start sequences and randomly add reset between each sequence
-
-            Checking:
-              - All sequences should be finished and checked by the scoreboard
-      '''
+            Import hw/dv/tools/dvsim/testplans/stress*.hjson
+            '''
       milestone: V2
       tests: ["pattgen_stress_all"]
     }
@@ -138,9 +113,7 @@
             * One bit width variables are wrapped in one cover point
               while counters and data have designated cover points
             * Channel enable signal is stand alone cover point
-            * Chennel enable signal is crossed with all other cover points
-            * When both channels are active, the enable signals of each
-              channel are each crossed with cover points of both channels
+            * Channel enable signal is crossed with all other cover points
             '''
     }
     {
@@ -182,15 +155,8 @@
     {
       name: inter_cg
       desc: '''
-            Covers that all valid settings of Interrupt Enable Register
-            and Interrupt State Register register have been tested.
-            Individual interrupt settings that will be covered include:
-            - Interrupt Enable Register[0] (done_ch0)
-            - Interrupt Enable Register[1] (done_ch1)
-            - Interrupt State Register[0] (done_ch0)
-            - Interrupt State Register[1] (done_ch1)
-            Combinations of Interrupt Enable and Interrupt State
-            registers for each channel will be crossed
+            instantiate the common covergroup for interrupt
+            in pattgen_env_cov 
             '''
     }
     {
@@ -245,7 +211,8 @@
             Covers various data_0 values of the channel0 seed pattern ranges,
             to ensure that Pattgen can operate successfully on different pattern lengths.
             we will cover that an acceptable distribution of lengths has been seen,
-            and specifically cover corner cases.
+            and specifically cover corner cases. The covergroup takes data from 
+            TL_UL scoreboard input
             '''
     }
     {

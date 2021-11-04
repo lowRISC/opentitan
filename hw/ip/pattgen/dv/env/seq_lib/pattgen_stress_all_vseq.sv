@@ -5,7 +5,8 @@
 // combine all pattgen seqs (except below vseqs) in one seq to run sequentially
 // 1. override_vseq requires scb and monitor to be disabled
 // 1. csr seq, which requires scb to be disabled
-class pattgen_stress_all_vseq extends pattgen_base_vseq;
+//class pattgen_stress_all_vseq extends pattgen_base_vseq;
+class pattgen_stress_all_vseq extends pattgen_base_busy_vseq;
   `uvm_object_utils(pattgen_stress_all_vseq)
 
   `uvm_object_new
