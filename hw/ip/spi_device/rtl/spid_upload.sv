@@ -195,6 +195,7 @@ module spid_upload
     cmd_info_i.opcode,
     cmd_info_i.payload_dir,
     cmd_info_i.payload_en,
+    cmd_info_i.payload_swap_en,
     cmd_info_i.upload
   };
 

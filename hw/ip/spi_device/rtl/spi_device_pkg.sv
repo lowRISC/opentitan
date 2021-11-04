@@ -132,6 +132,14 @@ package spi_device_pkg;
     logic [3:0]   payload_en;
     payload_dir_e payload_dir;
 
+    // If payload_swap_en is set, the passthrough logic swaps the first
+    // 4 bytes of the write payload with PAYLOAD_SWAP_MASK and
+    // PAYLOAD_SWAP_DATA CSR.
+    //
+    // `payload_swap_en` only works with write data and SingleIO mode.
+    // `payload_en` should be 4'b 0001 && `payload_dir` to be PayloadIn.
+    logic payload_swap_en;
+
     // upload: If upload field in the command info entry is set, the cmdparse
     // activates the upload submodule when the opcode is received. `addr_en`,
     // `addr_4B_affected`, and `addr_4b_forced` (TBD) affect the upload
@@ -162,6 +170,7 @@ package spi_device_pkg;
     dummy_size:       3'h 0,
     payload_en:       4'b 0001, // MOSI active
     payload_dir:      PayloadIn,
+    payload_swap_en:  1'b 0,
     upload:           1'b 0,
     busy:             1'b 0
   };
