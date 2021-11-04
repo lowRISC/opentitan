@@ -15,7 +15,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from io import StringIO
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import hjson
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
@@ -601,7 +601,7 @@ def generate_top_only(top_only_list, out_path, topname):
 
 def generate_top_ral(top: Dict[str, object],
                      name_to_block: Dict[str, IpBlock],
-                     dv_base_names: str,
+                     dv_base_names: List[str],
                      out_path: str):
     # construct top ral block
 
@@ -947,7 +947,7 @@ def main():
         action='store_true',
         help="If set, the tool generates top level RAL model for DV")
     parser.add_argument('--dv-base-names',
-                        default='dv_base',
+                        nargs="+",
                         help='Names or prefix for the DV register classes from which '
                         'the register models are derived.')
     # Generator options for compile time random netlist constants

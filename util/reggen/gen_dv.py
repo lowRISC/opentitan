@@ -6,12 +6,8 @@
 import logging as log
 import os
 import sys
-<<<<<<< Updated upstream
-from typing import List, Union, Dict
-=======
 from collections import defaultdict
 from typing import Dict, List, Union
->>>>>>> Stashed changes
 
 import yaml
 
@@ -69,15 +65,17 @@ def miname(m: Window) -> str:
 
 def gen_core_file(outdir: str,
                   lblock: str,
-                  dv_base_names: str,
+                  dv_base_names: List[str],
                   paths: List[str]) -> None:
     depends = ["lowrisc:dv:dv_base_reg"]
     blocks_base_names = get_dv_base_names_objects(dv_base_names)
-    # Assume the core file naming convetion is the package name without `_pkg`
-    # suffix.
-    for block in blocks_base_names:
-        pkg_name = blocks_base_names[block].pkg
-        depends.append("lowrisc:dv:{}".format(pkg_name[:-4]))
+
+    if blocks_base_names is not None:
+        # Assume the core file naming convetion is the package name without `_pkg`
+        # suffix.
+        for block in blocks_base_names:
+            pkg_name = blocks_base_names[block].pkg
+            depends.append("lowrisc:dv:{}".format(pkg_name[:-4]))
 
     # Generate a fusesoc core file that points at the files we've just
     # generated.
@@ -104,20 +102,21 @@ def gen_core_file(outdir: str,
         yaml.dump(core_data, core_file, encoding='utf-8')
 
 
-def get_dv_base_names_objects(dv_base_names: str) -> Dict[str, DvBaseNames]:
-    ''' Convert the dv_base_names from string to a list of DvBaseNames objects.
+def get_dv_base_names_objects(dv_base_names: List[str]) -> Dict[str, DvBaseNames]:
+    '''Returns a dictionary mapping a `DvBaseNames` object to a block.
 
-    If the `dv_base_names` matches the default argument, returns default DvBaseNames object.
-    If the `dv_bave_names` has customerized input, it should follow this format of a list:
-    ['block-1:type:entity-name', 'block-2:type:entity-name',...].
-    This method will parse the list and return customerized DvBaseNames ojects.
+    `dv_bave_names` is a list of base class entity names provided on the command-line, in the
+    following format:
+    ast:block:ast_base_reg_block ast:pkg:ast_base_reg_pkg otp_ctrl:all:otp_ctrl_base
+
+    This function creates a dictionary that wraps the provided base class overrides for each block
+    within a `DvBaseNames` object and returns a dictionary mapping the object to the block.
     '''
-    dv_base_names_dict = defaultdict(DvBaseNames)
+    if dv_base_names is None:
+        return None
 
-    if dv_base_names == "dv_base":
-        return dv_base_names_dict
-
-    for item in dv_base_names.split(","):
+    dv_base_names_dict = defaultdict(DvBaseNames)  # type: Dict[str, DvBaseNames]
+    for item in dv_base_names:
         try:
             block, base_type, entity = item.split(":")
         except ValueError:
@@ -127,16 +126,21 @@ def get_dv_base_names_objects(dv_base_names: str) -> Dict[str, DvBaseNames]:
     return dv_base_names_dict
 
 
-def get_block_base_name(dv_base_names: str, block: str) -> DvBaseNames:
-    ''' Given a string of dv_base_names and return a DvBaseNames object for a specific block.
+def get_block_base_name(dv_base_names_map: Dict[str, DvBaseNames], block: str) -> DvBaseNames:
+    '''Given a dictionary of `DvBaseNames` and return a `DvBaseNames` object for a specific block.
+
+    If the given dictionary is empty, or cannot find the block name in the list of dictionary keys,
+    this function will return the default `DvBaseNames` object.
     '''
-    blocks_dv_base_names = get_dv_base_names_objects(dv_base_names)
-    if block in blocks_dv_base_names:
-        return blocks_dv_base_names[block]
-    return DvBaseNames()
+    if dv_base_names_map is None:
+        return DvBaseNames()
+    try:
+        return dv_base_names_map[block]
+    except KeyError:
+        return DvBaseNames()
 
 
-def gen_dv(block: IpBlock, dv_base_names: str, outdir: str) -> int:
+def gen_dv(block: IpBlock, dv_base_names: List[str], outdir: str) -> int:
     '''Generate DV files for an IpBlock'''
 
     lookup = TemplateLookup(directories=[resource_filename('reggen', '.')])
@@ -149,7 +153,8 @@ def gen_dv(block: IpBlock, dv_base_names: str, outdir: str) -> int:
     generated = []
 
     lblock = block.name.lower()
-    block_dv_base_names = get_block_base_name(dv_base_names, lblock)
+    dv_base_names_map = get_dv_base_names_objects(dv_base_names)
+    block_dv_base_names = get_block_base_name(dv_base_names_map, lblock)
 
     for if_name, rb in block.reg_blocks.items():
         hier_path = '' if block.hier_path is None else block.hier_path + '.'
@@ -160,7 +165,6 @@ def gen_dv(block: IpBlock, dv_base_names: str, outdir: str) -> int:
         file_name = mod_base + '_ral_pkg.sv'
         generated.append(file_name)
         reg_top_path = os.path.join(outdir, file_name)
-
         with open(reg_top_path, 'w', encoding='UTF-8') as fout:
             try:
                 fout.write(uvm_reg_tpl.render(rb=rb,

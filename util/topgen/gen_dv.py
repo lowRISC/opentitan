@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging as log
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from mako import exceptions  # type: ignore
 from mako.lookup import TemplateLookup  # type: ignore
@@ -20,7 +20,7 @@ def sv_base_addr(top: Top, if_name: Tuple[str, Optional[str]]) -> str:
 
 
 def gen_dv(top: Top,
-           dv_base_names: str,
+           dv_base_names: List[str],
            outdir: str) -> int:
     '''Generate DV RAL model for a Top'''
     # Read template
