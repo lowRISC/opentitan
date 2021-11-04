@@ -71,7 +71,7 @@ def main():
                         help='Target directory for generated RTL; '
                         'tool uses ../rtl if blank.')
     parser.add_argument('--dv-base-names',
-                        default='dv_base',
+                        nargs="+",
                         help='Names or prefix for the DV register classes from which '
                         'the register models are derived.')
     parser.add_argument('--outfile',

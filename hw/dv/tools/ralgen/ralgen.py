@@ -65,8 +65,8 @@ def main():
         cmd = os.path.join(util_path, "topgen.py")
         args = [cmd, "-r", "-o", os.getcwd(), "-t", ral_spec]
 
-    if dv_base_names and dv_base_names != "dv_base":
-        args.extend(["--dv-base-names", dv_base_names])
+    if dv_base_names:
+        args += ["--dv-base-names"] + dv_base_names
 
     try:
         cmd_str = ' '.join([shlex.quote(arg) for arg in args])

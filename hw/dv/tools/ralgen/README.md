@@ -19,9 +19,8 @@ generator, the following parameters are set:
   classes are derived. Set this option to derive the register classes not from
   the default `dv_base_reg`, but from user defined custom class definitions.
   This argument follows the following format:
-  `--dv-base-names block:type:entity-name, ...`.
-  `block`: can be any block names, or use `default` to override all blocks
-  within the hjson.
+  `--dv-base-names block:type:entity-name block:type:entity-name ...`.
+  `block`: can be any block names.
   `type`: can be `block`, `reg`, `field`, `pkg`, `mem`, or use `all` to override
   all types within the block.
   `entity_name`: the name of the base class / package. If the `type` is set to `all`,
@@ -46,7 +45,9 @@ generate:
     parameters:
       name: <name>
       ip_hjson|top_hjson: <path-to-hjson-spec>
-      [dv_base_names: block_1:type:entity_name_1,block_2:type:entity_name_2]
+      [dv_base_names:
+        - block_1:type:entity_name_1
+        - block_2:type:entity_name_2]
 
 
 targets:
