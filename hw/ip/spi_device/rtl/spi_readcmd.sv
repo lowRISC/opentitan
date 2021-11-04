@@ -191,11 +191,12 @@ module spi_readcmd
 
   logic unused_cmd_info_members;
   assign unused_cmd_info_members = ^{
-    cmd_info_i.valid,         // cmdparse checks the valid bit
-    cmd_info_i.addr_en,       // Always assume Readcmd has addr_en set
-    cmd_info_i.addr_swap_en,  // address swap feature is used in Passthrough
-    cmd_info_i.opcode,        // Does not need to check opcode. (fixed slot)
-    cmd_info_i.payload_dir,   // Always output mode
+    cmd_info_i.valid,           // cmdparse checks the valid bit
+    cmd_info_i.addr_en,         // Always assume Readcmd has addr_en set
+    cmd_info_i.addr_swap_en,    // address swap feature is used in Passthrough
+    cmd_info_i.opcode,          // Does not need to check opcode. (fixed slot)
+    cmd_info_i.payload_dir,     // Always output mode
+    cmd_info_i.payload_swap_en, // Used in passthrough mode only
     cmd_info_i.upload,
     cmd_info_i.busy
     };

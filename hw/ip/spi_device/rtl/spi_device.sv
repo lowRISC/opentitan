@@ -593,6 +593,7 @@ module spi_device
         dummy_size:       reg2hw.cmd_info[i].dummy_size.q,
         payload_en:       reg2hw.cmd_info[i].payload_en.q,
         payload_dir:      payload_dir_e'(reg2hw.cmd_info[i].payload_dir.q),
+        payload_swap_en:  reg2hw.cmd_info[i].payload_swap_en.q,
         upload:           reg2hw.cmd_info[i].upload.q,
         busy:             reg2hw.cmd_info[i].busy.q
       };

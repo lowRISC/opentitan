@@ -65,7 +65,8 @@ module spi_cmdparse
                                    cmd_info_i[i].dummy_en,
                                   ^cmd_info_i[i].dummy_size,
                                    cmd_info_i[i].payload_dir,
-                                  ^cmd_info_i[i].payload_en};
+                                  ^cmd_info_i[i].payload_en,
+                                   cmd_info_i[i].payload_swap_en};
     end
   end
 
