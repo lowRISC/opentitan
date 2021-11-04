@@ -13,6 +13,7 @@ use opentitanlib::transport::{EmptyTransport, Transport};
 use opentitanlib::util::parse_int::ParseInt;
 
 pub mod cw310;
+pub mod emulation;
 pub mod ultradebug;
 pub mod verilator;
 
@@ -50,6 +51,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         "verilator" => verilator::create(&args.verilator_opts),
         "ultradebug" => ultradebug::create(args),
         "cw310" => cw310::create(args),
+        "emulation" => emulation::create(args),
         _ => Err(Error::UnknownInterface(args.interface.clone()).into()),
     }?);
     for conf_file in &args.conf {
