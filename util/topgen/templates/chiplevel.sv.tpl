@@ -80,23 +80,35 @@ module chip_${top["name"]}_${target["name"]} #(
 module chip_${top["name"]}_${target["name"]} (
 % endif
 <%
-
+  removed_port_names = []
 %>\
   // Dedicated Pads
 % for pad in dedicated_pads:
 <%
   sig = get_dio_sig(pinmux, pad)
+  if pad["name"] in target["pinout"]["remove_ports"]:
+    port_comment = "// Removed port: "
+    removed_port_names.append(pad["name"])
+  else:
+    port_comment = ""
   if sig is not None:
     comment = "// Dedicated Pad for {}".format(sig["name"])
   else:
     comment = "// Manual Pad"
 %>\
-  inout ${pad["name"]}, ${comment}
+  ${port_comment}inout ${pad["name"]}, ${comment}
 % endfor
 
   // Muxed Pads
 % for pad in muxed_pads:
-  inout ${pad["name"]}${" " if loop.last else ","} // MIO Pad ${pad["idx"]}
+<%
+  if pad["name"] in target["pinout"]["remove_ports"]:
+    port_comment = "// Removed port: "
+    removed_port_names.append(pad["name"])
+  else:
+    port_comment = ""
+%>\
+  ${port_comment}inout ${pad["name"]}${" " if loop.last else ","} // MIO Pad ${pad["idx"]}
 % endfor
 );
 
@@ -160,6 +172,13 @@ module chip_${top["name"]}_${target["name"]} (
   ////////////////////////
   // Signal definitions //
   ////////////////////////
+
+  % if removed_port_names:
+  // Net definitions for removed ports
+  % endif
+  % for port in removed_port_names:
+  wire ${port};
+  % endfor
 
   pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr;
   pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr;
@@ -910,17 +929,39 @@ module chip_${top["name"]}_${target["name"]} (
 
   // TODO: generalize this USB mux code and align with other tops.
 
-  // Connect the DP pad
+  // Connect the D+ pad
+  // Note that we use two pads in parallel for the D+ channel to meet electrical specifications.
   assign dio_in[DioUsbdevDp] = manual_in_usb_p;
   assign manual_out_usb_p = dio_out[DioUsbdevDp];
   assign manual_oe_usb_p = dio_oe[DioUsbdevDp];
   assign manual_attr_usb_p = dio_attr[DioUsbdevDp];
+  // This drives exactly the same output signal and attributes as for the first pad.
+  assign manual_out_usb_p1 = dio_out[DioUsbdevDp];
+  assign manual_oe_usb_p1 = dio_oe[DioUsbdevDp];
+  assign manual_attr_usb_p1 = dio_attr[DioUsbdevDp];
 
-  // Connect the DN pad
+  // For the input, only the first pad is used.
+  logic unused_in_usb_p1;
+  assign unused_in_usb_p1 = manual_in_usb_p1;
+
+  // Connect the D- pads
+  // Note that we use two pads in parallel for the D- channel to meet electrical specifications.
   assign dio_in[DioUsbdevDn] = manual_in_usb_n;
   assign manual_out_usb_n = dio_out[DioUsbdevDn];
   assign manual_oe_usb_n = dio_oe[DioUsbdevDn];
   assign manual_attr_usb_n = dio_attr[DioUsbdevDn];
+  // This drives exactly the same output signal and attributes as for the first pad.
+  assign manual_out_usb_n1 = dio_out[DioUsbdevDn];
+  assign manual_oe_usb_n1 = dio_oe[DioUsbdevDn];
+  assign manual_attr_usb_n1 = dio_attr[DioUsbdevDn];
+
+  // For the input, only the first pad is used.
+  logic unused_in_usb_n1;
+  assign unused_in_usb_n1 = manual_in_usb_n1;
+
+  // These shorts are intentional to make sure the parallel pads drive the same net.
+  assign USB_P1 = USB_P;
+  assign USB_N1 = USB_N;
 
   // Pullups
   logic usb_pullup_p_en, usb_pullup_n_en;

@@ -37,6 +37,7 @@ def create_pinout_table(top, c_helper, target):
 
     # get all pads for this target
     pads = top['pinout']['pads'] + target['pinout']['add_pads']
+    remove_ports = target['pinout']['remove_ports']
     remove_pads = target['pinout']['remove_pads']
     special_signals = target['pinmux']['special_signals']
 
@@ -60,7 +61,9 @@ def create_pinout_table(top, c_helper, target):
         else:
             insel = "-"
             mio_out = "-"
-        # check whether this pad needs to be dropped
+        # check whether this pad/port needs to be dropped
+        if pad['name'] in remove_ports:
+            continue
         if pad['name'] in remove_pads:
             continue
         # gather some stats

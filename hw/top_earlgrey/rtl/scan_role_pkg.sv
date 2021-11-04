@@ -25,6 +25,8 @@ package scan_role_pkg;
   parameter scan_role_e DioPadSpiDevCsLScanRole       = NoScan;
   parameter scan_role_e DioPadUsbPScanRole            = NoScan;
   parameter scan_role_e DioPadUsbNScanRole            = NoScan;
+  parameter scan_role_e DioPadUsbP1ScanRole           = NoScan;
+  parameter scan_role_e DioPadUsbN1ScanRole           = NoScan;
   parameter scan_role_e DioPadCc1ScanRole             = NoScan;
   parameter scan_role_e DioPadCc2ScanRole             = NoScan;
   parameter scan_role_e DioPadFlashTestVoltScanRole   = NoScan;

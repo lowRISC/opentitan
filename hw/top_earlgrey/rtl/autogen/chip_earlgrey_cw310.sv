@@ -194,6 +194,7 @@ module chip_earlgrey_cw310 #(
   // Signal definitions //
   ////////////////////////
 
+
   pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr;
   pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
