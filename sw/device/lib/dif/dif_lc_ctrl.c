@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 

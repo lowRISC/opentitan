@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/flash_ctrl.h"
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/runtime/log.h"

@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"

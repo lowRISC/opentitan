@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_base.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
