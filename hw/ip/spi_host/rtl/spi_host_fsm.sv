@@ -36,7 +36,7 @@ module spi_host_fsm
   input                              sw_rst_i
 );
 
-  logic             isIdle;
+  logic             is_idle;
   logic [15:0]      clkdiv, clkdiv_q;
   logic [15:0]      clk_cntr_q, clk_cntr_d;
   logic             clk_cntr_en;
@@ -164,13 +164,13 @@ module spi_host_fsm
     end
   end
 
-  assign isIdle     = (state_q == Idle) || (state_q == IdleCSBActive);
+  assign is_idle     = (state_q == Idle) || (state_q == IdleCSBActive);
 
-  assign active_o   = ~isIdle;
+  assign active_o   = ~is_idle;
 
   assign clk_cntr_d = sw_rst_i              ? 16'h0 :
                       !clk_cntr_en          ? clk_cntr_q :
-                      isIdle                ? 16'h0 :
+                      is_idle               ? 16'h0 :
                       new_command           ? clkdiv :
                       (clk_cntr_q == 16'h0) ? clkdiv :
                       clk_cntr_q - 1;
