@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
 

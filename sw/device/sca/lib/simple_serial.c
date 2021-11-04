@@ -5,6 +5,7 @@
 #include "sw/device/sca/lib/simple_serial.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/print.h"

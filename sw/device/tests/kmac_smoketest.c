@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/flash_ctrl.h"

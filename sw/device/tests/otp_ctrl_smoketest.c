@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/log.h"

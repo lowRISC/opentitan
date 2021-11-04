@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/shutdown.h"
 
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -18,10 +19,6 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
-
-// FIXME: I can't get ARRAYSIZE from `memory.h` because the definitions of
-// memcpy and friends there conflict with the standard definitions.
-#define ARRAYSIZE(x) ((sizeof x) / (sizeof x[0]))
 
 namespace shutdown_unittest {
 
