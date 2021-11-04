@@ -626,6 +626,43 @@
         }
       ]
     }
+    { name: "PAYLOAD_SWAP_MASK"
+      desc: '''Write Data Swap in the passthrough mode.
+
+        PAYLOAD_SWAP_MASK CSR provides the SW to change certain bits in the
+        first 4 bytes of the write payload in the passthrough mode.
+        '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits:   "31:0"
+          resval: "0"
+          name:   "mask"
+          desc:   "byte mask"
+        } // f: mask
+      ]
+    } // R: PAYLOAD_SWAP_MASK
+    { name: "PAYLOAD_SWAP_DATA"
+      desc: '''Write Data Swap in the passthrough mode.
+
+        PAYLOAD_SWAP_DATA combined with PAYLOAD_SWAP_MASK provides the SW to
+        change certain bits in the first 4 bytes of the write payload in the
+        passthrough mode.
+
+        The register should be written in Little-Endian order. [7:0] bits are
+        processed in the first received payload byte. [31:24] bits for the 4th
+        byte.
+        '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits:   "31:0"
+          resval: "0"
+          name:   "data"
+          desc:   "replaced data"
+        } // f: data
+      ]
+    } // R: PAYLOAD_SWAP_DATA
     { multireg: {
         cname: "SPI_DEVICE"
         name:  "CMD_INFO"
@@ -687,10 +724,31 @@
               this case, SW sets payload_en to 4'b 0010.
               '''
           }
-          { bits:   "20"
-            name:   "payload_dir"
-            desc:   "Set to 1 if the command returns data. If 0, the payload sends to the downstream Flash device."
-          }
+          { bits: "20"
+            name: "payload_dir"
+            desc: '''Set to 1 if the command returns data. If 0, the payload
+              sends to the downstream Flash device.
+              '''
+            enum: [
+              { value: "0"
+                name:  "PayloadIn"
+                desc:  "From host to the downstream flash device"
+              } // e: PayloadIn
+              { value: "1"
+                name:  "PayloadOut"
+                desc:  "From the downstream flash device to the host"
+              } // e: PayloadOut
+            ]
+          } // f: payload_dir
+          { bits: "21"
+            name: "payload_swap_en"
+            desc: '''Swap the first byte of the write payload.
+
+              If `payload_swap_en` is set, the passthrough logic swaps the first byte of the write payload with DATA_SWAP CSR.
+
+              `payload_swap_en` only works with write data and SingleIO mode. `payload_en` must be 4'b 0001 and `paylod_dir` to be PayloadIn.
+              '''
+          } // f: payload_swap_en
           { bits: "24"
             name: "upload"
             desc: '''Set to 1 to upload the command.
