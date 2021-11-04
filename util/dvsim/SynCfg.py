@@ -131,8 +131,11 @@ class SynCfg(OneShotCfg):
             """
             if val is not None and norm is not None:
                 if total is not None:
-                    perc = float(val) / float(total) * 100.0
-                    entry = "%2.1f %s" % (perc, perctag)
+                    if total <= 0.0:
+                        entry = "--"
+                    else:
+                        perc = float(val) / float(total) * 100.0
+                        entry = "%2.1f %s" % (perc, perctag)
                 else:
                     value = float(val) / norm
                     if value < 1.0:
@@ -238,17 +241,15 @@ class SynCfg(OneShotCfg):
                     for name in self.result["area"]["instances"].keys():
                         row = []
                         is_top = (self.result["area"]["instances"][name]["depth"] == 0)
-                        if is_top:
-                            row = ["**" + name + "**"]
-                        else:
-                            row = [name]
+                        row = ["**" + name + "**"] if is_top else [name]
 
                         for field in ["comb", "buf", "reg", "logic", "macro", "total"]:
-                            row.append(
-                                _create_entry(
-                                    self.result["area"]["instances"][name]
-                                    [field], kge)
-                            )
+                            entry = _create_entry(
+                                        self.result["area"]["instances"][name]
+                                        [field], kge)
+                            entry = "**" + entry + "**" if is_top else entry
+                            row.append(entry)
+
 
                         for k, field in enumerate(["logic", "macro", "total"]):
                             if is_top:
