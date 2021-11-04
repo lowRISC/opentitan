@@ -55,7 +55,7 @@ static const sigverify_rsa_buffer_t kSignatureExp3 = {
         0x55e2c441, 0xa6141c6f, 0x0b691a17, 0xbe151202, 0xb9f0e104, 0x5d411db9,
     }};
 
-// sw/device/silicon_creator/keys/fpga_key_0.public.der
+// sw/device/silicon_creator/mask_rom/keys/test_key_0_rsa_3072_exp_f4.public.der
 static const sigverify_rsa_key_t kKeyExp65537 = {
     .n = {{
         0x5801a2bd, 0xeff64a46, 0xc8cf2251, 0xa7cd62cb, 0x634a39c2, 0x55c936d3,
@@ -89,7 +89,7 @@ static const sigverify_rsa_key_t kKeyExp65537 = {
     .exponent = 65537,
 };
 
-// sw/device/silicon_creator/keys/fpga_key_1.public.der
+// sw/device/silicon_creator/mask_rom/keys/test_key_1_rsa_3072_exp_3.public.der
 static const sigverify_rsa_key_t kKeyExp3 = {
     .n = {{
         0xbd158913, 0xab75ea1a, 0xc04e5292, 0x68f5778a, 0xa71418c7, 0xddc4fc1c,
