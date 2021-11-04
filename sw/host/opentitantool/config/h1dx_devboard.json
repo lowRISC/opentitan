@@ -1,0 +1,10 @@
+{
+  "uarts": [
+    {
+      "name": "console",
+      "baudrate": 115200,
+      "parity": "None",
+      "stopbits": "Stop1"
+    }
+  ]
+}
