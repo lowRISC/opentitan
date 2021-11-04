@@ -65,6 +65,103 @@ package lc_ctrl_state_pkg;
       out.append('}')
 
     return ''.join(out)
+
+  # Print out the states as parameters
+  def _print_state_parameters(prefix, datatype, name, config):
+    indent = ' ' * 2
+
+    # Determine name length for nice alignment; build a new dictionary keyed by
+    # the Pascal-case version of the state names.
+    state_len = 0
+    entry_len = 3
+    pstates = {}
+    for state, state_cfg in config[name].items():
+      pstate = _to_pascal_case(state)
+      state_len = max(state_len, len(pstate))
+      for entry in state_cfg:
+        entry_len = max(entry_len, len(entry))
+
+      # Since _to_pascal_case isn't injective, we should check we didn't get
+      # any collisions.
+      assert pstate not in pstates
+      pstates[pstate] = state_cfg
+
+    out = []
+    for i, (pstate, state_cfg) in enumerate(pstates.items()):
+      if i:
+        out.append(';\n')
+      out += [indent, 'parameter ', datatype, ' ', prefix, pstate,
+              ' ' * (state_len - len(pstate)), ' = {']
+      # Need to iterate in reverse since this is a packed value
+      for j, entry in enumerate(reversed(state_cfg)):
+          if j:
+            out.append(', ')
+
+          ename = 'ZRO' if entry == '0' else entry
+          out += [' ' * (entry_len - len(ename)), ename]
+      out.append('}')
+    out.append(';\n')
+    return ''.join(out)
+
+  # Print a parameter array with valid values
+  def _print_state_valid(prefix, datatype, name, config):
+    indent = ' ' * 4
+
+    # Determine name length for nice alignment; build a new dictionary keyed by
+    # the Pascal-case version of the state names.
+    state_len = 0
+    entry_len = 3
+    pstates = {}
+    for state, state_cfg in config[name].items():
+      pstate = _to_pascal_case(state)
+      state_len = max(state_len, len(pstate))
+      for entry in state_cfg:
+        entry_len = max(entry_len, len(entry))
+
+      # Since _to_pascal_case isn't injective, we should check we didn't get
+      # any collisions.
+      assert pstate not in pstates
+      pstates[pstate] = state_cfg
+
+    out = []
+    out += ['  parameter ', datatype, ' ', _to_pascal_case(name), 'Valid', ' [', str(len(pstates.items())), '] = \'{\n']
+    for i, (pstate, state_cfg) in enumerate(pstates.items()):
+      if i:
+        out.append(',\n')
+      out += [indent, prefix, pstate]
+
+    out.append('\n  };')
+    return ''.join(out)
+
+  # Print a value to string conversion function
+  def _print_state_name(prefix, datatype, name, config):
+    indent = ' ' * 6
+
+    # Determine name length for nice alignment; build a new dictionary keyed by
+    # the Pascal-case version of the state names.
+    state_len = 0
+    entry_len = 3
+    pstates = {}
+    for state, state_cfg in config[name].items():
+      pstate = _to_pascal_case(state)
+      state_len = max(state_len, len(pstate))
+      for entry in state_cfg:
+        entry_len = max(entry_len, len(entry))
+
+      # Since _to_pascal_case isn't injective, we should check we didn't get
+      # any collisions.
+      assert pstate not in pstates
+      pstates[pstate] = state_cfg
+
+    out = ['  function automatic string ', name, '_name(', datatype , ' val);\n']
+    out.append('    unique case (val)\n')
+    for i, (pstate, state_cfg) in enumerate(pstates.items()):
+      out += [indent, prefix, pstate, ' : return ', '"', prefix, pstate, '";\n']
+    out.append('      default : return ($sformatf(\"invalid(%x)\", val));')
+    out.append('\n     endcase')
+    out.append('\n  endfunction')
+
+    return ''.join(out)
 %>
   import prim_util_pkg::vbits;
 
@@ -132,17 +229,44 @@ package lc_ctrl_state_pkg;
 
   parameter logic [${data_width-1}:0] ZRO = ${data_width}'h0;
 
+  // LC State type
+  typedef logic [LcStateWidth-1:0] lc_state_t;
+
+  // LC Count type
+  typedef logic [LcCountWidth-1:0] lc_count_t;
+
   ////////////////////////
   // Derived enum types //
   ////////////////////////
 
-  typedef enum logic [LcStateWidth-1:0] {
+`ifndef LC_CTRL_STATE_PKG_USE_PARAMETERS
+  typedef enum lc_state_t {
 ${_print_state_enum('LcSt', 'lc_state', lc_st_enc.config)}
   } lc_state_e;
 
-  typedef enum logic [LcCountWidth-1:0] {
+  typedef enum lc_count_t {
 ${_print_state_enum('LcCnt', 'lc_cnt', lc_st_enc.config)}
   } lc_cnt_e;
+`else // ifdef LC_CTRL_STATE_PKG_USE_PARAMETERS
+  // LC State values
+${_print_state_parameters('LcSt', 'lc_state_t', 'lc_state', lc_st_enc.config)}
+  // LC Count values
+${_print_state_parameters('LcCnt', 'lc_count_t', 'lc_cnt', lc_st_enc.config)}
+`endif // ifdef LC_CTRL_STATE_PKG_USE_PARAMETERS
+
+  // All LC State valid values
+${_print_state_valid('LcSt', 'lc_state_t', 'lc_state', lc_st_enc.config)}
+
+  //  All LC Count valid values
+${_print_state_valid('LcCnt', 'lc_count_t', 'lc_cnt', lc_st_enc.config)}
+
+`ifdef SIMULATION
+  // Convert LC State type to string
+${_print_state_name('LcSt', 'lc_state_t', 'lc_state', lc_st_enc.config)}
+
+  // Convert LC Count type to a string
+${_print_state_name('LcCnt', 'lc_count_t', 'lc_cnt', lc_st_enc.config)}
+`endif // ifdef SIMULATION
 
   // Decoded life cycle state, used to interface with CSRs and TAP.
   typedef enum logic [DecLcStateWidth-1:0] {

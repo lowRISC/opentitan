@@ -218,11 +218,18 @@ package lc_ctrl_state_pkg;
 
   parameter logic [15:0] ZRO = 16'h0;
 
+  // LC State type
+  typedef logic [LcStateWidth-1:0] lc_state_t;
+
+  // LC Count type
+  typedef logic [LcCountWidth-1:0] lc_count_t;
+
   ////////////////////////
   // Derived enum types //
   ////////////////////////
 
-  typedef enum logic [LcStateWidth-1:0] {
+`ifndef LC_CTRL_STATE_PKG_USE_PARAMETERS
+  typedef enum lc_state_t {
     LcStRaw           = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO},
     LcStTestUnlocked0 = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  A3,  A2,  A1,  B0},
     LcStTestLocked0   = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  A3,  A2,  B1,  B0},
@@ -246,7 +253,7 @@ package lc_ctrl_state_pkg;
     LcStScrap         = {B19, B18, B17, B16, B15, B14, B13, B12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0}
   } lc_state_e;
 
-  typedef enum logic [LcCountWidth-1:0] {
+  typedef enum lc_count_t {
     LcCnt0  = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO},
     LcCnt1  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  C3,  C2,  C1,  D0},
     LcCnt2  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  C3,  C2,  D1,  D0},
@@ -273,6 +280,174 @@ package lc_ctrl_state_pkg;
     LcCnt23 = {C23, D22, D21, D20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
     LcCnt24 = {D23, D22, D21, D20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0}
   } lc_cnt_e;
+`else // ifdef LC_CTRL_STATE_PKG_USE_PARAMETERS
+  // LC State values
+  parameter lc_state_t LcStRaw           = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO};
+  parameter lc_state_t LcStTestUnlocked0 = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  A3,  A2,  A1,  B0};
+  parameter lc_state_t LcStTestLocked0   = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  A3,  A2,  B1,  B0};
+  parameter lc_state_t LcStTestUnlocked1 = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  A3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestLocked1   = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestUnlocked2 = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  A6,  A5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestLocked2   = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  A6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestUnlocked3 = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestLocked3   = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestUnlocked4 = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestLocked4   = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestUnlocked5 = {A19, A18, A17, A16, A15, A14, A13, A12, A11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestLocked5   = {A19, A18, A17, A16, A15, A14, A13, A12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestUnlocked6 = {A19, A18, A17, A16, A15, A14, A13, B12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestLocked6   = {A19, A18, A17, A16, A15, A14, B13, B12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStTestUnlocked7 = {A19, A18, A17, A16, A15, B14, B13, B12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStDev           = {A19, A18, A17, A16, B15, B14, B13, B12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStProd          = {A19, A18, A17, B16, A15, B14, B13, B12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStProdEnd       = {A19, A18, B17, A16, A15, B14, B13, B12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStRma           = {B19, B18, A17, B16, B15, B14, B13, B12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+  parameter lc_state_t LcStScrap         = {B19, B18, B17, B16, B15, B14, B13, B12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0};
+
+  // LC Count values
+  parameter lc_count_t LcCnt0  = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO};
+  parameter lc_count_t LcCnt1  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  C3,  C2,  C1,  D0};
+  parameter lc_count_t LcCnt2  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  C3,  C2,  D1,  D0};
+  parameter lc_count_t LcCnt3  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  C3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt4  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt5  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt6  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt7  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt8  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt9  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt10 = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt11 = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt12 = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt13 = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt14 = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt15 = {C23, C22, C21, C20, C19, C18, C17, C16, C15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt16 = {C23, C22, C21, C20, C19, C18, C17, C16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt17 = {C23, C22, C21, C20, C19, C18, C17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt18 = {C23, C22, C21, C20, C19, C18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt19 = {C23, C22, C21, C20, C19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt20 = {C23, C22, C21, C20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt21 = {C23, C22, C21, D20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt22 = {C23, C22, D21, D20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt23 = {C23, D22, D21, D20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+  parameter lc_count_t LcCnt24 = {D23, D22, D21, D20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0};
+
+`endif // ifdef LC_CTRL_STATE_PKG_USE_PARAMETERS
+
+  // All LC State valid values
+  parameter lc_state_t LcStateValid [21] = '{
+    LcStRaw,
+    LcStTestUnlocked0,
+    LcStTestLocked0,
+    LcStTestUnlocked1,
+    LcStTestLocked1,
+    LcStTestUnlocked2,
+    LcStTestLocked2,
+    LcStTestUnlocked3,
+    LcStTestLocked3,
+    LcStTestUnlocked4,
+    LcStTestLocked4,
+    LcStTestUnlocked5,
+    LcStTestLocked5,
+    LcStTestUnlocked6,
+    LcStTestLocked6,
+    LcStTestUnlocked7,
+    LcStDev,
+    LcStProd,
+    LcStProdEnd,
+    LcStRma,
+    LcStScrap
+  };
+
+  //  All LC Count valid values
+  parameter lc_count_t LcCntValid [25] = '{
+    LcCnt0,
+    LcCnt1,
+    LcCnt2,
+    LcCnt3,
+    LcCnt4,
+    LcCnt5,
+    LcCnt6,
+    LcCnt7,
+    LcCnt8,
+    LcCnt9,
+    LcCnt10,
+    LcCnt11,
+    LcCnt12,
+    LcCnt13,
+    LcCnt14,
+    LcCnt15,
+    LcCnt16,
+    LcCnt17,
+    LcCnt18,
+    LcCnt19,
+    LcCnt20,
+    LcCnt21,
+    LcCnt22,
+    LcCnt23,
+    LcCnt24
+  };
+
+`ifdef SIMULATION
+  // Convert LC State type to string
+  function automatic string lc_state_name(lc_state_t val);
+    unique case (val)
+      LcStRaw : return "LcStRaw";
+      LcStTestUnlocked0 : return "LcStTestUnlocked0";
+      LcStTestLocked0 : return "LcStTestLocked0";
+      LcStTestUnlocked1 : return "LcStTestUnlocked1";
+      LcStTestLocked1 : return "LcStTestLocked1";
+      LcStTestUnlocked2 : return "LcStTestUnlocked2";
+      LcStTestLocked2 : return "LcStTestLocked2";
+      LcStTestUnlocked3 : return "LcStTestUnlocked3";
+      LcStTestLocked3 : return "LcStTestLocked3";
+      LcStTestUnlocked4 : return "LcStTestUnlocked4";
+      LcStTestLocked4 : return "LcStTestLocked4";
+      LcStTestUnlocked5 : return "LcStTestUnlocked5";
+      LcStTestLocked5 : return "LcStTestLocked5";
+      LcStTestUnlocked6 : return "LcStTestUnlocked6";
+      LcStTestLocked6 : return "LcStTestLocked6";
+      LcStTestUnlocked7 : return "LcStTestUnlocked7";
+      LcStDev : return "LcStDev";
+      LcStProd : return "LcStProd";
+      LcStProdEnd : return "LcStProdEnd";
+      LcStRma : return "LcStRma";
+      LcStScrap : return "LcStScrap";
+      default : return ($sformatf("invalid(%x)", val));
+     endcase
+  endfunction
+
+  // Convert LC Count type to a string
+  function automatic string lc_cnt_name(lc_count_t val);
+    unique case (val)
+      LcCnt0 : return "LcCnt0";
+      LcCnt1 : return "LcCnt1";
+      LcCnt2 : return "LcCnt2";
+      LcCnt3 : return "LcCnt3";
+      LcCnt4 : return "LcCnt4";
+      LcCnt5 : return "LcCnt5";
+      LcCnt6 : return "LcCnt6";
+      LcCnt7 : return "LcCnt7";
+      LcCnt8 : return "LcCnt8";
+      LcCnt9 : return "LcCnt9";
+      LcCnt10 : return "LcCnt10";
+      LcCnt11 : return "LcCnt11";
+      LcCnt12 : return "LcCnt12";
+      LcCnt13 : return "LcCnt13";
+      LcCnt14 : return "LcCnt14";
+      LcCnt15 : return "LcCnt15";
+      LcCnt16 : return "LcCnt16";
+      LcCnt17 : return "LcCnt17";
+      LcCnt18 : return "LcCnt18";
+      LcCnt19 : return "LcCnt19";
+      LcCnt20 : return "LcCnt20";
+      LcCnt21 : return "LcCnt21";
+      LcCnt22 : return "LcCnt22";
+      LcCnt23 : return "LcCnt23";
+      LcCnt24 : return "LcCnt24";
+      default : return ($sformatf("invalid(%x)", val));
+     endcase
+  endfunction
+`endif // ifdef SIMULATION
 
   // Decoded life cycle state, used to interface with CSRs and TAP.
   typedef enum logic [DecLcStateWidth-1:0] {
