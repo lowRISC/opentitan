@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom_exts/rom_ext_epmp.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"

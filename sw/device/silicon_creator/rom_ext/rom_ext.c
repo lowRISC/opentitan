@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom_exts/rom_ext.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext.h"
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
@@ -19,8 +19,8 @@
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify.h"
 #include "sw/device/silicon_creator/mask_rom/sigverify_keys.h"
-#include "sw/device/silicon_creator/rom_exts/rom_ext_boot_policy.h"
-#include "sw/device/silicon_creator/rom_exts/rom_ext_epmp.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 

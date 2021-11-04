@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom_exts/rom_ext_boot_policy.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
-#include "sw/device/silicon_creator/rom_exts/rom_ext_boot_policy_ptrs.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
 
 rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(void) {
   const manifest_t *slot_a = rom_ext_boot_policy_manifest_a_get();
