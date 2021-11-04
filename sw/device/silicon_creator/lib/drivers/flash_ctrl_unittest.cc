@@ -21,6 +21,7 @@ class FlashCtrlTest : public mask_rom_test::MaskRomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR;
   mask_rom_test::MockAbsMmio mmio_;
+  mask_rom_test::MockSecMmio sec_mmio_;
 };
 
 class InitTest : public FlashCtrlTest {};
@@ -187,13 +188,15 @@ TEST_F(TransferTest, TransferInternalError) {
 class ExecTest : public FlashCtrlTest {};
 
 TEST_F(ExecTest, Enable) {
-  EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_SEC_WRITE_INCREMENT(1);
   flash_ctrl_exec_set(kFlashCtrlExecEnable);
 }
 
 TEST_F(ExecTest, Disable) {
   // Note: any value that is not `0xa` will disable execution.
-  EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_SEC_WRITE_INCREMENT(1);
   flash_ctrl_exec_set(kFlashCtrlExecDisable);
 }
 
