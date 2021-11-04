@@ -609,5 +609,12 @@ TEST_F(ShutdownTest, FlashKill) {
   unmocked_shutdown_flash_kill();
 }
 
+TEST_F(ShutdownTest, ShutdownIfErrorOk) { SHUTDOWN_IF_ERROR(kErrorOk); }
+
+TEST_F(ShutdownTest, ShutdownIfErrorUnknown) {
+  ExpectFinalize(kErrorUnknown);
+  SHUTDOWN_IF_ERROR(kErrorUnknown);
+}
+
 }  // namespace
 }  // namespace shutdown_unittest
