@@ -5,7 +5,11 @@
 #include "sw/device/silicon_creator/lib/crypto/rsa_3072/rsa_3072_verify.h"
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
+#include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_util.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -40,6 +44,52 @@ static const uint32_t kOtbnRsaModeNumWords = 1;
 static const uint32_t kOtbnRsaModeVerify = 1;
 static const uint32_t kOtbnRsaModeComputeRR = 2;
 static const uint32_t kOtbnRsaModeComputeM0Inv = 3;
+
+rom_error_t rsa_3072_encode_sha256(const char *msg, size_t msgLen,
+                                   rsa_3072_int_t *result) {
+  enum { kSha256DigestNumWords = 8 };
+
+  // Message encoding as described in RFC 8017, Section 9.2. The encoded
+  // message is:
+  //
+  // EM = 0x00 || 0x01 || PS || 0x00 || T,
+  //
+  // where PS is padding made of enough 0xff bytes to meet the desired
+  // message length emLen (emLen = 384 bytes for RSA-3072), and T is the DER
+  // encoding of the digest. For SHA-256,
+  //
+  // T = (0x)30 31 30 0d 06 09 60 86 48 01 65 03 04 02 01 05 00 04 20 || H,
+  //
+  // where H is the 256-bit message digest from SHA-256.
+  //
+  // Note that the RFC document is using a big-endian representation; here we
+  // are using little-endian, so the bytes are reversed.
+
+  // Initially set all bits of the result; we will change the ones that are not
+  // part of PS.
+  memset(result->data, 0xff, sizeof(result->data));
+
+  // Set 0x00 || 0x01 bytes at most significant end
+  result->data[kRsa3072NumWords - 1] = 0x0001ffff;
+
+  // Compute the SHA-256 message digest.
+  hmac_sha256_init();
+  RETURN_IF_ERROR(hmac_sha256_update(msg, msgLen));
+  hmac_digest_t digest;
+  RETURN_IF_ERROR(hmac_sha256_final(&digest));
+
+  // Copy the message digest into the least significant end of the result.
+  memcpy(result->data, digest.digest, sizeof(digest.digest));
+
+  // Set remainder of 0x00 || T section
+  result->data[kSha256DigestNumWords] = 0x05000420;
+  result->data[kSha256DigestNumWords + 1] = 0x03040201;
+  result->data[kSha256DigestNumWords + 2] = 0x86480165;
+  result->data[kSha256DigestNumWords + 3] = 0x0d060960;
+  result->data[kSha256DigestNumWords + 4] = 0x00303130;
+
+  return kErrorOk;
+}
 
 /**
  * Copies a 3072-bit number from the CPU memory to OTBN data memory.
