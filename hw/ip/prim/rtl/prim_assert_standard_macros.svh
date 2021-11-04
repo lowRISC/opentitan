@@ -15,17 +15,24 @@
 // This workaround terminates design elaboration if the __prop predict is false.
 // It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
 // and CPU time.
-`define ASSERT_INIT(__name, __prop)                                          \
-`ifdef FPV_ON                                                                \
-  if (!(__prop)) $fatal(2, "Fatal static assertion [%s]: (%s) is not true.", \
-                        (__name), (__prop));                                 \
-`else                                                                        \
-  initial begin                                                              \
-    __name: assert (__prop)                                                  \
-      else begin                                                             \
-        `ASSERT_ERROR(__name)                                                \
-      end                                                                    \
-  end                                                                        \
+`define ASSERT_INIT(__name, __prop)                                                  \
+`ifdef FPV_ON                                                                        \
+  if (!(__prop)) $fatal(2, "Fatal static assertion [%s]: (%s) is not true.",         \
+                        (__name), (__prop));                                         \
+`else                                                                                \
+  initial begin                                                                      \
+    // #9017: Avoid race condition between the evaluation of assertion and `__prop`. \
+    //                                                                               \
+    // According to IEEE 1800-2017 SystemVerilog LRM, immediate assertions, unlike   \
+    // concurrent assertions are evaluated in the active region set, as opposed to   \
+    // the observed region. They are hence, susceptible to race conditions           \
+    // (described in section 4.8). The #0 is an acceptable workaround for this.      \
+    #0;                                                                              \
+    __name: assert (__prop)                                                          \
+      else begin                                                                     \
+        `ASSERT_ERROR(__name)                                                        \
+      end                                                                            \
+  end                                                                                \
 `endif
 
 `define ASSERT_FINAL(__name, __prop)                                         \
