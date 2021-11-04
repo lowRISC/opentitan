@@ -64,11 +64,11 @@ static inline rom_error_t mask_rom_irq_error(void) {
 /**
  * Performs once-per-boot initialization of mask ROM modules and peripherals.
  */
-static void mask_rom_init(void) {
+static rom_error_t mask_rom_init(void) {
   sec_mmio_init(shutdown_finalize);
   // Initialize the shutdown policy according to lifecycle state.
   lc_state = lifecycle_state_get();
-  shutdown_init(lc_state);
+  RETURN_IF_ERROR(shutdown_init(lc_state));
   flash_ctrl_init();
   // Initiaize in-memory copy of the ePMP register configuration.
   mask_rom_epmp_state_init(&epmp);
@@ -96,6 +96,8 @@ static void mask_rom_init(void) {
   // TODO(lowRISC/opentitan#8536): Integrate RND driver.
   sec_mmio_check_values(/*rnd_offset=*/0);
   sec_mmio_check_counters(/*expected_check_count=*/1);
+
+  return kErrorOk;
 }
 
 /**
@@ -190,7 +192,7 @@ static rom_error_t mask_rom_try_boot(void) {
 }
 
 void mask_rom_main(void) {
-  mask_rom_init();
+  SHUTDOWN_IF_ERROR(mask_rom_init());
 
   // TODO(lowrisc/opentitan#7894): What (if anything) should we print at
   // startup?
@@ -199,10 +201,9 @@ void mask_rom_main(void) {
 
   // TODO(lowrisc/opentitan#1513): Switch to EEPROM SPI device bootstrap
   // protocol.
-  rom_error_t error = primitive_bootstrap();
-  if (error != kErrorOk) {
-    shutdown_finalize(error);
-  }
+  SHUTDOWN_IF_ERROR(primitive_bootstrap());
+
+  // `mask_rom_try_boot` will not return unless there is an error.
   shutdown_finalize(mask_rom_try_boot());
 }
 
