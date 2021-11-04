@@ -89,6 +89,10 @@ module spi_passthrough
   input [31:0] cfg_addr_mask_i,
   input [31:0] cfg_addr_value_i,
 
+  // first byte of write payload manipulation
+  input [31:0] cfg_payload_mask_i,
+  input [31:0] cfg_payload_data_i,
+
   // Address mode
   input cfg_addr_4b_en_i,
 
@@ -432,6 +436,10 @@ module spi_passthrough
   logic csb_deassert;
   logic csb_deassert_outclk;
 
+  // Temp port connection
+  logic unused_payload_swap;
+  assign unused_payload_swap = ^{cfg_payload_data_i, cfg_payload_mask_i};
+
   // == BEGIN: Counters  ======================================================
   // bitcnt to count up to dummy
   localparam int unsigned MetaMaxBeat = 8+32+8; // Cmd + Addr + Dummy
@@ -574,6 +582,7 @@ module spi_passthrough
     cmd_info.addr_en,
     cmd_info.addr_swap_en,
     cmd_info.addr_4b_affected,
+    cmd_info.payload_swap_en,
     cmd_info.opcode,
     cmd_info.upload,
     cmd_info.busy
@@ -861,6 +870,12 @@ module spi_passthrough
 
   // Mailbox hit happens in the middle of Address phase, not at the end of it.
   `ASSERT(MailboxHitConflictAddrCnt_A, mailbox_hit_i |-> (addrcnt != 0))
+
+  // Assume when payload_swap_en is set, the direction is PayloadIn & only
+  // Single mode is used
+  `ASSUME(PayloadSwapConstraint_M,
+    cmd_info.payload_swap_en |-> (cmd_info.payload_en == 4'b 0001)
+                              && (cmd_info.payload_dir == PayloadOut))
 
 
 endmodule: spi_passthrough

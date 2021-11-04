@@ -237,9 +237,6 @@ module spi_device
   logic [31:0] payload_swap_mask;
   logic [31:0] payload_swap_data;
 
-  logic unused_payload_swap;
-  assign unused_payload_swap = ^{payload_swap_mask, payload_swap_data};
-
   // Command Info structure
   cmd_info_t [NumCmdInfo-1:0] cmd_info;
   // Broadcasted cmd_info. cmdparse compares the opcode up to CmdInfoReadCmdEnd
@@ -568,16 +565,9 @@ module spi_device
   assign addr_swap_mask = reg2hw.addr_swap_mask.q;
   assign addr_swap_data = reg2hw.addr_swap_data.q;
 
-  assign payload_swap_mask = reg2hw.payload_swap_mask.q;
-  assign payload_swap_data = reg2hw.payload_swap_data.q;
-
-  logic unused_payload_swap_en;
-  always_comb begin
-    unused_payload_swap_en = 1'b 1;
-    for (int unsigned i = 0 ; i < spi_device_reg_pkg::NumCmdInfo ; i++) begin
-      unused_payload_swap_en ^= reg2hw.cmd_info[i].payload_swap_en.q;
-    end
-  end
+  // payload_swap_mask and _data are big-endian to calculate easily.
+  assign payload_swap_mask = {<<8{reg2hw.payload_swap_mask.q}};
+  assign payload_swap_data = {<<8{reg2hw.payload_swap_data.q}};
 
   // Connect command info
   always_comb begin
@@ -1314,6 +1304,9 @@ module spi_device
 
     .cfg_addr_mask_i  (addr_swap_mask), // TODO
     .cfg_addr_value_i (addr_swap_data), // TODO
+
+    .cfg_payload_mask_i (payload_swap_mask),
+    .cfg_payload_data_i (payload_swap_data),
 
     .cfg_addr_4b_en_i (cfg_addr_4b_en),
 
