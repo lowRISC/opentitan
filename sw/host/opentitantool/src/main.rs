@@ -23,6 +23,7 @@ enum RootCommandHierarchy {
     Console(command::console::Console),
 
     Gpio(command::gpio::GpioCommand),
+    Image(command::image::Image),
     LoadBitstream(command::load_bitstream::LoadBitstream),
     Spi(command::spi::SpiCommand),
 
