@@ -47,7 +47,7 @@ impl CW310 {
     pub fn new(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
-        usb_serial: Option<String>,
+        usb_serial: Option<&str>,
     ) -> Result<Self> {
         let board = CW310 {
             device: Rc::new(RefCell::new(usb::Backend::new(

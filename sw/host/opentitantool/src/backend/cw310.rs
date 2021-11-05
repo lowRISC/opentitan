@@ -12,6 +12,6 @@ pub fn create(args: &BackendOpts) -> Result<Box<dyn Transport>> {
     Ok(Box::new(CW310::new(
         args.usb_vid,
         args.usb_vid,
-        args.usb_serial.clone(),
+        args.usb_serial.as_deref(),
     )?))
 }
