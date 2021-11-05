@@ -31,12 +31,14 @@ def rsa_3072_int_to_hexwords(x):
     for _ in range(RSA_3072_NUMWORDS):
         out.append(x & ((1 << 32) - 1))
         x >>= 32
+    # Note: some test sets may contain (invalid) signatures that are > 3072
+    # words. The type signature of our RSA-3072 implementation rules out
+    # getting the full value as input, so they are truncated here.
     return ['{:#010x}'.format(w) for w in out]
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('hjsonfile',
                         metavar='FILE',
                         type=argparse.FileType('r'),
@@ -58,8 +60,12 @@ def main() -> int:
 
     # Convert the 3072-bit numbers n and sig into words expressed in hex
     for t in testvecs:
-        t["n_hexwords"] = rsa_3072_int_to_hexwords(t["n"])
-        t["sig_hexwords"] = rsa_3072_int_to_hexwords(t["signature"])
+        t['n_hexwords'] = rsa_3072_int_to_hexwords(t['n'])
+        t['sig_hexwords'] = rsa_3072_int_to_hexwords(t['signature'])
+
+    # Convert the message into an array of bytes
+    for t in testvecs:
+        t['msg_bytes'] = t['msg'].to_bytes(t['msg_len'], byteorder='big')
 
     # Find the header template and output file in the script's directory
     tpl = open(os.path.join(os.path.dirname(__file__), TEMPLATE))

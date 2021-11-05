@@ -45,7 +45,7 @@ static const uint32_t kOtbnRsaModeVerify = 1;
 static const uint32_t kOtbnRsaModeComputeRR = 2;
 static const uint32_t kOtbnRsaModeComputeM0Inv = 3;
 
-rom_error_t rsa_3072_encode_sha256(const char *msg, size_t msgLen,
+rom_error_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
                                    rsa_3072_int_t *result) {
   enum { kSha256DigestNumWords = 8 };
 
@@ -74,7 +74,9 @@ rom_error_t rsa_3072_encode_sha256(const char *msg, size_t msgLen,
 
   // Compute the SHA-256 message digest.
   hmac_sha256_init();
-  RETURN_IF_ERROR(hmac_sha256_update(msg, msgLen));
+  if (msg != NULL) {
+    RETURN_IF_ERROR(hmac_sha256_update(msg, msgLen));
+  }
   hmac_digest_t digest;
   RETURN_IF_ERROR(hmac_sha256_final(&digest));
 
