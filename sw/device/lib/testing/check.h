@@ -50,8 +50,10 @@
 /**
  * Compare `num_items_` of `actual_` against `expected_` buffer.
  *
- * Prints differences between `actual_` and `expected_` before assigning the
- * comparison `result_` value.
+ * Prints differences between `actual_` and `expected_` before logging an error.
+ * Note, the differences between the actual and expected buffer values are
+ * logged via LOG_INFO _before_ the error is logged with LOG_ERROR, since by
+ * default DV simulations are configured to terminate upon the first error.
  *
  * @param actual_ Buffer containing actual values.
  * @param expected_ Buffer containing expected values.
