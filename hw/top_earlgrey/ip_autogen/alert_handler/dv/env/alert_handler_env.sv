@@ -17,6 +17,7 @@ class alert_handler_env extends cip_base_env #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
     // build alert agents
     alert_host_agent                    = new[NUM_ALERTS];
     virtual_sequencer.alert_host_seqr_h = new[NUM_ALERTS];
@@ -28,6 +29,7 @@ class alert_handler_env extends cip_base_env #(
       cfg.alert_host_cfg[i].en_cov = cfg.en_cov;
       cfg.alert_host_cfg[i].clk_freq_mhz = int'(cfg.clk_freq_mhz);
     end
+
     // build escalator agents
     esc_device_agent                    = new[NUM_ESCS];
     virtual_sequencer.esc_device_seqr_h = new[NUM_ESCS];
@@ -38,9 +40,14 @@ class alert_handler_env extends cip_base_env #(
           $sformatf("esc_device_agent[%0d]", i), "cfg", cfg.esc_device_cfg[i]);
       cfg.esc_device_cfg[i].en_cov = cfg.en_cov;
     end
+
     // get vifs
     if (!uvm_config_db#(crashdump_vif)::get(this, "", "crashdump_vif", cfg.crashdump_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get crashdump_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(alert_handler_vif)::get(this, "", "alert_handler_vif",
+                                                cfg.alert_handler_vif)) begin
+      `uvm_fatal(`gfn, "failed to get alert_handler_vif from uvm_config_db")
     end
   endfunction
 

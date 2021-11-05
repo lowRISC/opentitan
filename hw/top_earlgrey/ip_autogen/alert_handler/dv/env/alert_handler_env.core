@@ -8,9 +8,11 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:cip_lib
-      - lowrisc:ip:alert_handler_component # import alert_pkg
+      - lowrisc:ip:alert_handler_component  # import alert_pkg
+      - lowrisc:prim:mubi  # import prim_mubi_pkg
     files:
       - alert_handler_env_pkg.sv
+      - alert_handler_if.sv
       - alert_handler_env_cfg.sv: {is_include_file: true}
       - alert_handler_env_cov.sv: {is_include_file: true}
       - alert_handler_virtual_sequencer.sv: {is_include_file: true}

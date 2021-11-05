@@ -26,6 +26,7 @@ module tb;
   pins_if #(NUM_CRASHDUMP) crashdump_if(crashdump);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  alert_handler_if alert_handler_if(.clk(clk), .rst_n(rst_n));
   alert_esc_if esc_device_if [NUM_ESCS](.clk(clk), .rst_n(rst_n));
   alert_esc_if alert_host_if [NUM_ALERTS](.clk(clk), .rst_n(rst_n));
   alert_esc_probe_if probe_if[NUM_ESCS](.clk(clk), .rst_n(rst_n));
@@ -81,9 +82,8 @@ module tb;
     .intr_classb_o        ( interrupts[1] ),
     .intr_classc_o        ( interrupts[2] ),
     .intr_classd_o        ( interrupts[3] ),
-    // TODO: need to exercise LPGs
-    .lpg_cg_en_i          ( {alert_pkg::NLpg{prim_mubi_pkg::MuBi4False}} ),
-    .lpg_rst_en_i         ( {alert_pkg::NLpg{prim_mubi_pkg::MuBi4False}} ),
+    .lpg_cg_en_i          ( alert_handler_if.lpg_cg_en  ),
+    .lpg_rst_en_i         ( alert_handler_if.lpg_rst_en ),
     .crashdump_o          ( crashdump     ),
     .edn_o                ( edn_if.req    ),
     .edn_i                ( {edn_if.ack, edn_if.d_data} ),
@@ -103,6 +103,8 @@ module tb;
     uvm_config_db#(crashdump_vif)::set(null, "*.env", "crashdump_vif", crashdump_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual alert_handler_if)::set(null, "*.env", "alert_handler_vif",
+                   alert_handler_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
