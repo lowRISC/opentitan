@@ -4,13 +4,157 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_FLASH_CTRL_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_FLASH_CTRL_H_
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/multibits.h"
-#include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * Flash memory banks.
+ */
+enum {
+  /**
+   * Flash bank 0.
+   */
+  kFlashCtrlBank0 = 0,
+  /**
+   * Flash bank 1.
+   */
+  kFlashCtrlBank1 = 1,
+};
+
+/**
+ * A flash partition.
+ *
+ * Each `flash_ctrl_partition_t` enumeration constant is a bitfield with the
+ * following layout:
+ * - Bit 0: Data (0) or information (1) partition.
+ * - Bits 1-2: Information partition type [0, 2].
+ */
+typedef enum flash_crtl_partition {
+  /**
+   * Data Partition.
+   */
+  kFlashCtrlPartitionData = 0,
+  /**
+   * Information partition of type 0.
+   *
+   * This partition has 10 pages.
+   */
+  kFlashCtrlPartitionInfo0 = (0 << 1) | 1,
+  /**
+   * Information partition of type 1.
+   *
+   * This partition has 1 page.
+   */
+  kFlashCtrlPartitionInfo1 = (1 << 1) | 1,
+  /**
+   * Information partition of type 2.
+   *
+   * This partition has 2 pages.
+   */
+  kFlashCtrlPartitionInfo2 = (2 << 1) | 1,
+} flash_ctrl_partition_t;
+
+/**
+ * Bit and field definitions to get partition and info partition type from a
+ * `flash_ctrl_partition_t`.
+ */
+#define FLASH_CTRL_PARTITION_BIT_IS_INFO 0
+#define FLASH_CTRL_PARTITION_FIELD_INFO_TYPE \
+  ((bitfield_field32_t){.mask = 0x3, .index = 1})
+
+/**
+ * Helper macro for defining the value of a `flash_ctrl_info_page_t` enumeration
+ * constant.
+ *
+ * Each `flash_ctrl_info_page_t` enumeration constant is a bitfield with the
+ * following layout:
+ * - Bits 0-3: Page index ([0,9] for type 0, 0 for type 1, [0,1] for type 2).
+ * - Bits 4-6: Partition type (a `flash_ctrl_partition_type_t`).
+ * - Bit 7: Bank index [0,1].
+ *
+ * @param bank_ Bank index.
+ * @param partition_ Partition type, a `flash_ctrl_partition_type_t`.
+ * @param index_ Page index.
+ */
+#define INFO_PAGE_(bank_, partition_, index_) \
+  ((bank_ << 7) | (partition_ << 4) | (index_))
+
+// clang-format off
+#define FLASH_CTRL_INFO_PAGES_DEFINE(X) \
+  /**
+   * Bank 0 information partition type 0 pages.
+   */ \
+  X(kFlashCtrlInfoPageFactoryId,          INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 0)), \
+  X(kFlashCtrlInfoPageCreatorSecret,      INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 1)), \
+  X(kFlashCtrlInfoPageOwnerSecret,        INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 2)), \
+  X(kFlashCtrlInfoPageWaferAuthSecret,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 3)), \
+  X(kFlashCtrlInfoPageBank0Type0Page4,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 4)), \
+  X(kFlashCtrlInfoPageBank0Type0Page5,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 5)), \
+  X(kFlashCtrlInfoPageOwnerReserved0,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 6)), \
+  X(kFlashCtrlInfoPageOwnerReserved1,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 7)), \
+  X(kFlashCtrlInfoPageOwnerReserved2,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 8)), \
+  X(kFlashCtrlInfoPageOwnerReserved3,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 9)), \
+  /*
+   * Bank 0 information partition type 1 pages.
+   */ \
+  X(kFlashCtrlInfoPageBank0Type1Page0,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo1, 0)), \
+  /**
+   * Bank 0 information parititon type 2 pages.
+   */ \
+  X(kFlashCtrlInfoPageBank0Type2Page0,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo2, 0)), \
+  X(kFlashCtrlInfoPageBank0Type2Page1,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo2, 1)), \
+  /**
+   * Bank 1 information partition type 0 pages.
+   */ \
+  X(kFlashCtrlInfoPageBootData0,          INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 0)), \
+  X(kFlashCtrlInfoPageBootData1,          INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 1)), \
+  X(kFlashCtrlInfoPageOwnerSlot0,         INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 2)), \
+  X(kFlashCtrlInfoPageOwnerSlot1,         INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 3)), \
+  X(kFlashCtrlInfoPageBank1Type0Page4,    INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 4)), \
+  X(kFlashCtrlInfoPageBank1Type0Page5,    INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 5)), \
+  X(kFlashCtrlInfoPageCreatorCertificate, INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 6)), \
+  X(kFlashCtrlInfoPageBootServices,       INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 7)), \
+  X(kFlashCtrlInfoPageOwnerCerificate0,   INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 8)), \
+  X(kFlashCtrlInfoPageOwnerCerificate1,   INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 9)), \
+  /*
+   * Bank 1 information partition type 1 pages.
+   */ \
+  X(kFlashCtrlInfoPageBank1Type1Page0,    INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo1, 0)), \
+  /**
+   * Bank 1 information parititon type 2 pages.
+   */ \
+  X(kFlashCtrlInfoPageBank1Type2Page0,    INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo2, 0)), \
+  X(kFlashCtrlInfoPageBank1Type2Page1,    INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo2, 1)),
+// clang-format on
+
+/**
+ * Helper macro for defining a `flash_ctrl_info_page_t` enumeration constant.
+ * @name_ Name of the enumeration constant.
+ * @value_ Value of the enumeration constant.
+ */
+#define INFO_PAGE_ENUM_INIT_(name_, value_) name_ = value_
+
+/**
+ * Info pages.
+ */
+typedef enum flash_ctrl_info_page {
+  FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_ENUM_INIT_)
+} flash_ctrl_info_page_t;
+
+/**
+ * Field and bit definitions to get page index, partition type, and bank index
+ * from a `flash_ctrl_info_page_t`.
+ */
+#define FLASH_CTRL_INFO_PAGE_FIELD_INDEX \
+  ((bitfield_field32_t){.mask = 0xf, .index = 0})
+#define FLASH_CTRL_INFO_PAGE_FIELD_PARTITION \
+  ((bitfield_field32_t){.mask = 0x7, .index = 4})
+#define FLASH_CTRL_INFO_PAGE_BIT_BANK 7
 
 /**
  * Kicks of the initialization of the flash controller.
@@ -56,29 +200,6 @@ typedef struct flash_ctrl_status {
  * @param[out] status_out The current status of the flash controller.
  */
 void flash_ctrl_status_get(flash_ctrl_status_t *status);
-
-/**
- * Region selection enumeration. Represents both the partition and the info
- * type.
- */
-typedef enum flash_crtl_partition {
-  /**
-   * Select the data partition.
-   */
-  kFlashCtrlPartitionData = 0,
-  /**
-   * Select the info partition of type 0.
-   */
-  kFlashCtrlPartitionInfo0 = (0 << 1) | 1,
-  /**
-   * Select the info partition of type 1.
-   */
-  kFlashCtrlPartitionInfo1 = (1 << 1) | 1,
-  /**
-   * Select the info partition of type 2.
-   */
-  kFlashCtrlPartitionInfo2 = (2 << 1) | 1,
-} flash_ctrl_partition_t;
 
 /**
  * Perform a read transaction.
