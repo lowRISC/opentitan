@@ -87,6 +87,11 @@
     }
 
     {
+      name: alert_handler_lpg
+      uvm_test_seq: alert_handler_lpg_vseq
+    }
+
+    {
       name: alert_handler_stress_all
       run_opts: ["+test_timeout_ns=15_000_000_000"]
     }

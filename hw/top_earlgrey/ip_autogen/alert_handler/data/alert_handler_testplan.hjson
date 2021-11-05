@@ -95,6 +95,24 @@
       tests: ["alert_handler_ping_timeout"]
     }
     {
+      name: lpg
+      desc: '''
+            Test alert_handler low_power_group(lpg) request.
+
+            Stimulus:
+            - Randomly enabled alert_receivers' `alert_en` but disable their ping response.
+            - Turn on their low-power control by either set `lpg_cg_en_i` or `lpg_rst_en_i`.
+            - Enable alert ping timeout local alert.
+            - Run alert_handler_entropy_vseq.
+
+            Checks:
+            - Expect no ping timeout error because the alert_receivers are disabled via low-power
+              group.
+            '''
+      milestone: V2
+      tests: ["alert_handler_lpg"]
+    }
+    {
       name: stress_all
       desc: '''
             Combine above sequences in one test to run sequentially with the following exclusions:

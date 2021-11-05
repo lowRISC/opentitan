@@ -18,7 +18,7 @@ interface alert_handler_if(input clk, input rst_n);
   endfunction
 
   // TODO: randomize all values outside of the mubi4 enum.
-  function automatic void set_lpg_en(int index);
+  function automatic void set_lpg_cg_en(int index);
     check_lpg_index(index);
     lpg_cg_en[index] = MuBi4True;
   endfunction
