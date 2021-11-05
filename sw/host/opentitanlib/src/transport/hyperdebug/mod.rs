@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::Result;
 
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
@@ -16,11 +16,12 @@ use std::rc::Rc;
 
 use thiserror::Error;
 
+use crate::collection;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::{Capabilities, Capability, Transport, TransportError};
-use crate::collection;
+use crate::util::usb::UsbBackend;
 
 pub mod gpio;
 pub mod uart;
@@ -49,25 +50,19 @@ impl Hyperdebug {
     pub const PID_HYPERDEBUG: u16 = 0x520e;
 
     /// Establish connection with a particular HyperDebug.
-    pub fn open(usb_vid: Option<u16>, usb_pid: Option<u16>, usb_serial: &Option<String>)
+    pub fn open(usb_vid: Option<u16>, usb_pid: Option<u16>, usb_serial: Option<&str>)
                 -> Result<Self> {
-        let devices = Self::scan(usb_vid, usb_pid, usb_serial)?;
-        ensure!(!devices.is_empty(), Error::NoDevice);
-        ensure!(devices.len() == 1, Error::MultipleDevices);
-        match devices.get(0) {
-            Some((device, _)) => Self::do_open(device),
-            _ => unimplemented!(),
-        }
-    }
+        let device = UsbBackend::new(
+            usb_vid.unwrap_or(Self::VID_GOOGLE),
+            usb_pid.unwrap_or(Self::PID_HYPERDEBUG),
+            usb_serial)?;
 
-    fn do_open(device: &rusb::Device<rusb::GlobalContext>) -> Result<Self> {
         let path = PathBuf::from("/sys/bus/usb/devices");
 
         let mut console_tty: Option<PathBuf> = None;
         let mut spi_interface: Option<BulkInterface> = None;
         let mut uart_ttys: HashMap<String, PathBuf> = HashMap::new();
 
-        let handle = device.open()?;
         let config_desc = device.active_config_descriptor()?;
         // Iterate through each USB interface, discovering e.g. supported UARTs.
         for interface in config_desc.interfaces() {
@@ -76,7 +71,7 @@ impl Hyperdebug {
                     Some(idx) => idx,
                     None => { continue }
                 };
-                let interface_name = match handle.read_string_descriptor_ascii(idx) {
+                let interface_name = match device.read_string_descriptor_ascii(idx) {
                     Ok(interface_name) => interface_name,
                     _ => { continue }
                 };
@@ -156,73 +151,13 @@ impl Hyperdebug {
             uart_ttys,
             inner: Rc::new(Inner {
                 console_tty: console_tty.ok_or(Error::CommunicationError("Missing console interface"))?,
-                usb_handle: RefCell::new(handle),
+                usb_device: RefCell::new(device),
                 gpio: Default::default(),
                 spis: Default::default(),
                 uarts: Default::default(),
             })
         };
         Ok(result)
-    }
-
-    /// Scan the USB bus for "our" devices, (shamelessly copied from
-    /// cw310, may be able to share.)
-    fn scan(
-        usb_vid: Option<u16>,
-        usb_pid: Option<u16>,
-        usb_serial: &Option<String>,
-    ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
-        let usb_vid = usb_vid.unwrap_or(Self::VID_GOOGLE);
-        let usb_pid = usb_pid.unwrap_or(Self::PID_HYPERDEBUG);
-        let mut devices = Vec::new();
-        for device in rusb::devices()?.iter() {
-            let descriptor = match device.device_descriptor() {
-                Ok(desc) => desc,
-                _ => {
-                    log::error!(
-                        "Could not read device descriptor for device at bus={} address={}",
-                        device.bus_number(),
-                        device.address()
-                    );
-                    continue;
-                }
-            };
-            if descriptor.vendor_id() != usb_vid {
-                continue;
-            }
-            if descriptor.product_id() != usb_pid {
-                continue;
-            }
-            let handle = match device.open() {
-                Ok(handle) => handle,
-                _ => {
-                    log::error!(
-                        "Could not open device at bus={} address={}",
-                        device.bus_number(),
-                        device.address()
-                    );
-                    continue;
-                }
-            };
-            let serial_number = match handle.read_serial_number_string_ascii(&descriptor) {
-                Ok(sn) => sn,
-                _ => {
-                    log::error!(
-                        "Could not read serial number from device at bus={} address={}",
-                        device.bus_number(),
-                        device.address()
-                    );
-                    continue;
-                }
-            };
-            if let Some(sn) = usb_serial {
-                if &serial_number != sn {
-                    continue;
-                }
-            }
-            devices.push((device, serial_number));
-        }
-        Ok(devices)
     }
 
     /// Locates the /dev/ttyUSBn node corresponding to a given interface in the sys directory
@@ -245,7 +180,7 @@ impl Hyperdebug {
 /// even if the caller lets the outer Hyperdebug struct run out of scope.
 pub struct Inner {
     console_tty: PathBuf,
-    usb_handle: RefCell<rusb::DeviceHandle<rusb::GlobalContext>>,
+    usb_device: RefCell<UsbBackend>,
     gpio: RefCell<HashMap<String, Rc<dyn GpioPin>>>,
     spis: RefCell<HashMap<u8, Rc<dyn Target>>>,
     uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,

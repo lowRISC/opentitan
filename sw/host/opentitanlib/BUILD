@@ -48,6 +48,7 @@ rust_library(
         "src/util/image.rs",
         "src/util/mod.rs",
         "src/util/parse_int.rs",
+        "src/util/usb.rs",
         "src/util/voltage.rs",
     ],
     proc_macro_deps = [

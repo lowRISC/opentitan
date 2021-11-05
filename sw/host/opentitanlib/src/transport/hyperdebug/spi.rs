@@ -5,7 +5,6 @@
 use anyhow::{ensure, Result};
 use rusb::{Direction,RequestType,Recipient};
 use std::mem::size_of;
-use std::time::Duration;
 use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
@@ -32,8 +31,6 @@ const USB_SPI_REQ_ENABLE: u8 = 0;
 
 const USB_MAX_SIZE: usize = 64;
 const FULL_DUPLEX: usize = 65535;
-
-const TIMEOUT: Duration = Duration::from_millis(500);
 
 #[derive(AsBytes, FromBytes, Debug, Default)]
 #[repr(C)]
@@ -116,7 +113,7 @@ impl RspTransferContinue {
 
 impl HyperdebugSpiTarget {
     pub fn open(hyperdebug: &Hyperdebug, idx: u8) -> Result<Self> {
-        let mut usb_handle = hyperdebug.inner.usb_handle.borrow_mut();
+        let mut usb_handle = hyperdebug.inner.usb_device.borrow_mut();
         
         // Tell HyperDebug to enable SPI bridge.
         usb_handle.write_control(
@@ -124,19 +121,16 @@ impl HyperdebugSpiTarget {
             USB_SPI_REQ_ENABLE,
             0 /* wValue */,
             hyperdebug.spi_interface.interface as u16,
-            &mut [],
-            TIMEOUT)?;
+            &mut [])?;
 
         // Exclusively claim SPI interface, preparing for bulk transfers.
         usb_handle.claim_interface(hyperdebug.spi_interface.interface)?;
 
         // Initial bulk request/response to query capabilities.
         usb_handle.write_bulk(hyperdebug.spi_interface.out_endpoint,
-                              &USB_SPI_PKT_ID_CMD_GET_USB_SPI_CONFIG.to_le_bytes(),
-                              TIMEOUT)?;
+                              &USB_SPI_PKT_ID_CMD_GET_USB_SPI_CONFIG.to_le_bytes())?;
         let mut resp: RspUsbSpiConfig = Default::default();
-        let rc = usb_handle.read_bulk(hyperdebug.spi_interface.in_endpoint, resp.as_bytes_mut(),
-                                      TIMEOUT)?;
+        let rc = usb_handle.read_bulk(hyperdebug.spi_interface.in_endpoint, resp.as_bytes_mut())?;
         ensure!(
             rc == size_of::<RspUsbSpiConfig>(),
             Error::CommunicationError("Unrecognized reponse to GET_USB_SPI_CONFIG")
@@ -220,15 +214,13 @@ impl HyperdebugSpiTarget {
 
     /// Send one USB packet.
     fn usb_write_bulk(&self, buf: &[u8]) -> Result<()> {
-        self.inner.usb_handle.borrow().write_bulk(
-            self.interface.out_endpoint, buf, TIMEOUT)?;
+        self.inner.usb_device.borrow().write_bulk(self.interface.out_endpoint, buf)?;
         Ok(())
     }
 
     /// Receive one USB packet.
     fn usb_read_bulk(&self, buf: &mut [u8]) -> Result<usize> {
-        Ok(self.inner.usb_handle.borrow().read_bulk(
-            self.interface.in_endpoint, buf, TIMEOUT)?)
+        Ok(self.inner.usb_device.borrow().read_bulk(self.interface.in_endpoint, buf)?)
     }
 }
 

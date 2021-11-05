@@ -12,6 +12,6 @@ pub fn create(args: &BackendOpts) -> Result<Box<dyn Transport>> {
     Ok(Box::new(Hyperdebug::open(
         args.usb_vid,
         args.usb_vid,
-        &args.usb_serial,
+        args.usb_serial.as_deref(),
     )?))
 }

@@ -4,7 +4,6 @@
 
 use anyhow::{ensure, Result};
 use lazy_static::lazy_static;
-use rusb;
 use std::collections::HashMap;
 use std::time::Duration;
 use thiserror::Error;
@@ -13,136 +12,12 @@ use crate::collection;
 use crate::io::gpio::GpioError;
 use crate::io::spi::SpiError;
 use crate::util::parse_int::ParseInt;
+use crate::util::usb::UsbBackend;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("Could not find device {0}")]
-    NotFound(String),
     #[error("FPGA programming failed: {0}")]
     FpgaProgramFailed(String),
-}
-
-/// The `UsbBackend` provides low-level USB access to the CW310 board.
-pub struct UsbBackend {
-    handle: rusb::DeviceHandle<rusb::GlobalContext>,
-    serial_number: String,
-    timeout: Duration,
-}
-
-impl UsbBackend {
-    pub const VID_NEWAE: u16 = 0x2b3e;
-    pub const PID_CW310: u16 = 0xc310;
-
-    /// Scan the USB bus for CW310 devices.
-    pub fn scan(
-        usb_vid: Option<u16>,
-        usb_pid: Option<u16>,
-        usb_serial: Option<String>,
-    ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
-        let usb_vid = usb_vid.unwrap_or(UsbBackend::VID_NEWAE);
-        let usb_pid = usb_pid.unwrap_or(UsbBackend::PID_CW310);
-        let mut devices = Vec::new();
-        for device in rusb::devices()?.iter() {
-            let descriptor = match device.device_descriptor() {
-                Ok(desc) => desc,
-                _ => {
-                    log::error!(
-                        "Could not read device descriptor for device at bus={} address={}",
-                        device.bus_number(),
-                        device.address()
-                    );
-                    continue;
-                }
-            };
-            if descriptor.vendor_id() != usb_vid {
-                continue;
-            }
-            if descriptor.product_id() != usb_pid {
-                continue;
-            }
-            let handle = match device.open() {
-                Ok(handle) => handle,
-                _ => {
-                    log::error!(
-                        "Could not open device at bus={} address={}",
-                        device.bus_number(),
-                        device.address()
-                    );
-                    continue;
-                }
-            };
-            let serial_number = match handle.read_serial_number_string_ascii(&descriptor) {
-                Ok(sn) => sn,
-                _ => {
-                    log::error!(
-                        "Could not read serial number from device at bus={} address={}",
-                        device.bus_number(),
-                        device.address()
-                    );
-                    continue;
-                }
-            };
-            if let Some(sn) = &usb_serial {
-                if &serial_number != sn {
-                    continue;
-                }
-            }
-            devices.push((device, serial_number));
-        }
-        Ok(devices)
-    }
-
-    /// Create a new UsbBackend.
-    pub fn new(
-        usb_vid: Option<u16>,
-        usb_pid: Option<u16>,
-        usb_serial: Option<String>,
-    ) -> Result<Self> {
-        let mut devices = UsbBackend::scan(usb_vid, usb_pid, usb_serial)?;
-        ensure!(!devices.is_empty(), Error::NotFound("CW310".to_string()));
-
-        let (device, serial_number) = devices.remove(0);
-        Ok(UsbBackend {
-            handle: device.open()?,
-            serial_number,
-            timeout: Duration::from_millis(200),
-        })
-    }
-
-    /// Gets the usb serial number of the device.
-    pub fn get_serial_number(&self) -> &str {
-        self.serial_number.as_str()
-    }
-
-    /// Send a control write transaction to the CW310 board.
-    pub fn send_ctrl(&self, cmd: u8, value: u16, data: &[u8]) -> Result<usize> {
-        log::debug!("WRITE_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",
-                0x41, cmd, value, 0, data);
-        let len = self
-            .handle
-            .write_control(0x41, cmd, value, 0, data, self.timeout)?;
-        Ok(len)
-    }
-
-    /// Send a control read transaction to the CW310 board.
-    pub fn read_ctrl(&self, cmd: u8, value: u16, data: &mut [u8]) -> Result<usize> {
-        let len = self
-            .handle
-            .read_control(0xC1, cmd, value, 0, data, self.timeout)?;
-        log::debug!("READ_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",
-                0xC1, cmd, value, 0, data);
-        Ok(len)
-    }
-
-    pub fn read_bulk(&self, endpoint: u8, data: &mut [u8]) -> Result<usize> {
-        let len = self.handle.read_bulk(endpoint, data, self.timeout)?;
-        Ok(len)
-    }
-
-    pub fn write_bulk(&self, endpoint: u8, data: &[u8]) -> Result<usize> {
-        let len = self.handle.write_bulk(endpoint, data, self.timeout)?;
-        Ok(len)
-    }
 }
 
 /// The `Backend` struct provides high-level access to the CW310 board.
@@ -202,15 +77,35 @@ impl Backend {
 
     const LAST_PIN_NUMBER: u8 = 106;
 
+    const VID_NEWAE: u16 = 0x2b3e;
+    const PID_CW310: u16 = 0xc310;
+    
     /// Create a new connection to a CW310 board.
     pub fn new(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
-        usb_serial: Option<String>,
+        usb_serial: Option<&str>,
     ) -> Result<Self> {
         Ok(Backend {
-            usb: UsbBackend::new(usb_vid, usb_pid, usb_serial)?,
+            usb: UsbBackend::new(
+                usb_vid.unwrap_or(Self::VID_NEWAE),
+                usb_pid.unwrap_or(Self::PID_CW310),
+                usb_serial)?,
         })
+    }
+
+    /// Send a control write transaction to the CW310 board.
+    pub fn send_ctrl(&self, cmd: u8, value: u16, data: &[u8]) -> Result<usize> {
+        log::debug!("WRITE_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",
+                0x41, cmd, value, 0, data);
+        self.usb.write_control(0x41, cmd, value, 0, data)
+    }
+
+    /// Send a control read transaction to the CW310 board.
+    pub fn read_ctrl(&self, cmd: u8, value: u16, data: &mut [u8]) -> Result<usize> {
+        log::debug!("READ_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",
+                0xC1, cmd, value, 0, data);
+        self.usb.read_control(0xC1, cmd, value, 0, data)
     }
 
     /// Gets the usb serial number of the device.
@@ -221,23 +116,21 @@ impl Backend {
     /// Get the firmware build date as a string.
     pub fn get_firmware_build_date(&self) -> Result<String> {
         let mut buf = [0u8; 100];
-        let len = self
-            .usb
-            .read_ctrl(Backend::CMD_FW_BUILD_DATE, 0, &mut buf)?;
+        let len = self.read_ctrl(Backend::CMD_FW_BUILD_DATE, 0, &mut buf)?;
         Ok(String::from_utf8_lossy(&buf[0..len]).to_string())
     }
 
     /// Get the firmware version.
     pub fn get_firmware_version(&self) -> Result<[u8; 3]> {
         let mut buf = [0u8; 3];
-        self.usb.read_ctrl(Backend::CMD_FW_VERSION, 0, &mut buf)?;
+        self.read_ctrl(Backend::CMD_FW_VERSION, 0, &mut buf)?;
         Ok(buf)
     }
 
     /// Set GPIO `pinname` to either output or input mode.
     pub fn pin_set_output(&self, pinname: &str, output: bool) -> Result<()> {
         let pinnum = Backend::pin_name_to_number(pinname)?;
-        self.usb.send_ctrl(
+        self.send_ctrl(
             Backend::CMD_FPGAIO_UTIL,
             Backend::REQ_IO_CONFIG,
             &[
@@ -256,15 +149,14 @@ impl Backend {
     pub fn pin_get_state(&self, pinname: &str) -> Result<u8> {
         let pinnum = Backend::pin_name_to_number(pinname)? as u16;
         let mut buf = [0u8; 1];
-        self.usb
-            .read_ctrl(Backend::CMD_FPGAIO_UTIL, pinnum, &mut buf)?;
+        self.read_ctrl(Backend::CMD_FPGAIO_UTIL, pinnum, &mut buf)?;
         Ok(buf[0])
     }
 
     /// Set the state of GPIO `pinname`.
     pub fn pin_set_state(&self, pinname: &str, value: bool) -> Result<()> {
         let pinnum = Backend::pin_name_to_number(pinname)?;
-        self.usb.send_ctrl(
+        self.send_ctrl(
             Backend::CMD_FPGAIO_UTIL,
             Backend::REQ_IO_OUTPUT,
             &[pinnum, value as u8],
@@ -279,22 +171,22 @@ impl Backend {
         let sck = Backend::pin_name_to_number(sck)?;
         let cs = Backend::pin_name_to_number(cs)?;
 
-        self.usb.send_ctrl(
+        self.send_ctrl(
             Backend::CMD_FPGAIO_UTIL,
             Backend::REQ_IO_CONFIG,
             &[sdo, Backend::CONFIG_PIN_SPI1_SDO],
         )?;
-        self.usb.send_ctrl(
+        self.send_ctrl(
             Backend::CMD_FPGAIO_UTIL,
             Backend::REQ_IO_CONFIG,
             &[sdi, Backend::CONFIG_PIN_SPI1_SDI],
         )?;
-        self.usb.send_ctrl(
+        self.send_ctrl(
             Backend::CMD_FPGAIO_UTIL,
             Backend::REQ_IO_CONFIG,
             &[sck, Backend::CONFIG_PIN_SPI1_SCK],
         )?;
-        self.usb.send_ctrl(
+        self.send_ctrl(
             Backend::CMD_FPGAIO_UTIL,
             Backend::REQ_IO_CONFIG,
             &[cs, Backend::CONFIG_PIN_SPI1_CS],
@@ -304,7 +196,7 @@ impl Backend {
 
     /// Enable the spi interface on the SAM3U chip.
     pub fn spi1_enable(&self, enable: bool) -> Result<()> {
-        self.usb.send_ctrl(
+        self.send_ctrl(
             Backend::CMD_FPGASPI1_XFER,
             if enable {
                 Backend::REQ_ENABLE_SPI
@@ -318,7 +210,7 @@ impl Backend {
 
     /// Set the value of the SPI chip-select pin.
     pub fn spi1_set_cs_pin(&self, status: bool) -> Result<()> {
-        self.usb.send_ctrl(
+        self.send_ctrl(
             Backend::CMD_FPGASPI1_XFER,
             if status {
                 Backend::REQ_CS_HIGH
@@ -345,9 +237,8 @@ impl Backend {
             txdata.len() == rxdata.len(),
             SpiError::MismatchedDataLength(txdata.len(), rxdata.len())
         );
-        self.usb
-            .send_ctrl(Backend::CMD_FPGASPI1_XFER, Backend::REQ_SEND_DATA, txdata)?;
-        self.usb.read_ctrl(Backend::CMD_FPGASPI1_XFER, 0, rxdata)?;
+        self.send_ctrl(Backend::CMD_FPGASPI1_XFER, Backend::REQ_SEND_DATA, txdata)?;
+        self.read_ctrl(Backend::CMD_FPGASPI1_XFER, 0, rxdata)?;
         Ok(())
     }
 
@@ -387,18 +278,15 @@ impl Backend {
     /// Query whether the FPGA is programmed.
     pub fn fpga_is_programmed(&self) -> Result<bool> {
         let mut status = [0u8; 4];
-        self.usb
-            .read_ctrl(Backend::CMD_FPGA_STATUS, 0, &mut status)?;
+        self.read_ctrl(Backend::CMD_FPGA_STATUS, 0, &mut status)?;
         Ok(status[0] & 0x01 != 0)
     }
 
     // Erase the FPGA and prepare for programming.
     fn fpga_erase(&self) -> Result<()> {
-        self.usb
-            .send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_INIT, &[])?;
+        self.send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_INIT, &[])?;
         std::thread::sleep(Duration::from_millis(1));
-        self.usb
-            .send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_PREPARE, &[])?;
+        self.send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_PREPARE, &[])?;
         std::thread::sleep(Duration::from_millis(1));
         Ok(())
     }
@@ -438,8 +326,7 @@ impl Backend {
                 std::thread::sleep(Duration::from_millis(1));
             }
         }
-        self.usb
-            .send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_EXIT, &[])?;
+        self.send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_EXIT, &[])?;
 
         if let Err(e) = result {
             Err(Error::FpgaProgramFailed(e.to_string()).into())
