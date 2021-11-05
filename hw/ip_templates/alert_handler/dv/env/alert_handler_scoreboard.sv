@@ -80,12 +80,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual task process_alert_fifo();
     foreach (alert_fifo[i]) begin
       automatic int index = i;
+      automatic int lpg_index = alert_handler_reg_pkg::LpgMap[index];
       fork
         forever begin
           bit alert_en, loc_alert_en;
           alert_esc_seq_item act_item;
           alert_fifo[index].get(act_item);
-          alert_en = ral.alert_en_shadowed[index].get_mirrored_value();
+          alert_en = ral.alert_en_shadowed[index].get_mirrored_value() &&
+                     cfg.alert_handler_vif.lpg_cg_en[lpg_index] == prim_mubi_pkg::MuBi4False &&
+                     cfg.alert_handler_vif.lpg_rst_en[lpg_index] == prim_mubi_pkg::MuBi4False;
           if (alert_en) begin
             // alert detected
             if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.ping_timeout &&

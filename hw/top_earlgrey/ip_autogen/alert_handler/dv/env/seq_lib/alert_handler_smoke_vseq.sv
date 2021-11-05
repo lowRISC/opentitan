@@ -118,6 +118,12 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
 
   virtual task run_smoke_seq();
     `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_LOW)
+    if (verbosity != UVM_LOW) begin
+      `uvm_info(`gfn,
+          $sformatf("Config: intr_en=%0b, alert=%0b, alert_en=%0b, loc_alert_en=%0b",
+          intr_en, alert_trigger, alert_en, local_alert_en), UVM_LOW)
+    end
+
     for (int i = 1; i <= num_trans; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
