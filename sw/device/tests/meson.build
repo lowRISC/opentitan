@@ -485,6 +485,26 @@ sw_tests += {
   }
 }
 
+kmac_interrupt_test_lib = declare_dependency(
+  link_with: static_library(
+    'kmac_interrupt_test_lib',
+    sources: ['kmac_interrupt_test.c'],
+    dependencies: [
+      sw_lib_dif_kmac,
+      sw_lib_runtime_log,
+      sw_lib_dif_rv_plic,
+      sw_lib_irq,      
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'kmac_interrupt_test': {
+    'library': kmac_interrupt_test_lib,
+  }
+}
+
 kmac_mode_cshake_test_lib = declare_dependency(
   link_with: static_library(
     'kmac_mode_cshake_test_lib',

@@ -31,6 +31,16 @@
 #define ARRAYSIZE(array) (sizeof(array) / sizeof(array[0]))
 
 /**
+ * Compute the min between two values (equivalent to `fmin`).
+ */
+#define OT_MIN(_X, _Y) _X < _Y ? _X : _Y;
+
+/**
+ * Compute the max between two values (equivalent to `fmax`).
+ */
+#define OT_MAX(_X, _Y) _X > _Y ? _X : _Y;
+
+/**
  * An annotation that a switch/case fallthrough is the intended behavior.
  */
 #define FALLTHROUGH_INTENDED __attribute__((fallthrough))
