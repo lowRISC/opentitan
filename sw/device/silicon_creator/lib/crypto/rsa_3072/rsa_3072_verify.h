@@ -103,7 +103,7 @@ otbn_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
  * @param result Resulting 3072-bit message representative
  * @return Result of the operation (OK or error).
  */
-rom_error_t rsa_3072_encode_sha256(const char *msg, size_t msgLen,
+rom_error_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
                                    rsa_3072_int_t *result);
 
 /**

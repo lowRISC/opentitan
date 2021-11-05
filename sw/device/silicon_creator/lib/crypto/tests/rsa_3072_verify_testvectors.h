@@ -18,13 +18,19 @@ extern "C" {
 typedef struct rsa_3072_verify_test_vector_t {
   rsa_3072_public_key_t publicKey;  // The public key
   rsa_3072_int_t signature;         // The signature to verify
-  char *msg;                        // The message
-  size_t msgLen;                    // Length (in bytes) of the message
   bool valid;                       // Expected result (true if signature valid)
   char *comment;                    // Any notes about the test vector
+  size_t msgLen;                    // Length (in bytes) of the message
+  uint8_t *msg;                     // Message bytes
 } rsa_3072_verify_test_vector_t;
 
 static const size_t RSA_3072_VERIFY_NUM_TESTS = 2;
+
+// Static message arrays.
+static uint8_t msg0[12] = {0x74, 0x65, 0x73, 0x74, 0x20, 0x6d,
+                           0x65, 0x73, 0x73, 0x61, 0x67, 0x65};
+static uint8_t msg1[12] = {0x74, 0x65, 0x73, 0x74, 0x20, 0x6d,
+                           0x65, 0x73, 0x73, 0x61, 0x67, 0x65};
 
 static const rsa_3072_verify_test_vector_t rsa_3072_verify_tests[2] = {
     {
@@ -83,7 +89,7 @@ static const rsa_3072_verify_test_vector_t rsa_3072_verify_tests[2] = {
                      0x38a6c62b, 0x811f1473, 0x8b12fc5f, 0x7932623e, 0xb6389fc8,
                      0x9801d012,
                  }},
-        .msg = "test message",
+        .msg = msg0,
         .msgLen = 12,
         .valid = true,
         .comment = "Hardcoded test with valid signature",
@@ -144,7 +150,7 @@ static const rsa_3072_verify_test_vector_t rsa_3072_verify_tests[2] = {
                      0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
                      0x00000000,
                  }},
-        .msg = "test message",
+        .msg = msg1,
         .msgLen = 12,
         .valid = false,
         .comment = "Hardcoded test with invalid signature",

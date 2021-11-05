@@ -18,16 +18,25 @@ extern "C" {
 typedef struct rsa_3072_verify_test_vector_t {
   rsa_3072_public_key_t publicKey;  // The public key
   rsa_3072_int_t signature;         // The signature to verify
-  char *msg;                        // The message
-  size_t msgLen;                    // Length (in bytes) of the message
   bool valid;                       // Expected result (true if signature valid)
   char *comment;                    // Any notes about the test vector
+  size_t msgLen;                    // Length (in bytes) of the message
+  uint8_t *msg;                     // Message bytes
 } rsa_3072_verify_test_vector_t;
 
 static const size_t RSA_3072_VERIFY_NUM_TESTS = ${len(tests)};
 
+// Static message arrays.
+% for i in range(len(tests)):
+  % if tests[i]["msg_len"] == 0:
+// msg${i} is empty.
+  % else:
+static uint8_t msg${i}[${tests[i]["msg_len"]}] = {${', '.join(['{:#04x}'.format(b) for b in tests[i]["msg_bytes"]])}};
+  %endif
+% endfor
+
 static const rsa_3072_verify_test_vector_t rsa_3072_verify_tests[${len(tests)}] = {
-% for t in tests:
+% for idx, t in enumerate(tests):
     {
         .publicKey =
             {
@@ -46,7 +55,11 @@ static const rsa_3072_verify_test_vector_t rsa_3072_verify_tests[${len(tests)}] 
                      ${', '.join(t["sig_hexwords"][i:i + 5])},
   % endfor
                  }},
-        .msg = "${t["msg"]}",
+  % if t["msg_len"] == 0:
+        .msg = NULL,
+  % else:
+        .msg = msg${idx},
+  % endif
         .msgLen = ${t["msg_len"]},
         .valid = ${"true" if t["valid"] else "false"},
         .comment = "${t["comment"]}",

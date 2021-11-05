@@ -3,7 +3,7 @@
 This folder contains test data and infrastructure for the OpenTitan
 cryptographic library. Tests come from a variety of sources, including:
 - Our own hard-coded tests and regression tests
-- Coming soon: [wycheproof](https://github.com/google/wycheproof)
+- [wycheproof](https://github.com/google/wycheproof)
 - Coming soon: random tests!
 - Coming soon: FIPS tests!
 
@@ -23,7 +23,9 @@ custom set of tests, or random tests, you'll need to populate the
 script for this for each algorithm, ending in `set_testvectors.py` (e.g.
 `rsa_3072_verify_set_testvectors.py`). It reads an HJSON file containing your
 test vectors, and writes a C header file containing the data in the format
-expected from `*_testvectors.h".
+expected from `*_testvectors.h". For test vectors from an external source, you
+may need an extra script to parse the test vectors into the shared HJSON
+format.
 
 For example, here's the setup for just one algorithm, RSA-3072 verify:
 ```
@@ -35,8 +37,6 @@ tests/
     rsa_3072_verify_hardcoded.hjson          # Limited set of hard-coded tests
     wycheproof/
       rsa_3072_verify_parse_testvectors.py   # Parses raw test data to HJSON
-      raw/
-        rsa_signature_3072_sha256_test.json  # Raw test data
     ...
 ```
 
@@ -58,6 +58,8 @@ $ ./rsa_3072_verify_set_testvectors.py testvectors/custom_testvecs.hjson
 
 Set up RSA-3072 test to run all wycheproof test vectors:
 ```
-$ ./testvectors/wycheproof/rsa_3072_verify_parse_testvectors.py > testvectors/rsa_3072_verify_wycheproof.hjson
-$ ./rsa_3072_verify_set_testvectors.py testvectors/rsa_3072_verify_wycheproof.hjson
+$ testvectors/wycheproof/rsa_3072_verify_parse_testvectors.py\ 
+  $REPO_TOP/sw/vendor/wycheproof/testvectors/rsa_signature_3072_sha256_test.json\ 
+  testvectors/rsa_3072_verify_wycheproof.hjson
+$ ./rsa_3072_verify_set_testvectors.py testvectors/rsa_3072_verify_wycheproof.hjson rsa_3072_verify_testvectors.h
 ```
