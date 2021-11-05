@@ -18,6 +18,8 @@ import math
 import random
 import hjson
 import subprocess
+from typing import Tuple
+from pathlib import Path
 
 COPYRIGHT = """// Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -75,6 +77,9 @@ PRINT_OPTIONS = {"logic": "assign ", "function": "  "}
 
 # secded configurations
 SECDED_CFG_FILE = "util/design/data/secded_cfg.hjson"
+
+PROJ_ROOT = Path(__file__).parent.joinpath('../../')
+SECDED_CFG_PATH = Path(PROJ_ROOT).joinpath(SECDED_CFG_FILE)
 
 # The seed we use to initialise the PRNG when running the randomised algorithm
 # to choose constants for Hsiao codes.
@@ -315,6 +320,53 @@ def verify(cfgs):
                 cfg['code_type'], CODE_OPTIONS))
 
     return error
+
+
+def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
+    log.info(f"Encoding ECC for {hex(dataword)}")
+
+    # first check to see if bit width is supported among configuration
+    with open(SECDED_CFG_PATH, 'r') as infile:
+        config = hjson.load(infile)
+
+    codes = None
+    bitmasks = None
+    m = None
+    for cfg in config['cfgs']:
+        if cfg['k'] == k and cfg['code_type'] == codetype:
+            m = cfg['m']
+            codes = gen_code(codetype, k, m)
+            bitmasks = calc_bitmasks(k, m, codes, False)
+            break
+
+    # error if k not supported
+    if not m:
+        raise Exception(f'ECC for length {k} of type {codetype} unsupported')
+
+    # represent supplied dataword as a binary string
+    word_bin = format(dataword, '0' + str(k) + 'b')
+
+    codeword = word_bin
+    for j, mask in enumerate(bitmasks):
+        bit = 0
+        log.debug(f'codword: {codeword}')
+        log.debug(f'mask: {hex(mask)}')
+        mask = (format(mask, '0' + str(k + m) + 'b'))
+
+        # reverse codeword for index selection
+        # This is because the LSB is the farthest entry in the string
+        codeword_rev = codeword[::-1]
+        for idx, f in enumerate(mask[::-1]):
+            if int(f):
+                log.debug(f'xoring position {idx} value {codeword_rev[idx]}')
+                bit ^= int(codeword_rev[idx])
+
+        codeword = str(bit) + codeword
+
+    # Debug printouts
+    log.debug(f'original hex: {hex(dataword)}')
+    log.debug(f'codeword hex: {hex(int(codeword,2))}')
+    return int(codeword, 2), m
 
 
 def gen_code(codetype, k, m):
