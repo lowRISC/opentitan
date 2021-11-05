@@ -107,6 +107,13 @@ void handler_irq_external(void) {
     case kTopEarlgreyPlicIrqIdSpiDeviceTxUnderflow:
       spi_device_irq = kDifSpiDeviceIrqTxUnderflow;
       CHECK(expected_irqs[spi_device_irq], "Unexpected TX underflow interrupt");
+      // TxUnderflow keeps firing as TX fifo is empty but TB controls host to
+      // keep sending data and requesting data from device, so disable this
+      // interrupt once fired. Since TxUnderflow keeps firing, PC can not go
+      // back to the main program, disable the interrupt here instead of in the
+      // main program.
+      CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
+          &spi_device, kDifSpiDeviceIrqTxUnderflow, kDifToggleDisabled));
       break;
     default:
       LOG_ERROR("Unexpected interrupt (at PLIC): %d", plic_irq_id);
@@ -289,11 +296,8 @@ static bool execute_test(const dif_spi_device_t *spi_device,
 
     if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqTxUnderflow]) {
       expected_irqs[kDifSpiDeviceIrqRxWatermark] = true;
-      // TxUnderflow will fire every cycle, so disable this interrupt once fired
-      CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-          spi_device, kDifSpiDeviceIrqTxUnderflow, kDifToggleDisabled));
       expected_irqs[kDifSpiDeviceIrqTxUnderflow] = false;
-      LOG_INFO("SPI_DEVICE Tx Below level interrupt fired.");
+      LOG_INFO("SPI_DEVICE Tx underflow fired.");
     }
 
     if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqRxWatermark]) {
