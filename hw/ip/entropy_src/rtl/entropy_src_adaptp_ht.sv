@@ -22,21 +22,14 @@ module entropy_src_adaptp_ht #(
   input logic                   window_wrap_pulse_i,
   output logic [RegWidth-1:0]   test_cnt_o,
   output logic                  test_fail_hi_pulse_o,
-  output logic                  test_fail_lo_pulse_o
+  output logic                  test_fail_lo_pulse_o,
+  output logic                  count_err_o
 );
 
   // signals
   logic [RegWidth-1:0] column_cnt;
-
-  // flops
-  logic [RegWidth-1:0] test_cnt_q, test_cnt_d;
-
-  always_ff @(posedge clk_i or negedge rst_ni)
-    if (!rst_ni) begin
-      test_cnt_q       <= '0;
-    end else begin
-      test_cnt_q       <= test_cnt_d;
-    end
+  logic [RegWidth-1:0] test_cnt;
+  logic                test_cnt_err;
 
 
   // Adaptive Proportion Test
@@ -48,23 +41,35 @@ module entropy_src_adaptp_ht #(
   //  window size (W) of the test.
 
 
-  // Number of ones per column
+  // number of ones per column
   assign column_cnt =  RegWidth'(entropy_bit_i[3]) +
                        RegWidth'(entropy_bit_i[2]) +
                        RegWidth'(entropy_bit_i[1]) +
                        RegWidth'(entropy_bit_i[0]);
 
-  // Test event counter
-  assign test_cnt_d =
-         (!active_i || clear_i) ? '0 :
-         window_wrap_pulse_i ? '0 :
-         entropy_bit_vld_i ? (test_cnt_q+column_cnt) :
-         test_cnt_q;
+  // cumulative ones counter
+  prim_count #(
+      .Width(RegWidth),
+      .OutSelDnCnt(1'b0), // count up
+      .CntStyle(prim_count_pkg::DupCnt)
+    ) u_prim_count_test_cnt (
+      .clk_i,
+      .rst_ni,
+      .clr_i(window_wrap_pulse_i),
+      .set_i(!active_i || clear_i),
+      .set_cnt_i(RegWidth'(0)),
+      .en_i(entropy_bit_vld_i),
+      .step_i(column_cnt),
+      .cnt_o(test_cnt),
+      .err_o(test_cnt_err)
+    );
+
 
   // the pulses will be only one clock in length
-  assign test_fail_hi_pulse_o = active_i && window_wrap_pulse_i && (test_cnt_q > thresh_hi_i);
-  assign test_fail_lo_pulse_o = active_i && window_wrap_pulse_i && (test_cnt_q < thresh_lo_i);
-  assign test_cnt_o = test_cnt_q;
+  assign test_fail_hi_pulse_o = active_i && window_wrap_pulse_i && (test_cnt > thresh_hi_i);
+  assign test_fail_lo_pulse_o = active_i && window_wrap_pulse_i && (test_cnt < thresh_lo_i);
+  assign test_cnt_o = test_cnt;
+  assign count_err_o = test_cnt_err;
 
 
 endmodule
