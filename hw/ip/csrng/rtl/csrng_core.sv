@@ -460,7 +460,7 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   // set the interrupt sources
-  assign event_cs_fatal_err = cs_enable  && (
+  assign event_cs_fatal_err = (cs_enable  && (
          (|cmd_stage_sfifo_cmd_err_sum) ||
          (|cmd_stage_sfifo_genbits_err_sum) ||
          ctr_drbg_cmd_sfifo_cmdreq_err_sum ||
@@ -485,7 +485,8 @@ module csrng_core import csrng_pkg::*; #(
          aes_cipher_sm_err_sum ||
          fifo_write_err_sum ||
          fifo_read_err_sum ||
-         fifo_status_err_sum);
+         fifo_status_err_sum)) ||
+         cmd_gen_cnt_err_sum; // err not gated by cs_enable
 
   // set fifo errors that are single instances of source
   assign ctr_drbg_cmd_sfifo_cmdreq_err_sum = (|ctr_drbg_cmd_sfifo_cmdreq_err) ||
@@ -653,7 +654,7 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.err_code.aes_cipher_sm_err.de = cs_enable && aes_cipher_sm_err_sum;
 
   assign hw2reg.err_code.cmd_gen_cnt_err.d = 1'b1;
-  assign hw2reg.err_code.cmd_gen_cnt_err.de = cs_enable && cmd_gen_cnt_err_sum;
+  assign hw2reg.err_code.cmd_gen_cnt_err.de = cmd_gen_cnt_err_sum;
 
 
  // set the err code type bits
