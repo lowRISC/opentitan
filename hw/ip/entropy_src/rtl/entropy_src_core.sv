@@ -1205,7 +1205,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign health_test_done_pulse = (window_cntr == health_test_window);
 
   // Summary of counter errors
-  assign es_cntr_err = 1'b0 &&
+  assign es_cntr_err = 1'b0 && // TODO: remove exp code here
          (window_cntr_err ||
          repcnt_cntr_err ||
          repcnts_cntr_err ||
