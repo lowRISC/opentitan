@@ -187,6 +187,7 @@ module spi_host_reg_top (
   logic control_spien_wd;
   logic [7:0] status_txqd_qs;
   logic [7:0] status_rxqd_qs;
+  logic [3:0] status_cmdqd_qs;
   logic status_rxwm_qs;
   logic status_byteorder_qs;
   logic status_rxstall_qs;
@@ -560,6 +561,31 @@ module spi_host_reg_top (
 
     // to register interface (read)
     .qs     (status_rxqd_qs)
+  );
+
+  //   F[cmdqd]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (4'h0)
+  ) u_status_cmdqd (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.status.cmdqd.de),
+    .d      (hw2reg.status.cmdqd.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (status_cmdqd_qs)
   );
 
   //   F[rxwm]: 20:20
@@ -1692,6 +1718,7 @@ module spi_host_reg_top (
       addr_hit[5]: begin
         reg_rdata_next[7:0] = status_txqd_qs;
         reg_rdata_next[15:8] = status_rxqd_qs;
+        reg_rdata_next[19:16] = status_cmdqd_qs;
         reg_rdata_next[20] = status_rxwm_qs;
         reg_rdata_next[22] = status_byteorder_qs;
         reg_rdata_next[23] = status_rxstall_qs;
