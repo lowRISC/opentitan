@@ -371,11 +371,20 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [32:0]              sha3_err;
   logic                     cs_aes_halt_req;
   logic                     sha3_msg_rdy;
+  logic [HalfRegWidth-1:0]  window_cntr;
 
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
   logic [PreCondWidth-1:0] msg_data[Sha3Share];
   logic                    es_rdata_capt_vld;
+  logic                    window_cntr_err;
+  logic                    repcnt_cntr_err;
+  logic                    repcnts_cntr_err;
+  logic                    adaptp_cntr_err;
+  logic                    bucket_cntr_err;
+  logic                    markov_cntr_err;
+  logic                    es_cntr_err;
+  logic                    es_cntr_err_sum;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_sha3_state;
@@ -390,7 +399,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        ht_failed_q, ht_failed_d;
   logic        ht_failed_pulse_q, ht_failed_pulse_d;
   logic        ht_done_pulse_q, ht_done_pulse_d;
-  logic [HalfRegWidth-1:0] window_cntr_q, window_cntr_d;
   logic                    sha3_msg_rdy_q, sha3_msg_rdy_d;
   logic                    sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
@@ -407,7 +415,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       ht_esbus_dly_q        <= '0;
       ht_esbus_vld_dly_q    <= '0;
       ht_esbus_vld_dly2_q   <= '0;
-      window_cntr_q         <= '0;
       sha3_msg_rdy_q        <= '0;
       sha3_err_q            <= '0;
       cs_aes_halt_q         <= '0;
@@ -422,7 +429,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       ht_esbus_dly_q        <= ht_esbus_dly_d;
       ht_esbus_vld_dly_q    <= ht_esbus_vld_dly_d;
       ht_esbus_vld_dly2_q   <= ht_esbus_vld_dly2_d;
-      window_cntr_q         <= window_cntr_d;
       sha3_msg_rdy_q        <= sha3_msg_rdy_d;
       sha3_err_q            <= sha3_err_d;
       cs_aes_halt_q         <= cs_aes_halt_d;
@@ -563,12 +569,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   // set the interrupt sources
-  assign event_es_fatal_err = es_enable && (
-         sfifo_esrng_err_sum ||
-         sfifo_observe_err_sum ||
-         sfifo_esfinal_err_sum ||
-         es_ack_sm_err_sum ||
-         es_main_sm_err_sum);
+  assign event_es_fatal_err = (es_enable && (
+                                             sfifo_esrng_err_sum ||
+                                             sfifo_observe_err_sum ||
+                                             sfifo_esfinal_err_sum ||
+                                             es_ack_sm_err_sum ||
+                                             es_main_sm_err_sum)) ||
+                                             es_cntr_err_sum; // prim_count err is always active
 
   // set fifo errors that are single instances of source
   assign sfifo_esrng_err_sum = (|sfifo_esrng_err) ||
@@ -581,6 +588,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
          err_code_test_bit[20];
   assign es_main_sm_err_sum = es_main_sm_err ||
          err_code_test_bit[21];
+  assign es_cntr_err_sum = es_cntr_err ||
+         err_code_test_bit[22];
   assign fifo_write_err_sum =
          sfifo_esrng_err[2] ||
          sfifo_observe_err[2] ||
@@ -612,6 +621,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign hw2reg.err_code.es_main_sm_err.d = 1'b1;
   assign hw2reg.err_code.es_main_sm_err.de = es_enable && es_main_sm_err_sum;
+
+  assign hw2reg.err_code.es_cntr_err.d = 1'b1;
+  assign hw2reg.err_code.es_cntr_err.de = es_cntr_err_sum;
 
 
  // set the err code type bits
@@ -1173,15 +1185,33 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
   // Window counter
-  assign window_cntr_d =
-         (!es_enable) ? '0 :
-         health_test_clr ? '0 :
-         health_test_done_pulse ? '0  :
-         health_test_esbus_vld ? (window_cntr_q+1) :
-         window_cntr_q;
+    prim_count #(
+      .Width(HalfRegWidth),
+      .OutSelDnCnt(1'b0), // count up
+      .CntStyle(prim_count_pkg::DupCnt)
+    ) u_prim_count_window_cntr (
+      .clk_i,
+      .rst_ni,
+      .clr_i(!es_enable || health_test_clr),
+      .set_i(health_test_done_pulse),
+      .set_cnt_i(HalfRegWidth'(0)),
+      .en_i(health_test_esbus_vld),
+      .step_i(HalfRegWidth'(1)),
+      .cnt_o(window_cntr),
+      .err_o(window_cntr_err)
+    );
 
   // Window wrap condition
-  assign health_test_done_pulse = (window_cntr_q == health_test_window);
+  assign health_test_done_pulse = (window_cntr == health_test_window);
+
+  // Summary of counter errors
+  assign es_cntr_err =
+         (window_cntr_err ||
+         repcnt_cntr_err ||
+         repcnts_cntr_err ||
+         adaptp_cntr_err ||
+         bucket_cntr_err ||
+         markov_cntr_err);
 
   //--------------------------------------------
   // repetitive count test
@@ -1199,7 +1229,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .active_i            (repcnt_active),
     .thresh_i            (repcnt_threshold),
     .test_cnt_o          (repcnt_event_cnt),
-    .test_fail_pulse_o   (repcnt_fail_pulse)
+    .test_fail_pulse_o   (repcnt_fail_pulse),
+    .count_err_o         (repcnt_cntr_err)
   );
 
   entropy_src_watermark_reg #(
@@ -1259,7 +1290,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .active_i            (repcnts_active),
     .thresh_i            (repcnts_threshold),
     .test_cnt_o          (repcnts_event_cnt),
-    .test_fail_pulse_o   (repcnts_fail_pulse)
+    .test_fail_pulse_o   (repcnts_fail_pulse),
+    .count_err_o         (repcnts_cntr_err)
   );
 
   entropy_src_watermark_reg #(
@@ -1322,7 +1354,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .window_wrap_pulse_i (health_test_done_pulse),
     .test_cnt_o          (adaptp_event_cnt),
     .test_fail_hi_pulse_o(adaptp_hi_fail_pulse),
-    .test_fail_lo_pulse_o(adaptp_lo_fail_pulse)
+    .test_fail_lo_pulse_o(adaptp_lo_fail_pulse),
+    .count_err_o         (adaptp_cntr_err)
   );
 
 
@@ -1428,7 +1461,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .thresh_i            (bucket_threshold),
     .window_wrap_pulse_i (health_test_done_pulse),
     .test_cnt_o          (bucket_event_cnt),
-    .test_fail_pulse_o   (bucket_fail_pulse)
+    .test_fail_pulse_o   (bucket_fail_pulse),
+    .count_err_o         (bucket_cntr_err)
   );
 
   entropy_src_watermark_reg #(
@@ -1493,7 +1527,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .test_cnt_hi_o       (markov_hi_event_cnt),
     .test_cnt_lo_o       (markov_lo_event_cnt),
     .test_fail_hi_pulse_o (markov_hi_fail_pulse),
-    .test_fail_lo_pulse_o (markov_lo_fail_pulse)
+    .test_fail_lo_pulse_o (markov_lo_fail_pulse),
+    .count_err_o         (markov_cntr_err)
   );
 
   entropy_src_watermark_reg #(
