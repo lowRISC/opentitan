@@ -11,6 +11,7 @@ package spi_host_reg_pkg;
   parameter int NumCS = 1;
   parameter int TxDepth = 72;
   parameter int RxDepth = 64;
+  parameter int CmdDepth = 4;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
@@ -197,6 +198,10 @@ package spi_host_reg_pkg;
       logic        de;
     } rxqd;
     struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } cmdqd;
+    struct packed {
       logic        d;
       logic        de;
     } rxwm;
@@ -286,8 +291,8 @@ package spi_host_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    spi_host_hw2reg_intr_state_reg_t intr_state; // [55:52]
-    spi_host_hw2reg_status_reg_t status; // [51:12]
+    spi_host_hw2reg_intr_state_reg_t intr_state; // [60:57]
+    spi_host_hw2reg_status_reg_t status; // [56:12]
     spi_host_hw2reg_error_status_reg_t error_status; // [11:0]
   } spi_host_hw2reg_t;
 
