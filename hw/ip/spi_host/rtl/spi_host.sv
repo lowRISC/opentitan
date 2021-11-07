@@ -251,8 +251,6 @@ module spi_host
   // Any qe pin from COMMAND will suffice.
   assign command_valid = |cmd_qes;
 
-  `ASSERT(CmdAtomicity_A, ~(&cmd_qes ^ |cmd_qes), clk_i, rst_ni);
-
   logic active;
   logic rx_stall;
   logic tx_stall;
