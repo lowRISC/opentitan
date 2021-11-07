@@ -6,8 +6,6 @@
 //
 //
 
-// TODO: Implement CMDQD
-
 `include "prim_assert.sv"
 
 module spi_host
