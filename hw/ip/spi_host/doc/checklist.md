@@ -41,22 +41,22 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
 Documentation | [NEW_FEATURES][]        | Done        |
-Documentation | [BLOCK_DIAGRAM][]       | Not Started |
-Documentation | [DOC_INTERFACE][]       | Not Started |
-Documentation | [MISSING_FUNC][]        | Not Started |
+Documentation | [BLOCK_DIAGRAM][]       | Done        |
+Documentation | [DOC_INTERFACE][]       | Done        |
+Documentation | [MISSING_FUNC][]        | Done        |
 Documentation | [FEATURE_FROZEN][]      | Done        |
 RTL           | [FEATURE_COMPLETE][]    | Done        |
-RTL           | [AREA_CHECK][]          | Not Started |
+RTL           | [AREA_CHECK][]          | Done        |
 RTL           | [PORT_FROZEN][]         | Done        |
 RTL           | [ARCHITECTURE_FROZEN][] | Done        |
-RTL           | [REVIEW_TODO][]         | Not Started |
-RTL           | [STYLE_X][]             | Not Started |
-Code Quality  | [LINT_PASS][]           | Not Started |
-Code Quality  | [CDC_SETUP][]           | Not Started |
-Code Quality  | [FPGA_TIMING][]         | Not Started |
-Code Quality  | [CDC_SYNCMACRO][]       | Done        |
-Security      | [SEC_CM_DOCUMENTED][]   | Not Started |
-Security      | [SEC_RND_CNST][]        | Not Started |
+RTL           | [REVIEW_TODO][]         | Done        |
+RTL           | [STYLE_X][]             | Done        |
+Code Quality  | [LINT_PASS][]           | Done        |
+Code Quality  | [CDC_SETUP][]           | N/A         | No CDC's anymore & CDC flow not yet online
+Code Quality  | [FPGA_TIMING][]         | Done        |
+Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
+Security      | [SEC_CM_DOCUMENTED][]   | N/A         |
+Security      | [SEC_RND_CNST][]        | N/A         |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}
@@ -80,10 +80,10 @@ Security      | [SEC_RND_CNST][]        | Not Started |
 
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
-Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
-Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
-Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
-Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
+Security      | [SEC_CM_IMPLEMENTED][]       | N/A         |
+Security      | [SEC_CM_ASSETS_LISTED][]     | N/A         |
+Security      | [SEC_CM_RTL_REVIEWED][]      | N/A         |
+Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         |
 
 [SEC_CM_IMPLEMENTED]:      {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
 [SEC_CM_ASSETS_LISTED]:    {{<relref "/doc/project/checklist.md#sec_cm_assets_listed" >}}
@@ -227,7 +227,7 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Tests         | [SEC_CM_VERIFIED][]                     | Not Started |
+Tests         | [SEC_CM_VERIFIED][]                     | N/A         |
 
 [SEC_CM_VERIFIED]:                    {{<relref "/doc/project/checklist.md#sec_cm_verified" >}}
 
