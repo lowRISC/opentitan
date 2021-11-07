@@ -3,3 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for SPI_HOST
+
+# This waiver applies to the SPI_HOST FSM which uses signals next_state_after_idle and
+# next_state_after_idle_csb_active to determine the following state.
+#
+# This is done because in certain conditions the Idle and IdleCSBActive states can be bypassed,
+# meaning the idle state is never actually entered, and the FSM jumps immediately to the appropriate
+# exit state after idle. This allows smooth transitions from one command segment to the other. By
+# using a signal to define the following state, we can be sure that the logic is consistent
+# regardless of whether the idle state is occupied or bypassed.
+
+waive -rules {CALC_NEXT_STATE} -regexp {next_state_after_idle.*}
