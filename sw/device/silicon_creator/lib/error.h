@@ -119,7 +119,7 @@ enum module_ {
   X(kErrorBootstrapUnknown,           ERROR_(7, kModuleBootstrap, kInternal)), \
   X(kErrorLogBadFormatSpecifier,      ERROR_(1, kModuleLog, kInternal)), \
   X(kErrorBootDataNotFound,           ERROR_(1, kModuleBootData, kInternal)), \
-  X(kErrorBootDataFlash,              ERROR_(2, kModuleBootData, kInternal)), \
+  X(kErrorBootDataWriteCheck,         ERROR_(2, kModuleBootData, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 
