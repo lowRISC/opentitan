@@ -4,7 +4,7 @@ This folder contains test data and infrastructure for the OpenTitan
 cryptographic library. Tests come from a variety of sources, including:
 - Our own hard-coded tests and regression tests
 - [wycheproof](https://github.com/google/wycheproof)
-- Coming soon: random tests!
+- Random tests
 - Coming soon: FIPS tests!
 
 ## Setup
@@ -33,6 +33,7 @@ tests/
   rsa_3072_verify_functest.c                 # Main test file
   rsa_3072_verify_testvectors.h              # Test vectors (auto-generated)
   rsa_3072_verify_set_testvectors.py         # Generates .h above
+  rsa_3072_verify_gen_random_testvectors.py  # Generates random test vectors
   testvectors/
     rsa_3072_verify_hardcoded.hjson          # Limited set of hard-coded tests
     wycheproof/
@@ -49,6 +50,12 @@ $ ./rsa_3072_verify_set_testvectors.py testvectors/rsa_3072_verify_hardcoded.hjs
 After this step, you can run `ninja` to re-build and then run the
 `sw_silicon_creator_lib_crypto_rsa_3072_verify_functest` target to run the
 tests. The same applies to all other examples here.
+
+Set up RSA-3072 test to run 20 random test vectors:
+```
+$ ./rsa_3072_verify_gen_random_testvectors.py 20 testvectors/rsa_3072_verify_random.hjson
+$ ./rsa_3072_verify_set_testvectors.py testvectors/rsa_3072_verify_random.hjson rsa_3072_verify_testvectors.h
+```
 
 Set up RSA-3072 test to run a custom set of test vectors:
 ```
