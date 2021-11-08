@@ -197,10 +197,14 @@ module prim_count import prim_count_pkg::*; #(
   // This logic that will be assign to one, when user adds macro
   // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
   // is used in design without adding this assertion check.
+  `ifdef INC_ASSERT
   logic unused_assert_connected;
   `ASSERT_INIT(AssertConnected_A, unused_assert_connected === 1'b1)
+  `endif
 endmodule // prim_count
 
 `define ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, MAX_CYCLES_ = 5) \
   `ASSERT(NAME_, $rose(PRIM_HIER_.err_o) |-> ##[1:MAX_CYCLES_] $rose(ALERT_.alert_p)); \
-  assign PRIM_HIER_.unused_assert_connected = 1'b1;
+  `ifdef INC_ASSERT \
+  assign PRIM_HIER_.unused_assert_connected = 1'b1; \
+  `endif
