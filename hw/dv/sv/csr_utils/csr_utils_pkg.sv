@@ -255,9 +255,24 @@ package csr_utils_pkg;
                                         bit            predict,
                                         uvm_reg_map    map);
     uvm_status_e status;
-    csr.write(.status(status), .value(value), .path(path), .map(map), .prior(100));
+    bit reset_triggered = under_reset;
+    fork
+      begin : isolation_fork
+        fork
+          begin : wait_reset
+            wait (under_reset == 1);
+            reset_triggered = 1;
+          end
+        join_none
+        if (!reset_triggered) begin
+          csr.write(.status(status), .value(value), .path(path), .map(map), .prior(100));
+        end
+        // Wait until csr.write to finish then terminate this task to avoid deadlock in ral model.
+        disable fork;
+      end
+    join
 
-    if (under_reset) return;
+    if (reset_triggered) return;
     if (check == UVM_CHECK) begin
       `DV_CHECK_EQ(status, UVM_IS_OK,
                    $sformatf("trying to write csr %0s", csr.get_full_name()),
