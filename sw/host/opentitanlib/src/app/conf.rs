@@ -4,23 +4,9 @@
 
 //! Schema for configuration files, exact encoding json/xml to be worked out.
 
+use crate::io::gpio::{PinMode, PullMode};
+
 use serde::Deserialize;
-
-/// Overall operating mode of a single GPIO pin.
-#[derive(Deserialize, Clone, Debug)]
-pub enum PinMode {
-    Input,
-    PushPull,
-    OpenDrain,
-}
-
-/// Configuration of passive pullup/down for a single GPIO pin.
-#[derive(Deserialize, Clone, Debug)]
-pub enum PullMode {
-    None,
-    PullUp,
-    PullDown,
-}
 
 /// Configuration of a particular GPIO pin.
 #[derive(Deserialize, Clone, Debug)]
@@ -36,6 +22,16 @@ pub struct PinConfiguration {
     /// Name of a pin defined by the transport (or a lower level
     /// PinConfiguration).
     pub alias_of: Option<String>,
+}
+
+/// Configuration of a particular GPIO pin.
+#[derive(Deserialize, Clone, Debug)]
+pub struct StrappingConfiguration {
+    /// The user-visible name of the strapping combination.
+    pub name: String,
+    /// List of GPIO pin configurations (the alias_of) field should not be used in these.
+    #[serde(default)]
+    pub pins: Vec<PinConfiguration>,
 }
 
 /// Parity configuration for UART communication.
@@ -143,6 +139,9 @@ pub struct ConfigurationFile {
     /// List of GPIO pin configurations.
     #[serde(default)]
     pub pins: Vec<PinConfiguration>,
+    /// List of named sets of additional GPIO pin configurations (pullup/pulldown).
+    #[serde(default)]
+    pub strappings: Vec<StrappingConfiguration>,
     /// List of UART configurations.
     #[serde(default)]
     pub uarts: Vec<UartConfiguration>,

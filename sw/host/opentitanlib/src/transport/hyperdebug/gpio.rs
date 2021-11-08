@@ -5,7 +5,7 @@
 use anyhow::Result;
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinDirection};
+use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::transport::hyperdebug::{Error, Hyperdebug, Inner};
 
 pub struct HyperdebugGpioPin {
@@ -43,8 +43,33 @@ impl GpioPin for HyperdebugGpioPin {
         )
     }
 
-    /// Sets the `direction` of GPIO `id` as input or output.
-    fn set_direction(&self, _direction: PinDirection) -> Result<()> {
-        unimplemented!()
+    fn set_mode(&self, mode: PinMode) -> Result<()> {
+        self.inner.execute_command(
+            &format!(
+                "gpiomode {} {}",
+                &self.pinname,
+                match mode {
+                    PinMode::Input => "input",
+                    PinMode::OpenDrain => "opendrain",
+                    PinMode::PushPull => "pushpull",
+                }
+            ),
+            |_| {},
+        )
+    }
+
+    fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
+        self.inner.execute_command(
+            &format!(
+                "gpiopullmode {} {}",
+                &self.pinname,
+                match mode {
+                    PullMode::None => "none",
+                    PullMode::PullUp => "up",
+                    PullMode::PullDown => "down",
+                }
+            ),
+            |_| {},
+        )
     }
 }

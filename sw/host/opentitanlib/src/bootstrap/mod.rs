@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use serde::Deserialize;
 use std::time::Duration;
 use structopt::clap::arg_enum;
 use thiserror::Error;
@@ -27,7 +28,7 @@ arg_enum! {
     /// The 'Emulator' value indicates that this tool has a direct way
     /// of communicating with the OpenTitan emulator, to replace the
     /// contents of the emulated flash storage.
-    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+    #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
     pub enum BootstrapProtocol {
         Primitive,
         Legacy,
