@@ -92,9 +92,13 @@ enum module_ {
   X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
   X(kErrorOtpBadAlignment,            ERROR_(1, kModuleOtp, kInvalidArgument)), \
   X(kErrorOtbnInternal,               ERROR_(4, kModuleOtbn, kInternal)), \
-  X(kErrorFlashCtrlInvalidArgument,   ERROR_(1, kModuleFlashCtrl, kInvalidArgument)), \
-  X(kErrorFlashCtrlBusy,              ERROR_(2, kModuleFlashCtrl, kUnavailable)), \
-  X(kErrorFlashCtrlInternal,          ERROR_(3, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlDataRead,          ERROR_(1, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlInfoRead,          ERROR_(2, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlDataWrite,         ERROR_(3, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlInfoWrite,         ERROR_(4, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlDataErase,         ERROR_(5, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlInfoErase,         ERROR_(6, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlBusy,              ERROR_(7, kModuleFlashCtrl, kUnavailable)), \
   X(kErrorSecMmioRegFileSize,         ERROR_(0, kModuleSecMmio, kResourceExhausted)), \
   X(kErrorSecMmioReadFault,           ERROR_(1, kModuleSecMmio, kInternal)), \
   X(kErrorSecMmioWriteFault,          ERROR_(2, kModuleSecMmio, kInternal)), \

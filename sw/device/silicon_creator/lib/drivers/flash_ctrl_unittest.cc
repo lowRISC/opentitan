@@ -202,7 +202,7 @@ TEST_F(TransferTest, TransferInternalError) {
   ExpectWaitForDone(true, true);
   std::vector<uint32_t> words_out(words_.size());
   EXPECT_EQ(flash_ctrl_data_read(0x01234567, words_.size(), &words_out.front()),
-            kErrorFlashCtrlInternal);
+            kErrorFlashCtrlDataRead);
 }
 
 class ExecTest : public FlashCtrlTest {};
