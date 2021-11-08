@@ -1,0 +1,159 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "sysrst_ctrl"
+  // TODO: remove the common testplans if not applicable
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+  testpoints: [
+    {
+      name: smoke
+      desc: '''
+            Verify end to end data transfer in normal operation mode.
+            * Write a random data to the input keys.
+            * Read the data at the output pins and compare it with the input data.
+            '''
+      milestone: V1
+      tests: ["sysrst_ctrl_smoke"]
+    }
+    {
+      name: input_inverted
+      desc: '''
+            Verify end to end data transfer with inverted input.
+            * Write a random data to the input keys.
+            * Configure KEY_INVERT_CTL register to invert the input.
+            * Read the data at the output pins and compare it with the input data.
+            '''
+      milestone: V1
+      tests: ["sysrst_ctrl_in_inv"]
+    }
+    {
+      name: output_inverted
+      desc: '''
+            Verify end to end data transfer with inverted output.
+            * Write a random data to the input keys.
+            * Configure KEY_INVERT_CTL register to invert the output.
+            * Read the data at the output pins and compare it with the input data.
+            '''
+      milestone: V1
+      tests: ["sysrst_ctrl_out_inv"]
+    }
+    {
+      name: combo_detection
+      desc: '''
+            Verify the combo detection with different actions.                                        
+            * Trigger the input keys by configuring COM_SEL_CTL_0 register.                                            
+            * Set the combo duration via the COM_DET_CTL_0 register.                                                   
+            * Select the action to be taken by configuring COM_OUT_CTL_0 register.                                     
+            * Set the pulse width via EC_RST_CTL register only to raise ec_rst action.                                 
+            * Read the COMBO_INTR_STATUS register to check if the interrupt is raised and clear the interrupt. 
+            '''
+      milestone: V2
+      tests: ["sysrst_ctrl_combo_det_ec_rst",
+              "sysrst_ctrl_combo_det_bat_disable", 
+              "sysrst_ctrl_combo_det_interrupt",
+              "sysrst_ctrl_combo_det_rst_req"]
+    }
+    {
+      name: auto_block_key_outputs
+      desc: '''
+            Verify the auto block key output feature
+            * Trigger the input keys combo.
+            * Set the debounce timer value in AUTO_BLOCK_DEBOUNCE_CTL register.                                                                                                     
+            * Select the output override value by configuring AUTO_BLOCK_OUT_CTL register.                                                                                                                               
+            * Check whether the input keys stays low for the selected debounce time.                                                                       
+            * Read the AUTO_BLOCK_OUT_CTL register to check if the output key is overridden.
+            '''
+      milestone: V2
+      tests: ["sysrst_ctrl_auto_blk_key_output"]
+    }
+    {
+      name: keyboard_input_triggered_interrupt
+      desc: '''
+            Verify the keyboard and input triggered interrupt feature by detecting the edge transitions on input pins.
+            * Set the input signals and edge transition by configuring KEY_INTR_CTL register.                                                                                             
+            * Set the debounce timer value via KEY_INTR_DEBOUNCE_CTL register.                                                                                                        
+            * Read the KEY_INTR_STATUS register to check if the interrupt caused and clear the interrupt.
+            '''
+      milestone: V2
+      tests: ["sysrst_ctrl_edge_detect"]
+    }
+    {
+      name: pin_output_keyboard_inversion_control
+      desc: '''
+            Verify the keyboard inversion feature by override logic.
+            * Select the output signals to override via PIN_OUT_CTL register. 
+            * Allow the output signals to override the value via PIN_ALLOWED_CTL register.                                                                                                                                                               * Set the override value to the output signal via PIN_OUT_VALUE register.
+            '''
+      milestone: V2
+      tests: ["sysrst_ctrl_override_test"]
+    }
+    {
+      name: pin_input_value_accessibility
+      desc: '''
+            Verify the pin input value accessibilty.
+            * Trigger the key[0,1,2], ac_present_in, pwrb_in, ec_rst_in_l input pins with random values. 
+            * Read the PIN_IN_VALUE register and check if the read value is same as input value.                                                                                                                                             
+            '''
+      milestone: V2
+      tests: ["sysrst_ctrl_pin_access_test"]
+    }
+    {
+      name: ec_power_on_reset
+      desc: '''
+            
+            '''
+      milestone: V2
+      tests: ["sysrst_ctrl_ec_pwr_on_rst"]
+    }
+    {
+      name: flash_write_protect_output
+      desc: '''
+            
+            '''
+      milestone: V2
+      tests: ["sysrst_ctrl_flash_wr_prot_out"]
+    }
+    {
+      name: ultra_low_power_test
+      desc: '''
+            Verify the ultra low power feature. 
+            * Trigger the ac_present_i, lid_open_in, ec_rst_l_i input keys                                                                                                                                                                               * Configure ULP_AC_DEBOUNCE_CTL, ULP_LID_DEBOUNCE_CTL and ULP_PWRB_DEBOUNCE_CTL register to set the debounce timer value                                                                                  
+            * Read the WKUP_STATUS register to check if the event has occured                                                                                      
+            * Read the ULP_STATUS register and check if the ultra low power wakeup event is detected.
+            '''
+      milestone: V2
+      tests: ["sysrst_ctrl_override_test"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: sysrst_ctrl_ec_rst_pulse_width_cg
+      desc: '''
+        Cover the ec_rst_out_l pulse width range from 10-200ms.
+      '''
+    }
+    {
+      name: sysrst_ctrl_key_intr_cg
+      desc: '''
+        Cover the FSM for input key pressed and released. 
+      '''
+    }
+    {
+      name: sysrst_ctrl_timerfsm_cg
+      desc: '''
+        Cover the timer based FSM model for different debounce time. 
+      '''
+    }
+    {
+      name: sysrst_ctrl_ulpfsm_cg
+      desc: '''
+        Cover the ultra low power fsm model.
+      '''
+    }
+  ]
+}
