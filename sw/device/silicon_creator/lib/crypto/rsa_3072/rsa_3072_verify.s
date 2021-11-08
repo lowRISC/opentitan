@@ -13,29 +13,37 @@ run_rsa_3072:
   lw    x2, 0(x2)
 
   li    x3, 1
-  beq   x2, x3, precomp
-
-  li    x3, 2
   beq   x2, x3, verify
 
-  /* Mode is neither 1 (= precomp) nor 2 (= verify). Fail. */
+  li    x3, 2
+  beq   x2, x3, compute_rr
+
+  li    x3, 3
+  beq   x2, x3, compute_m0_inv
+
+  /* Mode is neither 1 (= verify) nor 2 (= compute_rr) nor 3 (= compute_m0_inv). Fail. */
   unimp
 
 .text
 
 /**
- * Precomputation of Montgomery constants R^2 and m0_inv.
+ * Precomputation of Montgomery constant R^2.
  *
- * Expects the modulus (in_mod) to be pre-populated. Results will be stored in
- * in_rr and in_m0_inv.
+ * Expects the modulus (in_mod) to be pre-populated. Result will be stored in
+ * in_rr.
  */
-precomp:
-  /* compute Montgomery constant R^2 */
+compute_rr:
   jal      x1, precomp_rr
+  ecall
 
-  /* compute Montgomery constant m0_inv */
+/**
+ * Precomputation of Montgomery constant m0_inv (= -M^-1 mod 2^256).
+ *
+ * Expects the modulus (in_mod) to be pre-populated. Result will be stored in
+ * in_m0_inv.
+ */
+compute_m0_inv:
   jal      x1, precomp_m0_inv
-
   ecall
 
 /**
@@ -45,7 +53,7 @@ precomp:
  * (in_mod) to be pre-populated. Recovered message will be stored in out_buf.
  */
 verify:
-  /* run modular exponentiation */
+  /* Run modular exponentiation. */
   jal      x1, modexp_var_3072_f4
 
   ecall
