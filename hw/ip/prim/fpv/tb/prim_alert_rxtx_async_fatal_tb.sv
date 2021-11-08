@@ -9,28 +9,28 @@ module prim_alert_rxtx_async_fatal_tb
   import prim_alert_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 (
-  input        clk_i,
-  input        rst_ni,
+  input          clk_i,
+  input          rst_ni,
   // for sigint error and skew injection only
-  input        ping_err_pi,
-  input        ping_err_ni,
-  input [1:0]  ping_skew_i,
-  input        ack_err_pi,
-  input        ack_err_ni,
-  input [1:0]  ack_skew_i,
-  input        alert_err_pi,
-  input        alert_err_ni,
-  input [1:0]  alert_skew_i,
+  input          ping_err_pi,
+  input          ping_err_ni,
+  input [1:0]    ping_skew_i,
+  input          ack_err_pi,
+  input          ack_err_ni,
+  input [1:0]    ack_skew_i,
+  input          alert_err_pi,
+  input          alert_err_ni,
+  input [1:0]    alert_skew_i,
   // normal I/Os
-  input        alert_test_i,
-  input        alert_req_i,
-  input  mubi_t init_trig_i,
-  input        ping_req_i,
-  output logic alert_ack_o,
-  output logic alert_state_o,
-  output logic ping_ok_o,
-  output logic integ_fail_o,
-  output logic alert_o
+  input          alert_test_i,
+  input          alert_req_i,
+  input  mubi4_t init_trig_i,
+  input          ping_req_i,
+  output logic   alert_ack_o,
+  output logic   alert_state_o,
+  output logic   ping_ok_o,
+  output logic   integ_fail_o,
+  output logic   alert_o
 );
 
   // asynchronous case
