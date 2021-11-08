@@ -1,14 +1,19 @@
 {
-  "strappings": [
+  "pins": [
     {
-      "name": "None",
-      "pins": [
-        {
-          "name": "BOOTSTRAP",
-          "level": false
-        }
-      ]
+      "name": "RESET",
+      "mode": "OpenDrain",
+      "level": true,
+      "pull_mode": "PullUp"
     },
+    {
+      "name": "BOOTSTRAP",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None"
+    }
+  ],
+  "strappings": [
     {
       "name": "RomBootstrap",
       "pins": [
