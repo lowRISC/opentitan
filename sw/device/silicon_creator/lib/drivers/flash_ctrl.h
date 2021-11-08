@@ -202,85 +202,104 @@ typedef struct flash_ctrl_status {
 void flash_ctrl_status_get(flash_ctrl_status_t *status);
 
 /**
- * Perform a read transaction.
+ * Reads data from the data partition.
  *
  * The flash controller will truncate to the closest, lower word aligned
  * address. For example, if 0x13 is supplied, the controller will perform a read
  * at address 0x10.
  *
- * On success, `data` is populated with the read data.
- *
- * For operations that fail with `kErrorFlashCtrlInternal`, `err` is set to the
- * internal error mask for flash_ctrl, which can be checked against the
- * `kFlashCtrlErr*` bits. The internal error state is cleared after each call.
- *
- * @param addr The address to read from.
- * @param word_count The number of bus words the flash operation should read.
- * @param region The region to read from.
- * @param[out] data The buffer to store the read data.
- * @param[out] err The internal error state of flash_ctrl.
- * @return `kErrorFlashCtrlBusy` if the flash controller is already processing a
- * transaction, `kErrorFlashCtrlInternal` if the operations fails, `kErrorOk`
- * otherwise.
+ * @param addr Address to read from.
+ * @param word_count Number of bus words to read.
+ * @param[out] data Buffer to store the read data.
+ * @return Result of the operation.
  */
-rom_error_t flash_ctrl_read(uint32_t addr, uint32_t word_count,
-                            flash_ctrl_partition_t partition, uint32_t *data);
+rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
+                                 uint32_t *data);
 
 /**
- * Perform a program transaction.
+ * Reads data from an information page.
+ *
+ * The flash controller will truncate to the closest, lower word aligned
+ * address. For example, if 0x13 is supplied, the controller will start reading
+ * at address 0x10.
+ *
+ * @param info_page Information page to read from.
+ * @param offset Offset from the start of the page.
+ * @param word_count Number of bus words to read.
+ * @param[out] data Buffer to store the read data.
+ * @return Result of the operation.
+ */
+rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
+                                 uint32_t offset, uint32_t word_count,
+                                 uint32_t *data);
+
+/**
+ * Writes data to the data partition.
  *
  * The flash controller will truncate to the closest, lower word aligned
  * address. For example, if 0x13 is supplied, the controller will start writing
  * at address 0x10.
  *
- * For operations that fail with `kErrorFlashCtrlInternal`, `err` is set to the
- * internal error mask for flash_ctrl, which can be checked against the
- * `kFlashCtrlErr*` bits. The internal error state is cleared after each call.
- *
- * @param addr The address to write to.
- * @param word_count The number of bus words the flash operation should program.
- * @param region The region to program.
- * @param data The buffer containing the data to program to flash.
- * @param[out] err The internal error state of flash_ctrl.
- * @return `kErrorFlashCtrlBusy` if the flash controller is already processing a
- * transaction, `kErrorFlashCtrlInternal` if the operations fails, `kErrorOk`
- * otherwise.
+ * @param addr Address to write to.
+ * @param word_count Number of bus words to write.
+ * @param data Data to write.
+ * @return Result of the operation.
  */
-rom_error_t flash_ctrl_prog(uint32_t addr, uint32_t word_count,
-                            flash_ctrl_partition_t partition,
-                            const uint32_t *data);
+rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
+                                  const uint32_t *data);
+
+/**
+ * Writes data to an information page.
+ *
+ * The flash controller will truncate to the closest, lower word aligned
+ * address. For example, if 0x13 is supplied, the controller will start writing
+ * at address 0x10.
+ *
+ * @param info_page Information page to write to.
+ * @param offset Offset from the start of the page.
+ * @param word_count Number of bus words to write.
+ * @param data Data to write.
+ * @return Result of the operation.
+ */
+rom_error_t flash_ctrl_info_write(flash_ctrl_info_page_t info_page,
+                                  uint32_t offset, uint32_t word_count,
+                                  const uint32_t *data);
 
 typedef enum flash_ctrl_erase_type {
   /**
    * Erase a page.
    */
-  kFlashCtrlEraseTypePage = 0x0000,
+  kFlashCtrlEraseTypePage = 0,
   /**
    * Erase a bank.
    */
-  kFlashCtrlEraseTypeBank = 0x0080,
+  kFlashCtrlEraseTypeBank = 1,
 } flash_ctrl_erase_type_t;
 
 /**
- * Invoke a blocking erase transaction.
+ * Erases a data partition page or bank.
  *
  * The flash controller will truncate to the closest page boundary for page
  * erase operations, and to the nearest bank aligned boundary for bank erase
  * operations.
  *
- * For operations that fail with `kErrorFlashCtrlInternal`, `err` is set to the
- * internal error mask for flash_ctrl, which can be checked against the
- * `kFlashCtrlErr*` bits. The internal error state is cleared after each call.
- *
- * @param addr The address that falls within the bank or page being deleted.
- * @param region The region that contains the bank or page being deleted.
- * @param[out] err The internal error state of flash_ctrl.
- * @return `kErrorFlashCtrlBusy` if the flash controller is already processing a
- * transaction, `kErrorFlashCtrlInternal` if the operations fails, `kErrorOk`
- * otherwise.
+ * @param addr Address that falls within the bank or page being deleted.
+ * @param erase_type Whether to erase a page or a bank.
+ * @return Result of the operation.
  */
-rom_error_t flash_ctrl_erase(uint32_t addr, flash_ctrl_partition_t partition,
-                             flash_ctrl_erase_type_t erase_type);
+rom_error_t flash_ctrl_data_erase(uint32_t addr,
+                                  flash_ctrl_erase_type_t erase_type);
+
+/**
+ * Erases an information partition page or bank.
+ *
+ * @param info_page Information page to erase for page erases, or a page within
+ * the bank to erase for bank erases.
+ * @param erase_type Whether to erase a page or a bank.
+ * @return Result of the operation.
+ */
+rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
+                                  flash_ctrl_erase_type_t erase_type);
 
 typedef enum flash_ctrl_exec {
   kFlashCtrlExecDisable = kMultiBitBool4False,
