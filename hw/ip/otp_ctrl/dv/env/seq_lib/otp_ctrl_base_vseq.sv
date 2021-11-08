@@ -49,15 +49,20 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     // OTP has dut and edn reset. If assign OTP values after `super.dut_init()`, and if dut reset
     // deasserts earlier than edn reset, some OTP outputs might remain X or Z when dut clock is
     // running.
+    bit callback_done;
     otp_ctrl_vif_init();
     super.dut_init(reset_kind);
-    callback_vseq.dut_init_callback();
+    callback_vseq.dut_init_callback(callback_done);
 
     cfg.backdoor_clear_mem = 0;
     // reset power init pin and lc pins
     if (do_otp_ctrl_init && do_apply_reset) otp_ctrl_init();
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
     if (do_otp_pwr_init && do_apply_reset) otp_pwr_init();
+
+    // The callback sequence can be non-blocking, so wait for `dut_init_callback` task to return 1
+    // then exit the `dut_init` task.
+    wait (callback_done == 1);
   endtask
 
   // Cfg errors are cleared after reset

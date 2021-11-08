@@ -12,8 +12,9 @@ class otp_ctrl_callback_vseq extends cip_base_vseq #(
   `uvm_object_utils(otp_ctrl_callback_vseq)
   `uvm_object_new
 
-  virtual task dut_init_callback();
+  virtual task dut_init_callback(ref bit callback_done);
     // Do nothing but can be overridden in closed source environment.
+    callback_done = 1;
   endtask
 
 endclass : otp_ctrl_callback_vseq
