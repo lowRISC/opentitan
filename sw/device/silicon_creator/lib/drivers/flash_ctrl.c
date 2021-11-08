@@ -149,6 +149,22 @@ static rom_error_t wait_for_done(void) {
   return kErrorOk;
 }
 
+/**
+ * Returns the base address of an information page.
+ *
+ * @param info_page An information page.
+ * @return Base address of the given page.
+ */
+static uint32_t info_page_addr(flash_ctrl_info_page_t info_page) {
+  const uint32_t bank_index =
+      bitfield_bit32_read(info_page, FLASH_CTRL_INFO_PAGE_BIT_BANK);
+  const uint32_t page_index =
+      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_INDEX);
+  return TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+         bank_index * FLASH_CTRL_PARAM_BYTES_PER_BANK +
+         page_index * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+}
+
 void flash_ctrl_init(void) {
   // Initialize the flash controller.
   abs_mmio_write32(kBase + FLASH_CTRL_INIT_REG_OFFSET,
