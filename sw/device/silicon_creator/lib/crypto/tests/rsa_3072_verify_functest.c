@@ -102,11 +102,11 @@ static const rsa_3072_int_t kMessage = {
              0x55555555, 0x55555555, 0x55555555, 0x55555555, 0x55555555,
              0x55555555}};
 
-rom_error_t precomp_test(void) {
+rom_error_t compute_constants_test(void) {
   rsa_3072_constants_t act_constants;
 
   // Precompute constants
-  RETURN_IF_ERROR(rsa_3072_precomp(&kPublicKey, &act_constants));
+  RETURN_IF_ERROR(rsa_3072_compute_constants(&kPublicKey, &act_constants));
 
   // Check that RR matches expected value
   for (int i = 0; i < kRsa3072NumWords; i++) {
@@ -143,7 +143,7 @@ bool test_main(void) {
 
   entropy_testutils_boot_mode_init();
 
-  EXECUTE_TEST(result, precomp_test);
+  EXECUTE_TEST(result, compute_constants_test);
 
   EXECUTE_TEST(result, verify_test);
 
