@@ -29,12 +29,6 @@ enum {
   kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
 };
 
-static bool is_busy(void) {
-  uint32_t bitfield =
-      abs_mmio_read32(kBase + FLASH_CTRL_CTRL_REGWEN_REG_OFFSET);
-  return !bitfield_bit32_read(bitfield, FLASH_CTRL_CTRL_REGWEN_EN_BIT);
-}
-
 /**
  * Flash transaction parameters.
  */
@@ -79,11 +73,7 @@ typedef struct transaction_params {
  * @param params Transaction parameters, see `transaction_params_t`.
  * @return The result of the operation.
  */
-static rom_error_t transaction_start(transaction_params_t params) {
-  if (is_busy()) {
-    return kErrorFlashCtrlBusy;
-  }
-
+static void transaction_start(transaction_params_t params) {
   // Set the address.
   abs_mmio_write32(kBase + FLASH_CTRL_ADDR_REG_OFFSET, params.addr);
   // Configure flash_ctrl and start the transaction.
@@ -104,7 +94,6 @@ static rom_error_t transaction_start(transaction_params_t params) {
   reg = bitfield_field32_write(reg, FLASH_CTRL_CONTROL_NUM_FIELD,
                                params.word_count - 1);
   abs_mmio_write32(kBase + FLASH_CTRL_CONTROL_REG_OFFSET, reg);
-  return kErrorOk;
 }
 
 /**
@@ -180,14 +169,14 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
     window_word_count =
         word_count < window_word_count ? word_count : window_word_count;
 
-    RETURN_IF_ERROR(transaction_start((transaction_params_t){
+    transaction_start((transaction_params_t){
         .addr = addr,
         .op_type = FLASH_CTRL_CONTROL_OP_VALUE_PROG,
         .partition = partition,
         .word_count = window_word_count,
         // Does not apply to program transactions.
         .erase_type = kFlashCtrlEraseTypePage,
-    }));
+    });
 
     fifo_write(window_word_count, data);
     RETURN_IF_ERROR(wait_for_done(error));
@@ -242,14 +231,14 @@ void flash_ctrl_status_get(flash_ctrl_status_t *status) {
 
 rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
                                  uint32_t *data) {
-  RETURN_IF_ERROR(transaction_start((transaction_params_t){
+  transaction_start((transaction_params_t){
       .addr = addr,
       .op_type = FLASH_CTRL_CONTROL_OP_VALUE_READ,
       .partition = kFlashCtrlPartitionData,
       .word_count = word_count,
       // Does not apply to read transactions.
       .erase_type = kFlashCtrlEraseTypePage,
-  }));
+  });
   fifo_read(word_count, data);
   return wait_for_done(kErrorFlashCtrlDataRead);
 }
@@ -260,14 +249,14 @@ rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
   const uint32_t addr = info_page_addr(info_page) + offset;
   const flash_ctrl_partition_t partition =
       bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PARTITION);
-  RETURN_IF_ERROR(transaction_start((transaction_params_t){
+  transaction_start((transaction_params_t){
       .addr = addr,
       .op_type = FLASH_CTRL_CONTROL_OP_VALUE_READ,
       .partition = partition,
       .word_count = word_count,
       // Does not apply to read transactions.
       .erase_type = kFlashCtrlEraseTypePage,
-  }));
+  });
   fifo_read(word_count, data);
   return wait_for_done(kErrorFlashCtrlInfoRead);
 }
@@ -289,14 +278,14 @@ rom_error_t flash_ctrl_info_write(flash_ctrl_info_page_t info_page,
 
 rom_error_t flash_ctrl_data_erase(uint32_t addr,
                                   flash_ctrl_erase_type_t erase_type) {
-  RETURN_IF_ERROR(transaction_start((transaction_params_t){
+  transaction_start((transaction_params_t){
       .addr = addr,
       .op_type = FLASH_CTRL_CONTROL_OP_VALUE_ERASE,
       .erase_type = erase_type,
       .partition = kFlashCtrlPartitionData,
       // Does not apply to erase transactions.
       .word_count = 1,
-  }));
+  });
   return wait_for_done(kErrorFlashCtrlDataErase);
 }
 
@@ -305,14 +294,14 @@ rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
   const uint32_t addr = info_page_addr(info_page);
   const flash_ctrl_partition_t partition =
       bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PARTITION);
-  RETURN_IF_ERROR(transaction_start((transaction_params_t){
+  transaction_start((transaction_params_t){
       .addr = addr,
       .op_type = FLASH_CTRL_CONTROL_OP_VALUE_ERASE,
       .erase_type = erase_type,
       .partition = partition,
       // Does not apply to erase transactions.
       .word_count = 1,
-  }));
+  });
   return wait_for_done(kErrorFlashCtrlInfoErase);
 }
 

@@ -69,11 +69,6 @@ class TransferTest : public FlashCtrlTest {
  protected:
   const std::vector<uint32_t> words_ = {0x12345678, 0x90ABCDEF, 0x0F1E2D3C,
                                         0x4B5A6978};
-  void ExpectCheckBusy(bool busy) {
-    EXPECT_ABS_READ32(base_ + FLASH_CTRL_CTRL_REGWEN_REG_OFFSET,
-                      {{FLASH_CTRL_CTRL_REGWEN_EN_BIT, !busy}});
-  }
-
   void ExpectWaitForDone(bool done, bool error) {
     EXPECT_ABS_READ32(base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET,
                       {{FLASH_CTRL_OP_STATUS_DONE_BIT, done},
@@ -86,7 +81,6 @@ class TransferTest : public FlashCtrlTest {
   void ExpectTransferStart(uint8_t part_sel, uint8_t info_sel,
                            uint8_t erase_sel, uint32_t op, uint32_t addr,
                            uint32_t word_count) {
-    ExpectCheckBusy(false);
     EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_ADDR_REG_OFFSET, addr);
     EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_CONTROL_REG_OFFSET,
                        {
@@ -111,22 +105,6 @@ class TransferTest : public FlashCtrlTest {
     }
   }
 };
-
-TEST_F(TransferTest, ReadBusy) {
-  ExpectCheckBusy(true);
-  EXPECT_EQ(flash_ctrl_data_read(0, 0, NULL), kErrorFlashCtrlBusy);
-}
-
-TEST_F(TransferTest, ProgBusy) {
-  ExpectCheckBusy(true);
-  EXPECT_EQ(flash_ctrl_data_write(0, 4, NULL), kErrorFlashCtrlBusy);
-}
-
-TEST_F(TransferTest, EraseBusy) {
-  ExpectCheckBusy(true);
-  EXPECT_EQ(flash_ctrl_data_erase(0, kFlashCtrlEraseTypePage),
-            kErrorFlashCtrlBusy);
-}
 
 TEST_F(TransferTest, ReadDataOk) {
   ExpectTransferStart(0, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_READ, 0x01234567,
