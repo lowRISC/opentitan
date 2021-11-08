@@ -138,9 +138,10 @@ static void fifo_write(size_t word_count, const uint32_t *data) {
 /**
  * Blocks until the current flash transaction is complete.
  *
+ * @param error Error code to return in case of a flash controller error.
  * @return The result of the operation.
  */
-static rom_error_t wait_for_done(void) {
+static rom_error_t wait_for_done(rom_error_t error) {
   uint32_t op_status;
   do {
     op_status = abs_mmio_read32(kBase + FLASH_CTRL_OP_STATUS_REG_OFFSET);
@@ -148,7 +149,7 @@ static rom_error_t wait_for_done(void) {
   abs_mmio_write32(kBase + FLASH_CTRL_OP_STATUS_REG_OFFSET, 0u);
 
   if (bitfield_bit32_read(op_status, FLASH_CTRL_OP_STATUS_ERR_BIT)) {
-    return kErrorFlashCtrlInternal;
+    return error;
   }
   return kErrorOk;
 }
@@ -159,10 +160,13 @@ static rom_error_t wait_for_done(void) {
  * @param addr Full byte address to write to.
  * @param partition The partition to write to.
  * @param word_count Number of bus words to write.
+ * @param data Data to write.
+ * @param error Error code to return in case of a flash controller error.
  * @return Result of the operation.
  */
 static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
-                         uint32_t word_count, const uint32_t *data) {
+                         uint32_t word_count, const uint32_t *data,
+                         rom_error_t error) {
   enum {
     kWindowWordCount =
         FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES / sizeof(uint32_t),
@@ -186,7 +190,7 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
     }));
 
     fifo_write(window_word_count, data);
-    RETURN_IF_ERROR(wait_for_done());
+    RETURN_IF_ERROR(wait_for_done(error));
 
     addr += window_word_count * sizeof(uint32_t);
     data += window_word_count;
@@ -247,7 +251,7 @@ rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
       .erase_type = kFlashCtrlEraseTypePage,
   }));
   fifo_read(word_count, data);
-  return wait_for_done();
+  return wait_for_done(kErrorFlashCtrlDataRead);
 }
 
 rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
@@ -265,12 +269,13 @@ rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
       .erase_type = kFlashCtrlEraseTypePage,
   }));
   fifo_read(word_count, data);
-  return wait_for_done();
+  return wait_for_done(kErrorFlashCtrlInfoRead);
 }
 
 rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
                                   const uint32_t *data) {
-  return write(addr, kFlashCtrlPartitionData, word_count, data);
+  return write(addr, kFlashCtrlPartitionData, word_count, data,
+               kErrorFlashCtrlDataWrite);
 }
 
 rom_error_t flash_ctrl_info_write(flash_ctrl_info_page_t info_page,
@@ -279,7 +284,7 @@ rom_error_t flash_ctrl_info_write(flash_ctrl_info_page_t info_page,
   const uint32_t addr = info_page_addr(info_page) + offset;
   const flash_ctrl_partition_t partition =
       bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PARTITION);
-  return write(addr, partition, word_count, data);
+  return write(addr, partition, word_count, data, kErrorFlashCtrlInfoWrite);
 }
 
 rom_error_t flash_ctrl_data_erase(uint32_t addr,
@@ -292,8 +297,7 @@ rom_error_t flash_ctrl_data_erase(uint32_t addr,
       // Does not apply to erase transactions.
       .word_count = 1,
   }));
-
-  return wait_for_done();
+  return wait_for_done(kErrorFlashCtrlDataErase);
 }
 
 rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
@@ -309,8 +313,7 @@ rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
       // Does not apply to erase transactions.
       .word_count = 1,
   }));
-
-  return wait_for_done();
+  return wait_for_done(kErrorFlashCtrlInfoErase);
 }
 
 void flash_ctrl_exec_set(flash_ctrl_exec_t enable) {
