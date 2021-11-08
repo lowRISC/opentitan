@@ -15,8 +15,6 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
   task body();
     bit [TL_DW-1:0] rand_addr = $urandom_range(CreatorSwCfgOffset,
                                                CreatorSwCfgOffset + CreatorSwCfgSize);
-    dut_init();
-
     // check status
     cfg.clk_rst_vif.wait_clks(1);
 
