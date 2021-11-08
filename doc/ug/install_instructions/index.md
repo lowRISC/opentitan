@@ -310,7 +310,8 @@ Most lowRISC designs support at least one FPGA board which works with a free Web
 ### Install Xilinx Vivado
 
 _**Vivado Version:** The recommendation is to use Vivado {{< tool_version "vivado" >}}.
-The following instructions have been tested with Vivado 2020.1.
+The following instructions have been tested with Vivado 2020.2.
+Some screenshots are generated from Vivado 2020.1, but the installation process has not changed.
 Vivado 2019.1 and all its minor updates are not compatible with this project._
 
 Vivado can be installed in two ways: either through an "All OS installer Single-File Download", or via the "Linux Self Extracting Web Installer".
@@ -321,9 +322,8 @@ But unfortunately it doesn't support the batch mode for unattended installations
 
 To get started faster we use the web installer in the following.
 
-1. Go to the [Xilinx download page](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/2020-1.html) and download two files for Vivado 2020.1.
-   (The version can be chosen on the left side if version 2020.1 is not already selected.)
-   1. The file "Xilinx Unified Installer 2020.1: Linux Self Extracting Web Installer".
+1. Go to the [Xilinx download page](https://www.xilinx.com/support/download.html). Select Vivado {{< tool_version "vivado" >}} from the left-hand side and download two files:
+   1. The file "Xilinx Unified Installer {{< tool_version "vivado" >}}: Linux Self Extracting Web Installer".
    2. The "Digests" file below the download.
 
    ![Vivado download site](img/install_vivado/vivado_download.png)
@@ -334,16 +334,16 @@ To get started faster we use the web installer in the following.
 2. Before you proceed ensure that the download didn't get corrupted by verifying the checksum.
 
     ```console
-    $ sha512sum --check Xilinx_Unified_2020.1_0602_1208_Lin64.bin.digests
-   Xilinx_Unified_2020.1_0602_1208_Lin64.bin: OK
+    $ sha512sum --check Xilinx_Unified_2020.2_1118_1232_Lin64.bin.digests
+    Xilinx_Unified_2020.2_1118_1232_Lin64.bin: OK
     sha512sum: WARNING: 22 lines are improperly formatted
     ```
 
     If you see an "OK" after the downloaded file proceed to the next step. Otherwise delete the download and start over. (You can ignore the warning produced by `sha512sum`.)
-3. Run the graphical installer.
+3. Run the graphical installer. It may warn you that a newer version is available; you can ignore the warning.
 
     ```console
-    $ sh Xilinx_Unified_2020.1_0602_1208_Lin64.bin
+    $ sh Xilinx_Unified_2020.2_1118_1232_Lin64.bin
     ```
 
 4. Now you need to click through the installer.
