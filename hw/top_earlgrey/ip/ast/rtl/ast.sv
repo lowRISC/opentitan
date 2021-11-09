@@ -277,7 +277,7 @@ assign ast_pwst_h_o.io_pok[1] = vcaon_pok && viob_pok;
 // Regulators & PDM Logic (VCC)
 ///////////////////////////////////////
 
-logic clk_aon;
+logic clk_aon, deep_sleep;
 
 rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .vcc_pok_h_i ( vcc_pok_h ),
@@ -290,6 +290,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .scan_mode_i ( scan_mode ),
   .vcaon_pok_h_o ( vcaon_pok_h_int ),
   .main_pwr_dly_o ( main_pwr_dly_o ),
+  .deep_sleep_h_o ( deep_sleep ),
   .otp_power_seq_h_o ( otp_power_seq_h_o[1:0] ),
   .flash_power_down_h_o ( flash_power_down_h_o ),
   .flash_power_ready_h_o ( flash_power_ready_h_o )
@@ -348,7 +349,7 @@ logic clk_usb_ext;
 assign clk_usb_ext   = clk_osc_byp_i.usb;
 `endif
 assign rst_usb_clk_n = vcmain_pok_por;
-assign clk_usb_pd_n  = vcmain_pok;
+assign clk_usb_pd_n  = !deep_sleep;
 
 usb_clk u_usb_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -443,6 +444,39 @@ io_clk u_io_clk (
   .clk_src_io_o ( clk_osc_io ),
   .clk_src_io_val_o ( clk_osc_io_val )
 );  // of u_io_clk
+
+
+///////////////////////////////////////
+// AST Clocks Bypass
+///////////////////////////////////////
+ast_clks_byp u_ast_clks_byp (
+  .clk_i ( clk_ast_tlul_i ),
+  .rst_ni ( rst_ast_tlul_ni ),
+  .vcaon_pok_i ( vcaon_pok ),
+  .deep_sleep_i ( deep_sleep ),
+  .clk_osc_sys_i ( clk_osc_sys ),
+  .clk_osc_sys_val_i ( clk_osc_sys_val ),
+  .clk_osc_io_i ( clk_osc_io ),
+  .clk_osc_io_val_i ( clk_osc_io_val ),
+  .clk_osc_usb_i ( clk_osc_usb ),
+  .clk_osc_usb_val_i ( clk_osc_usb_val ),
+  .clk_osc_aon_i ( clk_osc_aon ),
+  .clk_osc_aon_val_i ( clk_osc_aon_val ),
+  .clk_ast_ext_i ( clk_ast_ext_i ),
+  .io_clk_byp_req_i ( io_clk_byp_req_i ),
+  .all_clk_byp_req_i ( all_clk_byp_req_i ),
+  .ext_freq_is_96m_i ( ext_freq_is_96m_i ),
+  .io_clk_byp_ack_o ( io_clk_byp_ack_o ),
+  .all_clk_byp_ack_o ( all_clk_byp_ack_o ),
+  .clk_src_sys_o ( clk_src_sys_o ),
+  .clk_src_sys_val_o ( clk_src_sys_val_o ),
+  .clk_src_io_o ( clk_src_io_o ),
+  .clk_src_io_val_o ( clk_src_io_val_o ),
+  .clk_src_usb_o ( clk_src_usb_o ),
+  .clk_src_usb_val_o ( clk_src_usb_val_o ),
+  .clk_src_aon_o ( clk_src_aon_o ),
+  .clk_src_aon_val_o ( clk_src_aon_val_o )
+);
 
 
 ///////////////////////////////////////
@@ -744,39 +778,14 @@ assign usb_io_pu_cal_o = (1 << (UsbCalibWidth[5-1:0]/2));
 ///////////////////////////////////////
 // DFT (Main | Always ON)
 ///////////////////////////////////////
-
 ast_dft u_ast_dft (
-  .clk_i ( clk_ast_tlul_i ),
-  .rst_ni ( rst_ast_tlul_ni ),
-  .vcaon_pok_i ( vcaon_pok ),
-  .clk_osc_sys_i ( clk_osc_sys ),
-  .clk_osc_sys_val_i ( clk_osc_sys_val ),
-  .clk_osc_io_i ( clk_osc_io ),
-  .clk_osc_io_val_i ( clk_osc_io_val ),
-  .clk_osc_usb_i ( clk_osc_usb ),
-  .clk_osc_usb_val_i ( clk_osc_usb_val ),
-  .clk_osc_aon_i ( clk_osc_aon ),
-  .clk_osc_aon_val_i ( clk_osc_aon_val ),
-  .all_clk_byp_req_i ( all_clk_byp_req_i ),
-  .io_clk_byp_req_i ( io_clk_byp_req_i ),
-  .ext_freq_is_96m_i ( ext_freq_is_96m_i ),
-  .clk_ast_ext_i ( clk_ast_ext_i ),
-  .clk_src_sys_o ( clk_src_sys_o ),
-  .clk_src_sys_val_o ( clk_src_sys_val_o ),
-  .clk_src_io_o ( clk_src_io_o ),
-  .clk_src_io_val_o ( clk_src_io_val_o ),
-  .clk_src_usb_o ( clk_src_usb_o ),
-  .clk_src_usb_val_o ( clk_src_usb_val_o ),
-  .clk_src_aon_o ( clk_src_aon_o ),
-  .clk_src_aon_val_o ( clk_src_aon_val_o ),
-  .io_clk_byp_ack_o ( io_clk_byp_ack_o ),
-  .all_clk_byp_ack_o ( all_clk_byp_ack_o ),
   .dpram_rmf_o ( dpram_rmf_o ),
   .dpram_rml_o ( dpram_rml_o ),
   .spram_rm_o ( spram_rm_o ),
   .sprgf_rm_o ( sprgf_rm_o ),
   .sprom_rm_o ( sprom_rm_o )
 );
+
 
 ////////////////////////////////////////
 // DFT Misc Logic
