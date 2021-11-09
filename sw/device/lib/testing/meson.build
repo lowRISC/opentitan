@@ -116,7 +116,6 @@ sw_lib_testing_sram_ctrl_testutils = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_sram_ctrl_testutils',
     sources: [
-      hw_ip_sram_ctrl_reg_h,
       'sram_ctrl_testutils.c'
     ],
     dependencies: [

@@ -10,43 +10,6 @@
 
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-/**
- * Parameters to be used in utility functions and SRAM tests.
- *
- * Note: utility and SRAM tests will use only a subset of the parameters
- *       that are relevant for the particular use-case.
- */
-typedef struct sram_ctrl_params {
-  /**
-   * SRAM Controller register base.
-   */
-  uintptr_t reg_base;
-  /**
-   * SRAM Controller RAM start address (including the first word).
-   */
-  uintptr_t ram_start;
-  /**
-   * SRAM Controller RAM end address (including the last word).
-   */
-  uintptr_t ram_end;
-} sram_ctrl_params_t;
-
-/**
- * SRAM Controller type.
- */
-typedef struct sram_ctrl {
-  /**
-   * SRAM Controller parameters.
-   */
-  const sram_ctrl_params_t *params;
-  /**
-   * SRAM Controller peripheral interface.
-   */
-  dif_sram_ctrl_t dif;
-} sram_ctrl_t;
-
 /**
  * A typed representation of the test data.
  */
@@ -57,36 +20,25 @@ typedef struct sram_ctrl_data {
 } sram_ctrl_data_t;
 
 /**
- * Initialize Main SRAM Controller.
+ * Writes `data` at the `address` in RAM.
  */
-sram_ctrl_t sram_ctrl_main_init(void);
+void sram_ctrl_testutils_write(uintptr_t address, const sram_ctrl_data_t *data);
 
 /**
- * Initialize Retention SRAM Controller.
- */
-sram_ctrl_t sram_ctrl_ret_init(void);
-
-/**
- * Writes data to the beginning and end of RAM.
- */
-void sram_ctrl_write_to_ram(const sram_ctrl_t *sram,
-                            const sram_ctrl_data_t *data_in);
-
-/**
- * Reads and compares data at the beginning and end of RAM.
+ * Reads data from `address` in SRAM and compares against `expected`.
  *
- * The read data is checked for equality against the `expected` data.
+ * The data is checked for equality.
  */
-bool sram_ctrl_read_from_ram_eq(const sram_ctrl_t *sram,
-                                const sram_ctrl_data_t *expected);
+bool sram_ctrl_testutils_read_check_eq(uintptr_t address,
+                                       const sram_ctrl_data_t *expected);
 
 /**
- * Reads and compares data at the beginning and end of RAM.
+ * Reads data from `address` in SRAM and compares against `expected`.
  *
- * The read data is checked for inequality against the `expected` data.
+ * The data is checked for inequality.
  */
-bool sram_ctrl_read_from_ram_neq(const sram_ctrl_t *sram,
-                                 const sram_ctrl_data_t *expected);
+bool sram_ctrl_testutils_read_check_neq(uintptr_t address,
+                                        const sram_ctrl_data_t *expected);
 
 /**
  * Triggers the SRAM scrambling operation.
@@ -96,6 +48,6 @@ bool sram_ctrl_read_from_ram_neq(const sram_ctrl_t *sram,
  * The SRAM documentation stated that the scrambling operation takes around
  * 800 cycles, so another 50 are added just to be on a safe side.
  */
-void sram_ctrl_scramble(const sram_ctrl_t *sram);
+void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SRAM_CTRL_TESTUTILS_H_

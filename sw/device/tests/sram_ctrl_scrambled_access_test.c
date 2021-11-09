@@ -2,14 +2,31 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
 const test_config_t kTestConfig;
 
+static dif_sram_ctrl_t sram_ctrl;
+
+/**
+ * Retention SRAM start address (inclusive).
+ */
+static const uintptr_t kRetSramStartAddr =
+    TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
+
+/**
+ * First test pattern to be written and read from SRAM.
+ */
 static const sram_ctrl_data_t kRamTestPattern1 = {
     .words =
         {
@@ -20,6 +37,9 @@ static const sram_ctrl_data_t kRamTestPattern1 = {
         },
 };
 
+/**
+ * Second test pattern to be written and read from SRAM.
+ */
 static const sram_ctrl_data_t kRamTestPattern2 = {
     .words =
         {
@@ -38,15 +58,15 @@ static const sram_ctrl_data_t kRamTestPattern2 = {
  * which prevents a false-negative in case of the value of the memory address
  * under test is already initialised to one of the patterns.
  */
-static void test_ram_write_read_pattern(const sram_ctrl_t *sram) {
-  // Write first pattern to the start and the end of RAM.
-  sram_ctrl_write_to_ram(sram, &kRamTestPattern1);
-  CHECK(sram_ctrl_read_from_ram_eq(sram, &kRamTestPattern1),
+static void test_ram_write_read_pattern(void) {
+  // Write first pattern to the start of SRAM, and read it out.
+  sram_ctrl_testutils_write(kRetSramStartAddr, &kRamTestPattern1);
+  CHECK(sram_ctrl_testutils_read_check_eq(kRetSramStartAddr, &kRamTestPattern1),
         "Read-Write first pattern failed");
 
-  // Write second pattern to the start and the end of RAM.
-  sram_ctrl_write_to_ram(sram, &kRamTestPattern2);
-  CHECK(sram_ctrl_read_from_ram_eq(sram, &kRamTestPattern2),
+  // Write second pattern to the start of SRAM, and read it out.
+  sram_ctrl_testutils_write(kRetSramStartAddr, &kRamTestPattern2);
+  CHECK(sram_ctrl_testutils_read_check_eq(kRetSramStartAddr, &kRamTestPattern2),
         "Read-Write second pattern failed");
 }
 
@@ -59,28 +79,31 @@ static void test_ram_write_read_pattern(const sram_ctrl_t *sram) {
  * and checks them against the original pattern. The test is successful if
  * these patterns don't match.
  */
-bool test_ram_scrambling(const sram_ctrl_t *sram) {
-  // Write the pattern at the beginning and the end of RAM.
-  sram_ctrl_write_to_ram(sram, &kRamTestPattern1);
+bool test_ram_scrambling(const dif_sram_ctrl_t *sram_ctrl) {
+  // Write the pattern at the start of RAM.
+  sram_ctrl_testutils_write(kRetSramStartAddr, &kRamTestPattern1);
 
-  sram_ctrl_scramble(sram);
+  sram_ctrl_testutils_scramble(sram_ctrl);
 
-  // Read the first pattern at the beginning and the end of RAM.
-  // It should not match the originally written pattern.
-  return sram_ctrl_read_from_ram_neq(sram, &kRamTestPattern1);
+  // Read the first pattern at the start of RAM. It should NOT match the
+  // originally written pattern.
+  return sram_ctrl_testutils_read_check_neq(kRetSramStartAddr,
+                                            &kRamTestPattern1);
 }
 
 bool test_main(void) {
-  sram_ctrl_t sram = sram_ctrl_ret_init();
+  CHECK_DIF_OK(dif_sram_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
+      &sram_ctrl));
 
-  test_ram_write_read_pattern(&sram);
+  test_ram_write_read_pattern();
 
   // There is a non-zero chance that the value at the tested address by pure
   // chance will be the same. So just to be prudent, in case of the failure,
   // scrambling is tested again.
-  if (!test_ram_scrambling(&sram)) {
+  if (!test_ram_scrambling(&sram_ctrl)) {
     LOG_WARNING("Initial retention RAM scramble test(s) failed, running again");
-    CHECK(test_ram_scrambling(&sram),
+    CHECK(test_ram_scrambling(&sram_ctrl),
           "Retention RAM Scrambling test has failed (double-checked)");
   }
 
