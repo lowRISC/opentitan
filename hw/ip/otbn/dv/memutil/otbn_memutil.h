@@ -29,7 +29,7 @@ class OtbnMemUtil : public DpiMemUtil {
   const StagedMem::SegMap &GetSegs(bool is_imem) const;
 
   // Get access to a memory area
-  const MemArea &GetMemArea(bool is_imem) const {
+  const ScrambledEcc32MemArea &GetMemArea(bool is_imem) const {
     return is_imem ? imem_ : dmem_;
   }
 

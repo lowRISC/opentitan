@@ -58,8 +58,49 @@ class Dmem:
         self.data = [uninit] * num_words
         self.trace = []  # type: List[TraceDmemStore]
 
-    def load_le_words(self, data: bytes) -> None:
-        '''Replace the start of memory with data'''
+    def _load_5byte_le_words(self, data: bytes) -> None:
+        '''Replace the start of memory with data
+
+        The bytes loaded should represent each 32-bit word with 5 bytes,
+        consisting of a validity byte (0 or 1) followed by 4 bytes for the word
+        itself.
+
+        '''
+        if len(data) % 5:
+            raise ValueError('Trying to load {} bytes of data, '
+                             'which is not a multiple of 5.'
+                             .format(len(data)))
+
+        len_data_32 = len(data) // 5
+        len_mem_32 = (256 // 32) * len(self.data)
+
+        if len_data_32 > len_mem_32:
+            raise ValueError('Trying to load {} bytes of data, but DMEM '
+                             'is only {} bytes long.'
+                             .format(4 * len_data_32, 32 * len(self.data)))
+
+        # Zero-pad up to the next 32-bit word, represented by 5 bytes. Because
+        # things are little-endian, this is like zero-extending the last word.
+        if len(data) % 5:
+            data = data + b'0' * (5 - (len(data) % 5))
+
+        for idx32, (vld, u32) in enumerate(struct.iter_unpack('<BI', data)):
+            if vld not in [0, 1]:
+                raise ValueError('The validity byte for 32-bit word {} '
+                                 'in the input data is {}, not 0 or 1.'
+                                 .format(idx32, vld))
+
+            # TODO: Take account of validity bit here!
+
+            self.data[idx32] = u32
+
+    def _load_4byte_le_words(self, data: bytes) -> None:
+        '''Replace the start of memory with data
+
+        The bytes loaded should represent each 32-bit word with 4 bytes in
+        little-endian format.
+
+        '''
         if len(data) > 32 * len(self.data):
             raise ValueError('Trying to load {} bytes of data, but DMEM '
                              'is only {} bytes long.'
@@ -72,6 +113,18 @@ class Dmem:
         for idx32, u32 in enumerate(struct.iter_unpack('<I', data)):
             self.data[idx32] = u32[0]
 
+    def load_le_words(self, data: bytes, has_validity: bool) -> None:
+        '''Replace the start of memory with data
+
+        Uses the 5-byte format if has_validity is true and the 4-byte format
+        otherwise.
+
+        '''
+        if has_validity:
+            self._load_5byte_le_words(data)
+        else:
+            self._load_4byte_le_words(data)
+
     def dump_le_words(self) -> bytes:
         '''Return the contents of memory as bytes.
 
@@ -79,8 +132,11 @@ class Dmem:
         words are themselves packed little-endian into 256-bit words.
 
         '''
-        u32s = [self.data[i] for i in range(len(self.data))]
-        return struct.pack('<{}I'.format(len(u32s)), *u32s)
+        ret = b''
+        for u32 in self.data:
+            ret += struct.pack('<BI', 1, u32)
+
+        return ret
 
     def is_valid_256b_addr(self, addr: int) -> bool:
         '''Return true if this is a valid address for a BN.LID/BN.SID'''

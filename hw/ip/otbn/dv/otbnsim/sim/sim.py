@@ -34,8 +34,17 @@ class OTBNSim:
         '''Add a new loop warp to the simulation'''
         self.loop_warps.setdefault(addr, {})[from_cnt] = to_cnt
 
-    def load_data(self, data: bytes) -> None:
-        self.state.dmem.load_le_words(data)
+    def load_data(self, data: bytes, has_validity: bool) -> None:
+        '''Load bytes into DMEM, starting at address zero.
+
+        If has_validity is true, each 32-bit word should be represented by 5
+        bytes (1 byte that says whether the word is valid, then 4 bytes that
+        give the word in little-endian format). If has_validity is false, each
+        word is considered valid and is represented by 4 bytes in little-endian
+        format.
+
+        '''
+        self.state.dmem.load_le_words(data, has_validity)
 
     def start(self, collect_stats: bool) -> None:
         '''Prepare to start the execution.

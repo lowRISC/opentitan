@@ -171,7 +171,7 @@ def on_load_d(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
     print('LOAD_D {!r}'.format(path))
     with open(path, 'rb') as handle:
-        sim.load_data(handle.read())
+        sim.load_data(handle.read(), has_validity=True)
 
     return None
 
