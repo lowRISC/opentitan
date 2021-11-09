@@ -146,10 +146,10 @@ interface pwrmgr_if (
     low_power_hint = value;
   endfunction
 
-  function automatic void update_control_enables(pwrmgr_env_pkg::control_enables_t control_enables);
-    `uvm_info("pwrmgr_if", $sformatf("Updating control enables to 0x%x", control_enables),
+  function automatic void update_control_enables(pwrmgr_env_pkg::control_enables_t value);
+    `uvm_info("pwrmgr_if", $sformatf("Updating control enables to 0x%x", value),
               UVM_MEDIUM)
-    control_enables = control_enables;
+    control_enables = value;
   endfunction
 
   // FIXME Move all these initializations to sequences.
