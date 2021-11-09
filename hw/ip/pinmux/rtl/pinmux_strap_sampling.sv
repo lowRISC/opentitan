@@ -13,7 +13,7 @@ module pinmux_strap_sampling
 ) (
   input                            clk_i,
   input                            rst_ni,
-  input lc_ctrl_pkg::lc_tx_t       scanmode_i,
+  input prim_mubi_pkg::mubi4_t     scanmode_i,
   // To padring side
   output pad_attr_t [NumIOs-1:0]   attr_padring_o,
   output logic      [NumIOs-1:0]   out_padring_o,
@@ -48,16 +48,16 @@ module pinmux_strap_sampling
 
   lc_ctrl_pkg::lc_tx_t [1:0] lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
-  lc_ctrl_pkg::lc_tx_t [0:0] scanmode;
+  prim_mubi_pkg::mubi4_t [0:0] scanmode;
 
-  prim_lc_sync #(
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_por_scanmode_sync (
     .clk_i(1'b0),  // unused clock
     .rst_ni(1'b1), // unused reset
-    .lc_en_i(scanmode_i),
-    .lc_en_o(scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(scanmode)
   );
 
   prim_lc_sync #(
@@ -238,7 +238,7 @@ module pinmux_strap_sampling
   ) u_rst_por_aon_n_mux (
     .clk0_i(in_padring_i[TargetCfg.trst_idx]),
     .clk1_i(rst_ni),
-    .sel_i(scanmode[0] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[0])),
     .clk_o(jtag_req.trst_n)
   );
 

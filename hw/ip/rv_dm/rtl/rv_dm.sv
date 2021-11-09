@@ -22,7 +22,7 @@ module rv_dm
   input  logic                rst_ni,      // asynchronous reset active low, connect PoR
                                            // here, not the system reset
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
-  input  lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input  prim_mubi_pkg::mubi4_t scanmode_i,
   input                       scan_rst_ni,
   output logic                ndmreset_req_o,  // non-debug module reset
   output logic                dmactive_o,  // debug module is active
@@ -176,7 +176,7 @@ module rv_dm
   logic testmode;
 
   // Decode multibit scanmode enable
-  assign testmode = (scanmode_i == lc_ctrl_pkg::On);
+  assign testmode = prim_mubi_pkg::mubi4_test_true_strict(scanmode_i);
 
   // static debug hartinfo
   localparam dm::hartinfo_t DebugHartInfo = '{

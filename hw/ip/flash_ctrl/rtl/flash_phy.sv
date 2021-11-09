@@ -29,14 +29,14 @@ module flash_phy
   output flash_rsp_t flash_ctrl_o,
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
   input scan_en_i,
   input scan_rst_ni,
   input flash_power_ready_h_i,
   input flash_power_down_h_i,
   inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
-  input lc_ctrl_pkg::lc_tx_t flash_bist_enable_i,
+  input prim_mubi_pkg::mubi4_t flash_bist_enable_i,
   input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
   output ast_pkg::ast_dif_t flash_alert_o
 );
@@ -273,9 +273,12 @@ module flash_phy
     .lc_en_o(lc_nvm_debug_en)
   );
 
-  lc_ctrl_pkg::lc_tx_t bist_enable_qual;
-  assign bist_enable_qual = lc_ctrl_pkg::lc_tx_t'(flash_bist_enable_i &
-                            lc_nvm_debug_en[FlashBistSel]);
+  // if nvm debug is enabled, flash_bist_enable controls entry to flash test mode.
+  // if nvm debug is disabled, flash_bist_enable is always turned off.
+  prim_mubi_pkg::mubi4_t bist_enable_qual;
+  assign bist_enable_qual = (lc_nvm_debug_en[FlashBistSel] == lc_ctrl_pkg::On) ?
+                            flash_bist_enable_i :
+                            prim_mubi_pkg::MuBi4False;
 
   prim_flash #(
     .NumBanks(NumBanks),

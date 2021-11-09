@@ -54,7 +54,7 @@
   output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
 
   // dft interface
-  input lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // idle hints
   input [4:0] idle_i,
@@ -110,15 +110,15 @@
   );
 
 
-  lc_tx_t io_div2_div_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t io_div2_div_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_div2_div_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(io_div2_div_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(io_div2_div_scanmode)
   );
 
   prim_clock_div #(
@@ -128,19 +128,19 @@
     .rst_ni(rst_io_ni),
     .step_down_req_i(io_step_down_req),
     .step_down_ack_o(step_down_acks[0]),
-    .test_en_i(io_div2_div_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(io_div2_div_scanmode)),
     .clk_o(clk_io_div2_i)
   );
 
-  lc_tx_t io_div4_div_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t io_div4_div_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_div4_div_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(io_div4_div_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(io_div4_div_scanmode)
   );
 
   prim_clock_div #(
@@ -150,7 +150,7 @@
     .rst_ni(rst_io_ni),
     .step_down_req_i(io_step_down_req),
     .step_down_ack_o(step_down_acks[1]),
-    .test_en_i(io_div4_div_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(io_div4_div_scanmode)),
     .clk_o(clk_io_div4_i)
   );
 
@@ -836,15 +836,15 @@
     .q_o(clk_io_div4_peri_sw_en)
   );
 
-  lc_tx_t clk_io_div4_peri_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_io_div4_peri_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_div4_peri_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_io_div4_peri_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_io_div4_peri_scanmode)
   );
 
   logic clk_io_div4_peri_combined_en;
@@ -854,7 +854,7 @@
   ) u_clk_io_div4_peri_cg (
     .clk_i(clk_io_div4_root),
     .en_i(clk_io_div4_peri_combined_en),
-    .test_en_i(clk_io_div4_peri_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_div4_peri_scanmode)),
     .clk_o(clocks_o.clk_io_div4_peri)
   );
 
@@ -877,15 +877,15 @@
     .q_o(clk_io_div2_peri_sw_en)
   );
 
-  lc_tx_t clk_io_div2_peri_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_io_div2_peri_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_div2_peri_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_io_div2_peri_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_io_div2_peri_scanmode)
   );
 
   logic clk_io_div2_peri_combined_en;
@@ -895,7 +895,7 @@
   ) u_clk_io_div2_peri_cg (
     .clk_i(clk_io_div2_root),
     .en_i(clk_io_div2_peri_combined_en),
-    .test_en_i(clk_io_div2_peri_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_div2_peri_scanmode)),
     .clk_o(clocks_o.clk_io_div2_peri)
   );
 
@@ -918,15 +918,15 @@
     .q_o(clk_io_peri_sw_en)
   );
 
-  lc_tx_t clk_io_peri_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_io_peri_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_peri_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_io_peri_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_io_peri_scanmode)
   );
 
   logic clk_io_peri_combined_en;
@@ -936,7 +936,7 @@
   ) u_clk_io_peri_cg (
     .clk_i(clk_io_root),
     .en_i(clk_io_peri_combined_en),
-    .test_en_i(clk_io_peri_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_peri_scanmode)),
     .clk_o(clocks_o.clk_io_peri)
   );
 
@@ -959,15 +959,15 @@
     .q_o(clk_usb_peri_sw_en)
   );
 
-  lc_tx_t clk_usb_peri_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_usb_peri_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_usb_peri_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_usb_peri_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_usb_peri_scanmode)
   );
 
   logic clk_usb_peri_combined_en;
@@ -977,7 +977,7 @@
   ) u_clk_usb_peri_cg (
     .clk_i(clk_usb_root),
     .en_i(clk_usb_peri_combined_en),
-    .test_en_i(clk_usb_peri_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_usb_peri_scanmode)),
     .clk_o(clocks_o.clk_usb_peri)
   );
 
@@ -1020,15 +1020,15 @@
     .q_o(clk_main_aes_hint)
   );
 
-  lc_tx_t clk_main_aes_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_main_aes_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_aes_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_main_aes_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_main_aes_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -1044,7 +1044,7 @@
   ) u_clk_main_aes_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_aes_combined_en),
-    .test_en_i(clk_main_aes_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_aes_scanmode)),
     .clk_o(clocks_o.clk_main_aes)
   );
 
@@ -1069,15 +1069,15 @@
     .q_o(clk_main_hmac_hint)
   );
 
-  lc_tx_t clk_main_hmac_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_main_hmac_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_hmac_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_main_hmac_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_main_hmac_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -1093,7 +1093,7 @@
   ) u_clk_main_hmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_hmac_combined_en),
-    .test_en_i(clk_main_hmac_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_hmac_scanmode)),
     .clk_o(clocks_o.clk_main_hmac)
   );
 
@@ -1118,15 +1118,15 @@
     .q_o(clk_main_kmac_hint)
   );
 
-  lc_tx_t clk_main_kmac_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_main_kmac_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_kmac_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_main_kmac_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_main_kmac_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -1142,7 +1142,7 @@
   ) u_clk_main_kmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_kmac_combined_en),
-    .test_en_i(clk_main_kmac_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_kmac_scanmode)),
     .clk_o(clocks_o.clk_main_kmac)
   );
 
@@ -1167,15 +1167,15 @@
     .q_o(clk_main_otbn_hint)
   );
 
-  lc_tx_t clk_main_otbn_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_main_otbn_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_otbn_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_main_otbn_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_main_otbn_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -1191,7 +1191,7 @@
   ) u_clk_main_otbn_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_otbn_combined_en),
-    .test_en_i(clk_main_otbn_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_otbn_scanmode)),
     .clk_o(clocks_o.clk_main_otbn)
   );
 
@@ -1216,15 +1216,15 @@
     .q_o(clk_io_div4_otbn_hint)
   );
 
-  lc_tx_t clk_io_div4_otbn_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_io_div4_otbn_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_div4_otbn_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_io_div4_otbn_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_io_div4_otbn_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -1240,7 +1240,7 @@
   ) u_clk_io_div4_otbn_cg (
     .clk_i(clk_io_div4_root),
     .en_i(clk_io_div4_otbn_combined_en),
-    .test_en_i(clk_io_div4_otbn_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_div4_otbn_scanmode)),
     .clk_o(clocks_o.clk_io_div4_otbn)
   );
 

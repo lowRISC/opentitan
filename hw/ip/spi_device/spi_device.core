@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:clock_buf
       - lowrisc:prim:clock_gating
       - lowrisc:prim:clock_inv
+      - lowrisc:prim:mubi
       - lowrisc:prim:ram_2p_adv
       - lowrisc:prim:edge_detector
       - lowrisc:ip:lc_ctrl_pkg

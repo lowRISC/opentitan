@@ -85,12 +85,12 @@ module tb;
     // flash prim signals
     .flash_power_ready_h_i  (1'b1  ),
     .flash_power_down_h_i   (flash_power_down_h  ),
-    .flash_bist_enable_i    (lc_ctrl_pkg::Off),
+    .flash_bist_enable_i    (prim_mubi_pkg::MuBi4False),
     .flash_test_mode_a_io   (2'h3),
     .flash_test_voltage_h_io(1'b1),
 
     // test
-    .scanmode_i              ('0),
+    .scanmode_i              (prim_mubi_pkg::MuBi4False),
     .scan_rst_ni             ('0),
     .scan_en_i               ('0),
 

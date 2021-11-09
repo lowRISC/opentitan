@@ -4130,8 +4130,8 @@
         }
         {
           name: flash_bist_enable
-          struct: lc_tx
-          package: lc_ctrl_pkg
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: rcv
           width: 1
@@ -16106,8 +16106,8 @@
       }
       {
         name: flash_bist_enable
-        struct: lc_tx
-        package: lc_ctrl_pkg
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: rcv
         width: 1
@@ -18516,8 +18516,8 @@
         netname: flash_alert
       }
       {
-        package: lc_ctrl_pkg
-        struct: lc_tx
+        package: prim_mubi_pkg
+        struct: mubi4
         signame: flash_bist_enable_i
         width: 1
         type: uni

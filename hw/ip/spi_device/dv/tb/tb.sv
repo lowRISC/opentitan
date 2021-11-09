@@ -67,7 +67,7 @@ module tb;
     .intr_tx_underflow_o        (intr_txunderflow),
     .intr_tpm_header_not_empty_o(),
     .mbist_en_i     (1'b0),
-    .scanmode_i     (lc_ctrl_pkg::Off)
+    .scanmode_i     (prim_mubi_pkg::MuBi4False)
   );
 
   assign sck           = spi_if.sck;

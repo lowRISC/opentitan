@@ -1047,7 +1047,7 @@ module chip_earlgrey_nexysvideo #(
     .usbdev_usb_ref_pulse_o       ( usb_ref_val           ),
     .ast_edn_req_i                ( ast_edn_edn_req       ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
-    .flash_bist_enable_i          ( prim_mubi_pkg::MuBi4False ),
+    .flash_bist_enable_i          ( flash_bist_enable     ),
     .flash_power_down_h_i         ( 1'b0                  ),
     .flash_power_ready_h_i        ( 1'b1                  ),
     .io_clk_byp_req_o             ( io_clk_byp_req        ),

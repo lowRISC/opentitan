@@ -26,8 +26,8 @@ module prim_generic_flash #(
   input tdi_i,
   input tms_i,
   output logic tdo_o,
-  input lc_ctrl_pkg::lc_tx_t bist_enable_i,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_e bist_enable_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
   input scan_en_i,
   input scan_rst_ni,
   input flash_power_ready_h_i,
@@ -96,7 +96,7 @@ module prim_generic_flash #(
     );
   end
 
-  lc_ctrl_pkg::lc_tx_t unused_scanmode;
+  logic unused_scanmode;
   logic unused_scan_en;
   logic unused_scan_rst_n;
   logic [TestModeWidth-1:0] unused_flash_test_mode;
@@ -105,7 +105,7 @@ module prim_generic_flash #(
   logic unused_tdi;
   logic unused_tms;
 
-  assign unused_scanmode = scanmode_i;
+  assign unused_scanmode = ^scanmode_i;
   assign unused_scan_en = scan_en_i;
   assign unused_scan_rst_n = scan_rst_ni;
   assign unused_flash_test_mode = flash_test_mode_a_io;
@@ -171,8 +171,8 @@ module prim_generic_flash #(
     .cfg_i('0)
   );
 
-  lc_ctrl_pkg::lc_tx_t unused_bist_enable;
-  assign unused_bist_enable = bist_enable_i;
+  logic unused_bist_enable;
+  assign unused_bist_enable = ^bist_enable_i;
 
   // open source model has no error response at the moment
   assign flash_err_o = 1'b0;

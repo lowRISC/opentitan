@@ -45,7 +45,7 @@
   output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
 
   // dft interface
-  input lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // idle hints
   input [${len(typed_clocks.hint_clks)-1}:0] idle_i,
@@ -108,15 +108,15 @@
 % endfor
 % for src in clocks.derived_srcs.values():
 
-  lc_tx_t ${src.name}_div_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t ${src.name}_div_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${src.name}_div_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(${src.name}_div_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(${src.name}_div_scanmode)
   );
 
   prim_clock_div #(
@@ -126,7 +126,7 @@
     .rst_ni(rst_${src.src.name}_ni),
     .step_down_req_i(${src.src.name}_step_down_req),
     .step_down_ack_o(step_down_acks[${loop.index}]),
-    .test_en_i(${src.name}_div_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${src.name}_div_scanmode)),
     .clk_o(clk_${src.name}_i)
   );
 % endfor
@@ -392,15 +392,15 @@
     .q_o(${k}_sw_en)
   );
 
-  lc_tx_t ${k}_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t ${k}_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${k}_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(${k}_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(${k}_scanmode)
   );
 
   logic ${k}_combined_en;
@@ -410,7 +410,7 @@
   ) u_${k}_cg (
     .clk_i(clk_${v.src.name}_root),
     .en_i(${k}_combined_en),
-    .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${k}_scanmode)),
     .clk_o(clocks_o.${k})
   );
 
@@ -449,15 +449,15 @@
     .q_o(${clk}_hint)
   );
 
-  lc_tx_t ${clk}_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t ${clk}_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${clk}_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(${clk}_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(${clk}_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -473,7 +473,7 @@
   ) u_${clk}_cg (
     .clk_i(clk_${sig.src.name}_root),
     .en_i(${clk}_combined_en),
-    .test_en_i(${clk}_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${clk}_scanmode)),
     .clk_o(clocks_o.${clk})
   );
 

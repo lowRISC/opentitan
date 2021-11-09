@@ -63,8 +63,8 @@
       name: "lc_nvm_debug_en"
     },
 
-    { struct: "lc_tx"
-      package: "lc_ctrl_pkg"
+    { struct: "mubi4"
+      package: "prim_mubi_pkg"
       type: "uni"
       act: "rcv"
       name: "flash_bist_enable"

@@ -33,7 +33,7 @@ module xbar_${xbar.name} (
   input  tlul_pkg::tl_d2h_t tl_${node.name.replace('.', '__')}_i,
 % endfor
 
-  input lc_ctrl_pkg::lc_tx_t scanmode_i
+  input prim_mubi_pkg::mubi4_t scanmode_i
 );
 
   import tlul_pkg::*;
@@ -41,8 +41,8 @@ module xbar_${xbar.name} (
 
   // scanmode_i is currently not used, but provisioned for future use
   // this assignment prevents lint warnings
-  lc_ctrl_pkg::lc_tx_t unused_scanmode;
-  assign unused_scanmode = scanmode_i;
+  logic unused_scanmode;
+  assign unused_scanmode = ^scanmode_i;
 
 % for block in xbar.nodes:
   ## Create enum type for Upstream and Downstream ports connection

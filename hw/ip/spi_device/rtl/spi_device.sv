@@ -55,7 +55,7 @@ module spi_device
   input mbist_en_i,
   input scan_clk_i,
   input scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i
+  input prim_mubi_pkg::mubi4_t scanmode_i
 );
 
   import spi_device_pkg::*;
@@ -598,22 +598,22 @@ module spi_device
   //  doesn't exist until it transmits data through SDI
   logic sck_n;
   logic rst_spi_n;
-  lc_ctrl_pkg::lc_tx_t [ScanModeUseLast-1:0] scanmode;
+  prim_mubi_pkg::mubi4_t [ScanModeUseLast-1:0] scanmode;
 
-  prim_lc_sync #(
+  prim_mubi4_sync #(
     .NumCopies(int'(ScanModeUseLast)),
     .AsyncOn(0)
   ) u_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(scanmode)
   );
 
   prim_clock_inv u_clk_spi (
     .clk_i(cio_sck_i),
     .clk_no(sck_n),
-    .scanmode_i(scanmode[ClkInvSel] == lc_ctrl_pkg::On)
+    .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkInvSel]))
   );
 
   assign sck_monitor_o = cio_sck_i;
@@ -625,7 +625,7 @@ module spi_device
   ) u_clk_spi_in_mux (
     .clk0_i(clk_spi_in),
     .clk1_i(scan_clk_i),
-    .sel_i(scanmode[ClkMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkMuxSel])),
     .clk_o(clk_spi_in_muxed)
   );
 
@@ -639,7 +639,7 @@ module spi_device
   ) u_clk_spi_out_mux (
     .clk0_i(clk_spi_out),
     .clk1_i(scan_clk_i),
-    .sel_i(scanmode[ClkMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkMuxSel])),
     .clk_o(clk_spi_out_muxed)
   );
 
@@ -653,7 +653,7 @@ module spi_device
   ) u_csb_rst_scan_mux (
     .clk0_i(rst_ni & ~cio_csb_i),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode[CsbRstMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[CsbRstMuxSel])),
     .clk_o(rst_spi_n)
   );
 
@@ -662,7 +662,7 @@ module spi_device
   ) u_tx_rst_scan_mux (
     .clk0_i(rst_ni & ~rst_txfifo_reg),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode[TxRstMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[TxRstMuxSel])),
     .clk_o(rst_txfifo_n)
   );
 
@@ -671,7 +671,7 @@ module spi_device
   ) u_rx_rst_scan_mux (
     .clk0_i(rst_ni & ~rst_rxfifo_reg),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode[RxRstMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[RxRstMuxSel])),
     .clk_o(rst_rxfifo_n)
   );
 
@@ -708,7 +708,7 @@ module spi_device
   ) u_sram_clk_scan (
     .clk0_i (sram_clk_ungated),
     .clk1_i (scan_clk_i),
-    .sel_i  ((scanmode[ClkSramSel] == lc_ctrl_pkg::On) | mbist_en_i),
+    .sel_i  ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkSramSel]) | mbist_en_i)),
     .clk_o  (sram_clk_muxed)
   );
 
@@ -717,7 +717,7 @@ module spi_device
   ) u_sram_clk_cg (
     .clk_i  (sram_clk_muxed),
     .en_i   (sram_clk_en),
-    .test_en_i ((scanmode[ClkSramSel] == lc_ctrl_pkg::On) | mbist_en_i),
+    .test_en_i ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkSramSel]) | mbist_en_i)),
     .clk_o  (sram_clk)
   );
 
@@ -735,7 +735,7 @@ module spi_device
   ) u_sram_rst_scanmux (
     .clk0_i (sram_rst_n_noscan),
     .clk1_i (scan_rst_ni),
-    .sel_i  (scanmode[RstSramSel] == lc_ctrl_pkg::On),
+    .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[RstSramSel])),
     .clk_o  (sram_rst_n)
   );
 

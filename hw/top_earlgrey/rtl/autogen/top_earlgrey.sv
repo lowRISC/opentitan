@@ -128,7 +128,7 @@ module top_earlgrey #(
   input  prim_mubi_pkg::mubi4_t       all_clk_byp_ack_i,
   output logic       hi_speed_sel_o,
   output ast_pkg::ast_dif_t       flash_alert_o,
-  input  lc_ctrl_pkg::lc_tx_t       flash_bist_enable_i,
+  input  prim_mubi_pkg::mubi4_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
   inout   [1:0] flash_test_mode_a_io,
@@ -169,7 +169,7 @@ module top_earlgrey #(
 
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i   // lc_ctrl_pkg::On for Scan
+  input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan
 );
 
   // JTAG IDCODE for development versions of this code.

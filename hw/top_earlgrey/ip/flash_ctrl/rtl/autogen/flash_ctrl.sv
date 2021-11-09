@@ -78,9 +78,9 @@ module flash_ctrl
 
   // Flash test interface
   input scan_en_i,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
   input scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t flash_bist_enable_i,
+  input prim_mubi_pkg::mubi4_t flash_bist_enable_i,
   input flash_power_down_h_i,
   input flash_power_ready_h_i,
   inout [1:0] flash_test_mode_a_io,
