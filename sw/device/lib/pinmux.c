@@ -12,6 +12,7 @@
 #define PINMUX0_BASE_ADDR TOP_EARLGREY_PINMUX_AON_BASE_ADDR
 
 #define NUM_GPIO 32
+#define TEST_TEST_TEST 1
 
 static void init_gpio_regs(uint32_t reg, uint32_t mask, uint32_t start_v) {
   mmio_region_t reg32 = mmio_region_from_addr(reg);
