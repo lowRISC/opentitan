@@ -629,7 +629,7 @@
           desc: '''
             io has encountered a measurement error.
           '''
-        }
+        },
         {
           bits: "1",
           name: "IO_DIV2_MEASURE_ERR",
@@ -637,7 +637,7 @@
           desc: '''
             io_div2 has encountered a measurement error.
           '''
-        }
+        },
         {
           bits: "2",
           name: "IO_DIV4_MEASURE_ERR",
@@ -645,7 +645,7 @@
           desc: '''
             io_div4 has encountered a measurement error.
           '''
-        }
+        },
         {
           bits: "3",
           name: "MAIN_MEASURE_ERR",
@@ -653,13 +653,53 @@
           desc: '''
             main has encountered a measurement error.
           '''
-        }
+        },
         {
           bits: "4",
           name: "USB_MEASURE_ERR",
           resval: 0,
           desc: '''
             usb has encountered a measurement error.
+          '''
+        },
+        {
+          bits: "5",
+          name: "IO_TIMEOUT_ERR",
+          resval: 0,
+          desc: '''
+            io has timed out.
+          '''
+        }
+        {
+          bits: "6",
+          name: "IO_DIV2_TIMEOUT_ERR",
+          resval: 0,
+          desc: '''
+            io_div2 has timed out.
+          '''
+        }
+        {
+          bits: "7",
+          name: "IO_DIV4_TIMEOUT_ERR",
+          resval: 0,
+          desc: '''
+            io_div4 has timed out.
+          '''
+        }
+        {
+          bits: "8",
+          name: "MAIN_TIMEOUT_ERR",
+          resval: 0,
+          desc: '''
+            main has timed out.
+          '''
+        }
+        {
+          bits: "9",
+          name: "USB_TIMEOUT_ERR",
+          resval: 0,
+          desc: '''
+            usb has timed out.
           '''
         }
       ]

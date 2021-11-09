@@ -11,7 +11,7 @@ This document specifies the functionality of the OpenTitan clock manager.
 - Attribute based controls of OpenTitan clocks.
 - Minimal software clock controls to reduce risks in clock manipulation.
 - External clock switch support
-- Clock frequency measurement
+- Clock frequency /time-out measurement
 
 # Theory of Operation
 
@@ -227,7 +227,7 @@ The table below summarises the valid modes and the settings required.
 
 
 
-### Clock Frequency Measurements
+### Clock Frequency / Time-out Measurements
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
 This feature can be enabled through the various measurement control registers such as {{< regref "IO_MEASURE_CTRL" >}}.
@@ -238,12 +238,17 @@ Software sets both an expected maximum and minimum for each measured clock.
 Clock manager then counts the number of relevant root clock cycles in each always-on clock period.
 If the resulting count differs from the programmed thresholds, a recoverable error is registered.
 
-There are two types of errors:
+Additionally, clock manager uses a similar time-out mechanism to see if any of the root clocks have stopped toggling altogether.
+This is done by creating an artificial handshake between the two domains that must complete within a certain amount of time based on known clock ratios.
+
+There are three types of errors:
 * Clock too fast error
 * Clock too slow error
+* Clock time-out error
 
 Clock too fast is registered when the clock cycle count is greater than the software programmed max threshold.
 Clock too slow is registered when the clock cycle count is less than the software programmed min threshold.
+Clock time-out is registered when the clock stops toggling and the timeout threshold is reached.
 
 As these are all software supplied values, the entire measurement control can be locked from further programming through {{< regref "MEASURE_CTRL_REGWEN" >}}.
 

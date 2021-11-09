@@ -394,6 +394,16 @@
           desc: '''
             ${src} has encountered a measurement error.
           '''
+        },
+% endfor
+% for src in typed_clocks.rg_srcs:
+        {
+          bits: "${loop.index + len(typed_clocks.rg_srcs)}",
+          name: "${src.upper()}_TIMEOUT_ERR",
+          resval: 0,
+          desc: '''
+            ${src} has timed out.
+          '''
         }
 % endfor
       ]
