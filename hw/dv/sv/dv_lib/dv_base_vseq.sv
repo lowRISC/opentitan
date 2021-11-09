@@ -205,6 +205,12 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
       default   : `uvm_fatal(`gfn, $sformatf("specified opt is invalid: +csr_%0s", csr_test_type))
     endcase
 
+    // Print the list of available exclusions that are in effect for debug.
+    foreach (cfg.ral_models[i]) begin
+      csr_excl_item csr_excl = csr_utils_pkg::get_excl_item(cfg.ral_models[i]);
+      if (csr_excl != null) csr_excl.print_exclusions();
+    end
+
     // if hw_reset test, then write all CSRs first and reset the whole dut
     if (csr_test_type == "hw_reset" && do_rand_wr_and_reset) begin
       string        reset_type = "HARD";

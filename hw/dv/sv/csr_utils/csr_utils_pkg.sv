@@ -7,6 +7,7 @@ package csr_utils_pkg;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import dv_base_reg_pkg::*;
+  export dv_base_reg_pkg::csr_field_t, dv_base_reg_pkg::decode_csr_or_field;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -21,14 +22,6 @@ package csr_utils_pkg;
   uvm_check_e default_csr_check           = UVM_CHECK;
   bit         under_reset                 = 0;
   int         max_outstanding_accesses    = 100;
-
-  // csr field struct - hold field specific params
-  typedef struct {
-    uvm_reg         csr;
-    uvm_reg_field   field;
-    uvm_reg_data_t  mask;
-    uint            shift;
-  } csr_field_t;
 
   function automatic void increment_outstanding_access();
     outstanding_accesses++;
@@ -96,34 +89,6 @@ package csr_utils_pkg;
     end
     return result;
   endfunction : get_reg_fld_mirror_value
-
-  // This function attempts to cast a given uvm_object ptr into uvm_reg or uvm_reg_field. If cast
-  // is successful on either, then set the appropriate csr_field_t return values.
-  function automatic csr_field_t decode_csr_or_field(input uvm_object ptr);
-    uvm_reg       csr;
-    uvm_reg_field fld;
-    csr_field_t   result;
-    string        msg_id = {csr_utils_pkg::msg_id, "::decode_csr_or_field"};
-
-    if ($cast(csr, ptr)) begin
-      // return csr object with null field; set the mask to all 1s and shift to 0
-      result.csr = csr;
-      result.mask = '1;
-      result.shift = 0;
-    end
-    else if ($cast(fld, ptr)) begin
-      // return csr field object; return the appropriate mask and shift values
-      result.csr = fld.get_parent();
-      result.field = fld;
-      result.mask = (1 << fld.get_n_bits()) - 1;
-      result.shift = fld.get_lsb_pos();
-    end
-    else begin
-      `uvm_fatal(msg_id, $sformatf("ptr %0s is not of type uvm_reg or uvm_reg_field",
-                                   ptr.get_full_name()))
-    end
-    return result;
-  endfunction : decode_csr_or_field
 
   // get updated reg value by using new specific field value
   function automatic uvm_reg_data_t get_csr_val_with_updated_field(uvm_reg_field   field,
@@ -726,20 +691,29 @@ package csr_utils_pkg;
     return wdata;
   endfunction
 
+  // Returns the CSR exclusion item associated with the provided object.
+  //
+  // If an exclusion item for the immediate block (parent of the CSR if ptr is a CSR or a field) is
+  // not found, it recurses through the block's ancestors to find an available exclusion item.
+  // arg ptr: An extention of one of dv_base_reg{, _block or _field} classes.
   function automatic csr_excl_item get_excl_item(uvm_object ptr);
-    csr_field_t       csr_or_fld;
     dv_base_reg_block blk;
 
-    csr_or_fld = decode_csr_or_field(ptr);
-    `downcast(blk, csr_or_fld.csr.get_parent(), , , msg_id)
-
-    // csr_excl is at the highest level of reg block
-    while (blk.csr_excl == null) begin
-      `downcast(blk, blk.get_parent(), , , msg_id)
-      `DV_CHECK_NE_FATAL(blk, null, "", msg_id)
+    // Attempt cast to blk. If it fails, then attempt to cast to CSR or field.
+    if (!$cast(blk, ptr)) begin
+      csr_field_t csr_or_fld = decode_csr_or_field(ptr);
+      `downcast(blk, csr_or_fld.csr.get_parent(), , , msg_id)
     end
-    return blk.csr_excl;
+
+    // Recurse through block's ancestors.
+    do begin
+      csr_excl_item csr_excl = blk.get_excl_item();
+      if (csr_excl != null) return csr_excl;
+      `downcast(blk, blk.get_parent(), , , msg_id)
+    end while (blk != null);
+    return null;
   endfunction
+
   // sources
   `include "csr_seq_lib.sv"
 
