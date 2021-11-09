@@ -56,10 +56,10 @@ formal/             @cindychip
 # lint/             # TBD
 
 # SW related
-sw/**/*.c           @ot-c-cpp-reviewers
-sw/**/*.cc          @ot-c-cpp-reviewers
-sw/**/*.h           @ot-c-cpp-reviewers
-sw/**/*.rs          @ot-rust-reviewers
+sw/**/*.c           @lowRISC/ot-c-cpp-reviewers
+sw/**/*.cc          @lowRISC/ot-c-cpp-reviewers
+sw/**/*.h           @lowRISC/ot-c-cpp-reviewers
+sw/**/*.rs          @lowRISC/ot-rust-reviewers
 
 # Common docs
 /doc/               @asb
