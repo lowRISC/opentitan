@@ -5,11 +5,12 @@
 '''OTBN ELF file handling'''
 
 import re
+import struct
 from typing import Optional, Dict
 
 from shared.elf import read_elf
 
-from .decode import decode_bytes
+from .decode import decode_words
 from .sim import LoopWarps, OTBNSim
 
 
@@ -76,12 +77,17 @@ def load_elf(sim: OTBNSim, path: str) -> Optional[int]:
     '''
     (imem_bytes, dmem_bytes, symbols) = read_elf(path)
 
-    imem_insns = decode_bytes(0, imem_bytes)
+    # Collect imem bytes into 32-bit words and set the validity bit for each
+    assert len(imem_bytes) & 3 == 0
+    imem_words = [(True, w32s[0])
+                  for w32s in struct.iter_unpack('<I', imem_bytes)]
+
+    imem_insns = decode_words(0, imem_words)
     loop_warps = _get_loop_warps(symbols)
     exp_end = _get_exp_end_addr(symbols)
 
     sim.load_program(imem_insns)
     sim.loop_warps = loop_warps
-    sim.load_data(dmem_bytes)
+    sim.load_data(dmem_bytes, has_validity=False)
 
     return exp_end

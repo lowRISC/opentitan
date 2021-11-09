@@ -18,16 +18,6 @@
 #include "sv_scoped.h"
 #include "sv_utils.h"
 
-// Read (the start of) the contents of a file at path as a vector of bytes.
-// Expects num_bytes bytes of data. On failure, throws a std::runtime_error.
-static std::vector<uint8_t> read_vector_from_file(const std::string &path,
-                                                  size_t num_bytes);
-
-// Write a vector of bytes to a new file at path. On failure, throws a
-// std::runtime_error.
-static void write_vector_to_file(const std::string &path,
-                                 const std::vector<uint8_t> &data);
-
 extern "C" {
 // These functions are only implemented if DesignScope != "", i.e. if we're
 // running a block-level simulation. Code needs to check at runtime if
@@ -42,8 +32,10 @@ int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 #define FAILED_STEP_BIT (1U << 2)
 #define FAILED_CMP_BIT (1U << 3)
 
-static std::vector<uint8_t> read_vector_from_file(const std::string &path,
-                                                  size_t num_bytes) {
+// Read (the start of) the contents of a file at path as a vector of bytes.
+// Expects num_bytes bytes of data. On failure, throws a std::runtime_error.
+static Ecc32MemArea::EccWords read_words_from_file(const std::string &path,
+                                                   size_t num_words) {
   std::filebuf fb;
   if (!fb.open(path.c_str(), std::ios::in | std::ios::binary)) {
     std::ostringstream oss;
@@ -51,23 +43,71 @@ static std::vector<uint8_t> read_vector_from_file(const std::string &path,
     throw std::runtime_error(oss.str());
   }
 
-  std::vector<uint8_t> buf(num_bytes);
-  std::streamsize chars_in =
-      fb.sgetn(reinterpret_cast<char *>(&buf[0]), num_bytes);
+  Ecc32MemArea::EccWords ret;
+  ret.reserve(num_words);
 
-  if (chars_in != num_bytes) {
-    std::ostringstream oss;
-    oss << "Cannot read " << num_bytes << " bytes of memory data from " << path
-        << " (actually got " << chars_in << ").";
-    throw std::runtime_error(oss.str());
+  char minibuf[5];
+  for (size_t i = 0; i < num_words; ++i) {
+    std::streamsize chars_in = fb.sgetn(minibuf, 5);
+    if (chars_in != 5) {
+      std::ostringstream oss;
+      oss << "Cannot read word " << i << " from " << path
+          << " (expected 5 bytes, but actually got " << chars_in << ").";
+      throw std::runtime_error(oss.str());
+    }
+
+    // The layout should be a validity byte (either 0 or 1), followed
+    // by 4 bytes with a little-endian 32-bit word.
+    uint8_t vld_byte = minibuf[0];
+    if (vld_byte > 2) {
+      std::ostringstream oss;
+      oss << "Word " << i << " at " << path
+          << " had a validity byte with value " << (int)vld_byte
+          << "; not 0 or 1.";
+      throw std::runtime_error(oss.str());
+    }
+    bool valid = vld_byte == 1;
+
+    uint32_t word = 0;
+    for (int j = 0; j < 4; ++j) {
+      word |= (uint32_t)(uint8_t)minibuf[j + 1] << 8 * j;
+    }
+
+    ret.push_back(std::make_pair(valid, word));
   }
 
-  return buf;
+  return ret;
 }
 
-// Write a vector of bytes to a new file at path
-static void write_vector_to_file(const std::string &path,
-                                 const std::vector<uint8_t> &data) {
+static std::vector<uint8_t> words_to_bytes(
+    const Ecc32MemArea::EccWords &words) {
+  std::vector<uint8_t> ret;
+  ret.reserve(words.size() * 4);
+  for (size_t i = 0; i < words.size(); ++i) {
+    const Ecc32MemArea::EccWord &word = words[i];
+    bool valid = word.first;
+    uint32_t w32 = word.second;
+
+    // Complain if the word has an invalid checksum. We don't support doing
+    // that at the moment.
+    if (!valid) {
+      std::ostringstream oss;
+      oss << "Cannot convert 32-bit word " << i
+          << " to bytes because its valid flag is false.";
+      throw std::runtime_error(oss.str());
+    }
+
+    for (int j = 0; j < 4; ++j) {
+      ret.push_back((w32 >> 8 * j) & 0xff);
+    }
+  }
+  return ret;
+}
+
+// Write some words to a new file at path. On failure, throws a
+// std::runtime_error.
+static void write_words_to_file(const std::string &path,
+                                const Ecc32MemArea::EccWords &words) {
   std::filebuf fb;
   if (!fb.open(path.c_str(), std::ios::out | std::ios::binary)) {
     std::ostringstream oss;
@@ -75,15 +115,24 @@ static void write_vector_to_file(const std::string &path,
     throw std::runtime_error(oss.str());
   }
 
-  // Write out the data
-  std::streamsize chars_out =
-      fb.sputn(reinterpret_cast<const char *>(&data[0]), data.size());
+  for (const Ecc32MemArea::EccWord &word : words) {
+    uint8_t bytes[5];
 
-  if (chars_out != data.size()) {
-    std::ostringstream oss;
-    oss << "Cannot write " << data.size() << " bytes of memory data to " << path
-        << "' (actually wrote " << chars_out << ").";
-    throw std::runtime_error(oss.str());
+    bool valid = word.first;
+    uint32_t w32 = word.second;
+
+    bytes[0] = valid ? 1 : 0;
+    for (int j = 0; j < 4; ++j) {
+      bytes[j + 1] = (w32 >> (8 * j)) & 0xff;
+    }
+
+    std::streamsize chars_out =
+        fb.sputn(reinterpret_cast<const char *>(&bytes), 5);
+    if (chars_out != 5) {
+      std::ostringstream oss;
+      oss << "Failed to write to " << path << ".";
+      throw std::runtime_error(oss.str());
+    }
   }
 }
 
@@ -220,8 +269,8 @@ int OtbnModel::start() {
   std::string ifname(iss->make_tmp_path("imem"));
 
   try {
-    write_vector_to_file(dfname, get_sim_memory(false));
-    write_vector_to_file(ifname, get_sim_memory(true));
+    write_words_to_file(dfname, get_sim_memory(false));
+    write_words_to_file(ifname, get_sim_memory(true));
   } catch (const std::exception &err) {
     std::cerr << "Error when dumping memory contents: " << err.what() << "\n";
     return -1;
@@ -355,8 +404,11 @@ int OtbnModel::load_dmem() {
 
   std::string dfname(iss->make_tmp_path("dmem_out"));
   try {
+    // Read DMEM from the ISS
     iss->dump_d(dfname);
-    set_sim_memory(false, read_vector_from_file(dfname, dmem.GetSizeBytes()));
+    Ecc32MemArea::EccWords words =
+        read_words_from_file(dfname, dmem.GetSizeBytes() / 4);
+    set_sim_memory(false, words_to_bytes(words));
   } catch (const std::exception &err) {
     std::cerr << "Error when loading dmem from ISS: " << err.what() << "\n";
     return -1;
@@ -399,9 +451,9 @@ ISSWrapper *OtbnModel::ensure_wrapper() {
   return iss_.get();
 }
 
-std::vector<uint8_t> OtbnModel::get_sim_memory(bool is_imem) const {
-  const MemArea &mem_area = mem_util_.GetMemArea(is_imem);
-  return mem_area.Read(0, mem_area.GetSizeWords());
+Ecc32MemArea::EccWords OtbnModel::get_sim_memory(bool is_imem) const {
+  auto &mem_area = mem_util_.GetMemArea(is_imem);
+  return mem_area.ReadWithIntegrity(0, mem_area.GetSizeWords());
 }
 
 void OtbnModel::set_sim_memory(bool is_imem, const std::vector<uint8_t> &data) {
@@ -415,37 +467,63 @@ bool OtbnModel::check_dmem(ISSWrapper &iss) const {
   std::string dfname(iss.make_tmp_path("dmem_out"));
 
   iss.dump_d(dfname);
-  std::vector<uint8_t> iss_data = read_vector_from_file(dfname, dmem_bytes);
-  assert(iss_data.size() == dmem_bytes);
+  Ecc32MemArea::EccWords iss_words =
+      read_words_from_file(dfname, dmem_bytes / 4);
+  assert(iss_words.size() == dmem_bytes / 4);
 
-  std::vector<uint8_t> rtl_data = get_sim_memory(false);
-  assert(rtl_data.size() == dmem_bytes);
+  Ecc32MemArea::EccWords rtl_words = get_sim_memory(false);
+  assert(rtl_words.size() == dmem_bytes / 4);
 
-  // If the arrays match, we're done.
-  if (0 == memcmp(&iss_data[0], &rtl_data[0], dmem_bytes))
-    return true;
-
-  // If not, print out the first 10 mismatches
   std::ios old_state(nullptr);
   old_state.copyfmt(std::cerr);
-  std::cerr << "ERROR: Mismatches in dmem data:\n"
-            << std::hex << std::setfill('0');
-  int bad_count = 0;
-  for (size_t i = 0; i < dmem_bytes; ++i) {
-    if (iss_data[i] != rtl_data[i]) {
-      std::cerr << " @offset 0x" << std::setw(3) << i << ": rtl has 0x"
-                << std::setw(2) << (int)rtl_data[i] << "; iss has 0x"
-                << std::setw(2) << (int)iss_data[i] << "\n";
-      ++bad_count;
 
-      if (bad_count == 10) {
-        std::cerr << " (skipping further errors...)\n";
-        break;
-      }
+  int bad_count = 0;
+  for (size_t i = 0; i < dmem_bytes / 4; ++i) {
+    bool iss_valid = iss_words[i].first;
+    bool rtl_valid = rtl_words[i].first;
+    uint32_t iss_w32 = iss_words[i].second;
+    uint32_t rtl_w32 = rtl_words[i].second;
+
+    // If neither word has valid checksum bits, all is well.
+    if (!iss_valid && !rtl_valid)
+      continue;
+
+    // If both words have valid checksum bits and equal data, all is well.
+    if (iss_valid && rtl_valid && iss_w32 == rtl_w32)
+      continue;
+
+    // TODO: At the moment, the ISS doesn't track validity bits properly in
+    //       DMEM, which means that we might have a situation where RTL says a
+    //       word is invalid, but the ISS doesn't. To avoid spurious failures
+    //       until we've implemented things, skip the check in this case. Once
+    //       the ISS handles validity bits properly, delete this block.
+    if (iss_valid && !rtl_valid)
+      continue;
+
+    // Otherwise, something has gone wrong. Print out a banner if this is the
+    // first mismatch.
+    if (bad_count == 0) {
+      std::cerr << "ERROR: Mismatches in dmem data:\n"
+                << std::hex << std::setfill('0');
+    }
+
+    std::cerr << " @offset 0x" << std::setw(3) << 4 * i << ": ";
+    if (iss_valid != rtl_valid) {
+      std::cerr << "mismatching validity bits (rtl = " << rtl_valid
+                << "; iss = " << iss_valid << ")\n";
+    } else {
+      assert(iss_valid && rtl_valid && iss_w32 != rtl_w32);
+      std::cerr << "rtl has 0x" << std::setw(8) << rtl_w32 << "; iss has 0x"
+                << std::setw(8) << iss_w32 << "\n";
+    }
+    ++bad_count;
+    if (bad_count == 10) {
+      std::cerr << " (skipping further errors...)\n";
+      break;
     }
   }
   std::cerr.copyfmt(old_state);
-  return false;
+  return bad_count == 0;
 }
 
 bool OtbnModel::check_regs(ISSWrapper &iss) const {
