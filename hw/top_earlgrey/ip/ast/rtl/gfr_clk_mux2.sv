@@ -59,7 +59,6 @@ assign clk_osc_en_o = clk_osc_sel && (clk_osc_en_q || clk_osc_aoff);
 ////////////////////////////////////////
 logic clk_ext_sel, clk_ext_aoff;
 
-
 always_ff @( posedge clk_ext_i, negedge rst_clk_ext_ni ) begin
   if ( !rst_clk_ext_ni ) begin
     clk_ext_sel  <= 1'b0;
@@ -91,7 +90,7 @@ logic clk_osc, clk_ext;
 prim_clock_gating #(
   .NoFpgaGate ( 1'b1)
 ) u_clk_osc_ckgt (
-  .clk_i ( clk_osc_i && rst_clk_osc_ni ),
+  .clk_i ( clk_osc_i ),
   .en_i ( clk_osc_en_o ),
   .test_en_i ( 1'b0 ),
   .clk_o ( clk_osc )
@@ -100,7 +99,7 @@ prim_clock_gating #(
 prim_clock_gating #(
   .NoFpgaGate ( 1'b1)
 ) u_clk_byp_ckgt (
-  .clk_i ( clk_ext_i && rst_clk_ext_ni ),
+  .clk_i ( clk_ext_i ),
   .en_i ( clk_ext_en_o ),
   .test_en_i ( 1'b0 ),
   .clk_o ( clk_ext )
