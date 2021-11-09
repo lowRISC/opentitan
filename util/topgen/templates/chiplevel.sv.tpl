@@ -937,11 +937,9 @@ module chip_${top["name"]}_${target["name"]} (
   assign dio_in[DioUsbdevDp] = manual_in_usb_p;
   assign manual_out_usb_p = dio_out[DioUsbdevDp];
   assign manual_oe_usb_p = dio_oe[DioUsbdevDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevDp];
   // This drives exactly the same output signal and attributes as for the first pad.
   assign manual_out_usb_p1 = dio_out[DioUsbdevDp];
   assign manual_oe_usb_p1 = dio_oe[DioUsbdevDp];
-  assign manual_attr_usb_p1 = dio_attr[DioUsbdevDp];
 
   // For the input, only the first pad is used.
   logic unused_in_usb_p1;
@@ -952,15 +950,26 @@ module chip_${top["name"]}_${target["name"]} (
   assign dio_in[DioUsbdevDn] = manual_in_usb_n;
   assign manual_out_usb_n = dio_out[DioUsbdevDn];
   assign manual_oe_usb_n = dio_oe[DioUsbdevDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevDn];
   // This drives exactly the same output signal and attributes as for the first pad.
   assign manual_out_usb_n1 = dio_out[DioUsbdevDn];
   assign manual_oe_usb_n1 = dio_oe[DioUsbdevDn];
-  assign manual_attr_usb_n1 = dio_attr[DioUsbdevDn];
 
   // For the input, only the first pad is used.
   logic unused_in_usb_n1;
   assign unused_in_usb_n1 = manual_in_usb_n1;
+
+  // Connect the pad attributes. Note: this routes the same attributes to a pad pair, with the
+  // exception of the pull-up/down attributes which are tied to 0 for one pad in a pair.
+  always_comb begin : p_attr_usb
+    manual_attr_usb_p = dio_attr[DioUsbdevDp];
+    manual_attr_usb_p1 = dio_attr[DioUsbdevDp];
+    manual_attr_usb_n = dio_attr[DioUsbdevDn];
+    manual_attr_usb_n1 = dio_attr[DioUsbdevDn];
+    manual_attr_usb_p1.pull_select = 1'b0;
+    manual_attr_usb_p1.pull_en = 1'b0;
+    manual_attr_usb_n1.pull_select = 1'b0;
+    manual_attr_usb_n1.pull_en = 1'b0;
+  end
 
   // These shorts are intentional to make sure the parallel pads drive the same net.
   assign USB_P1 = USB_P;
