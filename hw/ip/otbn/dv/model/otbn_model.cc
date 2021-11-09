@@ -98,7 +98,7 @@ static std::vector<uint8_t> words_to_bytes(
     }
 
     for (int j = 0; j < 4; ++j) {
-      ret.push_back((w32 >> 8 * j) & 0xff);
+      ret.push_back((w32 >> 8 * (3 - j)) & 0xff);
     }
   }
   return ret;
