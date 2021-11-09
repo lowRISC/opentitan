@@ -29,6 +29,29 @@ void Ecc32MemArea::LoadVmem(const std::string &path) const {
       "vmem files are not supported for memories with ECC bits");
 }
 
+Ecc32MemArea::EccWords Ecc32MemArea::ReadWithIntegrity(
+    uint32_t word_offset, uint32_t num_words) const {
+  assert(word_offset + num_words <= num_words_);
+
+  // See MemArea::Write for an explanation for this buffer.
+  uint8_t minibuf[SV_MEM_WIDTH_BYTES];
+  memset(minibuf, 0, sizeof minibuf);
+  assert(width_byte_ <= sizeof minibuf);
+
+  EccWords ret;
+  ret.reserve(num_words);
+
+  for (uint32_t i = 0; i < num_words; ++i) {
+    uint32_t src_word = word_offset + i;
+    uint32_t phys_addr = ToPhysAddr(src_word);
+
+    ReadToMinibuf(minibuf, phys_addr);
+    ReadBufferWithIntegrity(ret, minibuf, src_word);
+  }
+
+  return ret;
+}
+
 // Add bits to buf at bit_idx
 //
 // buf is assumed to be little-endian, so bit_idx 0 will refer to the bottom
@@ -114,5 +137,25 @@ void Ecc32MemArea::ReadBuffer(std::vector<uint8_t> &data,
     for (int j = 0; j < 4; ++j) {
       data.push_back(extract_bits(buf, 39 * i + 8 * j, 8));
     }
+  }
+}
+
+void Ecc32MemArea::ReadBufferWithIntegrity(
+    EccWords &data, const uint8_t buf[SV_MEM_WIDTH_BYTES],
+    uint32_t src_word) const {
+  for (int i = 0; i < width_byte_ / 4; ++i) {
+    uint8_t buf32[4];
+    uint32_t w32 = 0;
+    for (int j = 0; j < 4; ++j) {
+      uint8_t byte = extract_bits(buf, 39 * i + 8 * j, 8);
+      buf32[j] = byte;
+      w32 |= (uint32_t)byte << 8 * j;
+    }
+
+    uint8_t exp_check_bits = enc_secded_39_32(buf32);
+    uint8_t check_bits = extract_bits(buf, 39 * i + 32, 7);
+    bool good = check_bits == exp_check_bits;
+
+    data.push_back(std::make_pair(good, w32));
   }
 }

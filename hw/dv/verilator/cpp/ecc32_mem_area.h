@@ -24,6 +24,22 @@ class Ecc32MemArea : public MemArea {
 
   void LoadVmem(const std::string &path) const override;
 
+  typedef std::pair<bool, uint32_t> EccWord;
+  typedef std::vector<EccWord> EccWords;
+
+  /** Read data with validity bits, starting at the given offset.
+   *
+   * This is equivalent to MemArea's Read method, but returns 32 bit
+   * words, each with a boolean saying whether the integrity bits for
+   * that word are valid or not.
+   *
+   * @param word_offset The offset, in words, of the first word that should be
+   *                    read.
+   *
+   * @param num_words   The number of words to read.
+   */
+  EccWords ReadWithIntegrity(uint32_t word_offset, uint32_t num_words) const;
+
  protected:
   void WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
                    const std::vector<uint8_t> &data, size_t start_idx,
@@ -32,6 +48,20 @@ class Ecc32MemArea : public MemArea {
   void ReadBuffer(std::vector<uint8_t> &data,
                   const uint8_t buf[SV_MEM_WIDTH_BYTES],
                   uint32_t src_word) const override;
+
+  /** Extract the logical words corresponding to the physical memory contents
+   * in \p buf, together with validity bits. Append them to \p data.
+   *
+   * @param data     The target, onto which the extracted memory words should
+   *                 be appended.
+   *
+   * @param buf      Source buffer (physical memory bits)
+   *
+   * @param src_word Logical address of the location being read
+   */
+  virtual void ReadBufferWithIntegrity(EccWords &data,
+                                       const uint8_t buf[SV_MEM_WIDTH_BYTES],
+                                       uint32_t src_word) const;
 };
 
 #endif  // OPENTITAN_HW_DV_VERILATOR_CPP_ECC32_MEM_AREA_H_
