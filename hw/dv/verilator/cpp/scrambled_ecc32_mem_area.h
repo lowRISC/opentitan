@@ -37,9 +37,16 @@ class ScrambledEcc32MemArea : public Ecc32MemArea {
                    const std::vector<uint8_t> &data, size_t start_idx,
                    uint32_t dst_word) const override;
 
+  std::vector<uint8_t> ReadUnscrambled(const uint8_t buf[SV_MEM_WIDTH_BYTES],
+                                       uint32_t src_word) const;
+
   void ReadBuffer(std::vector<uint8_t> &data,
                   const uint8_t buf[SV_MEM_WIDTH_BYTES],
                   uint32_t src_word) const override;
+
+  void ReadBufferWithIntegrity(EccWords &data,
+                               const uint8_t buf[SV_MEM_WIDTH_BYTES],
+                               uint32_t src_word) const override;
 
   uint32_t ToPhysAddr(uint32_t logical_addr) const override;
 

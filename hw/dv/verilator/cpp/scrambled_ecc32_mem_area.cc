@@ -169,18 +169,28 @@ void ScrambledEcc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
   std::copy(scramble_buf.begin(), scramble_buf.end(), &buf[0]);
 }
 
+std::vector<uint8_t> ScrambledEcc32MemArea::ReadUnscrambled(
+    const uint8_t buf[SV_MEM_WIDTH_BYTES], uint32_t src_word) const {
+  std::vector<uint8_t> scrambled_data(buf, buf + GetPhysWidthByte());
+  return scramble_decrypt_data(
+      scrambled_data, GetPhysWidth(), 39, AddrIntToBytes(src_word, addr_width_),
+      addr_width_, GetScrambleNonce(), GetScrambleKey(), repeat_keystream_);
+}
+
 void ScrambledEcc32MemArea::ReadBuffer(std::vector<uint8_t> &data,
                                        const uint8_t buf[SV_MEM_WIDTH_BYTES],
                                        uint32_t src_word) const {
-  // Unscramble data from read buffer
-  std::vector<uint8_t> scrambled_data =
-      std::vector<uint8_t>(buf, buf + GetPhysWidthByte());
-  std::vector<uint8_t> unscrambled_data = scramble_decrypt_data(
-      scrambled_data, GetPhysWidth(), 39, AddrIntToBytes(src_word, addr_width_),
-      addr_width_, GetScrambleNonce(), GetScrambleKey(), repeat_keystream_);
-
+  std::vector<uint8_t> unscrambled_data = ReadUnscrambled(buf, src_word);
   // Strip integrity to give final result
   Ecc32MemArea::ReadBuffer(data, &unscrambled_data[0], src_word);
+}
+
+void ScrambledEcc32MemArea::ReadBufferWithIntegrity(
+    EccWords &data, const uint8_t buf[SV_MEM_WIDTH_BYTES],
+    uint32_t src_word) const {
+  std::vector<uint8_t> unscrambled_data = ReadUnscrambled(buf, src_word);
+  // Strip integrity to give final result
+  Ecc32MemArea::ReadBufferWithIntegrity(data, &unscrambled_data[0], src_word);
 }
 
 uint32_t ScrambledEcc32MemArea::ToPhysAddr(uint32_t logical_addr) const {
