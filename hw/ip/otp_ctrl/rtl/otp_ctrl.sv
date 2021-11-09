@@ -77,7 +77,7 @@ module otp_ctrl
   // Scan
   input                                              scan_en_i,
   input                                              scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t                         scanmode_i,
+  input prim_mubi_pkg::mubi4_t                       scanmode_i,
   // Test-related GPIO output
   output logic [OtpTestVectWidth-1:0]                cio_test_o,
   output logic [OtpTestVectWidth-1:0]                cio_test_en_o

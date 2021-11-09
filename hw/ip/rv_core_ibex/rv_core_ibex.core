@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:esc
       - lowrisc:prim:clock_gating
+      - lowrisc:prim:mubi
       - lowrisc:ip:tlul
       - lowrisc:tlul:adapter_host
       - lowrisc:ip:lc_ctrl_pkg

@@ -61,7 +61,7 @@ module spi_tpm
   input sys_rst_ni,
 
   input                      scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i, // scanmode[RstTpmSel]
+  input prim_mubi_pkg::mubi4_t scanmode_i, // scanmode[RstTpmSel]
 
   // SPI interface
   input        csb_i, // TPM needs separate CS#
@@ -174,7 +174,7 @@ module spi_tpm
   ) u_tpm_csb_rst_scan_mux (
     .clk0_i (sys_rst_ni & ~csb_i),
     .clk1_i (scan_rst_ni),
-    .sel_i  (scanmode_i == lc_ctrl_pkg::On),
+    .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode_i)),
     .clk_o  (rst_n)
   );
 

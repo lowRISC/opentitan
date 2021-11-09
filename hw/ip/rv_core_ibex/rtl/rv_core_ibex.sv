@@ -82,7 +82,7 @@ module rv_core_ibex
 
   // dft bypass
   input scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // peripheral interface access
   input  tlul_pkg::tl_h2d_t cfg_tl_d_i,
@@ -286,7 +286,7 @@ module rv_core_ibex
     .rst_ni,
 
 
-    .test_en_i      (scanmode_i == lc_ctrl_pkg::On),
+    .test_en_i      (prim_mubi_pkg::mubi4_test_true_strict(scanmode_i)),
     .scan_rst_ni,
 
     .ram_cfg_i,

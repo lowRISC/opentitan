@@ -42,7 +42,7 @@ module prim_generic_otp
   input  tlul_pkg::tl_h2d_t          test_tl_i,
   output tlul_pkg::tl_d2h_t          test_tl_o,
   // Other DFT signals
-  input lc_ctrl_pkg::lc_tx_t     scanmode_i,  // Scan Mode input
+  input prim_mubi_pkg::mubi4_t   scanmode_i,  // Scan Mode input
   input                          scan_en_i,   // Scan Shift
   input                          scan_rst_ni, // Scan Reset
   // Alert indication
