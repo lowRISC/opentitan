@@ -13,6 +13,15 @@ package dv_base_reg_pkg;
 
    // global paramters for number of csr tests (including memory test)
   parameter uint NUM_CSR_TESTS = 4;
+  string msg_id = "dv_base_reg_pkg";
+
+  // csr field struct - hold field specific params
+  typedef struct {
+    uvm_reg         csr;
+    uvm_reg_field   field;
+    uvm_reg_data_t  mask;
+    uint            shift;
+  } csr_field_t;
 
  // csr exclusion indications
   typedef enum bit [2:0] {
@@ -45,15 +54,38 @@ package dv_base_reg_pkg;
     BkdrRegPathGlsShdow      // backdoor path for shadow reg's shadow val in GLS
   } bkdr_reg_path_e;
 
+  // Forward-declare class types for the functions below.
   typedef class dv_base_reg_block;
   typedef class dv_base_reg;
+  typedef class dv_base_reg_field;
 
-  `include "csr_excl_item.sv"
-  `include "dv_base_reg_field.sv"
-  `include "dv_base_reg.sv"
-  `include "dv_base_mem.sv"
-  `include "dv_base_reg_block.sv"
-  `include "dv_base_reg_map.sv"
+  // This function attempts to cast a given uvm_object ptr into uvm_reg or uvm_reg_field. If cast
+  // is successful on either, then set the appropriate csr_field_t return values.
+  function automatic csr_field_t decode_csr_or_field(input uvm_object ptr);
+    uvm_reg       csr;
+    uvm_reg_field fld;
+    csr_field_t   result;
+    string        msg_id = {dv_base_reg_pkg::msg_id, "::decode_csr_or_field"};
+
+    if ($cast(csr, ptr)) begin
+      // return csr object with null field; set the mask to all 1s and shift to 0
+      result.csr = csr;
+      result.mask = '1;
+      result.shift = 0;
+    end
+    else if ($cast(fld, ptr)) begin
+      // return csr field object; return the appropriate mask and shift values
+      result.csr = fld.get_parent();
+      result.field = fld;
+      result.mask = (1 << fld.get_n_bits()) - 1;
+      result.shift = fld.get_lsb_pos();
+    end
+    else begin
+      `uvm_fatal(msg_id, $sformatf("ptr %0s is not of type uvm_reg or uvm_reg_field",
+                                   ptr.get_full_name()))
+    end
+    return result;
+  endfunction : decode_csr_or_field
 
   function automatic void get_flds_from_uvm_object(input uvm_object obj,
                                                    input string msg = "dv_base_reg_pkg",
@@ -70,7 +102,7 @@ package dv_base_reg_pkg;
       `uvm_fatal(msg, $sformatf("obj %0s is not of type uvm_reg or uvm_reg_field",
                       obj.get_full_name()))
     end
-  endfunction
+  endfunction : get_flds_from_uvm_object
 
   // mask and shift data to extract the value specific to that supplied field
   function automatic uvm_reg_data_t get_field_val(uvm_reg_field   field,
@@ -78,6 +110,13 @@ package dv_base_reg_pkg;
     uvm_reg_data_t  mask = (1 << field.get_n_bits()) - 1;
     uint            shift = field.get_lsb_pos();
     get_field_val = (value >> shift) & mask;
-  endfunction
+  endfunction : get_field_val
+
+  `include "csr_excl_item.sv"
+  `include "dv_base_reg_field.sv"
+  `include "dv_base_reg.sv"
+  `include "dv_base_mem.sv"
+  `include "dv_base_reg_block.sv"
+  `include "dv_base_reg_map.sv"
 
 endpackage

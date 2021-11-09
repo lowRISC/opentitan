@@ -12,7 +12,8 @@ class dv_base_reg_block extends uvm_reg_block;
   // name as {ip_name}_{alert_name}. Hence, we need this ip_name in reg_block
   local string ip_name;
 
-  csr_excl_item csr_excl;
+  // CSR exclusion object that holds exclusion tags for the sub-blocks, CSRs and fields.
+  protected csr_excl_item csr_excl;
 
   // The address mask for the register block specific to a map. This will be (1 << K) - 1 for some
   // K. All relative offsets in the register block have addresses less than (1 << K), so an address
@@ -44,6 +45,11 @@ class dv_base_reg_block extends uvm_reg_block;
     string empty_str = "";
     `DV_CHECK_NE_FATAL(ip_name, empty_str, "ip_name hasn't been set yet")
     return ip_name;
+  endfunction
+
+  // Returns the CSR exclusion item attached to the block.
+  virtual function csr_excl_item get_excl_item();
+    return csr_excl;
   endfunction
 
   // provide build function to supply base addr
