@@ -442,6 +442,28 @@ sw_tests += {
 ###############################################################################
 # IP Integration Tests
 ###############################################################################
+# Alert handler tests.
+alert_test_lib = declare_dependency(
+  link_with: static_library(
+    'alert_test_lib',
+    sources: ['alert_test.c'],
+    dependencies: [
+      sw_lib_mem,
+      sw_lib_mmio,
+      sw_lib_dif_alert_handler,
+      sw_lib_dif_rv_plic,
+      sw_lib_dif_uart,
+      sw_lib_runtime_log,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+sw_tests += {
+  'alert_test': {
+    'library': alert_test_lib,
+  }
+}
+
 # Flash Controller Tests
 flash_ctrl_test_lib = declare_dependency(
   link_with: static_library(
