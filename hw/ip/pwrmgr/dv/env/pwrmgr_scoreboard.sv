@@ -69,13 +69,6 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
           cov.control_cg.sample(cfg.pwrmgr_vif.control_enables, 1'b1);
         end
       end
-    forever
-      @(posedge cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::ResetNone) begin
-        if (cfg.en_cov) begin
-          // At this point pwrmgr is awake.
-          cov.control_cg.sample(cfg.pwrmgr_vif.control_enables, 1'b0);
-        end
-      end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
