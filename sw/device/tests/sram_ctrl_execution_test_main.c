@@ -15,7 +15,11 @@
 #include "sw/device/lib/testing/test_framework/test_main.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
 const test_config_t kTestConfig;
+
+static dif_sram_ctrl_t sram_ctrl;
 
 static volatile const uint32_t kExecParam1 = 2;
 static volatile const uint32_t kExecParam2 = 3;
@@ -149,22 +153,25 @@ static void sram_execution_test(void) {
  * determines whether the execution from SRAM is enabled.
  */
 bool test_main(void) {
-  sram_ctrl_t sram = sram_ctrl_main_init();
+  CHECK_DIF_OK(dif_sram_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
+      &sram_ctrl));
+
   dif_lc_ctrl_t lc;
   CHECK_DIF_OK(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc));
 
   if (otp_ifetch_enabled()) {
     dif_toggle_t state;
-    CHECK_DIF_OK(dif_sram_ctrl_exec_get_enabled(&sram.dif, &state));
+    CHECK_DIF_OK(dif_sram_ctrl_exec_get_enabled(&sram_ctrl, &state));
     if (state == kDifToggleDisabled) {
       bool locked;
       CHECK_DIF_OK(
-          dif_sram_ctrl_is_locked(&sram.dif, kDifSramCtrlLockExec, &locked));
+          dif_sram_ctrl_is_locked(&sram_ctrl, kDifSramCtrlLockExec, &locked));
       CHECK(!locked,
             "Execution is disabled and locked, cannot perform the test");
       CHECK_DIF_OK(
-          dif_sram_ctrl_exec_set_enabled(&sram.dif, kDifToggleEnabled));
+          dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleEnabled));
 
       sram_execution_test();
     }
