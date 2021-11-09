@@ -6,6 +6,7 @@ import random
 from typing import Optional, Tuple
 
 from shared.insn_yaml import InsnsFile
+from shared.operand import ImmOperandType
 
 from ..config import Config
 from ..program import ProgInsn, Program
@@ -93,5 +94,12 @@ class BadIspr(SnippetGen):
             bad_addr = model.pick_bad_addr(mem_type)
             assert bad_addr is not None
             prog_insn.lsu_info = mem_type, bad_addr
+            imm_idx = None
+            for i, each in enumerate(prog_insn.insn.operands):
+                if isinstance(each.op_type, ImmOperandType):
+                    assert imm_idx is None
+                    imm_idx = i
+            assert imm_idx is not None
+            prog_insn.operands[imm_idx] = bad_addr
 
         return (prog_insn, model)
