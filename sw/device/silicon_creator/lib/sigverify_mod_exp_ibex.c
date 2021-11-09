@@ -76,8 +76,9 @@ static uint32_t shift_left(sigverify_rsa_buffer_t *a) {
 static void calc_r_square(const sigverify_rsa_key_t *key,
                           sigverify_rsa_buffer_t *result) {
   memset(result->data, 0, sizeof(result->data));
-  // Since R/2 < n < R, this subtraction ensures that result = R mod n and
-  // fits in `kSigVerifyRsaNumWords` going into the loop.
+  // This subtraction sets result = -n mod R = R - n, which is equivalent to R
+  // modulo n and ensures that `result` fits in `kSigVerifyRsaNumWords` going
+  // into the loop.
   subtract_modulus(key, result);
 
   // Iteratively shift and reduce `result`.
