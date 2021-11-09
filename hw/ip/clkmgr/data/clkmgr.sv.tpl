@@ -301,13 +301,16 @@
 % for src in typed_clocks.rg_srcs:
   logic ${src}_fast_err;
   logic ${src}_slow_err;
+  logic ${src}_timeout_err;
   <%
    freq = clocks.all_srcs[src].freq
    cnt = int(freq*2 / aon_freq)
   %>\
   prim_clock_meas #(
     .Cnt(${cnt}),
-    .RefCnt(1)
+    .RefCnt(1),
+    .ClkTimeOutChkEn(1'b1),
+    .RefTimeOutChkEn(1'b0)
   ) u_${src}_meas (
     .clk_i(clk_${src}_i),
     .rst_ni(rst_${src}_ni),
@@ -318,7 +321,9 @@
     .min_cnt(reg2hw.${src}_measure_ctrl.min_thresh.q),
     .valid_o(),
     .fast_o(${src}_fast_err),
-    .slow_o(${src}_slow_err)
+    .slow_o(${src}_slow_err),
+    .timeout_clk_ref_o(),
+    .ref_timeout_clk_o(${src}_timeout_err)
   );
 
   logic synced_${src}_err;
@@ -331,8 +336,24 @@
     .dst_pulse_o(synced_${src}_err)
   );
 
+  logic synced_${src}_timeout_err;
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue('0),
+    .EnSync(1'b1)
+  ) u_${src}_timeout_err_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(${src}_timeout_err),
+    .q_sync_o(),
+    .q_posedge_pulse_o(synced_${src}_timeout_err),
+    .q_negedge_pulse_o()
+  );
+
   assign hw2reg.recov_err_code.${src}_measure_err.d = 1'b1;
   assign hw2reg.recov_err_code.${src}_measure_err.de = synced_${src}_err;
+  assign hw2reg.recov_err_code.${src}_timeout_err.d = 1'b1;
+  assign hw2reg.recov_err_code.${src}_timeout_err.de = synced_${src}_timeout_err;
 
 % endfor
 

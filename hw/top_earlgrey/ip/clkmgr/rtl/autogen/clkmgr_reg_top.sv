@@ -246,6 +246,16 @@ module clkmgr_reg_top (
   logic recov_err_code_main_measure_err_wd;
   logic recov_err_code_usb_measure_err_qs;
   logic recov_err_code_usb_measure_err_wd;
+  logic recov_err_code_io_timeout_err_qs;
+  logic recov_err_code_io_timeout_err_wd;
+  logic recov_err_code_io_div2_timeout_err_qs;
+  logic recov_err_code_io_div2_timeout_err_wd;
+  logic recov_err_code_io_div4_timeout_err_qs;
+  logic recov_err_code_io_div4_timeout_err_wd;
+  logic recov_err_code_main_timeout_err_qs;
+  logic recov_err_code_main_timeout_err_wd;
+  logic recov_err_code_usb_timeout_err_qs;
+  logic recov_err_code_usb_timeout_err_wd;
   logic fatal_err_code_qs;
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
@@ -1478,6 +1488,131 @@ module clkmgr_reg_top (
     .qs     (recov_err_code_usb_measure_err_qs)
   );
 
+  //   F[io_timeout_err]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_recov_err_code_io_timeout_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_io_timeout_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.io_timeout_err.de),
+    .d      (hw2reg.recov_err_code.io_timeout_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_io_timeout_err_qs)
+  );
+
+  //   F[io_div2_timeout_err]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_recov_err_code_io_div2_timeout_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_io_div2_timeout_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.io_div2_timeout_err.de),
+    .d      (hw2reg.recov_err_code.io_div2_timeout_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_io_div2_timeout_err_qs)
+  );
+
+  //   F[io_div4_timeout_err]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_recov_err_code_io_div4_timeout_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_io_div4_timeout_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.io_div4_timeout_err.de),
+    .d      (hw2reg.recov_err_code.io_div4_timeout_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_io_div4_timeout_err_qs)
+  );
+
+  //   F[main_timeout_err]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_recov_err_code_main_timeout_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_main_timeout_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.main_timeout_err.de),
+    .d      (hw2reg.recov_err_code.main_timeout_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_main_timeout_err_qs)
+  );
+
+  //   F[usb_timeout_err]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_recov_err_code_usb_timeout_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_usb_timeout_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.usb_timeout_err.de),
+    .d      (hw2reg.recov_err_code.usb_timeout_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_usb_timeout_err_qs)
+  );
+
 
   // R[fatal_err_code]: V(False)
   prim_subreg #(
@@ -1618,6 +1753,16 @@ module clkmgr_reg_top (
 
   assign recov_err_code_usb_measure_err_wd = reg_wdata[4];
 
+  assign recov_err_code_io_timeout_err_wd = reg_wdata[5];
+
+  assign recov_err_code_io_div2_timeout_err_wd = reg_wdata[6];
+
+  assign recov_err_code_io_div4_timeout_err_wd = reg_wdata[7];
+
+  assign recov_err_code_main_timeout_err_wd = reg_wdata[8];
+
+  assign recov_err_code_usb_timeout_err_wd = reg_wdata[9];
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -1688,6 +1833,11 @@ module clkmgr_reg_top (
         reg_rdata_next[2] = recov_err_code_io_div4_measure_err_qs;
         reg_rdata_next[3] = recov_err_code_main_measure_err_qs;
         reg_rdata_next[4] = recov_err_code_usb_measure_err_qs;
+        reg_rdata_next[5] = recov_err_code_io_timeout_err_qs;
+        reg_rdata_next[6] = recov_err_code_io_div2_timeout_err_qs;
+        reg_rdata_next[7] = recov_err_code_io_div4_timeout_err_qs;
+        reg_rdata_next[8] = recov_err_code_main_timeout_err_qs;
+        reg_rdata_next[9] = recov_err_code_usb_timeout_err_qs;
       end
 
       addr_hit[14]: begin

@@ -184,6 +184,26 @@ package clkmgr_reg_pkg;
       logic        d;
       logic        de;
     } usb_measure_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_timeout_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_div2_timeout_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_div4_timeout_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } main_timeout_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } usb_timeout_err;
   } clkmgr_hw2reg_recov_err_code_reg_t;
 
   typedef struct packed {
@@ -208,8 +228,8 @@ package clkmgr_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [21:12]
-    clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [11:2]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [31:22]
+    clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [21:2]
     clkmgr_hw2reg_fatal_err_code_reg_t fatal_err_code; // [1:0]
   } clkmgr_hw2reg_t;
 
@@ -269,7 +289,7 @@ package clkmgr_reg_pkg;
     4'b 0111, // index[10] CLKMGR_IO_DIV4_MEASURE_CTRL
     4'b 0111, // index[11] CLKMGR_MAIN_MEASURE_CTRL
     4'b 0111, // index[12] CLKMGR_USB_MEASURE_CTRL
-    4'b 0001, // index[13] CLKMGR_RECOV_ERR_CODE
+    4'b 0011, // index[13] CLKMGR_RECOV_ERR_CODE
     4'b 0001  // index[14] CLKMGR_FATAL_ERR_CODE
   };
 

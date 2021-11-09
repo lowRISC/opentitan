@@ -17,6 +17,8 @@ module prim_clock_meas #(
   parameter int Cnt = 16,
   // Maximum value of reference clock counts over measurement period
   parameter int RefCnt = 1,
+  parameter bit ClkTimeOutChkEn = 1,
+  parameter bit RefTimeOutChkEn = 1,
   localparam int CntWidth = prim_util_pkg::vbits(Cnt),
   localparam int RefCntWidth = prim_util_pkg::vbits(RefCnt)
 ) (
@@ -31,7 +33,13 @@ module prim_clock_meas #(
   // input clock domain
   output logic valid_o,
   output logic fast_o,
-  output logic slow_o
+  output logic slow_o,
+
+  // signal on clk_i domain that indicates clk_ref has timed out
+  output logic timeout_clk_ref_o,
+
+  // signal on clk_ref_i domain that indicates clk has timed out
+  output logic ref_timeout_clk_o
 );
 
   //////////////////////////
@@ -66,6 +74,7 @@ module prim_clock_meas #(
       ref_valid <= 1'b0;
     end
   end
+
 
   //////////////////////////
   // Input Clock Logic
@@ -122,9 +131,72 @@ module prim_clock_meas #(
   assign slow_o = valid_o & (cnt < min_cnt);
 
   //////////////////////////
+  // Timeout Handling
+  //////////////////////////
+
+  localparam bit TimeOutChkEn = ClkTimeOutChkEn | RefTimeOutChkEn;
+
+  // determine ratio between
+  localparam int ClkRatio = Cnt / RefCnt;
+
+  // maximum cdc latency from the perspective of the measured clock
+  // 1 cycle to output request
+  // 2 ref cycles for synchronization
+  // 1 ref cycle to send ack
+  // 2 cycles to sync ack
+  // Double for margin
+  localparam int MaxClkCdcLatency = (1 + 2*ClkRatio + 1*ClkRatio + 2)*2;
+
+  // maximum cdc latency from the perspective of the reference clock
+  // 1 ref cycle to output request
+  // 2 cycles to sync + 1 cycle to ack is less than 1 cycle of ref based on assertion requirement
+  // 2 ref cycles to sync ack
+  // Double for margin
+  localparam int MaxRefCdcLatency = (1 + 1 + 2)*2;
+
+  if (RefTimeOutChkEn) begin : gen_ref_timeout_chk
+    // check whether reference clock has timed out
+    prim_clock_timeout #(
+      .TimeOutCnt(MaxClkCdcLatency)
+    ) u_timeout_clk_to_ref (
+      .clk_chk_i(clk_ref_i),
+      .rst_chk_ni(rst_ref_ni),
+      .clk_i,
+      .rst_ni,
+      .en_i,
+      .timeout_o(timeout_clk_ref_o)
+    );
+  end else begin : gen_unused_ref_timeout
+    assign timeout_clk_ref_o = 1'b0;
+  end
+
+  if (ClkTimeOutChkEn) begin : gen_clk_timeout_chk
+    // check whether clock has timed out
+    prim_clock_timeout #(
+      .TimeOutCnt(MaxRefCdcLatency)
+    ) u_timeout_ref_to_clk (
+      .clk_chk_i(clk_i),
+      .rst_chk_ni(rst_ni),
+      .clk_i(clk_ref_i),
+      .rst_ni(rst_ref_ni),
+      .en_i(ref_en),
+      .timeout_o(ref_timeout_clk_o)
+    );
+  end else begin : gen_unused_clk_timeout
+    assign ref_timeout_clk_o = 1'b0;
+  end
+
+
+  //////////////////////////
   // Assertions
   //////////////////////////
 
+  if (TimeOutChkEn) begin : gen_timeout_assert
+    // the measured clock must be faster than the reference clock
+    `ASSERT_INIT(ClkRatios_A, ClkRatio > 2)
+  end
+
+  // reference count has to be at least 1
   `ASSERT_INIT(RefCntVal_A, RefCnt >= 1)
 
   // if we've reached the max count, enable must be 0 next.
