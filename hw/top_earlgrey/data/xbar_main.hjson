@@ -4,9 +4,9 @@
 { name: "main",
   type: "xbar",
   clock_primary: "clk_main_i", // Main clock, used in sockets
-  other_clock_list: [ "clk_fixed_i" ] // Secondary clocks used by specific nodes
+  other_clock_list: [ "clk_fixed_i", "clk_spi_host0_i", "clk_spi_host1_i" ] // Secondary clocks used by specific nodes
   reset_primary: "rst_main_ni", // Main reset, used in sockets
-  other_reset_list: [ "rst_fixed_ni" ] // Secondary clocks used by specific nodes
+  other_reset_list: [ "rst_fixed_ni", "rst_spi_host0_ni", "rst_spi_host1_ni"] // Secondary clocks used by specific nodes
 
   nodes: [
     { name:  "rv_core_ibex.corei",
@@ -57,6 +57,18 @@
       clock:     "clk_fixed_i",
       reset:     "rst_fixed_ni",
       pipeline_byp: "false"
+    },
+    { name:      "spi_host0",
+      type:      "device",
+      clock:     "clk_spi_host0_i",
+      reset:     "rst_spi_host0_ni",
+      pipeline:  "false"
+    },
+    { name:      "spi_host1",
+      type:      "device",
+      clock:     "clk_spi_host1_i",
+      reset:     "rst_spi_host1_ni",
+      pipeline:  "false"
     },
     { name:      "flash_ctrl.core",
       type:      "device",
@@ -160,7 +172,8 @@
     rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.rom", "sram_ctrl_main.ram", "flash_ctrl.mem"],
     rv_core_ibex.cored:  [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.rom", "rv_dm.regs",
-      "sram_ctrl_main.ram", "peri", "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
+      "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1",
+      "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg"

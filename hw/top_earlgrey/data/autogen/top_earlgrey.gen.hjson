@@ -157,9 +157,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_aon_peri: aon
           clk_usb_peri: usb
+          clk_io_peri: io
         }
       }
       {
@@ -822,122 +822,6 @@
       base_addrs:
       {
         null: 0x40050000
-      }
-    }
-    {
-      name: spi_host0
-      type: spi_host
-      clock_srcs:
-      {
-        clk_i: io
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: spi_host0
-          domain: "0"
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_peri
-      }
-      domain:
-      [
-        "0"
-      ]
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: passthrough
-          struct: passthrough
-          package: spi_device_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: spi_host0
-          default: ""
-          top_signame: spi_device_passthrough
-          index: -1
-        }
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: spi_host0
-          default: ""
-          end_idx: -1
-          top_signame: spi_host0_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null: 0x40060000
-      }
-    }
-    {
-      name: spi_host1
-      type: spi_host
-      clock_srcs:
-      {
-        clk_i: io_div2
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: spi_host1
-          domain: "0"
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div2_peri
-      }
-      domain:
-      [
-        "0"
-      ]
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: passthrough
-          struct: passthrough
-          package: spi_device_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: spi_host1
-          index: -1
-        }
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: spi_host1
-          default: ""
-          end_idx: -1
-          top_signame: spi_host1_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null: 0x40070000
       }
     }
     {
@@ -2289,6 +2173,122 @@
       base_addrs:
       {
         null: 0x40150000
+      }
+    }
+    {
+      name: spi_host0
+      type: spi_host
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: spi_host0
+          domain: "0"
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_peri
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: passthrough
+          struct: passthrough
+          package: spi_device_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: spi_host0
+          default: ""
+          top_signame: spi_device_passthrough
+          index: -1
+        }
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: spi_host0
+          default: ""
+          end_idx: -1
+          top_signame: spi_host0_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null: 0x40300000
+      }
+    }
+    {
+      name: spi_host1
+      type: spi_host
+      clock_srcs:
+      {
+        clk_i: io_div2
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: spi_host1
+          domain: "0"
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_div2_peri
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: passthrough
+          struct: passthrough
+          package: spi_device_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: spi_host1
+          index: -1
+        }
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: spi_host1
+          default: ""
+          end_idx: -1
+          top_signame: spi_host1_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null: 0x40310000
       }
     }
     {
@@ -7359,6 +7359,14 @@
       [
         peri.tl_main
       ]
+      spi_host0.tl:
+      [
+        main.tl_spi_host0
+      ]
+      spi_host1.tl:
+      [
+        main.tl_spi_host1
+      ]
       flash_ctrl.core_tl:
       [
         main.tl_flash_ctrl__core
@@ -7466,14 +7474,6 @@
       spi_device.tl:
       [
         peri.tl_spi_device
-      ]
-      spi_host0.tl:
-      [
-        peri.tl_spi_host0
-      ]
-      spi_host1.tl:
-      [
-        peri.tl_spi_host1
       ]
       rv_timer.tl:
       [
@@ -7607,6 +7607,8 @@
       {
         clk_main_i: main
         clk_fixed_i: io_div4
+        clk_spi_host0_i: io
+        clk_spi_host1_i: io_div2
       }
       clock_group: infra
       reset: rst_main_ni
@@ -7622,11 +7624,23 @@
           name: sys_io_div4
           domain: "0"
         }
+        rst_spi_host0_ni:
+        {
+          name: spi_host0
+          domain: "0"
+        }
+        rst_spi_host1_ni:
+        {
+          name: spi_host1
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_main_i: clkmgr_aon_clocks.clk_main_infra
         clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
+        clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
+        clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
       }
       domain:
       [
@@ -7649,6 +7663,8 @@
           rv_dm.regs
           sram_ctrl_main.ram
           peri
+          spi_host0
+          spi_host1
           flash_ctrl.core
           flash_ctrl.prim
           flash_ctrl.mem
@@ -7809,9 +7825,49 @@
           [
             {
               base_addr: 0x40000000
-              size_byte: 0x800000
+              size_byte: 0x200000
+            }
+            {
+              base_addr: 0x40400000
+              size_byte: 0x400000
             }
           ]
+        }
+        {
+          name: spi_host0
+          type: device
+          clock: clk_spi_host0_i
+          reset: rst_spi_host0_ni
+          pipeline: "false"
+          inst_type: spi_host
+          addr_range:
+          [
+            {
+              base_addr: 0x40300000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
+          name: spi_host1
+          type: device
+          clock: clk_spi_host1_i
+          reset: rst_spi_host1_ni
+          pipeline: "false"
+          inst_type: spi_host
+          addr_range:
+          [
+            {
+              base_addr: 0x40310000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
         }
         {
           name: flash_ctrl.core
@@ -8207,6 +8263,30 @@
           index: -1
         }
         {
+          name: tl_spi_host0
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: spi_host0_tl
+          index: -1
+        }
+        {
+          name: tl_spi_host1
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: spi_host1_tl
+          index: -1
+        }
+        {
           name: tl_flash_ctrl__core
           struct: tl
           package: tlul_pkg
@@ -8405,8 +8485,6 @@
       clock_srcs:
       {
         clk_peri_i: io_div4
-        clk_spi_host0_i: io
-        clk_spi_host1_i: io_div2
       }
       clock_group: infra
       reset: rst_peri_ni
@@ -8417,22 +8495,10 @@
           name: sys_io_div4
           domain: "0"
         }
-        rst_spi_host0_ni:
-        {
-          name: spi_host0
-          domain: "0"
-        }
-        rst_spi_host1_ni:
-        {
-          name: spi_host1
-          domain: "0"
-        }
       }
       clock_connections:
       {
         clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
-        clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
-        clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
       }
       domain:
       [
@@ -8452,8 +8518,6 @@
           pattgen
           gpio
           spi_device
-          spi_host0
-          spi_host1
           rv_timer
           usbdev
           pwrmgr_aon
@@ -8679,42 +8743,6 @@
             {
               base_addr: 0x40050000
               size_byte: 0x2000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
-        {
-          name: spi_host0
-          type: device
-          clock: clk_spi_host0_i
-          reset: rst_spi_host0_ni
-          pipeline: "false"
-          inst_type: spi_host
-          addr_range:
-          [
-            {
-              base_addr: 0x40060000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
-        {
-          name: spi_host1
-          type: device
-          clock: clk_spi_host1_i
-          reset: rst_spi_host1_ni
-          pipeline: "false"
-          inst_type: spi_host
-          addr_range:
-          [
-            {
-              base_addr: 0x40070000
-              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -9174,30 +9202,6 @@
           inst_name: peri
           default: ""
           top_signame: spi_device_tl
-          index: -1
-        }
-        {
-          name: tl_spi_host0
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: peri
-          default: ""
-          top_signame: spi_host0_tl
-          index: -1
-        }
-        {
-          name: tl_spi_host1
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: peri
-          default: ""
-          top_signame: spi_host1_tl
           index: -1
         }
         {
@@ -12218,8 +12222,6 @@
     uart3
     gpio
     spi_device
-    spi_host0
-    spi_host1
     i2c0
     i2c1
     i2c2
@@ -12228,6 +12230,8 @@
     usbdev
     otp_ctrl
     alert_handler
+    spi_host0
+    spi_host1
     pwrmgr_aon
     sysrst_ctrl_aon
     adc_ctrl_aon
@@ -12483,30 +12487,6 @@
       width: 1
       type: interrupt
       module_name: spi_device
-    }
-    {
-      name: spi_host0_error
-      width: 1
-      type: interrupt
-      module_name: spi_host0
-    }
-    {
-      name: spi_host0_spi_event
-      width: 1
-      type: interrupt
-      module_name: spi_host0
-    }
-    {
-      name: spi_host1_error
-      width: 1
-      type: interrupt
-      module_name: spi_host1
-    }
-    {
-      name: spi_host1_spi_event
-      width: 1
-      type: interrupt
-      module_name: spi_host1
     }
     {
       name: i2c0_fmt_watermark
@@ -12953,6 +12933,30 @@
       module_name: alert_handler
     }
     {
+      name: spi_host0_error
+      width: 1
+      type: interrupt
+      module_name: spi_host0
+    }
+    {
+      name: spi_host0_spi_event
+      width: 1
+      type: interrupt
+      module_name: spi_host0
+    }
+    {
+      name: spi_host1_error
+      width: 1
+      type: interrupt
+      module_name: spi_host1
+    }
+    {
+      name: spi_host1_spi_event
+      width: 1
+      type: interrupt
+      module_name: spi_host1
+    }
+    {
       name: pwrmgr_aon_wakeup
       width: 1
       type: interrupt
@@ -13147,8 +13151,6 @@
     uart3
     gpio
     spi_device
-    spi_host0
-    spi_host1
     i2c0
     i2c1
     i2c2
@@ -13157,6 +13159,8 @@
     usbdev
     otp_ctrl
     lc_ctrl
+    spi_host0
+    spi_host1
     pwrmgr_aon
     rstmgr_aon
     clkmgr_aon
@@ -13240,31 +13244,13 @@
       lpg_idx: 1
     }
     {
-      name: spi_host0_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: spi_host0
-      lpg_name: peri_spi_host0_0
-      lpg_idx: 2
-    }
-    {
-      name: spi_host1_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: spi_host1
-      lpg_name: peri_spi_host1_0
-      lpg_idx: 3
-    }
-    {
       name: i2c0_fatal_fault
       width: 1
       type: alert
       async: "1"
       module_name: i2c0
       lpg_name: peri_i2c0_0
-      lpg_idx: 4
+      lpg_idx: 2
     }
     {
       name: i2c1_fatal_fault
@@ -13273,7 +13259,7 @@
       async: "1"
       module_name: i2c1
       lpg_name: peri_i2c1_0
-      lpg_idx: 5
+      lpg_idx: 3
     }
     {
       name: i2c2_fatal_fault
@@ -13282,7 +13268,7 @@
       async: "1"
       module_name: i2c2
       lpg_name: peri_i2c2_0
-      lpg_idx: 6
+      lpg_idx: 4
     }
     {
       name: pattgen_fatal_fault
@@ -13300,7 +13286,7 @@
       async: "1"
       module_name: rv_timer
       lpg_name: timers_sys_io_div4_0
-      lpg_idx: 7
+      lpg_idx: 5
     }
     {
       name: usbdev_fatal_fault
@@ -13309,7 +13295,7 @@
       async: "1"
       module_name: usbdev
       lpg_name: peri_usb_0
-      lpg_idx: 8
+      lpg_idx: 6
     }
     {
       name: otp_ctrl_fatal_macro_error
@@ -13318,7 +13304,7 @@
       async: "1"
       module_name: otp_ctrl
       lpg_name: secure_lc_io_div4_0
-      lpg_idx: 9
+      lpg_idx: 7
     }
     {
       name: otp_ctrl_fatal_check_error
@@ -13327,7 +13313,7 @@
       async: "1"
       module_name: otp_ctrl
       lpg_name: secure_lc_io_div4_0
-      lpg_idx: 9
+      lpg_idx: 7
     }
     {
       name: otp_ctrl_fatal_bus_integ_error
@@ -13336,7 +13322,7 @@
       async: "1"
       module_name: otp_ctrl
       lpg_name: secure_lc_io_div4_0
-      lpg_idx: 9
+      lpg_idx: 7
     }
     {
       name: lc_ctrl_fatal_prog_error
@@ -13345,7 +13331,7 @@
       async: "1"
       module_name: lc_ctrl
       lpg_name: secure_lc_io_div4_0
-      lpg_idx: 9
+      lpg_idx: 7
     }
     {
       name: lc_ctrl_fatal_state_error
@@ -13354,7 +13340,7 @@
       async: "1"
       module_name: lc_ctrl
       lpg_name: secure_lc_io_div4_0
-      lpg_idx: 9
+      lpg_idx: 7
     }
     {
       name: lc_ctrl_fatal_bus_integ_error
@@ -13363,6 +13349,24 @@
       async: "1"
       module_name: lc_ctrl
       lpg_name: secure_lc_io_div4_0
+      lpg_idx: 7
+    }
+    {
+      name: spi_host0_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: spi_host0
+      lpg_name: peri_spi_host0_0
+      lpg_idx: 8
+    }
+    {
+      name: spi_host1_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: spi_host1
+      lpg_name: peri_spi_host1_0
       lpg_idx: 9
     }
     {
@@ -13732,26 +13736,6 @@
       }
     }
     {
-      name: peri_spi_host0_0
-      clock_group: peri
-      clock_connection: clkmgr_aon_clocks.clk_io_peri
-      reset_connection:
-      {
-        name: spi_host0
-        domain: "0"
-      }
-    }
-    {
-      name: peri_spi_host1_0
-      clock_group: peri
-      clock_connection: clkmgr_aon_clocks.clk_io_div2_peri
-      reset_connection:
-      {
-        name: spi_host1
-        domain: "0"
-      }
-    }
-    {
       name: peri_i2c0_0
       clock_group: peri
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -13808,6 +13792,26 @@
       reset_connection:
       {
         name: lc_io_div4
+        domain: "0"
+      }
+    }
+    {
+      name: peri_spi_host0_0
+      clock_group: peri
+      clock_connection: clkmgr_aon_clocks.clk_io_peri
+      reset_connection:
+      {
+        name: spi_host0
+        domain: "0"
+      }
+    }
+    {
+      name: peri_spi_host1_0
+      clock_group: peri
+      clock_connection: clkmgr_aon_clocks.clk_io_div2_peri
+      reset_connection:
+      {
+        name: spi_host1
         domain: "0"
       }
     }
@@ -14039,54 +14043,6 @@
         default: ""
         end_idx: -1
         top_signame: spi_device_tl
-        index: -1
-      }
-      {
-        name: passthrough
-        struct: passthrough
-        package: spi_device_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: spi_host0
-        default: ""
-        top_signame: spi_device_passthrough
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: spi_host0
-        default: ""
-        end_idx: -1
-        top_signame: spi_host0_tl
-        index: -1
-      }
-      {
-        name: passthrough
-        struct: passthrough
-        package: spi_device_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: spi_host1
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: spi_host1
-        default: ""
-        end_idx: -1
-        top_signame: spi_host1_tl
         index: -1
       }
       {
@@ -15008,6 +14964,54 @@
         default: ""
         end_idx: -1
         top_signame: alert_handler_tl
+        index: -1
+      }
+      {
+        name: passthrough
+        struct: passthrough
+        package: spi_device_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: spi_host0
+        default: ""
+        top_signame: spi_device_passthrough
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: spi_host0
+        default: ""
+        end_idx: -1
+        top_signame: spi_host0_tl
+        index: -1
+      }
+      {
+        name: passthrough
+        struct: passthrough
+        package: spi_device_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: spi_host1
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: spi_host1
+        default: ""
+        end_idx: -1
+        top_signame: spi_host1_tl
         index: -1
       }
       {
@@ -17697,6 +17701,30 @@
         index: -1
       }
       {
+        name: tl_spi_host0
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: spi_host0_tl
+        index: -1
+      }
+      {
+        name: tl_spi_host1
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: spi_host1_tl
+        index: -1
+      }
+      {
         name: tl_flash_ctrl__core
         struct: tl
         package: tlul_pkg
@@ -18030,30 +18058,6 @@
         inst_name: peri
         default: ""
         top_signame: spi_device_tl
-        index: -1
-      }
-      {
-        name: tl_spi_host0
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: peri
-        default: ""
-        top_signame: spi_host0_tl
-        index: -1
-      }
-      {
-        name: tl_spi_host1
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: peri
-        default: ""
-        top_signame: spi_host1_tl
         index: -1
       }
       {
@@ -20000,6 +20004,50 @@
       {
         package: tlul_pkg
         struct: tl_h2d
+        signame: spi_host0_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: spi_host0_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: spi_host1_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: spi_host1_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
         signame: flash_ctrl_core_tl_req
         width: 1
         type: req_rsp
@@ -20584,50 +20632,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: spi_device_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: spi_host0_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: spi_host0_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: spi_host1_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: spi_host1_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

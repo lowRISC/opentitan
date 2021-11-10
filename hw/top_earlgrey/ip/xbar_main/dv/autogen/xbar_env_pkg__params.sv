@@ -20,7 +20,14 @@ tl_device_t xbar_devices[$] = '{
         '{32'h411e0000, 32'h411e0fff}
     }},
     '{"peri", '{
-        '{32'h40000000, 32'h407fffff}
+        '{32'h40000000, 32'h401fffff},
+        '{32'h40400000, 32'h407fffff}
+    }},
+    '{"spi_host0", '{
+        '{32'h40300000, 32'h40300fff}
+    }},
+    '{"spi_host1", '{
+        '{32'h40310000, 32'h40310fff}
     }},
     '{"flash_ctrl__core", '{
         '{32'h41000000, 32'h41000fff}
@@ -86,6 +93,8 @@ tl_host_t xbar_hosts[$] = '{
         "rv_dm__regs",
         "sram_ctrl_main__ram",
         "peri",
+        "spi_host0",
+        "spi_host1",
         "flash_ctrl__core",
         "flash_ctrl__prim",
         "flash_ctrl__mem",

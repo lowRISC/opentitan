@@ -19,6 +19,12 @@ tl_device_t xbar_devices[$] = '{
     '{"rom_ctrl__regs", '{
         '{32'h411e0000, 32'h411e0fff}
     }},
+    '{"spi_host0", '{
+        '{32'h40300000, 32'h40300fff}
+    }},
+    '{"spi_host1", '{
+        '{32'h40310000, 32'h40310fff}
+    }},
     '{"flash_ctrl__core", '{
         '{32'h41000000, 32'h41000fff}
     }},
@@ -100,12 +106,6 @@ tl_device_t xbar_devices[$] = '{
     '{"spi_device", '{
         '{32'h40050000, 32'h40051fff}
     }},
-    '{"spi_host0", '{
-        '{32'h40060000, 32'h40060fff}
-    }},
-    '{"spi_host1", '{
-        '{32'h40070000, 32'h40070fff}
-    }},
     '{"rv_timer", '{
         '{32'h40100000, 32'h40100fff}
     }},
@@ -182,8 +182,6 @@ tl_host_t xbar_hosts[$] = '{
         "pattgen",
         "gpio",
         "spi_device",
-        "spi_host0",
-        "spi_host1",
         "rv_timer",
         "usbdev",
         "pwrmgr_aon",
@@ -202,6 +200,8 @@ tl_host_t xbar_hosts[$] = '{
         "adc_ctrl_aon",
         "sysrst_ctrl_aon",
         "pwm_aon",
+        "spi_host0",
+        "spi_host1",
         "flash_ctrl__core",
         "flash_ctrl__prim",
         "flash_ctrl__mem",
@@ -233,8 +233,6 @@ tl_host_t xbar_hosts[$] = '{
         "pattgen",
         "gpio",
         "spi_device",
-        "spi_host0",
-        "spi_host1",
         "rv_timer",
         "usbdev",
         "pwrmgr_aon",

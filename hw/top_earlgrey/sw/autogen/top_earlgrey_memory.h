@@ -106,20 +106,6 @@
  */
 #define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0x40050000
 /**
- * Peripheral base address for spi_host0 in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_SPI_HOST0_BASE_ADDR 0x40060000
-/**
- * Peripheral base address for spi_host1 in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_SPI_HOST1_BASE_ADDR 0x40070000
-/**
  * Peripheral base address for i2c0 in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -189,6 +175,20 @@
  * registers associated with the peripheral (usually via a DIF).
  */
 #define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x40150000
+/**
+ * Peripheral base address for spi_host0 in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SPI_HOST0_BASE_ADDR 0x40300000
+/**
+ * Peripheral base address for spi_host1 in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SPI_HOST1_BASE_ADDR 0x40310000
 /**
  * Peripheral base address for pwrmgr_aon in top earlgrey.
  *

@@ -41,6 +41,8 @@ tl_if rv_dm__regs_tl_if(clk_main, rst_n);
 tl_if rv_dm__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl__regs_tl_if(clk_main, rst_n);
+tl_if spi_host0_tl_if(clk_io, rst_n);
+tl_if spi_host1_tl_if(clk_io_div2, rst_n);
 tl_if flash_ctrl__core_tl_if(clk_main, rst_n);
 tl_if flash_ctrl__prim_tl_if(clk_main, rst_n);
 tl_if flash_ctrl__mem_tl_if(clk_main, rst_n);
@@ -68,8 +70,6 @@ tl_if pattgen_tl_if(clk_io_div4, rst_n);
 tl_if pwm_aon_tl_if(clk_io_div4, rst_n);
 tl_if gpio_tl_if(clk_io_div4, rst_n);
 tl_if spi_device_tl_if(clk_io_div4, rst_n);
-tl_if spi_host0_tl_if(clk_io, rst_n);
-tl_if spi_host1_tl_if(clk_io_div2, rst_n);
 tl_if rv_timer_tl_if(clk_io_div4, rst_n);
 tl_if usbdev_tl_if(clk_io_div4, rst_n);
 tl_if pwrmgr_aon_tl_if(clk_io_div4, rst_n);
@@ -109,16 +109,16 @@ initial begin
     // bypass clkmgr, force clocks directly
     force tb.dut.top_earlgrey.u_xbar_main.clk_main_i = clk_main;
     force tb.dut.top_earlgrey.u_xbar_main.clk_fixed_i = clk_io_div4;
+    force tb.dut.top_earlgrey.u_xbar_main.clk_spi_host0_i = clk_io;
+    force tb.dut.top_earlgrey.u_xbar_main.clk_spi_host1_i = clk_io_div2;
     force tb.dut.top_earlgrey.u_xbar_peri.clk_peri_i = clk_io_div4;
-    force tb.dut.top_earlgrey.u_xbar_peri.clk_spi_host0_i = clk_io;
-    force tb.dut.top_earlgrey.u_xbar_peri.clk_spi_host1_i = clk_io_div2;
 
     // bypass rstmgr, force resets directly
     force tb.dut.top_earlgrey.u_xbar_main.rst_main_ni = rst_n;
     force tb.dut.top_earlgrey.u_xbar_main.rst_fixed_ni = rst_n;
+    force tb.dut.top_earlgrey.u_xbar_main.rst_spi_host0_ni = rst_n;
+    force tb.dut.top_earlgrey.u_xbar_main.rst_spi_host1_ni = rst_n;
     force tb.dut.top_earlgrey.u_xbar_peri.rst_peri_ni = rst_n;
-    force tb.dut.top_earlgrey.u_xbar_peri.rst_spi_host0_ni = rst_n;
-    force tb.dut.top_earlgrey.u_xbar_peri.rst_spi_host1_ni = rst_n;
 
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h)
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__cored, rv_core_ibex, cored_tl_h)
@@ -127,6 +127,8 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__rom, rv_dm, rom_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__rom, rom_ctrl, rom_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__regs, rom_ctrl, regs_tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(spi_host1, spi_host1, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__core, flash_ctrl, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__prim, flash_ctrl, prim_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__mem, flash_ctrl, mem_tl)
@@ -154,8 +156,6 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(pwm_aon, pwm_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(spi_host1, spi_host1, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl)
