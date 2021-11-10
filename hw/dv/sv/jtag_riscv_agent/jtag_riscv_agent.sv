@@ -31,6 +31,7 @@ class jtag_riscv_agent extends dv_base_agent #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
+    cfg.jtag_sequencer_h       = m_jtag_agent.sequencer;
   endfunction
 
 endclass
