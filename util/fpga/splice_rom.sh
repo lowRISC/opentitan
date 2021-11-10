@@ -102,7 +102,10 @@ FPGA_MMI_PATH=${FPGA_BUILD_DIR}/lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOAR
 FPGA_BIT_NAME=lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOARD}_0.1
 
 # Create the Vivado image for splicing.
-hw/ip/rom_ctrl/util/gen_vivado_mem_image.py "${TARGET}${TARGET_FILE_EXT}" "${TARGET}.updatemem.mem"
+hw/ip/rom_ctrl/util/gen_vivado_mem_image.py \
+  "${TARGET}${TARGET_FILE_EXT}" \
+  "${TARGET}.updatemem.mem" \
+  --swap-nibbles
 
 # Splice the ROM.
 # The --debug flag is undocumented and causes updatemem to print out the INIT_XX
