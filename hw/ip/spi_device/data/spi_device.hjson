@@ -706,23 +706,43 @@
             desc: '''Command Opcode
               '''
           }
-          { bits:   "8"
+          { bits:   "9:8"
             resval: "0"
-            name:   "addr_en"
-            desc:   "If 1, the command has an address field following the opcode"
-          }
-          { bits:   "9"
+            name:   "addr_mode"
+            desc:   '''Command address mode
+
+              A command can have four modes:
+
+              - 0: Command does not have an address field
+              - 1: CFG.addr_4b_en decides the address size (3B/4B)
+              - 2: Address size is always 3B regardless of CFG.addr_4b_en
+              - 3: Address size is always 4B regardless of CFG.addr_4b_en
+              '''
+            enum: [
+              { value: "0"
+                name:  "AddrDisabled"
+                desc:  "Address field does not exist"
+              } // e: AddrDisabled
+              { value: "1"
+                name:  "AddrCfg"
+                desc:  "CFG.addr_4b_en determines the address size"
+              } // e: AddrCfg
+              { value: "2"
+                name:  "Addr3B"
+                desc:  "Address size in the command is always 3B."
+              } // e: Addr3B
+              { value: "3"
+                name:  "Addr4B"
+                desc:  "Address size in the command is always 4B."
+              } // e: Addr4B
+            ]
+          } // f: addr_mode
+          { bits:   "10"
             resval: "0"
             name:   "addr_swap_en"
             desc:   '''This field is used in the passthrough logic.
               If this field is set to 1, the address in the passthrough command
               is replaced to the preconfigured value.
-              '''
-          }
-          { bits:   "10"
-            name:   "addr_4b_affected"
-            desc:   '''If 1, the address size is affected by `cfg_addr_4b_en`.
-              If not, the address size of the command is always 3B.
               '''
           }
           { bits:   "11"

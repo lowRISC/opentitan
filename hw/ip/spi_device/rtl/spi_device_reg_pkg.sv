@@ -262,14 +262,11 @@ package spi_device_reg_pkg;
       logic [7:0]  q;
     } opcode;
     struct packed {
-      logic        q;
-    } addr_en;
+      logic [1:0]  q;
+    } addr_mode;
     struct packed {
       logic        q;
     } addr_swap_en;
-    struct packed {
-      logic        q;
-    } addr_4b_affected;
     struct packed {
       logic        q;
     } mbyte_en;

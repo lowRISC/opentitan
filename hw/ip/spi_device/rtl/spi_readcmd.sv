@@ -190,7 +190,6 @@ module spi_readcmd
   logic unused_cmd_info_members;
   assign unused_cmd_info_members = ^{
     cmd_info_i.valid,           // cmdparse checks the valid bit
-    cmd_info_i.addr_en,         // Always assume Readcmd has addr_en set
     cmd_info_i.addr_swap_en,    // address swap feature is used in Passthrough
     cmd_info_i.opcode,          // Does not need to check opcode. (fixed slot)
     cmd_info_i.payload_dir,     // Always output mode
@@ -200,7 +199,7 @@ module spi_readcmd
     };
 
   `ASSERT(ValidCmdConfig_A,
-          main_st == MainAddress |-> cmd_info_i.addr_en
+          main_st == MainAddress |-> (cmd_info_i.addr_mode != AddrDisabled)
           && cmd_info_i.payload_dir == PayloadOut)
 
   logic unused_s2p_bitcnt;
@@ -270,6 +269,9 @@ module spi_readcmd
   // Signals //
   /////////////
 
+  // Address mode in cmd_info
+  addr_mode_e cmdinfo_addr_mode;
+
   // Address shift & latch
   logic addr_ready_in_word, addr_ready_in_halfword;
   logic addr_latched;
@@ -277,7 +279,7 @@ module spi_readcmd
   logic addr_latch_en;
   logic addr_inc; // increase address by 1 word
   // Address size is latched when the state machine moves to the MainAddress
-  // state based on the cmd_info.addr_4b_affected and addr_4b_en_i
+  // state based on the cmd_info.addr_mode and addr_4b_en_i
   logic [4:0] addr_cnt_d, addr_cnt_q;
   logic addr_cnt_set; // no need to clear the counter
 
@@ -387,6 +389,8 @@ module spi_readcmd
   // TODO: Check if addr_cnt_d or addr_cnt_q ?
   assign addr_latched = (addr_cnt_d == 5'd 0);
 
+  assign cmdinfo_addr_mode = get_addr_mode(cmd_info_i, addr_4b_en_i);
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       addr_cnt_q <= '0;
@@ -399,12 +403,12 @@ module spi_readcmd
     addr_cnt_d = addr_cnt_q;
     if (addr_cnt_set) begin
       // Set to the addr size based on cmd_info_i
-      // If addr_4b_affected && addr_4b_en, then 32, if not, 24
+      // If addr_mode && addr_4b_en is Addr4B, then 32, if not, 24
       // addr_cnt_d starts from the max -1. As addr_cnt_set is asserted when
       // FSM moves from Reset to Address. At that time of the transition, the
       // datapath should latch the Address[31] or Address[23] too. So, it
       // already counts one beat.
-      addr_cnt_d = (cmd_info_i.addr_4b_affected && addr_4b_en_i) ? 5'd 30 : 5'd 22;
+      addr_cnt_d = (cmdinfo_addr_mode == Addr4B) ? 5'd 30 : 5'd 22;
 
       // TODO: Dual IO/ Quad IO case
 

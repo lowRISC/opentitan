@@ -88,6 +88,16 @@ package spi_device_pkg;
     PayloadIn  = 1'b 0,
     PayloadOut = 1'b 1
   } payload_dir_e;
+
+  // addr_mode_e: CMD_INFO.addr_mode informs HW if a command has address field,
+  // CFG.addr_4b_en affected, or address is 3B/4B.
+  typedef enum logic [1:0] {
+    AddrDisabled = 2'b 00,
+    AddrCfg      = 2'b 01,
+    Addr3B       = 2'b 10,
+    Addr4B       = 2'b 11
+  } addr_mode_e;
+
   // cmd_info_t defines the command relevant information. SPI Device IP has
   // #NumCmdInfo cmd registers (default 16). A few of them are assigned to a
   // specific commands such as Read Status, Read SFDP.
@@ -103,17 +113,17 @@ package spi_device_pkg;
     // info slot having the lowest index among the matched ones.
     logic [7:0] opcode;
 
-    // set to 1 if the command has an address field following the opcode.
-    logic addr_en;
+    // Look at addr_mode_e description for details
+    // - 00: Address disabled
+    // - 01: Address is affected by CFG
+    // - 10: Address is 3 bytes field
+    // - 11: Address is 4 bytes field
+    addr_mode_e addr_mode;
 
     // swap_en is used in the passthrough logic. If this field is set to 1, the
     // address in the passthrough command is replaced to the preconfigured
     // value.
     logic addr_swap_en;
-
-    // If 1, the address size is affected by `cfg_addr_4b_en_i` configuration
-    // field.
-    logic addr_4b_affected;
 
     // Mbyte field exist. If set to 1, the command waits 1 byte before moving
     // to dummy field. This field data is ignored.
@@ -162,9 +172,8 @@ package spi_device_pkg;
   parameter cmd_info_t CmdInfoInput = '{
     valid:            1'b 0,
     opcode:           8'h 00,
-    addr_en:          1'b 0,
+    addr_mode:        AddrDisabled,
     addr_swap_en:     1'b 0,
-    addr_4b_affected: 1'b 0,
     mbyte_en:         1'b 0,
     dummy_en:         1'b 0,
     dummy_size:       3'h 0,
@@ -177,10 +186,18 @@ package spi_device_pkg;
 
   function automatic logic is_cmdinfo_addr_4b(cmd_info_t ci, logic addr_4b_en);
     logic result;
-    // TODO: Add force 4B
-    result = ci.addr_4b_affected ? addr_4b_en : 1'b 0;
+    result = ci.addr_mode == AddrCfg ? addr_4b_en : (ci.addr_mode == Addr4B);
     return result;
   endfunction : is_cmdinfo_addr_4b
+
+  // get_addr_mode removes AddrCfg.
+  // It returns {AddrDisabled, Addr3B, Addr4B}
+  function automatic addr_mode_e get_addr_mode(cmd_info_t ci, logic addr_4b_en);
+    addr_mode_e result;
+    result = (ci.addr_mode != AddrCfg) ? ci.addr_mode
+           : (addr_4b_en) ? Addr4B : Addr3B ;
+    return result;
+  endfunction : get_addr_mode
 
   // SPI_DEVICE HWIP has 16 command info slots. A few of them are pre-assigned.
   // (defined in the spi_device_pkg)

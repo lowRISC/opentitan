@@ -595,9 +595,8 @@ module spi_device
       cmd_info[i] = '{
         valid:            reg2hw.cmd_info[i].valid.q,
         opcode:           reg2hw.cmd_info[i].opcode.q,
-        addr_en:          reg2hw.cmd_info[i].addr_en.q,
+        addr_mode:        addr_mode_e'(reg2hw.cmd_info[i].addr_mode.q),
         addr_swap_en:     reg2hw.cmd_info[i].addr_swap_en.q,
-        addr_4b_affected: reg2hw.cmd_info[i].addr_4b_affected.q,
         mbyte_en:         reg2hw.cmd_info[i].mbyte_en.q,
         dummy_en:         reg2hw.cmd_info[i].dummy_en.q,
         dummy_size:       reg2hw.cmd_info[i].dummy_size.q,

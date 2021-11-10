@@ -183,6 +183,7 @@ module spid_upload
   assign unused_fifo_wready = ^{cmdfifo_wready, addrfifo_wready, payload_wready};
 
   // Simplified command info
+  addr_mode_e cmdinfo_addr_mode;
   logic cmdinfo_addr_en, cmdinfo_addr_4b_en;
 
   logic unused_cmdinfo;
@@ -217,10 +218,10 @@ module spid_upload
   //////////////
 
   // Command info process
-  assign cmdinfo_addr_en = cmd_info_i.addr_en;
+  assign cmdinfo_addr_mode = get_addr_mode(cmd_info_i, cfg_addr_4b_en_i);
+  assign cmdinfo_addr_en   = cmdinfo_addr_mode != AddrDisabled;
 
-  assign cmdinfo_addr_4b_en = spi_device_pkg::is_cmdinfo_addr_4b(
-                              cmd_info_i, cfg_addr_4b_en_i);
+  assign cmdinfo_addr_4b_en = cmdinfo_addr_mode == Addr4B;
 
   assign cmdfifo_wdata  = s2p_byte_i; // written to FIFO at first
   assign addrfifo_wdata = address_d;

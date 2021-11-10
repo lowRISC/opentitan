@@ -69,8 +69,7 @@ module spi_cmdparse
   always_comb begin
     unused_cmdinfo_members = 1'b 0;
     for (int unsigned i = 0 ; i < NumCmdInfo ; i++) begin
-      unused_cmdinfo_members ^= ^{ cmd_info_i[i].addr_4b_affected,
-                                   cmd_info_i[i].addr_en,
+      unused_cmdinfo_members ^= ^{ cmd_info_i[i].addr_mode,
                                    cmd_info_i[i].addr_swap_en,
                                    cmd_info_i[i].dummy_en,
                                   ^cmd_info_i[i].dummy_size,
