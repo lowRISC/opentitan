@@ -102,11 +102,17 @@ impl ImageAssembler {
 mod tests {
     use super::*;
 
+    fn testdata(s: &str) -> String {
+        let mut result = "sw/host/opentitanlib/src/util/testdata/".to_string();
+        result.push_str(s);
+        result
+    }
+
     #[test]
     fn test_assemble_concat() -> Result<()> {
         // Test image assembly by concatenation.
         let mut image = ImageAssembler::with_params(16, false);
-        image.parse(&["src/util/testdata/hello.txt", "src/util/testdata/world.txt"])?;
+        image.parse(&[testdata("hello.txt"), testdata("world.txt")])?;
         let data = image.assemble()?;
         assert_eq!(data, b"HelloWorld\xff\xff\xff\xff\xff\xff");
         Ok(())
@@ -117,8 +123,8 @@ mod tests {
         // Test image assembly by explicit offsets.
         let mut image = ImageAssembler::with_params(16, false);
         image.parse(&[
-            "src/util/testdata/hello.txt@0",
-            "src/util/testdata/world.txt@0x8",
+            testdata("hello.txt@0"),
+            testdata("world.txt@0x8"),
         ])?;
         let data = image.assemble()?;
         assert_eq!(data, b"Hello\xff\xff\xffWorld\xff\xff\xff");
@@ -129,7 +135,7 @@ mod tests {
     fn test_assemble_mirrored() -> Result<()> {
         // Test image assembly with mirroring.
         let mut image = ImageAssembler::with_params(20, true);
-        image.parse(&["src/util/testdata/hello.txt", "src/util/testdata/world.txt"])?;
+        image.parse(&[testdata("hello.txt"), testdata("world.txt")])?;
         let data = image.assemble()?;
         assert_eq!(data, b"HelloWorldHelloWorld");
         Ok(())
@@ -140,8 +146,8 @@ mod tests {
         // Test image assembly where one of the source files isn't read completely.
         let mut image = ImageAssembler::with_params(16, true);
         image.parse(&[
-            "src/util/testdata/hello.txt@0",
-            "src/util/testdata/world.txt@0x5",
+            testdata("hello.txt@0"),
+            testdata("world.txt@0x5"),
         ])?;
         let err = image.assemble().unwrap_err();
         assert_eq!(
