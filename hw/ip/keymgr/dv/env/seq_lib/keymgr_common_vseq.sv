@@ -57,7 +57,9 @@ class keymgr_common_vseq extends keymgr_base_vseq;
   virtual task read_check_shadow_reg_status(string msg_id);
     super.read_check_shadow_reg_status(msg_id);
 
-    if (`gmv(ral.fault_status.shadow)) begin
+    // Don't do additional operation in shadow_reg_errors_with_csr_rw, as the csr_rw_seq runs in
+    // parallel and issueing an operation affects CSR access.
+    if (`gmv(ral.fault_status.shadow) && common_seq_type != "shadow_reg_errors_with_csr_rw") begin
       check_state_after_non_operation_fault();
     end
   endtask
