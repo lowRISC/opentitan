@@ -10,8 +10,8 @@ cc_library(
     name = "flash_ctrl",
     srcs = ["flash_ctrl.c"],
     hdrs = ["flash_ctrl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deprecation = "Allegedly depricated",
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -41,8 +41,8 @@ cc_library(
     name = "pinmux",
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deprecation = "Allegedly depricated",
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
