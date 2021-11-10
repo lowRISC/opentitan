@@ -48,7 +48,7 @@ module prim_generic_pad_wrapper
                               attr_i.virt_od_en,
                               attr_i.drive_strength};
 
-    assign in_raw_o = (ie_i) ? inout_io  : 1'bz;
+    assign in_raw_o = (ie_i) ? inout_io  : 1'b0;
     // input inversion
     assign in_o = attr_i.invert ^ in_raw_o;
 
@@ -61,7 +61,7 @@ module prim_generic_pad_wrapper
                PadType == BidirOd ||
                PadType == BidirStd) begin : gen_bidir
 
-    assign in_raw_o = (ie_i) ? inout_io  : 1'bz;
+    assign in_raw_o = (ie_i) ? inout_io  : 1'b0;
     // input inversion
     assign in_o = attr_i.invert ^ in_raw_o;
 

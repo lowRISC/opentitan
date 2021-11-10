@@ -212,39 +212,52 @@ module chip_earlgrey_asic (
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_ie;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_ie;
 
   logic unused_mio_in_raw;
   assign unused_mio_in_raw = ^mio_in_raw;
 
   // Manual pads
-  logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
-  logic manual_in_usb_p, manual_out_usb_p, manual_oe_usb_p;
-  logic manual_in_usb_n, manual_out_usb_n, manual_oe_usb_n;
-  logic manual_in_cc1, manual_out_cc1, manual_oe_cc1;
-  logic manual_in_cc2, manual_out_cc2, manual_oe_cc2;
-  logic manual_in_flash_test_volt, manual_out_flash_test_volt, manual_oe_flash_test_volt;
-  logic manual_in_flash_test_mode0, manual_out_flash_test_mode0, manual_oe_flash_test_mode0;
-  logic manual_in_flash_test_mode1, manual_out_flash_test_mode1, manual_oe_flash_test_mode1;
-  logic manual_in_otp_ext_volt, manual_out_otp_ext_volt, manual_oe_otp_ext_volt;
-  logic manual_in_ast_misc, manual_out_ast_misc, manual_oe_ast_misc;
-  logic manual_in_usb_p1, manual_out_usb_p1, manual_oe_usb_p1;
-  logic manual_in_usb_n1, manual_out_usb_n1, manual_oe_usb_n1;
-
+  logic manual_in_por_n, manual_ie_por_n;
+  logic manual_out_por_n, manual_oe_por_n;
   pad_attr_t manual_attr_por_n;
+  logic manual_in_usb_p, manual_ie_usb_p;
+  logic manual_out_usb_p, manual_oe_usb_p;
   pad_attr_t manual_attr_usb_p;
+  logic manual_in_usb_n, manual_ie_usb_n;
+  logic manual_out_usb_n, manual_oe_usb_n;
   pad_attr_t manual_attr_usb_n;
+  logic manual_in_cc1, manual_ie_cc1;
+  logic manual_out_cc1, manual_oe_cc1;
   pad_attr_t manual_attr_cc1;
+  logic manual_in_cc2, manual_ie_cc2;
+  logic manual_out_cc2, manual_oe_cc2;
   pad_attr_t manual_attr_cc2;
+  logic manual_in_flash_test_volt, manual_ie_flash_test_volt;
+  logic manual_out_flash_test_volt, manual_oe_flash_test_volt;
   pad_attr_t manual_attr_flash_test_volt;
+  logic manual_in_flash_test_mode0, manual_ie_flash_test_mode0;
+  logic manual_out_flash_test_mode0, manual_oe_flash_test_mode0;
   pad_attr_t manual_attr_flash_test_mode0;
+  logic manual_in_flash_test_mode1, manual_ie_flash_test_mode1;
+  logic manual_out_flash_test_mode1, manual_oe_flash_test_mode1;
   pad_attr_t manual_attr_flash_test_mode1;
+  logic manual_in_otp_ext_volt, manual_ie_otp_ext_volt;
+  logic manual_out_otp_ext_volt, manual_oe_otp_ext_volt;
   pad_attr_t manual_attr_otp_ext_volt;
+  logic manual_in_ast_misc, manual_ie_ast_misc;
+  logic manual_out_ast_misc, manual_oe_ast_misc;
   pad_attr_t manual_attr_ast_misc;
+  logic manual_in_usb_p1, manual_ie_usb_p1;
+  logic manual_out_usb_p1, manual_oe_usb_p1;
   pad_attr_t manual_attr_usb_p1;
+  logic manual_in_usb_n1, manual_ie_usb_n1;
+  logic manual_out_usb_n1, manual_oe_usb_n1;
   pad_attr_t manual_attr_usb_n1;
 
 
@@ -610,6 +623,34 @@ module chip_earlgrey_asic (
         manual_in_usb_p,
         manual_in_por_n
       }),
+    .dio_ie_i ({
+        manual_ie_usb_n1,
+        manual_ie_usb_p1,
+        manual_ie_ast_misc,
+        dio_ie[DioSysrstCtrlAonFlashWpL],
+        dio_ie[DioSysrstCtrlAonEcRstL],
+        dio_ie[DioSpiDeviceCsb],
+        dio_ie[DioSpiDeviceSck],
+        dio_ie[DioSpiDeviceSd3],
+        dio_ie[DioSpiDeviceSd2],
+        dio_ie[DioSpiDeviceSd1],
+        dio_ie[DioSpiDeviceSd0],
+        dio_ie[DioSpiHost0Csb],
+        dio_ie[DioSpiHost0Sck],
+        dio_ie[DioSpiHost0Sd3],
+        dio_ie[DioSpiHost0Sd2],
+        dio_ie[DioSpiHost0Sd1],
+        dio_ie[DioSpiHost0Sd0],
+        manual_ie_otp_ext_volt,
+        manual_ie_flash_test_mode1,
+        manual_ie_flash_test_mode0,
+        manual_ie_flash_test_volt,
+        manual_ie_cc2,
+        manual_ie_cc1,
+        manual_ie_usb_n,
+        manual_ie_usb_p,
+        manual_ie_por_n
+      }),
     .dio_out_i ({
         manual_out_usb_n1,
         manual_out_usb_p1,
@@ -696,6 +737,7 @@ module chip_earlgrey_asic (
       }),
 
     .mio_in_o (mio_in[46:0]),
+    .mio_ie_i (mio_ie[46:0]),
     .mio_out_i (mio_out[46:0]),
     .mio_oe_i (mio_oe[46:0]),
     .mio_attr_i (mio_attr[46:0]),
@@ -1044,6 +1086,16 @@ module chip_earlgrey_asic (
     manual_in_otp_ext_volt
   };
 
+  // Input buffers are constantly enabled on these pads.
+  assign manual_ie_cc2              = 1'b1;
+  assign manual_ie_cc1              = 1'b1;
+  assign manual_ie_por_n            = 1'b1;
+  assign manual_ie_ast_misc         = 1'b1;
+  assign manual_ie_otp_ext_volt     = 1'b1;
+  assign manual_ie_flash_test_mode1 = 1'b1;
+  assign manual_ie_flash_test_mode0 = 1'b1;
+  assign manual_ie_flash_test_volt  = 1'b1;
+
   ///////////////////////////////
   // Differential USB Receiver //
   ///////////////////////////////
@@ -1053,6 +1105,7 @@ module chip_earlgrey_asic (
   // Connect the D+ pad
   // Note that we use two pads in parallel for the D+ channel to meet electrical specifications.
   assign dio_in[DioUsbdevDp] = manual_in_usb_p;
+  assign manual_ie_usb_p = dio_ie[DioUsbdevDp];
   assign manual_out_usb_p = dio_out[DioUsbdevDp];
   assign manual_oe_usb_p = dio_oe[DioUsbdevDp];
   assign manual_attr_usb_p = dio_attr[DioUsbdevDp];
@@ -1061,13 +1114,10 @@ module chip_earlgrey_asic (
   assign manual_oe_usb_p1 = dio_oe[DioUsbdevDp];
   assign manual_attr_usb_p1 = dio_attr[DioUsbdevDp];
 
-  // For the input, only the first pad is used.
-  logic unused_in_usb_p1;
-  assign unused_in_usb_p1 = manual_in_usb_p1;
-
   // Connect the D- pads
   // Note that we use two pads in parallel for the D- channel to meet electrical specifications.
   assign dio_in[DioUsbdevDn] = manual_in_usb_n;
+  assign manual_ie_usb_n = dio_ie[DioUsbdevDn];
   assign manual_out_usb_n = dio_out[DioUsbdevDn];
   assign manual_oe_usb_n = dio_oe[DioUsbdevDn];
   assign manual_attr_usb_n = dio_attr[DioUsbdevDn];
@@ -1076,9 +1126,12 @@ module chip_earlgrey_asic (
   assign manual_oe_usb_n1 = dio_oe[DioUsbdevDn];
   assign manual_attr_usb_n1 = dio_attr[DioUsbdevDn];
 
-  // For the input, only the first pad is used.
-  logic unused_in_usb_n1;
-  assign unused_in_usb_n1 = manual_in_usb_n1;
+  // For the input, only the first pads in a pair are used.
+  // We can therefore constantly drive the associated input enable to 0.
+  logic unused_in_usb;
+  assign unused_in_usb = manual_in_usb_p1 ^ manual_in_usb_n1;
+  assign manual_ie_usb_n1 = 1'b0;
+  assign manual_ie_usb_p1 = 1'b0;
 
   // These shorts are intentional to make sure the parallel pads drive the same net.
   assign USB_P1 = USB_P;
@@ -1206,11 +1259,13 @@ module chip_earlgrey_asic (
 
     // Multiplexed I/O
     .mio_in_i                     ( mio_in                     ),
+    .mio_ie_o                     ( mio_ie                     ),
     .mio_out_o                    ( mio_out                    ),
     .mio_oe_o                     ( mio_oe                     ),
 
     // Dedicated I/O
     .dio_in_i                     ( dio_in                     ),
+    .dio_ie_o                     ( dio_ie                     ),
     .dio_out_o                    ( dio_out                    ),
     .dio_oe_o                     ( dio_oe                     ),
 

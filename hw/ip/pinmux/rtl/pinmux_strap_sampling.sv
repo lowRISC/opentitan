@@ -19,11 +19,13 @@ module pinmux_strap_sampling
   output logic      [NumIOs-1:0]   out_padring_o,
   output logic      [NumIOs-1:0]   oe_padring_o,
   input  logic      [NumIOs-1:0]   in_padring_i,
+  output logic      [NumIOs-1:0]   ie_padring_o,
   // To core side
   input  pad_attr_t [NumIOs-1:0]   attr_core_i,
   input  logic      [NumIOs-1:0]   out_core_i,
   input  logic      [NumIOs-1:0]   oe_core_i,
   output logic      [NumIOs-1:0]   in_core_o,
+  input  logic      [NumIOs-1:0]   ie_core_i,
   // Used for TAP qualification
   input  logic                     strap_en_i,
   input  lc_ctrl_pkg::lc_tx_t      lc_dft_en_i,
@@ -257,10 +259,14 @@ module pinmux_strap_sampling
         // Override TDO output.
         assign out_padring_o[k] = (jtag_en) ? jtag_rsp.tdo    : out_core_i[k];
         assign oe_padring_o[k]  = (jtag_en) ? jtag_rsp.tdo_oe : oe_core_i[k];
+        // Input buffer does not have to be enabled in this case.
+        assign ie_padring_o[k]  = (jtag_en) ? 1'b0            : ie_core_i[k];
       end else begin : gen_output_tie_off
         // Make sure these pads are set to high-z.
         assign out_padring_o[k] = (jtag_en) ? 1'b0 : out_core_i[k];
         assign oe_padring_o[k]  = (jtag_en) ? 1'b0 : oe_core_i[k];
+        // Enable the input buffers.
+        assign ie_padring_o[k]  = (jtag_en) ? 1'b1 : ie_core_i[k];
       end
 
       // Also reset all corresponding pad attributes to the default ('0) when JTAG is enabled.
@@ -272,6 +278,7 @@ module pinmux_strap_sampling
       assign in_core_o[k]      = in_padring_i[k];
       assign out_padring_o[k]  = out_core_i[k];
       assign oe_padring_o[k]   = oe_core_i[k];
+      assign ie_padring_o[k]   = ie_core_i[k];
     end
   end
 

@@ -70,12 +70,14 @@ module top_${top["name"]} #(
 % if num_mio_pads != 0:
   // Multiplexed I/O
   input        ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_in_i,
+  output logic ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_ie_o,
   output logic ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_out_o,
   output logic ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_oe_o,
 % endif
 % if num_dio_total != 0:
   // Dedicated I/O
   input        ${lib.bitarray(num_dio_total, max_sigwidth)} dio_in_i,
+  output logic ${lib.bitarray(num_dio_total, max_sigwidth)} dio_ie_o,
   output logic ${lib.bitarray(num_dio_total, max_sigwidth)} dio_out_o,
   output logic ${lib.bitarray(num_dio_total, max_sigwidth)} dio_oe_o,
 % endif
@@ -131,10 +133,12 @@ module top_${top["name"]} #(
   // Signals
   logic [${num_mio_inputs - 1}:0] mio_p2d;
   logic [${num_mio_outputs - 1}:0] mio_d2p;
-  logic [${num_mio_outputs - 1}:0] mio_en_d2p;
+  logic [${num_mio_outputs - 1}:0] mio_oe_d2p;
+  logic [${num_mio_outputs - 1}:0] mio_ie_d2p;
   logic [${num_dio_total - 1}:0] dio_p2d;
   logic [${num_dio_total - 1}:0] dio_d2p;
-  logic [${num_dio_total - 1}:0] dio_en_d2p;
+  logic [${num_dio_total - 1}:0] dio_oe_d2p;
+  logic [${num_dio_total - 1}:0] dio_ie_d2p;
 % for m in top["module"]:
   % if not lib.is_inst(m):
 <% continue %>
@@ -444,22 +448,26 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % if m["type"] == "pinmux":
 
       .periph_to_mio_i      (mio_d2p    ),
-      .periph_to_mio_oe_i   (mio_en_d2p ),
+      .periph_to_mio_oe_i   (mio_oe_d2p ),
       .mio_to_periph_o      (mio_p2d    ),
+      .periph_to_mio_ie_i   (mio_ie_d2p ),
 
       .mio_attr_o,
       .mio_out_o,
       .mio_oe_o,
       .mio_in_i,
+      .mio_ie_o,
 
       .periph_to_dio_i      (dio_d2p    ),
-      .periph_to_dio_oe_i   (dio_en_d2p ),
+      .periph_to_dio_oe_i   (dio_oe_d2p ),
       .dio_to_periph_o      (dio_p2d    ),
+      .periph_to_dio_ie_i   (dio_ie_d2p ),
 
       .dio_attr_o,
       .dio_out_o,
       .dio_oe_o,
       .dio_in_i,
+      .dio_ie_o,
 
     % endif
     % if m["type"] == "alert_handler":
@@ -539,6 +547,12 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % endif
   % endfor
 
+  // All muxed input enables
+  // TODO(#9134): these are currently all hardwired to 1'b1.
+  // Long-term, these assignments should be pulled into the individual
+  // peripherals so that the IE can be modulated dynamically.
+  assign mio_ie_d2p = {$bits(mio_ie_d2p){1'b1}};
+
   // All muxed outputs
   % for sig in top["pinmux"]["ios"]:
     % if sig["connection"] == "muxed" and sig["type"] in ["inout", "output"]:
@@ -551,7 +565,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
   % for sig in top["pinmux"]["ios"]:
     % if sig["connection"] == "muxed" and sig["type"] in ["inout", "output"]:
 <% literal = lib.get_io_enum_literal(sig, 'mio_out') %>\
-  assign mio_en_d2p[${literal}] = cio_${sig["name"]}_en_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
+  assign mio_oe_d2p[${literal}] = cio_${sig["name"]}_en_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
     % endif
   % endfor
 
@@ -568,7 +582,20 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % endif
   % endfor
 
-    // All dedicated outputs
+  // All dedicated input enables
+  // TODO(#9134): these are currently all hardwired to 1'b1 or 1'b0.
+  // Long-term, these assignments should be pulled into the individual
+  // peripherals so that the IE can be modulated dynamically.
+  % for sig in top["pinmux"]["ios"]:
+<% literal = lib.get_io_enum_literal(sig, 'dio') %>\
+    % if sig["connection"] != "muxed" and sig["type"] in ["input", "inout"]:
+  assign dio_ie_d2p[${literal}] = 1'b1;
+    % elif sig["connection"] != "muxed" and sig["type"] in ["output"]:
+  assign dio_ie_d2p[${literal}] = 1'b0;
+    % endif
+  % endfor
+
+  // All dedicated outputs
   % for sig in top["pinmux"]["ios"]:
 <% literal = lib.get_io_enum_literal(sig, 'dio') %>\
     % if sig["connection"] != "muxed" and sig["type"] in ["inout"]:
@@ -584,11 +611,11 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
   % for sig in top["pinmux"]["ios"]:
 <% literal = lib.get_io_enum_literal(sig, 'dio') %>\
     % if sig["connection"] != "muxed" and sig["type"] in ["inout"]:
-  assign dio_en_d2p[${literal}] = cio_${sig["name"]}_en_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
+  assign dio_oe_d2p[${literal}] = cio_${sig["name"]}_en_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
     % elif sig["connection"] != "muxed" and sig["type"] in ["input"]:
-  assign dio_en_d2p[${literal}] = 1'b0;
+  assign dio_oe_d2p[${literal}] = 1'b0;
     % elif sig["connection"] != "muxed" and sig["type"] in ["output"]:
-  assign dio_en_d2p[${literal}] = cio_${sig["name"]}_en_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
+  assign dio_oe_d2p[${literal}] = cio_${sig["name"]}_en_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
     % endif
   % endfor
 

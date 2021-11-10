@@ -36,10 +36,12 @@ module padring
   inout wire       [NMioPads-1:0] mio_pad_io,
   // Dedicated IO signals coming from peripherals
   output logic     [NDioPads-1:0] dio_in_o,
+  input            [NDioPads-1:0] dio_ie_i,
   input            [NDioPads-1:0] dio_out_i,
   input            [NDioPads-1:0] dio_oe_i,
   // Muxed IO signals coming from pinmux
   output logic     [NMioPads-1:0] mio_in_o,
+  input            [NMioPads-1:0] mio_ie_i,
   input            [NMioPads-1:0] mio_out_i,
   input            [NMioPads-1:0] mio_oe_i,
   // Pad attributes from top level instance
@@ -66,10 +68,7 @@ module padring
       .inout_io   ( dio_pad_io[k]            ),
       .in_o       ( dio_in_o[k]              ),
       .in_raw_o   ( dio_in_raw_o[k]          ),
-      // This is currently not dynamically controlled.
-      // However, this may change in the future if the
-      // need arises (e.g. as part of to power sequencing).
-      .ie_i       ( 1'b1                     ),
+      .ie_i       ( dio_ie_i[k]              ),
       .out_i      ( dio_out_i[k]             ),
       .oe_i       ( dio_oe_i[k]              ),
       .attr_i     ( dio_attr_i[k]            )
@@ -87,10 +86,7 @@ module padring
       .inout_io   ( mio_pad_io[k]            ),
       .in_o       ( mio_in_o[k]              ),
       .in_raw_o   ( mio_in_raw_o[k]          ),
-      // This is currently not dynamically controlled.
-      // However, this may change in the future if the
-      // need arises (e.g. as part of to power sequencing).
-      .ie_i       ( 1'b1                     ),
+      .ie_i       ( mio_ie_i[k]              ),
       .out_i      ( mio_out_i[k]             ),
       .oe_i       ( mio_oe_i[k]              ),
       .attr_i     ( mio_attr_i[k]            )

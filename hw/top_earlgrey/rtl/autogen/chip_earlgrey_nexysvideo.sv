@@ -192,47 +192,64 @@ module chip_earlgrey_nexysvideo #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_ie;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_ie;
 
   logic unused_mio_in_raw;
   assign unused_mio_in_raw = ^mio_in_raw;
 
   // Manual pads
-  logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
-  logic manual_in_usb_p, manual_out_usb_p, manual_oe_usb_p;
-  logic manual_in_usb_n, manual_out_usb_n, manual_oe_usb_n;
-  logic manual_in_io_clk, manual_out_io_clk, manual_oe_io_clk;
-  logic manual_in_io_jsrst_n, manual_out_io_jsrst_n, manual_oe_io_jsrst_n;
-  logic manual_in_io_usb_sense0, manual_out_io_usb_sense0, manual_oe_io_usb_sense0;
-  logic manual_in_io_usb_dnpullup0, manual_out_io_usb_dnpullup0, manual_oe_io_usb_dnpullup0;
-  logic manual_in_io_usb_dppullup0, manual_out_io_usb_dppullup0, manual_oe_io_usb_dppullup0;
-  logic manual_in_io_uphy_dp_tx, manual_out_io_uphy_dp_tx, manual_oe_io_uphy_dp_tx;
-  logic manual_in_io_uphy_dn_tx, manual_out_io_uphy_dn_tx, manual_oe_io_uphy_dn_tx;
-  logic manual_in_io_uphy_dp_rx, manual_out_io_uphy_dp_rx, manual_oe_io_uphy_dp_rx;
-  logic manual_in_io_uphy_dn_rx, manual_out_io_uphy_dn_rx, manual_oe_io_uphy_dn_rx;
-  logic manual_in_io_uphy_d_rx, manual_out_io_uphy_d_rx, manual_oe_io_uphy_d_rx;
-  logic manual_in_io_uphy_oe_n, manual_out_io_uphy_oe_n, manual_oe_io_uphy_oe_n;
-  logic manual_in_io_uphy_sense, manual_out_io_uphy_sense, manual_oe_io_uphy_sense;
-  logic manual_in_io_uphy_dppullup, manual_out_io_uphy_dppullup, manual_oe_io_uphy_dppullup;
-
+  logic manual_in_por_n, manual_ie_por_n;
+  logic manual_out_por_n, manual_oe_por_n;
   pad_attr_t manual_attr_por_n;
+  logic manual_in_usb_p, manual_ie_usb_p;
+  logic manual_out_usb_p, manual_oe_usb_p;
   pad_attr_t manual_attr_usb_p;
+  logic manual_in_usb_n, manual_ie_usb_n;
+  logic manual_out_usb_n, manual_oe_usb_n;
   pad_attr_t manual_attr_usb_n;
+  logic manual_in_io_clk, manual_ie_io_clk;
+  logic manual_out_io_clk, manual_oe_io_clk;
   pad_attr_t manual_attr_io_clk;
+  logic manual_in_io_jsrst_n, manual_ie_io_jsrst_n;
+  logic manual_out_io_jsrst_n, manual_oe_io_jsrst_n;
   pad_attr_t manual_attr_io_jsrst_n;
+  logic manual_in_io_usb_sense0, manual_ie_io_usb_sense0;
+  logic manual_out_io_usb_sense0, manual_oe_io_usb_sense0;
   pad_attr_t manual_attr_io_usb_sense0;
+  logic manual_in_io_usb_dnpullup0, manual_ie_io_usb_dnpullup0;
+  logic manual_out_io_usb_dnpullup0, manual_oe_io_usb_dnpullup0;
   pad_attr_t manual_attr_io_usb_dnpullup0;
+  logic manual_in_io_usb_dppullup0, manual_ie_io_usb_dppullup0;
+  logic manual_out_io_usb_dppullup0, manual_oe_io_usb_dppullup0;
   pad_attr_t manual_attr_io_usb_dppullup0;
+  logic manual_in_io_uphy_dp_tx, manual_ie_io_uphy_dp_tx;
+  logic manual_out_io_uphy_dp_tx, manual_oe_io_uphy_dp_tx;
   pad_attr_t manual_attr_io_uphy_dp_tx;
+  logic manual_in_io_uphy_dn_tx, manual_ie_io_uphy_dn_tx;
+  logic manual_out_io_uphy_dn_tx, manual_oe_io_uphy_dn_tx;
   pad_attr_t manual_attr_io_uphy_dn_tx;
+  logic manual_in_io_uphy_dp_rx, manual_ie_io_uphy_dp_rx;
+  logic manual_out_io_uphy_dp_rx, manual_oe_io_uphy_dp_rx;
   pad_attr_t manual_attr_io_uphy_dp_rx;
+  logic manual_in_io_uphy_dn_rx, manual_ie_io_uphy_dn_rx;
+  logic manual_out_io_uphy_dn_rx, manual_oe_io_uphy_dn_rx;
   pad_attr_t manual_attr_io_uphy_dn_rx;
+  logic manual_in_io_uphy_d_rx, manual_ie_io_uphy_d_rx;
+  logic manual_out_io_uphy_d_rx, manual_oe_io_uphy_d_rx;
   pad_attr_t manual_attr_io_uphy_d_rx;
+  logic manual_in_io_uphy_oe_n, manual_ie_io_uphy_oe_n;
+  logic manual_out_io_uphy_oe_n, manual_oe_io_uphy_oe_n;
   pad_attr_t manual_attr_io_uphy_oe_n;
+  logic manual_in_io_uphy_sense, manual_ie_io_uphy_sense;
+  logic manual_out_io_uphy_sense, manual_oe_io_uphy_sense;
   pad_attr_t manual_attr_io_uphy_sense;
+  logic manual_in_io_uphy_dppullup, manual_ie_io_uphy_dppullup;
+  logic manual_out_io_uphy_dppullup, manual_oe_io_uphy_dppullup;
   pad_attr_t manual_attr_io_uphy_dppullup;
 
   /////////////////////////
@@ -242,79 +259,151 @@ module chip_earlgrey_nexysvideo #(
   // Only signals going to non-custom pads need to be tied off.
   logic [69:0] unused_sig;
   assign dio_in[DioSpiHost0Sd0] = 1'b0;
-  assign unused_sig[9] = dio_out[DioSpiHost0Sd0] ^ dio_oe[DioSpiHost0Sd0];
+  assign unused_sig[9] = dio_out[DioSpiHost0Sd0] ^ dio_oe[DioSpiHost0Sd0] ^ dio_ie[DioSpiHost0Sd0];
   assign dio_in[DioSpiHost0Sd1] = 1'b0;
-  assign unused_sig[10] = dio_out[DioSpiHost0Sd1] ^ dio_oe[DioSpiHost0Sd1];
+  assign unused_sig[10] = dio_out[DioSpiHost0Sd1] ^ dio_oe[DioSpiHost0Sd1] ^ dio_ie[DioSpiHost0Sd1];
   assign dio_in[DioSpiHost0Sd2] = 1'b0;
-  assign unused_sig[11] = dio_out[DioSpiHost0Sd2] ^ dio_oe[DioSpiHost0Sd2];
+  assign unused_sig[11] = dio_out[DioSpiHost0Sd2] ^ dio_oe[DioSpiHost0Sd2] ^ dio_ie[DioSpiHost0Sd2];
   assign dio_in[DioSpiHost0Sd3] = 1'b0;
-  assign unused_sig[12] = dio_out[DioSpiHost0Sd3] ^ dio_oe[DioSpiHost0Sd3];
+  assign unused_sig[12] = dio_out[DioSpiHost0Sd3] ^ dio_oe[DioSpiHost0Sd3] ^ dio_ie[DioSpiHost0Sd3];
   assign dio_in[DioSpiHost0Sck] = 1'b0;
-  assign unused_sig[13] = dio_out[DioSpiHost0Sck] ^ dio_oe[DioSpiHost0Sck];
+  assign unused_sig[13] = dio_out[DioSpiHost0Sck] ^ dio_oe[DioSpiHost0Sck] ^ dio_ie[DioSpiHost0Sck];
   assign dio_in[DioSpiHost0Csb] = 1'b0;
-  assign unused_sig[14] = dio_out[DioSpiHost0Csb] ^ dio_oe[DioSpiHost0Csb];
+  assign unused_sig[14] = dio_out[DioSpiHost0Csb] ^ dio_oe[DioSpiHost0Csb] ^ dio_ie[DioSpiHost0Csb];
   assign dio_in[DioSpiDeviceSd2] = 1'b0;
-  assign unused_sig[17] = dio_out[DioSpiDeviceSd2] ^ dio_oe[DioSpiDeviceSd2];
+  assign unused_sig[17] = dio_out[DioSpiDeviceSd2] ^ dio_oe[DioSpiDeviceSd2] ^ dio_ie[DioSpiDeviceSd2];
   assign dio_in[DioSpiDeviceSd3] = 1'b0;
-  assign unused_sig[18] = dio_out[DioSpiDeviceSd3] ^ dio_oe[DioSpiDeviceSd3];
+  assign unused_sig[18] = dio_out[DioSpiDeviceSd3] ^ dio_oe[DioSpiDeviceSd3] ^ dio_ie[DioSpiDeviceSd3];
   assign mio_in[19] = 1'b0;
   assign mio_in_raw[19] = 1'b0;
-  assign unused_sig[40] = mio_out[19] ^ mio_oe[19];
+  assign unused_sig[40] = ^{
+    mio_out[19],
+    mio_oe[19],
+    mio_ie[19]
+  };
   assign mio_in[20] = 1'b0;
   assign mio_in_raw[20] = 1'b0;
-  assign unused_sig[41] = mio_out[20] ^ mio_oe[20];
+  assign unused_sig[41] = ^{
+    mio_out[20],
+    mio_oe[20],
+    mio_ie[20]
+  };
   assign mio_in[21] = 1'b0;
   assign mio_in_raw[21] = 1'b0;
-  assign unused_sig[42] = mio_out[21] ^ mio_oe[21];
+  assign unused_sig[42] = ^{
+    mio_out[21],
+    mio_oe[21],
+    mio_ie[21]
+  };
   assign mio_in[22] = 1'b0;
   assign mio_in_raw[22] = 1'b0;
-  assign unused_sig[43] = mio_out[22] ^ mio_oe[22];
+  assign unused_sig[43] = ^{
+    mio_out[22],
+    mio_oe[22],
+    mio_ie[22]
+  };
   assign mio_in[23] = 1'b0;
   assign mio_in_raw[23] = 1'b0;
-  assign unused_sig[44] = mio_out[23] ^ mio_oe[23];
+  assign unused_sig[44] = ^{
+    mio_out[23],
+    mio_oe[23],
+    mio_ie[23]
+  };
   assign mio_in[34] = 1'b0;
   assign mio_in_raw[34] = 1'b0;
-  assign unused_sig[55] = mio_out[34] ^ mio_oe[34];
+  assign unused_sig[55] = ^{
+    mio_out[34],
+    mio_oe[34],
+    mio_ie[34]
+  };
   assign mio_in[35] = 1'b0;
   assign mio_in_raw[35] = 1'b0;
-  assign unused_sig[56] = mio_out[35] ^ mio_oe[35];
+  assign unused_sig[56] = ^{
+    mio_out[35],
+    mio_oe[35],
+    mio_ie[35]
+  };
   assign mio_in[36] = 1'b0;
   assign mio_in_raw[36] = 1'b0;
-  assign unused_sig[57] = mio_out[36] ^ mio_oe[36];
+  assign unused_sig[57] = ^{
+    mio_out[36],
+    mio_oe[36],
+    mio_ie[36]
+  };
   assign mio_in[37] = 1'b0;
   assign mio_in_raw[37] = 1'b0;
-  assign unused_sig[58] = mio_out[37] ^ mio_oe[37];
+  assign unused_sig[58] = ^{
+    mio_out[37],
+    mio_oe[37],
+    mio_ie[37]
+  };
   assign mio_in[38] = 1'b0;
   assign mio_in_raw[38] = 1'b0;
-  assign unused_sig[59] = mio_out[38] ^ mio_oe[38];
+  assign unused_sig[59] = ^{
+    mio_out[38],
+    mio_oe[38],
+    mio_ie[38]
+  };
   assign mio_in[39] = 1'b0;
   assign mio_in_raw[39] = 1'b0;
-  assign unused_sig[60] = mio_out[39] ^ mio_oe[39];
+  assign unused_sig[60] = ^{
+    mio_out[39],
+    mio_oe[39],
+    mio_ie[39]
+  };
   assign mio_in[40] = 1'b0;
   assign mio_in_raw[40] = 1'b0;
-  assign unused_sig[61] = mio_out[40] ^ mio_oe[40];
+  assign unused_sig[61] = ^{
+    mio_out[40],
+    mio_oe[40],
+    mio_ie[40]
+  };
   assign mio_in[41] = 1'b0;
   assign mio_in_raw[41] = 1'b0;
-  assign unused_sig[62] = mio_out[41] ^ mio_oe[41];
+  assign unused_sig[62] = ^{
+    mio_out[41],
+    mio_oe[41],
+    mio_ie[41]
+  };
   assign mio_in[42] = 1'b0;
   assign mio_in_raw[42] = 1'b0;
-  assign unused_sig[63] = mio_out[42] ^ mio_oe[42];
+  assign unused_sig[63] = ^{
+    mio_out[42],
+    mio_oe[42],
+    mio_ie[42]
+  };
   assign dio_in[DioSysrstCtrlAonEcRstL] = 1'b0;
-  assign unused_sig[64] = dio_out[DioSysrstCtrlAonEcRstL] ^ dio_oe[DioSysrstCtrlAonEcRstL];
+  assign unused_sig[64] = dio_out[DioSysrstCtrlAonEcRstL] ^ dio_oe[DioSysrstCtrlAonEcRstL] ^ dio_ie[DioSysrstCtrlAonEcRstL];
   assign dio_in[DioSysrstCtrlAonFlashWpL] = 1'b0;
-  assign unused_sig[65] = dio_out[DioSysrstCtrlAonFlashWpL] ^ dio_oe[DioSysrstCtrlAonFlashWpL];
+  assign unused_sig[65] = dio_out[DioSysrstCtrlAonFlashWpL] ^ dio_oe[DioSysrstCtrlAonFlashWpL] ^ dio_ie[DioSysrstCtrlAonFlashWpL];
   assign mio_in[43] = 1'b0;
   assign mio_in_raw[43] = 1'b0;
-  assign unused_sig[66] = mio_out[43] ^ mio_oe[43];
+  assign unused_sig[66] = ^{
+    mio_out[43],
+    mio_oe[43],
+    mio_ie[43]
+  };
   assign mio_in[44] = 1'b0;
   assign mio_in_raw[44] = 1'b0;
-  assign unused_sig[67] = mio_out[44] ^ mio_oe[44];
+  assign unused_sig[67] = ^{
+    mio_out[44],
+    mio_oe[44],
+    mio_ie[44]
+  };
   assign mio_in[45] = 1'b0;
   assign mio_in_raw[45] = 1'b0;
-  assign unused_sig[68] = mio_out[45] ^ mio_oe[45];
+  assign unused_sig[68] = ^{
+    mio_out[45],
+    mio_oe[45],
+    mio_ie[45]
+  };
   assign mio_in[46] = 1'b0;
   assign mio_in_raw[46] = 1'b0;
-  assign unused_sig[69] = mio_out[46] ^ mio_oe[46];
+  assign unused_sig[69] = ^{
+    mio_out[46],
+    mio_oe[46],
+    mio_ie[46]
+  };
 
   //////////////////////
   // Padring Instance //
@@ -465,6 +554,28 @@ module chip_earlgrey_nexysvideo #(
         manual_in_usb_p,
         manual_in_por_n
       }),
+    .dio_ie_i ({
+        manual_ie_io_uphy_dppullup,
+        manual_ie_io_uphy_sense,
+        manual_ie_io_uphy_oe_n,
+        manual_ie_io_uphy_d_rx,
+        manual_ie_io_uphy_dn_rx,
+        manual_ie_io_uphy_dp_rx,
+        manual_ie_io_uphy_dn_tx,
+        manual_ie_io_uphy_dp_tx,
+        manual_ie_io_usb_dppullup0,
+        manual_ie_io_usb_dnpullup0,
+        manual_ie_io_usb_sense0,
+        manual_ie_io_jsrst_n,
+        manual_ie_io_clk,
+        dio_ie[DioSpiDeviceCsb],
+        dio_ie[DioSpiDeviceSck],
+        dio_ie[DioSpiDeviceSd1],
+        dio_ie[DioSpiDeviceSd0],
+        manual_ie_usb_n,
+        manual_ie_usb_p,
+        manual_ie_por_n
+      }),
     .dio_out_i ({
         manual_out_io_uphy_dppullup,
         manual_out_io_uphy_sense,
@@ -535,6 +646,10 @@ module chip_earlgrey_nexysvideo #(
     .mio_in_o ({
         mio_in[33:24],
         mio_in[18:0]
+      }),
+    .mio_ie_i ({
+        mio_ie[33:24],
+        mio_ie[18:0]
       }),
     .mio_out_i ({
         mio_out[33:24],
@@ -1073,14 +1188,16 @@ module chip_earlgrey_nexysvideo #(
     .ast_init_done_i              ( ast_init_done              ),
 
     // Multiplexed I/O
-    .mio_in_i        ( mio_in   ),
-    .mio_out_o       ( mio_out  ),
-    .mio_oe_o        ( mio_oe   ),
+    .mio_in_i                     ( mio_in                     ),
+    .mio_ie_o                     ( mio_ie                     ),
+    .mio_out_o                    ( mio_out                    ),
+    .mio_oe_o                     ( mio_oe                     ),
 
     // Dedicated I/O
-    .dio_in_i        ( dio_in   ),
-    .dio_out_o       ( dio_out  ),
-    .dio_oe_o        ( dio_oe   ),
+    .dio_in_i                     ( dio_in                     ),
+    .dio_ie_o                     ( dio_ie                     ),
+    .dio_out_o                    ( dio_out                    ),
+    .dio_oe_o                     ( dio_oe                     ),
 
     // Pad attributes
     .mio_attr_o      ( mio_attr      ),

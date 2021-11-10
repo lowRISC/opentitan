@@ -61,21 +61,25 @@ module pinmux
   input        [NMioPeriphOut-1:0] periph_to_mio_i,
   input        [NMioPeriphOut-1:0] periph_to_mio_oe_i,
   output logic [NMioPeriphIn-1:0]  mio_to_periph_o,
+  input        [NMioPeriphIn-1:0]  periph_to_mio_ie_i,
   // Dedicated Peripheral side
   input        [NDioPads-1:0]      periph_to_dio_i,
   input        [NDioPads-1:0]      periph_to_dio_oe_i,
   output logic [NDioPads-1:0]      dio_to_periph_o,
+  input        [NDioPads-1:0]      periph_to_dio_ie_i,
   // Pad side
   // MIOs
   output prim_pad_wrapper_pkg::pad_attr_t [NMioPads-1:0] mio_attr_o,
   output logic                            [NMioPads-1:0] mio_out_o,
   output logic                            [NMioPads-1:0] mio_oe_o,
   input                                   [NMioPads-1:0] mio_in_i,
+  output logic                            [NMioPads-1:0] mio_ie_o,
   // DIOs
   output prim_pad_wrapper_pkg::pad_attr_t [NDioPads-1:0] dio_attr_o,
   output logic                            [NDioPads-1:0] dio_out_o,
   output logic                            [NDioPads-1:0] dio_oe_o,
-  input                                   [NDioPads-1:0] dio_in_i
+  input                                   [NDioPads-1:0] dio_in_i,
+  output logic                            [NDioPads-1:0] dio_ie_o
 );
 
   //////////////////////////////////
@@ -189,8 +193,8 @@ module pinmux
   //////////////////////////
 
   // Local versions of the input signals
-  logic [NMioPads-1:0] mio_out, mio_oe, mio_in;
-  logic [NDioPads-1:0] dio_out, dio_oe, dio_in;
+  logic [NMioPads-1:0] mio_out, mio_oe, mio_in, mio_ie;
+  logic [NDioPads-1:0] dio_out, dio_oe, dio_in, dio_ie;
 
   // This module contains the strap sampling and JTAG mux.
   // Affected inputs are intercepted/tapped before they go to the pinmux
@@ -206,11 +210,13 @@ module pinmux
     .out_padring_o  ( {dio_out_o,  mio_out_o}  ),
     .oe_padring_o   ( {dio_oe_o ,  mio_oe_o }  ),
     .in_padring_i   ( {dio_in_i ,  mio_in_i }  ),
+    .ie_padring_o   ( {dio_ie_o ,  mio_ie_o }  ),
     .attr_padring_o ( {dio_attr_o, mio_attr_o} ),
     // To core side
     .out_core_i     ( {dio_out,  mio_out}  ),
     .oe_core_i      ( {dio_oe,   mio_oe}   ),
     .in_core_o      ( {dio_in,   mio_in}   ),
+    .ie_core_i      ( {dio_ie,   mio_ie}   ),
     .attr_core_i    ( {dio_attr, mio_attr} ),
     // Strap and JTAG signals
     .strap_en_i,
@@ -320,6 +326,29 @@ module pinmux
     assign mio_to_periph_o[k] = mio_mux[reg2hw.mio_periph_insel[k].q];
   end
 
+  ////////////////////////////
+  // MIO Input Enable Logic //
+  ////////////////////////////
+
+  logic [AlignedMuxSize-1:0] mio_ie_aligned;
+  assign mio_ie  = NMioPads'(mio_ie_aligned[AlignedMuxSize-1:2]);
+  logic unused_mie_mux;
+  assign unused_mie_mux = ^mio_ie_aligned[1:0];
+
+  always_comb begin : p_mio_ie
+    mio_ie_aligned = '0;
+    // Connect input buffer enable from peripheral to pad.
+    for (int k = 0; k < NMioPeriphIn; k++) begin
+      mio_ie_aligned[reg2hw.mio_periph_insel[k].q] = periph_to_mio_ie_i[k];
+    end
+    // If a wakeup detector selects this MIO, override and select the IE.
+    for (int k = 0; k < NWkupDetect; k++) begin
+      if (reg2hw.wkup_detector[k].miodio.q == 1'b0) begin
+        mio_ie_aligned[reg2hw.wkup_detector_padsel[k]] = 1'b1;
+      end
+    end
+  end
+
   //////////////////////
   // MIO Output Muxes //
   //////////////////////
@@ -357,6 +386,24 @@ module pinmux
     assign mio_sleep_trig[k] = reg2hw.mio_pad_sleep_en[k].q & sleep_trig;
     assign hw2reg.mio_pad_sleep_status[k].d = 1'b1;
     assign hw2reg.mio_pad_sleep_status[k].de = mio_sleep_trig[k];
+  end
+
+  ////////////////////////////
+  // DIO Input Enable Logic //
+  ////////////////////////////
+
+  logic [AlignedMuxSize-1:0] dio_ie_aligned;
+  assign dio_ie  = NDioPads'(dio_ie_aligned[AlignedMuxSize-1:2]);
+
+  always_comb begin : p_dio_ie
+    // Loop through the IE signal coming from the DIO.
+    dio_ie_aligned = AlignedMuxSize'(periph_to_dio_ie_i);
+    // If a wakeup detector selects this DIO, override and select the IE.
+    for (int k = 0; k < NWkupDetect; k++) begin
+      if (reg2hw.wkup_detector[k].miodio.q) begin
+        dio_ie_aligned[reg2hw.wkup_detector_padsel[k]] = 1'b1;
+      end
+    end
   end
 
   /////////////////////
@@ -405,7 +452,7 @@ module pinmux
   logic [AlignedMuxSize-1:0] dio_wkup_mux;
   logic [AlignedMuxSize-1:0] mio_wkup_mux;
   assign dio_wkup_mux = AlignedMuxSize'(dio_in_i);
-  assign mio_wkup_mux = AlignedMuxSize'(mio_in_i);
+  assign mio_wkup_mux = AlignedMuxSize'({mio_in_i, 1'b1, 1'b0});
 
   logic [NWkupDetect-1:0] aon_wkup_req;
   for (genvar k = 0; k < NWkupDetect; k++) begin : gen_wkup_detect
@@ -446,6 +493,8 @@ module pinmux
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(MioOeKnownO_A, mio_oe_o)
   `ASSERT_KNOWN(DioOeKnownO_A, dio_oe_o)
+  `ASSERT_KNOWN(MioIeKnownO_A, mio_ie_o)
+  `ASSERT_KNOWN(DioIeKnownO_A, dio_ie_o)
 
   `ASSERT_KNOWN(MioKnownO_A, mio_attr_o)
   `ASSERT_KNOWN(DioKnownO_A, dio_attr_o)

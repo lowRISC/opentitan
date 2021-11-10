@@ -185,10 +185,12 @@ module chip_${top["name"]}_${target["name"]} (
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_ie;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_ie;
 
   logic unused_mio_in_raw;
   assign unused_mio_in_raw = ^mio_in_raw;
@@ -199,15 +201,8 @@ module chip_${top["name"]}_${target["name"]} (
   pad_prefix = pad["name"].lower()
 %>\
 % if not get_dio_sig(pinmux, pad):
-  logic manual_in_${pad_prefix}, manual_out_${pad_prefix}, manual_oe_${pad_prefix};
-% endif
-% endfor
-
-% for pad in dedicated_pads:
-<%
-  pad_prefix = pad["name"].lower()
-%>\
-% if not get_dio_sig(pinmux, pad):
+  logic manual_in_${pad_prefix}, manual_ie_${pad_prefix};
+  logic manual_out_${pad_prefix}, manual_oe_${pad_prefix};
   pad_attr_t manual_attr_${pad_prefix};
 % endif
 % endfor
@@ -224,7 +219,11 @@ module chip_${top["name"]}_${target["name"]} (
     % if pad["name"] in target["pinout"]["remove_pads"]:
   assign mio_in[${pad["idx"]}] = 1'b0;
   assign mio_in_raw[${pad["idx"]}] = 1'b0;
-  assign unused_sig[${loop.index}] = mio_out[${pad["idx"]}] ^ mio_oe[${pad["idx"]}];
+  assign unused_sig[${loop.index}] = ^{
+    mio_out[${pad["idx"]}],
+    mio_oe[${pad["idx"]}],
+    mio_ie[${pad["idx"]}]
+  };
     % endif
   % else:
     % if pad["name"] in target["pinout"]["remove_pads"]:
@@ -236,7 +235,7 @@ module chip_${top["name"]}_${target["name"]} (
 %>\
       % if sig is not None:
   assign dio_in[${lib.get_io_enum_literal(sig, 'dio')}] = 1'b0;
-  assign unused_sig[${loop.index}] = dio_out[${sig_index}] ^ dio_oe[${sig_index}];
+  assign unused_sig[${loop.index}] = dio_out[${sig_index}] ^ dio_oe[${sig_index}] ^ dio_ie[${sig_index}];
       % endif
     % endif
   % endif
@@ -320,7 +319,7 @@ module chip_${top["name"]}_${target["name"]} (
     }),
 
     // Core-facing
-% for port in ["in_o", "out_i", "oe_i", "attr_i"]:
+% for port in ["in_o", "ie_i", "out_i", "oe_i", "attr_i"]:
     .dio_${port} ({
   % for pad in list(reversed(dedicated_pads)):
   <%
@@ -335,7 +334,7 @@ module chip_${top["name"]}_${target["name"]} (
       }),
 % endfor
 
-% for port in ["in_o", "out_i", "oe_i", "attr_i", "in_raw_o"]:
+% for port in ["in_o", "ie_i", "out_i", "oe_i", "attr_i", "in_raw_o"]:
 <%
     sig_name = 'mio_' + port[:-2]
     indices = list(reversed(list(pad['idx'] for pad in muxed_pads)))
@@ -926,6 +925,16 @@ module chip_${top["name"]}_${target["name"]} (
     manual_in_otp_ext_volt
   };
 
+  // Input buffers are constantly enabled on these pads.
+  assign manual_ie_cc2              = 1'b1;
+  assign manual_ie_cc1              = 1'b1;
+  assign manual_ie_por_n            = 1'b1;
+  assign manual_ie_ast_misc         = 1'b1;
+  assign manual_ie_otp_ext_volt     = 1'b1;
+  assign manual_ie_flash_test_mode1 = 1'b1;
+  assign manual_ie_flash_test_mode0 = 1'b1;
+  assign manual_ie_flash_test_volt  = 1'b1;
+
   ///////////////////////////////
   // Differential USB Receiver //
   ///////////////////////////////
@@ -935,6 +944,7 @@ module chip_${top["name"]}_${target["name"]} (
   // Connect the D+ pad
   // Note that we use two pads in parallel for the D+ channel to meet electrical specifications.
   assign dio_in[DioUsbdevDp] = manual_in_usb_p;
+  assign manual_ie_usb_p = dio_ie[DioUsbdevDp];
   assign manual_out_usb_p = dio_out[DioUsbdevDp];
   assign manual_oe_usb_p = dio_oe[DioUsbdevDp];
   assign manual_attr_usb_p = dio_attr[DioUsbdevDp];
@@ -943,13 +953,10 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_oe_usb_p1 = dio_oe[DioUsbdevDp];
   assign manual_attr_usb_p1 = dio_attr[DioUsbdevDp];
 
-  // For the input, only the first pad is used.
-  logic unused_in_usb_p1;
-  assign unused_in_usb_p1 = manual_in_usb_p1;
-
   // Connect the D- pads
   // Note that we use two pads in parallel for the D- channel to meet electrical specifications.
   assign dio_in[DioUsbdevDn] = manual_in_usb_n;
+  assign manual_ie_usb_n = dio_ie[DioUsbdevDn];
   assign manual_out_usb_n = dio_out[DioUsbdevDn];
   assign manual_oe_usb_n = dio_oe[DioUsbdevDn];
   assign manual_attr_usb_n = dio_attr[DioUsbdevDn];
@@ -958,9 +965,12 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_oe_usb_n1 = dio_oe[DioUsbdevDn];
   assign manual_attr_usb_n1 = dio_attr[DioUsbdevDn];
 
-  // For the input, only the first pad is used.
-  logic unused_in_usb_n1;
-  assign unused_in_usb_n1 = manual_in_usb_n1;
+  // For the input, only the first pads in a pair are used.
+  // We can therefore constantly drive the associated input enable to 0.
+  logic unused_in_usb;
+  assign unused_in_usb = manual_in_usb_p1 ^ manual_in_usb_n1;
+  assign manual_ie_usb_n1 = 1'b0;
+  assign manual_ie_usb_p1 = 1'b0;
 
   // These shorts are intentional to make sure the parallel pads drive the same net.
   assign USB_P1 = USB_P;
@@ -1088,11 +1098,13 @@ module chip_${top["name"]}_${target["name"]} (
 
     // Multiplexed I/O
     .mio_in_i                     ( mio_in                     ),
+    .mio_ie_o                     ( mio_ie                     ),
     .mio_out_o                    ( mio_out                    ),
     .mio_oe_o                     ( mio_oe                     ),
 
     // Dedicated I/O
     .dio_in_i                     ( dio_in                     ),
+    .dio_ie_o                     ( dio_ie                     ),
     .dio_out_o                    ( dio_out                    ),
     .dio_oe_o                     ( dio_oe                     ),
 
@@ -1249,14 +1261,16 @@ module chip_${top["name"]}_${target["name"]} (
 % endif
 
     // Multiplexed I/O
-    .mio_in_i        ( mio_in   ),
-    .mio_out_o       ( mio_out  ),
-    .mio_oe_o        ( mio_oe   ),
+    .mio_in_i                     ( mio_in                     ),
+    .mio_ie_o                     ( mio_ie                     ),
+    .mio_out_o                    ( mio_out                    ),
+    .mio_oe_o                     ( mio_oe                     ),
 
     // Dedicated I/O
-    .dio_in_i        ( dio_in   ),
-    .dio_out_o       ( dio_out  ),
-    .dio_oe_o        ( dio_oe   ),
+    .dio_in_i                     ( dio_in                     ),
+    .dio_ie_o                     ( dio_ie                     ),
+    .dio_out_o                    ( dio_out                    ),
+    .dio_oe_o                     ( dio_oe                     ),
 
     // Pad attributes
     .mio_attr_o      ( mio_attr      ),
