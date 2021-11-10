@@ -35,16 +35,22 @@ static void init_uart(void) {
   base_uart_stdout(&uart0);
 }
 
-static void freertos_test_task(void *task_parameters) {
-  bool result = test_main();
-
-  // Must happen before any debug output.
-  if (kTestConfig.can_clobber_uart) {
+static void report_test_status(bool result) {
+  // Reinitialize UART before print any debug output if the test clobbered it.
+  if (kDeviceType != kDeviceSimDV && kTestConfig.can_clobber_uart) {
     init_uart();
+    test_coverage_send_buffer();
   }
 
-  test_coverage_send_buffer();
   test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
+}
+
+// A wrapper function is required to enable `test_main()` and test teardown
+// logic to be invoked as a FreeRTOS task. This wrapper can be used by tests
+// that are run on bare-metal.
+static void test_wrapper(void *task_parameters) {
+  bool result = test_main();
+  report_test_status(result);
 }
 
 int main(int argc, char **argv) {
@@ -55,10 +61,17 @@ int main(int argc, char **argv) {
     init_uart();
   }
 
-  // Run the test, which is contained within `test_main()`, as a FreeRTOS task.
-  xTaskCreate(freertos_test_task, "OTTFTestTask", configMINIMAL_STACK_SIZE,
-              NULL, tskIDLE_PRIORITY + 1, NULL);
-  vTaskStartScheduler();
+  // Run the test.
+  if (kTestConfig.enable_concurrency) {
+    // Run `test_main()` in a FreeRTOS task, allowing other FreeRTOS tasks to be
+    // spawned, if requested in the main test task.
+    xTaskCreate(test_wrapper, "TestTask", configMINIMAL_STACK_SIZE, NULL,
+                tskIDLE_PRIORITY + 1, NULL);
+    vTaskStartScheduler();
+  } else {
+    // Otherwise, launch `test_main()` on bare-metal.
+    test_wrapper(NULL);
+  }
 
   // Unreachable code.
   return 1;
