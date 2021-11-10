@@ -134,8 +134,6 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
 
       // write class_ctrl
       alert_handler_rand_wr_class_ctrl(lock_bit_en);
-      alert_handler_wr_regwen_regs(clr_regwen, alert_regwen, local_alert_regwen, ping_timer_regwen,
-                                   class_regwen);
 
       // randomize crashdump triggered phases
       alert_handler_crashdump_phases();
