@@ -5,6 +5,7 @@
 // Bidirectional IO buffer for Xilinx FPGAs. Implements inversion and
 // virtual open drain feature.
 
+`include "prim_assert.sv"
 
 module prim_xilinx_pad_wrapper
   import prim_pad_wrapper_pkg::*;
