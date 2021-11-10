@@ -7,13 +7,12 @@ class jtag_riscv_agent_cfg extends dv_base_agent_cfg;
   `uvm_object_utils_end
 
   jtag_agent_cfg m_jtag_agent_cfg;
+  jtag_sequencer jtag_sequencer_h;
 
   function new (string name="");
     super.new(name);
-
-    // This is a high level agent and will use jtag_agent's driver.
-    // TODO: consider move it to build_phase
-    this.has_driver = 0;
+    // Default active
+    this.has_driver = 1;
   endfunction : new
 
   // assert trst_n for a number of cycles

@@ -22,6 +22,8 @@ package jtag_riscv_agent_pkg;
   parameter uint DMI_IRW   = 5;
   parameter uint DMI_DRW   = DMI_OPW + DMI_DATAW + DMI_ADDRW;
   parameter uint DTMCS_DRW = 32;
+  // Bits to shift byte address to word address
+  parameter uint DMI_WORD_SHIFT = $clog2(DMI_DATAW/8);
 
   string msg_id = "jtag_riscv_agent_pkg";
 
@@ -55,14 +57,13 @@ package jtag_riscv_agent_pkg;
   typedef class jtag_riscv_item;
   typedef class jtag_riscv_agent_cfg;
 
-  // this dummy driver is defined to avoid compile errors in dv_base_agent.
-  typedef dv_base_driver #(jtag_riscv_item, jtag_riscv_agent_cfg) jtag_riscv_driver;
-
   // package sources
   `include "jtag_riscv_item.sv"
   `include "jtag_riscv_agent_cfg.sv"
   `include "jtag_riscv_agent_cov.sv"
+  `include "jtag_riscv_reg_adapter.sv"
   `include "jtag_riscv_monitor.sv"
+  `include "jtag_riscv_driver.sv"
   `include "jtag_riscv_sequencer.sv"
   `include "jtag_riscv_agent.sv"
   `include "jtag_riscv_seq_list.sv"
