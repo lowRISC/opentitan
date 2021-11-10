@@ -30,6 +30,7 @@ module tb;
   wire intr_rxerr;
   wire intr_rxoverflow;
   wire intr_txunderflow;
+  wire intr_tpm_header_not_empty;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -65,7 +66,7 @@ module tb;
     .intr_rx_error_o            (intr_rxerr),
     .intr_rx_overflow_o         (intr_rxoverflow),
     .intr_tx_underflow_o        (intr_txunderflow),
-    .intr_tpm_header_not_empty_o(),
+    .intr_tpm_header_not_empty_o(intr_tpm_header_not_empty),
     .mbist_en_i     (1'b0),
     .scanmode_i     (prim_mubi_pkg::MuBi4False)
   );
@@ -82,6 +83,7 @@ module tb;
   assign interrupts[RxFwModeErr]     = intr_rxerr;
   assign interrupts[RxFifoOverflow]  = intr_rxoverflow;
   assign interrupts[TxFifoUnderflow] = intr_txunderflow;
+  assign interrupts[TpmHeaderNotEmpty] = intr_tpm_header_not_empty;
 
   initial begin
     // drive clk and rst_n from clk_if
