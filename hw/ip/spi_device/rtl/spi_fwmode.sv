@@ -215,12 +215,12 @@ module spi_fwmode
     .sram_write  (fwm_sram_write [FwModeRxFifo]),
     .sram_addr   (fwm_sram_addr  [FwModeRxFifo]),
     .sram_wdata  (fwm_sram_wdata [FwModeRxFifo]),
+    .sram_wmask  (fwm_sram_wmask [FwModeRxFifo]),
     .sram_gnt    (fwm_sram_gnt   [FwModeRxFifo]),
     .sram_rvalid (fwm_sram_rvalid[FwModeRxFifo]),
     .sram_rdata  (fwm_sram_rdata [FwModeRxFifo]),
     .sram_error  (fwm_sram_error [FwModeRxFifo])
   );
-  assign fwm_sram_wmask [FwModeRxFifo] = '1;
 
   // TX Fifo control (SRAM read request --> FIFO write)
   spi_fwm_txf_ctrl #(

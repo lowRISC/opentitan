@@ -36,6 +36,7 @@ module spi_fwm_rxf_ctrl #(
   output logic              sram_write,
   output logic [SramAw-1:0] sram_addr,
   output logic [SramDw-1:0] sram_wdata,
+  output logic [SramDw-1:0] sram_wmask,
   input                     sram_gnt,
   input                     sram_rvalid,
   input        [SramDw-1:0] sram_rdata,
@@ -58,7 +59,6 @@ module spi_fwm_rxf_ctrl #(
   logic clr_byte_enable;
   logic sram_req_d;
   logic sram_write_d;
-  logic sram_wdata_sel;
   logic timer_rst;
   logic update_wptr;
 
@@ -66,10 +66,8 @@ module spi_fwm_rxf_ctrl #(
     StIdle   = 'h0,
     StPop    = 'h1,
     StWait   = 'h2,
-    StRead   = 'h3,
-    StModify = 'h4,
-    StWrite  = 'h5,
-    StUpdate = 'h6
+    StWrite  = 'h3,
+    StUpdate = 'h4
   } state_e;
 
   state_e st_next, st;
@@ -157,16 +155,14 @@ module spi_fwm_rxf_ctrl #(
       sram_wdata <= '0;
     end else if (update_wdata) begin
       sram_wdata[8*pos+:8] <= fifo_rdata;
-    end else if (sram_wdata_sel == 1'b1) begin
-      for (int i = 0 ; i < NumBytes ; i++) begin
-        if (!byte_enable[i]) begin
-          sram_wdata[8*i+:8] <= sram_rdata[8*i+:8];
-        end
-      end
     end
   end
 
-  `COVER(partialWriteCover, st == StModify, clk_i, !rst_ni)
+  assign sram_wmask = (byte_enable == '0) ? '1
+                    : spi_device_pkg::sram_strb2mask(byte_enable);
+
+  logic  unused_sram;
+  assign unused_sram = ^{sram_rvalid, sram_rdata, sram_error};
 
   // If FIFO is not empty, initiate SRAM write.
   // As FIFOWidth and SRAM Width are different, RMW is required.
@@ -180,7 +176,6 @@ module spi_fwm_rxf_ctrl #(
     clr_byte_enable = 1'b0;
     sram_req_d = 1'b0;
     sram_write_d = 1'b0;
-    sram_wdata_sel = 1'b0;
     timer_rst = 1'b0;
     update_wptr = 1'b0;
 
@@ -225,35 +220,12 @@ module spi_fwm_rxf_ctrl #(
           fifo_ready = 1'b1;
           update_wdata = 1'b1;
         end else if (!fifo_valid && timer_expired) begin
-          st_next = StRead;
-          sram_req_d   = 1'b1;
-          sram_write_d = 1'b0;
-        end else begin
-          st_next = StWait;
-        end
-      end
-
-      StRead: begin
-        // As counter expires, RMW is only option. State machine reads from current
-        // write pointer address (chopping lower bits).
-        if (sram_gnt) begin
-          st_next = StModify;
-        end else begin
-          st_next = StRead;
-          sram_req_d   = 1'b1;
-          sram_write_d = 1'b0;
-        end
-      end
-
-      StModify: begin
-        // Waits until read data arrives.
-        if (sram_rvalid) begin
+          // Partial write
           st_next = StWrite;
           sram_req_d   = 1'b1;
           sram_write_d = 1'b1;
-          sram_wdata_sel = 1'b1;
         end else begin
-          st_next = StModify;
+          st_next = StWait;
         end
       end
 
