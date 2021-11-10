@@ -131,16 +131,20 @@ Signal                                 | Direction | Type                       
 `periph_to_mio_i[NPeriphOut-1:0]`      | `input`   | packed `logic`                     | Signals from `NPeriphOut` muxed peripheral outputs coming into the `pinmux`.
 `periph_to_mio_oe_i[NPeriphOut-1:0]`   | `input`   | packed `logic`                     | Signals from `NPeriphOut` muxed peripheral output enables coming into the `pinmux`.
 `mio_to_periph_o[NPeriphIn-1:0]`       | `output`  | packed `logic`                     | Signals to `NPeriphIn` muxed peripherals coming from the `pinmux`.
+`periph_to_mio_ie_i[NPeriphIn-1:0]`    | `input`   | packed `logic`                     | Signals from `NPeriphIn` muxed peripheral input enables coming into the `pinmux`.
 `periph_to_dio_i[NDioPads-1:0]`        | `input`   | packed `logic`                     | Signals from `NDioPads` dedicated peripheral outputs coming into the `pinmux`.
 `periph_to_dio_oe_i[NDioPads-1:0]`     | `input`   | packed `logic`                     | Signals from `NDioPads` dedicated peripheral output enables coming into the `pinmux`.
 `dio_to_periph_o[NDioPads-1:0]`        | `output`  | packed `logic`                     | Signals to `NDioPads` dedicated peripherals coming from the `pinmux`.
+`periph_to_dio_ie_i[NDioPads-1:0]`     | `input`   | packed `logic`                     | Signals from `NDioPads` dedicated peripheral input enables coming into the `pinmux`.
 `mio_attr_o[NMioPads-1:0]`             | `output`  | prim_pad_wrapper_pkg::pad_attr_t   | Packed array containing the pad attributes of all muxed IOs.
 `mio_out_o[NMioPads-1:0]`              | `output`  | packed `logic`                     | Signals to `NMioPads` bidirectional muxed pads as output data.
 `mio_oe_o[NMioPads-1:0]`               | `output`  | packed `logic`                     | Signals to `NMioPads` bidirectional muxed pads as output enables.
+`mio_ie_o[NMioPads-1:0]`               | `output`  | packed `logic`                     | Signals to `NMioPads` bidirectional muxed pads as input enables.
 `mio_in_i[NMioPads-1:0]`               | `input`   | packed `logic`                     | Signals from `NMioPads` bidirectional muxed pads as input data.
 `dio_attr_o[NDioPads-1:0]`             | `output`  | prim_pad_wrapper_pkg::pad_attr_t   | Packed array containing the pad attributes of all dedicated IOs.
 `dio_out_o[NDioPads-1:0]`              | `output`  | packed `logic`                     | Signals to `NDioPads` bidirectional dedicated pads as output data.
 `dio_oe_o[NDioPads-1:0]`               | `output`  | packed `logic`                     | Signals to `NDioPads` bidirectional dedicated pads as output enables.
+`dio_ie_o[NDioPads-1:0]`               | `output`  | packed `logic`                     | Signals to `NDioPads` bidirectional dedicated pads as input enables.
 `dio_in_i[NDioPads-1:0]`               | `input`   | packed `logic`                     | Signals from `NDioPads` bidirectional dedicated pads as input data.
 
 
@@ -153,9 +157,12 @@ The diagram also shows the `padring` module which instantiates the bidirectional
 
 ![Pinmux Block Diagram](pinmux_muxing_matrix.svg)
 
-Note that apart from selecting a specific input pad, the `periph_insel[*]` signals can also be used to tie the peripheral input to 0 or 1.
+Apart from selecting a specific input pad, the `periph_insel[*]` signals can also be used to tie the peripheral input to 0 or 1.
+Note that each peripheral input `dio_to_periph` is associated with an input buffer enable signal `periph_to_dio_ie` (this is similar to the output buffer enable signal `periph_to_mio_oe` for peripheral outputs `periph_to_mio`).
+When a specific input pad is connected to a peripheral input using `periph_insel[*]`, the input enable coming from that peripheral will be sent to that pad.
+
 Likewise, the output select signals `mio_outsel[*]` can also be used to constantly drive an output pin to 0/1 or to put it into high-Z state (default).
-The output enable and the associated data signal (i.e. `periph_to_mio` and `periph_to_mio_oe`) are indexed with the same select signal to allow the peripheral hardware to determine the pad direction instead of demoting that control to SW.
+The output buffer enable and the associated data signal (i.e. `periph_to_mio_oe` and `periph_to_mio`) are indexed with the same select signal to allow the peripheral hardware to determine the pad direction instead of demoting that control to SW.
 
 ## Retention Logic
 
@@ -183,6 +190,8 @@ Note that for all patterns listed above, the input signal is sampled with the AO
 This means that the input signal needs to remain stable for at least one AON clock cycle after a level change for the detector to recognize the event (depending on the debounce filter configuration, the signal needs to remain stable for multiple clock cycles).
 
 If a pattern is detected, the wakeup detector will send a wakeup request to the power manager, and the cause bit corresponding to that detector will be set in the {{< regref "WKUP_CAUSE" >}} register.
+
+If a wakeup detector is configured to listen on a particular MIO or DIO pad, the input buffer enable of that pad will be forced to 1 regardless of the state of the input enable signals coming from the peripheral side.
 
 ## Strap Sampling and TAP Isolation
 
@@ -259,8 +268,9 @@ Signal               | Direction  | Type        | Description
 `inout_io`           | `inout`    | `wire`      | Bidirectional inout of the pad
 `in_o`               | `output`   | `logic`     | Input data signal
 `in_raw_o`           | `output`   | `logic`     | Un-inverted input data signal
+`ie_i`               | `input`    | `logic`     | Input buffer enable
 `out_i`              | `input`    | `logic`     | Output data signal
-`oe_i`               | `input`    | `logic`     | Output data enable
+`oe_i`               | `input`    | `logic`     | Output buffer enable
 `attr_i[0]`          | `input`    | `logic`     | Input/output inversion
 `attr_i[1]`          | `input`    | `logic`     | Virtual open-drain enable
 `attr_i[2]`          | `input`    | `logic`     | Pull enable
