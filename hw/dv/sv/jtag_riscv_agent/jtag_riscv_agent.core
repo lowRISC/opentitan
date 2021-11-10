@@ -15,7 +15,9 @@ filesets:
       - jtag_riscv_agent_cfg.sv: {is_include_file: true}
       - jtag_riscv_agent_cov.sv: {is_include_file: true}
       - jtag_riscv_item.sv: {is_include_file: true}
+      - jtag_riscv_reg_adapter.sv: {is_include_file: true}
       - jtag_riscv_monitor.sv: {is_include_file: true}
+      - jtag_riscv_driver.sv: {is_include_file: true}
       - jtag_riscv_sequencer.sv: {is_include_file: true}
       - jtag_riscv_agent.sv: {is_include_file: true}
       - seq_lib/jtag_riscv_base_seq.sv: {is_include_file: true}

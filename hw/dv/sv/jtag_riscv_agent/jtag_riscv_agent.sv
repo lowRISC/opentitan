@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class jtag_riscv_agent extends dv_base_agent #(
-      .CFG_T       (jtag_riscv_agent_cfg),
-      .SEQUENCER_T (jtag_riscv_sequencer),
-      .DRIVER_T    (jtag_riscv_driver),
-      .MONITOR_T   (jtag_riscv_monitor),
-      .COV_T       (jtag_riscv_agent_cov)
-  );
+  .CFG_T      (jtag_riscv_agent_cfg),
+  .SEQUENCER_T(jtag_riscv_sequencer),
+  .DRIVER_T   (jtag_riscv_driver),
+  .MONITOR_T  (jtag_riscv_monitor),
+  .COV_T      (jtag_riscv_agent_cov)
+);
 
   `uvm_component_utils(jtag_riscv_agent)
   `uvm_component_new
@@ -31,6 +31,8 @@ class jtag_riscv_agent extends dv_base_agent #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
+    cfg.jtag_sequencer_h       = m_jtag_agent.sequencer;
+    m_jtag_agent.monitor.analysis_port.connect(monitor.jtag_item_fifo.analysis_export);
   endfunction
 
 endclass
