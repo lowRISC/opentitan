@@ -824,8 +824,8 @@
 
   logic clk_io_div4_peri_sw_en;
   logic clk_io_div2_peri_sw_en;
-  logic clk_io_peri_sw_en;
   logic clk_usb_peri_sw_en;
+  logic clk_io_peri_sw_en;
 
   prim_flop_2sync #(
     .Width(1)
@@ -911,47 +911,6 @@
 
   prim_flop_2sync #(
     .Width(1)
-  ) u_clk_io_peri_sw_en_sync (
-    .clk_i(clk_io_i),
-    .rst_ni(rst_io_ni),
-    .d_i(reg2hw.clk_enables.clk_io_peri_en.q),
-    .q_o(clk_io_peri_sw_en)
-  );
-
-  prim_mubi_pkg::mubi4_t clk_io_peri_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_clk_io_peri_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .mubi_i(scanmode_i),
-    .mubi_o(clk_io_peri_scanmode)
-  );
-
-  logic clk_io_peri_combined_en;
-  assign clk_io_peri_combined_en = clk_io_peri_sw_en & clk_io_en;
-  prim_clock_gating #(
-    .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
-  ) u_clk_io_peri_cg (
-    .clk_i(clk_io_root),
-    .en_i(clk_io_peri_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_peri_scanmode)),
-    .clk_o(clocks_o.clk_io_peri)
-  );
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_io_peri (
-    .clk_i(clk_io_i),
-    .rst_ni(rst_io_ni),
-    .mubi_i(((clk_io_peri_combined_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.io_peri)
-  );
-
-  prim_flop_2sync #(
-    .Width(1)
   ) u_clk_usb_peri_sw_en_sync (
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
@@ -989,6 +948,47 @@
     .rst_ni(rst_usb_ni),
     .mubi_i(((clk_usb_peri_combined_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.usb_peri)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_clk_io_peri_sw_en_sync (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .d_i(reg2hw.clk_enables.clk_io_peri_en.q),
+    .q_o(clk_io_peri_sw_en)
+  );
+
+  prim_mubi_pkg::mubi4_t clk_io_peri_scanmode;
+  prim_mubi4_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_io_peri_scanmode_sync  (
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_io_peri_scanmode)
+  );
+
+  logic clk_io_peri_combined_en;
+  assign clk_io_peri_combined_en = clk_io_peri_sw_en & clk_io_en;
+  prim_clock_gating #(
+    .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
+  ) u_clk_io_peri_cg (
+    .clk_i(clk_io_root),
+    .en_i(clk_io_peri_combined_en),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_peri_scanmode)),
+    .clk_o(clocks_o.clk_io_peri)
+  );
+
+  // clock gated indication for alert handler
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_io_peri (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .mubi_i(((clk_io_peri_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_peri)
   );
 
 
