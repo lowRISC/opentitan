@@ -27,6 +27,7 @@ package spi_device_env_pkg;
     RxFwModeErr,
     RxFifoOverflow,
     TxFifoUnderflow,
+    TpmHeaderNotEmpty,
     NumSpiDevIntr
   } spi_device_intr_e;
 
