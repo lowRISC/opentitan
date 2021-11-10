@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-'''Code to help make typed objects out of parsed YAML'''
+'''Code to help make typed objects out of parsed YAML / json / hjson'''
 
 from typing import Callable, Dict, List, Optional, Sequence, TypeVar
 

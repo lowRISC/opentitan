@@ -20,7 +20,7 @@ py-libs    := $(filter-out $(py-scripts),$(py-files))
 lint-stamps := $(foreach scr,$(py-scripts),$(build-dir)/$(scr).stamp)
 
 $(lint-stamps): $(build-dir)/%.stamp: % $(py-libs) | $(build-dir)
-	env MYPYPATH="$$MYPYPATH:../../util" mypy --strict $< $(py-libs)
+	mypy --strict --config-file=mypy.ini $<
 	touch $@
 
 .PHONY: lint

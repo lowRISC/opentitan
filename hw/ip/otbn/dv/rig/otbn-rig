@@ -16,8 +16,8 @@ from typing import Optional, cast
 # can import modules like "shared.foo" and get the OTBN shared code.
 _RIG_DIR = os.path.dirname(__file__)
 _OTBN_DIR = os.path.normpath(os.path.join(_RIG_DIR, '../..'))
-_UTIL_DIR = os.path.join(_OTBN_DIR, 'util')
-sys.path.append(_UTIL_DIR)
+_OTBN_UTIL_DIR = os.path.join(_OTBN_DIR, 'util')
+sys.path.append(_OTBN_UTIL_DIR)
 
 from shared.insn_yaml import InsnsFile, load_insns_yaml  # noqa: E402
 

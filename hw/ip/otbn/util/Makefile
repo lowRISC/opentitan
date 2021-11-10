@@ -20,7 +20,7 @@ pyscripts := yaml_to_doc.py otbn-as otbn-ld otbn-objdump
 
 lint-stamps := $(foreach s,$(pyscripts),$(lint-build-dir)/$(s).stamp)
 $(lint-build-dir)/%.stamp: % $(pylibs) | $(lint-build-dir)
-	mypy --strict $< $(pylibs)
+	mypy --strict --config-file=mypy.ini $<
 	touch $@
 
 .PHONY: lint
