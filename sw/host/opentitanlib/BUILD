@@ -1,0 +1,67 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("//third_party/cargo:crates.bzl", "all_crate_deps")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "opentitanlib",
+    srcs = [
+        "src/app/command.rs",
+        "src/app/conf.rs",
+        "src/app/mod.rs",
+        "src/bootstrap/mod.rs",
+        "src/bootstrap/primitive.rs",
+        "src/io/gpio.rs",
+        "src/io/mod.rs",
+        "src/io/spi.rs",
+        "src/io/uart.rs",
+        "src/lib.rs",
+        "src/spiflash/flash.rs",
+        "src/spiflash/mod.rs",
+        "src/spiflash/sfdp.rs",
+        "src/transport/cw310/gpio.rs",
+        "src/transport/cw310/mod.rs",
+        "src/transport/cw310/spi.rs",
+        "src/transport/cw310/uart.rs",
+        "src/transport/cw310/usb.rs",
+        "src/transport/mod.rs",
+        "src/transport/ultradebug/gpio.rs",
+        "src/transport/ultradebug/mod.rs",
+        "src/transport/ultradebug/mpsse.rs",
+        "src/transport/ultradebug/spi.rs",
+        "src/transport/ultradebug/uart.rs",
+        "src/transport/verilator/mod.rs",
+        "src/transport/verilator/subprocess.rs",
+        "src/transport/verilator/transport.rs",
+        "src/transport/verilator/uart.rs",
+        "src/util/bitfield.rs",
+        "src/util/file.rs",
+        "src/util/image.rs",
+        "src/util/mod.rs",
+        "src/util/parse_int.rs",
+        "src/util/voltage.rs",
+    ],
+    proc_macro_deps = [
+        "//sw/host/opentitanlib/opentitantool_derive",
+    ],
+    deps = [
+        "@mundane//:mundane",
+    ] + all_crate_deps(),
+)
+
+rust_test(
+    name = "opentitanlib_test",
+    compile_data = [
+        "src/bootstrap/simple.bin",
+        "src/spiflash/SFDP_MX66L1G.bin",
+    ],
+    crate = ":opentitanlib",
+    data = [
+        "src/util/testdata/hello.txt",
+        "src/util/testdata/world.txt",
+    ],
+)

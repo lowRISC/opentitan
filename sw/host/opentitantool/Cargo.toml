@@ -8,6 +8,10 @@ version = "0.1.0"
 authors = ["lowRISC contributors"]
 edition = "2018"
 
+[[bin]]
+name = "opentitantool"
+path = "src/main.rs"
+
 [dependencies]
 anyhow = "1.0"
 thiserror = "1.0"
