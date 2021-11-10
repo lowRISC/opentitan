@@ -237,12 +237,12 @@ module edn_core import edn_pkg::*;
   assign event_edn_cmd_req_done = csrng_cmd_ack;
 
   // set the interrupt sources
-  assign event_edn_fatal_err = edn_enable && (
+  assign event_edn_fatal_err = (edn_enable && (
          sfifo_rescmd_err_sum ||
          sfifo_gencmd_err_sum ||
          edn_ack_sm_err_sum ||
-         edn_main_sm_err_sum ||
-         edn_cntr_err_sum);
+         edn_main_sm_err_sum)) ||
+         edn_cntr_err_sum;
 
   // set fifo errors that are single instances of source
   assign sfifo_rescmd_err_sum = (|sfifo_rescmd_err) ||
@@ -284,7 +284,7 @@ module edn_core import edn_pkg::*;
   assign hw2reg.err_code.edn_main_sm_err.de = edn_enable && edn_main_sm_err_sum;
 
   assign hw2reg.err_code.edn_cntr_err.d = 1'b1;
-  assign hw2reg.err_code.edn_cntr_err.de = edn_enable && edn_cntr_err_sum;
+  assign hw2reg.err_code.edn_cntr_err.de = edn_cntr_err_sum;
 
 
  // set the err code type bits
