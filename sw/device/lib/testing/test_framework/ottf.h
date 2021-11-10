@@ -32,6 +32,16 @@ typedef struct test_config {
    * by resetting the UART device before printing debug information.
    */
   bool can_clobber_uart;
+  /**
+   * If true, `test_main()` is run as a FreeRTOS task, enabling test writers to
+   * to spawn additional (concurrent) FreeRTOS tasks within the `test_main()`
+   * execution context.
+   *
+   * If false, `test_main()` is executed on bare-metal, and cannot spawn
+   * additional concurrent execution contexts. This is useful for tests that do
+   * not require concurrency, and seek to minimize simulation runtime.
+   */
+  bool enable_concurrency;
 } test_config_t;
 
 /**

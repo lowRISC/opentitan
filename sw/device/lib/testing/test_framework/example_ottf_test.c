@@ -11,10 +11,11 @@
 
 const test_config_t kTestConfig = {
     .can_clobber_uart = false,
+    .enable_concurrency = true,
 };
 
 bool test_main(void) {
-  // Calling pcTaskGetName() with NULL gets the name of the current task.
-  LOG_INFO("Running %s in FreeRTOS ...", pcTaskGetName(NULL));
+  LOG_INFO("Running on-device test as FreeRTOS task (%s) using the OTTF.",
+           pcTaskGetName(NULL));
   return true;
 }
