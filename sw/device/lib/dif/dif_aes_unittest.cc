@@ -22,19 +22,19 @@ using testing::Test;
 class AesTest : public testing::Test, public mock_mmio::MmioTest {
  public:
   void setExpectedKey(const dif_aes_key_share_t &key, uint32_t key_size = 8) {
-    for (int i = 0; i < key_size; ++i) {
+    for (uint32_t i = 0; i < key_size; ++i) {
       ptrdiff_t offset = AES_KEY_SHARE0_0_REG_OFFSET + (i * sizeof(uint32_t));
       EXPECT_WRITE32(offset, key.share0[i]);
     }
 
-    for (int i = 0; i < key_size; ++i) {
+    for (uint32_t i = 0; i < key_size; ++i) {
       ptrdiff_t offset = AES_KEY_SHARE1_0_REG_OFFSET + (i * sizeof(uint32_t));
       EXPECT_WRITE32(offset, key.share1[i]);
     }
   }
 
   void setExpectedIv(const dif_aes_iv_t &iv, const uint32_t kIvSize = 4) {
-    for (int i = 0; i < kIvSize; ++i) {
+    for (uint32_t i = 0; i < kIvSize; ++i) {
       ptrdiff_t offset = AES_IV_0_REG_OFFSET + (i * sizeof(uint32_t));
       EXPECT_WRITE32(offset, iv.iv[i]);
     }

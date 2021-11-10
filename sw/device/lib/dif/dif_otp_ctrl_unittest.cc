@@ -598,7 +598,7 @@ class BlockingIoTest : public OtpTest {
 };
 
 TEST_F(BlockingIoTest, Read) {
-  for (int i = 0; i < kWords; ++i) {
+  for (size_t i = 0; i < kWords; ++i) {
     auto offset =
         OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET + 0x10 + i * sizeof(uint32_t);
     EXPECT_READ32(OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + offset, i + 1);
