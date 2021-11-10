@@ -5,33 +5,9 @@
 '''A wrapper around reggen for otbn.hjson'''
 
 import os
-import sys
 from typing import Optional, Tuple
 
-
-# We use reggen to read the hjson file. Since that lives somewhere completely
-# different from this script (and there aren't __init__.py files scattered all
-# over the OpenTitan repository), we have to do sys.path hacks to find it.
-_OLD_SYS_PATH = sys.path
-try:
-    _UTIL_PATH = os.path.join(os.path.dirname(__file__),
-                              '..', '..', '..', '..', '..', 'util')
-    sys.path = [_UTIL_PATH] + _OLD_SYS_PATH
-    import reggen.field  # type: ignore
-    import reggen.ip_block   # type: ignore
-    import reggen.reg_block   # type: ignore
-    import reggen.register  # type: ignore
-    import reggen.window  # type: ignore
-finally:
-    sys.path = _OLD_SYS_PATH
-
-# Re-export some reggen types so that code importing otbn_reggen can get them
-# transitively without having to mess around with sys.path.
-Register = reggen.register.Register
-Field = reggen.field.Field
-Window = reggen.window.Window
-RegBlock = reggen.reg_block.RegBlock
-IpBlock = reggen.ip_block.IpBlock
+from reggen import ip_block, reg_block
 
 _LR_RETVAL = None  # type: Optional[Tuple[int, object]]
 
@@ -51,7 +27,7 @@ def load_registers() -> Tuple[int, object]:
                         '..', '..', 'data', 'otbn.hjson')
 
     try:
-        obj = IpBlock.from_path(path, [])
+        obj = ip_block.IpBlock.from_path(path, [])
     except ValueError as err:
         raise RuntimeError('Failed to parse {!r}: {}'.format(path, err))
 
@@ -60,6 +36,6 @@ def load_registers() -> Tuple[int, object]:
     reg_byte_width = (reg_bit_width + 7) // 8
 
     registers = obj.reg_blocks[None]
-    assert isinstance(registers, RegBlock)
+    assert isinstance(registers, reg_block.RegBlock)
     _LR_RETVAL = (reg_byte_width, registers)
     return _LR_RETVAL

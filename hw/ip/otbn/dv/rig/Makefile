@@ -20,8 +20,7 @@ pyscripts := otbn-rig
 
 lint-stamps := $(foreach s,$(pyscripts),$(lint-build-dir)/$(s).stamp)
 $(lint-build-dir)/%.stamp: % $(pylibs) | $(lint-build-dir)
-	env MYPYPATH=../../util:$$MYPYPATH \
-	  mypy --strict $<
+	mypy --strict --config-file=mypy.ini $<
 	touch $@
 
 .PHONY: lint

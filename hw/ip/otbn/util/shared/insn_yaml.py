@@ -9,14 +9,15 @@ import os
 import re
 from typing import Dict, List, Optional, Tuple, cast
 
+from serialize.parse_helpers import (check_keys, check_str, check_bool,
+                                     check_list, index_list, get_optional_str,
+                                     load_yaml)
+
 from .encoding import Encoding
 from .encoding_scheme import EncSchemes
 from .lsu_desc import LSUDesc
 from .operand import Operand
 from .syntax import InsnSyntax
-from .yaml_parse_helpers import (check_keys, check_str, check_bool,
-                                 check_list, index_list, get_optional_str,
-                                 load_yaml)
 
 
 class Insn:
