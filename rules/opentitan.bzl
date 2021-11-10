@@ -139,6 +139,14 @@ def opentitan_binary(
         output_bin = True,
         output_disassembly = True,
         output_scrambled = False,
+        copts = [
+            "-nostdlib",
+            "-ffreestanding",
+        ],
+        linkopts = [
+            "-nostartfiles",
+            "-nostdlib",
+        ],
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts.
     This macro is mostly a wrapper around cc_binary, but creates artifacts
@@ -164,6 +172,8 @@ def opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
             target_compatible_with = _targets_compatible_with[platform],
+            copts = copts,
+            linkopts = linkopts,
             **kwargs
         )
         targets.append(":" + devname + "_elf")

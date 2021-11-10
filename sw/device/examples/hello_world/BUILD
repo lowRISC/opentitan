@@ -15,10 +15,6 @@ opentitan_binary(
         # Disable the date-time warning only for the hello world program.
         "-Wno-date-time",
     ],
-    linkopts = [
-        "-nostartfiles",
-        "-nostdlib",
-    ],
     deps = [
         ":hello_world_lib",
         "//sw/device/lib/base:mmio",
