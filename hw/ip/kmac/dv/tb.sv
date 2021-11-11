@@ -33,7 +33,7 @@ module tb;
 
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
-  kmac_sideload_if sideload_if();
+  key_sideload_if sideload_if();
 
   kmac_app_intf kmac_app_if[kmac_pkg::NumAppIntf](.clk(clk), .rst_n(rst_n));
 
@@ -99,7 +99,7 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual pins_if#(1))::set(null, "*.env", "idle_vif", idle_if);
-    uvm_config_db#(virtual kmac_sideload_if)::set(null, "*.env", "sideload_vif", sideload_if);
+    uvm_config_db#(virtual key_sideload_if)::set(null, "*.env", "sideload_vif", sideload_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

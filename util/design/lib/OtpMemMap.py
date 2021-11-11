@@ -12,6 +12,7 @@ from math import ceil, log2
 
 from lib.common import check_bool, check_int, random_or_hexvalue
 from tabulate import tabulate
+from mubi.prim_mubi import is_width_valid, mubi_value_as_int
 
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8
@@ -188,13 +189,28 @@ def _validate_item(item):
     item.setdefault("name", "unknown_name")
     item.setdefault("size", "0")
     item.setdefault("isdigest", "false")
+    item.setdefault("ismubi", "false")
 
-    # Make sure this has integer type.
+    # make sure these have the correct types
+    item["isdigest"] = check_bool(item["isdigest"])
+    item["ismubi"] = check_bool(item["ismubi"])
     item["size"] = check_int(item["size"])
+    item_width = item["size"] * 8
 
-    # Generate random constant to be used when partition has
-    # not been initialized yet or when it is in error state.
-    random_or_hexvalue(item, "inv_default", check_int(item["size"]) * 8)
+    # defaults are handled differently in case of mubi
+    if item["ismubi"]:
+        if not is_width_valid(item_width):
+            raise RuntimeError("Mubi value {} has invalid width"
+                               .format(item["name"]))
+        # Convert default to correct mubi value
+        item.setdefault("inv_default", "false")
+        item["inv_default"] = check_bool(item["inv_default"])
+        item["inv_default"] = mubi_value_as_int(item["inv_default"],
+                                                item_width)
+    else:
+        # Generate random constant to be used when partition has
+        # not been initialized yet or when it is in error state.
+        random_or_hexvalue(item, "inv_default", item_width)
 
 
 def _validate_mmap(config):
@@ -261,10 +277,9 @@ def _validate_mmap(config):
                 "offset":
                 check_int(part["offset"]) + check_int(part["size"]) -
                 DIGEST_SIZE,
-                "isdigest":
-                "True",
-                "inv_default":
-                "<random>"
+                "ismubi": False,
+                "isdigest": True,
+                "inv_default": "<random>"
             })
             # Randomize the digest default.
             random_or_hexvalue(part["items"][-1], "inv_default",

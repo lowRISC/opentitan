@@ -76,6 +76,10 @@
   `define DV_STRINGIFY(I_) `"I_`"
 `endif
 
+`ifndef DUT_HIER_STR
+  `define DUT_HIER_STR `DV_STRINGIFY(`DUT_HIER)
+`endif
+
 // Common check macros used by DV_CHECK error and fatal macros.
 // Note: Should not be called by user code
 `ifndef DV_CHECK

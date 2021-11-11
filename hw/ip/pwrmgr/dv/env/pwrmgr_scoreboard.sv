@@ -65,10 +65,15 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     forever
       @(posedge cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::LowPwrEntry) begin
         if (cfg.en_cov) begin
-          cov.clock_control_cg.sample(cfg.pwrmgr_vif.clk_enables.core_clk_en,
-                                      cfg.pwrmgr_vif.clk_enables.io_clk_en,
-                                      cfg.pwrmgr_vif.clk_enables.usb_clk_en_lp,
-                                      cfg.pwrmgr_vif.clk_enables.usb_clk_en_active);
+          // At this point pwrmgr is asleep.
+          cov.control_cg.sample(cfg.pwrmgr_vif.control_enables, 1'b1);
+        end
+      end
+    forever
+      @(posedge cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::ResetNone) begin
+        if (cfg.en_cov) begin
+          // At this point pwrmgr is awake.
+          cov.control_cg.sample(cfg.pwrmgr_vif.control_enables, 1'b0);
         end
       end
   endtask
@@ -124,13 +129,22 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
         // Only some bits can be checked on reads. Bit 0 is cleared by hardware
         // on low power transition or when registering a valid reset.
         if (data_phase_write) begin
-          bit core_clk_en = get_field_val(ral.control.core_clk_en, item.a_data);
-          bit io_clk_en = get_field_val(ral.control.io_clk_en, item.a_data);
-          bit usb_clk_en_lp = get_field_val(ral.control.usb_clk_en_lp, item.a_data);
-          bit usb_clk_en_active = get_field_val(ral.control.usb_clk_en_active, item.a_data);
-          bit main_pd_n = get_field_val(ral.control.main_pd_n, item.a_data);
-          cfg.pwrmgr_vif.update_clock_enables(
-              '{core_clk_en, io_clk_en, usb_clk_en_lp, usb_clk_en_active, main_pd_n});
+          bit low_power_hint = get_field_val(ral.control.low_power_hint, item.a_data);
+          control_enables_t control_enables = '{
+              core_clk_en: get_field_val(ral.control.core_clk_en, item.a_data),
+              io_clk_en: get_field_val(ral.control.io_clk_en, item.a_data),
+              usb_clk_en_lp: get_field_val(ral.control.usb_clk_en_lp, item.a_data),
+              usb_clk_en_active: get_field_val(ral.control.usb_clk_en_active, item.a_data),
+              main_pd_n: get_field_val(ral.control.main_pd_n, item.a_data)
+          };
+          `uvm_info(`gfn, $sformatf("Writing control=0x%x, enables=%p", item.a_data, control_enables
+                    ), UVM_MEDIUM)
+          cfg.pwrmgr_vif.update_low_power_hint(low_power_hint);
+          cfg.pwrmgr_vif.update_control_enables(control_enables);
+          if (cfg.en_cov) begin
+            // At this point the processor is not asleep.
+            cov.control_cg.sample(control_enables, 1'b0);
+          end
         end
       end
       "cfg_cdc_sync": begin

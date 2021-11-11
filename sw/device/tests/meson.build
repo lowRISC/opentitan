@@ -134,6 +134,7 @@ rstmgr_smoketest_lib = declare_dependency(
       sw_lib_dif_rstmgr,
       sw_lib_mmio,
       sw_lib_runtime_hart,
+      sw_lib_testing_rstmgr_testutils,
     ],
   ),
 )
@@ -190,6 +191,7 @@ otp_ctrl_smoketest_lib = declare_dependency(
       sw_lib_runtime_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
+      sw_lib_testing_otp_ctrl_testutils,
     ],
   ),
 )
@@ -249,6 +251,23 @@ clkmgr_smoketest_lib = declare_dependency(
 sw_tests += {
   'clkmgr_smoketest': {
     'library': clkmgr_smoketest_lib,
+  }
+}
+
+clkmgr_jitter_test_lib = declare_dependency(
+  link_with: static_library(
+    'clkmgr_jitter_test_lib',
+    sources: ['clkmgr_jitter.c'],
+    dependencies: [
+      sw_lib_dif_clkmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'clkmgr_jitter_test': {
+    'library': clkmgr_jitter_test_lib,
   }
 }
 
@@ -454,6 +473,7 @@ lc_ctrl_otp_hw_cfg_test_lib = declare_dependency(
       sw_lib_runtime_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
+      sw_lib_testing_otp_ctrl_testutils,
     ],
   ),
 )
@@ -632,6 +652,15 @@ foreach sw_test_name, sw_test_info : sw_tests
       kwargs: bin_to_vmem64_custom_target_args,
     )
 
+    sw_test_scr_vmem64 = custom_target(
+      target_name.format('scrambled'),
+      input: sw_test_vmem64,
+      output: flash_image_outputs,
+      command: flash_image_command,
+      depend_files: flash_image_depend_files,
+      build_by_default: true,
+    )
+
     sw_test_sim_dv_frames = []
     if device_name == 'sim_dv' and \
         sw_test_info.has_key('dv_frames') and sw_test_info['dv_frames']
@@ -691,6 +720,7 @@ foreach sw_test_name, sw_test_info : sw_tests
         sw_test_bin,
         sw_test_vmem32,
         sw_test_vmem64,
+        sw_test_scr_vmem64,
         sw_test_sim_dv_frames,
         sw_test_sim_dv_logs,
       ],
@@ -768,10 +798,20 @@ foreach sw_test_name, sw_test_info : sw_rom_ext_tests
         kwargs: bin_to_vmem64_custom_target_args,
       )
 
+      sw_test_signed_scr_vmem64 = custom_target(
+        signed_target_name.format('scrambled'),
+        input: sw_test_signed_vmem64,
+        output: flash_image_outputs,
+        command: flash_image_command,
+        depend_files: flash_image_depend_files,
+        build_by_default: true,
+      )
+
       targets_to_export += [
         sw_test_signed_bin,
         sw_test_signed_vmem32,
         sw_test_signed_vmem64,
+        sw_test_signed_scr_vmem64
       ]
     endforeach
 
@@ -833,6 +873,15 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     kwargs: bin_to_vmem64_custom_target_args,
   )
 
+  crt_test_scr_vmem64 = custom_target(
+    target_name.format('scrambled'),
+    input: crt_test_vmem64,
+    output: flash_image_outputs,
+    command: flash_image_command,
+    depend_files: flash_image_depend_files,
+    build_by_default: true,
+  )
+
   custom_target(
     target_name.format('export'),
     command: export_target_command,
@@ -843,6 +892,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       crt_test_bin,
       crt_test_vmem32,
       crt_test_vmem64,
+      crt_test_scr_vmem64,
     ],
     output: target_name.format('export'),
     build_always_stale: true,
@@ -889,6 +939,15 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     kwargs: bin_to_vmem64_custom_target_args,
   )
 
+  ottf_scr_vmem64 = custom_target(
+    target_name.format('scrambled'),
+    input: ottf_vmem64,
+    output: flash_image_outputs,
+    command: flash_image_command,
+    depend_files: flash_image_depend_files,
+    build_by_default: true,
+  )
+
   custom_target(
     target_name.format('export'),
     command: export_target_command,
@@ -899,6 +958,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       ottf_bin,
       ottf_vmem32,
       ottf_vmem64,
+      ottf_scr_vmem64
     ],
     output: target_name.format('export'),
     build_always_stale: true,

@@ -72,7 +72,7 @@ struct SigTestCase {
 constexpr SigTestCase kSigTestCases[2]{
     // message: "test"
     {
-        // sw/device/silicon_creator/keys/fpga_key_0.public.der
+        // sw/device/silicon_creator/mask_rom/keys/test_key_0_rsa_3072_exp_f4.public.der
         .key =
             {
                 .n = {{
@@ -138,7 +138,7 @@ constexpr SigTestCase kSigTestCases[2]{
     },
     // message: "test"
     {
-        // sw/device/silicon_creator/keys/fpga_key_1.public.der
+        // sw/device/silicon_creator/mask_rom/keys/test_key_1_rsa_3072_exp_3.public.der
         .key =
             {
                 .n = {{

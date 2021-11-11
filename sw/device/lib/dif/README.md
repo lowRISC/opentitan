@@ -10,8 +10,8 @@ verification and early silicon verification.
 
 Although DIFs are high-quality software artifacts, they are not a hardware
 abstraction layer (HAL), nor do they follow the device driver model of
-any particular operating system, and as such, DIFs are *not* intended
-to be used by production firmware.  DIFs, in combination with the
+any particular operating system, and as such, **_DIFs are not intended
+to be used by production firmware_**.  DIFs, in combination with the
 hardware specification, may be illustrative for writing drivers, but should
 not be considered drivers themselves.
 
@@ -20,20 +20,38 @@ libraries.
 
 There is one DIF library per hardware IP, and each one contains the DIFs
 required to actuate all of the specification-required functionality of the
-hardware they are written for.
+hardware they are written for. 
 
-## New DIFs
+Each DIF library contains both auto-generated (which are checked-in to our
+repository under the `autogen/` subtree), and manually-implemented DIFs (which
+are not sub-foldered).
 
-Developers should use the `util/make_new_dif.py` script to instantiate some
-DIF-related templates which follow the guidance below. The script will create:
+## Developing New DIFs
 
-*   A Header for the DIF, based on [`dif_template.h.tpl`](./dif_template.h.tpl).
-*   A Checklist for the DIF, based on `doc/project/sw_checklist.md.tpl`.
+Developers should use the `util/make_new_dif.py` script to both auto-generate a
+subset of DIFs, *and* instantiate some initial boilerplate templates that should
+be subsequently edited. Specifically, the script will create:
 
-These files will need checking and editing, but the templates serve to avoid
-most of the copy/paste required.
+1. auto-generated DIF code, including:
+  * an auto-generated (private) DIF header, `autogen/dif_<ip>_autogen.h`, based
+  on `util/make_new_dif/templates/dif_autogen.h.tpl`,
+  * auto-generated DIF implementations, `autogen/dif_<ip>_autogen.c`, based on
+  `util/make_new_dif/templates/dif_autogen.c.tpl`, and
+  * auto-generated DIF unit tests (that test the auto-generated DIFs),
+  `autogen/dif_<ip>_autogen_unittest.cc`, based on
+  `util/make_new_dif/templates/dif_autogen_unittest.cc.tpl`.
+2. boilerplate templates (that should be manually edited/enhanced) for the
+   the portion of the IP DIF library that is manually implemented, including:
+  * a (public) header for the DIF, based on 
+  `util/make_new_dif/templates/dif_template.h.tpl`], and
+  * a checklist for the DIF, based on `doc/project/sw_checklist.md.tpl`.
+
+Only the second set of files will need checking and editing, but the templates
+serve to avoid most of the copy/paste required, while keeping our DIF libraries
+consistent across IPs.
 
 Further documentation for the script is provided in the script's source.
+Additionally, please invoke `util/make_new_dif.py --help` for detailed usage.
 
 ## Checklists
 
@@ -63,14 +81,18 @@ memory-mapped hardware, and modifying processor CSRs.
 
 * DIF libraries must be written in C.
 * DIF libraries can only depend on the following headers (and their associated
-  libraries) from the `sw/device/lib/base` directory:
+  libraries):
   * `sw/device/lib/base/bitfield.h`
   * `sw/device/lib/base/mmio.h`
   * `sw/device/lib/base/memory.h`
+  * `sw/device/lib/dif/dif_base.h`
 * DIF libraries must not depend on other DIF libraries. Exercising DIF
   functionality may require an environment set up using another DIF library, but
   DIFs must not call DIFs in other DIF libraries.
 * DIF library headers must be polyglot headers for C and C++.
+* the public (manually-implemented) DIF header for each DIF library should
+  `#include` the (private) auto-generated header, so that DIF consumers need
+  only `#include` the public DIF header to make use of an IP's DIF library.
 
 ### DIF API Guidance
 
@@ -84,11 +106,9 @@ Notational caveats:
   in `snake_case` or `PascalCase` as is appropriate.
 * The parameter name `handle` is not normative, and DIF libraries are free to
   choose a different, but consistent, name for it.
-* All functions below are assumed to return `dif_<ip>_result_t` or
-  `dif_<ip>_<operation>_result_t`, so their return values are specified as
-  `result_t`.
+* All functions below are assumed to return `dif_result_t`, a global DIF return
+  type defined in `sw/device/lib/dif/dif_base.h`.
 * Unless otherwise noted, all symbols mentioned below are required.
-
 
 #### Hardware Parameterization
 
@@ -105,63 +125,50 @@ extracted from the IP's auto-generated register header file, e.g.,
 
 #### Base Types
 
-The following basic types are expected to be provided by all DIFs (unless
-otherwise specified).
+There are two categories of base types:
+1. those that are defined once in `sw/device/lib/dif/dif_base.h` and used in all
+   DIF libraries, and
+2. those that are expected to be defined separately by all DIF libraries (unless
+   otherwise specified).
 
-* `dif_<ip>_t` is an **auto-generated** type representing a handle to the 
+The base types defined in `sw/device/lib/dif/dif_base.h` include:
+* `dif_result_t` -- an enum representing global DIF return codes.
+* `dif_toggle_t` -- an enum to be used instead of a `bool` when describing
+  enablement states.
+
+The base types that are expected to be defined separately by all DIF libraries
+include:
+* `dif_<ip>_t` -- an **auto-generated** type representing a handle to the 
   peripheral. Its first (and only) field is always the base address for the
   peripheral registers, styled `mmio_region_t base_addr;`.
   This type is usually passed by `const` pointer, except when it is
   being initialized (see `dif_<ip>_init()` below).
-  This type is always passed by value.
-* `dif_<ip>_config_t` is a *manually-defined* struct representing runtime
-  configuration parameters. It is only present when `dif_<ip>_configure()` is
-  defined. This type is always passed by value.
-* `dif_<ip>_result_t` is an *auto-generated* enum representing general return
-  codes for DIFs. It must define the following constants, in order:
-    * `kDif<ip>Ok`, with value 0, to denote the call succeeded.
-    * `kDif<ip>Error`, with value 1, to denote a non-specific error happened
-      during the call. This is for the `default:` case of enum switches (as
-      noted below), and for assertion errors (usually where the function has
-      already caused side-effects so `kDif<ip>BadArg` cannot be used).
-    * `kDif<ip>BadArg`, with value 2, to denote that the caller supplied
-      incorrect arguments. This value must only be returned if the function has
-      not caused any side-effects.
-* `dif_<ip>_result_ext_t` is an *manually-defined* enum representing additional
-  return code constants. These must begin with the value 3, and may cover more
-  specific forms of the return codes defined above, including more specific
-  reasons arguments are invalid.
-* **DEPRECATED** `dif_<ip>_<operation>_result_t` is an enum representing more
-  specific failure modes. These specific return code enums can be shared
-  between multiple DIFs that fail in the same way. `<operation>` need not
-  correspond to a DIF name if more than one DIF uses these return codes.
-
-  Operation return codes are being deprecated. See GitHub issue
-  [#6137](https://github.com/lowRISC/opentitan/issues/6137) for more details.
+* `dif_<ip>_config_t` -- a **manually-defined** struct representing runtime
+  configuration parameters for the peripheral. It is only present when
+  `dif_<ip>_configure()` is defined. This type is always passed by value.
 
 #### Lifecycle Functions
 The following functions are the basic functionality for initializing and
 handling the lifetime of a handle.
 
-* `result_t dif_<ip>_init(mmio_region_t base_addr, dif_<ip>_t *handle);`
-  initializes `handle` in an implementation-defined way, but does not perform any
-  hardware operations. `handle` may point to uninitialized data on function entry,
-  but if the function returns `Ok`, then `handle` must point to initialized data.
+* `dif_result_t dif_<ip>_init(mmio_region_t base_addr, dif_<ip>_t *handle);`
+  initializes `handle` with with the base address of the instantiated IP this
+  DIF is targeting to use. This DIF is **auto-generated**.
 
-* `result_t dif_<ip>_configure(const dif_<ip>_t *handle, dif_<ip>_config_t
+* `dif_result_t dif_<ip>_configure(const dif_<ip>_t *handle, dif_<ip>_config_t
   config);` configures the hardware managed by `handle` with runtime parameters
   in an implementation-defined way. This function should be "one-off": it should
   only need to be called once for the lifetime of the handle.
-
-  If there is no meaningful state to configure, this function may be omitted.
+  _If there is no meaningful state to configure, this function may be omitted._
   In particular, DIF libraries providing transaction functions will usually have
-  no need for this function at all.
+  no need for this function at all. This DIF is **manually-implemented**.
 
 #### Transaction Management
 
 The following types and functions are the standard interface for
 *transaction-oriented* peripherals, in which a client schedules an operation to
-be completed at some point in the future.
+be completed at some point in the future. All types and functions listed here
+are **manually-implemented**.
 
 * `dif_<ip>_transaction_t` is a struct representing runtime parameters for
   starting a hardware transaction. It is only present when `dif_<ip>_start()` is
@@ -171,11 +178,11 @@ be completed at some point in the future.
 * `dif_<ip>_output_t` is a struct describing how to output a completed
   transaction. Often, this will be a type like `uint8_t *`. The same caveats
   about a DIF library providing a different type apply here.
-* `result_t dif_<ip>_start(const dif_<ip>_t *handle, dif_<ip>_transaction_t
+* `dif_result_t dif_<ip>_start(const dif_<ip>_t *handle, dif_<ip>_transaction_t
   transaction);` starts a transaction on a transaction-oriented peripheral. This
   function may be called multiple times, but each call should be paired with a
   `dif_<ip>_end()` call.
-* `result_t dif_<ip>_end(const dif_<ip>_t *handle, dif_<ip>_output_t out);`
+* `dif_result_t dif_<ip>_end(const dif_<ip>_t *handle, dif_<ip>_output_t out);`
   completes a transaction started with `dif_<ip>_start()`, writing its results
   to a location specified in `out`.
 
@@ -183,7 +190,7 @@ If a peripheral supports multiple transaction modes with incompatible parameter
 types, the above names may be duplicated by inserting `mode_<mode>` after `<ip>`.
 For example,
 ```
-result_t dif_<ip>_mode_<mode>_end(const dif_<ip>_t *handle,
+dif_result_t dif_<ip>_mode_<mode>_end(const dif_<ip>_t *handle,
                                   dif_<ip>_mode_<mode>_output_t out);
 ```
 There is no requirement that `_start()` and `_end()` share the same set of
@@ -194,16 +201,17 @@ There is no requirement that `_start()` and `_end()` share the same set of
 #### Register Locking
 
 The following functions are the standard interface for peripherals that can lock
-portions of their software-accessible functionality.
+portions of their software-accessible functionality. All types and functions
+listed here are **manually-implemented**.
 
-* `kDif<ip><operation>Locked` is the standard variant name for the result enum
-  of an operation that can be locked out. DIFs which may fail due to lockout,
-  which is software-detectable, should return this value when possible.
-* `result_t dif_<ip>_lock(const dif_<ip>_t *handle);` locks out all portions of
-  the peripheral which can be locked. If a peripheral can be locked-out
-  piecewise, `dif_<ip>_lock_<operation>()` functions may be provided alonside or
-  in lieu of `dif_<ip>_lock()`.
-* `result_t dif_<ip>_is_locked(const dif_<ip>_t *handle, bool *is_locked);`
+* `kDifLocked` is the global return result enum of an operation that can be
+  locked out. DIFs which may fail due to lockout, which is software-detectable,
+  should return this value when possible.
+* `dif_result_t dif_<ip>_lock(const dif_<ip>_t *handle);` locks out all portions
+  of the peripheral which can be locked. If a peripheral can be locked-out
+  piecewise, `dif_<ip>_lock_<operation>()` functions may be provided alongside
+  or in lieu of `dif_<ip>_lock()`.
+* `dif_result_t dif_<ip>_is_locked(const dif_<ip>_t *handle, bool *is_locked);`
   checks whether the peripheral has been locked out. As with `dif_<ip>_lock()`,
   DIF libraries may provide a piecewise version of this API.
 
@@ -215,7 +223,7 @@ for interrupt management. A DIF library for a peripheral providing such
 registers must provide this interface. To ensure this, all interrupt DIFs,
 including: headers, (C) implementations, and unit tests, are *auto-generated* from
 templates and an IP's HJSON configuration file using the `util/make_new_dif.py`
-tool.
+tool (decribed above).
 
 If a peripheral is defined with `no_auto_intr_regs: true`, this exact API is not
 required even if the `INTR_` registers are provided (though DIF libraries are
@@ -223,28 +231,30 @@ encouraged to follow it where it makes sense). _In these cases, auto-generated
 interrupt DIFs may not exist._
 
 * `dif_<ip>_irq_t` is an enum that lists all of the interrupt types for this
-  peripheral. A DIF library may opt to use another pre-existing type instead,
-  when, for example, interrupt types are coupled to a distinct
-  peripheral-specific concept. In that case, all occurrences of `dif_<ip>_irq_t`
-  below should be replaced with this type.
-* `result_t dif_<ip>_irq_get_state(const dif_<ip>_t *handle, 
+  peripheral. These derrived from the `interrupt_list` attribute within an IP's
+  HJSON file.
+* `dif_result_t dif_<ip>_irq_get_state(const dif_<ip>_t *handle, 
   dif_<ip>_irq_state_snapshot_t *snapshot, bool *is_pending);` returns a
   snapshot of the entire interrupt state register, to check the status of all
   interrupts for a peripheral. 
-* `result_t dif_<ip>_irq_is_pending(const dif_<ip>_t *handle, dif_<ip>_irq_t
+* `dif_result_t dif_<ip>_irq_is_pending(const dif_<ip>_t *handle, dif_<ip>_irq_t
   irq, bool *is_pending);` checks whether a specific interrupt is
   pending (i.e., if the interrupt has been asserted but not yet cleared).
-* `result_t dif_<ip>_irq_acknowledge(const dif_<ip>_t *handle, dif_<ip>_irq_t
+* `dif_result_t dif_<ip>_irq_acknowledge_all(const dif_<ip>_t *handle);` 
+  acknowledges all interrupts have been serviced, marking them as
+  complete by clearing all pending bits. This function does nothing and returns
+  `kDifOk` if no interrupts were pending.
+* `dif_result_t dif_<ip>_irq_acknowledge(const dif_<ip>_t *handle, dif_<ip>_irq_t
   irq);` acknowledges that an interrupt has been serviced, marking it as
   complete by clearing its pending bit. This function does nothing and returns
-  `Ok` if the interrupt wasn't pending.
-* `result_t dif_<ip>_irq_get_enabled(const dif_<ip>_t *handle, dif_<ip>_irq_t
+  `kDifOk` if the interrupt wasn't pending.
+* `dif_result_t dif_<ip>_irq_get_enabled(const dif_<ip>_t *handle, dif_<ip>_irq_t
   irq, const dif_<ip>_toggle_t *state);` gets whether an interrupt is
   enabled (i.e., masked).
-* `result_t dif_<ip>_irq_set_enabled(const dif_<ip>_t *handle, dif_<ip>_irq_t
+* `dif_result_t dif_<ip>_irq_set_enabled(const dif_<ip>_t *handle, dif_<ip>_irq_t
   irq, dif_<ip>_toggle_t state);` sets whether a particular interrupt is
   enabled (i.e., masked).
-* `result_t dif_<ip>_irq_force(const dif_<ip>_t *handle, dif_<ip>_irq_t
+* `dif_result_t dif_<ip>_irq_force(const dif_<ip>_t *handle, dif_<ip>_irq_t
   irq);` forcibly asserts a specific interrupt, causing it to be serviced
   as if hardware had triggered it.
 
@@ -252,20 +262,21 @@ Additionally, the following types allow for batch save/restore operations on
 the interrupt enable register:
 
 * `dif_<ip>_irq_enable_snapshot_t` is a type that encapsulates restorable
-  interrupt state, to be used with the two functions below. This type should be
-  treated as opaque by clients.
-* `result_t dif_<ip>_irq_disable_all(const dif_<ip>_t *handle,
+  interrupt enablement state, to be used with the two functions below. This type
+  should be treated as opaque by clients.
+* `dif_result_t dif_<ip>_irq_disable_all(const dif_<ip>_t *handle,
   dif_<ip>_irq_enable_snapshot_t *snapshot);` disables all interrupts associated
   with the peripheral, saving them to `*snapshot`. `snapshot` may be null, in
   which case the previous enablement state is not saved.
-* `result_t dif_<ip>_irq_restore_all(const dif_<ip>_t *handle,
+* `dif_result_t dif_<ip>_irq_restore_all(const dif_<ip>_t *handle,
   const dif_<ip>_irq_enable_snapshot_t *snapshot);` restores an interrupt
   enablement snapshot produced by the above function.
 
 #### Unit Testing
 
-Each DIF has an associated unit test, written in C++. Those tests follow the
-following conventions:
+Each DIF has an associated unit test, written in C++. For auto-generated DIFs,
+their associated unit tests are also auto-generated. For manually-implemented
+DIFs, their associated unit tests follow the conventions:
 * The whole file is wrapped in the `dif_<ip>_unittest` namespace.
 * There is a base class for all test fixtures, named `<ip>Test`, which derives
   `testing::Test` and `mock_mmio::MmioTest`.
@@ -284,20 +295,12 @@ there are some relaxations of these rules for them described at the end.
   * Scalar arguments must not be declared `const` or `volatile` (cv-qualified)
     in DIF signatures.
 
-* DIFs must use one of the `result_[ext_]t` enums described above rather than booleans
-  for reporting errors. If a DIF can either error or instead produce a value, it
-  must return a `result_t`, and use an out-parameter for returning the produced
-  value.
-  * DIFs must document the meaning of each return code constant, including the
-    required ones above, with a Doxygen comment per declaration. This comment
-    must include whether returning this error code could have left the hardware
-    in an invalid or unrecoverable state.
-    * If a DIF returns `kDif<ip>Error`, it must be assumed to have left
-      the hardware in an invalid, unrecoverable state.
-    * If a DIF returns `kDif<ip>BadArg`, it must leave the hardware in a valid
-      and recoverable state. This is in addition to the rule that this value may
-      only be returned if the function has not caused any side-effects.
+* DIFs must use one of the `dif_result_t` enums (described in
+  `sw/device/lib/dif/dif_base.h`) rather than booleans for reporting errors. If
+  a DIF can either error or instead produce a value, it must return a
+  `dif_result_t`, and use an out-parameter for returning the produced value.
   * DIFs that return an enum return code must be annotated with
+    `OT_WARN_UNUSED_RESULT`, which expands to 
     `__attribute__((warn_unused_result))`, to help minimize mistakes from
     failing to check a result. This guidance applies to `static` helper
     functions that return an error of some kind as well.
@@ -321,9 +324,9 @@ there are some relaxations of these rules for them described at the end.
   switching on an enum value (an "enum switch").
   * The default case of an enum switch must report an error for values that are
     not a constant from that enum. In the absence of more specific information,
-    this should return `kDif<ip>Error` or the equivalent return code value from
-    a more specific return code enum. If the enum switch is part of a guard
-    statement, it may return `kDif<ip>BadArg` instead.
+    this should return `kDifError` or the equivalent return code value from
+    a global DIF return code enum. If the enum switch is part of a guard
+    statement, it may return `kDifBadArg` instead.
   * Enum switches do not need a `case` for enum constants that are unreachable
     due to a guard statement.
 

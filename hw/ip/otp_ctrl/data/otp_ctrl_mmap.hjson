@@ -222,22 +222,26 @@
                 {
                     name:        "EN_SRAM_IFETCH",
                     size:        "1",
-                    inv_default: "0",
+                    ismubi:      true,
+                    inv_default: false
                 },
                 {
                     name:        "EN_CSRNG_SW_APP_READ",
                     size:        "1",
-                    inv_default: "0",
+                    ismubi:      true,
+                    inv_default: false
                 },
                 {
                     name:        "EN_ENTROPY_SRC_FW_READ",
                     size:        "1",
-                    inv_default: "0",
+                    ismubi:      true,
+                    inv_default: false
                 },
                 {
                     name:        "EN_ENTROPY_SRC_FW_OVER",
                     size:        "1",
-                    inv_default: "0",
+                    ismubi:      true,
+                    inv_default: false
                 },
             ],
             desc: '''

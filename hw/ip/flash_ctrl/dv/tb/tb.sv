@@ -85,12 +85,12 @@ module tb;
     // flash prim signals
     .flash_power_ready_h_i  (1'b1  ),
     .flash_power_down_h_i   (flash_power_down_h  ),
-    .flash_bist_enable_i    (lc_ctrl_pkg::Off),
+    .flash_bist_enable_i    (prim_mubi_pkg::MuBi4False),
     .flash_test_mode_a_io   (2'h3),
     .flash_test_voltage_h_io(1'b1),
 
     // test
-    .scanmode_i              ('0),
+    .scanmode_i              (prim_mubi_pkg::MuBi4False),
     .scan_rst_ni             ('0),
     .scan_en_i               ('0),
 
@@ -168,7 +168,7 @@ module tb;
                               .path  (`FLASH_DATA_MEM_HIER_STR(i)),
                               .depth ($size(`FLASH_DATA_MEM_HIER(i))),
                               .n_bits($bits(`FLASH_DATA_MEM_HIER(i))),
-                              .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+                              .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_72_64));
         uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
                                            m_mem_bkdr_util);
         part = part.next();
@@ -181,7 +181,7 @@ module tb;
                                 .path  (`FLASH_INFO_MEM_HIER_STR(i, j)),
                                 .depth ($size(`FLASH_INFO_MEM_HIER(i, j))),
                                 .n_bits($bits(`FLASH_INFO_MEM_HIER(i, j))),
-                                .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+                                .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_72_64));
           uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
                                              m_mem_bkdr_util);
           part = part.next();

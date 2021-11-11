@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  tests: [
+    {
+      name: "{name}_sec_cm"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+run_sec_cm_fi", "+en_scb=0"]
+      reseed: 5
+    }
+  ]
+}

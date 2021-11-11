@@ -100,8 +100,10 @@ module tb;
     .idle_i    (clkmgr_if.idle_i),
 
     .lc_dft_en_i      (clkmgr_if.lc_dft_en_i),
-    .ast_clk_byp_req_o(clkmgr_if.ast_clk_byp_req),
-    .ast_clk_byp_ack_i(clkmgr_if.ast_clk_byp_ack),
+    .all_clk_byp_req_o(),
+    .all_clk_byp_ack_i(prim_mubi_pkg::MuBi4False),
+    .io_clk_byp_req_o (clkmgr_if.io_clk_byp_req),
+    .io_clk_byp_ack_i (clkmgr_if.io_clk_byp_ack),
     .lc_clk_byp_req_i (clkmgr_if.lc_clk_byp_req),
     .lc_clk_byp_ack_o (clkmgr_if.lc_clk_byp_ack),
 

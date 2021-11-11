@@ -19,8 +19,8 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
   task body();
     logic [TL_DW-1:0] value;
-    bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeup_en;
-    bit [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
+    wakeups_t wakeup_en;
+    resets_t reset_en;
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(0));
     csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0));

@@ -15,8 +15,10 @@ interface ast_supply_if (
   input logic trigger
 );
 
-  // The number of cycles to hold the glitch. It should be ok if it was just 1.
-  localparam int CyclesGlitching = 3;
+  // The amount of time to hold the glitch. Should be enough to span more than one aon_clk cycles
+  // so it is sampled.
+  localparam time GlitchTimeSpan = 10us;
+  localparam int GlitchCycles = 2;
 
   // The number of cycles after stopping the glitch in vcmain before restarting
   // assertions in pwrmgr.
@@ -25,6 +27,17 @@ interface ast_supply_if (
   function static void force_vcaon_supp_i(bit value);
     force u_ast.vcaon_supp_i = value;
   endfunction
+
+  // Create glitch in vcaon_supp_i some cycles after this is invoked. Hold vcaon_supp_i low for
+  // a fixed time: we cannot use clock cycles because the clock will stop.
+  task automatic glitch_vcaon_supp_i(int cycles);
+    repeat (cycles) @(posedge clk);
+    `uvm_info("ast_supply_if", "forcing vcaon_supp_i=0", UVM_MEDIUM)
+    force_vcaon_supp_i(1'b0);
+    #(GlitchTimeSpan);
+    `uvm_info("ast_supply_if", "forcing vcaon_supp_i=1", UVM_MEDIUM)
+    force_vcaon_supp_i(1'b1);
+  endtask
 
   // Wait some clock cycles due to various flops in the logic.
   task automatic reenable_vcmain_assertion();
@@ -48,7 +61,7 @@ interface ast_supply_if (
     @(posedge trigger);
     repeat (cycles) @(posedge clk);
     force_vcmain_supp_i(1'b0);
-    repeat (CyclesGlitching) @(posedge clk);
+    repeat (GlitchCycles) @(posedge clk);
     force_vcmain_supp_i(1'b1);
   endtask
 

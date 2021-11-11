@@ -22,22 +22,6 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Computes the number of elements in the given array.
- *
- * Note that this can only determine the length of *fixed-size* arrays. Due to
- * limitations of C, it will incorrectly compute the size of an array passed as
- * a function argument, because those automatically decay into pointers. This
- * function can only be used correctly with:
- * - Arrays declared as stack variables.
- * - Arrays declared at global scope.
- * - Arrays that are members of a struct or union.
- *
- * @param array The array expression to measure.
- * @return The number of elements in the array, as a `size_t`.
- */
-#define ARRAYSIZE(array) (sizeof(array) / sizeof(array[0]))
-
-/**
  * Load a word from memory directly, bypassing aliasing rules.
  *
  * ISO C forbids, in general, casting a pointer to non-character types and

@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
 
 #include "clkmgr_regs.h"  // Generated
@@ -26,6 +27,20 @@ static_assert(
     CLKMGR_PARAM_NUM_HINTABLE_CLOCKS <= CLKMGR_PARAM_REG_WIDTH,
     "Expected the number of hintable clocks to be <= the width of a CSR.");
 
+/**
+ * Converts a `bool` to `dif_toggle_t`.
+ */
+static dif_toggle_t bool_to_toggle(bool val) {
+  return val ? kDifToggleEnabled : kDifToggleDisabled;
+}
+
+/**
+ * Converts a `multi_bit_bool_t` to `dif_toggle_t`.
+ */
+static dif_toggle_t mubi4_to_toggle(multi_bit_bool_t val) {
+  return (val == kMultiBitBool4True) ? kDifToggleEnabled : kDifToggleDisabled;
+}
+
 static bool clkmgr_valid_gateable_clock(dif_clkmgr_gateable_clock_t clock) {
   return clock < CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS;
 }
@@ -34,17 +49,51 @@ static bool clkmgr_valid_hintable_clock(dif_clkmgr_hintable_clock_t clock) {
   return clock < CLKMGR_PARAM_NUM_HINTABLE_CLOCKS;
 }
 
+dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
+                                           dif_toggle_t *state) {
+  if (clkmgr == NULL || state == NULL) {
+    return kDifBadArg;
+  }
+
+  multi_bit_bool_t clk_jitter_val =
+      mmio_region_read32(clkmgr->base_addr, CLKMGR_JITTER_ENABLE_REG_OFFSET);
+  *state = mubi4_to_toggle(clk_jitter_val);
+
+  return kDifOk;
+}
+
+dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr,
+                                           dif_toggle_t new_state) {
+  multi_bit_bool_t new_jitter_enable_val;
+  if (clkmgr == NULL) {
+    return kDifBadArg;
+  }
+
+  switch (new_state) {
+    case kDifToggleEnabled:
+      new_jitter_enable_val = kMultiBitBool4True;
+      break;
+    case kDifToggleDisabled:
+      new_jitter_enable_val = kMultiBitBool4False;
+      break;
+    default:
+      return kDifBadArg;
+  }
+  mmio_region_write32(clkmgr->base_addr, CLKMGR_JITTER_ENABLE_REG_OFFSET,
+                      new_jitter_enable_val);
+  return kDifOk;
+}
+
 dif_result_t dif_clkmgr_gateable_clock_get_enabled(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_gateable_clock_t clock,
-    bool *is_enabled) {
-  if (clkmgr == NULL || is_enabled == NULL ||
-      !clkmgr_valid_gateable_clock(clock)) {
+    dif_toggle_t *state) {
+  if (clkmgr == NULL || state == NULL || !clkmgr_valid_gateable_clock(clock)) {
     return kDifBadArg;
   }
 
   uint32_t clk_enables_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_ENABLES_REG_OFFSET);
-  *is_enabled = bitfield_bit32_read(clk_enables_val, clock);
+  *state = bool_to_toggle(bitfield_bit32_read(clk_enables_val, clock));
 
   return kDifOk;
 }
@@ -80,15 +129,14 @@ dif_result_t dif_clkmgr_gateable_clock_set_enabled(
 
 dif_result_t dif_clkmgr_hintable_clock_get_enabled(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
-    bool *is_enabled) {
-  if (clkmgr == NULL || is_enabled == NULL ||
-      !clkmgr_valid_hintable_clock(clock)) {
+    dif_toggle_t *state) {
+  if (clkmgr == NULL || state == NULL || !clkmgr_valid_hintable_clock(clock)) {
     return kDifBadArg;
   }
 
   uint32_t clk_hints_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_HINTS_STATUS_REG_OFFSET);
-  *is_enabled = bitfield_bit32_read(clk_hints_val, clock);
+  *state = bool_to_toggle(bitfield_bit32_read(clk_hints_val, clock));
 
   return kDifOk;
 }
@@ -123,15 +171,14 @@ dif_result_t dif_clkmgr_hintable_clock_set_hint(
 
 dif_result_t dif_clkmgr_hintable_clock_get_hint(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
-    bool *hinted_is_enabled) {
-  if (clkmgr == NULL || hinted_is_enabled == NULL ||
-      !clkmgr_valid_hintable_clock(clock)) {
+    dif_toggle_t *state) {
+  if (clkmgr == NULL || state == NULL || !clkmgr_valid_hintable_clock(clock)) {
     return kDifBadArg;
   }
 
   uint32_t clk_hints_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_HINTS_REG_OFFSET);
-  *hinted_is_enabled = bitfield_bit32_read(clk_hints_val, clock);
+  *state = bool_to_toggle(bitfield_bit32_read(clk_hints_val, clock));
 
   return kDifOk;
 }

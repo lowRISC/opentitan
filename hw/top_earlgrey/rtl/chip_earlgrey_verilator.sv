@@ -189,13 +189,17 @@ module chip_earlgrey_verilator (
   ast_pkg::ast_alert_req_t ast_alert_req;
 
   // Flash connections
-  lc_ctrl_pkg::lc_tx_t flash_bist_enable;
+  prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
 
   // Life cycle clock bypass req/ack
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t all_clk_byp_req;
+  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t io_clk_byp_req;
+  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
+  logic hi_speed_sel;
+
 
   // DFT connections
   logic scan_en;
@@ -339,8 +343,11 @@ module chip_earlgrey_verilator (
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-    .lc_clk_byp_req_i      ( ast_clk_byp_req   ),
-    .lc_clk_byp_ack_o      ( ast_clk_byp_ack   ),
+    .ext_freq_is_96m_i     ( hi_speed_sel ),
+    .all_clk_byp_req_i     ( ast_clk_byp_req ),
+    .all_clk_byp_ack_o     ( ast_clk_byp_ack ),
+    .io_clk_byp_req_i      ( io_clk_byp_req   ),
+    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
     .flash_bist_en_o       ( flash_bist_enable ),
     // scan
     .dft_scan_md_o         ( scanmode ),
@@ -377,7 +384,7 @@ module chip_earlgrey_verilator (
     mio_pad_type: {pinmux_reg_pkg::NMioPads{prim_pad_wrapper_pkg::BidirStd}}
   };
 
-  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
+  prim_mubi_pkg::mubi4_t lc_clk_bypass;
 
 
   // Top-level design
@@ -424,8 +431,11 @@ module chip_earlgrey_verilator (
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
-    .ast_clk_byp_req_o            ( ast_clk_byp_req            ),
-    .ast_clk_byp_ack_i            ( ast_clk_byp_ack            ),
+    .all_clk_byp_req_o            ( all_clk_byp_req            ),
+    .all_clk_byp_ack_i            ( all_clk_byp_ack            ),
+    .io_clk_byp_req_o             ( io_clk_byp_req             ),
+    .io_clk_byp_ack_i             ( io_clk_byp_ack             ),
+    .hi_speed_sel_o               ( hi_speed_sel               ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
     .ast_init_done_i              ( ast_init_done              ),
 

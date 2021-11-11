@@ -58,14 +58,34 @@ typedef struct rsa_3072_constants_t {
 } rsa_3072_constants_t;
 
 /**
- * Precomputes Montgomery constants for an RSA-3072 public key.
+ * Computes Montgomery constant R^2 for an RSA-3072 public key.
  *
  * @param public_key Key for which to compute constants.
  * @param result Buffer in which to store output
  * @return Result of the operation (OK or error).
  */
-rom_error_t rsa_3072_precomp(const rsa_3072_public_key_t *public_key,
-                             rsa_3072_constants_t *result);
+rom_error_t rsa_3072_compute_rr(const rsa_3072_public_key_t *public_key,
+                                rsa_3072_int_t *result);
+
+/**
+ * Computes Montgomery constant m0_inv for an RSA-3072 public key.
+ *
+ * @param public_key Key for which to compute constants.
+ * @param result Buffer in which to store output
+ * @return Result of the operation (OK or error).
+ */
+rom_error_t rsa_3072_compute_m0_inv(const rsa_3072_public_key_t *public_key,
+                                    uint32_t result[kOtbnWideWordNumWords]);
+
+/**
+ * Computes Montgomery constants for an RSA-3072 public key.
+ *
+ * @param public_key Key for which to compute constants.
+ * @param result Buffer in which to store output
+ * @return Result of the operation (OK or error).
+ */
+rom_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
+                                       rsa_3072_constants_t *result);
 
 /**
  * Verifies an RSA-3072 signature.

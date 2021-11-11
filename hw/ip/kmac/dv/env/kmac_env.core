@@ -14,10 +14,10 @@ filesets:
       - lowrisc:dv:str_utils
       - lowrisc:dv:test_vectors
       - lowrisc:dv:digestpp_dpi:0.1
+      - lowrisc:dv:key_sideload_if
       - lowrisc:ip:kmac
     files:
       - kmac_env_pkg.sv
-      - kmac_sideload_if.sv
       - kmac_env_cfg.sv: {is_include_file: true}
       - kmac_env_cov.sv: {is_include_file: true}
       - kmac_virtual_sequencer.sv: {is_include_file: true}

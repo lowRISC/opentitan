@@ -134,6 +134,7 @@ target_pinmux_optional = {}
 target_pinmux_added = {}
 
 target_pinout_required = {
+    'remove_ports': ['l', 'List of port names to remove from the port list'],
     'remove_pads': ['l', 'List of pad names to remove and stub out'],
     'add_pads': ['l', 'List of manual pads to add'],
 }
@@ -574,6 +575,16 @@ def check_implementation_targets(top: Dict, prefix: str) -> int:
                 else:
                     log.warning('Special pad {} cannot refer to a manual pad'.format(entry['pad']))
                     error += 1
+
+        # Check ports to remove
+        for entry in target['pinout']['remove_ports']:
+            # The pad key needs to refer to a valid pad name.
+            for pad in top['pinout']['pads'] + target['pinout']['add_pads']:
+                if entry == pad['name']:
+                    break
+            else:
+                log.warning('Unknown pad {}'.format(entry))
+                error += 1
 
         # Check pads to remove and stub out
         for entry in target['pinout']['remove_pads']:

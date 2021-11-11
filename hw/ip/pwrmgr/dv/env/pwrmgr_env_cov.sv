@@ -75,14 +75,16 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
   pwrmgr_wakeup_ctrl_cg_wrap wakeup_ctrl_cg_wrap[pwrmgr_reg_pkg::NumWkups];
   pwrmgr_wakeup_intr_cg_wrap wakeup_intr_cg_wrap[pwrmgr_reg_pkg::NumWkups];
 
-  // This collects coverage on the clock control functionality.
-  covergroup clock_control_cg with function sample (bit core, bit io, bit usb_lp, bit usb_active);
-    core_cp: coverpoint core;
-    io_cp: coverpoint io;
-    usb_lp_cp: coverpoint usb_lp;
-    usb_active_cp: coverpoint usb_active;
+  // This collects coverage on the clock and power control functionality.
+  covergroup control_cg with function sample (control_enables_t control_enables, bit sleep);
+    core_cp: coverpoint control_enables.core_clk_en;
+    io_cp: coverpoint control_enables.io_clk_en;
+    usb_lp_cp: coverpoint control_enables.usb_clk_en_lp;
+    usb_active_cp: coverpoint control_enables.usb_clk_en_active;
+    main_pd_n_cp: coverpoint control_enables.main_pd_n;
+    sleep_cp: coverpoint sleep;
 
-    control_cross: cross core_cp, io_cp, usb_lp_cp, usb_active_cp;
+    control_cross: cross core_cp, io_cp, usb_lp_cp, usb_active_cp, main_pd_n_cp, sleep_cp;
   endgroup
 
   function new(string name, uvm_component parent);
@@ -92,7 +94,7 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
       wakeup_ctrl_cg_wrap[i] = new({wakeup.name, "_ctrl_cg"});
       wakeup_intr_cg_wrap[i] = new({wakeup.name, "_intr_cg"});
     end
-    clock_control_cg = new();
+    control_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);

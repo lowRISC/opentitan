@@ -76,7 +76,7 @@
             - Coverage collected by `wakeup_cg` and `wakeup_intr_cg`.
             '''
       milestone: V2
-      tests: []
+      tests: ["pwrmgr_wakeup"]
     }
     {
       name: control_clks
@@ -98,7 +98,7 @@
               the control register.
             '''
       milestone: V2
-      tests: []
+      tests: ["pwrmgr_wakeup"]
     }
     {
       name: aborted_lowpower
@@ -253,10 +253,10 @@
             '''
     }
     {
-      name: clock_control_cg
+      name: control_cg
       desc: '''
-            Collects coverage on clock enable bits from `control` CSR during a
-            lowpower transition and active state.
+            Collects coverage on clock and power bits from `control` CSR during
+            a lowpower transition and active state.
             '''
     }
     {

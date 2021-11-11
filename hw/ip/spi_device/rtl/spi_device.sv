@@ -55,7 +55,7 @@ module spi_device
   input mbist_en_i,
   input scan_clk_i,
   input scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i
+  input prim_mubi_pkg::mubi4_t scanmode_i
 );
 
   import spi_device_pkg::*;
@@ -233,6 +233,9 @@ module spi_device
 
   logic [31:0] addr_swap_mask;
   logic [31:0] addr_swap_data;
+
+  logic [31:0] payload_swap_mask;
+  logic [31:0] payload_swap_data;
 
   // Command Info structure
   cmd_info_t [NumCmdInfo-1:0] cmd_info;
@@ -548,6 +551,8 @@ module spi_device
   assign mailbox_addr   = { reg2hw.mailbox_addr.q[31:MailboxAw],
                             {MailboxAw{1'b0}}
                           };
+  logic unused_mailbox_addr;
+  assign unused_mailbox_addr = ^reg2hw.mailbox_addr.q[MailboxAw-1:0];
 
   // Passthrough config: value shall be stable while SPI transaction is active
   //assign cmd_filter = reg2hw.cmd_filter.q;
@@ -559,6 +564,10 @@ module spi_device
 
   assign addr_swap_mask = reg2hw.addr_swap_mask.q;
   assign addr_swap_data = reg2hw.addr_swap_data.q;
+
+  // payload_swap_mask and _data are big-endian to calculate easily.
+  assign payload_swap_mask = {<<8{reg2hw.payload_swap_mask.q}};
+  assign payload_swap_data = {<<8{reg2hw.payload_swap_data.q}};
 
   // Connect command info
   always_comb begin
@@ -574,6 +583,7 @@ module spi_device
         dummy_size:       reg2hw.cmd_info[i].dummy_size.q,
         payload_en:       reg2hw.cmd_info[i].payload_en.q,
         payload_dir:      payload_dir_e'(reg2hw.cmd_info[i].payload_dir.q),
+        payload_swap_en:  reg2hw.cmd_info[i].payload_swap_en.q,
         upload:           reg2hw.cmd_info[i].upload.q,
         busy:             reg2hw.cmd_info[i].busy.q
       };
@@ -588,22 +598,22 @@ module spi_device
   //  doesn't exist until it transmits data through SDI
   logic sck_n;
   logic rst_spi_n;
-  lc_ctrl_pkg::lc_tx_t [ScanModeUseLast-1:0] scanmode;
+  prim_mubi_pkg::mubi4_t [ScanModeUseLast-1:0] scanmode;
 
-  prim_lc_sync #(
+  prim_mubi4_sync #(
     .NumCopies(int'(ScanModeUseLast)),
     .AsyncOn(0)
   ) u_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(scanmode)
   );
 
   prim_clock_inv u_clk_spi (
     .clk_i(cio_sck_i),
     .clk_no(sck_n),
-    .scanmode_i(scanmode[ClkInvSel] == lc_ctrl_pkg::On)
+    .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkInvSel]))
   );
 
   assign sck_monitor_o = cio_sck_i;
@@ -615,7 +625,7 @@ module spi_device
   ) u_clk_spi_in_mux (
     .clk0_i(clk_spi_in),
     .clk1_i(scan_clk_i),
-    .sel_i(scanmode[ClkMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkMuxSel])),
     .clk_o(clk_spi_in_muxed)
   );
 
@@ -629,7 +639,7 @@ module spi_device
   ) u_clk_spi_out_mux (
     .clk0_i(clk_spi_out),
     .clk1_i(scan_clk_i),
-    .sel_i(scanmode[ClkMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkMuxSel])),
     .clk_o(clk_spi_out_muxed)
   );
 
@@ -643,7 +653,7 @@ module spi_device
   ) u_csb_rst_scan_mux (
     .clk0_i(rst_ni & ~cio_csb_i),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode[CsbRstMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[CsbRstMuxSel])),
     .clk_o(rst_spi_n)
   );
 
@@ -652,7 +662,7 @@ module spi_device
   ) u_tx_rst_scan_mux (
     .clk0_i(rst_ni & ~rst_txfifo_reg),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode[TxRstMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[TxRstMuxSel])),
     .clk_o(rst_txfifo_n)
   );
 
@@ -661,7 +671,7 @@ module spi_device
   ) u_rx_rst_scan_mux (
     .clk0_i(rst_ni & ~rst_rxfifo_reg),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode[RxRstMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[RxRstMuxSel])),
     .clk_o(rst_rxfifo_n)
   );
 
@@ -698,7 +708,7 @@ module spi_device
   ) u_sram_clk_scan (
     .clk0_i (sram_clk_ungated),
     .clk1_i (scan_clk_i),
-    .sel_i  ((scanmode[ClkSramSel] == lc_ctrl_pkg::On) | mbist_en_i),
+    .sel_i  ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkSramSel]) | mbist_en_i)),
     .clk_o  (sram_clk_muxed)
   );
 
@@ -707,7 +717,7 @@ module spi_device
   ) u_sram_clk_cg (
     .clk_i  (sram_clk_muxed),
     .en_i   (sram_clk_en),
-    .test_en_i ((scanmode[ClkSramSel] == lc_ctrl_pkg::On) | mbist_en_i),
+    .test_en_i ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkSramSel]) | mbist_en_i)),
     .clk_o  (sram_clk)
   );
 
@@ -725,7 +735,7 @@ module spi_device
   ) u_sram_rst_scanmux (
     .clk0_i (sram_rst_n_noscan),
     .clk1_i (scan_rst_ni),
-    .sel_i  (scanmode[RstSramSel] == lc_ctrl_pkg::On),
+    .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[RstSramSel])),
     .clk_o  (sram_rst_n)
   );
 
@@ -1294,6 +1304,9 @@ module spi_device
 
     .cfg_addr_mask_i  (addr_swap_mask), // TODO
     .cfg_addr_value_i (addr_swap_data), // TODO
+
+    .cfg_payload_mask_i (payload_swap_mask),
+    .cfg_payload_data_i (payload_swap_data),
 
     .cfg_addr_4b_en_i (cfg_addr_4b_en),
 

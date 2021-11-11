@@ -227,6 +227,8 @@ void flash_cfg_region(const mp_region_t *region_cfg) {
                 << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_ERASE_EN_0_BIT |
             region_cfg->scramble_en
                 << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT |
+            region_cfg->ecc_en
+                << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_ECC_EN_0_BIT |
             0x1 << FLASH_CTRL_MP_REGION_CFG_SHADOWED_0_EN_0_BIT);
   } else if (region_cfg->part == kInfoPartition) {
     reg_value =
@@ -238,6 +240,8 @@ void flash_cfg_region(const mp_region_t *region_cfg) {
             << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ERASE_EN_0_BIT |
         region_cfg->scramble_en
             << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT |
+        region_cfg->ecc_en
+            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ECC_EN_0_BIT |
         0x1 << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_EN_0_BIT;
 
     bank_sel = region_cfg->base / flash_get_pages_per_bank();

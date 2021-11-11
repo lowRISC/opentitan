@@ -90,4 +90,4 @@ documentation.
 TBD
 
 
-[1]: /sw/device/silicon_creator/rom_exts/docs/manifest.md
+[1]: /sw/device/silicon_creator/rom_ext/docs/manifest.md

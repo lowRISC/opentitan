@@ -53,10 +53,6 @@ The protocol controller currently supports the following features:
       *  Flash may contain additional pages used to remap broken pages for yield recovery.
       *  The storage, loading and security of redundant pages may also be implemented in the physical controller or flash memory.
 
-Features under consideration
-*  Ability to access flash metadata bits (see flash ECC)
-   * This feature is pending software discussions and actual usecase need.
-
 
 ### Flash Physical Controller Features
 
@@ -79,15 +75,11 @@ The physical controller supports the following features
    *  Flash data word packing when flash word size is an integer multiple of bus word size.
 *  Flash scrambling
    * Flash supports XEX scrambling using the prince cipher
+   * Scrambling is optional based on page boundaries and is configurable by software.
+*  Two types of Flash ECC support
+   * A pre-scramble ECC used for integrity verification, this is required on every word.
+   * A post-scramble ECC used for reliability detection, this is configurable on a page boundary.
 
-Features to be implemented
-
-*  Flash scrambling
-   * Scrambling is optional based on page boundaries and is configurable by software
-*  Flash ECC
-   * Flash supports SECDED on the flash word boundary, the ECC bits are stored in the metadata bits and are not normally visible to software.
-   * A feature is under consideration to expose the metadata bits to the flash protocol controller.
-   * ECC is optional based on page boudaries and is configurable by software
 
 ### Flash Memory Overview
 
@@ -262,9 +254,37 @@ Scramble enablement is done differently depending on the type of partitions.
 
 ### Flash ECC
 
-Similar to scrambling, flash ECC is enabled based on an address decode.
+There are two types of flash ECC supported.
+
+The first type is an integrity ECC used to detect whether the de-scrambled data has been modified.
+The second type is a reliabilty ECC used for error detection and correction on the whole flash word.
+
+The first type of ECC is required on every flash word.
+The second type of ECC is configurable based on the various page and memory property configurations.
+
+#### Overall ECC Application
+
+The following diagram shows how the various ECC tags are applied and used through the life of a transactions.
+![Flash ECC_LIFE](flash_integrity.svg).
+
+Note that the integrity ECC is calculated over the descrambled data and is only 4-bits.
+While the reliability ECC is calculated over both the scrambled data and the integrity ECC.
+
+#### Integrity ECC
+
+The purpose of the integrity ECC is to emulate end-to-end integrity like the other memories.
+This is why the data is calculated over the descrambled data as it can be stored alongside for continuous checks.
+When descrambled data is returned to the host, the integrity ECC is used to validate the data is correct.
+
+The flash may not always have the capacity to store both the integrity and reliability ECC, the integrity ECC is thus truncated since it is not used for error correction.
+
+#### Reliability ECC
+
+Similar to scrambling, the reliability ECC is enabled based on an address decode.
 The ECC for flash is chosen such that a fully erased flash word has valid ECC.
 Likewise a flash word that is completely 0 is also valid ECC.
+
+Unlike the integrity ECC, the reliability ECC is actually used for error correction if an accidental bit-flip is seen, it is thus fully stored and not truncated.
 
 ECC enablement is done differently depending on the type of partitions.
 *  For data partitions, the ECC enablement is done on contiugous page boundaries.

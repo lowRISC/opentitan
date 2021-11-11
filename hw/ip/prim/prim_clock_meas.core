@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:assert
     files:
       - rtl/prim_clock_meas.sv
+      - rtl/prim_clock_timeout.sv
     file_type: systemVerilogSource
 
 targets:

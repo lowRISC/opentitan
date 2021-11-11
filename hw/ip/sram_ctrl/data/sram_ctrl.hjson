@@ -103,12 +103,12 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     },
-    { struct:  "otp_en",
+    { struct:  "mubi8",
       type:    "uni",
       name:    "otp_en_sram_ifetch",
       act:     "rcv",
-      package: "otp_ctrl_pkg",
-      default: "'0"
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi8False"
     },
   ]
 
@@ -205,10 +205,10 @@
             name: "EN",
             mubi: true,
             desc: '''
-                  Write kMubi4True to this field to enable execution from SRAM.
+                  Write kMultiBitBool4True to this field to enable execution from SRAM.
                   Note that this register only takes effect if the EN_SRAM_IFETCH chicken switch
-                  in the OTP HW_CFG partition is set to kMubi8True. Otherwise execution from SRAM cannot be
-                  enabled via this register.
+                  in the OTP HW_CFG partition is set to kMultiBitBool8True. Otherwise execution
+                  from SRAM cannot be enabled via this register.
                   ''',
             resval: false
           },

@@ -76,12 +76,8 @@
       name: tl_intg_err_cg
       desc: '''Cover all kinds of integrity errors (command, data or both) and cover number of
                error bits on each integrity check.
-            '''
-    }
-    {
-      name: tl_intg_err_mem_subword_cg
-      desc: '''Cover the kinds of integrity errors with byte enabled write on memory.
 
+               Cover the kinds of integrity errors with byte enabled write on memory if applicable:
                Some memories store the integrity values. When there is a subword write, design
                re-calculate the integrity with full word data and update integrity in the memory.
                This coverage ensures that memory byte write has been issued and the related design

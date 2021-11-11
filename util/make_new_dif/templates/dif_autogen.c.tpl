@@ -24,7 +24,7 @@
     ${value});
 </%def>
 
-// This file is auto-generated.
+${autogen_banner}
 
 #include <stdint.h>
 #include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"

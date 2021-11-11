@@ -316,6 +316,14 @@
                 Writing a zero resets this status bit.
                 '''
         }
+        { bits: "12",
+          name: "CS_BUS_CMP_ALERT",
+          desc: '''
+                This bit is set when the software application port genbits bus value is equal
+                to the prior valid value on the bus, indicating a possible attack.
+                Writing a zero resets this status bit.
+                '''
+        }
       ]
     },
     {
@@ -519,6 +527,16 @@
           name: "AES_CIPHER_SM_ERR",
           desc: '''
                 This bit will be set to one when an AES fatal error has been detected.
+                This error will signal a fatal alert, and also
+                an interrupt if enabled.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "26",
+          name: "CMD_GEN_CNT_ERR",
+          desc: '''
+                This bit will be set to one when an Generate command counter fatal error
+                has been detected.
                 This error will signal a fatal alert, and also
                 an interrupt if enabled.
                 This bit will stay set until firmware clears it.

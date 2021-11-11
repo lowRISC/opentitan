@@ -46,15 +46,6 @@ package otp_ctrl_pkg;
     DaiDigest = 3'b100
   } dai_cmd_e;
 
-  // Width of HW CFG Enable Fields
-  parameter int OtpEnWidth = 8;
-  typedef logic [OtpEnWidth-1:0] otp_en_t;
-
-  typedef enum logic [7:0] {
-    Disabled = 8'h5A,
-    Enabled = 8'hA5
-  } enable_e;
-
   parameter int DeviceIdWidth = 256;
   typedef logic [DeviceIdWidth-1:0] otp_device_id_t;
 

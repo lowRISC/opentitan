@@ -962,8 +962,11 @@
         'ast.ram_2p_cfg'                  : 'ram_2p_cfg',
         'ast.rom_cfg'                     : 'rom_cfg',
         'clkmgr_aon.jitter_en'            : 'clk_main_jitter_en',
-        'clkmgr_aon.ast_clk_byp_req'      : 'ast_clk_byp_req',
-        'clkmgr_aon.ast_clk_byp_ack'      : 'ast_clk_byp_ack',
+        'clkmgr_aon.io_clk_byp_req'       : 'io_clk_byp_req',
+        'clkmgr_aon.io_clk_byp_ack'       : 'io_clk_byp_ack',
+        'clkmgr_aon.all_clk_byp_req'      : 'all_clk_byp_req',
+        'clkmgr_aon.all_clk_byp_ack'      : 'all_clk_byp_ack',
+        'clkmgr_aon.hi_speed_sel'         : 'hi_speed_sel',
         'flash_ctrl.flash_alert'          : 'flash_alert',
         'flash_ctrl.flash_bist_enable'    : 'flash_bist_enable',
         'flash_ctrl.flash_power_down_h'   : 'flash_power_down_h',
@@ -1235,6 +1238,12 @@
 
       // Pinout Changes.
       pinout: {
+        // This is a list of port names to remove from the chip port list.
+        // The corresponding pad of a removed port will remain instantiated,
+        // and a wire net will be declared inside the chip-level hierarchy so
+        // that it can be manually connected as needed.
+        remove_ports: ['USB_P1', 'USB_N1'],
+
         // This is a list of pad names to remove from the base pinout defined
         // above. Removed pads will be stubbed off such that their inputs
         // signals are driven  with zero. Output signals and output enables
@@ -1249,6 +1258,8 @@
         // to the pinmux or peripherals.
         add_pads: [
           { name: 'AST_MISC', type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra infrastructure pad for AST'}
+          { name: 'USB_P1'  , type: 'BidirTol', bank: 'VCC', connection: 'manual', desc: 'USB P signal (second pad)'},
+          { name: 'USB_N1'  , type: 'BidirTol', bank: 'VCC', connection: 'manual', desc: 'USB N signal (second pad)'},
         ],
       },
 
@@ -1289,11 +1300,10 @@
     { name: 'cw310',
 
       pinout: {
+        remove_ports: [],
         remove_pads: [
           'CC1', 'CC2',
           'SPI_DEV_D2', 'SPI_DEV_D3'
-          'SPI_HOST_CLK', 'SPI_HOST_CS_L',
-          'SPI_HOST_D0', 'SPI_HOST_D1', 'SPI_HOST_D2', 'SPI_HOST_D3',
           'FLASH_TEST_VOLT', 'OTP_EXT_VOLT'
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
           'IOB10', 'IOB11', 'IOB12',
@@ -1342,6 +1352,7 @@
     { name: 'nexysvideo',
 
       pinout: {
+        remove_ports: [],
         remove_pads: [
           'CC1', 'CC2',
           'SPI_DEV_D2', 'SPI_DEV_D3'

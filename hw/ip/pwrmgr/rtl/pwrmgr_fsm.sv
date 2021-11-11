@@ -25,6 +25,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input fsm_invalid_i,
   output logic clr_slow_req_o,
   input clr_slow_ack_i,
+  input usb_ip_clk_en_i,
+  output logic usb_ip_clk_status_o,
 
   // consumed in pwrmgr
   output logic wkup_o,        // generate wake interrupt
@@ -38,8 +40,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input pwr_rst_rsp_t pwr_rst_i,
 
   // clkmgr
-  output logic ips_clk_en_o,
-  input clk_en_status_i,
+  output pwr_clk_req_t ips_clk_en_o,
+  input pwr_clk_rsp_t clk_en_status_i,
 
   // otp
   output logic otp_init_o,
@@ -198,6 +200,27 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
     .q_o(lc_done)
   );
 
+
+  logic clks_enabled;
+  logic clks_disabled;
+
+  // clocks all enabled computed as follows:
+  // if enable is high, meaning clock is requested to turn on, the status must
+  // also be 1.
+  // if enable is low, meaning clock is not requested to turn on, the status is
+  // don't care.
+  // the bit-wise OR of both conditions must be all true.
+  assign clks_enabled = ip_clk_en_q &
+                        &((ips_clk_en_o & clk_en_status_i) | ~ips_clk_en_o);
+
+  // clocks all disabled is the opposite:
+  // if enable is low the status must also be low.
+  // if enable is high, the status is don't care.
+  // the bit-wise OR of both conditions must be all true.
+  assign clks_disabled = ~ip_clk_en_q &
+                         &((~ips_clk_en_o & ~clk_en_status_i) | ips_clk_en_o);
+
+
   always_comb begin
     otp_init = 1'b0;
     lc_init = 1'b0;
@@ -231,7 +254,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       FastPwrStateEnableClocks: begin
         ip_clk_en_d = 1'b1;
 
-        if (clk_en_status_i) begin
+        if (clks_enabled) begin
           state_d = FastPwrStateReleaseLcRst;
         end
       end
@@ -306,7 +329,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       FastPwrStateDisClks: begin
         ip_clk_en_d = 1'b0;
 
-        if (!clk_en_status_i) begin
+        if (clks_disabled) begin
           state_d = reset_req ? FastPwrStateNvmShutDown : FastPwrStateFallThrough;
           low_power_d = ~reset_req;
         end else begin
@@ -414,7 +437,20 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   assign pwr_rst_o.reset_cause = reset_cause_q;
   assign pwr_rst_o.rstreqs = reset_reqs_i[HwResetWidth-1:0];
 
-  assign ips_clk_en_o = ip_clk_en_q;
+  // main and io clocks are only turned on/off as part of normal
+  // power sequence
+  assign ips_clk_en_o.main_ip_clk_en = ip_clk_en_q;
+  assign ips_clk_en_o.io_ip_clk_en = ip_clk_en_q;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(1'b0)
+  ) u_usb_ip_clk_en (
+    .clk_i,
+    .rst_ni,
+    .d_i(ip_clk_en_d & usb_ip_clk_en_i),
+    .q_o(ips_clk_en_o.usb_ip_clk_en)
+  );
+  assign usb_ip_clk_status_o = clk_en_status_i.usb_status;
 
   prim_flop #(
     .Width(1),

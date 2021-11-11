@@ -21,6 +21,12 @@ module chip_earlgrey_cw310 #(
   inout POR_N, // Manual Pad
   inout USB_P, // Manual Pad
   inout USB_N, // Manual Pad
+  inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_D3, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_CLK, // Dedicated Pad for spi_host0_sck
+  inout SPI_HOST_CS_L, // Dedicated Pad for spi_host0_csb
   inout SPI_DEV_D0, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_D1, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
@@ -188,6 +194,7 @@ module chip_earlgrey_cw310 #(
   // Signal definitions //
   ////////////////////////
 
+
   pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr;
   pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
@@ -246,18 +253,6 @@ module chip_earlgrey_cw310 #(
 
   // Only signals going to non-custom pads need to be tied off.
   logic [69:0] unused_sig;
-  assign dio_in[DioSpiHost0Sd0] = 1'b0;
-  assign unused_sig[9] = dio_out[DioSpiHost0Sd0] ^ dio_oe[DioSpiHost0Sd0];
-  assign dio_in[DioSpiHost0Sd1] = 1'b0;
-  assign unused_sig[10] = dio_out[DioSpiHost0Sd1] ^ dio_oe[DioSpiHost0Sd1];
-  assign dio_in[DioSpiHost0Sd2] = 1'b0;
-  assign unused_sig[11] = dio_out[DioSpiHost0Sd2] ^ dio_oe[DioSpiHost0Sd2];
-  assign dio_in[DioSpiHost0Sd3] = 1'b0;
-  assign unused_sig[12] = dio_out[DioSpiHost0Sd3] ^ dio_oe[DioSpiHost0Sd3];
-  assign dio_in[DioSpiHost0Sck] = 1'b0;
-  assign unused_sig[13] = dio_out[DioSpiHost0Sck] ^ dio_oe[DioSpiHost0Sck];
-  assign dio_in[DioSpiHost0Csb] = 1'b0;
-  assign unused_sig[14] = dio_out[DioSpiHost0Csb] ^ dio_oe[DioSpiHost0Csb];
   assign dio_in[DioSpiDeviceSd2] = 1'b0;
   assign unused_sig[17] = dio_out[DioSpiDeviceSd2] ^ dio_oe[DioSpiDeviceSd2];
   assign dio_in[DioSpiDeviceSd3] = 1'b0;
@@ -331,7 +326,7 @@ module chip_earlgrey_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(22),
+    .NDioPads(28),
     .NMioPads(29),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
@@ -353,6 +348,12 @@ module chip_earlgrey_cw310 #(
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D1
       BidirStd, // SPI_DEV_D0
+      BidirStd, // SPI_HOST_CS_L
+      BidirStd, // SPI_HOST_CLK
+      BidirStd, // SPI_HOST_D3
+      BidirStd, // SPI_HOST_D2
+      BidirStd, // SPI_HOST_D1
+      BidirStd, // SPI_HOST_D0
       BidirTol, // USB_N
       BidirTol, // USB_P
       InputStd  // POR_N
@@ -391,7 +392,7 @@ module chip_earlgrey_cw310 #(
   ) u_padring (
   // This is only used for scan and DFT purposes
     .clk_scan_i   ( 1'b0                  ),
-    .scanmode_i   ( lc_ctrl_pkg::Off      ),
+    .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
     .dio_in_raw_o ( ),
     // Chip IOs
     .dio_pad_io ({
@@ -414,6 +415,12 @@ module chip_earlgrey_cw310 #(
       SPI_DEV_CLK,
       SPI_DEV_D1,
       SPI_DEV_D0,
+      SPI_HOST_CS_L,
+      SPI_HOST_CLK,
+      SPI_HOST_D3,
+      SPI_HOST_D2,
+      SPI_HOST_D1,
+      SPI_HOST_D0,
       USB_N,
       USB_P,
       POR_N
@@ -472,6 +479,12 @@ module chip_earlgrey_cw310 #(
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd1],
         dio_in[DioSpiDeviceSd0],
+        dio_in[DioSpiHost0Csb],
+        dio_in[DioSpiHost0Sck],
+        dio_in[DioSpiHost0Sd3],
+        dio_in[DioSpiHost0Sd2],
+        dio_in[DioSpiHost0Sd1],
+        dio_in[DioSpiHost0Sd0],
         manual_in_usb_n,
         manual_in_usb_p,
         manual_in_por_n
@@ -496,6 +509,12 @@ module chip_earlgrey_cw310 #(
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd1],
         dio_out[DioSpiDeviceSd0],
+        dio_out[DioSpiHost0Csb],
+        dio_out[DioSpiHost0Sck],
+        dio_out[DioSpiHost0Sd3],
+        dio_out[DioSpiHost0Sd2],
+        dio_out[DioSpiHost0Sd1],
+        dio_out[DioSpiHost0Sd0],
         manual_out_usb_n,
         manual_out_usb_p,
         manual_out_por_n
@@ -520,6 +539,12 @@ module chip_earlgrey_cw310 #(
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd1],
         dio_oe[DioSpiDeviceSd0],
+        dio_oe[DioSpiHost0Csb],
+        dio_oe[DioSpiHost0Sck],
+        dio_oe[DioSpiHost0Sd3],
+        dio_oe[DioSpiHost0Sd2],
+        dio_oe[DioSpiHost0Sd1],
+        dio_oe[DioSpiHost0Sd0],
         manual_oe_usb_n,
         manual_oe_usb_p,
         manual_oe_por_n
@@ -544,6 +569,12 @@ module chip_earlgrey_cw310 #(
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd1],
         dio_attr[DioSpiDeviceSd0],
+        dio_attr[DioSpiHost0Csb],
+        dio_attr[DioSpiHost0Sck],
+        dio_attr[DioSpiHost0Sd3],
+        dio_attr[DioSpiHost0Sd2],
+        dio_attr[DioSpiHost0Sd1],
+        dio_attr[DioSpiHost0Sd0],
         manual_attr_usb_n,
         manual_attr_usb_p,
         manual_attr_por_n
@@ -748,13 +779,16 @@ module chip_earlgrey_cw310 #(
   ast_pkg::ast_alert_req_t ast_alert_req;
 
   // Flash connections
-  lc_ctrl_pkg::lc_tx_t flash_bist_enable;
+  prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
 
-  // Life cycle clock bypass req/ack
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
+  // clock bypass req/ack
+  prim_mubi_pkg::mubi4_t io_clk_byp_req;
+  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t all_clk_byp_req;
+  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
+  logic hi_speed_sel;
 
   // DFT connections
   logic scan_en;
@@ -963,8 +997,11 @@ module chip_earlgrey_cw310 #(
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-    .lc_clk_byp_req_i      ( ast_clk_byp_req   ),
-    .lc_clk_byp_ack_o      ( ast_clk_byp_ack   ),
+    .ext_freq_is_96m_i     ( hi_speed_sel ),
+    .all_clk_byp_req_i     ( all_clk_byp_req  ),
+    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
+    .io_clk_byp_req_i      ( io_clk_byp_req   ),
+    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
     .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
@@ -1017,7 +1054,7 @@ module chip_earlgrey_cw310 #(
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
-  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
+  prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
 
 // TODO: align this with ASIC version to minimize the duplication.
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
@@ -1058,11 +1095,14 @@ module chip_earlgrey_cw310 #(
     .usbdev_usb_ref_pulse_o       ( usb_ref_val           ),
     .ast_edn_req_i                ( ast_edn_edn_req       ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
-    .flash_bist_enable_i          ( lc_ctrl_pkg::Off      ),
+    .flash_bist_enable_i          ( flash_bist_enable     ),
     .flash_power_down_h_i         ( 1'b0                  ),
     .flash_power_ready_h_i        ( 1'b1                  ),
-    .ast_clk_byp_req_o            ( ast_clk_byp_req       ),
-    .ast_clk_byp_ack_i            ( ast_clk_byp_ack       ),
+    .io_clk_byp_req_o             ( io_clk_byp_req        ),
+    .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
+    .all_clk_byp_req_o            ( all_clk_byp_req       ),
+    .all_clk_byp_ack_i            ( all_clk_byp_ack       ),
+    .hi_speed_sel_o               ( hi_speed_sel          ),
 
     .ast_tl_req_o                 ( base_ast_bus               ),
     .ast_tl_rsp_i                 ( ast_base_bus               ),
@@ -1103,7 +1143,7 @@ module chip_earlgrey_cw310 #(
     .dft_hold_tap_sel_i ( '0               ),
     .scan_rst_ni        ( 1'b1             ),
     .scan_en_i          ( 1'b0             ),
-    .scanmode_i         ( lc_ctrl_pkg::Off )
+    .scanmode_i         ( prim_mubi_pkg::MuBi4False )
   );
 
 

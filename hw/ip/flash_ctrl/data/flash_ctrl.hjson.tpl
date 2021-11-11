@@ -63,8 +63,8 @@
       name: "lc_nvm_debug_en"
     },
 
-    { struct: "lc_tx"
-      package: "lc_ctrl_pkg"
+    { struct: "mubi4"
+      package: "prim_mubi_pkg"
       type: "uni"
       act: "rcv"
       name: "flash_bist_enable"
@@ -661,7 +661,7 @@
               { bits: "5",
                 name: "ECC_EN",
                 desc: '''
-                  Region is ECC enabled.
+                  Region is ECC enabled (both integrity and reliability ECC).
                 ''',
                 resval: "0"
               }
@@ -731,7 +731,7 @@
           { bits: "4",
             name: "ECC_EN",
             desc: '''
-              Region is ECC enabled
+              Region is ECC enabled (both integrity and reliability ECC)
             ''',
             resval: "0"
           }
@@ -834,7 +834,7 @@
               { bits: "5",
                 name: "ECC_EN",
                 desc: '''
-                  Region is ECC enabled.
+                  Region is ECC enabled (both integrity and reliability ECC).
                 ''',
                 resval: "0"
               }

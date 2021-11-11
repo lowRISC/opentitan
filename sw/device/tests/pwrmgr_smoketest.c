@@ -59,9 +59,8 @@ bool test_main(void) {
         mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
         &aon_timer));
     aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
-    pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
-        kDifPwrmgrDomainOptionUsbClockInActivePower);
+    pwrmgr_testutils_enable_low_power(&pwrmgr,
+                                      kDifPwrmgrWakeupRequestSourceFive, 0);
     // Enter low power mode.
     wait_for_interrupt();
 

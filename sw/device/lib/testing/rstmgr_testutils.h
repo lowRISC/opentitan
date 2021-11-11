@@ -30,10 +30,8 @@ bool rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
  * @param rstmgr A reset manager handle.
  * @param expected_alert_dump An array holding the expected alert dump.
  * @param dump_size The size of the expected_alert_dump array.
- *
- * @return The result of the comparison.
  */
-bool rstmgr_testutils_compare_alert_info(
+void rstmgr_testutils_compare_alert_info(
     const dif_rstmgr_t *rstmgr,
     dif_rstmgr_alert_info_dump_segment_t *expected_alert_dump,
     size_t dump_size);
@@ -48,10 +46,8 @@ bool rstmgr_testutils_compare_alert_info(
  * @param rstmgr A reset manager handle.
  * @param expected_cpu_dump An array holding the expected cpu dump.
  * @param dump_size The size of the expected_cpu_dump array.
- *
- * @return The result of the comparison.
  */
-bool rstmgr_testutils_compare_cpu_info(
+void rstmgr_testutils_compare_cpu_info(
     const dif_rstmgr_t *rstmgr,
     dif_rstmgr_cpu_info_dump_segment_t *expected_cpu_dump, size_t dump_size);
 

@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:flop
     files:
       - rtl/usb_consts_pkg.sv
       - rtl/usb_fs_nb_in_pe.sv

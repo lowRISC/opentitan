@@ -132,7 +132,7 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
                          .loc_alert_en(local_alert_en),
                          .loc_alert_class(local_alert_class_map));
 
-      // write class_ctrl and clren_reg
+      // write class_ctrl
       alert_handler_rand_wr_class_ctrl(lock_bit_en);
       alert_handler_wr_regwen_regs(clr_regwen, alert_regwen, local_alert_regwen, ping_timer_regwen,
                                    class_regwen);
@@ -151,6 +151,10 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
 
       // when all configuration registers are set, write lock register
       lock_config(do_lock_config);
+
+      // once all above configs are written, lock them with regwen
+      alert_handler_wr_regwen_regs(clr_regwen, alert_regwen, local_alert_regwen, ping_timer_regwen,
+                                   class_regwen);
 
       // if config is not locked, update max_intr_timeout and max_wait_phases cycles
       if (!config_locked) begin

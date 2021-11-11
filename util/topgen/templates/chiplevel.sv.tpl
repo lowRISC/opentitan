@@ -80,23 +80,35 @@ module chip_${top["name"]}_${target["name"]} #(
 module chip_${top["name"]}_${target["name"]} (
 % endif
 <%
-
+  removed_port_names = []
 %>\
   // Dedicated Pads
 % for pad in dedicated_pads:
 <%
   sig = get_dio_sig(pinmux, pad)
+  if pad["name"] in target["pinout"]["remove_ports"]:
+    port_comment = "// Removed port: "
+    removed_port_names.append(pad["name"])
+  else:
+    port_comment = ""
   if sig is not None:
     comment = "// Dedicated Pad for {}".format(sig["name"])
   else:
     comment = "// Manual Pad"
 %>\
-  inout ${pad["name"]}, ${comment}
+  ${port_comment}inout ${pad["name"]}, ${comment}
 % endfor
 
   // Muxed Pads
 % for pad in muxed_pads:
-  inout ${pad["name"]}${" " if loop.last else ","} // MIO Pad ${pad["idx"]}
+<%
+  if pad["name"] in target["pinout"]["remove_ports"]:
+    port_comment = "// Removed port: "
+    removed_port_names.append(pad["name"])
+  else:
+    port_comment = ""
+%>\
+  ${port_comment}inout ${pad["name"]}${" " if loop.last else ","} // MIO Pad ${pad["idx"]}
 % endfor
 );
 
@@ -160,6 +172,13 @@ module chip_${top["name"]}_${target["name"]} (
   ////////////////////////
   // Signal definitions //
   ////////////////////////
+
+  % if removed_port_names:
+  // Net definitions for removed ports
+  % endif
+  % for port in removed_port_names:
+  wire ${port};
+  % endfor
 
   pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr;
   pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr;
@@ -233,7 +252,7 @@ module chip_${top["name"]}_${target["name"]} (
 % if target["name"] == "asic":
   // AST signals needed in padring
   logic scan_rst_n;
-  lc_ctrl_pkg::lc_tx_t scanmode;
+   prim_mubi_pkg::mubi4_t scanmode;
 % endif
 
   padring #(
@@ -284,7 +303,7 @@ module chip_${top["name"]}_${target["name"]} (
     .scanmode_i   ( scanmode              ),
 % else:
     .clk_scan_i   ( 1'b0                  ),
-    .scanmode_i   ( lc_ctrl_pkg::Off      ),
+    .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
   % endif
     .dio_in_raw_o ( ),
     // Chip IOs
@@ -570,13 +589,16 @@ module chip_${top["name"]}_${target["name"]} (
   ast_pkg::ast_alert_req_t ast_alert_req;
 
   // Flash connections
-  lc_ctrl_pkg::lc_tx_t flash_bist_enable;
+  prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
 
-  // Life cycle clock bypass req/ack
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
+  // clock bypass req/ack
+  prim_mubi_pkg::mubi4_t io_clk_byp_req;
+  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t all_clk_byp_req;
+  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
+  logic hi_speed_sel;
 
   // DFT connections
   logic scan_en;
@@ -831,8 +853,11 @@ module chip_${top["name"]}_${target["name"]} (
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-    .lc_clk_byp_req_i      ( ast_clk_byp_req   ),
-    .lc_clk_byp_ack_o      ( ast_clk_byp_ack   ),
+    .ext_freq_is_96m_i     ( hi_speed_sel ),
+    .all_clk_byp_req_i     ( all_clk_byp_req  ),
+    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
+    .io_clk_byp_req_i      ( io_clk_byp_req   ),
+    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
     .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
@@ -907,17 +932,39 @@ module chip_${top["name"]}_${target["name"]} (
 
   // TODO: generalize this USB mux code and align with other tops.
 
-  // Connect the DP pad
+  // Connect the D+ pad
+  // Note that we use two pads in parallel for the D+ channel to meet electrical specifications.
   assign dio_in[DioUsbdevDp] = manual_in_usb_p;
   assign manual_out_usb_p = dio_out[DioUsbdevDp];
   assign manual_oe_usb_p = dio_oe[DioUsbdevDp];
   assign manual_attr_usb_p = dio_attr[DioUsbdevDp];
+  // This drives exactly the same output signal and attributes as for the first pad.
+  assign manual_out_usb_p1 = dio_out[DioUsbdevDp];
+  assign manual_oe_usb_p1 = dio_oe[DioUsbdevDp];
+  assign manual_attr_usb_p1 = dio_attr[DioUsbdevDp];
 
-  // Connect the DN pad
+  // For the input, only the first pad is used.
+  logic unused_in_usb_p1;
+  assign unused_in_usb_p1 = manual_in_usb_p1;
+
+  // Connect the D- pads
+  // Note that we use two pads in parallel for the D- channel to meet electrical specifications.
   assign dio_in[DioUsbdevDn] = manual_in_usb_n;
   assign manual_out_usb_n = dio_out[DioUsbdevDn];
   assign manual_oe_usb_n = dio_oe[DioUsbdevDn];
   assign manual_attr_usb_n = dio_attr[DioUsbdevDn];
+  // This drives exactly the same output signal and attributes as for the first pad.
+  assign manual_out_usb_n1 = dio_out[DioUsbdevDn];
+  assign manual_oe_usb_n1 = dio_oe[DioUsbdevDn];
+  assign manual_attr_usb_n1 = dio_attr[DioUsbdevDn];
+
+  // For the input, only the first pad is used.
+  logic unused_in_usb_n1;
+  assign unused_in_usb_n1 = manual_in_usb_n1;
+
+  // These shorts are intentional to make sure the parallel pads drive the same net.
+  assign USB_P1 = USB_P;
+  assign USB_N1 = USB_N;
 
   // Pullups
   logic usb_pullup_p_en, usb_pullup_n_en;
@@ -1023,8 +1070,11 @@ module chip_${top["name"]}_${target["name"]} (
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
-    .ast_clk_byp_req_o            ( ast_clk_byp_req            ),
-    .ast_clk_byp_ack_i            ( ast_clk_byp_ack            ),
+    .io_clk_byp_req_o             ( io_clk_byp_req             ),
+    .io_clk_byp_ack_i             ( io_clk_byp_ack             ),
+    .all_clk_byp_req_o            ( all_clk_byp_req            ),
+    .all_clk_byp_ack_i            ( all_clk_byp_ack            ),
+    .hi_speed_sel_o               ( hi_speed_sel               ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
     .ast_init_done_i              ( ast_init_done              ),
 
@@ -1105,7 +1155,7 @@ module chip_${top["name"]}_${target["name"]} (
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
-  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
+  prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
 
 // TODO: align this with ASIC version to minimize the duplication.
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
@@ -1171,11 +1221,14 @@ module chip_${top["name"]}_${target["name"]} (
     .usbdev_usb_ref_pulse_o       ( usb_ref_val           ),
     .ast_edn_req_i                ( ast_edn_edn_req       ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
-    .flash_bist_enable_i          ( lc_ctrl_pkg::Off      ),
+    .flash_bist_enable_i          ( flash_bist_enable     ),
     .flash_power_down_h_i         ( 1'b0                  ),
     .flash_power_ready_h_i        ( 1'b1                  ),
-    .ast_clk_byp_req_o            ( ast_clk_byp_req       ),
-    .ast_clk_byp_ack_i            ( ast_clk_byp_ack       ),
+    .io_clk_byp_req_o             ( io_clk_byp_req        ),
+    .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
+    .all_clk_byp_req_o            ( all_clk_byp_req       ),
+    .all_clk_byp_ack_i            ( all_clk_byp_ack       ),
+    .hi_speed_sel_o               ( hi_speed_sel          ),
 
 % if target["name"] != "cw305":
     .ast_tl_req_o                 ( base_ast_bus               ),
@@ -1218,7 +1271,7 @@ module chip_${top["name"]}_${target["name"]} (
     .dft_hold_tap_sel_i ( '0               ),
     .scan_rst_ni        ( 1'b1             ),
     .scan_en_i          ( 1'b0             ),
-    .scanmode_i         ( lc_ctrl_pkg::Off )
+    .scanmode_i         ( prim_mubi_pkg::MuBi4False )
   );
 % endif
 

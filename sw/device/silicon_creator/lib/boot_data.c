@@ -84,7 +84,7 @@ static rom_error_t boot_data_digest_is_valid(
   *is_valid = kHardenedBoolFalse;
   hmac_digest_t act_digest;
   RETURN_IF_ERROR(boot_data_digest_compute(boot_data, &act_digest));
-  if (memcmp(&act_digest, boot_data, sizeof(act_digest)) == 0) {
+  if (memcmp(&act_digest, boot_data, sizeof(act_digest.digest)) == 0) {
     *is_valid = kHardenedBoolTrue;
   }
   return kErrorOk;
@@ -155,6 +155,63 @@ static rom_error_t boot_data_entry_read(uint32_t page_base, size_t index,
   // driver.
   if (flash_read(addr, kInfoPartition, kBootDataNumWords, boot_data->data) !=
       0) {
+    return kErrorBootDataFlash;
+  }
+  return kErrorOk;
+}
+
+/**
+ * Populates the boot data entry at the given page and index.
+ *
+ * @param page_base Page base address in bytes.
+ * @param index Index of the entry to write in the given page.
+ * @param boot_data Entry to write.
+ * @return The result of the operation.
+ */
+static rom_error_t boot_data_entry_write(uint32_t page_base, size_t index,
+                                         const boot_data_t *boot_data) {
+  const uint32_t addr = boot_data_entry_address_get(page_base, index);
+  boot_data_buffer_t buf;
+  memcpy(&buf, boot_data, sizeof(boot_data_t));
+  // TODO(#8777): Update error handling after switching to silicon_creator
+  // driver.
+  if (flash_write(addr, kInfoPartition, buf.data, kBootDataNumWords) != 0) {
+    return kErrorBootDataFlash;
+  }
+  if (flash_read(addr, kInfoPartition, kBootDataNumWords, buf.data) != 0) {
+    return kErrorBootDataFlash;
+  }
+  if (memcmp(&buf, boot_data, sizeof(boot_data_t)) != 0) {
+    return kErrorBootDataFlash;
+  }
+  return kErrorOk;
+}
+
+/**
+ * Invalidates the boot data entry at the given page and index.
+ *
+ * This function sets the `identifier` field of the given entry to
+ * `kBootDataInvalidatedIdentifier` which will cause both the identifier and the
+ * digest checks to fail in subsequent reads.
+ *
+ * This function must be called only after the new entry is successfully
+ * written since writes can potentially be interrupted.
+ *
+ * @param page_base Page base address in bytes.
+ * @param index Index of the entry to invalidate in the given page.
+ * @return The result of the operation.
+ */
+static rom_error_t boot_data_entry_invalidate(uint32_t page_base,
+                                              size_t index) {
+  static_assert(offsetof(boot_data_t, identifier) % sizeof(uint32_t) == 0,
+                "`identifier` must be word aligned.");
+
+  const uint32_t addr = boot_data_entry_address_get(page_base, index) +
+                        offsetof(boot_data_t, identifier);
+  // TODO(#8777): Update error handling after switching to silicon_creator
+  // driver.
+  const uint32_t val = kBootDataInvalidatedIdentifier;
+  if (flash_write(addr, kInfoPartition, &val, 1) != 0) {
     return kErrorBootDataFlash;
   }
   return kErrorOk;
@@ -237,7 +294,7 @@ static rom_error_t boot_data_page_info_get(uint32_t page_base,
       RETURN_IF_ERROR(boot_data_entry_read(page_base, i, &buf));
       RETURN_IF_ERROR(boot_data_digest_is_valid(&buf, &is_valid));
       if (is_valid == kHardenedBoolTrue) {
-        memcpy(&page_info->last_valid_entry, &buf, sizeof(buf));
+        memcpy(&page_info->last_valid_entry, &buf, sizeof(boot_data_t));
         page_info->last_valid_index = i;
         page_info->has_valid_entry = kHardenedBoolTrue;
         break;
@@ -345,4 +402,49 @@ rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
     default:
       return error;
   }
+}
+
+rom_error_t boot_data_write(const boot_data_t *boot_data) {
+  boot_data_t new_entry = *boot_data;
+  new_entry.identifier = kBootDataIdentifier;
+  boot_data_page_info_t active_page;
+  rom_error_t error = boot_data_active_page_find(&active_page);
+
+  if (error == kErrorOk) {
+    // Note: Not checking for wraparound since a successful write will
+    // invalidate the old entry.
+    new_entry.counter = active_page.last_valid_entry.counter + 1;
+    RETURN_IF_ERROR(boot_data_digest_compute(&new_entry, &new_entry.digest));
+    if (active_page.has_empty_entry == kHardenedBoolTrue) {
+      RETURN_IF_ERROR(boot_data_entry_write(
+          active_page.base_addr, active_page.first_empty_index, &new_entry));
+    } else {
+      uint32_t new_page_base = active_page.base_addr == kBootDataPage0Base
+                                   ? kBootDataPage1Base
+                                   : kBootDataPage0Base;
+      // TODO(#8777): Update error handling after switching to silicon_creator
+      // driver.
+      if (flash_page_erase(new_page_base, kInfoPartition) != 0) {
+        return kErrorBootDataFlash;
+      }
+      RETURN_IF_ERROR(boot_data_entry_write(new_page_base, 0, &new_entry));
+    }
+    // Invalidate the previous entry so that there is only one valid entry
+    // across both pages.
+    RETURN_IF_ERROR(boot_data_entry_invalidate(active_page.base_addr,
+                                               active_page.last_valid_index));
+  } else if (error == kErrorBootDataNotFound) {
+    new_entry.counter = kBootDataDefault.counter + 1;
+    RETURN_IF_ERROR(boot_data_digest_compute(&new_entry, &new_entry.digest));
+    // TODO(#8777): Update error handling after switching to silicon_creator
+    // driver.
+    if (flash_page_erase(kBootDataPage0Base, kInfoPartition) != 0) {
+      return kErrorBootDataFlash;
+    }
+    RETURN_IF_ERROR(boot_data_entry_write(kBootDataPage0Base, 0, &new_entry));
+  } else {
+    return error;
+  }
+
+  return kErrorOk;
 }

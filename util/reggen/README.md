@@ -64,14 +64,14 @@ $ ls /tmp/dv
 
 By default, the generated block, register and field models are derived from
 `dv_base_reg` classes provided at `hw/dv/sv/dv_base_reg`. If required, the user
-can supply the `--dv-base-prefix my_base` switch to have the models derive from
-a custom, user-defined RAL classes instead:
+can supply the `--dv-base-names block:type:entity-name` switch to have the models
+derive from a custom, user-defined RAL classes instead:
 
 ```console
 $ cd $REPO_TOP/util
 $ mkdir /tmp/dv
 $ ./regtool.py -s -t /tmp/dv ../hw/ip/uart/data/uart.hjson \
-  --dv-base-prefix my_base
+  --dv-base-names block:type:entity-name
 $ ls /tmp/dv
     uart_ral_pkg.sv
 ```

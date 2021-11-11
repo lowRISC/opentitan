@@ -14,7 +14,9 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
   rand logic [NUM_PERI-1:0] initial_enables;
 
   // The clk_enables CSR cannot be manipulated in low power mode.
-  constraint ip_clk_en_on_c {ip_clk_en == 1'b1;}
+  constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
+  constraint main_ip_clk_en_on_c {main_ip_clk_en == 1'b1;}
+  constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1'b1;}
 
   task body();
     update_csrs_with_reset_values();

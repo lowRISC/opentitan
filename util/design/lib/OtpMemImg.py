@@ -15,6 +15,7 @@ from lib.common import (check_bool, check_int, ecc_encode,
 from lib.LcStEnc import LcStEnc
 from lib.OtpMemMap import OtpMemMap
 from lib.Present import Present
+from mubi.prim_mubi import mubi_value_as_int
 
 # Seed diversification constant for OtpMemImg (this enables to use
 # the same seed for different classes)
@@ -269,18 +270,32 @@ class OtpMemImg(OtpMemMap):
     def merge_item_data(self, part, item):
         '''This validates and merges the item data into the memory map dict'''
         item.setdefault('name', 'unknown_name')
-        item.setdefault('value', '0x0')
 
         mmap_item = self.get_item(part['name'], item['name'])
         if mmap_item is None:
             raise RuntimeError('Item {} does not exist'.format(item['name']))
 
         item_size = mmap_item['size']
-        random_or_hexvalue(item, 'value', item_size * 8)
+        item_width = item_size * 8
+
+        # if needed, resolve the mubi value first
+        if mmap_item['ismubi']:
+            mubi_str = "mubi "
+            mubi_val_str = " kMultiBitBool{}".format(item_width)
+            item.setdefault("value", "false")
+            item["value"] = check_bool(item["value"])
+            mubi_val_str += "True" if item["value"] else "False"
+            item["value"] = mubi_value_as_int(item["value"], item_width)
+        else:
+            mubi_str = ""
+            mubi_val_str = ""
+            item.setdefault('value', '0x0')
+            random_or_hexvalue(item, 'value', item_width)
+
         mmap_item['value'] = item['value']
 
-        log.info('> Adding item {} with size {}B and value:'.format(
-            item['name'], item_size))
+        log.info('> Adding {}item {} with size {}B and value{}:'.format(
+            mubi_str, item['name'], item_size, mubi_val_str))
         fmt_str = '{:0' + str(item_size * 2) + 'x}'
         value_str = fmt_str.format(item['value'])
         bytes_per_line = 8

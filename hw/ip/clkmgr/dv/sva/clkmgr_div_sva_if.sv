@@ -44,9 +44,9 @@ interface clkmgr_div_sva_if #(
     // tracking.
     `ASSERT(Div2Stepped_A, $rose(step_down) ##1 step_down [* WAIT_CYCLES] |-> TracksClk_S, !clk,
             !rst_n)
-  `ASSERT(Div2Whole_A,
-          $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |-> WholeLeadLow_S or WholeLeadHigh_S,
-          !clk, !rst_n)
+    `ASSERT(Div2Whole_A,
+            $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |-> WholeLeadLow_S or WholeLeadHigh_S,
+            !clk, !rst_n)
 
   end else begin : g_div4
 
@@ -61,9 +61,9 @@ interface clkmgr_div_sva_if #(
     `ASSERT(Div4Stepped_A,
             $rose(step_down) ##1 step_down [* WAIT_CYCLES] |-> StepLeadLow_S or StepLeadHigh_S,
             !clk, !rst_n)
-  `ASSERT(Div4Whole_A,
-          $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |-> WholeLeadLow_S or WholeLeadHigh_S,
-          !clk, !rst_n)
+    `ASSERT(Div4Whole_A,
+            $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |-> WholeLeadLow_S or WholeLeadHigh_S,
+            !clk, !rst_n)
 
   end
 endinterface

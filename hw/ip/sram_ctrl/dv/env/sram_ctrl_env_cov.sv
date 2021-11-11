@@ -8,9 +8,10 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
-class sram_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(sram_ctrl_env_cfg));
+class sram_ctrl_env_cov #(parameter int AddrWidth = 10)
+    extends cip_base_env_cov #(.CFG_T(sram_ctrl_env_cfg#(AddrWidth)));
 
-  `uvm_component_utils(sram_ctrl_env_cov)
+  `uvm_component_param_utils(sram_ctrl_env_cov#(AddrWidth))
 
   // the base class provides the following handles for use:
   // sram_ctrl_env_cfg: cfg
@@ -70,12 +71,12 @@ class sram_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(sram_ctrl_env_cfg));
                                                 logic [2:0] csr_exec);
     // placeholder comment
     en_sram_ifetch_cp: coverpoint en_sram_ifetch {
-      bins sram_ifetch_enable = {otp_ctrl_pkg::Enabled};
-      bins sram_ifetch_valid_disable = {otp_ctrl_pkg::Disabled};
+      bins sram_ifetch_enable = {prim_mubi_pkg::MuBi8True};
+      bins sram_ifetch_valid_disable = {prim_mubi_pkg::MuBi8False};
       bins sram_ifetch_invalid_disable = {
-          [0 : otp_ctrl_pkg::Disabled-1],
-          [otp_ctrl_pkg::Disabled+1 : otp_ctrl_pkg::Enabled-1],
-          [otp_ctrl_pkg::Enabled+1 : '1]};
+          [0 : prim_mubi_pkg::MuBi8False-1],
+          [prim_mubi_pkg::MuBi8False+1 : prim_mubi_pkg::MuBi8True-1],
+          [prim_mubi_pkg::MuBi8True+1 : '1]};
     }
     lc_hw_debug_en_cp: coverpoint lc_hw_debug_en {
       bins hw_debug_en_on           = {lc_ctrl_pkg::On};

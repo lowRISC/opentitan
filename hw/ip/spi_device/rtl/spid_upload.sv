@@ -187,6 +187,7 @@ module spid_upload
 
   logic unused_cmdinfo;
   assign unused_cmdinfo = ^{
+    cmd_info_i.valid,         // cmdparse checks the valid bit
     cmd_info_i.addr_swap_en,
     cmd_info_i.dummy_en,
     cmd_info_i.dummy_size,
@@ -194,6 +195,7 @@ module spid_upload
     cmd_info_i.opcode,
     cmd_info_i.payload_dir,
     cmd_info_i.payload_en,
+    cmd_info_i.payload_swap_en,
     cmd_info_i.upload
   };
 
@@ -327,6 +329,8 @@ module spid_upload
 
         if (addrcnt == '0) begin
           st_d = StPayload;
+
+          addrfifo_wvalid = 1'b 1;
         end
       end
 
@@ -522,7 +526,8 @@ module spid_upload
   prim_sram_arbiter #(
     .N      (NumSramIntf),
     .SramDw (SramDw),
-    .SramAw (SramAw)
+    .SramAw (SramAw),
+    .EnMask (1'b 1)
   ) u_arbiter (
     .clk_i,
     .rst_ni,

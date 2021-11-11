@@ -34,12 +34,15 @@ package pwrmgr_env_pkg;
   } wakeup_e;
 
   typedef struct packed {
-    logic core_clk_en;
-    logic io_clk_en;
-    logic usb_clk_en_lp;
-    logic usb_clk_en_active;
     logic main_pd_n;
-  } clk_enables_t;
+    logic usb_clk_en_active;
+    logic usb_clk_en_lp;
+    logic io_clk_en;
+    logic core_clk_en;
+  } control_enables_t;
+
+  typedef bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeups_t;
+  typedef bit [pwrmgr_reg_pkg::NumRstReqs-1:0] resets_t;
 
   // functions
 

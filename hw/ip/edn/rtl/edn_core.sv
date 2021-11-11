@@ -41,7 +41,7 @@ module edn_core import edn_pkg::*;
 
   import edn_reg_pkg::*;
 
-//  localparam int EndPointBusWidth = 32;
+  localparam int RegWidth = 32;
   localparam int RescmdFifoWidth = 32;
   localparam int RescmdFifoDepth = 13;
   localparam int GencmdFifoWidth = 32;
@@ -55,11 +55,9 @@ module edn_core import edn_pkg::*;
   logic event_edn_fatal_err;
   logic edn_enable;
   logic edn_enable_pfe;
-  logic edn_enable_pfd;
   logic edn_enable_pfa;
   logic cmd_fifo_rst;
   logic cmd_fifo_rst_pfe;
-  logic cmd_fifo_rst_pfd;
   logic cmd_fifo_rst_pfa;
   logic packer_arb_valid;
   logic packer_arb_ready;
@@ -67,7 +65,6 @@ module edn_core import edn_pkg::*;
   logic [NumEndPoints-1:0] packer_arb_gnt;
   logic                    auto_req_mode;
   logic                    auto_req_mode_pfe;
-  logic                    auto_req_mode_pfd;
   logic                    auto_req_mode_pfa;
   logic                    seq_auto_req_mode;
   logic                    auto_req_mode_end;
@@ -96,7 +93,6 @@ module edn_core import edn_pkg::*;
   logic [CSGenBitsWidth-1:0] packer_cs_rdata;
   logic                      boot_request;
   logic                      boot_req_mode_pfe;
-  logic                      boot_req_mode_pfd;
   logic                      boot_req_mode_pfa;
   logic                      boot_wr_cmd_reg;
   logic                      boot_wr_cmd_genfifo;
@@ -145,6 +141,12 @@ module edn_core import edn_pkg::*;
   logic                               fifo_status_err_sum;
   logic                               cs_rdata_capt_vld;
   logic                               edn_bus_cmp_alert;
+  logic                               edn_cntr_err_sum;
+  logic                               edn_cntr_err;
+  logic [RegWidth-1:0]                max_reqs_cnt;
+  logic                               max_reqs_cnt_err;
+
+  // unused
   logic                               unused_err_code_test_bit;
 
   // flops
@@ -155,7 +157,6 @@ module edn_core import edn_pkg::*;
   logic [RescmdFifoIdxWidth-1:0]      cmd_fifo_cnt_q, cmd_fifo_cnt_d;
   logic                               send_rescmd_q, send_rescmd_d;
   logic                               send_gencmd_q, send_gencmd_d;
-  logic [31:0]                        max_reqs_cnt_q, max_reqs_cnt_d;
   logic                               csrng_fips_q, csrng_fips_d;
   logic [NumEndPoints-1:0]            edn_fips_q, edn_fips_d;
   logic [3:0]                         boot_req_q, boot_req_d;
@@ -173,7 +174,6 @@ module edn_core import edn_pkg::*;
       cmd_fifo_cnt_q <= '0;
       send_rescmd_q <= '0;
       send_gencmd_q <= '0;
-      max_reqs_cnt_q <= '0;
       csrng_fips_q <= '0;
       edn_fips_q <= '0;
       boot_req_q <= '0;
@@ -189,7 +189,6 @@ module edn_core import edn_pkg::*;
       cmd_fifo_cnt_q <= cmd_fifo_cnt_d;
       send_rescmd_q <= send_rescmd_d;
       send_gencmd_q <= send_gencmd_d;
-      max_reqs_cnt_q <= max_reqs_cnt_d;
       csrng_fips_q <= csrng_fips_d;
       edn_fips_q <= edn_fips_d;
       boot_req_q <= boot_req_d;
@@ -242,7 +241,8 @@ module edn_core import edn_pkg::*;
          sfifo_rescmd_err_sum ||
          sfifo_gencmd_err_sum ||
          edn_ack_sm_err_sum ||
-         edn_main_sm_err_sum);
+         edn_main_sm_err_sum ||
+         edn_cntr_err_sum);
 
   // set fifo errors that are single instances of source
   assign sfifo_rescmd_err_sum = (|sfifo_rescmd_err) ||
@@ -253,6 +253,9 @@ module edn_core import edn_pkg::*;
          err_code_test_bit[20];
   assign edn_main_sm_err_sum = edn_main_sm_err ||
          err_code_test_bit[21];
+  assign edn_cntr_err_sum = edn_cntr_err ||
+         err_code_test_bit[22];
+
   assign fifo_write_err_sum =
          sfifo_rescmd_err[2] ||
          sfifo_gencmd_err[2] ||
@@ -279,6 +282,9 @@ module edn_core import edn_pkg::*;
 
   assign hw2reg.err_code.edn_main_sm_err.d = 1'b1;
   assign hw2reg.err_code.edn_main_sm_err.de = edn_enable && edn_main_sm_err_sum;
+
+  assign hw2reg.err_code.edn_cntr_err.d = 1'b1;
+  assign hw2reg.err_code.edn_cntr_err.de = edn_enable && edn_cntr_err_sum;
 
 
  // set the err code type bits
@@ -312,18 +318,26 @@ module edn_core import edn_pkg::*;
   };
 
   // check for illegal enable field states, and set alert if detected
+  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_invalid;
 
-  assign edn_enable_pfe = (edn_enb_e'(reg2hw.ctrl.edn_enable.q) == EDN_FIELD_ON);
-  assign edn_enable_pfd = (edn_enb_e'(reg2hw.ctrl.edn_enable.q) == ~EDN_FIELD_ON);
-  assign edn_enable_pfa = !(edn_enable_pfe || edn_enable_pfd);
+  mubi4_e mubi_edn_enable;
+  assign mubi_edn_enable = mubi4_e'(reg2hw.ctrl.edn_enable.q);
+  assign edn_enable_pfe = mubi4_test_true_strict(mubi_edn_enable);
+  assign edn_enable_pfa = mubi4_test_invalid(mubi_edn_enable);
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.de = edn_enable_pfa;
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.d  = edn_enable_pfa;
 
-  assign cmd_fifo_rst_pfe = (edn_enb_e'(reg2hw.ctrl.cmd_fifo_rst.q) == EDN_FIELD_ON);
-  assign cmd_fifo_rst_pfd = (edn_enb_e'(reg2hw.ctrl.cmd_fifo_rst.q) == ~EDN_FIELD_ON);
-  assign cmd_fifo_rst_pfa = !(cmd_fifo_rst_pfe || cmd_fifo_rst_pfd);
+  mubi4_e mubi_cmd_fifo_rst;
+  assign mubi_cmd_fifo_rst = mubi4_e'(reg2hw.ctrl.cmd_fifo_rst.q);
+  assign cmd_fifo_rst_pfe = mubi4_test_true_strict(mubi_cmd_fifo_rst);
+  assign cmd_fifo_rst_pfa = mubi4_test_invalid(mubi_cmd_fifo_rst);
   assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.de = cmd_fifo_rst_pfa;
   assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.d  = cmd_fifo_rst_pfa;
+
+  // counter errors
+  assign edn_cntr_err = max_reqs_cnt_err;
 
   // master module enable
   assign edn_enable = edn_enable_pfe;
@@ -332,10 +346,10 @@ module edn_core import edn_pkg::*;
   //--------------------------------------------
   // sw register interface
   //--------------------------------------------
-
-  assign auto_req_mode_pfe = (edn_enb_e'(reg2hw.ctrl.auto_req_mode.q) == EDN_FIELD_ON);
-  assign auto_req_mode_pfd = (edn_enb_e'(reg2hw.ctrl.auto_req_mode.q) == ~EDN_FIELD_ON);
-  assign auto_req_mode_pfa = !(auto_req_mode_pfe || auto_req_mode_pfd);
+  mubi4_e mubi_auto_req_mode;
+  assign mubi_auto_req_mode = mubi4_e'(reg2hw.ctrl.auto_req_mode.q);
+  assign auto_req_mode_pfe = mubi4_test_true_strict(mubi_auto_req_mode);
+  assign auto_req_mode_pfa = mubi4_test_invalid(mubi_auto_req_mode);
   assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.de = auto_req_mode_pfa;
   assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.d  = auto_req_mode_pfa;
 
@@ -499,17 +513,28 @@ module edn_core import edn_pkg::*;
   );
 
 
-  assign max_reqs_cnt_d =
-         (!edn_enable) ? '0 :
-         max_reqs_cnt_load ? (max_reqs_between_reseed_bus-1) :
-         (send_gencmd && cmd_sent) ? (max_reqs_cnt_q-1) :
-         max_reqs_cnt_q;
+  // Maximum requests counter for a generate command
+    prim_count #(
+        .Width(RegWidth),
+        .OutSelDnCnt(1'b1), // count down
+        .CntStyle(prim_count_pkg::CrossCnt)
+      ) u_prim_count_max_reqs_cntr (
+        .clk_i,
+        .rst_ni,
+        .clr_i(1'b0),
+        .set_i(max_reqs_cnt_load),
+        .set_cnt_i(max_reqs_between_reseed_bus-1),
+        .en_i(send_gencmd && cmd_sent),
+        .step_i(RegWidth'(1)),
+        .cnt_o(max_reqs_cnt),
+        .err_o(max_reqs_cnt_err)
+      );
 
   assign max_reqs_cnt_load = (max_reqs_between_reseed_load || // sw initial load
                               (send_rescmd && cmd_sent) ||    // runtime decrement
                               auto_req_mode_end);             // restore when auto mode done
 
-  assign max_reqs_cnt_zero = boot_auto_req_dly_q ? 1'b0 : (max_reqs_cnt_q == '0);
+  assign max_reqs_cnt_zero = boot_auto_req_dly_q ? 1'b0 : (max_reqs_cnt == '0);
 
 
   assign cmd_fifo_cnt_d =
@@ -522,10 +547,10 @@ module edn_core import edn_pkg::*;
 
   assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1));
 
-
-  assign boot_req_mode_pfe = (edn_enb_e'(reg2hw.ctrl.boot_req_mode.q) == EDN_FIELD_ON);
-  assign boot_req_mode_pfd = (edn_enb_e'(reg2hw.ctrl.boot_req_mode.q) == ~EDN_FIELD_ON);
-  assign boot_req_mode_pfa = !(boot_req_mode_pfe || boot_req_mode_pfd);
+  mubi4_e mubi_boot_req_mode;
+  assign mubi_boot_req_mode = mubi4_e'(reg2hw.ctrl.boot_req_mode.q);
+  assign boot_req_mode_pfe = mubi4_test_true_strict(mubi_boot_req_mode);
+  assign boot_req_mode_pfa = mubi4_test_invalid(mubi_boot_req_mode);
   assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.de = boot_req_mode_pfa;
   assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.d  = boot_req_mode_pfa;
 

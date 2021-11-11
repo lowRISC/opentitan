@@ -18,15 +18,20 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   localparam int PropagationToSlowTimeoutInNanoSeconds = 15_000;
   localparam int FetchEnTimeoutNs = 40_000;
 
+  localparam int MaxCyclesBeforeEnable = 6;
+
+
   // Random wakeups and resets.
-  rand bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeups;
-  rand bit [pwrmgr_reg_pkg::NumRstReqs-1:0] resets;
+  rand wakeups_t wakeups;
+  rand resets_t resets;
 
   // Random delays.
   rand int cycles_before_pwrok;
   rand int cycles_before_clks_ok;
   rand int cycles_between_clks_ok;
-  rand int cycles_before_clk_status;
+  rand int cycles_before_io_status;
+  rand int cycles_before_main_status;
+  rand int cycles_before_usb_status;
   rand int cycles_before_rst_lc_src;
   rand int cycles_before_rst_sys_src;
   rand int cycles_before_otp_done;
@@ -45,16 +50,24 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   constraint cycles_before_pwrok_c {cycles_before_pwrok inside {[3 : 10]};}
   constraint cycles_before_clks_ok_c {cycles_before_clks_ok inside {[3 : 10]};}
   constraint cycles_between_clks_ok_c {cycles_between_clks_ok inside {[3 : 10]};}
-  constraint cycles_before_clk_status_c {cycles_before_clk_status inside {[0 : 4]};}
+  constraint cycles_before_io_status_c {cycles_before_io_status inside {[0 : 4]};}
+  constraint cycles_before_main_status_c {cycles_before_main_status inside {[0 : 4]};}
+  constraint cycles_before_usb_status_c {cycles_before_usb_status inside {[0 : 4]};}
   constraint cycles_before_rst_lc_src_base_c {cycles_before_rst_lc_src inside {[0 : 4]};}
   constraint cycles_before_rst_sys_src_base_c {cycles_before_rst_sys_src inside {[0 : 4]};}
   constraint cycles_before_otp_done_base_c {cycles_before_otp_done inside {[0 : 4]};}
   constraint cycles_before_lc_done_base_c {cycles_before_lc_done inside {[0 : 4]};}
   constraint cycles_before_wakeup_c {cycles_before_wakeup inside {[2 : 6]};}
-  constraint cycles_before_core_clk_en_c {cycles_before_core_clk_en inside {[0 : 6]};}
-  constraint cycles_before_io_clk_en_c {cycles_before_io_clk_en inside {[0 : 6]};}
-  constraint cycles_before_usb_clk_en_c {cycles_before_usb_clk_en inside {[0 : 6]};}
-  constraint cycles_before_main_pok_c {cycles_before_main_pok inside {[2 : 6]};}
+  constraint cycles_before_core_clk_en_c {
+    cycles_before_core_clk_en inside {[0 : MaxCyclesBeforeEnable]};
+  }
+  constraint cycles_before_io_clk_en_c {
+    cycles_before_io_clk_en inside {[0 : MaxCyclesBeforeEnable]};
+  }
+  constraint cycles_before_usb_clk_en_c {
+    cycles_before_usb_clk_en inside {[0 : MaxCyclesBeforeEnable]};
+  }
+  constraint cycles_before_main_pok_c {cycles_before_main_pok inside {[2 : MaxCyclesBeforeEnable]};}
 
   bit do_pwrmgr_init = 1'b1;
   // This static variable is incremented in each pre_start and decremented in each post_start.
@@ -74,6 +87,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task post_apply_reset(string reset_kind = "HARD");
+    super.post_apply_reset(reset_kind);
     `uvm_info(`gfn, "waiting for fast active after applying reset", UVM_MEDIUM)
     wait_for_fast_fsm_active();
   endtask
@@ -142,37 +156,56 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // Generates expected responses for the slow fsm.
   // - Completes the clock handshake with the ast: when a clk_en output changes, after a few
   //   cycles the ast is expected to set the corresponding clk_val input to the same value.
-  //
+  // - It is possible changes occur in fast succession, so the side-effect is pipelined.
   // Uses macros because VCS flags an error for assignments to automatic variables,
   // even if the variable is a ref to an interface variable.
 
-  `define SLOW_RESPONSE(rsp_name, cycles, req, rsp) \
+  `define SLOW_DETECT(rsp_name, req, rsp_sr) \
       forever \
         @req begin \
           raise_objection(); \
+          `uvm_info(`gfn, $sformatf("Will drive %0s to %b", rsp_name, req), UVM_MEDIUM) \
+        end
+
+  `define SLOW_SHIFT_SR(req, rsp_sr) \
+      forever \
+        @cfg.slow_clk_rst_vif.cb begin \
+          rsp_sr = {rsp_sr[MaxCyclesBeforeEnable-1:0], req}; \
+        end
+
+  `define SLOW_ASSIGN(rsp_name, cycles, rsp_sr, rsp) \
+      forever \
+        @(rsp_sr[cycles]) begin \
           `uvm_info(`gfn, $sformatf( \
-                    "Will drive %0s to %b in %0d slow clock cycles", \
-                    rsp_name, req, cycles), UVM_MEDIUM) \
-          cfg.slow_clk_rst_vif.wait_clks(cycles); \
-          rsp <= req; \
-          `uvm_info(`gfn, $sformatf("Driving %0s to %b", rsp_name, req), UVM_MEDIUM) \
+                    "Driving %0s to %b after %0d AON cycles.", rsp_name, rsp_sr[cycles], cycles \
+                    ), UVM_MEDIUM) \
+          rsp <= rsp_sr[cycles]; \
           drop_objection(); \
         end
 
   task slow_responder();
+    logic [MaxCyclesBeforeEnable:0] core_clk_val_sr;
+    logic [MaxCyclesBeforeEnable:0] io_clk_val_sr;
+    logic [MaxCyclesBeforeEnable:0] usb_clk_val_sr;
+    logic [MaxCyclesBeforeEnable:0] main_pd_val_sr;
+
     fork
-      `SLOW_RESPONSE("core_clk_val", cycles_before_core_clk_en,
-                     cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en,
-                     cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.core_clk_val)
-      `SLOW_RESPONSE("io_clk_val", cycles_before_io_clk_en,
-                     cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en,
-                     cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.io_clk_val)
-      `SLOW_RESPONSE("usb_clk_val", cycles_before_usb_clk_en,
-                     cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en,
-                     cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.usb_clk_val)
-      `SLOW_RESPONSE("main_pok", cycles_before_main_pok,
-                     cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n,
-                     cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.main_pok)
+      `SLOW_DETECT("core_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en, core_clk_val_sr)
+      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en, core_clk_val_sr)
+      `SLOW_ASSIGN("core_clk_val", cycles_before_core_clk_en, core_clk_val_sr,
+                   cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.core_clk_val)
+      `SLOW_DETECT("io_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en, io_clk_val_sr)
+      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en, io_clk_val_sr)
+      `SLOW_ASSIGN("io_clk_val", cycles_before_io_clk_en, io_clk_val_sr,
+                   cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.io_clk_val)
+      `SLOW_DETECT("usb_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en, usb_clk_val_sr)
+      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en, usb_clk_val_sr)
+      `SLOW_ASSIGN("usb_clk_val", cycles_before_usb_clk_en, usb_clk_val_sr,
+                   cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.usb_clk_val)
+      `SLOW_DETECT("main_pok", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n, main_pd_val_sr)
+      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n, main_pd_val_sr)
+      `SLOW_ASSIGN("main_pok", cycles_before_main_pok, main_pd_val_sr,
+                   cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.main_pok)
     join_none
   endtask
   `undef SLOW_RESPONSE
@@ -180,17 +213,18 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // Generates expected responses for the fast fsm.
   // - Completes the reset handshake with the rstmgr for lc and sys resets: soon after a
   //   reset is requested the corresponding active low reset src must go low.
-  // - Completes the handshake with the clkmgr: clk_status needs to track ip_clk_en.
+  // - Completes the handshake with the clkmgr for io, main, and usb clocks:
+  //   each status input needs to track the corresponding ip_clk_en output.
   // - Completes handshake with lc and otp: *_done needs to track *_init.
   // Macros for the same reason as the slow responder.
 
   `define FAST_RESPONSE_ACTION(rsp_name, rsp, req, cycles) \
           `uvm_info(`gfn, $sformatf( \
                     "Will drive %0s to %b in %0d fast clock cycles", \
-                    rsp_name, req, cycles), UVM_MEDIUM) \
+                    rsp_name, req, cycles), UVM_HIGH) \
           cfg.clk_rst_vif.wait_clks(cycles); \
           rsp <= req; \
-          `uvm_info(`gfn, $sformatf("Driving %0s to %b", rsp_name, req), UVM_MEDIUM) \
+          `uvm_info(`gfn, $sformatf("Driving %0s to %b", rsp_name, req), UVM_HIGH) \
 
 
   task fast_responder();
@@ -219,11 +253,27 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           drop_objection();
         end
       forever
-        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.ip_clk_en begin
+        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en begin
           raise_objection();
-          `FAST_RESPONSE_ACTION("clk_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.clk_status,
-                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.ip_clk_en,
-                                cycles_before_clk_status)
+          `FAST_RESPONSE_ACTION("io_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.io_status,
+                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en,
+                                cycles_before_io_status)
+          drop_objection();
+        end
+      forever
+        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en begin
+          raise_objection();
+          `FAST_RESPONSE_ACTION("main_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.main_status,
+                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en,
+                                cycles_before_main_status)
+          drop_objection();
+        end
+      forever
+        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en begin
+          raise_objection();
+          `FAST_RESPONSE_ACTION("usb_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.usb_status,
+                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en,
+                                cycles_before_usb_status)
           drop_objection();
         end
       forever

@@ -5,7 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_SRAM_CTRL_AUTOGEN_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_SRAM_CTRL_AUTOGEN_H_
 
-// This file is auto-generated.
+// THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
+// util/make_new_dif.py --mode=regen --only=autogen
 
 /**
  * @file

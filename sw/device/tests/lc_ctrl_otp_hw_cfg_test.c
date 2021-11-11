@@ -12,6 +12,7 @@
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -21,23 +22,6 @@ static dif_lc_ctrl_t lc;
 
 const test_config_t kTestConfig;
 const uint8_t NUM_DEVICE_ID = 8;
-const uint8_t OTP_DAI_TIMEOUT = 10;
-
-/**
- * Busy-wait until the DAI is done with whatever operation it is doing.
- */
-static void wait_for_dai(void) {
-  for (int i = 0; i < OTP_DAI_TIMEOUT; i++) {
-    dif_otp_ctrl_status_t status;
-    CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp, &status));
-    if (status.codes == (1 << kDifOtpCtrlStatusCodeDaiIdle)) {
-      return;
-    }
-    LOG_INFO("Waiting for DAI...");
-    usleep(10);
-  }
-  LOG_ERROR("OTP DAI access timeout.");
-}
 
 /**
  * Read and return 32-bit OTP data via the DAI interface.
@@ -47,7 +31,7 @@ static void otp_ctrl_dai_read_32(const dif_otp_ctrl_t *otp,
                                  uint32_t address, uint32_t *buf) {
   CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(otp, partition, address));
 
-  wait_for_dai();
+  otp_ctrl_testutils_wait_for_dai(otp);
 
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(otp, buf));
 }

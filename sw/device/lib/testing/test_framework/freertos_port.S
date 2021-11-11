@@ -58,7 +58,7 @@ handler_exception:
   sw t0, 29 * PORT_WORD_SIZE(sp)
 
   // Save MEPC to the stack.
-  // NOTE: this ISQ is synchronous, therefore, we must update the ISR resturn
+  // NOTE: this IRQ is synchronous, therefore, we must update the ISR return
   // address to point to the instruction after the one that triggered this IRQ.
   csrr t0, mepc
   addi t0, t0, PORT_WORD_SIZE
@@ -122,7 +122,7 @@ handler_irq_software:
   sw t0, 29 * PORT_WORD_SIZE(sp)
 
   // Save MEPC to the stack.
-  // NOTE: this ISQ is synchronous, therefore, we must update the ISR resturn
+  // NOTE: this IRQ is synchronous, therefore, we must update the ISR return
   // address to point to the instruction after the one that triggered this IRQ.
   csrr t0, mepc
   addi t0, t0, PORT_WORD_SIZE
@@ -186,7 +186,7 @@ handler_irq_timer:
   sw t0, 29 * PORT_WORD_SIZE(sp)
 
   // Save MEPC to the stack.
-  // NOTE: this ISQ is asynchronous, therefore, we do not need to modify MEPC.
+  // NOTE: this IRQ is asynchronous, therefore, we do not need to modify MEPC.
   csrr t0, mepc
   sw t0, 0(sp)
 
@@ -248,7 +248,7 @@ handler_irq_external:
   sw t0, 29 * PORT_WORD_SIZE(sp)
 
   // Save MEPC to the stack.
-  // NOTE: this ISQ is asynchronous, therefore, we do not need to modify MEPC.
+  // NOTE: this IRQ is asynchronous, therefore, we do not need to modify MEPC.
   csrr t0, mepc
   sw t0, 0(sp)
 
@@ -465,11 +465,12 @@ pxPortInitialiseStack:
   // Setup the stack frame detailed above (a0 holds the task stack pointer).
   addi a0, a0, -PORT_CONTEXT_SIZE
   // Push MSTATUS onto the stack.
-  sw t0, 29(a0)
+  sw t0, 29 * PORT_WORD_SIZE(a0)
+
   // Push task parameters (pvParameters that is in x12/a2, on the stack.
-  sw a2, 7(a0)
+  sw a2, 7 * PORT_WORD_SIZE(a0)
   // Push 0 for the portTASK_RETURN_ADDRESS for now.
-  sw zero, 1(a0)
+  sw zero, 1 * PORT_WORD_SIZE(a0)
   // Push the pointer to the task's entry point (pxCode) onto the stack. This
   // will be loaded into either ra (in xPortStartFirstTask) or mepc (in
   // freertosIrqExit), so that when ret/mret is called control flow will be

@@ -122,10 +122,13 @@ module top_earlgrey #(
   input  prim_ram_2p_pkg::ram_2p_cfg_t       ram_2p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
   output logic       clk_main_jitter_en_o,
-  output lc_ctrl_pkg::lc_tx_t       ast_clk_byp_req_o,
-  input  lc_ctrl_pkg::lc_tx_t       ast_clk_byp_ack_i,
+  output prim_mubi_pkg::mubi4_t       io_clk_byp_req_o,
+  input  prim_mubi_pkg::mubi4_t       io_clk_byp_ack_i,
+  output prim_mubi_pkg::mubi4_t       all_clk_byp_req_o,
+  input  prim_mubi_pkg::mubi4_t       all_clk_byp_ack_i,
+  output logic       hi_speed_sel_o,
   output ast_pkg::ast_dif_t       flash_alert_o,
-  input  lc_ctrl_pkg::lc_tx_t       flash_bist_enable_i,
+  input  prim_mubi_pkg::mubi4_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
   inout   [1:0] flash_test_mode_a_io,
@@ -166,7 +169,7 @@ module top_earlgrey #(
 
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i   // lc_ctrl_pkg::On for Scan
+  input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -725,7 +728,7 @@ module top_earlgrey #(
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
-  otp_ctrl_pkg::otp_en_t       sram_ctrl_main_otp_en_sram_ifetch;
+  prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
 
   // define mixed connection to port
   assign edn0_edn_req[2] = ast_edn_req_i;
@@ -761,12 +764,9 @@ module top_earlgrey #(
   // OTP HW_CFG Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
   // be performed by hand.
-  assign csrng_otp_en_csrng_sw_app_read =
-    prim_mubi_pkg::mubi8_e'(otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read);
-  assign entropy_src_otp_en_entropy_src_fw_read =
-    prim_mubi_pkg::mubi8_e'(otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read);
-  assign entropy_src_otp_en_entropy_src_fw_over =
-    prim_mubi_pkg::mubi8_e'(otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_over);
+  assign csrng_otp_en_csrng_sw_app_read = otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read;
+  assign entropy_src_otp_en_entropy_src_fw_read = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read;
+  assign entropy_src_otp_en_entropy_src_fw_over = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_over;
   assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
   assign lc_ctrl_otp_manuf_state = otp_ctrl_otp_hw_cfg.data.manuf_state;
@@ -1724,8 +1724,11 @@ module top_earlgrey #(
       .clocks_o(clkmgr_aon_clocks),
       .cg_en_o(clkmgr_aon_cg_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
-      .ast_clk_byp_req_o(ast_clk_byp_req_o),
-      .ast_clk_byp_ack_i(ast_clk_byp_ack_i),
+      .io_clk_byp_req_o(io_clk_byp_req_o),
+      .io_clk_byp_ack_i(io_clk_byp_ack_i),
+      .all_clk_byp_req_o(all_clk_byp_req_o),
+      .all_clk_byp_ack_i(all_clk_byp_ack_i),
+      .hi_speed_sel_o(hi_speed_sel_o),
       .lc_clk_byp_req_i(lc_ctrl_lc_clk_byp_req),
       .lc_clk_byp_ack_o(lc_ctrl_lc_clk_byp_ack),
       .jitter_en_o(clk_main_jitter_en_o),
@@ -1973,7 +1976,7 @@ module top_earlgrey #(
       .cfg_i(ast_ram_1p_cfg),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
-      .otp_en_sram_ifetch_i('0),
+      .otp_en_sram_ifetch_i(prim_mubi_pkg::MuBi8False),
       .regs_tl_i(sram_ctrl_ret_aon_regs_tl_req),
       .regs_tl_o(sram_ctrl_ret_aon_regs_tl_rsp),
       .ram_tl_i(sram_ctrl_ret_aon_ram_tl_req),

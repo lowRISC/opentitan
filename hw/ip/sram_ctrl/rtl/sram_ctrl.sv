@@ -42,7 +42,7 @@ module sram_ctrl
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_hw_debug_en_i,
   // Otp configuration for sram execution
-  input  otp_ctrl_pkg::otp_en_t                      otp_en_sram_ifetch_i,
+  input  prim_mubi_pkg::mubi8_t                      otp_en_sram_ifetch_i,
   // Key request to OTP (running on clk_fixed)
   output otp_ctrl_pkg::sram_otp_key_req_t            sram_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i,
@@ -60,6 +60,9 @@ module sram_ctrl
   // CSR Node and Mapping //
   //////////////////////////
 
+  // We've got two bus interfaces in this module, hence two integ failure sources.
+  logic [1:0] bus_integ_error;
+
   sram_ctrl_regs_reg2hw_t reg2hw;
   sram_ctrl_regs_hw2reg_t hw2reg;
 
@@ -70,7 +73,7 @@ module sram_ctrl
     .tl_o      (regs_tl_o),
     .reg2hw,
     .hw2reg,
-    .intg_err_o(),
+    .intg_err_o(bus_integ_error[0]),
     .devmode_i (1'b1)
    );
 
@@ -91,9 +94,8 @@ module sram_ctrl
   logic alert_test;
   assign alert_test = reg2hw.alert_test.q & reg2hw.alert_test.qe;
 
-  logic bus_integ_error;
   assign hw2reg.status.bus_integ_error.d  = 1'b1;
-  assign hw2reg.status.bus_integ_error.de = bus_integ_error;
+  assign hw2reg.status.bus_integ_error.de = |bus_integ_error;
 
   logic init_error;
   assign hw2reg.status.init_error.d  = 1'b1;
@@ -105,12 +107,12 @@ module sram_ctrl
   ) u_prim_alert_sender_parity (
     .clk_i,
     .rst_ni,
-    .alert_test_i  ( alert_test                   ),
-    .alert_req_i   ( bus_integ_error | init_error ),
-    .alert_ack_o   (                              ),
-    .alert_state_o (                              ),
-    .alert_rx_i    ( alert_rx_i[0]                ),
-    .alert_tx_o    ( alert_tx_o[0]                )
+    .alert_test_i  ( alert_test                    ),
+    .alert_req_i   ( |bus_integ_error | init_error ),
+    .alert_ack_o   (                               ),
+    .alert_state_o (                               ),
+    .alert_rx_i    ( alert_rx_i[0]                 ),
+    .alert_tx_o    ( alert_tx_o[0]                 )
   );
 
   /////////////////////////
@@ -137,7 +139,7 @@ module sram_ctrl
   logic local_esc;
   assign local_esc = escalate                   |
                      init_error                 |
-                     bus_integ_error            |
+                     |bus_integ_error           |
                      reg2hw.status.escalated.q  |
                      reg2hw.status.init_error.q |
                      reg2hw.status.bus_integ_error.q;
@@ -278,6 +280,7 @@ module sram_ctrl
   import prim_mubi_pkg::mubi4_e;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::mubi8_test_true_strict;
 
   mubi4_e en_ifetch;
   if (InstrExec) begin : gen_instr_ctrl
@@ -286,8 +289,8 @@ module sram_ctrl
     assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? MuBi4True :
                                                                   MuBi4False;
     assign reg_ifetch_en = mubi4_e'(reg2hw.exec.q);
-    assign en_ifetch = (otp_en_sram_ifetch_i == otp_ctrl_pkg::Enabled) ? reg_ifetch_en :
-                                                                         lc_ifetch_en;
+    assign en_ifetch = (mubi8_test_true_strict(otp_en_sram_ifetch_i)) ? reg_ifetch_en :
+                                                                        lc_ifetch_en;
   end else begin : gen_tieoff
     assign en_ifetch = MuBi4False;
 
@@ -361,7 +364,7 @@ module sram_ctrl
     .addr_o      (tlul_addr),
     .wdata_o     (tlul_wdata),
     .wmask_o     (tlul_wmask),
-    .intg_error_o(bus_integ_error),
+    .intg_error_o(bus_integ_error[1]),
     .rdata_i     (sram_rdata),
     .rvalid_i    (sram_rvalid),
     .rerror_i    ('0)

@@ -16,6 +16,7 @@
     import clkmgr_pkg::*;
     import clkmgr_reg_pkg::*;
     import lc_ctrl_pkg::lc_tx_t;
+    import prim_mubi_pkg::mubi4_t;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -53,7 +54,7 @@
   output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
 
   // dft interface
-  input lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // idle hints
   input [4:0] idle_i,
@@ -61,11 +62,16 @@
   // life cycle state output
   input lc_tx_t lc_dft_en_i,
 
-  // clock bypass control
+  // clock bypass control with lc_ctrl
   input lc_tx_t lc_clk_byp_req_i,
-  output lc_tx_t ast_clk_byp_req_o,
-  input lc_tx_t ast_clk_byp_ack_i,
   output lc_tx_t lc_clk_byp_ack_o,
+
+  // clock bypass control with ast
+  output mubi4_t io_clk_byp_req_o,
+  input mubi4_t io_clk_byp_ack_i,
+  output mubi4_t all_clk_byp_req_o,
+  input mubi4_t all_clk_byp_ack_i,
+  output logic hi_speed_sel_o,
 
   // jittery enable
   output logic jitter_en_o,
@@ -80,27 +86,39 @@
 
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::mubi4_test_true_loose;
+  import prim_mubi_pkg::mubi4_test_false_loose;
 
   ////////////////////////////////////////////////////
   // Divided clocks
   ////////////////////////////////////////////////////
 
-  lc_tx_t step_down_req;
+  logic step_down_req;
   logic [1:0] step_down_acks;
 
   logic clk_io_div2_i;
   logic clk_io_div4_i;
 
+  logic io_step_down_req;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_io_step_down_req_sync (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .d_i(step_down_req),
+    .q_o(io_step_down_req)
+  );
 
-  lc_tx_t io_div2_div_scanmode;
-  prim_lc_sync #(
+
+  prim_mubi_pkg::mubi4_t io_div2_div_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_div2_div_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(io_div2_div_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(io_div2_div_scanmode)
   );
 
   prim_clock_div #(
@@ -108,21 +126,21 @@
   ) u_no_scan_io_div2_div (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
-    .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
+    .step_down_req_i(io_step_down_req),
     .step_down_ack_o(step_down_acks[0]),
-    .test_en_i(io_div2_div_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(io_div2_div_scanmode)),
     .clk_o(clk_io_div2_i)
   );
 
-  lc_tx_t io_div4_div_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t io_div4_div_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_div4_div_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(io_div4_div_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(io_div4_div_scanmode)
   );
 
   prim_clock_div #(
@@ -130,9 +148,9 @@
   ) u_no_scan_io_div4_div (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
-    .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
+    .step_down_req_i(io_step_down_req),
     .step_down_ack_o(step_down_acks[1]),
-    .test_en_i(io_div4_div_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(io_div4_div_scanmode)),
     .clk_o(clk_io_div4_i)
   );
 
@@ -211,20 +229,36 @@
   // Clock bypass request
   ////////////////////////////////////////////////////
 
+  mubi4_t low_speed_sel;
+  assign low_speed_sel = mubi4_t'(reg2hw.extclk_ctrl.low_speed_sel.q);
   clkmgr_byp #(
     .NumDivClks(2)
   ) u_clkmgr_byp (
     .clk_i,
     .rst_ni,
     .en_i(lc_dft_en_i),
-    .byp_req_i(lc_tx_t'(reg2hw.extclk_ctrl.sel.q)),
-    .step_down_req_i(lc_tx_t'(reg2hw.extclk_ctrl.step_down.q)),
-    .ast_clk_byp_req_o,
-    .ast_clk_byp_ack_i,
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
+    .byp_req_i(mubi4_t'(reg2hw.extclk_ctrl.sel.q)),
+    .low_speed_sel_i(low_speed_sel),
+    .all_clk_byp_req_o,
+    .all_clk_byp_ack_i,
+    .io_clk_byp_req_o,
+    .io_clk_byp_ack_i,
+
+    // divider step down controls
     .step_down_acks_i(step_down_acks),
     .step_down_req_o(step_down_req)
+  );
+
+  // the external consumer of this signal requires the opposite polarity
+  prim_flop #(
+    .ResetValue(1'b1)
+  ) u_high_speed_sel (
+    .clk_i,
+    .rst_ni,
+    .d_i(mubi4_test_false_loose(low_speed_sel)),
+    .q_o(hi_speed_sel_o)
   );
 
   ////////////////////////////////////////////////////
@@ -305,184 +339,127 @@
   assign cg_en_o.aon_timers = MuBi4False;
 
   ////////////////////////////////////////////////////
+  // Distribute pwrmgr ip_clk_en requests to each family
+  ////////////////////////////////////////////////////
+  // clk_main family
+  logic pwrmgr_main_en;
+  assign pwrmgr_main_en = pwr_i.main_ip_clk_en;
+
+  // clk_io family
+  logic pwrmgr_io_en;
+  logic pwrmgr_io_div2_en;
+  logic pwrmgr_io_div4_en;
+  assign pwrmgr_io_en = pwr_i.io_ip_clk_en;
+  assign pwrmgr_io_div2_en = pwr_i.io_ip_clk_en;
+  assign pwrmgr_io_div4_en = pwr_i.io_ip_clk_en;
+
+  // clk_usb family
+  logic pwrmgr_usb_en;
+  assign pwrmgr_usb_en = pwr_i.usb_ip_clk_en;
+
+
+  ////////////////////////////////////////////////////
   // Root gating
   ////////////////////////////////////////////////////
 
-  logic wait_enable;
-  logic wait_disable;
-  logic en_status_d;
-  logic dis_status_d;
-  logic [1:0] en_status_q;
-  logic [1:0] dis_status_q;
-  logic clk_status;
-  logic clk_io_root;
-  logic clk_io_en;
-  logic clk_io_div2_root;
-  logic clk_io_div2_en;
-  logic clk_io_div4_root;
-  logic clk_io_div4_en;
-  logic clk_main_root;
+  // clk_main family
+  logic [0:0] main_ens;
+
   logic clk_main_en;
-  logic clk_usb_root;
-  logic clk_usb_en;
-
-  lc_tx_t io_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_io_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(io_scanmode)
-  );
-
-  prim_clock_gating_sync u_io_cg (
-    .clk_i(clk_io_i),
-    .rst_ni(rst_io_ni),
-    .test_en_i(io_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
-    .en_o(clk_io_en),
-    .clk_o(clk_io_root)
-  );
-
-  lc_tx_t io_div2_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_io_div2_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(io_div2_scanmode)
-  );
-
-  prim_clock_gating_sync u_io_div2_cg (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(rst_io_div2_ni),
-    .test_en_i(io_div2_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
-    .en_o(clk_io_div2_en),
-    .clk_o(clk_io_div2_root)
-  );
-
-  lc_tx_t io_div4_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_io_div4_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(io_div4_scanmode)
-  );
-
-  prim_clock_gating_sync u_io_div4_cg (
-    .clk_i(clk_io_div4_i),
-    .rst_ni(rst_io_div4_ni),
-    .test_en_i(io_div4_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
-    .en_o(clk_io_div4_en),
-    .clk_o(clk_io_div4_root)
-  );
-
-  lc_tx_t main_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_main_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(main_scanmode)
-  );
-
-  prim_clock_gating_sync u_main_cg (
+  logic clk_main_root;
+  clkmgr_root_ctrl u_main_root_ctrl (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .test_en_i(main_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
+    .scanmode_i,
+    .async_en_i(pwrmgr_main_en),
     .en_o(clk_main_en),
     .clk_o(clk_main_root)
   );
+  assign main_ens[0] = clk_main_en;
 
-  lc_tx_t usb_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_usb_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(usb_scanmode)
+  // create synchronized status
+  clkmgr_clk_status #(
+    .NumClocks(1)
+  ) u_main_status (
+    .clk_i,
+    .rst_ni,
+    .ens_i(main_ens),
+    .status_o(pwr_o.main_status)
   );
 
-  prim_clock_gating_sync u_usb_cg (
+  // clk_io family
+  logic [2:0] io_ens;
+
+  logic clk_io_en;
+  logic clk_io_root;
+  clkmgr_root_ctrl u_io_root_ctrl (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .scanmode_i,
+    .async_en_i(pwrmgr_io_en),
+    .en_o(clk_io_en),
+    .clk_o(clk_io_root)
+  );
+  assign io_ens[0] = clk_io_en;
+
+  logic clk_io_div2_en;
+  logic clk_io_div2_root;
+  clkmgr_root_ctrl u_io_div2_root_ctrl (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_io_div2_ni),
+    .scanmode_i,
+    .async_en_i(pwrmgr_io_div2_en),
+    .en_o(clk_io_div2_en),
+    .clk_o(clk_io_div2_root)
+  );
+  assign io_ens[1] = clk_io_div2_en;
+
+  logic clk_io_div4_en;
+  logic clk_io_div4_root;
+  clkmgr_root_ctrl u_io_div4_root_ctrl (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .scanmode_i,
+    .async_en_i(pwrmgr_io_div4_en),
+    .en_o(clk_io_div4_en),
+    .clk_o(clk_io_div4_root)
+  );
+  assign io_ens[2] = clk_io_div4_en;
+
+  // create synchronized status
+  clkmgr_clk_status #(
+    .NumClocks(3)
+  ) u_io_status (
+    .clk_i,
+    .rst_ni,
+    .ens_i(io_ens),
+    .status_o(pwr_o.io_status)
+  );
+
+  // clk_usb family
+  logic [0:0] usb_ens;
+
+  logic clk_usb_en;
+  logic clk_usb_root;
+  clkmgr_root_ctrl u_usb_root_ctrl (
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
-    .test_en_i(usb_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
+    .scanmode_i,
+    .async_en_i(pwrmgr_usb_en),
     .en_o(clk_usb_en),
     .clk_o(clk_usb_root)
   );
+  assign usb_ens[0] = clk_usb_en;
 
-  // an async AND of all the synchronized enables
-  // return feedback to pwrmgr only when all clocks are enabled
-  assign wait_enable =
-    clk_io_en &
-    clk_io_div2_en &
-    clk_io_div4_en &
-    clk_main_en &
-    clk_usb_en;
-
-  // an async OR of all the synchronized enables
-  // return feedback to pwrmgr only when all clocks are disabled
-  assign wait_disable =
-    clk_io_en |
-    clk_io_div2_en |
-    clk_io_div4_en |
-    clk_main_en |
-    clk_usb_en;
-
-  // Sync clkmgr domain for feedback to pwrmgr.
-  // Since the signal is combo / converged on the other side, de-bounce
-  // the signal prior to output
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_roots_en_status_sync (
+  // create synchronized status
+  clkmgr_clk_status #(
+    .NumClocks(1)
+  ) u_usb_status (
     .clk_i,
     .rst_ni,
-    .d_i(wait_enable),
-    .q_o(en_status_d)
+    .ens_i(usb_ens),
+    .status_o(pwr_o.usb_status)
   );
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_roots_or_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(wait_disable),
-    .q_o(dis_status_d)
-  );
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      en_status_q <= '0;
-      dis_status_q <= '0;
-      clk_status <= '0;
-    end else begin
-      en_status_q <= {en_status_q[0], en_status_d};
-      dis_status_q <= {dis_status_q[0], dis_status_d};
-
-      if (&en_status_q) begin
-        clk_status <= 1'b1;
-      end else if (|dis_status_q == '0) begin
-        clk_status <= 1'b0;
-      end
-    end
-  end
-
-  assign pwr_o.clk_status = clk_status;
 
   ////////////////////////////////////////////////////
   // Clock Measurement for the roots
@@ -490,9 +467,12 @@
 
   logic io_fast_err;
   logic io_slow_err;
+  logic io_timeout_err;
     prim_clock_meas #(
     .Cnt(960),
-    .RefCnt(1)
+    .RefCnt(1),
+    .ClkTimeOutChkEn(1'b1),
+    .RefTimeOutChkEn(1'b0)
   ) u_io_meas (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
@@ -503,7 +483,9 @@
     .min_cnt(reg2hw.io_measure_ctrl.min_thresh.q),
     .valid_o(),
     .fast_o(io_fast_err),
-    .slow_o(io_slow_err)
+    .slow_o(io_slow_err),
+    .timeout_clk_ref_o(),
+    .ref_timeout_clk_o(io_timeout_err)
   );
 
   logic synced_io_err;
@@ -516,14 +498,33 @@
     .dst_pulse_o(synced_io_err)
   );
 
+  logic synced_io_timeout_err;
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue('0),
+    .EnSync(1'b1)
+  ) u_io_timeout_err_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(io_timeout_err),
+    .q_sync_o(),
+    .q_posedge_pulse_o(synced_io_timeout_err),
+    .q_negedge_pulse_o()
+  );
+
   assign hw2reg.recov_err_code.io_measure_err.d = 1'b1;
   assign hw2reg.recov_err_code.io_measure_err.de = synced_io_err;
+  assign hw2reg.recov_err_code.io_timeout_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_timeout_err.de = synced_io_timeout_err;
 
   logic io_div2_fast_err;
   logic io_div2_slow_err;
+  logic io_div2_timeout_err;
     prim_clock_meas #(
     .Cnt(480),
-    .RefCnt(1)
+    .RefCnt(1),
+    .ClkTimeOutChkEn(1'b1),
+    .RefTimeOutChkEn(1'b0)
   ) u_io_div2_meas (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_io_div2_ni),
@@ -534,7 +535,9 @@
     .min_cnt(reg2hw.io_div2_measure_ctrl.min_thresh.q),
     .valid_o(),
     .fast_o(io_div2_fast_err),
-    .slow_o(io_div2_slow_err)
+    .slow_o(io_div2_slow_err),
+    .timeout_clk_ref_o(),
+    .ref_timeout_clk_o(io_div2_timeout_err)
   );
 
   logic synced_io_div2_err;
@@ -547,14 +550,33 @@
     .dst_pulse_o(synced_io_div2_err)
   );
 
+  logic synced_io_div2_timeout_err;
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue('0),
+    .EnSync(1'b1)
+  ) u_io_div2_timeout_err_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(io_div2_timeout_err),
+    .q_sync_o(),
+    .q_posedge_pulse_o(synced_io_div2_timeout_err),
+    .q_negedge_pulse_o()
+  );
+
   assign hw2reg.recov_err_code.io_div2_measure_err.d = 1'b1;
   assign hw2reg.recov_err_code.io_div2_measure_err.de = synced_io_div2_err;
+  assign hw2reg.recov_err_code.io_div2_timeout_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_div2_timeout_err.de = synced_io_div2_timeout_err;
 
   logic io_div4_fast_err;
   logic io_div4_slow_err;
+  logic io_div4_timeout_err;
     prim_clock_meas #(
     .Cnt(240),
-    .RefCnt(1)
+    .RefCnt(1),
+    .ClkTimeOutChkEn(1'b1),
+    .RefTimeOutChkEn(1'b0)
   ) u_io_div4_meas (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
@@ -565,7 +587,9 @@
     .min_cnt(reg2hw.io_div4_measure_ctrl.min_thresh.q),
     .valid_o(),
     .fast_o(io_div4_fast_err),
-    .slow_o(io_div4_slow_err)
+    .slow_o(io_div4_slow_err),
+    .timeout_clk_ref_o(),
+    .ref_timeout_clk_o(io_div4_timeout_err)
   );
 
   logic synced_io_div4_err;
@@ -578,14 +602,33 @@
     .dst_pulse_o(synced_io_div4_err)
   );
 
+  logic synced_io_div4_timeout_err;
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue('0),
+    .EnSync(1'b1)
+  ) u_io_div4_timeout_err_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(io_div4_timeout_err),
+    .q_sync_o(),
+    .q_posedge_pulse_o(synced_io_div4_timeout_err),
+    .q_negedge_pulse_o()
+  );
+
   assign hw2reg.recov_err_code.io_div4_measure_err.d = 1'b1;
   assign hw2reg.recov_err_code.io_div4_measure_err.de = synced_io_div4_err;
+  assign hw2reg.recov_err_code.io_div4_timeout_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_div4_timeout_err.de = synced_io_div4_timeout_err;
 
   logic main_fast_err;
   logic main_slow_err;
+  logic main_timeout_err;
     prim_clock_meas #(
     .Cnt(1000),
-    .RefCnt(1)
+    .RefCnt(1),
+    .ClkTimeOutChkEn(1'b1),
+    .RefTimeOutChkEn(1'b0)
   ) u_main_meas (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
@@ -596,7 +639,9 @@
     .min_cnt(reg2hw.main_measure_ctrl.min_thresh.q),
     .valid_o(),
     .fast_o(main_fast_err),
-    .slow_o(main_slow_err)
+    .slow_o(main_slow_err),
+    .timeout_clk_ref_o(),
+    .ref_timeout_clk_o(main_timeout_err)
   );
 
   logic synced_main_err;
@@ -609,14 +654,33 @@
     .dst_pulse_o(synced_main_err)
   );
 
+  logic synced_main_timeout_err;
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue('0),
+    .EnSync(1'b1)
+  ) u_main_timeout_err_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(main_timeout_err),
+    .q_sync_o(),
+    .q_posedge_pulse_o(synced_main_timeout_err),
+    .q_negedge_pulse_o()
+  );
+
   assign hw2reg.recov_err_code.main_measure_err.d = 1'b1;
   assign hw2reg.recov_err_code.main_measure_err.de = synced_main_err;
+  assign hw2reg.recov_err_code.main_timeout_err.d = 1'b1;
+  assign hw2reg.recov_err_code.main_timeout_err.de = synced_main_timeout_err;
 
   logic usb_fast_err;
   logic usb_slow_err;
+  logic usb_timeout_err;
     prim_clock_meas #(
     .Cnt(480),
-    .RefCnt(1)
+    .RefCnt(1),
+    .ClkTimeOutChkEn(1'b1),
+    .RefTimeOutChkEn(1'b0)
   ) u_usb_meas (
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
@@ -627,7 +691,9 @@
     .min_cnt(reg2hw.usb_measure_ctrl.min_thresh.q),
     .valid_o(),
     .fast_o(usb_fast_err),
-    .slow_o(usb_slow_err)
+    .slow_o(usb_slow_err),
+    .timeout_clk_ref_o(),
+    .ref_timeout_clk_o(usb_timeout_err)
   );
 
   logic synced_usb_err;
@@ -640,8 +706,24 @@
     .dst_pulse_o(synced_usb_err)
   );
 
+  logic synced_usb_timeout_err;
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue('0),
+    .EnSync(1'b1)
+  ) u_usb_timeout_err_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(usb_timeout_err),
+    .q_sync_o(),
+    .q_posedge_pulse_o(synced_usb_timeout_err),
+    .q_negedge_pulse_o()
+  );
+
   assign hw2reg.recov_err_code.usb_measure_err.d = 1'b1;
   assign hw2reg.recov_err_code.usb_measure_err.de = synced_usb_err;
+  assign hw2reg.recov_err_code.usb_timeout_err.d = 1'b1;
+  assign hw2reg.recov_err_code.usb_timeout_err.de = synced_usb_timeout_err;
 
 
   ////////////////////////////////////////////////////
@@ -754,15 +836,15 @@
     .q_o(clk_io_div4_peri_sw_en)
   );
 
-  lc_tx_t clk_io_div4_peri_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_io_div4_peri_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_div4_peri_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_io_div4_peri_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_io_div4_peri_scanmode)
   );
 
   logic clk_io_div4_peri_combined_en;
@@ -772,7 +854,7 @@
   ) u_clk_io_div4_peri_cg (
     .clk_i(clk_io_div4_root),
     .en_i(clk_io_div4_peri_combined_en),
-    .test_en_i(clk_io_div4_peri_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_div4_peri_scanmode)),
     .clk_o(clocks_o.clk_io_div4_peri)
   );
 
@@ -795,15 +877,15 @@
     .q_o(clk_io_div2_peri_sw_en)
   );
 
-  lc_tx_t clk_io_div2_peri_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_io_div2_peri_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_div2_peri_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_io_div2_peri_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_io_div2_peri_scanmode)
   );
 
   logic clk_io_div2_peri_combined_en;
@@ -813,7 +895,7 @@
   ) u_clk_io_div2_peri_cg (
     .clk_i(clk_io_div2_root),
     .en_i(clk_io_div2_peri_combined_en),
-    .test_en_i(clk_io_div2_peri_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_div2_peri_scanmode)),
     .clk_o(clocks_o.clk_io_div2_peri)
   );
 
@@ -836,15 +918,15 @@
     .q_o(clk_io_peri_sw_en)
   );
 
-  lc_tx_t clk_io_peri_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_io_peri_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_peri_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_io_peri_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_io_peri_scanmode)
   );
 
   logic clk_io_peri_combined_en;
@@ -854,7 +936,7 @@
   ) u_clk_io_peri_cg (
     .clk_i(clk_io_root),
     .en_i(clk_io_peri_combined_en),
-    .test_en_i(clk_io_peri_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_peri_scanmode)),
     .clk_o(clocks_o.clk_io_peri)
   );
 
@@ -877,15 +959,15 @@
     .q_o(clk_usb_peri_sw_en)
   );
 
-  lc_tx_t clk_usb_peri_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_usb_peri_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_usb_peri_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_usb_peri_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_usb_peri_scanmode)
   );
 
   logic clk_usb_peri_combined_en;
@@ -895,7 +977,7 @@
   ) u_clk_usb_peri_cg (
     .clk_i(clk_usb_root),
     .en_i(clk_usb_peri_combined_en),
-    .test_en_i(clk_usb_peri_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_usb_peri_scanmode)),
     .clk_o(clocks_o.clk_usb_peri)
   );
 
@@ -938,15 +1020,15 @@
     .q_o(clk_main_aes_hint)
   );
 
-  lc_tx_t clk_main_aes_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_main_aes_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_aes_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_main_aes_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_main_aes_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -962,7 +1044,7 @@
   ) u_clk_main_aes_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_aes_combined_en),
-    .test_en_i(clk_main_aes_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_aes_scanmode)),
     .clk_o(clocks_o.clk_main_aes)
   );
 
@@ -987,15 +1069,15 @@
     .q_o(clk_main_hmac_hint)
   );
 
-  lc_tx_t clk_main_hmac_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_main_hmac_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_hmac_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_main_hmac_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_main_hmac_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -1011,7 +1093,7 @@
   ) u_clk_main_hmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_hmac_combined_en),
-    .test_en_i(clk_main_hmac_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_hmac_scanmode)),
     .clk_o(clocks_o.clk_main_hmac)
   );
 
@@ -1036,15 +1118,15 @@
     .q_o(clk_main_kmac_hint)
   );
 
-  lc_tx_t clk_main_kmac_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_main_kmac_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_kmac_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_main_kmac_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_main_kmac_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -1060,7 +1142,7 @@
   ) u_clk_main_kmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_kmac_combined_en),
-    .test_en_i(clk_main_kmac_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_kmac_scanmode)),
     .clk_o(clocks_o.clk_main_kmac)
   );
 
@@ -1085,15 +1167,15 @@
     .q_o(clk_main_otbn_hint)
   );
 
-  lc_tx_t clk_main_otbn_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_main_otbn_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_otbn_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_main_otbn_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_main_otbn_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -1109,7 +1191,7 @@
   ) u_clk_main_otbn_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_otbn_combined_en),
-    .test_en_i(clk_main_otbn_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_main_otbn_scanmode)),
     .clk_o(clocks_o.clk_main_otbn)
   );
 
@@ -1134,15 +1216,15 @@
     .q_o(clk_io_div4_otbn_hint)
   );
 
-  lc_tx_t clk_io_div4_otbn_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t clk_io_div4_otbn_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_div4_otbn_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(clk_io_div4_otbn_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_io_div4_otbn_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -1158,7 +1240,7 @@
   ) u_clk_io_div4_otbn_cg (
     .clk_i(clk_io_div4_root),
     .en_i(clk_io_div4_otbn_combined_en),
-    .test_en_i(clk_io_div4_otbn_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(clk_io_div4_otbn_scanmode)),
     .clk_o(clocks_o.clk_io_div4_otbn)
   );
 
@@ -1185,7 +1267,7 @@
   assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_io_div4_otbn_val.d = clk_io_div4_otbn_en;
 
-  assign jitter_en_o = reg2hw.jitter_enable.q;
+  assign jitter_en_o = mubi4_test_true_loose(mubi4_t'(reg2hw.jitter_enable.q));
 
   ////////////////////////////////////////////////////
   // Exported clocks
@@ -1200,7 +1282,8 @@
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
-  `ASSERT_KNOWN(AstClkBypReqKnownO_A, ast_clk_byp_req_o)
+  `ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
+  `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
   `ASSERT_KNOWN(ClocksKownO_A, clocks_o)

@@ -235,6 +235,14 @@ package spi_device_reg_pkg;
   } spi_device_reg2hw_addr_swap_data_reg_t;
 
   typedef struct packed {
+    logic [31:0] q;
+  } spi_device_reg2hw_payload_swap_mask_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } spi_device_reg2hw_payload_swap_data_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic [7:0]  q;
     } opcode;
@@ -262,6 +270,9 @@ package spi_device_reg_pkg;
     struct packed {
       logic        q;
     } payload_dir;
+    struct packed {
+      logic        q;
+    } payload_swap_en;
     struct packed {
       logic        q;
     } upload;
@@ -520,27 +531,29 @@ package spi_device_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [1483:1477]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1476:1470]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [1469:1456]
-    spi_device_reg2hw_alert_test_reg_t alert_test; // [1455:1454]
-    spi_device_reg2hw_control_reg_t control; // [1453:1448]
-    spi_device_reg2hw_cfg_reg_t cfg; // [1447:1434]
-    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [1433:1402]
-    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [1401:1386]
-    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [1385:1370]
-    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [1369:1338]
-    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [1337:1306]
-    spi_device_reg2hw_flash_status_reg_t flash_status; // [1305:1280]
-    spi_device_reg2hw_jedec_id_reg_t jedec_id; // [1279:1256]
-    spi_device_reg2hw_read_threshold_reg_t read_threshold; // [1255:1246]
-    spi_device_reg2hw_mailbox_addr_reg_t mailbox_addr; // [1245:1214]
-    spi_device_reg2hw_upload_cmdfifo_reg_t upload_cmdfifo; // [1213:1205]
-    spi_device_reg2hw_upload_addrfifo_reg_t upload_addrfifo; // [1204:1172]
-    spi_device_reg2hw_cmd_filter_mreg_t [255:0] cmd_filter; // [1171:916]
-    spi_device_reg2hw_addr_swap_mask_reg_t addr_swap_mask; // [915:884]
-    spi_device_reg2hw_addr_swap_data_reg_t addr_swap_data; // [883:852]
-    spi_device_reg2hw_cmd_info_mreg_t [23:0] cmd_info; // [851:276]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [1571:1565]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1564:1558]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [1557:1544]
+    spi_device_reg2hw_alert_test_reg_t alert_test; // [1543:1542]
+    spi_device_reg2hw_control_reg_t control; // [1541:1536]
+    spi_device_reg2hw_cfg_reg_t cfg; // [1535:1522]
+    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [1521:1490]
+    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [1489:1474]
+    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [1473:1458]
+    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [1457:1426]
+    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [1425:1394]
+    spi_device_reg2hw_flash_status_reg_t flash_status; // [1393:1368]
+    spi_device_reg2hw_jedec_id_reg_t jedec_id; // [1367:1344]
+    spi_device_reg2hw_read_threshold_reg_t read_threshold; // [1343:1334]
+    spi_device_reg2hw_mailbox_addr_reg_t mailbox_addr; // [1333:1302]
+    spi_device_reg2hw_upload_cmdfifo_reg_t upload_cmdfifo; // [1301:1293]
+    spi_device_reg2hw_upload_addrfifo_reg_t upload_addrfifo; // [1292:1260]
+    spi_device_reg2hw_cmd_filter_mreg_t [255:0] cmd_filter; // [1259:1004]
+    spi_device_reg2hw_addr_swap_mask_reg_t addr_swap_mask; // [1003:972]
+    spi_device_reg2hw_addr_swap_data_reg_t addr_swap_data; // [971:940]
+    spi_device_reg2hw_payload_swap_mask_reg_t payload_swap_mask; // [939:908]
+    spi_device_reg2hw_payload_swap_data_reg_t payload_swap_data; // [907:876]
+    spi_device_reg2hw_cmd_info_mreg_t [23:0] cmd_info; // [875:276]
     spi_device_reg2hw_tpm_cfg_reg_t tpm_cfg; // [275:271]
     spi_device_reg2hw_tpm_access_mreg_t [4:0] tpm_access; // [270:231]
     spi_device_reg2hw_tpm_sts_reg_t tpm_sts; // [230:199]
@@ -605,30 +618,32 @@ package spi_device_reg_pkg;
   parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_FILTER_7_OFFSET = 13'h 70;
   parameter logic [BlockAw-1:0] SPI_DEVICE_ADDR_SWAP_MASK_OFFSET = 13'h 74;
   parameter logic [BlockAw-1:0] SPI_DEVICE_ADDR_SWAP_DATA_OFFSET = 13'h 78;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_0_OFFSET = 13'h 7c;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_1_OFFSET = 13'h 80;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_2_OFFSET = 13'h 84;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_3_OFFSET = 13'h 88;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_4_OFFSET = 13'h 8c;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_5_OFFSET = 13'h 90;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_6_OFFSET = 13'h 94;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_7_OFFSET = 13'h 98;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_8_OFFSET = 13'h 9c;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_9_OFFSET = 13'h a0;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_10_OFFSET = 13'h a4;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_11_OFFSET = 13'h a8;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_12_OFFSET = 13'h ac;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_13_OFFSET = 13'h b0;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_14_OFFSET = 13'h b4;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_15_OFFSET = 13'h b8;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_16_OFFSET = 13'h bc;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_17_OFFSET = 13'h c0;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_18_OFFSET = 13'h c4;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_19_OFFSET = 13'h c8;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_20_OFFSET = 13'h cc;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_21_OFFSET = 13'h d0;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_22_OFFSET = 13'h d4;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_23_OFFSET = 13'h d8;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_PAYLOAD_SWAP_MASK_OFFSET = 13'h 7c;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_PAYLOAD_SWAP_DATA_OFFSET = 13'h 80;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_0_OFFSET = 13'h 84;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_1_OFFSET = 13'h 88;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_2_OFFSET = 13'h 8c;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_3_OFFSET = 13'h 90;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_4_OFFSET = 13'h 94;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_5_OFFSET = 13'h 98;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_6_OFFSET = 13'h 9c;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_7_OFFSET = 13'h a0;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_8_OFFSET = 13'h a4;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_9_OFFSET = 13'h a8;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_10_OFFSET = 13'h ac;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_11_OFFSET = 13'h b0;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_12_OFFSET = 13'h b4;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_13_OFFSET = 13'h b8;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_14_OFFSET = 13'h bc;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_15_OFFSET = 13'h c0;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_16_OFFSET = 13'h c4;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_17_OFFSET = 13'h c8;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_18_OFFSET = 13'h cc;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_19_OFFSET = 13'h d0;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_20_OFFSET = 13'h d4;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_21_OFFSET = 13'h d8;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_22_OFFSET = 13'h dc;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CMD_INFO_23_OFFSET = 13'h e0;
   parameter logic [BlockAw-1:0] SPI_DEVICE_TPM_CAP_OFFSET = 13'h 800;
   parameter logic [BlockAw-1:0] SPI_DEVICE_TPM_CFG_OFFSET = 13'h 804;
   parameter logic [BlockAw-1:0] SPI_DEVICE_TPM_STATUS_OFFSET = 13'h 808;
@@ -707,6 +722,8 @@ package spi_device_reg_pkg;
     SPI_DEVICE_CMD_FILTER_7,
     SPI_DEVICE_ADDR_SWAP_MASK,
     SPI_DEVICE_ADDR_SWAP_DATA,
+    SPI_DEVICE_PAYLOAD_SWAP_MASK,
+    SPI_DEVICE_PAYLOAD_SWAP_DATA,
     SPI_DEVICE_CMD_INFO_0,
     SPI_DEVICE_CMD_INFO_1,
     SPI_DEVICE_CMD_INFO_2,
@@ -749,7 +766,7 @@ package spi_device_reg_pkg;
   } spi_device_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] SPI_DEVICE_PERMIT [70] = '{
+  parameter logic [3:0] SPI_DEVICE_PERMIT [72] = '{
     4'b 0001, // index[ 0] SPI_DEVICE_INTR_STATE
     4'b 0001, // index[ 1] SPI_DEVICE_INTR_ENABLE
     4'b 0001, // index[ 2] SPI_DEVICE_INTR_TEST
@@ -781,45 +798,47 @@ package spi_device_reg_pkg;
     4'b 1111, // index[28] SPI_DEVICE_CMD_FILTER_7
     4'b 1111, // index[29] SPI_DEVICE_ADDR_SWAP_MASK
     4'b 1111, // index[30] SPI_DEVICE_ADDR_SWAP_DATA
-    4'b 1111, // index[31] SPI_DEVICE_CMD_INFO_0
-    4'b 1111, // index[32] SPI_DEVICE_CMD_INFO_1
-    4'b 1111, // index[33] SPI_DEVICE_CMD_INFO_2
-    4'b 1111, // index[34] SPI_DEVICE_CMD_INFO_3
-    4'b 1111, // index[35] SPI_DEVICE_CMD_INFO_4
-    4'b 1111, // index[36] SPI_DEVICE_CMD_INFO_5
-    4'b 1111, // index[37] SPI_DEVICE_CMD_INFO_6
-    4'b 1111, // index[38] SPI_DEVICE_CMD_INFO_7
-    4'b 1111, // index[39] SPI_DEVICE_CMD_INFO_8
-    4'b 1111, // index[40] SPI_DEVICE_CMD_INFO_9
-    4'b 1111, // index[41] SPI_DEVICE_CMD_INFO_10
-    4'b 1111, // index[42] SPI_DEVICE_CMD_INFO_11
-    4'b 1111, // index[43] SPI_DEVICE_CMD_INFO_12
-    4'b 1111, // index[44] SPI_DEVICE_CMD_INFO_13
-    4'b 1111, // index[45] SPI_DEVICE_CMD_INFO_14
-    4'b 1111, // index[46] SPI_DEVICE_CMD_INFO_15
-    4'b 1111, // index[47] SPI_DEVICE_CMD_INFO_16
-    4'b 1111, // index[48] SPI_DEVICE_CMD_INFO_17
-    4'b 1111, // index[49] SPI_DEVICE_CMD_INFO_18
-    4'b 1111, // index[50] SPI_DEVICE_CMD_INFO_19
-    4'b 1111, // index[51] SPI_DEVICE_CMD_INFO_20
-    4'b 1111, // index[52] SPI_DEVICE_CMD_INFO_21
-    4'b 1111, // index[53] SPI_DEVICE_CMD_INFO_22
-    4'b 1111, // index[54] SPI_DEVICE_CMD_INFO_23
-    4'b 0111, // index[55] SPI_DEVICE_TPM_CAP
-    4'b 0001, // index[56] SPI_DEVICE_TPM_CFG
-    4'b 0011, // index[57] SPI_DEVICE_TPM_STATUS
-    4'b 1111, // index[58] SPI_DEVICE_TPM_ACCESS_0
-    4'b 0001, // index[59] SPI_DEVICE_TPM_ACCESS_1
-    4'b 1111, // index[60] SPI_DEVICE_TPM_STS
-    4'b 1111, // index[61] SPI_DEVICE_TPM_INTF_CAPABILITY
-    4'b 1111, // index[62] SPI_DEVICE_TPM_INT_ENABLE
-    4'b 0001, // index[63] SPI_DEVICE_TPM_INT_VECTOR
-    4'b 1111, // index[64] SPI_DEVICE_TPM_INT_STATUS
-    4'b 1111, // index[65] SPI_DEVICE_TPM_DID_VID
-    4'b 0001, // index[66] SPI_DEVICE_TPM_RID
-    4'b 1111, // index[67] SPI_DEVICE_TPM_CMD_ADDR
-    4'b 0001, // index[68] SPI_DEVICE_TPM_READ_FIFO
-    4'b 0001  // index[69] SPI_DEVICE_TPM_WRITE_FIFO
+    4'b 1111, // index[31] SPI_DEVICE_PAYLOAD_SWAP_MASK
+    4'b 1111, // index[32] SPI_DEVICE_PAYLOAD_SWAP_DATA
+    4'b 1111, // index[33] SPI_DEVICE_CMD_INFO_0
+    4'b 1111, // index[34] SPI_DEVICE_CMD_INFO_1
+    4'b 1111, // index[35] SPI_DEVICE_CMD_INFO_2
+    4'b 1111, // index[36] SPI_DEVICE_CMD_INFO_3
+    4'b 1111, // index[37] SPI_DEVICE_CMD_INFO_4
+    4'b 1111, // index[38] SPI_DEVICE_CMD_INFO_5
+    4'b 1111, // index[39] SPI_DEVICE_CMD_INFO_6
+    4'b 1111, // index[40] SPI_DEVICE_CMD_INFO_7
+    4'b 1111, // index[41] SPI_DEVICE_CMD_INFO_8
+    4'b 1111, // index[42] SPI_DEVICE_CMD_INFO_9
+    4'b 1111, // index[43] SPI_DEVICE_CMD_INFO_10
+    4'b 1111, // index[44] SPI_DEVICE_CMD_INFO_11
+    4'b 1111, // index[45] SPI_DEVICE_CMD_INFO_12
+    4'b 1111, // index[46] SPI_DEVICE_CMD_INFO_13
+    4'b 1111, // index[47] SPI_DEVICE_CMD_INFO_14
+    4'b 1111, // index[48] SPI_DEVICE_CMD_INFO_15
+    4'b 1111, // index[49] SPI_DEVICE_CMD_INFO_16
+    4'b 1111, // index[50] SPI_DEVICE_CMD_INFO_17
+    4'b 1111, // index[51] SPI_DEVICE_CMD_INFO_18
+    4'b 1111, // index[52] SPI_DEVICE_CMD_INFO_19
+    4'b 1111, // index[53] SPI_DEVICE_CMD_INFO_20
+    4'b 1111, // index[54] SPI_DEVICE_CMD_INFO_21
+    4'b 1111, // index[55] SPI_DEVICE_CMD_INFO_22
+    4'b 1111, // index[56] SPI_DEVICE_CMD_INFO_23
+    4'b 0111, // index[57] SPI_DEVICE_TPM_CAP
+    4'b 0001, // index[58] SPI_DEVICE_TPM_CFG
+    4'b 0011, // index[59] SPI_DEVICE_TPM_STATUS
+    4'b 1111, // index[60] SPI_DEVICE_TPM_ACCESS_0
+    4'b 0001, // index[61] SPI_DEVICE_TPM_ACCESS_1
+    4'b 1111, // index[62] SPI_DEVICE_TPM_STS
+    4'b 1111, // index[63] SPI_DEVICE_TPM_INTF_CAPABILITY
+    4'b 1111, // index[64] SPI_DEVICE_TPM_INT_ENABLE
+    4'b 0001, // index[65] SPI_DEVICE_TPM_INT_VECTOR
+    4'b 1111, // index[66] SPI_DEVICE_TPM_INT_STATUS
+    4'b 1111, // index[67] SPI_DEVICE_TPM_DID_VID
+    4'b 0001, // index[68] SPI_DEVICE_TPM_RID
+    4'b 1111, // index[69] SPI_DEVICE_TPM_CMD_ADDR
+    4'b 0001, // index[70] SPI_DEVICE_TPM_READ_FIFO
+    4'b 0001  // index[71] SPI_DEVICE_TPM_WRITE_FIFO
   };
 
 endpackage

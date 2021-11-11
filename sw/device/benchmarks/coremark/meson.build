@@ -62,6 +62,15 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     kwargs: bin_to_vmem64_custom_target_args,
   )
 
+  coremark_top_earlgrey_scr_vmem64 = custom_target(
+    target_name.format('scrambled'),
+    input: coremark_top_earlgrey_vmem64,
+    output: flash_image_outputs,
+    command: flash_image_command,
+    depend_files: flash_image_depend_files,
+    build_by_default: true,
+  )
+
   custom_target(
     target_name.format('export'),
     command: export_target_command,

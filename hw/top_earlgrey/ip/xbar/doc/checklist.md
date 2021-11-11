@@ -78,6 +78,14 @@ Review        | Signoff date            | Done        | 2019-11-04
 [FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga-timing" >}}
 [SEC_CM_DOCUMENTED]:   {{<relref "/doc/project/checklist.md#sec-cm-implemented" >}}
 
+### D2S
+
+ Type         | Item                    | Resolution  | Note/Collaterals
+--------------|-------------------------|-------------|------------------
+Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
+
+[SEC_CM_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+
 ### D3
 
  Type         | Item                    | Resolution  | Note/Collaterals
@@ -92,7 +100,6 @@ Review        | [REVIEW_SW_CSR][]       | N/A         |
 Review        | [REVIEW_SW_FATAL_ERR][] | Done        |
 Review        | [REVIEW_SW_CHANGE][]    | N/A         |
 Review        | [REVIEW_SW_ERRATA][]    | Done        |
-Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
 Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
 Security      | [SEC_SHADOW_REGS][]     | Not Started |
 Review        | Reviewer(s)             | Done        | @weicaiyang @tjaychen
@@ -109,7 +116,6 @@ Review        | Signoff date            | Done        | 2019-11-07
 [REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review-sw-fatal-err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review-sw-change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review-sw-errata" >}}
-[SEC_CM_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
 [SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
 [SEC_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
 
@@ -213,6 +219,14 @@ Review        | Signoff date                            | Done        | 2019-11-
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all_low_priority_issues_root_caused" >}}
 [DV_DOC_TESTPLAN_REVIEWED]:           {{<relref "/doc/project/checklist.md#dv_doc_testplan_reviewed" >}}
 [V3_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v3_checklist_scoped" >}}
+
+### V2S
+
+ Type         | Item                                    | Resolution  | Note/Collaterals
+--------------|-----------------------------------------|-------------|------------------
+Tests         | [SEC_CM_VERIFIED][]                     | Not Started |
+
+[SEC_CM_VERIFIED]:                    {{<relref "/doc/project/checklist.md#sec_cm_verified" >}}
 
 ### V3
 

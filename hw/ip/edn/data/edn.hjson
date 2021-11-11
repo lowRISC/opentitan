@@ -9,9 +9,6 @@
   interrupt_list: [
     { name: "edn_cmd_req_done"
       desc: "Asserted when a software CSRNG request has completed."}
-// TODO: add intrp
-//    { name: "edn_ebus_check_failed"
-//      desc: "Asserted when the entropy bus integrity check has failed."}
     { name: "edn_fatal_err"
       desc: "Asserted when a FIFO error occurs."}
   ],
@@ -82,41 +79,46 @@
      fields: [
         { bits: "3:0",
           name: "EDN_ENABLE",
+          mubi: true,
           desc: '''
-                Setting this field to 0xA enables the EDN module.
+                Setting this field to kMultiBitBool4True enables the EDN module.
                  '''
-          resval: "0x5"
+          resval: false
         },
         { bits: "7:4",
           name: "BOOT_REQ_MODE",
+          mubi: true,
           desc: '''
-                Setting this field to 0xA will enable the feature where the EDN block will
-                automatically send a boot-time request to the CSRNG application interface.
+                Setting this field to kMultiBitBool4True will enable the feature where the EDN block
+                will automatically send a boot-time request to the CSRNG application interface.
                 The purpose of this feature is to request entropy as fast as possible after reset,
                 and during chip boot-time.
                  '''
-          resval: "0x5"
+          resval: false
         },
         { bits: "11:8",
           name: "AUTO_REQ_MODE",
+          mubi: true,
           desc: '''
-                Setting this field to 0xA will enable the EDN block to automatically send another
-                request to CSRNG application interface. It is assumed that the command has been
-                set up ahead of time, such that when the previous command has returned ack, then
-                a new command will be send out again without software intervention. It is expected
-                that the generate command will be sent repeatedly so that a continuous supply of
-                entropy can be delivered to the endpoints.
+                Setting this field to kMultiBitBool4True will enable the EDN block to automatically
+                send another request to CSRNG application interface. It is assumed that the command
+                has been set up ahead of time, such that when the previous command has returned ack,
+                then a new command will be send out again without software intervention. It is
+                expected that the generate command will be sent repeatedly so that a continuous
+                supply of entropy can be delivered to the endpoints.
                  '''
-          resval: "0x5"
+          resval: false
         },
         { bits: "15:12",
           name: "CMD_FIFO_RST",
+          mubi: true,
           desc: '''
-                Setting this field to 0xA  clears the three command FIFOs: the SW_CMD_REQ FIFO, the
-                RESEED_CMD FIFO, and the GENERATE_CMD FIFO. This field must be set to the reset
-                state by software before any further commands can be issued to these FIFOs.
+                Setting this field to kMultiBitBool4True clears the three command FIFOs: the
+                SW_CMD_REQ FIFO, the RESEED_CMD FIFO, and the GENERATE_CMD FIFO. This field must be
+                set to the reset state by software before any further commands can be issued to
+                these FIFOs.
                 '''
-          resval: "0x5"
+          resval: false
         },
       ]
     },
@@ -331,8 +333,7 @@
           name: "EDN_ACK_SM_ERR",
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
-                EDN ack stage state machine. This error will signal a fatal alert, and also
-                an interrupt if enabled.
+                EDN ack stage state machine. This error will signal a fatal alert.
                 This bit will stay set until firmware clears it.
                 '''
         }
@@ -340,8 +341,15 @@
           name: "EDN_MAIN_SM_ERR",
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
-                EDN main stage state machine. This error will signal a fatal alert, and also
-                an interrupt if enabled.
+                EDN main stage state machine. This error will signal a fatal alert.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "22",
+          name: "EDN_CNTR_ERR",
+          desc: '''
+                This bit will be set to one when a hardened counter has detected an error
+                condition. This error will signal a fatal alert.
                 This bit will stay set until firmware clears it.
                 '''
         }
