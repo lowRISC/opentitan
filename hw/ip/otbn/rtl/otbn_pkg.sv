@@ -398,24 +398,13 @@ package otbn_pkg;
     OtbnStartStopSecureWipeComplete
   } otbn_start_stop_state_e;
 
-  // URNG PRNG default LFSR seed and permutation
-  // A single default seed is split into 64 bit chunks, a separate LFSR is used for each chunk. All
-  // LFSR chunks use the same permutation.
-  // These LFSR parameters have been generated with
+  // URNG PRNG default seed.
+  // These parameters have been generated with
   // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 2840984437 --prefix "Urnd"
-  parameter int UrndLfsrWidth = 256;
-  typedef logic [UrndLfsrWidth-1:0] urnd_lfsr_seed_t;
-  parameter urnd_lfsr_seed_t RndCnstUrndLfsrSeedDefault =
+  parameter int UrndPrngWidth = 256;
+  typedef logic [UrndPrngWidth-1:0] urnd_prng_seed_t;
+  parameter urnd_prng_seed_t RndCnstUrndPrngSeedDefault =
       256'h84ddfadaf7e1134d70aa1c59de6197ff25a4fe335d095f1e2cba89acbe4a07e9;
-
-  // These LFSR parameters have been generated with
-  // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 2840984437 --prefix "UrndChunk"
-  parameter int UrndChunkLfsrWidth = 64;
-  typedef logic [UrndChunkLfsrWidth-1:0][$clog2(UrndChunkLfsrWidth)-1:0] urnd_chunk_lfsr_perm_t;
-  parameter urnd_chunk_lfsr_perm_t RndCnstUrndChunkLfsrPermDefault = {
-    128'h911992e063cafd4f3b13ee5682b969be,
-    256'h86c701ecc39d9d483bdcacb5a15340b0988e2336e955ddd0dc01ab17e173726e
-  };
 
   parameter otp_ctrl_pkg::otbn_key_t RndCnstOtbnKeyDefault =
       128'h14e8cecae3040d5e12286bb3cc113298;

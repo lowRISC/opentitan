@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:util
       - lowrisc:prim:lfsr
+      - lowrisc:prim:xoshiro256pp
       - lowrisc:prim:cipher_pkg
       - lowrisc:prim:mubi
       - lowrisc:ip:edn_pkg

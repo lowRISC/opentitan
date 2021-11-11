@@ -16,9 +16,8 @@ module otbn
   parameter regfile_e             RegFile      = RegFileFF,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
 
-  // Default seed and permutation for URND LFSR
-  parameter urnd_lfsr_seed_t       RndCnstUrndLfsrSeed      = RndCnstUrndLfsrSeedDefault,
-  parameter urnd_chunk_lfsr_perm_t RndCnstUrndChunkLfsrPerm = RndCnstUrndChunkLfsrPermDefault,
+  // Default seed for URND PRNG
+  parameter urnd_prng_seed_t       RndCnstUrndPrngSeed      = RndCnstUrndPrngSeedDefault,
 
   // Default seed and nonce for scrambling
   parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = RndCnstOtbnKeyDefault,
@@ -835,8 +834,7 @@ module otbn
       .RegFile(RegFile),
       .DmemSizeByte(DmemSizeByte),
       .ImemSizeByte(ImemSizeByte),
-      .RndCnstUrndLfsrSeed(RndCnstUrndLfsrSeed),
-      .RndCnstUrndChunkLfsrPerm(RndCnstUrndChunkLfsrPerm)
+      .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
     ) u_otbn_core (
       .clk_i,
       .rst_ni                 (rst_n),
@@ -885,8 +883,7 @@ module otbn
       .RegFile(RegFile),
       .DmemSizeByte(DmemSizeByte),
       .ImemSizeByte(ImemSizeByte),
-      .RndCnstUrndLfsrSeed(RndCnstUrndLfsrSeed),
-      .RndCnstUrndChunkLfsrPerm(RndCnstUrndChunkLfsrPerm)
+      .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
     ) u_otbn_core (
       .clk_i,
       .rst_ni                 (rst_n),

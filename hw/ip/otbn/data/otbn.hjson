@@ -25,21 +25,13 @@
       local:   "false",
       expose:  "true"
     },
-    { name:    "RndCnstUrndLfsrSeed",
-      type:    "otbn_pkg::urnd_lfsr_seed_t",
+    { name:    "RndCnstUrndPrngSeed",
+      type:    "otbn_pkg::urnd_prng_seed_t",
       desc:    '''
         Default seed of the PRNG used for URND.
       '''
       randcount: "256",
       randtype:  "data"
-    },
-    { name:    "RndCnstUrndChunkLfsrPerm",
-      type:    "otbn_pkg::urnd_chunk_lfsr_perm_t",
-      desc:    '''
-        Permutation applied to the LFSR chunks of the PRNG used for URND.
-      '''
-      randcount: "64",
-      randtype:  "perm"
     },
     { name: "RndCnstOtbnKey",
       type: "otp_ctrl_pkg::otbn_key_t",
