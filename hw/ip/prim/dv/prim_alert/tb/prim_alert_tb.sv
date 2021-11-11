@@ -39,6 +39,9 @@ module prim_alert_tb;
   // The main concern here is the minimal wait cycles between each handshake.
   localparam int  MinHandshakeWait = 2 + WaitCycle;
 
+  // Clock cycles for alert init handshake to finish.
+  localparam int  WaitAlertInitDone = 20;
+
   typedef enum bit [3:0]{
     AlertSet,
     AlertAckSet,
@@ -203,10 +206,7 @@ module prim_alert_tb;
     main_clk.apply_reset();
 
     // Wait for initialization sequence to end
-    // This should take no more than 20 cycles
-    // if the sender / receiver clocks are on
-    // the same clock domain.
-    main_clk.wait_clks(20);
+    main_clk.wait_clks(WaitAlertInitDone);
 
     // Sequence 1). Alert request sequence.
     main_clk.wait_clks($urandom_range(0, 10));
@@ -230,6 +230,7 @@ module prim_alert_tb;
       main_clk.wait_clks(1);
       check_alert_handshake(.exp_ping_value(0));
       main_clk.apply_reset();
+      main_clk.wait_clks(WaitAlertInitDone);
     end
     $display("Alert request sequence finished!");
 
