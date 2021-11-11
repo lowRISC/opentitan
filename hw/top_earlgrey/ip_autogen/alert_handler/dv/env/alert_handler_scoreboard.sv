@@ -402,17 +402,18 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         alert_pkg::alert_crashdump_t crashdump_val =
             alert_pkg::alert_crashdump_t'(cfg.crashdump_vif.sample());
 
-        // If crashdump reached the phase programmed at `crashdump_trigger_shadowed`, `crashdump_o`
-        // value should keep stable until reset.
-        if (crashdump_triggered) begin
-          `uvm_fatal(`gfn, "crashdump value should not change after trigger condition is reached!")
-        end
-
         // Wait two negedge clock cycles to make sure csr mirrored values are updated.
         `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_n_clks(2);, wait (cfg.under_reset == 1);)
 
         if (!cfg.under_reset) begin
-          foreach (crashdump_val.class_esc_state[i]) begin
+          // If crashdump reached the phase programmed at `crashdump_trigger_shadowed`,
+          // `crashdump_o` value should keep stable until reset.
+          if (crashdump_triggered) begin
+            `uvm_fatal(`gfn,
+                       "crashdump value should not change after trigger condition is reached!")
+          end
+
+        foreach (crashdump_val.class_esc_state[i]) begin
             uvm_reg crashdump_trigger_csr = ral.get_reg_by_name(
                     $sformatf("class%0s_crashdump_trigger_shadowed", class_name[i]));
             if (crashdump_val.class_esc_state[i] == (`gmv(crashdump_trigger_csr) + 3'b100)) begin
