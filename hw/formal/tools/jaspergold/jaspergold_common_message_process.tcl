@@ -11,6 +11,11 @@ set_message -error VERI-9030
 # Error out when a parameter is defined twice for an instance
 set_message -error VERI-1402
 
+# Downgrade the enum cast error to warnings.
+# For example: JasperGold will throw an error and terminate if design assign an int to an enum
+# type.
+set_message -warning VERI-1348
+
 # Disabling warnings:
 # We use parameter instead of localparam in packages to allow redefinition
 # at elaboration time.
