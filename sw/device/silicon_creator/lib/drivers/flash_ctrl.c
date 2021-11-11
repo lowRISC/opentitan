@@ -7,7 +7,9 @@
 #include <assert.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
@@ -26,7 +28,14 @@ static_assert(kFlashCtrlPartitionInfo2 >> 1 == 2,
               "Incorrect enum value for kFlashCtrlRegionInfo2");
 
 enum {
+  /**
+   * Base address of the flash_ctrl registers.
+   */
   kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
+  /**
+   * Base address of the flash memory.
+   */
+  kMemBase = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
 };
 
 /**
@@ -201,8 +210,7 @@ static uint32_t info_page_addr(flash_ctrl_info_page_t info_page) {
       bitfield_bit32_read(info_page, FLASH_CTRL_INFO_PAGE_BIT_BANK);
   const uint32_t page_index =
       bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_INDEX);
-  return TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-         bank_index * FLASH_CTRL_PARAM_BYTES_PER_BANK +
+  return kMemBase + bank_index * FLASH_CTRL_PARAM_BYTES_PER_BANK +
          page_index * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
 }
 
@@ -308,4 +316,71 @@ rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
 void flash_ctrl_exec_set(flash_ctrl_exec_t enable) {
   // Enable or disable flash execution.
   abs_mmio_write32(kBase + FLASH_CTRL_EXEC_REG_OFFSET, (uint32_t)enable);
+}
+
+/**
+ * A struct for storing config and config write-enable register addresses of an
+ * info page.
+ */
+typedef struct info_cfg_regs {
+  /**
+   * Config write-enable register address.
+   */
+  uint32_t cfg_wen_addr;
+  /**
+   * Config register address.
+   */
+  uint32_t cfg_addr;
+} info_cfg_regs_t;
+
+/**
+ * Returns config and config write-enable register addresses of an info page.
+ *
+ * Note: This function only supports info pages of type 0.
+ *
+ * @param info_page An info page.
+ * @return Config and config write-enable register addresses of the info page.
+ */
+static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
+  // For each bank and info page type, there are N config regwen registers
+  // followed by N config registers, where N is the number pages available for
+  // the info page type. These "blocks" of registers are mapped to a contiguous
+  // address space by bank number starting with config regwen registers for page
+  // 0-9, type 0, bank 0, followed by config registers for page 0-9, type 0,
+  // bank 0, and so on.
+  enum {
+    kBankOffset = FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET -
+                  FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET,
+    kPageOffset = sizeof(uint32_t),
+  };
+  const uint32_t bank_index =
+      bitfield_bit32_read(info_page, FLASH_CTRL_INFO_PAGE_BIT_BANK);
+  const uint32_t page_index =
+      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_INDEX);
+  const uint32_t pre_addr =
+      kBase + bank_index * kBankOffset + page_index * kPageOffset;
+  return (info_cfg_regs_t){
+      .cfg_wen_addr = pre_addr + FLASH_CTRL_BANK0_INFO0_REGWEN_0_REG_OFFSET,
+      .cfg_addr =
+          pre_addr + FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET,
+  };
+}
+
+void flash_ctrl_info_mp_set(flash_ctrl_info_page_t info_page,
+                            flash_ctrl_mp_t perms) {
+  const uint32_t addr = info_cfg_regs(info_page).cfg_addr;
+  // Read first to preserve ECC, scrambling, and high endurance bits.
+  uint32_t reg = sec_mmio_read32(addr);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_EN_0_BIT, true);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_RD_EN_0_BIT,
+      perms.read == kHardenedBoolTrue);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_PROG_EN_0_BIT,
+      perms.write == kHardenedBoolTrue);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ERASE_EN_0_BIT,
+      perms.erase == kHardenedBoolTrue);
+  sec_mmio_write32_shadowed(addr, reg);
 }
