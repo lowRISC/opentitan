@@ -5,6 +5,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_FLASH_CTRL_H_
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -282,6 +283,36 @@ rom_error_t flash_ctrl_data_erase(uint32_t addr,
  */
 rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
                                   flash_ctrl_erase_type_t erase_type);
+
+/**
+ * A struct for specifying access permissions.
+ */
+typedef struct flash_ctrl_mp {
+  /**
+   * Read.
+   */
+  hardened_bool_t read;
+  /**
+   * Write.
+   */
+  hardened_bool_t write;
+  /**
+   * Erase.
+   */
+  hardened_bool_t erase;
+} flash_ctrl_mp_t;
+
+/**
+ * Sets access permissions for an info page.
+ *
+ * A permission is enabled only if the corresponding field in `perms` is
+ * `kHardenedBoolTrue`.
+ *
+ * @param info_page An information page.
+ * @param perms New permissions.
+ */
+void flash_ctrl_info_mp_set(flash_ctrl_info_page_t info_page,
+                            flash_ctrl_mp_t perms);
 
 typedef enum flash_ctrl_exec {
   kFlashCtrlExecDisable = kMultiBitBool4False,
