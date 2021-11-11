@@ -60,6 +60,11 @@
       run_opts: ["+test_timeout_ns=1000000"]
     }
     {
+      name: pwrmgr_reset
+      uvm_test_seq: pwrmgr_reset_vseq
+      run_opts: ["+test_timeout_ns=1000000"]
+    }
+    {
       name: pwrmgr_wakeup
       uvm_test_seq: pwrmgr_wakeup_vseq
       run_opts: ["+test_timeout_ns=1000000"]

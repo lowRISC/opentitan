@@ -156,7 +156,7 @@
              conditional resets inputs.
             '''
       milestone: V2
-      tests: []
+      tests: ["pwrmgr_reset"]
     }
     {
       name: main_power_glitch_reset
@@ -166,7 +166,7 @@
             A power glitch causes an unconditional reset.
 
             **Stimulus**:
-            - Set the input from AST indicating a main power glitch.
+            - Set the rst_main_ni input low indicating a main power glitch.
 
             **Checks**:
             - Waits for fast fsm to become active reading `ctrl_cfg_regwen`
@@ -174,11 +174,10 @@
             - Checks the `reset_status` CSRs.
             - Checks `ip_clk_en` output has a low transition.
             - Checks the output `pwr_rst_req.reset_cause` matches HwReq.
-            - Checks the output `pwr_rst_req.rstreqs` matches the enabled
-              resets.
+            - Checks the output `pwr_rst_req.rstreqs` matches power glitch.
             '''
       milestone: V2
-      tests: []
+      tests: ["pwrmgr_reset"]
     }
     {
       name: reset_wakeup_race

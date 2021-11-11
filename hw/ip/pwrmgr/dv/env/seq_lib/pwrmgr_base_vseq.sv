@@ -20,32 +20,39 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   localparam int MaxCyclesBeforeEnable = 6;
 
-
   // Random wakeups and resets.
-  rand wakeups_t wakeups;
-  rand resets_t resets;
+  rand wakeups_t         wakeups;
+  rand wakeups_t         wakeups_en;
+  rand resets_t          resets;
+  rand resets_t          resets_en;
+
+  rand bit               disable_wakeup_capture;
+
+  // Random control enables.
+  rand control_enables_t control_enables;
 
   // Random delays.
-  rand int cycles_before_pwrok;
-  rand int cycles_before_clks_ok;
-  rand int cycles_between_clks_ok;
-  rand int cycles_before_io_status;
-  rand int cycles_before_main_status;
-  rand int cycles_before_usb_status;
-  rand int cycles_before_rst_lc_src;
-  rand int cycles_before_rst_sys_src;
-  rand int cycles_before_otp_done;
-  rand int cycles_before_lc_done;
-  rand int cycles_before_wakeup;
-  rand int cycles_before_core_clk_en;
-  rand int cycles_before_io_clk_en;
-  rand int cycles_before_usb_clk_en;
-  rand int cycles_before_main_pok;
+  rand int               cycles_before_pwrok;
+  rand int               cycles_before_clks_ok;
+  rand int               cycles_between_clks_ok;
+  rand int               cycles_before_io_status;
+  rand int               cycles_before_main_status;
+  rand int               cycles_before_usb_status;
+  rand int               cycles_before_rst_lc_src;
+  rand int               cycles_before_rst_sys_src;
+  rand int               cycles_before_otp_done;
+  rand int               cycles_before_lc_done;
+  rand int               cycles_before_wakeup;
+  rand int               cycles_before_reset;
+  rand int               cycles_before_core_clk_en;
+  rand int               cycles_before_io_clk_en;
+  rand int               cycles_before_usb_clk_en;
+  rand int               cycles_before_main_pok;
 
   // This tracks the local objection count from these responders. We do not use UVM
   // objections because uvm_objection::wait_for(UVM_ALL_DROPPED, this) seems to wait
   // for all objections to be dropped, not just those raised by this.
-  local int objection_count = 0;
+  local int              objection_count            = 0;
 
   constraint cycles_before_pwrok_c {cycles_before_pwrok inside {[3 : 10]};}
   constraint cycles_before_clks_ok_c {cycles_before_clks_ok inside {[3 : 10]};}
@@ -58,6 +65,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   constraint cycles_before_otp_done_base_c {cycles_before_otp_done inside {[0 : 4]};}
   constraint cycles_before_lc_done_base_c {cycles_before_lc_done inside {[0 : 4]};}
   constraint cycles_before_wakeup_c {cycles_before_wakeup inside {[2 : 6]};}
+  constraint cycles_before_reset_c {cycles_before_reset inside {[2 : 6]};}
   constraint cycles_before_core_clk_en_c {
     cycles_before_core_clk_en inside {[0 : MaxCyclesBeforeEnable]};
   }
@@ -77,13 +85,23 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   task pre_start();
     if (do_pwrmgr_init) pwrmgr_init();
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
-    if (sequence_depth == 0) begin
-      `uvm_info(`gfn, "Starting responders", UVM_MEDIUM)
-      slow_responder();
-      fast_responder();
-    end
-    ++sequence_depth;
-    super.pre_start();
+    fork
+      // Toggle rst_main_n to make sure the slow fsm resets correctly, and wait some cycles
+      // so testing doesn't start until the side-effects are cleared.
+      begin
+        cfg.pwrmgr_vif.glitch_power_reset();
+        cfg.slow_clk_rst_vif.wait_clks(7);
+      end
+      begin
+        if (sequence_depth == 0) begin
+          `uvm_info(`gfn, "Starting responders", UVM_MEDIUM)
+          slow_responder();
+          fast_responder();
+        end
+        ++sequence_depth;
+        super.pre_start();
+      end
+    join
   endtask
 
   task post_apply_reset(string reset_kind = "HARD");
@@ -301,6 +319,25 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_rstmgr_sva_vif.disable_sva = !enable;
   endfunction
 
+  // Updates control CSR enables.
+  task update_control_enables(bit low_power_hint);
+    ral.control.core_clk_en.set(control_enables.core_clk_en);
+    ral.control.io_clk_en.set(control_enables.io_clk_en);
+    ral.control.usb_clk_en_lp.set(control_enables.usb_clk_en_lp);
+    ral.control.usb_clk_en_active.set(control_enables.usb_clk_en_active);
+    ral.control.main_pd_n.set(control_enables.main_pd_n);
+    ral.control.low_power_hint.set(low_power_hint);
+    // Disable assertions when main power is down.
+    control_assertions(control_enables.main_pd_n);
+    `uvm_info(`gfn, $sformatf(
+              "Setting control CSR to 0x%x, enables=%p, low_power_hint=%b",
+              ral.control.get(),
+              control_enables,
+              1'b1
+              ), UVM_MEDIUM)
+    csr_update(.csr(ral.control));
+  endtask
+
   // This enables the fast fsm to transition to low power after the transition is enabled by
   // software and cpu WFI.
   // FIXME Allow some units not being idle to defeat or postpone transition to low power.
@@ -325,15 +362,31 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("Observed reset cause_match 0x%x", cause), UVM_MEDIUM)
   endtask
 
-  task wait_for_reset_status_clear();
-    csr_spinwait(.ptr(ral.reset_status[0]), .exp_data('0), .timeout_ns(ActiveTimeoutInNanoSeconds));
-    `uvm_info(`gfn, "pwrmgr reset_status CSR cleared", UVM_MEDIUM)
-  endtask
-
   task wait_for_csr_to_propagate_to_slow_domain();
     csr_wr(.ptr(ral.cfg_cdc_sync), .value(1'b1));
     csr_spinwait(.ptr(ral.cfg_cdc_sync), .exp_data(1'b0),
                  .timeout_ns(PropagationToSlowTimeoutInNanoSeconds));
     `uvm_info(`gfn, "CSR updates made it to the slow domain", UVM_MEDIUM)
   endtask
+
+  // Checks the reset_status CSR matches expectations.
+  task check_reset_status(resets_t enabled_resets);
+    csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(enabled_resets),
+                 .err_msg("reset_status"));
+  endtask
+
+  // Checks the wake_info matches expectations depending on capture disable.
+  task check_wake_info(wakeups_t enabled_wakeups, bit fall_through, bit abort);
+
+    if (disable_wakeup_capture) begin
+      csr_rd_check(.ptr(ral.wake_info.reasons), .compare_value('0),
+                   .err_msg("With capture disabled"));
+    end else begin
+      csr_rd_check(.ptr(ral.wake_info.reasons), .compare_value(enabled_wakeups),
+                   .err_msg("With capture enabled"));
+    end
+    csr_rd_check(.ptr(ral.wake_info.fall_through), .compare_value(fall_through));
+    csr_rd_check(.ptr(ral.wake_info.abort), .compare_value(abort));
+  endtask
+
 endclass : pwrmgr_base_vseq

@@ -15,6 +15,8 @@ interface pwrmgr_if (
 
   // Ports to the dut side.
 
+  logic                                                              rst_main_n;
+
   pwrmgr_pkg::pwr_ast_req_t                                          pwr_ast_req;
   pwrmgr_pkg::pwr_ast_rsp_t                                          pwr_ast_rsp;
 
@@ -62,7 +64,7 @@ interface pwrmgr_if (
   logic                             [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
   logic                             [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
 
-  // Internal signals.
+  // Internal DUT signals.
 `ifndef PATO_TO_DUT
   `define PATH_TO_DUT tb.dut
 `endif
@@ -88,6 +90,9 @@ interface pwrmgr_if (
 
   logic intr_enable;
   always_comb intr_enable = `PATH_TO_DUT.reg2hw.intr_enable.q;
+
+  // Used to disable assertions once with the first power glitch.
+  bit internal_assertion_disabled;
 
   function automatic void update_ast_main_pok(logic value);
     pwr_ast_rsp.main_pok = value;
@@ -140,6 +145,22 @@ interface pwrmgr_if (
   function automatic void update_resets(logic [pwrmgr_reg_pkg::NumRstReqs-1:0] resets);
     rstreqs_i = resets;
   endfunction
+
+  function automatic void update_reset_en(logic [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en_value);
+    reset_en = reset_en_value;
+  endfunction
+
+  // Sends a main power glitch and disables a design assertion that trips for power glitches.
+  task automatic glitch_power_reset();
+    rst_main_n = 1'b0;
+    if (!internal_assertion_disabled) begin
+      internal_assertion_disabled = 1'b1;
+      `uvm_info("pwrmgr_if", "disabling power glitch related SVA", UVM_MEDIUM)
+      $assertoff(1, dut.u_slow_fsm.IntRstReq_A);
+    end
+    repeat (2) @(posedge clk_slow);
+    rst_main_n = 1'b1;
+  endtask
 
   function automatic void update_low_power_hint(logic value);
     `uvm_info("pwrmgr_if", $sformatf("Updating low power hint to 0x%x", value), UVM_MEDIUM)

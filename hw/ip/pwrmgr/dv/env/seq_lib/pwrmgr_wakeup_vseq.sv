@@ -9,7 +9,6 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
 
   `uvm_object_new
 
-  rand bit disable_wakeup_capture;
   constraint wakeups_c {wakeups != 0;}
 
   rand bit prior_wakeup;
@@ -22,44 +21,10 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
     }
   }
 
-  rand wakeups_t wakeup_en;
   constraint wakeup_en_c {
-    solve wakeups before wakeup_en;
-    |(wakeup_en & wakeups) == 1'b1;
+    solve wakeups before wakeups_en;
+    |(wakeups_en & wakeups) == 1'b1;
   }
-  rand control_enables_t control_enables;
-
-  task update_control_enables(bit low_power_hint);
-    ral.control.core_clk_en.set(control_enables.core_clk_en);
-    ral.control.io_clk_en.set(control_enables.io_clk_en);
-    ral.control.usb_clk_en_lp.set(control_enables.usb_clk_en_lp);
-    ral.control.usb_clk_en_active.set(control_enables.usb_clk_en_active);
-    ral.control.main_pd_n.set(control_enables.main_pd_n);
-    ral.control.low_power_hint.set(low_power_hint);
-    // Disable assertions when main power is down.
-    control_assertions(control_enables.main_pd_n);
-    `uvm_info(`gfn, $sformatf(
-              "Setting control CSR to 0x%x, enables=%p, lph=%b",
-              ral.control.get(),
-              control_enables,
-              1'b1
-              ), UVM_MEDIUM)
-    csr_update(.csr(ral.control));
-  endtask
-
-  // Checks the wake_info matches expectations depending on capture disable.
-  task check_wake_info(wakeups_t enabled_wakeups, bit fall_through, bit abort);
-
-    if (disable_wakeup_capture) begin
-      csr_rd_check(.ptr(ral.wake_info.reasons), .compare_value('0),
-                   .err_msg("With capture disabled"));
-    end else begin
-      csr_rd_check(.ptr(ral.wake_info.reasons), .compare_value(enabled_wakeups),
-                   .err_msg("With capture enabled"));
-    end
-    csr_rd_check(.ptr(ral.wake_info.fall_through), .compare_value(fall_through));
-    csr_rd_check(.ptr(ral.wake_info.abort), .compare_value(abort));
-  endtask
 
   task body();
     logic [TL_DW-1:0] value;
@@ -71,11 +36,11 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // Enable wakeups.
-      enabled_wakeups = wakeup_en & wakeups;
+      enabled_wakeups = wakeups_en & wakeups;
       `DV_CHECK(enabled_wakeups, $sformatf(
-                "Some wakeup must be enabled: wkups=%b, wkup_en=%b", wakeups, wakeup_en))
+                "Some wakeup must be enabled: wkups=%b, wkup_en=%b", wakeups, wakeups_en))
       `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x", enabled_wakeups), UVM_MEDIUM)
-      csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeup_en));
+      csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
       `uvm_info(`gfn, $sformatf("%0sabling wakeup capture", disable_wakeup_capture ? "Dis" : "En"),
                 UVM_MEDIUM)
       csr_wr(.ptr(ral.wake_info_capture_dis), .value(disable_wakeup_capture));

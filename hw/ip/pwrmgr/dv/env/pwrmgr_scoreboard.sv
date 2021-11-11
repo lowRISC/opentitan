@@ -32,6 +32,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
       wakeup_ctrl_coverage_collector();
       wakeup_intr_coverage_collector();
       low_power_coverage_collector();
+      reset_coverage_collector();
     join_none
   endtask
 
@@ -67,6 +68,17 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
         if (cfg.en_cov) begin
           // At this point pwrmgr is asleep.
           cov.control_cg.sample(cfg.pwrmgr_vif.control_enables, 1'b1);
+        end
+      end
+  endtask
+
+  // Resets are triggered without deep sleep at this point.
+  // TODO(maturana) Figure out how to determine a reset triggered while in sleep mode.
+  task reset_coverage_collector();
+    forever
+      @(posedge cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::HwReq) begin
+        if (cfg.en_cov) begin
+          cov.reset_cg.sample(cfg.pwrmgr_vif.pwr_rst_req.rstreqs, cfg.pwrmgr_vif.reset_en, 1'b0);
         end
       end
   endtask
@@ -164,6 +176,9 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
         // rw0c, so writing a 1 is a no-op.
       end
       "reset_en": begin
+        if (data_phase_write) begin
+          cfg.pwrmgr_vif.update_reset_en(item.a_data);
+        end
       end
       "reset_status": begin
         // Read-only.

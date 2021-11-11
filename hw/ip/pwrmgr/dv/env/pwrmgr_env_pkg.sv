@@ -44,6 +44,9 @@ package pwrmgr_env_pkg;
   typedef bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeups_t;
   typedef bit [pwrmgr_reg_pkg::NumRstReqs-1:0] resets_t;
 
+  // This is used to send all resets to rstmgr.
+  typedef bit [pwrmgr_pkg::HwResetWidth-1:0] resets_out_t;
+
   // functions
 
   // package sources
