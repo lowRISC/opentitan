@@ -44,15 +44,10 @@ The protocol controller currently supports the following features:
 *  Flash memory protection at page boundaries.
 *  Life cycle RMA entry.
 *  Key manager secret seeds that are inaccessible to software.
-*  Features to be added if required
-   *  Program verification
-      *  may not be required if flash memory supports alternative mechanisms of verification.
-   *  Erase verification
-      *  may not be required if flash memory supports alternative mechanisms of verification.
-   *  Flash redundant pages
-      *  Flash may contain additional pages used to remap broken pages for yield recovery.
-      *  The storage, loading and security of redundant pages may also be implemented in the physical controller or flash memory.
-
+*  Support vendor flash module [erase suspend]({{< relref "#erase-suspend" >}}).
+*  Provisioning of flash specific attributes:
+   * High endurance.
+*  Idle indication to external power managers.
 
 ### Flash Physical Controller Features
 
@@ -79,6 +74,7 @@ The physical controller supports the following features
 *  Two types of Flash ECC support
    * A pre-scramble ECC used for integrity verification, this is required on every word.
    * A post-scramble ECC used for reliability detection, this is configurable on a page boundary.
+*  Life cycle modulated JTAG connection to the vendor flash module.
 
 
 ### Flash Memory Overview
@@ -110,7 +106,7 @@ Lastly, while the different partitions may be identical in some attributes, they
    * Only erase can restore a bit to 1 under normal circumstances.
 *  Data partitions can be directly read by software and other hardware hosts, while information partitions can only be read by the flash controller
 
-By default, this design assumes 1 type of information partition and 4 pages per type of information partition.
+For default assumptions of the design, see the [default configuration]({{< relref "#flash-default-configuration" >}}).
 
 #### Secret Information Partitions
 
@@ -120,9 +116,9 @@ The read values are then fed to the key manager for later processing.
 There is a page for creator and a page for the owner.
 
 The seed pages are read under the following initialization conditions:
-*  life cycle sets provision enable
+*  life cycle sets provision enable - `lc_seed_hw_rd_en`.
 
-See [life cycle]({{< relref "hw/ip/lc_ctrl/doc/_index.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en" >}}) for more details.
+See [life cycle]({{< relref "hw/ip/lc_ctrl/doc/_index.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en" >}}) for more details on when this partition is allowed to be populated.
 
 #### Isolated Information Partitions
 
@@ -221,6 +217,28 @@ To support this function, the flash controller errors back anytime the start of 
 The valid program range is thus the valid program resolution for a particular memory.
 
 This information is not configurable but instead decided at design time and is exposed as a readable status.
+
+#### Erase Suspend
+
+The flash controller supports erase suspend through {{< regref "ERASE_SUSPEND" >}}.
+This allows the software to interrupt an ongoing erase operation.
+
+The behavior of what happens to flash contents when erase is suspended is vendor defined; however, generally it can be assumed that the erase would be incomplete.
+It is then up to the controlling software to take appropriate steps to erase again at a later time.
+
+#### Additional Flash Attributes
+
+There are certain attributes provisioned in {{< regref "MP_REGION_CFG_SHADOWED_0" >}} that are not directly used by the open source protocol or physical controllers.
+
+Instead, these attributes are fed to the vendor flash module on a per-page or defined boundary basis.
+Currently there is only one such attribute {{< regref "MP_REGION_CFG_SHADOWED_0.HE" >}}.
+
+#### Idle Indication to External Power Manager
+
+The flash controller provides an idle indication to an external power manager.
+This idle indication does not mean the controller is doing "nothing", but rather the controller is not doing anything "stateful", ie program or erase.
+
+This is because an external power manager event (such as shutting off power) while a flash stateful transaction is ongoing may be damaging to the vendor flash module.
 
 
 ### Flash Physical Controller
@@ -339,6 +357,13 @@ However, one TBD feature is related to flash support of life cycle and manufactu
 It may be required for manufacturers to directly inject data into specific pages flash information partitions via die contacts.
 For these pages, scramble shall be permanently disabled as the manufacturer should not be aware of scrambling functions.
 
+#### JTAG Connection
+
+The flash physical controller provides a JTAG connection to the vendor flash module.
+The vendor flash module can use this interface to build a testing setup or to provide backdoor access for debug.
+
+Due to the ability of this connection to bypass access controls, this connection is modulated by life cycle and only enabled when non-volatile debug, or `lc_nvm_debug_en` is allowed in the system.
+
 ## Flash Default Configuration
 Since the flash controller is highly dependent on the specific flavor of flash memory chosen underneath, its configuration can vary widely between different integrations.
 
@@ -363,54 +388,42 @@ This sections details the default settings used by the flash controller:
 
 ### Signals
 
-In addition to the interrupts and bus signals, the tables below lists the flash protocol controller I/Os.
+In addition to the interrupts and bus signals, the tables below lists the flash controller functional I/Os.
 
-Signal                  | Direction | Description
-------------------------|-----------|---------------
-`flash_i`               | `input`   | Inputs from physical controller, connects to `flash_ctrl_o` of physical controller.
-`flash_o`               | `output`  | Outputs to physical controller, connects to `flash_ctrl_i` of physical controller.
-`otp_i`                 | `input`   | Inputs from OTP, indicates the locked state of the creator seed page.
-`lc_i`                  | `input`   | Inputs from life cycle, indicates RMA intent and provisioning enable.
-`pwrmgr_i`              | `input`   | Inputs from power manager, flash controller initialization request.
+Signal                     | Direction      | Description
+------------------------   |-----------     |---------------
+`lc_creator_seed_sw_rw_en` | `input`        | Indication from `lc_ctrl` that software is allowed to read/write creator seed.
+`lc_owner_seed_sw_rw_en`   | `input`        | Indication from `lc_ctrl` that software is allowed to read/write owner seed.
+`lc_seed_hw_rd_en`         | `input`        | Indication from `lc_ctrl` that hardware is allowed to read creator / owner seeds.
+`lc_iso_part_sw_rd_en`     | `input`        | Indication from `lc_ctrl` that software is allowed to read the isolated partition.
+`lc_iso_part_sw_wr_en`     | `input`        | Indication from `lc_ctrl` that software is allowed to write the isolated partition.
+`lc_escalate_en`           | `input`        | Escalation indication from `lc_ctrl`.
+`lc_nvm_debug_en`          | `input`        | Indication from lc_ctrl that non-volatile memory debug is allowed.
+`core_tl`                  | `input/output` | TL-UL interface used to access `flash_ctrl` registers for activating program / erase and reads to information partitions/
+`prim_tl`                  | `input/output` | TL-UL interface used to access the vendor flash memory proprietary registers.
+`mem_tl`                   | `input/output` | TL-UL interface used by host to access the vendor flash memory directly.
+`otp`                      | `input/output` | Interface used to request scrambling keys from `otp_ctrl`.
+`rma_req`                  | `input`        | rma entry request from `lc_ctrl`.
+`rma_ack`                  | `output`       | rma entry acknowlegement to `lc_ctrl`.
+`rma_seed`                 | `input`        | rma entry seed.
+`pwrmgr`                   | `output`       | Idle indication to `pwrmgr`.
+`keymgr`                   | `output`       | Secret seed bus to `keymgr`.
 
-Each of `flash_i` and `flash_o` is a struct that packs together additional signals, as shown below
+In addition to the functional IOs, there are a set of signals that are directly connected to vendor flash module.
 
-| Signal          | Source               | Destination         | Description
-| --------------  | ---------------------| ------------------- | -------------------------------------------------------
-| `req`           | protocol controller  | physical controller | Protocol controller initiated transaction
-| `addr`          | protocol controller  | physical controller | Protocol controller initiated transaction address
-| `part`          | protocol controller  | physical controller | Protocol controller initiated transaction partition type - data or informational
-| `info_sel`      | protocol controller  | physical controller | Protocol controller initiated transaction information partition select - 0 ~ N
-| `scramble_en`   | protocol controller  | physical controller | Protocol controller initiated transaction address is scramble enabled
-| `ecc_en`        | protocol controller  | physical controller | Protocol controller initiated transaction address is ecc enabled
-| `he_en`         | protocol controller  | physical controller | Protocol controller initiated transaction address is high endurance enabled
-| `rd`            | protocol controller  | physical controller | Protocol controller initiated read
-| `prog`          | protocol controller  | physical controller | Protocol controller initiated program
-| `pg_erase`      | protocol controller  | physical controller | Protocol controller initiated page erase
-| `prog_data`     | protocol controller  | physical controller | Protocol controller initiated program data, 1 flash word wide
-| `prog_type`     | protocol controller  | physical controller | Protocol controller initiated program type, normal program or repair program
-| `prog_last`     | protocol controller  | physical controller | Protocol controller last program beat
-| `bk_erase`      | protocol controller  | physical controller | Protocol controller initiated bank erase
-| `addr_key`      | protocol controller  | physical controller | Physical controller address scramble key
-| `data_key`      | protocol controller  | physical controller | Physical controller data scramble key
-| `rd_done`       | physical controller  | protocol controller | Physical controller read done
-| `prog_done`     | physical controller  | protocol controller | Physical controller program done
-| `erase_done`    | physical controller  | protocol controller | Physical controller erase done
-| `init_busy`     | physical controller  | protocol controller | Physical controller reset release initialization in progress
-| `rd_data`       | physical controller  | protocol controller | Physical Controller read data, 1 flash word wide
+Signal                     | Direction      | Description
+------------------------   |-----------     |---------------
+`scan_en`                  | `input`        | scan enable
+`scanmode`                 | `input`        | scan mode
+`scan_rst_n`               | `input`        | scan reset
+`flash_bist_enable`        | `input`        | enable flash built-in-self-test
+`flash_power_down_h`       | `input`        | flash power down indication, note this is NOT a core level signal
+`flash_power_ready_h`      | `input`        | flash power ready indication, note this is NOT a core level signal
+`flash_test_mode_a`        | `input/output` | flash test mode io, note this is NOT a core level signal
+`flash_test_voltage_h`     | `input/output` | flash test voltage, note this is NOT a core level signal
+`flash_alert`              | `output`       | flash alert outputs directly to AST
 
 
-The physical controller IOs are listed and described below.
-
-| Signal            | Direction | Description
-| ----------------- | ----------| -------
-| `host_req_i`      | input     | Host initiated direct read, should always be highest priority.  Host is only able to perform direct reads
-| `host_addr_i`     | input     | Address of host initiated direct read
-| `host_req_rdy_o`  | output    | Host request ready, '1' implies transaction has been accepted, but not necessarily finished
-| `host_req_done_o` | output    | Host request completed
-| `host_rdata_o`    | output    | Host read data, 1 flash word wide
-| `flash_ctrl_i`    | input     | Inputs from protocol controller, connects to `flash_o` of protocol controller
-| `flash_ctrl_o`    | output    | Outputs to protocol controller, connects to `flash_i` of protcol controller
 
 ## Design Detials
 
