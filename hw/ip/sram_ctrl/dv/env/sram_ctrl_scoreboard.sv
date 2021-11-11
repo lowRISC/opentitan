@@ -172,6 +172,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   //       any CSRs or uvm_mems.
   virtual function bit sram_predict_tl_err(tl_seq_item item, tl_channels_e channel);
     bit is_tl_err;
+    tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
+
 
     is_tl_err = item.get_exp_d_error();
 
@@ -200,7 +202,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
                         item.get_error_size_over_max()),
               UVM_HIGH)
 
-    if (item.a_user[15:14] == prim_mubi_pkg::MuBi4True) begin
+    if (a_user.instr_type == prim_mubi_pkg::MuBi4True) begin
       // 2 error cases if an InstrType transaction is seen:
       // - if it is a write transaction
       // - if the SRAM is not configured in executable mode
@@ -214,6 +216,14 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
 
     return is_tl_err;
+  endfunction
+
+  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+    if (ral_name == RAL_T::type_name) begin
+      super.predict_tl_err(item, channel, ral_name);
+    end else begin
+      sram_predict_tl_err(item, channel);
+    end
   endfunction
 
   function void build_phase(uvm_phase phase);
@@ -707,7 +717,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
       `uvm_info({`gfn, "::process_completed_trans()"},
                 $sformatf("Checking SRAM memory transaction: %0p", trans),
-                UVM_HIGH)
+                UVM_MEDIUM)
 
       check_mem_trans(trans);
     end

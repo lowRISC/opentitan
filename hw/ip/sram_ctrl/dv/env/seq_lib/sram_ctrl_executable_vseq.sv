@@ -27,15 +27,9 @@ class sram_ctrl_executable_vseq extends sram_ctrl_multiple_keys_vseq;
     super.pre_start();
   endtask
 
-  task body();
-    `DV_SPINWAIT_EXIT(
-        forever begin
-          randomize_and_drive_ifetch_en();
-          cfg.clk_rst_vif.wait_clks($urandom_range(100, 500));
-        end
-        ,
-        super.body();
-    )
+  task req_scr_key();
+    super.req_scr_key();
+    randomize_and_drive_ifetch_en();
   endtask
 
   task randomize_and_drive_ifetch_en();
