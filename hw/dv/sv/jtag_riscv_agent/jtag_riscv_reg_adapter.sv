@@ -23,9 +23,12 @@ class jtag_riscv_reg_adapter extends uvm_reg_adapter;
         } else {
           op == DmiRead;
         }
-        addr == local::rw.addr[DMI_ADDRW+1:0];
+        // Convert to word address by slicing
+        addr == local::rw.addr[DMI_ADDRW + DMI_WORD_SHIFT - 1 : DMI_WORD_SHIFT];
         data == local::rw.data[DMI_DATAW-1:0];
     )
+    `uvm_info(`gfn,$sformatf("reg2bus: %s",
+        jtag_item.sprint(uvm_default_line_printer)),UVM_LOW)
     return jtag_item;
   endfunction
 
@@ -42,11 +45,13 @@ class jtag_riscv_reg_adapter extends uvm_reg_adapter;
       default: `uvm_fatal(`gfn, $sformatf("Invalid operation code %h", jtag_item.op))
     endcase
 
-    rw.addr = jtag_item.addr;
+    rw.addr = jtag_item.addr << DMI_WORD_SHIFT;
     // No byte enables
     rw.byte_en = '1;
     rw.data = jtag_item.data;
     rw.status = (jtag_item.status == DmiNoErr) ? UVM_IS_OK : UVM_NOT_OK;
+
+    `uvm_info(`gfn,$sformatf("bus2reg: rw=%p", rw),UVM_LOW)
   endfunction
 
 endclass

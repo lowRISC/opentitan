@@ -22,6 +22,8 @@ package jtag_riscv_agent_pkg;
   parameter uint DMI_IRW   = 5;
   parameter uint DMI_DRW   = DMI_OPW + DMI_DATAW + DMI_ADDRW;
   parameter uint DTMCS_DRW = 32;
+  // Bits to shift byte address to word address
+  parameter uint DMI_WORD_SHIFT = $clog2(DMI_DATAW/8);
 
   string msg_id = "jtag_riscv_agent_pkg";
 

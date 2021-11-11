@@ -12,18 +12,22 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
 
   // reset signals
   virtual task reset_signals();
+    `uvm_info(`gfn, "reset_signals: STARTED", UVM_MEDIUM)
     // Clear the queue
     reqs.delete();
   endtask
 
   // drive trans received from sequencer
   protected virtual task get_and_drive();
+    `uvm_info(`gfn, "get_and_drive: STARTED", UVM_MEDIUM)
+
     fork
       drive_jtag();
     join_none
 
     forever begin
       seq_item_port.get_next_item(req);
+      `uvm_info(`gfn, {"got request: ", req.sprint(uvm_default_line_printer)}, UVM_HIGH)
       accept_tr(req);
       `downcast(rsp, req.clone())
       rsp.set_id_info(req);
@@ -36,23 +40,20 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     ITEM_T drive_req;
     bit [DMI_DATAW-1:0] dout;
     bit [DMI_DATAW-1:0] rdata;
-    bit [DMI_ADDRW+1:0] word_addr;
     bit [DMI_OPW-1:0] status;
     forever begin
       wait (reqs.size());
       drive_req = reqs.pop_front();
+      `uvm_info(`gfn, drive_req.sprint(uvm_default_line_printer), UVM_HIGH)
 
       // Mark start of transaction processing
       void'(begin_tr(drive_req));
-
-      // Byte to word address
-      word_addr = drive_req.addr >> 2;
 
       // Drive IR with DMI access
       send_riscv_ir_req(JtagDmiAccess);
 
       // Drive DR with operation type, address, and data
-      send_csr_dr_req(drive_req.op, drive_req.data, word_addr, dout);
+      send_csr_dr_req(drive_req.op, drive_req.data, drive_req.addr, dout);
 
       // Get status of previous transfer
       check_csr_req_status(status, rdata);
@@ -65,7 +66,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
       end_tr(drive_req);
 
       // Send response
-      rsp_port.write(drive_req);
+      seq_item_port.put_response(drive_req);
     end
   endtask
 
