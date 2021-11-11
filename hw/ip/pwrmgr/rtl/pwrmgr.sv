@@ -83,18 +83,50 @@ module pwrmgr
   ///  escalation detections
   ////////////////////////////
 
+  logic clk_esc;
+  logic rst_esc_n;
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_esc_clk_buf (
+    .clk_i(clk_esc_i),
+    .clk_o(clk_esc)
+  );
+
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_esc_rst_buf (
+    .clk_i(rst_esc_ni),
+    .clk_o(rst_esc_n)
+  );
+
   logic esc_rst_req;
 
   prim_esc_receiver #(
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
   ) u_esc_rx (
-    .clk_i(clk_esc_i),
-    .rst_ni(rst_esc_ni),
+    .clk_i(clk_esc),
+    .rst_ni(rst_esc_n),
     .esc_req_o(esc_rst_req),
     .esc_rx_o(esc_rst_rx_o),
     .esc_tx_i(esc_rst_tx_i)
   );
+
+  localparam int EscTimeOutCnt = 128;
+  logic esc_timeout;
+  prim_clock_timeout #(
+    .TimeOutCnt(EscTimeOutCnt)
+  ) u_esc_timeout (
+    .clk_chk_i(clk_esc),
+    .rst_chk_ni(rst_esc_n),
+    .clk_i,
+    .rst_ni,
+    // if any ip clock enable is turned on, then the escalation
+    // clocks are also enabled.
+    .en_i(|pwr_clk_o),
+    .timeout_o(esc_timeout)
+  );
+
 
   ////////////////////////////
   ///  async declarations
@@ -105,7 +137,7 @@ module pwrmgr
   assign peri_reqs_raw.wakeups = wakeups_i;
   assign peri_reqs_raw.rstreqs[NumRstReqs-1:0] = rstreqs_i;
   assign peri_reqs_raw.rstreqs[ResetMainPwrIdx] = slow_rst_req;
-  assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req;
+  assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req | esc_timeout;
 
   ////////////////////////////
   ///  Software reset request
@@ -185,13 +217,13 @@ module pwrmgr
   ////////////////////////////
   ///  Register module
   ////////////////////////////
-
   logic [NumAlerts-1:0] alert_test, alerts;
   logic low_power_hint;
   logic lowpwr_cfg_wen;
   logic clr_hint;
   logic wkup;
   logic clr_cfg_lock;
+  logic reg_intg_err;
 
   pwrmgr_reg_top u_reg (
     .clk_i,
@@ -200,7 +232,7 @@ module pwrmgr
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o (alerts[0]),
+    .intg_err_o (reg_intg_err),
     .devmode_i  (1'b1)
   );
 
@@ -220,14 +252,27 @@ module pwrmgr
 
   assign hw2reg.ctrl_cfg_regwen.d = lowpwr_cfg_wen;
 
+  assign hw2reg.fault_status.reg_intg_err.de = reg_intg_err;
+  assign hw2reg.fault_status.reg_intg_err.d  = 1'b1;
+  assign hw2reg.fault_status.esc_timeout.de  = esc_timeout;
+  assign hw2reg.fault_status.esc_timeout.d   = 1'b1;
+
+
   ////////////////////////////
   ///  alerts
   ////////////////////////////
+
+  // the logic below assumes there is only one alert, so make an
+  // explicit assertion check for it.
+  `ASSERT_INIT(AlertNumCheck_A, NumAlerts == 1)
 
   assign alert_test = {
     reg2hw.alert_test.q &
     reg2hw.alert_test.qe
   };
+
+  assign alerts[0] = reg2hw.fault_status.reg_intg_err.q |
+                     reg2hw.fault_status.esc_timeout.q;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -237,7 +282,7 @@ module pwrmgr
       .clk_i,
       .rst_ni,
       .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[0]     ),
+      .alert_req_i   ( alerts[i]     ),
       .alert_ack_o   (               ),
       .alert_state_o (               ),
       .alert_rx_i    ( alert_rx_i[i] ),
@@ -533,6 +578,23 @@ module pwrmgr
   `ASSERT_KNOWN(OtpKnownO_A,       pwr_otp_o        )
   `ASSERT_KNOWN(LcKnownO_A,        pwr_lc_o         )
   `ASSERT_KNOWN(IntrKnownO_A,      intr_wakeup_o    )
+
+  // EscTimeOutCnt also sets the required clock ratios between escalator and local clock
+  // Ie, clk_esc cannot be so slow that the timeout count is reached
+  `ifdef INC_ASSERT
+  logic [31:0] cnt;
+  always_ff @(posedge clk_i or negedge clk_esc_i or negedge rst_ni) begin
+    if (!rst_ni || !clk_esc_i) begin
+      cnt <= '0;
+    end else begin
+      cnt <= cnt + 1'b1;
+    end
+  end
+
+  `ASSERT(ClkRatio_A, cnt < EscTimeOutCnt)
+
+  `endif
+
 
 
 endmodule // pwrmgr

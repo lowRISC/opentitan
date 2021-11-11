@@ -561,5 +561,27 @@
              // by software.
              "excl:CsrNonInitTests:CsrExclCheck"]
     },
+
+    { name: "FAULT_STATUS",
+      desc: "A read only register that shows the existing faults",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      resval: "0"
+      fields: [
+        { bits: "0",
+          name: "REG_INTG_ERR",
+          desc: '''
+            When 1, an integrity error has occurred.
+          ''',
+        },
+
+        { bits: "1",
+          name: "ESC_TIMEOUT",
+          desc: '''
+            When 1, an escalation clock / reset timeout has occurred.
+          ''',
+        },
+      ]
+    },
   ]
 }

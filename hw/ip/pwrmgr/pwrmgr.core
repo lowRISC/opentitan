@@ -16,6 +16,8 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:prim:mubi
+      - lowrisc:prim:clock_buf
+      - lowrisc:prim:measure
       - lowrisc:ip_interfaces:alert_handler_reg
     files:
       - rtl/pwrmgr.sv
