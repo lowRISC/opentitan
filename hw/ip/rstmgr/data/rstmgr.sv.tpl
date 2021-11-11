@@ -74,7 +74,8 @@ module rstmgr
 
   for (genvar i = 0; i < PowerDomains; i++) begin : gen_rst_por_aon
 
-      prim_mubi_pkg::mubi4_t por_scanmode;
+      // Declared as size 1 packed array to avoid FPV warning.
+      prim_mubi_pkg::mubi4_t [0:0] por_scanmode;
       prim_mubi4_sync #(
         .NumCopies(1),
         .AsyncOn(0)
@@ -90,7 +91,7 @@ module rstmgr
         .clk_i(clk_aon_i),
         .rst_ni(por_n_i[i]),
         .scan_rst_ni,
-        .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(por_scanmode)),
+        .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(por_scanmode[0])),
         .rst_no(rst_por_aon_n[i])
       );
 
@@ -121,7 +122,7 @@ module rstmgr
       ) u_por_domain_mux (
         .clk0_i(rst_por_aon_premux),
         .clk1_i(scan_rst_ni),
-        .sel_i(prim_mubi_pkg::mubi4_test_true_strict(por_scanmode)),
+        .sel_i(prim_mubi_pkg::mubi4_test_true_strict(por_scanmode[0])),
         .clk_o(rst_por_aon_n[i])
       );
 
@@ -235,7 +236,8 @@ module rstmgr
   logic [PowerDomains-1:0] rst_lc_src_n;
   logic [PowerDomains-1:0] rst_sys_src_n;
 
-  prim_mubi_pkg::mubi4_t rst_ctrl_scanmode;
+  // Declared as size 1 packed array to avoid FPV warning.
+  prim_mubi_pkg::mubi4_t [0:0] rst_ctrl_scanmode;
   prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -249,7 +251,7 @@ module rstmgr
   // lc reset sources
   rstmgr_ctrl u_lc_src (
     .clk_i,
-    .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode)),
+    .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode[0])),
     .scan_rst_ni,
     .rst_ni,
     .rst_req_i(pwr_i.rst_lc_req),
@@ -260,7 +262,7 @@ module rstmgr
   // sys reset sources
   rstmgr_ctrl u_sys_src (
     .clk_i,
-    .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode)),
+    .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode[0])),
     .scan_rst_ni,
     .rst_ni,
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),

@@ -108,7 +108,8 @@
 % endfor
 % for src in clocks.derived_srcs.values():
 
-  prim_mubi_pkg::mubi4_t ${src.name}_div_scanmode;
+  // Declared as size 1 packed array to avoid FPV warning.
+  prim_mubi_pkg::mubi4_t [0:0] ${src.name}_div_scanmode;
   prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -126,7 +127,7 @@
     .rst_ni(rst_${src.src.name}_ni),
     .step_down_req_i(${src.src.name}_step_down_req),
     .step_down_ack_o(step_down_acks[${loop.index}]),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${src.name}_div_scanmode)),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${src.name}_div_scanmode[0])),
     .clk_o(clk_${src.name}_i)
   );
 % endfor
@@ -392,7 +393,8 @@
     .q_o(${k}_sw_en)
   );
 
-  prim_mubi_pkg::mubi4_t ${k}_scanmode;
+  // Declared as size 1 packed array to avoid FPV warning.
+  prim_mubi_pkg::mubi4_t [0:0] ${k}_scanmode;
   prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -410,7 +412,7 @@
   ) u_${k}_cg (
     .clk_i(clk_${v.src.name}_root),
     .en_i(${k}_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${k}_scanmode)),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${k}_scanmode[0])),
     .clk_o(clocks_o.${k})
   );
 
@@ -449,7 +451,8 @@
     .q_o(${clk}_hint)
   );
 
-  prim_mubi_pkg::mubi4_t ${clk}_scanmode;
+  // Declared as size 1 packed array to avoid FPV warning.
+  prim_mubi_pkg::mubi4_t [0:0] ${clk}_scanmode;
   prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -473,7 +476,7 @@
   ) u_${clk}_cg (
     .clk_i(clk_${sig.src.name}_root),
     .en_i(${clk}_combined_en),
-    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${clk}_scanmode)),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${clk}_scanmode[0])),
     .clk_o(clocks_o.${clk})
   );
 
