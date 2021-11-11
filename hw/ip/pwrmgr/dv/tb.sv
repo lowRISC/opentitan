@@ -51,7 +51,7 @@ module tb;
     .rst_ni     (rst_n),
     .clk_slow_i (clk_slow),
     .rst_slow_ni(rst_slow_n),
-    .rst_main_ni(rst_slow_n),
+    .rst_main_ni(pwrmgr_if.rst_main_n),
     .clk_esc_i  (clk),
     .rst_esc_ni (rst_n),
 

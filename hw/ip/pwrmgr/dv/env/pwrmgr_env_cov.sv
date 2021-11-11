@@ -87,6 +87,14 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
     control_cross: cross core_cp, io_cp, usb_lp_cp, usb_active_cp, main_pd_n_cp, sleep_cp;
   endgroup
 
+  covergroup reset_cg with function sample (resets_out_t resets_out, resets_t resets_en, bit sleep);
+    resets_out_cp: coverpoint resets_out;
+    resets_en_cp: coverpoint resets_en;
+    sleep_cp: coverpoint sleep;
+
+    resets_cross: cross resets_out_cp, resets_en_cp, sleep_cp;
+  endgroup
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     foreach (wakeup_ctrl_cg_wrap[i]) begin
