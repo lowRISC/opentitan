@@ -2197,8 +2197,7 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[41:40]),
     .Stub(OtbnStub),
     .RegFile(OtbnRegFile),
-    .RndCnstUrndLfsrSeed(RndCnstOtbnUrndLfsrSeed),
-    .RndCnstUrndChunkLfsrPerm(RndCnstOtbnUrndChunkLfsrPerm),
+    .RndCnstUrndPrngSeed(RndCnstOtbnUrndPrngSeed),
     .RndCnstOtbnKey(RndCnstOtbnOtbnKey),
     .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce)
   ) u_otbn (
