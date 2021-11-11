@@ -34,6 +34,11 @@ from mubi import prim_mubi
     return ~(val inside {MuBi${nbits}True, MuBi${nbits}False});
   endfunction : mubi${nbits}_test_invalid
 
+  // Convert a 1 input value to a mubi output
+  function automatic mubi${nbits}_e mubi${nbits}_bool_to_mubi(logic val);
+    return (val ? MuBi${nbits}True : MuBi${nbits}False);
+  endfunction : mubi${nbits}_bool_to_mubi
+
   // Test whether the multibit value signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.

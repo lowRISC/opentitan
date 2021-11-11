@@ -23,6 +23,12 @@ module prim_mubi4_sync
   // In special cases where the receiver is in the same clock domain as the sender,
   // this can be set to 0. However, it is recommended to leave this at 1.
   parameter bit AsyncOn = 1,
+  // This controls whether the mubi module institutes stability checks when
+  // AsyncOn is set.  If stability checks are on, a 3rd stage of storage is
+  // added after the synchronizers and the outputs only updated if the 3rd
+  // stage and sychronizer agree.  If they do not agree, the ResetValue is
+  // is output instead.
+  parameter bit StabilityCheck = 0,
   // Reset value for the sync flops
   parameter mubi4_t ResetValue = MuBi4False
 ) (
@@ -36,6 +42,7 @@ module prim_mubi4_sync
 
   logic [MuBi4Width-1:0] mubi;
   if (AsyncOn) begin : gen_flops
+    logic [MuBi4Width-1:0] mubi_sync;
     prim_flop_2sync #(
       .Width(MuBi4Width),
       .ResetValue(MuBi4Width'(ResetValue))
@@ -43,8 +50,60 @@ module prim_mubi4_sync
       .clk_i,
       .rst_ni,
       .d_i(MuBi4Width'(mubi_i)),
-      .q_o(mubi)
+      .q_o(mubi_sync)
     );
+
+    if (StabilityCheck) begin : gen_stable_chks
+      logic [MuBi4Width-1:0] mubi_q;
+      prim_flop #(
+        .Width(MuBi4Width),
+        .ResetValue(MuBi4Width'(ResetValue))
+      ) u_prim_flop_3rd_stage (
+        .clk_i,
+        .rst_ni,
+        .d_i(mubi_sync),
+        .q_o(mubi_q)
+      );
+
+      logic [MuBi4Width-1:0] sig_unstable;
+      prim_xor2 #(
+        .Width(MuBi4Width)
+      ) u_mubi_xor (
+        .in0_i(mubi_sync),
+        .in1_i(mubi_q),
+        .out_o(sig_unstable)
+      );
+
+      logic [MuBi4Width-1:0] reset_value;
+      assign reset_value = ResetValue;
+
+      for (genvar k = 0; k < MuBi4Width; k++) begin : gen_bufs_muxes
+        logic [MuBi4Width-1:0] sig_unstable_buf;
+
+        // each mux gets its own buffered output, this ensures the OR-ing
+        // cannot be defeated in one place.
+        prim_sec_anchor_buf #(
+          .Width(MuBi4Width)
+        ) u_sig_unstable_buf (
+          .in_i(sig_unstable),
+          .out_o(sig_unstable_buf)
+        );
+
+        // if any xor indicates signal is unstable, output the reset
+        // value.
+        prim_clock_mux2 #(
+          .NoFpgaBufG(1'b1)
+        ) u_mux (
+          .clk0_i(mubi_q[k]),
+          .clk1_i(reset_value[k]),
+          .sel_i(|sig_unstable_buf),
+          .clk_o(mubi[k])
+        );
+      end
+
+    end else begin : gen_no_stable_chks
+      assign mubi = mubi_sync;
+    end
   end else begin : gen_no_flops
     logic unused_clk;
     logic unused_rst;
