@@ -9,6 +9,8 @@
 //
 // Decoder for multibit control signals with additional input buffers.
 
+`include "prim_assert.sv"
+
 module prim_mubi4_dec
   import prim_mubi_pkg::*;
 #(
