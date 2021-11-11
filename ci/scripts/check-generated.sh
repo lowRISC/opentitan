@@ -67,3 +67,11 @@ if [[ $? != 0 ]]; then
   echo "Regenerate with 'util/make_new_dif.py --mode=regen --only=autogen'."
   exit 1
 fi
+
+util/design/gen-mubi.py && is_clean
+if [[ $? != 0 ]]; then
+  echo -n "##vso[task.logissue type=error]"
+  echo "MUBI package not up-to-date."
+  echo "Regenerate with 'util/design/gen-mubi.py'."
+  exit 1
+fi
