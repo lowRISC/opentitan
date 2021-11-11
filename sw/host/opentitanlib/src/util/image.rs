@@ -122,10 +122,7 @@ mod tests {
     fn test_assemble_offset() -> Result<()> {
         // Test image assembly by explicit offsets.
         let mut image = ImageAssembler::with_params(16, false);
-        image.parse(&[
-            testdata("hello.txt@0"),
-            testdata("world.txt@0x8"),
-        ])?;
+        image.parse(&[testdata("hello.txt@0"), testdata("world.txt@0x8")])?;
         let data = image.assemble()?;
         assert_eq!(data, b"Hello\xff\xff\xffWorld\xff\xff\xff");
         Ok(())
@@ -145,10 +142,7 @@ mod tests {
     fn test_assemble_mirrored_offset_error() -> Result<()> {
         // Test image assembly where one of the source files isn't read completely.
         let mut image = ImageAssembler::with_params(16, true);
-        image.parse(&[
-            testdata("hello.txt@0"),
-            testdata("world.txt@0x5"),
-        ])?;
+        image.parse(&[testdata("hello.txt@0"), testdata("world.txt@0x5")])?;
         let err = image.assemble().unwrap_err();
         assert_eq!(
             err.to_string(),

@@ -6,7 +6,7 @@ use anyhow::Result;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioPin, PinDirection};
-use crate::transport::hyperdebug::{Hyperdebug, Inner, Error};
+use crate::transport::hyperdebug::{Error, Hyperdebug, Inner};
 
 pub struct HyperdebugGpioPin {
     inner: Rc<Inner>,
@@ -28,9 +28,8 @@ impl GpioPin for HyperdebugGpioPin {
     fn read(&self) -> Result<bool> {
         let mut result: Result<bool> =
             Err(Error::CommunicationError("No output from gpioget").into());
-        self.inner.execute_command(
-            &format!("gpioget {}", &self.pinname),
-            |line| {
+        self.inner
+            .execute_command(&format!("gpioget {}", &self.pinname), |line| {
                 result = Ok(line.trim_start().starts_with("1"))
             })?;
         result
@@ -40,7 +39,8 @@ impl GpioPin for HyperdebugGpioPin {
     fn write(&self, value: bool) -> Result<()> {
         self.inner.execute_command(
             &format!("gpioset {} {}", &self.pinname, if value { 1 } else { 0 }),
-            |_| {})
+            |_| {},
+        )
     }
 
     /// Sets the `direction` of GPIO `id` as input or output.

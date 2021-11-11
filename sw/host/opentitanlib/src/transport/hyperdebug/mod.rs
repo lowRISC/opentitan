@@ -24,8 +24,8 @@ use crate::transport::{Capabilities, Capability, Transport, TransportError};
 use crate::util::usb::UsbBackend;
 
 pub mod gpio;
-pub mod uart;
 pub mod spi;
+pub mod uart;
 
 /// Implementation of the Transport trait for HyperDebug based on the
 /// Nucleo-L552ZE-Q.
@@ -50,12 +50,16 @@ impl Hyperdebug {
     pub const PID_HYPERDEBUG: u16 = 0x520e;
 
     /// Establish connection with a particular HyperDebug.
-    pub fn open(usb_vid: Option<u16>, usb_pid: Option<u16>, usb_serial: Option<&str>)
-                -> Result<Self> {
+    pub fn open(
+        usb_vid: Option<u16>,
+        usb_pid: Option<u16>,
+        usb_serial: Option<&str>,
+    ) -> Result<Self> {
         let device = UsbBackend::new(
             usb_vid.unwrap_or(Self::VID_GOOGLE),
             usb_pid.unwrap_or(Self::PID_HYPERDEBUG),
-            usb_serial)?;
+            usb_serial,
+        )?;
 
         let path = PathBuf::from("/sys/bus/usb/devices");
 
@@ -69,18 +73,27 @@ impl Hyperdebug {
             for interface_desc in interface.descriptors() {
                 let idx = match interface_desc.description_string_index() {
                     Some(idx) => idx,
-                    None => { continue }
+                    None => continue,
                 };
                 let interface_name = match device.read_string_descriptor_ascii(idx) {
                     Ok(interface_name) => interface_name,
-                    _ => { continue }
+                    _ => continue,
                 };
-                let ports = device.port_numbers()?.iter().map(
-                    |id| id.to_string()).collect::<Vec<String>>().join(".");
+                let ports = device
+                    .port_numbers()?
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect::<Vec<String>>()
+                    .join(".");
                 let interface_path = path
                     .join(format!("{}-{}", device.bus_number(), ports))
-                    .join(format!("{}-{}:{}.{}",device.bus_number(), ports,
-                                  config_desc.number(), interface.number()));
+                    .join(format!(
+                        "{}-{}:{}.{}",
+                        device.bus_number(),
+                        ports,
+                        config_desc.number(),
+                        interface.number()
+                    ));
                 // Check the ASCII name of this USB interface.
                 match interface_name.as_str() {
                     "HyperDebug Shell" => {
@@ -90,9 +103,7 @@ impl Hyperdebug {
                     }
                     name if name.starts_with("UART") => {
                         // We found an UART forwarding USB interface.
-                        uart_ttys.insert(
-                            name.to_string(),
-                            Self::find_tty(&interface_path)?);
+                        uart_ttys.insert(name.to_string(), Self::find_tty(&interface_path)?);
                     }
                     "SPI" => {
                         // We found the SPI forwarding USB interface (this one interface allows
@@ -106,14 +117,18 @@ impl Hyperdebug {
                             match endpoint_desc.direction() {
                                 rusb::Direction::In => {
                                     if let Some(_) = in_endpoint.replace(endpoint_desc.address()) {
-                                        return Err(Error::CommunicationError
-                                                   ("Multiple SPI IN endpoints").into());
+                                        return Err(Error::CommunicationError(
+                                            "Multiple SPI IN endpoints",
+                                        )
+                                        .into());
                                     }
                                 }
                                 rusb::Direction::Out => {
                                     if let Some(_) = out_endpoint.replace(endpoint_desc.address()) {
-                                        return Err(Error::CommunicationError
-                                                   ("Multiple SPI OUT endpoints").into());
+                                        return Err(Error::CommunicationError(
+                                            "Multiple SPI OUT endpoints",
+                                        )
+                                        .into());
                                     }
                                 }
                             }
@@ -125,17 +140,20 @@ impl Hyperdebug {
                                     in_endpoint,
                                     out_endpoint,
                                 }) {
-                                    return Err(Error::CommunicationError
-                                               ("Multiple SPI interfaces").into());
+                                    return Err(Error::CommunicationError(
+                                        "Multiple SPI interfaces",
+                                    )
+                                    .into());
                                 }
                             }
                             _ => {
-                                return Err(Error::CommunicationError
-                                           ("Missing SPI interface").into());
+                                return Err(
+                                    Error::CommunicationError("Missing SPI interface").into()
+                                );
                             }
                         }
                     }
-                    _ => ()
+                    _ => (),
                 }
             }
         }
@@ -147,15 +165,17 @@ impl Hyperdebug {
         };
         let result = Hyperdebug {
             spi_names,
-            spi_interface: spi_interface.ok_or(Error::CommunicationError("Missing SPI interface"))?,
+            spi_interface: spi_interface
+                .ok_or(Error::CommunicationError("Missing SPI interface"))?,
             uart_ttys,
             inner: Rc::new(Inner {
-                console_tty: console_tty.ok_or(Error::CommunicationError("Missing console interface"))?,
+                console_tty: console_tty
+                    .ok_or(Error::CommunicationError("Missing console interface"))?,
                 usb_device: RefCell::new(device),
                 gpio: Default::default(),
                 spis: Default::default(),
                 uarts: Default::default(),
-            })
+            }),
         };
         Ok(result)
     }
@@ -187,7 +207,6 @@ pub struct Inner {
 }
 
 impl Inner {
-
     /// Send a command to HyperDebug firmware, with a callback to receive any output.
     pub fn execute_command(&self, cmd: &str, mut callback: impl FnMut(&str)) -> Result<()> {
         let mut port = serialport::new(
@@ -206,15 +225,16 @@ impl Inner {
         loop {
             match port.read(&mut buf) {
                 Ok(rc) => {
-                    log::info!("Discarded {} characters: {:?}\n", rc,
-                               &std::str::from_utf8(&buf[0..rc]));
+                    log::info!(
+                        "Discarded {} characters: {:?}\n",
+                        rc,
+                        &std::str::from_utf8(&buf[0..rc])
+                    );
                 }
                 Err(error) if error.kind() == ErrorKind::TimedOut => {
                     break;
                 }
-                Err(error) => {
-                    return Err(error.into())
-                }
+                Err(error) => return Err(error.into()),
             }
         }
         // Send Ctrl-C, followed by the command, then newline.  This will discard any previous
@@ -249,8 +269,8 @@ impl Inner {
                             if seen_echo {
                                 callback(line);
                             } else {
-                                if line.len() >= cmd.len()
-                                    && line[line.len() - cmd.len()..] == *cmd {
+                                if line.len() >= cmd.len() && line[line.len() - cmd.len()..] == *cmd
+                                {
                                     seen_echo = true;
                                 }
                             }
@@ -268,7 +288,7 @@ impl Inner {
                         // No data arrived for a while, and the last we got was a command
                         // prompt, this is what we expect when the command has finished
                         // successfully.
-                        return Ok(())
+                        return Ok(());
                     } else {
                         // No data arrived for a while, but the last was no a command prompt,
                         // this could be the command taking a little time to produce its output,
@@ -281,9 +301,7 @@ impl Inner {
                         }
                     }
                 }
-                Err(error) => {
-                    return Err(error.into())
-                }
+                Err(error) => return Err(error.into()),
             }
         }
     }
@@ -310,19 +328,21 @@ impl Transport for Hyperdebug {
 
     // Crate SPI Target instance, or return one from a cache of previously created instances.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
-        let &idx = self.spi_names.get(instance)
+        let &idx = self
+            .spi_names
+            .get(instance)
             .ok_or_else(|| TransportError::InvalidInstance("spi", instance.to_string()))?;
         if let Some(instance) = self.inner.spis.borrow().get(&idx) {
             return Ok(Rc::clone(instance));
         }
-        let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(
-            &self,
-            idx,
-        )?);
-        self.inner.spis.borrow_mut().insert(idx, Rc::clone(&instance));
+        let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(&self, idx)?);
+        self.inner
+            .spis
+            .borrow_mut()
+            .insert(idx, Rc::clone(&instance));
         Ok(instance)
     }
-    
+
     // Crate Uart instance, or return one from a cache of previously created instances.
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         match self.uart_ttys.get(instance) {
@@ -330,28 +350,27 @@ impl Transport for Hyperdebug {
                 if let Some(instance) = self.inner.uarts.borrow().get(tty) {
                     return Ok(Rc::clone(instance));
                 }
-                let instance: Rc<dyn Uart> = Rc::new(uart::HyperdebugUart::open(
-                            &self,
-                            tty,
-                        )?);
-                self.inner.uarts.borrow_mut().insert(tty.clone(), Rc::clone(&instance));
+                let instance: Rc<dyn Uart> = Rc::new(uart::HyperdebugUart::open(&self, tty)?);
+                self.inner
+                    .uarts
+                    .borrow_mut()
+                    .insert(tty.clone(), Rc::clone(&instance));
                 Ok(instance)
             }
-            _ => Err(TransportError::InvalidInstance("uart", instance.to_string()).into())
+            _ => Err(TransportError::InvalidInstance("uart", instance.to_string()).into()),
         }
     }
-    
+
     // Crate GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
-        Ok(match self.inner.gpio.borrow_mut().entry(pinname.to_string()) {
-            Entry::Vacant(v) => {
-                let u = v.insert(Rc::new(gpio::HyperdebugGpioPin::open(
-                    &self,
-                    pinname,
-                )?));
-                Rc::clone(u)
-            }
-            Entry::Occupied(o) => Rc::clone(o.get()),
-        })
+        Ok(
+            match self.inner.gpio.borrow_mut().entry(pinname.to_string()) {
+                Entry::Vacant(v) => {
+                    let u = v.insert(Rc::new(gpio::HyperdebugGpioPin::open(&self, pinname)?));
+                    Rc::clone(u)
+                }
+                Entry::Occupied(o) => Rc::clone(o.get()),
+            },
+        )
     }
 }

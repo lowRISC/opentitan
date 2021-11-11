@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Result};
-use rusb::{Direction,RequestType,Recipient};
+use rusb::{Direction, Recipient, RequestType};
 use std::mem::size_of;
 use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
 use crate::io::spi::{SpiError, Target, Transfer, TransferMode};
-use crate::transport::hyperdebug::{Hyperdebug, Inner, BulkInterface, Error};
+use crate::transport::hyperdebug::{BulkInterface, Error, Hyperdebug, Inner};
 
 pub struct HyperdebugSpiTarget {
     inner: Rc<Inner>,
@@ -114,21 +114,24 @@ impl RspTransferContinue {
 impl HyperdebugSpiTarget {
     pub fn open(hyperdebug: &Hyperdebug, idx: u8) -> Result<Self> {
         let mut usb_handle = hyperdebug.inner.usb_device.borrow_mut();
-        
+
         // Tell HyperDebug to enable SPI bridge.
         usb_handle.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             USB_SPI_REQ_ENABLE,
-            0 /* wValue */,
+            0, /* wValue */
             hyperdebug.spi_interface.interface as u16,
-            &mut [])?;
+            &mut [],
+        )?;
 
         // Exclusively claim SPI interface, preparing for bulk transfers.
         usb_handle.claim_interface(hyperdebug.spi_interface.interface)?;
 
         // Initial bulk request/response to query capabilities.
-        usb_handle.write_bulk(hyperdebug.spi_interface.out_endpoint,
-                              &USB_SPI_PKT_ID_CMD_GET_USB_SPI_CONFIG.to_le_bytes())?;
+        usb_handle.write_bulk(
+            hyperdebug.spi_interface.out_endpoint,
+            &USB_SPI_PKT_ID_CMD_GET_USB_SPI_CONFIG.to_le_bytes(),
+        )?;
         let mut resp: RspUsbSpiConfig = Default::default();
         let rc = usb_handle.read_bulk(hyperdebug.spi_interface.in_endpoint, resp.as_bytes_mut())?;
         ensure!(
@@ -173,7 +176,7 @@ impl HyperdebugSpiTarget {
         }
         Ok(())
     }
-    
+
     /// Receive data for a single SPI operation, using one or more USB packets.
     fn receive(&self, rbuf: &mut [u8]) -> Result<()> {
         let mut resp = RspTransferStart::new();
@@ -186,7 +189,10 @@ impl HyperdebugSpiTarget {
             resp.packet_id == USB_SPI_PKT_ID_RSP_TRANSFER_START,
             Error::CommunicationError("Unrecognized reponse to TRANSFER_START")
         );
-        ensure!(resp.status_code == 0, Error::CommunicationError("SPI error"));
+        ensure!(
+            resp.status_code == 0,
+            Error::CommunicationError("SPI error")
+        );
         let databytes = bytecount - 4;
         rbuf[0..databytes].clone_from_slice(&resp.data[0..databytes]);
         let mut index = databytes;
@@ -214,13 +220,20 @@ impl HyperdebugSpiTarget {
 
     /// Send one USB packet.
     fn usb_write_bulk(&self, buf: &[u8]) -> Result<()> {
-        self.inner.usb_device.borrow().write_bulk(self.interface.out_endpoint, buf)?;
+        self.inner
+            .usb_device
+            .borrow()
+            .write_bulk(self.interface.out_endpoint, buf)?;
         Ok(())
     }
 
     /// Receive one USB packet.
     fn usb_read_bulk(&self, buf: &mut [u8]) -> Result<usize> {
-        Ok(self.inner.usb_device.borrow().read_bulk(self.interface.in_endpoint, buf)?)
+        Ok(self
+            .inner
+            .usb_device
+            .borrow()
+            .read_bulk(self.interface.in_endpoint, buf)?)
     }
 }
 
@@ -246,9 +259,7 @@ impl Target for HyperdebugSpiTarget {
         todo!();
     }
     fn set_max_speed(&self, _frequency: u32) -> Result<()> {
-        log::info!(
-            "Setting of SPI speed not implemented for HyperDebug, ignoring\n",
-        );
+        log::info!("Setting of SPI speed not implemented for HyperDebug, ignoring\n",);
         Ok(())
     }
 
@@ -270,10 +281,14 @@ impl Target for HyperdebugSpiTarget {
                     // Hyperdebug can do SPI write followed by SPI read as a single USB
                     // request/reply.  Take advantage of that by detecting pairs of
                     // Transfer::Write followed by Transfer::Read.
-                    ensure!(wbuf.len() <= self.max_chunk_size,
-                            SpiError::InvalidDataLength(wbuf.len()));
-                    ensure!(rbuf.len() <= self.max_chunk_size,
-                            SpiError::InvalidDataLength(rbuf.len()));
+                    ensure!(
+                        wbuf.len() <= self.max_chunk_size,
+                        SpiError::InvalidDataLength(wbuf.len())
+                    );
+                    ensure!(
+                        rbuf.len() <= self.max_chunk_size,
+                        SpiError::InvalidDataLength(rbuf.len())
+                    );
                     self.transmit(wbuf, rbuf.len())?;
                     self.receive(rbuf)?;
                     // Skip two steps ahead, as two items were processed.
@@ -281,26 +296,34 @@ impl Target for HyperdebugSpiTarget {
                     continue;
                 }
                 [Transfer::Write(wbuf), ..] => {
-                    ensure!(wbuf.len() <= self.max_chunk_size,
-                            SpiError::InvalidDataLength(wbuf.len()));
+                    ensure!(
+                        wbuf.len() <= self.max_chunk_size,
+                        SpiError::InvalidDataLength(wbuf.len())
+                    );
                     self.transmit(wbuf, 0)?;
                     self.receive(&mut [])?;
                 }
                 [Transfer::Read(rbuf), ..] => {
-                    ensure!(rbuf.len() <= self.max_chunk_size,
-                            SpiError::InvalidDataLength(rbuf.len()));
+                    ensure!(
+                        rbuf.len() <= self.max_chunk_size,
+                        SpiError::InvalidDataLength(rbuf.len())
+                    );
                     self.transmit(&[], rbuf.len())?;
                     self.receive(rbuf)?;
                 }
                 [Transfer::Both(wbuf, rbuf), ..] => {
-                    ensure!(rbuf.len() == wbuf.len(),
-                            SpiError::MismatchedDataLength(wbuf.len(), rbuf.len()));
-                    ensure!(wbuf.len() <= self.max_chunk_size,
-                            SpiError::InvalidDataLength(wbuf.len()));
+                    ensure!(
+                        rbuf.len() == wbuf.len(),
+                        SpiError::MismatchedDataLength(wbuf.len(), rbuf.len())
+                    );
+                    ensure!(
+                        wbuf.len() <= self.max_chunk_size,
+                        SpiError::InvalidDataLength(wbuf.len())
+                    );
                     self.transmit(wbuf, FULL_DUPLEX)?;
                     self.receive(rbuf)?;
                 }
-                [] => ()
+                [] => (),
             }
             idx += 1;
         }
