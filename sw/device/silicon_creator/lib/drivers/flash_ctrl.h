@@ -99,15 +99,6 @@ typedef enum flash_crtl_partition {
   X(kFlashCtrlInfoPageOwnerReserved1,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 7)), \
   X(kFlashCtrlInfoPageOwnerReserved2,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 8)), \
   X(kFlashCtrlInfoPageOwnerReserved3,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 9)), \
-  /*
-   * Bank 0 information partition type 1 pages.
-   */ \
-  X(kFlashCtrlInfoPageBank0Type1Page0,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo1, 0)), \
-  /**
-   * Bank 0 information parititon type 2 pages.
-   */ \
-  X(kFlashCtrlInfoPageBank0Type2Page0,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo2, 0)), \
-  X(kFlashCtrlInfoPageBank0Type2Page1,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo2, 1)), \
   /**
    * Bank 1 information partition type 0 pages.
    */ \
@@ -121,15 +112,6 @@ typedef enum flash_crtl_partition {
   X(kFlashCtrlInfoPageBootServices,       INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 7)), \
   X(kFlashCtrlInfoPageOwnerCerificate0,   INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 8)), \
   X(kFlashCtrlInfoPageOwnerCerificate1,   INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 9)), \
-  /*
-   * Bank 1 information partition type 1 pages.
-   */ \
-  X(kFlashCtrlInfoPageBank1Type1Page0,    INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo1, 0)), \
-  /**
-   * Bank 1 information parititon type 2 pages.
-   */ \
-  X(kFlashCtrlInfoPageBank1Type2Page0,    INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo2, 0)), \
-  X(kFlashCtrlInfoPageBank1Type2Page1,    INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo2, 1)),
 // clang-format on
 
 /**
