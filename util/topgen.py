@@ -584,12 +584,19 @@ def generate_flash(topcfg, out_path):
     gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
 
 
-def generate_top_only(top_only_list, out_path, topname):
+def generate_top_only(top_only_dict, out_path, topname, alt_hjson_path):
     log.info("Generating top only modules")
 
-    for ip in top_only_list:
-        hjson_path = Path(__file__).resolve(
-        ).parent / "../hw/top_{}/ip/{}/data/{}.hjson".format(topname, ip, ip)
+    for ip, reggen_only in top_only_dict.items():
+
+        if reggen_only and alt_hjson_path is not None:
+            hjson_dir = Path(alt_hjson_path)
+        else:
+            hjson_dir = Path(__file__).resolve(
+            ).parent / f"../hw/top_{topname}/ip/{ip}/data/"
+
+        hjson_path = hjson_dir / f"{ip}.hjson"
+
         genrtl_dir = out_path / "ip/{}/rtl".format(ip)
         genrtl_dir.mkdir(parents=True, exist_ok=True)
         log.info("Generating top modules {}, hjson: {}, output: {}".format(
@@ -711,11 +718,12 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
 
     # These modules are NOT generated but belong to a specific top
     # and therefore not part of "hw/ip"
-    top_only_list = [
-        module['type'] for module in topcfg['module']
+    top_only_dict = {
+        module['type']: lib.is_reggen_only(module)
+        for module in topcfg['module']
         if lib.is_top_reggen(module)
-    ]
-    log.info("Filtered list is {}".format(top_only_list))
+    }
+    log.info("Filtered dict is {}".format(top_only_dict))
 
     topname = topcfg["name"]
 
@@ -724,7 +732,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     ips = search_ips(ip_dir)
 
     # exclude filtered IPs (to use top_${topname} one) and
-    exclude_list = generated_list + top_only_list
+    exclude_list = generated_list + list(top_only_dict.keys())
     ips = [x for x in ips if not x.parents[1].name in exclude_list]
 
     # Hack alert
@@ -760,9 +768,14 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
             ip_hjson = hjson_dir.parent / ip_relpath / ip / desc_file_relpath / f"{ip}.hjson"
         ips.append(ip_hjson)
 
-    for ip in top_only_list:
+    for ip, reggen_only in top_only_dict.items():
         log.info("Appending {}".format(ip))
-        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(ip, ip)
+
+        if reggen_only and args.hjson_path:
+            ip_hjson = Path(args.hjson_path) / f"{ip}.hjson"
+        else:
+            ip_hjson = hjson_dir.parent / f"ip/{ip}/data/{ip}.hjson"
+
         ips.append(ip_hjson)
 
     # load Hjson and pass validate from reggen
@@ -888,7 +901,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
 
     # Generate top only modules
     # These modules are not templated, but are not in hw/ip
-    generate_top_only(top_only_list, out_path, topname)
+    generate_top_only(top_only_dict, out_path, topname, args.hjson_path)
 
     return completecfg, name_to_block
 
@@ -905,6 +918,15 @@ def main():
         help='''Target TOP directory.
              Module is created under rtl/. (default: dir(topcfg)/..)
              ''')  # yapf: disable
+    parser.add_argument(
+        '--hjson_path',
+        help='''
+          If defined, topgen uses supplied path to search for ip hjson.
+          This applies only to ip's with the `reggen_only` attribute.
+          If an hjson is located both in the conventional path and the alternate
+          path, the alternate path has priority.
+        '''
+    )
     parser.add_argument('--verbose', '-v', action='store_true', help="Verbose")
 
     # Generator options: 'no' series. cannot combined with 'only' series
@@ -989,6 +1011,9 @@ def main():
         raise SystemExit(sys.exc_info()[1])
     else:
         outdir = Path(args.outdir)
+
+    if args.hjson_path is not None:
+        log.error("Alternate hjson path is {args.hjson_path}")
 
     out_path = Path(outdir)
     cfg_path = Path(args.topcfg).parents[1]

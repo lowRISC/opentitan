@@ -333,24 +333,22 @@ def get_unused_resets(top):
 def is_templated(module):
     """Returns an indication where a particular module is templated
     """
-    if "attr" not in module:
-        return False
-    elif module["attr"] in ["templated"]:
-        return True
-    else:
-        return False
+    return module.get('attr') in ["templated"]
 
 
 def is_top_reggen(module):
     """Returns an indication where a particular module is NOT templated
        and requires top level specific reggen
     """
-    if "attr" not in module:
-        return False
-    elif module["attr"] in ["reggen_top", "reggen_only"]:
-        return True
-    else:
-        return False
+    return module.get('attr') in ["reggen_top", "reggen_only"]
+
+
+def is_reggen_only(module):
+    """Returns an indication where a particular module is NOT templated,
+       requires top level specific reggen and is NOT instantiated in the
+       top
+    """
+    return module.get('attr') == "reggen_only"
 
 
 def is_inst(module):
