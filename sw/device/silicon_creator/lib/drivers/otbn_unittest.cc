@@ -32,7 +32,7 @@ TEST_F(StartTest, Success) {
   // Send EXECUTE command.
   EXPECT_ABS_WRITE32(base_ + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
 
-  EXPECT_EQ(otbn_execute(), kOtbnErrorOk);
+  otbn_execute();
 }
 
 class IsBusyTest : public OtbnTest {};

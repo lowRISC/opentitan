@@ -57,9 +57,8 @@ static otbn_error_t check_offset_len(uint32_t offset_bytes, size_t num_words,
   return kOtbnErrorOk;
 }
 
-otbn_error_t otbn_execute(void) {
+void otbn_execute(void) {
   abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
-  return kOtbnErrorOk;
 }
 
 bool otbn_is_busy() {
