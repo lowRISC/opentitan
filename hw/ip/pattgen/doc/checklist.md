@@ -118,7 +118,7 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [Pattgen DV document]({{<relref "dv" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [Pattgen DV document]({{<relref "dv" >}})
 Documentation | [TESTPLAN_COMPLETED][]                | Done        | [Pattgen Testplan]({{<relref "dv/index.md#testplan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
@@ -137,7 +137,7 @@ Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         | Except for IP module
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
-Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
+Review        | [TESTPLAN_REVIEWED][]                 | Done        |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Exception (Security, Power, Debug)
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
