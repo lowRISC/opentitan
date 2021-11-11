@@ -15,6 +15,7 @@ class jtag_riscv_item extends uvm_sequence_item;
   rand logic [DMI_OPW-1:0]   op;   // operation or status
   rand logic [DMI_DATAW-1:0] data;
   rand logic [DMI_ADDRW-1:0] addr; // word address
+  logic [DMI_OPW-1:0] status;      // status of DMI operation
 
   constraint ir_len_c {
     ir_len <= JTAG_IRW;
