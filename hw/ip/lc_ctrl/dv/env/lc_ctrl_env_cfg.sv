@@ -11,6 +11,7 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
   alert_esc_agent_cfg  m_esc_scrap_state1_agent_cfg;
   alert_esc_agent_cfg  m_esc_scrap_state0_agent_cfg;
   jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
+  uvm_reg_map          jtag_riscv_map;
 
   // ext interfaces
   pwr_lc_vif  pwr_lc_vif;
@@ -60,6 +61,75 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
     `DV_CHECK_RANDOMIZE_FATAL(m_jtag_riscv_agent_cfg)
 
     jtag_csr = 0;
+
+    // Set base address for JTAG map
+    ral.set_base_addr(ral.default_map.get_base_addr(), jtag_riscv_map);
+    //jtag_riscv_map.set_base_addr(csr_base_addr);
+
+    ral.print();
+  endfunction
+
+  protected virtual function void apply_ral_fixes();
+    uvm_reg_map clone;
+    // Current block being built is saved to 'ral'
+    jtag_riscv_map = clone_reg_map("jtag_riscv_map", ral.default_map);
+  endfunction
+
+  virtual function uvm_reg_map clone_reg_map(
+        string name,
+        uvm_reg_map map,
+        uvm_reg_addr_t base_addr = 0,
+        int n_bytes = 4,
+        uvm_endianness_e endian = UVM_LITTLE_ENDIAN,
+        bit byte_addressing = 1
+        );
+    uvm_reg_map clone;
+    uvm_reg_map submaps[$];
+    uvm_reg regs[$];
+    uvm_reg_block blk;
+    uvm_mem mems[$];
+
+    map.get_submaps(submaps);
+    if (submaps.size()) `uvm_fatal(`gfn, "clone_reg_map: submaps are not yet implemented");
+
+    // Clone the map
+    blk=map.get_parent();
+    clone = blk.create_map(
+      .name(name),
+   		.base_addr(base_addr),
+      .n_bytes(n_bytes),
+   		.endian(endian),
+   		.byte_addressing(byte_addressing)
+      );
+
+    // Clone the registers
+    map.get_registers(regs, UVM_NO_HIER);
+    while (regs.size()) begin
+      uvm_reg rg;
+      rg = regs.pop_front();
+      clone.add_reg(
+        .rg(rg),
+        .offset(rg.get_offset(map)),
+        .rights(rg.get_rights(map)),
+        .unmapped(0),
+        .frontdoor(null)
+      );
+    end
+
+    // Clone the memories
+    map.get_memories(mems, UVM_NO_HIER);
+    while (mems.size()) begin
+      uvm_mem mem;
+      mem = mems.pop_front();
+      clone.add_mem(
+        .mem(mem),
+        .offset(mem.get_offset(0, map)),
+        .rights(mem.get_rights(map)),
+        .unmapped(0),
+        .frontdoor(null)
+      );
+    end
+    return clone;
   endfunction
 
 endclass
