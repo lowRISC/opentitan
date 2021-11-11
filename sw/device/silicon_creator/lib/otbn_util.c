@@ -71,7 +71,8 @@ otbn_error_t otbn_execute_app(otbn_t *ctx) {
     return kOtbnErrorInvalidArgument;
   }
 
-  return otbn_execute();
+  otbn_execute();
+  return kOtbnErrorOk;
 }
 
 otbn_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len,

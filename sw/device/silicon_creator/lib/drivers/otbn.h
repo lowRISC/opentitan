@@ -73,12 +73,9 @@ typedef enum otbn_error_t {
   } while (0)
 
 /**
- * Start the execution of the application loaded into OTBN
- *
- * @return `kOtbnErrorInvalidArgument` if `start_addr` is invalid,
- * `kOtbnErrorOk` otherwise.
+ * Start the execution of the application loaded into OTBN.
  */
-otbn_error_t otbn_execute(void);
+void otbn_execute(void);
 
 /**
  * Is OTBN busy executing an application?
