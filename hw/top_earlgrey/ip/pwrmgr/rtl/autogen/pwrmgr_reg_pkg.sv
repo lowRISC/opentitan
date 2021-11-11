@@ -18,7 +18,7 @@ package pwrmgr_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int BlockAw = 6;
+  parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -96,6 +96,15 @@ package pwrmgr_reg_pkg;
   } pwrmgr_reg2hw_wake_info_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+    } reg_intg_err;
+    struct packed {
+      logic        q;
+    } esc_timeout;
+  } pwrmgr_reg2hw_fault_status_reg_t;
+
+  typedef struct packed {
     logic        d;
     logic        de;
   } pwrmgr_hw2reg_intr_state_reg_t;
@@ -143,49 +152,63 @@ package pwrmgr_reg_pkg;
     } abort;
   } pwrmgr_hw2reg_wake_info_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } reg_intg_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } esc_timeout;
+  } pwrmgr_hw2reg_fault_status_reg_t;
+
   // Register -> HW type
   typedef struct packed {
-    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [33:33]
-    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [32:32]
-    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [31:30]
-    pwrmgr_reg2hw_alert_test_reg_t alert_test; // [29:28]
-    pwrmgr_reg2hw_control_reg_t control; // [27:22]
-    pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [21:20]
-    pwrmgr_reg2hw_wakeup_en_mreg_t [5:0] wakeup_en; // [19:14]
-    pwrmgr_reg2hw_reset_en_mreg_t [1:0] reset_en; // [13:12]
-    pwrmgr_reg2hw_wake_info_capture_dis_reg_t wake_info_capture_dis; // [11:11]
-    pwrmgr_reg2hw_wake_info_reg_t wake_info; // [10:0]
+    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [35:35]
+    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [34:34]
+    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [33:32]
+    pwrmgr_reg2hw_alert_test_reg_t alert_test; // [31:30]
+    pwrmgr_reg2hw_control_reg_t control; // [29:24]
+    pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [23:22]
+    pwrmgr_reg2hw_wakeup_en_mreg_t [5:0] wakeup_en; // [21:16]
+    pwrmgr_reg2hw_reset_en_mreg_t [1:0] reset_en; // [15:14]
+    pwrmgr_reg2hw_wake_info_capture_dis_reg_t wake_info_capture_dis; // [13:13]
+    pwrmgr_reg2hw_wake_info_reg_t wake_info; // [12:2]
+    pwrmgr_reg2hw_fault_status_reg_t fault_status; // [1:0]
   } pwrmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [32:31]
-    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [30:30]
-    pwrmgr_hw2reg_control_reg_t control; // [29:28]
-    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [27:26]
-    pwrmgr_hw2reg_wake_status_mreg_t [5:0] wake_status; // [25:14]
-    pwrmgr_hw2reg_reset_status_mreg_t [1:0] reset_status; // [13:10]
-    pwrmgr_hw2reg_escalate_reset_status_reg_t escalate_reset_status; // [9:8]
-    pwrmgr_hw2reg_wake_info_reg_t wake_info; // [7:0]
+    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [36:35]
+    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [34:34]
+    pwrmgr_hw2reg_control_reg_t control; // [33:32]
+    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [31:30]
+    pwrmgr_hw2reg_wake_status_mreg_t [5:0] wake_status; // [29:18]
+    pwrmgr_hw2reg_reset_status_mreg_t [1:0] reset_status; // [17:14]
+    pwrmgr_hw2reg_escalate_reset_status_reg_t escalate_reset_status; // [13:12]
+    pwrmgr_hw2reg_wake_info_reg_t wake_info; // [11:4]
+    pwrmgr_hw2reg_fault_status_reg_t fault_status; // [3:0]
   } pwrmgr_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] PWRMGR_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [BlockAw-1:0] PWRMGR_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [BlockAw-1:0] PWRMGR_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [BlockAw-1:0] PWRMGR_ALERT_TEST_OFFSET = 6'h c;
-  parameter logic [BlockAw-1:0] PWRMGR_CTRL_CFG_REGWEN_OFFSET = 6'h 10;
-  parameter logic [BlockAw-1:0] PWRMGR_CONTROL_OFFSET = 6'h 14;
-  parameter logic [BlockAw-1:0] PWRMGR_CFG_CDC_SYNC_OFFSET = 6'h 18;
-  parameter logic [BlockAw-1:0] PWRMGR_WAKEUP_EN_REGWEN_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] PWRMGR_WAKEUP_EN_OFFSET = 6'h 20;
-  parameter logic [BlockAw-1:0] PWRMGR_WAKE_STATUS_OFFSET = 6'h 24;
-  parameter logic [BlockAw-1:0] PWRMGR_RESET_EN_REGWEN_OFFSET = 6'h 28;
-  parameter logic [BlockAw-1:0] PWRMGR_RESET_EN_OFFSET = 6'h 2c;
-  parameter logic [BlockAw-1:0] PWRMGR_RESET_STATUS_OFFSET = 6'h 30;
-  parameter logic [BlockAw-1:0] PWRMGR_ESCALATE_RESET_STATUS_OFFSET = 6'h 34;
-  parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET = 6'h 38;
-  parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_OFFSET = 6'h 3c;
+  parameter logic [BlockAw-1:0] PWRMGR_INTR_STATE_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] PWRMGR_INTR_ENABLE_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] PWRMGR_INTR_TEST_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] PWRMGR_ALERT_TEST_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] PWRMGR_CTRL_CFG_REGWEN_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] PWRMGR_CONTROL_OFFSET = 7'h 14;
+  parameter logic [BlockAw-1:0] PWRMGR_CFG_CDC_SYNC_OFFSET = 7'h 18;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKEUP_EN_REGWEN_OFFSET = 7'h 1c;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKEUP_EN_OFFSET = 7'h 20;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKE_STATUS_OFFSET = 7'h 24;
+  parameter logic [BlockAw-1:0] PWRMGR_RESET_EN_REGWEN_OFFSET = 7'h 28;
+  parameter logic [BlockAw-1:0] PWRMGR_RESET_EN_OFFSET = 7'h 2c;
+  parameter logic [BlockAw-1:0] PWRMGR_RESET_STATUS_OFFSET = 7'h 30;
+  parameter logic [BlockAw-1:0] PWRMGR_ESCALATE_RESET_STATUS_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET = 7'h 38;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] PWRMGR_FAULT_STATUS_OFFSET = 7'h 40;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] PWRMGR_INTR_TEST_RESVAL = 1'h 0;
@@ -216,11 +239,12 @@ package pwrmgr_reg_pkg;
     PWRMGR_RESET_STATUS,
     PWRMGR_ESCALATE_RESET_STATUS,
     PWRMGR_WAKE_INFO_CAPTURE_DIS,
-    PWRMGR_WAKE_INFO
+    PWRMGR_WAKE_INFO,
+    PWRMGR_FAULT_STATUS
   } pwrmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] PWRMGR_PERMIT [16] = '{
+  parameter logic [3:0] PWRMGR_PERMIT [17] = '{
     4'b 0001, // index[ 0] PWRMGR_INTR_STATE
     4'b 0001, // index[ 1] PWRMGR_INTR_ENABLE
     4'b 0001, // index[ 2] PWRMGR_INTR_TEST
@@ -236,7 +260,8 @@ package pwrmgr_reg_pkg;
     4'b 0001, // index[12] PWRMGR_RESET_STATUS
     4'b 0001, // index[13] PWRMGR_ESCALATE_RESET_STATUS
     4'b 0001, // index[14] PWRMGR_WAKE_INFO_CAPTURE_DIS
-    4'b 0001  // index[15] PWRMGR_WAKE_INFO
+    4'b 0001, // index[15] PWRMGR_WAKE_INFO
+    4'b 0001  // index[16] PWRMGR_FAULT_STATUS
   };
 
 endpackage
