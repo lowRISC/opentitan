@@ -454,13 +454,33 @@ module spi_passthrough
   // event
   assign event_cmd_filtered_o = filter;
 
-  // Mailbox hit.
-  logic mailbox_hit;
+  // SPI Flash submodules intercept Passthrough transaction.
+  //
+  // Passthrough logic cancels current SPI transaction to the downstream flash
+  // device. Input may be a pulse, the signal sets `intercept` to be free from
+  // timing.
+  logic intercept, intercept_q, intercept_set;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) mailbox_hit <= 1'b 0; // reset by CSb
-    else if (mailbox_hit_i) mailbox_hit <= 1'b 1; // set by event
+    if (!rst_ni)            intercept_q <= 1'b 0; // reset by CSb
+    else if (intercept_set) intercept_q <= 1'b 1; // set by event
   end
+
+  // TODO: change mailbox_hit_i
+  assign intercept_set = mailbox_hit_i;
+
+  // intercept signal should represent `intercept_set` signal to process Read
+  // Status, Read JEDEC ID cases.
+  // These commands return data right after opcode. When intercept happens,
+  // the SPID top occupies the SPI towards the host system. The ongoing
+  // transaction to the downstream device may not harm the device. Still, if
+  // timing allows, it is safer to filter when the event occurs.
+  //
+  // However, due to timing, the logic latches the `intercept` event and use
+  // the latched signal. To safely process Read Status / Read JEDEC, if SW
+  // wants to return those commands' data from the internal flash mode, the SW
+  // needs to set the command filter bits for those commands.
+  assign intercept = intercept_q;
 
   //////////////
   // Datapath //
@@ -848,6 +868,13 @@ module spi_passthrough
       end
 
       StWait: begin
+        if (intercept) begin
+          // Checking intercept event.
+          st_d = StFilter;
+
+          filter = 1'b 1;
+        end
+
         // Device Returns Data to host
         st_d = StWait;
 
@@ -857,6 +884,13 @@ module spi_passthrough
       end
 
       StDriving: begin
+        if (intercept) begin
+          // Checking intercept event.
+          st_d = StFilter;
+
+          filter = 1'b 1;
+        end
+
         // Host sends Data to device
         st_d = StDriving;
 
@@ -881,9 +915,10 @@ module spi_passthrough
       StAddress: begin
         // based on state, addr_phase is set. So just check if counter reaches 0
         if (addrcnt == '0) begin
-          if (mailbox_hit) begin
-            // In Address phase, mailbox region hits. Then Passthrough filteres
-            // the command and deligates the control to ReadCmd submodule.
+          if (intercept) begin
+            // In Address phase, intercept may occur when Read command hits
+            // the mailbox region. Passthrough filteres the command and
+            // relinquishes the control to the SPI Flash submodules.
             st_d = StFilter;
 
             filter = 1'b 1;
@@ -920,9 +955,6 @@ module spi_passthrough
   ///////////////
   // Assertion //
   ///////////////
-
-  // Mailbox hit happens in the middle of Address phase, not at the end of it.
-  `ASSERT(MailboxHitConflictAddrCnt_A, mailbox_hit_i |-> (addrcnt != 0))
 
   // Assume when payload_swap_en is set, the direction is PayloadIn & only
   // Single mode is used
