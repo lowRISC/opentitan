@@ -5,10 +5,10 @@
 use anyhow::Result;
 
 use std::cell::RefCell;
-use std::time::Duration;
 use std::io::Read;
 use std::io::Write;
 use std::path::Path;
+use std::time::Duration;
 
 use crate::io::uart::Uart;
 use crate::transport::hyperdebug::Error;
@@ -20,11 +20,10 @@ pub struct HyperdebugUart {
 
 impl HyperdebugUart {
     pub fn open(_hyperdebug: &Hyperdebug, tty: &Path) -> Result<Self> {
-        let port =
-            serialport::new(tty.to_str().ok_or(Error::UnicodePathError)?,
-                            115_200)
+        let port = serialport::new(tty.to_str().ok_or(Error::UnicodePathError)?, 115_200)
             .timeout(Duration::from_millis(100))
-            .open().expect("Failed to open port");
+            .open()
+            .expect("Failed to open port");
         Ok(HyperdebugUart {
             port: RefCell::new(port),
         })
@@ -51,7 +50,7 @@ impl Uart for HyperdebugUart {
     fn get_baudrate(&self) -> u32 {
         match self.port.borrow().baud_rate() {
             Ok(baud_rate) => baud_rate,
-            _ => panic!("SerialPort::baud_rate() returned Err")
+            _ => panic!("SerialPort::baud_rate() returned Err"),
         }
     }
 

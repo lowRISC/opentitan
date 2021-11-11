@@ -13,8 +13,8 @@ use opentitanlib::transport::{EmptyTransport, Transport};
 use opentitanlib::util::parse_int::ParseInt;
 
 pub mod cw310;
-pub mod ultradebug;
 pub mod hyperdebug;
+pub mod ultradebug;
 pub mod verilator;
 
 #[derive(Debug, StructOpt)]

@@ -79,7 +79,7 @@ impl Backend {
 
     const VID_NEWAE: u16 = 0x2b3e;
     const PID_CW310: u16 = 0xc310;
-    
+
     /// Create a new connection to a CW310 board.
     pub fn new(
         usb_vid: Option<u16>,
@@ -90,7 +90,8 @@ impl Backend {
             usb: UsbBackend::new(
                 usb_vid.unwrap_or(Self::VID_NEWAE),
                 usb_pid.unwrap_or(Self::PID_CW310),
-                usb_serial)?,
+                usb_serial,
+            )?,
         })
     }
 

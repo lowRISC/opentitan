@@ -83,11 +83,7 @@ impl UsbBackend {
     }
 
     /// Create a new UsbBackend.
-    pub fn new(
-        usb_vid: u16,
-        usb_pid: u16,
-        usb_serial: Option<&str>,
-    ) -> Result<Self> {
+    pub fn new(usb_vid: u16, usb_pid: u16, usb_serial: Option<&str>) -> Result<Self> {
         let mut devices = UsbBackend::scan(usb_vid, usb_pid, usb_serial)?;
         ensure!(!devices.is_empty(), Error::NotFound);
         ensure!(devices.len() == 1, Error::MultipleDevices);
@@ -119,7 +115,7 @@ impl UsbBackend {
     pub fn active_config_descriptor(&self) -> Result<rusb::ConfigDescriptor> {
         Ok(self.device.active_config_descriptor()?)
     }
-    
+
     pub fn bus_number(&self) -> u8 {
         self.device.bus_number()
     }
@@ -127,7 +123,7 @@ impl UsbBackend {
     pub fn port_numbers(&self) -> Result<Vec<u8>> {
         Ok(self.device.port_numbers()?)
     }
-    
+
     pub fn read_string_descriptor_ascii(&self, idx: u8) -> Result<String> {
         Ok(self.handle.read_string_descriptor_ascii(idx)?)
     }
@@ -135,19 +131,35 @@ impl UsbBackend {
     //
     // Sending and receiving data, the below methods provide a nice interface.
     //
-    
+
     /// Issue a USB control request with optional host-to-device data.
-    pub fn write_control(&self, request_type: u8, request: u8,
-                         value: u16, index: u16, buf: &[u8]) -> Result<usize> {
-        Ok(self.handle.write_control(request_type, request, value, index, buf, self.timeout)?)
+    pub fn write_control(
+        &self,
+        request_type: u8,
+        request: u8,
+        value: u16,
+        index: u16,
+        buf: &[u8],
+    ) -> Result<usize> {
+        Ok(self
+            .handle
+            .write_control(request_type, request, value, index, buf, self.timeout)?)
     }
-                         
+
     /// Issue a USB control request with optional device-to-host data.
-    pub fn read_control(&self, request_type: u8, request: u8,
-                         value: u16, index: u16, buf: &mut [u8]) -> Result<usize> {
-        Ok(self.handle.read_control(request_type, request, value, index, buf, self.timeout)?)
+    pub fn read_control(
+        &self,
+        request_type: u8,
+        request: u8,
+        value: u16,
+        index: u16,
+        buf: &mut [u8],
+    ) -> Result<usize> {
+        Ok(self
+            .handle
+            .read_control(request_type, request, value, index, buf, self.timeout)?)
     }
-                         
+
     /// Read bulk data bytes to given USB endpoint.
     pub fn read_bulk(&self, endpoint: u8, data: &mut [u8]) -> Result<usize> {
         let len = self.handle.read_bulk(endpoint, data, self.timeout)?;
