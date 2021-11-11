@@ -100,7 +100,7 @@ module entropy_src_repcnts_ht #(
 
 
   // the pulses will be only one clock in length
-  assign test_fail_pulse_o = active_i && (test_cnt > '0);
+  assign test_fail_pulse_o = active_i && entropy_bit_vld_i && (|rep_cnt_fail);
   assign test_cnt_o = test_cnt;
   assign count_err_o = test_cnt_err || (|rep_cntr_err);
 
