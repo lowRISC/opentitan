@@ -122,7 +122,7 @@ module hmac
     if (!rst_ni) begin
       secret_key <= '0;
     end else if (wipe_secret) begin
-      secret_key <= secret_key ^ {8{wipe_v}};
+      secret_key <= {8{wipe_v}};
     end else if (!cfg_block) begin
       // Allow updating secret key only when the engine is in Idle.
       for (int i = 0; i < 8; i++) begin
