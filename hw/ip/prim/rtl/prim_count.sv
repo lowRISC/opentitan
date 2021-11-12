@@ -191,7 +191,7 @@ module prim_count import prim_count_pkg::*; #(
   // 1). For duplicate counter, sets the `cnt_o` to `set_cnt_i`.
   // 2). For cross up counter, sets the `max_value` to `set_cnt_i`.
   // 3). For cross down counter, sets the `cnt_o` and `max_value` to `set_cnt_i`.
-  `ASSERT(OutSet_A, set_i |=>
+  `ASSERT(OutSet_A, ##1 set_i |=>
           (CntStyle == DupCnt || OutSelDnCnt) ? cnt_o == $past(set_cnt_i) : cnt_o == 0)
 
   // This logic that will be assign to one, when user adds macro
