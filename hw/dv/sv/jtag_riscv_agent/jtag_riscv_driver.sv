@@ -4,7 +4,8 @@
 // Pseudo driver to access CSR via JTAG TAP
 class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_agent_cfg);
 
-  ITEM_T reqs[$];
+  // drive_jtag process handle
+  protected process m_drive_jtag_process_h;
 
   `uvm_object_utils(jtag_riscv_driver)
 
@@ -13,61 +14,60 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
   // reset signals
   virtual task reset_signals();
     `uvm_info(`gfn, "reset_signals: STARTED", UVM_MEDIUM)
-    // Clear the queue
-    reqs.delete();
+    // Kill drive_jtag if its running
+    if(m_drive_jtag_process_h != null) m_drive_jtag_process_h.kill();
+    // Kill any sequences running on the physical jtag sequencer
+    cfg.jtag_sequencer_h.stop_sequences();
   endtask
 
   // drive trans received from sequencer
   protected virtual task get_and_drive();
     `uvm_info(`gfn, "get_and_drive: STARTED", UVM_MEDIUM)
-
-    fork
-      drive_jtag();
-    join_none
-
     forever begin
       seq_item_port.get_next_item(req);
       `uvm_info(`gfn, {"got request: ", req.sprint(uvm_default_line_printer)}, UVM_HIGH)
       accept_tr(req);
       `downcast(rsp, req.clone())
       rsp.set_id_info(req);
-      reqs.push_back(rsp);
       seq_item_port.item_done();
+      fork
+        begin : drive_jtag_process
+          m_drive_jtag_process_h = process::self();
+          drive_jtag(rsp);
+        end : drive_jtag_process
+      join
+      // Send response
+      seq_item_port.put_response(rsp);
     end
   endtask
 
-  protected virtual task drive_jtag();
-    ITEM_T drive_req;
+  protected virtual task drive_jtag(ITEM_T drive_req);
     bit [DMI_DATAW-1:0] dout;
     bit [DMI_DATAW-1:0] rdata;
     bit [DMI_OPW-1:0] status;
-    forever begin
-      wait (reqs.size());
-      drive_req = reqs.pop_front();
-      `uvm_info(`gfn, drive_req.sprint(uvm_default_line_printer), UVM_HIGH)
 
-      // Mark start of transaction processing
-      void'(begin_tr(drive_req));
+    `uvm_info(`gfn, {"drive_jtag: ",
+         drive_req.sprint(uvm_default_line_printer)}, UVM_HIGH)
 
-      // Drive IR with DMI access
-      send_riscv_ir_req(JtagDmiAccess);
+    // Mark start of transaction processing
+    void'(begin_tr(drive_req));
 
-      // Drive DR with operation type, address, and data
-      send_csr_dr_req(drive_req.op, drive_req.data, drive_req.addr, dout);
+    // Drive IR with DMI access
+    send_riscv_ir_req(JtagDmiAccess);
 
-      // Get status of previous transfer
-      check_csr_req_status(status, rdata);
-      drive_req.status = status;
+    // Drive DR with operation type, address, and data
+    send_csr_dr_req(drive_req.op, drive_req.data, drive_req.addr, dout);
 
-      // Update CSR read data
-      if (drive_req.op == DmiRead) drive_req.data = rdata;
+    // Get status of previous transfer
+    check_csr_req_status(status, rdata);
+    drive_req.status = status;
 
-      // Mark end of transaction processing
-      end_tr(drive_req);
+    // Update CSR read data
+    if (drive_req.op == DmiRead) drive_req.data = rdata;
 
-      // Send response
-      seq_item_port.put_response(drive_req);
-    end
+    // Mark end of transaction processing
+    end_tr(drive_req);
+
   endtask
 
  protected virtual task send_riscv_ir_req(jtag_ir_e riscv_ir_req);
