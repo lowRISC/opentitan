@@ -13,9 +13,12 @@ cc_library(
 
 cc_library(
     name = "adc_ctrl",
-    hdrs = [
+    srcs = [
         "autogen/dif_adc_ctrl_autogen.c",
         "autogen/dif_adc_ctrl_autogen.h",
+    ],
+    hdrs = [
+        "dif_adc_ctrl.h",
     ],
     deps = [
         ":base",
@@ -30,6 +33,7 @@ cc_test(
         "autogen/dif_adc_ctrl_autogen.c",
         "autogen/dif_adc_ctrl_autogen.h",
         "autogen/dif_adc_ctrl_autogen_unittest.cc",
+        "dif_adc_ctrl.h",
     ],
     defines = [
         "MOCK_MMIO=1",
@@ -317,6 +321,9 @@ cc_library(
         "autogen/dif_spi_host_autogen.c",
         "autogen/dif_spi_host_autogen.h",
     ],
+    hdrs = [
+        "dif_spi_host.h",
+    ],
     deps = [
         ":base",
         "//hw/ip/spi_host/data:spi_host_regs",
@@ -330,6 +337,7 @@ cc_test(
         "autogen/dif_spi_host_autogen.c",
         "autogen/dif_spi_host_autogen.h",
         "autogen/dif_spi_host_autogen_unittest.cc",
+        "dif_spi_host.h",
     ],
     defines = [
         "MOCK_MMIO=1",
@@ -776,6 +784,9 @@ cc_library(
         "autogen/dif_pattgen_autogen.c",
         "autogen/dif_pattgen_autogen.h",
     ],
+    hdrs = [
+        "dif_pattgen.h",
+    ],
     deps = [
         ":base",
         "//hw/ip/pattgen/data:pattgen_regs",
@@ -789,6 +800,7 @@ cc_test(
         "autogen/dif_pattgen_autogen.c",
         "autogen/dif_pattgen_autogen.h",
         "autogen/dif_pattgen_autogen_unittest.cc",
+        "dif_pattgen.h",
     ],
     defines = [
         "MOCK_MMIO=1",
@@ -925,6 +937,9 @@ cc_library(
         "autogen/dif_flash_ctrl_autogen.c",
         "autogen/dif_flash_ctrl_autogen.h",
     ],
+    hdrs = [
+        "dif_flash_ctrl.h",
+    ],
     deps = [
         ":base",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
@@ -938,6 +953,7 @@ cc_test(
         "autogen/dif_flash_ctrl_autogen.c",
         "autogen/dif_flash_ctrl_autogen.h",
         "autogen/dif_flash_ctrl_autogen_unittest.cc",
+        "dif_flash_ctrl.h",
     ],
     defines = [
         "MOCK_MMIO=1",
@@ -1073,6 +1089,9 @@ cc_library(
         "autogen/dif_sysrst_ctrl_autogen.c",
         "autogen/dif_sysrst_ctrl_autogen.h",
     ],
+    hdrs = [
+        "dif_sysrst_ctrl.h",
+    ],
     deps = [
         ":base",
         "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_regs",
@@ -1086,6 +1105,7 @@ cc_test(
         "autogen/dif_sysrst_ctrl_autogen.c",
         "autogen/dif_sysrst_ctrl_autogen.h",
         "autogen/dif_sysrst_ctrl_autogen_unittest.cc",
+        "dif_sysrst_ctrl.h",
     ],
     defines = [
         "MOCK_MMIO=1",
