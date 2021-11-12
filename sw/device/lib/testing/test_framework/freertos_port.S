@@ -4,6 +4,7 @@
 
 // Ibex does not implement additional registers beyond the RV32I spec.
 #define PORT_WORD_SIZE 4
+#define PORT_HALF_WORD_SIZE (PORT_WORD_SIZE / 2)
 #define PORT_CONTEXT_SIZE (30 * PORT_WORD_SIZE)
 
 .extern pxCurrentTCB
@@ -12,6 +13,36 @@
 .extern ottf_software_isr
 .extern ottf_timer_isr
 .extern ottf_external_isr
+
+// -----------------------------------------------------------------------------
+
+/**
+ * Save MEPC to the stack.
+ *
+ * NOTE: this IRQ is synchronous, therefore, we must update the ISR return
+ * address to point to the instruction after the one that triggered this IRQ.
+ * Since we support the RISC-V compressed instructions extension, we need to
+ * check if the two least significant bits of the instruction are
+ * b11 (0x3), which means that the trapped instruction is not compressed,
+ * i.e., the trapped instruction is 32bits = 4bytes. Otherwise, the trapped
+ * instruction is 16bits = 2bytes.
+ */
+
+.balign 4
+.type process_mepc_on_synchronous_irq, @function
+process_mepc_on_synchronous_irq:
+  csrr t0, mepc
+  li t1, 0x3
+  and t2, t0, t1
+  beq t2, t1, L_32bit_trap_instr
+  addi t0, t0, PORT_HALF_WORD_SIZE
+  ret
+L_32bit_trap_instr:
+  addi t0, t0, PORT_WORD_SIZE
+  ret
+
+  // Set size so this function can be disassembled.
+  .size process_mepc_on_synchronous_irq, .-process_mepc_on_synchronous_irq
 
 // -----------------------------------------------------------------------------
 
@@ -57,11 +88,9 @@ handler_exception:
   csrr t0, mstatus
   sw t0, 29 * PORT_WORD_SIZE(sp)
 
-  // Save MEPC to the stack.
-  // NOTE: this IRQ is synchronous, therefore, we must update the ISR return
-  // address to point to the instruction after the one that triggered this IRQ.
-  csrr t0, mepc
-  addi t0, t0, PORT_WORD_SIZE
+  // Save MEPC to the stack after updating it to the next instruction (since
+  // this is a synchronous IRQ).
+  jal process_mepc_on_synchronous_irq
   sw t0, 0(sp)
 
   // Store stack pointer to current TCB.
@@ -121,11 +150,9 @@ handler_irq_software:
   csrr t0, mstatus
   sw t0, 29 * PORT_WORD_SIZE(sp)
 
-  // Save MEPC to the stack.
-  // NOTE: this IRQ is synchronous, therefore, we must update the ISR return
-  // address to point to the instruction after the one that triggered this IRQ.
-  csrr t0, mepc
-  addi t0, t0, PORT_WORD_SIZE
+  // Save MEPC to the stack after updating it to the next instruction (since
+  // this is a synchronous IRQ).
+  jal process_mepc_on_synchronous_irq
   sw t0, 0(sp)
 
   // Store stack pointer to current TCB.
