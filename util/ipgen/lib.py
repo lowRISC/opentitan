@@ -260,10 +260,10 @@ class IpConfig:
         return cls(template_params, instance_name, param_values)
 
     @classmethod
-    def from_text(cls, txt: str, where: str) -> 'IpConfig':
+    def from_text(cls, template_params: TemplateParams, txt: str, where: str) -> 'IpConfig':
         """Load an IpConfig from an Hjson description in txt"""
-        return cls.from_raw(
-            hjson.loads(txt, use_decimal=True, encoding="UTF-8"), where)
+        raw = hjson.loads(txt, use_decimal=True, encoding="UTF-8")
+        return cls.from_raw(template_params, raw, where)
 
     def to_file(self, file_path: Path, header: Optional[str] = ""):
         obj = {}
