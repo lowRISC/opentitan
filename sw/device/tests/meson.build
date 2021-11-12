@@ -658,6 +658,27 @@ sw_tests += {
   }
 }
 
+# SRAM Controller execution from Ret SRAM test.
+sram_ctrl_execution_test_ret_lib = declare_dependency(
+  link_with: static_library(
+    'sram_ctrl_execution_test_ret_lib',
+    sources: ['sram_ctrl_execution_test_ret.c'],
+    dependencies: [
+      sw_lib_dif_sram_ctrl,
+      sw_lib_irq_handlers,
+      sw_lib_runtime_ibex,
+      sw_lib_runtime_log,
+      sw_lib_testing_sram_ctrl_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'sram_ctrl_execution_test_ret': {
+    'library': sram_ctrl_execution_test_ret_lib,
+  }
+}
+
 ###############################################################################
 # Auto-generated tests
 ###############################################################################
