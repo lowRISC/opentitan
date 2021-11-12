@@ -68,25 +68,25 @@ mode:
 
 /* Output buffer for the resulting, recovered message. */
 .globl out_buf
-.balign 512
+.balign 32
 out_buf:
   .zero 384
 
 /* Input buffer for the modulus. */
 .globl in_mod
-.balign 512
+.balign 32
 in_mod:
   .zero 384
 
 /* Input buffer for the signature. */
 .globl in_buf
-.balign 512
+.balign 32
 in_buf:
   .zero 384
 
 /* Input buffer for the Montgomery transformation constant R^2. */
 .globl in_rr
-.balign 512
+.balign 32
 in_rr:
   .zero 384
 
