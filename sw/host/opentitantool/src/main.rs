@@ -8,12 +8,14 @@ use log::LevelFilter;
 use std::env::{args_os, ArgsOs};
 use std::ffi::OsString;
 use std::io::ErrorKind;
+use std::iter::{IntoIterator, Iterator};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
 mod backend;
 mod command;
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::app::TransportWrapper;
 
 #[derive(Debug, StructOpt, CommandDispatch)]
 enum RootCommandHierarchy {
@@ -23,8 +25,10 @@ enum RootCommandHierarchy {
     Console(command::console::Console),
 
     Gpio(command::gpio::GpioCommand),
+
     Image(command::image::Image),
     LoadBitstream(command::load_bitstream::LoadBitstream),
+    NoOp(command::NoOp),
     Spi(command::spi::SpiCommand),
 
     // Flattened because `Greetings` is a subcommand hierarchy.
@@ -34,6 +38,10 @@ enum RootCommandHierarchy {
 }
 
 #[derive(Debug, StructOpt)]
+#[structopt(
+    name = "opentitantool",
+    about = "A tool for interacting with OpenTitan chips."
+)]
 struct Opts {
     #[structopt(
         long,
@@ -44,6 +52,13 @@ struct Opts {
 
     #[structopt(long, default_value = "off")]
     logging: LevelFilter,
+
+    #[structopt(
+        long,
+        number_of_values(1),
+        help = "Parse and execute the argument as a command"
+    )]
+    exec: Vec<String>,
 
     #[structopt(flatten)]
     backend_opts: backend::BackendOpts,
@@ -107,10 +122,33 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
     Ok(opts)
 }
 
+// Execute is a convenience function for taking a list of strings,
+// parsing them into a command, executing the command and printing the result.
+fn execute<I>(args: I, opts: &Opts, transport: &TransportWrapper) -> Result<()>
+where
+    I: IntoIterator<Item = OsString>,
+{
+    let command = RootCommandHierarchy::from_iter(
+        std::iter::once(OsString::from("opentitantool")).chain(args),
+    );
+    if let Some(value) = command.run(opts, transport)? {
+        println!("{}", serde_json::to_string_pretty(&value)?);
+    }
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = parse_command_line(Opts::from_args(), args_os())?;
 
     let transport = backend::create(&opts.backend_opts)?;
+
+    for command in &opts.exec {
+        execute(
+            shellwords::split(command)?.iter().map(OsString::from),
+            &opts,
+            &transport,
+        )?;
+    }
 
     if let Some(value) = opts.command.run(&opts, &transport)? {
         println!("{}", serde_json::to_string_pretty(&value)?);
