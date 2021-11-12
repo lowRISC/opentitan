@@ -9,13 +9,13 @@ package rom_ctrl_pkg;
   parameter int AlertFatal = 0;
 
   typedef struct packed {
-    logic done;
-    logic good;
+    prim_mubi_pkg::mubi4_t done;
+    prim_mubi_pkg::mubi4_t good;
   } pwrmgr_data_t;
 
   parameter pwrmgr_data_t PWRMGR_DATA_DEFAULT = '{
-    done: 1'b1,
-    good: 1'b1
+    done: prim_mubi_pkg::MuBi4True,
+    good: prim_mubi_pkg::MuBi4True
   };
 
   typedef struct packed {

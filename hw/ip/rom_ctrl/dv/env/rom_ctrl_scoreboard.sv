@@ -13,7 +13,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   bit [DIGEST_SIZE-1:0]          expected_digest;
   bit [kmac_pkg::AppDigestW-1:0] kmac_digest;
   bit                            rom_check_complete;
-  bit                            digest_good;
+  prim_mubi_pkg::mubi4_t         digest_good;
   bit                            pwrmgr_complete;
   bit                            keymgr_complete;
 
@@ -90,7 +90,8 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
       kmac_digest = kmac_rsp.rsp_digest_share0 ^ kmac_rsp.rsp_digest_share1;
       get_expected_digest();
       update_ral_digests();
-      digest_good = (kmac_digest[DIGEST_SIZE-1:0] == expected_digest);
+      digest_good = prim_mubi_pkg::mubi4_bool_to_mubi(
+                    kmac_digest[DIGEST_SIZE-1:0] == expected_digest);
       rom_check_complete = 1'b1;
     end
   endtask
@@ -132,7 +133,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
       @(cfg.rom_ctrl_vif.pwrmgr_data or cfg.rom_ctrl_vif.keymgr_data or cfg.under_reset);
       if (cfg.under_reset) continue;
       // Check data sent to pwrmgr
-      if (cfg.rom_ctrl_vif.pwrmgr_data.done) begin
+      if (prim_mubi_pkg::mubi4_test_true_strict(cfg.rom_ctrl_vif.pwrmgr_data.done)) begin
         `DV_CHECK_EQ(pwrmgr_complete, 1'b0, "Spurious pwrmgr signal")
         `DV_CHECK_EQ(cfg.rom_ctrl_vif.pwrmgr_data.good, digest_good, "Incorrect pwrmgr result")
         pwrmgr_complete = 1'b1;

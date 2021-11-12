@@ -57,8 +57,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input flash_idle_i,
 
   // rom_ctrl
-  input rom_ctrl_done_i,
-  input rom_ctrl_good_i,
+  input prim_mubi_pkg::mubi4_t rom_ctrl_done_i,
+  input prim_mubi_pkg::mubi4_t rom_ctrl_good_i,
 
   // pinmux
   output logic strap_o,
@@ -67,6 +67,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // processing elements
   output lc_ctrl_pkg::lc_tx_t fetch_en_o
 );
+
+  import prim_mubi_pkg::mubi4_test_true_strict;
 
   // The code below always assumes the always on domain is index 0
   `ASSERT_INIT(AlwaysOnIndex_A, ALWAYS_ON_DOMAIN == 0)
@@ -308,7 +310,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         rst_sys_req_d = '0;
         reset_cause_d = ResetNone;
 
-        if (rom_ctrl_done_i && rom_ctrl_good_i) begin
+        if (mubi4_test_true_strict(rom_ctrl_done_i) &&
+            mubi4_test_true_strict(rom_ctrl_good_i)) begin
           state_d = FastPwrStateActive;
         end
       end
