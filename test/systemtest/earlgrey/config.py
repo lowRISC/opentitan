@@ -65,10 +65,10 @@ TEST_APPS_SELFCHECKING = [
         "name": "rv_plic_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
     },
-    # TODO(#6656): AST is not instantiated in chip_earlgrey_verilator.
-    # {
-    #     "name": "pwrmgr_smoketest",
-    # },
+    {
+        "name": "pwrmgr_smoketest",
+        "targets": ["sim_verilator"],
+    },
     {
         "name": "rstmgr_smoketest",
         "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
@@ -90,11 +90,10 @@ TEST_APPS_SELFCHECKING = [
     #    "name": "csrng_smoketest",
     #   "targets": ["sim_verilator", "fpga_cw310"],
     # },
-    # TODO(lowrisc/opentitan#8114):
-    # {
-    #     "name": "entropy_src_smoketest",
-    #     "targets": ["sim_verilator", "fpga_cw310"],
-    # },
+    {
+        "name": "entropy_src_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310"],
+    },
     {
         "name": "kmac_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],
