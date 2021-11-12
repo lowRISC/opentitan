@@ -78,6 +78,7 @@ module prim_generic_flash_bank #(
   logic [DataWidth-1:0]     mem_wdata;
   logic [AddrW-1:0]         mem_addr;
   flash_ctrl_pkg::flash_part_e mem_part;
+  logic                     mem_bk_erase;
   logic [InfoTypesWidth-1:0] mem_info_sel;
 
   // insert a fifo here to break the large fanout from inputs to memories on reads
@@ -155,6 +156,8 @@ module prim_generic_flash_bank #(
   assign mem_rd_d = mem_req & ~mem_wr;
   assign mem_addr = cmd_q.addr + index_cnt[AddrW-1:0];
   assign mem_part = cmd_q.part;
+  assign mem_bk_erase = cmd_q.bk_erase;
+
   assign mem_info_sel = cmd_q.info_sel;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -221,7 +224,6 @@ module prim_generic_flash_bank #(
       else if (index_cnt_clr) index_cnt <= 32'h0;
     end
   end
-
 
   always_comb begin
     // state
@@ -373,13 +375,20 @@ module prim_generic_flash_bank #(
   logic [InfoTypes-1:0][MemWidth-1:0] rd_nom_data_info;
   logic [InfoTypes-1:0][EccWidth-1:0] rd_meta_data_info;
 
+  // data memory is requested whenver it's a transaction targetted at the data partition
+  // OR if it's a bank erase
+  logic data_mem_req;
+  assign data_mem_req = mem_req &
+                        (mem_part == flash_ctrl_pkg::FlashPartData |
+                         mem_bk_erase);
+
   prim_ram_1p #(
     .Width(MemWidth),
     .Depth(WordsPerBank),
     .DataBitsPerMask(MemWidth)
   ) u_mem (
     .clk_i,
-    .req_i    (mem_req & (mem_part == flash_ctrl_pkg::FlashPartData)),
+    .req_i    (data_mem_req),
     .write_i  (mem_wr),
     .addr_i   (mem_addr),
     .wdata_i  (mem_wdata[MemWidth-1:0]),
@@ -394,7 +403,7 @@ module prim_generic_flash_bank #(
     .DataBitsPerMask(EccWidth)
   ) u_mem_meta (
     .clk_i,
-    .req_i    (mem_req & (mem_part == flash_ctrl_pkg::FlashPartData)),
+    .req_i    (data_mem_req),
     .write_i  (mem_wr),
     .addr_i   (mem_addr),
     .wdata_i  (mem_wdata[MemWidth +: EccWidth]),
@@ -405,10 +414,12 @@ module prim_generic_flash_bank #(
 
   for (genvar info_type = 0; info_type < InfoTypes; info_type++) begin : gen_info_types
 
+    // when info partitions are selected for bank erase, all info types are erased.
+    // if NOT bank erase, then only the selected info partition is erased
     logic info_mem_req;
     assign info_mem_req = mem_req &
                           (mem_part == flash_ctrl_pkg::FlashPartInfo) &
-                          (mem_info_sel == info_type);
+                          ((mem_info_sel == info_type) | mem_bk_erase);
 
     prim_ram_1p #(
       .Width(MemWidth),

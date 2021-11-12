@@ -484,14 +484,13 @@
           { bits: "8",
             name: "PARTITION_SEL",
             desc: '''
-              Selects either info or data partition for operation.
+              When doing a read, program or page erase operation, selects either info or data partition for operation.
+              When 0, select data partition - this is the portion of flash that is accessible both by the host and by the controller.
+              When 1, select info partition - this is the portion of flash that is only accessible by the controller.
 
-              When 0, select data partition - this is the portion of flash that is accessible both
-              by the host and by the controller.
-
-              When 1, select info partition - this is the portion of flash that is only accessible
-              by the controller.
-
+              When doing a bank erase operation, selects info partition also for erase.
+              When 0, bank erase only erases data partition.
+              When 1, bank erase erases data partition and info partition.
             '''
             resval: "0"
           },
