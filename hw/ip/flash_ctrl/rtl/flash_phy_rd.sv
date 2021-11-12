@@ -410,7 +410,6 @@ module flash_phy_rd
   logic hint_forward;
   logic hint_descram;
   logic data_err_q;
-  logic ecc_en_q; // this is used for the integrity ECC check
   logic [NumBuf-1:0] alloc_q2;
 
   assign scramble_stage_rdy = data_fifo_rdy & mask_fifo_rdy;
@@ -456,7 +455,7 @@ module flash_phy_rd
 
   //TODO: Cleanup the FIFO popping a bit more
   prim_fifo_sync #(
-    .Width   (PlainDataWidth + 4 + NumBuf),
+    .Width   (PlainDataWidth + 3 + NumBuf),
     .Pass    (0),
     .Depth   (2),
     .OutputZeroIfEmpty (1)
@@ -466,12 +465,12 @@ module flash_phy_rd
     .clr_i   (1'b0),
     .wvalid_i(rd_done),
     .wready_o(data_fifo_rdy),
-    .wdata_i ({alloc_q, descram, forward, data_err, rd_attrs.ecc, data_int}),
+    .wdata_i ({alloc_q, descram, forward, data_err, data_int}),
     .depth_o (unused_rd_depth),
     .full_o (),
     .rvalid_o(fifo_data_valid),
     .rready_i(rd_and_mask_fifo_pop),
-    .rdata_o ({alloc_q2, descram_q, forward_q, data_err_q, ecc_en_q, fifo_data})
+    .rdata_o ({alloc_q2, descram_q, forward_q, data_err_q, fifo_data})
   );
 
   // storage for mask calculations

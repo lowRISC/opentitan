@@ -76,7 +76,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   logic data_he_en;
   logic info_rd_en;
   logic info_prog_en;
-  logic info_erase_en;
+  logic info_pg_erase_en;
+  logic info_bk_erase_en;
   logic info_scramble_en;
   logic info_ecc_en;
   logic info_he_en;
@@ -178,7 +179,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign data_rd_en       = data_en & rd_i            & data_region_cfg.rd_en.q;
   assign data_prog_en     = data_en & prog_i          & data_region_cfg.prog_en.q;
   assign data_pg_erase_en = data_en & pg_erase_i      & data_region_cfg.erase_en.q;
-  assign data_bk_erase_en = data_en & bk_erase_i      & |bk_erase_en;
+  assign data_bk_erase_en = bk_erase_i                & |bk_erase_en;
   assign data_scramble_en = data_en & (rd_i | prog_i) & data_region_cfg.scramble_en.q;
   assign data_ecc_en      = data_en & (rd_i | prog_i) & data_region_cfg.ecc_en.q;
   assign data_he_en       = data_en &                   data_region_cfg.he_en.q;
@@ -232,14 +233,16 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign info_en          = info_part_sel             & page_cfg.en.q;
   assign info_rd_en       = info_en & rd_i            & page_cfg.rd_en.q;
   assign info_prog_en     = info_en & prog_i          & page_cfg.prog_en.q;
-  assign info_erase_en    = info_en & pg_erase_i      & page_cfg.erase_en.q;
+  assign info_pg_erase_en = info_en & pg_erase_i      & page_cfg.erase_en.q;
+  assign info_bk_erase_en = info_en & bk_erase_i      & |bk_erase_en;
   assign info_scramble_en = info_en & (rd_i | prog_i) & page_cfg.scramble_en.q;
   assign info_ecc_en      = info_en & (rd_i | prog_i) & page_cfg.ecc_en.q;
   assign info_he_en       = info_en &                   page_cfg.he_en.q;
 
   // check for invalid transactions
   assign invalid_info_txn = req_i & info_part_sel &
-                            ~(info_rd_en | info_prog_en | info_erase_en);
+                            ~(info_rd_en | info_prog_en | info_pg_erase_en |
+                              info_bk_erase_en);
 
 
   ////////////////////////////////////////
@@ -247,8 +250,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   ////////////////////////////////////////
   assign rd_o          = req_i & (data_rd_en | info_rd_en);
   assign prog_o        = req_i & (data_prog_en | info_prog_en);
-  assign pg_erase_o    = req_i & (data_pg_erase_en | info_erase_en);
-  assign bk_erase_o    = req_i & data_bk_erase_en;
+  assign pg_erase_o    = req_i & (data_pg_erase_en | info_pg_erase_en);
+  assign bk_erase_o    = req_i & (data_bk_erase_en | info_bk_erase_en);
   assign scramble_en_o = req_i & (data_scramble_en | info_scramble_en);
   assign ecc_en_o      = req_i & (data_ecc_en | info_ecc_en);
   assign he_en_o       = req_i & (data_he_en | info_he_en);
@@ -301,12 +304,22 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   `ASSERT(InfoReqToData_a, req_i & info_part_sel |-> ~|{data_en,
                                                         data_rd_en,
                                                         data_prog_en,
-                                                        data_pg_erase_en,
-                                                        data_bk_erase_en})
+                                                        data_pg_erase_en})
   // A data request should not lead to info requests
-  `ASSERT(DataReqToInfo_a, req_i & data_part_sel |-> ~|{info_en,
-                                                        info_rd_en,
-                                                        info_prog_en,
-                                                        info_erase_en})
+  `ASSERT(DataReqToInfo_a, req_i & data_part_sel |->
+    ~|{info_en,
+    info_rd_en,
+    info_prog_en,
+    info_pg_erase_en,
+    info_bk_erase_en})
+
+  // If a bank erase request only selects data, then info should be erased
+  `ASSERT(BankEraseData_a, req_i & bk_erase_i & data_part_sel |-> data_bk_erase_en &
+          ~info_bk_erase_en)
+
+  // If a bank erase request also selects the info partition, then both data
+  // and info must be erased
+  `ASSERT(BankEraseInfo_a, req_i & bk_erase_i & info_part_sel |-> &{data_bk_erase_en,
+                                                                    info_bk_erase_en})
 
 endmodule // flash_erase_ctrl
