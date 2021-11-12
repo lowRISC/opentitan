@@ -84,10 +84,14 @@ class lc_ctrl_env extends cip_base_env #(
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
+
+    `DV_CHECK_NE_FATAL(cfg.jtag_riscv_map, null)
+    cfg.jtag_riscv_map.set_sequencer(m_jtag_riscv_agent.sequencer, m_jtag_riscv_reg_adapter);
+
     if (cfg.jtag_csr) begin
-      `uvm_info(`gfn,"Setting JTAG reg adapter",UVM_MEDIUM)
+      `uvm_info(`gfn,"Setting jtag_riscv_map as default map",UVM_MEDIUM)
       foreach (cfg.ral_models[i]) begin
-        cfg.ral_models[i].default_map.set_sequencer(m_jtag_riscv_agent.sequencer, m_jtag_riscv_reg_adapter);
+        cfg.ral_models[i].set_default_map(cfg.jtag_riscv_map);
       end
     end
   endfunction
