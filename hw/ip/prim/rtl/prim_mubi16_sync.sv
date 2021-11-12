@@ -27,7 +27,7 @@ module prim_mubi16_sync
   // AsyncOn is set.  If stability checks are on, a 3rd stage of storage is
   // added after the synchronizers and the outputs only updated if the 3rd
   // stage and sychronizer agree.  If they do not agree, the ResetValue is
-  // is output instead.
+  // output instead.
   parameter bit StabilityCheck = 0,
   // Reset value for the sync flops
   parameter mubi16_t ResetValue = MuBi16False

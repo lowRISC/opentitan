@@ -180,8 +180,8 @@ module pwrmgr
   pwr_flash_t flash_rsp;
   pwr_otp_rsp_t otp_rsp;
 
-  logic rom_ctrl_done;
-  logic rom_ctrl_good;
+  prim_mubi_pkg::mubi4_t rom_ctrl_done;
+  prim_mubi_pkg::mubi4_t rom_ctrl_good;
 
 
   ////////////////////////////
