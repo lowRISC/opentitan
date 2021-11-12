@@ -73,11 +73,19 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
                           ast_i.io_clk_val &
                           (~usb_clk_en_active_i | ast_i.usb_clk_val);
 
+  // usb clock state during low power is not completely controlled by
+  // input.
+  // if main_pd_ni is 0, (ie power will be turned off), then the low power
+  // state of usb is also off.  If main_pd_ni is 1 (power will be kept on),
+  // then the low power state of usb is directly controlled.
+  logic usb_clk_en_lp;
+  assign usb_clk_en_lp = main_pd_ni & usb_clk_en_lp_i;
+
   // if clocks were configured to turn off, make sure val is invalid
   // if clocks were not configured to turn off, just bypass the check
   assign all_clks_invalid = (core_clk_en_i | ~ast_i.core_clk_val) &
                             (io_clk_en_i | ~ast_i.io_clk_val) &
-                            (usb_clk_en_lp_i | ~ast_i.usb_clk_val);
+                            (usb_clk_en_lp | ~ast_i.usb_clk_val);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -217,7 +225,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       SlowPwrStateClocksOff: begin
         core_clk_en_d = core_clk_en_i;
         io_clk_en_d = io_clk_en_i;
-        usb_clk_en_d = usb_clk_en_lp_i;
+        usb_clk_en_d = usb_clk_en_lp;
 
         if (all_clks_invalid) begin
           // if main power is turned off, assert early clamp ahead

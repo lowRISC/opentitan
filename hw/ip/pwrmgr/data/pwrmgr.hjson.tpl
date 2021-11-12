@@ -307,7 +307,10 @@
             { value: "1",
               name: "Enabled",
               desc: '''
-                USB clock enabled during low power state
+                USB clock enabled during low power state.
+
+                However, if !!CONTROL.MAIN_PD_N is 0, USB clock is disabled
+                during low power state.
                 '''
             },
           ]
