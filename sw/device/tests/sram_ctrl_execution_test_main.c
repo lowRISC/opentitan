@@ -20,13 +20,15 @@ const test_config_t kTestConfig;
 static volatile const uint32_t kExecParam1 = 2;
 static volatile const uint32_t kExecParam2 = 3;
 
-static const uint32_t kRamStartBytes =
-    TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
-static const uint32_t kRamEndBytes =
-    TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-    TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES - 1;
+/**
+ * Main SRAM start and end addresses (inclusive).
+ */
+static const uint32_t kRamStartAddr = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
+static const uint32_t kRamEndAddr = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
+                                    TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES -
+                                    1;
 
-/*
+/**
  * OTP HW partition relative IFETCH offset in bytes.
  *
  * x = OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET (1728)
@@ -35,7 +37,7 @@ static const uint32_t kRamEndBytes =
  */
 static const uint32_t kOtpIfetchHwRelativeOffset = 8;
 
-/*
+/**
  * Buffer to hold instructions to be executed.
  *
  * Because this is the Main SRAM, we let the compiler allocate the buffer
@@ -81,7 +83,7 @@ __attribute__((section(
     0x00008067,
 };
 
-/*
+/**
  * Adds the first parameter to the second parameter and returns the result.
  *
  * Maps to the `execution_test_instructions` buffer as the function body.
@@ -112,7 +114,7 @@ static bool otp_ifetch_enabled(void) {
   return bitfield_bit32_read(value, 0);
 }
 
-/*
+/**
  * Performs SRAM execution test.
  *
  * `ram_exec_function_t` is "mapped" onto the `execution_test_instructions`
@@ -127,7 +129,7 @@ static void sram_execution_test(void) {
   ram_exec_function_t func = (ram_exec_function_t)execution_test_instructions;
 
   uintptr_t func_address = (uintptr_t)func;
-  CHECK(func_address > kRamStartBytes && func_address <= kRamEndBytes,
+  CHECK(func_address >= kRamStartAddr && func_address <= kRamEndAddr,
         "Test code resides outside of the Main SRAM: function address = %x",
         func_address);
 
@@ -138,7 +140,7 @@ static void sram_execution_test(void) {
         kExecParam2, expected_result, result);
 }
 
-/*
+/**
  * Performs the tests.
  *
  * When chip is in one of the lifecycle states where debug functions are
