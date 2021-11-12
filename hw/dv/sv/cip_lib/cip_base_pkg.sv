@@ -72,6 +72,39 @@ package cip_base_pkg;
     end
   endfunction
 
+  // Create functions that return a random value for the mubi type variable, based on weight
+  // settings
+  //
+  // The function is `get_rand_mubi4|8|16_val(t_weight, f_weight, other_weight)`
+  // t_weight: randomization weight of the value True
+  // f_weight: randomization weight of the value False
+  // other_weight: randomization weight of values other than True or False
+  `define _DV_MUBI_RAND_VAL(WIDTH_) \
+    function automatic mubi``WIDTH_``_e get_rand_mubi``WIDTH_``_val( \
+        int t_weight = 2, int f_weight = 2, int other_weight = 1); \
+      bit[WIDTH_-1:0] val; \
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, \
+          `DV_MUBI``WIDTH_``_DIST(val, t_weight, f_weight, other_weight), , msg_id) \
+      return mubi``WIDTH_``_e'(val); \
+    endfunction
+
+  // Create function - get_rand_mubi4_val
+  `_DV_MUBI_RAND_VAL(4)
+  // Create function - get_rand_mubi8_val
+  `_DV_MUBI_RAND_VAL(8)
+  // Create function - get_rand_mubi16_val
+  `_DV_MUBI_RAND_VAL(16)
+
+  `undef _DV_MUBI_RAND_VAL
+
+  // Currently lc_tx_e is exactly the same as mubi4_e. create a separate function in case these
+  // 2 types are changed differently in the future
+  function automatic lc_ctrl_pkg::lc_tx_e get_rand_lc_tx_val(int t_weight = 2,
+                                                             int f_weight = 2,
+                                                             int other_weight = 1);
+    return lc_ctrl_pkg::lc_tx_e'(get_rand_mubi4_val(t_weight, f_weight, other_weight));
+  endfunction
+
   // package sources
   // base env
   `include "cip_base_env_cfg.sv"

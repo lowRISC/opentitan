@@ -47,4 +47,44 @@
   end
 `endif
 
+// A macro to simplify the distribution constraint of mubi type variable
+// Don't use this macro directly, use DV_MUBI4|8|16_DIST
+`ifndef _DV_MUBI_DIST
+`define _DV_MUBI_DIST(VAR_, TRUE_, FALSE_, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_) \
+  // OTHER_WEIGHT_ must be divisible by 3 as there are ranges for values other than true and false \
+  if (TRUE_ > FALSE_) { \
+    VAR_ dist {TRUE_  :/ T_WEIGHT_ * 3, \
+               FALSE_ :/ F_WEIGHT_ * 3, \
+               [0 : FALSE_ - 1]         :/ OTHER_WEIGHT_, \
+               [FALSE_ + 1 : TRUE_ - 1] :/ OTHER_WEIGHT_, \
+               [TRUE_ + 1 : $]          :/ OTHER_WEIGHT_}; \
+  } else { \
+    VAR_ dist {TRUE_  :/ T_WEIGHT_ * 3, \
+               FALSE_ :/ F_WEIGHT_ * 3, \
+               [0 : TRUE_ - 1]          :/ OTHER_WEIGHT_, \
+               [TRUE_ + 1 : FALSE_ - 1] :/ OTHER_WEIGHT_, \
+               [FALSE_+ 1 : $]          :/ OTHER_WEIGHT_}; \
+  }
+`endif
+
+// inputs of these macros
+// VAR: the mubi variable
+// T_WEIGHT_: randomization weight of the value True
+// F_WEIGHT_: randomization weight of the value False
+// OTHER_WEIGHT_: randomization weight of values other than True or False
+`ifndef DV_MUBI4_DIST
+`define DV_MUBI4_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
+  `_DV_MUBI_DIST(VAR_, MuBi4True, MuBi4False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+`endif
+
+`ifndef DV_MUBI8_DIST
+`define DV_MUBI8_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
+  `_DV_MUBI_DIST(VAR_, MuBi8True, MuBi8False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+`endif
+
+`ifndef DV_MUBI16_DIST
+`define DV_MUBI16_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
+  `_DV_MUBI_DIST(VAR_, MuBi16True, MuBi16False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+`endif
+
 `endif // __CIP_MACROS_SVH__
