@@ -22,12 +22,12 @@ class alert_monitor extends alert_esc_base_monitor;
       ping_thread();
       reset_thread();
       int_fail_thread();
+      alert_init_thread();
     join_none
   endtask : run_phase
 
   virtual task reset_thread();
     under_reset = 1;
-    wait_alert_init_done();
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
@@ -35,10 +35,15 @@ class alert_monitor extends alert_esc_base_monitor;
       @(posedge cfg.vif.rst_n);
       // Reset signals at posedge rst_n to avoid race condition at negedge rst_n
       reset_signals();
-      // Wait for alert init with an intentional integrity fail to finish.
-      wait_alert_init_done();
     end
   endtask : reset_thread
+
+  virtual task alert_init_thread();
+    wait_alert_init_done();
+    forever @(posedge cfg.vif.rst_n) begin
+      wait_alert_init_done();
+    end
+  endtask : alert_init_thread
 
   virtual function void reset_signals();
     under_ping_rsp = 0;
@@ -48,25 +53,15 @@ class alert_monitor extends alert_esc_base_monitor;
   // process. However, it can still block alert handshake via the `cfg.alert_init_done` flag.
   // To handle the scenario where reset is issued during alert init, we use a fork join_any thread.
   virtual task wait_alert_init_done();
-    fork
-      begin
-        fork
-          begin
-            wait (cfg.vif.monitor_cb.alert_tx_final.alert_p ==
-                  cfg.vif.monitor_cb.alert_tx_final.alert_n);
-            wait (cfg.vif.monitor_cb.alert_tx_final.alert_p !=
-                  cfg.vif.monitor_cb.alert_tx_final.alert_n);
-            `uvm_info("alert_monitor", "Alert init done!", UVM_HIGH)
-            under_reset = 0;
-            cfg.alert_init_done = 1;
-          end
-          begin
-            @(negedge cfg.vif.rst_n);
-          end
-        join_any
-        disable fork;
-      end
-    join_none
+    `DV_SPINWAIT_EXIT(
+        wait (cfg.vif.monitor_cb.alert_tx_final.alert_p ==
+              cfg.vif.monitor_cb.alert_tx_final.alert_n);
+        wait (cfg.vif.monitor_cb.alert_tx_final.alert_p !=
+              cfg.vif.monitor_cb.alert_tx_final.alert_n);
+        `uvm_info("alert_monitor", "Alert init done!", UVM_HIGH)
+        cfg.alert_init_done = 1;
+        under_reset = 0;,
+        @(negedge cfg.vif.rst_n);)
   endtask
 
   virtual task ping_thread();

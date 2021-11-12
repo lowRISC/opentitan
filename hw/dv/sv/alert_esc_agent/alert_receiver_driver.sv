@@ -16,21 +16,26 @@ class alert_receiver_driver extends alert_esc_base_driver;
     fork
       send_ping();
       rsp_alert();
+      alert_init_thread();
     join_none
   endtask : drive_req
 
   virtual task reset_signals();
     do_reset();
-    do_alert_rx_init();
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
       do_reset();
       @(posedge cfg.vif.rst_n);
-      do_alert_rx_init();
-      under_reset = 0;
     end
   endtask
+
+  virtual task alert_init_thread();
+    do_alert_rx_init();
+    forever @(posedge cfg.vif.rst_n) begin
+      do_alert_rx_init();
+    end
+  endtask : alert_init_thread
 
   virtual task send_ping();
     forever begin
@@ -179,15 +184,18 @@ class alert_receiver_driver extends alert_esc_base_driver;
   endtask
 
   virtual task do_alert_rx_init();
-    // Drive alert init signal integrity error handshake.
-    repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
-    cfg.vif.alert_rx_int.ping_n <= 1'b0;
-    wait (cfg.vif.receiver_cb.alert_tx.alert_p == cfg.vif.receiver_cb.alert_tx.alert_n);
-    cfg.vif.alert_rx_int.ack_n <= 1'b0;
-    repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
-    cfg.vif.alert_rx_int.ack_n  <= 1'b1;
-    cfg.vif.alert_rx_int.ping_n <= 1'b1;
-    wait (cfg.vif.receiver_cb.alert_tx.alert_p != cfg.vif.receiver_cb.alert_tx.alert_n);
+    `DV_SPINWAIT_EXIT(
+        // Drive alert init signal integrity error handshake.
+        repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
+        cfg.vif.alert_rx_int.ping_n <= 1'b0;
+        wait (cfg.vif.receiver_cb.alert_tx.alert_p == cfg.vif.receiver_cb.alert_tx.alert_n);
+        cfg.vif.alert_rx_int.ack_n <= 1'b0;
+        repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
+        cfg.vif.alert_rx_int.ack_n  <= 1'b1;
+        cfg.vif.alert_rx_int.ping_n <= 1'b1;
+        wait (cfg.vif.receiver_cb.alert_tx.alert_p != cfg.vif.receiver_cb.alert_tx.alert_n);
+        under_reset = 0;,
+        @(negedge cfg.vif.rst_n);)
   endtask
 
 endclass : alert_receiver_driver
