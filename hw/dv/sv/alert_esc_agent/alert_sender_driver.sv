@@ -16,6 +16,7 @@ class alert_sender_driver extends alert_esc_base_driver;
   semaphore alert_atomic = new(1);
 
   virtual task reset_signals();
+    under_reset = 1;
     do_reset();
     forever begin
       @(negedge cfg.vif.rst_n);
@@ -24,8 +25,6 @@ class alert_sender_driver extends alert_esc_base_driver;
       @(posedge cfg.vif.rst_n);
       void'(alert_atomic.try_get(1));
       alert_atomic.put(1);
-      do_post_reset();
-      under_reset = 0;
     end
   endtask
 
@@ -36,8 +35,16 @@ class alert_sender_driver extends alert_esc_base_driver;
     fork
       send_alert();
       rsp_ping();
+      alert_init_thread();
     join_none
   endtask : drive_req
+
+  virtual task alert_init_thread();
+    do_alert_tx_init();
+    forever @(posedge cfg.vif.rst_n) begin
+      do_alert_tx_init();
+    end
+  endtask : alert_init_thread
 
   virtual task send_alert();
     forever begin
@@ -221,11 +228,14 @@ class alert_sender_driver extends alert_esc_base_driver;
   //
   // After alert_receiver is reset, it will send a signal integrity fail via `ping_n` and `ack_n`,
   // alert_sender acknowledged the init via sending an `alert_n` integrity fail.
-  virtual task do_post_reset();
-    wait (cfg.vif.alert_rx.ping_p == cfg.vif.alert_rx.ping_n);
-    cfg.vif.alert_tx_int.alert_n <= 1'b0;
-    wait (cfg.vif.alert_rx.ping_p != cfg.vif.alert_rx.ping_n);
-    cfg.vif.alert_tx_int.alert_n <= 1'b1;
+  virtual task do_alert_tx_init();
+    `DV_SPINWAIT_EXIT(
+        wait (cfg.vif.alert_rx.ping_p == cfg.vif.alert_rx.ping_n);
+        cfg.vif.alert_tx_int.alert_n <= 1'b0;
+        wait (cfg.vif.alert_rx.ping_p != cfg.vif.alert_rx.ping_n);
+        cfg.vif.alert_tx_int.alert_n <= 1'b1;
+        under_reset = 0;,
+        @(negedge cfg.vif.rst_n);)
   endtask
 
 endclass : alert_sender_driver
