@@ -70,7 +70,7 @@ impl BootstrapCommand {
             !(self.filename.len() > 1 || self.filename[0].contains('@')),
             "The `emulator` protocol does not support image assembly"
         );
-        transport.dispatch(&mut transport::Bootstrap {
+        transport.dispatch(&transport::Bootstrap {
             image_path: PathBuf::from(&self.filename[0]),
         })
     }
