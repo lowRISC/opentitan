@@ -72,7 +72,7 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
     let rcfile = if let Some(base) = ProjectDirs::from("org", "opentitan", "opentitantool") {
         base.config_dir().join(&opts.rcfile)
     } else {
-        opts.rcfile.clone()
+        opts.rcfile
     };
 
     // argument[0] is the executable name.
