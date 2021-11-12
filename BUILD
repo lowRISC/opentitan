@@ -3,15 +3,54 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
-load("//rules:quality.bzl", "license_check")
+load("//rules:quality.bzl", "clang_format_check", "license_check")
 
 package(default_visibility = ["//visibility:public"])
 
 buildifier(
-    name = "buildifier",
+    name = "buildifier_fix",
     exclude_patterns = ["./**/vendor/**"],
+)
+
+buildifier(
+    name = "buildifier_check",
+    diff_command = "diff -u",
+    exclude_patterns = ["./**/vendor/**"],
+    mode = "diff",
 )
 
 license_check(
     name = "license_check",
+)
+
+clang_format_check(
+    name = "clang_format_check",
+    exclude_patterns = [
+        # Vendored source code dirs
+        "./**/vendor/**",
+        # Rust cargo build dirs
+        "./**/target/**",
+        # Meson build dirs
+        "./build-out/**",
+        "./build-bin/**",
+        # fusesoc build dir
+        "./build/**",
+    ],
+    mode = "diff",
+)
+
+clang_format_check(
+    name = "clang_format_fix",
+    exclude_patterns = [
+        # Vendored source code dirs
+        "./**/vendor/**",
+        # Rust cargo build dirs
+        "./**/target/**",
+        # Meson build dirs
+        "./build-out/**",
+        "./build-bin/**",
+        # fusesoc build dir
+        "./build/**",
+    ],
+    mode = "fix",
 )
