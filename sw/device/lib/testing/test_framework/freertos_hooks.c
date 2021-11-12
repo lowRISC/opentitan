@@ -2,18 +2,31 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/test_framework/freertos_hooks.h"
-
+#include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/vendor/freertos_freertos_kernel/include/FreeRTOS.h"
+#include "sw/vendor/freertos_freertos_kernel/include/task.h"
 
 // NOTE: the function names below do NOT, and cannot, conform to the style
 // guide, since they are specific implementations of FreeRTOS defined functions.
 
+/**
+ * This is called if configUSE_MALLOC_FAILED_HOOK is set to 1 in
+ * FreeRTOSConfig.h, and a call to pvPortMalloc() fails.
+ */
 void vApplicationMallocFailedHook(void) {
-  // TODO: communicate this event back to the host.
-  LOG_INFO("Malloc Failed.");
-  taskDISABLE_INTERRUPTS();
+  LOG_INFO("FreeRTOS malloc failed. Increase heap size in FreeRTOSConfig.h");
+  irq_global_ctrl(false);
+  abort();
+}
+
+/**
+ * This is called if configCHECK_FOR_STACK_OVERFLOW is set to 1 or 2 in
+ * FreeRTOSConfig.h, and a task detects a stack overflow.
+ */
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
+  LOG_INFO("FreeRTOS stack overflow. Increase stack size of task: %s");
+  irq_global_ctrl(false);
   abort();
 }
