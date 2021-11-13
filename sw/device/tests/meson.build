@@ -26,6 +26,41 @@ sw_rom_ext_tests = {
 }
 
 ###############################################################################
+# OTTF Example Tests
+###############################################################################
+ottf_example_bare_metal_test_lib = declare_dependency(
+  link_with: static_library(
+    'ottf_example_bare_metal_test_lib',
+    sources: ['ottf_example_bare_metal_test.c'],
+    dependencies: [
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'ottf_example_bare_metal_test_lib': {
+    'library': ottf_example_bare_metal_test_lib,
+    'use_ottf': true,
+  }
+}
+
+ottf_example_concurrency_test_lib = declare_dependency(
+  link_with: static_library(
+    'ottf_example_concurrency_test_lib',
+    sources: ['ottf_example_concurrency_test.c'],
+    dependencies: [
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'ottf_example_concurrency_test_lib': {
+    'library': ottf_example_concurrency_test_lib,
+    'use_ottf': true,
+  }
+}
+
+###############################################################################
 # Smoke Tests
 ###############################################################################
 rv_plic_smoketest_lib = declare_dependency(
@@ -636,17 +671,32 @@ sw_tests += {
 # (unsigned) test binaries loaded with ROM from sw/device/boot_rom/
 foreach sw_test_name, sw_test_info : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
-    sw_test_elf = executable(
-      sw_test_name + '_' + device_name,
-      name_suffix: 'elf',
-      dependencies: [
-        riscv_crt,
-        device_lib,
-        sw_test_info['library'],
-        sw_lib_irq_handlers,
-        sw_lib_testing_test_main,
-      ],
-    )
+    if 'use_ottf' in sw_test_info
+      # test target with OTTF
+      sw_test_elf = executable(
+        sw_test_name + '_' + device_name,
+        name_suffix: 'elf',
+        dependencies: [
+          riscv_crt,
+          device_lib,
+          sw_test_info['library'],
+          sw_lib_testing_ottf,
+        ],
+      )
+    else
+      # test target with bare metal on-device test framework
+      sw_test_elf = executable(
+        sw_test_name + '_' + device_name,
+        name_suffix: 'elf',
+        dependencies: [
+          riscv_crt,
+          device_lib,
+          sw_test_info['library'],
+          sw_lib_irq_handlers,
+          sw_lib_testing_test_main,
+        ],
+      )
+    endif
 
     target_name = sw_test_name + '_@0@_' + device_name
 
@@ -915,72 +965,6 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       crt_test_vmem32,
       crt_test_vmem64,
       crt_test_scr_vmem64,
-    ],
-    output: target_name.format('export'),
-    build_always_stale: true,
-    build_by_default: true,
-  )
-endforeach
-
-# OpenTitan (FreeRTOS) Test Framework
-foreach device_name, device_lib : sw_lib_arch_core_devices
-  ottf_elf = executable(
-    'ottf_' + device_name,
-    name_suffix: 'elf',
-    dependencies: [
-      riscv_crt,
-      device_lib,
-      sw_lib_ottf,
-      sw_lib_irq_handlers,
-    ],
-  )
-
-  target_name = 'ottf_@0@_' + device_name
-
-  ottf_dis = custom_target(
-    target_name.format('dis'),
-    input: ottf_elf,
-    kwargs: elf_to_dis_custom_target_args,
-  )
-
-  ottf_bin = custom_target(
-    target_name.format('bin'),
-    input: ottf_elf,
-    kwargs: elf_to_bin_custom_target_args,
-  )
-
-  ottf_vmem32 = custom_target(
-    target_name.format('vmem32'),
-    input: ottf_bin,
-    kwargs: bin_to_vmem32_custom_target_args,
-  )
-
-  ottf_vmem64 = custom_target(
-    target_name.format('vmem64'),
-    input: ottf_bin,
-    kwargs: bin_to_vmem64_custom_target_args,
-  )
-
-  ottf_scr_vmem64 = custom_target(
-    target_name.format('scrambled'),
-    input: ottf_vmem64,
-    output: flash_image_outputs,
-    command: flash_image_command,
-    depend_files: flash_image_depend_files,
-    build_by_default: true,
-  )
-
-  custom_target(
-    target_name.format('export'),
-    command: export_target_command,
-    depend_files: [export_target_depend_files,],
-    input: [
-      ottf_elf,
-      ottf_dis,
-      ottf_bin,
-      ottf_vmem32,
-      ottf_vmem64,
-      ottf_scr_vmem64
     ],
     output: target_name.format('export'),
     build_always_stale: true,
