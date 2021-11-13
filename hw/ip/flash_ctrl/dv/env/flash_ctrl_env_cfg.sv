@@ -26,8 +26,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     list_of_alerts = flash_ctrl_env_pkg::LIST_OF_ALERTS;
+    has_shadowed_regs = 1;
     tl_intg_alert_name = "fatal_intg_err";
     super.initialize(csr_base_addr);
+
+    shadow_update_err_status_fields[ral.err_code.update_err] = 1;
+    shadow_storage_err_status_fields[ral.fault_status.storage_err] = 1;
+
     // create tl agent config obj
     m_eflash_tl_agent_cfg = tl_agent_cfg::type_id::create("m_eflash_tl_agent_cfg");
     m_eflash_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
