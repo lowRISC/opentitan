@@ -79,11 +79,9 @@ freertos_portable_path = '@0@/@1@'.format(freertos_root, 'portable/GCC/RISC-V')
 ottf_sources = [
   'ottf.c',
   'ottf_isrs.c',
-  'example_ottf_test.c',
   'freertos_hooks.c',
   'freertos_port.S',
   'freertos_port.c',
-  hw_ip_rv_timer_reg_h,
   join_paths(freertos_root ,'tasks.c'),
   join_paths(freertos_root ,'queue.c'),
   join_paths(freertos_root ,'list.c'),
@@ -94,9 +92,9 @@ ottf_incdirs = include_directories(
   '../../../../vendor/freertos_freertos_kernel/portable/GCC/RISC-V')
 
 # OpenTitan Test Framework (OTTF)
-sw_lib_ottf = declare_dependency(
+sw_lib_testing_ottf = declare_dependency(
   link_with: static_library(
-    'sw_lib_ottf',
+    'sw_lib_testing_ottf',
     sources: ottf_sources,
     include_directories: ottf_incdirs,
     c_args: [
