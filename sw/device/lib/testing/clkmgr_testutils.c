@@ -6,6 +6,9 @@
 
 #include "sw/device/lib/dif/dif_clkmgr.h"
 
+// `extern` declarations to give the inline functions in the
+// corresponding header a link location.
+
 extern bool clkmgr_testutils_get_trans_clock_status(
     dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock);
 

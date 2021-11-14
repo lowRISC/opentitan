@@ -9,8 +9,6 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/runtime/ibex.h"
 
-extern void wait_for_interrupt(void);
-
 void usleep(uint32_t usec) {
   uint64_t cycles = kClockFreqCpuHz * usec / 1000000;
   uint64_t start = ibex_mcycle_read();
@@ -23,3 +21,8 @@ noreturn void abort(void) {
     wait_for_interrupt();
   }
 }
+
+// `extern` declarations to give the inline functions in the
+// corresponding header a link location.
+
+extern void wait_for_interrupt(void);

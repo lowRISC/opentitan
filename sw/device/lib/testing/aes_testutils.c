@@ -4,6 +4,9 @@
 
 #include "sw/device/lib/testing/aes_testutils.h"
 
+// `extern` declarations to give the inline functions in the
+// corresponding header a link location.
+
 extern bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag);
 
 extern void aes_testutils_wait_for_status(dif_aes_t *aes, dif_aes_status_t flag,

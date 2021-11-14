@@ -4,7 +4,9 @@
 
 #include "sw/device/lib/base/hardened.h"
 
-// Instantiate inline functions in this TU.
+// `extern` declarations to give the inline functions in the corresponding
+// header a link location.
+
 extern uint32_t launder32(uint32_t);
 extern uintptr_t launderw(uintptr_t);
 extern void barrier32(uint32_t);

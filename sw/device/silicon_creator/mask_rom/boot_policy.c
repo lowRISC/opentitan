@@ -37,5 +37,8 @@ rom_error_t boot_policy_manifest_check(const manifest_t *manifest) {
   return kErrorOk;
 }
 
+// `extern` declarations to give the inline functions in the
+// corresponding header a link location.
+
 extern const manifest_t *boot_policy_manifest_a_get(void);
 extern const manifest_t *boot_policy_manifest_b_get(void);
