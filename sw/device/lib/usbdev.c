@@ -335,3 +335,9 @@ void usbdev_wake(bool set) {
   }
   REG32(USBDEV_BASE_ADDR + USBDEV_WAKE_CONFIG_REG_OFFSET) = reg_val;
 }
+
+// `extern` declarations to give the inline functions in the
+// corresponding header a link location.
+
+extern int usbdev_halted(usbdev_ctx_t *ctx, int endpoint);
+extern void usbdev_rem_wake_en(usbdev_ctx_t *ctx, int enable);

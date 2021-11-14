@@ -122,6 +122,7 @@ void mmio_region_memcpy_to_mmio32(mmio_region_t base, uint32_t offset,
 
 // `extern` declarations to give the inline functions in the
 // corresponding header a link location.
+extern mmio_region_t mmio_region_from_addr(uintptr_t address);
 extern uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset);
 extern uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset);
 extern void mmio_region_write8(mmio_region_t base, ptrdiff_t offset,
