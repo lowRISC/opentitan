@@ -280,17 +280,19 @@ module tb;
       dut.u_otbn_core.u_otbn_rf_base.i_otbn_rf_base_if);
 
     // Instantiate mem_bkdr_util objects to allow access to IMEM and DMEM
+    //
+    // Note that n_bits is the number of bits in the memory, including ECC check bits.
     imem_util = new(.name ("imem_util"),
                     .path ({"tb.dut.u_imem.u_prim_ram_1p_adv.",
                             "u_mem.gen_generic.u_impl_generic.mem"}),
                     .depth (otbn_reg_pkg::OTBN_IMEM_SIZE / 4),
-                    .n_bits (8 * otbn_reg_pkg::OTBN_IMEM_SIZE),
+                    .n_bits (otbn_reg_pkg::OTBN_IMEM_SIZE / 4 * 39),
                     .err_detection_scheme (mem_bkdr_util_pkg::Ecc_39_32));
     dmem_util = new(.name ("dmem_util"),
                     .path ({"tb.dut.u_dmem.u_prim_ram_1p_adv.",
                             "u_mem.gen_generic.u_impl_generic.mem"}),
                     .depth (otbn_reg_pkg::OTBN_DMEM_SIZE / 32),
-                    .n_bits (8 * otbn_reg_pkg::OTBN_DMEM_SIZE),
+                    .n_bits (otbn_reg_pkg::OTBN_DMEM_SIZE / 32 * 312),
                     .err_detection_scheme (mem_bkdr_util_pkg::Ecc_39_32));
 
     uvm_config_db#(mem_bkdr_util)::set(null, "*.env", imem_util.get_name(), imem_util);
