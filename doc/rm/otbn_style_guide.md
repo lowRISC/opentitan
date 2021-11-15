@@ -133,6 +133,17 @@ wide_sum:
   ret
 ```
 
+### Alignment Directives
+
+Big-number load/store instructions (`bn.lid`, `bn.sid`) require DMEM addresses
+to be 256-bit aligned; use `.balign 32` for any big-number inline binary data
+to ensure this. For non-big-number data, `.balign 4` (32-bit alignment) is
+recommended.
+
+### Inline Binary Directives
+
+Prefer `.word` over alternatives such as `.quad`.
+
 ## Secure Coding for Cryptography
 
 The following guidelines address cryptography-specific concerns for OTBN assembly.
@@ -216,18 +227,20 @@ eq_2048_var:
   li       x12, 28
 
   /* Check if all limbs are equal. */
+  li       x2, 1
   loopi    8, 5
+    /* If x2 is 0, skip to the end of the loop. (It's still necessary to
+       complete the same number of loop iterations to avoid polluting the loop
+       stack, but we can skip all instructions except the last.) */
+    beq      x2, x0, loop_end
     /* w27 <= A[i] */
     bn.movr  x11, x9++
     /* w28 <= B[i] */
     bn.movr  x12, x10++
     /* x2 <= (w27 == w28) */
     jal      x1, eq_256
-    /* If x2 is 0, exit loop early. */
-    beq      x2, x0, eq_2048_var_done
+loop_end:
     nop
-
-eq_2048_var_done:
 
   ret
 ```
