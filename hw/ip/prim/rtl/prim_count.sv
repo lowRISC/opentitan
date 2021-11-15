@@ -132,6 +132,19 @@ module prim_count import prim_count_pkg::*; #(
     `ASSERT(CrossCntErrBackward_A, err_o |->
             (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}))
 
+    // Down counter assumption to control underflow
+    // We can also constrain the down counter underflow via `down_cnt % step_i == 0`.
+    // However, modulo operation can be very complex for formal analysis.
+    `ASSUME(DownCntStepInt_A, cmp_valid == CmpValid |-> down_cnt == 0 || down_cnt >= step_i)
+
+    // Up counter assumption to control overflow
+      logic [Width:0] unused_cnt;
+      assign unused_cnt = up_cnt_q[0] + step_i;
+      logic unused_incr_cnt;
+      assign unused_incr_cnt = (cmp_valid == CmpValid) & !clr_i & !set_i;
+
+      `ASSUME(UpCntOverFlow_A, unused_incr_cnt && !err |-> ~unused_cnt[Width])
+
   end else if (CntStyle == DupCnt) begin : gen_dup_cnt_hardening
     // duplicate count compare is always valid
     assign cmp_valid = CmpValid;
@@ -147,20 +160,6 @@ module prim_count import prim_count_pkg::*; #(
                  (cmp_valid == CmpInvalid) ?  '0  : 1'b1;
 
   // ASSERTIONS AND ASSUMPTIONS
-
-  // Down counter assumption to control underflow
-  if (CntStyle == CrossCnt && OutSelDnCnt) begin : gen_down_cnter_assumptions
-    `ASSUME(DownCntStepInt_A, cmp_valid == CmpValid |-> max_val % step_i == 0)
-  // Up counter assumption to control overflow
-  end else begin : gen_up_cnter_assumptions
-    logic [Width:0] unused_cnt;
-    assign unused_cnt = up_cnt_q[0] + step_i;
-    logic unused_incr_cnt;
-    assign unused_incr_cnt = (cmp_valid == CmpValid) & !clr_i & !set_i;
-
-    `ASSUME(UpCntOverFlow_A, unused_incr_cnt && !err |-> ~unused_cnt[Width])
-  end
-
   `ifdef INC_ASSERT
   // Helper variables to hold the previous valid `cnt_o` and `step_i` when `en_i` is set.
   logic [Width-1:0] past_cnt_o, past_step_i;
@@ -199,7 +198,11 @@ module prim_count import prim_count_pkg::*; #(
   // is used in design without adding this assertion check.
   `ifdef INC_ASSERT
   logic unused_assert_connected;
+
+  // ASSERT_INIT can only be used for paramters/constants in FPV.
+  `ifdef SIMULATION
   `ASSERT_INIT(AssertConnected_A, unused_assert_connected === 1'b1)
+  `endif
   `endif
 endmodule // prim_count
 
