@@ -143,11 +143,11 @@ However, the {{< regref "adc_chn_val[0].adc_chn_value_intr" >}} and {{< regref "
 {
   signal: [
     {node: '.a..b........', phase:0.2},
-    {name: 'adc_pd_i'     , wave: '10|..|.....|....|..1'},
-    {name: 'clk_ast_adc_i', wave: 'p.|..|.....|....|...'},
-    {name: 'adc_chnsel_i' , wave: '0.|.3|..04.|....|0..'},
-    {name: 'adc_d_val_o'  , wave: '0.|..|.1.0.|.1..|.0.'},
-    {name: 'adc_d_o'      , wave: 'x.|..|.3.x.|.4..|.x.', data: ['ch0', 'ch1', 'ch1']},
+    {name: 'adc_pd_i'     , wave: '10|..|.....|....|1'},
+    {name: 'clk_ast_adc_i', wave: 'p.|..|.....|....|.'},
+    {name: 'adc_chnsel_i' , wave: '0.|.3|..04.|..0.|.'},
+    {name: 'adc_d_val_o'  , wave: '0.|..|.10..|.10.|.'},
+    {name: 'adc_d_o'      , wave: 'x.|..|.3x..|.4x.|.', data: ['ch0', 'ch1', 'ch1']},
   ],
   edge: [  'a<->b wakeup time',   ]
 }
