@@ -225,6 +225,15 @@ module spi_device
   logic cfg_mailbox_en;
   logic [31:0] mailbox_addr;
 
+  // Intercept
+  typedef struct packed {
+    logic status;
+    logic jedec;
+    logic sfdp;
+    logic mbx;
+  } intercept_en_t;
+  intercept_en_t cfg_intercept_en;
+
   // Threshold value of a buffer in bytes
   logic [BufferAw:0] readbuf_threshold;
 
@@ -530,6 +539,16 @@ module spi_device
   );
 
   // SPI Flash commands registers
+
+  assign cfg_intercept_en = '{
+    status:  reg2hw.intercept_en.status.q,
+    jedec:   reg2hw.intercept_en.jedec.q,
+    sfdp:    reg2hw.intercept_en.sfdp.q,
+    mbx:     reg2hw.intercept_en.mbx.q
+  };
+  logic unused_cfg_intercept_en;
+  assign unused_cfg_intercept_en = ^cfg_intercept_en;
+
   // TODO: Add 2FF sync? or just waive?
   assign hw2reg.last_read_addr.d = readbuf_addr_busclk;
 

@@ -394,6 +394,33 @@
         }
       ],
     },
+    //=========================================================================
+    // Flash & Passthrough CSRs
+    { name: "INTERCEPT_EN"
+      desc: '''Intercept Passthrough datapath.
+
+        '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0"
+          name: "status"
+          desc: "If set, Read Status is processed internally."
+        } // f: status
+        { bits: "1"
+          name: "jedec"
+          desc: "If set, Read JEDEC ID is processed internally."
+        } // f: jedec
+        { bits: "2"
+          name: "sfdp"
+          desc: "If set, Read SFDP is processed internally."
+        } // f: sfdp
+        { bits: "3"
+          name: "mbx"
+          desc: "If set, Read Command to Mailbox region is processed internally."
+        } // f: mailbox
+      ]
+    } // R: INTERCEPT_EN
     { name: "LAST_READ_ADDR"
       desc: '''Last Read Address
 
