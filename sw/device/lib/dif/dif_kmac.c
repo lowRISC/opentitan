@@ -595,17 +595,15 @@ dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
   // will not be byte swapped in big-endian mode.
   const uint8_t *data = (const uint8_t *)msg;
   for (; len != 0 && ((uintptr_t)data) % sizeof(uint32_t); --len) {
-    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET,
-                       *data++);
+    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET, *data++);
   }
   for (; len >= sizeof(uint32_t); len -= sizeof(uint32_t)) {
     mmio_region_write32(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET,
-                        *((const uint32_t *)data));
+                        read_32(data));
     data += sizeof(uint32_t);
   }
   for (; len != 0; --len) {
-    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET,
-                       *data++);
+    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET, *data++);
   }
 
   if (processed != NULL) {
