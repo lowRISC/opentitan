@@ -383,8 +383,8 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                       name:   "EN",
                       desc:   '''
                               Alert configuration write enable bit.
-                              If this is cleared to 0, the corresponding !!ALERT_EN_SHADOWED0
-                              and !!ALERT_CLASS bits are not writable anymore.
+                              If this is cleared to 0, the corresponding !!ALERT_EN_SHADOWED
+                              and !!ALERT_CLASS_SHADOWED bits are not writable anymore.
 
                               Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
                               ''',
@@ -471,8 +471,8 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                       name:   "EN",
                       desc:   '''
                               Alert configuration write enable bit.
-                              If this is cleared to 0, the corresponding !!LOC_ALERT_EN_SHADOWED0
-                              and !!LOC_ALERT_CLASS_SHADOWED0 bits are not writable anymore.
+                              If this is cleared to 0, the corresponding !!LOC_ALERT_EN_SHADOWED
+                              and !!LOC_ALERT_CLASS_SHADOWED bits are not writable anymore.
 
                               Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
                               ''',
