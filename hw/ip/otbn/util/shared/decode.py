@@ -3,8 +3,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import sys
 import struct
+import sys
 from typing import Dict, Tuple
 
 from shared.elf import read_elf
@@ -25,11 +25,11 @@ class OTBNProgram:
         self.data = data  # addr -> data (32b word)
 
         self.insns = {}
-        for pc in insns.keys():
-            opcode = insns[pc]
+        for pc, opcode in insns.items():
             mnem = INSNS_FILE.mnem_for_word(opcode)
             if mnem is None:
-                raise ValueError('No legal decoding for mnemonic: {}'.format(mnem))
+                raise ValueError(
+                    'No legal decoding for mnemonic: {}'.format(mnem))
             insn = INSNS_FILE.mnemonic_to_insn.get(mnem)
             enc_vals = insn.encoding.extract_operands(opcode)
             op_vals = insn.enc_vals_to_op_vals(pc, enc_vals)
