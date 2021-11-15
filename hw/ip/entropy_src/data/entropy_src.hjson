@@ -1007,7 +1007,7 @@
                 the ability to insert entropy bits back into the hardware flow. Firmware
                 can read data from the health check packer FIFO, then do optional health
                 checks or optional conditioning, then insert the results back into the flow.
-                Also, the !!FW_OV_MODE bit must be set.
+                Also, the !!FW_OV_CONTROL.FW_OV_MODE bit must be set.
                 '''
           resval: "0x5"
         },
@@ -1035,7 +1035,7 @@
       fields: [
         { bits: "31:0",
           desc: '''A write to  this register will insert entropy back into the entropy source
-                module flow. Both !!FW_OV_MODE and !!FW_OV_ENTROPY_INSERT bits need to be set
+                module flow. Both !!FW_OV_CONTROL.FW_OV_MODE and !!FW_OV_CONTROL.FW_OV_ENTROPY_INSERT bits need to be set
                 to enable the insertion.
                 '''
         }
