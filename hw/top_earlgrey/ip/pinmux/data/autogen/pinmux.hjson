@@ -666,7 +666,7 @@
                       name:   "EN",
                       desc:   '''
                               Register write enable bit.
-                              If this is cleared to 0, the corresponding !!MIO_OUT_SLEEP_MODE
+                              If this is cleared to 0, the corresponding !!MIO_PAD_SLEEP_MODE
                               is not writable anymore.
                               ''',
                       resval: "1",
@@ -1032,7 +1032,7 @@
                       name: "SEL",
                       resval: 0,
                       desc: '''Selects a specific MIO or DIO pad (depending on !!WKUP_DETECTOR configuration).
-                      In case of MIO, the pad select index is the same as used for !!PERIPH_INSEL, meaning that index
+                      In case of MIO, the pad select index is the same as used for !!MIO_PERIPH_INSEL, meaning that index
                       0 and 1 just select constants 0 and 1, and the MIO pads live at indices >= 2. In case of DIO pads,
                       the pad select index corresponds 1:1 to the DIO pad to be selected.
                       '''
