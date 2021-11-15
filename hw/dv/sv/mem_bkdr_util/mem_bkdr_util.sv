@@ -71,11 +71,38 @@ class mem_bkdr_util extends uvm_object;
     this.width = n_bits / depth;
     this.err_detection_scheme = err_detection_scheme;
 
-    data_width = `HAS_ECC ? prim_secded_pkg::get_ecc_data_width(
-        prim_secded_pkg::prim_secded_e'(err_detection_scheme)) : width;
+    if (`HAS_ECC) begin
+      import prim_secded_pkg::prim_secded_e;
+      import prim_secded_pkg::get_ecc_data_width;
+      import prim_secded_pkg::get_ecc_parity_width;
+
+      prim_secded_e secded_eds = prim_secded_e'(err_detection_scheme);
+      int non_ecc_bits_per_subword = get_ecc_data_width(secded_eds);
+      int ecc_bits_per_subword = get_ecc_parity_width(secded_eds);
+      int bits_per_subword = non_ecc_bits_per_subword + ecc_bits_per_subword;
+      int subwords_per_word;
+
+      // We shouldn't truncate the actual data word. This check ensures that err_detection_scheme
+      // and width are related sensibly. This only checks we've got enough space for one data word
+      // and at least one check bit. The next check will make sure that we don't truncate if there
+      // are multiple subwords.
+      `DV_CHECK_FATAL(non_ecc_bits_per_subword < this.width)
+
+      // Normally, we'd want width to be divisible by bits_per_subword, which means that we get a
+      // whole number of subwords in a word. As a special case, we also allow a having exactly one
+      // subword and only keeping some of the bits. This is used by the flash controller.
+      `DV_CHECK_FATAL((this.width < bits_per_subword) || (this.width % bits_per_subword == 0),
+                      "With multiple subwords, mem width must be a multiple of the ECC width")
+
+      subwords_per_word = (width + bits_per_subword - 1) / bits_per_subword;
+      this.data_width = subwords_per_word * non_ecc_bits_per_subword;
+    end else begin
+      this.data_width = width;
+    end
+
     byte_width = `HAS_PARITY ? 9 : 8;
     bytes_per_word = data_width / byte_width;
-    `DV_CHECK_LE_FATAL(bytes_per_word, 16, "data width > 16 bytes is not supported")
+    `DV_CHECK_LE_FATAL(bytes_per_word, 32, "data width > 32 bytes is not supported")
     size_bytes = depth * bytes_per_word;
     addr_lsb   = $clog2(bytes_per_word);
     addr_width = $clog2(depth);
@@ -220,6 +247,11 @@ class mem_bkdr_util extends uvm_object;
     return {read64(addr + 8), read64(addr)};
   endfunction
 
+  virtual function logic [255:0] read256(bit [bus_params_pkg::BUS_AW-1:0] addr);
+    `_ACCESS_CHECKS(addr, 256)
+    return {read128(addr + 16), read128(addr)};
+  endfunction
+
   // Write the entire word at the given address with the specified data.
   //
   // addr is the byte address starting at offset 0. Mask the upper address bits as needed before
@@ -320,7 +352,14 @@ class mem_bkdr_util extends uvm_object;
     `_ACCESS_CHECKS(addr, 128)
     if (!check_addr_valid(addr)) return;
     write64(addr, data[63:0]);
-    write64(addr + 4, data[127:63]);
+    write64(addr + 8, data[127:63]);
+  endfunction
+
+  virtual function void write256(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [255:0] data);
+    `_ACCESS_CHECKS(addr, 256)
+    if (!check_addr_valid(addr)) return;
+    write128(addr, data[127:0]);
+    write128(addr + 16, data[255:128]);
   endfunction
 
   `undef _ACCESS_CHECKS
