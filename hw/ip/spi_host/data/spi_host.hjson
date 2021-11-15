@@ -136,7 +136,7 @@
         { bits: "29",
           name: "TXFULL",
           desc: '''When high, indicates that the transmit data fifo is full.
-                   Any further writes to !!DATA will create an error interrupt.
+                   Any further writes to !!RXDATA will create an error interrupt.
                 '''
           resval: "0x0"
         },
@@ -162,7 +162,7 @@
           name: "RXFULL",
           desc: '''When high, indicates that the receive fifo is full.  Any
                    ongoing transactions will stall until firmware reads some
-                   data from !!DATA.'''
+                   data from !!RXDATA.'''
           resval: "0x0"
         },
         { bits: "24",
@@ -237,7 +237,7 @@
                      sck and are typically sampled on the trailing edge.
                      CPHA should be chosen to match the phase of the selected
                      device.  The sampling behavior is modified by the
-                     !!CONFIGOPTS_0.FULLCYC bit.
+                     !!CONFIGOPTS.FULLCYC bit.
                      ''',
             resval: "0x0"
           },
@@ -306,7 +306,7 @@
     { name: "COMMAND",
       desc: '''Command Register
 
-               Parameters specific to each command segment.  Unlike the `CONFIGOPTS` multi-register,
+               Parameters specific to each command segment.  Unlike the !!CONFIGOPTS multi-register,
                there is only one command register for controlling all attached SPI devices''',
       swaccess: "wo",
       hwaccess: "hro",
@@ -394,7 +394,7 @@
                  is chosen to match SPI flash devices. Individual bytes
                  are always transmitted with the most significant bit first.
                  Multi-byte writes are also supported, and if ByteOrder = 0,
-                 the bits of !!DATA are transmitted strictly in order of
+                 the bits of !!TXDATA are transmitted strictly in order of
                  decreasing signficance (i.e. most signicant bit first).
                  For some processor architectures, this could lead to shuffling
                  of flash data as compared to how it is written in memory.
@@ -428,7 +428,7 @@
         { bits: "2",
           name: "UNDERFLOW",
           desc: '''Underflow Errors: If this bit is set, the block sends an
-                   error interrupt whenever there is a read from !!DATA
+                   error interrupt whenever there is a read from !!RXDATA
                    but the RX FIFO is empty.'''
           resval: "0x1"
         },
@@ -476,7 +476,7 @@
         { bits: "2",
           name: "UNDERFLOW",
           desc: '''Indicates that firmware has attempted to read from
-                   !!DATA when the RX FIFO is empty.''',
+                   !!RXDATA when the RX FIFO is empty.''',
           resval: "0x0"
         },
         { bits: "1",
