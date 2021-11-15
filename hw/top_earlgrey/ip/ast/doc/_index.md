@@ -974,24 +974,20 @@ synchronous to the adc controller.
 
 7.   Deactivate the ADC by setting ‘adc\_pd’ to save power.
 
-![](./media/image2.png)
+{{< wavejson >}}
+{
+  signal: [ 
+    {node: '.a..b........', phase:0.2},
+    {name: 'adc_pd_i' ,     wave: '10|..|.....|....|..1'},
+    {name: 'clk_ast_adc_i', wave: 'p.|..|.....|....|...'},
+    {name: 'adc_chnsel_i' , wave: '0.|.3|..04.|....|0..'},
+    {name: 'adc_d_val_o' ,  wave: '0.|..|.1.0.|.1..|.0.'},
+    {name: 'adc_d_o' ,      wave: 'x.|..|.3.x.|.4..|.x.', data: ['ch0', 'ch1', 'ch1']},
+   ],
 
-[<u>https://wavedrom.com/editor.html</u>](https://urldefense.proofpoint.com/v2/url?u=https-3A__wavedrom.com_editor.html&d=DwMFaQ&c=ue8mO8zgC4VZ4q_aNVKt8G9MC01UFDmisvMR1k-EoDM&r=ORLxyPY9MsmpJYCWs7a9VBneW9h5vR8MnW3aYvrOooI&m=ts63KFxLdp_aXcU3h1dbe_sIHcNCW8am1RhZxv1PNbA&s=MzZVoXpb6wDp_3iGVjovwJ1b-NW3uLacU2X-WhLfAZ4&e=)
-
-<u>{signal: \[ {node: '.a..b........', phase:0.2},</u>
-
-<u>{name: 'adc\_pd\_i' , wave: '10|..|.....|....|..1'},</u>
-
-<u>{name: 'clk\_ast\_adc\_i', wave: 'p.|..|.....|....|...'},</u>
-
-<u>{name: 'adc\_chnsel\_i' , wave: '0.|.3|..04.|....|0..'},</u>
-
-<u>{name: 'adc\_d\_val\_o' , wave: '0.|..|.1.0.|.1..|.0.'},</u>
-
-<u>{name: 'adc\_d\_o' , wave: 'x.|..|.3.x.|.4..|.x.', data: \['ch0',
-'ch1', 'ch1'\]}, </u>
-
-<u>\],edge: \[ 'a\<-\>b wakeup time', \] }</u>
+  edge: [ 'a<->b wakeup time', ] 
+}
+{{< /wavejson >}}
 
 # Random Number Generator
 
@@ -1003,7 +999,16 @@ four random bit streams. rng\_b\_o bit streams are valid and can be
 sampled whenever \`rng\_val\_o\` is asserted according to the following
 diagram.
 
-![](./media/image3.png)
+{{< wavejson >}}
+{
+  signal: [
+    {name: 'clk',       wave: 'p.|......|......|......'},
+    {name: 'rng_en',    wave: '01|......|......|......'},
+    {name: 'rng_valid', wave: '0.|10....|10....|10....'},
+    {name: 'rng_b',     wave: 'x.|3.....|4.....|5.....', data: ['es0', 'es1', 'es2']},
+  ]
+}
+{{< /wavejson >}}
 
 The expected rng\_b\_o valid output rate is about 50KHz.
 
@@ -1013,19 +1018,17 @@ AST consumes entropy for defensive purposes. However, AST does not
 consume its raw entropy directly. Instead, AST receives entropy from the
 CSRNG. The details of this interface are still under discussion.
 
-![](./media/image1.png)
 
-{signal: \[
-
-{name: 'clk\_ast\_es\_i' , wave: 'p.|..........'},
-
-{name: 'entropy\_req\_o' , wave: '01|.0.1.....0'},
-
-{name: 'entropy\_ack\_i' , wave: '0.|10.1.01..0'},
-
-{name: 'entropy\_i' , wave: 'xx|2x.22x222x'},
-
-\] }
+{{< wavejson >}}
+{
+  signal: [
+    {name: 'clk_ast_es_i' ,  wave: 'p.|..........'},
+    {name: 'entropy_req_o' , wave: '01|.0.1.....0'},
+    {name: 'entropy_ack_i' , wave: '0.|10.1.01..0'},
+    {name: 'entropy_i',      wave: 'xx|2x.22x222x'},
+  ] 
+}
+{{< /wavejson >}}
 
 # Countermeasures and Alerts
 
