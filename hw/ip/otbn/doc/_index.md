@@ -490,6 +490,9 @@ Refer to the [Secure Wipe]({{<relref "#design-details-secure-wipe">}}) section f
 ## Instruction Counter
 
 In order to detect and mitigate fault injection attacks on the OTBN, the host CPU can read the number of executed instructions from {{< regref "INSN_CNT">}} and verify whether it matches the expectation.
+The host CPU can clear the instruction counter when OTBN is not running.
+Writing any value to {{< regref "INSN_CNT">}} clears this register to zero.
+Write attempts while OTBN is running are ignored.
 
 ## Key Sideloading
 
@@ -796,6 +799,10 @@ A **fatal alert** is a continuously triggered alert caused by [fatal errors](#de
 The error that caused the alert can be determined by reading the {{< regref "FATAL_ALERT_CAUSE" >}} register.
 If OTBN was running, this value will also be reflected in the {{< regref "ERR_BITS" >}} register.
 A fatal alert can only be cleared by resetting OTBN through the `rst_ni` line.
+
+The host CPU can clear the {{< regref "ERR_BITS" >}} when OTBN is not running.
+Writing any value to {{< regref "ERR_BITS" >}} clears this register to zero.
+Write attempts while OTBN is running are ignored.
 
 ### Reaction to Life Cycle Escalation Requests {#design-details-lifecycle-escalation}
 
