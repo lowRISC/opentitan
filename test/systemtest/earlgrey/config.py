@@ -39,6 +39,10 @@ TEST_APPS_SELFCHECKING = [
         # implemented.
         "targets": ["sim_verilator", "fpga_cw310"],
     },
+    {
+        "name": "otbn_irq_test",
+        "targets": ["sim_verilator", "fpga_cw310"],
+    },
     # The OTBN end-to-end tests can be run in simulation, but take a long time
     # there. Run them on the CW310 FPGA board only for faster test results.
     {
