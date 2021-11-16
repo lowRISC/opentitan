@@ -723,7 +723,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_packer_fifo #(
     .InW(1),
-    .OutW(RngBusWidth)
+    .OutW(RngBusWidth),
+    .ClearOnRead(1'b0)
   ) u_prim_packer_fifo_esbit (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
@@ -1919,7 +1920,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_packer_fifo #(
     .InW(RngBusWidth),
-    .OutW(PostHTWidth)
+    .OutW(PostHTWidth),
+    .ClearOnRead(1'b0)
   ) u_prim_packer_fifo_postht (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
@@ -1991,7 +1993,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_packer_fifo #(
     .InW(ObserveFifoWidth),
-    .OutW(PreCondWidth)
+    .OutW(PreCondWidth),
+    .ClearOnRead(1'b0)
   ) u_prim_packer_fifo_precon (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
@@ -2090,7 +2093,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_packer_fifo #(
      .InW(PreCondWidth),
-     .OutW(SeedLen)
+     .OutW(SeedLen),
+     .ClearOnRead(1'b0)
   ) u_prim_packer_fifo_bypass (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
@@ -2236,7 +2240,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_packer_fifo #(
     .InW(SeedLen),
-    .OutW(FullRegWidth)
+    .OutW(FullRegWidth),
+    .ClearOnRead(1'b0)
   ) u_prim_packer_fifo_swread (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
