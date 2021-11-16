@@ -357,7 +357,6 @@ def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
         codeword_rev = codeword[::-1]
         for idx, f in enumerate(mask[::-1]):
             if int(f):
-                log.debug(f'xoring position {idx} value {codeword_rev[idx]}')
                 bit ^= int(codeword_rev[idx])
 
         codeword = str(bit) + codeword
@@ -548,13 +547,10 @@ def _hamming_code(k, m):
                 # If even, we are in the skip phase, do not include
                 # If odd, we are in the include phase
                 parity_chk = int((pos - (pos % parity_pos)) / parity_pos)
-                log.debug("At position {} parity value {}, {}".format(
-                    pos, parity_pos, parity_chk))
 
                 # valid for inclusion or final parity bit that includes everything
                 if is_odd(parity_chk) or p == m - 1:
                     code = code + (p, )
-                    log.info("add {} to tuple {}".format(p, code))
 
             codes.append(code)
 
