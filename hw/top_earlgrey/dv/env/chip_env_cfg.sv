@@ -58,6 +58,10 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   sw_test_status_vif  sw_test_status_vif;
   ast_supply_vif      ast_supply_vif;
 
+  // Number of RAM tiles for each RAM instance.
+  uint num_ram_main_tiles;
+  uint num_ram_ret_tiles;
+
   // ext component cfgs
   rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
@@ -104,6 +108,9 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     sw_images[SwTypeTest] = "./sw";
     sw_images[SwTypeOtbn] = "./otbn";
     sw_images[SwTypeOtp] = "./otp";
+
+    `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
+    `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
   endfunction
 
   // ral flow is limited in terms of setting correct field access policies and reset values

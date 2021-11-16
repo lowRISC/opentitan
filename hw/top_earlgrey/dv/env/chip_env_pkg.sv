@@ -53,14 +53,17 @@ package chip_env_pkg;
   typedef virtual ast_supply_if         ast_supply_vif;
 
   // Types of memories in the chip.
+  //
+  // RAM instances have support for up to 16 tiles. Actual number of tiles in use in the design is a
+  // runtime setting in chip_env_cfg.
   typedef enum {
     FlashBank0Data,
     FlashBank1Data,
     FlashBank0Info,
     FlashBank1Info,
     Otp,
-    RamMain,
-    RamRet,
+    RamMain[16],
+    RamRet[16],
     Rom
   } chip_mem_e;
 
