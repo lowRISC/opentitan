@@ -151,9 +151,7 @@ _start_boot:
    *
    * The lowest two bits should be `0b01` to ensure we use vectored interrupts.
    */
-  la   t0, _interrupt_vector
-  andi t0, t0, -4
-  ori  t0, t0, 0b01
+  la   t0, (_interrupt_vector + 1)
   csrw mtvec, t0
 
   /**
