@@ -225,6 +225,70 @@
                cov: true
              }
              {
+               name: prim_secded_inv_22_16_fpv
+               dut: prim_secded_inv_22_16_tb
+               fusesoc_core: lowrisc:fpv:prim_secded_inv_22_16_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_inv_22_16/{sub_flow}/{tool}"
+               cov: true
+             }
+             {
+               name: prim_secded_inv_28_22_fpv
+               dut: prim_secded_inv_28_22_tb
+               fusesoc_core: lowrisc:fpv:prim_secded_inv_28_22_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_inv_28_22/{sub_flow}/{tool}"
+               cov: true
+             }
+             {
+               name: prim_secded_inv_39_32_fpv
+               dut: prim_secded_inv_39_32_tb
+               fusesoc_core: lowrisc:fpv:prim_secded_inv_39_32_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_inv_39_32/{sub_flow}/{tool}"
+               cov: true
+             }
+             {
+               name: prim_secded_inv_64_57_fpv
+               dut: prim_secded_inv_64_57_tb
+               fusesoc_core: lowrisc:fpv:prim_secded_inv_64_57_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_inv_64_57/{sub_flow}/{tool}"
+               cov: true
+             }
+             {
+               name: prim_secded_inv_72_64_fpv
+               dut: prim_secded_inv_72_64_tb
+               fusesoc_core: lowrisc:fpv:prim_secded_inv_72_64_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_secded_inv_72_64/{sub_flow}/{tool}"
+               cov: true
+             }
+             {
+               name: prim_secded_inv_hamming_22_16_fpv
+               dut: prim_secded_inv_hamming_22_16_tb
+               fusesoc_core: lowrisc:fpv:prim_secded_inv_hamming_22_16_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_hamming_22_16/{sub_flow}/{tool}"
+               cov: true
+             }
+             {
+               name: prim_secded_inv_hamming_39_32_fpv
+               dut: prim_secded_inv_hamming_39_32_tb
+               fusesoc_core: lowrisc:fpv:prim_secded_inv_hamming_39_32_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_hamming_39_32/{sub_flow}/{tool}"
+               cov: true
+             }
+             {
+               name: prim_secded_inv_hamming_72_64_fpv
+               dut: prim_secded_inv_hamming_72_64_tb
+               fusesoc_core: lowrisc:fpv:prim_secded_inv_hamming_72_64_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/prim/prim_hamming_72_64/{sub_flow}/{tool}"
+               cov: true
+             }
+             {
                name: pinmux_fpv
                dut: pinmux_tb
                fusesoc_core: lowrisc:fpv:pinmux_fpv
