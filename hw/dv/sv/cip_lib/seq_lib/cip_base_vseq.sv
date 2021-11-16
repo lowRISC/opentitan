@@ -381,7 +381,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       // Each iteration only sends 1 item with TL integrity error. Increase to send at least
       // 10 x num_times integrity errors
       "tl_intg_err":                   run_tl_intg_err_vseq(10 * num_times);
-      "stress_all_with_rand_reset":    run_stress_all_with_rand_reset_vseq(num_times);
+      "stress_all_with_rand_reset":    run_plusarg_vseq_with_rand_reset(num_times);
       "same_csr_outstanding":          run_same_csr_outstanding_vseq(num_times);
       "shadow_reg_errors":             run_shadow_reg_errors(num_times);
       "shadow_reg_errors_with_csr_rw": run_shadow_reg_errors(num_times, 1);
@@ -579,7 +579,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // Run a stress sequence (chosen by plusarg) in parallel with a TL errors vseq and then suddenly
   // inject a reset.
-  virtual task run_stress_all_with_rand_reset_vseq(int num_times);
+  virtual task run_plusarg_vseq_with_rand_reset(int num_times);
     string stress_seq_name;
     int had_stress_seq_plusarg = $value$plusargs("stress_seq=%0s", stress_seq_name);
     `DV_CHECK_FATAL(had_stress_seq_plusarg)
