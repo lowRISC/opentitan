@@ -35,6 +35,24 @@
     }
 
     {
+      name: prim_alert_init_trigger_test
+      desc: '''Verify init_trigger input from prim_alert_receiver.
+
+            Based on the prim_alert_test, this test adds a parallel sequence to randomly drive
+            init_trigger_i in prim_alert_receiver.
+
+            Check if alert sender/receiver pairs can resume normal handshake after init_trigger_i
+            is set.
+            For fatal alert, check if fatal alerts keep firing until reset is issued.
+            '''
+      milestone: V1
+      tests: ["prim_async_alert",
+              "prim_async_fatal_alert",
+              "prim_sync_alert",
+              "prim_sync_fatal_alert"]
+    }
+
+    {
       name: prim_alert_ping_request_test
       desc: '''Verify ping request from prim_alert_sender.
 

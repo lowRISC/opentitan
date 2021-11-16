@@ -40,7 +40,7 @@ module prim_alert_tb;
   localparam int  MinHandshakeWait = 2 + WaitCycle;
 
   // Clock cycles for alert init handshake to finish.
-  localparam int  WaitAlertInitDone = 20;
+  localparam int  WaitAlertInitDone = 30;
 
   typedef enum bit [3:0]{
     AlertSet,
@@ -74,7 +74,7 @@ module prim_alert_tb;
   logic ping_req, ping_ok, integ_fail, alert_o;
   prim_alert_pkg::alert_rx_t alert_rx;
   prim_alert_pkg::alert_tx_t alert_tx;
-
+  prim_mubi_pkg::mubi4_t     init_trig = prim_mubi_pkg::MuBi4False;
   prim_alert_sender #(
     .AsyncOn(IsAsync),
     .IsFatal(IsFatal)
@@ -94,8 +94,7 @@ module prim_alert_tb;
   ) i_alert_receiver (
     .clk_i(clk),
     .rst_ni(rst_n),
-    // TODO: randomly trigger this
-    .init_trig_i(prim_mubi_pkg::MuBi4False),
+    .init_trig_i(init_trig),
     .ping_req_i(ping_req),
     .ping_ok_o(ping_ok),
     .integ_fail_o(integ_fail),
@@ -209,30 +208,51 @@ module prim_alert_tb;
     main_clk.wait_clks(WaitAlertInitDone);
 
     // Sequence 1). Alert request sequence.
-    main_clk.wait_clks($urandom_range(0, 10));
-    alert_req = 1;
-    fork
-      begin
+    for (int num_trans = 1; num_trans <= 10; num_trans++) begin
+      int rand_wait_alert_req = $urandom_range(MinHandshakeWait, 10);
+      int rand_wait_init_trig = $urandom_range(0, 30);
+      fork
+        begin
+          main_clk.wait_clks(rand_wait_alert_req);
+          alert_req = 1;
+          fork
+            begin
+              main_clk.wait_clks(1);
+              check_alert_handshake(.exp_ping_value(0));
+            end
+            // While waiting to check alert handshake, reset alert_req as soon as alert is acked to
+            // avoid triggering multiple alert requests.
+            begin
+              wait (alert_ack == 1);
+              alert_req = 0;
+            end
+          join
+        end
+        begin
+          main_clk.wait_clks(rand_wait_init_trig);
+          init_trig = prim_mubi_pkg::MuBi4True;
+        end
+      join_any
+      disable fork;
+      if (init_trig == prim_mubi_pkg::MuBi4True) begin
+        alert_req = 0;
+        main_clk.wait_clks($urandom_range(0, 10));
+        init_trig = prim_mubi_pkg::MuBi4False;
+        main_clk.wait_clks(WaitAlertInitDone);
+      end
+      // For fatal alert, ensure alert keeps firing until reset.
+      // This check is valid if the alert is fatal, and alert is requested before init request.
+      if (IsFatal && (rand_wait_alert_req + 1) <= rand_wait_init_trig) begin
+        main_clk.wait_clks($urandom_range(10, 100));
+        wait (alert_tx.alert_p == 0);
+        wait (alert_tx.alert_p == 1);
         main_clk.wait_clks(1);
         check_alert_handshake(.exp_ping_value(0));
+        main_clk.apply_reset();
+        main_clk.wait_clks(WaitAlertInitDone);
       end
-      begin
-        wait (alert_ack == 1);
-        alert_req = 0;
-      end
-    join
-
-    // If alert is fatal, check alert will continuously fire until reset.
-    if (IsFatal) begin
-      main_clk.wait_clks($urandom_range(10, 1000));
-      wait (alert_tx.alert_p == 0);
-      wait (alert_tx.alert_p == 1);
-      main_clk.wait_clks(1);
-      check_alert_handshake(.exp_ping_value(0));
-      main_clk.apply_reset();
-      main_clk.wait_clks(WaitAlertInitDone);
+      $display("Alert request sequence %0d/10 finished!", num_trans);
     end
-    $display("Alert request sequence finished!");
 
     // Sequence 2). Alert test sequence.
     main_clk.wait_clks($urandom_range(MinHandshakeWait, 10));
