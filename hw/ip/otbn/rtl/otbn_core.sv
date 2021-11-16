@@ -610,7 +610,7 @@ module otbn_core
   // All outputs should be known.
   `ASSERT_KNOWN(DoneOKnown_A, done_o)
   `ASSERT_KNOWN(ImemReqOKnown_A, imem_req_o)
-  `ASSERT_KNOWN(ImemAddrOKnown_A, imem_addr_o)
+  `ASSERT_KNOWN_IF(ImemAddrOKnown_A, imem_addr_o, imem_req_o)
   `ASSERT_KNOWN(ImemWdataOKnown_A, imem_wdata_o)
   `ASSERT_KNOWN(DmemReqOKnown_A, dmem_req_o)
   `ASSERT_KNOWN_IF(DmemWriteOKnown_A, dmem_write_o, dmem_req_o)
