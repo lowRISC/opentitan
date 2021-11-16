@@ -61,8 +61,8 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_ops)
 
-      // Request a new scrambling key
-      req_scr_key();
+      // Request a new scrambling key and do init
+      if ($urandom_range(0, 1)) req_mem_init();
 
       fork
         begin

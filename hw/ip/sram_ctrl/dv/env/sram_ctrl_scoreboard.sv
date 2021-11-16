@@ -170,37 +170,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   //       For the same reason, we cannot use the already-provided `predict_tl_err(...)`
   //       function of the cip_base_scoreboard, as the SRAM TLUL interface does not have
   //       any CSRs or uvm_mems.
-  virtual function bit sram_predict_tl_err(tl_seq_item item, tl_channels_e channel);
+  virtual function bit get_sram_instr_type_err(tl_seq_item item, tl_channels_e channel);
     bit is_tl_err;
     tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
-
-
-    is_tl_err = item.get_exp_d_error();
-
-    `uvm_info(`gfn,
-              $sformatf("error_a_opcode_invalid: %0b",
-                        item.get_error_a_opcode_invalid()),
-              UVM_HIGH)
-    `uvm_info(`gfn,
-              $sformatf("error_PutFullData_mask_size_mismatch: %0b",
-                        item.get_error_PutFullData_mask_size_mismatched()),
-              UVM_HIGH)
-    `uvm_info(`gfn,
-              $sformatf("error_addr_mask_misaligned: %0b",
-                        item.get_error_addr_mask_misaligned()),
-              UVM_HIGH)
-    `uvm_info(`gfn,
-              $sformatf("error_addr_size_misaligned: %0b",
-                        item.get_error_addr_size_misaligned()),
-              UVM_HIGH)
-    `uvm_info(`gfn,
-              $sformatf("error_mask_not_in_enabled_lanes: %0b",
-                        item.get_error_mask_not_in_enabled_lanes()),
-              UVM_HIGH)
-    `uvm_info(`gfn,
-              $sformatf("error_size_over_max: %0b",
-                        item.get_error_size_over_max()),
-              UVM_HIGH)
 
     if (a_user.instr_type == prim_mubi_pkg::MuBi4True) begin
       // 2 error cases if an InstrType transaction is seen:
@@ -209,21 +181,16 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       is_tl_err = (allow_ifetch) ? (item.a_opcode != tlul_pkg::Get) : 1'b1;
     end
 
-    if (channel == DataChannel) begin
-      `DV_CHECK_EQ(item.d_error, is_tl_err,
-          $sformatf("item_err: %0d", is_tl_err))
+    if (channel == DataChannel && is_tl_err) begin
+      `DV_CHECK_EQ(item.d_error, 1, $sformatf("item_err: %0d", is_tl_err))
     end
-
 
     return is_tl_err;
   endfunction
 
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
-    if (ral_name == RAL_T::type_name) begin
-      super.predict_tl_err(item, channel, ral_name);
-    end else begin
-      sram_predict_tl_err(item, channel);
-    end
+    if (ral_name == cfg.sram_ral_name && get_sram_instr_type_err(item, channel)) return 1;
+    return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
   function void build_phase(uvm_phase phase);
@@ -431,7 +398,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
         // don't process any error items
         //
         // TODO: sample error coverage
-        if (cfg.en_scb_tl_err_chk && sram_predict_tl_err(item, AddrChannel)) begin
+        if (cfg.en_scb_tl_err_chk && predict_tl_err(item, AddrChannel, cfg.sram_ral_name)) begin
           `uvm_info(`gfn, "TL addr_phase error detected", UVM_HIGH)
           continue;
         end
@@ -501,7 +468,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // don't process any error items
       //
       // TODO: sample error coverage
-      if (cfg.en_scb_tl_err_chk && sram_predict_tl_err(item, DataChannel)) begin
+      if (cfg.en_scb_tl_err_chk && predict_tl_err(item, DataChannel, cfg.sram_ral_name)) begin
         `uvm_info(`gfn, "TL data_phase error detected", UVM_HIGH)
         continue;
       end
