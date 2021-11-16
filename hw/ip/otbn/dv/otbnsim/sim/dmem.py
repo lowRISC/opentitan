@@ -144,7 +144,7 @@ class Dmem:
         if addr & 31:
             return False
 
-        word_addr = addr // 32
+        word_addr = addr // 4
         if word_addr >= len(self.data):
             return False
 
@@ -175,7 +175,7 @@ class Dmem:
         if addr & 3:
             return False
 
-        if (addr + 3) // 32 >= len(self.data):
+        if (addr + 3) // 4 >= len(self.data):
             return False
 
         return True
