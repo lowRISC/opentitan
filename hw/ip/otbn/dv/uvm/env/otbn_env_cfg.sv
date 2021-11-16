@@ -116,7 +116,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     scr_data_arr = {<<{scr_data}};
 
     // Descramble the data
-    clr_data_arr = sram_scrambler_pkg::decrypt_sram_data(scr_data_arr, 39, 1'b0,
+    clr_data_arr = sram_scrambler_pkg::decrypt_sram_data(scr_data_arr, 39, 39,
                                                          idx_arr, ImemIndexWidth,
                                                          key_arr, nonce_arr);
     clr_data = {<<{clr_data_arr}};
@@ -145,7 +145,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
 
     // Scramble the data
     clr_data_arr = {<<{clr_data}};
-    scr_data_arr = sram_scrambler_pkg::encrypt_sram_data(clr_data_arr, 39, 1'b0,
+    scr_data_arr = sram_scrambler_pkg::encrypt_sram_data(clr_data_arr, 39, 39,
                                                          idx_arr, ImemIndexWidth,
                                                          key_arr, nonce_arr);
     scr_data = {<<{scr_data_arr}};
