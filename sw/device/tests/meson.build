@@ -579,6 +579,27 @@ sw_tests += {
   }
 }
 
+otbn_irq_test_lib = declare_dependency(
+  link_with: static_library(
+    'otbn_irq_test_lib',
+    sources: ['otbn_irq_test.c'],
+    dependencies: [
+      sw_lib_testing_entropy_testutils,
+      sw_lib_dif_otbn,
+      sw_lib_dif_rv_plic,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_otbn,
+      top_earlgrey,
+      sw_otbn['err_test']['rv32embed_dependency'],
+    ],
+  ),
+)
+sw_tests += {
+  'otbn_irq_test': {
+    'library': otbn_irq_test_lib,
+  }
+}
+
 # USB Device Tests
 usbdev_test_lib = declare_dependency(
   link_with: static_library(
