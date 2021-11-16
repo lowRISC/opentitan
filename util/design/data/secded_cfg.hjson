@@ -11,6 +11,15 @@
     {k: 32,   m: 7,  code_type: "hamming"},
     {k: 64,   m: 8,  code_type: "hamming"},
     {k: 68,   m: 8,  code_type: "hamming"},
+    {k: 16,   m: 6,  code_type: "inv_hsiao"  },
+    {k: 22,   m: 6,  code_type: "inv_hsiao"  },
+    {k: 32,   m: 7,  code_type: "inv_hsiao"  },
+    {k: 57,   m: 7,  code_type: "inv_hsiao"  },
+    {k: 64,   m: 8,  code_type: "inv_hsiao"  },
+    {k: 16,   m: 6,  code_type: "inv_hamming"},
+    {k: 32,   m: 7,  code_type: "inv_hamming"},
+    {k: 64,   m: 8,  code_type: "inv_hamming"},
+    {k: 68,   m: 8,  code_type: "inv_hamming"},
   ],
   // This seed can be changed here if re-generation of ECC RTL
   // with a different seed is desired.
