@@ -37,7 +37,7 @@ module otp_ctrl_ecc_reg #(
   logic [Width+EccWidth-1:0] ecc_enc;
 
   // Only one encoder is needed.
-  prim_secded_72_64_enc u_prim_secded_72_64_enc (
+  prim_secded_inv_72_64_enc u_prim_secded_inv_72_64_enc (
     .data_i(wdata_i),
     .data_o(ecc_enc)
   );
@@ -67,7 +67,7 @@ module otp_ctrl_ecc_reg #(
   // Concurrent ECC checks.
   logic [Depth-1:0][1:0] err;
   for (genvar k = 0; k < Depth; k++) begin : gen_ecc_dec
-    prim_secded_72_64_dec u_prim_secded_72_64_dec (
+    prim_secded_inv_72_64_dec u_prim_secded_inv_72_64_dec (
       .data_i({ecc_q[k], data_q[k]}),
       // We only rely on the error detection mechanism,
       // and not on error correction.
@@ -81,7 +81,7 @@ module otp_ctrl_ecc_reg #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      ecc_q  <= '0;
+      ecc_q  <= {Depth{prim_secded_pkg::SecdedInv7264ZeroEcc}};
       data_q <= '0;
     end else begin
       ecc_q  <= ecc_d;
