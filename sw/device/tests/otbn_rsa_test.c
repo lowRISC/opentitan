@@ -69,16 +69,14 @@ static const bool kTestRsaGreater1k = false;
 OTBN_DECLARE_APP_SYMBOLS(rsa);
 OTBN_DECLARE_PTR_SYMBOL(rsa, mode);
 OTBN_DECLARE_PTR_SYMBOL(rsa, n_limbs);
-OTBN_DECLARE_PTR_SYMBOL(rsa, in);
-OTBN_DECLARE_PTR_SYMBOL(rsa, out);
+OTBN_DECLARE_PTR_SYMBOL(rsa, inout);
 OTBN_DECLARE_PTR_SYMBOL(rsa, modulus);
 OTBN_DECLARE_PTR_SYMBOL(rsa, exp);
 
 static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(rsa);
 static const otbn_ptr_t kOtbnVarRsaMode = OTBN_PTR_T_INIT(rsa, mode);
 static const otbn_ptr_t kOtbnVarRsaNLimbs = OTBN_PTR_T_INIT(rsa, n_limbs);
-static const otbn_ptr_t kOtbnVarRsaIn = OTBN_PTR_T_INIT(rsa, in);
-static const otbn_ptr_t kOtbnVarRsaOut = OTBN_PTR_T_INIT(rsa, out);
+static const otbn_ptr_t kOtbnVarRsaInOut = OTBN_PTR_T_INIT(rsa, inout);
 static const otbn_ptr_t kOtbnVarRsaModulus = OTBN_PTR_T_INIT(rsa, modulus);
 static const otbn_ptr_t kOtbnVarRsaExp = OTBN_PTR_T_INIT(rsa, exp);
 
@@ -121,7 +119,7 @@ static void rsa_encrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
                                kOtbnVarRsaNLimbs) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, size_bytes, modulus,
                                kOtbnVarRsaModulus) == kOtbnOk);
-  CHECK(otbn_copy_data_to_otbn(otbn_ctx, size_bytes, in, kOtbnVarRsaIn) ==
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, size_bytes, in, kOtbnVarRsaInOut) ==
         kOtbnOk);
 
   // Call OTBN to perform operation, and wait for it to complete.
@@ -129,7 +127,7 @@ static void rsa_encrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Read back results.
-  CHECK(otbn_copy_data_from_otbn(otbn_ctx, size_bytes, kOtbnVarRsaOut, out) ==
+  CHECK(otbn_copy_data_from_otbn(otbn_ctx, size_bytes, kOtbnVarRsaInOut, out) ==
         kOtbnOk);
 }
 
@@ -165,7 +163,7 @@ static void rsa_decrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
                                kOtbnVarRsaModulus) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, size_bytes, private_exponent,
                                kOtbnVarRsaExp) == kOtbnOk);
-  CHECK(otbn_copy_data_to_otbn(otbn_ctx, size_bytes, in, kOtbnVarRsaIn) ==
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, size_bytes, in, kOtbnVarRsaInOut) ==
         kOtbnOk);
 
   // Call OTBN to perform operation
@@ -173,7 +171,7 @@ static void rsa_decrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
   // Read back results.
-  CHECK(otbn_copy_data_from_otbn(otbn_ctx, size_bytes, kOtbnVarRsaOut, out) ==
+  CHECK(otbn_copy_data_from_otbn(otbn_ctx, size_bytes, kOtbnVarRsaInOut, out) ==
         kOtbnOk);
 }
 

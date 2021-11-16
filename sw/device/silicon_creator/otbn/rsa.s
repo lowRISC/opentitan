@@ -25,6 +25,21 @@ rsa_encrypt:
   ecall
 
 
+/**
+ * Copy the contents of work_buf onto inout
+ *
+ * clobbered registers: x3, x4
+ */
+cp_work_buf:
+  la  x3, work_buf
+  la  x4, inout
+  /* The buffers are 512 bytes long, which we can load/store with
+     sixteen 256b words. */
+  loopi 16, 2
+    bn.lid x0, 0(x3++)
+    bn.sid x0, 0(x4++)
+  ret
+
 .data
 /*
 The structure of the 256b below are mandated by the calling convention of the
@@ -55,7 +70,7 @@ dptr_m:
 
 /* pointer to base bignum buffer (dptr_in) */
 dptr_in:
-  .word in
+  .word inout
 
 /* pointer to exponent buffer (dptr_exp, unused for encrypt) */
 dptr_exp:
@@ -63,7 +78,7 @@ dptr_exp:
 
 /* pointer to out buffer (dptr_out) */
 dptr_out:
-  .word out
+  .word work_buf
 
 
 /* Freely available DMEM space. */
@@ -87,11 +102,11 @@ exp:
   .zero 512
 
 /* input data */
-.globl in
-in:
+.globl inout
+inout:
   .zero 512
 
 /* output data */
-.globl out
-out:
+.globl work_buf
+work_buf:
   .zero 512
