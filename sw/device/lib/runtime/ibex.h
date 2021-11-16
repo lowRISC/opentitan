@@ -93,6 +93,44 @@ uint32_t ibex_mcause_read(void);
 uint32_t ibex_mtval_read(void);
 
 /**
+ * Reads the mepc register.
+ *
+ * When an exception is encountered, the current program counter is saved in
+ * mepc, and the core jumps to the exception address. When an MRET instruction
+ * is executed, the value from mepc replaces the current program counter.
+ *
+ * From the Ibex documentation (found at
+ * https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html)
+ *
+ * Please note that in case of a fault, mepc must be modified to hold the
+ * address of the next instruction, which can be at the 2byte (16bit) or 4byte
+ * (32bit) offset, dependent on the fault cause instruction type (standard or
+ * compressed).
+ *
+ * @return The mepc register value.
+ */
+uint32_t ibex_mepc_read(void);
+
+/**
+ * Writes the mepc register.
+ *
+ * When an exception is encountered, the current program counter is saved in
+ * mepc, and the core jumps to the exception address. When an MRET instruction
+ * is executed, the value from mepc replaces the current program counter.
+ *
+ * From the Ibex documentation (found at
+ * https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html)
+ *
+ * Please note that in case of a fault, mepc must be modified to hold the
+ * address of the next instruction, which can be at the 2byte (16bit) or 4byte
+ * (32bit) offset, dependent on the fault cause instruction type (standard or
+ * compressed).
+ *
+ * @param The new value to be written to the mepc register.
+ */
+void ibex_mepc_write(uint32_t mepc);
+
+/**
  * Initializes the ibex timeout based on current mcycle count.
  *
  * @param timeout_usec Timeout in microseconds.
