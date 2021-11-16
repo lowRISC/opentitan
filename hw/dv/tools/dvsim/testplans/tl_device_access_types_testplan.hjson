@@ -60,7 +60,7 @@
 
             Randomly inject errors on the control, data, or the ECC bits during CSR accesses.
             Verify that triggers the correct fatal alert.'''
-      milestone: V3
+      milestone: V2S
       tests: ["{name}_tl_intg_err"]
     }
   ]
