@@ -7,25 +7,36 @@ class cip_tl_seq_item extends tl_seq_item;
 
   `uvm_object_new
 
-  mubi4_e instr_type = MuBi4False;
   tl_intg_err_e       tl_intg_err_type = TlIntgErrNone;
   // the max errors that we can detect
   int                 max_ecc_errors = MAX_TL_ECC_ERRORS;
 
   `uvm_object_utils_begin(cip_tl_seq_item)
-    `uvm_field_enum(prim_mubi_pkg::mubi4_e, instr_type,       UVM_DEFAULT)
     `uvm_field_enum(tl_intg_err_e,          tl_intg_err_type, UVM_DEFAULT)
     `uvm_field_int(max_ecc_errors,                            UVM_DEFAULT)
   `uvm_object_utils_end
 
   function void post_randomize();
-    a_user = compute_a_user();
+    set_instr_type(MuBi4False);
+  endfunction
+
+  virtual function mubi4_e get_instr_type();
+    tl_a_user_t l_a_user = tl_a_user_t'(a_user);
+    return l_a_user.instr_type;
+  endfunction
+
+  virtual function void set_instr_type(mubi4_e instr_type);
+    // updating instr_type and re-calculate a_user
+    a_user = compute_a_user(instr_type);
+
+    // update intg to based on settings - tl_intg_err_type and max_ecc_errors
     inject_a_chan_intg_err();
   endfunction
 
-  // calculate ecc value for a_user and return a_user
+  // calculate data and cmd integrity value based on TLUL fields (such as addr, data etc) for a_user
+  // and return a_user
   // class member a_user isn't updated in this function
-  virtual function tl_a_user_t compute_a_user();
+  virtual function tl_a_user_t compute_a_user(mubi4_e instr_type = get_instr_type());
     tl_a_user_t user;
     tl_h2d_cmd_intg_t cmd_intg_payload;
     logic [H2DCmdFullWidth - 1 : 0] cmd_with_intg;
