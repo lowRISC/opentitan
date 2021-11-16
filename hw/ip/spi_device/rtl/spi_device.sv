@@ -220,7 +220,7 @@ module spi_device
   sel_datapath_e cmd_dp_sel, cmd_dp_sel_outclk;
 
   // Mailbox in Passthrough needs to take SPI if readcmd hits mailbox address
-  logic intercept_en, intercept_q;
+  logic intercept_en;
 
   logic cfg_mailbox_en;
   logic [31:0] mailbox_addr;
@@ -954,15 +954,14 @@ module spi_device
 
   // Assume `intercept` is registered (SPI_IN).
   // passthrough assumed signal shall be registered in (SPI_OUT)
-  always_ff @(posedge clk_spi_in_buf or negedge rst_spi_n) begin
-    if (!rst_spi_n)      intercept_q <= 1'b 0;
-    else if (|intercept) intercept_q <= 1'b 1;
-  end
-
   always_ff @(posedge clk_spi_out_buf or negedge rst_spi_n) begin
     if (!rst_spi_n) intercept_en <= 1'b 0;
-    else            intercept_en <= |intercept | intercept_q;
+    else            intercept_en <= |intercept;
   end
+  // intercept_en shall not be de-asserted except reset
+  `ASSUME(InterceptLevel_M,
+    $rose(intercept_en) |=> $stable(intercept_en) until !rst_spi_n,
+    clk_spi_out_buf, !rst_spi_n)
 
   ////////////////////////////
   // SPI Serial to Parallel //
@@ -1134,7 +1133,9 @@ module spi_device
 
     .addr_4b_en_i (cfg_addr_4b_en),
 
-    .mailbox_en_i      (cfg_mailbox_en ),
+    .mailbox_en_i           (cfg_mailbox_en ),
+    .cfg_intercept_en_mbx_i (cfg_intercept_en.mbx),
+
     .mailbox_addr_i    (mailbox_addr   ),
     .mailbox_assumed_o (intercept.mbx  ),
 

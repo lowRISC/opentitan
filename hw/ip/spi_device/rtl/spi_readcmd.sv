@@ -152,6 +152,7 @@ module spi_readcmd
 
   // Features
   input mailbox_en_i,
+  input cfg_intercept_en_mbx_i, // Intercept
 
   // Mailbox Address base address
   // Only allow compile-time fixed size (1kB by default)
@@ -178,9 +179,6 @@ module spi_readcmd
 
   spi_mode_e unused_spi_mode ; // will be used for passthrough for output enable
   assign unused_spi_mode = spi_mode_i;
-
-  // TODO: Implement
-  assign mailbox_assumed_o = 1'b 0;
 
   sram_err_t unused_sram_rerr;
   assign unused_sram_rerr = sram_m2l_i.rerror;
@@ -471,6 +469,17 @@ module spi_readcmd
   // manages the address to follow.
 
   logic sram_req;
+
+  // Check if mailbox and intercept config, then raises mailbox_assumed.
+  // The signal shall be registered in SCK in.
+  // Then, spi_device top will latch to SCK out
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) mailbox_assumed_o <= 1'b 0;
+    else if (sram_req && mailbox_en_i && cfg_intercept_en_mbx_i
+            && addr_in_mailbox) begin
+      mailbox_assumed_o <= 1'b 1;
+    end
+  end
   //- END:   SRAM Datapath ----------------------------------------------------
 
   //= BEGIN: FIFO to P2S datapath =============================================
