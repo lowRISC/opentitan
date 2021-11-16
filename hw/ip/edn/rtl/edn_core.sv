@@ -615,7 +615,8 @@ module edn_core import edn_pkg::*;
 
   prim_packer_fifo #(
      .InW(CSGenBitsWidth),
-     .OutW(CSGenBitsWidth)
+     .OutW(CSGenBitsWidth),
+     .ClearOnRead(1'b0)
   ) u_prim_packer_fifo_cs (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
@@ -675,7 +676,8 @@ module edn_core import edn_pkg::*;
 
     prim_packer_fifo #(
       .InW(CSGenBitsWidth),
-      .OutW(EndPointBusWidth)
+      .OutW(EndPointBusWidth),
+      .ClearOnRead(1'b0)
     ) u_prim_packer_fifo_ep (
       .clk_i      (clk_i),
       .rst_ni     (rst_ni),
