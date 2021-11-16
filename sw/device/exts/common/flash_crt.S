@@ -45,7 +45,7 @@ _start:
   .option pop
 
   // Set up the new interrupt vector.
-  la   t0, crt_interrupt_vector
+  la   t0, (crt_interrupt_vector + 1)
   csrw mtvec, t0
 
   // Zero out the `.bss` segment.
