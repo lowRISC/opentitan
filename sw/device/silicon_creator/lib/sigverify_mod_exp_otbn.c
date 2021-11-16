@@ -11,15 +11,13 @@
 OTBN_DECLARE_APP_SYMBOLS(rsa);          // The OTBN rsa app.
 OTBN_DECLARE_PTR_SYMBOL(rsa, mode);     // The RSA mode of operation.
 OTBN_DECLARE_PTR_SYMBOL(rsa, n_limbs);  // The number of 256-bit limbs.
-OTBN_DECLARE_PTR_SYMBOL(rsa, in);       // The input message.
-OTBN_DECLARE_PTR_SYMBOL(rsa, out);      // The output message.
+OTBN_DECLARE_PTR_SYMBOL(rsa, inout);    // The input/output message buffer
 OTBN_DECLARE_PTR_SYMBOL(rsa, modulus);  // The modulus to operate with.
 
 static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(rsa);
 static const otbn_ptr_t kOtbnVarRsaMode = OTBN_PTR_T_INIT(rsa, mode);
 static const otbn_ptr_t kOtbnVarRsaNLimbs = OTBN_PTR_T_INIT(rsa, n_limbs);
-static const otbn_ptr_t kOtbnVarRsaIn = OTBN_PTR_T_INIT(rsa, in);
-static const otbn_ptr_t kOtbnVarRsaOut = OTBN_PTR_T_INIT(rsa, out);
+static const otbn_ptr_t kOtbnVarRsaInOut = OTBN_PTR_T_INIT(rsa, inout);
 static const otbn_ptr_t kOtbnVarRsaModulus = OTBN_PTR_T_INIT(rsa, modulus);
 
 static const uint32_t kOtbnModeEncrypt = 1;
@@ -57,7 +55,7 @@ otbn_error_t sigverify_mod_exp_otbn_run_app(const sigverify_rsa_key_t *key,
                                               key->n.data, kOtbnVarRsaModulus));
   // Set the message text.
   OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kSigVerifyRsaNumWords,
-                                              sig->data, kOtbnVarRsaIn));
+                                              sig->data, kOtbnVarRsaInOut));
 
   // Start the OTBN routine.
   OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
@@ -66,8 +64,8 @@ otbn_error_t sigverify_mod_exp_otbn_run_app(const sigverify_rsa_key_t *key,
   OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
 
   // Read digest out of OTBN dmem.
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kSigVerifyRsaNumWords,
-                                                kOtbnVarRsaOut, result->data));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(
+      &otbn, kSigVerifyRsaNumWords, kOtbnVarRsaInOut, result->data));
   return kOtbnErrorOk;
 }
 

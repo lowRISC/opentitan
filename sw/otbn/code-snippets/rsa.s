@@ -25,6 +25,7 @@ start:
 rsa_encrypt:
   jal      x1, modload
   jal      x1, modexp_65537
+  jal      x1, cp_work_buf
   ecall
 
 /**
@@ -33,8 +34,23 @@ rsa_encrypt:
 rsa_decrypt:
   jal      x1, modload
   jal      x1, modexp
+  jal      x1, cp_work_buf
   ecall
 
+/**
+ * Copy the contents of work_buf onto inout
+ *
+ * clobbered registers: x3, x4
+ */
+cp_work_buf:
+  la  x3, work_buf
+  la  x4, inout
+  /* The buffers are 512 bytes long, which we can load/store with
+     sixteen 256b words. */
+  loopi 16, 2
+    bn.lid x0, 0(x3++)
+    bn.sid x0, 0(x4++)
+  ret
 
 .data
 /*
@@ -66,7 +82,7 @@ dptr_m:
 
 /* pointer to base bignum buffer (dptr_in) */
 dptr_in:
-  .word in
+  .word inout
 
 /* pointer to exponent buffer (dptr_exp, unused for encrypt) */
 dptr_exp:
@@ -74,7 +90,7 @@ dptr_exp:
 
 /* pointer to out buffer (dptr_out) */
 dptr_out:
-  .word out
+  .word work_buf
 
 
 /* Freely available DMEM space. */
@@ -97,12 +113,12 @@ modulus:
 exp:
   .zero 512
 
-/* input data */
-.globl in
-in:
+/* input/output data */
+.globl inout
+inout:
   .zero 512
 
-/* output data */
-.globl out
-out:
+/* working data */
+.globl work_buf
+work_buf:
   .zero 512
