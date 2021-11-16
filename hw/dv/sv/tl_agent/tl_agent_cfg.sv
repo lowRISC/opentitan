@@ -164,7 +164,18 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // For actual reqs made out to the DUT, use randomize_a_source_in_req().
   protected function void randomize_a_source_in_item(tl_seq_item item,
                                                      bit use_last_a_source_released);
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(a_source,
+    bit [SourceWidth - 1 : 0] a_source;
+
+    // Use std::randomize instead of calling item.randomize(a_source). item.randomize will invoke
+    // post_randomize. If user does sth after post_randomize before calling finish_item, invoking
+    // post_randomize may override that.
+    // For example, if we use item.randomize(a_source)
+    // item.randomize(); // in post_randomize, instr_type is set to False
+    // item.instr_type = True;
+    // finish_item(item); // finish_item will call randomize_a_source_in_item.
+    //                    // item.randomize(a_source) will invoke post_randomize, instr_type is set
+    //                    // to False again.
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(a_source,
         // use soft constraint as seq may still send req when all the valid a_source are used
         (!reset_asserted) -> soft !(a_source inside {a_source_pend_q});
         // Set the upper a_source bits that are unused to 0.
@@ -176,8 +187,8 @@ class tl_agent_cfg extends dv_base_agent_cfg;
         // that the new a_source == last_a_source_released is to ensure the test only does blocking
         // accesses.
         use_last_a_source_released && !(last_a_source_released inside {a_source_pend_q})
-            -> soft (a_source == last_a_source_released);,
-        item)
+            -> soft (a_source == last_a_source_released);)
+    item.a_source = a_source;
     `uvm_info(`gfn, $sformatf("a_source_pend_q: %p a_source: %0h", a_source_pend_q, item.a_source), UVM_DEBUG)
   endfunction
 
