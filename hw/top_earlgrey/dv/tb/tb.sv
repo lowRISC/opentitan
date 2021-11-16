@@ -349,20 +349,20 @@ module tb;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Otp], `OTP_MEM_HIER)
 
       `uvm_info("tb.sv", "Backdoor init RAM", UVM_MEDIUM)
-      m_mem_bkdr_util[RamMain] = new(.name  ("mem_bkdr_util[RamMain]"),
-                                     .path  (`DV_STRINGIFY(`RAM_MAIN_MEM_HIER)),
-                                     .depth ($size(`RAM_MAIN_MEM_HIER)),
-                                     .n_bits($bits(`RAM_MAIN_MEM_HIER)),
-                                     .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMain], `RAM_MAIN_MEM_HIER)
+      m_mem_bkdr_util[RamMain0] = new(.name  ("mem_bkdr_util[RamMain0]"),
+                                      .path  (`DV_STRINGIFY(`RAM_MAIN_MEM_HIER)),
+                                      .depth ($size(`RAM_MAIN_MEM_HIER)),
+                                      .n_bits($bits(`RAM_MAIN_MEM_HIER)),
+                                      .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMain0], `RAM_MAIN_MEM_HIER)
 
       `uvm_info("tb.sv", "Backdoor init RAM RET", UVM_MEDIUM)
-      m_mem_bkdr_util[RamRet] = new(.name  ("mem_bkdr_util[RamRet]"),
-                                    .path  (`DV_STRINGIFY(`RAM_RET_MEM_HIER)),
-                                    .depth ($size(`RAM_RET_MEM_HIER)),
-                                    .n_bits($bits(`RAM_RET_MEM_HIER)),
-                                    .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet], `RAM_RET_MEM_HIER)
+      m_mem_bkdr_util[RamRet0] = new(.name  ("mem_bkdr_util[RamRet0]"),
+                                     .path  (`DV_STRINGIFY(`RAM_RET_MEM_HIER)),
+                                     .depth ($size(`RAM_RET_MEM_HIER)),
+                                     .n_bits($bits(`RAM_RET_MEM_HIER)),
+                                     .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
 
       `uvm_info("tb.sv", "Backdoor init ROM", UVM_MEDIUM)
       m_mem_bkdr_util[Rom] = new(.name  ("mem_bkdr_util[Rom]"),
@@ -373,6 +373,8 @@ module tb;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
 
       for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin
+        if (mem inside {[RamMain1:RamMain15]}) continue;
+        if (mem inside {[RamRet1:RamRet15]}) continue;
         uvm_config_db#(mem_bkdr_util)::set(
             null, "*.env", m_mem_bkdr_util[mem].get_name(), m_mem_bkdr_util[mem]);
       end

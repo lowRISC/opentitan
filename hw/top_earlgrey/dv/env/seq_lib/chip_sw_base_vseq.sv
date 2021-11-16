@@ -41,7 +41,12 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     `uvm_info(`gfn, "Initializing RAM", UVM_MEDIUM)
     // Initialize the RAM to 0s and flash to all 1s.
-    if (cfg.initialize_ram) cfg.mem_bkdr_util_h[RamMain].clear_mem();
+    if (cfg.initialize_ram) begin
+      for (int i = 0; i < cfg.num_ram_main_tiles; i++) begin
+        chip_mem_e mem = chip_mem_e'(RamMain0 + i);
+        cfg.mem_bkdr_util_h[mem].clear_mem();
+      end
+    end
     cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
 
@@ -178,7 +183,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // Elf file name checks.
     `DV_CHECK_FATAL(cfg.sw_images.exists(sw_type))
     `DV_CHECK_STRNE_FATAL(cfg.sw_images[sw_type], "")
-    `DV_CHECK_FATAL(mem inside {Rom, RamMain, FlashBank0Data, FlashBank1Data},
+    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], FlashBank0Data, FlashBank1Data},
         $sformatf("SW symbol cannot appear in %0s mem", mem))
 
     // Find the symbol in the sw elf file.
@@ -192,6 +197,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   endfunction
 
   // General-use function to backdoor write a byte of data to any selected memory type
+  //
+  // TODO: Add support for tiled RAM memories.
   virtual function void mem_bkdr_write8(input chip_mem_e mem,
                                         input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                         input byte data);
