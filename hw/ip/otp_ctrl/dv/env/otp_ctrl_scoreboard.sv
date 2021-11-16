@@ -879,8 +879,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
   virtual function bit [1:0] read_a_word_with_ecc(bit [TL_DW-1:0] dai_addr,
                                                   ref bit [TL_DW-1:0] readout_word);
-    prim_secded_pkg::secded_28_22_t ecc_rd_data0 = cfg.mem_bkdr_util_h.ecc_read16(dai_addr);
-    prim_secded_pkg::secded_28_22_t ecc_rd_data1 = cfg.mem_bkdr_util_h.ecc_read16(dai_addr + 2);
+    prim_secded_pkg::secded_22_16_t ecc_rd_data0 = cfg.mem_bkdr_util_h.ecc_read16(dai_addr);
+    prim_secded_pkg::secded_22_16_t ecc_rd_data1 = cfg.mem_bkdr_util_h.ecc_read16(dai_addr + 2);
     readout_word[15:0]  = ecc_rd_data0.data;
     readout_word[31:16] = ecc_rd_data1.data;
     return max2(ecc_rd_data0.err, ecc_rd_data1.err);
