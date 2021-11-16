@@ -102,7 +102,7 @@ def main():
     else:
         assert args.ip_name_snake and args.ip_name_long, \
             "ERROR: pass --ip-name-snake and --ip-name-long when --mode=new."
-        ips.append(Ip(args.ip, args.peripheral))
+        ips.append(Ip(args.ip_name_snake, args.ip_name_long))
 
     # Default to generating all parts.
     if len(args.only) == 0:
