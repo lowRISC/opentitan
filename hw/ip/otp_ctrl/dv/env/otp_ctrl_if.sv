@@ -4,7 +4,7 @@
 
 // This interface collect the broadcast output data from OTP,
 // and drive input requests coming into OTP.
-`define ECC_REG_PATH u_otp_ctrl_ecc_reg.gen_ecc_dec[0].u_prim_secded_72_64_dec
+`define ECC_REG_PATH u_otp_ctrl_ecc_reg.gen_ecc_dec[0].u_prim_secded_inv_72_64_dec
 
 // This only supports buffered partitions.
 `define BUF_PART_OTP_CMD_PATH(i) \
