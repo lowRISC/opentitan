@@ -216,17 +216,15 @@ package sram_scrambler_pkg;
   // and then XOR the result with the data.
   //
   // After that, the XORed data neeeds to them be passed through the S&P network one byte at a time.
-  //
-  // TODO: We currently do not support data size of >64bits.
-  function automatic state_t encrypt_sram_data(logic data[], int data_width, bit byte_diff,
+  function automatic state_t encrypt_sram_data(logic data[], int data_width, int sp_width,
                                                logic addr[], int addr_width,
                                                logic key[], logic nonce[]);
-    // Generate the keystream
     logic keystream[] = new[SRAM_BLOCK_WIDTH];
     logic data_enc[] = new[data_width];
     logic byte_to_enc[] = new[8];
     logic enc_byte[] = new[8];
     logic zero_key[] = new[data_width];
+    int   ks_width = (data_width < 64) ? data_width : 64;
 
     // the key used for byte diffusion is all-zero.
     for (int i = 0; i < data_width; i++) begin
@@ -237,27 +235,44 @@ package sram_scrambler_pkg;
     keystream = gen_keystream(addr, addr_width, key, nonce);
 
     // XOR keystream with input data
-    // Assumes data width <= 64.
+    // Assumes ks_width <= 64.
     for (int i = 0; i < data_width; i++) begin
-      data_enc[i] = data[i] ^ keystream[i];
+      data_enc[i] = data[i] ^ keystream[i % ks_width];
     end
 
-    // pass each byte of the encoded result through the subst/perm network
-    if (byte_diff) begin
+    if (data_width == sp_width) begin
+      // pass the entire word through the subst/perm network at once (the next cases would give the
+      // same results too, but this should be a bit more efficient)
+      data_enc = sp_encrypt(data_enc, data_width, zero_key);
+    end else if (sp_width == 8) begin
+      // pass each byte of the encoded result through the subst/perm network (special case of the
+      // general code below)
       for (int i = 0; i < data_width / 8; i++) begin
         byte_to_enc = data_enc[i*8 +: 8];
         enc_byte = sp_encrypt(byte_to_enc, 8, zero_key);
         data_enc[i*8 +: 8] = enc_byte;
       end
-    // pass the entire word through the subst/perm network
     end else begin
-      data_enc = sp_encrypt(data_enc, data_width, zero_key);
+      // divide the word into sp_width chunks to pass it through the subst/perm network
+      for (int chunk_lsb = 0; chunk_lsb < data_width; chunk_lsb += sp_width) begin
+        int bits_remaining = data_width - chunk_lsb;
+        int chunk_width = (bits_remaining < sp_width) ? bits_remaining : sp_width;
+        logic chunk[] = new[chunk_width];
+
+        for (int j = 0; j < chunk_width; j++) begin
+          chunk[j] = data_enc[chunk_lsb + j];
+        end
+        chunk = sp_encrypt(chunk, chunk_width, zero_key);
+        for (int j = 0; j < chunk_width; j++) begin
+          data_enc[chunk_lsb + j] = chunk[j];
+        end
+      end
     end
     return data_enc;
 
   endfunction : encrypt_sram_data
 
-  function automatic state_t decrypt_sram_data(logic data[], int data_width, bit byte_diff,
+  function automatic state_t decrypt_sram_data(logic data[], int data_width, int sp_width,
                                                logic addr[], int addr_width,
                                                logic key[], logic nonce[]);
     logic keystream[] = new[SRAM_BLOCK_WIDTH];
@@ -265,6 +280,7 @@ package sram_scrambler_pkg;
     logic byte_to_dec[] = new[8];
     logic dec_byte[] = new[8];
     logic zero_key[] = new[data_width];
+    int   ks_width = (data_width < 64) ? data_width : 64;
 
     // the key used for byte diffusion is all-zero.
     for (int i = 0; i < data_width; i++) begin
@@ -274,21 +290,38 @@ package sram_scrambler_pkg;
     // Generate the keystream
     keystream = gen_keystream(addr, addr_width, key, nonce);
 
-    // pass each byte of the data through the subst/perm network
-    if (byte_diff) begin
+    if (data_width == sp_width) begin
+      // pass the entire word through the subst/perm network at once (the next cases would give the
+      // same results too, but this should be a bit more efficient)
+      data_dec = sp_decrypt(data, data_width, zero_key);
+    end else if (sp_width == 8) begin
+      // pass each byte of the data through the subst/perm network (special case of the general code
+      // below)
       for (int i = 0; i < data_width / 8; i++) begin
         byte_to_dec = data[i*8 +: 8];
         dec_byte = sp_decrypt(byte_to_dec, 8, zero_key);
         data_dec[i*8 +: 8] = dec_byte;
       end
-    // pass the entire word through the subst/perm network
     end else begin
-      data_dec = sp_decrypt(data, data_width, zero_key);
+      // divide the word into sp_width chunks to pass it through the subst/perm network
+      for (int chunk_lsb = 0; chunk_lsb < data_width; chunk_lsb += sp_width) begin
+        int bits_remaining = data_width - chunk_lsb;
+        int chunk_width = (bits_remaining < sp_width) ? bits_remaining : sp_width;
+        logic chunk[] = new[chunk_width];
+
+        for (int j = 0; j < chunk_width; j++) begin
+          chunk[j] = data[chunk_lsb + j];
+        end
+        chunk = sp_decrypt(chunk, chunk_width, zero_key);
+        for (int j = 0; j < chunk_width; j++) begin
+          data_dec[chunk_lsb + j] = chunk[j];
+        end
+      end
     end
 
     // XOR result data with the keystream
     for (int i = 0; i < data_width; i++) begin
-      data_dec[i] = data_dec[i] ^ keystream[i];
+      data_dec[i] = data_dec[i] ^ keystream[i % ks_width];
     end
 
     return data_dec;
