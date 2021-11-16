@@ -31,6 +31,10 @@ if {$env(DUT_TOP) == "prim_count_tb"} {
   elaborate -top $env(DUT_TOP) -enable_sva_isunknown -disable_auto_bbox
 }
 
+if {$env(STOPATS) ne ""} {
+  stopat -env $env(STOPATS)
+}
+
 #-------------------------------------------------------------------------
 # specify clock(s) and reset(s)
 #-------------------------------------------------------------------------
