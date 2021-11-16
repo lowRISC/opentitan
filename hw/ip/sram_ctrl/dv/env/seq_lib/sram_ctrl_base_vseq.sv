@@ -48,7 +48,9 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
   // Request a memory init.
   //
   virtual task req_mem_init();
-    csr_wr(.ptr(ral.ctrl), .value(3));
+    ral.ctrl.renew_scr_key.set(1);
+    ral.ctrl.init.set(1);
+    csr_update(.csr(ral.ctrl));
     csr_spinwait(.ptr(ral.status.init_done), .exp_data(1));
   endtask
 
@@ -119,7 +121,8 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
 
       // never send InstrType transactions unless en_ifetch is enabled
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_type, !en_ifetch -> instr_type == MuBi4False;)
+      if (en_ifetch) instr_type = get_rand_mubi4_val();
+      else           instr_type = MuBi4False;
 
       tl_access(.addr(addr),
                 .data(data),
@@ -155,7 +158,8 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
           addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]};)
 
       // never send InstrType transactions unless en_ifetch is enabled
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_type, !en_ifetch -> instr_type == MuBi4False;)
+      if (en_ifetch) instr_type = get_rand_mubi4_val();
+      else           instr_type = MuBi4False;
 
       tl_access_w_abort(.addr(addr),
                         .data(data),
