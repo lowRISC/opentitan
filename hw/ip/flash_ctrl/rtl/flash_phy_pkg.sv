@@ -8,48 +8,48 @@
 package flash_phy_pkg;
 
   // flash phy parameters
-  parameter int NumBanks       = flash_ctrl_pkg::NumBanks;
-  parameter int InfosPerBank   = flash_ctrl_pkg::InfosPerBank;
-  parameter int PagesPerBank   = flash_ctrl_pkg::PagesPerBank;
-  parameter int WordsPerPage   = flash_ctrl_pkg::WordsPerPage;
-  parameter int BankW          = flash_ctrl_pkg::BankW;
-  parameter int PageW          = flash_ctrl_pkg::PageW;
-  parameter int WordW          = flash_ctrl_pkg::WordW;
-  parameter int BankAddrW      = flash_ctrl_pkg::BankAddrW;
-  parameter int DataWidth      = flash_ctrl_pkg::DataWidth;
-  parameter int EccWidth       = 8;
-  parameter int MetaDataWidth  = flash_ctrl_pkg::MetaDataWidth;
-  parameter int WidthMultiple  = flash_ctrl_pkg::WidthMultiple;
-  parameter int NumBuf         = 4; // number of flash read buffers
-  parameter int RspOrderDepth  = 2; // this should be DataWidth / BusWidth
-                                    // will switch to this after bus widening
-  parameter int PlainIntgWidth = MetaDataWidth - EccWidth;
-  parameter int PlainDataWidth = DataWidth + PlainIntgWidth;
-  //parameter int ScrDataWidth   = DataWidth + EccWidth;
-  parameter int FullDataWidth  = DataWidth + MetaDataWidth;
-  parameter int InfoTypes      = flash_ctrl_pkg::InfoTypes;
-  parameter int InfoTypesWidth = flash_ctrl_pkg::InfoTypesWidth;
+  parameter int unsigned NumBanks       = flash_ctrl_pkg::NumBanks;
+  parameter int unsigned InfosPerBank   = flash_ctrl_pkg::InfosPerBank;
+  parameter int unsigned PagesPerBank   = flash_ctrl_pkg::PagesPerBank;
+  parameter int unsigned WordsPerPage   = flash_ctrl_pkg::WordsPerPage;
+  parameter int unsigned BankW          = flash_ctrl_pkg::BankW;
+  parameter int unsigned PageW          = flash_ctrl_pkg::PageW;
+  parameter int unsigned WordW          = flash_ctrl_pkg::WordW;
+  parameter int unsigned BankAddrW      = flash_ctrl_pkg::BankAddrW;
+  parameter int unsigned DataWidth      = flash_ctrl_pkg::DataWidth;
+  parameter int unsigned EccWidth       = 8;
+  parameter int unsigned MetaDataWidth  = flash_ctrl_pkg::MetaDataWidth;
+  parameter int unsigned WidthMultiple  = flash_ctrl_pkg::WidthMultiple;
+  parameter int unsigned NumBuf         = 4; // number of flash read buffers
+  parameter int unsigned RspOrderDepth  = 2; // this should be DataWidth / BusWidth
+                                             // will switch to this after bus widening
+  parameter int unsigned PlainIntgWidth = MetaDataWidth - EccWidth;
+  parameter int unsigned PlainDataWidth = DataWidth + PlainIntgWidth;
+  //parameter int unsigned ScrDataWidth   = DataWidth + EccWidth;
+  parameter int unsigned FullDataWidth  = DataWidth + MetaDataWidth;
+  parameter int unsigned InfoTypes      = flash_ctrl_pkg::InfoTypes;
+  parameter int unsigned InfoTypesWidth = flash_ctrl_pkg::InfoTypesWidth;
 
   // flash ctrl / bus parameters
-  parameter int BusWidth       = flash_ctrl_pkg::BusWidth;
-  parameter int BusBankAddrW   = flash_ctrl_pkg::BusBankAddrW;
-  parameter int BusWordW       = flash_ctrl_pkg::BusWordW;
-  parameter int ProgTypes      = flash_ctrl_pkg::ProgTypes;
+  parameter int unsigned BusWidth       = flash_ctrl_pkg::BusWidth;
+  parameter int unsigned BusBankAddrW   = flash_ctrl_pkg::BusBankAddrW;
+  parameter int unsigned BusWordW       = flash_ctrl_pkg::BusWordW;
+  parameter int unsigned ProgTypes      = flash_ctrl_pkg::ProgTypes;
 
   // address bits remain must be 0
-  parameter int AddrBitsRemain = DataWidth % BusWidth;
+  parameter int unsigned AddrBitsRemain = DataWidth % BusWidth;
 
   // base index
   // This is the lsb position of the prim flash address when looking at the bus address
-  parameter int LsbAddrBit    = $clog2(WidthMultiple);
-  parameter int WordSelW      = WidthMultiple == 1 ? 1 : LsbAddrBit;
+  parameter int unsigned LsbAddrBit    = $clog2(WidthMultiple);
+  parameter int unsigned WordSelW      = WidthMultiple == 1 ? 1 : LsbAddrBit;
 
   // scramble / de-scramble parameters
   // Number of cycles the gf_mult is given to complete
-  parameter int KeySize       = 128;
-  parameter int GfMultCycles  = 2;
+  parameter int unsigned KeySize       = 128;
+  parameter int unsigned GfMultCycles  = 2;
   // If this value is greater than 1, constraints must be updated for multicycle paths
-  parameter int CipherCycles  = 2;
+  parameter int unsigned CipherCycles  = 2;
 
   // Read buffer metadata
   typedef enum logic [1:0] {
