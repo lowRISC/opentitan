@@ -23,6 +23,11 @@ uint8_t enc_secded_28_22(const uint8_t bytes[3]);
 uint8_t enc_secded_39_32(const uint8_t bytes[4]);
 uint8_t enc_secded_64_57(const uint8_t bytes[8]);
 uint8_t enc_secded_72_64(const uint8_t bytes[8]);
+uint8_t enc_secded_inv_22_16(const uint8_t bytes[2]);
+uint8_t enc_secded_inv_28_22(const uint8_t bytes[3]);
+uint8_t enc_secded_inv_39_32(const uint8_t bytes[4]);
+uint8_t enc_secded_inv_64_57(const uint8_t bytes[8]);
+uint8_t enc_secded_inv_72_64(const uint8_t bytes[8]);
 
 #ifdef __cplusplus
 }  // extern "C"
