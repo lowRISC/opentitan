@@ -27,13 +27,14 @@ COPYRIGHT = """// Copyright lowRISC contributors.
 //
 """
 
-C_SRC_TOP = """#include <stdbool.h>
-#include <stdint.h>
-
+C_SRC_TOP = """
 #include "secded_enc.h"
 
+#include <stdbool.h>
+#include <stdint.h>
+
 // Calculates even parity for a 64-bit word
-static uint8_t calc_parity(uint64_t word) {
+static uint8_t calc_parity(uint64_t word, bool invert) {
   bool parity = false;
 
   while (word) {
@@ -44,7 +45,7 @@ static uint8_t calc_parity(uint64_t word) {
     word >>= 1;
   }
 
-  return parity;
+  return parity ^ invert;
 }
 """
 
@@ -72,8 +73,10 @@ C_H_FOOT = """
 #endif  // OPENTITAN_HW_IP_PRIM_DV_PRIM_SECDED_SECDED_ENC_H_
 """
 
-CODE_OPTIONS = {'hsiao': '', 'hamming': '_hamming'}
-PRINT_OPTIONS = {"logic": "assign ", "function": "  "}
+CODE_OPTIONS = {'hsiao': '',
+                'inv_hsiao': '_inv',
+                'hamming': '_hamming',
+                'inv_hamming': '_inv_hamming'}
 
 # secded configurations
 SECDED_CFG_FILE = "util/design/data/secded_cfg.hjson"
@@ -145,7 +148,9 @@ def print_secded_enum_and_util_fns(cfgs):
         m = cfg['m']
         n = k + m
         suffix = CODE_OPTIONS[cfg['code_type']]
-        formatted_suffix = suffix.replace('_', '').capitalize()
+        suffix = suffix.split('_')
+        suffix = [x.capitalize() for x in suffix]
+        formatted_suffix = ''.join(suffix)
 
         enum_name = "    Secded%s_%s_%s" % (formatted_suffix, n, k)
         enum_vals.append(enum_name)
@@ -198,20 +203,22 @@ def print_pkg_types(n, k, m, codes, suffix, codetype):
     return typestr
 
 
-def print_fn(n, k, m, codes, suffix, codetype):
-    enc_out = print_enc(n, k, m, codes)
+def print_fn(n, k, m, codes, suffix, codetype, inv=False):
+    enc_out = print_enc(n, k, m, codes, codetype)
     dec_out = print_dec(n, k, m, codes, codetype, "function")
 
     typename = "secded%s_%d_%d_t" % (suffix, n, k)
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
     outstr = '''
-  function automatic logic [{}:0] {}_enc (logic [{}:0] data_i);
+  function automatic logic [{}:0]
+      {}_enc (logic [{}:0] data_i);
     logic [{}:0] data_o;
 {}    return data_o;
   endfunction
 
-  function automatic {} {}_dec (logic [{}:0] data_i);
+  function automatic {}
+      {}_dec (logic [{}:0] data_i);
     logic [{}:0] data_o;
     logic [{}:0] syndrome_o;
     logic [1:0]  err_o;
@@ -231,10 +238,12 @@ def print_fn(n, k, m, codes, suffix, codetype):
     return outstr
 
 
-def print_enc(n, k, m, codes):
+def print_enc(n, k, m, codes, codetype):
+    invstr = "~" if codetype in ["inv_hsiao", "inv_hamming"] else ""
     outstr = "    data_o = {}'(data_i);\n".format(n)
-    format_str = "    data_o[{}] = ^(data_o & " + str(n) + "'h{:0" + str(
-        (n + 3) // 4) + "X});\n"
+    format_str = "    data_o[{}] = " + str(invstr) + \
+                 "^(data_o & " + str(n) + "'h{:0" + str(
+                 (n + 3) // 4) + "X});\n"
     # Print parity computation
     for j, mask in enumerate(calc_bitmasks(k, m, codes, False)):
         outstr += format_str.format(j + k, mask)
@@ -247,42 +256,35 @@ def calc_syndrome(code):
 
 
 def print_dec(n, k, m, codes, codetype, print_type="logic"):
-
-    preamble = PRINT_OPTIONS[print_type]
-
     outstr = ""
-    if codetype == "hsiao":
-        outstr += "  {}logic single_error;\n".format(
-            preamble if print_type == "function" else "")
-
-    outstr += "\n"
-    outstr += "  {}// Syndrome calculation\n".format(
-        preamble if print_type == "function" else "")
-    format_str = "  {}".format(preamble) + "syndrome_o[{}] = ^(data_i & " \
-        + str(n) + "'h{:0" + str((n + 3) // 4) + "X});\n"
+    outstr += "    // Syndrome calculation\n"
+    hexfmt = str(n) + "'h{:0" + str((n + 3) // 4) + "X}"
+    format_str = "    syndrome_o[{}] = ^("
+    # Add ECC bit inversion if needed.
+    if codetype in ["inv_hsiao", "inv_hamming"]:
+        format_str += "(data_i ^ " + hexfmt.format((2**m -1) * 2**k) + ")"
+    else:
+        format_str += "data_i"
+    format_str += " & " + hexfmt + ");\n"
 
     # Print syndrome computation
     for j, mask in enumerate(calc_bitmasks(k, m, codes, True)):
         outstr += format_str.format(j, mask)
     outstr += "\n"
-    outstr += "  {}// Corrected output calculation\n".format(
-        preamble if print_type == "function" else "")
+    outstr += "    // Corrected output calculation\n"
     for i in range(k):
-        outstr += "  {}".format(preamble)
-        outstr += "data_o[%d] = (syndrome_o == %d'h%x) ^ data_i[%d];\n" % (
+        outstr += "    data_o[%d] = (syndrome_o == %d'h%x) ^ data_i[%d];\n" % (
             i, m, calc_syndrome(codes[i]), i)
     outstr += "\n"
-    outstr += "  {}// err_o calc. bit0: single error, bit1: double error\n".format(
-        preamble if print_type == "function" else "")
+    outstr += "    // err_o calc. bit0: single error, bit1: double error\n"
     # The Hsiao and Hamming syndromes are interpreted slightly differently.
-    if codetype == "hamming":
-        outstr += "  {}".format(preamble) + "err_o[0] = syndrome_o[%d];\n" % (m - 1)
-        outstr += "  {}".format(preamble) + "err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (
+    if codetype in ["hamming", "inv_hamming"]:
+        outstr += "    err_o[0] = syndrome_o[%d];\n" % (m - 1)
+        outstr += "    err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (
             m - 2, m - 1)
     else:
-        outstr += "  {}".format(preamble) + "single_error = ^syndrome_o;\n"
-        outstr += "  {}".format(preamble) + "err_o[0] = single_error;\n"
-        outstr += "  {}".format(preamble) + "err_o[1] = ~single_error & (|syndrome_o);\n"
+        outstr += "    err_o[0] = ^syndrome_o;\n"
+        outstr += "    err_o[1] = ~err_o[0] & (|syndrome_o);\n"
     return outstr
 
 
@@ -325,6 +327,8 @@ def verify(cfgs):
 def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
     log.info(f"Encoding ECC for {hex(dataword)}")
 
+    assert 0 <= dataword < (1 << k)
+
     # first check to see if bit width is supported among configuration
     config = hjson.load(SECDED_CFG_PATH.open())
 
@@ -336,10 +340,10 @@ def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
             m = cfg['m']
             codes = gen_code(codetype, k, m)
             bitmasks = calc_bitmasks(k, m, codes, False)
+            invert = 1 if codetype in ['inv_hsiao', 'inv_hamming'] else 0
             break
-
-    # error if k not supported
-    if not m:
+    else:
+        # error if k not supported
         raise Exception(f'ECC for length {k} of type {codetype} unsupported')
 
     # represent supplied dataword as a binary string
@@ -359,6 +363,7 @@ def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
             if int(f):
                 bit ^= int(codeword_rev[idx])
 
+        bit ^= invert
         codeword = str(bit) + codeword
 
     # Debug printouts
@@ -411,8 +416,9 @@ def generate(cfgs, args):
         write_enc_dec_files(n, k, m, codes, suffix, args.outdir, codetype)
 
         # write out C files, only hsiao codes are supported
-        if codetype == "hsiao":
-            write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename)
+        if codetype in ["hsiao", "inv_hsiao"]:
+            write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
+                codetype)
 
         # write out package typedefs
         pkg_type_str += print_pkg_types(n, k, m, codes, suffix, codetype)
@@ -433,6 +439,9 @@ def generate(cfgs, args):
     full_pkg_str = enum_str + pkg_type_str + pkg_out_str
     write_pkg_file(args.outdir, full_pkg_str)
 
+
+def _inv_hsiao_code(k, m):
+    return _hsiao_code(k, m)
 
 # k = data bits
 # m = parity bits
@@ -520,6 +529,9 @@ def _hsiao_code(k, m):
     return codes
 
 
+def _inv_hamming_code(k, m):
+    return _hamming_code(k, m)
+
 # n = total bits
 # k = data bits
 # m = parity bits
@@ -588,7 +600,8 @@ def bytes_to_c_type(num_bytes):
     return None
 
 
-def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename):
+def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
+                  codetype):
     in_bytes = math.ceil(k / 8)
     out_bytes = math.ceil(m / 8)
 
@@ -603,10 +616,12 @@ def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename):
 
     assert in_type
     assert out_type
+    assert codetype in ["hsiao", "inv_hsiao"]
+    invert = "true" if codetype == "inv_hsiao" else "false"
 
     with open(c_src_filename, "a") as f:
         # Write out function prototype in src
-        f.write(f"\n{out_type} enc_secded_{n}_{k}{suffix}"
+        f.write(f"\n{out_type} enc_secded{suffix}_{n}_{k}"
                 f"(const uint8_t bytes[{in_bytes}]) {{\n")
 
         # Form a single word from the incoming byte data
@@ -620,14 +635,14 @@ def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename):
         f.write("return ")
         parity_bit_masks = enumerate(calc_bitmasks(k, m, codes, False))
         f.write(" | ".join(
-                [f"(calc_parity(word & 0x{mask:x}) << {par_bit})" for par_bit,
-                    mask in parity_bit_masks]))
+                [f"(calc_parity(word & 0x{mask:x}, {invert}) << {par_bit})"
+                 for par_bit, mask in parity_bit_masks]))
 
         f.write(";\n}\n")
 
     with open(c_h_filename, "a") as f:
         # Write out function declaration in header
-        f.write(f"{out_type} enc_secded_{n}_{k}{suffix}"
+        f.write(f"{out_type} enc_secded{suffix}_{n}_{k}"
                 f"(const uint8_t bytes[{in_bytes}]);\n")
 
 
@@ -648,7 +663,7 @@ def format_c_files(c_src_filename, c_h_filename):
 
 
 def write_enc_dec_files(n, k, m, codes, suffix, outdir, codetype):
-    enc_out = print_enc(n, k, m, codes)
+    enc_out = print_enc(n, k, m, codes, codetype)
 
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
@@ -679,7 +694,8 @@ module {}_dec (
   output logic [1:0] err_o
 );
 
-{}
+  always_comb begin : p_encode
+{}  end
 endmodule : {}_dec
 '''.format(COPYRIGHT, module_name, (n - 1), (k - 1), (m - 1),
            dec_out, module_name)
