@@ -39,6 +39,16 @@ module spi_cmdparse
   output cmd_info_t              cmd_info_o,
   output logic [CmdInfoIdxW-1:0] cmd_info_idx_o,
 
+  // CFG: Intercept
+  input cfg_intercept_en_status_i,
+  input cfg_intercept_en_jedec_i,
+  input cfg_intercept_en_sfdp_i,
+
+  // Output assumed
+  output logic intercept_status_o,
+  output logic intercept_jedec_o,
+  output logic intercept_sfdp_o,
+
   // Command Config is not implemented yet.
   // Indicator of command config. The pulse is generated at 3rd bit position
   // of Opcode. The upper 5 bits are used as address to fetch command configs
@@ -129,6 +139,11 @@ module spi_cmdparse
   logic module_active;
   logic in_flashmode, in_passthrough;
 
+  // Intercept passthrough if Passthrough is in active
+  // As intercept does not affect in Flash mode, the logic ignores
+  // `in_passthrough` condition.
+  logic intercept_d;
+
   // below signals are used in the FSM to determine to activate a certain
   // datapath based on the received input (opcode). The opcode is the SW
   // configurable CSRs `cmd_info_i`.
@@ -202,6 +217,20 @@ module spi_cmdparse
   // Check upload field in the cmd_info
   logic upload;
   assign upload = cmd_info_d.upload;
+
+  // Intercept: Latched in SCK
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intercept_status_o <= 1'b 0;
+      intercept_jedec_o  <= 1'b 0;
+      intercept_sfdp_o   <= 1'b 0;
+    end else if (intercept_d) begin
+      if (opcode_readstatus) intercept_status_o <= 1'b 1;
+      if (opcode_readjedec)  intercept_jedec_o  <= 1'b 1;
+      if (opcode_readsfdp)   intercept_sfdp_o   <= 1'b 1;
+    end
+  end
+
   ///////////////////
   // State Machine //
   ///////////////////
@@ -226,6 +255,8 @@ module spi_cmdparse
 
     latch_cmdinfo = 1'b 0;
 
+    intercept_d = 1'b 0;
+
     unique case (st)
       StIdle: begin
         if (module_active && data_valid_i && cmd_info_d.valid) begin
@@ -234,15 +265,23 @@ module spi_cmdparse
 
           priority case (1'b 1)
             opcode_readstatus: begin
-              // TODO: Check CFG config for passthrough
-              st_d = StStatus;
+              if (in_flashmode) begin
+                st_d = StStatus;
+              end else if (cfg_intercept_en_status_i) begin
+                st_d = StStatus;
+                intercept_d = 1'b 1;
+              end else begin
+                st_d = StWait;
+              end
             end
 
             opcode_readjedec: begin
               if (in_flashmode) begin
                 st_d = StJedec;
+              end else if (cfg_intercept_en_jedec_i) begin
+                st_d = StJedec;
+                intercept_d = 1'b 1;
               end else begin
-                // TODO: Passthrough ? <= check cfg
                 st_d = StWait;
               end
             end
@@ -251,8 +290,10 @@ module spi_cmdparse
             opcode_readsfdp: begin
               if (in_flashmode) begin
                 st_d = StSfdp;
+              end else if (cfg_intercept_en_sfdp_i) begin
+                st_d = StSfdp;
+                intercept_d = 1'b 1;
               end else begin
-                // TODO: Passthrough? Cannot stay in the Idle as it will compare at the next byte
                 // Check passthrough
                 st_d = StWait;
               end

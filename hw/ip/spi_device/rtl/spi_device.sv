@@ -220,7 +220,7 @@ module spi_device
   sel_datapath_e cmd_dp_sel, cmd_dp_sel_outclk;
 
   // Mailbox in Passthrough needs to take SPI if readcmd hits mailbox address
-  logic mailbox_assumed, passthrough_assumed_by_internal;
+  logic intercept_en, intercept_q;
 
   logic cfg_mailbox_en;
   logic [31:0] mailbox_addr;
@@ -231,8 +231,9 @@ module spi_device
     logic jedec;
     logic sfdp;
     logic mbx;
-  } intercept_en_t;
-  intercept_en_t cfg_intercept_en;
+  } intercept_t;
+  intercept_t cfg_intercept_en;
+  intercept_t intercept; // Assume signals
 
   // Threshold value of a buffer in bytes
   logic [BufferAw:0] readbuf_threshold;
@@ -934,7 +935,7 @@ module spi_device
         end
 
         PassThrough: begin
-          if (passthrough_assumed_by_internal) begin
+          if (intercept_en) begin
             cio_sd_o    = internal_sd;
             cio_sd_en_o = internal_sd_en;
           end else begin
@@ -950,10 +951,18 @@ module spi_device
       endcase
     end
   end
-  assign passthrough_assumed_by_internal = mailbox_assumed
-    // TOGO: Uncomment below when those submodules are implemented.
-    // | readstatus_assumed | readsfdp_assumed | readjedec_assumed
-    ;
+
+  // Assume `intercept` is registered (SPI_IN).
+  // passthrough assumed signal shall be registered in (SPI_OUT)
+  always_ff @(posedge clk_spi_in_buf or negedge rst_spi_n) begin
+    if (!rst_spi_n)      intercept_q <= 1'b 0;
+    else if (|intercept) intercept_q <= 1'b 1;
+  end
+
+  always_ff @(posedge clk_spi_out_buf or negedge rst_spi_n) begin
+    if (!rst_spi_n) intercept_en <= 1'b 0;
+    else            intercept_en <= |intercept | intercept_q;
+  end
 
   ////////////////////////////
   // SPI Serial to Parallel //
@@ -1079,6 +1088,14 @@ module spi_device
     .cmd_info_o     (cmd_info_broadcast),
     .cmd_info_idx_o (cmd_info_idx_broadcast),
 
+    .cfg_intercept_en_status_i (cfg_intercept_en.status),
+    .cfg_intercept_en_jedec_i  (cfg_intercept_en.jedec),
+    .cfg_intercept_en_sfdp_i   (cfg_intercept_en.sfdp),
+
+    .intercept_status_o (intercept.status),
+    .intercept_jedec_o  (intercept.jedec),
+    .intercept_sfdp_o   (intercept.sfdp),
+
     // Not used for now
     .cmd_config_req_o (),
     .cmd_config_idx_o ()
@@ -1119,7 +1136,7 @@ module spi_device
 
     .mailbox_en_i      (cfg_mailbox_en ),
     .mailbox_addr_i    (mailbox_addr   ),
-    .mailbox_assumed_o (mailbox_assumed),
+    .mailbox_assumed_o (intercept.mbx  ),
 
     .readbuf_address_o (readbuf_addr_sck),
 
