@@ -26,6 +26,15 @@ package mem_bkdr_util_pkg;
     EccHamming_39_32 = prim_secded_pkg::SecdedHamming_39_32,
     EccHamming_72_64 = prim_secded_pkg::SecdedHamming_72_64,
     EccHamming_76_68 = prim_secded_pkg::SecdedHamming_76_68,
+    EccInv_22_16        = prim_secded_pkg::SecdedInv_22_16,
+    EccInv_28_22        = prim_secded_pkg::SecdedInv_28_22,
+    EccInv_39_32        = prim_secded_pkg::SecdedInv_39_32,
+    EccInv_64_57        = prim_secded_pkg::SecdedInv_64_57,
+    EccInv_72_64        = prim_secded_pkg::SecdedInv_72_64,
+    EccInvHamming_22_16 = prim_secded_pkg::SecdedInvHamming_22_16,
+    EccInvHamming_39_32 = prim_secded_pkg::SecdedInvHamming_39_32,
+    EccInvHamming_72_64 = prim_secded_pkg::SecdedInvHamming_72_64,
+    EccInvHamming_76_68 = prim_secded_pkg::SecdedInvHamming_76_68,
     ParityEven,
     ParityOdd
   } err_detection_e;

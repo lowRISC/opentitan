@@ -313,6 +313,27 @@ class mem_bkdr_util extends uvm_object;
       EccHamming_76_68: begin
         rw_data = prim_secded_pkg::prim_secded_hamming_76_68_enc(rw_data[63:0]);
       end
+      EccInv_22_16: begin
+        rw_data = prim_secded_pkg::prim_secded_inv_22_16_enc(rw_data[15:0]);
+      end
+      EccInvHamming_22_16: begin
+        rw_data = prim_secded_pkg::prim_secded_inv_hamming_22_16_enc(rw_data[15:0]);
+      end
+      EccInv_39_32: begin
+        rw_data = prim_secded_pkg::prim_secded_inv_39_32_enc(rw_data[31:0]);
+      end
+      EccInvHamming_39_32: begin
+        rw_data = prim_secded_pkg::prim_secded_inv_hamming_39_32_enc(rw_data[31:0]);
+      end
+      EccInv_72_64: begin
+        rw_data = prim_secded_pkg::prim_secded_inv_72_64_enc(rw_data[63:0]);
+      end
+      EccInvHamming_72_64: begin
+        rw_data = prim_secded_pkg::prim_secded_inv_hamming_72_64_enc(rw_data[63:0]);
+      end
+      EccInvHamming_76_68: begin
+        rw_data = prim_secded_pkg::prim_secded_inv_hamming_76_68_enc(rw_data[63:0]);
+      end
       default: begin
         `uvm_error(`gfn, $sformatf("ECC scheme %0s is unsupported.", err_detection_scheme))
       end
@@ -383,6 +404,12 @@ class mem_bkdr_util extends uvm_object;
       EccHamming_22_16: begin
         return prim_secded_pkg::prim_secded_hamming_22_16_dec(data);
       end
+      EccInv_22_16: begin
+        return prim_secded_pkg::prim_secded_inv_22_16_dec(data);
+      end
+      EccInvHamming_22_16: begin
+        return prim_secded_pkg::prim_secded_inv_hamming_22_16_dec(data);
+      end
       default: return 'x;
     endcase
   endfunction
@@ -399,6 +426,12 @@ class mem_bkdr_util extends uvm_object;
       EccHamming_39_32: begin
         return prim_secded_pkg::prim_secded_hamming_39_32_dec(data);
       end
+      EccInv_39_32: begin
+        return prim_secded_pkg::prim_secded_inv_39_32_dec(data);
+      end
+      EccInvHamming_39_32: begin
+        return prim_secded_pkg::prim_secded_inv_hamming_39_32_dec(data);
+      end
       default: return 'x;
     endcase
   endfunction
@@ -414,6 +447,12 @@ class mem_bkdr_util extends uvm_object;
       end
       EccHamming_72_64: begin
         return prim_secded_pkg::prim_secded_hamming_72_64_dec(data);
+      end
+      EccInv_72_64: begin
+        return prim_secded_pkg::prim_secded_inv_72_64_dec(data);
+      end
+      EccInvHamming_72_64: begin
+        return prim_secded_pkg::prim_secded_inv_hamming_72_64_dec(data);
       end
       default: return 'x;
     endcase
