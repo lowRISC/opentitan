@@ -188,9 +188,22 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
       flash_ctrl_pkg::FlashEraseBank: begin
         // This address is relative to the bank it's in.
         erase_check_addr = 0;
-        num_words = FlashNumBusWordsPerBank;
         // No need to state page for bank erase.
         erase_page_num_msg = "";
+        case (flash_op.partition)
+          FlashPartData: begin
+            num_words = FlashNumBusWordsPerBank;
+          end
+          FlashPartInfo: begin
+            num_words = InfoTypeBusWords[0];
+          end
+          default: begin
+            `uvm_fatal(`gfn, $sformatf({"Invalid partition for bank_erase: %0s. ",
+                                        "Bank erase is only valid in the data partition ",
+                                        "(FlashPartData) and the first info partition ",
+                                        "(FlashPartInfo)."}, flash_op.partition.name()))
+          end
+        endcase
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("Invalid erase_type: %0s", flash_op.erase_type.name()))
