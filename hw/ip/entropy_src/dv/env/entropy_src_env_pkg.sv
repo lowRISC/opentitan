@@ -34,6 +34,81 @@ package entropy_src_env_pkg;
     NumEntropySrcIntr = 4
   } entropy_src_intr_e;
 
+  typedef enum int {
+    invalid_fips_enable             = 0,
+    invalid_entropy_data_reg_enable = 1,
+    invalid_module_enable           = 2,
+    invalid_threshold_scope         = 3,
+    invalid_rng_bit_enable          = 4,
+    invalid_fw_ov_mode              = 5,
+    invalid_fw_ov_entropy_insert    = 6,
+    invalid_es_route                = 7,
+    invalid_es_type                 = 8
+  } invalid_mubi_e;
+
+  typedef enum int {
+    sfifo_esrng_err        = 0,
+    sfifo_observe_err      = 1,
+    sfifo_esfinal_err      = 2,
+    es_ack_sm_err          = 3,
+    es_main_sm_err         = 4,
+    es_cntr_err            = 5,
+    fifo_write_err         = 6,
+    fifo_read_err          = 7,
+    fifo_state_err         = 8,
+    sfifo_esrng_err_test   = 9,
+    sfifo_observe_err_test = 10,
+    sfifo_esfinal_err_test = 11,
+    es_ack_sm_err_test     = 12,
+    es_main_sm_err_test    = 13,
+    es_cntr_err_test       = 14,
+    fifo_write_err_test    = 15,
+    fifo_read_err_test     = 16,
+    fifo_state_err_test    = 17
+  } err_code_e;
+
+  typedef enum int {
+    sfifo_observe_error = 0,
+    sfifo_esrng_error   = 1,
+    sfifo_esfinal_error = 2,
+    es_ack_sm_error     = 3,
+    es_main_sm_error    = 4,
+    es_cntr_error       = 5
+  } fatal_err_e;
+
+  typedef enum int {
+    window_cntr     = 0,
+    repcnt_ht_cntr  = 1,
+    repcnts_ht_cntr = 2,
+    adaptp_ht_cntr  = 3,
+    bucket_ht_cntr  = 4,
+    markov_ht_cntr  = 5
+  } cntr_e;
+
+  typedef enum int {
+    repcnt_ht_fail = 0,
+    adaptp_ht_fail = 1,
+    bucket_ht_fail = 2,
+    markov_ht_fail = 3
+  } ht_fail_e;
+
+  typedef enum int {
+    write = 0,
+    read  = 1,
+    state = 2
+  } which_fifo_err_e;
+
+  typedef enum int {
+    sfifo_esrng   = 0,
+    sfifo_observe = 1,
+    sfifo_esfinal = 2
+  } which_fifo_e;
+
+  typedef enum int {
+    high_test = 0,
+    low_test  = 1
+  } which_ht_e;
+
   typedef enum { BOOT, STARTUP, CONTINUOUS, HALTED } entropy_phase_e;
   typedef bit [RNG_BUS_WIDTH-1:0] rng_val_t;
   typedef rng_val_t queue_of_rng_val_t[$];

@@ -37,4 +37,3 @@ class entropy_src_base_test extends cip_base_test #(
   endfunction
 
 endclass : entropy_src_base_test
-
