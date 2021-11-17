@@ -55,7 +55,8 @@
     {
       name: health_checks
       desc: '''
-            Verify AdaptProp, RepCnt, RepCntSym, Bucket, Markov health check results match predicted.
+            Verify AdaptProp, RepCnt, RepCntSym, Bucket, Markov health check results
+            match predicted.
             - Generate passing and failing raw entropy streams
             - Random window sizes
             - Default and random hi/lo bypass/fips thresholds

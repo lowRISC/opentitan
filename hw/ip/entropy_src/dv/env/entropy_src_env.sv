@@ -53,6 +53,11 @@ class entropy_src_env extends cip_base_env #(
         cfg.otp_en_es_fw_over_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get otp_en_es_fw_over_vif from uvm_config_db")
     end
+    // config entropy_src path virtual interface
+    if (!uvm_config_db#(virtual entropy_src_path_if)::get(this, "", "entropy_src_path_vif",
+         cfg.entropy_src_path_vif)) begin
+      `uvm_fatal(`gfn, "failed to get entropy_src_path_vif from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);

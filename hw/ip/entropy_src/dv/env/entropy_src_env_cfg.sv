@@ -18,6 +18,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual pins_if#(8)   otp_en_es_fw_read_vif;
   virtual pins_if#(8)   otp_en_es_fw_over_vif;
 
+  // handle to csrng assert interface
+  virtual entropy_src_assert_if entropy_src_assert_if;
+  // handle to edn path interface
+  virtual entropy_src_path_if entropy_src_path_vif;
   //
   // Variables for controlling test duration.  Depending on the test there are two options:
   // fixed duration in time or total number of seeds.
@@ -36,6 +40,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   int      seed_cnt;
 
   uint     fips_window_size, bypass_window_size, boot_mode_retry_limit;
+
+  bit      use_invalid_mubi;
 
   /////////////////////
   // Knobs & Weights //
@@ -110,6 +116,23 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // alert within alert_max_delay clock cycles.
   int      alert_max_delay;
 
+  // Random values for interrupt, alert and error tests
+  rand fatal_err_e      which_fatal_err;
+  rand err_code_e       which_err_code;
+  rand which_fifo_e     which_fifo;
+  rand which_fifo_err_e which_fifo_err;
+  rand invalid_mubi_e   which_invalid_mubi;
+  rand ht_fail_e        which_ht_fail;
+  rand cntr_e           which_cntr;
+  rand which_ht_e       which_ht;
+
+  rand uint  which_cntr_replicate;
+  constraint which_cntr_replicate_c {which_cntr_replicate inside {[0:RNG_BUS_WIDTH-1]};}
+
+  int        num_bins = 2**RNG_BUS_WIDTH;
+  rand uint  which_bin;
+  constraint which_bin_c {which_bin inside {[0:num_bins-1]};}
+
   /////////////////
   // Constraints //
   /////////////////
@@ -140,11 +163,11 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   constraint module_enable_c {module_enable dist {
       prim_mubi_pkg::MuBi4True  :/ module_enable_pct,
-      prim_mubi_pkg::MuBi4False :/ 100 - module_enable_pct };}
+      prim_mubi_pkg::MuBi4False :/ (100 - module_enable_pct) };}
 
   constraint fips_enable_c {fips_enable dist {
       prim_mubi_pkg::MuBi4True  :/ fips_enable_pct,
-      prim_mubi_pkg::MuBi4False :/ 100 - fips_enable_pct };}
+      prim_mubi_pkg::MuBi4False :/ (100 - fips_enable_pct) };}
 
   constraint route_c {route_software dist {
       prim_mubi_pkg::MuBi4True  :/ route_software_pct,
@@ -156,11 +179,11 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   constraint entropy_data_reg_enable_c {entropy_data_reg_enable dist {
       prim_mubi_pkg::MuBi4True  :/ entropy_data_reg_enable_pct,
-      prim_mubi_pkg::MuBi4False :/ (100 - entropy_data_reg_enable_pct)};}
+      prim_mubi_pkg::MuBi4False :/ (100 - entropy_data_reg_enable_pct) };}
 
   constraint rng_bit_enable_c {rng_bit_enable dist {
       prim_mubi_pkg::MuBi4True  :/ rng_bit_enable_pct,
-      prim_mubi_pkg::MuBi4False :/ (100 - rng_bit_enable_pct)};}
+      prim_mubi_pkg::MuBi4False :/ (100 - rng_bit_enable_pct) };}
 
   constraint ht_threshold_scope_c {ht_threshold_scope dist {
       prim_mubi_pkg::MuBi4True  :/ ht_threshold_scope_pct,
@@ -193,6 +216,12 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
     end
+
+    // get entropy_src assert interface handle
+    if (!uvm_config_db#(virtual entropy_src_assert_if)::
+        get(null, "*.env" , "entropy_src_assert_if", entropy_src_assert_if)) begin
+      `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ASSERT IF"))
+    end
   endfunction
 
   virtual function string convert2string();
@@ -203,17 +232,17 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     str = {
         str,
         $sformatf("\n\t |***** otp_en_es_fw_read           : %12s *****| \t",
-             otp_en_es_fw_read.name()),
+                  otp_en_es_fw_read.name()),
         $sformatf("\n\t |***** otp_en_es_fw_over           : %12s *****| \t",
                   otp_en_es_fw_over.name()),
         $sformatf("\n\t |***** module_enable               : %12s *****| \t",
-                 module_enable.name()),
+                  module_enable.name()),
         $sformatf("\n\t |***** fips_enable                 : %12s *****| \t",
-                 fips_enable.name()),
+                  fips_enable.name()),
         $sformatf("\n\t |***** route_software              : %12s *****| \t",
                   route_software.name()),
         $sformatf("\n\t |***** type_bypass                 : %12s *****| \t",
-                   type_bypass.name()),
+                  type_bypass.name()),
         $sformatf("\n\t |***** entropy_data_reg_enable     : %12s *****| \t",
                   entropy_data_reg_enable.name()),
         $sformatf("\n\t |***** rng_bit_enable              : %12s *****| \t",
@@ -295,6 +324,27 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     tmp_r = real'(bucket_sigma_i)/{$bits(bucket_sigma_i){1'b1}};
     bucket_sigma = bucket_sigma_min + (bucket_sigma_max - bucket_sigma_min) * tmp_r;
 
+    if (use_invalid_mubi) begin
+      prim_mubi_pkg::mubi4_t invalid_mubi_val;
+      invalid_mubi_val = get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1));
+
+      entropy_src_assert_if.assert_off_alert();
+
+      case (which_invalid_mubi)
+        invalid_fips_enable: fips_enable = invalid_mubi_val;
+        invalid_entropy_data_reg_enable: entropy_data_reg_enable = invalid_mubi_val;
+        invalid_module_enable: module_enable = invalid_mubi_val;
+        invalid_threshold_scope: ht_threshold_scope = invalid_mubi_val;
+        invalid_rng_bit_enable: rng_bit_enable = invalid_mubi_val;
+        invalid_fw_ov_mode: fw_read_enable = invalid_mubi_val;
+        invalid_fw_ov_entropy_insert: fw_over_enable = invalid_mubi_val;
+        invalid_es_route: route_software = invalid_mubi_val;
+        invalid_es_type: type_bypass = invalid_mubi_val;
+        default: begin
+          `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
+        end
+      endcase // case (which_invalid_mubi)
+    end
   endfunction
 
 endclass

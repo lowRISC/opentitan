@@ -34,6 +34,7 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.fips_enable_pct             = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
+
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
   endfunction
 endclass : entropy_src_rng_test

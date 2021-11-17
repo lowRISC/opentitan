@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv:push_pull_agent
     files:
       - entropy_src_env_pkg.sv
+      - entropy_src_path_if.sv
       - entropy_src_env_cfg.sv: {is_include_file: true}
       - entropy_src_env_cov.sv: {is_include_file: true}
       - entropy_src_virtual_sequencer.sv: {is_include_file: true}
@@ -27,6 +28,9 @@ filesets:
       - seq_lib/entropy_src_fw_ov_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_base_rng_seq.sv: {is_include_file: true}
+      - seq_lib/entropy_src_intr_vseq.sv: {is_include_file: true}
+      - seq_lib/entropy_src_alert_vseq.sv: {is_include_file: true}
+      - seq_lib/entropy_src_err_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
