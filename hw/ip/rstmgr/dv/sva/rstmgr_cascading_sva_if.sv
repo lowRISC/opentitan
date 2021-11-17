@@ -27,7 +27,7 @@ interface rstmgr_cascading_sva_if (
   input [rstmgr_pkg::PowerDomains-1:0] rst_lc_src_n,
   input [rstmgr_pkg::PowerDomains-1:0] rst_sys_src_n,
   input logic scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i
+  input prim_mubi_pkg::mubi4_t scanmode_i
 );
 
   // The min and max bounds on the number of cycles for an edge to occur.

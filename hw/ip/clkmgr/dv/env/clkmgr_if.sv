@@ -25,8 +25,8 @@ interface clkmgr_if (
   // to 0 when all are disabled.
   pwrmgr_pkg::pwr_clk_rsp_t pwr_o;
 
-  // scanmode_i == lc_ctrl_pkg::On defeats all clock gating.
-  lc_ctrl_pkg::lc_tx_t scanmode_i;
+  // scanmode_i == MuBi4True defeats all clock gating.
+  prim_mubi_pkg::mubi4_t scanmode_i;
 
   // Life cycle enables clock bypass functionality.
   lc_ctrl_pkg::lc_tx_t lc_dft_en_i;
@@ -98,7 +98,7 @@ interface clkmgr_if (
     pwr_i.usb_ip_clk_en = value;
   endfunction
 
-  function automatic void update_scanmode(lc_ctrl_pkg::lc_tx_t value);
+  function automatic void update_scanmode(prim_mubi_pkg::mubi4_t value);
     scanmode_i = value;
   endfunction
 
@@ -131,7 +131,7 @@ interface clkmgr_if (
     actual_clk_io_div4 = actual_div4_value;
   endfunction
 
-  task automatic init(logic [NUM_TRANS-1:0] idle, lc_ctrl_pkg::lc_tx_t scanmode,
+  task automatic init(logic [NUM_TRANS-1:0] idle, prim_mubi_pkg::mubi4_t scanmode,
                       lc_ctrl_pkg::lc_tx_t lc_dft_en = lc_ctrl_pkg::Off,
                       lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off,
                       prim_mubi_pkg::mubi4_t io_clk_byp_ack = prim_mubi_pkg::MuBi4False);

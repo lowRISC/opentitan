@@ -99,12 +99,12 @@ package cip_base_pkg;
 
   `undef _DV_MUBI_RAND_VAL
 
-  // Currently lc_tx_e is exactly the same as mubi4_t. create a separate function in case these
-  // 2 types are changed differently in the future
-  function automatic lc_ctrl_pkg::lc_tx_e get_rand_lc_tx_val(int t_weight = 2,
+  // Currently lc_tx_t is exactly the same as mubi4_t. Create a separate function in case these
+  // 2 types are changed differently in the future.
+  function automatic lc_ctrl_pkg::lc_tx_t get_rand_lc_tx_val(int t_weight = 2,
                                                              int f_weight = 2,
                                                              int other_weight = 1);
-    return lc_ctrl_pkg::lc_tx_e'(get_rand_mubi4_val(t_weight, f_weight, other_weight));
+    return lc_ctrl_pkg::lc_tx_t'(get_rand_mubi4_val(t_weight, f_weight, other_weight));
   endfunction
 
   // package sources

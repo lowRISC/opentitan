@@ -39,17 +39,17 @@ package lc_ctrl_env_pkg;
   parameter uint OTP_PROG_DDATA_WIDTH = 1;
 
   typedef struct packed {
-    lc_ctrl_pkg::lc_tx_e lc_dft_en_o;
-    lc_ctrl_pkg::lc_tx_e lc_nvm_debug_en_o;
-    lc_ctrl_pkg::lc_tx_e lc_hw_debug_en_o;
-    lc_ctrl_pkg::lc_tx_e lc_cpu_en_o;
-    lc_ctrl_pkg::lc_tx_e lc_creator_seed_sw_rw_en_o;
-    lc_ctrl_pkg::lc_tx_e lc_owner_seed_sw_rw_en_o;
-    lc_ctrl_pkg::lc_tx_e lc_seed_hw_rd_en_o;
-    lc_ctrl_pkg::lc_tx_e lc_iso_part_sw_rd_en_o;
-    lc_ctrl_pkg::lc_tx_e lc_iso_part_sw_wr_en_o;
-    lc_ctrl_pkg::lc_tx_e lc_keymgr_en_o;
-    lc_ctrl_pkg::lc_tx_e lc_escalate_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_dft_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_cpu_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_keymgr_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_escalate_en_o;
   } lc_outputs_t;
 
   const lc_outputs_t EXP_LC_OUTPUTS[NUM_STATES] = {

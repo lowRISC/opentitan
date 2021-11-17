@@ -17,7 +17,7 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire                          clk_aon, rst_aon_n;
   wire                          lc_escalate_en_bit;
-  lc_ctrl_pkg::lc_tx_e          lc_escalate_en;
+  lc_ctrl_pkg::lc_tx_t          lc_escalate_en;
   wire                          wkup_expired, wdog_bark;
   wire                          wkup_req, rst_req;
   wire                          sleep;
@@ -28,7 +28,7 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   // An input to the DUT that shows whether the CPU is enabled. Rather than wire up an interface
-  // with an lc_tx_e member, we expose lc_escalate_en as a single bit and translate it to the right
+  // with an lc_tx_t member, we expose lc_escalate_en as a single bit and translate it to the right
   // type here.
   pins_if #(1) lc_escalate_en_if (lc_escalate_en_bit);
   assign lc_escalate_en = lc_escalate_en_bit ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
