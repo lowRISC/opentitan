@@ -17,6 +17,11 @@ interface alert_handler_if(input clk, input rst_n);
     lpg_rst_en = '{default: MuBi4False};
   endfunction
 
+  function automatic bit get_lpg_status(int index);
+    check_lpg_index(index);
+    return (lpg_cg_en[index] == MuBi4True || lpg_rst_en[index] == MuBi4True);
+  endfunction
+
   // TODO: randomize all values outside of the mubi4 enum.
   function automatic void set_lpg_cg_en(int index);
     check_lpg_index(index);
