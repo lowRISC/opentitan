@@ -57,6 +57,9 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     !(scanmode_other inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off});
   }
 
+  rand logic [NumSwResets-1:0] sw_rst_regwen;
+  rand logic [NumSwResets-1:0] sw_rst_ctrl_n;
+
   bit reset_once;
 
   pwrmgr_pkg::pwr_rst_req_t pwr_i;

@@ -75,7 +75,7 @@
             - Check the `reset_info`, `cpu_info`, and `alert_info` CSRs are not modified.
             '''
       milestone: V2
-      tests: []
+      tests: ["rstmgr_sw_rst"]
     }
     {
       name: reset_info

@@ -12,8 +12,6 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
   rand ibex_pkg::crash_dump_t cpu_dump;
   rand alert_pkg::alert_crashdump_t alert_dump;
   rand logic [pwrmgr_pkg::HwResetWidth-1:0] rstreqs;
-  rand logic [NumSwResets-1:0] sw_rst_regwen;
-  rand logic [NumSwResets-1:0] sw_rst_ctrl_n;
 
   constraint rstreqs_non_zero_c {rstreqs != '0;}
   constraint sw_rst_regwen_non_trivial_c {sw_rst_regwen != '0 && sw_rst_regwen != '1;}
@@ -81,8 +79,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
                    .err_msg("expected no reset on"));
       csr_wr(.ptr(ral.sw_rst_regwen[0]), .value(sw_rst_regwen));
       `uvm_info(`gfn, $sformatf("sw_rst_regwen set to 0x%0h", sw_rst_regwen), UVM_LOW)
-      csr_rd_check(.ptr(ral.sw_rst_regwen[0]), .compare_value(sw_rst_regwen),
-                   .err_msg("Expected sw_rst_regwen to reflect rw0c"));
+      csr_rd_check(.ptr(ral.sw_rst_regwen[0]), .compare_value(sw_rst_regwen));
 
       // Check sw_rst_regwen can not be set to all ones again because it is rw0c.
       csr_wr(.ptr(ral.sw_rst_regwen[0]), .value('1));
