@@ -44,7 +44,7 @@ tests/
 
 Set up RSA-3072 test to run hardcoded test vectors:
 ```
-$ ./rsa_3072_verify_set_testvectors.py testvectors/rsa_3072_verify_hardcoded.hjson rsa_3072_verify_testvectors.h
+$ ./rsa_3072_verify_set_testvectors.py testvectors/rsa_3072_verify_hardcoded.hjson
 ```
 After this step, you can run `ninja` to re-build and then run the
 `sw_silicon_creator_lib_crypto_rsa_3072_verify_functest` target to run the
@@ -53,11 +53,11 @@ tests. The same applies to all other examples here.
 Set up RSA-3072 test to run a custom set of test vectors:
 ```
 $ vim testvectors/custom_testvecs.hjson # write test vectors in HJSON format
-$ ./rsa_3072_verify_set_testvectors.py testvectors/custom_testvecs.hjson rsa_3072_verify_testvectors.h
+$ ./rsa_3072_verify_set_testvectors.py testvectors/custom_testvecs.hjson
 ```
 
 Set up RSA-3072 test to run all wycheproof test vectors:
 ```
 $ ./testvectors/wycheproof/rsa_3072_verify_parse_testvectors.py > testvectors/rsa_3072_verify_wycheproof.hjson
-$ ./rsa_3072_verify_set_testvectors.py testvectors/rsa_3072_verify_wycheproof.hjson rsa_3072_verify_testvectors.h
+$ ./rsa_3072_verify_set_testvectors.py testvectors/rsa_3072_verify_wycheproof.hjson
 ```
