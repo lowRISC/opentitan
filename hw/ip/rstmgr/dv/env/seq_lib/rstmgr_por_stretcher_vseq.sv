@@ -29,6 +29,7 @@ class rstmgr_por_stretcher_vseq extends rstmgr_base_vseq;
   task body();
     cfg.aon_clk_rst_vif.wait_clks(AON_CYCLES_BEFORE_START);
     for (int i = 0; i < num_trans; ++i) begin
+      `DV_CHECK_RANDOMIZE_FATAL(this)
       cfg.rstmgr_vif.por_n = 1'b1;
       cfg.aon_clk_rst_vif.wait_clks(glitch_separation_cycles);
       cfg.rstmgr_vif.por_n = 1'b0;
