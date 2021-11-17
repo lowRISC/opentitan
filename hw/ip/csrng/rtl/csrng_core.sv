@@ -694,27 +694,27 @@ module csrng_core import csrng_pkg::*; #(
   assign recov_alert_o = recov_alert_event;
 
 
-  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_invalid;
 
   // check for illegal enable field states, and set alert if detected
-  mubi4_e mubi_cs_enable;
-  assign mubi_cs_enable = mubi4_e'(reg2hw.ctrl.enable.q);
+  mubi4_t mubi_cs_enable;
+  assign mubi_cs_enable = mubi4_t'(reg2hw.ctrl.enable.q);
   assign cs_enable_pfe = mubi4_test_true_strict(mubi_cs_enable);
   assign cs_enable_pfa = mubi4_test_invalid(mubi_cs_enable);
   assign hw2reg.recov_alert_sts.enable_field_alert.de = cs_enable_pfa;
   assign hw2reg.recov_alert_sts.enable_field_alert.d  = cs_enable_pfa;
 
-  mubi4_e mubi_sw_app_enable;
-  assign mubi_sw_app_enable = mubi4_e'(reg2hw.ctrl.sw_app_enable.q);
+  mubi4_t mubi_sw_app_enable;
+  assign mubi_sw_app_enable = mubi4_t'(reg2hw.ctrl.sw_app_enable.q);
   assign sw_app_enable_pfe = mubi4_test_true_strict(mubi_sw_app_enable);
   assign sw_app_enable_pfa = mubi4_test_invalid(mubi_sw_app_enable);
   assign hw2reg.recov_alert_sts.sw_app_enable_field_alert.de = sw_app_enable_pfa;
   assign hw2reg.recov_alert_sts.sw_app_enable_field_alert.d  = sw_app_enable_pfa;
 
-  mubi4_e mubi_read_int_state;
-  assign mubi_read_int_state = mubi4_e'(reg2hw.ctrl.read_int_state.q);
+  mubi4_t mubi_read_int_state;
+  assign mubi_read_int_state = mubi4_t'(reg2hw.ctrl.read_int_state.q);
   assign read_int_state_pfe = mubi4_test_true_strict(mubi_read_int_state);
   assign read_int_state_pfa = mubi4_test_invalid(mubi_read_int_state);
   assign hw2reg.recov_alert_sts.read_int_state_field_alert.de = read_int_state_pfa;

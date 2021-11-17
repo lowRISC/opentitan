@@ -11,7 +11,7 @@ class cip_tl_host_single_seq extends tl_host_single_seq #(cip_tl_seq_item);
   `uvm_object_utils(cip_tl_host_single_seq)
   `uvm_object_new
 
-  mubi4_e instr_type                   = MuBi4False;
+  mubi4_t instr_type                   = MuBi4False;
   tl_intg_err_e       tl_intg_err_type = TlIntgErrNone;
 
   virtual function void randomize_req(REQ req, int idx);

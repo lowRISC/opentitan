@@ -12,14 +12,14 @@
 
 module flash_phy
   import flash_ctrl_pkg::*;
-  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_t;
 
 (
   input clk_i,
   input rst_ni,
   input host_req_i,
   input host_intg_err_i,
-  input mubi4_e host_instr_type_i,
+  input mubi4_t host_instr_type_i,
   input [BusAddrW-1:0] host_addr_i,
   output logic host_req_rdy_o,
   output logic host_req_done_o,

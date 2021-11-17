@@ -318,19 +318,19 @@ module edn_core import edn_pkg::*;
   };
 
   // check for illegal enable field states, and set alert if detected
-  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_invalid;
 
-  mubi4_e mubi_edn_enable;
-  assign mubi_edn_enable = mubi4_e'(reg2hw.ctrl.edn_enable.q);
+  mubi4_t mubi_edn_enable;
+  assign mubi_edn_enable = mubi4_t'(reg2hw.ctrl.edn_enable.q);
   assign edn_enable_pfe = mubi4_test_true_strict(mubi_edn_enable);
   assign edn_enable_pfa = mubi4_test_invalid(mubi_edn_enable);
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.de = edn_enable_pfa;
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.d  = edn_enable_pfa;
 
-  mubi4_e mubi_cmd_fifo_rst;
-  assign mubi_cmd_fifo_rst = mubi4_e'(reg2hw.ctrl.cmd_fifo_rst.q);
+  mubi4_t mubi_cmd_fifo_rst;
+  assign mubi_cmd_fifo_rst = mubi4_t'(reg2hw.ctrl.cmd_fifo_rst.q);
   assign cmd_fifo_rst_pfe = mubi4_test_true_strict(mubi_cmd_fifo_rst);
   assign cmd_fifo_rst_pfa = mubi4_test_invalid(mubi_cmd_fifo_rst);
   assign hw2reg.recov_alert_sts.cmd_fifo_rst_field_alert.de = cmd_fifo_rst_pfa;
@@ -346,8 +346,8 @@ module edn_core import edn_pkg::*;
   //--------------------------------------------
   // sw register interface
   //--------------------------------------------
-  mubi4_e mubi_auto_req_mode;
-  assign mubi_auto_req_mode = mubi4_e'(reg2hw.ctrl.auto_req_mode.q);
+  mubi4_t mubi_auto_req_mode;
+  assign mubi_auto_req_mode = mubi4_t'(reg2hw.ctrl.auto_req_mode.q);
   assign auto_req_mode_pfe = mubi4_test_true_strict(mubi_auto_req_mode);
   assign auto_req_mode_pfa = mubi4_test_invalid(mubi_auto_req_mode);
   assign hw2reg.recov_alert_sts.auto_req_mode_field_alert.de = auto_req_mode_pfa;
@@ -547,8 +547,8 @@ module edn_core import edn_pkg::*;
 
   assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1));
 
-  mubi4_e mubi_boot_req_mode;
-  assign mubi_boot_req_mode = mubi4_e'(reg2hw.ctrl.boot_req_mode.q);
+  mubi4_t mubi_boot_req_mode;
+  assign mubi_boot_req_mode = mubi4_t'(reg2hw.ctrl.boot_req_mode.q);
   assign boot_req_mode_pfe = mubi4_test_true_strict(mubi_boot_req_mode);
   assign boot_req_mode_pfa = mubi4_test_invalid(mubi_boot_req_mode);
   assign hw2reg.recov_alert_sts.boot_req_mode_field_alert.de = boot_req_mode_pfa;

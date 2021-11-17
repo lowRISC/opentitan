@@ -26,7 +26,7 @@ module prim_generic_flash #(
   input tdi_i,
   input tms_i,
   output logic tdo_o,
-  input prim_mubi_pkg::mubi4_e bist_enable_i,
+  input prim_mubi_pkg::mubi4_t bist_enable_i,
   input prim_mubi_pkg::mubi4_t scanmode_i,
   input scan_en_i,
   input scan_rst_ni,

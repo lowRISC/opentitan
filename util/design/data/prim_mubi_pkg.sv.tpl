@@ -27,13 +27,10 @@ from mubi import prim_mubi
   typedef enum logic [MuBi${nbits}Width-1:0] {
     MuBi${nbits}True = ${nbits}'h${prim_mubi.mubi_value_as_hexstr(True, nbits)}, // enabled
     MuBi${nbits}False = ${nbits}'h${prim_mubi.mubi_value_as_hexstr(False, nbits)}  // disabled
-  } mubi${nbits}_e;
-
-  // make a typedef such that this can be used as an intersignal type as well
-  typedef mubi${nbits}_e mubi${nbits}_t;
+  } mubi${nbits}_t;
 
   // Test whether the value is supplied is one of the valid enumerations
-  function automatic logic mubi${nbits}_test_invalid(mubi${nbits}_e val);
+  function automatic logic mubi${nbits}_test_invalid(mubi${nbits}_t val);
     return ~(val inside {MuBi${nbits}True, MuBi${nbits}False});
   endfunction : mubi${nbits}_test_invalid
 

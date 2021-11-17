@@ -804,7 +804,7 @@ module rstmgr
                          (pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry);
 
   // software initiated reset request
-  assign sw_rst_req_o = prim_mubi_pkg::mubi4_e'(reg2hw.reset_req.q);
+  assign sw_rst_req_o = prim_mubi_pkg::mubi4_t'(reg2hw.reset_req.q);
 
   // when pwrmgr reset request is received (reset is imminent), clear software
   // request so we are not in an infinite reset loop.

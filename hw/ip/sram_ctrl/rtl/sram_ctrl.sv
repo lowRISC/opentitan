@@ -277,18 +277,18 @@ module sram_ctrl
   // SRAM Execution //
   ////////////////////
 
-  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::mubi8_test_true_strict;
 
-  mubi4_e en_ifetch;
+  mubi4_t en_ifetch;
   if (InstrExec) begin : gen_instr_ctrl
-    mubi4_e lc_ifetch_en;
-    mubi4_e reg_ifetch_en;
+    mubi4_t lc_ifetch_en;
+    mubi4_t reg_ifetch_en;
     assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? MuBi4True :
                                                                   MuBi4False;
-    assign reg_ifetch_en = mubi4_e'(reg2hw.exec.q);
+    assign reg_ifetch_en = mubi4_t'(reg2hw.exec.q);
     assign en_ifetch = (mubi8_test_true_strict(otp_en_sram_ifetch_i)) ? reg_ifetch_en :
                                                                         lc_ifetch_en;
   end else begin : gen_tieoff

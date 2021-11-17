@@ -443,7 +443,7 @@ module rv_dm
   );
 `endif
 
-  prim_mubi_pkg::mubi4_e en_ifetch;
+  prim_mubi_pkg::mubi4_t en_ifetch;
   assign en_ifetch = (lc_hw_debug_en[EnFetch] == lc_ctrl_pkg::On) ?
                      prim_mubi_pkg::MuBi4True :
                      prim_mubi_pkg::MuBi4False;
