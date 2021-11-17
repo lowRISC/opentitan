@@ -107,7 +107,7 @@ module prim_packer_fifo #(
            depth_q;
 
     assign data_d = clear_data ? '0 :
-           load_data ? (data_q | wdata_shifted) :
+           load_data ? (wdata_shifted | (depth_q == 0 ? '0 : data_q)) :
            data_q;
 
     // set outputs
