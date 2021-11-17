@@ -92,6 +92,8 @@ package cip_base_pkg;
   `_DV_MUBI_RAND_VAL(4)
   // Create function - get_rand_mubi8_val
   `_DV_MUBI_RAND_VAL(8)
+  // Create function - get_rand_mubi12_val
+  `_DV_MUBI_RAND_VAL(12)
   // Create function - get_rand_mubi16_val
   `_DV_MUBI_RAND_VAL(16)
 

@@ -51,7 +51,6 @@
 // Don't use this macro directly, use DV_MUBI4|8|16_DIST
 `ifndef _DV_MUBI_DIST
 `define _DV_MUBI_DIST(VAR_, TRUE_, FALSE_, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_) \
-  // OTHER_WEIGHT_ must be divisible by 3 as there are ranges for values other than true and false \
   if (TRUE_ > FALSE_) { \
     VAR_ dist {TRUE_  :/ T_WEIGHT_ * 3, \
                FALSE_ :/ F_WEIGHT_ * 3, \
@@ -80,6 +79,11 @@
 `ifndef DV_MUBI8_DIST
 `define DV_MUBI8_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
   `_DV_MUBI_DIST(VAR_, MuBi8True, MuBi8False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+`endif
+
+`ifndef DV_MUBI12_DIST
+`define DV_MUBI12_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
+  `_DV_MUBI_DIST(VAR_, MuBi12True, MuBi12False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
 `endif
 
 `ifndef DV_MUBI16_DIST
