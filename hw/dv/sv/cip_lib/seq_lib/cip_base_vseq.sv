@@ -171,7 +171,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit [BUS_DW-1:0]  compare_mask = '1,
                          input bit               check_exp_data = 1'b0,
                          input bit               blocking = csr_utils_pkg::default_csr_blocking,
-                         input mubi4_e           instr_type = MuBi4False,
+                         input mubi4_t           instr_type = MuBi4False,
                          tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
                          input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
     bit completed, saw_err;
@@ -195,7 +195,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       input bit [BUS_DW-1:0]  compare_mask = '1,
       input bit               check_exp_data = 1'b0,
       input bit               blocking = csr_utils_pkg::default_csr_blocking,
-      input mubi4_e           instr_type = MuBi4False,
+      input mubi4_t           instr_type = MuBi4False,
       tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
       input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone,
       input int               req_abort_pct = 0);
@@ -227,7 +227,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              input bit [BUS_DW-1:0]  compare_mask = '1,
                              input bit               check_exp_data = 1'b0,
                              input int               req_abort_pct = 0,
-                             input mubi4_e           instr_type = MuBi4False,
+                             input mubi4_t           instr_type = MuBi4False,
                              tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
                              input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
     `DV_SPINWAIT(

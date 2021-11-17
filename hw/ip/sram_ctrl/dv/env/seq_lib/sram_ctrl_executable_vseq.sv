@@ -24,8 +24,8 @@ class sram_ctrl_executable_vseq extends sram_ctrl_multiple_keys_vseq;
   endtask
 
   task randomize_and_drive_ifetch_en();
-    mubi8_e en_sram_ifetch = get_rand_mubi8_val();
-    mubi4_e en_exec_csr = get_rand_mubi4_val();
+    mubi8_t en_sram_ifetch = get_rand_mubi8_val();
+    mubi4_t en_exec_csr = get_rand_mubi4_val();
     lc_ctrl_pkg::lc_tx_e hw_debug_en = get_rand_lc_tx_val();
 
     `uvm_info(`gfn, $sformatf("en_exec_csr: 0b%0b", en_exec_csr), UVM_HIGH)

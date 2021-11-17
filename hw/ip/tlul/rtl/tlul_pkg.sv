@@ -36,7 +36,7 @@ package tlul_pkg;
 
   typedef struct packed {
     logic [4:0]                 rsvd;
-    prim_mubi_pkg::mubi4_e      instr_type;
+    prim_mubi_pkg::mubi4_t      instr_type;
     logic [H2DCmdIntgWidth-1:0] cmd_intg;
     logic [DataIntgWidth-1:0]   data_intg;
   } tl_a_user_t;
@@ -49,7 +49,7 @@ package tlul_pkg;
   };
 
   typedef struct packed {
-    prim_mubi_pkg::mubi4_e        instr_type;
+    prim_mubi_pkg::mubi4_t        instr_type;
     logic   [top_pkg::TL_AW-1:0]  addr;
     tl_a_op_e                     opcode;
     logic  [top_pkg::TL_DBW-1:0]  mask;

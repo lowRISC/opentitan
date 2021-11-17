@@ -25,8 +25,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   rand uint                     num_cmds;
   rand bit                      chk_int_state, regwen;
-  rand mubi4_e                  enable, sw_app_enable, read_int_state;
-  rand mubi8_e                  otp_en_cs_sw_app_read;
+  rand mubi4_t                  enable, sw_app_enable, read_int_state;
+  rand mubi8_t                  otp_en_cs_sw_app_read;
 
   // Variables
   bit                                    compliance[NUM_HW_APPS], status[NUM_HW_APPS];

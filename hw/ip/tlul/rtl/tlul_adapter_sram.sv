@@ -19,7 +19,7 @@
  */
 module tlul_adapter_sram
   import tlul_pkg::*;
-  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_t;
 #(
   parameter int SramAw            = 12,
   parameter int SramDw            = 32, // Must be multiple of the TL width
@@ -43,11 +43,11 @@ module tlul_adapter_sram
   output  tl_d2h_t          tl_o,
 
   // control interface
-  input   mubi4_e en_ifetch_i,
+  input   mubi4_t en_ifetch_i,
 
   // SRAM interface
   output logic                req_o,
-  output mubi4_e              req_type_o,
+  output mubi4_t              req_type_o,
   input                       gnt_i,
   output logic                we_o,
   output logic [SramAw-1:0]   addr_o,

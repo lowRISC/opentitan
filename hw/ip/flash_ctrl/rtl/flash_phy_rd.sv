@@ -28,7 +28,7 @@
 
 module flash_phy_rd
   import flash_phy_pkg::*;
-  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_t;
 (
   input clk_i,
   input rst_ni,
@@ -39,7 +39,7 @@ module flash_phy_rd
 
   // interface with arbitration unit
   input req_i,
-  input mubi4_e instr_type_i,
+  input mubi4_t instr_type_i,
   input descramble_i,
   input ecc_i,
   input prog_i,

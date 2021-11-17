@@ -27,11 +27,11 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   rand bit         regwen;
   rand bit [1:0]   rng_bit_sel;
 
-  rand prim_mubi_pkg::mubi4_e   enable, route_software, type_bypass,
+  rand prim_mubi_pkg::mubi4_t   enable, route_software, type_bypass,
                                 boot_bypass_disable, entropy_data_reg_enable,
                                 rng_bit_enable;
 
-  rand prim_mubi_pkg::mubi8_e   otp_en_es_fw_read, otp_en_es_fw_over;
+  rand prim_mubi_pkg::mubi8_t   otp_en_es_fw_read, otp_en_es_fw_over;
 
   // Constraints
   constraint c_regwen {regwen dist {

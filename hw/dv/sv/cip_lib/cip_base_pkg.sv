@@ -80,12 +80,12 @@ package cip_base_pkg;
   // f_weight: randomization weight of the value False
   // other_weight: randomization weight of values other than True or False
   `define _DV_MUBI_RAND_VAL(WIDTH_) \
-    function automatic mubi``WIDTH_``_e get_rand_mubi``WIDTH_``_val( \
+    function automatic mubi``WIDTH_``_t get_rand_mubi``WIDTH_``_val( \
         int t_weight = 2, int f_weight = 2, int other_weight = 1); \
       bit[WIDTH_-1:0] val; \
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, \
           `DV_MUBI``WIDTH_``_DIST(val, t_weight, f_weight, other_weight), , msg_id) \
-      return mubi``WIDTH_``_e'(val); \
+      return mubi``WIDTH_``_t'(val); \
     endfunction
 
   // Create function - get_rand_mubi4_val
@@ -99,7 +99,7 @@ package cip_base_pkg;
 
   `undef _DV_MUBI_RAND_VAL
 
-  // Currently lc_tx_e is exactly the same as mubi4_e. create a separate function in case these
+  // Currently lc_tx_e is exactly the same as mubi4_t. create a separate function in case these
   // 2 types are changed differently in the future
   function automatic lc_ctrl_pkg::lc_tx_e get_rand_lc_tx_val(int t_weight = 2,
                                                              int f_weight = 2,

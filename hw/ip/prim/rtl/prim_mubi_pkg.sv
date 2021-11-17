@@ -20,13 +20,10 @@ package prim_mubi_pkg;
   typedef enum logic [MuBi4Width-1:0] {
     MuBi4True = 4'hA, // enabled
     MuBi4False = 4'h5  // disabled
-  } mubi4_e;
-
-  // make a typedef such that this can be used as an intersignal type as well
-  typedef mubi4_e mubi4_t;
+  } mubi4_t;
 
   // Test whether the value is supplied is one of the valid enumerations
-  function automatic logic mubi4_test_invalid(mubi4_e val);
+  function automatic logic mubi4_test_invalid(mubi4_t val);
     return ~(val inside {MuBi4True, MuBi4False});
   endfunction : mubi4_test_invalid
 
@@ -147,13 +144,10 @@ package prim_mubi_pkg;
   typedef enum logic [MuBi8Width-1:0] {
     MuBi8True = 8'h5A, // enabled
     MuBi8False = 8'hA5  // disabled
-  } mubi8_e;
-
-  // make a typedef such that this can be used as an intersignal type as well
-  typedef mubi8_e mubi8_t;
+  } mubi8_t;
 
   // Test whether the value is supplied is one of the valid enumerations
-  function automatic logic mubi8_test_invalid(mubi8_e val);
+  function automatic logic mubi8_test_invalid(mubi8_t val);
     return ~(val inside {MuBi8True, MuBi8False});
   endfunction : mubi8_test_invalid
 
@@ -274,13 +268,10 @@ package prim_mubi_pkg;
   typedef enum logic [MuBi12Width-1:0] {
     MuBi12True = 12'hA5A, // enabled
     MuBi12False = 12'h5A5  // disabled
-  } mubi12_e;
-
-  // make a typedef such that this can be used as an intersignal type as well
-  typedef mubi12_e mubi12_t;
+  } mubi12_t;
 
   // Test whether the value is supplied is one of the valid enumerations
-  function automatic logic mubi12_test_invalid(mubi12_e val);
+  function automatic logic mubi12_test_invalid(mubi12_t val);
     return ~(val inside {MuBi12True, MuBi12False});
   endfunction : mubi12_test_invalid
 
@@ -401,13 +392,10 @@ package prim_mubi_pkg;
   typedef enum logic [MuBi16Width-1:0] {
     MuBi16True = 16'h5A5A, // enabled
     MuBi16False = 16'hA5A5  // disabled
-  } mubi16_e;
-
-  // make a typedef such that this can be used as an intersignal type as well
-  typedef mubi16_e mubi16_t;
+  } mubi16_t;
 
   // Test whether the value is supplied is one of the valid enumerations
-  function automatic logic mubi16_test_invalid(mubi16_e val);
+  function automatic logic mubi16_test_invalid(mubi16_t val);
     return ~(val inside {MuBi16True, MuBi16False});
   endfunction : mubi16_test_invalid
 

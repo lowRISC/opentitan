@@ -23,7 +23,7 @@
 
 module tlul_adapter_host
   import tlul_pkg::*;
-  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_t;
 #(
   parameter int unsigned MAX_REQS = 2,
   // TODO(#7966) disable data intgrity overwrite once dv support available
@@ -39,7 +39,7 @@ module tlul_adapter_host
   input  logic [top_pkg::TL_DW-1:0]  wdata_i,
   input  logic [DataIntgWidth-1:0]   wdata_intg_i,
   input  logic [top_pkg::TL_DBW-1:0] be_i,
-  input  mubi4_e                     instr_type_i,
+  input  mubi4_t                     instr_type_i,
 
   output logic                       valid_o,
   output logic [top_pkg::TL_DW-1:0]  rdata_o,

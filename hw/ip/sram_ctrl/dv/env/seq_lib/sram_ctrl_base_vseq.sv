@@ -67,7 +67,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                               input bit                blocking     = $urandom_range(0, 1),
                               input bit                check_rdata  = 0,
                               input bit [TL_DW-1:0]    exp_rdata    = '0,
-                              input mubi4_e            instr_type   = MuBi4False,
+                              input mubi4_t            instr_type   = MuBi4False,
                               output logic [TL_DW-1:0] rdata);
     `DV_CHECK_FATAL((addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]}),
                     $sformatf("addr[0x%0x] is not in range", addr),
@@ -90,7 +90,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                                bit [TL_DW-1:0]  data,
                                bit [TL_DBW-1:0] mask        = get_rand_contiguous_mask(),
                                bit              blocking    = $urandom_range(0, 1),
-                               mubi4_e          instr_type  = MuBi4False);
+                               mubi4_t          instr_type  = MuBi4False);
     `DV_CHECK_FATAL((addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]}),
                     $sformatf("addr[0x%0x] is not in range", addr),
                     `gfn)
@@ -110,7 +110,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                              int num_stress_ops,
                              bit en_ifetch = 0);
     bit [TL_DW-1:0] data;
-    mubi4_e instr_type;
+    mubi4_t instr_type;
 
     `DV_CHECK_FATAL((addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]}),
                     $sformatf("addr[0x%0x] is not in range", addr),
@@ -148,7 +148,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                            bit en_ifetch = 0);
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
-    mubi4_e instr_type;
+    mubi4_t instr_type;
     repeat (num_ops) begin
       bit completed, saw_err;
 
