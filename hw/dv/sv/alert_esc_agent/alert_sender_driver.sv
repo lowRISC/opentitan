@@ -39,24 +39,30 @@ class alert_sender_driver extends alert_esc_base_driver;
     join_none
   endtask : drive_req
 
+  // Two conditions can trigger alert init:
+  // 1). Reset deassert;   2). LPG disabled.
   virtual task alert_init_thread();
     do_alert_tx_init();
-    forever @(posedge cfg.vif.rst_n) begin
-      do_alert_tx_init();
-    end
+    fork
+      forever @(posedge cfg.vif.rst_n) begin
+        do_alert_tx_init();
+      end
+      forever @(negedge cfg.en_alert_lpg) begin
+        do_alert_tx_init();
+      end
+    join_none
   endtask : alert_init_thread
 
   virtual task send_alert();
     forever begin
       alert_esc_seq_item req, rsp;
-      wait(s_alert_send_q.size() > 0 && !under_reset);
+      wait (s_alert_send_q.size() > 0 && !under_reset);
       req = s_alert_send_q.pop_front();
       `downcast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn,
           $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
           req.s_alert_send, req.s_alert_ping_rsp, req.int_err), UVM_HIGH)
-
       fork
         begin : isolation_fork
           fork
@@ -66,7 +72,7 @@ class alert_sender_driver extends alert_esc_base_driver;
               alert_atomic.put(1);
             end
             begin
-              wait(under_reset);
+              wait (under_reset);
             end
           join_any
           disable fork;
@@ -83,7 +89,7 @@ class alert_sender_driver extends alert_esc_base_driver;
   virtual task rsp_ping();
     forever begin
       alert_esc_seq_item req, rsp;
-      wait(s_alert_ping_rsp_q.size() > 0 && !under_reset);
+      wait (s_alert_ping_rsp_q.size() > 0 && !under_reset && !cfg.en_alert_lpg);
       req = s_alert_ping_rsp_q.pop_front();
       `downcast(rsp, req.clone());
       rsp.set_id_info(req);
@@ -105,7 +111,7 @@ class alert_sender_driver extends alert_esc_base_driver;
               alert_atomic.put(1);
             end
             begin
-              wait(under_reset);
+              wait (under_reset || cfg.en_alert_lpg);
             end
           join_any
           disable fork;
@@ -161,14 +167,18 @@ class alert_sender_driver extends alert_esc_base_driver;
       begin : isolation_fork
         fork
           begin : alert_timeout
-            repeat (cfg.handshake_timeout_cycle) wait_sender_clk();
+            repeat (cfg.handshake_timeout_cycle) begin
+              wait_sender_clk();
+              // If alert_lpg is enabled, alert rx request is ignored by the alert_receiver.
+              if (cfg.en_alert_lpg) break;
+            end
           end
           begin : wait_alert_handshake
-            wait(cfg.vif.alert_rx.ack_p == 1'b1);
+            wait (cfg.vif.alert_rx.ack_p == 1'b1);
             wait_sender_clk();
             repeat (ack_delay) wait_sender_clk();
             reset_alert();
-            wait(cfg.vif.alert_rx.ack_p == 1'b0);
+            wait (cfg.vif.alert_rx.ack_p == 1'b0);
           end
         join_any
         disable fork;
@@ -229,13 +239,28 @@ class alert_sender_driver extends alert_esc_base_driver;
   // After alert_receiver is reset, it will send a signal integrity fail via `ping_n` and `ack_n`,
   // alert_sender acknowledged the init via sending an `alert_n` integrity fail.
   virtual task do_alert_tx_init();
-    `DV_SPINWAIT_EXIT(
-        wait (cfg.vif.alert_rx.ping_p == cfg.vif.alert_rx.ping_n);
-        cfg.vif.alert_tx_int.alert_n <= 1'b0;
-        wait (cfg.vif.alert_rx.ping_p != cfg.vif.alert_rx.ping_n);
-        cfg.vif.alert_tx_int.alert_n <= 1'b1;
-        under_reset = 0;,
-        @(negedge cfg.vif.rst_n);)
+    fork begin
+      fork
+        begin
+          wait (cfg.vif.alert_rx.ping_p == cfg.vif.alert_rx.ping_n);
+          cfg.vif.alert_tx_int.alert_n <= 1'b0;
+          wait (cfg.vif.alert_rx.ping_p != cfg.vif.alert_rx.ping_n);
+          cfg.vif.alert_tx_int.alert_n <= 1'b1;
+          under_reset = 0;
+        end
+        begin
+          @(negedge cfg.vif.rst_n);
+        end
+        begin
+          // Clear `under_reset` when en_alert_lpg is on, because alert_sender can still send
+          // alerts, and alert_handler should ignore the alert_tx request.
+          wait (cfg.en_alert_lpg == 1);
+          under_reset = 0;
+        end
+      join_any
+      disable fork;
+    end
+    join
   endtask
 
 endclass : alert_sender_driver

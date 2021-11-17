@@ -53,15 +53,31 @@ class alert_monitor extends alert_esc_base_monitor;
   // process. However, it can still block alert handshake via the `cfg.alert_init_done` flag.
   // To handle the scenario where reset is issued during alert init, we use a fork join_any thread.
   virtual task wait_alert_init_done();
-    `DV_SPINWAIT_EXIT(
-        wait (cfg.vif.monitor_cb.alert_tx_final.alert_p ==
-              cfg.vif.monitor_cb.alert_tx_final.alert_n);
-        wait (cfg.vif.monitor_cb.alert_tx_final.alert_p !=
-              cfg.vif.monitor_cb.alert_tx_final.alert_n);
-        `uvm_info("alert_monitor", "Alert init done!", UVM_HIGH)
-        cfg.alert_init_done = 1;
-        under_reset = 0;,
-        @(negedge cfg.vif.rst_n);)
+    fork begin
+      fork
+        begin
+          wait (cfg.vif.monitor_cb.alert_tx_final.alert_p ==
+                cfg.vif.monitor_cb.alert_tx_final.alert_n);
+          wait (cfg.vif.monitor_cb.alert_tx_final.alert_p !=
+                cfg.vif.monitor_cb.alert_tx_final.alert_n);
+          `uvm_info("alert_monitor", "Alert init done!", UVM_HIGH)
+          cfg.alert_init_done = 1;
+          under_reset = 0;
+        end
+        begin
+          @(negedge cfg.vif.rst_n);
+        end
+        // Clear `under_reset` and `alert_init_done` when en_alert_lpg is on, because alert_sender
+        // can still send alerts, and alert_handler should ignore the alert_tx request.
+        begin
+          wait (cfg.en_alert_lpg == 1);
+          cfg.alert_init_done = 1;
+          under_reset = 0;
+        end
+      join_any
+      disable fork;
+    end
+    join
   endtask
 
   virtual task ping_thread();
@@ -92,7 +108,7 @@ class alert_monitor extends alert_esc_base_monitor;
                 under_ping_rsp = 0;
               end
               begin
-                wait(under_reset);
+                wait (under_reset || cfg.en_alert_lpg);
               end
             join_any
             // wait 1ps in case 'wait_ping_handshake' and 'wait_ping_timeout' thread finish at the
@@ -104,7 +120,7 @@ class alert_monitor extends alert_esc_base_monitor;
 
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
-        if (!under_reset) begin
+        if (!under_reset && !cfg.en_alert_lpg) begin
           alert_esc_port.write(req);
           if (cfg.en_cov && cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
 
@@ -156,7 +172,7 @@ class alert_monitor extends alert_esc_base_monitor;
                 req.alert_handshake_sta = AlertAckComplete;
               end
               begin
-                wait(under_reset);
+                wait (under_reset || cfg.en_alert_lpg);
               end
             join_any
             disable fork;
@@ -165,7 +181,7 @@ class alert_monitor extends alert_esc_base_monitor;
 
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
-        if (!under_reset) alert_esc_port.write(req);
+        if (!under_reset && !cfg.en_alert_lpg) alert_esc_port.write(req);
         if (cfg.en_cov) begin
           cov.m_alert_handshake_complete_cg.sample(req.alert_esc_type, req.alert_handshake_sta);
           if (cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
@@ -181,7 +197,8 @@ class alert_monitor extends alert_esc_base_monitor;
     bit prev_err;
     forever @(cfg.vif.monitor_cb) begin
       // use prev_err to exclude the async clk skew
-      if (!under_reset && is_sig_int_err() && (!cfg.is_async || prev_err != 0)) begin
+      if (!under_reset && !cfg.en_alert_lpg && is_sig_int_err() &&
+          (!cfg.is_async || prev_err != 0)) begin
         fork
           begin
             req = alert_esc_seq_item::type_id::create("req");

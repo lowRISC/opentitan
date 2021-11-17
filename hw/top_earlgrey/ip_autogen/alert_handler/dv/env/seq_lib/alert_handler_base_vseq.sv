@@ -199,7 +199,9 @@ class alert_handler_base_vseq extends cip_base_vseq #(
 
   virtual task wait_alert_handshake_done();
     cfg.clk_rst_vif.wait_clks(2);
-    foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].vif.wait_ack_complete();
+    foreach (cfg.alert_host_cfg[i]) begin
+      if (!cfg.alert_host_cfg[i].en_alert_lpg) cfg.alert_host_cfg[i].vif.wait_ack_complete();
+    end
   endtask
 
   virtual function bit check_esc_done(bit[TL_DW-1:0] vals[$]);
@@ -253,6 +255,31 @@ class alert_handler_base_vseq extends cip_base_vseq #(
       end
     join
   endtask
+
+  function void enable_lpg_group(bit [NUM_ALERTS-1:0] alert_en_i);
+    foreach (alert_en_i[i]) begin
+      if (alert_en_i[i]) set_alert_lpg(i);
+    end
+  endfunction
+
+  // Enable alert's LPG based on alert_i input.
+  //
+  // Only enable this alert's LPG if the lgp input `lpg_cg_en` or `lpg_rst_en` if not Mubi4True.
+  // Because one LPG will turn off a set of alert sensers. So this task will also set all LPG's
+  // alert_host_cfgs' `en_alert_lpg` to 1.
+  virtual function void set_alert_lpg(int alert_i);
+    int       lpg_i = alert_handler_reg_pkg::LpgMap[alert_i];
+    bit [1:0] set_lpg;
+
+    if (cfg.alert_handler_vif.get_lpg_status(lpg_i) == 0) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(set_lpg, set_lpg > 0;);
+      if (set_lpg[0]) cfg.alert_handler_vif.set_lpg_cg_en(lpg_i);
+      if (set_lpg[1]) cfg.alert_handler_vif.set_lpg_rst_en(lpg_i);
+      foreach (alert_handler_reg_pkg::LpgMap[i]) begin
+        if (alert_handler_reg_pkg::LpgMap[i] == lpg_i) cfg.alert_host_cfg[i].en_alert_lpg = 1;
+      end
+    end
+  endfunction
 
   virtual task alert_handler_crashdump_phases(bit [1:0] classa_phase = $urandom(),
                                               bit [1:0] classb_phase = $urandom(),
