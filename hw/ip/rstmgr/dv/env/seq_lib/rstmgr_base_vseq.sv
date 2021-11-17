@@ -44,17 +44,18 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     endcase
   endfunction
 
-  rand lc_ctrl_pkg::lc_tx_t scanmode_other;
+  rand bit [3:0]            scanmode_other;
   rand lc_tx_t_sel_e        sel_scanmode;
   int                       scanmode_on_weight = 8;
 
+  // TODO, consider to use macro DV_MUBI4_DIST
   constraint scanmode_c {
     sel_scanmode dist {
       LcTxTSelOn    := scanmode_on_weight,
       LcTxTSelOff   := 4,
       LcTxTSelOther := 4
     };
-    !(scanmode_other inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off});
+    !(scanmode_other inside {prim_mubi_pkg::MuBi4True, prim_mubi_pkg::MuBi4False});
   }
 
   rand logic [NumSwResets-1:0] sw_rst_regwen;
@@ -307,7 +308,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.main_clk_rst_vif.set_freq_mhz(MAIN_FREQ_MHZ);
     cfg.usb_clk_rst_vif.set_freq_mhz(USB_FREQ_MHZ);
     // Initial values for some input pins.
-    cfg.rstmgr_vif.scanmode_i  = lc_ctrl_pkg::Off;
+    cfg.rstmgr_vif.scanmode_i  = prim_mubi_pkg::MuBi4False;
     cfg.rstmgr_vif.scan_rst_ni = scan_rst_ni;
     set_pwrmgr_rst_reqs(1'b0, 1'b0);
     set_rstreqs('0);

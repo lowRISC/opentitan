@@ -99,7 +99,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriIo].sample(cfg.clkmgr_vif.peri_io_cb.clk_enable,
                                             cfg.clkmgr_vif.peri_io_cb.ip_clk_en,
-                                            cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                            cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True
+                                            );
           end
         end
       forever
@@ -107,7 +108,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriDiv2].sample(cfg.clkmgr_vif.peri_div2_cb.clk_enable,
                                               cfg.clkmgr_vif.peri_div2_cb.ip_clk_en,
-                                              cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                              cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True
+                                              );
           end
         end
       forever
@@ -115,7 +117,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriDiv4].sample(cfg.clkmgr_vif.peri_div4_cb.clk_enable,
                                               cfg.clkmgr_vif.peri_div4_cb.ip_clk_en,
-                                              cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                              cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True
+                                              );
           end
         end
       forever
@@ -123,7 +126,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriUsb].sample(cfg.clkmgr_vif.peri_usb_cb.clk_enable,
                                              cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
-                                             cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                             cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True
+                                             );
           end
         end
     join
@@ -147,7 +151,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         src_rst_en = cfg.main_clk_rst_vif.rst_n;
       end
       if (src_rst_en && cfg.en_cov) begin
-        logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+        logic scan_en = cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True;
         cov.trans_cg_wrap[trans].sample(hint, clk_en, scan_en, idle);
       end
     end

@@ -9,7 +9,7 @@ interface otp_ctrl_cov_if
   (
    input pwrmgr_pkg::pwr_otp_rsp_t                                 pwr_otp_o,
    input otp_ctrl_pkg::lc_otp_program_req_t                        lc_otp_program_i,
-   input lc_ctrl_pkg::lc_tx_t                                      lc_escalate_en_i,
+   input bit [3:0]                                                 lc_escalate_en_i,
    input otp_ctrl_pkg::flash_otp_key_req_t                         flash_otp_key_i,
    input otp_ctrl_pkg::sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_i,
    input otp_ctrl_pkg::otbn_otp_key_req_t                          otbn_otp_key_i

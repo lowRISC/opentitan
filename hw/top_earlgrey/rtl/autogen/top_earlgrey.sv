@@ -806,8 +806,8 @@ module top_earlgrey #(
   );
 
   // Wire up alert handler LPGs
-  lc_ctrl_pkg::lc_tx_t [alert_pkg::NLpg-1:0] lpg_cg_en;
-  lc_ctrl_pkg::lc_tx_t [alert_pkg::NLpg-1:0] lpg_rst_en;
+  prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_cg_en;
+  prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_rst_en;
 
 
   // peri_sys_io_div4_0

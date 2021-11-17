@@ -30,7 +30,7 @@ interface rstmgr_if (
   // dft bypass
   logic                                           scan_rst_ni;
 
-  lc_ctrl_pkg::lc_tx_t                            scanmode_i;
+  prim_mubi_pkg::mubi4_t                          scanmode_i;
 
   // reset outputs
   rstmgr_pkg::rstmgr_out_t                        resets_o;

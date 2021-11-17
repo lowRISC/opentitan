@@ -25,7 +25,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   } lc_tx_t_sel_e;
 
   // This simplifies the constraint blocks.
-  function lc_tx_t get_lc_tx_t_from_sel(lc_tx_t_sel_e sel, lc_tx_t other);
+  // This function is used for 2 enum mubi4_t and lc_tx_t. Use bit[3:0], so that we can skip type
+  // casting when using this function
+  function bit[3:0] get_lc_tx_t_from_sel(lc_tx_t_sel_e sel, bit[3:0] other);
     case (sel)
       LcTxTSelOn: return On;
       LcTxTSelOff: return Off;
@@ -40,8 +42,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   rand bit [NUM_TRANS-1:0] idle;
 
   // scanmode is set according to sel_scanmode, which is randomized with weights.
-  lc_tx_t                  scanmode;
-  rand lc_tx_t             scanmode_other;
+  prim_mubi_pkg::mubi4_t   scanmode;
+  rand bit [3:0]           scanmode_other;
   rand lc_tx_t_sel_e       sel_scanmode;
   int                      scanmode_on_weight = 8;
 
@@ -51,14 +53,15 @@ class clkmgr_base_vseq extends cip_base_vseq #(
       LcTxTSelOff   := 4,
       LcTxTSelOther := 4
     };
-    !(scanmode_other inside {On, Off});
+    !(scanmode_other inside {prim_mubi_pkg::MuBi4True, prim_mubi_pkg::MuBi4False});
   }
 
   // extclk_ctrl_sel is set according to sel_extclk_ctrl_sel, which is randomized with weights.
   lc_tx_t            extclk_ctrl_sel;
-  rand lc_tx_t       extclk_ctrl_sel_other;
+  rand bit [3:0]     extclk_ctrl_sel_other;
   rand lc_tx_t_sel_e sel_extclk_ctrl_sel;
 
+  // TODO, consider to use macro DV_MUBI4_DIST
   constraint extclk_ctrl_sel_c {
     sel_extclk_ctrl_sel dist {
       LcTxTSelOn    := 4,
@@ -82,7 +85,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   task initialize_on_start();
     idle = '1;
-    scanmode = Off;
+    scanmode = prim_mubi_pkg::MuBi4False;
     cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_dft_en(Off));
     io_ip_clk_en   = 1'b1;
     main_ip_clk_en = 1'b1;
