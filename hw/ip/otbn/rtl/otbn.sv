@@ -362,15 +362,9 @@ module otbn
   assign imem_rvalid_bus  = (~imem_access_core & imem_rvalid) | imem_dummy_response_q;
   assign imem_rvalid_core = imem_access_core ? imem_rvalid : 1'b0;
 
-  // imem_rerror_bus is passed to a TLUL adapter to report read errors back to the TL interface.
-  // We've squashed together the 2 bits from ECC into a single (uncorrectable) error, but the TLUL
-  // adapter expects the original ECC format. Send imem_rerror as bit 1, signalling an
-  // uncorrectable error.
-  //
-  // The mux ensures that imem_rerror doesn't appear on the bus (possibly leaking information) when
-  // the core is operating. Since rerror depends on rvalid, we could avoid this mux. However that
-  // seems a bit fragile, so we err on the side of caution.
-  assign imem_rerror_bus  = !imem_access_core ? {imem_rerror, 1'b0} : 2'b00;
+  // No imem errors reported for bus reads. Integrity is carried through on the bus so integrity
+  // checking on TL responses will pick up any errors.
+  assign imem_rerror_bus = 1'b0;
   assign imem_rerror_core = imem_rerror;
 
   // Data Memory (DMEM) ========================================================
@@ -548,9 +542,9 @@ module otbn
   assign dmem_rvalid_bus  = (~dmem_access_core & dmem_rvalid) | dmem_dummy_response_q;
   assign dmem_rvalid_core = dmem_access_core ? dmem_rvalid : 1'b0;
 
-  // Expand the error signal to 2 bits and mask when the core has access. See note above
-  // imem_rerror_bus for details.
-  assign dmem_rerror_bus  = !dmem_access_core ? {dmem_rerror, 1'b0} : 2'b00;
+  // No dmem errors reported for bus reads. Integrity is carried through on the bus so integrity
+  // checking on TL responses will pick up any errors.
+  assign dmem_rerror_bus  = 1'b0;
   assign dmem_rerror_core = dmem_rerror;
 
   // Registers =================================================================
