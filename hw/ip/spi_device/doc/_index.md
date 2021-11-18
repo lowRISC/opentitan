@@ -46,7 +46,7 @@ interface logic as its primary clock, which has performance benefits, but incurs
 design complications described later.
 
 The SW can receive TPM commands with payload (address and data) and respond to the read commands with the return data using the TPM submodule in the SPI_DEVICE HWIP.
-The submodule provides the command, address, write, and read FIFOs for the SW to communicate with the TPM host system, South Brige (SB).
+The submodule provides the command, address, write, and read FIFOs for the SW to communicate with the TPM host system.
 The submodule also supports the SW by managing a certain set of the FIFO registers and returning the read request by HW quickly.
 
 ## Compatibility
@@ -62,6 +62,51 @@ The TPM submodule conforms to the [TPM over SPI 2.0][] specification. The TPM op
 ## Block Diagram
 
 ![Block Diagram](block_diagram.svg)
+
+In Generic mode, the incoming data is stored byte-based into an asynchronous FIFO.
+The logic inside the generic mode then updates the DPSRAM RX space.
+The logic also reads data from the DPSRAM then pushes out to the SPI MISO line.
+
+The Generic mode uses the entire DPSRAM space exclusively.
+The TX/RX size in the DPSRAM can be changed by compile-time parameters.
+
+When Flash mode is selected, the command parser accepts the first byte of the SPI MOSI line then activates the flash submodules, such as Status, JEDEC, Read command, and Upload function.
+The Status logic processes the three Read Status commands.
+The SW may configure three bytes of the Flash Status CSR then the Status submodule returns the CSR data into the SPI MISO line.
+The SW may configure the Read Status commands' opcodes.
+
+The JEDEC submodule returns the JEDEC Manufacturer ID followed by the additional information.
+The Manufacturer ID may vary depending on the company.
+For example, lowRISC JEDEC ID `EFh` follows twelve bytes of 7Fh Continuous Codes, requiring a total thirteen bytes for the manufacturer ID.
+The SW may configure how many Continuous Codes is needed and the actual manufacturer ID.
+
+The Read submodule processes the Read SFDP (Serial Flash Discoverable Parameters) command, and up to six different types of the read commands.
+The read submodule receives address information from the SPI transaction, fetches the data from the read buffer in the DPSRAM, and returns the data on SPI lines (single, dual, quad lines).
+If the received address falls into the SW programmable mailbox address space, the logic fetches data not from the read buffer but from the mailbox buffer in the DPSRAM.
+
+SW may configure command information slots to upload the command into the FIFOs and the payload buffer in the DPSRAM.
+SW may additionally let HW to set the BUSY bit in the Status register when the HW uploads the command.
+
+In Passthrough mode, the logic filters the incoming transaction if the transaction is not permitted.
+The SW may configure the logic to change a portion of the address or first 4 bytes of the payload.
+
+## Hardware Interfaces
+
+{{< incGenFromIpDesc "../data/spi_device.hjson" "hwcfg" >}}
+
+The TPM submodule requires a separate input port for CS#.
+The TPM submodule and other SPI Device modes are able to be active together.
+The host system distinguishes between the TPM transactions and the other SPI transactions using separate CS# ports.
+Even though both submodules are able to be active, the host system cannot issue a TPM command and a SPI transaction at the same time due to the SPI IO lines being shared.
+
+The TPM has no write FIFO interrupt.
+As TPM transactions are not bigger than 4B in current usage case, the waiting time of the core is not a concern.
+The core takes multiple cycles to pop a byte from the write FIFO due to the slower peripheral clock and multiple CDC paths.
+The gain of having write FIFO interrupt is not great.
+
+## SPI Device Generic mode
+
+![Generic Mode Block Diagram](generic-blockdiagram.svg)
 
 The block diagram above shows how the SPI Device generic mode converts incoming
 bit-serialized SDI data into a valid byte, where the data bit is valid when the
@@ -89,21 +134,7 @@ of the TXFIFO using the {{< regref "CONTROL.rst_txfifo" >}} register. The soft-r
 is not synchronized to the SCK clock, so software should drive the reset
 signal when the SPI interface is idle.
 
-## Hardware Interfaces
-
-{{< incGenFromIpDesc "../data/spi_device.hjson" "hwcfg" >}}
-
-The TPM submodule requires a separate input port for CS#.
-The TPM submodule and other SPI Device modes are able to be active together.
-The SB distinguishes between the TPM transactions and the other SPI transactions using separate CS# ports.
-Even though both submodules are able to be active, the SB cannot issue a TPM command and a SPI transaction at the same time due to the  SPI IO lines being shared.
-
-The TPM has no write FIFO interrupt.
-As TPM transactions are not bigger than 4B in current usage case, the waiting time of the core is not a concern.
-The core takes multiple cycles to pop a byte from the write FIFO due to the slower peripheral clock and multiple CDC paths.
-The gain of having write FIFO interrupt is not great.
-
-## General Data Transfer on Pins
+### General Data Transfer on Pins
 
 Data transfers with the SPI device module involve four peripheral SPI pins: SCK,
 CSB, SDI, SDO. SCK is the SPI clock driven by an external SPI host. CSB (chip
@@ -135,7 +166,7 @@ edges, polarities, and bit orders are described later.
 {{< /wavejson >}}
 
 
-## Defining "Firmware Operation Mode"
+### Defining "Firmware Operation Mode"
 
 Firmware operation mode, as implemented by this SPI device, is used to bulk copy data in
 and out of the chip using the pins as shown above. In general, it is used to
@@ -152,7 +183,7 @@ unidirectional movement of data, the other direction can be ignored but will
 still be active. For instance, if only receive data is needed in the transfer,
 the device will still be transmitting data out on the TX ("SDO") pin.
 
-## SPI Generic Protocol
+### SPI Generic Protocol
 
 The primary protocol considered is one used by an external SPI host to send
 chunks of firmware data into the device in the receive direction, confirming the
@@ -490,7 +521,7 @@ The SW should enable the TPM submodule by writing 1 to the TPM_CFG.en CSR field.
 Other SPI_DEVICE features (Generic, Flash, Passthrough) CSRs do not affect the TPM feature.
 
 Update TPM_ACCESS_0, TPM_ACCESS_1 CSRs.
-The TPM submodule uses TPM_ACCESS_x.activeLocality to determine if the TPM_STS is returned to the SB.
+The TPM submodule uses TPM_ACCESS_x.activeLocality to determine if the TPM_STS is returned to the host system.
 The SW may configure TPM_CFG.hw_reg_dis and/or TPM_CFG.invalid_locality to fully control the TPM transactions.
 
 ### TPM mode: FIFO and CRB
@@ -502,14 +533,14 @@ In the TPM CRB mode (TPM_CFG.tpm_mode is 1), the logic always upload the command
 
 The SW manages the retun-by-HW registers.
 The contents are placed inside the SPI_DEVICE CSRs.
-The SW must maintain the other TPM registers outside of the SPI_DEVICE HWIP and use write/read FIFOs to receive the content from/ send the register value to the SB.
+The SW must maintain the other TPM registers outside of the SPI_DEVICE HWIP and use write/read FIFOs to receive the content from/ send the register value to the host system.
 
 When the SW updates the return-by-HW registers, the SW is recommended to read back the register to confirm the value is written.
 Due to the CDC issue, the SW is only permitted to update the registers when the TPM CS# is de-asserted.
 
 ### TPM Read
 
-1. The SB sends the TPM read command with the address.
+1. The host system sends the TPM read command with the address.
 1. The SW reads a word from TPM_CMD_ADDR CSR (optional cmdaddr_notempty interrupt).
   1. If the address falls into the return-by-HW registers and TPM_CFG.hw_reg_dis is not set, the HW does not push the command and address bytes into the TPM_CMD_ADDR CSR.
 1. The SW prepares the register value and writes the value into the read FIFO.
@@ -517,11 +548,11 @@ Due to the CDC issue, the SW is only permitted to update the registers when the 
 
 ### TPM Write
 
-1. The SB sends the TPM write command with the address.
+1. The host system sends the TPM write command with the address.
 1. The TPM submodule pushes the command and the address to the TPM_CMD_ADDR CSR.
 1. The TPM submodule checks the write FIFO status.
-1. If not empty, the TPM submodule sends `WAIT` to the SB.
-1. When the FIFO is empty, the TPM sends `START` to the SB, receives the payload, and stores the data into the write FIFO.
+1. If not empty, the TPM submodule sends `WAIT` to the host system.
+1. When the FIFO is empty, the TPM sends `START` to the host system, receives the payload, and stores the data into the write FIFO.
 1. The SW, in the meantime, reads TPM_CMD_ADDR then reads the write FIFO data when the FIFO is available.
 
 ### TPM Interrupt
