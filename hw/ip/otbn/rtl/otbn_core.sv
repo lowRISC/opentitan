@@ -40,7 +40,6 @@ module otbn_core
   // Instruction memory (IMEM)
   output logic                     imem_req_o,
   output logic [ImemAddrWidth-1:0] imem_addr_o,
-  output logic [31:0]              imem_wdata_o,
   input  logic [31:0]              imem_rdata_i,
   input  logic                     imem_rvalid_i,
   input  logic                     imem_rerror_i,
@@ -269,7 +268,6 @@ module otbn_core
     .insn_fetch_err_o        (insn_fetch_err)
   );
 
-  assign imem_wdata_o = '0;
 
   // Instruction decoder
   otbn_decoder u_otbn_decoder (
@@ -618,7 +616,6 @@ module otbn_core
   `ASSERT_KNOWN(DoneOKnown_A, done_o)
   `ASSERT_KNOWN(ImemReqOKnown_A, imem_req_o)
   `ASSERT_KNOWN_IF(ImemAddrOKnown_A, imem_addr_o, imem_req_o)
-  `ASSERT_KNOWN(ImemWdataOKnown_A, imem_wdata_o)
   `ASSERT_KNOWN(DmemReqOKnown_A, dmem_req_o)
   `ASSERT_KNOWN_IF(DmemWriteOKnown_A, dmem_write_o, dmem_req_o)
   `ASSERT_KNOWN_IF(DmemAddrOKnown_A, dmem_addr_o, dmem_req_o)
