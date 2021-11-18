@@ -109,8 +109,10 @@ class OTBNSim:
         pc_before = self.state.pc
         self.state.commit(sim_stalled=False)
 
-        # Fetch the next instruction
-        self._next_insn = self._fetch(self.state.pc)
+        # Fetch the next instruction unless this instruction had
+        # `has_fetch_stall` set, in which case we inject a single cycle stall.
+        self._next_insn = (None if insn.has_fetch_stall
+                           else self._fetch(self.state.pc))
 
         disasm = insn.disassemble(pc_before)
         if verbose:
@@ -129,7 +131,7 @@ class OTBNSim:
         if not self.state.running():
             return (None, [])
 
-        if self.state.fsm_state == FsmState.PRE_EXEC:
+        if self.state.fsm_state in [FsmState.PRE_EXEC, FsmState.FETCH_WAIT]:
             # Zero INSN_CNT the cycle after we are told to start (and every
             # cycle after that until we start executing instructions, but that
             # doesn't really matter)

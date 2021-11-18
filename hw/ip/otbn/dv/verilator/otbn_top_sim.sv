@@ -34,7 +34,6 @@ module otbn_top_sim (
   logic [ImemAddrWidth-1:0] imem_addr;
   logic [38:0]              imem_rdata;
   logic                     imem_rvalid;
-  logic                     imem_rerror;
 
   // Data memory (DMEM) signals
   logic                     dmem_req;
@@ -76,10 +75,10 @@ module otbn_top_sim (
 
     .imem_req_o                  ( imem_req            ),
     .imem_addr_o                 ( imem_addr           ),
-    .imem_wdata_o                (                     ),
-    .imem_rdata_i                ( imem_rdata[31:0]    ),
+    .imem_rdata_i                ( imem_rdata          ),
     .imem_rvalid_i               ( imem_rvalid         ),
-    .imem_rerror_i               ( imem_rerror         ),
+
+    .insn_fetch_err_o            (                     ),
 
     .dmem_req_o                  ( dmem_req            ),
     .dmem_write_o                ( dmem_write          ),
@@ -109,11 +108,6 @@ module otbn_top_sim (
     .sideload_key_shares_i       ( sideload_key_shares ),
     .sideload_key_shares_valid_i ( 2'b11               )
   );
-
-  // The top bits of IMEM rdata aren't currently used (they will eventually be used for integrity
-  // checks both on the bus and within the core)
-  logic unused_imem_top_rdata;
-  assign unused_imem_top_rdata = &{1'b0, imem_rdata[38:32]};
 
   localparam logic [WLEN-1:0] FixedEdnVal = {{(WLEN / 4){4'h9}}};
 
@@ -264,9 +258,6 @@ module otbn_top_sim (
     .rerror_o     (                         ),
     .cfg_i        ( '0                      )
   );
-
-  // No integrity errors in Verilator testbench
-  assign imem_rerror = 1'b0;
 
   // When OTBN is done let a few more cycles run then finish simulation
   logic [1:0] finish_counter;

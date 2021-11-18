@@ -31,6 +31,7 @@ module otbn_controller
   // Next instruction selection (to instruction fetch)
   output logic                     insn_fetch_req_valid_o,
   output logic [ImemAddrWidth-1:0] insn_fetch_req_addr_o,
+  output logic                     insn_fetch_resp_clear_o,
   // Error from fetch requested last cycle
   input  logic                     insn_fetch_err_i,
 
@@ -135,7 +136,14 @@ module otbn_controller
   input  logic        lifecycle_escalation_i,
   input  logic        software_errs_fatal_i,
 
-  input  logic [1:0]  sideload_key_shares_valid_i
+  input  logic [1:0]  sideload_key_shares_valid_i,
+
+  // Prefetch stage control
+  output logic                     prefetch_en_o,
+  output logic                     prefetch_loop_active_o,
+  output logic [31:0]              prefetch_loop_iterations_o,
+  output logic [ImemAddrWidth-1:0] prefetch_loop_end_addr_o,
+  output logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_o
 );
   otbn_state_e state_q, state_d;
 
@@ -146,7 +154,8 @@ module otbn_controller
   logic done_complete;
   logic executing;
 
-  logic insn_fetch_req_valid_raw;
+  logic                     insn_fetch_req_valid_raw;
+  logic [ImemAddrWidth-1:0] insn_fetch_req_addr_last;
 
   logic stall;
   logic ispr_stall;
@@ -274,13 +283,22 @@ module otbn_controller
   assign next_insn_addr_wide = {1'b0, insn_addr_i} + 'd4;
   assign next_insn_addr = next_insn_addr_wide[ImemAddrWidth-1:0];
 
+  // Record address for fetch request so it can be retried when an invalid response is received
+  always_ff @(posedge clk_i) begin
+    if (insn_fetch_req_valid_raw) begin
+      insn_fetch_req_addr_last <= insn_fetch_req_addr_o;
+    end
+  end
+
   always_comb begin
     state_d                  = state_q;
     // `insn_fetch_req_valid_raw` is the value `insn_fetch_req_valid_o` before any errors are
     // considered.
     insn_fetch_req_valid_raw = 1'b0;
     insn_fetch_req_addr_o    = '0;
+    insn_fetch_resp_clear_o  = 1'b1;
     err_bits_en              = 1'b0;
+    prefetch_en_o            = 1'b0;
 
     // TODO: Harden state machine
     // TODO: Jumps/branches
@@ -291,6 +309,7 @@ module otbn_controller
 
           insn_fetch_req_addr_o    = '0;
           insn_fetch_req_valid_raw = 1'b1;
+          prefetch_en_o            = 1'b1;
 
           // Enable error bits to zero them on start
           err_bits_en = 1'b1;
@@ -298,15 +317,21 @@ module otbn_controller
       end
       OtbnStateRun: begin
         insn_fetch_req_valid_raw = 1'b1;
+        prefetch_en_o            = 1'b1;
 
-        if (done_complete) begin
+        if (!insn_valid_i) begin
+          insn_fetch_req_addr_o = insn_fetch_req_addr_last;
+        end else if (done_complete) begin
           state_d                  = OtbnStateHalt;
           insn_fetch_req_valid_raw = 1'b0;
+          prefetch_en_o            = 1'b0;
         end else begin
-          // When stalling refetch the same instruction to keep decode inputs constant
           if (stall) begin
+            // When stalling don't request a new fetch and don't clear response either to keep
+            // current instruction.
             state_d               = OtbnStateStall;
-            insn_fetch_req_addr_o = insn_addr_i;
+            insn_fetch_req_valid_raw = 1'b0;
+            insn_fetch_resp_clear_o  = 1'b0;
           end else begin
             if (branch_taken) begin
               insn_fetch_req_addr_o = branch_target;
@@ -319,13 +344,16 @@ module otbn_controller
         end
       end
       OtbnStateStall: begin
-        insn_fetch_req_valid_raw = 1'b1;
-
+        prefetch_en_o = 1'b1;
         // When stalling refetch the same instruction to keep decode inputs constant
         if (stall) begin
-          state_d               = OtbnStateStall;
-          insn_fetch_req_addr_o = insn_addr_i;
+          state_d                  = OtbnStateStall;
+          //insn_fetch_req_addr_o = insn_addr_i;
+          insn_fetch_req_valid_raw = 1'b0;
+          insn_fetch_resp_clear_o  = 1'b0;
         end else begin
+          insn_fetch_req_valid_raw = 1'b1;
+
           if (loop_jump) begin
             insn_fetch_req_addr_o = loop_jump_addr;
           end else begin
@@ -345,6 +373,9 @@ module otbn_controller
     // On any error immediately halt, either going to OtbnStateLocked or OtbnStateHalt depending on
     // whether it was a fatal error.
     if (err) begin
+      prefetch_en_o           = 1'b0;
+      insn_fetch_resp_clear_o = 1'b1;
+
       if (!secure_wipe_running_i) begin
         // Capture error bits on error unless a secure wipe is in progress
         err_bits_en = 1'b1;
@@ -363,6 +394,8 @@ module otbn_controller
     end
   end
 
+  `ASSERT(InsnAlwaysValidInStall, state_q == OtbnStateStall |-> insn_valid_i)
+
   // Anything that moves us or keeps us in the stall state should cause `stall` to be asserted
   `ASSERT(StallIfNextStateStall, insn_valid_i & (state_d == OtbnStateStall) |-> stall)
 
@@ -379,7 +412,7 @@ module otbn_controller
       end else if (branch_taken) begin
         imem_addr_err = branch_target_overflow;
       end else begin
-        imem_addr_err = next_insn_addr_wide[ImemAddrWidth];
+        imem_addr_err = next_insn_addr_wide[ImemAddrWidth] & insn_valid_i;
       end
     end
   end
@@ -531,7 +564,12 @@ module otbn_controller
     .loop_err_o          (loop_err),
 
     .jump_or_branch_i    (jump_or_branch),
-    .otbn_stall_i        (stall)
+    .otbn_stall_i        (stall),
+
+    .prefetch_loop_active_o,
+    .prefetch_loop_iterations_o,
+    .prefetch_loop_end_addr_o,
+    .prefetch_loop_jump_addr_o
   );
 
   // loop_start_req indicates the instruction wishes to start a loop, loop_start_commit confirms it

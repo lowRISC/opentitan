@@ -24,13 +24,13 @@ class FsmState(IntEnum):
 
     The FSM diagram looks like:
 
-          /---------------------------------------------\
-          |                                             |
-          v                            /->  POST_EXEC --/
-        IDLE  ->  PRE_EXEC  ->  EXEC  <
-                                       \->  LOCKING   --\
-                                                        |
-          /---------------------------------------------/
+          /----------------------------------------------------------\
+          |                                                          |
+          v                                         /->  POST_EXEC --/
+        IDLE  ->  PRE_EXEC  ->  FETCH_WAIT -> EXEC <
+                                                    \->  LOCKING   --\
+                                                                     |
+          /----------------------------------------------------------/
           |
           v
         LOCKED
@@ -39,10 +39,11 @@ class FsmState(IntEnum):
     fatal errors. It matches Status.IDLE. LOCKED represents the state when
     there has been a fatal error. It matches Status.LOCKED.
 
-    PRE_EXEC, EXEC, POST_EXEC and LOCKING correspond to Status.BUSY_EXECUTE.
-    PRE_EXEC is the period after starting OTBN where we're still waiting for an
-    EDN value to seed URND. EXEC is the period where we start fetching and
-    executing instructions.
+    PRE_EXEC, FETCH_WAIT, EXEC, POST_EXEC and LOCKING correspond to
+    Status.BUSY_EXECUTE.  PRE_EXEC is the period after starting OTBN where we're
+    still waiting for an EDN value to seed URND. FETCH_WAIT is the single cycle
+    delay after seeding URND to fill the prefetch stage. EXEC is the period
+    where we start fetching and executing instructions.
 
     POST_EXEC and LOCKING are both used for the single cycle after we finish
     executing where the STATUS register gets updated. The difference between
@@ -56,8 +57,9 @@ class FsmState(IntEnum):
     '''
     IDLE = 0
     PRE_EXEC = 10
-    EXEC = 11
-    POST_EXEC = 12
+    FETCH_WAIT = 11
+    EXEC = 12
+    POST_EXEC = 13
     LOCKING = 13
     LOCKED = 2550
 
@@ -286,7 +288,16 @@ class OTBNState:
             if self.wsrs.URND.running:
                 # This part is strictly for standalone simulation. Otherwise
                 # we would set fsm_state before commit (at urnd_completed)
-                self.fsm_state = FsmState.EXEC
+                self.fsm_state = FsmState.FETCH_WAIT
+
+            return
+
+        # FETCH_WAIT works like PRE_EXEC, but it's only ever a single cycle
+        # wait.
+        if self.fsm_state == FsmState.FETCH_WAIT:
+            self.ext_regs.commit()
+            self.fsm_state = FsmState.EXEC
+
             return
 
         # If we are in POST_EXEC mode, this is the single cycle after the end
