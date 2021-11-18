@@ -28,9 +28,10 @@ class push_pull_agent #(
         this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get push_pull_if handle from uvm_config_db")
     end
-    cfg.vif.if_mode               = cfg.if_mode;
-    cfg.vif.is_push_agent         = (cfg.agent_type == PushAgent);
+    cfg.vif.if_mode = cfg.if_mode;
+    cfg.vif.is_push_agent = (cfg.agent_type == PushAgent);
     cfg.vif.in_bidirectional_mode = cfg.in_bidirectional_mode;
+    cfg.vif.is_pull_handshake_4_phase = (cfg.pull_handshake_type == FourPhase);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -42,7 +43,7 @@ class push_pull_agent #(
 
   virtual task run_phase(uvm_phase phase);
     push_pull_device_seq#(HostDataWidth, DeviceDataWidth) m_seq =
-      push_pull_device_seq#(HostDataWidth, DeviceDataWidth)::type_id::create("m_seq", this);
+        push_pull_device_seq#(HostDataWidth, DeviceDataWidth)::type_id::create("m_seq", this);
     if (cfg.if_mode == dv_utils_pkg::Device && cfg.start_default_device_seq) begin
       uvm_config_db#(uvm_object_wrapper)::set(null, {sequencer.get_full_name(), ".run_phase"},
                                               "default_sequence", m_seq.get_type());

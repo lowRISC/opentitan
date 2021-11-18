@@ -52,24 +52,18 @@ class push_pull_driver #(
   endfunction
 
   virtual task reset_signals();
-    // initial reset at start of test
     sub_driver.reset_signals();
     forever begin
       @(negedge cfg.vif.rst_n);
-      `uvm_info(`gfn, "Driver is resetting", UVM_HIGH)
-      sub_driver.set_in_reset(1'b1);
+      `uvm_info(`gfn, "Driver is under reset", UVM_HIGH)
       sub_driver.reset_signals();
       @(posedge cfg.vif.rst_n);
       `uvm_info(`gfn, "Driver is out of reset", UVM_HIGH)
-      sub_driver.set_in_reset(1'b0);
     end
   endtask
 
   // Drive trans received from sequencer.
   virtual task get_and_drive();
-    // Wait for the initial reset to pass.
-    @(posedge cfg.vif.rst_n);
-
     forever begin
       seq_item_port.try_next_item(req);
       if (req == null) begin
@@ -78,11 +72,7 @@ class push_pull_driver #(
       end
 
       `uvm_info(`gfn, $sformatf("Driver received item:\n%0s", req.convert2string()), UVM_HIGH)
-      if (sub_driver.get_in_reset()) begin
-        `uvm_info(`gfn, "Item not applied to the DUT due to reset assertion", UVM_HIGH)
-      end else begin
-        sub_driver.drive_item(req);
-      end
+      sub_driver.drive_item(req);
       seq_item_port.item_done(req);
     end
   endtask
@@ -97,26 +87,10 @@ virtual class push_pull_sub_driver #(
     parameter int DeviceDataWidth = HostDataWidth
 ) extends uvm_object;
 
-  // Indicates that the interface is in reset.
-  protected bit in_reset;
-
   // The handle to the agent cfg object set by the main driver.
   push_pull_agent_cfg #(HostDataWidth, DeviceDataWidth) cfg;
 
   `uvm_object_new
-
-  // Tell if the interface is in or out of reset.
-  //
-  // The main driver already implements a task that monitors the interface reset. The sub driver's
-  // in_reset bit is controlled by the main driver through this function.
-  virtual function void set_in_reset(bit in_reset);
-    this.in_reset = in_reset;
-  endfunction
-
-  // Returns the in_reset value.
-  virtual function bit get_in_reset();
-    return in_reset;
-  endfunction
 
   // Reset the interface signals driven to the DUT.
   pure virtual function void reset_signals();
@@ -153,14 +127,12 @@ class push_host_driver #(
   virtual task drive_item(push_pull_item#(HostDataWidth, DeviceDataWidth) req);
     `DV_SPINWAIT_EXIT(
         repeat (req.host_delay) @(`CB);
-        `CB.valid_int  <= 1'b1;
+        `CB.valid_int <= 1'b1;
         `CB.h_data_int <= req.h_data;
-        do begin
-          @(`CB);
-        end while (!`CB.ready);
+        do @(`CB); while (!`CB.ready);
         `CB.valid_int <= 1'b0;
         if (!cfg.hold_h_data_until_next_req) `CB.h_data_int <= 'x;,
-        wait(in_reset);)
+        wait (cfg.in_reset);)
   endtask
 
   `undef CB
@@ -191,14 +163,18 @@ class pull_host_driver #(
   virtual task drive_item(push_pull_item#(HostDataWidth, DeviceDataWidth) req);
     `DV_SPINWAIT_EXIT(
         repeat (req.host_delay) @(`CB);
-        `CB.req_int    <= 1'b1;
+        `CB.req_int <= 1'b1;
         `CB.h_data_int <= req.h_data;
-        do begin
-          @(`CB);
-        end while (!`CB.ack);
-        `CB.req_int <= 1'b0;
+        do @(`CB); while (!`CB.ack);
+        if (cfg.pull_handshake_type == FourPhase) begin
+          repeat (req.req_lo_delay) @(`CB);
+          `CB.req_int <= 1'b0;
+          do @(`CB); while (`CB.ack);
+        end else begin
+          `CB.req_int <= 1'b0;
+        end
         if (!cfg.hold_h_data_until_next_req) `CB.h_data_int <= 'x;,
-        wait(in_reset);)
+        wait (cfg.in_reset);)
   endtask
 
   `undef CB
@@ -228,13 +204,14 @@ class push_device_driver #(
   // Drives device side of ready/valid protocol
   virtual task drive_item(push_pull_item#(HostDataWidth, DeviceDataWidth) req);
     `DV_SPINWAIT_EXIT(
+        // TODO: this may be needed in future: while (!`CB.valid) @(`CB);
         repeat (req.device_delay) @(`CB);
-        `CB.ready_int  <= 1'b1;
+        `CB.ready_int <= 1'b1;
         `CB.d_data_int <= req.d_data;
         @(`CB);
-        `CB.ready_int  <= 1'b0;
+        `CB.ready_int <= 1'b0;
         if (!cfg.hold_d_data_until_next_req) `CB.d_data_int <= 'x;,
-        wait(in_reset);)
+        wait (cfg.in_reset);)
   endtask
 
   `undef CB
@@ -266,12 +243,17 @@ class pull_device_driver #(
     `DV_SPINWAIT_EXIT(
         while (!`CB.req) @(`CB);
         repeat (req.device_delay) @(`CB);
-        `CB.ack_int    <= 1'b1;
+        `CB.ack_int <= 1'b1;
         `CB.d_data_int <= req.d_data;
-        @(`CB);
-        `CB.ack_int    <= 1'b0;
+        if (cfg.pull_handshake_type == FourPhase) begin
+          do @(`CB); while (`CB.req);
+          repeat (req.ack_lo_delay) @(`CB);
+        end else begin
+          @(`CB);
+        end
+        `CB.ack_int <= 1'b0;
         if (!cfg.hold_d_data_until_next_req) `CB.d_data_int <= 'x;,
-        wait(in_reset);)
+        wait (cfg.in_reset);)
   endtask
 
   `undef CB
