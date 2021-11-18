@@ -14,7 +14,8 @@
             Smoke test exercising the main features of rom_ctrl.
 
             **Stimulus**:
-            - Create a random valid ROM image and load into memory model
+            - Create a random valid ROM where expected digest doesn't match with the KMAC digest
+            image and load into memory model
             - Allow the rom check to complete
             - Perform some random memory accesses
 
@@ -22,9 +23,26 @@
             - Check that all data supplied to kmac is correct
             - Check that the rom checking sequence gives the expected result
             - Check that the memory accesses return expected data
+            - Check that pwrmgr_data_o.good is not asserted. 
             '''
       milestone: V1
       tests: ["rom_ctrl_smoke"]
+    }
+    {
+      name: successful_rom_chk
+      desc: '''
+           Test successful completion of rom check
+
+           **Stimulus**:
+           - Create a random valid ROM image and load into memory model.
+           - Ensure that KMAC and expected digest match.
+         
+           **Checks**:
+           - Check that pwrmgr_data_o.good is asserted. 
+           '''
+      milestone: V1
+      tests: []
+
     }
     {
       name: multiple_reset
@@ -41,26 +59,14 @@
       tests: []
     }
     {
-      name: mem_tl_errors
+      name: corrupt_sig_fatal_chk
       desc: '''
-            This test will reuse the common tl_access_tests to run TLUL error sequences on the
-            ROM TLUL interface to verify that erroneous TLUL transactions are handled correctly.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: ecc_mem_fault
-      desc: '''
-            Inject runtime errors into the rom
-
-            **Stimulus**:
-            - Insert 1, 2 and 3 bit errors into rom reads to trigger ECC checking
-
+            Corrupt integrity of signals like the select signal to addr mux.
+            
             **Checks**:
-            - TODO - should this generate an alert with xmission integrity?
+            - Check that fatal error is flagged.
             '''
-      milestone: V3
+      milestone: V2S
       tests: []
     }
   ]
