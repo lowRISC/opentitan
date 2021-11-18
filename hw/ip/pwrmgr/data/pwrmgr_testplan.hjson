@@ -101,7 +101,7 @@
       tests: ["pwrmgr_wakeup"]
     }
     {
-      name: aborted_lowpower
+      name: aborted_low_power
       desc: '''
             Test aborted low power transitions.
 
@@ -127,7 +127,7 @@
               `abort` events when capture is enabled.
             '''
       milestone: V2
-      tests: []
+      tests: ["pwrmgr_aborted_low_power"]
     }
     {
       name: reset

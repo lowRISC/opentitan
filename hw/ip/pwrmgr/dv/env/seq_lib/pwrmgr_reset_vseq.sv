@@ -63,7 +63,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       wait_for_fast_fsm_active();
       `uvm_info(`gfn, "Back from reset", UVM_MEDIUM)
 
-      check_wake_info('0, .fall_through(1'b0), .abort(1'b0));
+      check_wake_info(.reasons('0), .fall_through(1'b0), .abort(1'b0));
 
       cfg.slow_clk_rst_vif.wait_clks(4);
       csr_rd_check(.ptr(ral.reset_status[0]), .compare_value('0));

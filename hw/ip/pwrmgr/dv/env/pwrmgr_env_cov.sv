@@ -103,7 +103,7 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
       wakeup_intr_cg_wrap[i] = new({wakeup.name, "_intr_cg"});
     end
     control_cg = new();
-    reset_cg = new();
+    reset_cg   = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);
