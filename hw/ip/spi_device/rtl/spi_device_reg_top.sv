@@ -169,6 +169,14 @@ module spi_device_reg_top (
   logic intr_state_rx_overflow_wd;
   logic intr_state_tx_underflow_qs;
   logic intr_state_tx_underflow_wd;
+  logic intr_state_cmdfifo_not_empty_qs;
+  logic intr_state_cmdfifo_not_empty_wd;
+  logic intr_state_payload_not_empty_qs;
+  logic intr_state_payload_not_empty_wd;
+  logic intr_state_readbuf_watermark_qs;
+  logic intr_state_readbuf_watermark_wd;
+  logic intr_state_readbuf_flip_qs;
+  logic intr_state_readbuf_flip_wd;
   logic intr_state_tpm_header_not_empty_qs;
   logic intr_state_tpm_header_not_empty_wd;
   logic intr_enable_we;
@@ -184,6 +192,14 @@ module spi_device_reg_top (
   logic intr_enable_rx_overflow_wd;
   logic intr_enable_tx_underflow_qs;
   logic intr_enable_tx_underflow_wd;
+  logic intr_enable_cmdfifo_not_empty_qs;
+  logic intr_enable_cmdfifo_not_empty_wd;
+  logic intr_enable_payload_not_empty_qs;
+  logic intr_enable_payload_not_empty_wd;
+  logic intr_enable_readbuf_watermark_qs;
+  logic intr_enable_readbuf_watermark_wd;
+  logic intr_enable_readbuf_flip_qs;
+  logic intr_enable_readbuf_flip_wd;
   logic intr_enable_tpm_header_not_empty_qs;
   logic intr_enable_tpm_header_not_empty_wd;
   logic intr_test_we;
@@ -193,6 +209,10 @@ module spi_device_reg_top (
   logic intr_test_rx_error_wd;
   logic intr_test_rx_overflow_wd;
   logic intr_test_tx_underflow_wd;
+  logic intr_test_cmdfifo_not_empty_wd;
+  logic intr_test_payload_not_empty_wd;
+  logic intr_test_readbuf_watermark_wd;
+  logic intr_test_readbuf_flip_wd;
   logic intr_test_tpm_header_not_empty_wd;
   logic alert_test_we;
   logic alert_test_wd;
@@ -1637,7 +1657,107 @@ module spi_device_reg_top (
     .qs     (intr_state_tx_underflow_qs)
   );
 
-  //   F[tpm_header_not_empty]: 6:6
+  //   F[cmdfifo_not_empty]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_intr_state_cmdfifo_not_empty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_cmdfifo_not_empty_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.cmdfifo_not_empty.de),
+    .d      (hw2reg.intr_state.cmdfifo_not_empty.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.cmdfifo_not_empty.q),
+
+    // to register interface (read)
+    .qs     (intr_state_cmdfifo_not_empty_qs)
+  );
+
+  //   F[payload_not_empty]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_intr_state_payload_not_empty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_payload_not_empty_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.payload_not_empty.de),
+    .d      (hw2reg.intr_state.payload_not_empty.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.payload_not_empty.q),
+
+    // to register interface (read)
+    .qs     (intr_state_payload_not_empty_qs)
+  );
+
+  //   F[readbuf_watermark]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_intr_state_readbuf_watermark (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_readbuf_watermark_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.readbuf_watermark.de),
+    .d      (hw2reg.intr_state.readbuf_watermark.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.readbuf_watermark.q),
+
+    // to register interface (read)
+    .qs     (intr_state_readbuf_watermark_qs)
+  );
+
+  //   F[readbuf_flip]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_intr_state_readbuf_flip (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_readbuf_flip_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.readbuf_flip.de),
+    .d      (hw2reg.intr_state.readbuf_flip.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.readbuf_flip.q),
+
+    // to register interface (read)
+    .qs     (intr_state_readbuf_flip_qs)
+  );
+
+  //   F[tpm_header_not_empty]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1814,7 +1934,107 @@ module spi_device_reg_top (
     .qs     (intr_enable_tx_underflow_qs)
   );
 
-  //   F[tpm_header_not_empty]: 6:6
+  //   F[cmdfifo_not_empty]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_cmdfifo_not_empty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_cmdfifo_not_empty_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.cmdfifo_not_empty.q),
+
+    // to register interface (read)
+    .qs     (intr_enable_cmdfifo_not_empty_qs)
+  );
+
+  //   F[payload_not_empty]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_payload_not_empty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_payload_not_empty_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.payload_not_empty.q),
+
+    // to register interface (read)
+    .qs     (intr_enable_payload_not_empty_qs)
+  );
+
+  //   F[readbuf_watermark]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_readbuf_watermark (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_readbuf_watermark_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.readbuf_watermark.q),
+
+    // to register interface (read)
+    .qs     (intr_enable_readbuf_watermark_qs)
+  );
+
+  //   F[readbuf_flip]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_readbuf_flip (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_readbuf_flip_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.readbuf_flip.q),
+
+    // to register interface (read)
+    .qs     (intr_enable_readbuf_flip_qs)
+  );
+
+  //   F[tpm_header_not_empty]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1925,7 +2145,63 @@ module spi_device_reg_top (
     .qs     ()
   );
 
-  //   F[tpm_header_not_empty]: 6:6
+  //   F[cmdfifo_not_empty]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_cmdfifo_not_empty (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_cmdfifo_not_empty_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.cmdfifo_not_empty.qe),
+    .q      (reg2hw.intr_test.cmdfifo_not_empty.q),
+    .qs     ()
+  );
+
+  //   F[payload_not_empty]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_payload_not_empty (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_payload_not_empty_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.payload_not_empty.qe),
+    .q      (reg2hw.intr_test.payload_not_empty.q),
+    .qs     ()
+  );
+
+  //   F[readbuf_watermark]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_readbuf_watermark (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_readbuf_watermark_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.readbuf_watermark.qe),
+    .q      (reg2hw.intr_test.readbuf_watermark.q),
+    .qs     ()
+  );
+
+  //   F[readbuf_flip]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_readbuf_flip (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_readbuf_flip_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.readbuf_flip.qe),
+    .q      (reg2hw.intr_test.readbuf_flip.q),
+    .qs     ()
+  );
+
+  //   F[tpm_header_not_empty]: 10:10
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test_tpm_header_not_empty (
@@ -17719,7 +17995,15 @@ module spi_device_reg_top (
 
   assign intr_state_tx_underflow_wd = reg_wdata[5];
 
-  assign intr_state_tpm_header_not_empty_wd = reg_wdata[6];
+  assign intr_state_cmdfifo_not_empty_wd = reg_wdata[6];
+
+  assign intr_state_payload_not_empty_wd = reg_wdata[7];
+
+  assign intr_state_readbuf_watermark_wd = reg_wdata[8];
+
+  assign intr_state_readbuf_flip_wd = reg_wdata[9];
+
+  assign intr_state_tpm_header_not_empty_wd = reg_wdata[10];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_rx_full_wd = reg_wdata[0];
@@ -17734,7 +18018,15 @@ module spi_device_reg_top (
 
   assign intr_enable_tx_underflow_wd = reg_wdata[5];
 
-  assign intr_enable_tpm_header_not_empty_wd = reg_wdata[6];
+  assign intr_enable_cmdfifo_not_empty_wd = reg_wdata[6];
+
+  assign intr_enable_payload_not_empty_wd = reg_wdata[7];
+
+  assign intr_enable_readbuf_watermark_wd = reg_wdata[8];
+
+  assign intr_enable_readbuf_flip_wd = reg_wdata[9];
+
+  assign intr_enable_tpm_header_not_empty_wd = reg_wdata[10];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_rx_full_wd = reg_wdata[0];
@@ -17749,7 +18041,15 @@ module spi_device_reg_top (
 
   assign intr_test_tx_underflow_wd = reg_wdata[5];
 
-  assign intr_test_tpm_header_not_empty_wd = reg_wdata[6];
+  assign intr_test_cmdfifo_not_empty_wd = reg_wdata[6];
+
+  assign intr_test_payload_not_empty_wd = reg_wdata[7];
+
+  assign intr_test_readbuf_watermark_wd = reg_wdata[8];
+
+  assign intr_test_readbuf_flip_wd = reg_wdata[9];
+
+  assign intr_test_tpm_header_not_empty_wd = reg_wdata[10];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -19026,7 +19326,11 @@ module spi_device_reg_top (
         reg_rdata_next[3] = intr_state_rx_error_qs;
         reg_rdata_next[4] = intr_state_rx_overflow_qs;
         reg_rdata_next[5] = intr_state_tx_underflow_qs;
-        reg_rdata_next[6] = intr_state_tpm_header_not_empty_qs;
+        reg_rdata_next[6] = intr_state_cmdfifo_not_empty_qs;
+        reg_rdata_next[7] = intr_state_payload_not_empty_qs;
+        reg_rdata_next[8] = intr_state_readbuf_watermark_qs;
+        reg_rdata_next[9] = intr_state_readbuf_flip_qs;
+        reg_rdata_next[10] = intr_state_tpm_header_not_empty_qs;
       end
 
       addr_hit[1]: begin
@@ -19036,7 +19340,11 @@ module spi_device_reg_top (
         reg_rdata_next[3] = intr_enable_rx_error_qs;
         reg_rdata_next[4] = intr_enable_rx_overflow_qs;
         reg_rdata_next[5] = intr_enable_tx_underflow_qs;
-        reg_rdata_next[6] = intr_enable_tpm_header_not_empty_qs;
+        reg_rdata_next[6] = intr_enable_cmdfifo_not_empty_qs;
+        reg_rdata_next[7] = intr_enable_payload_not_empty_qs;
+        reg_rdata_next[8] = intr_enable_readbuf_watermark_qs;
+        reg_rdata_next[9] = intr_enable_readbuf_flip_qs;
+        reg_rdata_next[10] = intr_enable_tpm_header_not_empty_qs;
       end
 
       addr_hit[2]: begin
@@ -19047,6 +19355,10 @@ module spi_device_reg_top (
         reg_rdata_next[4] = '0;
         reg_rdata_next[5] = '0;
         reg_rdata_next[6] = '0;
+        reg_rdata_next[7] = '0;
+        reg_rdata_next[8] = '0;
+        reg_rdata_next[9] = '0;
+        reg_rdata_next[10] = '0;
       end
 
       addr_hit[3]: begin

@@ -102,9 +102,27 @@ typedef enum dif_spi_device_irq {
    */
   kDifSpiDeviceIrqTxUnderflow = 5,
   /**
+   * Upload Command FIFO is not empty
+   */
+  kDifSpiDeviceIrqCmdfifoNotEmpty = 6,
+  /**
+   * Upload paylod is not empty.  The event occurs after SPI transaction
+   * completed
+   */
+  kDifSpiDeviceIrqPayloadNotEmpty = 7,
+  /**
+   * Read Buffer Threshold event.  The host system accesses greater than or
+   * equal to the threshold of a buffer.
+   */
+  kDifSpiDeviceIrqReadbufWatermark = 8,
+  /**
+   * Read buffer flipped event.  The host system accesses other side of buffer.
+   */
+  kDifSpiDeviceIrqReadbufFlip = 9,
+  /**
    * TPM Header(Command/Address) buffer available
    */
-  kDifSpiDeviceIrqTpmHeaderNotEmpty = 6,
+  kDifSpiDeviceIrqTpmHeaderNotEmpty = 10,
 } dif_spi_device_irq_t;
 
 /**

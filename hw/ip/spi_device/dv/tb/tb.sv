@@ -30,6 +30,10 @@ module tb;
   wire intr_rxerr;
   wire intr_rxoverflow;
   wire intr_txunderflow;
+  wire intr_cmdfifo_not_empty;
+  wire intr_payload_not_empty;
+  wire intr_readbuf_watermark;
+  wire intr_readbuf_flip;
   wire intr_tpm_header_not_empty;
 
   // interfaces
@@ -66,6 +70,10 @@ module tb;
     .intr_rx_error_o            (intr_rxerr),
     .intr_rx_overflow_o         (intr_rxoverflow),
     .intr_tx_underflow_o        (intr_txunderflow),
+    .intr_cmdfifo_not_empty_o   (intr_cmdfifo_not_empty),
+    .intr_payload_not_empty_o   (intr_payload_not_empty),
+    .intr_readbuf_watermark_o   (intr_readbuf_watermark),
+    .intr_readbuf_flip_o        (intr_readbuf_flip),
     .intr_tpm_header_not_empty_o(intr_tpm_header_not_empty),
     .mbist_en_i     (1'b0),
     .scanmode_i     (prim_mubi_pkg::MuBi4False)
@@ -83,6 +91,10 @@ module tb;
   assign interrupts[RxFwModeErr]     = intr_rxerr;
   assign interrupts[RxFifoOverflow]  = intr_rxoverflow;
   assign interrupts[TxFifoUnderflow] = intr_txunderflow;
+  assign interrupts[CmdFifoNotEmpty]   = intr_cmdfifo_not_empty;
+  assign interrupts[PayloadNotEmpty]   = intr_payload_not_empty;
+  assign interrupts[ReadbufWatermark]  = intr_readbuf_watermark;
+  assign interrupts[ReadbufFlip]       = intr_readbuf_flip;
   assign interrupts[TpmHeaderNotEmpty] = intr_tpm_header_not_empty;
 
   initial begin

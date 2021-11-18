@@ -37,12 +37,21 @@ module spi_device
   input  spi_device_pkg::passthrough_rsp_t passthrough_i,
 
   // Interrupts
+  // INTR: Generic mode
   output logic intr_rx_full_o,              // RX FIFO Full
   output logic intr_rx_watermark_o,         // RX FIFO above level
   output logic intr_tx_watermark_o,         // TX FIFO below level
   output logic intr_rx_error_o,             // RX Frame error
   output logic intr_rx_overflow_o,          // RX Async FIFO Overflow
   output logic intr_tx_underflow_o,         // TX Async FIFO Underflow
+
+  // INTR: Flash mode
+  output logic intr_cmdfifo_not_empty_o,
+  output logic intr_payload_not_empty_o,
+  output logic intr_readbuf_watermark_o,
+  output logic intr_readbuf_flip_o,
+
+  // INTR: TPM mode
   output logic intr_tpm_header_not_empty_o, // TPM Command/Address buffer
 
   // Memory configuration
@@ -264,6 +273,16 @@ module spi_device
 
   // Jedec ID
   logic [23:0] jedec_id;
+
+  // Interrupts in Flash mode
+  logic intr_upload_cmdfifo_not_empty, intr_upload_payload_not_empty;
+  logic intr_readbuf_watermark, intr_readbuf_flip;
+
+  // TODO: Implement
+  assign intr_upload_cmdfifo_not_empty = 1'b 0;
+  assign intr_upload_payload_not_empty = 1'b 0;
+  assign intr_readbuf_watermark        = 1'b 0;
+  assign intr_readbuf_flip             = 1'b 0;
 
   // TPM ===============================================================
   localparam int unsigned TpmFifoDepth    = 4; // 4B
@@ -524,6 +543,58 @@ module spi_device
     .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_underflow.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_underflow.d ),
     .intr_o                 (intr_tx_underflow_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_cmdfifo_not_empty (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_upload_cmdfifo_not_empty         ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.cmdfifo_not_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.cmdfifo_not_empty.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.cmdfifo_not_empty.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.cmdfifo_not_empty.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.cmdfifo_not_empty.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.cmdfifo_not_empty.de),
+    .intr_o                 (intr_cmdfifo_not_empty_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_payload_not_empty (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_upload_payload_not_empty         ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.payload_not_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.payload_not_empty.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.payload_not_empty.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.payload_not_empty.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.payload_not_empty.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.payload_not_empty.de),
+    .intr_o                 (intr_payload_not_empty_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_readbuf_watermark (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_readbuf_watermark                ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.readbuf_watermark.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.readbuf_watermark.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.readbuf_watermark.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.readbuf_watermark.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.readbuf_watermark.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.readbuf_watermark.de),
+    .intr_o                 (intr_readbuf_watermark_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_readbuf_flip (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_readbuf_flip                ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.readbuf_flip.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.readbuf_flip.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.readbuf_flip.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.readbuf_flip.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.readbuf_flip.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.readbuf_flip.de),
+    .intr_o                 (intr_readbuf_flip_o              )
   );
 
   prim_intr_hw #(.Width(1)) u_intr_tpm_cmdaddr_notempty (

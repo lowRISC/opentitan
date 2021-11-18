@@ -12473,6 +12473,30 @@
       module_name: spi_device
     }
     {
+      name: spi_device_cmdfifo_not_empty
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
+      name: spi_device_payload_not_empty
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
+      name: spi_device_readbuf_watermark
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
+      name: spi_device_readbuf_flip
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
       name: spi_device_tpm_header_not_empty
       width: 1
       type: interrupt

@@ -71,6 +71,18 @@ static bool spi_device_get_irq_bit_index(dif_spi_device_irq_t irq,
     case kDifSpiDeviceIrqTxUnderflow:
       *index_out = SPI_DEVICE_INTR_COMMON_TX_UNDERFLOW_BIT;
       break;
+    case kDifSpiDeviceIrqCmdfifoNotEmpty:
+      *index_out = SPI_DEVICE_INTR_COMMON_CMDFIFO_NOT_EMPTY_BIT;
+      break;
+    case kDifSpiDeviceIrqPayloadNotEmpty:
+      *index_out = SPI_DEVICE_INTR_COMMON_PAYLOAD_NOT_EMPTY_BIT;
+      break;
+    case kDifSpiDeviceIrqReadbufWatermark:
+      *index_out = SPI_DEVICE_INTR_COMMON_READBUF_WATERMARK_BIT;
+      break;
+    case kDifSpiDeviceIrqReadbufFlip:
+      *index_out = SPI_DEVICE_INTR_COMMON_READBUF_FLIP_BIT;
+      break;
     case kDifSpiDeviceIrqTpmHeaderNotEmpty:
       *index_out = SPI_DEVICE_INTR_COMMON_TPM_HEADER_NOT_EMPTY_BIT;
       break;
