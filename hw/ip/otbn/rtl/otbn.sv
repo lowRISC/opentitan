@@ -647,6 +647,9 @@ module otbn
   assign hw2reg.err_bits.bus_intg_violation.de = done;
   assign hw2reg.err_bits.bus_intg_violation.d = err_bits.bus_intg_violation;
 
+  assign hw2reg.err_bits.bad_internal_state.de = done;
+  assign hw2reg.err_bits.bad_internal_state.d = err_bits.bad_internal_state;
+
   assign hw2reg.err_bits.illegal_bus_access.de = done;
   assign hw2reg.err_bits.illegal_bus_access.d = err_bits.illegal_bus_access;
 
@@ -667,6 +670,8 @@ module otbn
   assign hw2reg.fatal_alert_cause.reg_intg_violation.d  = 0;
   assign hw2reg.fatal_alert_cause.bus_intg_violation.de = bus_intg_violation;
   assign hw2reg.fatal_alert_cause.bus_intg_violation.d  = bus_intg_violation;
+  assign hw2reg.fatal_alert_cause.bad_internal_state.de = 0;
+  assign hw2reg.fatal_alert_cause.bad_internal_state.d  = 0;
   assign hw2reg.fatal_alert_cause.illegal_bus_access.de = illegal_bus_access_d;
   assign hw2reg.fatal_alert_cause.illegal_bus_access.d  = illegal_bus_access_d;
   assign hw2reg.fatal_alert_cause.lifecycle_escalation.de = lifecycle_escalation;

@@ -346,16 +346,21 @@
           desc: "A `BUS_INTG_VIOLATION` error was observed."
         }
         { bits: "20",
+          name: "bad_internal_state",
+          resval: 0,
+          desc: "A `BAD_INTERNAL_STATE` error was observed."
+        }
+        { bits: "21",
           name: "illegal_bus_access"
           resval: 0,
           desc: "An `ILLEGAL_BUS_ACCESS` error was observed."
         }
-        { bits: "21",
+        { bits: "22",
           name: "lifecycle_escalation"
           resval: 0,
           desc: "A `LIFECYCLE_ESCALATION` error was observed."
         }
-        { bits: "22",
+        { bits: "23",
           name: "fatal_software"
           resval: 0,
           desc: "A `FATAL_SOFTWARE` error was observed."
@@ -398,16 +403,21 @@
           desc: "A `BUS_INTG_VIOLATION` error was observed."
         }
         { bits: "4",
+          name: "bad_internal_state",
+          resval: 0,
+          desc: "A `BAD_INTERNAL_STATE` error was observed."
+        }
+        { bits: "5",
           name: "illegal_bus_access"
           resval: 0,
           desc: "A `ILLEGAL_BUS_ACCESS` error was observed."
         }
-        { bits: "5",
+        { bits: "6",
           name: "lifecycle_escalation"
           resval: 0,
           desc: "A `LIFECYCLE_ESCALATION` error was observed."
         }
-        { bits: "6",
+        { bits: "7",
           name: "fatal_software"
           resval: 0,
           desc: "A `FATAL_SOFTWARE` error was observed."

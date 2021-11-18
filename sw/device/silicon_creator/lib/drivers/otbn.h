@@ -111,12 +111,14 @@ typedef enum otbn_err_bits {
   kOtbnErrBitsRegIntgViolation = (1 << 18),
   /** A BUS_INTG_VIOLATION error was observed. */
   kOtbnErrBitsBusIntgViolation = (1 << 19),
+  /** A BAD_INTERNAL_STATE error was observed. */
+  kDifOtbnErrBitsBadInternalState = (1 << 20),
   /** An ILLEGAL_BUS_ACCESS error was observed. */
-  kOtbnErrBitsIllegalBusAccess = (1 << 20),
+  kOtbnErrBitsIllegalBusAccess = (1 << 21),
   /** A LIFECYCLE_ESCALATION error was observed. */
-  kOtbnErrBitsLifecycleEscalation = (1 << 21),
+  kOtbnErrBitsLifecycleEscalation = (1 << 22),
   /** A FATAL_SOFTWARE error was observed. */
-  kOtbnErrBitsFatalSoftware = (1 << 22),
+  kOtbnErrBitsFatalSoftware = (1 << 23),
 } otbn_err_bits_t;
 
 /**

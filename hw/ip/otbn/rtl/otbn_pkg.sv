@@ -73,6 +73,7 @@ package otbn_pkg;
     logic fatal_software;
     logic lifecycle_escalation;
     logic illegal_bus_access;
+    logic bad_internal_state;
     logic bus_intg_violation;
     logic reg_intg_violation;
     logic dmem_intg_violation;

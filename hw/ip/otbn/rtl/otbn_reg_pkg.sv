@@ -108,6 +108,10 @@ package otbn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } bad_internal_state;
+    struct packed {
+      logic        d;
+      logic        de;
     } illegal_bus_access;
     struct packed {
       logic        d;
@@ -136,6 +140,10 @@ package otbn_reg_pkg;
       logic        d;
       logic        de;
     } bus_intg_violation;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bad_internal_state;
     struct packed {
       logic        d;
       logic        de;
@@ -172,11 +180,11 @@ package otbn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [114:113]
-    otbn_hw2reg_ctrl_reg_t ctrl; // [112:112]
-    otbn_hw2reg_status_reg_t status; // [111:103]
-    otbn_hw2reg_err_bits_reg_t err_bits; // [102:79]
-    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [78:65]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [118:117]
+    otbn_hw2reg_ctrl_reg_t ctrl; // [116:116]
+    otbn_hw2reg_status_reg_t status; // [115:107]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [106:81]
+    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [80:65]
     otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [64:33]
     otbn_hw2reg_load_checksum_reg_t load_checksum; // [32:0]
   } otbn_hw2reg_t;

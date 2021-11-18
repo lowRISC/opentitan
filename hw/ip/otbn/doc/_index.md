@@ -700,6 +700,11 @@ This way, no alert is generated without setting an error code somewhere.
       <td>An incoming bus transaction failed the integrity checks.</td>
     </tr>
     <tr>
+      <td><code>BAD_INTERNAL_STATE<code></td>
+      <td>fatal</td>
+      <td>The internal state of OTBN has become corrupt.</td>
+    </tr>
+    <tr>
       <td><code>ILLEGAL_BUS_ACCESS<code></td>
       <td>fatal</td>
       <td>A bus-accessible register or memory was accessed when not allowed.</td>

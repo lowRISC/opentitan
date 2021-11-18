@@ -69,12 +69,14 @@ typedef enum dif_otbn_err_bits {
   kDifOtbnErrBitsRegIntgViolation = (1 << 18),
   /** A BUS_INTG_VIOLATION error was observed. */
   kDifOtbnErrBitsBusIntgViolation = (1 << 19),
+  /** A BAD_INTERNAL_STATE error was observed. */
+  kDifOtbnErrBitsBadInternalState = (1 << 20),
   /** An ILLEGAL_BUS_ACCESS error was observed. */
-  kDifOtbnErrBitsIllegalBusAccess = (1 << 20),
+  kDifOtbnErrBitsIllegalBusAccess = (1 << 21),
   /** A LIFECYCLE_ESCALATION error was observed. */
-  kDifOtbnErrBitsLifecycleEscalation = (1 << 21),
+  kDifOtbnErrBitsLifecycleEscalation = (1 << 22),
   /** A FATAL_SOFTWARE error was observed. */
-  kDifOtbnErrBitsFatalSoftware = (1 << 22),
+  kDifOtbnErrBitsFatalSoftware = (1 << 23),
 } dif_otbn_err_bits_t;
 
 /**

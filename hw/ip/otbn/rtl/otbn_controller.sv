@@ -388,6 +388,7 @@ module otbn_controller
   assign err_bits.fatal_software       = software_err & software_errs_fatal_i;
   assign err_bits.lifecycle_escalation = lifecycle_escalation_i;
   assign err_bits.illegal_bus_access   = illegal_bus_access_i;
+  assign err_bits.bad_internal_state   = 0;
   assign err_bits.bus_intg_violation   = bus_intg_violation_i;
   assign err_bits.reg_intg_violation   = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
   assign err_bits.dmem_intg_violation  = lsu_rdata_err_i;
