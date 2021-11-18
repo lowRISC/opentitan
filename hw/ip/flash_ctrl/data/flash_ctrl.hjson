@@ -1422,7 +1422,10 @@
           { bits: "1",    name: "rd_empty",   desc: "Flash read FIFO empty", resval: "1"},
           { bits: "2",    name: "prog_full",  desc: "Flash program FIFO full"},
           { bits: "3",    name: "prog_empty", desc: "Flash program FIFO empty, software must provide data", resval: "1"},
-          { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init, inclusive of phy init"},
+          { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init, inclusive of phy init"
+            tags: [ // Bit changes immediately after start from reset value to 1b1 due to initialization
+            "excl:CsrAllTests:CsrExclAll"]
+          },
         ]
       },
 
@@ -1673,6 +1676,8 @@
           { bits: "0",
             name: "init_wip",
             desc: "Flash phy controller initializing"
+            tags: [ // Bit changes immediately after start from reset value to 1b1 due to initialization
+            "excl:CsrAllTests:CsrExclAll"]
           },
           { bits: "1",
             name: "prog_normal_avail",
