@@ -13,6 +13,25 @@ class push_pull_base_seq #(parameter int HostDataWidth = 32,
 
   `uvm_object_new
 
+  // Randomizes the req or response.
+  //
+  // Regardless of agent or item type, we can apply the same set of limits.
+  virtual function void randomize_item(push_pull_item #(HostDataWidth, DeviceDataWidth) item);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(item,
+      if (cfg.zero_delays) {
+        host_delay == 0;
+        device_delay == 0;
+        req_lo_delay == 0;
+        ack_lo_delay == 0;
+      } else {
+        host_delay inside {[cfg.host_delay_min : cfg.host_delay_max]};
+        device_delay inside {[cfg.device_delay_min : cfg.device_delay_max]};
+        req_lo_delay inside {[cfg.req_lo_delay_min : cfg.req_lo_delay_max]};
+        ack_lo_delay inside {[cfg.ack_lo_delay_min : cfg.ack_lo_delay_max]};
+      }
+    )
+  endfunction
+
   virtual task body();
     `uvm_fatal(`gtn, "Need to override this when you extend from this class!")
   endtask

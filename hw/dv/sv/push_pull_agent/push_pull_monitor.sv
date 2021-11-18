@@ -23,12 +23,9 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
     @(posedge cfg.vif.rst_n);
     fork
       monitor_reset();
-      collect_valid_trans();
-      // We only need to monitor incoming requests if the agent is configured
-      // in device mode and is using Pull protocol.
-      if (cfg.if_mode == dv_utils_pkg::Device && cfg.agent_type == PullAgent) begin
-        collect_request();
-      end
+      collect_trans(phase);
+      // Collect partial pull reqs for the reactive pull device agent.
+      collect_pull_req();
     join_none
   endtask
 
@@ -36,29 +33,82 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
     forever begin
       @(negedge cfg.vif.rst_n);
       cfg.in_reset = 1;
-      // TODO: sample any reset-related covergroups
       @(posedge cfg.vif.rst_n);
       cfg.in_reset = 0;
     end
   endtask
 
+  // Shorthand for restarting forever loop on reset detection.
+  `define WAIT_FOR_RESET    \
+    if (cfg.in_reset) begin \
+      wait (!cfg.in_reset); \
+      continue;             \
+    end
+
+  // Collect fully-completed transactions.
+  //
   // TODO : sample covergroups
-  virtual protected task collect_valid_trans();
-    forever begin
-      @(cfg.vif.mon_cb);
-      if (cfg.agent_type == PushAgent) begin
+  virtual protected task collect_trans(uvm_phase phase);
+    if (cfg.agent_type == PushAgent) begin
+      forever begin
+        @(cfg.vif.mon_cb);
+        `WAIT_FOR_RESET
         if (cfg.vif.mon_cb.ready && cfg.vif.mon_cb.valid) begin
           create_and_write_item();
-          // TODO: sample covergroups
         end
-      end else begin
+      end
+    end else begin
+      forever begin
+        @(cfg.vif.mon_cb);
+        `WAIT_FOR_RESET
         if (cfg.vif.mon_cb.req && cfg.vif.mon_cb.ack) begin
           create_and_write_item();
-          // TODO: sample covergroups
+          // Wait for req to de-assert in case of four-phase handshake.
+          if (cfg.pull_handshake_type == FourPhase) begin
+            `uvm_info(`gfn, "Waiting for 4-phase req-ack to de-asssert", UVM_HIGH)
+            `DV_SPINWAIT_EXIT(while (cfg.vif.mon_cb.ack) @(cfg.vif.mon_cb);,
+                              wait (cfg.in_reset))
+          end
         end
       end
     end
   endtask
+
+  // Collects partial pull requests.
+  //
+  // This task is only used for device agents using the Pull protocol.
+  // It will pick up any incoming requests from the DUT and send a signal to the
+  // sequencer (in the form of a sequence item), which will then be forwarded to
+  // the sequence, which then generates the appropriate response item.
+  //
+  // TODO: This assumes requests cannot be dropped, and might need to be fixed
+  //       if this is allowed.
+  virtual protected task collect_pull_req();
+    push_pull_item#(HostDataWidth, DeviceDataWidth) item;
+
+    if (!(cfg.agent_type == PullAgent && cfg.if_mode == dv_utils_pkg::Device)) return;
+    forever begin
+      @(cfg.vif.mon_cb);
+      `WAIT_FOR_RESET
+      if (cfg.vif.mon_cb.req) begin
+        `uvm_info(`gfn, $sformatf("[%0s] pull req detected", cfg.agent_type), UVM_HIGH)
+        // TODO: sample any covergroups
+        item = push_pull_item#(HostDataWidth, DeviceDataWidth)::type_id::create("item");
+        item.h_data = cfg.vif.mon_cb.h_data;
+        req_analysis_port.write(item);
+        // After picking up a request, wait until a response is sent before
+        // detecting another request, as this is not a pipelined protocol.
+        `DV_SPINWAIT_EXIT(while (!cfg.vif.mon_cb.ack) @(cfg.vif.mon_cb);,
+                          wait (cfg.in_reset))
+        if (cfg.pull_handshake_type == FourPhase) begin
+          `DV_SPINWAIT_EXIT(while (cfg.vif.mon_cb.ack) @(cfg.vif.mon_cb);,
+                            wait (cfg.in_reset))
+        end
+      end
+    end
+  endtask
+
+  `undef WAIT_FOR_RESET
 
   // Creates and writes the item to the analysis_port.
   //
@@ -75,39 +125,17 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
     analysis_port.write(item);
   endfunction
 
-  // This task is only used for device agents using the Pull protocol.
-  // It will pick up any incoming requests from the DUT and send a signal to the
-  // sequencer (in the form of a sequence item), which will then be forwarded to
-  // the sequence, which then generates the appropriate response item.
+  // Detects periods of inactivity for the ok_to_end watchdog.
   //
-  // TODO: This assumes no requests can be dropped, and might need to be fixed
-  //       if this is not allowed.
-  virtual protected task collect_request();
-    push_pull_item#(HostDataWidth, DeviceDataWidth) item;
-    forever begin
-      @(cfg.vif.mon_cb);
-      if (cfg.vif.req) begin
-        `uvm_info(`gfn, "detected pull request", UVM_HIGH)
-        // TODO: sample any covergroups
-        item = push_pull_item#(HostDataWidth, DeviceDataWidth)::type_id::create("item");
-        req_analysis_port.write(item);
-        // After picking up a request, wait until a response is sent before
-        // detecting another request, as this is not a pipelined protocol.
-        `DV_SPINWAIT_EXIT(while (!cfg.vif.mon_cb.ack) @(cfg.vif.mon_cb);,
-                          wait(cfg.in_reset))
-       end
-    end
-  endtask
-
-  // update ok_to_end to prevent simulation from finishing when
-  // there is any activity on the bus.
+  // Set ok_to_end bit to detect inactivity on the bus. Spawned by
+  // dv_base_monitor as a thread towards the end of run_phase.
   virtual task monitor_ready_to_end();
     forever begin
       @(cfg.vif.mon_cb);
       if (cfg.agent_type == PushAgent) begin
-        ok_to_end = (cfg.vif.valid == 0);
+        ok_to_end = !cfg.vif.mon_cb.valid;
       end else begin
-        ok_to_end = (cfg.vif.req == 0) && (cfg.vif.ack == 0);
+        ok_to_end = !cfg.vif.mon_cb.req && !cfg.vif.mon_cb.ack;
       end
     end
   endtask
