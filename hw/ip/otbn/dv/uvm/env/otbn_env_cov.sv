@@ -326,6 +326,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(err_bits_dmem_intg_violation_cp, value.dmem_intg_violation)
     `DEF_SEEN_CP(err_bits_reg_intg_violation_cp, value.reg_intg_violation)
     `DEF_SEEN_CP(err_bits_bus_intg_violation_cp, value.bus_intg_violation)
+    `DEF_SEEN_CP(err_bits_bad_internal_state_cp, value.bad_internal_state)
     `DEF_SEEN_CP(err_bits_illegal_bus_access_cp, value.illegal_bus_access)
     `DEF_SEEN_CP(err_bits_lifecycle_escalation_cp, value.lifecycle_escalation)
 
@@ -343,8 +344,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(fatal_alert_cause_dmem_intg_violation_cp, value[1])
     `DEF_SEEN_CP(fatal_alert_cause_reg_intg_violation_cp, value[2])
     `DEF_SEEN_CP(fatal_alert_cause_bus_intg_violation_cp, value[3])
-    `DEF_SEEN_CP(fatal_alert_cause_illegal_bus_access_cp, value[4])
-    `DEF_SEEN_CP(fatal_alert_cause_lifecycle_escalation_cp, value[5])
+    `DEF_SEEN_CP(fatal_alert_cause_bad_internal_state_cp, value[4])
+    `DEF_SEEN_CP(fatal_alert_cause_illegal_bus_access_cp, value[5])
+    `DEF_SEEN_CP(fatal_alert_cause_lifecycle_escalation_cp, value[6])
 
     // We want to see an access to FATAL_ALERT_CAUSE in every operational state, but don't need to
     // see all possible values that could be read.
