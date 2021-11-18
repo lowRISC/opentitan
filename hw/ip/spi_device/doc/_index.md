@@ -21,7 +21,7 @@ title: "SPI Device HWIP Technical Specification"
 
 ### TPM over SPI
 
-- In compliance with [TCG TPM 2.0][TPM over SPI 2.0]
+- In compliance with [TPM PC Client Platform][TPM PCCP]
 - up to 64B compile-time configurable read and write data buffer (default: 4B)
 - 1 TPM command (8b) and 1 address (24bit) buffer
 - HW controlled wait state
@@ -52,9 +52,10 @@ The submodule also supports the SW by managing a certain set of the FIFO registe
 ## Compatibility
 
 The SPI device supports emulating an EEPROM (SPI flash mode in this document).
-The TPM submodule conforms to the [TPM over SPI 2.0][] specification. The TPM operation follows [TCG PC Client Platform TPM Profile Specification Section 7](https://trustedcomputinggroup.org/resource/pc-client-platform-tpm-profile-ptp-specification/)
+The TPM submodule conforms to the [TPM over SPI 2.0][] specification. The TPM operation follows [TCG PC Client Platform TPM Profile Specification Section 7][TPM PCCP].
 
 [TPM over SPI 2.0]: https://trustedcomputinggroup.org/wp-content/uploads/Trusted-Platform-Module-Library-Family-2.0-Level-00-Revision-1.59_pub.zip
+[TPM PCCP]: https://trustedcomputinggroup.org/resource/pc-client-platform-tpm-profile-ptp-specification/
 
 # Theory of Operations
 
@@ -301,12 +302,20 @@ The module stays in the wait state until the read FIFO is not empty.
 The module sends `START` at the next byte when the logic sees the notempty signal of the read FIFO.
 Then the module pops data from the read FIFO and sends the data over SPI.
 
+The TPM submodule accepts the payload for the TPM write command without the `WAIT` state if the write FIFO is empty.
+In other case, the TPM submodule sends `WAIT` until the write FIFO becomes available (empty).
+
+### Configuring Return-by-HW registers
+
 The return-by-HW register values come from the SW read-writable CSRs.
 The module latches the CSRs from the SYS_CLK domain into the SPI SCK domain when CSb is asserted.
 The SW is allowed to modify the return-by-HW registers when CSb is not active.
 
-The TPM submodule accepts the payload for the TPM write command without the `WAIT` state if the write FIFO is empty.
-In other case, the TPM submodule sends `WAIT` until the write FIFO becomes available (empty).
+The [TCG PC Client Platform TPM Profile][TPM PCCP] spec describes in the section 6 that the TPM device returns registers values based on the received locality (address[15:12]) and the `TPM_ACCESS_x.activeLocality`.
+The HW uses `TPM_ACCESS_x.activeLocaltiy` and the address bit 15:12 to determine what value the logic should return.
+If `invalid_locality` configuration is set, the logic returns `INVALID` value to the host system, when the host system sends a read request to the Locality greater than 4.
+If the request is in the supported locality (0-4), the logic checks `TPM_ACCESS_x.activeLocality` then returns data based on the table 39 in the spec for Return-by-HW registers.
+Other registers in the table should be processed by SW.
 
 # Design Details
 
