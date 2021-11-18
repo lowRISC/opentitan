@@ -24,7 +24,7 @@
   // By default, 1 level of hierarchy is always expanded in the area report.
   // This can be changed by setting the expansion depth to a higher value,
   // or by listing explicitly which submodules shall be expanded further.
-  expand_modules: ""
+  expand_modules: "{name}"
   expand_depth: 1
 
   // Restrict the maximum message count in each category

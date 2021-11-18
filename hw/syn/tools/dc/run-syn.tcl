@@ -27,6 +27,7 @@ set DUT                [get_env_var "DUT"]
 set CONSTRAINT         [get_env_var "CONSTRAINT"]
 set FOUNDRY_CONSTRAINT [get_env_var "FOUNDRY_CONSTRAINT"]
 set PARAMS             [get_env_var "PARAMS"]
+set POST_ELAB_SCRIPT   [get_env_var "POST_ELAB_SCRIPT"]
 
 # if in interactive mode, do not exit at the end of the script
 if { [info exists ::env(INTERACTIVE)] } {
@@ -59,7 +60,8 @@ if {$FOUNDRY_ROOT != ""} {
   # PRIM_DEFAULT_IMPL is set inside the library setup script
   set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL}+${PRIM_STD_CELL_VARIANT}"
 } else {
-  set DEFINE ""
+  # This black-boxes the 1p and 2p memory models (used for GTECH runs only).
+  set DEFINE "SYNTHESIS_MEMORY_BLACK_BOXING=TRUE"
 }
 
 #######################
@@ -89,6 +91,7 @@ puts $fp "set ::env(BUILD_DIR) $BUILD_DIR"
 puts $fp "set ::env(DUT) $DUT"
 puts $fp "set ::env(CONSTRAINT) $CONSTRAINT"
 puts $fp "set ::env(FOUNDRY_CONSTRAINT) $FOUNDRY_CONSTRAINT"
+puts $fp "set ::env(POST_ELAB_SCRIPT) $POST_ELAB_SCRIPT"
 close $fp
 
 ###########################
@@ -106,8 +109,20 @@ check_design                                              > "${REPDIR}/check.rpt
 
 set_verification_top
 
+if {$POST_ELAB_SCRIPT != ""} {
+  source ${POST_ELAB_SCRIPT}
+}
+
 write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
-#write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
+
+# write out a GTECH netlist and quit if libs are not defined
+if {$FOUNDRY_ROOT == ""} {
+  change_names -rules verilog -hierarchy
+  define_name_rules fixbackslashes -allowed "A-Za-z0-9_" -first_restricted "\\" -remove_chars
+  change_names -rule fixbackslashes -h
+  write_file -format verilog -hierarchy -output "${VLOGDIR}/elab.v"
+  exit
+}
 
 #############################
 ##   CLOCK GATING SETUP    ##

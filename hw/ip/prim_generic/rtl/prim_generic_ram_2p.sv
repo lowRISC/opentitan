@@ -35,6 +35,16 @@ module prim_generic_ram_2p import prim_ram_2p_pkg::*; #(
   input ram_2p_cfg_t       cfg_i
 );
 
+// For certain synthesis experiments we compile the design with generic models to get an unmapped
+// netlist (GTECH). In these synthesis experiments, we typically black-box the memory models since
+// these are going to be simulated using plain RTL models in netlist simulations. This can be done
+// by analyzing and elaborating the design, and then removing the memory submodules before writing
+// out the verilog netlist. However, memory arrays can take a long time to elaborate, and in case
+// of dual port rams they can even trigger elab errors due to multiple processes writing to the
+// same memory variable concurrently. To this end, we exclude the entire logic in this module in
+// these runs with the following macro.
+`ifndef SYNTHESIS_MEMORY_BLACK_BOXING
+
   logic unused_cfg;
   assign unused_cfg = ^cfg_i;
 
@@ -93,5 +103,5 @@ module prim_generic_ram_2p import prim_ram_2p_pkg::*; #(
   end
 
   `include "prim_util_memload.svh"
-
+`endif
 endmodule
