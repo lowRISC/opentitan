@@ -530,6 +530,10 @@ The `URND` LFSR is seeded once from the EDN connected via `edn_urnd` when OTBN s
 Each new execution of OTBN will reseed the `URND` PRNG.
 The PRNG state is advanced every cycle when OTBN is running.
 
+The PRNG has a long cycle length but has a fixed point: the sequence of numbers will get stuck if the state ever happens to become zero.
+This will never happen in normal operation.
+If a fault causes the state to become zero, OTBN raises a `BAD_INTERNAL_STATE` fatal error.
+
 ### Operational States {#design-details-operational-states}
 
 <!--
