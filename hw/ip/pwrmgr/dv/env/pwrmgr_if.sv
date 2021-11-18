@@ -146,7 +146,8 @@ interface pwrmgr_if (
     rstreqs_i = resets;
   endfunction
 
-  function automatic void update_reset_en(logic [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en_value);
+  function automatic void update_reset_en(
+      logic [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en_value);
     reset_en = reset_en_value;
   endfunction
 
@@ -168,8 +169,7 @@ interface pwrmgr_if (
   endfunction
 
   function automatic void update_control_enables(pwrmgr_env_pkg::control_enables_t value);
-    `uvm_info("pwrmgr_if", $sformatf("Updating control enables to 0x%x", value),
-              UVM_MEDIUM)
+    `uvm_info("pwrmgr_if", $sformatf("Updating control enables to 0x%x", value), UVM_MEDIUM)
     control_enables = value;
   endfunction
 

@@ -21,6 +21,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     logic [TL_DW-1:0] value;
     wakeups_t wakeup_en;
     resets_t reset_en;
+    set_nvms_idle();
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(0));
     csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0));
@@ -34,7 +35,6 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     // Initiate low power transition.
     csr_wr(.ptr(ral.control.low_power_hint), .value(1'b1));
     cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
-    fast_to_low_power();
     if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
       wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
     end
@@ -59,7 +59,6 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     // Trigger a reset.
     cfg.pwrmgr_vif.update_resets(resets);
     cfg.slow_clk_rst_vif.wait_clks(2);
-    fast_to_low_power();
     wait_for_reset_cause(pwrmgr_pkg::HwReq);
 
     // Now bring it back: the slow fsm doesn't participate on this, so we cannot
@@ -72,7 +71,6 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
     // Wait for interrupt to be generated whether or not it is enabled.
     cfg.slow_clk_rst_vif.wait_clks(10);
-    `uvm_info(`gfn, "Ending smoke test", UVM_LOW)
   endtask
 
 endclass : pwrmgr_smoke_vseq
