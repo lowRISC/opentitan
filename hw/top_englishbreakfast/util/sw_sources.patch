@@ -75,30 +75,32 @@ index 5dc1286af..1e2dced96 100644
      simple_serial_process_packet();
    }
 diff --git a/sw/device/sca/lib/meson.build b/sw/device/sca/lib/meson.build
-index dbf6bd0a9..8a107194c 100644
+index a6ce4d8af..8a107194c 100644
 --- a/sw/device/sca/lib/meson.build
 +++ b/sw/device/sca/lib/meson.build
-@@ -17,7 +17,6 @@ sw_sca_lib_sca  = declare_dependency(
+@@ -17,8 +17,6 @@ sw_sca_lib_sca  = declare_dependency(
        sw_lib_dif_gpio,
        sw_lib_dif_rv_timer,
        sw_lib_dif_uart,
 -      sw_lib_dif_csrng,
+-      sw_lib_dif_edn,
        sw_lib_irq,
        sw_lib_irq_handlers,
        sw_lib_mmio,
 diff --git a/sw/device/sca/lib/sca.c b/sw/device/sca/lib/sca.c
-index da6a2fef4..a46911701 100644
+index 0336455da..a46911701 100644
 --- a/sw/device/sca/lib/sca.c
 +++ b/sw/device/sca/lib/sca.c
-@@ -7,7 +7,6 @@
+@@ -7,8 +7,6 @@
  #include "sw/device/lib/arch/device.h"
  #include "sw/device/lib/base/bitfield.h"
  #include "sw/device/lib/dif/dif_clkmgr.h"
 -#include "sw/device/lib/dif/dif_csrng.h"
+-#include "sw/device/lib/dif/dif_edn.h"
  #include "sw/device/lib/dif/dif_entropy_src.h"
  #include "sw/device/lib/dif/dif_gpio.h"
  #include "sw/device/lib/dif/dif_rv_timer.h"
-@@ -57,11 +56,9 @@ enum {
+@@ -58,13 +56,9 @@ enum {
    kRvTimerHart = kTopEarlgreyPlicTargetIbex0,
  };
 
@@ -107,10 +109,12 @@ index da6a2fef4..a46911701 100644
  static dif_gpio_t gpio;
  static dif_rv_timer_t timer;
 -static dif_csrng_t csrng;
+-static dif_edn_t edn0;
+-static dif_edn_t edn1;
  
  // TODO(alphan): Handle return values as long as they don't affect capture rate.
  
-@@ -77,13 +74,9 @@ static void sca_init_uart(void) {
+@@ -80,13 +74,9 @@ static void sca_init_uart(void) {
    };
 
    IGNORE_RESULT(dif_uart_init(
@@ -126,7 +130,7 @@ index da6a2fef4..a46911701 100644
  }
 
  /**
-@@ -124,14 +117,6 @@ static void sca_init_timer(void) {
+@@ -127,25 +117,6 @@ static void sca_init_timer(void) {
    irq_global_ctrl(true);
  }
  
@@ -138,19 +142,27 @@ index da6a2fef4..a46911701 100644
 -      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
 -}
 -
+-/**
+- * Initializes the EDN handle.
+- */
+-static void sca_init_edn(void) {
+-  IGNORE_RESULT(
+-      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
+-
+-  IGNORE_RESULT(
+-      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
+-}
+-
  /**
   * Timer IRQ handler.
   *
-@@ -158,23 +143,6 @@ void handler_irq_timer(void) {
+@@ -172,20 +143,6 @@ void handler_irq_timer(void) {
   * @param disable Set of peripherals to disable.
   */
  void sca_disable_peripherals(sca_peripherals_t disable) {
 -  if (disable & kScaPeripheralEdn) {
--    // TODO(#5465): Replace with `dif_edn_stop()` when it is implemented.
--    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
--                        EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
--    mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
--                        EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
+-    IGNORE_RESULT(dif_edn_stop(&edn0));
+-    IGNORE_RESULT(dif_edn_stop(&edn1));
 -  }
 -  if (disable & kScaPeripheralCsrng) {
 -    IGNORE_RESULT(dif_csrng_stop(&csrng));
@@ -165,7 +177,7 @@ index da6a2fef4..a46911701 100644
    // Disable HMAC, KMAC, OTBN and USB clocks through CLKMGR DIF.
    dif_clkmgr_t clkmgr;
    IGNORE_RESULT(dif_clkmgr_init(
-@@ -188,17 +156,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
+@@ -199,17 +156,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
      IGNORE_RESULT(dif_clkmgr_hintable_clock_set_hint(
          &clkmgr, CLKMGR_CLK_HINTS_CLK_MAIN_HMAC_HINT_BIT, kDifToggleDisabled));
    }
@@ -183,11 +195,12 @@ index da6a2fef4..a46911701 100644
    if (disable & kScaPeripheralUsb) {
      IGNORE_RESULT(dif_clkmgr_gateable_clock_set_enabled(
          &clkmgr, CLKMGR_CLK_ENABLES_CLK_USB_PERI_EN_BIT, kDifToggleDisabled));
-@@ -210,7 +167,6 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
+@@ -221,8 +167,6 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
    sca_init_uart();
    sca_init_gpio(trigger);
    sca_init_timer();
 -  sca_init_csrng();
+-  sca_init_edn();
    sca_disable_peripherals(~enable);
  }
  
@@ -214,10 +227,10 @@ index 1a5fef16c..214e08151 100644
    CHECK_DIF_OK(
        dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
-index 2c9cf8049..65e845a02 100644
+index 25b6fa24d..da9429263 100644
 --- a/sw/device/tests/meson.build
 +++ b/sw/device/tests/meson.build
-@@ -224,7 +224,6 @@ aes_smoketest_lib = declare_dependency(
+@@ -261,7 +261,6 @@ aes_smoketest_lib = declare_dependency(
        sw_lib_dif_aes,
        sw_lib_mmio,
        sw_lib_runtime_log,
