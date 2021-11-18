@@ -171,4 +171,8 @@ TEST_APPS_SELFCHECKING = [
         # verilator for now.
         "targets": ["sim_verilator"],
     },
+    {
+        "name": "sw_silicon_creator_lib_boot_data_functest",
+        "test_dir": "sw/device/silicon_creator/testing",
+    },
 ]
