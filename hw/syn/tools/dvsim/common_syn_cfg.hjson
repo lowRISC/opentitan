@@ -43,16 +43,20 @@
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
   sv_flist_gen_flags: ["--flag=fileset_{design_level}"]
 
+  // Can be used to hook in an additional post elab scripting step.
+  post_elab_script: ""
+
   // Common fail patterns.
   build_fail_patterns: [// FuseSoC build error
                         "^ERROR:.*$"]
 
   exports: [
-    { SYN_ROOT:     "{syn_root}" },
-    { FOUNDRY_ROOT: "{foundry_root}" },
-    { BUILD_DIR:    "{build_dir}" },
-    { DUT:          "{dut}" },
-    { PARAMS:       "{params}" },
-    { SV_FLIST:     "{sv_flist}" }
+    { SYN_ROOT:         "{syn_root}" },
+    { FOUNDRY_ROOT:     "{foundry_root}" },
+    { BUILD_DIR:        "{build_dir}" },
+    { DUT:              "{dut}" },
+    { PARAMS:           "{params}" },
+    { SV_FLIST:         "{sv_flist}" },
+    { POST_ELAB_SCRIPT: "{post_elab_script}" }
   ]
 }
