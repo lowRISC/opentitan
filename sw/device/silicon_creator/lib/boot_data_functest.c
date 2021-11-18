@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
@@ -15,11 +15,11 @@
 const test_config_t kTestConfig;
 
 /**
- * Base addresses of flash info pages used for storing boot data.
+ * Boot data flash info pages.
  */
-static const uint32_t kPageBaseAddrs[2] = {
-    kBootDataPage0Base,
-    kBootDataPage1Base,
+static const flash_ctrl_info_page_t kPages[2] = {
+    kFlashCtrlInfoPageBootData0,
+    kFlashCtrlInfoPageBootData1,
 };
 
 /**
@@ -34,23 +34,21 @@ boot_data_t kTestBootData = (boot_data_t){
 };
 
 /**
- * Unlocks boot data info pages.
+ * Sets read, write, and erase permissions for boot data pages.
+ *
+ * This function is intended for backdoor access during tests, e.g. to set the
+ * contents of a page before a read test or check the contents after a write
+ * test.
+ *
+ * @param enable New read, write, and erase permissions.
  */
-static void unlock_boot_data_pages(void) {
-  for (size_t i = 0; i < ARRAYSIZE(kPageBaseAddrs); ++i) {
-    const uint32_t page_id =
-        ((kPageBaseAddrs[i] - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR) %
-         FLASH_CTRL_PARAM_BYTES_PER_BANK) /
-        FLASH_CTRL_PARAM_BYTES_PER_PAGE;
-    mp_region_t info_region = {.num = page_id,
-                               .base = kPageBaseAddrs[i],
-                               .size = 0,  // unused for info pages.
-                               .part = kInfoPartition,
-                               .rd_en = true,
-                               .prog_en = true,
-                               .erase_en = true,
-                               .scramble_en = false};
-    flash_cfg_region(&info_region);
+static void boot_data_pages_mp_set(hardened_bool_t perm) {
+  for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
+    flash_ctrl_info_mp_set(kPages[i], (flash_ctrl_mp_t){
+                                          .read = perm,
+                                          .write = perm,
+                                          .erase = perm,
+                                      });
   }
 }
 
@@ -58,8 +56,8 @@ static void unlock_boot_data_pages(void) {
  * Erases boot data info pages.
  */
 static void erase_boot_data_pages(void) {
-  for (size_t i = 0; i < ARRAYSIZE(kPageBaseAddrs); ++i) {
-    CHECK(flash_page_erase(kPageBaseAddrs[i], kInfoPartition) == 0,
+  for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
+    CHECK(flash_ctrl_info_erase(kPages[i], kFlashCtrlEraseTypePage) == kErrorOk,
           "Flash page erase failed.");
   }
 }
@@ -70,19 +68,18 @@ static void erase_boot_data_pages(void) {
  * This function also checks that the entry was written correctly by reading it
  * back from the flash.
  *
- * @param page_base Page base address in bytes.
+ * @param page Flash info page.
  * @param index Index of the entry to write in the given page.
  * @param boot_data A boot data entry.
  */
-static void write_boot_data(uint32_t page_base, size_t index,
+static void write_boot_data(flash_ctrl_info_page_t page, size_t index,
                             const boot_data_t *boot_data) {
-  const uint32_t addr = page_base + index * sizeof(boot_data_t);
+  const uint32_t offset = index * sizeof(boot_data_t);
   uint32_t buf[kBootDataNumWords];
   memcpy(buf, boot_data, sizeof(boot_data_t));
-  CHECK(flash_write(addr, kInfoPartition, buf, kBootDataNumWords) == 0,
+  CHECK(flash_ctrl_info_write(page, offset, kBootDataNumWords, buf) == kErrorOk,
         "Flash write failed.");
-
-  CHECK(flash_read(addr, kInfoPartition, kBootDataNumWords, buf) == 0,
+  CHECK(flash_ctrl_info_read(page, offset, kBootDataNumWords, buf) == kErrorOk,
         "Flash read failed.");
   CHECK(memcmp(buf, boot_data, sizeof(boot_data_t)) == 0,
         "Flash write failed.");
@@ -91,15 +88,15 @@ static void write_boot_data(uint32_t page_base, size_t index,
 /**
  * Reads the boot data entry at the given page and index.
  *
- * @param page_base Page base address in bytes.
+ * @param page Flash info page.
  * @param index Index of the entry to read in the given page.
  * @param boot_data A boot data entry.
  */
-static void read_boot_data(uint32_t page_base, size_t index,
+static void read_boot_data(flash_ctrl_info_page_t page, size_t index,
                            boot_data_t *boot_data) {
-  const uint32_t addr = page_base + index * sizeof(boot_data_t);
+  const uint32_t offset = index * sizeof(boot_data_t);
   uint32_t buf[kBootDataNumWords];
-  CHECK(flash_read(addr, kInfoPartition, kBootDataNumWords, buf) == 0,
+  CHECK(flash_ctrl_info_read(page, offset, kBootDataNumWords, buf) == kErrorOk,
         "Flash read failed.");
   memcpy(boot_data, buf, sizeof(boot_data_t));
 }
@@ -111,17 +108,17 @@ static void read_boot_data(uint32_t page_base, size_t index,
  * `identifier` to `kBootDataInvalidatedIdentifier` before writing it to the
  * flash.
  *
- * @param page_base Page base address in bytes.
+ * @param page Flash info page.
  * @param num_entries Number of entries to write.
  * @param boot_data A boot data entry.
  */
-static void fill_with_invalidated_boot_data(uint32_t page_base,
+static void fill_with_invalidated_boot_data(flash_ctrl_info_page_t page,
                                             size_t num_entries,
                                             const boot_data_t *boot_data) {
   boot_data_t invalidated = *boot_data;
   invalidated.identifier = kBootDataInvalidatedIdentifier;
   for (size_t i = 0; i < num_entries; ++i) {
-    write_boot_data(page_base, i, &invalidated);
+    write_boot_data(page, i, &invalidated);
   }
 }
 
@@ -201,7 +198,7 @@ rom_error_t read_empty_default_not_allowed_test(void) {
 
 rom_error_t read_single_page_0_test(void) {
   erase_boot_data_pages();
-  write_boot_data(kBootDataPage0Base, 0, &kTestBootData);
+  write_boot_data(kFlashCtrlInfoPageBootData0, 0, &kTestBootData);
 
   boot_data_t boot_data;
   RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));
@@ -211,7 +208,7 @@ rom_error_t read_single_page_0_test(void) {
 
 rom_error_t read_single_page_1_test(void) {
   erase_boot_data_pages();
-  write_boot_data(kBootDataPage1Base, 0, &kTestBootData);
+  write_boot_data(kFlashCtrlInfoPageBootData1, 0, &kTestBootData);
 
   boot_data_t boot_data;
   uint64_t start = ibex_mcycle_read();
@@ -225,12 +222,12 @@ rom_error_t read_single_page_1_test(void) {
 
 rom_error_t read_full_page_0_test(void) {
   erase_boot_data_pages();
-  fill_with_invalidated_boot_data(kBootDataPage0Base,
+  fill_with_invalidated_boot_data(kFlashCtrlInfoPageBootData0,
                                   kBootDataEntriesPerPage - 1, &kTestBootData);
-  write_boot_data(kBootDataPage0Base, kBootDataEntriesPerPage - 1,
+  write_boot_data(kFlashCtrlInfoPageBootData0, kBootDataEntriesPerPage - 1,
                   &kTestBootData);
-  fill_with_invalidated_boot_data(kBootDataPage1Base, kBootDataEntriesPerPage,
-                                  &kTestBootData);
+  fill_with_invalidated_boot_data(kFlashCtrlInfoPageBootData1,
+                                  kBootDataEntriesPerPage, &kTestBootData);
 
   boot_data_t boot_data;
   RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));
@@ -240,11 +237,11 @@ rom_error_t read_full_page_0_test(void) {
 
 rom_error_t read_full_page_1_test(void) {
   erase_boot_data_pages();
-  fill_with_invalidated_boot_data(kBootDataPage0Base, kBootDataEntriesPerPage,
-                                  &kTestBootData);
-  fill_with_invalidated_boot_data(kBootDataPage1Base,
+  fill_with_invalidated_boot_data(kFlashCtrlInfoPageBootData0,
+                                  kBootDataEntriesPerPage, &kTestBootData);
+  fill_with_invalidated_boot_data(kFlashCtrlInfoPageBootData1,
                                   kBootDataEntriesPerPage - 1, &kTestBootData);
-  write_boot_data(kBootDataPage1Base, kBootDataEntriesPerPage - 1,
+  write_boot_data(kFlashCtrlInfoPageBootData1, kBootDataEntriesPerPage - 1,
                   &kTestBootData);
 
   boot_data_t boot_data;
@@ -284,14 +281,14 @@ rom_error_t write_page_switch_test(void) {
     if (i > 0) {
       // Previous entry must be invalidated.
       boot_data_t prev_entry;
-      read_boot_data(kBootDataPage0Base, i - 1, &prev_entry);
+      read_boot_data(kFlashCtrlInfoPageBootData0, i - 1, &prev_entry);
       if (prev_entry.identifier != kBootDataInvalidatedIdentifier) {
         return kErrorUnknown;
       }
     }
   }
   // Last written entry must be at entry 0 in page 1.
-  read_boot_data(kBootDataPage1Base, 0, &boot_data_exp);
+  read_boot_data(kFlashCtrlInfoPageBootData1, 0, &boot_data_exp);
   if (memcmp(&boot_data_act, &boot_data_exp, sizeof(boot_data_t)) != 0) {
     LOG_ERROR("Page 0 -> 1 switch failed.");
     return kErrorUnknown;
@@ -306,13 +303,13 @@ rom_error_t write_page_switch_test(void) {
     RETURN_IF_ERROR(check_boot_data(&boot_data_act, ++counter_exp));
     // Previous entry must be invalidated.
     boot_data_t prev_entry;
-    read_boot_data(kBootDataPage1Base, i - 1, &prev_entry);
+    read_boot_data(kFlashCtrlInfoPageBootData1, i - 1, &prev_entry);
     if (prev_entry.identifier != kBootDataInvalidatedIdentifier) {
       return kErrorUnknown;
     }
   }
   // Last written entry must be at entry 0 in page 0.
-  read_boot_data(kBootDataPage0Base, 0, &boot_data_exp);
+  read_boot_data(kFlashCtrlInfoPageBootData0, 0, &boot_data_exp);
   if (memcmp(&boot_data_act, &boot_data_exp, sizeof(boot_data_t)) != 0) {
     LOG_ERROR("Page 1 -> 0 switch failed.");
     return kErrorUnknown;
@@ -324,8 +321,10 @@ rom_error_t write_page_switch_test(void) {
 bool test_main(void) {
   rom_error_t result = kErrorOk;
 
-  flash_init_block();
-  unlock_boot_data_pages();
+  flash_ctrl_init();
+  // TODO: Reduce the scope of this once boot_data starts using
+  // `flash_ctrl_info_mp_set()`.
+  boot_data_pages_mp_set(kHardenedBoolTrue);
 
   EXECUTE_TEST(result, check_test_data_test);
   EXECUTE_TEST(result, read_empty_default_allowed_test);

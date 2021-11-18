@@ -282,7 +282,7 @@ sw_silicon_creator_lib_boot_data_functest = declare_dependency(
       'boot_data_functest.c'
     ],
     dependencies: [
-      sw_lib_flash_ctrl,
+      sw_silicon_creator_lib_driver_flash_ctrl,
       sw_silicon_creator_lib_boot_data,
     ],
   ),
