@@ -181,9 +181,9 @@ module otbn
   logic imem_req_core;
   logic imem_write_core;
   logic [ImemIndexWidth-1:0] imem_index_core;
-  logic [31:0] imem_rdata_core;
+  logic [38:0] imem_rdata_core;
   logic imem_rvalid_core;
-  logic imem_rerror_core;
+  logic insn_fetch_err;
 
   logic imem_req_bus;
   logic imem_dummy_response_q, imem_dummy_response_d;
@@ -356,7 +356,7 @@ module otbn
   // the currently executed instruction from IMEM through the bus
   // unintentionally.
   assign imem_rdata_bus  = !imem_access_core && !illegal_bus_access_q ? imem_rdata : 39'b0;
-  assign imem_rdata_core = imem_rdata[31:0];
+  assign imem_rdata_core = imem_rdata;
 
   // When an illegal bus access is seen, always return a dummy response the follow cycle.
   assign imem_rvalid_bus  = (~imem_access_core & imem_rvalid) | imem_dummy_response_q;
@@ -365,7 +365,6 @@ module otbn
   // No imem errors reported for bus reads. Integrity is carried through on the bus so integrity
   // checking on TL responses will pick up any errors.
   assign imem_rerror_bus = 1'b0;
-  assign imem_rerror_core = imem_rerror;
 
   // Data Memory (DMEM) ========================================================
 
@@ -662,8 +661,8 @@ module otbn
 
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
-  assign hw2reg.fatal_alert_cause.imem_intg_violation.de = imem_rerror;
-  assign hw2reg.fatal_alert_cause.imem_intg_violation.d  = imem_rerror;
+  assign hw2reg.fatal_alert_cause.imem_intg_violation.de = insn_fetch_err;
+  assign hw2reg.fatal_alert_cause.imem_intg_violation.d  = insn_fetch_err;
   assign hw2reg.fatal_alert_cause.dmem_intg_violation.de = dmem_rerror;
   assign hw2reg.fatal_alert_cause.dmem_intg_violation.d  = dmem_rerror;
   // TODO: Register file errors
@@ -693,7 +692,7 @@ module otbn
                                   reg2hw.alert_test.recov.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal] = imem_rerror          |
+  assign alerts[AlertFatal] = insn_fetch_err       |
                               dmem_rerror          |
                               bus_intg_violation   |
                               illegal_bus_access_d |
@@ -866,7 +865,8 @@ module otbn
       .imem_addr_o                 (imem_addr_core),
       .imem_rdata_i                (imem_rdata_core),
       .imem_rvalid_i               (imem_rvalid_core),
-      .imem_rerror_i               (imem_rerror_core),
+
+      .insn_fetch_err_o            (insn_fetch_err),
 
       .dmem_req_o                  (dmem_req_core),
       .dmem_write_o                (dmem_write_core),
@@ -917,7 +917,8 @@ module otbn
       .imem_addr_o                 (imem_addr_core),
       .imem_rdata_i                (imem_rdata_core),
       .imem_rvalid_i               (imem_rvalid_core),
-      .imem_rerror_i               (imem_rerror_core),
+
+      .insn_fetch_err_o            (insn_fetch_err),
 
       .dmem_req_o                  (dmem_req_core),
       .dmem_write_o                (dmem_write_core),

@@ -301,6 +301,7 @@ class SW(OTBNInsn):
 class BEQ(OTBNInsn):
     insn = insn_for_mnemonic('beq', 3)
     affects_control = True
+    has_fetch_stall = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
@@ -326,6 +327,7 @@ class BEQ(OTBNInsn):
 class BNE(OTBNInsn):
     insn = insn_for_mnemonic('bne', 3)
     affects_control = True
+    has_fetch_stall = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
@@ -352,6 +354,7 @@ class BNE(OTBNInsn):
 class JAL(OTBNInsn):
     insn = insn_for_mnemonic('jal', 2)
     affects_control = True
+    has_fetch_stall = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
@@ -373,6 +376,7 @@ class JAL(OTBNInsn):
 class JALR(OTBNInsn):
     insn = insn_for_mnemonic('jalr', 3)
     affects_control = True
+    has_fetch_stall = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
