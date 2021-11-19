@@ -28,11 +28,11 @@ class OtbnTest : public Test, public MmioTest {
 class InitTest : public OtbnTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_otbn_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_otbn_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_otbn_init({.base_addr = dev().region()}, &otbn_), kDifOk);
+  EXPECT_EQ(dif_otbn_init(dev().region(), &otbn_), kDifOk);
 }
 
 class AlertForceTest : public OtbnTest {};

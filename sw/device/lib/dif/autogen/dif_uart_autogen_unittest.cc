@@ -28,11 +28,11 @@ class UartTest : public Test, public MmioTest {
 class InitTest : public UartTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_uart_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_uart_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_uart_init({.base_addr = dev().region()}, &uart_), kDifOk);
+  EXPECT_EQ(dif_uart_init(dev().region(), &uart_), kDifOk);
 }
 
 class AlertForceTest : public UartTest {};

@@ -28,12 +28,11 @@ class PattgenTest : public Test, public MmioTest {
 class InitTest : public PattgenTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_pattgen_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_pattgen_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_pattgen_init({.base_addr = dev().region()}, &pattgen_), kDifOk);
+  EXPECT_EQ(dif_pattgen_init(dev().region(), &pattgen_), kDifOk);
 }
 
 class AlertForceTest : public PattgenTest {};

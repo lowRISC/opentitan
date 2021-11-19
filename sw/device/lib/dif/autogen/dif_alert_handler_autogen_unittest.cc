@@ -28,14 +28,11 @@ class AlertHandlerTest : public Test, public MmioTest {
 class InitTest : public AlertHandlerTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_alert_handler_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(
-      dif_alert_handler_init({.base_addr = dev().region()}, &alert_handler_),
-      kDifOk);
+  EXPECT_EQ(dif_alert_handler_init(dev().region(), &alert_handler_), kDifOk);
 }
 
 class IrqGetStateTest : public AlertHandlerTest {};

@@ -28,12 +28,11 @@ class RstmgrTest : public Test, public MmioTest {
 class InitTest : public RstmgrTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_rstmgr_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_rstmgr_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_rstmgr_init({.base_addr = dev().region()}, &rstmgr_), kDifOk);
+  EXPECT_EQ(dif_rstmgr_init(dev().region(), &rstmgr_), kDifOk);
 }
 
 }  // namespace

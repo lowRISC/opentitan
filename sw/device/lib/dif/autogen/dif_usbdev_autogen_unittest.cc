@@ -28,12 +28,11 @@ class UsbdevTest : public Test, public MmioTest {
 class InitTest : public UsbdevTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_usbdev_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_usbdev_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_usbdev_init({.base_addr = dev().region()}, &usbdev_), kDifOk);
+  EXPECT_EQ(dif_usbdev_init(dev().region(), &usbdev_), kDifOk);
 }
 
 class AlertForceTest : public UsbdevTest {};

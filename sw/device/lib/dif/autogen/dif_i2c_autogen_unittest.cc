@@ -28,11 +28,11 @@ class I2cTest : public Test, public MmioTest {
 class InitTest : public I2cTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_i2c_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_i2c_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_i2c_init({.base_addr = dev().region()}, &i2c_), kDifOk);
+  EXPECT_EQ(dif_i2c_init(dev().region(), &i2c_), kDifOk);
 }
 
 class AlertForceTest : public I2cTest {};

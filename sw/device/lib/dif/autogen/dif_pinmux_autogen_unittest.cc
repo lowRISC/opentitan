@@ -28,12 +28,11 @@ class PinmuxTest : public Test, public MmioTest {
 class InitTest : public PinmuxTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_pinmux_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_pinmux_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_pinmux_init({.base_addr = dev().region()}, &pinmux_), kDifOk);
+  EXPECT_EQ(dif_pinmux_init(dev().region(), &pinmux_), kDifOk);
 }
 
 class AlertForceTest : public PinmuxTest {};

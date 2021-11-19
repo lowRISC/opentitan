@@ -28,13 +28,11 @@ class AdcCtrlTest : public Test, public MmioTest {
 class InitTest : public AdcCtrlTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_adc_ctrl_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_adc_ctrl_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_adc_ctrl_init({.base_addr = dev().region()}, &adc_ctrl_),
-            kDifOk);
+  EXPECT_EQ(dif_adc_ctrl_init(dev().region(), &adc_ctrl_), kDifOk);
 }
 
 class AlertForceTest : public AdcCtrlTest {};
