@@ -12,7 +12,8 @@ filesets:
       - lowrisc:prim:util
       - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:lfsr
-      - lowrisc:prim:all
+      - lowrisc:prim:buf
+      - lowrisc:prim:cipher
       - lowrisc:prim:util_get_scramble_params
       - lowrisc:dv_verilator:memutil_dpi_scrambled
     files:
