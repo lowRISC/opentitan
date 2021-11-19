@@ -22,11 +22,11 @@
  *             384 bytes
  *             The signature
  *
- *   in_rr:    INPUT
+ *   rr:       INPUT
  *             384 bytes
  *             The Montgomery transformation constant R^2 = (2^3072)^2 mod N
  *
- *   in_m0inv: INPUT
+ *   m0inv:    INPUT
  *             384 bytes
  *             The Montgomery constant
  */
@@ -353,8 +353,8 @@ montmul:
  * to the output buffer. Note, that the content of the input buffer is
  * modified during execution.
  *
- * @param[in]  dmem[in_m0inv] pointer to m0' in dmem
- * @param[in]  dmem[in_rr] pointer to RR in dmem
+ * @param[in]  dmem[m0inv] pointer to m0' in dmem
+ * @param[in]  dmem[rr] pointer to RR in dmem
  * @param[in]  dmem[in_mod] pointer to first limb of modulus M in dmem
  * @param[in]  dmem[in_buf] pointer to buffer with base bignum
  * @param[in]  dmem[out_buf] pointer to output buffer
@@ -378,8 +378,8 @@ modexp_var_3072_f4:
   la        x24, out_buf
   la        x16, in_mod
   la        x23, in_buf
-  la        x26, in_rr
-  la        x17, in_m0inv
+  la        x26, rr
+  la        x17, m0inv
 
   /* convert input to Montgomery domain and store in dmem
      dmem[out_buf] = montmul(dmem[in_buf], dmem[in_RR]) = A*R mod M */
@@ -457,13 +457,13 @@ in_buf:
   .zero 384
 
 /* Input buffer for the Montgomery transformation constant R^2. */
-.section .data.in_rr
-.weak in_rr
-in_rr:
+.section .data.rr
+.weak rr
+rr:
   .zero 384
 
 /* The Montgomery constant. */
-.section .data.in_m0inv
-.weak in_m0inv
-in_m0inv:
+.section .data.m0inv
+.weak m0inv
+m0inv:
   .zero 32

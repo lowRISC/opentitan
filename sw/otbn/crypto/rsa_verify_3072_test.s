@@ -130,8 +130,8 @@ in_mod:
   .word 0xe1df9be8
 
 /* Montgomery constant m0' */
-.globl in_m0inv
-in_m0inv:
+.globl m0inv
+m0inv:
 .word 0xf09b71df
 .word 0xfd3e34f7
 .word 0x0b908e3b
@@ -150,8 +150,8 @@ in_m0inv:
 .word 0x7da9803a
 
 /* Squared Mongomery Radix RR = (2^3072)^2 mod N */
-.globl in_rr
-in_rr:
+.globl rr
+rr:
 .word 0xa3eb77fa
 .word 0x9db9a2ac
 .word 0x2c19d4ae
