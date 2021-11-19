@@ -148,6 +148,8 @@ module spi_device
   logic [31:0] addrfifo_rdata;
   logic        addrfifo_notempty;
 
+  logic payload_notempty;
+
   localparam int unsigned CmdFifoPtrW = $clog2(SramCmdFifoDepth+1);
   localparam int unsigned AddrFifoPtrW = $clog2(SramAddrFifoDepth+1);
 
@@ -157,6 +159,8 @@ module spi_device
   logic [CmdFifoPtrW-1:0]    cmdfifo_depth;
   logic [AddrFifoPtrW-1:0]   addrfifo_depth;
   logic [PayloadDepthW-1:0]  payload_depth;
+
+  assign payload_notempty = payload_depth != '0;
 
   /////////////////////
   // Control signals //
@@ -279,8 +283,6 @@ module spi_device
   logic intr_readbuf_watermark, intr_readbuf_flip;
 
   // TODO: Implement
-  assign intr_upload_cmdfifo_not_empty = 1'b 0;
-  assign intr_upload_payload_not_empty = 1'b 0;
   assign intr_readbuf_watermark        = 1'b 0;
   assign intr_readbuf_flip             = 1'b 0;
 
@@ -543,6 +545,20 @@ module spi_device
     .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_underflow.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_underflow.d ),
     .intr_o                 (intr_tx_underflow_o              )
+  );
+
+  prim_edge_detector #(
+    .Width (2),
+    .EnSync(1'b 0)
+  ) u_intr_upload_edge (
+    .clk_i,
+    .rst_ni,
+
+    .d_i               ({cmdfifo_notempty, payload_notempty}),
+    .q_sync_o          (),
+    .q_posedge_pulse_o ({intr_upload_cmdfifo_not_empty,
+                         intr_upload_payload_not_empty}),
+    .q_negedge_pulse_o ()
   );
 
   prim_intr_hw #(.Width(1)) u_intr_cmdfifo_not_empty (

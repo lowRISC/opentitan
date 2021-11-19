@@ -266,11 +266,35 @@ module spid_upload
   end
 
   // Synchronize to the sys_clk when CSb deasserted
+  logic sys_payloadptr_clr_posedge;
+
+  // To trigger the payload buffer update event, the payload_depth should be
+  // reset when new upload command comes.
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) sys_payload_depth_o <= '0;
+    else if (sys_payloadptr_clr_posedge) sys_payload_depth_o <= '0;
     else if (sys_csb_deasserted_pulse_i) sys_payload_depth_o <= payloadptr;
   end
 
+  // payloadptr_clr --> sys domain
+  // latch payloadptr_clr @ SCK -> 2FF -> Edge detect
+  logic payloadptr_clr_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) payloadptr_clr_q <= 1'b 0;
+    else         payloadptr_clr_q <= payloadptr_clr;
+  end
+  prim_edge_detector #(
+    .Width      (1),
+    .EnSync     (1'b 1),
+    .ResetValue (1'b 1)
+  ) u_payloadptr_clr_edge_sys (
+    .clk_i (sys_clk_i),
+    .rst_ni (sys_rst_ni),
+    .d_i    (payloadptr_clr_q),
+    .q_sync_o (),
+    .q_posedge_pulse_o (sys_payloadptr_clr_posedge),
+    .q_negedge_pulse_o ()
+  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
