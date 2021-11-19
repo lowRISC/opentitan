@@ -53,11 +53,6 @@ _start:
   la   a1, _bss_end
   call crt_section_clear
 
-  // Zero out the stack
-  la   a0, _stack_start
-  la   a1, _stack_end
-  call crt_section_clear
-
   // Initialize the `.data` segment from the `.idata` segment.
   la   a0, _data_start
   la   a1, _data_end
