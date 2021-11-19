@@ -153,8 +153,8 @@ module lc_ctrl_reg_top (
   logic [31:0] transition_token_3_wd;
   logic transition_target_re;
   logic transition_target_we;
-  logic [4:0] transition_target_qs;
-  logic [4:0] transition_target_wd;
+  logic [29:0] transition_target_qs;
+  logic [29:0] transition_target_wd;
   logic otp_vendor_test_ctrl_re;
   logic otp_vendor_test_ctrl_we;
   logic [31:0] otp_vendor_test_ctrl_qs;
@@ -162,11 +162,11 @@ module lc_ctrl_reg_top (
   logic otp_vendor_test_status_re;
   logic [31:0] otp_vendor_test_status_qs;
   logic lc_state_re;
-  logic [4:0] lc_state_qs;
+  logic [29:0] lc_state_qs;
   logic lc_transition_cnt_re;
   logic [4:0] lc_transition_cnt_qs;
   logic lc_id_state_re;
-  logic [1:0] lc_id_state_qs;
+  logic [31:0] lc_id_state_qs;
   logic device_id_0_re;
   logic [31:0] device_id_0_qs;
   logic device_id_1_re;
@@ -513,7 +513,7 @@ module lc_ctrl_reg_top (
 
   // R[transition_target]: V(True)
   prim_subreg_ext #(
-    .DW    (5)
+    .DW    (30)
   ) u_transition_target (
     .re     (transition_target_re),
     .we     (transition_target_we & transition_regwen_qs),
@@ -558,7 +558,7 @@ module lc_ctrl_reg_top (
 
   // R[lc_state]: V(True)
   prim_subreg_ext #(
-    .DW    (5)
+    .DW    (30)
   ) u_lc_state (
     .re     (lc_state_re),
     .we     (1'b0),
@@ -588,7 +588,7 @@ module lc_ctrl_reg_top (
 
   // R[lc_id_state]: V(True)
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (32)
   ) u_lc_id_state (
     .re     (lc_id_state_re),
     .we     (1'b0),
@@ -972,7 +972,7 @@ module lc_ctrl_reg_top (
   assign transition_target_re = addr_hit[10] & reg_re & !reg_error;
   assign transition_target_we = addr_hit[10] & reg_we & !reg_error;
 
-  assign transition_target_wd = reg_wdata[4:0];
+  assign transition_target_wd = reg_wdata[29:0];
   assign otp_vendor_test_ctrl_re = addr_hit[11] & reg_re & !reg_error;
   assign otp_vendor_test_ctrl_we = addr_hit[11] & reg_we & !reg_error;
 
@@ -1054,7 +1054,7 @@ module lc_ctrl_reg_top (
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[4:0] = transition_target_qs;
+        reg_rdata_next[29:0] = transition_target_qs;
       end
 
       addr_hit[11]: begin
@@ -1066,7 +1066,7 @@ module lc_ctrl_reg_top (
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[4:0] = lc_state_qs;
+        reg_rdata_next[29:0] = lc_state_qs;
       end
 
       addr_hit[14]: begin
@@ -1074,7 +1074,7 @@ module lc_ctrl_reg_top (
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[1:0] = lc_id_state_qs;
+        reg_rdata_next[31:0] = lc_id_state_qs;
       end
 
       addr_hit[16]: begin

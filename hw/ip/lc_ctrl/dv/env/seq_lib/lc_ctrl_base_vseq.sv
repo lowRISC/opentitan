@@ -107,7 +107,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     bit trigger_alert;
     bit [TL_DW-1:0] status_val;
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
-    csr_wr(ral.transition_target, next_lc_state);
+    csr_wr(ral.transition_target, {DecLcStateNumRep{next_lc_state[DecLcStateWidth-1:0]}});
     foreach (ral.transition_token[i]) begin
       csr_wr(ral.transition_token[i], token_val[TL_DW-1:0]);
       token_val = token_val >> TL_DW;

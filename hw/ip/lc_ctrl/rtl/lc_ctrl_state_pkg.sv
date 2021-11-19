@@ -22,6 +22,9 @@ package lc_ctrl_state_pkg;
   parameter int LcStateWidth = NumLcStateValues * LcValueWidth;
   parameter int NumLcStates = 21;
   parameter int DecLcStateWidth = vbits(NumLcStates);
+  // Redundant version used in the CSRs.
+  parameter int DecLcStateNumRep = 32/DecLcStateWidth;
+  parameter int ExtDecLcStateWidth = DecLcStateNumRep*DecLcStateWidth;
 
   parameter int NumLcCountValues = 24;
   parameter int LcCountWidth = NumLcCountValues * LcValueWidth;
@@ -33,6 +36,9 @@ package lc_ctrl_state_pkg;
   // is declared here for exposure through the CSR interface.
   parameter int NumLcIdStates = 2;
   parameter int DecLcIdStateWidth = vbits(NumLcIdStates+1);
+  // Redundant version used in the CSRs.
+  parameter int DecLcIdStateNumRep = 32/DecLcIdStateWidth;
+  parameter int ExtDecLcIdStateWidth = DecLcIdStateNumRep*DecLcIdStateWidth;
 
   /////////////////////////////////////////////
   // Life cycle manufacturing state encoding //
@@ -308,6 +314,8 @@ package lc_ctrl_state_pkg;
     DecLcStEscalate = 22,
     DecLcStInvalid = 23
   } dec_lc_state_e;
+
+  typedef dec_lc_state_e [DecLcStateNumRep-1:0] ext_dec_lc_state_t;
 
   typedef enum logic [DecLcIdStateWidth-1:0] {
     DecLcIdBlank,
