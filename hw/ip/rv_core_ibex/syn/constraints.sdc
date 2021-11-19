@@ -7,15 +7,13 @@
 # note that we do not fix hold timing in this flow
 set SETUP_CLOCK_UNCERTAINTY 0.5
 
-puts "Applying constraints for RV Core Ibex"
-
 #####################
 # main clock        #
 #####################
 set MAIN_CLK_PIN clk_i
 set MAIN_RST_PIN rst_ni
 # set main clock to 125 MHz
-set MAIN_TCK  5.0
+set MAIN_TCK  8.0
 set_ideal_network ${MAIN_CLK_PIN}
 set_ideal_network ${MAIN_RST_PIN}
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} ${MAIN_CLK_PIN}
@@ -38,9 +36,15 @@ set_output_delay ${OUT_DEL}  [all_outputs] -clock ${MAIN_CLK_PIN}
 #####################
 
 # attach load and drivers to IOs to get a more realistic estimate
-set_driving_cell  -no_design_rule -lib_cell ${driving_cell} -pin X [all_inputs]
-set_load [load_of ${load_lib}/${load_cell}/A] [all_outputs]
+set_driving_cell  -no_design_rule -lib_cell ${DRIVING_CELL} -pin ${DRIVING_CELL_PIN} [all_inputs]
+set_load [load_of ${LOAD_CELL_LIB}/${LOAD_CELL}/${LOAD_CELL_PIN}] [all_outputs]
 
 # set a nonzero critical range to be able to spot the violating paths better
 # in the report
 set_critical_range 0.5 ${DUT}
+
+#####################
+# Size Only Cells   #
+#####################
+
+set_size_only -all_instances [get_cells -h *u_size_only*] true
