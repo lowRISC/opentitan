@@ -38,7 +38,7 @@ ottf_example_bare_metal_test_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'ottf_example_bare_metal_test_lib': {
+  'ottf_example_bare_metal_test': {
     'library': ottf_example_bare_metal_test_lib,
     'use_ottf': true,
   }
@@ -54,7 +54,7 @@ ottf_example_concurrency_test_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'ottf_example_concurrency_test_lib': {
+  'ottf_example_concurrency_test': {
     'library': ottf_example_concurrency_test_lib,
     'use_ottf': true,
   }
