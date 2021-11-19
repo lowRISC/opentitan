@@ -141,8 +141,8 @@
           mubi: true,
           desc: '''
                 Setting this field to kMuBi4True will enable reading entropy values from the
-                ENTROPY_DATA register. This function also requires that the efuse_es_sw_reg_en
-                input is set.
+                ENTROPY_DATA register. This function also requires that the otp_en_entropy_src_fw_read
+                input vector is set to the enable encoding.
                 '''
           resval: "false"
         },
@@ -994,8 +994,8 @@
           desc: '''
                 Setting this field to 0xA will put the entropy flow in firmware override mode.
                 In this mode, firmware can monitor the post-health test entropy by reading
-                the observe FIFO. This function also requires that the efuse_es_sw_ov_en
-                input is set.
+                the observe FIFO. This function also requires that the otp_en_entropy_src_fw_over
+                input vector is set to the enable encoding.
                 '''
           resval: "0x5"
         },
