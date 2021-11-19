@@ -39,6 +39,7 @@ sw_otbn_sources = {}
 # All subdirectories add the objects they want to build to the sw_otbn_sources
 # dictionary.
 subdir('code-snippets')
+subdir('crypto')
 
 prog_otbn_build = meson.source_root() / 'util/otbn_build.py'
 
