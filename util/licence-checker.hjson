@@ -54,10 +54,10 @@
     # Code taken from Chromium, so covered by the BSD licence
     'sw/device/silicon_creator/lib/crypto/ecdsa_p256/p256.s',
     'sw/device/silicon_creator/lib/crypto/rsa_3072/rsa_3072.s',
-    'sw/otbn/code-snippets/modexp.s',
-    'sw/otbn/code-snippets/p256.s',
-    'sw/otbn/code-snippets/rsa_verify.s',
-    'sw/otbn/code-snippets/rsa_verify_3072.s',
+    'sw/otbn/crypto/modexp.s',
+    'sw/otbn/crypto/p256.s',
+    'sw/otbn/crypto/rsa_verify.s',
+    'sw/otbn/crypto/rsa_verify_3072.s',
     # Mersenne Twister PRNG
     'sw/device/sca/lib/prng.c',
   ],
