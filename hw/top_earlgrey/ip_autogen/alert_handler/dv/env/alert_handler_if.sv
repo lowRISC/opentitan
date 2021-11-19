@@ -6,6 +6,7 @@
 interface alert_handler_if(input clk, input rst_n);
   import alert_pkg::*;
   import prim_mubi_pkg::*;
+  import cip_base_pkg::*;
 
   mubi4_t [NLpg-1:0] lpg_cg_en;
   mubi4_t [NLpg-1:0] lpg_rst_en;
@@ -13,8 +14,9 @@ interface alert_handler_if(input clk, input rst_n);
   string msg_id = "alert_handler_if";
 
   function automatic void init();
-    lpg_cg_en = '{default: MuBi4False};
-    lpg_rst_en = '{default: MuBi4False};
+    mubi4_t mubi_false_val = get_rand_mubi4_val(0, 1, 1);
+    lpg_cg_en = '{default: mubi_false_val};
+    lpg_rst_en = '{default: mubi_false_val};
   endfunction
 
   function automatic bit get_lpg_status(int index);
