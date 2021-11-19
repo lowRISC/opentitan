@@ -1859,7 +1859,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               // after its depth has been greater than 0 to prevent random assertions
               @(fifo_wr_ptr, fifo_rd_ptr);
               #1;
-              if (fifo_wr_ptr >= fifo_rd_ptr) begin
+              if (fifo_wr_ptr > fifo_rd_ptr) begin
                 `uvm_info(`gfn, "fifo_wr_ptr is greater than fifo_rd_ptr", UVM_HIGH)
                 while (fifo_wr_ptr != fifo_rd_ptr) begin
                   cfg.clk_rst_vif.wait_clks(1);
