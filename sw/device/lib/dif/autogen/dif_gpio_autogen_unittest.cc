@@ -28,11 +28,11 @@ class GpioTest : public Test, public MmioTest {
 class InitTest : public GpioTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_gpio_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_gpio_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_gpio_init({.base_addr = dev().region()}, &gpio_), kDifOk);
+  EXPECT_EQ(dif_gpio_init(dev().region(), &gpio_), kDifOk);
 }
 
 class AlertForceTest : public GpioTest {};

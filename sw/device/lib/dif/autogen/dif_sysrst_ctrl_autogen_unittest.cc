@@ -28,13 +28,11 @@ class SysrstCtrlTest : public Test, public MmioTest {
 class InitTest : public SysrstCtrlTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_sysrst_ctrl_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_sysrst_ctrl_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_sysrst_ctrl_init({.base_addr = dev().region()}, &sysrst_ctrl_),
-            kDifOk);
+  EXPECT_EQ(dif_sysrst_ctrl_init(dev().region(), &sysrst_ctrl_), kDifOk);
 }
 
 class AlertForceTest : public SysrstCtrlTest {};

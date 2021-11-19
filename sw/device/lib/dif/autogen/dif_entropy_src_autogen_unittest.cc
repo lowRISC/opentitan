@@ -28,13 +28,11 @@ class EntropySrcTest : public Test, public MmioTest {
 class InitTest : public EntropySrcTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_entropy_src_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_entropy_src_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_entropy_src_init({.base_addr = dev().region()}, &entropy_src_),
-            kDifOk);
+  EXPECT_EQ(dif_entropy_src_init(dev().region(), &entropy_src_), kDifOk);
 }
 
 class AlertForceTest : public EntropySrcTest {};

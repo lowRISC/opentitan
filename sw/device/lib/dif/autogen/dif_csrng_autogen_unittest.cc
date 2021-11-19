@@ -28,11 +28,11 @@ class CsrngTest : public Test, public MmioTest {
 class InitTest : public CsrngTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_csrng_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_csrng_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_csrng_init({.base_addr = dev().region()}, &csrng_), kDifOk);
+  EXPECT_EQ(dif_csrng_init(dev().region(), &csrng_), kDifOk);
 }
 
 class AlertForceTest : public CsrngTest {};

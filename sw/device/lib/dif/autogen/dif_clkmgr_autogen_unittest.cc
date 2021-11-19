@@ -28,12 +28,11 @@ class ClkmgrTest : public Test, public MmioTest {
 class InitTest : public ClkmgrTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_clkmgr_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_clkmgr_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_clkmgr_init({.base_addr = dev().region()}, &clkmgr_), kDifOk);
+  EXPECT_EQ(dif_clkmgr_init(dev().region(), &clkmgr_), kDifOk);
 }
 
 }  // namespace

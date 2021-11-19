@@ -28,12 +28,11 @@ class PwrmgrTest : public Test, public MmioTest {
 class InitTest : public PwrmgrTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_pwrmgr_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_pwrmgr_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_pwrmgr_init({.base_addr = dev().region()}, &pwrmgr_), kDifOk);
+  EXPECT_EQ(dif_pwrmgr_init(dev().region(), &pwrmgr_), kDifOk);
 }
 
 class IrqGetStateTest : public PwrmgrTest {};

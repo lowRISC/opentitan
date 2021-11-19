@@ -28,13 +28,11 @@ class SpiDeviceTest : public Test, public MmioTest {
 class InitTest : public SpiDeviceTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_spi_device_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_spi_device_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_spi_device_init({.base_addr = dev().region()}, &spi_device_),
-            kDifOk);
+  EXPECT_EQ(dif_spi_device_init(dev().region(), &spi_device_), kDifOk);
 }
 
 class AlertForceTest : public SpiDeviceTest {};

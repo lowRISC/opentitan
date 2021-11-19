@@ -28,11 +28,11 @@ class HmacTest : public Test, public MmioTest {
 class InitTest : public HmacTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_hmac_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_hmac_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_hmac_init({.base_addr = dev().region()}, &hmac_), kDifOk);
+  EXPECT_EQ(dif_hmac_init(dev().region(), &hmac_), kDifOk);
 }
 
 class AlertForceTest : public HmacTest {};

@@ -28,13 +28,11 @@ class RvTimerTest : public Test, public MmioTest {
 class InitTest : public RvTimerTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_rv_timer_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_rv_timer_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_rv_timer_init({.base_addr = dev().region()}, &rv_timer_),
-            kDifOk);
+  EXPECT_EQ(dif_rv_timer_init(dev().region(), &rv_timer_), kDifOk);
 }
 
 class AlertForceTest : public RvTimerTest {};

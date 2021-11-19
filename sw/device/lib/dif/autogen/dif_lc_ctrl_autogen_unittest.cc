@@ -28,12 +28,11 @@ class LcCtrlTest : public Test, public MmioTest {
 class InitTest : public LcCtrlTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_lc_ctrl_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_lc_ctrl_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_lc_ctrl_init({.base_addr = dev().region()}, &lc_ctrl_), kDifOk);
+  EXPECT_EQ(dif_lc_ctrl_init(dev().region(), &lc_ctrl_), kDifOk);
 }
 
 class AlertForceTest : public LcCtrlTest {};

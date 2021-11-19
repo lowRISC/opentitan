@@ -28,13 +28,11 @@ class SpiHostTest : public Test, public MmioTest {
 class InitTest : public SpiHostTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_spi_host_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_spi_host_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_spi_host_init({.base_addr = dev().region()}, &spi_host_),
-            kDifOk);
+  EXPECT_EQ(dif_spi_host_init(dev().region(), &spi_host_), kDifOk);
 }
 
 class AlertForceTest : public SpiHostTest {};

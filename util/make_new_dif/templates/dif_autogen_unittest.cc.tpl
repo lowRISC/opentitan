@@ -40,14 +40,14 @@ namespace {
 
   TEST_F(InitTest, NullArgs) {
     EXPECT_EQ(dif_${ip.name_snake}_init(
-        {.base_addr = dev().region()},
+        dev().region(),
         nullptr),
       kDifBadArg);
   }
 
   TEST_F(InitTest, Success) {
     EXPECT_EQ(dif_${ip.name_snake}_init(
-        {.base_addr = dev().region()},
+        dev().region(),
         &${ip.name_snake}_),
       kDifOk);
   }

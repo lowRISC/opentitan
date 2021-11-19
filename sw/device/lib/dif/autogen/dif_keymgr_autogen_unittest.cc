@@ -28,12 +28,11 @@ class KeymgrTest : public Test, public MmioTest {
 class InitTest : public KeymgrTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_keymgr_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_keymgr_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_keymgr_init({.base_addr = dev().region()}, &keymgr_), kDifOk);
+  EXPECT_EQ(dif_keymgr_init(dev().region(), &keymgr_), kDifOk);
 }
 
 class AlertForceTest : public KeymgrTest {};
