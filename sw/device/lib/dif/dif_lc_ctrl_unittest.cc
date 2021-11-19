@@ -125,8 +125,7 @@ TEST_F(StateTest, GetIdState) {
   for (auto pair : states) {
     dif_lc_ctrl_id_state_t state;
 
-    EXPECT_READ32(LC_CTRL_LC_ID_STATE_REG_OFFSET,
-                  {{LC_CTRL_LC_ID_STATE_STATE_OFFSET, pair.first}});
+    EXPECT_READ32(LC_CTRL_LC_ID_STATE_REG_OFFSET, pair.first);
     EXPECT_EQ(dif_lc_ctrl_get_id_state(&lc_, &state), kDifOk);
     EXPECT_EQ(state, pair.second);
   }

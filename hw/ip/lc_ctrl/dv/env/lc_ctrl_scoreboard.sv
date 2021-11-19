@@ -66,7 +66,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         check_lc_outputs(exp_lc_o, err_msg);
 
         // predict LC state and cnt csr
-        void'(ral.lc_state.predict(lc_state));
+        void'(ral.lc_state.predict({DecLcStateNumRep{lc_state[DecLcStateWidth-1:0]}}));
         void'(ral.lc_transition_cnt.predict(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)));
       end
     end

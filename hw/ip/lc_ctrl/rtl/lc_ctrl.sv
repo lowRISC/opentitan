@@ -103,9 +103,9 @@ module lc_ctrl
   ////////////////////////
 
   // Check that the CSR parameters correspond with the ones used in the design.
-  `ASSERT_INIT(DecLcStateWidthCheck_A, CsrLcStateWidth == DecLcStateWidth)
+  `ASSERT_INIT(DecLcStateWidthCheck_A, CsrLcStateWidth == ExtDecLcStateWidth)
   `ASSERT_INIT(DecLcCountWidthCheck_A, CsrLcCountWidth == DecLcCountWidth)
-  `ASSERT_INIT(DecLcIdStateWidthCheck_A, CsrLcIdStateWidth == DecLcIdStateWidth)
+  `ASSERT_INIT(DecLcIdStateWidthCheck_A, CsrLcIdStateWidth == ExtDecLcIdStateWidth)
   `ASSERT_INIT(NumTokenWordsCheck_A, NumTokenWords == LcTokenWidth/32)
   `ASSERT_INIT(OtpTestCtrlWidth_A, otp_ctrl_pkg::OtpTestCtrlWidth == CsrOtpTestCtrlWidth)
 
@@ -262,7 +262,7 @@ module lc_ctrl
   mubi8_t        tap_claim_transition_if_d, tap_claim_transition_if_q;
   logic          transition_cmd;
   lc_token_t     transition_token_d, transition_token_q;
-  dec_lc_state_e transition_target_d, transition_target_q;
+  ext_dec_lc_state_t transition_target_d, transition_target_q;
   // No need to register these.
   dec_lc_state_e    dec_lc_state;
   dec_lc_cnt_t      dec_lc_cnt;
@@ -287,9 +287,9 @@ module lc_ctrl
     hw2reg.status.state_error            = fatal_state_error_q;
     hw2reg.status.otp_partition_error    = otp_part_error_q;
     hw2reg.status.bus_integ_error        = fatal_bus_integ_error_q;
-    hw2reg.lc_state                      = dec_lc_state;
+    hw2reg.lc_state                      = {DecLcStateNumRep{dec_lc_state}};
     hw2reg.lc_transition_cnt             = dec_lc_cnt;
-    hw2reg.lc_id_state                   = dec_lc_id_state;
+    hw2reg.lc_id_state                   = {DecLcIdStateNumRep{dec_lc_id_state}};
     hw2reg.device_id                     = otp_device_id_i;
     hw2reg.manuf_state                   = otp_manuf_state_i;
 
@@ -356,7 +356,10 @@ module lc_ctrl
         end
 
         if (tap_reg2hw.transition_target.qe) begin
-          transition_target_d = dec_lc_state_e'(tap_reg2hw.transition_target.q);
+          for (int k = 0; k < DecLcStateNumRep; k++) begin
+            transition_target_d[k] = dec_lc_state_e'(
+                tap_reg2hw.transition_target.q[k*DecLcStateWidth +: DecLcStateWidth]);
+          end
         end
 
         if (tap_reg2hw.otp_vendor_test_ctrl.qe) begin
@@ -377,7 +380,10 @@ module lc_ctrl
         end
 
         if (reg2hw.transition_target.qe) begin
-          transition_target_d = dec_lc_state_e'(reg2hw.transition_target.q);
+          for (int k = 0; k < DecLcStateNumRep; k++) begin
+            transition_target_d[k] = dec_lc_state_e'(
+                reg2hw.transition_target.q[k*DecLcStateWidth +: DecLcStateWidth]);
+          end
         end
 
         if (reg2hw.otp_vendor_test_ctrl.qe) begin
@@ -399,7 +405,7 @@ module lc_ctrl
       sw_claim_transition_if_q  <= MuBi8False;
       tap_claim_transition_if_q <= MuBi8False;
       transition_token_q        <= '0;
-      transition_target_q       <= DecLcStRaw;
+      transition_target_q       <= {DecLcStateNumRep{DecLcStRaw}};
       otp_part_error_q          <= 1'b0;
       fatal_bus_integ_error_q   <= 1'b0;
       otp_vendor_test_ctrl_q    <= '0;
