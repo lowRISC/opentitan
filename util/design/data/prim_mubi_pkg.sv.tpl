@@ -35,7 +35,7 @@ from mubi import prim_mubi
   endfunction : mubi${nbits}_test_invalid
 
   // Convert a 1 input value to a mubi output
-  function automatic mubi${nbits}_e mubi${nbits}_bool_to_mubi(logic val);
+  function automatic mubi${nbits}_t mubi${nbits}_bool_to_mubi(logic val);
     return (val ? MuBi${nbits}True : MuBi${nbits}False);
   endfunction : mubi${nbits}_bool_to_mubi
 
