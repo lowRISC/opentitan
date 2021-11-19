@@ -20,6 +20,16 @@
 // functions.
 
 // ----------------------------------------------------------------------------
+// Heap Setup
+//
+// We allocate the heap here and mark it so the linker can make a
+// NOLOAD section. Otherwise, it will end up in the `.bss` section, which gets
+// zeroed during boot initializations which wastes simulation cycles.
+// ----------------------------------------------------------------------------
+__attribute__((section(".freertos.heap")))
+uint8_t ucHeap[configTOTAL_HEAP_SIZE];
+
+// ----------------------------------------------------------------------------
 // Timer Setup (for use when preemptive scheduling is enabled)
 // ----------------------------------------------------------------------------
 #if configUSE_PREEMPTION

@@ -158,5 +158,17 @@ SECTIONS {
     _bss_end = .;
   } > ram_main
 
+  /**
+   * FreeRTOS heap.
+   *
+   * This is a separate NOLOAD section so that it does not end up in the `.bss`
+   * section which gets zeroed during the second boot stage initialization,
+   * causing wasted simulation cycles.
+   */
+  .freertos.heap (NOLOAD): ALIGN(4) {
+    _freertos_heap_start = .;
+    *(.freertos.heap)
+  } > ram_main
+
   INCLUDE sw/device/info_sections.ld
 }
