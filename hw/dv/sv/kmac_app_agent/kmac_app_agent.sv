@@ -31,8 +31,6 @@ class kmac_app_agent extends dv_base_agent #(
     // create push_agent, agent_cfg
     m_data_push_agent = push_pull_agent#(`CONNECT_DATA_WIDTH)::type_id::create(
         "m_data_push_agent", this);
-    cfg.m_data_push_agent_cfg = push_pull_agent_cfg#(`CONNECT_DATA_WIDTH)::type_id::create(
-        "m_data_push_agent_cfg");
     cfg.m_data_push_agent_cfg.is_active  = cfg.is_active;
     cfg.m_data_push_agent_cfg.agent_type = PushAgent;
     cfg.m_data_push_agent_cfg.if_mode    = cfg.if_mode;
