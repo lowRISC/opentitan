@@ -47,7 +47,7 @@ interface kmac_app_intf (input clk, input rst_n);
   assign kmac_data_req = (if_mode == dv_utils_pkg::Host) ?
                          {req_data_if.valid, req_data_if.h_data} : 'z;
   assign {req_data_if.valid, req_data_if.h_data} = (if_mode == dv_utils_pkg::Device) ?
-                                                 kmac_data_req : 'z;
+                                                   kmac_data_req : 'z;
 
   assign {req_data_if.ready, rsp_done, rsp_digest_share0, rsp_digest_share1, rsp_error} =
          (if_mode == dv_utils_pkg::Host) ? kmac_data_rsp : 'z;

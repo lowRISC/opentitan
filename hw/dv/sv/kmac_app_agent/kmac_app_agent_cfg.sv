@@ -23,13 +23,14 @@ class kmac_app_agent_cfg extends dv_base_agent_cfg;
   // Knob to enable percentage of error response in auto-response sequence
   int unsigned error_rsp_pct = 0;
 
+  rand push_pull_agent_cfg#(`CONNECT_DATA_WIDTH) m_data_push_agent_cfg;
+
   // Bias randomization in favor of enabling zero delays less often.
   constraint zero_delays_c {
     zero_delays dist { 0 := 8,
                        1 := 2 };
+    m_data_push_agent_cfg.zero_delays == zero_delays;
   }
-
-  push_pull_agent_cfg#(`CONNECT_DATA_WIDTH) m_data_push_agent_cfg;
 
   `uvm_object_utils_begin(kmac_app_agent_cfg)
     `uvm_field_int(rsp_delay_min,            UVM_DEFAULT)
@@ -38,6 +39,10 @@ class kmac_app_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int(start_default_device_seq, UVM_DEFAULT)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new (string name = "");
+    super.new(name);
+    m_data_push_agent_cfg = push_pull_agent_cfg#(`CONNECT_DATA_WIDTH)::type_id::create(
+        "m_data_push_agent_cfg");
+  endfunction : new
 
 endclass
