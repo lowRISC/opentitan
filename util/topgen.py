@@ -919,7 +919,7 @@ def main():
              Module is created under rtl/. (default: dir(topcfg)/..)
              ''')  # yapf: disable
     parser.add_argument(
-        '--hjson_path',
+        '--hjson-path',
         help='''
           If defined, topgen uses supplied path to search for ip hjson.
           This applies only to ip's with the `reggen_only` attribute.
@@ -1013,7 +1013,7 @@ def main():
         outdir = Path(args.outdir)
 
     if args.hjson_path is not None:
-        log.error("Alternate hjson path is {args.hjson_path}")
+        log.info(f"Alternate hjson path is {args.hjson_path}")
 
     out_path = Path(outdir)
     cfg_path = Path(args.topcfg).parents[1]
