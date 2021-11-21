@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_base_vseq extends cip_base_vseq #(
+class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base_vseq #(
     .CFG_T               (chip_env_cfg),
-    .RAL_T               (chip_reg_block),
+    .RAL_T               (RAL_T),
     .COV_T               (chip_env_cov),
     .VIRTUAL_SEQUENCER_T (chip_virtual_sequencer)
   );
