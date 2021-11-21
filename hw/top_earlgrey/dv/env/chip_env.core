@@ -58,4 +58,4 @@ targets:
     filesets:
       - files_dv
     generate:
-      - ral
+      - "!skip_ral_gen ? (ral)"
