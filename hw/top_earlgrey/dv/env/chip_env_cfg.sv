@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
+class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base_env_cfg #(
+    .RAL_T(RAL_T)
+  );
 
   // Testbench settings
   bit                 stub_cpu;
