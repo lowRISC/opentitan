@@ -42,10 +42,12 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
 
   // ral flow is limited in terms of setting correct field access policies and reset values
   // We apply those fixes here - please note these fixes need to be reflected in the scoreboard
-  protected virtual function void apply_ral_fixes();
+  protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
+    usbdev_reg_block usbdev_ral;
+    if (!$cast(usbdev_ral, ral)) return;
     // fix access policies
     // Out of reset, the link is in disconnected state.
-    ral.intr_state.disconnected.set_reset(1'b1);
+    usbdev_ral.intr_state.disconnected.set_reset(1'b1);
   endfunction
 
 endclass

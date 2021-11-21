@@ -113,11 +113,12 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
   endfunction
 
-  // ral flow is limited in terms of setting correct field access policies and reset values
-  // We apply those fixes here - please note these fixes need to be reflected in the scoreboard
-  protected virtual function void apply_ral_fixes();
+  // Apply RAL fixes before it is locked.
+  protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
+    RAL_T chip_ral;
+    if (!$cast(chip_ral, ral)) return;
     // Out of reset, the link is in disconnected state.
-    ral.usbdev.intr_state.disconnected.set_reset(1'b1);
+    chip_ral.usbdev.intr_state.disconnected.set_reset(1'b1);
   endfunction
 
   // Parse a space-separated list of sw_images supplied as a string.
