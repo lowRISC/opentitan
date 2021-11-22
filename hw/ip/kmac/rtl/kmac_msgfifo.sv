@@ -159,7 +159,7 @@ module kmac_msgfifo
   assign msg_data_o  = fifo_rdata.data;
   assign msg_strb_o  = fifo_rdata.strb;
 
-  assign fifo_empty_o = fifo_depth_o == '0;
+  assign fifo_empty_o = !fifo_rvalid;
 
   // Flush (process from outside) handling
   flush_st_e flush_st, flush_st_d;
