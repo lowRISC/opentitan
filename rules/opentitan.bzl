@@ -222,3 +222,51 @@ def opentitan_binary(
         name = name,
         srcs = targets,
     )
+
+def opentitan_functest(
+        name,
+        platform = OPENTITAN_PLATFORM,
+        per_device_deps = {
+            "verilator": ["//sw/device/lib/arch:sim_verilator"],
+        },
+        **kwargs):
+    """A helper macro for generating OpenTitan functional tests.
+    This macro is mostly a wrapper around opentitan_binary, but creates
+    testing artifacts for each of the keys in `per_device_deps`.
+    The testing artifacts are then given to an `sh_test` rule which
+    coordinates performing the test under verilator by way of opentitantool.
+    Args:
+      @param name: The name of this rule.
+      @param platform: The target platform for the artifacts.
+      @param per_device_deps: The deps for each of the execution environments.
+      @param **kwargs: Arguments to forward to `opentitan_binary`.
+    """
+
+    opentitan_binary(
+        name = name + "_prog",
+        platform = platform,
+        per_device_deps = per_device_deps,
+        output_bin = False,
+        output_disassembly = False,
+        **kwargs
+    )
+
+    native.sh_test(
+        name = name,
+        srcs = ["//util:opentitantool_test_runner.sh"],
+        args = [
+            "--tool=$(location //sw/host/opentitantool)",
+            "--verilator-dir=$(location //hw:verilator)",
+            "--verilator-rom=$(location //sw/device/boot_rom:boot_rom_verilator_scr)",
+            "--verilator-flash=$(location {}_prog_verilator_elf)".format(name),
+            "--verilator-otp=$(location //hw/ip/otp_ctrl/data:rma_image_verilator)",
+        ],
+        data = [
+            "//sw/device/boot_rom:boot_rom_verilator_scr",
+            "{}_prog_verilator_elf".format(name),
+            "//sw/host/opentitantool",
+            "//hw:verilator",
+            "//hw/ip/otp_ctrl/data:rma_image_verilator",
+        ],
+        local = True,
+    )
