@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class aes_smoke_test extends aes_base_test;
+class aes_sideload_test extends aes_base_test;
 
-  `uvm_component_utils(aes_smoke_test)
+  `uvm_component_utils(aes_sideload_test)
   `uvm_component_new
 
 
@@ -15,7 +15,7 @@ class aes_smoke_test extends aes_base_test;
 
   function void configure_env();
     super.configure_env();
-    cfg.error_types              = 0;     // no errors in smoke test
+    cfg.error_types              = 0;     // no errors in sideload test
     cfg.num_messages_min         = 1;
     cfg.num_messages_max         = 5;
     // message related knobs
@@ -26,8 +26,8 @@ class aes_smoke_test extends aes_base_test;
     cfg.cfb_weight               = 10;
 
     cfg.message_len_min          = 16;    // one block (16bytes=128bits)
-    cfg.message_len_max          = 32;    //
-    cfg.manual_operation_pct     = 50;
+    cfg.message_len_max          = 128;   //
+    cfg.manual_operation_pct     = 50;    // only non sideload messages
     cfg.use_key_mask             = 0;
 
     cfg.fixed_data_en            = 0;
@@ -44,7 +44,7 @@ class aes_smoke_test extends aes_base_test;
     cfg.random_data_key_iv_order = 0;
     cfg.read_prob                = 100;
     cfg.write_prob               = 100;
-    cfg.sideload_pct             = 0;
+    cfg.sideload_pct             = 75;
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endfunction
-endclass : aes_smoke_test
+endclass : aes_sideload_test

@@ -36,6 +36,7 @@ class aes_alert_reset_vseq extends aes_base_vseq;
                   )) begin
                 `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
               end else begin
+                `uvm_info(`gfn, $sformatf("FORCING ERROR"), UVM_MEDIUM)
                 $assertoff(0, "tb.dut.u_aes_core.AesModeValid");
                 $assertoff(0, "tb.dut.u_aes_core.u_aes_control.AesModeValid");
                 void'(uvm_hdl_force(

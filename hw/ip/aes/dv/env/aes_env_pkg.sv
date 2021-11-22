@@ -16,12 +16,14 @@ package aes_env_pkg;
   import aes_reg_pkg::*;
   import aes_ral_pkg::*;
   import aes_pkg::*;
+  import key_sideload_agent_pkg::*;
 
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  typedef virtual key_sideload_if   sideload_vif;
   // parameters
   parameter string LIST_OF_ALERTS[] = {"recov_ctrl_update_err", "fatal_fault"};
   parameter uint NUM_ALERTS = 2;

@@ -44,7 +44,7 @@ class aes_clear_test extends aes_base_test;
 
     cfg.random_data_key_iv_order = 1;
     cfg.clear_reg_pct            = 80;
-
+    cfg.sideload_pct             = 0;
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endfunction
 endclass : aes_clear_test

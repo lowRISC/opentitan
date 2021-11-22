@@ -34,6 +34,9 @@ class aes_message_item extends uvm_sequence_item;
   bit               fixed_operation_en   = 0;
   // fixed IV
   bit               fixed_iv_en          = 0;
+  // sideload
+  int               sideload_pct         = 0;
+  rand bit          sideload_en          = 0;
 
   // clear register percentage
   // percentage of items that will try to clear
@@ -174,17 +177,29 @@ class aes_message_item extends uvm_sequence_item;
 
   constraint c_config_error_type {
     solve has_config_error before cfg_error_type;
-    if (has_config_error) {
+    solve sideload_en before cfg_error_type;
+    if (has_config_error & !sideload_en) {
       cfg_error_type inside {[1:3]};
     } else {
       cfg_error_type == 2'b00;
     }
   }
 
-   constraint c_manual_operation {
-                  manual_operation dist { 0:/ (100 - manual_operation_pct),
-                                          1:/ manual_operation_pct};
-   }
+  constraint c_sideload {
+    sideload_en dist{ 0:/(100-sideload_pct),
+                       1:/sideload_pct};
+  }
+
+  constraint c_manual_operation {
+    solve sideload_en before manual_operation;
+    if (!sideload_en) {
+      manual_operation dist { 0:/ (100 - manual_operation_pct),
+                              1:/ manual_operation_pct};
+    } else {
+      manual_operation == 0 ;
+    }
+
+  }
 
 
   function void add_data_item(aes_seq_item item);
@@ -260,6 +275,7 @@ class aes_message_item extends uvm_sequence_item;
       str = {str, $sformatf("%h ",aes_iv[i])};
     end
     str = {str,  $sformatf("\n\t ----| Manual Mode : %b      \t   \t ", manual_operation)};
+    str = {str,  $sformatf("\n\t ----| SideLoad En : %b      \t   \t ", sideload_en)};
     str = {str,  $sformatf("\n\t ----| errors types enabled: %b      \t   \t ", error_types)};
     str = {str,  $sformatf("\n\t ----| CFB Weight: %d       \t \t ", cfb_weight)};
     str = {str,  $sformatf("\n\t ----| OFB Weight: %d       \t \t ", ofb_weight)};
@@ -318,5 +334,6 @@ class aes_message_item extends uvm_sequence_item;
     fixed_data       = rhs_.fixed_data;
     fixed_iv_en      = rhs_.fixed_iv_en;
     skip_msg         = rhs_.skip_msg;
+    sideload_en      = rhs_.sideload_en;
   endfunction // copy
 endclass
