@@ -6,15 +6,19 @@
 // The mux to select between ROM inputs
 //
 
-module rom_ctrl_mux #(
+module rom_ctrl_mux
+  import prim_mubi_pkg::mubi4_t;
+#(
   parameter int AW = 8,
   parameter int DW = 39
 ) (
   input logic           clk_i,
   input logic           rst_ni,
 
-  // select signal. 1 = checker; 0 = bus
-  input logic           sel_i,
+  // Select signal saying whether access is granted to the bus. This module raises an alert (by
+  // setting alert_o) if the signal isn't an allowed value or if the selection switches back from
+  // the bus to the checker.
+  input mubi4_t         sel_bus_i,
 
   // Interface for bus
   input logic [AW-1:0]  bus_addr_i,
@@ -36,32 +40,63 @@ module rom_ctrl_mux #(
   input logic           rom_rvalid_i,
 
   // Alert output
+  //
+  // This isn't latched in this module because it feeds into a fatal alert at top-level, whose
+  // sender will latch it anyway.
   output logic          alert_o
 );
 
-  // TODO: sel_q will definitely need to be multi-bit for glitch resistance. We'll probably also
-  // have to chase the "signal bit signals" back a bit further through the logic too.
-  logic sel_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      sel_q <= 1'b1;
-    end else begin
-      sel_q  <= sel_q & sel_i;
-    end
-  end
+  import prim_mubi_pkg::*;
 
-  // Spot if the select signal becomes one again after it went to zero
-  assign alert_o = sel_i & ~sel_q;
+  // Track the state of the mux up to the current cycle. This is a "1-way" mux, which means that
+  // we never switch from the bus back to the checker.
+  //
+  // We also have a version that's delayed by a single cycle to allow a check that sel_bus_q is
+  // never reset from True to False.
+  mubi4_t sel_bus_q, sel_bus_qq;
 
-  // The bus can have access every cycle, once the select signal is zero.
-  assign bus_gnt_o    = ~sel_i;
+  prim_flop #(.Width (4), .ResetValue ({MuBi4False}))
+  u_sel_bus_q_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i (mubi4_or_hi(sel_bus_q, sel_bus_i)),
+    .q_o (sel_bus_q)
+  );
+
+  prim_flop #(.Width (4), .ResetValue ({MuBi4False}))
+  u_sel_bus_qq_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i (sel_bus_q),
+    .q_o (sel_bus_qq)
+  );
+
+  // Spot if the sel_bus_i signal or its register version has a corrupt value.
+  logic sel_invalid;
+  assign sel_invalid = mubi4_test_invalid(sel_bus_i) || mubi4_test_invalid(sel_bus_q);
+
+  // Spot if the select signal switches back to the checker once we've switched to the bus. Doing so
+  // will have no lasting effect because of how we calculate sel_bus_q) but isn't supposed to
+  // happen, so we want to trigger an alert.
+  logic sel_reverted;
+  assign sel_reverted = mubi4_test_true_loose(sel_bus_q) & mubi4_test_false_loose(sel_bus_i);
+
+  // Spot if the sel_bus_q signal has reverted somehow.
+  logic sel_q_reverted;
+  assign sel_q_reverted = mubi4_test_true_loose(sel_bus_qq) & mubi4_test_false_loose(sel_bus_q);
+
+  assign alert_o = sel_invalid | sel_reverted | sel_q_reverted;
+
+  // The bus can have access every cycle, from when the select signal switches to the bus.
+  assign bus_gnt_o    = mubi4_test_true_strict(sel_bus_i);
   assign bus_rdata_o  = rom_clr_rdata_i;
-  // A high rom_rvalid_i is a response to a bus request if sel_i was zero on the previous cycle.
-  assign bus_rvalid_o = ~sel_q & rom_rvalid_i;
+  // A high rom_rvalid_i is a response to a bus request if the select signal pointed at the bus on
+  // the previous cycle.
+  assign bus_rvalid_o = mubi4_test_true_strict(sel_bus_q) & rom_rvalid_i;
 
   assign chk_rdata_o = rom_scr_rdata_i;
 
-  assign rom_addr_o = sel_i ? chk_addr_i : bus_addr_i;
-  assign rom_req_o  = sel_i ? chk_req_i  : bus_req_i;
+  assign rom_addr_o = mubi4_test_true_strict(sel_bus_i) ? bus_addr_i : chk_addr_i;
+  assign rom_req_o  = mubi4_test_true_strict(sel_bus_i) ? bus_req_i  : chk_req_i;
 
 endmodule
