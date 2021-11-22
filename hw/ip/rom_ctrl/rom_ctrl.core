@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:alert
       - lowrisc:prim:assert
+      - lowrisc:prim:buf
       - lowrisc:prim:cipher
       - lowrisc:prim:rom_adv
       - lowrisc:prim:subreg
