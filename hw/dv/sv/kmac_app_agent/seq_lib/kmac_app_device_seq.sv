@@ -19,14 +19,27 @@ class kmac_app_device_seq extends kmac_app_base_seq;
   endtask
 
   virtual function void randomize_item(REQ item);
+    kmac_pkg::rsp_digest_t rsp_digest_h; 
+    bit set_share;
+    if (cfg.has_user_digest_share()) begin
+      set_share = 1;
+      rsp_digest_h = cfg.get_user_digest_share();
+    end else begin
+      set_share = 0;
+    end
     `DV_CHECK_RANDOMIZE_WITH_FATAL(item,
       if (cfg.zero_delays) {
         rsp_delay == 0;
       } else {
         rsp_delay inside {[cfg.rsp_delay_min : cfg.rsp_delay_max]};
       }
+      if (set_share) {
+        rsp_digest_share0 == rsp_digest_h.digest_share0;
+        rsp_digest_share1 == rsp_digest_h.digest_share1;
+      }
       is_kmac_rsp_err dist {1 :/ cfg.error_rsp_pct,
                             0 :/ 100 - cfg.error_rsp_pct};
     )
   endfunction
+
 endclass

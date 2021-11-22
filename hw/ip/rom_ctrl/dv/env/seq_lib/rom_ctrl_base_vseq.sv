@@ -86,4 +86,32 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  // Pull the expected digest value from the top of rom
+  virtual function bit [DIGEST_SIZE-1:0] get_expected_digest();
+    bit [DIGEST_SIZE-1:0]    digest;
+    bit [rom_ctrl_reg_pkg::RomAw-1:0] dig_addr;
+    // Get the digest from rom
+    // The digest is the top 8 words in memory (unscrambled)
+    dig_addr = MAX_CHECK_ADDR;
+    for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
+      bit [ROM_MEM_W-1:0] mem_data = cfg.mem_bkdr_util_h.rom_encrypt_read32(
+          dig_addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b0);
+      digest[i*TL_DW+:TL_DW] = mem_data[TL_DW-1:0];
+      dig_addr += (TL_DW / 8);
+    end
+    return digest;
+  endfunction
+
+  // Set KMAC digest_share0 with ROM digest value and digest_share1 with 0
+  virtual function void set_kmac_digest();
+    bit [DIGEST_SIZE-1:0]  expected_digest;
+    bit [kmac_pkg::AppDigestW-1:0] share0;
+    kmac_pkg::rsp_digest_t rsp_digest_h;
+    expected_digest = get_expected_digest();
+    `DV_CHECK_STD_RANDOMIZE_FATAL(share0)
+    rsp_digest_h.digest_share0 = share0;
+    rsp_digest_h.digest_share1 = rsp_digest_h.digest_share0 ^ expected_digest;
+    cfg.m_kmac_agent_cfg.add_user_digest_share(rsp_digest_h);
+  endfunction
+
 endclass : rom_ctrl_base_vseq

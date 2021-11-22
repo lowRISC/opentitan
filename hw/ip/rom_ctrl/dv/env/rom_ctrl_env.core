@@ -26,6 +26,7 @@ filesets:
       - seq_lib/rom_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/rom_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/rom_ctrl_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/rom_ctrl_chk_successful_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
