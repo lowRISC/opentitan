@@ -278,6 +278,10 @@ package kmac_pkg;
     logic [23:0] info; // Additional Debug info
   } err_t;
 
+  typedef struct packed {
+    logic [AppDigestW-1:0] digest_share0;
+    logic [AppDigestW-1:0] digest_share1;
+  } rsp_digest_t;
   ///////////////////////
   // Library Functions //
   ///////////////////////

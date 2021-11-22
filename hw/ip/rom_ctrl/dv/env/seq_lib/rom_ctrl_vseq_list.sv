@@ -5,3 +5,4 @@
 `include "rom_ctrl_base_vseq.sv"
 `include "rom_ctrl_smoke_vseq.sv"
 `include "rom_ctrl_common_vseq.sv"
+`include "rom_ctrl_chk_successful_vseq.sv"

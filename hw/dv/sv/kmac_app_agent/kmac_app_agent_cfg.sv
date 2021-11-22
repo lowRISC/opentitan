@@ -20,10 +20,13 @@ class kmac_app_agent_cfg extends dv_base_agent_cfg;
   // Enable starting the device auto-response sequence by default if configured in Device mode.
   bit start_default_device_seq = 1;
 
-  // Knob to enable percentage of error response in auto-response sequence
+  // Knob to enable percentage of error response in auto-response sequence.
   int unsigned error_rsp_pct = 0;
 
   rand push_pull_agent_cfg#(`CONNECT_DATA_WIDTH) m_data_push_agent_cfg;
+  
+  // KMAC digest share0/1 that can be set from test env.
+  kmac_pkg::rsp_digest_t rsp_digest_hs[$];
 
   // Bias randomization in favor of enabling zero delays less often.
   constraint zero_delays_c {
@@ -31,6 +34,22 @@ class kmac_app_agent_cfg extends dv_base_agent_cfg;
                        1 := 2 };
     m_data_push_agent_cfg.zero_delays == zero_delays;
   }
+
+  // Setter method for the user digest share queues - must be called externally to place specific user-digest_share0
+  // to be sent by the driver.
+  function void add_user_digest_share(kmac_pkg::rsp_digest_t rsp_digest_h);
+    rsp_digest_hs.push_back(rsp_digest_h);
+  endfunction
+  // Getter method for the user digest share - returns the first data entry.
+  function kmac_pkg::rsp_digest_t get_user_digest_share();
+    `DV_CHECK_NE_FATAL(has_user_digest_share(), 0, "rsp_digest_share0 is empty!")
+    return rsp_digest_hs.pop_front();
+  endfunction
+  // Getter method for the user digest share - must be called externally to check whether there is
+  // any user data in the queues.
+  function bit has_user_digest_share();
+    return (rsp_digest_hs.size() > 0);
+  endfunction
 
   `uvm_object_utils_begin(kmac_app_agent_cfg)
     `uvm_field_int(rsp_delay_min,            UVM_DEFAULT)
