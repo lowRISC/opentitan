@@ -12,3 +12,8 @@ autogen_hjson_header(
         "rv_timer.hjson",
     ],
 )
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)

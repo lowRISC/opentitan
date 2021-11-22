@@ -12,3 +12,8 @@ autogen_hjson_header(
         "adc_ctrl.hjson",
     ],
 )
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)
