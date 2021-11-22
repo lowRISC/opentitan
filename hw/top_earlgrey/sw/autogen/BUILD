@@ -19,3 +19,8 @@ cc_library(
     name = "linker_script",
     deps = ["top_earlgrey_memory.ld"],
 )
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)

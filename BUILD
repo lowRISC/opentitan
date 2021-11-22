@@ -54,3 +54,12 @@ clang_format_check(
     ],
     mode = "fix",
 )
+
+filegroup(
+    name = "cores",
+    srcs = [
+        "check_tool_requirements.core",
+        "topgen.core",
+        "topgen-reg-only.core",
+    ],
+)

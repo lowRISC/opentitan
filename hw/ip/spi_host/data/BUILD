@@ -12,3 +12,8 @@ autogen_hjson_header(
         "spi_host.hjson",
     ],
 )
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)

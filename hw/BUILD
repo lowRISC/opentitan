@@ -1,3 +1,87 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+
+load("//rules:fusesoc.bzl", "fusesoc_build")
+
+package(default_visibility = ["//visibility:public"])
+
+fusesoc_build(
+    name = "verilator",
+    srcs = [
+        "//hw:all_files",
+    ],
+    cores = [
+        "//:cores",
+    ],
+    systems = ["lowrisc:dv:chip_verilator_sim"],
+    target = "sim",
+)
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]) + [
+        "//hw/ip/otp_ctrl/data:all_files",
+        "//hw/ip/otp_ctrl:all_files",
+        "//hw/ip/hmac/data:all_files",
+        "//hw/ip/hmac:all_files",
+        "//hw/ip/otbn/data:all_files",
+        "//hw/ip/otbn:all_files",
+        "//hw/ip/sram_ctrl/data:all_files",
+        "//hw/ip/sram_ctrl:all_files",
+        "//hw/ip/lc_ctrl/data:all_files",
+        "//hw/ip/lc_ctrl:all_files",
+        "//hw/ip/rv_timer/data:all_files",
+        "//hw/ip/rv_timer:all_files",
+        "//hw/ip/usbdev/data:all_files",
+        "//hw/ip/usbdev:all_files",
+        "//hw/ip/kmac/data:all_files",
+        "//hw/ip/kmac:all_files",
+        "//hw/ip/flash_ctrl/data:all_files",
+        "//hw/ip/csrng/data:all_files",
+        "//hw/ip/csrng:all_files",
+        "//hw/ip/sysrst_ctrl/data:all_files",
+        "//hw/ip/spi_device/data:all_files",
+        "//hw/ip/spi_device:all_files",
+        "//hw/ip/keymgr/data:all_files",
+        "//hw/ip/keymgr:all_files",
+        "//hw/ip/pattgen/data:all_files",
+        "//hw/ip/gpio/data:all_files",
+        "//hw/ip/gpio:all_files",
+        "//hw/ip/pinmux/data:all_files",
+        "//hw/ip/uart/data:all_files",
+        "//hw/ip/uart:all_files",
+        "//hw/ip/adc_ctrl/data:all_files",
+        "//hw/ip/entropy_src/data:all_files",
+        "//hw/ip/entropy_src:all_files",
+        "//hw/ip/edn/data:all_files",
+        "//hw/ip/edn:all_files",
+        "//hw/ip/aes/data:all_files",
+        "//hw/ip/aes:all_files",
+        "//hw/ip/aon_timer/data:all_files",
+        "//hw/ip/aon_timer:all_files",
+        "//hw/ip:all_files",
+        "//hw/ip/i2c/data:all_files",
+        "//hw/ip/i2c:all_files",
+        "//hw/ip/spi_host/data:all_files",
+        "//hw/top_earlgrey/sw/autogen:all_files",
+        "//hw/top_earlgrey/sw:all_files",
+        "//hw/top_earlgrey/ip/rstmgr/data/autogen:all_files",
+        "//hw/top_earlgrey/ip/rstmgr/data:all_files",
+        "//hw/top_earlgrey/ip/rstmgr:all_files",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:all_files",
+        "//hw/top_earlgrey/ip/flash_ctrl/data:all_files",
+        "//hw/top_earlgrey/ip/flash_ctrl:all_files",
+        "//hw/top_earlgrey/ip/clkmgr/data/autogen:all_files",
+        "//hw/top_earlgrey/ip/clkmgr/data:all_files",
+        "//hw/top_earlgrey/ip/clkmgr:all_files",
+        "//hw/top_earlgrey/ip/pinmux/data/autogen:all_files",
+        "//hw/top_earlgrey/ip/pinmux/data:all_files",
+        "//hw/top_earlgrey/ip/pinmux:all_files",
+        "//hw/top_earlgrey/ip:all_files",
+        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:all_files",
+        "//hw/top_earlgrey/ip/pwrmgr/data:all_files",
+        "//hw/top_earlgrey/ip/pwrmgr:all_files",
+        "//hw/top_earlgrey:all_files",
+    ],
+)

@@ -12,3 +12,8 @@ autogen_hjson_header(
         "aes.hjson",
     ],
 )
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)

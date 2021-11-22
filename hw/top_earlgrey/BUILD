@@ -19,3 +19,8 @@ autogen_hjson_header(
         "ip_autogen/alert_handler/data/alert_handler.hjson",
     ],
 )
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)
