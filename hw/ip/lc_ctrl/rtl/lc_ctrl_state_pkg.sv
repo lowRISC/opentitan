@@ -222,7 +222,13 @@ package lc_ctrl_state_pkg;
   // Derived enum types //
   ////////////////////////
 
-  typedef enum logic [LcStateWidth-1:0] {
+  // Use lc_state_t and lc_cnt_t in interfaces as very wide enumerations ( > 64 bits )
+  // are not supported for virtual interfaces by Excelium yet
+  // https://github.com/lowRISC/opentitan/issues/8884 (Cadence issue: cds_46570160)
+  // The enumeration types lc_state_e and lc_cnt_e are still ok in other circumstances
+
+  typedef logic [LcStateWidth-1:0] lc_state_t;
+  typedef enum lc_state_t {
     LcStRaw           = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO},
     LcStTestUnlocked0 = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  A3,  A2,  A1,  B0},
     LcStTestLocked0   = {A19, A18, A17, A16, A15, A14, A13, A12, A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  A3,  A2,  B1,  B0},
@@ -246,7 +252,8 @@ package lc_ctrl_state_pkg;
     LcStScrap         = {B19, B18, B17, B16, B15, B14, B13, B12, B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0}
   } lc_state_e;
 
-  typedef enum logic [LcCountWidth-1:0] {
+  typedef logic [LcCountWidth-1:0] lc_cnt_t;
+  typedef enum lc_cnt_t {
     LcCnt0  = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO},
     LcCnt1  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  C3,  C2,  C1,  D0},
     LcCnt2  = {C23, C22, C21, C20, C19, C18, C17, C16, C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  C3,  C2,  D1,  D0},
