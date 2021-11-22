@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:push_pull_agent
       - lowrisc:dv:csr_utils
       - lowrisc:dv:aes_model_dpi
+      - lowrisc:dv:key_sideload_agent
       - lowrisc:dv:aes_cov
       - lowrisc:dv:aes_test_vectors
     files:

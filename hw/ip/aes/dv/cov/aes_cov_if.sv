@@ -25,6 +25,7 @@ interface aes_cov_if
                                                bit [aes_pkg::AES_MODE_WIDTH-1:0]   aes_mode,
                                                bit [aes_pkg::AES_KEYLEN_WIDTH-1:0] aes_keylen,
                                                bit                                 aes_man_op,
+                                               bit                                 aes_sideload,
                                                bit                                 aes_force_0mask
                                                );
     option.per_instance = 1;
@@ -61,11 +62,13 @@ interface aes_cov_if
        bins manual_mode = { 1'b1 };
       }
 
+    cp_sideload: coverpoint aes_sideload;
+
     cp_force_0_masks: coverpoint aes_force_0mask;
 
     // Cross coverage points
-    // All key_lens are tested in all modes
-    cr_mode_key_len: cross cp_mode, cp_key_len;
+    // All key_lens are tested in all modes with sideload
+    cr_mode_key_len: cross cp_mode, cp_key_len, cp_sideload;
     // all modes are tested in both auto an manual operation
     cr_mode_man_op:  cross cp_mode, cp_manual_operation;
     // All modes used in both incryption and decryption
@@ -138,9 +141,11 @@ interface aes_cov_if
                                          bit [aes_pkg::AES_MODE_WIDTH-1:0]   aes_mode,
                                          bit [aes_pkg::AES_KEYLEN_WIDTH-1:0] aes_keylen,
                                          bit                                 aes_man_op,
+                                         bit                                 aes_sideload,
                                          bit                                 aes_force_0mask
                                          );
-    aes_ctrl_cg_inst.sample(aes_op, aes_mode, aes_keylen, aes_man_op, aes_force_0mask);
+    aes_ctrl_cg_inst.sample(aes_op, aes_mode, aes_keylen, aes_man_op,
+                            aes_sideload, aes_force_0mask);
   endfunction
 
   function automatic void cg_status_sample(bit [31:0] val);

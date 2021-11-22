@@ -82,6 +82,7 @@ class aes_base_test extends cip_base_test #(
   //  100: random resets
     cfg.error_types                 = 3'b111;
     cfg.config_error_pct            = 0;           // percentage of configuration errors
-    cfg.flip_rst_split_pct           = 60;
+    cfg.flip_rst_split_pct          = 60;
+    cfg.sideload_pct                = 0;
   endfunction
 endclass : aes_base_test

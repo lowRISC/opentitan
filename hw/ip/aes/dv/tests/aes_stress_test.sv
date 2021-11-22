@@ -48,5 +48,6 @@ class aes_stress_test extends aes_base_test;
     cfg.read_prob                = 65;
     cfg.write_prob               = 80;
     cfg.manual_operation_pct     = 30;
+    cfg.sideload_pct             = 30;
   endfunction // configure_env
 endclass : aes_stress_test
