@@ -13,6 +13,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   // seq cfg
   flash_ctrl_seq_cfg seq_cfg;
 
+  // interface
+  virtual flash_ctrl_if flash_ctrl_vif;
+
   // knobs
   // ral.status[init_wip] status is set for the very first clock cycle right out of reset.
   // This causes problems in the read value especially in CSR tests.
