@@ -33,6 +33,7 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   tl_if eflash_tl_if(.clk(clk), .rst_n(rst_n));
+  flash_ctrl_if flash_ctrl_if();
 
   `DV_ALERT_IF_CONNECT
 
@@ -44,6 +45,11 @@ module tb;
     otp_rsp.data_ack = otp_req.data_req;
     otp_rsp.addr_ack = otp_req.addr_req;
   end
+
+  wire flash_test_v;
+  assign (pull1,pull0) flash_test_v = 1'b1;
+  wire [1:0] flash_test_mode_a;
+  assign (pull1,pull0) flash_test_mode_a = 2'h3;
 
   // dut
   flash_ctrl dut (
@@ -66,34 +72,41 @@ module tb;
     .otp_o (otp_req),
 
     // various life cycle decode signals
-    .lc_creator_seed_sw_rw_en_i (lc_ctrl_pkg::Off),
-    .lc_owner_seed_sw_rw_en_i   (lc_ctrl_pkg::On),
-    .lc_iso_part_sw_rd_en_i     (lc_ctrl_pkg::On),
-    .lc_iso_part_sw_wr_en_i     (lc_ctrl_pkg::On),
-    .lc_seed_hw_rd_en_i         (lc_ctrl_pkg::On),
-    .lc_nvm_debug_en_i          (lc_ctrl_pkg::Off),
-    .lc_escalate_en_i           (lc_ctrl_pkg::Off),
+    .lc_creator_seed_sw_rw_en_i (flash_ctrl_if.lc_creator_seed_sw_rw_en),
+    .lc_owner_seed_sw_rw_en_i   (flash_ctrl_if.lc_owner_seed_sw_rw_en),
+    .lc_iso_part_sw_rd_en_i     (flash_ctrl_if.lc_iso_part_sw_rd_en),
+    .lc_iso_part_sw_wr_en_i     (flash_ctrl_if.lc_iso_part_sw_wr_en),
+    .lc_seed_hw_rd_en_i         (flash_ctrl_if.lc_seed_hw_rd_en),
+    .lc_nvm_debug_en_i          (flash_ctrl_if.lc_nvm_debug_en),
+    .lc_escalate_en_i           (flash_ctrl_if.lc_escalate_en),
 
     // life cycle rma handling
-    .rma_req_i  (lc_ctrl_pkg::Off),
-    .rma_seed_i ('0),
-    .rma_ack_o  (),
+    .rma_req_i  (flash_ctrl_if.rma_req),
+    .rma_seed_i (flash_ctrl_if.rma_seed),
+    .rma_ack_o  (flash_ctrl_if.rma_ack),
 
     // power manager indication
-    .pwrmgr_o (pwrmgr_pkg::PWR_FLASH_DEFAULT),
-    .keymgr_o (flash_ctrl_keymgr),
+    .pwrmgr_o (flash_ctrl_if.pwrmgr),
+    .keymgr_o (flash_ctrl_if.keymgr),
 
     // flash prim signals
     .flash_power_ready_h_i  (1'b1  ),
     .flash_power_down_h_i   (flash_power_down_h  ),
     .flash_bist_enable_i    (prim_mubi_pkg::MuBi4False),
-    .flash_test_mode_a_io   (2'h3),
-    .flash_test_voltage_h_io(1'b1),
+    .flash_test_mode_a_io    (flash_test_mode_a),
+    .flash_test_voltage_h_io (flash_test_v),
 
     // test
     .scanmode_i              (prim_mubi_pkg::MuBi4False),
     .scan_rst_ni             ('0),
     .scan_en_i               ('0),
+
+    // JTAG
+    .cio_tck_i    (flash_ctrl_if.cio_tck),
+    .cio_tms_i    (flash_ctrl_if.cio_tms),
+    .cio_tdi_i    (flash_ctrl_if.cio_tdi),
+    .cio_tdo_en_o (flash_ctrl_if.cio_tdo_en),
+    .cio_tdo_o    (flash_ctrl_if.cio_tdo),
 
     // alerts and interrupts
     .intr_prog_empty_o  (intr_prog_empty),
@@ -103,7 +116,8 @@ module tb;
     .intr_op_done_o     (intr_op_done   ),
     .intr_corr_err_o    (intr_err       ),
     .alert_rx_i         (alert_rx       ),
-    .alert_tx_o         (alert_tx       )
+    .alert_tx_o         (alert_tx       ),
+    .flash_alert_o      (flash_ctrl_if.flash_alert)
   );
 
   // -----------------------------------
@@ -214,6 +228,7 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_core_reg_block*", "vif",
                                        tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_eflash_tl_agent*", "vif", eflash_tl_if);
+    uvm_config_db#(virtual flash_ctrl_if)::set(null, "*.env", "flash_ctrl_vif", flash_ctrl_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
