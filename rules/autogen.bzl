@@ -65,3 +65,28 @@ autogen_chip_info = rule(
         "_tool": attr.label(default = "//util:rom_chip_info.py", allow_files = True),
     },
 )
+
+def _otp_image(ctx):
+    output = ctx.actions.declare_file(ctx.attr.name + ".vmem")
+    ctx.actions.run(
+        outputs = [output],
+        inputs = ctx.files.src + ctx.files.deps + ctx.files._tool,
+        arguments = [
+            "--quiet",
+            "--img-cfg",
+            ctx.files.src[0].path,
+            "--out",
+            output.path,
+        ],
+        executable = ctx.files._tool[0],
+    )
+    return [DefaultInfo(files = depset([output]), data_runfiles = ctx.runfiles(files = [output]))]
+
+otp_image = rule(
+    implementation = _otp_image,
+    attrs = {
+        "src": attr.label(allow_files = True),
+        "deps": attr.label_list(allow_files = True),
+        "_tool": attr.label(default = "//util:design/gen-otp-img.py", allow_files = True),
+    },
+)

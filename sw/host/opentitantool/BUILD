@@ -31,3 +31,11 @@ rust_binary(
         "//sw/host/opentitanlib",
     ] + all_crate_deps(),
 )
+
+filegroup(
+    name = "test_resources",
+    srcs = [
+        ":opentitantool",
+        "//sw/host/opentitantool/config",
+    ],
+)

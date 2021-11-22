@@ -4,7 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_binary")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_functest")
 load("//rules:autogen.bzl", "autogen_chip_info")
 
 autogen_chip_info(
@@ -55,7 +55,7 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing",
+        "//sw/device/lib/testing/test_framework",
     ],
 )
 
@@ -78,6 +78,21 @@ cc_library(
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing",
+        "//sw/device/lib/testing/test_framework",
+    ],
+)
+
+opentitan_functest(
+    name = "boot_rom_test",
+    srcs = [
+        "boot_rom_test.c",
+    ],
+    deps = [
+        "//sw/device/exts/common",
+        "//sw/device/lib:irq",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/crt",
+        "//sw/device/lib/testing/test_framework",
+        "//sw/device/lib/testing/test_framework:main",
     ],
 )

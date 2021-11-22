@@ -222,3 +222,186 @@ def opentitan_binary(
         name = name,
         srcs = targets,
     )
+
+def verilator_params(
+        rom = "//sw/device/boot_rom:boot_rom_verilator_scr",
+        otp = "//hw/ip/otp_ctrl/data:rma_image_verilator",
+        tags = ["verilator"],
+        timeout = "moderate",
+        local = True,
+        args = [
+            "console",
+            "--exit-failure=FAIL",
+            "--exit-success=PASS",
+            "--timeout=3600",
+        ],
+        data = [],
+        **kwargs):
+    """A macro to create verilator parameters for OpenTitan functional tests.
+
+    This macro emits a dictionary of parameters which are pasted into the
+    verilator specific test rule.
+
+    Args:
+        @param rom: The ROM to use when booting verilator.
+        @param otp: The OTP image to use when booting verilator.
+        @param tags: The test tags to apply to the test rule.
+        @param timeout: The timeout to apply to the test rule.
+        @param local: Whether the test should be run locally and without sandboxing.
+        @param args: Arguments to pass to the test.
+        @param data: Data dependencies of the test.
+    """
+    kwargs.update(rom = rom, otp = otp, tags = tags, timeout = timeout, local = local, args = args, data = data)
+    return kwargs
+
+def cw310_params(
+        tags = ["cw310", "exclusive"],
+        timeout = "moderate",
+        local = True,
+        args = [
+            "--exec=\"console -q -t0\"",
+            "--exec=\"bootstrap $(location {test_bin})\"",
+            "console",
+            "--exit-failure=FAIL",
+            "--exit-success=PASS",
+            "--timeout=3600",
+        ],
+        data = [],
+        **kwargs):
+    """A macro to create CW310 parameters for OpenTitan functional tests.
+
+    This macro emits a dictionary of parameters which are pasted into the
+    ChipWhisperer-310 specific test rule.
+
+    Args:
+        @param tags: The test tags to apply to the test rule.
+        @param timeout: The timeout to apply to the test rule.
+        @param local: Whether the test should be run locally and without sandboxing.
+        @param args: Arguments to pass to the test.
+        @param data: Data dependencies of the test.
+    """
+    kwargs.update(tags = tags, timeout = timeout, local = local, args = args, data = data)
+    return kwargs
+
+def _format_list(name, list1, datadict, **kwargs):
+    """Concatenate and format list items.
+
+    This is used to prepare substitutions in user-supplied args to the
+    various test invocations (ie: the location of test_bin).
+    Args:
+        @param name: The name of the item in `datadict`.
+        @param list1: A list of items to prepend to the list item from datadict.
+        @param datadict: A dictionary of per-test parameters.
+        @param **kwargs: Values to pass to the format function.
+    Returns:
+        list[str]
+    """
+    return [x.format(**kwargs) for x in list1 + datadict.pop(name, [])]
+
+def opentitan_functest(
+        name,
+        platform = OPENTITAN_PLATFORM,
+        targets = ["verilator", "cw310"],
+        args = [],
+        data = [],
+        verilator = None,
+        cw310 = None,
+        **kwargs):
+    """A helper macro for generating OpenTitan functional tests.
+    This macro is mostly a wrapper around opentitan_binary, but creates
+    testing artifacts for each of the keys in `per_device_deps`.
+    The testing artifacts are then given to an `sh_test` rule which
+    dispatches the test via opentitantool.
+    Args:
+      @param name: The name of this rule.
+      @param platform: The target platform for the artifacts.
+      @param targets: A list of targets on which to dispatch tests.
+      @param args: Extra arguments to pass to `opentitantool`.
+      @param data: Extra data dependencies needed while executing the test.
+      @param **kwargs: Arguments to forward to `opentitan_binary`.
+
+    This macro emits the following rules:
+        opentitan_binary named: {name}_prog (and all of its emitted rules).
+        sh_test named:          {name}_verilator_{test suffix}
+        sh_test named:          {name}_cw310_{test suffix}
+        test_suite named:       {name}
+    """
+
+    opentitan_binary(
+        name = name + "_prog",
+        platform = platform,
+        output_disassembly = False,
+        **kwargs
+    )
+
+    all_tests = []
+
+    if "verilator" in targets:
+        test_name = "verilator_{}".format(name)
+        test_bin = "{}_prog_verilator_elf".format(name)
+
+        if verilator == None:
+            verilator = verilator_params()
+        rom = verilator.pop("rom")
+        otp = verilator.pop("otp")
+        vargs = _format_list("args", args, verilator, test_bin = test_bin)
+        vdata = _format_list("data", data, verilator, test_bin = test_bin)
+
+        if "manual" not in verilator.get("tags", []):
+            all_tests.append(test_name)
+
+        native.sh_test(
+            name = test_name,
+            srcs = ["//util:opentitantool_test_runner.sh"],
+            args = [
+                "--rcfile=",
+                "--logging=info",
+                "--interface=verilator",
+                "--conf=sw/host/opentitantool/config/opentitan_verilator.json",
+                "--verilator-bin=$(location //hw:verilator)/sim-verilator/Vchip_sim_tb",
+                "--verilator-rom=$(location {})".format(rom),
+                "--verilator-flash=$(location {})".format(test_bin),
+                "--verilator-otp=$(location {})".format(otp),
+            ] + vargs,
+            data = [
+                test_bin,
+                rom,
+                otp,
+                "//sw/host/opentitantool:test_resources",
+                "//hw:verilator",
+            ] + vdata,
+            **verilator
+        )
+
+    if "cw310" in targets:
+        test_name = "cw310_{}".format(name)
+        test_bin = "{}_prog_cw310_bin".format(name)
+
+        if cw310 == None:
+            cw310 = cw310_params()
+        cargs = _format_list("args", args, cw310, test_bin = test_bin)
+        cdata = _format_list("data", data, cw310, test_bin = test_bin)
+
+        if "manual" not in verilator.get("tags", []):
+            all_tests.append(test_name)
+
+        native.sh_test(
+            name = test_name,
+            srcs = ["//util:opentitantool_test_runner.sh"],
+            args = [
+                "--rcfile=",
+                "--logging=info",
+                "--interface=cw310",
+                "--conf=sw/host/opentitantool/config/opentitan_cw310.json",
+            ] + cargs,
+            data = [
+                test_bin,
+                "//sw/host/opentitantool:test_resources",
+            ] + cdata,
+            **cw310
+        )
+
+    native.test_suite(
+        name = name,
+        tests = all_tests,
+    )

@@ -13,6 +13,7 @@ rust_library(
         "src/app/command.rs",
         "src/app/conf.rs",
         "src/app/mod.rs",
+        "src/bootstrap/legacy.rs",
         "src/bootstrap/mod.rs",
         "src/bootstrap/primitive.rs",
         "src/io/gpio.rs",

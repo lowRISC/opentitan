@@ -18,6 +18,9 @@ fusesoc_build(
     target = "sim",
 )
 
+# TODO(lowRISC/opentitan#7972): Globbing all of the //hw/... hierarchy together
+# is a bit of a hack.  Longer term, we need proper rules for expressing the
+# relationships between verilog components.
 filegroup(
     name = "all_files",
     srcs = glob(["**"]) + [
