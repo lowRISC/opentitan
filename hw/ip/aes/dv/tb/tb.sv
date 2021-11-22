@@ -31,8 +31,7 @@ module tb;
   `DV_EDN_IF_CONNECT
   `DV_ALERT_IF_CONNECT
 
-  // for now drive a static key marked as invalid
-  assign keymgr_key = keymgr_pkg::HW_KEY_REQ_DEFAULT;
+  key_sideload_if sideload_if(.clk_i(clk), .rst_ni(rst_n));
 
   // dut
   aes #(
@@ -50,7 +49,7 @@ module tb;
     .rst_edn_ni       ( edn_rst_n                         ),
     .edn_o            ( edn_if[0].req                     ),
     .edn_i            ( {edn_if[0].ack, edn_if[0].d_data} ),
-    .keymgr_key_i     ( keymgr_key                        ),
+    .keymgr_key_i     ( sideload_if.sideload_key          ),
 
     .tl_i             ( tl_if.h2d                         ),
     .tl_o             ( tl_if.d2h                         ),
@@ -69,7 +68,8 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual aes_cov_if)::set(null, "*.env", "aes_cov_if", dut.u_aes_cov_if );
-
+    uvm_config_db#(virtual key_sideload_if)
+                  ::set(null, "*.env.keymgr_sideload_agent*", "vif", sideload_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

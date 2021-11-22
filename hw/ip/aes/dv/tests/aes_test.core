@@ -18,6 +18,7 @@ filesets:
       - aes_config_error_test.sv: {is_include_file: true}
       - aes_clear_test.sv: {is_include_file: true}
       - aes_alert_reset_test.sv: {is_include_file: true}
+      - aes_sideload_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

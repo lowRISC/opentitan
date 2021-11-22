@@ -18,7 +18,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   aes_seq_item input_item;                    // item containing data and config
   aes_seq_item output_item;                   // item containing resulting output
   aes_seq_item complete_item;                 // merge of input and output items
-
+  aes_seq_item key_item;                      // sequence item holding last sideload valid key
   bit          ok_to_fwd          = 0;        // 0: item is not ready to forward
   bit          finish_message     = 0;        // set when test is trying to end
                                               // - to indicate the last message is finished
@@ -26,6 +26,10 @@ class aes_scoreboard extends cip_base_scoreboard #(
   int          corrupt_cnt        = 0;        // number of aes_mode errors seen
   int          skipped_cnt        = 0;        // number of skipped messages
   bit          reset_compare      = 0;        // reset compare task
+  bit          exp_clear          = 0;        // if using sideload - we are expecting a clear
+
+  keymgr_pkg::hw_key_req_t sideload_key = 0;  // will hold the key from sideload
+  uvm_tlm_analysis_fifo #(key_sideload_item)  key_manager_fifo;
 
   virtual      aes_cov_if   cov_if;           // handle to aes coverage interface
   // local queues to hold incoming packets pending comparison //
@@ -39,10 +43,12 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    msg_fifo    = new();
-    item_fifo   = new();
-    input_item  = new("input_item");
-    output_item = new ();
+    msg_fifo         = new();
+    item_fifo        = new();
+    key_manager_fifo = new("keymgr_analysis_fifo");
+    input_item       = new("input_item");
+    key_item         = new("key_item");
+    output_item      = new ();
 
     if (!uvm_config_db#(virtual aes_cov_if)::get(null, "*.env" , "aes_cov_if", cov_if)) begin
       `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO COVER IF"))
@@ -63,6 +69,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
     if (cfg.en_scb) begin
       fork
         compare();
+        process_sideload_key();
         rebuild_message();
       join_none
     end
@@ -102,9 +109,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
         (!uvm_re_match("ctrl_shadowed", csr_name)): begin
           if (write) begin
-//            cov_if.cg_ctrl_sample(item.a_data);
-            input_item.manual_op = get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data);
-            input_item.key_len   = get_field_val(ral.ctrl_shadowed.key_len, item.a_data);
+            input_item.manual_op   = get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data);
+            input_item.key_len     = get_field_val(ral.ctrl_shadowed.key_len, item.a_data);
+            input_item.sideload_en = get_field_val(ral.ctrl_shadowed.sideload, item.a_data);
             `downcast(input_item.operation,
                       get_field_val(ral.ctrl_shadowed.operation ,item.a_data));
             input_item.valid = 1'b1;
@@ -122,11 +129,15 @@ class aes_scoreboard extends cip_base_scoreboard #(
                                   get_field_val(ral.ctrl_shadowed.mode, item.a_data),
                                   get_field_val(ral.ctrl_shadowed.key_len, item.a_data),
                                   get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data),
+                                  get_field_val(ral.ctrl_shadowed.sideload, item.a_data),
                                   get_field_val(ral.ctrl_shadowed.force_zero_masks, item.a_data)
                                   );
 
             input_item.clean();
             input_item.start_item = 1;
+            if (input_item.sideload_en) begin
+              exp_clear = 1;
+            end
           end
         end
 
@@ -185,12 +196,14 @@ class aes_scoreboard extends cip_base_scoreboard #(
         if (get_field_val(ral.trigger.key_iv_data_in_clear, item.a_data)) begin
           void'(input_item.key_clean(0, 1));
           void'(input_item.iv_clean(0, 1));
+          void'(key_item.key_clean(0, 1));
           input_item.clean_data_in();
           // if in the middle of a message
           // this is seen as the beginning of a new message
           if (!input_item.start_item) begin
             input_item.start_item = 1;
-            input_item.split_item = 1;
+            if (!exp_clear) input_item.split_item = 1;
+            exp_clear = 0;
             `uvm_info(`gfn, $sformatf("splitting message"), UVM_MEDIUM)
           end
           `uvm_info(`gfn, $sformatf("\n\t ----| clearing KEY"), UVM_MEDIUM)
@@ -232,6 +245,11 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
       // check that the item is valid - all registers clean base on mode //
       if (input_item.valid && !input_item.manual_op) begin
+        // update key with what came from sideload
+        if(input_item.sideload_en && input_item.start_item) begin
+          input_item.key = key_item.key;
+          input_item.key_vld = key_item.key_vld;
+        end
         case (input_item.mode)
           AES_ECB: begin
             `uvm_info(`gfn, $sformatf("\n\t ----| ECB mode"), UVM_FULL)
@@ -438,17 +456,32 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
           `downcast(complete_clone, complete_item.clone());
           item_fifo.put(complete_clone);
-
-          `uvm_info(`gfn,
-                    $sformatf("\n\t ----|added data to item_fifo mode %0b (output received) fifo entries %d",
-                              complete_item.mode, item_fifo.num()), UVM_MEDIUM)
-
           output_item                    = new();
           complete_item                  = new();
         end
       end
     end
   endtask // process_tl_access
+
+
+  //This task will check for any sideload keys that have been provided
+  virtual task process_sideload_key();
+    key_sideload_item sideload_item;
+    sideload_item = new("sideload_item");
+
+      forever begin
+        // Wait for a valid sideloaded key
+        key_manager_fifo.get(sideload_item);
+          // Note: max size of sideloaded key is keymgr_pkg::KeyWidth
+
+        for (int i = 0; i < keymgr_pkg::KeyWidth / 32; i++) begin
+          key_item.key[0][i]     = sideload_item.key0[i*32 +: 32];
+          key_item.key[1][i]     = sideload_item.key1[i*32 +: 32];
+          key_item.key_vld[0][i] = 1'b1;
+          key_item.key_vld[1][i] = 1'b1;
+        end
+      end
+  endtask
 
 
   // takes items from the item queue and builds full
@@ -477,7 +510,7 @@ virtual task rebuild_message();
                   `uvm_info(`gfn, $sformatf("\n setting skip msg"), UVM_MEDIUM)
                 end else begin
                   `uvm_fatal(`gfn,
-                             $sformatf("\n\t ----| FIRST ITEM DID NOT HAVE MESSAGE START/CONFIG SETTINGS"))
+                      $sformatf("\n\t ----| FIRST ITEM DID NOT HAVE MESSAGE START/CONFIG SETTINGS"))
                 end
               end
               message.add_start_msg_item(full_item);
@@ -485,7 +518,6 @@ virtual task rebuild_message();
             end
 
             MSG_RUN: begin
-              `uvm_info(`gfn, $sformatf("\t ----| got item from item fifo "), UVM_MEDIUM)
               if (full_item.message_start() || (full_item.start_item && full_item.manual_op)) begin
                 `downcast(msg_clone, message.clone());
                 msg_fifo.put(msg_clone);
@@ -527,20 +559,15 @@ virtual task rebuild_message();
     string txt="";
     bit [3:0][31:0] tmp_input;
     bit [3:0][31:0] tmp_output;
-
     forever begin
       bit operation;
       aes_message_item msg;
       msg_fifo.get(msg);
-      `uvm_info(`gfn, $sformatf("model %b, operation: %b, mode %06b, IV %h, key_len %03b, key share0 %h, key share1 %h ",
-                                cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv, msg.aes_keylen,
-                                msg.aes_key[0], msg.aes_key[1]),
-                                UVM_MEDIUM)
 
       if (msg.aes_mode != AES_NONE && !msg.skip_msg) begin
         msg.alloc_predicted_msg();
 
-        //ref-model      / opration     / chipher mode /    IV   / key_len    / key /data i /data o //
+        //ref-model     / opration     / chipher mode /    IV   / key_len   / key /data i /data o //
         operation = msg.aes_operation == AES_ENC ? 1'b0 :
                     msg.aes_operation == AES_DEC ? 1'b1 : 1'b0;
         c_dpi_aes_crypt_message(cfg.ref_model, operation, msg.aes_mode, msg.aes_iv,
@@ -553,15 +580,17 @@ virtual task rebuild_message();
 
         foreach (msg.input_msg[i]) begin
           txt = { txt, $sformatf("\n\t %d %h \t %h \t %h \t %b",
-                                i, msg.input_msg[i], msg.output_msg[i], msg.predicted_msg[i], msg.output_cleared[i])};
+              i, msg.input_msg[i], msg.output_msg[i], msg.predicted_msg[i], msg.output_cleared[i])};
         end
 
         for (int n =0 ; n < msg.input_msg.size(); n++) begin
           if ((msg.output_msg[n] != msg.predicted_msg[n]) && ~msg.output_cleared[n]) begin
             txt = {"\t TEST FAILED MESSAGES DID NOT MATCH \n ", txt};
 
-            txt = {txt, $sformatf("\n\n\t ----| ACTUAL OUTPUT DID NOT MATCH PREDICTED OUTPUT |----")};
-            txt = {txt, $sformatf("\n\t ----| FAILED AT BYTE #%0d \t ACTUAL: 0x%h \t PREDICTED: 0x%h ",
+            txt = {txt,
+                 $sformatf("\n\n\t ----| ACTUAL OUTPUT DID NOT MATCH PREDICTED OUTPUT |----")};
+            txt = {txt,
+                 $sformatf("\n\t ----| FAILED AT BYTE #%0d \t ACTUAL: 0x%h \t PREDICTED: 0x%h ",
                                   n, msg.output_msg[n], msg.predicted_msg[n])};
           `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", good_cnt, txt))
           end
@@ -644,10 +673,12 @@ virtual task rebuild_message();
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_message_item, msg_fifo)
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_seq_item, item_fifo)
       `DV_EOT_PRINT_Q_CONTENTS(aes_seq_item, rcv_item_q)
-      if (good_cnt != (cfg.num_messages - cfg.num_corrupt_messages - skipped_cnt + cfg.split_cnt)) begin
+      if (good_cnt !=
+             (cfg.num_messages - cfg.num_corrupt_messages - skipped_cnt + cfg.split_cnt)) begin
         rpt_srvr = uvm_report_server::get_server();
-        if (rpt_srvr.get_severity_count(UVM_FATAL)+rpt_srvr.get_severity_count(UVM_ERROR) == 0) begin
-          txt = "\n\t ----| NO FAILURES BUT DIDN*T SEE ALL EXPECTED MESSAGES";
+        if (rpt_srvr.get_severity_count(UVM_FATAL)
+             + rpt_srvr.get_severity_count(UVM_ERROR) == 0) begin
+          txt = "\n\t ----| NO FAILURES BUT NUMBER OF EXPECTED MESSAGES DOES NOT MATCH ACTUAL";
         end else begin
           txt = "\n\t ----| TEST FAILED";
         end

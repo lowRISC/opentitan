@@ -46,7 +46,7 @@ class aes_alert_reset_test extends aes_base_test;
     cfg.random_data_key_iv_order = 1;
     cfg.read_prob                = 70;
     cfg.write_prob               = 90;
-
+    cfg.sideload_pct             = 0;
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endfunction
 endclass : aes_alert_reset_test

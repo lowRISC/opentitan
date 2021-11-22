@@ -8,9 +8,14 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   `uvm_object_utils_end
   `uvm_object_new
 
+
+  // external if
+ // sideload_vif    sideload_vif;
+
+  rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
   // test environment constraints //
-  typedef enum { VerySlow, Slow, Fast, VeryFast } tl_ul_access_e;
-    //  Message Knobs //
+    typedef enum { VerySlow, Slow, Fast, VeryFast } tl_ul_access_e;
+  //  Message Knobs //
   int                num_messages_min            = 1;
   int                num_messages_max            = 1;
   int                message_len_min             = 128;
@@ -97,6 +102,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // chance of writing data when DUT is ready (for each status poll)
   int                write_prob = 90;
 
+  // sideload enable
+  int                sideload_pct               = 0;
+
 
   ///////////////////////////////
   // dont touch updated by env //
@@ -124,7 +132,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   constraint c_inj_delay    {inj_delay    inside {[inj_min_delay : inj_max_delay]};}
 
-  constraint flip_rst_c { flip_rst dist { 0:/flip_rst_split_pct,
+  constraint c_flip_rst { flip_rst dist { 0:/flip_rst_split_pct,
                                           1:/(100-flip_rst_split_pct) };}
 
   function void post_randomize();
@@ -149,6 +157,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
         zero_delays                      = 1;
       end
     endcase // case (host_resp_speed)
+
 
     if (config_error_type[0] == 1'b1) num_corrupt_messages += 1;
   endfunction
@@ -179,6 +188,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     list_of_alerts = aes_env_pkg::LIST_OF_ALERTS;
+    keymgr_sideload_agent_cfg = key_sideload_agent_cfg::type_id
+                                ::create("keymgr_sideload_agent_cfg");
+    keymgr_sideload_agent_cfg.start_default_seq = 0;
     num_edn = 1;
     has_shadowed_regs = 1;
     super.initialize(csr_base_addr);
