@@ -118,6 +118,14 @@
       tests: ["aes_stress"]
     }
     {
+      name: sideload
+      desc: '''
+            Verify that DUT uses sideload correctly when sideload is enabled.
+            and that it ignores any valid on the bus when disabled.'''
+      milestone: V2
+        tests: ["aes_stress", "aes_sideload"]
+    }
+    {
       name: deinitialization
       desc: '''
             Make sure that there is no residual data from latest operation. '''
