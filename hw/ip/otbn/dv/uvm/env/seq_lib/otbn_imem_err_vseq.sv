@@ -42,7 +42,7 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
     // doesn't actually fetch anything until that happens. This isn't as lax as it looks, though. We
     // know that the alert is supposed to go out at the same time as STATUS changes, so can add a
     // timeout there.
-    cfg.scoreboard.set_exp_alert(.alert_name("fatal"), .is_fatal(1'b1), .max_delay(10000));
+    cfg.scoreboard.set_exp_alert(.alert_name("fatal"), .is_fatal(1'b1), .max_delay(100000));
 
     cfg.model_agent_cfg.vif.invalidate_imem <= 1'b1;
     @(cfg.clk_rst_vif.cb);
@@ -60,9 +60,11 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
             wait_alert_trigger("fatal", .wait_complete(1));
             seen_alert = 1'b1;
           end
-          repeat (10) @(cfg.clk_rst_vif.cb);
+          begin
+            repeat (50) @(cfg.m_alert_agent_cfg["fatal"].vif.receiver_cb);
+          end
         join_any
-        `DV_CHECK_FATAL(seen_alert, "No alert after 10 cycles")
+        `DV_CHECK_FATAL(seen_alert, "No alert after 50 cycles")
         disable fork;
       end
     join
