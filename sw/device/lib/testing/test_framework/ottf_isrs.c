@@ -9,7 +9,6 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 
 void ottf_exception_handler(void) {
   uint32_t mcause = ibex_mcause_read();
