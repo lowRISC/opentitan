@@ -38,6 +38,6 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing",
+        "//sw/device/lib/testing/test_framework",
     ],
 )
