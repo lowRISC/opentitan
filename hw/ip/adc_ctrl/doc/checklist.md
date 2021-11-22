@@ -52,7 +52,7 @@ RTL           | [ARCHITECTURE_FROZEN][] | Done        |
 RTL           | [REVIEW_TODO][]         | Done        |
 RTL           | [STYLE_X][]             | Done        |
 Code Quality  | [LINT_PASS][]           | Done        |
-Code Quality  | [CDC_SETUP][]           | In progress |
+Code Quality  | [CDC_SETUP][]           | NA          | CDC setup not yet available
 Code Quality  | [FPGA_TIMING][]         | Done        |
 Code Quality  | [CDC_SYNCMACRO][]       | Done        |
 Security      | [SEC_CM_DOCUMENTED][]   | NA          |
