@@ -19,3 +19,12 @@ autogen_hjson_header(
         "ip_autogen/alert_handler/data/alert_handler.hjson",
     ],
 )
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]) + [
+        "//hw/top_earlgrey/data:all_files",
+        "//hw/top_earlgrey/ip:all_files",
+        "//hw/top_earlgrey/sw:all_files",
+    ],
+)

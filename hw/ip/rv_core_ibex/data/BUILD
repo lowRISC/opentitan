@@ -12,3 +12,8 @@ autogen_hjson_header(
         "rv_core_ibex.hjson",
     ],
 )
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)

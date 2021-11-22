@@ -12,3 +12,8 @@ autogen_hjson_header(
         "i2c.hjson",
     ],
 )
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)
