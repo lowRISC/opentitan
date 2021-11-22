@@ -105,8 +105,12 @@ package otp_ctrl_pkg;
   typedef struct packed {
     logic                            valid;
     logic                            error;
-    lc_ctrl_state_pkg::lc_state_e    state;
-    lc_ctrl_state_pkg::lc_cnt_e      count;
+    // Use lc_state_t and lc_cnt_t here as very wide enumerations ( > 64 bits )
+    // are not supported for virtual interfaces by Excelium yet
+    // https://github.com/lowRISC/opentitan/issues/8884 (Cadence issue: cds_46570160)
+    // The enumeration types lc_state_e and lc_cnt_e are still ok in other circumstances
+    lc_ctrl_state_pkg::lc_state_t    state;
+    lc_ctrl_state_pkg::lc_cnt_t      count;
     // This is set to "On" if the partition containing the
     // root secrets have been locked. In that case, the device
     // is considered "personalized".

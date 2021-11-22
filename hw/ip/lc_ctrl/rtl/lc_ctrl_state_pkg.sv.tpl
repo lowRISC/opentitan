@@ -136,11 +136,18 @@ package lc_ctrl_state_pkg;
   // Derived enum types //
   ////////////////////////
 
-  typedef enum logic [LcStateWidth-1:0] {
+  // Use lc_state_t and lc_cnt_t in interfaces as very wide enumerations ( > 64 bits )
+  // are not supported for virtual interfaces by Excelium yet
+  // https://github.com/lowRISC/opentitan/issues/8884 (Cadence issue: cds_46570160)
+  // The enumeration types lc_state_e and lc_cnt_e are still ok in other circumstances
+
+  typedef logic [LcStateWidth-1:0] lc_state_t;
+  typedef enum lc_state_t {
 ${_print_state_enum('LcSt', 'lc_state', lc_st_enc.config)}
   } lc_state_e;
 
-  typedef enum logic [LcCountWidth-1:0] {
+  typedef logic [LcCountWidth-1:0] lc_cnt_t;
+  typedef enum lc_cnt_t {
 ${_print_state_enum('LcCnt', 'lc_cnt', lc_st_enc.config)}
   } lc_cnt_e;
 
