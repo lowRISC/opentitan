@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/irq.h"
-#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"

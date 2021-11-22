@@ -7,6 +7,8 @@
 
 #include <stdbool.h>
 
+// This private header is included here so that OTTF users can include a single
+// header in their test application (the `ottf.h` header).
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 
 /**
