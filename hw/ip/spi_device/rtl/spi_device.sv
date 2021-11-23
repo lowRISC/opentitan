@@ -283,12 +283,6 @@ module spi_device
   logic intr_readbuf_watermark, intr_readbuf_flip;
   logic flash_sck_readbuf_watermark, flash_sck_readbuf_flip;
 
-  // TODO: Implement
-  assign intr_readbuf_flip             = 1'b 0;
-
-  logic  unused_flip_event;
-  assign unused_flip_event = flash_sck_readbuf_flip;
-
   // TPM ===============================================================
   localparam int unsigned TpmFifoDepth    = 4; // 4B
   localparam int unsigned TpmFifoPtrW     = $clog2(TpmFifoDepth+1);
@@ -611,6 +605,14 @@ module spi_device
     .intr_o                 (intr_readbuf_watermark_o              )
   );
 
+  prim_pulse_sync u_flash_readbuf_flip_pulse_sync (
+    .clk_src_i   (clk_spi_in_buf        ),
+    .rst_src_ni  (rst_ni                ),
+    .src_pulse_i (flash_sck_readbuf_flip),
+    .clk_dst_i   (clk_i                 ),
+    .rst_dst_ni  (rst_ni                ),
+    .dst_pulse_o (intr_readbuf_flip     )
+  );
   prim_intr_hw #(.Width(1)) u_intr_readbuf_flip (
     .clk_i,
     .rst_ni,

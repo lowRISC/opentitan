@@ -114,8 +114,15 @@ module spid_readbuffer #(
   assign current_buffer_idx = current_address_i[31:OneBufferAw];
   assign flip = current_buffer_idx == next_buffer_addr;
 
-  // TODO: Make event_flip_o pulse signal
-  assign event_flip_o = active && flip;
+  // make flip event single cycle pulse signal
+  // It will be synchronized into the bus clock domain using prim_pulse_sync
+  logic flip_q;
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) flip_q <= 1'b 0;
+    else             flip_q <= flip;
+  end
+
+  assign event_flip_o = active && flip && !flip_q;
 
   // TODO: Consider the case if host jumps the address? (report error?)
 
