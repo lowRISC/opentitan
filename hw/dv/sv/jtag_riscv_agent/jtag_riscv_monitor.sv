@@ -66,7 +66,11 @@ class jtag_riscv_monitor extends dv_base_monitor #(
                       "Got busy status (%s) - op:%s(%h) addr:%h", status.name, op.name, op, addr),
                       UVM_MEDIUM)
           end else begin
-            `uvm_error(`gfn, $sformatf("Bad status - %s(%h) ", status.name, status))
+            if (!cfg.allow_errors) begin
+              `uvm_error(`gfn, $sformatf("Bad status - %s(%h) ", status.name, status))
+            end else begin
+              `uvm_info(`gfn, $sformatf("Bad status - %s(%h) ", status.name, status), UVM_MEDIUM)
+            end
           end
         end else begin
           `uvm_error(`gfn, $sformatf("Bad op - %s(%h) ", op_trans.name, op_trans))

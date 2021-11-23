@@ -55,15 +55,17 @@ static void check_lc_state_transition_count(uint8_t exp_lc_count) {
  * Tests the state transition request handshake between LC_CTRL and OTP_CTRL.
  *
  * 1). OTP pre-load image with lc_count = `8`.
- * 2). Backdoor write OTP's LC parition to `TestUnlocked2` state, and backdoor
- * write OTP's `test_exit` token to match the pattern
- * `h00_01_02_03_04_05_06_07_08_09_0a_0b_0c_0d`.
- * 3). When LC_CTRL is ready, check LC_CNT and LC_STATE register.
- * 4). Program LC state transition request to advance to `Prod` state.
- * 5). Issue hard reset.
- * 6). Wait for LC_CTRL is ready, then check if LC_STATE advanced to `Dev`
+ * 2). Backdoor write OTP's LC parition to `TestLocked1` state, and backdoor
+ * write OTP's `test_exit` token and `test_unlock` token to match the rand
+ * patterns.
+ * 3). `TestLocked1` state disabled CPU, so external testbench will drive JTAG
+ * interface to transit to `TestUnlocked2` state and increment the LC_CNT.
+ * 4). When LC_CTRL is ready, check LC_CNT and LC_STATE register.
+ * 5). Program LC state transition request to advance to `Prod` state.
+ * 6). Issue hard reset.
+ * 7). Wait for LC_CTRL is ready, then check if LC_STATE advanced to `Dev`
  * state, and lc_count advanced to `9`.
- * 7). Issue hard reset and override OTP's LC partition, and reset LC state to
+ * 8). Issue hard reset and override OTP's LC partition, and reset LC state to
  * `TestUnlocked2` state.
  */
 
@@ -78,14 +80,15 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
 
   // The OTP preload image hardcodes the initial LC state transition count to 8.
-  // With each iteration of the test, we increment it.
+  // With each iteration of test, there are two LC_CTRL state transitions.
+  // And the first LC_CTRL state transition is done via external JTAG interface.
   // `kTestIterationCount` starts with 1 in SystemVerilog.
-  const uint8_t LcStateTransitionCount = 8 + kTestIterationCount - 1;
+  const uint8_t kLcStateTransitionCount = 8 + 1 + (kTestIterationCount - 1) * 2;
 
   if (curr_state == kDifLcCtrlStateTestUnlocked2) {
     // LC TestUnlocked2 is the intial test state for this sequence.
     // The sequence will check if lc_count matches the preload value.
-    check_lc_state_transition_count(LcStateTransitionCount);
+    check_lc_state_transition_count(kLcStateTransitionCount);
 
     // Request lc_state transfer to Dev state.
     dif_lc_ctrl_token_t token;
@@ -107,7 +110,7 @@ bool test_main(void) {
     // Once the sequence checks current state and count via CSRs, the test can
     // exit successfully.
     CHECK(curr_state == kDifLcCtrlStateDev, "State transition failed!");
-    check_lc_state_transition_count(LcStateTransitionCount + 1);
+    check_lc_state_transition_count(kLcStateTransitionCount + 1);
     return true;
   }
 

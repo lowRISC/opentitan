@@ -9,7 +9,6 @@ class jtag_riscv_csr_seq extends jtag_riscv_base_seq;
   rand bit [DMI_DATAW-1:0] data;
   rand bit [DMI_ADDRW+1:0] addr;  // Need to convert from csr(byte) address to word address
   rand bit                 do_write;
-  bit                      exp_err;
 
   constraint op_c {
     do_write == 1 -> op == DmiWrite;
@@ -21,28 +20,30 @@ class jtag_riscv_csr_seq extends jtag_riscv_base_seq;
     `uvm_field_int(addr, UVM_DEFAULT)
     `uvm_field_int(data, UVM_DEFAULT)
     `uvm_field_int(do_write, UVM_DEFAULT)
-    `uvm_field_int(exp_err, UVM_DEFAULT)
   `uvm_object_utils_end
 
   function new(string name = "");
     super.new(name);
-    exp_err = 0;
   endfunction
 
   virtual task body();
-
     `uvm_create_obj(REQ, req)
     start_item(req);
+
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
       op   == local::op;
       // convert byte address to word address
       addr == local::addr >> DMI_WORD_SHIFT;
       data == local::data;)
+
     finish_item(req);
     get_response(rsp);
-    if (!do_write) data = rsp.data;
-    `DV_CHECK_EQ(rsp.status, (exp_err ? DmiFail : DmiNoErr), $sformatf(
-                 "JTAG DMI %0s access failed!", do_write ? "write" : "read"))
 
+    if (!do_write) data = rsp.data;
+    if (!cfg.allow_errors) begin
+      `DV_CHECK_EQ(rsp.status, DmiNoErr, $sformatf("JTAG DMI %0s access failed!",
+                                                   do_write ? "write" : "read"))
+    end
   endtask
+
 endclass

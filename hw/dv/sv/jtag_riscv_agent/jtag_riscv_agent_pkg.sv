@@ -77,4 +77,13 @@ package jtag_riscv_agent_pkg;
     csr_val = jtag_csr_seq.data;
   endtask
 
-endpackage : jtag_riscv_agent_pkg
+  task automatic jtag_write_csr(bit [bus_params_pkg::BUS_AW-1:0] csr_addr,
+                                jtag_riscv_sequencer             seqr,
+                                bit [bus_params_pkg::BUS_DW-1:0] csr_val);
+    jtag_riscv_csr_seq jtag_csr_seq = jtag_riscv_csr_seq::type_id::create("jtag_csr_seq");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(jtag_csr_seq, addr == csr_addr; do_write == 1; data == csr_val;,
+                                   , msg_id)
+    jtag_csr_seq.start(seqr);
+  endtask
+
+endpackage: jtag_riscv_agent_pkg
