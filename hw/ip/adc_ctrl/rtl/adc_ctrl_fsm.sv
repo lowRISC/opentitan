@@ -53,23 +53,23 @@ module adc_ctrl_fsm
   //   LP_021->LP_1->LP_EVAL->NP_0->NP_021->NP_1->NP_EVAL->NP_0...repeat
   //3. PWRDN->PWRUP->IDLE->NP_0->NP_021->NP_1->NP_EVAL->NP_0....repeat
   typedef enum logic [3:0] {
-                            PWRDN = 4'h0,// in the power down state
-                            PWRUP = 4'h1,// being powered up
-                            IDLE = 4'h2,// powered up after the pwrup_timer
-                            ONEST_0 = 4'h3,// in oneshot mode; sample channel0 value
-                            ONEST_021 = 4'h4,// in oneshot mode; transition from chn0 to chn1
-                            ONEST_1 = 4'h5,// in oneshot mode; sample channel1 value
-                            LP_0 = 4'h6,// in low-power mode, sample channel0 value
-                            LP_021 = 4'h7,// in low-power mode, transition from chn0 to chn1
-                            LP_1 = 4'h8,// in low-power mode, sample channel1 value
-                            LP_EVAL = 4'h9,// in low-power mode, evaluate if there is a match
-                            LP_SLP = 4'ha,// in low-power mode, go to sleep
-                            LP_PWRUP = 4'hb,// in low-power mode, being powered up
-                            NP_0 = 4'hc,// in normal-power mode, sample channel0 value
-                            NP_021 = 4'hd,// in normal-power mode, transition from chn0 to chn1
-                            NP_1 = 4'he,// in normal-power mode, sample channel1 value
-                            NP_EVAL = 4'hf// in normal-power mode, detection is done
-                            } fsm_state_e;
+    PWRDN = 4'h0,// in the power down state
+    PWRUP = 4'h1,// being powered up
+    IDLE = 4'h2,// powered up after the pwrup_timer
+    ONEST_0 = 4'h3,// in oneshot mode; sample channel0 value
+    ONEST_021 = 4'h4,// in oneshot mode; transition from chn0 to chn1
+    ONEST_1 = 4'h5,// in oneshot mode; sample channel1 value
+    LP_0 = 4'h6,// in low-power mode, sample channel0 value
+    LP_021 = 4'h7,// in low-power mode, transition from chn0 to chn1
+    LP_1 = 4'h8,// in low-power mode, sample channel1 value
+    LP_EVAL = 4'h9,// in low-power mode, evaluate if there is a match
+    LP_SLP = 4'ha,// in low-power mode, go to sleep
+    LP_PWRUP = 4'hb,// in low-power mode, being powered up
+    NP_0 = 4'hc,// in normal-power mode, sample channel0 value
+    NP_021 = 4'hd,// in normal-power mode, transition from chn0 to chn1
+    NP_1 = 4'he,// in normal-power mode, sample channel1 value
+    NP_EVAL = 4'hf// in normal-power mode, detection is done
+  } fsm_state_e;
 
   fsm_state_e fsm_state_q, fsm_state_d;
 
@@ -255,9 +255,11 @@ module adc_ctrl_fsm
         end
       end
 
-      ONEST_021: begin//transition betwenn chn0 and chn1; adc_chn_sel_o=2'b0
+      ONEST_021: begin//transition between chn0 and chn1; adc_chn_sel_o=2'b0
         adc_pd_o = 1'b0;
-        fsm_state_d = ONEST_1;
+        if (!adc_d_val_i) begin
+          fsm_state_d = ONEST_1;
+        end
       end
 
       ONEST_1: begin
@@ -277,9 +279,11 @@ module adc_ctrl_fsm
         end
       end
 
-      LP_021: begin//transition betwenn chn0 and chn1; adc_chn_sel_o=2'b0
+      LP_021: begin//transition between chn0 and chn1; adc_chn_sel_o=2'b0
         adc_pd_o = 1'b0;
-        fsm_state_d = LP_1;
+        if (!adc_d_val_i) begin
+          fsm_state_d = LP_1;
+        end
       end
 
       LP_1: begin
@@ -293,16 +297,19 @@ module adc_ctrl_fsm
 
       LP_EVAL: begin
         adc_pd_o = 1'b0;
-        if ((lp_sample_cnt_q != cfg_lp_sample_cnt_i) && (stay_match == 1'b1)) begin
-          fsm_state_d = LP_SLP;
-        end
-        else if ((lp_sample_cnt_q != cfg_lp_sample_cnt_i) && (stay_match != 1'b1)) begin
-          fsm_state_d = LP_SLP;
-          lp_sample_cnt_clr = 1'b1;
-        end
-        else if ((lp_sample_cnt_q == cfg_lp_sample_cnt_i) && (stay_match == 1'b1)) begin
-          fsm_state_d = NP_0;
-          lp_sample_cnt_clr = 1'b1;
+        // do not transition forward until handshake with ADC is complete
+        if (!adc_d_val_i) begin
+          if ((lp_sample_cnt_q != cfg_lp_sample_cnt_i) && (stay_match == 1'b1)) begin
+            fsm_state_d = LP_SLP;
+          end
+          else if ((lp_sample_cnt_q != cfg_lp_sample_cnt_i) && (stay_match != 1'b1)) begin
+            fsm_state_d = LP_SLP;
+            lp_sample_cnt_clr = 1'b1;
+          end
+          else if ((lp_sample_cnt_q == cfg_lp_sample_cnt_i) && (stay_match == 1'b1)) begin
+            fsm_state_d = NP_0;
+            lp_sample_cnt_clr = 1'b1;
+          end
         end
       end
 
@@ -336,9 +343,11 @@ module adc_ctrl_fsm
         end
       end
 
-      NP_021: begin//transition betwenn chn0 and chn1; adc_chn_sel_o=2'b0
+      NP_021: begin//transition between chn0 and chn1; adc_chn_sel_o=2'b0
         adc_pd_o = 1'b0;
-        fsm_state_d = NP_1;
+        if (!adc_d_val_i) begin
+          fsm_state_d = NP_1;
+        end
       end
 
       NP_1: begin
@@ -352,17 +361,21 @@ module adc_ctrl_fsm
 
       NP_EVAL: begin
         adc_pd_o = 1'b0;
-        if ((np_sample_cnt_q != cfg_np_sample_cnt_i) && (stay_match == 1'b1)) begin
-          fsm_state_d = NP_0;
-        end
-        else if ((np_sample_cnt_q != cfg_np_sample_cnt_i) && (stay_match != 1'b1)) begin
-          fsm_state_d = NP_0;
-          np_sample_cnt_clr = 1'b1;
-        end
-        else if ((np_sample_cnt_q == cfg_np_sample_cnt_i) && (stay_match == 1'b1)) begin
-          fsm_state_d = NP_0;
-          np_sample_cnt_clr = 1'b1;
-          adc_ctrl_done_o = 1'b1;
+
+        // do not transition forward until handshake with ADC is complete
+        if (!adc_d_val_i) begin
+          if ((np_sample_cnt_q != cfg_np_sample_cnt_i) && (stay_match == 1'b1)) begin
+            fsm_state_d = NP_0;
+          end
+          else if ((np_sample_cnt_q != cfg_np_sample_cnt_i) && (stay_match != 1'b1)) begin
+            fsm_state_d = NP_0;
+            np_sample_cnt_clr = 1'b1;
+          end
+          else if ((np_sample_cnt_q == cfg_np_sample_cnt_i) && (stay_match == 1'b1)) begin
+            fsm_state_d = NP_0;
+            np_sample_cnt_clr = 1'b1;
+            adc_ctrl_done_o = 1'b1;
+          end
         end
       end
 
