@@ -53,13 +53,13 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         end
         if (cfg.clk_rst_vif.rst_n) begin
           if ((cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == On) &&
-              (cfg.clkmgr_vif.clk_cb.lc_dft_en_i == On)) begin
+              (cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i == On)) begin
             `DV_CHECK_EQ(cfg.clkmgr_vif.all_clk_byp_req, On, "Expected all_clk_byp_req to be On")
           end
           if (cfg.en_cov) begin
             cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel,
                                  cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down,
-                                 cfg.clkmgr_vif.clk_cb.lc_dft_en_i,
+                                 cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i,
                                  cfg.clkmgr_vif.clk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
           end
         end
@@ -83,7 +83,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.en_cov) begin
             cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel,
                                  cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down,
-                                 cfg.clkmgr_vif.clk_cb.lc_dft_en_i,
+                                 cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i,
                                  cfg.clkmgr_vif.clk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
           end
         end

@@ -31,7 +31,7 @@ interface clkmgr_if (
   prim_mubi_pkg::mubi4_t scanmode_i;
 
   // Life cycle enables clock bypass functionality.
-  lc_ctrl_pkg::lc_tx_t lc_dft_en_i;
+  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i;
 
   // Life cycle clock bypass request and clkmgr ack.
   lc_ctrl_pkg::lc_tx_t lc_clk_byp_req;
@@ -107,8 +107,8 @@ interface clkmgr_if (
     scanmode_i = value;
   endfunction
 
-  function automatic void update_lc_dft_en(lc_ctrl_pkg::lc_tx_t value);
-    lc_dft_en_i = value;
+  function automatic void update_lc_debug_en(lc_ctrl_pkg::lc_tx_t value);
+    lc_hw_debug_en_i = value;
   endfunction
 
   function automatic void update_lc_clk_byp_req(lc_ctrl_pkg::lc_tx_t value);
@@ -143,12 +143,12 @@ interface clkmgr_if (
   endfunction
 
   task automatic init(logic [NUM_TRANS-1:0] idle, prim_mubi_pkg::mubi4_t scanmode,
-                      lc_ctrl_pkg::lc_tx_t lc_dft_en = lc_ctrl_pkg::Off,
+                      lc_ctrl_pkg::lc_tx_t lc_debug_en = lc_ctrl_pkg::Off,
                       lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off);
     `uvm_info("clkmgr_if", "In clkmgr_if init", UVM_MEDIUM)
     update_idle(idle);
     update_lc_clk_byp_req(lc_clk_byp_req);
-    update_lc_dft_en(lc_dft_en);
+    update_lc_debug_en(lc_debug_en);
     update_scanmode(scanmode);
   endtask
 
@@ -268,7 +268,7 @@ interface clkmgr_if (
   clocking clk_cb @(posedge clk);
     input extclk_ctrl_csr_sel;
     input extclk_ctrl_csr_step_down;
-    input lc_dft_en_i;
+    input lc_hw_debug_en_i;
     input io_clk_byp_req;
     input lc_clk_byp_req;
     input step_down = step_down_ff;

@@ -2851,7 +2851,7 @@
           index: -1
         }
         {
-          name: lc_dft_en
+          name: lc_hw_debug_en
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -2859,7 +2859,7 @@
           width: 1
           inst_name: clkmgr_aon
           default: ""
-          top_signame: lc_ctrl_lc_dft_en
+          top_signame: lc_ctrl_lc_hw_debug_en
           index: -1
         }
         {
@@ -7221,7 +7221,6 @@
         otp_ctrl.lc_dft_en
         pinmux_aon.lc_dft_en
         ast.lc_dft_en
-        clkmgr_aon.lc_dft_en
       ]
       lc_ctrl.lc_nvm_debug_en:
       [
@@ -7234,6 +7233,7 @@
         pinmux_aon.lc_hw_debug_en
         csrng.lc_hw_debug_en
         rv_dm.lc_hw_debug_en
+        clkmgr_aon.lc_hw_debug_en
       ]
       lc_ctrl.lc_cpu_en:
       [
@@ -15419,7 +15419,7 @@
         index: -1
       }
       {
-        name: lc_dft_en
+        name: lc_hw_debug_en
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -15427,7 +15427,7 @@
         width: 1
         inst_name: clkmgr_aon
         default: ""
-        top_signame: lc_ctrl_lc_dft_en
+        top_signame: lc_ctrl_lc_hw_debug_en
         index: -1
       }
       {
