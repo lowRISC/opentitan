@@ -40,7 +40,6 @@ ottf_example_bare_metal_test_lib = declare_dependency(
 sw_tests += {
   'ottf_example_bare_metal_test': {
     'library': ottf_example_bare_metal_test_lib,
-    'use_ottf': true,
   }
 }
 
@@ -56,7 +55,6 @@ ottf_example_concurrency_test_lib = declare_dependency(
 sw_tests += {
   'ottf_example_concurrency_test': {
     'library': ottf_example_concurrency_test_lib,
-    'use_ottf': true,
   }
 }
 
@@ -669,7 +667,6 @@ sram_ctrl_execution_test_main_lib = declare_dependency(
     dependencies: [
       sw_lib_bitfield,
       sw_lib_dif_sram_ctrl,
-      sw_lib_irq_handlers,
       sw_lib_runtime_ibex,
       sw_lib_runtime_log,
       sw_lib_testing_lc_ctrl_testutils,
@@ -692,7 +689,6 @@ sram_ctrl_execution_test_ret_lib = declare_dependency(
     sources: ['sram_ctrl_execution_test_ret.c'],
     dependencies: [
       sw_lib_dif_sram_ctrl,
-      sw_lib_irq_handlers,
       sw_lib_runtime_ibex,
       sw_lib_runtime_log,
       sw_lib_testing_sram_ctrl_testutils,
@@ -740,32 +736,16 @@ sw_tests += {
 # (unsigned) test binaries loaded with ROM from sw/device/boot_rom/
 foreach sw_test_name, sw_test_info : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
-    if 'use_ottf' in sw_test_info
-      # test target with OTTF
-      sw_test_elf = executable(
-        sw_test_name + '_' + device_name,
-        name_suffix: 'elf',
-        dependencies: [
-          riscv_crt,
-          device_lib,
-          sw_test_info['library'],
-          sw_lib_testing_ottf,
-        ],
-      )
-    else
-      # test target with bare metal on-device test framework
-      sw_test_elf = executable(
-        sw_test_name + '_' + device_name,
-        name_suffix: 'elf',
-        dependencies: [
-          riscv_crt,
-          device_lib,
-          sw_test_info['library'],
-          sw_lib_irq_handlers,
-          sw_lib_testing_test_main,
-        ],
-      )
-    endif
+    sw_test_elf = executable(
+      sw_test_name + '_' + device_name,
+      name_suffix: 'elf',
+      dependencies: [
+        riscv_crt,
+        device_lib,
+        sw_test_info['library'],
+        sw_lib_testing_ottf,
+      ],
+    )
 
     target_name = sw_test_name + '_@0@_' + device_name
 
@@ -981,9 +961,9 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_runtime_print,
       sw_lib_runtime_log,
       sw_lib_dif_uart,
-      # Explicitly do not pull in the test main; we need to run right after
+      # Explicitly do not pull in the OTTF; we need to run right after
       # the CRT is done executing.
-      # sw_lib_testing_test_main,
+      # sw_lib_testing_ottf,
     ],
   )
 

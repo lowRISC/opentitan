@@ -10,7 +10,7 @@
 #include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -129,12 +129,11 @@ static void plic_init_with_irqs(void) {
 }
 
 /**
- * The IRQ handler for this test.
+ * The ISR for this test.
  *
- * This function overrides the default external irq handler in
- * `sw/device/lib/handler.h`.
+ * This function overrides the default OTTF external ISR.
  */
-void handler_irq_external(void) {
+void ottf_external_isr(void) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t irq_id;
   CHECK_DIF_OK(

@@ -17,12 +17,11 @@ def args(p):
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
 #include "sw/device/lib/dif/dif_${n}.h"
 % endfor
-#include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
-#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -55,8 +54,7 @@ static volatile dif_${n}_irq_t ${n}_irq_serviced;
 /**
  * Provides external IRQ handling for this test.
  *
- * This function overrides the default external IRQ handler in
- * `sw/device/lib/handler.h`.
+ * This function overrides the default OTTF external ISR.
  *
  * For each IRQ, it performs the following:
  * 1. Claims the IRQ fired (finds PLIC IRQ index).
@@ -66,7 +64,7 @@ static volatile dif_${n}_irq_t ${n}_irq_serviced;
  * 4. Clears the IRQ at the peripheral.
  * 5. Completes the IRQ service at PLIC.
  */
-void handler_irq_external(void) {
+void ottf_external_isr(void) {
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kHart, &plic_irq_id));
 

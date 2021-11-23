@@ -10,7 +10,7 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 
-void ottf_exception_handler(void) {
+OT_ATTR_WEAK void ottf_exception_handler(void) {
   uint32_t mcause = ibex_mcause_read();
 
   switch ((ottf_exc_id_t)(mcause & kIdMax)) {

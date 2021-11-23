@@ -6,12 +6,11 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -57,17 +56,16 @@ static const uint8_t exp_spi_device_rx_data[SPI_DEVICE_DATASET_SIZE] = {
 
 // Set our expectation & event indications of the interrupts we intend to
 // exercise in this test. These are declared volatile since they are used by the
-// interrupt handler.
+// ISR.
 static volatile bool expected_irqs[SPI_DEVICE_NUM_IRQS];
 static volatile bool fired_irqs[SPI_DEVICE_NUM_IRQS];
 
 /**
  * Provides external irq handling for this test.
  *
- * This function overrides the default external irq handler in
- * `sw/device/lib/handler.h`.
+ * This function overrides the default OTTF external ISR.
  */
-void handler_irq_external(void) {
+void ottf_external_isr(void) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(
