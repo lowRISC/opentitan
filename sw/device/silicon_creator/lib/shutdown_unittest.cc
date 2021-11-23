@@ -503,7 +503,7 @@ TEST_F(ShutdownTest, InitializeRma) {
 TEST_F(ShutdownTest, RedactPolicyManufacturing) {
   // Devices in manufacturing or RMA states should not redact errors regardless
   // of the redaction level set by OTP.
-  constexpr auto kManufacturingStates = std::array<lifecycle_state_t, 9>{
+  constexpr std::array<lifecycle_state_t, 9> kManufacturingStates = {
       kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
       kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
       kLcStateTestUnlocked6, kLcStateTestUnlocked7, kLcStateRma};
@@ -517,7 +517,7 @@ TEST_F(ShutdownTest, RedactPolicyManufacturing) {
 
 TEST_F(ShutdownTest, RedactPolicyProduction) {
   // Production states should read redaction level from OTP.
-  constexpr auto kProductionStates = std::array<lifecycle_state_t, 3>{
+  constexpr std::array<lifecycle_state_t, 3> kProductionStates = {
       kLcStateProd, kLcStateProdEnd, kLcStateDev};
   for (const auto state : kProductionStates) {
     EXPECT_ABS_READ32(
@@ -534,7 +534,7 @@ TEST_F(ShutdownTest, RedactPolicyProduction) {
 TEST_F(ShutdownTest, RedactPolicyInvalid) {
   // Invalid states should result in the highest redaction level regardless of
   // the redaction level set by OTP.
-  constexpr auto kInvalidStates = std::array<lifecycle_state_t, 11>{
+  constexpr std::array<lifecycle_state_t, 11> kInvalidStates = {
       kLcStateTestLocked0, kLcStateTestLocked1, kLcStateTestLocked2,
       kLcStateTestLocked3, kLcStateTestLocked4, kLcStateTestLocked5,
       kLcStateTestLocked6, kLcStateScrap,       kLcStatePostTransition,
@@ -548,8 +548,8 @@ TEST_F(ShutdownTest, RedactPolicyInvalid) {
 }
 
 TEST_F(ShutdownTest, InitializeManufacturing) {
-  // OTP reads and alert setup should be skipped in the RAW and TEST_UNLOCKED
-  // lifecycle states.
+  // OTP reads and alert setup should be skipped in the TEST_UNLOCKED lifecycle
+  // states.
   constexpr std::array<lifecycle_state_t, 8> kManufacturingStates = {
       kLcStateTestUnlocked0, kLcStateTestUnlocked1, kLcStateTestUnlocked2,
       kLcStateTestUnlocked3, kLcStateTestUnlocked4, kLcStateTestUnlocked5,
