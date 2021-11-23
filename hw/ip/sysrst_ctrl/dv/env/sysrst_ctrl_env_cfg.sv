@@ -5,6 +5,8 @@
 class sysrst_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sysrst_ctrl_reg_block));
 
   // ext component cfgs
+  virtual sysrst_ctrl_if vif;
+  virtual clk_rst_if clk_aon_rst_vif;
 
   `uvm_object_utils_begin(sysrst_ctrl_env_cfg)
   `uvm_object_utils_end

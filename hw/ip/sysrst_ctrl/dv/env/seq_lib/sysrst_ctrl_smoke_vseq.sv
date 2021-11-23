@@ -8,8 +8,23 @@ class sysrst_ctrl_smoke_vseq extends sysrst_ctrl_base_vseq;
 
   `uvm_object_new
 
+  constraint num_trans_c {num_trans == 20;}
+
   task body();
-    `uvm_error(`gfn, "FIXME")
+   `uvm_info(`gfn, "Starting the body from smoke_seq", UVM_LOW)
+
+    repeat (num_trans) begin
+
+      // Randomize the input pins
+      cfg.vif.randomize_input();
+
+      // In normal mode sysrst_ctrl should pass the input pins data to output pins as it is
+      @(posedge cfg.vif.clk_i)
+      `DV_CHECK_EQ(cfg.vif.key0_in, cfg.vif.key0_out)
+      `DV_CHECK_EQ(cfg.vif.key1_in, cfg.vif.key1_out)
+      `DV_CHECK_EQ(cfg.vif.key2_in, cfg.vif.key2_out)
+      `DV_CHECK_EQ(cfg.vif.pwrb_in, cfg.vif.pwrb_out)
+    end
   endtask : body
 
 endclass : sysrst_ctrl_smoke_vseq

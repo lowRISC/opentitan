@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(sysrst_ctrl_env_cfg),
-    .RAL_T(sysrst_ctrl_reg_block),
-    .COV_T(sysrst_ctrl_env_cov)
-  );
+  .CFG_T(sysrst_ctrl_env_cfg),
+  .RAL_T(sysrst_ctrl_reg_block),
+  .COV_T(sysrst_ctrl_env_cov)
+);
   `uvm_component_utils(sysrst_ctrl_scoreboard)
 
   // local variables
+
 
   // local queues to hold incoming packets pending comparison
 
@@ -32,22 +33,21 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
+    uvm_reg        csr;
+    bit            do_read_check = 1'b1;
+    bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit            addr_phase_read = (!write && channel == AddrChannel);
+    bit            addr_phase_write = (write && channel == AddrChannel);
+    bit            data_phase_read = (!write && channel == DataChannel);
+    bit            data_phase_write = (write && channel == DataChannel);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else begin
+    end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
@@ -71,16 +71,37 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "intr_test": begin
         // FIXME
       end
+      "pin_out_ctl": begin
+      end
+      "pin_allowed_ctl": begin
+      end
+      "pin_out_value": begin
+      end
+      "key_invert_ctl": begin
+      end
+      "com_out_ctl[0]": begin
+      end
+      "com_sel_ctl[0]": begin
+      end
+      "com_det_ctl[0]": begin
+      end
+      "ec_rst_ctl": begin
+      end
+      "combo_intr_status": begin
+        do_read_check = 1'b0;  //This check is done in sequence
+      end
+      "key_intr_status": begin
+      end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
     endcase
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read) begin
       if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
+        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, $sformatf(
+                     "reg name: %0s", csr.get_full_name()))
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end

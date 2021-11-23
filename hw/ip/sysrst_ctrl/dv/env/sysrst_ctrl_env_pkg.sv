@@ -23,8 +23,6 @@ package sysrst_ctrl_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
   parameter uint   NUM_ALERTS = 1;
 
-  // types
-
   // functions
 
   // package sources
