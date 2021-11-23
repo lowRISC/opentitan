@@ -90,3 +90,47 @@ To do so, follow the steps below.
 * Open a Pull Request with the necessary code changes.
 
 If it is not clear on how to proceed, feel free to file an issue requesting assistance.
+
+## Change of Interrupts
+
+Changing the interrupts of an IP block needs some extra work in addition to the RTL change.
+1. If a DV environment exists, its testbench (`tb.sv`) will need the ports connected.
+1. If the IP block has been instantiated in a top-level, that top-level will need re-generating to include the new ports.
+1. The auto-generated DIFs will need re-generating.
+1. The PLIC test should also be updated.
+
+Item 1 is reasonably self-explanatory.
+The sections below show how to do items 2-4.
+
+### Update TOP
+
+```console
+$ make -C hw top
+```
+
+After you revise the IP `.hjson`, IP top module, IP register interface, and DV testbench `tb.sv`, you can re-generate top-levels with the command above.
+This reads the `.hjson` file and updates the interrupt signal and re-generates the PLIC module if needed.
+
+### New DIF
+
+Unfortunately, re-generating TOP does not resolve everything.
+If the interrupt names are changed or new interrupts are introduced, the DIF for the IP block should be re-generated.
+
+```console
+$ ./util/make_new_dif.py --mode=regen --only=autogen
+```
+
+The command above updates the DIF (auto-generated part) under `sw/device/lib/dif/`.
+
+If DIF for the IP block already uses the interrupt enums inside, you need to manually revise the reference.
+In most cases, the interrupt name is `kDif`, followed by the IP name in PascalCase (e.g `SpiDevice`), then `Irq`, then the interrupt name in PascalCase (e.g. `RxFull`).
+For example, `kDifSpiDeviceIrqRxFull`.
+To refer to an interrupt in the top-level PLIC enum, the format is `kTopEarlgreyPlicIrqId`, followed by the IP name in PascalCase, then the interrupt name in PascalCase.
+For example, `kTopEarlgreyPlicIrqIdSpiDeviceRxFull`.
+
+### PLIC Unittest
+
+If the number of interrupts has changed, you need to revise the SW unit test manually.
+
+Open `sw/device/lib/dif/dif_rv_plic_unittest.cc` and change the `RV_PLIC_PARAM_NUM_SRC` macro to the current interrupt number.
+Then, find `RV_PLIC_IE0_*_REG_OFFSET`, `RV_PLIC_IP0_*_REG_OFFSET` and revise the Bit value or add lines below if new `IE`, `IP` registers are added.
