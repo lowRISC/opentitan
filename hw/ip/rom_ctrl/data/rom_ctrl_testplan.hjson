@@ -45,20 +45,6 @@
 
     }
     {
-      name: multiple_reset
-      desc: '''
-            Test where the design is reset many times and the rom is re-checked
-
-            **Stimulus**:
-            - Periodically reset the device to restart the rom check
-
-            **Checks**:
-            - Check that the digest csrs are not corrupted
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
       name: corrupt_sig_fatal_chk
       desc: '''
             Corrupt integrity of signals like the select signal to addr mux.
@@ -68,6 +54,14 @@
             '''
       milestone: V2S
       tests: []
+    }
+    {
+      name: stress_all
+      desc: '''
+            - Combine above sequences in one test to run sequentially.
+            - Randomly add reset between each sequence'''
+      milestone: V2
+      tests: ["rom_ctrl_stress_all"]
     }
   ]
   covergroups: [
