@@ -12,12 +12,15 @@ set -e
 
 PASS="PASS"
 FAIL="FAIL"
-TIMELIMIT=$((15*60))
+TIMELIMIT=$((60*60))
+
+readonly OPENTITANTOOL="sw/host/opentitantool/opentitantool"
+readonly CONFIG="sw/host/opentitantool/config"
 
 for arg in "$@"; do
   case $arg in
-    --tool=*)
-      OPENTITANTOOL="${arg#*=}"
+    --interface=*)
+      INTERFACE="${arg#*=}"
       shift
       ;;
     --verilator-dir=*)
@@ -26,10 +29,6 @@ for arg in "$@"; do
       ;;
     --verilator-rom=*)
       VERILATOR_ROM="${arg#*=}"
-      shift
-      ;;
-    --verilator-flash=*)
-      VERILATOR_FLASH="${arg#*=}"
       shift
       ;;
     --verilator-otp=*)
@@ -44,6 +43,10 @@ for arg in "$@"; do
       FAIL="${arg#*=}"
       shift
       ;;
+    --test-bin=*)
+      TEST_BIN="${arg#*=}"
+      shift
+      ;;
     --timeout=*)
       TIMELIMIT="${arg#*=}"
       shift
@@ -55,16 +58,37 @@ for arg in "$@"; do
 esac
 done
 
-RUST_BACKTRACE=1 ${OPENTITANTOOL} \
-    --rcfile= \
-    --logging=info \
-    --interface=verilator \
-    --verilator-bin="${VERILATOR_DIR}/sim-verilator/Vchip_sim_tb" \
-    --verilator-rom="${VERILATOR_ROM}" \
-    --verilator-flash="${VERILATOR_FLASH}" \
-    --verilator-otp="${VERILATOR_OTP}" \
-    console \
-        --uart=0 \
-        --exit-failure="${FAIL}" \
-        --exit-success="${PASS}" \
-        --timeout="${TIMELIMIT}"
+case ${INTERFACE} in
+  verilator)
+    RUST_BACKTRACE=1 ${OPENTITANTOOL} \
+        --rcfile= \
+        --logging=info \
+        --interface=verilator \
+        --conf="${CONFIG}/opentitan_verilator.json" \
+        --verilator-bin="${VERILATOR_DIR}/sim-verilator/Vchip_sim_tb" \
+        --verilator-rom="${VERILATOR_ROM}" \
+        --verilator-flash="${TEST_BIN}" \
+        --verilator-otp="${VERILATOR_OTP}" \
+        console \
+            --exit-failure="${FAIL}" \
+            --exit-success="${PASS}" \
+            --timeout="${TIMELIMIT}"
+    ;;
+  cw310)
+    RUST_BACKTRACE=1 ${OPENTITANTOOL} \
+        --rcfile= \
+        --logging=info \
+        --interface=cw310 \
+        --conf="${CONFIG}/opentitan_cw310.json" \
+        --exec="console -q -t 0" \
+        --exec="bootstrap ${TEST_BIN}" \
+        console \
+            --exit-failure="${FAIL}" \
+            --exit-success="${PASS}" \
+            --timeout="${TIMELIMIT}"
+    ;;
+  *)
+    echo "Unknown interface: ${INTERFACE}"
+    exit 1
+    ;;
+esac
