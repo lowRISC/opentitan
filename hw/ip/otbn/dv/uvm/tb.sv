@@ -14,6 +14,7 @@ module tb;
   import otbn_reg_pkg::*;
   import edn_pkg::*;
   import otp_ctrl_pkg::*;
+  import keymgr_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -89,6 +90,12 @@ module tb;
   assign otp_key_rsp.nonce = TestScrambleNonce;
   assign otp_key_rsp.seed_valid = 1'b0;
 
+  otbn_key_req_t keymgr_key;
+
+  assign keymgr_key.key[0] = {12{32'hDEADBEEF}};
+  assign keymgr_key.key[1] = {12{32'hBAADF00D}};
+  assign keymgr_key.valid  = 1'b1;
+
   // dut
   otbn # (
     .RndCnstOtbnKey(TestScrambleKey),
@@ -124,7 +131,9 @@ module tb;
     .clk_otp_i     (clk),
     .rst_otp_ni    (rst_n),
     .otbn_otp_key_o(otp_key_req),
-    .otbn_otp_key_i(otp_key_rsp)
+    .otbn_otp_key_i(otp_key_rsp),
+
+    .keymgr_key_i(keymgr_key)
   );
 
   bind dut.u_otbn_core otbn_trace_if #(

@@ -314,6 +314,26 @@ jal x1, call_stack_3
 
 call_stack_3:
 
+# w1 = KEY_S0L = 0xdeadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef
+# w2 = w2 + w1 = w2 + KEY_S0L = 0x78475889_78475889_78475889_78475889_78475889_78475889_78475889_78475888
+bn.wsrr w1, 0x4
+bn.add w2, w2, w1
+
+# w1 = KEY_S0H = 0xdeadbeef_deadbeef_deadbeef_deadbeef
+# w2 = w2 + w1 = w2 + KEY_S0H = 0x78475889_78475889_78475889_7847588a_56f51779_56f51779_56f51779_56f51777
+bn.wsrr w1, 0x5
+bn.add w2, w2, w1
+
+# w1 = KEY_S1L = 0xbaadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d
+# w2 = w2 + w1 = w2 + KEY_S1L = 0x32f54897_32f54897_32f54897_32f54898_11a30787_11a30787_11a30787_11a30784
+bn.wsrr w1, 0x6
+bn.add w2, w2, w1
+
+# w1 = KEY_S1H = 0xbaadf00d_baadf00d_baadf00d_baadf00d
+# w2 = w2 + w1 = w2 + KEY_S1H = 0x32f54897_32f54897_32f54897_32f54898_cc50f794_cc50f794_cc50f794_cc50f791
+bn.wsrr w1, 0x7
+bn.add w2, w2, w1
+
 ecall
 
 test_fn_1:

@@ -59,7 +59,9 @@ module otbn
   input                                              clk_otp_i,
   input                                              rst_otp_ni,
   output otp_ctrl_pkg::otbn_otp_key_req_t            otbn_otp_key_o,
-  input  otp_ctrl_pkg::otbn_otp_key_rsp_t            otbn_otp_key_i
+  input  otp_ctrl_pkg::otbn_otp_key_rsp_t            otbn_otp_key_i,
+
+  input  keymgr_pkg::otbn_key_req_t                  keymgr_key_i
 );
 
   import prim_util_pkg::vbits;
@@ -638,6 +640,9 @@ module otbn
   assign hw2reg.err_bits.loop.de = done;
   assign hw2reg.err_bits.loop.d = err_bits.loop;
 
+  assign hw2reg.err_bits.key_invalid.de = done;
+  assign hw2reg.err_bits.key_invalid.d = err_bits.key_invalid;
+
   assign hw2reg.err_bits.imem_intg_violation.de = done;
   assign hw2reg.err_bits.imem_intg_violation.d = err_bits.imem_intg_violation;
 
@@ -856,46 +861,49 @@ module otbn
       .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
     ) u_otbn_core (
       .clk_i,
-      .rst_ni                 (rst_n),
+      .rst_ni                      (rst_n),
 
-      .start_i                (start_rtl),
-      .done_o                 (done_rtl),
-      .locked_o               (locked_rtl),
+      .start_i                     (start_rtl),
+      .done_o                      (done_rtl),
+      .locked_o                    (locked_rtl),
 
-      .err_bits_o             (err_bits_rtl),
+      .err_bits_o                  (err_bits_rtl),
 
-      .imem_req_o             (imem_req_core),
-      .imem_addr_o            (imem_addr_core),
-      .imem_wdata_o           (imem_wdata_core),
-      .imem_rdata_i           (imem_rdata_core),
-      .imem_rvalid_i          (imem_rvalid_core),
-      .imem_rerror_i          (imem_rerror_core),
+      .imem_req_o                  (imem_req_core),
+      .imem_addr_o                 (imem_addr_core),
+      .imem_wdata_o                (imem_wdata_core),
+      .imem_rdata_i                (imem_rdata_core),
+      .imem_rvalid_i               (imem_rvalid_core),
+      .imem_rerror_i               (imem_rerror_core),
 
-      .dmem_req_o             (dmem_req_core),
-      .dmem_write_o           (dmem_write_core),
-      .dmem_addr_o            (dmem_addr_core),
-      .dmem_wdata_o           (dmem_wdata_core),
-      .dmem_wmask_o           (dmem_wmask_core),
-      .dmem_rmask_o           (dmem_rmask_core_d),
-      .dmem_rdata_i           (dmem_rdata_core),
-      .dmem_rvalid_i          (dmem_rvalid_core),
-      .dmem_rerror_i          (dmem_rerror_core),
+      .dmem_req_o                  (dmem_req_core),
+      .dmem_write_o                (dmem_write_core),
+      .dmem_addr_o                 (dmem_addr_core),
+      .dmem_wdata_o                (dmem_wdata_core),
+      .dmem_wmask_o                (dmem_wmask_core),
+      .dmem_rmask_o                (dmem_rmask_core_d),
+      .dmem_rdata_i                (dmem_rdata_core),
+      .dmem_rvalid_i               (dmem_rvalid_core),
+      .dmem_rerror_i               (dmem_rerror_core),
 
-      .edn_rnd_req_o          (edn_rnd_req),
-      .edn_rnd_ack_i          (edn_rnd_ack),
-      .edn_rnd_data_i         (edn_rnd_data),
+      .edn_rnd_req_o               (edn_rnd_req),
+      .edn_rnd_ack_i               (edn_rnd_ack),
+      .edn_rnd_data_i              (edn_rnd_data),
 
-      .edn_urnd_req_o         (edn_urnd_req),
-      .edn_urnd_ack_i         (edn_urnd_ack),
-      .edn_urnd_data_i        (edn_urnd_data),
+      .edn_urnd_req_o              (edn_urnd_req),
+      .edn_urnd_ack_i              (edn_urnd_ack),
+      .edn_urnd_data_i             (edn_urnd_data),
 
-      .insn_cnt_o             (insn_cnt_rtl),
+      .insn_cnt_o                  (insn_cnt_rtl),
 
-      .bus_intg_violation_i   (bus_intg_violation),
-      .illegal_bus_access_i   (illegal_bus_access_q),
-      .lifecycle_escalation_i (lifecycle_escalation),
+      .bus_intg_violation_i        (bus_intg_violation),
+      .illegal_bus_access_i        (illegal_bus_access_q),
+      .lifecycle_escalation_i      (lifecycle_escalation),
 
-      .software_errs_fatal_i  (software_errs_fatal_q)
+      .software_errs_fatal_i       (software_errs_fatal_q),
+
+      .sideload_key_shares_i       (keymgr_key_i.key),
+      .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
     );
   `else
     otbn_core #(
@@ -905,46 +913,49 @@ module otbn
       .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
     ) u_otbn_core (
       .clk_i,
-      .rst_ni                 (rst_n),
+      .rst_ni                      (rst_n),
 
-      .start_i                (start_q),
-      .done_o                 (done),
-      .locked_o               (locked),
+      .start_i                     (start_q),
+      .done_o                      (done),
+      .locked_o                    (locked),
 
-      .err_bits_o             (err_bits),
+      .err_bits_o                  (err_bits),
 
-      .imem_req_o             (imem_req_core),
-      .imem_addr_o            (imem_addr_core),
-      .imem_wdata_o           (imem_wdata_core),
-      .imem_rdata_i           (imem_rdata_core),
-      .imem_rvalid_i          (imem_rvalid_core),
-      .imem_rerror_i          (imem_rerror_core),
+      .imem_req_o                  (imem_req_core),
+      .imem_addr_o                 (imem_addr_core),
+      .imem_wdata_o                (imem_wdata_core),
+      .imem_rdata_i                (imem_rdata_core),
+      .imem_rvalid_i               (imem_rvalid_core),
+      .imem_rerror_i               (imem_rerror_core),
 
-      .dmem_req_o             (dmem_req_core),
-      .dmem_write_o           (dmem_write_core),
-      .dmem_addr_o            (dmem_addr_core),
-      .dmem_wdata_o           (dmem_wdata_core),
-      .dmem_wmask_o           (dmem_wmask_core),
-      .dmem_rmask_o           (dmem_rmask_core_d),
-      .dmem_rdata_i           (dmem_rdata_core),
-      .dmem_rvalid_i          (dmem_rvalid_core),
-      .dmem_rerror_i          (dmem_rerror_core),
+      .dmem_req_o                  (dmem_req_core),
+      .dmem_write_o                (dmem_write_core),
+      .dmem_addr_o                 (dmem_addr_core),
+      .dmem_wdata_o                (dmem_wdata_core),
+      .dmem_wmask_o                (dmem_wmask_core),
+      .dmem_rmask_o                (dmem_rmask_core_d),
+      .dmem_rdata_i                (dmem_rdata_core),
+      .dmem_rvalid_i               (dmem_rvalid_core),
+      .dmem_rerror_i               (dmem_rerror_core),
 
-      .edn_rnd_req_o          (edn_rnd_req),
-      .edn_rnd_ack_i          (edn_rnd_ack),
-      .edn_rnd_data_i         (edn_rnd_data),
+      .edn_rnd_req_o               (edn_rnd_req),
+      .edn_rnd_ack_i               (edn_rnd_ack),
+      .edn_rnd_data_i              (edn_rnd_data),
 
-      .edn_urnd_req_o         (edn_urnd_req),
-      .edn_urnd_ack_i         (edn_urnd_ack),
-      .edn_urnd_data_i        (edn_urnd_data),
+      .edn_urnd_req_o              (edn_urnd_req),
+      .edn_urnd_ack_i              (edn_urnd_ack),
+      .edn_urnd_data_i             (edn_urnd_data),
 
-      .insn_cnt_o             (insn_cnt),
+      .insn_cnt_o                  (insn_cnt),
 
-      .bus_intg_violation_i   (bus_intg_violation),
-      .illegal_bus_access_i   (illegal_bus_access_q),
-      .lifecycle_escalation_i (lifecycle_escalation),
+      .bus_intg_violation_i        (bus_intg_violation),
+      .illegal_bus_access_i        (illegal_bus_access_q),
+      .lifecycle_escalation_i      (lifecycle_escalation),
 
-      .software_errs_fatal_i  (software_errs_fatal_q)
+      .software_errs_fatal_i       (software_errs_fatal_q),
+
+      .sideload_key_shares_i       (keymgr_key_i.key),
+      .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
     );
   `endif
 

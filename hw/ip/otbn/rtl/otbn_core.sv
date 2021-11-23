@@ -79,7 +79,10 @@ module otbn_core
   input  logic                    lifecycle_escalation_i,
 
   // When set software errors become fatal errors.
-  input  logic                    software_errs_fatal_i
+  input  logic                    software_errs_fatal_i,
+
+  input  logic [1:0]                       sideload_key_shares_valid_i,
+  input  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
 );
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -399,7 +402,9 @@ module otbn_core
     .bus_intg_violation_i,
     .illegal_bus_access_i,
     .lifecycle_escalation_i,
-    .software_errs_fatal_i
+    .software_errs_fatal_i,
+
+    .sideload_key_shares_valid_i
   );
 
   assign insn_cnt_o = insn_cnt;
@@ -557,7 +562,9 @@ module otbn_core
     .mac_operation_flags_en_i (mac_bignum_operation_flags_en),
 
     .rnd_data_i               (rnd_data),
-    .urnd_data_i              (urnd_data)
+    .urnd_data_i              (urnd_data),
+
+    .sideload_key_shares_i
   );
 
   otbn_mac_bignum u_otbn_mac_bignum (

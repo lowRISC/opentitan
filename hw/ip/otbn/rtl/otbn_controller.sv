@@ -133,7 +133,9 @@ module otbn_controller
   input  logic        bus_intg_violation_i,
   input  logic        illegal_bus_access_i,
   input  logic        lifecycle_escalation_i,
-  input  logic        software_errs_fatal_i
+  input  logic        software_errs_fatal_i,
+
+  input  logic [1:0]  sideload_key_shares_valid_i
 );
   otbn_state_e state_q, state_d;
 
@@ -220,6 +222,7 @@ module otbn_controller
   logic imem_addr_err, loop_err, ispr_err;
   logic dmem_addr_err, dmem_addr_unaligned_base, dmem_addr_unaligned_bignum, dmem_addr_overflow;
   logic illegal_insn_static;
+  logic key_invalid, key_invalid_err;
 
   logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
 
@@ -393,6 +396,7 @@ module otbn_controller
   assign err_bits.reg_intg_violation   = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
   assign err_bits.dmem_intg_violation  = lsu_rdata_err_i;
   assign err_bits.imem_intg_violation  = insn_fetch_err_i;
+  assign err_bits.key_invalid          = key_invalid_err;
   assign err_bits.illegal_insn         = illegal_insn_static | rf_indirect_err;
   assign err_bits.bad_data_addr        = dmem_addr_err;
   assign err_bits.loop                 = loop_err;
@@ -403,12 +407,14 @@ module otbn_controller
   // if other software errors haven't ocurred. As bad_insn_addr relates to the next instruction
   // begin fetched it cannot occur if the current instruction has seen an error and failed to
   // execute.
-  assign non_insn_addr_software_err = |{err_bits.illegal_insn,
+  assign non_insn_addr_software_err = |{err_bits.key_invalid,
+                                        err_bits.illegal_insn,
                                         err_bits.bad_data_addr,
                                         err_bits.loop,
                                         err_bits.call_stack};
 
-  assign software_err = |{err_bits.illegal_insn,
+  assign software_err = |{err_bits.key_invalid,
+                          err_bits.illegal_insn,
                           err_bits.bad_data_addr,
                           err_bits.loop,
                           err_bits.call_stack,
@@ -948,18 +954,38 @@ module otbn_controller
   always_comb begin
     ispr_addr_bignum = IsprMod;
     wsr_illegal_addr = 1'b0;
+    key_invalid      = 1'b0;
 
     unique case (wsr_addr)
       WsrMod:  ispr_addr_bignum = IsprMod;
       WsrRnd:  ispr_addr_bignum = IsprRnd;
       WsrUrnd: ispr_addr_bignum = IsprUrnd;
       WsrAcc:  ispr_addr_bignum = IsprAcc;
+      WsrKeyS0L: begin
+        ispr_addr_bignum = IsprKeyS0L;
+        key_invalid = ~sideload_key_shares_valid_i[0];
+      end
+      WsrKeyS0H: begin
+        ispr_addr_bignum = IsprKeyS0H;
+        key_invalid = ~sideload_key_shares_valid_i[0];
+      end
+      WsrKeyS1L: begin
+        ispr_addr_bignum = IsprKeyS1L;
+        key_invalid = ~sideload_key_shares_valid_i[1];
+      end
+      WsrKeyS1H: begin
+        ispr_addr_bignum = IsprKeyS1H;
+        key_invalid = ~sideload_key_shares_valid_i[1];
+      end
       default: wsr_illegal_addr = 1'b1;
     endcase
   end
 
   assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata_i | rf_bignum_rd_data_a_no_intg :
                                                       rf_bignum_rd_data_a_no_intg;
+
+  // Invalid key only becomes an error if we're trying to read it
+  assign key_invalid_err = ispr_rd_insn & insn_valid_i & key_invalid;
 
   assign ispr_illegal_addr = insn_dec_shared_i.subset == InsnSubsetBase ? csr_illegal_addr :
                                                                           wsr_illegal_addr;

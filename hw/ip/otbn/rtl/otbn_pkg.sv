@@ -38,6 +38,8 @@ package otbn_pkg;
   // Width of entropy input
   parameter int EdnDataWidth = 256;
 
+  parameter int SideloadKeyWidth = 384;
+
 
   // Toplevel constants ============================================================================
 
@@ -78,6 +80,7 @@ package otbn_pkg;
     logic reg_intg_violation;
     logic dmem_intg_violation;
     logic imem_intg_violation;
+    logic key_invalid;
     logic loop;
     logic illegal_insn;
     logic call_stack;
@@ -215,26 +218,34 @@ package otbn_pkg;
   } csr_e;
 
   // Wide Special Purpose Registers (WSRs)
-  parameter int NWsr = 4; // Number of WSRs
+  parameter int NWsr = 8; // Number of WSRs
   parameter int WsrNumWidth = $clog2(NWsr);
   typedef enum logic [WsrNumWidth-1:0] {
-    WsrMod   = 'd0,
-    WsrRnd   = 'd1,
-    WsrUrnd  = 'd2,
-    WsrAcc   = 'd3
+    WsrMod    = 'd0,
+    WsrRnd    = 'd1,
+    WsrUrnd   = 'd2,
+    WsrAcc    = 'd3,
+    WsrKeyS0L = 'd4,
+    WsrKeyS0H = 'd5,
+    WsrKeyS1L = 'd6,
+    WsrKeyS1H = 'd7
   } wsr_e;
 
   // Internal Special Purpose Registers (ISPRs)
   // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
   // design which CSRs and WSRs are mapped on to.
-  parameter int NIspr = 5;
+  parameter int NIspr = 9;
   parameter int IsprNumWidth = $clog2(NIspr);
   typedef enum logic [IsprNumWidth-1:0] {
-    IsprMod   = 'd0,
-    IsprRnd   = 'd1,
-    IsprAcc   = 'd2,
-    IsprFlags = 'd3,
-    IsprUrnd  = 'd4
+    IsprMod    = 'd0,
+    IsprRnd    = 'd1,
+    IsprAcc    = 'd2,
+    IsprFlags  = 'd3,
+    IsprUrnd   = 'd4,
+    IsprKeyS0L = 'd5,
+    IsprKeyS0H = 'd6,
+    IsprKeyS1L = 'd7,
+    IsprKeyS1H = 'd8
   } ispr_e;
 
   typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;

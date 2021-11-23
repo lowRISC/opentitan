@@ -120,6 +120,14 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     },
+
+    // Key sideload
+    { struct:  "otbn_key_req"
+      type:    "uni"
+      name:    "keymgr_key"
+      act:     "rcv"
+      package: "keymgr_pkg"
+    },
   ],
 
   regwidth: "32"
