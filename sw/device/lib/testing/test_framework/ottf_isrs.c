@@ -11,33 +11,33 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 
-OT_ATTR_WEAK void ottf_exception_handler(void) {
+void ottf_exception_handler(void) {
   uint32_t mcause = ibex_mcause_read();
 
   switch ((ottf_exc_id_t)(mcause & kIdMax)) {
     case kInstrMisaligned:
-      ottf_instr_misaligned_fault();
+      ottf_instr_misaligned_fault_handler();
       break;
     case kInstrAccessFault:
-      ottf_instr_access_fault();
+      ottf_instr_access_fault_handler();
       break;
     case kIllegalInstrFault:
-      ottf_illegal_instr_fault();
+      ottf_illegal_instr_fault_handler();
       break;
     case kBreakpoint:
-      ottf_breakpoint();
+      ottf_breakpoint_handler();
       break;
     case kLoadAccessFault:
-      ottf_load_store_fault();
+      ottf_load_store_fault_handler();
       break;
     case kStoreAccessFault:
-      ottf_load_store_fault();
+      ottf_load_store_fault_handler();
       break;
     case kMachineECall:
-      ottf_machine_ecall();
+      ottf_machine_ecall_handler();
       break;
     case kUserECall:
-      ottf_user_ecall();
+      ottf_user_ecall_handler();
       break;
     default:
       LOG_INFO("Unknown exception triggered!");
@@ -45,42 +45,42 @@ OT_ATTR_WEAK void ottf_exception_handler(void) {
   }
 }
 
-OT_ATTR_WEAK void ottf_instr_misaligned_fault(void) {
+OT_ATTR_WEAK void ottf_instr_misaligned_fault_handler(void) {
   LOG_INFO("Misaligned instruction, mtval holds the fault address.");
   LOG_INFO("MTVAL value is 0x%x", ibex_mtval_read());
   abort();
 }
 
-OT_ATTR_WEAK void ottf_instr_access_fault(void) {
+OT_ATTR_WEAK void ottf_instr_access_fault_handler(void) {
   LOG_INFO("Instruction access fault, mtval holds the fault address.");
   LOG_INFO("MTVAL value is 0x%x", ibex_mtval_read());
   abort();
 }
 
-OT_ATTR_WEAK void ottf_illegal_instr_fault(void) {
+OT_ATTR_WEAK void ottf_illegal_instr_fault_handler(void) {
   LOG_INFO("Illegal instruction fault, mtval shows the faulting instruction.");
   LOG_INFO("MTVAL value is 0x%x", ibex_mtval_read());
   abort();
 }
 
-OT_ATTR_WEAK void ottf_breakpoint(void) {
+OT_ATTR_WEAK void ottf_breakpoint_handler(void) {
   LOG_INFO("Breakpoint triggered, mtval holds the breakpoint address.");
   LOG_INFO("MTVAL value is 0x%x", ibex_mtval_read());
   abort();
 }
 
-OT_ATTR_WEAK void ottf_load_store_fault(void) {
+OT_ATTR_WEAK void ottf_load_store_fault_handler(void) {
   LOG_INFO("Load/Store fault, mtval holds the fault address.");
   LOG_INFO("MTVAL value is 0x%x", ibex_mtval_read());
   abort();
 }
 
-OT_ATTR_WEAK void ottf_machine_ecall(void) {
+OT_ATTR_WEAK void ottf_machine_ecall_handler(void) {
   LOG_INFO("Machine-mode environment call (syscall).");
   abort();
 }
 
-OT_ATTR_WEAK void ottf_user_ecall(void) {
+OT_ATTR_WEAK void ottf_user_ecall_handler(void) {
   LOG_INFO("User-mode environment call (syscall).");
   abort();
 }
