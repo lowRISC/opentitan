@@ -133,10 +133,10 @@
 #define OT_ATTR_SECTION(name) __attribute__((section(name)))
 
 /**
- * Returns the return address of the current function.
+ * Returns the address of the current function stack frame.
  *
  * See https://gcc.gnu.org/onlinedocs/gcc/Return-Address.html.
  */
-#define OT_RETURN_ADDR() __builtin_return_address(0)
+#define OT_FRAME_ADDR() __builtin_frame_address(0)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_

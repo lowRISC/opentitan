@@ -205,7 +205,7 @@ index 0336455da..a46911701 100644
  }
 
 diff --git a/sw/device/tests/aes_smoketest.c b/sw/device/tests/aes_smoketest.c
-index 1a5fef16c..214e08151 100644
+index ab6596ff5..2b6ee4a9a 100644
 --- a/sw/device/tests/aes_smoketest.c
 +++ b/sw/device/tests/aes_smoketest.c
 @@ -7,7 +7,6 @@
@@ -213,7 +213,7 @@ index 1a5fef16c..214e08151 100644
  #include "sw/device/lib/runtime/log.h"
  #include "sw/device/lib/testing/check.h"
 -#include "sw/device/lib/testing/entropy_testutils.h"
- #include "sw/device/lib/testing/test_framework/test_main.h"
+ #include "sw/device/lib/testing/test_framework/ottf.h"
 
  #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 @@ -66,9 +65,6 @@ bool test_main(void) {
@@ -227,10 +227,10 @@ index 1a5fef16c..214e08151 100644
    CHECK_DIF_OK(
        dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
-index 74989d684..3e52c00c6 100644
+index 62112f435..89d3d230c 100644
 --- a/sw/device/tests/meson.build
 +++ b/sw/device/tests/meson.build
-@@ -261,7 +261,6 @@ aes_smoketest_lib = declare_dependency(
+@@ -259,7 +259,6 @@ aes_smoketest_lib = declare_dependency(
        sw_lib_dif_aes,
        sw_lib_mmio,
        sw_lib_runtime_log,

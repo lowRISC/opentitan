@@ -7,13 +7,14 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static const uint8_t kSendData[] = "Smoke test!";
 
 const test_config_t kTestConfig = {
+    .enable_concurrency = false,
     .can_clobber_uart = true,
 };
 

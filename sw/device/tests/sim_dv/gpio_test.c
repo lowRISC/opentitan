@@ -6,13 +6,12 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -31,7 +30,7 @@ static const uint32_t kGpiosAllowedMask = 0xfff0ffff;
 static const uint32_t kChipGpiosMask = 0xffff & kGpiosAllowedMask;
 
 // These indicate the GPIO pin irq expected to fire, declared volatile since
-// they are used by the interrupt handler.
+// they are used by the ISR.
 static volatile uint32_t expected_gpio_pin_irq;
 static volatile bool expected_irq_edge;
 
@@ -194,10 +193,9 @@ static void gpio_input_test(const dif_gpio_t *gpio) {
 /**
  * Provides external irq handling for this test.
  *
- * This function overrides the default external irq handler in
- * `sw/device/lib/handler.h`.
+ * This function overrides the default OTTF external ISR.
  */
-void handler_irq_external(void) {
+void ottf_external_isr(void) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(

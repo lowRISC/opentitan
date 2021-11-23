@@ -3,13 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_rv_timer.h"
-#include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -45,8 +44,8 @@ static void test_handler(void) {
   irq_fired = true;
 }
 
-// Register our own IRQ handler by overriding a weak symbol in `handler.h`.
-void handler_irq_timer(void) {
+// Override default OTTF timer ISR.
+void ottf_timer_isr(void) {
   LOG_INFO("Entering handler_irq_timer()");
   test_handler();
   LOG_INFO("Exiting handler_irq_timer()");

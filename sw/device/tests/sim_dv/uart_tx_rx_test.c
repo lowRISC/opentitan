@@ -7,12 +7,11 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -113,7 +112,7 @@ static volatile uint32_t uart_irq_rx_parity_err_id;
 /**
  * Set our expectation & event indications of the interrupts we intend to
  * exercise in this test. These are declared volatile since they are used by the
- * interrupt handler.
+ * ISR.
  */
 static volatile bool exp_uart_irq_tx_watermark;
 static volatile bool uart_irq_tx_watermark_fired;
@@ -216,10 +215,9 @@ void update_uart_base_addr_and_irq_id(void) {
 /**
  * Provides external irq handling for this test.
  *
- * This function overrides the default external irq handler in
- * `sw/device/lib/handler.h`.
+ * This function overrides the default OTTF external ISR.
  */
-void handler_irq_external(void) {
+void ottf_external_isr(void) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(

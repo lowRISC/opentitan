@@ -8,14 +8,15 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
-#include "sw/device/lib/handler.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
-#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
+#include "sw/device/lib/testing/test_framework/ottf_isrs.h"
+#include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -83,7 +84,7 @@ static bool otp_ifetch_enabled(void) {
 }
 
 /**
- * Handles an exception.
+ * Overrides the default OTTF exception handler.
  *
  * This exception handler only processes the faults that are relevant to this
  * test. It falls into an infinite `wait_for_interrupt` routine (by calling
@@ -97,23 +98,44 @@ static bool otp_ifetch_enabled(void) {
  * Instead the control flow needs to be returned to the caller. In other words,
  * sram_execution_test -> retention_sram -> exception_handler
  * -> sram_execution_test.
+ *
+ * Before the jump into the exception handler, the register set is saved on
+ * stack by the OTTF exception handler entry subroutine, which means that the
+ * return address can be loaded from there. See comments below for more details.
  */
-void handler_exception(void) {
-  uintptr_t ret_addr = (uintptr_t)OT_RETURN_ADDR();
-  LOG_INFO("Fault address: mepc = %p, return address = %p", ibex_mepc_read(),
-           ret_addr);
+void ottf_exeception_handler(void) {
+  // The frame address is the address of the stack location that holds the
+  // `mepc`, since the OTTF exception handler entry code saves the `mepc` to
+  // the top of the stack before transferring control flow to the exception
+  // handler function (which is overridden here). See the `handler_exception`
+  // subroutine in `sw/device/lib/testing/testing/ottf_isrs.S` for more details.
+  uintptr_t mepc_stack_addr = (uintptr_t)OT_FRAME_ADDR();
 
-  exc_id_t exception_id = ibex_mcause_read();
+  // The return address of the function that holds the trapping instruction is
+  // the second top-most value placed on the stack by the OTTF exception handler
+  // entry code. We grab this off the stack so that we can use it to overwrite
+  // the `mepc` value stored on the stack, so that the `ottf_isr_exit`
+  // subroutine (in `sw/device/lib/testing/test_framework/ottf_isrs.S`) will
+  // restore control flow to the `sram_execution_test` function as described
+  // above.
+  uintptr_t ret_addr = *(uintptr_t *)(mepc_stack_addr + OTTF_WORD_SIZE);
+
+  LOG_INFO("Handling exception: mepc = %p, (trapped) return address = %p",
+           ibex_mepc_read(), ret_addr);
+
+  uint32_t mcause = ibex_mcause_read();
+  ottf_exc_id_t exception_id = mcause & kIdMax;
+
   switch (exception_id) {
-    case kInstAccFault:
+    case kInstrAccessFault:
       LOG_INFO("Instruction access fault handler");
       exception_observed = true;
-      ibex_mepc_write(ret_addr);
+      *(uintptr_t *)mepc_stack_addr = ret_addr;
       break;
-    case kInstIllegalFault:
+    case kIllegalInstrFault:
       LOG_INFO("Illegal instruction fault handler");
       exception_observed = true;
-      ibex_mepc_write(ret_addr);
+      *(uintptr_t *)mepc_stack_addr = ret_addr;
       break;
     default:
       LOG_FATAL("Unexpected exception id = 0x%x", exception_id);

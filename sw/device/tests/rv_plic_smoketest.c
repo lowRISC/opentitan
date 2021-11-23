@@ -5,12 +5,11 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -28,7 +27,7 @@ static volatile bool uart_rx_overflow_handled;
 static volatile bool uart_tx_empty_handled;
 
 /**
- * UART interrupt handler
+ * UART ISR.
  *
  * Services UART interrupts, sets the appropriate flags that are used to
  * determine success or failure of the test.
@@ -62,14 +61,13 @@ static void handle_uart_isr(const dif_rv_plic_irq_id_t interrupt_id) {
 }
 
 /**
- * External interrupt handler
+ * External ISR.
  *
  * Handles all peripheral interrupts on Ibex. PLIC asserts an external interrupt
- * line to the CPU, which results in a call to this handler. This handler
- * overrides the default implementation, and prototype for this handler must
- * include appropriate attributes.
+ * line to the CPU, which results in a call to this OTTF ISR. This ISR
+ * overrides the default OTTF implementation.
  */
-void handler_irq_external(void) {
+void ottf_external_isr(void) {
   // Claim the IRQ by reading the Ibex specific CC register.
   dif_rv_plic_irq_id_t interrupt_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic0, kPlicTarget, &interrupt_id));
@@ -152,6 +150,7 @@ static void execute_test(dif_uart_t *uart) {
 }
 
 const test_config_t kTestConfig = {
+    .enable_concurrency = false,
     .can_clobber_uart = true,
 };
 
