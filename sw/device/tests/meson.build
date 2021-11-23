@@ -856,8 +856,7 @@ foreach sw_test_name, sw_test_info : sw_rom_ext_tests
         rom_ext_slot_libs['rom_ext_slot_a'],
         device_lib,
         sw_test_info['library'],
-        sw_lib_irq_handlers,
-        sw_lib_testing_test_main,
+        sw_lib_testing_ottf,
       ],
     )
 
