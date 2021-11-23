@@ -24,6 +24,7 @@ module rstmgr_cnsty_chk
   input child_rst_ni,
   input parent_rst_ni,
   input sw_rst_req_i,
+  output logic sw_rst_req_clr_o,
   output logic err_o
 );
 
@@ -125,6 +126,7 @@ module rstmgr_cnsty_chk
     err_o = '0;
     cnt_inc = '0;
     cnt_clr = '0;
+    sw_rst_req_clr_o = '0;
 
     unique case (state_q)
       Reset: begin
@@ -175,6 +177,10 @@ module rstmgr_cnsty_chk
 
       // waiting for parent reset to release
       WaitForSrcRelease: begin
+        // if arrived here due to software requested reset, it is now
+        // okay to clear the original request.
+        sw_rst_req_clr_o = 1'b1;
+
         // it is not possible for the child reset to release
         // ahead of the parent reset
         if (!sync_child_rst && src_valid) begin
