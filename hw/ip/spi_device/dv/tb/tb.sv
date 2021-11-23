@@ -64,14 +64,14 @@ module tb;
 
     .cio_tpm_csb_i  (1'b 1     ), // TODO: Add TPM agent
 
-    .intr_rx_full_o             (intr_rxf  ),
-    .intr_rx_watermark_o        (intr_rxlvl),
-    .intr_tx_watermark_o        (intr_txlvl),
-    .intr_rx_error_o            (intr_rxerr),
-    .intr_rx_overflow_o         (intr_rxoverflow),
-    .intr_tx_underflow_o        (intr_txunderflow),
-    .intr_cmdfifo_not_empty_o   (intr_cmdfifo_not_empty),
-    .intr_payload_not_empty_o   (intr_payload_not_empty),
+    .intr_generic_rx_full_o             (intr_rxf  ),
+    .intr_generic_rx_watermark_o        (intr_rxlvl),
+    .intr_generic_tx_watermark_o        (intr_txlvl),
+    .intr_generic_rx_error_o            (intr_rxerr),
+    .intr_generic_rx_overflow_o         (intr_rxoverflow),
+    .intr_generic_tx_underflow_o        (intr_txunderflow),
+    .intr_upload_cmdfifo_not_empty_o   (intr_cmdfifo_not_empty),
+    .intr_upload_payload_not_empty_o   (intr_payload_not_empty),
     .intr_readbuf_watermark_o   (intr_readbuf_watermark),
     .intr_readbuf_flip_o        (intr_readbuf_flip),
     .intr_tpm_header_not_empty_o(intr_tpm_header_not_empty),

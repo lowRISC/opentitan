@@ -25,28 +25,28 @@
     }
   ]
   interrupt_list: [
-    { name: "rx_full"
+    { name: "generic_rx_full"
       desc: "RX SRAM FIFO Full"
     }
-    { name: "rx_watermark"
+    { name: "generic_rx_watermark"
       desc: "RX SRAM FIFO is above the level"
     }
-    { name: "tx_watermark"
+    { name: "generic_tx_watermark"
       desc: "TX SRAM FIFO is under the level"
     }
-    { name: "rx_error"
+    { name: "generic_rx_error"
       desc: "SDI in FwMode has error"
     }
-    { name: "rx_overflow"
+    { name: "generic_rx_overflow"
       desc: "RX Async FIFO overflow"
     }
-    { name: "tx_underflow"
+    { name: "generic_tx_underflow"
       desc: "TX Async FIFO underflow"
     }
-    { name: "cmdfifo_not_empty"
+    { name: "upload_cmdfifo_not_empty"
       desc: "Upload Command FIFO is not empty"
     }
-    { name: "payload_not_empty"
+    { name: "upload_payload_not_empty"
       desc: '''Upload paylod is not empty.
 
         The event occurs after SPI transaction completed

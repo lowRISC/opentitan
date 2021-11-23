@@ -157,22 +157,22 @@ module spi_device_reg_top (
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic intr_state_we;
-  logic intr_state_rx_full_qs;
-  logic intr_state_rx_full_wd;
-  logic intr_state_rx_watermark_qs;
-  logic intr_state_rx_watermark_wd;
-  logic intr_state_tx_watermark_qs;
-  logic intr_state_tx_watermark_wd;
-  logic intr_state_rx_error_qs;
-  logic intr_state_rx_error_wd;
-  logic intr_state_rx_overflow_qs;
-  logic intr_state_rx_overflow_wd;
-  logic intr_state_tx_underflow_qs;
-  logic intr_state_tx_underflow_wd;
-  logic intr_state_cmdfifo_not_empty_qs;
-  logic intr_state_cmdfifo_not_empty_wd;
-  logic intr_state_payload_not_empty_qs;
-  logic intr_state_payload_not_empty_wd;
+  logic intr_state_generic_rx_full_qs;
+  logic intr_state_generic_rx_full_wd;
+  logic intr_state_generic_rx_watermark_qs;
+  logic intr_state_generic_rx_watermark_wd;
+  logic intr_state_generic_tx_watermark_qs;
+  logic intr_state_generic_tx_watermark_wd;
+  logic intr_state_generic_rx_error_qs;
+  logic intr_state_generic_rx_error_wd;
+  logic intr_state_generic_rx_overflow_qs;
+  logic intr_state_generic_rx_overflow_wd;
+  logic intr_state_generic_tx_underflow_qs;
+  logic intr_state_generic_tx_underflow_wd;
+  logic intr_state_upload_cmdfifo_not_empty_qs;
+  logic intr_state_upload_cmdfifo_not_empty_wd;
+  logic intr_state_upload_payload_not_empty_qs;
+  logic intr_state_upload_payload_not_empty_wd;
   logic intr_state_readbuf_watermark_qs;
   logic intr_state_readbuf_watermark_wd;
   logic intr_state_readbuf_flip_qs;
@@ -180,22 +180,22 @@ module spi_device_reg_top (
   logic intr_state_tpm_header_not_empty_qs;
   logic intr_state_tpm_header_not_empty_wd;
   logic intr_enable_we;
-  logic intr_enable_rx_full_qs;
-  logic intr_enable_rx_full_wd;
-  logic intr_enable_rx_watermark_qs;
-  logic intr_enable_rx_watermark_wd;
-  logic intr_enable_tx_watermark_qs;
-  logic intr_enable_tx_watermark_wd;
-  logic intr_enable_rx_error_qs;
-  logic intr_enable_rx_error_wd;
-  logic intr_enable_rx_overflow_qs;
-  logic intr_enable_rx_overflow_wd;
-  logic intr_enable_tx_underflow_qs;
-  logic intr_enable_tx_underflow_wd;
-  logic intr_enable_cmdfifo_not_empty_qs;
-  logic intr_enable_cmdfifo_not_empty_wd;
-  logic intr_enable_payload_not_empty_qs;
-  logic intr_enable_payload_not_empty_wd;
+  logic intr_enable_generic_rx_full_qs;
+  logic intr_enable_generic_rx_full_wd;
+  logic intr_enable_generic_rx_watermark_qs;
+  logic intr_enable_generic_rx_watermark_wd;
+  logic intr_enable_generic_tx_watermark_qs;
+  logic intr_enable_generic_tx_watermark_wd;
+  logic intr_enable_generic_rx_error_qs;
+  logic intr_enable_generic_rx_error_wd;
+  logic intr_enable_generic_rx_overflow_qs;
+  logic intr_enable_generic_rx_overflow_wd;
+  logic intr_enable_generic_tx_underflow_qs;
+  logic intr_enable_generic_tx_underflow_wd;
+  logic intr_enable_upload_cmdfifo_not_empty_qs;
+  logic intr_enable_upload_cmdfifo_not_empty_wd;
+  logic intr_enable_upload_payload_not_empty_qs;
+  logic intr_enable_upload_payload_not_empty_wd;
   logic intr_enable_readbuf_watermark_qs;
   logic intr_enable_readbuf_watermark_wd;
   logic intr_enable_readbuf_flip_qs;
@@ -203,14 +203,14 @@ module spi_device_reg_top (
   logic intr_enable_tpm_header_not_empty_qs;
   logic intr_enable_tpm_header_not_empty_wd;
   logic intr_test_we;
-  logic intr_test_rx_full_wd;
-  logic intr_test_rx_watermark_wd;
-  logic intr_test_tx_watermark_wd;
-  logic intr_test_rx_error_wd;
-  logic intr_test_rx_overflow_wd;
-  logic intr_test_tx_underflow_wd;
-  logic intr_test_cmdfifo_not_empty_wd;
-  logic intr_test_payload_not_empty_wd;
+  logic intr_test_generic_rx_full_wd;
+  logic intr_test_generic_rx_watermark_wd;
+  logic intr_test_generic_tx_watermark_wd;
+  logic intr_test_generic_rx_error_wd;
+  logic intr_test_generic_rx_overflow_wd;
+  logic intr_test_generic_tx_underflow_wd;
+  logic intr_test_upload_cmdfifo_not_empty_wd;
+  logic intr_test_upload_payload_not_empty_wd;
   logic intr_test_readbuf_watermark_wd;
   logic intr_test_readbuf_flip_wd;
   logic intr_test_tpm_header_not_empty_wd;
@@ -1507,204 +1507,204 @@ module spi_device_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-  //   F[rx_full]: 0:0
+  //   F[generic_rx_full]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_full (
+  ) u_intr_state_generic_rx_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_rx_full_wd),
+    .wd     (intr_state_generic_rx_full_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_full.de),
-    .d      (hw2reg.intr_state.rx_full.d),
+    .de     (hw2reg.intr_state.generic_rx_full.de),
+    .d      (hw2reg.intr_state.generic_rx_full.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_full.q),
+    .q      (reg2hw.intr_state.generic_rx_full.q),
 
     // to register interface (read)
-    .qs     (intr_state_rx_full_qs)
+    .qs     (intr_state_generic_rx_full_qs)
   );
 
-  //   F[rx_watermark]: 1:1
+  //   F[generic_rx_watermark]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_watermark (
+  ) u_intr_state_generic_rx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_rx_watermark_wd),
+    .wd     (intr_state_generic_rx_watermark_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_watermark.de),
-    .d      (hw2reg.intr_state.rx_watermark.d),
+    .de     (hw2reg.intr_state.generic_rx_watermark.de),
+    .d      (hw2reg.intr_state.generic_rx_watermark.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_watermark.q),
+    .q      (reg2hw.intr_state.generic_rx_watermark.q),
 
     // to register interface (read)
-    .qs     (intr_state_rx_watermark_qs)
+    .qs     (intr_state_generic_rx_watermark_qs)
   );
 
-  //   F[tx_watermark]: 2:2
+  //   F[generic_tx_watermark]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_tx_watermark (
+  ) u_intr_state_generic_tx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_tx_watermark_wd),
+    .wd     (intr_state_generic_tx_watermark_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.tx_watermark.de),
-    .d      (hw2reg.intr_state.tx_watermark.d),
+    .de     (hw2reg.intr_state.generic_tx_watermark.de),
+    .d      (hw2reg.intr_state.generic_tx_watermark.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.tx_watermark.q),
+    .q      (reg2hw.intr_state.generic_tx_watermark.q),
 
     // to register interface (read)
-    .qs     (intr_state_tx_watermark_qs)
+    .qs     (intr_state_generic_tx_watermark_qs)
   );
 
-  //   F[rx_error]: 3:3
+  //   F[generic_rx_error]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_error (
+  ) u_intr_state_generic_rx_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_rx_error_wd),
+    .wd     (intr_state_generic_rx_error_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_error.de),
-    .d      (hw2reg.intr_state.rx_error.d),
+    .de     (hw2reg.intr_state.generic_rx_error.de),
+    .d      (hw2reg.intr_state.generic_rx_error.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_error.q),
+    .q      (reg2hw.intr_state.generic_rx_error.q),
 
     // to register interface (read)
-    .qs     (intr_state_rx_error_qs)
+    .qs     (intr_state_generic_rx_error_qs)
   );
 
-  //   F[rx_overflow]: 4:4
+  //   F[generic_rx_overflow]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_overflow (
+  ) u_intr_state_generic_rx_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_rx_overflow_wd),
+    .wd     (intr_state_generic_rx_overflow_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_overflow.de),
-    .d      (hw2reg.intr_state.rx_overflow.d),
+    .de     (hw2reg.intr_state.generic_rx_overflow.de),
+    .d      (hw2reg.intr_state.generic_rx_overflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_overflow.q),
+    .q      (reg2hw.intr_state.generic_rx_overflow.q),
 
     // to register interface (read)
-    .qs     (intr_state_rx_overflow_qs)
+    .qs     (intr_state_generic_rx_overflow_qs)
   );
 
-  //   F[tx_underflow]: 5:5
+  //   F[generic_tx_underflow]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_tx_underflow (
+  ) u_intr_state_generic_tx_underflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_tx_underflow_wd),
+    .wd     (intr_state_generic_tx_underflow_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.tx_underflow.de),
-    .d      (hw2reg.intr_state.tx_underflow.d),
+    .de     (hw2reg.intr_state.generic_tx_underflow.de),
+    .d      (hw2reg.intr_state.generic_tx_underflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.tx_underflow.q),
+    .q      (reg2hw.intr_state.generic_tx_underflow.q),
 
     // to register interface (read)
-    .qs     (intr_state_tx_underflow_qs)
+    .qs     (intr_state_generic_tx_underflow_qs)
   );
 
-  //   F[cmdfifo_not_empty]: 6:6
+  //   F[upload_cmdfifo_not_empty]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_cmdfifo_not_empty (
+  ) u_intr_state_upload_cmdfifo_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_cmdfifo_not_empty_wd),
+    .wd     (intr_state_upload_cmdfifo_not_empty_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.cmdfifo_not_empty.de),
-    .d      (hw2reg.intr_state.cmdfifo_not_empty.d),
+    .de     (hw2reg.intr_state.upload_cmdfifo_not_empty.de),
+    .d      (hw2reg.intr_state.upload_cmdfifo_not_empty.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.cmdfifo_not_empty.q),
+    .q      (reg2hw.intr_state.upload_cmdfifo_not_empty.q),
 
     // to register interface (read)
-    .qs     (intr_state_cmdfifo_not_empty_qs)
+    .qs     (intr_state_upload_cmdfifo_not_empty_qs)
   );
 
-  //   F[payload_not_empty]: 7:7
+  //   F[upload_payload_not_empty]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_payload_not_empty (
+  ) u_intr_state_upload_payload_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_payload_not_empty_wd),
+    .wd     (intr_state_upload_payload_not_empty_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.payload_not_empty.de),
-    .d      (hw2reg.intr_state.payload_not_empty.d),
+    .de     (hw2reg.intr_state.upload_payload_not_empty.de),
+    .d      (hw2reg.intr_state.upload_payload_not_empty.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.payload_not_empty.q),
+    .q      (reg2hw.intr_state.upload_payload_not_empty.q),
 
     // to register interface (read)
-    .qs     (intr_state_payload_not_empty_qs)
+    .qs     (intr_state_upload_payload_not_empty_qs)
   );
 
   //   F[readbuf_watermark]: 8:8
@@ -1784,18 +1784,18 @@ module spi_device_reg_top (
 
 
   // R[intr_enable]: V(False)
-  //   F[rx_full]: 0:0
+  //   F[generic_rx_full]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_full (
+  ) u_intr_enable_generic_rx_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_rx_full_wd),
+    .wd     (intr_enable_generic_rx_full_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1803,24 +1803,24 @@ module spi_device_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_full.q),
+    .q      (reg2hw.intr_enable.generic_rx_full.q),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_full_qs)
+    .qs     (intr_enable_generic_rx_full_qs)
   );
 
-  //   F[rx_watermark]: 1:1
+  //   F[generic_rx_watermark]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_watermark (
+  ) u_intr_enable_generic_rx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_rx_watermark_wd),
+    .wd     (intr_enable_generic_rx_watermark_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1828,24 +1828,24 @@ module spi_device_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_watermark.q),
+    .q      (reg2hw.intr_enable.generic_rx_watermark.q),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_watermark_qs)
+    .qs     (intr_enable_generic_rx_watermark_qs)
   );
 
-  //   F[tx_watermark]: 2:2
+  //   F[generic_tx_watermark]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_tx_watermark (
+  ) u_intr_enable_generic_tx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_tx_watermark_wd),
+    .wd     (intr_enable_generic_tx_watermark_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1853,24 +1853,24 @@ module spi_device_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.tx_watermark.q),
+    .q      (reg2hw.intr_enable.generic_tx_watermark.q),
 
     // to register interface (read)
-    .qs     (intr_enable_tx_watermark_qs)
+    .qs     (intr_enable_generic_tx_watermark_qs)
   );
 
-  //   F[rx_error]: 3:3
+  //   F[generic_rx_error]: 3:3
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_error (
+  ) u_intr_enable_generic_rx_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_rx_error_wd),
+    .wd     (intr_enable_generic_rx_error_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1878,24 +1878,24 @@ module spi_device_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_error.q),
+    .q      (reg2hw.intr_enable.generic_rx_error.q),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_error_qs)
+    .qs     (intr_enable_generic_rx_error_qs)
   );
 
-  //   F[rx_overflow]: 4:4
+  //   F[generic_rx_overflow]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_overflow (
+  ) u_intr_enable_generic_rx_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_rx_overflow_wd),
+    .wd     (intr_enable_generic_rx_overflow_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1903,24 +1903,24 @@ module spi_device_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_overflow.q),
+    .q      (reg2hw.intr_enable.generic_rx_overflow.q),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_overflow_qs)
+    .qs     (intr_enable_generic_rx_overflow_qs)
   );
 
-  //   F[tx_underflow]: 5:5
+  //   F[generic_tx_underflow]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_tx_underflow (
+  ) u_intr_enable_generic_tx_underflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_tx_underflow_wd),
+    .wd     (intr_enable_generic_tx_underflow_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1928,24 +1928,24 @@ module spi_device_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.tx_underflow.q),
+    .q      (reg2hw.intr_enable.generic_tx_underflow.q),
 
     // to register interface (read)
-    .qs     (intr_enable_tx_underflow_qs)
+    .qs     (intr_enable_generic_tx_underflow_qs)
   );
 
-  //   F[cmdfifo_not_empty]: 6:6
+  //   F[upload_cmdfifo_not_empty]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_cmdfifo_not_empty (
+  ) u_intr_enable_upload_cmdfifo_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_cmdfifo_not_empty_wd),
+    .wd     (intr_enable_upload_cmdfifo_not_empty_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1953,24 +1953,24 @@ module spi_device_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.cmdfifo_not_empty.q),
+    .q      (reg2hw.intr_enable.upload_cmdfifo_not_empty.q),
 
     // to register interface (read)
-    .qs     (intr_enable_cmdfifo_not_empty_qs)
+    .qs     (intr_enable_upload_cmdfifo_not_empty_qs)
   );
 
-  //   F[payload_not_empty]: 7:7
+  //   F[upload_payload_not_empty]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_payload_not_empty (
+  ) u_intr_enable_upload_payload_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_payload_not_empty_wd),
+    .wd     (intr_enable_upload_payload_not_empty_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1978,10 +1978,10 @@ module spi_device_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.payload_not_empty.q),
+    .q      (reg2hw.intr_enable.upload_payload_not_empty.q),
 
     // to register interface (read)
-    .qs     (intr_enable_payload_not_empty_qs)
+    .qs     (intr_enable_upload_payload_not_empty_qs)
   );
 
   //   F[readbuf_watermark]: 8:8
@@ -2061,115 +2061,115 @@ module spi_device_reg_top (
 
 
   // R[intr_test]: V(True)
-  //   F[rx_full]: 0:0
+  //   F[generic_rx_full]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_full (
+  ) u_intr_test_generic_rx_full (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_rx_full_wd),
+    .wd     (intr_test_generic_rx_full_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_full.qe),
-    .q      (reg2hw.intr_test.rx_full.q),
+    .qe     (reg2hw.intr_test.generic_rx_full.qe),
+    .q      (reg2hw.intr_test.generic_rx_full.q),
     .qs     ()
   );
 
-  //   F[rx_watermark]: 1:1
+  //   F[generic_rx_watermark]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_watermark (
+  ) u_intr_test_generic_rx_watermark (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_rx_watermark_wd),
+    .wd     (intr_test_generic_rx_watermark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_watermark.qe),
-    .q      (reg2hw.intr_test.rx_watermark.q),
+    .qe     (reg2hw.intr_test.generic_rx_watermark.qe),
+    .q      (reg2hw.intr_test.generic_rx_watermark.q),
     .qs     ()
   );
 
-  //   F[tx_watermark]: 2:2
+  //   F[generic_tx_watermark]: 2:2
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_tx_watermark (
+  ) u_intr_test_generic_tx_watermark (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_tx_watermark_wd),
+    .wd     (intr_test_generic_tx_watermark_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tx_watermark.qe),
-    .q      (reg2hw.intr_test.tx_watermark.q),
+    .qe     (reg2hw.intr_test.generic_tx_watermark.qe),
+    .q      (reg2hw.intr_test.generic_tx_watermark.q),
     .qs     ()
   );
 
-  //   F[rx_error]: 3:3
+  //   F[generic_rx_error]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_error (
+  ) u_intr_test_generic_rx_error (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_rx_error_wd),
+    .wd     (intr_test_generic_rx_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_error.qe),
-    .q      (reg2hw.intr_test.rx_error.q),
+    .qe     (reg2hw.intr_test.generic_rx_error.qe),
+    .q      (reg2hw.intr_test.generic_rx_error.q),
     .qs     ()
   );
 
-  //   F[rx_overflow]: 4:4
+  //   F[generic_rx_overflow]: 4:4
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_overflow (
+  ) u_intr_test_generic_rx_overflow (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_rx_overflow_wd),
+    .wd     (intr_test_generic_rx_overflow_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_overflow.qe),
-    .q      (reg2hw.intr_test.rx_overflow.q),
+    .qe     (reg2hw.intr_test.generic_rx_overflow.qe),
+    .q      (reg2hw.intr_test.generic_rx_overflow.q),
     .qs     ()
   );
 
-  //   F[tx_underflow]: 5:5
+  //   F[generic_tx_underflow]: 5:5
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_tx_underflow (
+  ) u_intr_test_generic_tx_underflow (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_tx_underflow_wd),
+    .wd     (intr_test_generic_tx_underflow_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tx_underflow.qe),
-    .q      (reg2hw.intr_test.tx_underflow.q),
+    .qe     (reg2hw.intr_test.generic_tx_underflow.qe),
+    .q      (reg2hw.intr_test.generic_tx_underflow.q),
     .qs     ()
   );
 
-  //   F[cmdfifo_not_empty]: 6:6
+  //   F[upload_cmdfifo_not_empty]: 6:6
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_cmdfifo_not_empty (
+  ) u_intr_test_upload_cmdfifo_not_empty (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_cmdfifo_not_empty_wd),
+    .wd     (intr_test_upload_cmdfifo_not_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.cmdfifo_not_empty.qe),
-    .q      (reg2hw.intr_test.cmdfifo_not_empty.q),
+    .qe     (reg2hw.intr_test.upload_cmdfifo_not_empty.qe),
+    .q      (reg2hw.intr_test.upload_cmdfifo_not_empty.q),
     .qs     ()
   );
 
-  //   F[payload_not_empty]: 7:7
+  //   F[upload_payload_not_empty]: 7:7
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_payload_not_empty (
+  ) u_intr_test_upload_payload_not_empty (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_payload_not_empty_wd),
+    .wd     (intr_test_upload_payload_not_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.payload_not_empty.qe),
-    .q      (reg2hw.intr_test.payload_not_empty.q),
+    .qe     (reg2hw.intr_test.upload_payload_not_empty.qe),
+    .q      (reg2hw.intr_test.upload_payload_not_empty.q),
     .qs     ()
   );
 
@@ -17983,21 +17983,21 @@ module spi_device_reg_top (
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_rx_full_wd = reg_wdata[0];
+  assign intr_state_generic_rx_full_wd = reg_wdata[0];
 
-  assign intr_state_rx_watermark_wd = reg_wdata[1];
+  assign intr_state_generic_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_state_tx_watermark_wd = reg_wdata[2];
+  assign intr_state_generic_tx_watermark_wd = reg_wdata[2];
 
-  assign intr_state_rx_error_wd = reg_wdata[3];
+  assign intr_state_generic_rx_error_wd = reg_wdata[3];
 
-  assign intr_state_rx_overflow_wd = reg_wdata[4];
+  assign intr_state_generic_rx_overflow_wd = reg_wdata[4];
 
-  assign intr_state_tx_underflow_wd = reg_wdata[5];
+  assign intr_state_generic_tx_underflow_wd = reg_wdata[5];
 
-  assign intr_state_cmdfifo_not_empty_wd = reg_wdata[6];
+  assign intr_state_upload_cmdfifo_not_empty_wd = reg_wdata[6];
 
-  assign intr_state_payload_not_empty_wd = reg_wdata[7];
+  assign intr_state_upload_payload_not_empty_wd = reg_wdata[7];
 
   assign intr_state_readbuf_watermark_wd = reg_wdata[8];
 
@@ -18006,21 +18006,21 @@ module spi_device_reg_top (
   assign intr_state_tpm_header_not_empty_wd = reg_wdata[10];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_rx_full_wd = reg_wdata[0];
+  assign intr_enable_generic_rx_full_wd = reg_wdata[0];
 
-  assign intr_enable_rx_watermark_wd = reg_wdata[1];
+  assign intr_enable_generic_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_enable_tx_watermark_wd = reg_wdata[2];
+  assign intr_enable_generic_tx_watermark_wd = reg_wdata[2];
 
-  assign intr_enable_rx_error_wd = reg_wdata[3];
+  assign intr_enable_generic_rx_error_wd = reg_wdata[3];
 
-  assign intr_enable_rx_overflow_wd = reg_wdata[4];
+  assign intr_enable_generic_rx_overflow_wd = reg_wdata[4];
 
-  assign intr_enable_tx_underflow_wd = reg_wdata[5];
+  assign intr_enable_generic_tx_underflow_wd = reg_wdata[5];
 
-  assign intr_enable_cmdfifo_not_empty_wd = reg_wdata[6];
+  assign intr_enable_upload_cmdfifo_not_empty_wd = reg_wdata[6];
 
-  assign intr_enable_payload_not_empty_wd = reg_wdata[7];
+  assign intr_enable_upload_payload_not_empty_wd = reg_wdata[7];
 
   assign intr_enable_readbuf_watermark_wd = reg_wdata[8];
 
@@ -18029,21 +18029,21 @@ module spi_device_reg_top (
   assign intr_enable_tpm_header_not_empty_wd = reg_wdata[10];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_rx_full_wd = reg_wdata[0];
+  assign intr_test_generic_rx_full_wd = reg_wdata[0];
 
-  assign intr_test_rx_watermark_wd = reg_wdata[1];
+  assign intr_test_generic_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_test_tx_watermark_wd = reg_wdata[2];
+  assign intr_test_generic_tx_watermark_wd = reg_wdata[2];
 
-  assign intr_test_rx_error_wd = reg_wdata[3];
+  assign intr_test_generic_rx_error_wd = reg_wdata[3];
 
-  assign intr_test_rx_overflow_wd = reg_wdata[4];
+  assign intr_test_generic_rx_overflow_wd = reg_wdata[4];
 
-  assign intr_test_tx_underflow_wd = reg_wdata[5];
+  assign intr_test_generic_tx_underflow_wd = reg_wdata[5];
 
-  assign intr_test_cmdfifo_not_empty_wd = reg_wdata[6];
+  assign intr_test_upload_cmdfifo_not_empty_wd = reg_wdata[6];
 
-  assign intr_test_payload_not_empty_wd = reg_wdata[7];
+  assign intr_test_upload_payload_not_empty_wd = reg_wdata[7];
 
   assign intr_test_readbuf_watermark_wd = reg_wdata[8];
 
@@ -19320,28 +19320,28 @@ module spi_device_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = intr_state_rx_full_qs;
-        reg_rdata_next[1] = intr_state_rx_watermark_qs;
-        reg_rdata_next[2] = intr_state_tx_watermark_qs;
-        reg_rdata_next[3] = intr_state_rx_error_qs;
-        reg_rdata_next[4] = intr_state_rx_overflow_qs;
-        reg_rdata_next[5] = intr_state_tx_underflow_qs;
-        reg_rdata_next[6] = intr_state_cmdfifo_not_empty_qs;
-        reg_rdata_next[7] = intr_state_payload_not_empty_qs;
+        reg_rdata_next[0] = intr_state_generic_rx_full_qs;
+        reg_rdata_next[1] = intr_state_generic_rx_watermark_qs;
+        reg_rdata_next[2] = intr_state_generic_tx_watermark_qs;
+        reg_rdata_next[3] = intr_state_generic_rx_error_qs;
+        reg_rdata_next[4] = intr_state_generic_rx_overflow_qs;
+        reg_rdata_next[5] = intr_state_generic_tx_underflow_qs;
+        reg_rdata_next[6] = intr_state_upload_cmdfifo_not_empty_qs;
+        reg_rdata_next[7] = intr_state_upload_payload_not_empty_qs;
         reg_rdata_next[8] = intr_state_readbuf_watermark_qs;
         reg_rdata_next[9] = intr_state_readbuf_flip_qs;
         reg_rdata_next[10] = intr_state_tpm_header_not_empty_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = intr_enable_rx_full_qs;
-        reg_rdata_next[1] = intr_enable_rx_watermark_qs;
-        reg_rdata_next[2] = intr_enable_tx_watermark_qs;
-        reg_rdata_next[3] = intr_enable_rx_error_qs;
-        reg_rdata_next[4] = intr_enable_rx_overflow_qs;
-        reg_rdata_next[5] = intr_enable_tx_underflow_qs;
-        reg_rdata_next[6] = intr_enable_cmdfifo_not_empty_qs;
-        reg_rdata_next[7] = intr_enable_payload_not_empty_qs;
+        reg_rdata_next[0] = intr_enable_generic_rx_full_qs;
+        reg_rdata_next[1] = intr_enable_generic_rx_watermark_qs;
+        reg_rdata_next[2] = intr_enable_generic_tx_watermark_qs;
+        reg_rdata_next[3] = intr_enable_generic_rx_error_qs;
+        reg_rdata_next[4] = intr_enable_generic_rx_overflow_qs;
+        reg_rdata_next[5] = intr_enable_generic_tx_underflow_qs;
+        reg_rdata_next[6] = intr_enable_upload_cmdfifo_not_empty_qs;
+        reg_rdata_next[7] = intr_enable_upload_payload_not_empty_qs;
         reg_rdata_next[8] = intr_enable_readbuf_watermark_qs;
         reg_rdata_next[9] = intr_enable_readbuf_flip_qs;
         reg_rdata_next[10] = intr_enable_tpm_header_not_empty_qs;

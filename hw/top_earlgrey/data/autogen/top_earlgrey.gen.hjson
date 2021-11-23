@@ -12457,49 +12457,49 @@
       module_name: gpio
     }
     {
-      name: spi_device_rx_full
+      name: spi_device_generic_rx_full
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_rx_watermark
+      name: spi_device_generic_rx_watermark
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_tx_watermark
+      name: spi_device_generic_tx_watermark
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_rx_error
+      name: spi_device_generic_rx_error
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_rx_overflow
+      name: spi_device_generic_rx_overflow
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_tx_underflow
+      name: spi_device_generic_tx_underflow
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_cmdfifo_not_empty
+      name: spi_device_upload_cmdfifo_not_empty
       width: 1
       type: interrupt
       module_name: spi_device
     }
     {
-      name: spi_device_payload_not_empty
+      name: spi_device_upload_payload_not_empty
       width: 1
       type: interrupt
       module_name: spi_device
