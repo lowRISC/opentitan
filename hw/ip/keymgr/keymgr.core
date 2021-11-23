@@ -8,17 +8,18 @@ description: "Key Manager"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:count
-      - lowrisc:prim:lfsr
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:lfsr
       - lowrisc:prim:msb_extend
+      - lowrisc:prim:sparse_fsm
       - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:rom_ctrl_pkg
+      - lowrisc:ip:tlul
     files:
       - rtl/keymgr_reg_top.sv
       - rtl/keymgr_sideload_key_ctrl.sv
