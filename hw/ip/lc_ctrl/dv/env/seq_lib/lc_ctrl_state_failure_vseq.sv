@@ -4,20 +4,22 @@
 
 // This sequence triggers prog_failure alert by setting the error bit in otp_program_rsp
 // Then check in scb if the alert is triggered correctly
-class lc_ctrl_prog_failure_vseq extends lc_ctrl_smoke_vseq;
-  `uvm_object_utils(lc_ctrl_prog_failure_vseq)
+class lc_ctrl_state_failure_vseq extends lc_ctrl_smoke_vseq;
+  `uvm_object_utils(lc_ctrl_state_failure_vseq)
 
   `uvm_object_new
 
-  constraint otp_prog_err_c {
-    err_inj.otp_prog_err == 1;
+  constraint lc_state_err_c {
+    err_inj.state_err          == 1;
+    err_inj.state_backdoor_err == 0;
+    err_inj.transition_err     == 0;
   }
 
   virtual task post_start();
     // trigger dut_init to make sure always on alert is not firing forever
     if (do_apply_reset) begin
       dut_init();
-    end else wait(0); // wait until upper seq resets and kills this seq
+    end else wait(0);  // wait until upper seq resets and kills this seq
 
     // delay to avoid race condition when sending item and checking no item after reset occur
     // at the same time

@@ -68,6 +68,13 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         // predict LC state and cnt csr
         void'(ral.lc_state.predict(lc_state));
         void'(ral.lc_transition_cnt.predict(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)));
+
+        // State error
+        if (cfg.err_inj.state_err) begin
+            set_exp_alert(.alert_name("fatal_state_error"), .is_fatal(1));
+            void'(ral.lc_state.predict(DecLcStEscalate));
+        end
+
       end
     end
   endtask
@@ -165,6 +172,23 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
+
+  // this function check if the triggered alert is expected
+  // to turn off this check, user can set `do_alert_check` to 0
+  // We overload this to trigger events in the config object when an alert is triggered
+  virtual function void process_alert(string alert_name, alert_esc_seq_item item);
+    if (item.alert_handshake_sta == AlertReceived) begin
+      case (alert_name)
+        "fatal_prog_error"       : -> cfg.fatal_prog_error_ev;
+        "fatal_state_error"      : -> cfg.fatal_state_error_ev;
+        "fatal_bus_integ_error"  : -> cfg.fatal_bus_integ_error_ev;
+      endcase
+    end
+
+    super.process_alert(alert_name, item);
+
+  endfunction
+
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);

@@ -62,6 +62,31 @@ package lc_ctrl_dv_utils_pkg;
                  DecLcStTestUnlocked1, DecLcStTestUnlocked0}
   };
 
+  // All valid decoded states as int
+  const int ValidDecodedStates [] = '{
+    int'(DecLcStRaw),
+    int'(DecLcStTestUnlocked0),
+    int'(DecLcStTestLocked0),
+    int'(DecLcStTestUnlocked1),
+    int'(DecLcStTestLocked1),
+    int'(DecLcStTestUnlocked2),
+    int'(DecLcStTestLocked2),
+    int'(DecLcStTestUnlocked3),
+    int'(DecLcStTestLocked3),
+    int'(DecLcStTestUnlocked4),
+    int'(DecLcStTestLocked4),
+    int'(DecLcStTestUnlocked5),
+    int'(DecLcStTestLocked5),
+    int'(DecLcStTestUnlocked6),
+    int'(DecLcStTestLocked6),
+    int'(DecLcStTestUnlocked7),
+    int'(DecLcStDev),
+    int'(DecLcStProd),
+    int'(DecLcStProdEnd),
+    int'(DecLcStRma),
+    int'(DecLcStScrap),
+    int'(DecLcStInvalid)
+  };
 
   // Checks whether the current state is a test unlocked state within the given index range.
   function automatic bit is_test_unlocked_state(dec_lc_state_e curr_state, int first, int last);
@@ -123,7 +148,7 @@ package lc_ctrl_dv_utils_pkg;
       LcStProdEnd:       return DecLcStProdEnd;
       LcStRma:           return DecLcStRma;
       LcStScrap:         return DecLcStScrap;
-      default: `uvm_fatal("lc_env_pkg", $sformatf("unknown lc_state 0x%0h", curr_state))
+      default:           return DecLcStInvalid;
     endcase
   endfunction
 
@@ -184,5 +209,220 @@ package lc_ctrl_dv_utils_pkg;
       default: `uvm_fatal("lc_env_pkg", $sformatf("unknown lc_cnt 0x%0h", curr_cnt))
     endcase
   endfunction
+
+  // Arrays of digit values
+  parameter bit [15:0] A_VALUES [19:0] = '{
+    lc_ctrl_state_pkg::A19,
+    lc_ctrl_state_pkg::A18,
+    lc_ctrl_state_pkg::A17,
+    lc_ctrl_state_pkg::A16,
+    lc_ctrl_state_pkg::A15,
+    lc_ctrl_state_pkg::A14,
+    lc_ctrl_state_pkg::A13,
+    lc_ctrl_state_pkg::A12,
+    lc_ctrl_state_pkg::A11,
+    lc_ctrl_state_pkg::A10,
+    lc_ctrl_state_pkg::A9,
+    lc_ctrl_state_pkg::A8,
+    lc_ctrl_state_pkg::A7,
+    lc_ctrl_state_pkg::A6,
+    lc_ctrl_state_pkg::A5,
+    lc_ctrl_state_pkg::A4,
+    lc_ctrl_state_pkg::A3,
+    lc_ctrl_state_pkg::A2,
+    lc_ctrl_state_pkg::A1,
+    lc_ctrl_state_pkg::A0
+  };
+
+  parameter bit [15:0] B_VALUES [19:0] = '{
+    lc_ctrl_state_pkg::B19,
+    lc_ctrl_state_pkg::B18,
+    lc_ctrl_state_pkg::B17,
+    lc_ctrl_state_pkg::B16,
+    lc_ctrl_state_pkg::B15,
+    lc_ctrl_state_pkg::B14,
+    lc_ctrl_state_pkg::B13,
+    lc_ctrl_state_pkg::B12,
+    lc_ctrl_state_pkg::B11,
+    lc_ctrl_state_pkg::B10,
+    lc_ctrl_state_pkg::B9,
+    lc_ctrl_state_pkg::B8,
+    lc_ctrl_state_pkg::B7,
+    lc_ctrl_state_pkg::B6,
+    lc_ctrl_state_pkg::B5,
+    lc_ctrl_state_pkg::B4,
+    lc_ctrl_state_pkg::B3,
+    lc_ctrl_state_pkg::B2,
+    lc_ctrl_state_pkg::B1,
+    lc_ctrl_state_pkg::B0
+  };
+
+  parameter bit [15:0] C_VALUES [23:0] = '{
+    lc_ctrl_state_pkg::C23,
+    lc_ctrl_state_pkg::C22,
+    lc_ctrl_state_pkg::C21,
+    lc_ctrl_state_pkg::C20,
+    lc_ctrl_state_pkg::C19,
+    lc_ctrl_state_pkg::C18,
+    lc_ctrl_state_pkg::C17,
+    lc_ctrl_state_pkg::C16,
+    lc_ctrl_state_pkg::C15,
+    lc_ctrl_state_pkg::C14,
+    lc_ctrl_state_pkg::C13,
+    lc_ctrl_state_pkg::C12,
+    lc_ctrl_state_pkg::C11,
+    lc_ctrl_state_pkg::C10,
+    lc_ctrl_state_pkg::C9,
+    lc_ctrl_state_pkg::C8,
+    lc_ctrl_state_pkg::C7,
+    lc_ctrl_state_pkg::C6,
+    lc_ctrl_state_pkg::C5,
+    lc_ctrl_state_pkg::C4,
+    lc_ctrl_state_pkg::C3,
+    lc_ctrl_state_pkg::C2,
+    lc_ctrl_state_pkg::C1,
+    lc_ctrl_state_pkg::C0
+  };
+
+  parameter bit [15:0] D_VALUES [23:0] = '{
+    lc_ctrl_state_pkg::D23,
+    lc_ctrl_state_pkg::D22,
+    lc_ctrl_state_pkg::D21,
+    lc_ctrl_state_pkg::D20,
+    lc_ctrl_state_pkg::D19,
+    lc_ctrl_state_pkg::D18,
+    lc_ctrl_state_pkg::D17,
+    lc_ctrl_state_pkg::D16,
+    lc_ctrl_state_pkg::D15,
+    lc_ctrl_state_pkg::D14,
+    lc_ctrl_state_pkg::D13,
+    lc_ctrl_state_pkg::D12,
+    lc_ctrl_state_pkg::D11,
+    lc_ctrl_state_pkg::D10,
+    lc_ctrl_state_pkg::D9,
+    lc_ctrl_state_pkg::D8,
+    lc_ctrl_state_pkg::D7,
+    lc_ctrl_state_pkg::D6,
+    lc_ctrl_state_pkg::D5,
+    lc_ctrl_state_pkg::D4,
+    lc_ctrl_state_pkg::D3,
+    lc_ctrl_state_pkg::D2,
+    lc_ctrl_state_pkg::D1,
+    lc_ctrl_state_pkg::D0
+  };
+
+  // Binary representation of state and count types
+  typedef bit [NumLcStateValues - 1 : 0] lc_state_bin_t;
+  typedef bit [NumLcCountValues - 1 : 0] lc_count_bin_t;
+
+
+
+  //Convert an lc_state to a binary representation 0=Axx 1=Bxx
+  function static lc_state_bin_t lc_state_to_bin([LcStateWidth-1:0] val);
+    int retval = 0;
+    for(int i=0; i < $size(A_VALUES); i++) begin
+      if(val[i*16 +: 16] == A_VALUES[i]) begin
+        retval[i] = 0;
+      end
+      else if (val[i*16 +: 16] == B_VALUES[i]) begin
+        retval[i] = 1;
+      end
+      else begin
+        $fatal("lc_ctrl_dv_utils_pkg", $sformatf("lc_state_to_bin: state %x not valid", val));
+      end
+    end
+    return(retval);
+  endfunction
+
+  //Convert a binary representation to a lc_state representation 0=Axx 1=Bxx
+  function static bit [LcStateWidth-1:0] bin_to_lc_state(lc_state_bin_t val);
+    bit [LcStateWidth-1:0] retval = 0;
+    for(int i=0; i < $size(A_VALUES); i++) begin
+      retval[i*16 +: 16] = val[i] ? B_VALUES[i] : A_VALUES[i];
+    end
+    return(retval);
+  endfunction
+
+  //Convert an lc_count to a binary representation 0=Cxx 1=Dxx
+  function static lc_count_bin_t lc_count_to_bin([LcCountWidth-1:0] val);
+    int retval = 0;
+    for(int i=0; i < $size(C_VALUES); i++) begin
+      if(val[i*16 +: 16] == C_VALUES[i]) begin
+        retval[i] = 0;
+      end
+      else if (val[i*16 +: 16] == D_VALUES[i]) begin
+        retval[i] = 1;
+      end
+      else begin
+        $fatal("lc_ctrl_dv_utils_pkg", $sformatf("lc_count_to_bin: count %x not valid", val));
+      end
+    end
+    return(retval);
+  endfunction
+
+  //Convert a binary representation to a lc_count representation 0=Cxx 1=Cxx
+  function static bit [LcCountWidth-1:0] bin_to_lc_count(lc_count_bin_t val);
+    bit [LcStateWidth-1:0] retval = 0;
+    for(int i=0; i < $size(A_VALUES); i++) begin
+      retval[i*16 +: 16] = val[i] ? B_VALUES[i] : A_VALUES[i];
+    end
+    return(retval);
+  endfunction
+
+  // Array of valid LC states in binary representation
+  parameter lc_state_bin_t ValidLcStatesBin [NumLcStates-1 : 0] = '{
+    lc_state_to_bin(LcStRaw),
+    lc_state_to_bin(LcStTestUnlocked0),
+    lc_state_to_bin(LcStTestLocked0),
+    lc_state_to_bin(LcStTestUnlocked1),
+    lc_state_to_bin(LcStTestLocked1),
+    lc_state_to_bin(LcStTestUnlocked2),
+    lc_state_to_bin(LcStTestLocked2),
+    lc_state_to_bin(LcStTestUnlocked3),
+    lc_state_to_bin(LcStTestLocked3),
+    lc_state_to_bin(LcStTestUnlocked4),
+    lc_state_to_bin(LcStTestLocked4),
+    lc_state_to_bin(LcStTestUnlocked5),
+    lc_state_to_bin(LcStTestLocked5),
+    lc_state_to_bin(LcStTestUnlocked6),
+    lc_state_to_bin(LcStTestLocked6),
+    lc_state_to_bin(LcStTestUnlocked7),
+    lc_state_to_bin(LcStDev),
+    lc_state_to_bin(LcStProd),
+    lc_state_to_bin(LcStProdEnd),
+    lc_state_to_bin(LcStRma),
+    lc_state_to_bin(LcStScrap)
+  };
+
+  // Array of valid LC states in binary representation
+  parameter lc_count_bin_t ValidLcCountsBin [24:0] = '{
+    lc_count_to_bin(LcCnt0),
+    lc_count_to_bin(LcCnt1),
+    lc_count_to_bin(LcCnt2),
+    lc_count_to_bin(LcCnt3),
+    lc_count_to_bin(LcCnt4),
+    lc_count_to_bin(LcCnt5),
+    lc_count_to_bin(LcCnt6),
+    lc_count_to_bin(LcCnt7),
+    lc_count_to_bin(LcCnt8),
+    lc_count_to_bin(LcCnt9),
+    lc_count_to_bin(LcCnt10),
+    lc_count_to_bin(LcCnt11),
+    lc_count_to_bin(LcCnt12),
+    lc_count_to_bin(LcCnt13),
+    lc_count_to_bin(LcCnt14),
+    lc_count_to_bin(LcCnt15),
+    lc_count_to_bin(LcCnt16),
+    lc_count_to_bin(LcCnt17),
+    lc_count_to_bin(LcCnt18),
+    lc_count_to_bin(LcCnt19),
+    lc_count_to_bin(LcCnt20),
+    lc_count_to_bin(LcCnt21),
+    lc_count_to_bin(LcCnt22),
+    lc_count_to_bin(LcCnt23),
+    lc_count_to_bin(LcCnt24)
+  };
+
+
 
 endpackage

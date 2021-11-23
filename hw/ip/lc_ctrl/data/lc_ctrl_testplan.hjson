@@ -85,7 +85,7 @@
             - Check if lc_state moves to escalation state.
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_state_failure"]
     }
     {
       name: lc_errors

@@ -52,6 +52,32 @@ package lc_ctrl_env_pkg;
     lc_ctrl_pkg::lc_tx_t lc_escalate_en_o;
   } lc_outputs_t;
 
+  // error injection
+  typedef struct packed {
+    bit clk_byp_error_rsp;
+    bit flash_rma_error_rsp;
+    bit otp_prog_err;
+    bit token_mismatch_err;
+    bit token_err;
+    // Invalid state driven via OTP interface
+    bit state_err;
+    // Invalid count driven via OTP interface
+    bit count_err;
+    // Invalid fsm state - via force in lc_ctrl_if
+    bit state_backdoor_err;
+    // Invalid count      - via force in lc_ctrl_if
+    bit count_backdoor_err;
+    bit transition_err;
+  } lc_ctrl_err_inj_t;
+
+  // Test phase - used to synchronise the scoreboard
+  typedef enum {
+    LcCtrlTestInit,
+    LcCtrlIterStart,
+    LcCtrlDutReady,
+    LcCtrlWaitStatus
+  } lc_ctrl_test_phase_e;
+
   const lc_outputs_t EXP_LC_OUTPUTS[NUM_STATES] = {
     // Raw (fixed size array index 0)
     {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
