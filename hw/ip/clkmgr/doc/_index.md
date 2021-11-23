@@ -198,7 +198,7 @@ When the clock switch is complete, the clock dividers are stepped down by a fact
 
 Unlike the life cycle controller, a software request for external clocks switches all clock sources to an external source.
 Software request for external clocks is not always valid.
-Software is only able to request for external clocks when dft functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#dft_en" >}}).
+Software is only able to request for external clocks when hardware debug functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#hw_debug_en" >}}).
 
 When software requests the external clock switch, it also provides an indication how fast the external clock is through {{< regref "EXTCLK_CTRL.LOW_SPEED_SEL" >}}.
 There are two supported clock speeds:
@@ -206,7 +206,7 @@ There are two supported clock speeds:
 * Low speed - external clock is half of nominal speeds (e.g. external clock is 48MHz and nominal frequency is 96MHz-100MHz)
 
 When software requests external clock, the register bit {{< regref "EXTCLK_CTRL.SEL" >}} is written.
-If dft functions are allowed, the `clkmgr` sends a request signal `all_clk_byp_req_o` to `ast` and is acknowledged through `all_clk_byp_ack_i`.
+If hardware debug functions are allowed, the `clkmgr` sends a request signal `all_clk_byp_req_o` to `ast` and is acknowledged through `all_clk_byp_ack_i`.
 
 If software requests a low speed external clock, at the completion of the switch, internal dividers are also stepped down.
 When the divider is stepped down, a divide-by-4 clock becomes divide-by-2 clock , and a divide-by-2 becomes a divide-by-1 clock.

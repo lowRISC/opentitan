@@ -185,11 +185,16 @@
           name: "SEL",
           mubi: true,
           desc: '''
-            A value of kMultiBitBool4True selects external clock as clock for the system.
-            While this register can always be programmed, it only takes effect when the system is in
-            life cycle TEST or RMA states when DFT is enabled.
+            When the current value is not kMultiBitBool4True, writing a value of kMultiBitBool4True
+            selects external clock as clock for the system.  Writing any other value has
+            no impact.
 
-            All other values are invalid and keep clocks on internal sources.
+            When the current value is kMultiBitBool4True, writing a value of kMultiBitBool4False
+            selects internal clock as clock for the system. Writing any other value during this stage
+            has no impact.
+
+            While this register can always be programmed, it only takes effect when debug functions are enabled
+            in life cycle TEST, DEV or RMA states.
           '''
           resval: "false"
         },
