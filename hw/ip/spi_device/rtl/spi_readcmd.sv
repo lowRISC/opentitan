@@ -169,8 +169,12 @@ module spi_readcmd
   output io_mode_e io_mode_o,
 
   // Read watermark event occurs when current address exceeds the threshold cfg
-  // value for the first time after hit the current read buffer (1kB granularity).
-  output read_watermark_o
+  // value for the first time after hit the current read buffer (1kB
+  // granularity).
+  //
+  // These signals are pulse signals.
+  output logic sck_read_watermark_o,
+  output logic sck_read_flip_o
 
 );
 
@@ -331,6 +335,9 @@ module spi_readcmd
 
   // Indication of data output phase
   logic output_start;
+
+  // Events: watermark, flip
+  logic read_watermark, read_flip;
 
   //////////////
   // Datapath //
@@ -669,6 +676,21 @@ module spi_readcmd
   end
   //- END:   Main state machine -----------------------------------------------
 
+  // Events: register
+  // watermark, flip are pulse signals. watermark pulse width is 1 SCK. flip
+  // pulse width varies (2 to 32).
+  // They are not registered (output of comb logic). Register the signal then
+  // pulse sync at TOP
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sck_read_watermark_o <= 1'b 0;
+      sck_read_flip_o      <= 1'b 0;
+    end else begin
+      sck_read_watermark_o <= read_watermark;
+      sck_read_flip_o      <= read_flip;
+    end
+  end
+
   ///////////////
   // Instances //
   ///////////////
@@ -719,8 +741,8 @@ module spi_readcmd
 
     .start_i (output_start),
 
-    .event_watermark_o (read_watermark_o),
-    .event_flip_o      ()
+    .event_watermark_o (read_watermark),
+    .event_flip_o      (read_flip)
   );
 
   ////////////////

@@ -114,6 +114,7 @@ module spid_readbuffer #(
   assign current_buffer_idx = current_address_i[31:OneBufferAw];
   assign flip = current_buffer_idx == next_buffer_addr;
 
+  // TODO: Make event_flip_o pulse signal
   assign event_flip_o = active && flip;
 
   // TODO: Consider the case if host jumps the address? (report error?)

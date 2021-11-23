@@ -281,10 +281,13 @@ module spi_device
   // Interrupts in Flash mode
   logic intr_upload_cmdfifo_not_empty, intr_upload_payload_not_empty;
   logic intr_readbuf_watermark, intr_readbuf_flip;
+  logic flash_sck_readbuf_watermark, flash_sck_readbuf_flip;
 
   // TODO: Implement
-  assign intr_readbuf_watermark        = 1'b 0;
   assign intr_readbuf_flip             = 1'b 0;
+
+  logic  unused_flip_event;
+  assign unused_flip_event = flash_sck_readbuf_flip;
 
   // TPM ===============================================================
   localparam int unsigned TpmFifoDepth    = 4; // 4B
@@ -587,6 +590,14 @@ module spi_device
     .intr_o                 (intr_upload_payload_not_empty_o              )
   );
 
+  prim_pulse_sync u_flash_readbuf_watermark_pulse_sync (
+    .clk_src_i   (clk_spi_in_buf             ),
+    .rst_src_ni  (rst_ni                     ),
+    .src_pulse_i (flash_sck_readbuf_watermark),
+    .clk_dst_i   (clk_i                      ),
+    .rst_dst_ni  (rst_ni                     ),
+    .dst_pulse_o (intr_readbuf_watermark     )
+  );
   prim_intr_hw #(.Width(1)) u_intr_readbuf_watermark (
     .clk_i,
     .rst_ni,
@@ -1229,7 +1240,8 @@ module spi_device
 
     .io_mode_o (sub_iomode [IoModeReadCmd]),
 
-    .read_watermark_o ()
+    .sck_read_watermark_o (flash_sck_readbuf_watermark),
+    .sck_read_flip_o      (flash_sck_readbuf_flip)
   );
 
   // Begin: Read Status ==============================================
