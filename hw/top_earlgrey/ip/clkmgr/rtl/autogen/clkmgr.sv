@@ -60,7 +60,7 @@
   input [4:0] idle_i,
 
   // life cycle state output
-  input lc_tx_t lc_dft_en_i,
+  input lc_tx_t lc_hw_debug_en_i,
 
   // clock bypass control with lc_ctrl
   input lc_tx_t lc_clk_byp_req_i,
@@ -238,7 +238,7 @@
   ) u_clkmgr_byp (
     .clk_i,
     .rst_ni,
-    .en_i(lc_dft_en_i),
+    .en_i(lc_hw_debug_en_i),
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
     .byp_req_i(mubi4_t'(reg2hw.extclk_ctrl.sel.q)),

@@ -12,18 +12,18 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   // When extclk_ctrl_regwen is clear it is not possible to select external clocks.
   // This is tested in regular csr_rw, so here this register is simply set to 1.
 
-  // lc_dft_en is set according to sel_lc_dft_en, which is randomized with weights.
-  lc_tx_t            lc_dft_en;
-  rand lc_tx_t       lc_dft_en_other;
-  rand lc_tx_t_sel_e sel_lc_dft_en;
+  // lc_debug_en is set according to sel_lc_debug_en, which is randomized with weights.
+  lc_tx_t            lc_debug_en;
+  rand lc_tx_t       lc_debug_en_other;
+  rand lc_tx_t_sel_e sel_lc_debug_en;
 
-  constraint lc_dft_en_c {
-    sel_lc_dft_en dist {
+  constraint lc_debug_en_c {
+    sel_lc_debug_en dist {
       LcTxTSelOn    := 8,
       LcTxTSelOff   := 2,
       LcTxTSelOther := 2
     };
-    !(lc_dft_en_other inside {On, Off});
+    !(lc_debug_en_other inside {On, Off});
   }
 
   // lc_clk_byp_req is set according to sel_lc_clk_byp_req, which is randomized with weights.
@@ -66,7 +66,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
 
   function void post_randomize();
     super.post_randomize();
-    lc_dft_en = get_lc_tx_t_from_sel(sel_lc_dft_en, lc_dft_en_other);
+    lc_debug_en = get_lc_tx_t_from_sel(sel_lc_debug_en, lc_debug_en_other);
     lc_clk_byp_req = get_lc_tx_t_from_sel(sel_lc_clk_byp_req, lc_clk_byp_req_other);
   endfunction
 
@@ -111,7 +111,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // Init needs to be synchronous.
       @cfg.clk_rst_vif.cb begin
-        cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_dft_en(lc_dft_en));
+        cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_debug_en(lc_debug_en));
         control_ip_clocks();
       end
       fork
@@ -126,11 +126,11 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
       join
       `uvm_info(`gfn, $sformatf(
                 {"extclk_ctrl_sel=0x%0x, extclk_ctrl_low_speed_sel=0x%0x, lc_clk_byp_req=0x%0x, ",
-                 "lc_dft_en=0x%0x, scanmode=0x%0x"},
+                 "lc_debug_en=0x%0x, scanmode=0x%0x"},
                 extclk_ctrl_sel,
                 extclk_ctrl_low_speed_sel,
                 lc_clk_byp_req,
-                lc_dft_en,
+                lc_debug_en,
                 scanmode
                 ), UVM_MEDIUM)
       csr_rd_check(.ptr(ral.extclk_ctrl),

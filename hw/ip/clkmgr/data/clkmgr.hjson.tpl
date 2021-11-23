@@ -70,7 +70,7 @@
 
     { struct:  "lc_tx",
       type:    "uni",
-      name:    "lc_dft_en",
+      name:    "lc_hw_debug_en",
       act:     "rcv",
       package: "lc_ctrl_pkg",
     },

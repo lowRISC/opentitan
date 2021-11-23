@@ -107,7 +107,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "In clkmgr_if initialize_on_start", UVM_MEDIUM)
     idle = '1;
     scanmode = prim_mubi_pkg::MuBi4False;
-    cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_dft_en(Off));
+    cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_debug_en(Off));
     io_ip_clk_en   = 1'b1;
     main_ip_clk_en = 1'b1;
     usb_ip_clk_en  = 1'b1;
@@ -116,7 +116,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   task pre_start();
     update_csrs_with_reset_values();
-    cfg.clkmgr_vif.init(.idle('1), .scanmode(scanmode), .lc_dft_en(Off));
+    cfg.clkmgr_vif.init(.idle('1), .scanmode(scanmode), .lc_debug_en(Off));
     cfg.clkmgr_vif.update_io_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_main_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_usb_ip_clk_en(1'b0);

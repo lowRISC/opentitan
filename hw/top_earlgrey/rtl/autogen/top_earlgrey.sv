@@ -1732,7 +1732,7 @@ module top_earlgrey #(
       // Inter-module signals
       .clocks_o(clkmgr_aon_clocks),
       .cg_en_o(clkmgr_aon_cg_en),
-      .lc_dft_en_i(lc_ctrl_lc_dft_en),
+      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .io_clk_byp_req_o(io_clk_byp_req_o),
       .io_clk_byp_ack_i(io_clk_byp_ack_i),
       .all_clk_byp_req_o(all_clk_byp_req_o),
