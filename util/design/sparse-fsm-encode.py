@@ -239,14 +239,15 @@ end
 // flops in order to prevent FSM state encoding optimizations.
 logic [StateWidth-1:0] state_raw_q;
 assign state_q = state_e'(state_raw_q);
-prim_flop #(
+prim_sparse_fsm_flop #(
+  .StateEnumT(state_e),
   .Width(StateWidth),
   .ResetValue(StateWidth'(State0))
 ) u_state_regs (
   .clk_i,
   .rst_ni,
-  .d_i ( state_d     ),
-  .q_o ( state_raw_q )
+  .state_i ( state_d     ),
+  .state_o ( state_raw_q )
 );
 '''.format(state_str))
 

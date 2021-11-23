@@ -30,7 +30,7 @@ module prim_lc_sync #(
   output lc_ctrl_pkg::lc_tx_t [NumCopies-1:0] lc_en_o
 );
 
-  localparam lc_ctrl_pkg::lc_tx_t ResetValue = (ResetValueIsOn) ? lc_ctrl_pkg::On :
+  localparam lc_ctrl_pkg::lc_tx_t LcResetValue = (ResetValueIsOn) ? lc_ctrl_pkg::On :
                                                                   lc_ctrl_pkg::Off;
 
   `ASSERT_INIT(NumCopiesMustBeGreaterZero_A, NumCopies > 0)
@@ -39,7 +39,7 @@ module prim_lc_sync #(
   if (AsyncOn) begin : gen_flops
     prim_flop_2sync #(
       .Width(lc_ctrl_pkg::TxWidth),
-      .ResetValue(lc_ctrl_pkg::TxWidth'(ResetValue))
+      .ResetValue(lc_ctrl_pkg::TxWidth'(LcResetValue))
     ) u_prim_flop_2sync (
       .clk_i,
       .rst_ni,

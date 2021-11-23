@@ -657,4 +657,5 @@ module keymgr
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KmacIfCntAlertCheck_A, u_kmac_if.u_cnt, alert_tx_o[0])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReseedCtrlCntAlertCheck_A, u_reseed_ctrl.u_reseed_cnt,
                                          alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A, u_ctrl.u_state_regs, alert_tx_o[0])
 endmodule // keymgr
