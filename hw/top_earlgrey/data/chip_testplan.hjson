@@ -1251,7 +1251,7 @@
             X-ref'ed with chip_kmac_lc_req.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
       name: chip_sw_lc_ctrl_kmac_reset

@@ -20,6 +20,9 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
   // Local queue for holding received UART TX data.
   byte uart_tx_data_q[$];
 
+  // Default value to drive JTAG tap during pre_start().
+  chip_tap_type_e select_jtag = SelectRVJtagTap;
+
   `uvm_object_new
 
   task post_start();
@@ -70,7 +73,7 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
 
     // Drive strap signals at the start.
     if (do_strap_pins_init) begin
-      cfg.tap_straps_vif.drive(SelectRVJtagTap); // Select JTAG.
+      cfg.tap_straps_vif.drive(select_jtag);
       cfg.dft_straps_vif.drive(2'b00);
       cfg.sw_straps_vif.drive({2'b00, cfg.use_spi_load_bootstrap});
     end
