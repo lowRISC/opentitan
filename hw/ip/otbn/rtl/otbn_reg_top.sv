@@ -184,6 +184,7 @@ module otbn_reg_top (
   logic err_bits_call_stack_qs;
   logic err_bits_illegal_insn_qs;
   logic err_bits_loop_qs;
+  logic err_bits_key_invalid_qs;
   logic err_bits_imem_intg_violation_qs;
   logic err_bits_dmem_intg_violation_qs;
   logic err_bits_reg_intg_violation_qs;
@@ -484,6 +485,31 @@ module otbn_reg_top (
 
     // to register interface (read)
     .qs     (err_bits_loop_qs)
+  );
+
+  //   F[key_invalid]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_err_bits_key_invalid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.key_invalid.de),
+    .d      (hw2reg.err_bits.key_invalid.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_key_invalid_qs)
   );
 
   //   F[imem_intg_violation]: 16:16
@@ -1029,6 +1055,7 @@ module otbn_reg_top (
         reg_rdata_next[2] = err_bits_call_stack_qs;
         reg_rdata_next[3] = err_bits_illegal_insn_qs;
         reg_rdata_next[4] = err_bits_loop_qs;
+        reg_rdata_next[5] = err_bits_key_invalid_qs;
         reg_rdata_next[16] = err_bits_imem_intg_violation_qs;
         reg_rdata_next[17] = err_bits_dmem_intg_violation_qs;
         reg_rdata_next[18] = err_bits_reg_intg_violation_qs;

@@ -226,13 +226,29 @@ class WSRFile:
         self.RND = RandWSR('RND')
         self.URND = URNDWSR('URND')
         self.ACC = DumbWSR('ACC')
+        self.KeyS0L = DumbWSR('KeyS0L')
+        self.KeyS0H = DumbWSR('KeyS0H')
+        self.KeyS1L = DumbWSR('KeyS1L')
+        self.KeyS1H = DumbWSR('KeyS1H')
 
         self._by_idx = {
             0: self.MOD,
             1: self.RND,
             2: self.URND,
-            3: self.ACC
+            3: self.ACC,
+            4: self.KeyS0L,
+            5: self.KeyS0H,
+            6: self.KeyS1L,
+            7: self.KeyS1H,
         }
+
+        # Use fixed sideload keys for now. This matches the fixed keys used in
+        # the testbenches. Eventually the model will snoop the incoming key as
+        # it snoops the incoming EDN data for RND/URND now.
+        self.KeyS0L._value = 0xDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF
+        self.KeyS0H._value = 0xDEADBEEFDEADBEEFDEADBEEFDEADBEEF
+        self.KeyS1L._value = 0xBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00D
+        self.KeyS1H._value = 0xBAADF00DBAADF00DBAADF00DBAADF00D
 
     def check_idx(self, idx: int) -> bool:
         '''Return True if idx is a valid WSR index'''

@@ -5278,6 +5278,18 @@
           index: -1
         }
         {
+          name: keymgr_key
+          struct: otbn_key_req
+          package: keymgr_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: otbn
+          default: ""
+          top_signame: keymgr_otbn_key
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -5520,6 +5532,10 @@
           act: req
           width: 1
           inst_name: keymgr
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: keymgr_otbn_key
           index: -1
         }
         {
@@ -7153,6 +7169,10 @@
       keymgr.kmac_key:
       [
         kmac.keymgr_key
+      ]
+      keymgr.otbn_key:
+      [
+        otbn.keymgr_key
       ]
       kmac.app:
       [
@@ -16786,6 +16806,18 @@
         index: -1
       }
       {
+        name: keymgr_key
+        struct: otbn_key_req
+        package: keymgr_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: otbn
+        default: ""
+        top_signame: keymgr_otbn_key
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16846,6 +16878,10 @@
         act: req
         width: 1
         inst_name: keymgr
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: keymgr_otbn_key
         index: -1
       }
       {
@@ -19398,6 +19434,17 @@
         act: req
         suffix: ""
         default: keymgr_pkg::HW_KEY_REQ_DEFAULT
+      }
+      {
+        package: keymgr_pkg
+        struct: otbn_key_req
+        signame: keymgr_otbn_key
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: keymgr_pkg::OTBN_KEY_REQ_DEFAULT
       }
       {
         package: kmac_pkg

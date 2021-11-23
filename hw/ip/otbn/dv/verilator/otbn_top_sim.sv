@@ -56,50 +56,58 @@ module otbn_top_sim (
   // Instruction counter (feeds into otbn.INSN_CNT in full block)
   logic [31:0]              insn_cnt;
 
+  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares;
+
+  assign sideload_key_shares[0] = {12{32'hDEADBEEF}};
+  assign sideload_key_shares[1] = {12{32'hBAADF00D}};
+
   otbn_core #(
     .ImemSizeByte ( ImemSizeByte ),
     .DmemSizeByte ( DmemSizeByte )
   ) u_otbn_core (
-    .clk_i                  ( IO_CLK           ),
-    .rst_ni                 ( IO_RST_N         ),
+    .clk_i                       ( IO_CLK              ),
+    .rst_ni                      ( IO_RST_N            ),
 
-    .start_i                ( otbn_start       ),
-    .done_o                 ( otbn_done        ),
-    .locked_o               (                  ),
+    .start_i                     ( otbn_start          ),
+    .done_o                      ( otbn_done           ),
+    .locked_o                    (                     ),
 
-    .err_bits_o             ( otbn_err_bits    ),
+    .err_bits_o                  ( otbn_err_bits       ),
 
-    .imem_req_o             ( imem_req         ),
-    .imem_addr_o            ( imem_addr        ),
-    .imem_wdata_o           (                  ),
-    .imem_rdata_i           ( imem_rdata[31:0] ),
-    .imem_rvalid_i          ( imem_rvalid      ),
-    .imem_rerror_i          ( imem_rerror      ),
+    .imem_req_o                  ( imem_req            ),
+    .imem_addr_o                 ( imem_addr           ),
+    .imem_wdata_o                (                     ),
+    .imem_rdata_i                ( imem_rdata[31:0]    ),
+    .imem_rvalid_i               ( imem_rvalid         ),
+    .imem_rerror_i               ( imem_rerror         ),
 
-    .dmem_req_o             ( dmem_req         ),
-    .dmem_write_o           ( dmem_write       ),
-    .dmem_addr_o            ( dmem_addr        ),
-    .dmem_wdata_o           ( dmem_wdata       ),
-    .dmem_wmask_o           ( dmem_wmask       ),
-    .dmem_rmask_o           ( ),
-    .dmem_rdata_i           ( dmem_rdata       ),
-    .dmem_rvalid_i          ( dmem_rvalid      ),
-    .dmem_rerror_i          ( dmem_rerror      ),
+    .dmem_req_o                  ( dmem_req            ),
+    .dmem_write_o                ( dmem_write          ),
+    .dmem_addr_o                 ( dmem_addr           ),
+    .dmem_wdata_o                ( dmem_wdata          ),
+    .dmem_wmask_o                ( dmem_wmask          ),
+    .dmem_rmask_o                ( ),
+    .dmem_rdata_i                ( dmem_rdata          ),
+    .dmem_rvalid_i               ( dmem_rvalid         ),
+    .dmem_rerror_i               ( dmem_rerror         ),
 
-    .edn_rnd_req_o          ( edn_rnd_req      ),
-    .edn_rnd_ack_i          ( edn_rnd_ack      ),
-    .edn_rnd_data_i         ( edn_rnd_data     ),
+    .edn_rnd_req_o               ( edn_rnd_req         ),
+    .edn_rnd_ack_i               ( edn_rnd_ack         ),
+    .edn_rnd_data_i              ( edn_rnd_data        ),
 
-    .edn_urnd_req_o         ( edn_urnd_req     ),
-    .edn_urnd_ack_i         ( edn_urnd_ack     ),
-    .edn_urnd_data_i        ( edn_urnd_data    ),
+    .edn_urnd_req_o              ( edn_urnd_req        ),
+    .edn_urnd_ack_i              ( edn_urnd_ack        ),
+    .edn_urnd_data_i             ( edn_urnd_data       ),
 
-    .insn_cnt_o             ( insn_cnt         ),
+    .insn_cnt_o                  ( insn_cnt            ),
 
-    .bus_intg_violation_i   ( 1'b0             ),
-    .illegal_bus_access_i   ( 1'b0             ),
-    .lifecycle_escalation_i ( 1'b0             ),
-    .software_errs_fatal_i  ( 1'b0             )
+    .bus_intg_violation_i        ( 1'b0                ),
+    .illegal_bus_access_i        ( 1'b0                ),
+    .lifecycle_escalation_i      ( 1'b0                ),
+    .software_errs_fatal_i       ( 1'b0                ),
+
+    .sideload_key_shares_i       ( sideload_key_shares ),
+    .sideload_key_shares_valid_i ( 2'b11               )
   );
 
   // The top bits of IMEM rdata aren't currently used (they will eventually be used for integrity

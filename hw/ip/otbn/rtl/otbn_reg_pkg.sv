@@ -92,6 +92,10 @@ package otbn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } key_invalid;
+    struct packed {
+      logic        d;
+      logic        de;
     } imem_intg_violation;
     struct packed {
       logic        d;
@@ -180,10 +184,10 @@ package otbn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [118:117]
-    otbn_hw2reg_ctrl_reg_t ctrl; // [116:116]
-    otbn_hw2reg_status_reg_t status; // [115:107]
-    otbn_hw2reg_err_bits_reg_t err_bits; // [106:81]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [120:119]
+    otbn_hw2reg_ctrl_reg_t ctrl; // [118:118]
+    otbn_hw2reg_status_reg_t status; // [117:109]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [108:81]
     otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [80:65]
     otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [64:33]
     otbn_hw2reg_load_checksum_reg_t load_checksum; // [32:0]
