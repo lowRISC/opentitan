@@ -22,8 +22,7 @@ foreach mask_rom_test_name, mask_rom_test_info : mask_rom_tests
         riscv_crt,
         device_lib,
         mask_rom_test_info['library'],
-        sw_lib_irq_handlers,
-        sw_lib_testing_test_main,
+        sw_lib_testing_ottf,
       ],
     )
 
