@@ -22,7 +22,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
     // use cip_tl_seq_item to create tl_seq_item with correct integrity values and obtain integrity
     // related functions
-    if (cfg.en_tl_intg_gen) tl_seq_item::type_id::set_type_override(cip_tl_seq_item::get_type());
+    tl_seq_item::type_id::set_type_override(cip_tl_seq_item::get_type());
 
     // Retrieve the virtual interfaces from uvm_config_db.
     if (!uvm_config_db#(intr_vif)::get(this, "", "intr_vif", cfg.intr_vif) &&

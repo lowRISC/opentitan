@@ -86,10 +86,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
             $sformatf("tl_intg_err_mem_subword_cgs_wrap[%0s]", ral_name));
       end
 
-      if (cfg.en_tl_intg_gen) begin
-        tl_intg_err_cgs_wrap[ral_name] = new($sformatf("tl_intg_err_cgs_wrap[%0s]", ral_name));
-        if (!has_mem) tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.weight = 0;
-      end
+      tl_intg_err_cgs_wrap[ral_name] = new($sformatf("tl_intg_err_cgs_wrap[%0s]", ral_name));
+      if (!has_mem) tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.weight = 0;
     end
   endfunction
 
@@ -347,35 +345,33 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     csr_size_err    = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
     tl_item_err     = item.get_exp_d_error();
 
-    if (cfg.en_tl_intg_gen) begin
-      has_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
+    has_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
 
-      // If we got an error response caused by an integrity failure, update the mirrored value for
-      // any bus integrity alert field (if there is one).
-      if (has_intg_err) begin
-        update_tl_alert_field_prediction();
-      end
+    // If we got an error response caused by an integrity failure, update the mirrored value for
+    // any bus integrity alert field (if there is one).
+    if (has_intg_err) begin
+      update_tl_alert_field_prediction();
+    end
 
-      if (channel == DataChannel) begin
-        cip_tl_seq_item cip_item;
-        tl_intg_err_e tl_intg_err_type;
-        uint num_cmd_err_bits, num_data_err_bits;
+    if (channel == DataChannel) begin
+      cip_tl_seq_item cip_item;
+      tl_intg_err_e tl_intg_err_type;
+      uint num_cmd_err_bits, num_data_err_bits;
 
-        // integrity at d_user is from DUT, which should be always correct
-        void'(item.is_d_chan_intg_ok(.throw_error(1)));
+      // integrity at d_user is from DUT, which should be always correct
+      void'(item.is_d_chan_intg_ok(.throw_error(1)));
 
-        // sample covergroup
-        `downcast(cip_item, item)
-        cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits);
-        tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
-                                              is_mem_addr(item, ral_name));
+      // sample covergroup
+      `downcast(cip_item, item)
+      cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits);
+      tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
+                                            is_mem_addr(item, ral_name));
 
-        if (tl_intg_err_mem_subword_cgs_wrap.exists(ral_name)) begin
-          tl_intg_err_mem_subword_cgs_wrap[ral_name].sample(
-              .tl_intg_err_type(tl_intg_err_type),
-              .write(item.a_opcode != tlul_pkg::Get),
-              .num_enable_bytes($countones(item.a_mask)));
-        end
+      if (tl_intg_err_mem_subword_cgs_wrap.exists(ral_name)) begin
+        tl_intg_err_mem_subword_cgs_wrap[ral_name].sample(
+            .tl_intg_err_type(tl_intg_err_type),
+            .write(item.a_opcode != tlul_pkg::Get),
+            .num_enable_bytes($countones(item.a_mask)));
       end
     end
 

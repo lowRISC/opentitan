@@ -304,6 +304,7 @@ module rv_dm
   end
 
   tlul_adapter_host #(
+    .EnableDataIntgGen(1),
     .MAX_REQS(1)
   ) tl_adapter_host_sba (
     .clk_i,

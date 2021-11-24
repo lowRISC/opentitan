@@ -12,8 +12,8 @@ class cip_tl_seq_item extends tl_seq_item;
   int                 max_ecc_errors = MAX_TL_ECC_ERRORS;
 
   `uvm_object_utils_begin(cip_tl_seq_item)
-    `uvm_field_enum(tl_intg_err_e,          tl_intg_err_type, UVM_DEFAULT)
-    `uvm_field_int(max_ecc_errors,                            UVM_DEFAULT)
+    `uvm_field_enum(tl_intg_err_e, tl_intg_err_type, UVM_DEFAULT)
+    `uvm_field_int(max_ecc_errors,                   UVM_DEFAULT)
   `uvm_object_utils_end
 
   function void post_randomize();
@@ -54,8 +54,8 @@ class cip_tl_seq_item extends tl_seq_item;
 
     user.rsvd = '0;
     user.instr_type = instr_type;
-    user.cmd_intg = cmd_with_intg[H2DCmdFullWidth -1 -: H2DCmdIntgWidth];
-    user.data_intg = data_with_intg[DataFullWidth -1 -: DataIntgWidth];
+    user.cmd_intg  = cmd_with_intg[H2DCmdFullWidth - 1 -: H2DCmdIntgWidth];
+    user.data_intg = data_with_intg[DataFullWidth - 1 -: DataIntgWidth];
     return user;
   endfunction : compute_a_user
 

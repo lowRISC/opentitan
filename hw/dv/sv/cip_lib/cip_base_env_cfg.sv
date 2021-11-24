@@ -25,10 +25,6 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   uvm_reg_data_t      shadow_update_err_status_fields[dv_base_reg_field];
   uvm_reg_data_t      shadow_storage_err_status_fields[dv_base_reg_field];
 
-  // Enables TL integrity generation & checking with *_user bits.
-  // Assume ALL TL agents have integrity check enabled or disabled altogether.
-  bit                 en_tl_intg_gen = 1;
-
   alert_esc_agent_cfg m_alert_agent_cfg[string];
   push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfg[];
 

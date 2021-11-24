@@ -209,7 +209,9 @@ module lc_ctrl
   );
 
   // DMI to TL-UL transducing
-  tlul_adapter_host u_tap_tlul_host (
+  tlul_adapter_host #(
+    .EnableDataIntgGen(1)
+  ) u_tap_tlul_host (
     .clk_i,
     .rst_ni,
     // do not make a request unless there is room for the response
