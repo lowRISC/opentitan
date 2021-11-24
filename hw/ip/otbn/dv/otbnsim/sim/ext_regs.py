@@ -220,6 +220,11 @@ class OTBNExtRegs:
         self.regs['STOP_PC'] = RGReg([RGField('STOP_PC', 32, 0, 0, 'ro')],
                                      True)
 
+        # Add a fake "RND_REQ" register to pass it through otbn_core_model
+        # when OTBN_USE_MODEL parameter is enabled in system level tests.
+        self.regs['RND_REQ'] = RGReg([RGField('RND_REQ', 32, 0, 0, 'ro')],
+                                     True)
+
     def _get_reg(self, reg_name: str) -> RGReg:
         reg = self.regs.get(reg_name)
         if reg is None:

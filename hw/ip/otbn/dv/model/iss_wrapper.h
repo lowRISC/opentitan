@@ -20,11 +20,13 @@ struct TmpDir;
 // versions of these registers in this structure.
 class MirroredRegs {
  public:
-  MirroredRegs() : status(0), insn_cnt(0), err_bits(0), stop_pc(0) {}
+  MirroredRegs()
+      : status(0), insn_cnt(0), err_bits(0), stop_pc(0), rnd_req(0) {}
 
   uint32_t status;
   uint32_t insn_cnt;
   uint32_t err_bits;
+  uint32_t rnd_req;
 
   // The final PC from the most recent run
   uint32_t stop_pc;

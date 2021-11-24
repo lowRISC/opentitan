@@ -39,9 +39,11 @@ module otbn_core_model
   output err_bits_t          err_bits_o, // updated when STATUS switches to idle
 
   input  edn_pkg::edn_rsp_t  edn_rnd_i, // EDN response interface for RND
+  output logic               edn_rnd_o, // EDN request interface for RND
   input  logic               edn_rnd_cdc_done_i, // RND from EDN is valid (DUT perspective)
 
   input  edn_pkg::edn_rsp_t  edn_urnd_i, // EDN response interface for URND seed
+  output logic               edn_urnd_o, // EDN request interface for URND seed
   input  logic               edn_urnd_cdc_done_i, // URND seed from EDN is valid (DUT perspective)
 
   output bit [7:0]       status_o,   // STATUS register
@@ -87,11 +89,53 @@ module otbn_core_model
   bit [31:0] insn_cnt_d, insn_cnt_q;
   bit [31:0] raw_err_bits_d, raw_err_bits_q;
   bit [31:0] stop_pc_d, stop_pc_q;
+  bit rnd_req_start_d, rnd_req_start_q;
 
   bit failed_invalidate_imem;
 
   bit unused_raw_err_bits;
   logic unused_edn_rsp_fips;
+
+  // EDN RND Request Logic
+  logic edn_rnd_req_q, edn_rnd_req_d;
+
+  // Since RND is instantly set inside model we need to wait right until
+  // it is also going to be written in RTL (which takes one cycle).
+  logic edn_rnd_cdc_done_q;
+
+  // RND Request starts if OTBN Model raises rnd_req_start while we are not
+  // finishing up processing RND.
+  assign edn_rnd_req_d = ~edn_rnd_cdc_done_q & (edn_rnd_req_q | rnd_req_start_q);
+
+  assign edn_rnd_o = edn_rnd_req_d;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      edn_rnd_req_q <= 1'b0;
+      edn_rnd_cdc_done_q <= 1'b0;
+    end else begin
+      edn_rnd_cdc_done_q <= edn_rnd_cdc_done_i;
+      edn_rnd_req_q <= edn_rnd_req_d;
+    end
+  end
+
+  // EDN URND Seed Request Logic
+  logic edn_urnd_req_q, edn_urnd_req_d, start_q;
+
+  // URND Reseeding is only done when we are starting OTBN from fresh.
+  assign edn_urnd_req_d = ~edn_urnd_cdc_done_i & (edn_urnd_req_q | start_q);
+
+  assign edn_urnd_o = edn_urnd_req_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      edn_urnd_req_q <= 1'b0;
+      start_q <= 1'b0;
+    end else begin
+      edn_urnd_req_q <= edn_urnd_req_d;
+      start_q <= start_i;
+    end
+  end
 
   // EDN Stepping is done with the EDN clock for also asserting the CDC measures in the design.
   always_ff @(posedge clk_edn_i or negedge rst_edn_ni) begin
@@ -115,6 +159,7 @@ module otbn_core_model
       model_state <= 0;
       status_q <= 0;
       insn_cnt_q <= 0;
+      rnd_req_start_q <= 0;
       raw_err_bits_q <= 0;
       stop_pc_q <= 0;
       failed_invalidate_imem <= 0;
@@ -136,14 +181,17 @@ module otbn_core_model
                                        model_state,
                                        status_d,
                                        insn_cnt_d,
+                                       rnd_req_start_d,
                                        raw_err_bits_d,
                                        stop_pc_d);
         status_q <= status_d;
         insn_cnt_q <= insn_cnt_d;
+        rnd_req_start_q <= rnd_req_start_d;
         raw_err_bits_q <= raw_err_bits_d;
         stop_pc_q <= stop_pc_d;
       end else begin
-        // If we're not running and we're not being told to start, there's nothing to do.
+        // Make RND Request 0 when we are not running and we're not being told to start.
+        rnd_req_start_q <= 1'b0;
       end
     end
   end

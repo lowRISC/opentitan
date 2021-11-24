@@ -318,6 +318,7 @@ void OtbnModel::edn_rnd_cdc_done() {
 
 int OtbnModel::step(svBitVecVal *status /* bit [7:0] */,
                     svBitVecVal *insn_cnt /* bit [31:0] */,
+                    svBitVecVal *rnd_req /* bit [0:0] */,
                     svBitVecVal *err_bits /* bit [31:0] */,
                     svBitVecVal *stop_pc /* bit [31:0] */) {
   assert(insn_cnt && err_bits && stop_pc);
@@ -341,17 +342,19 @@ int OtbnModel::step(svBitVecVal *status /* bit [7:0] */,
           throw std::runtime_error("STATUS register had non-empty top bits.");
         }
         set_sv_u8(status, iss->get_mirrored().status);
+        svPutBitselBit(rnd_req, 0, (iss->get_mirrored().rnd_req & 1));
         set_sv_u32(insn_cnt, iss->get_mirrored().insn_cnt);
         set_sv_u32(err_bits, iss->get_mirrored().err_bits);
         set_sv_u32(stop_pc, iss->get_mirrored().stop_pc);
         return 1;
 
       case 0:
-        // The simulation is still running. Update status and insn_cnt.
+        // The simulation is still running. Update status, rnd_req and insn_cnt.
         if (iss->get_mirrored().status >> 8) {
           throw std::runtime_error("STATUS register had non-empty top bits.");
         }
         set_sv_u8(status, iss->get_mirrored().status);
+        svPutBitselBit(rnd_req, 0, (iss->get_mirrored().rnd_req & 1));
         set_sv_u32(insn_cnt, iss->get_mirrored().insn_cnt);
         return 0;
 
@@ -662,6 +665,7 @@ void edn_model_urnd_cdc_done(OtbnModel *model) { model->edn_urnd_cdc_done(); }
 unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
                          svBitVecVal *status /* bit [7:0] */,
                          svBitVecVal *insn_cnt /* bit [31:0] */,
+                         svBitVecVal *rnd_req /* bit [31:0] */,
                          svBitVecVal *err_bits /* bit [31:0] */,
                          svBitVecVal *stop_pc /* bit [31:0] */) {
   assert(model && status && insn_cnt && err_bits && stop_pc);
@@ -707,7 +711,7 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
     return model_state;
 
   // Step the model once
-  switch (model->step(status, insn_cnt, err_bits, stop_pc)) {
+  switch (model->step(status, insn_cnt, rnd_req, err_bits, stop_pc)) {
     case 0:
       // Still running: no change
       break;

@@ -53,6 +53,7 @@ class OtbnModel {
   // checker. If the model has finished, writes otbn.ERR_BITS to *err_bits.
   int step(svBitVecVal *status /* bit [7:0] */,
            svBitVecVal *insn_cnt /* bit [31:0] */,
+           svBitVecVal *rnd_req /* bit [0:0] */,
            svBitVecVal *err_bits /* bit [31:0] */,
            svBitVecVal *stop_pc /* bit [31:0] */);
 

@@ -91,7 +91,7 @@ class CSRFile:
 
         if idx == 0x7d8:
             # RND_PREFETCH
-            # TODO: Implement.
+            wsrs.RND.pending_request = True
             return
 
         if idx == 0xfc0:
