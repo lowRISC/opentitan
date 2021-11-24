@@ -93,6 +93,7 @@ class OTBNState:
 
         self.rnd_set_flag = False
 
+        self.rnd_req = 0
         self.rnd_cdc_pending = False
         self.urnd_cdc_pending = False
 
@@ -345,7 +346,6 @@ class OTBNState:
         self.pc = self.get_next_pc()
         self._pc_next_override = None
         self.loop_stack.commit()
-        self.ext_regs.commit()
         self.wsrs.commit()
         self.csrs.flags.commit()
         self.wdrs.commit()

@@ -740,8 +740,8 @@ module otbn
     .fips_o     (              ), // unused
     .clk_edn_i,
     .rst_edn_ni,
-    .edn_o      ( edn_rnd_o    ),
-    .edn_i      ( edn_rnd_i    )
+    .edn_o      ( edn_rnd_o ),
+    .edn_i      ( edn_rnd_i )
   );
 
   prim_edn_req #(
@@ -788,15 +788,15 @@ module otbn
     logic         start_model, start_rtl;
     err_bits_t    err_bits_model, err_bits_rtl;
     logic [31:0]  insn_cnt_model, insn_cnt_rtl;
+    logic         edn_rnd_req_model, edn_rnd_req_rtl;
+    logic         edn_urnd_req_model, edn_urnd_req_rtl;
 
-    edn_pkg::edn_req_t  edn_rnd_model_o;
     edn_pkg::edn_rsp_t  edn_rnd_model_i;
 
-    edn_pkg::edn_req_t  edn_urnd_model_o;
     edn_pkg::edn_rsp_t  edn_urnd_model_i;
 
-    logic         edn_rnd_data_valid;
-    logic         edn_urnd_data_valid;
+    logic       edn_rnd_data_valid;
+    logic       edn_urnd_data_valid;
 
     // Note that the "done" signal will come two cycles later when using the model as a core than it
     // does when using the RTL
@@ -808,11 +808,13 @@ module otbn
     assign start_rtl = start_q & ~otbn_use_model;
 
     // Model (Instruction Set Simulator)
-    assign edn_rnd_data_valid =  otbn_use_model ? 1'b1 : edn_rnd_req & edn_rnd_ack;
-    assign edn_rnd_model_i  = otbn_use_model ? edn_rnd_i : '0;
+    assign edn_rnd_model_i    = otbn_use_model ? edn_rnd_i : '0;
+    assign edn_rnd_req        = otbn_use_model ? edn_rnd_req_model : edn_rnd_req_rtl;
+    assign edn_rnd_data_valid = edn_rnd_req & edn_rnd_ack;
 
-    assign edn_urnd_data_valid = otbn_use_model ? 1'b1 : edn_urnd_req & edn_urnd_ack;
-    assign edn_urnd_model_i = otbn_use_model ? edn_urnd_i : '0;
+    assign edn_urnd_model_i    = otbn_use_model ? edn_urnd_i : '0;
+    assign edn_urnd_req        = otbn_use_model ? edn_urnd_req_model : edn_urnd_req_rtl;
+    assign edn_urnd_data_valid = edn_urnd_req & edn_urnd_ack;
 
     otbn_core_model #(
       .DmemSizeByte(DmemSizeByte),
@@ -831,9 +833,11 @@ module otbn
       .err_bits_o            (err_bits_model),
 
       .edn_rnd_i             (edn_rnd_model_i),
+      .edn_rnd_o             (edn_rnd_req_model),
       .edn_rnd_cdc_done_i    (edn_rnd_data_valid),
 
       .edn_urnd_i            (edn_urnd_model_i),
+      .edn_urnd_o            (edn_urnd_req_model),
       .edn_urnd_cdc_done_i   (edn_urnd_data_valid),
 
       .insn_cnt_o            (insn_cnt_model),
@@ -878,11 +882,11 @@ module otbn
       .dmem_rvalid_i               (dmem_rvalid_core),
       .dmem_rerror_i               (dmem_rerror_core),
 
-      .edn_rnd_req_o               (edn_rnd_req),
+      .edn_rnd_req_o               (edn_rnd_req_rtl),
       .edn_rnd_ack_i               (edn_rnd_ack),
       .edn_rnd_data_i              (edn_rnd_data),
 
-      .edn_urnd_req_o              (edn_urnd_req),
+      .edn_urnd_req_o              (edn_urnd_req_rtl),
       .edn_urnd_ack_i              (edn_urnd_ack),
       .edn_urnd_data_i             (edn_urnd_data),
 

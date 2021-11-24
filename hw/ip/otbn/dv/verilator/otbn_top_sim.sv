@@ -307,9 +307,11 @@ module otbn_top_sim (
     .err_bits_o            ( otbn_model_err_bits ),
 
     .edn_rnd_i             ( rnd_rsp ),
+    .edn_rnd_o             ( ),
     .edn_rnd_cdc_done_i    ( edn_rnd_data_valid ),
 
     .edn_urnd_i            ( urnd_rsp ),
+    .edn_urnd_o            ( ),
     .edn_urnd_cdc_done_i   ( edn_urnd_data_valid ),
 
     .status_o              ( ),

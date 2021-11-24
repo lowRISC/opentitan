@@ -187,8 +187,8 @@ module tb;
 
   // Valid signals below are set when DUT finishes processing incoming 32b packages and constructs
   // 256b EDN data. Model checks if the processing of the packages are done in maximum of 5 cycles
-  logic edn_rnd_cdc_done;
-  logic edn_urnd_cdc_done;
+  logic edn_rnd_cdc_done, edn_rnd_req_model;
+  logic edn_urnd_cdc_done, edn_urnd_req_model;
 
   assign edn_rnd_cdc_done = dut.edn_rnd_req & dut.edn_rnd_ack;
   assign edn_urnd_cdc_done = dut.edn_urnd_req & dut.edn_urnd_ack;
@@ -211,9 +211,11 @@ module tb;
     .err_bits_o   (),
 
     .edn_rnd_i             ({edn_if[0].ack, edn_if[0].d_data}),
+    .edn_rnd_o             (edn_rnd_req_model),
     .edn_rnd_cdc_done_i    (edn_rnd_cdc_done),
 
     .edn_urnd_i             ({edn_if[1].ack, edn_if[1].d_data}),
+    .edn_urnd_o             (edn_urnd_req_model),
     .edn_urnd_cdc_done_i    (edn_urnd_cdc_done),
 
     .status_o     (model_if.status),
@@ -257,6 +259,10 @@ module tb;
   // be lucky with exactly when the reads happen if we want to see off-by-one cycle errors. This
   // assertion gives a continuous check.
   `ASSERT(MatchingStatus_A, dut.u_reg.u_status.q == model_if.status, clk, !rst_n)
+
+  // Check that if the modelled EDN requests are matching with the requests from DUT
+  `ASSERT(MatchingReqRND_A, dut.u_otbn_core.edn_rnd_req_o == edn_rnd_req_model, clk, !rst_n)
+  `ASSERT(MatchingReqURND_A, dut.u_otbn_core.edn_urnd_req_o == edn_urnd_req_model, clk, !rst_n)
 
   initial begin
     mem_bkdr_util imem_util, dmem_util;

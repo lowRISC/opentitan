@@ -2,9 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from .trace import Trace
+
+from .ext_regs import TraceExtRegChange, ExtRegChange
 
 
 class TraceWSR(Trace):
@@ -52,7 +54,7 @@ class WSR:
         '''Abort pending changes'''
         return
 
-    def changes(self) -> List[TraceWSR]:
+    def changes(self) -> Sequence[Trace]:
         '''Return list of pending architectural changes'''
         return []
 
@@ -101,6 +103,7 @@ class RandWSR(WSR):
         self._random_value = None  # type: Optional[int]
         self._random_value_read = False
         self.pending_request = False
+        self.req_high = False
 
     def read_unsigned(self) -> int:
         assert self._random_value is not None
@@ -124,7 +127,6 @@ class RandWSR(WSR):
     def commit(self) -> None:
         if self._random_value_read:
             self._random_value = None
-            self.pending_request = False
 
         self._random_value_read = False
 
@@ -135,6 +137,18 @@ class RandWSR(WSR):
 
         self.pending_request = True
         return False
+
+    def changes(self) -> List[Trace]:
+        # We are not tracing the value of RND. Instead we are tracing modelled
+        # EDN request for RND.
+        ret = []  # type: List[Trace]
+        if self.req_high and self._random_value is not None:
+            ret = [TraceExtRegChange('RND_REQ', ExtRegChange('=', 0, True, 0))]
+            self.req_high = False
+        elif self.pending_request:
+            self.req_high = True
+            ret = [TraceExtRegChange('RND_REQ', ExtRegChange('=', 1, True, 1))]
+        return ret
 
     def set_unsigned(self, value: int) -> None:
         '''Sets a random value that can be read by a future `read_unsigned`
@@ -148,6 +162,8 @@ class RandWSR(WSR):
         '''
         assert 0 <= value < (1 << 256)
         self._random_value = value
+        if self.pending_request:
+            self.pending_request = False
 
 
 class URNDWSR(WSR):
@@ -285,5 +301,10 @@ class WSRFile:
         self.URND.abort()
         self.ACC.abort()
 
-    def changes(self) -> List[TraceWSR]:
-        return self.MOD.changes() + self.RND.changes() + self.URND.changes() + self.ACC.changes()
+    def changes(self) -> List[Trace]:
+        ret = []  # type: List[Trace]
+        ret += self.MOD.changes()
+        ret += self.RND.changes()
+        ret += self.URND.changes()
+        ret += self.ACC.changes()
+        return ret
