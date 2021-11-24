@@ -49,12 +49,22 @@ module spi_host_fsm
   logic             full_cyc, cpha, cpol;
   logic             full_cyc_q, cpha_q, cpol_q;
 
-  logic [1:0]       cmd_speed;
-  logic [1:0]       cmd_speed_q;
-  logic             cmd_wr_en, cmd_wr_en_q;
-  logic             cmd_rd_en, cmd_rd_en_q;
+  // Unlike the configopts fields, the segment fields can change in back-to-backsegment operation.
+  // (If a change in only the configopts fields is detected, the FSM transitions to idle instead).
+  // For that reason, when using the segment fields in back-to-back operations,  we have to bear
+  // in mind context and determine whether it is appropriate to use the value for the previous
+  // segment or the following segment.
+  // For instance, the cmd_rd_en signal is sometimes used to push segment byte into the shift
+  // register, and so in that case it is important to use cmd_rd_en_q in that sense.  The same
+  // signal is consulted to load the bit counter at the /beginning/ of each byte or dummy cycle,
+  // and so in this context it is appropriate to use cmd_rd_en_d (which refers to the value from
+  // the immediately following segment).
+  logic [1:0]       cmd_speed_d, cmd_speed_q;
+  logic             cmd_wr_en_d, cmd_wr_en_q;
+  logic             cmd_rd_en_d, cmd_rd_en_q;
   // cmd_len needs no data latching as it is only used at the very start of a command.
-  // The corresponding register, cmd_len_q, would create a warning at synthesis
+  // A corresponding register (i.e. cmd_len_q) would not be  used and would only
+  // create a warning at synthesis
   logic [8:0]       cmd_len;
   logic             csaat;
   logic             csaat_q;
@@ -127,11 +137,12 @@ module spi_host_fsm
     csntrail  = new_command ? command_i.configopts.csntrail : csntrail_q;
     clkdiv    = new_command ? command_i.configopts.clkdiv : clkdiv_q;
     csaat     = new_command ? command_i.segment.csaat : csaat_q;
-    // cmd_len needs no data latching as it is only used at the very start of a command.
-    cmd_len   = command_i.segment.len;
-    cmd_rd_en = new_command ? command_i.segment.cmd_rd_en : cmd_rd_en_q;
-    cmd_wr_en = new_command ? command_i.segment.cmd_wr_en : cmd_wr_en_q;
-    cmd_speed = new_command ? command_i.segment.speed : cmd_speed_q;
+    // cmd_len needs no data latching as it is only used at the very start of a command
+    // to initialize byte_cntr_q
+    cmd_len     = command_i.segment.len;
+    cmd_wr_en_d = new_command ? command_i.segment.cmd_wr_en : cmd_wr_en_q;
+    cmd_rd_en_d = new_command ? command_i.segment.cmd_rd_en : cmd_rd_en_q;
+    cmd_speed_d = new_command ? command_i.segment.speed : cmd_speed_q;
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -158,9 +169,9 @@ module spi_host_fsm
       csntrail_q  <= (new_command && !stall) ? csntrail : csntrail_q;
       clkdiv_q    <= (new_command && !stall) ? clkdiv : clkdiv_q;
       csaat_q     <= (new_command && !stall) ? csaat : csaat_q;
-      cmd_rd_en_q <= (new_command && !stall) ? cmd_rd_en : cmd_rd_en_q;
-      cmd_wr_en_q <= (new_command && !stall) ? cmd_wr_en : cmd_wr_en_q;
-      cmd_speed_q <= (new_command && !stall) ? cmd_speed : cmd_speed_q;
+      cmd_wr_en_q <= (new_command && !stall) ? cmd_wr_en_d : cmd_wr_en_q;
+      cmd_rd_en_q <= (new_command && !stall) ? cmd_rd_en_d : cmd_rd_en_q;
+      cmd_speed_q <= (new_command && !stall) ? cmd_speed_d : cmd_speed_q;
     end
   end
 
@@ -347,7 +358,7 @@ module spi_host_fsm
   logic [2:0] start_bit;
 
   always_comb begin
-    if (!cmd_rd_en && !cmd_wr_en) begin
+    if (!cmd_rd_en_d && !cmd_wr_en_d) begin
       // direction == 0, means to send out
       // a fixed number of pulses, NOT bytes.
       // thus "last_bit" is always asserted,
@@ -356,7 +367,7 @@ module spi_host_fsm
       shift_size = 0;
       start_bit = 3'h0;
     end else begin
-      unique case (cmd_speed)
+      unique case (cmd_speed_q)
         Standard: begin
           shift_size = 3'h1;
           start_bit  = 3'h7;
@@ -437,10 +448,11 @@ module spi_host_fsm
     end
   end
 
-  assign wr_en_internal    = byte_starting & cmd_wr_en;
+  assign wr_en_internal    = byte_starting & cmd_wr_en_d;
   assign shift_en_internal = bit_shifting;
-  assign rd_en_internal    = byte_ending & cmd_rd_en;
-  assign speed_o           = cmd_speed;
+
+  assign rd_en_internal    = byte_ending & cmd_rd_en_q;
+  assign speed_o           = cmd_speed_q;
   assign sample_en_d       = byte_starting | shift_en_o;
   assign full_cyc_o        = full_cyc;
   assign last_read_o       = (byte_cntr_q == 'h0) & rd_en_o & sr_rd_ready_i;
@@ -498,18 +510,18 @@ module spi_host_fsm
     if (&csb_o) begin
       sd_en_o[3:0] = 4'h0;
     end else begin
-      unique case (cmd_speed)
+      unique case (cmd_speed_q)
         Standard: begin
           sd_en_o[0]   = 1'b1;
           sd_en_o[1]   = 1'b0;
           sd_en_o[3:2] = 2'b00;
         end
         Dual:     begin
-          sd_en_o[1:0] = {2{cmd_wr_en}};
+          sd_en_o[1:0] = {2{cmd_wr_en_q}};
           sd_en_o[3:2] = 2'b00;
         end
         Quad:     begin
-          sd_en_o[3:0] = {4{cmd_wr_en}};
+          sd_en_o[3:0] = {4{cmd_wr_en_q}};
         end
         default: begin
           // invalid speed
@@ -523,8 +535,10 @@ module spi_host_fsm
   // Assertions confirming valid user input.
   //
 
-  `ASSERT(BidirOnlyInStdMode_A, cmd_speed == Standard || !(cmd_rd_en && cmd_wr_en), clk_i, rst_ni)
-  `ASSERT(ValidSpeed_A, cmd_speed != RsvdSpd, clk_i, rst_ni)
+  `ASSERT(BidirOnlyInStdMode_A,
+      cmd_speed_d == Standard || !(cmd_rd_en_d && cmd_wr_en_d),
+      clk_i, rst_ni)
+  `ASSERT(ValidSpeed_A, cmd_speed_d != RsvdSpd, clk_i, rst_ni)
   `ASSERT(ValidCSID_A, csid < NumCS, clk_i, rst_ni)
 
 endmodule
