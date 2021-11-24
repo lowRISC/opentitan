@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class lc_ctrl_base_test extends cip_base_test #(
-  .CFG_T(lc_ctrl_env_cfg),
-  .ENV_T(lc_ctrl_env)
-);
+    .CFG_T(lc_ctrl_env_cfg),
+    .ENV_T(lc_ctrl_env)
+  );
 
   `uvm_component_utils(lc_ctrl_base_test)
   `uvm_component_new
@@ -17,8 +17,4 @@ class lc_ctrl_base_test extends cip_base_test #(
   // the base class also looks up UVM_TEST_SEQ plusarg to create and run that seq in
   // the run_phase; as such, nothing more needs to be done
 
-  virtual function void end_of_elaboration_phase(uvm_phase phase);
-    super.end_of_elaboration_phase(phase);
-    uvm_top.print_topology();
-  endfunction
 endclass : lc_ctrl_base_test
