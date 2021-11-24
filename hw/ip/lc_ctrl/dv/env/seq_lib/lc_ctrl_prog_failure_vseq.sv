@@ -10,7 +10,7 @@ class lc_ctrl_prog_failure_vseq extends lc_ctrl_smoke_vseq;
   `uvm_object_new
 
   constraint otp_prog_err_c {
-    err_inj.otp_prog_err == 1;
+    otp_prog_err == 1;
   }
 
   virtual task post_start();
