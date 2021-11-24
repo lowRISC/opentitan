@@ -103,32 +103,35 @@ impl Frame {
             };
             let slice_size = Self::DATA_LEN.min(payload.len() - addr);
             frame.data[..slice_size].copy_from_slice(&payload[addr..addr + slice_size]);
-            frame.header.hash = frame.header_hash();
             frames.push(frame);
 
             addr += Self::DATA_LEN;
             frame_num += 1;
         }
         frames.last_mut().map(|f| f.header.frame_num |= Self::EOF);
+        frames.iter_mut().for_each(|f| f.header.hash = f.header_hash());
         frames
     }
 }
 
 /// Implements the bootstrap protocol of previous Google Titan family chips.
 pub struct Legacy {
+    /// Controls the time that CS is deasserted between frames.  With Dauntless, 20ms has been
+    /// observed to be "too long", in that after the final frame was transmitted, the bootloader
+    /// could have already stopped listening to SPI and started booting the newly flashed code,
+    /// before OpenTitan tool could read the ACK of the final transaction.  1ms is what the
+    /// spiflash.cc tool from cr50-utils uses.
     pub inter_frame_delay: Duration,
-    pub flash_erase_delay: Duration,
 }
 
 impl Legacy {
-    const INTER_FRAME_DELAY: Duration = Duration::from_millis(20);
-    const FLASH_ERASE_DELAY: Duration = Duration::from_millis(200);
+    const INTER_FRAME_DELAY: Duration = Duration::from_millis(1);
+    const MAX_CONSECUTIVE_ERRORS: u32 = 100;
 
     /// Creates a new `Primitive` protocol updater from `options`.
     pub fn new(options: &BootstrapOptions) -> Self {
         Self {
             inter_frame_delay: options.inter_frame_delay.unwrap_or(Self::INTER_FRAME_DELAY),
-            flash_erase_delay: options.flash_erase_delay.unwrap_or(Self::FLASH_ERASE_DELAY),
         }
     }
 }
@@ -169,6 +172,8 @@ pub enum LegacyBootstrapError {
     BadAdr,
     #[error("Boot rom error: OVERFLOW")]
     Overflow,
+    #[error("Repeated errors communicating with boot rom")]
+    RepeatedErrors,
 }
 
 impl From<u8> for LegacyBootstrapError {
@@ -202,40 +207,75 @@ impl UpdateProtocol for Legacy {
     fn update(&self, spi: &dyn Target, payload: &[u8]) -> Result<()> {
         let frames = Frame::from_payload(payload);
 
-        for (i, frame) in frames.iter().enumerate() {
-            let want_hash = frames[i.saturating_sub(1)].frame_hash();
-            // Repeatedly transmit the frame, until receiving expected response.
-            loop {
-                // TODO: Introduce a progress callback, to allow common code to show progress bar.
-                eprint!("{}.", i);
+        // All frames up to but not including this index have been ack'ed by the bootloader.
+        // Once this reaches frames.len(), the operation was successful.
+        let mut first_unacked_index = 0;
 
-                // Important? Comment in spiflash.cc indicates that it seems to corrupt without a
-                // 1ms delay.
-                std::thread::sleep(self.inter_frame_delay);
+        // Counts the number of repeated failures in getting a frame ack.
+        let mut consecutive_errors = 0;
 
-                // Write the frame and read back the hash of the previous frame.
-                let mut response = [0u8; std::mem::size_of::<Frame>()];
-                spi.run_transaction(&mut [Transfer::Both(frame.as_bytes(), &mut response)])?;
+        // Set if the past transaction ack'ed the block sent before that one, while transmitting
+        // the next.  If so, we heuristically assume that the block just sent will be ack'ed in
+        // the upcoming bidirectional transaction.
+        let mut optimistic = false;
+        
+        // Set if the past transaction ack'ed the block sent before that one, while
+        // re-transmitting the same block.  If so, we do not care about the ack in the upcoming
+        // bidirectional transaction, as it turns out it was not necessary to perform the most
+        // recent re-transmission.
+        let mut becoming_optimistic = false;
 
-                if response.iter().all(|&x| x == response[0]) {
-                    // A response consisteing of all identical bytes is a status code.
-                    match LegacyBootstrapError::from(response[0]) {
-                        LegacyBootstrapError::NotReady => continue, // Retry sending same frame.
-                        error => return Err(error.into()),
+        loop {
+            if consecutive_errors > Self::MAX_CONSECUTIVE_ERRORS {
+                return Err(LegacyBootstrapError::RepeatedErrors.into())
+            }
+
+            let second_unacked_index = (first_unacked_index + 1).min(frames.len() - 1);
+            let transmit_index =
+                if optimistic { second_unacked_index } else { first_unacked_index };
+            let frame = &frames[transmit_index];
+            eprint!("{}.", transmit_index);
+            std::thread::sleep(self.inter_frame_delay);
+            
+            // Write the frame and read back the ack of a previously transmitted frame.
+            let mut response = [0u8; std::mem::size_of::<Frame>()];
+            spi.run_transaction(&mut [Transfer::Both(frame.as_bytes(), &mut response)])?;
+
+            if becoming_optimistic {
+                optimistic = true;
+                becoming_optimistic = false;
+                continue;
+            }
+
+            if response.iter().all(|&x| x == response[0]) {
+                // A response consisteing of all identical bytes is a status code.
+                match LegacyBootstrapError::from(response[0]) {
+                    LegacyBootstrapError::NotReady => {
+                        consecutive_errors += 1;
+                        continue; // Retry sending same frame.
                     }
+                    error => return Err(error.into()),
                 }
+            }
 
-                // Compare response with checksum of last block sent.
-                if response[..Frame::HASH_LEN] == want_hash {
-                    // Successful response, move on to the next frame.
-                    break;
-                }
-                log::error!(
-                    "Frame hash mismatch device:{:x?} != frame:{:x?}.",
-                    &response[..Frame::HASH_LEN],
-                    want_hash
-                );
-                // Retry sending same frame.
+            if response[..Frame::HASH_LEN] == frames[first_unacked_index].frame_hash() {
+                first_unacked_index = first_unacked_index + 1;
+            } else if response[..Frame::HASH_LEN] == frames[second_unacked_index].frame_hash() {
+                first_unacked_index = second_unacked_index + 1;
+            } else {
+                consecutive_errors += 1;
+                optimistic = false;
+                continue;
+            }
+
+            consecutive_errors = 0;
+            if first_unacked_index == frames.len() {
+                // All frames acked, we are done.
+                break;
+            }
+            if !optimistic {
+                // Heuristic, become optimistic after second or later frame is ack'ed.
+                becoming_optimistic = first_unacked_index > 1;
             }
         }
         eprintln!("success");
