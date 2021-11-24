@@ -7,7 +7,7 @@
 // seq, normal seq with default priority (100) has the priority to access TL driver
 `define create_tl_access_error_case(task_name_, with_c_,
                                     seq_t_ = tl_host_custom_seq #(cip_tl_seq_item),
-                                    seqr_t = p_sequencer.tl_sequencer_h) \
+                                    seqr_t) \
   begin \
     seq_t_ tl_seq; \
     `uvm_info(`gfn, {"Running ", `"task_name_`"}, UVM_HIGH) \
@@ -151,7 +151,8 @@ virtual task tl_write_ro_mem_err(string ral_name);
         opcode != tlul_pkg::Get;
         (addr & csr_addr_mask[ral_name]) inside
             {[loc_mem_ranges[mem_idx].start_addr :
-              loc_mem_ranges[mem_idx].end_addr]};
+              loc_mem_ranges[mem_idx].end_addr]};, ,
+        p_sequencer.tl_sequencer_hs[ral_name]
         )
   end
 endtask
@@ -317,19 +318,21 @@ virtual task check_tl_intg_error_response();
   `DV_CHECK_FATAL(cfg.tl_intg_alert_name inside {cfg.list_of_alerts}, $sformatf(
       "tl intg alert (%s) is not inside %p", cfg.tl_intg_alert_name, cfg.list_of_alerts))
 
-  `uvm_info(`gfn, "expected fatal alert is triggered", UVM_LOW)
-
   // Check both alert and CSR status update
   fork
     // This is a fatal alert and design keeps sending it until reset is issued.
     // Check alerts are triggered for a few times
-    repeat ($urandom_range(5, 20)) begin
-      wait_alert_trigger(cfg.tl_intg_alert_name, .wait_complete(1));
+    begin
+      repeat ($urandom_range(5, 20)) begin
+        wait_alert_trigger(cfg.tl_intg_alert_name, .wait_complete(1));
+      end
     end
-    // Check corresponding CSR status is updated correctly
-    foreach (cfg.tl_intg_alert_fields[csr_field]) begin
-      bit [BUS_DW-1:0] exp_val = cfg.tl_intg_alert_fields[csr_field];
-      csr_rd_check(.ptr(csr_field), .compare_value(exp_val));
+    begin
+      // Check corresponding CSR status is updated correctly
+      foreach (cfg.tl_intg_alert_fields[csr_field]) begin
+        bit [BUS_DW-1:0] exp_val = cfg.tl_intg_alert_fields[csr_field];
+        csr_rd_check(.ptr(csr_field), .compare_value(exp_val));
+      end
     end
   join
 endtask
