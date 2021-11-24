@@ -19,6 +19,7 @@ package chip_env_pkg;
   import flash_ctrl_pkg::*;
   import jtag_riscv_agent_pkg::*;
   import kmac_pkg::*;
+  import lc_ctrl_state_pkg::*;
   import mem_bkdr_util_pkg::*;
   import otp_ctrl_pkg::*;
   import spi_agent_pkg::*;
@@ -72,8 +73,7 @@ package chip_env_pkg;
   typedef enum {
     SwTypeRom,  // Ibex SW - first stage boot ROM.
     SwTypeTest, // Ibex SW - actual test SW.
-    SwTypeOtbn, // Otbn SW.
-    SwTypeOtp   // OTP image.
+    SwTypeOtbn  // Otbn SW.
   } sw_type_e;
 
   typedef enum bit [1:0] {

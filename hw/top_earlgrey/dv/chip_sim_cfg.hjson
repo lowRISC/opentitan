@@ -107,24 +107,44 @@
                    "{tool}_otbn_tracer_build_opts",
                    "{tool}_memutil_dpi_scrambled_build_opts"]
 
+  // Setup for generating OTP images.
+  gen_otp_images_cfg_dir: "{proj_root}/hw/ip/otp_ctrl/data"
+  gen_otp_images_cmd: "{proj_root}/util/design/gen-otp-img.py"
+  gen_otp_images_cmd_opts: ["--quiet", "--seed {seed}"]
+
   // Add run modes.
   run_modes: [
-    { // This base mode initializes the OTP / life cycle with the DEV state
-      name: base_otp_lc_dev_mode
-      sw_images: ["sw/device/otp_img/otp_img:3"],
-      run_opts: ["+sw_build_bin_dir={sw_build_dir}/build-bin",
-                 "+sw_build_device={sw_build_device}",
-                 // Separate individual SW images supplied to +sw_images plusarg by comma.
-                 "+sw_images={eval_cmd} echo {sw_images} | sed -E 's/\\s+/,/g'"]
+    // Generates OTP images with different LC states with cannonical values,
+    // pseudo-randomized with the same test seed.
+    {
+      name: gen_otp_images_mode
+      pre_run_cmds: [
+        '''{gen_otp_images_cmd} {gen_otp_images_cmd_opts} \
+               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_raw.hjson \
+               --out {run_dir}/otp_ctrl_img_raw.vmem
+        ''',
+        '''{gen_otp_images_cmd} {gen_otp_images_cmd_opts} \
+               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_dev.hjson \
+               --out {run_dir}/otp_ctrl_img_dev.vmem
+        ''',
+        '''{gen_otp_images_cmd} {gen_otp_images_cmd_opts} \
+               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_rma.hjson \
+               --out {run_dir}/otp_ctrl_img_rma.vmem
+        ''',
+      ]
     }
     {
       name: sw_test_mode
       sw_images: ["sw/device/boot_rom/boot_rom:0"]
-      en_run_modes: ["base_otp_lc_dev_mode"]
+      run_opts: ["+sw_build_bin_dir={sw_build_dir}/build-bin",
+                 "+sw_build_device={sw_build_device}",
+                 // Separate individual SW images supplied to +sw_images plusarg by comma.
+                 "+sw_images={eval_cmd} echo {sw_images} | sed -E 's/\\s+/,/g'"]
+      en_run_modes: ["gen_otp_images_mode"]
     }
     {
       name: stub_cpu_mode
-      en_run_modes: ["base_otp_lc_dev_mode"]
+      en_run_modes: ["gen_otp_images_mode"]
       run_opts: ["+stub_cpu=1"]
     }
     {
@@ -140,7 +160,7 @@
     }
     {
       name: xbar_mode
-      en_run_modes: ["base_otp_lc_dev_mode"]
+      en_run_modes: ["gen_otp_images_mode"]
       run_opts: ["+xbar_mode=1"]
       reseed: 100
     }
@@ -161,7 +181,6 @@
   // - 0 for boot_rom,
   // - 1 for SW test,
   // - 2 for OTBN test,
-  // - 3 for OTP and so on
   // This allows an arbitrary number of SW images to be supplied to the TB.
   tests: [
     {
