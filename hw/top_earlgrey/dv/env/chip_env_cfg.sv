@@ -30,11 +30,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   // sw related
   // Directory from where to pick up the SW test images -default to PWD {run_dir}.
-  string              sw_build_bin_dir = ".";
+  string sw_build_bin_dir = ".";
 
   // In OpenTitan, the same SW test image can be built for DV, Verilator and FPGA. SW build for
   // other platforms can be run on DV as well. We allow that by specifying the SW build device.
-  string              sw_build_device = "sim_dv";
+  string sw_build_device = "sim_dv";
 
   // Types of SW images used in the test.
   //
@@ -51,8 +51,12 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   //
   // The ~resolve_sw_image_paths()~ function does the job of prefixing this path with
   // ~sw_build_bin_dir and suffixing with ~sw_build_device~.
-  string              sw_images[sw_type_e];
-  string              sw_image_flags[sw_type_e][$];
+  string sw_images[sw_type_e];
+  string sw_image_flags[sw_type_e][$];
+
+  // Maintain a list of generated OTP images.
+  lc_ctrl_state_pkg::lc_state_e use_otp_image = lc_ctrl_state_pkg::LcStRma;
+  string otp_images[lc_ctrl_state_pkg::lc_state_e];
 
   uint                sw_test_timeout_ns = 5_000_000; // 5ms
   sw_logger_vif       sw_logger_vif;
@@ -108,7 +112,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     sw_images[SwTypeRom] = "./rom";
     sw_images[SwTypeTest] = "./sw";
     sw_images[SwTypeOtbn] = "./otbn";
-    sw_images[SwTypeOtp] = "./otp";
+
+    // By default, assume these OTP image paths.
+    otp_images[lc_ctrl_state_pkg::LcStRaw] = "otp_ctrl_img_raw.vmem";
+    otp_images[lc_ctrl_state_pkg::LcStDev] = "otp_ctrl_img_dev.vmem";
+    otp_images[lc_ctrl_state_pkg::LcStRma] = "otp_ctrl_img_rma.vmem";
 
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)

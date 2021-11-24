@@ -49,7 +49,7 @@ class chip_base_vseq #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_ba
     cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Info].set_mem();
     // Backdoor load the OTP image.
-    cfg.mem_bkdr_util_h[Otp].load_mem_from_file({cfg.sw_images[SwTypeOtp], ".vmem"});
+    cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
     // Randomize the ROM image. Subclasses that have an actual ROM image will load it later.
     cfg.mem_bkdr_util_h[Rom].randomize_mem();
     // Bring the chip out of reset.

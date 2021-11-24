@@ -18,6 +18,8 @@ class chip_base_test extends cip_base_test #(
 
   virtual function void build_phase(uvm_phase phase);
     string sw_images_plusarg;
+    string use_otp_image_plusarg;
+
     super.build_phase(phase);
 
     // TL integrity gen is in the design data path, no need to generate it in the agent
@@ -60,6 +62,12 @@ class chip_base_test extends cip_base_test #(
     if ($value$plusargs("sw_images=%0s", sw_images_plusarg)) begin
       cfg.parse_sw_images_string(sw_images_plusarg);
     end
+
+    // Knob to select the OTP image based on LC state.
+    `DV_GET_ENUM_PLUSARG(lc_ctrl_state_pkg::lc_state_e, cfg.use_otp_image, use_otp_image)
+    `DV_CHECK_FATAL(cfg.otp_images.exists(cfg.use_otp_image),
+                    $sformatf({"Unsupported plusarg value: +use_otp_image=%0s. An image associated",
+                               "with this LC state needs to be created first."}, cfg.use_otp_image))
   endfunction : build_phase
 
 endclass : chip_base_test
