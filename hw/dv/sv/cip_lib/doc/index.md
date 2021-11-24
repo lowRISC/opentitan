@@ -85,8 +85,6 @@ virtual function void initialize(bit [31:0] csr_base_addr = '1);
   super.initialize(csr_base_addr); // ral model is created in `super.initialize`
   tl_intg_alert_fields[ral.a_status_reg.a_field] = value;
 ```
-* **en_tl_intg_gen**: Controls whether the TLUL integrity error is generated in
-  sequences / checked by the scoreboard.
 
 Apart from these, there are several common settings such as `zero_delays`,
 `clk_freq_mhz`, which are randomized as well as knobs such as `en_scb` and
@@ -277,10 +275,7 @@ class cip_base_test #(type CFG_T = cip_base_env_cfg,
 
 ### cip_tl_seq_item
 This is extended class of tl_seq_item to generate correct integrity values in
-a_user and d_user. If DUT relies on the agent to generate integrity for TLUL, set
-`cfg.en_tl_intg_gen = 1`, cip_tl_seq_item will override tl_seq_item, and integrity
-values will be generated. If TLUL integrity is handled in the DUT, set
-`cfg.en_tl_intg_gen = 0`, then `a_user` and `d_user` will be fully randomized.
+`a_user` and `d_user`.
 
 ## Extending from CIP library classes
 Let's say we are verifying an actual comportable IP `uart` which has `uart_tx`

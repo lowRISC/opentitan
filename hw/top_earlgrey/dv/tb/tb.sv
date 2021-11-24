@@ -398,10 +398,21 @@ module tb;
       force `CPU_CORE_HIER.clk_i = 1'b0;
       force `CPU_HIER.u_ibus_trans.rst_ni = 1'b0;
       force `CPU_HIER.u_dbus_trans.rst_ni = 1'b0;
-      // tl type is used to calculate ECC and we use DataType for cpu data interface
-      force cpu_d_tl_if.h2d.a_user.instr_type = prim_mubi_pkg::MuBi4False;
       force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
       force cpu_d_tl_if.d2h = `CPU_TL_ADAPT_D_HIER.tl_i;
+
+      // TL command integrity gen is in the design data path. TL driver provides correct cmd intg.
+      // Here forces it to random value to ensure that design generates the cmd intg
+      fork
+        forever begin
+          @(cpu_d_tl_if.h2d.a_valid);
+          if (cpu_d_tl_if.h2d.a_valid) begin
+            force `CPU_TL_ADAPT_D_HIER.tl_out.a_user.cmd_intg = $urandom;
+          end else begin
+            release `CPU_TL_ADAPT_D_HIER.tl_out.a_user.cmd_intg;
+          end
+        end
+      join_none
 
       // In stub_cpu mode, disable these assertions because writing rand value to clkmgr's CSR
       // `extclk_sel` can violate these assertions.

@@ -266,8 +266,6 @@ virtual task run_tl_intg_err_vseq(int num_times = 1);
 endtask
 
 virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
-  `DV_CHECK_EQ(cfg.en_tl_intg_gen, 1)
-
   fork
     // run csr_rw seq to send some normal CSR accesses in parallel
     begin
@@ -283,7 +281,6 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
       check_tl_intg_error_response();
     end
   join
-
 endtask
 
 virtual task issue_tl_access_w_intg_err(string ral_name);

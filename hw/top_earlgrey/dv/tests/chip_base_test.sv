@@ -22,9 +22,6 @@ class chip_base_test extends cip_base_test #(
 
     super.build_phase(phase);
 
-    // TL integrity gen is in the design data path, no need to generate it in the agent
-    cfg.en_tl_intg_gen = 0;
-
     // Knob to en/dis stubbing cpu (disabled by default).
     void'($value$plusargs("stub_cpu=%0b", cfg.stub_cpu));
     // Set tl_agent's is_active bit based on the retrieved stub_cpu value.

@@ -26,8 +26,7 @@ module tlul_adapter_host
   import prim_mubi_pkg::mubi4_t;
 #(
   parameter int unsigned MAX_REQS = 2,
-  // TODO(#7966) disable data intgrity overwrite once dv support available
-  parameter bit EnableDataIntgGen = 1
+  parameter bit EnableDataIntgGen = 0
 ) (
   input clk_i,
   input rst_ni,
@@ -107,7 +106,6 @@ module tlul_adapter_host
     d_ready:   1'b1
   };
 
-  // TODO #7966 disable data intgrity overwrite once dv support available
   tlul_cmd_intg_gen #(.EnableDataIntgGen (EnableDataIntgGen)) u_cmd_intg_gen (
     .tl_i(tl_out),
     .tl_o(tl_o)
