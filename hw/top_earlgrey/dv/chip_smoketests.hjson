@@ -94,6 +94,12 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
+      name: chip_sw_sram_ctrl_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/sram_ctrl_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
       name: chip_sw_uart_smoketest
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/uart_smoketest:1"]

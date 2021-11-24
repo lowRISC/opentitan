@@ -433,6 +433,23 @@ sw_tests += {
   }
 }
 
+sram_ctrl_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'sram_ctrl_smoketest_lib',
+    sources: ['sram_ctrl_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_sram_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+    ],
+  ),
+)
+sw_tests += {
+  'sram_ctrl_smoketest': {
+    'library': sram_ctrl_smoketest_lib,
+  }
+}
+
 ###############################################################################
 # IP Integration Tests
 ###############################################################################
