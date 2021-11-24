@@ -1,5 +1,5 @@
 diff --git a/sw/device/boot_rom/rom_crt.S b/sw/device/boot_rom/rom_crt.S
-index e4b14eb84..d595aa757 100644
+index 6f71f62a7..7ed1c01d4 100644
 --- a/sw/device/boot_rom/rom_crt.S
 +++ b/sw/device/boot_rom/rom_crt.S
 @@ -81,19 +81,6 @@ _reset_start:
@@ -19,9 +19,9 @@ index e4b14eb84..d595aa757 100644
 -  li   t0, 0x55aa
 -  sw   t0, EDN_CTRL_REG_OFFSET(a0)
 -
-   // Zero out the `.bss` segment.
-   la   a0, _bss_start
-   la   a1, _bss_end
+   // Request memory scrambling and init
+   li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+   li a1, (1<<SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT)|(1<<SRAM_CTRL_CTRL_INIT_BIT)
 diff --git a/sw/device/lib/pinmux.c b/sw/device/lib/pinmux.c
 index 8861f54ba..8442bb896 100644
 --- a/sw/device/lib/pinmux.c
