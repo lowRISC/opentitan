@@ -61,11 +61,13 @@
   build_modes: [
     {
       name: sram_ctrl_main
-      build_opts: ["+define+SRAM_ADDR_WIDTH=15"]
+      build_opts: ["+define+SRAM_ADDR_WIDTH=15",
+                   "+define+INSTR_EXEC=1"]
     }
     {
       name: sram_ctrl_ret
-      build_opts: ["+define+SRAM_ADDR_WIDTH=10"]
+      build_opts: ["+define+SRAM_ADDR_WIDTH=10",
+                   "+define+INSTR_EXEC=0"]
     }
   ]
 
