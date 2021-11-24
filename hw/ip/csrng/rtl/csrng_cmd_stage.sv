@@ -43,6 +43,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   // error indication
   output logic [2:0]                 cmd_stage_sfifo_cmd_err_o,
   output logic [2:0]                 cmd_stage_sfifo_genbits_err_o,
+  output logic                       cmd_gen_cnt_err_o,
   output logic                       cmd_stage_sm_err_o
 );
 
@@ -79,13 +80,13 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic                    cmd_gen_inc_req;
   logic                    cmd_gen_cnt_last;
   logic                    cmd_final_ack;
+  logic [GenBitsCntrWidth-1:0] cmd_gen_cnt; // max_number_of_bits_per_request = 2^19
 
   // flops
   logic                    cmd_ack_q, cmd_ack_d;
   logic                    cmd_ack_sts_q, cmd_ack_sts_d;
   logic [3:0]              cmd_len_q, cmd_len_d;
   logic                    cmd_gen_flag_q, cmd_gen_flag_d;
-  logic [GenBitsCntrWidth-1:0] cmd_gen_cnt_q, cmd_gen_cnt_d; // max_nuber_of_bits_per_request = 2^19
   logic [11:0]             cmd_gen_cmd_q, cmd_gen_cmd_d;
 
 
@@ -95,14 +96,12 @@ module csrng_cmd_stage import csrng_pkg::*; #(
       cmd_ack_sts_q   <= '0;
       cmd_len_q       <= '0;
       cmd_gen_flag_q  <= '0;
-      cmd_gen_cnt_q   <= '0;
       cmd_gen_cmd_q   <= '0;
     end else begin
       cmd_ack_q       <= cmd_ack_d;
       cmd_ack_sts_q   <= cmd_ack_sts_d;
       cmd_len_q       <= cmd_len_d;
       cmd_gen_flag_q  <= cmd_gen_flag_d;
-      cmd_gen_cnt_q   <= cmd_gen_cnt_d;
       cmd_gen_cmd_q   <= cmd_gen_cmd_d;
     end
 
@@ -170,16 +169,26 @@ module csrng_cmd_stage import csrng_pkg::*; #(
          cmd_gen_1st_req ? (sfifo_cmd_rdata[2:0] == GEN) :
          cmd_gen_flag_q;
 
-  assign cmd_gen_cnt_d =
-         (!cs_enable_i) ? '0 :
-         cmd_gen_1st_req ? sfifo_cmd_rdata[30:12] :
-         cmd_gen_cnt_dec ? (cmd_gen_cnt_q-1) :
-         cmd_gen_cnt_q;
-
   assign cmd_gen_cmd_d =
          (!cs_enable_i) ? '0 :
          cmd_gen_1st_req ? {sfifo_cmd_rdata[11:0]} :
          cmd_gen_cmd_q;
+
+  prim_count #(
+    .Width(GenBitsCntrWidth),
+    .OutSelDnCnt(1'b1), // count down
+    .CntStyle(prim_count_pkg::CrossCnt)
+  ) u_prim_count_cmd_gen_cntr (
+    .clk_i,
+    .rst_ni,
+    .clr_i(!cs_enable_i),
+    .set_i(cmd_gen_1st_req),
+    .set_cnt_i(sfifo_cmd_rdata[30:12]),
+    .en_i(cmd_gen_cnt_dec),
+    .step_i(GenBitsCntrWidth'(1)),
+    .cnt_o(cmd_gen_cnt),
+    .err_o(cmd_gen_cnt_err_o)
+  );
 
 
   //---------------------------------------------------------
@@ -309,7 +318,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
         if (cmd_gen_flag_q) begin
           // must stall if genbits fifo is not clear
           if (!sfifo_genbits_full) begin
-            if (cmd_gen_cnt_q == '0) begin
+            if (cmd_gen_cnt == '0) begin
               cmd_final_ack = 1'b1;
               state_d = Idle;
             end else begin
@@ -335,7 +344,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
         cmd_gen_inc_req = 1'b1;
         state_d = GenCmdChk;
         // check for final genbits beat
-        if (cmd_gen_cnt_q == GenBitsCntrWidth'(1)) begin
+        if (cmd_gen_cnt == GenBitsCntrWidth'(1)) begin
           cmd_gen_cnt_last = 1'b1;
         end
       end

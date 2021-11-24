@@ -24,7 +24,7 @@
   import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 1
+  reseed: 20
 
   build_modes: [
     {

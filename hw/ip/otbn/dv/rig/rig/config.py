@@ -6,7 +6,7 @@ import os
 import random
 from typing import Dict, List, Optional, Set, Tuple
 
-from shared.yaml_parse_helpers import check_str, check_keys, load_yaml
+from serialize.parse_helpers import check_str, check_keys, load_yaml
 
 
 class Weights:

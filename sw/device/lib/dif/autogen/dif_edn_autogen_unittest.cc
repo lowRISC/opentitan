@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This file is auto-generated.
+// THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
+// util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_edn_autogen.h"
 
@@ -27,11 +28,11 @@ class EdnTest : public Test, public MmioTest {
 class InitTest : public EdnTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_edn_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_edn_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_edn_init({.base_addr = dev().region()}, &edn_), kDifOk);
+  EXPECT_EQ(dif_edn_init(dev().region(), &edn_), kDifOk);
 }
 
 class AlertForceTest : public EdnTest {};

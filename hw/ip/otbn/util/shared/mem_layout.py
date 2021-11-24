@@ -20,7 +20,9 @@ block).
 
 from typing import Dict, Optional, Tuple
 
-from .otbn_reggen import load_registers, RegBlock
+from reggen.reg_block import RegBlock
+
+from .otbn_reggen import load_registers
 
 # A window is represented as (offset, size)
 _Window = Tuple[int, int]

@@ -11,7 +11,7 @@
 
 module flash_phy_core
   import flash_phy_pkg::*;
-  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_t;
 #(
   parameter int unsigned ArbCnt = 4
 ) (
@@ -19,7 +19,7 @@ module flash_phy_core
   input                              rst_ni,
   input                              intg_err_i,
   input                              host_req_i,   // host request - read only
-  input mubi4_e                      host_instr_type_i,
+  input mubi4_t                      host_instr_type_i,
   input                              host_scramble_en_i,
   input                              host_ecc_en_i,
   input [BusBankAddrW-1:0]           host_addr_i,
@@ -76,7 +76,7 @@ module flash_phy_core
   logic [PhyOps-1:0] reqs;
 
   // the type of transaction to flash macro
-  mubi4_e muxed_instr_type;
+  mubi4_t muxed_instr_type;
 
   // host select for address
   logic host_sel;

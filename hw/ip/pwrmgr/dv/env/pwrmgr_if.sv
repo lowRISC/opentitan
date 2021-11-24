@@ -15,52 +15,56 @@ interface pwrmgr_if (
 
   // Ports to the dut side.
 
-  pwrmgr_pkg::pwr_ast_req_t                                      pwr_ast_req;
-  pwrmgr_pkg::pwr_ast_rsp_t                                      pwr_ast_rsp;
+  logic                                                              rst_main_n;
 
-  pwrmgr_pkg::pwr_rst_req_t                                      pwr_rst_req;
-  pwrmgr_pkg::pwr_rst_rsp_t                                      pwr_rst_rsp;
+  pwrmgr_pkg::pwr_ast_req_t                                          pwr_ast_req;
+  pwrmgr_pkg::pwr_ast_rsp_t                                          pwr_ast_rsp;
 
-  pwrmgr_pkg::pwr_clk_req_t                                      pwr_clk_req;
-  pwrmgr_pkg::pwr_clk_rsp_t                                      pwr_clk_rsp;
+  pwrmgr_pkg::pwr_rst_req_t                                          pwr_rst_req;
+  pwrmgr_pkg::pwr_rst_rsp_t                                          pwr_rst_rsp;
 
-  pwrmgr_pkg::pwr_otp_req_t                                      pwr_otp_req;
-  pwrmgr_pkg::pwr_otp_rsp_t                                      pwr_otp_rsp;
+  pwrmgr_pkg::pwr_clk_req_t                                          pwr_clk_req;
+  pwrmgr_pkg::pwr_clk_rsp_t                                          pwr_clk_rsp;
 
-  pwrmgr_pkg::pwr_lc_req_t                                       pwr_lc_req;
-  pwrmgr_pkg::pwr_lc_rsp_t                                       pwr_lc_rsp;
+  pwrmgr_pkg::pwr_otp_req_t                                          pwr_otp_req;
+  pwrmgr_pkg::pwr_otp_rsp_t                                          pwr_otp_rsp;
 
-  pwrmgr_pkg::pwr_flash_t                                        pwr_flash;
+  pwrmgr_pkg::pwr_lc_req_t                                           pwr_lc_req;
+  pwrmgr_pkg::pwr_lc_rsp_t                                           pwr_lc_rsp;
 
-  pwrmgr_pkg::pwr_cpu_t                                          pwr_cpu;
+  pwrmgr_pkg::pwr_flash_t                                            pwr_flash;
 
-  lc_ctrl_pkg::lc_tx_t                                           fetch_en;
+  pwrmgr_pkg::pwr_cpu_t                                              pwr_cpu;
 
-  logic                         [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
+  lc_ctrl_pkg::lc_tx_t                                               fetch_en;
 
-  logic                         [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs_i;
+  logic                             [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
 
-  logic                                                          strap;
-  logic                                                          low_power;
-  rom_ctrl_pkg::pwrmgr_data_t                                    rom_ctrl;
+  logic                             [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs_i;
 
-  prim_esc_pkg::esc_tx_t                                         esc_rst_tx;
-  prim_esc_pkg::esc_rx_t                                         esc_rst_rx;
+  logic                                                              strap;
+  logic                                                              low_power;
+  rom_ctrl_pkg::pwrmgr_data_t                                        rom_ctrl;
 
-  logic                                                          intr_wakeup;
+  prim_esc_pkg::esc_tx_t                                             esc_rst_tx;
+  prim_esc_pkg::esc_rx_t                                             esc_rst_rx;
+
+  logic                                                              intr_wakeup;
 
   // Relevant CSR values.
-  pwrmgr_env_pkg::clk_enables_t                                  clk_enables;
+  logic                                                              low_power_hint;
 
-  logic                                                          wakeup_en_regwen;
-  logic                         [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_en;
-  logic                         [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_status;
-  logic                                                          wakeup_capture_en;
+  pwrmgr_env_pkg::control_enables_t                                  control_enables;
 
-  logic                         [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
-  logic                         [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
+  logic                                                              wakeup_en_regwen;
+  logic                             [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_en;
+  logic                             [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_status;
+  logic                                                              wakeup_capture_en;
 
-  // Internal signals.
+  logic                             [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
+  logic                             [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
+
+  // Internal DUT signals.
 `ifndef PATO_TO_DUT
   `define PATH_TO_DUT tb.dut
 `endif
@@ -71,7 +75,7 @@ interface pwrmgr_if (
 
   // Fast fsm state.
   pwrmgr_pkg::fast_pwr_state_e fast_state;
-  always_comb fast_state = `PATH_TO_DUT.i_fsm.state_q;
+  always_comb fast_state = `PATH_TO_DUT.u_fsm.state_q;
 
   // Wakeup_status ro CSR.
   logic [pwrmgr_reg_pkg::NumWkups-1:0] wake_status;
@@ -86,6 +90,9 @@ interface pwrmgr_if (
 
   logic intr_enable;
   always_comb intr_enable = `PATH_TO_DUT.reg2hw.intr_enable.q;
+
+  // Used to disable assertions once with the first power glitch.
+  bit internal_assertion_disabled;
 
   function automatic void update_ast_main_pok(logic value);
     pwr_ast_rsp.main_pok = value;
@@ -139,8 +146,31 @@ interface pwrmgr_if (
     rstreqs_i = resets;
   endfunction
 
-  function automatic void update_clock_enables(pwrmgr_env_pkg::clk_enables_t clk_enables);
-    clk_enables = clk_enables;
+  function automatic void update_reset_en(logic [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en_value);
+    reset_en = reset_en_value;
+  endfunction
+
+  // Sends a main power glitch and disables a design assertion that trips for power glitches.
+  task automatic glitch_power_reset();
+    rst_main_n = 1'b0;
+    if (!internal_assertion_disabled) begin
+      internal_assertion_disabled = 1'b1;
+      `uvm_info("pwrmgr_if", "disabling power glitch related SVA", UVM_MEDIUM)
+      $assertoff(1, dut.u_slow_fsm.IntRstReq_A);
+    end
+    repeat (2) @(posedge clk_slow);
+    rst_main_n = 1'b1;
+  endtask
+
+  function automatic void update_low_power_hint(logic value);
+    `uvm_info("pwrmgr_if", $sformatf("Updating low power hint to 0x%x", value), UVM_MEDIUM)
+    low_power_hint = value;
+  endfunction
+
+  function automatic void update_control_enables(pwrmgr_env_pkg::control_enables_t value);
+    `uvm_info("pwrmgr_if", $sformatf("Updating control enables to 0x%x", value),
+              UVM_MEDIUM)
+    control_enables = value;
   endfunction
 
   // FIXME Move all these initializations to sequences.
@@ -148,7 +178,7 @@ interface pwrmgr_if (
     // From AST.
     pwr_ast_rsp = '{default: '0};
     pwr_rst_rsp = '{default: '0};
-    pwr_clk_rsp.clk_status = 1'b0;
+    pwr_clk_rsp = '{default: '0};
     pwr_otp_rsp = '{default: '0};
     pwr_lc_rsp = '{default: '0};
     pwr_flash = '{default: '0};
@@ -162,7 +192,7 @@ interface pwrmgr_if (
   clocking slow_cb @(posedge clk_slow);
     input slow_state;
     input pwr_ast_req;
-    input clk_enables;
+    input control_enables;
     output pwr_ast_rsp;
   endclocking
 

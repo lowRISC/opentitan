@@ -83,18 +83,50 @@ module pwrmgr
   ///  escalation detections
   ////////////////////////////
 
+  logic clk_esc;
+  logic rst_esc_n;
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_esc_clk_buf (
+    .clk_i(clk_esc_i),
+    .clk_o(clk_esc)
+  );
+
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_esc_rst_buf (
+    .clk_i(rst_esc_ni),
+    .clk_o(rst_esc_n)
+  );
+
   logic esc_rst_req;
 
   prim_esc_receiver #(
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
   ) u_esc_rx (
-    .clk_i(clk_esc_i),
-    .rst_ni(rst_esc_ni),
+    .clk_i(clk_esc),
+    .rst_ni(rst_esc_n),
     .esc_req_o(esc_rst_req),
     .esc_rx_o(esc_rst_rx_o),
     .esc_tx_i(esc_rst_tx_i)
   );
+
+  localparam int EscTimeOutCnt = 128;
+  logic esc_timeout;
+  prim_clock_timeout #(
+    .TimeOutCnt(EscTimeOutCnt)
+  ) u_esc_timeout (
+    .clk_chk_i(clk_esc),
+    .rst_chk_ni(rst_esc_n),
+    .clk_i,
+    .rst_ni,
+    // if any ip clock enable is turned on, then the escalation
+    // clocks are also enabled.
+    .en_i(|pwr_clk_o),
+    .timeout_o(esc_timeout)
+  );
+
 
   ////////////////////////////
   ///  async declarations
@@ -105,7 +137,7 @@ module pwrmgr
   assign peri_reqs_raw.wakeups = wakeups_i;
   assign peri_reqs_raw.rstreqs[NumRstReqs-1:0] = rstreqs_i;
   assign peri_reqs_raw.rstreqs[ResetMainPwrIdx] = slow_rst_req;
-  assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req;
+  assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req | esc_timeout;
 
   ////////////////////////////
   ///  Software reset request
@@ -138,6 +170,8 @@ module pwrmgr
   logic fsm_invalid;
   logic clr_slow_req;
   logic clr_slow_ack;
+  logic usb_ip_clk_en;
+  logic usb_ip_clk_status;
   pwrup_cause_e pwrup_cause;
 
   logic low_power_fall_through;
@@ -146,8 +180,8 @@ module pwrmgr
   pwr_flash_t flash_rsp;
   pwr_otp_rsp_t otp_rsp;
 
-  logic rom_ctrl_done;
-  logic rom_ctrl_good;
+  prim_mubi_pkg::mubi4_t rom_ctrl_done;
+  prim_mubi_pkg::mubi4_t rom_ctrl_good;
 
 
   ////////////////////////////
@@ -175,19 +209,21 @@ module pwrmgr
   logic slow_usb_clk_en_lp;
   logic slow_usb_clk_en_active;
   logic slow_clr_req;
+  logic slow_usb_ip_clk_en;
+  logic slow_usb_ip_clk_status;
 
 
 
   ////////////////////////////
   ///  Register module
   ////////////////////////////
-
   logic [NumAlerts-1:0] alert_test, alerts;
   logic low_power_hint;
   logic lowpwr_cfg_wen;
   logic clr_hint;
   logic wkup;
   logic clr_cfg_lock;
+  logic reg_intg_err;
 
   pwrmgr_reg_top u_reg (
     .clk_i,
@@ -196,7 +232,7 @@ module pwrmgr
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o (alerts[0]),
+    .intg_err_o (reg_intg_err),
     .devmode_i  (1'b1)
   );
 
@@ -216,14 +252,27 @@ module pwrmgr
 
   assign hw2reg.ctrl_cfg_regwen.d = lowpwr_cfg_wen;
 
+  assign hw2reg.fault_status.reg_intg_err.de = reg_intg_err;
+  assign hw2reg.fault_status.reg_intg_err.d  = 1'b1;
+  assign hw2reg.fault_status.esc_timeout.de  = esc_timeout;
+  assign hw2reg.fault_status.esc_timeout.d   = 1'b1;
+
+
   ////////////////////////////
   ///  alerts
   ////////////////////////////
+
+  // the logic below assumes there is only one alert, so make an
+  // explicit assertion check for it.
+  `ASSERT_INIT(AlertNumCheck_A, NumAlerts == 1)
 
   assign alert_test = {
     reg2hw.alert_test.q &
     reg2hw.alert_test.qe
   };
+
+  assign alerts[0] = reg2hw.fault_status.reg_intg_err.q |
+                     reg2hw.fault_status.esc_timeout.q;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -233,7 +282,7 @@ module pwrmgr
       .clk_i,
       .rst_ni,
       .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[0]     ),
+      .alert_req_i   ( alerts[i]     ),
       .alert_ack_o   (               ),
       .alert_state_o (               ),
       .alert_rx_i    ( alert_rx_i[i] ),
@@ -270,6 +319,8 @@ module pwrmgr
     .slow_peri_reqs_o(slow_peri_reqs),
     .slow_peri_reqs_masked_i(slow_peri_reqs_masked),
     .slow_clr_req_o(slow_clr_req),
+    .slow_usb_ip_clk_en_i(slow_usb_ip_clk_en),
+    .slow_usb_ip_clk_status_o(slow_usb_ip_clk_status),
 
     // fast domain signals
     .req_pwrdn_i(req_pwrdn),
@@ -290,6 +341,8 @@ module pwrmgr
     .peri_reqs_o(peri_reqs_masked),
     .clr_slow_req_i(clr_slow_req),
     .clr_slow_ack_o(clr_slow_ack),
+    .usb_ip_clk_en_o(usb_ip_clk_en),
+    .usb_ip_clk_status_i(usb_ip_clk_status),
 
     // AST signals
     .ast_i(pwr_ast_i),
@@ -380,6 +433,8 @@ module pwrmgr
     .rst_req_o            (slow_rst_req),
     .fsm_invalid_o        (slow_fsm_invalid),
     .clr_req_i            (slow_clr_req),
+    .usb_ip_clk_en_o      (slow_usb_ip_clk_en),
+    .usb_ip_clk_status_i  (slow_usb_ip_clk_status),
 
     .main_pd_ni           (slow_main_pd_n),
     .io_clk_en_i          (slow_io_clk_en),
@@ -399,23 +454,25 @@ module pwrmgr
 
   assign low_power_hint = reg2hw.control.low_power_hint.q == LowPower;
 
-  pwrmgr_fsm i_fsm (
+  pwrmgr_fsm u_fsm (
     .clk_i,
     .rst_ni,
     .clk_slow_i,
     .rst_slow_ni,
 
     // interface with slow_fsm
-    .req_pwrup_i       (req_pwrup),
-    .pwrup_cause_i     (pwrup_cause), // por, wake or reset request
-    .ack_pwrup_o       (ack_pwrup),
-    .req_pwrdn_o       (req_pwrdn),
-    .ack_pwrdn_i       (ack_pwrdn),
-    .low_power_entry_i (pwr_cpu_i.core_sleeping & low_power_hint),
-    .reset_reqs_i      (peri_reqs_masked.rstreqs),
-    .fsm_invalid_i     (fsm_invalid),
-    .clr_slow_req_o    (clr_slow_req),
-    .clr_slow_ack_i    (clr_slow_ack),
+    .req_pwrup_i         (req_pwrup),
+    .pwrup_cause_i       (pwrup_cause), // por, wake or reset request
+    .ack_pwrup_o         (ack_pwrup),
+    .req_pwrdn_o         (req_pwrdn),
+    .ack_pwrdn_i         (ack_pwrdn),
+    .low_power_entry_i   (pwr_cpu_i.core_sleeping & low_power_hint),
+    .reset_reqs_i        (peri_reqs_masked.rstreqs),
+    .fsm_invalid_i       (fsm_invalid),
+    .clr_slow_req_o      (clr_slow_req),
+    .clr_slow_ack_i      (clr_slow_ack),
+    .usb_ip_clk_en_i     (usb_ip_clk_en),
+    .usb_ip_clk_status_o (usb_ip_clk_status),
 
     // cfg
     .main_pd_ni        (reg2hw.control.main_pd_n.q),
@@ -432,8 +489,8 @@ module pwrmgr
     .pwr_rst_i         (pwr_rst_i),
 
     // clkmgr
-    .ips_clk_en_o      (pwr_clk_o.ip_clk_en),
-    .clk_en_status_i   (pwr_clk_i.clk_status),
+    .ips_clk_en_o      (pwr_clk_o),
+    .clk_en_status_i   (pwr_clk_i),
 
     // otp
     .otp_init_o        (pwr_otp_o.otp_init),
@@ -521,6 +578,23 @@ module pwrmgr
   `ASSERT_KNOWN(OtpKnownO_A,       pwr_otp_o        )
   `ASSERT_KNOWN(LcKnownO_A,        pwr_lc_o         )
   `ASSERT_KNOWN(IntrKnownO_A,      intr_wakeup_o    )
+
+  // EscTimeOutCnt also sets the required clock ratios between escalator and local clock
+  // Ie, clk_esc cannot be so slow that the timeout count is reached
+  `ifdef INC_ASSERT
+  logic [31:0] cnt;
+  always_ff @(posedge clk_i or negedge clk_esc_i or negedge rst_ni) begin
+    if (!rst_ni || !clk_esc_i) begin
+      cnt <= '0;
+    end else begin
+      cnt <= cnt + 1'b1;
+    end
+  end
+
+  `ASSERT(ClkRatio_A, cnt < EscTimeOutCnt)
+
+  `endif
+
 
 
 endmodule // pwrmgr

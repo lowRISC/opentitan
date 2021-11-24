@@ -51,7 +51,7 @@ module rstmgr
 
   // dft bypass
   input scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // Reset asserted indications going to alert handler
   output rstmgr_rst_en_t rst_en_o,
@@ -74,15 +74,16 @@ module rstmgr
 
   for (genvar i = 0; i < PowerDomains; i++) begin : gen_rst_por_aon
 
-      lc_ctrl_pkg::lc_tx_t por_scanmode;
-      prim_lc_sync #(
+      // Declared as size 1 packed array to avoid FPV warning.
+      prim_mubi_pkg::mubi4_t [0:0] por_scanmode;
+      prim_mubi4_sync #(
         .NumCopies(1),
         .AsyncOn(0)
       ) u_por_scanmode_sync (
         .clk_i(1'b0),  // unused clock
         .rst_ni(1'b1), // unused reset
-        .lc_en_i(scanmode_i),
-        .lc_en_o(por_scanmode)
+        .mubi_i(scanmode_i),
+        .mubi_o(por_scanmode)
       );
 
     if (i == DomainAonSel) begin : gen_rst_por_aon_normal
@@ -90,7 +91,7 @@ module rstmgr
         .clk_i(clk_aon_i),
         .rst_ni(por_n_i[i]),
         .scan_rst_ni,
-        .scanmode_i(por_scanmode == lc_ctrl_pkg::On),
+        .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(por_scanmode[0])),
         .rst_no(rst_por_aon_n[i])
       );
 
@@ -121,7 +122,7 @@ module rstmgr
       ) u_por_domain_mux (
         .clk0_i(rst_por_aon_premux),
         .clk1_i(scan_rst_ni),
-        .sel_i(por_scanmode == lc_ctrl_pkg::On),
+        .sel_i(prim_mubi_pkg::mubi4_test_true_strict(por_scanmode[0])),
         .clk_o(rst_por_aon_n[i])
       );
 
@@ -235,21 +236,22 @@ module rstmgr
   logic [PowerDomains-1:0] rst_lc_src_n;
   logic [PowerDomains-1:0] rst_sys_src_n;
 
-  lc_ctrl_pkg::lc_tx_t rst_ctrl_scanmode;
-  prim_lc_sync #(
+  // Declared as size 1 packed array to avoid FPV warning.
+  prim_mubi_pkg::mubi4_t [0:0] rst_ctrl_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_ctrl_scanmode_sync (
     .clk_i(1'b0),  // unused clock
     .rst_ni(1'b1), // unused reset
-    .lc_en_i(scanmode_i),
-    .lc_en_o(rst_ctrl_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(rst_ctrl_scanmode)
   );
 
   // lc reset sources
   rstmgr_ctrl u_lc_src (
     .clk_i,
-    .scanmode_i(rst_ctrl_scanmode == lc_ctrl_pkg::On),
+    .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode[0])),
     .scan_rst_ni,
     .rst_ni,
     .rst_req_i(pwr_i.rst_lc_req),
@@ -260,7 +262,7 @@ module rstmgr
   // sys reset sources
   rstmgr_ctrl u_sys_src (
     .clk_i,
-    .scanmode_i(rst_ctrl_scanmode == lc_ctrl_pkg::On),
+    .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode[0])),
     .scan_rst_ni,
     .rst_ni,
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
@@ -302,15 +304,15 @@ module rstmgr
   // To simplify generation, each reset generates all associated power domain outputs.
   // If a reset does not support a particular power domain, that reset is always hard-wired to 0.
 
-  lc_ctrl_pkg::lc_tx_t [${len(leaf_rsts)-1}:0] leaf_rst_scanmode;
-  prim_lc_sync #(
+  prim_mubi_pkg::mubi4_t [${len(leaf_rsts)-1}:0] leaf_rst_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(${len(leaf_rsts)}),
     .AsyncOn(0)
     ) u_leaf_rst_scanmode_sync  (
     .clk_i(1'b0),  // unused clock
     .rst_ni(1'b1), // unused reset
-    .lc_en_i(scanmode_i),
-    .lc_en_o(leaf_rst_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(leaf_rst_scanmode)
  );
 
 % for i, rst in enumerate(leaf_rsts):
@@ -338,7 +340,7 @@ module rstmgr
     .sw_rst_req_ni(1'b1),
          % endif
     .scan_rst_ni,
-    .scan_sel(leaf_rst_scanmode[${i}] == lc_ctrl_pkg::On),
+    .scan_sel(prim_mubi_pkg::mubi4_test_true_strict(leaf_rst_scanmode[${i}])),
     .rst_en_o(rst_en_o.${name}[Domain${domain}Sel]),
     .leaf_rst_o(resets_o.rst_${name}_n[Domain${domain}Sel]),
     .err_o(${err_prefix[j]}cnsty_chk_errs[${i}][Domain${domain}Sel])
@@ -380,7 +382,7 @@ module rstmgr
                          (pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry);
 
   // software initiated reset request
-  assign sw_rst_req_o = prim_mubi_pkg::mubi4_e'(reg2hw.reset_req.q);
+  assign sw_rst_req_o = prim_mubi_pkg::mubi4_t'(reg2hw.reset_req.q);
 
   // when pwrmgr reset request is received (reset is imminent), clear software
   // request so we are not in an infinite reset loop.

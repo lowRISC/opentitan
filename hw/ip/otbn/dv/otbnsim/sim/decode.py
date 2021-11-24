@@ -5,7 +5,7 @@
 '''Code to load instruction words into a simulator'''
 
 import struct
-from typing import List, Optional, Iterator
+from typing import Iterator, List, Optional, Tuple
 
 from .constants import ErrBits
 from .isa import INSNS_FILE, OTBNInsn
@@ -83,13 +83,34 @@ def _decode_word(pc: int, word: int) -> OTBNInsn:
     return cls(word, op_vals)
 
 
-def decode_bytes(base_addr: int, data: bytes) -> List[OTBNInsn]:
+def decode_words(base_addr: int,
+                 data: List[Tuple[bool, int]]) -> List[OTBNInsn]:
     '''Decode instruction bytes as instructions'''
-    assert len(data) & 3 == 0
-    return [_decode_word(base_addr + 4 * offset, int_val[0])
-            for offset, int_val in enumerate(struct.iter_unpack('<I', data))]
+    ret = []
+    for idx, (vld, w32) in enumerate(data):
+        pc = 4 * idx
+        ret.append(_decode_word(pc, w32) if vld else EmptyInsn(pc))
+    return ret
 
 
 def decode_file(base_addr: int, path: str) -> List[OTBNInsn]:
     with open(path, 'rb') as handle:
-        return decode_bytes(base_addr, handle.read())
+        raw_bytes = handle.read()
+
+    # Each 32-bit word is represented by a 5 bytes, consisting of a validity
+    # byte (0 or 1) followed by 4 bytes for the word itself.
+    if len(raw_bytes) % 5:
+        raise ValueError('Trying to load {} bytes of data from {}, '
+                         'which is not a multiple of 5.'
+                         .format(path, len(raw_bytes)))
+
+    data = []
+    for idx32, (vld, u32) in enumerate(struct.iter_unpack('<BI', raw_bytes)):
+        if vld not in [0, 1]:
+            raise ValueError('The validity byte for 32-bit word {} '
+                             'at {} is {}, not 0 or 1.'
+                             .format(idx32, path, vld))
+
+        data.append((vld == 1, u32))
+
+    return decode_words(base_addr, data)

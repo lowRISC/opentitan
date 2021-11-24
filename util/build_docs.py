@@ -132,6 +132,7 @@ config = {
         "hw/ip/tlul/data/tlul_testplan.hjson",
         "hw/ip/uart/data/uart_testplan.hjson",
         "hw/ip/usbdev/data/usbdev_testplan.hjson",
+        "hw/ip/sysrst_ctrl/data/sysrst_ctrl_testplan.hjson",
         "hw/top_earlgrey/data/chip_testplan.hjson",
         "hw/top_earlgrey/data/standalone_sw_testplan.hjson",
         "util/dvsim/examples/testplanner/foo_testplan.hjson",

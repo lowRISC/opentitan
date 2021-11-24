@@ -16,12 +16,20 @@ class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg,
   tl_agent        m_eflash_tl_agent;
   tl_reg_adapter  m_eflash_tl_reg_adapter;
 
+  virtual flash_ctrl_if flash_ctrl_vif;
+
   string hdl_path_root;
 
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    if (!uvm_config_db#(virtual flash_ctrl_if)::get(this, "", "flash_ctrl_vif",
+        cfg.flash_ctrl_vif)) begin
+      `uvm_fatal(`gfn, "failed to get flash_ctrl_vif from uvm_config_db")
+    end
+
     if (cfg.zero_delays) begin
       cfg.m_eflash_tl_agent_cfg.a_valid_delay_min = 0;
       cfg.m_eflash_tl_agent_cfg.a_valid_delay_max = 0;

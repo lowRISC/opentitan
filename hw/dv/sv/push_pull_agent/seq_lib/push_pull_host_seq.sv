@@ -17,25 +17,20 @@ class push_pull_host_seq #(parameter int HostDataWidth = 32,
   // Can be overridden at a higher layer.
   int unsigned num_trans = 1;
 
+  // Randomizes the host req.
+  virtual function void randomize_item(push_pull_item #(HostDataWidth, DeviceDataWidth) item);
+    super.randomize_item(item);
+    // If user-provided data is available, use it.
+    if (cfg.has_h_user_data()) item.h_data = cfg.get_h_user_data();
+  endfunction
+
   virtual task body();
-    for (int i = 0; i < num_trans; i++) begin : send_req
-      req = push_pull_item#(HostDataWidth, DeviceDataWidth)::type_id::create(
-        $sformatf("req[%0d]", i));
+    repeat (num_trans) begin : send_req
+      `uvm_create(req)
       start_item(req);
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-        if (cfg.zero_delays) {
-          host_delay == 0;
-        } else {
-          host_delay inside {[cfg.host_delay_min : cfg.host_delay_max]};
-        }
-      )
-      // If user-provided data is ready, use this instead of random data.
-      if (cfg.has_h_user_data()) req.h_data = cfg.get_h_user_data();
-      `uvm_info(`gfn, $sformatf("Starting sequence item: %0s", req.convert2string()), UVM_HIGH)
-      // We don't care about response data here, the monitor will log all complete transactions.
+      randomize_item(req);
       finish_item(req);
       get_response(rsp);
-      `uvm_info(`gfn, $sformatf("Received response: %0s", rsp.convert2string()), UVM_HIGH)
     end : send_req
   endtask
 

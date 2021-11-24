@@ -109,10 +109,11 @@ class MemArea {
    * across. Other implementations might undo scrambling, remove ECC bits or
    * similar.
    *
-   * @param data     The target, onto which the extracted memory contents should
-   * be appended.
+   * @param data     The target, onto which the extracted memory contents
+   *                 should be appended.
    *
    * @param buf      Source buffer (physical memory bits)
+   *
    * @param src_word Logical address of the location being read
    */
   virtual void ReadBuffer(std::vector<uint8_t> &data,
@@ -129,6 +130,13 @@ class MemArea {
   virtual uint32_t ToPhysAddr(uint32_t logical_addr) const {
     return logical_addr;
   }
+
+  /** Read the memory word at phys_addr into minibuf
+   *
+   * minibuf should be at least SV_MEM_WIDTH_BYTES in size. See the
+   * implementation of MemArea::Write() for the details.
+   */
+  void ReadToMinibuf(uint8_t *minibuf, uint32_t phys_addr) const;
 };
 
 #endif  // OPENTITAN_HW_DV_VERILATOR_CPP_MEM_AREA_H_

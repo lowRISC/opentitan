@@ -58,6 +58,10 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
       FlashPartRedundancy   :/ cfg.seq_cfg.op_on_redundancy_partition_pc
     };
 
+    // Bank erase is supported only for data & 1st info partitions
+    flash_op.partition != FlashPartData && flash_op.partition != FlashPartInfo ->
+        flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
+
     if (cfg.seq_cfg.op_readonly_on_info_partition) {
       flash_op.partition == FlashPartInfo ->
         flash_op.op == flash_ctrl_pkg::FlashOpRead;

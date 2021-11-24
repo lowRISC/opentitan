@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 
 #include "kmac_regs.h"  // Generated.
@@ -589,13 +590,20 @@ dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
     return kDifError;
   }
 
-  // Copy the message one byte at a time.
-  // This could be sped up copying a word at a time but be careful
-  // about message endianness (e.g. only copy a word at a time when in
-  // little-endian mode).
-  for (size_t i = 0; i < len; ++i) {
-    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET,
-                       ((const uint8_t *)msg)[i]);
+  // Copy message using aligned word sized loads and stores where possible to
+  // improve performance. Note: the parts of the message copied a byte at a time
+  // will not be byte swapped in big-endian mode.
+  const uint8_t *data = (const uint8_t *)msg;
+  for (; len != 0 && ((uintptr_t)data) % sizeof(uint32_t); --len) {
+    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET, *data++);
+  }
+  for (; len >= sizeof(uint32_t); len -= sizeof(uint32_t)) {
+    mmio_region_write32(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                        read_32(data));
+    data += sizeof(uint32_t);
+  }
+  for (; len != 0; --len) {
+    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET, *data++);
   }
 
   if (processed != NULL) {

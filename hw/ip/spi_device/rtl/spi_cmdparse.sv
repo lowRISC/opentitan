@@ -39,6 +39,16 @@ module spi_cmdparse
   output cmd_info_t              cmd_info_o,
   output logic [CmdInfoIdxW-1:0] cmd_info_idx_o,
 
+  // CFG: Intercept
+  input cfg_intercept_en_status_i,
+  input cfg_intercept_en_jedec_i,
+  input cfg_intercept_en_sfdp_i,
+
+  // Output assumed
+  output logic intercept_status_o,
+  output logic intercept_jedec_o,
+  output logic intercept_sfdp_o,
+
   // Command Config is not implemented yet.
   // Indicator of command config. The pulse is generated at 3rd bit position
   // of Opcode. The upper 5 bits are used as address to fetch command configs
@@ -59,13 +69,13 @@ module spi_cmdparse
   always_comb begin
     unused_cmdinfo_members = 1'b 0;
     for (int unsigned i = 0 ; i < NumCmdInfo ; i++) begin
-      unused_cmdinfo_members ^= ^{ cmd_info_i[i].addr_4b_affected,
-                                   cmd_info_i[i].addr_en,
+      unused_cmdinfo_members ^= ^{ cmd_info_i[i].addr_mode,
                                    cmd_info_i[i].addr_swap_en,
                                    cmd_info_i[i].dummy_en,
                                   ^cmd_info_i[i].dummy_size,
                                    cmd_info_i[i].payload_dir,
-                                  ^cmd_info_i[i].payload_en};
+                                  ^cmd_info_i[i].payload_en,
+                                   cmd_info_i[i].payload_swap_en};
     end
   end
 
@@ -121,12 +131,17 @@ module spi_cmdparse
 
   // FSM asserts latching enable signal for cmd_info in 8th opcode cycle.
   logic                   latch_cmdinfo;
-  cmd_info_t              cmd_info_d;
-  logic [CmdInfoIdxW-1:0] cmd_info_idx_d;
+  cmd_info_t              cmd_info_d,     cmd_info_q;
+  logic [CmdInfoIdxW-1:0] cmd_info_idx_d, cmd_info_idx_q;
 
   // the logic operates only when module_active condition is met
   logic module_active;
   logic in_flashmode, in_passthrough;
+
+  // Intercept passthrough if Passthrough is in active
+  // As intercept does not affect in Flash mode, the logic ignores
+  // `in_passthrough` condition.
+  logic intercept_d;
 
   // below signals are used in the FSM to determine to activate a certain
   // datapath based on the received input (opcode). The opcode is the SW
@@ -157,11 +172,11 @@ module spi_cmdparse
   // compare with 1 logic depth.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      cmd_info_o     <= '{payload_dir: PayloadIn, default: '0};
-      cmd_info_idx_o <= '0;
+      cmd_info_q     <= '{payload_dir: PayloadIn, default: '0};
+      cmd_info_idx_q <= '0;
     end else if (latch_cmdinfo) begin
-      cmd_info_o     <= cmd_info_d;
-      cmd_info_idx_o <= cmd_info_idx_d;
+      cmd_info_q     <= cmd_info_d;
+      cmd_info_idx_q <= cmd_info_idx_d;
     end
   end
 
@@ -178,9 +193,43 @@ module spi_cmdparse
     end
   end
 
+  // cmd_info & cmd_info_idx are registered output in the cmdparse module.
+  // The upload module in SPI_DEVICE uses cmd_info to determine if the address
+  // field exists or not.
+
+  // The cmd_info value arrives to the rest of the module one clock late. It
+  // results in the upload module to assume the command does not have the
+  // address field.
+
+  // This commit pulls in the cmd_info one clock early. It leads to longer
+  // datapath as cmdparse cannot register the data.
+  always_comb begin : cmd_info_output
+    cmd_info_o     = cmd_info_q;
+    cmd_info_idx_o = cmd_info_idx_q;
+
+    if ((st == StIdle) && module_active && data_valid_i) begin
+      cmd_info_o     = cmd_info_d;
+      cmd_info_idx_o = cmd_info_idx_d;
+    end
+  end
+
   // Check upload field in the cmd_info
   logic upload;
   assign upload = cmd_info_d.upload;
+
+  // Intercept: Latched in SCK
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intercept_status_o <= 1'b 0;
+      intercept_jedec_o  <= 1'b 0;
+      intercept_sfdp_o   <= 1'b 0;
+    end else if (intercept_d) begin
+      if (opcode_readstatus) intercept_status_o <= 1'b 1;
+      if (opcode_readjedec)  intercept_jedec_o  <= 1'b 1;
+      if (opcode_readsfdp)   intercept_sfdp_o   <= 1'b 1;
+    end
+  end
+
   ///////////////////
   // State Machine //
   ///////////////////
@@ -205,6 +254,8 @@ module spi_cmdparse
 
     latch_cmdinfo = 1'b 0;
 
+    intercept_d = 1'b 0;
+
     unique case (st)
       StIdle: begin
         if (module_active && data_valid_i && cmd_info_d.valid) begin
@@ -213,15 +264,23 @@ module spi_cmdparse
 
           priority case (1'b 1)
             opcode_readstatus: begin
-              // TODO: Check CFG config for passthrough
-              st_d = StStatus;
+              if (in_flashmode) begin
+                st_d = StStatus;
+              end else if (cfg_intercept_en_status_i) begin
+                st_d = StStatus;
+                intercept_d = 1'b 1;
+              end else begin
+                st_d = StWait;
+              end
             end
 
             opcode_readjedec: begin
               if (in_flashmode) begin
                 st_d = StJedec;
+              end else if (cfg_intercept_en_jedec_i) begin
+                st_d = StJedec;
+                intercept_d = 1'b 1;
               end else begin
-                // TODO: Passthrough ? <= check cfg
                 st_d = StWait;
               end
             end
@@ -230,8 +289,10 @@ module spi_cmdparse
             opcode_readsfdp: begin
               if (in_flashmode) begin
                 st_d = StSfdp;
+              end else if (cfg_intercept_en_sfdp_i) begin
+                st_d = StSfdp;
+                intercept_d = 1'b 1;
               end else begin
-                // TODO: Passthrough? Cannot stay in the Idle as it will compare at the next byte
                 // Check passthrough
                 st_d = StWait;
               end

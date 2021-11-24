@@ -255,7 +255,7 @@ typedef struct manifest_digest_region {
 /**
  * Allowed bounds for the `length` field of a ROM_EXT manifest.
  */
-// FIXME: Update min value after we have a fairly representative ROM_EXT.
+// TODO(#9045): Move ROM_EXT size to a common location.
 #define MANIFEST_LENGTH_FIELD_ROM_EXT_MIN MANIFEST_SIZE
 #define MANIFEST_LENGTH_FIELD_ROM_EXT_MAX 0x10000
 

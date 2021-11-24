@@ -168,6 +168,8 @@ module csrng_reg_top (
   logic recov_alert_sts_sw_app_enable_field_alert_wd;
   logic recov_alert_sts_read_int_state_field_alert_qs;
   logic recov_alert_sts_read_int_state_field_alert_wd;
+  logic recov_alert_sts_cs_bus_cmp_alert_qs;
+  logic recov_alert_sts_cs_bus_cmp_alert_wd;
   logic err_code_sfifo_cmd_err_qs;
   logic err_code_sfifo_genbits_err_qs;
   logic err_code_sfifo_cmdreq_err_qs;
@@ -190,6 +192,7 @@ module csrng_reg_top (
   logic err_code_drbg_updbe_sm_err_qs;
   logic err_code_drbg_updob_sm_err_qs;
   logic err_code_aes_cipher_sm_err_qs;
+  logic err_code_cmd_gen_cnt_err_qs;
   logic err_code_fifo_write_err_qs;
   logic err_code_fifo_read_err_qs;
   logic err_code_fifo_state_err_qs;
@@ -865,6 +868,31 @@ module csrng_reg_top (
     .qs     (recov_alert_sts_read_int_state_field_alert_qs)
   );
 
+  //   F[cs_bus_cmp_alert]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0)
+  ) u_recov_alert_sts_cs_bus_cmp_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_cs_bus_cmp_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.cs_bus_cmp_alert.de),
+    .d      (hw2reg.recov_alert_sts.cs_bus_cmp_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_cs_bus_cmp_alert_qs)
+  );
+
 
   // R[err_code]: V(False)
   //   F[sfifo_cmd_err]: 0:0
@@ -1417,6 +1445,31 @@ module csrng_reg_top (
     .qs     (err_code_aes_cipher_sm_err_qs)
   );
 
+  //   F[cmd_gen_cnt_err]: 26:26
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_err_code_cmd_gen_cnt_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.cmd_gen_cnt_err.de),
+    .d      (hw2reg.err_code.cmd_gen_cnt_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_code_cmd_gen_cnt_err_qs)
+  );
+
   //   F[fifo_write_err]: 28:28
   prim_subreg #(
     .DW      (1),
@@ -1756,6 +1809,8 @@ module csrng_reg_top (
   assign recov_alert_sts_sw_app_enable_field_alert_wd = reg_wdata[1];
 
   assign recov_alert_sts_read_int_state_field_alert_wd = reg_wdata[2];
+
+  assign recov_alert_sts_cs_bus_cmp_alert_wd = reg_wdata[12];
   assign err_code_test_we = addr_hit[15] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
@@ -1837,6 +1892,7 @@ module csrng_reg_top (
         reg_rdata_next[0] = recov_alert_sts_enable_field_alert_qs;
         reg_rdata_next[1] = recov_alert_sts_sw_app_enable_field_alert_qs;
         reg_rdata_next[2] = recov_alert_sts_read_int_state_field_alert_qs;
+        reg_rdata_next[12] = recov_alert_sts_cs_bus_cmp_alert_qs;
       end
 
       addr_hit[14]: begin
@@ -1862,6 +1918,7 @@ module csrng_reg_top (
         reg_rdata_next[23] = err_code_drbg_updbe_sm_err_qs;
         reg_rdata_next[24] = err_code_drbg_updob_sm_err_qs;
         reg_rdata_next[25] = err_code_aes_cipher_sm_err_qs;
+        reg_rdata_next[26] = err_code_cmd_gen_cnt_err_qs;
         reg_rdata_next[28] = err_code_fifo_write_err_qs;
         reg_rdata_next[29] = err_code_fifo_read_err_qs;
         reg_rdata_next[30] = err_code_fifo_state_err_qs;

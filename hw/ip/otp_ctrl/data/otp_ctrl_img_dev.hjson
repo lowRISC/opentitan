@@ -62,7 +62,7 @@
                 },
                 {
                     name:  "EN_ENTROPY_SRC_FW_READ",
-                    value: false,
+                    value: true,
                 },
             ],
         }

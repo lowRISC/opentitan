@@ -24,7 +24,7 @@ class otp_ctrl_ast_inputs_cfg extends uvm_object;
   //  Group: Variables
   rand otp_ast_rsp_t        otp_ast_pwr_seq_h;
   rand logic [otp_ctrl_pkg::OtpTestCtrlWidth-1:0] otp_vendor_test_ctrl;
-  rand lc_ctrl_pkg::lc_tx_t scanmode;
+  rand prim_mubi_pkg::mubi4_t scanmode;
   rand logic                scan_en, scan_rst_n;
 
   //  Group: Constraints

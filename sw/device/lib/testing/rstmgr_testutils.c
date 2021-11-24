@@ -18,51 +18,39 @@ bool rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
   return actual_info == info;
 }
 
-bool rstmgr_testutils_compare_alert_info(
+void rstmgr_testutils_compare_alert_info(
     const dif_rstmgr_t *rstmgr,
     dif_rstmgr_alert_info_dump_segment_t *expected_alert_dump,
     size_t dump_size) {
   size_t size_read;
-  bool compare_ok;
   dif_rstmgr_alert_info_dump_segment_t
       actual_alert_dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
 
   if (expected_alert_dump == 0 || dump_size == 0) {
-    return true;
+    return;
   }
 
   CHECK_DIF_OK(dif_rstmgr_alert_info_dump_read(
       rstmgr, actual_alert_dump, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &size_read));
   CHECK(dump_size <= size_read);
-  CHECK_BUFFER(compare_ok, actual_alert_dump, expected_alert_dump, dump_size);
-  if (!compare_ok) {
-    LOG_ERROR("rstmgr alert_info CSR mismatch");
-    test_status_set(kTestStatusFailed);
-  }
-  return compare_ok;
+  CHECK_BUFFER(actual_alert_dump, expected_alert_dump, dump_size);
 }
 
-bool rstmgr_testutils_compare_cpu_info(
+void rstmgr_testutils_compare_cpu_info(
     const dif_rstmgr_t *rstmgr,
     dif_rstmgr_cpu_info_dump_segment_t *expected_cpu_dump, size_t dump_size) {
   size_t size_read;
-  bool compare_ok;
   dif_rstmgr_cpu_info_dump_segment_t
       actual_cpu_dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
 
   if (expected_cpu_dump == 0 || dump_size == 0) {
-    return true;
+    return;
   }
 
   CHECK_DIF_OK(dif_rstmgr_cpu_info_dump_read(
       rstmgr, actual_cpu_dump, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &size_read));
   CHECK(dump_size <= size_read);
-  CHECK_BUFFER(compare_ok, actual_cpu_dump, expected_cpu_dump, dump_size);
-  if (!compare_ok) {
-    LOG_ERROR("rstmgr cpu_info CSR mismatch");
-    test_status_set(kTestStatusFailed);
-  }
-  return compare_ok;
+  CHECK_BUFFER(actual_cpu_dump, expected_cpu_dump, dump_size);
 }
 
 void rstmgr_testutils_pre_reset(const dif_rstmgr_t *rstmgr) {
@@ -88,8 +76,7 @@ void rstmgr_testutils_post_reset(
         "Unexpected reset_info CSR mismatch, expected 0x%x, got 0x%x",
         expected_reset_info, actual_reset_info);
 
-  CHECK(rstmgr_testutils_compare_alert_info(rstmgr, expected_alert_dump,
-                                            alert_dump_size));
-  CHECK(rstmgr_testutils_compare_cpu_info(rstmgr, expected_cpu_dump,
-                                          cpu_dump_size));
+  rstmgr_testutils_compare_alert_info(rstmgr, expected_alert_dump,
+                                      alert_dump_size);
+  rstmgr_testutils_compare_cpu_info(rstmgr, expected_cpu_dump, cpu_dump_size);
 }

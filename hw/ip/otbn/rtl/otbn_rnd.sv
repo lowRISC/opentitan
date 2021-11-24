@@ -9,7 +9,7 @@
  *
  * This module implements the RND, RND_PREFETCH and URND CSRs/WSRs. The EDN (entropy distribution
  * network) provides the bits for random numbers. RND gives direct access to EDN bits. URND provides
- * bits from an LFSR that is seeded with bits from the EDN.
+ * bits from a PRNG that is seeded with bits from the EDN.
  */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,8 +23,7 @@
 
 module otbn_rnd import otbn_pkg::*;
 #(
-  parameter urnd_lfsr_seed_t       RndCnstUrndLfsrSeed      = RndCnstUrndLfsrSeedDefault,
-  parameter urnd_chunk_lfsr_perm_t RndCnstUrndChunkLfsrPerm = RndCnstUrndChunkLfsrPermDefault
+  parameter urnd_prng_seed_t       RndCnstUrndPrngSeed      = RndCnstUrndPrngSeedDefault
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -34,14 +33,14 @@ module otbn_rnd import otbn_pkg::*;
   output logic            rnd_valid_o,
   output logic [WLEN-1:0] rnd_data_o,
 
-  // Request URND LFSR reseed from the EDN
+  // Request URND PRNG reseed from the EDN
   input  logic            urnd_reseed_req_i,
   // Remains asserted whilst reseed is in progress
   output logic            urnd_reseed_busy_o,
-  // When asserted URND LFSR state advances. It is permissible to advance the state whilst
+  // When asserted PRNG state advances. It is permissible to advance the state whilst
   // reseeding.
   input  logic            urnd_advance_i,
-  // URND data from LFSR
+  // URND data from PRNG
   output logic [WLEN-1:0] urnd_data_o,
 
   // Entropy distribution network (EDN)
@@ -53,9 +52,6 @@ module otbn_rnd import otbn_pkg::*;
   input  logic                    edn_urnd_ack_i,
   input  logic [EdnDataWidth-1:0] edn_urnd_data_i
 );
-  // Determine how many LFSR chunks are required to fill a full WLEN register
-  localparam int LfsrChunksPerWLEN = WLEN / UrndChunkLfsrWidth;
-  localparam int BytesPerLfsrChunk = UrndChunkLfsrWidth / 8;
 
   logic rnd_valid_q, rnd_valid_d;
   logic [WLEN-1:0] rnd_data_q, rnd_data_d;
@@ -109,7 +105,7 @@ module otbn_rnd import otbn_pkg::*;
   assign rnd_data_o  = rnd_data_q;
 
   /////////////////////////
-  // URND Implementation //
+  // PRNG Implementation //
   /////////////////////////
 
   logic edn_urnd_req_complete;
@@ -129,46 +125,23 @@ module otbn_rnd import otbn_pkg::*;
     end
   end
 
-  logic lfsr_seed_en;
-  logic [UrndChunkLfsrWidth-1:0] lfsr_seed  [LfsrChunksPerWLEN];
-  logic [UrndChunkLfsrWidth-1:0] lfsr_state [LfsrChunksPerWLEN];
+  logic xoshiro_seed_en;
 
-  assign lfsr_seed_en = edn_urnd_req_complete;
+  assign xoshiro_seed_en = edn_urnd_req_complete;
 
-  // We use multiple LFSR instances each having a width of ChunkSize.
-  // This is a functional prototype of the final URND functionality and is subject to change
-  // https://github.com/lowRISC/opentitan/issues/6083
-  for (genvar c = 0; c < LfsrChunksPerWLEN; c++) begin : gen_lfsr_chunks
-    localparam logic [UrndChunkLfsrWidth-1:0] LfsrChunkSeed =
-        RndCnstUrndLfsrSeed[c * UrndChunkLfsrWidth +: UrndChunkLfsrWidth];
-
-    assign lfsr_seed[c] = edn_urnd_data_i[c * UrndChunkLfsrWidth+: UrndChunkLfsrWidth];
-
-    prim_lfsr #(
-      .LfsrType    ( "GAL_XOR"                ),
-      .LfsrDw      ( UrndChunkLfsrWidth       ),
-      .StateOutDw  ( UrndChunkLfsrWidth       ),
-      .DefaultSeed ( LfsrChunkSeed            ),
-      .StatePermEn ( 1'b1                     ),
-      .StatePerm   ( RndCnstUrndChunkLfsrPerm )
-    ) u_lfsr_chunk (
-      .clk_i     ( clk_i          ),
-      .rst_ni    ( rst_ni         ),
-      .seed_en_i ( lfsr_seed_en   ),
-      .seed_i    ( lfsr_seed[c]   ),
-      .lfsr_en_i ( urnd_advance_i ),
-      .entropy_i ( '0             ),
-      .state_o   ( lfsr_state[c]  )
-    );
-  end
-
-  // Further "scramble" the LFSR state at the byte level to break linear shift patterns.
-  for (genvar c = 0; c < LfsrChunksPerWLEN; c++) begin : gen_lfsr_state_scramble_outer
-    for (genvar b = 0;b < BytesPerLfsrChunk; b++) begin : gen_lfsr_start_scramble_inner
-      assign urnd_data_o[b * 8 + c * UrndChunkLfsrWidth +: 8] =
-        prim_cipher_pkg::sbox4_8bit(lfsr_state[c][b*8 +: 8], prim_cipher_pkg::PRINCE_SBOX4);
-    end
-  end
+  prim_xoshiro256pp #(
+    .OutputDw   (WLEN),
+    .DefaultSeed(RndCnstUrndPrngSeed)
+  ) u_xoshiro256pp(
+    .clk_i,
+    .rst_ni,
+    .seed_en_i    (xoshiro_seed_en),
+    .seed_i       (edn_urnd_data_i),
+    .xoshiro_en_i (urnd_advance_i),
+    .entropy_i    ('0),
+    .data_o       (urnd_data_o),
+    .all_zero_o   ()
+  );
 
   `ASSERT(rnd_clear_on_req_complete, rnd_req_complete |=> ~rnd_valid_q)
 endmodule

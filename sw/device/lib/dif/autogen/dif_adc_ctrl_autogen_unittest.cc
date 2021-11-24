@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This file is auto-generated.
+// THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
+// util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_adc_ctrl_autogen.h"
 
@@ -27,13 +28,11 @@ class AdcCtrlTest : public Test, public MmioTest {
 class InitTest : public AdcCtrlTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_adc_ctrl_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_adc_ctrl_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_adc_ctrl_init({.base_addr = dev().region()}, &adc_ctrl_),
-            kDifOk);
+  EXPECT_EQ(dif_adc_ctrl_init(dev().region(), &adc_ctrl_), kDifOk);
 }
 
 class AlertForceTest : public AdcCtrlTest {};

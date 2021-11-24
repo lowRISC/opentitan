@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// The scoreboard checks ast_clk_byp_req is driven in response to an external clock request,
-// drives ast_clk_byp_ack response, checks the jitter_an_o output, and processes CSR checks.
+// The scoreboard checks io_clk_byp_req is driven in response to an external clock request,
+// drives io_clk_byp_ack response, checks the jitter_an_o output, and processes CSR checks.
 class clkmgr_scoreboard extends cip_base_scoreboard #(
   .CFG_T(clkmgr_env_cfg),
   .RAL_T(clkmgr_reg_block),
@@ -33,14 +33,14 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      monitor_ast_clk_byp();
+      monitor_io_clk_byp();
       monitor_jitter_en();
       sample_peri_covs();
       sample_trans_covs();
     join_none
   endtask
 
-  task monitor_ast_clk_byp();
+  task monitor_io_clk_byp();
     lc_tx_t prev_lc_clk_byp_req = Off;
     forever
       @cfg.clkmgr_vif.clk_cb begin
@@ -54,7 +54,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (((cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == On) &&
                (cfg.clkmgr_vif.clk_cb.lc_dft_en_i == On)) ||
               (cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On)) begin
-            `DV_CHECK_EQ(cfg.clkmgr_vif.ast_clk_byp_req, On, "Expected ast_clk_byp_req to be On")
+            `DV_CHECK_EQ(cfg.clkmgr_vif.io_clk_byp_req, On, "Expected io_clk_byp_req to be On")
           end
           if (cfg.en_cov) begin
             cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel,
@@ -72,7 +72,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.clk_rst_vif.rst_n) begin
             @cfg.clkmgr_vif.jitter_enable_csr begin
               cfg.clk_rst_vif.wait_clks(2);
-              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, cfg.clkmgr_vif.jitter_enable_csr,
+              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o,
+                           prim_mubi_pkg::mubi4_test_true_loose(cfg.clkmgr_vif.jitter_enable_csr),
                            "Mismatching jitter enable output")
             end
           end
@@ -82,7 +83,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.clk_rst_vif.rst_n) begin
             @cfg.clkmgr_vif.jitter_en_o begin
               cfg.clk_rst_vif.wait_clks(2);
-              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, cfg.clkmgr_vif.jitter_enable_csr,
+              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o,
+                           prim_mubi_pkg::mubi4_test_true_loose(cfg.clkmgr_vif.jitter_enable_csr),
                            "Mismatching jitter enable output")
             end
           end
@@ -97,7 +99,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriIo].sample(cfg.clkmgr_vif.peri_io_cb.clk_enable,
                                             cfg.clkmgr_vif.peri_io_cb.ip_clk_en,
-                                            cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                            cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True
+                                            );
           end
         end
       forever
@@ -105,7 +108,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriDiv2].sample(cfg.clkmgr_vif.peri_div2_cb.clk_enable,
                                               cfg.clkmgr_vif.peri_div2_cb.ip_clk_en,
-                                              cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                              cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True
+                                              );
           end
         end
       forever
@@ -113,7 +117,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriDiv4].sample(cfg.clkmgr_vif.peri_div4_cb.clk_enable,
                                               cfg.clkmgr_vif.peri_div4_cb.ip_clk_en,
-                                              cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                              cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True
+                                              );
           end
         end
       forever
@@ -121,7 +126,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
             cov.peri_cg_wrap[PeriUsb].sample(cfg.clkmgr_vif.peri_usb_cb.clk_enable,
                                              cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
-                                             cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+                                             cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True
+                                             );
           end
         end
     join
@@ -145,7 +151,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         src_rst_en = cfg.main_clk_rst_vif.rst_n;
       end
       if (src_rst_en && cfg.en_cov) begin
-        logic scan_en = cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On;
+        logic scan_en = cfg.clkmgr_vif.scanmode_i == prim_mubi_pkg::MuBi4True;
         cov.trans_cg_wrap[trans].sample(hint, clk_en, scan_en, idle);
       end
     end

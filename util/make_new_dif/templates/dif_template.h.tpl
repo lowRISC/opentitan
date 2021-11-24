@@ -26,7 +26,6 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_${ip.name_upper}_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_${ip.name_upper}_H_
 
-
 #error "This file is a template, and not real code."
 
 /**
@@ -97,7 +96,7 @@ dif_result_t dif_${ip.name_snake}_start(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dif_${ip.name_snake}_transaction_t transaction);
 
-/** Ends a ${ip.name_long_lower} transaction, writing the results to the given output..
+/** Ends a ${ip.name_long_lower} transaction, writing the results to the given output.
  *
  * @param ${ip.name_snake} A ${ip.name_long_lower} handle.
  * @param output Transaction output parameters.
@@ -112,7 +111,7 @@ dif_result_t dif_${ip.name_snake}_end(
  * Locks out ${ip.name_long_lower} functionality.
  *
  * This function is reentrant: calling it while functionality is locked will
- * have no effect and return `kDif${ip.name_camel}Ok`.
+ * have no effect and return `kDifOk`.
  *
  * @param ${ip.name_snake} A ${ip.name_long_lower} handle.
  * @return The result of the operation.

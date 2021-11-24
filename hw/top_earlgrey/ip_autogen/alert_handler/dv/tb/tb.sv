@@ -8,6 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import alert_handler_env_pkg::*;
   import alert_handler_test_pkg::*;
+  import alert_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -26,6 +27,7 @@ module tb;
   pins_if #(NUM_CRASHDUMP) crashdump_if(crashdump);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  alert_handler_if alert_handler_if(.clk(clk), .rst_n(rst_n));
   alert_esc_if esc_device_if [NUM_ESCS](.clk(clk), .rst_n(rst_n));
   alert_esc_if alert_host_if [NUM_ALERTS](.clk(clk), .rst_n(rst_n));
   alert_esc_probe_if probe_if[NUM_ESCS](.clk(clk), .rst_n(rst_n));
@@ -81,17 +83,48 @@ module tb;
     .intr_classb_o        ( interrupts[1] ),
     .intr_classc_o        ( interrupts[2] ),
     .intr_classd_o        ( interrupts[3] ),
-    // TODO: need to exercise LPGs
-    .lpg_cg_en_i          ( {alert_pkg::NLpg{prim_mubi_pkg::MuBi4False}} ),
-    .lpg_rst_en_i         ( {alert_pkg::NLpg{prim_mubi_pkg::MuBi4False}} ),
+    .lpg_cg_en_i          ( alert_handler_if.lpg_cg_en  ),
+    .lpg_rst_en_i         ( alert_handler_if.lpg_rst_en ),
     .crashdump_o          ( crashdump     ),
-    .edn_o                ( edn_if.req    ),
-    .edn_i                ( {edn_if.ack, edn_if.d_data} ),
+    .edn_o                ( edn_if[0].req    ),
+    .edn_i                ( {edn_if[0].ack, edn_if[0].d_data} ),
     .alert_rx_o           ( alert_rx      ),
     .alert_tx_i           ( alert_tx      ),
     .esc_rx_i             ( esc_rx        ),
     .esc_tx_o             ( esc_tx        )
   );
+
+  `define LPG_MUBI_PATH tb.dut.u_alert_handler_lpg_ctrl
+  for (genvar k = 0; k < NLpg; k++) begin : gen_lpgs_asserts_disable
+    // These SVA checks the lpg inputs are either Off or On, we will use more than these 2 values.
+    // If it's not On, it should be Off.
+    initial begin
+      $assertoff(0,
+          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_rst_en.PrimMubi4SyncCheckTransients_A);
+      $assertoff(0,
+          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_rst_en.PrimMubi4SyncCheckTransients0_A);
+      $assertoff(0,
+          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_rst_en.PrimMubi4SyncCheckTransients1_A);
+      $assertoff(0,
+          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_cg_en.PrimMubi4SyncCheckTransients_A);
+      $assertoff(0,
+          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_cg_en.PrimMubi4SyncCheckTransients0_A);
+      $assertoff(0,
+          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_cg_en.PrimMubi4SyncCheckTransients1_A);
+    end
+  end
+
+  for (genvar k=0; k < NAlerts; k++) begin : gen_alert_map_asserts_disable
+    initial begin
+      $assertoff(0,
+          `LPG_MUBI_PATH.gen_alert_map[k].u_prim_mubi4_sync_lpg_en.PrimMubi4SyncCheckTransients_A);
+      $assertoff(0,
+          `LPG_MUBI_PATH.gen_alert_map[k].u_prim_mubi4_sync_lpg_en.PrimMubi4SyncCheckTransients0_A);
+      $assertoff(0,
+          `LPG_MUBI_PATH.gen_alert_map[k].u_prim_mubi4_sync_lpg_en.PrimMubi4SyncCheckTransients1_A);
+    end
+  end
+  `undef LPG_MUBI_HIER_PATH
 
   initial begin
     // drive clk and rst_n from clk_if
@@ -103,6 +136,8 @@ module tb;
     uvm_config_db#(crashdump_vif)::set(null, "*.env", "crashdump_vif", crashdump_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual alert_handler_if)::set(null, "*.env", "alert_handler_vif",
+                   alert_handler_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

@@ -24,7 +24,7 @@ module pwrmgr_reg_top (
 
   import pwrmgr_reg_pkg::* ;
 
-  localparam int AW = 6;
+  localparam int AW = 7;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -180,6 +180,8 @@ module pwrmgr_reg_top (
   logic wake_info_fall_through_wd;
   logic wake_info_abort_qs;
   logic wake_info_abort_wd;
+  logic fault_status_reg_intg_err_qs;
+  logic fault_status_esc_timeout_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1017,8 +1019,60 @@ module pwrmgr_reg_top (
   );
 
 
+  // R[fault_status]: V(False)
+  //   F[reg_intg_err]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_reg_intg_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [15:0] addr_hit;
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.reg_intg_err.de),
+    .d      (hw2reg.fault_status.reg_intg_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fault_status.reg_intg_err.q),
+
+    // to register interface (read)
+    .qs     (fault_status_reg_intg_err_qs)
+  );
+
+  //   F[esc_timeout]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_fault_status_esc_timeout (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fault_status.esc_timeout.de),
+    .d      (hw2reg.fault_status.esc_timeout.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.fault_status.esc_timeout.q),
+
+    // to register interface (read)
+    .qs     (fault_status_esc_timeout_qs)
+  );
+
+
+
+  logic [16:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == PWRMGR_INTR_STATE_OFFSET);
@@ -1037,6 +1091,7 @@ module pwrmgr_reg_top (
     addr_hit[13] = (reg_addr == PWRMGR_ESCALATE_RESET_STATUS_OFFSET);
     addr_hit[14] = (reg_addr == PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET);
     addr_hit[15] = (reg_addr == PWRMGR_WAKE_INFO_OFFSET);
+    addr_hit[16] = (reg_addr == PWRMGR_FAULT_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1059,7 +1114,8 @@ module pwrmgr_reg_top (
                (addr_hit[12] & (|(PWRMGR_PERMIT[12] & ~reg_be))) |
                (addr_hit[13] & (|(PWRMGR_PERMIT[13] & ~reg_be))) |
                (addr_hit[14] & (|(PWRMGR_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(PWRMGR_PERMIT[15] & ~reg_be)))));
+               (addr_hit[15] & (|(PWRMGR_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(PWRMGR_PERMIT[16] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1211,6 +1267,11 @@ module pwrmgr_reg_top (
         reg_rdata_next[5:0] = wake_info_reasons_qs;
         reg_rdata_next[6] = wake_info_fall_through_qs;
         reg_rdata_next[7] = wake_info_abort_qs;
+      end
+
+      addr_hit[16]: begin
+        reg_rdata_next[0] = fault_status_reg_intg_err_qs;
+        reg_rdata_next[1] = fault_status_esc_timeout_qs;
       end
 
       default: begin

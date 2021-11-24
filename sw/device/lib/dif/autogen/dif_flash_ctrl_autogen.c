@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This file is auto-generated.
+// THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
+// util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.h"
 #include <stdint.h>

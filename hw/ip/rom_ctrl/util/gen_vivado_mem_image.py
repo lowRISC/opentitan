@@ -23,11 +23,14 @@ import re
 from mem import MemFile
 
 
-def swap_bytes(width: int, orig: int) -> int:
+def swap_bytes(width: int, orig: int, swap_nibbles: bool) -> int:
     num_bytes = math.ceil(width / 8)
     swapped = 0
     for i in range(num_bytes):
-        swapped |= (((orig >> (i * 8)) & 0xFF) << ((num_bytes - i - 1) * 8))
+        byte_value = ((orig >> (i * 8)) & 0xFF)
+        if swap_nibbles:
+            byte_value = ((byte_value << 4) | (byte_value >> 4)) & 0xFF
+        swapped |= (byte_value << ((num_bytes - i - 1) * 8))
     return swapped
 
 
@@ -35,6 +38,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('infile', type=argparse.FileType('rb'))
     parser.add_argument('outfile', type=argparse.FileType('w'))
+    parser.add_argument('--swap-nibbles', dest='swap_nibbles', action='store_true')
 
     args = parser.parse_args()
 
@@ -62,7 +66,7 @@ def main() -> int:
         # Generate the address.
         addr = idx * math.ceil(width / 8)
         # Convert endianness.
-        data = swap_bytes(width, word)
+        data = swap_bytes(width, word, args.swap_nibbles)
         # Write to file.
         toks = [f'@{addr:0{addr_chars}X}']
         toks.append(f'{data:0{word_chars}X}')

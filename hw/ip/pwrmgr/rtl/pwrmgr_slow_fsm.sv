@@ -26,6 +26,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   output logic rst_req_o,
   output logic fsm_invalid_o,
   input clr_req_i,
+  output logic usb_ip_clk_en_o,
+  input usb_ip_clk_status_i,
 
   // low power entry configuration
   input main_pd_ni,
@@ -301,7 +303,21 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   assign ast_o.core_clk_en = core_clk_en_q;
   assign ast_o.io_clk_en = io_clk_en_q;
-  assign ast_o.usb_clk_en = usb_clk_en_q;
+  // usb's enable is handshake with pwr_fsm, as it can be turned on/off
+  // outside of the normal low power sequence
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_usb_clk_en (
+    .clk_i,
+    .rst_ni,
+    // immediate enable
+    // graceful disable when status is 0
+    .d_i(usb_clk_en_q | usb_ip_clk_status_i),
+    .q_o(ast_o.usb_clk_en)
+  );
+  assign usb_ip_clk_en_o = usb_clk_en_q;
+
   assign ast_o.main_pd_n = pd_nq;
   assign ast_o.pwr_clamp_env = pwr_clamp_env_q;
   assign ast_o.pwr_clamp = pwr_clamp_q;

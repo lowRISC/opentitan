@@ -20,6 +20,16 @@
 // functions.
 
 // ----------------------------------------------------------------------------
+// Heap Setup
+//
+// We allocate the heap here and mark it so the linker can make a
+// NOLOAD section. Otherwise, it will end up in the `.bss` section, which gets
+// zeroed during boot initializations which wastes simulation cycles.
+// ----------------------------------------------------------------------------
+__attribute__((section(".freertos.heap")))
+uint8_t ucHeap[configTOTAL_HEAP_SIZE];
+
+// ----------------------------------------------------------------------------
 // Timer Setup (for use when preemptive scheduling is enabled)
 // ----------------------------------------------------------------------------
 #if configUSE_PREEMPTION
@@ -87,17 +97,11 @@ BaseType_t xPortStartScheduler(void) {
   irq_timer_ctrl(true);
   irq_external_ctrl(true);
   irq_software_ctrl(true);
+  // Note: no need to call 'irq_global_ctrl(true)' since the global interrupt
+  // enable is set in the xPortStartFirstTask sub-routine in
+  // sw/device/lib/testing/test_framework/freertos_port.S.
   xPortStartFirstTask();
 
   // Unreachable.
   return pdFAIL;
-}
-
-void vPortEndScheduler(void) {
-  // Not implemented.
-  // TODO: trigger this to be called when from the idle task hook when all tests
-  // have completed.
-  while (true) {
-    wait_for_interrupt();
-  }
 }

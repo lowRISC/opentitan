@@ -106,7 +106,7 @@ module top_${top["name"]} #(
 
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i   // lc_ctrl_pkg::On for Scan
+  input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -299,8 +299,8 @@ module top_${top["name"]} #(
   );
 
   // Wire up alert handler LPGs
-  lc_ctrl_pkg::lc_tx_t [alert_pkg::NLpg-1:0] lpg_cg_en;
-  lc_ctrl_pkg::lc_tx_t [alert_pkg::NLpg-1:0] lpg_rst_en;
+  prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_cg_en;
+  prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_rst_en;
 
 <%
 # get all known typed clocks and add them to a dict

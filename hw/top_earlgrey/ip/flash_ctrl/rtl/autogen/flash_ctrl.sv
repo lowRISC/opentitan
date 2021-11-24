@@ -78,9 +78,9 @@ module flash_ctrl
 
   // Flash test interface
   input scan_en_i,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
   input scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t flash_bist_enable_i,
+  input prim_mubi_pkg::mubi4_t flash_bist_enable_i,
   input flash_power_down_h_i,
   input flash_power_ready_h_i,
   inout [1:0] flash_test_mode_a_io,
@@ -89,7 +89,7 @@ module flash_ctrl
 );
 
   import flash_ctrl_reg_pkg::*;
-  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_t;
 
   flash_ctrl_core_reg2hw_t reg2hw;
   flash_ctrl_core_hw2reg_t hw2reg;
@@ -866,14 +866,14 @@ module flash_ctrl
   prim_mubi_pkg::mubi4_t flash_disable;
   assign flash_disable = lc_escalate_en == lc_ctrl_pkg::On ?
                          prim_mubi_pkg::MuBi4True :
-                         prim_mubi_pkg::mubi4_e'(reg2hw.dis.q);
+                         prim_mubi_pkg::mubi4_t'(reg2hw.dis.q);
 
   assign flash_phy_req.flash_disable = flash_disable;
 
   prim_mubi_pkg::mubi4_t flash_exec_en;
   assign flash_exec_en = lc_escalate_en == lc_ctrl_pkg::On ?
                          prim_mubi_pkg::MuBi4False :
-                         prim_mubi_pkg::mubi4_e'(reg2hw.exec.q);
+                         prim_mubi_pkg::mubi4_t'(reg2hw.exec.q);
 
   //////////////////////////////////////
   // Errors and Interrupts
@@ -1079,7 +1079,7 @@ module flash_ctrl
   // flash phy module
   //////////////////////////////////////
   logic flash_host_req;
-  mubi4_e flash_host_instr_type;
+  mubi4_t flash_host_instr_type;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
   logic flash_host_rderr;
@@ -1172,5 +1172,8 @@ module flash_ctrl
   `ASSERT(OutofBoundsReq_A, unused_op_valid & op_addr_oob |-> ~flash_phy_req.req)
 
   // add more assertions
-
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PageCntAlertCheck_A, u_flash_hw_if.u_page_cnt,
+                                         alert_tx_o[0])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_flash_hw_if.u_word_cnt,
+                                         alert_tx_o[0])
 endmodule

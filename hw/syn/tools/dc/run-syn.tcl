@@ -8,26 +8,26 @@
 ##  PREPARE FLOW   ##
 #####################
 
-set syn_root ""
-if {[info exists ::env(syn_root)]} {
-  set syn_root "$::env(syn_root)"
-} else {
-  puts "ERROR: Script run without syn_root environment variable."
-  quit
+proc get_env_var {name} {
+  if {[info exists ::env($name)]} {
+    set val "[set ::env([set name])]"
+    puts "::env($name) = $val"
+    return $val
+  } else {
+    puts "ERROR: Script run without $name environment variable."
+    quit
+  }
 }
 
-set foundry_root ""
-if {[info exists ::env(foundry_root)]} {
-  set foundry_root "$::env(foundry_root)"
-} else {
-  puts "ERROR: Script run without foundry_root environment variable."
-  quit
-}
-
-# Tool setup.
-# TODO: The below path assumes a certain directory structure in the foundry
-# area which does not exist in the open repo.
-source "${foundry_root}/syn/dc/setup.tcl"
+set FOUNDRY_ROOT       [get_env_var "FOUNDRY_ROOT"]
+set SYN_ROOT           [get_env_var "SYN_ROOT"]
+set SV_FLIST           [get_env_var "SV_FLIST"]
+set BUILD_DIR          [get_env_var "BUILD_DIR"]
+set DUT                [get_env_var "DUT"]
+set CONSTRAINT         [get_env_var "CONSTRAINT"]
+set FOUNDRY_CONSTRAINT [get_env_var "FOUNDRY_CONSTRAINT"]
+set PARAMS             [get_env_var "PARAMS"]
+set POST_ELAB_SCRIPT   [get_env_var "POST_ELAB_SCRIPT"]
 
 # if in interactive mode, do not exit at the end of the script
 if { [info exists ::env(INTERACTIVE)] } {
@@ -35,16 +35,6 @@ if { [info exists ::env(INTERACTIVE)] } {
 } else {
   set RUN_INTERACTIVE 0
 }
-
-# path to directory containing the source list file
-set SV_FLIST $::env(SV_FLIST)
-set BUILD_DIR $::env(BUILD_DIR)
-
-# just compile the "core" toplevel at the moment
-# might want to switch to chip_earlgrey_asic later on (with pads)
-set DUT $::env(DUT)
-set CONSTRAINT $::env(CONSTRAINT)
-set FOUNDRY_CONSTRAINT $::env(FOUNDRY_CONSTRAINT)
 
 # paths
 set WORKLIB  "${BUILD_DIR}/WORK"
@@ -57,6 +47,22 @@ exec mkdir -p ${REPDIR} ${DDCDIR} ${VLOGDIR} ${WORKLIB} ${RESULTDIR}
 
 # define work lib path
 define_design_lib WORK -path $WORKLIB
+
+########################
+## Library Setup      ##
+########################
+
+# if the foundry root is specified, some more library setup is needed.
+if {$FOUNDRY_ROOT != ""} {
+  source "${FOUNDRY_ROOT}/syn/dc/setup.tcl"
+  # this PRIM_DEFAULT_IMPL selects the appropriate technology by defining
+  # PRIM_DEFAULT_IMPL=prim_pkg::Impl<tech identifier>
+  # PRIM_DEFAULT_IMPL is set inside the library setup script
+  set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL}+${PRIM_STD_CELL_VARIANT}"
+} else {
+  # This black-boxes the 1p and 2p memory models (used for GTECH runs only).
+  set DEFINE "SYNTHESIS_MEMORY_BLACK_BOXING=TRUE"
+}
 
 #######################
 ## CONFIGURATIONS   ###
@@ -71,33 +77,21 @@ saif_map -start
 ###The following variable helps verification when there are differences between DC and FM while inferring logical hierarchies
 set_app_var hdlin_enable_hier_map true
 
-#######################
-##  DESIGN SOURCES  ###
-#######################
-
-# this PRIM_DEFAULT_IMPL selects the appropriate technology by defining
-# PRIM_DEFAULT_IMPL=prim_pkg::Impl<tech identifier>
-# PRIM_DEFAULT_IMPL is set inside the library setup script
-set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL}+${PRIM_STD_CELL_VARIANT}"
-
-# additional parameters
-set PARAMS "$::env(PARAMS)"
-
-
 ###########################
 ##   Env var file        ##
 ###########################
 
 set fp [open "${BUILD_DIR}/env_variables.tcl" w+]
 puts $fp "set ::env(INTERACTIVE) 1"
-puts $fp "set ::env(syn_root) $syn_root"
-puts $fp "set ::env(foundry_root) $foundry_root"
+puts $fp "set ::env(SYN_ROOT) $SYN_ROOT"
+puts $fp "set ::env(FOUNDRY_ROOT) $FOUNDRY_ROOT"
 puts $fp "set ::env(PARAMS) $PARAMS"
 puts $fp "set ::env(SV_FLIST) $SV_FLIST"
 puts $fp "set ::env(BUILD_DIR) $BUILD_DIR"
 puts $fp "set ::env(DUT) $DUT"
 puts $fp "set ::env(CONSTRAINT) $CONSTRAINT"
 puts $fp "set ::env(FOUNDRY_CONSTRAINT) $FOUNDRY_CONSTRAINT"
+puts $fp "set ::env(POST_ELAB_SCRIPT) $POST_ELAB_SCRIPT"
 close $fp
 
 ###########################
@@ -115,8 +109,20 @@ check_design                                              > "${REPDIR}/check.rpt
 
 set_verification_top
 
+if {$POST_ELAB_SCRIPT != ""} {
+  source ${POST_ELAB_SCRIPT}
+}
+
 write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
-#write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
+
+# write out a GTECH netlist and quit if libs are not defined
+if {$FOUNDRY_ROOT == ""} {
+  change_names -rules verilog -hierarchy
+  define_name_rules fixbackslashes -allowed "A-Za-z0-9_" -first_restricted "\\" -remove_chars
+  change_names -rule fixbackslashes -h
+  write_file -format verilog -hierarchy -output "${VLOGDIR}/elab.v"
+  exit
+}
 
 #############################
 ##   CLOCK GATING SETUP    ##

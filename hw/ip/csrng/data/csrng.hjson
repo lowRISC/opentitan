@@ -125,7 +125,7 @@
             desc: '''
                   Setting this field to kMuBi4True will enable reading from the !!GENBITS register.
                   This application interface for software (register based) will be enabled
-                  only if the efuse_sw_app_enable input is set.
+                  only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
                   '''
           resval: false
         },
@@ -134,9 +134,9 @@
             name: "READ_INT_STATE",
             mubi: true
             desc: '''
-                  Setting this field to kMuBi4True will enable reading from the INT_STATE_VAL register.
+                  Setting this field to kMuBi4True will enable reading from the !!INT_STATE_VAL register.
                   Reading the internal state of the enable instances will be enabled
-                  only if the efuse_sw_app_enable input is set.
+                  only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
                   '''
           resval: false
         },
@@ -313,6 +313,14 @@
           desc: '''
                 This bit is set when the READ_INT_STATE field in the !!CTRL register is set to
                 a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "12",
+          name: "CS_BUS_CMP_ALERT",
+          desc: '''
+                This bit is set when the software application port genbits bus value is equal
+                to the prior valid value on the bus, indicating a possible attack.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -519,6 +527,16 @@
           name: "AES_CIPHER_SM_ERR",
           desc: '''
                 This bit will be set to one when an AES fatal error has been detected.
+                This error will signal a fatal alert, and also
+                an interrupt if enabled.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "26",
+          name: "CMD_GEN_CNT_ERR",
+          desc: '''
+                This bit will be set to one when an Generate command counter fatal error
+                has been detected.
                 This error will signal a fatal alert, and also
                 an interrupt if enabled.
                 This bit will stay set until firmware clears it.

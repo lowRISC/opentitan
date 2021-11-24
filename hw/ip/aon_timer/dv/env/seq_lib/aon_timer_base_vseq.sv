@@ -11,7 +11,7 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(aon_timer_base_vseq)
 
   // various knobs to enable certain routines
-  bit do_aon_timer_init = 1'b1;
+  rand bit do_aon_timer_init;
 
   // If this is set, the AON clock starts first and then the fast clock starts sometime later. If
   // not, they start in parallel. Since the fast clock is *much* quicker, the practical result is

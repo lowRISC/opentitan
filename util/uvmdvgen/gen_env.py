@@ -12,7 +12,7 @@ from pkg_resources import resource_filename
 from uvmdvgen import VENDOR_DEFAULT
 
 
-def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, has_edn,
+def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, num_edn,
             env_agents, root_dir, vendor):
     # yapf: disable
     # flake8: noqa
@@ -80,7 +80,7 @@ def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, has_edn,
                                has_ral=has_ral,
                                has_interrupts=has_interrupts,
                                has_alerts=has_alerts,
-                               has_edn=has_edn,
+                               num_edn=num_edn,
                                env_agents=env_agents,
                                vendor=vendor))
             except Exception as e:

@@ -416,11 +416,10 @@ In Pass-though mode, control of the CSB lines passes directly to the inter-modul
 
 The command interface can allows for any number of segments in a given command.
 
-There is no command queue for submitting segments to the SPI_HOST IP.
-However a second segment can be placed into the Config/Command CDC whenever {{< regref "STATUS.READY" >}} is high, even if the previous segment is still running.
-The internal state within the Config/Command CDC provides the option of scheduling a second command segement to execute immediately after completion of the current segment.
+Since most SPI Flash transactions typically consist of 3 or 4 segemnts, there is a small command FIFO for submitting segments to the SPI_HOST IP, so that firmware can issue the entire transaction at one time.
 
-On the other hand, writing a segment description to {{< regref "COMMAND" >}} when {{< regref "STATUS.READY" >}} is low will trigger an error condition, which must be acknowledged by software.
+Writing a segment description to {{< regref "COMMAND" >}} when {{< regref "STATUS.READY" >}} is low will trigger an error condition, which must be acknowledged by software.
+When submitting multiple segments to the the command queue, firmware can also check the {{< regref "STATUS.CMDQD" >}} register to determine how many unprocessed segements are in the FIFO.
 
 ## Data Formatting
 

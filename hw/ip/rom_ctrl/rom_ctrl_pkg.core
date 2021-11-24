@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:mubi
     files:
       - rtl/rom_ctrl_pkg.sv
       - rtl/rom_ctrl_reg_pkg.sv

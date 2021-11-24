@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(sram_ctrl_env_cfg),
+class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scoreboard #(
+    .CFG_T(sram_ctrl_env_cfg#(AddrWidth)),
     .RAL_T(sram_ctrl_regs_reg_block),
-    .COV_T(sram_ctrl_env_cov)
+    .COV_T(sram_ctrl_env_cov#(AddrWidth))
   );
-  `uvm_component_utils(sram_ctrl_scoreboard)
+  `uvm_component_param_utils(sram_ctrl_scoreboard#(AddrWidth))
   `uvm_component_new
 
   // local variables
@@ -170,50 +170,27 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
   //       For the same reason, we cannot use the already-provided `predict_tl_err(...)`
   //       function of the cip_base_scoreboard, as the SRAM TLUL interface does not have
   //       any CSRs or uvm_mems.
-  virtual function bit sram_predict_tl_err(tl_seq_item item, tl_channels_e channel);
+  virtual function bit get_sram_instr_type_err(tl_seq_item item, tl_channels_e channel);
     bit is_tl_err;
+    tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
 
-    is_tl_err = item.get_exp_d_error();
-
-    `uvm_info(`gfn,
-              $sformatf("error_a_opcode_invalid: %0b",
-                        item.get_error_a_opcode_invalid()),
-              UVM_HIGH)
-    `uvm_info(`gfn,
-              $sformatf("error_PutFullData_mask_size_mismatch: %0b",
-                        item.get_error_PutFullData_mask_size_mismatched()),
-              UVM_HIGH)
-    `uvm_info(`gfn,
-              $sformatf("error_addr_mask_misaligned: %0b",
-                        item.get_error_addr_mask_misaligned()),
-              UVM_HIGH)
-    `uvm_info(`gfn,
-              $sformatf("error_addr_size_misaligned: %0b",
-                        item.get_error_addr_size_misaligned()),
-              UVM_HIGH)
-    `uvm_info(`gfn,
-              $sformatf("error_mask_not_in_enabled_lanes: %0b",
-                        item.get_error_mask_not_in_enabled_lanes()),
-              UVM_HIGH)
-    `uvm_info(`gfn,
-              $sformatf("error_size_over_max: %0b",
-                        item.get_error_size_over_max()),
-              UVM_HIGH)
-
-    if (item.a_user[15:14] == prim_mubi_pkg::MuBi4True) begin
+    if (a_user.instr_type == prim_mubi_pkg::MuBi4True) begin
       // 2 error cases if an InstrType transaction is seen:
       // - if it is a write transaction
       // - if the SRAM is not configured in executable mode
       is_tl_err = (allow_ifetch) ? (item.a_opcode != tlul_pkg::Get) : 1'b1;
     end
 
-    if (channel == DataChannel) begin
-      `DV_CHECK_EQ(item.d_error, is_tl_err,
-          $sformatf("item_err: %0d", is_tl_err))
+    if (channel == DataChannel && is_tl_err) begin
+      `DV_CHECK_EQ(item.d_error, 1, $sformatf("item_err: %0d", is_tl_err))
     end
 
-
     return is_tl_err;
+  endfunction
+
+  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+    if (ral_name == cfg.sram_ral_name && get_sram_instr_type_err(item, channel)) return 1;
+    return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
   function void build_phase(uvm_phase phase);
@@ -257,11 +234,12 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
                 forever begin
                   // sample the covergroup every time a new TL request is seen
                   // while a key request is outstanding.
-                  @(posedge cfg.m_sram_cfg.vif.h2d.a_valid);
+                  @(posedge cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_valid);
                   // zero delay to allow bus values to settle
                   #0;
                   if (cfg.en_cov) begin
-                    cov.access_during_key_req_cg.sample(cfg.m_sram_cfg.vif.h2d.a_opcode);
+                    cov.access_during_key_req_cg.sample(
+                        cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_opcode);
                   end
                 end
                 ,
@@ -420,7 +398,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
         // don't process any error items
         //
         // TODO: sample error coverage
-        if (cfg.en_scb_tl_err_chk && sram_predict_tl_err(item, AddrChannel)) begin
+        if (cfg.en_scb_tl_err_chk && predict_tl_err(item, AddrChannel, cfg.sram_ral_name)) begin
           `uvm_info(`gfn, "TL addr_phase error detected", UVM_HIGH)
           continue;
         end
@@ -490,7 +468,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       // don't process any error items
       //
       // TODO: sample error coverage
-      if (cfg.en_scb_tl_err_chk && sram_predict_tl_err(item, DataChannel)) begin
+      if (cfg.en_scb_tl_err_chk && predict_tl_err(item, DataChannel, cfg.sram_ral_name)) begin
         `uvm_info(`gfn, "TL data_phase error detected", UVM_HIGH)
         continue;
       end
@@ -706,7 +684,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
       `uvm_info({`gfn, "::process_completed_trans()"},
                 $sformatf("Checking SRAM memory transaction: %0p", trans),
-                UVM_HIGH)
+                UVM_MEDIUM)
 
       check_mem_trans(trans);
     end
@@ -746,7 +724,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, $sformatf("exp_masked_data: 0x%0x", exp_masked_data), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("act_masked_data: 0x%0x", act_masked_data), UVM_HIGH)
 
-    `DV_CHECK_EQ_FATAL(exp_masked_data, act_masked_data)
+    `DV_CHECK_EQ(exp_masked_data, act_masked_data)
   endfunction
 
 
@@ -760,6 +738,8 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     bit addr_phase_write  = (write && channel == AddrChannel);
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
+
+    if (ral_name != RAL_T::type_name) return;
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin

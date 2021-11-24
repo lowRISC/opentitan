@@ -45,17 +45,12 @@ _start:
   .option pop
 
   // Set up the new interrupt vector.
-  la   t0, crt_interrupt_vector
+  la   t0, (crt_interrupt_vector + 1)
   csrw mtvec, t0
 
   // Zero out the `.bss` segment.
   la   a0, _bss_start
   la   a1, _bss_end
-  call crt_section_clear
-
-  // Zero out the stack
-  la   a0, _stack_start
-  la   a1, _stack_end
   call crt_section_clear
 
   // Initialize the `.data` segment from the `.idata` segment.

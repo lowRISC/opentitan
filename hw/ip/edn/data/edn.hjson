@@ -9,9 +9,6 @@
   interrupt_list: [
     { name: "edn_cmd_req_done"
       desc: "Asserted when a software CSRNG request has completed."}
-// TODO: add intrp
-//    { name: "edn_ebus_check_failed"
-//      desc: "Asserted when the entropy bus integrity check has failed."}
     { name: "edn_fatal_err"
       desc: "Asserted when a FIFO error occurs."}
   ],
@@ -336,8 +333,7 @@
           name: "EDN_ACK_SM_ERR",
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
-                EDN ack stage state machine. This error will signal a fatal alert, and also
-                an interrupt if enabled.
+                EDN ack stage state machine. This error will signal a fatal alert.
                 This bit will stay set until firmware clears it.
                 '''
         }
@@ -345,8 +341,15 @@
           name: "EDN_MAIN_SM_ERR",
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
-                EDN main stage state machine. This error will signal a fatal alert, and also
-                an interrupt if enabled.
+                EDN main stage state machine. This error will signal a fatal alert.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "22",
+          name: "EDN_CNTR_ERR",
+          desc: '''
+                This bit will be set to one when a hardened counter has detected an error
+                condition. This error will signal a fatal alert.
                 This bit will stay set until firmware clears it.
                 '''
         }

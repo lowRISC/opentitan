@@ -41,7 +41,9 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   }
 
   // The extclk cannot be manipulated in low power mode.
-  constraint ip_clk_en_on_c {ip_clk_en == 1'b1;}
+  constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
+  constraint main_ip_clk_en_on_c {main_ip_clk_en == 1'b1;}
+  constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1'b1;}
 
   // This randomizes the time when the extclk_ctrl CSR write and the lc_clk_byp_req
   // input is asserted for good measure. Of course, there is a good chance only a single
@@ -49,14 +51,14 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   rand int cycles_before_extclk_ctrl_sel;
   rand int cycles_before_lc_clk_byp_req;
   rand int cycles_before_lc_clk_byp_ack;
-  rand int cycles_before_ast_clk_byp_ack;
+  rand int cycles_before_io_clk_byp_ack;
   rand int cycles_before_next_trans;
 
   constraint cycles_to_stim_c {
     cycles_before_extclk_ctrl_sel inside {[4 : 20]};
     cycles_before_lc_clk_byp_req inside {[4 : 20]};
     cycles_before_lc_clk_byp_ack inside {[12 : 20]};
-    cycles_before_ast_clk_byp_ack inside {[3 : 11]};
+    cycles_before_io_clk_byp_ack inside {[3 : 11]};
     cycles_before_next_trans inside {[15 : 25]};
   }
 
@@ -72,15 +74,15 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     csr_wr(.ptr(ral.extclk_ctrl_regwen), .value(1));
     fork
       forever
-        @cfg.clkmgr_vif.ast_clk_byp_req begin : ast_clk_byp_ack
-          if (cfg.clkmgr_vif.ast_clk_byp_req == lc_ctrl_pkg::On) begin
-            `uvm_info(`gfn, "Got ast_clk_byp_req on", UVM_MEDIUM)
-            cfg.clk_rst_vif.wait_clks(cycles_before_ast_clk_byp_ack);
-            cfg.clkmgr_vif.update_ast_clk_byp_ack(lc_ctrl_pkg::On);
+        @cfg.clkmgr_vif.io_clk_byp_req begin : io_clk_byp_ack
+          if (cfg.clkmgr_vif.io_clk_byp_req == prim_mubi_pkg::MuBi4True) begin
+            `uvm_info(`gfn, "Got io_clk_byp_req on", UVM_MEDIUM)
+            cfg.clk_rst_vif.wait_clks(cycles_before_io_clk_byp_ack);
+            cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4True);
           end else begin
-            `uvm_info(`gfn, "Got ast_clk_byp_req off", UVM_MEDIUM)
-            cfg.clk_rst_vif.wait_clks(cycles_before_ast_clk_byp_ack);
-            cfg.clkmgr_vif.update_ast_clk_byp_ack(lc_ctrl_pkg::Off);
+            `uvm_info(`gfn, "Got io_clk_byp_req off", UVM_MEDIUM)
+            cfg.clk_rst_vif.wait_clks(cycles_before_io_clk_byp_ack);
+            cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4False);
           end
         end
       forever

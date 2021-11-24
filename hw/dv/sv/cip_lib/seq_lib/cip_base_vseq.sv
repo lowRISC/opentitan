@@ -57,9 +57,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // mask out bits out of the csr/mem range and LSB 2 bits
   bit [BUS_AW-1:0] csr_addr_mask[string];
 
-  rand uint delay_to_reset;
-  constraint delay_to_reset_c {
-    delay_to_reset dist {
+  // This knob is used in run_seq_with_rand_reset_vseq to control how long we wait before injecting
+  // a reset.
+  rand uint rand_reset_delay;
+  constraint rand_reset_delay_c {
+    rand_reset_delay dist {
         [1         :1000]       :/ 1,
         [1001      :100_000]    :/ 2,
         [100_001   :1_000_000]  :/ 6,
@@ -84,6 +86,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   `include "cip_base_vseq__tl_errors.svh"
   `include "cip_base_vseq__shadow_reg_errors.svh"
+  `include "cip_base_vseq__sec_cm_fi.svh"
 
   virtual task post_apply_reset(string reset_kind = "HARD");
     super.post_apply_reset(reset_kind);
@@ -135,23 +138,23 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
       fork
-        if (cfg.has_edn) apply_edn_reset(kind);
+        if (cfg.num_edn) apply_edn_reset(kind);
         super.apply_reset(kind);
       join
     end
   endtask
 
   virtual task apply_edn_reset(string kind = "HARD");
-    if (cfg.has_edn && kind == "HARD") cfg.edn_clk_rst_vif.apply_reset();
+    if (cfg.num_edn && kind == "HARD") cfg.edn_clk_rst_vif.apply_reset();
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
-    if (cfg.has_edn) begin
+    if (cfg.num_edn) begin
       cfg.edn_clk_rst_vif.drive_rst_pin(0);
       reset_duration_ps = max2(reset_duration_ps, cfg.edn_clk_rst_vif.clk_period_ps);
     end
     super.apply_resets_concurrently(reset_duration_ps);
-    if (cfg.has_edn) cfg.edn_clk_rst_vif.drive_rst_pin(1);
+    if (cfg.num_edn) cfg.edn_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   // tl_access task: does a single BUS_DW-bit write or read transaction to the specified address
@@ -168,7 +171,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit [BUS_DW-1:0]  compare_mask = '1,
                          input bit               check_exp_data = 1'b0,
                          input bit               blocking = csr_utils_pkg::default_csr_blocking,
-                         input mubi4_e           instr_type = MuBi4False,
+                         input mubi4_t           instr_type = MuBi4False,
                          tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
                          input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
     bit completed, saw_err;
@@ -192,7 +195,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       input bit [BUS_DW-1:0]  compare_mask = '1,
       input bit               check_exp_data = 1'b0,
       input bit               blocking = csr_utils_pkg::default_csr_blocking,
-      input mubi4_e           instr_type = MuBi4False,
+      input mubi4_t           instr_type = MuBi4False,
       tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
       input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone,
       input int               req_abort_pct = 0);
@@ -224,7 +227,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              input bit [BUS_DW-1:0]  compare_mask = '1,
                              input bit               check_exp_data = 1'b0,
                              input int               req_abort_pct = 0,
-                             input mubi4_e           instr_type = MuBi4False,
+                             input mubi4_t           instr_type = MuBi4False,
                              tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
                              input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone);
     `DV_SPINWAIT(
@@ -378,13 +381,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       // Each iteration only sends 1 item with TL integrity error. Increase to send at least
       // 10 x num_times integrity errors
       "tl_intg_err":                   run_tl_intg_err_vseq(10 * num_times);
-      "stress_all_with_rand_reset":    run_stress_all_with_rand_reset_vseq(num_times);
+      "stress_all_with_rand_reset":    run_plusarg_vseq_with_rand_reset(num_times);
       "same_csr_outstanding":          run_same_csr_outstanding_vseq(num_times);
       "shadow_reg_errors":             run_shadow_reg_errors(num_times);
       "shadow_reg_errors_with_csr_rw": run_shadow_reg_errors(num_times, 1);
       "mem_partial_access":            run_mem_partial_access_vseq(num_times);
       "csr_mem_rw_with_rand_reset":    run_csr_mem_rw_with_rand_reset_vseq(num_times);
       "csr_mem_rw":                    run_csr_mem_rw_vseq(num_times);
+      "sec_cm_fi":                     run_sec_cm_fi_vseq(num_times);
       default:                         run_csr_vseq_wrapper(num_times);
     endcase
   endtask
@@ -573,16 +577,29 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
 
-  // task to insert random reset within the input vseqs list, then check all CSR values
-  virtual task run_stress_all_with_rand_reset_vseq(int num_times = 1, bit do_tl_err = 1,
-                                                   uvm_sequence seq = null);
+  // Run a stress sequence (chosen by plusarg) in parallel with a TL errors vseq and then suddenly
+  // inject a reset.
+  virtual task run_plusarg_vseq_with_rand_reset(int num_times);
     string stress_seq_name;
-    void'($value$plusargs("stress_seq=%0s", stress_seq_name));
+    int had_stress_seq_plusarg = $value$plusargs("stress_seq=%0s", stress_seq_name);
+    `DV_CHECK_FATAL(had_stress_seq_plusarg)
+
+    run_seq_with_rand_reset_vseq(create_seq_by_name(stress_seq_name), num_times);
+  endtask
+
+  // Run the given sequence and possibly a TL errors vseq (if do_tl_err is set). Suddenly inject a
+  // reset after at most reset_delay_bound cycles. When we come out of reset, check all CSR values
+  // to ensure they are the documented reset values.
+  virtual task run_seq_with_rand_reset_vseq(uvm_sequence seq,
+                                            int          num_times = 1,
+                                            bit          do_tl_err = 1,
+                                            uint         reset_delay_bound = 10_000_000);
+    `DV_CHECK_FATAL(seq != null)
 
     for (int i = 1; i <= num_times; i++) begin
       bit ongoing_reset;
       bit do_read_and_check_all_csrs;
-      `uvm_info(`gfn, $sformatf("running run_stress_all_with_rand_reset_vseq iteration %0d/%0d",
+      `uvm_info(`gfn, $sformatf("running run_seq_with_rand_reset_vseq iteration %0d/%0d",
                                 i, num_times), UVM_LOW)
       // Arbitration: requests at highest priority granted in FIFO order, so that we can predict
       // results for many non-blocking accesses
@@ -599,11 +616,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 end
                 begin : run_stress_seq
                   dv_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) dv_vseq;
-                  if (seq == null) begin
-                    `downcast(dv_vseq, create_seq_by_name(stress_seq_name))
-                  end else begin
-                    `downcast(dv_vseq, seq.clone())
-                  end
+                  `downcast(dv_vseq, seq.clone())
+
                   dv_vseq.do_apply_reset = 0;
                   dv_vseq.set_sequencer(p_sequencer);
                   `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)
@@ -614,8 +628,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               `uvm_info(`gfn, $sformatf("\nFinished run %0d/%0d w/o reset", i, num_times), UVM_LOW)
             end
             begin : issue_rand_reset
-              `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay_to_reset)
-              cfg.clk_rst_vif.wait_clks(delay_to_reset);
+              `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(
+                  rand_reset_delay,
+                  rand_reset_delay inside {[1:reset_delay_bound]};)
+
+              cfg.clk_rst_vif.wait_clks(rand_reset_delay);
               #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
@@ -828,8 +845,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     `downcast(cip_seq, this.clone())
     cip_seq.common_seq_type = "csr_mem_rw";
     `uvm_info(`gfn, "Running run_csr_mem_rw_with_rand_reset_vseq", UVM_HIGH)
-    run_stress_all_with_rand_reset_vseq(.num_times(num_times), .do_tl_err(1),
-                                        .seq(cip_seq));
+
+    // The reset_delay_bound of 1000 here ensures that we don't pick an enormous delay before
+    // injecting a reset. Since the IP block is otherwise quiescent, we only really care about what
+    // point in a TL transaction the reset occurs. Each TL transaction takes roughly 10 cycles, so
+    // there's no need to wait longer than 1000 cycles (which would be ~100 TL transactions).
+    run_seq_with_rand_reset_vseq(.seq(cip_seq), .num_times(num_times), .do_tl_err(1),
+                                 .reset_delay_bound(1000));
   endtask
 
   virtual task run_alert_rsp_seq_nonblocking();

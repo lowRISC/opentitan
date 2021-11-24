@@ -286,7 +286,7 @@ A random number without guaranteed secrecy properties or specific statistical pr
 Intended for use in masking and blinding schemes.
 Use RND for high-quality randomness.
 
-The number is sourced from an LFSR.
+The number is sourced from an local PRNG.
 Reads never stall.
       </td>
     </tr>
@@ -362,7 +362,7 @@ A random number without guaranteed secrecy properties or specific statistical pr
 Intended for use in masking and blinding schemes.
 Use RND for high-quality randomness.
 
-The number is sourced from an LFSR.
+The number is sourced from a local PRNG.
 Reads never stall.
       </td>
     </tr>
@@ -525,10 +525,14 @@ Both the `RND` CSR and WSR take their bits from the same cache.
 `RND` CSR reads get bottom 32b and simply discard the other 192b on a read.
 When stalling on an `RND` read, OTBN will unstall on the cycle after it receives WLEN RND data from the EDN.
 
-`URND` provides bits from an LFSR within OTBN; reads from it never stall.
+`URND` provides bits from an local PRNG within OTBN; reads from it never stall.
 The `URND` LFSR is seeded once from the EDN connected via `edn_urnd` when OTBN starts execution.
-Each new execution of OTBN will reseed the `URND` LFSR.
-The LFSR state is advanced every cycle when OTBN is running.
+Each new execution of OTBN will reseed the `URND` PRNG.
+The PRNG state is advanced every cycle when OTBN is running.
+
+The PRNG has a long cycle length but has a fixed point: the sequence of numbers will get stuck if the state ever happens to become zero.
+This will never happen in normal operation.
+If a fault causes the state to become zero, OTBN raises a `BAD_INTERNAL_STATE` fatal error.
 
 ### Operational States {#design-details-operational-states}
 
@@ -698,6 +702,11 @@ This way, no alert is generated without setting an error code somewhere.
       <td><code>BUS_INTG_VIOLATION<code></td>
       <td>fatal</td>
       <td>An incoming bus transaction failed the integrity checks.</td>
+    </tr>
+    <tr>
+      <td><code>BAD_INTERNAL_STATE<code></td>
+      <td>fatal</td>
+      <td>The internal state of OTBN has become corrupt.</td>
     </tr>
     <tr>
       <td><code>ILLEGAL_BUS_ACCESS<code></td>

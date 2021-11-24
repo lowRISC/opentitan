@@ -15,6 +15,22 @@ extern "C" {
 #endif
 
 /**
+ * Evaluate an expression and call `shutdown_finalize` if the result is an
+ * error.
+ *
+ * The error will be passed as an argument to `shutdown_finalize`.
+ *
+ * @param expr_ An expression which results in an rom_error_t.
+ */
+#define SHUTDOWN_IF_ERROR(expr_) \
+  do {                           \
+    rom_error_t error = (expr_); \
+    if (error != kErrorOk) {     \
+      shutdown_finalize(error);  \
+    }                            \
+  } while (false)
+
+/**
  * Initializes the Mask ROM shutdown infrastructure.
  *
  * Reads the shutdown policy from OTP, and initializes the alert handler.

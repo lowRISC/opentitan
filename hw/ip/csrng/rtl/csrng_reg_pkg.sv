@@ -182,6 +182,10 @@ package csrng_reg_pkg;
       logic        d;
       logic        de;
     } read_int_state_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cs_bus_cmp_alert;
   } csrng_hw2reg_recov_alert_sts_reg_t;
 
   typedef struct packed {
@@ -276,6 +280,10 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } cmd_gen_cnt_err;
+    struct packed {
+      logic        d;
+      logic        de;
     } fifo_write_err;
     struct packed {
       logic        d;
@@ -323,14 +331,14 @@ package csrng_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [185:178]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [177:174]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [173:172]
-    csrng_hw2reg_genbits_reg_t genbits; // [171:140]
-    csrng_hw2reg_int_state_val_reg_t int_state_val; // [139:108]
-    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [107:92]
-    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [91:86]
-    csrng_hw2reg_err_code_reg_t err_code; // [85:36]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [189:182]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [181:178]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [177:176]
+    csrng_hw2reg_genbits_reg_t genbits; // [175:144]
+    csrng_hw2reg_int_state_val_reg_t int_state_val; // [143:112]
+    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [111:96]
+    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [95:88]
+    csrng_hw2reg_err_code_reg_t err_code; // [87:36]
     csrng_hw2reg_tracking_sm_obs_reg_t tracking_sm_obs; // [35:0]
   } csrng_hw2reg_t;
 
@@ -404,7 +412,7 @@ package csrng_reg_pkg;
     4'b 0001, // index[10] CSRNG_INT_STATE_NUM
     4'b 1111, // index[11] CSRNG_INT_STATE_VAL
     4'b 0011, // index[12] CSRNG_HW_EXC_STS
-    4'b 0001, // index[13] CSRNG_RECOV_ALERT_STS
+    4'b 0011, // index[13] CSRNG_RECOV_ALERT_STS
     4'b 1111, // index[14] CSRNG_ERR_CODE
     4'b 0001, // index[15] CSRNG_ERR_CODE_TEST
     4'b 0001, // index[16] CSRNG_SEL_TRACKING_SM

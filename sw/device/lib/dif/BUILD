@@ -19,9 +19,9 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//sw/device/lib/base",
         "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
-    ]
+        "//sw/device/lib/base",
+    ],
 )
 
 cc_test(
@@ -40,7 +40,7 @@ cc_test(
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
         "@googletest//:gtest_main",
-    ]
+    ],
 )
 
 cc_library(
@@ -61,12 +61,12 @@ cc_library(
 cc_test(
     name = "clkmgr_unittest",
     srcs = [
-        "dif_clkmgr_unittest.cc",
         "autogen/dif_clkmgr_autogen.c",
         "autogen/dif_clkmgr_autogen.h",
         "autogen/dif_clkmgr_autogen_unittest.cc",
         "dif_clkmgr.c",
         "dif_clkmgr.h",
+        "dif_clkmgr_unittest.cc",
     ],
     defines = [
         "MOCK_MMIO=1",

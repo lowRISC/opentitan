@@ -161,12 +161,12 @@ As illustrated below, an OTP chicken switch EN_SRAM_IFETCH (see [OTP memory map]
 The different configuration options are listed in the table below:
 
 
- EN_SRAM_IFETCH (OTP) | HW_DEBUG_EN (Life Cycle) | EXEC CSR | Execution Enabled
-----------------------|--------------------------|----------|--------------------
- == 0xA5              | -                        | == 0x5   | Yes
- == 0xA5              | -                        | != 0x5   | No
- != 0xA5              | ON                       | -        | Yes
- != 0xA5              | OFF                      | -        | No
+ EN_SRAM_IFETCH (OTP)   | HW_DEBUG_EN (Life Cycle) | EXEC CSR               | Execution Enabled
+------------------------|--------------------------|------------------------|--------------------
+ == kMultiBitBool8True  | -                        | == kMultiBitBool4True  | Yes
+ == kMultiBitBool8True  | -                        | != kMultiBitBool4True  | No
+ != kMultiBitBool8True  | ON                       | -                      | Yes
+ != kMultiBitBool8True  | OFF                      | -                      | No
 
 Note that the execute from SRAM feature may only be enabled on certain SRAM controller instances in the top-level design.
 If the feature is turned off via the `InstrExec` parameter, the execute from SRAM feature is permanently disabled, and the status of the OTP chicken bit, the life cycle state and the value of the EXEC register are irrelevant.

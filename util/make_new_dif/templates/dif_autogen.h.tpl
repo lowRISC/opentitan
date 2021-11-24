@@ -20,7 +20,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
 
-// This file is auto-generated.
+${autogen_banner}
 
 /**
  * @file

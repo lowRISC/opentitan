@@ -337,7 +337,7 @@ module prim_alert_receiver
   // check in-band init sequence moves FSM into IDLE state
   `ASSERT(InBandInitSequence_A,
       (state_q == InitReq &&
-      mubi4_test_true_strict(init_trig_i) [*1:$]) ##1
+      mubi4_test_true_strict(init_trig_i)) ##1
       (alert_sigint &&
       mubi4_test_false_loose(init_trig_i)) [*1:$] ##1
       (!alert_sigint &&

@@ -1,0 +1,33 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: spid_upload
+  dut:  spid_upload
+  tb:   spid_upload_tb
+  tool: vcs
+  fusesoc_core: lowrisc:dv:spid_upload_sim:0.1
+  import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
+  reseed: 1
+
+  build_modes: [
+  ]
+
+  tests: [
+    {
+      name: spid_upload_smoke
+      //build_mode: spid_status_locality_1
+    }
+  ]
+
+  regressions: [
+    {
+      name: smoke
+      tests: ["spid_upload_smoke"]
+    }
+    {
+      name: nightly
+      tests: ["spid_upload_smoke"]
+    }
+  ]
+}

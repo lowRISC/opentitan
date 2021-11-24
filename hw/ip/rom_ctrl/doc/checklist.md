@@ -44,14 +44,14 @@ RTL           | [FEATURE_COMPLETE][]    | Done        |
 RTL           | [AREA_CHECK][]          | Done        |
 RTL           | [PORT_FROZEN][]         | Done        |
 RTL           | [ARCHITECTURE_FROZEN][] | Done        |
-RTL           | [REVIEW_TODO][]         | Partial     | Remaining TODOs are related to FI hardening
+RTL           | [REVIEW_TODO][]         | Done        | Remaining TODOs are related to FI hardening (tracked in D2S)
 RTL           | [STYLE_X][]             | Done        |
-Code Quality  | [LINT_PASS][]           | Not Started |
+Code Quality  | [LINT_PASS][]           | Done        |
 Code Quality  | [CDC_SETUP][]           | N/A         | rom_ctrl has only one clock
 Code Quality  | [FPGA_TIMING][]         | Done        |
 Code Quality  | [CDC_SYNCMACRO][]       | N/A         | rom_ctrl has only one clock
 Security      | [SEC_CM_DOCUMENTED][]   | Not Started |
-Security      | [SEC_RND_CNST][]        | Not Started |
+Security      | [SEC_RND_CNST][]        | Done        |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}
@@ -71,6 +71,14 @@ Security      | [SEC_RND_CNST][]        | Not Started |
 [SEC_CM_DOCUMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_documented" >}}
 [SEC_RND_CNST]:        {{<relref "/doc/project/checklist.md#sec_rnd_cnst" >}}
 
+### D2S
+
+ Type         | Item                    | Resolution  | Note/Collaterals
+--------------|-------------------------|-------------|------------------
+Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
+
+[SEC_CM_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+
 ### D3
 
  Type         | Item                    | Resolution  | Note/Collaterals
@@ -85,7 +93,6 @@ Review        | [REVIEW_SW_CSR][]       | Not Started |
 Review        | [REVIEW_SW_FATAL_ERR][] | Not Started |
 Review        | [REVIEW_SW_CHANGE][]    | Not Started |
 Review        | [REVIEW_SW_ERRATA][]    | Not Started |
-Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
 Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
 Security      | [SEC_SHADOW_REGS][]     | Not Started |
 Review        | Reviewer(s)             | Not Started |
@@ -102,7 +109,6 @@ Review        | Signoff date            | Not Started |
 [REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review_sw_fatal_err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
-[SEC_CM_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
 [SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
 [SEC_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
 
@@ -205,6 +211,14 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all_low_priority_issues_root_caused" >}}
 [DV_DOC_TESTPLAN_REVIEWED]:           {{<relref "/doc/project/checklist.md#dv_doc_testplan_reviewed" >}}
 [V3_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v3_checklist_scoped" >}}
+
+### V2S
+
+ Type         | Item                                    | Resolution  | Note/Collaterals
+--------------|-----------------------------------------|-------------|------------------
+Tests         | [SEC_CM_VERIFIED][]                     | Not Started |
+
+[SEC_CM_VERIFIED]:                    {{<relref "/doc/project/checklist.md#sec_cm_verified" >}}
 
 ### V3
 

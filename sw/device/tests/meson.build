@@ -26,6 +26,41 @@ sw_rom_ext_tests = {
 }
 
 ###############################################################################
+# OTTF Example Tests
+###############################################################################
+ottf_example_bare_metal_test_lib = declare_dependency(
+  link_with: static_library(
+    'ottf_example_bare_metal_test_lib',
+    sources: ['ottf_example_bare_metal_test.c'],
+    dependencies: [
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'ottf_example_bare_metal_test': {
+    'library': ottf_example_bare_metal_test_lib,
+    'use_ottf': true,
+  }
+}
+
+ottf_example_concurrency_test_lib = declare_dependency(
+  link_with: static_library(
+    'ottf_example_concurrency_test_lib',
+    sources: ['ottf_example_concurrency_test.c'],
+    dependencies: [
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'ottf_example_concurrency_test': {
+    'library': ottf_example_concurrency_test_lib,
+    'use_ottf': true,
+  }
+}
+
+###############################################################################
 # Smoke Tests
 ###############################################################################
 rv_plic_smoketest_lib = declare_dependency(
@@ -134,6 +169,7 @@ rstmgr_smoketest_lib = declare_dependency(
       sw_lib_dif_rstmgr,
       sw_lib_mmio,
       sw_lib_runtime_hart,
+      sw_lib_testing_rstmgr_testutils,
     ],
   ),
 )
@@ -250,6 +286,23 @@ clkmgr_smoketest_lib = declare_dependency(
 sw_tests += {
   'clkmgr_smoketest': {
     'library': clkmgr_smoketest_lib,
+  }
+}
+
+clkmgr_jitter_test_lib = declare_dependency(
+  link_with: static_library(
+    'clkmgr_jitter_test_lib',
+    sources: ['clkmgr_jitter.c'],
+    dependencies: [
+      sw_lib_dif_clkmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'clkmgr_jitter_test': {
+    'library': clkmgr_jitter_test_lib,
   }
 }
 
@@ -526,6 +579,27 @@ sw_tests += {
   }
 }
 
+otbn_irq_test_lib = declare_dependency(
+  link_with: static_library(
+    'otbn_irq_test_lib',
+    sources: ['otbn_irq_test.c'],
+    dependencies: [
+      sw_lib_testing_entropy_testutils,
+      sw_lib_dif_otbn,
+      sw_lib_dif_rv_plic,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_otbn,
+      top_earlgrey,
+      sw_otbn['err_test']['rv32embed_dependency'],
+    ],
+  ),
+)
+sw_tests += {
+  'otbn_irq_test': {
+    'library': otbn_irq_test_lib,
+  }
+}
+
 # USB Device Tests
 usbdev_test_lib = declare_dependency(
   link_with: static_library(
@@ -559,6 +633,28 @@ sram_ctrl_scrambled_access_test_lib = declare_dependency(
 sw_tests += {
   'sram_ctrl_scrambled_access_test': {
     'library': sram_ctrl_scrambled_access_test_lib,
+  }
+}
+
+# SRAM Controller execution from Main SRAM test.
+sram_ctrl_execution_test_main_lib = declare_dependency(
+  link_with: static_library(
+    'sram_ctrl_execution_test_main_lib',
+    sources: ['sram_ctrl_execution_test_main.c'],
+    dependencies: [
+      sw_lib_bitfield,
+      sw_lib_dif_sram_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_testing_lc_ctrl_testutils,
+      sw_lib_testing_otp_ctrl_testutils,
+      sw_lib_testing_sram_ctrl_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'sram_ctrl_execution_test_main': {
+    'library': sram_ctrl_execution_test_main_lib,
   }
 }
 
@@ -596,17 +692,32 @@ sw_tests += {
 # (unsigned) test binaries loaded with ROM from sw/device/boot_rom/
 foreach sw_test_name, sw_test_info : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
-    sw_test_elf = executable(
-      sw_test_name + '_' + device_name,
-      name_suffix: 'elf',
-      dependencies: [
-        riscv_crt,
-        device_lib,
-        sw_test_info['library'],
-        sw_lib_irq_handlers,
-        sw_lib_testing_test_main,
-      ],
-    )
+    if 'use_ottf' in sw_test_info
+      # test target with OTTF
+      sw_test_elf = executable(
+        sw_test_name + '_' + device_name,
+        name_suffix: 'elf',
+        dependencies: [
+          riscv_crt,
+          device_lib,
+          sw_test_info['library'],
+          sw_lib_testing_ottf,
+        ],
+      )
+    else
+      # test target with bare metal on-device test framework
+      sw_test_elf = executable(
+        sw_test_name + '_' + device_name,
+        name_suffix: 'elf',
+        dependencies: [
+          riscv_crt,
+          device_lib,
+          sw_test_info['library'],
+          sw_lib_irq_handlers,
+          sw_lib_testing_test_main,
+        ],
+      )
+    endif
 
     target_name = sw_test_name + '_@0@_' + device_name
 
@@ -632,6 +743,15 @@ foreach sw_test_name, sw_test_info : sw_tests
       target_name.format('vmem64'),
       input: sw_test_bin,
       kwargs: bin_to_vmem64_custom_target_args,
+    )
+
+    sw_test_scr_vmem64 = custom_target(
+      target_name.format('scrambled'),
+      input: sw_test_vmem64,
+      output: flash_image_outputs,
+      command: flash_image_command,
+      depend_files: flash_image_depend_files,
+      build_by_default: true,
     )
 
     sw_test_sim_dv_frames = []
@@ -693,6 +813,7 @@ foreach sw_test_name, sw_test_info : sw_tests
         sw_test_bin,
         sw_test_vmem32,
         sw_test_vmem64,
+        sw_test_scr_vmem64,
         sw_test_sim_dv_frames,
         sw_test_sim_dv_logs,
       ],
@@ -770,10 +891,20 @@ foreach sw_test_name, sw_test_info : sw_rom_ext_tests
         kwargs: bin_to_vmem64_custom_target_args,
       )
 
+      sw_test_signed_scr_vmem64 = custom_target(
+        signed_target_name.format('scrambled'),
+        input: sw_test_signed_vmem64,
+        output: flash_image_outputs,
+        command: flash_image_command,
+        depend_files: flash_image_depend_files,
+        build_by_default: true,
+      )
+
       targets_to_export += [
         sw_test_signed_bin,
         sw_test_signed_vmem32,
         sw_test_signed_vmem64,
+        sw_test_signed_scr_vmem64
       ]
     endforeach
 
@@ -835,6 +966,15 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     kwargs: bin_to_vmem64_custom_target_args,
   )
 
+  crt_test_scr_vmem64 = custom_target(
+    target_name.format('scrambled'),
+    input: crt_test_vmem64,
+    output: flash_image_outputs,
+    command: flash_image_command,
+    depend_files: flash_image_depend_files,
+    build_by_default: true,
+  )
+
   custom_target(
     target_name.format('export'),
     command: export_target_command,
@@ -845,62 +985,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       crt_test_bin,
       crt_test_vmem32,
       crt_test_vmem64,
-    ],
-    output: target_name.format('export'),
-    build_always_stale: true,
-    build_by_default: true,
-  )
-endforeach
-
-# OpenTitan (FreeRTOS) Test Framework
-foreach device_name, device_lib : sw_lib_arch_core_devices
-  ottf_elf = executable(
-    'ottf_' + device_name,
-    name_suffix: 'elf',
-    dependencies: [
-      riscv_crt,
-      device_lib,
-      sw_lib_ottf,
-      sw_lib_irq_handlers,
-    ],
-  )
-
-  target_name = 'ottf_@0@_' + device_name
-
-  ottf_dis = custom_target(
-    target_name.format('dis'),
-    input: ottf_elf,
-    kwargs: elf_to_dis_custom_target_args,
-  )
-
-  ottf_bin = custom_target(
-    target_name.format('bin'),
-    input: ottf_elf,
-    kwargs: elf_to_bin_custom_target_args,
-  )
-
-  ottf_vmem32 = custom_target(
-    target_name.format('vmem32'),
-    input: ottf_bin,
-    kwargs: bin_to_vmem32_custom_target_args,
-  )
-
-  ottf_vmem64 = custom_target(
-    target_name.format('vmem64'),
-    input: ottf_bin,
-    kwargs: bin_to_vmem64_custom_target_args,
-  )
-
-  custom_target(
-    target_name.format('export'),
-    command: export_target_command,
-    depend_files: [export_target_depend_files,],
-    input: [
-      ottf_elf,
-      ottf_dis,
-      ottf_bin,
-      ottf_vmem32,
-      ottf_vmem64,
+      crt_test_scr_vmem64,
     ],
     output: target_name.format('export'),
     build_always_stale: true,

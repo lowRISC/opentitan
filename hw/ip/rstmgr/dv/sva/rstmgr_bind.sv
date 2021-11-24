@@ -43,8 +43,8 @@ module rstmgr_bind;
 
   bind rstmgr rstmgr_attrs_sva_if rstmgr_attrs_sva_if (
     .rst_ni,
-    .actual_alert_info_attr(hw2reg.alert_info_attr),
-    .actual_cpu_info_attr(hw2reg.cpu_info_attr),
+    .actual_alert_info_attr({'0, hw2reg.alert_info_attr}),
+    .actual_cpu_info_attr({'0, hw2reg.cpu_info_attr}),
     .expected_alert_info_attr(($bits(alert_dump_i) + 31) / 32),
     .expected_cpu_info_attr(($bits(cpu_dump_i) + 31) / 32)
   );

@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:rstmgr_pkg
+      - lowrisc:prim:mubi
     files:
       - rtl/autogen/rstmgr.sv
     file_type: systemVerilogSource

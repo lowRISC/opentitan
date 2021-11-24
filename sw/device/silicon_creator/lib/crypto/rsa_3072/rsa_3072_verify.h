@@ -58,29 +58,68 @@ typedef struct rsa_3072_constants_t {
 } rsa_3072_constants_t;
 
 /**
- * Precomputes Montgomery constants for an RSA-3072 public key.
+ * Computes Montgomery constant R^2 for an RSA-3072 public key.
  *
  * @param public_key Key for which to compute constants.
  * @param result Buffer in which to store output
  * @return Result of the operation (OK or error).
  */
-rom_error_t rsa_3072_precomp(const rsa_3072_public_key_t *public_key,
-                             rsa_3072_constants_t *result);
+otbn_error_t rsa_3072_compute_rr(const rsa_3072_public_key_t *public_key,
+                                 rsa_3072_int_t *result);
+
+/**
+ * Computes Montgomery constant m0_inv for an RSA-3072 public key.
+ *
+ * @param public_key Key for which to compute constants.
+ * @param result Buffer in which to store output
+ * @return Result of the operation (OK or error).
+ */
+otbn_error_t rsa_3072_compute_m0_inv(const rsa_3072_public_key_t *public_key,
+                                     uint32_t result[kOtbnWideWordNumWords]);
+
+/**
+ * Computes Montgomery constants for an RSA-3072 public key.
+ *
+ * @param public_key Key for which to compute constants.
+ * @param result Buffer in which to store output
+ * @return Result of the operation (OK or error).
+ */
+otbn_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
+                                        rsa_3072_constants_t *result);
+
+/**
+ * Encode the message according to RFC 8017, section 9.2, with a SHA2-256 hash
+ * function. See https://datatracker.ietf.org/doc/html/rfc8017#section-9.2
+ *
+ * Note that because we know the length of the modulus is 3072 bits, we know
+ * that emLen (the intended length in bytes of the message representative) is
+ * 3072/8 = 384, so it is not an argument here.
+ *
+ * Unlike in RFC 8017, the message representative returned here is in
+ * little-endian form.
+ *
+ * @param msg Message to encode
+ * @param msgLen Length of the message
+ * @param result Resulting 3072-bit message representative
+ * @return Result of the operation (OK or error).
+ */
+rom_error_t rsa_3072_encode_sha256(const char *msg, size_t msgLen,
+                                   rsa_3072_int_t *result);
 
 /**
  * Verifies an RSA-3072 signature.
  *
  * @param signature Signature to be verified.
- * @param message Digest of the message to check the signature against.
+ * @param message Encoded message representative to check the signature against.
  * @param public_key Key to check the signature against.
  * @param result Buffer in which to store output (true iff signature is valid)
  * @return Result of the operation (OK or error).
  */
-rom_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
-                            const rsa_3072_int_t *message,
-                            const rsa_3072_public_key_t *public_key,
-                            const rsa_3072_constants_t *constants,
-                            hardened_bool_t *result);
+otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
+                             const rsa_3072_int_t *message,
+                             const rsa_3072_public_key_t *public_key,
+                             const rsa_3072_constants_t *constants,
+                             hardened_bool_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"

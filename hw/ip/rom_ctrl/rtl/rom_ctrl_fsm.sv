@@ -53,6 +53,8 @@ module rom_ctrl_fsm
   output logic                       alert_o
 );
 
+  import prim_mubi_pkg::mubi4_bool_to_mubi;
+
   localparam int AW = vbits(RomDepth);
   localparam int TAW = vbits(TopCount);
 
@@ -228,7 +230,8 @@ module rom_ctrl_fsm
   assign exp_digest_idx_o = rel_addr;
 
   // Pass the 'done' and 'good' signals directly from the checker
-  assign pwrmgr_data_o = '{done: (state_q == Done), good: checker_good};
+  assign pwrmgr_data_o = '{done: mubi4_bool_to_mubi(state_q == Done),
+                           good: mubi4_bool_to_mubi(checker_good)};
 
   // Pass the digest all-at-once to the keymgr
   assign keymgr_data_o = '{data: digest_i, valid: (state_q == Done)};

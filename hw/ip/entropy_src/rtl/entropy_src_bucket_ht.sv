@@ -20,7 +20,8 @@ module entropy_src_bucket_ht #(
   input logic [RegWidth-1:0]    thresh_i,
   input logic                   window_wrap_pulse_i,
   output logic [RegWidth-1:0]   test_cnt_o,
-  output logic                  test_fail_pulse_o
+  output logic                  test_fail_pulse_o,
+  output logic                  count_err_o
 );
 
   localparam int NUM_BINS = 2**RngBusWidth;
@@ -28,19 +29,10 @@ module entropy_src_bucket_ht #(
   // signals
   logic [NUM_BINS-1:0] bin_incr;
   logic [NUM_BINS-1:0] bin_cnt_exceeds_thresh;
-
-  // flops
-  logic [RegWidth-1:0] test_cnt_q, test_cnt_d;
-  logic [RegWidth-1:0] bin_cntr_q[NUM_BINS], bin_cntr_d[NUM_BINS];
-
-  always_ff @(posedge clk_i or negedge rst_ni)
-    if (!rst_ni) begin
-      test_cnt_q       <= '0;
-      bin_cntr_q       <= '{default:0};
-    end else begin
-      test_cnt_q       <= test_cnt_d;
-      bin_cntr_q       <= bin_cntr_d;
-    end
+  logic [RegWidth-1:0] bin_cntr[NUM_BINS];
+  logic [NUM_BINS-1:0] bin_cntr_err;
+  logic [RegWidth-1:0] test_cnt;
+  logic                test_cnt_err;
 
 
   // Bucket Test
@@ -58,22 +50,45 @@ module entropy_src_bucket_ht #(
     // set the bin incrementer if the symbol matches that bin
     assign bin_incr[i] = entropy_bit_vld_i && (entropy_bit_i == i);
     // use the bin incrementer to increase the bin total count
-    assign bin_cntr_d[i] = window_wrap_pulse_i ? '0 :
-           ((active_i && bin_incr[i]) ? (bin_cntr_q[i]+1) : bin_cntr_q[i]);
-    // use the bin incrementer to increase the bin total count
-    assign bin_cnt_exceeds_thresh[i] = (bin_cntr_q[i] > thresh_i);
+    prim_count #(
+        .Width(RegWidth),
+        .OutSelDnCnt(1'b0), // count up
+        .CntStyle(prim_count_pkg::DupCnt)
+      ) u_prim_count_bin_cntr (
+        .clk_i,
+        .rst_ni,
+        .clr_i(window_wrap_pulse_i),
+        .set_i(!active_i || clear_i),
+        .set_cnt_i(RegWidth'(0)),
+        .en_i(bin_incr[i]),
+        .step_i(RegWidth'(1)),
+        .cnt_o(bin_cntr[i]),
+        .err_o(bin_cntr_err[i])
+      );
+    assign bin_cnt_exceeds_thresh[i] = (bin_cntr[i] > thresh_i);
   end : gen_symbol_match
 
   // Test event counter
-  assign test_cnt_d =
-         (!active_i || clear_i) ? '0 :
-         window_wrap_pulse_i ? '0 :
-         entropy_bit_vld_i && (|bin_cnt_exceeds_thresh) ? (test_cnt_q+1) :
-         test_cnt_q;
+  prim_count #(
+      .Width(RegWidth),
+      .OutSelDnCnt(1'b0), // count up
+      .CntStyle(prim_count_pkg::DupCnt)
+    ) u_prim_count_test_cnt (
+      .clk_i,
+      .rst_ni,
+      .clr_i(window_wrap_pulse_i),
+      .set_i(!active_i || clear_i),
+      .set_cnt_i(RegWidth'(0)),
+      .en_i(entropy_bit_vld_i && (|bin_cnt_exceeds_thresh)),
+      .step_i(RegWidth'(1)),
+      .cnt_o(test_cnt),
+      .err_o(test_cnt_err)
+    );
 
   // the pulses will be only one clock in length
-  assign test_fail_pulse_o = active_i && window_wrap_pulse_i && (test_cnt_q > '0);
-  assign test_cnt_o = test_cnt_q;
+  assign test_fail_pulse_o = active_i && window_wrap_pulse_i && (test_cnt > '0);
+  assign test_cnt_o = test_cnt;
+  assign count_err_o = test_cnt_err || (|bin_cntr_err);
 
 
 endmodule

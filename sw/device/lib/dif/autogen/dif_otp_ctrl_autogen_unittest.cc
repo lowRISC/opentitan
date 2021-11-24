@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This file is auto-generated.
+// THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
+// util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
 
@@ -27,13 +28,11 @@ class OtpCtrlTest : public Test, public MmioTest {
 class InitTest : public OtpCtrlTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_otp_ctrl_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_otp_ctrl_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_otp_ctrl_init({.base_addr = dev().region()}, &otp_ctrl_),
-            kDifOk);
+  EXPECT_EQ(dif_otp_ctrl_init(dev().region(), &otp_ctrl_), kDifOk);
 }
 
 class AlertForceTest : public OtpCtrlTest {};

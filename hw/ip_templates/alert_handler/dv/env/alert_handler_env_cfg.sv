@@ -7,6 +7,7 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
   // ext component cfgs
   esc_en_vif               esc_en_vif;
   crashdump_vif            crashdump_vif;
+  alert_handler_vif        alert_handler_vif;
   rand alert_esc_agent_cfg alert_host_cfg[];
   rand alert_esc_agent_cfg esc_device_cfg[];
 
@@ -18,7 +19,7 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-    has_edn = 1;
+    num_edn = 1;
     has_shadowed_regs = 1;
     super.initialize(csr_base_addr);
     shadow_update_err_status_fields[ral.loc_alert_cause[LocalShadowRegUpdateErr].la] = 1;

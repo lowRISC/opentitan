@@ -21,6 +21,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // Backdoor load the sw test image, setup UART, logger and test status interfaces.
   virtual task cpu_init();
+    `uvm_info(`gfn, "Started cpu_init", UVM_MEDIUM)
     // TODO: Fixing this for now - need to find a way to pass this on to the SW test.
     foreach (cfg.m_uart_agent_cfgs[i]) begin
       cfg.m_uart_agent_cfgs[i].set_parity(1'b0, 1'b0);
@@ -38,23 +39,32 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // initialize the sw test status
     cfg.sw_test_status_vif.sw_test_status_addr = SW_DV_TEST_STATUS_ADDR;
 
+    `uvm_info(`gfn, "Initializing RAM", UVM_MEDIUM)
     // Initialize the RAM to 0s and flash to all 1s.
-    if (cfg.initialize_ram) cfg.mem_bkdr_util_h[RamMain].clear_mem();
+    if (cfg.initialize_ram) begin
+      for (int i = 0; i < cfg.num_ram_main_tiles; i++) begin
+        chip_mem_e mem = chip_mem_e'(RamMain0 + i);
+        cfg.mem_bkdr_util_h[mem].clear_mem();
+      end
+    end
     cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
 
+    `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
     // Backdoor load memories with sw images.
     cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".scr.39.vmem"});
 
     // TODO: the location of the main execution image should be randomized to either bank in future.
+    `uvm_info(`gfn, "Initializing flash", UVM_MEDIUM)
     if (cfg.use_spi_load_bootstrap) begin
       spi_device_load_bootstrap({cfg.sw_images[SwTypeTest], ".frames.vmem"});
     end else begin
       cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
-          {cfg.sw_images[SwTypeTest], ".64.vmem"});
+          {cfg.sw_images[SwTypeTest], ".64.scr.vmem"});
     end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
 
+    `uvm_info(`gfn, "cpu_init done", UVM_MEDIUM)
     // If we load the mem with a file in the same timestamp as we are overwriting a symbol in the
     // ELF file, then adding zero delay helps with avoiding a race condition. Do all symbol
     // overrides after this zero delay.
@@ -173,7 +183,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // Elf file name checks.
     `DV_CHECK_FATAL(cfg.sw_images.exists(sw_type))
     `DV_CHECK_STRNE_FATAL(cfg.sw_images[sw_type], "")
-    `DV_CHECK_FATAL(mem inside {Rom, RamMain, FlashBank0Data, FlashBank1Data},
+    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], FlashBank0Data, FlashBank1Data},
         $sformatf("SW symbol cannot appear in %0s mem", mem))
 
     // Find the symbol in the sw elf file.
@@ -187,6 +197,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   endfunction
 
   // General-use function to backdoor write a byte of data to any selected memory type
+  //
+  // TODO: Add support for tiled RAM memories.
   virtual function void mem_bkdr_write8(input chip_mem_e mem,
                                         input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                         input byte data);

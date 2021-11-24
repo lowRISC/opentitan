@@ -6,5 +6,6 @@ pub mod bootstrap;
 pub mod console;
 pub mod gpio;
 pub mod hello;
+pub mod image;
 pub mod load_bitstream;
 pub mod spi;

@@ -98,7 +98,7 @@
       name: byte_transfer_on_spi
       desc: '''send spi transfer on byte granularity, and make sure the timer never expires'''
       milestone: V2
-      tests: ["spi_device_byte_transfer"]
+      tests: []
     }
     {
       name: rx_timeout
@@ -145,6 +145,100 @@
       desc: '''Run spi_device_fifi_full_vseq with very small delays'''
       milestone: V2
       tests: []
+    }
+    {
+      name: tpm_read
+      desc: '''
+            - Set TPM_CFG.TPM_MODE to 0 and set TPM_CFG.EN.
+            - Randomise other fields in TPM_CFG.
+            - Assert the tpm_csb.
+            - Send TPM read command over the SPI bus with a randomised address.
+            - Check TPM_CMD_ADDR.
+            - Confirm FIFO behaviour dictated by TPM_CFG.tpm_mode.
+            - Check TPM_STATUS.cmdaddr_notempty and INTR_STATE.tpm_header_notempty, they should be asserted if hw_reg_dis == 0.
+            - If hw_reg_dis == 0, the data is returned to the host via return-by-HW register, else the data is returned via read FIFO.
+            - Confirm that the TPM submodule sends WAIT until the read FIFO is available.
+            - Check the read FIFO.
+            - When available, confirm that the TPM submodule sends START followed by the register value.
+            - Compare this value with the expected value.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: tpm_write
+      desc: '''
+            - Set TPM_CFG.TPM_MODE to 0 and set TPM_CFG.EN.
+            - Randomise other fields in TPM_CFG.
+            - Assert the tpm_csb.
+            - Send TPM write command with a randomised address.
+            - Check TPM_CMD_ADDR and write FIFO.
+            - Check TPM_STATUS.cmdaddr_notempty and INTR_STATE.tpm_header_notempty.
+            - Based on FIFO status, check SPI bus to confirm WAIT or START sent.
+            - Check that the TPM submodule accepts write data without the WAIT state if the write FIFO is empty.
+            - Otherwise, check WAIT until the write FIFO becomes available (empty).'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: tpm_locality
+      desc: '''
+            - Make transactions of varying locality to the tpm submodule.
+            - Ensure that the data returned is correct for the given locality.
+            - Randomise TPM_CFG.invalid_locality and confirm response.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: partial_tpm_txrx
+      desc: '''
+            - Perform partial txrx over SPI with TPM_CFG.EN is set.
+            - Perform multiple partial TX/RX.'''
+      milestone: V2
+      tests: []
+    }
+  ]
+  covergroups: [
+    {
+      name: spi_device_tpm_all_modes_cg
+      desc: '''
+            Cover every combination of all possible modes:
+            - All modes perform tx/rx interleaved tpm tx/rx.'''
+    }
+    {
+      name: spi_device_tpm_states_cg
+      desc: '''
+            Cover all tpm states on the SPI bus (WAIT, INVALID, ETC).'''
+    }
+    {
+      name: spi_device_fifo_fsm_cg
+      desc: '''
+            Cover all fsm states for RX/TX FIFO.'''
+    }
+    {
+      name: spi_device_abort_all_cg
+      desc: '''
+            Cover the correct abort functionality for all modes.
+
+            TODO: Functionality of abort to be clarified.'''
+    }
+    {
+      name: spi_device_txrx_order_cg
+      desc: '''
+            Verify that data being tx/rx is valid regardless of bit order and that the functionality behaves as expected:
+
+            Cover all configurations of rx/tx order in SPI_DEVICE.CFG for all valid modes.'''
+    }
+    {
+      name: spi_device_sram_size_cg
+      desc: '''
+            Cover the SramAw local parameter to confirm all sizes 1 - 32kB.'''
+    }
+    {
+      name: spi_device_sck_config_cg
+      desc: '''
+            Cover all combinations of SPI_DEVICE.CFG.CPOL and SPI_DEVICE.CFG.CPHA.
+
+            Cover valid combinations for each mode.'''
     }
   ]
 }

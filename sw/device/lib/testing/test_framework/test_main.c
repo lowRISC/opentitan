@@ -40,11 +40,11 @@ int main(int argc, char **argv) {
   bool result = test_main();
 
   // Must happen before any debug output.
-  if (kTestConfig.can_clobber_uart) {
+  if (kDeviceType != kDeviceSimDV && kTestConfig.can_clobber_uart) {
     init_uart();
+    test_coverage_send_buffer();
   }
 
-  test_coverage_send_buffer();
   test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
 
   // Unreachable code.

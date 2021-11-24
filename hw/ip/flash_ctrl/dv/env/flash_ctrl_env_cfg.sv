@@ -13,6 +13,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   // seq cfg
   flash_ctrl_seq_cfg seq_cfg;
 
+  // interface
+  virtual flash_ctrl_if flash_ctrl_vif;
+
   // knobs
   // ral.status[init_wip] status is set for the very first clock cycle right out of reset.
   // This causes problems in the read value especially in CSR tests.
@@ -26,8 +29,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     list_of_alerts = flash_ctrl_env_pkg::LIST_OF_ALERTS;
+    has_shadowed_regs = 1;
     tl_intg_alert_name = "fatal_intg_err";
     super.initialize(csr_base_addr);
+
+    shadow_update_err_status_fields[ral.err_code.update_err] = 1;
+    shadow_storage_err_status_fields[ral.fault_status.storage_err] = 1;
+
     // create tl agent config obj
     m_eflash_tl_agent_cfg = tl_agent_cfg::type_id::create("m_eflash_tl_agent_cfg");
     m_eflash_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
@@ -171,32 +179,53 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   virtual function void flash_mem_bkdr_erase_check(flash_op_t flash_op, data_q_t exp_data = {});
     flash_mem_addr_attrs    addr_attrs = new(flash_op.addr);
     bit [TL_AW-1:0]         erase_check_addr;
+    string                  erase_page_num_msg;
     uint                    num_words;
 
     case (flash_op.erase_type)
       flash_ctrl_pkg::FlashErasePage: begin
         erase_check_addr = addr_attrs.page_start_addr;
         num_words = FlashNumBusWordsPerPage;
+        erase_page_num_msg = $sformatf("page = %0d, ", addr_attrs.page);
       end
       flash_ctrl_pkg::FlashEraseBank: begin
-        // TODO: check if bank erase was supported
-        erase_check_addr = addr_attrs.bank_start_addr;
-        num_words = FlashNumBusWordsPerBank;
+        // This address is relative to the bank it's in.
+        erase_check_addr = 0;
+        // No need to state page for bank erase.
+        erase_page_num_msg = "";
+        case (flash_op.partition)
+          FlashPartData: begin
+            num_words = FlashNumBusWordsPerBank;
+          end
+          FlashPartInfo: begin
+            num_words = InfoTypeBusWords[0];
+          end
+          default: begin
+            `uvm_fatal(`gfn, $sformatf({"Invalid partition for bank_erase: %0s. ",
+                                        "Bank erase is only valid in the data partition ",
+                                        "(FlashPartData) and the first info partition ",
+                                        "(FlashPartInfo)."}, flash_op.partition.name()))
+          end
+        endcase
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("Invalid erase_type: %0s", flash_op.erase_type.name()))
       end
     endcase
-    `uvm_info(`gfn, $sformatf({"flash_mem_bkdr_erase_check: partition = %s , addr = 0x%0h, ",
-                               "num_words = %0d"}, flash_op.partition.name(), erase_check_addr,
-                               num_words), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf({"flash_mem_bkdr_erase_check: Erase type = %s, bank = %0d, ",
+                               "partition = %s , %snum_words = %0d"},
+                               flash_op.erase_type.name(), addr_attrs.bank,
+                               flash_op.partition.name(), erase_page_num_msg, num_words),
+                               UVM_MEDIUM)
 
     for (int i = 0; i < num_words; i++) begin
       logic [TL_DW-1:0] data;
       data = mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].read32(erase_check_addr);
-      `uvm_info(`gfn, $sformatf({"flash_mem_bkdr_erase_check: bank: %0d, partition: %s , ",
-                                 "addr: 0x%0h, data: 0x%0h"}, addr_attrs.bank,
-                                 flash_op.partition.name(), erase_check_addr, data), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf({"flash_mem_bkdr_erase_check: Erase type = %s, bank: %0d, ",
+                                 "partition: %s , %saddr: 0x%0h, data: 0x%0h"},
+                                 flash_op.erase_type.name(), addr_attrs.bank,
+                                 flash_op.partition.name(), erase_page_num_msg, erase_check_addr,
+                                 data), UVM_MEDIUM)
       // If the expected data is not empty then it should be taken is expected. If it is empty the
       //  default expected value is checked - which for successful erase is all 1s.
       if (exp_data.size() <= i) begin

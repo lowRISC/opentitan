@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/testing/mock_mmio_test_utils.h"
 #include "sw/device/silicon_creator/lib/base/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
@@ -69,17 +70,11 @@ class TransferTest : public FlashCtrlTest {
  protected:
   const std::vector<uint32_t> words_ = {0x12345678, 0x90ABCDEF, 0x0F1E2D3C,
                                         0x4B5A6978};
-  void ExpectCheckBusy(bool busy) {
-    EXPECT_ABS_READ32(base_ + FLASH_CTRL_CTRL_REGWEN_REG_OFFSET,
-                      {{FLASH_CTRL_CTRL_REGWEN_EN_BIT, !busy}});
-  }
-
   void ExpectWaitForDone(bool done, bool error) {
     EXPECT_ABS_READ32(base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET,
-                      {{FLASH_CTRL_OP_STATUS_DONE_BIT, done}});
+                      {{FLASH_CTRL_OP_STATUS_DONE_BIT, done},
+                       {FLASH_CTRL_OP_STATUS_ERR_BIT, error}});
     if (done) {
-      EXPECT_ABS_READ32(base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET,
-                        {{FLASH_CTRL_OP_STATUS_ERR_BIT, error}});
       EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_OP_STATUS_REG_OFFSET, 0u);
     }
   }
@@ -87,7 +82,6 @@ class TransferTest : public FlashCtrlTest {
   void ExpectTransferStart(uint8_t part_sel, uint8_t info_sel,
                            uint8_t erase_sel, uint32_t op, uint32_t addr,
                            uint32_t word_count) {
-    ExpectCheckBusy(false);
     EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_ADDR_REG_OFFSET, addr);
     EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_CONTROL_REG_OFFSET,
                        {
@@ -113,32 +107,13 @@ class TransferTest : public FlashCtrlTest {
   }
 };
 
-TEST_F(TransferTest, ReadBusy) {
-  ExpectCheckBusy(true);
-  EXPECT_EQ(flash_ctrl_read(0, 0, kFlashCtrlRegionData, NULL),
-            kErrorFlashCtrlBusy);
-}
-
-TEST_F(TransferTest, ProgBusy) {
-  ExpectCheckBusy(true);
-  EXPECT_EQ(flash_ctrl_prog(0, 4, kFlashCtrlRegionData, NULL),
-            kErrorFlashCtrlBusy);
-}
-
-TEST_F(TransferTest, EraseBusy) {
-  ExpectCheckBusy(true);
-  EXPECT_EQ(flash_ctrl_erase(0, kFlashCtrlRegionData, kFlashCtrlErasePage),
-            kErrorFlashCtrlBusy);
-}
-
 TEST_F(TransferTest, ReadDataOk) {
   ExpectTransferStart(0, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_READ, 0x01234567,
                       words_.size());
   ExpectReadData(words_);
   ExpectWaitForDone(true, false);
   std::vector<uint32_t> words_out(words_.size());
-  EXPECT_EQ(flash_ctrl_read(0x01234567, words_.size(), kFlashCtrlRegionData,
-                            &words_out.front()),
+  EXPECT_EQ(flash_ctrl_data_read(0x01234567, words_.size(), &words_out.front()),
             kErrorOk);
   EXPECT_EQ(words_out, words_);
 }
@@ -148,8 +123,7 @@ TEST_F(TransferTest, ProgDataOk) {
                       words_.size());
   ExpectProgData(words_);
   ExpectWaitForDone(true, false);
-  EXPECT_EQ(flash_ctrl_prog(0x01234567, words_.size(), kFlashCtrlRegionData,
-                            &words_.front()),
+  EXPECT_EQ(flash_ctrl_data_write(0x01234567, words_.size(), &words_.front()),
             kErrorOk);
 }
 
@@ -157,9 +131,8 @@ TEST_F(TransferTest, EraseDataPageOk) {
   ExpectTransferStart(0, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_ERASE, 0x01234567,
                       1);
   ExpectWaitForDone(true, false);
-  EXPECT_EQ(
-      flash_ctrl_erase(0x01234567, kFlashCtrlRegionData, kFlashCtrlErasePage),
-      kErrorOk);
+  EXPECT_EQ(flash_ctrl_data_erase(0x01234567, kFlashCtrlEraseTypePage),
+            kErrorOk);
 }
 
 TEST_F(TransferTest, ProgAcrossWindows) {
@@ -196,8 +169,8 @@ TEST_F(TransferTest, ProgAcrossWindows) {
 
   EXPECT_EQ(iter + half_step, many_words.end());
 
-  EXPECT_EQ(flash_ctrl_prog(kWinSize / 2, many_words.size(),
-                            kFlashCtrlRegionData, &many_words.front()),
+  EXPECT_EQ(flash_ctrl_data_write(kWinSize / 2, many_words.size(),
+                                  &many_words.front()),
             kErrorOk);
 }
 
@@ -207,9 +180,8 @@ TEST_F(TransferTest, TransferInternalError) {
   ExpectReadData(words_);
   ExpectWaitForDone(true, true);
   std::vector<uint32_t> words_out(words_.size());
-  EXPECT_EQ(flash_ctrl_read(0x01234567, words_.size(), kFlashCtrlRegionData,
-                            &words_out.front()),
-            kErrorFlashCtrlInternal);
+  EXPECT_EQ(flash_ctrl_data_read(0x01234567, words_.size(), &words_out.front()),
+            kErrorFlashCtrlDataRead);
 }
 
 class ExecTest : public FlashCtrlTest {};

@@ -15,7 +15,7 @@ module rv_core_ibex
   parameter logic [NumAlerts-1:0] AlertAsyncOn     = {NumAlerts{1'b1}},
   parameter bit                   PMPEnable        = 1'b0,
   parameter int unsigned          PMPGranularity   = 0,
-  parameter int unsigned          PMPNumRegions    = 4,
+  parameter int unsigned          PMPNumRegions    = 16,
   parameter int unsigned          MHPMCounterNum   = 10,
   parameter int unsigned          MHPMCounterWidth = 32,
   parameter bit                   RV32E            = 0,
@@ -24,11 +24,11 @@ module rv_core_ibex
   parameter ibex_pkg::regfile_e   RegFile          = ibex_pkg::RegFileFF,
   parameter bit                   BranchTargetALU  = 1'b1,
   parameter bit                   WritebackStage   = 1'b1,
-  parameter bit                   ICache           = 1'b0,
-  parameter bit                   ICacheECC        = 1'b0,
-  parameter bit                   BranchPredictor  = 1'b0,
+  parameter bit                   ICache           = 1'b1,
+  parameter bit                   ICacheECC        = 1'b1,
+  parameter bit                   BranchPredictor  = 1'b1,
   parameter bit                   DbgTriggerEn     = 1'b1,
-  parameter bit                   SecureIbex       = 1'b0,
+  parameter bit                   SecureIbex       = 1'b1,
   parameter ibex_pkg::lfsr_seed_t RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
   parameter ibex_pkg::lfsr_perm_t RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
   parameter int unsigned          DmHaltAddr       = 32'h1A110800,
@@ -82,7 +82,7 @@ module rv_core_ibex
 
   // dft bypass
   input scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // peripheral interface access
   input  tlul_pkg::tl_h2d_t cfg_tl_d_i,
@@ -286,7 +286,7 @@ module rv_core_ibex
     .rst_ni,
 
 
-    .test_en_i      (scanmode_i == lc_ctrl_pkg::On),
+    .test_en_i      (prim_mubi_pkg::mubi4_test_true_strict(scanmode_i)),
     .scan_rst_ni,
 
     .ram_cfg_i,

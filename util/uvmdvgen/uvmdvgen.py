@@ -151,7 +151,7 @@ def main():
         if not args.env_agents:
             args.env_agents = []
         gen_env.gen_env(args.name, args.is_cip, args.has_ral,
-                        args.has_interrupts, args.has_alerts, args.has_edn,
+                        args.has_interrupts, args.has_alerts, args.num_edn,
                         args.env_agents, args.env_outdir, args.vendor)
 
 

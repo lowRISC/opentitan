@@ -1,0 +1,22 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  import_cfgs: [// Project wide common synthesis config file
+                "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"]
+
+  overrides: [
+    // This forces the synthesis to run without the real ASIC libs and
+    // generic primitives. This is used for experiments with unmapped
+    // (GTECH) netlists that are written out after elab and before
+    // technology mapping and optimization.
+    {
+      name: foundry_root
+      value: ""
+    }
+  ]
+
+  // No timing constraints needed for GTECH flow
+  sdc_file: ""
+  foundry_sdc_file: ""
+}

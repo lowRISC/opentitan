@@ -5,6 +5,10 @@
 #include "sw/device/silicon_creator/lib/crypto/rsa_3072/rsa_3072_verify.h"
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/otbn.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_util.h"
 
@@ -37,8 +41,55 @@ static const otbn_ptr_t kOtbnVarRsaInM0Inv =
 /* Mode is represented by a single word, 1 for precomputation and 2 for verify
  */
 static const uint32_t kOtbnRsaModeNumWords = 1;
-static const uint32_t kOtbnRsaModePrecomp = 1;
-static const uint32_t kOtbnRsaModeVerify = 2;
+static const uint32_t kOtbnRsaModeVerify = 1;
+static const uint32_t kOtbnRsaModeComputeRR = 2;
+static const uint32_t kOtbnRsaModeComputeM0Inv = 3;
+
+rom_error_t rsa_3072_encode_sha256(const char *msg, size_t msgLen,
+                                   rsa_3072_int_t *result) {
+  enum { kSha256DigestNumWords = 8 };
+
+  // Message encoding as described in RFC 8017, Section 9.2. The encoded
+  // message is:
+  //
+  // EM = 0x00 || 0x01 || PS || 0x00 || T,
+  //
+  // where PS is padding made of enough 0xff bytes to meet the desired
+  // message length emLen (emLen = 384 bytes for RSA-3072), and T is the DER
+  // encoding of the digest. For SHA-256,
+  //
+  // T = (0x)30 31 30 0d 06 09 60 86 48 01 65 03 04 02 01 05 00 04 20 || H,
+  //
+  // where H is the 256-bit message digest from SHA-256.
+  //
+  // Note that the RFC document is using a big-endian representation; here we
+  // are using little-endian, so the bytes are reversed.
+
+  // Initially set all bits of the result; we will change the ones that are not
+  // part of PS.
+  memset(result->data, 0xff, sizeof(result->data));
+
+  // Set 0x00 || 0x01 bytes at most significant end
+  result->data[kRsa3072NumWords - 1] = 0x0001ffff;
+
+  // Compute the SHA-256 message digest.
+  hmac_sha256_init();
+  RETURN_IF_ERROR(hmac_sha256_update(msg, msgLen));
+  hmac_digest_t digest;
+  RETURN_IF_ERROR(hmac_sha256_final(&digest));
+
+  // Copy the message digest into the least significant end of the result.
+  memcpy(result->data, digest.digest, sizeof(digest.digest));
+
+  // Set remainder of 0x00 || T section
+  result->data[kSha256DigestNumWords] = 0x05000420;
+  result->data[kSha256DigestNumWords + 1] = 0x03040201;
+  result->data[kSha256DigestNumWords + 2] = 0x86480165;
+  result->data[kSha256DigestNumWords + 3] = 0x0d060960;
+  result->data[kSha256DigestNumWords + 4] = 0x00303130;
+
+  return kErrorOk;
+}
 
 /**
  * Copies a 3072-bit number from the CPU memory to OTBN data memory.
@@ -48,8 +99,8 @@ static const uint32_t kOtbnRsaModeVerify = 2;
  * @param dst Pointer to the destination in OTBN's data memory.
  * @return The result of the operation.
  */
-rom_error_t write_rsa_3072_int_to_otbn(otbn_t *otbn, const rsa_3072_int_t *src,
-                                       otbn_ptr_t dst) {
+otbn_error_t write_rsa_3072_int_to_otbn(otbn_t *otbn, const rsa_3072_int_t *src,
+                                        otbn_ptr_t dst) {
   return otbn_copy_data_to_otbn(otbn, kRsa3072NumWords, src->data, dst);
 }
 
@@ -61,95 +112,132 @@ rom_error_t write_rsa_3072_int_to_otbn(otbn_t *otbn, const rsa_3072_int_t *src,
  * @param dst The destination of the copied data in main memory (preallocated).
  * @return The result of the operation.
  */
-rom_error_t read_rsa_3072_int_from_otbn(otbn_t *otbn, const otbn_ptr_t src,
-                                        rsa_3072_int_t *dst) {
+otbn_error_t read_rsa_3072_int_from_otbn(otbn_t *otbn, const otbn_ptr_t src,
+                                         rsa_3072_int_t *dst) {
   return otbn_copy_data_from_otbn(otbn, kRsa3072NumWords, src, dst->data);
 }
 
 // TODO: This implementation waits while OTBN is processing; it should be
 // modified to be non-blocking.
-rom_error_t rsa_3072_precomp(const rsa_3072_public_key_t *public_key,
-                             rsa_3072_constants_t *result) {
+otbn_error_t rsa_3072_compute_rr(const rsa_3072_public_key_t *public_key,
+                                 rsa_3072_int_t *result) {
   otbn_t otbn;
 
   // Initialize OTBN and load the RSA app.
   otbn_init(&otbn);
-  RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
+  OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
 
-  // Set mode to perform precomputation.
-  RETURN_IF_ERROR(otbn_copy_data_to_otbn(
-      &otbn, kOtbnRsaModeNumWords, &kOtbnRsaModePrecomp, kOtbnVarRsaMode));
+  // Set mode to compute R^2.
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+      &otbn, kOtbnRsaModeNumWords, &kOtbnRsaModeComputeRR, kOtbnVarRsaMode));
 
   // Set the modulus (n).
-  RETURN_IF_ERROR(
+  OTBN_RETURN_IF_ERROR(
       write_rsa_3072_int_to_otbn(&otbn, &public_key->n, kOtbnVarRsaInMod));
 
   // Start the OTBN routine.
-  RETURN_IF_ERROR(otbn_execute_app(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
 
   // Spin here waiting for OTBN to complete.
-  RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
 
-  // Read precomputed constant rr out of DMEM.
-  RETURN_IF_ERROR(
-      read_rsa_3072_int_from_otbn(&otbn, kOtbnVarRsaInRR, &result->rr));
+  // Read constant rr out of DMEM.
+  OTBN_RETURN_IF_ERROR(
+      read_rsa_3072_int_from_otbn(&otbn, kOtbnVarRsaInRR, result));
 
-  // Read precomputed constant m0_inv out of DMEM.
-  RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kOtbnWideWordNumWords,
-                                           kOtbnVarRsaInM0Inv, result->m0_inv));
-
-  return kErrorOk;
+  return kOtbnErrorOk;
 }
 
 // TODO: This implementation waits while OTBN is processing; it should be
 // modified to be non-blocking.
-rom_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
-                            const rsa_3072_int_t *message,
-                            const rsa_3072_public_key_t *public_key,
-                            const rsa_3072_constants_t *constants,
-                            hardened_bool_t *result) {
+otbn_error_t rsa_3072_compute_m0_inv(const rsa_3072_public_key_t *public_key,
+                                     uint32_t result[kOtbnWideWordNumWords]) {
+  otbn_t otbn;
+
+  // Initialize OTBN and load the RSA app.
+  otbn_init(&otbn);
+  OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
+
+  // Set mode to compute m0_inv.
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+      &otbn, kOtbnRsaModeNumWords, &kOtbnRsaModeComputeM0Inv, kOtbnVarRsaMode));
+
+  // Set the modulus (n).
+  OTBN_RETURN_IF_ERROR(
+      write_rsa_3072_int_to_otbn(&otbn, &public_key->n, kOtbnVarRsaInMod));
+
+  // Start the OTBN routine.
+  OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
+
+  // Spin here waiting for OTBN to complete.
+  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+
+  // Read precomputed constant m0_inv out of DMEM.
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kOtbnWideWordNumWords,
+                                                kOtbnVarRsaInM0Inv, result));
+
+  return kOtbnErrorOk;
+}
+
+// TODO: This implementation waits while OTBN is processing; it should be
+// modified to be non-blocking.
+otbn_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
+                                        rsa_3072_constants_t *result) {
+  OTBN_RETURN_IF_ERROR(rsa_3072_compute_rr(public_key, &result->rr));
+  OTBN_RETURN_IF_ERROR(rsa_3072_compute_m0_inv(public_key, result->m0_inv));
+
+  return kOtbnErrorOk;
+}
+
+// TODO: This implementation waits while OTBN is processing; it should be
+// modified to be non-blocking.
+otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
+                             const rsa_3072_int_t *message,
+                             const rsa_3072_public_key_t *public_key,
+                             const rsa_3072_constants_t *constants,
+                             hardened_bool_t *result) {
   otbn_t otbn;
   rsa_3072_int_t recoveredMessage;
 
   // For now, only the F4 modulus is supported.
   if (public_key->e != 65537) {
-    return kErrorOtbnInvalidArgument;
+    return kOtbnErrorInvalidArgument;
   }
 
   // TODO: Check that s < n, reject signature otherwise
 
   // Initialize OTBN and load the RSA app.
   otbn_init(&otbn);
-  RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
+  OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
 
   // Set mode to perform verification.
-  RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kOtbnRsaModeNumWords,
-                                         &kOtbnRsaModeVerify, kOtbnVarRsaMode));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+      &otbn, kOtbnRsaModeNumWords, &kOtbnRsaModeVerify, kOtbnVarRsaMode));
 
   // Set the modulus (n).
-  RETURN_IF_ERROR(
+  OTBN_RETURN_IF_ERROR(
       write_rsa_3072_int_to_otbn(&otbn, &public_key->n, kOtbnVarRsaInMod));
 
   // Set the signature.
-  RETURN_IF_ERROR(
+  OTBN_RETURN_IF_ERROR(
       write_rsa_3072_int_to_otbn(&otbn, signature, kOtbnVarRsaInBuf));
 
   // Set the precomputed constant R^2.
-  RETURN_IF_ERROR(
+  OTBN_RETURN_IF_ERROR(
       write_rsa_3072_int_to_otbn(&otbn, &constants->rr, kOtbnVarRsaInRR));
 
   // Set the precomputed constant m0_inv.
-  RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
       &otbn, kOtbnWideWordNumWords, constants->m0_inv, kOtbnVarRsaInM0Inv));
 
   // Start the OTBN routine.
-  RETURN_IF_ERROR(otbn_execute_app(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
 
   // Spin here waiting for OTBN to complete.
-  RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
 
   // Read recovered message out of OTBN dmem.
-  RETURN_IF_ERROR(
+  OTBN_RETURN_IF_ERROR(
       read_rsa_3072_int_from_otbn(&otbn, kOtbnVarRsaOutBuf, &recoveredMessage));
 
   // TODO: harden this memory comparison
@@ -161,5 +249,5 @@ rom_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
     }
   }
 
-  return kErrorOk;
+  return kOtbnErrorOk;
 }

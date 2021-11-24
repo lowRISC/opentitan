@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-#include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 
 // The context is declared as weak so that the mask ROM and ROM_EXT may

@@ -129,5 +129,9 @@ module edn
   // Interrupt Asserts
   `ASSERT_KNOWN(IntrEdnCmdReqDoneKnownO_A, intr_edn_cmd_req_done_o)
 
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
+    u_edn_core.u_prim_count_max_reqs_cntr,
+    alert_tx_o[1])
+
 
 endmodule

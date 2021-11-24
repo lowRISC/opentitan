@@ -40,6 +40,11 @@ class alert_handler_ping_timeout_vseq extends alert_handler_entropy_vseq;
     esc_ping_timeout   == '1;
   }
 
+  // At least enable `NUM_ALERTS-4` alerts to avoid this sequence running too long.
+  constraint enable_one_alert_c {
+    $countones(alert_en) dist {NUM_ALERTS :/ 8, [NUM_ALERTS-4 : NUM_ALERTS-1] :/ 2};
+  }
+
   constraint ping_timeout_cyc_c {
     ping_timeout_cyc inside {[1:MAX_PING_TIMEOUT_CYCLE]};
   }

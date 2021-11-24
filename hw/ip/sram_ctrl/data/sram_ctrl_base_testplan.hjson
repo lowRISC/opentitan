@@ -76,15 +76,6 @@
       tests: ["{variant}_bijection"]
     }
     {
-      name: mem_tl_errors
-      desc: '''
-            This test will reuse the common tl_access_tests to run TLUL error sequences on the
-            SRAM TLUL interface to verify that erroneous TLUL transactions are handled correctly.
-            '''
-      milestone: V2
-      tests: ["{variant}_mem_tl_errors"]
-    }
-    {
       name: access_during_key_req
       desc: '''
             This test is the same as the multiple_keys test, except we make sure to sequence some

@@ -39,6 +39,7 @@ package otbn_env_pkg;
   // parameters
   parameter string LIST_OF_ALERTS[] = {"fatal", "recov"};
   parameter uint NUM_ALERTS = otbn_reg_pkg::NumAlerts;
+  parameter uint NUM_EDN = 2;
 
   // typedefs
   typedef virtual pins_if #(1) idle_vif;

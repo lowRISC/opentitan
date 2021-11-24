@@ -4,7 +4,11 @@
 
 from typing import Callable, Dict, List, Sequence
 
-from shared.otbn_reggen import Field, Register, RegBlock, load_registers
+from reggen.field import Field
+from reggen.register import Register
+from reggen.reg_block import RegBlock
+
+from shared.otbn_reggen import load_registers
 
 from .trace import Trace
 

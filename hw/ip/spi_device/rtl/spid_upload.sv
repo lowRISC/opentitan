@@ -183,10 +183,12 @@ module spid_upload
   assign unused_fifo_wready = ^{cmdfifo_wready, addrfifo_wready, payload_wready};
 
   // Simplified command info
+  addr_mode_e cmdinfo_addr_mode;
   logic cmdinfo_addr_en, cmdinfo_addr_4b_en;
 
   logic unused_cmdinfo;
   assign unused_cmdinfo = ^{
+    cmd_info_i.valid,         // cmdparse checks the valid bit
     cmd_info_i.addr_swap_en,
     cmd_info_i.dummy_en,
     cmd_info_i.dummy_size,
@@ -194,6 +196,7 @@ module spid_upload
     cmd_info_i.opcode,
     cmd_info_i.payload_dir,
     cmd_info_i.payload_en,
+    cmd_info_i.payload_swap_en,
     cmd_info_i.upload
   };
 
@@ -215,10 +218,10 @@ module spid_upload
   //////////////
 
   // Command info process
-  assign cmdinfo_addr_en = cmd_info_i.addr_en;
+  assign cmdinfo_addr_mode = get_addr_mode(cmd_info_i, cfg_addr_4b_en_i);
+  assign cmdinfo_addr_en   = cmdinfo_addr_mode != AddrDisabled;
 
-  assign cmdinfo_addr_4b_en = spi_device_pkg::is_cmdinfo_addr_4b(
-                              cmd_info_i, cfg_addr_4b_en_i);
+  assign cmdinfo_addr_4b_en = cmdinfo_addr_mode == Addr4B;
 
   assign cmdfifo_wdata  = s2p_byte_i; // written to FIFO at first
   assign addrfifo_wdata = address_d;
@@ -263,11 +266,35 @@ module spid_upload
   end
 
   // Synchronize to the sys_clk when CSb deasserted
+  logic sys_payloadptr_clr_posedge;
+
+  // To trigger the payload buffer update event, the payload_depth should be
+  // reset when new upload command comes.
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) sys_payload_depth_o <= '0;
+    else if (sys_payloadptr_clr_posedge) sys_payload_depth_o <= '0;
     else if (sys_csb_deasserted_pulse_i) sys_payload_depth_o <= payloadptr;
   end
 
+  // payloadptr_clr --> sys domain
+  // latch payloadptr_clr @ SCK -> 2FF -> Edge detect
+  logic payloadptr_clr_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) payloadptr_clr_q <= 1'b 0;
+    else         payloadptr_clr_q <= payloadptr_clr;
+  end
+  prim_edge_detector #(
+    .Width      (1),
+    .EnSync     (1'b 1),
+    .ResetValue (1'b 1)
+  ) u_payloadptr_clr_edge_sys (
+    .clk_i (sys_clk_i),
+    .rst_ni (sys_rst_ni),
+    .d_i    (payloadptr_clr_q),
+    .q_sync_o (),
+    .q_posedge_pulse_o (sys_payloadptr_clr_posedge),
+    .q_negedge_pulse_o ()
+  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -327,6 +354,8 @@ module spid_upload
 
         if (addrcnt == '0) begin
           st_d = StPayload;
+
+          addrfifo_wvalid = 1'b 1;
         end
       end
 
@@ -522,7 +551,8 @@ module spid_upload
   prim_sram_arbiter #(
     .N      (NumSramIntf),
     .SramDw (SramDw),
-    .SramAw (SramAw)
+    .SramAw (SramAw),
+    .EnMask (1'b 1)
   ) u_arbiter (
     .clk_i,
     .rst_ni,

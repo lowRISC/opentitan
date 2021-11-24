@@ -72,7 +72,7 @@ class OtbnModel {
   ISSWrapper *ensure_wrapper();
 
   // Read the contents of the ISS's memory
-  std::vector<uint8_t> get_sim_memory(bool is_imem) const;
+  Ecc32MemArea::EccWords get_sim_memory(bool is_imem) const;
 
   // Set the contents of the ISS's memory
   void set_sim_memory(bool is_imem, const std::vector<uint8_t> &data);

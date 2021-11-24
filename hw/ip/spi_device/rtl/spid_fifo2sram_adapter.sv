@@ -74,8 +74,8 @@ module spid_fifo2sram_adapter #(
     always_comb begin
       sram_wdata_o = '0;
       sram_wmask_o = '0;
-      for(int unsigned i = 0; i < SubWordW ; i++) begin
-        if (fifoptr[0+:$clog2(SubWordW)] == i) begin
+      for(int unsigned i = 0; i < NumEntryPerWord ; i++) begin
+        if (fifoptr[0+:SubWordW] == i) begin
           sram_wdata_o[i*FifoWidth+:FifoWidth] = wdata_i;
           sram_wmask_o[i*FifoWidth+:FifoWidth] = {FifoWidth{1'b1}};
         end

@@ -318,7 +318,7 @@ module rom_ctrl
     assign exp_digest_de = 1'b0;
     assign exp_digest_idx = '0;
 
-    assign pwrmgr_data_o = '{done: 1'b1, good: 1'b1};
+    assign pwrmgr_data_o = PWRMGR_DATA_DEFAULT;
     // Send something other than '1 or '0 because the key manager has an "all ones" and an "all
     // zeros" check.
     assign keymgr_data_o = '{data: {128{2'b10}}, valid: 1'b1};

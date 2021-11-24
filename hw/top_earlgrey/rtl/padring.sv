@@ -26,7 +26,7 @@ module padring
 ) (
   // This is only used for scan
   input                           clk_scan_i,
-  lc_ctrl_pkg::lc_tx_t            scanmode_i,
+  prim_mubi_pkg::mubi4_t          scanmode_i,
   // RAW outputs used for DFT and infrastructure
   // purposes (e.g. external muxed clock)
   output logic     [NDioPads-1:0] dio_in_raw_o,
@@ -50,9 +50,9 @@ module padring
   pad_pok_t [NIoBanks-1:0] pad_pok;
 
   logic scanmode;
-  prim_lc_dec u_prim_lc_dec (
-    .lc_en_i     ( scanmode_i ),
-    .lc_en_dec_o ( scanmode   )
+  prim_mubi4_dec u_prim_mubi4_dec (
+    .mubi_i     ( scanmode_i ),
+    .mubi_dec_o ( scanmode   )
   );
 
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_pads

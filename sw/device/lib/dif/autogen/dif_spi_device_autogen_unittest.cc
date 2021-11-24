@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This file is auto-generated.
+// THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
+// util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_spi_device_autogen.h"
 
@@ -27,13 +28,11 @@ class SpiDeviceTest : public Test, public MmioTest {
 class InitTest : public SpiDeviceTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_spi_device_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_spi_device_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_spi_device_init({.base_addr = dev().region()}, &spi_device_),
-            kDifOk);
+  EXPECT_EQ(dif_spi_device_init(dev().region(), &spi_device_), kDifOk);
 }
 
 class AlertForceTest : public SpiDeviceTest {};

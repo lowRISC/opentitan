@@ -33,7 +33,11 @@ class Dmem:
     '''
 
     def __init__(self) -> None:
-        _, dmem_size = get_memory_layout()['DMEM']
+        _, dmem_bus_size = get_memory_layout()['DMEM']
+
+        # DMEM is actually twice as big as the layout from reggen would have us
+        # believe!
+        dmem_size = 2 * dmem_bus_size
 
         # Check the arguments look sensible, to avoid allocating massive chunks
         # of memory. We know we won't have more than 1 MiB of DMEM.
@@ -48,82 +52,82 @@ class Dmem:
             raise RuntimeError('DMEM size ({}) is not divisible by 32.'
                                .format(dmem_size))
 
-        num_words = dmem_size // 32
+        num_words = dmem_size // 4
 
         # Initialise the memory to an arbitrary "bad" constant (here,
         # 0xdeadbeef). We could initialise to a random value, but maybe it's
         # more helpful to generate something recognisable for now.
-        uninit = 0
-        for i in range(32 // 4):
-            uninit = (uninit << 32) | 0xdeadbeef
+        uninit = 0xdeadbeef
 
         self.data = [uninit] * num_words
         self.trace = []  # type: List[TraceDmemStore]
 
-    def _get_u32s(self, idx: int) -> List[int]:
-        '''Return the value at idx as 8 uint32's
+    def _load_5byte_le_words(self, data: bytes) -> None:
+        '''Replace the start of memory with data
 
-        These are ordered by increasing address, so the first word from
-        _get_u32s(0) will correspond to bytes at addresses 0x0 through 0x3.
-
-        These uint32's are the words that get loaded by word accesses to
-        memory. Since these accesses are also little-endian, the byte at memory
-        address 0x0 (which holds the LSB for the first 256-bit value) will also
-        be the LSB of the first u32 returned by _get_u32s(0).
+        The bytes loaded should represent each 32-bit word with 5 bytes,
+        consisting of a validity byte (0 or 1) followed by 4 bytes for the word
+        itself.
 
         '''
-        assert 0 <= idx < len(self.data)
+        if len(data) % 5:
+            raise ValueError('Trying to load {} bytes of data, '
+                             'which is not a multiple of 5.'
+                             .format(len(data)))
 
-        word = self.data[idx]
-        assert 0 <= word <= 1 << 256
+        len_data_32 = len(data) // 5
+        len_mem_32 = (256 // 32) * len(self.data)
 
-        # Pack this unsigned word into w32s as 8 32-bit numbers. Note that
-        # this packing is "little-endian": the first unsigned word contains
-        # the LSB of the value.
-        ret = []
-        w32_mask = (1 << 32) - 1
-        for subidx in range(8):
-            ret.append((word >> (32 * subidx)) & w32_mask)
+        if len_data_32 > len_mem_32:
+            raise ValueError('Trying to load {} bytes of data, but DMEM '
+                             'is only {} bytes long.'
+                             .format(4 * len_data_32, 32 * len(self.data)))
 
-        return ret
+        # Zero-pad up to the next 32-bit word, represented by 5 bytes. Because
+        # things are little-endian, this is like zero-extending the last word.
+        if len(data) % 5:
+            data = data + b'0' * (5 - (len(data) % 5))
 
-    def _set_u32s(self, idx: int, u32s: List[int]) -> None:
-        '''Set the value at idx with 8 uint32's in little-endian order'''
-        assert 0 <= idx < len(self.data)
-        assert len(u32s) == 8
+        for idx32, (vld, u32) in enumerate(struct.iter_unpack('<BI', data)):
+            if vld not in [0, 1]:
+                raise ValueError('The validity byte for 32-bit word {} '
+                                 'in the input data is {}, not 0 or 1.'
+                                 .format(idx32, vld))
 
-        # Accumulate the u32s into a 256-bit unsigned number (in a
-        # little-endian fashion)
-        u256 = 0
-        for u32 in reversed(u32s):
-            assert 0 <= u32 <= (1 << 32) - 1
-            u256 = (u256 << 32) | u32
+            # TODO: Take account of validity bit here!
 
-        # Store it!
-        self.data[idx] = u256
+            self.data[idx32] = u32
 
-    def load_le_words(self, data: bytes) -> None:
-        '''Replace the start of memory with data'''
+    def _load_4byte_le_words(self, data: bytes) -> None:
+        '''Replace the start of memory with data
+
+        The bytes loaded should represent each 32-bit word with 4 bytes in
+        little-endian format.
+
+        '''
         if len(data) > 32 * len(self.data):
             raise ValueError('Trying to load {} bytes of data, but DMEM '
                              'is only {} bytes long.'
                              .format(len(data), 32 * len(self.data)))
-
-        # Zero-pad bytes up to the next multiple of 256 bits (because things
+        # Zero-pad bytes up to the next multiple of 32 bits (because things
         # are little-endian, is like zero-extending the last word).
-        if len(data) % 32:
+        if len(data) % 4:
             data = data + b'0' * (32 - (len(data) % 32))
 
-        acc = []
         for idx32, u32 in enumerate(struct.iter_unpack('<I', data)):
-            acc.append(u32[0])
-            if len(acc) == 8:
-                self._set_u32s(idx32 // 8, acc)
-                acc = []
+            self.data[idx32] = u32[0]
 
-        # Our zero-extension should have guaranteed we finished on a multiple
-        # of 8, but it can't hurt to check.
-        assert acc == []
+    def load_le_words(self, data: bytes, has_validity: bool) -> None:
+        '''Replace the start of memory with data
+
+        Uses the 5-byte format if has_validity is true and the 4-byte format
+        otherwise.
+
+        '''
+        if has_validity:
+            self._load_5byte_le_words(data)
+        else:
+            self._load_4byte_le_words(data)
 
     def dump_le_words(self) -> bytes:
         '''Return the contents of memory as bytes.
@@ -132,10 +136,11 @@ class Dmem:
         words are themselves packed little-endian into 256-bit words.
 
         '''
-        u32s = []  # type: List[int]
-        for idx in range(len(self.data)):
-            u32s += self._get_u32s(idx)
-        return struct.pack('<{}I'.format(len(u32s)), *u32s)
+        ret = b''
+        for u32 in self.data:
+            ret += struct.pack('<BI', 1, u32)
+
+        return ret
 
     def is_valid_256b_addr(self, addr: int) -> bool:
         '''Return true if this is a valid address for a BN.LID/BN.SID'''
@@ -143,7 +148,7 @@ class Dmem:
         if addr & 31:
             return False
 
-        word_addr = addr // 32
+        word_addr = addr // 4
         if word_addr >= len(self.data):
             return False
 
@@ -153,8 +158,12 @@ class Dmem:
         '''Read a u256 little-endian value from an aligned address'''
         assert addr >= 0
         assert self.is_valid_256b_addr(addr)
+        ret_data = 0
+        for i in range(256 // 32):
+            rd_data = self.data[(addr // 4) + i]
+            ret_data = ret_data | (rd_data << (i * 32))
 
-        return self.data[addr // 32]
+        return ret_data
 
     def store_u256(self, addr: int, value: int) -> None:
         '''Write a u256 little-endian value to an aligned address'''
@@ -170,7 +179,7 @@ class Dmem:
         if addr & 3:
             return False
 
-        if (addr + 3) // 32 >= len(self.data):
+        if (addr + 3) // 4 >= len(self.data):
             return False
 
         return True
@@ -182,13 +191,10 @@ class Dmem:
         32-bit integer.
 
         '''
+        assert addr >= 0
         assert self.is_valid_32b_addr(addr)
 
-        idx32 = addr // 4
-        idxW = idx32 // 8
-        offW = idx32 % 8
-
-        return self._get_u32s(idxW)[offW]
+        return self.data[addr // 4]
 
     def store_u32(self, addr: int, value: int) -> None:
         '''Store a 32-bit unsigned value to memory.
@@ -208,23 +214,16 @@ class Dmem:
     def _commit_store(self, item: TraceDmemStore) -> None:
         if item.is_wide:
             assert 0 <= item.value < (1 << 256)
-            self.data[item.addr // 32] = item.value
+            mask = (1 << 32) - 1
+            for i in range(256 // 32):
+                wr_data = (item.value >> (i * 32)) & mask
+                self.data[(item.addr // 4) + i] = wr_data
+
             return
+        else:
+            self.data[item.addr // 4] = item.value
 
-        idx32 = item.addr // 4
-        idxW = idx32 // 8
-        offW = idx32 % 8
-
-        # Since we store data in wide form, we have to do a read/modify/write
-        # to update. Grab the old word and expand it to a list of 8 u32s.
-        u32s = self._get_u32s(idxW)
-
-        # Replace the word we're setting
         assert 0 <= item.value <= (1 << 32) - 1
-        u32s[offW] = item.value
-
-        # And write back
-        self._set_u32s(idxW, u32s)
 
     def commit(self) -> None:
         for item in self.trace:

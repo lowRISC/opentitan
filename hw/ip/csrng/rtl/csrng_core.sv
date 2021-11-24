@@ -184,6 +184,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [2:0]             ctr_drbg_gen_sfifo_ggenbits_err;
   logic                   block_encrypt_sfifo_blkenc_err_sum;
   logic [2:0]             block_encrypt_sfifo_blkenc_err;
+  logic                   cmd_gen_cnt_err_sum;
   logic                   cmd_stage_sm_err_sum;
   logic                   main_sm_err_sum;
   logic                   main_sm_err;
@@ -288,6 +289,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_wr;
   logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_rd;
   logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_st;
+  logic [NApps-1:0]          cmd_gen_cnt_err;
   logic [NApps-1:0]          cmd_stage_sm_err;
 
   logic [NApps-1:0]          cmd_stage_vld;
@@ -334,6 +336,9 @@ module csrng_core import csrng_pkg::*; #(
   logic [7:0]              track_sm[16];
   logic [1:0]              sel_track_sm_grp;
 
+  logic                    cs_rdata_capt_vld;
+  logic                    cs_bus_cmp_alert;
+
   logic                    unused_err_code_test_bit;
   logic                    unused_reg2hw_genbits;
   logic                    unused_int_state_val;
@@ -351,6 +356,8 @@ module csrng_core import csrng_pkg::*; #(
   logic           cs_aes_halt_q, cs_aes_halt_d;
   logic [SeedLen-1:0] entropy_src_seed_q, entropy_src_seed_d;
   logic               entropy_src_fips_q, entropy_src_fips_d;
+  logic [63:0]        cs_rdata_capt_q, cs_rdata_capt_d;
+  logic               cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -366,6 +373,8 @@ module csrng_core import csrng_pkg::*; #(
       cs_aes_halt_q <= '0;
       entropy_src_seed_q <= '0;
       entropy_src_fips_q <= '0;
+      cs_rdata_capt_q       <= '0;
+      cs_rdata_capt_vld_q   <= '0;
     end else begin
       acmd_q  <= acmd_d;
       shid_q  <= shid_d;
@@ -379,6 +388,8 @@ module csrng_core import csrng_pkg::*; #(
       cs_aes_halt_q <= cs_aes_halt_d;
       entropy_src_seed_q <= entropy_src_seed_d;
       entropy_src_fips_q <= entropy_src_fips_d;
+      cs_rdata_capt_q       <= cs_rdata_capt_d;
+      cs_rdata_capt_vld_q   <= cs_rdata_capt_vld_d;
     end
 
   //--------------------------------------------
@@ -449,7 +460,7 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   // set the interrupt sources
-  assign event_cs_fatal_err = cs_enable  && (
+  assign event_cs_fatal_err = (cs_enable  && (
          (|cmd_stage_sfifo_cmd_err_sum) ||
          (|cmd_stage_sfifo_genbits_err_sum) ||
          ctr_drbg_cmd_sfifo_cmdreq_err_sum ||
@@ -474,7 +485,8 @@ module csrng_core import csrng_pkg::*; #(
          aes_cipher_sm_err_sum ||
          fifo_write_err_sum ||
          fifo_read_err_sum ||
-         fifo_status_err_sum);
+         fifo_status_err_sum)) ||
+         cmd_gen_cnt_err_sum; // err not gated by cs_enable
 
   // set fifo errors that are single instances of source
   assign ctr_drbg_cmd_sfifo_cmdreq_err_sum = (|ctr_drbg_cmd_sfifo_cmdreq_err) ||
@@ -517,6 +529,8 @@ module csrng_core import csrng_pkg::*; #(
          err_code_test_bit[24];
   assign aes_cipher_sm_err_sum = aes_cipher_sm_err ||
          err_code_test_bit[25];
+  assign cmd_gen_cnt_err_sum = (|cmd_gen_cnt_err) ||
+         err_code_test_bit[26];
   assign fifo_write_err_sum =
          block_encrypt_sfifo_blkenc_err[2] ||
          ctr_drbg_gen_sfifo_ggenbits_err[2] ||
@@ -639,6 +653,9 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.err_code.aes_cipher_sm_err.d = 1'b1;
   assign hw2reg.err_code.aes_cipher_sm_err.de = cs_enable && aes_cipher_sm_err_sum;
 
+  assign hw2reg.err_code.cmd_gen_cnt_err.d = 1'b1;
+  assign hw2reg.err_code.cmd_gen_cnt_err.de = cmd_gen_cnt_err_sum;
+
 
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
@@ -669,32 +686,35 @@ module csrng_core import csrng_pkg::*; #(
   };
 
 
-  assign recov_alert_event = cs_enable_pfa || sw_app_enable_pfa || read_int_state_pfa;
+  assign recov_alert_event = cs_enable_pfa ||
+         sw_app_enable_pfa ||
+         read_int_state_pfa ||
+         cs_bus_cmp_alert;
 
   assign recov_alert_o = recov_alert_event;
 
 
-  import prim_mubi_pkg::mubi4_e;
+  import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_invalid;
 
   // check for illegal enable field states, and set alert if detected
-  mubi4_e mubi_cs_enable;
-  assign mubi_cs_enable = mubi4_e'(reg2hw.ctrl.enable.q);
+  mubi4_t mubi_cs_enable;
+  assign mubi_cs_enable = mubi4_t'(reg2hw.ctrl.enable.q);
   assign cs_enable_pfe = mubi4_test_true_strict(mubi_cs_enable);
   assign cs_enable_pfa = mubi4_test_invalid(mubi_cs_enable);
   assign hw2reg.recov_alert_sts.enable_field_alert.de = cs_enable_pfa;
   assign hw2reg.recov_alert_sts.enable_field_alert.d  = cs_enable_pfa;
 
-  mubi4_e mubi_sw_app_enable;
-  assign mubi_sw_app_enable = mubi4_e'(reg2hw.ctrl.sw_app_enable.q);
+  mubi4_t mubi_sw_app_enable;
+  assign mubi_sw_app_enable = mubi4_t'(reg2hw.ctrl.sw_app_enable.q);
   assign sw_app_enable_pfe = mubi4_test_true_strict(mubi_sw_app_enable);
   assign sw_app_enable_pfa = mubi4_test_invalid(mubi_sw_app_enable);
   assign hw2reg.recov_alert_sts.sw_app_enable_field_alert.de = sw_app_enable_pfa;
   assign hw2reg.recov_alert_sts.sw_app_enable_field_alert.d  = sw_app_enable_pfa;
 
-  mubi4_e mubi_read_int_state;
-  assign mubi_read_int_state = mubi4_e'(reg2hw.ctrl.read_int_state.q);
+  mubi4_t mubi_read_int_state;
+  assign mubi_read_int_state = mubi4_t'(reg2hw.ctrl.read_int_state.q);
   assign read_int_state_pfe = mubi4_test_true_strict(mubi_read_int_state);
   assign read_int_state_pfa = mubi4_test_invalid(mubi_read_int_state);
   assign hw2reg.recov_alert_sts.read_int_state_field_alert.de = read_int_state_pfa;
@@ -748,6 +768,7 @@ module csrng_core import csrng_pkg::*; #(
       .genbits_fips_o      (genbits_stage_fips[ai]),
       .cmd_stage_sfifo_cmd_err_o (cmd_stage_sfifo_cmd_err[ai]),
       .cmd_stage_sfifo_genbits_err_o (cmd_stage_sfifo_genbits_err[ai]),
+      .cmd_gen_cnt_err_o  (cmd_gen_cnt_err[ai]),
       .cmd_stage_sm_err_o (cmd_stage_sm_err[ai])
     );
 
@@ -795,6 +816,32 @@ module csrng_core import csrng_pkg::*; #(
          genbits_stage_fips_sw_q;
 
   assign genbits_stage_fips_sw = genbits_stage_fips_sw_q;
+
+
+  //--------------------------------------------
+  // data path integrity check
+  // - a counter measure to software genbits bus tampering
+  // - checks to make sure repeated data sets off
+  //   an alert for sw to handle
+  //--------------------------------------------
+
+  // capture a copy of the genbits data
+  assign cs_rdata_capt_vld = (genbits_stage_vld[NApps-1] && genbits_stage_rdy[NApps-1]);
+
+  assign cs_rdata_capt_d = cs_rdata_capt_vld ? genbits_stage_bus[NApps-1][63:0] : cs_rdata_capt_q;
+
+  assign cs_rdata_capt_vld_d =
+         !cs_enable ? 1'b0 :
+         cs_rdata_capt_vld ? 1'b1 :
+         cs_rdata_capt_vld_q;
+
+  // continuous compare of the entropy data for sw port
+  assign cs_bus_cmp_alert = cs_rdata_capt_vld && cs_rdata_capt_vld_q &&
+         (cs_rdata_capt_q == genbits_stage_bus[NApps-1][63:0]); // only look at 64 bits
+
+  assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.de = cs_bus_cmp_alert;
+  assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.d  = cs_bus_cmp_alert;
+
 
   // HW interface connections (up to 16, numbered 0-14)
   for (genvar hai = 0; hai < (NApps-1); hai = hai+1) begin : gen_app_if

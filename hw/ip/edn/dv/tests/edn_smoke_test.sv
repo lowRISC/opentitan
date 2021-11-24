@@ -13,6 +13,6 @@ class edn_smoke_test extends edn_base_test;
     cfg.boot_req_mode_pct = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
-    `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_HIGH)
   endfunction
 endclass : edn_smoke_test

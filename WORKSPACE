@@ -1,6 +1,9 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# bazel_embedded has rules that support building for embedded targets.
+# We maintain a fork to build for RiscV32i
+
 git_repository(
     name = "bazel_embedded",
     commit = "f7299c20ea6182e164adabc336ba2a7c0d8caa71",

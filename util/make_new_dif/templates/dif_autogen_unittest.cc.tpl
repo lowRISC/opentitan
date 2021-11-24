@@ -14,7 +14,7 @@
     1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
 </%doc>
 
-// This file is auto-generated.
+${autogen_banner}
 
 #include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
@@ -40,14 +40,14 @@ namespace {
 
   TEST_F(InitTest, NullArgs) {
     EXPECT_EQ(dif_${ip.name_snake}_init(
-        {.base_addr = dev().region()},
+        dev().region(),
         nullptr),
       kDifBadArg);
   }
 
   TEST_F(InitTest, Success) {
     EXPECT_EQ(dif_${ip.name_snake}_init(
-        {.base_addr = dev().region()},
+        dev().region(),
         &${ip.name_snake}_),
       kDifOk);
   }

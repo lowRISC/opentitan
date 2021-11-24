@@ -20,6 +20,7 @@ package alert_handler_env_pkg;
 
   // parameters
   parameter uint NUM_ALERTS                = alert_handler_reg_pkg::NAlerts;
+  parameter uint NUM_EDN                   = 1;
   parameter uint NUM_ESCS                  = 4;
   parameter uint NUM_MAX_ESC_SEV           = 8;
   parameter uint NUM_ESC_SIGNALS           = 4;
@@ -82,6 +83,7 @@ package alert_handler_env_pkg;
   // forward declare classes to allow typedefs below
   typedef virtual pins_if #(NUM_MAX_ESC_SEV) esc_en_vif;
   typedef virtual pins_if #(NUM_CRASHDUMP) crashdump_vif;
+  typedef virtual alert_handler_if alert_handler_vif;
 
   // functions
 

@@ -524,6 +524,10 @@ dif_result_t dif_kmac_mode_kmac_start(
  * If `processed` is not provided then this function will block until the entire
  * message has been processed or an error occurs.
  *
+ * If big-endian mode is enabled for messages (`message_big_endian`) only the
+ * part of the message aligned to 32-bit word boundaries will be byte swapped.
+ * Unaligned leading and trailing bytes will be written into the message as-is.
+ *
  * @param kmac A KMAC handle.
  * @param operation_state A KMAC operation state context.
  * @param msg Pointer to data to absorb.

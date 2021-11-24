@@ -135,19 +135,39 @@ scramble_image_depend_files = [
     scramble_image_hjson
 ]
 
+# Generate proper flash image
+#
+
+flash_image_outputs = [
+  '@BASENAME@.scr.vmem',
+]
+
+flash_image_command = [
+    prog_python,
+    meson.source_root() / 'util/design/gen-flash-img.py',
+    '@INPUT@',
+    '@OUTPUT@',
+]
+
+flash_image_depend_files = [
+    meson.source_root() / 'util/design/gen-flash-img.py',
+]
+
+
 # Signing keys for ROM_EXT images.
 signing_keys = {
-  'fpga_key_0': {
-    'path': meson.source_root() / 'sw/device/silicon_creator/keys/fpga_key_0.private.der',
+  'test_key_0': {
+    'path': meson.source_root() / 'sw/device/silicon_creator/mask_rom/keys/test_key_0_rsa_3072_exp_f4.der',
   },
-  'fpga_key_1': {
-    'path': meson.source_root() / 'sw/device/silicon_creator/keys/fpga_key_1.private.der',
+  'test_key_1': {
+    'path': meson.source_root() / 'sw/device/silicon_creator/mask_rom/keys/test_key_1_rsa_3072_exp_3.der',
   },
 }
 
 subdir('boot_rom')
 subdir('otp_img')
 subdir('silicon_creator')
+subdir('silicon_owner')
 subdir('examples')
 subdir('sca')
 subdir('tests')

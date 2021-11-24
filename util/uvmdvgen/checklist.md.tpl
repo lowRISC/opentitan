@@ -76,6 +76,14 @@ Security      | [SEC_RND_CNST][]        | Not Started |
 [SEC_CM_DOCUMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_documented" >}}
 [SEC_RND_CNST]:        {{<relref "/doc/project/checklist.md#sec_rnd_cnst" >}}
 
+<%text>### D2S</%text>
+
+ Type         | Item                    | Resolution  | Note/Collaterals
+--------------|-------------------------|-------------|------------------
+Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
+
+[SEC_CM_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+
 <%text>### D3</%text>
 
  Type         | Item                    | Resolution  | Note/Collaterals
@@ -107,7 +115,6 @@ Review        | Signoff date            | Not Started |
 [REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review_sw_fatal_err" >}}
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
-[SEC_CM_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
 [SEC_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
 [SEC_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
 
@@ -210,6 +217,14 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all_low_priority_issues_root_caused" >}}
 [DV_DOC_TESTPLAN_REVIEWED]:           {{<relref "/doc/project/checklist.md#dv_doc_testplan_reviewed" >}}
 [V3_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v3_checklist_scoped" >}}
+
+<%text>### V2S</%text>
+
+ Type         | Item                                    | Resolution  | Note/Collaterals
+--------------|-----------------------------------------|-------------|------------------
+Tests         | [SEC_CM_VERIFIED][]                     | Not Started |
+
+[SEC_CM_VERIFIED]:                    {{<relref "/doc/project/checklist.md#sec_cm_verified" >}}
 
 <%text>### V3</%text>
 

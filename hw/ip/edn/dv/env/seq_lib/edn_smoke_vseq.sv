@@ -9,13 +9,21 @@ class edn_smoke_vseq extends edn_base_vseq;
 
   push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)   m_endpoint_pull_seq;
 
+  bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]      genbits;
+  bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]   fips;
+  bit [edn_pkg::ENDPOINT_BUS_WIDTH - 1:0]       edn_bus[edn_env_pkg::NUM_ENDPOINTS];
+
   task body();
     m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
         create("m_endpoint_pull_seq");
-    m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[edn_env_pkg::NUM_ENDPOINTS-1]);
+    `DV_CHECK_STD_RANDOMIZE_FATAL(fips)
+    `DV_CHECK_STD_RANDOMIZE_FATAL(genbits)
+    cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.add_h_user_data({fips, genbits});
 
-    // TODO: Compare to genbits from csrng_device_seq (not hardcode "deadbeef")
-    `DV_CHECK_EQ_FATAL(cfg.m_endpoint_agent_cfg[edn_env_pkg::NUM_ENDPOINTS-1].vif.d_data, {1'b0, 32'hdeadbeef})
+    m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[0]);
+
+    edn_bus[0] = genbits[edn_pkg::ENDPOINT_BUS_WIDTH - 1:0];
+    `DV_CHECK_EQ_FATAL(cfg.m_endpoint_agent_cfg[0].vif.d_data, {fips, edn_bus[0]})
   endtask
 
 endclass

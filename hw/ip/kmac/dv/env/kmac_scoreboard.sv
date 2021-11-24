@@ -268,7 +268,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             // of the "host", in this case KMAC needs 64 bits of entropy so prim_edn_req
             // performs 2 fetches from the EDN network.
             repeat (kmac_pkg::MsgWidth / cip_base_pkg::EDN_BUS_WIDTH) begin
-              edn_fifo.get(edn_item);
+              edn_fifos[0].get(edn_item);
             end
             `uvm_info(`gfn, "got all edn transactions", UVM_HIGH)
             // Receiving the last EDN sequence item is synchronized on the EDN clock,
@@ -1859,7 +1859,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               // after its depth has been greater than 0 to prevent random assertions
               @(fifo_wr_ptr, fifo_rd_ptr);
               #1;
-              if (fifo_wr_ptr > fifo_rd_ptr) begin
+              if (fifo_wr_ptr >= fifo_rd_ptr) begin
                 `uvm_info(`gfn, "fifo_wr_ptr is greater than fifo_rd_ptr", UVM_HIGH)
                 while (fifo_wr_ptr != fifo_rd_ptr) begin
                   cfg.clk_rst_vif.wait_clks(1);

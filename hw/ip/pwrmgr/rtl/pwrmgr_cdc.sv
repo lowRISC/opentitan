@@ -34,6 +34,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output pwr_peri_t slow_peri_reqs_o,
   input pwr_peri_t slow_peri_reqs_masked_i,
   output logic slow_clr_req_o,
+  input slow_usb_ip_clk_en_i,
+  output slow_usb_ip_clk_status_o,
 
   // fast domain signals
   input req_pwrdn_i,
@@ -54,6 +56,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output logic cdc_sync_done_o,
   input clr_slow_req_i,
   output logic clr_slow_ack_o,
+  output logic usb_ip_clk_en_o,
+  input usb_ip_clk_status_i,
 
   // peripheral inputs, mixed domains
   input pwr_peri_t peri_i,
@@ -68,8 +72,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input pwr_ast_rsp_t ast_i,
 
   // rom_ctrl signals
-  input rom_ctrl_done_i,
-  output logic rom_ctrl_done_o
+  input prim_mubi_pkg::mubi4_t rom_ctrl_done_i,
+  output prim_mubi_pkg::mubi4_t rom_ctrl_done_o
 
 );
 
@@ -117,6 +121,15 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .rst_ni (rst_slow_ni),
     .d_i    (peri_i),
     .q_o    (slow_peri_reqs_o)
+  );
+
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_ip_clk_status_sync (
+    .clk_i  (clk_slow_i),
+    .rst_ni (rst_slow_ni),
+    .d_i    (usb_ip_clk_status_i),
+    .q_o    (slow_usb_ip_clk_status_o)
   );
 
 
@@ -217,6 +230,15 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(pwrup_cause_toggle_q)
   );
 
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_ip_clk_en_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(slow_usb_ip_clk_en_i),
+    .q_o(usb_ip_clk_en_o)
+  );
+
   prim_pulse_sync u_scdc_sync (
     .clk_src_i(clk_slow_i),
     .rst_src_ni(rst_slow_ni),
@@ -273,14 +295,15 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(otp_o)
   );
 
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
+  prim_mubi4_sync #(
+    .NumCopies(1),
+    .AsyncOn(1),
+    .StabilityCheck(1)
   ) u_sync_rom_ctrl (
     .clk_i,
     .rst_ni,
-    .d_i(rom_ctrl_done_i),
-    .q_o(rom_ctrl_done_o)
+    .mubi_i(rom_ctrl_done_i),
+    .mubi_o(rom_ctrl_done_o)
   );
 
   ////////////////////////////////

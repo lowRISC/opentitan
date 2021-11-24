@@ -172,6 +172,10 @@ package edn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } edn_cntr_err;
+    struct packed {
+      logic        d;
+      logic        de;
     } fifo_write_err;
     struct packed {
       logic        d;
@@ -199,11 +203,11 @@ package edn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    edn_hw2reg_intr_state_reg_t intr_state; // [35:32]
-    edn_hw2reg_sum_sts_reg_t sum_sts; // [31:28]
-    edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [27:24]
-    edn_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [23:14]
-    edn_hw2reg_err_code_reg_t err_code; // [13:0]
+    edn_hw2reg_intr_state_reg_t intr_state; // [37:34]
+    edn_hw2reg_sum_sts_reg_t sum_sts; // [33:30]
+    edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [29:26]
+    edn_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [25:16]
+    edn_hw2reg_err_code_reg_t err_code; // [15:0]
   } edn_hw2reg_t;
 
   // Register offsets

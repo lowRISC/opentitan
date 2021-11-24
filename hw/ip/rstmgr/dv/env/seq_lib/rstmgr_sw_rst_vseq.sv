@@ -13,12 +13,13 @@ class rstmgr_sw_rst_vseq extends rstmgr_base_vseq;
 
   `uvm_object_new
 
-  rand bit [NumSwResets-1:0] sw_rst_ctrl_n;
-
   task body();
     bit [NumSwResets-1:0] exp_ctrl_n;
     bit [NumSwResets-1:0] sw_rst_regwen = '1;
-    set_alert_and_cpu_info_for_capture(.alert_dump('1), .cpu_dump('1));
+    alert_pkg::alert_crashdump_t bogus_alert_dump = '1;
+    ibex_pkg::crash_dump_t bogus_cpu_dump = '1;
+    set_alert_and_cpu_info_for_capture(bogus_alert_dump, bogus_cpu_dump);
+
     for (int i = 0; i < num_trans; ++i) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
       check_sw_rst_ctrl_n(sw_rst_ctrl_n, sw_rst_regwen, i % 2);

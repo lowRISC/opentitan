@@ -22,7 +22,6 @@ namespace {
 using ::testing::Each;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
-using ::testing::Test;
 
 class SecMmioTest : public mask_rom_test::MaskRomTest {
  protected:
@@ -53,7 +52,8 @@ TEST_F(SecMmioTest, Initialize) {
 TEST_F(SecMmioTest, NextStageInitialize) {
   // Ensure the register file size is greater than zero to ensure checks are
   // performed on non-zero sized arrays.
-  static_assert(kSecMmioRegFileSize > 2);
+  static_assert(kSecMmioRegFileSize > 2,
+                "kSecMmioRegFileSize must be greater than 2");
   std::array<uint32_t, kSecMmioRegFileSize> expected_addrs;
   std::array<uint32_t, kSecMmioRegFileSize> expected_values;
 
@@ -194,45 +194,49 @@ TEST_F(SecMmioTest, CheckCount) {
 class SecMmioDeathTest : public SecMmioTest {};
 
 TEST_F(SecMmioDeathTest, Read32OrDieSimulatedFault) {
-  auto deadly_ops = [this] {
-    EXPECT_ABS_READ32(0, 0x12345678);
-    EXPECT_ABS_READ32(0, 0);
-    sec_mmio_read32(0);
-  };
-  ASSERT_DEATH(deadly_ops(), "");
+  ASSERT_DEATH(
+      [] {
+        EXPECT_ABS_READ32(0, 0x12345678);
+        EXPECT_ABS_READ32(0, 0);
+        sec_mmio_read32(0);
+      }(),
+      "");
 }
 
 TEST_F(SecMmioDeathTest, Write32SimulatedFault) {
-  auto deadly_ops = [this] {
-    EXPECT_ABS_WRITE32(0, 0x12345678);
-    EXPECT_ABS_READ32(0, 0);
-    sec_mmio_write32(0, 0x12345678);
-  };
-  ASSERT_DEATH(deadly_ops(), "");
+  ASSERT_DEATH(
+      [] {
+        EXPECT_ABS_WRITE32(0, 0x12345678);
+        EXPECT_ABS_READ32(0, 0);
+        sec_mmio_write32(0, 0x12345678);
+      }(),
+      "");
 }
 
 TEST_F(SecMmioDeathTest, CheckValuesSimulatedFault) {
-  auto deadly_ops = [this] {
-    EXPECT_ABS_WRITE32(0, 0x12345678);
-    EXPECT_ABS_READ32(0, 0x12345678);
-    sec_mmio_write32(0, 0x12345678);
+  ASSERT_DEATH(
+      [] {
+        EXPECT_ABS_WRITE32(0, 0x12345678);
+        EXPECT_ABS_READ32(0, 0x12345678);
+        sec_mmio_write32(0, 0x12345678);
 
-    EXPECT_ABS_READ32(0, 0);
-    sec_mmio_check_values(/*rnd_offset=*/0);
-  };
-  ASSERT_DEATH(deadly_ops(), "");
+        EXPECT_ABS_READ32(0, 0);
+        sec_mmio_check_values(/*rnd_offset=*/0);
+      }(),
+      "");
 }
 
 TEST_F(SecMmioDeathTest, CheckCountWriteMismatch) {
-  auto deadly_ops = [this] {
-    EXPECT_ABS_WRITE32(0, 0x12345678);
-    EXPECT_ABS_READ32(0, 0x12345678);
-    sec_mmio_write32(0, 0x12345678);
-    sec_mmio_check_counters(/*expected_check_count=*/0);
-  };
   // The developer forgot to increment the write counter, or an attacker
   // glitched the sec write operation.
-  ASSERT_DEATH(deadly_ops(), "");
+  ASSERT_DEATH(
+      [] {
+        EXPECT_ABS_WRITE32(0, 0x12345678);
+        EXPECT_ABS_READ32(0, 0x12345678);
+        sec_mmio_write32(0, 0x12345678);
+        sec_mmio_check_counters(/*expected_check_count=*/0);
+      }(),
+      "");
 }
 
 }  // namespace

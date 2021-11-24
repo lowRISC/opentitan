@@ -467,6 +467,7 @@ sw_lib_dif_kmac = declare_dependency(
       sw_lib_bitfield,
       sw_lib_mmio,
       sw_lib_dif_autogen_kmac,
+      sw_lib_mem,  
     ],
   )
 )
@@ -476,6 +477,7 @@ test('dif_kmac_unittest', executable(
     sources: [
       'dif_kmac_unittest.cc',
       'autogen/dif_kmac_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/base/memory.c',
       meson.source_root() / 'sw/device/lib/dif/dif_kmac.c',
       meson.source_root() / 'sw/device/lib/dif/autogen/dif_kmac_autogen.c',
       hw_ip_kmac_reg_h,

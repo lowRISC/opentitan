@@ -5,6 +5,7 @@
 #include "sw/device/lib/dif/dif_csrng.h"
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 
@@ -279,6 +280,17 @@ dif_result_t dif_csrng_get_internal_state(
   // https://docs.opentitan.org/hw/ip/csrng/doc/#working-state-values
   state->instantiated = bitfield_bit32_read(flags, /*bit_index=*/0u);
   state->fips_compliance = bitfield_bit32_read(flags, /*bit_index=*/1u);
+
+  return kDifOk;
+}
+
+dif_result_t dif_csrng_stop(const dif_csrng_t *csrng) {
+  if (csrng == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(csrng->base_addr, CSRNG_CTRL_REG_OFFSET,
+                      CSRNG_CTRL_REG_RESVAL);
 
   return kDifOk;
 }

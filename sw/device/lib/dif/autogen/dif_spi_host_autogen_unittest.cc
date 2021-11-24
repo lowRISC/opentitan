@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This file is auto-generated.
+// THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
+// util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_spi_host_autogen.h"
 
@@ -27,13 +28,11 @@ class SpiHostTest : public Test, public MmioTest {
 class InitTest : public SpiHostTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_spi_host_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_spi_host_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_spi_host_init({.base_addr = dev().region()}, &spi_host_),
-            kDifOk);
+  EXPECT_EQ(dif_spi_host_init(dev().region(), &spi_host_), kDifOk);
 }
 
 class AlertForceTest : public SpiHostTest {};

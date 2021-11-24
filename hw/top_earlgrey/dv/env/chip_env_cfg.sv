@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
+class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base_env_cfg #(
+    .RAL_T(RAL_T)
+  );
 
   // Testbench settings
   bit                 stub_cpu;
@@ -58,6 +60,10 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   sw_test_status_vif  sw_test_status_vif;
   ast_supply_vif      ast_supply_vif;
 
+  // Number of RAM tiles for each RAM instance.
+  uint num_ram_main_tiles;
+  uint num_ram_ret_tiles;
+
   // ext component cfgs
   rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
@@ -104,13 +110,17 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     sw_images[SwTypeTest] = "./sw";
     sw_images[SwTypeOtbn] = "./otbn";
     sw_images[SwTypeOtp] = "./otp";
+
+    `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
+    `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
   endfunction
 
-  // ral flow is limited in terms of setting correct field access policies and reset values
-  // We apply those fixes here - please note these fixes need to be reflected in the scoreboard
-  protected virtual function void apply_ral_fixes();
+  // Apply RAL fixes before it is locked.
+  protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
+    RAL_T chip_ral;
+    if (!$cast(chip_ral, ral)) return;
     // Out of reset, the link is in disconnected state.
-    ral.usbdev.intr_state.disconnected.set_reset(1'b1);
+    chip_ral.usbdev.intr_state.disconnected.set_reset(1'b1);
   endfunction
 
   // Parse a space-separated list of sw_images supplied as a string.

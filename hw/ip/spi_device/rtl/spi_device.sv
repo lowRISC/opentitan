@@ -37,12 +37,21 @@ module spi_device
   input  spi_device_pkg::passthrough_rsp_t passthrough_i,
 
   // Interrupts
+  // INTR: Generic mode
   output logic intr_rx_full_o,              // RX FIFO Full
   output logic intr_rx_watermark_o,         // RX FIFO above level
   output logic intr_tx_watermark_o,         // TX FIFO below level
   output logic intr_rx_error_o,             // RX Frame error
   output logic intr_rx_overflow_o,          // RX Async FIFO Overflow
   output logic intr_tx_underflow_o,         // TX Async FIFO Underflow
+
+  // INTR: Flash mode
+  output logic intr_cmdfifo_not_empty_o,
+  output logic intr_payload_not_empty_o,
+  output logic intr_readbuf_watermark_o,
+  output logic intr_readbuf_flip_o,
+
+  // INTR: TPM mode
   output logic intr_tpm_header_not_empty_o, // TPM Command/Address buffer
 
   // Memory configuration
@@ -55,7 +64,7 @@ module spi_device
   input mbist_en_i,
   input scan_clk_i,
   input scan_rst_ni,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i
+  input prim_mubi_pkg::mubi4_t scanmode_i
 );
 
   import spi_device_pkg::*;
@@ -139,6 +148,8 @@ module spi_device
   logic [31:0] addrfifo_rdata;
   logic        addrfifo_notempty;
 
+  logic payload_notempty;
+
   localparam int unsigned CmdFifoPtrW = $clog2(SramCmdFifoDepth+1);
   localparam int unsigned AddrFifoPtrW = $clog2(SramAddrFifoDepth+1);
 
@@ -148,6 +159,8 @@ module spi_device
   logic [CmdFifoPtrW-1:0]    cmdfifo_depth;
   logic [AddrFifoPtrW-1:0]   addrfifo_depth;
   logic [PayloadDepthW-1:0]  payload_depth;
+
+  assign payload_notempty = payload_depth != '0;
 
   /////////////////////
   // Control signals //
@@ -220,10 +233,20 @@ module spi_device
   sel_datapath_e cmd_dp_sel, cmd_dp_sel_outclk;
 
   // Mailbox in Passthrough needs to take SPI if readcmd hits mailbox address
-  logic mailbox_assumed, passthrough_assumed_by_internal;
+  logic intercept_en;
 
   logic cfg_mailbox_en;
   logic [31:0] mailbox_addr;
+
+  // Intercept
+  typedef struct packed {
+    logic status;
+    logic jedec;
+    logic sfdp;
+    logic mbx;
+  } intercept_t;
+  intercept_t cfg_intercept_en;
+  intercept_t intercept; // Assume signals
 
   // Threshold value of a buffer in bytes
   logic [BufferAw:0] readbuf_threshold;
@@ -233,6 +256,9 @@ module spi_device
 
   logic [31:0] addr_swap_mask;
   logic [31:0] addr_swap_data;
+
+  logic [31:0] payload_swap_mask;
+  logic [31:0] payload_swap_data;
 
   // Command Info structure
   cmd_info_t [NumCmdInfo-1:0] cmd_info;
@@ -251,6 +277,14 @@ module spi_device
 
   // Jedec ID
   logic [23:0] jedec_id;
+
+  // Interrupts in Flash mode
+  logic intr_upload_cmdfifo_not_empty, intr_upload_payload_not_empty;
+  logic intr_readbuf_watermark, intr_readbuf_flip;
+
+  // TODO: Implement
+  assign intr_readbuf_watermark        = 1'b 0;
+  assign intr_readbuf_flip             = 1'b 0;
 
   // TPM ===============================================================
   localparam int unsigned TpmFifoDepth    = 4; // 4B
@@ -513,6 +547,72 @@ module spi_device
     .intr_o                 (intr_tx_underflow_o              )
   );
 
+  prim_edge_detector #(
+    .Width (2),
+    .EnSync(1'b 0)
+  ) u_intr_upload_edge (
+    .clk_i,
+    .rst_ni,
+
+    .d_i               ({cmdfifo_notempty, payload_notempty}),
+    .q_sync_o          (),
+    .q_posedge_pulse_o ({intr_upload_cmdfifo_not_empty,
+                         intr_upload_payload_not_empty}),
+    .q_negedge_pulse_o ()
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_cmdfifo_not_empty (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_upload_cmdfifo_not_empty         ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.cmdfifo_not_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.cmdfifo_not_empty.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.cmdfifo_not_empty.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.cmdfifo_not_empty.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.cmdfifo_not_empty.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.cmdfifo_not_empty.de),
+    .intr_o                 (intr_cmdfifo_not_empty_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_payload_not_empty (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_upload_payload_not_empty         ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.payload_not_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.payload_not_empty.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.payload_not_empty.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.payload_not_empty.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.payload_not_empty.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.payload_not_empty.de),
+    .intr_o                 (intr_payload_not_empty_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_readbuf_watermark (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_readbuf_watermark                ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.readbuf_watermark.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.readbuf_watermark.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.readbuf_watermark.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.readbuf_watermark.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.readbuf_watermark.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.readbuf_watermark.de),
+    .intr_o                 (intr_readbuf_watermark_o              )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_readbuf_flip (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (intr_readbuf_flip                ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.readbuf_flip.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.readbuf_flip.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.readbuf_flip.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.readbuf_flip.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.readbuf_flip.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.readbuf_flip.de),
+    .intr_o                 (intr_readbuf_flip_o              )
+  );
+
   prim_intr_hw #(.Width(1)) u_intr_tpm_cmdaddr_notempty (
     .clk_i,
     .rst_ni,
@@ -527,6 +627,16 @@ module spi_device
   );
 
   // SPI Flash commands registers
+
+  assign cfg_intercept_en = '{
+    status:  reg2hw.intercept_en.status.q,
+    jedec:   reg2hw.intercept_en.jedec.q,
+    sfdp:    reg2hw.intercept_en.sfdp.q,
+    mbx:     reg2hw.intercept_en.mbx.q
+  };
+  logic unused_cfg_intercept_en;
+  assign unused_cfg_intercept_en = ^cfg_intercept_en;
+
   // TODO: Add 2FF sync? or just waive?
   assign hw2reg.last_read_addr.d = readbuf_addr_busclk;
 
@@ -548,6 +658,8 @@ module spi_device
   assign mailbox_addr   = { reg2hw.mailbox_addr.q[31:MailboxAw],
                             {MailboxAw{1'b0}}
                           };
+  logic unused_mailbox_addr;
+  assign unused_mailbox_addr = ^reg2hw.mailbox_addr.q[MailboxAw-1:0];
 
   // Passthrough config: value shall be stable while SPI transaction is active
   //assign cmd_filter = reg2hw.cmd_filter.q;
@@ -560,20 +672,24 @@ module spi_device
   assign addr_swap_mask = reg2hw.addr_swap_mask.q;
   assign addr_swap_data = reg2hw.addr_swap_data.q;
 
+  // payload_swap_mask and _data are big-endian to calculate easily.
+  assign payload_swap_mask = {<<8{reg2hw.payload_swap_mask.q}};
+  assign payload_swap_data = {<<8{reg2hw.payload_swap_data.q}};
+
   // Connect command info
   always_comb begin
     for (int unsigned i = 0 ; i < spi_device_reg_pkg::NumCmdInfo ; i++) begin
       cmd_info[i] = '{
         valid:            reg2hw.cmd_info[i].valid.q,
         opcode:           reg2hw.cmd_info[i].opcode.q,
-        addr_en:          reg2hw.cmd_info[i].addr_en.q,
+        addr_mode:        addr_mode_e'(reg2hw.cmd_info[i].addr_mode.q),
         addr_swap_en:     reg2hw.cmd_info[i].addr_swap_en.q,
-        addr_4b_affected: reg2hw.cmd_info[i].addr_4b_affected.q,
         mbyte_en:         reg2hw.cmd_info[i].mbyte_en.q,
         dummy_en:         reg2hw.cmd_info[i].dummy_en.q,
         dummy_size:       reg2hw.cmd_info[i].dummy_size.q,
         payload_en:       reg2hw.cmd_info[i].payload_en.q,
         payload_dir:      payload_dir_e'(reg2hw.cmd_info[i].payload_dir.q),
+        payload_swap_en:  reg2hw.cmd_info[i].payload_swap_en.q,
         upload:           reg2hw.cmd_info[i].upload.q,
         busy:             reg2hw.cmd_info[i].busy.q
       };
@@ -588,22 +704,22 @@ module spi_device
   //  doesn't exist until it transmits data through SDI
   logic sck_n;
   logic rst_spi_n;
-  lc_ctrl_pkg::lc_tx_t [ScanModeUseLast-1:0] scanmode;
+  prim_mubi_pkg::mubi4_t [ScanModeUseLast-1:0] scanmode;
 
-  prim_lc_sync #(
+  prim_mubi4_sync #(
     .NumCopies(int'(ScanModeUseLast)),
     .AsyncOn(0)
   ) u_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(scanmode)
   );
 
   prim_clock_inv u_clk_spi (
     .clk_i(cio_sck_i),
     .clk_no(sck_n),
-    .scanmode_i(scanmode[ClkInvSel] == lc_ctrl_pkg::On)
+    .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkInvSel]))
   );
 
   assign sck_monitor_o = cio_sck_i;
@@ -615,7 +731,7 @@ module spi_device
   ) u_clk_spi_in_mux (
     .clk0_i(clk_spi_in),
     .clk1_i(scan_clk_i),
-    .sel_i(scanmode[ClkMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkMuxSel])),
     .clk_o(clk_spi_in_muxed)
   );
 
@@ -629,7 +745,7 @@ module spi_device
   ) u_clk_spi_out_mux (
     .clk0_i(clk_spi_out),
     .clk1_i(scan_clk_i),
-    .sel_i(scanmode[ClkMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkMuxSel])),
     .clk_o(clk_spi_out_muxed)
   );
 
@@ -643,7 +759,7 @@ module spi_device
   ) u_csb_rst_scan_mux (
     .clk0_i(rst_ni & ~cio_csb_i),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode[CsbRstMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[CsbRstMuxSel])),
     .clk_o(rst_spi_n)
   );
 
@@ -652,7 +768,7 @@ module spi_device
   ) u_tx_rst_scan_mux (
     .clk0_i(rst_ni & ~rst_txfifo_reg),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode[TxRstMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[TxRstMuxSel])),
     .clk_o(rst_txfifo_n)
   );
 
@@ -661,7 +777,7 @@ module spi_device
   ) u_rx_rst_scan_mux (
     .clk0_i(rst_ni & ~rst_rxfifo_reg),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode[RxRstMuxSel] == lc_ctrl_pkg::On),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[RxRstMuxSel])),
     .clk_o(rst_rxfifo_n)
   );
 
@@ -698,7 +814,7 @@ module spi_device
   ) u_sram_clk_scan (
     .clk0_i (sram_clk_ungated),
     .clk1_i (scan_clk_i),
-    .sel_i  ((scanmode[ClkSramSel] == lc_ctrl_pkg::On) | mbist_en_i),
+    .sel_i  ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkSramSel]) | mbist_en_i)),
     .clk_o  (sram_clk_muxed)
   );
 
@@ -707,7 +823,7 @@ module spi_device
   ) u_sram_clk_cg (
     .clk_i  (sram_clk_muxed),
     .en_i   (sram_clk_en),
-    .test_en_i ((scanmode[ClkSramSel] == lc_ctrl_pkg::On) | mbist_en_i),
+    .test_en_i ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkSramSel]) | mbist_en_i)),
     .clk_o  (sram_clk)
   );
 
@@ -725,7 +841,7 @@ module spi_device
   ) u_sram_rst_scanmux (
     .clk0_i (sram_rst_n_noscan),
     .clk1_i (scan_rst_ni),
-    .sel_i  (scanmode[RstSramSel] == lc_ctrl_pkg::On),
+    .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[RstSramSel])),
     .clk_o  (sram_rst_n)
   );
 
@@ -905,7 +1021,7 @@ module spi_device
         end
 
         PassThrough: begin
-          if (passthrough_assumed_by_internal) begin
+          if (intercept_en) begin
             cio_sd_o    = internal_sd;
             cio_sd_en_o = internal_sd_en;
           end else begin
@@ -921,10 +1037,17 @@ module spi_device
       endcase
     end
   end
-  assign passthrough_assumed_by_internal = mailbox_assumed
-    // TOGO: Uncomment below when those submodules are implemented.
-    // | readstatus_assumed | readsfdp_assumed | readjedec_assumed
-    ;
+
+  // Assume `intercept` is registered (SPI_IN).
+  // passthrough assumed signal shall be registered in (SPI_OUT)
+  always_ff @(posedge clk_spi_out_buf or negedge rst_spi_n) begin
+    if (!rst_spi_n) intercept_en <= 1'b 0;
+    else            intercept_en <= |intercept;
+  end
+  // intercept_en shall not be de-asserted except reset
+  `ASSUME(InterceptLevel_M,
+    $rose(intercept_en) |=> $stable(intercept_en) until !rst_spi_n,
+    clk_spi_out_buf, !rst_spi_n)
 
   ////////////////////////////
   // SPI Serial to Parallel //
@@ -1050,6 +1173,14 @@ module spi_device
     .cmd_info_o     (cmd_info_broadcast),
     .cmd_info_idx_o (cmd_info_idx_broadcast),
 
+    .cfg_intercept_en_status_i (cfg_intercept_en.status),
+    .cfg_intercept_en_jedec_i  (cfg_intercept_en.jedec),
+    .cfg_intercept_en_sfdp_i   (cfg_intercept_en.sfdp),
+
+    .intercept_status_o (intercept.status),
+    .intercept_jedec_o  (intercept.jedec),
+    .intercept_sfdp_o   (intercept.sfdp),
+
     // Not used for now
     .cmd_config_req_o (),
     .cmd_config_idx_o ()
@@ -1088,9 +1219,11 @@ module spi_device
 
     .addr_4b_en_i (cfg_addr_4b_en),
 
-    .mailbox_en_i      (cfg_mailbox_en ),
+    .mailbox_en_i           (cfg_mailbox_en ),
+    .cfg_intercept_en_mbx_i (cfg_intercept_en.mbx),
+
     .mailbox_addr_i    (mailbox_addr   ),
-    .mailbox_assumed_o (mailbox_assumed),
+    .mailbox_assumed_o (intercept.mbx  ),
 
     .readbuf_address_o (readbuf_addr_sck),
 
@@ -1294,6 +1427,9 @@ module spi_device
 
     .cfg_addr_mask_i  (addr_swap_mask), // TODO
     .cfg_addr_value_i (addr_swap_data), // TODO
+
+    .cfg_payload_mask_i (payload_swap_mask),
+    .cfg_payload_data_i (payload_swap_data),
 
     .cfg_addr_4b_en_i (cfg_addr_4b_en),
 

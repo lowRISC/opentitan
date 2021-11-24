@@ -14,6 +14,7 @@ package keymgr_env_pkg;
   import csr_utils_pkg::*;
   import keymgr_ral_pkg::*;
   import kmac_app_agent_pkg::*;
+  import sec_cm_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -22,6 +23,7 @@ package keymgr_env_pkg;
   // parameters and types
   parameter string LIST_OF_ALERTS[] = {"fatal_fault_err", "recov_operation_err"};
   parameter uint NUM_ALERTS = 2;
+  parameter uint NUM_EDN = 1;
   parameter uint DIGEST_SHARE_WORD_NUM = keymgr_pkg::KeyWidth / TL_DW;
 
   typedef virtual keymgr_if keymgr_vif;

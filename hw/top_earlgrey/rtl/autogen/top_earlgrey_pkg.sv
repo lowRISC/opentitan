@@ -71,26 +71,6 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES = 32'h2000;
 
   /**
-   * Peripheral base address for spi_host0 in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_SPI_HOST0_BASE_ADDR = 32'h40060000;
-
-  /**
-   * Peripheral size in bytes for spi_host0 in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_SPI_HOST0_SIZE_BYTES = 32'h1000;
-
-  /**
-   * Peripheral base address for spi_host1 in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_SPI_HOST1_BASE_ADDR = 32'h40070000;
-
-  /**
-   * Peripheral size in bytes for spi_host1 in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_SPI_HOST1_SIZE_BYTES = 32'h1000;
-
-  /**
    * Peripheral base address for i2c0 in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_I2C0_BASE_ADDR = 32'h40080000;
@@ -189,6 +169,26 @@ package top_earlgrey_pkg;
    * Peripheral size in bytes for alert_handler in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for spi_host0 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SPI_HOST0_BASE_ADDR = 32'h40300000;
+
+  /**
+   * Peripheral size in bytes for spi_host0 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SPI_HOST0_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for spi_host1 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SPI_HOST1_BASE_ADDR = 32'h40310000;
+
+  /**
+   * Peripheral size in bytes for spi_host1 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SPI_HOST1_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for pwrmgr_aon in top earlgrey.

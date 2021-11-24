@@ -12,6 +12,8 @@
   {
     clk_main_i: main
     clk_fixed_i: io_div4
+    clk_spi_host0_i: io
+    clk_spi_host1_i: io_div2
   }
   clock_group: infra
   reset: rst_main_ni
@@ -27,11 +29,23 @@
       name: sys_io_div4
       domain: "0"
     }
+    rst_spi_host0_ni:
+    {
+      name: spi_host0
+      domain: "0"
+    }
+    rst_spi_host1_ni:
+    {
+      name: spi_host1
+      domain: "0"
+    }
   }
   clock_connections:
   {
     clk_main_i: clkmgr_aon_clocks.clk_main_infra
     clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
+    clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
+    clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
   }
   domain:
   [
@@ -54,6 +68,8 @@
       rv_dm.regs
       sram_ctrl_main.ram
       peri
+      spi_host0
+      spi_host1
       flash_ctrl.core
       flash_ctrl.prim
       flash_ctrl.mem
@@ -214,9 +230,49 @@
       [
         {
           base_addr: 0x40000000
-          size_byte: 0x800000
+          size_byte: 0x200000
+        }
+        {
+          base_addr: 0x40400000
+          size_byte: 0x400000
         }
       ]
+    }
+    {
+      name: spi_host0
+      type: device
+      clock: clk_spi_host0_i
+      reset: rst_spi_host0_ni
+      pipeline: "false"
+      inst_type: spi_host
+      addr_range:
+      [
+        {
+          base_addr: 0x40300000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: spi_host1
+      type: device
+      clock: clk_spi_host1_i
+      reset: rst_spi_host1_ni
+      pipeline: "false"
+      inst_type: spi_host
+      addr_range:
+      [
+        {
+          base_addr: 0x40310000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
     }
     {
       name: flash_ctrl.core

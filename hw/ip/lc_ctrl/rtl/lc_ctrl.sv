@@ -35,7 +35,7 @@ module lc_ctrl
   output jtag_pkg::jtag_rsp_t                        jtag_o,
   // This bypasses the clock inverter inside the JTAG TAP for scanmmode.
   input                                              scan_rst_ni,
-  input  lc_tx_t                                     scanmode_i,
+  input  prim_mubi_pkg::mubi4_t                      scanmode_i,
   // Alert outputs.
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,

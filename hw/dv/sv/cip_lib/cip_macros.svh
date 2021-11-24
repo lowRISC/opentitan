@@ -32,14 +32,63 @@
   wire edn_rst_n; \
   wire edn_clk; \
   clk_rst_if edn_clk_rst_if(.clk(edn_clk), .rst_n(edn_rst_n)); \
-  push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(edn_clk), \
-                                                                        .rst_n(edn_rst_n)); \
+  push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if[NUM_EDN]( \
+  .clk(edn_clk), \
+  .rst_n(edn_rst_n)); \
   initial begin \
     edn_clk_rst_if.set_active(); \
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "edn_clk_rst_vif", edn_clk_rst_if); \
-    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::set \
-                   (null, "*env.m_edn_pull_agent*", "vif", edn_if); \
+  end \
+  for (genvar i = 0; i < NUM_EDN; i++) begin : connect_edn_pins \
+    initial begin \
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH))):: \
+                           set(null, $sformatf("*env.m_edn_pull_agent[%0d]", i), "vif", edn_if[i]); \
+    end \
   end
+`endif
+
+// A macro to simplify the distribution constraint of mubi type variable
+// Don't use this macro directly, use DV_MUBI4|8|16_DIST
+`ifndef _DV_MUBI_DIST
+`define _DV_MUBI_DIST(VAR_, TRUE_, FALSE_, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_) \
+  if (TRUE_ > FALSE_) { \
+    VAR_ dist {TRUE_  :/ T_WEIGHT_ * 3, \
+               FALSE_ :/ F_WEIGHT_ * 3, \
+               [0 : FALSE_ - 1]         :/ OTHER_WEIGHT_, \
+               [FALSE_ + 1 : TRUE_ - 1] :/ OTHER_WEIGHT_, \
+               [TRUE_ + 1 : $]          :/ OTHER_WEIGHT_}; \
+  } else { \
+    VAR_ dist {TRUE_  :/ T_WEIGHT_ * 3, \
+               FALSE_ :/ F_WEIGHT_ * 3, \
+               [0 : TRUE_ - 1]          :/ OTHER_WEIGHT_, \
+               [TRUE_ + 1 : FALSE_ - 1] :/ OTHER_WEIGHT_, \
+               [FALSE_+ 1 : $]          :/ OTHER_WEIGHT_}; \
+  }
+`endif
+
+// inputs of these macros
+// VAR: the mubi variable
+// T_WEIGHT_: randomization weight of the value True
+// F_WEIGHT_: randomization weight of the value False
+// OTHER_WEIGHT_: randomization weight of values other than True or False
+`ifndef DV_MUBI4_DIST
+`define DV_MUBI4_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
+  `_DV_MUBI_DIST(VAR_, MuBi4True, MuBi4False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+`endif
+
+`ifndef DV_MUBI8_DIST
+`define DV_MUBI8_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
+  `_DV_MUBI_DIST(VAR_, MuBi8True, MuBi8False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+`endif
+
+`ifndef DV_MUBI12_DIST
+`define DV_MUBI12_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
+  `_DV_MUBI_DIST(VAR_, MuBi12True, MuBi12False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
+`endif
+
+`ifndef DV_MUBI16_DIST
+`define DV_MUBI16_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
+  `_DV_MUBI_DIST(VAR_, MuBi16True, MuBi16False, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
 `endif
 
 `endif // __CIP_MACROS_SVH__

@@ -35,7 +35,10 @@ def gen_program(config: Config,
     # for memory x, not the VMA)
     mems = get_memory_layout()
     imem_lma, imem_size = mems['IMEM']
-    dmem_lma, dmem_size = mems['DMEM']
+    dmem_lma, dmem_bus_size = mems['DMEM']
+
+    # The actual size of DMEM is twice what we get from reggen
+    dmem_size = 2 * dmem_bus_size
 
     program = Program(imem_lma, imem_size, dmem_lma, dmem_size)
     model = Model(dmem_size, fuel)
@@ -47,7 +50,7 @@ def gen_program(config: Config,
     # Note that we only use the first half of DMEM for initialised data,
     # because it needs to be loaded over the bus and only the first half is
     # visible.
-    init_data = InitData.gen(dmem_size // 2)
+    init_data = InitData.gen(dmem_bus_size)
     for addr in init_data.keys():
         model.touch_mem('dmem', addr, 4)
 

@@ -22,9 +22,8 @@ module otbn_core
   // Enable internal secure wipe
   parameter bit SecWipeEn  = 1'b0,
 
-  // Default seed and permutation for URND LFSR
-  parameter urnd_lfsr_seed_t       RndCnstUrndLfsrSeed      = RndCnstUrndLfsrSeedDefault,
-  parameter urnd_chunk_lfsr_perm_t RndCnstUrndChunkLfsrPerm = RndCnstUrndChunkLfsrPermDefault,
+  // Default seed for URND PRNG
+  parameter urnd_prng_seed_t       RndCnstUrndPrngSeed      = RndCnstUrndPrngSeedDefault,
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
@@ -582,8 +581,7 @@ module otbn_core
   );
 
   otbn_rnd #(
-    .RndCnstUrndLfsrSeed      (RndCnstUrndLfsrSeed),
-    .RndCnstUrndChunkLfsrPerm (RndCnstUrndChunkLfsrPerm)
+    .RndCnstUrndPrngSeed      (RndCnstUrndPrngSeed)
   ) u_otbn_rnd (
     .clk_i,
     .rst_ni,
@@ -612,7 +610,7 @@ module otbn_core
   // All outputs should be known.
   `ASSERT_KNOWN(DoneOKnown_A, done_o)
   `ASSERT_KNOWN(ImemReqOKnown_A, imem_req_o)
-  `ASSERT_KNOWN(ImemAddrOKnown_A, imem_addr_o)
+  `ASSERT_KNOWN_IF(ImemAddrOKnown_A, imem_addr_o, imem_req_o)
   `ASSERT_KNOWN(ImemWdataOKnown_A, imem_wdata_o)
   `ASSERT_KNOWN(DmemReqOKnown_A, dmem_req_o)
   `ASSERT_KNOWN_IF(DmemWriteOKnown_A, dmem_write_o, dmem_req_o)

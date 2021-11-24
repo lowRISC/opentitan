@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This file is auto-generated.
+// THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
+// util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_usbdev_autogen.h"
 
@@ -27,12 +28,11 @@ class UsbdevTest : public Test, public MmioTest {
 class InitTest : public UsbdevTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_usbdev_init({.base_addr = dev().region()}, nullptr),
-            kDifBadArg);
+  EXPECT_EQ(dif_usbdev_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_usbdev_init({.base_addr = dev().region()}, &usbdev_), kDifOk);
+  EXPECT_EQ(dif_usbdev_init(dev().region(), &usbdev_), kDifOk);
 }
 
 class AlertForceTest : public UsbdevTest {};

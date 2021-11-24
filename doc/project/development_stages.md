@@ -67,24 +67,29 @@ They are similar to typical chip design milestones, but less rigid in the moveme
 The metric here is the quality bar and feature completeness of the design.
 
 The first design stage is **Initial Work**.
-This indicates the period of time between the Specification life stage and the RTL being functional enough to pass sanity checks.
+This indicates the period of time between the Specification life stage and the RTL being functional enough to pass smoke checks.
 The RTL is still in progress, registers being defined, etc.
-Once the device has passed a basic sanity check, has the lint flow setup, has the registers completely defined, it has completed the Initial Work stage.
+Once the device has passed a basic smoke check, has the lint flow setup, has the registers completely defined, it has completed the Initial Work stage.
 
 The second design stage is **Functional**.
 In this stage, the design is functional but not complete.
 Once all of the features in the specification are implemented, it has completed this stage.
 
 The third design stage is **Feature Complete**.
+In this phase, no changes are expected on the design except for bug fixes and security countermeasure implementations.
+Once all of the countermeasures in the specification are implemented, the design moves into: **Security Countermeasures Complete**.
+
+The fourth design stage is **Security Countermeasures Complete**.
 In this phase, no changes are expected on the design except for bug fixes.
-Once all bugs have fixed, lint and CDC violations cleaned up, the design moves into its final stage: **Design Complete**.
+Once all bugs have been fixed, lint and CDC violations cleaned up, the design moves into its final stage: **Design Complete**.
 
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
-| D0 | Initial Work | RTL being developed, not functional |
-| D1 | Functional | <ul> <li> Feature set finalized, spec complete <li> CSRs identified; RTL/DV/SW collateral generated <li> SW interface automation completed <li> Clock(s)/reset(s) connected to all sub modules <li> Lint run setup <li> Ports Frozen </ul> |
-| D2 | Feature Complete | <ul> <li> Full Feature Complete: all features implemented.  <li> Feature frozen </ul> |
-| D3 | Design Complete | <ul> <li> Lint/CDC clean, waivers reviewed <li> Design optimization for power and/or performance complete </ul> |
+| D0  | Initial Work | RTL being developed, not functional |
+| D1  | Functional | <ul> <li> Feature set finalized, spec complete <li> CSRs identified; RTL/DV/SW collateral generated <li> SW interface automation completed <li> Clock(s)/reset(s) connected to all sub modules <li> Lint run setup <li> Ports Frozen </ul> |
+| D2  | Feature Complete | <ul> <li> Full Feature Complete: all features implemented.  <li> Feature frozen </ul> |
+| D2S | Security Countermeasures Complete | <ul> <li> All security countermeasures implemented. </ul> |
+| D3  | Design Complete | <ul> <li> Lint/CDC clean, waivers reviewed <li> Design optimization for power and/or performance complete </ul> |
 
 ## Hardware Verification Stages (V)
 
@@ -103,6 +108,10 @@ In this stage, the verification environment is available but not all tests in th
 Once all of the items in the testplan are implemented, it exits this stage.
 
 The third verification stage is **Testing Complete**.
+In this phase, no changes are expected on the testplan, no changes expected on the testbench, and no new tests are expected except to verify security countermeasures and to close coverage on the design.
+Once all coverage metrics have been met, waivers checked, the verification moves into: **Security Countermeasures Verified**.
+
+The fourth verification stage is **Security Countermeasures Verified**.
 In this phase, no changes are expected on the testplan, no changes expected on the testbench, and no new tests are expected except to close coverage on the design.
 Once all coverage metrics have been met, waivers checked, the verification moves into its final stage: **Verification Complete**.
 
@@ -113,6 +122,7 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 | V0 | Initial Work | Testbench being developed, not functional; testplan being written; decided which methodology to use (sim-based DV, FPV, or both). |
 | V1 | Under Test | <ul> <li> Documentation: <ul> <li> [DV document]({{< relref "doc/ug/dv_methodology#documentation" >}}) available, <li> [Testplan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed </ul> <li> Testbench: <ul> <li> DUT instantiated with major interfaces hooked up <li> All available interface assertion monitors hooked up <li> X / unknown checks on DUT outputs added <li> Skeleton environment created with UVCs <li> TLM connections made from interface monitors to the scoreboard </ul> <li> Tests (written and passing): <ul> <li> Sanity test accessing basic functionality <li> CSR / mem test suite </ul> <li> Regressions: Sanity and nightly regression set up</ul> |
 | V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> DV document completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces hooked up and exercised <li> all assertions written and enabled </ul> <li> UVM environment: fully developed with end-to-end checks in scoreboard <li> Tests (written and passing): all tests planned for in the testplan  <li> Functional coverage (written): all covergroups planned for in the testplan <li> Regression: all tests passing in nightly regression with multiple seeds (> 90%)  <li> Coverage: 90% code coverage across the board, 100% functional coverpoints covered and 75% crosses covered</ul></ul> |
+| V2S | Security Countermeasures Verified | <ul> <li> Tests (written and passing): all tests for security countermeasures (if any) </ul> |
 | V3 | Verification Complete | <ul> <li> Design Issues: all bugs addressed <li> Tests (written and passing): all tests including newly added post-V2 tests (if any) <li> Regression: all tests with all seeds passing <li> Coverage: 100% code and 100% functional coverage with waivers </ul> </ul> |
 
 **Stages for FPV approaches**:
@@ -120,8 +130,9 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
 | V0 | Initial Work | Testbench being developed, not functional; testplan being written; decided which methodology to use (sim-based DV, FPV, or both). |
-| V1 | Under Test | <ul> <li> Documentation: <ul> <li> [DV document]({{< relref "doc/ug/dv_methodology#documentation" >}}) available, [Testplan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed </ul> <li> Testbench: <ul> <li> Formal testbench with DUT bound to assertion module(s) <li> All available interface assertion monitors hooked up <li> X / unknown assertions on DUT outputs added </ul> <li> Assertions (written and proven): <ul> <li> All functional properties identified and described in testplan <li> Assertions for main functional path implemented and passing (sanity check)<li> Each input and each output is part of at least one assertion</ul> <li> Regressions: Sanity and nightly regression set up</ul> |
+| V1 | Under Test | <ul> <li> Documentation: <ul> <li> [DV document]({{< relref "doc/ug/dv_methodology#documentation" >}}) available, [Testplan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed </ul> <li> Testbench: <ul> <li> Formal testbench with DUT bound to assertion module(s) <li> All available interface assertion monitors hooked up <li> X / unknown assertions on DUT outputs added </ul> <li> Assertions (written and proven): <ul> <li> All functional properties identified and described in testplan <li> Assertions for main functional path implemented and passing (smoke check)<li> Each input and each output is part of at least one assertion</ul> <li> Regressions: Sanity and nightly regression set up</ul> |
 | V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> DV document completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces have assertions checking the protocol <li> all functional assertions written and enabled <li> assumptions for FPV specified and reviewed </ul> <li> Tests (written and passing): all tests planned for in the testplan <li> Regression: 90% of properties proven in nightly regression <li> Coverage: 90% code coverage and 75% logic cone of influence (COI) coverage </ul> |
+| V2S | Security Countermeasures Verified | <ul> <li> Tests (written and passing): all tests for security countermeasures (if any) </ul> |
 | V3 | Verification Complete | <ul> <li> Design Issues: all bugs addressed <li> Assertions (written and proven): all assertions including newly added post-V2 assertions (if any) <li> Regression: 100% of properties proven (with reviewed assumptions) <li> Coverage: 100% code coverage and 100% COI coverage</ul> |
 
 ## Device Interface Function Stages (S)

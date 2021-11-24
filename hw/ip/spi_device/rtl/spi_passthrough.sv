@@ -89,6 +89,12 @@ module spi_passthrough
   input [31:0] cfg_addr_mask_i,
   input [31:0] cfg_addr_value_i,
 
+  // Big-Endian of payload swap mask/data
+  // [31:24] => first byte
+  // [ 7: 0] => 4th byte
+  input [31:0] cfg_payload_mask_i,
+  input [31:0] cfg_payload_data_i,
+
   // Address mode
   input cfg_addr_4b_en_i,
 
@@ -179,130 +185,6 @@ module spi_passthrough
     StMByte
   } passthrough_st_e;
   passthrough_st_e st, st_d;
-
-  /*
-  localparam cmd_type_t CmdInfoNone = '{
-    addr_en:          1'b 0,
-    addr_swap_en:     1'b 0,
-    addr_4b_affected: 1'b 0,
-    dummy_en:         1'b 0,
-    payload_en:       4'h 0,
-    payload_dir:  PayloadIn,
-    addr_size:           '0,
-    dummy_size:          '0
-  };
-
-  localparam cmd_type_t CmdInfoPayloadIn = '{
-    addr_en:          1'b 0,
-    addr_swap_en:     1'b 0,
-    addr_4b_affected: 1'b 0,
-    dummy_en:         1'b 0,
-    payload_en:       4'h 1,
-    payload_dir:  PayloadIn,
-    addr_size:           '0,
-    dummy_size:          '0
-  };
-
-  localparam cmd_type_t CmdInfoPayloadOut = '{
-    addr_en:          1'b 0,
-    addr_swap_en:     1'b 0,
-    addr_4b_affected: 1'b 0,
-    dummy_en:         1'b 0,
-    payload_en:       4'h 2, // S[1]
-    payload_dir: PayloadOut,
-    addr_size:           '0,
-    dummy_size:          '0
-  };
-
-  localparam cmd_type_t CmdInfoAddrPayloadIn = '{
-    addr_en:          1'b 1,
-    addr_swap_en:     1'b 0,
-    addr_4b_affected: 1'b 1,
-    dummy_en:         1'b 0,
-    payload_en:       4'h 1, // S[0] only
-    payload_dir:  PayloadIn, // Host sends Data
-    addr_size:           '0, // Logic decide
-    dummy_size:          '0
-  };
-
-  localparam cmd_type_t CmdInfoAddrPayloadInQuad = '{
-    addr_en:          1'b 1,
-    addr_swap_en:     1'b 0,
-    addr_4b_affected: 1'b 1,
-    dummy_en:         1'b 0,
-    payload_en:       4'h F, // S[3:0]
-    payload_dir:  PayloadIn, // Host sends Data
-    addr_size:           '0, // Logic decide
-    dummy_size:          '0
-  };
-
-  localparam cmd_type_t CmdInfoAddrPayloadOut = '{
-    addr_en:          1'b 1,
-    addr_swap_en:     1'b 1,
-    addr_4b_affected: 1'b 1,
-    dummy_en:         1'b 0,
-    payload_en:       4'h 2, // S[1] only
-    payload_dir: PayloadOut, // Flash device sends Data
-    addr_size:           '0, // Logic decide
-    dummy_size:          '0
-  };
-
-  // Address + Dummy + Payload but Address is 3B always
-  localparam cmd_type_t CmdInfoAddr3BDummyPayloadOut = '{
-    addr_en:          1'b 1,
-    addr_swap_en:     1'b 0,
-    addr_4b_affected: 1'b 0,
-    dummy_en:         1'b 1,
-    payload_en:       4'h 2, // S[1] only
-    payload_dir: PayloadOut, // Flash device sends Data
-    addr_size:           '0, // Logic decide
-    dummy_size:        'h 7
-  };
-
-  localparam cmd_type_t CmdInfoAddrDummyPayloadOut = '{
-    addr_en:          1'b 1,
-    addr_swap_en:     1'b 1,
-    addr_4b_affected: 1'b 1,
-    dummy_en:         1'b 1,
-    payload_en:       4'h 2, // S[1] only
-    payload_dir: PayloadOut, // Flash device sends Data
-    addr_size:           '0, // Logic decide
-    dummy_size:        'h 7
-  };
-
-  localparam cmd_type_t CmdInfoAddrDummyPayloadOutDual = '{
-    addr_en:          1'b 1,
-    addr_swap_en:     1'b 1,
-    addr_4b_affected: 1'b 1,
-    dummy_en:         1'b 1,
-    payload_en:       4'h 3, // S[1:0] only
-    payload_dir: PayloadOut, // Flash device sends Data
-    addr_size:           '0, // Logic decide
-    dummy_size:        'h 7
-  };
-
-  localparam cmd_type_t CmdInfoAddrDummyPayloadOutQuad = '{
-    addr_en:          1'b 1,
-    addr_swap_en:     1'b 1,
-    addr_4b_affected: 1'b 1,
-    dummy_en:         1'b 1,
-    payload_en:       4'h F, // S[3:0]
-    payload_dir: PayloadOut, // Flash device sends Data
-    addr_size:           '0, // Logic decide
-    dummy_size:        'h 7
-  };
-
-  localparam cmd_type_t CmdInfoAddr = '{
-    addr_en:          1'b 1,
-    addr_swap_en:     1'b 0,
-    addr_4b_affected: 1'b 0, // TODO: ??
-    dummy_en:         1'b 0,
-    payload_en:       4'h 0,
-    payload_dir: PayloadOut, // Flash device sends Data
-    addr_size:           '0, // Logic decide
-    dummy_size:        'h 0
-  };
-  */
 
   /* Not synthesizable in DC
   localparam cmd_type_t PassThroughCmdInfoOld [256] = '{
@@ -567,14 +449,21 @@ module spi_passthrough
   // rely on the synthesis tool not to generate the unneeded flops but must explicitly waive lint
   // warnings about unused fields.
   logic unused_cmd_info_fields;
-  assign unused_cmd_info_fields = &{1'b0,
-                                    cmd_info.opcode,
-                                    cmd_info.addr_en,
-                                    cmd_info.addr_swap_en,
-                                    cmd_info.addr_4b_affected,
-                                    cmd_info.opcode,
-                                    cmd_info.upload,
-                                    cmd_info.busy};
+  assign unused_cmd_info_fields = &{
+    1'b0,
+    cmd_info.valid, // valid bit is checked before latching into cmd_info
+    cmd_info.opcode,
+    cmd_info.addr_mode,
+    cmd_info.addr_swap_en,
+    cmd_info.payload_swap_en,
+    cmd_info.opcode,
+    cmd_info.upload,
+    cmd_info.busy
+  };
+
+  addr_mode_e cmdinfo7th_addr_mode;
+  assign cmdinfo7th_addr_mode = get_addr_mode(
+    cmd_info_7th[host_s_i[0]], cfg_addr_4b_en_i);
 
   always_comb begin
     cmd_info_d = '0;
@@ -584,11 +473,10 @@ module spi_passthrough
       // Latch only two cmd_info when the 7th bit arrives. Then select among two
       // at the 8th beat for cmd_info_d to reduce timing.
       cmd_info_d = cmd_info_7th[host_s_i[0]];
-      // TODO: Addr size
-      if (cmd_info_7th[host_s_i[0]].addr_4b_affected) begin
-        addr_size_d = (cfg_addr_4b_en_i)
-                    ? AddrCntW'(31) : AddrCntW'(23);
-      end
+
+      addr_size_d = (cmdinfo7th_addr_mode == Addr4B)
+                  ? AddrCntW'(31) : AddrCntW'(23);
+
       cmd_info_d.opcode = opcode_d;
 
       // dummy_size is set inside State Machine
@@ -633,6 +521,47 @@ module spi_passthrough
     else         addr_phase_outclk <= addr_phase;
   end
 
+  // Payload (4 bytes) swap
+  logic [4:0] payloadcnt, payloadcnt_outclk;
+  logic       payload_replace;
+  logic       payload_replace_set, payload_replace_clr;
+
+  // payload counter
+  //
+  // Reset to 'd31. decrease by 1 in every inclk. Stop at 0 then
+  // payload_replace is cleared.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      payloadcnt <= 5'h 1F;
+    end else if ((payloadcnt != '0) && payload_replace) begin
+      payloadcnt <= payloadcnt - 1'b 1;
+    end
+  end
+
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) payloadcnt_outclk <= 5'h 1F;
+    else         payloadcnt_outclk <= payloadcnt;
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)                  payload_replace <= 1'b 0;
+    else if (payload_replace_set) payload_replace <= 1'b 1;
+    else if (payload_replace_clr) payload_replace <= 1'b 0;
+  end
+
+  assign payload_replace_clr = (payloadcnt == '0);
+  // FSM drives payload_replace_set : assert when st moves to StDriving
+  logic payload_swap;
+  assign payload_swap = cfg_payload_mask_i[payloadcnt_outclk]
+                      ? cfg_payload_data_i[payloadcnt_outclk]
+                      : host_s_i[0] ;
+
+  // SPI swap (merging Addr & Payload)
+  logic swap_en, swap_data;
+  assign swap_en = addr_phase_outclk
+                 | (payload_replace & cmd_info.payload_swap_en);
+  assign swap_data = (addr_phase_outclk) ? addr_swap : payload_swap ;
+
   // Dummy Counter
   logic dummy_set;
   logic dummycnt_zero;
@@ -664,10 +593,9 @@ module spi_passthrough
 
   // = BEGIN: Passthrough Mux (!important) ====================================
 
-  // As addr_phase_outclk is in outclk domain, addr_swap can be directly used.
-  // addr_swap value is also determined by addrcnt_outclk.
-  assign passthrough_o.s = (addr_phase_outclk)
-                         ? {host_s_i[3:1], addr_swap} : host_s_i;
+  // As swap_en is in outclk domain, addr_swap can be directly used.
+  assign passthrough_o.s = (swap_en) ? {host_s_i[3:1], swap_data} : host_s_i ;
+
   logic [3:0] passthrough_s_en;
   always_ff @(posedge clk_out_i or negedge rst_ni) begin
     if (!rst_ni) passthrough_s_en <= 4'h 1; // S[0] active by default
@@ -718,6 +646,9 @@ module spi_passthrough
     // addr_set
     addr_set = 1'b 0;
 
+    // Payload swap control
+    payload_replace_set = 1'b 0;
+
     // mbyte counter udpate
     mbyte_set = 1'b 0;
 
@@ -747,9 +678,9 @@ module spi_passthrough
           // signals. StAddress state, however, controls the SPI lines for
           // address swap in case of Read Commands.
           //
-          // Order: addr_en , dummy_en, |payload_en
+          // Order: addr_mode , dummy_en, |payload_en
           // Note that no direct transition to MByte state.
-          if (cmd_info_d.addr_en) begin
+          if (cmd_info_d.addr_mode != AddrDisabled) begin
             st_d = StAddress;
 
             addr_set = 1'b 1;
@@ -764,6 +695,8 @@ module spi_passthrough
               st_d = StWait;
             end else begin
               st_d = StDriving;
+
+              payload_replace_set = 1'b 1;
             end
           end
         end // cmd_8th && cmd_info_d.valid
@@ -813,9 +746,13 @@ module spi_passthrough
       StHighZ: begin
         host_s_en_inclk   = 4'h 0; // explicit
         device_s_en_inclk = 4'h 0; // float
-        if (dummycnt_zero) begin
+        if (dummycnt_zero && (cmd_info.payload_dir == PayloadOut)) begin
           // Assume payload_en not 0
-          st_d = (cmd_info.payload_dir == PayloadOut) ? StWait : StDriving;
+          st_d = StWait;
+        end else if (dummycnt_zero && (cmd_info.payload_dir == PayloadIn)) begin
+          st_d = StDriving;
+
+          payload_replace_set = 1'b 1;
         end
       end
 
@@ -837,8 +774,14 @@ module spi_passthrough
 
             dummy_set = 1'b 1;
             dummycnt_d = cmd_info.dummy_size;
-          end else if (cmd_info.payload_en != 0) begin
-            st_d = (cmd_info.payload_dir == PayloadOut) ? StWait : StDriving;
+          end else if (cmd_info.payload_en != 0
+                       && (cmd_info.payload_dir == PayloadOut)) begin
+            st_d = StWait;
+          end else if (cmd_info.payload_en != 0
+                       && (cmd_info.payload_dir == PayloadIn)) begin
+            st_d = StDriving;
+
+            payload_replace_set = 1'b 1;
           end else begin
             // Addr completed command. goto wait state
             st_d = StWait;
@@ -858,6 +801,12 @@ module spi_passthrough
 
   // Mailbox hit happens in the middle of Address phase, not at the end of it.
   `ASSERT(MailboxHitConflictAddrCnt_A, mailbox_hit_i |-> (addrcnt != 0))
+
+  // Assume when payload_swap_en is set, the direction is PayloadIn & only
+  // Single mode is used
+  `ASSUME(PayloadSwapConstraint_M,
+    cmd_info.payload_swap_en |-> (cmd_info.payload_en == 4'b 0001)
+                              && (cmd_info.payload_dir == PayloadOut))
 
 
 endmodule: spi_passthrough

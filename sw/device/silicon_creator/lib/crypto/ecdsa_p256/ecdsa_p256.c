@@ -5,7 +5,7 @@
 #include "sw/device/silicon_creator/lib/crypto/ecdsa_p256/ecdsa_p256.h"
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/drivers/otbn.h"
 #include "sw/device/silicon_creator/lib/otbn_util.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -61,12 +61,13 @@ static const uint32_t kOtbnEcdsaModeSign = 1;
 /**
  * Makes a single dptr in the P256 library point to where its value is stored.
  */
-static rom_error_t setup_data_pointer(otbn_t *otbn, const otbn_ptr_t dptr,
-                                      const otbn_ptr_t value) {
+static otbn_error_t setup_data_pointer(otbn_t *otbn, const otbn_ptr_t dptr,
+                                       const otbn_ptr_t value) {
   uint32_t value_dmem_addr;
-  RETURN_IF_ERROR(otbn_data_ptr_to_dmem_addr(otbn, value, &value_dmem_addr));
-  RETURN_IF_ERROR(otbn_copy_data_to_otbn(otbn, 1, &value_dmem_addr, dptr));
-  return kErrorOk;
+  OTBN_RETURN_IF_ERROR(
+      otbn_data_ptr_to_dmem_addr(otbn, value, &value_dmem_addr));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(otbn, 1, &value_dmem_addr, dptr));
+  return kOtbnErrorOk;
 }
 
 /**
@@ -82,70 +83,75 @@ static rom_error_t setup_data_pointer(otbn_t *otbn, const otbn_ptr_t dptr,
  * This function makes the data pointers refer to the pre-allocated DMEM
  * regions to store the actual values.
  */
-static rom_error_t setup_data_pointers(otbn_t *otbn) {
-  RETURN_IF_ERROR(
+static otbn_error_t setup_data_pointers(otbn_t *otbn) {
+  OTBN_RETURN_IF_ERROR(
       setup_data_pointer(otbn, kOtbnVarEcdsaDptrMsg, kOtbnVarEcdsaMsg));
-  RETURN_IF_ERROR(setup_data_pointer(otbn, kOtbnVarEcdsaDptrR, kOtbnVarEcdsaR));
-  RETURN_IF_ERROR(setup_data_pointer(otbn, kOtbnVarEcdsaDptrS, kOtbnVarEcdsaS));
-  RETURN_IF_ERROR(setup_data_pointer(otbn, kOtbnVarEcdsaDptrX, kOtbnVarEcdsaX));
-  RETURN_IF_ERROR(setup_data_pointer(otbn, kOtbnVarEcdsaDptrY, kOtbnVarEcdsaY));
-  RETURN_IF_ERROR(setup_data_pointer(otbn, kOtbnVarEcdsaDptrD, kOtbnVarEcdsaD));
-  RETURN_IF_ERROR(
+  OTBN_RETURN_IF_ERROR(
+      setup_data_pointer(otbn, kOtbnVarEcdsaDptrR, kOtbnVarEcdsaR));
+  OTBN_RETURN_IF_ERROR(
+      setup_data_pointer(otbn, kOtbnVarEcdsaDptrS, kOtbnVarEcdsaS));
+  OTBN_RETURN_IF_ERROR(
+      setup_data_pointer(otbn, kOtbnVarEcdsaDptrX, kOtbnVarEcdsaX));
+  OTBN_RETURN_IF_ERROR(
+      setup_data_pointer(otbn, kOtbnVarEcdsaDptrY, kOtbnVarEcdsaY));
+  OTBN_RETURN_IF_ERROR(
+      setup_data_pointer(otbn, kOtbnVarEcdsaDptrD, kOtbnVarEcdsaD));
+  OTBN_RETURN_IF_ERROR(
       setup_data_pointer(otbn, kOtbnVarEcdsaDptrXr, kOtbnVarEcdsaXr));
-  return kErrorOk;
+  return kOtbnErrorOk;
 }
 
 // TODO: This implementation waits while OTBN is processing; it should be
 // modified to be non-blocking.
-rom_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
-                            const ecdsa_p256_private_key_t *private_key,
-                            ecdsa_p256_signature_t *result) {
+otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
+                             const ecdsa_p256_private_key_t *private_key,
+                             ecdsa_p256_signature_t *result) {
   otbn_t otbn;
   otbn_init(&otbn);
 
   // Load the ECDSA/P-256 app and set up data pointers
-  RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppEcdsa));
-  RETURN_IF_ERROR(setup_data_pointers(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppEcdsa));
+  OTBN_RETURN_IF_ERROR(setup_data_pointers(&otbn));
 
   // Set mode so start() will jump into p256_ecdsa_sign().
-  RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
       &otbn, kOtbnEcdsaModeNumWords, &kOtbnEcdsaModeSign, kOtbnVarEcdsaMode));
 
   // Set the message digest.
-  RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords, digest->h,
-                                         kOtbnVarEcdsaMsg));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords,
+                                              digest->h, kOtbnVarEcdsaMsg));
 
   // Set the private key.
-  RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords,
-                                         private_key->d, kOtbnVarEcdsaD));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords,
+                                              private_key->d, kOtbnVarEcdsaD));
 
   // Start the OTBN routine.
-  RETURN_IF_ERROR(otbn_execute_app(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
 
   // Spin here waiting for OTBN to complete.
-  RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
 
   // Read signature R out of OTBN dmem.
-  RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
-                                           kOtbnVarEcdsaR, result->R));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
+                                                kOtbnVarEcdsaR, result->R));
 
   // Read signature S out of OTBN dmem.
-  RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
-                                           kOtbnVarEcdsaS, result->S));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
+                                                kOtbnVarEcdsaS, result->S));
 
   // TODO: try to verify the signature, and return an error if verification
   // fails.
 
-  return kErrorOk;
+  return kOtbnErrorOk;
 }
 
 // TODO: This implementation waits while OTBN is processing; it should be
 // modified to be non-blocking.
-rom_error_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
-                              const ecdsa_p256_message_digest_t *digest,
-                              const ecdsa_p256_public_key_t *public_key,
-                              hardened_bool_t *result) {
+otbn_error_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
+                               const ecdsa_p256_message_digest_t *digest,
+                               const ecdsa_p256_public_key_t *public_key,
+                               hardened_bool_t *result) {
   // TODO: unimplemented
   *result = kHardenedBoolTrue;
-  return kErrorOk;
+  return kOtbnErrorOk;
 }

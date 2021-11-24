@@ -33,9 +33,15 @@ typedef struct test_config {
    */
   bool can_clobber_uart;
   /**
-   * A short name for the test for debugging purposes within FreeRTOS.
+   * If true, `test_main()` is run as a FreeRTOS task, enabling test writers to
+   * to spawn additional (concurrent) FreeRTOS tasks within the `test_main()`
+   * execution context.
+   *
+   * If false, `test_main()` is executed on bare-metal, and cannot spawn
+   * additional concurrent execution contexts. This is useful for tests that do
+   * not require concurrency, and seek to minimize simulation runtime.
    */
-  char test_name[configMAX_TASK_NAME_LEN];
+  bool enable_concurrency;
 } test_config_t;
 
 /**
@@ -63,6 +69,6 @@ extern const test_config_t kTestConfig;
  *
  * @return success or failure of the test as boolean.
  */
-extern void test_main(void *pvParameters);
+extern bool test_main(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_H_

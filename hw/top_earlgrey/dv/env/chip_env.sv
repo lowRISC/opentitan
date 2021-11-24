@@ -45,9 +45,17 @@ class chip_env extends cip_base_env #(
     end
 
     for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin
-      if (!uvm_config_db#(mem_bkdr_util)::get(
-          this, "", $sformatf("mem_bkdr_util[%0s]", mem.name()), cfg.mem_bkdr_util_h[mem])) begin
-        `uvm_fatal(`gfn, $sformatf("failed to get mem_bkdr_util[%0s] from uvm_config_db", mem))
+      string inst = $sformatf("mem_bkdr_util[%0s]", mem.name());
+      bit is_invalid;
+
+      is_invalid = mem inside {[RamMain0:RamMain15]} && (int'(mem - RamMain0) >
+                                                         cfg.num_ram_main_tiles - 1);
+
+      is_invalid |= mem inside {[RamRet0:RamRet15]} && (int'(mem - RamRet0) >
+                                                        cfg.num_ram_ret_tiles - 1);
+      if (is_invalid) continue;
+      if (!uvm_config_db#(mem_bkdr_util)::get(this, "", inst, cfg.mem_bkdr_util_h[mem])) begin
+        `uvm_fatal(`gfn, {"failed to get ", inst, " from uvm_config_db"})
       end
     end
 

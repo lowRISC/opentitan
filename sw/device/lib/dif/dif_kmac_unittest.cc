@@ -8,9 +8,13 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/testing/mock_mmio.h"
+
+#include "kmac_regs.h"  // Generated
 
 namespace dif_kmac_unittest {
-namespace {
+
 using ::testing::ElementsAre;
 
 TEST(CustomizationStringTest, Encode) {
@@ -86,5 +90,83 @@ TEST(FunctionNameTest, BadArg) {
   EXPECT_EQ(dif_kmac_function_name_init("", -1, &fn), kDifBadArg);
 }
 
-}  // namespace
+using mock_mmio::MmioTest;
+using mock_mmio::MockDevice;
+using testing::Test;
+
+// Base class for the rest fixtures in this file.
+class KmacTest : public testing::Test, public mock_mmio::MmioTest {
+ protected:
+  dif_kmac_t kmac_;
+  dif_kmac_operation_state_t op_state_;
+  static constexpr std::array<uint8_t, 17> kMsg_ = {
+      0xa7, 0x48, 0x47, 0x93, 0x0a, 0x03, 0xab, 0xee, 0xa4,
+      0x73, 0xe1, 0xf3, 0xdc, 0x30, 0xb8, 0x88, 0x15};
+
+  KmacTest() { EXPECT_EQ(dif_kmac_init(dev().region(), &kmac_), kDifOk); }
+
+  /**
+   * Set mmio write expectation for 8 bits data size.
+   *
+   * @param message Buffer with the data.
+   * @param size Len of the buffer.
+   */
+  void setExpectedMessageByte(const uint8_t *message, const size_t size) {
+    for (int i = 0; i < size; ++i) {
+      EXPECT_WRITE8(KMAC_MSG_FIFO_REG_OFFSET, message[i]);
+    }
+  }
+
+  /**
+   * Set mmio write expectation for 32 bits data size considering an alignment
+   * of 32 bits.
+   *
+   * @param message Buffer with the data.
+   * @param size Len of the buffer.
+   */
+  void setExpectedMessageInt32(const uint8_t *message, const size_t size) {
+    // Check if the buffer is unaligned.
+    size_t remaining = size;
+    size_t unalignment = ((uintptr_t)message) % sizeof(uint32_t);
+    if (unalignment) {
+      // write unaligned data in bytes.
+      unalignment = sizeof(uint32_t) - unalignment;
+      setExpectedMessageByte(message, unalignment);
+      message += unalignment;
+      remaining -= unalignment;
+    }
+
+    // Write aligned part of the buffer.
+    while (remaining >= sizeof(uint32_t)) {
+      uint32_t word = 0;
+      memcpy(&word, message, sizeof(uint32_t));
+      EXPECT_WRITE32(KMAC_MSG_FIFO_REG_OFFSET, word);
+      remaining -= sizeof(uint32_t);
+      message += sizeof(uint32_t);
+    }
+    // Check if there still unaligned data in the buffer tail.
+    if (remaining) {
+      // write unaligned data in bytes.
+      setExpectedMessageByte(message, remaining);
+    }
+  }
+};
+constexpr std::array<uint8_t, 17> KmacTest::kMsg_;
+
+class AbsorbalignmentMessage : public KmacTest {};
+
+TEST_F(AbsorbalignmentMessage, Success) {
+  uint8_t buffer[kMsg_.size() + sizeof(uint32_t)];
+
+  for (int i = 0; i < sizeof(uint32_t); i++) {
+    uint8_t *pMsg = &buffer[i];
+    std::copy(kMsg_.begin(), kMsg_.end(), pMsg);
+
+    EXPECT_READ32(KMAC_STATUS_REG_OFFSET, 3);
+    setExpectedMessageInt32(pMsg, kMsg_.size());
+
+    EXPECT_EQ(dif_kmac_absorb(&kmac_, &op_state_, pMsg, kMsg_.size(), NULL),
+              kDifOk);
+  }
+}
 }  // namespace dif_kmac_unittest

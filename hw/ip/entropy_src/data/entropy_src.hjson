@@ -141,8 +141,8 @@
           mubi: true,
           desc: '''
                 Setting this field to kMuBi4True will enable reading entropy values from the
-                ENTROPY_DATA register. This function also requires that the efuse_es_sw_reg_en
-                input is set.
+                ENTROPY_DATA register. This function also requires that the otp_en_entropy_src_fw_read
+                input vector is set to the enable encoding.
                 '''
           resval: "false"
         },
@@ -994,8 +994,8 @@
           desc: '''
                 Setting this field to 0xA will put the entropy flow in firmware override mode.
                 In this mode, firmware can monitor the post-health test entropy by reading
-                the observe FIFO. This function also requires that the efuse_es_sw_ov_en
-                input is set.
+                the observe FIFO. This function also requires that the otp_en_entropy_src_fw_over
+                input vector is set to the enable encoding.
                 '''
           resval: "0x5"
         },
@@ -1007,7 +1007,7 @@
                 the ability to insert entropy bits back into the hardware flow. Firmware
                 can read data from the health check packer FIFO, then do optional health
                 checks or optional conditioning, then insert the results back into the flow.
-                Also, the !!FW_OV_MODE bit must be set.
+                Also, the !!FW_OV_CONTROL.FW_OV_MODE bit must be set.
                 '''
           resval: "0x5"
         },
@@ -1035,7 +1035,7 @@
       fields: [
         { bits: "31:0",
           desc: '''A write to  this register will insert entropy back into the entropy source
-                module flow. Both !!FW_OV_MODE and !!FW_OV_ENTROPY_INSERT bits need to be set
+                module flow. Both !!FW_OV_CONTROL.FW_OV_MODE and !!FW_OV_CONTROL.FW_OV_ENTROPY_INSERT bits need to be set
                 to enable the insertion.
                 '''
         }
@@ -1241,6 +1241,15 @@
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
                 ES main stage state machine. This error will signal a fatal alert, and also
+                an interrupt if enabled.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "22",
+          name: "ES_CNTR_ERR",
+          desc: '''
+                This bit will be set to one when a hardened counter has detected an error
+                condition. This error will signal a fatal alert, and also
                 an interrupt if enabled.
                 This bit will stay set until firmware clears it.
                 '''

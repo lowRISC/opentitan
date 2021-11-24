@@ -27,7 +27,9 @@ module rstmgr_cnsty_chk
   output logic err_o
 );
 
-  localparam int CntWidth = prim_util_pkg::vbits(MaxSyncDelay + 1);
+  // The "+ 2" here is because the cnt counter that uses this width needs to be able to count up to
+  // MaxSyncDelay + 1.
+  localparam int CntWidth = $clog2(MaxSyncDelay + 2);
 
   // These two flops below are completely async.
   // The value from these flops are always fed through synchronizers before use.
@@ -101,7 +103,7 @@ module rstmgr_cnsty_chk
   // also operating on clk_i.  We are mainly trying to wait out the reset assertion delays.
   // parent resets are asynchronous assertion so there is at most a one cycle separation.
   // if needed we can make this timeout bigger.
-  assign timeout = cnt > MaxSyncDelay;
+  assign timeout = int'(cnt) > MaxSyncDelay;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

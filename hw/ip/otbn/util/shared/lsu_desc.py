@@ -4,7 +4,7 @@
 
 from typing import List
 
-from .yaml_parse_helpers import check_keys, check_str, check_int
+from serialize.parse_helpers import check_keys, check_str, check_int
 
 
 class LSUDesc:

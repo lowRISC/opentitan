@@ -11,6 +11,7 @@ use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 
 mod primitive;
+mod legacy;
 
 #[derive(Debug, Error)]
 pub enum BootstrapError {
@@ -64,11 +65,9 @@ impl Bootstrap {
 
     /// Consrtuct a `Bootstrap` struct configured to use `protocol` and `options`.
     pub fn new(protocol: BootstrapProtocol, options: BootstrapOptions) -> Result<Self> {
-        let updater = match protocol {
-            BootstrapProtocol::Primitive => primitive::Primitive::new(&options),
-            BootstrapProtocol::Legacy => {
-                unimplemented!();
-            }
+        let updater: Box<dyn UpdateProtocol> = match protocol {
+            BootstrapProtocol::Primitive => Box::new(primitive::Primitive::new(&options)),
+            BootstrapProtocol::Legacy => Box::new(legacy::Legacy::new(&options)),
             BootstrapProtocol::Eeprom => {
                 unimplemented!();
             }
@@ -80,7 +79,7 @@ impl Bootstrap {
         Ok(Bootstrap {
             protocol,
             reset_delay: options.reset_delay.unwrap_or(Self::RESET_DELAY),
-            updater: Box::new(updater),
+            updater: updater,
         })
     }
 

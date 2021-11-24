@@ -10,6 +10,7 @@
     import clkmgr_pkg::*;
     import clkmgr_reg_pkg::*;
     import lc_ctrl_pkg::lc_tx_t;
+    import prim_mubi_pkg::mubi4_t;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -44,7 +45,7 @@
   output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
 
   // dft interface
-  input lc_tx_t scanmode_i,
+  input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // idle hints
   input [${len(typed_clocks.hint_clks)-1}:0] idle_i,
@@ -52,11 +53,16 @@
   // life cycle state output
   input lc_tx_t lc_dft_en_i,
 
-  // clock bypass control
+  // clock bypass control with lc_ctrl
   input lc_tx_t lc_clk_byp_req_i,
-  output lc_tx_t ast_clk_byp_req_o,
-  input lc_tx_t ast_clk_byp_ack_i,
   output lc_tx_t lc_clk_byp_ack_o,
+
+  // clock bypass control with ast
+  output mubi4_t io_clk_byp_req_o,
+  input mubi4_t io_clk_byp_ack_i,
+  output mubi4_t all_clk_byp_req_o,
+  input mubi4_t all_clk_byp_ack_i,
+  output logic hi_speed_sel_o,
 
   // jittery enable
   output logic jitter_en_o,
@@ -74,29 +80,44 @@
 
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::mubi4_test_true_loose;
+  import prim_mubi_pkg::mubi4_test_false_loose;
 
   ////////////////////////////////////////////////////
   // Divided clocks
   ////////////////////////////////////////////////////
 
-  lc_tx_t step_down_req;
+  logic step_down_req;
   logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
 
 % for src_name in clocks.derived_srcs:
   logic clk_${src_name}_i;
 % endfor
 
+% for src_name in clocks.all_derived_srcs():
+  logic ${src_name}_step_down_req;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_${src_name}_step_down_req_sync (
+    .clk_i(clk_${src_name}_i),
+    .rst_ni(rst_${src_name}_ni),
+    .d_i(step_down_req),
+    .q_o(${src_name}_step_down_req)
+  );
+
+% endfor
 % for src in clocks.derived_srcs.values():
 
-  lc_tx_t ${src.name}_div_scanmode;
-  prim_lc_sync #(
+  // Declared as size 1 packed array to avoid FPV warning.
+  prim_mubi_pkg::mubi4_t [0:0] ${src.name}_div_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${src.name}_div_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(${src.name}_div_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(${src.name}_div_scanmode)
   );
 
   prim_clock_div #(
@@ -104,9 +125,9 @@
   ) u_no_scan_${src.name}_div (
     .clk_i(clk_${src.src.name}_i),
     .rst_ni(rst_${src.src.name}_ni),
-    .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
+    .step_down_req_i(${src.src.name}_step_down_req),
     .step_down_ack_o(step_down_acks[${loop.index}]),
-    .test_en_i(${src.name}_div_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${src.name}_div_scanmode[0])),
     .clk_o(clk_${src.name}_i)
   );
 % endfor
@@ -178,20 +199,36 @@
   // Clock bypass request
   ////////////////////////////////////////////////////
 
+  mubi4_t low_speed_sel;
+  assign low_speed_sel = mubi4_t'(reg2hw.extclk_ctrl.low_speed_sel.q);
   clkmgr_byp #(
     .NumDivClks(${len(clocks.derived_srcs)})
   ) u_clkmgr_byp (
     .clk_i,
     .rst_ni,
     .en_i(lc_dft_en_i),
-    .byp_req_i(lc_tx_t'(reg2hw.extclk_ctrl.sel.q)),
-    .step_down_req_i(lc_tx_t'(reg2hw.extclk_ctrl.step_down.q)),
-    .ast_clk_byp_req_o,
-    .ast_clk_byp_ack_i,
     .lc_clk_byp_req_i,
     .lc_clk_byp_ack_o,
+    .byp_req_i(mubi4_t'(reg2hw.extclk_ctrl.sel.q)),
+    .low_speed_sel_i(low_speed_sel),
+    .all_clk_byp_req_o,
+    .all_clk_byp_ack_i,
+    .io_clk_byp_req_o,
+    .io_clk_byp_ack_i,
+
+    // divider step down controls
     .step_down_acks_i(step_down_acks),
     .step_down_req_o(step_down_req)
+  );
+
+  // the external consumer of this signal requires the opposite polarity
+  prim_flop #(
+    .ResetValue(1'b1)
+  ) u_high_speed_sel (
+    .clk_i,
+    .rst_ni,
+    .d_i(mubi4_test_false_loose(low_speed_sel)),
+    .q_o(hi_speed_sel_o)
   );
 
   ////////////////////////////////////////////////////
@@ -211,105 +248,52 @@
 % endfor
 
   ////////////////////////////////////////////////////
+  // Distribute pwrmgr ip_clk_en requests to each family
+  ////////////////////////////////////////////////////
+% for root, clk_family in typed_clocks.parent_child_clks.items():
+  // clk_${root} family
+  % for clk in clk_family:
+  logic pwrmgr_${clk}_en;
+  % endfor
+  % for clk in clk_family:
+  assign pwrmgr_${clk}_en = pwr_i.${root}_ip_clk_en;
+  % endfor
+
+% endfor
+
+  ////////////////////////////////////////////////////
   // Root gating
   ////////////////////////////////////////////////////
 
-  logic wait_enable;
-  logic wait_disable;
-  logic en_status_d;
-  logic dis_status_d;
-  logic [1:0] en_status_q;
-  logic [1:0] dis_status_q;
-  logic clk_status;
-% for src in typed_clocks.rg_srcs:
-  logic clk_${src}_root;
+% for root, clk_family in typed_clocks.parent_child_clks.items():
+  // clk_${root} family
+  logic [${len(clk_family)-1}:0] ${root}_ens;
+
+  % for src in clk_family:
   logic clk_${src}_en;
-% endfor
-
-% for src in typed_clocks.rg_srcs:
-  lc_tx_t ${src}_scanmode;
-  prim_lc_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_${src}_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(${src}_scanmode)
-  );
-
-  prim_clock_gating_sync u_${src}_cg (
+  logic clk_${src}_root;
+  clkmgr_root_ctrl u_${src}_root_ctrl (
     .clk_i(clk_${src}_i),
     .rst_ni(rst_${src}_ni),
-    .test_en_i(${src}_scanmode == lc_ctrl_pkg::On),
-    .async_en_i(pwr_i.ip_clk_en),
+    .scanmode_i,
+    .async_en_i(pwrmgr_${src}_en),
     .en_o(clk_${src}_en),
     .clk_o(clk_${src}_root)
   );
+  assign ${root}_ens[${loop.index}] = clk_${src}_en;
 
-% endfor
-  // an async AND of all the synchronized enables
-  // return feedback to pwrmgr only when all clocks are enabled
-  assign wait_enable =
-% for src in typed_clocks.rg_srcs:
-    % if loop.last:
-    clk_${src}_en;
-    % else:
-    clk_${src}_en &
-    % endif
-% endfor
-
-  // an async OR of all the synchronized enables
-  // return feedback to pwrmgr only when all clocks are disabled
-  assign wait_disable =
-% for src in typed_clocks.rg_srcs:
-    % if loop.last:
-    clk_${src}_en;
-    % else:
-    clk_${src}_en |
-    % endif
-% endfor
-
-  // Sync clkmgr domain for feedback to pwrmgr.
-  // Since the signal is combo / converged on the other side, de-bounce
-  // the signal prior to output
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_roots_en_status_sync (
+  % endfor
+  // create synchronized status
+  clkmgr_clk_status #(
+    .NumClocks(${len(clk_family)})
+  ) u_${root}_status (
     .clk_i,
     .rst_ni,
-    .d_i(wait_enable),
-    .q_o(en_status_d)
+    .ens_i(${root}_ens),
+    .status_o(pwr_o.${root}_status)
   );
 
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_roots_or_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(wait_disable),
-    .q_o(dis_status_d)
-  );
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      en_status_q <= '0;
-      dis_status_q <= '0;
-      clk_status <= '0;
-    end else begin
-      en_status_q <= {en_status_q[0], en_status_d};
-      dis_status_q <= {dis_status_q[0], dis_status_d};
-
-      if (&en_status_q) begin
-        clk_status <= 1'b1;
-      end else if (|dis_status_q == '0) begin
-        clk_status <= 1'b0;
-      end
-    end
-  end
-
-  assign pwr_o.clk_status = clk_status;
-
+% endfor
   ////////////////////////////////////////////////////
   // Clock Measurement for the roots
   ////////////////////////////////////////////////////
@@ -318,13 +302,16 @@
 % for src in typed_clocks.rg_srcs:
   logic ${src}_fast_err;
   logic ${src}_slow_err;
+  logic ${src}_timeout_err;
   <%
    freq = clocks.all_srcs[src].freq
    cnt = int(freq*2 / aon_freq)
   %>\
   prim_clock_meas #(
     .Cnt(${cnt}),
-    .RefCnt(1)
+    .RefCnt(1),
+    .ClkTimeOutChkEn(1'b1),
+    .RefTimeOutChkEn(1'b0)
   ) u_${src}_meas (
     .clk_i(clk_${src}_i),
     .rst_ni(rst_${src}_ni),
@@ -335,7 +322,9 @@
     .min_cnt(reg2hw.${src}_measure_ctrl.min_thresh.q),
     .valid_o(),
     .fast_o(${src}_fast_err),
-    .slow_o(${src}_slow_err)
+    .slow_o(${src}_slow_err),
+    .timeout_clk_ref_o(),
+    .ref_timeout_clk_o(${src}_timeout_err)
   );
 
   logic synced_${src}_err;
@@ -348,8 +337,24 @@
     .dst_pulse_o(synced_${src}_err)
   );
 
+  logic synced_${src}_timeout_err;
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue('0),
+    .EnSync(1'b1)
+  ) u_${src}_timeout_err_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(${src}_timeout_err),
+    .q_sync_o(),
+    .q_posedge_pulse_o(synced_${src}_timeout_err),
+    .q_negedge_pulse_o()
+  );
+
   assign hw2reg.recov_err_code.${src}_measure_err.d = 1'b1;
   assign hw2reg.recov_err_code.${src}_measure_err.de = synced_${src}_err;
+  assign hw2reg.recov_err_code.${src}_timeout_err.d = 1'b1;
+  assign hw2reg.recov_err_code.${src}_timeout_err.de = synced_${src}_timeout_err;
 
 % endfor
 
@@ -388,15 +393,16 @@
     .q_o(${k}_sw_en)
   );
 
-  lc_tx_t ${k}_scanmode;
-  prim_lc_sync #(
+  // Declared as size 1 packed array to avoid FPV warning.
+  prim_mubi_pkg::mubi4_t [0:0] ${k}_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${k}_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(${k}_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(${k}_scanmode)
   );
 
   logic ${k}_combined_en;
@@ -406,7 +412,7 @@
   ) u_${k}_cg (
     .clk_i(clk_${v.src.name}_root),
     .en_i(${k}_combined_en),
-    .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${k}_scanmode[0])),
     .clk_o(clocks_o.${k})
   );
 
@@ -445,15 +451,16 @@
     .q_o(${clk}_hint)
   );
 
-  lc_tx_t ${clk}_scanmode;
-  prim_lc_sync #(
+  // Declared as size 1 packed array to avoid FPV warning.
+  prim_mubi_pkg::mubi4_t [0:0] ${clk}_scanmode;
+  prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${clk}_scanmode_sync  (
     .clk_i(1'b0),  //unused
     .rst_ni(1'b1), //unused
-    .lc_en_i(scanmode_i),
-    .lc_en_o(${clk}_scanmode)
+    .mubi_i(scanmode_i),
+    .mubi_o(${clk}_scanmode)
   );
 
   // Add a prim buf here to make sure the CG and the lc sender inputs
@@ -469,7 +476,7 @@
   ) u_${clk}_cg (
     .clk_i(clk_${sig.src.name}_root),
     .en_i(${clk}_combined_en),
-    .test_en_i(${clk}_scanmode == lc_ctrl_pkg::On),
+    .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(${clk}_scanmode[0])),
     .clk_o(clocks_o.${clk})
   );
 
@@ -491,7 +498,7 @@
   assign hw2reg.clk_hints_status.${clk}_val.d = ${clk}_en;
 % endfor
 
-  assign jitter_en_o = reg2hw.jitter_enable.q;
+  assign jitter_en_o = mubi4_test_true_loose(mubi4_t'(reg2hw.jitter_enable.q));
 
   ////////////////////////////////////////////////////
   // Exported clocks
@@ -513,7 +520,8 @@
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
-  `ASSERT_KNOWN(AstClkBypReqKnownO_A, ast_clk_byp_req_o)
+  `ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
+  `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
 % for intf in cfg['exported_clks']:

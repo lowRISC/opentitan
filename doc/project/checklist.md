@@ -135,6 +135,13 @@ Compile-time random netlist constants (such as LFSR seeds or scrambling constant
 Default random seeds and permutations for LFSRs can be generated with [the gen-lfsr-seed.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/gen-lfsr-seed.py).
 See also the related [GitHub issue #2229](https://github.com/lowRISC/opentitan/issues/2229).
 
+## D2S
+
+### SEC_CM_IMPLEMENTED
+
+Any appropriate security counter-measures are implemented.
+For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py) must be used to generate the encoding.
+
 ## D3
 
 ### NEW_FEATURES_D3
@@ -178,11 +185,6 @@ Any other software-visible design changes have been reviewed by the software tea
 ### REVIEW_SW_ERRATA
 
 All known "Won't Fix" bugs and "Errata" have been reviewed by the software team.
-
-### SEC_CM_IMPLEMENTED
-
-Any appropriate security counter-measures are implemented.
-For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/util/design/sparse-fsm-encode.py) must be used to generate the encoding.
 
 ### SEC_NON_RESET_FLOPS
 

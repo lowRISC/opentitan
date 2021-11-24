@@ -45,8 +45,10 @@ typedef struct mp_region {
   uint32_t prog_en;
   /** Erase enable flag. */
   uint32_t erase_en;
-  /** Scramble / ECC enable flag. */
+  /** Scramble enable flag*/
   uint32_t scramble_en;
+  /** ECC enable flag. */
+  uint32_t ecc_en;
 } mp_region_t;
 
 /**

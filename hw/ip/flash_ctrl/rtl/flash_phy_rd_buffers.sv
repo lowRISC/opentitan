@@ -29,7 +29,7 @@ module flash_phy_rd_buffers import flash_phy_pkg::*; (
   input [BankAddrW-1:0] addr_i,
   input part_i,
   input [InfoTypesWidth-1:0] info_sel_i,
-  input [DataWidth-1:0] data_i,
+  input [PlainDataWidth-1:0] data_i,
   output rd_buf_t out_o
 );
 

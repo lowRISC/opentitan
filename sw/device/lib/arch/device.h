@@ -97,7 +97,6 @@ extern const uint64_t kUartBaudrate;
  * The pre-calculated UART NCO value based on the Baudrate and Peripheral clock.
  */
 extern const uint32_t kUartNCOValue;
-;
 
 /**
  * An address to write to to report test status.

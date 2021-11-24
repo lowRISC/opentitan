@@ -201,7 +201,7 @@
             - Coverage collected per clock.
             '''
       milestone: V2
-      tests: []
+      tests: ["clkmgr_frequency"]
     }
     {
       name: frequency_overflow

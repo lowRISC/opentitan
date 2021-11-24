@@ -70,6 +70,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Poll fifo status before writing to prog_fifo / reading from rd_fifo.
   uint poll_fifo_status_pc;
 
+  // Chances to start flash with all 1s and not with random values (default is 30%).
+  uint flash_init_set_pc;
+
   //  Set by a higher level vseq that invokes this vseq 
   bit external_cfg;
 
@@ -140,13 +143,16 @@ class flash_ctrl_seq_cfg extends uvm_object;
     max_flash_ops_per_cfg = 50;
 
     op_readonly_on_info_partition = 0;
-    op_readonly_on_info1_partition = 0;
+    // info1 partition will be read-only by default
+    op_readonly_on_info1_partition = 1;
 
     op_erase_type_bank_pc = 20;
     op_max_words = 512;
     op_allow_invalid = 1'b0;
 
     poll_fifo_status_pc = 30;
+
+    flash_init_set_pc = 30;
 
     external_cfg = 1'b0;
 

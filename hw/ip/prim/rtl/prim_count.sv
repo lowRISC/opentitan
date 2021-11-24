@@ -132,6 +132,19 @@ module prim_count import prim_count_pkg::*; #(
     `ASSERT(CrossCntErrBackward_A, err_o |->
             (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}))
 
+    // Down counter assumption to control underflow
+    // We can also constrain the down counter underflow via `down_cnt % step_i == 0`.
+    // However, modulo operation can be very complex for formal analysis.
+    `ASSUME(DownCntStepInt_A, cmp_valid == CmpValid |-> down_cnt == 0 || down_cnt >= step_i)
+
+    // Up counter assumption to control overflow
+      logic [Width:0] unused_cnt;
+      assign unused_cnt = up_cnt_q[0] + step_i;
+      logic unused_incr_cnt;
+      assign unused_incr_cnt = (cmp_valid == CmpValid) & !clr_i & !set_i;
+
+      `ASSUME(UpCntOverFlow_A, unused_incr_cnt && !err |-> ~unused_cnt[Width])
+
   end else if (CntStyle == DupCnt) begin : gen_dup_cnt_hardening
     // duplicate count compare is always valid
     assign cmp_valid = CmpValid;
@@ -147,20 +160,7 @@ module prim_count import prim_count_pkg::*; #(
                  (cmp_valid == CmpInvalid) ?  '0  : 1'b1;
 
   // ASSERTIONS AND ASSUMPTIONS
-
-  // Down counter assumption to control underflow
-  if (CntStyle == CrossCnt && OutSelDnCnt) begin : gen_down_cnter_assumptions
-    `ASSUME(DownCntStepInt_A, cmp_valid == CmpValid |-> max_val % step_i == 0)
-  // Up counter assumption to control overflow
-  end else begin : gen_up_cnter_assumptions
-    logic [Width:0] unused_cnt;
-    assign unused_cnt = up_cnt_q[0] + step_i;
-    logic unused_incr_cnt;
-    assign unused_incr_cnt = (cmp_valid == CmpValid) & !clr_i & !set_i;
-
-    `ASSUME(UpCntOverFlow_A, unused_incr_cnt |-> ~unused_cnt[Width])
-  end
-
+  `ifdef INC_ASSERT
   // Helper variables to hold the previous valid `cnt_o` and `step_i` when `en_i` is set.
   logic [Width-1:0] past_cnt_o, past_step_i;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -172,6 +172,7 @@ module prim_count import prim_count_pkg::*; #(
       past_step_i <= step_i;
     end
   end
+  `endif
 
   // Clear and set should not be seen at the same time
   `ASSUME(SimulClrSet_A, clr_i || set_i |-> clr_i != set_i)
@@ -189,7 +190,24 @@ module prim_count import prim_count_pkg::*; #(
   // 1). For duplicate counter, sets the `cnt_o` to `set_cnt_i`.
   // 2). For cross up counter, sets the `max_value` to `set_cnt_i`.
   // 3). For cross down counter, sets the `cnt_o` and `max_value` to `set_cnt_i`.
-  `ASSERT(OutSet_A, set_i |=>
+  `ASSERT(OutSet_A, ##1 set_i |=>
           (CntStyle == DupCnt || OutSelDnCnt) ? cnt_o == $past(set_cnt_i) : cnt_o == 0)
 
-endmodule : prim_count
+  // This logic that will be assign to one, when user adds macro
+  // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
+  // is used in design without adding this assertion check.
+  `ifdef INC_ASSERT
+  logic unused_assert_connected;
+
+  // ASSERT_INIT can only be used for paramters/constants in FPV.
+  `ifdef SIMULATION
+  `ASSERT_INIT(AssertConnected_A, unused_assert_connected === 1'b1)
+  `endif
+  `endif
+endmodule // prim_count
+
+`define ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, MAX_CYCLES_ = 5) \
+  `ASSERT(NAME_, $rose(PRIM_HIER_.err_o) |-> ##[1:MAX_CYCLES_] $rose(ALERT_.alert_p)) \
+  `ifdef INC_ASSERT \
+  assign PRIM_HIER_.unused_assert_connected = 1'b1; \
+  `endif

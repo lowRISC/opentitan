@@ -57,6 +57,9 @@ module entropy_src
   output logic    intr_es_fatal_err_o
 );
 
+  localparam int RngBusWidth = 4; // AST RNG bus width
+  localparam int NumBins = 2**RngBusWidth; // bucket health test bin count
+
   // common signals
   entropy_src_hw2reg_t hw2reg;
   entropy_src_reg2hw_t reg2hw;
@@ -274,5 +277,48 @@ module entropy_src
   `ASSERT_KNOWN(IntrEsEntropyValidKnownO_A, intr_es_entropy_valid_o)
   `ASSERT_KNOWN(IntrEsHealthTestFailedKnownO_A, intr_es_health_test_failed_o)
   `ASSERT_KNOWN(IntrEsFifoErrKnownO_A, intr_es_fatal_err_o)
+
+  // prim_count alerts
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck0_A,
+    u_entropy_src_core.u_prim_count_window_cntr,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck1_A,
+    u_entropy_src_core.u_entropy_src_adaptp_ht.u_prim_count_test_cnt,
+    alert_tx_o[1])
+
+  for (genvar i = 0; i < NumBins; i = i + 1) begin : gen_symbol_match
+   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
+     u_entropy_src_core.u_entropy_src_bucket_ht.gen_symbol_match[i].u_prim_count_bin_cntr,
+     alert_tx_o[1])
+  end : gen_symbol_match
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck3_A,
+    u_entropy_src_core.u_entropy_src_bucket_ht.u_prim_count_test_cnt,
+    alert_tx_o[1])
+
+  for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_pair_cntrs
+   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
+     u_entropy_src_core.u_entropy_src_markov_ht.gen_cntrs[sh].u_prim_count_pair_cntr,
+     alert_tx_o[1])
+  end : gen_pair_cntrs
+
+  for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_rep_cntrs
+   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
+     u_entropy_src_core.u_entropy_src_repcnt_ht.gen_cntrs[sh].u_prim_count_rep_cntr,
+     alert_tx_o[1])
+  end : gen_rep_cntrs
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck6_A,
+    u_entropy_src_core.u_entropy_src_repcnt_ht.u_prim_count_test_cnt,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck7_A,
+    u_entropy_src_core.u_entropy_src_repcnts_ht.u_prim_count_rep_cntr,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck8_A,
+    u_entropy_src_core.u_entropy_src_repcnts_ht.u_prim_count_test_cnt,
+    alert_tx_o[1])
 
 endmodule

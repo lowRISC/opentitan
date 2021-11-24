@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
+      - lowrisc:prim:count
       - lowrisc:prim:assert
       - lowrisc:prim:lfsr
       - lowrisc:ip:tlul

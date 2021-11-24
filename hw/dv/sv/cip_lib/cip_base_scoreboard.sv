@@ -17,7 +17,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifos[string];
 
   // EDN fifo
-  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH))) edn_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH))) edn_fifos[];
 
   mem_model#() exp_mem[string];
 
@@ -46,7 +46,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       string alert_name = cfg.list_of_alerts[i];
       alert_fifos[alert_name] = new($sformatf("alert_fifo[%s]", alert_name), this);
     end
-    if (cfg.has_edn) edn_fifo = new("edn_fifo", this);
+    edn_fifos = new[cfg.num_edn];
+    foreach (cfg.m_edn_pull_agent_cfg[i]) edn_fifos[i] = new($sformatf("edn_fifos[%0d]", i), this);
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       exp_mem[i] = mem_model#()::type_id::create({"exp_mem_", i}, this);
     end
@@ -462,7 +463,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     super.reset(kind);
     foreach (tl_a_chan_fifos[i]) tl_a_chan_fifos[i].flush();
     foreach (tl_d_chan_fifos[i]) tl_d_chan_fifos[i].flush();
-    if (cfg.has_edn) edn_fifo.flush();
+    foreach (edn_fifos[i]) edn_fifos[i].flush();
     foreach(cfg.list_of_alerts[i]) begin
       alert_fifos[cfg.list_of_alerts[i]].flush();
       exp_alert[cfg.list_of_alerts[i]]             = 0;
@@ -473,7 +474,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction
 
   virtual task sample_resets();
-    if (cfg.has_edn && cfg.en_cov) begin
+    if (cfg.num_edn && cfg.en_cov) begin
       // Discard the first resets
       wait(cfg.clk_rst_vif.rst_n && cfg.edn_clk_rst_vif.rst_n);
       forever begin

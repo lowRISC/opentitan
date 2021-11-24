@@ -11,7 +11,7 @@ This document specifies the functionality of the OpenTitan clock manager.
 - Attribute based controls of OpenTitan clocks.
 - Minimal software clock controls to reduce risks in clock manipulation.
 - External clock switch support
-- Clock frequency measurement
+- Clock frequency /time-out measurement
 
 # Theory of Operation
 
@@ -187,22 +187,47 @@ There are two occasions where this is required:
 -  Life cycle transition from `Raw` / `Test_locked` to `Test_unlocked` [states]({{< relref "hw/ip/lc_ctrl/doc/_index.md#clk_byp_req" >}}).
 -  Software request for external clocks during normal functional mode.
 
-Software request for external clocks is not always valid.
-Software is only able to request for external clocks when dft functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#dft_en" >}}).
-When software requests the external clock switch, it also has the option to request whether the clock divider should be stepped down by a factor of 2.
+#### Life Cycle Requested External Clock
 
-
+The life cycle controller only requests the io clock input to be switched.
 When the life cycle controller requests external clock, a request signal `lc_clk_byp_req_i` is sent from `lc_ctrl` to `clkmgr`.
-`clkmgr` then forwards the request to `ast` through `ast_clk_byp_req_o`, which performs the actual clock switch.
+`clkmgr` then forwards the request to `ast` through `io_clk_byp_req_o`, which performs the actual clock switch and is acknowledged through `io_clk_byp_ack_i`.
 When the clock switch is complete, the clock dividers are stepped down by a factor of 2 and the life cycle controller is acknowledged through `lc_clk_byp_ack_o`.
 
-When software requests external clock, the register bit {{< regref "EXTCLK_CTRL" >}} is written.
-If dft functions are allowed, the `clkmgr` sends a request signal `ast_clk_byp_req_o` to `ast`.
+#### Software Requested External Clocks
 
+Unlike the life cycle controller, a software request for external clocks switches all clock sources to an external source.
+Software request for external clocks is not always valid.
+Software is only able to request for external clocks when dft functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#dft_en" >}}).
+
+When software requests the external clock switch, it also provides an indication how fast the external clock is through {{< regref "EXTCLK_CTRL.LOW_SPEED_SEL" >}}.
+There are two supported clock speeds:
+* High speed - external clock is close to nominal speeds (e.g. external clock is 96MHz and nominal frequency is 96MHz-100MHz)
+* Low speed - external clock is half of nominal speeds (e.g. external clock is 48MHz and nominal frequency is 96MHz-100MHz)
+
+When software requests external clock, the register bit {{< regref "EXTCLK_CTRL.SEL" >}} is written.
+If dft functions are allowed, the `clkmgr` sends a request signal `all_clk_byp_req_o` to `ast` and is acknowledged through `all_clk_byp_ack_i`.
+
+If software requests a low speed external clock, at the completion of the switch, internal dividers are also stepped down.
 When the divider is stepped down, a divide-by-4 clock becomes divide-by-2 clock , and a divide-by-2 becomes a divide-by-1 clock.
-This allows external connection to be either nominal frequencies or nominal divided-by-2.
 
-### Clock Frequency Measurements
+If software requests a high speed external clock, the dividers are kept as is.
+
+#### Clock Frequency Summary
+
+The table below summarises the valid modes and the settings required.
+
+| Mode                         | `lc_ctrl_clk_byp_req`  | `extclk_ctrl.sel` | `extclk_ctrl.low_speed_sel` | life cycle state        |
+| -------------                | ---------------------  | ----------------- | ----------------------------| ----------------------- |
+| Life cycle transition        | `lc_ctrl_pkg::On`      | Don't care        | Don't care                  | Controlled by `lc_ctrl` |
+| Internal Clocks              | `lc_ctrl_pkg::Off`     | `kMultiBit4False` | Don't care                  | All                     |
+| Software external high speed | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4False`           | TEST_UNLOCKED, RMA      |
+| Software external low speed  | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4True`            | TEST_UNLOCKED, RMA      |
+
+
+
+
+### Clock Frequency / Time-out Measurements
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
 This feature can be enabled through the various measurement control registers such as {{< regref "IO_MEASURE_CTRL" >}}.
@@ -213,12 +238,17 @@ Software sets both an expected maximum and minimum for each measured clock.
 Clock manager then counts the number of relevant root clock cycles in each always-on clock period.
 If the resulting count differs from the programmed thresholds, a recoverable error is registered.
 
-There are two types of errors:
+Additionally, clock manager uses a similar time-out mechanism to see if any of the root clocks have stopped toggling altogether.
+This is done by creating an artificial handshake between the two domains that must complete within a certain amount of time based on known clock ratios.
+
+There are three types of errors:
 * Clock too fast error
 * Clock too slow error
+* Clock time-out error
 
 Clock too fast is registered when the clock cycle count is greater than the software programmed max threshold.
 Clock too slow is registered when the clock cycle count is less than the software programmed min threshold.
+Clock time-out is registered when the clock stops toggling and the timeout threshold is reached.
 
 As these are all software supplied values, the entire measurement control can be locked from further programming through {{< regref "MEASURE_CTRL_REGWEN" >}}.
 

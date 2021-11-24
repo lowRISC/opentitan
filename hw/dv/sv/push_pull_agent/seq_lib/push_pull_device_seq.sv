@@ -14,62 +14,62 @@ class push_pull_device_seq #(parameter int HostDataWidth = 32,
 
   `uvm_object_new
 
-  mailbox #(push_pull_item#(HostDataWidth, DeviceDataWidth)) req_mailbox;
+  // Randomizes the device rsp.
+  //
+  // The randomization works out the same regardless of the agent type.
+  virtual function void randomize_item(push_pull_item #(HostDataWidth, DeviceDataWidth) item);
+    super.randomize_item(item);
+    // If user-provided data is available, use it.
+    if (cfg.has_d_user_data()) item.d_data = cfg.get_d_user_data();
+  endfunction
 
   virtual task body();
-    req_mailbox = new();
-
     if (cfg.agent_type == PushAgent) begin
-      // In Push mode, continuously send an empty but randomized sequence item
-      // to the device driver (which just needs to assert ready).
-      // If the agent is in bidirectional mode, send the corresponding data.
-      forever begin
-        // Pause if we are in reset.
-        if (cfg.in_reset) begin
-          wait(!cfg.in_reset);
-        end
-
-        req = push_pull_item#(HostDataWidth, DeviceDataWidth)::type_id::create("req");
-        start_item(req);
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-          if (cfg.zero_delays) {
-            device_delay == 0;
-          } else {
-            device_delay inside {[cfg.device_delay_min : cfg.device_delay_max]};
-          }
-        )
-        // If user-provided data is available, use this instead of randomized data.
-        if (cfg.has_d_user_data()) req.d_data = cfg.get_d_user_data();
-        finish_item(req);
-        get_response(rsp);
-        `uvm_info(`gfn, $sformatf("Received response: %0s", rsp.convert2string()), UVM_HIGH)
-      end
+      push_device_thread();
     end else begin
-      fork
-        forever begin : collect_req
-          // We indefinitely poll for any traffic sent from the monitor and store it to a mailbox.
-          p_sequencer.req_analysis_fifo.get(req);
-          req_mailbox.put(req);
-        end : collect_req
-        forever begin : send_req
-          // Collect transactions stored in the mailbox and send them to the driver.
-          req_mailbox.get(rsp);
-          start_item(rsp);
-          `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp,
-            if (cfg.zero_delays) {
-              device_delay == 0;
-            } else {
-              device_delay inside {[cfg.device_delay_min : cfg.device_delay_max]};
-            }
-          )
-          // If user-provided data is availabe, use this instead of randomized data.
-          if (cfg.has_d_user_data()) rsp.d_data = cfg.get_d_user_data();
-          finish_item(rsp);
-          get_response(rsp);
-          `uvm_info(`gfn, $sformatf("Received response: %0s", rsp.convert2string()), UVM_HIGH)
-        end : send_req
-      join
+      pull_device_thread();
     end
+  endtask
+
+  // Sends random rsps (assertion of ready) back to host.
+  //
+  // In Push mode, continuously send an empty but randomized sequence item
+  // to the device driver (which just needs to assert ready).
+  // If the agent is in bidirectional mode, send the corresponding data.
+  // TODO: for bidirectional mode, there may be a need for the returned device data to be
+  // constructed based on the received host data. This may need to be made "reactive" as well.
+  virtual task push_device_thread();
+    forever begin
+      wait (!cfg.in_reset);
+      `uvm_create(req)
+      start_item(req);
+      randomize_item(req);
+      finish_item(req);
+      get_response(rsp);
+    end
+  endtask
+
+  // Sends random rsps (device data and ack) back to host.
+  virtual task pull_device_thread();
+    push_pull_item #(HostDataWidth, DeviceDataWidth) req_q[$];
+    fork
+      forever begin : get_req
+        p_sequencer.req_analysis_fifo.get(req);
+        req_q.push_back(req);
+      end : get_req
+      forever begin : send_rsp
+        if (cfg.in_reset) begin
+          req_q.delete();
+          wait (!cfg.in_reset);
+        end
+        wait (req_q.size());
+        rsp = req_q.pop_front();
+        start_item(rsp);
+        randomize_item(rsp);
+        finish_item(rsp);
+        get_response(rsp);
+      end : send_rsp
+    join
   endtask
 
 endclass

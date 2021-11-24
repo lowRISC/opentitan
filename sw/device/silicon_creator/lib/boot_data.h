@@ -119,6 +119,17 @@ static_assert(kBootDataIdentifier != kBootDataInvalidatedIdentifier,
  */
 rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data);
 
+/**
+ * Writes the given boot data to the flash info partition.
+ *
+ * This function updates the `identifier`, `counter`, and `digest` fields of the
+ * given `boot_data` before writing it to the flash.
+ *
+ * @param boot_data[out] Boot data.
+ * @return The result of the operation.
+ */
+rom_error_t boot_data_write(const boot_data_t *boot_data);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

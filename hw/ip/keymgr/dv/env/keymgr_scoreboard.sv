@@ -234,8 +234,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         get_operation() inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
       current_cdi = get_adv_cdi_type();
       if (current_cdi > 0 && current_internal_key[current_cdi] > 0) begin
+        bit good_key = get_is_kmac_key_correct();
+        bit good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
         cfg.keymgr_vif.update_kdf_key(current_internal_key[current_cdi], current_state,
-                                      get_is_kmac_key_correct());
+                                      good_key, good_data);
       end
     end
   endfunction
@@ -567,7 +569,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                                                     current_cdi);
 
                   // expect no EDN request is issued. After this advance is done, will have 2 reqs
-                  `DV_CHECK_EQ(edn_fifo.is_empty(), 1)
+                  `DV_CHECK_EQ(edn_fifos[0].is_empty(), 1)
                 end else begin // !OpAdvance
                   current_op_status = keymgr_pkg::OpDoneFail;
                   // No KDF issued, done interrupt/alert is triggered in next cycle
@@ -591,6 +593,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               end
               default: begin // other than StReset and StDisabled
                 bit good_key = get_is_kmac_key_correct();
+                bit good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
+
                 bit skip_clean_kmac_key = 0;
 
                 if (current_state != keymgr_pkg::StReset &&
@@ -607,7 +611,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                 // update kmac key for check
                 if (current_internal_key[current_cdi] > 0) begin
                   cfg.keymgr_vif.update_kdf_key(current_internal_key[current_cdi], current_state,
-                                                good_key);
+                                                good_key, good_data);
                 end
               end
             endcase
@@ -667,7 +671,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
               // keymgr should request 2 EDN data during advancing from StReset
               // function `used` returns the number of entries put into the FIFO
-              `DV_CHECK_EQ(edn_fifo.used(), 2)
+              `DV_CHECK_EQ(edn_fifos[0].used(), 2)
             end
           end else begin
             `DV_CHECK_EQ(item.d_data, addr_phase_op_status)

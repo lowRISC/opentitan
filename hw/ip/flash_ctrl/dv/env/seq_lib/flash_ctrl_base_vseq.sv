@@ -18,6 +18,17 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  // Determine post-reset initialization method.
+  rand flash_mem_init_e flash_init;
+
+  // By default, in 30% of the times initialize flash as in initial state (all 1s),
+  //  while in 70% of the times the initialization will be randomized (simulating working flash).
+  constraint flash_init_c {
+    flash_init dist {
+      FlashMemInitSet       :/ cfg.seq_cfg.flash_init_set_pc,
+      FlashMemInitRandomize :/ 100 - cfg.seq_cfg.flash_init_set_pc
+    };
+  }
 
   // Vseq to do some initial post-reset actions. Can be overriden by extending envs.
   flash_ctrl_callback_vseq callback_vseq;
@@ -42,7 +53,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     // Set all flash partitions to 1s.
     flash_dv_part_e part = part.first();
     do begin
-      cfg.flash_mem_bkdr_init(part, FlashMemInitSet);
+      cfg.flash_mem_bkdr_init(part, flash_init);
       part = part.next();
     end while (part != part.first());
     // Wait for flash_ctrl to finish initializing on every reset

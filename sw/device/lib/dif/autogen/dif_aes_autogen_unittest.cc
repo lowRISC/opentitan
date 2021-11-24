@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This file is auto-generated.
+// THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
+// util/make_new_dif.py --mode=regen --only=autogen
 
 #include "sw/device/lib/dif/autogen/dif_aes_autogen.h"
 
@@ -27,11 +28,11 @@ class AesTest : public Test, public MmioTest {
 class InitTest : public AesTest {};
 
 TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_aes_init({.base_addr = dev().region()}, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_aes_init(dev().region(), nullptr), kDifBadArg);
 }
 
 TEST_F(InitTest, Success) {
-  EXPECT_EQ(dif_aes_init({.base_addr = dev().region()}, &aes_), kDifOk);
+  EXPECT_EQ(dif_aes_init(dev().region(), &aes_), kDifOk);
 }
 
 class AlertForceTest : public AesTest {};

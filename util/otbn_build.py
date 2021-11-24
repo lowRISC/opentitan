@@ -188,6 +188,7 @@ def main() -> int:
         args = (['-O', 'elf32-littleriscv',
                  '--prefix-sections=.rodata.otbn',
                  '--set-section-flags=*=alloc,load,readonly',
+                 '--remove-section=.scratchpad',
                  '--prefix-symbols', sym_pfx] +
                 [out_elf,
                  out_embedded_obj])

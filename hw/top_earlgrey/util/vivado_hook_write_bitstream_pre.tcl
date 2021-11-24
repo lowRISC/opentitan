@@ -59,9 +59,9 @@ foreach inst [lsort -dictionary $brams] {
   set slice_begin [get_property ram_slice_begin [get_cells $inst]]
   set slice_end [get_property ram_slice_end [get_cells $inst]]
   # The scrambled Boot ROM is actually 39 bits wide but the updatemem tool segfaults
-  # for slice sizes not divisible by 8.
-  if {[expr {($slice_end - $slice_begin + 1) < 8}]} {
-    set slice_end [expr {$slice_begin + 7}]
+  # for slice sizes not divisible by 4.
+  if {[expr {($slice_end - $slice_begin + 1) < 4}]} {
+    set slice_end [expr {$slice_begin + 3}]
   }
   set addr_begin [get_property ram_addr_begin [get_cells $inst]]
   set addr_end [get_property ram_addr_end [get_cells $inst]]

@@ -63,8 +63,8 @@
       name: "lc_nvm_debug_en"
     },
 
-    { struct: "lc_tx"
-      package: "lc_ctrl_pkg"
+    { struct: "mubi4"
+      package: "prim_mubi_pkg"
       type: "uni"
       act: "rcv"
       name: "flash_bist_enable"
@@ -481,14 +481,13 @@
           { bits: "8",
             name: "PARTITION_SEL",
             desc: '''
-              Selects either info or data partition for operation.
+              When doing a read, program or page erase operation, selects either info or data partition for operation.
+              When 0, select data partition - this is the portion of flash that is accessible both by the host and by the controller.
+              When 1, select info partition - this is the portion of flash that is only accessible by the controller.
 
-              When 0, select data partition - this is the portion of flash that is accessible both
-              by the host and by the controller.
-
-              When 1, select info partition - this is the portion of flash that is only accessible
-              by the controller.
-
+              When doing a bank erase operation, selects info partition also for erase.
+              When 0, bank erase only erases data partition.
+              When 1, bank erase erases data partition and info partition.
             '''
             resval: "0"
           },
@@ -661,7 +660,7 @@
               { bits: "5",
                 name: "ECC_EN",
                 desc: '''
-                  Region is ECC enabled.
+                  Region is ECC enabled (both integrity and reliability ECC).
                 ''',
                 resval: "0"
               }
@@ -731,7 +730,7 @@
           { bits: "4",
             name: "ECC_EN",
             desc: '''
-              Region is ECC enabled
+              Region is ECC enabled (both integrity and reliability ECC)
             ''',
             resval: "0"
           }
@@ -834,7 +833,7 @@
               { bits: "5",
                 name: "ECC_EN",
                 desc: '''
-                  Region is ECC enabled.
+                  Region is ECC enabled (both integrity and reliability ECC).
                 ''',
                 resval: "0"
               }

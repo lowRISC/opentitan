@@ -97,12 +97,16 @@ package pwrmgr_pkg;
 
   // pwrmgr to clkmgr
   typedef struct packed {
-    logic ip_clk_en;
+    logic main_ip_clk_en;
+    logic io_ip_clk_en;
+    logic usb_ip_clk_en;
   } pwr_clk_req_t;
 
   // clkmgr to pwrmgr
   typedef struct packed {
-    logic clk_status;
+    logic main_status;
+    logic io_status;
+    logic usb_status;
   } pwr_clk_rsp_t;
 
   // pwrmgr to otp

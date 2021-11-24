@@ -42,9 +42,7 @@ sw_silicon_creator_lib_boot_data = declare_dependency(
       'boot_data.c',
     ],
     dependencies: [
-      #TODO(#8777): Replace with silicon_creator version.
-      #sw_silicon_creator_lib_driver_flash_ctrl,
-      sw_lib_flash_ctrl,
+      sw_silicon_creator_lib_driver_flash_ctrl,
       sw_silicon_creator_lib_driver_hmac,
     ],
   ),
@@ -284,7 +282,7 @@ sw_silicon_creator_lib_boot_data_functest = declare_dependency(
       'boot_data_functest.c'
     ],
     dependencies: [
-      sw_lib_flash_ctrl,
+      sw_silicon_creator_lib_driver_flash_ctrl,
       sw_silicon_creator_lib_boot_data,
     ],
   ),

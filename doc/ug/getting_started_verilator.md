@@ -48,7 +48,7 @@ The programs listed after `--meminit` are loaded into the system's specified mem
 $ cd $REPO_TOP
 $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem \
-  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
+  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
 ```
 
@@ -105,7 +105,7 @@ A full command-line invocation of the simulation could then look like that:
 $ cd $REPO_TOP
 $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem \
-  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
+  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
   +UARTDPI_LOG_uart0=-
 ```
@@ -197,7 +197,7 @@ Tracing slows down the simulation by roughly factor of 1000.
 $ cd $REPO_TOP
 $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem \
-  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
+  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
   --trace
 $ gtkwave sim.fst

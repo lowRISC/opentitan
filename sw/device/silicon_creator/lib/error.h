@@ -43,6 +43,7 @@ enum module_ {
   kModuleBootstrap =    MODULE_CODE('B', 'S'),
   kModuleLog =          MODULE_CODE('L', 'G'),
   kModuleBootData =     MODULE_CODE('B', 'D'),
+  kModuleShutdown =     MODULE_CODE('S', 'D'),
   // clang-format on
 };
 
@@ -91,13 +92,13 @@ enum module_ {
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
   X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
   X(kErrorOtpBadAlignment,            ERROR_(1, kModuleOtp, kInvalidArgument)), \
-  X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
-  X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
-  X(kErrorOtbnExecutionFailed,        ERROR_(3, kModuleOtbn, kInternal)), \
-  X(kErrorOtbnUnavailable,            ERROR_(4, kModuleOtbn, kFailedPrecondition)), \
-  X(kErrorFlashCtrlInvalidArgument,   ERROR_(1, kModuleFlashCtrl, kInvalidArgument)), \
-  X(kErrorFlashCtrlBusy,              ERROR_(2, kModuleFlashCtrl, kUnavailable)), \
-  X(kErrorFlashCtrlInternal,          ERROR_(3, kModuleFlashCtrl, kInternal)), \
+  X(kErrorOtbnInternal,               ERROR_(1, kModuleOtbn, kInternal)), \
+  X(kErrorFlashCtrlDataRead,          ERROR_(1, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlInfoRead,          ERROR_(2, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlDataWrite,         ERROR_(3, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlInfoWrite,         ERROR_(4, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlDataErase,         ERROR_(5, kModuleFlashCtrl, kInternal)), \
+  X(kErrorFlashCtrlInfoErase,         ERROR_(6, kModuleFlashCtrl, kInternal)), \
   X(kErrorSecMmioRegFileSize,         ERROR_(0, kModuleSecMmio, kResourceExhausted)), \
   X(kErrorSecMmioReadFault,           ERROR_(1, kModuleSecMmio, kInternal)), \
   X(kErrorSecMmioWriteFault,          ERROR_(2, kModuleSecMmio, kInternal)), \
@@ -118,7 +119,8 @@ enum module_ {
   X(kErrorBootstrapUnknown,           ERROR_(7, kModuleBootstrap, kInternal)), \
   X(kErrorLogBadFormatSpecifier,      ERROR_(1, kModuleLog, kInternal)), \
   X(kErrorBootDataNotFound,           ERROR_(1, kModuleBootData, kInternal)), \
-  X(kErrorBootDataFlash,              ERROR_(2, kModuleBootData, kInternal)), \
+  X(kErrorBootDataWriteCheck,         ERROR_(2, kModuleBootData, kInternal)), \
+  X(kErrorShutdownBadLcState,         ERROR_(1, kModuleShutdown, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 

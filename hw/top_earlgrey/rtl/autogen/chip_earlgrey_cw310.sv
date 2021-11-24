@@ -194,6 +194,7 @@ module chip_earlgrey_cw310 #(
   // Signal definitions //
   ////////////////////////
 
+
   pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr;
   pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
@@ -391,7 +392,7 @@ module chip_earlgrey_cw310 #(
   ) u_padring (
   // This is only used for scan and DFT purposes
     .clk_scan_i   ( 1'b0                  ),
-    .scanmode_i   ( lc_ctrl_pkg::Off      ),
+    .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
     .dio_in_raw_o ( ),
     // Chip IOs
     .dio_pad_io ({
@@ -778,13 +779,16 @@ module chip_earlgrey_cw310 #(
   ast_pkg::ast_alert_req_t ast_alert_req;
 
   // Flash connections
-  lc_ctrl_pkg::lc_tx_t flash_bist_enable;
+  prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
 
-  // Life cycle clock bypass req/ack
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
+  // clock bypass req/ack
+  prim_mubi_pkg::mubi4_t io_clk_byp_req;
+  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
+  prim_mubi_pkg::mubi4_t all_clk_byp_req;
+  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
+  logic hi_speed_sel;
 
   // DFT connections
   logic scan_en;
@@ -993,8 +997,11 @@ module chip_earlgrey_cw310 #(
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-    .lc_clk_byp_req_i      ( ast_clk_byp_req   ),
-    .lc_clk_byp_ack_o      ( ast_clk_byp_ack   ),
+    .ext_freq_is_96m_i     ( hi_speed_sel ),
+    .all_clk_byp_req_i     ( all_clk_byp_req  ),
+    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
+    .io_clk_byp_req_i      ( io_clk_byp_req   ),
+    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
     .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
@@ -1047,7 +1054,7 @@ module chip_earlgrey_cw310 #(
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
-  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
+  prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
 
 // TODO: align this with ASIC version to minimize the duplication.
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
@@ -1088,11 +1095,14 @@ module chip_earlgrey_cw310 #(
     .usbdev_usb_ref_pulse_o       ( usb_ref_val           ),
     .ast_edn_req_i                ( ast_edn_edn_req       ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
-    .flash_bist_enable_i          ( lc_ctrl_pkg::Off      ),
+    .flash_bist_enable_i          ( flash_bist_enable     ),
     .flash_power_down_h_i         ( 1'b0                  ),
     .flash_power_ready_h_i        ( 1'b1                  ),
-    .ast_clk_byp_req_o            ( ast_clk_byp_req       ),
-    .ast_clk_byp_ack_i            ( ast_clk_byp_ack       ),
+    .io_clk_byp_req_o             ( io_clk_byp_req        ),
+    .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
+    .all_clk_byp_req_o            ( all_clk_byp_req       ),
+    .all_clk_byp_ack_i            ( all_clk_byp_ack       ),
+    .hi_speed_sel_o               ( hi_speed_sel          ),
 
     .ast_tl_req_o                 ( base_ast_bus               ),
     .ast_tl_rsp_i                 ( ast_base_bus               ),
@@ -1133,7 +1143,7 @@ module chip_earlgrey_cw310 #(
     .dft_hold_tap_sel_i ( '0               ),
     .scan_rst_ni        ( 1'b1             ),
     .scan_en_i          ( 1'b0             ),
-    .scanmode_i         ( lc_ctrl_pkg::Off )
+    .scanmode_i         ( prim_mubi_pkg::MuBi4False )
   );
 
 

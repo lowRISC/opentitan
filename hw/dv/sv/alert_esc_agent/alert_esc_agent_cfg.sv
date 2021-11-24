@@ -13,6 +13,7 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
   bit is_async        = 0;
   bit en_ping_cov     = 1;
   bit alert_init_done = 0;
+  bit en_alert_lpg    = 0;
 
   // dut clk frequency, used to generate alert async_clk frequency
   int clk_freq_mhz;
