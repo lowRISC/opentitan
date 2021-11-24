@@ -89,6 +89,10 @@ TEST_APPS_SELFCHECKING = [
         "name": "clkmgr_smoketest",
         "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
+    {
+        "name": "sram_ctrl_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
+    },
     # TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
     # {
     #    "name": "csrng_smoketest",
