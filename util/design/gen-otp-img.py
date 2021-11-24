@@ -36,7 +36,6 @@ def _override_seed(args, name, config):
     # Otherwise, we either take it from the .hjson if present, or
     # randomly generate a new seed if not.
     else:
-        random.seed()
         new_seed = random.getrandbits(64)
         if config.setdefault('seed', new_seed) == new_seed:
             log.warning('No {} specified, setting to {}.'.format(
@@ -101,6 +100,10 @@ def main():
     parser.register('action', 'extend', ExtendAction)
     parser.add_argument('--quiet', '-q', action='store_true',
                         help='''Don't print out progress messages.''')
+    parser.add_argument('--seed',
+                        type=int,
+                        metavar='<seed>',
+                        help="Custom seed used for randomization.")
     parser.add_argument('--img-seed',
                         type=int,
                         metavar='<seed>',
@@ -200,6 +203,10 @@ def main():
     log.info('Loading main image configuration file {}'.format(args.img_cfg))
     with open(args.img_cfg, 'r') as infile:
         img_cfg = hjson.load(infile)
+  
+    # Set the initial random seed so that the generated image is 
+    # deterministically randomized.
+    random.seed(args.seed)
 
     # If specified, override the seeds.
     _override_seed(args, 'lc_seed', lc_state_cfg)
