@@ -199,6 +199,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] status_val;
     forever begin
       csr_rd(ral.status, status_val);
+      `uvm_info(`gfn, {"wait_status: ", ral.status.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
       if (get_field_val(ral.status.transition_successful, status_val)) break;
       if (get_field_val(ral.status.token_error, status_val)) break;
       if (get_field_val(ral.status.otp_error, status_val) ||
@@ -287,7 +288,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     // err_inj
     printer.print_generic(
    	    .name("err_inj"),
-   	    .type_name($typename(err_inj)),
+   	    .type_name("lc_ctrl_err_inj_t"),
    	    .size($bits(err_inj)),
    	    .value($sformatf("%p", err_inj))
         );

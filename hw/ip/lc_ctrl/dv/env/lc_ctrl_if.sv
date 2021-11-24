@@ -6,7 +6,7 @@
 
 `ifndef LC_CTRL_FSM_STATE_REGS_PATH
 `define LC_CTRL_FSM_STATE_REGS_PATH \
-    lc_ctrl.u_lc_ctrl_fsm.u_fsm_state_regs.gen_generic.u_impl_generic.q_o
+    tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs.gen_generic.u_impl_generic.q_o
 `endif
 
 interface lc_ctrl_if(input clk, input rst_n);

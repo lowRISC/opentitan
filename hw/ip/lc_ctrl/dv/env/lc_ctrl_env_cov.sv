@@ -22,7 +22,6 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(lc_ctrl_env_cfg));
     flash_rma_error_rsp_cp : coverpoint cfg.err_inj.flash_rma_error_rsp;
     otp_prog_err_cp        : coverpoint cfg.err_inj.otp_prog_err;
     token_mismatch_err_cp  : coverpoint cfg.err_inj.token_mismatch_err;
-    token_err_cp           : coverpoint cfg.err_inj.token_err;
     state_err_cp           : coverpoint cfg.err_inj.state_err;
     state_backdoor_err_cp  : coverpoint cfg.err_inj.state_backdoor_err;
     transition_err_cp      : coverpoint cfg.err_inj.transition_err;

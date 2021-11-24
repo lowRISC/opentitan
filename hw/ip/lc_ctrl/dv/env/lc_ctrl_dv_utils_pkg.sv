@@ -319,54 +319,50 @@ package lc_ctrl_dv_utils_pkg;
 
   //Convert an lc_state to a binary representation 0=Axx 1=Bxx
   function static lc_state_bin_t lc_state_to_bin([LcStateWidth-1:0] val);
-    int retval = 0;
+    lc_state_to_bin = 0;
     for(int i=0; i < $size(A_VALUES); i++) begin
       if(val[i*16 +: 16] == A_VALUES[i]) begin
-        retval[i] = 0;
+        lc_state_to_bin[i] = 0;
       end
       else if (val[i*16 +: 16] == B_VALUES[i]) begin
-        retval[i] = 1;
+        lc_state_to_bin[i] = 1;
       end
       else begin
-        $fatal("lc_ctrl_dv_utils_pkg", $sformatf("lc_state_to_bin: state %x not valid", val));
+        $fatal(0, "lc_ctrl_dv_utils_pkg lc_state_to_bin: state %x not valid", val);
       end
     end
-    return(retval);
   endfunction
 
   //Convert a binary representation to a lc_state representation 0=Axx 1=Bxx
   function static bit [LcStateWidth-1:0] bin_to_lc_state(lc_state_bin_t val);
-    bit [LcStateWidth-1:0] retval = 0;
+    bin_to_lc_state = 0;
     for(int i=0; i < $size(A_VALUES); i++) begin
-      retval[i*16 +: 16] = val[i] ? B_VALUES[i] : A_VALUES[i];
+      bin_to_lc_state[i*16 +: 16] = val[i] ? B_VALUES[i] : A_VALUES[i];
     end
-    return(retval);
   endfunction
 
   //Convert an lc_count to a binary representation 0=Cxx 1=Dxx
   function static lc_count_bin_t lc_count_to_bin([LcCountWidth-1:0] val);
-    int retval = 0;
+    lc_count_to_bin = 0;
     for(int i=0; i < $size(C_VALUES); i++) begin
       if(val[i*16 +: 16] == C_VALUES[i]) begin
-        retval[i] = 0;
+        lc_count_to_bin[i] = 0;
       end
       else if (val[i*16 +: 16] == D_VALUES[i]) begin
-        retval[i] = 1;
+        lc_count_to_bin[i] = 1;
       end
       else begin
-        $fatal("lc_ctrl_dv_utils_pkg", $sformatf("lc_count_to_bin: count %x not valid", val));
+        $fatal(0, "lc_ctrl_dv_utils_pkg lc_count_to_bin: count %x not valid", val);
       end
     end
-    return(retval);
   endfunction
 
   //Convert a binary representation to a lc_count representation 0=Cxx 1=Cxx
   function static bit [LcCountWidth-1:0] bin_to_lc_count(lc_count_bin_t val);
-    bit [LcStateWidth-1:0] retval = 0;
+    bin_to_lc_count = 0;
     for(int i=0; i < $size(A_VALUES); i++) begin
-      retval[i*16 +: 16] = val[i] ? B_VALUES[i] : A_VALUES[i];
+      bin_to_lc_count[i*16 +: 16] = val[i] ? B_VALUES[i] : A_VALUES[i];
     end
-    return(retval);
   endfunction
 
   // Array of valid LC states in binary representation

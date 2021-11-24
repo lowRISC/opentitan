@@ -58,7 +58,6 @@ package lc_ctrl_env_pkg;
     bit flash_rma_error_rsp;
     bit otp_prog_err;
     bit token_mismatch_err;
-    bit token_err;
     // Invalid state driven via OTP interface
     bit state_err;
     // Invalid count driven via OTP interface

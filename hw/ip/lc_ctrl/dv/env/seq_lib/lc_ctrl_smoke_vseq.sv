@@ -59,7 +59,10 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
       end
 
       // SW transition request
-      if (valid_state_for_trans(lc_state) && lc_cnt != LcCnt24) begin
+      if (
+          (err_inj.state_err || valid_state_for_trans(lc_state)) &&
+          (err_inj.count_err || lc_cnt != LcCnt24)
+          ) begin
         lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf(
@@ -70,7 +73,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
         sw_transition_req(next_lc_state, token_val);
       end else begin
         // wait at least two clks for scb to finish checking lc outputs
-        cfg.clk_rst_vif.wait_clks($urandom_range(2, 10));
+        cfg.clk_rst_vif.wait_clks($urandom_range(10, 2));
       end
 
       csr_rd(ral.status, rdata);
