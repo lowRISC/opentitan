@@ -353,7 +353,7 @@ module tb;
                                       .path  (`DV_STRINGIFY(`RAM_MAIN_MEM_HIER)),
                                       .depth ($size(`RAM_MAIN_MEM_HIER)),
                                       .n_bits($bits(`RAM_MAIN_MEM_HIER)),
-                                      .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
+                                      .err_detection_scheme(mem_bkdr_util_pkg::Ecc_39_32));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMain0], `RAM_MAIN_MEM_HIER)
 
       `uvm_info("tb.sv", "Backdoor init RAM RET", UVM_MEDIUM)
@@ -361,7 +361,7 @@ module tb;
                                      .path  (`DV_STRINGIFY(`RAM_RET_MEM_HIER)),
                                      .depth ($size(`RAM_RET_MEM_HIER)),
                                      .n_bits($bits(`RAM_RET_MEM_HIER)),
-                                     .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
+                                     .err_detection_scheme(mem_bkdr_util_pkg::Ecc_39_32));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
 
       `uvm_info("tb.sv", "Backdoor init ROM", UVM_MEDIUM)
