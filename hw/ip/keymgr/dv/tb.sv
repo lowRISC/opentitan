@@ -89,16 +89,4 @@ module tb;
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
-
-  // TODO (#9324): Disable h_data stability assertion when keymgr is in disabled state.
-  initial begin
-    forever @tb.dut.u_ctrl.state_q begin
-      if (tb.dut.u_ctrl.state_q == 10'b1010101000) begin // StCtrlDisabled
-        $assertoff(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
-      end else begin
-        $asserton(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
-      end
-    end
-  end
-
 endmodule

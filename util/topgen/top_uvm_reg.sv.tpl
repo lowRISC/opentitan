@@ -84,6 +84,7 @@ ${make_ral_pkg_window_class(block_dv_base_names.mem, 'chip', window)}
         esc_if_name = block_name.lower() + if_suffix
         if_inst = inst_name + if_suffix
 %>\
+    bit create_${if_inst} = 1'b1;
     rand ${bcname(esc_if_name)} ${if_inst};
 %     endfor
 %   endfor
@@ -133,19 +134,21 @@ ${make_ral_pkg_window_class(block_dv_base_names.mem, 'chip', window)}
 
         hpr_indent = (len(if_inst) + len('.set_hdl_path_root(')) * ' '
 %>\
-      ${if_inst} =
-          ${bcname(esc_if_name)}::type_id::create("${if_inst}");
-      ${if_inst}.set_ip_name("${inst_name}");
-      ${if_inst}.configure(.parent(this));
-      ${if_inst}.build(.base_addr(base_addr + ${base_addr_txt}), .csr_excl(csr_excl));
-      ${if_inst}.set_hdl_path_root("${hdl_path}",
-      ${hpr_indent}"BkdrRegPathRtl");
-      ${if_inst}.set_hdl_path_root("${hdl_path}",
-      ${hpr_indent}"BkdrRegPathRtlCommitted");
-      ${if_inst}.set_hdl_path_root("${hdl_path}",
-      ${hpr_indent}"BkdrRegPathRtlShadow");
-      default_map.add_submap(.child_map(${if_inst}.default_map),
-                             .offset(base_addr + ${base_addr_txt}));
+      if (create_${if_inst}) begin
+        ${if_inst} =
+            ${bcname(esc_if_name)}::type_id::create("${if_inst}");
+        ${if_inst}.set_ip_name("${inst_name}");
+        ${if_inst}.configure(.parent(this));
+        ${if_inst}.build(.base_addr(base_addr + ${base_addr_txt}), .csr_excl(csr_excl));
+        ${if_inst}.set_hdl_path_root("${hdl_path}",
+        ${hpr_indent}"BkdrRegPathRtl");
+        ${if_inst}.set_hdl_path_root("${hdl_path}",
+        ${hpr_indent}"BkdrRegPathRtlCommitted");
+        ${if_inst}.set_hdl_path_root("${hdl_path}",
+        ${hpr_indent}"BkdrRegPathRtlShadow");
+        default_map.add_submap(.child_map(${if_inst}.default_map),
+                               .offset(base_addr + ${base_addr_txt}));
+      end
 %     endfor
 %   endfor
 % endfor

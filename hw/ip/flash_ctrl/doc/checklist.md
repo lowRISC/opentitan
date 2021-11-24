@@ -76,7 +76,7 @@ Code Quality  | [CDC_SYNCMACRO][]       | Done        |
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
+Security      | [SEC_CM_IMPLEMENTED][]  | Done        |
 
 [SEC_CM_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
 

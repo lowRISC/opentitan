@@ -44,6 +44,11 @@ interface keymgr_if(input clk, input rst_n);
   // when a good KDF is ongoing or kmac sideload key is available, this flag is set to 1
   bit is_kmac_key_good;
 
+  // KMAC data is checked in scb, but when keymgr is in disabled/invalid state or LC is off, KMAC
+  // data will be driven with constantly changed entropy data, which violate
+  // H_DataStableWhenValidAndNotReady_A. Use this flag to disable it
+  bit is_kmac_data_good;
+
   // sideload status
   keymgr_sideload_status_e aes_sideload_status;
   keymgr_sideload_status_e otbn_sideload_status;
@@ -137,6 +142,7 @@ interface keymgr_if(input clk, input rst_n);
     aes_key_exp  = '0;
     otbn_key_exp = '0;
     is_kmac_key_good = 0;
+    is_kmac_data_good = 0;
     kmac_sideload_status = SideLoadNotAvail;
     aes_sideload_status = SideLoadNotAvail;
     otbn_sideload_status = SideLoadNotAvail;
@@ -232,10 +238,11 @@ interface keymgr_if(input clk, input rst_n);
   // update kmac key for comparison during KDF
   function automatic void update_kdf_key(keymgr_env_pkg::key_shares_t key_shares,
                                          keymgr_pkg::keymgr_working_state_e state,
-                                         bit good_key = 1);
+                                         bit good_key, bit good_data);
 
     kmac_key_exp <= '{1'b1, key_shares};
     is_kmac_key_good <= good_key;
+    is_kmac_data_good <= good_data;
   endfunction
 
   // store internal key once it's available and use to compare if future OP is invalid
@@ -450,6 +457,16 @@ interface keymgr_if(input clk, input rst_n);
       end
     endcase
   endtask
+
+  // Disable h_data stability assertion when keymgr is in disabled/invalid state or LC turns off as
+  // keymgr will sent constantly changed entropy data to KMAC for KDF operation.
+  always_comb begin
+    if (!is_kmac_data_good || keymgr_en_sync2 != lc_ctrl_pkg::On) begin
+      $assertoff(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
+    end else begin
+      $asserton(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
+    end
+  end
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin

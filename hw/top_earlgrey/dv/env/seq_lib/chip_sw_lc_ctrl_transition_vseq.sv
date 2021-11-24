@@ -37,7 +37,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
 
   // This function takes the token value from LC_CTRL token CSRs, then runs through cshake128 to
   // get a 768-bit XORed token output.
-  // The first 128 bits of the decoded token should match the OTP's secret9 paritition's
+  // The first 128 bits of the decoded token should match the OTP's secret0 paritition's
   // descrambled exit token value.
   virtual function bit [ExitTokenWidthBit-1:0] get_otp_exit_token(
       bit [7:0] token_in[ExitTokenWidthByte]);
@@ -60,7 +60,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       bit [7:0] trans_i_array[] = {trans_i};
       sw_symbol_backdoor_overwrite("kTestIterationCount", trans_i_array);
 
-      if (trans_i > 0) begin
+      if (trans_i > 1) begin
         apply_reset();
         backdoor_override_otp();
       end
