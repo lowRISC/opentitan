@@ -413,20 +413,25 @@
   end
 `endif
 
-// This macro converts a string input from plusarg to an enum variable
-// ENUM_: the name of enum type
-// PLUSARG_: the name of the plusargs, which is also the name of the enum variable
-// CHECK_EXIST_: set to 1, `$value$plusargs()` should return true
+// Retrieves a plusarg value representing an enum literal.
+//
+// The plusarg is parsed as a string, which needs to be converted into the enum literal whose name
+// matches the string. This functionality is provided by the UVM helper function below.
+//
+// ENUM_: The enum type.
+// VAR_: The enum variable to which the plusarg value will be set (must be declared already).
+// PLUSARG_: the name of the plusarg (as raw text). This is typically the same as the enum variable.
+// CHECK_EXISTS_: Throws a fatal error if the plusarg is not set.
 `ifndef DV_GET_ENUM_PLUSARG
-`define DV_GET_ENUM_PLUSARG(ENUM_, PLUSARG_, CHECK_EXIST_ = 0, ID_ = `gfn) \
+`define DV_GET_ENUM_PLUSARG(ENUM_, VAR_, PLUSARG_ = VAR_, CHECK_EXISTS_ = 0, ID_ = `gfn) \
   begin \
     string str; \
     if ($value$plusargs("``PLUSARG_``=%0s", str)) begin \
-      if (!uvm_enum_wrapper#(ENUM_)::from_name(str, PLUSARG_)) begin \
-        `uvm_fatal(ID_, $sformatf("Cannot find %s from enum ``ENUM_``", PLUSARG_.name)) \
+      if (!uvm_enum_wrapper#(ENUM_)::from_name(str, VAR_)) begin \
+        `uvm_fatal(ID_, $sformatf("Cannot find %s from enum ``ENUM_``", VAR_.name())) \
       end \
-    end else if (CHECK_EXIST_) begin \
-      `uvm_fatal(ID_, "Can't find plusargs ``PLUSARG_``") \
+    end else if (CHECK_EXISTS_) begin \
+      `uvm_fatal(ID_, "Please pass the plusarg +``PLUSARG_``=<``ENUM_``-literal>") \
     end \
   end
 `endif
