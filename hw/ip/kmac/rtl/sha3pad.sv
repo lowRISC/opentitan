@@ -68,9 +68,29 @@ module sha3pad
   /////////////////
 
   // Padding States
-  // TODO: Make it has Hamming Distance >= 3 to be resistent to glitch attacks.
-  typedef enum logic [3:0] {
-    StPadIdle,
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 7 \
+  //      -s 1116691466 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (38.89%)
+  //  4: |||||||||||||||||||| (38.89%)
+  //  5: |||||||| (16.67%)
+  //  6: || (5.56%)
+  //  7: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 5
+  //
+  localparam int StateWidthPad = 7;
+  typedef enum logic [StateWidthPad-1:0] {
+    StPadIdle = 7'b1011010,
 
     // Sending a block of prefix, if cSHAKE mode is turned on. For the rest
     // (SHA3, SHAKE), sending prefix is not needed. FSM moves from Idle to
@@ -101,7 +121,7 @@ module sha3pad
     StPad01,
 
     // Flushing the internal packers in front of the Keccak data output port.
-    StPadFlush
+    StPadFlush = 7'b0010111
   } pad_st_e;
 
   typedef enum logic [2:0] {
@@ -231,13 +251,20 @@ module sha3pad
   // State Register ===========================================================
   pad_st_e st, st_d;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      st <= StPadIdle;
-    end else begin
-      st <= st_d;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidthPad-1:0] state_raw_q;
+  assign st = pad_st_e'(state_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(pad_st_e),
+    .Width(StateWidthPad),
+    .ResetValue(StateWidthPad'(StPadIdle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( st_d     ),
+    .state_o ( state_raw_q )
+  );
 
   // `end_of_block` indicates current beat is end of the block
   // It shall set when the address reaches to the end of the block. End address

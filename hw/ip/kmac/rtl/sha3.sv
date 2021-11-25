@@ -165,10 +165,21 @@ module sha3
   ///////////////////
 
   // State Register
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) st <= StIdle;
-    else         st <= st_d;
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign st = sha3_st_e'(state_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(sha3_st_e),
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(StIdle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( st_d        ),
+    .state_o ( state_raw_q )
+  );
+
 
   // Next State and Output Logic
   // Mainly the FSM controls the input signal access
@@ -246,6 +257,7 @@ module sha3
 
       default: begin
         st_d = StIdle;
+        //TODO error
       end
 
     endcase
