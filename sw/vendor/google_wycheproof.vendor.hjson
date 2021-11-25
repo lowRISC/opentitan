@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "wycheproof",
+  target_dir: "wycheproof",
+
+  upstream: {
+    url: "https://github.com/google/wycheproof.git",
+    rev: "master",
+  },
+
+  exclude_from_upstream: [
+    # Ignore everything except for the testvectors/ directory (by ignoring
+    # every path not starting with "t", plus "tools" and "third_party")
+    "[!t]*",
+    "tools*",
+    "third_party*",
+  ]
+}
