@@ -130,6 +130,20 @@ On future messages, it should raise an alert, defeating an attacker that tries t
 An attacker who modifies the ROM will perturb `CreatorRootKey` (to avoid doing so would require a preimage attack on the ROM checksum calculation or the `KM_DERIVE` function).
 The result is that, while the chip will function, it will have the "wrong" root key and the chain of trust used for attestation will be broken.
 
+## Fault-injection hardening
+
+The core integrity check, flowing from the ROM data to `CreatorRootKey`, should be infeasible to subvert.
+However, `rom_ctrl` also controls bus access to ROM data and interacts with other blocks.
+To avoid attacks propagating into the rest of the system, we take the following extra hardening steps:
+
+- All internal FSMs are sparsely encoded, with a minimum Hamming distance of 3.
+- The "good" signal passed to the power manager is multi-bit encoded. (*)
+- The switching signals for the mux are multi-bit encoded (using `mubi4_t`) (*)
+- We check to ensure the mux doesn't switch back to the checker after giving access to the bus.
+- The main FSM has internal consistency checking to ensure that other blocks don't signal completion when the FSM is in a state that doesn't expect them to be running.
+
+Items with (*) next to them are not yet implemented in the RTL.
+
 ## Hardware Interfaces
 
 {{< incGenFromIpDesc "../data/rom_ctrl.hjson" "hwcfg" >}}
