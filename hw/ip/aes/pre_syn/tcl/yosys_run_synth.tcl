@@ -21,7 +21,7 @@ yosys "read_verilog -sv $lr_synth_out_dir/generated/*.v"
 # You can use
 #    yosys "chparam -list $lr_synth_top_module"
 # To print the available parameters.
-if { $lr_synth_top_module != "aes_sbox" } {
+if { $lr_synth_top_module != "aes_sbox" && $lr_synth_top_module != "aes_sub_bytes" && $lr_synth_top_module != "aes_reduced_round"} {
   yosys "chparam -set AES192Enable $lr_synth_aes_192_enable $lr_synth_top_module"
   yosys "chparam -set Masking $lr_synth_masking $lr_synth_top_module"
 }

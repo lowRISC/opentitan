@@ -49,7 +49,9 @@ Execution-aware Masking Verification](https://github.com/IAIK/coco-alma).
    ```
    to only synthesize an individual AES S-Box as formally verifying the entire
    AES unit or the AES cipher core is currently out of scope from a tool run
-   time point of view.
+   time point of view. Alternatively, it is possible to verify `aes_sub_bytes`
+   containing all 16 S-Boxes of the data path or even `aes_reduced_round` which
+   besides the S-Boxes also includes the ShiftRows and MixColumns operations.
 
    Then run the synthesis
    ```sh
@@ -128,6 +130,16 @@ the masking can finally be formally verified.
    Checking probe (cycle 5, mux _0897_[0]): 0.00
    Finished in 50.74
    The execution is secure
+   ```
+   By default, this script will verify the AES S-Box. But you can actually
+   specify the top module to verify. For example, to verify a single, reduced
+   AES round without AddKey operation, first re-run the Yosys synthesis with
+   ```sh
+   export LR_SYNTH_TOP_MODULE=aes_reduced_round
+   ```
+   and then execute
+   ```sh
+   ${REPO_TOP}/hw/ip/aes/pre_sca/alma/verify_aes.sh aes_reduced_round
    ```
 
 ## Individual steps in detail
