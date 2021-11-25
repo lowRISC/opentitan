@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:entropy_src_test
       - lowrisc:dv:entropy_src_sva
+      - lowrisc:dv:digestpp_dpi:0.1
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
