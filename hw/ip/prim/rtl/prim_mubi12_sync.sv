@@ -5,7 +5,7 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-//    hw/ip/prim/util/generate_prim_mubi.py
+//    util/design/gen-mubi.py
 //
 // Double-synchronizer flop for multibit signals with additional output buffers.
 
