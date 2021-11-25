@@ -101,6 +101,7 @@ module otbn_top_sim (
     .edn_urnd_data_i             ( edn_urnd_data       ),
 
     .insn_cnt_o                  ( insn_cnt            ),
+    .insn_cnt_clear_i            ( 1'b0                ),
 
     .bus_intg_violation_i        ( 1'b0                ),
     .illegal_bus_access_i        ( 1'b0                ),

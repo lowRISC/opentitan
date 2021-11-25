@@ -69,6 +69,7 @@ module otbn_core
   input  logic [EdnDataWidth-1:0] edn_urnd_data_i,
 
   output logic [31:0]             insn_cnt_o,
+  input  logic                    insn_cnt_clear_i,
 
   // An integrity check on an incoming bus transaction failed. Results in a fatal error.
   input  logic                    bus_intg_violation_i,
@@ -417,6 +418,7 @@ module otbn_core
 
     .state_reset_i      (state_reset),
     .insn_cnt_o         (insn_cnt),
+    .insn_cnt_clear_i,
     .bus_intg_violation_i,
     .illegal_bus_access_i,
     .lifecycle_escalation_i,

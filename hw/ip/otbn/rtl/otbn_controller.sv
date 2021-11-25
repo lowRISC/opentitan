@@ -133,6 +133,7 @@ module otbn_controller
 
   input  logic        state_reset_i,
   output logic [31:0] insn_cnt_o,
+  input  logic        insn_cnt_clear_i,
   input  logic        bus_intg_violation_i,
   input  logic        illegal_bus_access_i,
   input  logic        lifecycle_escalation_i,
@@ -239,6 +240,7 @@ module otbn_controller
   logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
 
   logic [31:0] insn_cnt_d, insn_cnt_q;
+  logic        insn_cnt_clear;
 
   logic [4:0] ld_insn_bignum_wr_addr_q;
   err_bits_t err_bits;
@@ -476,19 +478,8 @@ module otbn_controller
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        err_bits_q.fatal_software <= 1'b0;
-        err_bits_q.lifecycle_escalation <= 1'b0;
-        err_bits_q.illegal_bus_access  <= 1'b0;
-        err_bits_q.bus_intg_violation <= 1'b0;
-        err_bits_q.reg_intg_violation  <= 1'b0;
-        err_bits_q.dmem_intg_violation <= 1'b0;
-        err_bits_q.imem_intg_violation <= 1'b0;
-        err_bits_q.illegal_insn <= 1'b0;
-        err_bits_q.bad_data_addr <= 1'b0;
-        err_bits_q.loop   <= 1'b0;
-        err_bits_q.call_stack <= 1'b0;
-        err_bits_q.bad_insn_addr <= 1'b0;
         recoverable_err_q <= 1'b0;
+        err_bits_q <= '0;
       end else if (err_bits_en) begin
         err_bits_q <= err_bits_d;
         recoverable_err_q <= recoverable_err_d;
@@ -528,8 +519,10 @@ module otbn_controller
     end
   end
 
+  assign insn_cnt_clear = state_reset_i | (state_q == OtbnStateLocked) | insn_cnt_clear_i;
+
   always_comb begin
-    if (state_reset_i || state_q == OtbnStateLocked) begin
+    if (insn_cnt_clear) begin
       insn_cnt_d = 32'd0;
     end else if (insn_executing & ~stall & (insn_cnt_q != 32'hffffffff)) begin
       insn_cnt_d = insn_cnt_q + 32'd1;

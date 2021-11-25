@@ -95,9 +95,14 @@ module otbn
   logic locked;
   logic illegal_bus_access_d, illegal_bus_access_q;
 
-  err_bits_t err_bits;
   logic recoverable_err;
   logic reg_intg_violation;
+  err_bits_t err_bits, err_bits_d, err_bits_q;
+  logic err_bits_en;
+
+  // ERR_BITS register should be cleared due to a write request from the host processor
+  // when OTBN is not running.
+  logic err_bits_clear;
 
   logic software_errs_fatal_q, software_errs_fatal_d;
 
@@ -641,47 +646,33 @@ module otbn
   // ERR_BITS register
   // The error bits for an OTBN operation get stored on the cycle that done is
   // asserted. Software is expected to read them out before starting the next operation.
-  assign hw2reg.err_bits.bad_data_addr.de = done;
-  assign hw2reg.err_bits.bad_data_addr.d = err_bits.bad_data_addr;
 
-  assign hw2reg.err_bits.bad_insn_addr.de = done;
-  assign hw2reg.err_bits.bad_insn_addr.d = err_bits.bad_insn_addr;
-
-  assign hw2reg.err_bits.call_stack.de = done;
-  assign hw2reg.err_bits.call_stack.d = err_bits.call_stack;
-
-  assign hw2reg.err_bits.illegal_insn.de = done;
-  assign hw2reg.err_bits.illegal_insn.d = err_bits.illegal_insn;
-
-  assign hw2reg.err_bits.loop.de = done;
-  assign hw2reg.err_bits.loop.d = err_bits.loop;
-
-  assign hw2reg.err_bits.key_invalid.de = done;
-  assign hw2reg.err_bits.key_invalid.d = err_bits.key_invalid;
-
-  assign hw2reg.err_bits.imem_intg_violation.de = done;
-  assign hw2reg.err_bits.imem_intg_violation.d = err_bits.imem_intg_violation;
-
-  assign hw2reg.err_bits.dmem_intg_violation.de = done;
-  assign hw2reg.err_bits.dmem_intg_violation.d = err_bits.dmem_intg_violation;
-
-  assign hw2reg.err_bits.reg_intg_violation.de = done;
-  assign hw2reg.err_bits.reg_intg_violation.d = err_bits.reg_intg_violation;
-
-  assign hw2reg.err_bits.bus_intg_violation.de = done;
-  assign hw2reg.err_bits.bus_intg_violation.d = err_bits.bus_intg_violation;
-
-  assign hw2reg.err_bits.bad_internal_state.de = done;
-  assign hw2reg.err_bits.bad_internal_state.d = err_bits.bad_internal_state;
-
-  assign hw2reg.err_bits.illegal_bus_access.de = done;
-  assign hw2reg.err_bits.illegal_bus_access.d = err_bits.illegal_bus_access;
-
-  assign hw2reg.err_bits.lifecycle_escalation.de = done;
-  assign hw2reg.err_bits.lifecycle_escalation.d = err_bits.lifecycle_escalation;
-
-  assign hw2reg.err_bits.fatal_software.de = done;
+  assign hw2reg.err_bits.bad_data_addr.d = err_bits_q.bad_data_addr;
+  assign hw2reg.err_bits.bad_insn_addr.d = err_bits_q.bad_insn_addr;
+  assign hw2reg.err_bits.call_stack.d = err_bits_q.call_stack;
+  assign hw2reg.err_bits.illegal_insn.d = err_bits_q.illegal_insn;
+  assign hw2reg.err_bits.loop.d = err_bits_q.loop;
+  assign hw2reg.err_bits.key_invalid.d = err_bits_q.key_invalid;
+  assign hw2reg.err_bits.imem_intg_violation.d = err_bits_q.imem_intg_violation;
+  assign hw2reg.err_bits.dmem_intg_violation.d = err_bits_q.dmem_intg_violation;
+  assign hw2reg.err_bits.reg_intg_violation.d = err_bits_q.reg_intg_violation;
+  assign hw2reg.err_bits.bus_intg_violation.d = err_bits_q.bus_intg_violation;
+  assign hw2reg.err_bits.bad_internal_state.d = err_bits_q.bad_internal_state;
+  assign hw2reg.err_bits.illegal_bus_access.d = err_bits_q.illegal_bus_access;
+  assign hw2reg.err_bits.lifecycle_escalation.d = err_bits_q.lifecycle_escalation;
   assign hw2reg.err_bits.fatal_software.d = err_bits.fatal_software;
+
+  assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & ~busy_execute_q;
+  assign err_bits_d = err_bits_clear ? '0 : err_bits;
+  assign err_bits_en = err_bits_clear | done;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      err_bits_q <= '0;
+    end else if (err_bits_en) begin
+      err_bits_q <= err_bits_d;
+    end
+  end
 
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
@@ -700,11 +691,13 @@ module otbn
   assign hw2reg.fatal_alert_cause.lifecycle_escalation.de = lifecycle_escalation;
   assign hw2reg.fatal_alert_cause.lifecycle_escalation.d  = lifecycle_escalation;
   assign hw2reg.fatal_alert_cause.fatal_software.de = done;
-  assign hw2reg.fatal_alert_cause.fatal_software.d  = err_bits.fatal_software;
+  assign hw2reg.fatal_alert_cause.fatal_software.d  = err_bits_d.fatal_software;
 
   // INSN_CNT register
   logic [31:0] insn_cnt;
+  logic        insn_cnt_clear;
   assign hw2reg.insn_cnt.d = insn_cnt;
+  assign insn_cnt_clear = reg2hw.insn_cnt.qe & ~busy_execute_q;
 
   // Alerts ====================================================================
 
@@ -927,6 +920,7 @@ module otbn
       .edn_urnd_data_i             (edn_urnd_data),
 
       .insn_cnt_o                  (insn_cnt_rtl),
+      .insn_cnt_clear_i            (insn_cnt_clear),
 
       .bus_intg_violation_i        (bus_intg_violation),
       .illegal_bus_access_i        (illegal_bus_access_q),
@@ -938,6 +932,7 @@ module otbn
       .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
     );
   `else
+
     otbn_core #(
       .RegFile(RegFile),
       .DmemSizeByte(DmemSizeByte),
@@ -981,6 +976,7 @@ module otbn
       .edn_urnd_data_i             (edn_urnd_data),
 
       .insn_cnt_o                  (insn_cnt),
+      .insn_cnt_clear_i            (insn_cnt_clear),
 
       .bus_intg_violation_i        (bus_intg_violation),
       .illegal_bus_access_i        (illegal_bus_access_q),

@@ -180,20 +180,36 @@ module otbn_reg_top (
   logic ctrl_qs;
   logic ctrl_wd;
   logic [7:0] status_qs;
+  logic err_bits_re;
+  logic err_bits_we;
   logic err_bits_bad_data_addr_qs;
+  logic err_bits_bad_data_addr_wd;
   logic err_bits_bad_insn_addr_qs;
+  logic err_bits_bad_insn_addr_wd;
   logic err_bits_call_stack_qs;
+  logic err_bits_call_stack_wd;
   logic err_bits_illegal_insn_qs;
+  logic err_bits_illegal_insn_wd;
   logic err_bits_loop_qs;
+  logic err_bits_loop_wd;
   logic err_bits_key_invalid_qs;
+  logic err_bits_key_invalid_wd;
   logic err_bits_imem_intg_violation_qs;
+  logic err_bits_imem_intg_violation_wd;
   logic err_bits_dmem_intg_violation_qs;
+  logic err_bits_dmem_intg_violation_wd;
   logic err_bits_reg_intg_violation_qs;
+  logic err_bits_reg_intg_violation_wd;
   logic err_bits_bus_intg_violation_qs;
+  logic err_bits_bus_intg_violation_wd;
   logic err_bits_bad_internal_state_qs;
+  logic err_bits_bad_internal_state_wd;
   logic err_bits_illegal_bus_access_qs;
+  logic err_bits_illegal_bus_access_wd;
   logic err_bits_lifecycle_escalation_qs;
+  logic err_bits_lifecycle_escalation_wd;
   logic err_bits_fatal_software_qs;
+  logic err_bits_fatal_software_wd;
   logic fatal_alert_cause_imem_intg_violation_qs;
   logic fatal_alert_cause_dmem_intg_violation_qs;
   logic fatal_alert_cause_reg_intg_violation_qs;
@@ -203,7 +219,9 @@ module otbn_reg_top (
   logic fatal_alert_cause_lifecycle_escalation_qs;
   logic fatal_alert_cause_fatal_software_qs;
   logic insn_cnt_re;
+  logic insn_cnt_we;
   logic [31:0] insn_cnt_qs;
+  logic [31:0] insn_cnt_wd;
   logic load_checksum_re;
   logic load_checksum_we;
   logic [31:0] load_checksum_qs;
@@ -363,354 +381,200 @@ module otbn_reg_top (
   );
 
 
-  // R[err_bits]: V(False)
+  // R[err_bits]: V(True)
   //   F[bad_data_addr]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_bad_data_addr (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.bad_data_addr.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_bad_data_addr_wd),
     .d      (hw2reg.err_bits.bad_data_addr.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.bad_data_addr.qe),
+    .q      (reg2hw.err_bits.bad_data_addr.q),
     .qs     (err_bits_bad_data_addr_qs)
   );
 
   //   F[bad_insn_addr]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_bad_insn_addr (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.bad_insn_addr.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_bad_insn_addr_wd),
     .d      (hw2reg.err_bits.bad_insn_addr.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.bad_insn_addr.qe),
+    .q      (reg2hw.err_bits.bad_insn_addr.q),
     .qs     (err_bits_bad_insn_addr_qs)
   );
 
   //   F[call_stack]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_call_stack (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.call_stack.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_call_stack_wd),
     .d      (hw2reg.err_bits.call_stack.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.call_stack.qe),
+    .q      (reg2hw.err_bits.call_stack.q),
     .qs     (err_bits_call_stack_qs)
   );
 
   //   F[illegal_insn]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_illegal_insn (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.illegal_insn.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_illegal_insn_wd),
     .d      (hw2reg.err_bits.illegal_insn.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.illegal_insn.qe),
+    .q      (reg2hw.err_bits.illegal_insn.q),
     .qs     (err_bits_illegal_insn_qs)
   );
 
   //   F[loop]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_loop (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.loop.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_loop_wd),
     .d      (hw2reg.err_bits.loop.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.loop.qe),
+    .q      (reg2hw.err_bits.loop.q),
     .qs     (err_bits_loop_qs)
   );
 
   //   F[key_invalid]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_key_invalid (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.key_invalid.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_key_invalid_wd),
     .d      (hw2reg.err_bits.key_invalid.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.key_invalid.qe),
+    .q      (reg2hw.err_bits.key_invalid.q),
     .qs     (err_bits_key_invalid_qs)
   );
 
   //   F[imem_intg_violation]: 16:16
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_imem_intg_violation (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.imem_intg_violation.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_imem_intg_violation_wd),
     .d      (hw2reg.err_bits.imem_intg_violation.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.imem_intg_violation.qe),
+    .q      (reg2hw.err_bits.imem_intg_violation.q),
     .qs     (err_bits_imem_intg_violation_qs)
   );
 
   //   F[dmem_intg_violation]: 17:17
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_dmem_intg_violation (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.dmem_intg_violation.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_dmem_intg_violation_wd),
     .d      (hw2reg.err_bits.dmem_intg_violation.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.dmem_intg_violation.qe),
+    .q      (reg2hw.err_bits.dmem_intg_violation.q),
     .qs     (err_bits_dmem_intg_violation_qs)
   );
 
   //   F[reg_intg_violation]: 18:18
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_reg_intg_violation (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.reg_intg_violation.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_reg_intg_violation_wd),
     .d      (hw2reg.err_bits.reg_intg_violation.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.reg_intg_violation.qe),
+    .q      (reg2hw.err_bits.reg_intg_violation.q),
     .qs     (err_bits_reg_intg_violation_qs)
   );
 
   //   F[bus_intg_violation]: 19:19
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_bus_intg_violation (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.bus_intg_violation.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_bus_intg_violation_wd),
     .d      (hw2reg.err_bits.bus_intg_violation.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.bus_intg_violation.qe),
+    .q      (reg2hw.err_bits.bus_intg_violation.q),
     .qs     (err_bits_bus_intg_violation_qs)
   );
 
   //   F[bad_internal_state]: 20:20
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_bad_internal_state (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.bad_internal_state.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_bad_internal_state_wd),
     .d      (hw2reg.err_bits.bad_internal_state.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.bad_internal_state.qe),
+    .q      (reg2hw.err_bits.bad_internal_state.q),
     .qs     (err_bits_bad_internal_state_qs)
   );
 
   //   F[illegal_bus_access]: 21:21
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_illegal_bus_access (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.illegal_bus_access.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_illegal_bus_access_wd),
     .d      (hw2reg.err_bits.illegal_bus_access.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.illegal_bus_access.qe),
+    .q      (reg2hw.err_bits.illegal_bus_access.q),
     .qs     (err_bits_illegal_bus_access_qs)
   );
 
   //   F[lifecycle_escalation]: 22:22
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_lifecycle_escalation (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.lifecycle_escalation.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_lifecycle_escalation_wd),
     .d      (hw2reg.err_bits.lifecycle_escalation.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.lifecycle_escalation.qe),
+    .q      (reg2hw.err_bits.lifecycle_escalation.q),
     .qs     (err_bits_lifecycle_escalation_qs)
   );
 
   //   F[fatal_software]: 23:23
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_bits_fatal_software (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_bits.fatal_software.de),
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_fatal_software_wd),
     .d      (hw2reg.err_bits.fatal_software.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .qre    (),
+    .qe     (reg2hw.err_bits.fatal_software.qe),
+    .q      (reg2hw.err_bits.fatal_software.q),
     .qs     (err_bits_fatal_software_qs)
   );
 
@@ -922,12 +786,12 @@ module otbn_reg_top (
     .DW    (32)
   ) u_insn_cnt (
     .re     (insn_cnt_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (insn_cnt_we),
+    .wd     (insn_cnt_wd),
     .d      (hw2reg.insn_cnt.d),
     .qre    (),
-    .qe     (),
-    .q      (),
+    .qe     (reg2hw.insn_cnt.qe),
+    .q      (reg2hw.insn_cnt.q),
     .qs     (insn_cnt_qs)
   );
 
@@ -1002,7 +866,40 @@ module otbn_reg_top (
   assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
 
   assign ctrl_wd = reg_wdata[0];
+  assign err_bits_re = addr_hit[7] & reg_re & !reg_error;
+  assign err_bits_we = addr_hit[7] & reg_we & !reg_error;
+
+  assign err_bits_bad_data_addr_wd = reg_wdata[0];
+
+  assign err_bits_bad_insn_addr_wd = reg_wdata[1];
+
+  assign err_bits_call_stack_wd = reg_wdata[2];
+
+  assign err_bits_illegal_insn_wd = reg_wdata[3];
+
+  assign err_bits_loop_wd = reg_wdata[4];
+
+  assign err_bits_key_invalid_wd = reg_wdata[5];
+
+  assign err_bits_imem_intg_violation_wd = reg_wdata[16];
+
+  assign err_bits_dmem_intg_violation_wd = reg_wdata[17];
+
+  assign err_bits_reg_intg_violation_wd = reg_wdata[18];
+
+  assign err_bits_bus_intg_violation_wd = reg_wdata[19];
+
+  assign err_bits_bad_internal_state_wd = reg_wdata[20];
+
+  assign err_bits_illegal_bus_access_wd = reg_wdata[21];
+
+  assign err_bits_lifecycle_escalation_wd = reg_wdata[22];
+
+  assign err_bits_fatal_software_wd = reg_wdata[23];
   assign insn_cnt_re = addr_hit[9] & reg_re & !reg_error;
+  assign insn_cnt_we = addr_hit[9] & reg_we & !reg_error;
+
+  assign insn_cnt_wd = reg_wdata[31:0];
   assign load_checksum_re = addr_hit[10] & reg_re & !reg_error;
   assign load_checksum_we = addr_hit[10] & reg_we & !reg_error;
 
