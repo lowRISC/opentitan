@@ -60,5 +60,8 @@
     'sw/otbn/crypto/rsa_verify_3072.s',
     # Mersenne Twister PRNG
     'sw/device/sca/lib/prng.c',
+    # Alma testbench files
+    'hw/ip/aes/pre_sca/alma/cpp/testbench.h',
+    'hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sbox.cpp',
   ],
 }

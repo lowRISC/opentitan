@@ -1,0 +1,37 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+# inputs:
+clk_i = unimportant
+rst_ni = unimportant
+en_i = unimportant
+out_ack_i = unimportant
+op_i = unimportant
+data_i [7:0] = secret 7:0
+mask_i [7:0] = secret 7:0
+prd_i [7:0] = random
+# registers:
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd_q [27:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.count_q [2:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_prim_xilinx_flop_ab_y10.q_o [15:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_prim_xilinx_flop_ab_y_ss.q_o [7:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_mul_y1_y0.u_prim_xilinx_flop_abxz0_z1.q_o [7:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_mul_theta_y1.u_prim_xilinx_flop_abq_z0.q_o [7:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_mul_y1_y0.u_prim_xilinx_flop_ab_yz0.q_o [7:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_mul_theta_y0.u_prim_xilinx_flop_abq_z0.q_o [7:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_prim_xilinx_flop_ab_gamma10.q_o [7:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_prim_xilinx_flop_ab_gamma_ss.q_o [3:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_mul_y1_y0.gen_pipeline.u_prim_xilinx_flop_ab_xy.q_o [15:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_mul_theta_y0.gen_pipeline.u_prim_xilinx_flop_mul_abx_aby.q_o [7:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_mul_theta_y1.gen_pipeline.u_prim_xilinx_flop_mul_abx_aby.q_o [7:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_omega_gamma1.u_prim_xilinx_flop_ab_yz0.q_o [3:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_gamma1_gamma0.u_prim_xilinx_flop_ab_yz0.q_o [3:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_gamma1_gamma0.u_prim_xilinx_flop_abxz0_z1.q_o [3:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_omega_gamma0.u_prim_xilinx_flop_abxz0_z1.q_o [3:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_omega_gamma1.u_prim_xilinx_flop_abxz0_z1.q_o [3:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_omega_gamma0.u_prim_xilinx_flop_ab_yz0.q_o [3:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_omega_gamma0.gen_pipeline.u_prim_xilinx_flop_ab_xy.q_o [7:0] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_omega_gamma1.gen_pipeline.u_prim_xilinx_flop_ab_xy.q_o_reg[7] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_omega_gamma1.gen_pipeline.u_prim_xilinx_flop_ab_xy.q_o_reg[4] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_omega_gamma1.gen_pipeline.u_prim_xilinx_flop_ab_xy.q_o_reg[5] = unimportant
+gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.u_aes_dom_mul_omega_gamma1.gen_pipeline.u_prim_xilinx_flop_ab_xy.q_o_reg[6] = unimportant
