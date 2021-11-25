@@ -461,7 +461,7 @@ interface keymgr_if(input clk, input rst_n);
   // Disable h_data stability assertion when keymgr is in disabled/invalid state or LC turns off as
   // keymgr will sent constantly changed entropy data to KMAC for KDF operation.
   always_comb begin
-    if (!is_kmac_data_good || keymgr_en_sync2 != lc_ctrl_pkg::On) begin
+    if (!is_kmac_data_good || keymgr_en_sync1 != lc_ctrl_pkg::On) begin
       $assertoff(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
     end else begin
       $asserton(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
