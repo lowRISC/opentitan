@@ -74,7 +74,12 @@ package lc_ctrl_env_pkg;
     LcCtrlTestInit,
     LcCtrlIterStart,
     LcCtrlDutReady,
-    LcCtrlWaitStatus
+    LcCtrlWaitTransition,
+    LcCtrlTransitionComplete,
+    LcCtrlReadState1,
+    LcCtrlEscalate,
+    LcCtrlReadState2,
+    LcCtrlPostStart
   } lc_ctrl_test_phase_e;
 
   const lc_outputs_t EXP_LC_OUTPUTS[NUM_STATES] = {

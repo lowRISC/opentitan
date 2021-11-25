@@ -9,22 +9,28 @@ class lc_ctrl_state_failure_vseq extends lc_ctrl_errors_vseq;
 
   `uvm_object_new
 
+  constraint num_trans_c {
+    num_trans == 3;
+  }
+
   constraint lc_state_err_c {
     err_inj.state_err          == 1;
     err_inj.state_backdoor_err == 0;
     err_inj.transition_err     == 0;
+    err_inj.count_err          == 0;
+    err_inj.count_backdoor_err == 0;
   }
 
-  virtual task post_start();
-    // trigger dut_init to make sure always on alert is not firing forever
-    if (do_apply_reset) begin
-      dut_init();
-    end else wait(0);  // wait until upper seq resets and kills this seq
+  // virtual task post_start();
+  //   // trigger dut_init to make sure always on alert is not firing forever
+  //   if (do_apply_reset) begin
+  //     dut_init();
+  //   end else wait(0);  // wait until upper seq resets and kills this seq
 
-    // delay to avoid race condition when sending item and checking no item after reset occur
-    // at the same time
-    #1ps;
-    super.post_start();
-  endtask
+  //   // delay to avoid race condition when sending item and checking no item after reset occur
+  //   // at the same time
+  //   #1ps;
+  //   super.post_start();
+  // endtask
 
 endclass

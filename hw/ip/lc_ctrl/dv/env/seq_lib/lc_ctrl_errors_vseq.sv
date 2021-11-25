@@ -7,18 +7,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   // Process to handle alerts
   protected process handle_alerts_process;
-
-  // various knobs to enable certain routines
-  bit do_lc_ctrl_init = 1'b1;
-
-  lc_ctrl_state_pkg::lc_state_e lc_state;
-  lc_ctrl_state_pkg::lc_cnt_e lc_cnt;
-
-  dec_lc_state_e next_lc_state;
-
   // Error injection control
   rand lc_ctrl_err_inj_t err_inj;
-
   // Invalid lc_state lc_count as a binary representation
   rand lc_state_bin_t invalid_lc_state_bin;
   rand lc_count_bin_t invalid_lc_count_bin;
@@ -28,6 +18,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   rand int unsigned fsm_state_err_inj_period;
 
   `uvm_object_utils_begin(lc_ctrl_errors_vseq)
+    `uvm_field_int(num_trans, UVM_DEFAULT)
     `uvm_field_int(err_inj, UVM_DEFAULT)
     `uvm_field_int(invalid_lc_state_bin, UVM_DEFAULT)
     `uvm_field_int(invalid_lc_count_bin, UVM_DEFAULT)
@@ -39,7 +30,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   `uvm_object_new
 
   constraint no_err_rsps_c {
-    err_inj.clk_byp_error_rsp == 0;
+    err_inj.clk_byp_error_rsp   == 0;
     err_inj.flash_rma_error_rsp == 0;
   }
 
@@ -71,15 +62,41 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     fsm_state_err_inj_period inside {[2 : 4]};
   }
 
+  virtual task post_start();
+    `uvm_info(`gfn, "post_start: Task called for lc_ctrl_errors_vseq",UVM_MEDIUM)
+
+    // Clear all error injection bits so we end with a clean lc_ state, lc_count etc.
+    err_inj = 0;
+
+    // trigger dut_init to make sure always on alert is not firing forever
+    if (do_apply_reset) begin
+      `uvm_info(`gfn, "post_start: calling dut_init", UVM_MEDIUM)
+      dut_init();
+    end else begin
+      `uvm_info(`gfn, "post_start: waiting to be killed", UVM_MEDIUM)
+      wait(0);  // wait until upper seq resets and kills this seq
+    end
+    // delay to avoid race condition when sending item and checking no item after reset occur
+    // at the same time
+    #1ps;
+    super.post_start();
+
+  endtask
+
   task body();
     uvm_reg_data_t rdata;
     logic [15:0] fsm_state;
+    num_trans.rand_mode(0);
+
+    fork
+      handle_alerts();
+    join_none
 
     run_clk_byp_rsp_nonblocking(err_inj.clk_byp_error_rsp);
     run_flash_rma_rsp_nonblocking(err_inj.flash_rma_error_rsp);
 
     for (int i = 1; i <= num_trans; i++) begin
-      cfg.test_phase = LcCtrlIterStart;
+      cfg.set_test_phase(LcCtrlIterStart);
 
       if (i != 1) dut_init();
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -97,9 +114,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
       if ($urandom_range(0, 1)) begin
         csr_rd_check(.ptr(ral.status.ready), .compare_value(1));
-        rd_lc_state_and_cnt_csrs();
       end
-      cfg.test_phase = LcCtrlDutReady;
+
+      cfg.set_test_phase(LcCtrlDutReady);
 
       // Invalid fsm state in registers by "backdoor"
       if (err_inj.state_backdoor_err) begin
@@ -127,8 +144,19 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 2));
       end
 
-      csr_rd(ral.status, rdata);
-      `uvm_info(`gfn, ral.status.sprint(uvm_default_line_printer), UVM_MEDIUM)
+      // Allow escalate to be generated if we have received an alert
+      cfg.set_test_phase(LcCtrlReadState1);
+      // Check count and state before escalate is generated
+      rd_lc_state_and_cnt_csrs();
+
+      // Allow escalate to be generated if we have received an alert
+      cfg.set_test_phase(LcCtrlEscalate);
+
+      // Wait before re-checking lc_state to allow escalate to be accepted
+      cfg.clk_rst_vif.wait_clks(100);
+      cfg.set_test_phase(LcCtrlReadState2);
+      // Check count and state after escalate is generated
+      rd_lc_state_and_cnt_csrs();
 
       // Sample coverage if enabled
       if (cfg.en_cov) begin
@@ -136,16 +164,18 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       end
 
     end
+
+    `uvm_info(`gfn, "body: finished", UVM_MEDIUM)
   endtask : body
 
   // smoke test will always return valid next_lc_state
   // need to randomize here because associative array's index cannot be a rand input in constraint
   virtual function void randomize_next_lc_state(dec_lc_state_e curr_lc_state);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(next_lc_state,
-                                       if (!err_inj.transition_err) {
+        if (!err_inj.transition_err && !err_inj.state_err) {
           // Valid transition
           next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]};
-        } else {
+        } else if (!err_inj.state_err) {
           // Invalid transition
           !(next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]});
         })
@@ -172,11 +202,13 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     tokens_a[TestExitTokenIdx]   = cfg.lc_ctrl_vif.otp_i.test_exit_token;
     tokens_a[RmaTokenIdx]        = cfg.lc_ctrl_vif.otp_i.rma_token;
 
-    `DV_CHECK_NE(token_idx, InvalidTokenIdx, $sformatf(
-                 "curr_state: %0s, next_state %0s, does not expect InvalidToken",
-                 lc_state.name,
-                 next_lc_state.name
-                 ))
+    if(!err_inj.state_err) begin
+      `DV_CHECK_NE(token_idx, InvalidTokenIdx, $sformatf(
+                  "curr_state: %0s, next_state %0s, does not expect InvalidToken",
+                  lc_state.name,
+                  next_lc_state.name
+                  ))
+    end
 
     // Clear the user_data_q here cause previous data might not be used due to some other lc_ctrl
     // error: for example: lc_program error
@@ -191,6 +223,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       end
     end
   endfunction
+
   // Drive OTP input `lc_state` and `lc_cnt`.
   virtual task drive_otp_i(bit rand_otp_i = 1);
     if (rand_otp_i) begin
@@ -207,57 +240,6 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     cfg.lc_ctrl_vif.init(lc_state, lc_cnt);
   endtask
 
-  // Drive LC init pin.
-  virtual task lc_ctrl_init();
-    cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 1);
-    wait(cfg.pwr_lc_vif.pins[LcPwrDoneRsp] == 1);
-    cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 0);
-  endtask
-
-  // some registers won't set to default value until otp_init is done
-  virtual task read_and_check_all_csrs_after_reset();
-    lc_ctrl_init();
-    super.read_and_check_all_csrs_after_reset();
-  endtask
-
-  virtual task run_clk_byp_rsp_nonblocking(bit has_err = 0);
-    fork
-      forever begin
-        lc_ctrl_pkg::lc_tx_t rsp;
-        wait(cfg.lc_ctrl_vif.clk_byp_req_o == lc_ctrl_pkg::On);
-        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
-            lc_ctrl_pkg::On;
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
-
-        wait(cfg.lc_ctrl_vif.clk_byp_req_o != lc_ctrl_pkg::On);
-        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
-            lc_ctrl_pkg::Off;
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
-      end
-    join_none
-  endtask
-
-  virtual task run_flash_rma_rsp_nonblocking(bit has_err = 0);
-    fork
-      forever begin
-        lc_ctrl_pkg::lc_tx_t rsp;
-        wait(cfg.lc_ctrl_vif.flash_rma_req_o == lc_ctrl_pkg::On);
-        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
-            lc_ctrl_pkg::On;
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
-
-        wait(cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On);
-        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
-            lc_ctrl_pkg::Off;
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
-      end
-    join_none
-  endtask
-
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);
     bit trigger_alert;
     bit [TL_DW-1:0] status_val;
@@ -268,10 +250,10 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       token_val = token_val >> TL_DW;
     end
     csr_wr(ral.transition_cmd, 'h01);
-
+    cfg.set_test_phase(LcCtrlWaitTransition);
     // Wait for status done or terminal errors
     `DV_SPINWAIT(wait_status(trigger_alert);)
-
+    cfg.set_test_phase(LcCtrlTransitionComplete);
     // always on alert, set time delay to make sure alert triggered for at least for one
     // handshake cycle
     if (trigger_alert) cfg.clk_rst_vif.wait_clks($urandom_range(50, 20));
@@ -367,11 +349,16 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   // Individual event handlers
   virtual task handle_fatal_prog_error;
-    `uvm_info(`gfn, $sformatf("handle_fatal_prog_error: alert received"), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("handle_fatal_prog_error: alert received"),
+        UVM_MEDIUM)
+    // Only send escalate at correct point of the test
+    if (!(cfg.get_test_phase() inside {LcCtrlEscalate, LcCtrlReadState2})) return;
+    send_escalate(1);
   endtask
 
   virtual task handle_fatal_state_error;
-    `uvm_info(`gfn, $sformatf("handle_fatal_bus_integ_error: alert received"), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("handle_fatal_state_error: alert received"),
+        UVM_MEDIUM)
     // alert_sender_seq alert_seq;
     // `uvm_info(`gfn, $sformatf("handle_fatal_state_error: alert received"), UVM_MEDIUM)
     // `uvm_create_obj(alert_sender_seq, alert_seq)
@@ -380,11 +367,16 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     // `DV_SPINWAIT(alert_seq.start(p_sequencer.esc_scrap_state_sequencer_h);,
     //     "Escalate sequence timed out",1000,)
     // `uvm_info(`gfn,alert_seq.sprint(uvm_default_line_printer),UVM_LOW)
+    // wait(cfg.test_phase == LcCtrlEscalate);
+
+    // Only send an escalate at the correct part of the test
+    if (!(cfg.get_test_phase() inside {LcCtrlEscalate, LcCtrlReadState2})) return;
     send_escalate(0);
   endtask
 
   virtual task handle_fatal_bus_integ_error;
-    `uvm_info(`gfn, $sformatf("handle_fatal_bus_integ_error: alert received"), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("handle_fatal_bus_integ_error: alert received"),
+        UVM_MEDIUM)
   endtask
 
 endclass

@@ -68,4 +68,12 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
 
   endfunction
 
+  virtual function void set_test_phase(lc_ctrl_test_phase_e test_phase);
+    this.test_phase = test_phase;
+  endfunction
+
+  virtual function lc_ctrl_test_phase_e get_test_phase();
+    return(this.test_phase);
+  endfunction
+
 endclass

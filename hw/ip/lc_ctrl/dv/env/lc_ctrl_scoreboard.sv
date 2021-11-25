@@ -66,13 +66,13 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         check_lc_outputs(exp_lc_o, err_msg);
 
         // predict LC state and cnt csr
+        // Deafult prediction - overriden below if we expect error conditions
         void'(ral.lc_state.predict(lc_state));
         void'(ral.lc_transition_cnt.predict(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)));
 
-        // State error
-        if (cfg.err_inj.state_err) begin
+
+        if (cfg.err_inj.state_err) begin // State error expected
             set_exp_alert(.alert_name("fatal_state_error"), .is_fatal(1));
-            void'(ral.lc_state.predict(DecLcStEscalate));
         end
 
       end
@@ -146,30 +146,45 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
-    // process the csr req
-    // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
-    case (csr.get_name())
-      // TODO: temp enable read checking, once do_read_check default set to 1, should not need this.
-      "lc_transition_cnt", "lc_state": do_read_check = 1;
-      "status": begin
-        if (data_phase_read) begin
-          // when lc successfully req a transition, all outputs are turned off.
-          if (item.d_data[ral.status.transition_successful.get_lsb_pos()]) check_lc_outputs(exp);
+    if(addr_phase_read) begin
+      case (csr.get_name())
+         "lc_state": begin
+          if (cfg.err_inj.state_err) begin // State error expected
+            case(cfg.test_phase)
+              LcCtrlReadState1: `DV_CHECK_FATAL(
+                  ral.lc_state.predict(.value(DecLcStInvalid), .kind(UVM_PREDICT_READ)))
+              LcCtrlReadState2: `DV_CHECK_FATAL(
+                  ral.lc_state.predict(.value(DecLcStEscalate), .kind(UVM_PREDICT_READ)))
+            endcase
+          end
         end
-      end
-      default: begin
-        // `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
-      end
-    endcase
+
+        "lc_transition_cnt": begin
+          // If we have a state error no transition will take place so
+          // the tarnsition count will be 31
+          if (cfg.err_inj.state_err) begin // State error expected
+            `DV_CHECK_FATAL(ral.lc_transition_cnt.predict(.value(31), .kind(UVM_PREDICT_READ)))
+          end
+        end
+
+        default: begin
+          // `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        end
+      endcase
+    end
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read) begin
+      if(csr.get_name() inside {"lc_state", "lc_transition_cnt"}) do_read_check = 1;
+
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+
+      // when lc successfully req a transition, all outputs are turned off.
+      if(ral.status.transition_successful.get()) check_lc_outputs(exp);
     end
   endtask
 
