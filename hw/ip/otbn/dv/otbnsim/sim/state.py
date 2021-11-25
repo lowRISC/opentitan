@@ -18,19 +18,20 @@ from .reg import RegFile
 from .trace import Trace, TracePC
 from .wsr import WSRFile
 
+SEC_WIPE_CNT = 96
 
 class FsmState(IntEnum):
     r'''State of the internal start/stop FSM
 
     The FSM diagram looks like:
 
-          /----------------------------------------------------------\
-          |                                                          |
-          v                                         /->  POST_EXEC --/
-        IDLE  ->  PRE_EXEC  ->  FETCH_WAIT -> EXEC <
-                                                    \->  LOCKING   --\
-                                                                     |
-          /----------------------------------------------------------/
+          /------------------------------------------------------------------\
+          |                                                                  |
+          v                                                 /->  POST_EXEC --/
+        IDLE  ->  PRE_EXEC  ->  FETCH_WAIT -> EXEC -> WIPE <
+                                                            \->  LOCKING   --\
+                                                                             |
+          /------------------------------------------------------------------/
           |
           v
         LOCKED
@@ -59,8 +60,9 @@ class FsmState(IntEnum):
     PRE_EXEC = 10
     FETCH_WAIT = 11
     EXEC = 12
-    POST_EXEC = 13
-    LOCKING = 13
+    WIPE = 13
+    POST_EXEC = 14
+    LOCKING = 15
     LOCKED = 2550
 
 
@@ -111,6 +113,10 @@ class OTBNState:
         # instruction. Make this a counter, decremented once per cycle. When we
         # get to zero, we set the flag.
         self._time_to_imem_invalidation = None  # type: Optional[int]
+        self.wiping_cnt = 0
+
+        # This flag is set to true if we've injected integrity errors, trashing
+        # the whole of IMEM. The next fetch should fail.
         self.invalidated_imem = False
 
     def get_next_pc(self) -> int:
@@ -266,6 +272,9 @@ class OTBNState:
     def running(self) -> bool:
         return self.fsm_state not in [FsmState.IDLE, FsmState.LOCKED]
 
+    def wiping(self) -> bool:
+        return self.fsm_state in [FsmState.WIPE]
+
     def commit(self, sim_stalled: bool) -> None:
         # We shouldn't be running commit() in IDLE or LOCKED mode
         assert self.running()
@@ -303,7 +312,6 @@ class OTBNState:
                 # This part is strictly for standalone simulation. Otherwise
                 # we would set fsm_state before commit (at urnd_completed)
                 self.fsm_state = FsmState.FETCH_WAIT
-
             return
 
         # FETCH_WAIT works like PRE_EXEC, but it's only ever a single cycle
@@ -311,13 +319,25 @@ class OTBNState:
         if self.fsm_state == FsmState.FETCH_WAIT:
             self.ext_regs.commit()
             self.fsm_state = FsmState.EXEC
+            return
 
+        if self.fsm_state == FsmState.WIPE:
+            if self.wiping_cnt == SEC_WIPE_CNT:
+              self.ext_regs.commit()
+              if self._err_bits >> 16:
+                  self.ext_regs.write('INSN_CNT', 0, True)
+                  self.fsm_state = FsmState.LOCKING
+              else:
+                  self.fsm_state = FsmState.POST_EXEC
+            else:
+                self.wiping_cnt+=1
             return
 
         # If we are in POST_EXEC mode, this is the single cycle after the end
         # of execution after either completion or a recoverable error. Commit
         # external registers (to update STATUS) and then switch to IDLE.
         if self.fsm_state == FsmState.POST_EXEC:
+            print('got to post exec')
             self.ext_regs.commit()
             self.fsm_state = FsmState.IDLE
             return
@@ -338,11 +358,12 @@ class OTBNState:
         # POST_EXEC to allow one more cycle.
         if self.pending_halt:
             self.ext_regs.commit()
-            if self._err_bits >> 16:
-                self.ext_regs.write('INSN_CNT', 0, True)
-                self.fsm_state = FsmState.LOCKING
-            else:
-                self.fsm_state = FsmState.POST_EXEC
+            self.fsm_state = FsmState.WIPE
+            # if self._err_bits >> 16:
+            #     self.ext_regs.write('INSN_CNT', 0, True)
+            #     self.fsm_state = FsmState.LOCKING
+            # else:
+            #     self.fsm_state = FsmState.POST_EXEC
             return
 
         # As pending_halt wasn't set, there shouldn't be any pending error bits
@@ -407,7 +428,7 @@ class OTBNState:
         clear the busy flag and write STOP_PC.
 
         '''
-
+        print('on stop()')
         if self._err_bits:
             # Abort all pending changes, including changes to external
             # registers.
@@ -421,6 +442,7 @@ class OTBNState:
         # greater than 16, this was a fatal error so we should lock ourselves.
         # Otherwise, go back to IDLE.
         new_status = Status.LOCKED if self._err_bits >> 16 else Status.IDLE
+        print(new_status)
         self.ext_regs.write('STATUS', new_status, True)
 
         # Make any error bits visible
@@ -508,3 +530,12 @@ class OTBNState:
 
     def invalidate_imem(self) -> None:
         self._time_to_imem_invalidation = 2
+
+    def start_wiping(self) -> None:
+        # print('Start wiping')
+        self.ext_regs.increment_insn_cnt()
+        self.wiping_cnt = 0
+        if self._err_bits:
+            # Abort all pending changes, including changes to external
+            # registers.
+            self._abort()

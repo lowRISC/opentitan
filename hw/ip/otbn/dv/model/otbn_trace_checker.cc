@@ -21,6 +21,7 @@ OtbnTraceChecker::OtbnTraceChecker()
       iss_pending_(false),
       done_(true),
       seen_err_(false),
+      seen_secure_wipe_(false),
       last_data_vld_(false) {
   OtbnTraceSource::get().AddListener(this);
 }
@@ -95,9 +96,10 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
 
   // This wasn't a stall entry. Check it's an execution.
   if (!trace_entry.is_exec()) {
-    std::cerr << "ERROR: Invalid RTL trace entry (neither S nor E):\n";
-    trace_entry.print("  ", std::cerr);
-    seen_err_ = true;
+    // std::cerr << "ERROR: Invalid RTL trace entry (neither S nor E):\n";
+    // trace_entry.print("  ", std::cerr);
+    // seen_err_ = true;
+    seen_secure_wipe_ = true;
     return;
   }
 
@@ -161,7 +163,7 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
 
   done_ = false;
 
-  if (iss_pending_) {
+  if (iss_pending_ & !seen_secure_wipe_) {
     // An instruction finished execution on the ISS and its trace entry is
     // stored in iss_entry_. Another one has just started, but we haven't
     // seen an RTL trace entry in the intervening time.

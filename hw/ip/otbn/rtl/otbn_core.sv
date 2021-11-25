@@ -20,7 +20,7 @@ module otbn_core
   // Size of the data memory, in bytes
   parameter int DmemSizeByte = 4096,
   // Enable internal secure wipe
-  parameter bit SecWipeEn = 1'b0,
+  parameter bit SecWipeEn  = 1'b1,
 
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
