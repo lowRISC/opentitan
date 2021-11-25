@@ -7,7 +7,22 @@
 
 set -e
 
-export TOP_MODULE=aes_sbox
+# Argument parsing
+if [[ "$#" -gt 0 ]]; then
+  TOP_MODULE=$1
+else
+  TOP_MODULE=aes_sbox
+fi
+
+# aes_sub_bytes and aes_reduced_round share the same testbench.
+if [[ ${TOP_MODULE} == "aes_sbox" ]]; then
+  TESTBENCH=${TOP_MODULE}
+elif  [[ ${TOP_MODULE} == "aes_sub_bytes" || ${TOP_MODULE} == "aes_reduced_round" ]]; then
+  TESTBENCH="aes_sub_bytes"
+else
+  echo "TOP_MODULE ${TOP_MODULE} not supported, aborting now"
+  exit 1
+fi
 
 echo "Verifying ${TOP_MODULE} using Alma"
 
@@ -17,7 +32,7 @@ echo "Verifying ${TOP_MODULE} using Alma"
 --netlist tmp/circuit.v --log-yosys
 
 # Trace
-./trace.py --testbench ${REPO_TOP}/hw/ip/aes/pre_sca/alma/cpp/verilator_tb_${TOP_MODULE}.cpp \
+./trace.py --testbench ${REPO_TOP}/hw/ip/aes/pre_sca/alma/cpp/verilator_tb_${TESTBENCH}.cpp \
 --netlist tmp/circuit.v -o tmp/circuit
 
 # Verify

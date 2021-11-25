@@ -63,5 +63,6 @@
     # Alma testbench files
     'hw/ip/aes/pre_sca/alma/cpp/testbench.h',
     'hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sbox.cpp',
+    'hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sub_bytes.cpp',
   ],
 }
