@@ -16,6 +16,7 @@ fusesoc_build(
     ],
     systems = ["lowrisc:dv:chip_verilator_sim"],
     target = "sim",
+    data = ["//hw/ip/otbn:all_files"],
 )
 
 # TODO(lowRISC/opentitan#7972): Globbing all of the //hw/... hierarchy together

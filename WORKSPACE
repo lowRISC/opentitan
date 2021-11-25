@@ -6,9 +6,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 git_repository(
     name = "bazel_embedded",
-    commit = "f7299c20ea6182e164adabc336ba2a7c0d8caa71",
+    commit = "b4faaec60b07b11fe3d1fc6b40f22baf31a54690",
     remote = "https://github.com/lowRISC/bazel-embedded.git",
-    shallow_since = "1628013051 +0000",
+    shallow_since = "1639417565 -0800"
 )
 
 load("@bazel_embedded//:bazel_embedded_deps.bzl", "bazel_embedded_deps")

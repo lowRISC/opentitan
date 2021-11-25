@@ -31,6 +31,85 @@ cc_library(
     ],
 )
 
+# TODO(lowRISC/opentitan#7972): clean up check.h after completing the
+# migration to bazel.
+cc_library(
+    name = "check",
+    hdrs = [
+        "test_status.h",
+        "//sw/device/lib/testing:check",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+cc_library(
+    name = "freertos_config",
+    hdrs = [
+        "FreeRTOSConfig.h",
+    ],
+    # FreeRTOS sources don't follow our project's include-path standard,
+    # and just include via the bare filename.
+    includes = ["."],
+    deps = [
+        "//sw/device/lib/arch:device",
+    ],
+)
+
+cc_library(
+    name = "freertos_port",
+    srcs = [
+        "freertos_hooks.c",
+        "freertos_port.S",
+        "freertos_port.c",
+    ],
+    hdrs = [
+        "ottf_macros.h",
+    ],
+    deps = [
+        ":check",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:irq",
+        "//sw/device/lib/base",
+        "//sw/device/lib/dif:rv_timer",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/vendor/freertos_freertos_kernel:kernel",
+    ],
+)
+
+cc_library(
+    name = "ottf",
+    srcs = [
+        "ottf.c",
+    ],
+    hdrs = [
+        "ottf.h",
+        "//sw/device/lib/testing:check",
+    ],
+    linkopts = [
+        # Make the linker keep resolving references between these
+        # targets until satisfied.
+        "-Wl,--start-group",
+        "$(location :freertos_port)",
+        "$(location //sw/device/lib:irq)",
+        "$(location //sw/vendor/freertos_freertos_kernel:kernel)",
+        "-Wl,--end-group",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":freertos_port",
+        ":test_framework",
+        "//sw/device/lib:irq",
+        "//sw/device/lib/base",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/vendor/freertos_freertos_kernel:kernel",
+    ],
+)
+
 cc_library(
     name = "ottf_isrs",
     srcs = [
@@ -39,13 +118,9 @@ cc_library(
     ],
     hdrs = [
         "ottf_isrs.h",
-        "ottf_macros.h",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/base",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
+        ":freertos_port",
     ],
 )
