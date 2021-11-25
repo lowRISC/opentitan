@@ -59,6 +59,8 @@ package sram_ctrl_env_pkg;
     SramCtrlInitDone        = 5
   } sram_ctrl_status_e;
 
+  typedef class sram_ctrl_scoreboard;
+
   // package sources
   `include "sram_ctrl_env_cfg.sv"
   `include "sram_ctrl_env_cov.sv"

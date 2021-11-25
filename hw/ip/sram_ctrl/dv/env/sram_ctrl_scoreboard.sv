@@ -101,6 +101,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   bit in_raw_hazard = 0;
 
+  // initialize mem to remove all the previous written data
+  function void init_mem();
+    exp_mem[cfg.sram_ral_name].init();
+  endfunction
+
   // utility function to word-align an input TL address
   // (SRAM is indexed at word granularity)
   function bit [TL_AW-1:0] word_align_addr(bit [TL_AW-1:0] addr);

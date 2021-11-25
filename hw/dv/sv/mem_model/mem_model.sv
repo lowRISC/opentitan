@@ -16,6 +16,10 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
 
   `uvm_object_new
 
+  function void init();
+    system_memory.delete();
+  endfunction
+
   function int get_written_bytes();
     return system_memory.size();
   endfunction
@@ -33,14 +37,13 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
   endfunction
 
   function void write_byte(mem_addr_t addr, bit [7:0] data);
-   `uvm_info(`gfn, $sformatf("Write Mem : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
+   `uvm_info(`gfn, $sformatf("Write Mem : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_MEDIUM)
     system_memory[addr] = data;
   endfunction
 
   function void compare_byte(mem_addr_t addr, bit [7:0] act_data);
    `uvm_info(`gfn, $sformatf("Compare Mem : Addr[0x%0h], Act Data[0x%0h], Exp Data[0x%0h]",
-                             addr, act_data, system_memory[addr]), UVM_HIGH)
-    system_memory[addr] = act_data;
+                             addr, act_data, system_memory[addr]), UVM_MEDIUM)
     `DV_CHECK_EQ(act_data, system_memory[addr], $sformatf("addr 0x%0h read out mismatch", addr))
   endfunction
 
@@ -67,12 +70,14 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     return data;
   endfunction
 
-  function void compare(mem_addr_t addr, mem_data_t act_data, mem_mask_t mask = '1);
+  function void compare(mem_addr_t addr, mem_data_t act_data, mem_mask_t mask = '1,
+                        bit compare_exist_addr_only = 1);
     bit [7:0] byte_data;
     for (int i = 0; i < DataWidth / 8; i++) begin
+      mem_addr_t byte_addr = addr + i;
       byte_data = act_data[7:0];
-      if (mask[0]) begin
-        compare_byte(addr + i, byte_data);
+      if (mask[0] && (!compare_exist_addr_only || system_memory.exists(byte_addr))) begin
+        compare_byte(byte_addr, byte_data);
       end else begin
         // Nothing to do here: since this byte wasn't selected by the mask, there are no
         // requirements about what data came back.
