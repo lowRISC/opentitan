@@ -12,9 +12,9 @@
 
 package prim_mubi_pkg;
 
-  //////////////////////////////////////////////
+  ///////////////////////////////////////
   // 4 Bit Multibit Type and Functions //
-  //////////////////////////////////////////////
+  ///////////////////////////////////////
 
   parameter int MuBi4Width = 4;
   typedef enum logic [MuBi4Width-1:0] {
@@ -29,7 +29,7 @@ package prim_mubi_pkg;
 
   // Convert a 1 input value to a mubi output
   function automatic mubi4_t mubi4_bool_to_mubi(logic val);
-    return (val ? MuBi4True : MuBi4False);
+    return val ? MuBi4True : MuBi4False;
   endfunction : mubi4_bool_to_mubi
 
   // Test whether the multibit value signals an "enabled" condition.
@@ -141,9 +141,9 @@ package prim_mubi_pkg;
     return mubi4_and(a, b, MuBi4False);
   endfunction : mubi4_and_lo
 
-  //////////////////////////////////////////////
+  ///////////////////////////////////////
   // 8 Bit Multibit Type and Functions //
-  //////////////////////////////////////////////
+  ///////////////////////////////////////
 
   parameter int MuBi8Width = 8;
   typedef enum logic [MuBi8Width-1:0] {
@@ -158,7 +158,7 @@ package prim_mubi_pkg;
 
   // Convert a 1 input value to a mubi output
   function automatic mubi8_t mubi8_bool_to_mubi(logic val);
-    return (val ? MuBi8True : MuBi8False);
+    return val ? MuBi8True : MuBi8False;
   endfunction : mubi8_bool_to_mubi
 
   // Test whether the multibit value signals an "enabled" condition.
@@ -270,9 +270,9 @@ package prim_mubi_pkg;
     return mubi8_and(a, b, MuBi8False);
   endfunction : mubi8_and_lo
 
-  //////////////////////////////////////////////
+  ////////////////////////////////////////
   // 12 Bit Multibit Type and Functions //
-  //////////////////////////////////////////////
+  ////////////////////////////////////////
 
   parameter int MuBi12Width = 12;
   typedef enum logic [MuBi12Width-1:0] {
@@ -287,7 +287,7 @@ package prim_mubi_pkg;
 
   // Convert a 1 input value to a mubi output
   function automatic mubi12_t mubi12_bool_to_mubi(logic val);
-    return (val ? MuBi12True : MuBi12False);
+    return val ? MuBi12True : MuBi12False;
   endfunction : mubi12_bool_to_mubi
 
   // Test whether the multibit value signals an "enabled" condition.
@@ -399,9 +399,9 @@ package prim_mubi_pkg;
     return mubi12_and(a, b, MuBi12False);
   endfunction : mubi12_and_lo
 
-  //////////////////////////////////////////////
+  ////////////////////////////////////////
   // 16 Bit Multibit Type and Functions //
-  //////////////////////////////////////////////
+  ////////////////////////////////////////
 
   parameter int MuBi16Width = 16;
   typedef enum logic [MuBi16Width-1:0] {
@@ -416,7 +416,7 @@ package prim_mubi_pkg;
 
   // Convert a 1 input value to a mubi output
   function automatic mubi16_t mubi16_bool_to_mubi(logic val);
-    return (val ? MuBi16True : MuBi16False);
+    return val ? MuBi16True : MuBi16False;
   endfunction : mubi16_bool_to_mubi
 
   // Test whether the multibit value signals an "enabled" condition.
