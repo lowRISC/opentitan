@@ -20,6 +20,7 @@ environment variables:
   OTBN_LD            path to otbn-ld, the OTBN linker
   RV32_TOOL_LD       path to RV32 ld
   RV32_TOOL_AS       path to RV32 as
+  RV32_TOOL_AR       path to RV32 ar
   RV32_TOOL_OBJCOPY  path to RV32 objcopy
 
   The RV32* environment variables are used by both this script and the OTBN
@@ -120,14 +121,26 @@ def call_rv32_objcopy(args: List[str]):
     run_cmd([rv32_tool_objcopy] + args)
 
 
+def call_rv32_ar(args: List[str]):
+    rv32_tool_ar = os.environ.get('RV32_TOOL_AR',
+                                  'riscv32-unknown-elf-ar')
+    run_cmd([rv32_tool_ar] + args)
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
         '--out-dir',
         '-o',
         required=False,
         default=".",
         help="Output directory (default: %(default)s)")
+    parser.add_argument(
+        '--archive',
+        '-a',
+        action='store_true',
+        help='Archive the rv32embed.o file into a library.')
     parser.add_argument(
         '--verbose',
         '-v',
@@ -152,7 +165,7 @@ def main() -> int:
     log.basicConfig(level=log_level, format="%(message)s")
 
     out_dir = Path(args.out_dir)
-    out_dir.mkdir(exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     src_files = [Path(f) for f in args.src_files]
     for src_file in src_files:
@@ -162,6 +175,7 @@ def main() -> int:
     obj_files = [out_dir / f.with_suffix('.o').name for f in src_files]
 
     app_name = args.app_name or str(src_files[0].stem)
+    archive = args.archive
 
     try:
         for src_file, obj_file in zip(src_files, obj_files):
@@ -204,6 +218,10 @@ def main() -> int:
         with open(out_embedded_obj, 'r+b') as emb_file:
             emb_file.seek(0x10)
             emb_file.write(b'\1\0')
+
+        if archive:
+            out_embedded_a = out_dir / (app_name + '.rv32embed.a')
+            call_rv32_ar(['rcs', out_embedded_a, out_embedded_obj])
 
     except subprocess.CalledProcessError as e:
         # Show a nicer error message if any of the called programs fail.

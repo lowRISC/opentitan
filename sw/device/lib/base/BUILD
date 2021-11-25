@@ -30,6 +30,9 @@ cc_library(
 
 cc_library(
     name = "mmio",
+    hdrs = [
+        "mmio.h",
+    ],
     srcs = [
         "mmio.c",
     ],

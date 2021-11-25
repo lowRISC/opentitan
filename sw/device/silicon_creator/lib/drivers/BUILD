@@ -1,0 +1,434 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_functest")
+
+cc_library(
+    name = "alert",
+    srcs = ["alert.c"],
+    hdrs = ["alert.h"],
+    deps = [
+        "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_library(
+    name = "mock_alert",
+    testonly = True,
+    hdrs = ["mock_alert.h"],
+    deps = [
+        ":alert",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "alert_unittest",
+    srcs = ["alert_unittest.cc"],
+    deps = [
+        ":alert",
+        "//hw/top_earlgrey:alert_handler_regs",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_functest(
+    name = "alert_functest",
+    srcs = ["alert_functest.c"],
+    deps = [
+        ":alert",
+        ":rstmgr",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_library(
+    name = "flash_ctrl",
+    srcs = ["flash_ctrl.c"],
+    hdrs = ["flash_ctrl.h"],
+    deps = [
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_test(
+    name = "flash_ctrl_unittest",
+    srcs = ["flash_ctrl_unittest.cc"],
+    deps = [
+        ":flash_ctrl",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/testing",
+        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
+        "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "hmac",
+    srcs = ["hmac.c"],
+    hdrs = ["hmac.h"],
+    deps = [
+        "//hw/ip/hmac/data:hmac_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+    ],
+)
+
+cc_library(
+    name = "mock_hmac",
+    testonly = True,
+    hdrs = ["mock_hmac.h"],
+    deps = [
+        ":hmac",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "hmac_unittest",
+    srcs = ["hmac_unittest.cc"],
+    deps = [
+        ":hmac",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
+        "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_functest(
+    name = "hmac_functest",
+    srcs = ["hmac_functest.c"],
+    deps = [
+        ":hmac",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:test_main",
+    ],
+)
+
+cc_library(
+    name = "keymgr",
+    srcs = ["keymgr.c"],
+    hdrs = ["keymgr.h"],
+    deps = [
+        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/lib/base/freestanding",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_test(
+    name = "keymgr_unittest",
+    srcs = ["keymgr_unittest.cc"],
+    deps = [
+        ":keymgr",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
+        "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_functest(
+    name = "keymgr_functest",
+    srcs = ["keymgr_functest.c"],
+    # FIXME: currently, the FPGA doesn't wake up from low-power mode.
+    # For now, run the test only in verilator.
+    targets = ["verilator"],
+    deps = [
+        ":keymgr",
+        ":lifecycle",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib:flash_ctrl",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_library(
+    name = "lifecycle",
+    srcs = ["lifecycle.c"],
+    hdrs = ["lifecycle.h"],
+    deps = [
+        "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_library(
+    name = "mock_lifecycle",
+    testonly = True,
+    hdrs = ["mock_lifecycle.h"],
+    deps = [
+        ":lifecycle",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "otbn",
+    srcs = ["otbn.c"],
+    hdrs = ["otbn.h"],
+    deps = [
+        "//hw/ip/otbn/data:otbn_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+    ],
+)
+
+cc_test(
+    name = "otbn_unittest",
+    srcs = ["otbn_unittest.cc"],
+    deps = [
+        ":otbn",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "otp",
+    srcs = ["otp.c"],
+    hdrs = ["otp.h"],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_library(
+    name = "mock_otp",
+    testonly = True,
+    hdrs = ["mock_otp.h"],
+    deps = [
+        ":otp",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "otp_unittest",
+    srcs = ["otp_unittest.cc"],
+    deps = [
+        ":otp",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "pinmux",
+    srcs = ["pinmux.c"],
+    hdrs = ["pinmux.h"],
+    deps = [
+        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+    ],
+)
+
+cc_test(
+    name = "pinmux_unittest",
+    srcs = ["pinmux_unittest.cc"],
+    deps = [
+        ":pinmux",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "retention_sram",
+    srcs = ["retention_sram.c"],
+    hdrs = ["retention_sram.h"],
+    deps = [
+        "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+    ],
+)
+
+cc_test(
+    name = "retention_sram_unittest",
+    srcs = ["retention_sram_unittest.cc"],
+    deps = [
+        ":retention_sram",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
+        "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_functest(
+    name = "retention_sram_functest",
+    srcs = ["retention_sram_functest.c"],
+    deps = [
+        ":retention_sram",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:test_main",
+    ],
+)
+
+cc_library(
+    name = "rstmgr",
+    srcs = ["rstmgr.c"],
+    hdrs = ["rstmgr.h"],
+    deps = [
+        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_test(
+    name = "rstmgr_unittest",
+    srcs = ["rstmgr_unittest.cc"],
+    deps = [
+        ":rstmgr",
+        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "uart",
+    srcs = ["uart.c"],
+    hdrs = ["uart.h"],
+    deps = [
+        "//hw/ip/uart/data:uart_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+    ],
+)
+
+cc_test(
+    name = "uart_unittest",
+    srcs = ["uart_unittest.cc"],
+    deps = [
+        ":uart",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
+        "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_functest(
+    name = "uart_functest",
+    srcs = ["uart_functest.c"],
+    deps = [
+        ":uart",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:test_main",
+    ],
+)
+
+cc_library(
+    name = "watchdog",
+    srcs = ["watchdog.c"],
+    hdrs = ["watchdog.h"],
+    deps = [
+        "//hw/ip/aon_timer/data:aon_timer_regs",
+        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+    ],
+)
+
+cc_test(
+    name = "watchdog_unittest",
+    srcs = ["watchdog_unittest.cc"],
+    deps = [
+        ":watchdog",
+        "//hw/ip/aon_timer/data:aon_timer_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
+        "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_functest(
+    name = "watchdog_functest",
+    srcs = ["watchdog_functest.c"],
+    deps = [
+        ":retention_sram",
+        ":rstmgr",
+        ":watchdog",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/base:abs_mmio",
+    ],
+)

@@ -88,11 +88,5 @@ opentitan_functest(
         "boot_rom_test.c",
     ],
     deps = [
-        "//sw/device/exts/common",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/crt",
-        "//sw/device/lib/testing/test_framework",
-        "//sw/device/lib/testing/test_framework:main",
-        "//sw/device/lib/testing/test_framework:ottf_isrs",
     ],
 )

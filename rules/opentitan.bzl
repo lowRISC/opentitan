@@ -15,11 +15,11 @@ _targets_compatible_with = {
     OPENTITAN_PLATFORM: [OPENTITAN_CPU],
 }
 
-def _platforms_transition_impl(settings, attr):
+def _opentitan_transition_impl(settings, attr):
     return {"//command_line_option:platforms": attr.platform}
 
-_platforms_transition = transition(
-    implementation = _platforms_transition_impl,
+opentitan_transition = transition(
+    implementation = _opentitan_transition_impl,
     inputs = [],
     outputs = ["//command_line_option:platforms"],
 )
@@ -45,7 +45,7 @@ def _obj_transform(ctx):
 
 obj_transform = rule(
     implementation = _obj_transform,
-    cfg = _platforms_transition,
+    cfg = opentitan_transition,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "suffix": attr.string(default = "bin"),
@@ -79,7 +79,7 @@ def _elf_to_disassembly(ctx):
 
 elf_to_disassembly = rule(
     implementation = _elf_to_disassembly,
-    cfg = _platforms_transition,
+    cfg = opentitan_transition,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "platform": attr.string(default = OPENTITAN_PLATFORM),
@@ -115,7 +115,7 @@ def _elf_to_scrambled(ctx):
 
 elf_to_scrambled = rule(
     implementation = _elf_to_scrambled,
-    cfg = _platforms_transition,
+    cfg = opentitan_transition,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "platform": attr.string(default = OPENTITAN_PLATFORM),
@@ -298,12 +298,33 @@ def _format_list(name, list1, datadict, **kwargs):
     """
     return [x.format(**kwargs) for x in list1 + datadict.pop(name, [])]
 
+_OTTF_DEPS = [
+    "//sw/device/lib/base",
+    "//sw/device/lib/runtime:hart",
+    "//sw/device/lib/runtime:log",
+    "//sw/device/lib/runtime:print",
+    "//sw/device/lib/arch:device",
+    "//sw/device/exts/common",
+    "//sw/device/lib/crt",
+    "//sw/device/lib/testing/test_framework:ottf",
+    "//sw/device/lib/testing/test_framework:ottf_isrs",
+    "//sw/device/lib/base:mmio",
+]
+
+def _unique_deps(*deplists):
+    uniq = {}
+    for deplist in deplists:
+        for dep in deplist:
+            uniq[dep] = True
+    return uniq.keys()
+
 def opentitan_functest(
         name,
         platform = OPENTITAN_PLATFORM,
         targets = ["verilator", "cw310"],
         args = [],
         data = [],
+        ottf = _OTTF_DEPS,
         verilator = None,
         cw310 = None,
         **kwargs):
@@ -318,19 +339,23 @@ def opentitan_functest(
       @param targets: A list of targets on which to dispatch tests.
       @param args: Extra arguments to pass to `opentitantool`.
       @param data: Extra data dependencies needed while executing the test.
+      @param ottf: Default dependencies for OTTF tests.  Set to empty list if
+                   your test doesn't use the OTTF.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
 
     This macro emits the following rules:
         opentitan_binary named: {name}_prog (and all of its emitted rules).
-        sh_test named:          {name}_verilator_{test suffix}
-        sh_test named:          {name}_cw310_{test suffix}
+        sh_test named:          verilator_{name}
+        sh_test named:          cw310_{name}
         test_suite named:       {name}
     """
 
+    deps = _unique_deps(kwargs.pop("deps", []), ottf)
     opentitan_binary(
         name = name + "_prog",
         platform = platform,
-        output_disassembly = False,
+        output_disassembly = True,
+        deps = deps,
         **kwargs
     )
 
