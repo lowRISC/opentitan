@@ -46,6 +46,8 @@ class sram_ctrl_env #(parameter int AddrWidth = 10) extends cip_base_env #(
     uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE)))::set(
       this, "m_kdi_agent", "cfg", cfg.m_kdi_cfg);
     cfg.m_kdi_cfg.en_cov = cfg.en_cov;
+
+    cfg.scb = scoreboard;
   endfunction
 
   function void connect_phase(uvm_phase phase);

@@ -25,6 +25,10 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
   // Represent the lower and upper bounds of the SRAM memory region
   bit [TL_AW-1:0] sram_start_addr, sram_end_addr;
 
+  // Store the scb handle for seq. When seq initializes the mem, we should initialize mem_model in
+  // scb as well.
+  sram_ctrl_scoreboard#(AddrWidth) scb;
+
   // otp clk freq
   rand uint otp_freq_mhz;
 

@@ -144,10 +144,6 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (cfg.en_scb_tl_err_chk) begin
       if (predict_tl_err(item, AddrChannel, ral_name)) return;
     end
-    if (cfg.en_scb_mem_chk && item.is_write() && is_mem_addr(item, ral_name)) begin
-      process_mem_write(item, ral_name);
-    end
-
     if (!cfg.en_scb) return;
 
     process_tl_access(item, AddrChannel, ral_name);
@@ -161,8 +157,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       void'(item.is_ok());
       if (predict_tl_err(item, DataChannel, ral_name)) return;
     end
-    if (cfg.en_scb_mem_chk && !item.is_write() && is_mem_addr(item, ral_name)) begin
-      process_mem_read(item, ral_name);
+    if (cfg.en_scb_mem_chk && is_mem_addr(item, ral_name)) begin
+      if (item.is_write()) begin
+        process_mem_write(item, ral_name);
+      end else begin
+        process_mem_read(item, ral_name);
+      end
     end
 
     if (!cfg.en_scb) return;
