@@ -67,13 +67,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     return result;
   endfunction
 
-  // return zero if this next set of rng values would cause a health check failure,
-  // based on the currently configured thresholds.
-  virtual function bit health_check_rng_data(queue_of_rng_val_t sample);
-    // TODO: Implement this
-    return 0;
-  endfunction
-
   // Load enough data into the rng_push_seq to create the next seed.
   //
   // This function needs to take into account the current configuation
@@ -89,6 +82,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     int window_size;
     entropy_phase_e phase;
     int retry_limit, retry_cnt;
+    int pass_requirement, pass_cnt;
     bit status;
     queue_of_rng_val_t window_sample;
 
@@ -99,30 +93,52 @@ class entropy_src_base_vseq extends cip_base_vseq #(
                                   cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True,
                                   cfg.fips_window_size);
 
-    retry_limit = (phase == BOOT) ? cfg.boot_mode_retry_limit :
-                  (phase == STARTUP) ? 2 :
-                  0; // CONTINUOUS PHASE: No retries necessary.
-                     // Occasional failing data is passed on.
-    retry_cnt   = 0;
+    case(phase)
+      BOOT: begin
+        retry_limit      = cfg.boot_mode_retry_limit;
+        pass_requirement = 1;
+      end
+      STARTUP: begin
+        retry_limit      = 2;
+        pass_requirement = 2;
+      end
+      CONTINUOUS: begin
+        retry_limit      = 2;
+        pass_requirement = 0;
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("Invalid phase: %s\n", phase.name()))
+      end
+    endcase
+
+    retry_cnt = 0;
+    pass_cnt  = 0;
 
     do begin
+
+      `uvm_info(`gfn, "STARTING", UVM_LOW)
+
       // TODO: properly handle rng bit-select config
       window_sample = generate_rng_data(window_size / 4);
-      status = health_check_rng_data(window_sample);
-      retry_cnt++;
-      if(retry_limit && retry_cnt >= retry_limit) break;
-    end while(status);
 
-    if(status) begin
-      return status;
-    end
+      `uvm_info(`gfn, "GOT SAMPLE", UVM_LOW)
 
-    do begin
-      m_rng_push_seq.num_trans++;
-      cfg.m_rng_agent_cfg.add_h_user_data(window_sample.pop_front());
-    end while(window_sample.size() > 0);
+      if (health_check_rng_data(window_sample)) begin
+        retry_cnt++;
+        pass_cnt = 0;
+      end else begin
+        retry_cnt = 0;
+        pass_cnt++;
+      end
 
-    return status;
+      do begin
+        m_rng_push_seq.num_trans++;
+        cfg.m_rng_agent_cfg.add_h_user_data(window_sample.pop_front());
+      end while(window_sample.size() > 0);
+
+    end while( (pass_cnt < pass_requirement) && (retry_cnt < retry_limit) );
+
+    return (retry_cnt < retry_limit);
 
   endfunction : load_rng_push_seq_single_seed
 

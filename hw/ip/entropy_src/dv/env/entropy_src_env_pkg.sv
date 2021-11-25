@@ -13,6 +13,7 @@ package entropy_src_env_pkg;
   import csr_utils_pkg::*;
   import entropy_src_ral_pkg::*;
   import push_pull_agent_pkg::*;
+  import entropy_src_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -34,7 +35,7 @@ package entropy_src_env_pkg;
   } entropy_src_intr_e;
 
   typedef enum { BOOT, STARTUP, CONTINUOUS } entropy_phase_e;
-  typedef bit[entropy_src_pkg::RNG_BUS_WIDTH-1:0] rng_val_t;
+  typedef bit [RNG_BUS_WIDTH-1:0] rng_val_t;
   typedef rng_val_t queue_of_rng_val_t[$];
 
   //
@@ -88,6 +89,14 @@ package entropy_src_env_pkg;
     return (bypass || phase == BOOT) ? entropy_src_pkg::CSRNG_BUS_WIDTH : fips_window_size;
 
   endfunction
+
+  // return zero if this next set of rng values would cause a health check failure,
+  // based on the currently configured thresholds.
+  function automatic bit health_check_rng_data(queue_of_rng_val_t sample);
+    // TODO: Implement this
+    return 0;
+  endfunction
+
 
   // package sources
   `include "entropy_src_env_cfg.sv"

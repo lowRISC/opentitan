@@ -100,26 +100,61 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual function string convert2string();
     string str = "";
     str = {str, "\n"};
-    str = {str,  $sformatf("\n\t |**************** entropy_src_env_cfg *****************| \t")                         };
-    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_read           : %12s *****| \t", otp_en_es_fw_read.name())       };
-    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_over           : %12s *****| \t", otp_en_es_fw_over.name())       };
-    str = {str,  $sformatf("\n\t |***** enable                      : %12s *****| \t", enable.name())                  };
-    str = {str,  $sformatf("\n\t |***** route_software              : %12s *****| \t", route_software.name())          };
-    str = {str,  $sformatf("\n\t |***** type_bypass                 : %12s *****| \t", type_bypass.name())             };
-    str = {str,  $sformatf("\n\t |***** entropy_data_reg_enable     : %12s *****| \t", entropy_data_reg_enable.name()) };
-    str = {str,  $sformatf("\n\t |***** boot_bypass_disable         : %12s *****| \t", boot_bypass_disable.name())     };
-    str = {str,  $sformatf("\n\t |***** rng_bit_enable              : %12s *****| \t", rng_bit_enable.name())          };
-    str = {str,  $sformatf("\n\t |***** rng_bit_sel                 : %12d *****| \t", rng_bit_sel)                    };
-    str = {str,  $sformatf("\n\t |----------------- knobs ------------------------------| \t")                         };
-    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_read_pct       : %12d *****| \t", otp_en_es_fw_read_pct)          };
-    str = {str,  $sformatf("\n\t |***** otp_en_es_fw_over_pct       : %12d *****| \t", otp_en_es_fw_over_pct)          };
-    str = {str,  $sformatf("\n\t |***** enable_pct                  : %12d *****| \t", enable_pct)                     };
-    str = {str,  $sformatf("\n\t |***** route_software_pct          : %12d *****| \t", route_software_pct)             };
-    str = {str,  $sformatf("\n\t |***** type_bypass_pct             : %12d *****| \t", type_bypass_pct)                };
-    str = {str,  $sformatf("\n\t |***** entropy_data_reg_enable_pct : %12d *****| \t", entropy_data_reg_enable_pct)    };
-    str = {str,  $sformatf("\n\t |***** boot_bypass_disable_pct     : %12d *****| \t", boot_bypass_disable_pct)        };
-    str = {str,  $sformatf("\n\t |***** rng_bit_enable_pct          : %12d *****| \t", rng_bit_enable_pct)             };
-    str = {str,  $sformatf("\n\t |******************************************************| \t")                         };
+    str = {str, "\n\t |**************** entropy_src_env_cfg *****************| \t"};
+
+    str = {
+        str,
+        $sformatf("\n\t |***** otp_en_es_fw_read           : %12s *****| \t",
+             otp_en_es_fw_read.name()),
+        $sformatf("\n\t |***** otp_en_es_fw_over           : %12s *****| \t",
+                  otp_en_es_fw_over.name()),
+        $sformatf("\n\t |***** enable                      : %12s *****| \t",
+                 enable.name()),
+        $sformatf("\n\t |***** route_software              : %12s *****| \t",
+                  route_software.name()),
+         $sformatf("\n\t |***** type_bypass                 : %12s *****| \t",
+                   type_bypass.name()),
+        $sformatf("\n\t |***** entropy_data_reg_enable     : %12s *****| \t",
+                  entropy_data_reg_enable.name()),
+        $sformatf("\n\t |***** boot_bypass_disable         : %12s *****| \t",
+                  boot_bypass_disable.name()),
+        $sformatf("\n\t |***** rng_bit_enable              : %12s *****| \t",
+                  rng_bit_enable.name()),
+        $sformatf("\n\t |***** rng_bit_sel                 : %12d *****| \t",
+                  rng_bit_sel),
+        $sformatf("\n\t |***** fips_window_size            : %12d *****| \t",
+                  fips_window_size),
+        $sformatf("\n\t |***** bypass_window_size          : %12d *****| \t",
+                  bypass_window_size),
+        $sformatf("\n\t |***** boot_mode_retry_limit       : %12d *****| \t",
+                  boot_mode_retry_limit),
+        $sformatf("\n\t |***** seed_cnt                    : %12d *****| \t",
+                  seed_cnt)
+    };
+
+    str = {str, "\n\t |----------------- knobs ------------------------------| \t"};
+
+    str = {
+        str,
+        $sformatf("\n\t |***** otp_en_es_fw_read_pct       : %12d *****| \t",
+                  otp_en_es_fw_read_pct),
+        $sformatf("\n\t |***** otp_en_es_fw_over_pct       : %12d *****| \t",
+                  otp_en_es_fw_over_pct),
+        $sformatf("\n\t |***** enable_pct                  : %12d *****| \t",
+                  enable_pct),
+        $sformatf("\n\t |***** route_software_pct          : %12d *****| \t",
+                  route_software_pct),
+        $sformatf("\n\t |***** type_bypass_pct             : %12d *****| \t",
+                  type_bypass_pct),
+        $sformatf("\n\t |***** entropy_data_reg_enable_pct : %12d *****| \t",
+                  entropy_data_reg_enable_pct),
+        $sformatf("\n\t |***** boot_bypass_disable_pct     : %12d *****| \t",
+                  boot_bypass_disable_pct),
+        $sformatf("\n\t |***** rng_bit_enable_pct          : %12d *****| \t",
+                  rng_bit_enable_pct)
+    };
+
+    str = {str, "\n\t |******************************************************| \t"};
     str = {str, "\n"};
     return str;
   endfunction
