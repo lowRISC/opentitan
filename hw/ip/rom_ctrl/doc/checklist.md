@@ -50,7 +50,7 @@ Code Quality  | [LINT_PASS][]           | Done        |
 Code Quality  | [CDC_SETUP][]           | N/A         | rom_ctrl has only one clock
 Code Quality  | [FPGA_TIMING][]         | Done        |
 Code Quality  | [CDC_SYNCMACRO][]       | N/A         | rom_ctrl has only one clock
-Security      | [SEC_CM_DOCUMENTED][]   | Not Started |
+Security      | [SEC_CM_DOCUMENTED][]   | Done        |
 Security      | [SEC_RND_CNST][]        | Done        |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
