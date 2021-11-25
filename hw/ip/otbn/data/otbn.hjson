@@ -301,9 +301,18 @@
 
         Refer to the "List of Errors" section for a detailed description of the
         errors.
+
+        The host CPU can clear this register when OTBN is not running,
+        by writing any value. Write attempts while OTBN is running are ignored.
       ''',
-      swaccess: "ro",
-      hwaccess: "hwo",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
+      tags: [
+            // Don't write this register in the automated CSR tests;
+            "excl:CsrAllTests:CsrExclWrite"
+      ],
       fields: [
         // Software errors
         { bits: "0",
@@ -450,10 +459,14 @@
         count towards the total.
 
         Always reads as 0 if OTBN is locked.
+
+        The host CPU can clear this register when OTBN is not running,
+        by writing any value. Write attempts while OTBN is running are ignored.
       ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
       hwext: "true",
-      swaccess: "ro",
-      hwaccess: "hwo",
+      hwqe:  "true",
       fields: [
         { bits: "31:0",
           name: "insn_cnt",
@@ -461,6 +474,10 @@
           desc: '''
             The number of executed instructions.
           '''
+          tags: [
+            // Don't write this field in the automated CSR tests;
+            "excl:CsrAllTests:CsrExclWrite"
+          ]
         }
       ]
     }
