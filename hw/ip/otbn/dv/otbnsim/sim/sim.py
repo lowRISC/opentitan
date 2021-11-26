@@ -137,6 +137,7 @@ class OTBNSim:
             self.state.ext_regs.write('INSN_CNT', 0, True)
             return (None, changes)
 
+        self.state.wsrs.URND.commit()
         self.state.wsrs.URND.step()
 
         if self.state.fsm_state == FsmState.POST_EXEC:
