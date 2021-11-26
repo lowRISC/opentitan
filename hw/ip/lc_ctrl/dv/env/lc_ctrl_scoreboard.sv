@@ -12,6 +12,11 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   // local variables
   bit is_personalized = 0;
 
+  // Data to program OTP
+  protected otp_ctrl_pkg::lc_otp_program_req_t m_otp_prog_data;
+  // First OTP program instruction count cleared by reset
+  protected uint m_otp_prog_cnt;
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                         .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))) otp_prog_fifo;
@@ -66,7 +71,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         check_lc_outputs(exp_lc_o, err_msg);
 
         // predict LC state and cnt csr
-        // Deafult prediction - overriden below if we expect error conditions
+        // Default prediction - overriden below if we expect error conditions
         void'(ral.lc_state.predict(lc_state));
         void'(ral.lc_transition_cnt.predict(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)));
 
@@ -80,6 +85,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task process_otp_prog_rsp();
+    otp_ctrl_pkg::lc_otp_program_req_t otp_prog_data_exp;
+    lc_state_e otp_prog_state_act, otp_prog_state_exp;
+    lc_cnt_e   otp_prog_count_act, otp_prog_count_exp;
+    const string MsgFmt = "Check failed %s == %s %s [%h] vs %s [%h]";
     forever begin
       push_pull_item#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                       .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)) item_rcv;
@@ -87,6 +96,35 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       if (item_rcv.d_data == 1 && cfg.en_scb) begin
         set_exp_alert(.alert_name("fatal_prog_error"), .is_fatal(1));
       end
+      // Decode and store to use for prediction
+      m_otp_prog_data   = otp_ctrl_pkg::lc_otp_program_req_t'(item_rcv.h_data);
+
+      // Increment otp program count
+      m_otp_prog_cnt++;
+
+      // Get expected from model
+      otp_prog_data_exp  = predict_otp_prog_req();
+
+      otp_prog_state_act = lc_cnt_e'(m_otp_prog_data.state);
+      otp_prog_count_act = lc_cnt_e'(m_otp_prog_data.count);
+      otp_prog_state_exp = lc_cnt_e'(otp_prog_data_exp.state);
+      otp_prog_count_exp = lc_cnt_e'(otp_prog_data_exp.count);
+      $display("$left(m_otp_prog_data.count) == %0d", $left(m_otp_prog_data.count));
+
+
+      // `DV_CHECK_EQ(otp_prog_state_act, otp_prog_state_exp, $sformatf(
+      //     "Check failed %s == %s %s [%h] vs %s [%h]",
+      //     "otp_prog_state_act", "otp_prog_state_exp",
+      //     otp_prog_state_act.name, otp_prog_state_act,
+      //     otp_prog_state_exp.name, otp_prog_state_exp))
+
+      `DV_CHECK_EQ(otp_prog_state_act, otp_prog_state_exp,
+          $sformatf(" - %s vs %s",  otp_prog_state_act.name, otp_prog_state_exp.name))
+
+
+      `DV_CHECK_EQ(otp_prog_count_act, otp_prog_count_exp,
+        $sformatf(" - %s vs %s",  otp_prog_count_act.name, otp_prog_count_exp.name))
+
     end
   endtask
 
@@ -149,14 +187,15 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     if(addr_phase_read) begin
       case (csr.get_name())
          "lc_state": begin
-          if (cfg.err_inj.state_err) begin // State error expected
-            case(cfg.test_phase)
-              LcCtrlReadState1: `DV_CHECK_FATAL(
-                  ral.lc_state.predict(.value(DecLcStInvalid), .kind(UVM_PREDICT_READ)))
-              LcCtrlReadState2: `DV_CHECK_FATAL(
-                  ral.lc_state.predict(.value(DecLcStEscalate), .kind(UVM_PREDICT_READ)))
-            endcase
-          end
+          // if (cfg.err_inj.state_err) begin // State error expected
+          //   case(cfg.test_phase)
+          //     LcCtrlReadState1: `DV_CHECK_FATAL(
+          //         ral.lc_state.predict(.value(DecLcStInvalid), .kind(UVM_PREDICT_READ)))
+          //     LcCtrlReadState2: `DV_CHECK_FATAL(
+          //         ral.lc_state.predict(.value(DecLcStEscalate), .kind(UVM_PREDICT_READ)))
+          //   endcase
+          `DV_CHECK_FATAL(ral.lc_state.state.predict(
+              .value(predict_lc_state()), .kind(UVM_PREDICT_READ)))
         end
 
         "lc_transition_cnt": begin
@@ -188,6 +227,52 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  // Predict the value of lc_state
+  virtual function dec_lc_state_e predict_lc_state();
+    if (cfg.err_inj.state_err) begin // State error expected
+      case(cfg.test_phase)
+        LcCtrlReadState1: return DecLcStInvalid;
+        LcCtrlReadState2: return DecLcStEscalate;
+      endcase
+    end else begin
+      // By default expect lc_state to reflect otp_i state;
+      return dec_lc_state(cfg.lc_ctrl_vif.otp_i.state);
+    end
+  endfunction
+
+  virtual function otp_ctrl_pkg::lc_otp_program_req_t predict_otp_prog_req();
+    // Convert state and count back to enums
+    const lc_state_e LcStateIn = cfg.lc_ctrl_vif.otp_i.state;
+    const lc_cnt_e   LcCntIn   = cfg.lc_ctrl_vif.otp_i.count;
+    // Incremented LcCntIn - next() works because of encoding method
+    const lc_cnt_e    LcCntInInc = LcCntIn.next();
+    // TODO needs expanding for JTAG registers
+    const lc_state_e LcTargetState =
+        encode_lc_state(cfg.ral.transition_target.get_mirrored_value());
+    lc_state_e lc_state_exp;
+    lc_cnt_e   lc_cnt_exp;
+
+    if(m_otp_prog_cnt == 1) begin
+      // First program transaction just programs the incremented count so state
+      // is the same as input
+      lc_cnt_exp   = LcCntInInc;
+      lc_state_exp = LcStateIn;
+    end else if (m_otp_prog_cnt == 2) begin
+      // Second program transaction programs both the incremented count and
+      // the transition target state in (TRANSITION_TARGET register)
+      lc_cnt_exp   = LcCntInInc;
+      lc_state_exp = LcTargetState;
+    end
+
+    // Transition to SCRAP state always programs LcCnt24
+    if(LcTargetState == LcStScrap) lc_cnt_exp=LcCnt24;
+
+    `uvm_info(`gfn, $sformatf("predict_otp_prog_req: state=%s count=%s",
+        lc_state_exp.name(),lc_cnt_exp.name), UVM_MEDIUM)
+
+    return ('{state: lc_state_t'(lc_state_exp), count: lc_cnt_t'(lc_cnt_exp), req:0});
+  endfunction
+
   // this function check if the triggered alert is expected
   // to turn off this check, user can set `do_alert_check` to 0
   // We overload this to trigger events in the config object when an alert is triggered
@@ -204,10 +289,11 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   endfunction
 
-
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
+    // Clear OTP program count
+    m_otp_prog_cnt = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);
