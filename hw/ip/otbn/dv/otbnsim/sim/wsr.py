@@ -160,6 +160,7 @@ class URNDWSR(WSR):
                       4 * [0], 4 * [0]]
         self.out = 4 * [0]
         self._next_value = None  # type: Optional[int]
+        self._value = None  # type: Optional[int]
         self.running = False
 
     # Function to left rotate a 64b number n by d bits
@@ -175,6 +176,7 @@ class URNDWSR(WSR):
         return
 
     def read_unsigned(self) -> int:
+        assert self._value is not None
         return self._value
 
     def state_update(self, data_in: List[int]) -> List[int]:
