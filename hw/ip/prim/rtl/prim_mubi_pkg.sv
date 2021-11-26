@@ -17,10 +17,16 @@ package prim_mubi_pkg;
   ///////////////////////////////////////
 
   parameter int MuBi4Width = 4;
+
+  // The enum holds the "good" values that we will use. For code in the rest of the design, use
+  // mubi4_t instead. This is a better representation of "4 bits that are hopefully
+  // one of the encoded bools".
   typedef enum logic [MuBi4Width-1:0] {
     MuBi4True = 4'hA, // enabled
     MuBi4False = 4'h5  // disabled
-  } mubi4_t;
+  } mubi4_e;
+
+  typedef logic [MuBi4Width-1:0] mubi4_t;
 
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic mubi4_test_invalid(mubi4_t val);
@@ -146,10 +152,16 @@ package prim_mubi_pkg;
   ///////////////////////////////////////
 
   parameter int MuBi8Width = 8;
+
+  // The enum holds the "good" values that we will use. For code in the rest of the design, use
+  // mubi8_t instead. This is a better representation of "8 bits that are hopefully
+  // one of the encoded bools".
   typedef enum logic [MuBi8Width-1:0] {
     MuBi8True = 8'h5A, // enabled
     MuBi8False = 8'hA5  // disabled
-  } mubi8_t;
+  } mubi8_e;
+
+  typedef logic [MuBi8Width-1:0] mubi8_t;
 
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic mubi8_test_invalid(mubi8_t val);
@@ -275,10 +287,16 @@ package prim_mubi_pkg;
   ////////////////////////////////////////
 
   parameter int MuBi12Width = 12;
+
+  // The enum holds the "good" values that we will use. For code in the rest of the design, use
+  // mubi12_t instead. This is a better representation of "12 bits that are hopefully
+  // one of the encoded bools".
   typedef enum logic [MuBi12Width-1:0] {
     MuBi12True = 12'hA5A, // enabled
     MuBi12False = 12'h5A5  // disabled
-  } mubi12_t;
+  } mubi12_e;
+
+  typedef logic [MuBi12Width-1:0] mubi12_t;
 
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic mubi12_test_invalid(mubi12_t val);
@@ -404,10 +422,16 @@ package prim_mubi_pkg;
   ////////////////////////////////////////
 
   parameter int MuBi16Width = 16;
+
+  // The enum holds the "good" values that we will use. For code in the rest of the design, use
+  // mubi16_t instead. This is a better representation of "16 bits that are hopefully
+  // one of the encoded bools".
   typedef enum logic [MuBi16Width-1:0] {
     MuBi16True = 16'h5A5A, // enabled
     MuBi16False = 16'hA5A5  // disabled
-  } mubi16_t;
+  } mubi16_e;
+
+  typedef logic [MuBi16Width-1:0] mubi16_t;
 
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic mubi16_test_invalid(mubi16_t val);

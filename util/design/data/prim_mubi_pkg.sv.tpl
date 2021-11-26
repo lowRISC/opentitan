@@ -28,6 +28,7 @@ from mubi import prim_mubi
    true_hex = f"{nbits}'h" + prim_mubi.mubi_value_as_hexstr(True, nbits)
    false_hex = f"{nbits}'h" + prim_mubi.mubi_value_as_hexstr(False, nbits)
 
+   enum_type = f'mubi{nbits}_e'
    mubi_type = f'mubi{nbits}_t'
    fun_pfx = f'mubi{nbits}_'
 
@@ -37,10 +38,16 @@ from mubi import prim_mubi
   ${box_slashes}
 
   parameter int ${MuBiWidth} = ${nbits};
+
+  // The enum holds the "good" values that we will use. For code in the rest of the design, use
+  // ${mubi_type} instead. This is a better representation of "${nbits} bits that are hopefully
+  // one of the encoded bools".
   typedef enum logic [${MuBiWidth}-1:0] {
     ${MuBiTrue} = ${true_hex}, // enabled
     ${MuBiFalse} = ${false_hex}  // disabled
-  } ${mubi_type};
+  } ${enum_type};
+
+  typedef logic [${MuBiWidth}-1:0] ${mubi_type};
 
   // Test whether the value is supplied is one of the valid enumerations
   function automatic logic ${fun_pfx}test_invalid(${mubi_type} val);
