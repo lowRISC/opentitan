@@ -1,0 +1,61 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:prim:crc32_sim"
+description: "Verilator simulation of CRC32 calculation block"
+
+filesets:
+  files_crc32:
+    depend:
+      - lowrisc:prim:crc32
+  files_verilator:
+    depend:
+      - lowrisc:dv_verilator:simutil_verilator
+    files:
+      - prim_crc32_sim.cc: { file_type: cppSource }
+      - prim_crc32_sim.sv: { file_type: systemVerilogSource }
+
+targets:
+  default: &default_target
+    filesets:
+      - files_crc32
+      - files_verilator
+    toplevel: prim_crc32_sim
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+          # RAM primitives wider than 64bit (required for ECC) fail to build in
+          # Verilator without increasing the unroll count (see Verilator#1266)
+          - "--unroll-count 72"
+
+  sim:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      vcs:
+        vcs_options:
+          - '-xlrm uniq_prior_final'
+          - '-debug_access+r'
+      verilator:
+        mode: cc
+        verilator_options:
+          # Disabling tracing reduces compile times but doesn't have a
+          # huge influence on runtime performance.
+          - '--trace'
+          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=prim_crc32_sim"'
+          - '-LDFLAGS "-pthread -lutil -lelf"'
+          - "-Wall"
+          # RAM primitives wider than 64bit (required for ECC) fail to build in
+          # Verilator without increasing the unroll count (see Verilator#1266)
+          - "--unroll-count 72"
