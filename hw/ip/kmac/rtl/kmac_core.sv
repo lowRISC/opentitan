@@ -63,22 +63,41 @@ module kmac_core
   // Definitions //
   /////////////////
 
-  typedef enum logic [1:0] {
-    StKmacIdle,
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
+  //      -s 401658243 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: |||||||||| (33.33%)
+  //  5: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 4
+  //
+  localparam int StateWidth = 5;
+  typedef enum logic [StateWidth-1:0] {
+    StKmacIdle = 5'b01100,
 
     // Secret Key pushing stage
     // The key is sliced by prim_slicer. This state pushes the sliced data into
     // SHA3 hashing engine. When it hits the block size limit,
     // (same as in sha3pad) the state machine moves to Message.
-    StKey,
+    StKey = 5'b01011,
 
     // Incoming Message
     // The core does nothing but forwarding the incoming message to SHA3 hashing
     // engine by turning off `en_kmac_datapath`.
-    StKmacMsg,
+    StKmacMsg = 5'b10111,
 
     // Wait till done signal
-    StKmacFlush
+    StKmacFlush = 5'b10000
   } kmac_st_e ;
 
   /////////////
@@ -127,13 +146,20 @@ module kmac_core
   kmac_st_e st, st_d;
 
   // State register
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      st <= StKmacIdle;
-    end else begin
-      st <= st_d;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign st = kmac_st_e'(state_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(kmac_st_e),
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(StKmacIdle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( st_d     ),
+    .state_o ( state_raw_q )
+  );
 
   // Next state and output logic
   always_comb begin
@@ -195,6 +221,7 @@ module kmac_core
 
       default: begin
         st_d = StKmacIdle;
+        //ToDO add alert
       end
     endcase
   end
