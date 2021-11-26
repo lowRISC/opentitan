@@ -375,7 +375,7 @@ module rom_ctrl
                                   reg2hw.alert_test.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal] = reg_integrity_error | checker_alert | mux_alert;
+  assign alerts[AlertFatal] = bus_integrity_error | checker_alert | mux_alert;
 
   for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
     prim_alert_sender #(
