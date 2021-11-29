@@ -65,14 +65,7 @@ class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_lock_vseq;
   endtask
 
   virtual task post_start();
-    // Use reset to clear lc interrupt error
-    if (do_apply_reset) begin
-      dut_init();
-    end else wait(0); // wait until upper seq resets and kills this seq
-
-    // delay to avoid race condition when sending item and checking no item after reset occur
-    // at the same time
-    #1ps;
+    expect_fatal_alerts = 1;
     cfg.en_scb = 1;
     super.post_start();
   endtask
