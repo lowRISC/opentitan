@@ -14,9 +14,6 @@
 module rstmgr_cnsty_chk
   import rstmgr_pkg::*;
   import rstmgr_reg_pkg::*;
-#(
-  parameter int MaxSyncDelay = 2
-)
 (
   input clk_i,
   input rst_ni,
@@ -26,6 +23,8 @@ module rstmgr_cnsty_chk
   input sw_rst_req_i,
   output logic err_o
 );
+
+  localparam int MaxSyncDelay = 2;
 
   // The "+ 2" here is because the cnt counter that uses this width needs to be able to count up to
   // MaxSyncDelay + 1.
