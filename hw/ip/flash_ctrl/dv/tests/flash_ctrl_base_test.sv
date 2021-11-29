@@ -10,6 +10,13 @@ class flash_ctrl_base_test extends cip_base_test #(
   `uvm_component_utils(flash_ctrl_base_test)
   `uvm_component_new
 
+  virtual function void end_of_elaboration_phase(uvm_phase phase);
+    super.end_of_elaboration_phase(phase);
+    if (uvm_top.get_report_verbosity_level() > UVM_LOW) begin
+      uvm_top.print_topology();
+    end
+   endfunction // end_of_elaboration
+
   // the base class dv_base_test creates the following instances:
   // flash_ctrl_env_cfg: cfg
   // flash_ctrl_env:     env

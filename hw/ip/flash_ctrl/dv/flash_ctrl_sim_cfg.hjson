@@ -62,6 +62,11 @@
       reseed: 5
     }
     {
+      name: flash_ctrl_smoke_hw
+      uvm_test_seq: flash_ctrl_smoke_hw_vseq
+      reseed: 5
+    }
+    {
       name: flash_ctrl_rand_ops
       uvm_test_seq: flash_ctrl_rand_ops_vseq
     }
@@ -72,6 +77,10 @@
     {
       name: smoke
       tests: ["flash_ctrl_smoke"]
+    }
+    {
+      name: smoke_hw
+      tests: ["flash_ctrl_smoke_hw"]
     }
   ]
 }
