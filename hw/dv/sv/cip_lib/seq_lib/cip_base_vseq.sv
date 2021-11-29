@@ -137,11 +137,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (do_clear_all_interrupts) clear_all_interrupts();
 
     if (expect_fatal_alerts) begin
-      // Fatal alert is triggered in this seq. Wait 10_000ns to entire background check
+      // Fatal alert is triggered in this seq. Wait 10_000ns so the background check
       // `check_fatal_alert_nonblocking` has enough time to execute before dut_init.
       // Issue reset if reset is allowed, otherwise, reset will be called in upper vseq.
       #10_000ns;
-      if (do_apply_reset) dut_init();
+      dut_init();
     end else begin
       check_no_fatal_alerts();
     end

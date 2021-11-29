@@ -68,7 +68,7 @@ class keymgr_sync_async_fault_cross_vseq extends keymgr_base_vseq;
   endfunction
 
   task post_start();
-    do_reset_at_end_of_seq = 1;
+    expect_fatal_alerts = 1;
     super.post_start();
     cfg.en_scb = 1;
     cfg.keymgr_vif.en_chk = 1;

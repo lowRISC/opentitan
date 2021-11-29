@@ -66,7 +66,7 @@ class keymgr_cmd_invalid_vseq extends keymgr_lc_disable_vseq;
 
   task post_start();
     // fatal alert will be triggered, need reset to clear it
-    do_reset_at_end_of_seq = 1;
+    expect_fatal_alerts = 1;
     super.post_start();
     cfg.en_scb = 1;
     cfg.keymgr_vif.en_chk = 1;
