@@ -45,10 +45,7 @@ class otp_ctrl_dai_errs_vseq extends otp_ctrl_dai_lock_vseq;
   endtask
 
   virtual task post_start();
-    apply_reset();
-    // delay to avoid race condition when sending item and checking no item after reset occur
-    // at the same time
-    #1ps;
+    expect_fatal_alerts = 1;
     super.post_start();
   endtask
 endclass
