@@ -112,5 +112,6 @@ rr:
 
 /* signature */
 .globl in_buf
+.balign 32
 in_buf:
 .zero 384
