@@ -10,15 +10,16 @@ class lc_ctrl_state_failure_vseq extends lc_ctrl_errors_vseq;
   `uvm_object_new
 
   constraint num_trans_c {
-    num_trans == 3;
+    num_trans == 10;
   }
 
   constraint lc_state_err_c {
-    err_inj.state_err          == 1;
+    // err_inj.state_err          == 0;
     err_inj.state_backdoor_err == 0;
     err_inj.transition_err     == 0;
-    err_inj.count_err          == 0;
+    //err_inj.count_err          == 1;
     err_inj.count_backdoor_err == 0;
+    $onehot({err_inj.state_err, err_inj.count_err});
   }
 
   // virtual task post_start();

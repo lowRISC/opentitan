@@ -205,7 +205,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     tokens_a[TestExitTokenIdx]   = cfg.lc_ctrl_vif.otp_i.test_exit_token;
     tokens_a[RmaTokenIdx]        = cfg.lc_ctrl_vif.otp_i.rma_token;
 
-    if(!err_inj.state_err) begin
+    if(!err_inj.state_err && !err_inj.count_err) begin
       `DV_CHECK_NE(token_idx, InvalidTokenIdx, $sformatf(
                   "curr_state: %0s, next_state %0s, does not expect InvalidToken",
                   lc_state.name,
@@ -230,12 +230,19 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // Drive OTP input `lc_state` and `lc_cnt`.
   virtual task drive_otp_i(bit rand_otp_i = 1);
     if (rand_otp_i) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state)
-      if (err_inj.state_err) begin
+      if (!err_inj.state_err) begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state)
+      end else begin
         // Force invalid state on input
         lc_state = bin_to_lc_state(invalid_lc_state_bin);
       end
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_cnt, (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);)
+
+      if (!err_inj.count_err) begin
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_cnt, (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);)
+      end else begin
+        // Force invalid count on input
+        lc_cnt = bin_to_lc_count(invalid_lc_count_bin);
+      end
     end else begin
       lc_state = LcStRaw;
       lc_cnt   = LcCnt0;
@@ -265,6 +272,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // Wait for status done or terminal errors
   virtual task wait_status(ref bit expect_alert);
     bit [TL_DW-1:0] status_val;
+    bit state_error_exp, state_error_act;
     forever begin
       csr_rd(ral.status, status_val);
       `uvm_info(`gfn, {"wait_status: ", ral.status.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
@@ -280,6 +288,13 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       // Random delay to next read
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 1));
     end
+
+    state_error_exp = cfg.err_inj.state_err || cfg.err_inj.count_err;
+    state_error_act = get_field_val(ral.status.state_error, status_val);
+    // Check status against expected from err_inj
+    `DV_CHECK_EQ(state_error_act,state_error_exp)
+
+
   endtask
 
   // checking of these two CSRs are done in scb

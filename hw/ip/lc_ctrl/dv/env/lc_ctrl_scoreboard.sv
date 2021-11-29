@@ -70,14 +70,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
         check_lc_outputs(exp_lc_o, err_msg);
 
-        // predict LC state and cnt csr
-        // Default prediction - overriden below if we expect error conditions
-        void'(ral.lc_state.predict(lc_state));
-        void'(ral.lc_transition_cnt.predict(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)));
-
-
-        if (cfg.err_inj.state_err) begin // State error expected
-            set_exp_alert(.alert_name("fatal_state_error"), .is_fatal(1));
+        if (cfg.err_inj.state_err || cfg.err_inj.count_err) begin // State/count error expected
+          set_exp_alert(.alert_name("fatal_state_error"), .is_fatal(1));
         end
 
       end
@@ -192,7 +186,9 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         "lc_transition_cnt": begin
           // If we have a state error no transition will take place so
           // the tarnsition count will be 31
-          if (cfg.err_inj.state_err) begin // State error expected
+          if(!cfg.err_inj.count_err && !cfg.err_inj.state_err) begin
+            void'(ral.lc_transition_cnt.predict(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)));
+          end else begin // State or count error expected
             `DV_CHECK_FATAL(ral.lc_transition_cnt.predict(.value(31), .kind(UVM_PREDICT_READ)))
           end
         end
@@ -220,7 +216,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Predict the value of lc_state
   virtual function dec_lc_state_e predict_lc_state();
-    if (cfg.err_inj.state_err) begin // State error expected
+    if (cfg.err_inj.state_err || cfg.err_inj.count_err) begin // State error expected
       case(cfg.test_phase)
         LcCtrlReadState1: return DecLcStInvalid;
         LcCtrlReadState2: return DecLcStEscalate;
