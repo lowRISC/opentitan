@@ -25,7 +25,7 @@ class keymgr_kmac_rsp_err_vseq extends keymgr_hwsw_invalid_input_vseq;
     cfg.m_keymgr_kmac_agent_cfg.error_rsp_pct = 20;
 
     // fatal alert will be triggered, need reset to clear it
-    do_reset_at_end_of_seq = 1;
+    expect_fatal_alerts = 1;
     super.pre_start();
   endtask
 
