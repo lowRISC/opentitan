@@ -15,6 +15,8 @@ interface clkmgr_if (
 
   // The ports to the dut side.
 
+  localparam int LcTxTWidth = $bits(lc_ctrl_pkg::lc_tx_t);
+
   // Encodes the transactional units that are idle.
   logic [NUM_TRANS-1:0] idle_i;
 
@@ -34,9 +36,12 @@ interface clkmgr_if (
   // Life cycle clock bypass request and clkmgr ack.
   lc_ctrl_pkg::lc_tx_t lc_clk_byp_req;
   lc_ctrl_pkg::lc_tx_t lc_clk_byp_ack;
-  // clkmgr clock bypass request and ast ack.
+  // clkmgr clock bypass request for io clocks and ast ack: triggered by lc_clk_byp_req.
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
   prim_mubi_pkg::mubi4_t io_clk_byp_ack;
+  // clkmgr clock bypass request for all clocks and ast ack: triggered by software.
+  prim_mubi_pkg::mubi4_t all_clk_byp_req;
+  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
 
   logic jitter_en_o;
   clkmgr_pkg::clkmgr_out_t clocks_o;
@@ -65,12 +70,12 @@ interface clkmgr_if (
   prim_mubi_pkg::mubi4_t jitter_enable_csr;
 
   // The expected and actual divided io clocks.
-  logic                exp_clk_io_div2;
-  logic                actual_clk_io_div2;
-  logic                exp_clk_io_div4;
-  logic                actual_clk_io_div4;
+  logic                  exp_clk_io_div2;
+  logic                  actual_clk_io_div2;
+  logic                  exp_clk_io_div4;
+  logic                  actual_clk_io_div4;
 
-  function automatic void update_extclk_ctrl(logic [2*$bits(lc_ctrl_pkg::lc_tx_t)-1:0] value);
+  function automatic void update_extclk_ctrl(logic [2*LcTxTWidth-1:0] value);
     {extclk_ctrl_csr_step_down, extclk_ctrl_csr_sel} = value;
   endfunction
 
@@ -110,6 +115,12 @@ interface clkmgr_if (
     lc_clk_byp_req = value;
   endfunction
 
+  function automatic void update_all_clk_byp_ack(prim_mubi_pkg::mubi4_t value);
+    `uvm_info("clkmgr_if", $sformatf("In clkmgr_if update_all_clk_byp_ack with %b", value),
+              UVM_MEDIUM)
+    all_clk_byp_ack = value;
+  endfunction
+
   function automatic void update_io_clk_byp_ack(prim_mubi_pkg::mubi4_t value);
     io_clk_byp_ack = value;
   endfunction
@@ -133,9 +144,8 @@ interface clkmgr_if (
 
   task automatic init(logic [NUM_TRANS-1:0] idle, prim_mubi_pkg::mubi4_t scanmode,
                       lc_ctrl_pkg::lc_tx_t lc_dft_en = lc_ctrl_pkg::Off,
-                      lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off,
-                      prim_mubi_pkg::mubi4_t io_clk_byp_ack = prim_mubi_pkg::MuBi4False);
-    update_io_clk_byp_ack(io_clk_byp_ack);
+                      lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off);
+    `uvm_info("clkmgr_if", "In clkmgr_if init", UVM_MEDIUM)
     update_idle(idle);
     update_lc_clk_byp_req(lc_clk_byp_req);
     update_lc_dft_en(lc_dft_en);
@@ -257,6 +267,7 @@ interface clkmgr_if (
 
   clocking clk_cb @(posedge clk);
     input extclk_ctrl_csr_sel;
+    input extclk_ctrl_csr_step_down;
     input lc_dft_en_i;
     input io_clk_byp_req;
     input lc_clk_byp_req;

@@ -18,6 +18,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   // synchronizers.
   localparam int IO_DIV4_SYNC_CYCLES = 8;
 
+  // Use this to hold a lc_tx_t.
+  typedef bit [$bits(lc_tx_t)-1:0] lc_tx_t_as_vec;
+
   typedef enum {
     LcTxTSelOn,
     LcTxTSelOff,
@@ -25,9 +28,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   } lc_tx_t_sel_e;
 
   // This simplifies the constraint blocks.
-  // This function is used for 2 enum mubi4_t and lc_tx_t. Use bit[3:0], so that we can skip type
-  // casting when using this function
-  function bit[3:0] get_lc_tx_t_from_sel(lc_tx_t_sel_e sel, bit[3:0] other);
+  // This function is used for 2 enum mubi4_t and lc_tx_t. Use lc_tx_t_as_vec, so that we can skip
+  // type casting when using this function
+  function lc_tx_t_as_vec get_lc_tx_t_from_sel(lc_tx_t_sel_e sel, lc_tx_t_as_vec other);
     case (sel)
       LcTxTSelOn: return On;
       LcTxTSelOff: return Off;
@@ -43,7 +46,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   // scanmode is set according to sel_scanmode, which is randomized with weights.
   prim_mubi_pkg::mubi4_t   scanmode;
-  rand bit [3:0]           scanmode_other;
+  rand lc_tx_t_as_vec      scanmode_other;
   rand lc_tx_t_sel_e       sel_scanmode;
   int                      scanmode_on_weight = 8;
 
@@ -57,18 +60,32 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   }
 
   // extclk_ctrl_sel is set according to sel_extclk_ctrl_sel, which is randomized with weights.
-  lc_tx_t            extclk_ctrl_sel;
-  rand bit [3:0]     extclk_ctrl_sel_other;
-  rand lc_tx_t_sel_e sel_extclk_ctrl_sel;
+  lc_tx_t             extclk_ctrl_sel;
+  rand lc_tx_t_as_vec extclk_ctrl_sel_other;
+  rand lc_tx_t_sel_e  sel_extclk_ctrl_sel;
 
   // TODO, consider to use macro DV_MUBI4_DIST
   constraint extclk_ctrl_sel_c {
     sel_extclk_ctrl_sel dist {
-      LcTxTSelOn    := 4,
+      LcTxTSelOn    := 6,
       LcTxTSelOff   := 2,
       LcTxTSelOther := 2
     };
     !(extclk_ctrl_sel_other inside {On, Off});
+  }
+
+  // extclk_ctrl_low_speed_sel is set according to sel_extclk_ctrl_low_speed_sel, which is randomized with weights.
+  lc_tx_t             extclk_ctrl_low_speed_sel;
+  rand lc_tx_t_as_vec extclk_ctrl_low_speed_sel_other;
+  rand lc_tx_t_sel_e  sel_extclk_ctrl_low_speed_sel;
+
+  constraint extclk_ctrl_low_speed_sel_c {
+    sel_extclk_ctrl_low_speed_sel dist {
+      LcTxTSelOn    := 6,
+      LcTxTSelOff   := 2,
+      LcTxTSelOther := 2
+    };
+    !(extclk_ctrl_low_speed_sel_other inside {On, Off});
   }
 
   `uvm_object_new
@@ -77,6 +94,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     super.post_randomize();
     scanmode = get_lc_tx_t_from_sel(sel_scanmode, scanmode_other);
     extclk_ctrl_sel = get_lc_tx_t_from_sel(sel_extclk_ctrl_sel, extclk_ctrl_sel_other);
+    extclk_ctrl_low_speed_sel = get_lc_tx_t_from_sel(
+        sel_extclk_ctrl_low_speed_sel, extclk_ctrl_low_speed_sel_other
+    );
   endfunction
 
   virtual function void set_scanmode_on_low_weight();
@@ -84,6 +104,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   task initialize_on_start();
+    `uvm_info(`gfn, "In clkmgr_if initialize_on_start", UVM_MEDIUM)
     idle = '1;
     scanmode = prim_mubi_pkg::MuBi4False;
     cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_dft_en(Off));
@@ -99,6 +120,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.clkmgr_vif.update_io_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_main_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_usb_ip_clk_en(1'b0);
+    cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
+    cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4False);
     clkmgr_init();
     super.pre_start();
   endtask

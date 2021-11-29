@@ -51,6 +51,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   rand int cycles_before_extclk_ctrl_sel;
   rand int cycles_before_lc_clk_byp_req;
   rand int cycles_before_lc_clk_byp_ack;
+  rand int cycles_before_all_clk_byp_ack;
   rand int cycles_before_io_clk_byp_ack;
   rand int cycles_before_next_trans;
 
@@ -58,6 +59,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     cycles_before_extclk_ctrl_sel inside {[4 : 20]};
     cycles_before_lc_clk_byp_req inside {[4 : 20]};
     cycles_before_lc_clk_byp_ack inside {[12 : 20]};
+    cycles_before_all_clk_byp_ack inside {[3 : 11]};
     cycles_before_io_clk_byp_ack inside {[3 : 11]};
     cycles_before_next_trans inside {[15 : 25]};
   }
@@ -73,6 +75,19 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     set_scanmode_on_low_weight();
     csr_wr(.ptr(ral.extclk_ctrl_regwen), .value(1));
     fork
+      forever
+        // Notice only all_clk_byp_req Mubi4True and Mubi4False cause transitions.
+        @cfg.clkmgr_vif.all_clk_byp_req begin : all_clk_byp_ack
+          if (cfg.clkmgr_vif.all_clk_byp_req == prim_mubi_pkg::MuBi4True) begin
+            `uvm_info(`gfn, "Got all_clk_byp_req on", UVM_MEDIUM)
+            cfg.clk_rst_vif.wait_clks(cycles_before_all_clk_byp_ack);
+            cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4True);
+          end else if (cfg.clkmgr_vif.all_clk_byp_req == prim_mubi_pkg::MuBi4False) begin
+            `uvm_info(`gfn, "Got all_clk_byp_req off", UVM_MEDIUM)
+            cfg.clk_rst_vif.wait_clks(cycles_before_all_clk_byp_ack);
+            cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
+          end
+        end
       forever
         @cfg.clkmgr_vif.io_clk_byp_req begin : io_clk_byp_ack
           if (cfg.clkmgr_vif.io_clk_byp_req == prim_mubi_pkg::MuBi4True) begin
@@ -102,7 +117,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
       fork
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_extclk_ctrl_sel);
-          csr_wr(.ptr(ral.extclk_ctrl), .value({lc_ctrl_pkg::On, extclk_ctrl_sel}));
+          csr_wr(.ptr(ral.extclk_ctrl), .value({extclk_ctrl_low_speed_sel, extclk_ctrl_sel}));
         end
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_req);
@@ -110,13 +125,16 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
         end
       join
       `uvm_info(`gfn, $sformatf(
-                "extclk_ctrl_sel=0x%0x, lc_clk_byp_req=0x%0x, lc_dft_en=0x%0x, scanmode=0x%0x",
+                {"extclk_ctrl_sel=0x%0x, extclk_ctrl_low_speed_sel=0x%0x, lc_clk_byp_req=0x%0x, ",
+                 "lc_dft_en=0x%0x, scanmode=0x%0x"},
                 extclk_ctrl_sel,
+                extclk_ctrl_low_speed_sel,
                 lc_clk_byp_req,
                 lc_dft_en,
                 scanmode
                 ), UVM_MEDIUM)
-      csr_rd_check(.ptr(ral.extclk_ctrl), .compare_value({lc_ctrl_pkg::On, extclk_ctrl_sel}));
+      csr_rd_check(.ptr(ral.extclk_ctrl),
+                   .compare_value({extclk_ctrl_low_speed_sel, extclk_ctrl_sel}));
       if (lc_clk_byp_req == lc_ctrl_pkg::On) begin
         wait(cfg.clkmgr_vif.lc_clk_byp_req == lc_ctrl_pkg::On);
         cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_ack);
