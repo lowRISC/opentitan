@@ -290,9 +290,9 @@ module ${mod_name} (
     .error_i (reg_error)
   );
 
-% if not rb.async_if:
+  % if not rb.async_if:
   // cdc oversampling signals
-  % for clock in rb.clocks.values():
+    % for clock in rb.clocks.values():
   <%
     clk_name = clock.clock_base_name
     tgl_expr = clk_name + "_tgl"
@@ -311,8 +311,8 @@ module ${mod_name} (
     .dst_req_o(sync_${clk_name}_update),
     .dst_ack_i(sync_${clk_name}_update)
   );
-  % endfor
-% endif
+    % endfor
+  % endif
 
   % if block.expose_reg_if:
   assign reg2hw.reg_if.reg_we    = reg_we;
@@ -338,12 +338,12 @@ ${reg_sig_decl(r)}\
 ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
     % endfor
   % endfor
-% if len(rb.clocks.values()) > 0:
+  % if len(rb.clocks.values()) > 0:
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
-% endif
-% for r in regs_flat:
-  % if r.async_clk:
+  % endif
+  % for r in regs_flat:
+    % if r.async_clk:
 <%
   base_name = r.async_clk.clock_base_name
   r_name = r.name.lower()
@@ -356,35 +356,35 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
   dst_re_expr = f"{base_name}_{r_name}_re" if r.needs_re() else ""
   dst_regwen_expr = f"{base_name}_{r_name}_regwen" if r.regwen else ""
 %>
-    % if len(r.fields) > 1:
-      % for f in r.fields:
+      % if len(r.fields) > 1:
+        % for f in r.fields:
   logic ${str_arr_sv(f.bits)} ${base_name}_${r_name}_${f.name.lower()}_qs_int;
-      % endfor
-    % else:
+        % endfor
+      % else:
   logic ${str_arr_sv(r.fields[0].bits)} ${base_name}_${r_name}_qs_int;
-    % endif
+      % endif
   logic [${r.get_width()-1}:0] ${base_name}_${r_name}_d;
-  % if r.needs_we():
+      % if r.needs_we():
   logic [${r.get_width()-1}:0] ${base_name}_${r_name}_wdata;
   logic ${base_name}_${r_name}_we;
   logic unused_${base_name}_${r_name}_wdata;
-  % endif
-  % if r.needs_re():
+      % endif
+      % if r.needs_re():
   logic ${base_name}_${r_name}_re;
-  % endif
-  % if r.regwen:
+      % endif
+      % if r.regwen:
   logic ${base_name}_${r_name}_regwen;
-  % endif
+      % endif
 
   always_comb begin
     ${base_name}_${r_name}_d = '0;
-    % if len(r.fields) > 1:
-      % for f in r.fields:
+      % if len(r.fields) > 1:
+        % for f in r.fields:
     ${base_name}_${r_name}_d[${str_bits_sv(f.bits)}] = ${base_name}_${r_name}_${f.name.lower()}_qs_int;
-      % endfor
-    % else:
+        % endfor
+      % else:
     ${base_name}_${r_name}_d = ${base_name}_${r_name}_qs_int;
-    % endif
+      % endif
   end
 
   prim_reg_cdc #(
@@ -409,11 +409,11 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
     .dst_regwen_o (${dst_regwen_expr}),
     .dst_wd_o     (${dst_wd_expr})
   );
-    % if r.needs_we():
+      % if r.needs_we():
   assign unused_${base_name}_${r_name}_wdata = ^${base_name}_${r_name}_wdata;
+      % endif
     % endif
-  % endif
-% endfor
+  % endfor
 
   // Register instances
   % for r in rb.all_regs:
@@ -482,7 +482,7 @@ ${finst_gen(sr, field, finst_name, fsig_name)}
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
 
-% if regs_flat:
+  % if regs_flat:
 <%
     # We want to signal wr_err if reg_be (the byte enable signal) is true for
     # any bytes that aren't supported by a register. That's true if a
@@ -499,9 +499,9 @@ ${finst_gen(sr, field, finst_name, fsig_name)}
     wr_err = (reg_we &
               (${wr_err_expr}));
   end
-% else:
+  % else:
   assign wr_error = 1'b0;
-% endif\
+  % endif\
 
   % for i, r in enumerate(regs_flat):
 ${reg_enable_gen(r, i)}\
@@ -518,25 +518,25 @@ ${field_wd_gen(f, r.name.lower() + "_" + f.name.lower(), r.hwext, r.shadowed, r.
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
-      % for i, r in enumerate(regs_flat):
-        % if r.async_clk:
+  % for i, r in enumerate(regs_flat):
+    % if r.async_clk:
       addr_hit[${i}]: begin
         reg_rdata_next = DW'(${r.name.lower()}_qs);
       end
-        % elif len(r.fields) == 1:
+    % elif len(r.fields) == 1:
       addr_hit[${i}]: begin
 ${rdata_gen(r.fields[0], r.name.lower())}\
       end
 
-        % else:
+    % else:
       addr_hit[${i}]: begin
-          % for f in r.fields:
+      % for f in r.fields:
 ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
-          % endfor
+      % endfor
       end
 
-        % endif
-      % endfor
+    % endif
+  % endfor
       default: begin
         reg_rdata_next = '1;
       end
@@ -579,13 +579,13 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
-      % for i, r in enumerate(regs_flat):
-        % if r.async_clk:
+    % for i, r in enumerate(regs_flat):
+      % if r.async_clk:
       addr_hit[${i}]: begin
         reg_busy_sel = ${r.name.lower() + "_busy"};
       end
-        % endif
-      % endfor
+      % endif
+    % endfor
       default: begin
         reg_busy_sel  = '0;
       end
