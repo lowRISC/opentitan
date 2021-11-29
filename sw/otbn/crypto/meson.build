@@ -118,6 +118,12 @@ sw_otbn_sources += {
     'rsa_verify_test_exp3.s',
     'rsa_verify.s',
   ),
+  'run_rsa_verify_3072': files(
+    'run_rsa_verify_3072.s',
+    'rsa_verify_3072.s',
+    'rsa_verify_3072_m0inv.s',
+    'rsa_verify_3072_rr.s',
+  ),
   'run_rsa_verify_3072_rr_modexp': files(
     'run_rsa_verify_3072_rr_modexp.s',
     'rsa_verify_3072_rr.s',
