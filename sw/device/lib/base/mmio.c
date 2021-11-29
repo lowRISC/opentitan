@@ -31,8 +31,8 @@ static ptrdiff_t misalignment32_of(uintptr_t addr) {
  * @param from_mmio if true, copy from MMIO to main memory. Otherwise, copy from
  * main memory to MMIO.
  */
-static void mmio_region_memcpy32(mmio_region_t base, uint32_t offset, void *buf,
-                                 size_t len, bool from_mmio) {
+static void mmio_region_memcpy32(mmio_region_t base, uint32_t offset,
+                                 uint8_t *buf, size_t len, bool from_mmio) {
   if (len == 0) {
     return;
   }
