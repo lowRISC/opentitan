@@ -33,11 +33,37 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      monitor_all_clk_byp();
       monitor_io_clk_byp();
       monitor_jitter_en();
       sample_peri_covs();
       sample_trans_covs();
     join_none
+  endtask
+
+  task monitor_all_clk_byp();
+    lc_tx_t prev_all_clk_byp_req = Off;
+    forever
+      @cfg.clkmgr_vif.clk_cb begin
+        if (cfg.clkmgr_vif.all_clk_byp_req != prev_all_clk_byp_req) begin
+          `uvm_info(`gfn, $sformatf(
+                    "Got all_clk_byp_req %s", cfg.clkmgr_vif.all_clk_byp_req == On ? "On" : "Off"),
+                    UVM_MEDIUM)
+          prev_all_clk_byp_req = lc_tx_t'(cfg.clkmgr_vif.all_clk_byp_req);
+        end
+        if (cfg.clk_rst_vif.rst_n) begin
+          if ((cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == On) &&
+              (cfg.clkmgr_vif.clk_cb.lc_dft_en_i == On)) begin
+            `DV_CHECK_EQ(cfg.clkmgr_vif.all_clk_byp_req, On, "Expected all_clk_byp_req to be On")
+          end
+          if (cfg.en_cov) begin
+            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel,
+                                 cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down,
+                                 cfg.clkmgr_vif.clk_cb.lc_dft_en_i,
+                                 cfg.clkmgr_vif.clk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
+          end
+        end
+      end
   endtask
 
   task monitor_io_clk_byp();
@@ -51,13 +77,12 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           prev_lc_clk_byp_req = cfg.clkmgr_vif.lc_clk_byp_req;
         end
         if (cfg.clk_rst_vif.rst_n) begin
-          if (((cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == On) &&
-               (cfg.clkmgr_vif.clk_cb.lc_dft_en_i == On)) ||
-              (cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On)) begin
+          if (cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On) begin
             `DV_CHECK_EQ(cfg.clkmgr_vif.io_clk_byp_req, On, "Expected io_clk_byp_req to be On")
           end
           if (cfg.en_cov) begin
             cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel,
+                                 cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down,
                                  cfg.clkmgr_vif.clk_cb.lc_dft_en_i,
                                  cfg.clkmgr_vif.clk_cb.lc_clk_byp_req, cfg.clkmgr_vif.scanmode_i);
           end
@@ -72,9 +97,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.clk_rst_vif.rst_n) begin
             @cfg.clkmgr_vif.jitter_enable_csr begin
               cfg.clk_rst_vif.wait_clks(2);
-              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o,
-                           prim_mubi_pkg::mubi4_test_true_loose(cfg.clkmgr_vif.jitter_enable_csr),
-                           "Mismatching jitter enable output")
+              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, prim_mubi_pkg::mubi4_test_true_loose(
+                           cfg.clkmgr_vif.jitter_enable_csr), "Mismatching jitter enable output")
             end
           end
         end
@@ -83,9 +107,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.clk_rst_vif.rst_n) begin
             @cfg.clkmgr_vif.jitter_en_o begin
               cfg.clk_rst_vif.wait_clks(2);
-              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o,
-                           prim_mubi_pkg::mubi4_test_true_loose(cfg.clkmgr_vif.jitter_enable_csr),
-                           "Mismatching jitter enable output")
+              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, prim_mubi_pkg::mubi4_test_true_loose(
+                           cfg.clkmgr_vif.jitter_enable_csr), "Mismatching jitter enable output")
             end
           end
         end
@@ -222,7 +245,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       end
       "jitter_enable": begin
         if (addr_phase_write) begin
-          cfg.clkmgr_vif.update_jitter_enable(item.a_data);
+          cfg.clkmgr_vif.update_jitter_enable(prim_mubi_pkg::mubi4_t'(item.a_data));
         end
       end
       "clk_enables": begin

@@ -74,13 +74,16 @@ class clkmgr_env_cov extends cip_base_env_cov #(
   clkmgr_trans_cg_wrap trans_cg_wrap[clkmgr_env_pkg::NUM_TRANS];
 
   // This embeded covergroup collects coverage for the external clock functionality.
-  covergroup extclk_cg with function sample (bit sel, bit dft_en, bit byp_req, bit scanmode);
-    sel_cp: coverpoint sel;
+  covergroup extclk_cg with function sample (
+      bit csr_sel, bit csr_low_speed, bit dft_en, bit byp_req, bit scanmode
+  );
+    csr_sel_cp: coverpoint csr_sel;
+    csr_low_speed_cp: coverpoint csr_low_speed;
     dft_en_cp: coverpoint dft_en;
     byp_req_cp: coverpoint byp_req;
     scanmode_cp: coverpoint scanmode;
 
-    extclk_cross: cross sel_cp, dft_en_cp, byp_req_cp, scanmode_cp;
+    extclk_cross: cross csr_sel_cp, csr_low_speed_cp, dft_en_cp, byp_req_cp, scanmode_cp;
   endgroup
 
   function new(string name, uvm_component parent);
