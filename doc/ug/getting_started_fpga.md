@@ -219,6 +219,10 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
 1. Observe the output both on the board and the serial console. Type any text into the console window.
 1. Exit `screen` by pressing CTRL-a k, and confirm with y.
 
+#### Troubleshooting
+
+If the firmware load fails with a message like `Error transferring frame: 0x00000000`, try pressing the "USB RST" button before loading the bitstream.
+
 ### Running on the Nexys Video board
 
 In order to load `hello_world` into the FPGA on the Nexys Video board, both the binary and the [loading tool]({{< relref "/sw/host/spiflash/README.md" >}}) must be compiled.
