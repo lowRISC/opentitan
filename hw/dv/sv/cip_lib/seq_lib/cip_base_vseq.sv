@@ -26,6 +26,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // knobs to disable post_start clear interrupt routine
   bit do_clear_all_interrupts = 1'b1;
 
+  bit expect_fatal_alerts = 1'b0;
+
   // knobs to enable alert auto reponse, once disabled it won't be able to enable again unless
   // reset is issued
   bit en_auto_alerts_response = 1'b1;
@@ -133,6 +135,16 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     super.post_start();
     void'($value$plusargs("do_clear_all_interrupts=%0b", do_clear_all_interrupts));
     if (do_clear_all_interrupts) clear_all_interrupts();
+
+    if (expect_fatal_alerts) begin
+      // Fatal alert is triggered in this seq. Wait 10_000ns to entire background check
+      // `check_fatal_alert_nonblocking` has enough time to execute before dut_init.
+      // Issue reset if reset is allowed, otherwise, reset will be called in upper vseq.
+      #10_000ns;
+      if (do_apply_reset) dut_init();
+    end else begin
+      check_no_fatal_alerts();
+    end
   endtask
 
   virtual task apply_reset(string kind = "HARD");
@@ -457,6 +469,20 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       end
     end
     if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
+  endtask
+
+  virtual task check_no_fatal_alerts();
+    if (cfg.list_of_alerts.size() > 0) begin
+      // Alert hanshake should be within 200 cycles considering async domains.
+      int num_cycles = $urandom_range(200, 500);
+      repeat(num_cycles) begin
+        cfg.clk_rst_vif.wait_clks(1);
+        foreach (cfg.m_alert_agent_cfg[alert_name]) begin
+          `DV_CHECK_EQ(0, cfg.m_alert_agent_cfg[alert_name].vif.get_alert(),
+                       $sformatf("Alert %0s fired unexpectedly!", alert_name))
+        end
+      end
+    end
   endtask
 
   virtual task run_alert_test_vseq(int num_times = 1);
