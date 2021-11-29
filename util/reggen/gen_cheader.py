@@ -205,7 +205,7 @@ def gen_cdefines_module_param(outstr: TextIO,
                               existing_defines: Set[str]) -> None:
     # Presently there is only one type (int), however if the new types are
     # added, they potentially need to be handled differently.
-    known_types = ["int"]
+    known_types = ["int", "int unsigned"]
     if param.param_type not in known_types:
         warnings.warn("Cannot generate a module define of type {}"
                       .format(param.param_type))
@@ -217,7 +217,7 @@ def gen_cdefines_module_param(outstr: TextIO,
     # otherwise, assume StudlyCaps and covert it to snake_case.
     param_name = param.name if '_' in param.name else to_snake_case(param.name)
     define_name = as_define(module_name + '_PARAM_' + param_name)
-    if param.param_type == "int":
+    if param.param_type == "int" or param.param_type == "int unsigned":
         define = gen_define(define_name, [], param.value,
                             existing_defines)
 
