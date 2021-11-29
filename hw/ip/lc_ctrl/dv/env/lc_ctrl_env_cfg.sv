@@ -23,9 +23,10 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
   event fatal_prog_error_ev;
   event fatal_state_error_ev;
   event fatal_bus_integ_error_ev;
-
   // Test phase - used to synchronise scoreboard
   lc_ctrl_test_phase_e test_phase;
+  // Max delay for alerts in clocks
+  uint alert_max_delay;
 
   `uvm_object_utils_begin(lc_ctrl_env_cfg)
   `uvm_object_utils_end
@@ -66,6 +67,7 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_jtag_riscv_agent_cfg)
 
+    alert_max_delay = 500;
   endfunction
 
   virtual function void set_test_phase(lc_ctrl_test_phase_e test_phase);

@@ -16,6 +16,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   protected otp_ctrl_pkg::lc_otp_program_req_t m_otp_prog_data;
   // First OTP program instruction count cleared by reset
   protected uint m_otp_prog_cnt;
+  event          check_lc_output_ev;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
@@ -68,10 +69,14 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
           exp_lc_o.lc_seed_hw_rd_en_o = lc_ctrl_pkg::Off;
         end
 
+        -> check_lc_output_ev;
         check_lc_outputs(exp_lc_o, err_msg);
 
-        if (cfg.err_inj.state_err || cfg.err_inj.count_err) begin // State/count error expected
-          set_exp_alert(.alert_name("fatal_state_error"), .is_fatal(1));
+
+        if (cfg.err_inj.state_err || cfg.err_inj.count_err ||
+            cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err ) begin // State/count error expected
+          set_exp_alert(.alert_name("fatal_state_error"),
+              .is_fatal(1), .max_delay(cfg.alert_max_delay));
         end
 
       end
@@ -186,8 +191,11 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         "lc_transition_cnt": begin
           // If we have a state error no transition will take place so
           // the tarnsition count will be 31
-          if(!cfg.err_inj.count_err && !cfg.err_inj.state_err) begin
-            void'(ral.lc_transition_cnt.predict(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)));
+          if(!cfg.err_inj.count_err && !cfg.err_inj.state_err &&
+              !cfg.err_inj.count_backdoor_err && !cfg.err_inj.state_backdoor_err
+              ) begin
+            `DV_CHECK_FATAL((ral.lc_transition_cnt.predict(
+                .value(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)), .kind(UVM_PREDICT_READ))))
           end else begin // State or count error expected
             `DV_CHECK_FATAL(ral.lc_transition_cnt.predict(.value(31), .kind(UVM_PREDICT_READ)))
           end
@@ -216,7 +224,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Predict the value of lc_state
   virtual function dec_lc_state_e predict_lc_state();
-    if (cfg.err_inj.state_err || cfg.err_inj.count_err) begin // State error expected
+    if (cfg.err_inj.state_err || cfg.err_inj.count_err || cfg.err_inj.count_backdoor_err ||
+        cfg.err_inj.state_backdoor_err) begin // State error expected
       case(cfg.test_phase)
         LcCtrlReadState1: return DecLcStInvalid;
         LcCtrlReadState2: return DecLcStEscalate;

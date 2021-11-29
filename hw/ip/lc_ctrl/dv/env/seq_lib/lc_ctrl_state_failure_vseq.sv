@@ -10,16 +10,17 @@ class lc_ctrl_state_failure_vseq extends lc_ctrl_errors_vseq;
   `uvm_object_new
 
   constraint num_trans_c {
-    num_trans == 10;
+    num_trans == 2;
   }
 
-  constraint lc_state_err_c {
+  constraint lc_state_failure_c {
     // err_inj.state_err          == 0;
-    err_inj.state_backdoor_err == 0;
-    err_inj.transition_err     == 0;
-    //err_inj.count_err          == 1;
-    err_inj.count_backdoor_err == 0;
-    $onehot({err_inj.state_err, err_inj.count_err});
+    // err_inj.state_backdoor_err == 0;
+    // err_inj.transition_err     == 0;
+    // err_inj.count_err          == 0;
+    // err_inj.count_backdoor_err == 1;
+    $onehot({err_inj.state_err, err_inj.count_err,
+        err_inj.state_backdoor_err, err_inj.count_backdoor_err});
   }
 
   // virtual task post_start();

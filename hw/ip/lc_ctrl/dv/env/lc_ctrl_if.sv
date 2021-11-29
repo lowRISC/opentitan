@@ -9,6 +9,12 @@
     tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs.gen_generic.u_impl_generic.q_o
 `endif
 
+`ifndef LC_CTRL_FSM_COUNT_REGS_PATH
+`define LC_CTRL_FSM_COUNT_REGS_PATH \
+    tb.dut.u_lc_ctrl_fsm.u_cnt_regs.gen_generic.u_impl_generic.q_o
+`endif
+
+
 interface lc_ctrl_if(input clk, input rst_n);
 
   import lc_ctrl_pkg::*;
@@ -43,8 +49,10 @@ interface lc_ctrl_if(input clk, input rst_n);
   lc_keymgr_div_t     keymgr_div_o;
   lc_flash_rma_seed_t flash_rma_seed_o;
 
-  event fsm_backdoor_write_ev;
-  event fsm_backdoor_read_ev;
+  event fsm_backdoor_state_write_ev;
+  event fsm_backdoor_state_read_ev;
+  event fsm_backdoor_count_write_ev;
+  event fsm_backdoor_count_read_ev;
 
   task automatic init(lc_state_e lc_state = LcStRaw,
                       lc_cnt_e   lc_cnt = LcCnt0,
@@ -80,7 +88,7 @@ interface lc_ctrl_if(input clk, input rst_n);
   endtask
 
   function static fsm_state_backdoor_write(
-    input logic [15:0] val = 'hdead,
+    input logic [FsmStateWidth-1:0] val = 'hdead,
     input int delay_clocks=0,
     input int force_clocks=5
     );
@@ -88,7 +96,7 @@ interface lc_ctrl_if(input clk, input rst_n);
     fork
       begin : force_state_proc
         repeat(delay_clocks) @(posedge clk);
-        -> fsm_backdoor_write_ev;
+        -> fsm_backdoor_state_write_ev;
         force `LC_CTRL_FSM_STATE_REGS_PATH = val;
         repeat(force_clocks) @(posedge clk);
         release `LC_CTRL_FSM_STATE_REGS_PATH;
@@ -96,10 +104,35 @@ interface lc_ctrl_if(input clk, input rst_n);
     join_none
   endfunction
 
-  function static logic [15:0] fsm_state_backdoor_read();
-    -> fsm_backdoor_read_ev;
+
+  function static logic [FsmStateWidth-1:0] fsm_state_backdoor_read();
+    -> fsm_backdoor_state_read_ev;
     return `LC_CTRL_FSM_STATE_REGS_PATH;
   endfunction
+
+
+  function static fsm_count_backdoor_write(
+    input logic  [LcCountWidth-1:0] val = 'hdead,
+    input int delay_clocks=0,
+    input int force_clocks=5
+    );
+    `dv_info($sformatf("Backdoor write to state registers"))
+    fork
+      begin : force_state_proc
+        repeat(delay_clocks) @(posedge clk);
+        -> fsm_backdoor_count_write_ev;
+        force `LC_CTRL_FSM_COUNT_REGS_PATH = val;
+        repeat(force_clocks) @(posedge clk);
+        release `LC_CTRL_FSM_COUNT_REGS_PATH;
+      end : force_count_proc
+    join_none
+  endfunction
+
+  function static logic  [LcCountWidth-1:0] fsm_count_backdoor_read();
+    -> fsm_backdoor_count_read_ev;
+    return `LC_CTRL_FSM_COUNT_REGS_PATH;
+  endfunction
+
 
 
 endinterface

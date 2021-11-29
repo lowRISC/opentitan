@@ -13,9 +13,12 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   rand lc_state_bin_t invalid_lc_state_bin;
   rand lc_count_bin_t invalid_lc_count_bin;
   rand bit [DecLcStateWidth-1:0] invalid_next_state;
-  rand bit [15:0] fsm_state_invert_bits;
+  rand bit [FsmStateWidth-1:0] fsm_state_invert_bits;
+  rand bit [LcCountWidth-1:0]  fsm_count_invert_bits;
   rand int unsigned fsm_state_err_inj_delay;
   rand int unsigned fsm_state_err_inj_period;
+  rand int unsigned fsm_count_err_inj_delay;
+  rand int unsigned fsm_count_err_inj_period;
 
   `uvm_object_utils_begin(lc_ctrl_errors_vseq)
     `uvm_field_int(num_trans, UVM_DEFAULT)
@@ -38,11 +41,15 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   constraint token_mismatch_err_c {err_inj.token_mismatch_err == 0;}
 
-  constraint lc_state_err_c {
+  constraint lc_state_failure_c {
     err_inj.state_err          == 0;
     err_inj.state_backdoor_err == 0;
     err_inj.count_err          == 0;
     err_inj.count_backdoor_err == 0;
+    err_inj.transition_err     == 0;
+  }
+
+  constraint lc_errors_c {
     err_inj.transition_err     == 0;
   }
 
@@ -57,9 +64,19 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     $onehot(fsm_state_invert_bits);
   }
 
+  constraint fsm_count_invert_bits_c {
+    // Just one bit flipped by default
+    $onehot(fsm_count_invert_bits);
+  }
+
   constraint fsm_state_err_inj_delay_c {
-    fsm_state_err_inj_delay inside {[1 : 200]};
+    fsm_state_err_inj_delay  inside {[1 : 200]};
     fsm_state_err_inj_period inside {[2 : 4]};
+  }
+
+  constraint fsm_count_err_inj_delay_c {
+    fsm_count_err_inj_delay  inside {[1 : 200]};
+    fsm_count_err_inj_period inside {[2 : 4]};
   }
 
   virtual task post_start();
@@ -85,7 +102,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   task body();
     uvm_reg_data_t rdata;
-    logic [15:0] fsm_state;
+    logic  [FsmStateWidth-1:0] fsm_state;
     num_trans.rand_mode(0);
 
     fork
@@ -124,6 +141,16 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
           begin
             cfg.clk_rst_vif.wait_clks(fsm_state_err_inj_delay);
             fsm_backdoor_err_inj();
+          end
+        join_none
+      end
+
+      // Invalid fsm state in registers by "backdoor"
+      if (err_inj.count_backdoor_err) begin
+        fork
+          begin
+            cfg.clk_rst_vif.wait_clks(fsm_count_err_inj_delay);
+            count_backdoor_err_inj();
           end
         join_none
       end
@@ -243,6 +270,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         // Force invalid count on input
         lc_cnt = bin_to_lc_count(invalid_lc_count_bin);
       end
+
     end else begin
       lc_state = LcStRaw;
       lc_cnt   = LcCnt0;
@@ -289,11 +317,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 1));
     end
 
-    state_error_exp = cfg.err_inj.state_err || cfg.err_inj.count_err;
+    state_error_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
+        cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err;
     state_error_act = get_field_val(ral.status.state_error, status_val);
     // Check status against expected from err_inj
     `DV_CHECK_EQ(state_error_act,state_error_exp)
-
 
   endtask
 
@@ -327,12 +355,20 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     join
   endtask
 
-  // Flip bits in FSM
+  // Flip bits in FSM registers
   protected virtual task fsm_backdoor_err_inj();
-    logic [15:0] fsm_state;
+    logic [FsmStateWidth-1:0] fsm_state;
     fsm_state = cfg.lc_ctrl_vif.fsm_state_backdoor_read();
     fsm_state ^= fsm_state_invert_bits;
     cfg.lc_ctrl_vif.fsm_state_backdoor_write(fsm_state, 0, fsm_state_err_inj_period);
+  endtask
+
+  // Flip bits in Count registers
+  protected virtual task count_backdoor_err_inj();
+    logic [LcCountWidth-1:0] fsm_count;
+    fsm_count = cfg.lc_ctrl_vif.fsm_count_backdoor_read();
+    fsm_count ^= fsm_count_invert_bits;
+    cfg.lc_ctrl_vif.fsm_count_backdoor_write(fsm_count, 0, fsm_count_err_inj_period);
   endtask
 
   // Send an escalate alert
