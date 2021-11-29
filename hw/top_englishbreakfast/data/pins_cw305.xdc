@@ -54,8 +54,8 @@ set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 } [get_ports { IO_UTX_D
 
 ## 20-Pin Connector (JP1)
 
-set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 } [get_ports { IOC11 }];      #JP1 PIN 12 TIO2    - OpenTitan UART0 TX
-set_property -dict { PACKAGE_PIN P16 IOSTANDARD LVCMOS33 } [get_ports { IOC10 }];      #JP1 PIN 10 TIO1    - OpenTitan UART0 RX
+set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 } [get_ports { IOC4 }];      #JP1 PIN 12 TIO2    - OpenTitan UART0 TX
+set_property -dict { PACKAGE_PIN P16 IOSTANDARD LVCMOS33 } [get_ports { IOC3 }];      #JP1 PIN 10 TIO1    - OpenTitan UART0 RX
 set_property -dict { PACKAGE_PIN T14 IOSTANDARD LVCMOS33 } [get_ports { IO_TRIGGER }]; #JP1 PIN 16 TIO4    - Capture Trigger
 set_property -dict { PACKAGE_PIN M16 IOSTANDARD LVCMOS33 } [get_ports { IO_CLKOUT }];  #JP1 PIN  4 TIO_HS1 - Target clock
 

@@ -63,13 +63,13 @@ set_property -dict { PACKAGE_PIN AE11 IOSTANDARD LVCMOS18 } [get_ports { SPI_HOS
 
 ## OTHER IO
 set_property -dict { PACKAGE_PIN A8  IOSTANDARD LVCMOS33 } [get_ports { IOC2 }]; #USERIOB-9
-set_property -dict { PACKAGE_PIN B9  IOSTANDARD LVCMOS33 } [get_ports { IOC3 }]; #USERIOB-11
-set_property -dict { PACKAGE_PIN A9  IOSTANDARD LVCMOS33 } [get_ports { IOC4 }]; #USERIOB-15
 set_property -dict { PACKAGE_PIN E10 IOSTANDARD LVCMOS33 } [get_ports { IOC5 }]; #USERIOB-14
 set_property -dict { PACKAGE_PIN D8  IOSTANDARD LVCMOS33 } [get_ports { IOC6 }]; #USERIOB-16
 set_property -dict { PACKAGE_PIN D9  IOSTANDARD LVCMOS33 } [get_ports { IOC7 }]; #USERIOB-18
 #set_property -dict { PACKAGE_PIN C9  IOSTANDARD LVCMOS33 } [get_ports { IOC8 }]; #USERIOB-24
 #set_property -dict { PACKAGE_PIN D10 IOSTANDARD LVCMOS33 } [get_ports { IOC9 }]; #USERIOB-26
+set_property -dict { PACKAGE_PIN B9  IOSTANDARD LVCMOS33 } [get_ports { IOC10 }]; #USERIOB-11
+set_property -dict { PACKAGE_PIN A9  IOSTANDARD LVCMOS33 } [get_ports { IOC11 }]; #USERIOB-15
 
 ## ChipWhisperer 20-Pin Connector (J14)
 set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS33 } [get_ports { IOC9 }];       #J14 PIN 12 CWIO_IO2 - OpenTitan UART1 TX
@@ -97,8 +97,8 @@ set_property -dict { PACKAGE_PIN A12   IOSTANDARD LVCMOS33 } [get_ports { IO_USB
 set_property -dict { PACKAGE_PIN A13   IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DPPULLUP0 }]; #USERIOB-27
 
 ## UART
-set_property -dict { PACKAGE_PIN AA22 IOSTANDARD LVCMOS33 } [get_ports { IOC11 }]; #UART1RXD - OpenTitan UART0 TX
-set_property -dict { PACKAGE_PIN W24  IOSTANDARD LVCMOS33 } [get_ports { IOC10 }]; #UART1TXD - OpenTitan UART0 RX
+set_property -dict { PACKAGE_PIN AA22 IOSTANDARD LVCMOS33 } [get_ports { IOC4 }]; #UART1RXD - OpenTitan UART0 TX
+set_property -dict { PACKAGE_PIN W24  IOSTANDARD LVCMOS33 } [get_ports { IOC3 }]; #UART1TXD - OpenTitan UART0 RX
 
 ## Configuration options, can be used for all designs
 set_property CONFIG_VOLTAGE 3.3 [current_design]

@@ -80,6 +80,18 @@ module tb;
   assign (weak0, weak1) spi_host_tie_off = '0;
   assign (weak0, weak1) spi_dev_tie_off = '0;
 
+  // TODO: Replace this weak pull to a known value with initialization
+  // in the agent/interface.
+  wire ioc3;
+  wire ioc4;
+  wire uart0_sel;
+  assign uart0_sel = 1'b1;
+  assign ioc3 = (uart0_sel) ? uart_if[0].uart_rx : dft_straps[0];
+  assign ioc4 = (uart0_sel) ? 1'bz : dft_straps[1];
+  assign uart_if[0].uart_tx = ioc4;
+  assign (weak0, weak1) ioc3 = 1'b1;
+  assign (weak0, weak1) ioc4 = 1'b1;
+
   // TODO: the external clk is currently not connected.
   // We will need to feed this in via a muxed pin, once that function implemented.
 
@@ -130,16 +142,16 @@ module tb;
     .IOC0(tie_off[5]),     // MIO 22
     .IOC1(sw_straps[1]),   // MIO 23
     .IOC2(sw_straps[2]),   // MIO 24
-    .IOC3(dft_straps[0]),  // MIO 25
-    .IOC4(dft_straps[1]),  // MIO 26
+    .IOC3(ioc3),           // MIO 25
+    .IOC4(ioc4),           // MIO 26
     .IOC5(tap_straps[1]),  // MIO 27
     .IOC6(clk),            // MIO 28 - external clock fed in at a fixed position
     .IOC7(tie_off[7]),     // MIO 29
     .IOC8(tap_straps[0]),  // MIO 30
     .IOC9(tie_off[8]),     // MIO 31
-    .IOC10(uart_rx[0]),    // MIO 32
-    .IOC11(uart_tx[0]),    // MIO 33
-    .IOC12(tie_off[9]),    // MIO 34
+    .IOC10(tie_off[9]),    // MIO 32
+    .IOC11(tie_off[10]),   // MIO 33
+    .IOC12(tie_off[11]),   // MIO 34
     // Bank R (VCC domain)
     .IOR0(jtag_tms),       // MIO 35
     .IOR1(jtag_tdo),       // MIO 36
@@ -284,14 +296,17 @@ module tb;
     run_test();
   end
 
-  for (genvar i = 0; i < NUM_UARTS; i++) begin : gen_uart_if
+  for (genvar i = 1; i < NUM_UARTS; i++) begin : gen_uart_if
     // TODO: Replace this weak pull to a known value with initialization
     // in the agent/interface.
+
     assign (weak0, weak1) uart_rx[i] = 1'b1;
     assign (weak0, weak1) uart_tx[i] = 1'b1;
     assign uart_rx[i] = uart_if[i].uart_rx;
     assign uart_if[i].uart_tx = uart_tx[i];
+  end
 
+  for (genvar i = 0; i < NUM_UARTS; i++) begin : gen_uart_agent_if
     initial begin
       uvm_config_db#(virtual uart_if)::set(null, $sformatf("*.env.m_uart_agent%0d*", i),
                                            "vif", uart_if[i]);

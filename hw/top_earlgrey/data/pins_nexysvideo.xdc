@@ -116,13 +116,13 @@ set_property -dict { PACKAGE_PIN M17  IOSTANDARD LVCMOS12 } [get_ports { IOA7 }]
 
 ## Pmod header JA
 set_property -dict { PACKAGE_PIN AB22  IOSTANDARD LVCMOS33 } [get_ports { IOC2 }]; #IO_L10N_T1_D15_14 Sch=ja[1]
-set_property -dict { PACKAGE_PIN AB21  IOSTANDARD LVCMOS33 } [get_ports { IOC3 }]; #IO_L10P_T1_D14_14 Sch=ja[2]
-set_property -dict { PACKAGE_PIN AB20  IOSTANDARD LVCMOS33 } [get_ports { IOC4 }]; #IO_L15N_T2_DQS_DOUT_CSO_B_14 Sch=ja[3]
 set_property -dict { PACKAGE_PIN AB18  IOSTANDARD LVCMOS33 } [get_ports { IOC5 }]; #IO_L17N_T2_A13_D29_14 Sch=ja[4]
 set_property -dict { PACKAGE_PIN Y21   IOSTANDARD LVCMOS33 } [get_ports { IOC6 }]; #IO_L9P_T1_DQS_14 Sch=ja[7]
 set_property -dict { PACKAGE_PIN AA21  IOSTANDARD LVCMOS33 } [get_ports { IOC7 }]; #IO_L8N_T1_D12_14 Sch=ja[8]
 set_property -dict { PACKAGE_PIN AA20  IOSTANDARD LVCMOS33 } [get_ports { IOC8 }]; #IO_L8P_T1_D11_14 Sch=ja[9]
 set_property -dict { PACKAGE_PIN AA18  IOSTANDARD LVCMOS33 } [get_ports { IOC9 }]; #IO_L17P_T2_A14_D30_14 Sch=ja[10]
+set_property -dict { PACKAGE_PIN AB21  IOSTANDARD LVCMOS33 } [get_ports { IOC10 }]; #IO_L10P_T1_D14_14 Sch=ja[2]
+set_property -dict { PACKAGE_PIN AB20  IOSTANDARD LVCMOS33 } [get_ports { IOC11 }]; #IO_L15N_T2_DQS_DOUT_CSO_B_14 Sch=ja[3]
 
 
 ## Pmod header JB
@@ -176,8 +176,8 @@ set_property -dict { PACKAGE_PIN AB6   IOSTANDARD LVCMOS33 } [get_ports { IO_UPH
 
 
 ## UART
-set_property -dict { PACKAGE_PIN AA19  IOSTANDARD LVCMOS33 } [get_ports { IOC11 }]; #IO_L15P_T2_DQS_RDWR_B_14 Sch=uart_rx_out
-set_property -dict { PACKAGE_PIN V18   IOSTANDARD LVCMOS33 } [get_ports { IOC10 }]; #IO_L14P_T2_SRCC_14 Sch=uart_tx_in
+set_property -dict { PACKAGE_PIN AA19  IOSTANDARD LVCMOS33 } [get_ports { IOC4 }]; #IO_L15P_T2_DQS_RDWR_B_14 Sch=uart_rx_out
+set_property -dict { PACKAGE_PIN V18   IOSTANDARD LVCMOS33 } [get_ports { IOC3 }]; #IO_L14P_T2_SRCC_14 Sch=uart_tx_in
 
 
 ## Ethernet
