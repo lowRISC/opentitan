@@ -41,23 +41,23 @@ void pinmux_init(void) {
                  PINMUX_MIO_OUTSEL_0_OUT_0_MASK,
                  PINMUX_PERIPH_OUTSEL_IDX_OFFSET);
 
-  // Configure UART0 RX input to connect to MIO pad IOC10
+  // Configure UART0 RX input to connect to MIO pad IOC3
   mmio_region_t reg32 = mmio_region_from_addr(
       PINMUX0_BASE_ADDR + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET);
-  uint32_t reg_value = kTopEarlgreyPinmuxInselIoc10;
+  uint32_t reg_value = kTopEarlgreyPinmuxInselIoc3;
   // We've got one insel configuration field per register. Hence, we have to
   // convert the enumeration index into a byte address using << 2.
   uint32_t reg_offset = kTopEarlgreyPinmuxPeripheralInUart0Rx << 2;
   uint32_t mask = PINMUX_MIO_PERIPH_INSEL_0_IN_0_MASK;
   mmio_region_write32(reg32, reg_offset, reg_value & mask);
 
-  // Configure UART0 TX output to connect to MIO pad IOC11
+  // Configure UART0 TX output to connect to MIO pad IOC4
   reg32 =
       mmio_region_from_addr(PINMUX0_BASE_ADDR + PINMUX_MIO_OUTSEL_0_REG_OFFSET);
   reg_value = kTopEarlgreyPinmuxOutselUart0Tx;
   // We've got one insel configuration field per register. Hence, we have to
   // convert the enumeration index into a byte address using << 2.
-  reg_offset = kTopEarlgreyPinmuxMioOutIoc11 << 2;
+  reg_offset = kTopEarlgreyPinmuxMioOutIoc4 << 2;
   mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
   mmio_region_write32(reg32, reg_offset, reg_value & mask);
 

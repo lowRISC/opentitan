@@ -882,7 +882,7 @@
           'FLASH_TEST_VOLT',
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
           'IOB10', 'IOB11', 'IOB12',
-          'IOC0', 'IOC1', 'IOC2', 'IOC3', 'IOC4', 'IOC5', 'IOC6', 'IOC7', 'IOC8', 'IOC9', 'IOC12',
+          'IOC0', 'IOC1', 'IOC2', 'IOC5', 'IOC6', 'IOC7', 'IOC8', 'IOC9', 'IOC10', 'IOC11', 'IOC12',
           'IOR0', 'IOR1', 'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
         ],
 

@@ -3,7 +3,7 @@ index 8861f54ba..8442bb896 100644
 --- a/sw/device/lib/pinmux.c
 +++ b/sw/device/lib/pinmux.c
 @@ -60,24 +60,4 @@ void pinmux_init(void) {
-   reg_offset = kTopEarlgreyPinmuxMioOutIoc11 << 2;
+   reg_offset = kTopEarlgreyPinmuxMioOutIoc4 << 2;
    mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
    mmio_region_write32(reg32, reg_offset, reg_value & mask);
 -

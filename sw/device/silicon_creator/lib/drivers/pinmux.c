@@ -34,7 +34,7 @@ static const pinmux_input_t kPinmuxInputs[] = {
      */
     {
         .periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
-        .pad = kTopEarlgreyPinmuxInselIoc10,
+        .pad = kTopEarlgreyPinmuxInselIoc3,
     },
 };
 
@@ -53,7 +53,7 @@ static const pinmux_output_t kPinmuxOutputs[] = {
     /**
      * UART
      */
-    {.pad = kTopEarlgreyPinmuxMioOutIoc11,
+    {.pad = kTopEarlgreyPinmuxMioOutIoc4,
      .periph = kTopEarlgreyPinmuxOutselUart0Tx},
 };
 

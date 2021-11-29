@@ -63,10 +63,10 @@ TEST_F(InitTest, Initialize) {
   EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInGpioGpio17),
                      kTopEarlgreyPinmuxInselIob8)
   EXPECT_ABS_WRITE32(RegIn(kTopEarlgreyPinmuxPeripheralInUart0Rx),
-                     kTopEarlgreyPinmuxInselIoc10);
+                     kTopEarlgreyPinmuxInselIoc3);
 
   // The outputs that will be configured.
-  EXPECT_ABS_WRITE32(RegOut(kTopEarlgreyPinmuxMioOutIoc11),
+  EXPECT_ABS_WRITE32(RegOut(kTopEarlgreyPinmuxMioOutIoc4),
                      kTopEarlgreyPinmuxOutselUart0Tx);
 
   pinmux_init();

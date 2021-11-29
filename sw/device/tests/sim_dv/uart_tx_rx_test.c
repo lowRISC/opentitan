@@ -500,8 +500,8 @@ bool test_main(void) {
 
   // TODO, remove thse once pinout configuration is provided
   pinmux_connect_uart_to_pads(
-      kTopEarlgreyPinmuxInselIoc10, kTopEarlgreyPinmuxPeripheralInUart0Rx,
-      kTopEarlgreyPinmuxMioOutIoc11, kTopEarlgreyPinmuxOutselUart0Tx);
+      kTopEarlgreyPinmuxInselIoc3, kTopEarlgreyPinmuxPeripheralInUart0Rx,
+      kTopEarlgreyPinmuxMioOutIoc4, kTopEarlgreyPinmuxOutselUart0Tx);
   pinmux_connect_uart_to_pads(
       kTopEarlgreyPinmuxInselIor5, kTopEarlgreyPinmuxPeripheralInUart1Rx,
       kTopEarlgreyPinmuxMioOutIor6, kTopEarlgreyPinmuxOutselUart1Tx);
