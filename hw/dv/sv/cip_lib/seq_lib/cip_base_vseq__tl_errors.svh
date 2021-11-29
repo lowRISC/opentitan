@@ -253,8 +253,12 @@ endtask : run_tl_errors_vseq_sub
 virtual task run_tl_intg_err_vseq(int num_times = 1);
   // TODO(#6628) as above TODO
   set_tl_assert_en(.enable(0));
-
-  `loop_ral_models_to_create_threads(run_tl_intg_err_vseq_sub(num_times, ral_name);)
+  for (int trans = 1; trans <= num_times; trans++) begin
+    `uvm_info(`gfn, $sformatf("Running run_tl_intg_err_vseq %0d/%0d", trans, num_times),
+              UVM_LOW)
+    `loop_ral_models_to_create_threads(run_tl_intg_err_vseq_sub(num_times, ral_name);)
+    dut_init("HARD");
+  end
   csr_utils_pkg::wait_no_outstanding_access();
 
   set_tl_assert_en(.enable(1));
@@ -263,28 +267,22 @@ endtask
 virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
   `DV_CHECK_EQ(cfg.en_tl_intg_gen, 1)
 
-  for (int trans = 1; trans <= num_times; trans++) begin
-    `uvm_info(`gfn, $sformatf("Running run_tl_intg_err_vseq %0d/%0d", trans, num_times),
-              UVM_LOW)
-    fork
-      // run csr_rw seq to send some normal CSR accesses in parallel
-      begin
-        `uvm_info(`gfn, "Run csr_rw seq", UVM_HIGH)
-        run_csr_vseq("rw");
-      end
-      begin
-        issue_tl_access_w_intg_err(ral_name);
+  fork
+    // run csr_rw seq to send some normal CSR accesses in parallel
+    begin
+      `uvm_info(`gfn, "Run csr_rw seq", UVM_HIGH)
+      run_csr_vseq("rw");
+    end
+    begin
+      issue_tl_access_w_intg_err(ral_name);
 
-        // Check design's response to tl_intg_error.
-        // This virtual task verifies the fatal alert is firing continuously and verifies integrity
-        // error status register field is set.
-        check_tl_intg_error_response();
-      end
-    join
+      // Check design's response to tl_intg_error.
+      // This virtual task verifies the fatal alert is firing continuously and verifies integrity
+      // error status register field is set.
+      check_tl_intg_error_response();
+    end
+  join
 
-    // issue hard reset for fatal alert to recover
-    dut_init("HARD");
-  end
 endtask
 
 virtual task issue_tl_access_w_intg_err(string ral_name);
@@ -311,8 +309,8 @@ virtual task issue_tl_access_w_intg_err(string ral_name);
                             cfg.ral_models[ral_name].mem_ranges[mem_idx].end_addr);
     end
   endcase
-  tl_access(.addr($urandom), .write(write), .data(data),
-            .tl_intg_err_type(tl_intg_err_type));
+  tl_access(.addr($urandom), .write(write), .data(data), .tl_intg_err_type(tl_intg_err_type), 
+            .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
 endtask
 
 virtual task check_tl_intg_error_response();
