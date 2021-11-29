@@ -109,18 +109,9 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       otp_prog_count_act = lc_cnt_e'(m_otp_prog_data.count);
       otp_prog_state_exp = lc_cnt_e'(otp_prog_data_exp.state);
       otp_prog_count_exp = lc_cnt_e'(otp_prog_data_exp.count);
-      $display("$left(m_otp_prog_data.count) == %0d", $left(m_otp_prog_data.count));
-
-
-      // `DV_CHECK_EQ(otp_prog_state_act, otp_prog_state_exp, $sformatf(
-      //     "Check failed %s == %s %s [%h] vs %s [%h]",
-      //     "otp_prog_state_act", "otp_prog_state_exp",
-      //     otp_prog_state_act.name, otp_prog_state_act,
-      //     otp_prog_state_exp.name, otp_prog_state_exp))
 
       `DV_CHECK_EQ(otp_prog_state_act, otp_prog_state_exp,
           $sformatf(" - %s vs %s",  otp_prog_state_act.name, otp_prog_state_exp.name))
-
 
       `DV_CHECK_EQ(otp_prog_count_act, otp_prog_count_exp,
         $sformatf(" - %s vs %s",  otp_prog_count_act.name, otp_prog_count_exp.name))

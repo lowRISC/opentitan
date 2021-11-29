@@ -165,6 +165,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     end
 
+    // Clear error injection object so we don't get expect alerts etc.
+    cfg.err_inj = 0;
+
     `uvm_info(`gfn, "body: finished", UVM_MEDIUM)
   endtask : body
 
@@ -318,17 +321,17 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   endtask
 
   // Send an escalate alert
-  protected virtual task send_escalate(int index);
+  protected virtual task send_escalate(int index, int assert_clocks=1);
     // TODO - replace with calls to escalate agent when driver implemented
     unique case (index)
       0: begin
         cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b10;
-        #10us;
+        cfg.clk_rst_vif.wait_clks(assert_clocks);
         cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
       end
       1: begin
         cfg.m_esc_scrap_state1_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b10;
-        #10us;
+        cfg.clk_rst_vif.wait_clks(assert_clocks);
         cfg.m_esc_scrap_state1_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
       end
     endcase
@@ -353,7 +356,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         UVM_MEDIUM)
     // Only send escalate at correct point of the test
     if (!(cfg.get_test_phase() inside {LcCtrlEscalate, LcCtrlReadState2})) return;
-    send_escalate(1);
+    send_escalate(1,100);
   endtask
 
   virtual task handle_fatal_state_error;
@@ -371,7 +374,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     // Only send an escalate at the correct part of the test
     if (!(cfg.get_test_phase() inside {LcCtrlEscalate, LcCtrlReadState2})) return;
-    send_escalate(0);
+    send_escalate(0,100);
   endtask
 
   virtual task handle_fatal_bus_integ_error;
