@@ -28,6 +28,9 @@ module rom_ctrl_rom_reg_top (
   import rom_ctrl_reg_pkg::* ;
 
 
+  tlul_pkg::tl_h2d_t tl_reg_h2d;
+  tlul_pkg::tl_d2h_t tl_reg_d2h;
+
 
   // incoming payload check
   logic intg_err;
@@ -59,8 +62,57 @@ module rom_ctrl_rom_reg_top (
     .tl_o(tl_o)
   );
 
-  assign tl_win_o = tl_i;
-  assign tl_o_pre = tl_win_i;
+  tlul_pkg::tl_h2d_t tl_socket_h2d [2];
+  tlul_pkg::tl_d2h_t tl_socket_d2h [2];
+
+  logic [1:0] reg_steer;
+
+  // socket_1n connection
+  assign tl_reg_h2d = tl_socket_h2d[1];
+  assign tl_socket_d2h[1] = tl_reg_d2h;
+
+  assign tl_win_o = tl_socket_h2d[0];
+  assign tl_socket_d2h[0] = tl_win_i;
+
+  // Create Socket_1n
+  tlul_socket_1n #(
+    .N          (2),
+    .HReqPass   (1'b1),
+    .HRspPass   (1'b1),
+    .DReqPass   ({2{1'b1}}),
+    .DRspPass   ({2{1'b1}}),
+    .HReqDepth  (4'h0),
+    .HRspDepth  (4'h0),
+    .DReqDepth  ({2{4'h0}}),
+    .DRspDepth  ({2{4'h0}})
+  ) u_socket (
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
+    .tl_h_i (tl_i),
+    .tl_h_o (tl_o_pre),
+    .tl_d_o (tl_socket_h2d),
+    .tl_d_i (tl_socket_d2h),
+    .dev_select_i (reg_steer)
+  );
+
+  // Create steering logic
+  always_comb begin
+    reg_steer = 1;       // Default set to register
+
+    // TODO: Can below codes be unique case () inside ?
+      reg_steer = 0;
+    if (intg_err) begin
+      reg_steer = 1;
+    end
+  end
+  tlul_err_resp #(
+    .EnableDataIntgGen(0)
+  ) u_err (
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
+    .tl_h_i (tl_reg_h2d),
+    .tl_h_o (tl_reg_d2h)
+  );
 
   // Unused signal tieoff
   // devmode_i is not used if there are no registers

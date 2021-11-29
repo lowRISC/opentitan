@@ -13,8 +13,8 @@
 
   num_wins = len(rb.windows)
   num_wins_width = ((num_wins+1).bit_length()) - 1
-  num_reg_dsp = 1 if rb.all_regs else 0
-  num_dsp  = num_wins + num_reg_dsp
+  num_dsp  = num_wins + 1
+
   regs_flat = rb.flat_regs
   max_regs_char = len("{}".format(len(regs_flat) - 1))
   addr_width = rb.get_addr_width()
@@ -114,10 +114,10 @@ module ${mod_name} (
 
   logic [DW-1:0] reg_rdata_next;
   logic reg_busy;
+% endif
 
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
-% endif
 
   % if rb.async_if:
   tlul_pkg::tl_h2d_t tl_async_h2d;
@@ -167,28 +167,21 @@ module ${mod_name} (
     .tl_o(${tl_d2h_expr})
   );
 
-% if num_dsp == 1:
-  ## Either no windows (and just registers) or no registers and only
-  ## one window.
-  % if num_wins == 0:
+% if num_wins == 0:
+  ## No windows (just registers)
   assign tl_reg_h2d = ${tl_h2d_expr};
   assign tl_o_pre   = tl_reg_d2h;
-  % else:
-  assign tl_win_o = ${tl_h2d_expr};
-  assign tl_o_pre = tl_win_i;
-  % endif
 % else:
+  ## One or more windows and maybe registers; maybe not.
   tlul_pkg::tl_h2d_t tl_socket_h2d [${num_dsp}];
   tlul_pkg::tl_d2h_t tl_socket_d2h [${num_dsp}];
 
   logic [${num_wins_width}:0] reg_steer;
 
   // socket_1n connection
-  % if rb.all_regs:
   assign tl_reg_h2d = tl_socket_h2d[${num_wins}];
   assign tl_socket_d2h[${num_wins}] = tl_reg_d2h;
 
-  % endif
   % for i,t in enumerate(rb.windows):
 <%
       win_suff = f'[{i}]' if num_wins > 1 else ''
@@ -262,7 +255,19 @@ module ${mod_name} (
     end
   end
 % endif
-% if rb.all_regs:
+% if not rb.all_regs:
+  ## In this case, we don't have any registers but we still need a location to which
+  ## we should steer bus accesses that fail their integrity check so that it can
+  ## respond with an error.
+  tlul_err_resp #(
+    .EnableDataIntgGen(${adapt_data_intg_gen})
+  ) u_err (
+    .clk_i  (${reg_clk_expr}),
+    .rst_ni (${reg_rst_expr}),
+    .tl_h_i (tl_reg_h2d),
+    .tl_h_o (tl_reg_d2h)
+  );
+% else:
 
   tlul_adapter_reg #(
     .RegAw(AW),

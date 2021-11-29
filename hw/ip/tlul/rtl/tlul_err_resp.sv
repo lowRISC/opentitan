@@ -6,7 +6,9 @@
 // to requests to no correct address space. Responses are always one cycle
 // after request with no stalling unless response is stuck on the way out.
 
-module tlul_err_resp (
+module tlul_err_resp #(
+  parameter bit EnableDataIntgGen = 1'b0
+) (
   input                     clk_i,
   input                     rst_ni,
   input  tlul_pkg::tl_h2d_t tl_h_i,
@@ -35,6 +37,17 @@ module tlul_err_resp (
     end
   end
 
+  logic [DataIntgWidth-1:0] data_intg;
+  if (EnableDataIntgGen) begin : gen_data_intg
+    logic [DataMaxWidth-1:0] unused_data;
+    prim_secded_39_32_enc u_data_gen (
+      .data_i({DataMaxWidth{1'b1}}),
+      .data_o({data_intg, unused_data})
+    );
+  end else begin : gen_tieoff_data_intg
+    assign data_intg = '0;
+  end
+
   assign tl_h_o.a_ready  = ~err_rsp_pending & ~(err_req_pending & ~tl_h_i.d_ready);
   assign tl_h_o.d_valid  = err_req_pending | err_rsp_pending;
   assign tl_h_o.d_data   = '1; // Return all F
@@ -43,7 +56,7 @@ module tlul_err_resp (
   assign tl_h_o.d_param  = '0;
   assign tl_h_o.d_size   = err_size;
   assign tl_h_o.d_opcode = (err_opcode == Get) ? AccessAckData : AccessAck;
-  assign tl_h_o.d_user   = '0;
+  assign tl_h_o.d_user   = '{default: '0, data_intg: data_intg};
   assign tl_h_o.d_error  = 1'b1;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
