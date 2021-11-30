@@ -69,16 +69,17 @@ class MisalignedLoadStore(SnippetGen):
         if len(self.bnlid.operands) != 5:
             raise RuntimeError('Unexpected number of operands for bn.lid')
 
-        if not (isinstance(self.bnlid.operands[0].op_type, RegOperandType) and
-                (self.bnlid.operands[0].op_type.reg_type == 'gpr' and
-                not self.bnlid.operands[0].op_type.is_dest() and
-                isinstance(self.bnlid.operands[1].op_type, RegOperandType) and
-                self.bnlid.operands[1].op_type.reg_type == 'gpr' and
-                not self.bnlid.operands[1].op_type.is_dest() and
-                isinstance(self.bnlid.operands[2].op_type, ImmOperandType) and
-                self.bnlid.operands[2].op_type.signed and
-                isinstance(self.bnlid.operands[3].op_type, OptionOperandType) and
-                isinstance(self.bnlid.operands[4].op_type, OptionOperandType))):
+        ops = self.bnlid.operands
+        if not (isinstance(ops[0].op_type, RegOperandType) and
+                (ops[0].op_type.reg_type == 'gpr' and
+                not ops[0].op_type.is_dest() and
+                isinstance(ops[1].op_type, RegOperandType) and
+                ops[1].op_type.reg_type == 'gpr' and
+                not ops[1].op_type.is_dest() and
+                isinstance(ops[2].op_type, ImmOperandType) and
+                ops[2].op_type.signed and
+                isinstance(ops[3].op_type, OptionOperandType) and
+                isinstance(ops[4].op_type, OptionOperandType))):
             raise RuntimeError('BN.LID instruction from instructions file is '
                                'not the shape expected by the BadLoadStore'
                                'generator.')
@@ -91,17 +92,18 @@ class MisalignedLoadStore(SnippetGen):
         if len(self.bnsid.operands) != 5:
             raise RuntimeError('Unexpected number of operands for bn.sid')
 
-        if not (isinstance(self.bnsid.operands[0].op_type, RegOperandType) and
-                self.bnsid.operands[0].op_type.reg_type == 'gpr' and
-                not self.bnsid.operands[0].op_type.is_dest() and
-                isinstance(self.bnsid.operands[1].op_type, RegOperandType) and
-                self.bnsid.operands[1].op_type.reg_type == 'gpr' and
-                not self.bnsid.operands[1].op_type.is_dest() and
-                isinstance(self.bnsid.operands[2].op_type, ImmOperandType) and
-                self.bnsid.operands[2].op_type.signed and
-                isinstance(self.bnsid.operands[3].op_type, OptionOperandType) and
-                isinstance(self.bnsid.operands[4].op_type, OptionOperandType)):
-            raise RuntimeError('BN.LID instruction from instructions file is '
+        ops = self.bnsid.operands
+        if not (isinstance(ops[0].op_type, RegOperandType) and
+                ops[0].op_type.reg_type == 'gpr' and
+                not ops[0].op_type.is_dest() and
+                isinstance(ops[1].op_type, RegOperandType) and
+                ops[1].op_type.reg_type == 'gpr' and
+                not ops[1].op_type.is_dest() and
+                isinstance(ops[2].op_type, ImmOperandType) and
+                ops[2].op_type.signed and
+                isinstance(ops[3].op_type, OptionOperandType) and
+                isinstance(ops[4].op_type, OptionOperandType)):
+            raise RuntimeError('BN.SID instruction from instructions file is '
                                'not the shape expected by the BadLoadStore'
                                'generator.')
 
@@ -182,7 +184,8 @@ class MisalignedLoadStore(SnippetGen):
         # We always have x0 as an eligible register for misaligned load/stores
         assert base
 
-        # Pick a random register among known registers that is constrained above
+        # Pick a random register among known registers that is constrained
+        # above
         idx, value = random.choice(base)
 
         op_val_grs1 = idx
@@ -204,8 +207,8 @@ class MisalignedLoadStore(SnippetGen):
         assert offset_val is not None
 
         if insn.mnemonic == 'lw':
-            # Pick grd randomly. Since we can write to any register (including x0)
-            # this should always succeed.
+            # Pick grd randomly. Since we can write to any register (including
+            # x0) this should always succeed.
             op_val_grd = model.pick_operand_value(grd_op_type)
             assert op_val_grd is not None
 
@@ -266,16 +269,17 @@ class MisalignedLoadStore(SnippetGen):
         assert op_val_grs1 is not None
 
         if insn.mnemonic == 'bn.lid':
-            # Pick grd randomly. Since we can write to any register (including x0)
-            # this should always succeed.
-            op_val_grd = model.pick_operand_value(self.bnlid.operands[0].op_type)
+            # Pick grd randomly. Since we can write to any register (including
+            # x0) this should always succeed.
+            op_val_grd = model.pick_operand_value(insn.operands[0].op_type)
             assert op_val_grd is not None
 
             op_val = [op_val_grd, op_val_grs1, bn_offset_val, 0, 0]
 
         elif insn.mnemonic == 'bn.sid':
             # Any known register is okay for grs2 operand since it will be
-            # guaranteed to have an out of bounds address to store the value from.
+            # guaranteed to have an out of bounds address to store the value
+            # from.
             op_val_grs2 = random.choice(known_regs)[0]
             assert op_val_grs2 is not None
 

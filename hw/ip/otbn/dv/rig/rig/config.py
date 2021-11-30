@@ -84,11 +84,15 @@ class MinMaxes:
             else:
                 self.max_values[key[4:]] = ival
 
-    def get_min(self, key: str, default: Optional[int] = None) -> Optional[int]:
+    def get_min(self,
+                key: str,
+                default: Optional[int] = None) -> Optional[int]:
         '''Get a minimum from the dictionary'''
         return self.min_values.get(key, default)
 
-    def get_max(self, key: str, default: Optional[int] = None) -> Optional[int]:
+    def get_max(self,
+                key: str,
+                default: Optional[int] = None) -> Optional[int]:
         '''Get a maximum from the dictionary'''
         return self.max_values.get(key, default)
 

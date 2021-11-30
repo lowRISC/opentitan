@@ -337,14 +337,22 @@ void ISSWrapper::edn_rnd_cdc_done() {
   run_command("edn_rnd_cdc_done\n", nullptr);
 }
 
-void ISSWrapper::edn_step(uint32_t edn_rnd_data) {
+void ISSWrapper::edn_urnd_cdc_done() {
+  run_command("edn_urnd_cdc_done\n", nullptr);
+}
+
+void ISSWrapper::edn_flush() { run_command("edn_flush\n", nullptr); }
+
+void ISSWrapper::edn_rnd_step(uint32_t edn_rnd_data) {
   std::ostringstream oss;
-  oss << "edn_step " << std::hex << "0x" << edn_rnd_data << "\n";
+  oss << "edn_rnd_step " << std::hex << "0x" << edn_rnd_data << "\n";
   run_command(oss.str(), nullptr);
 }
 
-void ISSWrapper::edn_urnd_reseed_complete() {
-  run_command("edn_urnd_reseed_complete\n", nullptr);
+void ISSWrapper::edn_urnd_step(uint32_t edn_urnd_data) {
+  std::ostringstream oss;
+  oss << "edn_urnd_step " << std::hex << "0x" << edn_urnd_data << "\n";
+  run_command(oss.str(), nullptr);
 }
 
 int ISSWrapper::step(bool gen_trace) {
@@ -369,6 +377,7 @@ int ISSWrapper::step(bool gen_trace) {
   // updated around the end of an operation but the precise timing is slightly
   // in flux, so it's easiest to just allow updates whenever they arrive.
   read_ext_reg("INSN_CNT", lines, &mirrored_.insn_cnt);
+  read_ext_reg("RND_REQ", lines, &mirrored_.rnd_req);
   read_ext_reg("ERR_BITS", lines, &mirrored_.err_bits);
   read_ext_reg("STOP_PC", lines, &mirrored_.stop_pc);
 
@@ -389,6 +398,8 @@ void ISSWrapper::reset(bool gen_trace) {
   // the ISS one cycle *after* start, but clearing it here avoids a glitch
   // before that.
   mirrored_.insn_cnt = 0;
+
+  mirrored_.rnd_req = 0;
 
   // Zero our mirror of STATUS: the initial zero value for the next run doesn't
   // get reported by the ISS.

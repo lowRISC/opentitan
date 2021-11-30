@@ -78,6 +78,9 @@ package lc_ctrl_state_pkg;
   parameter int LcStateWidth = NumLcStateValues * LcValueWidth;
   parameter int NumLcStates = ${len(lc_st_enc.config['lc_state'])};
   parameter int DecLcStateWidth = vbits(NumLcStates);
+  // Redundant version used in the CSRs.
+  parameter int DecLcStateNumRep = 32/DecLcStateWidth;
+  parameter int ExtDecLcStateWidth = DecLcStateNumRep*DecLcStateWidth;
 
   parameter int NumLcCountValues = ${lc_st_enc.config['num_lc_cnt_words']};
   parameter int LcCountWidth = NumLcCountValues * LcValueWidth;
@@ -89,6 +92,9 @@ package lc_ctrl_state_pkg;
   // is declared here for exposure through the CSR interface.
   parameter int NumLcIdStates = 2;
   parameter int DecLcIdStateWidth = vbits(NumLcIdStates+1);
+  // Redundant version used in the CSRs.
+  parameter int DecLcIdStateNumRep = 32/DecLcIdStateWidth;
+  parameter int ExtDecLcIdStateWidth = DecLcIdStateNumRep*DecLcIdStateWidth;
 
   /////////////////////////////////////////////
   // Life cycle manufacturing state encoding //
@@ -160,6 +166,8 @@ ${_print_state_enum('LcCnt', 'lc_cnt', lc_st_enc.config)}
     DecLcStEscalate = ${len(lc_st_enc.config['lc_state']) + 1},
     DecLcStInvalid = ${len(lc_st_enc.config['lc_state']) + 2}
   } dec_lc_state_e;
+
+  typedef dec_lc_state_e [DecLcStateNumRep-1:0] ext_dec_lc_state_t;
 
   typedef enum logic [DecLcIdStateWidth-1:0] {
     DecLcIdBlank,

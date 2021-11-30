@@ -28,28 +28,29 @@ filesets:
       - rtl/ast_pkg.sv
       - rtl/ast_bhv_pkg.sv
       - rtl/ast.sv
+      - rtl/ast_reg_top.sv
       - rtl/adc.sv
       - rtl/adc_ana.sv
-      - rtl/aon_clk.sv
-      - rtl/aon_osc.sv
-      - rtl/ast_dft.sv
-      - rtl/ast_reg_top.sv
-      - rtl/ast_entropy.sv
-      - rtl/dev_entropy.sv
-      - rtl/ast_alert.sv
       - rtl/vcc_pgd.sv
       - rtl/vio_pgd.sv
       - rtl/vcaon_pgd.sv
       - rtl/vcmain_pgd.sv
-      - rtl/gfr_clk_mux2.sv
+      - rtl/ast_alert.sv
+      - rtl/aon_clk.sv
+      - rtl/aon_osc.sv
       - rtl/io_clk.sv
       - rtl/io_osc.sv
-      - rtl/rglts_pdm_3p3v.sv
-      - rtl/rng.sv
       - rtl/sys_clk.sv
       - rtl/sys_osc.sv
       - rtl/usb_clk.sv
       - rtl/usb_osc.sv
+      - rtl/gfr_clk_mux2.sv
+      - rtl/ast_clks_byp.sv
+      - rtl/rglts_pdm_3p3v.sv
+      - rtl/ast_entropy.sv
+      - rtl/dev_entropy.sv
+      - rtl/rng.sv
+      - rtl/ast_dft.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

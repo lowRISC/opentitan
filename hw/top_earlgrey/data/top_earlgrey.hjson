@@ -829,6 +829,7 @@
       'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],
       'keymgr.aes_key'          : ['aes.keymgr_key'],
       'keymgr.kmac_key'         : ['kmac.keymgr_key'],
+      'keymgr.otbn_key'         : ['otbn.keymgr_key'],
 
       // KMAC Application Interface
       'kmac.app'                : ['keymgr.kmac_data',    // Keymgr needs to be at index 0

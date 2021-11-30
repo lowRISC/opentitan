@@ -10,20 +10,20 @@ module lc_ctrl_state_transition
   import lc_ctrl_state_pkg::*;
 (
   // Life cycle state vector.
-  input  lc_state_e        lc_state_i,
-  input  lc_cnt_e          lc_cnt_i,
+  input  lc_state_e         lc_state_i,
+  input  lc_cnt_e           lc_cnt_i,
   // Main FSM state.
-  input  fsm_state_e       fsm_state_i,
+  input  fsm_state_e        fsm_state_i,
   // Decoded lc state input
-  input  dec_lc_state_e    dec_lc_state_i,
+  input  dec_lc_state_e     dec_lc_state_i,
   // Transition target.
-  input  dec_lc_state_e    trans_target_i,
+  input  ext_dec_lc_state_t trans_target_i,
   // Updated state vector.
-  output lc_state_e        next_lc_state_o,
-  output lc_cnt_e          next_lc_cnt_o,
+  output lc_state_e         next_lc_state_o,
+  output lc_cnt_e           next_lc_cnt_o,
   // If the transition counter is maxed out
-  output logic             trans_cnt_oflw_error_o,
-  output logic             trans_invalid_error_o
+  output logic              trans_cnt_oflw_error_o,
+  output logic              trans_invalid_error_o
 );
 
   //////////////////////////
@@ -80,7 +80,7 @@ module lc_ctrl_state_transition
       endcase // lc_cnt_i
 
       // In case the transition target is SCRAP, max out the counter.
-      if (trans_target_i == DecLcStScrap) begin
+      if (trans_target_i == {DecLcStateNumRep{DecLcStScrap}}) begin
         next_lc_cnt_o = LcCnt24;
       end
     end
@@ -91,39 +91,39 @@ module lc_ctrl_state_transition
                             TransProgSt}) begin
       // Check that the decoded transition indexes are valid
       // before indexing the state transition matrix.
-      if (dec_lc_state_i <= DecLcStScrap ||
-          trans_target_i <= DecLcStScrap) begin
+      if (dec_lc_state_i    <= DecLcStScrap &&
+          trans_target_i[0] <= DecLcStScrap) begin
         // Check the state transition token matrix in order to see whether this
         // transition is valid. All transitions have a token index value different
         // from InvalidTokenIdx.
-        if (TransTokenIdxMatrix[dec_lc_state_i][trans_target_i] != InvalidTokenIdx) begin
+        if (TransTokenIdxMatrix[dec_lc_state_i][trans_target_i[0]] != InvalidTokenIdx) begin
           // Encode the target state.
           // Note that the life cycle encoding itself also ensures that only certain transitions are
           // possible. So even if this logic here is tampered with, the encoding values won't allow
           // an invalid transition (instead, the programming operation will fail and leave the life
           // cycle state corrupted/invalid).
           unique case (trans_target_i)
-            DecLcStRaw:           next_lc_state_o = LcStRaw;
-            DecLcStTestUnlocked0: next_lc_state_o = LcStTestUnlocked0;
-            DecLcStTestLocked0:   next_lc_state_o = LcStTestLocked0;
-            DecLcStTestUnlocked1: next_lc_state_o = LcStTestUnlocked1;
-            DecLcStTestLocked1:   next_lc_state_o = LcStTestLocked1;
-            DecLcStTestUnlocked2: next_lc_state_o = LcStTestUnlocked2;
-            DecLcStTestLocked2:   next_lc_state_o = LcStTestLocked2;
-            DecLcStTestUnlocked3: next_lc_state_o = LcStTestUnlocked3;
-            DecLcStTestLocked3:   next_lc_state_o = LcStTestLocked3;
-            DecLcStTestUnlocked4: next_lc_state_o = LcStTestUnlocked4;
-            DecLcStTestLocked4:   next_lc_state_o = LcStTestLocked4;
-            DecLcStTestUnlocked5: next_lc_state_o = LcStTestUnlocked5;
-            DecLcStTestLocked5:   next_lc_state_o = LcStTestLocked5;
-            DecLcStTestUnlocked6: next_lc_state_o = LcStTestUnlocked6;
-            DecLcStTestLocked6:   next_lc_state_o = LcStTestLocked6;
-            DecLcStTestUnlocked7: next_lc_state_o = LcStTestUnlocked7;
-            DecLcStDev:           next_lc_state_o = LcStDev;
-            DecLcStProd:          next_lc_state_o = LcStProd;
-            DecLcStProdEnd:       next_lc_state_o = LcStProdEnd;
-            DecLcStRma:           next_lc_state_o = LcStRma;
-            DecLcStScrap:         next_lc_state_o = LcStScrap;
+            {DecLcStateNumRep{DecLcStRaw}}:           next_lc_state_o = LcStRaw;
+            {DecLcStateNumRep{DecLcStTestUnlocked0}}: next_lc_state_o = LcStTestUnlocked0;
+            {DecLcStateNumRep{DecLcStTestLocked0}}:   next_lc_state_o = LcStTestLocked0;
+            {DecLcStateNumRep{DecLcStTestUnlocked1}}: next_lc_state_o = LcStTestUnlocked1;
+            {DecLcStateNumRep{DecLcStTestLocked1}}:   next_lc_state_o = LcStTestLocked1;
+            {DecLcStateNumRep{DecLcStTestUnlocked2}}: next_lc_state_o = LcStTestUnlocked2;
+            {DecLcStateNumRep{DecLcStTestLocked2}}:   next_lc_state_o = LcStTestLocked2;
+            {DecLcStateNumRep{DecLcStTestUnlocked3}}: next_lc_state_o = LcStTestUnlocked3;
+            {DecLcStateNumRep{DecLcStTestLocked3}}:   next_lc_state_o = LcStTestLocked3;
+            {DecLcStateNumRep{DecLcStTestUnlocked4}}: next_lc_state_o = LcStTestUnlocked4;
+            {DecLcStateNumRep{DecLcStTestLocked4}}:   next_lc_state_o = LcStTestLocked4;
+            {DecLcStateNumRep{DecLcStTestUnlocked5}}: next_lc_state_o = LcStTestUnlocked5;
+            {DecLcStateNumRep{DecLcStTestLocked5}}:   next_lc_state_o = LcStTestLocked5;
+            {DecLcStateNumRep{DecLcStTestUnlocked6}}: next_lc_state_o = LcStTestUnlocked6;
+            {DecLcStateNumRep{DecLcStTestLocked6}}:   next_lc_state_o = LcStTestLocked6;
+            {DecLcStateNumRep{DecLcStTestUnlocked7}}: next_lc_state_o = LcStTestUnlocked7;
+            {DecLcStateNumRep{DecLcStDev}}:           next_lc_state_o = LcStDev;
+            {DecLcStateNumRep{DecLcStProd}}:          next_lc_state_o = LcStProd;
+            {DecLcStateNumRep{DecLcStProdEnd}}:       next_lc_state_o = LcStProdEnd;
+            {DecLcStateNumRep{DecLcStRma}}:           next_lc_state_o = LcStRma;
+            {DecLcStateNumRep{DecLcStScrap}}:         next_lc_state_o = LcStScrap;
             default:              trans_invalid_error_o = 1'b1;
           endcase // trans_target_i
         end else begin

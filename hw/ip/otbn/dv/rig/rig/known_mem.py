@@ -123,7 +123,8 @@ class KnownMem:
 
         # Are we just above it?
         if addr == left_hi:
-            # If there is no range above, we can just extend the last range by one.
+            # If there is no range above, we can just extend the last range by
+            # one.
             if first_idx_above is None:
                 self.known_ranges = left + [(left_lo, left_hi + 1)]
                 return
@@ -239,8 +240,9 @@ class KnownMem:
         if ibase_addr % gcd:
             return None
 
-        # If gcd divides ibase_addr, we convert x0 and y0 to an initial solution
-        # (i0, j0) as described above by multiplying up by ibase_addr / gcd.
+        # If gcd divides ibase_addr, we convert x0 and y0 to an initial
+        # solution (i0, j0) as described above by multiplying up by ibase_addr
+        # / gcd.
         #
         # Note: the floor divisions below for scale_factor, minus_u and v are
         # actually exact

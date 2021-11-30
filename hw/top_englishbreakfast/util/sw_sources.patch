@@ -1,5 +1,5 @@
 diff --git a/sw/device/boot_rom/rom_crt.S b/sw/device/boot_rom/rom_crt.S
-index 99485c5ff..1c8e29d86 100644
+index e4b14eb84..d595aa757 100644
 --- a/sw/device/boot_rom/rom_crt.S
 +++ b/sw/device/boot_rom/rom_crt.S
 @@ -81,19 +81,6 @@ _reset_start:
@@ -19,9 +19,9 @@ index 99485c5ff..1c8e29d86 100644
 -  li   t0, 0x55aa
 -  sw   t0, EDN_CTRL_REG_OFFSET(a0)
 -
-   // Request memory scrambling and init
-   li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
-   li a1, (1<<SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT)|(1<<SRAM_CTRL_CTRL_INIT_BIT)
+   // Zero out the `.bss` segment.
+   la   a0, _bss_start
+   la   a1, _bss_end
 diff --git a/sw/device/lib/pinmux.c b/sw/device/lib/pinmux.c
 index 8861f54ba..8442bb896 100644
 --- a/sw/device/lib/pinmux.c
@@ -111,9 +111,9 @@ index 0336455da..a46911701 100644
 -static dif_csrng_t csrng;
 -static dif_edn_t edn0;
 -static dif_edn_t edn1;
- 
+
  // TODO(alphan): Handle return values as long as they don't affect capture rate.
- 
+
 @@ -80,13 +74,9 @@ static void sca_init_uart(void) {
    };
 
@@ -133,7 +133,7 @@ index 0336455da..a46911701 100644
 @@ -127,25 +117,6 @@ static void sca_init_timer(void) {
    irq_global_ctrl(true);
  }
- 
+
 -/**
 - * Initializes the CSRNG handle.
 - */
@@ -203,7 +203,7 @@ index 0336455da..a46911701 100644
 -  sca_init_edn();
    sca_disable_peripherals(~enable);
  }
- 
+
 diff --git a/sw/device/tests/aes_smoketest.c b/sw/device/tests/aes_smoketest.c
 index 1a5fef16c..214e08151 100644
 --- a/sw/device/tests/aes_smoketest.c
@@ -227,7 +227,7 @@ index 1a5fef16c..214e08151 100644
    CHECK_DIF_OK(
        dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
 diff --git a/sw/device/tests/meson.build b/sw/device/tests/meson.build
-index 25b6fa24d..da9429263 100644
+index 74989d684..3e52c00c6 100644
 --- a/sw/device/tests/meson.build
 +++ b/sw/device/tests/meson.build
 @@ -261,7 +261,6 @@ aes_smoketest_lib = declare_dependency(

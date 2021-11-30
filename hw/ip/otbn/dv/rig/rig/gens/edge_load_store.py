@@ -51,17 +51,18 @@ class EdgeLoadStore(SnippetGen):
         if len(self.bnsid.operands) != 5:
             raise RuntimeError('Unexpected number of operands for bn.sid')
 
-        if not (isinstance(self.bnsid.operands[0].op_type, RegOperandType) and
-                self.bnsid.operands[0].op_type.reg_type == 'gpr' and
-                not self.bnsid.operands[0].op_type.is_dest() and
-                isinstance(self.bnsid.operands[1].op_type, RegOperandType) and
-                self.bnsid.operands[1].op_type.reg_type == 'gpr' and
-                not self.bnsid.operands[1].op_type.is_dest() and
-                isinstance(self.bnsid.operands[2].op_type, ImmOperandType) and
-                self.bnsid.operands[2].op_type.signed and
-                isinstance(self.bnsid.operands[3].op_type, OptionOperandType) and
-                isinstance(self.bnsid.operands[4].op_type, OptionOperandType)):
-            raise RuntimeError('BN.LID instruction from instructions file is '
+        ops = self.bnsid.operands
+        if not (isinstance(ops[0].op_type, RegOperandType) and
+                ops[0].op_type.reg_type == 'gpr' and
+                not ops[0].op_type.is_dest() and
+                isinstance(ops[1].op_type, RegOperandType) and
+                ops[1].op_type.reg_type == 'gpr' and
+                not ops[1].op_type.is_dest() and
+                isinstance(ops[2].op_type, ImmOperandType) and
+                ops[2].op_type.signed and
+                isinstance(ops[3].op_type, OptionOperandType) and
+                isinstance(ops[4].op_type, OptionOperandType)):
+            raise RuntimeError('BN.SID instruction from instructions file is '
                                'not the shape expected by the BadLoadStore'
                                'generator.')
 
@@ -132,13 +133,14 @@ class EdgeLoadStore(SnippetGen):
 
         for reg_idx, u_reg_val in known_regs:
             reg_val = u_reg_val - (1 << 32) if u_reg_val >> 31 else u_reg_val
-            if model.dmem_size - reg_val - 4 in range(min_offset, max_offset + 1):
+            off_to_top = model.dmem_size - reg_val - 4
+            if off_to_top in range(min_offset, max_offset + 1):
                 base.append((reg_idx, reg_val))
 
         if not base:
             return None
 
-        # Pick a random register among known registers that are constrained above
+        # Pick a random known register that can reach the top of memory
         idx, value = random.choice(base)
 
         imm_val = model.dmem_size - 4 - value

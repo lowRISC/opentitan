@@ -5,7 +5,7 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-//    hw/ip/prim/util/generate_prim_mubi.py
+//    util/design/gen-mubi.py
 //
 // Multibit sender module. This module is instantiates a hand-picked flop cell for each bit in the
 // multibit signal such that tools do not optimize the multibit encoding.

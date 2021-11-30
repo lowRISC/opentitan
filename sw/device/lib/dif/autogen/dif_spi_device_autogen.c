@@ -53,29 +53,29 @@ dif_result_t dif_spi_device_alert_force(const dif_spi_device_t *spi_device,
 static bool spi_device_get_irq_bit_index(dif_spi_device_irq_t irq,
                                          bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifSpiDeviceIrqRxFull:
-      *index_out = SPI_DEVICE_INTR_COMMON_RX_FULL_BIT;
+    case kDifSpiDeviceIrqGenericRxFull:
+      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_RX_FULL_BIT;
       break;
-    case kDifSpiDeviceIrqRxWatermark:
-      *index_out = SPI_DEVICE_INTR_COMMON_RX_WATERMARK_BIT;
+    case kDifSpiDeviceIrqGenericRxWatermark:
+      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_RX_WATERMARK_BIT;
       break;
-    case kDifSpiDeviceIrqTxWatermark:
-      *index_out = SPI_DEVICE_INTR_COMMON_TX_WATERMARK_BIT;
+    case kDifSpiDeviceIrqGenericTxWatermark:
+      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_TX_WATERMARK_BIT;
       break;
-    case kDifSpiDeviceIrqRxError:
-      *index_out = SPI_DEVICE_INTR_COMMON_RX_ERROR_BIT;
+    case kDifSpiDeviceIrqGenericRxError:
+      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_RX_ERROR_BIT;
       break;
-    case kDifSpiDeviceIrqRxOverflow:
-      *index_out = SPI_DEVICE_INTR_COMMON_RX_OVERFLOW_BIT;
+    case kDifSpiDeviceIrqGenericRxOverflow:
+      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_RX_OVERFLOW_BIT;
       break;
-    case kDifSpiDeviceIrqTxUnderflow:
-      *index_out = SPI_DEVICE_INTR_COMMON_TX_UNDERFLOW_BIT;
+    case kDifSpiDeviceIrqGenericTxUnderflow:
+      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_TX_UNDERFLOW_BIT;
       break;
-    case kDifSpiDeviceIrqCmdfifoNotEmpty:
-      *index_out = SPI_DEVICE_INTR_COMMON_CMDFIFO_NOT_EMPTY_BIT;
+    case kDifSpiDeviceIrqUploadCmdfifoNotEmpty:
+      *index_out = SPI_DEVICE_INTR_COMMON_UPLOAD_CMDFIFO_NOT_EMPTY_BIT;
       break;
-    case kDifSpiDeviceIrqPayloadNotEmpty:
-      *index_out = SPI_DEVICE_INTR_COMMON_PAYLOAD_NOT_EMPTY_BIT;
+    case kDifSpiDeviceIrqUploadPayloadNotEmpty:
+      *index_out = SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_NOT_EMPTY_BIT;
       break;
     case kDifSpiDeviceIrqReadbufWatermark:
       *index_out = SPI_DEVICE_INTR_COMMON_READBUF_WATERMARK_BIT;

@@ -87,13 +87,6 @@ __attribute__((section(
     0x00008067,
 };
 
-/**
- * Adds the first parameter to the second parameter and returns the result.
- *
- * Maps to the `execution_test_instructions` buffer as the function body.
- */
-typedef uint32_t (*ram_exec_function_t)(volatile uint32_t, volatile uint32_t);
-
 static bool otp_ifetch_enabled(void) {
   dif_otp_ctrl_t otp;
   CHECK_DIF_OK(dif_otp_ctrl_init(
@@ -130,7 +123,8 @@ static bool otp_ifetch_enabled(void) {
  */
 static void sram_execution_test(void) {
   // Map the function pointer onto the instruction buffer.
-  ram_exec_function_t func = (ram_exec_function_t)execution_test_instructions;
+  sram_ctrl_testutils_exec_function_t func =
+      (sram_ctrl_testutils_exec_function_t)execution_test_instructions;
 
   uintptr_t func_address = (uintptr_t)func;
   CHECK(func_address >= kRamStartAddr && func_address <= kRamEndAddr,

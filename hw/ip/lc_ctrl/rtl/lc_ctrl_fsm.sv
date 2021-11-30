@@ -38,7 +38,7 @@ module lc_ctrl_fsm
   input  lc_tx_t                rma_token_valid_i,
   // Transition trigger interface.
   input                         trans_cmd_i,
-  input  dec_lc_state_e         trans_target_i,
+  input  ext_dec_lc_state_t     trans_target_i,
   // Decoded life cycle state for CSRs.
   output dec_lc_state_e         dec_lc_state_o,
   output dec_lc_cnt_t           dec_lc_cnt_o,
@@ -322,7 +322,7 @@ module lc_ctrl_fsm
       // Flash RMA state. Note that we check the flash response again
       // two times later below.
       FlashRmaSt: begin
-        if (trans_target_i == DecLcStRma) begin
+        if (trans_target_i == {DecLcStateNumRep{DecLcStRma}}) begin
           lc_flash_rma_req = On;
           if (lc_flash_rma_ack[0] == On) begin
             fsm_state_d = TokenCheck0St;
@@ -342,10 +342,10 @@ module lc_ctrl_fsm
         end else begin
           // If any of these RMA are conditions are true,
           // all of them must be true at the same time.
-          if ((trans_target_i != DecLcStRma &&
+          if ((trans_target_i != {DecLcStateNumRep{DecLcStRma}} &&
                lc_flash_rma_req_o == Off    &&
                lc_flash_rma_ack[1] == Off)   ||
-              (trans_target_i == DecLcStRma &&
+              (trans_target_i == {DecLcStateNumRep{DecLcStRma}} &&
                lc_flash_rma_req_o == On     &&
                lc_flash_rma_ack[1] == On)) begin
             if (hashed_token_i == hashed_token_mux &&
@@ -496,7 +496,7 @@ module lc_ctrl_fsm
     hashed_tokens_valid[InvalidTokenIdx]    = 1'b0; // always invalid
   end
 
-  assign token_idx = TransTokenIdxMatrix[dec_lc_state_o][trans_target_i];
+  assign token_idx = TransTokenIdxMatrix[dec_lc_state_o][trans_target_i[0]];
   assign hashed_token_mux = hashed_tokens[token_idx];
   assign hashed_token_valid_mux = hashed_tokens_valid[token_idx];
 

@@ -10,6 +10,16 @@
 
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 
+/*
+ * Adds the first parameter to the second parameter and returns the result.
+ *
+ * The main use-case is to map this function pointer onto a buffer holding
+ * SRAM execution test instructions. The assumption is that this buffer holds
+ * instruction[0] = add a0, a1, a0, instruction[1] = jalr zero, 0(ra).
+ */
+typedef uint32_t (*sram_ctrl_testutils_exec_function_t)(volatile uint32_t,
+                                                        volatile uint32_t);
+
 /**
  * A typed representation of the test data.
  */

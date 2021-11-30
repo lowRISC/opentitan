@@ -89,8 +89,9 @@ class InitData:
     def gen(dmem_size: int) -> 'InitData':
         '''Generate some initialised data
 
-        This will be inserted into the program as initialised data (pre-loaded).
-        The dictionary maps (word-aligned) byte addresses to u32 values.
+        This will be inserted into the program as initialised data
+        (pre-loaded). The dictionary maps (word-aligned) byte addresses to u32
+        values.
 
         '''
         assert dmem_size > 0

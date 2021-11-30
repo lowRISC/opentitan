@@ -143,11 +143,11 @@ class BadDeepLoop(SnippetGen):
             # above)
             prog_insn, _ = self._gen_loop_head(model, program)
 
-            # Note that we generate a ProgSnippet, not a LoopSnippet here: while
-            # we've got a loop instruction, we happen to know that it will fault,
-            # so it's going to behave more like a straight line instruction. Also,
-            # we don't have a snippet for the body so the types don't really work
-            # for LoopSnippet.
+            # Note that we generate a ProgSnippet, not a LoopSnippet here:
+            # while we've got a loop instruction, we happen to know that it
+            # will fault, so it's going to behave more like a straight line
+            # instruction. Also, we don't have a snippet for the body so the
+            # types don't really work for LoopSnippet.
             snippet = ProgSnippet(model.pc, [prog_insn])
             snippet.insert_into_program(program)
 
@@ -161,7 +161,8 @@ class BadDeepLoop(SnippetGen):
         # space calculations into account (maybe thread them through as
         # arguments?)
 
-        # Our space calculations in gen() should have ensured that this is true.
+        # Our space calculations in gen() should have ensured that this is
+        # true.
         assert space_here >= 2
 
         hd_pc = model.pc
@@ -195,7 +196,8 @@ class BadDeepLoop(SnippetGen):
         if body_snippet is None:
             body_snippet = real_body_snippet
         else:
-            body_snippet = Snippet.merge_list([body_snippet, real_body_snippet])
+            body_snippet = Snippet.merge_list([body_snippet,
+                                               real_body_snippet])
 
         return (LoopSnippet(hd_pc, hd_insn, body_snippet, None), model)
 

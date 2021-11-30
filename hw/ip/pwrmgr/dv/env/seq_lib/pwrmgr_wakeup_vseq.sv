@@ -11,15 +11,7 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
 
   constraint wakeups_c {wakeups != 0;}
 
-  rand bit prior_wakeup;
-  rand wakeups_t prior_wakeups;
-  constraint prior_wakeups_c {
-    solve wakeups, prior_wakeup before prior_wakeups;
-    if (prior_wakeup) {
-      prior_wakeups != 0;
-      prior_wakeups != wakeups;
-    }
-  }
+  rand bit keep_prior_wake_info;
 
   constraint wakeup_en_c {
     solve wakeups before wakeups_en;
@@ -29,6 +21,9 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
   task body();
     logic [TL_DW-1:0] value;
     wakeups_t enabled_wakeups;
+    wakeups_t prior_reasons = '0;
+    bit prior_fall_through = '0;
+    bit prior_abort = '0;
 
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(0));
@@ -41,6 +36,24 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
                 "Some wakeup must be enabled: wkups=%b, wkup_en=%b", wakeups, wakeups_en))
       `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x", enabled_wakeups), UVM_MEDIUM)
       csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
+
+      if (keep_prior_wake_info) begin
+        csr_rd(.ptr(ral.wake_info.reasons), .value(prior_reasons));
+        csr_rd(.ptr(ral.wake_info.fall_through), .value(prior_fall_through));
+        csr_rd(.ptr(ral.wake_info.abort), .value(prior_abort));
+      end else begin
+        clear_wake_info();
+        prior_reasons = '0;
+        prior_fall_through = '0;
+        prior_abort = '0;
+      end
+      `uvm_info(`gfn, $sformatf(
+                "Prior wake_info: reasons=0x%x, fall_through=%b, abort=%b",
+                prior_reasons,
+                prior_fall_through,
+                prior_abort
+                ), UVM_MEDIUM)
+
       `uvm_info(`gfn, $sformatf("%0sabling wakeup capture", disable_wakeup_capture ? "Dis" : "En"),
                 UVM_MEDIUM)
       csr_wr(.ptr(ral.wake_info_capture_dis), .value(disable_wakeup_capture));
@@ -48,10 +61,11 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       update_control_enables(1'b1);
 
       wait_for_csr_to_propagate_to_slow_domain();
-      cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
 
       // Initiate low power transition.
-      fast_to_low_power();
+      cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
+      set_nvms_idle();
+
       if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
         wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
       end
@@ -73,21 +87,20 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0),
                    .err_msg("failed reset_status check"));
 
-      check_wake_info(enabled_wakeups, .fall_through(1'b0), .abort(1'b0));
-
-      // To clear wake_info capture must be disabled.
-      csr_wr(.ptr(ral.wake_info_capture_dis), .value(1'b1));
-      csr_wr(.ptr(ral.wake_info), .value('1));
+      check_wake_info(.reasons(enabled_wakeups), .prior_reasons(prior_reasons), .fall_through(1'b0),
+                      .prior_fall_through(prior_fall_through), .abort(1'b0),
+                      .prior_abort(prior_abort));
 
       // This is the expected side-effect of the low power entry reset, since the source of the
       // non-aon wakeup sources will deassert it as a consequence of their reset.
       // Some aon wakeups may remain active until software clears them. If they didn't, such wakeups
       // will remain active, preventing the device from going to sleep.
       cfg.pwrmgr_vif.update_wakeups('0);
+      cfg.slow_clk_rst_vif.wait_clks(10);
+      csr_rd_check(.ptr(ral.wake_status[0]), .compare_value('0));
 
       // Wait for interrupt to be generated whether or not it is enabled.
       cfg.slow_clk_rst_vif.wait_clks(10);
-      csr_rd_check(.ptr(ral.wake_status[0]), .compare_value('0));
     end
   endtask
 

@@ -94,23 +94,10 @@ _start:
   li   t0, 0x55aa
   sw   t0, EDN_CTRL_REG_OFFSET(a0)
 
-  // Request memory scrambling and init
-  li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
-  li a1, (1<<SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT)|(1<<SRAM_CTRL_CTRL_INIT_BIT)
-  sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
-
   // Zero out the `.bss` segment.
   la   a0, _bss_start
   la   a1, _bss_end
   call crt_section_clear
-
-  // This zero out stack function is now handled by the hardware memory init from above
-  //
-  // As the stack grows downwards and we zero going forwards the start pointer
-  // starts as _stack_start and the end pointer at _stack_end.
-  //la   a0, _stack_start
-  //la   a1, _stack_end
-  //call crt_section_clear
 
   // Initialize the `.data` segment from the `.idata` segment.
   la   a0, _data_start

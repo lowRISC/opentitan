@@ -239,7 +239,7 @@ shutdown_redact_policy_inline(void) {
     case kLcStateTestUnlocked6:
     case kLcStateTestUnlocked7:
     case kLcStateRma:
-      // No error redaction in RAW, TEST_UNLOCKED and RMA states.
+      // No error redaction in TEST_UNLOCKED and RMA states.
       return kShutdownErrorRedactNone;
     case kLcStateProd:
     case kLcStateProdEnd:

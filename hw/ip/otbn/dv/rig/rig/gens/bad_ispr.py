@@ -17,7 +17,7 @@ from .straight_line_insn import StraightLineInsn
 
 
 class BadIspr(SnippetGen):
-    ''' A snippet to generate load and store instructions to bad CSR/ WSR adresses '''
+    '''A snippet to generate accesses to invalid CSRs/WSRs'''
 
     ends_program = True
 
@@ -72,8 +72,9 @@ class BadIspr(SnippetGen):
         while prog_insn is None:
             idx = random.choices(range(len(self.insns)), weights=weights)[0]
 
-            # weights[idx] will be positive so long as at least one instruction has positive weight.
-            # If it's zero, it means that every weight is zero and we should give up.
+            # weights[idx] will be positive so long as at least one instruction
+            # has positive weight. If it's zero, it means that every weight is
+            # zero and we should give up.
             if weights[idx] < 0:
                 return None
 

@@ -37,8 +37,8 @@ def find_tool(tool_name: str) -> str:
         tool_path = os.path.join(toolchain_path, 'bin', expanded)
         if not os.path.exists(tool_path):
             raise RuntimeError('No such file: {!r} (derived from the '
-                               'TOOLCHAIN_PATH environment variable when trying '
-                               'to find the {!r} tool).'
+                               'TOOLCHAIN_PATH environment variable when '
+                               'trying to find the {!r} tool).'
                                .format(tool_path, tool_name))
         return tool_path
 

@@ -82,9 +82,19 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // It is used to start and stop the responders when the parent sequence starts and ends.
   local static int sequence_depth = 0;
 
+  // This stops randomizing cycles counts that select from a pipeline, since
+  // changes can lead to missing or unexpected transitions.
+  task stop_randomizing_cycles();
+    cycles_before_core_clk_en.rand_mode(0);
+    cycles_before_io_clk_en.rand_mode(0);
+    cycles_before_usb_clk_en.rand_mode(0);
+    cycles_before_main_pok.rand_mode(0);
+  endtask
+
   task pre_start();
     if (do_pwrmgr_init) pwrmgr_init();
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
+    stop_randomizing_cycles();
     fork
       // Toggle rst_main_n to make sure the slow fsm resets correctly, and wait some cycles
       // so testing doesn't start until the side-effects are cleared.
@@ -102,7 +112,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
         super.pre_start();
       end
     join
-  endtask
+  endtask : pre_start
 
   task post_apply_reset(string reset_kind = "HARD");
     super.post_apply_reset(reset_kind);
@@ -163,12 +173,15 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     control_assertions(0);
   endtask
 
-  local function void raise_objection();
+  local function void raise_objection(string label);
     ++objection_count;
+    `uvm_info(`gfn, $sformatf("Raising objection to %0d for %0s", objection_count, label), UVM_HIGH)
   endfunction
 
-  local function void drop_objection();
+  local function void drop_objection(string label);
     --objection_count;
+    `uvm_info(`gfn, $sformatf("Dropping objection to %0d for %0s", objection_count, label),
+              UVM_HIGH)
   endfunction
 
   // Generates expected responses for the slow fsm.
@@ -178,27 +191,31 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // Uses macros because VCS flags an error for assignments to automatic variables,
   // even if the variable is a ref to an interface variable.
 
-  `define SLOW_DETECT(rsp_name, req, rsp_sr) \
+  `define SLOW_DETECT(rsp_name_, req_) \
       forever \
-        @req begin \
-          raise_objection(); \
-          `uvm_info(`gfn, $sformatf("Will drive %0s to %b", rsp_name, req), UVM_MEDIUM) \
+        @req_ begin \
+          raise_objection(rsp_name_); \
+          `uvm_info(`gfn, $sformatf( \
+                    "slow_responder: Will drive %0s to %b", rsp_name_, req_), UVM_MEDIUM) \
         end
 
-  `define SLOW_SHIFT_SR(req, rsp_sr) \
+  `define SLOW_SHIFT_SR(req_, rsp_sr_) \
       forever \
         @cfg.slow_clk_rst_vif.cb begin \
-          rsp_sr = {rsp_sr[MaxCyclesBeforeEnable-1:0], req}; \
+          rsp_sr_ = {rsp_sr_[MaxCyclesBeforeEnable-1:0], req_}; \
         end
 
-  `define SLOW_ASSIGN(rsp_name, cycles, rsp_sr, rsp) \
+  `define SLOW_ASSIGN(rsp_name_, cycles_, rsp_sr_, rsp_) \
       forever \
-        @(rsp_sr[cycles]) begin \
+        @(rsp_sr_[cycles_]) begin \
           `uvm_info(`gfn, $sformatf( \
-                    "Driving %0s to %b after %0d AON cycles.", rsp_name, rsp_sr[cycles], cycles \
+                    "slow_responder: Driving %0s to %b after %0d AON cycles.", \
+                    rsp_name_, \
+                    rsp_sr_[cycles_], \
+                    cycles_ \
                     ), UVM_MEDIUM) \
-          rsp <= rsp_sr[cycles]; \
-          drop_objection(); \
+          rsp_ <= rsp_sr_[cycles_]; \
+          drop_objection(rsp_name_); \
         end
 
   task slow_responder();
@@ -208,24 +225,24 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     logic [MaxCyclesBeforeEnable:0] main_pd_val_sr;
 
     fork
-      `SLOW_DETECT("core_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en, core_clk_val_sr)
+      `SLOW_DETECT("core_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en, core_clk_val_sr)
       `SLOW_ASSIGN("core_clk_val", cycles_before_core_clk_en, core_clk_val_sr,
                    cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.core_clk_val)
-      `SLOW_DETECT("io_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en, io_clk_val_sr)
+      `SLOW_DETECT("io_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en, io_clk_val_sr)
       `SLOW_ASSIGN("io_clk_val", cycles_before_io_clk_en, io_clk_val_sr,
                    cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.io_clk_val)
-      `SLOW_DETECT("usb_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en, usb_clk_val_sr)
+      `SLOW_DETECT("usb_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en, usb_clk_val_sr)
       `SLOW_ASSIGN("usb_clk_val", cycles_before_usb_clk_en, usb_clk_val_sr,
                    cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.usb_clk_val)
-      `SLOW_DETECT("main_pok", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n, main_pd_val_sr)
+      `SLOW_DETECT("main_pok", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n, main_pd_val_sr)
       `SLOW_ASSIGN("main_pok", cycles_before_main_pok, main_pd_val_sr,
                    cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.main_pok)
     join_none
-  endtask
+  endtask : slow_responder
   `undef SLOW_RESPONSE
 
   // Generates expected responses for the fast fsm.
@@ -238,11 +255,11 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   `define FAST_RESPONSE_ACTION(rsp_name, rsp, req, cycles) \
           `uvm_info(`gfn, $sformatf( \
-                    "Will drive %0s to %b in %0d fast clock cycles", \
+                    "fast_responder: Will drive %0s to %b in %0d fast clock cycles", \
                     rsp_name, req, cycles), UVM_HIGH) \
           cfg.clk_rst_vif.wait_clks(cycles); \
           rsp <= req; \
-          `uvm_info(`gfn, $sformatf("Driving %0s to %b", rsp_name, req), UVM_HIGH) \
+          `uvm_info(`gfn, $sformatf("fast_responder: Driving %0s to %b", rsp_name, req), UVM_HIGH) \
 
 
   task fast_responder();
@@ -250,7 +267,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req begin
-          raise_objection();
+          raise_objection("rst_lc_src_n");
           `FAST_RESPONSE_ACTION("rst_lc_src_n", cfg.pwrmgr_vif.fast_cb.pwr_rst_rsp.rst_lc_src_n,
                                 ~cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req,
                                 cycles_before_rst_lc_src)
@@ -260,56 +277,56 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
             cfg.pwrmgr_vif.update_resets('0);
             `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
           end
-          drop_objection();
+          drop_objection("rst_lc_src_n");
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_sys_req begin
-          raise_objection();
+          raise_objection("rst_sys_src_n");
           `FAST_RESPONSE_ACTION("rst_sys_src_n", cfg.pwrmgr_vif.fast_cb.pwr_rst_rsp.rst_sys_src_n,
                                 ~cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_sys_req,
                                 cycles_before_rst_sys_src)
-          drop_objection();
+          drop_objection("rst_sys_src_n");
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en begin
-          raise_objection();
+          raise_objection("io_status");
           `FAST_RESPONSE_ACTION("io_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.io_status,
                                 cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en,
                                 cycles_before_io_status)
-          drop_objection();
+          drop_objection("io_status");
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en begin
-          raise_objection();
+          raise_objection("main_status");
           `FAST_RESPONSE_ACTION("main_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.main_status,
                                 cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en,
                                 cycles_before_main_status)
-          drop_objection();
+          drop_objection("main_status");
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en begin
-          raise_objection();
+          raise_objection("usb_status");
           `FAST_RESPONSE_ACTION("usb_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.usb_status,
                                 cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en,
                                 cycles_before_usb_status)
-          drop_objection();
+          drop_objection("usb_status");
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_lc_req.lc_init begin
-          raise_objection();
+          raise_objection("lc_done");
           `FAST_RESPONSE_ACTION("lc_done", cfg.pwrmgr_vif.fast_cb.pwr_lc_rsp.lc_done,
                                 cfg.pwrmgr_vif.fast_cb.pwr_lc_req.lc_init, cycles_before_lc_done)
-          drop_objection();
+          drop_objection("lc_done");
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_otp_req.otp_init begin
-          raise_objection();
+          raise_objection("otp_done");
           `FAST_RESPONSE_ACTION("otp_done", cfg.pwrmgr_vif.fast_cb.pwr_otp_rsp.otp_done,
                                 cfg.pwrmgr_vif.fast_cb.pwr_otp_req.otp_init, cycles_before_otp_done)
-          drop_objection();
+          drop_objection("otp_done");
         end
     join_none
-  endtask
+  endtask : fast_responder
   `undef FAST_RESPONSE_ACTION
 
   function void control_assertions(bit enable);
@@ -336,16 +353,18 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
               1'b1
               ), UVM_MEDIUM)
     csr_update(.csr(ral.control));
-  endtask
+  endtask : update_control_enables
 
-  // This enables the fast fsm to transition to low power after the transition is enabled by
-  // software and cpu WFI.
-  // FIXME Allow some units not being idle to defeat or postpone transition to low power.
-  virtual task fast_to_low_power();
-    `uvm_info(`gfn, "Setting nvms idle", UVM_MEDIUM)
-    cfg.pwrmgr_vif.update_otp_idle(1'b1);
-    cfg.pwrmgr_vif.update_lc_idle(1'b1);
-    cfg.pwrmgr_vif.update_flash_idle(1'b1);
+  // This enables the fast fsm to transition to low power when all nvms are idle after the
+  // transition is enabled by software and cpu WFI. When not all are idle the transition is
+  // aborted.
+  virtual task set_nvms_idle(logic flash_idle = 1'b1, logic lc_idle = 1'b1, logic otp_idle = 1'b1);
+    `uvm_info(`gfn, $sformatf(
+              "Setting nvms idle: flash=%b, lc=%b, otp=%b", flash_idle, lc_idle, otp_idle),
+              UVM_MEDIUM)
+    cfg.pwrmgr_vif.update_flash_idle(flash_idle);
+    cfg.pwrmgr_vif.update_lc_idle(lc_idle);
+    cfg.pwrmgr_vif.update_otp_idle(otp_idle);
   endtask
 
   // Waits for the fast fsm becoming active after SW initiated low power, indicated by the
@@ -376,17 +395,32 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   // Checks the wake_info matches expectations depending on capture disable.
-  task check_wake_info(wakeups_t enabled_wakeups, bit fall_through, bit abort);
+  // The per-field "prior_" arguments support cases where the wake_info register was not
+  // cleared amd may contain residual values.
+  task check_wake_info(wakeups_t reasons, wakeups_t prior_reasons = '0, bit fall_through,
+                       bit prior_fall_through = '0, bit abort, bit prior_abort = '0);
 
     if (disable_wakeup_capture) begin
-      csr_rd_check(.ptr(ral.wake_info.reasons), .compare_value('0),
+      csr_rd_check(.ptr(ral.wake_info.reasons), .compare_value(prior_reasons),
+                   .err_msg("With capture disabled"));
+      csr_rd_check(.ptr(ral.wake_info.fall_through), .compare_value(prior_fall_through),
+                   .err_msg("With capture disabled"));
+      csr_rd_check(.ptr(ral.wake_info.abort), .compare_value(prior_abort),
                    .err_msg("With capture disabled"));
     end else begin
-      csr_rd_check(.ptr(ral.wake_info.reasons), .compare_value(enabled_wakeups),
+      csr_rd_check(.ptr(ral.wake_info.reasons), .compare_value(reasons | prior_reasons),
+                   .err_msg("With capture enabled"));
+      csr_rd_check(.ptr(ral.wake_info.fall_through),
+                   .compare_value(fall_through | prior_fall_through),
+                   .err_msg("With capture enabled"));
+      csr_rd_check(.ptr(ral.wake_info.abort), .compare_value(abort | prior_abort),
                    .err_msg("With capture enabled"));
     end
-    csr_rd_check(.ptr(ral.wake_info.fall_through), .compare_value(fall_through));
-    csr_rd_check(.ptr(ral.wake_info.abort), .compare_value(abort));
-  endtask
+  endtask : check_wake_info
 
+  task clear_wake_info();
+    // To clear wake_info, capture must be disabled.
+    csr_wr(.ptr(ral.wake_info_capture_dis), .value(1'b1));
+    csr_wr(.ptr(ral.wake_info), .value('1));
+  endtask
 endclass : pwrmgr_base_vseq

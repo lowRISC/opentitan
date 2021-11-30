@@ -18,6 +18,14 @@ uint32_t ibex_mtval_read(void) {
   return mtval;
 }
 
+uint32_t ibex_mepc_read(void) {
+  uint32_t mepc;
+  CSR_READ(CSR_REG_MEPC, &mepc);
+  return mepc;
+}
+
+void ibex_mepc_write(uint32_t mepc) { CSR_WRITE(CSR_REG_MEPC, mepc); }
+
 // `extern` declarations to give the inline functions in the
 // corresponding header a link location.
 

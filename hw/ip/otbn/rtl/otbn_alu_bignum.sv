@@ -93,7 +93,9 @@ module otbn_alu_bignum
   input  flags_t                      mac_operation_flags_en_i,
 
   input  logic [WLEN-1:0]             rnd_data_i,
-  input  logic [WLEN-1:0]             urnd_data_i
+  input  logic [WLEN-1:0]             urnd_data_i,
+
+  input  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
 );
   ///////////
   // ISPRs //
@@ -209,11 +211,17 @@ module otbn_alu_bignum
     ispr_rdata_o = mod_q;
 
     unique case (ispr_addr_i)
-      IsprMod:   ispr_rdata_o = mod_q;
-      IsprRnd:   ispr_rdata_o = rnd_data_i;
-      IsprUrnd:  ispr_rdata_o = urnd_data_i;
-      IsprAcc:   ispr_rdata_o = ispr_acc_i;
-      IsprFlags: ispr_rdata_o = {{(WLEN - (NFlagGroups * FlagsWidth)){1'b0}}, flags_flattened};
+      IsprMod:    ispr_rdata_o = mod_q;
+      IsprRnd:    ispr_rdata_o = rnd_data_i;
+      IsprUrnd:   ispr_rdata_o = urnd_data_i;
+      IsprAcc:    ispr_rdata_o = ispr_acc_i;
+      IsprFlags:  ispr_rdata_o = {{(WLEN - (NFlagGroups * FlagsWidth)){1'b0}}, flags_flattened};
+      IsprKeyS0L: ispr_rdata_o = sideload_key_shares_i[0][255:0];
+      IsprKeyS0H: ispr_rdata_o = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
+                                  sideload_key_shares_i[0][SideloadKeyWidth-1:256]};
+      IsprKeyS1L: ispr_rdata_o = sideload_key_shares_i[1][255:0];
+      IsprKeyS1H: ispr_rdata_o = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
+                                  sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
       default: ;
     endcase
   end

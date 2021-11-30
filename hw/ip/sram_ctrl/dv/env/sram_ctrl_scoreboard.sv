@@ -381,9 +381,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
         valid_hw_debug_en = detected_hw_debug_en;
         valid_en_sram_ifetch = detected_en_sram_ifetch;
 
-        allow_ifetch = (valid_en_sram_ifetch == prim_mubi_pkg::MuBi8True) ?
-                       (valid_csr_exec == prim_mubi_pkg::MuBi4True)           :
-                       (valid_hw_debug_en == lc_ctrl_pkg::On);
+        if (`INSTR_EXEC) begin
+          allow_ifetch = (valid_en_sram_ifetch == prim_mubi_pkg::MuBi8True) ?
+                         (valid_csr_exec == prim_mubi_pkg::MuBi4True)       :
+                         (valid_hw_debug_en == lc_ctrl_pkg::On);
+        end else begin
+          allow_ifetch = 0;
+        end
 
         if (!cfg.en_scb) continue;
 

@@ -80,36 +80,36 @@ typedef enum dif_spi_device_irq {
   /**
    * RX SRAM FIFO Full
    */
-  kDifSpiDeviceIrqRxFull = 0,
+  kDifSpiDeviceIrqGenericRxFull = 0,
   /**
    * RX SRAM FIFO is above the level
    */
-  kDifSpiDeviceIrqRxWatermark = 1,
+  kDifSpiDeviceIrqGenericRxWatermark = 1,
   /**
    * TX SRAM FIFO is under the level
    */
-  kDifSpiDeviceIrqTxWatermark = 2,
+  kDifSpiDeviceIrqGenericTxWatermark = 2,
   /**
    * SDI in FwMode has error
    */
-  kDifSpiDeviceIrqRxError = 3,
+  kDifSpiDeviceIrqGenericRxError = 3,
   /**
    * RX Async FIFO overflow
    */
-  kDifSpiDeviceIrqRxOverflow = 4,
+  kDifSpiDeviceIrqGenericRxOverflow = 4,
   /**
    * TX Async FIFO underflow
    */
-  kDifSpiDeviceIrqTxUnderflow = 5,
+  kDifSpiDeviceIrqGenericTxUnderflow = 5,
   /**
    * Upload Command FIFO is not empty
    */
-  kDifSpiDeviceIrqCmdfifoNotEmpty = 6,
+  kDifSpiDeviceIrqUploadCmdfifoNotEmpty = 6,
   /**
    * Upload paylod is not empty.  The event occurs after SPI transaction
    * completed
    */
-  kDifSpiDeviceIrqPayloadNotEmpty = 7,
+  kDifSpiDeviceIrqUploadPayloadNotEmpty = 7,
   /**
    * Read Buffer Threshold event.  The host system accesses greater than or
    * equal to the threshold of a buffer.

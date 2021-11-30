@@ -22,6 +22,7 @@ module rglts_pdm_3p3v (
   input scan_mode_i,                     // Scan Mode
   output logic vcaon_pok_h_o,            // VCAON (1.1v) Exist @3.3v
   output logic main_pwr_dly_o,           // For modeling only.
+  output logic deep_sleep_h_o,           // Deep Sleep (main regulator & switch are off) @3.3v
   output logic flash_power_down_h_o,     //
   output logic flash_power_ready_h_o,    //
   output logic [1:0] otp_power_seq_h_o   // MMR0,24 masked by PDM, out (VCC)
@@ -101,6 +102,12 @@ end else begin : gen_generic
   // TODO
 end
 `endif  // of SYNTHESIS
+
+
+///////////////////////////////////////
+// Deep Sleep Indication
+///////////////////////////////////////
+assign deep_sleep_h_o = !(main_pd_h_ni && vcmain_pok_o_h_i);
 
 
 ///////////////////////////////////////

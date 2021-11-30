@@ -40,10 +40,10 @@ module otbn_core
   // Instruction memory (IMEM)
   output logic                     imem_req_o,
   output logic [ImemAddrWidth-1:0] imem_addr_o,
-  output logic [31:0]              imem_wdata_o,
-  input  logic [31:0]              imem_rdata_i,
+  input  logic [38:0]              imem_rdata_i,
   input  logic                     imem_rvalid_i,
-  input  logic                     imem_rerror_i,
+
+  output logic                     insn_fetch_err_o,
 
   // Data memory (DMEM)
   output logic                        dmem_req_o,
@@ -79,7 +79,10 @@ module otbn_core
   input  logic                    lifecycle_escalation_i,
 
   // When set software errors become fatal errors.
-  input  logic                    software_errs_fatal_i
+  input  logic                    software_errs_fatal_i,
+
+  input  logic [1:0]                       sideload_key_shares_valid_i,
+  input  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
 );
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -89,6 +92,7 @@ module otbn_core
   logic                     insn_fetch_resp_valid;
   logic [ImemAddrWidth-1:0] insn_fetch_resp_addr;
   logic [31:0]              insn_fetch_resp_data;
+  logic                     insn_fetch_resp_clear;
   logic                     insn_fetch_err;
 
   // The currently executed instruction.
@@ -201,6 +205,12 @@ module otbn_core
   logic sec_wipe_mod_urnd;
   logic sec_wipe_zero;
 
+  logic                     prefetch_en;
+  logic                     prefetch_loop_active;
+  logic [31:0]              prefetch_loop_iterations;
+  logic [ImemAddrWidth-1:0] prefetch_loop_end_addr;
+  logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr;
+
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
   otbn_start_stop_control #(
@@ -253,7 +263,6 @@ module otbn_core
     .imem_addr_o,
     .imem_rdata_i,
     .imem_rvalid_i,
-    .imem_rerror_i,
 
     // Instruction to fetch
     .insn_fetch_req_addr_i  (insn_fetch_req_addr),
@@ -263,10 +272,17 @@ module otbn_core
     .insn_fetch_resp_addr_o  (insn_fetch_resp_addr),
     .insn_fetch_resp_valid_o (insn_fetch_resp_valid),
     .insn_fetch_resp_data_o  (insn_fetch_resp_data),
-    .insn_fetch_err_o        (insn_fetch_err)
+    .insn_fetch_resp_clear_i (insn_fetch_resp_clear),
+    .insn_fetch_err_o        (insn_fetch_err),
+
+    .prefetch_en_i              (prefetch_en),
+    .prefetch_loop_active_i     (prefetch_loop_active),
+    .prefetch_loop_iterations_i (prefetch_loop_iterations),
+    .prefetch_loop_end_addr_i   (prefetch_loop_end_addr),
+    .prefetch_loop_jump_addr_i  (prefetch_loop_jump_addr)
   );
 
-  assign imem_wdata_o = '0;
+  assign insn_fetch_err_o = insn_fetch_err;
 
   // Instruction decoder
   otbn_decoder u_otbn_decoder (
@@ -302,8 +318,9 @@ module otbn_core
     .err_bits_o,
 
     // Next instruction selection (to instruction fetch)
-    .insn_fetch_req_addr_o  (insn_fetch_req_addr),
-    .insn_fetch_req_valid_o (insn_fetch_req_valid),
+    .insn_fetch_req_addr_o   (insn_fetch_req_addr),
+    .insn_fetch_req_valid_o  (insn_fetch_req_valid),
+    .insn_fetch_resp_clear_o (insn_fetch_resp_clear),
     // Error from fetch requested last cycle
     .insn_fetch_err_i       (insn_fetch_err),
 
@@ -399,8 +416,19 @@ module otbn_core
     .bus_intg_violation_i,
     .illegal_bus_access_i,
     .lifecycle_escalation_i,
-    .software_errs_fatal_i
+    .software_errs_fatal_i,
+
+    .sideload_key_shares_valid_i,
+
+    .prefetch_en_o              (prefetch_en),
+    .prefetch_loop_active_o     (prefetch_loop_active),
+    .prefetch_loop_iterations_o (prefetch_loop_iterations),
+    .prefetch_loop_end_addr_o   (prefetch_loop_end_addr),
+    .prefetch_loop_jump_addr_o  (prefetch_loop_jump_addr)
   );
+
+  `ASSERT(InsnDataStableInStall, u_otbn_controller.state_q == OtbnStateStall |->
+                                 insn_fetch_resp_data == $past(insn_fetch_resp_data))
 
   assign insn_cnt_o = insn_cnt;
 
@@ -557,7 +585,9 @@ module otbn_core
     .mac_operation_flags_en_i (mac_bignum_operation_flags_en),
 
     .rnd_data_i               (rnd_data),
-    .urnd_data_i              (urnd_data)
+    .urnd_data_i              (urnd_data),
+
+    .sideload_key_shares_i
   );
 
   otbn_mac_bignum u_otbn_mac_bignum (
@@ -611,7 +641,6 @@ module otbn_core
   `ASSERT_KNOWN(DoneOKnown_A, done_o)
   `ASSERT_KNOWN(ImemReqOKnown_A, imem_req_o)
   `ASSERT_KNOWN_IF(ImemAddrOKnown_A, imem_addr_o, imem_req_o)
-  `ASSERT_KNOWN(ImemWdataOKnown_A, imem_wdata_o)
   `ASSERT_KNOWN(DmemReqOKnown_A, dmem_req_o)
   `ASSERT_KNOWN_IF(DmemWriteOKnown_A, dmem_write_o, dmem_req_o)
   `ASSERT_KNOWN_IF(DmemAddrOKnown_A, dmem_addr_o, dmem_req_o)

@@ -64,7 +64,7 @@
     { name:    "CsrLcStateWidth",
       desc:    "Number of life cycle state enum bits.",
       type:    "int"
-      default: "5",
+      default: "30", // 6 * 5bit
       local:   "true"
     }
     { name:    "CsrLcCountWidth",
@@ -76,7 +76,7 @@
     { name:    "CsrLcIdStateWidth",
       desc:    "Number of life cycle id state enum bits.",
       type:    "int"
-      default: "2",
+      default: "32",
       local:   "true"
     }
     { name:    "CsrOtpTestCtrlWidth",
@@ -555,6 +555,10 @@
         { bits: "CsrLcStateWidth-1:0"
           name: "STATE"
           desc: '''
+                This field encodes the target life cycle state in a redundant enum format.
+                The 5bit state enum is repeated 6x so that it fills the entire 32bit register.
+                The encoding is straightforward replication: [val, val, val, val, val, val].
+
                 Note that this register is shared with the life cycle TAP interface.
                 In order to have exclusive access to this register, SW must first claim the associated
                 hardware mutex via !!CLAIM_TRANSITION_IF.
@@ -563,87 +567,87 @@
                   // CLAIM_TRANSITION_IF, so can not auto predict its value.
                   "excl:CsrNonInitTests:CsrExclCheck"],
           enum: [
-            { value: "0",
+            { value: "0b00000_00000_00000_00000_00000_00000", // 0
               name:  "RAW",
               desc:  "Raw life cycle state after fabrication where all functions are disabled."
             }
-            { value: "1",
+            { value: "0b00001_00001_00001_00001_00001_00001", // 1
               name:  "TEST_UNLOCKED0",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "2",
+            { value: "0b00010_00010_00010_00010_00010_00010", // 2
               name:  "TEST_LOCKED0",
               desc:  "Locked test state where where all functions are disabled."
             }
-            { value: "3",
+            { value: "0b00011_00011_00011_00011_00011_00011", // 3
               name:  "TEST_UNLOCKED1",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "4",
+            { value: "0b00100_00100_00100_00100_00100_00100", // 4
               name:  "TEST_LOCKED1",
               desc:  "Locked test state where where all functions are disabled."
             }
-            { value: "5",
+            { value: "0b00101_00101_00101_00101_00101_00101", // 5
               name:  "TEST_UNLOCKED2",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "6",
+            { value: "0b00110_00110_00110_00110_00110_00110", // 6
               name:  "TEST_LOCKED2",
               desc:  "Locked test state where debug all functions are disabled."
             }
-            { value: "7",
+            { value: "0b00111_00111_00111_00111_00111_00111", // 7
               name:  "TEST_UNLOCKED3",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "8",
+            { value: "0b01000_01000_01000_01000_01000_01000", // 8
               name:  "TEST_LOCKED3",
               desc:  "Locked test state where debug all functions are disabled."
             }
-            { value: "9",
+            { value: "0b01001_01001_01001_01001_01001_01001", // 9
               name:  "TEST_UNLOCKED4",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "10",
+            { value: "0b01010_01010_01010_01010_01010_01010", // 10
               name:  "TEST_LOCKED4",
               desc:  "Locked test state where debug all functions are disabled."
             }
-            { value: "11",
+            { value: "0b01011_01011_01011_01011_01011_01011", // 11
               name:  "TEST_UNLOCKED5",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "12",
+            { value: "0b01100_01100_01100_01100_01100_01100", // 12
               name:  "TEST_LOCKED5",
               desc:  "Locked test state where debug all functions are disabled."
             }
-            { value: "13",
+            { value: "0b01101_01101_01101_01101_01101_01101", // 13
               name:  "TEST_UNLOCKED6",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "14",
+            { value: "0b01110_01110_01110_01110_01110_01110", // 14
               name:  "TEST_LOCKED6",
               desc:  "Locked test state where debug all functions are disabled."
             }
-            { value: "15",
+            { value: "0b01111_01111_01111_01111_01111_01111", // 15
               name:  "TEST_UNLOCKED7",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "16",
+            { value: "0b10000_10000_10000_10000_10000_10000", // 16
               name:  "DEV",
               desc:  "Development life cycle state where limited debug functionality is available."
             }
-            { value: "17",
+            { value: "0b10001_10001_10001_10001_10001_10001", // 17
               name:  "PROD",
               desc:  "Production life cycle state."
             }
-            { value: "18",
+            { value: "0b10010_10010_10010_10010_10010_10010", // 18
               name:  "PROD_END",
               desc:  "Same as PROD, but transition into RMA is not possible from this state."
             }
-            { value: "19",
+            { value: "0b10011_10011_10011_10011_10011_10011", // 19
               name:  "RMA",
               desc:  "RMA life cycle state."
             }
-            { value: "20",
+            { value: "0b10100_10100_10100_10100_10100_10100", // 20
               name:  "SCRAP",
               desc:  "SCRAP life cycle state where all functions are disabled."
             }
@@ -707,102 +711,106 @@
       fields: [
         { bits: "CsrLcStateWidth-1:0"
           name: "STATE"
-          desc: ""
+          desc: '''
+                This field exposes the decoded life cycle state in a redundant enum format.
+                The 5bit state enum is repeated 6x so that it fills the entire 32bit register.
+                The encoding is straightforward replication: [val, val, val, val, val, val].
+                '''
           enum: [
-            { value: "0",
+            { value: "0b00000_00000_00000_00000_00000_00000", // 0
               name:  "RAW",
               desc:  "Raw life cycle state after fabrication where all functions are disabled."
             }
-            { value: "1",
+            { value: "0b00001_00001_00001_00001_00001_00001", // 1
               name:  "TEST_UNLOCKED0",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "2",
+            { value: "0b00010_00010_00010_00010_00010_00010", // 2
               name:  "TEST_LOCKED0",
               desc:  "Locked test state where where all functions are disabled."
             }
-            { value: "3",
+            { value: "0b00011_00011_00011_00011_00011_00011", // 3
               name:  "TEST_UNLOCKED1",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "4",
+            { value: "0b00100_00100_00100_00100_00100_00100", // 4
               name:  "TEST_LOCKED1",
               desc:  "Locked test state where where all functions are disabled."
             }
-            { value: "5",
+            { value: "0b00101_00101_00101_00101_00101_00101", // 5
               name:  "TEST_UNLOCKED2",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "6",
+            { value: "0b00110_00110_00110_00110_00110_00110", // 6
               name:  "TEST_LOCKED2",
               desc:  "Locked test state where debug all functions are disabled."
             }
-            { value: "7",
+            { value: "0b00111_00111_00111_00111_00111_00111", // 7
               name:  "TEST_UNLOCKED3",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "8",
+            { value: "0b01000_01000_01000_01000_01000_01000", // 8
               name:  "TEST_LOCKED3",
               desc:  "Locked test state where debug all functions are disabled."
             }
-            { value: "9",
+            { value: "0b01001_01001_01001_01001_01001_01001", // 9
               name:  "TEST_UNLOCKED4",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "10",
+            { value: "0b01010_01010_01010_01010_01010_01010", // 10
               name:  "TEST_LOCKED4",
               desc:  "Locked test state where debug all functions are disabled."
             }
-            { value: "11",
+            { value: "0b01011_01011_01011_01011_01011_01011", // 11
               name:  "TEST_UNLOCKED5",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "12",
+            { value: "0b01100_01100_01100_01100_01100_01100", // 12
               name:  "TEST_LOCKED5",
               desc:  "Locked test state where debug all functions are disabled."
             }
-            { value: "13",
+            { value: "0b01101_01101_01101_01101_01101_01101", // 13
               name:  "TEST_UNLOCKED6",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "14",
+            { value: "0b01110_01110_01110_01110_01110_01110", // 14
               name:  "TEST_LOCKED6",
               desc:  "Locked test state where debug all functions are disabled."
             }
-            { value: "15",
+            { value: "0b01111_01111_01111_01111_01111_01111", // 15
               name:  "TEST_UNLOCKED7",
               desc:  "Unlocked test state where debug functions are enabled."
             }
-            { value: "16",
+            { value: "0b10000_10000_10000_10000_10000_10000", // 16
               name:  "DEV",
               desc:  "Development life cycle state where limited debug functionality is available."
             }
-            { value: "17",
+            { value: "0b10001_10001_10001_10001_10001_10001", // 17
               name:  "PROD",
               desc:  "Production life cycle state."
             }
-            { value: "18",
+            { value: "0b10010_10010_10010_10010_10010_10010", // 18
               name:  "PROD_END",
               desc:  "Same as PROD, but transition into RMA is not possible from this state."
             }
-            { value: "19",
+            { value: "0b10011_10011_10011_10011_10011_10011", // 19
               name:  "RMA",
               desc:  "RMA life cycle state."
             }
-            { value: "20",
+            { value: "0b10100_10100_10100_10100_10100_10100", // 20
               name:  "SCRAP",
               desc:  "SCRAP life cycle state where all functions are disabled."
             }
             // The following states are temporary.
-            { value: "21",
+            { value: "0b10101_10101_10101_10101_10101_10101", // 21
               name:  "POST_TRANSITION",
               desc:  "This state is temporary and behaves the same way as SCRAP."
             }
-            { value: "22",
+            { value: "0b10110_10110_10110_10110_10110_10110", // 22
               name:  "ESCALATE",
               desc:  "This state is temporary and behaves the same way as SCRAP."
             }
-            { value: "23",
+            { value: "0b10111_10111_10111_10111_10111_10111", // 23
               name:  "INVALID",
               desc:   '''
                       This state is reported when the life cycle state encoding is invalid.
@@ -845,19 +853,19 @@
       tags: [ // Life cycle internal HW will update status so can not auto-predict its value.
               "excl:CsrAllTests:CsrExclCheck"],
       fields: [
-        { bits: "1:0"
+        { bits: "CsrLcIdStateWidth-1:0"
           name: "STATE"
           desc: ""
           enum: [
-            { value: "0",
+            { value: "0x0",
               name:  "BLANK",
               desc:  "The device has not yet been personalized."
             }
-            { value: "1",
+            { value: "0x11111111",
               name:  "PERSONALIZED",
               desc:  "The device has been personalized."
             }
-            { value: "2",
+            { value: "0x22222222",
               name:  "INVALID",
               desc:  "The state is not valid."
             }

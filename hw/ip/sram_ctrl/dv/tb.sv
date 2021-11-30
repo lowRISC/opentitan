@@ -64,7 +64,8 @@ module tb;
 
   sram_ctrl #(
     // memory size in bytes
-    .MemSizeRam(4 * 2 ** `SRAM_ADDR_WIDTH)
+    .MemSizeRam(4 * 2 ** `SRAM_ADDR_WIDTH),
+    .InstrExec(`INSTR_EXEC)
   ) dut (
     // main clock
     .clk_i               (clk                       ),

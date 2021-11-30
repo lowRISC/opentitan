@@ -188,7 +188,7 @@ dif_result_t dif_lc_ctrl_get_id_state(const dif_lc_ctrl_t *lc,
 
   uint32_t reg =
       mmio_region_read32(lc->base_addr, LC_CTRL_LC_ID_STATE_REG_OFFSET);
-  switch (bitfield_field32_read(reg, LC_CTRL_LC_ID_STATE_STATE_FIELD)) {
+  switch (reg) {
     case LC_CTRL_LC_ID_STATE_STATE_VALUE_BLANK:
       *state = kDifLcCtrlIdStateBlank;
       break;

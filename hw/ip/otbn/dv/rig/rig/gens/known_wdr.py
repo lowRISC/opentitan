@@ -29,43 +29,47 @@ class KnownWDR(SnippetGen):
 
         # BN.XOR has six operands: wrd, wrs1, wrs2, shift_type, shift_value
         # and flag_group
-        if not (len(self.bn_xor.operands) == 6 and
-                isinstance(self.bn_xor.operands[0].op_type, RegOperandType) and
-                self.bn_xor.operands[0].op_type.reg_type == 'wdr' and
-                self.bn_xor.operands[0].op_type.is_dest() and
-                isinstance(self.bn_xor.operands[1].op_type, RegOperandType) and
-                self.bn_xor.operands[1].op_type.reg_type == 'wdr' and
-                not self.bn_xor.operands[1].op_type.is_dest() and
-                isinstance(self.bn_xor.operands[2].op_type, RegOperandType) and
-                self.bn_xor.operands[2].op_type.reg_type == 'wdr' and
-                not self.bn_xor.operands[2].op_type.is_dest() and
-                isinstance(self.bn_xor.operands[4].op_type, ImmOperandType)):
+        ops = self.bn_xor.operands
+        if not (len(ops) == 6 and
+                isinstance(ops[0].op_type, RegOperandType) and
+                ops[0].op_type.reg_type == 'wdr' and
+                ops[0].op_type.is_dest() and
+                isinstance(ops[1].op_type, RegOperandType) and
+                ops[1].op_type.reg_type == 'wdr' and
+                not ops[1].op_type.is_dest() and
+                isinstance(ops[2].op_type, RegOperandType) and
+                ops[2].op_type.reg_type == 'wdr' and
+                not ops[2].op_type.is_dest() and
+                isinstance(ops[4].op_type, ImmOperandType)):
             raise RuntimeError('BN.XOR instruction from instructions file is '
-                               'not the shape expected by the KnownWDR generator.')
+                               'not the shape expected by the KnownWDR '
+                               'generator.')
 
-        self.wrd_op_type = self.bn_xor.operands[0].op_type
-        self.wrs_op_type = self.bn_xor.operands[1].op_type
-        self.imm_op_type = self.bn_xor.operands[4].op_type
+        self.wrd_op_type = ops[0].op_type
+        self.wrs_op_type = ops[1].op_type
+        self.imm_op_type = ops[4].op_type
         assert self.imm_op_type.shift == 3
 
-        if not (isinstance(self.bn_not.operands[0].op_type, RegOperandType) and
-                self.bn_not.operands[0].op_type.reg_type == 'wdr' and
-                self.bn_not.operands[0].op_type.is_dest() and
-                isinstance(self.bn_not.operands[1].op_type, RegOperandType) and
-                self.bn_not.operands[1].op_type.reg_type == 'wdr' and
-                not self.bn_not.operands[1].op_type.is_dest() and
-                isinstance(self.bn_not.operands[2].op_type, EnumOperandType) and
-                isinstance(self.bn_not.operands[3].op_type, ImmOperandType)):
+        ops = self.bn_not.operands
+        if not (isinstance(ops[0].op_type, RegOperandType) and
+                ops[0].op_type.reg_type == 'wdr' and
+                ops[0].op_type.is_dest() and
+                isinstance(ops[1].op_type, RegOperandType) and
+                ops[1].op_type.reg_type == 'wdr' and
+                not ops[1].op_type.is_dest() and
+                isinstance(ops[2].op_type, EnumOperandType) and
+                isinstance(ops[3].op_type, ImmOperandType)):
             raise RuntimeError('BN.NOT instruction from instructions file is '
-                               'not the shape expected by KnownWDR generator. ')
+                               'not the shape expected by the KnownWDR '
+                               'generator.')
 
     def gen(self,
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
-        # Return None if this one of the last two instructions in the current gap
-        # because we need to either jump or do an ECALL to avoid getting stuck
-        # after executing both bn.xor and bn.not
+        # Return None if this one of the last two instructions in the current
+        # gap because we need to either jump or do an ECALL to avoid getting
+        # stuck after executing both bn.xor and bn.not
         if program.get_insn_space_at(model.pc) <= 3:
             return None
 
@@ -92,7 +96,8 @@ class KnownWDR(SnippetGen):
         shift_bits = self.imm_op_type.op_val_to_enc_val(0, model.pc)
         assert shift_bits is not None
 
-        # Value of shift_type does not matter since shift_bits are hardcoded to 0
+        # Value of shift_type does not matter since shift_bits are hardcoded to
+        # 0
         shift_type = model.pick_operand_value(self.bn_xor.operands[3].op_type)
         assert shift_type is not None
 
@@ -108,7 +113,8 @@ class KnownWDR(SnippetGen):
         op_vals_xor = [wrd_val_xor, wrs_val_xor, wrs_val_xor, shift_type,
                        shift_bits, flg_group]
 
-        op_vals_not = [wrd_val_not, wrd_val_xor, shift_type, shift_bits, flg_group]
+        op_vals_not = [wrd_val_not, wrd_val_xor,
+                       shift_type, shift_bits, flg_group]
 
         prog_bn_xor = ProgInsn(self.bn_xor, op_vals_xor, None)
         prog_bn_not = ProgInsn(self.bn_not, op_vals_not, None)

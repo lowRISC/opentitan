@@ -16,7 +16,7 @@ from ..config import Config
 
 
 class BranchGen(SnippetGen):
-    ''' A snippet generator base class to generate bad or unbtaken BEQ and BNE.
+    ''' A snippet generator base class to generate bad or untaken BEQ and BNE.
 
     BadBranch and UntakenBranch inherit this class.
 
@@ -42,8 +42,9 @@ class BranchGen(SnippetGen):
                     not insn.operands[1].op_type.is_dest() and
                     isinstance(insn.operands[2].op_type, ImmOperandType) and
                     insn.operands[2].op_type.signed):
-                raise RuntimeError('{} instruction from instructions file is not '
-                                   'the shape expected by the Branch generator.'
+                raise RuntimeError('{} instruction from instructions file is '
+                                   'not the shape expected by the BranchGen '
+                                   'generator.'
                                    .format(insn.mnemonic))
 
         self.imm_op_type = self.bne.operands[2].op_type
@@ -55,7 +56,7 @@ class BranchGen(SnippetGen):
                     self.weights.append(weight)
                     self.insns.append(insn)
 
-        # Disable this generator if no branch instruction has a positive weigh
+        # Disable this generator if no branch instruction has a positive weight
         assert len(self.insns) == len(self.weights)
         if not self.weights:
             self.disabled = True

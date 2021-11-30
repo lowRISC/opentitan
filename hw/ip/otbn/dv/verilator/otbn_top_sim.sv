@@ -34,7 +34,6 @@ module otbn_top_sim (
   logic [ImemAddrWidth-1:0] imem_addr;
   logic [38:0]              imem_rdata;
   logic                     imem_rvalid;
-  logic                     imem_rerror;
 
   // Data memory (DMEM) signals
   logic                     dmem_req;
@@ -56,59 +55,62 @@ module otbn_top_sim (
   // Instruction counter (feeds into otbn.INSN_CNT in full block)
   logic [31:0]              insn_cnt;
 
+  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares;
+
+  assign sideload_key_shares[0] = {12{32'hDEADBEEF}};
+  assign sideload_key_shares[1] = {12{32'hBAADF00D}};
+
   otbn_core #(
     .ImemSizeByte ( ImemSizeByte ),
     .DmemSizeByte ( DmemSizeByte )
   ) u_otbn_core (
-    .clk_i                  ( IO_CLK           ),
-    .rst_ni                 ( IO_RST_N         ),
+    .clk_i                       ( IO_CLK              ),
+    .rst_ni                      ( IO_RST_N            ),
 
-    .start_i                ( otbn_start       ),
-    .done_o                 ( otbn_done        ),
-    .locked_o               (                  ),
+    .start_i                     ( otbn_start          ),
+    .done_o                      ( otbn_done           ),
+    .locked_o                    (                     ),
 
-    .err_bits_o             ( otbn_err_bits    ),
+    .err_bits_o                  ( otbn_err_bits       ),
 
-    .imem_req_o             ( imem_req         ),
-    .imem_addr_o            ( imem_addr        ),
-    .imem_wdata_o           (                  ),
-    .imem_rdata_i           ( imem_rdata[31:0] ),
-    .imem_rvalid_i          ( imem_rvalid      ),
-    .imem_rerror_i          ( imem_rerror      ),
+    .imem_req_o                  ( imem_req            ),
+    .imem_addr_o                 ( imem_addr           ),
+    .imem_rdata_i                ( imem_rdata          ),
+    .imem_rvalid_i               ( imem_rvalid         ),
 
-    .dmem_req_o             ( dmem_req         ),
-    .dmem_write_o           ( dmem_write       ),
-    .dmem_addr_o            ( dmem_addr        ),
-    .dmem_wdata_o           ( dmem_wdata       ),
-    .dmem_wmask_o           ( dmem_wmask       ),
-    .dmem_rmask_o           ( ),
-    .dmem_rdata_i           ( dmem_rdata       ),
-    .dmem_rvalid_i          ( dmem_rvalid      ),
-    .dmem_rerror_i          ( dmem_rerror      ),
+    .insn_fetch_err_o            (                     ),
 
-    .edn_rnd_req_o          ( edn_rnd_req      ),
-    .edn_rnd_ack_i          ( edn_rnd_ack      ),
-    .edn_rnd_data_i         ( edn_rnd_data     ),
+    .dmem_req_o                  ( dmem_req            ),
+    .dmem_write_o                ( dmem_write          ),
+    .dmem_addr_o                 ( dmem_addr           ),
+    .dmem_wdata_o                ( dmem_wdata          ),
+    .dmem_wmask_o                ( dmem_wmask          ),
+    .dmem_rmask_o                ( ),
+    .dmem_rdata_i                ( dmem_rdata          ),
+    .dmem_rvalid_i               ( dmem_rvalid         ),
+    .dmem_rerror_i               ( dmem_rerror         ),
 
-    .edn_urnd_req_o         ( edn_urnd_req     ),
-    .edn_urnd_ack_i         ( edn_urnd_ack     ),
-    .edn_urnd_data_i        ( edn_urnd_data    ),
+    .edn_rnd_req_o               ( edn_rnd_req         ),
+    .edn_rnd_ack_i               ( edn_rnd_ack         ),
+    .edn_rnd_data_i              ( edn_rnd_data        ),
 
-    .insn_cnt_o             ( insn_cnt         ),
+    .edn_urnd_req_o              ( edn_urnd_req        ),
+    .edn_urnd_ack_i              ( edn_urnd_ack        ),
+    .edn_urnd_data_i             ( edn_urnd_data       ),
 
-    .bus_intg_violation_i   ( 1'b0             ),
-    .illegal_bus_access_i   ( 1'b0             ),
-    .lifecycle_escalation_i ( 1'b0             ),
-    .software_errs_fatal_i  ( 1'b0             )
+    .insn_cnt_o                  ( insn_cnt            ),
+
+    .bus_intg_violation_i        ( 1'b0                ),
+    .illegal_bus_access_i        ( 1'b0                ),
+    .lifecycle_escalation_i      ( 1'b0                ),
+    .software_errs_fatal_i       ( 1'b0                ),
+
+    .sideload_key_shares_i       ( sideload_key_shares ),
+    .sideload_key_shares_valid_i ( 2'b11               )
   );
 
-  // The top bits of IMEM rdata aren't currently used (they will eventually be used for integrity
-  // checks both on the bus and within the core)
-  logic unused_imem_top_rdata;
-  assign unused_imem_top_rdata = &{1'b0, imem_rdata[38:32]};
-
   localparam logic [WLEN-1:0] FixedEdnVal = {{(WLEN / 4){4'h9}}};
- 
+
   edn_req_t rnd_req;
   edn_rsp_t rnd_rsp;
 
@@ -129,8 +131,9 @@ module otbn_top_sim (
   );
 
   assign edn_rnd_data_valid = edn_rnd_req & edn_rnd_ack;
- 
+
   edn_req_t urnd_req;
+  edn_rsp_t urnd_rsp;
 
   assign urnd_req.edn_req = edn_urnd_req;
 
@@ -142,7 +145,7 @@ module otbn_top_sim (
     .rst_ni     ( IO_RST_N     ),
 
     .edn_req_i  ( urnd_req ),
-    .edn_rsp_o  (  ),
+    .edn_rsp_o  ( urnd_rsp ),
 
     .edn_ack_o  ( edn_urnd_ack  ),
     .edn_data_o ( edn_urnd_data )
@@ -256,9 +259,6 @@ module otbn_top_sim (
     .cfg_i        ( '0                      )
   );
 
-  // No integrity errors in Verilator testbench
-  assign imem_rerror = 1'b0;
-
   // When OTBN is done let a few more cycles run then finish simulation
   logic [1:0] finish_counter;
 
@@ -307,8 +307,12 @@ module otbn_top_sim (
     .err_bits_o            ( otbn_model_err_bits ),
 
     .edn_rnd_i             ( rnd_rsp ),
+    .edn_rnd_o             ( ),
     .edn_rnd_cdc_done_i    ( edn_rnd_data_valid ),
-    .edn_urnd_data_valid_i ( edn_urnd_data_valid ),
+
+    .edn_urnd_i            ( urnd_rsp ),
+    .edn_urnd_o            ( ),
+    .edn_urnd_cdc_done_i   ( edn_urnd_data_valid ),
 
     .status_o              ( ),
     .insn_cnt_o            ( otbn_model_insn_cnt ),

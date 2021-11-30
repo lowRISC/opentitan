@@ -39,7 +39,7 @@ virtual function logic [7:0] sram_encrypt_read8(logic [bus_params_pkg::BUS_AW-1:
   rdata = read8(bus_addr);
   rdata_arr = {<<{rdata}};
   rdata_arr = sram_scrambler_pkg::decrypt_sram_data(
-      rdata_arr, 8, 1, sram_addr, addr_width, key_arr, nonce_arr
+      rdata_arr, 8, 8, sram_addr, addr_width, key_arr, nonce_arr
   );
   rdata = {<<{rdata_arr}};
   return rdata;
@@ -79,7 +79,7 @@ virtual function logic [15:0] sram_encrypt_read16(logic [bus_params_pkg::BUS_AW-
   rdata = read16(bus_addr);
   rdata_arr = {<<{rdata}};
   rdata_arr = sram_scrambler_pkg::decrypt_sram_data(
-      rdata_arr, 16, 1, sram_addr, addr_width, key_arr, nonce_arr
+      rdata_arr, 16, 8, sram_addr, addr_width, key_arr, nonce_arr
   );
   rdata = {<<{rdata_arr}};
   return rdata;
@@ -118,7 +118,7 @@ virtual function logic [31:0] sram_encrypt_read32(logic [bus_params_pkg::BUS_AW-
   rdata = read32(bus_addr);
   rdata_arr = {<<{rdata}};
   rdata_arr = sram_scrambler_pkg::decrypt_sram_data(
-      rdata_arr, 32, 1, sram_addr, addr_width, key_arr, nonce_arr
+      rdata_arr, 32, 8, sram_addr, addr_width, key_arr, nonce_arr
   );
   rdata = {<<{rdata_arr}};
   return rdata;
@@ -159,7 +159,7 @@ virtual function logic [38:0] sram_encrypt_read32_integ(logic [bus_params_pkg::B
   `uvm_info(`gfn, $sformatf("scr data: 0x%0x", rdata), UVM_HIGH)
   rdata_arr = {<<{rdata}};
   rdata_arr = sram_scrambler_pkg::decrypt_sram_data(
-      rdata_arr, 39, 0, sram_addr, addr_width, key_arr, nonce_arr
+      rdata_arr, 39, 39, sram_addr, addr_width, key_arr, nonce_arr
   );
   rdata = {<<{rdata_arr}};
   // Only return the data payload without ECC bits.
@@ -201,7 +201,7 @@ virtual function logic [63:0] sram_encrypt_read64(logic [bus_params_pkg::BUS_AW-
   rdata = read64(bus_addr);
   rdata_arr = {<<{rdata}};
   rdata_arr = sram_scrambler_pkg::decrypt_sram_data(
-      rdata_arr, 64, 1, sram_addr, addr_width, key_arr, nonce_arr
+      rdata_arr, 64, 8, sram_addr, addr_width, key_arr, nonce_arr
   );
   rdata = {<<{rdata_arr}};
   return rdata;
@@ -234,7 +234,7 @@ virtual function void sram_encrypt_write8(logic [bus_params_pkg::BUS_AW-1:0] add
   // Calculate the scrambled data
   wdata_arr = {<<{data}};
   wdata_arr = sram_scrambler_pkg::encrypt_sram_data(
-      wdata_arr, 8, 1, sram_addr, addr_width, key_arr, nonce_arr
+      wdata_arr, 8, 8, sram_addr, addr_width, key_arr, nonce_arr
   );
   scrambled_data = {<<{wdata_arr}};
 
@@ -276,7 +276,7 @@ virtual function void sram_encrypt_write16(logic [bus_params_pkg::BUS_AW-1:0] ad
   // Calculate the scrambled data
   wdata_arr = {<<{data}};
   wdata_arr = sram_scrambler_pkg::encrypt_sram_data(
-      wdata_arr, 16, 1, sram_addr, addr_width, key_arr, nonce_arr
+      wdata_arr, 16, 8, sram_addr, addr_width, key_arr, nonce_arr
   );
   scrambled_data = {<<{wdata_arr}};
 
@@ -318,7 +318,7 @@ virtual function void sram_encrypt_write32(logic [bus_params_pkg::BUS_AW-1:0] ad
   // Calculate the scrambled data
   wdata_arr = {<<{data}};
   wdata_arr = sram_scrambler_pkg::encrypt_sram_data(
-      wdata_arr, 32, 1, sram_addr, addr_width, key_arr, nonce_arr
+      wdata_arr, 32, 8, sram_addr, addr_width, key_arr, nonce_arr
   );
   scrambled_data = {<<{wdata_arr}};
 
@@ -364,7 +364,7 @@ virtual function void sram_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1
   // Calculate the scrambled data
   wdata_arr = {<<{integ_data}};
   wdata_arr = sram_scrambler_pkg::encrypt_sram_data(
-      wdata_arr, 39, 0, sram_addr, addr_width, key_arr, nonce_arr
+      wdata_arr, 39, 39, sram_addr, addr_width, key_arr, nonce_arr
   );
   scrambled_data = {<<{wdata_arr}};
 
@@ -406,7 +406,7 @@ virtual function void sram_encrypt_write64(logic [bus_params_pkg::BUS_AW-1:0] ad
   // Calculate the scrambled data
   wdata_arr = {<<{data}};
   wdata_arr = sram_scrambler_pkg::encrypt_sram_data(
-      wdata_arr, 64, 1, sram_addr, addr_width, key_arr, nonce_arr
+      wdata_arr, 64, 8, sram_addr, addr_width, key_arr, nonce_arr
   );
   scrambled_data = {<<{wdata_arr}};
 

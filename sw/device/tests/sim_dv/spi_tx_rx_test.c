@@ -82,30 +82,30 @@ void handler_irq_external(void) {
   // Correlate the interrupt fired at PLIC with SPI DEVICE.
   dif_spi_device_irq_t spi_device_irq = 0;
   switch (plic_irq_id) {
-    case kTopEarlgreyPlicIrqIdSpiDeviceRxFull:
-      spi_device_irq = kDifSpiDeviceIrqRxFull;
+    case kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull:
+      spi_device_irq = kDifSpiDeviceIrqGenericRxFull;
       CHECK(expected_irqs[spi_device_irq], "Unexpected RX full interrupt");
       break;
-    case kTopEarlgreyPlicIrqIdSpiDeviceRxWatermark:
-      spi_device_irq = kDifSpiDeviceIrqRxWatermark;
+    case kTopEarlgreyPlicIrqIdSpiDeviceGenericRxWatermark:
+      spi_device_irq = kDifSpiDeviceIrqGenericRxWatermark;
       CHECK(expected_irqs[spi_device_irq],
             "Unexpected RX above level interrupt");
       break;
-    case kTopEarlgreyPlicIrqIdSpiDeviceTxWatermark:
-      spi_device_irq = kDifSpiDeviceIrqTxWatermark;
+    case kTopEarlgreyPlicIrqIdSpiDeviceGenericTxWatermark:
+      spi_device_irq = kDifSpiDeviceIrqGenericTxWatermark;
       CHECK(expected_irqs[spi_device_irq],
             "Unexpected TX below level interrupt");
       break;
-    case kTopEarlgreyPlicIrqIdSpiDeviceRxError:
-      spi_device_irq = kDifSpiDeviceIrqRxError;
+    case kTopEarlgreyPlicIrqIdSpiDeviceGenericRxError:
+      spi_device_irq = kDifSpiDeviceIrqGenericRxError;
       CHECK(expected_irqs[spi_device_irq], "Unexpected RX error interrupt");
       break;
-    case kTopEarlgreyPlicIrqIdSpiDeviceRxOverflow:
-      spi_device_irq = kDifSpiDeviceIrqRxOverflow;
+    case kTopEarlgreyPlicIrqIdSpiDeviceGenericRxOverflow:
+      spi_device_irq = kDifSpiDeviceIrqGenericRxOverflow;
       CHECK(expected_irqs[spi_device_irq], "Unexpected RX overflow interrupt");
       break;
-    case kTopEarlgreyPlicIrqIdSpiDeviceTxUnderflow:
-      spi_device_irq = kDifSpiDeviceIrqTxUnderflow;
+    case kTopEarlgreyPlicIrqIdSpiDeviceGenericTxUnderflow:
+      spi_device_irq = kDifSpiDeviceIrqGenericTxUnderflow;
       CHECK(expected_irqs[spi_device_irq], "Unexpected TX underflow interrupt");
       // TxUnderflow keeps firing as TX fifo is empty but TB controls host to
       // keep sending data and requesting data from device, so disable this
@@ -113,7 +113,7 @@ void handler_irq_external(void) {
       // back to the main program, disable the interrupt here instead of in the
       // main program.
       CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-          &spi_device, kDifSpiDeviceIrqTxUnderflow, kDifToggleDisabled));
+          &spi_device, kDifSpiDeviceIrqGenericTxUnderflow, kDifToggleDisabled));
       break;
     default:
       LOG_ERROR("Unexpected interrupt (at PLIC): %d", plic_irq_id);
@@ -147,17 +147,17 @@ static void spi_device_init_with_irqs(
   CHECK_DIF_OK(dif_spi_device_configure(spi_device, spi_device_config));
 
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqRxFull, kDifToggleEnabled));
+      spi_device, kDifSpiDeviceIrqGenericRxFull, kDifToggleEnabled));
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqRxWatermark, kDifToggleEnabled));
+      spi_device, kDifSpiDeviceIrqGenericRxWatermark, kDifToggleEnabled));
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqTxWatermark, kDifToggleEnabled));
+      spi_device, kDifSpiDeviceIrqGenericTxWatermark, kDifToggleEnabled));
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqRxError, kDifToggleEnabled));
+      spi_device, kDifSpiDeviceIrqGenericRxError, kDifToggleEnabled));
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqRxOverflow, kDifToggleEnabled));
+      spi_device, kDifSpiDeviceIrqGenericRxOverflow, kDifToggleEnabled));
   CHECK_DIF_OK(dif_spi_device_irq_set_enabled(
-      spi_device, kDifSpiDeviceIrqTxUnderflow, kDifToggleEnabled));
+      spi_device, kDifSpiDeviceIrqGenericTxUnderflow, kDifToggleEnabled));
 
   // Initialize the volatile irq variables.
   for (int i = 0; i < SPI_DEVICE_NUM_IRQS; i++) {
@@ -177,53 +177,59 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
   // Set the priority of SPI DEVICE interrupts at PLIC to be >=1 (so ensure the
   // target does get interrupted).
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxFull, kDifRvPlicMaxPriority));
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull,
+      kDifRvPlicMaxPriority));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxWatermark, kDifRvPlicMaxPriority));
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericRxWatermark,
+      kDifRvPlicMaxPriority));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceTxWatermark, kDifRvPlicMaxPriority));
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericTxWatermark,
+      kDifRvPlicMaxPriority));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxError, kDifRvPlicMaxPriority));
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericRxError,
+      kDifRvPlicMaxPriority));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxOverflow, kDifRvPlicMaxPriority));
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericRxOverflow,
+      kDifRvPlicMaxPriority));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceTxUnderflow, kDifRvPlicMaxPriority));
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericTxUnderflow,
+      kDifRvPlicMaxPriority));
 
   // Set the threshold for the Ibex to 0.
   CHECK_DIF_OK(
       dif_rv_plic_target_set_threshold(plic, kTopEarlgreyPlicTargetIbex0, 0x0));
 
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxFull, kTopEarlgreyPlicTargetIbex0,
-      kDifToggleEnabled));
-
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxWatermark,
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull,
       kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
 
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceTxWatermark,
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericRxWatermark,
       kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
 
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxError, kTopEarlgreyPlicTargetIbex0,
-      kDifToggleEnabled));
-
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceRxOverflow,
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericTxWatermark,
       kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
 
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      plic, kTopEarlgreyPlicIrqIdSpiDeviceTxUnderflow,
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericRxError,
+      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericRxOverflow,
+      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      plic, kTopEarlgreyPlicIrqIdSpiDeviceGenericTxUnderflow,
       kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
 }
 
 static bool exp_irqs_fired(void) {
-  return fired_irqs[kDifSpiDeviceIrqRxWatermark] &&
-         fired_irqs[kDifSpiDeviceIrqTxWatermark] &&
-         fired_irqs[kDifSpiDeviceIrqRxOverflow] &&
-         fired_irqs[kDifSpiDeviceIrqTxUnderflow] &&
-         fired_irqs[kDifSpiDeviceIrqRxFull];
+  return fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] &&
+         fired_irqs[kDifSpiDeviceIrqGenericTxWatermark] &&
+         fired_irqs[kDifSpiDeviceIrqGenericRxOverflow] &&
+         fired_irqs[kDifSpiDeviceIrqGenericTxUnderflow] &&
+         fired_irqs[kDifSpiDeviceIrqGenericRxFull];
 }
 
 static bool execute_test(const dif_spi_device_t *spi_device,
@@ -244,30 +250,30 @@ static bool execute_test(const dif_spi_device_t *spi_device,
 
   CHECK_DIF_OK(dif_spi_device_set_irq_levels(
       spi_device, SPI_DEVICE_DATASET_SIZE, SPI_DEVICE_DATASET_SIZE / 2));
-  expected_irqs[kDifSpiDeviceIrqTxWatermark] = true;
+  expected_irqs[kDifSpiDeviceIrqGenericTxWatermark] = true;
 
   bool read_rx_fifo_done = false;
   while (!read_rx_fifo_done || !exp_irqs_fired()) {
     // set rx tx level back to default value so TxBelowLevel irq won't trigger
-    if (fired_irqs[kDifSpiDeviceIrqTxWatermark] &&
-        expected_irqs[kDifSpiDeviceIrqTxWatermark]) {
+    if (fired_irqs[kDifSpiDeviceIrqGenericTxWatermark] &&
+        expected_irqs[kDifSpiDeviceIrqGenericTxWatermark]) {
       CHECK_DIF_OK(dif_spi_device_set_irq_levels(spi_device,
                                                  SPI_DEVICE_DATASET_SIZE, 0));
-      expected_irqs[kDifSpiDeviceIrqTxWatermark] = false;
-      expected_irqs[kDifSpiDeviceIrqRxWatermark] = true;
+      expected_irqs[kDifSpiDeviceIrqGenericTxWatermark] = false;
+      expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = true;
       LOG_INFO("SPI_DEVICE tx_below_level interrupt fired.");
     }
 
     // wait for SPI_HOST to send 128 bytes and trigger RxAboveLevel irq
-    if (fired_irqs[kDifSpiDeviceIrqRxWatermark] &&
-        expected_irqs[kDifSpiDeviceIrqRxWatermark]) {
-      expected_irqs[kDifSpiDeviceIrqRxWatermark] = false;
+    if (fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] &&
+        expected_irqs[kDifSpiDeviceIrqGenericRxWatermark]) {
+      expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = false;
       LOG_INFO("SPI_DEVICE rx_above_level interrupt fired.");
     }
 
     // when 128 bytes received in RX_FIFO from SPI_HOST,
     // read out and compare against the expected data
-    if (fired_irqs[kDifSpiDeviceIrqRxWatermark] && !read_rx_fifo_done) {
+    if (fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] && !read_rx_fifo_done) {
       size_t bytes_recved = 0;
       uint8_t spi_device_rx_data[SPI_DEVICE_DATASET_SIZE];
       CHECK_DIF_OK(dif_spi_device_recv(spi_device, spi_device_config,
@@ -282,8 +288,8 @@ static bool execute_test(const dif_spi_device_t *spi_device,
             bytes_recved, SPI_DEVICE_DATASET_SIZE);
       }
       // expect SPI_HOST to send another 1024 bytes to fill RX SRAM FIFO
-      expected_irqs[kDifSpiDeviceIrqTxUnderflow] = true;
-      fired_irqs[kDifSpiDeviceIrqRxWatermark] = false;
+      expected_irqs[kDifSpiDeviceIrqGenericTxUnderflow] = true;
+      fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] = false;
 
       // Check data consistency.
       LOG_INFO("Checking the received SPI_HOST RX_FIFO data for consistency.");
@@ -294,23 +300,23 @@ static bool execute_test(const dif_spi_device_t *spi_device,
       }
     }
 
-    if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqTxUnderflow]) {
-      expected_irqs[kDifSpiDeviceIrqRxWatermark] = true;
-      expected_irqs[kDifSpiDeviceIrqTxUnderflow] = false;
+    if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqGenericTxUnderflow]) {
+      expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = true;
+      expected_irqs[kDifSpiDeviceIrqGenericTxUnderflow] = false;
       LOG_INFO("SPI_DEVICE Tx underflow fired.");
     }
 
-    if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqRxWatermark]) {
-      expected_irqs[kDifSpiDeviceIrqRxWatermark] = false;
-      expected_irqs[kDifSpiDeviceIrqRxFull] = true;
+    if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqGenericRxWatermark]) {
+      expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = false;
+      expected_irqs[kDifSpiDeviceIrqGenericRxFull] = true;
       LOG_INFO("SPI_DEVICE RX Above level interrupt fired.");
     }
 
     // After RX SRAM FIFO full, expect RX async FIFO overflow irq
-    if (fired_irqs[kDifSpiDeviceIrqRxFull] &&
-        !fired_irqs[kDifSpiDeviceIrqRxOverflow]) {
-      expected_irqs[kDifSpiDeviceIrqRxFull] = false;
-      expected_irqs[kDifSpiDeviceIrqRxOverflow] = true;
+    if (fired_irqs[kDifSpiDeviceIrqGenericRxFull] &&
+        !fired_irqs[kDifSpiDeviceIrqGenericRxOverflow]) {
+      expected_irqs[kDifSpiDeviceIrqGenericRxFull] = false;
+      expected_irqs[kDifSpiDeviceIrqGenericRxOverflow] = true;
       LOG_INFO("SPI_DEVICE RX_FIFO full interrupt fired.");
     }
 

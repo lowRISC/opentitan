@@ -100,11 +100,12 @@ def test_basic_block_stats_loop(tmpdir: py.path.local) -> None:
         1: 1   # 1 basic block with 1 instruction (ecall)
     })
 
-    assert sorted(stats.ext_basic_block_histo) == sorted(stats.basic_block_histo)
+    assert (sorted(stats.ext_basic_block_histo) ==
+            sorted(stats.basic_block_histo))
 
 
 def test_basic_block_stats_loopi(tmpdir: py.path.local) -> None:
-    '''Check if statistics for basic blocks in LOOPIs are calculated properly'''
+    '''Check statistics for basic blocks in LOOPIs are calculated properly'''
 
     asm = """
     /* Loop 3 times over a body of 2 instructions. */
@@ -136,7 +137,7 @@ def test_general_and_loop(tmpdir: py.path.local) -> None:
     stats = _simulate_asm_file(asm_file, tmpdir)
 
     # General statistics
-    assert stats.stall_count == 3
+    assert stats.stall_count == 4
     assert stats.get_insn_count() == 28
     assert stats.insn_histo == {'addi': 22, 'loop': 4, 'loopi': 1, 'ecall': 1}
     assert stats.func_calls == []

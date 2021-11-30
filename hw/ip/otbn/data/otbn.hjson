@@ -120,6 +120,14 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     },
+
+    // Key sideload
+    { struct:  "otbn_key_req"
+      type:    "uni"
+      name:    "keymgr_key"
+      act:     "rcv"
+      package: "keymgr_pkg"
+    },
   ],
 
   regwidth: "32"
@@ -322,6 +330,11 @@
           name: "loop"
           resval: 0,
           desc: "A `LOOP` error was observed."
+        }
+        { bits: "5",
+          name: "key_invalid"
+          resval: 0,
+          desc: "A `KEY_INVALID` error was observed."
         }
 
         // Fatal errors. Keep in sync with list in FATAL_ALERT_CAUSE.

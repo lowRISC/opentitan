@@ -22,28 +22,28 @@ package spi_device_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } rx_full;
+    } generic_rx_full;
     struct packed {
       logic        q;
-    } rx_watermark;
+    } generic_rx_watermark;
     struct packed {
       logic        q;
-    } tx_watermark;
+    } generic_tx_watermark;
     struct packed {
       logic        q;
-    } rx_error;
+    } generic_rx_error;
     struct packed {
       logic        q;
-    } rx_overflow;
+    } generic_rx_overflow;
     struct packed {
       logic        q;
-    } tx_underflow;
+    } generic_tx_underflow;
     struct packed {
       logic        q;
-    } cmdfifo_not_empty;
+    } upload_cmdfifo_not_empty;
     struct packed {
       logic        q;
-    } payload_not_empty;
+    } upload_payload_not_empty;
     struct packed {
       logic        q;
     } readbuf_watermark;
@@ -58,28 +58,28 @@ package spi_device_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } rx_full;
+    } generic_rx_full;
     struct packed {
       logic        q;
-    } rx_watermark;
+    } generic_rx_watermark;
     struct packed {
       logic        q;
-    } tx_watermark;
+    } generic_tx_watermark;
     struct packed {
       logic        q;
-    } rx_error;
+    } generic_rx_error;
     struct packed {
       logic        q;
-    } rx_overflow;
+    } generic_rx_overflow;
     struct packed {
       logic        q;
-    } tx_underflow;
+    } generic_tx_underflow;
     struct packed {
       logic        q;
-    } cmdfifo_not_empty;
+    } upload_cmdfifo_not_empty;
     struct packed {
       logic        q;
-    } payload_not_empty;
+    } upload_payload_not_empty;
     struct packed {
       logic        q;
     } readbuf_watermark;
@@ -95,35 +95,35 @@ package spi_device_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_full;
+    } generic_rx_full;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_watermark;
+    } generic_rx_watermark;
     struct packed {
       logic        q;
       logic        qe;
-    } tx_watermark;
+    } generic_tx_watermark;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_error;
+    } generic_rx_error;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_overflow;
+    } generic_rx_overflow;
     struct packed {
       logic        q;
       logic        qe;
-    } tx_underflow;
+    } generic_tx_underflow;
     struct packed {
       logic        q;
       logic        qe;
-    } cmdfifo_not_empty;
+    } upload_cmdfifo_not_empty;
     struct packed {
       logic        q;
       logic        qe;
-    } payload_not_empty;
+    } upload_payload_not_empty;
     struct packed {
       logic        q;
       logic        qe;
@@ -419,35 +419,35 @@ package spi_device_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } rx_full;
+    } generic_rx_full;
     struct packed {
       logic        d;
       logic        de;
-    } rx_watermark;
+    } generic_rx_watermark;
     struct packed {
       logic        d;
       logic        de;
-    } tx_watermark;
+    } generic_tx_watermark;
     struct packed {
       logic        d;
       logic        de;
-    } rx_error;
+    } generic_rx_error;
     struct packed {
       logic        d;
       logic        de;
-    } rx_overflow;
+    } generic_rx_overflow;
     struct packed {
       logic        d;
       logic        de;
-    } tx_underflow;
+    } generic_tx_underflow;
     struct packed {
       logic        d;
       logic        de;
-    } cmdfifo_not_empty;
+    } upload_cmdfifo_not_empty;
     struct packed {
       logic        d;
       logic        de;
-    } payload_not_empty;
+    } upload_payload_not_empty;
     struct packed {
       logic        d;
       logic        de;
@@ -732,14 +732,14 @@ package spi_device_reg_pkg;
 
   // Reset values for hwext registers and their fields
   parameter logic [10:0] SPI_DEVICE_INTR_TEST_RESVAL = 11'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RX_FULL_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RX_WATERMARK_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TX_WATERMARK_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RX_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RX_OVERFLOW_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TX_UNDERFLOW_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_CMDFIFO_NOT_EMPTY_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_DEVICE_INTR_TEST_PAYLOAD_NOT_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_GENERIC_RX_FULL_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_GENERIC_RX_WATERMARK_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_GENERIC_TX_WATERMARK_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_GENERIC_RX_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_GENERIC_RX_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_GENERIC_TX_UNDERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_UPLOAD_CMDFIFO_NOT_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_UPLOAD_PAYLOAD_NOT_EMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_READBUF_WATERMARK_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_READBUF_FLIP_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_TPM_HEADER_NOT_EMPTY_RESVAL = 1'h 0;

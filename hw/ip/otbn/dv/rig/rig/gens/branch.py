@@ -36,8 +36,9 @@ class Branch(SnippetGen):
                     not insn.operands[1].op_type.is_dest() and
                     isinstance(insn.operands[2].op_type, ImmOperandType) and
                     insn.operands[2].op_type.signed):
-                raise RuntimeError('{} instruction from instructions file is not '
-                                   'the shape expected by the Branch generator.'
+                raise RuntimeError('{} instruction from instructions file is '
+                                   'not the shape expected by the Branch '
+                                   'generator.'
                                    .format(insn.mnemonic))
 
         self.beq_prob = 0.5

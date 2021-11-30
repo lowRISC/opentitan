@@ -394,14 +394,14 @@ module top_earlgrey #(
   logic intr_uart3_rx_timeout;
   logic intr_uart3_rx_parity_err;
   logic [31:0] intr_gpio_gpio;
-  logic intr_spi_device_rx_full;
-  logic intr_spi_device_rx_watermark;
-  logic intr_spi_device_tx_watermark;
-  logic intr_spi_device_rx_error;
-  logic intr_spi_device_rx_overflow;
-  logic intr_spi_device_tx_underflow;
-  logic intr_spi_device_cmdfifo_not_empty;
-  logic intr_spi_device_payload_not_empty;
+  logic intr_spi_device_generic_rx_full;
+  logic intr_spi_device_generic_rx_watermark;
+  logic intr_spi_device_generic_tx_watermark;
+  logic intr_spi_device_generic_rx_error;
+  logic intr_spi_device_generic_rx_overflow;
+  logic intr_spi_device_generic_tx_underflow;
+  logic intr_spi_device_upload_cmdfifo_not_empty;
+  logic intr_spi_device_upload_payload_not_empty;
   logic intr_spi_device_readbuf_watermark;
   logic intr_spi_device_readbuf_flip;
   logic intr_spi_device_tpm_header_not_empty;
@@ -570,6 +570,7 @@ module top_earlgrey #(
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_aes_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
+  keymgr_pkg::otbn_key_req_t       keymgr_otbn_key;
   kmac_pkg::app_req_t [2:0] kmac_app_req;
   kmac_pkg::app_rsp_t [2:0] kmac_app_rsp;
   logic       kmac_en_masking;
@@ -1146,17 +1147,17 @@ module top_earlgrey #(
       .cio_sd_en_o      (cio_spi_device_sd_en_d2p),
 
       // Interrupt
-      .intr_rx_full_o              (intr_spi_device_rx_full),
-      .intr_rx_watermark_o         (intr_spi_device_rx_watermark),
-      .intr_tx_watermark_o         (intr_spi_device_tx_watermark),
-      .intr_rx_error_o             (intr_spi_device_rx_error),
-      .intr_rx_overflow_o          (intr_spi_device_rx_overflow),
-      .intr_tx_underflow_o         (intr_spi_device_tx_underflow),
-      .intr_cmdfifo_not_empty_o    (intr_spi_device_cmdfifo_not_empty),
-      .intr_payload_not_empty_o    (intr_spi_device_payload_not_empty),
-      .intr_readbuf_watermark_o    (intr_spi_device_readbuf_watermark),
-      .intr_readbuf_flip_o         (intr_spi_device_readbuf_flip),
-      .intr_tpm_header_not_empty_o (intr_spi_device_tpm_header_not_empty),
+      .intr_generic_rx_full_o          (intr_spi_device_generic_rx_full),
+      .intr_generic_rx_watermark_o     (intr_spi_device_generic_rx_watermark),
+      .intr_generic_tx_watermark_o     (intr_spi_device_generic_tx_watermark),
+      .intr_generic_rx_error_o         (intr_spi_device_generic_rx_error),
+      .intr_generic_rx_overflow_o      (intr_spi_device_generic_rx_overflow),
+      .intr_generic_tx_underflow_o     (intr_spi_device_generic_tx_underflow),
+      .intr_upload_cmdfifo_not_empty_o (intr_spi_device_upload_cmdfifo_not_empty),
+      .intr_upload_payload_not_empty_o (intr_spi_device_upload_payload_not_empty),
+      .intr_readbuf_watermark_o        (intr_spi_device_readbuf_watermark),
+      .intr_readbuf_flip_o             (intr_spi_device_readbuf_flip),
+      .intr_tpm_header_not_empty_o     (intr_spi_device_tpm_header_not_empty),
       // [5]: fatal_fault
       .alert_tx_o  ( alert_tx[5:5] ),
       .alert_rx_i  ( alert_rx[5:5] ),
@@ -2228,6 +2229,7 @@ module top_earlgrey #(
       .idle_otp_o(clkmgr_aon_idle[3]),
       .ram_cfg_i(ast_ram_1p_cfg),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .keymgr_key_i(keymgr_otbn_key),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),
 
@@ -2269,7 +2271,7 @@ module top_earlgrey #(
       .edn_i(edn0_edn_rsp[0]),
       .aes_key_o(keymgr_aes_key),
       .kmac_key_o(keymgr_kmac_key),
-      .otbn_key_o(),
+      .otbn_key_o(keymgr_otbn_key),
       .kmac_data_o(kmac_app_req[0]),
       .kmac_data_i(kmac_app_rsp[0]),
       .otp_key_i(otp_ctrl_otp_keymgr_key),
@@ -2637,14 +2639,14 @@ module top_earlgrey #(
       intr_spi_device_tpm_header_not_empty, // IDs [75 +: 1]
       intr_spi_device_readbuf_flip, // IDs [74 +: 1]
       intr_spi_device_readbuf_watermark, // IDs [73 +: 1]
-      intr_spi_device_payload_not_empty, // IDs [72 +: 1]
-      intr_spi_device_cmdfifo_not_empty, // IDs [71 +: 1]
-      intr_spi_device_tx_underflow, // IDs [70 +: 1]
-      intr_spi_device_rx_overflow, // IDs [69 +: 1]
-      intr_spi_device_rx_error, // IDs [68 +: 1]
-      intr_spi_device_tx_watermark, // IDs [67 +: 1]
-      intr_spi_device_rx_watermark, // IDs [66 +: 1]
-      intr_spi_device_rx_full, // IDs [65 +: 1]
+      intr_spi_device_upload_payload_not_empty, // IDs [72 +: 1]
+      intr_spi_device_upload_cmdfifo_not_empty, // IDs [71 +: 1]
+      intr_spi_device_generic_tx_underflow, // IDs [70 +: 1]
+      intr_spi_device_generic_rx_overflow, // IDs [69 +: 1]
+      intr_spi_device_generic_rx_error, // IDs [68 +: 1]
+      intr_spi_device_generic_tx_watermark, // IDs [67 +: 1]
+      intr_spi_device_generic_rx_watermark, // IDs [66 +: 1]
+      intr_spi_device_generic_rx_full, // IDs [65 +: 1]
       intr_gpio_gpio, // IDs [33 +: 32]
       intr_uart3_rx_parity_err, // IDs [32 +: 1]
       intr_uart3_rx_timeout, // IDs [31 +: 1]

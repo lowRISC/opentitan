@@ -2,9 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from .trace import Trace
+
+from .ext_regs import TraceExtRegChange, ExtRegChange
 
 
 class TraceWSR(Trace):
@@ -52,7 +54,7 @@ class WSR:
         '''Abort pending changes'''
         return
 
-    def changes(self) -> List[TraceWSR]:
+    def changes(self) -> Sequence[Trace]:
         '''Return list of pending architectural changes'''
         return []
 
@@ -90,9 +92,10 @@ class RandWSR(WSR):
 
     RND is special as OTBN can stall on reads to it. A read from RND either
     immediately returns data from a cache of a previous EDN request (triggered
-    by writing to the RND_PREFETCH CSR) or waits for data from the EDN. To model
-    this anything reading from RND must first call `request_value` which returns
-    True if the value is available.
+    by writing to the RND_PREFETCH CSR) or waits for data from the EDN. To
+    model this, anything reading from RND must first call `request_value` which
+    returns True if the value is available.
+
     '''
     def __init__(self, name: str):
         super().__init__(name)
@@ -100,6 +103,7 @@ class RandWSR(WSR):
         self._random_value = None  # type: Optional[int]
         self._random_value_read = False
         self.pending_request = False
+        self.req_high = False
 
     def read_unsigned(self) -> int:
         assert self._random_value is not None
@@ -123,7 +127,6 @@ class RandWSR(WSR):
     def commit(self) -> None:
         if self._random_value_read:
             self._random_value = None
-            self.pending_request = False
 
         self._random_value_read = False
 
@@ -134,6 +137,18 @@ class RandWSR(WSR):
 
         self.pending_request = True
         return False
+
+    def changes(self) -> List[Trace]:
+        # We are not tracing the value of RND. Instead we are tracing modelled
+        # EDN request for RND.
+        ret = []  # type: List[Trace]
+        if self.req_high and self._random_value is not None:
+            ret = [TraceExtRegChange('RND_REQ', ExtRegChange('=', 0, True, 0))]
+            self.req_high = False
+        elif self.pending_request:
+            self.req_high = True
+            ret = [TraceExtRegChange('RND_REQ', ExtRegChange('=', 1, True, 1))]
+        return ret
 
     def set_unsigned(self, value: int) -> None:
         '''Sets a random value that can be read by a future `read_unsigned`
@@ -147,6 +162,80 @@ class RandWSR(WSR):
         '''
         assert 0 <= value < (1 << 256)
         self._random_value = value
+        if self.pending_request:
+            self.pending_request = False
+
+
+class URNDWSR(WSR):
+    '''Models URND PRNG Structure'''
+    def __init__(self, name: str):
+        super().__init__(name)
+        self._seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
+                      0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
+        self.state = [self._seed,
+                      4 * [0], 4 * [0],
+                      4 * [0], 4 * [0]]
+        self.out = 4 * [0]
+        self._next_value = None  # type: Optional[int]
+        self._value = None  # type: Optional[int]
+        self.running = False
+
+    # Function to left rotate a 64b number n by d bits
+    def leftRotate64(self, n: int, d: int) -> int:
+        return ((n << d) & ((1 << 64) - 1)) | (n >> (64 - d))
+
+    def read_u32(self) -> int:
+        '''Read a 32-bit unsigned result'''
+        return self.read_unsigned() & ((1 << 32) - 1)
+
+    def write_unsigned(self, value: int) -> None:
+        '''Writes to URND are ignored'''
+        return
+
+    def read_unsigned(self) -> int:
+        assert self._value is not None
+        return self._value
+
+    def state_update(self, data_in: List[int]) -> List[int]:
+        a_in = data_in[3]
+        b_in = data_in[2]
+        c_in = data_in[1]
+        d_in = data_in[0]
+
+        a_out = a_in ^ b_in ^ d_in
+        b_out = a_in ^ b_in ^ c_in
+        c_out = a_in ^ ((b_in << 17) & ((1 << 64) - 1)) ^ c_in
+        d_out = self.leftRotate64(d_in, 45) ^ self.leftRotate64(b_in, 45)
+        assert a_out < (1 << 64)
+        assert b_out < (1 << 64)
+        assert c_out < (1 << 64)
+        assert d_out < (1 << 64)
+        return [d_out, c_out, b_out, a_out]
+
+    def set_seed(self, value: List[int]) -> None:
+        self.running = True
+        self.state[0] = value
+
+    def step(self) -> None:
+        if self.running:
+            mid = 4 * [0]
+            self._next_value = 0
+            for i in range(4):
+                self.state[i + 1] = self.state_update(self.state[i])
+                mid[i] = (self.state[i][3] + self.state[i][0]) & ((1 << 64) - 1)
+                self.out[i] = (self.leftRotate64(mid[i], 23) + self.state[i][3]) & ((1 << 64) - 1)
+                self._next_value = (self._next_value | (self.out[i] << (64 * i))) & ((1 << 256) - 1)
+            self.state[0] = self.state[4]
+
+    def commit(self) -> None:
+        if self._next_value is not None:
+            self._value = self._next_value
+
+    def abort(self) -> None:
+        self._next_value = 0
+
+    def changes(self) -> List[TraceWSR]:
+        return ([])
 
 
 class WSRFile:
@@ -154,14 +243,31 @@ class WSRFile:
     def __init__(self) -> None:
         self.MOD = DumbWSR('MOD')
         self.RND = RandWSR('RND')
+        self.URND = URNDWSR('URND')
         self.ACC = DumbWSR('ACC')
+        self.KeyS0L = DumbWSR('KeyS0L')
+        self.KeyS0H = DumbWSR('KeyS0H')
+        self.KeyS1L = DumbWSR('KeyS1L')
+        self.KeyS1H = DumbWSR('KeyS1H')
 
         self._by_idx = {
             0: self.MOD,
             1: self.RND,
-            # TODO: Implement 2: URND
-            3: self.ACC
+            2: self.URND,
+            3: self.ACC,
+            4: self.KeyS0L,
+            5: self.KeyS0H,
+            6: self.KeyS1L,
+            7: self.KeyS1H,
         }
+
+        # Use fixed sideload keys for now. This matches the fixed keys used in
+        # the testbenches. Eventually the model will snoop the incoming key as
+        # it snoops the incoming EDN data for RND/URND now.
+        self.KeyS0L._value = 0xDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF
+        self.KeyS0H._value = 0xDEADBEEFDEADBEEFDEADBEEFDEADBEEF
+        self.KeyS1L._value = 0xBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00DBAADF00D
+        self.KeyS1H._value = 0xBAADF00DBAADF00DBAADF00DBAADF00D
 
     def check_idx(self, idx: int) -> bool:
         '''Return True if idx is a valid WSR index'''
@@ -186,12 +292,19 @@ class WSRFile:
     def commit(self) -> None:
         self.MOD.commit()
         self.RND.commit()
+        self.URND.commit()
         self.ACC.commit()
 
     def abort(self) -> None:
         self.MOD.abort()
         self.RND.abort()
+        self.URND.abort()
         self.ACC.abort()
 
-    def changes(self) -> List[TraceWSR]:
-        return self.MOD.changes() + self.RND.changes() + self.ACC.changes()
+    def changes(self) -> List[Trace]:
+        ret = []  # type: List[Trace]
+        ret += self.MOD.changes()
+        ret += self.RND.changes()
+        ret += self.URND.changes()
+        ret += self.ACC.changes()
+        return ret

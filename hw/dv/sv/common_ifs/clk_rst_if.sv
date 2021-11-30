@@ -66,13 +66,18 @@ interface clk_rst_if #(
   int duty_cycle = 50;
 
   // Maximum jitter applied to each period of the clock - this is expected to be about 20% or less
-  // than the clock period. The computed jitter is added or subtracted to each edge.
+  // than the clock period.
+  // The jitter is divided to two values - plus-jitter and minus-jitter.
+  // Plus jitter is the possible time can be added to the clock period, while the minus jittter is
+  // the possible time can be subtracted from the clock period.
   //         _________
   // _____:_| :     : |_:_______
   //
-  // The actual jitter value is picked randomly within the window {[-max_jitter_ps:max_jitter_ps]}
+  // The actual jitter value is picked randomly within the window
+  // {[-max_minus_jitter_ps:max_plus_jitter_ps]}
   // and is added to the time to next edge.
-  int max_jitter_ps = 1000;
+  int max_plus_jitter_ps = 1000;
+  int max_minus_jitter_ps = 1000;
 
   // The percentage chance of jitter occurring on each edge. If 0 (default value), then jitter is
   // disabled altogether. If 100, jitter is computed and applied at every edge.
@@ -170,9 +175,12 @@ interface clk_rst_if #(
     recompute = 1'b1;
   endfunction
 
-  // set maximum jitter in ps
-  function automatic void set_max_jitter_ps(int jitter_ps);
-    max_jitter_ps = jitter_ps;
+  // set maximum jitter in ps, separating the plus jitter and the minus jitter.
+  //  In default the plus and minus jitters are the same.
+  function automatic void set_max_jitter_ps(int plus_jitter_ps,
+                                            int minus_jitter_ps = plus_jitter_ps);
+    max_plus_jitter_ps = plus_jitter_ps;
+    max_minus_jitter_ps = minus_jitter_ps;
   endfunction
 
   // set jitter chance in percentage (0 - 100)
@@ -216,13 +224,19 @@ interface clk_rst_if #(
   // Applies jitter to clk_hi and clk_lo half periods based on jitter_chance_pc.
   function automatic void apply_jitter();
     int jitter;
+    int plus_jitter;
+    int minus_jitter;
 
     if ($urandom_range(1, 100) <= jitter_chance_pc) begin
-      jitter = ($urandom_range(0, 1) ? 1 : -1) * $urandom_range(0, max_jitter_ps);
+      plus_jitter = $urandom_range(0, max_plus_jitter_ps/2);
+      minus_jitter = $urandom_range(0, max_minus_jitter_ps/2);
+      jitter = ($urandom_range(0, 1) ? plus_jitter : (-1 * minus_jitter));
       clk_hi_modified_ps = clk_hi_ps + jitter;
     end
     if ($urandom_range(1, 100) <= jitter_chance_pc) begin
-      jitter = ($urandom_range(0, 1) ? 1 : -1) * $urandom_range(0, max_jitter_ps);
+      plus_jitter = $urandom_range(0, max_plus_jitter_ps/2);
+      minus_jitter = $urandom_range(0, max_minus_jitter_ps/2);
+      jitter = ($urandom_range(0, 1) ? plus_jitter : (-1 * minus_jitter));
       clk_lo_modified_ps = clk_lo_ps + jitter;
     end
   endfunction

@@ -562,7 +562,7 @@ void handler_irq_external(void) {
     case kTopEarlgreyPlicPeripheralSpiDevice: {
       dif_spi_device_irq_t irq = (dif_spi_device_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiDeviceRxFull);
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull);
       CHECK(irq == spi_device_irq_expected,
             "Incorrect spi_device IRQ triggered: exp = %d, obs = %d",
             spi_device_irq_expected, irq);
@@ -1256,7 +1256,7 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralSpiDevice;
-  for (dif_spi_device_irq_t irq = kDifSpiDeviceIrqRxFull;
+  for (dif_spi_device_irq_t irq = kDifSpiDeviceIrqGenericRxFull;
        irq <= kDifSpiDeviceIrqTpmHeaderNotEmpty; ++irq) {
     spi_device_irq_expected = irq;
     LOG_INFO("Triggering spi_device IRQ %d.", irq);

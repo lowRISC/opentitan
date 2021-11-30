@@ -7,13 +7,16 @@ class jtag_riscv_agent_cfg extends dv_base_agent_cfg;
   `uvm_object_utils_end
 
   jtag_agent_cfg m_jtag_agent_cfg;
+  jtag_sequencer jtag_sequencer_h;
 
-  function new (string name="");
+  // status to return if we assert in_reset
+  logic [DMI_OPW-1:0] status_in_reset;
+
+  function new(string name = "");
     super.new(name);
-
-    // This is a high level agent and will use jtag_agent's driver.
-    // TODO: consider move it to build_phase
-    this.has_driver = 0;
+    // Default active
+    has_driver      = 1;
+    status_in_reset = DmiNoErr;
   endfunction : new
 
   // assert trst_n for a number of cycles

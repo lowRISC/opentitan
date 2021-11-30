@@ -65,6 +65,10 @@ class OTBNInsn:
     # false by the EmptyInsn subclass)
     has_bits = True
 
+    # A class variable that is true if there will be a cycle of fetch stall
+    # after the instruction executes.
+    has_fetch_stall = False
+
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         self.raw = raw
         self.op_vals = op_vals

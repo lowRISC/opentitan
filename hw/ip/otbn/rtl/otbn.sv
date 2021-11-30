@@ -59,7 +59,9 @@ module otbn
   input                                              clk_otp_i,
   input                                              rst_otp_ni,
   output otp_ctrl_pkg::otbn_otp_key_req_t            otbn_otp_key_o,
-  input  otp_ctrl_pkg::otbn_otp_key_rsp_t            otbn_otp_key_i
+  input  otp_ctrl_pkg::otbn_otp_key_rsp_t            otbn_otp_key_i,
+
+  input  keymgr_pkg::otbn_key_req_t                  keymgr_key_i
 );
 
   import prim_util_pkg::vbits;
@@ -179,10 +181,9 @@ module otbn
   logic imem_req_core;
   logic imem_write_core;
   logic [ImemIndexWidth-1:0] imem_index_core;
-  logic [31:0] imem_wdata_core;
-  logic [31:0] imem_rdata_core;
+  logic [38:0] imem_rdata_core;
   logic imem_rvalid_core;
-  logic imem_rerror_core;
+  logic insn_fetch_err;
 
   logic imem_req_bus;
   logic imem_dummy_response_q, imem_dummy_response_d;
@@ -326,7 +327,7 @@ module otbn
   assign imem_req   = imem_access_core ? imem_req_core        : imem_req_bus;
   assign imem_write = imem_access_core ? imem_write_core      : imem_write_bus;
   assign imem_index = imem_access_core ? imem_index_core      : imem_index_bus;
-  assign imem_wdata = imem_access_core ? 39'(imem_wdata_core) : imem_wdata_bus;
+  assign imem_wdata = imem_access_core ? '0                   : imem_wdata_bus;
 
   assign imem_illegal_bus_access = imem_req_bus & imem_access_core;
 
@@ -355,22 +356,15 @@ module otbn
   // the currently executed instruction from IMEM through the bus
   // unintentionally.
   assign imem_rdata_bus  = !imem_access_core && !illegal_bus_access_q ? imem_rdata : 39'b0;
-  assign imem_rdata_core = imem_rdata[31:0];
+  assign imem_rdata_core = imem_rdata;
 
   // When an illegal bus access is seen, always return a dummy response the follow cycle.
   assign imem_rvalid_bus  = (~imem_access_core & imem_rvalid) | imem_dummy_response_q;
   assign imem_rvalid_core = imem_access_core ? imem_rvalid : 1'b0;
 
-  // imem_rerror_bus is passed to a TLUL adapter to report read errors back to the TL interface.
-  // We've squashed together the 2 bits from ECC into a single (uncorrectable) error, but the TLUL
-  // adapter expects the original ECC format. Send imem_rerror as bit 1, signalling an
-  // uncorrectable error.
-  //
-  // The mux ensures that imem_rerror doesn't appear on the bus (possibly leaking information) when
-  // the core is operating. Since rerror depends on rvalid, we could avoid this mux. However that
-  // seems a bit fragile, so we err on the side of caution.
-  assign imem_rerror_bus  = !imem_access_core ? {imem_rerror, 1'b0} : 2'b00;
-  assign imem_rerror_core = imem_rerror;
+  // No imem errors reported for bus reads. Integrity is carried through on the bus so integrity
+  // checking on TL responses will pick up any errors.
+  assign imem_rerror_bus = 1'b0;
 
   // Data Memory (DMEM) ========================================================
 
@@ -547,9 +541,9 @@ module otbn
   assign dmem_rvalid_bus  = (~dmem_access_core & dmem_rvalid) | dmem_dummy_response_q;
   assign dmem_rvalid_core = dmem_access_core ? dmem_rvalid : 1'b0;
 
-  // Expand the error signal to 2 bits and mask when the core has access. See note above
-  // imem_rerror_bus for details.
-  assign dmem_rerror_bus  = !dmem_access_core ? {dmem_rerror, 1'b0} : 2'b00;
+  // No dmem errors reported for bus reads. Integrity is carried through on the bus so integrity
+  // checking on TL responses will pick up any errors.
+  assign dmem_rerror_bus  = 1'b0;
   assign dmem_rerror_core = dmem_rerror;
 
   // Registers =================================================================
@@ -638,6 +632,9 @@ module otbn
   assign hw2reg.err_bits.loop.de = done;
   assign hw2reg.err_bits.loop.d = err_bits.loop;
 
+  assign hw2reg.err_bits.key_invalid.de = done;
+  assign hw2reg.err_bits.key_invalid.d = err_bits.key_invalid;
+
   assign hw2reg.err_bits.imem_intg_violation.de = done;
   assign hw2reg.err_bits.imem_intg_violation.d = err_bits.imem_intg_violation;
 
@@ -664,8 +661,8 @@ module otbn
 
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
-  assign hw2reg.fatal_alert_cause.imem_intg_violation.de = imem_rerror;
-  assign hw2reg.fatal_alert_cause.imem_intg_violation.d  = imem_rerror;
+  assign hw2reg.fatal_alert_cause.imem_intg_violation.de = insn_fetch_err;
+  assign hw2reg.fatal_alert_cause.imem_intg_violation.d  = insn_fetch_err;
   assign hw2reg.fatal_alert_cause.dmem_intg_violation.de = dmem_rerror;
   assign hw2reg.fatal_alert_cause.dmem_intg_violation.d  = dmem_rerror;
   // TODO: Register file errors
@@ -695,7 +692,7 @@ module otbn
                                   reg2hw.alert_test.recov.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal] = imem_rerror          |
+  assign alerts[AlertFatal] = insn_fetch_err       |
                               dmem_rerror          |
                               bus_intg_violation   |
                               illegal_bus_access_d |
@@ -743,8 +740,8 @@ module otbn
     .fips_o     (              ), // unused
     .clk_edn_i,
     .rst_edn_ni,
-    .edn_o      ( edn_rnd_o    ),
-    .edn_i      ( edn_rnd_i    )
+    .edn_o      ( edn_rnd_o ),
+    .edn_i      ( edn_rnd_i )
   );
 
   prim_edn_req #(
@@ -791,8 +788,15 @@ module otbn
     logic         start_model, start_rtl;
     err_bits_t    err_bits_model, err_bits_rtl;
     logic [31:0]  insn_cnt_model, insn_cnt_rtl;
-    logic         edn_rnd_data_valid;
-    logic         edn_urnd_data_valid;
+    logic         edn_rnd_req_model, edn_rnd_req_rtl;
+    logic         edn_urnd_req_model, edn_urnd_req_rtl;
+
+    edn_pkg::edn_rsp_t  edn_rnd_model_i;
+
+    edn_pkg::edn_rsp_t  edn_urnd_model_i;
+
+    logic       edn_rnd_data_valid;
+    logic       edn_urnd_data_valid;
 
     // Note that the "done" signal will come two cycles later when using the model as a core than it
     // does when using the RTL
@@ -804,8 +808,13 @@ module otbn
     assign start_rtl = start_q & ~otbn_use_model;
 
     // Model (Instruction Set Simulator)
+    assign edn_rnd_model_i    = otbn_use_model ? edn_rnd_i : '0;
+    assign edn_rnd_req        = otbn_use_model ? edn_rnd_req_model : edn_rnd_req_rtl;
     assign edn_rnd_data_valid = edn_rnd_req & edn_rnd_ack;
-    assign edn_urnd_data_valid = otbn_use_model ? 1'b1 : edn_urnd_req & edn_urnd_ack;
+
+    assign edn_urnd_model_i    = otbn_use_model ? edn_urnd_i : '0;
+    assign edn_urnd_req        = otbn_use_model ? edn_urnd_req_model : edn_urnd_req_rtl;
+    assign edn_urnd_data_valid = edn_urnd_req & edn_urnd_ack;
 
     otbn_core_model #(
       .DmemSizeByte(DmemSizeByte),
@@ -823,10 +832,13 @@ module otbn
 
       .err_bits_o            (err_bits_model),
 
-      .edn_rnd_i             (edn_rnd_i),
+      .edn_rnd_i             (edn_rnd_model_i),
+      .edn_rnd_o             (edn_rnd_req_model),
       .edn_rnd_cdc_done_i    (edn_rnd_data_valid),
 
-      .edn_urnd_data_valid_i (edn_urnd_data_valid),
+      .edn_urnd_i            (edn_urnd_model_i),
+      .edn_urnd_o            (edn_urnd_req_model),
+      .edn_urnd_cdc_done_i   (edn_urnd_data_valid),
 
       .insn_cnt_o            (insn_cnt_model),
 
@@ -845,46 +857,49 @@ module otbn
       .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
     ) u_otbn_core (
       .clk_i,
-      .rst_ni                 (rst_n),
+      .rst_ni                      (rst_n),
 
-      .start_i                (start_rtl),
-      .done_o                 (done_rtl),
-      .locked_o               (locked_rtl),
+      .start_i                     (start_rtl),
+      .done_o                      (done_rtl),
+      .locked_o                    (locked_rtl),
 
-      .err_bits_o             (err_bits_rtl),
+      .err_bits_o                  (err_bits_rtl),
 
-      .imem_req_o             (imem_req_core),
-      .imem_addr_o            (imem_addr_core),
-      .imem_wdata_o           (imem_wdata_core),
-      .imem_rdata_i           (imem_rdata_core),
-      .imem_rvalid_i          (imem_rvalid_core),
-      .imem_rerror_i          (imem_rerror_core),
+      .imem_req_o                  (imem_req_core),
+      .imem_addr_o                 (imem_addr_core),
+      .imem_rdata_i                (imem_rdata_core),
+      .imem_rvalid_i               (imem_rvalid_core),
 
-      .dmem_req_o             (dmem_req_core),
-      .dmem_write_o           (dmem_write_core),
-      .dmem_addr_o            (dmem_addr_core),
-      .dmem_wdata_o           (dmem_wdata_core),
-      .dmem_wmask_o           (dmem_wmask_core),
-      .dmem_rmask_o           (dmem_rmask_core_d),
-      .dmem_rdata_i           (dmem_rdata_core),
-      .dmem_rvalid_i          (dmem_rvalid_core),
-      .dmem_rerror_i          (dmem_rerror_core),
+      .insn_fetch_err_o            (insn_fetch_err),
 
-      .edn_rnd_req_o          (edn_rnd_req),
-      .edn_rnd_ack_i          (edn_rnd_ack),
-      .edn_rnd_data_i         (edn_rnd_data),
+      .dmem_req_o                  (dmem_req_core),
+      .dmem_write_o                (dmem_write_core),
+      .dmem_addr_o                 (dmem_addr_core),
+      .dmem_wdata_o                (dmem_wdata_core),
+      .dmem_wmask_o                (dmem_wmask_core),
+      .dmem_rmask_o                (dmem_rmask_core_d),
+      .dmem_rdata_i                (dmem_rdata_core),
+      .dmem_rvalid_i               (dmem_rvalid_core),
+      .dmem_rerror_i               (dmem_rerror_core),
 
-      .edn_urnd_req_o         (edn_urnd_req),
-      .edn_urnd_ack_i         (edn_urnd_ack),
-      .edn_urnd_data_i        (edn_urnd_data),
+      .edn_rnd_req_o               (edn_rnd_req_rtl),
+      .edn_rnd_ack_i               (edn_rnd_ack),
+      .edn_rnd_data_i              (edn_rnd_data),
 
-      .insn_cnt_o             (insn_cnt_rtl),
+      .edn_urnd_req_o              (edn_urnd_req_rtl),
+      .edn_urnd_ack_i              (edn_urnd_ack),
+      .edn_urnd_data_i             (edn_urnd_data),
 
-      .bus_intg_violation_i   (bus_intg_violation),
-      .illegal_bus_access_i   (illegal_bus_access_q),
-      .lifecycle_escalation_i (lifecycle_escalation),
+      .insn_cnt_o                  (insn_cnt_rtl),
 
-      .software_errs_fatal_i  (software_errs_fatal_q)
+      .bus_intg_violation_i        (bus_intg_violation),
+      .illegal_bus_access_i        (illegal_bus_access_q),
+      .lifecycle_escalation_i      (lifecycle_escalation),
+
+      .software_errs_fatal_i       (software_errs_fatal_q),
+
+      .sideload_key_shares_i       (keymgr_key_i.key),
+      .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
     );
   `else
     otbn_core #(
@@ -894,46 +909,49 @@ module otbn
       .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
     ) u_otbn_core (
       .clk_i,
-      .rst_ni                 (rst_n),
+      .rst_ni                      (rst_n),
 
-      .start_i                (start_q),
-      .done_o                 (done),
-      .locked_o               (locked),
+      .start_i                     (start_q),
+      .done_o                      (done),
+      .locked_o                    (locked),
 
-      .err_bits_o             (err_bits),
+      .err_bits_o                  (err_bits),
 
-      .imem_req_o             (imem_req_core),
-      .imem_addr_o            (imem_addr_core),
-      .imem_wdata_o           (imem_wdata_core),
-      .imem_rdata_i           (imem_rdata_core),
-      .imem_rvalid_i          (imem_rvalid_core),
-      .imem_rerror_i          (imem_rerror_core),
+      .imem_req_o                  (imem_req_core),
+      .imem_addr_o                 (imem_addr_core),
+      .imem_rdata_i                (imem_rdata_core),
+      .imem_rvalid_i               (imem_rvalid_core),
 
-      .dmem_req_o             (dmem_req_core),
-      .dmem_write_o           (dmem_write_core),
-      .dmem_addr_o            (dmem_addr_core),
-      .dmem_wdata_o           (dmem_wdata_core),
-      .dmem_wmask_o           (dmem_wmask_core),
-      .dmem_rmask_o           (dmem_rmask_core_d),
-      .dmem_rdata_i           (dmem_rdata_core),
-      .dmem_rvalid_i          (dmem_rvalid_core),
-      .dmem_rerror_i          (dmem_rerror_core),
+      .insn_fetch_err_o            (insn_fetch_err),
 
-      .edn_rnd_req_o          (edn_rnd_req),
-      .edn_rnd_ack_i          (edn_rnd_ack),
-      .edn_rnd_data_i         (edn_rnd_data),
+      .dmem_req_o                  (dmem_req_core),
+      .dmem_write_o                (dmem_write_core),
+      .dmem_addr_o                 (dmem_addr_core),
+      .dmem_wdata_o                (dmem_wdata_core),
+      .dmem_wmask_o                (dmem_wmask_core),
+      .dmem_rmask_o                (dmem_rmask_core_d),
+      .dmem_rdata_i                (dmem_rdata_core),
+      .dmem_rvalid_i               (dmem_rvalid_core),
+      .dmem_rerror_i               (dmem_rerror_core),
 
-      .edn_urnd_req_o         (edn_urnd_req),
-      .edn_urnd_ack_i         (edn_urnd_ack),
-      .edn_urnd_data_i        (edn_urnd_data),
+      .edn_rnd_req_o               (edn_rnd_req),
+      .edn_rnd_ack_i               (edn_rnd_ack),
+      .edn_rnd_data_i              (edn_rnd_data),
 
-      .insn_cnt_o             (insn_cnt),
+      .edn_urnd_req_o              (edn_urnd_req),
+      .edn_urnd_ack_i              (edn_urnd_ack),
+      .edn_urnd_data_i             (edn_urnd_data),
 
-      .bus_intg_violation_i   (bus_intg_violation),
-      .illegal_bus_access_i   (illegal_bus_access_q),
-      .lifecycle_escalation_i (lifecycle_escalation),
+      .insn_cnt_o                  (insn_cnt),
 
-      .software_errs_fatal_i  (software_errs_fatal_q)
+      .bus_intg_violation_i        (bus_intg_violation),
+      .illegal_bus_access_i        (illegal_bus_access_q),
+      .lifecycle_escalation_i      (lifecycle_escalation),
+
+      .software_errs_fatal_i       (software_errs_fatal_q),
+
+      .sideload_key_shares_i       (keymgr_key_i.key),
+      .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
     );
   `endif
 

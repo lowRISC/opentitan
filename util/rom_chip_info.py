@@ -39,8 +39,12 @@ def main():
                         help='Output Directory'
                         )
     parser.add_argument('--ot_version',
-                        required=True,
+                        required=False,
                         help='OpenTitan Version'
+                        )
+    parser.add_argument('--ot_version_file',
+                        required=False,
+                        help='Path to a file with the OpenTitan Version'
                         )
 
     log.basicConfig(format="%(levelname)s: %(message)s")
@@ -49,12 +53,18 @@ def main():
     if not args.outdir:
         log.error("Missing --outdir.")
         raise SystemExit(sys.exc_info()[1])
-    if not args.ot_version:
-        log.error("Missing --ot_version.")
+
+    if args.ot_version:
+        version = args.ot_version
+    elif args.ot_version_file:
+        version = open(args.ot_version_file, "rt").read().strip()
+    else:
+        log.error(
+            "Missing ot_version, provide --ot_version or --ot_version_file."
+        )
         raise SystemExit(sys.exc_info()[1])
 
     outdir = Path(args.outdir)
-    version = args.ot_version
 
     outdir.mkdir(parents=True, exist_ok=True)
     out_path = outdir / "chip_info.h"

@@ -40,13 +40,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.sw_test_status_vif.sw_test_status_addr = SW_DV_TEST_STATUS_ADDR;
 
     `uvm_info(`gfn, "Initializing RAM", UVM_MEDIUM)
-    // Initialize the RAM to 0s and flash to all 1s.
-    if (cfg.initialize_ram) begin
-      for (int i = 0; i < cfg.num_ram_main_tiles; i++) begin
-        chip_mem_e mem = chip_mem_e'(RamMain0 + i);
-        cfg.mem_bkdr_util_h[mem].clear_mem();
-      end
+    // Randomize the main SRAM.
+    for (int i = 0; i < cfg.num_ram_main_tiles; i++) begin
+      chip_mem_e mem = chip_mem_e'(RamMain0 + i);
+      cfg.mem_bkdr_util_h[mem].randomize_mem();
     end
+
+    // Initialize the data partition in all flash banks to all 1s.
+    `uvm_info(`gfn, "Initializing flash banks (data partition only)", UVM_MEDIUM)
     cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
 
@@ -55,8 +56,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".scr.39.vmem"});
 
     // TODO: the location of the main execution image should be randomized to either bank in future.
-    `uvm_info(`gfn, "Initializing flash", UVM_MEDIUM)
     if (cfg.use_spi_load_bootstrap) begin
+      `uvm_info(`gfn, "Initializing SPI flash bootstrap", UVM_MEDIUM)
       spi_device_load_bootstrap({cfg.sw_images[SwTypeTest], ".frames.vmem"});
     end else begin
       cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
@@ -64,8 +65,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
 
-    `uvm_info(`gfn, "cpu_init done", UVM_MEDIUM)
-    // If we load the mem with a file in the same timestamp as we are overwriting a symbol in the
+    `uvm_info(`gfn, "CPU_init done", UVM_MEDIUM)
+    // If we load the mem with a file in the same time step as overwriting a symbol in the
     // ELF file, then adding zero delay helps with avoiding a race condition. Do all symbol
     // overrides after this zero delay.
     #0;
