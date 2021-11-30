@@ -56,10 +56,12 @@ static void boot_data_pages_mp_set(hardened_bool_t perm) {
  * Erases boot data info pages.
  */
 static void erase_boot_data_pages(void) {
+  boot_data_pages_mp_set(kHardenedBoolTrue);
   for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
     CHECK(flash_ctrl_info_erase(kPages[i], kFlashCtrlEraseTypePage) == kErrorOk,
           "Flash page erase failed.");
   }
+  boot_data_pages_mp_set(kHardenedBoolFalse);
 }
 
 /**
@@ -77,10 +79,12 @@ static void write_boot_data(flash_ctrl_info_page_t page, size_t index,
   const uint32_t offset = index * sizeof(boot_data_t);
   uint32_t buf[kBootDataNumWords];
   memcpy(buf, boot_data, sizeof(boot_data_t));
+  boot_data_pages_mp_set(kHardenedBoolTrue);
   CHECK(flash_ctrl_info_write(page, offset, kBootDataNumWords, buf) == kErrorOk,
         "Flash write failed.");
   CHECK(flash_ctrl_info_read(page, offset, kBootDataNumWords, buf) == kErrorOk,
         "Flash read failed.");
+  boot_data_pages_mp_set(kHardenedBoolFalse);
   CHECK(memcmp(buf, boot_data, sizeof(boot_data_t)) == 0,
         "Flash write failed.");
 }
@@ -96,8 +100,10 @@ static void read_boot_data(flash_ctrl_info_page_t page, size_t index,
                            boot_data_t *boot_data) {
   const uint32_t offset = index * sizeof(boot_data_t);
   uint32_t buf[kBootDataNumWords];
+  boot_data_pages_mp_set(kHardenedBoolTrue);
   CHECK(flash_ctrl_info_read(page, offset, kBootDataNumWords, buf) == kErrorOk,
         "Flash read failed.");
+  boot_data_pages_mp_set(kHardenedBoolFalse);
   memcpy(boot_data, buf, sizeof(boot_data_t));
 }
 
@@ -322,9 +328,6 @@ bool test_main(void) {
   rom_error_t result = kErrorOk;
 
   flash_ctrl_init();
-  // TODO: Reduce the scope of this once boot_data starts using
-  // `flash_ctrl_info_mp_set()`.
-  boot_data_pages_mp_set(kHardenedBoolTrue);
 
   EXECUTE_TEST(result, check_test_data_test);
   EXECUTE_TEST(result, read_empty_default_allowed_test);
