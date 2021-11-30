@@ -15,66 +15,67 @@
 `endif
 
 
-interface lc_ctrl_if(input clk, input rst_n);
+interface lc_ctrl_if (
+  input clk,
+  input rst_n
+);
 
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
 
-  logic tdo_oe; // TODO: add assertions
-  otp_lc_data_t otp_i;
-  otp_device_id_t otp_device_id_i;
-  otp_device_id_t otp_manuf_state_i;
-  lc_token_t    hashed_token;
+  logic               tdo_oe;  // TODO: add assertions
+  otp_lc_data_t       otp_i;
+  otp_device_id_t     otp_device_id_i;
+  otp_device_id_t     otp_manuf_state_i;
+  lc_token_t          hashed_token;
 
-  lc_tx_t lc_dft_en_o;
-  lc_tx_t lc_nvm_debug_en_o;
-  lc_tx_t lc_hw_debug_en_o;
-  lc_tx_t lc_cpu_en_o;
-  lc_tx_t lc_creator_seed_sw_rw_en_o;
-  lc_tx_t lc_owner_seed_sw_rw_en_o;
-  lc_tx_t lc_iso_part_sw_rd_en_o;
-  lc_tx_t lc_iso_part_sw_wr_en_o;
-  lc_tx_t lc_seed_hw_rd_en_o;
-  lc_tx_t lc_keymgr_en_o;
-  lc_tx_t lc_escalate_en_o;
-  lc_tx_t lc_check_byp_en_o;
+  lc_tx_t             lc_dft_en_o;
+  lc_tx_t             lc_nvm_debug_en_o;
+  lc_tx_t             lc_hw_debug_en_o;
+  lc_tx_t             lc_cpu_en_o;
+  lc_tx_t             lc_creator_seed_sw_rw_en_o;
+  lc_tx_t             lc_owner_seed_sw_rw_en_o;
+  lc_tx_t             lc_iso_part_sw_rd_en_o;
+  lc_tx_t             lc_iso_part_sw_wr_en_o;
+  lc_tx_t             lc_seed_hw_rd_en_o;
+  lc_tx_t             lc_keymgr_en_o;
+  lc_tx_t             lc_escalate_en_o;
+  lc_tx_t             lc_check_byp_en_o;
 
-  lc_tx_t clk_byp_req_o;
-  lc_tx_t clk_byp_ack_i;
-  lc_tx_t flash_rma_req_o;
-  lc_tx_t flash_rma_ack_i;
+  lc_tx_t             clk_byp_req_o;
+  lc_tx_t             clk_byp_ack_i;
+  lc_tx_t             flash_rma_req_o;
+  lc_tx_t             flash_rma_ack_i;
 
   lc_keymgr_div_t     keymgr_div_o;
   lc_flash_rma_seed_t flash_rma_seed_o;
 
-  event fsm_backdoor_state_write_ev;
-  event fsm_backdoor_state_read_ev;
-  event fsm_backdoor_count_write_ev;
-  event fsm_backdoor_count_read_ev;
+  event               fsm_backdoor_state_write_ev;
+  event               fsm_backdoor_state_read_ev;
+  event               fsm_backdoor_count_write_ev;
+  event               fsm_backdoor_count_read_ev;
 
-  task automatic init(lc_state_e lc_state = LcStRaw,
-                      lc_cnt_e   lc_cnt = LcCnt0,
-                      lc_tx_t    clk_byp_ack = Off,
-                      lc_tx_t    flash_rma_ack = Off);
-    otp_i.valid = 1;
-    otp_i.error = 0;
-    otp_i.state = lc_state;
-    otp_i.count = lc_cnt;
+  task automatic init(lc_state_e lc_state = LcStRaw, lc_cnt_e lc_cnt = LcCnt0,
+                      lc_tx_t clk_byp_ack = Off, lc_tx_t flash_rma_ack = Off);
+    otp_i.valid             = 1;
+    otp_i.error             = 0;
+    otp_i.state             = lc_state;
+    otp_i.count             = lc_cnt;
     otp_i.test_unlock_token = lc_ctrl_env_pkg::get_random_token();
     otp_i.test_exit_token   = lc_ctrl_env_pkg::get_random_token();
     otp_i.rma_token         = lc_ctrl_env_pkg::get_random_token();
     // TODO: need to randomize this,
-    otp_i.secrets_valid = Off;
+    otp_i.secrets_valid     = Off;
     otp_i.test_tokens_valid = On;
-    otp_i.rma_token_valid = On;
+    otp_i.rma_token_valid   = On;
 
-    otp_device_id_i = 0;
-    otp_manuf_state_i = 0;
+    otp_device_id_i         = 0;
+    otp_manuf_state_i       = 0;
 
-    clk_byp_ack_i = clk_byp_ack;
-    flash_rma_ack_i = flash_rma_ack;
+    clk_byp_ack_i           = clk_byp_ack;
+    flash_rma_ack_i         = flash_rma_ack;
 
     release `LC_CTRL_FSM_STATE_REGS_PATH;
   endtask
@@ -87,18 +88,15 @@ interface lc_ctrl_if(input clk, input rst_n);
     flash_rma_ack_i = val;
   endtask
 
-  function static fsm_state_backdoor_write(
-    input logic [FsmStateWidth-1:0] val = 'hdead,
-    input int delay_clocks=0,
-    input int force_clocks=5
-    );
+  function static fsm_state_backdoor_write(input logic [FsmStateWidth-1:0] val = 'hdead,
+                                           input int delay_clocks = 0, input int force_clocks = 5);
     `dv_info($sformatf("Backdoor write to state registers"))
     fork
       begin : force_state_proc
-        repeat(delay_clocks) @(posedge clk);
-        -> fsm_backdoor_state_write_ev;
+        repeat (delay_clocks) @(posedge clk);
+        ->fsm_backdoor_state_write_ev;
         force `LC_CTRL_FSM_STATE_REGS_PATH = val;
-        repeat(force_clocks) @(posedge clk);
+        repeat (force_clocks) @(posedge clk);
         release `LC_CTRL_FSM_STATE_REGS_PATH;
       end : force_state_proc
     join_none
@@ -106,30 +104,27 @@ interface lc_ctrl_if(input clk, input rst_n);
 
 
   function static logic [FsmStateWidth-1:0] fsm_state_backdoor_read();
-    -> fsm_backdoor_state_read_ev;
+    ->fsm_backdoor_state_read_ev;
     return `LC_CTRL_FSM_STATE_REGS_PATH;
   endfunction
 
 
-  function static fsm_count_backdoor_write(
-    input logic  [LcCountWidth-1:0] val = 'hdead,
-    input int delay_clocks=0,
-    input int force_clocks=5
-    );
+  function static fsm_count_backdoor_write(input logic [LcCountWidth-1:0] val = 'hdead,
+                                           input int delay_clocks = 0, input int force_clocks = 5);
     `dv_info($sformatf("Backdoor write to state registers"))
     fork
       begin : force_state_proc
-        repeat(delay_clocks) @(posedge clk);
-        -> fsm_backdoor_count_write_ev;
+        repeat (delay_clocks) @(posedge clk);
+        ->fsm_backdoor_count_write_ev;
         force `LC_CTRL_FSM_COUNT_REGS_PATH = val;
-        repeat(force_clocks) @(posedge clk);
+        repeat (force_clocks) @(posedge clk);
         release `LC_CTRL_FSM_COUNT_REGS_PATH;
       end : force_count_proc
     join_none
   endfunction
 
-  function static logic  [LcCountWidth-1:0] fsm_count_backdoor_read();
-    -> fsm_backdoor_count_read_ev;
+  function static logic [LcCountWidth-1:0] fsm_count_backdoor_read();
+    ->fsm_backdoor_count_read_ev;
     return `LC_CTRL_FSM_COUNT_REGS_PATH;
   endfunction
 

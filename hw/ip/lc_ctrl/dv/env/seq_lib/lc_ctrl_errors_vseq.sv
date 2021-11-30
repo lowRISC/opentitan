@@ -14,7 +14,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   rand lc_count_bin_t invalid_lc_count_bin;
   rand bit [DecLcStateWidth-1:0] invalid_next_state;
   rand bit [FsmStateWidth-1:0] fsm_state_invert_bits;
-  rand bit [LcCountWidth-1:0]  fsm_count_invert_bits;
+  rand bit [LcCountWidth-1:0] fsm_count_invert_bits;
   rand int unsigned fsm_state_err_inj_delay;
   rand int unsigned fsm_state_err_inj_period;
   rand int unsigned fsm_count_err_inj_delay;
@@ -33,7 +33,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   `uvm_object_new
 
   constraint no_err_rsps_c {
-    err_inj.clk_byp_error_rsp   == 0;
+    err_inj.clk_byp_error_rsp == 0;
     err_inj.flash_rma_error_rsp == 0;
   }
 
@@ -42,16 +42,14 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   constraint token_mismatch_err_c {err_inj.token_mismatch_err == 0;}
 
   constraint lc_state_failure_c {
-    err_inj.state_err          == 0;
+    err_inj.state_err == 0;
     err_inj.state_backdoor_err == 0;
-    err_inj.count_err          == 0;
+    err_inj.count_err == 0;
     err_inj.count_backdoor_err == 0;
-    err_inj.transition_err     == 0;
+    err_inj.transition_err == 0;
   }
 
-  constraint lc_errors_c {
-    err_inj.transition_err     == 0;
-  }
+  constraint lc_errors_c {err_inj.transition_err == 0;}
 
   constraint invalid_states_bin_c {
     !(invalid_lc_state_bin inside {ValidLcStatesBin});
@@ -70,17 +68,17 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   }
 
   constraint fsm_state_err_inj_delay_c {
-    fsm_state_err_inj_delay  inside {[1 : 200]};
+    fsm_state_err_inj_delay inside {[1 : 200]};
     fsm_state_err_inj_period inside {[2 : 4]};
   }
 
   constraint fsm_count_err_inj_delay_c {
-    fsm_count_err_inj_delay  inside {[1 : 200]};
+    fsm_count_err_inj_delay inside {[1 : 200]};
     fsm_count_err_inj_period inside {[2 : 4]};
   }
 
   virtual task post_start();
-    `uvm_info(`gfn, "post_start: Task called for lc_ctrl_errors_vseq",UVM_MEDIUM)
+    `uvm_info(`gfn, "post_start: Task called for lc_ctrl_errors_vseq", UVM_MEDIUM)
 
     // Clear all error injection bits so we end with a clean lc_ state, lc_count etc.
     err_inj = 0;
@@ -102,7 +100,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   task body();
     uvm_reg_data_t rdata;
-    logic  [FsmStateWidth-1:0] fsm_state;
+    logic [FsmStateWidth-1:0] fsm_state;
     num_trans.rand_mode(0);
 
     fork
@@ -156,8 +154,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       end
 
       // SW transition request
-      if ((err_inj.state_err || valid_state_for_trans(lc_state)) &&
-          (err_inj.count_err || lc_cnt != LcCnt24)) begin
+      if ((err_inj.state_err || valid_state_for_trans(
+              lc_state
+          )) && (err_inj.count_err || lc_cnt != LcCnt24)) begin
         lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf(
@@ -202,7 +201,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // need to randomize here because associative array's index cannot be a rand input in constraint
   virtual function void randomize_next_lc_state(dec_lc_state_e curr_lc_state);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(next_lc_state,
-        if (!err_inj.transition_err && !err_inj.state_err) {
+                                       if (!err_inj.transition_err && !err_inj.state_err) {
           // Valid transition
           next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]};
         } else if (!err_inj.state_err) {
@@ -232,12 +231,12 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     tokens_a[TestExitTokenIdx]   = cfg.lc_ctrl_vif.otp_i.test_exit_token;
     tokens_a[RmaTokenIdx]        = cfg.lc_ctrl_vif.otp_i.rma_token;
 
-    if(!err_inj.state_err && !err_inj.count_err) begin
+    if (!err_inj.state_err && !err_inj.count_err) begin
       `DV_CHECK_NE(token_idx, InvalidTokenIdx, $sformatf(
-                  "curr_state: %0s, next_state %0s, does not expect InvalidToken",
-                  lc_state.name,
-                  next_lc_state.name
-                  ))
+                   "curr_state: %0s, next_state %0s, does not expect InvalidToken",
+                   lc_state.name,
+                   next_lc_state.name
+                   ))
     end
 
     // Clear the user_data_q here cause previous data might not be used due to some other lc_ctrl
@@ -307,10 +306,13 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       `uvm_info(`gfn, {"wait_status: ", ral.status.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
       if (get_field_val(ral.status.transition_successful, status_val)) break;
       if (get_field_val(ral.status.token_error, status_val)) break;
-      if (get_field_val(ral.status.otp_error, status_val) ||
-          get_field_val(ral.status.state_error, status_val) ||
-          get_field_val(ral.status.bus_integ_error, status_val)
-          ) begin
+      if (get_field_val(
+              ral.status.otp_error, status_val
+          ) || get_field_val(
+              ral.status.state_error, status_val
+          ) || get_field_val(
+              ral.status.bus_integ_error, status_val
+          )) begin
         expect_alert = 1;
         break;
       end
@@ -342,8 +344,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // This is shared with the scoreboard via the environment config object
   virtual function void update_err_inj_cfg();
     cfg.err_inj = err_inj;
-    `uvm_info(`gfn, $sformatf("update_err_inj_cfg: %p", cfg.err_inj),
-              UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("update_err_inj_cfg: %p", cfg.err_inj), UVM_MEDIUM)
   endfunction
 
   // Sample the coverage for this sequence
@@ -378,7 +379,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   endtask
 
   // Send an escalate alert
-  protected virtual task send_escalate(int index, int assert_clocks=1);
+  protected virtual task send_escalate(int index, int assert_clocks = 1);
     // TODO - replace with calls to escalate agent when driver implemented
     unique case (index)
       0: begin
@@ -398,27 +399,21 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   virtual function void do_print(uvm_printer printer);
     super.do_print(printer);
     // err_inj
-    printer.print_generic(
-   	    .name("err_inj"),
-   	    .type_name("lc_ctrl_err_inj_t"),
-   	    .size($bits(err_inj)),
-   	    .value($sformatf("%p", err_inj))
-        );
+    printer.print_generic(.name("err_inj"), .type_name("lc_ctrl_err_inj_t"), .size($bits(err_inj)),
+                          .value($sformatf("%p", err_inj)));
 
   endfunction
 
   // Individual event handlers
   virtual task handle_fatal_prog_error;
-    `uvm_info(`gfn, $sformatf("handle_fatal_prog_error: alert received"),
-        UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("handle_fatal_prog_error: alert received"), UVM_MEDIUM)
     // Only send escalate at correct point of the test
     if (!(cfg.get_test_phase() inside {LcCtrlEscalate, LcCtrlReadState2})) return;
-    send_escalate(1,100);
+    send_escalate(1, 100);
   endtask
 
   virtual task handle_fatal_state_error;
-    `uvm_info(`gfn, $sformatf("handle_fatal_state_error: alert received"),
-        UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("handle_fatal_state_error: alert received"), UVM_MEDIUM)
     // alert_sender_seq alert_seq;
     // `uvm_info(`gfn, $sformatf("handle_fatal_state_error: alert received"), UVM_MEDIUM)
     // `uvm_create_obj(alert_sender_seq, alert_seq)
@@ -431,12 +426,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     // Only send an escalate at the correct part of the test
     if (!(cfg.get_test_phase() inside {LcCtrlEscalate, LcCtrlReadState2})) return;
-    send_escalate(0,100);
+    send_escalate(0, 100);
   endtask
 
   virtual task handle_fatal_bus_integ_error;
-    `uvm_info(`gfn, $sformatf("handle_fatal_bus_integ_error: alert received"),
-        UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("handle_fatal_bus_integ_error: alert received"), UVM_MEDIUM)
   endtask
 
 endclass

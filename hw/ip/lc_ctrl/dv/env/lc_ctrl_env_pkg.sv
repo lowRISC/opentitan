@@ -27,12 +27,12 @@ package lc_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"fatal_prog_error",
-                                       "fatal_state_error",
-                                       "fatal_bus_integ_error"};
-  parameter uint   NUM_ALERTS = 3;
-  parameter uint   CLAIM_TRANS_VAL = MuBi8True;
-  parameter uint   NUM_STATES = 24;
+  parameter string LIST_OF_ALERTS[] = {
+    "fatal_prog_error", "fatal_state_error", "fatal_bus_integ_error"
+  };
+  parameter uint NUM_ALERTS = 3;
+  parameter uint CLAIM_TRANS_VAL = MuBi8True;
+  parameter uint NUM_STATES = 24;
 
   // lc_otp_program host data width: lc_state_e width + lc_cnt_e width
   parameter uint OTP_PROG_HDATA_WIDTH = LcStateWidth + LcCountWidth;
@@ -82,6 +82,7 @@ package lc_ctrl_env_pkg;
     LcCtrlPostStart
   } lc_ctrl_test_phase_e;
 
+  // verilog_format: off
   const lc_outputs_t EXP_LC_OUTPUTS[NUM_STATES] = {
     // Raw (fixed size array index 0)
     {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
@@ -135,6 +136,7 @@ package lc_ctrl_env_pkg;
     // Invalid
     {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On}
   };
+  // verilog_format: on
 
   // types
   typedef enum bit [1:0] {
@@ -145,7 +147,7 @@ package lc_ctrl_env_pkg;
   } lc_pwr_if_e;
 
   typedef virtual pins_if #(LcPwrIfWidth) pwr_lc_vif;
-  typedef virtual lc_ctrl_if              lc_ctrl_vif;
+  typedef virtual lc_ctrl_if lc_ctrl_vif;
 
   // functions
   function automatic bit valid_state_for_trans(lc_state_e curr_state);
@@ -171,6 +173,7 @@ package lc_ctrl_env_pkg;
                                LcStRma});
   endfunction
 
+  // verilog_format: off
   function automatic lc_ctrl_pkg::token_idx_e get_exp_token(dec_lc_state_e curr_state,
                                                             dec_lc_state_e next_state);
     // Raw Token
@@ -213,9 +216,10 @@ package lc_ctrl_env_pkg;
       get_exp_token = lc_ctrl_pkg::InvalidTokenIdx;
     end
   endfunction
+  // verilog_format: on
 
   function automatic lc_ctrl_state_pkg::lc_token_t get_random_token();
-    `DV_CHECK_STD_RANDOMIZE_FATAL(get_random_token, , "lc_ctrl_env_pkg");
+    `DV_CHECK_STD_RANDOMIZE_FATAL(get_random_token,, "lc_ctrl_env_pkg");
   endfunction
 
   // package sources
