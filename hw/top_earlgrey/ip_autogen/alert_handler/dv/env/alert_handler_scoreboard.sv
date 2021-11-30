@@ -87,8 +87,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           alert_esc_seq_item act_item;
           alert_fifo[index].get(act_item);
           alert_en = ral.alert_en_shadowed[index].get_mirrored_value() &&
-                     cfg.alert_handler_vif.lpg_cg_en[lpg_index] == prim_mubi_pkg::MuBi4False &&
-                     cfg.alert_handler_vif.lpg_rst_en[lpg_index] == prim_mubi_pkg::MuBi4False;
+              prim_mubi_pkg::mubi4_test_false_loose(cfg.alert_handler_vif.lpg_cg_en[lpg_index]) &&
+              prim_mubi_pkg::mubi4_test_false_loose(cfg.alert_handler_vif.lpg_rst_en[lpg_index]);
           if (alert_en) begin
             // alert detected
             if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.ping_timeout &&
