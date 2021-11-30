@@ -15,15 +15,15 @@
 #include "sw/device/lib/testing/check.h"
 
 void demo_gpio_startup(dif_gpio_t *gpio) {
-  LOG_INFO("Watch the LEDs!");
+  LOG_INFO("Watch the LEDs!", "");
 
   // Give a LED pattern as startup indicator for 5 seconds.
-  CHECK_DIF_OK(dif_gpio_write_all(gpio, 0xff00));
+  CHECK_DIF_OK(dif_gpio_write_all(gpio, 0xff00), "");
   for (int i = 0; i < 32; ++i) {
     usleep(5 * 1000);  // 5 ms
-    CHECK_DIF_OK(dif_gpio_write(gpio, 8 + (i % 8), (i / 8) % 2));
+    CHECK_DIF_OK(dif_gpio_write(gpio, 8 + (i % 8), (i / 8) % 2), "");
   }
-  CHECK_DIF_OK(dif_gpio_write_all(gpio, 0x0000));  // All LEDs off.
+  CHECK_DIF_OK(dif_gpio_write_all(gpio, 0x0000), "");  // All LEDs off.
 }
 
 /**
@@ -39,7 +39,7 @@ static const uint32_t kFtdiMask = 0x10000;
 
 uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state) {
   uint32_t gpio_state;
-  CHECK_DIF_OK(dif_gpio_read_all(gpio, &gpio_state));
+  CHECK_DIF_OK(dif_gpio_read_all(gpio, &gpio_state), "");
   gpio_state &= kGpioMask;
 
   uint32_t state_delta = prev_gpio_state ^ gpio_state;
@@ -53,9 +53,9 @@ uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state) {
 
   if ((state_delta & kFtdiMask) != 0) {
     if ((gpio_state & kFtdiMask) != 0) {
-      LOG_INFO("FTDI control changed. Enable JTAG.");
+      LOG_INFO("FTDI control changed. Enable JTAG.", "");
     } else {
-      LOG_INFO("FTDI control changed. Enable JTAG.");
+      LOG_INFO("FTDI control changed. Enable JTAG.", "");
     }
   }
 
@@ -67,12 +67,14 @@ void demo_spi_to_log_echo(const dif_spi_device_t *spi,
   uint32_t spi_buf[8];
   size_t spi_len;
   CHECK_DIF_OK(
-      dif_spi_device_recv(spi, spi_config, spi_buf, sizeof(spi_buf), &spi_len));
+      dif_spi_device_recv(spi, spi_config, spi_buf, sizeof(spi_buf), &spi_len),
+      "");
   if (spi_len > 0) {
     uint32_t echo_word = spi_buf[0] ^ 0x01010101;
-    CHECK_DIF_OK(dif_spi_device_send(spi, spi_config, &echo_word,
-                                     sizeof(uint32_t),
-                                     /*bytes_sent=*/NULL));
+    CHECK_DIF_OK(
+        dif_spi_device_send(spi, spi_config, &echo_word, sizeof(uint32_t),
+                            /*bytes_sent=*/NULL),
+        "");
     LOG_INFO("SPI: %z", spi_len, spi_buf);
   }
 }
@@ -86,8 +88,8 @@ void demo_uart_to_uart_and_gpio_echo(dif_uart_t *uart, dif_gpio_t *gpio) {
     }
 
     uint8_t rcv_char;
-    CHECK_DIF_OK(dif_uart_bytes_receive(uart, 1, &rcv_char, NULL));
-    CHECK_DIF_OK(dif_uart_byte_send_polled(uart, rcv_char));
-    CHECK_DIF_OK(dif_gpio_write_all(gpio, rcv_char << 8));
+    CHECK_DIF_OK(dif_uart_bytes_receive(uart, 1, &rcv_char, NULL), "");
+    CHECK_DIF_OK(dif_uart_byte_send_polled(uart, rcv_char), "");
+    CHECK_DIF_OK(dif_gpio_write_all(gpio, rcv_char << 8), "");
   }
 }

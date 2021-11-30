@@ -25,13 +25,13 @@ static void test_status_device_write(test_status_t test_status) {
 void test_status_set(test_status_t test_status) {
   switch (test_status) {
     case kTestStatusPassed: {
-      LOG_INFO("PASS!");
+      LOG_INFO("PASS!", "");
       test_status_device_write(test_status);
       abort();
       break;
     }
     case kTestStatusFailed: {
-      LOG_INFO("FAIL!");
+      LOG_INFO("FAIL!", "");
       test_status_device_write(test_status);
       abort();
       break;

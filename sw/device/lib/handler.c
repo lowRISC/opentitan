@@ -66,19 +66,19 @@ __attribute__((weak)) void handler_exception(void) {
 }
 
 __attribute__((weak)) void handler_irq_software(void) {
-  LOG_INFO("Software IRQ triggered!");
+  LOG_INFO("Software IRQ triggered!", "");
   while (1) {
   }
 }
 
 __attribute__((weak)) void handler_irq_timer(void) {
-  LOG_INFO("Timer IRQ triggered!");
+  LOG_INFO("Timer IRQ triggered!", "");
   while (1) {
   }
 }
 
 __attribute__((weak)) void handler_irq_external(void) {
-  LOG_INFO("External IRQ triggered!");
+  LOG_INFO("External IRQ triggered!", "");
   while (1) {
   }
 }
@@ -107,7 +107,7 @@ __attribute__((weak)) void handler_lsu_fault(void) {
 }
 
 __attribute__((weak)) void handler_ecall(void) {
-  LOG_INFO("Environment call encountered");
+  LOG_INFO("Environment call encountered", "");
   while (1) {
   }
 }

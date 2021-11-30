@@ -100,9 +100,9 @@
          only one of the below string constants           \
          will be included in the final binary.*/          \
       if (GET_NUM_VARIABLE_ARGS(_, ##__VA_ARGS__) == 0) { \
-        LOG_ERROR("DIF-fail: " #dif_call);                \
+        LOG_ERROR("DIF-fail: " #dif_call, "");            \
       } else {                                            \
-        LOG_ERROR("DIF-fail: " __VA_ARGS__);              \
+        LOG_ERROR("DIF-fail: " __VA_ARGS__, "");          \
       }                                                   \
       /* Currently, this macro will call into             \
          the test failure code, which logs                \
