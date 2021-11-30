@@ -364,16 +364,8 @@ module prim_generic_flash_bank #(
 
   end // always_comb
 
-  //localparam int MemWidth = DataWidth - MetaDataWidth;
-  localparam int MemWidth = DataWidth - MetaDataWidth + 4;
-  localparam int EccWidth = MetaDataWidth - 4;
-
-
   logic [DataWidth-1:0] rd_data_main, rd_data_info;
-  logic [MemWidth-1:0] rd_nom_data_main;
-  logic [EccWidth-1:0] rd_meta_data_main;
-  logic [InfoTypes-1:0][MemWidth-1:0] rd_nom_data_info;
-  logic [InfoTypes-1:0][EccWidth-1:0] rd_meta_data_info;
+  logic [InfoTypes-1:0][DataWidth-1:0] rd_nom_data_info;
 
   // data memory is requested whenver it's a transaction targetted at the data partition
   // OR if it's a bank erase
@@ -383,32 +375,17 @@ module prim_generic_flash_bank #(
                          mem_bk_erase);
 
   prim_ram_1p #(
-    .Width(MemWidth),
+    .Width(DataWidth),
     .Depth(WordsPerBank),
-    .DataBitsPerMask(MemWidth)
+    .DataBitsPerMask(DataWidth)
   ) u_mem (
     .clk_i,
     .req_i    (data_mem_req),
     .write_i  (mem_wr),
     .addr_i   (mem_addr),
-    .wdata_i  (mem_wdata[MemWidth-1:0]),
-    .wmask_i  ({MemWidth{1'b1}}),
-    .rdata_o  (rd_nom_data_main),
-    .cfg_i    ('0)
-  );
-
-  prim_ram_1p #(
-    .Width(EccWidth),
-    .Depth(WordsPerBank),
-    .DataBitsPerMask(EccWidth)
-  ) u_mem_meta (
-    .clk_i,
-    .req_i    (data_mem_req),
-    .write_i  (mem_wr),
-    .addr_i   (mem_addr),
-    .wdata_i  (mem_wdata[MemWidth +: EccWidth]),
-    .wmask_i  ({EccWidth{1'b1}}),
-    .rdata_o  (rd_meta_data_main),
+    .wdata_i  (mem_wdata),
+    .wmask_i  ({DataWidth{1'b1}}),
+    .rdata_o  (rd_data_main),
     .cfg_i    ('0)
   );
 
@@ -422,39 +399,22 @@ module prim_generic_flash_bank #(
                           ((mem_info_sel == info_type) | mem_bk_erase);
 
     prim_ram_1p #(
-      .Width(MemWidth),
+      .Width(DataWidth),
       .Depth(WordsPerInfoBank),
-      .DataBitsPerMask(MemWidth)
+      .DataBitsPerMask(DataWidth)
     ) u_info_mem (
       .clk_i,
       .req_i    (info_mem_req),
       .write_i  (mem_wr),
       .addr_i   (mem_addr[0 +: InfoAddrW]),
-      .wdata_i  (mem_wdata[MemWidth-1:0]),
-      .wmask_i  ({MemWidth{1'b1}}),
+      .wdata_i  (mem_wdata),
+      .wmask_i  ({DataWidth{1'b1}}),
       .rdata_o  (rd_nom_data_info[info_type]),
-      .cfg_i    ('0)
-    );
-
-    prim_ram_1p #(
-      .Width(EccWidth),
-      .Depth(WordsPerInfoBank),
-      .DataBitsPerMask(EccWidth)
-    ) u_info_mem_meta (
-      .clk_i,
-      .req_i    (info_mem_req),
-      .write_i  (mem_wr),
-      .addr_i   (mem_addr[0 +: InfoAddrW]),
-      .wdata_i  (mem_wdata[MemWidth +: EccWidth]),
-      .wmask_i  ({EccWidth{1'b1}}),
-      .rdata_o  (rd_meta_data_info[info_type]),
       .cfg_i    ('0)
     );
   end
 
-
-  assign rd_data_main = {rd_meta_data_main, rd_nom_data_main};
-  assign rd_data_info = {rd_meta_data_info[info_sel_q], rd_nom_data_info[info_sel_q]};
+  assign rd_data_info = rd_nom_data_info[info_sel_q];
   assign rd_data_d    = rd_part_q == flash_ctrl_pkg::FlashPartData ? rd_data_main : rd_data_info;
 
   flash_ctrl_pkg::flash_prog_e unused_prog_type;
