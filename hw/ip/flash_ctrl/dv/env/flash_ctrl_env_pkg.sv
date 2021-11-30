@@ -67,6 +67,8 @@ package flash_ctrl_env_pkg;
                                             FlashPageWidth - 1;
   parameter uint FlashMemAddrBankMsbBit   = FlashDataByteWidth + FlashWordLineWidth +
                                             FlashPageWidth + FlashBankWidth - 1;
+  // Need to create a design parameter for this
+  parameter uint FlashFullDataWidth       = flash_ctrl_pkg::DataWidth + 4;
 
   // types
   typedef enum int {
