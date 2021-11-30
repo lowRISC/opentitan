@@ -81,6 +81,16 @@
       name: spi_device_intr
       uvm_test_seq: spi_device_intr_vseq
     }
+    
+    {
+      name: spi_device_perf
+      uvm_test_seq: spi_device_perf_vseq
+    }
+    
+    {
+      name: spi_device_byte_transfer
+      uvm_test_seq: spi_device_byte_transfer_vseq
+    }
   ]
 
   // List of regressions.

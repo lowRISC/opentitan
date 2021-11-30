@@ -11,3 +11,5 @@
 `include "spi_device_extreme_fifo_size_vseq.sv"
 `include "spi_device_dummy_item_extra_dly_vseq.sv"
 `include "spi_device_intr_vseq.sv"
+`include "spi_device_perf_vseq.sv"
+`include "spi_device_byte_transfer_vseq.sv"
