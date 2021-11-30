@@ -21,6 +21,17 @@ bool rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
                                     dif_rstmgr_reset_info_bitfield_t info);
 
 /**
+ * Determines if the reset info contains any of the reasons in `info`.
+ *
+ * @param rstmgr A reset manager handle.
+ * @param info A bit mask of reset reasons.
+ *
+ * @return True if the reset info contains any of the reasons in `info`.
+ */
+bool rstmgr_testutils_reset_info_any(const dif_rstmgr_t *rstmgr,
+                                     dif_rstmgr_reset_info_bitfield_t info);
+
+/**
  * Compares the given alert dump against the device's.
  *
  * If the dump array is null or its size is zero this check succeeds. It is
