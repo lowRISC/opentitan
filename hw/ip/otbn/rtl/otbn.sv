@@ -113,12 +113,6 @@ module otbn
   tlul_pkg::tl_h2d_t tl_win_h2d [2];
   tlul_pkg::tl_d2h_t tl_win_d2h [2];
 
-  // TODO: Implement LOAD_CHECKSUM register
-  logic unused_load_checksum;
-  assign unused_load_checksum = ^reg2hw.load_checksum;
-  assign hw2reg.load_checksum.d = '0;
-  assign hw2reg.load_checksum.de = 1'b0;
-
   // Inter-module signals ======================================================
 
   // TODO: Use STATUS == IDLE here.
@@ -196,6 +190,17 @@ module otbn
   logic [1:0] imem_rerror_bus;
 
   logic imem_bus_intg_violation;
+
+  typedef struct packed {
+    logic        imem;
+    logic [14:0] index;
+    logic [31:0] wr_data;
+  } mem_crc_data_in_t;
+
+  logic             mem_crc_data_in_valid;
+  mem_crc_data_in_t mem_crc_data_in;
+  logic             set_crc;
+  logic [31:0]      crc_in, crc_out;
 
   logic [ImemAddrWidth-1:0] imem_addr_core;
   assign imem_index_core = imem_addr_core[ImemAddrWidth-1:2];
@@ -385,6 +390,8 @@ module otbn
   logic [ExtWLEN-1:0] dmem_wdata_bus;
   logic [ExtWLEN-1:0] dmem_wmask_bus;
   logic [ExtWLEN-1:0] dmem_rdata_bus;
+  logic [top_pkg::TL_AW-1:0] dmem_addr_bus;
+  logic [31:0] dmem_wdata_narrow_bus;
   logic dmem_rvalid_bus;
   logic [1:0] dmem_rerror_bus;
 
@@ -528,6 +535,40 @@ module otbn
   // checking on TL responses will pick up any errors.
   assign dmem_rerror_bus  = 2'b00;
   assign dmem_rerror_core = dmem_rerror;
+
+  assign dmem_addr_bus = tl_win_h2d[TlWinDmem].a_address;
+  assign dmem_wdata_narrow_bus = tl_win_h2d[TlWinDmem].a_data[31:0];
+
+  // Memory Load Integrity =====================================================
+
+  assign mem_crc_data_in_valid   = (imem_req_bus | dmem_req_bus) &
+                                  ~(dmem_access_core | imem_access_core);
+
+  assign mem_crc_data_in.wr_data = imem_req_bus ? imem_wdata_bus[31:0] :
+                                                  dmem_wdata_narrow_bus[31:0];
+  // TODO: Expand DMem index so it's per 32-bit not per 256-bit
+  assign mem_crc_data_in.index   = imem_req_bus ? {{(15 - ImemIndexWidth){1'b0}}, imem_index_bus} :
+                                                   {{(15 - DmemIndexWidth + 3){1'b0}},
+                                                    dmem_addr_bus[DmemIndexWidth-1:2]};
+  assign mem_crc_data_in.imem    = imem_req_bus;
+
+  prim_crc32 #(
+    .BytesPerWord(6)
+  ) u_mem_load_crc32 (
+    .clk_i       (clk_i                ),
+    .rst_ni      (rst_ni               ),
+
+    .set_crc_i   (set_crc              ),
+    .crc_in_i    (crc_in               ),
+
+    .data_valid_i(mem_crc_data_in_valid),
+    .data_i      (mem_crc_data_in      ),
+    .crc_out_o   (crc_out              )
+  );
+
+  assign set_crc = reg2hw.load_checksum.qe;
+  assign crc_in  = reg2hw.load_checksum.q;
+  assign hw2reg.load_checksum.d = crc_out;
 
   // Registers =================================================================
 

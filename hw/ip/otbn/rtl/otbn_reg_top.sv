@@ -204,6 +204,7 @@ module otbn_reg_top (
   logic fatal_alert_cause_fatal_software_qs;
   logic insn_cnt_re;
   logic [31:0] insn_cnt_qs;
+  logic load_checksum_re;
   logic load_checksum_we;
   logic [31:0] load_checksum_qs;
   logic [31:0] load_checksum_wd;
@@ -931,28 +932,17 @@ module otbn_reg_top (
   );
 
 
-  // R[load_checksum]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0)
+  // R[load_checksum]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_load_checksum (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (load_checksum_re),
     .we     (load_checksum_we),
     .wd     (load_checksum_wd),
-
-    // from internal hardware
-    .de     (hw2reg.load_checksum.de),
     .d      (hw2reg.load_checksum.d),
-
-    // to internal hardware
-    .qe     (),
+    .qre    (),
+    .qe     (reg2hw.load_checksum.qe),
     .q      (reg2hw.load_checksum.q),
-
-    // to register interface (read)
     .qs     (load_checksum_qs)
   );
 
@@ -1013,6 +1003,7 @@ module otbn_reg_top (
 
   assign ctrl_wd = reg_wdata[0];
   assign insn_cnt_re = addr_hit[9] & reg_re & !reg_error;
+  assign load_checksum_re = addr_hit[10] & reg_re & !reg_error;
   assign load_checksum_we = addr_hit[10] & reg_we & !reg_error;
 
   assign load_checksum_wd = reg_wdata[31:0];
