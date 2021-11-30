@@ -38,8 +38,12 @@ package rv_core_ibex_reg_pkg;
   } rv_core_ibex_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    logic [1:0]  q;
-  } rv_core_ibex_reg2hw_sw_alert_mreg_t;
+    logic [3:0]  q;
+  } rv_core_ibex_reg2hw_sw_recov_err_reg_t;
+
+  typedef struct packed {
+    logic [3:0]  q;
+  } rv_core_ibex_reg2hw_sw_fatal_err_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -84,6 +88,11 @@ package rv_core_ibex_reg_pkg;
   } rv_core_ibex_reg2hw_nmi_state_reg_t;
 
   typedef struct packed {
+    logic [3:0]  d;
+    logic        de;
+  } rv_core_ibex_hw2reg_sw_recov_err_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
@@ -124,8 +133,9 @@ package rv_core_ibex_reg_pkg;
 
   // Register -> HW type for cfg interface
   typedef struct packed {
-    rv_core_ibex_reg2hw_alert_test_reg_t alert_test; // [275:268]
-    rv_core_ibex_reg2hw_sw_alert_mreg_t [1:0] sw_alert; // [267:264]
+    rv_core_ibex_reg2hw_alert_test_reg_t alert_test; // [279:272]
+    rv_core_ibex_reg2hw_sw_recov_err_reg_t sw_recov_err; // [271:268]
+    rv_core_ibex_reg2hw_sw_fatal_err_reg_t sw_fatal_err; // [267:264]
     rv_core_ibex_reg2hw_ibus_addr_en_mreg_t [1:0] ibus_addr_en; // [263:262]
     rv_core_ibex_reg2hw_ibus_addr_matching_mreg_t [1:0] ibus_addr_matching; // [261:198]
     rv_core_ibex_reg2hw_ibus_remap_addr_mreg_t [1:0] ibus_remap_addr; // [197:134]
@@ -138,6 +148,7 @@ package rv_core_ibex_reg_pkg;
 
   // HW -> register type for cfg interface
   typedef struct packed {
+    rv_core_ibex_hw2reg_sw_recov_err_reg_t sw_recov_err; // [50:46]
     rv_core_ibex_hw2reg_nmi_state_reg_t nmi_state; // [45:42]
     rv_core_ibex_hw2reg_err_status_reg_t err_status; // [41:34]
     rv_core_ibex_hw2reg_rnd_data_reg_t rnd_data; // [33:1]
@@ -146,31 +157,29 @@ package rv_core_ibex_reg_pkg;
 
   // Register offsets for cfg interface
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_ALERT_TEST_OFFSET = 7'h 0;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_SW_ALERT_REGWEN_0_OFFSET = 7'h 4;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_SW_ALERT_REGWEN_1_OFFSET = 7'h 8;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_SW_ALERT_0_OFFSET = 7'h c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_SW_ALERT_1_OFFSET = 7'h 10;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REGWEN_0_OFFSET = 7'h 14;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REGWEN_1_OFFSET = 7'h 18;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_EN_0_OFFSET = 7'h 1c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_EN_1_OFFSET = 7'h 20;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_OFFSET = 7'h 24;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_OFFSET = 7'h 28;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REMAP_ADDR_0_OFFSET = 7'h 2c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REMAP_ADDR_1_OFFSET = 7'h 30;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REGWEN_0_OFFSET = 7'h 34;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REGWEN_1_OFFSET = 7'h 38;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_EN_0_OFFSET = 7'h 3c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_EN_1_OFFSET = 7'h 40;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_OFFSET = 7'h 44;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_OFFSET = 7'h 48;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REMAP_ADDR_0_OFFSET = 7'h 4c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REMAP_ADDR_1_OFFSET = 7'h 50;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_ENABLE_OFFSET = 7'h 54;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_STATE_OFFSET = 7'h 58;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_ERR_STATUS_OFFSET = 7'h 5c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_DATA_OFFSET = 7'h 60;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_STATUS_OFFSET = 7'h 64;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_SW_RECOV_ERR_OFFSET = 7'h 4;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_SW_FATAL_ERR_OFFSET = 7'h 8;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REGWEN_0_OFFSET = 7'h c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REGWEN_1_OFFSET = 7'h 10;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_EN_0_OFFSET = 7'h 14;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_EN_1_OFFSET = 7'h 18;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_OFFSET = 7'h 1c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_OFFSET = 7'h 20;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REMAP_ADDR_0_OFFSET = 7'h 24;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_IBUS_REMAP_ADDR_1_OFFSET = 7'h 28;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REGWEN_0_OFFSET = 7'h 2c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REGWEN_1_OFFSET = 7'h 30;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_EN_0_OFFSET = 7'h 34;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_EN_1_OFFSET = 7'h 38;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_OFFSET = 7'h 3c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_OFFSET = 7'h 40;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REMAP_ADDR_0_OFFSET = 7'h 44;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_DBUS_REMAP_ADDR_1_OFFSET = 7'h 48;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_ENABLE_OFFSET = 7'h 4c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_STATE_OFFSET = 7'h 50;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_ERR_STATUS_OFFSET = 7'h 54;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_DATA_OFFSET = 7'h 58;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_STATUS_OFFSET = 7'h 5c;
 
   // Reset values for hwext registers and their fields for cfg interface
   parameter logic [3:0] RV_CORE_IBEX_ALERT_TEST_RESVAL = 4'h 0;
@@ -184,10 +193,8 @@ package rv_core_ibex_reg_pkg;
   // Register index for cfg interface
   typedef enum int {
     RV_CORE_IBEX_ALERT_TEST,
-    RV_CORE_IBEX_SW_ALERT_REGWEN_0,
-    RV_CORE_IBEX_SW_ALERT_REGWEN_1,
-    RV_CORE_IBEX_SW_ALERT_0,
-    RV_CORE_IBEX_SW_ALERT_1,
+    RV_CORE_IBEX_SW_RECOV_ERR,
+    RV_CORE_IBEX_SW_FATAL_ERR,
     RV_CORE_IBEX_IBUS_REGWEN_0,
     RV_CORE_IBEX_IBUS_REGWEN_1,
     RV_CORE_IBEX_IBUS_ADDR_EN_0,
@@ -212,33 +219,31 @@ package rv_core_ibex_reg_pkg;
   } rv_core_ibex_cfg_id_e;
 
   // Register width information to check illegal writes for cfg interface
-  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [26] = '{
+  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [24] = '{
     4'b 0001, // index[ 0] RV_CORE_IBEX_ALERT_TEST
-    4'b 0001, // index[ 1] RV_CORE_IBEX_SW_ALERT_REGWEN_0
-    4'b 0001, // index[ 2] RV_CORE_IBEX_SW_ALERT_REGWEN_1
-    4'b 0001, // index[ 3] RV_CORE_IBEX_SW_ALERT_0
-    4'b 0001, // index[ 4] RV_CORE_IBEX_SW_ALERT_1
-    4'b 0001, // index[ 5] RV_CORE_IBEX_IBUS_REGWEN_0
-    4'b 0001, // index[ 6] RV_CORE_IBEX_IBUS_REGWEN_1
-    4'b 0001, // index[ 7] RV_CORE_IBEX_IBUS_ADDR_EN_0
-    4'b 0001, // index[ 8] RV_CORE_IBEX_IBUS_ADDR_EN_1
-    4'b 1111, // index[ 9] RV_CORE_IBEX_IBUS_ADDR_MATCHING_0
-    4'b 1111, // index[10] RV_CORE_IBEX_IBUS_ADDR_MATCHING_1
-    4'b 1111, // index[11] RV_CORE_IBEX_IBUS_REMAP_ADDR_0
-    4'b 1111, // index[12] RV_CORE_IBEX_IBUS_REMAP_ADDR_1
-    4'b 0001, // index[13] RV_CORE_IBEX_DBUS_REGWEN_0
-    4'b 0001, // index[14] RV_CORE_IBEX_DBUS_REGWEN_1
-    4'b 0001, // index[15] RV_CORE_IBEX_DBUS_ADDR_EN_0
-    4'b 0001, // index[16] RV_CORE_IBEX_DBUS_ADDR_EN_1
-    4'b 1111, // index[17] RV_CORE_IBEX_DBUS_ADDR_MATCHING_0
-    4'b 1111, // index[18] RV_CORE_IBEX_DBUS_ADDR_MATCHING_1
-    4'b 1111, // index[19] RV_CORE_IBEX_DBUS_REMAP_ADDR_0
-    4'b 1111, // index[20] RV_CORE_IBEX_DBUS_REMAP_ADDR_1
-    4'b 0001, // index[21] RV_CORE_IBEX_NMI_ENABLE
-    4'b 0001, // index[22] RV_CORE_IBEX_NMI_STATE
-    4'b 0011, // index[23] RV_CORE_IBEX_ERR_STATUS
-    4'b 1111, // index[24] RV_CORE_IBEX_RND_DATA
-    4'b 0001  // index[25] RV_CORE_IBEX_RND_STATUS
+    4'b 0001, // index[ 1] RV_CORE_IBEX_SW_RECOV_ERR
+    4'b 0001, // index[ 2] RV_CORE_IBEX_SW_FATAL_ERR
+    4'b 0001, // index[ 3] RV_CORE_IBEX_IBUS_REGWEN_0
+    4'b 0001, // index[ 4] RV_CORE_IBEX_IBUS_REGWEN_1
+    4'b 0001, // index[ 5] RV_CORE_IBEX_IBUS_ADDR_EN_0
+    4'b 0001, // index[ 6] RV_CORE_IBEX_IBUS_ADDR_EN_1
+    4'b 1111, // index[ 7] RV_CORE_IBEX_IBUS_ADDR_MATCHING_0
+    4'b 1111, // index[ 8] RV_CORE_IBEX_IBUS_ADDR_MATCHING_1
+    4'b 1111, // index[ 9] RV_CORE_IBEX_IBUS_REMAP_ADDR_0
+    4'b 1111, // index[10] RV_CORE_IBEX_IBUS_REMAP_ADDR_1
+    4'b 0001, // index[11] RV_CORE_IBEX_DBUS_REGWEN_0
+    4'b 0001, // index[12] RV_CORE_IBEX_DBUS_REGWEN_1
+    4'b 0001, // index[13] RV_CORE_IBEX_DBUS_ADDR_EN_0
+    4'b 0001, // index[14] RV_CORE_IBEX_DBUS_ADDR_EN_1
+    4'b 1111, // index[15] RV_CORE_IBEX_DBUS_ADDR_MATCHING_0
+    4'b 1111, // index[16] RV_CORE_IBEX_DBUS_ADDR_MATCHING_1
+    4'b 1111, // index[17] RV_CORE_IBEX_DBUS_REMAP_ADDR_0
+    4'b 1111, // index[18] RV_CORE_IBEX_DBUS_REMAP_ADDR_1
+    4'b 0001, // index[19] RV_CORE_IBEX_NMI_ENABLE
+    4'b 0001, // index[20] RV_CORE_IBEX_NMI_STATE
+    4'b 0011, // index[21] RV_CORE_IBEX_ERR_STATUS
+    4'b 1111, // index[22] RV_CORE_IBEX_RND_DATA
+    4'b 0001  // index[23] RV_CORE_IBEX_RND_STATUS
   };
 
 endpackage
