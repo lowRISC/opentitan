@@ -183,7 +183,7 @@ module tb;
                               .path  (`FLASH_DATA_MEM_HIER_STR(i)),
                               .depth ($size(`FLASH_DATA_MEM_HIER(i))),
                               .n_bits($bits(`FLASH_DATA_MEM_HIER(i))),
-                              .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_72_64));
+                              .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68));
         uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
                                            m_mem_bkdr_util);
         part = part.next();
@@ -196,7 +196,7 @@ module tb;
                                 .path  (`FLASH_INFO_MEM_HIER_STR(i, j)),
                                 .depth ($size(`FLASH_INFO_MEM_HIER(i, j))),
                                 .n_bits($bits(`FLASH_INFO_MEM_HIER(i, j))),
-                                .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_72_64));
+                                .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68));
           uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
                                              m_mem_bkdr_util);
           part = part.next();

@@ -130,7 +130,11 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
       logic [TL_DW-1:0] loc_data = (scheme == FlashMemInitCustom) ? data[i] :
           (scheme == FlashMemInitRandomize) ? $urandom() : wr_data;
 
-      mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].write32(addr_attrs.bank_addr, loc_data);
+      _flash_full_write(flash_op.partition,
+                        addr_attrs.bank,
+                        addr_attrs.bank_addr,
+                        loc_data);
+
       `uvm_info(`gfn, $sformatf("flash_mem_bkdr_write: partition = %s , {%s} = 0x%0h",
                                 flash_op.partition.name(), addr_attrs.sprint(), loc_data),
                                 UVM_MEDIUM)
@@ -145,6 +149,43 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
     end
   endfunction : flash_mem_bkdr_write
 
+  // Helper function that takes a 32-bit data and correctly populates the integrity ECC
+  //
+  function void _flash_full_write(flash_dv_part_e partition,
+                                  uint bank,
+                                  // bus word aligned address
+                                  bit [TL_AW-1:0] addr,
+                                  bit [TL_DW-1:0] wr_data);
+
+    // read back the full flash word
+    logic [flash_ctrl_pkg::DataWidth-1:0] data;
+    logic [7:0] intg_data;
+    logic is_upper = addr[flash_ctrl_pkg::DataByteWidth-1];
+    logic [TL_AW-1:0] aligned_addr = addr;
+
+    if (is_upper) begin
+       aligned_addr = {addr[TL_AW-1:FlashDataByteWidth], {FlashDataByteWidth{1'b0}}};
+    end
+
+    // get the full flash word
+    data = mem_bkdr_util_h[partition][bank].read64(aligned_addr);
+
+    // writing the upper portion of the flash word
+    if (is_upper) begin
+      data = {wr_data, data[TL_DW-1:0]};
+    end else begin
+      data = {data[flash_ctrl_pkg::DataWidth -: TL_DW], wr_data};
+    end
+
+    // calculate truncated integrity
+    {intg_data, data} = prim_secded_pkg::prim_secded_hamming_72_64_enc(data);
+
+    // program fully via backdoor
+    mem_bkdr_util_h[partition][bank].write64(aligned_addr, {intg_data[3:0], data});
+
+  endfunction
+
+
   // Helper function that randomizes the half-word at the given address if unknown.
   //
   // When the 'other' flash half-word is being written by the flash_mem_bkdr_write() method, the
@@ -157,7 +198,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
     if ($isunknown(data)) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
       `uvm_info(`gfn, $sformatf("Data at 0x%0h is Xs, writing random 0x%0h", addr, data), UVM_HIGH)
-      mem_bkdr_util_h[partition][bank].write32(addr, data);
+      _flash_full_write(partition, bank, addr, data);
     end
   endfunction
 
