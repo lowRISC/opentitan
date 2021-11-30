@@ -179,6 +179,9 @@
       regwen: "EXTCLK_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
+      tags: [ // Write non-Mubi4True or non-Mubi4False value will cause AST clks_byp's
+              // PrimMubi4SyncCheckTransients_A assertion to fail.
+              "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
           bits: "3:0",
