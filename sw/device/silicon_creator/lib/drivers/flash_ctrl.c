@@ -384,4 +384,5 @@ void flash_ctrl_info_mp_set(flash_ctrl_info_page_t info_page,
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ERASE_EN_0_BIT,
       perms.erase == kHardenedBoolTrue);
   sec_mmio_write32_shadowed(addr, reg);
+  sec_mmio_write_increment(1);
 }
