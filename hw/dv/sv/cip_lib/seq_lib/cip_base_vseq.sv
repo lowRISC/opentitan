@@ -585,7 +585,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // override csr_vseq to control adapter to abort transaction
   virtual task run_csr_vseq(string csr_test_type = "",
                             int    num_test_csrs = 0,
-                            bit    do_rand_wr_and_reset = 1);
+                            bit    do_rand_wr_and_reset = 1,
+                            string ral_name = "");
 
     if (csr_access_abort_pct.rand_mode()) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_access_abort_pct)
@@ -599,7 +600,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     // checking the status.
     if (csr_access_abort_pct > 0) csr_utils_pkg::default_csr_check = UVM_NO_CHECK;
     else                          csr_utils_pkg::default_csr_check = UVM_CHECK;
-    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset);
+    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset, ral_name);
   endtask
 
 
