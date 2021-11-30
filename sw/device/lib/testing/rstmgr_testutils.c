@@ -18,6 +18,13 @@ bool rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
   return actual_info == info;
 }
 
+bool rstmgr_testutils_reset_info_any(const dif_rstmgr_t *rstmgr,
+                                     dif_rstmgr_reset_info_bitfield_t info) {
+  dif_rstmgr_reset_info_bitfield_t actual_info;
+  CHECK_DIF_OK(dif_rstmgr_reset_info_get(rstmgr, &actual_info));
+  return (actual_info & info) != 0;
+}
+
 void rstmgr_testutils_compare_alert_info(
     const dif_rstmgr_t *rstmgr,
     dif_rstmgr_alert_info_dump_segment_t *expected_alert_dump,
