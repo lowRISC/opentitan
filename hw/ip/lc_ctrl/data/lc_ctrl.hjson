@@ -394,7 +394,7 @@
           name: "OTP_ERROR"
           desc: '''
                 This bit is set to 1 if an error occurred during an OTP programming operation.
-                This error will move the life cycle state automatically to ESCALATE and raise a
+                This error will move the life cycle state automatically to POST_TRANSITION and raise a
                 fatal_prog_error alert.
                 '''
         }
@@ -403,7 +403,7 @@
           desc: '''
                 This bit is set to 1 if either the controller FSM state or the life cycle state is invalid or
                 has been corrupted as part of a tampering attempt. This error will move the life cycle state
-                automatically to ESCALATE and raise a fatal_state_error alert.
+                automatically to INVALID and raise a fatal_state_error alert.
                 '''
         }
         { bits: "8"

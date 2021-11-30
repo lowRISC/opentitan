@@ -164,6 +164,7 @@ module lc_ctrl_fsm
     otp_prog_error_o      = 1'b0;
     flash_rma_error_o     = 1'b0;
     trans_success_o       = 1'b0;
+    state_invalid_error_o = 1'b0;
 
     // Status indication going to power manager.
     init_done_o = 1'b1;
@@ -395,14 +396,23 @@ module lc_ctrl_fsm
       ScrapSt,
       PostTransSt: ;
 
-      EscalateSt,
-      InvalidSt: begin
+
+      EscalateSt: begin
         // During an escalation it is okay to de-assert token_hash_req without receivng ACK.
         token_hash_req_chk_o = 1'b0;
       end
+
+      InvalidSt: begin
+        // During an escalation it is okay to de-assert token_hash_req without receivng ACK.
+        token_hash_req_chk_o = 1'b0;
+        state_invalid_error_o = 1'b1;
+      end
       ///////////////////////////////////////////////////////////////////
       // Go to terminal error state if we get here.
-      default: fsm_state_d = InvalidSt;
+      default: begin
+        fsm_state_d = InvalidSt;
+        state_invalid_error_o = 1'b1;
+      end
       ///////////////////////////////////////////////////////////////////
     endcase
 
@@ -412,6 +422,7 @@ module lc_ctrl_fsm
     // with different error sources - need to reduce this to one bit here.
     if (|state_invalid_error) begin
       fsm_state_d = InvalidSt;
+      state_invalid_error_o = 1'b1;
     end else if (esc_scrap_state0_i || esc_scrap_state1_i) begin
       fsm_state_d = EscalateSt;
     end
@@ -518,9 +529,6 @@ module lc_ctrl_fsm
     .dec_lc_cnt_o,
     .state_invalid_error_o (state_invalid_error)
   );
-
-  // Output logically reduced version.
-  assign state_invalid_error_o = |state_invalid_error;
 
   // LC transition checker logic and next state generation.
   lc_ctrl_state_transition u_lc_ctrl_state_transition (
