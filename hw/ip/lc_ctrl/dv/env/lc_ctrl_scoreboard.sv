@@ -218,11 +218,16 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
 
       // when lc successfully req a transition, all outputs are turned off.
+      if(cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err) begin
+        // Expect escalate
+        exp.lc_escalate_en_o = lc_ctrl_pkg::On;
+      end
+
       if(ral.status.transition_successful.get()) check_lc_outputs(exp);
     end
   endtask
 
-  // Predict the value of lc_state
+  // Predict the value of lc_state register
   virtual function dec_lc_state_e predict_lc_state();
     if (cfg.err_inj.state_err || cfg.err_inj.count_err || cfg.err_inj.count_backdoor_err ||
         cfg.err_inj.state_backdoor_err) begin // State error expected

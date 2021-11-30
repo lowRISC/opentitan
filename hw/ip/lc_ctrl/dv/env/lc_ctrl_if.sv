@@ -6,12 +6,12 @@
 
 `ifndef LC_CTRL_FSM_STATE_REGS_PATH
 `define LC_CTRL_FSM_STATE_REGS_PATH \
-    tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs.gen_generic.u_impl_generic.q_o
+    tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs.gen_generic.u_impl_generic.d_i
 `endif
 
 `ifndef LC_CTRL_FSM_COUNT_REGS_PATH
 `define LC_CTRL_FSM_COUNT_REGS_PATH \
-    tb.dut.u_lc_ctrl_fsm.u_cnt_regs.gen_generic.u_impl_generic.q_o
+    tb.dut.u_lc_ctrl_fsm.u_cnt_regs.gen_generic.u_impl_generic.d_i
 `endif
 
 

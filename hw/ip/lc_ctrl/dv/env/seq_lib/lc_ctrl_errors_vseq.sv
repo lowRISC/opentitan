@@ -301,6 +301,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   virtual task wait_status(ref bit expect_alert);
     bit [TL_DW-1:0] status_val;
     bit state_error_exp, state_error_act;
+    bit count_error_exp, count_error_act;
     forever begin
       csr_rd(ral.status, status_val);
       `uvm_info(`gfn, {"wait_status: ", ral.status.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
@@ -317,11 +318,16 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 1));
     end
 
+    // Expected bits
     state_error_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
         cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err;
+
+
+    // Actual bits
     state_error_act = get_field_val(ral.status.state_error, status_val);
+
     // Check status against expected from err_inj
-    `DV_CHECK_EQ(state_error_act,state_error_exp)
+    `DV_CHECK_EQ(state_error_act, state_error_exp)
 
   endtask
 
