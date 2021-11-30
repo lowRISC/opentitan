@@ -65,7 +65,7 @@ module rv_dm_rom_reg_top (
   tlul_pkg::tl_h2d_t tl_socket_h2d [2];
   tlul_pkg::tl_d2h_t tl_socket_d2h [2];
 
-  logic [1:0] reg_steer;
+  logic [0:0] reg_steer;
 
   // socket_1n connection
   assign tl_reg_h2d = tl_socket_h2d[1];
@@ -97,10 +97,9 @@ module rv_dm_rom_reg_top (
 
   // Create steering logic
   always_comb begin
-    reg_steer = 1;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
-      reg_steer = 0;
+    reg_steer = 0;
     if (intg_err) begin
       reg_steer = 1;
     end

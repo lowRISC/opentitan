@@ -46,7 +46,7 @@ module tlul_socket_1n #(
   parameter bit [3:0]     HRspDepth = 4'h2,
   parameter bit [N*4-1:0] DReqDepth = {N{4'h2}},
   parameter bit [N*4-1:0] DRspDepth = {N{4'h2}},
-  localparam int unsigned NWD       = $clog2(N+1) // derived parameter
+  localparam int unsigned NWD       = $clog2(N) // derived parameter
 ) (
   input                     clk_i,
   input                     rst_ni,

@@ -12,7 +12,7 @@
   from reggen.bits import Bits
 
   num_wins = len(rb.windows)
-  num_wins_width = ((num_wins+1).bit_length()) - 1
+  num_wins_width = ((num_wins).bit_length()) - 1
   num_dsp  = num_wins + 1
 
   regs_flat = rb.flat_regs
@@ -223,13 +223,11 @@ module ${mod_name} (
     .dev_select_i (reg_steer)
   );
 
-  // Create steering logic
-  always_comb begin
-    reg_steer = ${num_dsp-1};       // Default set to register
-
-    // TODO: Can below codes be unique case () inside ?
-  % for i,w in enumerate(rb.windows):
 <%
+    unconditional_steer = True
+    addr_tests = []
+
+    for i, w in enumerate(rb.windows):
       base_addr = w.offset
       limit_addr = w.offset + w.size_in_bytes
 
@@ -240,15 +238,28 @@ module ${mod_name} (
       if limit_addr < 2**addr_width:
         addr_checks.append(f'{tl_h2d_expr}.a_address[AW-1:0] < {limit_addr}')
 
-      addr_test = ' && '.join(addr_checks)
+      addr_tests.append(' && '.join(addr_checks))
+
+      if addr_checks:
+        unconditional_steer = False
+      else:
+        assert unconditional_steer
 %>\
-      % if addr_test:
-    if (${addr_test}) begin
-      % endif
+  // Create steering logic
+  always_comb begin
+  % if not unconditional_steer:
+    reg_steer = ${num_dsp-1};       // Default set to register
+  % endif
+
+    // TODO: Can below codes be unique case () inside ?
+  % for i, test in enumerate(addr_tests):
+    % if test:
+    if (${test}) begin
       reg_steer = ${i};
-      % if addr_test:
     end
-      % endif
+    % else:
+    reg_steer = ${i};
+    % endif
   % endfor
     if (intg_err) begin
       reg_steer = ${num_dsp-1};

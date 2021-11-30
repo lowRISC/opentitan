@@ -84,7 +84,7 @@ module otp_ctrl_core_reg_top (
   tlul_pkg::tl_h2d_t tl_socket_h2d [2];
   tlul_pkg::tl_d2h_t tl_socket_d2h [2];
 
-  logic [1:0] reg_steer;
+  logic [0:0] reg_steer;
 
   // socket_1n connection
   assign tl_reg_h2d = tl_socket_h2d[1];
