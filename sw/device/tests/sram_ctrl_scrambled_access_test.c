@@ -27,7 +27,7 @@ static const uintptr_t kRetSramStartAddr =
 /**
  * First test pattern to be written and read from SRAM.
  */
-static const sram_ctrl_data_t kRamTestPattern1 = {
+static const sram_ctrl_testutils_data_t kRamTestPattern1 = {
     .words =
         {
             0xA5A5A5A5,
@@ -40,7 +40,7 @@ static const sram_ctrl_data_t kRamTestPattern1 = {
 /**
  * Second test pattern to be written and read from SRAM.
  */
-static const sram_ctrl_data_t kRamTestPattern2 = {
+static const sram_ctrl_testutils_data_t kRamTestPattern2 = {
     .words =
         {
             0x5A5A5A5A,
