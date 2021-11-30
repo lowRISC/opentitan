@@ -271,7 +271,7 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
     // run csr_rw seq to send some normal CSR accesses in parallel
     begin
       `uvm_info(`gfn, "Run csr_rw seq", UVM_HIGH)
-      run_csr_vseq("rw");
+      run_csr_vseq(.csr_test_type("rw"), .ral_name(ral_name));
     end
     begin
       issue_tl_access_w_intg_err(ral_name);
