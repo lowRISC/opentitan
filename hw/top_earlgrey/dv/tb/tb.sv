@@ -402,6 +402,12 @@ module tb;
       force cpu_d_tl_if.h2d.a_user.instr_type = prim_mubi_pkg::MuBi4False;
       force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
       force cpu_d_tl_if.d2h = `CPU_TL_ADAPT_D_HIER.tl_i;
+
+      // In stub_cpu mode, disable these assertions because writing rand value to clkmgr's CSR
+      // `extclk_sel` can violate these assertions.
+      $assertoff(0, tb.dut.u_ast.u_ast_clks_byp.u_all_clk_byp_req.PrimMubi4SyncCheckTransients_A);
+      $assertoff(0, tb.dut.u_ast.u_ast_clks_byp.u_all_clk_byp_req.PrimMubi4SyncCheckTransients0_A);
+      $assertoff(0, tb.dut.u_ast.u_ast_clks_byp.u_all_clk_byp_req.PrimMubi4SyncCheckTransients1_A);
     end else begin
       // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
       // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
