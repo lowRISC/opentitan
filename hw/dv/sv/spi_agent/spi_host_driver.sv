@@ -80,7 +80,7 @@ class spi_host_driver extends spi_driver;
   endtask
 
   task drive_normal_item();
-    cfg.vif.csb[0] <= 1'b0;
+    cfg.vif.csb[cfg.csb_sel] <= 1'b0;
     sck_pulses = req.data.size() * 8;
 
     // for mode 1 and 3, get the leading edges out of the way
@@ -107,7 +107,7 @@ class spi_host_driver extends spi_driver;
     end
 
     wait(sck_pulses == 0);
-    cfg.vif.csb[0] <= 1'b1;
+    cfg.vif.csb[cfg.csb_sel] <= 1'b1;
     cfg.vif.sio[0] <= 1'bx;
   endtask
 
@@ -121,9 +121,9 @@ class spi_host_driver extends spi_driver;
   endtask
 
   task drive_csb_no_sck_item();
-    cfg.vif.csb[0] <= 1'b0;
+    cfg.vif.csb[cfg.csb_sel] <= 1'b0;
     #(req.dummy_sck_length_ns * 1ns);
-    cfg.vif.csb[0] <= 1'b1;
+    cfg.vif.csb[cfg.csb_sel] <= 1'b1;
   endtask
 
   function uint get_rand_extra_delay_ns_btw_sck();
