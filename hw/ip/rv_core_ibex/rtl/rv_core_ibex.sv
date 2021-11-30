@@ -575,11 +575,21 @@ module rv_core_ibex
   localparam bit [NumAlerts-1:0] AlertFatal = '{1, 0, 1, 0};
 
   logic [NumAlerts-1:0] alert_events;
+  logic [NumAlerts-1:0] alert_acks;
 
-  assign alert_events[0] = reg2hw.sw_alert[0].q != EventOff;
-  assign alert_events[1] = reg2hw.sw_alert[1].q != EventOff;
+  import prim_mubi_pkg::mubi4_test_true_loose;
+  import prim_mubi_pkg::mubi4_t;
+  assign alert_events[0] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_fatal_err.q));
+  assign alert_events[1] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_recov_err.q));
   assign alert_events[2] = intg_err | fatal_intg_err | fatal_core_err;
   assign alert_events[3] = recov_core_err;
+
+  logic unused_alert_acks;
+  assign unused_alert_acks = |alert_acks;
+
+  // recoverable alerts are sent once and silenced until activated again.
+  assign hw2reg.sw_recov_err.de = alert_acks[1];
+  assign hw2reg.sw_recov_err.d = prim_mubi_pkg::MuBi4False;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
@@ -590,7 +600,7 @@ module rv_core_ibex
       .rst_ni,
       .alert_test_i(alert_test[i]),
       .alert_req_i(alert_events[i]),
-      .alert_ack_o(),
+      .alert_ack_o(alert_acks[i]),
       .alert_state_o(),
       .alert_rx_i(alert_rx_i[i]),
       .alert_tx_o(alert_tx_o[i])

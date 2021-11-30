@@ -309,62 +309,48 @@
   regwidth: "32",
   registers: {
     cfg: [
-      { multireg: {
-          cname: "SW_ALERTS_REGWEN",
-          name: "SW_ALERT_REGWEN",
-          desc: "Software alert regwen.",
-          count: "NumSwAlerts",
-          swaccess: "rw0c",
-          hwaccess: "none",
-          compact: false,
-          fields: [
-            { bits: "0",
-              name: "EN",
-              resval: "1",
-              desc: "Software alert write-enable.  Once set to 0, it can longer be configured to 1",
-              enum: [
-                { value: "0",
-                  name: "Software alert locked",
-                  desc: '''
-                          Software alert can no longer be configured until next reset.
-                          '''
-                },
-                { value: "1",
-                  name: "Software alert enabled",
-                  desc: '''
-                          Software alert can still be configured.
-                          '''
-                },
-              ]
-            },
-          ],
-        },
+      { name: "SW_RECOV_ERR",
+        desc: '''
+          Software recoverable error
+        ''',
+        swaccess: "rw",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "3:0",
+            mubi: true,
+            name: "VAL",
+            resval: false,
+            desc: '''
+              Software recoverable alert.
+              When set to any value other than kMultiBitBool4False, a recoverable alert is sent.
+              Once the alert is sent, the field is then reset to kMultiBitBool4False.
+            '''
+          },
+        ],
+        tags: [// This register will self clear when set
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
       },
 
-      { multireg: {
-          cname: "SW_ALERTS",
-          name: "SW_ALERT",
-          regwen: "SW_ALERT_REGWEN",
-          regwen_multi: true,
-          desc: '''
-                  Software trigger alerts.
-                  When set to 1, triggers an alert to the alert handler
-                                          ''',
-                                          count: "NumSwAlerts",
-          compact: false,
-          swaccess: "rw",
-          hwaccess: "hro",
-          fields: [
-            { bits: "1:0",
-              name: "VAL",
-              desc: '''
-                      Software alert trigger value.
-                      Any value NOT 1 will trigger an alert.
-                      ''',
-                      resval: "1"
-            },
-          ],
-        },
+      { name: "SW_FATAL_ERR",
+        desc: '''
+          Software fatal error
+        ''',
+        swaccess: "rw0c",
+        hwaccess: "hro",
+        fields: [
+          { bits: "3:0",
+            mubi: true,
+            name: "VAL",
+            resval: false,
+            desc: '''
+              Software fatal alert.
+              When set to any value other than kMultiBitBool4False, a fatal alert is sent.
+              Note, this field once cleared cannot be set and will continuously cause alert events.
+            '''
+          },
+        ]
+        tags: [// This register is sticky and cannot be cleared after being set
+        "excl:CsrNonInitTests:CsrExclWrite"],
       },
 
       { multireg: {

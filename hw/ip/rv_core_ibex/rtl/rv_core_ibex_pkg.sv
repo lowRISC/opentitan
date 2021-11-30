@@ -7,13 +7,6 @@
 
 package rv_core_ibex_pkg;
 
-  typedef enum logic [1:0] {
-    EventOn = 2'b10,
-    EventOff = 2'b01
-  } alert_event_e;
-
-  typedef alert_event_e alert_event_t;
-
   typedef struct packed {
     logic en;
     logic [31:0] matching_region;
