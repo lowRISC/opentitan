@@ -44,7 +44,7 @@ class spi_monitor extends dv_base_monitor#(
       begin: isolation_thread
         fork
           begin: csb_deassert_thread
-            wait(cfg.vif.csb[0] == 1'b1);
+            wait(cfg.vif.csb[cfg.csb_sel] == 1'b1);
           end
           begin: sample_thread
             // for mode 1 and 3, get the leading edges out of the way

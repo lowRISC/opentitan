@@ -20,6 +20,7 @@ module tb;
 
   wire sck;
   wire csb;
+  wire tpm_csb;
   wire [3:0] sd_out;
   wire [3:0] sd_out_en;
   wire [3:0] sd_in;
@@ -62,7 +63,7 @@ module tb;
     .cio_sd_en_o    (sd_out_en ),
     .cio_sd_i       (sd_in     ),
 
-    .cio_tpm_csb_i  (1'b 1     ), // TODO: Add TPM agent
+    .cio_tpm_csb_i  (tpm_csb   ),
 
     .intr_generic_rx_full_o             (intr_rxf  ),
     .intr_generic_rx_watermark_o        (intr_rxlvl),
@@ -81,6 +82,7 @@ module tb;
 
   assign sck           = spi_if.sck;
   assign csb           = spi_if.csb[0];
+  assign tpm_csb       = spi_if.csb[1];
   // TODO: quad SPI mode is currently not yet implemented
   assign sd_in         = {3'b000, spi_if.sio[0]};
   assign spi_if.sio[1] = sd_out_en[1] ? sd_out[1] : 1'bz;
