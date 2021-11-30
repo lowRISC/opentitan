@@ -174,8 +174,6 @@ module otbn
   logic [38:0] imem_wmask;
   logic [38:0] imem_rdata;
   logic imem_rvalid;
-  logic [1:0] imem_rerror_vec;
-  logic imem_rerror;
   logic imem_illegal_bus_access;
 
   logic imem_req_core;
@@ -272,22 +270,6 @@ module otbn
     .cfg_i       (ram_cfg_i)
   );
 
-  // Separate check for imem read data integrity outside of `u_imem` as `prim_ram_1p_adv` doesn't
-  // have functionality for only integrity checking, just fully integrated ECC.
-  prim_secded_39_32_dec u_imem_intg_check (
-    .data_i     (imem_rdata),
-    .data_o     (),
-    .syndrome_o (),
-    .err_o      (imem_rerror_vec)
-  );
-
-  // imem_rerror is only reported for reads from OTBN. For Ibex reads integrity checking on TL
-  // responses will serve the same purpose.
-  // imem_rerror_vec is 2 bits wide and is used to report ECC errors. Bit 1 is set if there's an
-  // uncorrectable error and bit 0 is set if there's a correctable error. However, we're treating
-  // all errors as fatal, so OR the two signals together.
-  assign imem_rerror = |imem_rerror_vec & imem_rvalid & imem_access_core;
-
   // IMEM access from main TL-UL bus
   logic imem_gnt_bus;
   // Always grant to bus accesses, when OTBN is running a dummy response is returned
@@ -364,7 +346,7 @@ module otbn
 
   // No imem errors reported for bus reads. Integrity is carried through on the bus so integrity
   // checking on TL responses will pick up any errors.
-  assign imem_rerror_bus = 1'b0;
+  assign imem_rerror_bus = 2'b00;
 
   // Data Memory (DMEM) ========================================================
 
@@ -476,8 +458,9 @@ module otbn
         {2{dmem_rmask_core_q[i_word] & dmem_rvalid & dmem_access_core}};
   end
 
-  // Combine uncorrectable / correctable errors. See note above definition of imem_rerror for
-  // details.
+  // dmem_rerror_vec is 2 bits wide and is used to report ECC errors. Bit 1 is set if there's an
+  // uncorrectable error and bit 0 is set if there's a correctable error. However, we're treating
+  // all errors as fatal, so OR the two signals together.
   assign dmem_rerror = |dmem_rerror_vec;
 
   // DMEM access from main TL-UL bus
@@ -543,7 +526,7 @@ module otbn
 
   // No dmem errors reported for bus reads. Integrity is carried through on the bus so integrity
   // checking on TL responses will pick up any errors.
-  assign dmem_rerror_bus  = 1'b0;
+  assign dmem_rerror_bus  = 2'b00;
   assign dmem_rerror_core = dmem_rerror;
 
   // Registers =================================================================
