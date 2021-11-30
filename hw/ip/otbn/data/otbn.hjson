@@ -470,6 +470,8 @@
 
         See the "Memory Load Integrity" section of the manual for full details.
       '''
+      hwext: "true",
+      hwqe:  "true",
       swaccess: "rw",
       hwaccess: "hrw",
       fields: [

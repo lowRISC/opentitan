@@ -927,7 +927,7 @@ It isn't a cryptographically secure MAC, so cannot spot an attacker who can comp
 However, in this case the attacker would be equally able to control responses from OTBN, so any such check could be subverted.
 
 The CRC used is the 32-bit CRC-32-IEEE checksum.
-This standard choice of generating polynomial makes it compatible with other tooling, such as the POSIX cksum utility [[POSIX18]({{< relref "#ref-posix-cksum">}})].
+This standard choice of generating polynomial makes it compatible with other tooling and libraries, such as the [crc32 function](https://docs.python.org/3/library/binascii.html#binascii.crc32) in the python 'binascii' module and the crc instructions in the RISC-V bitmanip specification [[SYMBIOTIC21]]({{<relref "#ref-symbiotic21" >}}).
 The stream over which the checksum is computed is the stream of writes that have been seen since the last write to {{< regref "LOAD_CHECKSUM" >}}.
 Each write is treated as a 48b value, `{imem, idx, wdata}`.
 Here, `imem` is a single bit flag which is one for writes to IMEM and zero for writes to DMEM.
@@ -935,9 +935,11 @@ The `idx` value is the index of the word within the memory, zero extended from 1
 Finally, `wdata` is the 32b word that was written.
 
 The host processor can also write to the register.
-Typically, this will be to clear the value to `32'hffffffff`, the traditional starting value for a 32-bit CRC.
+Typically, this will be to clear the value to `32'h00000000`, the traditional starting value for a 32-bit CRC.
+Note the internal representation of the CRC is inverted from the register visible version.
+This is done to maintain compatibility with existing CRC-32-IEEE tooling and libraries.
 
-To use this functionality, the host processor should set {{< regref "LOAD_CHECKSUM" >}} to a known value (traditionally, `32'hffffffff`).
+To use this functionality, the host processor should set {{< regref "LOAD_CHECKSUM" >}} to a known value (traditionally, `32'h00000000`).
 Next, it should write the program to be loaded to OTBN's IMEM and DMEM over the bus.
 Finally, it should read back the value of {{< regref "LOAD_CHECKSUM" >}} and compare it with an expected value.
 
@@ -1371,4 +1373,4 @@ Code snippets giving examples of 256x256 and 384x384 multiplies can be found in 
 
 <a name="ref-chen08">[CHEN08]</a> L. Chen, "Hsiao-Code Check Matrices and Recursively Balanced Matrices," arXiv:0803.1217 [cs], Mar. 2008 [Online]. Available: http://arxiv.org/abs/0803.1217
 
-<a name="ref-posix-cksum">[POSIX18]</a> The Open Group, "cksum" manual. Available: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/cksum.html
+<a name="ref-symbiotic21">[SYMBIOTIC21]</a> RISC-V Bitmanip Extension v0.93 Available: https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf 

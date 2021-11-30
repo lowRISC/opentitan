@@ -14,6 +14,7 @@ filesets:
       - lowrisc:prim:xoshiro256pp
       - lowrisc:prim:cipher_pkg
       - lowrisc:prim:mubi
+      - lowrisc:prim:crc32
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:otbn_pkg

@@ -52,6 +52,7 @@ package otbn_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
+    logic        qe;
   } otbn_reg2hw_load_checksum_reg_t;
 
   typedef struct packed {
@@ -168,29 +169,28 @@ package otbn_reg_pkg;
 
   typedef struct packed {
     logic [31:0] d;
-    logic        de;
   } otbn_hw2reg_load_checksum_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [50:50]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [49:49]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [48:47]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [46:43]
-    otbn_reg2hw_cmd_reg_t cmd; // [42:34]
-    otbn_reg2hw_ctrl_reg_t ctrl; // [33:32]
-    otbn_reg2hw_load_checksum_reg_t load_checksum; // [31:0]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [51:51]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [50:50]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [49:48]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [47:44]
+    otbn_reg2hw_cmd_reg_t cmd; // [43:35]
+    otbn_reg2hw_ctrl_reg_t ctrl; // [34:33]
+    otbn_reg2hw_load_checksum_reg_t load_checksum; // [32:0]
   } otbn_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [120:119]
-    otbn_hw2reg_ctrl_reg_t ctrl; // [118:118]
-    otbn_hw2reg_status_reg_t status; // [117:109]
-    otbn_hw2reg_err_bits_reg_t err_bits; // [108:81]
-    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [80:65]
-    otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [64:33]
-    otbn_hw2reg_load_checksum_reg_t load_checksum; // [32:0]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [119:118]
+    otbn_hw2reg_ctrl_reg_t ctrl; // [117:117]
+    otbn_hw2reg_status_reg_t status; // [116:108]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [107:80]
+    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [79:64]
+    otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [63:32]
+    otbn_hw2reg_load_checksum_reg_t load_checksum; // [31:0]
   } otbn_hw2reg_t;
 
   // Register offsets
@@ -218,6 +218,8 @@ package otbn_reg_pkg;
   parameter logic [0:0] OTBN_CTRL_SOFTWARE_ERRS_FATAL_RESVAL = 1'h 0;
   parameter logic [31:0] OTBN_INSN_CNT_RESVAL = 32'h 0;
   parameter logic [31:0] OTBN_INSN_CNT_INSN_CNT_RESVAL = 32'h 0;
+  parameter logic [31:0] OTBN_LOAD_CHECKSUM_RESVAL = 32'h 0;
+  parameter logic [31:0] OTBN_LOAD_CHECKSUM_CHECKSUM_RESVAL = 32'h 0;
 
   // Window parameters
   parameter logic [BlockAw-1:0] OTBN_IMEM_OFFSET = 16'h 4000;
