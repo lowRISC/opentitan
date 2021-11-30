@@ -5,6 +5,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 
 .extern pxCurrentTCB
+.extern kTestConfig
 .extern ottf_exception_handler
 .extern ottf_software_isr
 .extern ottf_timer_isr
@@ -33,15 +34,39 @@ compute_mepc_on_synchronous_irq:
   csrr t0, mepc
   li t1, 0x3
   and t2, t0, t1
-  beq t2, t1, L_32bit_trap_instr
+  beq t2, t1, .L_32bit_trap_instr
   addi t0, t0, OTTF_HALF_WORD_SIZE
   ret
-L_32bit_trap_instr:
+.L_32bit_trap_instr:
   addi t0, t0, OTTF_WORD_SIZE
   ret
 
   // Set size so this function can be disassembled.
   .size compute_mepc_on_synchronous_irq, .-compute_mepc_on_synchronous_irq
+
+// -----------------------------------------------------------------------------
+
+/**
+ * Store stack pointer to current Task Control Block (TCB) ONLY if concurrency
+ * is enabled for a given test, i.e., the test that triggers an IRQ is running
+ * as a FreeRTOS task. This is because for bare-metal tests, the current
+ * FreeRTOS TCB pointer (pxCurrentTCB) will be NULL, which will result in an
+ * exception, if we attempt to perform a store to said address.
+ */
+.balign 4
+.type save_current_sp_to_tcb, @function
+save_current_sp_to_tcb:
+  la t0, kTestConfig  // Load the pointer to the test configuration struct.
+  lb t1, 0(t0)        // Load the first byte of the test_config struct, which
+                      // contains the `enable_concurrency` field to check.
+  beqz t1, .L_skip_sp_save
+  lw t2, pxCurrentTCB
+  sw sp, 0(t2)
+.L_skip_sp_save:
+  ret
+
+  // Set size so this function can be disassembled.
+  .size save_current_sp_to_tcb, .-save_current_sp_to_tcb
 
 // -----------------------------------------------------------------------------
 
@@ -92,9 +117,9 @@ handler_exception:
   jal compute_mepc_on_synchronous_irq
   sw t0, 0(sp)
 
-  // Store stack pointer to current TCB.
-  lw t0, pxCurrentTCB
-  sw sp, 0(t0)
+  // Store stack pointer to current TCB (only if concurrency is enabled, i.e.,
+  // the test that triggers this is running as a FreeRTOS task).
+  jal save_current_sp_to_tcb
 
   // Jump to the exception handler.
   jal ottf_exception_handler
@@ -154,9 +179,9 @@ handler_irq_software:
   jal compute_mepc_on_synchronous_irq
   sw t0, 0(sp)
 
-  // Store stack pointer to current TCB.
-  lw t0, pxCurrentTCB
-  sw sp, 0(t0)
+  // Store stack pointer to current TCB (only if concurrency is enabled, i.e.,
+  // the test that triggers this is running as a FreeRTOS task).
+  jal save_current_sp_to_tcb
 
   // Jump to the software ISR.
   jal ottf_software_isr
@@ -216,9 +241,9 @@ handler_irq_timer:
   csrr t0, mepc
   sw t0, 0(sp)
 
-  // Store stack pointer to current TCB.
-  lw t0, pxCurrentTCB
-  sw sp, 0(t0)
+  // Store stack pointer to current TCB (only if concurrency is enabled, i.e.,
+  // the test that triggers this is running as a FreeRTOS task).
+  jal save_current_sp_to_tcb
 
   // Jump to timer ISR.
   jal ottf_timer_isr
@@ -278,9 +303,9 @@ handler_irq_external:
   csrr t0, mepc
   sw t0, 0(sp)
 
-  // Store stack pointer to current TCB.
-  lw t0, pxCurrentTCB
-  sw sp, 0(t0)
+  // Store stack pointer to current TCB (only if concurrency is enabled, i.e.,
+  // the test that triggers this is running as a FreeRTOS task).
+  jal save_current_sp_to_tcb
 
   // Jump to external ISR.
   jal ottf_external_isr
@@ -300,17 +325,26 @@ handler_irq_external:
 .global ottf_isr_exit
 .type ottf_isr_exit, @function
 ottf_isr_exit:
-  // Load the stack pointer for the current TCB.
-	lw  t1, pxCurrentTCB
-	lw  sp, 0(t1)
+  // Load the stack pointer for the current task control block (TCB), only if
+  // the `enable_concurrency` flag is set in the test configuration struct,
+  // meaning a test is run as a FreeRTOS task, where each task maintains its own
+  // stack. Otherwise, the test is run on bare-metal, and there is no TCB, and
+  // only a single stack/stack pointer.
+  la t0, kTestConfig  // Load the pointer to the test configuration struct.
+  lb t1, 0(t0)        // Load the first byte of the test_config struct, which
+                      // contains the `enable_concurrency` field to check.
+  beqz t1, .L_skip_sp_restore
+  lw  t2, pxCurrentTCB
+  lw  sp, 0(t2)
+.L_skip_sp_restore:
 
   // Load the correct MEPC for the next instruction in the current task.
-	lw t0, 0(sp)
-	csrw mepc, t0
+  lw t0, 0(sp)
+  csrw mepc, t0
 
   // Load MSTATUS for the MPIE bit.
-	lw  t0, 29 * OTTF_WORD_SIZE(sp)
-	csrw mstatus, t0
+  lw  t0, 29 * OTTF_WORD_SIZE(sp)
+  csrw mstatus, t0
 
   // Restore all registers from the stack.
   lw   ra,  1 * OTTF_WORD_SIZE(sp)

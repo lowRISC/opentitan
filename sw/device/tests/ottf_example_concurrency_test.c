@@ -6,8 +6,8 @@
 #include "sw/device/lib/testing/test_framework/ottf.h"
 
 const test_config_t kTestConfig = {
-    .can_clobber_uart = false,
     .enable_concurrency = true,
+    .can_clobber_uart = false,
 };
 
 bool test_main(void) {
