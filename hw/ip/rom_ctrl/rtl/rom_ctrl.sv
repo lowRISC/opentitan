@@ -427,4 +427,18 @@ module rom_ctrl
   `ASSERT_KNOWN(KmacDataOValidKnown_A, kmac_data_o.valid)
   `ASSERT_KNOWN_IF(KmacDataODataKnown_A, kmac_data_o, kmac_data_o.valid)
 
+  // Check that pwrmgr_data_o.good is stable when kmac_data_o.valid is asserted
+  `ASSERT(StabilityChkKmac_A, kmac_data_o.valid && $past(kmac_data_o.valid)
+          |-> $stable(pwrmgr_data_o.good))
+
+  // Check that pwrmgr_data_o.good is stable when keymgr_data_o.valid is asserted
+  `ASSERT(StabilityChkkeymgr_A, keymgr_data_o.valid && $past(keymgr_data_o.valid)
+          |-> $stable(pwrmgr_data_o.good))
+
+  // Check that pwrmgr_data_o.done is never de-asserted once asserted
+  `ASSERT(PwrmgrDataChk_A, $rose(pwrmgr_data_o.done) |-> always !$fell(pwrmgr_data_o.done))
+
+  // Check that keymgr_data_o.valid is never de-asserted once asserted
+  `ASSERT(KeymgrValidChk_A, $rose(keymgr_data_o.valid) |-> always !$fell(keymgr_data_o.valid))
+
 endmodule
