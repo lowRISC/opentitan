@@ -15,6 +15,8 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   bit device_bit_dir;     // 1 - lsb -> msb, 0 - msb -> lsb
   bit sck_on;             // keep sck on
   bit [1:0] csb_sel;      // Select active CSB
+  bit partial_byte;       // Transfering less than byte
+  bit [2:0] bits_to_transfer; // Bits to transfer if using less than byte
 
   // spi mode knob
   spi_mode_e spi_mode;
@@ -47,6 +49,8 @@ class spi_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int (host_bit_dir,   UVM_DEFAULT)
     `uvm_field_int (device_bit_dir, UVM_DEFAULT)
     `uvm_field_int (csb_sel,        UVM_DEFAULT)
+    `uvm_field_int (partial_byte,   UVM_DEFAULT)
+    `uvm_field_int (bits_to_transfer,             UVM_DEFAULT)
     `uvm_field_int (en_extra_dly_btw_sck,         UVM_DEFAULT)
     `uvm_field_int (max_extra_dly_ns_btw_sck,     UVM_DEFAULT)
     `uvm_field_int (extra_dly_chance_pc_btw_sck,  UVM_DEFAULT)

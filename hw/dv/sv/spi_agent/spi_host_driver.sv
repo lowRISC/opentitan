@@ -98,6 +98,7 @@ class spi_host_driver extends spi_driver;
         cfg.vif.sio[0] <= host_byte[which_bit];
         // wait for sampling edge to sample sio (half cycle)
         cfg.wait_sck_edge(SamplingEdge);
+        if (cfg.partial_byte == 1 && j >= cfg.bits_to_transfer) break;
         which_bit = cfg.device_bit_dir ? j : 7 - j;
         device_byte[which_bit] = cfg.vif.sio[1];
         // wait for driving edge to complete 1 cycle
