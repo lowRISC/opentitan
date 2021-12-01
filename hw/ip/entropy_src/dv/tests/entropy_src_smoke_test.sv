@@ -10,8 +10,7 @@ class entropy_src_smoke_test extends entropy_src_base_test;
   function void configure_env();
     super.configure_env();
 
-    // TODO: Enable scoreboard
-    cfg.en_scb                      = 0;
+    cfg.en_scb                      = 1;
     cfg.fips_window_size            = 2048;
     cfg.bypass_window_size          = 384;
     cfg.boot_mode_retry_limit       = 10;
