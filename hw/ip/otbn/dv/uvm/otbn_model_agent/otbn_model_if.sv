@@ -2,14 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-interface otbn_model_if #(
+interface otbn_model_if
+  import keymgr_pkg::otbn_key_req_t;
+#(
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = 4096,
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte)
 ) (
   input logic clk_i,
-  input logic rst_ni
+  input logic rst_ni,
+  input otbn_key_req_t keymgr_key_i
 );
 
   // Inputs to DUT

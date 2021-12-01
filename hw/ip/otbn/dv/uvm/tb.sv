@@ -23,6 +23,7 @@ module tb;
   wire clk, rst_n;
   wire idle, intr_done;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  otbn_key_req_t keymgr_key;
 
   // interfaces
   clk_rst_if                    clk_rst_if (.clk(clk), .rst_n(rst_n));
@@ -35,11 +36,16 @@ module tb;
   // needed for sequences that trigger alerts (locking OTBN) without telling the model.
   `DV_ASSERT_CTRL("otbn_status_assert_en", tb.MatchingStatus_A)
 
+  assign keymgr_key.key[0] = {12{32'hDEADBEEF}};
+  assign keymgr_key.key[1] = {12{32'hBAADF00D}};
+  assign keymgr_key.valid  = 1'b1;
+
   otbn_model_if #(
     .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE)
   ) model_if (
-    .clk_i  (clk),
-    .rst_ni (rst_n)
+    .clk_i         (clk),
+    .rst_ni        (rst_n),
+    .keymgr_key_i  (keymgr_key)
   );
 
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
@@ -89,12 +95,6 @@ module tb;
   assign otp_key_rsp.key = TestScrambleKey;
   assign otp_key_rsp.nonce = TestScrambleNonce;
   assign otp_key_rsp.seed_valid = 1'b0;
-
-  otbn_key_req_t keymgr_key;
-
-  assign keymgr_key.key[0] = {12{32'hDEADBEEF}};
-  assign keymgr_key.key[1] = {12{32'hBAADF00D}};
-  assign keymgr_key.valid  = 1'b1;
 
   // dut
   otbn # (
@@ -223,7 +223,9 @@ module tb;
 
     .done_rr_o    (),
 
-    .err_o        (model_if.err)
+    .err_o        (model_if.err),
+
+    .keymgr_key_i (model_if.keymgr_key_i)
   );
 
   // Pull the final PC and the OtbnModel handle out of the SV model wrapper.

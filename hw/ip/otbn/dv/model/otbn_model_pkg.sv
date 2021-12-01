@@ -26,6 +26,10 @@ package otbn_model_pkg;
     void edn_model_urnd_cdc_done(chandle model);
 
   import "DPI-C" function
+    void otbn_model_set_keymgr_value(chandle model, logic [383:0] key0,
+                                     logic [383:0] key1, bit valid);
+
+  import "DPI-C" function
     void edn_model_rnd_cdc_done(chandle model);
 
   import "DPI-C" context function

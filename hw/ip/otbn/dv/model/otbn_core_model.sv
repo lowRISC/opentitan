@@ -15,6 +15,7 @@ module otbn_core_model
   import otbn_pkg::*;
   import otbn_model_pkg::*;
   import edn_pkg::*;
+  import keymgr_pkg::otbn_key_req_t;
 #(
   // The scope that contains the instruction and data memory (for DPI)
   parameter string MemScope = "",
@@ -45,6 +46,8 @@ module otbn_core_model
   output bit [31:0]      insn_cnt_o, // INSN_CNT register
 
   input logic            invalidate_imem_i, // Trash contents of IMEM (causing integrity errors)
+
+  input keymgr_pkg::otbn_key_req_t keymgr_key_i,
 
   output bit             done_rr_o,
 
@@ -188,6 +191,19 @@ module otbn_core_model
     end
   end
 
+  always_ff @(posedge clk_i or posedge rst_ni)
+  begin
+    if (rst_ni) begin
+      if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
+        otbn_model_set_keymgr_value(model_handle, keymgr_key_i.key[0], keymgr_key_i.key[1],
+                                    keymgr_key_i.valid);
+      end
+    end
+  end
+  // Assertion to ensure that keymgr key valid is never unknown.
+  `ASSERT_KNOWN(KeyValidIsKnownChk_A, keymgr_key_i.valid)
+  // Assertion to ensure that keymgr key values are never unknown if valid is high.
+  `ASSERT_KNOWN_IF(KeyIsKnownChk_A, keymgr_key_i.valid, {keymgr_key_i.key[0], keymgr_key_i.key[1]})
   assign unused_raw_err_bits = ^raw_err_bits_q[31:$bits(err_bits_t)];
   assign unused_edn_rsp_fips = edn_rnd_i.edn_fips & edn_urnd_i.edn_fips;
 

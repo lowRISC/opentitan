@@ -355,6 +355,24 @@ void ISSWrapper::edn_urnd_step(uint32_t edn_urnd_data) {
   run_command(oss.str(), nullptr);
 }
 
+void ISSWrapper::set_keymgr_value(const std::array<uint32_t, 12> &key0_arr,
+                                  const std::array<uint32_t, 12> &key1_arr,
+                                  bool valid) {
+  std::ostringstream oss;
+
+  oss << "set_keymgr_value 0x" << std::hex << std::setfill('0');
+  for (int i = 0; i < 12; ++i) {
+    oss << std::setw(8) << key0_arr[11 - i];
+  }
+  oss << " 0x";
+  for (int i = 0; i < 12; ++i) {
+    oss << std::setw(8) << key1_arr[11 - i];
+  }
+  oss << " " << valid << "\n";
+
+  run_command(oss.str(), nullptr);
+}
+
 int ISSWrapper::step(bool gen_trace) {
   std::vector<std::string> lines;
   bool error = false;
