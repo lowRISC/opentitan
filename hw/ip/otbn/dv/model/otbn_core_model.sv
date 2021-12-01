@@ -15,6 +15,7 @@ module otbn_core_model
   import otbn_pkg::*;
   import otbn_model_pkg::*;
   import edn_pkg::*;
+  import keymgr_pkg::*;
 #(
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = 4096,
@@ -53,7 +54,9 @@ module otbn_core_model
 
   output bit             done_rr_o,
 
-  output bit             err_o // something went wrong
+  output bit             err_o, // something went wrong
+
+  input keymgr_pkg::otbn_key_req_t keymgr_key_i
 );
 
   localparam int ImemSizeWords = ImemSizeByte / 4;
@@ -196,6 +199,17 @@ module otbn_core_model
     end
   end
 
+  always_ff @(posedge clk_i or posedge rst_ni)
+  begin
+    if (rst_ni) begin
+      if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
+        otbn_model_set_keymgr_value(model_handle, keymgr_key_i.key[0], keymgr_key_i.key[1],
+                                    keymgr_key_i.valid);
+      end
+    end
+  end
+  // Assertion to ensure that keymgr key values are never unknown.
+  `ASSERT_KNOWN(KeyIsKnownChk, {keymgr_key_i.key[0], keymgr_key_i.key[1]})
   assign unused_raw_err_bits = ^raw_err_bits_q[31:$bits(err_bits_t)];
   assign unused_edn_rsp_fips = edn_rnd_i.edn_fips & edn_urnd_i.edn_fips;
 
