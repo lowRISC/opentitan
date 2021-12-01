@@ -40,6 +40,8 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     forever
       @(posedge cfg.pwrmgr_vif.wakeups_i) begin
         if (cfg.en_cov) begin
+          // Allow for synchronization delay.
+          cfg.slow_clk_rst_vif.wait_clks(2);
           foreach (cov.wakeup_ctrl_cg_wrap[i]) begin
             cov.wakeup_ctrl_cg_wrap[i].sample(
                 cfg.pwrmgr_vif.wakeup_en[i], cfg.pwrmgr_vif.wakeup_capture_en,
@@ -78,7 +80,11 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     forever
       @(posedge cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::HwReq) begin
         if (cfg.en_cov) begin
-          cov.reset_cg.sample(cfg.pwrmgr_vif.pwr_rst_req.rstreqs, cfg.pwrmgr_vif.reset_en, 1'b0);
+          cov.reset_cg.sample(
+              .hw_resets(cfg.pwrmgr_vif.rstreqs_i), .hw_resets_en(cfg.pwrmgr_vif.reset_en),
+              .esc_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx]),
+              .main_pwr_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx]),
+              .sw_rst(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True), .sleep(1'b0));
         end
       end
   endtask

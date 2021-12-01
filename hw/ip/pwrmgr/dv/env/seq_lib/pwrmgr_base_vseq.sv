@@ -275,6 +275,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           // peripherals are reset they should drop their reset requests.
           if (cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req[1] == 1'b0) begin
             cfg.pwrmgr_vif.update_resets('0);
+            cfg.pwrmgr_vif.update_sw_rst_req(prim_mubi_pkg::MuBi4False);
             `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
           end
           drop_objection("rst_lc_src_n");

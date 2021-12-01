@@ -46,6 +46,8 @@ interface pwrmgr_if (
   logic                                                              low_power;
   rom_ctrl_pkg::pwrmgr_data_t                                        rom_ctrl;
 
+  prim_mubi_pkg::mubi4_t                                             sw_rst_req_i;
+
   prim_esc_pkg::esc_tx_t                                             esc_rst_tx;
   prim_esc_pkg::esc_rx_t                                             esc_rst_rx;
 
@@ -78,9 +80,8 @@ interface pwrmgr_if (
   always_comb fast_state = `PATH_TO_DUT.u_fsm.state_q;
 
   // Wakeup_status ro CSR.
-  logic [pwrmgr_reg_pkg::NumWkups-1:0] wake_status;
   always_comb
-    wake_status = {
+    wakeup_status = {
       `PATH_TO_DUT.hw2reg.wake_status[4].d,
       `PATH_TO_DUT.hw2reg.wake_status[3].d,
       `PATH_TO_DUT.hw2reg.wake_status[2].d,
@@ -149,6 +150,10 @@ interface pwrmgr_if (
   function automatic void update_reset_en(
       logic [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en_value);
     reset_en = reset_en_value;
+  endfunction
+
+  function automatic void update_sw_rst_req(prim_mubi_pkg::mubi4_t value);
+    sw_rst_req_i = value;
   endfunction
 
   // Sends a main power glitch and disables a design assertion that trips for power glitches.

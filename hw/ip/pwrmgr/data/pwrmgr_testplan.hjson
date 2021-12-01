@@ -219,7 +219,7 @@
             - Either pwrmgr remains active or a full low power cycle occurs.
             '''
       milestone: V2
-      tests: []
+      tests: ["pwrmgr_lowpower_wakeup_race"]
     }
     {
       name: stress
