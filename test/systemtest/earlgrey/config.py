@@ -174,5 +174,7 @@ TEST_APPS_SELFCHECKING = [
     {
         "name": "sw_silicon_creator_lib_boot_data_functest",
         "test_dir": "sw/device/silicon_creator/testing",
+        # This test takes a long time to run in simulation.
+        "targets": ["fpga_cw310"],
     },
 ]
