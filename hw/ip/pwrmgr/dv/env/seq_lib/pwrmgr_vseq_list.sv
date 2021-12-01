@@ -4,6 +4,7 @@
 
 `include "pwrmgr_base_vseq.sv"
 `include "pwrmgr_aborted_low_power_vseq.sv"
+`include "pwrmgr_lowpower_wakeup_race_vseq.sv"
 `include "pwrmgr_reset_vseq.sv"
 `include "pwrmgr_smoke_vseq.sv"
 `include "pwrmgr_wakeup_vseq.sv"

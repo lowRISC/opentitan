@@ -4,12 +4,17 @@
 
 // The reset test randomly introduces external resets, power glitches, and escalation resets.
 class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4True;
+
   `uvm_object_utils(pwrmgr_reset_vseq)
 
   `uvm_object_new
 
   rand bit power_glitch_reset;
   rand bit escalation_reset;
+  rand prim_mubi_pkg::mubi4_t sw_rst_from_rstmgr;
 
   // TODO(maturana) Enable escalation resets once there is support for driving them.
   constraint escalation_reset_c {escalation_reset == 1'b0;}
@@ -20,6 +25,11 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
 
   constraint wakeups_c {wakeups == 0;}
   constraint wakeups_en_c {wakeups_en == 0;}
+
+  function void post_randomize();
+    sw_rst_from_rstmgr = get_rand_mubi4_val(8, 4, 4);
+    super.post_randomize();
+  endfunction
 
   task body();
     logic [TL_DW-1:0] value;
@@ -51,6 +61,8 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       cfg.clk_rst_vif.wait_clks(cycles_before_reset);
       `uvm_info(`gfn, $sformatf("Sending resets=0x%x", resets), UVM_MEDIUM)
       cfg.pwrmgr_vif.update_resets(resets);
+      `uvm_info(`gfn, $sformatf("Sending sw reset from rstmgr=%b", sw_rst_from_rstmgr), UVM_MEDIUM)
+      cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
 
       cfg.slow_clk_rst_vif.wait_clks(4);
 

@@ -87,12 +87,25 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
     control_cross: cross core_cp, io_cp, usb_lp_cp, usb_active_cp, main_pd_n_cp, sleep_cp;
   endgroup
 
-  covergroup reset_cg with function sample (resets_out_t resets_out, resets_t resets_en, bit sleep);
-    resets_out_cp: coverpoint resets_out;
-    resets_en_cp: coverpoint resets_en;
+  covergroup reset_cg with function sample (
+      resets_t hw_resets,
+      resets_t hw_resets_en,
+      logic sw_rst,
+      logic main_pwr_rst,
+      logic esc_rst,
+      bit sleep
+  );
+    hw_resets_cp: coverpoint hw_resets;
+    sw_rst_cp: coverpoint sw_rst;
+    main_pwr_rst_cp: coverpoint main_pwr_rst;
+    esc_rst_cp: coverpoint esc_rst;
+    hw_resets_en_cp: coverpoint hw_resets_en;
     sleep_cp: coverpoint sleep;
 
-    resets_cross: cross resets_out_cp, resets_en_cp, sleep_cp;
+    hw_resets_cross: cross hw_resets_cp, hw_resets_en_cp, sleep_cp;
+    esc_rst_cross: cross esc_rst_cp, sleep_cp;
+    main_pwr_rst_cross: cross main_pwr_rst_cp, sleep_cp;
+    sw_rst_cross: cross sw_rst_cp, sleep_cp;
   endgroup
 
   function new(string name, uvm_component parent);

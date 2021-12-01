@@ -88,7 +88,7 @@ module tb;
 
     .rom_ctrl_i(pwrmgr_if.rom_ctrl),
 
-    .sw_rst_req_i(prim_mubi_pkg::MuBi4False),
+    .sw_rst_req_i(pwrmgr_if.sw_rst_req_i),
 
     .esc_rst_tx_i(pwrmgr_if.esc_rst_tx),
     .esc_rst_rx_o(pwrmgr_if.esc_rst_rx),
