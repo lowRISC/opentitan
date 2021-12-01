@@ -23,7 +23,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   // interface to ctrl arb control ports
   output flash_ctrl_reg_pkg::flash_ctrl_reg2hw_control_reg_t ctrl_o,
   output logic req_o,
-  output logic [top_pkg::TL_AW-1:0] addr_o,
+  output logic [BusAddrByteW-1:0] addr_o,
   input done_i,
   input flash_ctrl_err_t err_i,
 
@@ -684,8 +684,8 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   assign ctrl_o.info_sel.q = seed_phase ? info_sel : rma_info_sel;
   assign ctrl_o.num = seed_phase ? num_words : rma_num_words;
   // address is consistent with software width format (full bus)
-  assign addr_o = seed_phase ? top_pkg::TL_AW'({addr, {BusByteWidth{1'b0}}}) :
-                               top_pkg::TL_AW'({rma_addr, {BusByteWidth{1'b0}}});
+  assign addr_o = seed_phase ? {addr, {BusByteWidth{1'b0}}} :
+                               {rma_addr, {BusByteWidth{1'b0}}};
   assign init_busy_o = seed_phase;
   assign req_o = seed_phase | rma_phase;
   assign rready_o = 1'b1;

@@ -21,7 +21,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
 
   // software interface to rd_ctrl / erase_ctrl
   input flash_ctrl_reg_pkg::flash_ctrl_reg2hw_control_reg_t sw_ctrl_i,
-  input [31:0] sw_addr_i,
+  input [BusAddrByteW-1:0] sw_addr_i,
   output logic sw_ack_o,
   output flash_ctrl_err_t sw_err_o,
 
@@ -38,7 +38,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   input hw_req_i,
   input flash_ctrl_reg_pkg::flash_ctrl_reg2hw_control_reg_t hw_ctrl_i,
   input flash_lcmgr_phase_e hw_phase_i,
-  input [31:0] hw_addr_i,
+  input [BusAddrByteW-1:0] hw_addr_i,
   output logic hw_ack_o,
   output flash_ctrl_err_t hw_err_o,
 
@@ -53,7 +53,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
 
   // muxed interface to rd_ctrl / erase_ctrl
   output flash_ctrl_reg_pkg::flash_ctrl_reg2hw_control_reg_t muxed_ctrl_o,
-  output logic [31:0] muxed_addr_o,
+  output logic [BusAddrByteW-1:0] muxed_addr_o,
   input prog_ack_i,
   input flash_ctrl_err_t prog_err_i,
   input [BusAddrW-1:0] prog_err_addr_i,

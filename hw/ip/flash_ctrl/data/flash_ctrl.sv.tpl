@@ -204,7 +204,7 @@ module flash_ctrl
   flash_key_t rand_data_key;
   flash_ctrl_reg2hw_control_reg_t hw_ctrl;
   logic hw_req;
-  logic [top_pkg::TL_AW-1:0] hw_addr;
+  logic [BusAddrByteW-1:0] hw_addr;
   logic hw_done;
   flash_ctrl_err_t hw_err;
   logic hw_rvalid;
@@ -223,13 +223,11 @@ module flash_ctrl
 
   // Flash control muxed connections
   flash_ctrl_reg2hw_control_reg_t muxed_ctrl;
-  logic [top_pkg::TL_AW-1:0] muxed_addr;
+  logic [BusAddrByteW-1:0] muxed_addr;
   logic op_start;
   logic [11:0] op_num_words;
   logic [BusAddrW-1:0] op_addr;
   logic [BusAddrW-1:0] ctrl_err_addr;
-  // SW or HW supplied address is out of bounds
-  logic op_addr_oob;
   flash_op_e op_type;
   flash_part_e op_part;
   logic [InfoTypesWidth-1:0] op_info_sel;
@@ -369,9 +367,6 @@ module flash_ctrl
   assign op_erase_type = flash_erase_e'(muxed_ctrl.erase_sel.q);
   assign op_prog_type  = flash_prog_e'(muxed_ctrl.prog_sel.q);
   assign op_addr       = muxed_addr[BusByteWidth +: BusAddrW];
-  // The supplied address by software is completely beyond the flash
-  // and will wrap.  Instead of allowing this, explicitly error back.
-  assign op_addr_oob   = muxed_addr >= EndAddr;
   assign op_type       = flash_op_e'(muxed_ctrl.op.q);
   assign op_part       = flash_part_e'(muxed_ctrl.partition_sel.q);
   assign op_info_sel   = muxed_ctrl.info_sel.q;
@@ -508,7 +503,7 @@ module flash_ctrl
     .op_done_o      (prog_done),
     .op_err_o       (prog_err),
     .op_addr_i      (op_addr),
-    .op_addr_oob_i  (op_addr_oob),
+    .op_addr_oob_i  ('0),
     .op_type_i      (op_prog_type),
     .type_avail_i   (prog_type_en),
     .op_err_addr_o  (prog_err_addr),
@@ -594,7 +589,7 @@ module flash_ctrl
     .op_err_o       (rd_err),
     .op_err_addr_o  (rd_err_addr),
     .op_addr_i      (op_addr),
-    .op_addr_oob_i  (op_addr_oob),
+    .op_addr_oob_i  ('0),
 
     // FIFO Interface
     .data_rdy_i     (rd_fifo_wready),
@@ -621,7 +616,7 @@ module flash_ctrl
     .op_done_o      (erase_done),
     .op_err_o       (erase_err),
     .op_addr_i      (op_addr),
-    .op_addr_oob_i  (op_addr_oob),
+    .op_addr_oob_i  ('0),
     .op_err_addr_o  (erase_err_addr),
 
     // Flash Macro Interface
@@ -873,27 +868,24 @@ module flash_ctrl
   //////////////////////////////////////
 
   // all software interface errors are treated as synchronous errors
-  assign hw2reg.err_code.oob_err.d        = 1'b1;
   assign hw2reg.err_code.mp_err.d         = 1'b1;
   assign hw2reg.err_code.rd_err.d         = 1'b1;
   assign hw2reg.err_code.prog_win_err.d   = 1'b1;
   assign hw2reg.err_code.prog_type_err.d  = 1'b1;
   assign hw2reg.err_code.flash_phy_err.d  = 1'b1;
   assign hw2reg.err_code.update_err.d     = 1'b1;
-  assign hw2reg.err_code.oob_err.de       = sw_ctrl_err.oob_err;
   assign hw2reg.err_code.mp_err.de        = sw_ctrl_err.mp_err;
   assign hw2reg.err_code.rd_err.de        = sw_ctrl_err.rd_err;
   assign hw2reg.err_code.prog_win_err.de  = sw_ctrl_err.prog_win_err;
   assign hw2reg.err_code.prog_type_err.de = sw_ctrl_err.prog_type_err;
   assign hw2reg.err_code.flash_phy_err.de = sw_ctrl_err.phy_err;
   assign hw2reg.err_code.update_err.de    = update_err;
-  assign hw2reg.err_addr.d                = {reg2hw.addr.q[31:BusAddrW],ctrl_err_addr};
+  assign hw2reg.err_addr.d                = {ctrl_err_addr, {BusByteWidth{1'h0}}};
   assign hw2reg.err_addr.de               = sw_ctrl_err.mp_err |
                                             sw_ctrl_err.rd_err |
                                             sw_ctrl_err.phy_err;
 
   // all hardware interface errors are considered faults
-  assign hw2reg.fault_status.oob_err.d        = 1'b1;
   assign hw2reg.fault_status.mp_err.d         = 1'b1;
   assign hw2reg.fault_status.rd_err.d         = 1'b1;
   assign hw2reg.fault_status.prog_win_err.d   = 1'b1;
@@ -903,7 +895,6 @@ module flash_ctrl
   assign hw2reg.fault_status.phy_intg_err.d   = 1'b1;
   assign hw2reg.fault_status.lcmgr_err.d      = 1'b1;
   assign hw2reg.fault_status.storage_err.d    = 1'b1;
-  assign hw2reg.fault_status.oob_err.de       = hw_err.oob_err;
   assign hw2reg.fault_status.mp_err.de        = hw_err.mp_err;
   assign hw2reg.fault_status.rd_err.de        = hw_err.rd_err;
   assign hw2reg.fault_status.prog_win_err.de  = hw_err.prog_win_err;
@@ -1059,12 +1050,10 @@ module flash_ctrl
 
   // Unused bits
   logic [BusByteWidth-1:0] unused_byte_sel;
-  logic [top_pkg::TL_AW-1-BusAddrW:0] unused_higher_addr_bits;
   logic [top_pkg::TL_AW-1:0] unused_scratch;
 
   // Unused signals
   assign unused_byte_sel = muxed_addr[BusByteWidth-1:0];
-  assign unused_higher_addr_bits = muxed_addr[top_pkg::TL_AW-1:BusAddrW];
   assign unused_scratch = reg2hw.scratch;
 
 
@@ -1160,9 +1149,6 @@ module flash_ctrl
   // This is used only for assertions
   logic unused_op_valid;
   assign unused_op_valid = prog_op_valid | rd_op_valid | erase_op_valid;
-
-  // if there is an out of bounds error, flash request should never assert
-  `ASSERT(OutofBoundsReq_A, unused_op_valid & op_addr_oob |-> ~flash_phy_req.req)
 
   // add more assertions
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PageCntAlertCheck_A, u_flash_hw_if.u_page_cnt,

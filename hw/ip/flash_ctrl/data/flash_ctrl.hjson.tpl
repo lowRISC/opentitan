@@ -513,13 +513,15 @@
         hwaccess: "hro",
         resval: "0",
         fields: [
-          { bits: "31:0",
+          { bits: "${total_byte_width-1}:0",
             name: "START",
             desc: '''
-              Start address of a flash transaction.  Software should supply the full byte address.
-              The flash controller will then truncate the address as needed.  For read operations,
-              the flash controller will truncate to the closest, lower word aligned address.  For
-              example, if 0x13 is supplied, the controller will perform a read at address 0x10.
+              Start address of a flash transaction.  This is a byte address relative to the flash
+              only.  Ie, an address of 0 will access address 0 of the requested partition.
+
+              For read operations, the flash controller will truncate to the closest, lower word
+              aligned address.  For example, if 0x13 is supplied, the controller will perform a
+              read at address 0x10.
 
               Program operations behave similarly, the controller does not have read modified write
               support.
@@ -938,13 +940,6 @@
         swaccess: "rw1c",
         hwaccess: "hwo",
         fields: [
-          { bits: "0",
-            name: "oob_err",
-            desc: '''
-              The supplied address !!ADDR is invalid and out of bounds.
-              This is a synchronous error.
-            '''
-          },
           { bits: "1",
             name: "mp_err",
             desc: '''
@@ -1004,12 +999,6 @@
         swaccess: "ro",
         hwaccess: "hrw",
         fields: [
-          { bits: "0",
-            name: "oob_err",
-            desc: '''
-              The flash hardware interface supplied an out of bound value.
-            '''
-          },
           { bits: "1",
             name: "mp_err",
             desc: '''
@@ -1073,7 +1062,7 @@
         swaccess: "ro",
         hwaccess: "hwo",
         fields: [
-          { bits: "31:0",
+          { bits: "${total_byte_width-1}:0",
             resval: 0,
           },
         ]

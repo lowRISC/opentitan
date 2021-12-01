@@ -185,14 +185,6 @@ Each page can be configured with access privileges.
 As a result, software does not need to define a start and end page for information partitions.
 See {{< regref "BANK0_INFO_PAGE_CFG0" >}} as an example.
 
-#### Address Out of Bounds Check
-In addition to memory protection, the flash controller also explicitly checks to ensure the supplied input is not too large.
-Normally, if software supplies an address that is larger than the flash, the address bits are truncated and the operation wraps.
-However, this can lead to unintentional side effects where it seems like the controller is erasing, programming or reading the wrong location.
-
-Instead the controller explicitly creates an error when the address is out of bounds.
-This terminates the transaction immediately and notifies software of the error.
-
 #### Memory Protection for Key Manager and Life Cycle
 
 While memory protection is largely under software control, certain behavior is hardwired to support key manager secret partitions and life cycle functions.
