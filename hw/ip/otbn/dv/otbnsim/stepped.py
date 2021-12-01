@@ -55,6 +55,8 @@ prefixed with "0x" if they are hexadecimal.
 
     invalidate_imem      Mark all of IMEM as having invalid ECC checksums
 
+    set_keymgr_value     Send keymgr data to the model.
+
 '''
 
 import sys
@@ -260,6 +262,18 @@ def on_edn_urnd_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
+def on_set_keymgr_value(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    if len(args) != 3:
+        raise ValueError('set_keymgr_value expects exactly 1 argument. Got {}.'
+                         .format(args))
+    key0 = read_word('key0', args[0], 384)
+    key1 = read_word('key1', args[1], 384)
+    valid = read_word('valid', args[2], 1) == 1
+    sim.state.set_keymgr_value(key0, key1, valid)
+
+    return None
+
+
 def on_edn_flush(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     if len(args) != 0:
         raise ValueError('edn_flush expects zero arguments. Got {}.'
@@ -321,7 +335,8 @@ _HANDLERS = {
     'edn_rnd_cdc_done': on_edn_rnd_cdc_done,
     'edn_urnd_cdc_done': on_edn_urnd_cdc_done,
     'edn_flush': on_edn_flush,
-    'invalidate_imem': on_invalidate_imem
+    'invalidate_imem': on_invalidate_imem,
+    'set_keymgr_value': on_set_keymgr_value
 }
 
 

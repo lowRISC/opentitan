@@ -153,6 +153,9 @@ class OTBNState:
         # signal from RTL
         self.urnd_256b_counter = 0
 
+    def set_keymgr_value(self, key0: int, key1: int, valid: bool) -> None:
+        return None
+
     def edn_rnd_step(self, rnd_data: int) -> None:
         # Take the new data
         assert 0 <= rnd_data < (1 << 32)
