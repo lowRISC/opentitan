@@ -42,8 +42,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
 
     // Send HwReq.
     // Enable alert_info and cpu_info capture.
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(alert_dump);
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(cpu_dump);
+    `DV_CHECK_RANDOMIZE_FATAL(this)
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     send_reset(pwrmgr_pkg::HwReq, rstreqs);
@@ -53,9 +52,8 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
 
     // Clear reset_info register.
     csr_wr(.ptr(ral.reset_info), .value('1));
+    `DV_CHECK_RANDOMIZE_FATAL(this)
 
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(alert_dump);
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(cpu_dump);
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     // Send debug reset.

@@ -14,7 +14,7 @@ class clkmgr_clk_status_vseq extends clkmgr_base_vseq;
   `uvm_object_new
 
   // And disable scanmode since it is not interesting.
-  constraint scanmode_off_c {sel_scanmode == LcTxTSelOff;}
+  constraint scanmode_c {scanmode == lc_ctrl_pkg::Off;}
 
   task body();
     update_csrs_with_reset_values();

@@ -12,34 +12,6 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   // When extclk_ctrl_regwen is clear it is not possible to select external clocks.
   // This is tested in regular csr_rw, so here this register is simply set to 1.
 
-  // lc_debug_en is set according to sel_lc_debug_en, which is randomized with weights.
-  lc_tx_t            lc_debug_en;
-  rand lc_tx_t       lc_debug_en_other;
-  rand lc_tx_t_sel_e sel_lc_debug_en;
-
-  constraint lc_debug_en_c {
-    sel_lc_debug_en dist {
-      LcTxTSelOn    := 8,
-      LcTxTSelOff   := 2,
-      LcTxTSelOther := 2
-    };
-    !(lc_debug_en_other inside {On, Off});
-  }
-
-  // lc_clk_byp_req is set according to sel_lc_clk_byp_req, which is randomized with weights.
-  lc_tx_t            lc_clk_byp_req;
-  rand lc_tx_t       lc_clk_byp_req_other;
-  rand lc_tx_t_sel_e sel_lc_clk_byp_req;
-
-  constraint lc_clk_byp_req_c {
-    sel_lc_clk_byp_req dist {
-      LcTxTSelOn    := 8,
-      LcTxTSelOff   := 2,
-      LcTxTSelOther := 2
-    };
-    !(lc_clk_byp_req_other inside {On, Off});
-  }
-
   // The extclk cannot be manipulated in low power mode.
   constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
   constraint main_ip_clk_en_on_c {main_ip_clk_en == 1'b1;}
@@ -64,10 +36,16 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     cycles_before_next_trans inside {[15 : 25]};
   }
 
+  lc_tx_t lc_clk_byp_req;
+  lc_tx_t lc_debug_en;
+
   function void post_randomize();
+    lc_clk_byp_req = get_rand_lc_tx_val(8, 2, 2);
+    lc_debug_en = get_rand_lc_tx_val(8, 2, 2);
+    `uvm_info(`gfn, $sformatf(
+              "randomize gives lc_clk_byp_req=0x%x, lc_debug_en=0x%x",
+              lc_clk_byp_req, lc_debug_en), UVM_MEDIUM)
     super.post_randomize();
-    lc_debug_en = get_lc_tx_t_from_sel(sel_lc_debug_en, lc_debug_en_other);
-    lc_clk_byp_req = get_lc_tx_t_from_sel(sel_lc_clk_byp_req, lc_clk_byp_req_other);
   endfunction
 
   task body();
