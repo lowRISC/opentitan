@@ -24,25 +24,9 @@ module sram_ctrl_ram_reg_top (
 
 
 
-  // incoming payload check
-  logic intg_err;
-  tlul_cmd_intg_chk u_chk (
-    .tl_i(tl_i),
-    .err_o(intg_err)
-  );
-
-  logic intg_err_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      intg_err_q <= '0;
-    end else if (intg_err) begin
-      intg_err_q <= 1'b1;
-    end
-  end
-
-  // integrity error output is permanent and should be used for alert generation
-  // register errors are transactional
-  assign intg_err_o = intg_err_q | intg_err;
+  // Since there are no registers in this block, commands are routed through to windows which
+  // can report their own integrity errors.
+  assign intg_err_o = 1'b0;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
