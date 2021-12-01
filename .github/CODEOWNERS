@@ -18,6 +18,13 @@
 *.c                 @moidx
 *.h                 @moidx
 
+
+# Bazel build rules
+*.bzl               @cfrantz @drewmacrae
+BUILD               @cfrantz @drewmacrae
+/WORKSPACE          @cfrantz @drewmacrae
+/.bazelrc           @cfrantz @drewmacrae
+
 # Utils: reggen, topgen, tlgen
 util/*.py           @asb
 util/*gen/          @msfschaffner @tjaychen
