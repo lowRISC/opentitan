@@ -61,7 +61,12 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
   //
   // Will trigger a request to the KDI push_pull agent.
   virtual task req_scr_key();
-    csr_wr(.ptr(ral.ctrl), .value(1'b1));
+    ral.ctrl.renew_scr_key.set(1);
+    csr_update(.csr(ral.ctrl));
+    csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1));
+
+    // initialize mem_model
+    cfg.scb.init_mem();
   endtask
 
   // Task to perform a single SRAM read at the specified location
@@ -72,9 +77,6 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                               input bit [TL_DW-1:0]    exp_rdata    = '0,
                               input mubi4_t            instr_type   = MuBi4False,
                               output logic [TL_DW-1:0] rdata);
-    `DV_CHECK_FATAL((addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]}),
-                    $sformatf("addr[0x%0x] is not in range", addr),
-                    `gfn)
     tl_access(.addr(addr),
               .data(rdata),
               .mask(mask),
@@ -94,9 +96,6 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                                bit [TL_DBW-1:0] mask        = get_rand_contiguous_mask(),
                                bit              blocking    = $urandom_range(0, 1),
                                mubi4_t          instr_type  = MuBi4False);
-    `DV_CHECK_FATAL((addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]}),
-                    $sformatf("addr[0x%0x] is not in range", addr),
-                    `gfn)
     tl_access(.addr(addr),
               .data(data),
               .mask(mask),
@@ -114,10 +113,6 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                              bit en_ifetch = 0);
     bit [TL_DW-1:0] data;
     mubi4_t instr_type;
-
-    `DV_CHECK_FATAL((addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]}),
-                    $sformatf("addr[0x%0x] is not in range", addr),
-                    `gfn)
 
     repeat (num_stress_ops) begin
       // fully randomize data
@@ -157,8 +152,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
 
       // full randomize addr and data
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
-          addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]};)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
 
       // never send InstrType transactions unless en_ifetch is enabled
       if (en_ifetch) instr_type = get_rand_mubi4_val();

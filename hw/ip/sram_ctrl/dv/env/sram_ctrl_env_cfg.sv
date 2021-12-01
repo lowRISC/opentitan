@@ -22,9 +22,6 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
   virtual sram_ctrl_exec_if exec_vif;
   mem_bkdr_util mem_bkdr_util_h;
 
-  // Represent the lower and upper bounds of the SRAM memory region
-  bit [TL_AW-1:0] sram_start_addr, sram_end_addr;
-
   // Store the scb handle for seq. When seq initializes the mem, we should initialize mem_model in
   // scb as well.
   sram_ctrl_scoreboard#(AddrWidth) scb;
@@ -46,13 +43,6 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     clk_freqs_mhz[sram_ral_name] = clk_freq_mhz;
 
     super.initialize(csr_base_addr);
-
-    // SRAM is a single, contiguous, address range
-    sram_start_addr = ral_models[sram_ral_name].mapped_addr_ranges[0].start_addr;
-    sram_end_addr   = ral_models[sram_ral_name].mapped_addr_ranges[0].end_addr;
-
-    `uvm_info(`gfn, $sformatf("sram_start_addr: 0x%0x", sram_start_addr), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("sram_end_addr: 0x%0x", sram_end_addr), UVM_HIGH)
 
     // Build KDI cfg object and configure
     m_kdi_cfg = push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE))::type_id::create("m_kdi_cfg");
@@ -92,5 +82,4 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
       `uvm_error(`gfn, $sformatf("%0s is an illegal RAL model name", name))
     end
   endfunction
-
 endclass
