@@ -14,7 +14,6 @@ class aon_timer_env extends cip_base_env #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-
     // get the vifs from config db
     if (!uvm_config_db#(virtual clk_rst_if)::
         get(this, "", "aon_clk_rst_vif", cfg.aon_clk_rst_vif)) begin
