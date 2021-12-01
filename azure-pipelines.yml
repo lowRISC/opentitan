@@ -430,6 +430,7 @@ jobs:
 
       cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit" \
         "$BIN_DIR/hw/top_earlgrey"
+      cp "$OBJ_DIR/hw/synth-vivado/rom.mmi" "$BIN_DIR/hw/top_earlgrey"
     displayName: Build bitstream with Vivado
   - bash: |
       . util/build_consts.sh
@@ -443,9 +444,42 @@ jobs:
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
-        - "/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"
+        - "/hw/***"
   - publish: "$(Build.ArtifactStagingDirectory)"
     artifact: chip_earlgrey_cw310-build-out
+    displayName: Upload all Vivado artifacts for CW310
+    condition: failed()
+
+- job: chip_earlgrey_cw310_splice_mask_rom
+  displayName: Splice mask ROM binary into CW310 bitstream using Vivado
+  dependsOn:
+    - chip_earlgrey_cw310
+    - sw_build
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
+  pool: ci-public
+  timeoutInMinutes: 10
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_earlgrey_cw310
+        - sw_build
+  - bash: |
+      set -e
+      . util/build_consts.sh
+
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+
+      util/fpga/splice_rom.sh -t cw310 -T earlgrey -b PROD
+
+    displayName: Splicing bitstream with Vivado
+  - template: ci/upload-artifacts-template.yml
+    parameters:
+      includePatterns:
+        - "/hw/***"
+  - publish: "$(Build.ArtifactStagingDirectory)"
+    artifact: chip_earlgrey_cw310-splice-mask-rom-build-out
     displayName: Upload all Vivado artifacts for CW310
     condition: failed()
 
