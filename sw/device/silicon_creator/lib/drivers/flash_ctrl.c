@@ -18,7 +18,7 @@
 // Values of `flash_ctrl_partition_t` constants must be distinct from each
 // other, and `kFlashCtrlRegionInfo* >> 1` should give the correct
 // CONTROL.INFO_SEL value.
-static_assert(kFlashCtrlPartitionData == 0u,
+static_assert(kFlashCtrlPartitionData == 0,
               "Incorrect enum value for kFlashCtrlRegionData");
 static_assert(kFlashCtrlPartitionInfo0 >> 1 == 0,
               "Incorrect enum value for kFlashCtrlRegionInfo0");
@@ -166,8 +166,7 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
                          uint32_t word_count, const uint32_t *data,
                          rom_error_t error) {
   enum {
-    kWindowWordCount =
-        FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES / sizeof(uint32_t),
+    kWindowWordCount = FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES / sizeof(uint32_t)
   };
 
   // Find the number of words that can be written in the first window.
