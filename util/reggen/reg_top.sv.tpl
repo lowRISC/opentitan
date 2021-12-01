@@ -123,7 +123,7 @@ module ${mod_name} (
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 % endif
 
-  % if rb.async_if:
+% if rb.async_if:
   tlul_pkg::tl_h2d_t tl_async_h2d;
   tlul_pkg::tl_d2h_t tl_async_d2h;
   tlul_fifo_async #(
@@ -139,8 +139,9 @@ module ${mod_name} (
     .tl_d_o(${tl_h2d_expr}),
     .tl_d_i(${tl_d2h_expr})
   );
-  % endif
+% endif
 
+% if rb.all_regs:
   // incoming payload check
   logic intg_err;
   tlul_cmd_intg_chk u_chk (
@@ -160,6 +161,11 @@ module ${mod_name} (
   // integrity error output is permanent and should be used for alert generation
   // register errors are transactional
   assign intg_err_o = intg_err_q | intg_err;
+% else:
+  // Since there are no registers in this block, commands are routed through to windows which
+  // can report their own integrity errors.
+  assign intg_err_o = 1'b0;
+% endif
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
