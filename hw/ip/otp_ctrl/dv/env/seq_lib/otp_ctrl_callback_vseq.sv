@@ -16,4 +16,7 @@ class otp_ctrl_callback_vseq extends cip_base_vseq #(
     // Do nothing but can be overridden in closed source environment.
   endtask
 
+  virtual task post_otp_pwr_init();
+    // Do nothing but can be overridden in closed source environment.
+  endtask : post_otp_pwr_init
 endclass : otp_ctrl_callback_vseq
