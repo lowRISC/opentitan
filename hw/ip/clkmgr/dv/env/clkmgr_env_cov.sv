@@ -47,7 +47,9 @@ class clkmgr_trans_cg_wrap;
     scanmode_cp: coverpoint scanmode;
     idle_cp: coverpoint idle;
 
-    trans_cross: cross csr_hint_cp, ip_clk_en_cp, scanmode_cp, idle_cp;
+    trans_cross: cross csr_hint_cp, ip_clk_en_cp, scanmode_cp, idle_cp {
+      ignore_bins ignore = trans_cross with (idle_cp == 0 && ip_clk_en_cp == 0);
+    }
   endgroup
 
   function new(string name);
