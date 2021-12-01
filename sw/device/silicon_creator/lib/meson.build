@@ -91,7 +91,7 @@ sw_silicon_creator_lib_sigverify = declare_dependency(
       sw_silicon_creator_lib_driver_lifecycle,
       sw_lib_bitfield,
       sw_silicon_creator_lib_otbn_util,
-      sw_silicon_creator_otbn['rsa']['rv32embed_dependency'],
+      sw_otbn['run_rsa_verify_3072_rr_modexp']['rv32embed_dependency'],
     ],
   ),
 )
