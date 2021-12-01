@@ -8,7 +8,13 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   .COV_T              (clkmgr_env_cov),
   .VIRTUAL_SEQUENCER_T(clkmgr_virtual_sequencer)
 );
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4True;
+
   `uvm_object_utils(clkmgr_base_vseq)
+
+  `uvm_object_new
 
   // The extra cycles to wait after reset before starting any test, required so some CSRs (notably
   // hints_status) are properly set when inputs go through synchronizers.
@@ -18,89 +24,33 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   // synchronizers.
   localparam int IO_DIV4_SYNC_CYCLES = 8;
 
-  // Use this to hold a lc_tx_t.
-  typedef bit [$bits(lc_tx_t)-1:0] lc_tx_t_as_vec;
-
-  typedef enum {
-    LcTxTSelOn,
-    LcTxTSelOff,
-    LcTxTSelOther
-  } lc_tx_t_sel_e;
-
-  // This simplifies the constraint blocks.
-  // This function is used for 2 enum mubi4_t and lc_tx_t. Use lc_tx_t_as_vec, so that we can skip
-  // type casting when using this function
-  function lc_tx_t_as_vec get_lc_tx_t_from_sel(lc_tx_t_sel_e sel, lc_tx_t_as_vec other);
-    case (sel)
-      LcTxTSelOn: return On;
-      LcTxTSelOff: return Off;
-      LcTxTSelOther: return other;
-    endcase
-  endfunction
-
   rand bit                 io_ip_clk_en;
   rand bit                 main_ip_clk_en;
   rand bit                 usb_ip_clk_en;
 
   rand bit [NUM_TRANS-1:0] idle;
 
-  // scanmode is set according to sel_scanmode, which is randomized with weights.
-  prim_mubi_pkg::mubi4_t   scanmode;
-  rand lc_tx_t_as_vec      scanmode_other;
-  rand lc_tx_t_sel_e       sel_scanmode;
-  int                      scanmode_on_weight = 8;
+  mubi4_t                  scanmode;
+  int                      scanmode_on_weight         = 8;
 
-  constraint scanmode_c {
-    sel_scanmode dist {
-      LcTxTSelOn    := scanmode_on_weight,
-      LcTxTSelOff   := 4,
-      LcTxTSelOther := 4
-    };
-    !(scanmode_other inside {prim_mubi_pkg::MuBi4True, prim_mubi_pkg::MuBi4False});
-  }
-
-  // extclk_ctrl_sel is set according to sel_extclk_ctrl_sel, which is randomized with weights.
-  lc_tx_t             extclk_ctrl_sel;
-  rand lc_tx_t_as_vec extclk_ctrl_sel_other;
-  rand lc_tx_t_sel_e  sel_extclk_ctrl_sel;
-
-  // TODO, consider to use macro DV_MUBI4_DIST
-  constraint extclk_ctrl_sel_c {
-    sel_extclk_ctrl_sel dist {
-      LcTxTSelOn    := 6,
-      LcTxTSelOff   := 2,
-      LcTxTSelOther := 2
-    };
-    !(extclk_ctrl_sel_other inside {On, Off});
-  }
-
-  // extclk_ctrl_low_speed_sel is set according to sel_extclk_ctrl_low_speed_sel, which is randomized with weights.
-  lc_tx_t             extclk_ctrl_low_speed_sel;
-  rand lc_tx_t_as_vec extclk_ctrl_low_speed_sel_other;
-  rand lc_tx_t_sel_e  sel_extclk_ctrl_low_speed_sel;
-
-  constraint extclk_ctrl_low_speed_sel_c {
-    sel_extclk_ctrl_low_speed_sel dist {
-      LcTxTSelOn    := 6,
-      LcTxTSelOff   := 2,
-      LcTxTSelOther := 2
-    };
-    !(extclk_ctrl_low_speed_sel_other inside {On, Off});
-  }
-
-  `uvm_object_new
-
-  function void post_randomize();
-    super.post_randomize();
-    scanmode = get_lc_tx_t_from_sel(sel_scanmode, scanmode_other);
-    extclk_ctrl_sel = get_lc_tx_t_from_sel(sel_extclk_ctrl_sel, extclk_ctrl_sel_other);
-    extclk_ctrl_low_speed_sel = get_lc_tx_t_from_sel(
-        sel_extclk_ctrl_low_speed_sel, extclk_ctrl_low_speed_sel_other
-    );
-  endfunction
+  lc_tx_t                  extclk_ctrl_low_speed_sel;
+  lc_tx_t                  extclk_ctrl_sel;
 
   virtual function void set_scanmode_on_low_weight();
     scanmode_on_weight = 2;
+  endfunction
+
+  function void post_randomize();
+    extclk_ctrl_low_speed_sel = get_rand_lc_tx_val(6, 2, 2);
+    extclk_ctrl_sel = get_rand_lc_tx_val(4, 2, 2);
+    scanmode = get_rand_mubi4_val(scanmode_on_weight, 4, 4);
+    `uvm_info(`gfn, $sformatf(
+              "randomize gives extclk_ctrl_sel=0x%x, extclk_ctrl_low_speed_sel=0x%x, scanmode=0x%x",
+              extclk_ctrl_sel,
+              extclk_ctrl_low_speed_sel,
+              scanmode
+              ), UVM_MEDIUM)
+    super.post_randomize();
   endfunction
 
   task initialize_on_start();

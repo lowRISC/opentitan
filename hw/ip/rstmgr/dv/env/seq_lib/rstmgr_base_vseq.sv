@@ -8,6 +8,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   .COV_T              (rstmgr_env_cov),
   .VIRTUAL_SEQUENCER_T(rstmgr_virtual_sequencer)
 );
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4True;
+
   `uvm_object_utils(rstmgr_base_vseq)
 
   // Set clock frequencies per spec, except the aon is 200kHZ, which is
@@ -29,46 +33,15 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // Some extra cycles from reset going inactive before the CPU's reset goes inactive.
   localparam int CPU_RESET_CLK_CYCLES = 10;
 
-  typedef enum {
-    LcTxTSelOn,
-    LcTxTSelOff,
-    LcTxTSelOther
-  } lc_tx_t_sel_e;
-
-  // This simplifies the constraint blocks.
-  function lc_ctrl_pkg::lc_tx_t get_lc_tx_t_from_sel(lc_tx_t_sel_e sel, lc_ctrl_pkg::lc_tx_t other);
-    case (sel)
-      LcTxTSelOn: return lc_ctrl_pkg::On;
-      LcTxTSelOff: return lc_ctrl_pkg::Off;
-      LcTxTSelOther: return other;
-    endcase
-  endfunction
-
-  rand bit [3:0]            scanmode_other;
-  rand lc_tx_t_sel_e        sel_scanmode;
-  int                       scanmode_on_weight = 8;
-
-  // TODO, consider to use macro DV_MUBI4_DIST
-  constraint scanmode_c {
-    sel_scanmode dist {
-      LcTxTSelOn    := scanmode_on_weight,
-      LcTxTSelOff   := 4,
-      LcTxTSelOther := 4
-    };
-    !(scanmode_other inside {prim_mubi_pkg::MuBi4True, prim_mubi_pkg::MuBi4False});
-  }
-
   rand logic [NumSwResets-1:0] sw_rst_regwen;
   rand logic [NumSwResets-1:0] sw_rst_ctrl_n;
 
-  bit reset_once;
+  bit                          reset_once;
 
-  pwrmgr_pkg::pwr_rst_req_t pwr_i;
+  pwrmgr_pkg::pwr_rst_req_t    pwr_i;
 
-  rand logic scan_rst_ni;
+  rand logic                   scan_rst_ni;
   constraint scan_rst_ni_c {scan_rst_ni == 1;}
-
-  lc_ctrl_pkg::lc_tx_t scanmode;
 
   rand int ndm_reset_cycles;
   constraint ndm_reset_cycles_c {ndm_reset_cycles inside {[4 : 16]};}
@@ -77,9 +50,16 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   constraint non_ndm_reset_cycles_c {non_ndm_reset_cycles inside {[4 : 16]};}
 
   // various knobs to enable certain routines
-  bit do_rstmgr_init = 1'b1;
+  bit     do_rstmgr_init     = 1'b1;
+
+  mubi4_t scanmode;
+  int     scanmode_on_weight = 8;
 
   `uvm_object_new
+
+  function void post_randomize();
+    scanmode = get_rand_mubi4_val(scanmode_on_weight, 4, 4);
+  endfunction
 
   function void set_pwrmgr_rst_reqs(logic rst_lc_req, logic rst_sys_req);
     cfg.rstmgr_vif.pwr_i.rst_lc_req  = {rstmgr_pkg::PowerDomains{rst_lc_req}};
