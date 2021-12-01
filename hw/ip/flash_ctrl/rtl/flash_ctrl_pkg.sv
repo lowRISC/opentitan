@@ -7,9 +7,6 @@
 
 package flash_ctrl_pkg;
 
-  // End address of flash
-  parameter logic [top_pkg::TL_AW-1:0] EndAddr = 'h20100000;
-
   // design parameters that can be altered through topgen
   parameter int unsigned NumBanks        = flash_ctrl_reg_pkg::RegNumBanks;
   parameter int unsigned PagesPerBank    = flash_ctrl_reg_pkg::RegPagesPerBank;
@@ -60,8 +57,10 @@ package flash_ctrl_pkg;
   parameter int BusWordsPerPage = WordsPerPage * WidthMultiple;
   parameter int BusWordW        = prim_util_pkg::vbits(BusWordsPerPage);
   parameter int BusAddrW        = BankW + PageW + BusWordW;
+  parameter int BusAddrByteW    = BusAddrW + BusByteWidth;
   parameter int BusBankAddrW    = PageW + BusWordW;
   parameter int PhyAddrStart    = BusWordW - WordW;
+
 
   // fifo parameters
   parameter int FifoDepthW      = prim_util_pkg::vbits(FifoDepth+1);
