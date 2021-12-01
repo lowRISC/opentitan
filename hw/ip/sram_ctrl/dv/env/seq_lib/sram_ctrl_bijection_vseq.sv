@@ -45,7 +45,6 @@ class sram_ctrl_bijection_vseq extends sram_ctrl_smoke_vseq;
       // request new scrambling key on all but the last iteration
       if (i != num_trans - 1) begin
         req_scr_key();
-        csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1'b1));
       end
 
     end

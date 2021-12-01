@@ -89,8 +89,7 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
       if (stress_pipeline) begin
         bit [TL_AW-1:0] stress_addr;
         for (int i = 0; i < num_ops; i++) begin
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(stress_addr,
-              stress_addr inside {[cfg.sram_start_addr : cfg.sram_end_addr]};)
+          `DV_CHECK_STD_RANDOMIZE_FATAL(stress_addr)
           do_stress_ops(stress_addr, $urandom_range(5, 20));
         end
       end else begin

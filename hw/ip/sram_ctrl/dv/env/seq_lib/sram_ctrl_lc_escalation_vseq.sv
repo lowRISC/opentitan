@@ -58,7 +58,6 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
           // randomly enable zero delays in the SRAM TLUL agent
           cfg.zero_delays = $urandom_range(0, 1);
           req_scr_key();
-          csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1));
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_ops)
           do_rand_ops(.num_ops(num_ops), .abort(1));
         end
