@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/crypto/rsa_3072/rsa_3072_modexp.h"
-
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
+#include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_util.h"
+#include "sw/device/silicon_creator/lib/sigverify_mod_exp.h"
+#include "sw/device/silicon_creator/lib/sigverify_rsa_key.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -45,10 +46,9 @@ static const otbn_ptr_t kOtbnVarRsaM0Inv =
  * @param dst Pointer to the destination in OTBN's data memory.
  * @return The result of the operation.
  */
-static otbn_error_t write_rsa_3072_int_to_otbn(otbn_t *otbn,
-                                               const rsa_3072_int_t *src,
-                                               otbn_ptr_t dst) {
-  return otbn_copy_data_to_otbn(otbn, kRsa3072NumWords, src->data, dst);
+static otbn_error_t write_rsa_3072_int_to_otbn(
+    otbn_t *otbn, const sigverify_rsa_buffer_t *src, otbn_ptr_t dst) {
+  return otbn_copy_data_to_otbn(otbn, kSigVerifyRsaNumWords, src->data, dst);
 }
 
 /**
@@ -61,28 +61,23 @@ static otbn_error_t write_rsa_3072_int_to_otbn(otbn_t *otbn,
  */
 static otbn_error_t read_rsa_3072_int_from_otbn(otbn_t *otbn,
                                                 const otbn_ptr_t src,
-                                                rsa_3072_int_t *dst) {
-  return otbn_copy_data_from_otbn(otbn, kRsa3072NumWords, src, dst->data);
+                                                sigverify_rsa_buffer_t *dst) {
+  return otbn_copy_data_from_otbn(otbn, kSigVerifyRsaNumWords, src, dst->data);
 }
 
-otbn_error_t run_otbn_rsa_3072_modexp(const rsa_3072_int_t *signature,
-                                      const rsa_3072_public_key_t *public_key,
-                                      const uint32_t *m0_inv,
-                                      rsa_3072_int_t *recovered_message) {
+otbn_error_t run_otbn_rsa_3072_modexp(
+    const sigverify_rsa_key_t *public_key,
+    const sigverify_rsa_buffer_t *signature,
+    sigverify_rsa_buffer_t *recovered_message) {
   otbn_t otbn;
-
-  // For now, only the F4 modulus is supported.
-  if (public_key->e != 65537) {
-    return kOtbnErrorInvalidArgument;
-  }
 
   // Initialize OTBN and load the RSA app.
   otbn_init(&otbn);
   OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
 
   // Set the exponent (e).
-  OTBN_RETURN_IF_ERROR(
-      otbn_copy_data_to_otbn(&otbn, 1, &public_key->e, kOtbnVarRsaInExp));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, 1, &public_key->exponent,
+                                              kOtbnVarRsaInExp));
 
   // Set the modulus (n).
   OTBN_RETURN_IF_ERROR(
@@ -93,8 +88,8 @@ otbn_error_t run_otbn_rsa_3072_modexp(const rsa_3072_int_t *signature,
       write_rsa_3072_int_to_otbn(&otbn, signature, kOtbnVarRsaInBuf));
 
   // Set the precomputed constant m0_inv.
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kOtbnWideWordNumWords,
-                                              m0_inv, kOtbnVarRsaM0Inv));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+      &otbn, kOtbnWideWordNumWords, public_key->n0_inv, kOtbnVarRsaM0Inv));
 
   // Start the OTBN routine.
   OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
@@ -107,4 +102,18 @@ otbn_error_t run_otbn_rsa_3072_modexp(const rsa_3072_int_t *signature,
       read_rsa_3072_int_from_otbn(&otbn, kOtbnVarRsaOutBuf, recovered_message));
 
   return kOtbnErrorOk;
+}
+
+rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
+                                   const sigverify_rsa_buffer_t *sig,
+                                   sigverify_rsa_buffer_t *result) {
+  // TODO: The OTBN routines should be consistent with ibex exponent support.
+  if (key->exponent != 65537) {
+    return kErrorSigverifyBadExponent;
+  }
+
+  // Run OTBN application, and convert the OTBN error to a ROM error if needed.
+  FOLD_OTBN_ERROR(run_otbn_rsa_3072_modexp(key, sig, result));
+
+  return kErrorOk;
 }
