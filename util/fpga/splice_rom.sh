@@ -97,9 +97,8 @@ TARGET_FILE_EXT=".scr.39.vmem"
 TARGET_EXPORT="${TARGET_PREFIX}_export_fpga_${TARGET_BOARD}"
 TARGET="${BIN_DIR}/${TARGET_PREFIX}_fpga_${TARGET_BOARD}"
 
-FPGA_BUILD_DIR=${OBJ_DIR}/hw/synth-vivado
-FPGA_MMI_PATH=${FPGA_BUILD_DIR}/lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOARD}_0.1.runs/impl_1
-FPGA_BIT_NAME=lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOARD}_0.1
+FPGA_BIN_DIR="${BIN_DIR}/hw/top_${TARGET_TOP}"
+FPGA_BIT_NAME="lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOARD}_0.1"
 
 # Create the Vivado image for splicing.
 hw/ip/rom_ctrl/util/gen_vivado_mem_image.py \
@@ -113,11 +112,11 @@ hw/ip/rom_ctrl/util/gen_vivado_mem_image.py \
 # the implemented design in Vivado and then inspecting the cell properties of
 # the corresponding BRAM cells. This information is very useful when debugging
 # the splicing flow.
-updatemem -force --meminfo "${FPGA_BUILD_DIR}/rom.mmi" \
+updatemem -force --meminfo "${FPGA_BIN_DIR}/rom.mmi" \
   --data "${TARGET}.updatemem.mem" \
-  --bit "${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.bit"  --proc dummy \
-  --out "${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.splice.bit" \
+  --bit "${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit"  --proc dummy \
+  --out "${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.splice.bit" \
   --debug
 
-mv ${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.bit ${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.bit.orig
-mv ${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.splice.bit ${FPGA_BUILD_DIR}/${FPGA_BIT_NAME}.bit
+mv ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit.orig
+mv ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.splice.bit ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit
