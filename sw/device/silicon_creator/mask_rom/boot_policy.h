@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_BOOT_POLICY_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MASK_ROM_BOOT_POLICY_H_
 
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 
@@ -51,10 +52,12 @@ boot_policy_manifests_t boot_policy_manifests_get(void);
  * that its `identifier` is correct, and its `security_version` is greater than
  * or equal to the minimum required security version.
  *
+ * @param lc_state Life cycle state of the device.
  * @param manifest A ROM_EXT manifest.
  * @return Result of the operation.
  */
-rom_error_t boot_policy_manifest_check(const manifest_t *manifest);
+rom_error_t boot_policy_manifest_check(lifecycle_state_t lc_state,
+                                       const manifest_t *manifest);
 
 #ifdef __cplusplus
 }  // extern "C"

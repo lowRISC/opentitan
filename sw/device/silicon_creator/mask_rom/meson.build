@@ -39,6 +39,7 @@ sw_silicon_creator_mask_rom_boot_policy = declare_dependency(
     ],
     dependencies: [
       sw_silicon_creator_lib_manifest,
+      sw_silicon_creator_lib_boot_data,
     ],
   ),
 )
