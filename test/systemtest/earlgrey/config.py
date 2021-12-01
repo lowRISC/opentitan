@@ -71,7 +71,7 @@ TEST_APPS_SELFCHECKING = [
     },
     {
         "name": "pwrmgr_smoketest",
-        "targets": ["sim_verilator"],
+        "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
         "name": "rstmgr_smoketest",
