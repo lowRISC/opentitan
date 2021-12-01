@@ -4,15 +4,17 @@
 
 class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_block));
 
+  import entropy_src_pkg::*;
+
   `uvm_object_utils_begin(entropy_src_env_cfg)
   `uvm_object_utils_end
 
   `uvm_object_new
 
   // Ext component cfgs
-  rand push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))
+  rand push_pull_agent_cfg#(.HostDataWidth(RNG_BUS_WIDTH))
        m_rng_agent_cfg;
-  rand push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
+  rand push_pull_agent_cfg#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))
        m_csrng_agent_cfg;
 
   virtual pins_if#(8)   otp_en_es_fw_read_vif;
@@ -30,6 +32,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   rand prim_mubi_pkg::mubi4_t   enable, route_software, type_bypass,
                                 boot_bypass_disable, entropy_data_reg_enable,
                                 rng_bit_enable;
+
+  // TODO: randomize
+  uint fips_window_size, bypass_window_size, boot_mode_retry_limit;
+  int  seed_cnt;
 
   rand prim_mubi_pkg::mubi8_t   otp_en_es_fw_read, otp_en_es_fw_over;
 
@@ -77,9 +83,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     super.initialize(csr_base_addr);
 
     // create agent config objs
-    m_rng_agent_cfg   = push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))::
+    m_rng_agent_cfg   = push_pull_agent_cfg#(.HostDataWidth(RNG_BUS_WIDTH))::
                         type_id::create("m_rng_agent_cfg");
-    m_csrng_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))::
+    m_csrng_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))::
                         type_id::create("m_csrng_agent_cfg");
 
     // set num_interrupts & num_alerts
