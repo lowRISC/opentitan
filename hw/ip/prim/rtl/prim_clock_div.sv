@@ -77,8 +77,8 @@ module prim_clock_div #(
     logic [CntWidth-1:0] cnt;
     logic [CntWidth-1:0] limit;
 
-    assign limit = !step_down_req       ? ToggleCnt - 1 :
-                   (ToggleCnt / 2) == 2 ? '0 : (ToggleCnt / 2) - 1;
+    assign limit = !step_down_req       ? CntWidth'(ToggleCnt - 1) :
+                   (ToggleCnt / 2) == 2 ? '0 : CntWidth'((ToggleCnt / 2) - 1);
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
