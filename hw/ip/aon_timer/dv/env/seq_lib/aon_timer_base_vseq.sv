@@ -10,9 +10,6 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(aon_timer_base_vseq)
 
-  // various knobs to enable certain routines
-  rand bit do_aon_timer_init;
-
   // If this is set, the AON clock starts first and then the fast clock starts sometime later. If
   // not, they start in parallel. Since the fast clock is *much* quicker, the practical result is
   // that it starts first.
@@ -27,21 +24,61 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   // the design should work either way so we may as well test it.
   rand bit initial_sleep_mode;
 
+  // Randomize Bark/Bite and Wake-up thresholds for the counter
+  rand uint wkup_thold;
+  rand uint wdog_bark_thold;
+  rand uint wdog_bite_thold;
+
+  constraint thold_vals_c {
+    wkup_thold      inside {[1:10]};
+    wdog_bark_thold inside {[1:10]};
+    wdog_bite_thold inside {[1:10]};
+  }
+
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
-    if (do_aon_timer_init) aon_timer_init();
   endtask
 
-  virtual task dut_shutdown();
-    // check for pending aon_timer operations and wait for them to complete
-    // TODO
+  virtual task aon_timer_shutdown();
+    `uvm_info(`gfn, "Shutting down AON Timer...", UVM_LOW)
+
+    `uvm_info(`gfn, "Clearing interrupts, count registers and wakeup request.", UVM_LOW)
+    // Clear wake-up request if we have any
+    csr_utils_pkg::csr_wr(ral.wkup_cause, 1'b0);
+
+    // Clear the interrupts
+    csr_utils_pkg::csr_wr(ral.intr_state, 2'b11);
+
+    // Zero out the COUNT registers
+    csr_utils_pkg::csr_wr(ral.wkup_count, 32'h0000_0000);
+    csr_utils_pkg::csr_wr(ral.wdog_count, 32'h0000_0000);
+
+    `uvm_info(`gfn, "Disabling AON Timer. Writing 0 to WKUP_CTRL and WDOG_CTRL", UVM_LOW)
+    csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b0);
+    csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b0);
   endtask
 
   // setup basic aon_timer features
   virtual task aon_timer_init();
-    `uvm_info(`gfn, "Initializating aon timer, nothing to do at the moment", UVM_MEDIUM)
+
+    `uvm_info(`gfn, "Initializating AON Timer. Writing 0 to WKUP_COUNT and WDOG_COUNT", UVM_LOW)
+    // Register Write
+    csr_utils_pkg::csr_wr(ral.wkup_count, 32'h0000_0000);
+    csr_utils_pkg::csr_wr(ral.wdog_count, 32'h0000_0000);
+
+    `uvm_info(`gfn, "Randomizing AON Timer thresholds", UVM_HIGH)
+
+    csr_utils_pkg::csr_wr(ral.wkup_thold, wkup_thold);
+    csr_utils_pkg::csr_wr(ral.wdog_bark_thold, wdog_bark_thold);
+    csr_utils_pkg::csr_wr(ral.wdog_bite_thold, wdog_bite_thold);
+
+    cfg.lc_escalate_en_vif.drive(0);
+
+    `uvm_info(`gfn, "Enabling AON Timer. Writing 1 to WKUP_CTRL and WDOG_CTRL", UVM_HIGH)
+    csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b1);
+    csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b1);
   endtask
 
   virtual task apply_reset(string kind = "HARD");
@@ -65,5 +102,15 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     cfg.aon_clk_rst_vif.drive_rst_pin(0);
     super.apply_resets_concurrently(cfg.aon_clk_rst_vif.clk_period_ps);
     cfg.aon_clk_rst_vif.drive_rst_pin(1);
+  endtask
+
+  task wait_for_interrupt();
+    if (cfg.aon_clk_rst_vif.rst_n && !cfg.aon_intr_vif.pins) begin
+      @(negedge cfg.aon_clk_rst_vif.rst_n or cfg.aon_intr_vif.pins);
+      // If we are getting an interrupt, let's asssume sleep signal immediately goes low.
+      if (cfg.aon_intr_vif.pins) begin
+        cfg.sleep_vif.drive(0);
+      end
+    end
   endtask
 endclass : aon_timer_base_vseq

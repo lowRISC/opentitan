@@ -10,6 +10,30 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(aon_timer_scoreboard)
 
   // local variables
+  local bit  wkup_en;
+  local bit  wkup_num_update_due;
+  local uint wkup_count;
+  local uint prescaler;
+  local uint wkup_thold;
+
+  local bit  wdog_en;
+  local bit  wdog_num_update_due;
+  local uint wdog_count;
+  local uint bark_thold;
+  local uint bite_thold;
+
+  local uint wkup_num;
+  local uint wdog_bark_num;
+  local uint wdog_bite_num;
+
+  // expected values
+  local bit intr_status_exp [2];
+  local bit wdog_rst_req_exp = 0;
+
+  typedef enum logic {
+    WKUP = 1'b0,
+    WDOG = 1'b1
+  } timers_e;
 
   // TLM agent fifos
 
@@ -28,6 +52,8 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      compute_num_clks();
+      check_interrupt();
     join_none
   endtask
 
@@ -62,17 +88,45 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        // FIXME
         do_read_check = 1'b0;
+        if (data_phase_write) begin
+          uint intr_state_val = item.a_data;
+          if (intr_state_val[WKUP]) intr_status_exp[WKUP] = 1'b0;
+          if (intr_state_val[WDOG]) intr_status_exp[WDOG] = 1'b0;
+        end
       end
-      "intr_enable": begin
-        // FIXME
+      "wkup_ctrl": begin
+        prescaler = get_reg_fld_mirror_value(ral, csr.get_name(), "prescaler");
+        wkup_en   = get_reg_fld_mirror_value(ral, csr.get_name(), "enable");
+      end
+      "wkup_count": begin
+        wkup_count =  csr.get_mirrored_value();
+      end
+      "wkup_thold": begin
+        wkup_thold =  csr.get_mirrored_value();
+        if (data_phase_write) wkup_num_update_due = 1;
+      end
+      "wdog_ctrl": begin
+        wdog_en = get_reg_fld_mirror_value(ral, csr.get_name(), "enable");
+      end
+      "wdog_count": begin
+        wdog_count =  csr.get_mirrored_value();
+      end
+      "wdog_bark_thold": begin
+        bark_thold =  csr.get_mirrored_value();
+        if (data_phase_write) wdog_num_update_due = 1;
+      end
+      "wdog_bite_thold": begin
+        bite_thold =  csr.get_mirrored_value();
+        if (data_phase_write) wdog_num_update_due = 1;
       end
       "intr_test": begin
-        // FIXME
+        uint intr_test_val = item.a_data;
+        if (intr_test_val[WKUP]) intr_status_exp[WKUP] = 1'b1;
+        if (intr_test_val[WDOG]) intr_status_exp[WDOG] = 1'b1;
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+          // No other special behaviour for writes
       end
     endcase
 
@@ -83,6 +137,117 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+    end
+  endtask
+
+  // Task : check_interrupt
+  // wait for expected # of clocks and check for interrupt state reg and pin
+  virtual task check_interrupt();
+    forever begin
+      wait (!under_reset);
+
+      fork : isolation_fork
+        fork
+          wait (under_reset);
+          run_wkup_timer();
+          run_wdog_timer();
+        join_any
+
+        // run_wkup_timer and run_wdog_timer never return so if we've got here then we've gone into
+        // reset. Kill the two timer processes then go around and wait until we come out of reset
+        // again.
+        disable fork;
+      join
+    end
+  endtask : check_interrupt
+
+  virtual task compute_num_clks();
+    forever begin : compute_num_clks
+      // calculate number of clocks required to have interrupt from wkup
+      @(wkup_num_update_due or wdog_num_update_due);
+      wait(!under_reset);
+      if (wkup_num_update_due) begin
+        wkup_num = ((wkup_thold - wkup_count) * (prescaler + 1));
+      end
+      if (wdog_num_update_due) begin
+        // calculate wdog bark and bite
+        wdog_bark_num = bark_thold - wdog_count;
+        wdog_bite_num = bite_thold - wdog_count;
+      end
+      wkup_num_update_due = 0;
+      wdog_num_update_due = 0;
+    end // compute_num_clks
+  endtask
+
+  virtual task run_wkup_timer();
+    forever begin
+      wait (wkup_en);
+      fork
+        begin
+          // trying to count how many cycles we need to count
+          uint count = 0;
+          // We are catching the enable signal too early. It takes one cycle to save to the register
+          // one more cycle to propagate to hw from the read port of it.
+          cfg.aon_clk_rst_vif.wait_clks(2);
+          while (count <= wkup_num) begin
+            @cfg.aon_clk_rst_vif.cb;
+            // reset the cycle counter when we update the cycle count needed
+            count = wkup_num_update_due ? 0 : (count + 1);
+            `uvm_info(`gfn, $sformatf("WKUP Timer count: %d", count), UVM_LOW)
+          end
+          `uvm_info(`gfn, $sformatf("WKUP Timer expired check for interrupts"), UVM_LOW)
+          intr_status_exp[WKUP] = 1'b1;
+          // Propagation delay of one cycle from aon_core to interrupt pin.
+          cfg.aon_clk_rst_vif.wait_clks(1);
+          `DV_CHECK_CASE_EQ(intr_status_exp[WKUP],
+                            cfg.aon_intr_vif.sample_pin(.idx(1)))
+        end
+        begin
+          wait (!wkup_en);
+          `uvm_info(`gfn, $sformatf("WKUP Timer disabled, quit scoring"), UVM_HIGH)
+        end
+      join_any
+      disable fork;
+    end
+  endtask
+
+  virtual task run_wdog_timer();
+    forever begin
+      wait (wdog_en);
+      fork
+        begin
+          // trying to count how many cycles we need to count
+          uint count = 0;
+          // We are catching the enable signal too early. It takes one cycle to save to the register
+          // one more cycle to propagate to hw from the read port of it.
+          cfg.aon_clk_rst_vif.wait_clks(2);
+          while (count <= wdog_bark_num || count <= wdog_bite_num) begin
+            @cfg.aon_clk_rst_vif.cb;
+            // reset the cycle counter when we update the cycle count needed
+            count = wdog_num_update_due ? 0 : (count + 1);
+            `uvm_info(`gfn, $sformatf("WDOG Timer count: %d", count), UVM_LOW)
+          end
+          `uvm_info(`gfn, $sformatf("WDOG Timer expired check for interrupts"), UVM_LOW)
+          if (count > wdog_bark_num) intr_status_exp[WDOG] = 1'b1;
+          if (count > wdog_bite_num) wdog_rst_req_exp = 1'b1;
+          // Propagation delay of one cycle from aon_core to interrupt pins.
+          cfg.aon_clk_rst_vif.wait_clks(1);
+          `DV_CHECK_CASE_EQ(intr_status_exp[WDOG],
+                            cfg.aon_intr_vif.sample_pin(.idx(1)))
+          `DV_CHECK_CASE_EQ(wdog_rst_req_exp,
+                            cfg.aon_intr_vif.sample_pin(.idx(0)))
+          `uvm_info(`gfn,
+                    $sformatf("WDOG INTR Bark: %d, Bite: %d",
+                              intr_status_exp[WDOG],
+                              wdog_rst_req_exp),
+                    UVM_HIGH)
+        end
+        begin
+          wait (!wdog_en);
+          `uvm_info(`gfn, $sformatf("WDOG Timer disabled, quit scoring"), UVM_HIGH)
+        end
+      join_any
+      disable fork;
     end
   endtask
 
