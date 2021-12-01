@@ -7,16 +7,22 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
 
   `uvm_object_new
 
-  task body();
-    // Create and start rng host sequence
-    m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
-         create("m_rng_push_seq");
-    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH;
-    for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
-      rng_val = i % 16;
-      cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
+  int rng_count = 0;
+
+  virtual function queue_of_rng_val_t generate_rng_data(int quad_cnt);
+    queue_of_rng_val_t result;
+
+    for (int i = 0; i < quad_cnt; i++) begin
+      result.push_back(4'(rng_count));
+      rng_count++;
     end
-    m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
+
+    return result;
+  endfunction
+
+  task body();
+
+    init_rng_push_seq;
 
     // Wait for entropy_valid interrupt
     csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
