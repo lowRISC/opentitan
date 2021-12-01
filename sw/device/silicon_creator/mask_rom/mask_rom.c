@@ -13,7 +13,6 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/pinmux.h"
-#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -110,7 +109,7 @@ static rom_error_t mask_rom_init(void) {
  * @return Result of the operation.
  */
 static rom_error_t mask_rom_verify(const manifest_t *manifest) {
-  RETURN_IF_ERROR(boot_policy_manifest_check(manifest));
+  RETURN_IF_ERROR(boot_policy_manifest_check(lc_state, manifest));
 
   const sigverify_rsa_key_t *key;
   RETURN_IF_ERROR(sigverify_rsa_key_get(
