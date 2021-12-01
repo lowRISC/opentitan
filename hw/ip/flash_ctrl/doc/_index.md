@@ -56,7 +56,7 @@ The flash physical controller wraps the actual flash memory and translates both 
 The physical controller supports the following features
 *  Multiple banks of flash memory
 *  For each flash bank, parameterized support for number of flash pages (default to 256)
-*  For each flash page, parameterized support for number of words and word size (default to 128 words of 8-bytes each)
+*  For each flash page, parameterized support for number of words and word size (default to 256 words of 8-bytes each)
 *  Data and informational partitions within each bank of flash memory
 *  Arbitration between host requests and controller requests at the bank level
    *  Host requests are always favored, however the controller priority can escalate if it repeatedly loses arbitration
@@ -108,15 +108,69 @@ Lastly, while the different partitions may be identical in some attributes, they
 
 For default assumptions of the design, see the [default configuration]({{< relref "#flash-default-configuration" >}}).
 
+#### Addresses Map
+
+##### Bank Address
+The flash address map is built upon the bank base address.
+The bank size is based upon the number of pages in the data partition.
+The first bank's address is always `0x0`.
+The second bank's address is `0x0 + size_of_bank_in_bytes`.
+
+For example:
+Assume each bank is 512KB in size.
+The address of bank 0 is `0x0`.
+The address of bank 1 is `0x80000`
+
+##### Page Address
+The address of a particular page is calculated based on the page size and the index number of the page.
+
+For example:
+Assume each page is 2KB in size.
+
+To access page 0 in bank 1, the address would be the base address of bank 1 plus the base address of page 0.
+This would still be `0x80000` in this case.
+
+To access page 4 in bank 1, the address would then be `0x80000 + 2KB * 4 = 0x82000`.
+
+##### Partition Access
+All partitions share the same addressing scheme.
+For example, the page 0 address of any kind of partition is always the same.
+
+To distinguish which partition is accessed, use the configuration in {{< regref "CONTROL.PARTITION_SEL" >}} and {{< regref "CONTROL.INFO_SEL" >}}
+Note however, the system host is only able to access the [data partitions]({{< relref "#host-and-protocol-controller-handling" >}})
+
+##### Default Address Map
+Based on the [default configuration]({{< relref "#flash-default-configuration" >}}), the following would be the default address map for each partition / page.
+
+Location        | Address      |
+----------------|------------- |
+Bank 0 Page 0   | 0x0          |
+Bank 0 Page 1   | 0x800        |
+Bank 0 Page 2   | 0x1000       |
+...             | ...          |
+Bank 0 Page 255 | 0x7F800      |
+Bank 1 Page 0   | 0x80000      |
+Bank 1 Page 1   | 0x80800      |
+Bank 1 Page 2   | 0x81000      |
+...             | ...          |
+Bank 1 Page 255 | 0xFF800      |
+
+Note when accessing from host, the system memory address for flash should be added to this offset.
+
+
 #### Secret Information Partitions
 
-Two information partition pages in the design hold secret seeds for the key manager.
+Two information partition pages (one for creator and one for owner) in the design hold secret seeds for the key manager.
 These pages, when enabled by life cycle and otp, are read upon flash controller initialization (no software configuration is required).
 The read values are then fed to the key manager for later processing.
 There is a page for creator and a page for the owner.
 
+The seed pages can be programmed/erased/read by software when the following are set:
+* `lc_creator_seed_sw_rw_en` - allows software access to creator seed partition.
+* `lc_owner_seed_sw_rw_en` - allows software access to owner seed partition.
+
 The seed pages are read under the following initialization conditions:
-*  life cycle sets provision enable - `lc_seed_hw_rd_en`.
+*  life cycle sets provision enable - `lc_seed_hw_rd_en` is set.
 
 See [life cycle]({{< relref "hw/ip/lc_ctrl/doc/_index.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en" >}}) for more details on when this partition is allowed to be populated.
 
@@ -125,8 +179,11 @@ See [life cycle]({{< relref "hw/ip/lc_ctrl/doc/_index.md#creator_seed_sw_rw_en-a
 One information partition page in the design is used for manufacturing time authentication.
 The accessibility of this page is controlled by life cycle and otp.
 
-During TEST states, the isolated page is only progrmmable.
+During TEST states, the isolated page is only programmable.
+* `lc_iso_part_sw_wr_en` is set, but `lc_iso_part_sw_rd_en` is not.
+
 During production and RMA states, the isolated page is also readable.
+* Both `lc_iso_part_sw_wr_en` and `lc_iso_part_sw_rd_en` are set.
 
 See [life cycle]({{< relref "hw/ip/lc_ctrl/doc/_index.md#iso_part_sw_rd_en-and-iso_part_sw_wr_en" >}}) for more details
 
@@ -241,6 +298,19 @@ The contained vendor wrapper module is then responsible for converting high leve
 The vendor wrapper module is also responsible for any BIST, redundancy handling, remapping features or custom configurations required for the flash.
 
 The scramble keys are provided by an external static block such as the OTP.
+
+### Host and Protocol Controller Handling
+
+Both the protocol controller and the system host converge on the physical controller.
+The protocol controller has read access to all partitions as well as program and erase privileges.
+The host on the other hand, can only read the data partitions.
+
+Even though the host has less access to flash, it is prioritized when competing against the protocol controller for access.
+When a host request and a protocol controller request arrive at the same time, the host is favored and granted.
+Every time the protocol controller looses such an arbitration, it increases an arbitration lost count.
+Once this lost count reaches 5, the protocol controller is favored.
+This ensures a stream of host activity cannot deny protocol controller access (for example a tight polling loop).
+
 
 ### Flash Scrambling
 
@@ -361,15 +431,15 @@ Since the flash controller is highly dependent on the specific flavor of flash m
 
 This sections details the default settings used by the flash controller:
 * Number of banks: 2
-* Number of pages per bank: 256
+* Number of data partition pages per bank: 256
 * [Program resolution](#program-resolution): 8 flash words
 * Flash word data bits: 64
 * Flash word metadata bits: 8
 * ECC choice: Hamming code SECDED
 * Information partition types: 3
-* Size of information partition type 0: 10 pages
-* Size of information partition type 1: 1 page
-* Size of information partition type 2: 2 pages
+* Number of information partition type 0 pages per bank: 10
+* Number of information partition type 1 pages per bank: 1
+* Number of information partition type 2 pages per bank: 2
 * Secret partition 0 (used for creator): Bank 0, information partition 0, page 1
 * Secret partition 1 (used for owner): Bank 0, information partition 0, page 2
 * Isolated partition: Bank 0, information partition 0, page 3
