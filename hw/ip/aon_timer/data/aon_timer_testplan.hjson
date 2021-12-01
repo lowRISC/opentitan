@@ -12,22 +12,60 @@
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the aon_timer.
+            Smoke test initializes and starts AON Timer according to
+            the programmers guide.
 
             **Stimulus**:
-            - TBD
+            - Register writes to Watchdog/Wakeup COUNT, CTRL and THOLD registers
 
             **Checks**:
-            - TBD
+            - If we are changing WDOG_BARK_THOLD to be lower than the current WDOG_COUNT
+            watchdog timer should raise the interrupt `wdog_timer_bark`.
+            - If we are changing WDOG_BITE_THOLD to be lower than the current WDOG_COUNT
+            watchdog timer should trigger a reset request.
+            - If we are changing WKUP_THOLD to be lower than the current WKUP_COUNT
+            wakeup timer should raise the interrupt `wkup_timer_expired`.
             '''
       milestone: V1
       tests: ["aon_timer_smoke"]
     }
     {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
+      name: wdog_lock
+      desc: '''
+            Change threshold value and set counter value randomly while running with the
+            configuration lock for watchdog timer enabled
+
+            **Stimulus**:
+            - Register writes to WDOG_CTRL, WDOG_REGWEN, WDOG_BARK_THOLD, WDOG_BITE_THOLD
+
+            **Checks**:
+            - There should be no change in the behaviour of AON Timer since configurations
+            are locked.
+            '''
       milestone: V1
-      tests: []
+      tests: ["aon_timer_lock"]
+    }
+    {
+      name: stress
+      desc: '''
+            Change threshold values and prescaler value on random times without locking
+            configuration registers of watchdog timer.
+
+            **Stimulus**:
+            - Register writes to WDOG_BARK_THOLD, WDOG_BITE_THOLD, WKUP_THOLD, WKUP_CTRL
+
+            **Checks**:
+            - If we are changing WDOG_BARK_THOLD to be lower than the current WDOG_COUNT
+            watchdog timer should raise the interrupt `wdog_timer_bark`.
+            - If we are changing WDOG_BITE_THOLD to be lower than the current WDOG_COUNT
+            watchdog timer should trigger a reset request.
+            - If we are changing WKUP_THOLD to be lower than the current WKUP_COUNT
+            wakeup timer should raise the interrupt `wkup_timer_expired`.
+            - WKUP_COUNT should reflect expected passing of real time regardless of
+            prescaler value.
+            '''
+      milestone: V2
+      tests: ["aon_timer_stress"]
     }
   ]
 }
