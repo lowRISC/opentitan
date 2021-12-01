@@ -58,6 +58,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (do_otp_ctrl_init && do_apply_reset) otp_ctrl_init();
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
     if (do_otp_pwr_init && do_apply_reset) otp_pwr_init();
+    callback_vseq.post_otp_pwr_init();
   endtask
 
   // Cfg errors are cleared after reset
