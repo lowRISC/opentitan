@@ -28,9 +28,9 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
     csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
 
     // Read and check entropy
-    for (int i = 0; i < entropy_src_pkg::CSRNG_BUS_WIDTH/TL_DW/2; i++) begin
-      csr_rd_check(.ptr(ral.entropy_data), .compare_value(INCR_ENTROPY_LO));
-      csr_rd_check(.ptr(ral.entropy_data), .compare_value(INCR_ENTROPY_HI));
+    for (int i = 0; i < entropy_src_pkg::CSRNG_BUS_WIDTH/TL_DW; i++) begin
+      bit [TL_DW-1:0] entropy_tlul;
+      csr_rd(.ptr(ral.entropy_data), .value(entropy_tlul));
     end
 
     // Ensure entropy_valid interrupt bit set
