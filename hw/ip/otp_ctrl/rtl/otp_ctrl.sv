@@ -828,7 +828,7 @@ module otp_ctrl
   logic scrmbl_arb_req_ready, scrmbl_arb_rsp_valid;
   logic [NumAgents-1:0] part_scrmbl_req_ready, part_scrmbl_rsp_valid;
 
-  otp_ctrl_scrmbl u_scrmbl (
+  otp_ctrl_scrmbl u_otp_ctrl_scrmbl (
     .clk_i,
     .rst_ni,
     .cmd_i         ( scrmbl_req_bundle.cmd       ),
@@ -1070,6 +1070,9 @@ module otp_ctrl
                                          integ_chk_req[k],
                                          cnsty_chk_req[k]};
 
+      // Alert assertion for sparse FSM.
+      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartBufFsmCheck_A,
+          u_part_unbuf.u_state_regs, alert_tx_o[1])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
       otp_ctrl_part_buf #(
@@ -1120,6 +1123,11 @@ module otp_ctrl
       assign part_tlul_rerror[k] = '0;
       assign part_tlul_rvalid[k] = 1'b0;
       assign part_tlul_rdata[k]  = '0;
+
+      // Alert assertion for sparse FSM.
+      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartBufFsmCheck_A,
+          u_part_buf.u_state_regs, alert_tx_o[1])
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
@@ -1182,10 +1190,15 @@ module otp_ctrl
       assign unused_part_scrmbl_sigs = ^{part_scrmbl_mtx_gnt[k],
                                          part_scrmbl_req_ready[k],
                                          part_scrmbl_rsp_valid[k]};
+      // Alert assertion for sparse FSM.
+      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartLcFsmCheck_A,
+          u_part_buf.u_state_regs, alert_tx_o[1])
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     end else begin : gen_invalid
       // This is invalid and should break elaboration
       assert_static_in_generate_invalid assert_static_in_generate_invalid();
     end
+    ////////////////////////////////////////////////////////////////////////////////////////////////
   end
 
   //////////////////////////////////
@@ -1307,5 +1320,17 @@ module otp_ctrl
   `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
   `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)
   `ASSERT_KNOWN(OtpHwCfgKnown_A,             otp_hw_cfg_o)
+
+  // Alert assertions for sparse FSMs.
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDaiFsmCheck_A,
+      u_otp_ctrl_dai.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKdiFsmCheck_A,
+      u_otp_ctrl_kdi.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLciFsmCheck_A,
+      u_otp_ctrl_lci.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLfsrTimerFsmCheck_A,
+      u_otp_ctrl_lfsr_timer.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlScrambleFsmCheck_A,
+      u_otp_ctrl_scrmbl.u_state_regs, alert_tx_o[1])
 
 endmodule : otp_ctrl

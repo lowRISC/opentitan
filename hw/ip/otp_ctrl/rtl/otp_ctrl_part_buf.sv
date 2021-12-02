@@ -103,44 +103,49 @@ module otp_ctrl_part_buf
   // OTP Partition FSM //
   ///////////////////////
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 16 -n 12 -s 3370657881
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 16 -n 12 \
+  //      -s 3370657881 --language=sv
+  //
   // Hamming distance histogram:
   //
-  // 0:  --
-  // 1:  --
-  // 2:  --
-  // 3:  --
-  // 4:  --
-  // 5:  |||||||||||||||||| (30.00%)
-  // 6:  |||||||||||||||||||| (32.50%)
-  // 7:  ||||||||||| (19.17%)
-  // 8:  ||||||| (11.67%)
-  // 9:  || (4.17%)
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||| (28.33%)
+  //  6: |||||||||||||||||||| (38.33%)
+  //  7: |||||||||| (19.17%)
+  //  8: ||| (5.83%)
+  //  9: || (4.17%)
   // 10: | (2.50%)
-  // 11: --
-  // 12: --
+  // 11:  (0.83%)
+  // 12:  (0.83%)
   //
   // Minimum Hamming distance: 5
-  // Maximum Hamming distance: 10
+  // Maximum Hamming distance: 12
+  // Minimum Hamming weight: 4
+  // Maximum Hamming weight: 8
   //
   localparam int StateWidth = 12;
   typedef enum logic [StateWidth-1:0] {
-    ResetSt         = 12'b001001101010,
+    ResetSt         = 12'b011000001110,
     InitSt          = 12'b110100100111,
     InitWaitSt      = 12'b001110110001,
     InitDescrSt     = 12'b110010000100,
-    InitDescrWaitSt = 12'b101000011100,
-    IdleSt          = 12'b100110101000,
-    IntegScrSt      = 12'b010101001101,
-    IntegScrWaitSt  = 12'b110101011010,
-    IntegDigClrSt   = 12'b011000011011,
-    IntegDigSt      = 12'b101001000001,
-    IntegDigPadSt   = 12'b101111010111,
+    InitDescrWaitSt = 12'b100110101000,
+    IdleSt          = 12'b010101001101,
+    IntegScrSt      = 12'b110101011010,
+    IntegScrWaitSt  = 12'b100010011111,
+    IntegDigClrSt   = 12'b101001000001,
+    IntegDigSt      = 12'b011101100010,
+    IntegDigPadSt   = 12'b001101010111,
     IntegDigFinSt   = 12'b011011100101,
     IntegDigWaitSt  = 12'b100011110010,
-    CnstyReadSt     = 12'b111111101110,
-    CnstyReadWaitSt = 12'b001100000110,
-    ErrorSt         = 12'b000011011001
+    CnstyReadSt     = 12'b000001101011,
+    CnstyReadWaitSt = 12'b101001111100,
+    ErrorSt         = 12'b010110111110
   } state_e;
 
   typedef enum logic {
@@ -667,14 +672,15 @@ module otp_ctrl_part_buf
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = state_e'(state_raw_q);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(ResetSt))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d     ),
-    .q_o ( state_raw_q )
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs

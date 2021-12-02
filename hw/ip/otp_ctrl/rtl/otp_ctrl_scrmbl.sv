@@ -202,30 +202,35 @@ module otp_ctrl_scrmbl
   // FSM //
   /////////
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 5 -n 9 -s 2193087944
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 9 \
+  //      -s 2193087944 --language=sv
+  //
   // Hamming distance histogram:
   //
-  // 0: --
-  // 1: --
-  // 2: --
-  // 3: --
-  // 4: --
-  // 5: |||||||||||||||||||| (60.00%)
-  // 6: ||||||||||||| (40.00%)
-  // 7: --
-  // 8: --
-  // 9: --
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (60.00%)
+  //  6: ||||||||||||| (40.00%)
+  //  7: --
+  //  8: --
+  //  9: --
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 4
+  // Maximum Hamming weight: 7
   //
   localparam int StateWidth = 9;
   typedef enum logic [StateWidth-1:0] {
-    IdleSt    = 9'b100010111,
-    DecryptSt = 9'b001010000,
-    EncryptSt = 9'b011001011,
-    DigestSt  = 9'b100101000,
-    ErrorSt   = 9'b010111101
+    IdleSt    = 9'b100011001,
+    DecryptSt = 9'b101101111,
+    EncryptSt = 9'b010010111,
+    DigestSt  = 9'b111000010,
+    ErrorSt   = 9'b011111000
   } state_e;
 
   localparam int CntWidth = $clog2(NumPresentRounds+1);
@@ -419,14 +424,15 @@ module otp_ctrl_scrmbl
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = state_e'(state_raw_q);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(IdleSt))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d     ),
-    .q_o ( state_raw_q )
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs

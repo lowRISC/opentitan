@@ -248,7 +248,7 @@ module otp_ctrl_kdi
   /////////////////
 
   // Encoding generated with:
-  // $ ./sparse-fsm-encode.py -d 5 -m 11 -n 10 \
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 11 -n 10 \
   //      -s 2544133835 --language=sv
   //
   // Hamming distance histogram:
@@ -267,20 +267,22 @@ module otp_ctrl_kdi
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 9
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    ResetSt        = 10'b0111100000,
-    IdleSt         = 10'b0001111101,
-    DigClrSt       = 10'b1101101011,
-    DigLoadSt      = 10'b0100011010,
-    FetchEntropySt = 10'b0010001001,
-    DigEntropySt   = 10'b0110110111,
-    DigFinSt       = 10'b0001000110,
-    DigWaitSt      = 10'b1100000101,
-    FetchNonceSt   = 10'b1010101110,
-    FinishSt       = 10'b1111011100,
-    ErrorSt        = 10'b1011010011
+    ResetSt        = 10'b0101100001,
+    IdleSt         = 10'b0001011011,
+    DigClrSt       = 10'b1101010110,
+    DigLoadSt      = 10'b0010110111,
+    FetchEntropySt = 10'b1000001101,
+    DigEntropySt   = 10'b0100111100,
+    DigFinSt       = 10'b1000100010,
+    DigWaitSt      = 10'b1110010001,
+    FetchNonceSt   = 10'b0011000100,
+    FinishSt       = 10'b1011111000,
+    ErrorSt        = 10'b1111101111
   } state_e;
 
   state_e state_d, state_q;
@@ -505,14 +507,15 @@ module otp_ctrl_kdi
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = state_e'(state_raw_q);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(ResetSt))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d     ),
-    .q_o ( state_raw_q )
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
