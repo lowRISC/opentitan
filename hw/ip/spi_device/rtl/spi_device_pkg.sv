@@ -441,6 +441,7 @@ package spi_device_pkg;
 
   // spi device scanmode usage
   typedef enum logic [3:0] {
+    ClkCgSel,
     ClkInvSel,
     CsbRstMuxSel,
     TxRstMuxSel,

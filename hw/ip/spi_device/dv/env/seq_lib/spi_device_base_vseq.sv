@@ -132,6 +132,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.m_spi_agent_cfg.csb_sel = 0;
     // update device rtl
     ral.control.mode.set(spi_mode);
+    ral.control.spi_clk_en.set(1);
     csr_update(.csr(ral.control));
     ral.cfg.cpol.set(sck_polarity);
     ral.cfg.cpha.set(sck_phase);

@@ -158,6 +158,9 @@ package spi_device_reg_pkg;
     } rst_rxfifo;
     struct packed {
       logic        q;
+    } spi_clk_en;
+    struct packed {
+      logic        q;
     } sram_clk_en;
   } spi_device_reg2hw_control_reg_t;
 
@@ -599,11 +602,11 @@ package spi_device_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [1591:1581]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1580:1570]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [1569:1548]
-    spi_device_reg2hw_alert_test_reg_t alert_test; // [1547:1546]
-    spi_device_reg2hw_control_reg_t control; // [1545:1540]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [1592:1582]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1581:1571]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [1570:1549]
+    spi_device_reg2hw_alert_test_reg_t alert_test; // [1548:1547]
+    spi_device_reg2hw_control_reg_t control; // [1546:1540]
     spi_device_reg2hw_cfg_reg_t cfg; // [1539:1526]
     spi_device_reg2hw_fifo_level_reg_t fifo_level; // [1525:1494]
     spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [1493:1478]

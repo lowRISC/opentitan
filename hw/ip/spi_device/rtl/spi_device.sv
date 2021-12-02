@@ -715,6 +715,14 @@ module spi_device
   //  clk_spi cannot use glitch-free clock mux as clock switching in glitch-free
   //  requires two clocks to propagate clock selection and enable but SPI clock
   //  doesn't exist until it transmits data through SDI
+
+  // SCK (cio_sck_i) is gated to be used inside the SPI_DEVICE logic.
+  // passthrough uses cio_sck_i directly.
+  // The reason is to safely release the system reset (rst_ni).
+  // gated sck can be released only when SPI transaction is not active.
+  // it means CSb = 1
+  logic clk_spi_in_gated;
+  logic sck_gate_en, sck_gate_en_q, sck_gate_en_set, csr_sck_en;
   logic sck_n;
   logic rst_spi_n;
   prim_mubi_pkg::mubi4_t [ScanModeUseLast-1:0] scanmode;
@@ -729,20 +737,31 @@ module spi_device
     .mubi_o(scanmode)
   );
 
+  // SCK gate enable
+  // if CSR sck_en is off, it shuts off SCK right away.
+  // TODO: Should we 2flop sync cio_csb_i ??
+  assign sck_gate_en     = sck_gate_en_q & csr_sck_en ;
+  assign sck_gate_en_set = cio_csb_i & csr_sck_en ;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)              sck_gate_en_q <= 1'b 0;
+    else if (sck_gate_en_set) sck_gate_en_q <= 1'b 1;
+  end
+  assign csr_sck_en = reg2hw.control.spi_clk_en.q;
+
   prim_clock_inv u_clk_spi (
-    .clk_i(cio_sck_i),
+    .clk_i(sck_gated),
     .clk_no(sck_n),
     .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkInvSel]))
   );
 
   assign sck_monitor_o = cio_sck_i;
-  assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : cio_sck_i   ;
-  assign clk_spi_out = (cpha ^ cpol) ? cio_sck_i    : sck_n   ;
+  assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : sck_gated   ;
+  assign clk_spi_out = (cpha ^ cpol) ? sck_gated    : sck_n   ;
 
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_clk_spi_in_mux (
-    .clk0_i(clk_spi_in),
+    .clk0_i(clk_spi_in_gated),
     .clk1_i(scan_clk_i),
     .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkMuxSel])),
     .clk_o(clk_spi_in_muxed)
@@ -751,6 +770,15 @@ module spi_device
   prim_clock_buf u_clk_spi_in_buf(
     .clk_i (clk_spi_in_muxed),
     .clk_o (clk_spi_in_buf)
+  );
+  // Gated SCK
+  prim_clock_gating #(
+    .FpgaBufGlobal(1'b0)
+  ) u_clk_spi_in_cg (
+    .clk_i  (clk_spi_in),
+    .en_i   (sck_gate_en),
+    .test_en_i ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkCgSel]) | mbist_en_i)),
+    .clk_o  (clk_spi_in_gated)
   );
 
   prim_clock_mux2 #(

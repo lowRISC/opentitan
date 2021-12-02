@@ -183,6 +183,22 @@
             '''
           resval: "0",
         },
+        { bits:     "30"
+          name:     "spi_clk_en"
+          swaccess: "rw"
+          hwaccess: "hro"
+          desc: '''SCK Clock Enable for internal logic.
+
+            SCK clock by default does not propagate into SPI_DEVICE internal
+            module. It is to guarantee the system reset does not collide with
+            the edge of SCK. Some of the logic inside SPI_DEVICE flash,
+            passthrough modes use the system reset along with SPI SCK.
+
+            This sck enable bit affects the CG when the SPI transaction is
+            idle. In other words, it affects when CSb is 1.
+            '''
+          resval: "0"
+        }
         { bits: "31"
           name: "sram_clk_en",
           desc: '''SRAM Clock Enable.
