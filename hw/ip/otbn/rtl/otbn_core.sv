@@ -37,6 +37,7 @@ module otbn_core
 
   output err_bits_t err_bits_o, // valid when done_o is asserted
   output logic  recoverable_err_o,
+  output logic  reg_intg_violation_o,
 
   // Instruction memory (IMEM)
   output logic                     imem_req_o,
@@ -318,6 +319,7 @@ module otbn_core
 
     .err_bits_o,
     .recoverable_err_o,
+    .reg_intg_violation_o,
 
     // Next instruction selection (to instruction fetch)
     .insn_fetch_req_addr_o   (insn_fetch_req_addr),

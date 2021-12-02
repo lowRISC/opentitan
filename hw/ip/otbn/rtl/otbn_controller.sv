@@ -28,6 +28,7 @@ module otbn_controller
 
   output err_bits_t err_bits_o, // valid when done_o is asserted
   output logic      recoverable_err_o,
+  output logic      reg_intg_violation_o,
 
   // Next instruction selection (to instruction fetch)
   output logic                     insn_fetch_req_valid_o,
@@ -461,6 +462,8 @@ module otbn_controller
                        err_bits.imem_intg_violation};
 
   assign recoverable_err = software_err & ~software_errs_fatal_i;
+
+  assign reg_intg_violation_o = err_bits.reg_intg_violation;
 
   if (SecWipeEn) begin: gen_sec_wipe
     err_bits_t err_bits_d, err_bits_q;

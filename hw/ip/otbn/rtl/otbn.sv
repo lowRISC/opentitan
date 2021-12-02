@@ -97,6 +97,7 @@ module otbn
 
   err_bits_t err_bits;
   logic recoverable_err;
+  logic reg_intg_violation;
 
   logic software_errs_fatal_q, software_errs_fatal_d;
 
@@ -647,9 +648,8 @@ module otbn
   assign hw2reg.fatal_alert_cause.imem_intg_violation.d  = insn_fetch_err;
   assign hw2reg.fatal_alert_cause.dmem_intg_violation.de = dmem_rerror;
   assign hw2reg.fatal_alert_cause.dmem_intg_violation.d  = dmem_rerror;
-  // TODO: Register file errors
-  assign hw2reg.fatal_alert_cause.reg_intg_violation.de = 0;
-  assign hw2reg.fatal_alert_cause.reg_intg_violation.d  = 0;
+  assign hw2reg.fatal_alert_cause.reg_intg_violation.de = reg_intg_violation;
+  assign hw2reg.fatal_alert_cause.reg_intg_violation.d  = reg_intg_violation;
   assign hw2reg.fatal_alert_cause.bus_intg_violation.de = bus_intg_violation;
   assign hw2reg.fatal_alert_cause.bus_intg_violation.d  = bus_intg_violation;
   assign hw2reg.fatal_alert_cause.bad_internal_state.de = 0;
@@ -858,6 +858,7 @@ module otbn
 
       .err_bits_o                  (err_bits_rtl),
       .recoverable_err_o           (recoverable_err_rtl),
+      .reg_intg_violation_o        (reg_intg_violation),
 
       .imem_req_o                  (imem_req_core),
       .imem_addr_o                 (imem_addr_core),
@@ -911,6 +912,7 @@ module otbn
 
       .err_bits_o                  (err_bits),
       .recoverable_err_o           (recoverable_err),
+      .reg_intg_violation_o        (reg_intg_violation),
 
       .imem_req_o                  (imem_req_core),
       .imem_addr_o                 (imem_addr_core),
