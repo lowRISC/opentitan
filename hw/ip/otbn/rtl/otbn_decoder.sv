@@ -42,10 +42,6 @@ module otbn_decoder
   insn_opcode_e     opcode;
   insn_opcode_e     opcode_alu;
 
-  // To help timing the flops containing the current instruction are replicated to reduce fan-out.
-  // insn_alu is used to determine the ALU control logic and associated operand/imm select signals
-  // as the ALU is often on the more critical timing paths. insn is used for everything else.
-  // TODO: Actually replicate flops, if needed.
   assign insn     = insn_fetch_resp_data_i;
   assign insn_alu = insn_fetch_resp_data_i;
 

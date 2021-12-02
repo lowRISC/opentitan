@@ -73,6 +73,7 @@ module otbn_top_sim (
 
     .err_bits_o                  ( otbn_err_bits       ),
     .recoverable_err_o           (                     ),
+    .reg_intg_violation_o        (                     ),
 
     .imem_req_o                  ( imem_req            ),
     .imem_addr_o                 ( imem_addr           ),

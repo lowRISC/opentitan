@@ -246,8 +246,6 @@ module otbn_controller
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
-  // TODO: Possibility of error response on store? Probably still don't need to stall in that case
-  // just ensure incoming store error stops anything else happening.
   assign mem_stall = lsu_load_req_raw;
 
   // Reads to RND must stall until data is available
@@ -303,7 +301,6 @@ module otbn_controller
     prefetch_en_o            = 1'b0;
 
     // TODO: Harden state machine
-    // TODO: Jumps/branches
     unique case (state_q)
       OtbnStateHalt: begin
         if (start_i) begin
