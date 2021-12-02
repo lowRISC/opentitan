@@ -96,6 +96,7 @@ module otbn
   logic illegal_bus_access_d, illegal_bus_access_q;
 
   err_bits_t err_bits;
+  logic recoverable_err;
 
   logic software_errs_fatal_q, software_errs_fatal_d;
 
@@ -682,7 +683,7 @@ module otbn
                               lifecycle_escalation |
                               err_bits.fatal_software;
 
-  assign alerts[AlertRecov] = 1'b0; // TODO: Implement
+  assign alerts[AlertRecov] = recoverable_err & done;
 
   for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
     prim_alert_sender #(
@@ -770,6 +771,7 @@ module otbn
     logic         locked_model, locked_rtl;
     logic         start_model, start_rtl;
     err_bits_t    err_bits_model, err_bits_rtl;
+    logic         recoverable_err_model, recoverable_err_rtl;
     logic [31:0]  insn_cnt_model, insn_cnt_rtl;
     logic         edn_rnd_req_model, edn_rnd_req_rtl;
     logic         edn_urnd_req_model, edn_urnd_req_rtl;
@@ -786,6 +788,7 @@ module otbn
     assign done = otbn_use_model ? done_rr_model : done_rtl;
     assign locked = otbn_use_model ? locked_model : locked_rtl;
     assign err_bits = otbn_use_model ? err_bits_model : err_bits_rtl;
+    assign recoverable_err = otbn_use_model ? recoverable_err_model : recoverable_err_rtl;
     assign insn_cnt = otbn_use_model ? insn_cnt_model : insn_cnt_rtl;
     assign start_model = start_q & otbn_use_model;
     assign start_rtl = start_q & ~otbn_use_model;
@@ -830,6 +833,14 @@ module otbn
       .err_o ()
     );
 
+    assign recoverable_err_model = |{err_bits_model.key_invalid,
+                                     err_bits_model.loop,
+                                     err_bits_model.illegal_insn,
+                                     err_bits_model.call_stack,
+                                     err_bits_model.bad_insn_addr,
+                                     err_bits_model.bad_data_addr} &
+                                    ~software_errs_fatal_q;
+
     assign locked_model = 1'b0;
 
     // RTL implementation
@@ -847,6 +858,7 @@ module otbn
       .locked_o                    (locked_rtl),
 
       .err_bits_o                  (err_bits_rtl),
+      .recoverable_err_o           (recoverable_err_rtl),
 
       .imem_req_o                  (imem_req_core),
       .imem_addr_o                 (imem_addr_core),
@@ -899,6 +911,7 @@ module otbn
       .locked_o                    (locked),
 
       .err_bits_o                  (err_bits),
+      .recoverable_err_o           (recoverable_err),
 
       .imem_req_o                  (imem_req_core),
       .imem_addr_o                 (imem_addr_core),

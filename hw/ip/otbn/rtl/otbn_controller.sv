@@ -27,6 +27,7 @@ module otbn_controller
   output logic  locked_o, // OTBN in locked state and must be reset to perform any further actions
 
   output err_bits_t err_bits_o, // valid when done_o is asserted
+  output logic      recoverable_err_o,
 
   // Next instruction selection (to instruction fetch)
   output logic                     insn_fetch_req_valid_o,
@@ -151,6 +152,7 @@ module otbn_controller
   logic software_err;
   logic non_insn_addr_software_err;
   logic fatal_err;
+  logic recoverable_err;
   logic done_complete;
   logic executing;
 
@@ -461,13 +463,16 @@ module otbn_controller
                        err_bits.dmem_intg_violation,
                        err_bits.imem_intg_violation};
 
-
+  assign recoverable_err = software_err & ~software_errs_fatal_i;
 
   if (SecWipeEn) begin: gen_sec_wipe
     err_bits_t err_bits_d, err_bits_q;
+    logic      recoverable_err_d, recoverable_err_q;
 
     assign err_bits_d = err_bits;
     assign err_bits_o = err_bits_q;
+    assign recoverable_err_d = recoverable_err;
+    assign recoverable_err_o = recoverable_err_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
@@ -483,8 +488,10 @@ module otbn_controller
         err_bits_q.loop   <= 1'b0;
         err_bits_q.call_stack <= 1'b0;
         err_bits_q.bad_insn_addr <= 1'b0;
+        recoverable_err_q <= 1'b0;
       end else if (err_bits_en) begin
         err_bits_q <= err_bits_d;
+        recoverable_err_q <= recoverable_err_d;
       end
     end
 
@@ -494,6 +501,7 @@ module otbn_controller
 
     assign unused_err_bits_en = err_bits_en;
     assign err_bits_o = err_bits;
+    assign recoverable_err_o = recoverable_err;
   end
 
   assign err = software_err | fatal_err;

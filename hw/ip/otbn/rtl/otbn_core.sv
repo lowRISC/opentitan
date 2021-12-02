@@ -36,6 +36,7 @@ module otbn_core
   output logic  locked_o, // otbn locked, reset required to perform further commands
 
   output err_bits_t err_bits_o, // valid when done_o is asserted
+  output logic  recoverable_err_o,
 
   // Instruction memory (IMEM)
   output logic                     imem_req_o,
@@ -316,6 +317,7 @@ module otbn_core
     .locked_o,
 
     .err_bits_o,
+    .recoverable_err_o,
 
     // Next instruction selection (to instruction fetch)
     .insn_fetch_req_addr_o   (insn_fetch_req_addr),
