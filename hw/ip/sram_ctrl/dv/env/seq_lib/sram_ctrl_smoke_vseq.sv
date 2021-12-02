@@ -61,26 +61,39 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_ops)
 
-      // Request a new scrambling key and do init
-      if ($urandom_range(0, 1)) req_mem_init();
-
-      fork
-        begin
-          // wait for a valid KDI transaction to be completed
-          //
-          // STATUS.scr_key_seed_valid return value will be checked by scoreboard
-          csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1'b1));
-        end
-        begin
-          if (access_during_key_req) begin
+      if (access_during_key_req) begin
+        // request new key or issue mem init, in the meanwhile, do some random SRAM operations
+        fork
+          begin
+            // during key or init req, sram access shouldn't be taken
+            randcase
+              1: begin
+                // If we only do scrambling without re-init the mem, data intg will be wrong
+                cfg.scb.en_d_user_intg_chk = 0;
+                req_scr_key();
+              end
+              1: begin
+                req_mem_init();
+              end
+            endcase
+          end
+          begin
+            // add 2 cycles to avoid issuing key_scr/init and mem access happen at the same time,
+            // as it's hard to handle this case in scb
+            // Also need to enable zero_delays, otherwise, the CSR programming may take random
+            // cycles to finish
+            cfg.clk_rst_vif.wait_clks(2);
             `uvm_info(`gfn, "accessing during key req", UVM_HIGH)
             do_rand_ops(.num_ops($urandom_range(100, 500)),
                         .abort(1),
                         .en_ifetch(en_ifetch));
             csr_utils_pkg::wait_no_outstanding_access();
           end
-        end
-      join
+        join
+      end else if ($urandom_range(0, 1)) begin
+        req_mem_init();
+      end
+
 
       // Do some random memory accesses
       `uvm_info(`gfn,

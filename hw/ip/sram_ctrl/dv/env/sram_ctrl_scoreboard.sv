@@ -101,11 +101,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   bit in_raw_hazard = 0;
 
-  // initialize mem to remove all the previous written data
-  function void init_mem();
-    exp_mem[cfg.sram_ral_name].init();
-  endfunction
-
   // utility function to word-align an input TL address
   // (SRAM is indexed at word granularity)
   function bit [TL_AW-1:0] word_align_addr(bit [TL_AW-1:0] addr);
@@ -396,9 +391,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
         if (!cfg.en_scb) continue;
 
-        if (in_key_req) begin
-          `uvm_error(`gfn, "Received SRAM_TLUL transaction while requesting a new key")
-        end
+        `DV_CHECK_EQ(in_key_req, 0, "No item is accepted during key req")
+        `DV_CHECK_EQ(in_init, 0, "No item is accepted during init")
 
         // If the escalation propagation has finished,
         // do not process anymore addr_phase transactions
@@ -487,10 +481,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
       addr_trans_available = (addr_phase_mbox.try_get(addr_trans) > 0);
 
-      if (in_key_req) begin
-        `DV_CHECK_EQ(addr_trans_available, 1,
-            "SRAM returned TLUL response during active key request")
-      end
+      `DV_CHECK_EQ(in_key_req, 0, "No item is accepted during key req")
+      `DV_CHECK_EQ(in_init, 0, "No item is accepted during init")
 
       // See the explanation in `process_lc_escalation()` as to why we use `handling_lc_esc`.
       //
@@ -801,6 +793,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
             in_init = 1;
             `uvm_info(`gfn, "raised in_init", UVM_HIGH)
           end
+          if (in_key_req || in_init) exp_mem[cfg.sram_ral_name].init();
         end else if (addr_phase_read) begin
           // CTRL.renew_scr_key always reads as 0
           void'(ral.ctrl.renew_scr_key.predict(.value(0), .kind(UVM_PREDICT_READ)));

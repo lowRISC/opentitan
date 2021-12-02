@@ -102,6 +102,8 @@
     {
       name: "{variant}_access_during_key_req"
       uvm_test_seq: sram_ctrl_access_during_key_req_vseq
+      // Need to make sure no sram access when we just request new key or init, so use zero_delays
+      run_opts: ["+zero_delays=1"]
     }
     {
       name: "{variant}_executable"
