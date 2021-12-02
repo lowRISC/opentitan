@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
-load("//rules:quality.bzl", "clang_format_check", "license_check")
+load("//rules:quality.bzl", "clang_format_check", "html_coverage_report", "license_check")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -53,6 +53,10 @@ clang_format_check(
         "./build/**",
     ],
     mode = "fix",
+)
+
+html_coverage_report(
+    name = "html_coverage_report",
 )
 
 filegroup(

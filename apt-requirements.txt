@@ -24,6 +24,7 @@ flex
 g++
 git
 golang
+lcov
 libelf1
 libelf-dev
 libftdi1-2

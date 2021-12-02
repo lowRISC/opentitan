@@ -16,3 +16,7 @@ build --incompatible_enable_cc_toolchain_resolution
 # This lets us generate key/value pairs for the workspace which can be
 # accessed like we do in util/BUILD
 build --workspace_status_command=util/get_workspace_status.sh
+
+# Generate coverage in lcov format, which can be post-processed by lcov
+# into html-formatted reports.
+coverage --combined_report=lcov --instrument_test_targets --experimental_cc_coverage

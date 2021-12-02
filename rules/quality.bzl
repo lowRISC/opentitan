@@ -111,3 +111,29 @@ clang_format_check = rule(
     },
     executable = True,
 )
+
+def _html_coverage_report_impl(ctx):
+    out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
+    substitutions = {}
+    ctx.actions.expand_template(
+        template = ctx.file._runner,
+        output = out_file,
+        substitutions = substitutions,
+        is_executable = True,
+    )
+
+    return DefaultInfo(
+        files = depset([out_file]),
+        executable = out_file,
+    )
+
+html_coverage_report = rule(
+    implementation = _html_coverage_report_impl,
+    attrs = {
+        "_runner": attr.label(
+            default = "//rules/scripts:html_coverage_report.template.sh",
+            allow_single_file = True,
+        ),
+    },
+    executable = True,
+)
