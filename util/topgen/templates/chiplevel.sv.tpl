@@ -551,7 +551,11 @@ module chip_${top["name"]}_${target["name"]} (
   tlul_pkg::tl_h2d_t base_ast_bus;
   tlul_pkg::tl_d2h_t ast_base_bus;
 
-  assign ast_base_pwr.main_pok = ast_pwst.main_pok;
+  assign ast_base_pwr.main_pok     = base_ast_pwr.main_pd_n;
+  //assign ast_base_pwr.slow_clk_val = 1'b1;
+  //assign ast_base_pwr.core_clk_val = base_ast_pwr.core_clk_en;
+  //assign ast_base_pwr.io_clk_val   = base_ast_pwr.io_clk_en;
+  //assign ast_base_pwr.usb_clk_val  = base_ast_pwr.usb_clk_en;
 
   // synchronization clocks / rests
   clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
