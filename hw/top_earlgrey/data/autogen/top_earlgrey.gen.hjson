@@ -3233,12 +3233,12 @@
       {
         rst_ni:
         {
-          name: por_io_div4
+          name: sys_io_div4
           domain: Aon
         }
         rst_aon_ni:
         {
-          name: por_aon
+          name: sys_aon
           domain: Aon
         }
       }
@@ -13472,8 +13472,8 @@
       type: alert
       async: "1"
       module_name: pinmux_aon
-      lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 10
+      lpg_name: powerup_sys_io_div4_Aon
+      lpg_idx: 13
     }
     {
       name: aon_timer_aon_fatal_fault
