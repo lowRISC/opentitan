@@ -291,7 +291,7 @@ def on_edn_rnd_cdc_done(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 def on_invalidate_imem(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('invalidate_imem', 0, args)
 
-    sim.state.invalidated_imem = True
+    sim.state.invalidate_imem()
 
     return None
 
