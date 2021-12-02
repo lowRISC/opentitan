@@ -104,8 +104,13 @@ class OTBNState:
         self.urnd_256b = 4 * [0]
         self.urnd_64b = 0
 
-        # This flag is set to true if we've injected integrity errors, trashing
-        # the whole of IMEM. The next fetch should fail.
+        # To simulate injecting integrity errors, we set a flag to say that
+        # IMEM is no longer readable without getting an error. This can't take
+        # effect instantly because the RTL's prefetch stage (which we don't
+        # model except for matching its timing) has a copy of the next
+        # instruction. Make this a counter, decremented once per cycle. When we
+        # get to zero, we set the flag.
+        self._time_to_imem_invalidation = None  # type: Optional[int]
         self.invalidated_imem = False
 
     def get_next_pc(self) -> int:
@@ -265,6 +270,12 @@ class OTBNState:
         # We shouldn't be running commit() in IDLE or LOCKED mode
         assert self.running()
 
+        if self._time_to_imem_invalidation is not None:
+            self._time_to_imem_invalidation -= 1
+            if self._time_to_imem_invalidation == 0:
+                self.invalidated_imem = True
+                self._time_to_imem_invalidation = None
+
         # Check if we processed the RND data, if so set the register. This is
         # done seperately from the rnd_completed method because in other case
         # we are exiting stall caused by RND waiting by one cycle too early.
@@ -327,8 +338,11 @@ class OTBNState:
         # POST_EXEC to allow one more cycle.
         if self.pending_halt:
             self.ext_regs.commit()
-            self.fsm_state = (FsmState.LOCKING
-                              if self._err_bits >> 16 else FsmState.POST_EXEC)
+            if self._err_bits >> 16:
+                self.ext_regs.write('INSN_CNT', 0, True)
+                self.fsm_state = FsmState.LOCKING
+            else:
+                self.fsm_state = FsmState.POST_EXEC
             return
 
         # As pending_halt wasn't set, there shouldn't be any pending error bits
@@ -498,3 +512,6 @@ class OTBNState:
         '''
         self._err_bits |= err_bits
         self.pending_halt = True
+
+    def invalidate_imem(self) -> None:
+        self._time_to_imem_invalidation = 2
