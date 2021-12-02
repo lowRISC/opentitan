@@ -57,7 +57,6 @@ module prim_alert_receiver
 );
 
   import prim_mubi_pkg::mubi4_test_true_strict;
-  import prim_mubi_pkg::mubi4_test_false_loose;
 
   /////////////////////////////////
   // decode differential signals //
@@ -257,6 +256,10 @@ module prim_alert_receiver
   ////////////////
   // assertions //
   ////////////////
+
+`ifdef INC_ASSERT
+  import prim_mubi_pkg::mubi4_test_false_loose;
+`endif
 
   // check whether all outputs have a good known state after reset
   `ASSERT_KNOWN(PingOkKnownO_A, ping_ok_o)
