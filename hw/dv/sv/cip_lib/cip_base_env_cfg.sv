@@ -115,6 +115,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
         m_alert_agent_cfg[alert_name].if_mode = dv_utils_pkg::Device;
         m_alert_agent_cfg[alert_name].is_async = 1; // default async_on, can override this
         m_alert_agent_cfg[alert_name].en_ping_cov = 0;
+        m_alert_agent_cfg[alert_name].en_lpg_cov = 0;
       end
     end
 
