@@ -56,6 +56,8 @@ module pwrmgr
   // processor interface
   input  pwr_cpu_t pwr_cpu_i,
   output lc_ctrl_pkg::lc_tx_t fetch_en_o,
+  input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
 
   // peripherals wakeup and reset requests
   input  [NumWkups-1:0] wakeups_i,
@@ -501,6 +503,8 @@ module pwrmgr
     .lc_init_o         (pwr_lc_o.lc_init),
     .lc_done_i         (pwr_lc_i.lc_done),
     .lc_idle_i         (pwr_lc_i.lc_idle),
+    .lc_dft_en_i,
+    .lc_hw_debug_en_i,
 
     // flash
     .flash_idle_i      (flash_rsp.flash_idle),

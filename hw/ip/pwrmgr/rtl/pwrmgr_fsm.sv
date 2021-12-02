@@ -52,6 +52,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   output logic lc_init_o,
   input lc_done_i,
   input lc_idle_i,
+  input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
 
   // flash
   input flash_idle_i,
@@ -223,6 +225,21 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
                          &((~ips_clk_en_o & ~clk_en_status_i) | ips_clk_en_o);
 
 
+  // rom integrity checks are disabled during TEST / RMA states
+  // During TEST / RMA states, both dft_en and hw_debug_en are On.
+  // During DEV / PROD states, either both signals are Off, or only
+  // hw_debug_en is On
+  logic rom_intg_chk_dis;
+  assign rom_intg_chk_dis = (lc_dft_en_i == lc_ctrl_pkg::On) &
+                            (lc_hw_debug_en_i == lc_ctrl_pkg::On);
+
+  logic rom_intg_chk_done;
+  assign rom_intg_chk_done = mubi4_test_true_strict(rom_ctrl_done_i);
+
+  logic rom_intg_chk_ok;
+  assign rom_intg_chk_ok = rom_intg_chk_dis ? rom_intg_chk_done :
+                           rom_intg_chk_done & mubi4_test_true_strict(rom_ctrl_good_i);
+
   always_comb begin
     otp_init = 1'b0;
     lc_init = 1'b0;
@@ -305,8 +322,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         rst_sys_req_d = '0;
         reset_cause_d = ResetNone;
 
-        if (mubi4_test_true_strict(rom_ctrl_done_i) &&
-            mubi4_test_true_strict(rom_ctrl_good_i)) begin
+        if (rom_intg_chk_ok) begin
           state_d = FastPwrStateStrap;
         end
       end

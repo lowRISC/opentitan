@@ -2542,6 +2542,30 @@
           index: -1
         }
         {
+          name: lc_dft_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: pwrmgr_aon
+          default: ""
+          top_signame: lc_ctrl_lc_dft_en
+          index: -1
+        }
+        {
+          name: lc_hw_debug_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: pwrmgr_aon
+          default: ""
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
           name: sw_rst_req
           struct: mubi4
           package: prim_mubi_pkg
@@ -7221,6 +7245,7 @@
         otp_ctrl.lc_dft_en
         pinmux_aon.lc_dft_en
         ast.lc_dft_en
+        pwrmgr_aon.lc_dft_en
       ]
       lc_ctrl.lc_nvm_debug_en:
       [
@@ -7234,6 +7259,7 @@
         csrng.lc_hw_debug_en
         rv_dm.lc_hw_debug_en
         clkmgr_aon.lc_hw_debug_en
+        pwrmgr_aon.lc_hw_debug_en
       ]
       lc_ctrl.lc_cpu_en:
       [
@@ -15243,6 +15269,30 @@
         end_idx: -1
         top_type: broadcast
         top_signame: pwrmgr_aon_fetch_en
+        index: -1
+      }
+      {
+        name: lc_dft_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: pwrmgr_aon
+        default: ""
+        top_signame: lc_ctrl_lc_dft_en
+        index: -1
+      }
+      {
+        name: lc_hw_debug_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: pwrmgr_aon
+        default: ""
+        top_signame: lc_ctrl_lc_hw_debug_en
         index: -1
       }
       {
