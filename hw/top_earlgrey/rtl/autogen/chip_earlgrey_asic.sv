@@ -722,8 +722,6 @@ module chip_earlgrey_asic (
   tlul_pkg::tl_h2d_t base_ast_bus;
   tlul_pkg::tl_d2h_t ast_base_bus;
 
-  assign ast_base_pwr.main_pok = ast_pwst.main_pok;
-
   // synchronization clocks / rests
   clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
   rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
@@ -841,6 +839,8 @@ module chip_earlgrey_asic (
   //////////////////////////////////
 
 
+
+  assign ast_base_pwr.main_pok = ast_pwst.main_pok;
 
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
 
