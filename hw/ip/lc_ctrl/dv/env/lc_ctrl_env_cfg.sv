@@ -24,6 +24,17 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   // Use JTAG for register accesses
   // TODO: use multiple address maps
   bit jtag_csr;
+  // Error injection configuration
+  lc_ctrl_err_inj_t err_inj;
+
+  // Alert events - these are triggered in the scoreboard
+  event fatal_prog_error_ev;
+  event fatal_state_error_ev;
+  event fatal_bus_integ_error_ev;
+  // Test phase - used to synchronise scoreboard
+  lc_ctrl_test_phase_e test_phase;
+  // Max delay for alerts in clocks
+  uint alert_max_delay;
 
   `uvm_object_utils_begin(lc_ctrl_env_cfg)
   `uvm_object_utils_end
@@ -73,11 +84,20 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     // Set base address for JTAG map
     ral.set_base_addr(ral.default_map.get_base_addr(), jtag_riscv_map);
 
+    alert_max_delay = 500;
   endfunction
 
   protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
     // Clone the resister map for JTAG
     jtag_riscv_map = clone_reg_map("jtag_riscv_map", ral.default_map);
+  endfunction
+
+  virtual function void set_test_phase(lc_ctrl_test_phase_e test_phase);
+    this.test_phase = test_phase;
+  endfunction
+
+  virtual function lc_ctrl_test_phase_e get_test_phase();
+    return (this.test_phase);
   endfunction
 
   // Use these functions to propagate in_reset to JTAG RISCV agents
