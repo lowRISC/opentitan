@@ -6,9 +6,13 @@
 build --cxxopt='-std=c++14'
 build --conlyopt='-std=c11'
 
+# Bazel embedded enables the following feature which along with -std=c11 and
+# our codebase generates a lot of warnings by setting the -Wpedantic flag
+build --features=-all_warnings
+
 # Enable toolchain resolution with cc
 build --incompatible_enable_cc_toolchain_resolution
 
-# This lets us generate key/value pairs for the workspace which can be 
+# This lets us generate key/value pairs for the workspace which can be
 # accessed like we do in util/BUILD
 build --workspace_status_command=util/get_workspace_status.sh
