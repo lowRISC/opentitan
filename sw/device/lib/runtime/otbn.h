@@ -101,6 +101,11 @@ typedef struct otbn {
   bool app_is_loaded;
 } otbn_t;
 
+enum {
+  /* Data width of big number subset, in bytes. */
+  kOtbnWlenBytes = 256 / 8,
+};
+
 /**
  * Makes an embedded OTBN application image available for use.
  *
@@ -255,5 +260,18 @@ otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
  * @return The result of the operation.
  */
 otbn_result_t otbn_dump_dmem(const otbn_t *ctx, uint32_t max_addr);
+
+/**
+ * Evaluate an OTBN result and return if the result is an error.
+ *
+ * @param expr_ An expression which results in an otbn_result_t.
+ */
+#define OTBN_RETURN_IF_ERROR(expr_)     \
+  do {                                  \
+    otbn_result_t local_error_ = expr_; \
+    if (local_error_ != kOtbnOk) {      \
+      return local_error_;              \
+    }                                   \
+  } while (0)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_OTBN_H_

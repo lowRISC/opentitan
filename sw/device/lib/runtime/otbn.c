@@ -9,11 +9,6 @@
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/log.h"
 
-/**
- * Data width of big number subset, in bytes.
- */
-const int kOtbnWlenBytes = 256 / 8;
-
 otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
                                          uint32_t *dmem_addr_otbn) {
   uintptr_t ptr_addr = (uintptr_t)ptr;

@@ -101,7 +101,7 @@ dif_result_t dif_hmac_mode_sha256_start(const dif_hmac_t *hmac,
  * the FIFO fills up or `len` bytes have been sent.
  *
  * In the event that the FIFO fills up before `len` bytes have been sent this
- * function will return a `kDifHmacFifoFull` error. In this case it is valid
+ * function will return a `kDifIpFifoFull` error. In this case it is valid
  * to call this function again by advancing `data` by `len` - |*bytes_sent|
  * bytes. It may be desirable to wait for space to free up on the FIFO before
  * issuing subsequent calls to this function, but it is not strictly
