@@ -151,6 +151,7 @@ module rom_ctrl
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1),
+    .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(SecDisableScrambling),
     .EnableDataIntgPt(!SecDisableScrambling)

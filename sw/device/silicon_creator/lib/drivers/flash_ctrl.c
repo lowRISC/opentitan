@@ -315,7 +315,8 @@ rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
 
 void flash_ctrl_exec_set(flash_ctrl_exec_t enable) {
   // Enable or disable flash execution.
-  abs_mmio_write32(kBase + FLASH_CTRL_EXEC_REG_OFFSET, (uint32_t)enable);
+  sec_mmio_write32(kBase + FLASH_CTRL_EXEC_REG_OFFSET, (uint32_t)enable);
+  sec_mmio_write_increment(1);
 }
 
 /**
@@ -383,4 +384,5 @@ void flash_ctrl_info_mp_set(flash_ctrl_info_page_t info_page,
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ERASE_EN_0_BIT,
       perms.erase == kHardenedBoolTrue);
   sec_mmio_write32_shadowed(addr, reg);
+  sec_mmio_write_increment(1);
 }

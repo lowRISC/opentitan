@@ -28,6 +28,14 @@ static_assert(!(sizeof(boot_data_t) & (sizeof(boot_data_t) - 1)),
               "Size of `boot_data_t` must be a power of two.");
 
 /**
+ * Boot data flash info pages.
+ */
+static const flash_ctrl_info_page_t kPages[2] = {
+    kFlashCtrlInfoPageBootData0,
+    kFlashCtrlInfoPageBootData1,
+};
+
+/**
  * A type that holds `kBootDataNumWords` words.
  */
 typedef struct boot_data_buffer {
@@ -133,17 +141,28 @@ static rom_error_t boot_data_entry_read(flash_ctrl_info_page_t page,
 /**
  * Populates the boot data entry at the given page and index.
  *
+ * If `erase` is `kHardenedBoolTrue`, this function erases the given page before
+ * writing the new entry. This function also also verifies the newly written
+ * entry by reading it back. Reads, writes, and erases (if applicable) must be
+ * enabled for the given page before this function is called, see
+ * `boot_data_entry_write()`.
+ *
  * @param page A boot data page.
  * @param index Index of the entry to write in the given page.
  * @param boot_data Entry to write.
+ * @param erase Whether to erase the page before writing the entry.
  * @return The result of the operation.
  */
-static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
-                                         size_t index,
-                                         const boot_data_t *boot_data) {
+static rom_error_t boot_data_entry_write_impl(flash_ctrl_info_page_t page,
+                                              size_t index,
+                                              const boot_data_t *boot_data,
+                                              hardened_bool_t erase) {
   boot_data_buffer_t buf;
   memcpy(&buf, boot_data, sizeof(boot_data_t));
   const uint32_t offset = index * sizeof(boot_data_t);
+  if (erase == kHardenedBoolTrue) {
+    RETURN_IF_ERROR(flash_ctrl_info_erase(page, kFlashCtrlEraseTypePage));
+  }
   RETURN_IF_ERROR(
       flash_ctrl_info_write(page, offset, kBootDataNumWords, buf.data));
   RETURN_IF_ERROR(
@@ -155,11 +174,44 @@ static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
 }
 
 /**
+ * Handles access permissions and populates the boot data entry at the given
+ * page and index.
+ *
+ * This function wraps the actual implementation to enable and disable reads,
+ * writes, and erases (if applicable) for the given page, see
+ * `boot_data_page_entry_write_impl()`.
+ *
+ * @param page A boot data page.
+ * @param index Index of the entry to write in the given page.
+ * @param boot_data Entry to write.
+ * @param erase Whether to erase the page before writing the entry.
+ * @return The result of the operation.
+ */
+static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
+                                         size_t index,
+                                         const boot_data_t *boot_data,
+                                         hardened_bool_t erase) {
+  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
+                                   .read = kHardenedBoolTrue,
+                                   .write = kHardenedBoolTrue,
+                                   .erase = erase,
+                               });
+  rom_error_t error = boot_data_entry_write_impl(page, index, boot_data, erase);
+  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
+                                   .read = kHardenedBoolFalse,
+                                   .write = kHardenedBoolFalse,
+                                   .erase = kHardenedBoolFalse,
+                               });
+  return error;
+}
+
+/**
  * Invalidates the boot data entry at the given page and index.
  *
- * This function sets the `identifier` field of the given entry to
- * `kBootDataInvalidatedIdentifier` which will cause both the identifier and the
- * digest checks to fail in subsequent reads.
+ * This function handles write permissions for the given page and sets the
+ * `identifier` field of the given entry to `kBootDataInvalidatedIdentifier`
+ * which will cause both the identifier and the digest checks to fail in
+ * subsequent reads.
  *
  * This function must be called only after the new entry is successfully
  * written since writes can potentially be interrupted.
@@ -176,7 +228,18 @@ static rom_error_t boot_data_entry_invalidate(flash_ctrl_info_page_t page,
   const uint32_t offset =
       index * sizeof(boot_data_t) + offsetof(boot_data_t, identifier);
   const uint32_t val = kBootDataInvalidatedIdentifier;
-  return flash_ctrl_info_write(page, offset, 1, &val);
+  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
+                                   .read = kHardenedBoolFalse,
+                                   .write = kHardenedBoolTrue,
+                                   .erase = kHardenedBoolFalse,
+                               });
+  rom_error_t error = flash_ctrl_info_write(page, offset, 1, &val);
+  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
+                                   .read = kHardenedBoolFalse,
+                                   .write = kHardenedBoolFalse,
+                                   .erase = kHardenedBoolFalse,
+                               });
+  return error;
 }
 
 /**
@@ -215,13 +278,15 @@ typedef struct boot_data_page_info {
  *
  * This function performs a forward search to find the first empty boot data
  * entry followed by a backward search to find the last valid boot data entry.
+ * Reads must be enabled for the given page before this function is called, see
+ * `boot_data_page_info_get()`.
  *
  * @param page A boot data page.
  * @param[out] page_info Page info struct for the given page.
  * @return The result of the operation.
  */
-static rom_error_t boot_data_page_info_get(flash_ctrl_info_page_t page,
-                                           boot_data_page_info_t *page_info) {
+static rom_error_t boot_data_page_info_get_impl(
+    flash_ctrl_info_page_t page, boot_data_page_info_t *page_info) {
   uint32_t identifiers[kBootDataEntriesPerPage];
   boot_data_buffer_t buf;
 
@@ -268,6 +333,32 @@ static rom_error_t boot_data_page_info_get(flash_ctrl_info_page_t page,
 }
 
 /**
+ * Handles read permissions and populates a page info struct for the given page.
+ *
+ * This function wraps the actual implementation to enable and disable reads for
+ * the given page, see `boot_data_page_info_get_impl()`.
+ *
+ * @param page A boot data page.
+ * @param[out] page_info Page info struct for the given page.
+ * @return The result of the operation.
+ */
+static rom_error_t boot_data_page_info_get(flash_ctrl_info_page_t page,
+                                           boot_data_page_info_t *page_info) {
+  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
+                                   .read = kHardenedBoolTrue,
+                                   .write = kHardenedBoolFalse,
+                                   .erase = kHardenedBoolFalse,
+                               });
+  rom_error_t error = boot_data_page_info_get_impl(page, page_info);
+  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
+                                   .read = kHardenedBoolFalse,
+                                   .write = kHardenedBoolFalse,
+                                   .erase = kHardenedBoolFalse,
+                               });
+  return error;
+}
+
+/**
  * Finds the active info page and returns its page info struct.
  *
  * The active info page is the one that has the newest valid boot data entry,
@@ -279,10 +370,9 @@ static rom_error_t boot_data_page_info_get(flash_ctrl_info_page_t page,
 static rom_error_t boot_data_active_page_find(
     boot_data_page_info_t *page_info) {
   boot_data_page_info_t page_infos[2];
-  RETURN_IF_ERROR(
-      boot_data_page_info_get(kFlashCtrlInfoPageBootData0, &page_infos[0]));
-  RETURN_IF_ERROR(
-      boot_data_page_info_get(kFlashCtrlInfoPageBootData1, &page_infos[1]));
+  for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
+    RETURN_IF_ERROR(boot_data_page_info_get(kPages[i], &page_infos[i]));
+  }
 
   if (page_infos[0].has_valid_entry == kHardenedBoolTrue &&
       page_infos[1].has_valid_entry == kHardenedBoolTrue) {
@@ -380,17 +470,16 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
     new_entry.counter = active_page.last_valid_entry.counter + 1;
     RETURN_IF_ERROR(boot_data_digest_compute(&new_entry, &new_entry.digest));
     if (active_page.has_empty_entry == kHardenedBoolTrue) {
-      RETURN_IF_ERROR(boot_data_entry_write(
-          active_page.page, active_page.first_empty_index, &new_entry));
+      RETURN_IF_ERROR(boot_data_entry_write(active_page.page,
+                                            active_page.first_empty_index,
+                                            &new_entry, kHardenedBoolFalse));
     } else {
       // Erase the other page and write the new entry there if the active page
       // is full.
       flash_ctrl_info_page_t new_page =
-          active_page.page == kFlashCtrlInfoPageBootData0
-              ? kFlashCtrlInfoPageBootData1
-              : kFlashCtrlInfoPageBootData0;
-      RETURN_IF_ERROR(flash_ctrl_info_erase(new_page, kFlashCtrlEraseTypePage));
-      RETURN_IF_ERROR(boot_data_entry_write(new_page, 0, &new_entry));
+          active_page.page == kPages[0] ? kPages[1] : kPages[0];
+      RETURN_IF_ERROR(
+          boot_data_entry_write(new_page, 0, &new_entry, kHardenedBoolTrue));
     }
     // Invalidate the previous entry so that there is only one valid entry
     // across both pages.
@@ -400,10 +489,9 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
     // Erase the first page and write the entry there if the active page cannot
     // be found, i.e. the storage is not initialized yet.
     new_entry.counter = kBootDataDefault.counter + 1;
-    const flash_ctrl_info_page_t first_page = kFlashCtrlInfoPageBootData0;
     RETURN_IF_ERROR(boot_data_digest_compute(&new_entry, &new_entry.digest));
-    RETURN_IF_ERROR(flash_ctrl_info_erase(first_page, kFlashCtrlEraseTypePage));
-    RETURN_IF_ERROR(boot_data_entry_write(first_page, 0, &new_entry));
+    RETURN_IF_ERROR(
+        boot_data_entry_write(kPages[0], 0, &new_entry, kHardenedBoolTrue));
   } else {
     return error;
   }
