@@ -39,6 +39,16 @@ covergroup alert_esc_trans_cg with function sample(alert_esc_trans_type_e trans)
   }
 endgroup : alert_esc_trans_cg
 
+covergroup alert_ping_lpg_cg with function sample(bit alert_lpg_en);
+  option.per_instance = 1;
+  cp_alert_ping_lpg: coverpoint alert_lpg_en;
+endgroup
+
+covergroup alert_lpg_cg with function sample(bit alert_lpg_en);
+  option.per_instance = 1;
+  cp_alert_lpg: coverpoint alert_lpg_en;
+endgroup
+
 // If a module contains alert or escalation ports, these covergroups can check if all
 // alerts/escalations/pings have been completed.
 class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
@@ -46,6 +56,8 @@ class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
   alert_handshake_complete_cg m_alert_handshake_complete_cg;
   esc_handshake_complete_cg   m_esc_handshake_complete_cg;
   alert_esc_trans_cg          m_alert_esc_trans_cg;
+  alert_ping_lpg_cg           m_alert_ping_lpg_cg;
+  alert_lpg_cg                m_alert_lpg_cg;
 
   `uvm_component_utils(alert_esc_agent_cov)
   `uvm_component_new
@@ -53,6 +65,10 @@ class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     if (cfg.en_ping_cov) m_alert_esc_trans_cg = new();
+    if (cfg.en_lpg_cov) begin
+      m_alert_ping_lpg_cg = new();
+      m_alert_lpg_cg = new();
+    end
     if (cfg.is_alert)    m_alert_handshake_complete_cg = new();
     else                 m_esc_handshake_complete_cg = new();
   endfunction : build_phase
