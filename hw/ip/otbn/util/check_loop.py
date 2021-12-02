@@ -5,11 +5,10 @@
 
 import argparse
 import sys
-from typing import Dict, List, Tuple
+from typing import List
 
 from shared.check import CheckResult
 from shared.decode import OTBNProgram, decode_elf
-from shared.insn_yaml import Insn
 
 
 class CodeSection:
@@ -30,7 +29,7 @@ class CodeSection:
 
 def _get_pcs_for_mnemonics(program: OTBNProgram,
                            mnems: List[str]) -> List[int]:
-    '''Gets all PCs in the program at which the given instruction is present.'''
+    '''Gets all PCs in the program holding the given instruction.'''
     return [
         pc for (pc, (insn, _)) in program.insns.items()
         if insn.mnemonic in mnems
@@ -52,7 +51,6 @@ def _get_loops(program: OTBNProgram) -> List[CodeSection]:
     loop_starts = _get_loop_starts(program)
     loops = []
     for pc in loop_starts:
-        insn = program.get_insn(pc)
         operands = program.get_operands(pc)
         end_pc = pc + operands['bodysize'] * 4
         loops.append(CodeSection(pc + 4, end_pc))
@@ -63,10 +61,11 @@ def _check_loop_iterations(program: OTBNProgram,
                            loops: List[CodeSection]) -> CheckResult:
     '''Checks number of iterations for loopi.
 
-    If the number of iterations is 0, this check fails; `loopi` requires at least
-    one iteration and will raise a LOOP error otherwise. The `loop` instruction
-    also has this requirement, but since the number of loop iterations comes
-    from a register it's harder to check statically and is not considered here.
+    If the number of iterations is 0, this check fails; `loopi` requires at
+    least one iteration and will raise a LOOP error otherwise. The `loop`
+    instruction also has this requirement, but since the number of loop
+    iterations comes from a register it's harder to check statically and is not
+    considered here.
     '''
     out = CheckResult()
     for loop in loops:
@@ -106,7 +105,7 @@ def _check_loop_inclusion(program: OTBNProgram,
     out = CheckResult()
     for loop in loops:
         for other in loops:
-            if other.start in loop and not other.end in loop:
+            if other.start in loop and other.end not in loop:
                 out.err('Inner loop ends after outer loop (inner loop {}, '
                         'outer loop {})'.format(other, loop))
 
@@ -181,10 +180,13 @@ def _check_loop_stack(program: OTBNProgram,
         programmer must ensure that:
 
         * Even if there are branches and jumps within a loop body, the final
-          instruction of the loop body gets executed exactly once per iteration.
+          instruction of the loop body gets executed exactly once per
+          iteration.
+
         * Nested loops have distinct end addresses.
-        * The end instruction of an outer loop is not executed before an inner loop
-          finishes.
+
+        * The end instruction of an outer loop is not executed before an inner
+          loop finishes.
 
     In order to avoid simulating the control flow of the entire program to
     check the first and third conditions, this check takes a conservative,

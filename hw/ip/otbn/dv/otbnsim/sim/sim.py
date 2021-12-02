@@ -137,7 +137,8 @@ class OTBNSim:
             # cycle after that until we start executing instructions, but that
             # doesn't really matter)
             changes = self._on_stall(verbose, fetch_next=False)
-            changes += [TraceExtRegChange('RND_REQ', ExtRegChange('=', 0, True, 0))]
+            changes += [TraceExtRegChange('RND_REQ',
+                                          ExtRegChange('=', 0, True, 0))]
             self.state.ext_regs.write('INSN_CNT', 0, True)
             return (None, changes)
 

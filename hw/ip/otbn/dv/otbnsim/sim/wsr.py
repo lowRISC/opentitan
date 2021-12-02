@@ -184,8 +184,8 @@ class URNDWSR(WSR):
         self._value = None  # type: Optional[int]
         self.running = False
 
-    # Function to left rotate a 64b number n by d bits
-    def leftRotate64(self, n: int, d: int) -> int:
+    def rol(self, n: int, d: int) -> int:
+        '''Rotate n left by d bits'''
         return ((n << d) & ((1 << 64) - 1)) | (n >> (64 - d))
 
     def read_u32(self) -> int:
@@ -209,7 +209,7 @@ class URNDWSR(WSR):
         a_out = a_in ^ b_in ^ d_in
         b_out = a_in ^ b_in ^ c_in
         c_out = a_in ^ ((b_in << 17) & ((1 << 64) - 1)) ^ c_in
-        d_out = self.leftRotate64(d_in, 45) ^ self.leftRotate64(b_in, 45)
+        d_out = self.rol(d_in, 45) ^ self.rol(b_in, 45)
         assert a_out < (1 << 64)
         assert b_out < (1 << 64)
         assert c_out < (1 << 64)
@@ -222,13 +222,16 @@ class URNDWSR(WSR):
 
     def step(self) -> None:
         if self.running:
+            mask64 = (1 << 64) - 1
             mid = 4 * [0]
-            self._next_value = 0
+            nv = 0
             for i in range(4):
-                self.state[i + 1] = self.state_update(self.state[i])
-                mid[i] = (self.state[i][3] + self.state[i][0]) & ((1 << 64) - 1)
-                self.out[i] = (self.leftRotate64(mid[i], 23) + self.state[i][3]) & ((1 << 64) - 1)
-                self._next_value = (self._next_value | (self.out[i] << (64 * i))) & ((1 << 256) - 1)
+                st_i = self.state[i]
+                self.state[i + 1] = self.state_update(st_i)
+                mid[i] = (st_i[3] + st_i[0]) & mask64
+                self.out[i] = (self.rol(mid[i], 23) + st_i[3]) & mask64
+                nv |= self.out[i] << (64 * i)
+            self._next_value = nv
             self.state[0] = self.state[4]
 
     def commit(self) -> None:
