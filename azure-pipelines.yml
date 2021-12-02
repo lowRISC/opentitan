@@ -365,6 +365,7 @@ jobs:
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test
   dependsOn: lint
+  condition: and(succeeded(), False)
   pool:
     vmImage: ubuntu-18.04
   timeoutInMinutes: 10

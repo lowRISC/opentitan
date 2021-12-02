@@ -21,42 +21,42 @@ TEST_APPS_SELFCHECKING = [
     {
         "name": "crt_test",
     },
-    {
-        "name": "otbn_smoketest_rtl",
-        "binary_name": "otbn_smoketest",
-        "verilator_extra_args": ['+OTBN_USE_MODEL=0'],
-        "targets": ["sim_verilator"],
-    },
-    {
-        "name": "otbn_smoketest_model",
-        "binary_name": "otbn_smoketest",
-        "verilator_extra_args": ['+OTBN_USE_MODEL=1'],
-        "targets": ["sim_verilator"],
-    },
-    {
-        "name": "otbn_randomness_test",
-        # TODO: Run this test also against the ISS once URND and RND are
-        # implemented.
-        "targets": ["sim_verilator", "fpga_cw310"],
-    },
-    {
-        "name": "otbn_irq_test",
-        "targets": ["sim_verilator", "fpga_cw310"],
-    },
-    # The OTBN end-to-end tests can be run in simulation, but take a long time
-    # there. Run them on the CW310 FPGA board only for faster test results.
-    {
-        "name": "otbn_rsa_test",
-        "targets": ["fpga_cw310"],
-    },
-    {
-        "name": "otbn_ecdsa_p256_test",
-        "targets": ["fpga_cw310"],
-    },
-    {
-        "name": "aes_smoketest",
-        "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
-    },
+#    {
+#        "name": "otbn_smoketest_rtl",
+#        "binary_name": "otbn_smoketest",
+#        "verilator_extra_args": ['+OTBN_USE_MODEL=0'],
+#        "targets": ["sim_verilator"],
+#    },
+#    {
+#        "name": "otbn_smoketest_model",
+#        "binary_name": "otbn_smoketest",
+#        "verilator_extra_args": ['+OTBN_USE_MODEL=1'],
+#        "targets": ["sim_verilator"],
+#    },
+#    {
+#        "name": "otbn_randomness_test",
+#        # TODO: Run this test also against the ISS once URND and RND are
+#        # implemented.
+#        "targets": ["sim_verilator", "fpga_cw310"],
+#    },
+#    {
+#        "name": "otbn_irq_test",
+#        "targets": ["sim_verilator", "fpga_cw310"],
+#    },
+#    # The OTBN end-to-end tests can be run in simulation, but take a long time
+#    # there. Run them on the CW310 FPGA board only for faster test results.
+#    {
+#        "name": "otbn_rsa_test",
+#        "targets": ["fpga_cw310"],
+#    },
+#    {
+#        "name": "otbn_ecdsa_p256_test",
+#        "targets": ["fpga_cw310"],
+#    },
+#    {
+#        "name": "aes_smoketest",
+#        "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
+#    },
     {
         "name": "aon_timer_smoketest",
         "targets": ["sim_verilator", "fpga_cw310"],

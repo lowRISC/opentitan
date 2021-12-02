@@ -840,7 +840,7 @@ module otbn
       .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
     ) u_otbn_core (
       .clk_i,
-      .rst_ni                      (rst_n),
+      .rst_ni                      (1'b0),
 
       .start_i                     (start_rtl),
       .done_o                      (done_rtl),

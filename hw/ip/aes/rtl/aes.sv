@@ -160,8 +160,8 @@ module aes
     .RndCnstMaskingLfsrPerm   ( RndCnstMaskingLfsrPerm   )
   ) u_aes_core (
     .clk_i                  ( clk_i                ),
-    .rst_ni                 ( rst_ni               ),
-    .rst_shadowed_ni        ( rst_shadowed_ni      ),
+    .rst_ni                 ( '0               ),
+    .rst_shadowed_ni        ( '0      ),
     .entropy_clearing_req_o ( entropy_clearing_req ),
     .entropy_clearing_ack_i ( entropy_clearing_ack ),
     .entropy_clearing_i     ( edn_data             ),
