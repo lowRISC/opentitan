@@ -57,6 +57,11 @@
     }
 
     {
+      name: lc_ctrl_state_post_trans
+      uvm_test_seq: lc_ctrl_state_post_trans_vseq
+    }
+
+    {
       name: lc_ctrl_prog_failure
       uvm_test_seq: lc_ctrl_prog_failure_vseq
     }
