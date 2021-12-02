@@ -15,6 +15,7 @@ filesets:
       - lowrisc:prim:edn_req
       - lowrisc:prim:buf
       - lowrisc:prim:mubi
+      - lowrisc:prim:sparse_fsm
       - lowrisc:ip_interfaces:alert_handler_reg
     files:
       - rtl/alert_pkg.sv

@@ -263,12 +263,12 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   //
   localparam int StateWidth = 9;
   typedef enum logic [StateWidth-1:0] {
-    InitSt      = 9'b000101100,
-    AlertWaitSt = 9'b011001011,
-    AlertPingSt = 9'b110000000,
-    EscWaitSt   = 9'b101110001,
-    EscPingSt   = 9'b011110110,
-    FsmErrorSt  = 9'b100011111
+    InitSt      = 9'b011001011,
+    AlertWaitSt = 9'b110000000,
+    AlertPingSt = 9'b101110001,
+    EscWaitSt   = 9'b010110110,
+    EscPingSt   = 9'b000011101,
+    FsmErrorSt  = 9'b101101110
   } state_e;
 
   state_e state_d, state_q;
@@ -365,15 +365,18 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = state_e'(state_raw_q);
-
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
     .Width(StateWidth),
-    .ResetValue(StateWidth'(InitSt))
+    .ResetValue(StateWidth'(InitSt)),
+    // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
+    // an alert signal, this condition is handled internally in the alert handler.
+    .EnableAlertTriggerSVA(0)
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d     ),
-    .q_o ( state_raw_q )
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
   );
 
   ////////////////
