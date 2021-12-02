@@ -61,13 +61,13 @@ if {$FOUNDRY_ROOT != ""} {
     set USB_P_PIN  gen_flops[3]*.u_size_only_reg/D
     set USB_PIN    gen_flops[1]*.u_size_only_reg/D
     set USB_D_PIN  u_usb_d_flop/gen_*u_impl*/gen_flops[0]*.u_size_only_reg/Q
-    set USB_OE_PIN u_oe_flop_flop/gen_*u_impl*/gen_flops[0]*.u_size_only_reg/Q
+    set USB_OE_PIN u_oe_flop/gen_*u_impl*/gen_flops[0]*.u_size_only_reg/Q
 } else {
     set USB_N_PIN  d_i[2]
     set USB_P_PIN  d_i[3]
     set USB_PIN    d_i[1]
     set USB_D_PIN  u_usb_d_flop/gen_*u_impl*/q_o[0]
-    set USB_OE_PIN u_oe_flop_flop/gen_*u_impl*/q_o[0]
+    set USB_OE_PIN u_oe_flop/gen_*u_impl*/q_o[0]
 }
 
 set_max_delay 3 -from [get_ports USB_N] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_N_PIN}]
