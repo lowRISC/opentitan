@@ -272,6 +272,9 @@ module prim_alert_receiver
   // shift sequence two cycles to the right to avoid reset effects.
   `ASSERT(PingDiffOk_A, ##2 $past(send_init) ^ alert_rx_o.ping_p ^ alert_rx_o.ping_n)
   `ASSERT(AckDiffOk_A, ##2 $past(send_init) ^ alert_rx_o.ack_p ^ alert_rx_o.ack_n)
+  `ASSERT(InitReq_A, mubi4_test_true_strict(init_trig_i) &&
+          !(state_q inside {InitReq, InitAckWait}) |=> send_init)
+
   // ping request at input -> need to see encoded ping request
   `ASSERT(PingRequest0_A, ##1 $rose(ping_req_i) && !send_init |=> $changed(alert_rx_o.ping_p))
   // ping response implies it has been requested
