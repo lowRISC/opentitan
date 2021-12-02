@@ -29,6 +29,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   local bit is_fatal_alert[string];
   local int alert_chk_max_delay[string];
 
+  // intg check
+  bit en_d_user_intg_chk = 1;
+
   // covergroups
   tl_errors_cg_wrap   tl_errors_cgs_wrap[string];
   tl_intg_err_cg_wrap tl_intg_err_cgs_wrap[string];
@@ -359,7 +362,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       uint num_cmd_err_bits, num_data_err_bits;
 
       // integrity at d_user is from DUT, which should be always correct
-      void'(item.is_d_chan_intg_ok(.throw_error(1)));
+      if (en_d_user_intg_chk) void'(item.is_d_chan_intg_ok(.throw_error(1)));
 
       // sample covergroup
       `downcast(cip_item, item)

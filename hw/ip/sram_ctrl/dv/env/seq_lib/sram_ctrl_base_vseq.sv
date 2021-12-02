@@ -52,9 +52,6 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     ral.ctrl.init.set(1);
     csr_update(.csr(ral.ctrl));
     csr_spinwait(.ptr(ral.status.init_done), .exp_data(1));
-
-    // initialize mem_model
-    cfg.scb.init_mem();
   endtask
 
   // Request a new scrambling key from the OTP interface.
@@ -64,9 +61,6 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     ral.ctrl.renew_scr_key.set(1);
     csr_update(.csr(ral.ctrl));
     csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1));
-
-    // initialize mem_model
-    cfg.scb.init_mem();
   endtask
 
   // Task to perform a single SRAM read at the specified location
