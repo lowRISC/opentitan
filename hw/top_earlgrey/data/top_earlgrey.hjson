@@ -857,7 +857,8 @@
       // LC function control signal broadcast
       'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en',
                                       'pinmux_aon.lc_dft_en',
-                                      'ast.lc_dft_en'
+                                      'ast.lc_dft_en',
+                                      'pwrmgr_aon.lc_dft_en',
                                      ],
       'lc_ctrl.lc_nvm_debug_en'    : ['flash_ctrl.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
@@ -865,7 +866,8 @@
                                       'pinmux_aon.lc_hw_debug_en',
                                       'csrng.lc_hw_debug_en',
                                       'rv_dm.lc_hw_debug_en',
-                                      'clkmgr_aon.lc_hw_debug_en'],
+                                      'clkmgr_aon.lc_hw_debug_en',
+                                      'pwrmgr_aon.lc_hw_debug_en',],
       'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
       'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',

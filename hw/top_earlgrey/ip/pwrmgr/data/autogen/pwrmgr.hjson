@@ -136,6 +136,20 @@
       package: "lc_ctrl_pkg",
     },
 
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "lc_dft_en",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "lc_hw_debug_en",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+    },
+
     { struct:  "mubi4",
       type:    "uni",
       name:    "sw_rst_req",

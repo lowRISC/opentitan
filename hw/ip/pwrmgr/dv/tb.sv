@@ -83,6 +83,9 @@ module tb;
     .wakeups_i (pwrmgr_if.wakeups_i),
     .rstreqs_i (pwrmgr_if.rstreqs_i),
 
+    .lc_dft_en_i     (lc_ctrl_pkg::Off),
+    .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
+
     .strap_o    (pwrmgr_if.strap),
     .low_power_o(pwrmgr_if.low_power),
 

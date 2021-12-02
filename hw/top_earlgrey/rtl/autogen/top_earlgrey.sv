@@ -1675,6 +1675,8 @@ module top_earlgrey #(
       .low_power_o(pwrmgr_aon_low_power),
       .rom_ctrl_i(rom_ctrl_pwrmgr_data),
       .fetch_en_o(pwrmgr_aon_fetch_en),
+      .lc_dft_en_i(lc_ctrl_lc_dft_en),
+      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .sw_rst_req_i(rstmgr_aon_sw_rst_req),
       .tl_i(pwrmgr_aon_tl_req),
       .tl_o(pwrmgr_aon_tl_rsp),
