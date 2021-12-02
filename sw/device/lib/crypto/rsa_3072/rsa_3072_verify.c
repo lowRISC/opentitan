@@ -45,23 +45,32 @@ static const uint32_t kOtbnRsaModeNumBytes = sizeof(uint32_t);
 static const uint32_t kOtbnRsaModeConstants = 1;
 static const uint32_t kOtbnRsaModeModexp = 2;
 
+/* Exponent is represented by a single word */
+static const uint32_t kOtbnRsaExponentNumBytes = sizeof(uint32_t);
+
 /**
  * Compute the SHA-256 digest of a message using the HMAC accelerator.
  *
- * Both input and output are little-endian. This function will block if the
- * HMAC fifo fills up, and wait until it can pass more data.
+ * This function will block if the HMAC fifo fills up, and wait until it can
+ * pass more data.
  *
  * `msg` *must* point to an allocated buffer of at least length `msg_len`.
  *
  * @param hmac HMAC context
- * @param msg Message to hash (little-endian)
+ * @param msg Message to hash
  * @param msg_len Length of message in bytes
  * @param[out] digest Resulting digest (little-endian)
  */
 dif_result_t sha256(const dif_hmac_t *hmac, const uint8_t *msg, size_t msg_len,
                     dif_hmac_digest_t *digest) {
-  // HMAC configuration (little-endian for both input and output)
+  // HMAC configuration
   dif_hmac_transaction_t hmac_config = {
+      // Note: the "message_endianness" must always be set to little-endian.
+      // This setting only affects multi-byte writes. Because msg is a byte
+      // array, it will only affect cases where the HMAC driver sees that the
+      // message is word-aligned and decides to push multiple bytes at once
+      // onto the FIFO by converting the first 4 bytes into a 32-bit integer,
+      // which is always little-endian.
       .message_endianness = kDifHmacEndiannessLittle,
       .digest_endianness = kDifHmacEndiannessLittle,
   };
@@ -86,10 +95,25 @@ dif_result_t sha256(const dif_hmac_t *hmac, const uint8_t *msg, size_t msg_len,
     msg_len = msg_len - bytes_sent;
   }
 
+  // Start processing
+  hmac_result = dif_hmac_process(hmac);
+  if (hmac_result != kDifOk) {
+    return hmac_result;
+  }
+
   // Poll until HMAC is finished processing, and retrieve the digest.
+  dif_hmac_digest_t raw_digest;
   do {
-    hmac_result = dif_hmac_finish(hmac, digest);
+    hmac_result = dif_hmac_finish(hmac, &raw_digest);
   } while (hmac_result == kDifUnavailable);
+
+  // Setting the HMAC configuration to little-endian changes the order of bytes
+  // within the words of the digest but not the order of the words themselves;
+  // therefore, to make the digest fully little-endian, we need to reverse the
+  // words.
+  for (uint32_t i = 0; i < ARRAYSIZE(raw_digest.digest); i++) {
+    digest->digest[i] = raw_digest.digest[ARRAYSIZE(raw_digest.digest) - 1 - i];
+  }
 
   return hmac_result;
 }
@@ -223,8 +247,8 @@ otbn_result_t rsa_3072_verify(otbn_t *otbn, const rsa_3072_int_t *signature,
       otbn, kOtbnRsaModeNumBytes, &kOtbnRsaModeModexp, kOtbnVarRsaMode));
 
   // Set the exponent (e).
-  OTBN_RETURN_IF_ERROR(
-      otbn_copy_data_to_otbn(otbn, 1, &public_key->e, kOtbnVarRsaInExp));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+      otbn, kOtbnRsaExponentNumBytes, &public_key->e, kOtbnVarRsaInExp));
 
   // Set the modulus (n).
   OTBN_RETURN_IF_ERROR(

@@ -5,10 +5,8 @@
 #include "sw/device/lib/crypto/rsa_3072/rsa_3072_verify.h"
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/test_main.h"
 #include "sw/device/tests/crypto/rsa_3072_verify_testvectors.h"
 
@@ -16,19 +14,18 @@
 
 void rsa_3072_verify_test(otbn_t *otbn, dif_hmac_t *hmac,
                           const rsa_3072_verify_test_vector_t *testvec) {
-  rsa_3072_constants_t constants;
-  rsa_3072_int_t encodedMessage;
-  hardened_bool_t result;
-
   // Encode message
+  rsa_3072_int_t encodedMessage;
   CHECK(rsa_3072_encode_sha256(hmac, testvec->msg, testvec->msgLen,
                                &encodedMessage) == kDifOk);
 
   // Precompute Montgomery constants
+  rsa_3072_constants_t constants;
   CHECK(rsa_3072_compute_constants(otbn, &testvec->publicKey, &constants) ==
         kOtbnOk);
 
   // Attempt to verify signature
+  hardened_bool_t result;
   CHECK(rsa_3072_verify(otbn, &testvec->signature, &encodedMessage,
                         &testvec->publicKey, &constants, &result) == kOtbnOk);
 
@@ -48,8 +45,6 @@ void rsa_3072_verify_test(otbn_t *otbn, dif_hmac_t *hmac,
 const test_config_t kTestConfig;
 
 bool test_main(void) {
-  entropy_testutils_boot_mode_init();
-
   // Initialize OTBN context.
   otbn_t otbn;
   CHECK(otbn_init(&otbn, mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR)) ==

@@ -2,29 +2,28 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-sw_lib_crypto_ecdsa_p256_test = declare_dependency(
+crypto_ecdsa_p256_test_lib = declare_dependency(
   link_with: static_library(
-    'sw_lib_crypto_ecdsa_p256_test',
+    'crypto_ecdsa_p256_test_lib',
     sources: [
       'ecdsa_p256_test.c'
     ],
     dependencies: [
       sw_lib_crypto_ecdsa_p256,
-      sw_lib_dif_hmac,
       sw_lib_testing_entropy_testutils,
     ],
   ),
 )
 sw_tests += {
-  'sw_lib_crypto_ecdsa_p256_test': {
-    'library' : sw_lib_crypto_ecdsa_p256_test,
+  'crypto_ecdsa_p256_test': {
+    'library' : crypto_ecdsa_p256_test_lib,
   }
 }
 
 # Tests for RSA-3072 verify
-sw_lib_crypto_rsa_3072_verify_test = declare_dependency(
+crypto_rsa_3072_verify_test_lib = declare_dependency(
   link_with: static_library(
-    'sw_lib_crypto_rsa_3072_verify_test',
+    'crypto_rsa_3072_verify_test_lib',
     sources: [
       'rsa_3072_verify_test.c',
       'rsa_3072_verify_testvectors.h'
@@ -36,7 +35,7 @@ sw_lib_crypto_rsa_3072_verify_test = declare_dependency(
   ),
 )
 sw_tests += {
-  'sw_lib_crypto_rsa_3072_verify_test': {
-    'library' : sw_lib_crypto_rsa_3072_verify_test,
+  'crypto_rsa_3072_verify_test': {
+    'library' : crypto_rsa_3072_verify_test_lib,
   }
 }
