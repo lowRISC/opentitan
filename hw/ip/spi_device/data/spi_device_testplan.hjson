@@ -123,7 +123,7 @@
       name: byte_transfer_on_spi
       desc: '''send spi transfer on byte granularity, and make sure the timer never expires'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_byte_transfer"]
     }
     {
       name: rx_timeout
@@ -133,7 +133,7 @@
               model the timer feature
             - Note: Timeout only for RX'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_rx_timeout"]
     }
     {
       name: bit_transfer_on_spi
@@ -154,7 +154,7 @@
       name: perf
       desc: '''Run spi_device_fifi_full_vseq with very small delays'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_perf"]
     }
     {
       name: tpm_read
