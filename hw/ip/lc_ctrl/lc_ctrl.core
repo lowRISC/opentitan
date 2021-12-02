@@ -14,6 +14,7 @@ filesets:
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lc_sender
       - lowrisc:prim:mubi
+      - lowrisc:prim:sparse_fsm
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:tlul
       - lowrisc:ip:pwrmgr_pkg
