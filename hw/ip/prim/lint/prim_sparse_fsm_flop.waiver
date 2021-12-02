@@ -10,5 +10,5 @@ waive -rules {IFDEF_CODE} -location {prim_sparse_fsm_flop.sv} -regexp {.*unused_
 waive -rules {PARAM_NOT_USED} -location {prim_sparse_fsm_flop.sv} -regexp {.*StateEnumT.*} \
       -comment "The state enum is used only during DV / FPV."
 
-waive -rules {PARAM_NOT_USED} -location {prim_sparse_fsm_flop.sv} -regexp {.*DisableAlertTriggerSVA.*} \
+waive -rules {PARAM_NOT_USED} -location {prim_sparse_fsm_flop.sv} -regexp {.*EnableAlertTriggerSVA.*} \
       -comment "The disable parameter is used only during DV / FPV."

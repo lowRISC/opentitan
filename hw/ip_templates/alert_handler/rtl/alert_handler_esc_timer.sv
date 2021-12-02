@@ -114,28 +114,28 @@ module alert_handler_esc_timer import alert_pkg::*; (
   //  2: --
   //  3: --
   //  4: --
-  //  5: |||||||||||||||||||| (42.86%)
-  //  6: |||||||||||||||||||| (42.86%)
-  //  7: |||||| (14.29%)
+  //  5: |||||||||||||||||||| (46.43%)
+  //  6: |||||||||||||||||||| (46.43%)
+  //  7: ||| (7.14%)
   //  8: --
   //  9: --
   // 10: --
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 7
-  // Minimum Hamming weight: 2
-  // Maximum Hamming weight: 7
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 9
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    IdleSt     = 10'b1101000111,
-    TimeoutSt  = 10'b0010011110,
-    Phase0St   = 10'b1111011001,
-    Phase1St   = 10'b0001110100,
-    Phase2St   = 10'b1110110010,
-    Phase3St   = 10'b0010000001,
-    TerminalSt = 10'b0101101010,
-    FsmErrorSt = 10'b1000101101
+    IdleSt     = 10'b1011011010,
+    TimeoutSt  = 10'b0000100110,
+    Phase0St   = 10'b1110000101,
+    Phase1St   = 10'b0101010100,
+    Phase2St   = 10'b0000011001,
+    Phase3St   = 10'b1001100001,
+    TerminalSt = 10'b1101111111,
+    FsmErrorSt = 10'b0111101000
   } state_e;
 
   logic fsm_error;
@@ -310,14 +310,18 @@ module alert_handler_esc_timer import alert_pkg::*; (
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = state_e'(state_raw_q);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
     .Width(StateWidth),
-    .ResetValue(StateWidth'(IdleSt))
+    .ResetValue(StateWidth'(IdleSt)),
+    // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
+    // an alert signal, this condition is handled internally in the alert handler.
+    .EnableAlertTriggerSVA(0)
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d     ),
-    .q_o ( state_raw_q )
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
   );
 
   ////////////////
