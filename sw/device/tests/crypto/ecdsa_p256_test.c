@@ -2,21 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/ecdsa_p256/ecdsa_p256.h"
+
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/silicon_creator/lib/crypto/ecdsa_p256/ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/otbn.h"
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/otbn_util.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
+#include "sw/device/lib/testing/test_framework/test_main.h"
 
-// Message
-static const char kMessage[] = "test message";
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// Digest of the test message above.
-ecdsa_p256_message_digest_t digest;
+// SHA-256 digest of "test message" (digest in little-endian form)
+ecdsa_p256_message_digest_t digest = {.h = {0x05468728, 0x3ed0c5ca, 0x025d4fda,
+                                            0xcfa3e704, 0x507ce0d8, 0xecb616f6,
+                                            0xa0a4a460, 0x3f0a377b}};
 
 static const ecdsa_p256_public_key_t kPublicKey = {
     // Public key x-coordinate (Q.x)
@@ -33,49 +32,35 @@ static const ecdsa_p256_private_key_t kPrivateKey = {
           0xf46c0bda, 0x7abbe68f, 0xb7a04555},
 };
 
-rom_error_t compute_digest(void) {
-  hmac_digest_t act_digest;
-  uint32_t i;
+const test_config_t kTestConfig;
 
-  hmac_sha256_init();
-  RETURN_IF_ERROR(hmac_sha256_update(&kMessage, sizeof(kMessage) - 1));
-  RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
-
-  for (i = 0; i < kP256ScalarNumWords; i++) {
-    digest.h[i] = act_digest.digest[i];
-  };
-
-  return kErrorOk;
-}
-
-rom_error_t sign_then_verify_test(void) {
+void sign_then_verify_test(void) {
   ecdsa_p256_signature_t signature;
   hardened_bool_t verificationResult;
 
+  // Initialize OTBN context.
+  otbn_t otbn;
+  CHECK(otbn_init(&otbn, mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR)) ==
+        kOtbnOk);
   // Generate a signature for the message
   LOG_INFO("Signing...");
-  FOLD_OTBN_ERROR(ecdsa_p256_sign(&digest, &kPrivateKey, &signature));
+  CHECK(ecdsa_p256_sign(&otbn, &digest, &kPrivateKey, &signature) == kOtbnOk);
 
   // Verify the signature
   LOG_INFO("Verifying...");
-  FOLD_OTBN_ERROR(
-      ecdsa_p256_verify(&signature, &digest, &kPublicKey, &verificationResult));
+  CHECK(ecdsa_p256_verify(&otbn, &signature, &digest, &kPublicKey,
+                          &verificationResult) == kOtbnOk);
 
   // Signature verification is expected to succeed
   CHECK(verificationResult == kHardenedBoolTrue);
 
-  return kErrorOk;
+  return;
 }
 
-const test_config_t kTestConfig;
-
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
-
   entropy_testutils_boot_mode_init();
 
-  CHECK(compute_digest() == kErrorOk);
+  sign_then_verify_test();
 
-  EXECUTE_TEST(result, sign_then_verify_test);
-  return result == kErrorOk;
+  return true;
 }

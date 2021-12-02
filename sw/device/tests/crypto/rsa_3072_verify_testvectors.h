@@ -8,7 +8,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRYPTO_TESTS_RSA_3072_VERIFY_TESTVECTORS_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRYPTO_TESTS_RSA_3072_VERIFY_TESTVECTORS_H_
 
-#include "sw/device/silicon_creator/lib/crypto/rsa_3072/rsa_3072_verify.h"
+#include "sw/device/lib/crypto/rsa_3072/rsa_3072_verify.h"
 
 #ifdef __cplusplus
 extern "C" {
