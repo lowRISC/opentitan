@@ -115,6 +115,24 @@
 #define OT_ATTR_WEAK __attribute__((weak))
 
 /**
+ * Attribute to construct functions without prologue/epilogue sequences.
+ *
+ * Only basic asm statements can be safely included in naked functions.
+ *
+ * See https://gcc.gnu.org/onlinedocs/gcc/RISC-V-Function-Attributes.html
+ * #RISC-V-Function-Attributes
+ */
+#define OT_ATTR_NAKED __attribute__((naked))
+
+/**
+ * Attribute to place symbols into particular sections.
+ *
+ * See https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html
+ * #Common-Function-Attributes
+ */
+#define OT_ATTR_SECTION(name) __attribute__((section(name)))
+
+/**
  * Returns the return address of the current function.
  *
  * See https://gcc.gnu.org/onlinedocs/gcc/Return-Address.html.
