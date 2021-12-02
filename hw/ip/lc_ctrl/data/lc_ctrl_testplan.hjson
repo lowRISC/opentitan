@@ -42,7 +42,7 @@
             and check state count.
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_state_post_trans"]
     }
     {
       name: regwen_during_op

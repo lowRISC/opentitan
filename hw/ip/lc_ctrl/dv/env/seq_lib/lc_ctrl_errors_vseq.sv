@@ -20,6 +20,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   rand int unsigned fsm_count_err_inj_delay;
   rand int unsigned fsm_count_err_inj_period;
 
+  bit fatal_prog_alert_received;
+  bit fatal_state_alert_received;
+  bit fatal_bus_integ_alert_received;
+
+
   `uvm_object_utils_begin(lc_ctrl_errors_vseq)
     `uvm_field_int(num_trans, UVM_DEFAULT)
     `uvm_field_int(err_inj, UVM_DEFAULT)
@@ -49,6 +54,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   }
 
   constraint lc_errors_c {err_inj.transition_err == 0;}
+
+  constraint post_trans_c {err_inj.post_trans_err == 0;}
 
   constraint invalid_states_bin_c {
     !(invalid_lc_state_bin inside {ValidLcStatesBin});
@@ -104,27 +111,30 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     fork
       handle_alerts();
+      handle_escalate();
     join_none
 
     run_clk_byp_rsp_nonblocking(err_inj.clk_byp_error_rsp);
     run_flash_rma_rsp_nonblocking(err_inj.flash_rma_error_rsp);
+    update_err_inj_cfg();
+
 
     for (int i = 1; i <= num_trans; i++) begin
       cfg.set_test_phase(LcCtrlIterStart);
 
       if (i != 1) begin
         `DV_CHECK_RANDOMIZE_FATAL(this)
+        update_err_inj_cfg();
         dut_init();
       end
 
-      update_err_inj_cfg();
-
       `uvm_info(`gfn, $sformatf(
-                "starting seq %0d/%0d, init LC_state is %0s, LC_cnt is %0s",
+                "starting seq %0d/%0d, init LC_state is %0s, LC_cnt is %0s err_inj=%p",
                 i,
                 num_trans,
                 lc_state.name,
-                lc_cnt.name
+                lc_cnt.name,
+                err_inj
                 ), UVM_MEDIUM)
 
       if ($urandom_range(0, 1)) begin
@@ -156,21 +166,25 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       // SW transition request
       if ((err_inj.state_err || valid_state_for_trans(
               lc_state
-          )) && (err_inj.count_err || lc_cnt != LcCnt24)) begin
+          )) && (err_inj.count_err || (lc_cnt != LcCnt24 && lc_state != DecLcStScrap))) begin
         lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf(
                   "next_LC_state is %0s, input token is %0h", next_lc_state.name, token_val),
                   UVM_HIGH)
-
         set_hashed_token();
+        cfg.set_test_phase(LcCtrlWaitTransition);
         sw_transition_req(next_lc_state, token_val);
+        cfg.set_test_phase(LcCtrlTransitionComplete);
       end else begin
+        cfg.set_test_phase(LcCtrlBadNextState);
         // wait at least two clks for scb to finish checking lc outputs
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 2));
       end
 
-      // Allow escalate to be generated if we have received an alert
+      // Allow volatile registers to settle
+      cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
+
       cfg.set_test_phase(LcCtrlReadState1);
       // Check count and state before escalate is generated
       rd_lc_state_and_cnt_csrs();
@@ -179,10 +193,33 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       cfg.set_test_phase(LcCtrlEscalate);
 
       // Wait before re-checking lc_state to allow escalate to be accepted
-      cfg.clk_rst_vif.wait_clks(100);
+      cfg.clk_rst_vif.wait_clks($urandom_range(150, 100));
       cfg.set_test_phase(LcCtrlReadState2);
       // Check count and state after escalate is generated
       rd_lc_state_and_cnt_csrs();
+
+      cfg.set_test_phase(LcCtrlPostTransition);
+
+      // Attempt a second transition post transition if enabled
+      if (err_inj.post_trans_err) begin
+        `uvm_info(`gfn, "Attempting second transition post transition", UVM_LOW)
+        `DV_CHECK_RANDOMIZE_FATAL(this)
+        // Clear all error injections except post_trans_err
+        err_inj = '{post_trans_err: 1, default: 0};
+        // SW transition request
+        if ((err_inj.state_err || valid_state_for_trans(
+                lc_state
+            )) && (err_inj.count_err || lc_cnt != LcCnt24)) begin
+          lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
+          randomize_next_lc_state(dec_lc_state(lc_state));
+          set_hashed_token();
+          sw_transition_req(next_lc_state, token_val);
+        end else begin
+          // wait at least two clks for scb to finish checking lc outputs
+          cfg.clk_rst_vif.wait_clks($urandom_range(10, 2));
+        end
+        cfg.set_test_phase(LcCtrlPostTransTransitionComplete);
+      end
 
       // Sample coverage if enabled
       if (cfg.en_cov) begin
@@ -191,17 +228,31 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     end
 
-    // Clear error injection object so we don't get expect alerts etc.
+    // Clear error injection object so we don't get alerts etc.
     cfg.err_inj = 0;
 
     `uvm_info(`gfn, "body: finished", UVM_MEDIUM)
   endtask : body
+
+  protected virtual task dut_init(string reset_kind = "HARD");
+    super.dut_init();
+    // Make sure escalates and alert flags are cleared
+    clear_escalate(0);
+    clear_escalate(1);
+    fatal_prog_alert_received = 0;
+    fatal_state_alert_received = 0;
+    fatal_bus_integ_alert_received = 0;
+  endtask
+
 
   // smoke test will always return valid next_lc_state
   // need to randomize here because associative array's index cannot be a rand input in constraint
   // verilog_format: off - avoid bad formatting
   virtual function void randomize_next_lc_state(dec_lc_state_e curr_lc_state);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(next_lc_state,
+        // Only lifecycle states
+        next_lc_state inside {[DecLcStTestUnlocked0 : DecLcStScrap]};
+
         if (!err_inj.transition_err && !err_inj.state_err) {
           // Valid transition
           next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]};
@@ -261,18 +312,30 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
               ), UVM_MEDIUM)
     if (rand_otp_i) begin
       if (!err_inj.state_err) begin
-        `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_state,
+                                           // lc_state should be valid for transition
+                                           lc_state inside {LcValidStateForTrans};)
+        `uvm_info(`gfn, $sformatf("drive_otp_i: driving lc_state=%s", lc_state.name), UVM_MEDIUM)
       end else begin
         // Force invalid state on input
-        `uvm_info(`gfn, "drive_otp_i: applying invalid state to otp_i", UVM_MEDIUM)
         lc_state = bin_to_lc_state(invalid_lc_state_bin);
+        `uvm_info(`gfn, $sformatf("drive_otp_i: driving invalid state lc_state=%s", lc_state.name),
+                  UVM_MEDIUM)
       end
 
       if (!err_inj.count_err) begin
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_cnt, (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_cnt,
+                                           (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);
+        // Only valid counts for transition so not the one defined
+        lc_cnt != LcCnt24;)
       end else begin
         // Force invalid count on input
         lc_cnt = bin_to_lc_count(invalid_lc_count_bin);
+        `uvm_info(`gfn, $sformatf(
+                  "drive_otp_i: invalid count to otp_i invalid_lc_count_bin='b%b lc_cnt=%h",
+                  invalid_lc_count_bin,
+                  lc_cnt
+                  ), UVM_MEDIUM)
       end
 
     end else begin
@@ -284,18 +347,21 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);
     bit trigger_alert;
-    bit [TL_DW-1:0] status_val;
+    bit [TL_DW-1:0] status_val = 0;
+
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
-    csr_wr(ral.transition_target, next_lc_state);
+    while (status_val != CLAIM_TRANS_VAL) begin
+      csr_rd(ral.claim_transition_if, status_val);
+    end
+
+    csr_wr(ral.transition_target, {DecLcStateNumRep{next_lc_state[DecLcStateWidth-1:0]}});
     foreach (ral.transition_token[i]) begin
       csr_wr(ral.transition_token[i], token_val[TL_DW-1:0]);
       token_val = token_val >> TL_DW;
     end
     csr_wr(ral.transition_cmd, 'h01);
-    cfg.set_test_phase(LcCtrlWaitTransition);
     // Wait for status done or terminal errors
     `DV_SPINWAIT(wait_status(trigger_alert);)
-    cfg.set_test_phase(LcCtrlTransitionComplete);
     // always on alert, set time delay to make sure alert triggered for at least for one
     // handshake cycle
     if (trigger_alert) cfg.clk_rst_vif.wait_clks($urandom_range(50, 20));
@@ -312,6 +378,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       `uvm_info(`gfn, {"wait_status: ", ral.status.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
       if (get_field_val(ral.status.transition_successful, status_val)) break;
       if (get_field_val(ral.status.token_error, status_val)) break;
+      if (get_field_val(ral.status.transition_error, status_val)) break;
       if (get_field_val(ral.status.otp_error, status_val) ||
           get_field_val(ral.status.state_error, status_val) ||
           get_field_val(ral.status.bus_integ_error, status_val)) begin
@@ -401,6 +468,22 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     endcase
   endtask
 
+  // Clear escalate assertion
+  protected virtual task clear_escalate(int index);
+    // TODO - replace with calls to escalate agent when driver implemented
+    unique case (index)
+      0: begin
+        cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
+      end
+      1: begin
+        cfg.m_esc_scrap_state1_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("Invalid index %0d", index))
+      end
+    endcase
+  endtask
+
   // do_print - do a better job of printing structures etc.
   virtual function void do_print(uvm_printer printer);
     super.do_print(printer);
@@ -411,22 +494,32 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   endfunction
 
   // Individual event handlers
-  virtual task handle_fatal_prog_error;
+  protected virtual task handle_fatal_prog_error;
     `uvm_info(`gfn, $sformatf("handle_fatal_prog_error: alert received"), UVM_MEDIUM)
-    // Only send escalate at correct point of the test
-    if (!(cfg.get_test_phase() inside {LcCtrlEscalate, LcCtrlReadState2})) return;
-    send_escalate(1, 100);
+    fatal_prog_alert_received = 1;
   endtask
 
-  virtual task handle_fatal_state_error;
+  protected virtual task handle_fatal_state_error;
     `uvm_info(`gfn, $sformatf("handle_fatal_state_error: alert received"), UVM_MEDIUM)
-    // Only send an escalate at the correct part of the test
-    if (!(cfg.get_test_phase() inside {LcCtrlEscalate, LcCtrlReadState2})) return;
-    send_escalate(0, 100);
+    fatal_state_alert_received = 1;
   endtask
 
-  virtual task handle_fatal_bus_integ_error;
+  protected virtual task handle_fatal_bus_integ_error;
     `uvm_info(`gfn, $sformatf("handle_fatal_bus_integ_error: alert received"), UVM_MEDIUM)
+    fatal_bus_integ_alert_received = 1;
+  endtask
+
+  // Assert escalate at the appropriate part of the test
+  protected virtual task handle_escalate();
+    forever begin
+      @(cfg.set_test_phase_ev);
+      if (cfg.get_test_phase() == LcCtrlEscalate) begin
+        if( fatal_prog_alert_received ||
+            fatal_state_alert_received || fatal_bus_integ_alert_received ) begin
+          send_escalate($urandom_range(1, 0), 100);
+        end
+      end
+    end
   endtask
 
 endclass

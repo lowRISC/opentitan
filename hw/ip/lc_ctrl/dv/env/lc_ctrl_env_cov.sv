@@ -29,6 +29,12 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
     count_err_cp: coverpoint cfg.err_inj.count_err;
     count_backdoor_err_cp: coverpoint cfg.err_inj.count_backdoor_err;
     transition_err_cp: coverpoint cfg.err_inj.transition_err;
+    post_trans_err_cp: coverpoint cfg.err_inj.post_trans_err;
+
+    // Cross for attempted second transition with and without failure
+    state_post_trans_xp: cross post_trans_err_cp, state_err_cp, state_backdoor_err_cp,
+        count_err_cp, count_backdoor_err_cp;
+
   endgroup
 
   function new(string name, uvm_component parent);
