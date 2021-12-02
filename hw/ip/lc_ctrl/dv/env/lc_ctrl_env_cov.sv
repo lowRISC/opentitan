@@ -8,25 +8,36 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
-class lc_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(lc_ctrl_env_cfg));
+class lc_ctrl_env_cov extends cip_base_env_cov #(
+  .CFG_T(lc_ctrl_env_cfg)
+);
   `uvm_component_utils(lc_ctrl_env_cov)
 
   // the base class provides the following handles for use:
   // lc_ctrl_env_cfg: cfg
 
   // covergroups
-  // [add covergroups here]
+
+  // State error injections
+  covergroup err_inj_cg;
+    clk_byp_error_rsp_cp: coverpoint cfg.err_inj.clk_byp_error_rsp;
+    flash_rma_error_rsp_cp: coverpoint cfg.err_inj.flash_rma_error_rsp;
+    otp_prog_err_cp: coverpoint cfg.err_inj.otp_prog_err;
+    token_mismatch_err_cp: coverpoint cfg.err_inj.token_mismatch_err;
+    state_err_cp: coverpoint cfg.err_inj.state_err;
+    state_backdoor_err_cp: coverpoint cfg.err_inj.state_backdoor_err;
+    count_err_cp: coverpoint cfg.err_inj.count_err;
+    count_backdoor_err_cp: coverpoint cfg.err_inj.count_backdoor_err;
+    transition_err_cp: coverpoint cfg.err_inj.transition_err;
+  endgroup
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    // [instantiate covergroups here]
+    err_inj_cg = new();
   endfunction : new
 
-  virtual function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    // [or instantiate covergroups here]
-    // Please instantiate sticky_intr_cov array of objects for all interrupts that are sticky
-    // See cip_base_env_cov for details
+  virtual function void sample_cov();
+    err_inj_cg.sample();
   endfunction
 
 endclass
