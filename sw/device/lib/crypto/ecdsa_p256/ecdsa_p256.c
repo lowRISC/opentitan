@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/crypto/ecdsa_p256/ecdsa_p256.h"
+#include "sw/device/lib/crypto/ecdsa_p256/ecdsa_p256.h"
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/silicon_creator/lib/drivers/otbn.h"
-#include "sw/device/silicon_creator/lib/otbn_util.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "sw/device/lib/runtime/otbn.h"
 
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa);       // The OTBN ECDSA/P-256 app.
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, mode);  // ECDSA mode (sign or verify).
@@ -54,20 +51,21 @@ static const otbn_ptr_t kOtbnVarEcdsaDptrXr =
     OTBN_PTR_T_INIT(p256_ecdsa, dptr_x_r);
 
 /* Mode is represented by a single word, 1 for sign and 2 for verify */
-static const uint32_t kOtbnEcdsaModeNumWords = 1;
+static const uint32_t kOtbnEcdsaModeNumBytes = sizeof(uint32_t);
 static const uint32_t kOtbnEcdsaModeSign = 1;
 // static const uint32_t kOtbnEcdsaModeVerify = 2;
 
 /**
  * Makes a single dptr in the P256 library point to where its value is stored.
  */
-static otbn_error_t setup_data_pointer(otbn_t *otbn, const otbn_ptr_t dptr,
-                                       const otbn_ptr_t value) {
+static otbn_result_t setup_data_pointer(otbn_t *otbn, const otbn_ptr_t dptr,
+                                        const otbn_ptr_t value) {
   uint32_t value_dmem_addr;
   OTBN_RETURN_IF_ERROR(
       otbn_data_ptr_to_dmem_addr(otbn, value, &value_dmem_addr));
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(otbn, 1, &value_dmem_addr, dptr));
-  return kOtbnErrorOk;
+  OTBN_RETURN_IF_ERROR(
+      otbn_copy_data_to_otbn(otbn, sizeof(uint32_t), &value_dmem_addr, dptr));
+  return kOtbnOk;
 }
 
 /**
@@ -83,7 +81,7 @@ static otbn_error_t setup_data_pointer(otbn_t *otbn, const otbn_ptr_t dptr,
  * This function makes the data pointers refer to the pre-allocated DMEM
  * regions to store the actual values.
  */
-static otbn_error_t setup_data_pointers(otbn_t *otbn) {
+static otbn_result_t setup_data_pointers(otbn_t *otbn) {
   OTBN_RETURN_IF_ERROR(
       setup_data_pointer(otbn, kOtbnVarEcdsaDptrMsg, kOtbnVarEcdsaMsg));
   OTBN_RETURN_IF_ERROR(
@@ -98,60 +96,59 @@ static otbn_error_t setup_data_pointers(otbn_t *otbn) {
       setup_data_pointer(otbn, kOtbnVarEcdsaDptrD, kOtbnVarEcdsaD));
   OTBN_RETURN_IF_ERROR(
       setup_data_pointer(otbn, kOtbnVarEcdsaDptrXr, kOtbnVarEcdsaXr));
-  return kOtbnErrorOk;
+  return kOtbnOk;
 }
 
 // TODO: This implementation waits while OTBN is processing; it should be
 // modified to be non-blocking.
-otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
-                             const ecdsa_p256_private_key_t *private_key,
-                             ecdsa_p256_signature_t *result) {
-  otbn_t otbn;
-  otbn_init(&otbn);
-
+otbn_result_t ecdsa_p256_sign(otbn_t *otbn,
+                              const ecdsa_p256_message_digest_t *digest,
+                              const ecdsa_p256_private_key_t *private_key,
+                              ecdsa_p256_signature_t *result) {
   // Load the ECDSA/P-256 app and set up data pointers
-  OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppEcdsa));
-  OTBN_RETURN_IF_ERROR(setup_data_pointers(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_load_app(otbn, kOtbnAppEcdsa));
+  OTBN_RETURN_IF_ERROR(setup_data_pointers(otbn));
 
   // Set mode so start() will jump into p256_ecdsa_sign().
   OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
-      &otbn, kOtbnEcdsaModeNumWords, &kOtbnEcdsaModeSign, kOtbnVarEcdsaMode));
+      otbn, kOtbnEcdsaModeNumBytes, &kOtbnEcdsaModeSign, kOtbnVarEcdsaMode));
 
   // Set the message digest.
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords,
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(otbn, kP256ScalarNumBytes,
                                               digest->h, kOtbnVarEcdsaMsg));
 
   // Set the private key.
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords,
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(otbn, kP256ScalarNumBytes,
                                               private_key->d, kOtbnVarEcdsaD));
 
   // Start the OTBN routine.
-  OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_execute(otbn));
 
   // Spin here waiting for OTBN to complete.
-  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(otbn));
 
   // Read signature R out of OTBN dmem.
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(otbn, kP256ScalarNumBytes,
                                                 kOtbnVarEcdsaR, result->R));
 
   // Read signature S out of OTBN dmem.
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(otbn, kP256ScalarNumBytes,
                                                 kOtbnVarEcdsaS, result->S));
 
   // TODO: try to verify the signature, and return an error if verification
   // fails.
 
-  return kOtbnErrorOk;
+  return kOtbnOk;
 }
 
 // TODO: This implementation waits while OTBN is processing; it should be
 // modified to be non-blocking.
-otbn_error_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
-                               const ecdsa_p256_message_digest_t *digest,
-                               const ecdsa_p256_public_key_t *public_key,
-                               hardened_bool_t *result) {
+otbn_result_t ecdsa_p256_verify(otbn_t *otbn,
+                                const ecdsa_p256_signature_t *signature,
+                                const ecdsa_p256_message_digest_t *digest,
+                                const ecdsa_p256_public_key_t *public_key,
+                                hardened_bool_t *result) {
   // TODO: unimplemented
   *result = kHardenedBoolTrue;
-  return kOtbnErrorOk;
+  return kOtbnOk;
 }

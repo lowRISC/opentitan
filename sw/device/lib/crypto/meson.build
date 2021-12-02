@@ -7,3 +7,4 @@
 # subdirectories.
 
 subdir('rsa_3072')
+subdir('ecdsa_p256')

@@ -10,7 +10,7 @@ sw_lib_crypto_ecdsa_p256 = declare_dependency(
       'ecdsa_p256.c',
     ],
     dependencies: [
-      sw_silicon_creator_lib_otbn_util,
+      sw_lib_runtime_otbn,
       sw_otbn['p256_ecdsa']['rv32embed_dependency'],
     ],
   ),

@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/silicon_creator/lib/drivers/otbn.h"
+#include "sw/device/lib/runtime/otbn.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,15 +21,19 @@ enum {
    * parameter, see FIPS 186-4 section D.1.2.3)
    */
   kP256CoordNumBits = 256,
+  /* Length of a P-256 curve point coordinate in bytes */
+  kP256CoordNumBytes = kP256CoordNumBits / 8,
   /* Length of a P-256 curve point coordinate in words */
-  kP256CoordNumWords = kP256CoordNumBits / (sizeof(uint32_t) * 8),
+  kP256CoordNumWords = kP256CoordNumBytes / sizeof(uint32_t),
   /**
    * Length of a number modulo the P-256 "n" parameter (see FIPS 186-4 section
    * D.1.2.3) in bits
    */
   kP256ScalarNumBits = 256,
+  /* Length of a number modulo the P-256 "n" parameter in bytes */
+  kP256ScalarNumBytes = kP256ScalarNumBits / 8,
   /* Length of a number modulo the P-256 "n" parameter in words */
-  kP256ScalarNumWords = kP256ScalarNumBits / (sizeof(uint32_t) * 8),
+  kP256ScalarNumWords = kP256ScalarNumBytes / sizeof(uint32_t),
   /* Length of the message digest in bits */
   kP256MessageDigestNumBits = 256,
 };
@@ -77,28 +81,32 @@ typedef struct ecdsa_p256_message_digest_t {
 /**
  * Generates an ECDSA/P-256 signature.
  *
+ * @param otbn OTBN context.
  * @param message_digest Digest of the message to sign.
  * @param private_key Key to sign the message with.
  * @param result Buffer in which to store the generated signature.
  * @return Result of the operation (OK or error).
  */
-otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
-                             const ecdsa_p256_private_key_t *private_key,
-                             ecdsa_p256_signature_t *result);
+otbn_result_t ecdsa_p256_sign(otbn_t *otbn,
+                              const ecdsa_p256_message_digest_t *digest,
+                              const ecdsa_p256_private_key_t *private_key,
+                              ecdsa_p256_signature_t *result);
 
 /**
  * Verifies an ECDSA/P-256 signature.
  *
+ * @param otbn OTBN context.
  * @param signature Signature to be verified.
  * @param message_digest Digest of the message to check the signature against.
  * @param public_key Key to check the signature against.
  * @param result Buffer in which to store output (true iff signature is valid)
  * @return Result of the operation (OK or error).
  */
-otbn_error_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
-                               const ecdsa_p256_message_digest_t *digest,
-                               const ecdsa_p256_public_key_t *public_key,
-                               hardened_bool_t *result);
+otbn_result_t ecdsa_p256_verify(otbn_t *otbn,
+                                const ecdsa_p256_signature_t *signature,
+                                const ecdsa_p256_message_digest_t *digest,
+                                const ecdsa_p256_public_key_t *public_key,
+                                hardened_bool_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"
