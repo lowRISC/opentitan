@@ -714,6 +714,58 @@ package csr_utils_pkg;
     return null;
   endfunction
 
+  // Clone a UVM address map
+  function automatic uvm_reg_map clone_reg_map(
+      string name, uvm_reg_map map, uvm_reg_addr_t base_addr = 0, int n_bytes = 4,
+      uvm_endianness_e endian = UVM_LITTLE_ENDIAN, bit byte_addressing = 1);
+    uvm_reg_map clone;
+    uvm_reg_map submaps[$];
+    uvm_reg regs[$];
+    uvm_reg_block blk;
+    uvm_mem mems[$];
+
+    // Clone the map
+    blk = map.get_parent();
+    clone = blk.create_map(
+        .name(name),
+        .base_addr(base_addr),
+        .n_bytes(n_bytes),
+        .endian(endian),
+        .byte_addressing(byte_addressing)
+    );
+
+    // Clone the submaps by calling this function recursively
+    map.get_submaps(submaps);
+    if (submaps.size()) `dv_warning("clone_reg_map: submaps are not yet tested", "DV_UTILS_PKG")
+    while (submaps.size()) begin
+      uvm_reg_map submap, submap_clone;
+      submap = submaps.pop_front();
+      submap_clone = clone_reg_map(.name(name), .map(submap), .base_addr(submap.get_base_addr()),
+        .n_bytes(submap.get_n_bytes()), .endian(endian));
+      clone.add_submap(.child_map(submap_clone), .offset(clone.get_submap_offset(submap)));
+    end
+
+    // Clone the registers
+    map.get_registers(regs, UVM_NO_HIER);
+    while (regs.size()) begin
+      uvm_reg rg;
+      rg = regs.pop_front();
+      clone.add_reg(.rg(rg), .offset(rg.get_offset(map)), .rights(rg.get_rights(map)), .unmapped(0),
+                    .frontdoor(null));
+    end
+
+    // Clone the memories
+    map.get_memories(mems, UVM_NO_HIER);
+    while (mems.size()) begin
+      uvm_mem mem;
+      mem = mems.pop_front();
+      clone.add_mem(.mem(mem), .offset(mem.get_offset(0, map)), .rights(mem.get_rights(map)),
+                    .unmapped(0), .frontdoor(null));
+    end
+    return clone;
+
+  endfunction
+
   // sources
   `include "csr_seq_lib.sv"
 

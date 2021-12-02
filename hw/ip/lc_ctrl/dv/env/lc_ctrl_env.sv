@@ -16,11 +16,15 @@ class lc_ctrl_env extends cip_base_env #(
   alert_esc_agent  m_esc_scrap_state1_agent;
   alert_esc_agent  m_esc_scrap_state0_agent;
   jtag_riscv_agent m_jtag_riscv_agent;
+  jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    m_jtag_riscv_reg_adapter = jtag_riscv_reg_adapter::type_id::
+        create("m_jtag_riscv_reg_adapter",null,this.get_full_name());
 
     // config power manager pin
     if (!uvm_config_db#(pwr_lc_vif)::get(this, "", "pwr_lc_vif", cfg.pwr_lc_vif)) begin
@@ -75,7 +79,29 @@ class lc_ctrl_env extends cip_base_env #(
           scoreboard.esc_wipe_secrets_fifo.analysis_export);
       m_esc_scrap_state0_agent.monitor.analysis_port.connect(
           scoreboard.esc_scrap_state_fifo.analysis_export);
+      m_jtag_riscv_agent.monitor.analysis_port.connect(
+          scoreboard.jtag_riscv_fifo.analysis_export);
     end
+  endfunction
+
+  virtual function void end_of_elaboration_phase(uvm_phase phase);
+    super.end_of_elaboration_phase(phase);
+
+    `DV_CHECK_NE_FATAL(cfg.jtag_riscv_map, null)
+    cfg.jtag_riscv_map.set_sequencer(m_jtag_riscv_agent.sequencer, m_jtag_riscv_reg_adapter);
+
+    if (cfg.jtag_csr) begin
+      `uvm_info(`gfn,"Setting jtag_riscv_map as default map",UVM_MEDIUM)
+      foreach (cfg.ral_models[i]) begin
+        cfg.ral_models[i].set_default_map(cfg.jtag_riscv_map);
+      end
+    end
+
+    // Print out register model and topology if UVM_HIGH+
+    foreach (cfg.ral_models[i]) begin
+      `uvm_info(`gfn, cfg.ral_models[i].sprint(), UVM_HIGH)
+    end
+
   endfunction
 
 endclass
