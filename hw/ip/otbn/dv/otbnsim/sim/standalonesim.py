@@ -9,8 +9,10 @@ _TEST_RND_DATA = \
 
 # This is the default seed for URND PRNG. Note that the actualy URND value will
 # be random since we are modelling PRNG inside the URND register model.
-_TEST_URND_DATA = \
-    [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff, 0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
+_TEST_URND_DATA = [
+    0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
+    0x25a4fe335d095f1e, 0x2cba89acbe4a07e9
+]
 
 
 class StandaloneSim(OTBNSim):

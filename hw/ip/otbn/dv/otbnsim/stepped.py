@@ -50,8 +50,8 @@ prefixed with "0x" if they are hexadecimal.
                          is also finished processing 32b packages from EDN and
                          set the seed.
 
-    edn_flush            Flush EDN data from model because of reset signal in EDN
-                         CLOCK DOMAIN
+    edn_flush            Flush EDN data from model because of reset signal in
+                         EDN clock domain
 
     invalidate_imem      Mark all of IMEM as having invalid ECC checksums
 

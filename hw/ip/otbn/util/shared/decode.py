@@ -5,7 +5,7 @@
 
 import struct
 import sys
-from typing import Dict, Tuple
+from typing import Dict
 
 from shared.elf import read_elf
 from shared.insn_yaml import Insn, load_insns_yaml

@@ -14,7 +14,9 @@ class CheckResult:
         out += first_check()
         out += second_check()
         out.warn('A warning')
-        print(out.report()) # prints warnings/errors from both checks and "A warning"
+
+        # prints warnings/errors from both checks and "A warning"
+        print(out.report())
     '''
     def __init__(self):
         self.errors = []

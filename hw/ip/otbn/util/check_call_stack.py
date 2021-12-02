@@ -5,7 +5,7 @@
 
 import argparse
 import sys
-from typing import Dict, Tuple
+from typing import Dict
 
 from shared.check import CheckResult
 from shared.decode import OTBNProgram, decode_elf

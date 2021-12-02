@@ -40,7 +40,7 @@ class FsmState(IntEnum):
     there has been a fatal error. It matches Status.LOCKED.
 
     PRE_EXEC, FETCH_WAIT, EXEC, POST_EXEC and LOCKING correspond to
-    Status.BUSY_EXECUTE.  PRE_EXEC is the period after starting OTBN where we're
+    Status.BUSY_EXECUTE. PRE_EXEC is the period after starting OTBN where we're
     still waiting for an EDN value to seed URND. FETCH_WAIT is the single cycle
     delay after seeding URND to fill the prefetch stage. EXEC is the period
     where we start fetching and executing instructions.
