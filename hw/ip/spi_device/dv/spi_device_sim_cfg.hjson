@@ -91,6 +91,11 @@
       name: spi_device_byte_transfer
       uvm_test_seq: spi_device_byte_transfer_vseq
     }
+    
+    {
+      name: spi_device_rx_timeout
+      uvm_test_seq: spi_device_rx_timeout_vseq
+    }
   ]
 
   // List of regressions.
