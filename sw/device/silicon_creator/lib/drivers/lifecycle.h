@@ -133,17 +133,20 @@ typedef struct lifecycle_device_id {
   uint32_t device_id[kLifecycleDeviceIdNumWords];
 } lifecycle_device_id_t;
 
-/*
- * An array of human-readable life cycle state names.
- */
-extern const char *const lifecycle_state_name[];
-
 /**
  * Get the life cycle state.
  *
  * @return Life cycle state.
  */
 lifecycle_state_t lifecycle_state_get(void);
+
+/**
+ * Get the human-readable name for a life cycle state.
+ *
+ * @param lc_state Life cycle state.
+ * @return Name of the given state.
+ */
+const char *lifecycle_state_name_get(lifecycle_state_t lc_state);
 
 /**
  * Get the device identifier.

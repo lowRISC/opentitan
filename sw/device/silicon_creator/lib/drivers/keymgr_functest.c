@@ -279,7 +279,7 @@ bool test_main(void) {
 
   // This test is expected to run in DEV, PROD or PROD_END states.
   lifecycle_state_t lc_state = lifecycle_state_get();
-  LOG_INFO("lifecycle state: %s", lifecycle_state_name[lc_state]);
+  LOG_INFO("lifecycle state: %s", lifecycle_state_name_get(lc_state));
 
   // Initialize pwrmgr
   dif_pwrmgr_t pwrmgr;
