@@ -139,4 +139,16 @@
  */
 #define OT_RETURN_ADDR() __builtin_return_address(0)
 
+/**
+ * Hints to the compiler that some point is not reachable.
+ *
+ * One use case could be a function that never returns.
+ *
+ * Please not that if the control flow reaches the point of the
+ * __builtin_unreachable, the program is undefined.
+ *
+ * See https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html.
+ */
+#define OT_UNREACHABLE() __builtin_unreachable()
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
