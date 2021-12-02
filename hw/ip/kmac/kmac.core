@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:arbiter
       - lowrisc:prim:lfsr
       - lowrisc:prim:assert
+      - lowrisc:prim:count
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:tlul
       - lowrisc:ip:keymgr_pkg
