@@ -19,6 +19,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                         otp_token_fifo;
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_wipe_secrets_fifo;
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_scrap_state_fifo;
+  uvm_tlm_analysis_fifo #(jtag_riscv_item) jtag_riscv_fifo;
 
   // local queues to hold incoming packets pending comparison
 
@@ -30,6 +31,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     otp_token_fifo = new("otp_token_fifo", this);
     esc_wipe_secrets_fifo = new("esc_wipe_secrets_fifo", this);
     esc_scrap_state_fifo = new("esc_scrap_state_fifo", this);
+    jtag_riscv_fifo = new("jtag_riscv_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -42,6 +44,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       check_lc_output();
       process_otp_prog_rsp();
       process_otp_token_rsp();
+      process_jtag_riscv();
     join_none
   endtask
 
@@ -96,6 +99,35 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  virtual task process_jtag_riscv();
+    jtag_riscv_item jt_item;
+    tl_seq_item     tl_item;
+    const uvm_reg_addr_t jtag_risc_address_mask = ~(2**(DMI_ADDRW+2) - 1);
+    const uvm_reg_addr_t base_address = cfg.jtag_riscv_map.get_base_addr();
+    const uvm_reg_addr_t base_address_masked = base_address & jtag_risc_address_mask;
+
+    forever begin
+      jtag_riscv_fifo.get(jt_item);
+      `uvm_info(`gfn,{"process_jtag_risc: ",
+          jt_item.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
+      if((jt_item.op === DmiRead || jt_item.op === DmiWrite) && jt_item.status === DmiNoErr) begin
+        `uvm_create_obj(tl_seq_item, tl_item)
+        tl_item.a_addr   = base_address_masked | (jt_item.addr << 2);
+        tl_item.a_data   = jt_item.data;
+        tl_item.a_opcode = (jt_item.op === DmiRead) ? tlul_pkg::Get : tlul_pkg::PutFullData;
+        tl_item.a_mask   = '1;
+        tl_item.d_data   = jt_item.data;
+        tl_item.d_opcode = (jt_item.op === DmiRead) ? tlul_pkg::Get : tlul_pkg::PutFullData;
+
+
+        process_tl_access(tl_item, AddrChannel, "lc_ctrl_reg_block");
+        process_tl_access(tl_item, DataChannel, "lc_ctrl_reg_block");
+
+
+      end
+    end
+  endtask
+
   // check lc outputs, default all off
   virtual function void check_lc_outputs(lc_outputs_t exp_o = '{default:lc_ctrl_pkg::Off},
                                          string       msg   = "expect all output OFF");
@@ -136,6 +168,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
     // if incoming access is a write to a valid csr, then make updates right away
     if (addr_phase_write) begin
+      `uvm_info(`gfn,{"process_tl_access: write predict ", csr.get_name(), " ",
+          item.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
@@ -163,6 +197,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+      `uvm_info(`gfn,{"process_tl_access: read predict ", csr.get_name(), " ",
+          item.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
     end
   endtask
 

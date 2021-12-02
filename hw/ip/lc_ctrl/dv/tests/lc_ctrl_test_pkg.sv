@@ -6,6 +6,7 @@ package lc_ctrl_test_pkg;
   // dep packages
   import uvm_pkg::*;
   import cip_base_pkg::*;
+  import dv_utils_pkg::*;
   import lc_ctrl_env_pkg::*;
 
   // macro includes

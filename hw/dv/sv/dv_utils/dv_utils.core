@@ -17,6 +17,7 @@ filesets:
       - lowrisc:dv:dv_test_status
     files:
       - dv_utils_pkg.sv
+      - dv_report_catcher.sv: {is_include_file: true}
       - dv_report_server.sv: {is_include_file: true}
       - dv_vif_wrap.sv: {is_include_file: true}
     file_type: systemVerilogSource
