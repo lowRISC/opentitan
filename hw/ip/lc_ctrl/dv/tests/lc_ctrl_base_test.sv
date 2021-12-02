@@ -33,6 +33,14 @@ class lc_ctrl_base_test extends cip_base_test #(
     // Demote address maps warnings
     msg = "\s*map .* does not seem to be initialized correctly.*";
     catcher.add_change_sev("RegModel", msg, UVM_INFO);
+
+    // Demote field busy warning
+    msg = {
+      "\s*Setting the value of field \".*\" while containing",
+      "\s+register \"lc_ctrl_reg_block.alert_test\" is being accessed"
+    };
+    catcher.add_change_sev("UVM/FLD/SET/BSY", msg, UVM_INFO);
+
   endfunction
 
 endclass : lc_ctrl_base_test

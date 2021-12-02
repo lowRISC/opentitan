@@ -25,42 +25,47 @@ interface lc_ctrl_if (
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
 
-  logic               tdo_oe;  // TODO: add assertions
-  otp_lc_data_t       otp_i;
-  otp_device_id_t     otp_device_id_i;
-  otp_device_id_t     otp_manuf_state_i;
-  lc_token_t          hashed_token;
+  logic                                 tdo_oe;  // TODO: add assertions
+  otp_lc_data_t                         otp_i;
+  otp_device_id_t                       otp_device_id_i;
+  otp_device_id_t                       otp_manuf_state_i;
+  lc_token_t                            hashed_token;
 
-  lc_tx_t             lc_dft_en_o;
-  lc_tx_t             lc_nvm_debug_en_o;
-  lc_tx_t             lc_hw_debug_en_o;
-  lc_tx_t             lc_cpu_en_o;
-  lc_tx_t             lc_creator_seed_sw_rw_en_o;
-  lc_tx_t             lc_owner_seed_sw_rw_en_o;
-  lc_tx_t             lc_iso_part_sw_rd_en_o;
-  lc_tx_t             lc_iso_part_sw_wr_en_o;
-  lc_tx_t             lc_seed_hw_rd_en_o;
-  lc_tx_t             lc_keymgr_en_o;
-  lc_tx_t             lc_escalate_en_o;
-  lc_tx_t             lc_check_byp_en_o;
+  lc_tx_t                               lc_dft_en_o;
+  lc_tx_t                               lc_nvm_debug_en_o;
+  lc_tx_t                               lc_hw_debug_en_o;
+  lc_tx_t                               lc_cpu_en_o;
+  lc_tx_t                               lc_creator_seed_sw_rw_en_o;
+  lc_tx_t                               lc_owner_seed_sw_rw_en_o;
+  lc_tx_t                               lc_iso_part_sw_rd_en_o;
+  lc_tx_t                               lc_iso_part_sw_wr_en_o;
+  lc_tx_t                               lc_seed_hw_rd_en_o;
+  lc_tx_t                               lc_keymgr_en_o;
+  lc_tx_t                               lc_escalate_en_o;
+  lc_tx_t                               lc_check_byp_en_o;
 
-  lc_tx_t             clk_byp_req_o;
-  lc_tx_t             clk_byp_ack_i;
-  lc_tx_t             flash_rma_req_o;
-  lc_tx_t             flash_rma_ack_i;
+  lc_tx_t                               clk_byp_req_o;
+  lc_tx_t                               clk_byp_ack_i;
+  lc_tx_t                               flash_rma_req_o;
+  lc_tx_t                               flash_rma_ack_i;
 
-  lc_keymgr_div_t     keymgr_div_o;
-  lc_flash_rma_seed_t flash_rma_seed_o;
+  lc_keymgr_div_t                       keymgr_div_o;
+  lc_flash_rma_seed_t                   flash_rma_seed_o;
 
-  event               fsm_backdoor_state_write_ev;
-  event               fsm_backdoor_state_read_ev;
-  event               fsm_backdoor_count_write_ev;
-  event               fsm_backdoor_count_read_ev;
+  event                                 fsm_backdoor_state_write_ev;
+  event                                 fsm_backdoor_state_read_ev;
+  event                                 fsm_backdoor_count_write_ev;
+  event                                 fsm_backdoor_count_read_ev;
+
+  // Debug signals
+  lc_ctrl_env_pkg::lc_ctrl_err_inj_t    err_inj;
+  lc_ctrl_env_pkg::lc_ctrl_test_phase_e test_phase;
 
   task automatic init(lc_state_e lc_state = LcStRaw, lc_cnt_e lc_cnt = LcCnt0,
-                      lc_tx_t clk_byp_ack = Off, lc_tx_t flash_rma_ack = Off);
+                      lc_tx_t clk_byp_ack = Off, lc_tx_t flash_rma_ack = Off,
+                      logic otp_partition_err = 0);
     otp_i.valid             = 1;
-    otp_i.error             = 0;
+    otp_i.error             = otp_partition_err;
     otp_i.state             = lc_state;
     otp_i.count             = lc_cnt;
     otp_i.test_unlock_token = lc_ctrl_env_pkg::get_random_token();

@@ -23,6 +23,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   bit fatal_prog_alert_received;
   bit fatal_state_alert_received;
   bit fatal_bus_integ_alert_received;
+  bit assertions_disabled;
 
 
   `uvm_object_utils_begin(lc_ctrl_errors_vseq)
@@ -37,14 +38,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   `uvm_object_utils_end
   `uvm_object_new
 
-  constraint no_err_rsps_c {
-    err_inj.clk_byp_error_rsp == 0;
-    err_inj.flash_rma_error_rsp == 0;
-  }
-
   constraint otp_prog_err_c {err_inj.otp_prog_err == 0;}
 
-  constraint token_mismatch_err_c {err_inj.token_mismatch_err == 0;}
+  constraint post_trans_c {err_inj.post_trans_err == 0;}
 
   constraint lc_state_failure_c {
     err_inj.state_err == 0;
@@ -53,9 +49,14 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     err_inj.count_backdoor_err == 0;
   }
 
-  constraint lc_errors_c {err_inj.transition_err == 0;}
-
-  constraint post_trans_c {err_inj.post_trans_err == 0;}
+  constraint lc_errors_c {
+    err_inj.transition_err == 0;
+    err_inj.transition_count_err == 0;
+    err_inj.clk_byp_error_rsp == 0;
+    err_inj.flash_rma_error_rsp == 0;
+    err_inj.token_mismatch_err == 0;
+    err_inj.otp_partition_err == 0;
+  }
 
   constraint invalid_states_bin_c {
     !(invalid_lc_state_bin inside {ValidLcStatesBin});
@@ -88,6 +89,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     // Clear all error injection bits so we end with a clean lc_ state, lc_count etc.
     err_inj = 0;
+    // Clear assertions disabled flag
+    assertions_disabled = 0;
 
     // trigger dut_init to make sure always on alert is not firing forever
     if (do_apply_reset) begin
@@ -97,6 +100,13 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       `uvm_info(`gfn, "post_start: waiting to be killed", UVM_MEDIUM)
       wait(0);  // wait until upper seq resets and kills this seq
     end
+
+    // Reenable assertions before next sequence
+    `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A", 1)
+    `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 1)
+    `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 1)
+    `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 1)
+
     // delay to avoid race condition when sending item and checking no item after reset occur
     // at the same time
     #1ps;
@@ -108,6 +118,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     uvm_reg_data_t rdata;
     logic [FsmStateWidth-1:0] fsm_state;
     num_trans.rand_mode(0);
+    update_err_inj_cfg();
 
     fork
       handle_alerts();
@@ -116,8 +127,6 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     run_clk_byp_rsp_nonblocking(err_inj.clk_byp_error_rsp);
     run_flash_rma_rsp_nonblocking(err_inj.flash_rma_error_rsp);
-    update_err_inj_cfg();
-
 
     for (int i = 1; i <= num_trans; i++) begin
       cfg.set_test_phase(LcCtrlIterStart);
@@ -164,15 +173,17 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       end
 
       // SW transition request
-      if ((err_inj.state_err || valid_state_for_trans(
-              lc_state
-          )) && (err_inj.count_err || (lc_cnt != LcCnt24 && lc_state != DecLcStScrap))) begin
+      // verilog_format: off - avoid bad formatting
+      if ((err_inj.state_err || valid_state_for_trans(lc_state)) &&
+          (err_inj.count_err || err_inj.transition_count_err ||
+          (lc_cnt != LcCnt24 && lc_state != DecLcStScrap))) begin
         lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf(
                   "next_LC_state is %0s, input token is %0h", next_lc_state.name, token_val),
                   UVM_HIGH)
         set_hashed_token();
+        set_otp_prog_rsp();
         cfg.set_test_phase(LcCtrlWaitTransition);
         sw_transition_req(next_lc_state, token_val);
         cfg.set_test_phase(LcCtrlTransitionComplete);
@@ -181,13 +192,21 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         // wait at least two clks for scb to finish checking lc outputs
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 2));
       end
+      // verilog_format: on
 
       // Allow volatile registers to settle
       cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
 
       cfg.set_test_phase(LcCtrlReadState1);
       // Check count and state before escalate is generated
-      rd_lc_state_and_cnt_csrs();
+      // Skip this if we are injecting clock bypass error responses as the KMAC
+      // may or may not respond leaving the FSM stuck in TokenHashSt
+      if (!err_inj.clk_byp_error_rsp) rd_lc_state_and_cnt_csrs();
+      else begin
+        `uvm_info(`gfn, "Skipped read of lc state & lc_count because err_inj.clk_byp_error_rsp = 1",
+                  UVM_MEDIUM)
+        cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
+      end
 
       // Allow escalate to be generated if we have received an alert
       cfg.set_test_phase(LcCtrlEscalate);
@@ -201,18 +220,19 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       cfg.set_test_phase(LcCtrlPostTransition);
 
       // Attempt a second transition post transition if enabled
+      // verilog_format: off - avoid bad formatting
       if (err_inj.post_trans_err) begin
         `uvm_info(`gfn, "Attempting second transition post transition", UVM_LOW)
         `DV_CHECK_RANDOMIZE_FATAL(this)
         // Clear all error injections except post_trans_err
         err_inj = '{post_trans_err: 1, default: 0};
         // SW transition request
-        if ((err_inj.state_err || valid_state_for_trans(
-                lc_state
-            )) && (err_inj.count_err || lc_cnt != LcCnt24)) begin
+        if ((err_inj.state_err || valid_state_for_trans(lc_state)) &&
+            (err_inj.count_err || err_inj.transition_count_err || lc_cnt != LcCnt24)) begin
           lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
           randomize_next_lc_state(dec_lc_state(lc_state));
           set_hashed_token();
+          set_otp_prog_rsp();
           sw_transition_req(next_lc_state, token_val);
         end else begin
           // wait at least two clks for scb to finish checking lc outputs
@@ -220,7 +240,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         end
         cfg.set_test_phase(LcCtrlPostTransTransitionComplete);
       end
-
+      // verilog_format: on
       // Sample coverage if enabled
       if (cfg.en_cov) begin
         sample_cov();
@@ -242,6 +262,23 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     fatal_prog_alert_received = 0;
     fatal_state_alert_received = 0;
     fatal_bus_integ_alert_received = 0;
+
+    // Disable assertions depending on error injection
+    if (err_inj.clk_byp_error_rsp) begin
+      `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A", 0)
+      `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 0)
+      `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 0)
+      `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 0)
+      assertions_disabled = 1;
+    end else if (assertions_disabled) begin
+      // Reenable assertions if they had been disabled
+      `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A", 1)
+      `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 1)
+      `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 1)
+      `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 1)
+      assertions_disabled = 0;
+    end
+
   endtask
 
 
@@ -275,16 +312,18 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   virtual function void set_hashed_token();
     lc_ctrl_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
-
-    // No token for InvalidTokenIdx
+    lc_ctrl_pkg::token_idx_e token_idx_err_inj;
     lc_ctrl_state_pkg::lc_token_t tokens_a[NumTokens-1];
-    tokens_a[ZeroTokenIdx]       = 0;
+    lc_ctrl_state_pkg::lc_token_t token_err_inj;
+
+    tokens_a[ZeroTokenIdx]       = lc_ctrl_state_pkg::AllZeroTokenHashed;
     tokens_a[RawUnlockTokenIdx]  = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
     tokens_a[TestUnlockTokenIdx] = cfg.lc_ctrl_vif.otp_i.test_unlock_token;
     tokens_a[TestExitTokenIdx]   = cfg.lc_ctrl_vif.otp_i.test_exit_token;
     tokens_a[RmaTokenIdx]        = cfg.lc_ctrl_vif.otp_i.rma_token;
+    tokens_a[InvalidTokenIdx]    = '0;
 
-    if (!err_inj.state_err && !err_inj.count_err) begin
+    if (!err_inj.state_err && !err_inj.count_err && !err_inj.transition_err) begin
       `DV_CHECK_NE(token_idx, InvalidTokenIdx, $sformatf(
                    "curr_state: %0s, next_state %0s, does not expect InvalidToken",
                    lc_state.name,
@@ -298,12 +337,28 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     if (!err_inj.token_mismatch_err) begin
       cfg.m_otp_token_pull_agent_cfg.add_d_user_data(tokens_a[token_idx]);
     end else begin
-      // 50% chance to input other token data, 50% chance let push-pull agent drive random data
+      // Inject token error
+      // 50% chance other token data, 50% chance random data
       if ($urandom_range(0, 1)) begin
-        token_idx = token_idx_e'($urandom_range(0, TokenIdxWidth - 2));
-        cfg.m_otp_token_pull_agent_cfg.add_d_user_data(tokens_a[token_idx]);
+        // Use other token
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(token_idx_err_inj, token_idx_err_inj != token_idx;)
+        cfg.m_otp_token_pull_agent_cfg.add_d_user_data(tokens_a[token_idx_err_inj]);
+      end else begin
+        // Random token
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(token_err_inj, !(token_err_inj inside {tokens_a});)
+        cfg.m_otp_token_pull_agent_cfg.add_d_user_data(token_err_inj);
       end
     end
+  endfunction
+
+  // Set otp program response data
+  virtual function void set_otp_prog_rsp();
+    bit [1:0] err_bits = 0;
+    // Clear any previous data
+    cfg.m_otp_prog_pull_agent_cfg.clear_d_user_data();
+    // TODO: tailor constraint to LC state transitions for V3
+    if (err_inj.otp_prog_err) `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_bits, err_bits == 3;)
+    foreach (err_bits[i]) cfg.m_otp_prog_pull_agent_cfg.add_d_user_data(err_bits[i]);
   endfunction
 
   // Drive OTP input `lc_state` and `lc_cnt`.
@@ -326,8 +381,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       if (!err_inj.count_err) begin
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_cnt,
                                            (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);
-        // Only valid counts for transition so not the one defined
-        lc_cnt != LcCnt24;)
+        // Count must be less than LcCnt24 unless we want to inject a tranisition count error
+        if (!err_inj.transition_count_err) {lc_cnt != LcCnt24;}
+        else {lc_cnt == LcCnt24;})
       end else begin
         // Force invalid count on input
         lc_cnt = bin_to_lc_count(invalid_lc_count_bin);
@@ -342,7 +398,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       lc_state = LcStRaw;
       lc_cnt   = LcCnt0;
     end
-    cfg.lc_ctrl_vif.init(lc_state, lc_cnt);
+    cfg.lc_ctrl_vif.init(.lc_state(lc_state), .lc_cnt(lc_cnt),
+                         .otp_partition_err(err_inj.otp_partition_err));
   endtask
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);
@@ -372,13 +429,22 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     bit [TL_DW-1:0] status_val;
     bit state_error_exp, state_error_act;
     bit count_error_exp, count_error_act;
+    bit token_error_exp, token_error_act;
+    bit flash_rma_error_exp, flash_rma_error_act;
+    bit otp_error_exp, otp_error_act;
+    bit transition_count_error_exp, transition_count_error_act;
+    bit otp_partition_error_exp, otp_partition_error_act;
+
     // verilog_format: off - avoid bad formatting
     forever begin
       csr_rd(ral.status, status_val);
       `uvm_info(`gfn, {"wait_status: ", ral.status.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
       if (get_field_val(ral.status.transition_successful, status_val)) break;
       if (get_field_val(ral.status.token_error, status_val)) break;
+      if (get_field_val(ral.status.flash_rma_error, status_val)) break;
       if (get_field_val(ral.status.transition_error, status_val)) break;
+      if (get_field_val(ral.status.transition_count_error, status_val)) break;
+      // if (get_field_val(ral.status.otp_partition_error, status_val)) break;
       if (get_field_val(ral.status.otp_error, status_val) ||
           get_field_val(ral.status.state_error, status_val) ||
           get_field_val(ral.status.bus_integ_error, status_val)) begin
@@ -393,13 +459,27 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     // Expected bits
     state_error_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
         cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err;
-
+    token_error_exp = cfg.err_inj.token_mismatch_err;
+    flash_rma_error_exp = cfg.err_inj.flash_rma_error_rsp;
+    otp_error_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp;
+    transition_count_error_exp = cfg.err_inj.transition_count_err;
+    otp_partition_error_exp = cfg.err_inj.otp_partition_err;
 
     // Actual bits
     state_error_act = get_field_val(ral.status.state_error, status_val);
+    token_error_act = get_field_val(ral.status.token_error, status_val);
+    flash_rma_error_act = get_field_val(ral.status.flash_rma_error, status_val);
+    otp_error_act = get_field_val(ral.status.otp_error, status_val);
+    transition_count_error_act = get_field_val(ral.status.transition_count_error, status_val);
+    otp_partition_error_act = get_field_val(ral.status.otp_partition_error, status_val);
 
     // Check status against expected from err_inj
     `DV_CHECK_EQ(state_error_act, state_error_exp)
+    `DV_CHECK_EQ(token_error_act, token_error_exp)
+    `DV_CHECK_EQ(flash_rma_error_act, flash_rma_error_exp)
+    `DV_CHECK_EQ(otp_error_act, otp_error_exp)
+    `DV_CHECK_EQ(transition_count_error_exp, transition_count_error_act)
+    `DV_CHECK_EQ(otp_partition_error_exp, otp_partition_error_act)
 
   endtask
 
@@ -414,6 +494,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // This is shared with the scoreboard via the environment config object
   virtual function void update_err_inj_cfg();
     cfg.err_inj = err_inj;
+    // Debug signal in lc_ctrl_if
+    cfg.lc_ctrl_vif.err_inj <= err_inj;
     `uvm_info(`gfn, $sformatf("update_err_inj_cfg: %p", cfg.err_inj), UVM_MEDIUM)
   endfunction
 
@@ -522,4 +604,70 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     end
   endtask
 
+  // verilog_format: off
+  virtual task run_clk_byp_rsp_nonblocking(bit has_err = 0);
+    fork
+      forever begin
+        lc_ctrl_pkg::lc_tx_t rsp = lc_ctrl_pkg::Off;
+        wait (cfg.lc_ctrl_vif.clk_byp_req_o == lc_ctrl_pkg::On || err_inj.clk_byp_error_rsp);
+        if (err_inj.clk_byp_error_rsp) begin
+          // Error stream just on -> off -> on... every clock cycle
+          rsp = (rsp == lc_ctrl_pkg::On) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On;
+          cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+          cfg.clk_rst_vif.wait_clks(1);
+        end else begin
+          // Normal behaviour
+          rsp = lc_ctrl_pkg::On;
+          cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+          cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+        end
+        wait (cfg.lc_ctrl_vif.clk_byp_req_o != lc_ctrl_pkg::On || err_inj.clk_byp_error_rsp);
+        if (err_inj.clk_byp_error_rsp) begin
+          // Error stream just on -> off -> on... every clock cycle
+          rsp = (rsp == lc_ctrl_pkg::On) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On;
+          cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+          cfg.clk_rst_vif.wait_clks(1);
+        end else begin
+          // Normal behaviour
+          rsp = lc_ctrl_pkg::Off;
+          cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+          cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+        end
+      end
+    join_none
+  endtask
+
+
+  virtual task run_flash_rma_rsp_nonblocking(bit has_err = 0);
+    fork
+      forever begin
+        lc_ctrl_pkg::lc_tx_t rsp = lc_ctrl_pkg::Off;
+        wait (cfg.lc_ctrl_vif.flash_rma_req_o == lc_ctrl_pkg::On || err_inj.flash_rma_error_rsp);
+        if (err_inj.flash_rma_error_rsp) begin
+          // Error stream just on -> off -> on... every clock cycle
+          rsp = (rsp == lc_ctrl_pkg::On) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On;
+          cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+          cfg.clk_rst_vif.wait_clks(1);
+        end else begin
+          // Normal behaviour
+          rsp = lc_ctrl_pkg::On;
+          cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+          cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+        end
+        wait (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On || err_inj.flash_rma_error_rsp);
+        if (err_inj.flash_rma_error_rsp) begin
+          // Error stream just on -> off -> on... every clock cycle
+          rsp = (rsp == lc_ctrl_pkg::On) ? lc_ctrl_pkg::Off : lc_ctrl_pkg::On;
+          cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+          cfg.clk_rst_vif.wait_clks(1);
+        end else begin
+          // Normal behaviour
+          rsp = lc_ctrl_pkg::Off;
+          cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+          cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+        end
+      end
+    join_none
+  endtask
+  // verilog_format: on
 endclass

@@ -86,6 +86,12 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                         .max_delay(cfg.alert_max_delay));
         end
 
+        if (cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp) begin
+          // OTP program error expected
+          set_exp_alert(.alert_name("fatal_prog_error"), .is_fatal(1),
+                        .max_delay(cfg.alert_max_delay));
+        end
+
       end
     end
   endtask
@@ -223,13 +229,6 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     if (addr_phase_read) begin
       case (csr.get_name())
         "lc_state": begin
-          // if (cfg.err_inj.state_err) begin // State error expected
-          //   case(cfg.test_phase)
-          //     LcCtrlReadState1: `DV_CHECK_FATAL(
-          //         ral.lc_state.predict(.value(DecLcStInvalid), .kind(UVM_PREDICT_READ)))
-          //     LcCtrlReadState2: `DV_CHECK_FATAL(
-          //         ral.lc_state.predict(.value(DecLcStEscalate), .kind(UVM_PREDICT_READ)))
-          //   endcase
           `DV_CHECK_FATAL(ral.lc_state.state.predict(
                           .value(predict_lc_state()), .kind(UVM_PREDICT_READ)))
         end
@@ -281,6 +280,9 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     bit state_err_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
         cfg.err_inj.count_backdoor_err || cfg.err_inj.state_backdoor_err;
 
+    // OTP program error is expected
+    bit prog_err_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp;
+
     // Exceptions to default
     unique case (cfg.test_phase)
       LcCtrlTestInit, LcCtrlIterStart, LcCtrlDutReady, LcCtrlWaitTransition: begin
@@ -300,8 +302,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         // Default PostTransition
         lc_state_single_exp = DecLcStPostTrans;
 
-        if (state_err_exp) begin
-          // For state error after escalate is triggered we expect Escalate
+        if (state_err_exp || prog_err_exp) begin
+          // For state / prog error after escalate is triggered we expect Escalate
           lc_state_single_exp = DecLcStEscalate;
         end
       end

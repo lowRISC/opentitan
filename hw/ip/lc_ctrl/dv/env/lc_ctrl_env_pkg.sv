@@ -54,9 +54,15 @@ package lc_ctrl_env_pkg;
 
   // error injection
   typedef struct packed {
+    // Bad protocol on clk_byp_ack_i
     bit clk_byp_error_rsp;
+    // Bad protocol on flash_rma_ack_i
     bit flash_rma_error_rsp;
+    // OTP responds with error
     bit otp_prog_err;
+    // OTP data to lc_ctrl has error bit set
+    bit otp_partition_err;
+    // Incorrect token for state change
     bit token_mismatch_err;
     // Invalid state driven via OTP interface
     bit state_err;
@@ -68,7 +74,10 @@ package lc_ctrl_env_pkg;
     bit count_backdoor_err;
     // Send a transition request in post_trans state
     bit post_trans_err;
+    // Invalid transition for current state
     bit transition_err;
+    // Invalid transition because count already at maximum
+    bit transition_count_err;
   } lc_ctrl_err_inj_t;
 
   // Test phase - used to synchronise the scoreboard

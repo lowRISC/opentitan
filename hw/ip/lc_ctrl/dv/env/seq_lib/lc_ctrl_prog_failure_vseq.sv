@@ -4,18 +4,11 @@
 
 // This sequence triggers prog_failure alert by setting the error bit in otp_program_rsp
 // Then check in scb if the alert is triggered correctly
-class lc_ctrl_prog_failure_vseq extends lc_ctrl_smoke_vseq;
+class lc_ctrl_prog_failure_vseq extends lc_ctrl_errors_vseq;
   `uvm_object_utils(lc_ctrl_prog_failure_vseq)
 
   `uvm_object_new
 
-  constraint otp_prog_err_c {
-    otp_prog_err == 1;
-  }
-
-  virtual task post_start();
-    expect_fatal_alerts = 1;
-    super.post_start();
-  endtask
+  constraint otp_prog_err_c {err_inj.otp_prog_err == 1;}
 
 endclass

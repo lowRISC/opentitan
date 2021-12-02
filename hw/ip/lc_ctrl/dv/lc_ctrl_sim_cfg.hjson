@@ -68,7 +68,7 @@
 
     {
       name: lc_ctrl_errors
-      uvm_test_seq: lc_ctrl_errors_vseq
+      uvm_test_seq: lc_ctrl_lc_errors_vseq
     }
 
   ]
