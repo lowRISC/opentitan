@@ -341,16 +341,19 @@ module kmac_app
   /////////
 
   // State register
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] st_raw;
   assign st = st_e'(st_raw);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(st_e),
     .Width      (StateWidth),
     .ResetValue (StateWidth'(StIdle))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( st_d   ),
-    .q_o ( st_raw )
+    .state_i ( st_d   ),
+    .state_o ( st_raw )
   );
 
   // Next State & output logic

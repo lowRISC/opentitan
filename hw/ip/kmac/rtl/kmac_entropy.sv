@@ -376,14 +376,17 @@ module kmac_entropy
   assign st = rand_st_e'(st_raw_q);
 
   // State FF
-  prim_flop #(
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  prim_sparse_fsm_flop #(
+    .StateEnumT(rand_st_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(StRandReset))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( st_d     ),
-    .q_o ( st_raw_q )
+    .state_i ( st_d     ),
+    .state_o ( st_raw_q )
   );
 
   // State: Next State and Output Logic
