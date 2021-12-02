@@ -581,7 +581,7 @@ module lc_ctrl
   // KMAC Interface //
   ////////////////////
 
-  logic token_hash_req, token_hash_req_chk, token_hash_ack, token_hash_err;
+  logic token_hash_req, token_hash_req_chk, token_hash_ack, token_hash_err, token_if_fsm_err;
   lc_token_t hashed_token;
   lc_ctrl_kmac_if u_lc_ctrl_kmac_if (
     .clk_i,
@@ -595,6 +595,7 @@ module lc_ctrl
     .token_hash_req_chk_i ( token_hash_req_chk ),
     .token_hash_ack_o     ( token_hash_ack     ),
     .token_hash_err_o     ( token_hash_err     ),
+    .token_if_fsm_err_o   ( token_if_fsm_err   ),
     .hashed_token_o       ( hashed_token       )
   );
 
@@ -633,6 +634,7 @@ module lc_ctrl
     .token_hash_req_chk_o   ( token_hash_req_chk               ),
     .token_hash_ack_i       ( token_hash_ack                   ),
     .token_hash_err_i       ( token_hash_err                   ),
+    .token_if_fsm_err_i     ( token_if_fsm_err                 ),
     .hashed_token_i         ( hashed_token                     ),
     .otp_prog_req_o         ( lc_otp_program_o.req             ),
     .otp_prog_lc_state_o    ( lc_otp_program_o.state           ),
@@ -691,5 +693,11 @@ module lc_ctrl
   `ASSERT_KNOWN(LcFlashRmaSeedKnown_A,  lc_flash_rma_seed_o        )
   `ASSERT_KNOWN(LcFlashRmaReqKnown_A,   lc_flash_rma_req_o         )
   `ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o            )
+
+  // Alert assertions for sparse FSMs.
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcFsmCheck_A,
+      u_lc_ctrl_fsm.u_fsm_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKmacIfFsmCheck_A,
+      u_lc_ctrl_kmac_if.u_state_regs, alert_tx_o[1])
 
 endmodule : lc_ctrl

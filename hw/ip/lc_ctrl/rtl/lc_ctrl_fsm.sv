@@ -48,6 +48,7 @@ module lc_ctrl_fsm
   output logic                  token_hash_req_chk_o,
   input                         token_hash_ack_i,
   input                         token_hash_err_i,
+  input                         token_if_fsm_err_i,
   input  lc_token_t             hashed_token_i,
   // OTP programming interface
   output logic                  otp_prog_req_o,
@@ -416,11 +417,11 @@ module lc_ctrl_fsm
       ///////////////////////////////////////////////////////////////////
     endcase
 
-    // If at any time the life cycle state encoding is not valid,
-    // we jump into the terminal error state right away.
+    // If at any time the life cycle state encoding or any other FSM state within this module
+    // is not valid, we jump into the terminal error state right away.
     // Note that state_invalid_error is a multibit error signal
     // with different error sources - need to reduce this to one bit here.
-    if (|state_invalid_error) begin
+    if (|state_invalid_error | token_if_fsm_err_i) begin
       fsm_state_d = InvalidSt;
       state_invalid_error_o = 1'b1;
     end else if (esc_scrap_state0_i || esc_scrap_state1_i) begin
@@ -436,14 +437,15 @@ module lc_ctrl_fsm
   // flops in order to prevent FSM state encoding optimizations.
   logic [FsmStateWidth-1:0] fsm_state_raw_q;
   assign fsm_state_q = fsm_state_e'(fsm_state_raw_q);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(fsm_state_e),
     .Width(FsmStateWidth),
     .ResetValue(FsmStateWidth'(ResetSt))
   ) u_fsm_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( fsm_state_d     ),
-    .q_o ( fsm_state_raw_q )
+    .state_i ( fsm_state_d     ),
+    .state_o ( fsm_state_raw_q )
   );
 
   logic [LcStateWidth-1:0] lc_state_raw_q;

@@ -26,8 +26,9 @@ module lc_ctrl_kmac_if
   input                         token_hash_req_i,
   // Used for gating assertions inside CDC primitives.
   input                         token_hash_req_chk_i,
-  output                        token_hash_ack_o,
-  output                        token_hash_err_o,
+  output logic                  token_hash_ack_o,
+  output logic                  token_hash_err_o,
+  output logic                  token_if_fsm_err_o,
   output lc_token_t             hashed_token_o
 );
 
@@ -141,15 +142,15 @@ module lc_ctrl_kmac_if
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 6
-  // Minimum Hamming weight: 1
+  // Minimum Hamming weight: 2
   // Maximum Hamming weight: 6
   //
   localparam int StateWidth = 8;
   typedef enum logic [StateWidth-1:0] {
-    FirstSt  = 8'b00000001,
-    SecondSt = 8'b11110011,
-    WaitSt   = 8'b10111100,
-    DoneSt   = 8'b01001110
+    FirstSt  = 8'b01011011,
+    SecondSt = 8'b10010100,
+    WaitSt   = 8'b11100111,
+    DoneSt   = 8'b00101000
   } state_e;
 
   state_e state_d, state_q;
@@ -159,6 +160,7 @@ module lc_ctrl_kmac_if
     state_d = state_q;
     kmac_data_o = '0;
     kmac_ack = 1'b0;
+    token_if_fsm_err_o = 1'b0;
 
     unique case (state_q)
       // Wait for request and transfer first half of
@@ -193,7 +195,9 @@ module lc_ctrl_kmac_if
       // Terminal state (by design we can only perform
       // one token hashing operation per reset cycle).
       DoneSt: ;
-      default: state_d = DoneSt;
+      default: begin
+        token_if_fsm_err_o = 1'b1;
+      end
     endcase // state_q
   end
 
@@ -201,14 +205,15 @@ module lc_ctrl_kmac_if
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = state_e'(state_raw_q);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(FirstSt))
   ) u_state_regs (
-    .clk_i  ( clk_kmac_i  ),
-    .rst_ni ( rst_kmac_ni ),
-    .d_i    ( state_d     ),
-    .q_o    ( state_raw_q )
+    .clk_i   ( clk_kmac_i  ),
+    .rst_ni  ( rst_kmac_ni ),
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
   );
 
 endmodule : lc_ctrl_kmac_if
