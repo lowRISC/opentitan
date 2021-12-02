@@ -9,4 +9,5 @@
 `include "lc_ctrl_prog_failure_vseq.sv"
 `include "lc_ctrl_state_failure_vseq.sv"
 `include "lc_ctrl_state_post_trans_vseq.sv"
+`include "lc_ctrl_lc_errors_vseq.sv"
 

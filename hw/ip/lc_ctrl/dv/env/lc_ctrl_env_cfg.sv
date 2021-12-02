@@ -86,7 +86,7 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     // Set base address for JTAG map
     ral.set_base_addr(ral.default_map.get_base_addr(), jtag_riscv_map);
 
-    alert_max_delay = 500;
+    alert_max_delay = 1000;
   endfunction
 
   protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
@@ -95,7 +95,10 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   endfunction
 
   virtual function void set_test_phase(lc_ctrl_test_phase_e test_phase);
+    // Set in config object
     this.test_phase = test_phase;
+    // And interface
+    lc_ctrl_vif.test_phase <= test_phase;
     ->set_test_phase_ev;
   endfunction
 
