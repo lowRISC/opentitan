@@ -129,7 +129,6 @@ package otbn_pkg;
     AluOpBaseSll
   } alu_op_base_e;
 
-  // TODO: Can we arrange this to simplify decoding logic?
   typedef enum logic [3:0] {
     AluOpBignumAdd,
     AluOpBignumAddc,
@@ -266,17 +265,11 @@ package otbn_pkg;
     FlagZ = 'd3
   } flag_e;
 
-  // TODO: Figure out how to add assertions for the enum type width; initial blocks, as produced by
-  // ASSERT_INIT, aren't allowed in packages.
-  //`ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
-
   // Structures for decoded instructions, grouped into three:
   // - insn_dec_shared_t - Anything that applies to both bignum and base microarchitecture
   // - insn_dec_base_t - Anything that only applies to the base side microarchitecture
   // - insn_dec_bignum_t - Anything that only applies to bignum side microarchitecture
-  //
-  // TODO: The variable names are rather short, especially "i" is confusing. Think about renaming.
-  //
+
   typedef struct packed {
     insn_subset_e   subset;
     logic           ecall_insn;

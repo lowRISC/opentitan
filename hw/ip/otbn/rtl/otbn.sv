@@ -254,9 +254,8 @@ module otbn
     .nonce_i     (otbn_imem_scramble_nonce),
 
     .req_i       (imem_req),
-    // TODO: Deal with grant signal, can we safely ignore?  Does OTBN need refactoring to deal with
-    // no grant? If exposed to Ibex will result in long stall if there's no valid key, may not be
-    // the behaviour we want, read error instead?
+    // TODO: OTBN should always get grant when active, wire up grant and add check it occurs,
+    // trigger fatal alert if it doesn't.
     .gnt_o       (),
     .write_i     (imem_write),
     .addr_i      (imem_index),
@@ -412,9 +411,8 @@ module otbn
     .nonce_i     (otbn_dmem_scramble_nonce),
 
     .req_i       (dmem_req),
-    // TODO: Deal with grant signal, can we safely ignore?  Does OTBN need refactoring to deal with
-    // no grant? If exposed to Ibex will result in long stall if there's no valid key, may not be
-    // the behaviour we want, read error instead?
+    // TODO: OTBN should always get grant when active, wire up grant and add check it occurs,
+    // trigger fatal alert if it doesn't.
     .gnt_o       (),
     .write_i     (dmem_write),
     .addr_i      (dmem_index),
@@ -679,6 +677,7 @@ module otbn
   assign alerts[AlertFatal] = insn_fetch_err       |
                               dmem_rerror          |
                               bus_intg_violation   |
+                              reg_intg_violation   |
                               illegal_bus_access_d |
                               lifecycle_escalation |
                               err_bits.fatal_software;
@@ -977,4 +976,6 @@ module otbn
   `ASSERT(NonIdleDmemReadsZero_A,
       (hw2reg.status.d != StatusIdle) & dmem_rvalid_bus |-> dmem_rdata_bus == 'd0)
 
+  // Constraint from package, check here as we cannot have `ASSERT_INIT in package
+  `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
 endmodule
