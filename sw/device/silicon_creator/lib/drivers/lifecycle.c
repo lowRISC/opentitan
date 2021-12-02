@@ -14,7 +14,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "lc_ctrl_regs.h"
 
-const char *const lifecycle_state_name[] = {
+static const char *const kStateNames[] = {
     // clang-format off
     "RAW",
     "TEST_UNLOCKED0",
@@ -43,8 +43,8 @@ const char *const lifecycle_state_name[] = {
     // clang-format on
 };
 
-static_assert(ARRAYSIZE(lifecycle_state_name) == kLcStateNumStates,
-              "length of the lifecycle_state_name array doesn't match the "
+static_assert(ARRAYSIZE(kStateNames) == kLcStateNumStates,
+              "length of the kStateNames array doesn't match the "
               "number of states.");
 
 #define LC_ASSERT(a, b) static_assert(a == b, "Bad value for " #a)
@@ -82,6 +82,17 @@ lifecycle_state_t lifecycle_state_get(void) {
       sec_mmio_read32(kBase + LC_CTRL_LC_STATE_REG_OFFSET),
       LC_CTRL_LC_STATE_STATE_FIELD);
   return (lifecycle_state_t)value;
+}
+
+const char *lifecycle_state_name_get(lifecycle_state_t lc_state) {
+  // Life cycle state value (`lc_state`) is a 32-bit value that repeats the
+  // 5-bit life cycle state index 6 times.
+  enum { kStateIndexMask = 0x1f };
+  size_t state_index = (uint32_t)lc_state & kStateIndexMask;
+  if (state_index >= kLcStateNumStates) {
+    state_index = kLcStateInvalid & kStateIndexMask;
+  }
+  return kStateNames[state_index];
 }
 
 void lifecycle_device_id_get(lifecycle_device_id_t *device_id) {
