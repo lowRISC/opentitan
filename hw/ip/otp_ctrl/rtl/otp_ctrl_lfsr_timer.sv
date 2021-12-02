@@ -217,30 +217,35 @@ module otp_ctrl_lfsr_timer
   // Ping and Timeout Logic //
   ////////////////////////////
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 5 -n 9 -s 628816752
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 9 \
+  //      -s 628816752 --language=sv
+  //
   // Hamming distance histogram:
   //
-  // 0: --
-  // 1: --
-  // 2: --
-  // 3: --
-  // 4: --
-  // 5: |||||||||||||||||||| (60.00%)
-  // 6: ||||||||||||| (40.00%)
-  // 7: --
-  // 8: --
-  // 9: --
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (60.00%)
+  //  6: ||||||||||||| (40.00%)
+  //  7: --
+  //  8: --
+  //  9: --
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 4
+  // Maximum Hamming weight: 6
   //
   localparam int StateWidth = 9;
   typedef enum logic [StateWidth-1:0] {
-    ResetSt     = 9'b011111011,
-    IdleSt      = 9'b000100000,
-    IntegWaitSt = 9'b110010101,
-    CnstyWaitSt = 9'b001010110,
-    ErrorSt     = 9'b100101111
+    ResetSt     = 9'b100100101,
+    IdleSt      = 9'b001101110,
+    IntegWaitSt = 9'b010110011,
+    CnstyWaitSt = 9'b111010110,
+    ErrorSt     = 9'b001011001
   } state_e;
 
   state_e state_d, state_q;
@@ -373,14 +378,15 @@ module otp_ctrl_lfsr_timer
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] state_raw_q;
   assign state_q = state_e'(state_raw_q);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(ResetSt))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d     ),
-    .q_o ( state_raw_q )
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
