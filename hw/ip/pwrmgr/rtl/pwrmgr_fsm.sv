@@ -281,14 +281,9 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         lc_init = 1'b1;
 
         if (lc_done) begin
-          state_d = FastPwrStateStrap;
+          state_d = FastPwrStateAckPwrUp;
 
         end
-      end
-
-      FastPwrStateStrap: begin
-        strap_o = ~strap_sampled;
-        state_d =  FastPwrStateAckPwrUp;
       end
 
       FastPwrStateAckPwrUp: begin
@@ -312,8 +307,13 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
         if (mubi4_test_true_strict(rom_ctrl_done_i) &&
             mubi4_test_true_strict(rom_ctrl_good_i)) begin
-          state_d = FastPwrStateActive;
+          state_d = FastPwrStateStrap;
         end
+      end
+
+      FastPwrStateStrap: begin
+        strap_o = ~strap_sampled;
+        state_d =  FastPwrStateActive;
       end
 
       FastPwrStateActive: begin
