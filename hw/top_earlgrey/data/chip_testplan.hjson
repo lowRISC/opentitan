@@ -1137,6 +1137,26 @@
       milestone: V2
       tests: []
     }
+    {
+      name: chip_sw_alert_handler_lpg
+      desc: '''Verify alert's low_power_group(lpg).
+
+            Choose an always-on block and send alerts during deep sleep mode, check the
+            alert_senders can recover after system comes out of the deep sleep mode.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
+      desc: '''Verify escalation reverse ping timer disabled in sleep mode.
+
+            Check that escalation receivers located inside always-on blocks do not auto-escalate
+            due to the reverse ping feature while the system is in deep sleep.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // LC_CTRL (pre-verified IP) integration tests:
     {
