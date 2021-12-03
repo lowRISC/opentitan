@@ -381,11 +381,22 @@ module kmac_core
   // It behaves same as `keccak_addr` or `prefix_index` in sha3pad module.
   assign inc_keyidx = kmac_valid & msg_ready_i ;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)         key_index <= '0;
-    else if (clr_keyidx) key_index <= '0;
-    else if (inc_keyidx) key_index <= key_index + 1'b 1;
-  end
+  // This primitive is used to place a hardened counter
+  prim_count #(
+    .Width(sha3_pkg::KeccakMsgAddrW),
+    .OutSelDnCnt(1'b0), // 0 selects up count
+    .CntStyle(prim_count_pkg::DupCnt)
+  ) u_key_index_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(clr_keyidx),
+    .set_i(1'b0),
+    .set_cnt_i(sha3_pkg::KeccakMsgAddrW'(0)),
+    .en_i(inc_keyidx),
+    .step_i(sha3_pkg::KeccakMsgAddrW'(1)),
+    .cnt_o(key_index),
+    .err_o() //ToDo
+  );
 
   // Block size based on the address.
   // This is used for bytepad() and also pad10*1()
