@@ -200,7 +200,7 @@ module tlul_socket_1n #(
   end
 
   assign tl_u_o[N].a_valid     = tl_t_o.a_valid &
-                                 (dev_select_t == NWD'(N)) &
+                                 (dev_select_t >= NWD'(N)) &
                                  ~hold_all_requests;
   assign tl_u_o[N].a_opcode    = tl_t_o.a_opcode;
   assign tl_u_o[N].a_param     = tl_t_o.a_param;
