@@ -53,15 +53,16 @@ module sim_sram #(
 
   // Split the incoming access into two.
   tlul_socket_1n #(
-    .N        (2),
-    .HReqPass (1'b1),
-    .HRspPass (1'b1),
-    .DReqPass ({2{1'b1}}),
-    .DRspPass ({2{1'b1}}),
-    .HReqDepth(4'h0),
-    .HRspDepth(4'h0),
-    .DReqDepth({2{4'h0}}),
-    .DRspDepth({2{4'h0}})
+    .N           (2),
+    .HReqPass    (1'b1),
+    .HRspPass    (1'b1),
+    .DReqPass    ({2{1'b1}}),
+    .DRspPass    ({2{1'b1}}),
+    .HReqDepth   (4'h0),
+    .HRspDepth   (4'h0),
+    .DReqDepth   ({2{4'h0}}),
+    .DRspDepth   ({2{4'h0}}),
+    .ExplicitErrs(1'b0)
   ) u_socket (
     .clk_i,
     .rst_ni,
@@ -69,7 +70,7 @@ module sim_sram #(
     .tl_h_o      (tl_in_o),
     .tl_d_o      (tl_socket_h2d),
     .tl_d_i      (tl_socket_d2h),
-    .dev_select_i({1'b0, dev_select})
+    .dev_select_i(dev_select)
   );
 
   // Logic to select SRAM address range.
