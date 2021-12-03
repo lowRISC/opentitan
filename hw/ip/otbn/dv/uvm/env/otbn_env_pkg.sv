@@ -96,7 +96,7 @@ package otbn_env_pkg;
   typedef class otbn_scoreboard;
 
   parameter int ImemIndexWidth = vbits(int'(otbn_reg_pkg::OTBN_IMEM_SIZE) / 4);
-  parameter int DmemIndexWidth = vbits(int'(otbn_reg_pkg::OTBN_DMEM_SIZE) / 32);
+  parameter int DmemIndexWidth = vbits(2 * int'(otbn_reg_pkg::OTBN_DMEM_SIZE) / 32);
 
   // package sources
   `include "otbn_env_cfg.sv"

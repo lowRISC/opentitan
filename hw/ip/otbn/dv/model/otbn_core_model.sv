@@ -16,11 +16,6 @@ module otbn_core_model
   import otbn_model_pkg::*;
   import edn_pkg::*;
 #(
-  // Size of the instruction memory, in bytes
-  parameter int ImemSizeByte = 4096,
-  // Size of the data memory, in bytes
-  parameter int DmemSizeByte = 4096,
-
   // The scope that contains the instruction and data memory (for DPI)
   parameter string MemScope = "",
 
@@ -56,13 +51,10 @@ module otbn_core_model
   output bit             err_o // something went wrong
 );
 
-  localparam int ImemSizeWords = ImemSizeByte / 4;
-  localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
-
   // Create and destroy an object through which we can talk to the ISS.
   chandle model_handle;
   initial begin
-    model_handle = otbn_model_init(MemScope, DesignScope, ImemSizeWords, DmemSizeWords);
+    model_handle = otbn_model_init(MemScope, DesignScope);
     assert(model_handle != null);
   end
   final begin
