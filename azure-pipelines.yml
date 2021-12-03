@@ -156,7 +156,7 @@ jobs:
   displayName: Build Software for Earl Grey toplevel design targeting the Nexys Video board
   dependsOn: lint
   # Make the following condition always false for now, see #7814.
-  condition: and(succeeded(), False, eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool:
     vmImage: ubuntu-18.04
   steps:
@@ -175,7 +175,7 @@ jobs:
       ninja -C "$OBJ_DIR" all
 
       # Delete all build artifacts which are *not* for the Nexys Video board.
-      find "$BIN_DIR/sw/device" -not -name '*fpga_nexysvideo*' -type f -delete
+      # find "$BIN_DIR/sw/device" -not -name '*fpga_nexysvideo*' -type f -delete
     displayName: Build embedded targets
   - bash: |
       . util/build_consts.sh
@@ -184,7 +184,7 @@ jobs:
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
-        - "/sw/device/**/*nexysvideo*"
+        - "/sw/***"
 
 # Software targeting the English Breakfast top level is produced by patching
 # the source tree before building. This builds a selected subset of software
@@ -490,7 +490,7 @@ jobs:
     # The bootrom is built into the FPGA image at synthesis time.
     - sw_build_nexysvideo
     # Make the following condition always false for now, see #7814.
-  condition: and(succeeded(), False, eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
   steps:
