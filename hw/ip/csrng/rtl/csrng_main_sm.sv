@@ -76,14 +76,15 @@ module csrng_main_sm import csrng_pkg::*; (
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(Idle))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d ),
-    .q_o ( state_raw_q )
+    .state_i ( state_d ),
+    .state_o ( state_raw_q )
   );
 
   assign state_q = state_e'(state_raw_q);

@@ -133,5 +133,14 @@ module edn
     u_edn_core.u_prim_count_max_reqs_cntr,
     alert_tx_o[1])
 
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(MainFsmCheck_A,
+    u_edn_core.u_edn_main_sm.u_state_regs,
+    alert_tx_o[1])
+
+  for (genvar i = 0; i < NumEndPoints; i = i+1) begin : gen_edn_fsm_asserts
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AckFsmCheck_A,
+      u_edn_core.gen_ep_blk[i].u_edn_ack_sm_ep.u_state_regs,
+      alert_tx_o[1])
+  end
 
 endmodule

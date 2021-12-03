@@ -163,7 +163,26 @@ module csrng
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
       u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr,
       alert_tx_o[1])
+
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgCmdFsmCheck_A,
+      u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_state_regs,
+      alert_tx_o[1])
   end
 
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A,
+    u_csrng_core.u_csrng_main_sm.u_state_regs,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgGenFsmCheck_A,
+    u_csrng_core.u_csrng_ctr_drbg_gen.u_state_regs,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgUpdBlkEncFsmCheck_A,
+    u_csrng_core.u_csrng_ctr_drbg_upd.u_blk_enc_state_regs,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgUpdOutBlkFsmCheck_A,
+    u_csrng_core.u_csrng_ctr_drbg_upd.u_outblk_state_regs,
+    alert_tx_o[1])
 
 endmodule

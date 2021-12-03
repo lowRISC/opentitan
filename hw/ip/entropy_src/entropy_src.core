@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:count
       - lowrisc:prim:assert
       - lowrisc:prim:lfsr
+      - lowrisc:prim:sparse_fsm
       - lowrisc:ip:tlul
       - lowrisc:ip:sha3
       - lowrisc:ip:otp_ctrl_pkg
