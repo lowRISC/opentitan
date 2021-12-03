@@ -24,12 +24,8 @@
 
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.
-static_assert(offsetof(test_config_t, enable_concurrency) == 0,
-              "Expected enable_concurrency field to be at offset zero within "
-              "test configuration struct.");
-static_assert(sizeof(((test_config_t){0}).enable_concurrency) == 1,
-              "Expected enable_concurrency field in test configuration struct "
-              "to be one byte.");
+OT_ASSERT_MEMBER_OFFSET(test_config_t, enable_concurrency, 0);
+OT_ASSERT_MEMBER_SIZE(test_config_t, enable_concurrency, 1);
 
 // UART for communication with host.
 static dif_uart_t uart0;
