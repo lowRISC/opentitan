@@ -1,0 +1,11 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_sparse_fsm_flop
+
+waive -rules {IFDEF_CODE} -location {prim_sparse_fsm_flop.sv} -regexp {.*unused_valid_st.*} \
+      -comment "The unused_valid_st signal is used purely for DV only and is switched to a constant during lint / synth."
+
+waive -rules {PARAM_NOT_USED} -location {prim_sparse_fsm_flop.sv} -regexp {.*StateEnumT.*} \
+      -comment "The state enum is used only during DV / FPV."
