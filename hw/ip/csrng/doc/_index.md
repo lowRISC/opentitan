@@ -378,6 +378,7 @@ The actions performed by each command, as well as which flags are supported, are
          Values in the instance are zeroed out.
          When the <tt>uninstantiate</tt> comand is completed, the <tt>active</tt> bit in the CSRNG working state will be cleared.
          Uninstantiating an instance effectively resets it, clearing any errors that it may have encountered due to bad command syntax or entropy source failures.
+         Only a value of zero should be used for clen, since any additional data will be ignored.
     </td>
   </tr>
   <tr>
