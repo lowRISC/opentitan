@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:count
       - lowrisc:prim:assert
+      - lowrisc:prim:sparse_fsm
       - lowrisc:ip:tlul
       - lowrisc:ip:edn_pkg
     files:

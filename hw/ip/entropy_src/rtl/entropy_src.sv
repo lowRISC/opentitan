@@ -321,4 +321,12 @@ module entropy_src
     u_entropy_src_core.u_entropy_src_repcnts_ht.u_prim_count_test_cnt,
     alert_tx_o[1])
 
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A,
+    u_entropy_src_core.u_entropy_src_main_sm.u_state_regs,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlAckFsmCheck_A,
+    u_entropy_src_core.u_entropy_src_ack_sm.u_state_regs,
+    alert_tx_o[1])
+
 endmodule

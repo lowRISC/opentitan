@@ -186,14 +186,15 @@ module csrng_ctr_drbg_upd #(
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(blk_enc_state_e),
     .Width(BlkEncStateWidth),
     .ResetValue(BlkEncStateWidth'(ReqIdle))
   ) u_blk_enc_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( blk_enc_state_d ),
-    .q_o ( blk_enc_state_raw_q )
+    .state_i ( blk_enc_state_d ),
+    .state_o ( blk_enc_state_raw_q )
   );
 
   assign blk_enc_state_q = blk_enc_state_e'(blk_enc_state_raw_q);
@@ -232,14 +233,15 @@ module csrng_ctr_drbg_upd #(
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(outblk_state_e),
     .Width(OutBlkStateWidth),
     .ResetValue(OutBlkStateWidth'(AckIdle))
   ) u_outblk_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( outblk_state_d ),
-    .q_o ( outblk_state_raw_q )
+    .state_i ( outblk_state_d ),
+    .state_o ( outblk_state_raw_q )
   );
 
   assign outblk_state_q = outblk_state_e'(outblk_state_raw_q);

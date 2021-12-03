@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:count
       - lowrisc:prim:assert
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:sparse_fsm
       - lowrisc:ip:tlul
       - lowrisc:ip:aes
       - lowrisc:ip:otp_ctrl_pkg
@@ -73,5 +74,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
-
