@@ -220,12 +220,8 @@ static std::vector<T> get_stack(const std::string &stack_scope) {
 }
 
 OtbnModel::OtbnModel(const std::string &mem_scope,
-                     const std::string &design_scope, unsigned imem_size_words,
-                     unsigned dmem_size_words)
-    : mem_util_(mem_scope),
-      design_scope_(design_scope),
-      imem_size_words_(imem_size_words),
-      dmem_size_words_(dmem_size_words) {}
+                     const std::string &design_scope)
+    : mem_util_(mem_scope), design_scope_(design_scope) {}
 
 OtbnModel::~OtbnModel() {}
 
@@ -638,10 +634,9 @@ bool OtbnModel::check_call_stack(ISSWrapper &iss) const {
   return good;
 }
 
-OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope,
-                           unsigned imem_words, unsigned dmem_words) {
+OtbnModel *otbn_model_init(const char *mem_scope, const char *design_scope) {
   assert(mem_scope && design_scope);
-  return new OtbnModel(mem_scope, design_scope, imem_words, dmem_words);
+  return new OtbnModel(mem_scope, design_scope);
 }
 
 void otbn_model_destroy(OtbnModel *model) { delete model; }

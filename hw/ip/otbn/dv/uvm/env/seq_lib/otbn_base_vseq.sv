@@ -76,7 +76,8 @@ class otbn_base_vseq extends cip_base_vseq #(
 
   protected function automatic void
   get_queue_entries(bit for_imem, ref otbn_loaded_word entries[$]);
-    // Get the size of this memory (to make sure the number of loaded words makes sense)
+    // Get the bus-accessible size of this memory (to make sure the number of loaded words makes
+    // sense)
     int unsigned mem_size = for_imem ? OTBN_IMEM_SIZE : OTBN_DMEM_SIZE;
 
     // Iterate over the segments for this memory

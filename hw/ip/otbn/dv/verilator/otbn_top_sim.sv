@@ -295,8 +295,6 @@ module otbn_top_sim (
   bit        otbn_model_err;
 
   otbn_core_model #(
-    .DmemSizeByte    ( DmemSizeByte ),
-    .ImemSizeByte    ( ImemSizeByte ),
     .MemScope        ( ".." ),
     .DesignScope     ( DesignScope )
   ) u_otbn_core_model (

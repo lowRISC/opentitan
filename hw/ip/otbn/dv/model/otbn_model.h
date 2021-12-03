@@ -16,8 +16,7 @@ class ISSWrapper;
 
 class OtbnModel {
  public:
-  OtbnModel(const std::string &mem_scope, const std::string &design_scope,
-            unsigned imem_size_words, unsigned dmem_size_words);
+  OtbnModel(const std::string &mem_scope, const std::string &design_scope);
   ~OtbnModel();
 
   // Replace any current loop warps with those from memutil. Returns 0
@@ -109,7 +108,6 @@ class OtbnModel {
   std::unique_ptr<ISSWrapper> iss_;
   OtbnMemUtil mem_util_;
   std::string design_scope_;
-  unsigned imem_size_words_, dmem_size_words_;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_H_

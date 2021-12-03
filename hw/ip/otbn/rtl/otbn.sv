@@ -836,8 +836,6 @@ module otbn
     assign edn_urnd_data_valid = edn_urnd_req & edn_urnd_ack;
 
     otbn_core_model #(
-      .DmemSizeByte(DmemSizeByte),
-      .ImemSizeByte(ImemSizeByte),
       .MemScope(".."),
       .DesignScope("")
     ) u_otbn_core_model (

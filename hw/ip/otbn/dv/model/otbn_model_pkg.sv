@@ -10,9 +10,7 @@ package otbn_model_pkg;
   import otbn_pkg::WLEN;
 
   import "DPI-C" context function chandle otbn_model_init(string mem_scope,
-                                                          string design_scope,
-                                                          int unsigned imem_words,
-                                                          int unsigned dmem_words);
+                                                          string design_scope);
 
   import "DPI-C" function void otbn_model_destroy(chandle model);
 
