@@ -84,7 +84,7 @@ module usbdev_reg_top (
   tlul_pkg::tl_h2d_t tl_socket_h2d [2];
   tlul_pkg::tl_d2h_t tl_socket_d2h [2];
 
-  logic [1:0] reg_steer;
+  logic [0:0] reg_steer;
 
   // socket_1n connection
   assign tl_reg_h2d = tl_socket_h2d[1];
@@ -95,15 +95,16 @@ module usbdev_reg_top (
 
   // Create Socket_1n
   tlul_socket_1n #(
-    .N          (2),
-    .HReqPass   (1'b1),
-    .HRspPass   (1'b1),
-    .DReqPass   ({2{1'b1}}),
-    .DRspPass   ({2{1'b1}}),
-    .HReqDepth  (4'h0),
-    .HRspDepth  (4'h0),
-    .DReqDepth  ({2{4'h0}}),
-    .DRspDepth  ({2{4'h0}})
+    .N            (2),
+    .HReqPass     (1'b1),
+    .HRspPass     (1'b1),
+    .DReqPass     ({2{1'b1}}),
+    .DRspPass     ({2{1'b1}}),
+    .HReqDepth    (4'h0),
+    .HRspDepth    (4'h0),
+    .DReqDepth    ({2{4'h0}}),
+    .DRspDepth    ({2{4'h0}}),
+    .ExplicitErrs (1'b0)
   ) u_socket (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),

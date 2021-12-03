@@ -54,43 +54,8 @@ module otp_ctrl_prim_reg_top (
     .tl_o(tl_o)
   );
 
-  tlul_pkg::tl_h2d_t tl_socket_h2d [0];
-  tlul_pkg::tl_d2h_t tl_socket_d2h [0];
-
-  logic [0:0] reg_steer;
-
-  // socket_1n connection
-
-  // Create Socket_1n
-  tlul_socket_1n #(
-    .N          (0),
-    .HReqPass   (1'b1),
-    .HRspPass   (1'b1),
-    .DReqPass   ({0{1'b1}}),
-    .DRspPass   ({0{1'b1}}),
-    .HReqDepth  (4'h0),
-    .HRspDepth  (4'h0),
-    .DReqDepth  ({0{4'h0}}),
-    .DRspDepth  ({0{4'h0}})
-  ) u_socket (
-    .clk_i  (clk_i),
-    .rst_ni (rst_ni),
-    .tl_h_i (tl_i),
-    .tl_h_o (tl_o_pre),
-    .tl_d_o (tl_socket_h2d),
-    .tl_d_i (tl_socket_d2h),
-    .dev_select_i (reg_steer)
-  );
-
-  // Create steering logic
-  always_comb begin
-    reg_steer = -1;       // Default set to register
-
-    // TODO: Can below codes be unique case () inside ?
-    if (intg_err) begin
-      reg_steer = -1;
-    end
-  end
+  assign tl_reg_h2d = tl_i;
+  assign tl_o_pre   = tl_reg_d2h;
 
   // Unused signal tieoff
   // devmode_i is not used if there are no registers

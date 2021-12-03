@@ -12,12 +12,16 @@
   from reggen.bits import Bits
 
   num_wins = len(rb.windows)
-  num_wins_width = ((num_wins+1).bit_length()) - 1
   num_reg_dsp = 1 if rb.all_regs else 0
   num_dsp  = num_wins + num_reg_dsp
   regs_flat = rb.flat_regs
   max_regs_char = len("{}".format(len(regs_flat) - 1))
   addr_width = rb.get_addr_width()
+
+  # Used for the dev_select_i signal on a tlul_socket_1n with N =
+  # num_wins + 1. This needs to be able to represent any value up to
+  # N-1.
+  steer_msb = ((num_wins).bit_length()) - 1
 
   lblock = block.name.lower()
   ublock = lblock.upper()
@@ -167,7 +171,7 @@ module ${mod_name} (
     .tl_o(${tl_d2h_expr})
   );
 
-% if num_dsp == 1:
+% if num_dsp <= 1:
   ## Either no windows (and just registers) or no registers and only
   ## one window.
   % if num_wins == 0:
@@ -181,7 +185,7 @@ module ${mod_name} (
   tlul_pkg::tl_h2d_t tl_socket_h2d [${num_dsp}];
   tlul_pkg::tl_d2h_t tl_socket_d2h [${num_dsp}];
 
-  logic [${num_wins_width}:0] reg_steer;
+  logic [${steer_msb}:0] reg_steer;
 
   // socket_1n connection
   % if rb.all_regs:
@@ -211,15 +215,16 @@ module ${mod_name} (
 
   // Create Socket_1n
   tlul_socket_1n #(
-    .N          (${num_dsp}),
-    .HReqPass   (1'b1),
-    .HRspPass   (1'b1),
-    .DReqPass   ({${num_dsp}{1'b1}}),
-    .DRspPass   ({${num_dsp}{1'b1}}),
-    .HReqDepth  (4'h0),
-    .HRspDepth  (4'h0),
-    .DReqDepth  ({${num_dsp}{4'h0}}),
-    .DRspDepth  ({${num_dsp}{4'h0}})
+    .N            (${num_dsp}),
+    .HReqPass     (1'b1),
+    .HRspPass     (1'b1),
+    .DReqPass     ({${num_dsp}{1'b1}}),
+    .DRspPass     ({${num_dsp}{1'b1}}),
+    .HReqDepth    (4'h0),
+    .HRspDepth    (4'h0),
+    .DReqDepth    ({${num_dsp}{4'h0}}),
+    .DRspDepth    ({${num_dsp}{4'h0}}),
+    .ExplicitErrs (1'b0)
   ) u_socket (
     .clk_i  (${reg_clk_expr}),
     .rst_ni (${reg_rst_expr}),
