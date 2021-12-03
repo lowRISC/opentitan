@@ -70,9 +70,34 @@
       tests: ["spi_device_dummy_item_extra_dly"]
     }
     {
-      name: async_fifo_reset
-      desc: '''Reset async fifo when SPI interface is idle
-            TODO: fifo may be fetching data from SRAM? What is the actual usage?'''
+      name: tx_async_fifo_reset
+      desc: '''
+            Reset TX async fifo when SPI interface is idle
+
+            - Fill TX SRAM FIFO with some data, which will be transfered to TX async FIFO
+            - Write 0 into read and write point of TX SRAM FIFO
+            - Program `rst_txfifo` to reset the async FIFO
+            - Check `async_fifo_level.txlvl` is 0
+            - Fill TX SRAM FIFO with some other data and enable SPI transfer
+            - Check SPI device sends and receives the correct data
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rx_async_fifo_reset
+      desc: '''
+            Reset RX async fifo when SPI interface is idle
+
+            - Configure RX SRAM FIFO with a small size, so that it's easy to fill up
+            - Start SPI transfers to fill up the RX SRAM FIFO and at least part of the RX async
+              FIFO
+            - Program `rst_rxfifo` to reset the async FIFO
+            - Check `async_fifo_level.rxlvl` is 0
+            - Write 0 into read and write point of RX SRAM FIFO
+            - Fill TX SRAM FIFO with some other data and start another SPI transfers
+            - Check SPI device sends and receives the correct data
+            '''
       milestone: V2
       tests: []
     }
@@ -124,21 +149,6 @@
       desc: '''Set fifo size to 4 bytes(minimum), 2k-4bytes(maximum) and others'''
       milestone: V2
       tests: ["spi_device_extreme_fifo_size"]
-    }
-    {
-      name: mode
-      desc: '''TODO :only support fw mode now'''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: mem_ecc
-      desc: '''
-            Backdoor hack memory data to test basic memory ECC behavior limitation:
-            - Just cover basic functionality and connectivity
-            - Complete verification will be done by PFV'''
-      milestone: V2
-      tests: []
     }
     {
       name: perf
