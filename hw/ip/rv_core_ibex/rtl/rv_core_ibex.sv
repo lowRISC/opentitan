@@ -371,7 +371,10 @@ module rv_core_ibex
   );
 
   tlul_adapter_host #(
-    .MAX_REQS(NumOutstandingReqs)
+    .MAX_REQS(NumOutstandingReqs),
+    // if secure ibex is not set, data integrity is not generated
+    // from ibex, therefore generate it in the gasket instead.
+    .EnableDataIntgGen(~SecureIbex)
   ) tl_adapter_host_i_ibex (
     .clk_i,
     .rst_ni,
@@ -422,7 +425,8 @@ module rv_core_ibex
   );
 
   tlul_adapter_host #(
-    .MAX_REQS(2)
+    .MAX_REQS(2),
+    .EnableDataIntgGen(~SecureIbex)
   ) tl_adapter_host_d_ibex (
     .clk_i,
     .rst_ni,
