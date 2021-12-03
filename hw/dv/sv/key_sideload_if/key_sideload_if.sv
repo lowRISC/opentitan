@@ -20,8 +20,8 @@ interface key_sideload_if #(parameter type KEY_T = keymgr_pkg::hw_key_req_t,
     KEY_T key;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(key, key.valid == key_valid;, , msg_id)
-    key[0] = (key_valid) ? share0 : 'hx;
-    key[1] = (key_valid) ? share1 : 'hx;
+    key.key[0] = (key_valid) ? share0 : 'hx;
+    key.key[1] = (key_valid) ? share1 : 'hx;
 
     sideload_key = key;
   endtask
