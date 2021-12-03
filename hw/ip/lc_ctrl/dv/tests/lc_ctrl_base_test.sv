@@ -33,15 +33,6 @@ class lc_ctrl_base_test extends cip_base_test #(
     // Demote address maps warnings
     msg = "\s*map .* does not seem to be initialized correctly.*";
     catcher.add_change_sev("RegModel", msg, UVM_INFO);
-
-    // Demote sequencer kill errors
-    msg = {
-      "\s*The task responsible for requesting a wait_for_grant on sequencer ",
-      ".*m_jtag_riscv_agent.sequencer' for sequence .* ",
-      "has been killed, to avoid a deadlock the sequence will be ",
-      "removed from the arbitration queues"
-    };
-    catcher.add_change_sev("SEQREQZMB", msg, UVM_INFO);
   endfunction
 
 endclass : lc_ctrl_base_test

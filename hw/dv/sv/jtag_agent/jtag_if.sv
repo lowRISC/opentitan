@@ -55,7 +55,6 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
   // Generate the tck, with UartDefaultClkPeriodNs period as default
   initial begin
     tck = 1'b1;
-    do_trst_n($urandom_range(1, 10));
     forever begin
       if (tck_en) begin
         #(tck_period_ns / 2);

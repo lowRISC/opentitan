@@ -176,7 +176,7 @@ module tb;
   // (one example is the interference IRQ of the I2C that propagates into the PLIC).
   assign (weak0, weak1) jtag_tck = 1'b0;
   assign (weak0, weak1) jtag_tms = 1'b0;
-  assign (weak0, weak1) jtag_trst_n = 1'b0;
+  assign (weak0, weak1) jtag_trst_n = rst_n;
   assign (weak0, weak1) jtag_tdi = 1'b0;
   assign (weak0, weak1) jtag_tdo = 1'b0;
   assign jtag_tck         = jtag_if.tck;

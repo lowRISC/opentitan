@@ -20,13 +20,18 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   // reset signals
   virtual task reset_signals();
-    if (cfg.if_mode == Host) begin
-      cfg.vif.tck_en <= 1'b0;
-      `HOST_CB.tms <= 1'b0;
-      `HOST_CB.tdi <= 1'b0;
-    end
-    else begin
-      `DEVICE_CB.tdo <= 1'b0;
+    forever begin
+      @(negedge cfg.vif.trst_n);
+      if (cfg.if_mode == Host) begin
+        cfg.vif.tck_en <= 1'b0;
+        `HOST_CB.tms <= 1'b0;
+        `HOST_CB.tdi <= 1'b0;
+      end
+      else begin
+        `DEVICE_CB.tdo <= 1'b0;
+      end
+
+      @(posedge cfg.vif.trst_n);
     end
   endtask
 
@@ -47,10 +52,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
-      cfg.set_tck_en(1'b1);
-      @(`HOST_CB); // wait one cycle to ensure clock is stable
-      drive_jtag_req(req, rsp);
-      cfg.set_tck_en(1'b0);
+
+      `DV_SPINWAIT_EXIT(drive_jtag_req(req, rsp);,
+                        wait (!cfg.vif.trst_n);)
+
       `uvm_info(`gfn, "item sent", UVM_HIGH)
       seq_item_port.item_done(rsp);
     end
@@ -59,9 +64,13 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   // drive jtag req and retrieve rsp
   virtual task drive_jtag_req(jtag_item req, jtag_item rsp);
     logic [JTAG_DRW-1:0] dout;
+
+    cfg.set_tck_en(1'b1);
+    @(`HOST_CB); // wait one cycle to ensure clock is stable
     if (req.select_ir) drive_jtag_ir(req.ir_len, req.ir);
     else               drive_jtag_dr(req.dr_len, req.dr, dout);
     rsp.dout = dout;
+    cfg.set_tck_en(1'b0);
   endtask
 
   // task to drive req into the instruction register
