@@ -397,7 +397,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        ht_esbus_vld_dly2_q, ht_esbus_vld_dly2_d;
   logic        boot_bypass_q, boot_bypass_d;
   logic        ht_failed_q, ht_failed_d;
-  logic        ht_failed_pulse_q, ht_failed_pulse_d;
   logic        ht_done_pulse_q, ht_done_pulse_d;
   logic                    sha3_msg_rdy_q, sha3_msg_rdy_d;
   logic                    sha3_err_q, sha3_err_d;
@@ -410,7 +409,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     if (!rst_ni) begin
       boot_bypass_q         <= 1'b1;
       ht_failed_q           <= '0;
-      ht_failed_pulse_q     <= '0;
       ht_done_pulse_q       <= '0;
       ht_esbus_dly_q        <= '0;
       ht_esbus_vld_dly_q    <= '0;
@@ -424,7 +422,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     end else begin
       boot_bypass_q         <= boot_bypass_d;
       ht_failed_q           <= ht_failed_d;
-      ht_failed_pulse_q     <= ht_failed_pulse_d;
       ht_done_pulse_q       <= ht_done_pulse_d;
       ht_esbus_dly_q        <= ht_esbus_dly_d;
       ht_esbus_vld_dly_q    <= ht_esbus_vld_dly_d;
@@ -1749,15 +1746,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign ht_failed_d =
          (!es_enable) ? 1'b0 :
-         sfifo_esfinal_push ? 1'b0 :
-         (any_fail_pulse && health_test_done_pulse) ? 1'b1 :
+         ht_done_pulse_q ? 1'b0 :
+         any_fail_pulse ? 1'b1 :
          ht_failed_q;
 
 
-  // delay health pulse and fail pulse so that main_sm will
+  // delay health pulse so that main_sm will
   // get the correct threshold value comparisons
   assign ht_done_pulse_d = health_test_done_pulse;
-  assign ht_failed_pulse_d = any_fail_pulse;
 
   assign hw2reg.alert_summary_fail_counts.d = any_fail_count;
 
@@ -2125,7 +2121,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni               (rst_ni),
     .enable_i             (es_enable),
     .ht_done_pulse_i      (ht_done_pulse_q),
-    .ht_fail_pulse_i      (ht_failed_pulse_q),
+    .ht_fail_pulse_i      (ht_failed_q),
     .alert_thresh_fail_i  (alert_threshold_fail),
     .sfifo_esfinal_full_i (sfifo_esfinal_full),
     .rst_alert_cntr_o     (rst_alert_cntr),
