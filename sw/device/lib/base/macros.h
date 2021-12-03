@@ -78,6 +78,17 @@
                 "Unexpected offset for " #type "." #member)
 
 /**
+ * A macro that expands to an assertion for the size of a struct member.
+ *
+ * @param type A struct type.
+ * @param member A member of the struct.
+ * @param size Expected size of the type.
+ */
+#define OT_ASSERT_MEMBER_SIZE(type, member, size)             \
+  static_assert(sizeof(((type){0}).member) == UINT32_C(size), \
+                "Unexpected size for " #type)
+
+/**
  * A macro that expands to an assertion for the size of a type.
  *
  * @param type A type.
