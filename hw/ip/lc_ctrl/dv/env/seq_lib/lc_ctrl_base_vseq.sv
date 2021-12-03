@@ -18,6 +18,21 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  virtual task apply_reset(string kind = "HARD");
+    if (kind == "HARD") begin
+      fork
+        cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.do_trst_n();
+        super.apply_reset(kind);
+      join
+    end
+  endtask
+
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.trst_n = 0;
+    super.apply_resets_concurrently(reset_duration_ps);
+    cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.trst_n = 1;
+  endtask
+
   virtual task pre_start();
     // LC_CTRL does not have interrupts
     do_clear_all_interrupts = 0;
