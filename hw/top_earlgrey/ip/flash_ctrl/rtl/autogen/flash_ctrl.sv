@@ -249,7 +249,6 @@ module flash_ctrl
   logic adapter_rvalid;
   logic sw_wvalid;
   logic [BusWidth-1:0] sw_wdata;
-  logic sw_wen;
   logic sw_wready;
 
   // lfsr for local entropy usage
@@ -309,7 +308,9 @@ module flash_ctrl
     .sw_rready_i(adapter_rvalid),
 
     // software interface to prog_fifo
-    .sw_wvalid_i(sw_wvalid & sw_wen),
+    // if prog operation not selected, software interface
+    // writes have no meaning
+    .sw_wvalid_i(sw_wvalid & prog_op_valid),
     .sw_wdata_i(sw_wdata),
     .sw_wready_o(sw_wready),
 
@@ -467,7 +468,7 @@ module flash_ctrl
     .req_o       (sw_wvalid),
     .req_type_o  (),
     .gnt_i       (sw_wready),
-    .we_o        (sw_wen),
+    .we_o        (),
     .addr_o      (),
     .wmask_o     (),
     .intg_error_o(),
@@ -483,8 +484,8 @@ module flash_ctrl
   ) u_prog_fifo (
     .clk_i,
     .rst_ni,
-    .clr_i   (reg2hw.fifo_rst.q | fifo_clr),
-    .wvalid_i(prog_fifo_wvalid & prog_op_valid),
+    .clr_i   (reg2hw.fifo_rst.q | fifo_clr | sw_ctrl_done),
+    .wvalid_i(prog_fifo_wvalid),
     .wready_o(prog_fifo_wready),
     .wdata_i (prog_fifo_wdata),
     .depth_o (prog_fifo_depth),
@@ -533,11 +534,18 @@ module flash_ctrl
     .flash_mp_err_i (flash_mp_err)
   );
 
+  // a read request is seen from software but a read operation is not enabled
+  // AND there are no pending entries to read from the fifo.
+  logic rd_no_op_d, rd_no_op_q;
+  assign rd_no_op_d = rd_fifo_ren & ~rd_op_valid & ~sw_rvalid;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       adapter_rvalid <= 1'b0;
+      rd_no_op_q <= 1'b0;
     end else begin
-      adapter_rvalid <= rd_fifo_ren && sw_rvalid;
+      adapter_rvalid <= rd_fifo_ren & sw_rvalid;
+      rd_no_op_q <= rd_no_op_d;
     end
   end
 
@@ -555,15 +563,17 @@ module flash_ctrl
     .en_ifetch_i (prim_mubi_pkg::MuBi4False),
     .req_o       (rd_fifo_ren),
     .req_type_o  (),
-    .gnt_i       (rd_fifo_rvalid),
+    // if there is no valid read operation, don't hang the
+    // bus, just let things normally return
+    .gnt_i       (sw_rvalid | rd_no_op_d),
     .we_o        (),
     .addr_o      (),
     .wmask_o     (),
     .wdata_o     (),
     .intg_error_o(),
     .rdata_i     (rd_fifo_rdata),
-    .rvalid_i    (adapter_rvalid),
-    .rerror_i    (2'b0)
+    .rvalid_i    (adapter_rvalid | rd_no_op_q),
+    .rerror_i    ({rd_no_op_q, 1'b0})
   );
 
   prim_fifo_sync #(
