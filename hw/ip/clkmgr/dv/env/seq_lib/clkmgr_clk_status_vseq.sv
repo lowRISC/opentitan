@@ -13,8 +13,11 @@ class clkmgr_clk_status_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-  // And disable scanmode since it is not interesting.
-  constraint scanmode_c {scanmode == lc_ctrl_pkg::Off;}
+  function void post_randomize();
+    super.post_randomize();
+    // Disable scanmode since it is not interesting.
+    scanmode = prim_mubi_pkg::MuBi4False;
+  endfunction
 
   task body();
     update_csrs_with_reset_values();

@@ -17,7 +17,7 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-  rand bit [NUM_TRANS-1:0] initial_hints;
+  rand hintables_t initial_hints;
 
   // The clk_hints CSR cannot be manipulated in low power mode.
   constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
@@ -28,7 +28,7 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
     update_csrs_with_reset_values();
     for (int i = 0; i < num_trans; ++i) begin
       logic bit_value;
-      logic [NUM_TRANS-1:0] value;
+      hintables_t value;
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
       cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode));

@@ -11,10 +11,11 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
 
   // This is measured in aon clocks, and is pretty tight.
   localparam int CyclesToGetOneMeasurement = 2;
-  // This is measured in clkmgr clk_i clocks. It is set to cover worse case delays.
+
+  // This is measured in clkmgr clk_i clocks. It is set to cover worst case delays.
   // The clk_i frequency is randomized for IPs, but the clkmgr is hooked to io_div4, which would
-  // allow a tighter number of cycles.
-  // TODO(maturana) Connect clkmgr's clk_i to the powerup io_div4 clock, as is in the chip.
+  // allow a tighter number of cycles. Leaving the clk_i random probably provides more cases,
+  // so leaving it as is.
   localparam int CyclesForErrUpdate = 16;
 
   // The min ands max offsets from the expected counts. Notice the count occasionally matches

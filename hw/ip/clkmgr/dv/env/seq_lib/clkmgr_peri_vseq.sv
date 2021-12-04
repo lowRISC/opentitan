@@ -11,7 +11,7 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-  rand logic [NUM_PERI-1:0] initial_enables;
+  rand peri_enables_t initial_enables;
 
   // The clk_enables CSR cannot be manipulated in low power mode.
   constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
@@ -21,7 +21,7 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
   task body();
     update_csrs_with_reset_values();
     for (int i = 0; i < num_trans; ++i) begin
-      logic [NUM_PERI-1:0] flipped_enables;
+      peri_enables_t flipped_enables;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode));
       control_ip_clocks();
