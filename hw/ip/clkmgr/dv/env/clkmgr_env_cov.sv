@@ -61,6 +61,27 @@ class clkmgr_trans_cg_wrap;
   endfunction
 endclass
 
+// Wrapper class for frequency measurement covergroup.
+class freq_measure_cg_wrap;
+  // This covergroup collects outcomes of clock frequency measurements.
+  covergroup freq_measure_cg(string name) with function sample (bit okay, bit slow, bit fast);
+    option.name = name;
+    option.per_instance = 1;
+
+    okay_cp: coverpoint okay;
+    slow_cp: coverpoint slow;
+    fast_cp: coverpoint fast;
+  endgroup
+
+  function new(string name);
+    freq_measure_cg = new(name);
+  endfunction
+
+  function void sample (bit okay, bit slow, bit fast);
+    freq_measure_cg.sample(okay, slow, fast);
+  endfunction
+endclass
+
 class clkmgr_env_cov extends cip_base_env_cov #(
   .CFG_T(clkmgr_env_cfg)
 );
@@ -70,22 +91,25 @@ class clkmgr_env_cov extends cip_base_env_cov #(
   // clkmgr_env_cfg: cfg
 
   // These covergroups collect signals affecting peripheral clocks.
-  clkmgr_peri_cg_wrap  peri_cg_wrap[clkmgr_env_pkg::NUM_PERI];
+  clkmgr_peri_cg_wrap  peri_cg_wrap[NUM_PERI];
 
   // These covergroups collect signals affecting transactional clocks.
-  clkmgr_trans_cg_wrap trans_cg_wrap[clkmgr_env_pkg::NUM_TRANS];
+  clkmgr_trans_cg_wrap trans_cg_wrap[NUM_TRANS];
+
+  // These covergroups collect outcomes of clock frequency measurements.
+  freq_measure_cg_wrap freq_measure_cg_wrap[5];
 
   // This embeded covergroup collects coverage for the external clock functionality.
   covergroup extclk_cg with function sample (
-      bit csr_sel, bit csr_low_speed, bit dft_en, bit byp_req, bit scanmode
+      bit csr_sel, bit csr_low_speed, bit hw_debug_en, bit byp_req, bit scanmode
   );
     csr_sel_cp: coverpoint csr_sel;
     csr_low_speed_cp: coverpoint csr_low_speed;
-    dft_en_cp: coverpoint dft_en;
+    hw_debug_en_cp: coverpoint hw_debug_en;
     byp_req_cp: coverpoint byp_req;
     scanmode_cp: coverpoint scanmode;
 
-    extclk_cross: cross csr_sel_cp, csr_low_speed_cp, dft_en_cp, byp_req_cp, scanmode_cp;
+    extclk_cross: cross csr_sel_cp, csr_low_speed_cp, hw_debug_en_cp, byp_req_cp, scanmode_cp;
   endgroup
 
   function new(string name, uvm_component parent);
@@ -99,6 +123,10 @@ class clkmgr_env_cov extends cip_base_env_cov #(
     foreach (trans_cg_wrap[i]) begin
       clkmgr_env_pkg::trans_e trans = clkmgr_env_pkg::trans_e'(i);
       trans_cg_wrap[i] = new(trans.name);
+    end
+    foreach (ExpectedCounts[i]) begin
+      clk_mesr_e clk_mesr = clk_mesr_e'(i);
+      freq_measure_cg_wrap[i] = new(clk_mesr.name);
     end
     extclk_cg = new();
   endfunction : new

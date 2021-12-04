@@ -28,7 +28,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   rand bit                 main_ip_clk_en;
   rand bit                 usb_ip_clk_en;
 
-  rand bit [NUM_TRANS-1:0] idle;
+  rand hintables_t       idle;
 
   mubi4_t                  scanmode;
   int                      scanmode_on_weight         = 8;
@@ -82,7 +82,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   virtual task dut_shutdown();
     // check for pending clkmgr operations and wait for them to complete
-    // TODO
   endtask
 
   task start_aon_clk();
@@ -112,6 +111,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     end else begin
       cfg.io_clk_rst_vif.start_clk();
       cfg.clkmgr_vif.pwr_i.io_ip_clk_en = io_ip_clk_en;
+      // There is a check that the RTL generates in a bounded number of cycles, so if this posedge
+      // never occurs we wont timeout.
       @(posedge cfg.clkmgr_vif.pwr_o.io_status);
     end
     `uvm_info(`gfn, "controlling io clock done", UVM_LOW)

@@ -29,6 +29,9 @@ package clkmgr_env_pkg;
   localparam int NUM_PERI = 4;
   localparam int NUM_TRANS = 5;
 
+  typedef logic [NUM_PERI-1:0] peri_enables_t;
+  typedef logic [NUM_TRANS-1:0] hintables_t;
+
   localparam int MainClkHz = 100_000_000;
   localparam int IoClkHz = 96_000_000;
   localparam int UsbClkHz = 48_000_000;

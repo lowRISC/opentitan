@@ -38,6 +38,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       monitor_jitter_en();
       sample_peri_covs();
       sample_trans_covs();
+      sample_freq_measurement_covs();
     join_none
   endtask
 
@@ -179,12 +180,65 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   endtask
 
   task sample_trans_covs();
-    for (int i = 0; i < NUM_TRANS; ++i) begin
+    for (int i = 0; i < $bits(hintables_t); ++i) begin
       fork
         automatic int trans_index = i;
         sample_trans_cov(trans_index);
       join_none
     end
+  endtask
+
+  task sample_freq_measurement_covs();
+    fork
+      forever
+        @(posedge cfg.clkmgr_vif.io_freq_measurement.valid) begin
+          if (cfg.en_cov) begin
+            cov.freq_measure_cg_wrap[ClkMesrIo].sample(
+                !cfg.clkmgr_vif.io_freq_measurement.slow &&
+                !cfg.clkmgr_vif.io_freq_measurement.fast,
+                cfg.clkmgr_vif.io_freq_measurement.slow, cfg.clkmgr_vif.io_freq_measurement.fast);
+          end
+        end
+      forever
+        @(posedge cfg.clkmgr_vif.io_div2_freq_measurement.valid) begin
+          if (cfg.en_cov) begin
+            cov.freq_measure_cg_wrap[ClkMesrIoDiv2].sample(
+                !cfg.clkmgr_vif.io_div2_freq_measurement.slow &&
+                !cfg.clkmgr_vif.io_div2_freq_measurement.fast,
+                cfg.clkmgr_vif.io_div2_freq_measurement.slow,
+                cfg.clkmgr_vif.io_div2_freq_measurement.fast);
+          end
+        end
+      forever
+        @(posedge cfg.clkmgr_vif.io_div4_freq_measurement.valid) begin
+          if (cfg.en_cov) begin
+            cov.freq_measure_cg_wrap[ClkMesrIoDiv4].sample(
+                !cfg.clkmgr_vif.io_div4_freq_measurement.slow &&
+                !cfg.clkmgr_vif.io_div4_freq_measurement.fast,
+                cfg.clkmgr_vif.io_div4_freq_measurement.slow,
+                cfg.clkmgr_vif.io_div4_freq_measurement.fast);
+          end
+        end
+      forever
+        @(posedge cfg.clkmgr_vif.main_freq_measurement.valid) begin
+          if (cfg.en_cov) begin
+            cov.freq_measure_cg_wrap[ClkMesrMain].sample(
+                !cfg.clkmgr_vif.main_freq_measurement.slow &&
+                !cfg.clkmgr_vif.main_freq_measurement.fast,
+                cfg.clkmgr_vif.main_freq_measurement.slow,
+                cfg.clkmgr_vif.main_freq_measurement.fast);
+          end
+        end
+      forever
+        @(posedge cfg.clkmgr_vif.usb_freq_measurement.valid) begin
+          if (cfg.en_cov) begin
+            cov.freq_measure_cg_wrap[ClkMesrUsb].sample(
+                !cfg.clkmgr_vif.usb_freq_measurement.slow &&
+                !cfg.clkmgr_vif.usb_freq_measurement.fast,
+                cfg.clkmgr_vif.usb_freq_measurement.slow, cfg.clkmgr_vif.usb_freq_measurement.fast);
+          end
+        end
+    join_none
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -266,29 +320,14 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         if (addr_phase_write) measure_ctrl_regwen = item.a_data;
       end
       "io_measure_ctrl": begin
-        if (cfg.en_cov) begin
-          // TODO(maturana) Insert coverage.
-        end
       end
       "io_div2_measure_ctrl": begin
-        if (cfg.en_cov) begin
-          // TODO(maturana) Insert coverage.
-        end
       end
       "io_div4_measure_ctrl": begin
-        if (cfg.en_cov) begin
-          // TODO(maturana) Insert coverage.
-        end
       end
       "main_measure_ctrl": begin
-        if (cfg.en_cov) begin
-          // TODO(maturana) Insert coverage.
-        end
       end
       "usb_measure_ctrl": begin
-        if (cfg.en_cov) begin
-          // TODO(maturana) Insert coverage.
-        end
       end
       "recov_err_code": begin
         do_read_check = 1'b0;

@@ -37,8 +37,8 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
   // via assertions in clkmgr_if.sv and behavioral code in the scoreboard.
   task test_peri_clocks();
     // Flip all bits of clk_enables.
-    logic [NUM_PERI-1:0] value = ral.clk_enables.get();
-    logic [NUM_PERI-1:0] flipped_value;
+    peri_enables_t value = ral.clk_enables.get();
+    peri_enables_t flipped_value;
     csr_rd(.ptr(ral.clk_enables), .value(value));
     flipped_value = value ^ ((1 << ral.clk_enables.get_n_bits()) - 1);
     csr_wr(.ptr(ral.clk_enables), .value(flipped_value));
@@ -57,7 +57,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
     trans_e trans;
     logic bit_value;
     logic [TL_DW-1:0] value;
-    logic [NUM_TRANS-1:0] idle;
+    hintables_t idle;
     typedef struct {
       trans_e unit;
       uvm_reg_field hint_bit;

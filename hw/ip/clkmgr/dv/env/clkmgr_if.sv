@@ -18,7 +18,7 @@ interface clkmgr_if (
   localparam int LcTxTWidth = $bits(lc_ctrl_pkg::lc_tx_t);
 
   // Encodes the transactional units that are idle.
-  logic [NUM_TRANS-1:0] idle_i;
+  hintables_t idle_i;
 
   // pwrmgr req contains ip_clk_en, set to enable the gated clocks.
   pwrmgr_pkg::pwr_clk_req_t pwr_i;
@@ -75,6 +75,52 @@ interface clkmgr_if (
   logic                  exp_clk_io_div4;
   logic                  actual_clk_io_div4;
 
+  typedef struct {
+    logic valid;
+    logic slow;
+    logic fast;
+  } freq_measurement_t;
+
+  // Internal DUT signals.
+`ifndef PATH_TO_DUT
+  `define PATH_TO_DUT tb.dut
+`endif
+
+  freq_measurement_t io_freq_measurement;
+  always @(posedge `PATH_TO_DUT.u_io_meas.valid_o) begin
+    io_freq_measurement = '{valid: `PATH_TO_DUT.u_io_meas.valid_o,
+                            slow: `PATH_TO_DUT.u_io_meas.slow_o,
+                            fast: `PATH_TO_DUT.u_io_meas.fast_o};
+  end
+
+  freq_measurement_t io_div2_freq_measurement;
+  always @(posedge `PATH_TO_DUT.u_io_div2_meas.valid_o) begin
+    io_div2_freq_measurement = '{valid: `PATH_TO_DUT.u_io_div2_meas.valid_o,
+                                 slow: `PATH_TO_DUT.u_io_div2_meas.slow_o,
+                                 fast: `PATH_TO_DUT.u_io_div2_meas.fast_o};
+  end
+
+  freq_measurement_t io_div4_freq_measurement;
+  always @(posedge `PATH_TO_DUT.u_io_div4_meas.valid_o) begin
+    io_div4_freq_measurement = '{valid: `PATH_TO_DUT.u_io_div4_meas.valid_o,
+                                 slow: `PATH_TO_DUT.u_io_div4_meas.slow_o,
+                                 fast: `PATH_TO_DUT.u_io_div4_meas.fast_o};
+  end
+
+  freq_measurement_t main_freq_measurement;
+  always @(posedge `PATH_TO_DUT.u_main_meas.valid_o) begin
+    main_freq_measurement = '{valid: `PATH_TO_DUT.u_main_meas.valid_o,
+                              slow: `PATH_TO_DUT.u_main_meas.slow_o,
+                              fast: `PATH_TO_DUT.u_main_meas.fast_o};
+  end
+
+  freq_measurement_t usb_freq_measurement;
+  always @(posedge `PATH_TO_DUT.u_usb_meas.valid_o) begin
+    usb_freq_measurement = '{valid: `PATH_TO_DUT.u_usb_meas.valid_o,
+                             slow: `PATH_TO_DUT.u_usb_meas.slow_o,
+                             fast: `PATH_TO_DUT.u_usb_meas.fast_o};
+  end
+
   function automatic void update_extclk_ctrl(logic [2*LcTxTWidth-1:0] value);
     {extclk_ctrl_csr_step_down, extclk_ctrl_csr_sel} = value;
   endfunction
@@ -87,7 +133,7 @@ interface clkmgr_if (
     clk_hints_csr = value;
   endfunction
 
-  function automatic void update_idle(bit [NUM_TRANS-1:0] value);
+  function automatic void update_idle(hintables_t value);
     idle_i = value;
   endfunction
 
@@ -142,7 +188,7 @@ interface clkmgr_if (
     actual_clk_io_div4 = actual_div4_value;
   endfunction
 
-  task automatic init(logic [NUM_TRANS-1:0] idle, prim_mubi_pkg::mubi4_t scanmode,
+  task automatic init(hintables_t idle, prim_mubi_pkg::mubi4_t scanmode,
                       lc_ctrl_pkg::lc_tx_t lc_debug_en = lc_ctrl_pkg::Off,
                       lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off);
     `uvm_info("clkmgr_if", "In clkmgr_if init", UVM_MEDIUM)

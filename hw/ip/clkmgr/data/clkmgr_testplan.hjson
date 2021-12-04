@@ -94,27 +94,26 @@
 
             - External clock is enabled if the `lc_clk_byp_req_i` input from
               `lc_ctrl` is `lc_ctrl_pkg::On`.
-            - External clock is also be enabled when CSR `extclk_sel` is set to
+            - External clock is also be enabled when CSR `extclk_ctrl.sel` is
+              set to
               `lc_ctrl_pkg::On` and the `lc_dtl_en_i` input from `lc_ctrl` is
               `lc_ctrl_pkg::On`.
-            - Notice writes to the `extclk_sel` register are ignored unless the
-              CSR `extclk_sel_regwen` is 1.
+            - Notice writes to the `extclk_ctrl.sel` register are ignored unless
+              the CSR `extclk_ctrl_regwen` is 1.
             - A successful switch to external clocks due to `lc_clk_byl_req_i`
               will cause the clkmgr to undo a divide by 2 for io_div4 and
               io_div2 clocks except when `(scanmode_i == lc_ctrl_pkg::On)`.
             - A software triggered switch to external clock will undo divides
-              by 2 if `extclk_ctrl.step_down` is set to `lc_ctrl_pkg::On`.
+              by 2 if `extclk_ctrl.low_speed_sel` is set to `lc_ctrl_pkg::On`.
 
             **Stimulus**:
-            - CSR writes to `extclk_sel` and `extclk_sel_regwen`.
-            - Setting `lc_dft_en_i`, `lc_clk_byp_req_i`, and the handshake to
+            - CSR writes to `extclk_ctrl` and `extclk_ctrl_regwen`.
+            - Setting `lc_hw_debug_en_i`, `lc_clk_byp_req_i`, and the handshake to
               ast via `ast_clk_byp_req_o` and `ast_clk_byp_ack_i`.
             - Setting `scanmode_i`.
 
             **Checks**:
-            Clock divider checks: since `scanmode_i` is asynchronous, the checks
-            are performed in behavioral code in the scoreboard; SVA assertions
-            will be added, conditioned on scanmode being off.
+            Clock divider checks are done with SVA assertions.
             - When the external clock is selected (and not defeated by
               `scanmode_i` for scoreboard checks):
               - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
@@ -143,22 +142,17 @@
     {
       name: clk_status
       desc: '''
-            This tests the `pwr_o.clk_status` output port.
+            This tests the three `pwr_o.<clk>_status` output ports, for the
+            `io`, `main`, and `usb` clocks.
 
-            The `pwr_o.clk_status` output must track the `pwr_i.ip_clk_en`
-            input once the clock outputs are enabled when ip_clk_en is active,
-            or disabled when ip_clk_en goes inactive.
+            The `pwr_o.<clk>_status` output must track the correspponding
+            `pwr_i.<clk>_ip_clk_en` input.
 
             **Stimulus**:
-            - Randomize the `pwr_i.ip_clk_en` setting.
-            - Randomize the various pwrmgr clock controls per settings in
-              the pwrmgr `control` CSR.
-            - This will trigger cases where the usb clock is inactive with
-              `ip_clk_en` enabled.
+            - Randomize the `pwr_i.<clk>_ip_clk_en` setting for each clock.
 
             **Check**:
-            - The sequence checks that `pwr_o.clk_status` tracks
-              `pwr_i.ip_clk_en`.
+            - The checks are done in SVA at `clkmbf_pwrmgr_sva_if.sv`.
             '''
       milestone: V2
       tests: ["clkmgr_clk_status"]
@@ -270,14 +264,8 @@
             Collects coverage for the external clock selection.
 
             The external clock selection depends on the `extclk_sel` CSR,
-            and the `lc_dft_en_i`, `lc_clk_byp_req_i`, and `scanmode_i`
+            and the `lc_hw_debug_en_i`, `lc_clk_byp_req_i`, and `scanmode_i`
             input pins. This covergroup collects their cross.
-            '''
-    }
-    {
-      name: jitter_cg
-      desc: '''
-            Collects coverage of the `jitter` CSR.
             '''
     }
     {
