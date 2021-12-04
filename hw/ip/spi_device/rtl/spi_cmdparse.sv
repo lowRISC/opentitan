@@ -172,7 +172,11 @@ module spi_cmdparse
   // compare with 1 logic depth.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      cmd_info_q     <= '{payload_dir: PayloadIn, default: '0};
+      cmd_info_q <= '{
+        payload_dir: payload_dir_e'(PayloadIn),
+        addr_mode: addr_mode_e'('0),
+        default: '0
+      };
       cmd_info_idx_q <= '0;
     end else if (latch_cmdinfo) begin
       cmd_info_q     <= cmd_info_d;
@@ -181,7 +185,11 @@ module spi_cmdparse
   end
 
   always_comb begin
-    cmd_info_d     = '{payload_dir: PayloadIn, default: '0};
+    cmd_info_d = '{
+      payload_dir: payload_dir_e'(PayloadIn),
+      addr_mode: addr_mode_e'('0),
+      default: '0
+    };
     cmd_info_idx_d = '0;
     if ((st == StIdle) && module_active && data_valid_i) begin
       for (int unsigned i = 0 ; i < NumCmdInfo ; i++ ) begin

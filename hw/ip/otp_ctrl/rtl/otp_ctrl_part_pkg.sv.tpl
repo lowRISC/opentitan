@@ -169,11 +169,13 @@ package otp_ctrl_part_pkg;
       % if offset != item['offset'] + item['size']:
       logic [${(offset - item['size'] - item['offset']) * 8 - 1}:0] unallocated;<% offset = item['offset'] + item['size'] %>
       % endif
-      % if item['ismubi']:
-      prim_mubi_pkg::mubi${item["size"]*8}_t ${item["name"].lower()};<% offset -= item['size'] %>
-      % else:
-      logic [${int(item["size"])*8-1}:0] ${item["name"].lower()};<% offset -= item['size'] %>
-      % endif
+<%
+  if item['ismubi']:
+    item_type = 'prim_mubi_pkg::mubi' + str(item["size"]*8) + '_t'
+  else:
+    item_type = 'logic [' + str(int(item["size"])*8-1) + ':0]'
+%>\
+    ${item_type} ${item["name"].lower()};<% offset -= item['size'] %>
     % endfor
   } otp_${part["name"].lower()}_data_t;
 
@@ -183,7 +185,15 @@ package otp_ctrl_part_pkg;
     % if offset != item['offset'] + item['size']:
     unallocated: ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}<% offset = item['offset'] + item['size'] %>,
     % endif
-    ${item["name"].lower()}: ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${"," if k < len(part["items"])-1 else ""}<% offset -= item['size'] %>
+<%
+  if item['ismubi']:
+    item_cast_pre = "prim_mubi_pkg::mubi" + str(item["size"]*8) + "_t'("
+    item_cast_post = ")"
+  else:
+    item_cast_pre = ""
+    item_cast_post = ""
+%>\
+    ${item["name"].lower()}: ${item_cast_pre}${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${item_cast_post}${"," if k < len(part["items"])-1 else ""}<% offset -= item['size'] %>
   % endfor
   };
 
