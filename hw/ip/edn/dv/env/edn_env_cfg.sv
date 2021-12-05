@@ -21,22 +21,19 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   // Knobs & Weights
   uint   enable_pct, boot_req_mode_pct, auto_req_mode_pct;
 
-  rand bit[3:0]   enable;
-  rand bit[3:0]   boot_req_mode;
-  rand bit[3:0]   auto_req_mode;
+  rand mubi4_t   enable, boot_req_mode, auto_req_mode;
 
   // Constraints
+  // TODO: utilize suggestions in PR9535 to generate "other" values when testing alerts
   constraint c_enable {enable dist {
-                       edn_pkg::EDN_FIELD_ON         :/ enable_pct,
-                       [0:edn_pkg::EDN_FIELD_ON - 1] :/ (100 - enable_pct)/2,
-                       [edn_pkg::EDN_FIELD_ON + 1:$] :/ (100 - enable_pct)/2 };}
+                       MuBi4True  :/ enable_pct,
+                       MuBi4False :/ (100 - enable_pct) };}
   constraint c_boot_req_mode {boot_req_mode dist {
-                              edn_pkg::EDN_FIELD_ON :/ boot_req_mode_pct,
-                              [0:edn_pkg::EDN_FIELD_ON - 1] :/ (100 - boot_req_mode_pct)/2,
-                              [edn_pkg::EDN_FIELD_ON + 1:$] :/ (100 - boot_req_mode_pct)/2 };}
+                              MuBi4True  :/ boot_req_mode_pct,
+                              MuBi4False :/ (100 - boot_req_mode_pct) };}
   constraint c_auto_req_mode {auto_req_mode dist {
-                              [0:edn_pkg::EDN_FIELD_ON - 1] :/ (100 - auto_req_mode_pct)/2,
-                              [edn_pkg::EDN_FIELD_ON + 1:$] :/ (100 - auto_req_mode_pct)/2 };}
+                              MuBi4True  :/ auto_req_mode_pct,
+                              MuBi4False :/ (100 - auto_req_mode_pct) };}
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = edn_env_pkg::LIST_OF_ALERTS;

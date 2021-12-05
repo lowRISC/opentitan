@@ -90,16 +90,18 @@ class csrng_monitor extends dv_base_monitor #(
   // TODO: This assumes no requests can be dropped, and might need to be fixed
   //       if this is not allowed.
   virtual protected task collect_request();
-    csrng_item   item;
+    csrng_item   cs_item;
     forever begin
       @(cfg.vif.cmd_push_if.mon_cb);
       if (cfg.vif.cmd_push_if.mon_cb.valid) begin
         // TODO: sample any covergroups
         // TODO: Implement suggestion in PR #5456
-        item = csrng_item::type_id::create("item");
-        item.acmd = cfg.vif.mon_cb.cmd_req.csrng_req_bus[3:0];
-        `uvm_info(`gfn, $sformatf("Captured item: %s", item.convert2string()), UVM_HIGH)
-        req_analysis_port.write(item);
+        cs_item = csrng_item::type_id::create("cs_item");
+        cs_item.acmd = cfg.vif.mon_cb.cmd_req.csrng_req_bus[3:0];
+        if (cs_item.acmd == csrng_pkg::GEN)
+          cs_item.glen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[30:12];
+        `uvm_info(`gfn, $sformatf("Captured item: %s", cs_item.convert2string()), UVM_HIGH)
+        req_analysis_port.write(cs_item);
         // After picking up a request, wait until a response is sent before
         // detecting another request, as this is not a pipelined protocol.
         `DV_SPINWAIT_EXIT(while (!cfg.vif.mon_cb.cmd_rsp.csrng_rsp_ack) @(cfg.vif.mon_cb);,

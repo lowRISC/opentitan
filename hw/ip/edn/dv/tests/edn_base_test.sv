@@ -25,6 +25,8 @@ class edn_base_test extends cip_base_test #(
 
   virtual function void configure_env();
     cfg.enable_pct = 100;
+    cfg.m_csrng_agent_cfg.max_cmd_ack_dly = 32;
+    cfg.m_csrng_agent_cfg.max_genbits_dly = 32;
   endfunction
 
 endclass : edn_base_test
