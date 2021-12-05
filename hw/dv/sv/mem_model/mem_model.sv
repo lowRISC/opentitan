@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
-                  int DataWidth = bus_params_pkg::BUS_DW,
-                  int MaskWidth = bus_params_pkg::BUS_DBW) extends uvm_object;
+                  int DataWidth = bus_params_pkg::BUS_DW) extends uvm_object;
+
+  localparam int MaskWidth  = DataWidth / 8;
 
   typedef bit [AddrWidth-1:0] mem_addr_t;
   typedef bit [DataWidth-1:0] mem_data_t;
