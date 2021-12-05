@@ -80,6 +80,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
       end
       "ctrl": begin
       end
+      "sw_cmd_req": begin
+      end
+      "sw_cmd_sts": begin
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end

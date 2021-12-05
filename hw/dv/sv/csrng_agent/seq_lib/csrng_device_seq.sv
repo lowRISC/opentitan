@@ -11,34 +11,25 @@ class csrng_device_seq extends csrng_base_seq;
   `uvm_object_utils(csrng_device_seq)
   `uvm_object_new
 
-  csrng_item   req_q[$];
   push_pull_host_seq#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)   m_genbits_seq;
 
   virtual task body();
-    fork
-      forever begin
-        csrng_item   req;
-        p_sequencer.req_analysis_fifo.get(req);
-        req_q.push_back(req);
-      end
+    forever begin
+      csrng_item   req;
 
-      forever begin
-        csrng_item   rsp;
-        wait(req_q.size);
-        rsp = req_q.pop_front();
-        case (rsp.acmd)
-          GEN: begin
-            m_genbits_seq = push_pull_host_seq#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)::type_id::
-                create("m_genbits_seq");
-            cfg.m_genbits_push_agent_cfg.host_delay_min = cfg.min_genbits_dly;
-            cfg.m_genbits_push_agent_cfg.host_delay_max = cfg.max_genbits_dly;
-            m_genbits_seq.start(p_sequencer.m_genbits_push_sequencer);
-          end
-        endcase
-        start_item(rsp);
-        finish_item(rsp);
+      p_sequencer.req_analysis_fifo.get(req);
+      `uvm_info(`gfn, $sformatf("Received item: %s", req.convert2string()), UVM_HIGH)
+      if (req.acmd == csrng_pkg::GEN) begin
+        m_genbits_seq = push_pull_host_seq#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)::type_id::
+           create("m_genbits_seq");
+        cfg.m_genbits_push_agent_cfg.host_delay_min = cfg.min_genbits_dly;
+        cfg.m_genbits_push_agent_cfg.host_delay_max = cfg.max_genbits_dly;
+        m_genbits_seq.num_trans = req.glen;
+        m_genbits_seq.start(p_sequencer.m_genbits_push_sequencer);
       end
-    join
+      start_item(req);
+      finish_item(req);
+    end
   endtask
 
 endclass
