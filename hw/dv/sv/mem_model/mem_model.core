@@ -9,6 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:opentitan:bus_params_pkg
+      - lowrisc:dv:dv_macros
     files:
       - mem_model_pkg.sv
       - mem_model.sv: {is_include_file: true}
