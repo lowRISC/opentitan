@@ -22,6 +22,9 @@ filesets:
       - rtl/aes_ctrl_reg_shadowed.sv
       - rtl/aes_core.sv
       - rtl/aes_ctr.sv
+      - rtl/aes_ctr_fsm.sv
+      - rtl/aes_ctr_fsm_p.sv
+      - rtl/aes_ctr_fsm_n.sv
       - rtl/aes_control.sv
       - rtl/aes_reg_status.sv
       - rtl/aes_sel_buf_chk.sv

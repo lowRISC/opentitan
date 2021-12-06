@@ -7,8 +7,6 @@
 // This module uses one counter with a width of SliceSizeCtr to iteratively increment the 128-bit
 // counter value.
 
-`include "prim_assert.sv"
-
 module aes_ctr import aes_pkg::*;
 (
   input  logic                                       clk_i,
@@ -41,36 +39,8 @@ module aes_ctr import aes_pkg::*;
     return out;
   endfunction
 
-  // Local parameters
-  localparam int unsigned SliceIdxWidth = prim_util_pkg::vbits(NumSlicesCtr);
-
-  // Types
-  // $ ./sparse-fsm-encode.py -d 3 -m 3 -n 5 \
-  //      -s 31468618 --language=sv
-  //
-  // Hamming distance histogram:
-  //
-  //  0: --
-  //  1: --
-  //  2: --
-  //  3: |||||||||||||||||||| (66.67%)
-  //  4: |||||||||| (33.33%)
-  //  5: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
-  //
-  localparam int StateWidth = 5;
-  typedef enum logic [StateWidth-1:0] {
-    IDLE  = 5'b01110,
-    INCR  = 5'b11000,
-    ERROR = 5'b00001
-  } aes_ctr_e;
-
   // Signals
-  aes_ctr_e                                   aes_ctr_ns, aes_ctr_cs;
-  logic                   [SliceIdxWidth-1:0] ctr_slice_idx_d, ctr_slice_idx_q;
-  logic                                       ctr_carry_d, ctr_carry_q;
+  logic                   [SliceIdxWidth-1:0] ctr_slice_idx;
 
   logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] ctr_i_rev; // 8 times 2 bytes
   logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] ctr_o_rev; // 8 times 2 bytes
@@ -79,11 +49,15 @@ module aes_ctr import aes_pkg::*;
 
   logic                    [SliceSizeCtr-1:0] ctr_i_slice;
   logic                    [SliceSizeCtr-1:0] ctr_o_slice;
-  logic                      [SliceSizeCtr:0] ctr_value;
 
-  logic                                       alert;
   sp2v_e                                      incr;
-  logic                                       incr_err_d, incr_err_q;
+  logic                                       incr_err;
+  logic                                       mr_err;
+
+  // Multi-rail signals. These are outputs of the single-rail FSMs and need combining.
+  logic    [Sp2VWidth-1:0]                    mr_alert;
+  logic    [Sp2VWidth-1:0][SliceIdxWidth-1:0] mr_ctr_slice_idx;
+  logic    [Sp2VWidth-1:0] [SliceSizeCtr-1:0] mr_ctr_o_slice;
 
   ////////////
   // Inputs //
@@ -98,109 +72,83 @@ module aes_ctr import aes_pkg::*;
     .Num   ( Sp2VNum   ),
     .Width ( Sp2VWidth )
   ) u_aes_sb_en_buf_chk (
-    .clk_i  ( clk_i      ),
-    .rst_ni ( rst_ni     ),
-    .sel_i  ( incr_i     ),
-    .sel_o  ( incr_raw   ),
-    .err_o  ( incr_err_d )
+    .clk_i  ( clk_i    ),
+    .rst_ni ( rst_ni   ),
+    .sel_i  ( incr_i   ),
+    .sel_o  ( incr_raw ),
+    .err_o  ( incr_err )
   );
   assign incr = sp2v_e'(incr_raw);
-
-  // Need to register errors in incr to avoid circular loops in the main
-  // controller related to start.
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_out_ack_err
-    if (!rst_ni) begin
-      incr_err_q <= 1'b0;
-    end else if (incr_err_d) begin
-      incr_err_q <= 1'b1;
-    end
-  end
 
   /////////////
   // Counter //
   /////////////
 
   // We do SliceSizeCtr bits at a time.
-  assign ctr_i_slice = ctr_i_rev[ctr_slice_idx_q];
-  assign ctr_value   = ctr_i_slice + {{(SliceSizeCtr-1){1'b0}}, ctr_carry_q};
-  assign ctr_o_slice = ctr_value[SliceSizeCtr-1:0];
+  assign ctr_i_slice = ctr_i_rev[ctr_slice_idx];
 
-  /////////////
-  // Control //
-  /////////////
+  /////////
+  // FSM //
+  /////////
+  // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
+  // of every rail are buffered to prevent aggressive synthesis optimizations.
+  for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm
+    if (SP2V_HIGH[i] == 1'b1) begin : gen_fsm_p
+      aes_ctr_fsm_p u_aes_ctr_fsm_i (
+        .clk_i           ( clk_i               ),
+        .rst_ni          ( rst_ni              ),
 
-  // FSM
-  always_comb begin : aes_ctr_fsm
+        .incr_i          ( incr[i]             ), // Sparsified
+        .ready_o         ( ready_o[i]          ), // Sparsified
+        .incr_err_i      ( incr_err            ),
+        .mr_err_i        ( mr_err              ),
+        .alert_o         ( mr_alert[i]         ), // OR-combine
 
-    // Outputs
-    ready_o         = SP2V_LOW;
-    ctr_we          = SP2V_LOW;
-    alert           = 1'b0;
+        .ctr_slice_idx_o ( mr_ctr_slice_idx[i] ), // OR-combine
+        .ctr_slice_i     ( ctr_i_slice         ),
+        .ctr_slice_o     ( mr_ctr_o_slice[i]   ), // OR-combine
+        .ctr_we_o        ( ctr_we[i]           )  // Sparsified
+      );
+    end else begin : gen_fsm_n
+      aes_ctr_fsm_n u_aes_ctr_fsm_i (
+        .clk_i           ( clk_i               ),
+        .rst_ni          ( rst_ni              ),
 
-    // FSM
-    aes_ctr_ns      = aes_ctr_cs;
-    ctr_slice_idx_d = ctr_slice_idx_q;
-    ctr_carry_d     = ctr_carry_q;
+        .incr_ni         ( incr[i]             ), // Sparsified
+        .ready_no        ( ready_o[i]          ), // Sparsified
+        .incr_err_i      ( incr_err            ),
+        .mr_err_i        ( mr_err              ),
+        .alert_o         ( mr_alert[i]         ), // OR-combine
 
-    unique case (aes_ctr_cs)
-      IDLE: begin
-        ready_o = SP2V_HIGH;
-        if (incr == SP2V_HIGH) begin
-          // Initialize slice index and carry bit.
-          ctr_slice_idx_d = '0;
-          ctr_carry_d     = 1'b1;
-          aes_ctr_ns      = INCR;
-        end
-      end
-
-      INCR: begin
-        // Increment slice index.
-        ctr_slice_idx_d = ctr_slice_idx_q + SliceIdxWidth'(1);
-        ctr_carry_d     = ctr_value[SliceSizeCtr];
-        ctr_we          = SP2V_HIGH;
-
-        if (ctr_slice_idx_q == {SliceIdxWidth{1'b1}}) begin
-          aes_ctr_ns = IDLE;
-        end
-      end
-
-      ERROR: begin
-        // Terminal error state
-        alert = 1'b1;
-      end
-
-      // We should never get here. If we do (e.g. via a malicious
-      // glitch), error out immediately.
-      default: begin
-        aes_ctr_ns = ERROR;
-      end
-    endcase
-  end
-
-  // Registers
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ctr_slice_idx_q <= '0;
-      ctr_carry_q     <= '0;
-    end else begin
-      ctr_slice_idx_q <= ctr_slice_idx_d;
-      ctr_carry_q     <= ctr_carry_d;
+        .ctr_slice_idx_o ( mr_ctr_slice_idx[i] ), // OR-combine
+        .ctr_slice_i     ( ctr_i_slice         ),
+        .ctr_slice_o     ( mr_ctr_o_slice[i]   ), // OR-combine
+        .ctr_we_no       ( ctr_we  [i]         )  // Sparsified
+      );
     end
   end
 
-  // This primitive is used to place a size-only constraint on the
-  // flops in order to prevent FSM state encoding optimizations.
-  logic [StateWidth-1:0] aes_ctr_cs_raw;
-  assign aes_ctr_cs = aes_ctr_e'(aes_ctr_cs_raw);
-  prim_flop #(
-    .Width(StateWidth),
-    .ResetValue(StateWidth'(IDLE))
-  ) u_state_regs (
-    .clk_i,
-    .rst_ni,
-    .d_i ( aes_ctr_ns     ),
-    .q_o ( aes_ctr_cs_raw )
-  );
+  // Combine single-bit FSM outputs.
+  // OR: One bit is sufficient to drive the corresponding output bit high.
+  assign alert_o = |mr_alert;
+
+  // Combine multi-bit FSM outputs. We simply OR them together and compare the values
+  // to detect errors.
+  always_comb begin : combine_sparse_signals
+    ctr_slice_idx = '0;
+    ctr_o_slice   = '0;
+    mr_err        = 1'b0;
+
+    for (int i = 0; i < Sp2VWidth; i++) begin
+      ctr_slice_idx |= mr_ctr_slice_idx[i];
+      ctr_o_slice   |= mr_ctr_o_slice[i];
+
+      if (ctr_slice_idx != mr_ctr_slice_idx[i] ||
+          ctr_o_slice   != mr_ctr_o_slice[i]) begin
+        mr_err = 1'b1;
+      end
+    end
+  end
 
   /////////////
   // Outputs //
@@ -208,29 +156,18 @@ module aes_ctr import aes_pkg::*;
 
   // Combine input and counter output.
   always_comb begin
-    ctr_o_rev                  = ctr_i_rev;
-    ctr_o_rev[ctr_slice_idx_q] = ctr_o_slice;
+    ctr_o_rev                = ctr_i_rev;
+    ctr_o_rev[ctr_slice_idx] = ctr_o_slice;
   end
 
   // Generate the sliced write enable.
   always_comb begin
-    ctr_we_o_rev                  = {NumSlicesCtr{SP2V_LOW}};
-    ctr_we_o_rev[ctr_slice_idx_q] = ctr_we;
+    ctr_we_o_rev                = {NumSlicesCtr{SP2V_LOW}};
+    ctr_we_o_rev[ctr_slice_idx] = ctr_we;
   end
 
   // Reverse byte and bit order.
   assign ctr_o    = aes_rev_order_byte(ctr_o_rev);
   assign ctr_we_o = aes_rev_order_sp2v(ctr_we_o_rev);
-
-  // Collect alert signals.
-  assign alert_o  = alert | incr_err_q;
-
-  ////////////////
-  // Assertions //
-  ////////////////
-  `ASSERT(AesCtrStateValid, !alert_o |-> aes_ctr_cs inside {
-      IDLE,
-      INCR
-      })
 
 endmodule
