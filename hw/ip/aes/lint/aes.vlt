@@ -41,3 +41,4 @@ lint_off -rule UNOPTFLAT -file "*/rtl/aes_control.sv" -match "Signal unoptimizab
 lint_off -rule UNOPTFLAT -file "*/rtl/aes_control.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_control.sp2v_sig[23:12]'"
 lint_off -rule UNOPTFLAT -file "*/rtl/aes_control.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_control.sp2v_sig[11:0]'"
 lint_off -rule UNOPTFLAT -file "*/rtl/aes_cipher_control_fsm_*.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_cipher_control_fsm_i.out'"
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_ctr_fsm_*.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*u_aes_ctr_fsm_i.in'"
