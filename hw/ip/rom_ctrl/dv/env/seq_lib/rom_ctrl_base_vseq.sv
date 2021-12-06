@@ -35,8 +35,21 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
 
   // Task to build a random rom in memory
   virtual task rom_ctrl_mem_init();
-    // randomize the memory contents
-    cfg.mem_bkdr_util_h.randomize_mem();
+    bit [31:0] rnd_data;
+
+    // Randomize the memory contents.
+    //
+    // We can't just use the mem_bkdr_util randomize_mem function because that doesn't obey the
+    // scrambling key. This wouldn't be a problem (the memory is supposed to be random!), except
+    // that we also need to pick ECC values that match.
+    for (int i = 0; i < rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE / 4; i++) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
+      cfg.mem_bkdr_util_h.rom_encrypt_write32_integ(i * 4,
+                                                    rnd_data,
+                                                    RND_CNST_SCR_KEY,
+                                                    RND_CNST_SCR_NONCE,
+                                                    1'b1);
+    end
   endtask
 
   // Task to perform `num_ops` fully randomized memory transactions.
