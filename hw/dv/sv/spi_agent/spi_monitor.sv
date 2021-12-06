@@ -53,7 +53,13 @@ class spi_monitor extends dv_base_monitor#(
               bit [7:0] host_byte;    // from sio
               bit [7:0] device_byte;  // from sio
               int       which_bit;
-              for (int i = 0; i < 8; i++) begin
+              bit [3:0] num_bits;
+              if (cfg.partial_byte == 1) begin
+                num_bits = cfg.bits_to_transfer;
+              end else begin
+                num_bits = 8;
+              end
+              for (int i = 0; i < num_bits; i++) begin
                 // wait for the sampling edge
                 cfg.wait_sck_edge(SamplingEdge);
                 // check sio not x or z
@@ -72,8 +78,10 @@ class spi_monitor extends dv_base_monitor#(
                 cfg.vif.device_bit = which_bit;
                 cfg.vif.device_byte = device_byte;
               end
+              if (num_bits == 8) begin
               host_item.data.push_back(host_byte);
               device_item.data.push_back(device_byte);
+              end
 
               // sending transactions when collect a word data
               if (host_item.data.size == cfg.num_bytes_per_trans_in_mon &&

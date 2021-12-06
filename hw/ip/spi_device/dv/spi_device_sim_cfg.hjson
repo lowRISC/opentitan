@@ -90,6 +90,17 @@
     {
       name: spi_device_byte_transfer
       uvm_test_seq: spi_device_byte_transfer_vseq
+      //run_opts: ["+en_scb=0"]
+    }
+    
+    {
+      name: spi_device_tx_async_fifo_reset
+      uvm_test_seq: spi_device_tx_async_fifo_reset_vseq
+    }
+    
+    {
+      name: spi_device_tpm
+      uvm_test_seq: spi_device_tpm_write_vseq
     }
   ]
 

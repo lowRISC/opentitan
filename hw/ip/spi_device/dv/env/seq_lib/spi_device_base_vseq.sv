@@ -131,6 +131,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.m_spi_agent_cfg.device_bit_dir = device_bit_dir;
     cfg.m_spi_agent_cfg.csb_sel = 0;
     cfg.m_spi_agent_cfg.partial_byte = 0;
+    cfg.m_spi_agent_cfg.consecutive = 0;
     // update device rtl
     ral.control.mode.set(spi_mode);
     csr_update(.csr(ral.control));
@@ -266,7 +267,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf({"rx_rptr[SRAM_MSB:0] = 0x%0h, rx_rptr_phase_bit = 0x%0h, ",
                                  "rx_sram_size_bytes = 0x%0h, rx_rptr_addr = 0x%0h"},
                                  rx_rptr[SRAM_MSB:0], rx_rptr[SRAM_PTR_PHASE_BIT],
-                                 rx_sram_size_bytes, rx_rptr_addr), UVM_MEDIUM)
+                                 rx_sram_size_bytes, rx_rptr_addr), UVM_LOW)
       tl_access(.addr(rx_rptr_addr), .write(1'b0), .data(word_data)); // TODO: bkdr rd?
       host_data.push_back(word_data);
       // advance rx rptr by SRAM_WORD_SIZE
