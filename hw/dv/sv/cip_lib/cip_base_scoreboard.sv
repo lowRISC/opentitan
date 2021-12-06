@@ -197,6 +197,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
   endtask
 
+  // Called at the start of each alert handshake. The default implementation depends on the
+  // do_alert_check flag. If that is set, it checks that an alert is expected (by checking
+  // exp_alert[alert_name]).
+  virtual function void on_alert(string alert_name, alert_esc_seq_item item);
+    if (do_alert_check) begin
+      `DV_CHECK_EQ(exp_alert[alert_name], 1,
+                   $sformatf("alert %0s triggered unexpectedly", alert_name))
+    end
+  endfunction
+
   // this function check if the triggered alert is expected
   // to turn off this check, user can set `do_alert_check` to 0
   virtual function void process_alert(string alert_name, alert_esc_seq_item item);
@@ -208,10 +218,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                               item.alert_handshake_sta), UVM_DEBUG)
     if (item.alert_handshake_sta == AlertReceived) begin
       under_alert_handshake[alert_name] = 1;
-      if (do_alert_check) begin
-        `DV_CHECK_EQ(exp_alert[alert_name], 1,
-                     $sformatf("alert %0s triggered unexpectedly", alert_name))
-      end
+      on_alert(alert_name, item);
     end else begin
       if (!cfg.under_reset && under_alert_handshake[alert_name] == 0) begin
         `uvm_error(`gfn, $sformatf("alert %0s is not received!", alert_name))
