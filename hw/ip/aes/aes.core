@@ -26,6 +26,9 @@ filesets:
       - rtl/aes_ctr_fsm_p.sv
       - rtl/aes_ctr_fsm_n.sv
       - rtl/aes_control.sv
+      - rtl/aes_control_fsm.sv
+      - rtl/aes_control_fsm_p.sv
+      - rtl/aes_control_fsm_n.sv
       - rtl/aes_reg_status.sv
       - rtl/aes_sel_buf_chk.sv
       - rtl/aes_cipher_core.sv
