@@ -142,4 +142,5 @@ module otbn_instruction_fetch
   // We should always get prefetches correct, the check exists as an integrity check only
   `ASSERT(NoAddressMismatch,
           imem_rvalid_i && insn_fetch_req_valid_i |-> insn_fetch_req_addr_i == insn_prefetch_addr)
+  `ASSERT(FetchEnOnlyIfValidIMem, insn_fetch_en |-> imem_rvalid_i)
 endmodule

@@ -1010,6 +1010,9 @@ module otbn
   `ASSERT_KNOWN(EdnUrndOKnown_A, edn_urnd_o, clk_edn_i, !rst_edn_ni)
   `ASSERT_KNOWN(OtbnOtpKeyO_A, otbn_otp_key_o, clk_otp_i, !rst_otp_ni)
 
+  // Incoming key must be valid (other inputs go via prim modules that handle the X checks).
+  `ASSERT_KNOWN(KeyMgrKeyValid_A, keymgr_key_i.valid)
+
   // In locked state, the readable registers INSN_CNT, IMEM, and DMEM are expected to always read 0
   // when accessed from the bus. For INSN_CNT, we use "|=>" so that the assertion lines up with
   // "status.q" (a signal that isn't directly accessible here).
