@@ -31,7 +31,7 @@ yosys "chparam -set SBoxImpl $lr_synth_s_box_impl $lr_synth_top_module"
 yosys "attrmap -tocase keep -imap keep=\"true\" keep=1 -imap keep=\"false\" keep=0 -remove keep=0"
 
 # Synthesize.
-yosys "synth $flatten_opt -top $lr_synth_top_module"
+yosys "synth -nofsm $flatten_opt -top $lr_synth_top_module"
 yosys "opt -purge"
 
 yosys "write_verilog $lr_synth_pre_map_out"
