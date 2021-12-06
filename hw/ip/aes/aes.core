@@ -27,6 +27,9 @@ filesets:
       - rtl/aes_sel_buf_chk.sv
       - rtl/aes_cipher_core.sv
       - rtl/aes_cipher_control.sv
+      - rtl/aes_cipher_control_fsm.sv
+      - rtl/aes_cipher_control_fsm_p.sv
+      - rtl/aes_cipher_control_fsm_n.sv
       - rtl/aes_sub_bytes.sv
       - rtl/aes_sbox.sv
       - rtl/aes_sbox_lut.sv
