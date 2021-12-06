@@ -100,7 +100,7 @@ virtual function void rom_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1:
     // Calculate the scrambled data
     wdata_arr = {<<{integ_data}};
     wdata_arr = sram_scrambler_pkg::encrypt_sram_data(
-        wdata_arr, 39, 0, rom_addr, addr_width, key_arr, nonce_arr
+        wdata_arr, 39, 39, rom_addr, addr_width, key_arr, nonce_arr
     );
     scrambled_data = {<<{wdata_arr}};
   end
