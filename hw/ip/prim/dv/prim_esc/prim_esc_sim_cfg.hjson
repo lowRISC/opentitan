@@ -30,7 +30,6 @@
   tests: [
     {
       name: prim_esc_test
-      run_opts: ["+test_timeout_ns=1_000"]
     }
   ]
 
