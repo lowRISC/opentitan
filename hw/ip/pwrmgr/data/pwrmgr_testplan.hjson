@@ -190,14 +190,16 @@
             **Stimulus**:
             - Trigger reset and wakeup from low power as described for other
               testpoints.
-            - Make sure to test them coinciding also.
+            - Issue reset and wakeup a random number of cycles after the slow
+              state machine is in LowPower state.
+              - This also checks them coinciding.
 
             **Check**:
             - Similar tests as for the wakeup and reset testpoints, except
               making sure they happen per the triggering order.
               '''
       milestone: V2
-      tests: []
+      tests: ["pwrmgr_wakeup_reset"]
     }
     {
       name: lowpower_wakeup_race

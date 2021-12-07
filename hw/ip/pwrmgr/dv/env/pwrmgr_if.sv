@@ -190,6 +190,7 @@ interface pwrmgr_if (
     pwr_cpu = pwrmgr_pkg::PWR_CPU_DEFAULT;
     wakeups_i = pwrmgr_pkg::WAKEUPS_DEFAULT;
     rstreqs_i = pwrmgr_pkg::RSTREQS_DEFAULT;
+    sw_rst_req_i = prim_mubi_pkg::MuBi4False;
     rom_ctrl = rom_ctrl_pkg::PWRMGR_DATA_DEFAULT;
     esc_rst_tx = prim_esc_pkg::ESC_TX_DEFAULT;
   end
