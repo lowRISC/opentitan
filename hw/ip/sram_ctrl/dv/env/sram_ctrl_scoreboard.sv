@@ -46,6 +46,10 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   bit in_executable_mode;
 
+  string write_en_path;
+
+  sram_ctrl_mem_bkdr_scb mem_bkdr_scb;
+
   typedef struct {
     // 1 for writes, 0 for reads
     bit we;
@@ -105,6 +109,10 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   // (SRAM is indexed at word granularity)
   function bit [TL_AW-1:0] word_align_addr(bit [TL_AW-1:0] addr);
     return {addr[TL_AW-1:2], 2'b00};
+  endfunction
+
+  function bit [TL_AW-1:0] normalize_addr(bit [TL_AW-1:0] addr);
+    return cfg.ral_models[cfg.sram_ral_name].get_normalized_addr(addr);
   endfunction
 
   // utility function to check whether two addresses map to the same SRAM memory line
@@ -209,6 +217,14 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   endfunction
 
   task run_phase(uvm_phase phase);
+    string mem_path = dv_utils_pkg::get_parent_hier(cfg.mem_bkdr_util_h.get_path());
+    write_en_path = $sformatf("%s.write_i", mem_path);
+    `DV_CHECK(uvm_hdl_check_path(write_en_path),
+              $sformatf("Hierarchical path %0s appears to be invalid.", write_en_path))
+
+    mem_bkdr_scb = sram_ctrl_mem_bkdr_scb::type_id::create("mem_bkdr_scb");
+    mem_bkdr_scb.mem_bkdr_util_h = cfg.mem_bkdr_util_h;
+
     super.run_phase(phase);
     fork
       sample_key_req_access_cg();
@@ -220,6 +236,22 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       process_kdi_fifo();
       process_completed_trans();
     join_none
+  endtask
+
+  // write usually completes in a few cycles after TL addrss phase, but it may take longer time
+  // when it's partial write or when RAW hazard occurs. It's not easy to know when it actually
+  // finishes, so probe internal write_i instead
+  task wait_write_done_and_check_nonblocking();
+    bit write_en;
+    fork begin
+      while (!write_en) begin
+        cfg.clk_rst_vif.wait_n_clks(1);
+        `DV_CHECK(uvm_hdl_read(write_en_path, write_en))
+      end
+      cfg.clk_rst_vif.wait_n_clks(1);
+      // There is no addr and mask info collected for this write, skipping the consistency check
+      mem_bkdr_scb.write_finish(.en_check_consistency(0));
+    end join_none
   endtask
 
   // This task spins forever and samples the appropriate covergroup whenever
@@ -406,6 +438,14 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
           continue;
         end
 
+        if (item.is_write()) begin
+          mem_bkdr_scb.write_start(normalize_addr(item.a_addr), item.a_data, item.a_mask);
+
+          wait_write_done_and_check_nonblocking();
+        end else begin
+          mem_bkdr_scb.read_start(normalize_addr(item.a_addr), item.a_mask);
+        end
+
         addr_trans.we    = item.is_write();
         addr_trans.addr  = word_align_addr(item.a_addr);
         addr_trans.mask  = item.a_mask;
@@ -501,6 +541,10 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
           `DV_CHECK_EQ(addr_trans_available, 1,
               "SRAM returned TLUL response in LC escalation state")
         end
+      end
+
+      if (!item.is_write()) begin
+        mem_bkdr_scb.read_finish(item.d_data, normalize_addr(item.a_addr), item.a_mask);
       end
 
       // the addr_phase_mbox will be populated during A_phase of each memory transaction.
@@ -647,6 +691,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
       // When KDI item is seen, update key, nonce
       {key, nonce, seed_valid} = item.d_data;
+      mem_bkdr_scb.update_key(key, nonce);
 
       // sample coverage on seed_valid
       if (cfg.en_cov) begin
@@ -717,7 +762,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
     // backdoor read the mem
     exp_data = cfg.mem_bkdr_util_h.sram_encrypt_read32_integ(word_addr, t.key, t.nonce);
-    `uvm_info(`gfn, $sformatf("exp_data: 0x%0x", exp_data), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("exp_data: 0x%0x", exp_data), UVM_MEDIUM)
 
     exp_masked_data = exp_data & bit_mask;
     act_masked_data = t.data & bit_mask;
@@ -725,7 +770,12 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     `uvm_info(`gfn, $sformatf("exp_masked_data: 0x%0x", exp_masked_data), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("act_masked_data: 0x%0x", act_masked_data), UVM_HIGH)
 
-    `DV_CHECK_EQ(exp_masked_data, act_masked_data)
+    // TODO, downgrade this check and it can't handle a few b2b cases
+    // This part of checking will be removed once mem_bkdr_scb works well.
+    if (exp_masked_data != act_masked_data) begin
+      `uvm_info(`gfn, $sformatf("act_masked_data: 0x%0x != exp_masked_data: 0x%0x",
+                                act_masked_data, exp_masked_data), UVM_LOW)
+    end
   endfunction
 
 

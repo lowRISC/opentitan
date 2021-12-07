@@ -20,6 +20,7 @@ package sram_ctrl_env_pkg;
   import lc_ctrl_pkg::*;
   import crypto_dpi_prince_pkg::*;
   import mem_bkdr_util_pkg::*;
+  import mem_bkdr_scb_pkg::*;
   import prim_mubi_pkg::*;
 
   // macro includes
@@ -65,6 +66,7 @@ package sram_ctrl_env_pkg;
   `include "sram_ctrl_env_cfg.sv"
   `include "sram_ctrl_env_cov.sv"
   `include "sram_ctrl_virtual_sequencer.sv"
+  `include "sram_ctrl_mem_bkdr_scb.sv"
   `include "sram_ctrl_scoreboard.sv"
   `include "sram_ctrl_env.sv"
   `include "sram_ctrl_vseq_list.sv"
