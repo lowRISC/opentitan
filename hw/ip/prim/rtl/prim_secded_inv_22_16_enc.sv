@@ -11,12 +11,12 @@ module prim_secded_inv_22_16_enc (
 
   always_comb begin : p_encode
     data_o = 22'(data_i);
-    data_o[16] = ~^(data_o & 22'h00496E);
-    data_o[17] = ~^(data_o & 22'h00F20B);
-    data_o[18] = ~^(data_o & 22'h008ED8);
-    data_o[19] = ~^(data_o & 22'h007714);
-    data_o[20] = ~^(data_o & 22'h00ACA5);
-    data_o[21] = ~^(data_o & 22'h0011F3);
+    data_o[16] = 0 ^ ^(data_o & 22'h00496E);
+    data_o[17] = 1 ^ ^(data_o & 22'h00F20B);
+    data_o[18] = 0 ^ ^(data_o & 22'h008ED8);
+    data_o[19] = 1 ^ ^(data_o & 22'h007714);
+    data_o[20] = 0 ^ ^(data_o & 22'h00ACA5);
+    data_o[21] = 1 ^ ^(data_o & 22'h0011F3);
   end
 
 endmodule : prim_secded_inv_22_16_enc

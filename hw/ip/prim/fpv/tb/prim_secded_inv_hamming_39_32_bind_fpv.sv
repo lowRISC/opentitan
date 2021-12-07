@@ -12,6 +12,7 @@ module prim_secded_inv_hamming_39_32_bind_fpv;
     .rst_ni,
     .data_i,
     .data_o,
+    .encoded_o,
     .syndrome_o,
     .err_o,
     .error_inject_i

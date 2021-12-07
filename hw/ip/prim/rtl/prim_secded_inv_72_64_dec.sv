@@ -13,14 +13,14 @@ module prim_secded_inv_72_64_dec (
 
   always_comb begin : p_encode
     // Syndrome calculation
-    syndrome_o[0] = ^((data_i ^ 72'hFF0000000000000000) & 72'h01B9000000001FFFFF);
-    syndrome_o[1] = ^((data_i ^ 72'hFF0000000000000000) & 72'h025E00000FFFE0003F);
-    syndrome_o[2] = ^((data_i ^ 72'hFF0000000000000000) & 72'h0467003FF003E007C1);
-    syndrome_o[3] = ^((data_i ^ 72'hFF0000000000000000) & 72'h08CD0FC0F03C207842);
-    syndrome_o[4] = ^((data_i ^ 72'hFF0000000000000000) & 72'h10B671C711C4438884);
-    syndrome_o[5] = ^((data_i ^ 72'hFF0000000000000000) & 72'h20B5B65926488C9108);
-    syndrome_o[6] = ^((data_i ^ 72'hFF0000000000000000) & 72'h40CBDAAA4A91152210);
-    syndrome_o[7] = ^((data_i ^ 72'hFF0000000000000000) & 72'h807AED348D221A4420);
+    syndrome_o[0] = ^((data_i ^ 72'hAA0000000000000000) & 72'h01B9000000001FFFFF);
+    syndrome_o[1] = ^((data_i ^ 72'hAA0000000000000000) & 72'h025E00000FFFE0003F);
+    syndrome_o[2] = ^((data_i ^ 72'hAA0000000000000000) & 72'h0467003FF003E007C1);
+    syndrome_o[3] = ^((data_i ^ 72'hAA0000000000000000) & 72'h08CD0FC0F03C207842);
+    syndrome_o[4] = ^((data_i ^ 72'hAA0000000000000000) & 72'h10B671C711C4438884);
+    syndrome_o[5] = ^((data_i ^ 72'hAA0000000000000000) & 72'h20B5B65926488C9108);
+    syndrome_o[6] = ^((data_i ^ 72'hAA0000000000000000) & 72'h40CBDAAA4A91152210);
+    syndrome_o[7] = ^((data_i ^ 72'hAA0000000000000000) & 72'h807AED348D221A4420);
 
     // Corrected output calculation
     data_o[0] = (syndrome_o == 8'h7) ^ data_i[0];

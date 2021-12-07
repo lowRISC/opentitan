@@ -13,14 +13,14 @@ module prim_secded_inv_hamming_76_68_dec (
 
   always_comb begin : p_encode
     // Syndrome calculation
-    syndrome_o[0] = ^((data_i ^ 76'hFF00000000000000000) & 76'h01AAB55555556AAAD5B);
-    syndrome_o[1] = ^((data_i ^ 76'hFF00000000000000000) & 76'h02CCD9999999B33366D);
-    syndrome_o[2] = ^((data_i ^ 76'hFF00000000000000000) & 76'h040F1E1E1E1E3C3C78E);
-    syndrome_o[3] = ^((data_i ^ 76'hFF00000000000000000) & 76'h08F01FE01FE03FC07F0);
-    syndrome_o[4] = ^((data_i ^ 76'hFF00000000000000000) & 76'h10001FFFE0003FFF800);
-    syndrome_o[5] = ^((data_i ^ 76'hFF00000000000000000) & 76'h20001FFFFFFFC000000);
-    syndrome_o[6] = ^((data_i ^ 76'hFF00000000000000000) & 76'h40FFE00000000000000);
-    syndrome_o[7] = ^((data_i ^ 76'hFF00000000000000000) & 76'hFFFFFFFFFFFFFFFFFFF);
+    syndrome_o[0] = ^((data_i ^ 76'hAA00000000000000000) & 76'h01AAB55555556AAAD5B);
+    syndrome_o[1] = ^((data_i ^ 76'hAA00000000000000000) & 76'h02CCD9999999B33366D);
+    syndrome_o[2] = ^((data_i ^ 76'hAA00000000000000000) & 76'h040F1E1E1E1E3C3C78E);
+    syndrome_o[3] = ^((data_i ^ 76'hAA00000000000000000) & 76'h08F01FE01FE03FC07F0);
+    syndrome_o[4] = ^((data_i ^ 76'hAA00000000000000000) & 76'h10001FFFE0003FFF800);
+    syndrome_o[5] = ^((data_i ^ 76'hAA00000000000000000) & 76'h20001FFFFFFFC000000);
+    syndrome_o[6] = ^((data_i ^ 76'hAA00000000000000000) & 76'h40FFE00000000000000);
+    syndrome_o[7] = ^((data_i ^ 76'hAA00000000000000000) & 76'hFFFFFFFFFFFFFFFFFFF);
 
     // Corrected output calculation
     data_o[0] = (syndrome_o == 8'h83) ^ data_i[0];

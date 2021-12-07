@@ -9,20 +9,19 @@ module prim_secded_28_22_tb (
   input               rst_ni,
   input        [21:0] data_i,
   output logic [21:0] data_o,
+  output logic [27:0] encoded_o,
   output logic [5:0] syndrome_o,
   output logic [1:0]  err_o,
   input        [27:0] error_inject_i
 );
 
-  logic [27:0] data_enc;
-
   prim_secded_28_22_enc prim_secded_28_22_enc (
     .data_i,
-    .data_o(data_enc)
+    .data_o(encoded_o)
   );
 
   prim_secded_28_22_dec prim_secded_28_22_dec (
-    .data_i(data_enc ^ error_inject_i),
+    .data_i(encoded_o ^ error_inject_i),
     .data_o,
     .syndrome_o,
     .err_o

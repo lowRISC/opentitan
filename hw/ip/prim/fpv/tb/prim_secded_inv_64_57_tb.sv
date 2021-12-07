@@ -9,20 +9,19 @@ module prim_secded_inv_64_57_tb (
   input               rst_ni,
   input        [56:0] data_i,
   output logic [56:0] data_o,
+  output logic [63:0] encoded_o,
   output logic [6:0] syndrome_o,
   output logic [1:0]  err_o,
   input        [63:0] error_inject_i
 );
 
-  logic [63:0] data_enc;
-
   prim_secded_inv_64_57_enc prim_secded_inv_64_57_enc (
     .data_i,
-    .data_o(data_enc)
+    .data_o(encoded_o)
   );
 
   prim_secded_inv_64_57_dec prim_secded_inv_64_57_dec (
-    .data_i(data_enc ^ error_inject_i),
+    .data_i(encoded_o ^ error_inject_i),
     .data_o,
     .syndrome_o,
     .err_o
