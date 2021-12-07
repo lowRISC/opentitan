@@ -36,44 +36,45 @@ module entropy_src_main_sm #(
   output logic                  main_sm_err_o
 );
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 16 -n 8 \
-//      -s 4129751849 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 17 -n 8 \
+//      -s 1105235456 --language=sv
 //
 // Hamming distance histogram:
 //
 //  0: --
 //  1: --
 //  2: --
-//  3: |||||||||||||||| (28.33%)
-//  4: |||||||||||||||||||| (35.00%)
-//  5: |||||||||||| (21.67%)
-//  6: |||||| (11.67%)
-//  7: | (3.33%)
-//  8: --
+//  3: ||||||||||||||| (29.41%)
+//  4: |||||||||||||||||||| (38.97%)
+//  5: ||||||||| (17.65%)
+//  6: |||| (8.82%)
+//  7: || (4.41%)
+//  8:  (0.74%)
 //
 // Minimum Hamming distance: 3
-// Maximum Hamming distance: 7
+// Maximum Hamming distance: 8
 // Minimum Hamming weight: 1
 // Maximum Hamming weight: 6
 //
 
   typedef enum logic [StateWidth-1:0] {
-    Idle              = 8'b11000110, // idle
-    BootHTRunning     = 8'b10111001, // boot mode, wait for health test done pulse
-    BootPostHTChk     = 8'b10110110, // boot mode, wait for post health test packer not empty state
-    StartupHTStart    = 8'b10000101, // startup mode, pulse the sha3 start input
-    StartupPhase1     = 8'b01110100, // startup mode, look for first test pass/fail
-    StartupPass1      = 8'b00101110, // startup mode, look for first test pass/fail, done if pass
-    StartupFail1      = 8'b01000011, // startup mode, look for second fail, alert if fail
-    ContHTStart       = 8'b01011110, // continuous test mode, pulse the sha3 start input
-    ContHTRunning     = 8'b11110011, // continuous test mode, wait for health test done pulse
-    Sha3Prep          = 8'b10011111, // sha3 mode, request csrng arb to reduce power
-    Sha3Process       = 8'b11101000, // sha3 mode, pulse the sha3 process input
-    Sha3Valid         = 8'b10001010, // sha3 mode, wait for sha3 valid indication
-    Sha3Done          = 8'b00010000, // sha3 mode, capture sha3 result, pulse done input
-    Sha3Quiesce       = 8'b01101101, // sha3 mode, goto alert state or continuous check mode
-    AlertState        = 8'b01011001, // if some alert condition occurs, hang here until sw handles
-    Error             = 8'b00100001  // illegal state reached and hang
+    Idle              = 8'b10010011, // idle
+    BootHTRunning     = 8'b01111011, // boot mode, wait for health test done pulse
+    BootPostHTChk     = 8'b01001111, // boot mode, wait for post health test packer not empty state
+    StartupHTStart    = 8'b11100110, // startup mode, pulse the sha3 start input
+    StartupPhase1     = 8'b11010100, // startup mode, look for first test pass/fail
+    StartupPass1      = 8'b00100000, // startup mode, look for first test pass/fail, done if pass
+    StartupFail1      = 8'b11110001, // startup mode, look for second fail, alert if fail
+    ContHTStart       = 8'b00011101, // continuous test mode, pulse the sha3 start input
+    ContHTRunning     = 8'b10101111, // continuous test mode, wait for health test done pulse
+    Sha3MsgDone       = 8'b10001001, // sha3 mode, all input messages added, ready to process
+    Sha3Prep          = 8'b01101100, // sha3 mode, request csrng arb to reduce power
+    Sha3Process       = 8'b10111000, // sha3 mode, pulse the sha3 process input
+    Sha3Valid         = 8'b10011110, // sha3 mode, wait for sha3 valid indication
+    Sha3Done          = 8'b00110110, // sha3 mode, capture sha3 result, pulse done input
+    Sha3Quiesce       = 8'b01011000, // sha3 mode, goto alert state or continuous check mode
+    AlertState        = 8'b00001010, // if some alert condition occurs, hang here until sw handles
+    Error             = 8'b01000001  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -182,7 +183,7 @@ module entropy_src_main_sm #(
               state_d = StartupFail1;
             end else begin
               // Passed two consecutive tests
-              state_d = Sha3Prep;
+              state_d = Sha3MsgDone;
             end
           end
         end
@@ -212,8 +213,11 @@ module entropy_src_main_sm #(
       ContHTRunning: begin
         // pass or fail of HT is the same path
         if (ht_done_pulse_i || !enable_i) begin
-          state_d = Sha3Prep;
+          state_d = Sha3MsgDone;
         end
+      end
+      Sha3MsgDone: begin
+        state_d = Sha3Prep;
       end
       Sha3Prep: begin
         // for normal or halt cases, always prevent a power spike
