@@ -85,12 +85,32 @@ module kmac_errchk
   /////////////////
   // Definitions //
   /////////////////
-  typedef enum logic [2:0] {
-    StIdle,
-    StMsgFeed,
-    StProcessing,
-    StAbsorbed,
-    StSqueezing
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
+  //      -s 2239170217 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (50.00%)
+  //  4: |||||||||||||||| (40.00%)
+  //  5: |||| (10.00%)
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 5
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 4
+  //
+  localparam int StateWidth = 6;
+  typedef enum logic [StateWidth-1:0] {
+    StIdle = 6'b001101,
+    StMsgFeed = 6'b110001,
+    StProcessing = 6'b010110,
+    StAbsorbed = 6'b100010,
+    StSqueezing = 6'b111100
   } st_e;
   st_e st, st_d;
 
@@ -205,8 +225,7 @@ module kmac_errchk
                  code: ErrSwCmdSequence,
                  info: {5'h0,
                         {err_swsequence, err_modestrength, err_prefix},
-                        8'h0,
-                        {1'b0, st, sw_cmd_i}
+                        {6'b0, st, sw_cmd_i}
                        }
                };
       end
@@ -242,7 +261,7 @@ module kmac_errchk
   assign error_o = err;
 
   // If below failed, revise err_swsequence error response info field.
-  `ASSERT_INIT(ExpectedStSwCmdBits_A, $bits(st) == 3 && $bits(sw_cmd_i) == 4)
+  `ASSERT_INIT(ExpectedStSwCmdBits_A, $bits(st) == StateWidth && $bits(sw_cmd_i) == 4)
 
   // If failed, revise err_modestrength error info field.
   `ASSERT_INIT(ExpectedModeStrengthBits_A,
@@ -252,13 +271,20 @@ module kmac_errchk
   ///////////////////
   // State Machine //
   ///////////////////
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      st <= StIdle;
-    end else begin
-      st <= st_d;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign st = st_e'(state_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(st_e),
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(StIdle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( st_d        ),
+    .state_o ( state_raw_q )
+  );
 
   always_comb begin : next_state
     st_d = st;
@@ -300,6 +326,7 @@ module kmac_errchk
 
       default: begin
         st_d = StIdle;
+        //ToDo: add alert
       end
     endcase
   end : next_state
