@@ -166,6 +166,7 @@
           name: "ROM"
           items: "8192" // 32 KiB
           swaccess: "ro",
+          data-intg-passthru: "true",
           desc: '''ROM data'''
         }
       }
