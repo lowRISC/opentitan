@@ -87,6 +87,16 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
               .sw_rst(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True), .sleep(1'b0));
         end
       end
+    forever
+      @(posedge cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateLowPower) begin
+        if (cfg.en_cov) begin
+          cov.reset_cg.sample(
+              .hw_resets(cfg.pwrmgr_vif.rstreqs_i), .hw_resets_en(cfg.pwrmgr_vif.reset_en),
+              .esc_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx]),
+              .main_pwr_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx]),
+              .sw_rst(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True), .sleep(1'b1));
+        end
+      end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
