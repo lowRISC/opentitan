@@ -20,7 +20,7 @@ cc_library(
     ],
 )
 
-# TODO use more specific targets to avoid unnecesary dependencies
+# TODO use more specific targets to avoid unnecessary dependencies
 # https://github.com/lowRISC/opentitan/issues/9098
 cc_library(
     name = "test_framework",
@@ -42,5 +42,24 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
+    ],
+)
+
+cc_library(
+    name = "ottf_isrs",
+    srcs = [
+        "ottf_isrs.S",
+        "ottf_isrs.c",
+    ],
+    hdrs = [
+        "ottf_isrs.h",
+        "ottf_macros.h",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
     ],
 )

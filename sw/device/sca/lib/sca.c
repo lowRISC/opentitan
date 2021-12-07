@@ -13,11 +13,11 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 
 #include "clkmgr_regs.h"  // Generated
 #include "csrng_regs.h"   // Generated
@@ -147,11 +147,11 @@ static void sca_init_edn(void) {
 }
 
 /**
- * Timer IRQ handler.
+ * Override default Timer ISR.
  *
  * Disables the counter and clears pending interrupts.
  */
-void handler_irq_timer(void) {
+void ottf_timer_isr(void) {
   // Return values of below functions are ignored to improve capture
   // performance.
   IGNORE_RESULT(dif_rv_timer_counter_set_enabled(&timer, kRvTimerHart,

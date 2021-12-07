@@ -18,8 +18,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_dif_spi_device,
       sw_lib_dif_uart,
       riscv_crt,
-      sw_lib_irq_handlers,
       device_lib,
+      sw_lib_testing_ottf_isrs,
       sw_lib_testing_test_status,
     ],
   )

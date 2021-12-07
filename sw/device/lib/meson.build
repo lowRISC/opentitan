@@ -60,28 +60,6 @@ sw_lib_irq = declare_dependency(
   )
 )
 
-# IRQ Handlers Library
-#
-# handler.c contains various definitions with weak linkage, for interrupt
-# handler symbols referenced from riscv_crt.
-#
-# To override default handlers, implement the declarations in handler.h, and
-# link to this library to pick up the other default definitions, if needed.
-#
-# If you are getting errors for functions beginning `handler_` when linking a
-# device executable, it's likely because you forgot to link this library.
-sw_lib_irq_handlers = declare_dependency(
-  link_with: static_library(
-    'irq_default_handlers_ot',
-    sources: [
-      'handler.c',
-    ],
-    dependencies: [
-      sw_lib_runtime_log,
-    ],
-  )
-)
-
 # USB DEV library (sw_lib_usb)
 sw_lib_usb = declare_dependency(
   link_with: static_library(
