@@ -834,8 +834,8 @@
           name: "CNT"
           desc: '''
           Number of total life cycle state transition attempts.
-          The life cycle controller allows up to 16 transition attempts.
-          If this counter is equal to 16, the !!LC_STATE is considered
+          The life cycle controller allows up to 24 transition attempts.
+          If this counter is equal to 24, the !!LC_STATE is considered
           to be invalid and will read as SCRAP.
 
           If the counter state is invalid, the counter will have the
