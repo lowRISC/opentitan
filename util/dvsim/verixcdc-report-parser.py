@@ -182,11 +182,11 @@ def main():
     # Patterns for vcdc.log
     parser_args.update({
         args.repdir.joinpath('syn-icarus/vcdc.log'): [
-            ("error", r"^FlexNet Licensing error.*"),
-            ("error", r"^Error: .*"),
-            ("error", r"^ERROR.*"),
-            ("error", r"^  ERR .*"),
-            ("warning", r"^Warning: .*"),
+            ("flow_error", r"^FlexNet Licensing error.*"),
+            ("flow_error", r"^Error: .*"),
+            ("flow_error", r"^ERROR.*"),
+            ("flow_error", r"^  ERR .*"),
+            ("flow_warning", r"^Warning: .*"),
             # We ignore several messages here:
             # #25010: unused signals
             # #25011: unused signals
@@ -196,17 +196,17 @@ def main():
             # #39035: parameter becomes local
             # #39122: non-positive repeat
             # #39491: parameter in package
-            ("warning", r"^  "
-                         "(?!WARN \[#25010\])"
-                         "(?!WARN \[#25011\])"
-                         "(?!WARN \[#25012\])"
-                         "(?!WARN \[#25013\])"
-                         "(?!WARN \[#26038\])"
-                         "(?!WARN \[#39035\])"
-                         "(?!WARN \[#39122\])"
-                         "(?!WARN \[#39491\])"
-                         "WARN .*"),
-            ("info", r"^  INFO .*")
+            ("flow_warning", r"^  "
+                             "(?!WARN \[#25010\])"
+                             "(?!WARN \[#25011\])"
+                             "(?!WARN \[#25012\])"
+                             "(?!WARN \[#25013\])"
+                             "(?!WARN \[#26038\])"
+                             "(?!WARN \[#39035\])"
+                             "(?!WARN \[#39122\])"
+                             "(?!WARN \[#39491\])"
+                             "WARN .*"),
+            ("flow_info", r"^  INFO .*")
         ]
     })
 
