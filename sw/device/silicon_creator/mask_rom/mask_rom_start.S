@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/multibits_asm.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "ast_regs.h"
 #include "csrng_regs.h"
@@ -134,6 +135,13 @@ _mask_rom_start_boot:
   li   t0, 0xFFFF0888
   csrc mie, t0
 
+  // Check if AST initialization should be skipped.
+  li   t0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
+            OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET)
+  li   t1, MULTIBIT_ASM_BOOL4_TRUE
+  bne  t0, t1, .L_ast_init_skip
+
   // Copy the AST configuration from OTP.
   li   a0, (TOP_EARLGREY_AST_BASE_ADDR + AST_REGA_0_REG_OFFSET)
   li   a1, (TOP_EARLGREY_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
@@ -150,6 +158,7 @@ _mask_rom_start_boot:
   andi t0, t0, 0x1
   beqz t0, .L_ast_done_loop
 
+.L_ast_init_skip:
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
   li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR

@@ -4,11 +4,6 @@
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-)
-
 load("//rules:autogen.bzl", "autogen_hjson_header")
 
 autogen_hjson_header(
@@ -16,4 +11,9 @@ autogen_hjson_header(
     srcs = [
         "ast.hjson",
     ],
+)
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
 )
