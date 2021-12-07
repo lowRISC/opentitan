@@ -18,7 +18,9 @@
  */
 module otbn_rf_bignum_fpga
   import otbn_pkg::*;
-(
+#(
+  parameter logic [BaseIntgWidth-1:0] WordZeroVal = '0
+) (
   input  logic             clk_i,
   input  logic             rst_ni,
 
@@ -32,23 +34,57 @@ module otbn_rf_bignum_fpga
   input  logic [WdrAw-1:0]   rd_addr_b_i,
   output logic [ExtWLEN-1:0] rd_data_b_o
 );
-  logic [ExtWLEN-1:0] rf [NWdr];
+
 
   // The reset is not used in this register file version.
   logic unused_rst_ni;
   assign unused_rst_ni = rst_ni;
 
-  // Sync write
-  for (genvar i = 0; i < 2; i++) begin : g_rf
-    // Split registers into halves for clear separation for the enable terms.
-    always_ff @(posedge clk_i) begin
-      if (wr_en_i[i] == 1'b1) begin
-        rf[wr_addr_i][i*ExtWLEN/2+:ExtWLEN/2] <= wr_data_i[i*ExtWLEN/2+:ExtWLEN/2];
+  // This is only used for backdoor access in simulations.
+  logic [ExtWLEN-1:0] rf [NWdr];
+  logic [ExtWLEN-1:0] unused_rf [NWdr];
+  assign unused_rf = rf;
+
+  // Split registers into individual 39bit wide memories - otherwise the tool fails to properly
+  // implement the non-zero memory intialization assignment in the initial block. Further, the
+  // regfile is split into two sets of memories for clear separation of the enable terms.
+  for (genvar i = 0; i < BaseWordsPerWLEN; i++) begin : gen_rf
+    logic [BaseIntgWidth-1:0] rf_local [NWdr];
+    // Sync write
+    // Note that the SystemVerilog LRM requires variables on the LHS of assignments within
+    // "always_ff" to not be written to by any other process. However, to enable the initialization
+    // of the inferred RAM32M primitives with non-zero values, below "initial" procedure is needed.
+    // Therefore, we use "always" instead of the generally preferred "always_ff" for the synchronous
+    // write procedure.
+    always @(posedge clk_i) begin
+      if (wr_en_i[i/(BaseWordsPerWLEN/2)] == 1'b1) begin
+        rf_local[wr_addr_i] <= wr_data_i[i*BaseIntgWidth+:BaseIntgWidth];
       end
     end
+
+    // Make sure we initialize the BRAM with the correct register reset value.
+    initial begin
+      for (int k = 0; k < NWdr; k++) begin
+        rf_local[k] = WordZeroVal;
+      end
+    end
+
+    // Async read
+    assign rd_data_a_o[i*BaseIntgWidth+:BaseIntgWidth] = rf_local[rd_addr_a_i];
+    assign rd_data_b_o[i*BaseIntgWidth+:BaseIntgWidth] = rf_local[rd_addr_b_i];
+
+  // This is only used for backdoor access in simulations.
+`ifdef VERILATOR
+  `define INC_BACKDOOR_LOAD
+`elsif SIMULATION
+  `define INC_BACKDOOR_LOAD
+`endif
+`ifdef INC_BACKDOOR_LOAD
+    for (genvar k = 0; k < NWdr; k++) begin : gen_sim
+      assign rf[k][i*BaseIntgWidth+:BaseIntgWidth] = rf_local[k];
+    end
+`undef INC_BACKDOOR_LOAD
+`endif
   end
 
-  // Async read
-  assign rd_data_a_o = rf[rd_addr_a_i];
-  assign rd_data_b_o = rf[rd_addr_b_i];
 endmodule

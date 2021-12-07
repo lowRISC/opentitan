@@ -14,7 +14,9 @@
  */
 module otbn_rf_base_ff
   import otbn_pkg::*;
-(
+#(
+  parameter logic [BaseIntgWidth-1:0] WordZeroVal = '0
+) (
   input logic                     clk_i,
   input logic                     rst_ni,
 
@@ -38,7 +40,7 @@ module otbn_rf_base_ff
   end
 
   // No flops for register 0 as it's hard-wired to 0
-  assign rf_reg[0] = '0;
+  assign rf_reg[0] = WordZeroVal;
 
   // Generate flops for register 1 - NGpr
   for (genvar i = 1; i < NGpr; i++) begin : g_rf_flops
@@ -46,7 +48,7 @@ module otbn_rf_base_ff
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        rf_reg_q <= '0;
+        rf_reg_q <= WordZeroVal;
       end else if(we_onehot[i]) begin
         rf_reg_q <= wr_data_i;
       end

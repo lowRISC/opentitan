@@ -263,9 +263,14 @@ module tlul_adapter_sram
       d_sink   : 1'b0,
       d_data   : (d_valid && vld_rd_rsp)
                  ? rspfifo_rdata.data : '0,
-      d_user   : '{default: '1, data_intg: d_valid && vld_rd_rsp ? rspfifo_rdata.data_intg : '0},
+      // If this a write response with data fields set to 0, we have to set all ECC bits correctly
+      // since we are using an inverted Hsiao code.
+      d_user   : '{
+        default: '0,
+        data_intg: d_valid && vld_rd_rsp ? rspfifo_rdata.data_intg :
+                                           prim_secded_pkg::SecdedInv3932ZeroEcc
+      },
       d_error  : d_valid && d_error,
-
       a_ready  : (gnt_i | error_internal) & reqfifo_wready & sramreqfifo_wready
   };
 
@@ -325,7 +330,7 @@ module tlul_adapter_sram
     wdata_intg  = '0;
 
     if (tl_i_int.a_valid) begin
-      wmask_intg[woffset] = '1;
+      wmask_intg[woffset] = {DataIntgWidth{1'b1}};
       wdata_intg[woffset] = tl_i_int.a_user.data_intg;
     end
   end
@@ -365,29 +370,40 @@ module tlul_adapter_sram
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
 
   // Make sure only requested bytes are forwarded
-  logic [WidthMult-1:0][DataWidth-1:0] rdata;
-  logic [WidthMult-1:0][DataWidth-1:0] rmask;
+  logic [WidthMult-1:0][DataWidth-1:0] rdata_reshaped;
   logic [DataWidth-1:0] rdata_tlword;
 
-  // When passing through data integrity, we must feedback the entire
-  // read data, otherwise the stored integrity will not calculate correctly
+  // This just changes the array format so that the correct word can be selected by indexing.
+  assign rdata_reshaped = rdata_i;
+
   if (EnableDataIntgPt) begin : gen_no_rmask
-    assign rmask = {DataOutW{|sramreqfifo_rdata.mask}};
+    always_comb begin
+      // If the read mask is set to zero, all read data is zeroed out by the mask.
+      // We have to set the ECC bits accordingly since we are using an inverted Hsiao code.
+      rdata_tlword = prim_secded_pkg::SecdedInv3932ZeroWord;
+      // Otherwise, if at least one mask bit is nonzero, we are passing through the integrity.
+      // In that case we need to feed back the entire word since otherwise the integrity
+      // will not calculate correctly.
+      if (|sramreqfifo_rdata.mask) begin
+        // Select correct word.
+        rdata_tlword = rdata_reshaped[sramreqfifo_rdata.woffset];
+      end
+    end
   end else begin : gen_rmask
+    logic [DataWidth-1:0] rmask;
     always_comb begin
       rmask = '0;
       for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
-        rmask[sramreqfifo_rdata.woffset][8*i +: 8] = {8{sramreqfifo_rdata.mask[i]}};
+        rmask[8*i +: 8] = {8{sramreqfifo_rdata.mask[i]}};
       end
     end
+    // Select correct word and mask it.
+    assign rdata_tlword = rdata_reshaped[sramreqfifo_rdata.woffset] & rmask;
   end
-
-  assign rdata = rdata_i & rmask;
-  assign rdata_tlword = rdata[sramreqfifo_rdata.woffset];
 
   assign rspfifo_wdata  = '{
     data      : rdata_tlword[top_pkg::TL_DW-1:0],
-    data_intg : EnableDataIntgPt ? rdata_tlword[DataWidth-1 -: DataIntgWidth] : '1,
+    data_intg : EnableDataIntgPt ? rdata_tlword[DataWidth-1 -: DataIntgWidth] : '0,
     error     : rerror_i[1] // Only care for Uncorrectable error
   };
   assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
