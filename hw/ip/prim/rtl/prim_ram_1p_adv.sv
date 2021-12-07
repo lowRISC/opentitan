@@ -136,22 +136,22 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
 
     if (Width == 16) begin : gen_secded_22_16
       if (HammingECC) begin : gen_hamming
-        prim_secded_hamming_22_16_enc u_enc (
+        prim_secded_inv_hamming_22_16_enc u_enc (
           .data_i(wdata_i),
           .data_o(wdata_d)
         );
-        prim_secded_hamming_22_16_dec u_dec (
+        prim_secded_inv_hamming_22_16_dec u_dec (
           .data_i     (rdata_sram),
           .data_o     (rdata_d[0+:Width]),
           .syndrome_o ( ),
           .err_o      (rerror_d)
         );
       end else begin : gen_hsiao
-        prim_secded_22_16_enc u_enc (
+        prim_secded_inv_22_16_enc u_enc (
           .data_i(wdata_i),
           .data_o(wdata_d)
         );
-        prim_secded_22_16_dec u_dec (
+        prim_secded_inv_22_16_dec u_dec (
           .data_i     (rdata_sram),
           .data_o     (rdata_d[0+:Width]),
           .syndrome_o ( ),
@@ -160,22 +160,22 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
       end
     end else if (Width == 32) begin : gen_secded_39_32
       if (HammingECC) begin : gen_hamming
-        prim_secded_hamming_39_32_enc u_enc (
+        prim_secded_inv_hamming_39_32_enc u_enc (
           .data_i(wdata_i),
           .data_o(wdata_d)
         );
-        prim_secded_hamming_39_32_dec u_dec (
+        prim_secded_inv_hamming_39_32_dec u_dec (
           .data_i     (rdata_sram),
           .data_o     (rdata_d[0+:Width]),
           .syndrome_o ( ),
           .err_o      (rerror_d)
         );
       end else begin : gen_hsiao
-        prim_secded_39_32_enc u_enc (
+        prim_secded_inv_39_32_enc u_enc (
           .data_i(wdata_i),
           .data_o(wdata_d)
         );
-        prim_secded_39_32_dec u_dec (
+        prim_secded_inv_39_32_dec u_dec (
           .data_i     (rdata_sram),
           .data_o     (rdata_d[0+:Width]),
           .syndrome_o ( ),

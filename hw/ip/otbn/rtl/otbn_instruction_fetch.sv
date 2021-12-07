@@ -123,7 +123,7 @@ module otbn_instruction_fetch
   end
 
   // Check integrity on prefetched instruction
-  prim_secded_39_32_dec u_insn_intg_check (
+  prim_secded_inv_39_32_dec u_insn_intg_check (
     .data_i     (insn_fetch_resp_data_intg_q),
     .data_o     (),
     .syndrome_o (),

@@ -51,7 +51,9 @@ module otbn_rf_bignum
   logic [BaseWordsPerWLEN*2-1:0] rd_data_a_err, rd_data_b_err;
 
   if (RegFile == RegFileFF) begin : gen_rf_bignum_ff
-    otbn_rf_bignum_ff u_otbn_rf_bignum_inner (
+    otbn_rf_bignum_ff #(
+      .WordZeroVal(prim_secded_pkg::SecdedInv3932ZeroWord)
+    ) u_otbn_rf_bignum_inner (
       .clk_i,
       .rst_ni,
 
@@ -66,7 +68,9 @@ module otbn_rf_bignum
       .rd_data_b_o(rd_data_b_intg_o)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_rf_bignum_fpga
-    otbn_rf_bignum_fpga u_otbn_rf_bignum_inner (
+    otbn_rf_bignum_fpga #(
+      .WordZeroVal(prim_secded_pkg::SecdedInv3932ZeroWord)
+    ) u_otbn_rf_bignum_inner (
       .clk_i,
       .rst_ni,
 
@@ -87,20 +91,20 @@ module otbn_rf_bignum
 
   // Separate integrity encode and decode per 32-bit integrity granule
   for (genvar i = 0; i < BaseWordsPerWLEN; ++i) begin : g_rf_intg_calc
-    prim_secded_39_32_enc u_wr_data_intg_enc (
+    prim_secded_inv_39_32_enc u_wr_data_intg_enc (
       .data_i(wr_data_no_intg_i[i * 32 +: 32]),
       .data_o(wr_data_intg_calc[i * 39 +: 39])
     );
 
     // Integrity decoders used to detect errors only, corrections (`syndrome_o`/`d_o`) are ignored
-    prim_secded_39_32_dec u_rd_data_a_intg_dec (
+    prim_secded_inv_39_32_dec u_rd_data_a_intg_dec (
       .data_i    (rd_data_a_intg_o[i * 39 +: 39]),
       .data_o    (),
       .syndrome_o(),
       .err_o     (rd_data_a_err[i*2 +: 2])
     );
 
-    prim_secded_39_32_dec u_rd_data_b_intg_dec (
+    prim_secded_inv_39_32_dec u_rd_data_b_intg_dec (
       .data_i    (rd_data_b_intg_o[i * 39 +: 39]),
       .data_o    (),
       .syndrome_o(),

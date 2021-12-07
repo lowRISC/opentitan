@@ -461,7 +461,7 @@ module otbn
     // Separate check for dmem read data integrity outside of `u_dmem` as `prim_ram_1p_adv` doesn't
     // have functionality for only integrity checking, just fully integrated ECC. Integrity bits are
     // implemented on a 32-bit granule so separate checks are required for each.
-    prim_secded_39_32_dec u_dmem_intg_check (
+    prim_secded_inv_39_32_dec u_dmem_intg_check (
       .data_i     (dmem_rdata[i_word*39 +: 39]),
       .data_o     (),
       .syndrome_o (),

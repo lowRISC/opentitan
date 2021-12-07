@@ -369,7 +369,7 @@ module tb;
                                  .path  (`DV_STRINGIFY(`ROM_MEM_HIER)),
                                  .depth ($size(`ROM_MEM_HIER)),
                                  .n_bits($bits(`ROM_MEM_HIER)),
-                                 .err_detection_scheme(mem_bkdr_util_pkg::Ecc_39_32));
+                                 .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
 
       for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin

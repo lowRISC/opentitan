@@ -301,7 +301,7 @@ module tb;
                             "u_mem.gen_generic.u_impl_generic.mem"}),
                     .depth (otbn_reg_pkg::OTBN_IMEM_SIZE / 4),
                     .n_bits (otbn_reg_pkg::OTBN_IMEM_SIZE / 4 * 39),
-                    .err_detection_scheme (mem_bkdr_util_pkg::Ecc_39_32));
+                    .err_detection_scheme (mem_bkdr_util_pkg::EccInv_39_32));
 
     // DMEM is twice as big as the bus-accessible part
     real_dmem_size = 2 * otbn_reg_pkg::OTBN_DMEM_SIZE;
@@ -312,7 +312,7 @@ module tb;
                             "u_mem.gen_generic.u_impl_generic.mem"}),
                     .depth (dmem_depth),
                     .n_bits (dmem_depth * 312),
-                    .err_detection_scheme (mem_bkdr_util_pkg::Ecc_39_32));
+                    .err_detection_scheme (mem_bkdr_util_pkg::EccInv_39_32));
 
     uvm_config_db#(mem_bkdr_util)::set(null, "*.env", imem_util.get_name(), imem_util);
     uvm_config_db#(mem_bkdr_util)::set(null, "*.env", dmem_util.get_name(), dmem_util);

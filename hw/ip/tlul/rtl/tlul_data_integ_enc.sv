@@ -14,7 +14,7 @@ module tlul_data_integ_enc import tlul_pkg::*; (
   output logic [DataMaxWidth+DataIntgWidth-1:0] data_intg_o
 );
 
-  prim_secded_39_32_enc u_data_gen (
+  prim_secded_inv_39_32_enc u_data_gen (
     .data_i,
     .data_o(data_intg_o)
   );
