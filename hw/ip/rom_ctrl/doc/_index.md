@@ -91,7 +91,7 @@ This is taken by the checker FSM (ignoring ECC bits) and will be compared with t
 
 Once it comes back, the digest is forwarded directly to the [Key Manager]({{< relref "hw/ip/keymgr/doc" >}}).
 It is also compared with the hash that was read from the top eight words of ROM.
-On a match, `pwrmgr_data_o.good` is signalled as `On`.
+On a match, `pwrmgr_data_o.good` is signalled as `Mubi4True`.
 In either case, `pwrmgr_data_o.done` goes high when the calculation is complete.
 
 The diagram below shows the operation of the simple FSM.
@@ -114,7 +114,8 @@ Since the code in ROM is the first thing to execute, an attacker that modifies i
 As such, OpenTitan needs some form of ROM integrity checking and the ROM checker is the module in charge of providing it.
 
 After bringing the ROM controller module out of reset, the power manager must wait until `pwrgr_data_o.done` is asserted before starting the host processor.
-In PROD state, it will also check that `pwrmgr_data_o.good` is `On`: if not, it will refuse to boot.
+The ROM controller also passes the `pwrmgr_data_o.good` signal.
+The power manager can use this to decide whether to boot (taking into account life cycle state).
 This provides an extra safety check, but the real security comes from key manager integration described below.
 
 The simple KMAC interface assumes that KMAC is pre-configured to run the cSHAKE algorithm with a prefix specific to the ROM checker.
