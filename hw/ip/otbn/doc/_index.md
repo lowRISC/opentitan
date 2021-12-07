@@ -560,6 +560,15 @@ This is to allow OTBN applications to store sensitive information in the other h
 Each memory write through the register interface updates a checksum.
 See the [Memory Load Integrity]({{< relref "#mem-load-integrity" >}}) section for more details.
 
+### Instruction Prefetch
+
+OTBN employs an instruction prefetch stage which allows register file inputs to be taken directly from registers by pre-decoding instructions in the prefetch stage.
+This is required to enable the blanking SCA hardening measure (TODO: Not yet implemented or documented).
+Its operation is entirely transparent to software.
+It does not speculate and will only prefetch where the next instruction address can be known.
+This results in a stall cycle for all conditional branches and jumps as the result is neither predicted nor known ahead of time.
+Instruction bits held in the prefetch buffer are unscrambled but use the integrity protection described in [Data Integrity Protection]({{<relref "#design-details-data-integrity-protection">}}).
+
 ### Random Numbers
 
 OTBN is connected to the [Entropy Distribution Network (EDN)]({{< relref "hw/ip/edn/doc" >}}) which can provide random numbers via the `RND` and `URND` CSRs and WSRs.
