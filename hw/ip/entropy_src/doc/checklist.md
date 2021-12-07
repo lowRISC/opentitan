@@ -50,7 +50,7 @@ Code Quality  | [LINT_PASS][]           | Done        |
 Code Quality  | [CDC_SETUP][]           | N/A         |
 Code Quality  | [FPGA_TIMING][]         | Done        |
 Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
-Security      | [SEC_CM_DOCUMENTED][]   | Deferred    |
+Security      | [SEC_CM_DOCUMENTED][]   | Done        |
 Security      | [SEC_RND_CNST][]        | N/A         |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
@@ -75,8 +75,8 @@ Security      | [SEC_RND_CNST][]        | N/A         |
 
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
-Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
-Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
+Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
+Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
 Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
 
