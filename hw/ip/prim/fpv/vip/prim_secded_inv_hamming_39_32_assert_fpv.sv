@@ -9,6 +9,7 @@ module prim_secded_inv_hamming_39_32_assert_fpv (
   input        rst_ni,
   input [31:0] data_i,
   input [31:0] data_o,
+  input [38:0] encoded_o,
   input [6:0] syndrome_o,
   input [1:0]  err_o,
   input [38:0] error_inject_i
@@ -29,5 +30,10 @@ module prim_secded_inv_hamming_39_32_assert_fpv (
   // Basic syndrome check
   `ASSERT(SyndromeCheck_A, |syndrome_o |-> $countones(error_inject_i) > 0)
   `ASSERT(SyndromeCheckReverse_A, $countones(error_inject_i) > 0 |-> |syndrome_o)
+
+  // Check that all-one and all-zero data does not result in all-one or all-zero codewords
+  `ASSERT(AllZerosCheck_A, data_i == '0 |-> encoded_o != '0)
+  `ASSERT(AllOnesCheck_A, data_i == '1 |-> encoded_o != '1)
+
 
 endmodule : prim_secded_inv_hamming_39_32_assert_fpv

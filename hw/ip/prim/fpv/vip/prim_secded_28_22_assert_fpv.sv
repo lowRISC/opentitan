@@ -9,6 +9,7 @@ module prim_secded_28_22_assert_fpv (
   input        rst_ni,
   input [21:0] data_i,
   input [21:0] data_o,
+  input [27:0] encoded_o,
   input [5:0] syndrome_o,
   input [1:0]  err_o,
   input [27:0] error_inject_i

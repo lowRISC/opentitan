@@ -13,13 +13,13 @@ module prim_secded_inv_39_32_dec (
 
   always_comb begin : p_encode
     // Syndrome calculation
-    syndrome_o[0] = ^((data_i ^ 39'h7F00000000) & 39'h012606BD25);
-    syndrome_o[1] = ^((data_i ^ 39'h7F00000000) & 39'h02DEBA8050);
-    syndrome_o[2] = ^((data_i ^ 39'h7F00000000) & 39'h04413D89AA);
-    syndrome_o[3] = ^((data_i ^ 39'h7F00000000) & 39'h0831234ED1);
-    syndrome_o[4] = ^((data_i ^ 39'h7F00000000) & 39'h10C2C1323B);
-    syndrome_o[5] = ^((data_i ^ 39'h7F00000000) & 39'h202DCC624C);
-    syndrome_o[6] = ^((data_i ^ 39'h7F00000000) & 39'h4098505586);
+    syndrome_o[0] = ^((data_i ^ 39'h2A00000000) & 39'h012606BD25);
+    syndrome_o[1] = ^((data_i ^ 39'h2A00000000) & 39'h02DEBA8050);
+    syndrome_o[2] = ^((data_i ^ 39'h2A00000000) & 39'h04413D89AA);
+    syndrome_o[3] = ^((data_i ^ 39'h2A00000000) & 39'h0831234ED1);
+    syndrome_o[4] = ^((data_i ^ 39'h2A00000000) & 39'h10C2C1323B);
+    syndrome_o[5] = ^((data_i ^ 39'h2A00000000) & 39'h202DCC624C);
+    syndrome_o[6] = ^((data_i ^ 39'h2A00000000) & 39'h4098505586);
 
     // Corrected output calculation
     data_o[0] = (syndrome_o == 7'h19) ^ data_i[0];
