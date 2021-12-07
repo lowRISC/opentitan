@@ -287,6 +287,9 @@
     type: mem-load
     target: [offset, grs1]
     bytes: 4
+  iflow:
+    - to: [grd]
+      from: [dmem]
 
 - mnemonic: sw
   rv32i: true
@@ -316,6 +319,9 @@
     type: mem-store
     target: [offset, grs1]
     bytes: 4
+  iflow:
+    - to: [dmem]
+      from: [grs2]
 
 - mnemonic: beq
   rv32i: true
@@ -406,6 +412,9 @@
       funct3: b000
       rd: grd
       opcode: b11001
+  iflow:
+    - to: [grd]
+      from: []
 
 - mnemonic: csrrs
   rv32i: true
@@ -432,6 +441,43 @@
   lsu:
     type: csr
     target: [csr]
+  iflow:
+    - to: [grd]
+      from: []
+    - test:
+        - csr == 0x7c0
+      to: [fg0-all]
+      from: [fg0-all, grs1]
+    - test:
+        - csr == 0x7c0
+      to: [grd]
+      from: [fg0-all]
+    - test:
+        - csr == 0x7c1
+      to: [fg1-all]
+      from: [fg1-all, grs1]
+    - test:
+        - csr == 0x7c1
+      to: [grd]
+      from: [fg1-all]
+    - test:
+        - csr == 0x7c8
+      to: [fg0-all, fg1-all]
+      from: [fg0-all, fg1-all, grs1]
+    - test:
+        - csr == 0x7c8
+      to: [grd]
+      from: [fg0-all, fg1-all]
+    - test:
+        - csr >= 0x7d0
+        - csr <= 0x7d8
+      to: [mod]
+      from: [mod, grs1]
+    - test:
+        - csr >= 0x7d0
+        - csr <= 0x7d8
+      to: [grd]
+      from: [mod]
 
 - mnemonic: csrrw
   rv32i: true
@@ -459,6 +505,51 @@
   lsu:
     type: csr
     target: [csr]
+  iflow:
+    - to: [grd]
+      from: []
+    - test:
+        - grd != 0
+        - csr == 0x7c0
+      to: [fg0-all]
+      from: [grs1]
+    - test:
+        - grd != 0
+        - csr == 0x7c0
+      to: [grd]
+      from: [fg0-all]
+    - test:
+        - grd != 0
+        - csr == 0x7c1
+      to: [fg1-all]
+      from: [grs1]
+    - test:
+        - grd != 0
+        - csr == 0x7c1
+      to: [grd]
+      from: [fg1-all]
+    - test:
+        - grd != 0
+        - csr == 0x7c8
+      to: [fg0-all, fg1-all]
+      from: [grs1]
+    - test:
+        - grd != 0
+        - csr == 0x7c8
+      to: [grd]
+      from: [fg0-all, fg1-all]
+    - test:
+        - grd != 0
+        - csr >= 0x7d0
+        - csr <= 0x7d8
+      to: [mod]
+      from: [mod, grs1]
+    - test:
+        - grd != 0
+        - csr >= 0x7d0
+        - csr <= 0x7d8
+      to: [grd]
+      from: [mod]
 
 - mnemonic: ecall
   rv32i: true

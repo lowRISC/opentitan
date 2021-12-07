@@ -80,6 +80,14 @@ encoding-schemes: enc-schemes.yml
 #  cycles:    A positive integer, giving the number of cycles that the
 #             instruction takes to execute. Optional, default 1.
 #
+#  iflow:    An optional list of dictionaries. If set, this describes the
+#            information flow properties of the instruction according to the
+#            dictionaries' fields (defined below). The default is to assume all
+#            source registers flow to all destination registers, the new
+#            destination register value does not depend on the old value, and
+#            that there is no information flow to or from memory, flags, or
+#            special registers.
+#
 # The operands field should be a list, corresponding to the operands in the
 # order they will appear in the syntax. Each operand is either a string (the
 # operand name) or a dictionary. In the latter case, it has the following
@@ -162,6 +170,40 @@ encoding-schemes: enc-schemes.yml
 #
 #  bytes:   An integer giving the width of the operation in bytes. This is
 #           required if type is mem-* and cannot be used otherwise.
+#
+#
+# If specified, the iflow field for an instruction should be a list of
+# dictionaries, each specifying an information flow "rule". Rules have the
+# following fields:
+#
+#   to: A list of strings, representing the locations that receive information
+#       from locations in the "from" list (i.e. information-flow sinks). Every
+#       location updated by the instruction should be in the "to" list. Each
+#       string should be either:
+#       - a register operand name such as "grd" or "wrs1"
+#       - "wref-<reg operand name>" for instructions where a WDR is indirectly
+#         accessed via a GPR operand
+#       - "dmem" for memory, which is treated as a monolithic block
+#       - "acc" or "mod" to represent special registers ACC and MOD
+#       - a flag (represented as "<flag group>-<flag>" e.g. fg0-all, flags-c), where:
+#         * <flag group> can be either "fg0", "fg1", or (if the instruction has
+#           a `flag_group` operand) simply "flags" to select that flag group
+#         * <flag> can be l, c, m, z, or "all".
+#
+#   from: List of strings with the same format as the "to" field; represents
+#         the locations that information in this rule is flowing from (i.e.
+#         information-flow sources). If the "from" list is empty, that means
+#         the locations in the "to" list are updated to constants, and their
+#         values no longer depend on their previous values.
+#
+#   test:  Optional list of strings specifying when this rule applies. The rule
+#          only applies if all tests in the list are true. Each list item is a
+#          string of the form "<operand> <comparison> <value>", where:
+#          - <operand> is the name of one of the instruction's operands
+#          - <comparison> is "==", "!=", ">=", or "<="
+#          - <value> is an integer that is within the allowed range of values
+#            for this operand (for instance, for a flag group it would be 0 or 1,
+#            and for a register it would be between 0 and 31).
 
 insn-groups:
   - key: base
