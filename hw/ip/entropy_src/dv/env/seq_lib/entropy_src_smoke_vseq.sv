@@ -8,39 +8,32 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
   `uvm_object_new
 
   int rng_count = 0;
-
-  virtual function queue_of_rng_val_t generate_rng_data(int quad_cnt);
-    queue_of_rng_val_t result;
-
-    for (int i = 0; i < quad_cnt; i++) begin
-      result.push_back(4'(rng_count));
-      rng_count++;
-    end
-
-    return result;
-  endfunction
+  int offset = 0;
 
   task body();
 
-    init_rng_push_seq;
+    int seed_cnt = cfg.seed_cnt;
 
-    // Wait for entropy_valid interrupt
-    csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
+    // Create rng host sequence
+    m_rng_push_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
+                     create("m_rng_push_seq");
 
-    // Read and check entropy
-    for (int i = 0; i < entropy_src_pkg::CSRNG_BUS_WIDTH/TL_DW; i++) begin
-      bit [TL_DW-1:0] entropy_tlul;
-      csr_rd(.ptr(ral.entropy_data), .value(entropy_tlul));
-    end
 
-    // Ensure entropy_valid interrupt bit set
-    csr_rd_check(.ptr(ral.intr_state), .compare_value(1'b1));
-
-    // Clear entropy_valid interrupt bit
-    csr_wr(.ptr(ral.intr_state), .value(1'b1));
-
-    // Ensure entropy_valid interrupt bit cleared
-    csr_rd_check(.ptr(ral.intr_state), .compare_value(1'b0));
+    fork
+      m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
+      begin
+        do begin
+          int available_seeds;
+          // Wait for data to arrive for TL consumption via the ENTROPY_DATA register
+          csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
+          // Read all currently available data (but no more than seed_cnt)
+          do_entropy_data_read(seed_cnt, available_seeds);
+          // Update the count of remaining seeds to read
+          seed_cnt -= available_seeds;
+        end while (seed_cnt > 0);
+        m_rng_push_seq.stop();
+      end
+    join
 
   endtask : body
 

@@ -12,12 +12,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   rand bit [3:0]   rng_val;
 
-  // The actual number of seeds that should be expected out
-  // of the current sequence (given predicted health check failures)
-  uint        seed_cnt_actual;
-
-  push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)          m_rng_push_seq;
-  push_pull_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)   m_csrng_pull_seq;
+  push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq;
+  push_pull_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)     m_csrng_pull_seq;
 
   // various knobs to enable certain routines
   bit  do_entropy_src_init = 1'b1;
@@ -30,8 +26,9 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_shutdown();
+    bit intr_status;
     // check for pending entropy_src operations and wait for them to complete
-    // TODO
+    do_entropy_data_read(6, intr_status);
   endtask
 
   // setup basic entropy_src features
@@ -59,106 +56,23 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   endtask
 
-  virtual function queue_of_rng_val_t generate_rng_data(int quad_cnt);
-    queue_of_rng_val_t result;
-
-    `uvm_fatal(`gtn, "Need to override this when you extend from this class!")
-
-    return result;
-  endfunction
-
-  // Load enough data into the rng_push_seq to create the next seed.
-  //
-  // This function needs to take into account the current configuation
-  // (is SHA3 always bypassed? Is boot bypass disabled?) as well as
-  // the fact that some data may be discarded due to health check failures.
-
-  // In the case of anticipated health check failures, the failing
-  // data is loaded anyway, but more data is created to extend the sequence.
-  //
-  // Returns 1 on failure, 0 otherwise.
-  virtual function bit load_rng_push_seq_single_seed(int seed_idx);
-
-    int window_size;
-    entropy_phase_e phase;
-    int retry_limit, retry_cnt;
-    int pass_requirement, pass_cnt;
-    bit status;
-    queue_of_rng_val_t window_sample;
-
-    phase = convert_seed_idx_to_phase(seed_idx,
-                                      cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True);
-    window_size = rng_window_size(seed_idx,
-                                  cfg.type_bypass == prim_mubi_pkg::MuBi4True,
-                                  cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True,
-                                  cfg.fips_window_size);
-
-    case(phase)
-      BOOT: begin
-        retry_limit      = cfg.boot_mode_retry_limit;
-        pass_requirement = 1;
-      end
-      STARTUP: begin
-        retry_limit      = 2;
-        pass_requirement = 2;
-      end
-      CONTINUOUS: begin
-        retry_limit      = 2;
-        pass_requirement = 0;
-      end
-      default: begin
-        `uvm_fatal(`gfn, $sformatf("Invalid phase: %s\n", phase.name()))
-      end
-    endcase
-
-    retry_cnt = 0;
-    pass_cnt  = 0;
+  task do_entropy_data_read(int max_tries, output int try_cnt);
+    bit intr_status;
+    try_cnt = 0;
 
     do begin
-
-      `uvm_info(`gfn, "STARTING", UVM_LOW)
-
-      // TODO: properly handle rng bit-select config
-      window_sample = generate_rng_data(window_size / 4);
-
-      `uvm_info(`gfn, "GOT SAMPLE", UVM_LOW)
-
-      if (health_check_rng_data(window_sample)) begin
-        retry_cnt++;
-        pass_cnt = 0;
-      end else begin
-        retry_cnt = 0;
-        pass_cnt++;
+      csr_rd(.ptr(ral.intr_state.es_entropy_valid), .value(intr_status));
+      if (intr_status) begin
+        // Read and check entropy
+        for (int i = 0; i < entropy_src_pkg::CSRNG_BUS_WIDTH/TL_DW; i++) begin
+          bit [TL_DW-1:0] entropy_tlul;
+          csr_rd(.ptr(ral.entropy_data), .value(entropy_tlul));
+        end
+        // Clear entropy_valid interrupt bit
+        csr_wr(.ptr(ral.intr_state.es_entropy_valid), .value(1'b1), .blocking(1'b1));
+        try_cnt++;
       end
-
-      do begin
-        m_rng_push_seq.num_trans++;
-        cfg.m_rng_agent_cfg.add_h_user_data(window_sample.pop_front());
-      end while(window_sample.size() > 0);
-
-    end while( (pass_cnt < pass_requirement) && (retry_cnt < retry_limit) );
-
-    return (retry_cnt < retry_limit);
-
-  endfunction : load_rng_push_seq_single_seed
-
-  virtual function int load_rng_push_seq();
-    int seed_cnt = 0;
-
-    m_rng_push_seq.num_trans = 0;
-    for (int i = 0; i < cfg.seed_cnt; i++) begin
-      seed_cnt += (load_rng_push_seq_single_seed(i) == 0);
-    end
-
-    return seed_cnt;
-  endfunction
-
-  virtual task init_rng_push_seq();
-    // Create and start rng host sequence
-    m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
-        create("m_rng_push_seq");
-    seed_cnt_actual = load_rng_push_seq();
-    m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
+    end while (intr_status && try_cnt < max_tries);
   endtask
 
 endclass : entropy_src_base_vseq

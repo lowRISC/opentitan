@@ -4,4 +4,5 @@
 
 `include "push_pull_base_seq.sv"
 `include "push_pull_host_seq.sv"
+`include "push_pull_indefinite_host_seq.sv"
 `include "push_pull_device_seq.sv"
