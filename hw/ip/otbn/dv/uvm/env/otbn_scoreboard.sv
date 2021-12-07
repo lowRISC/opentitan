@@ -64,12 +64,30 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   // band'.
   bit locked = 1'b0;
 
+  // A counter for the number of fatal alerts that we've seen. This gets incremented by on_alert().
+  int unsigned fatal_alert_count = 0;
+  // A flag showing that we've seen a recoverable alert
+  bit          recov_alert_seen  = 1'b0;
+
+  // Flags saying that we expect alerts. These might be set (slightly) after an alert comes in and
+  // that's ok. We'll marry up the flags and the alerts themselves in the check phase.
+  bit fatal_alert_expected = 1'b0;
+  bit recov_alert_expected = 1'b0;
+
+  // A counter giving how many "alert wait counters" are currently running. The scoreboard should
+  // object to ending the run phase if this is nonzero.
+  int unsigned num_alert_wait_counters = 0;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     model_fifo = new("model_fifo", this);
     trace_fifo = new("trace_fifo", this);
+
+    // Disable alert checking in cip_base_scoreboard (we've got a different system set up which
+    // handles the fact that we might not know that an alert should happen until after the fact).
+    do_alert_check = 1'b0;
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -96,6 +114,12 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
     // Clear the locked bit (this is modelling RTL state that should be cleared on reset)
     locked = 1'b0;
+
+    // Clear all alert counters and flags
+    fatal_alert_count = 0;
+    recov_alert_expected = 1'b0;
+    fatal_alert_expected = 1'b0;
+    recov_alert_expected = 1'b0;
   endfunction
 
   task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -264,17 +288,32 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
       case (item.item_type)
         OtbnModelStatus: begin
+          bit was_running = model_status inside {otbn_pkg::StatusBusyExecute,
+                                                 otbn_pkg::StatusBusySecWipeDmem,
+                                                 otbn_pkg::StatusBusySecWipeImem};
+          bit is_running = item.status inside {otbn_pkg::StatusBusyExecute,
+                                               otbn_pkg::StatusBusySecWipeDmem,
+                                               otbn_pkg::StatusBusySecWipeImem};
+
           // Has the status changed from idle to busy? If so, we should have seen a write to the
           // command register on the previous posedge. See comment above pending_start_tl_trans for
           // the details.
-          if (model_status == otbn_pkg::StatusIdle &&
-              item.status inside {otbn_pkg::StatusBusyExecute,
-                                  otbn_pkg::StatusBusySecWipeDmem,
-                                  otbn_pkg::StatusBusySecWipeImem}) begin
+          if (model_status == otbn_pkg::StatusIdle && is_running) begin
             `DV_CHECK_FATAL(pending_start_tl_trans,
                             "Saw start transaction without corresponding write to CMD")
             pending_start_tl_trans = 1'b0;
           end
+
+          // Has the status changed to locked? This should be accompanied by a fatal alert
+          if (item.status == otbn_pkg::StatusLocked) begin
+            expect_alert("fatal");
+          end
+          // Has the status changed from busy to idle with a nonzero err_bits? If so, we should see
+          // a recoverable alert.
+          if (was_running && item.status == otbn_pkg::StatusIdle && item.err_bits != 0) begin
+            expect_alert("recov");
+          end
+
           model_status = item.status;
         end
 
@@ -316,6 +355,172 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       otbn_model_item iss_item = iss_trace_queue.pop_front();
       otbn_trace_item rtl_item = rtl_trace_queue.pop_front();
       cov.on_insn(iss_item, rtl_item);
+    end
+  endfunction
+
+  // Wait up to max_wait cycles for us to decide that we should be expecting the named alert. While
+  // this is running, num_alert_wait_counters will be positive which should mean that we object to
+  // end of the run phase.
+  protected task wait_for_expected_alert(string alert_name, int unsigned max_wait);
+    bit expected = 1'b0;
+
+    num_alert_wait_counters++;
+    for (int unsigned i = 0; i < max_wait; i++) begin
+      // Note that if we're waiting for a status change that implies a recoverable alert, we'll also
+      // accept one that implies a fatal alert. The reason is that you can trigger a recoverable
+      // alert and then, on the next cycle, a fatal alert. You'll only see one status change (from
+      // busy to locked), so the scoreboard has no way of knowing whether the recoverable alert was
+      // supposed to have happened. In practice, I suspect we don't care: if a fatal alert was
+      // raised, a recoverable alert doesn't really matter.
+      expected = ((alert_name == "recov") && recov_alert_expected) || fatal_alert_expected;
+      if (expected || cfg.under_reset) begin
+        break;
+      end
+      @(cfg.clk_rst_vif.cb);
+    end
+    num_alert_wait_counters--;
+
+    if (cfg.under_reset) begin
+      // If we're in reset, exit immediately. No need to check anything or update any state
+      return;
+    end
+
+    if (!expected) begin
+      `uvm_fatal(`gfn,
+                 $sformatf({"A %0s alert arrived %0d cycles ago and ",
+                            "we still don't think it should have done."},
+                           alert_name, max_wait))
+    end
+
+    if (alert_name == "fatal") begin
+      // If this is a fatal alert, check the counter is positive (otherwise something has gone really
+      // wrong), but leave it unchanged.
+      `DV_CHECK_FATAL((fatal_alert_count > 0) && fatal_alert_expected)
+    end else begin
+      // Otherwise this was a recoverable alert. Check that the seen flag is set (this should have
+      // happened just before we were originally called) and then wait a cycle of the other clock
+      // before clearing it. This extra cycle is to allow the wait_for_alert() task which should be
+      // running at the same time to see the flag set.
+      `DV_CHECK_FATAL(recov_alert_seen)
+      @(cfg.m_alert_agent_cfg[alert_name].vif.receiver_cb);
+      recov_alert_seen = 1'b0;
+    end
+  endtask
+
+  // Wait up to max_wait cycles on the alert interface for the named alert. While this is running,
+  // num_alert_wait_counters will be positive which should mean that we object to end of the run
+  // phase.
+  protected task wait_for_alert(string alert_name, int unsigned max_wait);
+    bit seen = 1'b0;
+
+    num_alert_wait_counters++;
+    for (int unsigned i = 0; i < max_wait; i++) begin
+      seen = (alert_name == "recov") ? recov_alert_seen : (fatal_alert_count > 0);
+      if (seen || cfg.under_reset) begin
+        break;
+      end
+      @(cfg.m_alert_agent_cfg[alert_name].vif.receiver_cb);
+    end
+    num_alert_wait_counters--;
+
+    if (cfg.under_reset) begin
+      // If we're in reset, exit immediately. No need to check anything or update any state
+      return;
+    end
+
+    if (!seen) begin
+      `uvm_fatal(`gfn,
+                 $sformatf({"A %0s alert arrived %0d cycles ago and ",
+                            "we still don't think it should have done."},
+                           alert_name, max_wait))
+    end
+
+    if (alert_name == "fatal") begin
+      // If this was a fatal alert then check the counter is positive and that the expected flag is
+      // set (but don't clear it).
+      `DV_CHECK_FATAL((fatal_alert_count > 0) && fatal_alert_expected)
+    end else begin
+      // Otherwise this was a recoverable alert. Check that the expected flag is set and then wait a
+      // cycle of the other clock before clearing it (to allow the wait_for_expected_alert() task
+      // that should be running at the same time to see it set).
+      `DV_CHECK_FATAL(recov_alert_expected)
+      @(cfg.clk_rst_vif.cb);
+      recov_alert_expected = 1'b0;
+    end
+  endtask
+
+  // Overridden from cip_base_scoreboard. Called when an alert happens.
+  protected function void on_alert(string alert_name,
+                                   alert_esc_agent_pkg::alert_esc_seq_item item);
+
+    `uvm_info(`gfn, $sformatf("on_alert(%0s)", alert_name), UVM_HIGH)
+
+    // An alert has just come in. Increment counter / set flag showing that it has been seen.
+    if (alert_name == "fatal") begin
+      fatal_alert_count += 1;
+    end else if (alert_name == "recov") begin
+      // We're not supposed to see a second recoverable alert while we're still "waiting to expect"
+      // the previous one. If that happens then recov_alert_seen will be set.
+      `DV_CHECK_FATAL(!recov_alert_seen, "Double recoverable alert seen")
+      recov_alert_seen = 1'b1;
+    end
+    else `uvm_fatal(`gfn, $sformatf("Bad alert name: %0s", alert_name));
+
+    // Wait up to 10 cycles for the a prediction to come through (giving up on reset). Note that
+    // this might be here already, in which case wait_for_expected_alert will take zero time
+    fork
+      wait_for_expected_alert(alert_name, 10);
+    join_none
+  endfunction
+
+  // Called when we see something that makes us think an alert should happen
+  protected function void expect_alert(string alert_name);
+    int unsigned max_delay;
+
+    `uvm_info(`gfn, $sformatf("expect_alert(%0s)", alert_name), UVM_HIGH)
+
+    if (alert_name == "fatal") begin
+      fatal_alert_expected = 1'b1;
+    end else if (alert_name == "recov") begin
+      // We're not supposed to see an event that expects a second recoverable alert while we're
+      // still waiting for the previous one to arrive. If that happens then recov_alert_expected
+      // will be set.
+      `DV_CHECK_FATAL(!recov_alert_expected, "Double recoverable alert expect with no alert")
+      recov_alert_expected = 1'b1;
+    end
+    else `uvm_fatal(`gfn, $sformatf("Bad alert name: %0s", alert_name));
+
+    // Otherwise, we haven't seen the corresponding alert yet. Wait for a bit on the (slower) alert
+    // interface clock for the alert to come through, giving up on reset. The wait is calculated as
+    //
+    //    ack_delay_max +
+    //    ack_stable_max +
+    //    arbitrary delay for alert_p to go down +
+    //    2 cycles of main clock
+    //
+    // We model the 3rd and 4th term as 10 slow clock cycles in total, giving:
+    max_delay = (cfg.m_alert_agent_cfg[alert_name].ack_delay_max +
+                 cfg.m_alert_agent_cfg[alert_name].ack_stable_max +
+                 10);
+    fork
+      wait_for_alert(alert_name, max_delay);
+    join_none
+  endfunction
+
+  virtual function void phase_ready_to_end(uvm_phase phase);
+    if (phase.get_name() != "run") return;
+
+    // We cannot end while num_alert_wait_counters is positive (which means that wait_for_alert
+    // and/or wait_for_expected_alert are running). Wait until they are finished to make sure that
+    // we don't fail to notice a missing (or unjustified) alert.
+    if (num_alert_wait_counters != 0) begin
+      phase.raise_objection(this, "num_alert_wait_counters != 0");
+      fork
+        begin
+          wait (num_alert_wait_counters == 0);
+          phase.drop_objection(this);
+        end
+      join_none
     end
   endfunction
 

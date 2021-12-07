@@ -22,6 +22,9 @@ class otbn_base_vseq extends cip_base_vseq #(
   // we assume we've got a new program, which might take a different amount of time)
   protected int unsigned longest_run_ = 0;
 
+  // This flag is set in the common vseq to re-enable the checks done by check_no_fatal_alerts
+  protected bit enable_base_alert_checks = 1'b0;
+
   // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
   // is true) or with TL transactions. Also, pass loop warp rules to the ISS through the model.
   protected task load_elf(string path, bit backdoor);
@@ -354,4 +357,15 @@ class otbn_base_vseq extends cip_base_vseq #(
       @(negedge cfg.clk_rst_vif.rst_n or posedge cfg.intr_vif.pins[0]);
     end
   endtask
+
+  // Overridden from cip_base_vseq
+  //
+  // This task in the base sequence checks whether any alerts fire. This doesn't really work for
+  // OTBN because it's not in sync with the logic that actually generates the alerts. We handle this
+  // properly in the scoreboard so want to disable this check except in otbn_common_vseq (which is
+  // used for the generic alert tests).
+  task check_no_fatal_alerts();
+    if (enable_base_alert_checks) super.check_no_fatal_alerts();
+  endtask
+
 endclass : otbn_base_vseq

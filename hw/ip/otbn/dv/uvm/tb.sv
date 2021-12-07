@@ -208,7 +208,7 @@ module tb;
 
     .start_i      (model_if.start),
 
-    .err_bits_o   (),
+    .err_bits_o   (model_if.err_bits),
 
     .edn_rnd_i             ({edn_if[0].ack, edn_if[0].d_data}),
     .edn_rnd_o             (edn_rnd_req_model),

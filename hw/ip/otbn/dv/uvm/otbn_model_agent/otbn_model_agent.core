@@ -10,6 +10,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
+      - lowrisc:ip:otbn_pkg
     files:
       - otbn_model_if.sv
       - otbn_model_agent_pkg.sv

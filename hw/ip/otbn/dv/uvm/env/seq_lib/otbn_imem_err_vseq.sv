@@ -37,38 +37,17 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
       cfg.write_imem_word(i, bad_data, key, nonce);
     end
 
-    // We're expecting to see an alert as a result of poking things. We have to allow a large delay,
-    // because we might have just started and be still waiting for URND data to come in: OTBN
-    // doesn't actually fetch anything until that happens. This isn't as lax as it looks, though. We
-    // know that the alert is supposed to go out at the same time as STATUS changes, so can add a
-    // timeout there.
-    cfg.scoreboard.set_exp_alert(.alert_name("fatal"), .is_fatal(1'b1), .max_delay(100000));
-
     cfg.model_agent_cfg.vif.invalidate_imem <= 1'b1;
     @(cfg.clk_rst_vif.cb);
     cfg.model_agent_cfg.vif.invalidate_imem <= 1'b0;
 
+    // Wait until the ISS and RTL move to a locked state
     wait (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);
+    `DV_CHECK_FATAL(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);
 
-    // At this point, our status has changed. We're probably actually seeing the alert now, but make
-    // sure that it has gone out in at most 10 cycles.
-    fork : isolation_fork
-      begin
-        bit seen_alert = 1'b0;
-        fork
-          begin
-            wait_alert_trigger("fatal", .wait_complete(1));
-            seen_alert = 1'b1;
-          end
-          begin
-            repeat (50) @(cfg.m_alert_agent_cfg["fatal"].vif.receiver_cb);
-          end
-        join_any
-        `DV_CHECK_FATAL(seen_alert, "No alert after 50 cycles")
-        disable fork;
-      end
-    join
-
+    // The scoreboard will have seen the transition to locked state and inferred that it should see
+    // a fatal alert. However, it doesn't really have a way to ensure that we keep generating them.
+    // Wait for 3 fatal alerts and also read STATUS, ERR_BITS and FATAL_ALERT_CAUSE in parallel.
     fork
       begin
         csr_utils_pkg::csr_rd(.ptr(ral.status), .value(act_val));
@@ -76,12 +55,12 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
         csr_utils_pkg::csr_rd(.ptr(ral.fatal_alert_cause), .value(act_val));
       end
       begin
-        wait_alert_trigger("fatal", .wait_complete(1));
+        repeat (3) wait_alert_trigger("fatal", .wait_complete(1));
       end
     join
 
+    // Finally, reset the DUT (otherwise we won't be able to chain another vseq after this one)
     dut_init("HARD");
-
   endtask
 
 endclass
