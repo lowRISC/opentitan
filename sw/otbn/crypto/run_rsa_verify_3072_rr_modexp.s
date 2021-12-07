@@ -44,8 +44,10 @@ modexp_f4:
   ecall
 
 modexp_3:
-  /* e=3 exponentiation is unimplemented */
-  unimp
+  /* run modular exponentiation */
+  jal      x1, modexp_var_3072_3
+
+  ecall
 
 .data
 
