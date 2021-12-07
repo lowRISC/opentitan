@@ -472,10 +472,19 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   virtual task check_no_fatal_alerts();
+    // Max alert_handshake shake cycls:
+    // - 20 cycles includes ack response and ack stable time.
+    // - 10 is the max difference between alert clock and dut clock.
+    int max_alert_handshake_cycles = 20 * 10;
     if (cfg.list_of_alerts.size() > 0) begin
-      // Alert hanshake should be within 200 cycles considering async domains.
-      int num_cycles = $urandom_range(200, 500);
-      repeat(num_cycles) begin
+      int check_cycles = $urandom_range(max_alert_handshake_cycles,
+                                        max_alert_handshake_cycles * 3);
+
+      // This task allows recoverable alerts to fire, or fatal alert being triggered once by
+      // `alert_test` register.
+      cfg.clk_rst_vif.wait_clks(max_alert_handshake_cycles);
+
+      repeat(check_cycles) begin
         cfg.clk_rst_vif.wait_clks(1);
         foreach (cfg.m_alert_agent_cfg[alert_name]) begin
           `DV_CHECK_EQ(0, cfg.m_alert_agent_cfg[alert_name].vif.get_alert(),
