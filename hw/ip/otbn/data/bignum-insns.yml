@@ -38,6 +38,9 @@
     flags. The content of the second source WDR can be shifted by an unsigned
     immediate before it is consumed by the operation.
   errs: []
+  iflow:
+    - to: [wrd, flags-all]
+      from: [wrs1, wrs2]
   encoding:
     scheme: bnaf
     mapping:
@@ -59,6 +62,9 @@
     WDR can be shifted by an unsigned immediate before it is consumed by the
     operation.
   errs: []
+  iflow:
+    - to: [wrd, flags-all]
+      from: [wrs1, wrs2, flags-c]
   encoding:
     scheme: bnaf
     mapping:
@@ -87,6 +93,9 @@
     Adds a zero-extended unsigned immediate to the value of a WDR, writes the
     result to the destination WDR, and updates the flags.
   errs: []
+  iflow:
+    - to: [wrd, flags-all]
+      from: [wrs]
   encoding:
     scheme: bnai
     mapping:
@@ -112,6 +121,9 @@
 
     Flags are not used or saved.
   errs: []
+  iflow:
+    - to: [wrd]
+      from: [wrs1, wrs2, mod]
   encoding:
     scheme: bnam
     mapping:
@@ -173,6 +185,13 @@
 
     For versions of the instruction with writeback, see `BN.MULQACC.WO` and `BN.MULQACC.SO`.
   errs: []
+  iflow:
+    - to: [acc]
+      from: [wrs1, wrs2]
+    - test:
+        - zero_acc == 0
+      to: [acc]
+      from: [acc]
   encoding:
     scheme: bnaq
     mapping:
@@ -207,6 +226,13 @@
     Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bits, and adds the result to the accumulator.
     Writes the resulting accumulator to `wrd`.
   errs: []
+  iflow:
+    - to: [acc, wrd, flags-m, flags-l, flags-z]
+      from: [wrs1, wrs2]
+    - test:
+        - zero_acc == 0
+      to: [acc, wrd, flags-m, flags-l, flags-z]
+      from: [acc]
   encoding:
     scheme: bnaq
     mapping:
@@ -258,6 +284,33 @@
     The `M` flag is set iff the top bit of the shifted-out result is zero.
     The `Z` flag is left unchanged if the shifted-out result is zero and cleared if not.
   errs: []
+  iflow:
+    - to: [acc, wrd]
+      from: [wrs1, wrs2]
+    - test:
+        - zero_acc == 0
+        - wrd_hwsel == 0
+      to: [acc, wrd, flags-l, flags-z]
+      from: [acc, wrs1, wrs2]
+    - test:
+        - zero_acc == 0
+        - wrd_hwsel == 1
+      to: [acc, wrd, flags-m, flags-z]
+      from: [acc, wrs1, wrs2]
+    - test:
+        - zero_acc == 1
+        - wrd_hwsel == 0
+      to: [flags-l, flags-z]
+      from: [wrs1, wrs2]
+    - test:
+        - zero_acc == 1
+        - wrd_hwsel == 1
+      to: [flags-m, flags-z]
+      from: [wrs1, wrs2]
+    - test:
+        - wrd_hwsel == 1
+      to: [flags-z]
+      from: [flags-z]
   encoding:
     scheme: bnaq
     mapping:
@@ -289,6 +342,9 @@
     Subtracts the second WDR value from the first one, writes the result to the destination WDR and updates flags.
     The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
   errs: []
+  iflow:
+    - to: [wrd, flags-all]
+      from: [wrs1, wrs2]
   encoding:
     scheme: bnaf
     mapping:
@@ -307,6 +363,9 @@
   doc: |
     Subtracts the second WDR value and the Carry from the first one, writes the result to the destination WDR, and updates the flags.
     The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
+  iflow:
+    - to: [wrd, flags-all]
+      from: [wrs1, wrs2, flags-c]
   encoding:
     scheme: bnaf
     mapping:
@@ -334,6 +393,9 @@
     Subtracts a zero-extended unsigned immediate from the value of a WDR,
     writes the result to the destination WDR, and updates the flags.
   errs: []
+  iflow:
+    - to: [wrd, flags-all]
+      from: [wrs]
   encoding:
     scheme: bnai
     mapping:
@@ -359,6 +421,9 @@
 
     Flags are not used or saved.
   errs: []
+  iflow:
+    - to: [wrd]
+      from: [wrs1, wrs2, mod]
   encoding:
     scheme: bnam
     mapping:
@@ -388,6 +453,9 @@
     The content of the second source register can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
   errs: []
+  iflow: &bn-and-iflow
+    - to: [wrd, flags-m, flags-l, flags-z]
+      from: [wrs1, wrs2]
   encoding:
     scheme: bna
     mapping:
@@ -409,6 +477,7 @@
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
   errs: []
+  iflow: *bn-and-iflow
   encoding:
     scheme: bna
     mapping:
@@ -437,6 +506,9 @@
     The source value can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
   errs: []
+  iflow:
+    - to: [wrd, flags-m, flags-l, flags-z]
+      from: [wrs]
   encoding:
     scheme: bnan
     mapping:
@@ -457,6 +529,7 @@
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group `flag_group` are updated with the result of the operation.
   errs: []
+  iflow: *bn-and-iflow
   encoding:
     scheme: bna
     mapping:
@@ -519,6 +592,25 @@
   doc: |
     Returns in the destination WDR the value of the first source WDR if the flag in the chosen flag group is set, otherwise returns the value of the second source WDR.
   errs: []
+  iflow:
+    - to: [wrd]
+      from: [wrs1, wrs2]
+    - test:
+        - flag == 0
+      to: [wrd]
+      from: [flags-c]
+    - test:
+        - flag == 1
+      to: [wrd]
+      from: [flags-m]
+    - test:
+        - flag == 2
+      to: [wrd]
+      from: [flags-l]
+    - test:
+        - flag == 3
+      to: [wrd]
+      from: [flags-z]
   encoding:
     scheme: bns
     mapping:
@@ -544,6 +636,9 @@
     Subtracts the second WDR value from the first one and updates flags.
     This instruction is identical to BN.SUB, except that no result register is written.
   errs: []
+  iflow:
+    - to: [flags-all]
+      from: [wrs1, wrs2]
   encoding:
     scheme: bnc
     mapping:
@@ -562,6 +657,9 @@
     Subtracts the second WDR value from the first one and updates flags.
     This instruction is identical to BN.SUBB, except that no result register is written.
   errs: []
+  iflow:
+    - to: [flags-all]
+      from: [wrs1, wrs2, flags-c]
   encoding:
     scheme: bnc
     mapping:
@@ -630,6 +728,17 @@
     - An `ILLEGAL_INSN` error if both `grd_inc` and `grs1_inc` are set.
     - An `ILLEGAL_INSN` error if the value in GPR `grd` is greater than 31.
     - &data-addr A `BAD_DATA_ADDR` error if the computed address is not a valid DMEM address aligned to WLEN bits.
+  iflow:
+    - to: [wref-grd]
+      from: [dmem]
+    - test:
+        - grd_inc == 1
+      to: [grd]
+      from: [grd]
+    - test:
+        - grs1_inc == 1
+      to: [grs1]
+      from: [grs1]
   encoding:
     scheme: bnxid
     mapping:
@@ -693,6 +802,17 @@
     type: mem-store
     target: [offset, grs1]
     bytes: 32
+  iflow:
+    - to: [dmem]
+      from: [wref-grs2]
+    - test:
+        - grs1_inc == 1
+      to: [grs1]
+      from: [grs1]
+    - test:
+        - grs2_inc == 1
+      to: [grs2]
+      from: [grs2]
   encoding:
     scheme: bnxid
     mapping:
@@ -750,6 +870,17 @@
     - A `CALL_STACK` error from using `x1` as `grs` or `grd` when the call stack is empty.
     - An `ILLEGAL_INSN` error if either the value in GPR `grd` or the value in GPR `grs` is greater than 31.
     - An `ILLEGAL_INSN` error if both `grs_inc` and `grd_inc` are set.
+  iflow:
+    - to: [wref-grd]
+      from: [wref-grs]
+    - test:
+        - grd_inc == 1
+      to: [grd]
+      from: [grd]
+    - test:
+        - grs_inc == 1
+      to: [grs]
+      from: [grs]
   encoding:
     scheme: bnmovr
     mapping:
@@ -770,6 +901,17 @@
     If `wsr` isn't the index of a valid WSR, this results in an error (setting bit `illegal_insn` in `ERR_BITS`).
   errs:
     - &bad-wsr An `ILLEGAL_INSN` error if `wsr` doesn't name a valid WSR.
+  iflow:
+    - to: [wrd]
+      from: []
+    - test:
+        - wsr == 0x0
+      to: [wrd]
+      from: [mod]
+    - test:
+        - wsr == 0x3
+      to: [wrd]
+      from: [acc]
   encoding:
     scheme: wcsr
     mapping:
@@ -794,6 +936,17 @@
     If `wsr` isn't the index of a valid WSR, this results in an error (setting bit `illegal_insn` in `ERR_BITS`).
   errs:
     - *bad-wsr
+  iflow:
+    - to: []
+      from: []
+    - test:
+        - wsr == 0x0
+      to: [mod]
+      from: [wrs]
+    - test:
+        - wsr == 0x3
+      to: [acc]
+      from: [wrs]
   encoding:
     scheme: wcsr
     mapping:

@@ -30,7 +30,7 @@ class Insn:
                          'syntax', 'doc', 'errs', 'note',
                          'encoding', 'glued-ops',
                          'literal-pseudo-op', 'python-pseudo-op', 'lsu',
-                         'straight-line'])
+                         'straight-line', 'iflow'])
 
         self.mnemonic = check_str(yd['mnemonic'], 'mnemonic for instruction')
 
