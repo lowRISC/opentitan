@@ -18,6 +18,7 @@ interface otbn_model_if #(
   // Outputs from DUT
   bit                       err;          // Something went wrong
   bit [31:0]                stop_pc;      // PC at end of operation
+  otbn_pkg::err_bits_t      err_bits;     // Error bits; updated when STATUS switches to idle
 
   // Backdoor inputs to DUT
   bit                       invalidate_imem;   // Trash the contents of IMEM, causing integrity errors
