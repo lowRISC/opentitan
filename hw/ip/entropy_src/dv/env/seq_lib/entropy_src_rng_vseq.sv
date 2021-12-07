@@ -13,22 +13,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   task body();
     // Create rng host sequence
-    m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
+    m_rng_push_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
          create("m_rng_push_seq");
-    // TODO: num_seeds_requested > 4 (fifo_full). Will drop without reqs, need to predict.
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_seeds_requested, num_seeds_requested inside {[1:4]};)
-    if (cfg.rng_bit_enable == prim_mubi_pkg::MuBi4True) begin
-      m_rng_push_seq.num_trans = (4 * num_seeds_requested *
-           (entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH + 1));
-    end
-    else begin
-      m_rng_push_seq.num_trans =  num_seeds_requested *
-           entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH;
-    end
-    for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(rng_val);
-      cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
-    end
 
     // Create csrng host sequence
     m_csrng_pull_seq = push_pull_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::type_id::
@@ -39,8 +25,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // Start sequences
     fork
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
-      m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
-    join_none
+      begin
+        m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
+        m_rng_push_seq.stop();
+      end
+    join
   endtask : body
 
 endclass : entropy_src_rng_vseq

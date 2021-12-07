@@ -13,11 +13,25 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   `uvm_component_utils(entropy_src_scoreboard)
 
   // used by collect_entropy to determine the FSMs phase
-  int seed_idx           = 0;
-  int entropy_data_reads = 0;
+  int seed_idx                = 0;
+  int entropy_data_seeds      = 0;
+  int entropy_data_drops      = 0;
+  int csrng_seeds             = 0;
+  int csrng_drops             = 0;
 
-  // local variables
-  bit [31:0]                       entropy_data_q[$];
+
+  // Queue of seeds for predicting reads to entropy_data CSR
+  bit [CSRNG_BUS_WIDTH - 1:0]      entropy_data_q[$];
+
+  // The most recent candidate seed from entropy_data_q
+  // At each TL read the TL data item is compared to the appropriate
+  // 32-bit segment of this seed (as determented by seed_tl_read_cnt)
+  bit [CSRNG_BUS_WIDTH - 1:0]      tl_best_seed_candidate;
+
+  // Number of 32-bit TL reads to the current (active) seed
+  // Ranges from 0 (no data read out) to CSRNG_BUS_WIDTH/TL_DW (seed fully read out)
+  int                              seed_tl_read_cnt = 0;
+
   bit [FIPS_CSRNG_BUS_WIDTH - 1:0] fips_csrng_q[$];
 
   // TLM agent fifos
@@ -47,6 +61,95 @@ class entropy_src_scoreboard extends cip_base_scoreboard
         process_csrng();
       join_none
     end
+  endtask
+
+  //
+  // Helper function for process_entropy_data_access
+  //
+
+  function bit try_seed(input bit [CSRNG_BUS_WIDTH - 1:0] new_candidate,
+                        input bit [TL_DW - 1:0] tl_data,
+                        output bit [TL_DW - 1:0] tl_prediction);
+    bit [CSRNG_BUS_WIDTH - 1:0] mask, new_seed_masked, best_seed_masked;
+    bit matches_prev_reads;
+    bit matches_tl_data;
+    string fmt;
+
+    mask = '0;
+
+    for(int i = 0; i < seed_tl_read_cnt; i++) begin
+      mask[i * TL_DW +: TL_DW] = {TL_DW{1'b1}};
+    end
+    new_seed_masked = (new_candidate & mask);
+    best_seed_masked = (tl_best_seed_candidate & mask);
+    matches_prev_reads = (best_seed_masked == new_seed_masked);
+
+    if (matches_prev_reads) begin
+      // Only log this if the new seed is different from the previous best:
+      if (new_candidate != tl_best_seed_candidate) begin
+        string fmt = "Found another match candidate after %01d total dropped seeds";
+       `uvm_info(`gfn, $sformatf(fmt, entropy_data_drops), UVM_HIGH)
+      end
+    end else begin
+      `uvm_info(`gfn, "New candidate seed does not match previous segments", UVM_HIGH)
+      fmt = "New seed: %096h, Best seed: %096h";
+      // In the log mask out portions that have not been compared yet, for contrast
+      `uvm_info(`gfn, $sformatf(fmt, new_seed_masked, best_seed_masked), UVM_HIGH)
+       return 0;
+    end
+
+    tl_prediction = new_candidate[TL_DW * seed_tl_read_cnt +: TL_DW];
+    matches_tl_data = (tl_prediction == tl_data);
+
+    if (tl_prediction == tl_data) begin
+      tl_best_seed_candidate = new_candidate;
+      fmt = "Seed matches TL data after %d TL reads";
+      `uvm_info(`gfn, $sformatf(fmt, seed_tl_read_cnt+1), UVM_HIGH)
+      return 1;
+    end else begin
+      fmt = "TL DATA (%08h) does not match predicted seed segment (%08h)";
+      `uvm_info(`gfn, $sformatf(fmt, tl_data, tl_prediction), UVM_HIGH)
+      return 0;
+    end
+
+  endfunction
+
+  // Helper routine for process_tl_access
+  //
+  // Since the DUT may, by design, internally drop data, it is not sufficient to check against
+  // one seed, we compare TL data values against all available seeds.
+  // If no match is found then the access is in error.
+  //
+  task process_entropy_data_access(tl_seq_item item, uvm_reg csr);
+
+    bit [TL_DW - 1:0] ed_pred_data;
+    bit               match_found;
+
+    match_found = 0;
+
+    while (entropy_data_q.size() > 0) begin : seed_trial_loop
+      bit [TL_DW - 1:0] prediction;
+      `uvm_info(`gfn, $sformatf("seed_tl_read_cnt: %01d", seed_tl_read_cnt), UVM_FULL)
+      match_found = try_seed(entropy_data_q[0], item.d_data, prediction);
+      if (match_found) begin
+        `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
+        seed_tl_read_cnt++;
+        if (seed_tl_read_cnt == CSRNG_BUS_WIDTH / TL_DW) begin
+          seed_tl_read_cnt = 0;
+          entropy_data_q.pop_front();
+          entropy_data_seeds++;
+        end else if (seed_tl_read_cnt > CSRNG_BUS_WIDTH / TL_DW) begin
+          `uvm_error(`gfn, "testbench error: too many segments read from candidate seed")
+        end
+        break;
+      end else begin
+        entropy_data_q.pop_front();
+        entropy_data_drops++;
+      end
+    end : seed_trial_loop
+
+    `DV_CHECK_NE(match_found, 0,
+                "All candidate seeds have been checked.  ENTROPY_DATA does not match")
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -146,12 +249,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       if (do_read_check) begin
         case (csr.get_name())
           "entropy_data": begin
-            bit [31:0] ed_pred_data = entropy_data_q.pop_front();
-            `uvm_info(`gfn, $sformatf("entropy_data_prediction: %08h\n", ed_pred_data), UVM_MEDIUM)
-            `uvm_info(`gfn, $sformatf("Actual value:            %08h", item.d_data), UVM_HIGH)
-            `DV_CHECK_FATAL(csr.predict(.value(ed_pred_data), .kind(UVM_PREDICT_READ)))
-            entropy_data_reads++;
-            `uvm_info(`gfn, $sformatf("entropy_data_reads: %3d\n", entropy_data_reads), UVM_MEDIUM);
+            process_entropy_data_access(item, csr);
           end
         endcase
 
@@ -171,7 +269,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   endfunction
 
   // Note: this routine is destructive in that it empties the input argument
-  function bit [FIPS_CSRNG_BUS_WIDTH - 1:0] predict_fips_csrng(queue_of_rng_val_t sample);
+  function bit [FIPS_CSRNG_BUS_WIDTH - 1:0] predict_fips_csrng(ref queue_of_rng_val_t sample);
     bit [FIPS_CSRNG_BUS_WIDTH - 1:0] fips_csrng_data;
     bit [CSRNG_BUS_WIDTH - 1:0]      csrng_data;
     bit [FIPS_BUS_WIDTH - 1:0]       fips_data;
@@ -235,13 +333,17 @@ class entropy_src_scoreboard extends cip_base_scoreboard
 
       while (sample.size() > 0) begin
         rng_val_t rng_val = sample.pop_back();
+        string fmt = "sample size: %01d, last elem.: %01h";
         // Since the queue is read from back to front
         // earlier rng bits occupy the less significant bits of csrng_data
+
+        `uvm_info(`gfn, $sformatf(fmt, sample.size()+1, rng_val), UVM_FULL)
         csrng_data = (csrng_data << RNG_BUS_WIDTH) + rng_val;
       end
       `uvm_info(`gfn, $sformatf("Unconditioned data: %096h", csrng_data), UVM_HIGH)
 
     end
+
     fips_csrng_data = {fips_data, csrng_data};
 
     return fips_csrng_data;
@@ -271,23 +373,28 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       dut_fsm_phase = convert_seed_idx_to_phase(seed_idx,
           cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True);
 
-      case (dut_fsm_phase)
-        BOOT: begin
-          pass_requirement = 1;
-          retry_limit = cfg.boot_mode_retry_limit;
-        end
-        STARTUP: begin
-          pass_requirement = 2;
-          retry_limit = 2;
-        end
-        CONTINUOUS: begin
-          pass_requirement = 0;
-          retry_limit = 2;
-        end
-        default: begin
-          `uvm_fatal(`gfn, "Invalid predicted dut state (bug in environment)")
-        end
-      endcase
+      if(cfg.type_bypass == prim_mubi_pkg::MuBi4True) begin
+        retry_limit          = 2;
+        pass_requirement     = 0;
+      end else begin
+        case (dut_fsm_phase)
+          BOOT: begin
+            pass_requirement = 1;
+            retry_limit = cfg.boot_mode_retry_limit;
+          end
+          STARTUP: begin
+            pass_requirement = 2;
+            retry_limit = 2;
+          end
+          CONTINUOUS: begin
+            pass_requirement = 0;
+            retry_limit = 2;
+          end
+          default: begin
+            `uvm_fatal(`gfn, "Invalid predicted dut state (bug in environment)")
+          end
+        endcase
+      end
 
       `uvm_info(`gfn, $sformatf("phase: %s\n", dut_fsm_phase.name), UVM_HIGH)
 
@@ -353,6 +460,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
         bit [FIPS_CSRNG_BUS_WIDTH - 1:0] fips_csrng;
 
         fips_csrng = predict_fips_csrng(sample);
+        `uvm_info(`gfn, $sformatf("sample.size(): %01d", sample.size()), UVM_FULL)
 
         // update counters for processing next seed:
         retry_cnt = 0;
@@ -362,10 +470,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
         // package data for routing to SW or to CSRNG:
         if (cfg.route_software == prim_mubi_pkg::MuBi4True) begin
           bit [CSRNG_BUS_WIDTH - 1:0] csrng_seed = get_csrng_seed(fips_csrng);
-          for (int i = 0; i < CSRNG_BUS_WIDTH / TL_DW; i++) begin
-            bit [TL_DW - 1:0] entropy_slice = csrng_seed[i * TL_DW +: TL_DW];
-            entropy_data_q.push_back(entropy_slice);
-          end
+          entropy_data_q.push_back(csrng_seed);
         end else if (cfg.route_software == prim_mubi_pkg::MuBi4False) begin
           fips_csrng_q.push_back(fips_csrng);
         end
