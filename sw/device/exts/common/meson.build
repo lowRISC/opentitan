@@ -25,7 +25,7 @@ riscv_linker_args = [
 # RISC-V startup library. Every RISC-V executable should depend on this target.
 #
 # The crt defines the interrupt vector, so requires definitions for all the
-# declarations in `sw/device/lib/handler.h`.
+# declarations in `sw/device/lib/testing/test_framework/ottf_isrs.S`.
 riscv_crt = declare_dependency(
   link_args: riscv_linker_args,
   # The following assembly files need to be included as a source, not a

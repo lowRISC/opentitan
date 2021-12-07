@@ -7,7 +7,8 @@
  * This file contains Ibex-specific interrupt vectors.
  */
 
-  // These functions are declared in `sw/device/lib/handler.h`.
+  // These symbols are declared in
+  // `sw/device/lib/testing/test_framework/ottf_isrs.S`.
   .extern handler_exception
   .extern handler_irq_software
   .extern handler_irq_timer
@@ -28,9 +29,9 @@
  * `crt_interrupt_vector` is the CRT-loaded interrupt vector for Ibex.
  *
  * It contains entries that point at the functions declared in
- * `sw/device/lib/handler.h`. If you are getting link errors for these symbols,
- * then it's likely you have forgotten to add `sw_lib_irq_handlers` as a
- * dependency for your executable.
+ * `sw/device/lib/testing/test_framework/ottf_isrs.S`. If you are getting link
+ * errors for these symbols, then it's likely you have forgotten to add 
+ * `ottf_isrs` as a dependency for your executable.
  *
  * Interrupt vectors in Ibex have 32 entries for 32 possible interrupts. The
  * vector must be 256-byte aligned, as Ibex's vectoring mechanism requires that.

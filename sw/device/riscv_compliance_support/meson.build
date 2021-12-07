@@ -14,8 +14,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     dependencies: [
       sw_lib_runtime_print,
       sw_lib_runtime_log,
-      sw_lib_irq_handlers,
       sw_lib_mem,
+      sw_lib_testing_ottf_isrs,
       sw_lib_testing_test_status,
       device_lib,
     ],
