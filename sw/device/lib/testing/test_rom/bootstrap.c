@@ -69,7 +69,7 @@ static int erase_flash(void) {
 static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
                            dif_hmac_digest_t *digest) {
   const dif_hmac_transaction_t config = {
-      .digest_endianness = kDifHmacEndiannessBig,
+      .digest_endianness = kDifHmacEndiannessLittle,
       .message_endianness = kDifHmacEndiannessLittle,
   };
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(hmac, config));
