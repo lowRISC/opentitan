@@ -33,8 +33,10 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"
+                // Enable stress tests later
+                // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
+                ]
 
   en_build_modes: ["{tool}_memutil_dpi_scrambled_build_opts"]
 

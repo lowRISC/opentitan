@@ -10,6 +10,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:mem_bkdr_scb
     files:
       - sram_ctrl_prim_ral_pkg.sv
       - sram_ctrl_env_pkg.sv
@@ -18,6 +19,7 @@ filesets:
       - sram_ctrl_env_cfg.sv: {is_include_file: true}
       - sram_ctrl_env_cov.sv: {is_include_file: true}
       - sram_ctrl_virtual_sequencer.sv: {is_include_file: true}
+      - sram_ctrl_mem_bkdr_scb.sv: {is_include_file: true}
       - sram_ctrl_scoreboard.sv: {is_include_file: true}
       - sram_ctrl_env.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_vseq_list.sv: {is_include_file: true}
