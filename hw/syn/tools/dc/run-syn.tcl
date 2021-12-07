@@ -29,6 +29,9 @@ set FOUNDRY_CONSTRAINT [get_env_var "FOUNDRY_CONSTRAINT"]
 set PARAMS             [get_env_var "PARAMS"]
 set POST_ELAB_SCRIPT   [get_env_var "POST_ELAB_SCRIPT"]
 
+# This is not a CDC run.
+set IS_CDC_RUN 0
+
 # if in interactive mode, do not exit at the end of the script
 if { [info exists ::env(INTERACTIVE)] } {
   set RUN_INTERACTIVE 1
