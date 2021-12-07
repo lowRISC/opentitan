@@ -8,11 +8,14 @@
 // 1). Random reset during escalation handshake sequence.
 // 2). Escalation request sequence.
 // 3). Ping request interrupted by escalation request sequence.
-// 4). `Esc_tx` integrity error sequence.
+// 4). Integrity error sequence.
 // 5). Escalation reverse ping timeout sequence.
 // 6). Escalation receiver counter fail sequence.
+// 7). Random esc_rx/tx signal without request error sequence.
 
 module prim_esc_tb;
+
+  import dv_utils_pkg::*;
 
   //////////////////////////////////////////////////////
   // config
@@ -21,6 +24,7 @@ module prim_esc_tb;
   localparam time ClkPeriod  = 10000;
   localparam int  PING_CNT_DW = 1;
   localparam int  TIMEOUT_CYCLES = 1 << (PING_CNT_DW + 6);
+  uint default_spinwait_timeout_ns = 100_000;
 
   //////////////////////////////////////////////////////
   // Clock and Reset
@@ -93,7 +97,7 @@ module prim_esc_tb;
     main_clk.apply_reset();
     ping_req = 0;
 
-    $display("Random reset during escalation handshake sequence finished!");
+    $display("[prim_esc_seq] Random reset during escalation handshake sequence finished!");
 
     // Sequence 2. Escalation request sequence.
     esc_req = 1;
@@ -103,45 +107,66 @@ module prim_esc_tb;
     if (!esc_req_out) test_error("Esc_req did not set esc_req!");
     esc_req = 0;
 
-    $display("Escalation request sequence finished!");
+    $display("[prim_esc_seq] Escalation request sequence finished!");
 
     // Sequence 3. Ping request interrupted by escalation request.
-    main_clk.wait_clks($urandom_range(1, 20));
+    main_clk.wait_clks($urandom_range(2, 20));
+    #1ns;
+    ping_req = 1;
+    `DV_SPINWAIT(wait (ping_ok == 1);, , , "Wait for ping_ok timeout");
+    if (integ_fail) test_error("Expect no errors when trigger ping_req");
+    main_clk.wait_clks($urandom_range(2, 20));
+    ping_req = 0;
+
+    main_clk.wait_clks($urandom_range(2, 20));
     ping_req = 1;
     // Wait a max of 5 clock cycle to ensure esc_req is send during ping handshake.
     main_clk.wait_clks($urandom_range(0, 5));
     esc_req = 1;
-    wait (ping_ok);
-    wait (esc_req_out);
-    main_clk.wait_clks($urandom_range(1, 20));
+    `DV_SPINWAIT(wait (ping_ok == 1);, , , "Wait for ping_ok timeout");
+    `DV_SPINWAIT(wait (esc_req_out == 1);, , , "Wait for esc_req_out timeout");
+    main_clk.wait_clks(1);
     esc_req = 0;
     ping_req = 0;
     if (integ_fail) test_error("Expect no errors when esc_req interrupts ping_req");
 
-    $display("Ping request interrupted by escalation request sequence finished!");
+    $display("[prim_esc_seq] Ping request interrupted by escalation request sequence finished!");
 
-    // Sequence 4.1 `Esc_tx` integrity error sequence during escalation request.
+    // Sequence 4.1 Integrity error sequence during escalation request.
     main_clk.wait_clks($urandom_range(1, 20));
     esc_req = 1;
     // Randomly wait a few clock cycles then inject integrity error.
     main_clk.wait_clks($urandom_range(0, 5));
     // Force esc_tx signal to create a integrity fail error case.
     force esc_tx.esc_n = 1;
-    wait (integ_fail);
+    `DV_SPINWAIT(wait (integ_fail == 1);, , , "Wait for esc_tx.esc_n integ_fail timeout");
+    main_clk.wait_clks(1);
     release esc_tx.esc_n;
     // Wait #1ps to avoid a race condition on clock edge.
     #1ps;
     if (!esc_req_out) test_error("Signal integrity error should set esc_req!");
     esc_req = 0;
+    $display("[prim_esc_seq] Integrity esc_tx error sequence finished [1/2]!");
 
-    $display("Escalation esc_p/n integrity sequence during escalation request finished!");
+    main_clk.wait_clks($urandom_range(1, 20));
+    // Force esc_tx signal to create a integrity fail error case.
+    force esc_rx.resp_n = 1;
+    esc_req = 1;
+    `DV_SPINWAIT(wait (integ_fail == 1);, , , "Wait for esc_rx.resp_n integ_fail timeout");
+    main_clk.wait_clks(1);
+    release esc_rx.resp_n;
+    // Wait #1ps to avoid a race condition on clock edge.
+    #1ps;
+    if (!esc_req_out) test_error("Signal integrity error should set esc_req!");
+    esc_req = 0;
+    $display("[prim_esc_seq] Integrity esc_rx error sequence finished [2/2]!");
 
     // Sequence 4.1 `Esc_tx` integrity error sequence during ping request.
     main_clk.wait_clks($urandom_range(1, 20));
     ping_req = 1;
     // Force esc_tx signal to create a integrity fail error case.
     force esc_tx.esc_n = 1;
-    wait (integ_fail);
+    `DV_SPINWAIT(wait (integ_fail == 1);, , , "Wait for ping request integ_fail timeout");
     release esc_tx.esc_n;
     // Wait #1ps to avoid a race condition on clock edge.
     #1ps;
@@ -149,7 +174,7 @@ module prim_esc_tb;
     if (ping_ok)      test_error("Ping error!");
     ping_req = 0;
 
-    $display("Escalation esc_p/n integrity sequence during ping request finished!");
+    $display("[prim_esc_seq] Escalation esc_p/n integrity sequence during ping request finished!");
 
     // Sequence 5. Escalation reverse ping timeout sequence.
     // Wait at least two clock cycles for the previous sequence to finish its escalation request.
@@ -165,7 +190,7 @@ module prim_esc_tb;
       end
       begin
         // Wait for a ping handshake to complete.
-        wait (ping_ok);
+        `DV_SPINWAIT(wait (ping_ok == 1);, , , "Wait for ping_ok timeout");
         main_clk.wait_clks(2);
         ping_req = 0;
         if (integ_fail)  test_error("Ping_req unexpected signal integrity error!");
@@ -174,21 +199,41 @@ module prim_esc_tb;
     join
     main_clk.apply_reset();
 
-    $display("Escalation ping request timeout sequence finished!");
+    $display("[prim_esc_seq] Escalation ping request timeout sequence finished!");
 
     // Sequence 6. Escalation receiver counter fail sequence.
     ping_req = 1;
     // Wait until ping request is acknowledged and counter starts to increment.
-    wait (ping_ok);
+    `DV_SPINWAIT(wait (ping_ok == 1);, , , "Wait for ping_ok timeout");
     main_clk.wait_clks(2);
     ping_req = 0;
     // If cnt_q[0] and cnt_q[1]'s value do not match, deisgn will set `esc_req_out` signal.
     force prim_esc_tb.i_esc_receiver.cnt_q[1] = 0;
-    wait (esc_req_out);
+    `DV_SPINWAIT(wait (esc_req_out == 1);, , , "Wait for esc_req_out timeout");
     if (integ_fail) test_error("Escalation receiver counter unexpected signal integrity error!");
     release prim_esc_tb.i_esc_receiver.cnt_q[1];
 
-    $display("Escalation couter error sequence finished!");
+    $display("[prim_esc_seq] Escalation couter error sequence finished!");
+
+    // 7. Random esc_rx/tx signal without request error sequence.
+    main_clk.wait_clks($urandom_range(1, 20));
+    // Force esc_tx signals to create a integrity fail error case.
+    force esc_rx.resp_p = 1;
+    force esc_rx.resp_n = 0;
+    `DV_SPINWAIT(wait (integ_fail == 1);, , , "Wait for esc_rx.resp_p/n integ_fail timeout");
+    release esc_rx.resp_p;
+    release esc_rx.resp_n;
+    $display("[prim_esc_seq] Random esc_rx error sequence finished [1/2]!");
+
+    main_clk.wait_clks($urandom_range(1, 20));
+    // Force esc_tx signals to create a integrity fail error case.
+    force esc_tx.esc_p = 1;
+    force esc_tx.esc_n = 0;
+    `DV_SPINWAIT(wait (integ_fail == 1);, , , "Wait for esc_rx.resp_p/n integ_fail timeout");
+    release esc_tx.esc_p;
+    release esc_tx.esc_n;
+    $display("[prim_esc_seq] Random esc_tx error sequence finished [1/2]!");
+    main_clk.wait_clks(2);
 
     dv_test_status_pkg::dv_test_status(.passed(!error));
     $finish();
