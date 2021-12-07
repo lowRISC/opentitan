@@ -17,11 +17,14 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   local uint wkup_thold;
 
   local bit  wdog_en;
+  local bit  wdog_regwen;
+  local bit  wdog_pause_in_sleep;
   local bit  wdog_num_update_due;
   local uint wdog_count;
   local uint bark_thold;
   local uint bite_thold;
 
+  local bit  wkup_cause;
   local uint wkup_num;
   local uint wdog_bark_num;
   local uint wdog_bite_num;
@@ -54,7 +57,20 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
     fork
       compute_num_clks();
       check_interrupt();
+      monitor_interrupts();
     join_none
+  endtask
+
+  task monitor_interrupts();
+    forever begin
+      @(cfg.aon_intr_vif.pins);
+      // Sample interrupt pin coverage for interrupt pins
+      if (cfg.en_cov) begin
+        foreach (cfg.aon_intr_vif.pins[i]) begin
+          cov.intr_pins_cg.sample(i, cfg.aon_intr_vif.sample_pin(.idx(i)));
+        end
+      end
+    end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -80,6 +96,11 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
     // if incoming access is a write to a valid csr, then make updates right away
     if (addr_phase_write) begin
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      if (cfg.en_cov) begin
+        //Sample configuration coverage
+        cov.timer_cfg_cg.sample(prescaler, bark_thold, bite_thold,
+                                wkup_thold, wdog_regwen, wdog_pause_in_sleep, wkup_cause);
+      end
     end
 
     // process the csr req
@@ -94,10 +115,20 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
           if (intr_state_val[WKUP]) intr_status_exp[WKUP] = 1'b0;
           if (intr_state_val[WDOG]) intr_status_exp[WDOG] = 1'b0;
         end
+        // INTR_EN register does not exists in AON timer because the interrupts are
+        // enabled as long as timers are enabled.
+        if (cfg.en_cov && data_phase_read) begin
+          cov.intr_cg.sample(WKUP, wkup_en, item.d_data);
+          cov.intr_cg.sample(WDOG, wdog_en, item.d_data);
+        end
       end
       "wkup_ctrl": begin
         prescaler = get_reg_fld_mirror_value(ral, csr.get_name(), "prescaler");
         wkup_en   = get_reg_fld_mirror_value(ral, csr.get_name(), "enable");
+      end
+      "wkup_cause": begin
+        wkup_cause = csr.get_mirrored_value();
+        intr_status_exp[WKUP] = item.a_data;
       end
       "wkup_count": begin
         wkup_count =  csr.get_mirrored_value();
@@ -108,9 +139,13 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
       end
       "wdog_ctrl": begin
         wdog_en = get_reg_fld_mirror_value(ral, csr.get_name(), "enable");
+        wdog_pause_in_sleep = get_reg_fld_mirror_value(ral, csr.get_name(), "pause_in_sleep");
       end
       "wdog_count": begin
         wdog_count =  csr.get_mirrored_value();
+      end
+      "wdog_regwen": begin
+        wdog_regwen =  csr.get_mirrored_value();
       end
       "wdog_bark_thold": begin
         bark_thold =  csr.get_mirrored_value();
@@ -124,6 +159,12 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
         uint intr_test_val = item.a_data;
         if (intr_test_val[WKUP]) intr_status_exp[WKUP] = 1'b1;
         if (intr_test_val[WDOG]) intr_status_exp[WDOG] = 1'b1;
+        if (cfg.en_cov) begin
+          cov.intr_test_cg.sample(WKUP, intr_test_val[WKUP],
+                                  wkup_en, intr_status_exp[WKUP]);
+          cov.intr_test_cg.sample(WDOG, intr_test_val[WDOG],
+                                  wdog_en, intr_status_exp[WDOG]);
+        end
       end
       default: begin
           // No other special behaviour for writes
