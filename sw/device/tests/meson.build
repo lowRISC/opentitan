@@ -956,14 +956,18 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     dependencies: [
       riscv_crt,
       device_lib,
-      sw_lib_irq_handlers,
       sw_lib_testing_test_status,
       sw_lib_runtime_print,
       sw_lib_runtime_log,
       sw_lib_dif_uart,
-      # Explicitly do not pull in the OTTF; we need to run right after
-      # the CRT is done executing.
+      # Explicitly DO NOT pull in the OTTF; we need to run right after
+      # the CRT is done executing. However, DO pull in the OTTF default ISRs.
+      # While this test does not override any of the default symbols, they
+      # should be linked in since the `mtvec` is set to point to these in the
+      # `sw/device/exts/common/flash_crt.S` initialization assembly (contained
+      # in the riscv_crt target above).
       # sw_lib_testing_ottf,
+      sw_lib_testing_ottf_isrs,
     ],
   )
 
