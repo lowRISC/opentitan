@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
-#include "entropy_src_regs.h"
+#include "ast_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
+#include "entropy_src_regs.h"
+#include "otp_ctrl_regs.h"
+#include "sensor_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
 
 /**
@@ -130,6 +133,22 @@ _mask_rom_start_boot:
   // of `mie`.
   li   t0, 0xFFFF0888
   csrc mie, t0
+
+  // Copy the AST configuration from OTP.
+  li   a0, (TOP_EARLGREY_AST_BASE_ADDR + AST_REGA_0_REG_OFFSET)
+  li   a1, (TOP_EARLGREY_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
+  li   a2, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
+            OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
+  call crt_section_copy
+
+  // Wait for AST initialization to complete.
+  li   a0, TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR
+.L_ast_done_loop:
+  lw   t0, SENSOR_CTRL_STATUS_REG_OFFSET(a0)
+  srli t0, t0, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT // no-op as bit index is currently 0
+  andi t0, t0, 0x1
+  beqz t0, .L_ast_done_loop
 
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
