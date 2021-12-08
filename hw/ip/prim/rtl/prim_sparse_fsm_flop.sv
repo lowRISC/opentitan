@@ -7,7 +7,10 @@
 module prim_sparse_fsm_flop #(
   parameter type              StateEnumT = logic,
   parameter int               Width      = 1,
-  parameter logic [Width-1:0] ResetValue = 0
+  parameter logic [Width-1:0] ResetValue = 0,
+  // This should only be disabled in special circumstances, for example
+  // in non-comportable IPs where an error does not trigger an alert.
+  parameter bit               EnableAlertTriggerSVA = 1
 ) (
   input                    clk_i,
   input                    rst_ni,
@@ -42,7 +45,7 @@ module prim_sparse_fsm_flop #(
 
   // ASSERT_INIT can only be used for paramters/constants in FPV.
   `ifdef SIMULATION
-  `ASSERT_INIT(AssertConnected_A, unused_assert_connected === 1'b1)
+  `ASSERT_INIT(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
   `endif
   `endif
 
