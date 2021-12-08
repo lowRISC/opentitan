@@ -104,7 +104,9 @@ module kmac_app
   input err_processed_i,
 
   // error_o value is pushed to Error FIFO at KMAC/SHA3 top and reported to SW
-  output kmac_pkg::err_t error_o
+  output kmac_pkg::err_t error_o,
+
+  output logic sparse_fsm_error_o
 );
 
   /////////////////
@@ -374,6 +376,7 @@ module kmac_app
 
     // Error
     fsm_err = '{valid: 1'b 0, code: ErrNone, info: '0};
+    sparse_fsm_error_o = 1'b 0;
 
     // If error happens, FSM asserts data ready but discard incoming msg
     fsm_data_ready = 1'b 0;
@@ -498,7 +501,8 @@ module kmac_app
       end
 
       default: begin
-        st_d = StIdle;
+        sparse_fsm_error_o = 1'b 1;
+        st_d = StError;
       end
     endcase
   end
