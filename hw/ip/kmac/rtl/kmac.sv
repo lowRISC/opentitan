@@ -582,6 +582,17 @@ module kmac
     endcase
   end
 
+  // State Errors
+  logic sparse_fsm_error;
+  logic sha3_state_error, kmac_errchk_state_error;
+  logic kmac_core_state_error, kmac_app_state_error;
+  logic kmac_entropy_state_error;
+  assign sparse_fsm_error = sha3_state_error
+                          | kmac_errchk_state_error
+                          | kmac_core_state_error
+                          | kmac_app_state_error
+                          | kmac_entropy_state_error;
+
   prim_intr_hw #(.Width(1)) intr_kmac_err (
     .clk_i,
     .rst_ni,
@@ -712,7 +723,10 @@ module kmac
     .start_i   (sha3_start          ),
     .process_i (msgfifo2kmac_process),
     .done_i    (sha3_done           ),
-    .process_o (kmac2sha3_process   )
+    .process_o (kmac2sha3_process   ),
+
+    // Error detection
+    .sparse_fsm_error_o (kmac_core_state_error)
   );
 
   // SHA3 hashing engine
@@ -757,7 +771,8 @@ module kmac
     .state_valid_o (state_valid),
     .state_o       (state), // [Share]
 
-    .error_o (sha3_err)
+    .error_o            (sha3_err),
+    .sparse_fsm_error_o (sha3_state_error)
   );
 
   // MSG_FIFO window interface to FIFO interface ===============================
@@ -888,7 +903,8 @@ module kmac
     .cmd_o    (kmac_cmd),
 
     // Error report
-    .error_o (app_err)
+    .error_o            (app_err),
+    .sparse_fsm_error_o (kmac_app_state_error)
 
   );
 
@@ -959,7 +975,8 @@ module kmac
     .sha3_absorbed_i(sha3_absorbed       ),
     .keccak_done_i  (sha3_block_processed),
 
-    .error_o(errchecker_err)
+    .error_o           (errchecker_err),
+    .sparse_fsm_error_o (kmac_errchk_state_error)
   );
 
   // Entropy Generator
@@ -1030,6 +1047,7 @@ module kmac
 
       // Error
       .err_o           (entropy_err),
+      .sparse_fsm_error_o (kmac_entropy_state_error),
       .err_processed_i (err_processed)
     );
   end else begin : gen_empty_entropy
@@ -1063,6 +1081,8 @@ module kmac
     assign entropy_hash_cnt = '0;
 
     assign entropy_err = '{valid: 1'b 0, code: ErrNone, info: '0};
+
+    assign kmac_entropy_state_error = 1'b 0;
 
     logic [1:0] unused_entropy_status;
     assign unused_entropy_status = entropy_in_keyblock;
@@ -1144,7 +1164,9 @@ module kmac
 
   assign alert_fatal = shadowed_storage_err
                      | alert_intg_err
+                     | sparse_fsm_error
                      ;
+
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -1182,4 +1204,19 @@ module kmac
 
   // Command input should be onehot0
   `ASSUME(CmdOneHot0_M, reg2hw.cmd.cmd.qe |-> $onehot0(reg2hw.cmd.cmd.q))
+
+  // Sparse FSM state error
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacCoreFsmCheck_A, u_kmac_core.u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacAppFsmCheck_A, u_app_intf.u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3FsmCheck_A, u_sha3.u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A, u_sha3.u_pad.u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KeccackFsmCheck_A, u_sha3.u_keccak.u_state_regs,
+                                       alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ErrorCheckFsmCheck_A, u_errchk.u_state_regs, alert_tx_o[0])
+
+  // prim is only instantiated if masking is enabled
+  if (EnMasking == 1) begin : g_testassertion
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(EntropyFsmCheck_A, gen_entropy.u_entropy.u_state_regs,
+                                         alert_tx_o[0])
+  end
 endmodule

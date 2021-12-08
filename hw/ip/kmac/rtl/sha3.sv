@@ -69,7 +69,11 @@ module sha3
   output logic [StateW-1:0] state_o [Share],
 
   // error_o value is pushed to Error FIFO at KMAC/SHA3 top and reported to SW
-  output err_t error_o
+  output err_t error_o,
+
+  // sparse_fsm_alert
+  output logic sparse_fsm_error_o
+
 );
   /////////////////
   // Definitions //
@@ -114,6 +118,13 @@ module sha3
 
   // Keccak control signal (filtered by State Machine)
   logic keccak_start, keccak_process, keccak_done;
+
+  // alert signals
+  logic sha3_state_error;
+  logic keccak_round_state_error;
+  logic sha3pad_state_error;
+
+  assign sparse_fsm_error_o = sha3_state_error | keccak_round_state_error | sha3pad_state_error;
 
   /////////////////
   // Connections //
@@ -201,6 +212,8 @@ module sha3
     state_valid = 1'b 0;
     mux_sel = MuxGuard ;
 
+    sha3_state_error = 1'b 0;
+
     unique case (st)
       StIdle: begin
         if (start_i) begin
@@ -257,7 +270,7 @@ module sha3
 
       default: begin
         st_d = StIdle;
-        //TODO error
+        sha3_state_error = 1'b 1;
       end
 
     endcase
@@ -382,7 +395,8 @@ module sha3
     .done_i    (keccak_done),
 
     // output
-    .absorbed_o (absorbed)
+    .absorbed_o         (absorbed),
+    .sparse_fsm_error_o (sha3pad_state_error)
   );
 
   // Keccak round logic
@@ -409,6 +423,8 @@ module sha3
     .complete_o (keccak_complete),
 
     .state_o    (state),
+
+    .sparse_fsm_error_o (keccak_round_state_error),
 
     .clear_i    (keccak_done)
   );

@@ -58,6 +58,7 @@ module kmac_entropy
 
   // Error output
   output err_t err_o,
+  output logic sparse_fsm_error_o,
   input        err_processed_i
 );
 
@@ -392,6 +393,7 @@ module kmac_entropy
   // State: Next State and Output Logic
   always_comb begin
     st_d = StRandReset;
+    sparse_fsm_error_o = 1'b 0;
 
     // Default Timer values
     timer_enable = 1'b 0;
@@ -592,6 +594,7 @@ module kmac_entropy
 
       default: begin
         st_d = StRandReset;
+        sparse_fsm_error_o = 1'b 1;
       end
     endcase
   end

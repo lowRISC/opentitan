@@ -67,7 +67,8 @@ module kmac_errchk
   input sha3_absorbed_i,
   input keccak_done_i,
 
-  output err_t error_o
+  output err_t error_o,
+  output logic sparse_fsm_error_o
 );
 
   // sha3_pkg::sha3_mode_e
@@ -138,6 +139,7 @@ module kmac_errchk
   // info field: Current state, Received command
   always_comb begin
     err_swsequence = 1'b 0;
+    sparse_fsm_error_o = 1'b 0;
 
     unique case (st)
       StIdle: begin
@@ -175,6 +177,7 @@ module kmac_errchk
 
       default: begin
         err_swsequence = 1'b 0;
+        sparse_fsm_error_o = 1'b 1;
       end
     endcase
   end

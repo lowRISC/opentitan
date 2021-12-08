@@ -51,6 +51,8 @@ module keccak_round #(
   // State out. This can be used as Digest
   output logic [Width-1:0] state_o [Share],
 
+  output logic             sparse_fsm_error_o,
+
   input                    clear_i     // Clear internal state to '0
 );
 
@@ -213,6 +215,8 @@ module keccak_round #(
 
     complete_d = 1'b 0;
 
+    sparse_fsm_error_o = 1'b 0;
+
     unique case (keccak_st)
       StIdle: begin
         if (valid_i) begin
@@ -294,12 +298,13 @@ module keccak_round #(
       end
 
       StError: begin
-        keccak_st_d = StIdle;
+        keccak_st_d = StError;
+        sparse_fsm_error_o = 1'b 1;
       end
 
       default: begin
         keccak_st_d = StError;
-        //ToDO: alert signal?
+        sparse_fsm_error_o = 1'b 1;
       end
     endcase
   end

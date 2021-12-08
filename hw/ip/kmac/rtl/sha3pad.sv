@@ -60,7 +60,10 @@ module sha3pad
   // Indication of the Keccak Sponge Absorbing is complete, it is time for SW to
   // control the Keccak-round if it needs more digest, or complete by asserting
   // `done_i`
-  output logic absorbed_o
+  output logic absorbed_o,
+
+  // Indication that there was a fault in the sparse encoding
+  output logic sparse_fsm_error_o
 );
 
   /////////////////
@@ -298,6 +301,8 @@ module sha3pad
 
     absorbed_d = 1'b 0;
 
+    sparse_fsm_error_o = 1'b 0;
+
     unique case (st)
 
       // In Idle state, the FSM checks if the software (or upper FSM) initiates
@@ -459,6 +464,7 @@ module sha3pad
 
       default: begin
         st_d = StPadIdle;
+        sparse_fsm_error_o = 1'b 1;
       end
 
     endcase

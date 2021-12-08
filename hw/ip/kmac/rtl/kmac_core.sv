@@ -47,7 +47,9 @@ module kmac_core
   input done_i,
 
   // Control to SHA3 core
-  output logic process_o
+  output logic process_o,
+
+  output logic sparse_fsm_error_o
 );
 
   import sha3_pkg::KeccakMsgAddrW;
@@ -173,6 +175,8 @@ module kmac_core
     kmac_valid = 1'b 0;
     kmac_process = 1'b 0;
 
+    sparse_fsm_error_o = 1'b 0;
+
     unique case (st)
       StKmacIdle: begin
         if (kmac_en_i && start_i) begin
@@ -221,7 +225,7 @@ module kmac_core
 
       default: begin
         st_d = StKmacIdle;
-        //ToDO add alert
+        sparse_fsm_error_o = 1'b 1;
       end
     endcase
   end
