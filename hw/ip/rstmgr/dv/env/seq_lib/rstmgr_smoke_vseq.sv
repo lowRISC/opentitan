@@ -20,14 +20,29 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
   task body();
     // The rstmgr is ready for CSR accesses.
     logic [TL_DW-1:0] value;
-    set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     // Expect reset info to be POR.
     csr_rd_check(.ptr(ral.reset_info), .compare_value(32'h1),
                  .err_msg("expected reset_info to indicate POR"));
-    check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b1));
+    check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
 
-    // Clear reset_info register, no need to re-enable cpu and alert info capture.
+    // Clear reset_info register, and enable cpu and alert info capture.
+    csr_wr(.ptr(ral.reset_info), .value('1));
+
+    set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
+
+    // Send scan reset.
+    send_scan_reset();
+    // Scan reset triggers an AON reset (and all others).
+    wait(cfg.rstmgr_vif.resets_o.rst_por_aon_n == '1);
+
+    csr_rd_check(.ptr(ral.reset_info), .compare_value(32'h1),
+                 .err_msg("Expected reset info to indicate POR for scan reset"));
+    // Alert and cpu info settings were reset. Check and re-enable them.
+    check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
+    set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
+
+    // Clear reset_info register.
     csr_wr(.ptr(ral.reset_info), .value('1));
 
     // Send low power entry reset.

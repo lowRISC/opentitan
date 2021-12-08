@@ -61,6 +61,14 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     scanmode = get_rand_mubi4_val(scanmode_on_weight, 4, 4);
   endfunction
 
+  function void update_scanmode(prim_mubi_pkg::mubi4_t value);
+    cfg.rstmgr_vif.scanmode_i = value;
+  endfunction
+
+  function void update_scan_rst_n(logic value);
+    cfg.rstmgr_vif.scan_rst_ni = value;
+  endfunction
+
   function void set_pwrmgr_rst_reqs(logic rst_lc_req, logic rst_sys_req);
     cfg.rstmgr_vif.pwr_i.rst_lc_req  = {rstmgr_pkg::PowerDomains{rst_lc_req}};
     cfg.rstmgr_vif.pwr_i.rst_sys_req = {rstmgr_pkg::PowerDomains{rst_sys_req}};
@@ -207,11 +215,22 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('0));
   endtask
 
+  task send_scan_reset();
+    `uvm_info(`gfn, "Sending scan reset.", UVM_MEDIUM)
+    update_scanmode(prim_mubi_pkg::MuBi4True);
+    update_scan_rst_n(1'b0);
+    // The clocks are turned off, so wait in time units.
+    #1us;
+    update_scanmode(prim_mubi_pkg::MuBi4False);
+    update_scan_rst_n(1'b1);
+    `uvm_info(`gfn, "Done sending scan reset.", UVM_MEDIUM)
+  endtask
+
   // Sends an ndm reset, and drops it once it should have
   // caused the hardware to handle it.
   task send_ndm_reset();
     set_ndmreset_req(1'b1);
-    `uvm_info(`gfn, $sformatf("Sending ndm reset"), UVM_LOW)
+    `uvm_info(`gfn, "Sending ndm reset", UVM_LOW)
     cfg.io_div4_clk_rst_vif.wait_clks(ndm_reset_cycles);
     set_ndmreset_req(1'b0);
     `uvm_info(`gfn, $sformatf("Clearing ndm reset"), UVM_LOW)
