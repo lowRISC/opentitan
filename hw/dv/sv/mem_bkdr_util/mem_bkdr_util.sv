@@ -57,8 +57,11 @@ class mem_bkdr_util extends uvm_object;
   event writememh_event;
 
   // Initialize the class instance.
+  // `extra_bits_per_subword` is the width any additional metadata that is not captured in secded
+  // package.
   function new(string name = "", string path, int unsigned depth,
-               longint unsigned n_bits, err_detection_e err_detection_scheme);
+               longint unsigned n_bits, err_detection_e err_detection_scheme,
+               int extra_bits_per_subword = 0);
 
     bit res;
     super.new(name);
@@ -79,7 +82,8 @@ class mem_bkdr_util extends uvm_object;
       prim_secded_e secded_eds = prim_secded_e'(err_detection_scheme);
       int non_ecc_bits_per_subword = get_ecc_data_width(secded_eds);
       int ecc_bits_per_subword = get_ecc_parity_width(secded_eds);
-      int bits_per_subword = non_ecc_bits_per_subword + ecc_bits_per_subword;
+      int bits_per_subword = non_ecc_bits_per_subword + ecc_bits_per_subword +
+                             extra_bits_per_subword;
       int subwords_per_word;
 
       // We shouldn't truncate the actual data word. This check ensures that err_detection_scheme
