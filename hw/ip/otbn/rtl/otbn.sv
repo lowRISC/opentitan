@@ -552,8 +552,8 @@ module otbn
   assign mem_crc_data_in.wr_data = imem_req_bus ? imem_wdata_bus[31:0] :
                                                   dmem_wdata_narrow_bus[31:0];
   // TODO: Expand DMem index so it's per 32-bit not per 256-bit
-  assign mem_crc_data_in.index   = imem_req_bus ? {{(15 - ImemIndexWidth){1'b0}}, imem_index_bus} :
-                                                   {{(15 - DmemIndexWidth + 3){1'b0}},
+  assign mem_crc_data_in.index   = imem_req_bus ? {{15 - ImemIndexWidth{1'b0}}, imem_index_bus} :
+                                                   {{15 - (DmemIndexWidth - 2){1'b0}},
                                                     dmem_addr_bus[DmemIndexWidth-1:2]};
   assign mem_crc_data_in.imem    = imem_req_bus;
 
