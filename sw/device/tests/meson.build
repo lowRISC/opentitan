@@ -26,35 +26,21 @@ sw_rom_ext_tests = {
 }
 
 ###############################################################################
-# OTTF Example Tests
+# Example Chip-Level Test
 ###############################################################################
-ottf_example_bare_metal_test_lib = declare_dependency(
+example_chip_level_test_lib = declare_dependency(
   link_with: static_library(
-    'ottf_example_bare_metal_test_lib',
-    sources: ['ottf_example_bare_metal_test.c'],
+    'example_chip_level_test_lib',
+    sources: ['example_chip_level_test.c'],
     dependencies: [
-      sw_lib_runtime_log,
+      # Add dependencies here.
     ],
   ),
 )
-sw_tests += {
-  'ottf_example_bare_metal_test': {
-    'library': ottf_example_bare_metal_test_lib,
-  }
-}
 
-ottf_example_concurrency_test_lib = declare_dependency(
-  link_with: static_library(
-    'ottf_example_concurrency_test_lib',
-    sources: ['ottf_example_concurrency_test.c'],
-    dependencies: [
-      sw_lib_runtime_log,
-    ],
-  ),
-)
 sw_tests += {
-  'ottf_example_concurrency_test': {
-    'library': ottf_example_concurrency_test_lib,
+  'example_chip_level_test': {
+    'library': example_chip_level_test_lib,
   }
 }
 
