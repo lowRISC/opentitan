@@ -660,7 +660,7 @@ module otbn
   assign hw2reg.err_bits.bad_internal_state.d = err_bits_q.bad_internal_state;
   assign hw2reg.err_bits.illegal_bus_access.d = err_bits_q.illegal_bus_access;
   assign hw2reg.err_bits.lifecycle_escalation.d = err_bits_q.lifecycle_escalation;
-  assign hw2reg.err_bits.fatal_software.d = err_bits.fatal_software;
+  assign hw2reg.err_bits.fatal_software.d = err_bits_q.fatal_software;
 
   assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & ~busy_execute_q;
   assign err_bits_d = err_bits_clear ? '0 : err_bits;
