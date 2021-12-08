@@ -31,11 +31,22 @@ rust_flags = ''
 # The cargo invocation script.
 cargo_invoke_cmd = meson.source_root() / 'util/invoke_cargo.sh'
 
+# Get the command lines for the native C and C++ compilers to pass on to other
+# build systems.
+# The Mundane rust library uses CMake to build BoringSSL, which needs a native
+# C/C++ compiler. Ensure that this build step uses the same native compiler as
+# all other parts of the build.
+prog_c_native = ' '.join(meson.get_compiler('c', native: true).cmd_array())
+prog_cxx_native = ' '.join(meson.get_compiler('cpp', native: true).cmd_array())
+
 # Note: the opentitantool depends on opentitanlib. This dependency is handled
 # by cargo itself but perhaps should be handled by the build system.
 opentitantool = custom_target(
   'opentitantool',
   command: [
+    prog_env,
+    'CC=@0@'.format(prog_c_native),
+    'CXX=@0@'.format(prog_cxx_native),
     cargo_invoke_cmd,
     cargo,
     cargo_flags,
