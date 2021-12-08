@@ -78,7 +78,7 @@ module otbn_rnd import otbn_pkg::*;
   // Start an EDN request when there is a prefetch or an attempt at reading RND when RND data is not
   // available. Signalling `edn_rnd_req_start` whilst there is an outstanding request has no effect
   // and is harmless.
-  assign edn_rnd_req_start = rnd_prefetch_req_i | (rnd_req_i & ~rnd_valid_q);
+  assign edn_rnd_req_start = (rnd_prefetch_req_i | rnd_req_i) & ~rnd_valid_q;
 
   // Assert `edn_rnd_req_o` when a request is started and keep it asserted until the request is done
   assign edn_rnd_req_d = (edn_rnd_req_q | edn_rnd_req_start) & ~edn_rnd_req_complete;
