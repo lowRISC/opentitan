@@ -260,8 +260,8 @@ def print_fn(n, k, m, codes, suffix, codetype, inv=False):
 def print_enc(n, k, m, codes, codetype):
     invert = 1 if codetype in ["inv_hsiao", "inv_hamming"] else 0
     outstr = "    data_o = {}'(data_i);\n".format(n)
-    format_str = "    data_o[{}] = {} ^ ^(data_o & " + str(n) + "'h{:0" + str(
-                 (n + 3) // 4) + "X});\n"
+    format_str = "    data_o[{}] = 1'b{} ^ ^(data_o & " + str(n) + "'h{:0" +\
+                 str((n + 3) // 4) + "X});\n"
     # Print parity computation If inverted encoding is turned on, we only
     # invert every odd bit so that both all-one and all-zero encodings are not
     # possible. This works for most encodings generated if the fanin is
