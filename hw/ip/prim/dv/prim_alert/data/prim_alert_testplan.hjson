@@ -35,15 +35,11 @@
     }
 
     {
-      name: prim_alert_init_trigger_test
-      desc: '''Verify init_trigger input from prim_alert_receiver.
+      name: prim_alert_ping_request_test
+      desc: '''Verify ping request from prim_alert_sender.
 
-            Based on the prim_alert_test, this test adds a parallel sequence to randomly drive
-            init_trigger_i in prim_alert_receiver.
-
-            Check if alert sender/receiver pairs can resume normal handshake after init_trigger_i
-            is set.
-            For fatal alert, check if fatal alerts keep firing until reset is issued.
+            - Send a ping request by driving `ping_req` pin to 1.
+            - Verify that `ping_ok` signal is set and ping handshake completes.
             '''
       milestone: V1
       tests: ["prim_async_alert",
@@ -53,13 +49,18 @@
     }
 
     {
-      name: prim_alert_ping_request_test
-      desc: '''Verify ping request from prim_alert_sender.
+      name: prim_alert_init_trigger_test
+      desc: '''Verify init_trigger input from prim_alert_receiver.
 
-             - Send a ping request by driving `ping_req` pin to 1.
-             - Verify that `ping_ok` signal is set and ping handshake completes.
-             Because ping reqeust is level trigger, in order to cover toggle coverage for
-             `alert_tx.ping_p/n` the above sequence will run twice.
+            This test is based on previous tests:
+            - Based on the prim_alert_request_test, this test adds a parallel sequence to randomly
+              drive `init_trigger_i` in prim_alert_receiver.
+              Check if alert sender/receiver pairs can resume normal handshake after init_trigger_i
+              is set.
+              For fatal alert, check if fatal alerts keep firing until reset is issued.
+            - Based on prim_alert_ping_request_test, this test adds a parallel sequence to randomly
+              drive `init_trigger_i` in prim_alert_receiver.
+              Check `ping_ok` returns 1.
             '''
       milestone: V1
       tests: ["prim_async_alert",
