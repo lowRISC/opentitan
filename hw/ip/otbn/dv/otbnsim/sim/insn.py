@@ -1227,8 +1227,14 @@ class BNWSRR(OTBNInsn):
                 # There's a pending EDN request. Stall for a cycle.
                 yield
 
-        # At this point, the WSR is ready. Read it, and update wrd with the
-        # result.
+        # At this point, the WSR is ready. Does it have a valid value? (It
+        # might not if this is a sideload key register and keymgr hasn't
+        # provided us with a value). If not, fail with a KEY_INVALID error.
+        if not state.wsrs.has_value_at_idx(self.wsr):
+            state.stop_at_end_of_cycle(ErrBits.KEY_INVALID)
+            return
+
+        # The WSR is ready and has a value. Read it.
         val = state.wsrs.read_at_idx(self.wsr)
         state.wdrs.get_reg(self.wrd).write_unsigned(val)
 
