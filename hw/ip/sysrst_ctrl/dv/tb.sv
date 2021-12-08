@@ -65,7 +65,10 @@ module tb;
     .cio_key1_out_o   (sysrst_ctrl_if.key1_out),
     .cio_key2_out_o   (sysrst_ctrl_if.key2_out),
     .cio_pwrb_out_o   (sysrst_ctrl_if.pwrb_out),
-    .cio_z3_wakeup_o  (sysrst_ctrl_if.z3_wakeup)
+    .cio_z3_wakeup_o  (sysrst_ctrl_if.z3_wakeup),
+
+    .aon_sysrst_ctrl_rst_req_o (sysrst_ctrl_if.sysrst_ctrl_rst_req),
+    .intr_sysrst_ctrl_o (sysrst_ctrl_if.sysrst_ctrl_intr)
   );
 
   initial begin

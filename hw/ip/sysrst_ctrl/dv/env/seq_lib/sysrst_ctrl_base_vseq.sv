@@ -52,7 +52,6 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
         super.apply_reset(kind);
         cfg.clk_aon_rst_vif.apply_reset(0,400,0,1);
       join
-      `uvm_info(`gfn, "Driving from apply_reset", UVM_NONE)
     end
   endtask  // apply_reset
 

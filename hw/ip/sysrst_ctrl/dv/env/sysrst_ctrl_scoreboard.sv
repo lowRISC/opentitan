@@ -98,7 +98,7 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;  //This check is done in sequence
       end
       default: begin
-        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+       `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
     endcase
 

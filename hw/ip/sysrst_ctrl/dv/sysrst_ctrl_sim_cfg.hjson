@@ -66,6 +66,16 @@
       name: sysrst_ctrl_override_test
       uvm_test_seq: sysrst_ctrl_pin_override_vseq
     }
+    {
+      name: sysrst_ctrl_combo_detect
+      uvm_test_seq: sysrst_ctrl_combo_detect_vseq
+      reseed: 1
+    }
+    {
+      name: sysrst_ctrl_auto_blk_key_output
+      uvm_test_seq: sysrst_ctrl_auto_blk_key_output_vseq
+      reseed: 1
+    }
 
   ]
 
