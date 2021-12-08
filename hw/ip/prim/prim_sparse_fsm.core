@@ -17,13 +17,16 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+    files:
+      - lint/prim_sparse_fsm_flop.vlt
+    file_type: vlt
 
   files_ascentlint_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/prim_sparse_fsm.waiver
+      - lint/prim_sparse_fsm_flop.waiver
     file_type: waiver
 
 
