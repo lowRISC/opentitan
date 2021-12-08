@@ -54,4 +54,12 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
   `uvm_object_utils_end
   `uvm_object_new
 
+  function bit get_esc_en();
+    if (if_mode == Device && is_active) begin
+      return probe_vif.get_esc_en();
+    end
+    // Only support escalation ping request interrupted by real escalation request in device mode.
+    return 0;
+  endfunction
+
 endclass : alert_esc_agent_cfg

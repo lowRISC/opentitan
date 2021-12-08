@@ -46,7 +46,7 @@ class esc_monitor extends alert_esc_base_monitor;
           check_esc_resp(.req(req), .is_ping(1));
           while (req.esc_handshake_sta != EscRespComplete &&
                  ping_cnter < cfg.ping_timeout_cycle &&
-                 !cfg.probe_vif.get_esc_en() &&
+                 !cfg.get_esc_en() &&
                  !under_reset) begin
             @(cfg.vif.monitor_cb);
             check_esc_resp(.req(req), .is_ping(1), .ping_triggered(1));
@@ -61,14 +61,14 @@ class esc_monitor extends alert_esc_base_monitor;
             // alignment for prim_esc_sender design. Design does not know ping timeout cycles, only
             // way to exit FSM is when state is IDLE or PingComplete.
             // for detailed dicussion please refer to issue #3034
-            while (!cfg.probe_vif.get_esc_en() &&
+            while (!cfg.get_esc_en() &&
                    !(req.esc_handshake_sta inside {EscIntFail, EscRespComplete, EscReceived})) begin
               @(cfg.vif.monitor_cb);
               check_esc_resp(.req(req), .is_ping(1), .ping_triggered(1));
             end
           end
             // wait a clk cycle to enter the esc_p/n mode
-          if (cfg.probe_vif.get_esc_en()) @(cfg.vif.monitor_cb);
+          if (cfg.get_esc_en()) @(cfg.vif.monitor_cb);
           under_esc_ping = 0;
         end
 
@@ -157,7 +157,7 @@ class esc_monitor extends alert_esc_base_monitor;
         end
         // If there is signal integrity error or it is not the first ping request or escalation
         // request, stay in this case for one more clock cycle.
-        if (!cfg.probe_vif.get_esc_en() &&
+        if (!cfg.get_esc_en() &&
             (ping_triggered || (req.esc_handshake_sta == EscIntFail && !is_ping))) begin
           req.esc_handshake_sta = EscReceived;
         end else begin
@@ -165,7 +165,7 @@ class esc_monitor extends alert_esc_base_monitor;
         end
       end
       EscRespHi: begin
-        if (is_ping && cfg.probe_vif.get_esc_en()) begin
+        if (is_ping && cfg.get_esc_en()) begin
           req.esc_handshake_sta = EscRespLo;
         end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 1) begin
           req.esc_handshake_sta = EscIntFail;
@@ -177,7 +177,7 @@ class esc_monitor extends alert_esc_base_monitor;
         end
       end
       EscRespLo: begin
-        if (is_ping && cfg.probe_vif.get_esc_en()) begin
+        if (is_ping && cfg.get_esc_en()) begin
           req.esc_handshake_sta = EscRespHi;
         end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 0) begin
           req.esc_handshake_sta = EscIntFail;
@@ -190,7 +190,7 @@ class esc_monitor extends alert_esc_base_monitor;
         end
       end
       EscRespPing0: begin
-        if (is_ping && cfg.probe_vif.get_esc_en()) begin
+        if (is_ping && cfg.get_esc_en()) begin
           req.esc_handshake_sta = EscRespLo;
         end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 1) begin
           req.esc_handshake_sta = EscIntFail;
@@ -202,7 +202,7 @@ class esc_monitor extends alert_esc_base_monitor;
         end
       end
       EscRespPing1: begin
-        if (is_ping && cfg.probe_vif.get_esc_en()) begin
+        if (is_ping && cfg.get_esc_en()) begin
           req.esc_handshake_sta = EscRespHi;
         end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 0) begin
           req.esc_handshake_sta = EscIntFail;
