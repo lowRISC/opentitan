@@ -33,6 +33,7 @@
     {
       name: tl_agent_smoke
       uvm_test_seq: tl_agent_base_vseq
+      run_opts: ["-covg_disable_cg"]
     }
   ]
 
