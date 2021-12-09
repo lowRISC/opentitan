@@ -24,48 +24,34 @@ module alert_handler_accu import alert_pkg::*; (
   output logic                 accu_fail_o   // asserted if the tandem accu counters are not equal
 );
 
-  logic trig_gated_unbuf;
-  assign trig_gated_unbuf = class_trig_i & class_en_i;
+  logic trig_gated, accu_en;
+  assign trig_gated = class_trig_i & class_en_i;
+  assign accu_en = trig_gated && !(&accu_cnt_o);
 
   // We employ two redundant counters to guard against FI attacks.
   // If any of the two is glitched and the two counter states do not agree,
   // the check_fail_o signal is asserted which will move the corresponding escalation
   // FSM into a terminal error state where all escalation actions will be permanently asserted.
-  logic [1:0][AccuCntDw-1:0] accu_q;
-  for (genvar k = 0; k < 2; k++) begin : gen_double_accu
+  prim_count #(
+    .Width(AccuCntDw),
+    .OutSelDnCnt(0), // count up
+    .CntStyle(prim_count_pkg::CrossCnt),
+    // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
+    // an alert signal, this condition is handled internally in the alert handler.
+    .EnableAlertTriggerSVA(0)
+  ) u_prim_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i,
+    .set_i(1'b0),
+    .set_cnt_i('0),
+    .en_i(accu_en),
+    .step_i(AccuCntDw'(1)),
+    .cnt_o(accu_cnt_o),
+    .err_o(accu_fail_o)
+  );
 
-    logic trig_gated_buf, clr_buf;
-    logic [AccuCntDw-1:0] accu_d;
-
-    // These size_only buffers are instantiated in order to prevent
-    // optimization / merging of the two counters.
-    prim_buf u_prim_buf_clr (
-      .in_i(clr_i),
-      .out_o(clr_buf)
-    );
-
-    prim_buf u_prim_buf_trig (
-      .in_i(trig_gated_unbuf),
-      .out_o(trig_gated_buf)
-    );
-
-    assign accu_d = (clr_buf)                         ? '0               : // clear
-                    (trig_gated_buf && !(&accu_q[k])) ? accu_q[k] + 1'b1 : // saturate counter
-                                                        accu_q[k];
-
-    prim_flop #(
-      .Width(AccuCntDw)
-    ) u_prim_flop (
-      .clk_i,
-      .rst_ni,
-      .d_i(accu_d),
-      .q_o(accu_q[k])
-    );
-  end
-
-  assign accu_cnt_o = accu_q[0];
-  assign accu_trig_o = (accu_q[0] >= thresh_i) & trig_gated_unbuf;
-  assign accu_fail_o = accu_q[0] != accu_q[1];
+  assign accu_trig_o = (accu_cnt_o >= thresh_i) & trig_gated;
 
   ////////////////
   // Assertions //
@@ -73,7 +59,5 @@ module alert_handler_accu import alert_pkg::*; (
 
   `ASSERT(DisabledNoTrigFwd_A, !class_en_i |-> !accu_trig_o)
   `ASSERT(DisabledNoTrigBkwd_A, accu_trig_o |-> class_en_i)
-  `ASSERT(CheckFailFwd_A, accu_q[0] != accu_q[1] |-> accu_fail_o)
-  `ASSERT(CheckFailBkwd_A, accu_fail_o |-> accu_q[0] != accu_q[1])
 
 endmodule : alert_handler_accu

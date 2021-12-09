@@ -83,7 +83,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // Tandem LFSR Instances //
   ///////////////////////////
 
-  logic lfsr_en, lfsr_err;
+  logic cnt_set, lfsr_err;
   logic [LfsrWidth-1:0] entropy;
   logic [PING_CNT_DW + IdDw - 1:0] lfsr_state;
   assign entropy = (reseed_en) ? edn_data_i[LfsrWidth-1:0] : '0;
@@ -107,7 +107,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .rst_ni,
     .seed_en_i  ( 1'b0                 ),
     .seed_i     ( '0                   ),
-    .lfsr_en_i  ( reseed_en || lfsr_en ),
+    .lfsr_en_i  ( reseed_en || cnt_set ),
     .entropy_i  ( entropy              ),
     .state_o    ( lfsr_state           ),
     .err_o      ( lfsr_err             )
@@ -154,66 +154,75 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // In order to have enough margin, the escalation receiver timeout counters use a threshold that
   // is 4x higher than the value calculated above. With N_ESC_SEV = 4, PING_CNT_DW = 16 and
   // NUM_WAIT_COUNT = NUM_TIMEOUT_COUNT = 2 this amounts to a 22bit timeout threshold.
-
-  logic esc_cnt_en;
-  logic [1:0][PING_CNT_DW-1:0] esc_cnt_q;
-
+  //
   // We employ two redundant counters to guard against FI attacks.
   // If any of the two is glitched and the two counter states do not agree,
   // the FSM below is moved into a terminal error state and all ping alerts
   // are permanently asserted.
-  for (genvar k = 0; k < 2; k++) begin : gen_double_esc_cnt
 
-    logic [PING_CNT_DW-1:0] esc_cnt_d;
-    assign esc_cnt_d = (esc_cnt_q[k] >= PING_CNT_DW'(N_ESC_SEV-1)) ? '0 : (esc_cnt_q[k] + 1'b1);
+  logic esc_cnt_en, esc_cnt_clr, esc_cnt_error;
+  logic [PING_CNT_DW-1:0] esc_cnt;
+  assign esc_cnt_clr = (esc_cnt >= PING_CNT_DW'(N_ESC_SEV-1)) && esc_cnt_en;
 
-    prim_flop_en #(
-      .Width(PING_CNT_DW)
-    ) u_prim_flop_en (
-      .clk_i,
-      .rst_ni,
-      .en_i  ( esc_cnt_en   ),
-      .d_i   ( esc_cnt_d    ),
-      .q_o   ( esc_cnt_q[k] )
-    );
-  end
+  prim_count #(
+    .Width(PING_CNT_DW),
+    .OutSelDnCnt(0), // count up
+    .CntStyle(prim_count_pkg::CrossCnt),
+    // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
+    // an alert signal, this condition is handled internally in the alert handler.
+    .EnableAlertTriggerSVA(0)
+  ) u_prim_count_esc_cnt (
+    .clk_i,
+    .rst_ni,
+    .clr_i(esc_cnt_clr),
+    .set_i(1'b0),
+    .set_cnt_i('0),
+    .en_i(esc_cnt_en),
+    .step_i(PING_CNT_DW'(1)),
+    .cnt_o(esc_cnt),
+    .err_o(esc_cnt_error)
+  );
 
   /////////////////////////////
   // Timer Counter Instances //
   /////////////////////////////
 
-  logic [1:0][PING_CNT_DW-1:0] cnt_q;
-  logic wait_cnt_load, timeout_cnt_load, timer_expired;
-  assign timer_expired = (cnt_q[0] == '0);
-  assign lfsr_en = wait_cnt_load || timeout_cnt_load;
-
   // We employ two redundant counters to guard against FI attacks.
   // If any of the two is glitched and the two counter states do not agree,
   // the FSM below is moved into a terminal error state and all ping alerts
   // are permanently asserted.
-  for (genvar k = 0; k < 2; k++) begin : gen_double_cnt
+  logic [PING_CNT_DW-1:0] cnt, cnt_setval;
+  logic wait_cnt_set, timeout_cnt_set, timer_expired, cnt_error;
+  assign timer_expired = (cnt == '0);
+  assign cnt_set = wait_cnt_set || timeout_cnt_set;
 
-    // the constant offset ensures a minimum cycle spacing between pings.
-    logic unused_bits;
-    logic [PING_CNT_DW-1:0] wait_cyc;
-    assign wait_cyc = (lfsr_state[PING_CNT_DW-1:0] | PING_CNT_DW'(3'b100));
-    assign unused_bits = lfsr_state[2];
+  prim_count #(
+    .Width(PING_CNT_DW),
+    .OutSelDnCnt(1), // count down
+    .CntStyle(prim_count_pkg::CrossCnt),
+    // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
+    // an alert signal, this condition is handled internally in the alert handler.
+    .EnableAlertTriggerSVA(0)
+  ) u_prim_count_cnt (
+    .clk_i,
+    .rst_ni,
+    .clr_i(1'b0),
+    .set_i(cnt_set),
+    .set_cnt_i(cnt_setval),
+    .en_i(!timer_expired),
+    .step_i(PING_CNT_DW'(1)),
+    .cnt_o(cnt),
+    .err_o(cnt_error)
+  );
 
-    // note that the masks are used for DV/FPV only in order to reduce the state space.
-    logic [PING_CNT_DW-1:0] cnt_d;
-    assign cnt_d = (wait_cnt_load)    ? (wait_cyc & wait_cyc_mask_i) :
-                   (timeout_cnt_load) ? (ping_timeout_cyc_i)         :
-                   (cnt_q[k] > '0)    ? cnt_q[k] - 1'b1              : '0;
+  // the constant offset ensures a minimum cycle spacing between pings.
+  logic unused_bits;
+  logic [PING_CNT_DW-1:0] wait_cyc;
+  assign wait_cyc = (lfsr_state[PING_CNT_DW-1:0] | PING_CNT_DW'(3'b100));
+  assign unused_bits = lfsr_state[2];
 
-    prim_flop #(
-      .Width(PING_CNT_DW)
-    ) u_prim_flop (
-      .clk_i,
-      .rst_ni,
-      .d_i   ( cnt_d    ),
-      .q_o   ( cnt_q[k] )
-    );
-  end
+  // note that the masks are used for DV/FPV only in order to reduce the state space.
+  assign cnt_setval = (wait_cnt_set) ? (wait_cyc & wait_cyc_mask_i) : ping_timeout_cyc_i;
 
   ////////////////////////////
   // Ping and Timeout Logic //
@@ -224,7 +233,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
 
   // generate ping enable vector
   assign alert_ping_req_o = NAlerts'(alert_ping_en) << id_to_ping;
-  assign esc_ping_req_o   = N_ESC_SEV'(esc_ping_en) << esc_cnt_q[0];
+  assign esc_ping_req_o   = N_ESC_SEV'(esc_ping_en) << esc_cnt;
 
   // under normal operation, these signals should never be asserted.
   // we place hand instantiated buffers here such that these signals are not
@@ -276,8 +285,8 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   always_comb begin : p_fsm
     // default
     state_d          = state_q;
-    wait_cnt_load    = 1'b0;
-    timeout_cnt_load = 1'b0;
+    wait_cnt_set    = 1'b0;
+    timeout_cnt_set = 1'b0;
     esc_cnt_en       = 1'b0;
     alert_ping_en    = 1'b0;
     esc_ping_en      = 1'b0;
@@ -292,14 +301,14 @@ module alert_handler_ping_timer import alert_pkg::*; #(
       InitSt: begin
         if (en_i) begin
           state_d = AlertWaitSt;
-          wait_cnt_load = 1'b1;
+          wait_cnt_set = 1'b1;
         end
       end
       // wait for random amount of cycles
       AlertWaitSt: begin
         if (timer_expired) begin
           state_d = AlertPingSt;
-          timeout_cnt_load = 1'b1;
+          timeout_cnt_set = 1'b1;
         end
       end
       // send out an alert ping request and wait for a ping
@@ -310,7 +319,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
         alert_ping_en = id_vld;
         if (timer_expired || |(alert_ping_ok_i & alert_ping_req_o) || !id_vld) begin
           state_d           = EscWaitSt;
-          wait_cnt_load     = 1'b1;
+          wait_cnt_set     = 1'b1;
           if (timer_expired) begin
             alert_ping_fail_o = 1'b1;
           end
@@ -320,7 +329,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
       EscWaitSt: begin
         if (timer_expired) begin
           state_d          = EscPingSt;
-          timeout_cnt_load = 1'b1;
+          timeout_cnt_set = 1'b1;
         end
       end
       // send out an escalation ping request and wait for a ping
@@ -329,7 +338,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
         esc_ping_en = 1'b1;
         if (timer_expired || |(esc_ping_ok_i & esc_ping_req_o)) begin
           state_d         = AlertWaitSt;
-          wait_cnt_load   = 1'b1;
+          wait_cnt_set   = 1'b1;
           esc_cnt_en      = 1'b1;
           if (timer_expired) begin
             esc_ping_fail_o = 1'b1;
@@ -350,9 +359,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
 
     // if the two LFSR or counter states do not agree,
     // we move into the terminal state.
-    if (lfsr_err                  ||
-        cnt_q[0]      != cnt_q[1] ||
-        esc_cnt_q[0]  != esc_cnt_q[1]) begin
+    if (lfsr_err || cnt_error || esc_cnt_error) begin
        state_d = FsmErrorSt;
     end
   end
