@@ -19,28 +19,12 @@ _UTIL_DESIGN = os.path.normpath(os.path.join(_REPO_ROOT, 'util/design'))
 old_sys_path = sys.path
 try:
     sys.path = sys.path + [_UTIL_DESIGN]
-    import secded_gen  # type: ignore
+    # This strange formulation explicitly re-exports ecc_encode_some from this
+    # module, allowing users of mem.py to call it directly without needing to
+    # do the sys.path dance.
+    from secded_gen import ecc_encode_some as ecc_encode_some  # type: ignore
 finally:
     sys.path = old_sys_path
-
-
-def red_xor32(word: int) -> int:
-    '''Reduction XOR for a uint32'''
-    word = (word & 0xffff) ^ (word >> 16)
-    word = (word & 0xff) ^ (word >> 8)
-    word = (word & 0xf) ^ (word >> 4)
-    word = (word & 0x3) ^ (word >> 2)
-    return (word & 0x1) ^ (word >> 1)
-
-
-def add_ecc32(word: int, bitmasks: List[int]) -> int:
-    '''Add Hsiao (39,32) ECC bits to a 32-bit unsigned word'''
-    assert 0 <= word < (1 << 32)
-    assert len(bitmasks) == 7
-    ret = word
-    for idx, bitmask in enumerate(bitmasks):
-        ret |= red_xor32(word ^ bitmask) << (32 + idx)
-    return ret
 
 
 class MemChunk:
@@ -85,9 +69,7 @@ class MemChunk:
         bits, to make 39-bit words.
 
         '''
-        codes = secded_gen.gen_code('hsiao', 32, 7)
-        bitmasks = secded_gen.calc_bitmasks(32, 7, codes, False)
-        self.words = [add_ecc32(w, bitmasks) for w in self.words]
+        self.words = ecc_encode_some('hsiao', 32, self.words)[0]
 
 
 class MemFile:
