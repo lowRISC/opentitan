@@ -27,13 +27,25 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  rst_shadowed_if rst_shadowed_if(.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(1) devmode_if(devmode);
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  tl_if eflash_tl_if(.clk(clk), .rst_n(rst_n));
-  flash_ctrl_if flash_ctrl_if();
+  clk_rst_if clk_rst_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+  rst_shadowed_if rst_shadowed_if (
+    .rst_n(rst_n),
+    .rst_shadowed_n(rst_shadowed_n)
+  );
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
+  pins_if #(1) devmode_if (devmode);
+  tl_if tl_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+  tl_if eflash_tl_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+  flash_ctrl_if flash_ctrl_if ();
 
   `DV_ALERT_IF_CONNECT
 
@@ -47,77 +59,77 @@ module tb;
   end
 
   wire flash_test_v;
-  assign (pull1,pull0) flash_test_v = 1'b1;
+  assign (pull1, pull0) flash_test_v = 1'b1;
   wire [1:0] flash_test_mode_a;
-  assign (pull1,pull0) flash_test_mode_a = 2'h3;
+  assign (pull1, pull0) flash_test_mode_a = 2'h3;
 
   // dut
   flash_ctrl dut (
-    .clk_i           (clk      ),
-    .rst_ni          (rst_n    ),
-    .rst_shadowed_ni (rst_shadowed_n),
-    .clk_otp_i       (clk      ),
-    .rst_otp_ni      (rst_n    ),
+    .clk_i          (clk),
+    .rst_ni         (rst_n),
+    .rst_shadowed_ni(rst_shadowed_n),
+    .clk_otp_i      (clk),
+    .rst_otp_ni     (rst_n),
 
     // various tlul interfaces
-    .core_tl_i (tl_if.h2d),
-    .core_tl_o (tl_if.d2h),
-    .prim_tl_i ('0),
-    .prim_tl_o (),
-    .mem_tl_i  (eflash_tl_if.h2d),
-    .mem_tl_o  (eflash_tl_if.d2h),
+    .core_tl_i(tl_if.h2d),
+    .core_tl_o(tl_if.d2h),
+    .prim_tl_i('0),
+    .prim_tl_o(),
+    .mem_tl_i (eflash_tl_if.h2d),
+    .mem_tl_o (eflash_tl_if.d2h),
 
     // otp interface
-    .otp_i (otp_rsp),
-    .otp_o (otp_req),
+    .otp_i(otp_rsp),
+    .otp_o(otp_req),
 
     // various life cycle decode signals
-    .lc_creator_seed_sw_rw_en_i (flash_ctrl_if.lc_creator_seed_sw_rw_en),
-    .lc_owner_seed_sw_rw_en_i   (flash_ctrl_if.lc_owner_seed_sw_rw_en),
-    .lc_iso_part_sw_rd_en_i     (flash_ctrl_if.lc_iso_part_sw_rd_en),
-    .lc_iso_part_sw_wr_en_i     (flash_ctrl_if.lc_iso_part_sw_wr_en),
-    .lc_seed_hw_rd_en_i         (flash_ctrl_if.lc_seed_hw_rd_en),
-    .lc_nvm_debug_en_i          (flash_ctrl_if.lc_nvm_debug_en),
-    .lc_escalate_en_i           (flash_ctrl_if.lc_escalate_en),
+    .lc_creator_seed_sw_rw_en_i(flash_ctrl_if.lc_creator_seed_sw_rw_en),
+    .lc_owner_seed_sw_rw_en_i  (flash_ctrl_if.lc_owner_seed_sw_rw_en),
+    .lc_iso_part_sw_rd_en_i    (flash_ctrl_if.lc_iso_part_sw_rd_en),
+    .lc_iso_part_sw_wr_en_i    (flash_ctrl_if.lc_iso_part_sw_wr_en),
+    .lc_seed_hw_rd_en_i        (flash_ctrl_if.lc_seed_hw_rd_en),
+    .lc_nvm_debug_en_i         (flash_ctrl_if.lc_nvm_debug_en),
+    .lc_escalate_en_i          (flash_ctrl_if.lc_escalate_en),
 
     // life cycle rma handling
-    .rma_req_i  (flash_ctrl_if.rma_req),
-    .rma_seed_i (flash_ctrl_if.rma_seed),
-    .rma_ack_o  (flash_ctrl_if.rma_ack),
+    .rma_req_i (flash_ctrl_if.rma_req),
+    .rma_seed_i(flash_ctrl_if.rma_seed),
+    .rma_ack_o (flash_ctrl_if.rma_ack),
 
     // power manager indication
-    .pwrmgr_o (flash_ctrl_if.pwrmgr),
-    .keymgr_o (flash_ctrl_if.keymgr),
+    .pwrmgr_o(flash_ctrl_if.pwrmgr),
+    .keymgr_o(flash_ctrl_if.keymgr),
 
     // flash prim signals
-    .flash_power_ready_h_i  (1'b1  ),
-    .flash_power_down_h_i   (flash_power_down_h  ),
+    .flash_power_ready_h_i  (1'b1),
+    .flash_power_down_h_i   (flash_power_down_h),
     .flash_bist_enable_i    (prim_mubi_pkg::MuBi4False),
-    .flash_test_mode_a_io    (flash_test_mode_a),
-    .flash_test_voltage_h_io (flash_test_v),
+    .flash_test_mode_a_io   (flash_test_mode_a),
+    .flash_test_voltage_h_io(flash_test_v),
 
     // test
-    .scanmode_i              (prim_mubi_pkg::MuBi4False),
-    .scan_rst_ni             ('0),
-    .scan_en_i               ('0),
+    .scanmode_i (prim_mubi_pkg::MuBi4False),
+    .scan_rst_ni('0),
+    .scan_en_i  ('0),
 
     // JTAG
-    .cio_tck_i    (flash_ctrl_if.cio_tck),
-    .cio_tms_i    (flash_ctrl_if.cio_tms),
-    .cio_tdi_i    (flash_ctrl_if.cio_tdi),
-    .cio_tdo_en_o (flash_ctrl_if.cio_tdo_en),
-    .cio_tdo_o    (flash_ctrl_if.cio_tdo),
+    .cio_tck_i   (flash_ctrl_if.cio_tck),
+    .cio_tms_i   (flash_ctrl_if.cio_tms),
+    .cio_tdi_i   (flash_ctrl_if.cio_tdi),
+    .cio_tdo_en_o(flash_ctrl_if.cio_tdo_en),
+    .cio_tdo_o   (flash_ctrl_if.cio_tdo),
 
     // alerts and interrupts
-    .intr_prog_empty_o  (intr_prog_empty),
-    .intr_prog_lvl_o    (intr_prog_lvl  ),
-    .intr_rd_full_o     (intr_rd_full   ),
-    .intr_rd_lvl_o      (intr_rd_lvl    ),
-    .intr_op_done_o     (intr_op_done   ),
-    .intr_corr_err_o    (intr_err       ),
-    .alert_rx_i         (alert_rx       ),
-    .alert_tx_o         (alert_tx       ),
-    .flash_alert_o      (flash_ctrl_if.flash_alert)
+    .intr_prog_empty_o(intr_prog_empty),
+    .intr_prog_lvl_o  (intr_prog_lvl),
+    .intr_rd_full_o   (intr_rd_full),
+    .intr_rd_lvl_o    (intr_rd_lvl),
+    .intr_op_done_o   (intr_op_done),
+    .intr_corr_err_o  (intr_err),
+    .alert_rx_i       (alert_rx),
+    .alert_tx_o       (alert_tx),
+    .flash_alert_o    (flash_ctrl_if.flash_alert)
   );
 
   // -----------------------------------
@@ -179,11 +191,13 @@ module tb;
 
       initial begin
         mem_bkdr_util m_mem_bkdr_util;
-        m_mem_bkdr_util = new(.name  ($sformatf("mem_bkdr_util[%0s][%0d]", part.name(), i)),
-                              .path  (`FLASH_DATA_MEM_HIER_STR(i)),
-                              .depth ($size(`FLASH_DATA_MEM_HIER(i))),
-                              .n_bits($bits(`FLASH_DATA_MEM_HIER(i))),
-                              .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68));
+        m_mem_bkdr_util = new(
+            .name($sformatf("mem_bkdr_util[%0s][%0d]", part.name(), i)),
+            .path(`FLASH_DATA_MEM_HIER_STR(i)),
+            .depth($size(`FLASH_DATA_MEM_HIER(i))),
+            .n_bits($bits(`FLASH_DATA_MEM_HIER(i))),
+            .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68)
+        );
         uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
                                            m_mem_bkdr_util);
         part = part.next();
@@ -192,11 +206,13 @@ module tb;
       for (genvar j = 0; j < flash_ctrl_pkg::InfoTypes; j++) begin : gen_each_info_type
         initial begin
           mem_bkdr_util m_mem_bkdr_util;
-          m_mem_bkdr_util = new(.name  ($sformatf("mem_bkdr_util[%0s][%0d]", part.name(), i)),
-                                .path  (`FLASH_INFO_MEM_HIER_STR(i, j)),
-                                .depth ($size(`FLASH_INFO_MEM_HIER(i, j))),
-                                .n_bits($bits(`FLASH_INFO_MEM_HIER(i, j))),
-                                .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68));
+          m_mem_bkdr_util = new(
+              .name($sformatf("mem_bkdr_util[%0s][%0d]", part.name(), i)),
+              .path(`FLASH_INFO_MEM_HIER_STR(i, j)),
+              .depth($size(`FLASH_INFO_MEM_HIER(i, j))),
+              .n_bits($bits(`FLASH_INFO_MEM_HIER(i, j))),
+              .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68)
+          );
           uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
                                              m_mem_bkdr_util);
           part = part.next();
@@ -221,13 +237,16 @@ module tb;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
+                                            "clk_rst_vif_flash_ctrl_eflash_reg_block", clk_rst_if);
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif",
                                                  rst_shadowed_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_core_reg_block*", "vif",
                                        tl_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_eflash_tl_agent*", "vif", eflash_tl_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_eflash_reg_block*", "vif",
+                                       eflash_tl_if);
     uvm_config_db#(virtual flash_ctrl_if)::set(null, "*.env", "flash_ctrl_vif", flash_ctrl_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();

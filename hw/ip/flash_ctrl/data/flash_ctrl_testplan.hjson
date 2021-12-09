@@ -25,12 +25,14 @@
       tests: ["flash_ctrl_smoke"]
     }
     {
-      name: smoke_hw_rd
+      name: smoke_hw
       desc: '''
-            Perform host direct read on the single page of one bank within Data partition.
+            Perform host direct read on the single page of Data partition. First Flash memory is
+            initialized with random values and then it is being read directly by Host interface.
+            Finally, backdoor read is used for checking read data.
             '''
       milestone: V1
-      tests: []
+      tests: ["flash_ctrl_smoke_hw"]
     }
     {
       name: sw_op
@@ -41,7 +43,7 @@
             '''
       milestone: V2
       tests: []
-    }    
+    }
     {
       name: host_read_direct
       desc: '''
@@ -334,15 +336,15 @@
             - rd_err: Flash read has an uncorrectable data error.
             - prog_win_err: Flash program has a window resolution error.
             - prog_type_err: Flash program selected unavailable type.
-            - flash_phy_err: The flash access encountered a native flash error.            
+            - flash_phy_err: The flash access encountered a native flash error.
             Covers following error scenarios given in Flash fault status register:
             - oob_err: The flash hardware interface supplied an out of bound value.
             - mp_err: The flash hardware interface encountered a memory permission error.
             - rd_err: The flash hardware interface encountered a read data error.
             - prog_win_err: The flash hardware interface encountered a program resolution error.
             - prog_type_err: The flash hardware interface encountered a program type error.
-            - flash_phy_err: The flash hardware interface encountered a native flash error.            
-            - lcmgr_err: The life cycle management interface has encountered a fatal error.            
+            - flash_phy_err: The flash hardware interface encountered a native flash error.
+            - lcmgr_err: The life cycle management interface has encountered a fatal error.
             '''
     }
   ]

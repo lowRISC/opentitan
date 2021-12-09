@@ -2,19 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_block));
+class flash_ctrl_env_cfg extends cip_base_env_cfg #(
+  .RAL_T(flash_ctrl_core_reg_block)
+);
 
   // Memory backdoor util instances for each partition in each bank.
   mem_bkdr_util mem_bkdr_util_h[flash_dv_part_e][flash_ctrl_pkg::NumBanks];
-
-  // ext component cfgs
-  rand tl_agent_cfg m_eflash_tl_agent_cfg;
 
   // seq cfg
   flash_ctrl_seq_cfg seq_cfg;
 
   // interface
   virtual flash_ctrl_if flash_ctrl_vif;
+  virtual clk_rst_if clk_rst_vif_flash_ctrl_eflash_reg_block;
 
   // knobs
   // ral.status[init_wip] status is set for the very first clock cycle right out of reset.
@@ -22,23 +22,28 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   int post_reset_delay_clks = 1;
 
   `uvm_object_utils_begin(flash_ctrl_env_cfg)
-    `uvm_field_object(m_eflash_tl_agent_cfg, UVM_DEFAULT)
+
   `uvm_object_utils_end
 
   `uvm_object_new
+
+  string flash_ral_name = "flash_ctrl_eflash_reg_block";
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     list_of_alerts = flash_ctrl_env_pkg::LIST_OF_ALERTS;
     has_shadowed_regs = 1;
     tl_intg_alert_name = "fatal_intg_err";
+
+    // Set up second RAL model for Flash memory
+    ral_model_names.push_back(flash_ral_name);
+
+    // both RAL models use same clock frequency
+    clk_freqs_mhz[flash_ral_name] = clk_freq_mhz;
+
     super.initialize(csr_base_addr);
 
     shadow_update_err_status_fields[ral.err_code.update_err] = 1;
     shadow_storage_err_status_fields[ral.fault_status.storage_err] = 1;
-
-    // create tl agent config obj
-    m_eflash_tl_agent_cfg = tl_agent_cfg::type_id::create("m_eflash_tl_agent_cfg");
-    m_eflash_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
 
     // create the seq_cfg and call configure
     seq_cfg = flash_ctrl_seq_cfg::type_id::create("seq_cfg");
@@ -51,6 +56,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
     end
+
+    `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
   endfunction : initialize
 
   // Backdoor initialize flash memory elements.
@@ -80,15 +87,17 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   //
   // The addr arg need not be word aligned - its the same addr programmed into the `control` CSR.
   // TODO: add support for partition.
-  virtual function void flash_mem_bkdr_read(flash_op_t flash_op,
-                                            ref data_q_t data);
+  virtual function void flash_mem_bkdr_read(flash_op_t flash_op, ref data_q_t data);
     flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
     data.delete();
     for (int i = 0; i < flash_op.num_words; i++) begin
       data[i] = mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].read32(addr_attrs.bank_addr);
-      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_read: partition = %s , {%s} = 0x%0h",
-                                flash_op.partition.name(), addr_attrs.sprint(), data[i]),
-                                UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf(
+                "flash_mem_bkdr_read: partition = %s , {%s} = 0x%0h",
+                flash_op.partition.name(),
+                addr_attrs.sprint(),
+                data[i]
+                ), UVM_MEDIUM)
       addr_attrs.incr(TL_DBW);
     end
   endfunction : flash_mem_bkdr_read
@@ -98,8 +107,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   // The addr need not be bus word aligned, Its the same addr programmed into the `control` CSR.
   // The data queue is sized for the bus word.
   // TODO: support for partition.
-  virtual function void flash_mem_bkdr_write(flash_op_t flash_op,
-                                             flash_mem_init_e scheme,
+  virtual function void flash_mem_bkdr_write(flash_op_t flash_op, flash_mem_init_e scheme,
                                              data_q_t data = {});
     flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
     logic [TL_DW-1:0] wr_data;
@@ -130,14 +138,14 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
       logic [TL_DW-1:0] loc_data = (scheme == FlashMemInitCustom) ? data[i] :
           (scheme == FlashMemInitRandomize) ? $urandom() : wr_data;
 
-      _flash_full_write(flash_op.partition,
-                        addr_attrs.bank,
-                        addr_attrs.bank_addr,
-                        loc_data);
+      _flash_full_write(flash_op.partition, addr_attrs.bank, addr_attrs.bank_addr, loc_data);
 
-      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_write: partition = %s , {%s} = 0x%0h",
-                                flash_op.partition.name(), addr_attrs.sprint(), loc_data),
-                                UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf(
+                "flash_mem_bkdr_write: partition = %s , {%s} = 0x%0h",
+                flash_op.partition.name(),
+                addr_attrs.sprint(),
+                loc_data
+                ), UVM_MEDIUM)
       addr_attrs.incr(TL_DBW);
     end
 
@@ -151,8 +159,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
 
   // Helper function that takes a 32-bit data and correctly populates the integrity ECC
   //
-  function void _flash_full_write(flash_dv_part_e partition,
-                                  uint bank,
+  function void _flash_full_write(flash_dv_part_e partition, uint bank,
                                   // bus word aligned address
                                   bit [TL_AW-1:0] addr,
                                   bit [TL_DW-1:0] wr_data);
@@ -164,7 +171,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
     logic [TL_AW-1:0] aligned_addr = addr;
 
     if (is_upper) begin
-       aligned_addr = {addr[TL_AW-1:FlashDataByteWidth], {FlashDataByteWidth{1'b0}}};
+      aligned_addr = {addr[TL_AW-1:FlashDataByteWidth], {FlashDataByteWidth{1'b0}}};
     end
 
     // get the full flash word
@@ -174,7 +181,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
     if (is_upper) begin
       data = {wr_data, data[TL_DW-1:0]};
     end else begin
-      data = {data[flash_ctrl_pkg::DataWidth -: TL_DW], wr_data};
+      data = {data[flash_ctrl_pkg::DataWidth-:TL_DW], wr_data};
     end
 
     // calculate truncated integrity
@@ -207,8 +214,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   // The addr need not be bus word aligned. Its the same addr programmed into the `control` CSR.
   // The exp data queue is sized for the bus word.
   // TODO: support for partition.
-  virtual function void flash_mem_bkdr_read_check(flash_op_t flash_op,
-                                                  const ref data_q_t exp_data);
+  virtual function void flash_mem_bkdr_read_check(flash_op_t flash_op, const ref data_q_t exp_data);
     data_q_t data;
     flash_mem_bkdr_read(flash_op, data);
     foreach (data[i]) begin
@@ -218,10 +224,10 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
 
   // Verifies that the flash page / bank has indeed been erased.
   virtual function void flash_mem_bkdr_erase_check(flash_op_t flash_op, data_q_t exp_data = {});
-    flash_mem_addr_attrs    addr_attrs = new(flash_op.addr);
-    bit [TL_AW-1:0]         erase_check_addr;
-    string                  erase_page_num_msg;
-    uint                    num_words;
+    flash_mem_addr_attrs             addr_attrs = new(flash_op.addr);
+    bit                  [TL_AW-1:0] erase_check_addr;
+    string                           erase_page_num_msg;
+    uint                             num_words;
 
     case (flash_op.erase_type)
       flash_ctrl_pkg::FlashErasePage: begin
@@ -231,7 +237,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
       end
       flash_ctrl_pkg::FlashEraseBank: begin
         // This address is relative to the bank it's in.
-        erase_check_addr = 0;
+        erase_check_addr   = 0;
         // No need to state page for bank erase.
         erase_page_num_msg = "";
         case (flash_op.partition)
@@ -242,10 +248,15 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
             num_words = InfoTypeBusWords[0];
           end
           default: begin
-            `uvm_fatal(`gfn, $sformatf({"Invalid partition for bank_erase: %0s. ",
-                                        "Bank erase is only valid in the data partition ",
-                                        "(FlashPartData) and the first info partition ",
-                                        "(FlashPartInfo)."}, flash_op.partition.name()))
+            `uvm_fatal(`gfn, $sformatf(
+                       {
+                         "Invalid partition for bank_erase: %0s. ",
+                         "Bank erase is only valid in the data partition ",
+                         "(FlashPartData) and the first info partition ",
+                         "(FlashPartInfo)."
+                       },
+                       flash_op.partition.name()
+                       ))
           end
         endcase
       end
@@ -253,20 +264,33 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
         `uvm_fatal(`gfn, $sformatf("Invalid erase_type: %0s", flash_op.erase_type.name()))
       end
     endcase
-    `uvm_info(`gfn, $sformatf({"flash_mem_bkdr_erase_check: Erase type = %s, bank = %0d, ",
-                               "partition = %s , %snum_words = %0d"},
-                               flash_op.erase_type.name(), addr_attrs.bank,
-                               flash_op.partition.name(), erase_page_num_msg, num_words),
-                               UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf(
+              {
+                "flash_mem_bkdr_erase_check: Erase type = %s, bank = %0d, ",
+                "partition = %s , %snum_words = %0d"
+              },
+              flash_op.erase_type.name(),
+              addr_attrs.bank,
+              flash_op.partition.name(),
+              erase_page_num_msg,
+              num_words
+              ), UVM_MEDIUM)
 
     for (int i = 0; i < num_words; i++) begin
       logic [TL_DW-1:0] data;
       data = mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].read32(erase_check_addr);
-      `uvm_info(`gfn, $sformatf({"flash_mem_bkdr_erase_check: Erase type = %s, bank: %0d, ",
-                                 "partition: %s , %saddr: 0x%0h, data: 0x%0h"},
-                                 flash_op.erase_type.name(), addr_attrs.bank,
-                                 flash_op.partition.name(), erase_page_num_msg, erase_check_addr,
-                                 data), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf(
+                {
+                  "flash_mem_bkdr_erase_check: Erase type = %s, bank: %0d, ",
+                  "partition: %s , %saddr: 0x%0h, data: 0x%0h"
+                },
+                flash_op.erase_type.name(),
+                addr_attrs.bank,
+                flash_op.partition.name(),
+                erase_page_num_msg,
+                erase_check_addr,
+                data
+                ), UVM_MEDIUM)
       // If the expected data is not empty then it should be taken is expected. If it is empty the
       //  default expected value is checked - which for successful erase is all 1s.
       if (exp_data.size() <= i) begin
@@ -279,8 +303,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_core_reg_b
   endfunction : flash_mem_bkdr_erase_check
 
   // Function to enable changing of the expected data to be checked in the post-transaction
-  //  checks.
-  virtual function data_q_t calculate_expected_data(flash_op_t flash_op, const ref data_q_t exp_data);
+  // checks.
+  virtual function data_q_t calculate_expected_data(flash_op_t flash_op,
+                                                    const ref data_q_t exp_data);
     return exp_data;
   endfunction : calculate_expected_data
 
