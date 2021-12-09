@@ -940,6 +940,7 @@ Each write is treated as a 48b value, `{imem, idx, wdata}`.
 Here, `imem` is a single bit flag which is one for writes to IMEM and zero for writes to DMEM.
 The `idx` value is the index of the word within the memory, zero extended from 10b to 15b.
 Finally, `wdata` is the 32b word that was written.
+Writes that are less than 32b or not aligned on a 32b boundary are ignored and not factored into the CRC calculation.
 
 The host processor can also write to the register.
 Typically, this will be to clear the value to `32'h00000000`, the traditional starting value for a 32-bit CRC.
