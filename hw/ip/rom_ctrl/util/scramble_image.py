@@ -12,7 +12,7 @@ from typing import Dict, List
 import hjson  # type: ignore
 from Crypto.Hash import cSHAKE256
 
-from mem import MemChunk, MemFile
+from mem import MemChunk, MemFile, ecc_encode_some
 
 ROM_BASE_WORD = 0x8000 // 4
 ROM_SIZE_WORDS = 8192
@@ -273,6 +273,9 @@ def prince(data: int, key: int, num_rounds_half: int) -> int:
 
 
 class Scrambler:
+    subst_perm_rounds = 2
+    num_rounds_half = 2
+
     def __init__(self, nonce: int, key: int, rom_size_words: int):
         assert 0 <= nonce < (1 << 64)
         assert 0 <= key < (1 << 128)
@@ -367,11 +370,53 @@ class Scrambler:
 
         return flattened
 
+    def get_keystream(self, log_addr: int, width: int) -> int:
+        assert (log_addr >> self._addr_width) == 0
+        assert 0 < width <= 64
+
+        data_nonce_width = 64 - self._addr_width
+        data_scr_nonce = self.nonce & ((1 << data_nonce_width) - 1)
+        to_scramble = (data_scr_nonce << self._addr_width) | log_addr
+        full_keystream = prince(to_scramble, self.key, self.num_rounds_half)
+
+        return full_keystream & ((1 << width) - 1)
+
+    def addr_sp_enc(self, log_addr: int) -> int:
+        assert self._addr_width < 64
+        data_nonce_width = 64 - self._addr_width
+        addr_scr_nonce = self.nonce >> data_nonce_width
+        return subst_perm_enc(log_addr, addr_scr_nonce,
+                              self._addr_width, self.subst_perm_rounds)
+
+    def addr_sp_dec(self, phy_addr: int) -> int:
+        assert self._addr_width < 64
+
+        data_nonce_width = 64 - self._addr_width
+        addr_scr_nonce = self.nonce >> data_nonce_width
+        return subst_perm_dec(phy_addr, addr_scr_nonce,
+                              self._addr_width, self.subst_perm_rounds)
+
+    def data_sp_enc(self, width: int, data: int) -> int:
+        return subst_perm_enc(data, 0, width, self.subst_perm_rounds)
+
+    def data_sp_dec(self, width: int, data: int) -> int:
+        return subst_perm_dec(data, 0, width, self.subst_perm_rounds)
+
+    def scramble_word(self, width: int, log_addr: int, clr_data: int) -> int:
+        '''Scramble clr_data at the given logical address.'''
+        keystream = self.get_keystream(log_addr, width)
+        return self.data_sp_enc(width, keystream ^ clr_data)
+
+    def unscramble_word(self, width: int, log_addr: int, scr_data: int) -> int:
+        keystream = self.get_keystream(log_addr, width)
+        sp_scr_data = self.data_sp_dec(width, scr_data)
+        return keystream ^ sp_scr_data
+
     def scramble(self, mem: MemFile) -> MemFile:
         assert len(mem.chunks) == 1
         assert len(mem.chunks[0].words) == self.rom_size_words
 
-        word_width = mem.width
+        width = mem.width
 
         # Write addr_sp, data_sp for the S&P networks for address and data,
         # respectively. Write clr[i] for unscrambled data word i and scr[i] for
@@ -380,45 +425,31 @@ class Scrambler:
         #
         # Then, for all i, we have:
         #
-        #   clr[i] = PRINCE(i) ^ data_sp(scr[addr_sp(i)])
+        #   clr[i] = PRINCE(i) ^ data_sp_dec(scr[addr_sp_enc(i)])
         #
-        # Change coordinates by evaluating at addr_sp_inv(i):
+        # Change coordinates by evaluating at addr_sp_dec(i):
         #
-        #   clr[addr_sp_inv(i)] = PRINCE(addr_sp_inv(i)) ^ data_sp(scr[i])
+        #   clr[addr_sp_dec(i)] = PRINCE(addr_sp_dec(i)) ^ data_sp_dec(scr[i])
         #
         # so
         #
-        #   scr[i] = data_sp_inv(clr[addr_sp_inv(i)] ^ PRINCE(addr_sp_inv(i)))
-        subst_perm_rounds = 2
-        num_rounds_half = 2
+        #   scr[i] = data_sp_enc(clr[addr_sp_dec(i)] ^ PRINCE(addr_sp_dec(i)))
+        #
+        # Using the scramble_word helper function, this is:
+        #
+        #   scr[i] = scramble_word(width, addr_sp_dec(i), clr[addr_sp_dec(i)])
 
-        assert word_width <= 64
-        word_mask = (1 << word_width) - 1
-
-        data_nonce_width = 64 - self._addr_width
-
-        data_scr_nonce = self.nonce & ((1 << data_nonce_width) - 1)
-        addr_scr_nonce = self.nonce >> data_nonce_width
+        assert width <= 64
 
         scrambled = []
         for phy_addr in range(self.rom_size_words):
-            log_addr = subst_perm_dec(phy_addr, addr_scr_nonce,
-                                      self._addr_width, subst_perm_rounds)
+            log_addr = self.addr_sp_dec(phy_addr)
             assert 0 <= log_addr < self.rom_size_words
 
-            to_scramble = (data_scr_nonce << self._addr_width) | log_addr
-            keystream = prince(to_scramble, self.key, num_rounds_half)
-
-            keystream_trunc = keystream & word_mask
             clr_data = mem.chunks[0].words[log_addr]
-            assert 0 <= clr_data < word_mask
+            assert 0 <= clr_data < (1 << width)
 
-            sp_scr_data = keystream_trunc ^ clr_data
-            scr_data = subst_perm_enc(sp_scr_data, 0, word_width, subst_perm_rounds)
-
-            assert 0 <= scr_data < word_mask
-
-            scrambled.append(scr_data)
+            scrambled.append(self.scramble_word(width, log_addr, clr_data))
 
         return MemFile(mem.width, [MemChunk(0, scrambled)])
 
@@ -434,21 +465,17 @@ class Scrambler:
         assert len(scr_mem.chunks) == 1
         assert scr_mem.chunks[0].base_addr == 0
         assert len(scr_mem.chunks[0].words) == self.rom_size_words
+        assert scr_mem.width == 39
 
         scr_chunk = scr_mem.chunks[0]
-
-        data_nonce_width = 64 - self._addr_width
-        subst_perm_rounds = 2
-        addr_scr_nonce = self.nonce >> data_nonce_width
 
         bytes_per_word = 32 // 8
         num_digest_words = 256 // 32
 
-        # Read out the scrambled data
+        # Read out the scrambled data in logical address order
         to_hash = b''
         for log_addr in range(self.rom_size_words - num_digest_words):
-            phy_addr = subst_perm_enc(log_addr, addr_scr_nonce,
-                                      self._addr_width, subst_perm_rounds)
+            phy_addr = self.addr_sp_enc(log_addr)
             scr_word = scr_chunk.words[phy_addr]
             to_hash += scr_word.to_bytes(64 // 8, byteorder='little')
 
@@ -458,13 +485,34 @@ class Scrambler:
         digest_bytes = hash_obj.read(bytes_per_word * num_digest_words)
         digest256 = int.from_bytes(digest_bytes, byteorder='little')
 
-        # Insert the hash back into scr_mem
+        # Chop the 256-bit digest into 32-bit words. These words should never
+        # be read "unscrambled": the rom_ctrl checker reads them raw. We can
+        # guarantee this by fiddling around with the top 7 bits (which are
+        # otherwise ignored) to ensure that they unscramble to words with
+        # invalid ECC checksums.
+        mask32 = (1 << 32) - 1
+        first_digest_idx = self.rom_size_words - num_digest_words
         for digest_idx in range(num_digest_words):
-            log_addr = self.rom_size_words - num_digest_words + digest_idx
-            phy_addr = subst_perm_enc(log_addr, addr_scr_nonce,
-                                      self._addr_width, subst_perm_rounds)
-            digest_word = (digest256 >> (32 * digest_idx)) & ((1 << 32) - 1)
-            scr_chunk.words[phy_addr] = digest_word
+            log_addr = first_digest_idx + digest_idx
+            w32 = (digest256 >> (32 * digest_idx)) & mask32
+            found_mismatch = False
+
+            for chk_bits in range(128):
+                w39 = w32 | (chk_bits << 32)
+                clr39 = self.unscramble_word(39, log_addr, w39)
+                clr32 = clr39 & mask32
+                exp39 = ecc_encode_some('hsiao', 32, [clr32])[0][0]
+                if clr39 != exp39:
+                    # The checksum doesn't match. Excellent!
+                    found_mismatch = True
+                    break
+
+            # Surely at least one of the 128 possible choices of top bits
+            # should have given us an invalid checksum.
+            assert found_mismatch
+
+            phy_addr = self.addr_sp_enc(log_addr)
+            scr_chunk.words[phy_addr] = w32
 
 
 def main() -> int:
