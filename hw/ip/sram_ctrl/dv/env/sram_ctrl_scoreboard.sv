@@ -46,7 +46,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   bit in_executable_mode;
 
+  // path for backdoor access
   string write_en_path;
+  string write_addr_path;
 
   sram_ctrl_mem_bkdr_scb mem_bkdr_scb;
 
@@ -70,6 +72,14 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     otp_ctrl_pkg::sram_nonce_t nonce;
 
   } sram_trans_t;
+
+  typedef struct {
+    bit [TL_AW-1:0]  addr;
+    bit [TL_DW-1:0]  data;
+    bit [TL_DBW-1:0] mask;
+  } mem_item_t;
+
+  mem_item_t write_item_q[$];
 
   // TLM agent fifos for the tl_agent connected to the SRAM memory itself
   uvm_tlm_analysis_fifo #(tl_seq_item) sram_tl_a_chan_fifo;
@@ -105,14 +115,33 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   bit in_raw_hazard = 0;
 
+  bit [TL_AW-1:0] sram_addr_mask = (1 << (AddrWidth + 2)) - 1;
+
   // utility function to word-align an input TL address
   // (SRAM is indexed at word granularity)
   function bit [TL_AW-1:0] word_align_addr(bit [TL_AW-1:0] addr);
     return {addr[TL_AW-1:2], 2'b00};
   endfunction
 
-  function bit [TL_AW-1:0] normalize_addr(bit [TL_AW-1:0] addr);
-    return cfg.ral_models[cfg.sram_ral_name].get_normalized_addr(addr);
+  // Only LSB is used in the sram, the other MSB bits will be ignored. Use the simplified
+  // address for mem_bkdr_scb
+  function bit [TL_AW-1:0] simplify_addr(bit [TL_AW-1:0] addr);
+    // word align
+    addr[1:0] = 0;
+    return addr & sram_addr_mask;
+  endfunction
+
+  function bit [AddrWidth-1:0] decrypt_sram_addr(bit [AddrWidth-1:0] addr);
+    logic addr_arr         [] = new[AddrWidth];
+    logic decrypt_addr_arr [] = new[AddrWidth];
+    logic nonce_arr        [] = new[$bits(otp_ctrl_pkg::sram_nonce_t)];
+
+    addr_arr  = {<<{addr}};
+    nonce_arr = {<<{nonce}};
+
+    decrypt_addr_arr = sram_scrambler_pkg::decrypt_sram_addr(addr_arr, AddrWidth, nonce_arr);
+
+    return {<<{decrypt_addr_arr}};
   endfunction
 
   // utility function to check whether two addresses map to the same SRAM memory line
@@ -218,9 +247,12 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   task run_phase(uvm_phase phase);
     string mem_path = dv_utils_pkg::get_parent_hier(cfg.mem_bkdr_util_h.get_path());
-    write_en_path = $sformatf("%s.write_i", mem_path);
+    write_en_path   = $sformatf("%s.write_i", mem_path);
+    write_addr_path = $sformatf("%s.addr_i", mem_path);
     `DV_CHECK(uvm_hdl_check_path(write_en_path),
               $sformatf("Hierarchical path %0s appears to be invalid.", write_en_path))
+    `DV_CHECK(uvm_hdl_check_path(write_addr_path),
+              $sformatf("Hierarchical path %0s appears to be invalid.", write_addr_path))
 
     mem_bkdr_scb = sram_ctrl_mem_bkdr_scb::type_id::create("mem_bkdr_scb");
     mem_bkdr_scb.mem_bkdr_util_h = cfg.mem_bkdr_util_h;
@@ -235,23 +267,37 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       process_sram_tl_d_chan_fifo();
       process_kdi_fifo();
       process_completed_trans();
+      process_write_done_and_check();
     join_none
   endtask
 
   // write usually completes in a few cycles after TL addrss phase, but it may take longer time
   // when it's partial write or when RAW hazard occurs. It's not easy to know when it actually
   // finishes, so probe internal write_i instead
-  task wait_write_done_and_check_nonblocking();
-    bit write_en;
-    fork begin
+  task process_write_done_and_check();
+    forever begin
+      bit write_en;
+      mem_item_t item;
+      bit [AddrWidth-1:0] write_addr;
+      bit [TL_AW-1:0] sram_addr;
+
+      wait (write_item_q.size > 0);
+      item = write_item_q.pop_front();
+
       while (!write_en) begin
         cfg.clk_rst_vif.wait_n_clks(1);
         `DV_CHECK(uvm_hdl_read(write_en_path, write_en))
       end
-      cfg.clk_rst_vif.wait_n_clks(1);
-      // There is no addr and mask info collected for this write, skipping the consistency check
-      mem_bkdr_scb.write_finish(.en_check_consistency(0));
-    end join_none
+      `DV_CHECK(uvm_hdl_read(write_addr_path, write_addr))
+      sram_addr = decrypt_sram_addr(write_addr);
+
+      sram_addr = sram_addr << 2;
+
+      // the data should be settled after posedge. Wait for a 1ps to avoid race condition
+      cfg.clk_rst_vif.wait_clks(1);
+      #1ps;
+      mem_bkdr_scb.write_finish(sram_addr, item.mask);
+    end
   endtask
 
   // This task spins forever and samples the appropriate covergroup whenever
@@ -439,11 +485,12 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
         end
 
         if (item.is_write()) begin
-          mem_bkdr_scb.write_start(normalize_addr(item.a_addr), item.a_data, item.a_mask);
+          mem_bkdr_scb.write_start(simplify_addr(item.a_addr), item.a_data, item.a_mask);
 
-          wait_write_done_and_check_nonblocking();
+          write_item_q.push_back(mem_item_t'{simplify_addr(item.a_addr),
+                                             item.a_data, item.a_mask});
         end else begin
-          mem_bkdr_scb.read_start(normalize_addr(item.a_addr), item.a_mask);
+          mem_bkdr_scb.read_start(simplify_addr(item.a_addr), item.a_mask);
         end
 
         addr_trans.we    = item.is_write();
@@ -544,7 +591,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       end
 
       if (!item.is_write()) begin
-        mem_bkdr_scb.read_finish(item.d_data, normalize_addr(item.a_addr), item.a_mask);
+        mem_bkdr_scb.read_finish(item.d_data, simplify_addr(item.a_addr), item.a_mask);
       end
 
       // the addr_phase_mbox will be populated during A_phase of each memory transaction.
@@ -875,6 +922,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     super.reset(kind);
     key = sram_ctrl_pkg::RndCnstSramKeyDefault;
     nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
+    mem_bkdr_scb.update_key(key, nonce);
     clear_hazard_state();
     exp_status = '0;
     handling_lc_esc = 0;
@@ -882,6 +930,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     detected_csr_exec = '0;
     detected_hw_debug_en = '0;
     detected_en_sram_ifetch = '0;
+    write_item_q.delete();
   endfunction
 
   function void check_phase(uvm_phase phase);
@@ -889,6 +938,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, sram_tl_a_chan_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, sram_tl_d_chan_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(push_pull_item#(.DeviceDataWidth(KDI_DATA_SIZE)), kdi_fifo)
+    `DV_CHECK_EQ(write_item_q.size, 0)
     // check addr_phase_mbox
     while (addr_phase_mbox.num() != 0) begin
       sram_trans_t t;

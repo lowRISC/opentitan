@@ -212,6 +212,29 @@ package sram_scrambler_pkg;
 
   endfunction : encrypt_sram_addr
 
+  // Deccrypts the target SRAM address using the custom S&P network.
+  function automatic state_t decrypt_sram_addr(logic addr[], int addr_width,
+                                               logic full_nonce[]);
+
+    logic nonce[] = new[addr_width];
+    logic encrypted_addr[] = new[addr_width];
+
+    // The address encryption nonce is the same width as the address,
+    // and is constructed from the top addr_width bits of the full nonce.
+    //
+    // `with` syntax is currently unsupported by Verible,
+    // uncomment once support has been added
+    //
+    // nonce = {>> {full_nonce with [SRAM_BLOCK_WIDTH - addr_width +: addr_width]}};
+    for (int i = 0; i < addr_width; i++) begin
+      nonce[i] = full_nonce[SRAM_BLOCK_WIDTH - addr_width + i];
+    end
+
+    encrypted_addr = sp_decrypt(addr, addr_width, nonce);
+    return encrypted_addr;
+
+  endfunction : decrypt_sram_addr
+
   // SRAM data encryption is more involved, we need to run 2 rounds of PRINCE on the nonce and key
   // and then XOR the result with the data.
   //
