@@ -97,8 +97,8 @@ module otp_ctrl_lci
     ErrorSt     = 9'b011111101
   } state_e;
 
-  logic cnt_clr, cnt_en;
-  logic [CntWidth-1:0] cnt_d, cnt_q;
+  logic cnt_clr, cnt_en, cnt_err;
+  logic [CntWidth-1:0] cnt;
   otp_err_e error_d, error_q;
   state_e state_d, state_q;
 
@@ -173,7 +173,7 @@ module otp_ctrl_lci
 
           // Check whether we programmed all OTP words.
           // If yes, we are done and can go back to idle.
-          if (cnt_q == LastLcOtpWord) begin
+          if (cnt == LastLcOtpWord) begin
             state_d = IdleSt;
             lc_ack_o = 1'b1;
             // If in any of the words a programming error has occurred,
@@ -208,7 +208,7 @@ module otp_ctrl_lci
     endcase // state_q
 
     // Unconditionally jump into the terminal error state in case of escalation.
-    if (escalate_en_i != lc_ctrl_pkg::Off) begin
+    if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
       state_d = ErrorSt;
       if (error_q == NoError) begin
         error_d = FsmStateError;
@@ -222,20 +222,33 @@ module otp_ctrl_lci
   //////////////////////////////
 
   // Native OTP word counter
-  assign cnt_d = (cnt_clr) ? '0           :
-                 (cnt_en)  ? cnt_q + 1'b1 : cnt_q;
+  prim_count #(
+    .Width(CntWidth),
+    .OutSelDnCnt(0), // count up
+    .CntStyle(prim_count_pkg::CrossCnt)
+  ) u_prim_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(cnt_clr),
+    .set_i(1'b0),
+    .set_cnt_i('0),
+    .en_i(cnt_en),
+    .step_i(CntWidth'(1)),
+    .cnt_o(cnt),
+    .err_o(cnt_err)
+  );
 
   // The output address is "offset + count", but we have to convert Info.offset from a byte address
   // to a halfword (16-bit) address by discarding the bottom OtpAddrShift bits. We also make the
-  // zero-extension of cnt_q explicit (to avoid width mismatch warnings).
-  assign otp_addr_o = Info.offset[OtpByteAddrWidth-1:OtpAddrShift] + OtpAddrWidth'(cnt_q);
+  // zero-extension of cnt explicit (to avoid width mismatch warnings).
+  assign otp_addr_o = Info.offset[OtpByteAddrWidth-1:OtpAddrShift] + OtpAddrWidth'(cnt);
 
   // Always transfer 16bit blocks.
   assign otp_size_o = '0;
 
   logic [NumLcOtpWords-1:0][OtpWidth-1:0] data;
   assign data        = lc_data_i;
-  assign otp_wdata_o = (otp_req_o) ? OtpIfWidth'(data[cnt_q]) : '0;
+  assign otp_wdata_o = (otp_req_o) ? OtpIfWidth'(data[cnt]) : '0;
 
   logic unused_rdata;
   assign unused_rdata = ^otp_rdata_i;
@@ -262,10 +275,8 @@ module otp_ctrl_lci
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       error_q <= NoError;
-      cnt_q   <= '0;
     end else begin
       error_q <= error_d;
-      cnt_q   <= cnt_d;
     end
   end
 

@@ -238,15 +238,27 @@ module otp_ctrl_scrmbl
   localparam bit [CntWidth-1:0] LastPresentRound = LastPresentRoundInt[CntWidth-1:0];
 
   state_e state_d, state_q;
-  logic [CntWidth-1:0] cnt_d, cnt_q;
-  logic cnt_clr, cnt_en;
+  logic [CntWidth-1:0] cnt;
+  logic cnt_clr, cnt_en, cnt_err;
   logic valid_d, valid_q;
 
   assign valid_o = valid_q;
 
-  assign cnt_d = (cnt_clr) ? '0        :
-                 (cnt_en)  ? cnt_q + 1 :
-                             cnt_q;
+  prim_count #(
+    .Width(CntWidth),
+    .OutSelDnCnt(0), // count up
+    .CntStyle(prim_count_pkg::CrossCnt)
+  ) u_prim_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(cnt_clr),
+    .set_i(1'b0),
+    .set_cnt_i('0),
+    .en_i(cnt_en),
+    .step_i(CntWidth'(1)),
+    .cnt_o(cnt),
+    .err_o(cnt_err)
+  );
 
   always_comb begin : p_fsm
     state_d          = state_q;
@@ -326,7 +338,7 @@ module otp_ctrl_scrmbl
         data_state_en  = 1'b1;
         key_state_en   = 1'b1;
         cnt_en         = 1'b1;
-        if (cnt_q == LastPresentRound) begin
+        if (cnt == LastPresentRound) begin
           state_d = IdleSt;
           valid_d = 1'b1;
         end
@@ -339,7 +351,7 @@ module otp_ctrl_scrmbl
         data_state_en  = 1'b1;
         key_state_en   = 1'b1;
         cnt_en         = 1'b1;
-        if (cnt_q == LastPresentRound) begin
+        if (cnt == LastPresentRound) begin
           state_d = IdleSt;
           valid_d = 1'b1;
         end
@@ -353,7 +365,7 @@ module otp_ctrl_scrmbl
         data_state_en  = 1'b1;
         key_state_en   = 1'b1;
         cnt_en         = 1'b1;
-        if (cnt_q == LastPresentRound) begin
+        if (cnt == LastPresentRound) begin
           state_d = IdleSt;
           valid_d = 1'b1;
           // Apply XOR for Davies-Meyer construction.
@@ -379,7 +391,7 @@ module otp_ctrl_scrmbl
     endcase // state_q
 
     // Unconditionally jump into the terminal error state in case of escalation.
-    if (escalate_en_i != lc_ctrl_pkg::Off) begin
+    if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
       state_d = ErrorSt;
     end
   end
@@ -437,7 +449,6 @@ module otp_ctrl_scrmbl
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      cnt_q          <= '0;
       key_state_q    <= '0;
       idx_state_q    <= '0;
       data_state_q   <= '0;
@@ -446,7 +457,6 @@ module otp_ctrl_scrmbl
       valid_q        <= 1'b0;
       digest_mode_q  <= StandardMode;
     end else begin
-      cnt_q         <= cnt_d;
       valid_q       <= valid_d;
       digest_mode_q <= digest_mode_d;
 

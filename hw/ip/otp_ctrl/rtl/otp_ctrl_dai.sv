@@ -141,8 +141,8 @@ module otp_ctrl_dai
   } addr_sel_e;
 
   state_e state_d, state_q;
-  logic [CntWidth-1:0] cnt_d, cnt_q;
-  logic cnt_en, cnt_clr;
+  logic [CntWidth-1:0] cnt;
+  logic cnt_en, cnt_clr, cnt_err;
   otp_err_e error_d, error_q;
   logic data_en, data_clr;
   data_sel_e data_sel;
@@ -550,7 +550,7 @@ module otp_ctrl_dai
         // No need to digest the digest value itself
         if (otp_addr_o == digest_addr_lut[part_idx]) begin
           // Trigger digest round in case this is the second block in a row.
-          if (!cnt_q[0]) begin
+          if (!cnt[0]) begin
             scrmbl_cmd_o = Digest;
             if (scrmbl_ready_i) begin
               state_d = DigFinSt;
@@ -561,7 +561,7 @@ module otp_ctrl_dai
           end
         end else begin
           // Trigger digest round in case this is the second block in a row.
-          if (!cnt_q[0]) begin
+          if (!cnt[0]) begin
             scrmbl_cmd_o = Digest;
           end
           // Go back and fetch more data blocks.
@@ -624,7 +624,7 @@ module otp_ctrl_dai
     endcase // state_q
 
     // Unconditionally jump into the terminal error state in case of escalation.
-    if (escalate_en_i != lc_ctrl_pkg::Off) begin
+    if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
         error_d = FsmStateError;
@@ -708,13 +708,26 @@ module otp_ctrl_dai
 
   // Address counter - this is only used for computing a digest, hence the increment is
   // fixed to 8 byte.
-  assign cnt_d = (cnt_clr) ? '0           :
-                 (cnt_en)  ? cnt_q + 1'b1 : cnt_q;
+  prim_count #(
+    .Width(CntWidth),
+    .OutSelDnCnt(0), // count up
+    .CntStyle(prim_count_pkg::CrossCnt)
+  ) u_prim_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(cnt_clr),
+    .set_i(1'b0),
+    .set_cnt_i('0),
+    .en_i(cnt_en),
+    .step_i(CntWidth'(1)),
+    .cnt_o(cnt),
+    .err_o(cnt_err)
+  );
 
   // Note that OTP works on halfword (16bit) addresses, hence need to
   // shift the addresses appropriately.
   logic [OtpByteAddrWidth-1:0] addr_calc;
-  assign addr_calc = {cnt_q, {$clog2(ScrmblBlockWidth/8){1'b0}}} + addr_base;
+  assign addr_calc = {cnt, {$clog2(ScrmblBlockWidth/8){1'b0}}} + addr_base;
   assign otp_addr_o = OtpAddrWidth'(addr_calc >> OtpAddrShift);
 
   ///////////////
@@ -739,12 +752,10 @@ module otp_ctrl_dai
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       error_q        <= NoError;
-      cnt_q          <= '0;
       data_q         <= '0;
       base_sel_q     <= DaiOffset;
     end else begin
       error_q        <= error_d;
-      cnt_q          <= cnt_d;
       base_sel_q     <= base_sel_d;
 
       // Working register

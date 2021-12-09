@@ -1071,7 +1071,7 @@ module otp_ctrl
                                          cnsty_chk_req[k]};
 
       // Alert assertion for sparse FSM.
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartBufFsmCheck_A,
+      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartUnbufFsmCheck_A,
           u_part_unbuf.u_state_regs, alert_tx_o[1])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
@@ -1127,6 +1127,8 @@ module otp_ctrl
       // Alert assertion for sparse FSM.
       `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartBufFsmCheck_A,
           u_part_buf.u_state_regs, alert_tx_o[1])
+      `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntPartBufCheck_A,
+          u_part_buf.u_prim_count, alert_tx_o[1])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       otp_ctrl_part_buf #(
@@ -1193,6 +1195,8 @@ module otp_ctrl
       // Alert assertion for sparse FSM.
       `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartLcFsmCheck_A,
           u_part_buf.u_state_regs, alert_tx_o[1])
+      `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntPartLcCheck_A,
+          u_part_buf.u_prim_count, alert_tx_o[1])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else begin : gen_invalid
       // This is invalid and should break elaboration
@@ -1332,5 +1336,21 @@ module otp_ctrl
       u_otp_ctrl_lfsr_timer.u_state_regs, alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlScrambleFsmCheck_A,
       u_otp_ctrl_scrmbl.u_state_regs, alert_tx_o[1])
+
+  // Alert assertions for redundant counters.
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntIntegCheck_A,
+      u_otp_ctrl_lfsr_timer.u_prim_count_integ, alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCnstyCheck_A,
+      u_otp_ctrl_lfsr_timer.u_prim_count_cnsty, alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntDaiCheck_A,
+      u_otp_ctrl_dai.u_prim_count, alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntKdiSeedCheck_A,
+      u_otp_ctrl_kdi.u_prim_count_seed, alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntKdiEntropyCheck_A,
+      u_otp_ctrl_kdi.u_prim_count_entropy, alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntLciCheck_A,
+      u_otp_ctrl_lci.u_prim_count, alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntScrmblCheck_A,
+      u_otp_ctrl_scrmbl.u_prim_count, alert_tx_o[1])
 
 endmodule : otp_ctrl
