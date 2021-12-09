@@ -154,6 +154,14 @@ class OTBNState:
         self.urnd_256b_counter = 0
 
     def set_keymgr_value(self, key0: int, key1: int, valid: int) -> None:
+        assert 0 <= key0 < (1 << 384)
+        assert 0 <= key1 < (1 << 384)
+        if valid:
+            self.wsrs.KeyS0.write_unsigned(key0)
+            self.wsrs.KeyS1.write_unsigned(key1)
+        else:
+            self.wsrs.KeyS0.write_unsigned(None)
+            self.wsrs.KeyS1.write_unsigned(None)
         return None
 
     def edn_rnd_step(self, rnd_data: int) -> None:

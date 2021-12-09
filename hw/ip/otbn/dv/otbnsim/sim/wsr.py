@@ -8,7 +8,6 @@ from .trace import Trace
 
 from .ext_regs import TraceExtRegChange, ExtRegChange
 
-
 class TraceWSR(Trace):
     def __init__(self, wsr_name: str, new_value: int):
         self.wsr_name = wsr_name
