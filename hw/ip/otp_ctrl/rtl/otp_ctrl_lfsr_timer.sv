@@ -118,78 +118,61 @@ module otp_ctrl_lfsr_timer
   // Tandem Counter Instances //
   //////////////////////////////
 
-  logic [1:0][LfsrWidth-1:0] integ_cnt_q;
-  logic [1:0][LfsrWidth-1:0] cnsty_cnt_q;
-  logic integ_load_period, integ_load_timeout, integ_cnt_zero;
-  logic cnsty_load_period, cnsty_load_timeout, cnsty_cnt_zero;
-
-  logic [LfsrWidth-1:0] integ_mask, cnsty_mask;
-  assign integ_mask  = {integ_period_msk_i, {LfsrWidth-32{1'b1}}};
-  assign cnsty_mask  = {cnsty_period_msk_i, {LfsrWidth-32{1'b1}}};
-
-  logic timeout_zero, integ_msk_zero, cnsty_msk_zero, cnsty_cnt_pause;
-  assign timeout_zero   = (timeout_i == '0);
-  assign integ_msk_zero = (integ_period_msk_i == '0);
-  assign cnsty_msk_zero = (cnsty_period_msk_i == '0);
-  assign integ_cnt_zero = (integ_cnt_q[0] == '0);
-  assign cnsty_cnt_zero = (cnsty_cnt_q[0] == '0);
-
   // We employ redundant counters to guard against FI attacks.
   // If any of them is glitched and the redundant counter states do not agree,
   // the FSM below is moved into a terminal error state.
-  for (genvar k = 0; k < 2; k++) begin : gen_double_cnt
-    // Instantiate size_only buffers to prevent
-    // optimization / merging of redundant logic.
-    logic integ_load_period_buf, integ_load_timeout_buf;
-    logic cnsty_load_period_buf, cnsty_load_timeout_buf, cnsty_cnt_pause_buf;
+  logic [LfsrWidth-1:0] integ_cnt, cnsty_cnt, integ_cnt_set_val, cnsty_cnt_set_val;
+  logic [LfsrWidth-1:0] integ_mask, cnsty_mask;
+  logic integ_set_period, integ_set_timeout, integ_cnt_zero;
+  logic cnsty_set_period, cnsty_set_timeout, cnsty_cnt_zero;
+  logic integ_cnt_set, cnsty_cnt_set, integ_cnt_err, cnsty_cnt_err;
+  logic timeout_zero, integ_msk_zero, cnsty_msk_zero, cnsty_cnt_pause;
 
-    prim_buf #(
-      .Width(5)
-    ) u_prim_buf (
-      .in_i({integ_load_period,
-             integ_load_timeout,
-             cnsty_load_period,
-             cnsty_load_timeout,
-             cnsty_cnt_pause}),
-      .out_o({integ_load_period_buf,
-              integ_load_timeout_buf,
-              cnsty_load_period_buf,
-              cnsty_load_timeout_buf,
-              cnsty_cnt_pause_buf})
-    );
+  assign timeout_zero   = (timeout_i == '0);
+  assign integ_msk_zero = (integ_period_msk_i == '0);
+  assign cnsty_msk_zero = (cnsty_period_msk_i == '0);
+  assign integ_cnt_zero = (integ_cnt == '0);
+  assign cnsty_cnt_zero = (cnsty_cnt == '0);
 
-    logic [LfsrWidth-1:0] integ_cnt_d;
-    logic [LfsrWidth-1:0] cnsty_cnt_d;
-    assign integ_cnt_d = (integ_load_period_buf)  ? lfsr_state & integ_mask :
-                         (integ_load_timeout_buf) ? LfsrWidth'(timeout_i)   :
-                         (integ_cnt_q[k] == '0)   ? '0                      :
-                                                    integ_cnt_q[k] - 1'b1;
+  assign integ_cnt_set = integ_set_period || integ_set_timeout;
+  assign cnsty_cnt_set = cnsty_set_period || cnsty_set_timeout;
 
+  assign integ_mask  = {integ_period_msk_i, {LfsrWidth-32{1'b1}}};
+  assign cnsty_mask  = {cnsty_period_msk_i, {LfsrWidth-32{1'b1}}};
+  assign integ_cnt_set_val = (integ_set_period) ? (lfsr_state & integ_mask) : LfsrWidth'(timeout_i);
+  assign cnsty_cnt_set_val = (cnsty_set_period) ? (lfsr_state & cnsty_mask) : LfsrWidth'(timeout_i);
 
-    assign cnsty_cnt_d = (cnsty_load_period_buf)  ? lfsr_state & cnsty_mask :
-                         (cnsty_load_timeout_buf) ? LfsrWidth'(timeout_i)   :
-                         (cnsty_cnt_q[k] == '0)   ? '0                      :
-                         (cnsty_cnt_pause_buf)    ? cnsty_cnt_q[k]          :
-                                                    cnsty_cnt_q[k] - 1'b1;
+  prim_count #(
+    .Width(LfsrWidth),
+    .OutSelDnCnt(1), // count down
+    .CntStyle(prim_count_pkg::CrossCnt)
+  ) u_prim_count_integ (
+    .clk_i,
+    .rst_ni,
+    .clr_i(1'b0),
+    .set_i(integ_cnt_set),
+    .set_cnt_i(integ_cnt_set_val),
+    .en_i(!integ_cnt_zero),
+    .step_i(LfsrWidth'(1)),
+    .cnt_o(integ_cnt),
+    .err_o(integ_cnt_err)
+  );
 
-    prim_flop #(
-      .Width(LfsrWidth)
-    ) u_prim_flop_integ_cnt (
-      .clk_i,
-      .rst_ni,
-      .d_i   ( integ_cnt_d    ),
-      .q_o   ( integ_cnt_q[k] )
-    );
-
-    prim_flop #(
-      .Width(LfsrWidth)
-    ) u_prim_flop_cnsty_cnt (
-      .clk_i,
-      .rst_ni,
-      .d_i   ( cnsty_cnt_d    ),
-      .q_o   ( cnsty_cnt_q[k] )
-    );
-  end
+  prim_count #(
+    .Width(LfsrWidth),
+    .OutSelDnCnt(1), // count down
+    .CntStyle(prim_count_pkg::CrossCnt)
+  ) u_prim_count_cnsty (
+    .clk_i,
+    .rst_ni,
+    .clr_i(1'b0),
+    .set_i(cnsty_cnt_set),
+    .set_cnt_i(cnsty_cnt_set_val),
+    .en_i(!cnsty_cnt_zero && !cnsty_cnt_pause),
+    .step_i(LfsrWidth'(1)),
+    .cnt_o(cnsty_cnt),
+    .err_o(cnsty_cnt_err)
+  );
 
   /////////////////////
   // Request signals //
@@ -258,10 +241,10 @@ module otp_ctrl_lfsr_timer
 
     // LFSR and counter signals
     lfsr_en = 1'b0;
-    integ_load_period  = 1'b0;
-    cnsty_load_period  = 1'b0;
-    integ_load_timeout = 1'b0;
-    cnsty_load_timeout = 1'b0;
+    integ_set_period  = 1'b0;
+    cnsty_set_period  = 1'b0;
+    integ_set_timeout = 1'b0;
+    cnsty_set_timeout = 1'b0;
     cnsty_cnt_pause    = 1'b0;
 
     // Requests going to partitions.
@@ -293,12 +276,12 @@ module otp_ctrl_lfsr_timer
       IdleSt: begin
         if ((!integ_msk_zero && integ_cnt_zero) || integ_chk_trig_q) begin
           state_d = IntegWaitSt;
-          integ_load_timeout = 1'b1;
+          integ_set_timeout = 1'b1;
           set_all_integ_reqs = 1'b1;
           clr_integ_chk_trig = integ_chk_trig_q;
         end else if ((!cnsty_msk_zero && cnsty_cnt_zero) || cnsty_chk_trig_q) begin
           state_d = CnstyWaitSt;
-          cnsty_load_timeout = 1'b1;
+          cnsty_set_timeout = 1'b1;
           set_all_cnsty_reqs = 1'b1;
           clr_cnsty_chk_trig = cnsty_chk_trig_q;
         end
@@ -315,7 +298,7 @@ module otp_ctrl_lfsr_timer
         end else if (integ_chk_req_q == '0) begin
           state_d = IdleSt;
           // This draws the next wait period.
-          integ_load_period = 1'b1;
+          integ_set_period = 1'b1;
           lfsr_en = 1'b1;
         end
       end
@@ -337,7 +320,7 @@ module otp_ctrl_lfsr_timer
         end else if (cnsty_chk_req_q == '0) begin
           state_d = IdleSt;
           // This draws the next wait period.
-          cnsty_load_period = 1'b1;
+          cnsty_set_period = 1'b1;
           lfsr_en = 1'b1;
         end
       end
@@ -362,10 +345,7 @@ module otp_ctrl_lfsr_timer
 
     // Unconditionally jump into the terminal error state in case of escalation,
     // or if the two LFSR or counter states do not agree.
-    if (lfsr_err ||
-        integ_cnt_q[0] != integ_cnt_q[1] ||
-        cnsty_cnt_q[0] != cnsty_cnt_q[1] ||
-        escalate_en_i != lc_ctrl_pkg::Off) begin
+    if (lfsr_err || integ_cnt_err || cnsty_cnt_err || escalate_en_i != lc_ctrl_pkg::Off) begin
        state_d = ErrorSt;
     end
   end

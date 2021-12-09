@@ -188,13 +188,41 @@ module otp_ctrl_kdi
   // Temporary Regs and Muxes //
   //////////////////////////////
 
-  logic seed_cnt_clr, seed_cnt_en, entropy_cnt_clr, entropy_cnt_en;
-  logic [1:0] seed_cnt_d, seed_cnt_q, entropy_cnt_d, entropy_cnt_q;
+  localparam int CntWidth = 2;
+  logic seed_cnt_clr, seed_cnt_en, entropy_cnt_clr, entropy_cnt_en, seed_cnt_err, entropy_cnt_err;
+  logic [CntWidth-1:0] seed_cnt, entropy_cnt;
 
-  assign seed_cnt_d    = (seed_cnt_clr)    ? '0 :
-                         (seed_cnt_en)     ? seed_cnt_q + 1'b1 : seed_cnt_q;
-  assign entropy_cnt_d = (entropy_cnt_clr) ? '0 :
-                         (entropy_cnt_en)  ? entropy_cnt_q + 1'b1 : entropy_cnt_q;
+  prim_count #(
+    .Width(CntWidth),
+    .OutSelDnCnt(0), // count up
+    .CntStyle(prim_count_pkg::CrossCnt)
+  ) u_prim_count_seed (
+    .clk_i,
+    .rst_ni,
+    .clr_i(seed_cnt_clr),
+    .set_i(1'b0),
+    .set_cnt_i('0),
+    .en_i(seed_cnt_en),
+    .step_i(CntWidth'(1)),
+    .cnt_o(seed_cnt),
+    .err_o(seed_cnt_err)
+  );
+
+  prim_count #(
+    .Width(CntWidth),
+    .OutSelDnCnt(0), // count up
+    .CntStyle(prim_count_pkg::CrossCnt)
+  ) u_prim_count_entropy (
+    .clk_i,
+    .rst_ni,
+    .clr_i(entropy_cnt_clr),
+    .set_i(1'b0),
+    .set_cnt_i('0),
+    .en_i(entropy_cnt_en),
+    .step_i(CntWidth'(1)),
+    .cnt_o(entropy_cnt),
+    .err_o(entropy_cnt_err)
+  );
 
   logic seed_valid_reg_en;
   logic key_reg_en, nonce_reg_en;
@@ -207,10 +235,10 @@ module otp_ctrl_kdi
     nonce_out_d  = nonce_out_q;
     seed_valid_d = seed_valid_q;
     if (key_reg_en) begin
-      key_out_d[seed_cnt_q[1]] = scrmbl_data_i;
+      key_out_d[seed_cnt[1]] = scrmbl_data_i;
     end
     if (nonce_reg_en) begin
-      nonce_out_d[entropy_cnt_q] = edn_data_i;
+      nonce_out_d[entropy_cnt] = edn_data_i;
     end
     if (seed_valid_reg_en) begin
       seed_valid_d = req_bundle.seed_valid;
@@ -239,9 +267,9 @@ module otp_ctrl_kdi
 
   // Select correct 64bit block.
   data_sel_e data_sel;
-  assign scrmbl_data_o = (data_sel == EntropyData) ? nonce_out_q[entropy_cnt_q[0]] :
+  assign scrmbl_data_o = (data_sel == EntropyData) ? nonce_out_q[entropy_cnt[0]] :
                         // Gate seed value to '0 if invalid.
-                         (req_bundle.seed_valid)   ? req_bundle.seed[seed_cnt_q]   : '0;
+                         (req_bundle.seed_valid)   ? req_bundle.seed[seed_cnt]   : '0;
 
   /////////////////
   // Control FSM //
@@ -360,7 +388,7 @@ module otp_ctrl_kdi
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
         // Trigger digest round in case this is the second block in a row.
-        if (seed_cnt_q[0]) begin
+        if (seed_cnt[0]) begin
           scrmbl_cmd_o = Digest;
           if (scrmbl_ready_i) begin
             // Go and ingest a block of entropy if required.
@@ -384,7 +412,7 @@ module otp_ctrl_kdi
         if (edn_ack_i) begin
           nonce_reg_en = 1'b1;
           // Finished, go and acknowledge this request.
-          if (entropy_cnt_q == 2'h1) begin
+          if (entropy_cnt == 2'h1) begin
             state_d = DigEntropySt;
             entropy_cnt_clr = 1'b1;
           // Keep on requesting entropy.
@@ -401,7 +429,7 @@ module otp_ctrl_kdi
         scrmbl_valid_o = 1'b1;
         // Trigger digest round in case this is the second block in a row,
         // and go to digest finalization.
-        if (entropy_cnt_q[0]) begin
+        if (entropy_cnt[0]) begin
           scrmbl_cmd_o = Digest;
           if (scrmbl_ready_i) begin
             state_d = DigFinSt;
@@ -431,7 +459,7 @@ module otp_ctrl_kdi
         if (scrmbl_valid_i) begin
           key_reg_en = 1'b1;
           // Not finished yet, need to go back and produce second 64bit block.
-          if (seed_cnt_q == 2'h1) begin
+          if (seed_cnt == 2'h1) begin
             seed_cnt_en  = 1'b1;
             // In this case the previous digest state is kept,
             // which leads to a chained digest.
@@ -464,7 +492,7 @@ module otp_ctrl_kdi
         if (edn_ack_i) begin
           nonce_reg_en = 1'b1;
           // Finished, go and acknowledge this request.
-          if (entropy_cnt_q == req_bundle.nonce_size) begin
+          if (entropy_cnt == req_bundle.nonce_size) begin
             state_d = FinishSt;
             entropy_cnt_clr = 1'b1;
           // Keep on requesting entropy.
@@ -494,7 +522,7 @@ module otp_ctrl_kdi
     endcase // state_q
 
     // Unconditionally jump into the terminal error state in case of escalation.
-    if (escalate_en_i != lc_ctrl_pkg::Off) begin
+    if (escalate_en_i != lc_ctrl_pkg::Off || seed_cnt_err || entropy_cnt_err) begin
       state_d = ErrorSt;
     end
   end
@@ -520,15 +548,11 @@ module otp_ctrl_kdi
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      seed_cnt_q    <= '0;
-      entropy_cnt_q <= '0;
       key_out_q     <= '0;
       nonce_out_q   <= '0;
       seed_valid_q  <= 1'b0;
       edn_req_q     <= 1'b0;
     end else begin
-      seed_cnt_q    <= seed_cnt_d;
-      entropy_cnt_q <= entropy_cnt_d;
       key_out_q     <= key_out_d;
       nonce_out_q   <= nonce_out_d;
       seed_valid_q  <= seed_valid_d;
