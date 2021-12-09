@@ -15,6 +15,7 @@ filesets:
       - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:constants:top_pkg
     files:
+      - flash_ctrl_eflash_ral_pkg.sv
       - flash_ctrl_env_pkg.sv
       - flash_ctrl_if.sv
       - flash_mem_addr_attrs.sv: {is_include_file: true}
@@ -30,6 +31,7 @@ filesets:
       - seq_lib/flash_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_rand_ops_base_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_smoke_hw_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_rand_ops_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
