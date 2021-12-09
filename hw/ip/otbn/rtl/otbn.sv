@@ -399,6 +399,7 @@ module otbn
   logic [ExtWLEN-1:0] dmem_wmask_bus;
   logic [ExtWLEN-1:0] dmem_rdata_bus;
   logic [top_pkg::TL_AW-1:0] dmem_addr_bus;
+  logic unused_dmem_addr_bus;
   logic [31:0] dmem_wdata_narrow_bus;
   logic [top_pkg::TL_DBW-1:0] dmem_byte_mask_bus;
   logic dmem_rvalid_bus;
@@ -566,6 +567,10 @@ module otbn
                                                     dmem_addr_bus[DmemIndexWidth-1:2]};
   assign mem_crc_data_in.imem    = imem_req_bus;
 
+  // Only the bits that factor into the dmem index and dmem word enables are required
+  assign unused_dmem_addr_bus = ^{dmem_addr_bus[top_pkg::TL_AW-1:DmemIndexWidth],
+                                  dmem_addr_bus[1:0]};
+
   prim_crc32 #(
     .BytesPerWord(6)
   ) u_mem_load_crc32 (
@@ -674,6 +679,25 @@ module otbn
   assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & ~busy_execute_q;
   assign err_bits_d = err_bits_clear ? '0 : err_bits;
   assign err_bits_en = err_bits_clear | done;
+
+  logic unused_reg2hw_err_bits;
+
+  // Majority of reg2hw.err_bits is unused as write values are ignored, all writes clear the
+  // register to 0.
+  assign unused_reg2hw_err_bits = ^{reg2hw.err_bits.bad_data_addr.q,
+                                    reg2hw.err_bits.bad_insn_addr,
+                                    reg2hw.err_bits.call_stack,
+                                    reg2hw.err_bits.illegal_insn,
+                                    reg2hw.err_bits.loop,
+                                    reg2hw.err_bits.key_invalid,
+                                    reg2hw.err_bits.imem_intg_violation,
+                                    reg2hw.err_bits.dmem_intg_violation,
+                                    reg2hw.err_bits.reg_intg_violation,
+                                    reg2hw.err_bits.bus_intg_violation,
+                                    reg2hw.err_bits.bad_internal_state,
+                                    reg2hw.err_bits.illegal_bus_access,
+                                    reg2hw.err_bits.lifecycle_escalation,
+                                    reg2hw.err_bits.fatal_software};
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -866,7 +890,10 @@ module otbn
       .edn_urnd_o            (edn_urnd_req_model),
       .edn_urnd_cdc_done_i   (edn_urnd_data_valid),
 
+      .status_o              (),
       .insn_cnt_o            (insn_cnt_model),
+
+      .invalidate_imem_i     (1'b0),
 
       .done_rr_o (done_rr_model),
 

@@ -312,7 +312,7 @@ module prim_crc32 #(
     end
   end
 
-  always @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       crc_q <= 32'hFFFFFFFF;
     end else if (crc_en) begin
