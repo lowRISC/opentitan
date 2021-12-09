@@ -991,7 +991,7 @@ module csrng_core import csrng_pkg::*; #(
   prim_packer_fifo #(
     .InW(32),
     .OutW(SeedLen),
-    .ClearOnRead(1'b0)
+    .ClearOnRead(1'b1)
   ) u_prim_packer_fifo_adata (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
