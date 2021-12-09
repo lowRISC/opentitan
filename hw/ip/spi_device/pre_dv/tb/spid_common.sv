@@ -14,6 +14,8 @@ endinterface : spi_if
 
 // spid_common package contains common tasks, functions
 package spid_common;
+  import spi_device_pkg::*;
+
   typedef enum int unsigned {
     IoNone   = 0,
     IoSingle = 1,
@@ -48,10 +50,6 @@ package spid_common;
   } spi_fifo_t;
 
   // Command list parameters
-  import spi_device_pkg::cmd_info_t;
-  import spi_device_pkg::payload_dir_e;
-  import spi_device_pkg::PayloadIn;
-  import spi_device_pkg::PayloadOut;
 
   parameter spi_device_pkg::cmd_info_t [23:0] CmdInfo = {
     // 23:
@@ -65,6 +63,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -80,6 +79,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -95,6 +95,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -110,6 +111,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -125,6 +127,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -140,6 +143,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -155,6 +159,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -170,6 +175,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -185,6 +191,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -200,6 +207,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -215,6 +223,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0001, // MISO
       payload_dir:      PayloadIn,
+      payload_swap_en:  1'b 0,
       upload:           1'b 1,
       busy:             1'b 1
     },
@@ -230,6 +239,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0000, // MISO
       payload_dir:      PayloadIn,
+      payload_swap_en:  1'b 0,
       upload:           1'b 1,
       busy:             1'b 1
     },
@@ -245,6 +255,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0000, // MISO
       payload_dir:      PayloadIn,
+      payload_swap_en:  1'b 0,
       upload:           1'b 1,
       busy:             1'b 1
     },
@@ -260,6 +271,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -275,6 +287,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -290,6 +303,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -305,6 +319,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -320,6 +335,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -335,6 +351,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -350,6 +367,7 @@ package spid_common;
       dummy_size:       3'h 7,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -365,6 +383,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -380,6 +399,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -395,6 +415,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     },
@@ -410,6 +431,7 @@ package spid_common;
       dummy_size:          '0,
       payload_en:       4'b 0010, // MISO
       payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
       upload:           1'b 0,
       busy:             1'b 0
     }
