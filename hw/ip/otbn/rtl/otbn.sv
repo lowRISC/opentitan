@@ -191,6 +191,7 @@ module otbn
   logic [38:0] imem_wdata_bus;
   logic [38:0] imem_wmask_bus;
   logic [38:0] imem_rdata_bus;
+  logic [top_pkg::TL_DBW-1:0] imem_byte_mask_bus;
   logic imem_rvalid_bus;
   logic [1:0] imem_rerror_bus;
 
@@ -355,6 +356,8 @@ module otbn
   assign imem_rvalid_bus  = (~imem_access_core & imem_rvalid) | imem_dummy_response_q;
   assign imem_rvalid_core = imem_access_core ? imem_rvalid : 1'b0;
 
+  assign imem_byte_mask_bus = tl_win_h2d[TlWinImem].a_mask;
+
   // No imem errors reported for bus reads. Integrity is carried through on the bus so integrity
   // checking on TL responses will pick up any errors.
   assign imem_rerror_bus = 2'b00;
@@ -397,6 +400,7 @@ module otbn
   logic [ExtWLEN-1:0] dmem_rdata_bus;
   logic [top_pkg::TL_AW-1:0] dmem_addr_bus;
   logic [31:0] dmem_wdata_narrow_bus;
+  logic [top_pkg::TL_DBW-1:0] dmem_byte_mask_bus;
   logic dmem_rvalid_bus;
   logic [1:0] dmem_rerror_bus;
 
@@ -543,11 +547,16 @@ module otbn
 
   assign dmem_addr_bus = tl_win_h2d[TlWinDmem].a_address;
   assign dmem_wdata_narrow_bus = tl_win_h2d[TlWinDmem].a_data[31:0];
+  assign dmem_byte_mask_bus = tl_win_h2d[TlWinDmem].a_mask;
 
   // Memory Load Integrity =====================================================
+  // CRC logic below assumes a incoming data bus width of 32 bits
+  `ASSERT_INIT(TLDWIs32Bit_A, top_pkg::TL_DW == 32)
 
-  assign mem_crc_data_in_valid   = (imem_req_bus | dmem_req_bus) &
-                                  ~(dmem_access_core | imem_access_core);
+  // Only advance CRC calculation on full 32-bit writes;
+  assign mem_crc_data_in_valid   = ~(dmem_access_core | imem_access_core) &
+      ((imem_req_bus & (imem_byte_mask_bus == 4'hf)) |
+       (dmem_req_bus & (dmem_byte_mask_bus == 4'hf)));
 
   assign mem_crc_data_in.wr_data = imem_req_bus ? imem_wdata_bus[31:0] :
                                                   dmem_wdata_narrow_bus[31:0];
