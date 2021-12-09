@@ -18,7 +18,7 @@ import math
 import random
 import hjson
 import subprocess
-from typing import Tuple
+from typing import List, Tuple
 from pathlib import Path
 
 COPYRIGHT = """// Copyright lowRISC contributors.
@@ -350,11 +350,7 @@ def verify(cfgs):
     return error
 
 
-def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
-    log.info(f"Encoding ECC for {hex(dataword)}")
-
-    assert 0 <= dataword < (1 << k)
-
+def _ecc_pick_code(codetype: str, k: int) -> Tuple[int, List[int], int]:
     # first check to see if bit width is supported among configuration
     config = hjson.load(SECDED_CFG_PATH.open())
 
@@ -367,10 +363,16 @@ def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
             codes = gen_code(codetype, k, m)
             bitmasks = calc_bitmasks(k, m, codes, False)
             invert = 1 if codetype in ['inv_hsiao', 'inv_hamming'] else 0
-            break
-    else:
-        # error if k not supported
-        raise Exception(f'ECC for length {k} of type {codetype} unsupported')
+            return (m, bitmasks, invert)
+
+    # error if k not supported
+    raise Exception(f'ECC for length {k} of type {codetype} unsupported')
+
+
+def _ecc_encode(k: int,
+                m: int, bitmasks: List[int], invert: int,
+                dataword: int) -> int:
+    assert 0 <= dataword < (1 << k)
 
     # represent supplied dataword as a binary string
     word_bin = format(dataword, '0' + str(k) + 'b')
@@ -392,11 +394,28 @@ def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
         # Add ECC bit inversion if needed (see print_enc function).
         bit ^= (invert & k % 2)
         codeword = str(bit) + codeword
+    return codeword
+
+
+def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
+    log.info(f"Encoding ECC for {hex(dataword)}")
+
+    m, bitmasks, invert = _ecc_pick_code(codetype, k)
+    codeword = _ecc_encode(k, m, bitmasks, invert, dataword)
 
     # Debug printouts
     log.debug(f'original hex: {hex(dataword)}')
     log.debug(f'codeword hex: {hex(int(codeword,2))}')
     return int(codeword, 2), m
+
+
+def ecc_encode_some(codetype: str,
+                    k: int,
+                    datawords: int) -> Tuple[List[int], int]:
+    m, bitmasks, invert = _ecc_pick_code(codetype, k)
+    codewords = [int(_ecc_encode(k, m, bitmasks, invert, w), 2)
+                 for w in datawords]
+    return codewords, m
 
 
 def gen_code(codetype, k, m):
