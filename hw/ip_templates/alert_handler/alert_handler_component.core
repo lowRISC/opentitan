@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:esc
       - lowrisc:prim:double_lfsr
+      - lowrisc:prim:count
       - lowrisc:prim:edn_req
       - lowrisc:prim:buf
       - lowrisc:prim:mubi

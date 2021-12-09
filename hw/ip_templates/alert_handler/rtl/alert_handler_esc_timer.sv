@@ -46,56 +46,36 @@ module alert_handler_esc_timer import alert_pkg::*; (
   // Tandem Counter //
   ////////////////////
 
-  logic cnt_en, cnt_clr, cnt_ge;
-  logic [1:0][EscCntDw-1:0] cnt_q;
-
   // We employ two redundant counters to guard against FI attacks.
   // If any of the two is glitched and the two counter states do not agree,
   // the FSM below is moved into a terminal error state and escalation actions
   // are permanently asserted.
-  for (genvar k = 0; k < 2; k++) begin : gen_double_cnt
+  logic cnt_en, cnt_clr, cnt_error;
 
-    logic cnt_en_buf, cnt_clr_buf;
-
-    // These size_only buffers are instantiated in order to prevent
-    // optimization / merging of the two counters.
-    prim_buf u_prim_buf_clr (
-      .in_i(cnt_clr),
-      .out_o(cnt_clr_buf)
-    );
-
-    prim_buf u_prim_buf_en (
-      .in_i(cnt_en),
-      .out_o(cnt_en_buf)
-    );
-
-    // escalation counter, used for all phases and the timeout
-    logic [EscCntDw-1:0] cnt_d;
-    assign cnt_d = (cnt_clr_buf && cnt_en_buf) ? EscCntDw'(1'b1) :
-                   (cnt_clr_buf)               ? '0              :
-                   (cnt_en_buf)                ? cnt_q[k] + 1'b1 : cnt_q[k];
-
-    prim_flop #(
-      .Width(EscCntDw)
-    ) u_prim_flop (
-      .clk_i,
-      .rst_ni,
-      .d_i(cnt_d),
-      .q_o(cnt_q[k])
-    );
-  end
+  prim_count #(
+    .Width(EscCntDw),
+    .OutSelDnCnt(0), // count up
+    .CntStyle(prim_count_pkg::DupCnt),
+    // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
+    // an alert signal, this condition is handled internally in the alert handler.
+    .EnableAlertTriggerSVA(0)
+  ) u_prim_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(cnt_clr && !cnt_en),
+    .set_i(cnt_clr && cnt_en),
+    .set_cnt_i(EscCntDw'(1)),
+    .en_i(!cnt_clr && cnt_en),
+    .step_i(EscCntDw'(1)),
+    .cnt_o(esc_cnt_o),
+    .err_o(cnt_error)
+  );
 
   // threshold test, the thresholds are muxed further below
   // depending on the current state
+  logic cnt_ge;
   logic [EscCntDw-1:0] thresh;
-  assign cnt_ge    = (cnt_q[0] >= thresh);
-
-  // current counter output
-  assign esc_cnt_o   = cnt_q[0];
-
-  // consistency check
-  logic cnt_check_fail;
-  assign cnt_check_fail = cnt_q[0] != cnt_q[1];
+  assign cnt_ge = (esc_cnt_o >= thresh);
 
   //////////////
   // Main FSM //
@@ -289,7 +269,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
 
     // if any of the duplicate counter pairs has an inconsistent state
     // we move into the terminal FSM error state.
-    if (accu_fail_i || cnt_check_fail) begin
+    if (accu_fail_i || cnt_error) begin
       state_d = FsmErrorSt;
     end
   end
@@ -373,7 +353,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
       !accu_fail_i &&
       state_q == TimeoutSt &&
       timeout_en_i &&
-      cnt_q[0] < timeout_cyc_i &&
+      esc_cnt_o < timeout_cyc_i &&
       !accu_trig_i
       |=>
       state_q == TimeoutSt)
@@ -389,7 +369,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
       !accu_fail_i &&
       state_q == TimeoutSt &&
       timeout_en_i &&
-      cnt_q[0] == timeout_cyc_i
+      esc_cnt_o == timeout_cyc_i
       |=>
       state_q == Phase0St)
   // Check whether escalation phases are correctly switched
@@ -397,28 +377,28 @@ module alert_handler_esc_timer import alert_pkg::*; (
       !accu_fail_i &&
       state_q == Phase0St &&
       !clr_i &&
-      cnt_q[0] >= phase_cyc_i[0]
+      esc_cnt_o >= phase_cyc_i[0]
       |=>
       state_q == Phase1St)
   `ASSERT(CheckPhase1_A,
       !accu_fail_i &&
       state_q == Phase1St &&
       !clr_i &&
-      cnt_q[0] >= phase_cyc_i[1]
+      esc_cnt_o >= phase_cyc_i[1]
       |=>
       state_q == Phase2St)
   `ASSERT(CheckPhase2_A,
       !accu_fail_i &&
       state_q == Phase2St &&
       !clr_i &&
-      cnt_q[0] >= phase_cyc_i[2]
+      esc_cnt_o >= phase_cyc_i[2]
       |=>
       state_q == Phase3St)
   `ASSERT(CheckPhase3_A,
       !accu_fail_i &&
       state_q == Phase3St &&
       !clr_i &&
-      cnt_q[0] >= phase_cyc_i[3]
+      esc_cnt_o >= phase_cyc_i[3]
       |=>
       state_q == TerminalSt)
   `ASSERT(AccuFailToFsmError_A,
