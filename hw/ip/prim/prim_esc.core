@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:diff_decode
       - lowrisc:prim:buf
+      - lowrisc:prim:count
       - lowrisc:prim:flop
       - lowrisc:prim:sec_anchor
     files:

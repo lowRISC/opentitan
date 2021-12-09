@@ -90,37 +90,43 @@ module prim_esc_receiver
   // Ping Monitor Counter / Auto Escalation //
   ////////////////////////////////////////////
 
-  logic ping_en, esc_req;
-  logic [1:0][TimeoutCntDw-1:0] cnt_q;
+  // The timeout counter is kicked off when the first ping occurs, and subsequent pings reset
+  // the counter to 1. The counter keeps on counting when it is nonzero, and saturates when it
+  // has reached its maximum (this state is terminal).
+  logic ping_en, timeout_cnt_error;
+  logic timeout_cnt_set, timeout_cnt_en;
+  logic [TimeoutCntDw-1:0] timeout_cnt;
+  assign timeout_cnt_set = (ping_en && !(&timeout_cnt));
+  assign timeout_cnt_en = ((timeout_cnt > '0) && !(&timeout_cnt));
 
-  for (genvar k = 0; k < 2; k++) begin : gen_timeout_cnt
-
-    logic [TimeoutCntDw-1:0] cnt_d;
-
-    // The timeout counter is kicked off when the first ping occurs, and subsequent pings reset
-    // the counter to 1. The counter keeps on counting when it is nonzero, and saturates when it
-    // has reached its maximum (this state is terminal).
-    assign cnt_d = (ping_en && !(&cnt_q[k]))         ? TimeoutCntDw'(1) :
-                   ((cnt_q[k] > '0) && !(&cnt_q[k])) ? cnt_q[k] + 1'b1  :
-                                                       cnt_q[k];
-    prim_flop #(
-      .Width(TimeoutCntDw)
-    ) u_prim_flop (
-      .clk_i,
-      .rst_ni,
-      .d_i(cnt_d),
-      .q_o(cnt_q[k])
-    );
-  end
+  prim_count #(
+    .Width(TimeoutCntDw),
+    .OutSelDnCnt(0), // count up
+    .CntStyle(prim_count_pkg::DupCnt),
+    // The escalation receiver behaves differently than other comportable IP. I.e., instead of
+    // sending out an alert signal, this condition is handled internally in the alert handler.
+    .EnableAlertTriggerSVA(0)
+  ) u_prim_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(1'b0),
+    .set_i(timeout_cnt_set),
+    .set_cnt_i(TimeoutCntDw'(1)),
+    .en_i(timeout_cnt_en),
+    .step_i(TimeoutCntDw'(1)),
+    .cnt_o(timeout_cnt),
+    .err_o(timeout_cnt_error)
+  );
 
   // Escalation is asserted if
   // - requested via the escalation sender/receiver path,
   // - the ping monitor timeout is reached,
   // - the two ping monitor counters are in an inconsistent state.
+  logic esc_req;
   prim_sec_anchor_buf #(
     .Width(1)
   ) u_prim_buf_esc_req (
-    .in_i(esc_req | (&cnt_q[0]) | (cnt_q[0] != cnt_q[1])),
+    .in_i(esc_req || (&timeout_cnt) || timeout_cnt_error),
     .out_o(esc_req_o)
   );
 
@@ -264,8 +270,8 @@ module prim_esc_receiver
   `ASSERT(EscEnCheck_A, esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && state_q != SigInt
       ##1 esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) |-> esc_req_o)
   // make sure the counter does not wrap around
-  `ASSERT(EscCntWrap_A, &cnt_q[0] |=> cnt_q[0] != 0)
+  `ASSERT(EscCntWrap_A, &timeout_cnt |=> timeout_cnt != 0)
   // if the counter expires, escalation should be asserted
-  `ASSERT(EscCntEsc_A, &cnt_q[0] |-> esc_req_o)
+  `ASSERT(EscCntEsc_A, &timeout_cnt |-> esc_req_o)
 
 endmodule : prim_esc_receiver
