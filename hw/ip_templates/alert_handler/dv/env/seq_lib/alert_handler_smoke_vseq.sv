@@ -18,10 +18,10 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
   rand bit [NUM_ALERTS-1:0]                              alert_int_err;
   rand bit [NUM_ALERTS-1:0]                              alert_en;
   rand bit [NUM_ALERTS-1:0]                              alert_ping_timeout;
-  rand bit [NUM_ALERT_CLASSES-1:0][NUM_ALERTS-1:0]       alert_class_map;
+  rand bit [NUM_ALERTS-1:0][NUM_ALERT_CLASSES-1:0]       alert_class_map;
   rand bit [NUM_LOCAL_ALERTS-1:0]                        local_alert_regwen;
   rand bit [NUM_LOCAL_ALERTS-1:0]                        local_alert_en;
-  rand bit [NUM_ALERT_CLASSES-1:0][NUM_LOCAL_ALERTS-1:0] local_alert_class_map;
+  rand bit [NUM_LOCAL_ALERTS-1:0][NUM_ALERT_CLASSES-1:0] local_alert_class_map;
   rand bit [NUM_ESCS-1:0]                                esc_int_err;
   rand bit [NUM_ESCS-1:0]                                esc_standalone_int_err;
   rand bit [NUM_ESCS-1:0]                                esc_ping_timeout;
@@ -127,8 +127,8 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
     for (int i = 1; i <= num_trans; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
-      `uvm_info(`gfn,
-          $sformatf("start seq %0d/%0d: intr_en=%0b, alert=%0b, alert_en=%0b, loc_alert_en=%0b",
+      `uvm_info(`gfn, $sformatf(
+          "start seq %0d/%0d: intr_en=0x%0h, alert=0x%0h, alert_en=0x%0h, loc_alert_en=0x%0h",
           i, num_trans, intr_en, alert_trigger, alert_en, local_alert_en), verbosity)
 
       // write initial settings (enable and mapping csrs)

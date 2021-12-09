@@ -47,11 +47,13 @@ class alert_handler_base_vseq extends cip_base_vseq #(
 
   // setup basic alert_handler features
   // alert_class default 0 -> all alert will trigger interrupt classA
-  virtual task alert_handler_init(bit [NUM_ALERT_CLASSES-1:0]            intr_en = '1,
-                                  bit [NUM_ALERTS-1:0]                   alert_en = '1,
-                                  bit [NUM_ALERT_CLASSES-1:0][TL_DW-1:0] alert_class = 'h0,
-                                  bit [NUM_LOCAL_ALERTS-1:0]             loc_alert_en = '1,
-                                  bit [NUM_ALERT_CLASSES-1:0][TL_DW-1:0] loc_alert_class = 'h0);
+  virtual task alert_handler_init(
+      bit [NUM_ALERT_CLASSES-1:0]                       intr_en = '1,
+      bit [NUM_ALERTS-1:0]                              alert_en = '1,
+      bit [NUM_ALERTS-1:0][NUM_ALERT_CLASSES-1:0]       alert_class = 'h0,
+      bit [NUM_LOCAL_ALERTS-1:0]                        loc_alert_en = '1,
+      bit [NUM_LOCAL_ALERTS-1:0][NUM_ALERT_CLASSES-1:0] loc_alert_class = 'h0);
+
     csr_wr(.ptr(ral.intr_enable), .value(intr_en));
     foreach (alert_en[i])        csr_wr(.ptr(ral.alert_en_shadowed[i]),
                                         .value(alert_en[i]));
