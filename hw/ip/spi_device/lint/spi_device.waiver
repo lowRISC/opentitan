@@ -94,7 +94,7 @@ waive -rules TERMINAL_STATE -location {spi_readcmd.sv} \
       -regexp {Terminal state 'Main(Output|Error)' is detected} \
       -comment "Intentional dead-end. CSb will reset"
 waive -rules TERMINAL_STATE -location {spid_jedec.sv} \
-      -regexp {Terminal state 'StActive' is detected} \
+      -regexp {Terminal state 'StDevId' is detected} \
       -comment "Intentional dead-end. CSb will reset"
 
 # async resets

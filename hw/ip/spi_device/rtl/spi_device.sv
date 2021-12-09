@@ -276,7 +276,7 @@ module spi_device
   logic status_busy_broadcast; // from spid_status
 
   // Jedec ID
-  logic [23:0] jedec_id;
+  jedec_cfg_t jedec_cfg;
 
   // Interrupts in Flash mode
   logic intr_upload_cmdfifo_not_empty, intr_upload_payload_not_empty;
@@ -662,7 +662,11 @@ module spi_device
   end
 
   // Jedec ID
-  assign jedec_id = {reg2hw.jedec_id.mf.q, reg2hw.jedec_id.id.q};
+  assign jedec_cfg = '{ num_cc:    reg2hw.jedec_cc.num_cc.q,
+                        cc:        reg2hw.jedec_cc.cc.q,
+                        jedec_id:  reg2hw.jedec_id.mf.q,
+                        device_id: reg2hw.jedec_id.id.q
+                      };
 
   assign readbuf_threshold = reg2hw.read_threshold.q[BufferAw:0];
 
@@ -1311,7 +1315,7 @@ module spi_device
 
     .inclk_csb_asserted_pulse_i (csb_asserted_pulse_sckin),
 
-    .sys_jedec_i (jedec_id),
+    .sys_jedec_i (jedec_cfg),
 
     .io_mode_o (sub_iomode[IoModeJedec]),
 

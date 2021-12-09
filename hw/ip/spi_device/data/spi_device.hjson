@@ -522,6 +522,28 @@
       ]
     } // R: FLASH_STATUS
     {
+      name: "JEDEC_CC"
+      desc: '''JEDEC Continuation Code configuration register.
+
+        Read JEDEC ID must return the continuation code if the manufacturer ID
+        is not shown in the first page of JEDEC table. This register controls
+        the Continuation Code.
+        '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:8"
+          name: "num_cc"
+          desc: "The number that Continuation Code repeats"
+        } // f: num_cc
+        { bits: "7:0"
+          name: "cc"
+          desc: "Continuation Code byte"
+          resval: "0x7F"
+        } // f: cc
+      ]
+    } // R: JEDEC_CC
+    {
       name: "JEDEC_ID"
       desc: '''JEDEC ID register.
         '''

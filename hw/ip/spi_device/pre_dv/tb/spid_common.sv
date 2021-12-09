@@ -666,6 +666,8 @@ package spid_common;
   task automatic spiflash_readjedec(
     virtual spi_if.tb  sif,
     input spi_data_t   opcode,
+    input logic [7:0]  num_cc,
+    input logic [7:0]  cc,      // Continuous Code
     ref   logic [23:0] jedec_id // [23:16] Manufacurer ID, [15:0] ID
   );
     automatic spi_fifo_t send_data [$];
@@ -675,18 +677,23 @@ package spid_common;
 
     send_data.push_back('{data: opcode, dir: DirIn,  mode: IoSingle});
 
+    // Continuous code handling
     // Receive 3 bytes from DUT
-    repeat (3) begin
+    repeat (3+num_cc) begin
       send_data.push_back('{data: '0, dir: DirOut, mode: IoNone});
     end
 
     spi_transaction(sif, send_data, rcv_data);
 
-    assert(rcv_data.size() == 3);
+    assert(rcv_data.size() == (3 + num_cc));
+
+    repeat (num_cc) begin
+      assert(rcv_data.pop_front() == cc);
+    end
 
     jedec_id[23:16] = rcv_data.pop_front();
-    jedec_id[15:8]  = rcv_data.pop_front();
     jedec_id[7:0]   = rcv_data.pop_front();
+    jedec_id[15:8]  = rcv_data.pop_front();
 
     $display("Jedec ID Received: Manufacturer ID [%x], JEDEC_ID [%x]",
       jedec_id[23:16], jedec_id[15:0]);
