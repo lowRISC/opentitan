@@ -31,7 +31,6 @@
                 "{proj_root}/hw/dv/verilator/memutil_dpi_scrambled_opts.hjson",
                 // Common CIP test lists
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"
                 // Enable stress tests later
@@ -110,6 +109,18 @@
     {
       name: "{variant}_executable"
       uvm_test_seq: sram_ctrl_executable_vseq
+    }
+    // Below 2 tests are same as the tests in dvsim/tests/mem_tests.hjson
+    // Replicate them here in order to enable scb
+    {
+      name: "{variant}_mem_walk"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+csr_mem_walk"]
+    }
+    {
+      name: "{variant}_mem_partial_access"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+run_mem_partial_access"]
     }
   ]
 
