@@ -27,7 +27,10 @@
 module prim_count import prim_count_pkg::*; #(
   parameter int Width = 2,
   parameter bit OutSelDnCnt = 1, // 0 selects up count
-  parameter prim_count_style_e CntStyle = CrossCnt
+  parameter prim_count_style_e CntStyle = CrossCnt, // DupCnt or CrossCnt
+  // This should only be disabled in special circumstances, for example
+  // in non-comportable IPs where an error does not trigger an alert.
+  parameter bit EnableAlertTriggerSVA = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -201,7 +204,7 @@ module prim_count import prim_count_pkg::*; #(
 
   // ASSERT_INIT can only be used for paramters/constants in FPV.
   `ifdef SIMULATION
-  `ASSERT_INIT(AssertConnected_A, unused_assert_connected === 1'b1)
+  `ASSERT_INIT(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
   `endif
   `endif
 endmodule // prim_count
