@@ -65,7 +65,7 @@ class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     if (cfg.en_ping_cov) m_alert_esc_trans_cg = new();
-    if (cfg.en_lpg_cov) begin
+    if (cfg.en_lpg_cov && cfg.is_alert) begin
       m_alert_ping_lpg_cg = new();
       m_alert_lpg_cg = new();
     end
