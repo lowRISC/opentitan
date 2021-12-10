@@ -11,7 +11,7 @@
     version:            "1.0",
     life_stage:         "L1",
     design_stage:       "D2",
-    verification_stage: "V1",
+    verification_stage: "V2",
     dif_stage:          "S0",
     notes:              "Use both FPV and DV to perform block level verification.",
 }
