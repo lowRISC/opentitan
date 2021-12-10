@@ -112,3 +112,17 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
                    .format(x.name,
                            render_td(x.desc, rnames, None)))
         genout(outfile, "</table>\n")
+
+    if not cfgs.countermeasures:
+        genout(outfile, "<p><i>Security Countermeasures: none</i></p>\n")
+    else:
+        genout(outfile, "<p><i>Security Countermeasures:</i></p>\n")
+        genout(
+            outfile, "<table class=\"cfgtable\"><tr><th>Countermeasure ID</th>" +
+            "<th>Description</th></tr>\n")
+        for cm in cfgs.countermeasures:
+            genout(outfile,
+                   '<tr><td>{}</td>{}</tr>'
+                   .format(cfgs.name.upper() + '.' + str(cm),
+                           render_td(cm.desc, rnames, None)))
+        genout(outfile, "</table>\n")
