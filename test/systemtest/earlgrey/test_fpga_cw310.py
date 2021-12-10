@@ -35,6 +35,7 @@ def board_earlgrey(tmp_path_factory, topsrcdir, bin_dir, localconf_board):
         topsrcdir / 'util/fpga/cw310_loader.py',
         '--bitstream',
         bitstream,
+        '--set-pll-defaults',
     ]
 
     log.debug("Flashing ChipWhisperer CW310 board with bitstream {}".format(
