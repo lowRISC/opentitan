@@ -131,6 +131,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.m_spi_agent_cfg.device_bit_dir = device_bit_dir;
     cfg.m_spi_agent_cfg.csb_sel = 0;
     cfg.m_spi_agent_cfg.partial_byte = 0;
+    cfg.m_spi_agent_cfg.csb_consecutive = 0;
     // update device rtl
     ral.control.mode.set(spi_mode);
     csr_update(.csr(ral.control));

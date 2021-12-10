@@ -22,7 +22,7 @@ class spi_host_driver extends spi_driver;
       under_reset = 1'b1;
       cfg.vif.sck <= cfg.sck_polarity[0];
       cfg.vif.sio <= 'hz;
-      cfg.vif.csb <= 'h1;
+      cfg.vif.csb <= 'hF;
       sck_pulses = 0;
       @(posedge cfg.vif.rst_n);
       under_reset = 1'b0;
@@ -109,8 +109,10 @@ class spi_host_driver extends spi_driver;
     end
 
     wait(sck_pulses == 0);
-    cfg.vif.csb[cfg.csb_sel] <= 1'b1;
-    cfg.vif.sio[0] <= 1'bz;
+    if (cfg.csb_consecutive == 0) begin
+      cfg.vif.csb[cfg.csb_sel] <= 1'b1;
+      cfg.vif.sio[0] <= 1'bx;
+    end
   endtask
 
   task drive_sck_no_csb_item();

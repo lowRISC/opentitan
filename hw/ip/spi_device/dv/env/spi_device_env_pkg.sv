@@ -40,6 +40,11 @@ package spi_device_env_pkg;
     SramSpaceAvail
   } sram_avail_type_e;
 
+  typedef enum bit {
+    TpmFifoMode,
+    TpmCrbMode
+  } tpm_cfg_mode_e;
+
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
@@ -51,6 +56,9 @@ package spi_device_env_pkg;
   parameter uint SRAM_PTR_PHASE_BIT       = SRAM_MSB + 1;
   parameter uint SRAM_WORD_SIZE           = 4;
   parameter uint ASYNC_FIFO_SIZE          = 8;
+  parameter bit[7:0] TPM_WRITE_CMD        = 8'hC0;
+  parameter byte TPM_START                = 8'h01;
+  parameter byte TPM_WAIT                 = 8'h00;
 
   string msg_id = "spi_device_env_pkg";
 
