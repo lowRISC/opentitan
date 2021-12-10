@@ -9,22 +9,7 @@ from typing import List
 
 from shared.check import CheckResult
 from shared.decode import OTBNProgram, decode_elf
-
-
-class CodeSection:
-    '''A continuous part of a program's code (represented as a PC range).
-
-    The code section is considered to include both the start and end PC.
-    '''
-    def __init__(self, start: int, end: int):
-        self.start = start
-        self.end = end
-
-    def __contains__(self, pc):
-        return self.start <= pc and pc <= self.end
-
-    def __repr__(self):
-        return '{:#x}-0x{:#x}'.format(self.start, self.end)
+from shared.section import CodeSection
 
 
 def _get_pcs_for_mnemonics(program: OTBNProgram,
