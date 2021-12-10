@@ -101,14 +101,14 @@ module prim_alert_receiver
 
   // signal ping request upon positive transition on ping_req_i
   // signalling is performed by a level change event on the diff output
-  assign ping_req_d  = ping_req_i;
+  assign ping_req_d  = ping_req_i && !(state_q inside {InitReq, InitAckWait});
   assign ping_rise   = ping_req_i && !ping_req_q;
   assign ping_tog_pd = (send_init) ? 1'b0         :
                        (ping_rise) ? ~ping_tog_pq : ping_tog_pq;
 
   // in-band reset is performed by sending out an integrity error on purpose.
-  assign ack_dn      = (send_init) ? ack_pd      : ~ack_pd;
-  assign ping_tog_dn = (send_init) ? ping_tog_pd : ~ping_tog_pd;
+  assign ack_dn      = (send_init) ? ack_pd : ~ack_pd;
+  assign ping_tog_dn = ~ping_tog_pd;
 
   // This prevents further tool optimizations of the differential signal.
   prim_sec_anchor_flop #(
@@ -270,7 +270,7 @@ module prim_alert_receiver
   // check encoding of outgoing diffpairs. note that during init, the outgoing diffpairs are
   // supposed to be incorrectly encoded on purpose.
   // shift sequence two cycles to the right to avoid reset effects.
-  `ASSERT(PingDiffOk_A, ##2 $past(send_init) ^ alert_rx_o.ping_p ^ alert_rx_o.ping_n)
+  `ASSERT(PingDiffOk_A, alert_rx_o.ping_p ^ alert_rx_o.ping_n)
   `ASSERT(AckDiffOk_A, ##2 $past(send_init) ^ alert_rx_o.ack_p ^ alert_rx_o.ack_n)
   `ASSERT(InitReq_A, mubi4_test_true_strict(init_trig_i) &&
           !(state_q inside {InitReq, InitAckWait}) |=> send_init)
