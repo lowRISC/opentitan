@@ -226,7 +226,9 @@ def opentitan_binary(
 def verilator_params(
         rom = "//sw/device/lib/testing/test_rom:test_rom_verilator_scr",
         otp = "//hw/ip/otp_ctrl/data:rma_image_verilator",
-        tags = ["verilator", "cpu:4"],
+        tags = [
+            "cpu:4",
+        ],
         timeout = "moderate",
         local = True,
         args = [
@@ -251,11 +253,11 @@ def verilator_params(
         @param args: Arguments to pass to the test.
         @param data: Data dependencies of the test.
     """
-    kwargs.update(rom = rom, otp = otp, tags = tags, timeout = timeout, local = local, args = args, data = data)
+    kwargs.update(rom = rom, otp = otp, tags = tags + ["verilator"], timeout = timeout, local = local, args = args, data = data)
     return kwargs
 
 def cw310_params(
-        tags = ["cw310", "exclusive"],
+        tags = [],
         timeout = "moderate",
         local = True,
         args = [
@@ -280,7 +282,7 @@ def cw310_params(
         @param args: Arguments to pass to the test.
         @param data: Data dependencies of the test.
     """
-    kwargs.update(tags = tags, timeout = timeout, local = local, args = args, data = data)
+    kwargs.update(tags = tags + ["cw310", "exclusive"], timeout = timeout, local = local, args = args, data = data)
     return kwargs
 
 def _format_list(name, list1, datadict, **kwargs):

@@ -170,12 +170,12 @@ cc_library(
     hdrs = ["primitive_bootstrap.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/testing/test_rom:bootstrap",
         "//sw/device/lib:flash_ctrl",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/testing/test_rom:bootstrap",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:log",
         "//sw/device/silicon_creator/lib/drivers:hmac",
@@ -255,5 +255,9 @@ opentitan_functest(
             "--exit-success='boot_fault: 0x0142500d'",
         ],
         rom = ":mask_rom_verilator_scr",
+        tags = [
+            "cpu:4",
+            "failing_verilator",
+        ],
     ),
 )
