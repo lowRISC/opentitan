@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRYPTO_ECDSA_P256_ECDSA_P256_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRYPTO_ECDSA_P256_ECDSA_P256_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_ECDSA_P256_ECDSA_P256_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_ECDSA_P256_ECDSA_P256_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -112,4 +112,4 @@ otbn_result_t ecdsa_p256_verify(otbn_t *otbn,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRYPTO_ECDSA_P256_ECDSA_P256_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_ECDSA_P256_ECDSA_P256_H_

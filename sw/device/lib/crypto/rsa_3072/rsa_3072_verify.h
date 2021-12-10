@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRYPTO_RSA_3072_RSA_3072_VERIFY_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRYPTO_RSA_3072_RSA_3072_VERIFY_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_RSA_3072_RSA_3072_VERIFY_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_RSA_3072_RSA_3072_VERIFY_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -115,4 +115,4 @@ otbn_result_t rsa_3072_verify(otbn_t *otbn, const rsa_3072_int_t *signature,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRYPTO_RSA_3072_RSA_3072_VERIFY_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_RSA_3072_RSA_3072_VERIFY_H_
