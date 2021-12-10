@@ -92,7 +92,7 @@ def _check_loop_inclusion(program: OTBNProgram,
         for other in loops:
             if other.start in loop and other.end not in loop:
                 out.err('Inner loop ends after outer loop (inner loop {}, '
-                        'outer loop {})'.format(other, loop))
+                        'outer loop {})'.format(other, loop.pretty()))
 
     return out
 
