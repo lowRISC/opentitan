@@ -59,13 +59,13 @@ module rom_ctrl
 
   mubi4_t                   rom_select_bus;
 
-  logic [RomIndexWidth-1:0] rom_index;
+  logic [RomIndexWidth-1:0] rom_rom_index, rom_prince_index;
   logic                     rom_req;
   logic [DataWidth-1:0]     rom_scr_rdata;
   logic [DataWidth-1:0]     rom_clr_rdata;
   logic                     rom_rvalid;
 
-  logic [RomIndexWidth-1:0] bus_rom_index;
+  logic [RomIndexWidth-1:0] bus_rom_rom_index, bus_rom_prince_index;
   logic                     bus_rom_req;
   logic                     bus_rom_gnt;
   logic [DataWidth-1:0]     bus_rom_rdata;
@@ -124,7 +124,7 @@ module rom_ctrl
 
   // TL interface ==============================================================
 
-  tlul_pkg::tl_h2d_t tl_rom_h2d;
+  tlul_pkg::tl_h2d_t tl_rom_h2d_upstream, tl_rom_h2d_downstream;
   tlul_pkg::tl_d2h_t tl_rom_d2h;
 
   logic  rom_reg_integrity_error;
@@ -134,12 +134,25 @@ module rom_ctrl
     .rst_ni     (rst_ni),
     .tl_i       (rom_tl_i),
     .tl_o       (rom_tl_o),
-    .tl_win_o   (tl_rom_h2d),
+    .tl_win_o   (tl_rom_h2d_upstream),
     .tl_win_i   (tl_rom_d2h),
 
     .intg_err_o (rom_reg_integrity_error),
 
     .devmode_i  (1'b1)
+  );
+
+  // This buffer ensures that when we calculate bus_rom_prince_index by snooping on
+  // tl_rom_h2d_upstream, we get a value that's buffered from the thing that goes into both the ECC
+  // check and the addr_o output of u_tl_adapter_rom. That way, an injected 1- or 2-bit fault that
+  // affects bus_rom_prince_index must either affect the ECC check (causing it to fail) OR it cannot
+  // affect bus_rom_rom_index (so the address-tweakable scrambling will mean the read probably gets
+  // garbage).
+  prim_buf #(
+    .Width($bits(tlul_pkg::tl_h2d_t))
+  ) u_tl_rom_h2d_buf (
+    .in_i (tl_rom_h2d_upstream),
+    .out_o (tl_rom_h2d_downstream)
   );
 
   // Bus -> ROM adapter ========================================================
@@ -160,14 +173,14 @@ module rom_ctrl
     .clk_i        (clk_i),
     .rst_ni       (rst_ni),
 
-    .tl_i         (tl_rom_h2d),
+    .tl_i         (tl_rom_h2d_downstream),
     .tl_o         (tl_rom_d2h),
     .en_ifetch_i  (prim_mubi_pkg::MuBi4True),
     .req_o        (bus_rom_req),
     .req_type_o   (),
     .gnt_i        (bus_rom_gnt),
     .we_o         (),
-    .addr_o       (bus_rom_index),
+    .addr_o       (bus_rom_rom_index),
     .wdata_o      (),
     .wmask_o      (),
     .intg_error_o (rom_integrity_error),
@@ -175,6 +188,15 @@ module rom_ctrl
     .rvalid_i     (bus_rom_rvalid),
     .rerror_i     (2'b00)
   );
+
+  // Snoop on the "upstream" TL transaction to infer the address to pass to the PRINCE cipher.
+  assign bus_rom_prince_index = (tl_rom_h2d_upstream.a_valid ?
+                                 tl_rom_h2d_upstream.a_address[2 +: RomIndexWidth] :
+                                 '0);
+
+  // Unless there has been an injected fault, bus_rom_prince_index and bus_rom_rom_index should have
+  // the same value.
+  `ASSERT(BusRomIndicesMatch_A, bus_rom_prince_index == bus_rom_rom_index)
 
   // The mux ===================================================================
 
@@ -184,23 +206,25 @@ module rom_ctrl
     .AW (RomIndexWidth),
     .DW (DataWidth)
   ) u_mux (
-    .clk_i           (clk_i),
-    .rst_ni          (rst_ni),
-    .sel_bus_i       (rom_select_bus),
-    .bus_addr_i      (bus_rom_index),
-    .bus_req_i       (bus_rom_req),
-    .bus_gnt_o       (bus_rom_gnt),
-    .bus_rdata_o     (bus_rom_rdata),
-    .bus_rvalid_o    (bus_rom_rvalid),
-    .chk_addr_i      (checker_rom_index),
-    .chk_req_i       (checker_rom_req),
-    .chk_rdata_o     (checker_rom_rdata),
-    .rom_addr_o      (rom_index),
-    .rom_req_o       (rom_req),
-    .rom_scr_rdata_i (rom_scr_rdata),
-    .rom_clr_rdata_i (rom_clr_rdata),
-    .rom_rvalid_i    (rom_rvalid),
-    .alert_o         (mux_alert)
+    .clk_i             (clk_i),
+    .rst_ni            (rst_ni),
+    .sel_bus_i         (rom_select_bus),
+    .bus_rom_addr_i    (bus_rom_rom_index),
+    .bus_prince_addr_i (bus_rom_prince_index),
+    .bus_req_i         (bus_rom_req),
+    .bus_gnt_o         (bus_rom_gnt),
+    .bus_rdata_o       (bus_rom_rdata),
+    .bus_rvalid_o      (bus_rom_rvalid),
+    .chk_addr_i        (checker_rom_index),
+    .chk_req_i         (checker_rom_req),
+    .chk_rdata_o       (checker_rom_rdata),
+    .rom_rom_addr_o    (rom_rom_index),
+    .rom_prince_addr_o (rom_prince_index),
+    .rom_req_o         (rom_req),
+    .rom_scr_rdata_i   (rom_scr_rdata),
+    .rom_clr_rdata_i   (rom_clr_rdata),
+    .rom_rvalid_i      (rom_rvalid),
+    .alert_o           (mux_alert)
   );
 
   // The ROM itself ============================================================
@@ -214,14 +238,15 @@ module rom_ctrl
       .ScrNonce    (RndCnstScrNonce),
       .ScrKey      (RndCnstScrKey)
     ) u_rom (
-      .clk_i       (clk_i),
-      .rst_ni      (rst_ni),
-      .req_i       (rom_req),
-      .addr_i      (rom_index),
-      .rvalid_o    (rom_rvalid),
-      .scr_rdata_o (rom_scr_rdata),
-      .clr_rdata_o (rom_clr_rdata),
-      .cfg_i       (rom_cfg_i)
+      .clk_i         (clk_i),
+      .rst_ni        (rst_ni),
+      .req_i         (rom_req),
+      .rom_addr_i    (rom_rom_index),
+      .prince_addr_i (rom_prince_index),
+      .rvalid_o      (rom_rvalid),
+      .scr_rdata_o   (rom_scr_rdata),
+      .clr_rdata_o   (rom_clr_rdata),
+      .cfg_i         (rom_cfg_i)
     );
 
   end : gen_rom_scramble_enabled
@@ -238,7 +263,7 @@ module rom_ctrl
       .clk_i    (clk_i),
       .rst_ni   (rst_ni),
       .req_i    (rom_req),
-      .addr_i   (rom_index),
+      .addr_i   (rom_rom_index),
       .rvalid_o (rom_rvalid),
       .rdata_o  (rom_scr_rdata),
       .cfg_i    (rom_cfg_i)
@@ -246,6 +271,10 @@ module rom_ctrl
 
     // There's no scrambling, so "scrambled" and "clear" rdata are equal.
     assign rom_clr_rdata = rom_scr_rdata;
+
+    // Since we're not generating a keystream, we don't use the rom_prince_index at all
+    logic unused_prince_index;
+    assign unused_prince_index = ^rom_prince_index;
 
   end : gen_rom_scramble_disabled
 
