@@ -1808,6 +1808,6 @@ module spi_device
   `ASSERT_KNOWN(AlertKnownO_A,         alert_tx_o)
 
   // Assume the tpm_en is set when TPM transaction is idle.
-  `ASSUME(TpmEnableWhenTpmCsbIdle_M, cfg_tpm_en |-> cio_tpm_csb_i)
+  `ASSUME(TpmEnableWhenTpmCsbIdle_M, $rose(cfg_tpm_en) |-> cio_tpm_csb_i)
 
 endmodule
