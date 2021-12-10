@@ -278,15 +278,17 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
+    uvm_reg        csr;
+    dv_base_reg    dv_base_csr;
+    bit            do_read_check   = 1'b1;
+    bit            write           = item.is_write();
     uvm_reg_addr_t csr_addr = {item.a_addr[TL_AW-1:2], 2'b00};
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
+      `downcast(dv_base_csr, csr)
     end
     if (csr == null) begin
       // we hit an oob addr - expect error response and return
@@ -297,12 +299,13 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     if (channel == AddrChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
+        string csr_name = csr.get_name();
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
         // process the csr req
         // for write, update local variable and fifo at address phase
-        case (csr.get_name())
+        case (1)
           // add individual case item for each csr
-          "intr_test": begin
+          (!uvm_re_match("intr_test", csr_name)): begin
             bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
             if (cfg.en_cov) begin
               bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
@@ -313,7 +316,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
           end
           // disable intr_enable or clear intr_state will clear the interrupt timeout cnter
-          "intr_state": begin
+          (!uvm_re_match("intr_state", csr_name)): begin
             fork
               begin
                 // after interrupt is set, it needs one clock cycle to update the value and stop
@@ -333,22 +336,144 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               end
             join_none
           end
-          "intr_enable": begin
+          (!uvm_re_match("intr_enable", csr_name)): begin
             foreach (under_intr_classes[i]) begin
               if (item.a_data[i] == 0) under_intr_classes[i] = 0;
             end
           end
-          "classa_clr_shadowed": begin
+          (!uvm_re_match("class*_ctrl_shadowed", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
+                if (csr_name == $sformatf("class%0s_ctrl_shadowed", class_name[i])) begin
+                  uvm_reg regwen = ral.get_reg_by_name($sformatf("class%s_regwen", class_name[i]));
+                  cov.class_ctrl_regwen_cg_wrap[i].sample(`gmv(regwen));
+                  break;
+                end
+              end
+            end
+          end
+          (!uvm_re_match("class*_accum_thresh_shadowed", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
+                if (csr_name == $sformatf("class%0s_accum_thresh_shadowed", class_name[i])) begin
+                  uvm_reg regwen = ral.get_reg_by_name($sformatf("class%s_regwen", class_name[i]));
+                  cov.class_accum_thresh_regwen_cg_wrap[i].sample(`gmv(regwen));
+                  break;
+                end
+              end
+            end
+          end
+          (!uvm_re_match("class*_timeout_cyc_shadowed", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
+                if (csr_name == $sformatf("class%0s_timeout_cyc_shadowed", class_name[i])) begin
+                  uvm_reg regwen = ral.get_reg_by_name($sformatf("class%s_regwen", class_name[i]));
+                  cov.class_timeout_cyc_regwen_cg_wrap[i].sample(`gmv(regwen));
+                  break;
+                end
+              end
+            end
+          end
+           (!uvm_re_match("class*_crashdump_trigger_shadowed", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
+                if (csr_name == $sformatf("class%0s_crashdump_trigger_shadowed", class_name[i]))
+                    begin
+                  uvm_reg regwen = ral.get_reg_by_name($sformatf("class%s_regwen", class_name[i]));
+                  cov.class_crashdump_trigger_regwen_cg_wrap[i].sample(`gmv(regwen));
+                  break;
+                end
+              end
+            end
+          end
+           (!uvm_re_match("class*_phase_cyc*_shadowed", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              for (int i = 0; i < NUM_ALERT_CLASSES; i++) begin
+                for (int j = 0; j <NUM_ESC_PHASES; j++) begin
+                  if (csr_name == $sformatf("class%0s_phase%0d_cyc_shadowed", class_name[i], j))
+                    begin
+                    uvm_reg regwen = ral.get_reg_by_name($sformatf("class%s_regwen",
+                                                         class_name[i]));
+                    cov.class_phase_cyc_regwen_cg_wrap[i].sample(`gmv(regwen), j);
+                    break;
+                  end
+                end
+              end
+            end
+          end
+         (!uvm_re_match("classa_clr_shadowed", csr_name)): begin
             if (ral.classa_clr_regwen.get_mirrored_value()) clr_reset_esc_class(0);
-          end
-          "classb_clr_shadowed": begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              cov.class_clr_regwen_cg_wrap[0].sample(`gmv(ral.classa_clr_regwen));
+            end
+         end
+          (!uvm_re_match("classb_clr_shadowed", csr_name)): begin
             if (ral.classb_clr_regwen.get_mirrored_value()) clr_reset_esc_class(1);
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              cov.class_clr_regwen_cg_wrap[0].sample(`gmv(ral.classb_clr_regwen));
+            end
           end
-          "classc_clr_shadowed": begin
+          (!uvm_re_match("classc_clr_shadowed", csr_name)): begin
             if (ral.classc_clr_regwen.get_mirrored_value()) clr_reset_esc_class(2);
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              cov.class_clr_regwen_cg_wrap[0].sample(`gmv(ral.classc_clr_regwen));
+            end
           end
-          "classd_clr_shadowed": begin
+          (!uvm_re_match("classd_clr_shadowed", csr_name)): begin
             if (ral.classd_clr_regwen.get_mirrored_value()) clr_reset_esc_class(3);
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              cov.class_clr_regwen_cg_wrap[0].sample(`gmv(ral.classd_clr_regwen));
+            end
+          end
+          (!uvm_re_match("ping_timeout_cyc_shadowed", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              cov.ping_timeout_cyc_regwen_cg.sample(`gmv(ral.ping_timer_regwen));
+            end
+          end
+          (!uvm_re_match("ping_timer_en_shadowed", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              cov.ping_timer_en_regwen_cg.sample(`gmv(ral.ping_timer_regwen));
+            end
+          end
+          (!uvm_re_match("alert_en_shadowed_*", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              for (int i = 0; i < NUM_ALERTS; i++) begin
+                if (csr_name == $sformatf("alert_en_shadowed_%0d", i)) begin
+                  cov.alert_en_regwen_cg_wrap[i].sample(`gmv(ral.alert_regwen[i]));
+                  break;
+                end
+              end
+            end
+          end
+          (!uvm_re_match("alert_class_shadowed_*", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              for (int i = 0; i < NUM_ALERTS; i++) begin
+                if (csr_name == $sformatf("alert_class_shadowed_%0d", i)) begin
+                  cov.alert_class_regwen_cg_wrap[i].sample(`gmv(ral.alert_regwen[i]));
+                  break;
+                end
+              end
+            end
+          end
+          (!uvm_re_match("loc_alert_en_shadowed_*", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              for (int i = 0; i < NUM_LOCAL_ALERTS; i++) begin
+                if (csr_name == $sformatf("loc_alert_en_shadowed_%0d", i)) begin
+                  cov.loc_alert_en_regwen_cg_wrap[i].sample(`gmv(ral.loc_alert_regwen[i]));
+                  break;
+                end
+              end
+            end
+          end
+          (!uvm_re_match("loc_alert_class_shadowed_*", csr_name)): begin
+            if (cfg.en_cov && shadowed_reg_wr_completed(dv_base_csr)) begin
+              for (int i = 0; i < NUM_LOCAL_ALERTS; i++) begin
+                if (csr_name == $sformatf("loc_alert_class_shadowed_%0d", i)) begin
+                  cov.loc_alert_class_regwen_cg_wrap[i].sample(`gmv(ral.loc_alert_regwen[i]));
+                  break;
+                end
+              end
+            end
           end
           default: begin
             // TODO: align all names with shadow post_fix and re-enable this check.
@@ -630,6 +755,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                                               class_name[class_i]));
     return class_timeout_rg.get_mirrored_value();
   endfunction
-endclass
 
+  function bit shadowed_reg_wr_completed(dv_base_reg dv_base_reg);
+    return (!dv_base_reg.is_staged() && !dv_base_reg.get_shadow_update_err());
+  endfunction
+
+endclass
 `undef ASSIGN_CLASS_PHASE_REGS
