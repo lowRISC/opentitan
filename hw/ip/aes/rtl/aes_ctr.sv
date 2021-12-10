@@ -54,8 +54,9 @@ module aes_ctr import aes_pkg::*;
   logic                                       incr_err;
   logic                                       mr_err;
 
-  // Sparsified FSM output signals. These need to converted to sp2v_e after collecting
-  // the individual bits.
+  // Sparsified FSM signals. These are needed for connecting the individual bits of the Sp2V
+  // signals to the single-rail FSMs.
+  logic    [Sp2VWidth-1:0]                    sp_incr;
   logic    [Sp2VWidth-1:0]                    sp_ready;
   logic    [Sp2VWidth-1:0]                    sp_ctr_we;
 
@@ -95,15 +96,19 @@ module aes_ctr import aes_pkg::*;
   /////////
   // FSM //
   /////////
+
+  // Convert sp2v_e signals to sparsified inputs.
+  assign sp_incr = {incr};
+
   // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
   // of every rail are buffered to prevent aggressive synthesis optimizations.
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm
-    if ({SP2V_HIGH}[i] == 1'b1) begin : gen_fsm_p
+    if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_fsm_p
       aes_ctr_fsm_p u_aes_ctr_fsm_i (
         .clk_i           ( clk_i               ),
         .rst_ni          ( rst_ni              ),
 
-        .incr_i          ( {incr}[i]           ), // Sparsified
+        .incr_i          ( sp_incr[i]          ), // Sparsified
         .ready_o         ( sp_ready[i]         ), // Sparsified
         .incr_err_i      ( incr_err            ),
         .mr_err_i        ( mr_err              ),
@@ -119,7 +124,7 @@ module aes_ctr import aes_pkg::*;
         .clk_i           ( clk_i               ),
         .rst_ni          ( rst_ni              ),
 
-        .incr_ni         ( {incr}[i]           ), // Sparsified
+        .incr_ni         ( sp_incr[i]          ), // Sparsified
         .ready_no        ( sp_ready[i]         ), // Sparsified
         .incr_err_i      ( incr_err            ),
         .mr_err_i        ( mr_err              ),

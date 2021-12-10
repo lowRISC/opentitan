@@ -325,6 +325,9 @@ typedef enum logic [Sp2VWidth-1:0] {
   SP2V_LOW  = MUX2_SEL_1
 } sp2v_e;
 
+typedef logic [Sp2VWidth-1:0] sp2v_logic_t;
+parameter sp2v_logic_t SP2V_LOGIC_HIGH = {SP2V_HIGH};
+
 // Control register type
 typedef struct packed {
   logic      force_zero_masks;

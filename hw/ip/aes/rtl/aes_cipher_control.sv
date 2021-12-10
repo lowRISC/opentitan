@@ -89,19 +89,27 @@ module aes_cipher_control import aes_pkg::*;
   logic                                mr_err;
   logic                                sp_enc_err;
 
-  // Sparsified FSM output signals. These need to converted to sp2v_e after collecting
-  // the individual bits.
+  // Sparsified FSM signals. These are needed for connecting the individual bits of the Sp2V
+  // signals to the single-rail FSMs.
+  logic           [Sp2VWidth-1:0]      sp_in_valid;
   logic           [Sp2VWidth-1:0]      sp_in_ready;
   logic           [Sp2VWidth-1:0]      sp_out_valid;
+  logic           [Sp2VWidth-1:0]      sp_out_ready;
+  logic           [Sp2VWidth-1:0]      sp_crypt;
+  logic           [Sp2VWidth-1:0]      sp_dec_key_gen;
   logic           [Sp2VWidth-1:0]      sp_state_we;
   logic           [Sp2VWidth-1:0]      sp_sub_bytes_en;
+  logic           [Sp2VWidth-1:0]      sp_sub_bytes_out_req;
   logic           [Sp2VWidth-1:0]      sp_sub_bytes_out_ack;
   logic           [Sp2VWidth-1:0]      sp_key_full_we;
   logic           [Sp2VWidth-1:0]      sp_key_dec_we;
   logic           [Sp2VWidth-1:0]      sp_key_expand_en;
+  logic           [Sp2VWidth-1:0]      sp_key_expand_out_req;
   logic           [Sp2VWidth-1:0]      sp_key_expand_out_ack;
   logic           [Sp2VWidth-1:0]      sp_crypt_d;
+  logic           [Sp2VWidth-1:0]      sp_crypt_q;
   logic           [Sp2VWidth-1:0]      sp_dec_key_gen_d;
+  logic           [Sp2VWidth-1:0]      sp_dec_key_gen_q;
 
   // Multi-rail signals. These are outputs of the single-rail FSMs and need combining.
   logic           [Sp2VWidth-1:0]      mr_alert;
@@ -125,10 +133,21 @@ module aes_cipher_control import aes_pkg::*;
   /////////
   // FSM //
   /////////
+
+  // Convert sp2v_e signals to sparsified inputs.
+  assign sp_in_valid           = {in_valid};
+  assign sp_out_ready          = {out_ready};
+  assign sp_crypt              = {crypt};
+  assign sp_dec_key_gen        = {dec_key_gen};
+  assign sp_sub_bytes_out_req  = {sub_bytes_out_req};
+  assign sp_key_expand_out_req = {key_expand_out_req};
+  assign sp_crypt_q            = {crypt_q};
+  assign sp_dec_key_gen_q      = {dec_key_gen_q};
+
   // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
   // of every rail are buffered to prevent aggressive synthesis optimizations.
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm
-    if ({SP2V_HIGH}[i] == 1'b1) begin : gen_fsm_p
+    if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_fsm_p
       aes_cipher_control_fsm_p #(
         .Masking  ( Masking  ),
         .SBoxImpl ( SBoxImpl )
@@ -136,17 +155,17 @@ module aes_cipher_control import aes_pkg::*;
         .clk_i                 ( clk_i                    ),
         .rst_ni                ( rst_ni                   ),
 
-        .in_valid_i            ( {in_valid}[i]            ), // Sparsified
+        .in_valid_i            ( sp_in_valid[i]           ), // Sparsified
         .in_ready_o            ( sp_in_ready[i]           ), // Sparsified
 
         .out_valid_o           ( sp_out_valid[i]          ), // Sparsified
-        .out_ready_i           ( {out_ready}[i]           ), // Sparsified
+        .out_ready_i           ( sp_out_ready[i]          ), // Sparsified
 
         .cfg_valid_i           ( cfg_valid_i              ),
         .op_i                  ( op_i                     ),
         .key_len_i             ( key_len_i                ),
-        .crypt_i               ( {crypt}[i]               ), // Sparsified
-        .dec_key_gen_i         ( {dec_key_gen}[i]         ), // Sparsified
+        .crypt_i               ( sp_crypt[i]              ), // Sparsified
+        .dec_key_gen_i         ( sp_dec_key_gen[i]        ), // Sparsified
         .key_clear_i           ( key_clear_i              ),
         .data_out_clear_i      ( data_out_clear_i         ),
         .mux_sel_err_i         ( mux_sel_err              ),
@@ -161,7 +180,7 @@ module aes_cipher_control import aes_pkg::*;
         .state_sel_o           ( mr_state_sel[i]          ), // OR-combine
         .state_we_o            ( sp_state_we[i]           ), // Sparsified
         .sub_bytes_en_o        ( sp_sub_bytes_en[i]       ), // Sparsified
-        .sub_bytes_out_req_i   ( {sub_bytes_out_req}[i]   ), // Sparsified
+        .sub_bytes_out_req_i   ( sp_sub_bytes_out_req[i]  ), // Sparsified
         .sub_bytes_out_ack_o   ( sp_sub_bytes_out_ack[i]  ), // Sparsified
         .add_rk_sel_o          ( mr_add_rk_sel[i]         ), // OR-combine
 
@@ -170,7 +189,7 @@ module aes_cipher_control import aes_pkg::*;
         .key_dec_sel_o         ( mr_key_dec_sel[i]        ), // OR-combine
         .key_dec_we_o          ( sp_key_dec_we[i]         ), // Sparsified
         .key_expand_en_o       ( sp_key_expand_en[i]      ), // Sparsified
-        .key_expand_out_req_i  ( {key_expand_out_req}[i]  ), // Sparsified
+        .key_expand_out_req_i  ( sp_key_expand_out_req[i] ), // Sparsified
         .key_expand_out_ack_o  ( sp_key_expand_out_ack[i] ), // Sparsified
         .key_expand_clear_o    ( mr_key_expand_clear[i]   ), // OR-combine
         .key_words_sel_o       ( mr_key_words_sel[i]      ), // OR-combine
@@ -182,9 +201,9 @@ module aes_cipher_control import aes_pkg::*;
         .rnd_ctr_rem_d_o       ( mr_rnd_ctr_rem_d[i]      ), // OR-combine
         .num_rounds_q_i        ( num_rounds_q             ),
         .num_rounds_d_o        ( mr_num_rounds_d[i]       ), // OR-combine
-        .crypt_q_i             ( {crypt_q}[i]             ), // Sparsified
+        .crypt_q_i             ( sp_crypt_q[i]            ), // Sparsified
         .crypt_d_o             ( sp_crypt_d[i]            ), // Sparsified
-        .dec_key_gen_q_i       ( {dec_key_gen_q}[i]       ), // Sparsified
+        .dec_key_gen_q_i       ( sp_dec_key_gen_q[i]      ), // Sparsified
         .dec_key_gen_d_o       ( sp_dec_key_gen_d[i]      ), // Sparsified
         .key_clear_q_i         ( key_clear_q              ),
         .key_clear_d_o         ( mr_key_clear_d[i]        ), // AND-combine
@@ -199,17 +218,17 @@ module aes_cipher_control import aes_pkg::*;
         .clk_i                 ( clk_i                    ),
         .rst_ni                ( rst_ni                   ),
 
-        .in_valid_ni           ( {in_valid}[i]            ), // Sparsified
+        .in_valid_ni           ( sp_in_valid[i]           ), // Sparsified
         .in_ready_no           ( sp_in_ready[i]           ), // Sparsified
 
         .out_valid_no          ( sp_out_valid[i]          ), // Sparsified
-        .out_ready_ni          ( {out_ready}[i]           ), // Sparsified
+        .out_ready_ni          ( sp_out_ready[i]          ), // Sparsified
 
         .cfg_valid_i           ( cfg_valid_i              ),
         .op_i                  ( op_i                     ),
         .key_len_i             ( key_len_i                ),
-        .crypt_ni              ( {crypt}[i]               ), // Sparsified
-        .dec_key_gen_ni        ( {dec_key_gen}[i]         ), // Sparsified
+        .crypt_ni              ( sp_crypt[i]              ), // Sparsified
+        .dec_key_gen_ni        ( sp_dec_key_gen[i]        ), // Sparsified
         .key_clear_i           ( key_clear_i              ),
         .data_out_clear_i      ( data_out_clear_i         ),
         .mux_sel_err_i         ( mux_sel_err              ),
@@ -224,7 +243,7 @@ module aes_cipher_control import aes_pkg::*;
         .state_sel_o           ( mr_state_sel[i]          ), // OR-combine
         .state_we_no           ( sp_state_we[i]           ), // Sparsified
         .sub_bytes_en_no       ( sp_sub_bytes_en[i]       ), // Sparsified
-        .sub_bytes_out_req_ni  ( {sub_bytes_out_req}[i]   ), // Sparsified
+        .sub_bytes_out_req_ni  ( sp_sub_bytes_out_req[i]  ), // Sparsified
         .sub_bytes_out_ack_no  ( sp_sub_bytes_out_ack[i]  ), // Sparsified
         .add_rk_sel_o          ( mr_add_rk_sel[i]         ), // OR-combine
 
@@ -233,7 +252,7 @@ module aes_cipher_control import aes_pkg::*;
         .key_dec_sel_o         ( mr_key_dec_sel[i]        ), // OR-combine
         .key_dec_we_no         ( sp_key_dec_we[i]         ), // Sparsified
         .key_expand_en_no      ( sp_key_expand_en[i]      ), // Sparsified
-        .key_expand_out_req_ni ( {key_expand_out_req}[i]  ), // Sparsified
+        .key_expand_out_req_ni ( sp_key_expand_out_req[i] ), // Sparsified
         .key_expand_out_ack_no ( sp_key_expand_out_ack[i] ), // Sparsified
         .key_expand_clear_o    ( mr_key_expand_clear[i]   ), // OR-combine
         .key_words_sel_o       ( mr_key_words_sel[i]      ), // OR-combine
@@ -245,9 +264,9 @@ module aes_cipher_control import aes_pkg::*;
         .rnd_ctr_rem_d_o       ( mr_rnd_ctr_rem_d[i]      ), // OR-combine
         .num_rounds_q_i        ( num_rounds_q             ),
         .num_rounds_d_o        ( mr_num_rounds_d[i]       ), // OR-combine
-        .crypt_q_ni            ( {crypt_q}[i]             ), // Sparsified
+        .crypt_q_ni            ( sp_crypt_q[i]            ), // Sparsified
         .crypt_d_no            ( sp_crypt_d[i]            ), // Sparsified
-        .dec_key_gen_q_ni      ( {dec_key_gen_q}[i]       ), // Sparsified
+        .dec_key_gen_q_ni      ( sp_dec_key_gen_q[i]      ), // Sparsified
         .dec_key_gen_d_no      ( sp_dec_key_gen_d[i]      ), // Sparsified
         .key_clear_q_i         ( key_clear_q              ),
         .key_clear_d_o         ( mr_key_clear_d[i]        ), // AND-combine
