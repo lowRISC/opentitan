@@ -6,21 +6,7 @@ package(default_visibility = ["//visibility:public"])
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
-cc_library(
-    name = "main",
-    srcs = [
-        "test_main.c",
-    ],
-    hdrs = [
-        "test_main.h",
-    ],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":test_framework",
-    ],
-)
-
-# TODO use more specific targets to avoid unnecessary dependencies
+# TODO use more specific targets to avoid unnecesary dependencies
 # https://github.com/lowRISC/opentitan/issues/9098
 cc_library(
     name = "test_framework",
