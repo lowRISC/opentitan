@@ -538,6 +538,12 @@ def raze_fetch_remote_crates():
         type = "tar.gz",
         sha256 = "3c8469b4a23b962c1396b9b451dda50ef5b283e8dd309d69033475fa9b334324",
         strip_prefix = "libudev-sys-0.1.4",
+        patches = [
+            "@//third_party/cargo/patches:libudev-sys-0.1.4.patch",
+        ],
+        patch_args = [
+            "-p1",
+        ],
         build_file = Label("//third_party/cargo/remote:BUILD.libudev-sys-0.1.4.bazel"),
     )
 

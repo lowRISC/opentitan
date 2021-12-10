@@ -38,3 +38,7 @@ opentitantool_derive = {path = "opentitantool_derive"}
 
 [package.metadata.raze.crates.libudev-sys.'0.1.4']
 gen_buildrs = true
+patches = [
+    "@//third_party/cargo/patches:libudev-sys-0.1.4.patch"
+]
+patch_args = ["-p1"]
