@@ -278,28 +278,53 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     forever begin
       bit write_en;
       mem_item_t item;
-      bit [AddrWidth-1:0] write_addr;
-      bit [TL_AW-1:0] sram_addr;
+      bit [AddrWidth-1:0] encrypt_addr;
+      bit [TL_AW-1:0] decrypt_addr;
 
-      wait (write_item_q.size > 0);
+      wait (write_item_q.size > 0 || in_init);
+
+      if (in_init) begin
+        // before entering init, there should be no pending write
+        `DV_CHECK_EQ(write_item_q.size, 0)
+
+        // init is to write init value to the sram, which will triggers 1<<AddrWidth write strobes
+        // Below is to count all the strobe to make sure init is done, so that we know what strobe
+        // is for the actual write
+        repeat (1 << AddrWidth) wait_write_strobe();
+
+        // One write may be accepted before init is done
+        `DV_CHECK_LE(write_item_q.size, 1)
+        continue;
+      end
       item = write_item_q.pop_front();
 
       while (!write_en) begin
         cfg.clk_rst_vif.wait_n_clks(1);
         `DV_CHECK(uvm_hdl_read(write_en_path, write_en))
       end
-      `DV_CHECK(uvm_hdl_read(write_addr_path, write_addr))
-      sram_addr = decrypt_sram_addr(write_addr);
+      `DV_CHECK(uvm_hdl_read(write_addr_path, encrypt_addr))
+      decrypt_addr = decrypt_sram_addr(encrypt_addr);
+      decrypt_addr = decrypt_addr << 2;
+      `uvm_info(`gfn, $sformatf("Write encrypt_addr 0x%0h, decrypt_addr 0x%0h",
+                                encrypt_addr, decrypt_addr), UVM_MEDIUM)
 
-      sram_addr = sram_addr << 2;
 
       // the data should be settled after posedge. Wait for a 1ps to avoid race condition
       cfg.clk_rst_vif.wait_clks(1);
       #1ps;
-      mem_bkdr_scb.write_finish(sram_addr, item.mask);
+      mem_bkdr_scb.write_finish(decrypt_addr, item.mask);
+      `uvm_info(`gfn, $sformatf("Currently num of pending write items is %0d", write_item_q.size),
+                UVM_MEDIUM)
     end
   endtask
 
+  task wait_write_strobe();
+    bit write_en;
+    while (!write_en) begin
+      cfg.clk_rst_vif.wait_n_clks(1);
+      `DV_CHECK(uvm_hdl_read(write_en_path, write_en))
+    end
+  endtask
   // This task spins forever and samples the appropriate covergroup whenever
   // in_key_req is high and a new valid addr_phase transaction is seen on the memory bus.
   virtual task sample_key_req_access_cg();
@@ -724,7 +749,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     push_pull_item #(.DeviceDataWidth(KDI_DATA_SIZE)) item;
     forever begin
       kdi_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("Received transaction from kdi_fifo:\n%0s", item.convert2string()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Received transaction from kdi_fifo:\n%0s", item.convert2string()),
+                UVM_HIGH)
 
       // after a KDI transaction is completed, it takes 3 clock cycles in the SRAM domain
       // to properly synchronize and propagate the data through the DUT
@@ -752,8 +778,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // if we are in escalated state, scr_key_seed_valid will always stay low
       exp_status[SramCtrlScrKeySeedValid] = status_lc_esc ? 0 : seed_valid;
 
-      `uvm_info(`gfn, $sformatf("Updated key: 0x%0x", key), UVM_HIGH)
-      `uvm_info(`gfn, $sformatf("Updated nonce: 0x%0x", nonce), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Updated key: 0x%0x", key), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("Updated nonce: 0x%0x", nonce), UVM_MEDIUM)
     end
   endtask
 
