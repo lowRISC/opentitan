@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// This DV coverplan documents basic escalation agent covergroups.
+{
+  covergroups: [
+    {
+      name: esc_handshake_complete_cg
+      desc: '''Cover if the escalation handshake completes.'''
+    }
+  ]
+}

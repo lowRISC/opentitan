@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// This DV coverplan documents additional escalation agent covergroups.
+// To enable these covergroups, please ensure the following variable is enabled:
+// `cfg.en_ping_cov`
+{
+  covergroups: [
+    {
+      name:  alert_esc_trans_cg
+      desc: '''Cover if the transaction is a ping request or an actual escalation request.'''
+    }
+  ]
+}
