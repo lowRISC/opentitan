@@ -441,6 +441,18 @@ module rom_ctrl
   // The assert_tx_o output should have a known value when out of reset
   `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
 
+  // Assertions to check that we've wired up our alert bits correctly
+  if (!SecDisableScrambling) begin : gen_asserts_with_scrambling
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CompareFsmAlert_A,
+                                         gen_fsm_scramble_enabled.
+                                         u_checker_fsm.u_compare.u_state_regs,
+                                         alert_tx_o[AlertFatal])
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CheckerFsmAlert_A,
+                                         gen_fsm_scramble_enabled.
+                                         u_checker_fsm.u_state_regs,
+                                         alert_tx_o[AlertFatal])
+  end
+
   // The pwrmgr_data_o output (the "done" and "good" signals) should have a known value when out of
   // reset. (In theory, the "good" signal could be unknown when !done, but the stronger and simpler
   // assertion is also true, so we use that)

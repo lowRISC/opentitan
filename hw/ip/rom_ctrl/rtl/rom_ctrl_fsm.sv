@@ -160,12 +160,15 @@ module rom_ctrl_fsm
   logic [9:0]  state_q, state_d;
   logic        fsm_alert;
 
-  prim_flop #(.Width(10), .ResetValue({ReadingLow}))
-  u_state_regs (
-    .clk_i  (clk_i),
-    .rst_ni (rst_ni),
-    .d_i    (state_d),
-    .q_o    (state_q)
+  prim_sparse_fsm_flop #(
+    .StateEnumT(state_e),
+    .Width(10),
+    .ResetValue({ReadingLow})
+  ) u_state_regs (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .state_i (state_d),
+    .state_o (state_q)
   );
 
   always_comb begin
