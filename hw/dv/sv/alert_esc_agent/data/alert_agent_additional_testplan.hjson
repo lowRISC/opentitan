@@ -1,0 +1,29 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// This DV coverplan documents additional alert agent covergroups.
+// To enable these covergroups, please ensure the following variables are enabled:
+// `cfg.en_ping_cov` and `cfg.en_lpg_cov`
+{
+  covergroups: [
+    {
+      name:  alert_esc_trans_cg
+      desc: '''Cover if the transaction is a ping request or an actual alert request.'''
+    }
+    {
+      name:  alert_ping_lpg_cg
+      desc: '''Covers alert lpg status during a ping request.
+
+      Cover if its lower-power-group (lpg) is enabled or disabled during a ping request.
+      '''
+    }
+    {
+      name:  alert_lpg_cg
+      desc: '''Covers alert lpg status during an alert request.
+
+      Cover if its lower-power-group (lpg) is enabled or disabled during an alert request.
+      '''
+    }
+  ]
+}
