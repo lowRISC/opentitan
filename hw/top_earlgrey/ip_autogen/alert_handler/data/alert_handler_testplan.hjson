@@ -188,5 +188,45 @@
       name: crashdump_trigger_cg
       desc: '''Covers which phase triggers crashdump.'''
     }
-  ]
+    {
+      name: alert_en_regwen_cg
+      desc: '''Covers if regwen is locked for alert_en registers.'''
+    }
+    {
+      name: alert_class_regwen_cg
+      desc: '''Covers if regwen is locked for alert_class registers.'''
+    }
+    {
+      name: loc_alert_en_regwen_cg
+      desc: '''Covers if regwen is locked for loc_alert_en registers.'''
+    }
+    {
+      name: loc_alert_class_regwen_cg
+      desc: '''Covers if regwen is locked for loc_alert_class registers.'''
+    }
+    {
+      name: class_ctrl_regwen_cg
+      desc: '''Covers if regwen is locked for class_ctrl registers.'''
+    }
+    {
+      name: class_clr_regwen_cg
+      desc: '''Covers if regwen is locked for class_clr registers.'''
+    }
+    {
+      name: class_accum_thresh_regwen_cg
+      desc: '''Covers if regwen is locked for class_accum_thresh registers.'''
+    }
+    {
+      name: class_timeout_cyc_regwen_cg
+      desc: '''Covers if regwen is locked for class_timeout_cyc registers.'''
+    }
+    {
+      name: class_crashdump_trigger_regwen_cg
+      desc: '''Covers if regwen is locked for class_crashdump_trigger registers.'''
+    }
+    {
+      name: class_phase_cyc_regwen_cg
+      desc: '''Covers if regwen is locked for class_phase_cyc registers.'''
+    }
+ ]
 }
