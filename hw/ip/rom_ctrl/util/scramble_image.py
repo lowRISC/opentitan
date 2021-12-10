@@ -501,7 +501,7 @@ class Scrambler:
                 w39 = w32 | (chk_bits << 32)
                 clr39 = self.unscramble_word(39, log_addr, w39)
                 clr32 = clr39 & mask32
-                exp39 = ecc_encode_some('hsiao', 32, [clr32])[0][0]
+                exp39 = ecc_encode_some('inv_hsiao', 32, [clr32])[0][0]
                 if clr39 != exp39:
                     # The checksum doesn't match. Excellent!
                     found_mismatch = True
