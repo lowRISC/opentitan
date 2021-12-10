@@ -54,6 +54,7 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_64_57_enc.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_39_32_dec.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_39_32_enc.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sparse_fsm_flop.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subreg.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subreg_ext.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subreg_shadow.sv
@@ -110,6 +111,10 @@ for file in ${OT_DEP_SOURCES[@]}; do
     sed -i 's/prim_xor2/prim_xilinx_xor2/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
 done
 
+# Rename the prim_sparse_fsm_flop module. For some reason, sv2v decides to append a suffix.
+sed -i 's/module prim_sparse_fsm_flop_.*/module prim_sparse_fsm_flop \(/g' \
+    $LR_SYNTH_OUT_DIR/generated/prim_sparse_fsm_flop.v
+
 # Get and convert core sources.
 for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
     module=`basename -s .sv $file`
@@ -135,6 +140,10 @@ for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
     sed -i 's/prim_buf/prim_xilinx_buf/g'                $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_xor2/prim_xilinx_xor2/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
+
+    # Remove the StateEnumT parameter from prim_sparse_fsm_flop instances. Yosys doesn't seem to
+    # support this.
+    sed -i '/\.StateEnumT(logic \[.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
 done
 
 #-------------------------------------------------------------------------

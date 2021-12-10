@@ -133,14 +133,15 @@ module aes_ctr_fsm import aes_pkg::*;
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] aes_ctr_cs_raw;
   assign aes_ctr_cs = aes_ctr_e'(aes_ctr_cs_raw);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(aes_ctr_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(IDLE))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( aes_ctr_ns     ),
-    .q_o ( aes_ctr_cs_raw )
+    .state_i ( aes_ctr_ns     ),
+    .state_o ( aes_ctr_cs_raw )
   );
 
   // Forward slice index.

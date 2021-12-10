@@ -222,4 +222,49 @@ module aes
   `ASSERT_KNOWN(EdnReqKnown, edn_o)
   `ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
 
+`ifndef SYNTHESIS
+  // Alert assertions for sparse FSMs.
+  for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_control_fsm_svas
+    if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_control_fsm_svas_p
+      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesControlFsmCheck_A,
+          u_aes_core.u_aes_control.gen_fsm[i].gen_fsm_p.
+              u_aes_control_fsm_i.u_aes_control_fsm.u_state_regs,
+          alert_tx_o[1])
+    end else begin : gen_control_fsm_svas_n
+      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesControlFsmCheck_A,
+          u_aes_core.u_aes_control.gen_fsm[i].gen_fsm_n.
+              u_aes_control_fsm_i.u_aes_control_fsm.u_state_regs,
+          alert_tx_o[1])
+    end
+  end
+
+  for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_ctr_fsm_svas
+    if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_ctr_fsm_svas_p
+      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCtrFsmCheck_A,
+          u_aes_core.u_aes_ctr.gen_fsm[i].gen_fsm_p.
+              u_aes_ctr_fsm_i.u_aes_ctr_fsm.u_state_regs,
+          alert_tx_o[1])
+    end else begin : gen_ctr_fsm_svas_n
+      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCtrFsmCheck_A,
+          u_aes_core.u_aes_ctr.gen_fsm[i].gen_fsm_n.
+              u_aes_ctr_fsm_i.u_aes_ctr_fsm.u_state_regs,
+          alert_tx_o[1])
+    end
+  end
+
+  for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_cipher_control_fsm_svas
+    if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_cipher_control_fsm_svas_p
+      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
+          u_aes_core.u_aes_cipher_core.u_aes_cipher_control.gen_fsm[i].gen_fsm_p.
+              u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.u_state_regs,
+          alert_tx_o[1])
+    end else begin : gen_cipher_control_fsm_svas_n
+      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
+          u_aes_core.u_aes_cipher_core.u_aes_cipher_control.gen_fsm[i].gen_fsm_n.
+              u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.u_state_regs,
+          alert_tx_o[1])
+    end
+  end
+`endif
+
 endmodule
