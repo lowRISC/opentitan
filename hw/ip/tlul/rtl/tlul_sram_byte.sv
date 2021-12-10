@@ -39,12 +39,10 @@ module tlul_sram_byte import tlul_pkg::*; #(
   if (EnableIntg) begin : gen_integ_handling
 
     // state enumeration
-    typedef enum logic [2:0] {
+    typedef enum logic [1:0] {
       StPassThru,
-      StFlush,
       StWaitRd,
-      StWriteCmd,
-      StWait
+      StWriteCmd
     } state_e;
 
     // signal select enumeration
@@ -56,7 +54,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
     // state and selection
     sel_sig_e sel_int;
     logic stall_host;
-    logic wr_phase, rd_wait;
+    logic wr_phase;
+    logic rd_wait;
     state_e state_d, state_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -75,87 +74,43 @@ module tlul_sram_byte import tlul_pkg::*; #(
     logic wr_txn;
     logic byte_wr_txn;
     logic byte_req_ack;
-    logic a_ack_q;
+    logic [prim_util_pkg::vbits(Outstanding):0] pending_txn_cnt;
 
     assign a_ack = tl_i.a_valid & tl_o.a_ready;
     assign d_ack = tl_o.d_valid & tl_i.d_ready;
     assign sram_a_ack = tl_sram_o.a_valid & tl_sram_i.a_ready;
     assign sram_d_ack = tl_sram_i.d_valid & tl_sram_o.d_ready;
     assign wr_txn = (tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData);
+
+
     assign byte_req_ack = byte_wr_txn & a_ack;
-
-    logic [3:0] txn_cnt;
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        txn_cnt <= '0;
-      end else if (a_ack && !d_ack) begin
-        txn_cnt <= txn_cnt + 1'b1;
-      end else if (!a_ack && d_ack) begin
-        txn_cnt <= txn_cnt - 1'b1;
-      end
-    end
-
-
     assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn & ~error_i;
-    assign sel_int = byte_wr_txn | stall_host ? SelInt : SelPassThru;
-    // TODO(#7461): remove this register, once this issue has been addressed.
-    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-      if (!rst_ni) begin
-         a_ack_q <= 1'b0;
-      end else begin
-         a_ack_q <= a_ack;
-      end
-    end
+    assign sel_int = (byte_wr_txn || stall_host) ? SelInt : SelPassThru;
 
     // state machine handling
     always_comb begin
+      rd_wait = 1'b0;
       stall_host = 1'b0;
       wr_phase = 1'b0;
-      rd_wait = 1'b0;
       state_d = state_q;
 
       unique case (state_q)
-        //StPassThru: begin
-        //  // TODO(#7461): remove the first if condition once all RAW corner cases are handled in DV.
-        //  // This introduces an artificial bubble before entering a read modify write operation
-        //  // in case there was another transaction right before this one. This ensures that the
-        //  // previous operation can complete.
-        //  if (byte_wr_txn && a_ack_q) begin
-        //    stall_host = 1'b1;
-        //  end else if (byte_req_ack) begin
-        //    state_d = StWaitRd;
-        //  end
-        //end
-
         StPassThru: begin
-          if (byte_wr_txn && a_ack_q) begin
-            stall_host = 1'b1;
-          end else if (byte_req_ack) begin
-            state_d = (txn_cnt == '0) ?  StWaitRd : StFlush;
+          if (byte_req_ack) begin
+            state_d = StWaitRd;
           end
         end
 
-        // Flush is required if there are many outstanding transactions before
-        // the partial write.  Due to the way things are serialized, there is
-        // no way for the logic to tell which read belongs to the partial read
-        // unless it flushes all prior transactions.
-        StFlush: begin
+        // Due to the way things are serialized, there is no way for the logic to tell which read
+        // belongs to the partial read unless it flushes all prior transactions. Hence, we wait
+        // here until exactly one outstanding transaction remains (that one is the partial read).
+        StWaitRd: begin
           stall_host = 1'b1;
-          if (txn_cnt == 4'h1) begin
-            rd_wait = 1'b1;
-
+          if (pending_txn_cnt == $bits(pending_txn_cnt)'(1)) begin
+            rd_wait    = 1'b1;
             if (sram_d_ack) begin
               state_d = StWriteCmd;
             end
-          end
-        end
-
-        StWaitRd: begin
-          stall_host = 1'b1;
-          rd_wait = 1'b1; // TODO(#7461): remove this signal, once this issue has been addressed.
-
-          if (sram_d_ack) begin
-            state_d = StWriteCmd;
           end
         end
 
@@ -164,22 +119,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
           wr_phase = 1'b1;
 
           if (sram_a_ack) begin
-            state_d = StWait;
+            state_d = StPassThru;
           end
-        end
-
-        // TODO(#7461): remove this once all RAW corner cases are handled in DV.
-        // This state artificially introduces a bubble after each read modify write
-        // operation such that it can complete.
-
-        // The new wait is primarily here to handle back to back partial writes.
-        // If we do not wait this one out, the new "write" issues a read that is
-        // immediately accepted. This causes the read response to pop out up the
-        // upstream host, which is incorrect behavior.  There are cleaner ways
-        // to solve this, but this is the most convenient for now.
-        StWait: begin
-          stall_host = 1'b1;
-          state_d = d_ack ? StPassThru : StWait;
         end
 
         default:;
@@ -236,7 +177,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
     // captured read data
     logic [top_pkg::TL_DW-1:0] rsp_data;
     always_ff @(posedge clk_i) begin
-      if (sram_d_ack) begin
+      if (sram_d_ack && rd_wait) begin
         rsp_data <= tl_sram_i.d_data;
       end
     end
@@ -274,7 +215,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
       a_mask:    '{default: '1},
       a_data:    wr_phase ? combined_data       : tl_i.a_data,   // registered data
       a_user:    wr_phase ? held_data.a_user    : tl_i.a_user,   // registered user
-      // TODO(#7461): this can be set constantly to 1'b1, once this issue has been addressed.
+      // if we're waiting for an internal read, we force this to 1.
       d_ready:   tl_i.d_ready | rd_wait
     };
 
@@ -293,31 +234,32 @@ module tlul_sram_byte import tlul_pkg::*; #(
     assign tl_sram_o = (sel_int == SelInt) ? tl_h2d_intg : tl_i;
     assign error_o = (sel_int == SelInt) ? '0 : error_i;
 
+    logic size_fifo_rdy;
     logic [top_pkg::TL_SZW-1:0] a_size;
     prim_fifo_sync #(
       .Width(top_pkg::TL_SZW),
       .Pass(1'b0),
       .Depth(Outstanding),
-      .OutputZeroIfEmpty(1'b0)
+      .OutputZeroIfEmpty(1'b1)
     ) u_sync_fifo_a_size (
       .clk_i,
       .rst_ni,
       .clr_i(1'b0),
       .wvalid_i(a_ack),
-      .wready_o(),
+      .wready_o(size_fifo_rdy),
       .wdata_i(tl_i.a_size),
       .rvalid_o(),
       .rready_i(d_ack),
       .rdata_o(a_size),
       .full_o(),
-      .depth_o()
+      .depth_o(pending_txn_cnt)
     );
 
     always_comb begin
       tl_o = tl_sram_i;
 
       // pass a_ready through directly if we are not stalling
-      tl_o.a_ready = tl_sram_i.a_ready & ~stall_host & fifo_rdy;
+      tl_o.a_ready = tl_sram_i.a_ready & ~stall_host & fifo_rdy & size_fifo_rdy;
 
       // when internal logic has taken over, do not show response to host during
       // read phase.  During write phase, allow the host to see the completion.
@@ -326,15 +268,15 @@ module tlul_sram_byte import tlul_pkg::*; #(
       // the size returned by tl_sram_i does not always correspond to the actual
       // transaction size in cases where a read modify write operation is
       // performed. Hence, we always return the registered size here.
-      tl_o.d_size  = (tl_o.d_valid) ? a_size : '0;
+      tl_o.d_size  = a_size;
     end
 
     // when byte access detected, go to wait read
     `ASSERT(ByteAccessStateChange_A, a_ack & wr_txn & ~&tl_i.a_mask & ~error_i |=>
-      state_q inside {StWaitRd, StFlush})
-
+      state_q inside {StWaitRd})
     // when in wait for read, a successful response should move to write phase
-    `ASSERT(ReadCompleteStateChange_A, (state_q == StWaitRd) & sram_d_ack |=> state_q == StWriteCmd)
+    `ASSERT(ReadCompleteStateChange_A,
+        (state_q == StWaitRd) && (pending_txn_cnt == 1) && sram_d_ack |=> state_q == StWriteCmd)
 
   end else begin : gen_no_integ_handling
     // In this case we pass everything just through.
