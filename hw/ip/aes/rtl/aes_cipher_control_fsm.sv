@@ -418,14 +418,15 @@ module aes_cipher_control_fsm import aes_pkg::*;
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] aes_cipher_ctrl_cs_raw;
   assign aes_cipher_ctrl_cs = aes_cipher_ctrl_e'(aes_cipher_ctrl_cs_raw);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(aes_cipher_ctrl_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(IDLE))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( aes_cipher_ctrl_ns     ),
-    .q_o ( aes_cipher_ctrl_cs_raw )
+    .state_i ( aes_cipher_ctrl_ns     ),
+    .state_o ( aes_cipher_ctrl_cs_raw )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm

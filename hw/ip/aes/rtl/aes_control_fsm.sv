@@ -577,14 +577,15 @@ module aes_control_fsm
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] aes_ctrl_cs_raw;
   assign aes_ctrl_cs = aes_ctrl_e'(aes_ctrl_cs_raw);
-  prim_flop #(
+  prim_sparse_fsm_flop #(
+    .StateEnumT(aes_ctrl_e),
     .Width(StateWidth),
     .ResetValue(StateWidth'(IDLE))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( aes_ctrl_ns     ),
-    .q_o ( aes_ctrl_cs_raw )
+    .state_i ( aes_ctrl_ns     ),
+    .state_o ( aes_ctrl_cs_raw )
   );
 
   /////////////////////
