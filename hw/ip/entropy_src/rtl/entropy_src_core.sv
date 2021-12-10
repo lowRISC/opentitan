@@ -368,7 +368,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     sha3_done;
   logic                     sha3_absorbed;
   logic                     sha3_squeezing;
-  logic [2:0]               sha3_fsm;
+ // logic [sha3_pkg::StateWidth-1:0] sha3_fsm;
   logic [32:0]              sha3_err;
   logic                     cs_aes_halt_req;
   logic                     sha3_msg_rdy;
@@ -391,6 +391,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_sha3_state;
   logic                    unused_entropy_data;
   logic                    unused_fw_ov_rd_data;
+
+  logic                    sha3_state_error;
 
   // flops
   logic [RngBusWidth-1:0] ht_esbus_dly_q, ht_esbus_dly_d;
@@ -573,7 +575,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                              sfifo_esfinal_err_sum ||
                                              es_ack_sm_err_sum ||
                                              es_main_sm_err_sum)) ||
-                                             es_cntr_err_sum; // prim_count err is always active
+                                             es_cntr_err_sum || // prim_count err is always active
+                                             sha3_state_error;
 
   // set fifo errors that are single instances of source
   assign sfifo_esrng_err_sum = (|sfifo_esrng_err) ||
@@ -655,7 +658,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // set the debug status reg
   assign hw2reg.debug_status.entropy_fifo_depth.d = sfifo_esfinal_depth;
-  assign hw2reg.debug_status.sha3_fsm.d = sha3_fsm;
+  assign hw2reg.debug_status.sha3_fsm.d = '0;
   assign hw2reg.debug_status.sha3_block_pr.d = sha3_block_processed;
   assign hw2reg.debug_status.sha3_squeezing.d = sha3_squeezing;
   assign hw2reg.debug_status.sha3_absorbed.d = sha3_absorbed;
@@ -2080,12 +2083,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
     .block_processed_o (sha3_block_processed),
 
-    .sha3_fsm_o (sha3_fsm),
+   // .sha3_fsm_o (sha3_fsm),
+    .sha3_fsm_o(),
 
     .state_valid_o (sha3_state_vld),
     .state_o       (sha3_state),
 
-    .error_o (sha3_err)
+    .error_o (sha3_err),
+    .sparse_fsm_error_o (sha3_state_error)
   );
 
 

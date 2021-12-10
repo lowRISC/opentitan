@@ -321,4 +321,13 @@ module entropy_src
     u_entropy_src_core.u_entropy_src_ack_sm.u_state_regs,
     alert_tx_o[1])
 
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3FsmCheck_A,
+    u_entropy_src_core.u_sha3.u_state_regs, alert_tx_o[1])
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KeccakRoundFsmCheck_A,
+    u_entropy_src_core.u_sha3.u_keccak.u_state_regs, alert_tx_o[1])
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A,
+    u_entropy_src_core.u_sha3.u_pad.u_state_regs, alert_tx_o[1])
+
 endmodule
