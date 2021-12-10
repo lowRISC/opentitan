@@ -272,6 +272,15 @@ module rom_ctrl_fsm
     end
   end
 
+  // The counter is supposed to run from zero up to the top of memory and then tell us that it's
+  // done with the counter_done signal. We would like to be sure that no-one can fiddle with the
+  // counter address once the hash has been computed (if they could subvert the mux as well, this
+  // would allow them to generate a useful wrong address for a fetch). Fortunately, doing so would
+  // cause the counter_done signal to drop again and we *know* that it should stay high when our FSM
+  // is in the Done state.
+  logic unexpected_counter_change;
+  assign unexpected_counter_change = mubi4_test_true_loose(in_state_done) & !counter_done;
+
   // We keep control of the ROM mux from reset until we're done.
   assign rom_select_bus_o = in_state_done;
 
@@ -280,6 +289,6 @@ module rom_ctrl_fsm
 
   // TODO: There are lots more checks that we could do here (things like spotting vld signals that
   //       occur when we're in an FSM state that doesn't expect them)
-  assign alert_o = fsm_alert | checker_alert;
+  assign alert_o = fsm_alert | checker_alert | unexpected_counter_change;
 
 endmodule
