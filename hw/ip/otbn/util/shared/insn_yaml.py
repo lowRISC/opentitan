@@ -15,6 +15,7 @@ from serialize.parse_helpers import (check_keys, check_str, check_bool,
 
 from .encoding import Encoding
 from .encoding_scheme import EncSchemes
+from .information_flow import InsnInformationFlow
 from .lsu_desc import LSUDesc
 from .operand import Operand
 from .syntax import InsnSyntax
@@ -160,6 +161,9 @@ class Insn:
                                      .format(idx, what, op_name))
 
         self.straight_line = yd.get('straight-line', True)
+
+        self.iflow = InsnInformationFlow.from_yaml(yd.get('iflow', None),
+                'iflow field for {}'.format(what), self.operands)
 
     def enc_vals_to_op_vals(self,
                             cur_pc: int,
