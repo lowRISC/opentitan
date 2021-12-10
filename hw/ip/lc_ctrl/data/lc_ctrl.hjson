@@ -838,8 +838,8 @@
           If this counter is equal to 24, the !!LC_STATE is considered
           to be invalid and will read as SCRAP.
 
-          If the counter state is invalid, the counter will have the
-          value 31 (i.e., all counter bits will be set).
+          If the counter state is invalid, or the life cycle controller is in the post-transition state,
+          the counter will have the value 31 (i.e., all counter bits will be set).
           '''
         }
       ],
@@ -855,7 +855,11 @@
       fields: [
         { bits: "CsrLcIdStateWidth-1:0"
           name: "STATE"
-          desc: ""
+          desc: '''
+                This field exposes the id state in redundant enum format.
+                The 2bit id state enum is repeated 16x so that it fills the entire 32bit register.
+                The encoding is straightforward replication: [val, val, ... val]."
+                '''
           enum: [
             { value: "0x0",
               name:  "BLANK",
