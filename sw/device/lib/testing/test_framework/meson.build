@@ -2,9 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-###############################################################################
-# (Current) On-device Test Framework
-###############################################################################
 # Test status library.
 sw_lib_testing_test_status = declare_dependency(
   link_with: static_library(
@@ -52,34 +49,6 @@ if coverage
   )
 endif
 
-sw_lib_testing_test_main = declare_dependency(
-  link_with: static_library(
-    'test_main_ot',
-    sources: ['test_main.c'],
-    dependencies: [
-      sw_lib_runtime_log,
-      sw_lib_runtime_print,
-      sw_lib_dif_uart,
-      sw_lib_testing_test_status,
-      sw_lib_testing_test_coverage,
-    ],
-  )
-)
-
-###############################################################################
-# (Future) On-device Test Framework (OTTF)
-# See #8015: https://github.com/lowRISC/opentitan/issues/8015
-###############################################################################
-# FreeRTOS kernel paths.
-freertos_root = '@0@/@1@'.format(meson.source_root(), 'sw/vendor/freertos_freertos_kernel')
-freertos_memmang_path = '@0@/@1@'.format(freertos_root, 'portable/MemMang')
-freertos_portable_path = '@0@/@1@'.format(freertos_root, 'portable/GCC/RISC-V')
-
-# OTTF include directories.
-ottf_incdirs = include_directories(
-  '../../../../vendor/freertos_freertos_kernel/include',
-  '../../../../vendor/freertos_freertos_kernel/portable/GCC/RISC-V')
-
 # OTTF (Default) Interrupt Service Routines
 #
 # ottf_isrs.c contains various definitions with weak linkage, for interrupt
@@ -105,6 +74,12 @@ sw_lib_testing_ottf_isrs = declare_dependency(
 )
 
 # OpenTitan Test Framework (OTTF)
+freertos_root = '@0@/@1@'.format(meson.source_root(), 'sw/vendor/freertos_freertos_kernel')
+freertos_memmang_path = '@0@/@1@'.format(freertos_root, 'portable/MemMang')
+freertos_portable_path = '@0@/@1@'.format(freertos_root, 'portable/GCC/RISC-V')
+ottf_incdirs = include_directories(
+  '../../../../vendor/freertos_freertos_kernel/include',
+  '../../../../vendor/freertos_freertos_kernel/portable/GCC/RISC-V')
 sw_lib_testing_ottf = declare_dependency(
   link_with: static_library(
     'sw_lib_testing_ottf',
