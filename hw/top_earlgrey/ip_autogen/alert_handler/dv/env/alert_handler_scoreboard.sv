@@ -427,6 +427,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                     $sformatf("class%0s_crashdump_trigger_shadowed", class_name[i]));
             if (crashdump_val.class_esc_state[i] == (`gmv(crashdump_trigger_csr) + 3'b100)) begin
               crashdump_triggered = 1;
+              if (cfg.en_cov) cov.crashdump_trigger_cg.sample(`gmv(crashdump_trigger_csr));
               break;
              end
           end
@@ -475,7 +476,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                     state_per_class[class_i] = EscStateTimeout;
                     while (under_intr_classes[class_i]) begin
                       @(cfg.clk_rst_vif.cbn);
-                      if (intr_cnter_per_class[class_i] >= timeout_cyc) predict_esc(class_i);
+                      if (intr_cnter_per_class[class_i] >= timeout_cyc) begin
+                        predict_esc(class_i);
+                        if (cfg.en_cov) cov.intr_timeout_cnt_cg.sample(class_i, timeout_cyc);
+                      end
                       intr_cnter_per_class[class_i] += 1;
                     end
                   end
@@ -576,12 +580,19 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   // clear accumulative counters, and escalation counters if they are under escalation
   // interrupt timeout counters cannot be cleared by this
-  task clr_reset_esc_class(int class_i);
+  task clr_reset_esc_class(int i);
     fork
+      automatic int class_i = i;
       begin
         cfg.clk_rst_vif.wait_clks(1);
-        if (under_intr_classes[class_i]) clr_esc_under_intr[class_i] = 1;
-        if (under_esc_classes [class_i]) intr_cnter_per_class[class_i] = 0;
+        if (under_intr_classes[class_i]) begin
+          if (cfg.en_cov) cov.clear_intr_cnt_cg.sample(class_i);
+          clr_esc_under_intr[class_i] = 1;
+        end
+        if (under_esc_classes [class_i]) begin
+          if (cfg.en_cov) cov.clear_esc_cnt_cg.sample(class_i);
+          intr_cnter_per_class[class_i] = 0;
+        end
         under_esc_classes[class_i] = 0;
         cfg.clk_rst_vif.wait_n_clks(1);
         last_triggered_alert_per_class[class_i] = $realtime;

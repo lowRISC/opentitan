@@ -123,4 +123,70 @@
       tests: ["alert_handler_stress_all"]
     }
   ]
+
+  covergroups: [
+    {
+      name: accum_cnt_cg
+      desc: '''Covers escalation due to accumulated alerts.
+
+            - Collect the threshold of accumulated alerts.
+            - Collect which alert_class exceeds the accumulated count.
+            - Cross the above coverpoints.
+            '''
+    }
+    {
+      name: intr_timeout_cnt_cg
+      desc: '''Covers escalation due to interrupt timeout.
+
+            - Collect the threshold of interrupt timeout cycles.
+            - Collect which alert_class exceeds the timeout threshold.
+            - Cross the above coverpoints.
+            '''
+    }
+    {
+      name: esc_sig_length_cg
+      desc: '''Covers escalation signal length for each escalation signal.'''
+    }
+    {
+      name: clear_intr_cnt_cg
+      desc: '''Covers interrupt counter being cleared by class_clr_shadowed register.'''
+    }
+    {
+      name: clear_esc_cnt_cg
+      desc: '''Covers escalation counter being cleared by class_clr_shadowed register.'''
+    }
+    {
+      name: alert_cause_cg
+      desc: '''Covers alert_cause register and related items.
+
+            - Collect which alert causes the alert_cause register to set.
+            - Collect the alert_class that this alert belongs to.
+            - Cross the above coverpoints.
+            '''
+    }
+    {
+      name: alert_loc_alert_cause_cg
+      desc: '''Covers loc_alert_cause register regarding alert.
+
+            - Collect two loc_alert causes: alert_ping_fail and alert_integrity_fail.
+            - Collect which alert triggers this loc_alert.
+            - Collect the alert_class that this local alert belongs to.
+            - Cross the first coverpoint with the rest of the coverpoints.
+            '''
+    }
+    {
+      name: esc_loc_alert_cause_cg
+      desc: '''Covers loc_alert_cause register regarding escalation.
+
+            - Collect two loc_alert causes: esc_ping_fail and esc_integrity_fail.
+            - Collect which escalation triggers this loc_alert.
+            - Collect the alert_class that this local alert belongs to.
+            - Cross the first coverpoint with the rest of the coverpoints.
+            '''
+    }
+    {
+      name: crashdump_trigger_cg
+      desc: '''Covers which phase triggers crashdump.'''
+    }
+  ]
 }
