@@ -516,13 +516,15 @@ class InsnInformationFlow:
             for const in rule.required_constants(op_vals)
         }
 
-    def evaluate(
-            self, op_vals: Dict[str, int],
-            constant_regs: Dict[str, int]) -> Optional[InformationFlowGraph]:
+    def evaluate(self, op_vals: Dict[str, int],
+                 constant_regs: Dict[str, int]) -> InformationFlowGraph:
         graph = None
         for rule in self.rules:
             rule_graph = rule.evaluate(op_vals, constant_regs)
             graph = safe_update_iflow(graph, rule_graph)
+        if graph is None:
+            # If no rules are triggered, return an empty graph
+            graph = InformationFlowGraph({})
         return graph
 
     @staticmethod
