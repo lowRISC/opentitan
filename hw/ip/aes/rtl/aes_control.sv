@@ -149,6 +149,16 @@ module aes_control
   logic                          mr_err;
   logic                          sp_enc_err;
 
+  // Sparsified FSM output signals. These need to converted to sp2v_e after collecting
+  // the individual bits.
+  logic          [Sp2VWidth-1:0] sp_data_out_we;
+  logic          [Sp2VWidth-1:0] sp_data_in_prev_we;
+  logic          [Sp2VWidth-1:0] sp_ctr_incr;
+  logic          [Sp2VWidth-1:0] sp_cipher_in_valid;
+  logic          [Sp2VWidth-1:0] sp_cipher_out_ready;
+  logic          [Sp2VWidth-1:0] sp_cipher_crypt;
+  logic          [Sp2VWidth-1:0] sp_cipher_dec_key_gen;
+
   // Multi-rail signals. These are outputs of the single-rail FSMs and need combining.
   logic          [Sp2VWidth-1:0] mr_ctrl_we;
   logic          [Sp2VWidth-1:0] mr_alert;
@@ -205,7 +215,7 @@ module aes_control
   // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
   // of every rail are buffered to prevent aggressive synthesis optimizations.
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm
-    if (SP2V_HIGH[i] == 1'b1) begin : gen_fsm_p
+    if ({SP2V_HIGH}[i] == 1'b1) begin : gen_fsm_p
       aes_control_fsm_p u_aes_control_fsm_i (
         .clk_i                     ( clk_i                         ),
         .rst_ni                    ( rst_ni                        ),
@@ -234,27 +244,27 @@ module aes_control
         .data_in_qe_i              ( data_in_qe_i                  ),
         .data_out_re_i             ( data_out_re_i                 ),
         .data_in_we_o              ( mr_data_in_we[i]              ), // AND-combine
-        .data_out_we_o             ( data_out_we_o[i]              ), // Sparsified
+        .data_out_we_o             ( sp_data_out_we[i]             ), // Sparsified
 
         .data_in_prev_sel_o        ( mr_data_in_prev_sel[i]        ), // OR-combine
-        .data_in_prev_we_o         ( data_in_prev_we_o[i]          ), // Sparsified
+        .data_in_prev_we_o         ( sp_data_in_prev_we[i]         ), // Sparsified
 
         .state_in_sel_o            ( mr_state_in_sel[i]            ), // OR-combine
         .add_state_in_sel_o        ( mr_add_state_in_sel[i]        ), // OR-combine
         .add_state_out_sel_o       ( mr_add_state_out_sel[i]       ), // OR-combine
 
-        .ctr_incr_o                ( ctr_incr_o[i]                 ), // Sparsified
-        .ctr_ready_i               ( ctr_ready[i]                  ), // Sparsified
+        .ctr_incr_o                ( sp_ctr_incr[i]                ), // Sparsified
+        .ctr_ready_i               ( {ctr_ready}[i]                ), // Sparsified
         .ctr_we_i                  ( int_ctr_we[i]                 ), // Sparsified
 
-        .cipher_in_valid_o         ( cipher_in_valid_o[i]          ), // Sparsified
-        .cipher_in_ready_i         ( cipher_in_ready[i]            ), // Sparsified
-        .cipher_out_valid_i        ( cipher_out_valid[i]           ), // Sparsified
-        .cipher_out_ready_o        ( cipher_out_ready_o[i]         ), // Sparsified
-        .cipher_crypt_o            ( cipher_crypt_o[i]             ), // Sparsified
-        .cipher_crypt_i            ( cipher_crypt[i]               ), // Sparsified
-        .cipher_dec_key_gen_o      ( cipher_dec_key_gen_o[i]       ), // Sparsified
-        .cipher_dec_key_gen_i      ( cipher_dec_key_gen[i]         ), // Sparsified
+        .cipher_in_valid_o         ( sp_cipher_in_valid[i]         ), // Sparsified
+        .cipher_in_ready_i         ( {cipher_in_ready}[i]          ), // Sparsified
+        .cipher_out_valid_i        ( {cipher_out_valid}[i]         ), // Sparsified
+        .cipher_out_ready_o        ( sp_cipher_out_ready[i]        ), // Sparsified
+        .cipher_crypt_o            ( sp_cipher_crypt[i]            ), // Sparsified
+        .cipher_crypt_i            ( {cipher_crypt}[i]             ), // Sparsified
+        .cipher_dec_key_gen_o      ( sp_cipher_dec_key_gen[i]      ), // Sparsified
+        .cipher_dec_key_gen_i      ( {cipher_dec_key_gen}[i]       ), // Sparsified
         .cipher_key_clear_o        ( mr_cipher_key_clear[i]        ), // OR-combine
         .cipher_key_clear_i        ( cipher_key_clear_i            ),
         .cipher_data_out_clear_o   ( mr_cipher_data_out_clear[i]   ), // OR-combine
@@ -317,27 +327,27 @@ module aes_control
         .data_in_qe_i              ( data_in_qe_i                  ),
         .data_out_re_i             ( data_out_re_i                 ),
         .data_in_we_o              ( mr_data_in_we[i]              ), // AND-combine
-        .data_out_we_no            ( data_out_we_o[i]              ), // Sparsified
+        .data_out_we_no            ( sp_data_out_we[i]             ), // Sparsified
 
         .data_in_prev_sel_o        ( mr_data_in_prev_sel[i]        ), // OR-combine
-        .data_in_prev_we_no        ( data_in_prev_we_o[i]          ), // Sparsified
+        .data_in_prev_we_no        ( sp_data_in_prev_we[i]         ), // Sparsified
 
         .state_in_sel_o            ( mr_state_in_sel[i]            ), // OR-combine
         .add_state_in_sel_o        ( mr_add_state_in_sel[i]        ), // OR-combine
         .add_state_out_sel_o       ( mr_add_state_out_sel[i]       ), // OR-combine
 
-        .ctr_incr_no               ( ctr_incr_o[i]                 ), // Sparsified
-        .ctr_ready_ni              ( ctr_ready[i]                  ), // Sparsified
+        .ctr_incr_no               ( sp_ctr_incr[i]                ), // Sparsified
+        .ctr_ready_ni              ( {ctr_ready}[i]                ), // Sparsified
         .ctr_we_ni                 ( int_ctr_we[i]                 ), // Sparsified
 
-        .cipher_in_valid_no        ( cipher_in_valid_o[i]          ), // Sparsified
-        .cipher_in_ready_ni        ( cipher_in_ready[i]            ), // Sparsified
-        .cipher_out_valid_ni       ( cipher_out_valid[i]           ), // Sparsified
-        .cipher_out_ready_no       ( cipher_out_ready_o[i]         ), // Sparsified
-        .cipher_crypt_no           ( cipher_crypt_o[i]             ), // Sparsified
-        .cipher_crypt_ni           ( cipher_crypt[i]               ), // Sparsified
-        .cipher_dec_key_gen_no     ( cipher_dec_key_gen_o[i]       ), // Sparsified
-        .cipher_dec_key_gen_ni     ( cipher_dec_key_gen[i]         ), // Sparsified
+        .cipher_in_valid_no        ( sp_cipher_in_valid[i]         ), // Sparsified
+        .cipher_in_ready_ni        ( {cipher_in_ready}[i]          ), // Sparsified
+        .cipher_out_valid_ni       ( {cipher_out_valid}[i]         ), // Sparsified
+        .cipher_out_ready_no       ( sp_cipher_out_ready[i]        ), // Sparsified
+        .cipher_crypt_no           ( sp_cipher_crypt[i]            ), // Sparsified
+        .cipher_crypt_ni           ( {cipher_crypt}[i]             ), // Sparsified
+        .cipher_dec_key_gen_no     ( sp_cipher_dec_key_gen[i]      ), // Sparsified
+        .cipher_dec_key_gen_ni     ( {cipher_dec_key_gen}[i]       ), // Sparsified
         .cipher_key_clear_o        ( mr_cipher_key_clear[i]        ), // OR-combine
         .cipher_key_clear_i        ( cipher_key_clear_i            ),
         .cipher_data_out_clear_o   ( mr_cipher_data_out_clear[i]   ), // OR-combine
@@ -374,6 +384,15 @@ module aes_control
     end
   end
 
+  // Convert sparsified outputs to sp2v_e type.
+  assign data_out_we_o        = sp2v_e'(sp_data_out_we);
+  assign data_in_prev_we_o    = sp2v_e'(sp_data_in_prev_we);
+  assign ctr_incr_o           = sp2v_e'(sp_ctr_incr);
+  assign cipher_in_valid_o    = sp2v_e'(sp_cipher_in_valid);
+  assign cipher_out_ready_o   = sp2v_e'(sp_cipher_out_ready);
+  assign cipher_crypt_o       = sp2v_e'(sp_cipher_crypt);
+  assign cipher_dec_key_gen_o = sp2v_e'(sp_cipher_dec_key_gen);
+
   // Combine single-bit FSM outputs.
   // OR: One bit is sufficient to drive the corresponding output bit high.
   assign alert_o                   = |mr_alert;
@@ -405,12 +424,12 @@ module aes_control
   // - An invalid encoding results: A downstream checker will fire, see mux_sel_err_i.
   // - A valid encoding results: The outputs are compared below to cover this case, see mr_err;
   always_comb begin : combine_sparse_signals
-    data_in_prev_sel_o  = dip_sel_e'('0);
-    state_in_sel_o      = si_sel_e'('0);
-    add_state_in_sel_o  = add_si_sel_e'('0);
-    add_state_out_sel_o = add_so_sel_e'('0);
-    key_init_sel_o      = key_init_sel_e'('0);
-    iv_sel_o            = iv_sel_e'('0);
+    data_in_prev_sel_o  = dip_sel_e'({DIPSelWidth{1'b0}});
+    state_in_sel_o      = si_sel_e'({SISelWidth{1'b0}});
+    add_state_in_sel_o  = add_si_sel_e'({AddSISelWidth{1'b0}});
+    add_state_out_sel_o = add_so_sel_e'({AddSOSelWidth{1'b0}});
+    key_init_sel_o      = key_init_sel_e'({KeyInitSelWidth{1'b0}});
+    iv_sel_o            = iv_sel_e'({IVSelWidth{1'b0}});
     mr_err              = 1'b0;
 
     for (int i = 0; i < Sp2VWidth; i++) begin

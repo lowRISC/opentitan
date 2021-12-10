@@ -54,6 +54,11 @@ module aes_ctr import aes_pkg::*;
   logic                                       incr_err;
   logic                                       mr_err;
 
+  // Sparsified FSM output signals. These need to converted to sp2v_e after collecting
+  // the individual bits.
+  logic    [Sp2VWidth-1:0]                    sp_ready;
+  logic    [Sp2VWidth-1:0]                    sp_ctr_we;
+
   // Multi-rail signals. These are outputs of the single-rail FSMs and need combining.
   logic    [Sp2VWidth-1:0]                    mr_alert;
   logic    [Sp2VWidth-1:0][SliceIdxWidth-1:0] mr_ctr_slice_idx;
@@ -93,13 +98,13 @@ module aes_ctr import aes_pkg::*;
   // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
   // of every rail are buffered to prevent aggressive synthesis optimizations.
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm
-    if (SP2V_HIGH[i] == 1'b1) begin : gen_fsm_p
+    if ({SP2V_HIGH}[i] == 1'b1) begin : gen_fsm_p
       aes_ctr_fsm_p u_aes_ctr_fsm_i (
         .clk_i           ( clk_i               ),
         .rst_ni          ( rst_ni              ),
 
-        .incr_i          ( incr[i]             ), // Sparsified
-        .ready_o         ( ready_o[i]          ), // Sparsified
+        .incr_i          ( {incr}[i]           ), // Sparsified
+        .ready_o         ( sp_ready[i]         ), // Sparsified
         .incr_err_i      ( incr_err            ),
         .mr_err_i        ( mr_err              ),
         .alert_o         ( mr_alert[i]         ), // OR-combine
@@ -107,15 +112,15 @@ module aes_ctr import aes_pkg::*;
         .ctr_slice_idx_o ( mr_ctr_slice_idx[i] ), // OR-combine
         .ctr_slice_i     ( ctr_i_slice         ),
         .ctr_slice_o     ( mr_ctr_o_slice[i]   ), // OR-combine
-        .ctr_we_o        ( ctr_we[i]           )  // Sparsified
+        .ctr_we_o        ( sp_ctr_we[i]        )  // Sparsified
       );
     end else begin : gen_fsm_n
       aes_ctr_fsm_n u_aes_ctr_fsm_i (
         .clk_i           ( clk_i               ),
         .rst_ni          ( rst_ni              ),
 
-        .incr_ni         ( incr[i]             ), // Sparsified
-        .ready_no        ( ready_o[i]          ), // Sparsified
+        .incr_ni         ( {incr}[i]           ), // Sparsified
+        .ready_no        ( sp_ready[i]         ), // Sparsified
         .incr_err_i      ( incr_err            ),
         .mr_err_i        ( mr_err              ),
         .alert_o         ( mr_alert[i]         ), // OR-combine
@@ -123,10 +128,14 @@ module aes_ctr import aes_pkg::*;
         .ctr_slice_idx_o ( mr_ctr_slice_idx[i] ), // OR-combine
         .ctr_slice_i     ( ctr_i_slice         ),
         .ctr_slice_o     ( mr_ctr_o_slice[i]   ), // OR-combine
-        .ctr_we_no       ( ctr_we  [i]         )  // Sparsified
+        .ctr_we_no       ( sp_ctr_we[i]        )  // Sparsified
       );
     end
   end
+
+  // Convert sparsified outputs to sp2v_e type.
+  assign ready_o = sp2v_e'(sp_ready);
+  assign ctr_we  = sp2v_e'(sp_ctr_we);
 
   // Combine single-bit FSM outputs.
   // OR: One bit is sufficient to drive the corresponding output bit high.

@@ -66,7 +66,7 @@ module aes_ctr_fsm import aes_pkg::*;
   /////////////
 
   // FSM
-  always_comb begin : aes_ctr_fsm
+  always_comb begin : aes_ctr_fsm_comb
 
     // Outputs
     ready_o         = 1'b0;
