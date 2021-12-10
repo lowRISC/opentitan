@@ -149,15 +149,20 @@ module aes_control
   logic                          mr_err;
   logic                          sp_enc_err;
 
-  // Sparsified FSM output signals. These need to converted to sp2v_e after collecting
-  // the individual bits.
+  // Sparsified FSM signals. These are needed for connecting the individual bits of the Sp2V
+  // signals to the single-rail FSMs.
   logic          [Sp2VWidth-1:0] sp_data_out_we;
   logic          [Sp2VWidth-1:0] sp_data_in_prev_we;
   logic          [Sp2VWidth-1:0] sp_ctr_incr;
+  logic          [Sp2VWidth-1:0] sp_ctr_ready;
   logic          [Sp2VWidth-1:0] sp_cipher_in_valid;
+  logic          [Sp2VWidth-1:0] sp_cipher_in_ready;
+  logic          [Sp2VWidth-1:0] sp_cipher_out_valid;
   logic          [Sp2VWidth-1:0] sp_cipher_out_ready;
-  logic          [Sp2VWidth-1:0] sp_cipher_crypt;
-  logic          [Sp2VWidth-1:0] sp_cipher_dec_key_gen;
+  logic          [Sp2VWidth-1:0] sp_in_cipher_crypt;
+  logic          [Sp2VWidth-1:0] sp_out_cipher_crypt;
+  logic          [Sp2VWidth-1:0] sp_in_cipher_dec_key_gen;
+  logic          [Sp2VWidth-1:0] sp_out_cipher_dec_key_gen;
 
   // Multi-rail signals. These are outputs of the single-rail FSMs and need combining.
   logic          [Sp2VWidth-1:0] mr_ctrl_we;
@@ -212,10 +217,18 @@ module aes_control
   /////////
   // FSM //
   /////////
+
+  // Convert sp2v_e signals to sparsified inputs.
+  assign sp_ctr_ready             = {ctr_ready};
+  assign sp_cipher_in_ready       = {cipher_in_ready};
+  assign sp_cipher_out_valid      = {cipher_out_valid};
+  assign sp_in_cipher_crypt       = {cipher_crypt};
+  assign sp_in_cipher_dec_key_gen = {cipher_dec_key_gen};
+
   // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
   // of every rail are buffered to prevent aggressive synthesis optimizations.
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm
-    if ({SP2V_HIGH}[i] == 1'b1) begin : gen_fsm_p
+    if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_fsm_p
       aes_control_fsm_p u_aes_control_fsm_i (
         .clk_i                     ( clk_i                         ),
         .rst_ni                    ( rst_ni                        ),
@@ -254,17 +267,17 @@ module aes_control
         .add_state_out_sel_o       ( mr_add_state_out_sel[i]       ), // OR-combine
 
         .ctr_incr_o                ( sp_ctr_incr[i]                ), // Sparsified
-        .ctr_ready_i               ( {ctr_ready}[i]                ), // Sparsified
+        .ctr_ready_i               ( sp_ctr_ready[i]               ), // Sparsified
         .ctr_we_i                  ( int_ctr_we[i]                 ), // Sparsified
 
         .cipher_in_valid_o         ( sp_cipher_in_valid[i]         ), // Sparsified
-        .cipher_in_ready_i         ( {cipher_in_ready}[i]          ), // Sparsified
-        .cipher_out_valid_i        ( {cipher_out_valid}[i]         ), // Sparsified
+        .cipher_in_ready_i         ( sp_cipher_in_ready[i]         ), // Sparsified
+        .cipher_out_valid_i        ( sp_cipher_out_valid[i]        ), // Sparsified
         .cipher_out_ready_o        ( sp_cipher_out_ready[i]        ), // Sparsified
-        .cipher_crypt_o            ( sp_cipher_crypt[i]            ), // Sparsified
-        .cipher_crypt_i            ( {cipher_crypt}[i]             ), // Sparsified
-        .cipher_dec_key_gen_o      ( sp_cipher_dec_key_gen[i]      ), // Sparsified
-        .cipher_dec_key_gen_i      ( {cipher_dec_key_gen}[i]       ), // Sparsified
+        .cipher_crypt_o            ( sp_out_cipher_crypt[i]        ), // Sparsified
+        .cipher_crypt_i            ( sp_in_cipher_crypt[i]         ), // Sparsified
+        .cipher_dec_key_gen_o      ( sp_out_cipher_dec_key_gen[i]  ), // Sparsified
+        .cipher_dec_key_gen_i      ( sp_in_cipher_dec_key_gen[i]   ), // Sparsified
         .cipher_key_clear_o        ( mr_cipher_key_clear[i]        ), // OR-combine
         .cipher_key_clear_i        ( cipher_key_clear_i            ),
         .cipher_data_out_clear_o   ( mr_cipher_data_out_clear[i]   ), // OR-combine
@@ -337,17 +350,17 @@ module aes_control
         .add_state_out_sel_o       ( mr_add_state_out_sel[i]       ), // OR-combine
 
         .ctr_incr_no               ( sp_ctr_incr[i]                ), // Sparsified
-        .ctr_ready_ni              ( {ctr_ready}[i]                ), // Sparsified
+        .ctr_ready_ni              ( sp_ctr_ready[i]               ), // Sparsified
         .ctr_we_ni                 ( int_ctr_we[i]                 ), // Sparsified
 
         .cipher_in_valid_no        ( sp_cipher_in_valid[i]         ), // Sparsified
-        .cipher_in_ready_ni        ( {cipher_in_ready}[i]          ), // Sparsified
-        .cipher_out_valid_ni       ( {cipher_out_valid}[i]         ), // Sparsified
+        .cipher_in_ready_ni        ( sp_cipher_in_ready[i]         ), // Sparsified
+        .cipher_out_valid_ni       ( sp_cipher_out_valid[i]        ), // Sparsified
         .cipher_out_ready_no       ( sp_cipher_out_ready[i]        ), // Sparsified
-        .cipher_crypt_no           ( sp_cipher_crypt[i]            ), // Sparsified
-        .cipher_crypt_ni           ( {cipher_crypt}[i]             ), // Sparsified
-        .cipher_dec_key_gen_no     ( sp_cipher_dec_key_gen[i]      ), // Sparsified
-        .cipher_dec_key_gen_ni     ( {cipher_dec_key_gen}[i]       ), // Sparsified
+        .cipher_crypt_no           ( sp_out_cipher_crypt[i]        ), // Sparsified
+        .cipher_crypt_ni           ( sp_in_cipher_crypt[i]         ), // Sparsified
+        .cipher_dec_key_gen_no     ( sp_out_cipher_dec_key_gen[i]  ), // Sparsified
+        .cipher_dec_key_gen_ni     ( sp_in_cipher_dec_key_gen[i]   ), // Sparsified
         .cipher_key_clear_o        ( mr_cipher_key_clear[i]        ), // OR-combine
         .cipher_key_clear_i        ( cipher_key_clear_i            ),
         .cipher_data_out_clear_o   ( mr_cipher_data_out_clear[i]   ), // OR-combine
@@ -390,8 +403,8 @@ module aes_control
   assign ctr_incr_o           = sp2v_e'(sp_ctr_incr);
   assign cipher_in_valid_o    = sp2v_e'(sp_cipher_in_valid);
   assign cipher_out_ready_o   = sp2v_e'(sp_cipher_out_ready);
-  assign cipher_crypt_o       = sp2v_e'(sp_cipher_crypt);
-  assign cipher_dec_key_gen_o = sp2v_e'(sp_cipher_dec_key_gen);
+  assign cipher_crypt_o       = sp2v_e'(sp_out_cipher_crypt);
+  assign cipher_dec_key_gen_o = sp2v_e'(sp_out_cipher_dec_key_gen);
 
   // Combine single-bit FSM outputs.
   // OR: One bit is sufficient to drive the corresponding output bit high.
