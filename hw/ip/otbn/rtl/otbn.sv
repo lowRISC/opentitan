@@ -729,8 +729,11 @@ module otbn
   // INSN_CNT register
   logic [31:0] insn_cnt;
   logic        insn_cnt_clear;
+  logic        unused_insn_cnt_q;
   assign hw2reg.insn_cnt.d = insn_cnt;
   assign insn_cnt_clear = reg2hw.insn_cnt.qe & ~busy_execute_q;
+  // Ignore all write data to insn_cnt. All writes zero the register.
+  assign unused_insn_cnt_q = ^reg2hw.insn_cnt.q;
 
   // Alerts ====================================================================
 
