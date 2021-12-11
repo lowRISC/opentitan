@@ -162,16 +162,20 @@ class pull_host_driver #(
   // Drives host side of req/ack protocol
   virtual task drive_item(push_pull_item#(HostDataWidth, DeviceDataWidth) req);
     `DV_SPINWAIT_EXIT(
+        do @(`CB); while (`CB.req_int);
         repeat (req.host_delay) @(`CB);
         `CB.req_int <= 1'b1;
         `CB.h_data_int <= req.h_data;
+      `uvm_info(`gfn, $sformatf("Driver sends request:\n%0s", req.convert2string()), UVM_HIGH)
         do @(`CB); while (!`CB.ack);
         if (cfg.pull_handshake_type == FourPhase) begin
           repeat (req.req_lo_delay) @(`CB);
           `CB.req_int <= 1'b0;
+      `uvm_info(`gfn, $sformatf("Driver drops request:\n%0s", req.convert2string()), UVM_HIGH)
           do @(`CB); while (`CB.ack);
         end else begin
           `CB.req_int <= 1'b0;
+      `uvm_info(`gfn, $sformatf("Driver drops request:\n%0s", req.convert2string()), UVM_HIGH)
         end
         if (!cfg.hold_h_data_until_next_req) `CB.h_data_int <= 'x;,
         wait (cfg.in_reset);)

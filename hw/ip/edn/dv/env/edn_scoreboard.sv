@@ -11,21 +11,34 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
   // local variables
 
+  bit                                           fips;
+  //push_pull_item                                endpoint_item;
+  push_pull_item#(.HostDataWidth(33),.DeviceDataWidth(33)) endpoint_item;
+  push_pull_item#(.HostDataWidth(129),.DeviceDataWidth(129)) genbits_item;
+  bit [csrng_pkg::FIPS_GENBITS_BUS_WIDTH-1:0]        gb_item;
+  bit [edn_pkg::FIPS_ENDPOINT_BUS_WIDTH-1:0]            ep_item;
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)))
-      endpoint_fifo[NUM_ENDPOINTS-1:0];
+      endpoint_fifo[MAX_NUM_ENDPOINTS];
 
   // local queues to hold incoming packets pending comparison
   push_pull_item#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-      endpoint_q[$][NUM_ENDPOINTS-1:0];
+      endpoint_q[$][MAX_NUM_ENDPOINTS];
+
+  // TLM agent fifos
+  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)))
+      genbits_fifo;
+
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    for (int i = 0; i < NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
       endpoint_fifo[i] = new($sformatf("endpoint_fifo[%0d]", i), this);
     end
+    genbits_fifo = new("genbits_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -35,6 +48,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+    compare_genbits();
     join_none
   endtask
 
@@ -108,5 +122,30 @@ class edn_scoreboard extends cip_base_scoreboard #(
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
   endfunction
+
+  virtual task compare_genbits();
+
+  for (int i = 0; i < edn_env_pkg::MAX_NUM_ENDPOINTS; i++) begin
+    if (!endpoint_fifo[i].is_empty) begin
+      if (!genbits_fifo.is_empty)  begin
+         endpoint_fifo[i].get(endpoint_item);
+         $cast(ep_item, endpoint_item);
+         genbits_fifo.get(genbits_item);
+         $cast(gb_item, genbits_item);
+         `DV_CHECK_EQ_FATAL(ep_item, gb_item[31:0]);
+         end
+            else begin
+           gb_item = gb_item >> 32;
+           endpoint_fifo[i].get(endpoint_item);
+         $cast(ep_item, endpoint_item);
+           `DV_CHECK_EQ_FATAL(ep_item, gb_item[31:0]);
+         end
+       end
+      end
+
+  endtask
+        
+
+  
 
 endclass
