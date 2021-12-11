@@ -187,12 +187,10 @@ class alert_receiver_driver extends alert_esc_base_driver;
     `DV_SPINWAIT_EXIT(
         // Drive alert init signal integrity error handshake.
         repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
-        cfg.vif.alert_rx_int.ping_n <= 1'b0;
-        wait (cfg.vif.receiver_cb.alert_tx.alert_p == cfg.vif.receiver_cb.alert_tx.alert_n);
         cfg.vif.alert_rx_int.ack_n <= 1'b0;
+        wait (cfg.vif.receiver_cb.alert_tx.alert_p == cfg.vif.receiver_cb.alert_tx.alert_n);
         repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
         cfg.vif.alert_rx_int.ack_n  <= 1'b1;
-        cfg.vif.alert_rx_int.ping_n <= 1'b1;
         wait (cfg.vif.receiver_cb.alert_tx.alert_p != cfg.vif.receiver_cb.alert_tx.alert_n);
         under_reset = 0;,
         @(negedge cfg.vif.rst_n);)

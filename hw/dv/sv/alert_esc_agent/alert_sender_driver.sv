@@ -242,9 +242,9 @@ class alert_sender_driver extends alert_esc_base_driver;
     fork begin
       fork
         begin
-          wait (cfg.vif.alert_rx.ping_p == cfg.vif.alert_rx.ping_n);
+          wait (cfg.vif.alert_rx.ack_p == cfg.vif.alert_rx.ack_n);
           cfg.vif.alert_tx_int.alert_n <= 1'b0;
-          wait (cfg.vif.alert_rx.ping_p != cfg.vif.alert_rx.ping_n);
+          wait (cfg.vif.alert_rx.ack_p != cfg.vif.alert_rx.ack_n);
           cfg.vif.alert_tx_int.alert_n <= 1'b1;
           under_reset = 0;
         end
