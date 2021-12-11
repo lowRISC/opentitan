@@ -119,15 +119,20 @@ module otbn_reg_top (
 
   // Create steering logic
   always_comb begin
-    reg_steer = 2;       // Default set to register
+    unique case (tl_i.a_address[AW-1:0]) inside
+      [16384:20479]: begin
+        reg_steer = 0;
+      end
+      [32768:34815]: begin
+        reg_steer = 1;
+      end
+      default: begin
+        // Default set to register
+        reg_steer = 2;
+      end
+    endcase
 
-    // TODO: Can below codes be unique case () inside ?
-    if (tl_i.a_address[AW-1:0] >= 16384 && tl_i.a_address[AW-1:0] < 20480) begin
-      reg_steer = 0;
-    end
-    if (tl_i.a_address[AW-1:0] >= 32768 && tl_i.a_address[AW-1:0] < 34816) begin
-      reg_steer = 1;
-    end
+    // Override this in case of an integrity error
     if (intg_err) begin
       reg_steer = 2;
     end
