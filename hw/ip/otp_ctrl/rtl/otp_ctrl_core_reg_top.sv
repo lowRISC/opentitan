@@ -117,12 +117,17 @@ module otp_ctrl_core_reg_top (
 
   // Create steering logic
   always_comb begin
-    reg_steer = 1;       // Default set to register
+    unique case (tl_i.a_address[AW-1:0]) inside
+      [4096:6143]: begin
+        reg_steer = 0;
+      end
+      default: begin
+        // Default set to register
+        reg_steer = 1;
+      end
+    endcase
 
-    // TODO: Can below codes be unique case () inside ?
-    if (tl_i.a_address[AW-1:0] >= 4096 && tl_i.a_address[AW-1:0] < 6144) begin
-      reg_steer = 0;
-    end
+    // Override this in case of an integrity error
     if (intg_err) begin
       reg_steer = 1;
     end
