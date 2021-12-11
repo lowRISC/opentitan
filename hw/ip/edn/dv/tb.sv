@@ -17,8 +17,8 @@ module tb;
   wire devmode;
   wire intr_edn_cmd_req_done, intr_edn_ebus_check_failed, intr_edn_fatal_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  edn_pkg::edn_req_t [NUM_ENDPOINTS-1:0] endpoint_req;
-  edn_pkg::edn_rsp_t [NUM_ENDPOINTS-1:0] endpoint_rsp;
+  edn_pkg::edn_req_t [MAX_NUM_ENDPOINTS - 1:0] endpoint_req;
+  edn_pkg::edn_rsp_t [MAX_NUM_ENDPOINTS - 1:0] endpoint_rsp;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -27,12 +27,12 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   csrng_if csrng_if(.clk(clk), .rst_n(rst_n));
   push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-       endpoint_if[NUM_ENDPOINTS-1:0](.clk(clk), .rst_n(rst_n));
+       endpoint_if[MAX_NUM_ENDPOINTS - 1:0](.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
   // dut
-  edn#(.NumEndPoints(NUM_ENDPOINTS)) dut (
+  edn#(.NumEndPoints(MAX_NUM_ENDPOINTS)) dut (
     .clk_i                     (clk      ),
     .rst_ni                    (rst_n    ),
 
@@ -57,7 +57,7 @@ module tb;
     // TODO: remove below when adding intrp
   assign                        intr_edn_ebus_check_failed = 1'b0;
 
-  for (genvar i = 0; i < NUM_ENDPOINTS; i++) begin : gen_endpoint_if
+  for (genvar i = 0; i < MAX_NUM_ENDPOINTS; i++) begin : gen_endpoint_if
     assign endpoint_req[i].edn_req = endpoint_if[i].req;
     assign endpoint_if[i].ack = endpoint_rsp[i].edn_ack;
     assign endpoint_if[i].d_data = {endpoint_rsp[i].edn_fips, endpoint_rsp[i].edn_bus};
