@@ -21,7 +21,7 @@ package edn_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint     NUM_ENDPOINTS = 1;
+  parameter uint     MAX_NUM_ENDPOINTS = 8;
   parameter string    LIST_OF_ALERTS[] = {"recov_alert","fatal_alert"};
   parameter uint     NUM_ALERTS       = 2;
 

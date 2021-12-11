@@ -11,7 +11,7 @@ class edn_smoke_vseq extends edn_base_vseq;
 
   bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]      genbits;
   bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]   fips;
-  bit [edn_pkg::ENDPOINT_BUS_WIDTH - 1:0]       edn_bus[edn_env_pkg::NUM_ENDPOINTS];
+  bit [edn_pkg::ENDPOINT_BUS_WIDTH - 1:0]       edn_bus[edn_env_pkg::MAX_NUM_ENDPOINTS];
 
   task body();
     // Wait for cmd_rdy
