@@ -87,38 +87,58 @@ interface clkmgr_if (
 `endif
 
   freq_measurement_t io_freq_measurement;
-  always @(posedge `PATH_TO_DUT.u_io_meas.valid_o) begin
-    io_freq_measurement = '{valid: `PATH_TO_DUT.u_io_meas.valid_o,
-                            slow: `PATH_TO_DUT.u_io_meas.slow_o,
-                            fast: `PATH_TO_DUT.u_io_meas.fast_o};
+  always @(posedge `PATH_TO_DUT.u_io_meas.clk_i) begin
+    if (`PATH_TO_DUT.u_io_meas.valid_o) begin
+      io_freq_measurement = '{valid: `PATH_TO_DUT.u_io_meas.valid_o,
+                              slow: `PATH_TO_DUT.u_io_meas.slow_o,
+                              fast: `PATH_TO_DUT.u_io_meas.fast_o};
+      `uvm_info("clkmgr_if", $sformatf("Sampled coverage for ClkMesrIo as %p", io_freq_measurement),
+                UVM_MEDIUM)
+    end
   end
 
   freq_measurement_t io_div2_freq_measurement;
-  always @(posedge `PATH_TO_DUT.u_io_div2_meas.valid_o) begin
-    io_div2_freq_measurement = '{valid: `PATH_TO_DUT.u_io_div2_meas.valid_o,
-                                 slow: `PATH_TO_DUT.u_io_div2_meas.slow_o,
-                                 fast: `PATH_TO_DUT.u_io_div2_meas.fast_o};
+  always @(posedge `PATH_TO_DUT.u_io_div2_meas.clk_i) begin
+    if (`PATH_TO_DUT.u_io_div2_meas.valid_o) begin
+      io_div2_freq_measurement = '{valid: `PATH_TO_DUT.u_io_div2_meas.valid_o,
+                                   slow: `PATH_TO_DUT.u_io_div2_meas.slow_o,
+                                   fast: `PATH_TO_DUT.u_io_div2_meas.fast_o};
+      `uvm_info("clkmgr_if", $sformatf(
+                "Sampled coverage for ClkMesrIoDiv2 as %p", io_div2_freq_measurement), UVM_MEDIUM)
+    end
   end
 
   freq_measurement_t io_div4_freq_measurement;
-  always @(posedge `PATH_TO_DUT.u_io_div4_meas.valid_o) begin
-    io_div4_freq_measurement = '{valid: `PATH_TO_DUT.u_io_div4_meas.valid_o,
-                                 slow: `PATH_TO_DUT.u_io_div4_meas.slow_o,
-                                 fast: `PATH_TO_DUT.u_io_div4_meas.fast_o};
+  always @(posedge `PATH_TO_DUT.u_io_div4_meas.clk_i) begin
+    if (`PATH_TO_DUT.u_io_div4_meas.valid_o) begin
+      io_div4_freq_measurement = '{valid: `PATH_TO_DUT.u_io_div4_meas.valid_o,
+                                   slow: `PATH_TO_DUT.u_io_div4_meas.slow_o,
+                                   fast: `PATH_TO_DUT.u_io_div4_meas.fast_o};
+      `uvm_info("clkmgr_if", $sformatf(
+                "Sampled coverage for ClkMesrIoDiv4 as %p", io_div4_freq_measurement), UVM_MEDIUM)
+    end
   end
 
   freq_measurement_t main_freq_measurement;
-  always @(posedge `PATH_TO_DUT.u_main_meas.valid_o) begin
-    main_freq_measurement = '{valid: `PATH_TO_DUT.u_main_meas.valid_o,
-                              slow: `PATH_TO_DUT.u_main_meas.slow_o,
-                              fast: `PATH_TO_DUT.u_main_meas.fast_o};
+  always @(posedge `PATH_TO_DUT.u_main_meas.clk_i) begin
+    if (`PATH_TO_DUT.u_main_meas.valid_o) begin
+      main_freq_measurement = '{valid: `PATH_TO_DUT.u_main_meas.valid_o,
+                                slow: `PATH_TO_DUT.u_main_meas.slow_o,
+                                fast: `PATH_TO_DUT.u_main_meas.fast_o};
+      `uvm_info("clkmgr_if", $sformatf(
+                "Sampled coverage for ClkMesrMain as %p", main_freq_measurement), UVM_MEDIUM)
+    end
   end
 
   freq_measurement_t usb_freq_measurement;
-  always @(posedge `PATH_TO_DUT.u_usb_meas.valid_o) begin
-    usb_freq_measurement = '{valid: `PATH_TO_DUT.u_usb_meas.valid_o,
-                             slow: `PATH_TO_DUT.u_usb_meas.slow_o,
-                             fast: `PATH_TO_DUT.u_usb_meas.fast_o};
+  always @(posedge `PATH_TO_DUT.u_usb_meas.clk_i) begin
+    if (`PATH_TO_DUT.u_usb_meas.valid_o) begin
+      usb_freq_measurement = '{valid: `PATH_TO_DUT.u_usb_meas.valid_o,
+                               slow: `PATH_TO_DUT.u_usb_meas.slow_o,
+                               fast: `PATH_TO_DUT.u_usb_meas.fast_o};
+      `uvm_info("clkmgr_if", $sformatf("Sampled coverage for ClkMesrUsb as %p", usb_freq_measurement
+                ), UVM_MEDIUM)
+    end
   end
 
   function automatic void update_extclk_ctrl(logic [2*LcTxTWidth-1:0] value);

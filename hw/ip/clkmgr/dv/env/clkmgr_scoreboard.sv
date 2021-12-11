@@ -197,6 +197,12 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                 !cfg.clkmgr_vif.io_freq_measurement.slow &&
                 !cfg.clkmgr_vif.io_freq_measurement.fast,
                 cfg.clkmgr_vif.io_freq_measurement.slow, cfg.clkmgr_vif.io_freq_measurement.fast);
+            `uvm_info(`gfn, $sformatf(
+                      "Cov for ClkMesrIo: %0s",
+                      cfg.clkmgr_vif.io_freq_measurement.slow ? "slow" :
+                      cfg.clkmgr_vif.io_freq_measurement.fast ? "fast" : "okay"
+                      ), UVM_MEDIUM)
+            cfg.clkmgr_vif.io_freq_measurement = '{default: 0};
           end
         end
       forever
@@ -207,6 +213,12 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                 !cfg.clkmgr_vif.io_div2_freq_measurement.fast,
                 cfg.clkmgr_vif.io_div2_freq_measurement.slow,
                 cfg.clkmgr_vif.io_div2_freq_measurement.fast);
+            `uvm_info(`gfn, $sformatf(
+                      "Cov for ClkMesrIoDiv2: %0s",
+                      cfg.clkmgr_vif.io_div2_freq_measurement.slow ? "slow" :
+                      cfg.clkmgr_vif.io_div2_freq_measurement.fast ? "fast" : "okay"
+                      ), UVM_MEDIUM)
+            cfg.clkmgr_vif.io_div2_freq_measurement = '{default: 0};
           end
         end
       forever
@@ -217,6 +229,12 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                 !cfg.clkmgr_vif.io_div4_freq_measurement.fast,
                 cfg.clkmgr_vif.io_div4_freq_measurement.slow,
                 cfg.clkmgr_vif.io_div4_freq_measurement.fast);
+            `uvm_info(`gfn, $sformatf(
+                      "Cov for ClkMesrIoDiv4: %0s",
+                      cfg.clkmgr_vif.io_div4_freq_measurement.slow ? "slow" :
+                      cfg.clkmgr_vif.io_div4_freq_measurement.fast ? "fast" : "okay"
+                      ), UVM_MEDIUM)
+            cfg.clkmgr_vif.io_div4_freq_measurement = '{default: 0};
           end
         end
       forever
@@ -227,6 +245,12 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                 !cfg.clkmgr_vif.main_freq_measurement.fast,
                 cfg.clkmgr_vif.main_freq_measurement.slow,
                 cfg.clkmgr_vif.main_freq_measurement.fast);
+            `uvm_info(`gfn, $sformatf(
+                      "Cov for ClkMesrMain: %0s",
+                      cfg.clkmgr_vif.main_freq_measurement.slow ? "slow" :
+                      cfg.clkmgr_vif.main_freq_measurement.fast ? "fast" : "okay"
+                      ), UVM_MEDIUM)
+            cfg.clkmgr_vif.main_freq_measurement = '{default: 0};
           end
         end
       forever
@@ -236,6 +260,12 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                 !cfg.clkmgr_vif.usb_freq_measurement.slow &&
                 !cfg.clkmgr_vif.usb_freq_measurement.fast,
                 cfg.clkmgr_vif.usb_freq_measurement.slow, cfg.clkmgr_vif.usb_freq_measurement.fast);
+            `uvm_info(`gfn, $sformatf(
+                      "Cov for ClkMesrUsb: %0s",
+                      cfg.clkmgr_vif.usb_freq_measurement.slow ? "slow" :
+                      cfg.clkmgr_vif.usb_freq_measurement.fast ? "fast" : "okay"
+                      ), UVM_MEDIUM)
+            cfg.clkmgr_vif.usb_freq_measurement = '{default: 0};
           end
         end
     join_none
