@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdnoreturn.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -93,6 +94,16 @@ void rstmgr_reason_clear(uint32_t reasons);
  * Enable capturing of alert info in the event of an alert escalation.
  */
 void rstmgr_alert_info_enable(void);
+
+/**
+ * Requests a system reset.
+ */
+#ifndef OT_OFF_TARGET_TEST
+// Omit `noreturn` to be able to test this function in off-target tests.
+noreturn
+#endif
+    void
+    rstmgr_reset(void);
 
 #ifdef __cplusplus
 }
