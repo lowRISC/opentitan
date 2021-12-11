@@ -6,6 +6,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/mock_abs_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -52,6 +53,11 @@ TEST_F(RstmgrTest, ClearResetReason) {
 TEST_F(RstmgrTest, EnableAlertInfo) {
   EXPECT_ABS_WRITE32(base_ + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 1);
   rstmgr_alert_info_enable();
+}
+
+TEST_F(RstmgrTest, Reset) {
+  EXPECT_ABS_WRITE32(base_ + RSTMGR_RESET_REQ_REG_OFFSET, kMultiBitBool4True);
+  rstmgr_reset();
 }
 
 }  // namespace

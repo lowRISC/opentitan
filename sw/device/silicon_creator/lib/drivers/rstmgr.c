@@ -7,6 +7,9 @@
 #include <assert.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/multibits.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -68,9 +71,19 @@ uint32_t rstmgr_reason_get(void) {
 }
 
 void rstmgr_reason_clear(uint32_t reasons) {
-  return abs_mmio_write32(kBase + RSTMGR_RESET_INFO_REG_OFFSET, reasons);
+  abs_mmio_write32(kBase + RSTMGR_RESET_INFO_REG_OFFSET, reasons);
 }
 
 void rstmgr_alert_info_enable(void) {
   abs_mmio_write32(kBase + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 1);
+}
+
+void rstmgr_reset(void) {
+  abs_mmio_write32(kBase + RSTMGR_RESET_REQ_REG_OFFSET, kMultiBitBool4True);
+#ifdef OT_PLATFORM_RV32
+  // Wait until the chip resets.
+  while (true) {
+    wait_for_interrupt();
+  }
+#endif
 }
