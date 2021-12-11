@@ -57,7 +57,7 @@ Example:
 
 ### Operation-with-immediate mnemonics
 
-***Do not use aliases for opertaion-with-immediate instructions, like `add rd, rs, imm`.***
+***Do not use aliases for operation-with-immediate instructions, like `add rd, rs, imm`.***
 
 Assemblers usually recognize instructions like `add t0, t1, 5` as an alias for `addi`. These should be avoided, since they are confusing and a potential source of errors.
 
@@ -90,7 +90,7 @@ The mnemonics for these are:
 - `tail sym`, for a far non-returnable jump (i.e., a non-unwinding tail-call).
 - `call sym`, for a far returnable jump (i.e., function calls).
 
-Far jumps are implemented in the assembler by emiting `auipc` instructions as necessary (since the jump-and-link instruction takes only a small immediate).
+Far jumps are implemented in the assembler by emitting `auipc` instructions as necessary (since the jump-and-link instruction takes only a small immediate).
 Jumps into C should always be treated as far jumps, and as such use the `call` instruction, unless the C function is marked `noreturn`, in which case `tail` can be used.
 
 Example:
@@ -147,7 +147,7 @@ Of course, this advice should be ignored when it is necessary to prove that a ce
 
 ***Do not use the current point (`.`) label.***
 
-The current point label does not look like a label, and can be easilly missed during review.
+The current point label does not look like a label, and can be easily missed during review.
 
 ## `.S` Files
 
@@ -187,10 +187,10 @@ All other advice for writing comments, as in the C/C++ style guide, also applies
 ***Register usage in a "function" that diverges from the RISC-V function call ABI must be documented.***
 
 This includes non-standard calling conventions, non-standard clobbers, and other behavior not expected of a well-behaved RISC-V function.
-Non-standard input and output registers should use Doxygemn's `param[in] reg` and
+Non-standard input and output registers should use Doxygen's `param[in] reg` and
 `param[out] reg` annotations, respectively.
 
-Within a function, whether or not it conforms to RISC-V's calling convention, comments should be present to describe the asassignment of logical values to registers.
+Within a function, whether or not it conforms to RISC-V's calling convention, comments should be present to describe the assignment of logical values to registers.
 
 Example:
 ```S
