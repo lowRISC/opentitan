@@ -7,11 +7,11 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   // ext component cfgs
   rand csrng_agent_cfg   m_csrng_agent_cfg;
   rand push_pull_agent_cfg#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-            m_endpoint_agent_cfg [edn_env_pkg::NUM_ENDPOINTS:0];
+            m_endpoint_agent_cfg [edn_env_pkg::MAX_NUM_ENDPOINTS:0];
 
   `uvm_object_utils_begin(edn_env_cfg)
     `uvm_field_object(m_csrng_agent_cfg, UVM_DEFAULT)
-    for (int i = 0; i < edn_env_pkg::NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < edn_env_pkg::MAX_NUM_ENDPOINTS; i++) begin
       `uvm_field_object(m_endpoint_agent_cfg[i], UVM_DEFAULT)
     end
   `uvm_object_utils_end
@@ -43,7 +43,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     // create config objects
     m_csrng_agent_cfg = csrng_agent_cfg::type_id::create("m_csrng_genbits_agent_cfg");
 
-    for (int i = 0; i < edn_env_pkg::NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < edn_env_pkg::MAX_NUM_ENDPOINTS; i++) begin
       m_endpoint_agent_cfg[i] = push_pull_agent_cfg#(.HostDataWidth(edn_pkg::
                                 FIPS_ENDPOINT_BUS_WIDTH))::type_id::create
                                 ($sformatf("m_endpoint_agent_cfg[%0d]", i));
