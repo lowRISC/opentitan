@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/multibits_asm.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
-#include "aon_timer_regs.h"
-#include "pwrmgr_regs.h"
+#include "rstmgr_regs.h"
 
   // This code is in the .crt section since it is designed to be safe
   // to run before the C runtime has been initialized.
@@ -22,24 +22,10 @@
   .globl _asm_exception_handler
   .type _asm_exception_handler, @function
 _asm_exception_handler:
-  // Configure the power manager to enable resets.
-  // Note: this enables all types of reset request for simplicity.
-  li t0, TOP_EARLGREY_PWRMGR_AON_BASE_ADDR
-  li t1, -1
-  sw t1, PWRMGR_RESET_EN_REG_OFFSET(t0)
-
-  // Trigger a configuration synchronization.
-  li t1, (1 << PWRMGR_CFG_CDC_SYNC_SYNC_BIT)
-  sw t1, PWRMGR_CFG_CDC_SYNC_REG_OFFSET(t0)
-
-  // Set the watchdog bite threshold to 0 so that a reset will be
-  // triggered immediately when the watchdog timer is enabled.
-  li t0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
-  sw zero, AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET(t0)
-
-  // Enable the watchdog timer (if it is not already enabled).
-  li t1, (1 << AON_TIMER_WDOG_CTRL_ENABLE_BIT)
-  sw t1, AON_TIMER_WDOG_CTRL_REG_OFFSET(t0)
+  // Request a system reset.
+  li t0, TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
+  li t1, MULTIBIT_ASM_BOOL4_TRUE
+  sw t1, RSTMGR_RESET_REQ_REG_OFFSET(t0)
 
   // Enter a wait for interrupt loop, the device should reset shortly.
 .L_wfi_loop:
