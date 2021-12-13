@@ -16,6 +16,41 @@
 
 namespace flash_ctrl_unittest {
 namespace {
+using ::testing::Each;
+using ::testing::SizeIs;
+
+/**
+ * A struct that holds bank, page, and config register information for an
+ * information page.
+ */
+struct InfoPage {
+  uint32_t bank;
+  uint32_t page;
+  uint32_t cfg_offset;
+  uint32_t cfg_wen_offset;
+};
+
+/**
+ * Returns a map from `flash_ctrl_info_page_t` to `InfoPage` to be used in
+ * tests.
+ */
+const std::map<flash_ctrl_info_page_t, InfoPage> &InfoPages() {
+#define INFO_PAGE_MAP_INIT(name_, bank_, page_)                                    \
+  {                                                                                \
+    name_,                                                                         \
+        {                                                                          \
+            bank_,                                                                 \
+            page_,                                                                 \
+            FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_SHADOWED_##page_##_REG_OFFSET, \
+            FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,            \
+        },                                                                         \
+  }
+
+  static const std::map<flash_ctrl_info_page_t, InfoPage> *const kInfoPages =
+      new std::map<flash_ctrl_info_page_t, InfoPage>{
+          FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_MAP_INIT)};
+  return *kInfoPages;
+}
 
 class FlashCtrlTest : public mask_rom_test::MaskRomTest {
  protected:
@@ -23,6 +58,41 @@ class FlashCtrlTest : public mask_rom_test::MaskRomTest {
   mask_rom_test::MockAbsMmio mmio_;
   mask_rom_test::MockSecMmio sec_mmio_;
 };
+
+class InfoPagesTest : public FlashCtrlTest {};
+TEST_F(InfoPagesTest, NumberOfPages) { EXPECT_THAT(InfoPages(), SizeIs(20)); }
+
+TEST_F(InfoPagesTest, PagesPerBank) {
+  std::array<uint32_t, 2> pages_per_bank = {0, 0};
+  for (const auto &it : InfoPages()) {
+    const uint32_t bank = it.second.bank;
+    EXPECT_EQ(bank, static_cast<uint32_t>(bitfield_bit32_read(
+                        it.first, FLASH_CTRL_INFO_PAGE_BIT_BANK)));
+    EXPECT_LE(bank, 1);
+    ++pages_per_bank[bank];
+  }
+
+  EXPECT_THAT(pages_per_bank, Each(10));
+}
+
+TEST_F(InfoPagesTest, AllType0) {
+  for (const auto &it : InfoPages()) {
+    const flash_ctrl_partition_t partition =
+        static_cast<flash_ctrl_partition_t>(bitfield_field32_read(
+            it.first, FLASH_CTRL_INFO_PAGE_FIELD_PARTITION));
+    EXPECT_EQ(partition, kFlashCtrlPartitionInfo0);
+  }
+}
+
+TEST_F(InfoPagesTest, PageIndices) {
+  for (const auto &it : InfoPages()) {
+    const uint32_t page = it.second.page;
+
+    EXPECT_EQ(page,
+              bitfield_field32_read(it.first, FLASH_CTRL_INFO_PAGE_FIELD_PAGE));
+    EXPECT_LE(page, 9);
+  }
+}
 
 class InitTest : public FlashCtrlTest {};
 
