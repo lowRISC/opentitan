@@ -20,3 +20,10 @@ build --workspace_status_command=util/get_workspace_status.sh
 # Generate coverage in lcov format, which can be post-processed by lcov
 # into html-formatted reports.
 coverage --combined_report=lcov --instrument_test_targets --experimental_cc_coverage
+
+# Verilator is built for 4 cores and can time out if bazel is running more
+# than 1 test per four cores.
+# Until we get the built-in tag "cpu:4" to work for verilator tests, we can run
+# 1 test per 4 cores to avoid verilator performance falloff and timeouts we'd
+# otherwise see on machines with fewer than 40 cores.
+test --local_test_jobs=HOST_CPUS*0.25
