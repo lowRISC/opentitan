@@ -270,5 +270,98 @@ TEST_F(ExecTest, Disable) {
   flash_ctrl_exec_set(kFlashCtrlExecDisable);
 }
 
+struct InfoMpSetCase {
+  /**
+   * Access permissions to set.
+   */
+  flash_ctrl_mp_t perms;
+  /**
+   * Expected value to be read from the config register.
+   */
+  uint32_t read_val;
+  /**
+   * Expected value to be written to the config register.
+   */
+  uint32_t write_val;
+};
+
+class FlashCtrlInfoMpSetTest
+    : public FlashCtrlTest,
+      public testing::WithParamInterface<InfoMpSetCase> {};
+
+TEST_P(FlashCtrlInfoMpSetTest, InfoMpSet) {
+  for (const auto &it : InfoPages()) {
+    EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().read_val);
+    EXPECT_SEC_WRITE32_SHADOWED(base_ + it.second.cfg_offset,
+                                GetParam().write_val);
+    EXPECT_SEC_WRITE_INCREMENT(1);
+
+    flash_ctrl_info_mp_set(it.first, GetParam().perms);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlInfoMpSetTest,
+                         testing::Values(
+                             // Read.
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolTrue,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolFalse},
+                                 .read_val = 0x0,
+                                 .write_val = 0x3,
+                             },
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolTrue,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolFalse},
+                                 .read_val = 0x7f,
+                                 .write_val = 0x73,
+                             },
+                             // Write.
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolFalse},
+                                 .read_val = 0x0,
+                                 .write_val = 0x5,
+                             },
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolFalse},
+                                 .read_val = 0x7f,
+                                 .write_val = 0x75,
+                             },
+                             // Erase.
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolTrue},
+                                 .read_val = 0x0,
+                                 .write_val = 0x9,
+                             },
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolTrue},
+                                 .read_val = 0x7f,
+                                 .write_val = 0x79,
+                             },
+                             // Write and erase.
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolTrue},
+                                 .read_val = 0x0,
+                                 .write_val = 0xd,
+                             },
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolTrue},
+                                 .read_val = 0x7f,
+                                 .write_val = 0x7d,
+                             }));
+
 }  // namespace
 }  // namespace flash_ctrl_unittest
