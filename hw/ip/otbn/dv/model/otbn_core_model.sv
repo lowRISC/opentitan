@@ -45,8 +45,6 @@ module otbn_core_model
   output bit [7:0]       status_o,   // STATUS register
   output bit [31:0]      insn_cnt_o, // INSN_CNT register
 
-  input logic            invalidate_imem_i, // Trash contents of IMEM (causing integrity errors)
-
   input keymgr_pkg::otbn_key_req_t keymgr_key_i,
 
   output bit             done_rr_o,
@@ -85,8 +83,6 @@ module otbn_core_model
   bit [31:0] raw_err_bits_d, raw_err_bits_q;
   bit [31:0] stop_pc_d, stop_pc_q;
   bit rnd_req_start_d, rnd_req_start_q;
-
-  bit failed_invalidate_imem;
 
   bit unused_raw_err_bits;
   logic unused_edn_rsp_fips;
@@ -157,13 +153,7 @@ module otbn_core_model
       rnd_req_start_q <= 0;
       raw_err_bits_q <= 0;
       stop_pc_q <= 0;
-      failed_invalidate_imem <= 0;
     end else begin
-      if (invalidate_imem_i) begin
-        if (otbn_model_invalidate_imem(model_handle) != 0) begin
-          failed_invalidate_imem <= 1'b1;
-        end
-      end
       if (edn_urnd_cdc_done_i) begin
         edn_model_urnd_cdc_done(model_handle);
       end
@@ -241,7 +231,7 @@ module otbn_core_model
       );
   end
 
-  assign err_o = failed_step | failed_cmp | failed_invalidate_imem;
+  assign err_o = failed_step | failed_cmp;
 
   // Derive a "done" signal. This should trigger for a single cycle when OTBN finishes its work.
   // It's analogous to the done_o signal on otbn_core, but this signal is delayed by a single cycle
