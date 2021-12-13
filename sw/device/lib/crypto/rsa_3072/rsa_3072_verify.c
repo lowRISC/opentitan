@@ -102,18 +102,15 @@ dif_result_t sha256(const dif_hmac_t *hmac, const uint8_t *msg, size_t msg_len,
   }
 
   // Poll until HMAC is finished processing, and retrieve the digest.
-  dif_hmac_digest_t raw_digest;
   do {
-    hmac_result = dif_hmac_finish(hmac, &raw_digest);
+    hmac_result = dif_hmac_finish(hmac, digest);
   } while (hmac_result == kDifUnavailable);
 
   // Setting the HMAC configuration to little-endian changes the order of bytes
   // within the words of the digest but not the order of the words themselves;
   // therefore, to make the digest fully little-endian, we need to reverse the
   // words.
-  for (uint32_t i = 0; i < ARRAYSIZE(raw_digest.digest); i++) {
-    digest->digest[i] = raw_digest.digest[ARRAYSIZE(raw_digest.digest) - 1 - i];
-  }
+  memrev32(digest->digest, ARRAYSIZE(digest->digest));
 
   return hmac_result;
 }

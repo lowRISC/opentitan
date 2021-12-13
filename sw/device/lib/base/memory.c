@@ -82,6 +82,34 @@ void *memrchr(const void *ptr, int value, size_t len) {
   return NULL;
 }
 
+void memrev8(const void *ptr, size_t len) {
+  uint8_t *ptr8 = (uint8_t *)ptr;
+  if (len <= 1) {
+    // Nothing to do.
+    return;
+  }
+  for (size_t i = 0; i < (len / 2) - 1; ++i) {
+    uint8_t tmp = ptr8[i];
+    ptr8[i] = ptr8[len - 1 - i];
+    ptr8[len - 1 - i] = tmp;
+  }
+  return;
+}
+
+void memrev32(const void *ptr, size_t len) {
+  uint32_t *ptr32 = (uint32_t *)ptr;
+  if (len <= 1) {
+    // Nothing to do.
+    return;
+  }
+  for (size_t i = 0; i < (len / 2); ++i) {
+    uint32_t tmp = ptr32[i];
+    ptr32[i] = ptr32[len - 1 - i];
+    ptr32[len - 1 - i] = tmp;
+  }
+  return;
+}
+
 // `extern` declarations to give the inline functions in the corresponding
 // header a link location.
 

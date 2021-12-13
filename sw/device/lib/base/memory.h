@@ -157,6 +157,28 @@ void *memchr(const void *ptr, int value, size_t len);
  */
 void *memrchr(const void *ptr, int value, size_t len);
 
+/**
+ * Reverse a sequence of bytes in place.
+ *
+ * Reverses the order of `len` bytes starting from `ptr`.
+ *
+ * @param src the region to copy from.
+ * @param len the number of bytes to copy.
+ */
+void memrev8(const void *ptr, size_t len);
+
+/**
+ * Reverse a sequence of 32-bit words in place.
+ *
+ * Reverses the order of `len` words starting from `ptr`, so that the first
+ * word appears last and the last word appears first. Does not change the byte
+ * order within the words.
+ *
+ * @param src the region to copy from.
+ * @param len the number of bytes to copy.
+ */
+void memrev32(const void *ptr, size_t len);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
