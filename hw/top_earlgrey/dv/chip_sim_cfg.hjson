@@ -306,6 +306,12 @@
       sw_images: ["sw/device/tests/kmac_mode_kmac_test:1"]
       en_run_modes: ["sw_test_mode"]
     }
+    {
+      name: chip_sw_kmac_app_rom_test
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/kmac_app_rom_test:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
 
     {
       name: chip_sw_coremark

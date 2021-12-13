@@ -1687,7 +1687,7 @@
             X-ref'ed with ROM_CTRL test/env.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_kmac_app_rom_test"]
     }
     {
       name: chip_sw_kmac_entropy
