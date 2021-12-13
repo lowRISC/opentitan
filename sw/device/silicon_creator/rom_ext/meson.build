@@ -90,6 +90,7 @@ foreach slot, slot_link_args : rom_ext_link_info
       dependencies: [
         freestanding_headers,
         sw_silicon_creator_lib_base_sec_mmio,
+        sw_silicon_creator_lib_driver_flash_ctrl,
         sw_silicon_creator_lib_driver_hmac,
         sw_silicon_creator_lib_driver_pinmux,
         sw_silicon_creator_lib_driver_uart,

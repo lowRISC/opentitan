@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
@@ -91,6 +92,8 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest) {
 }
 
 static rom_error_t rom_ext_boot(const manifest_t *manifest) {
+  // Lock down silicon creator info pages until next reset.
+  flash_ctrl_creator_info_pages_lockdown();
   // Unlock execution of owner stage executable code (text) sections.
   rom_ext_epmp_unlock_owner_stage_rx(&epmp, manifest_code_region_get(manifest));
 
