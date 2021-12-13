@@ -390,9 +390,6 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       fields: [
         { bits: "0", name: "A", desc: "Cause bit ", resval: 0}
       ],
-      tags: [// The value of this register is determined by triggering different kinds of alerts
-             // Cannot be auto-predicted so excluded from read check
-             "excl:CsrNonInitTests:CsrExclWriteCheck"]
       }
     },
 ##############################################################################
@@ -603,8 +600,8 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
           resval: 1,
         }
       ],
-      tags: [// The value of this register is set to false only by hardware,
-             // under the condition that escalation is triggered and the corresponding lock bit is true
+      tags: [// The value of this register is set to false only by hardware, under the condition
+             // that escalation is triggered and the corresponding lock bit is true
              // Cannot not be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
