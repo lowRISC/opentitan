@@ -513,6 +513,7 @@
         ram: {
           label:    "ram_ret_aon",
           swaccess:   "rw",
+          data_intg_passthru: "true",
           exec:       "True",
           byte_write: "True",
           size:     "0x1000"
@@ -529,6 +530,7 @@
         mem: {
           label:      "eflash",
           swaccess:   "ro",
+          data_intg_passthru: "true",
           exec:       "True",
           byte_write: "False",
           config: {
@@ -643,6 +645,7 @@
         ram: {
           label:      "ram_main",
           swaccess:   "rw",
+          data_intg_passthru: "true",
           exec:       "True",
           byte_write: "True",
           size:       "0x20000"
@@ -659,6 +662,7 @@
         rom: {
           label:              "rom",
           swaccess:           "ro",
+          data_intg_passthru: "true",
           exec:               "True",
           byte_write:         "False",
           size:               "0x8000"
