@@ -3866,6 +3866,7 @@
         {
           label: ram_ret_aon
           swaccess: rw
+          data_intg_passthru: "true"
           exec: True
           byte_write: True
           size: 0x1000
@@ -4057,6 +4058,7 @@
         {
           label: eflash
           swaccess: ro
+          data_intg_passthru: "true"
           exec: True
           byte_write: False
           config:
@@ -6162,6 +6164,7 @@
         {
           label: ram_main
           swaccess: rw
+          data_intg_passthru: "true"
           exec: True
           byte_write: True
           size: 0x20000
@@ -6351,10 +6354,10 @@
         {
           label: rom
           swaccess: ro
+          data_intg_passthru: True
           exec: True
           byte_write: False
           size: 0x8000
-          data_intg_passthru: True
         }
       }
       param_decl:
