@@ -23,6 +23,7 @@ package sram_ctrl_prim_ral_pkg;
                  int              has_coverage = UVM_NO_COVERAGE);
       super.new(name, size, n_bits, access, has_coverage);
       set_mem_partial_write_support(1);
+      set_data_intg_passthru(1);
     endfunction : new
 
   endclass : sram_ctrl_prim_mem_sram_mem

@@ -307,7 +307,7 @@ virtual task issue_tl_access_w_intg_err(string ral_name);
                             cfg.ral_models[ral_name].mem_ranges[mem_idx].end_addr);
     end
   endcase
-  tl_access(.addr($urandom), .write(write), .data(data), .tl_intg_err_type(tl_intg_err_type), 
+  tl_access(.addr($urandom), .write(write), .data(data), .tl_intg_err_type(tl_intg_err_type),
             .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
 endtask
 

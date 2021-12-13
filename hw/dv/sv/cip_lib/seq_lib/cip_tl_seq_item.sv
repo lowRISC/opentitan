@@ -167,37 +167,64 @@ class cip_tl_seq_item extends tl_seq_item;
     d_user = l_d_user;
   endfunction : inject_d_chan_intg_err
 
-  virtual function bit is_a_chan_intg_ok(bit throw_error = 1'b1);
+  virtual function bit is_a_chan_intg_ok(bit en_cmd_intg_chk = 1,
+                                         bit en_data_intg_chk = 1,
+                                         bit throw_error = 1'b1);
     tl_a_user_t exp_a_user = compute_a_user();
     tl_a_user_t act_a_user = tl_a_user_t'(a_user);
+    bit cmd_intg_ok  = 1;
+    bit data_intg_ok = 1;
 
-    is_a_chan_intg_ok = act_a_user == exp_a_user;
+    `DV_CHECK(en_cmd_intg_chk || en_data_intg_chk)
 
-    if (!is_a_chan_intg_ok) begin
-      string str = $sformatf("a_user act (%p) != exp (%p)", act_a_user, exp_a_user);
-      if (throw_error) begin
-        `uvm_error(`gfn, str)
-      end else begin
-        `uvm_info(`gfn, str, UVM_MEDIUM)
-      end
+    if (en_cmd_intg_chk) cmd_intg_ok = act_a_user.cmd_intg == exp_a_user.cmd_intg;
+    if (en_data_intg_chk) data_intg_ok = act_a_user.data_intg == exp_a_user.data_intg;
+
+    if (!cmd_intg_ok) begin
+      report_intg_mismatch(act_a_user.cmd_intg, exp_a_user.cmd_intg, throw_error,
+                           "a_user.cmd_intg");
     end
+    if (!data_intg_ok) begin
+      report_intg_mismatch(act_a_user.data_intg, exp_a_user.data_intg, throw_error,
+                           "a_user.data_intg");
+    end
+
+    return cmd_intg_ok && data_intg_ok;
   endfunction : is_a_chan_intg_ok
 
-  virtual function bit is_d_chan_intg_ok(bit throw_error = 1'b1);
+  virtual function bit is_d_chan_intg_ok(bit en_rsp_intg_chk = 1,
+                                         bit en_data_intg_chk = 1,
+                                         bit throw_error = 1'b1);
     tl_d_user_t exp_d_user = compute_d_user();
     tl_d_user_t act_d_user = tl_d_user_t'(d_user);
+    bit rsp_intg_ok  = 1;
+    bit data_intg_ok = 1;
 
-    is_d_chan_intg_ok = act_d_user == exp_d_user;
+    if (en_rsp_intg_chk) rsp_intg_ok = act_d_user.rsp_intg == exp_d_user.rsp_intg;
+    if (en_data_intg_chk) data_intg_ok = act_d_user.data_intg == exp_d_user.data_intg;
 
-    if (!is_d_chan_intg_ok) begin
-      string str = $sformatf("d_user act (%p) != exp (%p)", act_d_user, exp_d_user);
-      if (throw_error) begin
-        `uvm_error(`gfn, str)
-      end else begin
-        `uvm_info(`gfn, str, UVM_MEDIUM)
-      end
+    if (!rsp_intg_ok) begin
+      report_intg_mismatch(act_d_user.rsp_intg, exp_d_user.rsp_intg, throw_error,
+                           "d_user.rsp_intg");
     end
+    if (!data_intg_ok) begin
+      report_intg_mismatch(act_d_user.data_intg, exp_d_user.data_intg, throw_error,
+                           "d_user.data_intg");
+    end
+
+    return rsp_intg_ok && data_intg_ok;
   endfunction : is_d_chan_intg_ok
+
+  virtual function void report_intg_mismatch(int act_intg, int exp_intg, bit throw_error,
+                                             string intg_str);
+    string str = $sformatf("%s act (0x%0h) != exp (0x%0h)", intg_str, act_intg, exp_intg);
+
+    if (throw_error) begin
+      `uvm_error(`gfn, str)
+    end else begin
+      `uvm_info(`gfn, str, UVM_MEDIUM)
+    end
+  endfunction : report_intg_mismatch
 
   // extract error info for coverage
   virtual function void get_a_chan_err_info(output tl_intg_err_e tl_intg_err_type,
