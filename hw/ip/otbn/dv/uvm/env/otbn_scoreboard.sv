@@ -132,13 +132,26 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
   task process_tl_addr(tl_seq_item item);
     uvm_reg              csr;
-    uvm_reg_addr_t       csr_addr;
+    uvm_reg_addr_t       aligned_addr;
     otbn_exp_read_data_t exp_read_data = '{upd: 1'b0, chk: 'x, val: 'x};
 
-    csr_addr = ral.get_word_aligned_addr(item.a_addr);
-    csr = ral.default_map.get_reg_by_offset(csr_addr);
+    aligned_addr = ral.get_word_aligned_addr(item.a_addr);
 
-    // csr might be null and that's ok (it's probably a write to memory).
+    // Is this a write to memory (either DMEM or IMEM)?
+    if (item.is_write()) begin
+      uvm_mem mem = ral.default_map.get_mem_by_offset(aligned_addr);
+      uvm_reg_addr_t masked_addr = aligned_addr & ral.get_addr_mask();
+      if (mem != null) begin
+        uvm_reg_addr_t base = mem.get_offset(0, ral.default_map);
+        `DV_CHECK_FATAL(base <= masked_addr)
+        process_tl_mem_write(mem, masked_addr - base, item);
+      end
+    end
+
+    csr = ral.default_map.get_reg_by_offset(aligned_addr);
+
+    // csr might be null and that's ok (it just means an access to an unmapped register, which will
+    // have no effect)
     if (csr == null)
       return;
 
@@ -278,6 +291,49 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
+
+  // Called on each write to memory (on the A side). This is responsible for updating the model of
+  // the CRC register.
+  function void process_tl_mem_write(uvm_mem mem, bit [31:0] offset, tl_seq_item item);
+    bit            is_imem;
+    logic [14:0]   mem_idx;
+    logic [47:0]   crc_item;
+    uvm_reg_data_t old_crc;
+    bit [31:0]     new_crc;
+
+    // Ignore any partial or misaligned writes: these don't update the CRC.
+    if ((item.a_addr & 3) || (item.a_size != 2))
+      return;
+
+    // Build the 48-bit value that's supposed to be added to the CRC. This is built as the triple
+    // {imem, idx, wdata}, where imem is a 1-bit value showing whether this is IMEM, idx is the
+    // index of the 32-bit word in memory, zero-extended to 15 bits, and wdata is the 32-bit word
+    // that was written.
+    is_imem = mem.get_name() == "imem";
+    mem_idx = offset >> 2;
+    crc_item = {is_imem, mem_idx, item.a_data};
+    `uvm_info(`gfn,
+              $sformatf("Updating CRC with memory write: {%0d, 0x%0h, 0x%0h} = 0x%012h",
+                        is_imem, mem_idx, item.a_data, crc_item),
+              UVM_HIGH);
+    `DV_CHECK_FATAL(!$isunknown(crc_item))
+
+    // Grab the old modelled CRC value (which we store in the RAL as the predicted value for
+    // LOAD_CHECKSUM). This should be a 32-bit number and shouldn't have any unknown bits.
+    old_crc = ral.load_checksum.checksum.get_mirrored_value();
+    `DV_CHECK_FATAL(old_crc >> 32 == 0)
+    `DV_CHECK_FATAL(!$isunknown(old_crc))
+
+    new_crc = cfg.model_agent_cfg.vif.step_crc(crc_item, old_crc);
+
+    `uvm_info(`gfn,
+              $sformatf("CRC step: 0x%08h -> 0x%08h (or 0x%08h -> 0x%08h)",
+                        old_crc, new_crc, old_crc ^ {32{1'b1}}, new_crc ^ {32{1'b1}}),
+              UVM_HIGH);
+
+    // Predict the resulting value of LOAD_CHECKSUM
+    `DV_CHECK_FATAL(ral.load_checksum.checksum.predict(.value(new_crc), .kind(UVM_PREDICT_READ)))
+  endfunction
 
   task process_model_fifo();
     otbn_model_item item;
