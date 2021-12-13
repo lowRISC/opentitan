@@ -319,6 +319,14 @@ typedef enum flash_ctrl_exec {
  */
 void flash_ctrl_exec_set(flash_ctrl_exec_t enable);
 
+/**
+ * Disables all access to silicon creator info pages until next reset.
+ *
+ * This function must be called in ROM_EXT before handing over execution to the
+ * first owner boot stage.
+ */
+void flash_ctrl_creator_info_pages_lockdown(void);
+
 #ifdef __cplusplus
 }
 #endif

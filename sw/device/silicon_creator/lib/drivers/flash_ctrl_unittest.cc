@@ -99,6 +99,10 @@ class InitTest : public FlashCtrlTest {};
 TEST_F(InitTest, Initialize) {
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
+  auto info_page = InfoPages().at(kFlashCtrlInfoPageCreatorSecret);
+  EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
+  EXPECT_SEC_WRITE_INCREMENT(2);
 
   flash_ctrl_init();
 }
@@ -362,6 +366,22 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlInfoMpSetTest,
                                  .read_val = 0x7f,
                                  .write_val = 0x7d,
                              }));
+
+TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
+  std::array<flash_ctrl_info_page_t, 6> no_owner_access = {
+      kFlashCtrlInfoPageOwnerSecret, kFlashCtrlInfoPageWaferAuthSecret,
+      kFlashCtrlInfoPageBootData0,   kFlashCtrlInfoPageBootData1,
+      kFlashCtrlInfoPageOwnerSlot0,  kFlashCtrlInfoPageOwnerSlot1,
+  };
+  for (auto page : no_owner_access) {
+    auto info_page = InfoPages().at(page);
+    EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
+    EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
+  }
+  EXPECT_SEC_WRITE_INCREMENT(2 * no_owner_access.size());
+
+  flash_ctrl_creator_info_pages_lockdown();
+}
 
 }  // namespace
 }  // namespace flash_ctrl_unittest
