@@ -456,6 +456,31 @@ int OtbnModel::invalidate_imem() {
   return 0;
 }
 
+int OtbnModel::step_crc(const svBitVecVal *item /* bit [47:0] */,
+                        svBitVecVal *state /* bit [31:0] */) {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  std::array<uint8_t, 6> item_arr;
+  for (int i = 0; i < item_arr.size(); ++i) {
+    item_arr[i] = item[i / 4] >> 8 * (i % 4);
+  }
+  uint32_t state32 = state[0];
+
+  try {
+    state32 = iss->step_crc(item_arr, state32);
+  } catch (const std::exception &err) {
+    std::cerr << "Error when stepping CRC in ISS: " << err.what() << "\n";
+    return -1;
+  }
+
+  // Write back to SV-land
+  state[0] = state32;
+
+  return 0;
+}
+
 void OtbnModel::reset() {
   ISSWrapper *iss = iss_.get();
   if (iss)
@@ -761,6 +786,12 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
 int otbn_model_invalidate_imem(OtbnModel *model) {
   assert(model);
   return model->invalidate_imem();
+}
+
+int otbn_model_step_crc(OtbnModel *model, svBitVecVal *item /* bit [47:0] */,
+                        svBitVecVal *state /* inout bit [31:0] */) {
+  assert(model && item && state);
+  return model->step_crc(item, state);
 }
 
 void otbn_model_reset(OtbnModel *model) {

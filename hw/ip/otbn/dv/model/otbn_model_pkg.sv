@@ -42,7 +42,11 @@ package otbn_model_pkg;
                                  inout bit [31:0] err_bits,
                                  inout bit [31:0] stop_pc);
 
-  import "DPI-C" context function int otbn_model_invalidate_imem(chandle model);
+  import "DPI-C" function int otbn_model_invalidate_imem(chandle model);
+
+  import "DPI-C" function int otbn_model_step_crc(chandle          model,
+                                                  bit [47:0]       item,
+                                                  inout bit [31:0] state);
 
   import "DPI-C" function void otbn_model_reset(chandle model);
 
