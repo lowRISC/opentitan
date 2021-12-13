@@ -85,22 +85,34 @@ Since the two timers are essentially independent, we use two test sequences, dri
 #### Test sequences
 
 The test sequences can be found in `hw/ip/aon_timer/dv/env/seq_lib`.
-The basic test virtual sequence configures the block in a valid initial state, but doesn't enable either timer.
+The basic test virtual sequence `aon_timer_base_vseq` configures the block in a valid initial state, but doesn't enable either timer.
 This is used as a base class for automated tests like the CSR tests.
 
-<div class="bd-callout bd-callout-warning">
+The smoke sequence initializes both timers and starts them with random threshold values configured.
+After that it waits until an interrupt is seen and clears everything before shutting down.
 
-**TODO**: Describe other test sequences here.
+The lock sequence tries to change the configuration of the watchdog timer while it is locked by software.
 
-</div>
+Stress sequence tries to change all configurations while running.
 
 #### Functional coverage
 
-<div class="bd-callout bd-callout-warning">
+To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
+The following cover points have been developed to prove that the test intent has been adequately met.
 
-**TODO**: Functional coverage points are not yet defined.
+`prescale_cp`: Includes possible values for the prescale register of wakeup timer.
 
-</div>
+`bark_thold_cp`: Includes bark threshold configurations of watchdog timer.
+
+`bite_thold_cp`: Includes bite threshold configurations of watchdog timer.
+
+`wkup_thold_cp`: Includes threshold configurations of wakeup timer.
+
+`wkup_cause_cp`: Makes sure if we ever clear the wakeup interrupt by writing to `WKUP_CAUSE` register.
+
+`wdog_regwen_cp`: Makes sure if the locking feature of watchdog timer is enabled in any test.
+
+`pause_in_sleep_cp`: Makes sure if the pause in sleep mode feature of watchdog timer is enabled in any test.
 
 ### Self-checking strategy
 #### Scoreboard
@@ -109,10 +121,10 @@ As described earlier in this document, the self-checking strategy is in two part
 The first part of the strategy is to track the domain crossing logic and check that values propagate across unmodified and reasonably quickly.
 This does not include precise modelling for the CDC timing.
 
-The second part of the self-checking logic looks at only the *core interface*.
-This is an interface of type `aon_timer_core_if`, that is bound into the `aon_timer_core` module.
+The second part of the self-checking logic looks at the configuration registers of the timers.
+After calculating the amount of clock cycles, it starts checking for an interrupt from either wake-up timer or watchdog timer.
 Here, there is a single clock domain (the AON clock) and easily predictable behaviour.
-The scoreboard contains an exact model of how the signals exposed by this interface will behave.
+The scoreboard contains an exact model of how the interrupts generated from this specific configuration.
 
 Putting the two parts of the scoreboard together gives a full checker for the block.
 An incoming configuration write will be tracked (with slightly flexible timing) through the CDC logic by the first part of the scoreboard.
