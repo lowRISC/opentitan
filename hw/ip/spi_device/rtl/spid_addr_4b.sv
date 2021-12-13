@@ -25,7 +25,6 @@ module spid_addr_4b (
   input sys_rst_ni,
 
   input spi_clk_i,
-  input spi_rst_ni,
 
   input spi_csb_asserted_pulse_i,
   input sys_csb_deasserted_pulse_i,

@@ -473,6 +473,13 @@ package spi_device_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic        d;
+      logic        de;
+    } addr_4b_en;
+  } spi_device_hw2reg_cfg_reg_t;
+
+  typedef struct packed {
+    struct packed {
       logic [7:0]  d;
     } rxlvl;
     struct packed {
@@ -649,7 +656,8 @@ package spi_device_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [266:245]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [268:247]
+    spi_device_hw2reg_cfg_reg_t cfg; // [246:245]
     spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [244:229]
     spi_device_hw2reg_status_reg_t status; // [228:223]
     spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [222:206]

@@ -267,9 +267,11 @@ module spi_device
   cmd_info_t                  cmd_info_broadcast;
   logic [CmdInfoIdxW-1:0]     cmd_info_idx_broadcast;
 
-  // Bus clock pulse event of CSb de-assertion. It is used to latch the SCK
-  // domain variables into the bus clock domain.
-  logic csb_deasserted_busclk;
+  // CSb edge detector in the system clock and SPI input clock
+  // SYS clock assertion can be detected but no usage for the event yet.
+  // SPI clock de-assertion cannot be detected as no SCK at the time is given.
+  logic sys_csb_deasserted_pulse;
+  logic spi_csb_asserted_pulse  ;
 
   // Read Status input and broadcast
   logic status_busy_set; // set by HW (upload)
@@ -341,7 +343,7 @@ module spi_device
 
   assign timer_v = reg2hw.cfg.timer_v.q;
 
-  assign cfg_addr_4b_en = reg2hw.cfg.addr_4b_en.q;
+  //assign cfg_addr_4b_en = reg2hw.cfg.addr_4b_en.q;
 
   assign sram_rxf_bindex = reg2hw.rxf_addr.base.q[SDW+:SramAw];
   assign sram_rxf_lindex = reg2hw.rxf_addr.limit.q[SDW+:SramAw];
@@ -656,7 +658,7 @@ module spi_device
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       readbuf_addr_busclk <= '0;
-    end else if (csb_deasserted_busclk) begin
+    end else if (sys_csb_deasserted_pulse) begin
       readbuf_addr_busclk <= readbuf_addr_sck;
     end
   end
@@ -862,41 +864,39 @@ module spi_device
     .clk_o  (sram_rst_n)
   );
 
-  // CSb deassertion pulse generator
-  logic csb_sync, csb_sync_q;
-  prim_flop_2sync #(
-    .Width      (1),
-    .ResetValue (1'b 1)
-  ) u_csb_sync (
+  // CSb edge on the system clock
+  prim_edge_detector #(
+    .Width     (1    ),
+    .ResetValue(1'b 1),
+    .EnSync    (1'b 1)
+  ) u_csb_edge_sysclk (
     .clk_i,
     .rst_ni,
-    .d_i     (cio_csb_i),
-    .q_o     (csb_sync)
+
+    .d_i      (cio_csb_i),
+    .q_sync_o (         ),
+
+    // sys_csb_assertion can be detected but no usage
+    .q_posedge_pulse_o (sys_csb_deasserted_pulse),
+    .q_negedge_pulse_o (                        )
   );
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) csb_sync_q <= 1'b 1;
-    else         csb_sync_q <= csb_sync;
-  end
 
-  assign csb_deasserted_busclk = !csb_sync_q && csb_sync;
+  // CSb edge on the SPI input clock
+  prim_edge_detector #(
+    .Width      (1    ),
+    .ResetValue (1'b 1),
+    .EnSync     (1'b 1)
+  ) u_csb_edge_spiclk (
+    .clk_i  (clk_spi_in_buf),
+    .rst_ni (rst_spi_n),
 
-  // CSb pulse
-  logic csb_sckin_sync_d, csb_sckin_sync_q, csb_asserted_pulse_sckin;
-  prim_flop_2sync #(
-    .Width      (1),
-    .ResetValue (1'b 1)
-  ) u_csb_sckin_sync (
-    .clk_i (clk_spi_in_buf),
-    .rst_ni(rst_spi_n), //Use CSb as a reset
-    .d_i (1'b 0),
-    .q_o (csb_sckin_sync_d)
+    .d_i      (cio_csb_i),
+    .q_sync_o (         ),
+
+    // posedge(deassertion) cannot be detected as clock could be absent.
+    .q_posedge_pulse_o (                      ),
+    .q_negedge_pulse_o (spi_csb_asserted_pulse)
   );
-  always_ff @(posedge clk_spi_in_buf or negedge rst_spi_n) begin
-    if (!rst_spi_n) csb_sckin_sync_q <= 1'b 1;
-    else            csb_sckin_sync_q <= csb_sckin_sync_d;
-  end
-
-  assign csb_asserted_pulse_sckin = csb_sckin_sync_q && !csb_sckin_sync_d;
 
   //////////////////////////////
   // SPI_DEVICE mode selector //
@@ -1313,7 +1313,7 @@ module spi_device
 
     .clk_out_i (clk_spi_out_buf),
 
-    .inclk_csb_asserted_pulse_i (csb_asserted_pulse_sckin),
+    .inclk_csb_asserted_pulse_i (spi_csb_asserted_pulse),
 
     .sys_jedec_i (jedec_cfg),
 
@@ -1352,7 +1352,7 @@ module spi_device
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
 
-    .sys_csb_deasserted_pulse_i (csb_deasserted_busclk),
+    .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
 
     .sel_dp_i (cmd_dp_sel),
 
@@ -1432,6 +1432,32 @@ module spi_device
   assign hw2reg.upload_status.payload_depth.d  = payload_depth;
 
   // End:   Upload ---------------------------------------------------
+
+  // Begin: Address 3B/4B Tracker ====================================
+  spid_addr_4b u_spid_addr_4b (
+    .sys_clk_i  (clk_i ),
+    .sys_rst_ni (rst_ni),
+
+    .spi_clk_i  (clk_spi_in_buf),
+
+    .spi_csb_asserted_pulse_i  (spi_csb_asserted_pulse  ),
+    .sys_csb_deasserted_pulse_i(sys_csb_deasserted_pulse),
+
+    // Assume CFG.addr_4b_en is not external register.
+    // And has the permissions as below:
+    //    swaccess: "rw"
+    //    hwaccess: "hrw"
+    .reg2hw_cfg_addr_4b_en_q_i  (reg2hw.cfg.addr_4b_en.q ), // registered input
+    .hw2reg_cfg_addr_4b_en_de_o (hw2reg.cfg.addr_4b_en.de),
+    .hw2reg_cfg_addr_4b_en_d_o  (hw2reg.cfg.addr_4b_en.d ),
+
+    .spi_cfg_addr_4b_en_o (cfg_addr_4b_en), // broadcast
+
+    .spi_addr_4b_set_i (1'b 0), // EN4B command
+    .spi_addr_4b_clr_i (1'b 0)  // EX4B command
+  );
+  // End:   Address 3B/4B Tracker ------------------------------------
+
   /////////////////////
   // SPI Passthrough //
   /////////////////////

@@ -2509,8 +2509,8 @@ module spi_device_reg_top (
     .wd     (cfg_addr_4b_en_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
+    .de     (hw2reg.cfg.addr_4b_en.de),
+    .d      (hw2reg.cfg.addr_4b_en.d),
 
     // to internal hardware
     .qe     (),
