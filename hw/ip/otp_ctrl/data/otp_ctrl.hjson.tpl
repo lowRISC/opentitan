@@ -328,6 +328,20 @@
     }
   ] // inter_signal_list
 
+  /////////////////////
+  // Countermeasures //
+  /////////////////////
+
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
+
+  ///////////////
+  // Registers //
+  ///////////////
+
   regwidth: "32",
   registers: {
     core: [

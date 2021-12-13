@@ -29,6 +29,11 @@
       '''
     }
   ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
   regwidth: "32",
   scan: "true",
   scan_reset: "true",

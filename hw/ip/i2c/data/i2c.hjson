@@ -77,6 +77,11 @@
       default: "64",
     }
   ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
 
   // REGISTER definition
   regwidth: "32"

@@ -156,6 +156,11 @@
     },
   ],
 
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
 
   registers: [
     { name: "EXTCLK_CTRL_REGWEN",

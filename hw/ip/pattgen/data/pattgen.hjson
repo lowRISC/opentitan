@@ -39,6 +39,12 @@
       local:   "true"
     }
   ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
+
   // REGISTER definition
   registers: [
     // CTRL register

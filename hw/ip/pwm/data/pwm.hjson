@@ -30,6 +30,11 @@
       '''
     }
   ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
   registers: [
     { name: "REGWEN",
       desc: "Register write enable for all control registers",
