@@ -48,7 +48,7 @@ class aon_timer_env_cov extends cip_base_env_cov #(.CFG_T(aon_timer_env_cfg));
       bins bite_max = {'1};
       bins bite_remainder = default;
     }
-    cp_wkup_thold_cp: coverpoint wkup_thold {
+    wkup_thold_cp: coverpoint wkup_thold {
       bins wkup_0 = {0};
       bins wkup_1_512 = {[1:512]};
       bins wkup_513_1024 = {[513:1024]};
