@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv:tl_agent
       - lowrisc:dv:alert_esc_agent
       - lowrisc:dv:otbn_model_agent
+      - lowrisc:dv:key_sideload_agent
     files:
       - otbn_env_pkg.sv
       - otbn_loop_if.sv
