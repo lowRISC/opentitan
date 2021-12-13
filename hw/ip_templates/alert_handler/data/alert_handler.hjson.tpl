@@ -222,6 +222,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       package: "prim_esc_pkg"
     },
   ]
+
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
 ##############################################################################
 # interrupt registers for the classes
   interrupt_list: [

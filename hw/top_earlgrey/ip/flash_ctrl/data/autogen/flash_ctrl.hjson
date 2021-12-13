@@ -179,6 +179,11 @@
     }
 
   ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
 
   scan: "true",       // Enable `scanmode_i` port
   scan_en: "true",    // Enable `scan_en_i` port

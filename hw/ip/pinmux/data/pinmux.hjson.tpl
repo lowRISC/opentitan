@@ -214,6 +214,12 @@
       expose:  "true"
     },
   ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
+
   registers: [
 //////////////////////////
 // MIO Inputs           //

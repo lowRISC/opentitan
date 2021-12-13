@@ -177,6 +177,11 @@
       local: "true"
     },
   ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
 
   regwidth: "32",
   registers: [

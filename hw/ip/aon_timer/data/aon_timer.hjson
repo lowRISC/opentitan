@@ -75,6 +75,11 @@
       width:   "1"
     }
   ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
   no_auto_intr_regs: "true",
   regwidth: "32",
   registers: [

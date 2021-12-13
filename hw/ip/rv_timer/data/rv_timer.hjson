@@ -36,6 +36,11 @@
     }
   ],
   no_auto_intr_regs: "true",
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
   regwidth: "32",
   registers: [
     { multireg: {

@@ -73,6 +73,12 @@
     },
   ]
 
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
+
   regwidth: "32",
   registers: [
 % for i in range(src):
