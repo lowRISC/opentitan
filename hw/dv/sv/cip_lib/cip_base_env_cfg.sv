@@ -44,6 +44,11 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   bit  en_devmode = 1;
   bit  has_shadowed_regs = 0;
 
+  // If the data intg is passthru for the memory and the data intg value in mem is incorrect, it
+  // won't trigger d_error in this mem block and the check is done in the processor
+  // User can set this flag to disable the check for d_user.data_intg
+  bit disable_d_user_data_intg_check_for_passthru_mem;
+
   uint num_interrupts;
   uint num_edn;
   // if module has alerts, this list_of_alerts needs to override in cfg before super.initialize()

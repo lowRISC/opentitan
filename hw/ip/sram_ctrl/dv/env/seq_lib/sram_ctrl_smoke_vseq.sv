@@ -68,12 +68,14 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
             // during key or init req, sram access shouldn't be taken
             randcase
               1: begin
-                // If we only do scrambling without re-init the mem, data intg will be wrong
-                cfg.scb.en_d_user_intg_chk = 0;
+                // If we only do scrambling without re-initializing the mem, data intg will be wrong
+                // since it's data intg passthru mem, it doesn't matter, just don't check it.
+                cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
                 req_scr_key();
               end
               1: begin
                 req_mem_init();
+                cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
               end
             endcase
           end

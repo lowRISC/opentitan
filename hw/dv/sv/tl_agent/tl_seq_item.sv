@@ -318,12 +318,16 @@ class tl_seq_item extends uvm_sequence_item;
   //
   // Returns 1 if the integrity of a_channel is maintained, 0 otherwise. This base
   // class implementation vacuously returns 1.
-  virtual function bit is_a_chan_intg_ok(bit throw_error = 1'b1);
+  virtual function bit is_a_chan_intg_ok(bit en_cmd_intg_chk = 1,
+                                         bit en_data_intg_chk = 1,
+                                         bit throw_error = 1'b1);
     return 1;
   endfunction
 
   // d_channel version of the function above
-  virtual function bit is_d_chan_intg_ok(bit throw_error = 1'b1);
+  virtual function bit is_d_chan_intg_ok(bit en_rsp_intg_chk = 1,
+                                         bit en_data_intg_chk = 1,
+                                         bit throw_error = 1'b1);
     return 1;
   endfunction
 endclass

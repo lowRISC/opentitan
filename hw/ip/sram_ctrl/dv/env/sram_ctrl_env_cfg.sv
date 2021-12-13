@@ -43,6 +43,7 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     clk_freqs_mhz[sram_ral_name] = clk_freq_mhz;
 
     super.initialize(csr_base_addr);
+    tl_intg_alert_fields[ral.status.bus_integ_error] = 1;
 
     // Build KDI cfg object and configure
     m_kdi_cfg = push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE))::type_id::create("m_kdi_cfg");
