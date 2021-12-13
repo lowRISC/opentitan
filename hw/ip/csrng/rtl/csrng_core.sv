@@ -54,6 +54,7 @@ module csrng_core import csrng_pkg::*; #(
   localparam int NApps = NHwApps + 1;
   localparam int AppCmdWidth = 32;
   localparam int AppCmdFifoDepth = 2;
+  localparam int SWCmdFifoDepth = 12;
   localparam int GenBitsWidth = 128;
   localparam int Cmd = 3;
   localparam int StateId = 4;
@@ -338,6 +339,14 @@ module csrng_core import csrng_pkg::*; #(
 
   logic                    cs_rdata_capt_vld;
   logic                    cs_bus_cmp_alert;
+
+  // sw command fifo
+  logic [AppCmdWidth-1:0]  sfifo_swcmd_rdata;
+  logic                    sfifo_swcmd_push;
+  logic [AppCmdWidth-1:0]  sfifo_swcmd_wdata;
+  logic                    sfifo_swcmd_pop;
+  logic                    sfifo_swcmd_full;
+  logic                    sfifo_swcmd_not_empty;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_reg2hw_genbits;
@@ -776,19 +785,47 @@ module csrng_core import csrng_pkg::*; #(
 
   // SW interface connection (only 1, and must be present)
   // cmd req
-  assign cmd_stage_vld[NApps-1] = reg2hw.cmd_req.qe;
+  assign sfifo_swcmd_push = reg2hw.cmd_req.qe;
+  assign sfifo_swcmd_wdata = reg2hw.cmd_req.q;
+  assign cmd_stage_bus[NApps-1] = sfifo_swcmd_rdata;
+  assign sfifo_swcmd_pop = cmd_stage_rdy[NApps-1] && cmd_stage_vld[NApps-1];
+  assign cmd_stage_vld[NApps-1] = sfifo_swcmd_not_empty;
   assign cmd_stage_shid[NApps-1] = StateId'(NApps-1);
-  assign cmd_stage_bus[NApps-1] = reg2hw.cmd_req.q;
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
-  assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_stage_rdy[NApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_rdy.d = !sfifo_swcmd_full;
+
   // cmd ack sts
   assign hw2reg.sw_cmd_sts.cmd_sts.de = cmd_stage_ack[NApps-1];
   assign hw2reg.sw_cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NApps-1];
+
   // genbits
   assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vldo_sw;
   assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw;
   assign hw2reg.genbits.d = (sw_app_enable && efuse_sw_app_enable_i) ? genbits_stage_bus_sw : '0;
   assign genbits_stage_bus_rd_sw = reg2hw.genbits.re;
+
+  // SW cmd extension FIFO
+  // This FIFO extension is to ensure a reliable interface between the processor and
+  // the register interface. No polling of the cmd_rdy is required.
+
+  prim_fifo_sync #(
+    .Width(AppCmdWidth),
+    .Pass(0),
+    .Depth(SWCmdFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
+  ) u_prim_fifo_sync_swcmd (
+    .clk_i          (clk_i),
+    .rst_ni         (rst_ni),
+    .clr_i          (!cs_enable),
+    .wvalid_i       (sfifo_swcmd_push),
+    .wready_o       (),
+    .wdata_i        (sfifo_swcmd_wdata),
+    .rvalid_o       (sfifo_swcmd_not_empty),
+    .rready_i       (sfifo_swcmd_pop),
+    .rdata_o        (sfifo_swcmd_rdata),
+    .full_o         (sfifo_swcmd_full),
+    .depth_o        ()
+  );
 
 
   // pack the gen bits into a 32 bit register sized word
