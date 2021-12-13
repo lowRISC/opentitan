@@ -208,7 +208,7 @@ static uint32_t info_page_addr(flash_ctrl_info_page_t info_page) {
   const uint32_t bank_index =
       bitfield_bit32_read(info_page, FLASH_CTRL_INFO_PAGE_BIT_BANK);
   const uint32_t page_index =
-      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_INDEX);
+      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PAGE);
   return kMemBase + bank_index * FLASH_CTRL_PARAM_BYTES_PER_BANK +
          page_index * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
 }
@@ -356,7 +356,7 @@ static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
   const uint32_t bank_index =
       bitfield_bit32_read(info_page, FLASH_CTRL_INFO_PAGE_BIT_BANK);
   const uint32_t page_index =
-      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_INDEX);
+      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PAGE);
   const uint32_t pre_addr =
       kBase + bank_index * kBankOffset + page_index * kPageOffset;
   return (info_cfg_regs_t){
