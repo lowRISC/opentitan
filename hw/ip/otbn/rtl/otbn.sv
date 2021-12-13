@@ -398,7 +398,7 @@ module otbn
   logic [ExtWLEN-1:0] dmem_wdata_bus;
   logic [ExtWLEN-1:0] dmem_wmask_bus;
   logic [ExtWLEN-1:0] dmem_rdata_bus;
-  logic [top_pkg::TL_AW-1:0] dmem_addr_bus;
+  logic [DmemAddrWidth-1:0] dmem_addr_bus;
   logic unused_dmem_addr_bus;
   logic [31:0] dmem_wdata_narrow_bus;
   logic [top_pkg::TL_DBW-1:0] dmem_byte_mask_bus;
@@ -546,7 +546,7 @@ module otbn
   assign dmem_rerror_bus  = 2'b00;
   assign dmem_rerror_core = dmem_rerror;
 
-  assign dmem_addr_bus = tl_win_h2d[TlWinDmem].a_address;
+  assign dmem_addr_bus = tl_win_h2d[TlWinDmem].a_address[DmemAddrWidth-1:0];
   assign dmem_wdata_narrow_bus = tl_win_h2d[TlWinDmem].a_data[31:0];
   assign dmem_byte_mask_bus = tl_win_h2d[TlWinDmem].a_mask;
 
@@ -561,14 +561,13 @@ module otbn
 
   assign mem_crc_data_in.wr_data = imem_req_bus ? imem_wdata_bus[31:0] :
                                                   dmem_wdata_narrow_bus[31:0];
-  // TODO: Expand DMem index so it's per 32-bit not per 256-bit
   assign mem_crc_data_in.index   = imem_req_bus ? {{15 - ImemIndexWidth{1'b0}}, imem_index_bus} :
                                                    {{15 - (DmemIndexWidth - 2){1'b0}},
                                                     dmem_addr_bus[DmemIndexWidth-1:2]};
   assign mem_crc_data_in.imem    = imem_req_bus;
 
   // Only the bits that factor into the dmem index and dmem word enables are required
-  assign unused_dmem_addr_bus = ^{dmem_addr_bus[top_pkg::TL_AW-1:DmemIndexWidth],
+  assign unused_dmem_addr_bus = ^{dmem_addr_bus[DmemAddrWidth-1:DmemIndexWidth],
                                   dmem_addr_bus[1:0]};
 
   prim_crc32 #(
