@@ -14,9 +14,9 @@ class csrng_item extends uvm_sequence_item;
   rand bit [18:0]   glen;
   rand bit [31:0]   cmd_data_q[$];
 
+  bit               fips;
   bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]   genbits_q[$];
 
-  // TODO: Try clen > 12
   constraint c_clen {
     clen inside {[0:12]};
   };
@@ -30,9 +30,13 @@ class csrng_item extends uvm_sequence_item;
     flags inside {[0:1]};
   };
 
-  // TODO: Try glen > 32, glen = 0
+  // TODO: Try glen > 32, glen = 0 on GEN cmd
   constraint c_glen {
-    glen inside {[1:32]};
+    solve acmd before glen;
+    if (acmd != GEN)
+      glen == 0;
+    else
+      glen inside {[1:32]};
   };
 
    //--------------------------------------------------------------------
@@ -47,6 +51,7 @@ class csrng_item extends uvm_sequence_item;
       this.clen       = rhs_.clen;
       this.flags      = rhs_.flags;
       this.glen       = rhs_.glen;
+      this.fips       = rhs_.fips;
       this.cmd_data_q = rhs_.cmd_data_q;
       this.genbits_q  = rhs_.genbits_q;
    endfunction
@@ -59,6 +64,7 @@ class csrng_item extends uvm_sequence_item;
     str = {str,  $sformatf("\n\t |* clen           :      %5d *| \t", clen)               };
     str = {str,  $sformatf("\n\t |* flags[0]       :      %5d *| \t", flags[0])           };
     str = {str,  $sformatf("\n\t |* glen           :      %5d *| \t", glen)               };
+    str = {str,  $sformatf("\n\t |* fips           :      %5d *| \t", fips)               };
     for (int i = 0; i < cmd_data_q.size(); i++) begin
       str = {str,  $sformatf("\n\t |* cmd_data_q[%2d] : 0x%8h *| \t", i, cmd_data_q[i]) };
     end

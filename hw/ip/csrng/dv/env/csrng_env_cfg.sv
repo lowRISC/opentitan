@@ -15,50 +15,46 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   rand csrng_agent_cfg   m_edn_agent_cfg[NUM_HW_APPS];
 
-  virtual pins_if#(8)   otp_en_cs_sw_app_read_vif;
+  virtual pins_if#(8)    otp_en_cs_sw_app_read_vif;
 
   // Knobs & Weights
   uint   otp_en_cs_sw_app_read_pct, regwen_pct,
          enable_pct, sw_app_enable_pct, read_int_state_pct,
-         chk_int_state_pct,
-         num_cmds_min, num_cmds_max;
+         check_int_state_pct, num_cmds_min, num_cmds_max;
 
-  rand uint                     num_cmds;
-  rand bit                      chk_int_state, regwen;
-  rand mubi4_t                  enable, sw_app_enable, read_int_state;
-  rand mubi8_t                  otp_en_cs_sw_app_read;
+  rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS], sw_app;
+  rand mubi4_t   enable, sw_app_enable, read_int_state;
+  rand mubi8_t   otp_en_cs_sw_app_read;
 
-  // Variables
-  bit                                    compliance[NUM_HW_APPS], status[NUM_HW_APPS];
-  bit [csrng_env_pkg::KEY_LEN-1:0]       key[NUM_HW_APPS];
-  bit [csrng_env_pkg::BLOCK_LEN-1:0]     v[NUM_HW_APPS];
-  bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   reseed_counter[NUM_HW_APPS];
+  // Variables (+1 is for the SW APP)
+  bit                                    compliance[NUM_HW_APPS + 1], status[NUM_HW_APPS + 1];
+  bit [csrng_env_pkg::KEY_LEN-1:0]       key[NUM_HW_APPS + 1];
+  bit [csrng_env_pkg::BLOCK_LEN-1:0]     v[NUM_HW_APPS + 1];
+  bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   reseed_counter[NUM_HW_APPS + 1];
 
-  constraint c_otp_en_cs_sw_app_read {otp_en_cs_sw_app_read dist {
+  constraint otp_en_cs_sw_app_read_c {otp_en_cs_sw_app_read dist {
                                       MuBi8True  :/ otp_en_cs_sw_app_read_pct,
                                       MuBi8False :/ (100 - otp_en_cs_sw_app_read_pct) };}
 
-  constraint c_regwen { regwen dist {
+  constraint regwen_c { regwen dist {
                         1 :/ regwen_pct,
                         0 :/ (100 - regwen_pct) };}
 
-  constraint c_enable { enable dist {
+  constraint enable_c { enable dist {
                         MuBi4True  :/ enable_pct,
                         MuBi4False :/ (100 - enable_pct) };}
 
-  constraint c_sw_app_enable { sw_app_enable dist {
+  constraint sw_app_enable_c { sw_app_enable dist {
                                MuBi4True  :/ sw_app_enable_pct,
                                MuBi4False :/ (100 - sw_app_enable_pct) };}
 
-  constraint c_read_int_state { read_int_state dist {
+  constraint read_int_state_c { read_int_state dist {
                                 MuBi4True  :/ read_int_state_pct,
                                 MuBi4False :/ (100 - read_int_state_pct) };}
 
-  constraint c_chk_int_state { chk_int_state dist {
-                               1 :/ chk_int_state_pct,
-                               0 :/ (100 - chk_int_state_pct) };}
-
-  constraint c_num_cmds { num_cmds inside { [num_cmds_min:num_cmds_max] };}
+  constraint check_int_state_c { check_int_state dist {
+                                 1 :/ check_int_state_pct,
+                                 0 :/ (100 - check_int_state_pct) };}
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = csrng_env_pkg::LIST_OF_ALERTS;
@@ -82,84 +78,87 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     end
   endfunction
 
-  function void print_internal_state(bit [NUM_HW_APPS-1:0] hwapp);
-    `uvm_info(`gfn, $sformatf("********** internal_state **********"), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("cfg.reseed_counter[%0d]       = %0d", hwapp,
-         reseed_counter[hwapp]), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("cfg.compliance[%0d]/status[%0d] = 0b%0b", hwapp, hwapp,
-         {compliance[hwapp], status[hwapp]}), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("cfg.key[%0d] = 0x%0h", hwapp, key[hwapp]), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("cfg.v[%0d]   = 0x%0h", hwapp, v[hwapp]), UVM_DEBUG)
-  endfunction
-
-  // Compare internal state
-  task check_int_state(uint hwapp);
+  // Check internal state w/ optional compare
+  task check_internal_state(uint app = 2, bit compare = 0);
     bit [TL_DW-1:0]                        rdata;
     bit                                    hw_compliance, hw_status;
     bit [csrng_env_pkg::KEY_LEN-1:0]       hw_key;
     bit [csrng_env_pkg::BLOCK_LEN-1:0]     hw_v;
     bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   hw_reseed_counter;
 
-    csr_wr(.ptr(ral.int_state_num), .value(hwapp));
-    csr_rd_check(.ptr(ral.int_state_num), .compare_vs_ral(1'b1));
+    csr_wr(.ptr(ral.int_state_num), .value(app));
+    // To give the hardware time to update
+    clk_rst_vif.wait_clks(1);
     for (int i = 0; i < RSD_CTR_LEN/TL_DW; i++) begin
       csr_rd(.ptr(ral.int_state_val), .value(rdata));
       hw_reseed_counter = (rdata<<TL_DW*i) + hw_reseed_counter;
     end
-    `uvm_info(`gfn, $sformatf("hw_reseed_counter[%0d]  = %0d",
-        hwapp, hw_reseed_counter), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("cfg.reseed_counter[%0d] = %0d",
-        hwapp, reseed_counter[hwapp]), UVM_DEBUG)
-    `DV_CHECK_EQ_FATAL(hw_reseed_counter, reseed_counter[hwapp])
     for (int i = 0; i < BLOCK_LEN/TL_DW; i++) begin
       csr_rd(.ptr(ral.int_state_val), .value(rdata));
       hw_v = (rdata<<TL_DW*i) + hw_v;
     end
-    `uvm_info(`gfn, $sformatf("hw_v[%0d]  = 0x%0h",
-        hwapp, hw_v), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("cfg.v[%0d] = 0x%0h",
-        hwapp, v[hwapp]), UVM_DEBUG)
-    `DV_CHECK_EQ_FATAL(hw_v, v[hwapp])
     for (int i = 0; i < KEY_LEN/TL_DW; i++) begin
       csr_rd(.ptr(ral.int_state_val), .value(rdata));
       hw_key = (rdata<<TL_DW*i) + hw_key;
     end
-    `uvm_info(`gfn, $sformatf("hw_key[%0d]  = 0x%0h",
-        hwapp, hw_key), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("cfg.key[%0d] = 0x%0h",
-        hwapp, key[hwapp]), UVM_DEBUG)
-    `DV_CHECK_EQ_FATAL(hw_key, key[hwapp])
     csr_rd(.ptr(ral.int_state_val), .value(rdata));
     hw_compliance = rdata[1];
     hw_status     = rdata[0];
-    `uvm_info(`gfn, $sformatf("hw_compliance/status[%0d]  = 0b%b",
-        hwapp, {hw_compliance, hw_status}), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("cfg.compliance/status[%0d] = 0b%b",
-        hwapp, {compliance[hwapp], status[hwapp]}), UVM_DEBUG)
-    `DV_CHECK_EQ_FATAL({hw_compliance, hw_status}, {compliance[hwapp], status[hwapp]})
+    `uvm_info(`gfn, $sformatf("\n"), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("************ internal_state[%0d] ***********", app), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("hw_reseed_counter  = %0d", hw_reseed_counter), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("cfg.reseed_counter = %0d", reseed_counter[app]), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("hw_v  = 0x%0h", hw_v), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("cfg.v = 0x%0h", v[app]), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("hw_key  = 0x%0h", hw_key), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("cfg.key = 0x%0h", key[app]), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("hw_compliance/status  = 0b%b", {hw_compliance, hw_status}),
+        UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("cfg.compliance/status = 0b%b", {compliance[app], status[app]}),
+        UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("******************************************\n"), UVM_DEBUG)
+    if (compare) begin
+      `DV_CHECK_EQ_FATAL(hw_reseed_counter, reseed_counter[app])
+      `DV_CHECK_EQ_FATAL(hw_key, key[app])
+      `DV_CHECK_EQ_FATAL(hw_v, v[app])
+      `DV_CHECK_EQ_FATAL({hw_compliance, hw_status}, {compliance[app], status[app]})
+    end
  endtask
 
   virtual function string convert2string();
     string str = "";
     str = {str, "\n"};
-    str = {str,  $sformatf("\n\t |************** csrng_env_cfg *****************| \t")                           };
-    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read     : 0x%4h *****| \t", otp_en_cs_sw_app_read)     };
-    str = {str,  $sformatf("\n\t |***** enable                    : 0x%4h *****| \t", enable)                    };
-    str = {str,  $sformatf("\n\t |***** sw_app_enable             : 0x%4h *****| \t", sw_app_enable)             };
-    str = {str,  $sformatf("\n\t |***** read_int_state            : 0x%4h *****| \t", read_int_state)            };
-    str = {str,  $sformatf("\n\t |***** regwen                    :   %4d *****| \t", regwen)                    };
-    str = {str,  $sformatf("\n\t |***** chk_int_state             :   %4d *****| \t", chk_int_state)             };
-    str = {str,  $sformatf("\n\t |***** num_cmds                  :   %4d *****| \t", num_cmds)                  };
-    str = {str,  $sformatf("\n\t |-------------- knobs -------------------------| \t")                           };
-    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_pct :   %4d *****| \t", otp_en_cs_sw_app_read_pct) };
-    str = {str,  $sformatf("\n\t |***** regwen_pct                :   %4d *****| \t", regwen_pct)                };
-    str = {str,  $sformatf("\n\t |***** enable_pct                :   %4d *****| \t", enable_pct)                };
-    str = {str,  $sformatf("\n\t |***** sw_app_enable_pct         :   %4d *****| \t", sw_app_enable_pct)         };
-    str = {str,  $sformatf("\n\t |***** read_int_state_pct        :   %4d *****| \t", read_int_state_pct)        };
-    str = {str,  $sformatf("\n\t |***** chk_int_state_pct         :   %4d *****| \t", chk_int_state_pct)         };
-    str = {str,  $sformatf("\n\t |***** num_cmds_min              :   %4d *****| \t", num_cmds_min)              };
-    str = {str,  $sformatf("\n\t |***** num_cmds_max              :   %4d *****| \t", num_cmds_max)              };
-    str = {str,  $sformatf("\n\t |**********************************************| \t")                           };
+    str = {str,  $sformatf("\n\t |************** csrng_env_cfg *****************| \t")};
+    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read     : 0x%4h *****| \t",
+           otp_en_cs_sw_app_read)};
+    str = {str,  $sformatf("\n\t |***** enable                    : 0x%4h *****| \t",
+           enable)};
+    str = {str,  $sformatf("\n\t |***** sw_app_enable             : 0x%4h *****| \t",
+           sw_app_enable)};
+    str = {str,  $sformatf("\n\t |***** read_int_state            : 0x%4h *****| \t",
+           read_int_state)};
+    str = {str,  $sformatf("\n\t |***** regwen                    :   %4d *****| \t",
+           regwen)};
+    str = {str,  $sformatf("\n\t |***** check_int_state           :   %4d *****| \t",
+           check_int_state)};
+    str = {str,  $sformatf("\n\t |-------------- knobs -------------------------| \t")};
+    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_pct :   %4d *****| \t",
+           otp_en_cs_sw_app_read_pct) };
+    str = {str,  $sformatf("\n\t |***** regwen_pct                :   %4d *****| \t",
+           regwen_pct)};
+    str = {str,  $sformatf("\n\t |***** enable_pct                :   %4d *****| \t",
+           enable_pct)};
+    str = {str,  $sformatf("\n\t |***** sw_app_enable_pct         :   %4d *****| \t",
+           sw_app_enable_pct)};
+    str = {str,  $sformatf("\n\t |***** read_int_state_pct        :   %4d *****| \t",
+           read_int_state_pct)};
+    str = {str,  $sformatf("\n\t |***** check_int_state_pct       :   %4d *****| \t",
+           check_int_state_pct)};
+    str = {str,  $sformatf("\n\t |***** num_cmds_min              :   %4d *****| \t",
+           num_cmds_min)};
+    str = {str,  $sformatf("\n\t |***** num_cmds_max              :   %4d *****| \t",
+           num_cmds_max)};
+    str = {str,  $sformatf("\n\t |**********************************************| \t")};
     str = {str, "\n"};
     return str;
   endfunction

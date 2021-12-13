@@ -23,17 +23,13 @@ package csrng_env_pkg;
 
   // parameters
   parameter uint     NUM_HW_APPS      = 2;
+  parameter uint     SW_APP           = 2;
   parameter string   LIST_OF_ALERTS[] = {"recov_alert","fatal_alert"};
   parameter uint     NUM_ALERTS       = 2;
   parameter uint     KEY_LEN          = 256;
   parameter uint     BLOCK_LEN        = 128;
   parameter uint     CTR_LEN          = 32;
   parameter uint     RSD_CTR_LEN      = 32;
-
-  parameter bit [TL_DW-1:0] [3:0] ZERO_SEED_GENBITS = {32'h0,
-                                                       32'h0,
-                                                       32'h0,
-                                                       32'h4};
 
   // types
   typedef enum int {

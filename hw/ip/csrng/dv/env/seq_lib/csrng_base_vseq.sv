@@ -9,11 +9,10 @@ class csrng_base_vseq extends cip_base_vseq #(
     .VIRTUAL_SEQUENCER_T (csrng_virtual_sequencer)
   );
   `uvm_object_utils(csrng_base_vseq)
-
-  // various knobs to enable certain routines
-  bit do_csrng_init = 1'b1;
-
   `uvm_object_new
+
+  bit               do_csrng_init = 1'b1;
+  bit [TL_DW-1:0]   rdata;
 
   push_pull_device_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)   m_entropy_src_pull_seq;
   push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)                m_edn_push_seq[NUM_HW_APPS];
@@ -40,26 +39,55 @@ class csrng_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.ctrl));
   endtask
 
-  // write csrng command request register
-  virtual task wr_cmd_req(bit[3:0] acmd, bit[3:0] clen, bit[3:0] flags, bit[18:0] glen,
-                          bit [31:0] data_q[$] = '{});
-    csr_wr(.ptr(ral.cmd_req), .value({1'b0, glen, flags, clen, acmd}));
+  task automatic wait_cmd_req_done();
+    csr_spinwait(.ptr(ral.intr_state.cs_cmd_req_done), .exp_data(1'b1));
+    csr_rd_check(.ptr(ral.sw_cmd_sts.cmd_sts), .compare_value(1'b0));
+    check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
   endtask
 
-  task automatic send_cmd_req(uint hwapp, csrng_item cs_item);
+  task automatic send_cmd_req(uint app, csrng_item cs_item);
     bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]   cmd;
     // Gen cmd_req
     cmd = {cs_item.glen, cs_item.flags, cs_item.clen, 1'b0, cs_item.acmd};
-    cfg.m_edn_agent_cfg[hwapp].m_cmd_push_agent_cfg.add_h_user_data(cmd);
-    m_edn_push_seq[hwapp].num_trans = cs_item.clen + 1;
-    for (int i = 0; i < cs_item.clen; i++)
-      cfg.m_edn_agent_cfg[hwapp].m_cmd_push_agent_cfg.add_h_user_data(cs_item.cmd_data_q.pop_front());
-    fork
-      // Drive cmd_req
-      m_edn_push_seq[hwapp].start(p_sequencer.edn_sequencer_h[hwapp].m_cmd_push_sequencer);
-    join_none
-    // Wait for ack
-    cfg.m_edn_agent_cfg[hwapp].vif.wait_cmd_ack();
+    if (app != SW_APP) begin
+      cfg.m_edn_agent_cfg[app].m_cmd_push_agent_cfg.add_h_user_data(cmd);
+      m_edn_push_seq[app].num_trans = cs_item.clen + 1;
+      for (int i = 0; i < cs_item.clen; i++)
+        cfg.m_edn_agent_cfg[app].m_cmd_push_agent_cfg.add_h_user_data(
+            cs_item.cmd_data_q.pop_front());
+      fork
+        // Drive cmd_req
+        m_edn_push_seq[app].start(p_sequencer.edn_sequencer_h[app].m_cmd_push_sequencer);
+      join_none
+      // Wait for ack
+      cfg.m_edn_agent_cfg[app].vif.wait_cmd_ack();
+    end
+    else begin
+      // Wait for CSRNG cmd_rdy
+      // TODO: Need 2 for now to allow cmd_rdy to go low
+      csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
+      csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
+      csr_wr(.ptr(ral.cmd_req), .value(cmd));
+      for (int i = 0; i < cs_item.clen; i++) begin
+        cmd = cs_item.cmd_data_q.pop_front();
+        // Wait for CSRNG cmd_rdy
+        // TODO: Need 2 for now to allow cmd_rdy to go low
+        csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
+        csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
+        csr_wr(.ptr(ral.cmd_req), .value(cmd));
+      end
+      if (cs_item.acmd != csrng_pkg::GEN) begin
+        wait_cmd_req_done();
+      end
+      else begin
+        for (int i = 0; i < cs_item.glen; i++) begin
+          csr_spinwait(.ptr(ral.genbits_vld.genbits_vld), .exp_data(1'b1));
+          for (int i = 0; i < csrng_pkg::GENBITS_BUS_WIDTH/TL_DW; i++) begin
+            csr_rd(.ptr(ral.genbits.genbits), .value(rdata));
+          end
+        end
+        wait_cmd_req_done();
+      end
+    end
   endtask
-
 endclass : csrng_base_vseq

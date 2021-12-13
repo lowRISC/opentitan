@@ -9,12 +9,16 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   );
   `uvm_component_utils(csrng_scoreboard)
 
-  // local variables
-  bit [RSD_CTR_LEN-1:0]   reseed_counter;
-  bit [BLOCK_LEN-1:0]     v;
-  bit [KEY_LEN-1:0]       key;
+  csrng_item                                    cs_item[NUM_HW_APPS + 1];
+  push_pull_item#(.HostDataWidth(
+      entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))   es_item[NUM_HW_APPS + 1];
+  uint                                          more_cmd_data;
+  bit [TL_DW-1:0]                               hw_genbits_reg_q[$];
+  bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0]        hw_genbits, prd_genbits_q[NUM_HW_APPS + 1][$];
+  bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]    cs_data[NUM_HW_APPS + 1], es_data[NUM_HW_APPS + 1];
+  bit                                           fips[NUM_HW_APPS + 1];
 
-  virtual csrng_cov_if    cov_vif;
+  virtual csrng_cov_if                          cov_vif;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))
@@ -27,6 +31,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     super.build_phase(phase);
 
     entropy_src_fifo = new("entropy_src_fifo", this);
+
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       csrng_cmd_fifo[i] = new($sformatf("csrng_cmd_fifo[%0d]", i), this);
     end
@@ -100,6 +105,58 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       "sum_sts": begin
       end
       "cmd_req": begin
+        if (addr_phase_write) begin
+          if (!more_cmd_data) begin
+            cs_item[SW_APP] = csrng_item::type_id::create("cs_item[SW_APP]");
+            cs_item[SW_APP].acmd  = item.a_data[3:0];
+            cs_item[SW_APP].clen  = item.a_data[7:4];
+            cs_item[SW_APP].flags = item.a_data[11:8];
+            cs_item[SW_APP].glen  = item.a_data[30:12];
+
+            more_cmd_data = cs_item[SW_APP].clen;
+          end
+          else begin
+            more_cmd_data -= 1;
+            cs_item[SW_APP].cmd_data_q.push_back(item.a_data);
+          end
+          if (!more_cmd_data) begin
+            for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
+              cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) +
+                  cs_data[SW_APP];
+            end
+            case (cs_item[SW_APP].acmd)
+              csrng_pkg::INS: begin
+                if (!cs_item[SW_APP].flags[0]) begin
+                  // Get seed
+                  entropy_src_fifo.get(es_item[SW_APP]);
+                  es_data[SW_APP]      = es_item[SW_APP].d_data[entropy_src_pkg::
+                      CSRNG_BUS_WIDTH-1:0];
+                  cs_item[SW_APP].fips = es_item[SW_APP].d_data[entropy_src_pkg::
+                      CSRNG_BUS_WIDTH];
+                end
+                ctr_drbg_instantiate(SW_APP, es_data[SW_APP], cs_data[SW_APP],
+                   cs_item[SW_APP].fips);
+              end
+              csrng_pkg::RES: begin
+                if (!cs_item[SW_APP].flags[0]) begin
+                  // Get seed
+                  entropy_src_fifo.get(es_item[SW_APP]);
+                  es_data[SW_APP] = es_item[SW_APP].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
+                  cs_item[SW_APP].fips = es_item[SW_APP].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
+                end
+                ctr_drbg_reseed(SW_APP, es_data[SW_APP], cs_data[SW_APP], cs_item[SW_APP].fips);
+              end
+              csrng_pkg::UPD: begin
+                ctr_drbg_update(SW_APP, cs_data[SW_APP]);
+              end
+              csrng_pkg::UNI: begin
+                ctr_drbg_uninstantiate(SW_APP);
+              end
+            endcase
+            cs_data[SW_APP] = 'h0;
+            es_data[SW_APP] = 'h0;
+          end
+        end
       end
       "sw_cmd_sts": begin
         do_read_check = 1'b0;
@@ -109,6 +166,29 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       "genbits": begin
         do_read_check = 1'b0;
+        if (data_phase_read) begin
+          hw_genbits_reg_q.push_back(item.d_data);
+        end
+        if (hw_genbits_reg_q.size() == csrng_pkg::GENBITS_BUS_WIDTH/TL_DW) begin
+          for (int i = 0; i < hw_genbits_reg_q.size(); i++) begin
+            hw_genbits += hw_genbits_reg_q[i] << i*TL_DW;
+          end
+          cs_item[SW_APP].genbits_q.push_back(hw_genbits);
+          hw_genbits_reg_q.delete();
+          hw_genbits = '0;
+        end
+        if (cs_item[SW_APP].genbits_q.size() == cs_item[SW_APP].glen) begin
+          for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
+            cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) +
+                cs_data[SW_APP];
+          end
+          ctr_drbg_generate(SW_APP, cs_item[SW_APP].glen, cs_data[SW_APP]);
+          for (int i = 0; i < cs_item[SW_APP].glen; i++) begin
+            `DV_CHECK_EQ_FATAL(cs_item[SW_APP].genbits_q[i], prd_genbits_q[SW_APP][i])
+          end
+          prd_genbits_q[SW_APP].delete();
+          cs_data[SW_APP] = 'h0;
+        end
       end
       "halt_main_sm": begin
       end
@@ -164,7 +244,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     return output_block;
   endfunction
 
-  function void ctr_drbg_update(uint hwapp,
+  function void ctr_drbg_update(uint app,
                                 bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] provided_data);
 
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   temp;
@@ -174,28 +254,28 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     for (int i = 0; i < (entropy_src_pkg::CSRNG_BUS_WIDTH/BLOCK_LEN); i++) begin
       if (CTR_LEN < BLOCK_LEN) begin
-        inc = (cfg.v[hwapp][CTR_LEN-1:0] + 1);
+        inc = (cfg.v[app][CTR_LEN-1:0] + 1);
         mod_val = 2**CTR_LEN;
         inc = inc % mod_val;
-        cfg.v[hwapp] = {cfg.v[hwapp][BLOCK_LEN - 1:CTR_LEN], inc};
+        cfg.v[app] = {cfg.v[app][BLOCK_LEN - 1:CTR_LEN], inc};
       end
       else begin
-        cfg.v[hwapp] += 1;
+        cfg.v[app] += 1;
         mod_val = 2**BLOCK_LEN;
-        cfg.v[hwapp] = cfg.v[hwapp] % mod_val;
+        cfg.v[app] = cfg.v[app] % mod_val;
       end
 
-      output_block = block_encrypt(cfg.key[hwapp], cfg.v[hwapp]);
+      output_block = block_encrypt(cfg.key[app], cfg.v[app]);
       temp = {temp, output_block};
     end
 
     temp = temp ^ provided_data;
-    cfg.key[hwapp] = temp[entropy_src_pkg::CSRNG_BUS_WIDTH-1:(entropy_src_pkg::CSRNG_BUS_WIDTH -
+    cfg.key[app] = temp[entropy_src_pkg::CSRNG_BUS_WIDTH-1:(entropy_src_pkg::CSRNG_BUS_WIDTH -
         KEY_LEN)];
-    cfg.v[hwapp] = temp[BLOCK_LEN-1:0];
+    cfg.v[app] = temp[BLOCK_LEN-1:0];
   endfunction
 
-  function void ctr_drbg_instantiate(uint hwapp,
+  function void ctr_drbg_instantiate(uint app,
                                      bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
                                        entropy_input,
                                      bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
@@ -205,15 +285,15 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   seed_material;
 
     seed_material  = entropy_input ^ additional_input;
-    cfg.key[hwapp] = 'h0;
-    cfg.v[hwapp]   = 'h0;
-    ctr_drbg_update(hwapp, seed_material);
-    cfg.reseed_counter[hwapp] = 1'b1;
-    cfg.compliance[hwapp]     = fips;
-    cfg.status[hwapp]         = 1'b1;
+    cfg.key[app] = 'h0;
+    cfg.v[app]   = 'h0;
+    ctr_drbg_update(app, seed_material);
+    cfg.reseed_counter[app] = 1'b1;
+    cfg.compliance[app]     = fips;
+    cfg.status[app]         = 1'b1;
   endfunction
 
-  function void ctr_drbg_reseed(uint hwapp,
+  function void ctr_drbg_reseed(uint app,
                                 bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] entropy_input,
                                 bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
                                     additional_input,
@@ -222,21 +302,21 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   seed_material;
 
     seed_material = entropy_input ^ additional_input;
-    ctr_drbg_update(hwapp, seed_material);
-    cfg.reseed_counter[hwapp] = 1'b1;
-    cfg.compliance[hwapp]     = fips;
+    ctr_drbg_update(app, seed_material);
+    cfg.reseed_counter[app] = 1'b1;
+    cfg.compliance[app]     = fips;
   endfunction
 
-  function void ctr_drbg_uninstantiate(uint hwapp);
-    cfg.key[hwapp] = 'h0;
-    cfg.v[hwapp]   = 'h0;
-    cfg.reseed_counter[hwapp] = 1'b0;
-    cfg.compliance[hwapp]     = 1'b0;
-    cfg.status[hwapp]         = 1'b0;
+  function void ctr_drbg_uninstantiate(uint app);
+    cfg.key[app] = 'h0;
+    cfg.v[app]   = 'h0;
+    cfg.reseed_counter[app] = 1'b0;
+    cfg.compliance[app]     = 1'b0;
+    cfg.status[app]         = 1'b0;
   endfunction
 
-  function void ctr_drbg_generate(uint hwapp,
-                                  csrng_item cs_item,
+  function void ctr_drbg_generate(uint app,
+                                  bit [18:0] glen,
                                   bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
                                       additional_input = 'h0);
 
@@ -246,83 +326,83 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit [BLOCK_LEN-1:0]                      output_block;
     bit [63:0]                               mod_val;
 
-    if (additional_input != 0)
-      ctr_drbg_update(hwapp, additional_input);
-    requested_bits = cs_item.glen * csrng_pkg::GENBITS_BUS_WIDTH;
-    for (int i = 0; i < cs_item.glen; i++) begin
+    if (additional_input) begin
+      ctr_drbg_update(app, additional_input);
+    end
+    requested_bits = glen * csrng_pkg::GENBITS_BUS_WIDTH;
+    for (int i = 0; i < glen; i++) begin
       if (CTR_LEN < BLOCK_LEN) begin
-        inc = (cfg.v[hwapp][CTR_LEN-1:0] + 1);
+        inc = (cfg.v[app][CTR_LEN-1:0] + 1);
         mod_val = 2**CTR_LEN;
         inc = inc % mod_val;
-        cfg.v[hwapp] = {cfg.v[hwapp][BLOCK_LEN - 1:CTR_LEN], inc};
+        cfg.v[app] = {cfg.v[app][BLOCK_LEN - 1:CTR_LEN], inc};
       end
       else begin
-        cfg.v[hwapp] += 1;
+        cfg.v[app] += 1;
         mod_val = 2**BLOCK_LEN;
-        cfg.v[hwapp] = cfg.v[hwapp] % mod_val;
+        cfg.v[app] = cfg.v[app] % mod_val;
       end
-      output_block = block_encrypt(cfg.key[hwapp], cfg.v[hwapp]);
+      output_block = block_encrypt(cfg.key[app], cfg.v[app]);
       genbits      = output_block;
-      `uvm_info(`gfn, $sformatf("genbits[%0d]    = %h", hwapp, genbits), UVM_DEBUG)
-      `uvm_info(`gfn, $sformatf("hw_genbits[%0d] = %h", hwapp, cs_item.genbits_q[0]), UVM_DEBUG)
-      hw_genbits = cs_item.genbits_q.pop_front();
-      `DV_CHECK_EQ_FATAL(genbits, hw_genbits)
+      prd_genbits_q[app].push_back(genbits);
     end
-    ctr_drbg_update(hwapp, additional_input);
-    cfg.reseed_counter[hwapp] += 1;
+    ctr_drbg_update(app, additional_input);
+    cfg.reseed_counter[app] += 1;
   endfunction
 
-  task process_csrng_cmd_fifo(bit[NUM_HW_APPS-1:0] hwapp);
-    bit                                           fips;
-    bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]    cs_data, es_data;
-    csrng_item                                    cs_item;
-    push_pull_item#(.HostDataWidth(
-        entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))   es_item;
-
+  task process_csrng_cmd_fifo(bit[NUM_HW_APPS-1:0] app);
     forever begin
-      csrng_cmd_fifo[hwapp].get(cs_item);
-      cs_data = '0;
-      es_data = '0;
-      fips    = 1'b0;
-      for (int i = 0; i < cs_item.cmd_data_q.size(); i++) begin
-        cs_data = (cs_item.cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) + cs_data;
+      csrng_cmd_fifo[app].get(cs_item[app]);
+      cs_data[app] = '0;
+      es_data[app] = '0;
+      fips[app]    = 1'b0;
+      for (int i = 0; i < cs_item[app].cmd_data_q.size(); i++) begin
+        cs_data[app] = (cs_item[app].cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) +
+                       cs_data[app];
       end
-      `uvm_info(`gfn, $sformatf("Received cs_item[%0d]:%0s", hwapp, cs_item.convert2string()), UVM_DEBUG)
-      cov_vif.cg_cmds_sample(hwapp, cs_item);
+      `uvm_info(`gfn, $sformatf("Received cs_item[%0d]:%0s", app, cs_item[app].convert2string()),
+          UVM_DEBUG)
+      cov_vif.cg_cmds_sample(app, cs_item[app]);
 
-      // TODO: Move interface dependency from scoreboard to monitor
-      case (cs_item.acmd)
+      case (cs_item[app].acmd)
         csrng_pkg::INS: begin
-          if (cs_item.flags[0] == 'b0) begin
-            entropy_src_fifo.get(es_item);
-            `uvm_info(`gfn, $sformatf("Received es_item:\n%0s", es_item.convert2string()), UVM_DEBUG)
-            es_data = es_item.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
-            fips    = es_item.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
+          if (!cs_item[app].flags[0]) begin
+            // Get seed
+            entropy_src_fifo.get(es_item[app]);
+            `uvm_info(`gfn, $sformatf("Received es_item[%0d]:\n%0s", app,
+                es_item[app].convert2string()), UVM_DEBUG)
+            es_data[app]   = es_item[app].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
+            fips[app]      = es_item[app].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
           end
-          `uvm_info(`gfn, $sformatf("es_data = %0h, cs_data = %0h, fips = %0d", es_data, cs_data, fips), UVM_DEBUG)
-          ctr_drbg_instantiate(hwapp, es_data, cs_data, fips);
+          ctr_drbg_instantiate(app, es_data[app], cs_data[app], fips[app]);
         end
         csrng_pkg::GEN: begin
-          ctr_drbg_generate(hwapp, cs_item, cs_data);
+          ctr_drbg_generate(app, cs_item[app].glen, cs_data[app]);
+          for (int i = 0; i < cs_item[app].glen; i++) begin
+            `DV_CHECK_EQ_FATAL(cs_item[app].genbits_q[i], prd_genbits_q[app][i])
+          end
         end
         csrng_pkg::UNI: begin
-          ctr_drbg_uninstantiate(hwapp);
+          ctr_drbg_uninstantiate(app);
         end
         csrng_pkg::RES: begin
-          if (cs_item.flags[0] == 'b0) begin
-            entropy_src_fifo.get(es_item);
-            `uvm_info(`gfn, $sformatf("Received es_item:\n%0s", es_item.convert2string()), UVM_DEBUG)
-            es_data = es_item.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
-            fips    = es_item.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
+          if (cs_item[app].flags[0] == 'b0) begin
+            // Get seed
+            entropy_src_fifo.get(es_item[app]);
+            `uvm_info(`gfn, $sformatf("Received es_item[%0d]:\n%0s", app,
+                es_item[app].convert2string()), UVM_DEBUG)
+            es_data[app]   = es_item[app].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
+            fips[app]      = es_item[app].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
           end
-          ctr_drbg_reseed(hwapp, es_data, cs_data, fips);
+          ctr_drbg_reseed(app, es_data[app], cs_data[app], fips[app]);
         end
         csrng_pkg::UPD: begin
-          ctr_drbg_update(hwapp, cs_data);
+          ctr_drbg_update(app, cs_data[app]);
+        end
+        default: begin
+          `uvm_fatal(`gfn, $sformatf("Invalid csrng_acmd: 0x%0h", cs_item[app].acmd))
         end
       endcase
-      cfg.print_internal_state(hwapp);
     end
   endtask
-
 endclass
