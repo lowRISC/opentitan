@@ -29,7 +29,7 @@ class csrng_base_test extends cip_base_test #(
     cfg.enable_pct                = 100;
     cfg.sw_app_enable_pct         = 100;
     cfg.read_int_state_pct        = 100;
-    cfg.chk_int_state_pct         = 100;
+    cfg.check_int_state_pct       = 100;
   endfunction
 
 endclass : csrng_base_test

@@ -10,8 +10,9 @@ class csrng_cmds_test extends csrng_base_test;
   function void configure_env();
     super.configure_env();
 
-    cfg.num_cmds_min = 0;
-    cfg.num_cmds_max = 20;
+    cfg.num_cmds_min      = 0;
+    cfg.num_cmds_max      = 20;
+    cfg.sw_app_enable_pct = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
