@@ -895,8 +895,6 @@ module otbn
       .status_o              (),
       .insn_cnt_o            (insn_cnt_model),
 
-      .invalidate_imem_i     (1'b0),
-
       .done_rr_o (done_rr_model),
 
       .err_o ()
