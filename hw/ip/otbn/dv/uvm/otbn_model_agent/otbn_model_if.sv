@@ -57,6 +57,18 @@ interface otbn_model_if
                     "Failed to invalidate IMEM", "otbn_model_if")
   endfunction
 
+  // Ask the Python model to compute a CRC step for a memory write
+  //
+  // This doesn't actually update any model state (we pass in the old state and delta, and the
+  // function returns the new state). But we still call out to Python because that avoids us having
+  // to write our own CRC function and ensures that the RTL matches the standardised CRC-32-IEEE
+  // checksum.
+  function automatic bit [31:0] step_crc(bit [47:0] item, bit [31:0] crc_state);
+    `DV_CHECK_FATAL(otbn_model_pkg::otbn_model_step_crc(handle, item, crc_state) == 0,
+                    "Failed to update CRC", "otbn_model_if")
+    return crc_state;
+  endfunction
+
   // The err signal is asserted by the model if it fails to find the DUT or if it finds a mismatch
   // in results. It should never go high.
   `ASSERT(NoModelErrs, !err)
