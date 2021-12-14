@@ -130,7 +130,19 @@
             Reuse the `smoke` and `stress_pipeline` by setting `partial_access_pct` = 90%
             '''
       milestone: V2
-      tests: ["{variant}_partial_access, {variant}_partial_access_b2b"]
+      tests: ["{variant}_partial_access", "{variant}_partial_access_b2b"]
+    }
+    {
+      name: max_throughput
+      desc: '''
+            This test is intended to test the max throughput of the SRAM.
+
+            Without partial write, if driver doesn't introduce any delay, it takes N+1 cycles to
+            finish N SRAM read/write accesses.
+            With partial write, it needs 2 extra cycles per partial write.
+            '''
+      milestone: V2
+      tests: ["{variant}_max_throughput", "{variant}_throughput_w_partial_write"]
     }
     {
       name: parity

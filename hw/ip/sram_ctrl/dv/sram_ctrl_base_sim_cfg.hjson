@@ -97,14 +97,24 @@
       run_opts: ["+zero_delays=1"]
     }
     {
-      name: "{variant}_partial_write"
+      name: "{variant}_partial_access"
       uvm_test_seq: sram_ctrl_smoke_vseq
       run_opts: ["+partial_access_pct=90"]
     }
     {
-      name: "{variant}_partial_write_b2b"
+      name: "{variant}_partial_access_b2b"
       uvm_test_seq: sram_ctrl_stress_pipeline_vseq
       run_opts: ["+partial_access_pct=90"]
+    }
+    {
+      name: "{variant}_max_throughput"
+      uvm_test_seq: sram_ctrl_throughput_vseq
+      run_opts: ["+zero_delays=1 +partial_access_pct=0"]
+    }
+    {
+      name: "{variant}_throughput_w_partial_write"
+      uvm_test_seq: sram_ctrl_throughput_vseq
+      run_opts: ["+zero_delays=1 +partial_access_pct=20"]
     }
     {
       name: "{variant}_lc_escalation"
