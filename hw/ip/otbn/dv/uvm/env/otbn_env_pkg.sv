@@ -53,10 +53,13 @@ package otbn_env_pkg;
     logic [BUS_DW-1:0] val;
   } otbn_exp_read_data_t;
 
-  // Used for coverage in otbn_env_cov.sv (where we need to convert string mnemonics to a packed
-  // integral type)
+  // Used for coverage in otbn_env_cov.sv (where we need to convert strings giving mnemonics and CSR
+  // names to a packed integral type)
   parameter int unsigned MNEM_STR_LEN = 16;
   typedef bit [MNEM_STR_LEN*8-1:0] mnem_str_t;
+
+  parameter int unsigned CSR_STR_LEN = 16;
+  typedef bit [CSR_STR_LEN*8-1:0] csr_str_t;
 
   // A very simple wrapper around a word that has been loaded from the input binary and needs
   // storing to OTBN's IMEM or DMEM.
