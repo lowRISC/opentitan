@@ -7,7 +7,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/check.h"
-#include "sw/device/lib/testing/test_framework/test_main.h"
+#include "sw/device/lib/testing/test_framework/ottf.h"
 #include "sw/device/tests/crypto/rsa_3072_verify_testvectors.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
