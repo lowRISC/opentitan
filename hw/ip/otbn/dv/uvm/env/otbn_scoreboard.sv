@@ -124,6 +124,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     fatal_alert_expected = 1'b0;
     fatal_alert_allowed  = 1'b0;
     recov_alert_expected = 1'b0;
+
+    // Reset any state tracking in the coverage collector
+    if (cfg.en_cov) cov.on_reset();
   endfunction
 
   task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -160,14 +163,14 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       return;
 
     if (item.is_write()) begin
-      // If this is a write, update the RAL model
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-
       // Track coverage for write accesses to external CSRs over TL-UL.
       if (cfg.en_cov) begin
         cov.on_ext_csr_access(csr, otbn_env_pkg::AccessSoftwareWrite, item.a_data,
                               cfg.controller_vif.get_operational_state());
       end
+
+      // If this is a write, update the RAL model
+      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
       case (csr.get_name())
         // Spot writes to the "cmd" register that tell us to start
@@ -339,6 +342,10 @@ class otbn_scoreboard extends cip_base_scoreboard #(
               $sformatf("CRC step: 0x%08h -> 0x%08h (or 0x%08h -> 0x%08h)",
                         old_crc, new_crc, old_crc ^ {32{1'b1}}, new_crc ^ {32{1'b1}}),
               UVM_HIGH);
+
+    if (cfg.en_cov) begin
+      cov.on_mem_write(mem, offset, item.a_data, cfg.controller_vif.get_operational_state());
+    end
 
     // Predict the resulting value of LOAD_CHECKSUM
     `DV_CHECK_FATAL(ral.load_checksum.checksum.predict(.value(new_crc), .kind(UVM_PREDICT_READ)))

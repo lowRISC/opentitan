@@ -81,23 +81,100 @@ See the instruction counter saturate.
 The OTBN block exposes functionality to a bus host through bus-accessible CSRs.
 Behavior of some CSRs depends on [OTBN's operational state]({{< relref "..#design-details-operational-states" >}}).
 
-Events we want to see:
-- For the `CMD` CSR, we want to see all valid commands being written crossed with all operational states to ensure commands are ignored as expected when OTBN is busy or locked.
+For every CSR (no matter its access restrictions), we want to see an attempt to read it and an attempt to write it.
+The CSRs are tracked in covergroups based on the CSR name, with the format: `ext_csr_<name>_cg`.
+Each has an `access_type_cp` coverpoint which will track read and write attempts.
 
-  Tracked in the `csr_ext_cmd_cg` covergroup.
-- For the `STATUS` CSR we want to see a read of all valid status codes.
+If writes to the CSR behave differently depending on the operational state, we cross attempts to write with the operational state.
+For CSRs like `CMD`, which have an immediate effect, this is easy to handle.
+For CSRs that need a follow-up read to check their value, this is handled with the `ext_csr_wr_operational_state_cg` covergroup.
+We track the last write state for a CSR and then sample that covergroup when the value is read back.
 
-  Tracked in the `csr_ext_status_cg` covergroup.
-- For the `ERR_BITS` CSR, we want to see that every valid bit is read at least once, and we want to see a read in each operational state.
+### CMD
 
-  Tracked in the `csr_ext_err_bits_cg` covergroup.
-- For the `FATAL_ALERT_CAUSE` CSR, we want to see that every valid bit is read at least once, and we want to see a read in each operational state.
+Coverage is tracked in the `ext_csr_cmd_cg` covergroup.
 
-  Tracked in the `csr_ext_fatal_alert_cause_cg` covergroup.
-- For `INSN_CNT` we want to see a read returning a zero and a non-zero value.
-  We also want to see a read in every operational state.
+We want to see all valid commands (plus at least one invalid command) being written in each operational state.
+This ensures commands are ignored as expected when OTBN is busy or locked.
+It also ensures that bad commands are ignored as expected.
 
-  Tracked in the `csr_ext_fatal_insn_cnt_cg` covergroup.
+The `cmd_cp` bin covers the different types of commands.
+It is crossed with the operational state in `cmd_state_cross`.
+We check that we see a read (as well as a write) with the `access_type_cp` coverpoint.
+
+### CTRL
+
+Coverage is tracked in the `ext_csr_ctrl_cg` covergroup.
+
+We expect to see this written with each of zero and one in the idle state (where it should take an effect).
+This is tracked in `value_cp`.
+
+We check that we see a read (as well as a write) with the `access_type_cp` coverpoint.
+
+We expect to see this written in each operational state, tracked with the `ext_csr_wr_operational_state_cg` covergroup.
+
+We also want to see this be set back to zero after an operation has run with it set to one, then trigger a software error.
+This ensures that we can indeed disable the fatal error promotion mechanism.
+
+**TODO: This part is not currently tracked.**
+
+### STATUS
+
+Coverage is tracked in the `ext_csr_status_cg` covergroup.
+
+We want to see a read of all valid status codes.
+This is tracked in `status_cp`.
+We check that we see a write (as well as a read) with the `access_type_cp` coverpoint.
+
+### ERR_BITS
+
+Coverage is tracked in the `ext_csr_err_bits_cg` covergroup.
+
+We want to see that every valid bit is read at least once.
+This is tracked in coverpoints with names of the form `err_bits_<errcode>_cp`.
+We also want to see a read in each operational state.
+This is tracked in `state_cp`.
+
+We want to see a write to this register in each operational state when it was previously nonzero.
+This checks that the clearing behaviour works properly.
+We don't have to follow up with another read because we've got continuous checks that the RTL value of this register matches the ISS.
+This is tracked in `clear_state_cross`.
+
+We want to see both reads and writes.
+This is tracked in `access_type_cp`.
+
+### FATAL\_ALERT_CAUSE
+
+Coverage is tracked in the `ext_csr_fatal_alert_cause_cg` covergroup.
+
+We want to see that every valid bit is read at least once.
+This is tracked in coverpoints with names of the form `fatal_alert_cause_<errcode>_cp`.
+We also want to see a read in each operational state.
+This is tracked in `state_cp`.
+
+We check that we see a write (as well as a read) with the `access_type_cp` coverpoint.
+
+### INSN_CNT
+
+Coverage is tracked in the `ext_csr_insn_cnt_cg` covergroup.
+
+We want to see a read returning a zero and a non-zero value.
+This is tracked in `insn_cnt_cp`.
+We also want to see a read in every operational state.
+This is tracked in `state_cp`.
+
+We want to see a write to this register in each operational state when it was previously nonzero.
+This checks that the clearing behaviour works properly.
+We don't have to follow up with another read because we've got continuous checks that the RTL value of this register matches the ISS.
+This is tracked in `clear_state_cross`.
+
+### LOAD_CHECKSUM
+
+We want to see a write to the register (that changes its value), followed by an update caused by writing to memory, finally followed by a read of the register value.
+This is tracked in the `ext_csr_load_checksum_wur_cg` covergroup.
+
+We also want to see a write in every operational state, followed by a read before the next write.
+This is tracked in the `ext_csr_wr_operational_state_cg` covergroup.
 
 # Instruction-based coverage
 
