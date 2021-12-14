@@ -8,7 +8,7 @@
 {
   covergroups: [
     {
-      name:  alert_esc_trans_cg
+      name:  esc_trans_cg
       desc: '''Cover if the transaction is a ping request or an actual escalation request.'''
     }
   ]
