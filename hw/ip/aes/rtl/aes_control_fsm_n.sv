@@ -17,7 +17,9 @@
 module aes_control_fsm_n
   import aes_pkg::*;
   import aes_reg_pkg::*;
-(
+#(
+  parameter bit Masking = 0
+) (
   input  logic                                    clk_i,
   input  logic                                    rst_ni,
 
@@ -29,6 +31,7 @@ module aes_control_fsm_n
   input  aes_mode_e                               mode_i,
   input  ciph_op_e                                cipher_op_i,
   input  logic                                    sideload_i,
+  input  prs_rate_e                               prng_reseed_rate_i,
   input  logic                                    manual_operation_i,
   input  logic                                    start_i,
   input  logic                                    key_iv_data_in_clear_i,
@@ -72,6 +75,8 @@ module aes_control_fsm_n
   input  logic                                    cipher_crypt_ni,         // Sparsify
   output logic                                    cipher_dec_key_gen_no,   // Sparsify
   input  logic                                    cipher_dec_key_gen_ni,   // Sparsify
+  output logic                                    cipher_prng_reseed_o,
+  input  logic                                    cipher_prng_reseed_i,
   output logic                                    cipher_key_clear_o,
   input  logic                                    cipher_key_clear_i,
   output logic                                    cipher_data_out_clear_o,
@@ -122,6 +127,7 @@ module aes_control_fsm_n
     mode_i,
     cipher_op_i,
     sideload_i,
+    prng_reseed_rate_i,
     manual_operation_i,
     start_i,
     key_iv_data_in_clear_i,
@@ -142,6 +148,7 @@ module aes_control_fsm_n
     cipher_out_valid_ni,
     cipher_crypt_ni,
     cipher_dec_key_gen_ni,
+    cipher_prng_reseed_i,
     cipher_key_clear_i,
     cipher_data_out_clear_i,
     prng_data_ack_i,
@@ -158,6 +165,7 @@ module aes_control_fsm_n
     mode_i,
     cipher_op_i,
     sideload_i,
+    prng_reseed_rate_i,
     manual_operation_i,
     start_i,
     key_iv_data_in_clear_i,
@@ -178,6 +186,7 @@ module aes_control_fsm_n
     cipher_out_valid_ni,
     cipher_crypt_ni,
     cipher_dec_key_gen_ni,
+    cipher_prng_reseed_i,
     cipher_key_clear_i,
     cipher_data_out_clear_i,
     prng_data_ack_i,
@@ -200,6 +209,7 @@ module aes_control_fsm_n
   aes_mode_e                               mode;
   ciph_op_e                                cipher_op;
   logic                                    sideload;
+  prs_rate_e                               prng_reseed_rate;
   logic                                    manual_operation;
   logic                                    start;
   logic                                    key_iv_data_in_clear;
@@ -220,6 +230,7 @@ module aes_control_fsm_n
   logic                                    cipher_out_valid_n;
   logic                                    cipher_crypt_in_buf_n;
   logic                                    cipher_dec_key_gen_in_buf_n;
+  logic                                    cipher_prng_reseed_in_buf;
   logic                                    cipher_key_clear_in_buf;
   logic                                    cipher_data_out_clear_in_buf;
   logic                                    prng_data_ack;
@@ -232,6 +243,7 @@ module aes_control_fsm_n
           mode,
           cipher_op,
           sideload,
+          prng_reseed_rate,
           manual_operation,
           start,
           key_iv_data_in_clear,
@@ -252,6 +264,7 @@ module aes_control_fsm_n
           cipher_out_valid_n,
           cipher_crypt_in_buf_n,
           cipher_dec_key_gen_in_buf_n,
+          cipher_prng_reseed_in_buf,
           cipher_key_clear_in_buf,
           cipher_data_out_clear_in_buf,
           prng_data_ack,
@@ -273,6 +286,7 @@ module aes_control_fsm_n
   logic                                    cipher_out_ready;
   logic                                    cipher_crypt_out_buf;
   logic                                    cipher_dec_key_gen_out_buf;
+  logic                                    cipher_prng_reseed_out_buf;
   logic                                    cipher_key_clear_out_buf;
   logic                                    cipher_data_out_clear_out_buf;
   key_init_sel_e                           key_init_sel;
@@ -304,7 +318,9 @@ module aes_control_fsm_n
   // Invert *_n input signals here to get the positive values for the regular FSM. To obtain the
   // negated outputs, important output signals are inverted further below. Thanks to the prim_buf
   // synthesis optimization barriers, tools will push the inverters into the regular FSM.
-  aes_control_fsm u_aes_control_fsm (
+  aes_control_fsm #(
+    .Masking ( Masking )
+  ) u_aes_control_fsm (
     .clk_i                     ( clk_i                         ),
     .rst_ni                    ( rst_ni                        ),
 
@@ -315,6 +331,7 @@ module aes_control_fsm_n
     .mode_i                    ( mode                          ),
     .cipher_op_i               ( cipher_op                     ),
     .sideload_i                ( sideload                      ),
+    .prng_reseed_rate_i        ( prng_reseed_rate              ),
     .manual_operation_i        ( manual_operation              ),
     .start_i                   ( start                         ),
     .key_iv_data_in_clear_i    ( key_iv_data_in_clear          ),
@@ -353,6 +370,8 @@ module aes_control_fsm_n
     .cipher_crypt_i            ( ~cipher_crypt_in_buf_n        ), // Invert for regular FSM.
     .cipher_dec_key_gen_o      ( cipher_dec_key_gen_out_buf    ), // Invert below for _n output.
     .cipher_dec_key_gen_i      ( ~cipher_dec_key_gen_in_buf_n  ), // Invert for regular FSM.
+    .cipher_prng_reseed_o      ( cipher_prng_reseed_out_buf    ),
+    .cipher_prng_reseed_i      ( cipher_prng_reseed_in_buf     ),
     .cipher_key_clear_o        ( cipher_key_clear_out_buf      ),
     .cipher_key_clear_i        ( cipher_key_clear_in_buf       ),
     .cipher_data_out_clear_o   ( cipher_data_out_clear_out_buf ),
@@ -406,6 +425,7 @@ module aes_control_fsm_n
     cipher_out_ready_no,
     cipher_crypt_no,
     cipher_dec_key_gen_no,
+    cipher_prng_reseed_o,
     cipher_key_clear_o,
     cipher_data_out_clear_o,
     key_init_sel_o,
@@ -449,6 +469,7 @@ module aes_control_fsm_n
     ~cipher_out_ready,
     ~cipher_crypt_out_buf,
     ~cipher_dec_key_gen_out_buf,
+    cipher_prng_reseed_out_buf,
     cipher_key_clear_out_buf,
     cipher_data_out_clear_out_buf,
     key_init_sel,
@@ -496,6 +517,7 @@ module aes_control_fsm_n
           cipher_out_ready_no,
           cipher_crypt_no,
           cipher_dec_key_gen_no,
+          cipher_prng_reseed_o,
           cipher_key_clear_o,
           cipher_data_out_clear_o,
           key_init_sel_o,

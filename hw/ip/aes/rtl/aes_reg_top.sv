@@ -177,6 +177,8 @@ module aes_reg_top (
   logic [2:0] ctrl_shadowed_key_len_wd;
   logic ctrl_shadowed_sideload_qs;
   logic ctrl_shadowed_sideload_wd;
+  logic [2:0] ctrl_shadowed_prng_reseed_rate_qs;
+  logic [2:0] ctrl_shadowed_prng_reseed_rate_wd;
   logic ctrl_shadowed_manual_operation_qs;
   logic ctrl_shadowed_manual_operation_wd;
   logic ctrl_shadowed_force_zero_masks_qs;
@@ -774,7 +776,21 @@ module aes_reg_top (
     .qs     (ctrl_shadowed_sideload_qs)
   );
 
-  //   F[manual_operation]: 11:11
+  //   F[prng_reseed_rate]: 13:11
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_ctrl_shadowed_prng_reseed_rate (
+    .re     (ctrl_shadowed_re),
+    .we     (ctrl_shadowed_we),
+    .wd     (ctrl_shadowed_prng_reseed_rate_wd),
+    .d      (hw2reg.ctrl_shadowed.prng_reseed_rate.d),
+    .qre    (reg2hw.ctrl_shadowed.prng_reseed_rate.re),
+    .qe     (reg2hw.ctrl_shadowed.prng_reseed_rate.qe),
+    .q      (reg2hw.ctrl_shadowed.prng_reseed_rate.q),
+    .qs     (ctrl_shadowed_prng_reseed_rate_qs)
+  );
+
+  //   F[manual_operation]: 14:14
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_manual_operation (
@@ -788,7 +804,7 @@ module aes_reg_top (
     .qs     (ctrl_shadowed_manual_operation_qs)
   );
 
-  //   F[force_zero_masks]: 12:12
+  //   F[force_zero_masks]: 15:15
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_force_zero_masks (
@@ -1250,9 +1266,11 @@ module aes_reg_top (
 
   assign ctrl_shadowed_sideload_wd = reg_wdata[10];
 
-  assign ctrl_shadowed_manual_operation_wd = reg_wdata[11];
+  assign ctrl_shadowed_prng_reseed_rate_wd = reg_wdata[13:11];
 
-  assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[12];
+  assign ctrl_shadowed_manual_operation_wd = reg_wdata[14];
+
+  assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[15];
   assign trigger_we = addr_hit[30] & reg_we & !reg_error;
 
   assign trigger_start_wd = reg_wdata[0];
@@ -1389,8 +1407,9 @@ module aes_reg_top (
         reg_rdata_next[6:1] = ctrl_shadowed_mode_qs;
         reg_rdata_next[9:7] = ctrl_shadowed_key_len_qs;
         reg_rdata_next[10] = ctrl_shadowed_sideload_qs;
-        reg_rdata_next[11] = ctrl_shadowed_manual_operation_qs;
-        reg_rdata_next[12] = ctrl_shadowed_force_zero_masks_qs;
+        reg_rdata_next[13:11] = ctrl_shadowed_prng_reseed_rate_qs;
+        reg_rdata_next[14] = ctrl_shadowed_manual_operation_qs;
+        reg_rdata_next[15] = ctrl_shadowed_force_zero_masks_qs;
       end
 
       addr_hit[30]: begin

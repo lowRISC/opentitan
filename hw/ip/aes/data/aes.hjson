@@ -456,7 +456,38 @@
         '''
         tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_sideload"]
       }
-      { bits: "11",
+      { bits: "13:11",
+        name: "PRNG_RESEED_RATE",
+        resval: "1",
+        hwaccess: "hrw",
+        desc: '''
+          3-bit one-hot field to control the reseeding rate of the internal pseudo-random number generator (PRNG) used for masking.
+          Invalid input values, i.e., values with multiple bits set and value 3'b000 are mapped to the highest reseeding rate PER_1 (3'b001).
+        '''
+        enum: [
+          { value: "1",
+            name: "PER_1",
+            desc: '''
+              3'b001: Reseed the masking PRNG once per block.
+              Invalid input values, i.e., values with multiple bits set and value 3'b000 are mapped to PER_1 (3'b001).
+            '''
+          },
+          { value: "2",
+            name: "PER_64",
+            desc: '''
+              3'b010: Reseed the masking PRNG approximately once per every 64 blocks.
+            '''
+          },
+          { value: "4",
+            name: "PER_8K",
+            desc: '''
+              3'b100: Reseed the masking PRNG approximately once per every 8192 blocks.
+            '''
+          }
+        ]
+        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_prng_reseed_rate"]
+      }
+      { bits: "14",
         name: "MANUAL_OPERATION",
         resval: "0"
         desc:  '''
@@ -469,7 +500,7 @@
         '''
         tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_manual_operation"]
       }
-      { bits: "12",
+      { bits: "15",
         name: "FORCE_ZERO_MASKS",
         resval: "0"
         desc:  '''
@@ -534,7 +565,7 @@
         name: "PRNG_RESEED",
         resval: "1"
         desc:  '''
-          Keep continuing with the current internal state of the internal pseudo-random number generator used for register clearing (0) or perform a reseed of the internal state from the connected entropy source (1).
+          Keep continuing with the current states of the internal pseudo-random number generators used for register clearing and masking (0) or perform a reseed of the internal states from the connected entropy source (1).
         '''
         tags: ["excl:CsrAllTests:CsrExclCheck"]
       }

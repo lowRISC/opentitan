@@ -451,7 +451,7 @@ This section discusses how software can interface with the AES unit.
 
 ## Clear upon Reset
 
-Upon reset, the AES unit will first reseed the internal PRNG for register clearing via EDN, and then clear all key, IV and data registers with pseudo-random data.
+Upon reset, the AES unit will first reseed the internal PRNGs for register clearing and masking via EDN, and then clear all key, IV and data registers with pseudo-random data.
 Only after this sequence has finished, the unit becomes idle (indicated in {{< regref "STATUS.IDLE" >}}).
 The AES unit is then ready for software initialization.
 Note that at this point, the key, IV and data registers' values can no longer be expected to match the reset values.

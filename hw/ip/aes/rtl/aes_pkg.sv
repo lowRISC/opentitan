@@ -77,8 +77,9 @@ typedef enum integer {
 
 
 // Parameters used for controlgroups in the coverage
-parameter int AES_MODE_WIDTH   = 6;
-parameter int AES_KEYLEN_WIDTH = 3;
+parameter int AES_MODE_WIDTH           = 6;
+parameter int AES_KEYLEN_WIDTH         = 3;
+parameter int AES_PRNGRESEEDRATE_WIDTH = 3;
 
 typedef enum logic {
   AES_ENC = 1'b0,
@@ -105,6 +106,12 @@ typedef enum logic [AES_KEYLEN_WIDTH-1:0] {
   AES_256 = 3'b100
 } key_len_e;
 
+typedef enum logic [AES_PRNGRESEEDRATE_WIDTH-1:0] {
+  PER_1  = 3'b001,
+  PER_64 = 3'b010,
+  PER_8K = 3'b100
+} prs_rate_e;
+parameter int unsigned BlockCtrWidth = 13;
 
 typedef struct packed {
   logic [31:7] unused;
@@ -332,6 +339,7 @@ parameter sp2v_logic_t SP2V_LOGIC_HIGH = {SP2V_HIGH};
 typedef struct packed {
   logic      force_zero_masks;
   logic      manual_operation;
+  prs_rate_e prng_reseed_rate;
   logic      sideload;
   key_len_e  key_len;
   aes_mode_e mode;
@@ -341,6 +349,7 @@ typedef struct packed {
 parameter ctrl_reg_t CTRL_RESET = '{
   force_zero_masks: aes_reg_pkg::AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_RESVAL,
   manual_operation: aes_reg_pkg::AES_CTRL_SHADOWED_MANUAL_OPERATION_RESVAL,
+  prng_reseed_rate: aes_reg_pkg::AES_CTRL_SHADOWED_PRNG_RESEED_RATE_RESVAL,
   sideload:         aes_reg_pkg::AES_CTRL_SHADOWED_SIDELOAD_RESVAL,
   key_len:          key_len_e'(aes_reg_pkg::AES_CTRL_SHADOWED_KEY_LEN_RESVAL),
   mode:             aes_mode_e'(aes_reg_pkg::AES_CTRL_SHADOWED_MODE_RESVAL),

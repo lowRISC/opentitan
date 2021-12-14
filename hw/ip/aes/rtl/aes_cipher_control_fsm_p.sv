@@ -29,6 +29,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
   input  key_len_e         key_len_i,
   input  logic             crypt_i,               // Sparsify using multi-rail.
   input  logic             dec_key_gen_i,         // Sparsify using multi-rail.
+  input  logic             prng_reseed_i,
   input  logic             key_clear_i,
   input  logic             data_out_clear_i,
   input  logic             mux_sel_err_i,
@@ -72,6 +73,8 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
   output logic             crypt_d_o,             // Sparsify using multi-rail.
   input  logic             dec_key_gen_q_i,       // Sparsify using multi-rail.
   output logic             dec_key_gen_d_o,       // Sparsify using multi-rail.
+  input  logic             prng_reseed_q_i,
+  output logic             prng_reseed_d_o,
   input  logic             key_clear_q_i,
   output logic             key_clear_d_o,
   input  logic             data_out_clear_q_i,
@@ -90,6 +93,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     key_len_i,
     crypt_i,
     dec_key_gen_i,
+    prng_reseed_i,
     key_clear_i,
     data_out_clear_i,
     mux_sel_err_i,
@@ -103,6 +107,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     num_rounds_q_i,
     crypt_q_i,
     dec_key_gen_q_i,
+    prng_reseed_q_i,
     key_clear_q_i,
     data_out_clear_q_i
   });
@@ -117,6 +122,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     key_len_i,
     crypt_i,
     dec_key_gen_i,
+    prng_reseed_i,
     key_clear_i,
     data_out_clear_i,
     mux_sel_err_i,
@@ -130,6 +136,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     num_rounds_q_i,
     crypt_q_i,
     dec_key_gen_q_i,
+    prng_reseed_q_i,
     key_clear_q_i,
     data_out_clear_q_i
   };
@@ -150,6 +157,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
   key_len_e         key_len;
   logic             crypt;
   logic             dec_key_gen;
+  logic             prng_reseed;
   logic             key_clear;
   logic             data_out_clear;
   logic             mux_sel_err;
@@ -163,6 +171,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
   logic [3:0]       num_rounds_q;
   logic             crypt_q;
   logic             dec_key_gen_q;
+  logic             prng_reseed_q;
   logic             key_clear_q;
   logic             data_out_clear_q;
 
@@ -173,6 +182,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
           key_len,
           crypt,
           dec_key_gen,
+          prng_reseed,
           key_clear,
           data_out_clear,
           mux_sel_err,
@@ -186,6 +196,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
           num_rounds_q,
           crypt_q,
           dec_key_gen_q,
+          prng_reseed_q,
           key_clear_q,
           data_out_clear_q} = in_buf;
 
@@ -214,6 +225,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
   logic [3:0]       num_rounds_d;
   logic             crypt_d;
   logic             dec_key_gen_d;
+  logic             prng_reseed_d;
   logic             key_clear_d;
   logic             data_out_clear_d;
 
@@ -239,6 +251,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     .key_len_i             ( key_len                ),
     .crypt_i               ( crypt                  ),
     .dec_key_gen_i         ( dec_key_gen            ),
+    .prng_reseed_i         ( prng_reseed            ),
     .key_clear_i           ( key_clear              ),
     .data_out_clear_i      ( data_out_clear         ),
     .mux_sel_err_i         ( mux_sel_err            ),
@@ -280,6 +293,8 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     .dec_key_gen_d_o       ( dec_key_gen_d          ),
     .key_clear_q_i         ( key_clear_q            ),
     .key_clear_d_o         ( key_clear_d            ),
+    .prng_reseed_q_i       ( prng_reseed_q          ),
+    .prng_reseed_d_o       ( prng_reseed_d          ),
     .data_out_clear_q_i    ( data_out_clear_q       ),
     .data_out_clear_d_o    ( data_out_clear_d       )
   );
@@ -314,6 +329,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     crypt_d_o,
     dec_key_gen_d_o,
     key_clear_d_o,
+    prng_reseed_d_o,
     data_out_clear_d_o
   });
 
@@ -345,6 +361,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
     crypt_d,
     dec_key_gen_d,
     key_clear_d,
+    prng_reseed_d,
     data_out_clear_d
   };
 
@@ -382,6 +399,7 @@ module aes_cipher_control_fsm_p import aes_pkg::*;
           crypt_d_o,
           dec_key_gen_d_o,
           key_clear_d_o,
+          prng_reseed_d_o,
           data_out_clear_d_o} = out_buf;
 
 endmodule

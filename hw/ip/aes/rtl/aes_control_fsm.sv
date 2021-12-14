@@ -12,7 +12,9 @@
 module aes_control_fsm
   import aes_pkg::*;
   import aes_reg_pkg::*;
-(
+#(
+  parameter bit Masking = 0
+) (
   input  logic                                    clk_i,
   input  logic                                    rst_ni,
 
@@ -24,6 +26,7 @@ module aes_control_fsm
   input  aes_mode_e                               mode_i,
   input  ciph_op_e                                cipher_op_i,
   input  logic                                    sideload_i,
+  input  prs_rate_e                               prng_reseed_rate_i,
   input  logic                                    manual_operation_i,
   input  logic                                    start_i,
   input  logic                                    key_iv_data_in_clear_i,
@@ -67,6 +70,8 @@ module aes_control_fsm
   input  logic                                    cipher_crypt_i,          // Sparsify
   output logic                                    cipher_dec_key_gen_o,    // Sparsify
   input  logic                                    cipher_dec_key_gen_i,    // Sparsify
+  output logic                                    cipher_prng_reseed_o,
+  input  logic                                    cipher_prng_reseed_i,
   output logic                                    cipher_key_clear_o,
   input  logic                                    cipher_key_clear_i,
   output logic                                    cipher_data_out_clear_o,
@@ -136,9 +141,10 @@ module aes_control_fsm
     ERROR       = 6'b001110
   } aes_ctrl_e;
 
-  aes_ctrl_e                aes_ctrl_ns, aes_ctrl_cs;
-
   // Signals
+  aes_ctrl_e                aes_ctrl_ns, aes_ctrl_cs;
+  logic                     prng_reseed_done_d, prng_reseed_done_q;
+
   logic                     key_init_clear;
   logic                     key_init_new;
   logic                     key_init_load;
@@ -189,6 +195,9 @@ module aes_control_fsm
   logic                     output_valid_we;
   logic                     input_ready;
   logic                     input_ready_we;
+
+  logic                     block_ctr_expr;
+  logic                     block_ctr_decr;
 
   // Software updates IV in chunks of 32 bits, the counter updates SliceSizeCtr bits at a time.
   // Convert word write enable to internal half-word write enable.
@@ -266,6 +275,7 @@ module aes_control_fsm
     cipher_out_done         = 1'b0;
     cipher_crypt_o          = 1'b0;
     cipher_dec_key_gen_o    = 1'b0;
+    cipher_prng_reseed_o    = 1'b0;
     cipher_key_clear_o      = 1'b0;
     cipher_data_out_clear_o = 1'b0;
 
@@ -312,8 +322,12 @@ module aes_control_fsm
     iv_load        = 1'b0;
     iv_arm         = 1'b0;
 
+    // Block counter
+    block_ctr_decr = 1'b0;
+
     // FSM
-    aes_ctrl_ns = aes_ctrl_cs;
+    aes_ctrl_ns        = aes_ctrl_cs;
+    prng_reseed_done_d = prng_reseed_done_q | prng_reseed_ack_i;
 
     unique case (aes_ctrl_cs)
 
@@ -338,7 +352,21 @@ module aes_control_fsm
 
         if (prng_reseed_i) begin
           // PRNG reseeding has highest priority.
-          aes_ctrl_ns = PRNG_RESEED;
+          if (!Masking) begin
+            prng_reseed_done_d = 1'b0;
+            aes_ctrl_ns        = PRNG_RESEED;
+          end else begin
+            // In case masking is enabled, also the masking PRNG inside the cipher core needs to
+            // be reseeded.
+            cipher_prng_reseed_o = 1'b1;
+
+            // Perform handshake.
+            cipher_in_valid_o = 1'b1;
+            if (cipher_in_ready_i) begin
+              prng_reseed_done_d = 1'b0;
+              aes_ctrl_ns        = PRNG_RESEED;
+            end
+          end
 
         end else if (key_iv_data_in_clear_i || data_out_clear_i) begin
           // To clear registers, we must first request fresh pseudo-random data.
@@ -347,6 +375,9 @@ module aes_control_fsm
         end else if (start) begin
           // Signal that we want to start encryption/decryption.
           cipher_crypt_o = 1'b1;
+
+          // Signal if the cipher core shall reseed the masking PRNG.
+          cipher_prng_reseed_o = block_ctr_expr;
 
           // We got a new initial key, but want to do decryption. The cipher core must first
           // generate the start key for decryption.
@@ -443,12 +474,27 @@ module aes_control_fsm
       end
 
       PRNG_RESEED: begin
-        // Request a reseed of the PRNG, perform handshake.
-        prng_reseed_req_o = 1'b1;
-        if (prng_reseed_ack_i) begin
-          // Clear the trigger and return.
-          prng_reseed_we = 1'b1;
-          aes_ctrl_ns    = IDLE;
+        // Request a reseed of the clearing PRNG.
+        prng_reseed_req_o = ~prng_reseed_done_q;
+
+        if (!Masking) begin
+          if (prng_reseed_done_q) begin
+            // Clear the trigger and return.
+            prng_reseed_we     = 1'b1;
+            prng_reseed_done_d = 1'b0;
+            aes_ctrl_ns        = IDLE;
+          end
+
+        end else begin
+          // In case masking is used, we must also wait for the cipher core to reseed the internal
+          // masking PRNG. Perform handshake.
+          cipher_out_ready_o = prng_reseed_done_q;
+          if (cipher_out_ready_o && cipher_out_valid_i) begin
+            // Clear the trigger and return.
+            prng_reseed_we     = 1'b1;
+            prng_reseed_done_d = 1'b0;
+            aes_ctrl_ns        = IDLE;
+          end
         end
       end
 
@@ -459,7 +505,8 @@ module aes_control_fsm
           // We are ready.
           cipher_out_ready_o = 1'b1;
           if (cipher_out_valid_i) begin
-            aes_ctrl_ns = IDLE;
+            block_ctr_decr = 1'b1;
+            aes_ctrl_ns    = IDLE;
           end
         end else begin
           // Handshake signals: We are ready once the output data registers can be written. Don't
@@ -506,8 +553,9 @@ module aes_control_fsm
 
           // Proceed upon successful handshake.
           if (cipher_out_done) begin
-            data_out_we_o = 1'b1;
-            aes_ctrl_ns   = IDLE;
+            block_ctr_decr = 1'b1;
+            data_out_we_o  = 1'b1;
+            aes_ctrl_ns    = IDLE;
           end
         end
       end
@@ -587,6 +635,14 @@ module aes_control_fsm
     .state_i ( aes_ctrl_ns     ),
     .state_o ( aes_ctrl_cs_raw )
   );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm
+    if (!rst_ni) begin
+      prng_reseed_done_q <= 1'b0;
+    end else begin
+      prng_reseed_done_q <= prng_reseed_done_d;
+    end
+  end
 
   /////////////////////
   // Status Tracking //
@@ -732,6 +788,45 @@ module aes_control_fsm
   assign key_iv_data_in_clear_we_o = alert_fatal_i ? 1'b1 : key_iv_data_in_clear_we;
   assign data_out_clear_we_o       = alert_fatal_i ? 1'b1 : data_out_clear_we;
   assign prng_reseed_we_o          = alert_fatal_i ? 1'b1 : prng_reseed_we;
+
+  ////////////////////////////
+  // PRNG Reseeding Counter //
+  ////////////////////////////
+  // Count the number of blocks since the start of the message to determine when the masking PRNG
+  // inside the cipher core needs to be reseeded.
+  if (Masking) begin : gen_block_ctr
+    logic                     block_ctr_set;
+    logic [BlockCtrWidth-1:0] block_ctr_d, block_ctr_q;
+
+    assign block_ctr_expr = block_ctr_q == '0;
+    assign block_ctr_set  = ctrl_we_q | (block_ctr_decr & (block_ctr_expr | cipher_prng_reseed_i));
+
+    assign block_ctr_d =
+        block_ctr_set  ?
+            (prng_reseed_rate_i == PER_1  ? BlockCtrWidth'(0)    :
+             prng_reseed_rate_i == PER_64 ? BlockCtrWidth'(63)   :
+             prng_reseed_rate_i == PER_8K ? BlockCtrWidth'(8191) : BlockCtrWidth'(0)) :
+        block_ctr_decr ? block_ctr_q - BlockCtrWidth'(1) : block_ctr_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : reg_block_ctr
+      if (!rst_ni) begin
+        block_ctr_q <= '0;
+      end else begin
+        block_ctr_q <= block_ctr_d;
+      end
+    end
+
+  end else begin : gen_no_block_ctr
+    assign block_ctr_expr = 1'b0;
+
+    // Tie off unused signals.
+    logic      unused_block_ctr_decr;
+    prs_rate_e unused_prng_reseed_rate;
+    logic      unused_cipher_prng_reseed;
+    assign unused_block_ctr_decr     = block_ctr_decr;
+    assign unused_prng_reseed_rate   = prng_reseed_rate_i;
+    assign unused_cipher_prng_reseed = cipher_prng_reseed_i;
+  end
 
   ////////////////
   // Assertions //

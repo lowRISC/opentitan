@@ -10,6 +10,7 @@ module aes_control
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
+  parameter bit          Masking              = 0,
   parameter int unsigned SecStartTriggerDelay = 0
 ) (
   input  logic                      clk_i,
@@ -23,6 +24,7 @@ module aes_control
   input  aes_mode_e                 mode_i,
   input  ciph_op_e                  cipher_op_i,
   input  logic                      sideload_i,
+  input  prs_rate_e                 prng_reseed_rate_i,
   input  logic                      manual_operation_i,
   input  logic                      start_i,
   input  logic                      key_iv_data_in_clear_i,
@@ -66,6 +68,8 @@ module aes_control
   input  sp2v_e                     cipher_crypt_i,
   output sp2v_e                     cipher_dec_key_gen_o,
   input  sp2v_e                     cipher_dec_key_gen_i,
+  output logic                      cipher_prng_reseed_o,
+  input  logic                      cipher_prng_reseed_i,
   output logic                      cipher_key_clear_o,
   input  logic                      cipher_key_clear_i,
   output logic                      cipher_data_out_clear_o,
@@ -172,6 +176,7 @@ module aes_control
   si_sel_e       [Sp2VWidth-1:0] mr_state_in_sel;
   add_si_sel_e   [Sp2VWidth-1:0] mr_add_state_in_sel;
   add_so_sel_e   [Sp2VWidth-1:0] mr_add_state_out_sel;
+  logic          [Sp2VWidth-1:0] mr_cipher_prng_reseed;
   logic          [Sp2VWidth-1:0] mr_cipher_key_clear;
   logic          [Sp2VWidth-1:0] mr_cipher_data_out_clear;
   key_init_sel_e [Sp2VWidth-1:0] mr_key_init_sel;
@@ -235,7 +240,9 @@ module aes_control
   // of every rail are buffered to prevent aggressive synthesis optimizations.
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm
     if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_fsm_p
-      aes_control_fsm_p u_aes_control_fsm_i (
+      aes_control_fsm_p #(
+        .Masking ( Masking )
+      ) u_aes_control_fsm_i (
         .clk_i                     ( clk_i                         ),
         .rst_ni                    ( rst_ni                        ),
 
@@ -246,6 +253,7 @@ module aes_control
         .mode_i                    ( mode_i                        ),
         .cipher_op_i               ( cipher_op_i                   ),
         .sideload_i                ( sideload_i                    ),
+        .prng_reseed_rate_i        ( prng_reseed_rate_i            ),
         .manual_operation_i        ( manual_operation_i            ),
         .start_i                   ( start_trigger                 ),
         .key_iv_data_in_clear_i    ( key_iv_data_in_clear_i        ),
@@ -284,6 +292,8 @@ module aes_control
         .cipher_crypt_i            ( sp_in_cipher_crypt[i]         ), // Sparsified
         .cipher_dec_key_gen_o      ( sp_out_cipher_dec_key_gen[i]  ), // Sparsified
         .cipher_dec_key_gen_i      ( sp_in_cipher_dec_key_gen[i]   ), // Sparsified
+        .cipher_prng_reseed_o      ( mr_cipher_prng_reseed[i]      ), // OR-combine
+        .cipher_prng_reseed_i      ( cipher_prng_reseed_i          ),
         .cipher_key_clear_o        ( mr_cipher_key_clear[i]        ), // OR-combine
         .cipher_key_clear_i        ( cipher_key_clear_i            ),
         .cipher_data_out_clear_o   ( mr_cipher_data_out_clear[i]   ), // OR-combine
@@ -318,7 +328,9 @@ module aes_control
         .input_ready_we_o          ( mr_input_ready_we[i]          )  // AND-combine
       );
     end else begin : gen_fsm_n
-      aes_control_fsm_n u_aes_control_fsm_i (
+      aes_control_fsm_n #(
+        .Masking ( Masking )
+      ) u_aes_control_fsm_i (
         .clk_i                     ( clk_i                         ),
         .rst_ni                    ( rst_ni                        ),
 
@@ -329,6 +341,7 @@ module aes_control
         .mode_i                    ( mode_i                        ),
         .cipher_op_i               ( cipher_op_i                   ),
         .sideload_i                ( sideload_i                    ),
+        .prng_reseed_rate_i        ( prng_reseed_rate_i            ),
         .manual_operation_i        ( manual_operation_i            ),
         .start_i                   ( start_trigger                 ),
         .key_iv_data_in_clear_i    ( key_iv_data_in_clear_i        ),
@@ -367,6 +380,8 @@ module aes_control
         .cipher_crypt_ni           ( sp_in_cipher_crypt[i]         ), // Sparsified
         .cipher_dec_key_gen_no     ( sp_out_cipher_dec_key_gen[i]  ), // Sparsified
         .cipher_dec_key_gen_ni     ( sp_in_cipher_dec_key_gen[i]   ), // Sparsified
+        .cipher_prng_reseed_o      ( mr_cipher_prng_reseed[i]      ), // OR-combine
+        .cipher_prng_reseed_i      ( cipher_prng_reseed_i          ),
         .cipher_key_clear_o        ( mr_cipher_key_clear[i]        ), // OR-combine
         .cipher_key_clear_i        ( cipher_key_clear_i            ),
         .cipher_data_out_clear_o   ( mr_cipher_data_out_clear[i]   ), // OR-combine
@@ -415,6 +430,7 @@ module aes_control
   // Combine single-bit FSM outputs.
   // OR: One bit is sufficient to drive the corresponding output bit high.
   assign alert_o                   = |mr_alert;
+  assign cipher_prng_reseed_o      = |mr_cipher_prng_reseed;
   assign cipher_key_clear_o        = |mr_cipher_key_clear;
   assign cipher_data_out_clear_o   = |mr_cipher_data_out_clear;
   assign prng_data_req_o           = |mr_prng_data_req;

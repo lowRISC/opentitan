@@ -30,6 +30,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
   input  key_len_e         key_len_i,
   input  logic             crypt_i,              // Sparsify using multi-rail.
   input  logic             dec_key_gen_i,        // Sparsify using multi-rail.
+  input  logic             prng_reseed_i,
   input  logic             key_clear_i,
   input  logic             data_out_clear_i,
   input  logic             mux_sel_err_i,
@@ -73,6 +74,8 @@ module aes_cipher_control_fsm import aes_pkg::*;
   output logic             crypt_d_o,            // Sparsify using multi-rail.
   input  logic             dec_key_gen_q_i,      // Sparsify using multi-rail.
   output logic             dec_key_gen_d_o,      // Sparsify using multi-rail.
+  input  logic             prng_reseed_q_i,
+  output logic             prng_reseed_d_o,
   input  logic             key_clear_q_i,
   output logic             key_clear_d_o,
   input  logic             data_out_clear_q_i,
@@ -80,7 +83,8 @@ module aes_cipher_control_fsm import aes_pkg::*;
 );
 
   // Types
-  // $ ./sparse-fsm-encode.py -d 3 -m 7 -n 6 \
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
   //      -s 31468618 --language=sv
   //
   // Hamming distance histogram:
@@ -95,16 +99,19 @@ module aes_cipher_control_fsm import aes_pkg::*;
   //
   // Minimum Hamming distance: 3
   // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 5
   //
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    IDLE     = 6'b111100,
-    INIT     = 6'b101001,
-    ROUND    = 6'b010000,
-    FINISH   = 6'b100010,
-    CLEAR_S  = 6'b011011,
-    CLEAR_KD = 6'b110111,
-    ERROR    = 6'b001110
+    IDLE        = 6'b001001,
+    INIT        = 6'b100011,
+    ROUND       = 6'b111101,
+    FINISH      = 6'b010000,
+    PRNG_RESEED = 6'b100100,
+    CLEAR_S     = 6'b111010,
+    CLEAR_KD    = 6'b001110,
+    ERROR       = 6'b010111
   } aes_cipher_ctrl_e;
 
   // cfg_valid_i is used for SVAs only.
@@ -156,6 +163,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
     rnd_ctr_rem_d_o      = rnd_ctr_rem_q_i;
     crypt_d_o            = crypt_q_i;
     dec_key_gen_d_o      = dec_key_gen_q_i;
+    prng_reseed_d_o      = prng_reseed_q_i;
     key_clear_d_o        = key_clear_q_i;
     data_out_clear_d_o   = data_out_clear_q_i;
     prng_reseed_done_d   = prng_reseed_done_q | prng_reseed_ack_i;
@@ -167,12 +175,17 @@ module aes_cipher_control_fsm import aes_pkg::*;
     unique case (aes_cipher_ctrl_cs)
 
       IDLE: begin
-        dec_key_gen_d_o = 1'b0;
-
         // Signal that we are ready, wait for handshake.
         in_ready_o = 1'b1;
         if (in_valid_i) begin
-          if (key_clear_i || data_out_clear_i) begin
+          if (Masking && prng_reseed_i && !dec_key_gen_i && !crypt_i) begin
+            // Reseed the masking PRNG without starting encryption/decryption or generation of the
+            // start key for decryption.
+            prng_reseed_d_o    = 1'b1;
+            prng_reseed_done_d = 1'b0;
+            aes_cipher_ctrl_ns = PRNG_RESEED;
+
+          end else if (key_clear_i || data_out_clear_i) begin
             // Clear internal key registers. The cipher core muxes are used to clear the data
             // output registers.
             key_clear_d_o      = key_clear_i;
@@ -185,6 +198,9 @@ module aes_cipher_control_fsm import aes_pkg::*;
             // Start encryption/decryption or generation of start key for decryption.
             crypt_d_o       = ~dec_key_gen_i & crypt_i;
             dec_key_gen_d_o =  dec_key_gen_i;
+
+            // Latch whether we shall reseed the masking PRNG.
+            prng_reseed_d_o = Masking & prng_reseed_i;
 
             // Load input data to state
             state_sel_o = dec_key_gen_i ? STATE_CLEAR : STATE_INIT;
@@ -271,7 +287,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
             (key_len_i == AES_256 && op_i == CIPH_INV) ? KEY_WORDS_0123 : KEY_WORDS_ZERO;
 
         // Keep requesting PRNG reseeding until it is acknowledged.
-        prng_reseed_req_o = Masking & ~prng_reseed_done_q;
+        prng_reseed_req_o = Masking & prng_reseed_q_i & ~prng_reseed_done_q;
 
         // Select round key: direct or mixed (equivalent inverse cipher)
         round_key_sel_o = (op_i == CIPH_FWD) ? ROUND_KEY_DIRECT : ROUND_KEY_MIXED;
@@ -305,10 +321,11 @@ module aes_cipher_control_fsm import aes_pkg::*;
               // Indicate that we are done, try to perform the handshake. But we don't wait here.
               // If we don't get the handshake now, we will wait in the finish state. When using
               // masking, we only finish if the masking PRNG has been reseeded.
-              out_valid_o = Masking ? prng_reseed_done_q : 1'b1;
+              out_valid_o = Masking ? (prng_reseed_q_i ? prng_reseed_done_q : 1'b1) : 1'b1;
               if (out_valid_o && out_ready_i) begin
                 // Go to idle state directly.
                 dec_key_gen_d_o    = 1'b0;
+                prng_reseed_d_o    = 1'b0;
                 aes_cipher_ctrl_ns = IDLE;
               end
             end
@@ -331,7 +348,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
         add_rk_sel_o = ADD_RK_FINAL;
 
         // Keep requesting PRNG reseeding until it is acknowledged.
-        prng_reseed_req_o = Masking & ~prng_reseed_done_q;
+        prng_reseed_req_o = Masking & prng_reseed_q_i & ~prng_reseed_done_q;
 
         // Once we're done, we won't need the state anymore. We actually clear it when progressing
         // to the next state.
@@ -346,8 +363,8 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // Perform both handshakes simultaneously.
         advance        = sub_bytes_out_req_i | dec_key_gen_q_i;
         sub_bytes_en_o = ~dec_key_gen_q_i;
-        out_valid_o    = (mux_sel_err_i || sp_enc_err_i) ? 1'b0 :
-                         Masking ? prng_reseed_done_q & advance : advance;
+        out_valid_o    = (mux_sel_err_i || sp_enc_err_i) ? 1'b0                  :
+            Masking ? (prng_reseed_q_i ? prng_reseed_done_q & advance : advance) : advance;
         // When using DOM S-Boxes, make the masking PRNG advance every cycle until the output is
         // ready. For other S-Boxes, make it advance once only. Updating it while being stalled
         // would cause non-DOM S-Boxes to be re-evaluated, thereby creating additional SCA leakage.
@@ -362,7 +379,20 @@ module aes_cipher_control_fsm import aes_pkg::*;
           // If we were generating the decryption key and didn't get the handshake in the last
           // regular round, we should clear dec_key_gen now.
           dec_key_gen_d_o     = 1'b0;
+          prng_reseed_d_o     = 1'b0;
           aes_cipher_ctrl_ns  = IDLE;
+        end
+      end
+
+      PRNG_RESEED: begin
+        // Keep requesting PRNG reseeding until it is acknowledged.
+        prng_reseed_req_o = prng_reseed_q_i & ~prng_reseed_done_q;
+
+        // Once we're done, wait for handshake.
+        out_valid_o = prng_reseed_done_q;
+        if (out_valid_o && out_ready_i) begin
+          prng_reseed_d_o    = 1'b0;
+          aes_cipher_ctrl_ns = IDLE;
         end
       end
 
@@ -448,11 +478,12 @@ module aes_cipher_control_fsm import aes_pkg::*;
       AES_192,
       AES_256
       })
-  `ASSERT(AesControlStateValid, !alert_o |-> aes_cipher_ctrl_cs inside {
+  `ASSERT(AesCipherControlStateValid, !alert_o |-> aes_cipher_ctrl_cs inside {
       IDLE,
       INIT,
       ROUND,
       FINISH,
+      PRNG_RESEED,
       CLEAR_S,
       CLEAR_KD
       })
