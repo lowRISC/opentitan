@@ -12,26 +12,26 @@ autogen_chip_info(
 )
 
 opentitan_binary(
-    name = "boot_rom",
+    name = "test_rom",
     srcs = [
-        "irq_vector.S",
+        "test_rom_irq_vector.S",
     ],
     linkopts = [
-        "-T $(location rom_link.ld)",
+        "-T $(location test_rom.ld)",
     ],
     output_scrambled = True,
     deps = [
-        "rom_link.ld",
-        ":boot_rom_lib",
+        "test_rom.ld",
+        ":test_rom_lib",
         "//sw/device/lib/base:mmio",
     ],
 )
 
 cc_library(
-    name = "boot_rom_lib",
+    name = "test_rom_lib",
     srcs = [
-        "boot_rom.c",
-        "rom_crt.S",
+        "test_rom.c",
+        "test_rom_start.S",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
@@ -83,9 +83,9 @@ cc_library(
 )
 
 opentitan_functest(
-    name = "boot_rom_test",
+    name = "test_rom_test",
     srcs = [
-        "boot_rom_test.c",
+        "test_rom_test.c",
     ],
     deps = [
     ],

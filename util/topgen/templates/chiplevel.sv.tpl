@@ -71,7 +71,7 @@ unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["
 module chip_${top["name"]}_${target["name"]} #(
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
-  parameter BootRomInitFile = "boot_rom_fpga_${target["name"]}.32.vmem",
+  parameter BootRomInitFile = "test_rom_fpga_${target["name"]}.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
   parameter OtpCtrlMemInitFile = "otp_img_fpga_${target["name"]}.vmem"

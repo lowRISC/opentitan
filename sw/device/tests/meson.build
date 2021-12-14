@@ -755,7 +755,7 @@ sw_tests += {
 ###############################################################################
 # Build Targets
 ###############################################################################
-# (unsigned) test binaries loaded with ROM from sw/device/boot_rom/
+# (unsigned) test binaries loaded with ROM from sw/device/lib/testing/test_rom/
 foreach sw_test_name, sw_test_info : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
     sw_test_elf = executable(

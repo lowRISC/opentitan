@@ -43,7 +43,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // suffixed to the basename to pick the correct image. The following files (extensions) with this
   // basename are expected to exist there:
   // - .elf:          embedded executable
-  // - .32.vmem:      mem image with 32-bit word size (for boot_rom)
+  // - .32.vmem:      mem image with 32-bit word size (for boot ROM)
   // - .64.vmem:      mem image with 64-bit word size (for sw_test / flash load)
   // - .frames.vmem:  mem image converted with spiflash frames (for tests with boostrap enabled)
   // - .rodata.txt:   dump of RO sections of the SW

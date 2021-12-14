@@ -2,9 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-subdir('lib')
-subdir('exts')
-
 # Dictionaries that can be used as `custom_target` arguments for common
 # operations on `.elf` and `.bin` files. To create a custom target using
 # `my_custom_target_args`:
@@ -164,7 +161,8 @@ signing_keys = {
   },
 }
 
-subdir('boot_rom')
+subdir('lib')
+subdir('exts')
 subdir('otp_img')
 subdir('silicon_creator')
 subdir('silicon_owner')

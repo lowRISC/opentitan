@@ -19,34 +19,34 @@ chip_info_h = declare_dependency(
   )],
 )
 
-# ROM linker parameters.
+# Test ROM linker parameters.
 #
 # See sw/device/exts/common/flash_link.ld for additional info about these
 # parameters.
-rom_linkfile = files(['rom_link.ld'])
-rom_link_args = [
+test_rom_linker_script = files(['test_rom.ld'])
+test_rom_link_args = [
   '-Wl,-L,@0@'.format(meson.source_root()),
-  '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0]),
+  '-Wl,-T,@0@/@1@'.format(meson.source_root(), test_rom_linker_script[0]),
   '-Wl,--build-id=none',
 ]
-rom_link_deps = [rom_linkfile]
+test_rom_link_deps = [test_rom_linker_script]
 
 foreach device_name, device_lib : sw_lib_arch_core_devices
-  boot_rom_elf = executable(
-    'boot_rom_' + device_name,
+  test_rom_elf = executable(
+    'test_rom_' + device_name,
     sources: [
       hw_ip_sram_ctrl_reg_h,
       hw_ip_entropy_src_reg_h,
       hw_ip_csrng_reg_h,
       hw_ip_edn_reg_h,
-      'boot_rom.c',
+      'test_rom.c',
       'bootstrap.c',
-      'irq_vector.S',
-      'rom_crt.S',
+      'test_rom_irq_vector.S',
+      'test_rom_start.S',
     ],
     name_suffix: 'elf',
-    link_args: rom_link_args,
-    link_depends: rom_link_deps,
+    link_args: test_rom_link_args,
+    link_depends: test_rom_link_deps,
     dependencies: [
       chip_info_h,
       sw_lib_crt,
@@ -67,52 +67,52 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
   )
 
-  target_name = 'boot_rom_@0@_' + device_name
+  target_name = 'test_rom_@0@_' + device_name
 
-  boot_rom_dis = custom_target(
+  test_rom_dis = custom_target(
     target_name.format('dis'),
-    input: boot_rom_elf,
+    input: test_rom_elf,
     kwargs: elf_to_dis_custom_target_args,
   )
 
-  boot_rom_bin = custom_target(
+  test_rom_bin = custom_target(
     target_name.format('bin'),
-    input: boot_rom_elf,
+    input: test_rom_elf,
     kwargs: elf_to_bin_custom_target_args,
   )
 
-  boot_rom_vmem32 = custom_target(
+  test_rom_vmem32 = custom_target(
     target_name.format('vmem32'),
-    input: boot_rom_bin,
+    input: test_rom_bin,
     kwargs: bin_to_vmem32_custom_target_args,
   )
 
-  boot_rom_vmem64 = custom_target(
+  test_rom_vmem64 = custom_target(
     target_name.format('vmem64'),
-    input: boot_rom_bin,
+    input: test_rom_bin,
     kwargs: bin_to_vmem64_custom_target_args,
   )
 
-  boot_rom_scrambled = custom_target(
+  test_rom_scrambled = custom_target(
     target_name.format('scrambled'),
     command: scramble_image_command,
     depend_files: scramble_image_depend_files,
-    input: boot_rom_elf,
+    input: test_rom_elf,
     output: scramble_image_outputs,
     build_by_default: true,
   )
 
-  boot_rom_sim_dv_logs = []
+  test_rom_sim_dv_logs = []
   if device_name == 'sim_dv'
-    boot_rom_sim_dv_logs = custom_target(
-      'boot_rom_dv_logs',
-      # Boot_rom has additional RO data sections of interest to DV logging.
+    test_rom_sim_dv_logs = custom_target(
+      'test_rom_dv_logs',
+      # test_rom has additional RO data sections of interest to DV logging.
       command: [
         extract_sw_logs_sim_dv_command,
         '--rodata-sections', '.chip_info',
       ],
       depend_files: [extract_sw_logs_sim_dv_depend_files,],
-      input: boot_rom_elf,
+      input: test_rom_elf,
       output: extract_sw_logs_sim_dv_outputs,
     )
   endif
@@ -122,13 +122,13 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     command: export_target_command,
     depend_files: [export_target_depend_files,],
     input: [
-      boot_rom_elf,
-      boot_rom_dis,
-      boot_rom_bin,
-      boot_rom_vmem32,
-      boot_rom_vmem64,
-      boot_rom_scrambled,
-      boot_rom_sim_dv_logs,
+      test_rom_elf,
+      test_rom_dis,
+      test_rom_bin,
+      test_rom_vmem32,
+      test_rom_vmem64,
+      test_rom_scrambled,
+      test_rom_sim_dv_logs,
     ],
     output: target_name.format('export'),
     build_always_stale: true,

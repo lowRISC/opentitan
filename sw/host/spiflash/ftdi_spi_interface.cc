@@ -38,7 +38,7 @@ enum FtdiGpioMapping {
 };
 
 /**
- * Resets the target to go back to boot_rom. Assumes boot_rom will enter
+ * Resets the target to go back to boot ROM. Assumes boot ROM will enter
  * bootstrap mode.
  */
 void ResetTarget(struct mpsse_context *ctx) {

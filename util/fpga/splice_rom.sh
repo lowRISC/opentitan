@@ -31,7 +31,7 @@ Usage: $0 [-t TARGET_BOARD] [-T TARGET_TOP] [-b DV | PROD]
   - b: Mask ROM binary, set to either DV or PROD.
 
 Mask ROM binary targets (-b):
-  - DV: sw/device/boot_rom
+  - DV: sw/device/lib/testing/test_rom
   - PROD: sw/device/silicon_creator/mask_rom
 
 USAGE
@@ -83,7 +83,7 @@ fi
 
 TARGET_PREFIX=""
 if [[ ${FLAGS_BIN} == "DV" ]]; then
-  TARGET_PREFIX="sw/device/boot_rom/boot_rom"
+  TARGET_PREFIX="sw/device/lib/testing/test_rom/test_rom"
 elif [[ ${FLAGS_BIN} == "PROD" ]]; then
   TARGET_PREFIX="sw/device/silicon_creator/mask_rom/mask_rom"
 else

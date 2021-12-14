@@ -37,7 +37,7 @@ ready to go with spiflash available at `$BIN_DIR/sw/host/spiflash/spiflash`.
 To quickly get started with a verilator binary or FPGA bitfile, please see the
 [OpenTitan quick start guide](https://docs.opentitan.org/doc/ug/quickstart/).
 
-Finally the support software must be built, including the boot_rom when using
+Finally the support software must be built, including the test_rom when using
 the verilator target.
 
 ```console

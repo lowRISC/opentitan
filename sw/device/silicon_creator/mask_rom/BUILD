@@ -164,7 +164,7 @@ cc_library(
     hdrs = ["primitive_bootstrap.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/boot_rom:bootstrap",
+        "//sw/device/lib/testing/test_rom:bootstrap",
         "//sw/device/lib:flash_ctrl",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base",

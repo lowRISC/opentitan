@@ -47,7 +47,7 @@ The programs listed after `--meminit` are loaded into the system's specified mem
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
-  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem \
+  --meminit=rom,build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
 ```
@@ -83,10 +83,10 @@ If everything is working correctly you should expect to see text like the follow
 
 ```console
 $ cat /dev/pts/11
-I00000 boot_rom.c:35] Version:    opentitan-snapshot-20191101-1-1182-g2aedf641
+I00000 test_rom.c:35] Version:    opentitan-snapshot-20191101-1-1182-g2aedf641
 Build Date: 2020-05-13, 15:04:09
 
-I00001 boot_rom.c:44] Boot ROM initialisation has completed, jump into flash!
+I00001 test_rom.c:44] Boot ROM initialisation has completed, jump into flash!
 I00000 hello_world.c:30] Hello World!
 I00001 hello_world.c:31] Built at: May 13 2020, 15:27:31
 I00002 demos.c:17] Watch the LEDs!
@@ -104,7 +104,7 @@ A full command-line invocation of the simulation could then look like that:
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
-  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem \
+  --meminit=rom,build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
   +UARTDPI_LOG_uart0=-
@@ -196,7 +196,7 @@ Tracing slows down the simulation by roughly factor of 1000.
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
-  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem \
+  --meminit=rom,build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
   --trace

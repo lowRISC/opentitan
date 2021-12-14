@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/boot_rom/bootstrap.h"
-#include "sw/device/boot_rom/chip_info.h"  // Generated.
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -16,11 +14,13 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_framework/test_status.h"
+#include "sw/device/lib/testing/test_rom/bootstrap.h"
+#include "sw/device/lib/testing/test_rom/chip_info.h"  // Generated.
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 /**
- * This symbol is defined in sw/device/boot_rom/rom_link.ld,
+ * This symbol is defined in sw/device/lib/testing/test_rom/test_rom.ld,
  * and describes the location of the flash header.
  *
  * The actual contents are not defined by the ROM, but rather

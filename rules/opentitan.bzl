@@ -224,7 +224,7 @@ def opentitan_binary(
     )
 
 def verilator_params(
-        rom = "//sw/device/boot_rom:boot_rom_verilator_scr",
+        rom = "//sw/device/lib/testing/test_rom:test_rom_verilator_scr",
         otp = "//hw/ip/otp_ctrl/data:rma_image_verilator",
         tags = ["verilator"],
         timeout = "moderate",
