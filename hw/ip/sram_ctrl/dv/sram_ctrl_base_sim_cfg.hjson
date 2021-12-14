@@ -133,12 +133,12 @@
     // Below 2 tests are same as the tests in dvsim/tests/mem_tests.hjson
     // Replicate them here in order to enable scb
     {
-      name: "{variant}_mem_walk"
+      name: "{name}_mem_walk"
       uvm_test_seq: "{name}_common_vseq"
       run_opts: ["+csr_mem_walk"]
     }
     {
-      name: "{variant}_mem_partial_access"
+      name: "{name}_mem_partial_access"
       uvm_test_seq: "{name}_common_vseq"
       run_opts: ["+run_mem_partial_access"]
     }
