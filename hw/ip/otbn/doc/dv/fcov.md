@@ -55,6 +55,11 @@ We expect to:
 - Jump/branch to the final instruction of a loop
   Tracked as `JumpToLoopEnd_C`.
 
+## CSRs and WSRs
+
+Accesses to CSRs and WSRs are tracked in the coverage for the instructions that access them.
+See [CSRRS](#csrrs) and [CSRRW](#csrrw) for CSRs; [BN.WSRR](#bnwsrr) and [BN.WSRW](#bnwsrw) for WSRs.
+
 ## Flags
 
 Each flag in each flag group should be set to one from zero by some instruction.
