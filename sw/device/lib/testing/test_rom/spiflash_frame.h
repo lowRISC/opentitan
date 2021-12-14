@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_BOOT_ROM_SPIFLASH_FRAME_H_
-#define OPENTITAN_SW_DEVICE_BOOT_ROM_SPIFLASH_FRAME_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_ROM_SPIFLASH_FRAME_H_
+#define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_ROM_SPIFLASH_FRAME_H_
 
 #include <stdint.h>
 
@@ -74,4 +74,4 @@ typedef struct spiflash_frame {
 _Static_assert(sizeof(spiflash_frame_t) == SPIFLASH_RAW_BUFFER_SIZE,
                "spiflash_frame_t is the wrong size!");
 
-#endif  // OPENTITAN_SW_DEVICE_BOOT_ROM_SPIFLASH_FRAME_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_ROM_SPIFLASH_FRAME_H_

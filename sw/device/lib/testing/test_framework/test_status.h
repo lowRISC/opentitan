@@ -18,7 +18,7 @@
  */
 typedef enum test_status {
   /**
-   * Indicates that the CPU has started executing the boot_rom code.
+   * Indicates that the CPU has started executing the test_rom code.
    *
    * Writing this value to #kDeviceTestStatusAddress must not stop simulation of
    * the current device.

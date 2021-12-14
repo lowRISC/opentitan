@@ -135,7 +135,7 @@
     }
     {
       name: sw_test_mode
-      sw_images: ["sw/device/boot_rom/boot_rom:0"]
+      sw_images: ["sw/device/lib/testing/test_rom/test_rom:0"]
       run_opts: ["+sw_build_bin_dir={sw_build_dir}/build-bin",
                  "+sw_build_device={sw_build_device}",
                  // Separate individual SW images supplied to +sw_images plusarg by comma.
@@ -178,7 +178,7 @@
   //
   // Each entry in `sw_images` is followed by an index separated with ':' which
   // is used by the testbench to know what type of image is it:
-  // - 0 for boot_rom,
+  // - 0 for Boot ROM,
   // - 1 for SW test,
   // - 2 for OTBN test,
   // This allows an arbitrary number of SW images to be supplied to the TB.

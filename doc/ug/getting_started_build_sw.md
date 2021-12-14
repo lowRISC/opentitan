@@ -11,7 +11,7 @@ _Make sure you followed the install instructions to [prepare the system]({{< rel
 OpenTitan software is built using [Meson](https://mesonbuild.com).
 However, Meson is not an exact fit for a lot of things OpenTitan does (such as distinguishing between FPGA, ASIC, and simulations), so the setup is a little bit different.
 
-For example, the following commands build the `boot_rom` and `hello_world` binaries for FPGA:
+For example, the following commands build the `test_rom` and `hello_world` binaries for FPGA:
 
 ```console
 # Configure the Meson environment.
@@ -19,7 +19,7 @@ $ cd $REPO_TOP
 $ ./meson_init.sh
 
 # Build the two targets we care about, specifically.
-$ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_cw310
+$ ninja -C build-out sw/device/lib/testing/test_rom/test_rom_export_fpga_cw310
 $ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_cw310
 
 # Build *everything*, including targets for other devices.

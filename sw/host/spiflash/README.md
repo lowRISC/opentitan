@@ -40,9 +40,9 @@ $ ninja -C build-out sw/device/examples/hello_world/hello_world_export_${DEVICE}
 
 Where ${DEVICE} is one of 'sim_verilator' or 'fpga_nexysvideo'
 
-## Run the tool in Verilator
+## Run the tool with the Verilator Simulation
 
-Run Verilator with boot_rom enabled as described in the [verilator]({{< relref "doc/ug/getting_started_verilator" >}}) getting started guide.
+Run Verilator with test_rom as described in the [verilator]({{< relref "doc/ug/getting_started_verilator" >}}) getting started guide.
 
 Run spiflash.
 In this example we use SPI device `/dev/pts/3` as an example.
