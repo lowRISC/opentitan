@@ -87,25 +87,34 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
     control_cross: cross core_cp, io_cp, usb_lp_cp, usb_active_cp, main_pd_n_cp, sleep_cp;
   endgroup
 
-  covergroup reset_cg with function sample (
-      resets_t hw_resets,
-      resets_t hw_resets_en,
-      logic sw_rst,
-      logic main_pwr_rst,
-      logic esc_rst,
-      bit sleep
-  );
-    hw_resets_cp: coverpoint hw_resets;
-    sw_rst_cp: coverpoint sw_rst;
-    main_pwr_rst_cp: coverpoint main_pwr_rst;
-    esc_rst_cp: coverpoint esc_rst;
-    hw_resets_en_cp: coverpoint hw_resets_en;
+  covergroup hw_reset_0_cg with function sample (logic reset, logic enable, bit sleep);
+    reset_cp: coverpoint reset;
+    enable_cp: coverpoint enable;
     sleep_cp: coverpoint sleep;
+    reset_cross: cross reset, enable, sleep;
+  endgroup
 
-    hw_resets_cross: cross hw_resets_cp, hw_resets_en_cp, sleep_cp;
-    esc_rst_cross: cross esc_rst_cp, sleep_cp;
-    main_pwr_rst_cross: cross main_pwr_rst_cp, sleep_cp;
-    sw_rst_cross: cross sw_rst_cp, sleep_cp;
+  covergroup hw_reset_1_cg with function sample (logic reset, logic enable, bit sleep);
+    reset_cp: coverpoint reset;
+    enable_cp: coverpoint enable;
+    sleep_cp: coverpoint sleep;
+    reset_cross: cross reset_cp, enable_cp, sleep_cp;
+  endgroup
+
+  covergroup rstmgr_sw_reset_cg with function sample (logic sw_reset);
+    sw_reset_cp: coverpoint sw_reset;
+  endgroup
+
+  covergroup main_power_reset_cg with function sample (logic main_power_reset, bit sleep);
+    main_power_reset_cp: coverpoint main_power_reset;
+    sleep_cp: coverpoint sleep;
+    reset_cross: cross main_power_reset_cp, sleep_cp;
+  endgroup
+
+  covergroup esc_reset_cg with function sample (logic esc_reset, bit sleep);
+    esc_reset_cp: coverpoint esc_reset;
+    sleep_cp: coverpoint sleep;
+    reset_cross: cross esc_reset_cp, sleep_cp;
   endgroup
 
   function new(string name, uvm_component parent);
@@ -116,7 +125,11 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
       wakeup_intr_cg_wrap[i] = new({wakeup.name, "_intr_cg"});
     end
     control_cg = new();
-    reset_cg   = new();
+    hw_reset_0_cg = new();
+    hw_reset_1_cg = new();
+    rstmgr_sw_reset_cg = new();
+    main_power_reset_cg = new();
+    esc_reset_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);
