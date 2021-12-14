@@ -84,6 +84,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                        region_cfg.program_en) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].erase_en, data,
                                        region_cfg.erase_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].he_en, data,
+                                       region_cfg.he_en) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].base, data,
                                        region_cfg.start_page) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].size, data,
@@ -120,7 +122,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data, page_cfg.read_en) |
         get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"), data,
                                        page_cfg.program_en) |
-        get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data, page_cfg.erase_en);
+        get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data,
+                                       page_cfg.erase_en) |
+        get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data,
+                                       page_cfg.he_en);
     csr_wr(.ptr(csr), .value(data));
   endtask
 
