@@ -23,6 +23,7 @@ partner_google = "https://opensource.google/"
 partner_nuvoton = "https://www.nuvoton.com"
 partner_wd = "https://www.westerndigital.com/"
 partner_seagate = "https://www.seagate.com"
+partner_rivos = "https://www.rivosinc.com"
 
 [[deployment.targets]]
 name = "staging"
