@@ -121,6 +121,15 @@ The lifecycle controller can send a "lifecycle escalation" signal to tell OTBN t
 We expect to see this happen.
 However, we don't track coverage for this explicitly since it's handled at the testplan level (with the `lc_escalation` testpoint).
 
+## Error promotion
+
+If the `CTRL.software_errs_fatal` field is set then a software error which would normally trigger a recoverable alert will trigger a fatal alert.
+We expect to see each software error triggered and upgraded to a fatal alert.
+
+This is tracked in the `promoted_err_cg` covergroup.
+
+Note that we already track seeing each software error triggered (but not upgraded) with the coverage for `ERR_BITS` in the [external CSRs](#ext-csrs) section below.
+
 ## External (bus-accessible) CSRs {#ext-csrs}
 
 The OTBN block exposes functionality to a bus host through bus-accessible CSRs.

@@ -337,6 +337,19 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   // the CSR, we sample the ext_csr_wr_operational_state_cg covergroup.
   operational_state_e last_write_state[csr_str_t];
 
+  // To track "error promotion" based on the CTRL register, we want to see each software error cause
+  // a fatal alert. One way to do this is to run a test, check we're in the LOCKED state, then look
+  // at ERR_BITS and see just one SW error, then look at FATAL_ALERT_CAUSE and see that only the
+  // FATAL_SOFTWARE bit is set.
+  //
+  // Of course, this is a bit fiddly to track because there are several things that have to happen
+  // in order. This variable gets set on each read of ERR_BITS and cleared on reset or on a change
+  // of operational state. The idea is that if we read FATAL_ALERT_CAUSE and see only FATAL_SOFTWARE
+  // set then we can sample the promoted_err_cg covergroup, tracking which SW error was promoted.
+  // Clearing when when changing operational state makes sure that we really have seen nonzero
+  // ERR_BITS since the last operation finished.
+  logic [31:0] last_err_bits = 0;
+
   // Non-core covergroups //////////////////////////////////////////////////////
 
   // CMD external CSR
@@ -495,6 +508,24 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     csr_state_cross: cross csr_cp, wr_state;
 
+  endgroup
+
+  // Specialized covergroup to track that we've seen each software error individually cause a fatal
+  // alert. This gets sampled when we read a FATAL_ALERT_CAUSE with just FATAL_SOFTWARE and is given
+  // last_err_bits (see comment above declaration of that variable for more details).
+  covergroup promoted_err_cg
+    with function sample(logic [31:0] last_err_bits);
+
+    // We're interested in the "one-hot" values corresponding to each error that wouldn't normally
+    // be fatal.
+    err_bits_cp: coverpoint last_err_bits {
+      bins bad_data_addr = {32'h1};
+      bins bad_insn_addr = {32'h2};
+      bins call_stack    = {32'h4};
+      bins illegal_insn  = {32'h8};
+      bins loop          = {32'h10};
+      bins key_invalid   = {32'h20};
+    }
   endgroup
 
   // Non-instruction covergroups ///////////////////////////////////////////////
@@ -1946,6 +1977,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     ext_csr_insn_cnt_cg = new;
     ext_csr_load_checksum_wur_cg = new;
     ext_csr_wr_operational_state_cg = new;
+    promoted_err_cg = new;
 
     call_stack_cg = new;
     flag_write_cg = new;
@@ -2063,6 +2095,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   function void on_reset();
     wur_state = WUR_IDLE;
     last_write_state.delete();
+    last_err_bits = 0;
+  endfunction
+
+  // Called on each change of operational state
+  function void on_state_change(operational_state_e new_state);
+    last_err_bits = 0;
   endfunction
 
   function void on_write_to_wr_csr(uvm_reg csr, logic [31:0] data, operational_state_e state);
@@ -2100,6 +2138,14 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       end
       "fatal_alert_cause": begin
         ext_csr_fatal_alert_cause_cg.sample(data, access_type, state);
+
+        // If we read a FATAL_ALERT_CAUSE of (1 << 7) = FATAL_SOFTWARE and we're in a locked state
+        // then we should sample promoted_err_cg to track what SW error was promoted.
+        if ((state == OperationalStateLocked) &&
+            (access_type == AccessSoftwareRead) &&
+            (data == (1 << 7))) begin
+          promoted_err_cg.sample(last_err_bits);
+        end
       end
       "insn_cnt": begin
         ext_csr_insn_cnt_cg.sample(data, csr.get_mirrored_value(), access_type, state);
