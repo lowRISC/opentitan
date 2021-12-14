@@ -139,15 +139,21 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
   task process_tl_addr(tl_seq_item item);
     uvm_reg              csr;
-    uvm_reg_addr_t       aligned_addr;
+    uvm_reg_addr_t       masked_addr, aligned_addr;
+    operational_state_e  state;
     otbn_exp_read_data_t exp_read_data = '{upd: 1'b0, chk: 'x, val: 'x};
 
+    state = cfg.controller_vif.get_operational_state();
+
     aligned_addr = ral.get_word_aligned_addr(item.a_addr);
+    masked_addr  = aligned_addr & ral.get_addr_mask();
+
+    // If coverage is enabled, track the write.
+    if (cfg.en_cov) cov.on_tl_write(masked_addr, item.a_data, state);
 
     // Is this a write to memory (either DMEM or IMEM)?
     if (item.is_write()) begin
       uvm_mem mem = ral.default_map.get_mem_by_offset(aligned_addr);
-      uvm_reg_addr_t masked_addr = aligned_addr & ral.get_addr_mask();
       if (mem != null) begin
         uvm_reg_addr_t base = mem.get_offset(0, ral.default_map);
         `DV_CHECK_FATAL(base <= masked_addr)
@@ -165,8 +171,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     if (item.is_write()) begin
       // Track coverage for write accesses to external CSRs over TL-UL.
       if (cfg.en_cov) begin
-        cov.on_ext_csr_access(csr, otbn_env_pkg::AccessSoftwareWrite, item.a_data,
-                              cfg.controller_vif.get_operational_state());
+        cov.on_ext_csr_access(csr, otbn_env_pkg::AccessSoftwareWrite, item.a_data, state);
       end
 
       // If this is a write, update the RAL model

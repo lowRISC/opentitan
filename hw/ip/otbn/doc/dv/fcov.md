@@ -130,6 +130,15 @@ This is tracked in the `promoted_err_cg` covergroup.
 
 Note that we already track seeing each software error triggered (but not upgraded) with the coverage for `ERR_BITS` in the [external CSRs](#ext-csrs) section below.
 
+## Scratchpad memory
+
+A portion of DMEM is inaccessible from the bus.
+We want to see accesses (read and write) to both endpoints of the inaccessible portion of DMEM when OTBN is in an idle state (so would otherwise allow them).
+These are tracked in the `addr_cp` coverpoint in `scratchpad_writes_cg`.
+
+We also want to see a successful write to the top word of accessible DMEM.
+We don't track that explicitly, since it is covered by the `otbn_mem_walk` test.
+
 ## External (bus-accessible) CSRs {#ext-csrs}
 
 The OTBN block exposes functionality to a bus host through bus-accessible CSRs.
