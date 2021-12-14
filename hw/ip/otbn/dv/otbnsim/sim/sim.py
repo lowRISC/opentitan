@@ -196,7 +196,7 @@ class OTBNSim:
         if not sim_stalled:
             return (insn, self._on_retire(verbose, insn))
 
-        return (None, self._on_stall(verbose, fetch_next=True))
+        return (None, self._on_stall(verbose, fetch_next=False))
 
     def dump_data(self) -> bytes:
         return self.state.dmem.dump_le_words()
