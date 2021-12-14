@@ -21,12 +21,12 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   localparam int MaxCyclesBeforeEnable = 6;
 
   // Random wakeups and resets.
-  rand wakeups_t         wakeups;
-  rand wakeups_t         wakeups_en;
-  rand resets_t          resets;
-  rand resets_t          resets_en;
-  rand bit               power_glitch_reset;
-  rand bit               escalation_reset;
+  rand wakeups_t wakeups;
+  rand wakeups_t wakeups_en;
+  rand resets_t  resets;
+  rand resets_t  resets_en;
+  rand bit       power_glitch_reset;
+  rand bit       escalation_reset;
 
   // TODO(maturana) Enable escalation resets once there is support for driving them.
   constraint escalation_reset_c {escalation_reset == 1'b0;}
