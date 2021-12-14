@@ -289,6 +289,11 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       end
       // Update the RAL model to match the value we've just read from HW
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+    end else begin
+      // We don't predict any sort of hardware backdoor updates to this register so the mirrored
+      // value in the RAL should be correct. Is it?
+      `DV_CHECK_EQ(item.d_data, csr.get_mirrored_value(),
+                   $sformatf("value for auto-predicted register %0s", csr.get_full_name()))
     end
   endtask
 
