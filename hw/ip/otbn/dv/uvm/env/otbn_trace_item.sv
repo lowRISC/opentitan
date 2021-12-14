@@ -31,6 +31,9 @@ class otbn_trace_item extends uvm_sequence_item;
   stack_fullness_e loop_stack_fullness;
   stack_fullness_e call_stack_fullness;
 
+  // Is the sideload key valid?
+  logic has_sideload_key;
+
   // The address of the last instruction of the innermost loop. Only valid if loop_stack_fullness is
   // not StackEmpty.
   logic [31:0] current_loop_end;

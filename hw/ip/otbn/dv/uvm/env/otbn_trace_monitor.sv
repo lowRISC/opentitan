@@ -52,6 +52,7 @@ class otbn_trace_monitor extends dv_base_monitor #(
             item.call_stack_flags = cfg.rf_base_vif.get_call_stack_flags();
             item.loop_stack_fullness = cfg.loop_vif.get_fullness();
             item.call_stack_fullness = cfg.rf_base_vif.get_call_stack_fullness();
+            item.has_sideload_key = cfg.keymgr_sideload_agent_cfg.vif.sideload_key.valid;
             item.current_loop_end = cfg.loop_vif.current_loop_end;
             item.at_current_loop_end_insn = cfg.loop_vif.at_current_loop_end_insn;
             item.mod = cfg.alu_bignum_vif.mod_q;

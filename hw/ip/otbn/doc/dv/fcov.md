@@ -76,6 +76,11 @@ See the instruction counter saturate.
 
 > This is tracked in the `insn_cnt_if` interface with the `InsnCntSaturated_C` cover property.
 
+## Key sideload interface
+
+We expect to see reads from this interface (both when a key is present and when it is not).
+The coverage for these reads is tracked in the [BN.WSRR](#bnwsrr) instruction which does the reading.
+
 ## External (bus-accessible) CSRs
 
 The OTBN block exposes functionality to a bus host through bus-accessible CSRs.
@@ -1045,8 +1050,12 @@ Binning together the two underflows and WDR indices unless it makes a difference
 This instruction uses the `bnwcsr` encoding schema, with covergroup `enc_wcsr_cg`.
 There is no instruction-specific covergroup.
 
-- Read from each valid WSR
-- Read from an invalid WSR
+- Read from each valid WSR and an invalid WSR.
+  Tracked with `wsr_cross` in `enc_wcsr_cg`.
+- Read from each key sideload WSR, getting a valid response.
+  Tracked as part of `key_avail_cross` in `insn_bn_wsrr_cg`.
+- Read from each key sideload WSR, getting a KEY_INVALID error.
+  Tracked as part of `key_avail_cross` in `insn_bn_wsrr_cg`.
 
 These points are tracked with `wsr_cross` in `enc_wcsr_cg`.
 

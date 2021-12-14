@@ -294,6 +294,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       8'h01: return 1;     // RND
       8'h02: return 2;     // URND
       8'h03: return 3;     // ACC
+      8'h04: return 4;     // KEY_S0_L
+      8'h05: return 5;     // KEY_S0_H
+      8'h06: return 6;     // KEY_S1_L
+      8'h07: return 7;     // KEY_S1_H
       default: return -1;  // (invalid)
     endcase
   endfunction
@@ -304,6 +308,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     bins rnd         = {1};            \
     bins urnd        = {2};            \
     bins acc         = {3};            \
+    bins key_s0_l    = {4};            \
+    bins key_s0_h    = {5};            \
+    bins key_s1_l    = {6};            \
+    bins key_s1_h    = {7};            \
     bins invalid     = {-1};           \
     illegal_bins bad = default;        \
   }
@@ -1911,6 +1919,19 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                  (operand_a >= 32))
   endgroup
 
+  covergroup insn_bn_wsrr_cg
+    with function sample(logic [7:0] wsr_imm, logic has_sideload_key);
+
+    // Track coverage of the key sideload WSRs specifically. Here 4 - 7 are the indices of KEY_S0_L,
+    // KEY_S0_H, KEY_S1_L and KEY_S1_H respectively.
+    key_wsr_cp: coverpoint wsr_imm { bins key_wsrs[] = {[4:7]}; }
+
+    // Crossing key_wsr_cp with has_sideload_key asks that we see a read of each WSR both with and
+    // without a valid key.
+    key_avail_cross: cross key_wsr_cp, has_sideload_key;
+
+  endgroup
+
   // A mapping from instruction name to the name of that instruction's encoding.
   string insn_encodings[mnem_str_t];
 
@@ -1979,6 +2000,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_bn_subm_cg = new;
     insn_bn_xid_cg = new;
     insn_bn_movr_cg = new;
+    insn_bn_wsrr_cg = new;
 
     // Set up instruction encoding mapping
     insn_encodings[mnem_add]           = "R";
@@ -2445,6 +2467,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                                grs,
                                grd,
                                local_x1_uflow);
+      end
+      mnem_bn_wsrr: begin
+        logic [7:0] wsr_imm = insn_data[27:20];
+        insn_bn_wsrr_cg.sample(wsr_imm, rtl_item.has_sideload_key);
       end
       default:
         // No special handling for this instruction yet.
