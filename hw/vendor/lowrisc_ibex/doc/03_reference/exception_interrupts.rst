@@ -50,7 +50,8 @@ To enable interrupts, both the global interrupt enable (MIE) bit in the ``mstatu
 For more information, see the :ref:`cs-registers` documentation.
 
 If multiple interrupts are pending, they are handled in the priority order defined by the RISC-V Privileged Specification, version 1.11 (see Machine Interrupt Registers, Section 3.1.9).
-The highest priority is given to the interrupt with the highest ID, except for timer interrupts, which have the lowest priority.
+The fast interrupts have a platform defined priority.
+In Ibex they take priority over all other interrupts and between fast interrupts the highest priority is given to the interrupt with the lowest ID.
 
 The NMI is enabled independent of the values in the ``mstatus`` and ``mie`` CSRs, and it is not visible through the ``mip`` CSR.
 It has interrupt ID 31, i.e., it has the highest priority of all interrupts and the core jumps to the trap-handler base address (in ``mtvec``) plus 0x7C to handle the NMI.

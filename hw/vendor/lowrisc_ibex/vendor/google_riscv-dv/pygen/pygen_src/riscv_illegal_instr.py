@@ -162,8 +162,8 @@ class riscv_illegal_instr:
     @vsc.constraint
     def b_extension_c(self):
         if riscv_instr_group_t.RV32B in rcs.supported_isa:
-            with vsc.if_then(self.exception in [illegal_instr_type_e.kIllegalFunc3,
-                                                illegal_instr_type_e.kIllegalFunc7]):
+            with vsc.if_then(self.exception.inside(vsc.rangelist(illegal_instr_type_e.kIllegalFunc3,
+                                                illegal_instr_type_e.kIllegalFunc7))):
                 self.opcode.inside(vsc.rangelist([51, 19, 59]))
 
     @vsc.constraint
@@ -338,7 +338,7 @@ class riscv_illegal_instr:
     def initialize(self):
         if (riscv_instr_group_t.RV32F in rcs.supported_isa) or \
                 (riscv_instr_group_t.RV32D in rcs.supported_isa):
-            self.legal_opcode.extend(7, 39, 67, 71, 75, 79, 83)
+            self.legal_opcode.extend((7, 39, 67, 71, 75, 79, 83))
         if riscv_instr_group_t.RV64I in rcs.supported_isa:
             self.legal_opcode.append(27)
         if riscv_instr_group_t.RV32A in rcs.supported_isa:
@@ -347,8 +347,8 @@ class riscv_illegal_instr:
                 (riscv_instr_group_t.RV64M in rcs.supported_isa):
             self.legal_opcode.append(59)
         if riscv_instr_group_t.RV64I in rcs.supported_isa:
-            self.legal_c00_opcode.extend(3, 7)
-            self.legal_c10_opcode.extend(3, 7)
+            self.legal_c00_opcode.extend((3, 7))
+            self.legal_c10_opcode.extend((3, 7))
         # TODO csr
 
     def get_bin_str(self):

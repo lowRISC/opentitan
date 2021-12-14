@@ -252,6 +252,12 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    vector_instr_only;
   // Bit manipulation extension support
   bit                    enable_b_extension;
+
+  bit                    enable_zba_extension;
+  bit                    enable_zbb_extension;
+  bit                    enable_zbc_extension;
+  bit                    enable_zbs_extension;
+
   b_ext_group_t          enable_bitmanip_groups[] = {ZBB, ZBS, ZBP, ZBE, ZBF, ZBC, ZBR, ZBM, ZBT,
                                                      ZB_TMP};
 
@@ -516,6 +522,10 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(vector_instr_only, UVM_DEFAULT)
     `uvm_field_int(enable_b_extension, UVM_DEFAULT)
     `uvm_field_array_enum(b_ext_group_t, enable_bitmanip_groups, UVM_DEFAULT)
+    `uvm_field_int(enable_zba_extension, UVM_DEFAULT)
+    `uvm_field_int(enable_zbb_extension, UVM_DEFAULT)
+    `uvm_field_int(enable_zbc_extension, UVM_DEFAULT)
+    `uvm_field_int(enable_zbs_extension, UVM_DEFAULT)
     `uvm_field_int(use_push_data_section, UVM_DEFAULT)
   `uvm_object_utils_end
 
@@ -575,6 +585,10 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+enable_floating_point=", enable_floating_point);
     get_bool_arg_value("+enable_vector_extension=", enable_vector_extension);
     get_bool_arg_value("+enable_b_extension=", enable_b_extension);
+    get_bool_arg_value("+enable_zba_extension=", enable_zba_extension);
+    get_bool_arg_value("+enable_zbb_extension=", enable_zbb_extension);
+    get_bool_arg_value("+enable_zbc_extension=", enable_zbc_extension);
+    get_bool_arg_value("+enable_zbs_extension=", enable_zbs_extension);
     cmdline_enum_processor #(b_ext_group_t)::get_array_values("+enable_bitmanip_groups=",
                                                               enable_bitmanip_groups);
     if(inst.get_arg_value("+boot_mode=", boot_mode_opts)) begin
@@ -600,6 +614,27 @@ class riscv_instr_gen_config extends uvm_object;
     if (!(RV32C inside {supported_isa})) begin
       disable_compressed_instr = 1;
     end
+
+    if (!((RV32ZBA inside {supported_isa}) ||
+          (RV64ZBA inside {supported_isa}))) begin
+      enable_zba_extension = 0;
+    end
+
+    if (!((RV32ZBB inside {supported_isa}) ||
+          (RV64ZBB inside {supported_isa}))) begin
+      enable_zbb_extension = 0;
+    end
+
+    if (!((RV32ZBC inside {supported_isa}) ||
+          (RV64ZBC inside {supported_isa}))) begin
+      enable_zbc_extension = 0;
+    end
+
+    if (!((RV32ZBS inside {supported_isa}) ||
+          (RV64ZBS inside {supported_isa}))) begin
+      enable_zbs_extension = 0;
+    end
+
     vector_cfg = riscv_vector_cfg::type_id::create("vector_cfg");
     pmp_cfg = riscv_pmp_cfg::type_id::create("pmp_cfg");
     pmp_cfg.rand_mode(pmp_cfg.pmp_randomize);

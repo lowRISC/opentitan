@@ -58,7 +58,7 @@ Bus Integrity Checking
 ----------------------
 
 The core can optionally generate and verify check bits sent alongside the data for memory accesses.
-Checkbits are generated and checked using a 39/32 Hsaio code (see :file:`vendor/lowrisc_ip/ip/prim/rtl/prim_secded_39_32_enc.sv`).
+Checkbits are generated and checked using an inverted 39/32 Hsaio code (see :file:`vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_enc.sv`).
 When this feature is used, any mismatch in checkbits will generate a major alert.
 
 This feature is only used if the core is configured with the SecureIbex parameter set.

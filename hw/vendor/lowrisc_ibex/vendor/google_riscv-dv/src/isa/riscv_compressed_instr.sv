@@ -318,11 +318,11 @@ class riscv_compressed_instr extends riscv_instr;
       C_ADD:
         binary = $sformatf("%4h", {get_func3(), 1'b1, rd, rs2, get_c_opcode()});
       C_FSDSP, C_SDSP:
-        binary = $sformatf("%4h", {get_func3(), 1'b0, imm[5:3], imm[8:6], rs2, get_c_opcode()});
+        binary = $sformatf("%4h", {get_func3(), imm[5:3], imm[8:6], rs2, get_c_opcode()});
       C_SQSP:
-        binary = $sformatf("%4h", {get_func3(), 1'b0, imm[5:4], imm[9:6], rs2, get_c_opcode()});
+        binary = $sformatf("%4h", {get_func3(), imm[5:4], imm[9:6], rs2, get_c_opcode()});
       C_SWSP, C_FSWSP:
-        binary = $sformatf("%4h", {get_func3(), 1'b0, imm[5:2], imm[7:6], rs2, get_c_opcode()});
+        binary = $sformatf("%4h", {get_func3(), imm[5:2], imm[7:6], rs2, get_c_opcode()});
       default : `uvm_fatal(`gfn, $sformatf("Unsupported instruction %0s", instr_name.name()))
     endcase
     return {prefix, binary};

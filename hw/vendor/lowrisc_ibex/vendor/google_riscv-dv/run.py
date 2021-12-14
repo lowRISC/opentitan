@@ -380,11 +380,21 @@ def gen(test_list, argv, output_dir, cwd):
     # Run the instruction generator
     if not argv.co:
         seed_gen = SeedGen(argv.start_seed, argv.seed, argv.seed_yaml)
+        if argv.simulator == 'pyflow':
+            """Default timeout of Pyflow is 20 minutes, if the user
+               doesn't specified their own gen_timeout value from CMD
+            """
+            if argv.gen_timeout == 360:
+                gen_timeout = 1200
+            else:
+                gen_timeout = argv.gen_timeout
+        else:
+            gen_timeout = argv.gen_timeout
         do_simulate(sim_cmd, argv.simulator, test_list, cwd, argv.sim_opts,
                     seed_gen,
                     argv.csr_yaml, argv.isa, argv.end_signature_addr,
                     argv.lsf_cmd,
-                    argv.gen_timeout, argv.log_suffix, argv.batch_size,
+                    gen_timeout, argv.log_suffix, argv.batch_size,
                     output_dir,
                     argv.verbose, check_return_code, argv.debug, argv.target)
 

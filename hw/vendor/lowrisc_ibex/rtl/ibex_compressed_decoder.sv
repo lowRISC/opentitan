@@ -14,13 +14,13 @@
 `include "prim_assert.sv"
 
 module ibex_compressed_decoder (
-    input  logic        clk_i,
-    input  logic        rst_ni,
-    input  logic        valid_i,
-    input  logic [31:0] instr_i,
-    output logic [31:0] instr_o,
-    output logic        is_compressed_o,
-    output logic        illegal_instr_o
+  input  logic        clk_i,
+  input  logic        rst_ni,
+  input  logic        valid_i,
+  input  logic [31:0] instr_i,
+  output logic [31:0] instr_o,
+  output logic        is_compressed_o,
+  output logic        illegal_instr_o
 );
   import ibex_pkg::*;
 
@@ -229,7 +229,7 @@ module ibex_compressed_decoder (
               end else begin
                 // c.jr -> jalr x0, rd/rs1, 0
                 instr_o = {12'b0, instr_i[11:7], 3'b0, 5'b0, {OPCODE_JALR}};
-                if (instr_i[11:7] == 5'b0)  illegal_instr_o = 1'b1;
+                if (instr_i[11:7] == 5'b0) illegal_instr_o = 1'b1;
               end
             end else begin
               if (instr_i[6:2] != 5'b0) begin

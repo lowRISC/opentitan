@@ -94,6 +94,12 @@ Ibex implements all the Control and Status Registers (CSRs) listed in the follow
 +---------+--------------------+--------+-----------------------------------------------+
 |  0xB9F  | ``mhpmcounter31h`` | WARL   | Upper 32 bits of ``mhmpcounter31``            |
 +---------+--------------------+--------+-----------------------------------------------+
+|  0xF11  | ``mvendorid``      | R      | Machine Vendor ID                             |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xF12  | ``marchid``        | R      | Machine Architecture ID                       |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xF13  | ``mimpid``         | R      | Machine Implementation ID                     |
++---------+--------------------+--------+-----------------------------------------------+
 |  0xF14  | ``mhartid``        | R      | Hardware Thread ID                            |
 +---------+--------------------+--------+-----------------------------------------------+
 
@@ -575,6 +581,38 @@ CSR Address: ``0xC01 / 0xC81``
 The User Mode ``time(h)`` registers are not implemented in Ibex.
 Any access to these registers will trap.
 It is recommended that trap handler software provides a means of accessing platform-defined ``mtime(h)`` timers where available.
+
+Machine Vendor ID (mvendorid)
+-----------------------------
+
+CSR Address: ``0xF11``
+
+Reset Value: ``0x0000_0000``
+
+Use the ``CSR_MVENDORID_VALUE`` parameter in :file:`rtl/ibex_pkg.sv` to change the fixed value.
+Details of what the ID represents can be found in the RISC-V Privileged Specification.
+
+Machine Architecture ID (marchid)
+---------------------------------
+
+CSR Address: ``0xF12``
+
+Reset Value: ``0x0000_0016``
+
+Use the ``CSR_MARCHID_VALUE`` parameter in :file:`rtl/ibex_pkg.sv` to change the fixed value.
+The value used is allocated specifically to Ibex.
+If significant changes are made a different ID should be used.
+Details of what the ID represents can be found in the RISC-V Privileged Specification.
+
+Machine Implementation ID (mimpid)
+----------------------------------
+
+CSR Address: ``0xF13``
+
+Reset Value: ``0x0000_0000``
+
+Use the ``CSR_MIMPID_VALUE`` parameter in :file:`rtl/ibex_pkg.sv` to change the fixed value.
+Details of what the ID represents can be found in the RISC-V Privileged Specification.
 
 .. _csr-mhartid:
 
