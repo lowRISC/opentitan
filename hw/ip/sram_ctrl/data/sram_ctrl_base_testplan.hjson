@@ -122,6 +122,17 @@
       tests: ["{variant}_executable"]
     }
     {
+      name: partial_access
+      desc: '''
+            This test is intended to test a lot of partial accesses with random addresses or
+            back-to-back accesses.
+
+            Reuse the `smoke` and `stress_pipeline` by setting `partial_access_pct` = 90%
+            '''
+      milestone: V2
+      tests: ["{variant}_partial_access, {variant}_partial_access_b2b"]
+    }
+    {
       name: parity
       desc: '''
             TODO - to be changed into an ECC test
