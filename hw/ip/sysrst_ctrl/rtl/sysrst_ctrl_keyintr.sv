@@ -76,7 +76,7 @@ module sysrst_ctrl_keyintr
     end
 
     assign l2h_met_pulse[k] = l2h_met_d & ~l2h_met_q;
-    assign h2l_met_pulse[k] = ~h2l_met_d & h2l_met_q;
+    assign h2l_met_pulse[k] = h2l_met_d & ~h2l_met_q;
   end
 
   // Assign to CSRs
