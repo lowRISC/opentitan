@@ -528,6 +528,14 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     }
   endgroup
 
+  covergroup scratchpad_writes_cg with function sample(uvm_reg_addr_t addr);
+    // See attempted writes to the bottom and top address in the scratchpad memory
+    addr_cp: coverpoint addr {
+      bins low  = {OTBN_DMEM_OFFSET + OTBN_DMEM_SIZE};
+      bins high = {OTBN_DMEM_OFFSET + 2 * OTBN_DMEM_SIZE - 1};
+    }
+  endgroup
+
   // Non-instruction covergroups ///////////////////////////////////////////////
 
   covergroup call_stack_cg
@@ -1978,6 +1986,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     ext_csr_load_checksum_wur_cg = new;
     ext_csr_wr_operational_state_cg = new;
     promoted_err_cg = new;
+    scratchpad_writes_cg = new;
 
     call_stack_cg = new;
     flag_write_cg = new;
@@ -2204,6 +2213,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // WUR_UPDATED_MEM.
     if ((wur_state == WUR_WRITTEN_CSR) && (state == OperationalStateIdle)) begin
       wur_state = WUR_UPDATED_MEM;
+    end
+  endfunction
+
+  function void on_tl_write(uvm_reg_addr_t addr, logic [31:0] data, operational_state_e state);
+    // Track attempted writes to the scratchpad memory
+    if (state == OperationalStateIdle) begin
+      scratchpad_writes_cg.sample(addr);
     end
   endfunction
 
