@@ -15,34 +15,34 @@
 `include "prim_assert.sv"
 
 module ibex_multdiv_fast #(
-    parameter ibex_pkg::rv32m_e RV32M = ibex_pkg::RV32MFast
+  parameter ibex_pkg::rv32m_e RV32M = ibex_pkg::RV32MFast
   ) (
-    input  logic             clk_i,
-    input  logic             rst_ni,
-    input  logic             mult_en_i,  // dynamic enable signal, for FSM control
-    input  logic             div_en_i,   // dynamic enable signal, for FSM control
-    input  logic             mult_sel_i, // static decoder output, for data muxes
-    input  logic             div_sel_i,  // static decoder output, for data muxes
-    input  ibex_pkg::md_op_e operator_i,
-    input  logic  [1:0]      signed_mode_i,
-    input  logic [31:0]      op_a_i,
-    input  logic [31:0]      op_b_i,
-    input  logic [33:0]      alu_adder_ext_i,
-    input  logic [31:0]      alu_adder_i,
-    input  logic             equal_to_zero_i,
-    input  logic             data_ind_timing_i,
+  input  logic             clk_i,
+  input  logic             rst_ni,
+  input  logic             mult_en_i,  // dynamic enable signal, for FSM control
+  input  logic             div_en_i,   // dynamic enable signal, for FSM control
+  input  logic             mult_sel_i, // static decoder output, for data muxes
+  input  logic             div_sel_i,  // static decoder output, for data muxes
+  input  ibex_pkg::md_op_e operator_i,
+  input  logic  [1:0]      signed_mode_i,
+  input  logic [31:0]      op_a_i,
+  input  logic [31:0]      op_b_i,
+  input  logic [33:0]      alu_adder_ext_i,
+  input  logic [31:0]      alu_adder_i,
+  input  logic             equal_to_zero_i,
+  input  logic             data_ind_timing_i,
 
-    output logic [32:0]      alu_operand_a_o,
-    output logic [32:0]      alu_operand_b_o,
+  output logic [32:0]      alu_operand_a_o,
+  output logic [32:0]      alu_operand_b_o,
 
-    input  logic [33:0]      imd_val_q_i[2],
-    output logic [33:0]      imd_val_d_o[2],
-    output logic [1:0]       imd_val_we_o,
+  input  logic [33:0]      imd_val_q_i[2],
+  output logic [33:0]      imd_val_d_o[2],
+  output logic [1:0]       imd_val_we_o,
 
-    input  logic             multdiv_ready_id_i,
+  input  logic             multdiv_ready_id_i,
 
-    output logic [31:0]      multdiv_result_o,
-    output logic             valid_o
+  output logic [31:0]      multdiv_result_o,
+  output logic             valid_o
 );
 
   import ibex_pkg::*;
@@ -415,7 +415,7 @@ module ibex_multdiv_fast #(
     div_hold         = 1'b0;
     div_by_zero_d    = div_by_zero_q;
 
-    unique case(md_state_q)
+    unique case (md_state_q)
       MD_IDLE: begin
         if (operator_i == MD_OP_DIV) begin
           // Check if the Denominator is 0

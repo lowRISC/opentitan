@@ -1,7 +1,6 @@
 """
 Copyright 2020 Google LLC
 Copyright 2020 PerfectVIPs Inc.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -9,7 +8,6 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
 """
 
 import logging
@@ -22,6 +20,7 @@ from pygen_src.riscv_privil_reg import riscv_privil_reg
 rcs = import_module("pygen_src.target." + cfg.argv.target + ".riscv_core_setting")
 
 
+# This class provides some common routines for privileged mode operations
 @vsc.randobj
 class riscv_privileged_common_seq():
     def __init___(self):
@@ -79,8 +78,8 @@ class riscv_privileged_common_seq():
 
     def gen_csr_instr(self, regs, instrs):
         for i in range(len(regs)):
-            instrs.append("li x{}, {}".format(cfg.gpr[0].value, hex(regs[i].get_val())))
-            instrs.append("csrw {}, x{} # {}".format(hex(regs[i].reg_name.value),
+            instrs.append("li x{}, {}".format(cfg.gpr[0], hex(regs[i].get_val())))
+            instrs.append("csrw {}, x{} # {}".format(hex(regs[i].reg_name),
                                                      cfg.gpr[0], regs[i].reg_name.name))
 
     def setup_satp(self, instrs):

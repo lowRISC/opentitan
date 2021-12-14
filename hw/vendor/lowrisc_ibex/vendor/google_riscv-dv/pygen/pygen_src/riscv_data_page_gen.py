@@ -14,9 +14,14 @@ import logging
 import vsc
 import random
 from collections import defaultdict
-from pygen_src.riscv_instr_pkg import pkg_ins, data_pattern_t
 from pygen_src.riscv_instr_gen_config import cfg
+from pygen_src.riscv_instr_pkg import pkg_ins, data_pattern_t
 
+
+# -----------------------------------------------------------------------------------------
+# RISC-V assmebly program data section generator
+# There can be user mode and supervisor(kernel) mode data pages
+# -----------------------------------------------------------------------------------------
 
 @vsc.randobj
 class riscv_data_page_gen:
@@ -24,6 +29,8 @@ class riscv_data_page_gen:
         self.data_page_str = []
         self.mem_region_setting = defaultdict(list)
 
+    # The data section can be initialized with different data pattern:
+    # - Random value, incremental value, all zeros
     @staticmethod
     def gen_data(idx, pattern, num_of_bytes, data):
         temp_data = 0
@@ -36,10 +43,9 @@ class riscv_data_page_gen:
                 data[i] = (idx + i) % 256
         return data
 
+    # Generate data pages for all memory regions
     def gen_data_page(self, hart_id, pattern, is_kernel=0, amo=0):
-        tmp_str = ""
         temp_data = []
-        page_size = 0
         self.data_page_str.clear()
         if is_kernel:
             self.mem_region_setting = cfg.s_mem_region
@@ -47,8 +53,6 @@ class riscv_data_page_gen:
             self.mem_region_setting = cfg.amo_region
         else:
             self.mem_region_setting = cfg.mem_region
-        for i in range(len(self.mem_region_setting)):
-            logging.info("mem_region_setting {}".format(self.mem_region_setting[i]))
         for i in range(len(self.mem_region_setting)):
             logging.info("Generate data section: {} size:0x{} xwr:0x{}".format(
                          self.mem_region_setting[i].name,

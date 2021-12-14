@@ -12,9 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 from enum import IntEnum, auto
 
+
 # Will be the lowest 8 bits of the data word
-
-
 class signature_type_t(IntEnum):
     '''
     Information sent to the core relating its current status.

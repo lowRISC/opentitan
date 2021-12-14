@@ -32,6 +32,11 @@ case "$ID-$VERSION_ID" in
     $SUDO_CMD sh -c "echo 'deb http://download.opensuse.org/repositories/home:/phiwag:/edatools/xUbuntu_$VERSION_ID/ /' > /etc/apt/sources.list.d/edatools.list"
     $SUDO_CMD apt-get update
 
+    # Make spike-cosim repository available
+    curl -Ls https://download.opensuse.org/repositories/home:gac_lowrisc/xUbuntu_18.04/Release.key | $SUDO_CMD apt-key add -
+    $SUDO_CMD sh -c "echo 'deb http://download.opensuse.org/repositories/home:/gac_lowrisc/xUbuntu_18.04/ /' > /etc/apt/sources.list.d/spike-cosim.list" sudo apt update
+    $SUDO_CMD apt-get update
+
     # Packaged dependencies
     # Install python3-yaml through apt to get a version with libyaml bindings,
     # which is significantly faster than the pure Python version.
@@ -53,6 +58,7 @@ case "$ID-$VERSION_ID" in
         libelf-dev \
         clang-format \
         "verilator-$VERILATOR_VERSION" \
+        spike-cosim \
         xz-utils
 
       # Python dependencies

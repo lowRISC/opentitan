@@ -99,7 +99,15 @@ package riscv_instr_pkg;
     RV128C,
     RVV,
     RV32B,
+    RV32ZBA,
+    RV32ZBB,
+    RV32ZBC,
+    RV32ZBS,
     RV64B,
+    RV64ZBA,
+    RV64ZBB,
+    RV64ZBC,
+    RV64ZBS,
     RV32X,
     RV64X
   } riscv_instr_group_t;
@@ -154,108 +162,115 @@ package riscv_instr_pkg;
     CSRRWI,
     CSRRSI,
     CSRRCI,
-    // RV32B instructions
+    // RV32ZBA instructions
+    SH1ADD,
+    SH2ADD,
+    SH3ADD,
+    // RV32ZBB instructions
     ANDN,
+    CLZ,
+    CPOP,
+    CTZ,
+    MAX,
+    MAXU,
+    MIN,
+    MINU,
+    ORC_B,
     ORN,
-    XNOR,
-    GORC,
-    SLO,
-    SRO,
+    REV8,
     ROL,
     ROR,
-    SBCLR,
-    SBSET,
-    SBINV,
-    SBEXT,
-    GREV,
-    SLOI,
-    SROI,
     RORI,
-    SBCLRI,
-    SBSETI,
-    SBINVI,
-    SBEXTI,
+    SEXT_B,
+    SEXT_H,
+    XNOR,
+    ZEXT_H,
+    // RV32ZBC instructions
+    CLMUL,
+    CLMULH,
+    CLMULR,
+    // RV32ZBS instructions
+    BCLR,
+    BCLRI,
+    BEXT,
+    BEXTI,
+    BINV,
+    BINVI,
+    BSET,
+    BSETI,
+    // RV32B instructions
+    // Remaining bitmanip instructions of draft v.0.93 not ratified in v.1.00 (Zba, Zbb, Zbc, Zbs).
+    GORC,
     GORCI,
-    GREVI,
     CMIX,
     CMOV,
+    PACK,
+    PACKU,
+    PACKH,
+    XPERM_N,
+    XPERM_B,
+    XPERM_H,
+    SLO,
+    SRO,
+    SLOI,
+    SROI,
+    GREV,
+    GREVI,
     FSL,
     FSR,
     FSRI,
-    CLZ,
-    CTZ,
-    PCNT,
-    SEXT_B,
-    SEXT_H,
     CRC32_B,
     CRC32_H,
     CRC32_W,
     CRC32C_B,
     CRC32C_H,
     CRC32C_W,
-    CLMUL,
-    CLMULR,
-    CLMULH,
-    MIN,
-    MAX,
-    MINU,
-    MAXU,
     SHFL,
     UNSHFL,
-    BDEP,
-    BEXT,
-    PACK,
-    PACKU,
-    BMATOR,
-    BMATXOR,
-    PACKH,
-    BFP,
     SHFLI,
     UNSHFLI,
+    BCOMPRESS,
+    BDECOMPRESS,
+    BFP,
+    // RV64ZBA instructions
+    ADD_UW,
+    SH1ADD_UW,
+    SH2ADD_UW,
+    SH3ADD_UW,
+    SLLI_UW,
+    // RV64ZBB instructions
+    CLZW,
+    CPOPW,
+    CTZW,
+    ROLW,
+    RORW,
+    RORIW,
     //RV64B instructions
-    ADDIWU,
-    SLLIU_W,
-    ADDWU,
-    SUBWU,
+    // Remaining bitmanip instructions of draft v.0.93 not ratified in v.1.00 (Zba, Zbb, Zbc, Zbs).
+    BMATOR,
+    BMATXOR,
     BMATFLIP,
     CRC32_D,
     CRC32C_D,
-    ADDU_W,
-    SUBU_W,
+    SHFLW,
+    UNSHFLW,
+    BCOMPRESSW,
+    BDECOMPRESSW,
+    BFPW,
     SLOW,
     SROW,
-    ROLW,
-    RORW,
-    SBCLRW,
-    SBSETW,
-    SBINVW,
-    SBEXTW,
-    GORCW,
-    GREVW,
     SLOIW,
     SROIW,
-    RORIW,
-    SBCLRIW,
-    SBSETIW,
-    SBINVIW,
-    GORCIW,
+    GREVW,
     GREVIW,
     FSLW,
     FSRW,
     FSRIW,
-    CLZW,
-    CTZW,
-    PCNTW,
-    CLMULW,
-    CLMULRW,
-    CLMULHW,
-    SHFLW,
-    UNSHFLW,
-    BDEPW,
-    BEXTW,
+    GORCW,
+    GORCIW,
     PACKW,
     PACKUW,
-    BFPW,
+    XPERM_W,
     // RV32M instructions
     MUL,
     MULH,
@@ -1151,6 +1166,7 @@ package riscv_instr_pkg;
   } vxrm_t;
 
   typedef enum int {
+    ZBA,
     ZBB,
     ZBS,
     ZBP,
@@ -1178,7 +1194,7 @@ package riscv_instr_pkg;
   parameter int DATA_WIDTH  = 32;
 
   // Parameters for output assembly program formatting
-  parameter int MAX_INSTR_STR_LEN = 11;
+  parameter int MAX_INSTR_STR_LEN = 13;
   parameter int LABEL_STR_LEN     = 18;
 
   // Parameter for program generation
@@ -1372,10 +1388,18 @@ package riscv_instr_pkg;
   `include "riscv_vector_cfg.sv"
   `include "riscv_pmp_cfg.sv"
   typedef class riscv_instr;
+  typedef class riscv_zba_instr;
+  typedef class riscv_zbb_instr;
+  typedef class riscv_zbc_instr;
+  typedef class riscv_zbs_instr;
   typedef class riscv_b_instr;
   `include "riscv_instr_gen_config.sv"
   `include "isa/riscv_instr.sv"
   `include "isa/riscv_amo_instr.sv"
+  `include "isa/riscv_zba_instr.sv"
+  `include "isa/riscv_zbb_instr.sv"
+  `include "isa/riscv_zbc_instr.sv"
+  `include "isa/riscv_zbs_instr.sv"
   `include "isa/riscv_b_instr.sv"
   `include "isa/riscv_floating_point_instr.sv"
   `include "isa/riscv_vector_instr.sv"
@@ -1388,9 +1412,15 @@ package riscv_instr_pkg;
   `include "isa/rv32f_instr.sv"
   `include "isa/rv32i_instr.sv"
   `include "isa/rv32b_instr.sv"
+  `include "isa/rv32zba_instr.sv"
+  `include "isa/rv32zbb_instr.sv"
+  `include "isa/rv32zbc_instr.sv"
+  `include "isa/rv32zbs_instr.sv"
   `include "isa/rv32m_instr.sv"
   `include "isa/rv64a_instr.sv"
   `include "isa/rv64b_instr.sv"
+  `include "isa/rv64zba_instr.sv"
+  `include "isa/rv64zbb_instr.sv"
   `include "isa/rv64c_instr.sv"
   `include "isa/rv64d_instr.sv"
   `include "isa/rv64f_instr.sv"

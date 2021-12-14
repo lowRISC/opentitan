@@ -16,27 +16,26 @@ module ibex_fetch_fifo #(
   parameter int unsigned NUM_REQS = 2,
   parameter bit          ResetAll = 1'b0
 ) (
-    input  logic                clk_i,
-    input  logic                rst_ni,
+  input  logic                clk_i,
+  input  logic                rst_ni,
 
-    // control signals
-    input  logic                clear_i,   // clears the contents of the FIFO
-    output logic [NUM_REQS-1:0] busy_o,
+  // control signals
+  input  logic                clear_i,   // clears the contents of the FIFO
+  output logic [NUM_REQS-1:0] busy_o,
 
-    // input port
-    input  logic                in_valid_i,
-    input  logic [31:0]         in_addr_i,
-    input  logic [31:0]         in_rdata_i,
-    input  logic                in_err_i,
+  // input port
+  input  logic                in_valid_i,
+  input  logic [31:0]         in_addr_i,
+  input  logic [31:0]         in_rdata_i,
+  input  logic                in_err_i,
 
-    // output port
-    output logic                out_valid_o,
-    input  logic                out_ready_i,
-    output logic [31:0]         out_addr_o,
-    output logic [31:0]         out_addr_next_o,
-    output logic [31:0]         out_rdata_o,
-    output logic                out_err_o,
-    output logic                out_err_plus2_o
+  // output port
+  output logic                out_valid_o,
+  input  logic                out_ready_i,
+  output logic [31:0]         out_addr_o,
+  output logic [31:0]         out_rdata_o,
+  output logic                out_err_o,
+  output logic                out_err_plus2_o
 );
 
   localparam int unsigned DEPTH = NUM_REQS+1;
@@ -166,10 +165,7 @@ module ibex_fetch_fifo #(
     end
   end
 
-  // Output both PC of current instruction and instruction following. PC of instruction following is
-  // required for the branch predictor. It's used to fetch the instruction following a branch that
-  // was not-taken but (mis)predicted taken.
-  assign out_addr_next_o = {instr_addr_next, 1'b0};
+  // Output PC of current instruction
   assign out_addr_o      = {instr_addr_q, 1'b0};
 
   // The LSB of the address is unused, since all addresses are halfword aligned

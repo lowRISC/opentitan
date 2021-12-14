@@ -111,9 +111,9 @@ module formal_tb
       f_addr_valid <= 1'b0;
     end else begin
       if (branch_i) begin
-        f_addr_valid = 1'b1;
+        f_addr_valid <= 1'b1;
       end else if (valid_o & ready_i & err_o) begin
-        f_addr_valid = 1'b0;
+        f_addr_valid <= 1'b0;
       end
     end
   end

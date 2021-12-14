@@ -14,13 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import vsc
 import random
 from importlib import import_module
+from pygen_src.riscv_instr_gen_config import cfg
+from pygen_src.isa.riscv_instr import riscv_instr
+from pygen_src.riscv_pseudo_instr import riscv_pseudo_instr
 from pygen_src.riscv_directed_instr_lib import riscv_mem_access_stream
 from pygen_src.riscv_instr_pkg import (riscv_reg_t, riscv_pseudo_instr_name_t,
                                        riscv_instr_name_t, riscv_instr_category_t,
                                        riscv_instr_group_t)
-from pygen_src.riscv_instr_gen_config import cfg
-from pygen_src.riscv_pseudo_instr import riscv_pseudo_instr
-from pygen_src.isa.riscv_instr import riscv_instr
 rcs = import_module("pygen_src.target." + cfg.argv.target + ".riscv_core_setting")
 
 
@@ -62,7 +62,6 @@ class riscv_amo_base_instr_stream(riscv_mem_access_stream):
 
     @vsc.constraint
     def aligned_amo_c(self):
-
         with vsc.foreach(self.offset, idx = True) as i:
             with vsc.if_then(self.XLEN == 32):
                 self.offset[i] % 4 == 0
@@ -73,7 +72,7 @@ class riscv_amo_base_instr_stream(riscv_mem_access_stream):
         self.data_page = cfg.amo_region
         max_data_page_id = len(self.data_page)
         self.data_page_id = random.randrange(0, max_data_page_id - 1)
-        self.max_offset = self.data_page[self.data_page_id]['size_in_bytes']
+        self.max_offset = self.data_page[self.data_page_id].size_in_bytes
 
     # Use "la" instruction to initialize the offset regiseter
     def init_offset_reg(self):
@@ -81,7 +80,7 @@ class riscv_amo_base_instr_stream(riscv_mem_access_stream):
             la_instr = riscv_pseudo_instr()
             la_instr.pseudo_instr_name = riscv_pseudo_instr_name_t.LA
             la_instr.rd = self.rs1_reg[i]
-            la_instr.imm_str = "{}+{}".format(cfg.amo_region[self.data_page_id]['name'],
+            la_instr.imm_str = "{}+{}".format(cfg.amo_region[self.data_page_id].name,
                                               self.offset[i])
             self.instr_list.insert(0, la_instr)
 

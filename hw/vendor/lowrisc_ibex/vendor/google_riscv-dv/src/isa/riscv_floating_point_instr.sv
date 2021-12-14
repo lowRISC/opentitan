@@ -248,7 +248,7 @@ class riscv_floating_point_instr extends riscv_instr;
     if (group inside {RV32F, RV64F}) begin
       fs1_sign = get_fp_operand_sign(fs1_value, 31);
       fs2_sign = get_fp_operand_sign(fs2_value, 31);
-      fs3_sign = get_fp_operand_sign(fs2_value, 31);
+      fs3_sign = get_fp_operand_sign(fs3_value, 31);
       fd_sign = get_fp_operand_sign(fd_value, 31);
     end else if (instr_name == FCVT_S_D) begin
       fs1_sign = get_fp_operand_sign(fs1_value, 63);
@@ -259,7 +259,7 @@ class riscv_floating_point_instr extends riscv_instr;
     end else begin
       fs1_sign = get_fp_operand_sign(fs1_value, 63);
       fs2_sign = get_fp_operand_sign(fs2_value, 63);
-      fs3_sign = get_fp_operand_sign(fs2_value, 63);
+      fs3_sign = get_fp_operand_sign(fs3_value, 63);
       fd_sign = get_fp_operand_sign(fd_value, 63);
     end
   endfunction : pre_sample

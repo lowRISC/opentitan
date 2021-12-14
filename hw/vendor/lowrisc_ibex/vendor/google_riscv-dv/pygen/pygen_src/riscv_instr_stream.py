@@ -1,7 +1,6 @@
 """
 Copyright 2020 Google LLC
 Copyright 2020 PerfectVIPs Inc.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -10,6 +9,7 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
+
 import random
 import logging
 import sys
@@ -20,15 +20,12 @@ from pygen_src.isa.riscv_instr import riscv_instr
 from pygen_src.riscv_instr_gen_config import cfg
 
 
+# Base class for RISC-V instruction stream
+# A instruction stream here is a queue of RISC-V basic instructions.
+# This class also provides some functions to manipulate the instruction stream, like insert a new
+# instruction, mix two instruction streams etc.
 @vsc.randobj
 class riscv_instr_stream:
-    '''
-     Base class for RISC-V instruction stream
-     A instruction stream here is a queue of RISC-V basic instructions.
-     This class also provides some functions to manipulate the instruction stream, like insert a new
-     instruction, mix two instruction streams etc.
-    '''
-
     def __init__(self):
         self.instr_list = []
         self.instr_cnt = 0
@@ -40,6 +37,7 @@ class riscv_instr_stream:
         self.reserved_rd = vsc.list_t(vsc.enum_t(riscv_reg_t))
         self.hart = 0
 
+    # Initialize the instruction stream, create each instruction instance
     def initialize_instr_list(self, instr_cnt):
         self.instr_list.clear()
         self.instr_cnt = instr_cnt
@@ -50,12 +48,11 @@ class riscv_instr_stream:
             instr = riscv_instr()
             self.instr_list.append(instr)
 
+    # Insert an instruction to the existing instruction stream at the given index
+    # When index is -1, the instruction is injected at a random location
     def insert_instr(self, instr, idx = -1):
-        """
-           Insert an instruction to the existing instruction stream at the given index
-           When index is -1, the instruction is injected at a random location
-        """
         current_instr_cnt = len(self.instr_list)
+        # TODO
         if idx == -1:
             idx = random.randint(0, current_instr_cnt - 1)
             while self.instr_list[idx].atomic:
@@ -64,16 +61,14 @@ class riscv_instr_stream:
                     self.instr_list.append(instr)
                     return
         elif idx > current_instr_cnt or idx < 0:
-            logging.error("Cannot insert instr:%0s at idx %0d", instr.convert2asm(), idx)
+            logging.error("Cannot insert instr:{} at idx {}".format(instr.convert2asm(), idx))
             sys.exit(1)
         self.instr_list.insert(idx, instr)
 
+    # Insert an instruction to the existing instruction stream at the given index
+    # When index is -1, the instruction is injected at a random location
+    # When replace is 1, the original instruction at the inserted position will be replaced
     def insert_instr_stream(self, new_instr, idx = -1, replace = 0):
-        """
-            Insert an instruction to the existing instruction stream at the given index
-            When index is -1, the instruction is injected at a random location
-            When replace is 1, the original instruction at the inserted position will be replaced
-        """
         current_instr_cnt = len(self.instr_list)
 
         if current_instr_cnt == 0:
@@ -97,7 +92,7 @@ class riscv_instr_stream:
                     logging.critical("Cannot inject the instruction")
                     sys.exit(1)
         elif idx > current_instr_cnt or idx < 0:
-            logging.error("Cannot insert instr stream at idx %0d", idx)
+            logging.error("Cannot insert instr stream at idx {}".format(idx))
             sys.exit(1)
         # When replace is 1, the original instruction at this index will be removed.
         # The label of the original instruction will be copied to the head
@@ -117,17 +112,15 @@ class riscv_instr_stream:
                 self.instr_list = self.instr_list[0:idx] + new_instr + \
                     self.instr_list[idx:current_instr_cnt]
 
+    # Mix the input instruction stream with the original instruction, the instruction order is
+    # preserved. When 'contained' is set, the original instruction stream will be inside the
+    # new instruction stream with the first and last instruction from the input instruction stream.
+    # new_instr is a list of riscv_instr
     def mix_instr_stream(self, new_instr, contained = 0):
-        """
-        Mix the input instruction stream with the original instruction, the instruction order is
-        preserved. When 'contained' is set, the original instruction stream will be inside the
-        new instruction stream with the first and last instruction from the input instruction
-        stream.
-        new_instr is a list of riscv_instr
-        """
         current_instr_cnt = len(self.instr_list)
         new_instr_cnt = len(new_instr)
         insert_instr_position = [0] * new_instr_cnt
+        # TODO
         if len(insert_instr_position) > 0:
             insert_instr_position.sort()
         for i in range(new_instr_cnt):
@@ -148,16 +141,13 @@ class riscv_instr_stream:
         return s
 
 
+# Generate a random instruction stream based on the configuration
+# There are two ways to use this class to generate instruction stream
+# 1. For short instruction stream, you can call randomize() directly.
+# 2. For long instruction stream (>1K), randomize() all instructions together might take a
+# long time for the constraint solver. In this case, you can call gen_instr to generate
+# instructions one by one. The time only grows linearly with the instruction count
 class riscv_rand_instr_stream(riscv_instr_stream):
-    """
-    Generate a random instruction stream based on the configuration
-    There are two ways to use this class to generate instruction stream
-        1. For short instruction stream, you can call randomize() directly.
-        2. For long instruction stream (>1K), randomize() all instructions together might take a
-           long time for the constraint solver. In this case, you can call gen_instr to generate
-           instructions one by one. The time only grows linearly with the instruction count
-    """
-
     def __init__(self):
         # calling super constructor
         super().__init__()
@@ -196,7 +186,7 @@ class riscv_rand_instr_stream(riscv_instr_stream):
                                                                     riscv_reg_t.A5)))
                     with vsc.foreach(self.avail_regs, idx = True) as i:
                         self.avail_regs[i].not_inside(vsc.rangelist(cfg.reserved_regs,
-                                                      self.reserved_rd))
+                                                                    self.reserved_rd))
             except Exception:
                 logging.critical("Cannot randomize avail_regs")
                 sys.exit(1)'''
@@ -209,12 +199,14 @@ class riscv_rand_instr_stream(riscv_instr_stream):
             if no_load_store:
                 self.category_dist[riscv_instr_category_t.LOAD.name] = 0
                 self.category_dist[riscv_instr_category_t.STORE.name] = 0
-            logging.info("setup_instruction_dist: %0d", len(self.category_dist))
+            logging.info("setup_instruction_dist: {}".format(len(self.category_dist)))
 
     def gen_instr(self, no_branch = 0, no_load_store = 1, is_debug_program = 0):
         self.setup_allowed_instr(no_branch, no_load_store)
         for i in range(len(self.instr_list)):
             self.instr_list[i] = self.randomize_instr(self.instr_list[i], is_debug_program)
+        # Do not allow branch instruction as the last instruction because there's no
+        # forward branch target
         while self.instr_list[-1].category == riscv_instr_category_t.BRANCH:
             self.instr_list.pop()
             if len(self.instr_list) == 0:
@@ -268,3 +260,11 @@ class riscv_rand_instr_stream(riscv_instr_stream):
                     instr.rs1 != cfg.reserved_regs[i]
         # TODO: Add constraint for CSR, floating point register
         return instr
+
+    def get_init_gpr_instr(self, gpr, val):
+        # TODO
+        pass
+
+    def add_init_vector_gpr_instr(self, gpr, val):
+        # TODO
+        pass

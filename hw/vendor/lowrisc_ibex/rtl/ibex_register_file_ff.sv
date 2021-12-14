@@ -11,30 +11,31 @@
  * targeting FPGA synthesis or Verilator simulation.
  */
 module ibex_register_file_ff #(
-    parameter bit          RV32E             = 0,
-    parameter int unsigned DataWidth         = 32,
-    parameter bit          DummyInstructions = 0
+  parameter bit                   RV32E             = 0,
+  parameter int unsigned          DataWidth         = 32,
+  parameter bit                   DummyInstructions = 0,
+  parameter logic [DataWidth-1:0] WordZeroVal       = '0
 ) (
-    // Clock and Reset
-    input  logic                 clk_i,
-    input  logic                 rst_ni,
+  // Clock and Reset
+  input  logic                 clk_i,
+  input  logic                 rst_ni,
 
-    input  logic                 test_en_i,
-    input  logic                 dummy_instr_id_i,
+  input  logic                 test_en_i,
+  input  logic                 dummy_instr_id_i,
 
-    //Read port R1
-    input  logic [4:0]           raddr_a_i,
-    output logic [DataWidth-1:0] rdata_a_o,
+  //Read port R1
+  input  logic [4:0]           raddr_a_i,
+  output logic [DataWidth-1:0] rdata_a_o,
 
-    //Read port R2
-    input  logic [4:0]           raddr_b_i,
-    output logic [DataWidth-1:0] rdata_b_o,
+  //Read port R2
+  input  logic [4:0]           raddr_b_i,
+  output logic [DataWidth-1:0] rdata_b_o,
 
 
-    // Write port W1
-    input  logic [4:0]           waddr_a_i,
-    input  logic [DataWidth-1:0] wdata_a_i,
-    input  logic                 we_a_i
+  // Write port W1
+  input  logic [4:0]           waddr_a_i,
+  input  logic [DataWidth-1:0] wdata_a_i,
+  input  logic                 we_a_i
 
 );
 
@@ -47,7 +48,7 @@ module ibex_register_file_ff #(
 
   always_comb begin : we_a_decoder
     for (int unsigned i = 1; i < NUM_WORDS; i++) begin
-      we_a_dec[i] = (waddr_a_i == 5'(i)) ?  we_a_i : 1'b0;
+      we_a_dec[i] = (waddr_a_i == 5'(i)) ? we_a_i : 1'b0;
     end
   end
 
@@ -55,8 +56,8 @@ module ibex_register_file_ff #(
   for (genvar i = 1; i < NUM_WORDS; i++) begin : g_rf_flops
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        rf_reg_q[i] <= '0;
-      end else if(we_a_dec[i]) begin
+        rf_reg_q[i] <= WordZeroVal;
+      end else if (we_a_dec[i]) begin
         rf_reg_q[i] <= wdata_a_i;
       end
     end
@@ -73,21 +74,21 @@ module ibex_register_file_ff #(
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        rf_r0_q <= '0;
+        rf_r0_q <= WordZeroVal;
       end else if (we_r0_dummy) begin
         rf_r0_q <= wdata_a_i;
       end
     end
 
     // Output the dummy data for dummy instructions, otherwise R0 reads as zero
-    assign rf_reg[0] = dummy_instr_id_i ? rf_r0_q : '0;
+    assign rf_reg[0] = dummy_instr_id_i ? rf_r0_q : WordZeroVal;
 
   end else begin : g_normal_r0
     logic unused_dummy_instr_id;
     assign unused_dummy_instr_id = dummy_instr_id_i;
 
     // R0 is nil
-    assign rf_reg[0] = '0;
+    assign rf_reg[0] = WordZeroVal;
   end
 
   assign rf_reg[NUM_WORDS-1:1] = rf_reg_q[NUM_WORDS-1:1];

@@ -31,13 +31,14 @@ class riscv_rand_instr_test(riscv_instr_base_test):
         gen_config_table()
 
     def apply_directed_instr(self):
+        # Mix below directed instruction streams with the random instructions
         self.asm.add_directed_instr_stream("riscv_load_store_rand_instr_stream", 4)
-        self.asm.add_directed_instr_stream("riscv_loop_instr", 3)
+        # self.asm.add_directed_instr_stream("riscv_loop_instr", 3)
         self.asm.add_directed_instr_stream("riscv_jal_instr", 4)
-        self.asm.add_directed_instr_stream("riscv_hazard_instr_stream", 4)
+        # self.asm.add_directed_instr_stream("riscv_hazard_instr_stream", 4)
         self.asm.add_directed_instr_stream("riscv_load_store_hazard_instr_stream", 4)
-        self.asm.add_directed_instr_stream("riscv_multi_page_load_store_instr_stream", 4)
-        self.asm.add_directed_instr_stream("riscv_mem_region_stress_test", 4)
+        # self.asm.add_directed_instr_stream("riscv_multi_page_load_store_instr_stream", 4)
+        # self.asm.add_directed_instr_stream("riscv_mem_region_stress_test", 4)
 
 
 start_time = time.time()

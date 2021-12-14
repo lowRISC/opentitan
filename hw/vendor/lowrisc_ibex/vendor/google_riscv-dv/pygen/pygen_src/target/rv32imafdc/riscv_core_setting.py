@@ -1,7 +1,6 @@
 """
 Copyright 2020 Google LLC
 Copyright 2020 PerfectVIPs Inc.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -10,71 +9,111 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
-from pygen_src.riscv_instr_pkg import (privileged_reg_t, interrupt_cause_t,
-                                       exception_cause_t, satp_mode_t,
-                                       riscv_instr_group_t, privileged_mode_t,
-                                       mtvec_mode_t)
+
+import math
+from pygen_src.riscv_instr_pkg import (privileged_reg_t, satp_mode_t,
+                                       riscv_instr_group_t, mtvec_mode_t,
+                                       privileged_mode_t)
 
 
+# -----------------------------------------------------------------------------
+# Processor feature configuration
+# -----------------------------------------------------------------------------
+
+# XLEN
 XLEN = 32
 
-implemented_csr = [privileged_reg_t.MVENDORID, privileged_reg_t.MARCHID,
-                   privileged_reg_t.MIMPID, privileged_reg_t.MHARTID,
-                   privileged_reg_t.MSTATUS, privileged_reg_t.MISA, privileged_reg_t.MIE,
-                   privileged_reg_t.MTVEC, privileged_reg_t.MCOUNTEREN, privileged_reg_t.MSCRATCH,
-                   privileged_reg_t.MEPC, privileged_reg_t.MCAUSE,
-                   privileged_reg_t.MTVAL, privileged_reg_t.MIP]
-
+# set to BARE if address translation is not supported
 SATP_MODE = satp_mode_t.BARE
 
+# Supported Privileged mode
+supported_privileged_mode = [privileged_mode_t.MACHINE_MODE]
+
+# Unsupported instructions
+unsupported_instr = []
+
+# ISA supported by the processor
 supported_isa = [riscv_instr_group_t.RV32I, riscv_instr_group_t.RV32M,
                  riscv_instr_group_t.RV32C, riscv_instr_group_t.RV32F,
                  riscv_instr_group_t.RV32FC, riscv_instr_group_t.RV32D,
                  riscv_instr_group_t.RV32DC, riscv_instr_group_t.RV32A]
 
-supported_privileged_mode = [privileged_mode_t.MACHINE_MODE]
-
+# Interrupt mode support
 supported_interrupt_mode = [mtvec_mode_t.DIRECT, mtvec_mode_t.VECTORED]
 
+# The number of interrupt vectors to be generated, only used if VECTORED
+# interrupt mode is supported
 max_interrupt_vector_num = 16
 
-support_debug_mode = 0
-
-NUM_HARTS = 1
-
+# Physical memory protection support
 support_pmp = 0
 
-unsupported_instr = []
+# Debug mode support
+support_debug_mode = 0
 
+# Support delegate trap to user mode
 support_umode_trap = 0
 
+# Support sfence.vma instruction
 support_sfence = 0
 
+# Support unaligned load/store
 support_unaligned_load_store = 1
 
+# GPR Setting
 NUM_FLOAT_GPR = 32
-
 NUM_GPR = 32
-
 NUM_VEC_GPR = 32
 
+# -----------------------------------------------------------------------------
+# Vector extension configuration
+# -----------------------------------------------------------------------------
+
+# Parameter for vector extension
 VECTOR_EXTENSION_ENABLE = 0
 
 VLEN = 512
 
+# Maximum size of a single vector element
 ELEN = 32
 
-SELEN = 0
+# Minimum size of a sub-element, which must be at most 8-bits.
+SELEN = 8
 
-MAX_MUL = 8
+# Maximum size of a single vector element (encoded in vsew format)
+VELEN = int(math.log(ELEN) // math.log(2)) - 3
 
-implemented_interrupt = [interrupt_cause_t.M_SOFTWARE_INTR,
-                         interrupt_cause_t.M_TIMER_INTR,
-                         interrupt_cause_t.M_EXTERNAL_INTR]
+# Maxium LMUL supported by the core
+MAX_LMUL = 8
 
-implemented_exception = [exception_cause_t.INSTRUCTION_ACCESS_FAULT,
-                         exception_cause_t.ILLEGAL_INSTRUCTION,
-                         exception_cause_t.BREAKPOINT,
-                         exception_cause_t.LOAD_ADDRESS_MISALIGNED,
-                         exception_cause_t.LOAD_ACCESS_FAULT,
-                         exception_cause_t.ECALL_MMODE]
+
+# -----------------------------------------------------------------------------
+# Multi-harts configuration
+# -----------------------------------------------------------------------------
+
+# Number of harts
+NUM_HARTS = 1
+
+# -----------------------------------------------------------------------------
+# Previleged CSR implementation
+# -----------------------------------------------------------------------------
+
+# Implemented previlieged CSR list
+implemented_csr = [privileged_reg_t.MVENDORID,  # Vendor ID
+                   privileged_reg_t.MARCHID,  # Architecture ID
+                   privileged_reg_t.MIMPID,  # Implementation ID
+                   privileged_reg_t.MHARTID,  # Hardware thread ID
+                   privileged_reg_t.MSTATUS,  # Machine status
+                   privileged_reg_t.MISA,  # ISA and extensions
+                   privileged_reg_t.MIE,  # Machine interrupt-enable register
+                   privileged_reg_t.MTVEC,  # Machine trap-handler base address
+                   privileged_reg_t.MCOUNTEREN,  # Machine counter enable
+                   privileged_reg_t.MSCRATCH,  # Scratch register for machine trap handlers
+                   privileged_reg_t.MEPC,  # Machine exception program counter
+                   privileged_reg_t.MCAUSE,  # Machine trap cause
+                   privileged_reg_t.MTVAL,  # Machine bad address or instruction
+                   privileged_reg_t.MIP  # Machine interrupt pending
+                   ]
+
+# Implementation-specific custom CSRs
+custom_csr = []

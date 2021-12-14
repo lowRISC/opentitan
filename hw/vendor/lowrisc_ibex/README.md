@@ -28,7 +28,7 @@ These are configurations on which lowRISC is focusing for performance evaluation
 | Config | "micro" | "small" | "maxperf" | "maxperf-pmp-bmfull" |
 | ------ | ------- | --------| ----------| -------------------- |
 | Features | RV32EC | RV32IMC, 3 cycle mult | RV32IMC, 1 cycle mult, Branch target ALU, Writeback stage | RV32IMCB, 1 cycle mult, Branch target ALU, Writeback stage, 16 PMP regions |
-| Performance (CoreMark/MHz) | 0.904 | 2.47 | 3.13 | 3.05 |
+| Performance (CoreMark/MHz) | 0.904 | 2.47 | 3.13 | 3.13 |
 | Area - Yosys (kGE) | 17.44 | 26.06 | 35.64 | 58.74 |
 | Area - Commercial (estimated kGE) | ~16 | ~24 | ~33 | ~54 |
 | Verification status | Red | Green | Amber | Amber |
@@ -38,7 +38,6 @@ Notes:
 * Performance numbers are based on CoreMark running on the Ibex Simple System [platform](examples/simple_system/README.md).
   Note that different ISAs (use of B and C extensions) give the best results for different configurations.
   See the [Benchmarks README](examples/sw/benchmarks/README.md) for more information.
-  The "maxperf-pmp-bmfull" configuration sets a `SpecBranch` parameter in `ibex_core.sv`; this helps timing but has a small negative performance impact.
 * Yosys synthesis area numbers are based on the Ibex basic synthesis [flow](syn/README.md) using the latch-based register file.
 * Commercial synthesis area numbers are a rough estimate of what might be achievable with a commercial synthesis flow and technology library.
 * For comparison, the original "Zero-riscy" core yields an area of 23.14kGE using our Yosys synthesis flow.

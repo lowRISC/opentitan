@@ -26,6 +26,10 @@ When data-independent timing is enabled:
 * Early completion of multiplication by zero/one is removed
 * Early completion of divide by zero is removed
 
+Note that data memory operations to unaligned addresses might result in multiple bus accesses being made.
+This in turn could expose information about the address as a timing side-channel.
+It is therefore recommended to stick to aligned memory accesses when using this feature for critical code regions.
+
 Dummy Instruction Insertion
 ---------------------------
 
