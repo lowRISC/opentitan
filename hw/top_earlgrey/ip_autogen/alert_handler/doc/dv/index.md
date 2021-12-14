@@ -6,10 +6,11 @@ title: "ALERT_HANDLER DV document"
 * **DV**
   * Verify all ALERT_HANDLER IP features by running dynamic simulations with a SV/UVM based testbench
   * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Verify transmitter and receiver pairs for alert (/hw/ip/prim/dv/prim_alert) and escalation (/hw/ip/prim/dv/prim_esc) via direct stimulus.
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
   * Verify transmitter and receiver pairs for alert and escalator
-  * Partially verify ping_timer
+  * Verify alert_handler_esc_timer and alert_handler_ping_timer
 
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
@@ -31,6 +32,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * ALERT_HANDLER IOs
+* Alerts and escalations([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}))
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
@@ -53,14 +55,14 @@ ALERT_HANDLER testbench instantiates (already handled in CIP base env) [tl_agent
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into ALERT_HANDLER device.
 
-### ALERT_HANDLER Agent
-[ALERT_HANDLER agent]:link WIP is used to drive and monitor transmitter and
-receiver pairs for the alerts and escalators.
+### ALERT_ESC Agent
+[ALERT_ESC agent]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}) is used to drive and monitor transmitter and receiver pairs for the alerts and escalators.
+Alert_handler DUT includes alert_receivers and esc_senders, so the alert_esc agent will drive output signals of the alert_senders and esc_receivers.
 
 ### UVM RAL Model
-The ALERT_HANDLER RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) `fusesoc` generator script automatically when the simulation is at the build stage.
+The ALERT_HANDLER RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}).
 
 ### Stimulus strategy
 #### Test sequences
@@ -69,14 +71,19 @@ The `alert_handler_base_vseq` virtual sequence is extended from `cip_base_vseq` 
 All test sequences are extended from `alert_handler_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* drive_alert:     Drive alert_tx signal pairs through `alert_esc_if` interface
-* read_ecs_status: Readout registers that reflect escalation status, including `classa/b/c/d_accum_cnt`, `classa/b/c/d_esc_cnt`, and `classa/b/c/d_state`
+* alert_handler_init: Configure alert_handler DUT by writing to `intr_en`, `alert_en_shadowed_*`, `alert_class_shadowed_*`, `loc_alert_en_shadowed_*`, `loc_alert_class_shadowed_*` registers.
+* drive_alert: Drive alert_tx signal pairs through `alert_sender_driver`.
+* drive_esc_rsp: Drive esc_rx signal pairs through `esc_receiver_driver`.
+* read_ecs_status: Readout registers that reflect escalation status, including `classa/b/c/d_accum_cnt`, `classa/b/c/d_esc_cnt`, and `classa/b/c/d_state`.
+* wait_alert_handshake_done: Wait for alert_rx/tx handshake to finish. If the alert's low-power-group(LPG) is enabled, immediately return.
+* wait_esc_handshake_done: Wait for esc_rx/tx handshake to finish by reading `class*_state` registers and check esc_rx/tx signals.
+* set_alert_lpg: Given alert index, find the linked LPG group and enabled the LPG group by driving `lpg_cg_en` or `lpg_rst_en` to Mubi4True.
+* run_esc_rsp_seq_nonblocking: A non-blocking sequence to drive `esc_tx` when received escalation or escalation-ping requests.
+* run_alert_ping_rsp_seq_nonblocking: A non-blocking sequence to drive `alert_rx` when received alert-ping requests.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-The following covergroups have been developed to prove that the test intent has been adequately met:
-* accum_cnt_cg:      Cover number of alerts triggered under the same class
-* esc_sig_length_cg: Cover signal length of each escalation pairs
+The detailed covergroups are documented under alert_handler [testplan](#testplan).
 
 ### Self-checking strategy
 #### Scoreboard
