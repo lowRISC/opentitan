@@ -82,7 +82,7 @@
             - Check SPI device sends and receives the correct data
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_device_tx_async_fifo_reset"]
     }
     {
       name: rx_async_fifo_reset
@@ -99,7 +99,7 @@
             - Check SPI device sends and receives the correct data
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_device_rx_async_fifo_reset"]
     }
     {
       name: interrupts
@@ -115,9 +115,10 @@
     {
       name: abort
       desc: '''
-            TODO: Need to clarify the behavior in spec'''
+            Fill TX FIFO without host traffic
+            '''
       milestone: V2
-      tests: []
+      tests: ["spi_device_abort"]
     }
     {
       name: byte_transfer_on_spi
@@ -142,7 +143,7 @@
             - If TX drives < 7 bits, this byte will be sent in next CSB.
             - If TX drives 7 bits and set CSB to high, this byte won't be sent in next CSB'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_bit_transfer"]
     }
     {
       name: extreme_fifo_setting

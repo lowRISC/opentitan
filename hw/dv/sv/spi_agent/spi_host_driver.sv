@@ -82,7 +82,11 @@ class spi_host_driver extends spi_driver;
 
   task drive_normal_item();
     cfg.vif.csb[cfg.csb_sel] <= 1'b0;
-    sck_pulses = req.data.size() * 8;
+    if ((req.data.size() == 1) && (cfg.partial_byte == 1)) begin
+      sck_pulses = cfg.bits_to_transfer;
+    end else begin
+      sck_pulses = req.data.size() * 8;
+    end
 
     // for mode 1 and 3, get the leading edges out of the way
     cfg.wait_sck_edge(LeadingEdge);
@@ -92,18 +96,23 @@ class spi_host_driver extends spi_driver;
       bit [7:0] host_byte;
       bit [7:0] device_byte;
       int       which_bit;
+      bit [3:0] num_bits;
+      if (cfg.partial_byte == 1) begin
+        num_bits = cfg.bits_to_transfer;
+      end else begin
+        num_bits = 8;
+      end
       host_byte = req.data[i];
-      for (int j = 0; j < 8; j++) begin
+      for (int j = 0; j < num_bits; j++) begin
         // drive sio early so that it is stable at the sampling edge
         which_bit = cfg.host_bit_dir ? j : 7 - j;
         cfg.vif.sio[0] <= host_byte[which_bit];
         // wait for sampling edge to sample sio (half cycle)
         cfg.wait_sck_edge(SamplingEdge);
-        if (cfg.partial_byte == 1 && j >= cfg.bits_to_transfer) break;
         which_bit = cfg.device_bit_dir ? j : 7 - j;
         device_byte[which_bit] = cfg.vif.sio[1];
         // wait for driving edge to complete 1 cycle
-        if (i != req.data.size() - 1 || j != 7) cfg.wait_sck_edge(DrivingEdge);
+        if (i != req.data.size() - 1 || j != (num_bits - 1)) cfg.wait_sck_edge(DrivingEdge);
       end
       rsp.data[i] = device_byte;
     end
