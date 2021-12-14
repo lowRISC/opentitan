@@ -31,6 +31,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint mp_region_read_en_pc;
   uint mp_region_program_en_pc;
   uint mp_region_erase_en_pc;
+  uint mp_region_he_en_pc;
   uint mp_region_max_pages;
 
   // Knob to control bank level erasability.
@@ -47,6 +48,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint mp_info_page_read_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
   uint mp_info_page_program_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
   uint mp_info_page_erase_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
+  uint mp_info_page_he_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
 
   // Control the number of flash ops.
   uint max_flash_ops_per_cfg;
@@ -123,6 +125,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
     mp_region_read_en_pc = 50;
     mp_region_program_en_pc = 50;
     mp_region_erase_en_pc = 50;
+    mp_region_he_en_pc = 0;
     mp_region_max_pages = 32;
 
     bank_erase_en_pc = 50;
@@ -136,6 +139,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
       mp_info_page_read_en_pc[i][j] = 50;
       mp_info_page_program_en_pc[i][j] = 50;
       mp_info_page_erase_en_pc[i][j] = 50;
+      mp_info_page_he_en_pc[i][j] = 0;
     end
 
     flash_only_op = FlashOpInvalid;
