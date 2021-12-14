@@ -1,108 +1,6 @@
 ---
-title: "OTBN DV document"
+title: "OTBN functional coverage"
 ---
-
-## Goals
-* **DV**
-  * Verify the OTBN processor by running dynamic simulations with a SV/UVM based testbench
-  * These simulations are grouped in tests listed in the [testplan](#testplan) below.
-  * Close code and functional coverage on the IP and all of its sub-modules
-* **FPV**
-  * Verify TileLink device protocol compliance with an SVA based testbench
-
-## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/otbn/dv/uvm/latest/results.html)
-
-## Design features
-
-OTBN, the OpenTitan Big Number accelerator, is a cryptographic accelerator.
-For detailed information on OTBN design features, see the [OTBN HWIP technical specification]({{< relref ".." >}}).
-
-## Testbench architecture
-
-The OTBN testbench is based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
-It builds on the [dv_utils]({{< relref "hw/dv/sv/dv_utils/README.md" >}}) and [csr_utils]({{< relref "hw/dv/sv/csr_utils/README.md" >}}) packages.
-
-### Block diagram
-
-OTBN testing makes use of a DPI-based model called `otbn_core_model`.
-This is shown in the block diagram.
-The dotted interfaces in the `otbn` block are bound in by the model to access internal signals (register file and memory contents).
-
-![Block diagram](tb.svg)
-
-### Top level testbench
-
-The top-level testbench is located at `hw/ip/otbn/dv/uvm/tb.sv`.
-This instantiates the OTBN DUT module `hw/ip/otbn/rtl/otbn.sv`.
-
-OTBN has the following interfaces:
-- A [Clock and reset interface]({{< relref "/hw/dv/sv/common_ifs#clk_rst_if" >}})
-- A [TileLink interface]({{< relref "/hw/dv/sv/tl_agent/README.md" >}}).
-  OTBN is a TL-UL device, which expects to communicate with a TL-UL host.
-  In the OpenTitan SoC, this will be the Ibex core.
-- Idle signals in each clock domain, `idle_o`, and `idle_otp_o`
-- One interrupt
-- An [alert interface]({{< relref "/hw/dv/sv/alert_esc_agent/README" >}})
-- A life cycle escalation interface
-- An [OTP]({{< relref "/hw/ip/otp_ctrl/doc" >}}) connection
-- Two [EDN]({{< relref "/hw/ip/edn/doc" >}}) connections
-- A RAM configuration interface, which is passed through to the SRAM macros
-
-The idle and interrupt signals are modelled with the basic
-[`pins_if`]({{< relref "hw/dv/sv/common_ifs#pins_if" >}}) interface.
-
-As well as instantiating OTBN, the testbench also instantiates an `otbn_core_model`.
-This module wraps an ISS (instruction set simulator) subprocess and performs checks to make sure that OTBN behaves the same as the ISS.
-The `otbn_core_model` module communicates with test sequences through an `otbn_model_if` interface, which is monitored by the `otbn_model_agent`, described below.
-The module communicates with the Python subprocess as shown in the diagram below.
-
-![Model communication](model.svg)
-
-
-### OTBN model agent
-
-The model agent is instantiated by the testbench to monitor the OTBN model.
-It is a passive agent (essentially just a monitor): the inputs to the model are set in `tb.sv`.
-The monitor for the agent generates transactions when it sees a start signal or a done signal.
-
-The start signal is important because we "cheat" and pull it out of the DUT.
-To make sure that the processor is starting when we expect, we check start transactions against TL writes in the scoreboard.
-
-### Reference models
-
-The main reference model for OTBN is the instruction set simulator (ISS), which is run as a subprocess by DPI code inside `otbn_core_model`.
-This Python-based simulator can be found at `hw/ip/otbn/dv/otbnsim`.
-
-## Stimulus strategy
-
-When testing OTBN, we are careful to distinguish between
-
-- behaviour that can be triggered by particular instruction streams
-- behaviour that is triggered by particular external stimuli (register writes; surprise resets etc.)
-
-Testing lots of different instruction streams doesn't really use the UVM machinery, so we have a "pre-DV" phase of testing that generates constrained-random instruction streams (as ELF binaries) and runs a simple block-level simulation on each to check that the RTL matches the model.
-The idea is that this is much quicker for designers to use to smoke-test proposed changes, and can be run with Verilator, so it doesn't require an EDA tool licence.
-This pre-DV phase cannot drive sign-off, but it does use much of the same tooling.
-
-Once we are running full DV tests, we re-use this work, by using the same collection of randomised instruction streams and randomly picking from them for most of the sequences.
-At the moment, the full DV tests create binaries on the fly by running `hw/ip/otbn/dv/uvm/gen-binaries.py`.
-This results in one or more ELF files in a directory, which the simulation then picks from at random.
-
-The pre-DV testing doesn't address external stimuli like resets or TileLink-based register accesses.
-These are driven by specialised test sequences, described below.
-
-### Test sequences
-
-The test sequences can be found in `hw/ip/otbn/dv/uvm/env/seq_lib`.
-The basic test sequence (`otbn_base_vseq`) loads the instruction stream from a randomly chosen binary (see above), configures OTBN and then lets it run to completion.
-
-More specialized sequences include things like multiple runs, register accesses during operation (which should fail) and memory corruption.
-We also check things like the correct operation of the interrupt registers.
-
-## Functional coverage
 
 We distinguish between *architectural* and *micro-architectural* functional coverage.
 The idea is that the points that go into architectural coverage are those that a DV engineer could derive by reading the block specification.
@@ -112,9 +10,9 @@ These two views are complementary and will probably duplicate coverage points.
 For example, an architectural coverage point might be "the processor executed `ADDI` and the result overflowed".
 This might overlap with something like "the `overflow` signal in the ALU was true when adding".
 
-### Block-based coverage
+# Block-based coverage
 
-#### Call stack
+## Call stack
 
 The [call stack]({{< relref ".#call-stack" >}}) is exposed as a special register behind `x1`.
 It has a bounded depth of 8 elements.
@@ -132,7 +30,7 @@ All four of these events should be crossed with the three states of the call sta
 > The 3 different fullness states are tracked as `fullness_cp`.
 > These are then crossed to give `flags_fullness_cross`.
 
-#### Loop stack
+## Loop stack
 
 The [loop stack]({{< relref ".#loop-stack" >}}) is accessed by executing `LOOP` and `LOOPI` instructions.
 Events concerning the start of loops are tracked at those instructions, but we can't track things like loop completion there.
@@ -157,7 +55,7 @@ We expect to:
 - Jump/branch to the final instruction of a loop
   Tracked as `JumpToLoopEnd_C`.
 
-#### Flags
+## Flags
 
 Each flag in each flag group should be set to one from zero by some instruction.
 Similarly, each flag in each flag group should be cleared to zero from one by some instruction.
@@ -167,13 +65,13 @@ Similarly, each flag in each flag group should be cleared to zero from one by so
 > The covergroup contains eight coverpoints (for each flag set and cleared).
 > These are then crossed with the flag group.
 
-#### Instruction counter
+## Instruction counter
 
 See the instruction counter saturate.
 
 > This is tracked in the `insn_cnt_if` interface with the `InsnCntSaturated_C` cover property.
 
-#### External (bus-accessible) CSRs
+## External (bus-accessible) CSRs
 
 The OTBN block exposes functionality to a bus host through bus-accessible CSRs.
 Behavior of some CSRs depends on [OTBN's operational state]({{< relref "..#design-details-operational-states" >}}).
@@ -196,7 +94,7 @@ Events we want to see:
 
   Tracked in the `csr_ext_fatal_insn_cnt_cg` covergroup.
 
-### Instruction-based coverage
+# Instruction-based coverage
 
 As a processor, much of OTBN's coverage points are described in terms of instructions being executed.
 Because OTBN doesn't have a complicated multi-stage pipeline or any real exception handling, we don't track much temporal information (such as sequences of instructions).
@@ -262,7 +160,7 @@ For any instruction that can cause multiple errors in a single cycle, we expect 
 This is described in more detail in the per-instruction text below.
 If an instruction below doesn't describe triggering multiple errors, that means we don't think it's possible.
 
-#### ADD
+## ADD
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 The instruction-specific covergroup is `insn_addsub_cg` (also used for `SUB`).
@@ -270,7 +168,7 @@ The instruction-specific covergroup is `insn_addsub_cg` (also used for `SUB`).
 - Cross the three possible signs (negative, zero, positive) for each input operand (giving 9 points).
   Tracked as `sign_a_sign_b_cross`.
 
-#### ADDI
+## ADDI
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 The instruction-specific covergroup is `insn_addi_cg`.
@@ -278,12 +176,12 @@ The instruction-specific covergroup is `insn_addi_cg`.
 - Cross the three possible signs (negative, zero, positive) for each input operand (giving 9 points).
   Tracked as `sign_cross`.
 
-#### LUI
+## LUI
 
 This instruction uses the `U` encoding schema, with covergroup `enc_u_cg`.
 There are no further coverage points.
 
-#### SUB
+## SUB
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 The instruction-specific covergroup is `insn_addsub_cg`.
@@ -291,7 +189,7 @@ The instruction-specific covergroup is `insn_addsub_cg`.
 - Cross the three possible signs (negative, zero, positive) for each input operand (giving 9 points).
   Tracked as `sign_a_sign_b_cross`.
 
-#### SLL
+## SLL
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 The instruction-specific covergroup is `insn_sll_cg`.
@@ -301,7 +199,7 @@ The instruction-specific covergroup is `insn_sll_cg`.
 - A shift of a value by `0x1f` which leaves the top bit set.
   Tracked as `shift15_cp`.
 
-#### SLLI
+## SLLI
 
 This instruction uses the `Is` encoding schema, with covergroup `enc_is_cg`.
 The instruction-specific covergroup is `insn_slli_cg`.
@@ -311,7 +209,7 @@ The instruction-specific covergroup is `insn_slli_cg`.
 - A shift of a value by `0x1f` which leaves the top bit set.
   Tracked as `shift15_cp`.
 
-#### SRL
+## SRL
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 The instruction-specific covergroup is `insn_srl_cg`.
@@ -322,7 +220,7 @@ The instruction-specific covergroup is `insn_srl_cg`.
   Tracked as `shift15_cp`.
   Note that this point also checks that we're performing a logical, rather than arithmetic, right shift.
 
-#### SRLI
+## SRLI
 
 This instruction uses the `Is` encoding schema, with covergroup `enc_is_cg`.
 The instruction-specific covergroup is `insn_srli_cg`.
@@ -333,7 +231,7 @@ The instruction-specific covergroup is `insn_srli_cg`.
   Tracked as `shift15_cp`.
   Note that this point also checks that we're performing a logical, rather than arithmetic, right shift.
 
-#### SRA
+## SRA
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 The instruction-specific covergroup is `insn_sra_cg`.
@@ -344,7 +242,7 @@ The instruction-specific covergroup is `insn_sra_cg`.
   Tracked as `shift15_cp`.
   Note that this point also checks that we're performing an arithmetic, rather than logical, right shift.
 
-#### SRAI
+## SRAI
 
 This instruction uses the `Is` encoding schema, with covergroup `enc_is_cg`.
 The instruction-specific covergroup is `insn_srai_cg`.
@@ -355,7 +253,7 @@ The instruction-specific covergroup is `insn_srai_cg`.
   Tracked as `shift15_cp`.
   Note that this point also checks that we're performing an arithmetic, rather than logical, right shift.
 
-#### AND
+## AND
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
@@ -363,7 +261,7 @@ The instruction-specific covergroup is `insn_log_binop_cg` (shared with other lo
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just AND'ing things with zero)
   Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
-#### ANDI
+## ANDI
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
@@ -371,7 +269,7 @@ The instruction-specific covergroup is `insn_log_binop_cg` (shared with other lo
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just AND'ing things with zero)
   Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
-#### OR
+## OR
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
@@ -379,7 +277,7 @@ The instruction-specific covergroup is `insn_log_binop_cg` (shared with other lo
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just OR'ing things with `'1`)
   Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
-#### ORI
+## ORI
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
@@ -387,7 +285,7 @@ The instruction-specific covergroup is `insn_log_binop_cg` (shared with other lo
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just OR'ing things with `'1`)
   Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
-#### XOR
+## XOR
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
@@ -395,7 +293,7 @@ The instruction-specific covergroup is `insn_log_binop_cg` (shared with other lo
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just XOR'ing things with zero)
   Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
-#### XORI
+## XORI
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
@@ -403,7 +301,7 @@ The instruction-specific covergroup is `insn_log_binop_cg` (shared with other lo
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just XOR'ing things with zero)
   Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
-#### LW
+## LW
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 The instruction-specific covergroup is `insn_xw_cg` (shared with `SW`).
@@ -436,7 +334,7 @@ This leaves a single combination to check:
 - Overflow the call stack when loading from an invalid address.
   Tracked as `overflow_cs_invalid_addr_cp`.
 
-#### SW
+## SW
 
 This instruction uses the `I` encoding schema, with covergroup `enc_s_cg`.
 The instruction-specific covergroup is `insn_xw_cg` (shared with `LW`).
@@ -467,7 +365,7 @@ These can happen together, giving a single combination to check:
 - Underflow the call stack when reading the value to be stored and try to write it to an invalid address.
   Tracked as `underflow_cs_invalid_addr_cp`.
 
-#### BEQ
+## BEQ
 
 This instruction uses the `B` encoding schema, with covergroup `enc_b_cg`.
 The instruction-specific covergroup is `insn_bxx_cg` (shared with `BNE`).
@@ -500,7 +398,7 @@ This leaves two possible combinations:
 - Take a branch to an invalid address where the branch instruction is at the end of a loop.
   Tracked as `bad_addr_at_loop_end_cross`.
 
-#### BNE
+## BNE
 
 This instruction uses the `B` encoding schema, with covergroup `enc_b_cg`.
 The instruction-specific covergroup is `insn_bxx_cg` (shared with `BEQ`).
@@ -533,7 +431,7 @@ This leaves two possible combinations:
 - Take a branch to an invalid address where the branch instruction is at the end of a loop.
   Tracked as `bad_addr_at_loop_end_cross`.
 
-#### JAL
+## JAL
 
 This instruction uses the `J` encoding schema, with covergroup `enc_j_cg`.
 The instruction-specific covergroup is `insn_jal_cg`.
@@ -566,7 +464,7 @@ All four combinations are possible:
 - Overflow call stack when jumping to an invalid address from the end of a loop.
   Tracked as `overflow_and_invalid_addr_at_loop_end_cp`.
 
-#### JALR
+## JALR
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 The instruction-specific covergroup is `insn_jalr_cg`.
@@ -609,7 +507,7 @@ Otherwise, all other combinations are possible.
 - Overflow call stack when jumping to an invalid address from the end of a loop.
   Tracked as `overflow_and_bad_addr_at_loop_end_cp`.
 
-#### CSRRS
+## CSRRS
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 The instruction-specific covergroup is `insn_csrrs_cg`.
@@ -630,7 +528,7 @@ The other two combinations are possible:
 - Overflow the call stack and access an invalid CSR
   Tracked as `overflow_with_bad_csr_cp`.
 
-#### CSRRW
+## CSRRW
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 The instruction-specific covergroup is `insn_csrrw_cg`.
@@ -652,14 +550,14 @@ The other two combinations are possible:
 - Overflow the call stack and access an invalid CSR
   Tracked as `overflow_with_bad_csr_cp`.
 
-#### ECALL
+## ECALL
 
 This instruction uses the `I` encoding schema, but with every field set to a fixed value.
 Encoding-level coverpoints are tracked in covergroup `enc_ecall_cg`.
 
 No special coverage points for this instruction.
 
-#### LOOP
+## LOOP
 
 This instruction uses the `loop` encoding schema, with covergroup `enc_loop_cg`.
 The instruction-specific covergroup is `insn_loop_cg`.
@@ -686,7 +584,7 @@ It's not possible to underflow the call stack and see a zero loop count (because
 - Loop with a zero loop count at the end of a loop.
   Tracked as `zero_count_at_loop_end_cp`.
 
-#### LOOPI
+## LOOPI
 
 This instruction uses the `loopi` encoding schema, with covergroup `enc_loopi_cg`.
 The instruction-specific covergroup is `insn_loopi_cg`.
@@ -709,7 +607,7 @@ These can happen together:
 - Loop with a zero loop count at the end of a loop.
   Tracked as `zero_count_at_loop_end_cp`.
 
-#### BN.ADD
+## BN.ADD
 
 This instruction uses the `bnaf` encoding schema, with covergroup `enc_bnaf_cg`.
 There is no instruction-specific covergroup.
@@ -719,7 +617,7 @@ There is no instruction-specific covergroup.
 - A nonzero right shift with a value in `wrs2` whose top bit is set
   This is tracked in `enc_bnaf_cg` as `srl_cross`.
 
-#### BN.ADDC
+## BN.ADDC
 
 This instruction uses the `bnaf` encoding schema, with covergroup `enc_bnaf_cg`.
 The instruction-specific covergroup is `insn_bn_addc_cg`.
@@ -731,14 +629,14 @@ The instruction-specific covergroup is `insn_bn_addc_cg`.
 - Execute with both values of the carry flag for both flag groups (to make sure things are wired through properly)
   Tracked as `carry_cross`.
 
-#### BN.ADDI
+## BN.ADDI
 
 This instruction uses the `bnai` encoding schema, with covergroup `enc_bnai_cg`.
 There is no instruction-specific covergroup.
 
 No special coverage.
 
-#### BN.ADDM
+## BN.ADDM
 
 This instruction uses the `bnam` encoding schema, with covergroup `enc_bnam_cg`.
 The instruction-specific covergroup is `insn_bn_addm_cg`.
@@ -756,7 +654,7 @@ The instruction-specific covergroup is `insn_bn_addm_cg`.
 - A calculation where the intermediate sum is greater than `2^256-1`, crossed with whether the subtraction of `MOD` results in a value that will wrap.
   Tracked as `overflow_wrap_cross`.
 
-#### BN.MULQACC
+## BN.MULQACC
 
 This instruction uses the `bnaq` encoding schema, with covergroup `enc_bnaq_cg`.
 The instruction-specific covergroup is `insn_bn_mulqaccx_cg` (shared with the other `BN.MULQACC*` instructions).
@@ -766,7 +664,7 @@ The instruction-specific covergroup is `insn_bn_mulqaccx_cg` (shared with the ot
 - See the accumulator overflow
   This is tracked in `insn_bnmulqaccx_cg` as `overflow_cross`.
 
-#### BN.MULQACC.WO
+## BN.MULQACC.WO
 
 This instruction uses the `bnaq` encoding schema, with an extra field not present in `bn.mulqacc`.
 Encoding-level coverpoints are tracked in covergroup `enc_bnaqw_cg`.
@@ -777,7 +675,7 @@ The instruction-specific covergroup is `insn_bn_mulqaccx_cg` (shared with the ot
 - See the accumulator overflow
   This is tracked in `insn_bnmulqaccx_cg` as `overflow_cross`.
 
-#### BN.MULQACC.SO
+## BN.MULQACC.SO
 
 This instruction uses the `bnaq` encoding schema, with an extra field not present in `bn.mulqacc`.
 Encoding-level coverpoints are tracked in covergroup `enc_bnaqs_cg`.
@@ -790,7 +688,7 @@ The instruction-specific covergroup is `insn_bn_mulqaccx_cg` (shared with the ot
 - Cross the generic flag updates with `wrd_hwsel`, since the flag changes are different in the two modes.
   This is tracked in `enc_bnaqs_cg` as `flags_01_cross`, `flags_10_cross` and `flags_11_cross`.
 
-#### BN.SUB
+## BN.SUB
 
 This instruction uses the `bnaf` encoding schema, with covergroup `enc_bnaf_cg`.
 There is no instruction-specific covergroup.
@@ -800,7 +698,7 @@ There is no instruction-specific covergroup.
 - A nonzero right shift with a value in `wrs2` whose top bit is set
   This is tracked in `enc_bnaf_cg` as `srl_cross`.
 
-#### BN.SUBB
+## BN.SUBB
 
 This instruction uses the `bnaf` encoding schema, with covergroup `enc_bnaf_cg`.
 The instruction-specific covergroup is `insn_bn_subcmpb_cg`.
@@ -812,14 +710,14 @@ The instruction-specific covergroup is `insn_bn_subcmpb_cg`.
 - Execute with both values of the carry flag for both flag groups (to make sure things are wired through properly)
   Tracked as `fg_carry_flag_cross`.
 
-#### BN.SUBI
+## BN.SUBI
 
 This instruction uses the `bnai` encoding schema, with covergroup `enc_bnai_cg`.
 There is no instruction-specific covergroup.
 
 No special coverage.
 
-#### BN.SUBM
+## BN.SUBM
 
 This instruction uses the `bnam` encoding schema, with covergroup `enc_bnam_cg`.
 The instruction-specific covergroup is `insn_bn_subm_cg`.
@@ -835,7 +733,7 @@ The instruction-specific covergroup is `insn_bn_subm_cg`.
 - A very negative intermediate result with a nonzero `MOD` (so `MOD` is added, but the top bit is still set)
   Tracked as `diff_neg2_cp`.
 
-#### BN.AND
+## BN.AND
 
 This instruction uses the `bna` encoding schema, with covergroup `enc_bna_cg`.
 There is no instruction-specific covergroup.
@@ -845,7 +743,7 @@ There is no instruction-specific covergroup.
 - Toggle coverage of the output result (to ensure we're not just AND'ing things with zero)
   Tracked in `enc_bna_cg` as `wrd_XXXXXXXX_cross`, where `XXXXXXXX` is the base-2 representation of the bit being checked.
 
-#### BN.OR
+## BN.OR
 
 This instruction uses the `bna` encoding schema, with covergroup `enc_bna_cg`.
 There is no instruction-specific covergroup.
@@ -855,7 +753,7 @@ There is no instruction-specific covergroup.
 - Toggle coverage of the output result (to ensure we're not just OR'ing things with zero)
   Tracked in `enc_bna_cg` as `wrd_XXXXXXXX_cross`, where `XXXXXXXX` is the base-2 representation of the bit being checked.
 
-#### BN.NOT
+## BN.NOT
 
 This instruction uses the `bnan` encoding schema, with covergroup `enc_bnan_cg`.
 There is no instruction-specific covergroup.
@@ -865,7 +763,7 @@ There is no instruction-specific covergroup.
 - Toggle coverage of the output result (to ensure nothing gets clamped)
   Tracked in `enc_bnan_cg` as `wrd_XXXXXXXX_cp`, where `XXXXXXXX` is the base-2 representation of the bit being checked.
 
-#### BN.XOR
+## BN.XOR
 
 This instruction uses the `bna` encoding schema, with covergroup `enc_bna_cg`.
 There is no instruction-specific covergroup.
@@ -875,14 +773,14 @@ There is no instruction-specific covergroup.
 - Toggle coverage of the output result (to ensure we're not just XOR'ing things with zero)
   Tracked in `enc_bna_cg` as `wrd_XXXXXXXX_cross`, where `XXXXXXXX` is the base-2 representation of the bit being checked.
 
-#### BN.RSHI
+## BN.RSHI
 
 This instruction uses the `bnr` encoding schema, with covergroup `enc_bnr_cg`.
 There is no instruction-specific covergroup.
 
 No special coverage.
 
-#### BN.SEL
+## BN.SEL
 
 This instruction uses the `bns` encoding schema, with covergroup `enc_bns_cg`.
 There is no instruction-specific covergroup.
@@ -890,7 +788,7 @@ There is no instruction-specific covergroup.
 - Cross flag group, flag and flag value (2 times 4 times 2 points)
   Tracked in `enc_bns_cg` as `flag_cross`.
 
-#### BN.CMP
+## BN.CMP
 
 This instruction uses the `bnc` encoding schema, with covergroup `enc_bnc_cg`.
 There is no instruction-specific covergroup.
@@ -900,7 +798,7 @@ There is no instruction-specific covergroup.
 - A nonzero right shift with a value in `wrs2` whose top bit is set
   Tracked in `enc_bnc_cg` as `srl_cross`.
 
-#### BN.CMPB
+## BN.CMPB
 
 This instruction uses the `bnc` encoding schema, with covergroup `enc_bnc_cg`.
 The instruction-specific covergroup is `insn_bn_subcmpb_cg`.
@@ -912,7 +810,7 @@ The instruction-specific covergroup is `insn_bn_subcmpb_cg`.
 - Execute with both values of the carry flag for both flag groups (to make sure things are wired through properly)
   Tracked as `fg_carry_flag_cross`.
 
-#### BN.LID
+## BN.LID
 
 This instruction uses the `bnxid` encoding schema, with covergroup `enc_bnxid_cg`.
 The instruction-specific covergroup is `insn_bn_xid_cg` (shared with `BN.SID`).
@@ -968,7 +866,7 @@ Binning together the two underflows unless it makes a difference to the possible
 - Set both increments and have both a bad WDR index and a bad address.
   Tracked as `inc_both_and_bad_wdr_and_bad_addr_cross`.
 
-#### BN.SID
+## BN.SID
 
 This instruction uses the `bnxid` encoding schema, with covergroup `enc_bnxid_cg`.
 The instruction-specific covergroup is `insn_bn_xid_cg` (shared with `BN.LID`).
@@ -1024,14 +922,14 @@ Binning together the two underflows unless it makes a difference to the possible
 - Set both increments and have both a bad WDR index and a bad address.
   Tracked as `inc_both_and_bad_wdr_and_bad_addr_cross`.
 
-#### BN.MOV
+## BN.MOV
 
 This instruction uses the `bnmov` encoding schema, with covergroup `enc_bnmov_cg`.
 There is no instruction-specific covergroup.
 
 No special coverage otherwise.
 
-#### BN.MOVR
+## BN.MOVR
 
 This instruction uses the `bnmovr` encoding schema, with covergroup `enc_bnmovr_cg`.
 The instruction-specific covergroup is `insn_bn_movr_cg`.
@@ -1060,7 +958,7 @@ Binning together the two underflows and WDR indices unless it makes a difference
 - Underflow call stack for `grd`, setting both increments and have a bad WDR index in `*grs`.
   Tracked as `underflow_grd_and_inc_both_and_bad_wdr_cp`.
 
-#### BN.WSRR
+## BN.WSRR
 
 This instruction uses the `bnwcsr` encoding schema, with covergroup `enc_wcsr_cg`.
 There is no instruction-specific covergroup.
@@ -1070,7 +968,7 @@ There is no instruction-specific covergroup.
 
 These points are tracked with `wsr_cross` in `enc_wcsr_cg`.
 
-#### BN.WSRW
+## BN.WSRW
 
 This instruction uses the `bnwcsr` encoding schema, with covergroup `enc_wcsr_cg`.
 There is no instruction-specific covergroup.
@@ -1080,29 +978,3 @@ There is no instruction-specific covergroup.
 
 These points are tracked with `wsr_cross` in `enc_wcsr_cg`.
 
-## Self-checking strategy
-### Scoreboard
-
-Much of the checking for these tests is actually performed in `otbn_core_model`, which ensures that the RTL and ISS have the same behaviour.
-However, the scoreboard does have some checks, to ensure that interrupt and idle signals are high at the expected times.
-
-### Assertions
-
-Core TLUL protocol assertions are checked by binding the [TL-UL protocol checker]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) into the design.
-
-Outputs are also checked for `'X` values by assertions in the design RTL.
-The design RTL contains other assertions defined by the designers, which will be checked in simulation (and won't have been checked by the pre-DV Verilator simulations).
-
-Finally, the `otbn_idle_checker` checks that the `idle_o` output correctly matches the running state that you'd expect, based on writes to the `CMD` register and responses that will appear in the `DONE` interrupt.
-
-## Building and running tests
-
-Tests can be run with [`dvsim.py`]({{< relref "hw/dv/tools/README.md" >}}).
-The link gives details of the tool's features and command line arguments.
-To run a basic smoke test, go to the top of the repository and run:
-```console
-$ util/dvsim/dvsim.py hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_smoke
-```
-
-## Testplan
-{{< incGenFromIpDesc "../../data/otbn_testplan.hjson" "testplan" >}}
