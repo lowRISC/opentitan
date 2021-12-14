@@ -855,6 +855,16 @@ module spi_device_reg_top (
   logic payload_swap_data_we;
   logic [31:0] payload_swap_data_qs;
   logic [31:0] payload_swap_data_wd;
+  logic cmd_info_en4b_we;
+  logic [7:0] cmd_info_en4b_opcode_qs;
+  logic [7:0] cmd_info_en4b_opcode_wd;
+  logic cmd_info_en4b_valid_qs;
+  logic cmd_info_en4b_valid_wd;
+  logic cmd_info_ex4b_we;
+  logic [7:0] cmd_info_ex4b_opcode_qs;
+  logic [7:0] cmd_info_ex4b_opcode_wd;
+  logic cmd_info_ex4b_valid_qs;
+  logic cmd_info_ex4b_valid_wd;
   logic cmd_info_0_we;
   logic [7:0] cmd_info_0_opcode_0_qs;
   logic [7:0] cmd_info_0_opcode_0_wd;
@@ -9910,6 +9920,110 @@ module spi_device_reg_top (
   );
 
 
+  // R[cmd_info_en4b]: V(False)
+  //   F[opcode]: 7:0
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_cmd_info_en4b_opcode (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_en4b_we),
+    .wd     (cmd_info_en4b_opcode_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info_en4b.opcode.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_en4b_opcode_qs)
+  );
+
+  //   F[valid]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_en4b_valid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_en4b_we),
+    .wd     (cmd_info_en4b_valid_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info_en4b.valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_en4b_valid_qs)
+  );
+
+
+  // R[cmd_info_ex4b]: V(False)
+  //   F[opcode]: 7:0
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0)
+  ) u_cmd_info_ex4b_opcode (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_ex4b_we),
+    .wd     (cmd_info_ex4b_opcode_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info_ex4b.opcode.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_ex4b_opcode_qs)
+  );
+
+  //   F[valid]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_ex4b_valid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_ex4b_we),
+    .wd     (cmd_info_ex4b_valid_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info_ex4b.valid.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_ex4b_valid_qs)
+  );
+
+
   // Subregister 0 of Multireg cmd_info
   // R[cmd_info_0]: V(False)
   //   F[opcode_0]: 7:0
@@ -17887,7 +18001,7 @@ module spi_device_reg_top (
 
 
 
-  logic [73:0] addr_hit;
+  logic [75:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SPI_DEVICE_INTR_STATE_OFFSET);
@@ -17925,45 +18039,47 @@ module spi_device_reg_top (
     addr_hit[32] = (reg_addr == SPI_DEVICE_ADDR_SWAP_DATA_OFFSET);
     addr_hit[33] = (reg_addr == SPI_DEVICE_PAYLOAD_SWAP_MASK_OFFSET);
     addr_hit[34] = (reg_addr == SPI_DEVICE_PAYLOAD_SWAP_DATA_OFFSET);
-    addr_hit[35] = (reg_addr == SPI_DEVICE_CMD_INFO_0_OFFSET);
-    addr_hit[36] = (reg_addr == SPI_DEVICE_CMD_INFO_1_OFFSET);
-    addr_hit[37] = (reg_addr == SPI_DEVICE_CMD_INFO_2_OFFSET);
-    addr_hit[38] = (reg_addr == SPI_DEVICE_CMD_INFO_3_OFFSET);
-    addr_hit[39] = (reg_addr == SPI_DEVICE_CMD_INFO_4_OFFSET);
-    addr_hit[40] = (reg_addr == SPI_DEVICE_CMD_INFO_5_OFFSET);
-    addr_hit[41] = (reg_addr == SPI_DEVICE_CMD_INFO_6_OFFSET);
-    addr_hit[42] = (reg_addr == SPI_DEVICE_CMD_INFO_7_OFFSET);
-    addr_hit[43] = (reg_addr == SPI_DEVICE_CMD_INFO_8_OFFSET);
-    addr_hit[44] = (reg_addr == SPI_DEVICE_CMD_INFO_9_OFFSET);
-    addr_hit[45] = (reg_addr == SPI_DEVICE_CMD_INFO_10_OFFSET);
-    addr_hit[46] = (reg_addr == SPI_DEVICE_CMD_INFO_11_OFFSET);
-    addr_hit[47] = (reg_addr == SPI_DEVICE_CMD_INFO_12_OFFSET);
-    addr_hit[48] = (reg_addr == SPI_DEVICE_CMD_INFO_13_OFFSET);
-    addr_hit[49] = (reg_addr == SPI_DEVICE_CMD_INFO_14_OFFSET);
-    addr_hit[50] = (reg_addr == SPI_DEVICE_CMD_INFO_15_OFFSET);
-    addr_hit[51] = (reg_addr == SPI_DEVICE_CMD_INFO_16_OFFSET);
-    addr_hit[52] = (reg_addr == SPI_DEVICE_CMD_INFO_17_OFFSET);
-    addr_hit[53] = (reg_addr == SPI_DEVICE_CMD_INFO_18_OFFSET);
-    addr_hit[54] = (reg_addr == SPI_DEVICE_CMD_INFO_19_OFFSET);
-    addr_hit[55] = (reg_addr == SPI_DEVICE_CMD_INFO_20_OFFSET);
-    addr_hit[56] = (reg_addr == SPI_DEVICE_CMD_INFO_21_OFFSET);
-    addr_hit[57] = (reg_addr == SPI_DEVICE_CMD_INFO_22_OFFSET);
-    addr_hit[58] = (reg_addr == SPI_DEVICE_CMD_INFO_23_OFFSET);
-    addr_hit[59] = (reg_addr == SPI_DEVICE_TPM_CAP_OFFSET);
-    addr_hit[60] = (reg_addr == SPI_DEVICE_TPM_CFG_OFFSET);
-    addr_hit[61] = (reg_addr == SPI_DEVICE_TPM_STATUS_OFFSET);
-    addr_hit[62] = (reg_addr == SPI_DEVICE_TPM_ACCESS_0_OFFSET);
-    addr_hit[63] = (reg_addr == SPI_DEVICE_TPM_ACCESS_1_OFFSET);
-    addr_hit[64] = (reg_addr == SPI_DEVICE_TPM_STS_OFFSET);
-    addr_hit[65] = (reg_addr == SPI_DEVICE_TPM_INTF_CAPABILITY_OFFSET);
-    addr_hit[66] = (reg_addr == SPI_DEVICE_TPM_INT_ENABLE_OFFSET);
-    addr_hit[67] = (reg_addr == SPI_DEVICE_TPM_INT_VECTOR_OFFSET);
-    addr_hit[68] = (reg_addr == SPI_DEVICE_TPM_INT_STATUS_OFFSET);
-    addr_hit[69] = (reg_addr == SPI_DEVICE_TPM_DID_VID_OFFSET);
-    addr_hit[70] = (reg_addr == SPI_DEVICE_TPM_RID_OFFSET);
-    addr_hit[71] = (reg_addr == SPI_DEVICE_TPM_CMD_ADDR_OFFSET);
-    addr_hit[72] = (reg_addr == SPI_DEVICE_TPM_READ_FIFO_OFFSET);
-    addr_hit[73] = (reg_addr == SPI_DEVICE_TPM_WRITE_FIFO_OFFSET);
+    addr_hit[35] = (reg_addr == SPI_DEVICE_CMD_INFO_EN4B_OFFSET);
+    addr_hit[36] = (reg_addr == SPI_DEVICE_CMD_INFO_EX4B_OFFSET);
+    addr_hit[37] = (reg_addr == SPI_DEVICE_CMD_INFO_0_OFFSET);
+    addr_hit[38] = (reg_addr == SPI_DEVICE_CMD_INFO_1_OFFSET);
+    addr_hit[39] = (reg_addr == SPI_DEVICE_CMD_INFO_2_OFFSET);
+    addr_hit[40] = (reg_addr == SPI_DEVICE_CMD_INFO_3_OFFSET);
+    addr_hit[41] = (reg_addr == SPI_DEVICE_CMD_INFO_4_OFFSET);
+    addr_hit[42] = (reg_addr == SPI_DEVICE_CMD_INFO_5_OFFSET);
+    addr_hit[43] = (reg_addr == SPI_DEVICE_CMD_INFO_6_OFFSET);
+    addr_hit[44] = (reg_addr == SPI_DEVICE_CMD_INFO_7_OFFSET);
+    addr_hit[45] = (reg_addr == SPI_DEVICE_CMD_INFO_8_OFFSET);
+    addr_hit[46] = (reg_addr == SPI_DEVICE_CMD_INFO_9_OFFSET);
+    addr_hit[47] = (reg_addr == SPI_DEVICE_CMD_INFO_10_OFFSET);
+    addr_hit[48] = (reg_addr == SPI_DEVICE_CMD_INFO_11_OFFSET);
+    addr_hit[49] = (reg_addr == SPI_DEVICE_CMD_INFO_12_OFFSET);
+    addr_hit[50] = (reg_addr == SPI_DEVICE_CMD_INFO_13_OFFSET);
+    addr_hit[51] = (reg_addr == SPI_DEVICE_CMD_INFO_14_OFFSET);
+    addr_hit[52] = (reg_addr == SPI_DEVICE_CMD_INFO_15_OFFSET);
+    addr_hit[53] = (reg_addr == SPI_DEVICE_CMD_INFO_16_OFFSET);
+    addr_hit[54] = (reg_addr == SPI_DEVICE_CMD_INFO_17_OFFSET);
+    addr_hit[55] = (reg_addr == SPI_DEVICE_CMD_INFO_18_OFFSET);
+    addr_hit[56] = (reg_addr == SPI_DEVICE_CMD_INFO_19_OFFSET);
+    addr_hit[57] = (reg_addr == SPI_DEVICE_CMD_INFO_20_OFFSET);
+    addr_hit[58] = (reg_addr == SPI_DEVICE_CMD_INFO_21_OFFSET);
+    addr_hit[59] = (reg_addr == SPI_DEVICE_CMD_INFO_22_OFFSET);
+    addr_hit[60] = (reg_addr == SPI_DEVICE_CMD_INFO_23_OFFSET);
+    addr_hit[61] = (reg_addr == SPI_DEVICE_TPM_CAP_OFFSET);
+    addr_hit[62] = (reg_addr == SPI_DEVICE_TPM_CFG_OFFSET);
+    addr_hit[63] = (reg_addr == SPI_DEVICE_TPM_STATUS_OFFSET);
+    addr_hit[64] = (reg_addr == SPI_DEVICE_TPM_ACCESS_0_OFFSET);
+    addr_hit[65] = (reg_addr == SPI_DEVICE_TPM_ACCESS_1_OFFSET);
+    addr_hit[66] = (reg_addr == SPI_DEVICE_TPM_STS_OFFSET);
+    addr_hit[67] = (reg_addr == SPI_DEVICE_TPM_INTF_CAPABILITY_OFFSET);
+    addr_hit[68] = (reg_addr == SPI_DEVICE_TPM_INT_ENABLE_OFFSET);
+    addr_hit[69] = (reg_addr == SPI_DEVICE_TPM_INT_VECTOR_OFFSET);
+    addr_hit[70] = (reg_addr == SPI_DEVICE_TPM_INT_STATUS_OFFSET);
+    addr_hit[71] = (reg_addr == SPI_DEVICE_TPM_DID_VID_OFFSET);
+    addr_hit[72] = (reg_addr == SPI_DEVICE_TPM_RID_OFFSET);
+    addr_hit[73] = (reg_addr == SPI_DEVICE_TPM_CMD_ADDR_OFFSET);
+    addr_hit[74] = (reg_addr == SPI_DEVICE_TPM_READ_FIFO_OFFSET);
+    addr_hit[75] = (reg_addr == SPI_DEVICE_TPM_WRITE_FIFO_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -18044,7 +18160,9 @@ module spi_device_reg_top (
                (addr_hit[70] & (|(SPI_DEVICE_PERMIT[70] & ~reg_be))) |
                (addr_hit[71] & (|(SPI_DEVICE_PERMIT[71] & ~reg_be))) |
                (addr_hit[72] & (|(SPI_DEVICE_PERMIT[72] & ~reg_be))) |
-               (addr_hit[73] & (|(SPI_DEVICE_PERMIT[73] & ~reg_be)))));
+               (addr_hit[73] & (|(SPI_DEVICE_PERMIT[73] & ~reg_be))) |
+               (addr_hit[74] & (|(SPI_DEVICE_PERMIT[74] & ~reg_be))) |
+               (addr_hit[75] & (|(SPI_DEVICE_PERMIT[75] & ~reg_be)))));
   end
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -18733,7 +18851,17 @@ module spi_device_reg_top (
   assign payload_swap_data_we = addr_hit[34] & reg_we & !reg_error;
 
   assign payload_swap_data_wd = reg_wdata[31:0];
-  assign cmd_info_0_we = addr_hit[35] & reg_we & !reg_error;
+  assign cmd_info_en4b_we = addr_hit[35] & reg_we & !reg_error;
+
+  assign cmd_info_en4b_opcode_wd = reg_wdata[7:0];
+
+  assign cmd_info_en4b_valid_wd = reg_wdata[31];
+  assign cmd_info_ex4b_we = addr_hit[36] & reg_we & !reg_error;
+
+  assign cmd_info_ex4b_opcode_wd = reg_wdata[7:0];
+
+  assign cmd_info_ex4b_valid_wd = reg_wdata[31];
+  assign cmd_info_0_we = addr_hit[37] & reg_we & !reg_error;
 
   assign cmd_info_0_opcode_0_wd = reg_wdata[7:0];
 
@@ -18758,7 +18886,7 @@ module spi_device_reg_top (
   assign cmd_info_0_busy_0_wd = reg_wdata[25];
 
   assign cmd_info_0_valid_0_wd = reg_wdata[31];
-  assign cmd_info_1_we = addr_hit[36] & reg_we & !reg_error;
+  assign cmd_info_1_we = addr_hit[38] & reg_we & !reg_error;
 
   assign cmd_info_1_opcode_1_wd = reg_wdata[7:0];
 
@@ -18783,7 +18911,7 @@ module spi_device_reg_top (
   assign cmd_info_1_busy_1_wd = reg_wdata[25];
 
   assign cmd_info_1_valid_1_wd = reg_wdata[31];
-  assign cmd_info_2_we = addr_hit[37] & reg_we & !reg_error;
+  assign cmd_info_2_we = addr_hit[39] & reg_we & !reg_error;
 
   assign cmd_info_2_opcode_2_wd = reg_wdata[7:0];
 
@@ -18808,7 +18936,7 @@ module spi_device_reg_top (
   assign cmd_info_2_busy_2_wd = reg_wdata[25];
 
   assign cmd_info_2_valid_2_wd = reg_wdata[31];
-  assign cmd_info_3_we = addr_hit[38] & reg_we & !reg_error;
+  assign cmd_info_3_we = addr_hit[40] & reg_we & !reg_error;
 
   assign cmd_info_3_opcode_3_wd = reg_wdata[7:0];
 
@@ -18833,7 +18961,7 @@ module spi_device_reg_top (
   assign cmd_info_3_busy_3_wd = reg_wdata[25];
 
   assign cmd_info_3_valid_3_wd = reg_wdata[31];
-  assign cmd_info_4_we = addr_hit[39] & reg_we & !reg_error;
+  assign cmd_info_4_we = addr_hit[41] & reg_we & !reg_error;
 
   assign cmd_info_4_opcode_4_wd = reg_wdata[7:0];
 
@@ -18858,7 +18986,7 @@ module spi_device_reg_top (
   assign cmd_info_4_busy_4_wd = reg_wdata[25];
 
   assign cmd_info_4_valid_4_wd = reg_wdata[31];
-  assign cmd_info_5_we = addr_hit[40] & reg_we & !reg_error;
+  assign cmd_info_5_we = addr_hit[42] & reg_we & !reg_error;
 
   assign cmd_info_5_opcode_5_wd = reg_wdata[7:0];
 
@@ -18883,7 +19011,7 @@ module spi_device_reg_top (
   assign cmd_info_5_busy_5_wd = reg_wdata[25];
 
   assign cmd_info_5_valid_5_wd = reg_wdata[31];
-  assign cmd_info_6_we = addr_hit[41] & reg_we & !reg_error;
+  assign cmd_info_6_we = addr_hit[43] & reg_we & !reg_error;
 
   assign cmd_info_6_opcode_6_wd = reg_wdata[7:0];
 
@@ -18908,7 +19036,7 @@ module spi_device_reg_top (
   assign cmd_info_6_busy_6_wd = reg_wdata[25];
 
   assign cmd_info_6_valid_6_wd = reg_wdata[31];
-  assign cmd_info_7_we = addr_hit[42] & reg_we & !reg_error;
+  assign cmd_info_7_we = addr_hit[44] & reg_we & !reg_error;
 
   assign cmd_info_7_opcode_7_wd = reg_wdata[7:0];
 
@@ -18933,7 +19061,7 @@ module spi_device_reg_top (
   assign cmd_info_7_busy_7_wd = reg_wdata[25];
 
   assign cmd_info_7_valid_7_wd = reg_wdata[31];
-  assign cmd_info_8_we = addr_hit[43] & reg_we & !reg_error;
+  assign cmd_info_8_we = addr_hit[45] & reg_we & !reg_error;
 
   assign cmd_info_8_opcode_8_wd = reg_wdata[7:0];
 
@@ -18958,7 +19086,7 @@ module spi_device_reg_top (
   assign cmd_info_8_busy_8_wd = reg_wdata[25];
 
   assign cmd_info_8_valid_8_wd = reg_wdata[31];
-  assign cmd_info_9_we = addr_hit[44] & reg_we & !reg_error;
+  assign cmd_info_9_we = addr_hit[46] & reg_we & !reg_error;
 
   assign cmd_info_9_opcode_9_wd = reg_wdata[7:0];
 
@@ -18983,7 +19111,7 @@ module spi_device_reg_top (
   assign cmd_info_9_busy_9_wd = reg_wdata[25];
 
   assign cmd_info_9_valid_9_wd = reg_wdata[31];
-  assign cmd_info_10_we = addr_hit[45] & reg_we & !reg_error;
+  assign cmd_info_10_we = addr_hit[47] & reg_we & !reg_error;
 
   assign cmd_info_10_opcode_10_wd = reg_wdata[7:0];
 
@@ -19008,7 +19136,7 @@ module spi_device_reg_top (
   assign cmd_info_10_busy_10_wd = reg_wdata[25];
 
   assign cmd_info_10_valid_10_wd = reg_wdata[31];
-  assign cmd_info_11_we = addr_hit[46] & reg_we & !reg_error;
+  assign cmd_info_11_we = addr_hit[48] & reg_we & !reg_error;
 
   assign cmd_info_11_opcode_11_wd = reg_wdata[7:0];
 
@@ -19033,7 +19161,7 @@ module spi_device_reg_top (
   assign cmd_info_11_busy_11_wd = reg_wdata[25];
 
   assign cmd_info_11_valid_11_wd = reg_wdata[31];
-  assign cmd_info_12_we = addr_hit[47] & reg_we & !reg_error;
+  assign cmd_info_12_we = addr_hit[49] & reg_we & !reg_error;
 
   assign cmd_info_12_opcode_12_wd = reg_wdata[7:0];
 
@@ -19058,7 +19186,7 @@ module spi_device_reg_top (
   assign cmd_info_12_busy_12_wd = reg_wdata[25];
 
   assign cmd_info_12_valid_12_wd = reg_wdata[31];
-  assign cmd_info_13_we = addr_hit[48] & reg_we & !reg_error;
+  assign cmd_info_13_we = addr_hit[50] & reg_we & !reg_error;
 
   assign cmd_info_13_opcode_13_wd = reg_wdata[7:0];
 
@@ -19083,7 +19211,7 @@ module spi_device_reg_top (
   assign cmd_info_13_busy_13_wd = reg_wdata[25];
 
   assign cmd_info_13_valid_13_wd = reg_wdata[31];
-  assign cmd_info_14_we = addr_hit[49] & reg_we & !reg_error;
+  assign cmd_info_14_we = addr_hit[51] & reg_we & !reg_error;
 
   assign cmd_info_14_opcode_14_wd = reg_wdata[7:0];
 
@@ -19108,7 +19236,7 @@ module spi_device_reg_top (
   assign cmd_info_14_busy_14_wd = reg_wdata[25];
 
   assign cmd_info_14_valid_14_wd = reg_wdata[31];
-  assign cmd_info_15_we = addr_hit[50] & reg_we & !reg_error;
+  assign cmd_info_15_we = addr_hit[52] & reg_we & !reg_error;
 
   assign cmd_info_15_opcode_15_wd = reg_wdata[7:0];
 
@@ -19133,7 +19261,7 @@ module spi_device_reg_top (
   assign cmd_info_15_busy_15_wd = reg_wdata[25];
 
   assign cmd_info_15_valid_15_wd = reg_wdata[31];
-  assign cmd_info_16_we = addr_hit[51] & reg_we & !reg_error;
+  assign cmd_info_16_we = addr_hit[53] & reg_we & !reg_error;
 
   assign cmd_info_16_opcode_16_wd = reg_wdata[7:0];
 
@@ -19158,7 +19286,7 @@ module spi_device_reg_top (
   assign cmd_info_16_busy_16_wd = reg_wdata[25];
 
   assign cmd_info_16_valid_16_wd = reg_wdata[31];
-  assign cmd_info_17_we = addr_hit[52] & reg_we & !reg_error;
+  assign cmd_info_17_we = addr_hit[54] & reg_we & !reg_error;
 
   assign cmd_info_17_opcode_17_wd = reg_wdata[7:0];
 
@@ -19183,7 +19311,7 @@ module spi_device_reg_top (
   assign cmd_info_17_busy_17_wd = reg_wdata[25];
 
   assign cmd_info_17_valid_17_wd = reg_wdata[31];
-  assign cmd_info_18_we = addr_hit[53] & reg_we & !reg_error;
+  assign cmd_info_18_we = addr_hit[55] & reg_we & !reg_error;
 
   assign cmd_info_18_opcode_18_wd = reg_wdata[7:0];
 
@@ -19208,7 +19336,7 @@ module spi_device_reg_top (
   assign cmd_info_18_busy_18_wd = reg_wdata[25];
 
   assign cmd_info_18_valid_18_wd = reg_wdata[31];
-  assign cmd_info_19_we = addr_hit[54] & reg_we & !reg_error;
+  assign cmd_info_19_we = addr_hit[56] & reg_we & !reg_error;
 
   assign cmd_info_19_opcode_19_wd = reg_wdata[7:0];
 
@@ -19233,7 +19361,7 @@ module spi_device_reg_top (
   assign cmd_info_19_busy_19_wd = reg_wdata[25];
 
   assign cmd_info_19_valid_19_wd = reg_wdata[31];
-  assign cmd_info_20_we = addr_hit[55] & reg_we & !reg_error;
+  assign cmd_info_20_we = addr_hit[57] & reg_we & !reg_error;
 
   assign cmd_info_20_opcode_20_wd = reg_wdata[7:0];
 
@@ -19258,7 +19386,7 @@ module spi_device_reg_top (
   assign cmd_info_20_busy_20_wd = reg_wdata[25];
 
   assign cmd_info_20_valid_20_wd = reg_wdata[31];
-  assign cmd_info_21_we = addr_hit[56] & reg_we & !reg_error;
+  assign cmd_info_21_we = addr_hit[58] & reg_we & !reg_error;
 
   assign cmd_info_21_opcode_21_wd = reg_wdata[7:0];
 
@@ -19283,7 +19411,7 @@ module spi_device_reg_top (
   assign cmd_info_21_busy_21_wd = reg_wdata[25];
 
   assign cmd_info_21_valid_21_wd = reg_wdata[31];
-  assign cmd_info_22_we = addr_hit[57] & reg_we & !reg_error;
+  assign cmd_info_22_we = addr_hit[59] & reg_we & !reg_error;
 
   assign cmd_info_22_opcode_22_wd = reg_wdata[7:0];
 
@@ -19308,7 +19436,7 @@ module spi_device_reg_top (
   assign cmd_info_22_busy_22_wd = reg_wdata[25];
 
   assign cmd_info_22_valid_22_wd = reg_wdata[31];
-  assign cmd_info_23_we = addr_hit[58] & reg_we & !reg_error;
+  assign cmd_info_23_we = addr_hit[60] & reg_we & !reg_error;
 
   assign cmd_info_23_opcode_23_wd = reg_wdata[7:0];
 
@@ -19333,7 +19461,7 @@ module spi_device_reg_top (
   assign cmd_info_23_busy_23_wd = reg_wdata[25];
 
   assign cmd_info_23_valid_23_wd = reg_wdata[31];
-  assign tpm_cfg_we = addr_hit[60] & reg_we & !reg_error;
+  assign tpm_cfg_we = addr_hit[62] & reg_we & !reg_error;
 
   assign tpm_cfg_en_wd = reg_wdata[0];
 
@@ -19344,7 +19472,7 @@ module spi_device_reg_top (
   assign tpm_cfg_tpm_reg_chk_dis_wd = reg_wdata[3];
 
   assign tpm_cfg_invalid_locality_wd = reg_wdata[4];
-  assign tpm_access_0_we = addr_hit[62] & reg_we & !reg_error;
+  assign tpm_access_0_we = addr_hit[64] & reg_we & !reg_error;
 
   assign tpm_access_0_access_0_wd = reg_wdata[7:0];
 
@@ -19353,37 +19481,37 @@ module spi_device_reg_top (
   assign tpm_access_0_access_2_wd = reg_wdata[23:16];
 
   assign tpm_access_0_access_3_wd = reg_wdata[31:24];
-  assign tpm_access_1_we = addr_hit[63] & reg_we & !reg_error;
+  assign tpm_access_1_we = addr_hit[65] & reg_we & !reg_error;
 
   assign tpm_access_1_wd = reg_wdata[7:0];
-  assign tpm_sts_we = addr_hit[64] & reg_we & !reg_error;
+  assign tpm_sts_we = addr_hit[66] & reg_we & !reg_error;
 
   assign tpm_sts_wd = reg_wdata[31:0];
-  assign tpm_intf_capability_we = addr_hit[65] & reg_we & !reg_error;
+  assign tpm_intf_capability_we = addr_hit[67] & reg_we & !reg_error;
 
   assign tpm_intf_capability_wd = reg_wdata[31:0];
-  assign tpm_int_enable_we = addr_hit[66] & reg_we & !reg_error;
+  assign tpm_int_enable_we = addr_hit[68] & reg_we & !reg_error;
 
   assign tpm_int_enable_wd = reg_wdata[31:0];
-  assign tpm_int_vector_we = addr_hit[67] & reg_we & !reg_error;
+  assign tpm_int_vector_we = addr_hit[69] & reg_we & !reg_error;
 
   assign tpm_int_vector_wd = reg_wdata[7:0];
-  assign tpm_int_status_we = addr_hit[68] & reg_we & !reg_error;
+  assign tpm_int_status_we = addr_hit[70] & reg_we & !reg_error;
 
   assign tpm_int_status_wd = reg_wdata[31:0];
-  assign tpm_did_vid_we = addr_hit[69] & reg_we & !reg_error;
+  assign tpm_did_vid_we = addr_hit[71] & reg_we & !reg_error;
 
   assign tpm_did_vid_vid_wd = reg_wdata[15:0];
 
   assign tpm_did_vid_did_wd = reg_wdata[31:16];
-  assign tpm_rid_we = addr_hit[70] & reg_we & !reg_error;
+  assign tpm_rid_we = addr_hit[72] & reg_we & !reg_error;
 
   assign tpm_rid_wd = reg_wdata[7:0];
-  assign tpm_cmd_addr_re = addr_hit[71] & reg_re & !reg_error;
-  assign tpm_read_fifo_we = addr_hit[72] & reg_we & !reg_error;
+  assign tpm_cmd_addr_re = addr_hit[73] & reg_re & !reg_error;
+  assign tpm_read_fifo_we = addr_hit[74] & reg_we & !reg_error;
 
   assign tpm_read_fifo_wd = reg_wdata[7:0];
-  assign tpm_write_fifo_re = addr_hit[73] & reg_re & !reg_error;
+  assign tpm_write_fifo_re = addr_hit[75] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -19839,6 +19967,16 @@ module spi_device_reg_top (
       end
 
       addr_hit[35]: begin
+        reg_rdata_next[7:0] = cmd_info_en4b_opcode_qs;
+        reg_rdata_next[31] = cmd_info_en4b_valid_qs;
+      end
+
+      addr_hit[36]: begin
+        reg_rdata_next[7:0] = cmd_info_ex4b_opcode_qs;
+        reg_rdata_next[31] = cmd_info_ex4b_valid_qs;
+      end
+
+      addr_hit[37]: begin
         reg_rdata_next[7:0] = cmd_info_0_opcode_0_qs;
         reg_rdata_next[9:8] = cmd_info_0_addr_mode_0_qs;
         reg_rdata_next[10] = cmd_info_0_addr_swap_en_0_qs;
@@ -19853,7 +19991,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_0_valid_0_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[38]: begin
         reg_rdata_next[7:0] = cmd_info_1_opcode_1_qs;
         reg_rdata_next[9:8] = cmd_info_1_addr_mode_1_qs;
         reg_rdata_next[10] = cmd_info_1_addr_swap_en_1_qs;
@@ -19868,7 +20006,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_1_valid_1_qs;
       end
 
-      addr_hit[37]: begin
+      addr_hit[39]: begin
         reg_rdata_next[7:0] = cmd_info_2_opcode_2_qs;
         reg_rdata_next[9:8] = cmd_info_2_addr_mode_2_qs;
         reg_rdata_next[10] = cmd_info_2_addr_swap_en_2_qs;
@@ -19883,7 +20021,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_2_valid_2_qs;
       end
 
-      addr_hit[38]: begin
+      addr_hit[40]: begin
         reg_rdata_next[7:0] = cmd_info_3_opcode_3_qs;
         reg_rdata_next[9:8] = cmd_info_3_addr_mode_3_qs;
         reg_rdata_next[10] = cmd_info_3_addr_swap_en_3_qs;
@@ -19898,7 +20036,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_3_valid_3_qs;
       end
 
-      addr_hit[39]: begin
+      addr_hit[41]: begin
         reg_rdata_next[7:0] = cmd_info_4_opcode_4_qs;
         reg_rdata_next[9:8] = cmd_info_4_addr_mode_4_qs;
         reg_rdata_next[10] = cmd_info_4_addr_swap_en_4_qs;
@@ -19913,7 +20051,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_4_valid_4_qs;
       end
 
-      addr_hit[40]: begin
+      addr_hit[42]: begin
         reg_rdata_next[7:0] = cmd_info_5_opcode_5_qs;
         reg_rdata_next[9:8] = cmd_info_5_addr_mode_5_qs;
         reg_rdata_next[10] = cmd_info_5_addr_swap_en_5_qs;
@@ -19928,7 +20066,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_5_valid_5_qs;
       end
 
-      addr_hit[41]: begin
+      addr_hit[43]: begin
         reg_rdata_next[7:0] = cmd_info_6_opcode_6_qs;
         reg_rdata_next[9:8] = cmd_info_6_addr_mode_6_qs;
         reg_rdata_next[10] = cmd_info_6_addr_swap_en_6_qs;
@@ -19943,7 +20081,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_6_valid_6_qs;
       end
 
-      addr_hit[42]: begin
+      addr_hit[44]: begin
         reg_rdata_next[7:0] = cmd_info_7_opcode_7_qs;
         reg_rdata_next[9:8] = cmd_info_7_addr_mode_7_qs;
         reg_rdata_next[10] = cmd_info_7_addr_swap_en_7_qs;
@@ -19958,7 +20096,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_7_valid_7_qs;
       end
 
-      addr_hit[43]: begin
+      addr_hit[45]: begin
         reg_rdata_next[7:0] = cmd_info_8_opcode_8_qs;
         reg_rdata_next[9:8] = cmd_info_8_addr_mode_8_qs;
         reg_rdata_next[10] = cmd_info_8_addr_swap_en_8_qs;
@@ -19973,7 +20111,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_8_valid_8_qs;
       end
 
-      addr_hit[44]: begin
+      addr_hit[46]: begin
         reg_rdata_next[7:0] = cmd_info_9_opcode_9_qs;
         reg_rdata_next[9:8] = cmd_info_9_addr_mode_9_qs;
         reg_rdata_next[10] = cmd_info_9_addr_swap_en_9_qs;
@@ -19988,7 +20126,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_9_valid_9_qs;
       end
 
-      addr_hit[45]: begin
+      addr_hit[47]: begin
         reg_rdata_next[7:0] = cmd_info_10_opcode_10_qs;
         reg_rdata_next[9:8] = cmd_info_10_addr_mode_10_qs;
         reg_rdata_next[10] = cmd_info_10_addr_swap_en_10_qs;
@@ -20003,7 +20141,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_10_valid_10_qs;
       end
 
-      addr_hit[46]: begin
+      addr_hit[48]: begin
         reg_rdata_next[7:0] = cmd_info_11_opcode_11_qs;
         reg_rdata_next[9:8] = cmd_info_11_addr_mode_11_qs;
         reg_rdata_next[10] = cmd_info_11_addr_swap_en_11_qs;
@@ -20018,7 +20156,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_11_valid_11_qs;
       end
 
-      addr_hit[47]: begin
+      addr_hit[49]: begin
         reg_rdata_next[7:0] = cmd_info_12_opcode_12_qs;
         reg_rdata_next[9:8] = cmd_info_12_addr_mode_12_qs;
         reg_rdata_next[10] = cmd_info_12_addr_swap_en_12_qs;
@@ -20033,7 +20171,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_12_valid_12_qs;
       end
 
-      addr_hit[48]: begin
+      addr_hit[50]: begin
         reg_rdata_next[7:0] = cmd_info_13_opcode_13_qs;
         reg_rdata_next[9:8] = cmd_info_13_addr_mode_13_qs;
         reg_rdata_next[10] = cmd_info_13_addr_swap_en_13_qs;
@@ -20048,7 +20186,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_13_valid_13_qs;
       end
 
-      addr_hit[49]: begin
+      addr_hit[51]: begin
         reg_rdata_next[7:0] = cmd_info_14_opcode_14_qs;
         reg_rdata_next[9:8] = cmd_info_14_addr_mode_14_qs;
         reg_rdata_next[10] = cmd_info_14_addr_swap_en_14_qs;
@@ -20063,7 +20201,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_14_valid_14_qs;
       end
 
-      addr_hit[50]: begin
+      addr_hit[52]: begin
         reg_rdata_next[7:0] = cmd_info_15_opcode_15_qs;
         reg_rdata_next[9:8] = cmd_info_15_addr_mode_15_qs;
         reg_rdata_next[10] = cmd_info_15_addr_swap_en_15_qs;
@@ -20078,7 +20216,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_15_valid_15_qs;
       end
 
-      addr_hit[51]: begin
+      addr_hit[53]: begin
         reg_rdata_next[7:0] = cmd_info_16_opcode_16_qs;
         reg_rdata_next[9:8] = cmd_info_16_addr_mode_16_qs;
         reg_rdata_next[10] = cmd_info_16_addr_swap_en_16_qs;
@@ -20093,7 +20231,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_16_valid_16_qs;
       end
 
-      addr_hit[52]: begin
+      addr_hit[54]: begin
         reg_rdata_next[7:0] = cmd_info_17_opcode_17_qs;
         reg_rdata_next[9:8] = cmd_info_17_addr_mode_17_qs;
         reg_rdata_next[10] = cmd_info_17_addr_swap_en_17_qs;
@@ -20108,7 +20246,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_17_valid_17_qs;
       end
 
-      addr_hit[53]: begin
+      addr_hit[55]: begin
         reg_rdata_next[7:0] = cmd_info_18_opcode_18_qs;
         reg_rdata_next[9:8] = cmd_info_18_addr_mode_18_qs;
         reg_rdata_next[10] = cmd_info_18_addr_swap_en_18_qs;
@@ -20123,7 +20261,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_18_valid_18_qs;
       end
 
-      addr_hit[54]: begin
+      addr_hit[56]: begin
         reg_rdata_next[7:0] = cmd_info_19_opcode_19_qs;
         reg_rdata_next[9:8] = cmd_info_19_addr_mode_19_qs;
         reg_rdata_next[10] = cmd_info_19_addr_swap_en_19_qs;
@@ -20138,7 +20276,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_19_valid_19_qs;
       end
 
-      addr_hit[55]: begin
+      addr_hit[57]: begin
         reg_rdata_next[7:0] = cmd_info_20_opcode_20_qs;
         reg_rdata_next[9:8] = cmd_info_20_addr_mode_20_qs;
         reg_rdata_next[10] = cmd_info_20_addr_swap_en_20_qs;
@@ -20153,7 +20291,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_20_valid_20_qs;
       end
 
-      addr_hit[56]: begin
+      addr_hit[58]: begin
         reg_rdata_next[7:0] = cmd_info_21_opcode_21_qs;
         reg_rdata_next[9:8] = cmd_info_21_addr_mode_21_qs;
         reg_rdata_next[10] = cmd_info_21_addr_swap_en_21_qs;
@@ -20168,7 +20306,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_21_valid_21_qs;
       end
 
-      addr_hit[57]: begin
+      addr_hit[59]: begin
         reg_rdata_next[7:0] = cmd_info_22_opcode_22_qs;
         reg_rdata_next[9:8] = cmd_info_22_addr_mode_22_qs;
         reg_rdata_next[10] = cmd_info_22_addr_swap_en_22_qs;
@@ -20183,7 +20321,7 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_22_valid_22_qs;
       end
 
-      addr_hit[58]: begin
+      addr_hit[60]: begin
         reg_rdata_next[7:0] = cmd_info_23_opcode_23_qs;
         reg_rdata_next[9:8] = cmd_info_23_addr_mode_23_qs;
         reg_rdata_next[10] = cmd_info_23_addr_swap_en_23_qs;
@@ -20198,13 +20336,13 @@ module spi_device_reg_top (
         reg_rdata_next[31] = cmd_info_23_valid_23_qs;
       end
 
-      addr_hit[59]: begin
+      addr_hit[61]: begin
         reg_rdata_next[7:0] = tpm_cap_rev_qs;
         reg_rdata_next[8] = tpm_cap_locality_qs;
         reg_rdata_next[18:16] = tpm_cap_max_xfer_size_qs;
       end
 
-      addr_hit[60]: begin
+      addr_hit[62]: begin
         reg_rdata_next[0] = tpm_cfg_en_qs;
         reg_rdata_next[1] = tpm_cfg_tpm_mode_qs;
         reg_rdata_next[2] = tpm_cfg_hw_reg_dis_qs;
@@ -20212,63 +20350,63 @@ module spi_device_reg_top (
         reg_rdata_next[4] = tpm_cfg_invalid_locality_qs;
       end
 
-      addr_hit[61]: begin
+      addr_hit[63]: begin
         reg_rdata_next[0] = tpm_status_cmdaddr_notempty_qs;
         reg_rdata_next[1] = tpm_status_rdfifo_notempty_qs;
         reg_rdata_next[6:4] = tpm_status_rdfifo_depth_qs;
         reg_rdata_next[10:8] = tpm_status_wrfifo_depth_qs;
       end
 
-      addr_hit[62]: begin
+      addr_hit[64]: begin
         reg_rdata_next[7:0] = tpm_access_0_access_0_qs;
         reg_rdata_next[15:8] = tpm_access_0_access_1_qs;
         reg_rdata_next[23:16] = tpm_access_0_access_2_qs;
         reg_rdata_next[31:24] = tpm_access_0_access_3_qs;
       end
 
-      addr_hit[63]: begin
+      addr_hit[65]: begin
         reg_rdata_next[7:0] = tpm_access_1_qs;
       end
 
-      addr_hit[64]: begin
+      addr_hit[66]: begin
         reg_rdata_next[31:0] = tpm_sts_qs;
       end
 
-      addr_hit[65]: begin
+      addr_hit[67]: begin
         reg_rdata_next[31:0] = tpm_intf_capability_qs;
       end
 
-      addr_hit[66]: begin
+      addr_hit[68]: begin
         reg_rdata_next[31:0] = tpm_int_enable_qs;
       end
 
-      addr_hit[67]: begin
+      addr_hit[69]: begin
         reg_rdata_next[7:0] = tpm_int_vector_qs;
       end
 
-      addr_hit[68]: begin
+      addr_hit[70]: begin
         reg_rdata_next[31:0] = tpm_int_status_qs;
       end
 
-      addr_hit[69]: begin
+      addr_hit[71]: begin
         reg_rdata_next[15:0] = tpm_did_vid_vid_qs;
         reg_rdata_next[31:16] = tpm_did_vid_did_qs;
       end
 
-      addr_hit[70]: begin
+      addr_hit[72]: begin
         reg_rdata_next[7:0] = tpm_rid_qs;
       end
 
-      addr_hit[71]: begin
+      addr_hit[73]: begin
         reg_rdata_next[23:0] = tpm_cmd_addr_addr_qs;
         reg_rdata_next[31:24] = tpm_cmd_addr_cmd_qs;
       end
 
-      addr_hit[72]: begin
+      addr_hit[74]: begin
         reg_rdata_next[7:0] = '0;
       end
 
-      addr_hit[73]: begin
+      addr_hit[75]: begin
         reg_rdata_next[7:0] = tpm_write_fifo_qs;
       end
 

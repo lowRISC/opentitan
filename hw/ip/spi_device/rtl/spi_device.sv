@@ -185,6 +185,27 @@ module spi_device
   //spi_byte_t fw_dummy_byte;
   logic cfg_addr_4b_en;
 
+  // Address 3B/ 4B tracker related signals
+  //
+  // EN4B/ EX4B change internal status by HW. If SW is involved into the
+  // process, the latency is long. As EN4B/ EX4B commands do not assert BUSY
+  // bit, the host system issues next read commands without any delays. SW
+  // process latency cannot meet the requirement.
+  //
+  // `spid_addr_4b` submodule processes the broadcasting signal
+  // `cfg_addr_4b_en`. The command parser recognizes the commands and triggers
+  // the `spid_addr_4b` submodule to change the internal status.
+  //
+  // The opcodes of the commands SW may configure via CMD_INFO_EN4B,
+  // CMD_INFO_EX4B.
+  logic cmd_en4b_pulse, cmd_ex4b_pulse;
+  logic unused_addr_4b;
+
+  // TODO: implement inside cmdparse
+  assign unused_addr_4b = ^{reg2hw.cmd_info_en4b, reg2hw.cmd_info_ex4b};
+  assign cmd_en4b_pulse = 1'b 0;
+  assign cmd_ex4b_pulse = 1'b 0;
+
   logic intr_sram_rxf_full, intr_fwm_rxerr;
   logic intr_fwm_rxlvl, rxlvl, rxlvl_d, intr_fwm_txlvl, txlvl, txlvl_d;
   logic intr_fwm_rxoverflow, intr_fwm_txunderflow;
@@ -1453,8 +1474,8 @@ module spi_device
 
     .spi_cfg_addr_4b_en_o (cfg_addr_4b_en), // broadcast
 
-    .spi_addr_4b_set_i (1'b 0), // EN4B command
-    .spi_addr_4b_clr_i (1'b 0)  // EX4B command
+    .spi_addr_4b_set_i (cmd_en4b_pulse), // EN4B command
+    .spi_addr_4b_clr_i (cmd_ex4b_pulse)  // EX4B command
   );
   // End:   Address 3B/4B Tracker ------------------------------------
 

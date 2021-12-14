@@ -741,6 +741,44 @@
         } // f: data
       ]
     } // R: PAYLOAD_SWAP_DATA
+    { name: "CMD_INFO_EN4B"
+      swaccess: "rw"
+      hwaccess: "hro"
+      desc: '''Opcode for EN4B.
+
+        If the register is active and the IP receives the matched opcode, the
+        HW sets `CFG.addr_4b_en` at the end of the SPI transaction.
+        '''
+      fields:  [
+        { bits: "31"
+          name: "valid"
+          desc: "If 1, Opcode affects"
+        } // f: valid
+        { bits: "7:0"
+          name: "opcode"
+          desc: "EN4B opcode"
+        } // f: opcode
+      ]
+    } // R: CMD_INFO_EN4B
+    { name: "CMD_INFO_EX4B"
+      swaccess: "rw"
+      hwaccess: "hro"
+      desc: '''Opcode for EX4B
+
+        If the register is active and the IP receives the matched opcode, the
+        HW clears `CFG.addr_4b_en` at the end of the SPI transaction.
+        '''
+      fields:  [
+        { bits: "31"
+          name: "valid"
+          desc: "If 1, Opcode affects"
+        } // f: valid
+        { bits: "7:0"
+          name: "opcode"
+          desc: "EX4B opcode"
+        } // f: opcode
+      ]
+    } // R: CMD_INFO_EX4B
     { multireg: {
         cname: "SPI_DEVICE"
         name:  "CMD_INFO"
