@@ -182,6 +182,11 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     bit [bus_params_pkg::BUS_DBW-1:0] mask;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask,
         // mask to be contiguous
+        // if one bit is set, 'b1 ^ 'b10 <= 2
+        // if 2 bits are set, 'b11 ^ 'b110 <= 2
+        //     non-contiguous cases: 'b101 ^ 'b1010 = 4, 'b1001 ^ 'b0010 = 3
+        // if 3 bits are set, 'b111 ^ 'b1110 <= 2
+        //     non-contiguous cases: 'b1101 ^ 'b1010 = 3, 'b1011 ^ 'b0110 = 3
         $countones(mask ^ {mask[bus_params_pkg::BUS_DBW-2:0], 1'b0}) <= 2;
         mask dist {'1 :/ 100 - partial_access_pct,
                    [0 : '1 - 1] :/ partial_access_pct};)
