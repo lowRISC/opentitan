@@ -125,6 +125,8 @@ module aes_cipher_core import aes_pkg::*;
   output sp2v_e                       crypt_o,
   input  sp2v_e                       dec_key_gen_i,
   output sp2v_e                       dec_key_gen_o,
+  input  logic                        prng_reseed_i,
+  output logic                        prng_reseed_o,
   input  logic                        key_clear_i,
   output logic                        key_clear_o,
   input  logic                        data_out_clear_i, // Re-use the cipher core muxes.
@@ -514,6 +516,8 @@ module aes_cipher_core import aes_pkg::*;
     .crypt_o              ( crypt_o             ),
     .dec_key_gen_i        ( dec_key_gen_i       ),
     .dec_key_gen_o        ( dec_key_gen_o       ),
+    .prng_reseed_i        ( prng_reseed_i       ),
+    .prng_reseed_o        ( prng_reseed_o       ),
     .key_clear_i          ( key_clear_i         ),
     .key_clear_o          ( key_clear_o         ),
     .data_out_clear_i     ( data_out_clear_i    ),

@@ -62,6 +62,7 @@ module aes_core
   ciph_op_e                                   cipher_op;
   key_len_e                                   key_len_q;
   logic                                       sideload_q;
+  prs_rate_e                                  prng_reseed_rate_q;
   logic                                       manual_operation_q;
   logic                                       force_zero_masks_q;
   logic                                       ctrl_err_update;
@@ -151,6 +152,8 @@ module aes_core
   sp2v_e                                      cipher_crypt_busy;
   sp2v_e                                      cipher_dec_key_gen;
   sp2v_e                                      cipher_dec_key_gen_busy;
+  logic                                       cipher_prng_reseed;
+  logic                                       cipher_prng_reseed_busy;
   logic                                       cipher_key_clear;
   logic                                       cipher_key_clear_busy;
   logic                                       cipher_data_out_clear;
@@ -421,6 +424,8 @@ module aes_core
     .crypt_o            ( cipher_crypt_busy          ),
     .dec_key_gen_i      ( cipher_dec_key_gen         ),
     .dec_key_gen_o      ( cipher_dec_key_gen_busy    ),
+    .prng_reseed_i      ( cipher_prng_reseed         ),
+    .prng_reseed_o      ( cipher_prng_reseed_busy    ),
     .key_clear_i        ( cipher_key_clear           ),
     .key_clear_o        ( cipher_key_clear_busy      ),
     .data_out_clear_i   ( cipher_data_out_clear      ),
@@ -499,6 +504,7 @@ module aes_core
     .mode_o             ( aes_mode_q           ),
     .key_len_o          ( key_len_q            ),
     .sideload_o         ( sideload_q           ),
+    .prng_reseed_rate_o ( prng_reseed_rate_q   ),
     .manual_operation_o ( manual_operation_q   ),
     .force_zero_masks_o ( force_zero_masks_q   ),
     .err_update_o       ( ctrl_err_update      ),
@@ -513,6 +519,7 @@ module aes_core
 
   // Control
   aes_control #(
+    .Masking              ( Masking              ),
     .SecStartTriggerDelay ( SecStartTriggerDelay )
   ) u_aes_control (
     .clk_i                     ( clk_i                                  ),
@@ -525,6 +532,7 @@ module aes_core
     .mode_i                    ( aes_mode_q                             ),
     .cipher_op_i               ( cipher_op                              ),
     .sideload_i                ( sideload_q                             ),
+    .prng_reseed_rate_i        ( prng_reseed_rate_q                     ),
     .manual_operation_i        ( manual_operation_q                     ),
     .start_i                   ( reg2hw.trigger.start.q                 ),
     .key_iv_data_in_clear_i    ( reg2hw.trigger.key_iv_data_in_clear.q  ),
@@ -563,6 +571,8 @@ module aes_core
     .cipher_crypt_i            ( cipher_crypt_busy                      ),
     .cipher_dec_key_gen_o      ( cipher_dec_key_gen                     ),
     .cipher_dec_key_gen_i      ( cipher_dec_key_gen_busy                ),
+    .cipher_prng_reseed_o      ( cipher_prng_reseed                     ),
+    .cipher_prng_reseed_i      ( cipher_prng_reseed_busy                ),
     .cipher_key_clear_o        ( cipher_key_clear                       ),
     .cipher_key_clear_i        ( cipher_key_clear_busy                  ),
     .cipher_data_out_clear_o   ( cipher_data_out_clear                  ),

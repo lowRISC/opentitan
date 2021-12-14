@@ -77,6 +77,11 @@ package aes_reg_pkg;
       logic        re;
     } sideload;
     struct packed {
+      logic [2:0]  q;
+      logic        qe;
+      logic        re;
+    } prng_reseed_rate;
+    struct packed {
       logic        q;
       logic        qe;
       logic        re;
@@ -144,6 +149,9 @@ package aes_reg_pkg;
       logic        d;
     } sideload;
     struct packed {
+      logic [2:0]  d;
+    } prng_reseed_rate;
+    struct packed {
       logic        d;
     } manual_operation;
     struct packed {
@@ -203,25 +211,25 @@ package aes_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    aes_reg2hw_alert_test_reg_t alert_test; // [951:948]
-    aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [947:684]
-    aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [683:420]
-    aes_reg2hw_iv_mreg_t [3:0] iv; // [419:288]
-    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [287:156]
-    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [155:24]
-    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [23:5]
+    aes_reg2hw_alert_test_reg_t alert_test; // [955:952]
+    aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [951:688]
+    aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [687:424]
+    aes_reg2hw_iv_mreg_t [3:0] iv; // [423:292]
+    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [291:160]
+    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [159:28]
+    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [27:5]
     aes_reg2hw_trigger_reg_t trigger; // [4:1]
     aes_reg2hw_status_reg_t status; // [0:0]
   } aes_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [934:679]
-    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [678:423]
-    aes_hw2reg_iv_mreg_t [3:0] iv; // [422:295]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [294:163]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [162:35]
-    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [34:22]
+    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [937:682]
+    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [681:426]
+    aes_hw2reg_iv_mreg_t [3:0] iv; // [425:298]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [297:166]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [165:38]
+    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [37:22]
     aes_hw2reg_trigger_reg_t trigger; // [21:14]
     aes_hw2reg_status_reg_t status; // [13:0]
   } aes_hw2reg_t;
@@ -312,11 +320,12 @@ package aes_reg_pkg;
   parameter logic [31:0] AES_DATA_OUT_2_DATA_OUT_2_RESVAL = 32'h 0;
   parameter logic [31:0] AES_DATA_OUT_3_RESVAL = 32'h 0;
   parameter logic [31:0] AES_DATA_OUT_3_DATA_OUT_3_RESVAL = 32'h 0;
-  parameter logic [12:0] AES_CTRL_SHADOWED_RESVAL = 13'h c0;
+  parameter logic [15:0] AES_CTRL_SHADOWED_RESVAL = 16'h 8c0;
   parameter logic [0:0] AES_CTRL_SHADOWED_OPERATION_RESVAL = 1'h 0;
   parameter logic [5:0] AES_CTRL_SHADOWED_MODE_RESVAL = 6'h 20;
   parameter logic [2:0] AES_CTRL_SHADOWED_KEY_LEN_RESVAL = 3'h 1;
   parameter logic [0:0] AES_CTRL_SHADOWED_SIDELOAD_RESVAL = 1'h 0;
+  parameter logic [2:0] AES_CTRL_SHADOWED_PRNG_RESEED_RATE_RESVAL = 3'h 1;
   parameter logic [0:0] AES_CTRL_SHADOWED_MANUAL_OPERATION_RESVAL = 1'h 0;
   parameter logic [0:0] AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_RESVAL = 1'h 0;
 

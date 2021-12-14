@@ -107,6 +107,8 @@ module csrng_block_encrypt import csrng_pkg::*; #(
     .alert_o            ( block_encrypt_aes_cipher_sm_err_o),
     .dec_key_gen_i      ( aes_pkg::SP2V_LOW          ), // Disable
     .dec_key_gen_o      (                            ),
+    .prng_reseed_i      ( 1'b0                       ), // Disable
+    .prng_reseed_o      (                            ),
     .key_clear_i        ( 1'b0                       ), // Disable
     .key_clear_o        (                            ),
     .data_out_clear_i   ( 1'b0                       ), // Disable

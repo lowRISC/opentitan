@@ -35,8 +35,10 @@ class aes_common_vseq extends aes_base_vseq;
   virtual function void ctrl_reg_map_invalid_value(ref bit [TL_DW-1:0] val);
     aes_mode_e      mode_e;
     key_len_e       key_len_e;
+    prs_rate_e      prs_rate_e;
     bit [TL_DW-1:0] mode_val = get_field_val(ral.ctrl_shadowed.mode, val);
     bit [TL_DW-1:0] key_len_val = get_field_val(ral.ctrl_shadowed.key_len, val);
+    bit [TL_DW-1:0] prs_rate_val = get_field_val(ral.ctrl_shadowed.prng_reseed_rate, val);
 
     if (!$cast(mode_e, mode_val)) begin
       val = get_csr_val_with_updated_field(ral.ctrl_shadowed.mode, val, AES_NONE);
@@ -44,9 +46,12 @@ class aes_common_vseq extends aes_base_vseq;
     if (!$cast(key_len_e, key_len_val)) begin
       val = get_csr_val_with_updated_field(ral.ctrl_shadowed.key_len, val, AES_256);
     end
+    if (!$cast(prs_rate_e, prs_rate_val)) begin
+      val = get_csr_val_with_updated_field(ral.ctrl_shadowed.prng_reseed_rate, val, PER_1);
+    end
     // TODO: find a better way than hardcode it. Force_zero_masks field should be 0 unless the
     // maksing parameters are enabled.
-    val[12] = 0;
+    val[15] = 0;
   endfunction
 
   // Discussed in Issue #8460, fatal storage error will clear storage error status bit.

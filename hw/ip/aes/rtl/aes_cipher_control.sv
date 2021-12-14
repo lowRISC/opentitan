@@ -32,6 +32,8 @@ module aes_cipher_control import aes_pkg::*;
   output sp2v_e                   crypt_o,
   input  sp2v_e                   dec_key_gen_i,
   output sp2v_e                   dec_key_gen_o,
+  input  logic                    prng_reseed_i,
+  output logic                    prng_reseed_o,
   input  logic                    key_clear_i,
   output logic                    key_clear_o,
   input  logic                    data_out_clear_i,
@@ -77,6 +79,7 @@ module aes_cipher_control import aes_pkg::*;
   logic                                rnd_ctr_err, rnd_ctr_err_sum, rnd_ctr_err_parity;
   sp2v_e                               crypt_d, crypt_q;
   sp2v_e                               dec_key_gen_d, dec_key_gen_q;
+  logic                                prng_reseed_d, prng_reseed_q;
   logic                                key_clear_d, key_clear_q;
   logic                                data_out_clear_d, data_out_clear_q;
   sp2v_e                               sub_bytes_out_req;
@@ -116,6 +119,7 @@ module aes_cipher_control import aes_pkg::*;
   logic           [Sp2VWidth-1:0]      mr_prng_update;
   logic           [Sp2VWidth-1:0]      mr_prng_reseed_req;
   logic           [Sp2VWidth-1:0]      mr_key_expand_clear;
+  logic           [Sp2VWidth-1:0]      mr_prng_reseed_d;
   logic           [Sp2VWidth-1:0]      mr_key_clear_d;
   logic           [Sp2VWidth-1:0]      mr_data_out_clear_d;
 
@@ -166,6 +170,7 @@ module aes_cipher_control import aes_pkg::*;
         .key_len_i             ( key_len_i                ),
         .crypt_i               ( sp_crypt[i]              ), // Sparsified
         .dec_key_gen_i         ( sp_dec_key_gen[i]        ), // Sparsified
+        .prng_reseed_i         ( prng_reseed_i            ),
         .key_clear_i           ( key_clear_i              ),
         .data_out_clear_i      ( data_out_clear_i         ),
         .mux_sel_err_i         ( mux_sel_err              ),
@@ -205,6 +210,8 @@ module aes_cipher_control import aes_pkg::*;
         .crypt_d_o             ( sp_crypt_d[i]            ), // Sparsified
         .dec_key_gen_q_i       ( sp_dec_key_gen_q[i]      ), // Sparsified
         .dec_key_gen_d_o       ( sp_dec_key_gen_d[i]      ), // Sparsified
+        .prng_reseed_q_i       ( prng_reseed_q            ),
+        .prng_reseed_d_o       ( mr_prng_reseed_d[i]      ), // AND-combine
         .key_clear_q_i         ( key_clear_q              ),
         .key_clear_d_o         ( mr_key_clear_d[i]        ), // AND-combine
         .data_out_clear_q_i    ( data_out_clear_q         ),
@@ -229,6 +236,7 @@ module aes_cipher_control import aes_pkg::*;
         .key_len_i             ( key_len_i                ),
         .crypt_ni              ( sp_crypt[i]              ), // Sparsified
         .dec_key_gen_ni        ( sp_dec_key_gen[i]        ), // Sparsified
+        .prng_reseed_i         ( prng_reseed_i            ),
         .key_clear_i           ( key_clear_i              ),
         .data_out_clear_i      ( data_out_clear_i         ),
         .mux_sel_err_i         ( mux_sel_err              ),
@@ -268,6 +276,8 @@ module aes_cipher_control import aes_pkg::*;
         .crypt_d_no            ( sp_crypt_d[i]            ), // Sparsified
         .dec_key_gen_q_ni      ( sp_dec_key_gen_q[i]      ), // Sparsified
         .dec_key_gen_d_no      ( sp_dec_key_gen_d[i]      ), // Sparsified
+        .prng_reseed_q_i       ( prng_reseed_q            ),
+        .prng_reseed_d_o       ( mr_prng_reseed_d[i]      ), // AND-combine
         .key_clear_q_i         ( key_clear_q              ),
         .key_clear_d_o         ( mr_key_clear_d[i]        ), // AND-combine
         .data_out_clear_q_i    ( data_out_clear_q         ),
@@ -297,6 +307,7 @@ module aes_cipher_control import aes_pkg::*;
   assign key_expand_clear_o = |mr_key_expand_clear;
   // AND: Only if all bits are high, the corresponding status is signaled which will lead to
   // the clearing of these trigger bits.
+  assign prng_reseed_d      = &mr_prng_reseed_d;
   assign key_clear_d        = &mr_key_clear_d;
   assign data_out_clear_d   = &mr_data_out_clear_d;
 
@@ -350,9 +361,11 @@ module aes_cipher_control import aes_pkg::*;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm
     if (!rst_ni) begin
+      prng_reseed_q      <= 1'b0;
       key_clear_q        <= 1'b0;
       data_out_clear_q   <= 1'b0;
     end else begin
+      prng_reseed_q      <= prng_reseed_d;
       key_clear_q        <= key_clear_d;
       data_out_clear_q   <= data_out_clear_d;
     end
@@ -366,6 +379,7 @@ module aes_cipher_control import aes_pkg::*;
   // Let the main controller know whate we are doing.
   assign crypt_o          = crypt_q;
   assign dec_key_gen_o    = dec_key_gen_q;
+  assign prng_reseed_o    = prng_reseed_q;
   assign key_clear_o      = key_clear_q;
   assign data_out_clear_o = data_out_clear_q;
 
