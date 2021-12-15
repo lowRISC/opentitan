@@ -398,6 +398,33 @@ cc_library(
 )
 
 cc_library(
+    name = "sigverify_testvectors",
+    hdrs = [
+        "sigverify_tests/sigverify_testvectors.h",
+    ],
+    deps = [
+    ],
+)
+
+opentitan_functest(
+    name = "sigverify_mod_exp_otbn_functest",
+    srcs = ["sigverify_mod_exp_otbn_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+        tags = [
+            "manual",
+            "verilator",
+        ],
+    ),
+    deps = [
+        ":sigverify_mod_exp_otbn",
+        ":sigverify_testvectors",
+        ":test_main",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_library(
     name = "mock_sigverify",
     testonly = True,
     hdrs = [
