@@ -62,7 +62,7 @@
               drive `init_trigger_i` in prim_alert_receiver.
               Check `ping_ok` returns 1.
             '''
-      milestone: V1
+      milestone: V2
       tests: ["prim_async_alert",
               "prim_async_fatal_alert",
               "prim_sync_alert",
@@ -91,5 +91,18 @@
               "prim_sync_fatal_alert"]
     }
 
+    {
+      name: prim_alert_gate_sender_clk_rst_test
+      desc: '''Gate prim_alert_sender clk or reset during alert_handshake.
+
+            - During alert handshake, gate prim_alert_sender's clock or issue reset.
+            - Verify alert handshake can resume after prim_alert_sender is re-initialized.
+            - If clock was gated, verify alert handshake will resume when clock is active,
+              and verify we will never miss or drop an alert handshake by expecting `alert_ack_o`
+              to return 1 after `alert_req` is sent.
+            '''
+      milestone: V3
+      tests: []
+    }
   ]
 }
