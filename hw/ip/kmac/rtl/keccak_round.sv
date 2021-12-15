@@ -52,6 +52,7 @@ module keccak_round #(
   output logic [Width-1:0] state_o [Share],
 
   output logic             sparse_fsm_error_o,
+  output logic             round_count_error_o,
 
   input                    clear_i     // Clear internal state to '0
 );
@@ -382,15 +383,22 @@ module keccak_round #(
   `ASSERT_INIT(NoReuseShare_A, ReuseShare == 0)
 
   // Round number
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      round <= '0;
-    end else if (rst_rnd_num) begin
-      round <= '0;
-    end else if (inc_rnd_num) begin
-      round <= round + 1'b 1;
-    end
-  end
+  // This primitive is used to place a hardened counter
+  prim_count #(
+    .Width(RndW),
+    .OutSelDnCnt(1'b 0), // 0 selects up count
+    .CntStyle(prim_count_pkg::CrossCnt)
+  ) u_round_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(1'b 0),
+    .set_i(rst_rnd_num), // clears up count to 0 and sets down count to max
+    .set_cnt_i(RndW'(MaxRound-1)),
+    .en_i(inc_rnd_num),
+    .step_i(RndW'(1)),
+    .cnt_o(round),
+    .err_o(round_count_error_o)
+  );
 
   // completion signal
   always_ff @(posedge clk_i or negedge rst_ni) begin

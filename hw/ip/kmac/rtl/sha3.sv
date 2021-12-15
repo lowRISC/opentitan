@@ -75,7 +75,7 @@ module sha3
   output logic sparse_fsm_error_o,
 
   // counter error
-  output logic msg_count_error_o
+  output logic count_error_o
 
 );
   /////////////////
@@ -123,6 +123,9 @@ module sha3
   logic keccak_start, keccak_process, keccak_done;
 
   // alert signals
+  logic round_count_error, msg_count_error;
+  assign count_error_o =  round_count_error | msg_count_error;
+
   logic sha3_state_error;
   logic keccak_round_state_error;
   logic sha3pad_state_error;
@@ -401,7 +404,7 @@ module sha3
     // output
     .absorbed_o         (absorbed),
     .sparse_fsm_error_o (sha3pad_state_error),
-    .msg_count_error_o  (msg_count_error_o)
+    .msg_count_error_o  (msg_count_error)
   );
 
   // Keccak round logic
@@ -429,7 +432,8 @@ module sha3
 
     .state_o    (state),
 
-    .sparse_fsm_error_o (keccak_round_state_error),
+    .sparse_fsm_error_o  (keccak_round_state_error),
+    .round_count_error_o (round_count_error),
 
     .clear_i    (keccak_done)
   );
