@@ -124,7 +124,8 @@ compute_m0_inv:
 
   /* w5 <= M[0] = M mod (2^256) */
   li        x3, 5
-  la        x16, in_mod
+  la        x16, dptr_mod
+  lw        x16, 0(x16)
   bn.lid    x3, 0(x16)
 
   /* w6 <= 1 */
@@ -167,19 +168,24 @@ compute_m0_inv:
 
   /* Store result in dmem[m0inv]. */
   li        x9, 2
-  la        x26, m0inv
+  la        x26, dptr_m0inv
+  lw        x26, 0(x26)
   bn.sid    x9, 0(x26)
 
   ret
 
-/* Input buffer for the modulus. */
-.section .data.in_mod
-.weak in_mod
-in_mod:
-  .zero 384
+.section .data
 
-/* Output buffer for the Montgomery constant. */
-.section .data.m0inv
-.weak m0inv
-m0inv:
-  .zero 32
+/* Pointer to modulus. */
+.globl dptr_mod
+.weak dptr_mod
+.balign 4
+dptr_mod:
+.zero 4
+
+/* Pointer to the output buffer for the Montgomery constant. */
+.globl dptr_m0inv
+.weak dptr_m0inv
+.balign 4
+dptr_m0inv:
+.zero 4

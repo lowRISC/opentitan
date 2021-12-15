@@ -17,9 +17,13 @@ enum {
    */
   kSigVerifyRsaNumBits = 3072,
   /**
+   * Length of an RSA-3072 modulus or signature in bytes.
+   */
+  kSigVerifyRsaNumBytes = kSigVerifyRsaNumBits / 8,
+  /**
    * Length of an RSA-3072 modulus or signature in words.
    */
-  kSigVerifyRsaNumWords = kSigVerifyRsaNumBits / (sizeof(uint32_t) * 8),
+  kSigVerifyRsaNumWords = kSigVerifyRsaNumBytes / sizeof(uint32_t),
 };
 
 /**

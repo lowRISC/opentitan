@@ -11,6 +11,18 @@
  * w0). See comment at the end of the file for expected values.
  */
 run_rsa_verify_3072_consts_test:
+
+  /* Set up pointers */
+  la       x2, mod
+  la       x3, dptr_mod
+  sw       x2, 0(x3)
+  la       x2, rr
+  la       x3, dptr_rr
+  sw       x2, 0(x3)
+  la       x2, m0inv
+  la       x3, dptr_m0inv
+  sw       x2, 0(x3)
+
   /* Compute R^2 = (2^3072)^2 mod M */
   jal      x1, compute_rr
 
@@ -34,8 +46,8 @@ run_rsa_verify_3072_consts_test:
 .data
 
 /* Modulus of test key */
-.globl in_mod
-in_mod:
+.globl mod
+mod:
   .word 0x6a6a75e1
   .word 0xa018ddc5
   .word 0x687bb168

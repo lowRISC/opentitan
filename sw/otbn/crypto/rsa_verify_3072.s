@@ -6,29 +6,18 @@
  * Derived from code in
  * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_bn.c
  *
- * The interface for this file can be accessed through the following symbols.
- * All of them are declared weak in this file, so can be overridden by code
- * that links against this object:
+ * This function recieves and returns its data through the following pointers
+ * to DMEM regions:
  *
- *   out_buf:  OUTPUT
- *             384 bytes
- *             The resulting recovered message
+ *   dptr_mod      Pointer to the modulus (384 bytes)
+ *   dptr_sig      Pointer to the signature (384 bytes)
+ *   dptr_rr       Pointer to Montgomery constant R^2 (384 bytes)
+ *   dptr_m0inv    Pointer to Montgomery constant -(M^-1) mod 2^256 (32 bytes)
+ *   dptr_out_buf  Pointer to a buffer for the output (384 bytes)
  *
- *   in_mod:   INPUT
- *             384 bytes
- *             The modulus
- *
- *   in_buf:   INPUT
- *             384 bytes
- *             The signature
- *
- *   rr:       INPUT
- *             384 bytes
- *             The Montgomery transformation constant R^2 = (2^3072)^2 mod N
- *
- *   m0inv:    INPUT
- *             384 bytes
- *             The Montgomery constant
+ * These routines assume that the above DMEM regions are disjoint and 32-byte
+ * aligned. All pointer symbols are declared .weak in this file, so they can be
+ * overridden by code that links against this.
  */
 
 .text
@@ -348,11 +337,11 @@ montmul:
  * The base bignum A is expected in the input buffer, the result C is written
  * to the output buffer.
  *
- * @param[in]  dmem[m0inv] pointer to m0' in dmem
- * @param[in]  dmem[rr] pointer to RR in dmem
- * @param[in]  dmem[in_mod] pointer to first limb of modulus M in dmem
- * @param[in]  dmem[in_buf] pointer to buffer with base bignum
- * @param[in]  dmem[out_buf] pointer to output buffer
+ * @param[in]  dmem[dptr_m0inv] pointer to m0' in dmem
+ * @param[in]  dmem[dptr_rr] pointer to RR in dmem
+ * @param[in]  dmem[dptr_mod] pointer to first limb of modulus M in dmem
+ * @param[in]  dmem[dptr_buf] pointer to buffer with base bignum
+ * @param[in]  dmem[dptr_out_buf] pointer to output buffer
  *
  * clobbered registers: x2, x5 to x13, x16 to x21, x29
                         w2, to w15, w24 to w31
@@ -370,14 +359,19 @@ modexp_var_3072_3:
   li        x11, 2
 
   /* Set pointers to buffers. */
-  la        x24, out_buf
-  la        x16, in_mod
-  la        x23, in_buf
-  la        x26, rr
-  la        x17, m0inv
+  la        x24, dptr_out_buf
+  lw        x24, 0(x24)
+  la        x16, dptr_mod
+  lw        x16, 0(x16)
+  la        x23, dptr_sig
+  lw        x23, 0(x23)
+  la        x26, dptr_rr
+  lw        x26, 0(x26)
+  la        x17, dptr_m0inv
+  lw        x17, 0(x17)
 
   /* Convert input to Montgomery domain and store in dmem.
-     dmem[out_buf] <= montmul(dmem[in_buf], dmem[in_RR]) = A*R mod M */
+     dmem[dptr_out_buf] <= montmul(dmem[dptr_sig], dmem[dptr_rr]) = A*R mod M */
   addi      x19, x23, 0
   addi      x20, x26, 0
   addi      x21, x24, 0
@@ -387,7 +381,7 @@ modexp_var_3072_3:
     addi      x8, x8, 1
 
   /* Square the outbut buffer.
-     dmem[out_buf]  <= montmul(dmem[out_buf], dmem[out_buf]) = (A^2)*R mod M */
+     dmem[dptr_out_buf]  <= montmul(dmem[dptr_out_buf], dmem[dptr_out_buf]) = (A^2)*R mod M */
   addi      x19, x24, 0
   addi      x20, x24, 0
   addi      x21, x24, 0
@@ -397,13 +391,13 @@ modexp_var_3072_3:
     addi      x8, x8, 1
 
   /* Final multiplication and conversion of result from Montgomery domain.
-     dmem[out_buf]  <= montmul(dmem[in_buf], dmem[out_buf]) = (A^3) mod M */
+     dmem[dptr_out_buf]  <= montmul(dmem[dptr_sig], dmem[dptr_out_buf]) = (A^3) mod M */
   addi      x19, x23, 0
   addi      x20, x24, 0
   addi      x21, x24, 0
   jal       x1, montmul
 
-  /* Final conditional subtraction of modulus if mod >= dmem[out_buf]. */
+  /* Final conditional subtraction of modulus if mod >= dmem[dptr_out_buf]. */
   bn.add    w31, w31, w31
   li        x17, 16
   loopi     12, 4
@@ -446,11 +440,11 @@ modexp_var_3072_3:
  * The base bignum A is expected in the input buffer, the result C is written
  * to the output buffer.
  *
- * @param[in]  dmem[m0inv] pointer to m0' in dmem
- * @param[in]  dmem[rr] pointer to RR in dmem
- * @param[in]  dmem[in_mod] pointer to first limb of modulus M in dmem
- * @param[in]  dmem[in_buf] pointer to buffer with base bignum
- * @param[in]  dmem[out_buf] pointer to output buffer
+ * @param[in]  dmem[dptr_m0inv] pointer to m0' in dmem
+ * @param[in]  dmem[dptr_rr] pointer to RR in dmem
+ * @param[in]  dmem[dptr_mod] pointer to first limb of modulus M in dmem
+ * @param[in]  dmem[dptr_sig] pointer to buffer with base bignum
+ * @param[in]  dmem[dptr_out_buf] pointer to output buffer
  *
  * clobbered registers: x2, x5 to x13, x16 to x21, x29
                         w2, to w15, w24 to w31
@@ -468,14 +462,19 @@ modexp_var_3072_f4:
   li        x11, 2
 
   /* Set pointers to buffers. */
-  la        x24, out_buf
-  la        x16, in_mod
-  la        x23, in_buf
-  la        x26, rr
-  la        x17, m0inv
+  la        x24, dptr_out_buf
+  lw        x24, 0(x24)
+  la        x16, dptr_mod
+  lw        x16, 0(x16)
+  la        x23, dptr_sig
+  lw        x23, 0(x23)
+  la        x26, dptr_rr
+  lw        x26, 0(x26)
+  la        x17, dptr_m0inv
+  lw        x17, 0(x17)
 
   /* Convert input to Montgomery domain and store in dmem.
-     dmem[out_buf] <= montmul(dmem[in_buf], dmem[in_RR]) = A*R mod M */
+     dmem[dptr_out_buf] <= montmul(dmem[dptr_sig], dmem[dptr_rr]) = A*R mod M */
   addi      x19, x23, 0
   addi      x20, x26, 0
   addi      x21, x24, 0
@@ -485,9 +484,9 @@ modexp_var_3072_f4:
     addi      x8, x8, 1
 
   /* 16 consecutive Montgomery squares on the outbut buffer, i.e. after loop:
-     dmem[out_buf] <= dmem[out_buf]^65536*R mod M */
+     dmem[dptr_out_buf] <= dmem[dptr_out_buf]^65536*R mod M */
   loopi     16, 8
-    /* dmem[out_buf]  <= montmul(dmem[out_buf], dmem[out_buf]) */
+    /* dmem[dptr_out_buf]  <= montmul(dmem[dptr_out_buf], dmem[dptr_out_buf]) */
     addi      x19, x24, 0
     addi      x20, x24, 0
     addi      x21, x24, 0
@@ -498,13 +497,13 @@ modexp_var_3072_f4:
     nop
 
   /* Final multiplication and conversion of result from Montgomery domain.
-     out_buf  <= montmul(*x28, *x20) = montmul(dmem[in_buf], dmem[out_buf]) */
+     dmem[dptr_out_buf]  <= montmul(*x28, *x20) = montmul(dmem[dptr_sig], dmem[dptr_out_buf]) */
   addi      x19, x23, 0
   addi      x20, x24, 0
   addi      x21, x24, 0
   jal       x1, montmul
 
-  /* Final conditional subtraction of modulus if mod >= dmem[out_buf]. */
+  /* Final conditional subtraction of modulus if mod >= dmem[dptr_out_buf]. */
   bn.add    w31, w31, w31
   li        x17, 16
   loopi     12, 4
@@ -531,32 +530,39 @@ modexp_var_3072_f4:
 
   ret
 
-/* Output buffer for the resulting, recovered message. */
-.section .data.out_buf
-.weak out_buf
-out_buf:
-  .zero 384
+.section .data
 
-/* Input buffer for the modulus. */
-.section .data.in_mod
-.weak in_mod
-in_mod:
-  .zero 384
+/* Pointer to output buffer. */
+.globl dptr_out_buf
+.weak dptr_out_buf
+.balign 4
+dptr_out_buf:
+.zero 4
 
-/* Input buffer for the signature. */
-.section .data.in_buf
-.weak in_buf
-in_buf:
-  .zero 384
+/* Pointer to modulus. */
+.globl dptr_mod
+.weak dptr_mod
+.balign 4
+dptr_mod:
+.zero 4
 
-/* Input buffer for the Montgomery transformation constant R^2. */
-.section .data.rr
-.weak rr
-rr:
-  .zero 384
+/* Pointer to signature. */
+.globl dptr_sig
+.weak dptr_sig
+.balign 4
+dptr_sig:
+.zero 4
 
-/* The Montgomery constant. */
-.section .data.m0inv
-.weak m0inv
-m0inv:
-  .zero 32
+/* Pointer to the Montgomery transformation constant R^2. */
+.globl dptr_rr
+.weak dptr_rr
+.balign 4
+dptr_rr:
+.zero 4
+
+/* Pointer to the Montgomery constant -(M^-1) mod 2^256. */
+.globl dptr_m0inv
+.weak dptr_m0inv
+.balign 4
+dptr_m0inv:
+.zero 4

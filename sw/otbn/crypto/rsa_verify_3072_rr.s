@@ -2,17 +2,15 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-/* The interface for this file can be accessed through the following symbols.
- * All of them are declared weak in this file, so can be overridden by code
- * that links against this object:
+/* This function recieves and returns its data through the following pointers
+ * to DMEM regions:
  *
- *   in_mod:   INPUT
- *             384 bytes
- *             The modulus
+ *   dptr_mod      Pointer to the modulus (384 bytes)
+ *   dptr_rr       Pointer to Montgomery constant R^2 (384 bytes)
  *
- *   rr:    INPUT
- *             384 bytes
- *             The Montgomery transformation constant R^2 = (2^3072)^2 mod N
+ * These routines assume that the above DMEM regions are disjoint and 32-byte
+ * aligned. All pointer symbols are declared .weak in this file, so they can be
+ * overridden by code that links against this.
  */
 
 .text
@@ -148,11 +146,12 @@ sel_aa:
  * 53), which states that the prime factors of the RSA modulus must be at least
  * sqrt(2)*2^(nlen/2-1) (where nlen is the key length, 3072 in this case).
  *
- * The result is stored in dmem[rr]. This routine runs in variable time.
+ * This routine runs in variable time.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  dmem[in_mod] pointer to first limb of modulus M in dmem
+ * @param[in]  dmem[dptr_mod] pointer to first limb of modulus M in dmem
+ * @param[out] dmem[dptr_rr]  result, R^2 mod M
  *
  * clobbered registers: x9, x10, x16, w4 to w16, w31
  * clobbered Flag Groups: FG0
@@ -163,7 +162,8 @@ compute_rr:
   bn.xor    w31, w31, w31
 
   /* Set pointer to modulus. */
-  la        x16, in_mod
+  la        x16, dptr_mod
+  lw        x16, 0(x16)
 
   /* Zero [w4:w15]. */
   li        x9, 4
@@ -191,21 +191,26 @@ compute_rr:
 
   /* Store result in dmem[rr]. */
   li        x9, 4
-  la        x10, rr
+  la        x10, dptr_rr
+  lw        x10, 0(x10)
   loopi     12, 2
     bn.sid    x9, 0(x10++)
     addi      x9, x9, 1
 
   ret
 
-/* Input buffer for the modulus. */
-.section .data.in_mod
-.weak in_mod
-in_mod:
-  .zero 384
+.section .data
 
-/* Output buffer for the Montgomery transformation constant R^2. */
-.section .data.rr
-.weak rr
-rr:
-  .zero 384
+/* Pointer to modulus. */
+.globl dptr_mod
+.weak dptr_mod
+.balign 4
+dptr_mod:
+.zero 4
+
+/* Pointer to the output buffer for R^2. */
+.globl dptr_rr
+.weak dptr_rr
+.balign 4
+dptr_rr:
+.zero 4

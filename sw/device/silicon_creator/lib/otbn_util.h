@@ -21,8 +21,10 @@ extern "C" {
 enum {
   /* Length of an OTBN wide word in bits */
   kOtbnWideWordNumBits = 256,
+  /* Length of an OTBN wide word in bytes */
+  kOtbnWideWordNumBytes = kOtbnWideWordNumBits / 8,
   /* Length of an OTBN wide word in words */
-  kOtbnWideWordNumWords = kOtbnWideWordNumBits / (sizeof(uint32_t) * 8),
+  kOtbnWideWordNumWords = kOtbnWideWordNumBytes / sizeof(uint32_t),
 };
 
 /**
@@ -79,6 +81,13 @@ typedef struct otbn {
    * Only valid if @p app_is_loaded is true.
    */
   otbn_app_t app;
+
+  /**
+   * Pointer to the first byte of free DMEM space.
+   *
+   * Only valid if @p app_is_loaded is true.
+   */
+  otbn_ptr_t free_dmem;
 
   /**
    * Is the application loaded into OTBN?
@@ -209,12 +218,85 @@ otbn_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len,
  *
  * @param ctx The context object.
  * @param ptr The pointer to convert.
- * @param[out] dmem_addr_otbn The address of the data in OTBN's data memory.
- * @return The result of the operation; #kOtbnBadArg if `ptr` is not in the data
- *         memory space of the currently loaded application.
+ * @return The address of the data in OTBN's data memory.
  */
-otbn_error_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
-                                        uint32_t *dmem_addr_otbn);
+uint32_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr);
+
+/**
+ * Converts a DMEM address into a corresponding pointer in CPU memory.
+ *
+ * @param ctx The context object.
+ * @param dmem_addr The address to convert.
+ * @return The pointer in CPU memory.
+ */
+otbn_ptr_t otbn_dmem_addr_to_data_ptr(const otbn_t *ctx, uint32_t dmem_addr);
+
+/**
+ * Makes a single dptr symbol point to where its value is stored.
+ *
+ * After this routine, dmem[dptr] contains the DMEM address corresponding to
+ * `value`.
+ *
+ * @param otbn The OTBN context
+ * @param dptr Pointer to the dptr_* symbol
+ * @param value Pointer to the value
+ * @return The result of the operation.
+ */
+otbn_error_t set_data_pointer(otbn_t *otbn, const otbn_ptr_t dptr,
+                              const otbn_ptr_t value);
+
+/**
+ * Sets a pointer to a certain amount of free space in DMEM.
+ *
+ * Aligns the destination pointer to the next free and 256-bit aligned DMEM
+ * address and sets up the dptr to point to that address.
+ *
+ * Must be called when OTBN is idle. Errors on attempts to allocate past the
+ * boundaries of DMEM.
+ *
+ * @param otbn The OTBN context
+ * @param len The number of 32b words to allocate
+ * @param dptr Pointer to the dptr_* symbol
+ * @return The result of the operation.
+ */
+otbn_error_t otbn_dmem_alloc(otbn_t *otbn, size_t len, otbn_ptr_t dptr);
+
+/**
+ * Copies data from the CPU to OTBN DMEM.
+ *
+ * Writes data to the next free, 256-bit-aligned DMEM address. Then, sets up
+ * the dptr to point to the newly written value, and internally updates the
+ * OTBN context to indicate that those bytes are no longer free.
+ *
+ * Must be called when OTBN is idle. Errors on attempts to write past the
+ * boundaries of DMEM.
+ *
+ * @param otbn The OTBN context
+ * @param len The number of 32b words to copy
+ * @param src Source of the data to copy
+ * @param dptr Pointer to the dptr_* symbol
+ * @return The result of the operation.
+ */
+otbn_error_t otbn_dmem_write_indirect(otbn_t *otbn, size_t len,
+                                      const uint32_t *src, otbn_ptr_t dptr);
+
+/**
+ * Read the value pointed to by a DMEM pointer.
+ *
+ * Reads the address held in DMEM[dptr] and then copies `len` words from DMEM
+ * to CPU main memory starting at that address.
+ *
+ * Errors if the read is outside DMEM, or if the address read from the dptr is
+ * not 32b-aligned.
+ *
+ * @param otbn The OTBN context
+ * @param len The number of 32b words to copy
+ * @param dptr Pointer to the dptr_* symbol
+ * @param dest Pointer to the destination in CPU memory
+ * @return The result of the operation.
+ */
+otbn_error_t otbn_dmem_read_indirect(otbn_t *otbn, size_t len, otbn_ptr_t dptr,
+                                     uint32_t *dest);
 
 /**
  * Evaluate an expression and return a mask ROM error if the result is an

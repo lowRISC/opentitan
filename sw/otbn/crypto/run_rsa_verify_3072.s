@@ -8,8 +8,28 @@
  * Standalone embeddable wrapper for 3072 bit RSA signature verification.
  * Performs either computation of Montgomery constants or modular
  * exponentiation, depending on mode.
+ *
+ * This file allocates space only for the pointers to large buffers, in order
+ * to avoid including empty DMEM space in the binary. The caller must, before
+ * executing this application, ensure that all input, output, and intermediate
+ * buffers are allocated and non-overlapping, and that the pointers needed by
+ * the given mode point to the correct locations.
+ *
+ * For computing constants (mode=1), the caller must allocate:
+ *   - a 384-byte buffer holding the modulus at dmem[dptr_mod]
+ *   - a 384-byte buffer for the output R^2 at dmem[dptr_rr]
+ *   - a 32-byte buffer for the output m0_inv at dmem[dptr_m0_inv]
+ *
+ * For modular exponentiation (mode=2), the caller must allocate:
+ *   - a 384-byte buffer holding the modulus at dmem[dptr_mod]
+ *   - a 384-byte buffer holding the signature at dmem[dptr_sig]
+ *   - a 384-byte buffer holding R^2 at dmem[dptr_rr]
+ *   - a 32-byte buffer holding m0_inv at dmem[dptr_m0_inv]
+ *   - a 384-byte buffer for the output at dmem[dptr_out_buf]
+ *
  */
 run_rsa_verify_3072:
+
   /* Get the mode input value: x3 <= mode */
   la       x2, mode
   lw       x3, 0(x2)
@@ -28,9 +48,9 @@ run_rsa_verify_3072:
 /**
  * Compute the two Montgomery constants for the given modulus.
  *
- * @param[in] dmem[in_mod]: Modulus of the RSA public key
- * @param[out] dmem[rr]: Montgomery constant R^2 = (2^3072)^2 mod M
- * @param[out] dmem[m0inv]: Montgomery constant m0_inv = (-(M^-1)) mod 2^256
+ * @param[in] dmem[dptr_mod]: Modulus of the RSA public key
+ * @param[out] dmem[dptr_rr]: Montgomery constant R^2 = (2^3072)^2 mod M
+ * @param[out] dmem[dptr_m0inv]: Montgomery constant m0_inv = (-(M^-1)) mod 2^256
 */
 compute_constants:
   jal       x1, compute_rr
@@ -47,16 +67,16 @@ compute_constants:
  *
  * The result, msg, is the recovered message digest.
  *
- * @param[in] dmem[in_exp]: Exponent of the RSA public key (must be 3 or F4=65537)
- * @param[in] dmem[in_mod]: Modulus of the RSA public key
- * @param[in] dmem[in_buf]: Signature to check against
- * @param[in] dmem[rr]: Montgomery constant R^2
- * @param[in] dmem[m0inv]: Montgomery constant m0_inv
- * @param[out] dmem[out_buf]: Recovered message digest (msg)
+ * @param[in] dmem[exp]: Exponent of the RSA public key (must be 3 or F4=65537)
+ * @param[in] dmem[dptr_mod]: Modulus of the RSA public key
+ * @param[in] dmem[dptr_sig]: Signature to check against
+ * @param[in] dmem[dptr_rr]: Montgomery constant R^2
+ * @param[in] dmem[dptr_m0inv]: Montgomery constant m0_inv
+ * @param[out] dmem[dptr_out_buf]: Recovered message digest (msg)
 */
 modexp:
-  /* Get the exponent: x3 <= dmem[in_exp] */
-  la       x2, in_exp
+  /* Get the exponent: x3 <= dmem[exp] */
+  la       x2, exp
   lw       x3, 0(x2)
 
   /* Call a modexp implementation matching the exponent.
@@ -88,31 +108,37 @@ mode:
 .zero 4
 
 /* Exponent of the RSA-3072 key. Accepted values: 3 or F4=65537 */
-.globl in_exp
+.globl exp
 .balign 4
-in_exp:
+exp:
 .zero 4
 
-/* Modulus of RSA-3072 key */
-.globl in_mod
-.balign 32
-in_mod:
-.zero 384
+/* Pointer to output buffer. */
+.globl dptr_out_buf
+.balign 4
+dptr_out_buf:
+.zero 4
 
-/* Montgomery constant m0' */
-.globl m0inv
-.balign 32
-m0inv:
-.zero 32
+/* Pointer to modulus. */
+.globl dptr_mod
+.balign 4
+dptr_mod:
+.zero 4
 
-/* Squared Mongomery Radix RR = (2^3072)^2 mod N */
-.globl rr
-.balign 32
-rr:
-.zero 384
+/* Pointer to signature. */
+.globl dptr_sig
+.balign 4
+dptr_sig:
+.zero 4
 
-/* signature */
-.globl in_buf
-.balign 32
-in_buf:
-.zero 384
+/* Pointer to the Montgomery transformation constant R^2. */
+.globl dptr_rr
+.balign 4
+dptr_rr:
+.zero 4
+
+/* Pointer to the Montgomery constant -(M^-1) mod 2^256. */
+.globl dptr_m0inv
+.balign 4
+dptr_m0inv:
+.zero 4

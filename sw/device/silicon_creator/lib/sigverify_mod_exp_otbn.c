@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
-
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_util.h"
@@ -16,55 +15,32 @@
 OTBN_DECLARE_APP_SYMBOLS(
     run_rsa_verify_3072_rr_modexp);  // The OTBN RSA-3072 app.
 OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072_rr_modexp,
-                        out_buf);  // Output buffer (message).
+                        exp);  // The RSA key exponent (e).
 OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072_rr_modexp,
-                        in_exp);  // The RSA key exponent (e).
+                        dptr_out_buf);  // Output buffer (message).
 OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072_rr_modexp,
-                        in_mod);  // The RSA modulus (n).
+                        dptr_mod);  // The RSA modulus (n).
 OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072_rr_modexp,
-                        in_buf);  // The signature (s).
+                        dptr_sig);  // The signature (s).
 OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072_rr_modexp,
-                        m0inv);  // The Montgomery constant m0_inv.
+                        dptr_rr);  // The Montgomery constant R^2.
+OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072_rr_modexp,
+                        dptr_m0inv);  // The Montgomery constant m0_inv.
 
 static const otbn_app_t kOtbnAppRsa =
     OTBN_APP_T_INIT(run_rsa_verify_3072_rr_modexp);
-static const otbn_ptr_t kOtbnVarRsaOutBuf =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, out_buf);
-static const otbn_ptr_t kOtbnVarRsaInExp =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, in_exp);
-static const otbn_ptr_t kOtbnVarRsaInMod =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, in_mod);
-static const otbn_ptr_t kOtbnVarRsaInBuf =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, in_buf);
-static const otbn_ptr_t kOtbnVarRsaM0Inv =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, m0inv);
-
-/**
- * Copies a 3072-bit number from the CPU memory to OTBN data memory.
- *
- * @param otbn The OTBN context object.
- * @param src Source of the data to copy.
- * @param dst Pointer to the destination in OTBN's data memory.
- * @return The result of the operation.
- */
-static otbn_error_t write_rsa_3072_int_to_otbn(
-    otbn_t *otbn, const sigverify_rsa_buffer_t *src, otbn_ptr_t dst) {
-  return otbn_copy_data_to_otbn(otbn, kSigVerifyRsaNumWords, src->data, dst);
-}
-
-/**
- * Copies a 3072-bit number from OTBN data memory to CPU memory.
- *
- * @param otbn The OTBN context object.
- * @param src The pointer in OTBN data memory to copy from.
- * @param dst The destination of the copied data in main memory (preallocated).
- * @return The result of the operation.
- */
-static otbn_error_t read_rsa_3072_int_from_otbn(otbn_t *otbn,
-                                                const otbn_ptr_t src,
-                                                sigverify_rsa_buffer_t *dst) {
-  return otbn_copy_data_from_otbn(otbn, kSigVerifyRsaNumWords, src, dst->data);
-}
+static const otbn_ptr_t kOtbnVarRsaExp =
+    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, exp);
+static const otbn_ptr_t kOtbnVarRsaDptrOutBuf =
+    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, dptr_out_buf);
+static const otbn_ptr_t kOtbnVarRsaDptrMod =
+    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, dptr_mod);
+static const otbn_ptr_t kOtbnVarRsaDptrSig =
+    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, dptr_sig);
+static const otbn_ptr_t kOtbnVarRsaDptrRR =
+    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, dptr_rr);
+static const otbn_ptr_t kOtbnVarRsaDptrM0Inv =
+    OTBN_PTR_T_INIT(run_rsa_verify_3072_rr_modexp, dptr_m0inv);
 
 otbn_error_t run_otbn_rsa_3072_modexp(
     const sigverify_rsa_key_t *public_key,
@@ -77,20 +53,28 @@ otbn_error_t run_otbn_rsa_3072_modexp(
   OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppRsa));
 
   // Set the exponent (e).
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, 1, &public_key->exponent,
-                                              kOtbnVarRsaInExp));
-
-  // Set the modulus (n).
   OTBN_RETURN_IF_ERROR(
-      write_rsa_3072_int_to_otbn(&otbn, &public_key->n, kOtbnVarRsaInMod));
+      otbn_copy_data_to_otbn(&otbn, 1, &public_key->exponent, kOtbnVarRsaExp));
+
+  // Set the modulus.
+  OTBN_RETURN_IF_ERROR(otbn_dmem_write_indirect(
+      &otbn, kSigVerifyRsaNumWords, public_key->n.data, kOtbnVarRsaDptrMod));
 
   // Set the signature.
-  OTBN_RETURN_IF_ERROR(
-      write_rsa_3072_int_to_otbn(&otbn, signature, kOtbnVarRsaInBuf));
+  OTBN_RETURN_IF_ERROR(otbn_dmem_write_indirect(
+      &otbn, kSigVerifyRsaNumWords, signature->data, kOtbnVarRsaDptrSig));
 
   // Set the precomputed constant m0_inv.
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
-      &otbn, kOtbnWideWordNumWords, public_key->n0_inv, kOtbnVarRsaM0Inv));
+  OTBN_RETURN_IF_ERROR(otbn_dmem_write_indirect(
+      &otbn, kOtbnWideWordNumWords, public_key->n0_inv, kOtbnVarRsaDptrM0Inv));
+
+  // Allocate a buffer for the constant R^2.
+  OTBN_RETURN_IF_ERROR(
+      otbn_dmem_alloc(&otbn, kSigVerifyRsaNumWords, kOtbnVarRsaDptrRR));
+
+  // Allocate a buffer for the output.
+  OTBN_RETURN_IF_ERROR(
+      otbn_dmem_alloc(&otbn, kSigVerifyRsaNumWords, kOtbnVarRsaDptrOutBuf));
 
   // Start the OTBN routine.
   OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
@@ -99,8 +83,9 @@ otbn_error_t run_otbn_rsa_3072_modexp(
   OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
 
   // Read recovered message out of OTBN dmem.
-  OTBN_RETURN_IF_ERROR(
-      read_rsa_3072_int_from_otbn(&otbn, kOtbnVarRsaOutBuf, recovered_message));
+  OTBN_RETURN_IF_ERROR(otbn_dmem_read_indirect(&otbn, kSigVerifyRsaNumWords,
+                                               kOtbnVarRsaDptrOutBuf,
+                                               recovered_message->data));
 
   return kOtbnErrorOk;
 }

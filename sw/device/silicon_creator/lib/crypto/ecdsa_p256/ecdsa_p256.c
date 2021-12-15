@@ -59,18 +59,6 @@ static const uint32_t kOtbnEcdsaModeSign = 1;
 // static const uint32_t kOtbnEcdsaModeVerify = 2;
 
 /**
- * Makes a single dptr in the P256 library point to where its value is stored.
- */
-static otbn_error_t setup_data_pointer(otbn_t *otbn, const otbn_ptr_t dptr,
-                                       const otbn_ptr_t value) {
-  uint32_t value_dmem_addr;
-  OTBN_RETURN_IF_ERROR(
-      otbn_data_ptr_to_dmem_addr(otbn, value, &value_dmem_addr));
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(otbn, 1, &value_dmem_addr, dptr));
-  return kOtbnErrorOk;
-}
-
-/**
  * Sets up all data pointers used by the P256 library to point to DMEM.
  *
  * The ECDSA P256 OTBN library makes use of "named" data pointers as part of
@@ -83,21 +71,21 @@ static otbn_error_t setup_data_pointer(otbn_t *otbn, const otbn_ptr_t dptr,
  * This function makes the data pointers refer to the pre-allocated DMEM
  * regions to store the actual values.
  */
-static otbn_error_t setup_data_pointers(otbn_t *otbn) {
+static otbn_error_t set_data_pointers(otbn_t *otbn) {
   OTBN_RETURN_IF_ERROR(
-      setup_data_pointer(otbn, kOtbnVarEcdsaDptrMsg, kOtbnVarEcdsaMsg));
+      set_data_pointer(otbn, kOtbnVarEcdsaDptrMsg, kOtbnVarEcdsaMsg));
   OTBN_RETURN_IF_ERROR(
-      setup_data_pointer(otbn, kOtbnVarEcdsaDptrR, kOtbnVarEcdsaR));
+      set_data_pointer(otbn, kOtbnVarEcdsaDptrR, kOtbnVarEcdsaR));
   OTBN_RETURN_IF_ERROR(
-      setup_data_pointer(otbn, kOtbnVarEcdsaDptrS, kOtbnVarEcdsaS));
+      set_data_pointer(otbn, kOtbnVarEcdsaDptrS, kOtbnVarEcdsaS));
   OTBN_RETURN_IF_ERROR(
-      setup_data_pointer(otbn, kOtbnVarEcdsaDptrX, kOtbnVarEcdsaX));
+      set_data_pointer(otbn, kOtbnVarEcdsaDptrX, kOtbnVarEcdsaX));
   OTBN_RETURN_IF_ERROR(
-      setup_data_pointer(otbn, kOtbnVarEcdsaDptrY, kOtbnVarEcdsaY));
+      set_data_pointer(otbn, kOtbnVarEcdsaDptrY, kOtbnVarEcdsaY));
   OTBN_RETURN_IF_ERROR(
-      setup_data_pointer(otbn, kOtbnVarEcdsaDptrD, kOtbnVarEcdsaD));
+      set_data_pointer(otbn, kOtbnVarEcdsaDptrD, kOtbnVarEcdsaD));
   OTBN_RETURN_IF_ERROR(
-      setup_data_pointer(otbn, kOtbnVarEcdsaDptrXr, kOtbnVarEcdsaXr));
+      set_data_pointer(otbn, kOtbnVarEcdsaDptrXr, kOtbnVarEcdsaXr));
   return kOtbnErrorOk;
 }
 
@@ -111,7 +99,7 @@ otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
 
   // Load the ECDSA/P-256 app and set up data pointers
   OTBN_RETURN_IF_ERROR(otbn_load_app(&otbn, kOtbnAppEcdsa));
-  OTBN_RETURN_IF_ERROR(setup_data_pointers(&otbn));
+  OTBN_RETURN_IF_ERROR(set_data_pointers(&otbn));
 
   // Set mode so start() will jump into p256_ecdsa_sign().
   OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(

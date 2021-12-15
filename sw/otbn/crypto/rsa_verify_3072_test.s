@@ -14,6 +14,24 @@
  * w0). See comment at the end of the file for expected values.
  */
 run_rsa_verify_3072:
+
+  /* Set up pointers */
+  la       x2, mod
+  la       x3, dptr_mod
+  sw       x2, 0(x3)
+  la       x2, sig
+  la       x3, dptr_sig
+  sw       x2, 0(x3)
+  la       x2, rr
+  la       x3, dptr_rr
+  sw       x2, 0(x3)
+  la       x2, m0inv
+  la       x3, dptr_m0inv
+  sw       x2, 0(x3)
+  la       x2, out_buf
+  la       x3, dptr_out_buf
+  sw       x2, 0(x3)
+
   /* run modular exponentiation */
   jal      x1, modexp_var_3072_f4
 
@@ -30,8 +48,8 @@ run_rsa_verify_3072:
 .data
 
 /* Modulus of test key */
-.globl in_mod
-in_mod:
+.globl mod
+mod:
   .word 0x6a6a75e1
   .word 0xa018ddc5
   .word 0x687bb168
@@ -250,8 +268,8 @@ rr:
 .word 0x9e2dcea8
 
 /* signature */
-.globl in_buf
-in_buf:
+.globl sig
+sig:
 .word 0xceb7e983
 .word 0xe693b200
 .word 0xf9153989
@@ -349,6 +367,10 @@ in_buf:
 .word 0x8fc62fbe
 .word 0x114e6da5
 
+/* Buffer for result */
+.globl out_buf
+out_buf:
+.zero 384
 
 /* Full key for reference:
    modulus                       n = 0xe1df9be8a6c7bf58a792e13e81f787930fce770a5e4ed04d24bd4fbf663209f21344ceaf90e82c7346c9addeb52f170d24c5052559cf874df24f038b21f57f30e18e1206131000ea4d6713ff782e02047a8dfb7f9a29e77d59e0765580a85056565afdbc33976249987caa5b45185f0f04afc71aeb6c3d05b02d90b75f78cb0daf4c58b43970dcb933370e5d78916a8cb70d6b88c8c7100ff0250bf5a137ac60c3d9945f996b62414021b0bd5402c462edf34bc0c4aba4e589c240e0c253ac43c9e0e12fe3bc0f60c13c437e069eccc9eb27475435bf0dfb49d8b510aab78f7bfad39f161ab269e9d2947d3d4d783a7c24e415466e66b8c82819a938fa7b49ee9ebd1ff224e2efdb4f40def28c28f251235574d2b62ed01530e74d0d8018385091b74a8443cccdf7d41db7aa8ae28eb94b1431e3ef762d5bc56ad0f27b9d63661c8be7b3824fb1421c4fb8d78e1dd008b27e206a57f51964a825f9880ce3f8a3e1312531f84d21cfc8722ac57dbfffa78e8205a5687bb168a018ddc56a6a75e1
