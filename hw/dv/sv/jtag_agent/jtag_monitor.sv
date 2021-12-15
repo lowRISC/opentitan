@@ -25,7 +25,7 @@ class jtag_monitor extends dv_base_monitor #(
     super.run_phase(phase);
   endtask
 
-  // collect transactions forever - already forked in dv_base_moditor::run_phase
+  // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task collect_trans(uvm_phase phase);
     jtag_fsm_state_e                jtag_state;
     jtag_item                       item;
