@@ -133,8 +133,11 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_regs",
+        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
     ],
 )
 

@@ -8,7 +8,7 @@ git_repository(
     name = "bazel_embedded",
     commit = "b4faaec60b07b11fe3d1fc6b40f22baf31a54690",
     remote = "https://github.com/lowRISC/bazel-embedded.git",
-    shallow_since = "1639417565 -0800"
+    shallow_since = "1639417565 -0800",
 )
 
 load("@bazel_embedded//:bazel_embedded_deps.bzl", "bazel_embedded_deps")
