@@ -113,7 +113,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   logic [SeedRdsWidth-1:0] addr_cnt_q;
   logic seed_cnt_en, seed_cnt_clr;
   logic addr_cnt_en, addr_cnt_clr;
-  logic rma_wipe_req, rma_wipe_done;
+  logic rma_wipe_req, rma_wipe_done, rma_wipe_req_tmp;
   logic [WipeIdxWidth-1:0] rma_wipe_idx;
   logic rma_wipe_idx_incr;
   flash_lcmgr_phase_e phase;
@@ -425,7 +425,10 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       end
 
     endcase // unique case (state_q)
-
+    // TODO this is a temporary fix you cannot glitch rma_wipe_req_tmp
+    // and this will break the x prop issue -but it is techincally still
+    // a combinatiorial loop and should be avoided.
+    rma_wipe_req_tmp = rma_wipe_req;
   end // always_comb
 
   ///////////////////////////////
@@ -593,7 +596,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     unique case (rma_state_q)
 
       StRmaIdle: begin
-        if (rma_wipe_req) begin
+        if (rma_wipe_req_tmp) begin
           rma_state_d = StRmaPageSel;
           page_cnt_ld = 1'b1;
         end
