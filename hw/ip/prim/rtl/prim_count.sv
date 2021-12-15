@@ -196,6 +196,9 @@ module prim_count import prim_count_pkg::*; #(
   `ASSERT(OutSet_A, ##1 set_i |=>
           (CntStyle == DupCnt || OutSelDnCnt) ? cnt_o == $past(set_cnt_i) : cnt_o == 0)
 
+  // If the up counter reaches its max value, the value won't increment or change.
+  `ASSERT(MaxUpCntStable_A, up_cnt_q[0] == max_val && !clr_i && !set_i |=> $stable(up_cnt_q[0]))
+
   // This logic that will be assign to one, when user adds macro
   // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
   // is used in design without adding this assertion check.
