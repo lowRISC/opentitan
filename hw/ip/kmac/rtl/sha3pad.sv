@@ -63,7 +63,10 @@ module sha3pad
   output logic absorbed_o,
 
   // Indication that there was a fault in the sparse encoding
-  output logic sparse_fsm_error_o
+  output logic sparse_fsm_error_o,
+
+  // Indication that there was a fault in the counter
+  output logic msg_count_error_o
 );
 
   /////////////////
@@ -192,7 +195,7 @@ module sha3pad
     .en_i(inc_sentmsg),
     .step_i(KeccakCountW'(1)),
     .cnt_o(sent_message),
-    .err_o() //ToDo
+    .err_o(msg_count_error_o)
   );
 
 
