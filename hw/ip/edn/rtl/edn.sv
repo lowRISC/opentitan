@@ -11,9 +11,7 @@ module edn
   import edn_reg_pkg::*;
 #(
   parameter int NumEndPoints = 7,
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter int BootInsCmd = 32'h0000_0001,
-  parameter int BootGenCmd = 32'h00ff_f003
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -61,9 +59,7 @@ module edn
   );
 
   edn_core #(
-    .NumEndPoints(NumEndPoints),
-    .BootInsCmd(BootInsCmd),
-    .BootGenCmd(BootGenCmd)
+    .NumEndPoints(NumEndPoints)
   ) u_edn_core (
     .clk_i,
     .rst_ni,
