@@ -190,7 +190,7 @@ def _build_iflow_straightline(
     encountering a control-flow instruction. Updates `constants` to hold the
     constant values after the section has finished.
     '''
-    iflow = InformationFlowGraph({})
+    iflow = InformationFlowGraph({'x0': set()})
     constant_deps = set()
 
     for pc in range(start_pc, end_pc + 4, 4):
@@ -616,3 +616,28 @@ def get_program_iflow(program: OTBNProgram,
                          'when analyzing whole program.')
     assert end_iflow is not None
     return end_iflow, control_deps
+
+
+def stringify_control_deps(program: OTBNProgram, control_deps: Dict[str,Set[int]]) -> List[str]:
+    '''Compute string representations of nodes that influence control flow.
+
+    Returns a list of strings, each representing one node that influences
+    control flow according to the input dictionary. The input is a dictionary
+    whose keys are information-flow nodes and whose values are the PCs at which
+    these nodes influence the control flow of the program.
+
+    Example:
+      input: {'x2' : {0x44, 0x55}, 'x3': {0x44}}
+      output: ['x2 (via beq at 0x44, bne at 0x55)', 'x3 (via beq at 0x44)']
+    '''
+    out = []
+    for node, pcs in control_deps.items():
+        pc_strings = []
+        if len(pcs) == 0:
+            continue
+        for pc in pcs:
+            insn = program.get_insn(pc)
+            pc_strings.append('{} at PC {:#x}'.format(
+                insn.mnemonic, pc))
+        out.append('{} (via {})'.format(node, ', '.join(pc_strings)))
+    return out

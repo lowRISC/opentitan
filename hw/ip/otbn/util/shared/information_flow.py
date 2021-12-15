@@ -522,9 +522,15 @@ class InsnInformationFlow:
         for rule in self.rules:
             rule_graph = rule.evaluate(op_vals, constant_regs)
             graph = safe_update_iflow(graph, rule_graph)
+
         if graph is None:
             # If no rules are triggered, return an empty graph
             graph = InformationFlowGraph({})
+
+        # The x0 register is special and always zero; make sure the
+        # information-flow graph shows it having no dependencies.
+        graph.flow['x0'] = set()
+
         return graph
 
     @staticmethod
