@@ -86,10 +86,13 @@
       desc: "Sparse state machine implementation."
     }
     { name: "CNT.REDUN"
-      desc: "Counter hardening."
+      desc: "Counter hardening for all health test counters."
+    }
+    { name: "LOGIC.INTEGRITY"
+      desc: "Comparison on successive bus values for the post-conditioned entropy seed bus."
     }
     { name: "BUS.INTEGRITY"
-      desc: "End-to-end bus integrity scheme."
+      desc: "Tilelink end-to-end bus integrity scheme."
     }
   ],
 
