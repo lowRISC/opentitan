@@ -231,15 +231,21 @@ package spi_device_pkg;
     // "Manufacture/Device ID", etc.  They are not always Input mode. Some has
     // a dummy cycle followed by the output field.
     CmdInfoReserveStart = 11,
-    CmdInfoReserveEnd   = spi_device_reg_pkg::NumCmdInfo -1
+    CmdInfoReserveEnd   = spi_device_reg_pkg::NumCmdInfo - 1,
+    CmdInfoEn4B         = CmdInfoReserveEnd + 1,
+    CmdInfoEx4B         = CmdInfoEn4B + 1,
+    NumTotalCmdInfo
   } cmd_info_index_e;
 
   parameter int unsigned NumReadCmdInfo = CmdInfoReadCmdEnd - CmdInfoReadCmdStart + 1;
 
-  import spi_device_reg_pkg::NumCmdInfo;
-  export spi_device_reg_pkg::NumCmdInfo;
+  // NumCmdInfo adds two more entries (EN4B/ EX4B)
+  // or, add NumTotalCmdInfo inside cmd_info_index_e and use?
+  //parameter int unsigned NumFixedCmdInfo = 2;
+  //parameter int unsigned NumTotalCmdInfo = NumFixedCmdInfo
+  //                                       + spi_device_reg_pkg::NumCmdInfo;
 
-  parameter int unsigned CmdInfoIdxW = $clog2(NumCmdInfo);
+  parameter int unsigned CmdInfoIdxW = $clog2(NumTotalCmdInfo);
 
   // Jedec Configuration Structure
   typedef struct packed {
@@ -305,21 +311,24 @@ package spi_device_pkg;
 
   localparam int MEM_AW = 12; // Memory Address width (Byte based)
 
-  typedef enum logic [5:0] {
-    DpNone       = 'b 000000,
-    DpReadCmd    = 'b 000001,
-    DpReadStatus = 'b 000010,
-    DpReadSFDP   = 'b 000100,
-    DpReadJEDEC  = 'b 001000,
+  typedef enum logic [7:0] {
+    DpNone       = 'b 00000000,
+    DpReadCmd    = 'b 00000001,
+    DpReadStatus = 'b 00000010,
+    DpReadSFDP   = 'b 00000100,
+    DpReadJEDEC  = 'b 00001000,
 
     // Command + Address only: e.g Block Erase
     // Command + Address + Paylod: Program
     // Command followed by direct payload
     // Write Status could be an example
     // Command only: Write Protect Enable / Chip Erase
-    DpUpload     = 'b 010000,
+    DpUpload     = 'b 00010000,
+
+    DpEn4B       = 'b 00100000,
+    DpEx4B       = 'b 01000000,
     // Unrecognizable commands: Just handle this as DpPayload
-    DpUnknown    = 'b 100000
+    DpUnknown    = 'b 10000000
   } sel_datapath_e;
 
   typedef enum spi_byte_t {
@@ -381,6 +390,8 @@ package spi_device_pkg;
   // Sram Depth is set to 1024 to satisfy DPSRAM parameter even though
   // SramTotalDepth above is 928.
   //parameter int unsigned SramDepth = 1024;
+  import spi_device_reg_pkg::SramDepth;
+  export spi_device_reg_pkg::SramDepth;
 
   parameter int unsigned SramAw = $clog2(spi_device_reg_pkg::SramDepth);
 

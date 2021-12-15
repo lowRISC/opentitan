@@ -101,7 +101,7 @@ module spi_passthrough
   input spi_mode_e spi_mode_i,
 
   // Command Info structure
-  input cmd_info_t [NumCmdInfo-1:0] cmd_info_i,
+  input cmd_info_t [NumTotalCmdInfo-1:0] cmd_info_i,
 
   // SPI in
   //
@@ -412,7 +412,7 @@ module spi_passthrough
   always_comb begin
     cmd_info_7th_d = {CmdInfoInput, CmdInfoInput};
     if (cmd_7th) begin
-      for(int unsigned i = 0 ; i < NumCmdInfo ; i++) begin
+      for(int unsigned i = 0 ; i < NumTotalCmdInfo ; i++) begin
         if (cmd_info_i[i].valid) begin
           if (cmd_info_i[i].opcode == {opcode_d[6:0], 1'b1}) begin
             cmd_info_7th_d[1] = cmd_info_i[i];
