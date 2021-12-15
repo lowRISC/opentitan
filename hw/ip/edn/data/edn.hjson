@@ -166,6 +166,38 @@
         }
       ]
     },
+    { name: "BOOT_INS_CMD",
+      desc: "EDN boot instantiate command register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [// Internal HW can modify status register
+                "excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "31:0",
+          name: "BOOT_INS_CMD",
+          desc: '''
+                This field is used as the value for Instantiate command at boot time.
+                '''
+         resval: 0x0000_0001
+        }
+      ]
+    },
+    { name: "BOOT_GEN_CMD",
+      desc: "EDN boot generate command register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [// Internal HW can modify status register
+                "excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "31:0",
+          name: "BOOT_GEN_CMD",
+          desc: '''
+                This field is used as the value for generate command at boot time.
+                '''
+         resval: 0x00ff_f003
+       }
+      ]
+    },
     { name: "SW_CMD_REQ",
       desc: "EDN csrng app command request register",
       swaccess: "wo",
