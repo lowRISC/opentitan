@@ -2035,7 +2035,7 @@
             - In open source, this is verified by a simple connectivity assertion check.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_rom_ctrl_ast_rom_cfg"]
     }
     {
       name: chip_sw_rom_ctrl_integrity_check

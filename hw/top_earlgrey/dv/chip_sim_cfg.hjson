@@ -295,6 +295,11 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
+      name: chip_rom_ctrl_ast_rom_cfg
+      uvm_test_seq: chip_rom_ctrl_ast_rom_cfg_vseq
+      en_run_modes: ["stub_cpu_mode"]
+    }
+    {
       name: chip_sw_kmac_mode_cshake_test
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/kmac_mode_cshake_test:1"]
