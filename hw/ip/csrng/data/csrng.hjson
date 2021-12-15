@@ -90,10 +90,13 @@
       desc: "Sparse state machine implementation."
     }
     { name: "CNT.REDUN"
-      desc: "Counter hardening."
+      desc: "Counter hardening for generate command counter."
+    }
+    { name: "LOGIC.INTEGRITY"
+      desc: "Comparison on successive bus values for genbits returned on the software channel."
     }
     { name: "BUS.INTEGRITY"
-      desc: "End-to-end bus integrity scheme."
+      desc: "Tilelink end-to-end bus integrity scheme."
     }
   ],
 

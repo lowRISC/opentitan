@@ -55,10 +55,13 @@
       desc: "Sparse state machine implementation."
     }
     { name: "CNT.REDUN"
-      desc: "Counter hardening."
+      desc: "Counter hardening on the generate command maximum requests counter."
+    }
+    { name: "LOGIC.INTEGRITY"
+      desc: "Comparison on successive bus values for genbits returned from csrng that will destribute over the endpoint buses."
     }
     { name: "BUS.INTEGRITY"
-      desc: "End-to-end bus integrity scheme."
+      desc: "Tilelink end-to-end bus integrity scheme."
     }
   ],
 
