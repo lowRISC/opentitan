@@ -339,4 +339,7 @@ module entropy_src
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A,
     u_entropy_src_core.u_sha3.u_pad.u_sentmsg_count, alert_tx_o[1])
 
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RoundCountCheck_A,
+    u_entropy_src_core.u_sha3.u_keccak.u_round_count, alert_tx_o[1])
+
 endmodule

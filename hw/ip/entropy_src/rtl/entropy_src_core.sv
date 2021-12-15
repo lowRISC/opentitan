@@ -393,7 +393,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_fw_ov_rd_data;
 
   logic                    sha3_state_error;
-  logic                    sha3_msg_count_error;
+  logic                    sha3_count_error;
 
   // flops
   logic [RngBusWidth-1:0] ht_esbus_dly_q, ht_esbus_dly_d;
@@ -582,7 +582,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                              es_ack_sm_err_sum ||
                                              es_main_sm_err_sum)) ||
                                              es_cntr_err_sum || // prim_count err is always active
-                                             sha3_msg_count_error ||
+                                             sha3_count_error ||
                                              sha3_state_error;
 
   // set fifo errors that are single instances of source
@@ -2110,7 +2110,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
     .error_o (sha3_err),
     .sparse_fsm_error_o (sha3_state_error),
-    .msg_count_error_o  (sha3_msg_count_error)
+    .count_error_o  (sha3_count_error)
   );
 
 

@@ -605,8 +605,8 @@ module kmac
   end
 
   // Counter errors
-  logic counter_error, msg_count_error, key_index_error;
-  assign counter_error = msg_count_error
+  logic counter_error, sha3_count_error, key_index_error;
+  assign counter_error = sha3_count_error
                        | key_index_error;
 
   // State Errors
@@ -812,7 +812,7 @@ module kmac
 
     .error_o            (sha3_err),
     .sparse_fsm_error_o (sha3_state_error),
-    .msg_count_error_o  (msg_count_error)
+    .count_error_o  (sha3_count_error)
   );
 
   // MSG_FIFO window interface to FIFO interface ===============================
@@ -1256,6 +1256,8 @@ module kmac
 
   // redundant counter error
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A, u_sha3.u_pad.u_sentmsg_count,
+                                         alert_tx_o[0])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RoundCountCheck_A, u_sha3.u_keccak.u_round_count,
                                          alert_tx_o[0])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KeyIndexCountCheck_A, u_kmac_core.u_key_index_count,
                                          alert_tx_o[0])
