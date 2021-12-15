@@ -95,7 +95,7 @@ virtual function void rom_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1:
 
   if(scramble_data) begin
     // Calculate the integrity constant
-    integ_data = prim_secded_pkg::prim_secded_39_32_enc(data);
+    integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
   
     // Calculate the scrambled data
     wdata_arr = {<<{integ_data}};
