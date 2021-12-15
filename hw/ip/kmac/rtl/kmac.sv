@@ -604,6 +604,11 @@ module kmac
     endcase
   end
 
+  // Counter errors
+  logic counter_error, msg_count_error, key_index_error;
+  assign counter_error = msg_count_error
+                       | key_index_error;
+
   // State Errors
   logic sparse_fsm_error;
   logic sha3_state_error, kmac_errchk_state_error;
@@ -759,7 +764,8 @@ module kmac
     .process_o (kmac2sha3_process   ),
 
     // Error detection
-    .sparse_fsm_error_o (kmac_core_state_error)
+    .sparse_fsm_error_o (kmac_core_state_error),
+    .key_index_error_o  (key_index_error)
   );
 
   // SHA3 hashing engine
@@ -805,7 +811,8 @@ module kmac
     .state_o       (state), // [Share]
 
     .error_o            (sha3_err),
-    .sparse_fsm_error_o (sha3_state_error)
+    .sparse_fsm_error_o (sha3_state_error),
+    .msg_count_error_o  (msg_count_error)
   );
 
   // MSG_FIFO window interface to FIFO interface ===============================
@@ -1198,6 +1205,7 @@ module kmac
   assign alert_fatal = shadowed_storage_err
                      | alert_intg_err
                      | sparse_fsm_error
+                     | counter_error
                      ;
 
 
@@ -1238,6 +1246,11 @@ module kmac
   // Command input should be onehot0
   `ASSUME(CmdOneHot0_M, reg2hw.cmd.cmd.qe |-> $onehot0(reg2hw.cmd.cmd.q))
 
+  // redundant counter error
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A, u_sha3.u_pad.u_sentmsg_count,
+                                         alert_tx_o[0])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KeyIndexCountCheck_A, u_kmac_core.u_key_index_count,
+                                         alert_tx_o[0])
   // Sparse FSM state error
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacCoreFsmCheck_A, u_kmac_core.u_state_regs, alert_tx_o[0])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacAppFsmCheck_A, u_app_intf.u_state_regs, alert_tx_o[0])

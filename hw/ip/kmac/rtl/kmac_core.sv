@@ -49,7 +49,8 @@ module kmac_core
   // Control to SHA3 core
   output logic process_o,
 
-  output logic sparse_fsm_error_o
+  output logic sparse_fsm_error_o,
+  output logic key_index_error_o
 );
 
   import sha3_pkg::KeccakMsgAddrW;
@@ -395,7 +396,7 @@ module kmac_core
     .en_i(inc_keyidx),
     .step_i(sha3_pkg::KeccakMsgAddrW'(1)),
     .cnt_o(key_index),
-    .err_o() //ToDo
+    .err_o(key_index_error_o)
   );
 
   // Block size based on the address.

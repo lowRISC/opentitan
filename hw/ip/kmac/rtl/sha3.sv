@@ -72,7 +72,10 @@ module sha3
   output err_t error_o,
 
   // sparse_fsm_alert
-  output logic sparse_fsm_error_o
+  output logic sparse_fsm_error_o,
+
+  // counter error
+  output logic msg_count_error_o
 
 );
   /////////////////
@@ -397,7 +400,8 @@ module sha3
 
     // output
     .absorbed_o         (absorbed),
-    .sparse_fsm_error_o (sha3pad_state_error)
+    .sparse_fsm_error_o (sha3pad_state_error),
+    .msg_count_error_o  (msg_count_error_o)
   );
 
   // Keccak round logic
