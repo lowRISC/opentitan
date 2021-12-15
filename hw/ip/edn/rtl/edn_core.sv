@@ -46,6 +46,8 @@ module edn_core import edn_pkg::*;
   localparam int RescmdFifoDepth = 13;
   localparam int GencmdFifoWidth = 32;
   localparam int GencmdFifoDepth = 13;
+  localparam int SWCmdFifoWidth = 32;
+  localparam int SWCmdFifoDepth = 13;
   localparam int CSGenBitsWidth = 128;
   localparam int EndPointBusWidth = 32;
   localparam int RescmdFifoIdxWidth = $clog2(RescmdFifoDepth);
@@ -145,6 +147,15 @@ module edn_core import edn_pkg::*;
   logic                               edn_cntr_err;
   logic [RegWidth-1:0]                max_reqs_cnt;
   logic                               max_reqs_cnt_err;
+  logic                               csrng_req_ready;
+
+  // sw command fifo
+  logic [SWCmdFifoWidth-1:0]          sfifo_swcmd_rdata;
+  logic                               sfifo_swcmd_push;
+  logic [SWCmdFifoWidth-1:0]          sfifo_swcmd_wdata;
+  logic                               sfifo_swcmd_pop;
+  logic                               sfifo_swcmd_full;
+  logic                               sfifo_swcmd_not_empty;
 
   // unused
   logic                               unused_err_code_test_bit;
@@ -357,8 +368,38 @@ module edn_core import edn_pkg::*;
   // SW interface connection
   // cmd req
   assign auto_req_mode = auto_req_mode_pfe;
-  assign sw_cmd_req_load = reg2hw.sw_cmd_req.qe;
-  assign sw_cmd_req_bus = reg2hw.sw_cmd_req.q;
+
+//  assign sw_cmd_req_load = reg2hw.sw_cmd_req.qe;
+  assign sfifo_swcmd_push = reg2hw.sw_cmd_req.qe;
+//  assign sw_cmd_req_bus = reg2hw.sw_cmd_req.q;
+  assign sfifo_swcmd_wdata = reg2hw.sw_cmd_req.q;
+  assign sw_cmd_req_load = csrng_req_ready && sfifo_swcmd_not_empty;
+  assign sw_cmd_req_bus = sfifo_swcmd_rdata;
+  assign sfifo_swcmd_pop = sw_cmd_req_load;
+
+  // SW cmd extension FIFO
+  // This FIFO extension is to ensure a reliable interface between the processor and
+  // the register interface. No polling of the cmd_rdy is required.
+
+  prim_fifo_sync #(
+    .Width(SWCmdFifoWidth),
+    .Pass(0),
+    .Depth(SWCmdFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
+  ) u_prim_fifo_sync_swcmd (
+    .clk_i          (clk_i),
+    .rst_ni         (rst_ni),
+    .clr_i          (!edn_enable),
+    .wvalid_i       (sfifo_swcmd_push),
+    .wready_o       (),
+    .wdata_i        (sfifo_swcmd_wdata),
+    .rvalid_o       (sfifo_swcmd_not_empty),
+    .rready_i       (sfifo_swcmd_pop),
+    .rdata_o        (sfifo_swcmd_rdata),
+    .full_o         (sfifo_swcmd_full),
+    .depth_o        ()
+  );
+
   assign hw2reg.sum_sts.req_mode_sm_sts.de = 1'b1;
   assign hw2reg.sum_sts.req_mode_sm_sts.d = seq_auto_req_mode;
   assign hw2reg.sum_sts.boot_inst_ack.de = 1'b1;
@@ -400,8 +441,9 @@ module edn_core import edn_pkg::*;
   assign csrng_cmd_o.csrng_req_bus = cs_cmd_req_out_q;
 
   // receive rdy
+  assign csrng_req_ready = csrng_cmd_i.csrng_req_ready;
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
-  assign hw2reg.sw_cmd_sts.cmd_rdy.d = csrng_cmd_i.csrng_req_ready;
+  assign hw2reg.sw_cmd_sts.cmd_rdy.d = !sfifo_swcmd_full;
   // receive cmd ack
   assign csrng_cmd_ack = csrng_cmd_i.csrng_rsp_ack;
   assign hw2reg.sw_cmd_sts.cmd_sts.de = csrng_cmd_ack;
