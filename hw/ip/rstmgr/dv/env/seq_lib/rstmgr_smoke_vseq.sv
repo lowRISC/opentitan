@@ -28,10 +28,8 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
 
     // Clear reset_info register, and enable cpu and alert info capture.
     csr_wr(.ptr(ral.reset_info), .value('1));
-
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
-    // Send scan reset.
     send_scan_reset();
     // Scan reset triggers an AON reset (and all others).
     wait(cfg.rstmgr_vif.resets_o.rst_por_aon_n == '1);

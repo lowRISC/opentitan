@@ -96,11 +96,13 @@ interface rstmgr_cascading_sva_if (
   sequence PorStable_S;
     $rose(
         por_n_i[rstmgr_pkg::DomainAonSel]
-    ) ##1 (por_n_i[rstmgr_pkg::DomainAonSel] [* PorCycles.rise.max]);
+    ) ##1 (por_n_i[rstmgr_pkg::DomainAonSel] [* PorCycles.rise.min]);
   endsequence
 
   // The reset stretching assertion.
-  `ASSERT(StablePorToAonRise_A, PorStable_S |-> resets_o.rst_por_aon_n[0], clk_aon_i, disable_sva)
+  `ASSERT(StablePorToAonRise_A,
+          PorStable_S |-> ##[0:(PorCycles.rise.max-PorCycles.rise.min)] resets_o.rst_por_aon_n[0],
+          clk_aon_i, disable_sva)
 
   logic scan_reset_n;
   always_comb scan_reset_n = scan_rst_ni || (scanmode_i != lc_ctrl_pkg::On);
@@ -113,12 +115,12 @@ interface rstmgr_cascading_sva_if (
   always_comb
     local_rst_n = {rstmgr_pkg::PowerDomains{resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]}};
 
-   // The AON reset triggers the various POR reset for the different clock domains through
-   // synchronizers.
-   // The current system doesn ot have any consumers of domain 1 por_io_div4, and thus only domain 0
-   // cascading is checked here.
-   `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst[0],
-                     resets_o.rst_por_io_div4_n[0], SyncCycles, clk_io_div4_i)
+  // The AON reset triggers the various POR reset for the different clock domains through
+  // synchronizers.
+  // The current system doesn't have any consumers of domain 1 por_io_div4, and thus only domain 0
+  // cascading is checked here.
+  `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst[0],
+                    resets_o.rst_por_io_div4_n[0], SyncCycles, clk_io_div4_i)
 
   for (genvar pd = 0; pd < rstmgr_pkg::PowerDomains; ++pd) begin : g_power_domains
     // The root lc reset is triggered either by the internal reset, or by the pwr_i.rst_lc_req
