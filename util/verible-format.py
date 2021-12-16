@@ -3,6 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import shutil
 import sys
 import os
 import argparse
@@ -25,12 +26,7 @@ def get_repo_top():
 
 
 def get_verible_executable_path():
-    try:
-        return subprocess.run(['which', 'verible-verilog-format'],
-                              check=True, universal_newlines=True,
-                              stdout=subprocess.PIPE).stdout.strip()
-    except subprocess.CalledProcessError:
-        return None
+    return shutil.which('verible-verilog-format')
 
 
 def get_verible_version(verible_exec_path):
