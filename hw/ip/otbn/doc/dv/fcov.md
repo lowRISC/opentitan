@@ -60,6 +60,31 @@ We expect to:
 Accesses to CSRs and WSRs are tracked in the coverage for the instructions that access them.
 See [CSRRS](#csrrs) and [CSRRW](#csrrw) for CSRs; [BN.WSRR](#bnwsrr) and [BN.WSRW](#bnwsrw) for WSRs.
 
+## Random numbers
+
+Random numbers are exposed to OTBN code through the `RND` and `URND` CSRs and WSRs.
+A new random number can be prefetched for `RND` with the `RND_PREFETCH` CSR.
+
+We track uses of each of these CSRs and WSRs in the instructions that access them.
+See [CSRRS](#csrrs) and [CSRRW](#csrrw) for CSRs; [BN.WSRR](#bnwsrr) and [BN.WSRW](#bnwsrw) for WSRs.
+However, we also want to see some interactions between `RND` and `RND_PREFETCH`.
+These are all tracked with cover properties in `otbn_rnd_if.sv`.
+
+Specifically, we expect to see:
+
+- An read of `RND` (either CSR or WSR) before any write to `RND_PREFETCH`.
+  This is tracked with the `RndWithNoPrefetch_C` cover property.
+- Two consecutive writes to `RND_PREFETCH` without a random value arriving between.
+  This is tracked with the `PrefetchPrefetch_C` cover property.
+- Two consecutive writes to `RND_PREFETCH`, where a random value arrives between them.
+  This is tracked with the `FullPrefetch_C` cover property.
+- A write to `RND_PREFETCH` followed by a read from `RND` after the random value has arrived.
+  This is tracked with the `FullRead_C` cover property.
+- A write to `RND_PREFETCH` followed by a read from `RND` before the random value has arrived.
+  This is tracked with the `PrefetchingRead_C` cover property.
+
+
+
 ## Flags
 
 Each flag in each flag group should be set to one from zero by some instruction.
