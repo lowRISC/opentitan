@@ -26,8 +26,8 @@ module otbn_instruction_fetch
   input  logic                     imem_rvalid_i,
 
   // Next instruction selection (to instruction fetch)
-  input  logic                     insn_fetch_req_valid_i,
-  input  logic [ImemAddrWidth-1:0] insn_fetch_req_addr_i,
+  input logic                     insn_fetch_req_valid_i,
+  input logic [ImemAddrWidth-1:0] insn_fetch_req_addr_i,
 
   // Decoded instruction
   output logic                     insn_fetch_resp_valid_o,
@@ -35,7 +35,7 @@ module otbn_instruction_fetch
   output logic [31:0]              insn_fetch_resp_data_o,
   input  logic                     insn_fetch_resp_clear_i,
 
-  output logic                     insn_fetch_err_o, // ECC error seen in instruction fetch
+  output logic insn_fetch_err_o,  // ECC error seen in instruction fetch
 
   input logic                     prefetch_en_i,
   input logic                     prefetch_loop_active_i,
@@ -124,10 +124,10 @@ module otbn_instruction_fetch
 
   // Check integrity on prefetched instruction
   prim_secded_inv_39_32_dec u_insn_intg_check (
-    .data_i     (insn_fetch_resp_data_intg_q),
-    .data_o     (),
-    .syndrome_o (),
-    .err_o      (insn_fetch_resp_intg_error_vec)
+    .data_i    (insn_fetch_resp_data_intg_q),
+    .data_o    (),
+    .syndrome_o(),
+    .err_o     (insn_fetch_resp_intg_error_vec)
   );
 
   assign imem_req_o = insn_prefetch;

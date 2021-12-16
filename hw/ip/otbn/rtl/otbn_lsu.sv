@@ -48,7 +48,7 @@ module otbn_lsu
   output logic                     lsu_rdata_err_o
 );
   localparam int BaseWordsPerWLen = WLEN / 32;
-  localparam int BaseWordAddrW = prim_util_pkg::vbits(WLEN/8);
+  localparam int BaseWordAddrW = prim_util_pkg::vbits(WLEN / 8);
 
   // Produce a WLEN bit mask for 32-bit writes given the 32-bit word write address. This doesn't
   // propagate X so a separate assertion must be used to check the input isn't X when a valid output
@@ -138,6 +138,6 @@ module otbn_lsu
   logic unused_clk;
   logic unused_rst_n;
 
-  assign unused_clk = clk_i;
+  assign unused_clk   = clk_i;
   assign unused_rst_n = rst_ni;
 endmodule

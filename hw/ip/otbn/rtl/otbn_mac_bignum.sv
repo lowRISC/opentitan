@@ -77,10 +77,10 @@ module otbn_mac_bignum
     mul_res_shifted = '0;
 
     unique case (operation_i.pre_acc_shift_imm)
-      2'd0: mul_res_shifted = {{QWLEN*2{1'b0}}, mul_res};
+      2'd0: mul_res_shifted = {{QWLEN * 2{1'b0}}, mul_res};
       2'd1: mul_res_shifted = {{QWLEN{1'b0}}, mul_res, {QWLEN{1'b0}}};
-      2'd2: mul_res_shifted = {mul_res, {QWLEN*2{1'b0}}};
-      2'd3: mul_res_shifted = {mul_res[63:0], {QWLEN*3{1'b0}}};
+      2'd2: mul_res_shifted = {mul_res, {QWLEN * 2{1'b0}}};
+      2'd3: mul_res_shifted = {mul_res[63:0], {QWLEN * 3{1'b0}}};
       default: mul_res_shifted = '0;
     endcase
   end
@@ -105,16 +105,14 @@ module otbn_mac_bignum
 
   assign operation_flags_o.L    = adder_result[0];
   // L is always updated for .WO, and for .SO when writing to the lower half-word
-  assign operation_flags_en_o.L = operation_i.shift_acc ? ~operation_i.wr_hw_sel_upper :
-                                                          1'b1;
+  assign operation_flags_en_o.L = operation_i.shift_acc ? ~operation_i.wr_hw_sel_upper : 1'b1;
 
   // For .SO M is taken from the top-bit of shifted out half-word, otherwise it is taken from the
   // top-bit of the full result.
   assign operation_flags_o.M    = operation_i.shift_acc ? adder_result[WLEN/2-1] :
                                                           adder_result[WLEN-1];
   // M is always updated for .WO, and for .SO when writing to the upper half-word.
-  assign operation_flags_en_o.M = operation_i.shift_acc ? operation_i.wr_hw_sel_upper :
-                                                          1'b1;
+  assign operation_flags_en_o.M = operation_i.shift_acc ? operation_i.wr_hw_sel_upper : 1'b1;
 
   // For .SO Z is calculated from the shifted out half-word, otherwise it is calculated on the full
   // result.
@@ -133,7 +131,7 @@ module otbn_mac_bignum
   assign operation_flags_en_o.C = 1'b0;
 
   always_comb begin
-    unique case(1'b1)
+    unique case (1'b1)
     sec_wipe_acc_urnd_i: acc_d = urnd_data_i;
     sec_wipe_zero_i:     acc_d = '0;
     // If performing an ACC ISPR write the next accumulator value is taken from the ISPR write data,
