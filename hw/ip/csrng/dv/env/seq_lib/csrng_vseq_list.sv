@@ -7,3 +7,6 @@
 `include "csrng_common_vseq.sv"
 `include "csrng_cmds_vseq.sv"
 `include "csrng_stress_all_vseq.sv"
+`include "csrng_intr_vseq.sv"
+`include "csrng_alert_vseq.sv"
+`include "csrng_err_vseq.sv"
