@@ -52,7 +52,7 @@ endif
 # OTTF (Default) Interrupt Service Routines
 #
 # ottf_isrs.c contains various definitions with weak linkage, for interrupt
-# service routine symbols referenced from riscv_crt.
+# service routine (ISR) symbols referenced from test_rom_ext.
 #
 # To override any default ISRs, implement the declarations in ottf_isrs.h,
 # you intend to override, and link this library or the OTTF below (depending if

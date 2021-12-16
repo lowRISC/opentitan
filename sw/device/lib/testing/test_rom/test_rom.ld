@@ -3,7 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Linker script for an OpenTitan boot ROM.
+ * Linker script for an OpenTitan (test) boot ROM.
  *
  * Portions of this file are Ibex-specific.
  */
@@ -36,8 +36,8 @@ _flash_start = ORIGIN(eflash);
  * This symbol points at the header of the flash binary, which contains loading
  * and signing information.
  *
- * See sw/device/lib/ext/common/flash_link.ld, under the .flash_header section,
- * which populates it.
+ * See `sw/device/lib/testing/test_rom_ext/test_rom_ext.ld`, under the
+ * .flash_header section, which populates it.
  */
 _flash_header = _vflash_start;
 

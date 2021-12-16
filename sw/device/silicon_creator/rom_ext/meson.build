@@ -15,11 +15,6 @@ sw_silicon_creator_rom_ext_epmp = declare_dependency(
   )
 )
 
-# Mask ROM Linker Parameters
-#
-# See sw/device/exts/common/flash_link.ld for additional info about these
-# parameters.
-
 # ROM_EXT boot policy.
 sw_silicon_creator_rom_ext_boot_policy = declare_dependency(
   link_with: static_library(
@@ -48,6 +43,11 @@ test('sw_silicon_creator_rom_ext_boot_policy_unittest', executable(
   ),
   suite: 'rom_ext',
 )
+
+# Mask ROM Linker Parameters
+#
+# See `sw/device/lib/testing/test_rom_ext/test_rom_ext.ld` for additional info
+# about these parameters.
 
 rom_ext_linkfile_slot_a = files(['rom_ext_slot_a.ld'])
 rom_ext_linkfile_slot_b = files(['rom_ext_slot_b.ld'])

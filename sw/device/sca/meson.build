@@ -45,7 +45,7 @@ foreach sca_program_name, sca_program_info: sca_programs
       name_suffix: 'elf',
       dependencies: [
         device_lib,
-        riscv_crt,
+        test_rom_ext,
         sw_lib_mmio,
         sw_lib_runtime_hart,
         sw_lib_runtime_log,

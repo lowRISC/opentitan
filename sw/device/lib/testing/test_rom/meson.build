@@ -21,12 +21,12 @@ chip_info_h = declare_dependency(
 
 # Test ROM linker parameters.
 #
-# See sw/device/exts/common/flash_link.ld for additional info about these
-# parameters.
-test_rom_linker_script = files(['test_rom.ld'])
+# See `sw/device/lib/testing/test_rom_ext/test_rom_ext.ld` for additional info
+# about these parameters.
+test_rom_linker_script = '@0@/@1@'.format(meson.source_root(), files(['test_rom.ld'])[0])
 test_rom_link_args = [
   '-Wl,-L,@0@'.format(meson.source_root()),
-  '-Wl,-T,@0@/@1@'.format(meson.source_root(), test_rom_linker_script[0]),
+  '-Wl,-T,@0@'.format(test_rom_linker_script),
   '-Wl,--build-id=none',
 ]
 test_rom_link_deps = [test_rom_linker_script]

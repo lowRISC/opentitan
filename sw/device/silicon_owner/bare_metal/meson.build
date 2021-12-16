@@ -4,8 +4,8 @@
 
 # Mask ROM Linker Parameters
 #
-# See sw/device/exts/common/flash_link.ld for additional info about these
-# parameters.
+# See `sw/device/lib/testing/test_rom_ext/test_rom_ext.ld` for additional info
+# about these parameters.
 
 bare_metal_linkfile_slot_a = files(['bare_metal_slot_a.ld'])
 bare_metal_linkfile_slot_b = files(['bare_metal_slot_b.ld'])
