@@ -114,6 +114,13 @@ Rather than tracking this with functional coverage, we rely on testplan entries.
 
 See the `mem_integrity` and `internal_integrity` entries in the testplan for more details.
 
+## Lifecycle escalation
+
+The lifecycle controller can send a "lifecycle escalation" signal to tell OTBN to clear its internal state and to raise its own fatal error.
+
+We expect to see this happen.
+However, we don't track coverage for this explicitly since it's handled at the testplan level (with the `lc_escalation` testpoint).
+
 ## External (bus-accessible) CSRs {#ext-csrs}
 
 The OTBN block exposes functionality to a bus host through bus-accessible CSRs.
