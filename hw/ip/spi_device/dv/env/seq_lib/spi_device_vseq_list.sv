@@ -16,3 +16,5 @@
 `include "spi_device_byte_transfer_vseq.sv"
 `include "spi_device_tpm_base_vseq.sv"
 `include "spi_device_tpm_write_vseq.sv"
+`include "spi_device_tpm_locality_vseq.sv"
+`include "spi_device_tpm_read_vseq.sv"

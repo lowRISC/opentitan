@@ -43,13 +43,23 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
 
   // Randomise other fields in TPM_CFG.
   virtual task tpm_configure();
-    ral.tpm_cfg.tpm_mode.set(1'b1); // TODO randomize for locality test
+    ral.tpm_cfg.tpm_mode.set(TpmCrbMode); // TODO randomize for locality test
     ral.tpm_cfg.hw_reg_dis.set(1); // TODO randomize for locality test
     ral.tpm_cfg.tpm_reg_chk_dis.set(1); // TODO randomize for locality test
     ral.tpm_cfg.invalid_locality.set(0); // TODO randomize for locality test
     csr_update(.csr(ral.tpm_cfg));
     `uvm_info(`gfn, ral.tpm_cfg.sprint(), UVM_MEDIUM)
   endtask : tpm_configure
+
+  // Randomise other fields in TPM_CFG.
+  virtual task tpm_configure_locality();
+    ral.tpm_cfg.tpm_mode.set(TpmFifoMode); // FIFO Mode
+    ral.tpm_cfg.hw_reg_dis.set(0);
+    ral.tpm_cfg.tpm_reg_chk_dis.set(0);
+    ral.tpm_cfg.invalid_locality.set(1);
+    csr_update(.csr(ral.tpm_cfg));
+    `uvm_info(`gfn, ral.tpm_cfg.sprint(), UVM_MEDIUM)
+  endtask : tpm_configure_locality
 
   // Check the CMD_ADDR/wrFIFO contents.
   virtual task chk_fifo_contents(bit [31:0] addr_cmd, byte data_bytes[$]);
@@ -70,5 +80,22 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     end
 
   endtask : chk_fifo_contents
+
+  // Poll for START symbol from TPM, collect device data
+  virtual task poll_start_collect_data(byte data_bytes[5], ref bit [7:0] returned_bytes[*]);
+    int pay_num = 0;
+    bit [7:0]  device_byte_rsp;
+    while (pay_num < 5) begin
+      spi_host_xfer_byte(data_bytes[pay_num], device_byte_rsp);
+      device_byte_rsp = {<<1{device_byte_rsp}};
+      `uvm_info(`gfn, $sformatf("Device Resp = 0x%0h", device_byte_rsp), UVM_LOW)
+      if (pay_num > 0) begin
+        returned_bytes[pay_num - 1] = device_byte_rsp;
+        pay_num++;
+      end
+      if ((pay_num == 0  && device_byte_rsp == TPM_START)) pay_num++;
+      if (pay_num == 4) cfg.m_spi_agent_cfg.csb_consecutive = 0;
+    end
+  endtask : poll_start_collect_data
 
 endclass : spi_device_tpm_base_vseq

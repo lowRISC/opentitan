@@ -101,6 +101,16 @@
       name: spi_device_tpm_write
       uvm_test_seq: spi_device_tpm_write_vseq
     }
+    
+    {
+      name: spi_device_tpm_locality
+      uvm_test_seq: spi_device_tpm_locality_vseq
+    }
+    
+    {
+      name: spi_device_tpm_read
+      uvm_test_seq: spi_device_tpm_read_vseq
+    }
   ]
 
   // List of regressions.
