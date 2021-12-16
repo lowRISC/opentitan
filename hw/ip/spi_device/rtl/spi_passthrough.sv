@@ -454,7 +454,6 @@ module spi_passthrough
     cmd_info.valid, // valid bit is checked before latching into cmd_info
     cmd_info.opcode,
     cmd_info.addr_mode,
-    cmd_info.addr_swap_en,
     cmd_info.payload_swap_en,
     cmd_info.opcode,
     cmd_info.upload,
@@ -523,7 +522,7 @@ module spi_passthrough
 
   // Payload (4 bytes) swap
   logic [4:0] payloadcnt, payloadcnt_outclk;
-  logic       payload_replace;
+  logic       payload_replace, payload_replace_outclk;
   logic       payload_replace_set, payload_replace_clr;
 
   // payload counter
@@ -549,6 +548,11 @@ module spi_passthrough
     else if (payload_replace_clr) payload_replace <= 1'b 0;
   end
 
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) payload_replace_outclk <= 1'b 0;
+    else         payload_replace_outclk <= payload_replace;
+  end
+
   assign payload_replace_clr = (payloadcnt == '0);
   // FSM drives payload_replace_set : assert when st moves to StDriving
   logic payload_swap;
@@ -557,10 +561,14 @@ module spi_passthrough
                       : host_s_i[0] ;
 
   // SPI swap (merging Addr & Payload)
-  logic swap_en, swap_data;
-  assign swap_en = addr_phase_outclk
-                 | (payload_replace & cmd_info.payload_swap_en);
-  assign swap_data = (addr_phase_outclk) ? addr_swap : payload_swap ;
+  logic swap_en, swap_data, addr_swap_en, payload_swap_en;
+  assign addr_swap_en    = addr_phase_outclk
+                         & cmd_info.addr_swap_en;
+  assign payload_swap_en = payload_replace_outclk
+                         & cmd_info.payload_swap_en;
+
+  assign swap_en   = addr_swap_en | payload_swap_en ;
+  assign swap_data = (addr_swap_en) ? addr_swap : payload_swap ;
 
   // Dummy Counter
   logic dummy_set;
