@@ -185,6 +185,8 @@ module tb;
   bind dut.u_otbn_core.u_otbn_mac_bignum otbn_mac_bignum_if i_otbn_mac_bignum_if (.*);
   bind dut.u_otbn_core.u_otbn_rf_base otbn_rf_base_if i_otbn_rf_base_if (.*);
 
+  bind dut.u_otbn_core.u_otbn_rnd otbn_rnd_if i_otbn_rnd_if (.*);
+
   // OTBN model, wrapping an ISS.
   //
   // Note that we pull the "start" signal out of the DUT. This is because it's much more difficult
