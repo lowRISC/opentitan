@@ -81,7 +81,15 @@ See the instruction counter saturate.
 We expect to see reads from this interface (both when a key is present and when it is not).
 The coverage for these reads is tracked in the [BN.WSRR](#bnwsrr) instruction which does the reading.
 
-## External (bus-accessible) CSRs
+## Integrity protection
+
+The contents of IMEM and DMEM, the register file, and other pieces of internal state are protected by ECC integrity bits.
+We want to see errors/alerts caused by corrupting each of these pieces of state.
+Rather than tracking this with functional coverage, we rely on testplan entries.
+
+See the `mem_integrity` and `internal_integrity` entries in the testplan for more details.
+
+## External (bus-accessible) CSRs {#ext-csrs}
 
 The OTBN block exposes functionality to a bus host through bus-accessible CSRs.
 Behavior of some CSRs depends on [OTBN's operational state]({{< relref "..#design-details-operational-states" >}}).
