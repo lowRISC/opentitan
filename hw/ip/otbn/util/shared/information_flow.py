@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+from copy import deepcopy
 from typing import Dict, Iterable, List, Optional, Sequence, Set
 
 from serialize.parse_helpers import check_keys, check_list, check_str
@@ -143,7 +144,7 @@ class InformationFlowGraph:
             # Updating a nonexistent graph with another graph should return the
             # other graph; since we need to modify self, we change this graph's
             # flow to match other's.
-            self.flow = other.flow.copy()
+            self.flow = deepcopy(other.flow)
             self.exists = other.exists
             return
 
@@ -201,6 +202,52 @@ class InformationFlowGraph:
 
         return InformationFlowGraph(flow)
 
+    def __deepcopy__(self, memo):
+        flow = deepcopy(self.flow, memo)
+        return InformationFlowGraph(flow, self.exists)
+
+    def loop(self, max_iterations=1000) -> 'InformationFlowGraph':
+        '''Returns graph representing all possible repetitions of seq() of this
+        graph with itself.
+
+        The graph will be the combination of all possible chainings of this
+        graph with itself, including 0 chainings (i.e. an empty graph). The
+        result will be equivalent to:
+
+        g = InformationFlowGraph({})
+        for _ in range(infinity):
+            g.update(g.seq(g))
+
+        It is important to ensure that the total number of nodes in the set is
+        limited, otherwise the computation could infinite-loop; the computation
+        stops when the update becomes a no-op (signalling that the graph has
+        stabilized), which is only guaranteed to happen if the node set is
+        finite. By default, an error will be produced after a certain maximum
+        number of iterations, but the caller can override this by setting
+        `max_iterations` to None. 
+
+        Returns a new graph; the input graph is unmodified.
+        '''
+        if not self.exists:
+            # Looping a nonexistent graph results in a nonexistent graph.
+            return InformationFlowGraph.nonexistent()
+
+        graph = InformationFlowGraph.empty()
+        ctr = 0
+        while (max_iterations is None or ctr < max_iterations):
+            old = deepcopy(graph)
+            graph.update(graph.seq(self))
+            if (old == graph):
+                # Graph has stabilized; further iterations will not change it.
+                return graph
+            ctr += 1
+
+        raise RuntimeError(
+                'Maximum number of iterations ({}) exceeded when looping '
+                'information-flow graph. Is the set of possible nodes larger '
+                'than the maximum iterations?'
+                .format(max_iterations))
+
     def pretty(self, indent: int = 0) -> str:
         '''Return a human-readable representation of the graph.'''
         if not self.exists:
@@ -220,6 +267,14 @@ class InformationFlowGraph:
             lines.append('{}{}{} -> {}'.format(prefix, sources_str, padding,
                                                sink))
         return '\n'.join(lines)
+
+    def __eq__(self, other: 'InformationFlowGraph') -> bool:
+        '''Compare two information flow graphs for equality.
+
+        Two graphs are considered equal iff the underlying flow dictionaries
+        are equal.
+        '''
+        return self.flow == other.flow
 
 
 class InsnInformationFlowNode:
