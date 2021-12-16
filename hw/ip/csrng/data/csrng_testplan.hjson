@@ -13,8 +13,8 @@
     {
       name: smoke
       desc: '''
-      Verify sending instantiate/generate cmds via SW path.
-      Verify reading genbits via SW path.
+            Verify sending instantiate/generate cmds via SW path.
+            Verify reading genbits via SW path.
             '''
       milestone: V1
       tests: ["csrng_smoke"]

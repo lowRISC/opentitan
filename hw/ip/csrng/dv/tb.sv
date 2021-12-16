@@ -36,6 +36,8 @@ module tb;
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       entropy_src_if(.clk(clk), .rst_n(rst_n));
   push_pull_if#(.HostDataWidth(1))   aes_halt_if(.clk(clk), .rst_n(rst_n));
+  csrng_path_if csrng_path_if (.csrng_cmd_i(csrng_cmd_i));
+  csrng_assert_if csrng_assert_if (.csrng_cmd_i(csrng_cmd_i));
 
   `DV_ALERT_IF_CONNECT
 
@@ -102,10 +104,13 @@ module tb;
         lc_hw_debug_en_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::
-        set(null, "*.env.m_entropy_src_agent*", "vif", entropy_src_if);
+      set(null, "*.env.m_entropy_src_agent*", "vif", entropy_src_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(1)))::set
         (null, "*.env.m_aes_halt_agent*", "vif", aes_halt_if);
-    uvm_config_db#(virtual csrng_cov_if)::set(null, "*.env", "csrng_cov_if", dut.u_csrng_cov_if );
+    uvm_config_db#(virtual csrng_cov_if)::set(null, "*.env", "csrng_cov_if", dut.u_csrng_cov_if);
+    uvm_config_db#(virtual csrng_assert_if)::set(null, "*.env", "csrng_assert_vif",
+                                                 csrng_assert_if);
+    uvm_config_db#(virtual csrng_path_if)::set(null, "*.env", "csrng_path_vif", csrng_path_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

@@ -57,12 +57,18 @@ class csrng_env extends cip_base_env #(
         cfg.lc_hw_debug_en_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get lc_hw_debug_en_vif from uvm_config_db")
     end
+    // config csrng path virtual interface
+    if (!uvm_config_db#(virtual csrng_path_if)::
+        get(this, "", "csrng_path_vif", cfg.csrng_path_vif)) begin
+      `uvm_fatal(`gfn, "failed to get csrng_path_vif from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
-      m_entropy_src_agent.monitor.analysis_port.connect(scoreboard.entropy_src_fifo.analysis_export);
+      m_entropy_src_agent.monitor.analysis_port.connect(
+        scoreboard.entropy_src_fifo.analysis_export);
       for (int i = 0; i < NUM_HW_APPS; i++) begin
         m_edn_agent[i].monitor.analysis_port.connect(scoreboard.csrng_cmd_fifo[i].analysis_export);
       end

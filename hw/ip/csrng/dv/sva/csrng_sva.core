@@ -11,6 +11,7 @@ filesets:
       - lowrisc:fpv:csr_assert_gen
     files:
       - csrng_bind.sv
+      - csrng_assert_if.sv
     file_type: systemVerilogSource
 
   files_formal:
