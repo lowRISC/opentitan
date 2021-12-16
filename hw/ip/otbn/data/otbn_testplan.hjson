@@ -79,8 +79,16 @@
       desc: '''
             Inject ECC errors into DMEM and IMEM and expect an alert
             '''
-      milestone: V2
+      milestone: V2S
       tests: ["otbn_imem_err", "otbn_dmem_err"]
+    }
+    {
+      name: internal_integrity
+      desc: '''
+        Corrupt internal state and expect an alert
+      '''
+      milestone: V2S
+      tests: []
     }
     {
       name: back_to_back
