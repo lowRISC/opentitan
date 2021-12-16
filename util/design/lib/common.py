@@ -212,6 +212,26 @@ def permute_bits(bits, permutation):
     return permword
 
 
+def _parse_hex(value):
+    '''Parse a hex value into an integer.
+
+    Args:
+      value: list[str] or str:
+        If a `list[str]`, parse each element as a 32-bit integer.
+        If a `str`, parse as a single hex string.
+    Returns:
+        int
+    '''
+    if isinstance(value, list):
+        result = 0
+        for (i, v) in enumerate(value):
+            result |= int(v, 16) << (i * 32)
+        return result
+    else:
+        value = value.translate(str.maketrans('', '', ' \r\n\t'))
+        return int(value, 16)
+
+
 def random_or_hexvalue(dict_obj, key, num_bits):
     '''Convert hex value at "key" to an integer or draw a random number.'''
 
@@ -225,7 +245,7 @@ def random_or_hexvalue(dict_obj, key, num_bits):
     # Check that the range is correct.
     else:
         try:
-            dict_obj[key] = int(dict_obj[key], 16)
+            dict_obj[key] = _parse_hex(dict_obj[key])
             if dict_obj[key] >= 2**num_bits:
                 raise RuntimeError(
                     'Value "{}" is out of range.'
