@@ -18,22 +18,44 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   virtual pins_if#(MuBi8Width)   otp_en_cs_sw_app_read_vif;
   virtual pins_if#(MuBi4Width)   lc_hw_debug_en_vif;
 
+  virtual csrng_assert_if csrng_assert_vif; // handle to csrng assert interface
+
+  virtual csrng_path_if csrng_path_vif; // handle to csrng path interface
+
   // Knobs & Weights
   uint   otp_en_cs_sw_app_read_pct, lc_hw_debug_en_pct, regwen_pct,
          enable_pct, sw_app_enable_pct, read_int_state_pct,
          check_int_state_pct, num_cmds_min, num_cmds_max, aes_halt_pct,
          min_aes_halt_clks, max_aes_halt_clks;
 
+  bit    use_invalid_mubi;
+
   rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS], sw_app, aes_halt;
   rand mubi4_t   enable, sw_app_enable, read_int_state;
   rand lc_tx_t   lc_hw_debug_en;
   rand mubi8_t   otp_en_cs_sw_app_read;
+
+  rand fatal_err_e      which_fatal_err;
+  rand err_code_e       which_err_code;
+  rand which_fifo_e     which_fifo;
+  rand which_fifo_err_e which_fifo_err;
+  rand invalid_mubi_e   which_invalid_mubi;
 
   // Variables (+1 is for the SW APP)
   bit                                    compliance[NUM_HW_APPS + 1], status[NUM_HW_APPS + 1];
   bit [csrng_env_pkg::KEY_LEN-1:0]       key[NUM_HW_APPS + 1];
   bit [csrng_env_pkg::BLOCK_LEN-1:0]     v[NUM_HW_APPS + 1];
   bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   reseed_counter[NUM_HW_APPS + 1];
+
+  int                                    NHwApps = 2;
+  int                                    NApps = NHwApps + 1;
+  int                                    Sp2VWidth = 3;
+
+  rand uint  which_hw_inst_exc;
+  constraint which_hw_inst_exc_c { which_hw_inst_exc inside {[0:NHwApps-1]};}
+
+  rand uint  which_sp2v;
+  constraint which_sp2v_c { which_sp2v inside {[0:Sp2VWidth-1]};}
 
   constraint otp_en_cs_sw_app_read_c { otp_en_cs_sw_app_read dist {
                                        MuBi8True  :/ otp_en_cs_sw_app_read_pct,
@@ -66,6 +88,24 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
                           1 :/ aes_halt_pct,
                           0 :/ (100 - aes_halt_pct) };}
 
+  // Functions
+  function void post_randomize();
+    if (use_invalid_mubi) begin
+      prim_mubi_pkg::mubi4_t invalid_mubi_val;
+      invalid_mubi_val = get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1));
+
+      csrng_assert_vif.assert_off_alert();
+      case (which_invalid_mubi)
+        invalid_enable: enable = invalid_mubi_val;
+        invalid_sw_app_enable: sw_app_enable = invalid_mubi_val;
+        invalid_read_int_state: read_int_state = invalid_mubi_val;
+        default: begin
+          `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
+        end
+      endcase // case (which_invalid_mubi)
+    end
+  endfunction // post_randomize
+
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = csrng_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_alert";
@@ -88,6 +128,12 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
       if (rg != null) begin
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
+    end
+
+    // get csrng assert interface handle
+    if (!uvm_config_db#(virtual csrng_assert_if)::
+        get(null, "*.env" , "csrng_assert_vif", csrng_assert_vif)) begin
+      `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ASSERT IF"))
     end
   endfunction
 

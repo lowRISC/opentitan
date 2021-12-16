@@ -46,6 +46,121 @@ package csrng_env_pkg;
     FifoErr    = 3
   } csrng_intr_e;
 
+  typedef enum int {
+    invalid_enable         = 0,
+    invalid_sw_app_enable  = 1,
+    invalid_read_int_state = 2
+  } invalid_mubi_e;
+
+  typedef enum int {
+    sfifo_cmd_error      = 0,
+    sfifo_genbits_error  = 1,
+    sfifo_cmdreq_error   = 2,
+    sfifo_rcstage_error  = 3,
+    sfifo_keyvrc_error   = 4,
+    sfifo_updreq_error   = 5,
+    sfifo_bencreq_error  = 6,
+    sfifo_bencack_error  = 7,
+    sfifo_pdata_error    = 8,
+    sfifo_final_error    = 9,
+    sfifo_gbencack_error = 10,
+    sfifo_grcstage_error = 11,
+    sfifo_ggenreq_error  = 12,
+    sfifo_gadstage_error = 13,
+    sfifo_ggenbits_error = 14,
+    sfifo_blkenc_error   = 15,
+    cmd_stage_sm_error   = 16,
+    main_sm_error        = 17,
+    drbg_gen_sm_error    = 18,
+    drbg_updbe_sm_error  = 19,
+    drbg_updob_sm_error  = 20,
+    aes_cipher_sm_error  = 21,
+    cmd_gen_cnt_error    = 22,
+    fifo_write_error     = 23,
+    fifo_read_error      = 24,
+    fifo_state_error     = 25
+  } fatal_err_e;
+
+  typedef enum int {
+    sfifo_cmd_err           = 0,
+    sfifo_genbits_err       = 1,
+    sfifo_cmdreq_err        = 2,
+    sfifo_rcstage_err       = 3,
+    sfifo_keyvrc_err        = 4,
+    sfifo_updreq_err        = 5,
+    sfifo_bencreq_err       = 6,
+    sfifo_bencack_err       = 7,
+    sfifo_pdata_err         = 8,
+    sfifo_final_err         = 9,
+    sfifo_gbencack_err      = 10,
+    sfifo_grcstage_err      = 11,
+    sfifo_ggenreq_err       = 12,
+    sfifo_gadstage_err      = 13,
+    sfifo_ggenbits_err      = 14,
+    sfifo_blkenc_err        = 15,
+    cmd_stage_sm_err        = 16,
+    main_sm_err             = 17,
+    drbg_gen_sm_err         = 18,
+    drbg_updbe_sm_err       = 19,
+    drbg_updob_sm_err       = 20,
+    aes_cipher_sm_err       = 21,
+    cmd_gen_cnt_err         = 22,
+    fifo_write_err          = 23,
+    fifo_read_err           = 24,
+    fifo_state_err          = 25,
+    sfifo_cmd_err_test      = 26,
+    sfifo_genbits_err_test  = 27,
+    sfifo_cmdreq_err_test   = 28,
+    sfifo_rcstage_err_test  = 29,
+    sfifo_keyvrc_err_test   = 30,
+    sfifo_updreq_err_test   = 31,
+    sfifo_bencreq_err_test  = 32,
+    sfifo_bencack_err_test  = 33,
+    sfifo_pdata_err_test    = 34,
+    sfifo_final_err_test    = 35,
+    sfifo_gbencack_err_test = 36,
+    sfifo_grcstage_err_test = 37,
+    sfifo_ggenreq_err_test  = 38,
+    sfifo_gadstage_err_test = 39,
+    sfifo_ggenbits_err_test = 40,
+    sfifo_blkenc_err_test   = 41,
+    cmd_stage_sm_err_test   = 42,
+    main_sm_err_test        = 43,
+    drbg_gen_sm_err_test    = 44,
+    drbg_updbe_sm_err_test  = 45,
+    drbg_updob_sm_err_test  = 46,
+    aes_cipher_sm_err_test  = 47,
+    cmd_gen_cnt_err_test    = 48,
+    fifo_write_err_test     = 49,
+    fifo_read_err_test      = 50,
+    fifo_state_err_test     = 51
+  } err_code_e;
+
+  typedef enum int {
+    sfifo_blkenc   = 0,
+    sfifo_ggenbits = 1,
+    sfifo_gadstage = 2,
+    sfifo_ggenreq  = 3,
+    sfifo_grcstage = 4,
+    sfifo_gbencack = 5,
+    sfifo_final    = 6,
+    sfifo_pdata    = 7,
+    sfifo_bencack  = 8,
+    sfifo_bencreq  = 9,
+    sfifo_updreq   = 10,
+    sfifo_keyvrc   = 11,
+    sfifo_rcstage  = 12,
+    sfifo_cmdreq   = 13,
+    sfifo_genbits  = 14,
+    sfifo_cmd      = 15
+  } which_fifo_e;
+
+  typedef enum int {
+    fifo_write = 0,
+    fifo_read  = 1,
+    fifo_state = 2
+  } which_fifo_err_e;
+
   // functions
 
   // package sources

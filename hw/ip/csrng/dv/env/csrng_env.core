@@ -18,6 +18,7 @@ filesets:
       - lowrisc:dv:aes_model_dpi
     files:
       - csrng_env_pkg.sv
+      - csrng_path_if.sv
       - csrng_env_cfg.sv: {is_include_file: true}
       - csrng_env_cov.sv: {is_include_file: true}
       - csrng_virtual_sequencer.sv: {is_include_file: true}
@@ -29,6 +30,9 @@ filesets:
       - seq_lib/csrng_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/csrng_cmds_vseq.sv: {is_include_file: true}
       - seq_lib/csrng_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/csrng_intr_vseq.sv: {is_include_file: true}
+      - seq_lib/csrng_alert_vseq.sv: {is_include_file: true}
+      - seq_lib/csrng_err_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
