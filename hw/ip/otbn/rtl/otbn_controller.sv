@@ -20,13 +20,13 @@ module otbn_controller
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
 ) (
-  input  logic  clk_i,
-  input  logic  rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
 
-  input  logic  start_i, // start the processing at address zero
-  output logic  locked_o, // OTBN in locked state and must be reset to perform any further actions
+  input  logic start_i,  // start the processing at address zero
+  output logic locked_o, // OTBN in locked state and must be reset to perform any further actions
 
-  output err_bits_t err_bits_o, // valid when done_o is asserted
+  output err_bits_t err_bits_o,           // valid when done_o is asserted
   output logic      recoverable_err_o,
   output logic      reg_intg_violation_o,
 
@@ -38,14 +38,14 @@ module otbn_controller
   input  logic                     insn_fetch_err_i,
 
   // Fetched/decoded instruction
-  input  logic                     insn_valid_i,
-  input  logic                     insn_illegal_i,
-  input  logic [ImemAddrWidth-1:0] insn_addr_i,
+  input logic                     insn_valid_i,
+  input logic                     insn_illegal_i,
+  input logic [ImemAddrWidth-1:0] insn_addr_i,
 
   // Decoded instruction data
-  input insn_dec_base_t       insn_dec_base_i,
-  input insn_dec_bignum_t     insn_dec_bignum_i,
-  input insn_dec_shared_t     insn_dec_shared_i,
+  input insn_dec_base_t   insn_dec_base_i,
+  input insn_dec_bignum_t insn_dec_bignum_i,
+  input insn_dec_shared_t insn_dec_shared_i,
 
   // Base register file
   output logic [4:0]               rf_base_wr_addr_o,
@@ -63,8 +63,8 @@ module otbn_controller
   input  logic [BaseIntgWidth-1:0] rf_base_rd_data_b_intg_i,
   output logic                     rf_base_rd_commit_o,
 
-  input  logic         rf_base_call_stack_err_i,
-  input  logic         rf_base_rd_data_err_i,
+  input logic rf_base_call_stack_err_i,
+  input logic rf_base_rd_data_err_i,
 
   // Bignum register file (WDRs)
   output logic [4:0]         rf_bignum_wr_addr_o,
@@ -81,7 +81,7 @@ module otbn_controller
   output logic               rf_bignum_rd_en_b_o,
   input  logic [ExtWLEN-1:0] rf_bignum_rd_data_b_intg_i,
 
-  input  logic               rf_bignum_rd_data_err_i,
+  input logic rf_bignum_rd_data_err_i,
 
   // Execution units
 
@@ -139,7 +139,7 @@ module otbn_controller
   input  logic        lifecycle_escalation_i,
   input  logic        software_errs_fatal_i,
 
-  input  logic [1:0]  sideload_key_shares_valid_i,
+  input logic [1:0] sideload_key_shares_valid_i,
 
   // Prefetch stage control
   output logic                     prefetch_en_o,
@@ -331,7 +331,7 @@ module otbn_controller
           if (stall) begin
             // When stalling don't request a new fetch and don't clear response either to keep
             // current instruction.
-            state_d               = OtbnStateStall;
+            state_d                  = OtbnStateStall;
             insn_fetch_req_valid_raw = 1'b0;
             insn_fetch_resp_clear_o  = 1'b0;
           end else begin
@@ -467,7 +467,7 @@ module otbn_controller
 
   assign reg_intg_violation_o = err_bits.reg_intg_violation;
 
-  if (SecWipeEn) begin: gen_sec_wipe
+  if (SecWipeEn) begin : gen_sec_wipe
     err_bits_t err_bits_d, err_bits_q;
     logic      recoverable_err_d, recoverable_err_q;
 
@@ -486,8 +486,7 @@ module otbn_controller
       end
     end
 
-  end
-  else begin: gen_bypass_sec_wipe
+  end else begin : gen_bypass_sec_wipe
     logic unused_err_bits_en;
 
     assign unused_err_bits_en = err_bits_en;
@@ -504,8 +503,8 @@ module otbn_controller
   `ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
   `ASSERT(SoftwareErrIfNonInsnAddrSoftwareErr, non_insn_addr_software_err |-> software_err)
 
-  `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun,
-                                                OtbnStateStall, OtbnStateLocked})
+  `ASSERT(ControllerStateValid,
+          state_q inside {OtbnStateHalt, OtbnStateRun, OtbnStateStall, OtbnStateLocked})
   // Branch only takes effect in OtbnStateRun so must not go into stall state for branch
   // instructions.
   `ASSERT(NoStallOnBranch,
@@ -549,23 +548,23 @@ module otbn_controller
     .clk_i,
     .rst_ni,
 
-    .state_reset_i       (loop_reset),
+    .state_reset_i(loop_reset),
 
     .insn_valid_i,
     .insn_addr_i,
-    .next_insn_addr_i    (next_insn_addr),
+    .next_insn_addr_i(next_insn_addr),
 
-    .loop_start_req_i    (loop_start_req),
-    .loop_start_commit_i (loop_start_commit),
-    .loop_bodysize_i     (loop_bodysize),
-    .loop_iterations_i   (loop_iterations),
+    .loop_start_req_i   (loop_start_req),
+    .loop_start_commit_i(loop_start_commit),
+    .loop_bodysize_i    (loop_bodysize),
+    .loop_iterations_i  (loop_iterations),
 
-    .loop_jump_o         (loop_jump),
-    .loop_jump_addr_o    (loop_jump_addr),
-    .loop_err_o          (loop_err),
+    .loop_jump_o     (loop_jump),
+    .loop_jump_addr_o(loop_jump_addr),
+    .loop_err_o      (loop_err),
 
-    .jump_or_branch_i    (jump_or_branch),
-    .otbn_stall_i        (stall),
+    .jump_or_branch_i(jump_or_branch),
+    .otbn_stall_i    (stall),
 
     .prefetch_loop_active_o,
     .prefetch_loop_iterations_o,
@@ -752,8 +751,8 @@ module otbn_controller
   end
 
   for (genvar i = 0; i < BaseWordsPerWLEN; ++i) begin : g_rf_bignum_rd_data
-    assign rf_bignum_rd_data_a_no_intg[i * 32 +: 32] = rf_bignum_rd_data_a_intg_i[i * 39 +: 32];
-    assign rf_bignum_rd_data_b_no_intg[i * 32 +: 32] = rf_bignum_rd_data_b_intg_i[i * 39 +: 32];
+    assign rf_bignum_rd_data_a_no_intg[i*32+:32] = rf_bignum_rd_data_a_intg_i[i*39+:32];
+    assign rf_bignum_rd_data_b_no_intg[i*32+:32] = rf_bignum_rd_data_b_intg_i[i*39+:32];
   end
 
   assign rf_bignum_rd_addr_a_o = insn_dec_bignum_i.rf_a_indirect ? rf_base_rd_data_a_no_intg[4:0] :
@@ -916,7 +915,7 @@ module otbn_controller
     csr_illegal_addr    = 1'b0;
 
     unique case (csr_addr)
-      CsrFlags, CsrFg0, CsrFg1 : begin
+      CsrFlags, CsrFg0, CsrFg1: begin
         ispr_addr_base      = IsprFlags;
         ispr_word_addr_base = '0;
       end

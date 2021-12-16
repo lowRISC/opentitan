@@ -11,20 +11,20 @@ module otbn_decoder
   import otbn_pkg::*;
 (
   // For assertions only.
-  input  logic                 clk_i,
-  input  logic                 rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
 
   // instruction data to be decoded
-  input  logic [31:0]          insn_fetch_resp_data_i,
-  input  logic                 insn_fetch_resp_valid_i,
+  input logic [31:0] insn_fetch_resp_data_i,
+  input logic        insn_fetch_resp_valid_i,
 
   // Decoded instruction
-  output logic                 insn_valid_o,
-  output logic                 insn_illegal_o,
+  output logic insn_valid_o,
+  output logic insn_illegal_o,
 
-  output insn_dec_base_t       insn_dec_base_o,
-  output insn_dec_bignum_t     insn_dec_bignum_o,
-  output insn_dec_shared_t     insn_dec_shared_o
+  output insn_dec_base_t   insn_dec_base_o,
+  output insn_dec_bignum_t insn_dec_bignum_o,
+  output insn_dec_shared_t insn_dec_shared_o
 );
 
   logic        illegal_insn;
@@ -95,15 +95,15 @@ module otbn_decoder
   logic rf_d_indirect_bignum;
 
   // immediate extraction and sign extension
-  assign imm_i_type_base = { {20{insn[31]}}, insn[31:20] };
-  assign imm_s_type_base = { {20{insn[31]}}, insn[31:25], insn[11:7] };
-  assign imm_b_type_base = { {19{insn[31]}}, insn[31], insn[7], insn[30:25], insn[11:8], 1'b0 };
-  assign imm_u_type_base = { insn[31:12], 12'b0 };
-  assign imm_j_type_base = { {12{insn[31]}}, insn[19:12], insn[20], insn[30:21], 1'b0 };
+  assign imm_i_type_base = {{20{insn[31]}}, insn[31:20]};
+  assign imm_s_type_base = {{20{insn[31]}}, insn[31:25], insn[11:7]};
+  assign imm_b_type_base = {{19{insn[31]}}, insn[31], insn[7], insn[30:25], insn[11:8], 1'b0};
+  assign imm_u_type_base = {insn[31:12], 12'b0};
+  assign imm_j_type_base = {{12{insn[31]}}, insn[19:12], insn[20], insn[30:21], 1'b0};
   // l type immediate is for the loop count in the LOOPI instruction and is not from the RISC-V ISA
-  assign imm_l_type_base = { 22'b0, insn[19:15], insn[11:7] };
+  assign imm_l_type_base = {22'b0, insn[19:15], insn[11:7]};
   // x type immediate is for BN.LID/BN.SID instructions and is not from the RISC-V ISA
-  assign imm_x_type_base = { {17{insn[11]}}, insn[11:9], insn[31:25], 5'b0 };
+  assign imm_x_type_base = {{17{insn[11]}}, insn[11:9], insn[31:25], 5'b0};
 
   logic [WLEN-1:0] imm_i_type_bignum;
 
@@ -177,14 +177,14 @@ module otbn_decoder
   logic [31:0] imm_b_base;
   always_comb begin : immediate_b_mux
     unique case (imm_b_mux_sel_base)
-      ImmBaseBI:   imm_b_base = imm_i_type_base;
-      ImmBaseBS:   imm_b_base = imm_s_type_base;
-      ImmBaseBU:   imm_b_base = imm_u_type_base;
-      ImmBaseBB:   imm_b_base = imm_b_type_base;
-      ImmBaseBJ:   imm_b_base = imm_j_type_base;
-      ImmBaseBL:   imm_b_base = imm_l_type_base;
-      ImmBaseBX:   imm_b_base = imm_x_type_base;
-      default:     imm_b_base = imm_i_type_base;
+      ImmBaseBI: imm_b_base = imm_i_type_base;
+      ImmBaseBS: imm_b_base = imm_s_type_base;
+      ImmBaseBU: imm_b_base = imm_u_type_base;
+      ImmBaseBB: imm_b_base = imm_b_type_base;
+      ImmBaseBJ: imm_b_base = imm_j_type_base;
+      ImmBaseBL: imm_b_base = imm_l_type_base;
+      ImmBaseBX: imm_b_base = imm_x_type_base;
+      default:   imm_b_base = imm_i_type_base;
     endcase
   end
 
@@ -314,14 +314,14 @@ module otbn_decoder
       //////////////
 
       InsnOpcodeBaseLui: begin  // Load Upper Immediate
-        insn_subset      = InsnSubsetBase;
-        rf_we_base       = 1'b1;
+        insn_subset = InsnSubsetBase;
+        rf_we_base  = 1'b1;
       end
 
-      InsnOpcodeBaseOpImm: begin // Register-Immediate ALU Operations
-        insn_subset      = InsnSubsetBase;
-        rf_ren_a_base    = 1'b1;
-        rf_we_base       = 1'b1;
+      InsnOpcodeBaseOpImm: begin  // Register-Immediate ALU Operations
+        insn_subset   = InsnSubsetBase;
+        rf_ren_a_base = 1'b1;
+        rf_we_base    = 1'b1;
 
         unique case (insn[14:12])
           3'b000,  // addi
@@ -332,7 +332,7 @@ module otbn_decoder
 
           3'b001: begin
             unique case (insn[31:25])
-              7'b0000000: illegal_insn = 1'b0;   // slli
+              7'b0000000: illegal_insn = 1'b0;  // slli
               default: illegal_insn = 1'b1;
             endcase
           end
@@ -351,10 +351,10 @@ module otbn_decoder
       end
 
       InsnOpcodeBaseOp: begin  // Register-Register ALU operation
-        insn_subset     = InsnSubsetBase;
-        rf_ren_a_base   = 1'b1;
-        rf_ren_b_base   = 1'b1;
-        rf_we_base      = 1'b1;
+        insn_subset   = InsnSubsetBase;
+        rf_ren_a_base = 1'b1;
+        rf_ren_b_base = 1'b1;
+        rf_we_base    = 1'b1;
         // Look at the funct7 and funct3 fields.
         unique case ({insn[31:25], insn[14:12]})
           {7'b000_0000, 3'b000},  // ADD
@@ -464,7 +464,7 @@ module otbn_decoder
             // No read if destination is x0
             ispr_rd_insn = insn_rd != 5'b0;
             ispr_wr_insn = 1'b1;
-          end else if(insn[14:12] == 3'b010) begin
+          end else if (insn[14:12] == 3'b010) begin
             // Read and set if source register isn't x0, otherwise read only
             if (insn_rs1 != 5'b0) begin
               ispr_rs_insn = 1'b1;
@@ -504,18 +504,18 @@ module otbn_decoder
 
       InsnOpcodeBignumBaseMisc: begin
         unique case (insn[14:12])
-          3'b000, 3'b001: begin // LOOP[I]
+          3'b000, 3'b001: begin  // LOOP[I]
             insn_subset   = InsnSubsetBase;
             rf_ren_a_base = ~insn[12];
             loop_insn     = 1'b1;
           end
-          3'b010, 3'b011, 3'b100, 3'b110, 3'b111: begin // BN.RHSI/BN.AND/BN.OR/BN.XOR
+          3'b010, 3'b011, 3'b100, 3'b110, 3'b111: begin  // BN.RHSI/BN.AND/BN.OR/BN.XOR
             insn_subset     = InsnSubsetBignum;
             rf_we_bignum    = 1'b1;
             rf_ren_a_bignum = 1'b1;
             rf_ren_b_bignum = 1'b1;
           end
-          3'b101: begin // BN.NOT
+          3'b101: begin  // BN.NOT
             insn_subset     = InsnSubsetBignum;
             rf_we_bignum    = 1'b1;
             rf_ren_a_bignum = 1'b1;
@@ -532,18 +532,18 @@ module otbn_decoder
         insn_subset = InsnSubsetBignum;
 
         unique case (insn[14:12])
-          3'b000: begin // BN.SEL
+          3'b000: begin  // BN.SEL
             rf_we_bignum        = 1'b1;
             rf_ren_a_bignum     = 1'b1;
             rf_ren_b_bignum     = 1'b1;
             rf_wdata_sel_bignum = RfWdSelMovSel;
             sel_insn_bignum     = 1'b1;
           end
-          3'b011, 3'b001: begin // BN.CMP[B]
+          3'b011, 3'b001: begin  // BN.CMP[B]
             rf_ren_a_bignum = 1'b1;
             rf_ren_b_bignum = 1'b1;
           end
-          3'b100: begin // BN.LID
+          3'b100: begin  // BN.LID
             ld_insn              = 1'b1;
             rf_we_bignum         = 1'b1;
             rf_ren_a_base        = 1'b1;
@@ -570,7 +570,7 @@ module otbn_decoder
               illegal_insn           = 1'b1;
             end
           end
-          3'b101: begin // BN.SID
+          3'b101: begin  // BN.SID
             st_insn              = 1'b1;
             rf_ren_a_base        = 1'b1;
             rf_ren_b_base        = 1'b1;
@@ -596,13 +596,13 @@ module otbn_decoder
               illegal_insn           = 1'b1;
             end
           end
-          3'b110: begin // BN.MOV/BN.MOVR
+          3'b110: begin  // BN.MOV/BN.MOVR
             insn_subset         = InsnSubsetBignum;
             rf_we_bignum        = 1'b1;
             rf_ren_a_bignum     = 1'b1;
             rf_wdata_sel_bignum = RfWdSelMovSel;
 
-            if (insn[31]) begin // BN.MOVR
+            if (insn[31]) begin  // BN.MOVR
               rf_a_indirect_bignum = 1'b1;
               rf_d_indirect_bignum = 1'b1;
               rf_ren_a_base        = 1'b1;
@@ -629,10 +629,10 @@ module otbn_decoder
             end
           end
           3'b111: begin
-            if (insn[31]) begin // BN.WSRW
+            if (insn[31]) begin  // BN.WSRW
               rf_ren_a_bignum = 1'b1;
               ispr_wr_insn    = 1'b1;
-            end else begin // BN.WSRR
+            end else begin  // BN.WSRR
               rf_we_bignum        = 1'b1;
               rf_wdata_sel_bignum = RfWdSelIspr;
               ispr_rd_insn        = 1'b1;
@@ -653,7 +653,7 @@ module otbn_decoder
         rf_wdata_sel_bignum = RfWdSelMac;
         mac_en_bignum       = 1'b1;
 
-        if (insn[30] == 1'b1 || insn[29] == 1'b1) begin // BN.MULQACC.WO/BN.MULQACC.SO
+        if (insn[30] == 1'b1 || insn[29] == 1'b1) begin  // BN.MULQACC.WO/BN.MULQACC.SO
           rf_we_bignum = 1'b1;
         end
       end
@@ -713,7 +713,7 @@ module otbn_decoder
         alu_operator_base     = AluOpBaseAdd;
       end
 
-      InsnOpcodeBaseOpImm: begin // Register-Immediate ALU Operations
+      InsnOpcodeBaseOpImm: begin  // Register-Immediate ALU Operations
         alu_op_a_mux_sel_base = OpASelRegister;
         alu_op_b_mux_sel_base = OpBSelImmediate;
         imm_b_mux_sel_base    = ImmBaseBI;
@@ -725,14 +725,14 @@ module otbn_decoder
           3'b111: alu_operator_base = AluOpBaseAnd;  // And with Immediate
 
           3'b001: begin
-            alu_operator_base = AluOpBaseSll; // Shift Left Logical by Immediate
+            alu_operator_base = AluOpBaseSll;  // Shift Left Logical by Immediate
           end
 
           3'b101: begin
             if (insn_alu[31:27] == 5'b0_0000) begin
-              alu_operator_base = AluOpBaseSrl; // Shift Right Logical by Immediate
+              alu_operator_base = AluOpBaseSrl;  // Shift Right Logical by Immediate
             end else if (insn_alu[31:27] == 5'b0_1000) begin
-              alu_operator_base = AluOpBaseSra; // Shift Right Arithmetically by Immediate
+              alu_operator_base = AluOpBaseSra;  // Shift Right Arithmetically by Immediate
             end
           end
 
@@ -821,7 +821,7 @@ module otbn_decoder
       InsnOpcodeBignumArith: begin
         alu_flag_en_bignum = 1'b1;
 
-        unique case(insn_alu[14:12])
+        unique case (insn_alu[14:12])
           3'b000: alu_operator_bignum = AluOpBignumAdd;
           3'b001: alu_operator_bignum = AluOpBignumSub;
           3'b010: alu_operator_bignum = AluOpBignumAddc;
@@ -861,7 +861,7 @@ module otbn_decoder
         imm_b_mux_sel_base      = ImmBaseBL;
         alu_op_b_mux_sel_bignum = OpBSelRegister;
 
-        unique case(insn_alu[14:12])
+        unique case (insn_alu[14:12])
           3'b010: begin
             shift_amt_mux_sel_bignum = ShamtSelBignumA;
             alu_operator_bignum      = AluOpBignumAnd;
@@ -897,20 +897,20 @@ module otbn_decoder
 
       InsnOpcodeBignumMisc: begin
         unique case (insn[14:12])
-          3'b001: begin // BN.CMP
+          3'b001: begin  // BN.CMP
             alu_operator_bignum      = AluOpBignumSub;
             alu_op_b_mux_sel_bignum  = OpBSelRegister;
             shift_amt_mux_sel_bignum = ShamtSelBignumA;
             alu_flag_en_bignum       = 1'b1;
           end
-          3'b011: begin // BN.CMPB
+          3'b011: begin  // BN.CMPB
             alu_operator_bignum      = AluOpBignumSubb;
             alu_op_b_mux_sel_bignum  = OpBSelRegister;
             shift_amt_mux_sel_bignum = ShamtSelBignumA;
             alu_flag_en_bignum       = 1'b1;
           end
           3'b100,
-          3'b101: begin // BN.LID/BN.SID
+          3'b101: begin  // BN.LID/BN.SID
             // Calculate memory address using base ALU
             alu_op_a_mux_sel_base = OpASelRegister;
             alu_op_b_mux_sel_base = OpBSelImmediate;
@@ -926,7 +926,7 @@ module otbn_decoder
       ////////////////////////////////////////////
 
       InsnOpcodeBignumMulqacc: begin
-        if (insn[30] == 1'b1 || insn[29] == 1'b1) begin // BN.MULQACC.WO/BN.MULQACC.SO
+        if (insn[30] == 1'b1 || insn[29] == 1'b1) begin  // BN.MULQACC.WO/BN.MULQACC.SO
           mac_flag_en_bignum = 1'b1;
         end
       end
@@ -940,7 +940,7 @@ module otbn_decoder
   logic unused_clk;
   logic unused_rst_n;
 
-  assign unused_clk = clk_i;
+  assign unused_clk   = clk_i;
   assign unused_rst_n = rst_ni;
 
   ////////////////
@@ -949,14 +949,13 @@ module otbn_decoder
 
 
   // Selectors must be known/valid.
-  `ASSERT(IbexRegImmAluOpBaseKnown, (opcode == InsnOpcodeBaseOpImm) |->
-      !$isunknown(insn[14:12]))
+  `ASSERT(IbexRegImmAluOpBaseKnown, (opcode == InsnOpcodeBaseOpImm) |-> !$isunknown(insn[14:12]))
 
   // Can only do a single inc. Selection mux in controller doesn't factor in instruction valid (to
   // ease timing), so these must always be one-hot to 0 to avoid violating unique constraint for mux
   // case statement.
   `ASSERT(BignumRegIncOnehot,
-    $onehot0({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
+          $onehot0({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
 
   // RfWdSelIncr requires active selection
   `ASSERT(BignumRegIncReq,
