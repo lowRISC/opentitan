@@ -9,20 +9,27 @@
 //    There are two copies of the relevant counter and they are constantly compared.
 // 2. Cross count
 //    There is an up count and a down count, and the combined value must always
-//    combine to the same value
+//    combine to the same value.
 //
-// This counter supports a generic clr / set / en interface.
-// When clr_i is set, the counter clears to 0
-// When set_i is set, the down count (if enabled) will set to the max value
-// When neither of the above is set, increment the up count(s) or decrement the down count.
+// This counter supports a generic clr / set / en interface, where
+// clr_i and set_i MUST NOT be set at the same time!
 //
-// Note there are many other flavor of functions that can be added, but this primitive
-// module initially favors the usage inside keymgr and flash_ctrl.
+// In duplicate count mode
+//    - clr_i sets all (internal) counters to 0.
+//    - set_i sets the up_count's starting value to set_cnt_i.
+//      Note: the maximum value is just the max possible value given by the counter's width.
+//    - en_i increments the counter by step_i, if neither of the above is set.
 //
-// The usage of set_cnt_i is as follows:
-// When doing CrossCnt, set_cnt_i sets the maximum value as well as the starting value of down_cnt.
-// When doing DupCnt, set_cnt_i sets the starting value of up_cnt. Note during DupCnt, the maximum
-// value is just the max possible value given the counter width.
+// In cross count mode
+//    - clr_i sets all (internal) counters to 0. This means:
+//      -- down_count is halted until set_i is set again
+//         Note: The up_count is still running.
+//      -- err_o is set to 0 (false),
+//      -- cnt_o is either all zero (OutSelDnCnt = 1) or the (running) up_count value (OutSelDnCnt = 0).
+//    - set_i sets
+//      -- the up_count to 0 and the down_count to set_cnt_i,
+//      -- the up_count's maximum value to set_cnt_i.
+//    - en_i increments/decrements the up_count/down_count by step_i, if neither of the above is set.
 
 module prim_count import prim_count_pkg::*; #(
   parameter int Width = 2,
@@ -43,7 +50,7 @@ module prim_count import prim_count_pkg::*; #(
   output logic err_o
 );
 
-  // if output selects downcount, it MUST be the cross count style
+  // if output selects down count, it MUST be the cross count style
   `ASSERT_INIT(CntStyleMatch_A, OutSelDnCnt ? CntStyle == CrossCnt : 1'b1)
 
   localparam int CntCopies = (CntStyle == DupCnt) ? 2 : 1;
@@ -52,11 +59,11 @@ module prim_count import prim_count_pkg::*; #(
   // when the max value is re-set during cross count.
   logic clr_up_cnt;
   assign clr_up_cnt = clr_i |
-                      set_i & CntStyle == CrossCnt;
+                      (set_i & (CntStyle == CrossCnt));
 
   // set up count to desired value only during duplicate counts.
   logic set_up_cnt;
-  assign set_up_cnt = set_i & CntStyle == DupCnt;
+  assign set_up_cnt = set_i & (CntStyle == DupCnt);
 
 
   cmp_valid_e cmp_valid;
@@ -75,9 +82,9 @@ module prim_count import prim_count_pkg::*; #(
 
   for (genvar i = 0; i < CntCopies; i++) begin : gen_cnts
     // up-count
-    assign up_cnt_d[i] = (clr_up_cnt)                   ? '0 :
-                         (set_up_cnt)                   ? set_cnt_i :
-                         (en_i & up_cnt_q[i] < max_val) ? up_cnt_q[i] + step_i :
+    assign up_cnt_d[i] = (clr_up_cnt)                     ? '0 :
+                         (set_up_cnt)                     ? set_cnt_i :
+                         (en_i & (up_cnt_q[i] < max_val)) ? up_cnt_q[i] + step_i :
                                                           up_cnt_q[i];
 
     prim_buf #(
@@ -120,7 +127,7 @@ module prim_count import prim_count_pkg::*; #(
         down_cnt <= '0;
       end else if (set_i) begin
         down_cnt <= set_cnt_i;
-      end else if (en_i && down_cnt > '0) begin
+      end else if (en_i && (down_cnt > '0)) begin
         down_cnt <= down_cnt - step_i;
       end
     end
@@ -128,7 +135,7 @@ module prim_count import prim_count_pkg::*; #(
     logic msb;
     assign {msb, sum} = down_cnt + up_cnt_q[0];
     assign cnt_o = OutSelDnCnt ? down_cnt : up_cnt_q[0];
-    assign err   = max_val != sum | msb;
+    assign err   = (max_val != sum) | msb;
 
     `ASSERT(CrossCntErrForward_A,
             (cmp_valid == CmpValid) && ((down_cnt + up_cnt_q[0]) != {1'b0, max_val}) |-> err_o)
@@ -159,6 +166,8 @@ module prim_count import prim_count_pkg::*; #(
   end
 
   // If the compare flag is not a valid enum, treat it like an error
+  // If cmp_valid == CmpInvalid we cannot make a valid comparison and thus
+  // don't set err_o (this happens when the down_cnt is cleared to zero)
   assign err_o = (cmp_valid == CmpValid)   ?  err :
                  (cmp_valid == CmpInvalid) ?  '0  : 1'b1;
 
