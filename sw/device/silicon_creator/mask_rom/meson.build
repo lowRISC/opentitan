@@ -4,8 +4,8 @@
 
 # Mask ROM Linker Parameters
 #
-# See sw/device/exts/common/flash_link.ld for additional info about these
-# parameters.
+# See `sw/device/lib/testing/test_rom_ext/test_rom_ext.ld` for additional info
+# about these parameters.
 
 rom_linkfile = files(['mask_rom.ld'])
 rom_link_args = [

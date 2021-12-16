@@ -4,7 +4,7 @@
 
 /**
  * @file
- * This file contains Ibex-specific interrupt vectors.
+ * This file contains Ibex-specific interrupt vectors for test flash images.
  */
 
   // These symbols are declared in

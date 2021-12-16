@@ -304,7 +304,7 @@ _OTTF_DEPS = [
     "//sw/device/lib/runtime:log",
     "//sw/device/lib/runtime:print",
     "//sw/device/lib/arch:device",
-    "//sw/device/exts/common",
+    "//sw/device/lib/testing/test_rom_ext",
     "//sw/device/lib/crt",
     "//sw/device/lib/testing/test_framework:ottf",
     "//sw/device/lib/testing/test_framework:ottf_isrs",

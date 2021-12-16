@@ -3,7 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Linker script for an OpenTitan flash binaries.
+ * Linker script for an OpenTitan flash (test) binaries.
  *
  * Portions of this file are Ibex-specific.
  */
@@ -33,10 +33,10 @@ _stack_start = _stack_end - _stack_size;
 _dv_log_offset = 0x10000;
 
 /**
- * The entry point in `flash_crt.S` is called `_start`. This information in the
- * ELF file is not used - instead we use the information in the `.flash_header`
- * section to understand where to start execution of a flash image. We need this
- * declaration so LLD does not error.
+ * The entry point in `test_rom_ext.S` is called `_start`. This information in
+ * the ELF file is not used - instead we use the information in the
+ * `.flash_header` section to understand where to start execution of a flash
+ * image. We need this declaration so LLD does not error.
  */
 ENTRY(_start);
 
@@ -60,7 +60,7 @@ SECTIONS {
   } > eflash_virtual
 
   /**
-   * Ibex interrupt vectors. See 'ibex_interrupt_vectors.S' for more
+   * Ibex interrupt vectors. See 'test_rom_ext_irq_vector.S' for more
    * information.
    */
   .vectors : {
@@ -159,7 +159,7 @@ SECTIONS {
   } > ram_main
 
   /**
-   * FreeRTOS heap.
+   * FreeRTOS heap (for OTTF).
    *
    * This is a separate NOLOAD section so that it does not end up in the `.bss`
    * section which gets zeroed during the second boot stage initialization,

@@ -162,7 +162,6 @@ signing_keys = {
 }
 
 subdir('lib')
-subdir('exts')
 subdir('otp_img')
 subdir('silicon_creator')
 subdir('silicon_owner')

@@ -20,7 +20,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_runtime_log,
       sw_lib_dif_uart,
       sw_lib_usb,
-      riscv_crt,
+      test_rom_ext,
       device_lib,
       sw_lib_testing_ottf_isrs,
       sw_lib_testing_test_status,
