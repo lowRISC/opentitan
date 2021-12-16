@@ -3,7 +3,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, Optional
+from copy import deepcopy
+from typing import Dict, Iterable, Optional
 
 from .insn_yaml import Insn
 from .operand import RegOperandType
@@ -46,8 +47,15 @@ class ConstantContext:
     def __contains__(self, gpr: str) -> bool:
         return gpr in self.values
 
-    def copy(self) -> 'ConstantContext':
-        return ConstantContext(self.values)
+    def __deepcopy__(self, memo) -> 'ConstantContext':
+        return ConstantContext(deepcopy(self.values, memo))
+
+    def includes(self, other: 'ConstantContext') -> 'ConstantContext':
+        '''Returns true iff self contains all key/value pairs in other.'''
+        for k, v in other.values.items():
+            if self.get(k) != v:
+                return False
+        return True
 
     def intersect(self, other: 'ConstantContext') -> 'ConstantContext':
         '''Returns a new context with only values on which self/other agree.
@@ -59,6 +67,18 @@ class ConstantContext:
             if other.get(k) == v:
                 out[k] = v
         return ConstantContext(out)
+
+    def removemany(self, to_remove: Iterable[str]) -> None:
+        '''Remove the given registers from the constant context.
+
+        Useful for cases when, for example, the given registers have been
+        overwritten. Does nothing for registers that are not known constants,
+        or for the special register x0.
+        '''
+        for reg in to_remove:
+            if reg != 'x0':
+                self.values.pop(reg, None)
+
 
     def update_insn(self, insn: Insn, op_vals: Dict[str, int]) -> None:
         '''Updates to new known constant values GPRs after the instruction.
@@ -95,8 +115,6 @@ class ConstantContext:
         # register can no longer be determined; remove it from the constants
         # dictionary.
         iflow = insn.iflow.evaluate(op_vals, self.values)
-        for sink in iflow.all_sinks():
-            # Remove from self.values if key exists
-            self.values.pop(sink, None)
+        self.removemany(iflow.all_sinks())
 
         self.values.update(new_values)

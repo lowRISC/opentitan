@@ -72,6 +72,7 @@ class LoopStart(ControlLoc):
     is the last PC of the loop body.
     '''
     def __init__(self, loop_start_pc: int, loop_end_pc: int):
+        super().__init__(loop_start_pc)
         self.loop_start_pc = loop_start_pc
         self.loop_end_pc = loop_end_pc
 
@@ -83,18 +84,29 @@ class LoopStart(ControlLoc):
         return '<loop from {:#x}-{:#x}>'.format(self.loop_start_pc,
                                                 self.loop_end_pc)
 
+class Cycle(ControlLoc):
+    '''Represents a control flow that loops back to a previous PC.
 
-class LoopEnd(ControlLoc):
+    This is not represented as a normal ControlLoc because it's convenient to
+    catch these cyclic control flows rather than follow the jump/branch and
+    potentially cause an infinite loop; with this structure, the control-flow
+    graph remains a DAG.
+    '''
+    @classmethod
+    def is_special(cls) -> bool:
+        return True
+
+    def pretty(self) -> str:
+        return '<cycle: back to {:#x}>'.format(self.pc)
+
+class LoopEnd(Cycle):
     '''Represents the end of a loop (looping back to the start).
 
     Contains the LoopStart instance we're looping back to.
     '''
     def __init__(self, loop_start: LoopStart):
+        super().__init__(loop_start.loop_start_pc)
         self.loop_start = loop_start
-
-    @classmethod
-    def is_special(cls) -> bool:
-        return True
 
     def pretty(self) -> str:
         return '<loop end: back to {:#x}>'.format(
@@ -108,19 +120,18 @@ class ControlGraph:
 
     The `graph` dictionary maps PCs to 2-item tuples. Not all PCs are in
     `graph`; only ones that are jumped, branched, or looped to in the control
-    flow starting at `start`.
-
-    The first item in the tuple for each PC is the CodeSection that starts at
-    the PCs. It is guaranteed to be 0 or more straightline instructions,
-    followed by a final non-straightline instruction.
-
-    The second item in the tuple for each PC is a list of the various
-    control-flow locations that can be reached *after* the CodeSection has run.
-    For example, a CodeSection ending in a BNE instruction would have two
-    ControlLocs in its list.
+    flow starting at `start`. The 2-item tuple for each PC is as follows:
+        - 0: the CodeSection that starts at the PC. It is guaranteed to be 0
+          or more straightline instructions, followed by a final
+          non-straightline instruction.
+        - 1: a list of the various control-flow locations that can be reached
+          *after* the CodeSection has run.  For example, a CodeSection ending
+          in a BNE instruction would have two ControlLocs in its list, and a
+          CodeSection ending in `ret` would have a single Ret() instance in its
+          list.
     '''
-    def __init__(self, start: int, graph: Dict[int, Tuple[CodeSection,
-                                                          List[ControlLoc]]]):
+    def __init__(self, start: int,
+            graph: Dict[int, Tuple[CodeSection,List[ControlLoc]]]):
         for pc, (sec, _) in graph.items():
             assert sec.start == pc
         self.start = start
@@ -153,27 +164,14 @@ class ControlGraph:
         '''
         return self.get_entry(pc)[1]
 
-    def get_cycles(self,
-                   pc: int,
-                   path: List[int] = []) -> Dict[int, List[int]]:
-        '''Returns any (non LOOP/LOOPI) control-flow cycles in this graph.'''
-        cycles: Dict[int, List[int]] = {}
-        sec, edges = self.get_entry(pc)
-        for loc in edges:
-            if isinstance(loc, LoopStart):
-                pc = loc.loop_start_pc
-            elif loc.is_special():
-                # Skip Ret, Ecall, ImemEnd, LoopEnd
-                continue
-            else:
-                pc = loc.pc
-            if pc in path:
-                # Found a cycle; report it
-                cycles.setdefault(pc, []).append(sec.end)
-            else:
-                pcs = list(range(sec.start, sec.end + 4, 4))
-                cycles.update(self.get_cycles(pc, path + pcs))
-        return cycles
+    def get_cycle_starts(self) -> Set[int]:
+        '''Returns start PCs of all marked cycles in the graph.'''
+        out = set()
+        for pc, entry in self.graph.items():
+            for edge in entry[1]:
+                if isinstance(edge, Cycle):
+                    out.add(edge.pc)
+        return out
 
     def _pretty_lines(self,
                       program: OTBNProgram,
@@ -188,13 +186,16 @@ class ControlGraph:
         '''
         out = []
         sec, edges = self.get_entry(entry_pc)
-        symbols = program.get_symbols_for_pc(entry_pc)
+        symbols = [s for s in program.get_symbols_for_pc(entry_pc) if s != '']
         pcs_to_print = list(range(sec.start, sec.end + 4, 4))
-        if len(symbols) > 0:
+        if entry_pc in already_printed and not concise:
+            if len(symbols) > 0:
+                out.append((0, '<{}> (see above)'.format(', '.join(symbols))))
+            else:
+                out.append((0, '{:#x}..{:#x} (see above)'.format(entry_pc, sec.end)))
+            pcs_to_print = []
+        elif len(symbols) > 0:
             out.append((0, '<{}>'.format(', '.join(symbols))))
-            if entry_pc in already_printed and not concise:
-                out.append((0, '(see above)'))
-                pcs_to_print = []
         if concise:
             # only print last insn
             out.append((0, '...'))
@@ -212,12 +213,15 @@ class ControlGraph:
             if not (loc.is_special() or isinstance(loc, LoopEnd))
         ]
         child_indent = 0 if len(non_special_edges) <= 1 else 2
+        if any(map(lambda loc: isinstance(loc, LoopEnd), edges)):
+            child_indent = -2
         for loc in edges:
             if isinstance(loc, LoopEnd):
                 out.append((0, loc.pretty()))
                 continue
             if len(non_special_edges) > 1:
-                out.append((0, '->'))
+                last_insn = program.get_insn(sec.end)
+                out.append((0, '-> (branch from {:#x}: {})'.format(sec.end, last_insn.mnemonic)))
             if loc.is_special():
                 out.append((child_indent, loc.pretty()))
                 if isinstance(loc, Ret) and len(call_stack) > 0:
@@ -227,7 +231,7 @@ class ControlGraph:
                                 program, call_stack[0], concise,
                                 already_printed, call_stack[1:])]
                 if isinstance(loc, LoopStart):
-                    out += [(indent + child_indent, line)
+                    out += [(indent + child_indent + 2, line)
                             for indent, line in self._pretty_lines(
                                 program, loc.loop_start_pc, concise,
                                 already_printed, call_stack)]
@@ -315,6 +319,9 @@ def _populate_control_graph(graph: ControlGraph, program: OTBNProgram,
     checks only for the innermost loop's end PC; if the loops are incorrectly
     nested, it will not warn. However, it will raise a RuntimeError if the loop
     stack size (8) is exceeded.
+
+    This function will not record cycles in the control graph with the Cycle
+    instance; run _fix_cycles afterward.
     '''
     LOOP_STACK_SIZE = 8
 
@@ -345,6 +352,8 @@ def _populate_control_graph(graph: ControlGraph, program: OTBNProgram,
         operands = program.get_operands(pc)
         section = CodeSection(start_pc, pc)
         locs = _get_next_control_locations(insn, operands, pc)
+        if start_pc in graph.graph:
+            raise RuntimeError
         graph.graph[start_pc] = (section, locs)
 
         # Recurse on next control-flow locations.
@@ -386,6 +395,47 @@ def _populate_control_graph(graph: ControlGraph, program: OTBNProgram,
                                          program.max_pc()), [ImemEnd()])
     return
 
+def _label_cycles(program: OTBNProgram, graph: ControlGraph, start_pc: int, visited_pcs: Set[int]) -> None:
+    '''Creates Cycle edges to remove cyclic control flow from the graph.
+
+    Modifies graph in place. Works by replacing edges that loop back to an
+    already-traversed part of the control flow with a Cycle instance.
+    '''
+    sec, edges = graph.get_entry(start_pc)
+    for pc in sec:
+        visited_pcs.add(pc)
+    for i in range(len(edges)):
+        edge = edges[i]
+        if isinstance(edge, Ret) or isinstance(edge, ImemEnd) or isinstance(edge, Ecall):
+            # Cannot possibly loop back 
+            continue
+        elif isinstance(edge, Cycle):
+            # Done; no need to traverse or replace
+            continue
+        if edge.pc in visited_pcs:
+            # Replace with Cycle instance and do not traverse
+            edges[i] = Cycle(edge.pc)
+        else:
+            _label_cycles(program, graph, edge.pc, visited_pcs.copy())
+
+
+def _fix_cycles(program: OTBNProgram, graph: ControlGraph) -> None:
+    '''Labels cycles and splits them from other CodeSections in the graph.
+
+    Modifies graph in place.
+    '''
+    _label_cycles(program, graph, graph.start, set())
+    cycle_start_pcs = graph.get_cycle_starts()
+    new_entries: Dict[int,Tuple[CodeSection,List[ControlLoc]]] = {}
+    for start_pc in graph.graph:
+        sec, edges = graph.get_entry(start_pc)
+        for pc in sec:
+            if pc in cycle_start_pcs and pc != sec.start:
+                # Split this section and create a new edge leading to the cycle
+                new_entries[start_pc] = (CodeSection(start_pc, pc), [ControlLoc(pc)])
+                break
+    graph.graph.update(new_entries)
+
 
 def _make_control_graph(program: OTBNProgram, start_pc: int) -> ControlGraph:
     '''Constructs a control flow graph with start_pc as the entrypoint.
@@ -394,6 +444,7 @@ def _make_control_graph(program: OTBNProgram, start_pc: int) -> ControlGraph:
     '''
     graph = ControlGraph(start_pc, {})
     _populate_control_graph(graph, program, start_pc, [])
+    _fix_cycles(program, graph)
     return graph
 
 

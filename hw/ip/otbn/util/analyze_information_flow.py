@@ -50,6 +50,13 @@ def main() -> int:
     if args.verbose:
         print('Control-flow graph:')
         print(graph.pretty(program, indent=2))
+        cycle_pcs = graph.get_cycle_starts()
+        if cycle_pcs:
+            print('Control flow has cycles starting at the following PCs:')
+            for pc in cycle_pcs:
+                symbols = program.get_symbols_for_pc(pc)
+                label_str = ' <{}>'.format(', '.join(symbols)) if symbols else ''
+                print('{:#x}{}'.format(pc, label_str))
 
     # Compute information-flow graph(s).
     if args.subroutine is None:
