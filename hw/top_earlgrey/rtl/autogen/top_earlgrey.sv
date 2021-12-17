@@ -83,7 +83,7 @@ module top_earlgrey #(
   parameter int unsigned RvCoreIbexMHPMCounterWidth = 32,
   parameter bit RvCoreIbexRV32E = 0,
   parameter ibex_pkg::rv32m_e RvCoreIbexRV32M = ibex_pkg::RV32MSingleCycle,
-  parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BNone,
+  parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BOTEarlGrey,
   parameter ibex_pkg::regfile_e RvCoreIbexRegFile = ibex_pkg::RegFileFF,
   parameter bit RvCoreIbexBranchTargetALU = 1,
   parameter bit RvCoreIbexWritebackStage = 1,
