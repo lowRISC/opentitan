@@ -44,6 +44,21 @@ yosys "opt -purge"
 
 yosys "write_verilog $lr_synth_pre_map_out"
 
+# Remove keep_hierarchy constraints before writing out the netlist for Alma as it doesn't like
+# these constraints.
+yosys "setattr -mod -set keep_hierarchy 0 *prim_xilinx_buf*"
+yosys "setattr -mod -set keep_hierarchy 0 *aes_*_fsm_p*"
+yosys "setattr -mod -set keep_hierarchy 0 *aes_*_fsm_n*"
+yosys "setattr -mod -set keep_hierarchy 0 *aes_sel_buf_chk*"
+
+yosys "write_verilog $lr_synth_alma_out"
+
+# Re-add keep_hierarchy constraints for further synthesis steps.
+yosys "setattr -mod -set keep_hierarchy 1 *prim_xilinx_buf*"
+yosys "setattr -mod -set keep_hierarchy 1 *aes_*_fsm_p*"
+yosys "setattr -mod -set keep_hierarchy 1 *aes_*_fsm_n*"
+yosys "setattr -mod -set keep_hierarchy 1 *aes_sel_buf_chk*"
+
 yosys "dfflibmap -liberty $lr_synth_cell_library_path"
 yosys "opt"
 
