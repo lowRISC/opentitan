@@ -114,6 +114,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
   // Signals
   aes_cipher_ctrl_e aes_cipher_ctrl_ns, aes_cipher_ctrl_cs;
   logic             advance;
+  logic       [2:0] cyc_ctr_d, cyc_ctr_q;
   logic             prng_reseed_done_d, prng_reseed_done_q;
   logic       [3:0] num_rounds_regular;
 
@@ -160,6 +161,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
     data_out_clear_d_o   = data_out_clear_q_i;
     prng_reseed_done_d   = prng_reseed_done_q | prng_reseed_ack_i;
     advance              = 1'b0;
+    cyc_ctr_d            = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q + 3'd1 : 3'd0;
 
     // Alert
     alert_o              = 1'b0;
@@ -168,6 +170,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
       IDLE: begin
         dec_key_gen_d_o = 1'b0;
+        cyc_ctr_d       = 3'd0;
 
         // Signal that we are ready, wait for handshake.
         in_ready_o = 1'b1;
@@ -249,12 +252,14 @@ module aes_cipher_control_fsm import aes_pkg::*;
             key_full_we_o        = 1'b1;
             rnd_ctr_d_o          = rnd_ctr_q_i     + 4'b0001;
             rnd_ctr_rem_d_o      = rnd_ctr_rem_q_i - 4'b0001;
+            cyc_ctr_d            = 3'd0;
             aes_cipher_ctrl_ns   = ROUND;
           end
         end else begin
           state_we_o         = ~dec_key_gen_q_i;
           rnd_ctr_d_o        = rnd_ctr_q_i     + 4'b0001;
           rnd_ctr_rem_d_o    = rnd_ctr_rem_q_i - 4'b0001;
+          cyc_ctr_d          = 3'd0;
           aes_cipher_ctrl_ns = ROUND;
         end
       end
@@ -283,6 +288,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
         prng_update_o   = (SBoxImpl == SBoxImplDom) ? ~advance : Masking;
         sub_bytes_en_o  = ~dec_key_gen_q_i;
         key_expand_en_o = 1'b1;
+
         if (advance) begin
           sub_bytes_out_ack_o  = ~dec_key_gen_q_i;
           key_expand_out_ack_o = 1'b1;
@@ -293,6 +299,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
           // Update round
           rnd_ctr_d_o     = rnd_ctr_q_i     + 4'b0001;
           rnd_ctr_rem_d_o = rnd_ctr_rem_q_i - 4'b0001;
+          cyc_ctr_d       = 3'd0;
 
           // Are we doing the last regular round?
           if (rnd_ctr_q_i == num_rounds_regular) begin
@@ -333,8 +340,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // Keep requesting PRNG reseeding until it is acknowledged.
         prng_reseed_req_o = Masking & ~prng_reseed_done_q;
 
-        // Once we're done, we won't need the state anymore. We actually clear it when progressing
-        // to the next state.
+        // Once we're done, we won't need the state anymore.
         state_sel_o = STATE_CLEAR;
 
         // Advance in sync with SubBytes. Based on the S-Box implementation, it can take multiple
@@ -348,17 +354,30 @@ module aes_cipher_control_fsm import aes_pkg::*;
         sub_bytes_en_o = ~dec_key_gen_q_i;
         out_valid_o    = (mux_sel_err_i || sp_enc_err_i) ? 1'b0 :
                          Masking ? prng_reseed_done_q & advance : advance;
+
         // When using DOM S-Boxes, make the masking PRNG advance every cycle until the output is
         // ready. For other S-Boxes, make it advance once only. Updating it while being stalled
         // would cause non-DOM S-Boxes to be re-evaluated, thereby creating additional SCA leakage.
         prng_update_o = (SBoxImpl == SBoxImplDom) ? ~advance                  :
                                           Masking ? out_valid_o & out_ready_i : 1'b0;
+
+        // Stop updating the cycle counter once we have valid output.
+        cyc_ctr_d = (SBoxImpl == SBoxImplDom) ? (!advance ? cyc_ctr_q + 3'd1 : cyc_ctr_q) : 3'd0;
+
+        // The DOM S-Boxes provide valid output in the fifth clock cycle. This output propgates
+        // through the rest of the cipher core and is forwarded to the output registers/mode logic
+        // (both unmasked). To cover potential SCA leakage related to this unmasking, we
+        // simultaneously clear the state with PRD. The write enable needs to be asserted one clock
+        // cycle earlier, i.e., in the fourth cycle. For non-DOM S-Boxes or if masking is disabled,
+        // the state can only be cleared when when the output registers are actually written.
+        state_we_o = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd3 : out_valid_o & out_ready_i;
+
         if (out_valid_o && out_ready_i) begin
           sub_bytes_out_ack_o = ~dec_key_gen_q_i;
 
           // Clear the state.
-          state_we_o          = 1'b1;
           crypt_d_o           = 1'b0;
+          cyc_ctr_d           = 3'd0;
           // If we were generating the decryption key and didn't get the handshake in the last
           // regular round, we should clear dec_key_gen now.
           dec_key_gen_d_o     = 1'b0;
@@ -435,6 +454,20 @@ module aes_cipher_control_fsm import aes_pkg::*;
     end else begin
       prng_reseed_done_q <= prng_reseed_done_d;
     end
+  end
+
+  if (SBoxImpl == SBoxImplDom) begin : gen_reg_cyc_ctr
+    always_ff @(posedge clk_i or negedge rst_ni) begin : reg_cyc_ctr
+      if (!rst_ni) begin
+        cyc_ctr_q <= 3'd0;
+      end else begin
+        cyc_ctr_q <= cyc_ctr_d;
+      end
+    end
+  end else begin : gen_no_cyc_ctr
+    logic [2:0] unused_cyc_ctr;
+    assign cyc_ctr_q      = cyc_ctr_d;
+    assign unused_cyc_ctr = cyc_ctr_q;
   end
 
   ////////////////
