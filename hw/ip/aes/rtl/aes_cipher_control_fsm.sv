@@ -121,6 +121,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
   // Signals
   aes_cipher_ctrl_e aes_cipher_ctrl_ns, aes_cipher_ctrl_cs;
   logic             advance;
+  logic       [2:0] cyc_ctr_d, cyc_ctr_q;
   logic             prng_reseed_done_d, prng_reseed_done_q;
   logic       [3:0] num_rounds_regular;
 
@@ -168,6 +169,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
     data_out_clear_d_o   = data_out_clear_q_i;
     prng_reseed_done_d   = prng_reseed_done_q | prng_reseed_ack_i;
     advance              = 1'b0;
+    cyc_ctr_d            = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q + 3'd1 : 3'd0;
 
     // Alert
     alert_o              = 1'b0;
@@ -175,6 +177,8 @@ module aes_cipher_control_fsm import aes_pkg::*;
     unique case (aes_cipher_ctrl_cs)
 
       IDLE: begin
+        cyc_ctr_d = 3'd0;
+
         // Signal that we are ready, wait for handshake.
         in_ready_o = 1'b1;
         if (in_valid_i) begin
@@ -254,10 +258,12 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // required by KeyExpand only.
         if (key_len_i != AES_256) begin
           // Advance in sync with KeyExpand. Based on the S-Box implementation, it can take
-          // multiple cycles to finish. Wait for handshake. The DOM S-Boxes take fresh PRD
-          // in every cycle except the last.
+          // multiple cycles to finish. Wait for handshake. The DOM S-Boxes consume fresh PRD
+          // only in the first clock cycle. By requesting the PRNG update in any clock cycle
+          // other than the last one, the PRD fed into the DOM S-Boxes is guaranteed to be stable.
+          // This is better in terms of SCA resistance. Request the PRNG update in the first cycle.
           advance         = key_expand_out_req_i;
-          prng_update_o   = (SBoxImpl == SBoxImplDom) ? advance : Masking;
+          prng_update_o   = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : Masking;
           key_expand_en_o = 1'b1;
           if (advance) begin
             key_expand_out_ack_o = 1'b1;
@@ -265,12 +271,14 @@ module aes_cipher_control_fsm import aes_pkg::*;
             key_full_we_o        = 1'b1;
             rnd_ctr_d_o          = rnd_ctr_q_i     + 4'b0001;
             rnd_ctr_rem_d_o      = rnd_ctr_rem_q_i - 4'b0001;
+            cyc_ctr_d            = 3'd0;
             aes_cipher_ctrl_ns   = ROUND;
           end
         end else begin
           state_we_o         = ~dec_key_gen_q_i;
           rnd_ctr_d_o        = rnd_ctr_q_i     + 4'b0001;
           rnd_ctr_rem_d_o    = rnd_ctr_rem_q_i - 4'b0001;
+          cyc_ctr_d          = 3'd0;
           aes_cipher_ctrl_ns = ROUND;
         end
       end
@@ -293,12 +301,16 @@ module aes_cipher_control_fsm import aes_pkg::*;
         round_key_sel_o = (op_i == CIPH_FWD) ? ROUND_KEY_DIRECT : ROUND_KEY_MIXED;
 
         // Advance in sync with SubBytes and KeyExpand. Based on the S-Box implementation, both can
-        // take multiple cycles to finish. Wait for handshake. Make the masking PRNG advance every
-        // cycle. The DOM S-Boxes take fresh PRD in every cycle except the last.
+        // take multiple cycles to finish. Wait for handshake. The DOM S-Boxes consume fresh PRD
+        // only in the first clock cycle. By requesting the PRNG update in any clock cycle other
+        // than the last one, the PRD fed into the DOM S-Boxes is guaranteed to be stable. This is
+        // better in terms of SCA resistance. Request the PRNG update in the first cycle. Non-DOM
+        // S-Boxes need fresh PRD in every clock cycle.
         advance         = (dec_key_gen_q_i | sub_bytes_out_req_i) & key_expand_out_req_i;
-        prng_update_o   = (SBoxImpl == SBoxImplDom) ? ~advance : Masking;
+        prng_update_o   = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : Masking;
         sub_bytes_en_o  = ~dec_key_gen_q_i;
         key_expand_en_o = 1'b1;
+
         if (advance) begin
           sub_bytes_out_ack_o  = ~dec_key_gen_q_i;
           key_expand_out_ack_o = 1'b1;
@@ -309,6 +321,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
           // Update round
           rnd_ctr_d_o     = rnd_ctr_q_i     + 4'b0001;
           rnd_ctr_rem_d_o = rnd_ctr_rem_q_i - 4'b0001;
+          cyc_ctr_d       = 3'd0;
 
           // Are we doing the last regular round?
           if (rnd_ctr_q_i == num_rounds_regular) begin
@@ -365,17 +378,25 @@ module aes_cipher_control_fsm import aes_pkg::*;
         sub_bytes_en_o = ~dec_key_gen_q_i;
         out_valid_o    = (mux_sel_err_i || sp_enc_err_i) ? 1'b0                  :
             Masking ? (prng_reseed_q_i ? prng_reseed_done_q & advance : advance) : advance;
-        // When using DOM S-Boxes, make the masking PRNG advance every cycle until the output is
-        // ready. For other S-Boxes, make it advance once only. Updating it while being stalled
-        // would cause non-DOM S-Boxes to be re-evaluated, thereby creating additional SCA leakage.
-        prng_update_o = (SBoxImpl == SBoxImplDom) ? ~advance                  :
-                                          Masking ? out_valid_o & out_ready_i : 1'b0;
+
+        // Stop updating the cycle counter once we have valid output.
+        cyc_ctr_d = (SBoxImpl == SBoxImplDom) ? (!advance ? cyc_ctr_q + 3'd1 : cyc_ctr_q) : 3'd0;
+
+        // The DOM S-Boxes consume fresh PRD only in the first clock cycle. By requesting the PRNG
+        // update in any clock cycle other than the last one, the PRD fed into the DOM S-Boxes is
+        // guaranteed to be stable. This is better in terms of SCA resistance. Request the PRNG
+        // update in the first cycle. We update it only once and in the last cycle for non-DOM
+        // S-Boxes where otherwise updating the PRNG while being stalled would cause the S-Boxes
+        // to be re-evaluated, thereby creating additional SCA leakage.
+        prng_update_o = (SBoxImpl == SBoxImplDom) ? cyc_ctr_q == 3'd0 : out_valid_o & out_ready_i;
+
         if (out_valid_o && out_ready_i) begin
           sub_bytes_out_ack_o = ~dec_key_gen_q_i;
 
           // Clear the state.
           state_we_o          = 1'b1;
           crypt_d_o           = 1'b0;
+          cyc_ctr_d           = 3'd0;
           // If we were generating the decryption key and didn't get the handshake in the last
           // regular round, we should clear dec_key_gen now.
           dec_key_gen_d_o     = 1'b0;
@@ -465,6 +486,20 @@ module aes_cipher_control_fsm import aes_pkg::*;
     end else begin
       prng_reseed_done_q <= prng_reseed_done_d;
     end
+  end
+
+  if (SBoxImpl == SBoxImplDom) begin : gen_reg_cyc_ctr
+    always_ff @(posedge clk_i or negedge rst_ni) begin : reg_cyc_ctr
+      if (!rst_ni) begin
+        cyc_ctr_q <= 3'd0;
+      end else begin
+        cyc_ctr_q <= cyc_ctr_d;
+      end
+    end
+  end else begin : gen_no_cyc_ctr
+    logic [2:0] unused_cyc_ctr;
+    assign cyc_ctr_q      = cyc_ctr_d;
+    assign unused_cyc_ctr = cyc_ctr_q;
   end
 
   ////////////////
