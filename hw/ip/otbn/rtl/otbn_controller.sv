@@ -192,6 +192,7 @@ module otbn_controller
   logic                                ispr_wr_insn, ispr_rd_insn;
   logic                                ispr_wr_base_insn;
   logic                                ispr_wr_bignum_insn;
+  logic                                ispr_rd_bignum_insn;
 
   logic lsu_load_req_raw;
   logic lsu_store_req_raw;
@@ -1023,7 +1024,7 @@ module otbn_controller
                                                       rf_bignum_rd_data_a_no_intg;
 
   // Invalid key only becomes an error if we're trying to read it
-  assign key_invalid_err = ispr_rd_insn & insn_valid_i & key_invalid;
+  assign key_invalid_err = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
 
   assign ispr_illegal_addr = insn_dec_shared_i.subset == InsnSubsetBase ? csr_illegal_addr :
                                                                           wsr_illegal_addr;
@@ -1040,6 +1041,7 @@ module otbn_controller
     ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBase) & (csr_addr != CsrRndPrefetch);
 
   assign ispr_wr_bignum_insn = ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBignum);
+  assign ispr_rd_bignum_insn = ispr_rd_insn & (insn_dec_shared_i.subset == InsnSubsetBignum);
 
   assign ispr_addr_o         = insn_dec_shared_i.subset == InsnSubsetBase ? ispr_addr_base :
                                                                             ispr_addr_bignum;
