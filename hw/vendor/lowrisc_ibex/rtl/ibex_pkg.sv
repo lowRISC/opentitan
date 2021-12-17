@@ -45,9 +45,10 @@ package ibex_pkg;
   } rv32m_e;
 
   typedef enum integer {
-    RV32BNone     = 0,
-    RV32BBalanced = 1,
-    RV32BFull     = 2
+    RV32BNone       = 0,
+    RV32BBalanced   = 1,
+    RV32BOTEarlGrey = 2,
+    RV32BFull       = 3
   } rv32b_e;
 
   /////////////

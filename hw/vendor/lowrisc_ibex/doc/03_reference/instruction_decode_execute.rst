@@ -64,44 +64,45 @@ Other blocks use the ALU for the following tasks:
 * It computes memory addresses for loads and stores with a Reg + Imm calculation
 * The LSU uses it to increment addresses when performing two accesses to handle an unaligned access
 
-Bit Manipulation Extension
-  Support for the `RISC-V Bit Manipulation Extension (draft version 0.92 from November 8, 2019) <https://github.com/riscv/riscv-bitmanip/blob/master/bitmanip-0.92.pdf>`_ is optional. [#B_draft]_
+Bit-Manipulation Extension
+  Support for the `RISC-V Bit-Manipulation Extension version 1.0.0 <https://github.com/riscv/riscv-bitmanip/releases/download/1.0.0/bitmanip-1.0.0-38-g865e7a7.pdf>`_ and `draft version 0.93 from January 10, 2021 <https://github.com/riscv/riscv-bitmanip/blob/master/bitmanip-0.93.pdf>`_ is optional. [#B_draft]_
   It can be enabled via the enumerated parameter ``RV32B`` defined in :file:`rtl/ibex_pkg.sv`.
-  By default, this parameter is set to "ibex_pkg::RV32BNone" to disable the bit manipulation extension.
+  By default, this parameter is set to "ibex_pkg::RV32BNone" to disable the bit-manipulation extension.
 
-  There are two versions of the bit manipulation extension available:
-  The balanced implementation comprises a set of sub-extensions aiming for good benefits at a reasonable area overhead.
+  There are three versions of the bit-manipulation extension available:
+  The balanced version comprises a set of sub-extensions aiming for good benefits at a reasonable area overhead.
   It can be selected by setting the ``RV32B`` parameter to "ibex_pkg::RV32BBalanced".
-  The full implementation comprises all 32 bit instructions defined in the extension.
-  This version can be selected by setting the ``RV32B`` parameter to "ibex_pkg::RV32BFull".
-  The following table lists the implemented instructions in each version.
+  The OTEarlGrey version comprises all sub-extensions except for the Zbe.
+  This version can be selected by setting the ``RV32B`` parameter to "ibex_pkg::RV32BOTEarlGrey".
+  The full version comprises all sub-extensions and can be selected by setting the ``RV32B`` parameter to "ibex_pkg::RV32BFull".
+  The following table gives an overview of which sub-extensions are implemented in each version and of which instructions are implemented as multi-cycle instructions.
   Multi-cycle instructions are completed in 2 cycles.
   All remaining instructions complete in a single cycle.
 
-  +---------------------------------+---------------+--------------------------+
-  | Z-Extension                     | Version       | Multi-Cycle Instructions |
-  +=================================+===============+==========================+
-  | Zbb (Base)                      | Balanced/Full | rol, ror[i]              |
-  +---------------------------------+---------------+--------------------------+
-  | Zbs (Single-bit)                | Balanced/Full | None                     |
-  +---------------------------------+---------------+--------------------------+
-  | Zbp (Permutation)               | Full          | None                     |
-  +---------------------------------+---------------+--------------------------+
-  | Zbe (Bit compress/decompress)   | Full          | All                      |
-  +---------------------------------+---------------+--------------------------+
-  | Zbf (Bit-field place)           | Balanced/Full | All                      |
-  +---------------------------------+---------------+--------------------------+
-  | Zbc (Carry-less multiply)       | Full          | None                     |
-  +---------------------------------+---------------+--------------------------+
-  | Zbr (CRC)                       | Full          | All                      |
-  +---------------------------------+---------------+--------------------------+
-  | Zbt (Ternary)                   | Balanced/Full | All                      |
-  +---------------------------------+---------------+--------------------------+
+  +--------------------------------+---------+----------+------------+------+--------------------+
+  | Bit-Manipulation Sub-Extension | Spec.   | Balanced | OTEarlGrey | Full | Multi-Cycle Instr. |
+  +================================+=========+==========+============+======+====================+
+  | Zba (Address generation)       | v.1.0.0 |    X     |     X      |  X   | None               |
+  +--------------------------------+---------+----------+------------+------+--------------------+
+  | Zbb (Base)                     | v.1.0.0 |    X     |     X      |  X   | rol, ror[i]        |
+  +--------------------------------+---------+----------+------------+------+--------------------+
+  | Zbc (Carry-less multiply)      | v.1.0.0 |          |     X      |  X   | None               |
+  +--------------------------------+---------+----------+------------+------+--------------------+
+  | Zbs (Single-bit)               | v.1.0.0 |    X     |     X      |  X   | None               |
+  +--------------------------------+---------+----------+------------+------+--------------------+
+  | Zbe (Bit compress/decompress)  | v.0.93  |          |            |  X   | All                |
+  +--------------------------------+---------+----------+------------+------+--------------------+
+  | Zbf (Bit-field place)          | v.0.93  |    X     |     X      |  X   | All                |
+  +--------------------------------+---------+----------+------------+------+--------------------+
+  | Zbp (Permutation)              | v.0.93  |          |     X      |  X   | None               |
+  +--------------------------------+---------+----------+------------+------+--------------------+
+  | Zbr (CRC)                      | v.0.93  |          |     X      |  X   | All                |
+  +--------------------------------+---------+----------+------------+------+--------------------+
+  | Zbt (Ternary)                  | v.0.93  |    X     |     X      |  X   | All                |
+  +--------------------------------+---------+----------+------------+------+--------------------+
 
-  The implementation of the B-extension comes with an area overhead of 1.8 to 3.0 kGE for the balanced version and 6.0 to 8.7 kGE for the full version.
-  That corresponds to an approximate percentage increase in area of 9 to 14 % and 25 to 30 % for the balanced and full versions respectively.
-  The ranges correspond to synthesis results generated using relaxed and maximum frequency targets respectively.
-  The designs have been synthesized using Synopsys Design Compiler targeting TSMC 65 nm technology.
+  The implementation of the Bit-Manipulation Extension comes with an area overhead of 2.7 kGE for the balanced version, 6.1 kGE for the OTEarlGrey version, and 7.5 kGE for the full version.
+  These numbers were obtained by synthesizing the design with Yosys and relaxed timing constraints.
 
 
 .. _mult-div:
@@ -171,8 +172,9 @@ See :ref:`load-store-unit` for more details.
 
 .. rubric:: Footnotes
 
-.. [#B_draft] Ibex fully implements draft version 0.92 of the RISC-V Bit Manipulation Extension.
-   This extension may change before being ratified as a standard by the RISC-V Foundation.
+.. [#B_draft] Ibex fully implements the ratified version 1.0.0 of the RISC-V Bit-Manipulation Extension including the Zba, Zbb, Zbc and Zbs sub-extensions.
+   In addition, Ibex also supports the remaining Zbe, Zbf, Zbp, Zbr and Zbt sub-extensions as defined in draft version 0.93 of the RISC-V Bit-Manipulation Extension.
+   Note that the latter sub-extensions may change before being ratified as a standard by the RISC-V Foundation.
    Ibex will be updated to match future versions of the specification.
    Prior to ratification this may involve backwards incompatible changes.
    Additionally, neither GCC or Clang have committed to maintaining support upstream for unratified versions of the specification.

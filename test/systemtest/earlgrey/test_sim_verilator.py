@@ -238,7 +238,7 @@ def test_openocd_basic_connectivity(tmp_path, bin_dir, topsrcdir, openocd):
         ('Info : JTAG tap: riscv.tap tap/device found: 0x04f5484d '
          '(mfg: 0x426 (Google Inc), part: 0x4f54, ver: 0x0)'),
         'Info : Examined RISC-V core; found 1 harts',
-        'Info :  hart 0: XLEN=32, misa=0x40101104',
+        'Info :  hart 0: XLEN=32, misa=0x40101106',
     ]
 
     for msg_exp in msgs_exp:
