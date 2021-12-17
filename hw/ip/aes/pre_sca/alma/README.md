@@ -158,6 +158,22 @@ For more details, please refer to the [Alma tutorial](https://github.com/IAIK/co
       --netlist tmp/circuit.v --log-yosys
    ```
 
+1. Next, the automatically generated labeling file `tmp/labels.txt` needs to be
+   adapted. This file tells Alma which inputs of the DUT correspond to the
+   secret shares and which ones are used to provide randomness for
+   (re-)masking. Open the file and change the lines
+   ```
+   data_i [7:0] = unimportant
+   mask_i [7:0] = unimportant
+   prd_i [27:0] = unimportant
+   ```
+   to
+   ```
+   data_i [7:0] = secret 7:0
+   mask_i [7:0] = secret 7:0
+   prd_i [27:0] = random
+   ```
+
 1. Then the Verilator testbench can be compiled and run required to identify
    control signals and the like
    ```sh
@@ -169,7 +185,7 @@ For more details, please refer to the [Alma tutorial](https://github.com/IAIK/co
 
    ```sh
    ./verify.py --json tmp/circuit.json \
-      --label ${REPO_TOP}/hw/ip/aes/pre_sca/alma/labels/aes_sbox.txt \
+      --label tmp/labels.txt \
       --top-module aes_sbox \
       --vcd tmp/tmp.vcd \
       --rst-name rst_ni --rst-phase 0 \
@@ -181,8 +197,5 @@ For more details, please refer to the [Alma tutorial](https://github.com/IAIK/co
 
 - `cpp`: SystemVerilog testbench, instantiates and drives the synthesized
   netlist of the DUT.
-- `labels`: Contains the labeling files telling Alma which inputs of the DUT
-  correspond to the secret shares and which ones are used to provide randomness
-  for (re-)masking.
 - `verify_aes.sh`: Script to run the parse, trace and compile steps with
   one single command.
