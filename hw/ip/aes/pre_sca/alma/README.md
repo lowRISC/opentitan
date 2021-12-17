@@ -154,7 +154,7 @@ For more details, please refer to the [Alma tutorial](https://github.com/IAIK/co
 1. The first step involves the parsing the synthesized netlist.
    ```sh
    ./parse.py --top-module aes_sbox \
-      --source ${REPO_TOP}/hw/ip/aes/pre_syn/syn_out/latest/generated/aes_sbox.pre_map.v \
+      --source ${REPO_TOP}/hw/ip/aes/pre_syn/syn_out/latest/generated/aes_sbox.alma.v \
       --netlist tmp/circuit.v --log-yosys
    ```
 

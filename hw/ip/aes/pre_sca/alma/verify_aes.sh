@@ -28,7 +28,7 @@ echo "Verifying ${TOP_MODULE} using Alma"
 
 # Parse
 ./parse.py --top-module ${TOP_MODULE} \
---source ${REPO_TOP}/hw/ip/aes/pre_syn/syn_out/latest/generated/${TOP_MODULE}.pre_map.v \
+--source ${REPO_TOP}/hw/ip/aes/pre_syn/syn_out/latest/generated/${TOP_MODULE}.alma.v \
 --netlist tmp/circuit.v --log-yosys
 
 # Trace
