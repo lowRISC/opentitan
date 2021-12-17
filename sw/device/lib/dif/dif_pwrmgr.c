@@ -157,31 +157,6 @@ static const request_reg_info_t request_reg_infos[2] = {
 };
 
 /**
- * Checks if a value is a valid `dif_toggle_t` and converts it to `bool`.
- */
-OT_WARN_UNUSED_RESULT
-static bool toggle_to_bool(dif_toggle_t val, bool *val_bool) {
-  switch (val) {
-    case kDifToggleEnabled:
-      *val_bool = true;
-      break;
-    case kDifToggleDisabled:
-      *val_bool = false;
-      break;
-    default:
-      return false;
-  }
-  return true;
-}
-
-/**
- * Converts a `bool` to `dif_toggle_t`.
- */
-static dif_toggle_t bool_to_toggle(bool val) {
-  return val ? kDifToggleEnabled : kDifToggleDisabled;
-}
-
-/**
  * Checks if a value is a valid `dif_pwrmgr_req_type_t`.
  */
 OT_WARN_UNUSED_RESULT
@@ -244,12 +219,7 @@ static bool request_sources_is_locked(const dif_pwrmgr_t *pwrmgr,
 
 dif_result_t dif_pwrmgr_low_power_set_enabled(const dif_pwrmgr_t *pwrmgr,
                                               dif_toggle_t new_state) {
-  if (pwrmgr == NULL) {
-    return kDifBadArg;
-  }
-
-  bool enable = false;
-  if (!toggle_to_bool(new_state, &enable)) {
+  if (pwrmgr == NULL || !dif_is_valid_toggle(new_state)) {
     return kDifBadArg;
   }
 
@@ -259,8 +229,8 @@ dif_result_t dif_pwrmgr_low_power_set_enabled(const dif_pwrmgr_t *pwrmgr,
 
   uint32_t reg_val =
       mmio_region_read32(pwrmgr->base_addr, PWRMGR_CONTROL_REG_OFFSET);
-  reg_val =
-      bitfield_bit32_write(reg_val, PWRMGR_CONTROL_LOW_POWER_HINT_BIT, enable);
+  reg_val = bitfield_bit32_write(reg_val, PWRMGR_CONTROL_LOW_POWER_HINT_BIT,
+                                 dif_toggle_to_bool(new_state));
   mmio_region_write32(pwrmgr->base_addr, PWRMGR_CONTROL_REG_OFFSET, reg_val);
 
   // Slow clock domain must be synced for changes to take effect.
@@ -277,7 +247,7 @@ dif_result_t dif_pwrmgr_low_power_get_enabled(const dif_pwrmgr_t *pwrmgr,
 
   uint32_t reg_val =
       mmio_region_read32(pwrmgr->base_addr, PWRMGR_CONTROL_REG_OFFSET);
-  *cur_state = bool_to_toggle(
+  *cur_state = dif_bool_to_toggle(
       bitfield_bit32_read(reg_val, PWRMGR_CONTROL_LOW_POWER_HINT_BIT));
 
   return kDifOk;
@@ -403,20 +373,14 @@ dif_result_t dif_pwrmgr_request_sources_is_locked(
 
 dif_result_t dif_pwrmgr_wakeup_request_recording_set_enabled(
     const dif_pwrmgr_t *pwrmgr, dif_toggle_t new_state) {
-  if (pwrmgr == NULL) {
-    return kDifBadArg;
-  }
-
-  bool enable = false;
-  if (!toggle_to_bool(new_state, &enable)) {
+  if (pwrmgr == NULL || !dif_is_valid_toggle(new_state)) {
     return kDifBadArg;
   }
 
   // Only a single bit of this register is significant, thus we don't perform a
   // read-modify-write. Setting this bit to 1 disables recording.
-  uint32_t reg_val =
-      bitfield_bit32_write(0, PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL_BIT, !enable);
-
+  uint32_t reg_val = bitfield_bit32_write(
+      0, PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL_BIT, !dif_toggle_to_bool(new_state));
   mmio_region_write32(pwrmgr->base_addr,
                       PWRMGR_WAKE_INFO_CAPTURE_DIS_REG_OFFSET, reg_val);
 
@@ -432,7 +396,7 @@ dif_result_t dif_pwrmgr_wakeup_request_recording_get_enabled(
   uint32_t reg_val = mmio_region_read32(
       pwrmgr->base_addr, PWRMGR_WAKE_INFO_CAPTURE_DIS_REG_OFFSET);
   // Recording is disabled if this bit is set to 1.
-  *cur_state = bool_to_toggle(
+  *cur_state = dif_bool_to_toggle(
       !bitfield_bit32_read(reg_val, PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL_BIT));
 
   return kDifOk;

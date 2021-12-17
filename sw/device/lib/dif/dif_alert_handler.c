@@ -199,26 +199,6 @@ static bool classify_local_alerts(
 }
 
 /**
- * Converts a toggle_t to bool.
- *
- * Returns false if `toggle` is out of range.
- */
-OT_WARN_UNUSED_RESULT
-static bool toggle_to_bool(dif_toggle_t toggle, bool *flag) {
-  switch (toggle) {
-    case kDifToggleEnabled:
-      *flag = true;
-      break;
-    case kDifToggleDisabled:
-      *flag = false;
-      break;
-    default:
-      return false;
-  }
-  return true;
-}
-
-/**
  * Configures the control registers of a particular alert handler class.
  */
 OT_WARN_UNUSED_RESULT
@@ -251,22 +231,14 @@ static bool configure_class(const dif_alert_handler_t *alert_handler,
   uint32_t ctrl_reg = 0;
 
   // Configure the escalation protocol enable flag.
-  bool use_escalation_protocol;
-  if (!toggle_to_bool(class->use_escalation_protocol,
-                      &use_escalation_protocol)) {
-    return false;
-  }
   ctrl_reg =
       bitfield_bit32_write(ctrl_reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_BIT,
-                           use_escalation_protocol);
+                           dif_toggle_to_bool(class->use_escalation_protocol));
 
   // Configure the escalation protocol auto-lock flag.
-  bool automatic_locking;
-  if (!toggle_to_bool(class->automatic_locking, &automatic_locking)) {
-    return false;
-  }
-  ctrl_reg = bitfield_bit32_write(
-      ctrl_reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_LOCK_BIT, automatic_locking);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg,
+                                  ALERT_HANDLER_CLASSA_CTRL_SHADOWED_LOCK_BIT,
+                                  dif_toggle_to_bool(class->automatic_locking));
 
   if (class->phase_signals == NULL && class->phase_signals_len != 0) {
     return false;
