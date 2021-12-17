@@ -44,6 +44,7 @@ We currently support two out of the three aformentioned target types (i.e., simu
 | Verilator | Simulation Tool | SW Testing | no | no | [Getting Started with Verilator]({{< relref "getting_started_verilator.md" >}})|
 | FPGA | FPGA Board | Testing & Evaluation | maybe (FPGA size dependent) | yes | [Getting Started on FPGAs]({{< relref "getting_started_fpga.md" >}}) |
 | DV | Simulation Tool | HW Verification | yes | no | [Getting Started with Design Verification]({{< relref "getting_started_dv.md" >}}) |
+| Formal | Simulation Tool | HW Verification | yes | no | [Getting Started with Formal Verification]({{< relref "getting_started_formal.md" >}}) |
 
 The instructions on how to compile the required demo software, and synthesize the main top-level hardware design ([Earl Grey]({{< relref "/hw/top_earlgrey" >}})) for each target are linked above in the table.
 **Again, if you are new to the project, we recommend starting with the Verilator target, as this uses only free EDA tools, and does not require any additional hardware.**
