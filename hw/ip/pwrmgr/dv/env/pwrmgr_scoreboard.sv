@@ -56,9 +56,9 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
       @(posedge (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheck)) begin
         if (cfg.en_cov) begin
           foreach (cov.wakeup_intr_cg_wrap[i]) begin
-            cov.wakeup_intr_cg_wrap[i].sample(cfg.pwrmgr_vif.wakeup_status[i],
-                                              cfg.pwrmgr_vif.intr_enable,
-                                              cfg.pwrmgr_vif.intr_wakeup);
+            cov.wakeup_intr_cg_wrap[i].sample(
+                cfg.pwrmgr_vif.wakeup_status[i], cfg.pwrmgr_vif.intr_enable,
+                cfg.pwrmgr_vif.intr_status, cfg.pwrmgr_vif.intr_wakeup);
           end
         end
       end

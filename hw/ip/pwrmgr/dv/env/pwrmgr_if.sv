@@ -92,6 +92,9 @@ interface pwrmgr_if (
   logic intr_enable;
   always_comb intr_enable = `PATH_TO_DUT.reg2hw.intr_enable.q;
 
+  logic intr_status;
+  always_comb intr_status = `PATH_TO_DUT.reg2hw.intr_state.q;
+
   // Used to disable assertions once with the first power glitch.
   bit internal_assertion_disabled;
 

@@ -30,6 +30,10 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
+
+      // Instrument interrupts.
+      setup_interrupt(en_intr);
+
       // Enable wakeups.
       enabled_wakeups = wakeups_en & wakeups;
       `DV_CHECK(enabled_wakeups, $sformatf(
@@ -101,6 +105,7 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
 
       // Wait for interrupt to be generated whether or not it is enabled.
       cfg.slow_clk_rst_vif.wait_clks(10);
+      check_and_clear_interrupt(.expected(1'b1));
     end
   endtask
 

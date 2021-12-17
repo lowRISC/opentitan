@@ -28,6 +28,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      setup_interrupt(.enable(en_intr));
       // Enable resets.
       enabled_resets = resets_en & resets;
       `uvm_info(`gfn, $sformatf(
@@ -109,8 +110,12 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       csr_rd_check(.ptr(ral.reset_status[0]), .compare_value('0));
       csr_rd_check(.ptr(ral.wake_status[0]), .compare_value('0));
 
-      // Wait for interrupt to be generated whether or not it is enabled.
       cfg.slow_clk_rst_vif.wait_clks(10);
+      // An interrupt will be generated depending on the exact timing of the slow fsm getting
+      // the reset and wakeup. We choose not to predict it here (it is checked on other tests).
+      // Instead, we just check if the interrupt status is asserted and it is enabled the
+      // output interrupt is active.
+      check_and_clear_interrupt(.expected(1'b1), .check_expected('0));
     end
   endtask
 

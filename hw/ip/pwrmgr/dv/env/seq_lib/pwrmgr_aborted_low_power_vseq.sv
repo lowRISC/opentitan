@@ -16,6 +16,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
   rand bit flash_idle;
   rand bit lc_idle;
   rand bit otp_idle;
+
   constraint idle_c {
     solve cpu_interrupt before flash_idle, lc_idle, otp_idle;
     if (!cpu_interrupt) {flash_idle & lc_idle & otp_idle == 1'b0;}
@@ -41,6 +42,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      setup_interrupt(.enable(en_intr));
       // Enable wakeups.
       enabled_wakeups = wakeups_en & wakeups;
       `DV_CHECK(enabled_wakeups, $sformatf(
@@ -84,6 +86,9 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
         check_wake_info(.reasons('0), .fall_through(1'b0), .abort(1'b1));
       end
       clear_wake_info();
+
+      // And check interrupt is set.
+      check_and_clear_interrupt(.expected(1'b1));
 
       // Get ready for another round.
       cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
