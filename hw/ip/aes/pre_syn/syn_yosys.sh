@@ -50,10 +50,10 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_rsp_intg_gen.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_data_integ_dec.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_data_integ_enc.sv
-    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_64_57_dec.sv
-    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_64_57_enc.sv
-    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_39_32_dec.sv
-    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_39_32_enc.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_inv_64_57_dec.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_inv_64_57_enc.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_inv_39_32_dec.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_inv_39_32_enc.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sparse_fsm_flop.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subreg.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subreg_ext.sv
