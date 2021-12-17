@@ -37,6 +37,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      setup_interrupt(.enable(en_intr));
       csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
       `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x", wakeups_en & wakeups), UVM_MEDIUM)
 
@@ -119,6 +120,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
 
       // Wait for interrupt to be generated whether or not it is enabled.
       cfg.slow_clk_rst_vif.wait_clks(10);
+      check_and_clear_interrupt(.expected(1'b1));
     end
   endtask
 

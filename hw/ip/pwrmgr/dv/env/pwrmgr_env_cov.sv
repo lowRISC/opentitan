@@ -42,24 +42,25 @@ class pwrmgr_wakeup_intr_cg_wrap;
   covergroup wakeup_intr_cg(
       string name
   ) with function sample (
-      bit enable, bit wakeup, bit interrupt
+      bit wakeup, bit enable, bit status, bit interrupt
   );
     option.name = name;
     option.per_instance = 1;
 
     enable_cp: coverpoint enable;
+    status_cp: coverpoint status;
     wakeup_cp: coverpoint wakeup;
     interrupt_cp: coverpoint interrupt;
 
-    interrupt_cross: cross enable_cp, wakeup_cp, interrupt_cp;
+    interrupt_cross: cross enable_cp, status_cp, wakeup_cp, interrupt_cp;
   endgroup
 
   function new(string name);
     wakeup_intr_cg = new(name);
   endfunction
 
-  function void sample (bit enable, bit wakeup, bit interrupt);
-    wakeup_intr_cg.sample(enable, wakeup, interrupt);
+  function void sample (bit enable, bit status, bit wakeup, bit interrupt);
+    wakeup_intr_cg.sample(wakeup, enable, status, interrupt);
   endfunction
 endclass
 

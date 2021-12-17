@@ -22,6 +22,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     wakeups_t wakeup_en;
     resets_t reset_en;
     set_nvms_idle();
+    setup_interrupt(.enable(1'b1));
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(0));
     csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0));
@@ -50,6 +51,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
                  .err_msg("failed wake_status check"));
     csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0),
                  .err_msg("failed reset_status check"));
+    check_and_clear_interrupt(.expected(1'b1));
 
     // Enable resets.
     reset_en = '1;
@@ -71,6 +73,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
     // Wait for interrupt to be generated whether or not it is enabled.
     cfg.slow_clk_rst_vif.wait_clks(10);
+    check_and_clear_interrupt(.expected(1'b0));
   endtask
 
 endclass : pwrmgr_smoke_vseq
