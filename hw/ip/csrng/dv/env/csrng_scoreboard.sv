@@ -9,20 +9,21 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   );
   `uvm_component_utils(csrng_scoreboard)
 
-  csrng_item                                    cs_item[NUM_HW_APPS + 1];
-  push_pull_item#(.HostDataWidth(
-      entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))   es_item[NUM_HW_APPS + 1];
-  uint                                          more_cmd_data;
-  bit [TL_DW-1:0]                               hw_genbits_reg_q[$];
-  bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0]        hw_genbits, prd_genbits_q[NUM_HW_APPS + 1][$];
-  bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]    cs_data[NUM_HW_APPS + 1], es_data[NUM_HW_APPS + 1];
-  bit                                           fips[NUM_HW_APPS + 1];
+  csrng_item                                              cs_item[NUM_HW_APPS + 1];
+  push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))   es_item[NUM_HW_APPS + 1],
+                                                          es_item_q[NUM_HW_APPS + 1][$];
+  uint                                                    more_cmd_data;
+  bit [TL_DW-1:0]                                         hw_genbits_reg_q[$];
+  bit [GENBITS_BUS_WIDTH-1:0]                             hw_genbits,
+                                                          prd_genbits_q[NUM_HW_APPS + 1][$];
+  bit [CSRNG_BUS_WIDTH-1:0]                               cs_data[NUM_HW_APPS + 1],
+                                                          es_data[NUM_HW_APPS + 1];
+  bit                                                     fips[NUM_HW_APPS + 1];
 
-  virtual csrng_cov_if                          cov_vif;
+  virtual csrng_cov_if                                    cov_vif;
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))
-      entropy_src_fifo;
+  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH)))   entropy_src_fifo;
   uvm_tlm_analysis_fifo#(csrng_item)   csrng_cmd_fifo[NUM_HW_APPS];
 
   `uvm_component_new
@@ -48,14 +49,18 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
 
-      for (int i = 0; i < NUM_HW_APPS; i++) begin
-        automatic int j = i;
-        fork
-          begin
-            process_csrng_cmd_fifo(j);
-          end
-        join_none;
-      end
+    fork
+      collect_seeds();
+    join_none;
+
+    for (int i = 0; i < NUM_HW_APPS; i++) begin
+      automatic int j = i;
+      fork
+        begin
+          process_csrng_cmd_fifo(j);
+        end
+      join_none;
+    end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -121,40 +126,45 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           end
           if (!more_cmd_data) begin
             for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
-              cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) +
+              cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
                   cs_data[SW_APP];
             end
             case (cs_item[SW_APP].acmd)
-              csrng_pkg::INS: begin
+              INS: begin
                 if (!cs_item[SW_APP].flags[0]) begin
                   // Get seed
-                  entropy_src_fifo.get(es_item[SW_APP]);
-                  es_data[SW_APP]      = es_item[SW_APP].d_data[entropy_src_pkg::
-                      CSRNG_BUS_WIDTH-1:0];
-                  cs_item[SW_APP].fips = es_item[SW_APP].d_data[entropy_src_pkg::
-                      CSRNG_BUS_WIDTH];
+                  wait (es_item_q[SW_APP].size());
+                  es_item[SW_APP] = es_item_q[SW_APP].pop_front;
+                  es_data[SW_APP] = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH-1:0];
+                  fips[SW_APP]    = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH];
                 end
-                ctr_drbg_instantiate(SW_APP, es_data[SW_APP], cs_data[SW_APP],
-                   cs_item[SW_APP].fips);
+                ctr_drbg_instantiate(SW_APP, es_data[SW_APP], cs_data[SW_APP], fips[SW_APP]);
               end
-              csrng_pkg::RES: begin
+              RES: begin
                 if (!cs_item[SW_APP].flags[0]) begin
                   // Get seed
-                  entropy_src_fifo.get(es_item[SW_APP]);
-                  es_data[SW_APP] = es_item[SW_APP].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
-                  cs_item[SW_APP].fips = es_item[SW_APP].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
+                  wait (es_item_q[SW_APP].size());
+                  es_item[SW_APP] = es_item_q[SW_APP].pop_front;
+                  es_data[SW_APP] = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH-1:0];
+                  fips[SW_APP]    = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH];
                 end
-                ctr_drbg_reseed(SW_APP, es_data[SW_APP], cs_data[SW_APP], cs_item[SW_APP].fips);
+                ctr_drbg_reseed(SW_APP, es_data[SW_APP], cs_data[SW_APP], fips[SW_APP]);
               end
-              csrng_pkg::UPD: begin
+              UPD: begin
                 ctr_drbg_update(SW_APP, cs_data[SW_APP]);
               end
-              csrng_pkg::UNI: begin
+              UNI: begin
                 ctr_drbg_uninstantiate(SW_APP);
+              end
+              default: begin
+                if (!GEN) begin
+                  `uvm_fatal(`gfn, $sformatf("Invalid csrng.acmd: 0x%0h", cs_item[SW_APP].acmd))
+                end
               end
             endcase
             cs_data[SW_APP] = 'h0;
             es_data[SW_APP] = 'h0;
+            fips[SW_APP]    = 'h0;
           end
         end
       end
@@ -169,7 +179,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         if (data_phase_read) begin
           hw_genbits_reg_q.push_back(item.d_data);
         end
-        if (hw_genbits_reg_q.size() == csrng_pkg::GENBITS_BUS_WIDTH/TL_DW) begin
+        if (hw_genbits_reg_q.size() == GENBITS_BUS_WIDTH/TL_DW) begin
           for (int i = 0; i < hw_genbits_reg_q.size(); i++) begin
             hw_genbits += hw_genbits_reg_q[i] << i*TL_DW;
           end
@@ -179,7 +189,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         end
         if (cs_item[SW_APP].genbits_q.size() == cs_item[SW_APP].glen) begin
           for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
-            cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) +
+            cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
                 cs_data[SW_APP];
           end
           ctr_drbg_generate(SW_APP, cs_item[SW_APP].glen, cs_data[SW_APP]);
@@ -244,15 +254,14 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     return output_block;
   endfunction
 
-  function void ctr_drbg_update(uint app,
-                                bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] provided_data);
+  function void ctr_drbg_update(uint app, bit [CSRNG_BUS_WIDTH-1:0] provided_data);
 
-    bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   temp;
-    bit [CTR_LEN-1:0]                            inc;
-    bit [BLOCK_LEN-1:0]                          output_block;
-    bit [63:0]                                   mod_val;
+    bit [CSRNG_BUS_WIDTH-1:0]   temp;
+    bit [CTR_LEN-1:0]           inc;
+    bit [BLOCK_LEN-1:0]         output_block;
+    bit [63:0]                  mod_val;
 
-    for (int i = 0; i < (entropy_src_pkg::CSRNG_BUS_WIDTH/BLOCK_LEN); i++) begin
+    for (int i = 0; i < (CSRNG_BUS_WIDTH/BLOCK_LEN); i++) begin
       if (CTR_LEN < BLOCK_LEN) begin
         inc = (cfg.v[app][CTR_LEN-1:0] + 1);
         mod_val = 2**CTR_LEN;
@@ -270,19 +279,16 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     end
 
     temp = temp ^ provided_data;
-    cfg.key[app] = temp[entropy_src_pkg::CSRNG_BUS_WIDTH-1:(entropy_src_pkg::CSRNG_BUS_WIDTH -
-        KEY_LEN)];
+    cfg.key[app] = temp[CSRNG_BUS_WIDTH-1:(CSRNG_BUS_WIDTH - KEY_LEN)];
     cfg.v[app] = temp[BLOCK_LEN-1:0];
   endfunction
 
   function void ctr_drbg_instantiate(uint app,
-                                     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
-                                       entropy_input,
-                                     bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
-                                       additional_input,
+                                     bit [CSRNG_BUS_WIDTH-1:0] entropy_input,
+                                     bit [CSRNG_BUS_WIDTH-1:0] additional_input,
                                      bit fips);
 
-    bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   seed_material;
+    bit [CSRNG_BUS_WIDTH-1:0]   seed_material;
 
     seed_material  = entropy_input ^ additional_input;
     cfg.key[app] = 'h0;
@@ -294,12 +300,11 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   function void ctr_drbg_reseed(uint app,
-                                bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0] entropy_input,
-                                bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
-                                    additional_input,
+                                bit [CSRNG_BUS_WIDTH-1:0] entropy_input,
+                                bit [CSRNG_BUS_WIDTH-1:0] additional_input,
                                 bit fips);
 
-    bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]   seed_material;
+    bit [CSRNG_BUS_WIDTH-1:0]   seed_material;
 
     seed_material = entropy_input ^ additional_input;
     ctr_drbg_update(app, seed_material);
@@ -317,19 +322,18 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
   function void ctr_drbg_generate(uint app,
                                   bit [18:0] glen,
-                                  bit [entropy_src_pkg::CSRNG_BUS_WIDTH-1:0]
-                                      additional_input = 'h0);
+                                  bit [CSRNG_BUS_WIDTH-1:0] additional_input = 'h0);
 
-    uint                                     requested_bits;
-    bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0]   genbits, hw_genbits;
-    bit [CTR_LEN-1:0]                        inc;
-    bit [BLOCK_LEN-1:0]                      output_block;
-    bit [63:0]                               mod_val;
+    uint                          requested_bits;
+    bit [GENBITS_BUS_WIDTH-1:0]   genbits, hw_genbits;
+    bit [CTR_LEN-1:0]             inc;
+    bit [BLOCK_LEN-1:0]           output_block;
+    bit [63:0]                    mod_val;
 
     if (additional_input) begin
       ctr_drbg_update(app, additional_input);
     end
-    requested_bits = glen * csrng_pkg::GENBITS_BUS_WIDTH;
+    requested_bits = glen * GENBITS_BUS_WIDTH;
     for (int i = 0; i < glen; i++) begin
       if (CTR_LEN < BLOCK_LEN) begin
         inc = (cfg.v[app][CTR_LEN-1:0] + 1);
@@ -350,6 +354,33 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.reseed_counter[app] += 1;
   endfunction
 
+  task collect_seeds();
+    push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))   es_item;
+    bit [1:0]   cmd_arb_idx;
+    string      cmd_arb_idx_q_path = "tb.dut.u_csrng_core.cmd_arb_idx_q";
+
+    `DV_CHECK_FATAL(uvm_hdl_check_path(cmd_arb_idx_q_path))
+    forever begin
+      entropy_src_fifo.get(es_item);
+      // Need to access rtl signal to determine which APP won arbitration
+      `DV_CHECK(uvm_hdl_read(cmd_arb_idx_q_path, cmd_arb_idx))
+      case (cmd_arb_idx)
+        HW_APP0: begin
+                   es_item_q[HW_APP0].push_back(es_item);
+                 end
+        HW_APP1: begin
+                   es_item_q[HW_APP1].push_back(es_item);
+                 end
+        SW_APP:  begin
+                   es_item_q[SW_APP].push_back(es_item);
+                 end
+        default: begin
+          `uvm_fatal(`gfn, $sformatf("Invalid APP: %0d", cmd_arb_idx))
+        end
+      endcase
+     end
+  endtask
+
   task process_csrng_cmd_fifo(bit[NUM_HW_APPS-1:0] app);
     forever begin
       csrng_cmd_fifo[app].get(cs_item[app]);
@@ -357,46 +388,42 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       es_data[app] = '0;
       fips[app]    = 1'b0;
       for (int i = 0; i < cs_item[app].cmd_data_q.size(); i++) begin
-        cs_data[app] = (cs_item[app].cmd_data_q[i] << i * csrng_pkg::CSRNG_CMD_WIDTH) +
+        cs_data[app] = (cs_item[app].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
                        cs_data[app];
       end
-      `uvm_info(`gfn, $sformatf("Received cs_item[%0d]:%0s", app, cs_item[app].convert2string()),
-          UVM_DEBUG)
       cov_vif.cg_cmds_sample(app, cs_item[app]);
 
       case (cs_item[app].acmd)
-        csrng_pkg::INS: begin
+        INS: begin
           if (!cs_item[app].flags[0]) begin
             // Get seed
-            entropy_src_fifo.get(es_item[app]);
-            `uvm_info(`gfn, $sformatf("Received es_item[%0d]:\n%0s", app,
-                es_item[app].convert2string()), UVM_DEBUG)
-            es_data[app]   = es_item[app].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
-            fips[app]      = es_item[app].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
+            wait (es_item_q[app].size());
+            es_item[app] = es_item_q[app].pop_front();
+            es_data[app] = es_item[app].d_data[CSRNG_BUS_WIDTH-1:0];
+            fips[app]    = es_item[app].d_data[CSRNG_BUS_WIDTH];
           end
           ctr_drbg_instantiate(app, es_data[app], cs_data[app], fips[app]);
         end
-        csrng_pkg::GEN: begin
+        GEN: begin
           ctr_drbg_generate(app, cs_item[app].glen, cs_data[app]);
           for (int i = 0; i < cs_item[app].glen; i++) begin
             `DV_CHECK_EQ_FATAL(cs_item[app].genbits_q[i], prd_genbits_q[app][i])
           end
         end
-        csrng_pkg::UNI: begin
+        UNI: begin
           ctr_drbg_uninstantiate(app);
         end
-        csrng_pkg::RES: begin
-          if (cs_item[app].flags[0] == 'b0) begin
+        RES: begin
+          if (!cs_item[app].flags[0]) begin
             // Get seed
-            entropy_src_fifo.get(es_item[app]);
-            `uvm_info(`gfn, $sformatf("Received es_item[%0d]:\n%0s", app,
-                es_item[app].convert2string()), UVM_DEBUG)
-            es_data[app]   = es_item[app].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
-            fips[app]      = es_item[app].d_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
+            wait (es_item_q[app].size());
+            es_item[app] = es_item_q[app].pop_front();
+            es_data[app] = es_item[app].d_data[CSRNG_BUS_WIDTH-1:0];
+            fips[app]    = es_item[app].d_data[CSRNG_BUS_WIDTH];
           end
           ctr_drbg_reseed(app, es_data[app], cs_data[app], fips[app]);
         end
-        csrng_pkg::UPD: begin
+        UPD: begin
           ctr_drbg_update(app, cs_data[app]);
         end
         default: begin
