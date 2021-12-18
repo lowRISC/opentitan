@@ -119,8 +119,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     `uvm_info(`gfn, $sformatf("******************************************\n"), UVM_DEBUG)
     if (compare) begin
       `DV_CHECK_EQ_FATAL(hw_reseed_counter, reseed_counter[app])
-      `DV_CHECK_EQ_FATAL(hw_key, key[app])
       `DV_CHECK_EQ_FATAL(hw_v, v[app])
+      `DV_CHECK_EQ_FATAL(hw_key, key[app])
       `DV_CHECK_EQ_FATAL({hw_compliance, hw_status}, {compliance[app], status[app]})
     end
  endtask
