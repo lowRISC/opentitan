@@ -25,10 +25,50 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     if (do_entropy_src_init) entropy_src_init();
   endtask
 
+  //
+  // Most of the health check diagnostics are hard to read during the normal test.
+  //
+  // Since there is a delay between when data is received at the RNG interface and when
+  // the health check completes, checking these registers during the usual test body can lead
+  // to spurious scoreboarding errors.   We let the scoreboard check these all at the end of
+  // the test instead.
+  //
+  task check_ht_diagnostics();
+    int val;
+
+    csr_rd(.ptr( ral.repcnt_hi_watermarks), .value(val));
+    csr_rd(.ptr(ral.repcnts_hi_watermarks), .value(val));
+    csr_rd(.ptr( ral.adaptp_hi_watermarks), .value(val));
+    csr_rd(.ptr( ral.adaptp_lo_watermarks), .value(val));
+    csr_rd(.ptr(  ral.extht_hi_watermarks), .value(val));
+    csr_rd(.ptr(  ral.extht_lo_watermarks), .value(val));
+    csr_rd(.ptr( ral.bucket_hi_watermarks), .value(val));
+    csr_rd(.ptr( ral.markov_hi_watermarks), .value(val));
+    csr_rd(.ptr( ral.markov_lo_watermarks), .value(val));
+
+    csr_rd(.ptr(   ral.repcnt_total_fails), .value(val));
+    csr_rd(.ptr(  ral.repcnts_total_fails), .value(val));
+    csr_rd(.ptr(ral.adaptp_hi_total_fails), .value(val));
+    csr_rd(.ptr(ral.adaptp_lo_total_fails), .value(val));
+    csr_rd(.ptr( ral.extht_hi_total_fails), .value(val));
+    csr_rd(.ptr( ral.extht_lo_total_fails), .value(val));
+    csr_rd(.ptr(   ral.bucket_total_fails), .value(val));
+    csr_rd(.ptr(ral.markov_hi_total_fails), .value(val));
+    csr_rd(.ptr(ral.markov_lo_total_fails), .value(val));
+
+    csr_rd(.ptr(    ral.alert_fail_counts), .value(val));
+    csr_rd(.ptr(    ral.extht_fail_counts), .value(val));
+  endtask
+
   virtual task dut_shutdown();
-    bit intr_status;
+    bit seeds_found;
     // check for pending entropy_src operations and wait for them to complete
-    do_entropy_data_read(6, intr_status);
+    do begin
+      #( 1us);
+      do_entropy_data_read(-1, seeds_found);
+    end while (seeds_found > 0);
+
+     check_ht_diagnostics();
   endtask
 
   // setup basic entropy_src features
@@ -56,9 +96,15 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   endtask
 
-  task do_entropy_data_read(int max_tries, output int try_cnt);
+  // Read all seeds in ENTROPY_DATA until
+  // a. Max_tries seed have been read
+  // b. The intr_state register indicates no more data in entropy_data
+  //
+  // If max_tries < 0, simply reads all available seeds.
+  task do_entropy_data_read(int max_seeds, output int seeds_found);
     bit intr_status;
-    try_cnt = 0;
+    bit done;
+    seeds_found = 0;
 
     do begin
       csr_rd(.ptr(ral.intr_state.es_entropy_valid), .value(intr_status));
@@ -70,9 +116,10 @@ class entropy_src_base_vseq extends cip_base_vseq #(
         end
         // Clear entropy_valid interrupt bit
         csr_wr(.ptr(ral.intr_state.es_entropy_valid), .value(1'b1), .blocking(1'b1));
-        try_cnt++;
+        seeds_found++;
       end
-    end while (intr_status && try_cnt < max_tries);
+      done = (max_seeds >= 0) && (seeds_found >= max_seeds);
+    end while (intr_status && !done);
   endtask
 
 endclass : entropy_src_base_vseq

@@ -19,7 +19,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   int csrng_seeds             = 0;
   int csrng_drops             = 0;
 
-
   // Queue of seeds for predicting reads to entropy_data CSR
   bit [CSRNG_BUS_WIDTH - 1:0]      entropy_data_q[$];
 
@@ -33,6 +32,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   int                              seed_tl_read_cnt = 0;
 
   bit [FIPS_CSRNG_BUS_WIDTH - 1:0] fips_csrng_q[$];
+
+  // TODO: Document Initial Conditions for health check.
+  // This should make no practical difference, but it is important for successful verification.
+  rng_val_t                        prev_rng_val = '0;
+  int                              repcnt      [RNG_BUS_WIDTH];
+  int                              repcnt_symbol;
+  int                              max_repcnt, max_repcnt_symbol;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH)))
@@ -62,6 +68,375 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       join_none
     end
   endtask
+
+  //
+  // Health check test routines
+  //
+
+  task update_repcnts(rng_val_t rng_val);
+    for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
+      if (rng_val[i] == prev_rng_val[i]) begin
+        repcnt[i]++;
+        max_repcnt = (repcnt[i] > max_repcnt) ? repcnt[i] : max_repcnt;
+      end else begin
+        repcnt[i] = 0;
+      end
+    end
+    if (rng_val == prev_rng_val) begin
+      repcnt_symbol++;
+    end else begin
+      repcnt_symbol = 0;
+    end
+    prev_rng_val = rng_val;
+    max_repcnt_symbol = (repcnt_symbol > max_repcnt_symbol) ? repcnt_symbol : max_repcnt_symbol;
+  endtask
+
+  // TODO: Revisit after resolution of #9759
+  function int calc_adaptp_test(queue_of_rng_val_t window);
+    int result = '0;
+    for (int i = 0; i < window.size(); i++) begin
+      for (int j = 0; j < RNG_BUS_WIDTH; j++) begin
+         result += window[i][j];
+      end
+    end
+    return result;
+  endfunction
+
+  function int calc_bucket_test(queue_of_rng_val_t window);
+    int bin_count = (1 << RNG_BUS_WIDTH);
+    int result[$];
+
+    int buckets [] = new [bin_count];
+
+    for (int i = 0; i < window.size(); i++) begin
+      int elem = window[i];
+      buckets[elem]++;
+    end
+
+    for (int i = 0; i < bin_count; i++) begin
+      `uvm_info(`gfn, $sformatf("Bucket test. bin: %01h, value: %02h", i, buckets[i]), UVM_FULL)
+    end
+
+    result = buckets.max();
+
+    `uvm_info(`gfn, $sformatf("Bucket test. max value: %02h", result[0]), UVM_FULL)
+
+    return result[0];
+  endfunction
+
+  function int calc_markov_test(queue_of_rng_val_t window, output int maxval, output int minval);
+    int pair_cnt[RNG_BUS_WIDTH];
+    int minq[$], maxq[$];
+    for (int i = 0; i < window.size(); i += 2) begin
+      for (int j = 0; j < RNG_BUS_WIDTH; j++) begin
+        bit different = window[i][j] ^ window[i + 1][j];
+        pair_cnt[j] += different;
+      end
+    end
+    maxq = pair_cnt.max();
+    maxval = maxq[0];
+    minq = pair_cnt.min();
+    minval = minq[0];
+    return pair_cnt.sum();
+  endfunction
+
+  function int calc_extht_test(queue_of_rng_val_t window);
+    // TODO
+    int result = 0;
+    return result;
+  endfunction
+
+  //
+  // Debug tool: make sure that the following helper functions use proper names for health checks.
+  //
+  function void validate_test_name(string name);
+    bit is_valid;
+    is_valid = (name == "adaptp_hi") ||
+               (name == "adaptp_lo") ||
+               (name == "bucket"   ) ||
+               (name == "markov_hi") ||
+               (name == "markov_lo") ||
+               (name == "extht_hi" ) ||
+               (name == "extht_lo" ) ||
+               (name == "repcnt"   ) ||
+               (name == "repcnts"  );
+    `DV_CHECK_EQ(is_valid, 1, $sformatf("invalid test name: %s\n", name))
+  endfunction
+
+  function bit is_low_test(string name);
+    int len = name.len();
+    return (name.substr(len - 3, len - 1) == "_lo");
+  endfunction
+
+  // Operate on the watermark for a given test, using the mirrored copy of the corresponding
+  // watermark register.
+  //
+  // If the value exceeds (or is less then) the latest watermark value, then update the prediction.
+  //
+  // Implements predictions for all registers named <test>_watermarks.
+  function void update_watermark(string test, bit fips_mode, int value);
+    string        watermark_field_name;
+    string        watermark_reg_name;
+    uvm_reg       watermark_reg;
+    uvm_reg_field watermark_field;
+    int           watermark_val;
+    bit           low_test;
+    string        fmt;
+
+
+    validate_test_name(test);
+
+    // The watermark registers for repcnt, repcnts and bucket tests deviate from the
+    // general convention of suppressing the "_hi" suffix for tests that do not have a low
+    // threshold.
+    if ((test == "repcnt") || (test == "repcnts") || (test == "bucket")) begin
+      test = {test, "_hi"};
+    end
+
+    watermark_field_name = fips_mode ? "fips_watermark" : "bypass_watermark";
+    watermark_reg_name   = $sformatf("%s_watermarks", test);
+    watermark_reg        = ral.get_reg_by_name(watermark_reg_name);
+    watermark_field      = watermark_reg.get_field_by_name(watermark_field_name);
+    watermark_val        = watermark_field.get_mirrored_value();
+    low_test             = is_low_test(test);
+
+    if (low_test) begin : low_watermark_check
+      if (value < watermark_val) begin
+        fmt = "Predicted LO watermark for \"%s\" test (FIPS? %d): %04h";
+        `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, value), UVM_HIGH)
+        `DV_CHECK_FATAL(watermark_field.predict(.value(value), .kind(UVM_PREDICT_READ)))
+      end else begin
+        fmt = "LO watermark unchanged for \"%s\" test (FIPS? %d): %04h";
+        `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, watermark_val), UVM_HIGH)
+      end
+    end else begin : high_watermark_check
+      if (value > watermark_val) begin
+        string fmt;
+        fmt = "Predicted HI watermark for \"%s\" test (FIPS? %d): %04h";
+        `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, value), UVM_HIGH)
+        `DV_CHECK_FATAL(watermark_field.predict(.value(value), .kind(UVM_PREDICT_READ)))
+      end else begin
+        fmt = "HI watermark unchanged for \"%s\" test (FIPS? %d): %04h";
+        `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, watermark_val), UVM_HIGH)
+      end
+    end : high_watermark_check
+
+  endfunction
+
+  // Compare a particular health check value against the corresponding thresholds.
+  // If the health check fails, log the failure and update our predictions for the alert registers.
+  //
+  // Implements predictions for all registers named:
+  // <test>_total_fails
+  // alert_fail_counts.<test>_fail_count
+  // extht_fail_counts.<test>_fail_count
+  //
+  // Because failing multiple  tests for a single test only count as one total alert failure
+  // this routine does not update alert_summary_fail_counts
+  //
+  function bit check_threshold(string test, bit fips_mode, int value);
+    string        threshold_reg_name;
+    string        threshold_field_name;
+    string        total_fail_reg_name;
+    string        total_fail_field_name;
+    string        alert_cnt_reg_name;
+    string        alert_cnt_field_name;
+    uvm_reg       threshold_reg;
+    uvm_reg       total_fail_reg;
+    uvm_reg       alert_cnt_reg;
+    uvm_reg_field threshold_field;
+    uvm_reg_field total_fail_field;
+    uvm_reg_field alert_cnt_field;
+
+    int        threshold_val;
+    bit [3:0]  alert_cnt;
+    int        fail_total;
+    bit        continuous_test;
+    bit        failure;
+    bit        low_test;
+    string     fmt;
+
+    validate_test_name(test);
+    low_test             = is_low_test(test);
+    continuous_test      = (test == "repcnt") || (test == "repcnts");
+
+    // TODO: confirm that the FIPS threshold is the only one that matters for the continuous tests.
+    // Having split thresholds doesn't matter for such tests.
+    threshold_field_name = (fips_mode || continuous_test) ? "fips_thresh" : "bypass_thresh";
+    threshold_reg_name  = $sformatf("%s_thresholds", test);
+
+    total_fail_reg_name = $sformatf("%s_total_fails", test);
+    total_fail_field_name = total_fail_reg_name;
+
+    // Most tests have field in the alert_fail_counts register, except extht_fail_counts
+    if (test.substr(0, 5) == "extht_") begin
+      alert_cnt_reg_name = "extht_fail_counts";
+    end else begin
+      alert_cnt_reg_name = "alert_fail_counts";
+    end
+    alert_cnt_field_name = $sformatf("%s_fail_count", test);
+
+    threshold_reg    = ral.get_reg_by_name(threshold_reg_name);
+    threshold_field  = threshold_reg.get_field_by_name(threshold_field_name);
+
+    total_fail_reg   = ral.get_reg_by_name(total_fail_reg_name);
+    total_fail_field = total_fail_reg.get_field_by_name(total_fail_field_name);
+
+    alert_cnt_reg    = ral.get_reg_by_name(alert_cnt_reg_name);
+    alert_cnt_field  = alert_cnt_reg.get_field_by_name(alert_cnt_field_name);
+
+    threshold_val = threshold_field.get_mirrored_value();
+
+    failure = (low_test && value < threshold_val) || (!low_test && value > threshold_val);
+
+    fail_total = total_fail_field.get_mirrored_value();
+    alert_cnt  =  alert_cnt_field.get_mirrored_value();
+
+    if (failure) begin
+      alert_cnt++;
+      fail_total++;
+    end else begin
+      alert_cnt = 0;
+    end
+
+    fmt = "Threshold for \"%s\" test (FIPS? %d): %04h";
+    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, threshold_val), UVM_HIGH)
+
+    fmt = "Observed Val for \"%s\" test (FIPS? %d): %04h, %s";
+    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, value, failure ? "FAIL" : "PASS"), UVM_HIGH)
+
+    fmt = "Predicted alert cnt for \"%s\" test (FIPS? %d): %04h";
+    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, alert_cnt), UVM_HIGH)
+
+    fmt = "Predicted fail cnt for \"%s\" test (FIPS? %d): %04h";
+    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, fail_total), UVM_HIGH)
+
+    `DV_CHECK_FATAL(total_fail_field.predict(.value(fail_total), .kind(UVM_PREDICT_READ)))
+    `DV_CHECK_FATAL( alert_cnt_field.predict(.value( alert_cnt), .kind(UVM_PREDICT_READ)))
+
+  endfunction
+
+  // TODO: Revisit after resolution of #9759
+  function bit evaluate_adaptp_test(queue_of_rng_val_t window, bit fips_mode);
+    int value;
+    bit fail_hi, fail_lo;
+
+    value = calc_adaptp_test(window);
+
+    update_watermark("adaptp_lo", fips_mode, value);
+    update_watermark("adaptp_hi", fips_mode, value);
+
+    fail_lo = check_threshold("adaptp_lo", fips_mode, value);
+    fail_hi = check_threshold("adaptp_hi", fips_mode, value);
+
+    return (fail_hi || fail_lo);
+  endfunction
+
+  function bit evaluate_bucket_test(queue_of_rng_val_t window, bit fips_mode);
+    int value;
+    bit fail;
+
+    value = calc_bucket_test(window);
+
+    update_watermark("bucket", fips_mode, value);
+
+    fail = check_threshold("bucket", fips_mode, value);
+
+    return fail;
+  endfunction
+
+  // TODO: Revisit after resolution of #9759
+  function bit evaluate_markov_test(queue_of_rng_val_t window, bit fips_mode);
+    int value, minval, maxval;
+    bit fail_hi, fail_lo;
+
+    value = calc_markov_test(window, maxval, minval);
+
+    update_watermark("markov_lo", fips_mode, minval);
+    update_watermark("markov_hi", fips_mode, maxval);
+
+    fail_lo = check_threshold("markov_lo", fips_mode, value);
+    fail_hi = check_threshold("markov_hi", fips_mode, value);
+
+    return (fail_hi || fail_lo);
+  endfunction
+
+  function evaluate_external_ht(queue_of_rng_val_t window, bit fips_mode);
+    int value;
+    bit fail_hi, fail_lo;
+
+    value = calc_extht_test(window);
+
+    update_watermark("extht_lo", fips_mode, value);
+    update_watermark("extht_hi", fips_mode, value);
+
+    fail_lo = check_threshold("extht_lo", fips_mode, value);
+    fail_hi = check_threshold("extht_hi", fips_mode, value);
+
+    return (fail_hi || fail_lo);
+  endfunction
+
+  // The repetition counts are always running
+  function bit evaluate_repcnt_test(bit fips_mode);
+    int value;
+    bit fail;
+
+    value = max_repcnt;
+
+    update_watermark("repcnt", fips_mode, value);
+
+    fail = check_threshold("repcnt", fips_mode, value);
+
+    return fail;
+  endfunction
+
+  function bit evaluate_repcnt_symbol_test(bit fips_mode);
+    int value;
+    bit fail;
+
+    value = max_repcnt_symbol;
+
+    update_watermark("repcnts", fips_mode, value);
+
+    fail = check_threshold("repcnts", fips_mode, value);
+
+    return fail;
+  endfunction
+
+  function bit health_check_rng_data(queue_of_rng_val_t window, bit fips_mode);
+    int failcnt = 0;
+    bit failure = 0;
+    uvm_reg       alert_summary_reg   = ral.get_reg_by_name("alert_summary_fail_counts");
+    uvm_reg_field alert_summary_field = alert_summary_reg.get_field_by_name("any_fail_count");
+    string        fmt;
+    int           any_fail_count_regval;
+
+    failcnt += evaluate_repcnt_test(fips_mode);
+    failcnt += evaluate_repcnt_symbol_test(fips_mode);
+    failcnt += evaluate_adaptp_test(window, fips_mode);
+    failcnt += evaluate_bucket_test(window, fips_mode);
+    failcnt += evaluate_markov_test(window, fips_mode);
+    failcnt += evaluate_external_ht(window, fips_mode);
+
+    failure = (failcnt != 0);
+
+    any_fail_count_regval = alert_summary_field.get_mirrored_value();
+    if (failure) begin
+      any_fail_count_regval++;
+    end else begin
+      any_fail_count_regval = 0;
+    end
+
+    fmt = "Predicted alert cnt for all tests (FIPS? %d): %04h";
+    `uvm_info(`gfn, $sformatf(fmt, fips_mode, any_fail_count_regval), UVM_HIGH)
+
+    `DV_CHECK_FATAL(alert_summary_field.predict(.value(any_fail_count_regval),
+                                                .kind(UVM_PREDICT_READ)))
+    // TODO: Anticipate alerts if any_fail_count crosses the threshold
+    // TODO: If an alert is anticipated, we should check that this (if necessary this seed is
+    // stopped and no others are allowed to progress.
+    return failure;
+  endfunction
 
   //
   // Helper function for process_entropy_data_access
@@ -203,15 +578,25 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       end
       "repcnt_thresholds": begin
       end
+      "repcnts_thresholds": begin
+      end
       "adaptp_hi_thresholds": begin
       end
       "adaptp_lo_thresholds": begin
       end
       "bucket_thresholds": begin
       end
-      "markov_thresholds": begin
+      "markov_hi_thresholds": begin
+      end
+      "markov_lo_thresholds": begin
       end
       "repcnt_hi_watermarks": begin
+        // TODO: KNOWN ISSUE: Github Issue pending
+        do_read_check = 1'b0;
+      end
+      "repcnts_hi_watermarks": begin
+        // TODO: KNOWN ISSUE: Github Issue pending
+        do_read_check = 1'b0;
       end
       "adaptp_hi_watermarks": begin
       end
@@ -221,7 +606,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       end
       "markov_hi_watermarks": begin
       end
+      "markov_lo_watermarks": begin
+      end
+      "extht_hi_watermarks": begin
+      end
+      "extht_lo_watermarks": begin
+      end
       "repcnt_total_fails": begin
+      end
+      "repcnts_total_fails": begin
       end
       "adaptp_hi_total_fails": begin
       end
@@ -229,11 +622,19 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       end
       "bucket_total_fails": begin
       end
-      "markov_total_fails": begin
+      "markov_hi_total_fails": begin
+      end
+      "markov_lo_total_fails": begin
+      end
+      "extht_hi_total_fails": begin
+      end
+      "extht_lo_total_fails": begin
       end
       "alert_threshold": begin
       end
       "alert_fail_counts": begin
+      end
+      "extht_fail_counts": begin
       end
       "debug_status": begin
       end
@@ -361,6 +762,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     int                       window_rng_frames;
     int                       pass_requirement, pass_cnt;
     int                       retry_limit, retry_cnt;
+    bit                       ht_fips_mode;
 
     retry_cnt = 0;
     pass_cnt  = 0;
@@ -376,19 +778,23 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       if(cfg.type_bypass == prim_mubi_pkg::MuBi4True) begin
         retry_limit          = 2;
         pass_requirement     = 0;
+        ht_fips_mode         = 0;
       end else begin
         case (dut_fsm_phase)
           BOOT: begin
             pass_requirement = 1;
-            retry_limit = cfg.boot_mode_retry_limit;
+            retry_limit      = cfg.boot_mode_retry_limit;
+            ht_fips_mode     = 0;
           end
           STARTUP: begin
             pass_requirement = 2;
-            retry_limit = 2;
+            retry_limit      = 2;
+            ht_fips_mode     = 1;
           end
           CONTINUOUS: begin
             pass_requirement = 0;
-            retry_limit = 2;
+            retry_limit      = 2;
+            ht_fips_mode     = 1;
           end
           default: begin
             `uvm_fatal(`gfn, "Invalid predicted dut state (bug in environment)")
@@ -430,11 +836,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard
           rng_val = rng_item.h_data;
         end
         window.push_back(rng_val);
+        // The repetition count is updated continuously.
+        // The other health checks only operate on complete windows, and are processed later.
+        update_repcnts(rng_val);
       end
 
-
      `uvm_info(`gfn, "FULL_WINDOW", UVM_FULL)
-      if (health_check_rng_data(window)) begin
+      if (health_check_rng_data(window, ht_fips_mode)) begin
         retry_cnt++;
         pass_cnt = 0;
       end else begin
