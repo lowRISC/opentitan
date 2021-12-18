@@ -26,6 +26,17 @@ typedef struct boot_data {
    */
   hmac_digest_t digest;
   /**
+   * Invalidation field.
+   *
+   * This field is used to invalidate the previous entry after writing a new
+   * entry. When writing a new entry, the value of this field is assumed to be
+   * `kBootDataValidEntry`, which matches the value of unwritten flash words,
+   * but it is skipped so that the entry can be invalidated at a later time. An
+   * entry can be invalidated by writing `kBootDataInvalidEntry` to this field
+   * resulting in a digest mismatch.
+   */
+  uint64_t is_valid;
+  /**
    * Boot data identifier.
    */
   uint32_t identifier;
@@ -43,14 +54,15 @@ typedef struct boot_data {
   /**
    * Padding to make the size of `boot_data_t` a power of two.
    */
-  uint32_t padding[5];
+  uint32_t padding[3];
 } boot_data_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 32);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, counter, 36);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_rom_ext, 40);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 44);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 32);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 40);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, counter, 44);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_rom_ext, 48);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 52);
 OT_ASSERT_SIZE(boot_data_t, 64);
 
 enum {
@@ -59,11 +71,16 @@ enum {
    */
   kBootDataIdentifier = 0x41444f42,
   /**
-   * Identifier value for invalidated boot data entries.
-   *
-   * This value is used to invalidate the previous entry after a write.
+   * Value of the `is_valid` field for valid entries.
    */
-  kBootDataInvalidatedIdentifier = 0,
+  kBootDataValidEntry = UINT64_MAX,
+  /**
+   * Value of the `is_valid` field for invalidated entries.
+   *
+   * This value is used to invalidate the previous entry after writing a new
+   * entry.
+   */
+  kBootDataInvalidEntry = 0,
   /**
    * Value of a word in flash after erase.
    *
@@ -97,10 +114,11 @@ enum {
    */
   kBootDataEntriesPerPage = 32,
 };
-static_assert(kBootDataIdentifier != kBootDataEmptyWordValue,
-              "Invalid `kBootDataIdentifier` value.");
-static_assert(kBootDataIdentifier != kBootDataInvalidatedIdentifier,
-              "Invalid `kBootDataIdentifier` value.");
+static_assert(kBootDataInvalidEntry != kBootDataValidEntry,
+              "Invalidation values cannot be equal.");
+static_assert(kBootDataValidEntry ==
+                  (kBootDataEmptyWordValue << 32 | kBootDataEmptyWordValue),
+              "kBootDataValidEntry words must be kBootDataEmptyWordValue");
 
 /**
  * Reads the boot data stored in the flash info partition.

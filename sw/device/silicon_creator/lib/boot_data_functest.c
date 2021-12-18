@@ -26,9 +26,11 @@ static const flash_ctrl_info_page_t kPages[2] = {
  * Boot data entry used in tests.
  */
 boot_data_t kTestBootData = (boot_data_t){
-    .digest = {{0x2f2a8ad9, 0x9076b353, 0x7f6a8f14, 0x2bc04b19, 0x6d9ee1a3,
-                0x50d73250, 0x3070651e, 0x47fdeb51}},
+    .digest = {{0x00f0046c, 0x34e7a3d5, 0x93b15c2e, 0x77cbd502, 0x3d0530f6,
+                0xa58d38b2, 0x60693f97, 0x67e132d9}},
     .identifier = kBootDataIdentifier,
+    .is_valid = kBootDataValidEntry,
+    // `kBootDataDefault.counter` + 1 for consistency.
     .counter = 6,
     .min_security_version_rom_ext = 0,
 };
@@ -111,7 +113,7 @@ static void read_boot_data(flash_ctrl_info_page_t page, size_t index,
  * Writes the given number of invalidated boot data entries to a page.
  *
  * This function invalidates the given boot data entry by setting its
- * `identifier` to `kBootDataInvalidatedIdentifier` before writing it to the
+ * `is_valid` field to `kBootDataInvalidEntry` before writing it to the
  * flash.
  *
  * @param page Flash info page.
@@ -122,7 +124,8 @@ static void fill_with_invalidated_boot_data(flash_ctrl_info_page_t page,
                                             size_t num_entries,
                                             const boot_data_t *boot_data) {
   boot_data_t invalidated = *boot_data;
-  invalidated.identifier = kBootDataInvalidatedIdentifier;
+  invalidated.identifier = kBootDataIdentifier;
+  invalidated.is_valid = kBootDataInvalidEntry;
   for (size_t i = 0; i < num_entries; ++i) {
     write_boot_data(page, i, &invalidated);
   }
@@ -288,7 +291,8 @@ rom_error_t write_page_switch_test(void) {
       // Previous entry must be invalidated.
       boot_data_t prev_entry;
       read_boot_data(kFlashCtrlInfoPageBootData0, i - 1, &prev_entry);
-      if (prev_entry.identifier != kBootDataInvalidatedIdentifier) {
+      if (prev_entry.is_valid != kBootDataInvalidEntry) {
+        LOG_ERROR("Previous entry was not invalidated");
         return kErrorUnknown;
       }
     }
@@ -310,7 +314,8 @@ rom_error_t write_page_switch_test(void) {
     // Previous entry must be invalidated.
     boot_data_t prev_entry;
     read_boot_data(kFlashCtrlInfoPageBootData1, i - 1, &prev_entry);
-    if (prev_entry.identifier != kBootDataInvalidatedIdentifier) {
+    if (prev_entry.is_valid != kBootDataInvalidEntry) {
+      LOG_ERROR("Previous entry was not invalidated");
       return kErrorUnknown;
     }
   }
