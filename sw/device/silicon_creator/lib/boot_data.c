@@ -26,6 +26,11 @@ static_assert(!(FLASH_CTRL_PARAM_BYTES_PER_PAGE &
               "Size of a flash page must be a power of two.");
 static_assert(!(sizeof(boot_data_t) & (sizeof(boot_data_t) - 1)),
               "Size of `boot_data_t` must be a power of two.");
+OT_ASSERT_MEMBER_SIZE(boot_data_t, is_valid, FLASH_CTRL_PARAM_BYTES_PER_WORD);
+static_assert(offsetof(boot_data_t, is_valid) %
+                      FLASH_CTRL_PARAM_BYTES_PER_WORD ==
+                  0,
+              "`is_valid` must be flash word aligned.");
 
 /**
  * Boot data flash info pages.
@@ -105,22 +110,41 @@ static hardened_bool_t boot_data_is_empty(const boot_data_buffer_t *boot_data) {
 }
 
 /**
- * Reads the identifier field of the boot data entry at the given page and
- * index.
+ * Returns the `identifier` of the boot data entry at the given page and
+ * index after masking it with the words of its `is_valid` field.
+ *
+ * This function can be used to quickly determine if an entry can be empty or
+ * valid. Due to the values chosen for valid and invalid entries,
+ * `masked_identifier` will be `kBootDataEmptyWordValue` for entries that can be
+ * empty, `kBootDataIdentifier` for entries that are not invalidated, and `0`
+ * for invalidated entries.
  *
  * @param page A boot data page.
  * @param index Index of the entry to read in the given page.
- * @param[out] identifier Identifier field of the entry.
+ * @param[out] masked_identifier Identifier masked with the words of `is_valid`.
  * @return The result of the operation.
  */
-static rom_error_t boot_data_identifier_read(flash_ctrl_info_page_t page,
-                                             size_t index,
-                                             uint32_t *identifier) {
-  static_assert(offsetof(boot_data_t, identifier) % sizeof(uint32_t) == 0,
-                "`identifier` must be word aligned.");
-  const uint32_t offset =
-      index * sizeof(boot_data_t) + offsetof(boot_data_t, identifier);
-  return flash_ctrl_info_read(page, offset, 1, identifier);
+static rom_error_t boot_data_sniff(flash_ctrl_info_page_t page, size_t index,
+                                   uint32_t *masked_identifier) {
+  static_assert(kBootDataValidEntry == UINT64_MAX,
+                "is_valid must be UINT64_MAX for valid entries.");
+  static_assert(kBootDataInvalidEntry == 0,
+                "is_valid must be 0 for invalid entries.");
+
+  enum {
+    kIsValidOffset = offsetof(boot_data_t, is_valid),
+    kIdentifierOffset = offsetof(boot_data_t, identifier),
+  };
+  static_assert(
+      kIdentifierOffset - kIsValidOffset == sizeof((boot_data_t){0}.is_valid),
+      "is_valid and identifier must be consecutive.");
+
+  *masked_identifier = 0;
+  uint32_t buf[3];
+  const uint32_t offset = index * sizeof(boot_data_t) + kIsValidOffset;
+  RETURN_IF_ERROR(flash_ctrl_info_read(page, offset, 3, buf));
+  *masked_identifier = buf[0] & buf[1] & buf[2];
+  return kErrorOk;
 }
 
 /**
@@ -141,10 +165,12 @@ static rom_error_t boot_data_entry_read(flash_ctrl_info_page_t page,
 /**
  * Populates the boot data entry at the given page and index.
  *
- * If `erase` is `kHardenedBoolTrue`, this function erases the given page before
- * writing the new entry. This function also also verifies the newly written
- * entry by reading it back. Reads, writes, and erases (if applicable) must be
- * enabled for the given page before this function is called, see
+ * This function writes the new entry in two transactions skipping over the
+ * `is_valid` field so that the entry can be invalidated later. If `erase` is
+ * `kHardenedBoolTrue`, this function erases the given page before writing the
+ * new entry. This function also also verifies the newly written entry by
+ * reading it back. Reads, writes, and erases (if applicable) must be enabled
+ * for the given page before this function is called, see
  * `boot_data_entry_write()`.
  *
  * @param page A boot data page.
@@ -157,14 +183,33 @@ static rom_error_t boot_data_entry_write_impl(flash_ctrl_info_page_t page,
                                               size_t index,
                                               const boot_data_t *boot_data,
                                               hardened_bool_t erase) {
+  // This function assumes the following layout for the first three fields.
+  OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
+  OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 32);
+  OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 40);
+
   boot_data_buffer_t buf;
   memcpy(&buf, boot_data, sizeof(boot_data_t));
-  const uint32_t offset = index * sizeof(boot_data_t);
+
   if (erase == kHardenedBoolTrue) {
     RETURN_IF_ERROR(flash_ctrl_info_erase(page, kFlashCtrlEraseTypePage));
   }
+
+  // Write digest
+  const uint32_t offset = index * sizeof(boot_data_t);
   RETURN_IF_ERROR(
-      flash_ctrl_info_write(page, offset, kBootDataNumWords, buf.data));
+      flash_ctrl_info_write(page, offset, kHmacDigestNumWords, buf.data));
+  // Write the rest of the entry, skipping over `is_valid`.
+  enum {
+    kSecondWriteOffsetBytes = offsetof(boot_data_t, identifier),
+    kSecondWriteOffsetWords = kSecondWriteOffsetBytes / sizeof(uint32_t),
+    kSecondWriteNumWords = kBootDataNumWords - kSecondWriteOffsetWords,
+  };
+  RETURN_IF_ERROR(flash_ctrl_info_write(page, offset + kSecondWriteOffsetBytes,
+                                        kSecondWriteNumWords,
+                                        buf.data + kSecondWriteOffsetWords));
+
+  // Check.
   RETURN_IF_ERROR(
       flash_ctrl_info_read(page, offset, kBootDataNumWords, buf.data));
   if (memcmp(&buf, boot_data, sizeof(boot_data_t)) != 0) {
@@ -209,9 +254,8 @@ static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
  * Invalidates the boot data entry at the given page and index.
  *
  * This function handles write permissions for the given page and sets the
- * `identifier` field of the given entry to `kBootDataInvalidatedIdentifier`
- * which will cause both the identifier and the digest checks to fail in
- * subsequent reads.
+ * `is_valid` field of the given entry to `kBootDataInvalidEntry` which will
+ * cause the digest checks to fail in subsequent reads.
  *
  * This function must be called only after the new entry is successfully
  * written since writes can potentially be interrupted.
@@ -222,18 +266,20 @@ static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
  */
 static rom_error_t boot_data_entry_invalidate(flash_ctrl_info_page_t page,
                                               size_t index) {
-  static_assert(offsetof(boot_data_t, identifier) % sizeof(uint32_t) == 0,
-                "`identifier` must be word aligned.");
+  // Assertions for the assumptions below.
+  OT_ASSERT_MEMBER_SIZE(boot_data_t, is_valid, 8);
+  static_assert(kBootDataInvalidEntry == 0,
+                "Unexpected kBootDataInvalidEntry value.");
 
   const uint32_t offset =
-      index * sizeof(boot_data_t) + offsetof(boot_data_t, identifier);
-  const uint32_t val = kBootDataInvalidatedIdentifier;
+      index * sizeof(boot_data_t) + offsetof(boot_data_t, is_valid);
+  const uint32_t val[2] = {0, 0};
   flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
                                    .read = kHardenedBoolFalse,
                                    .write = kHardenedBoolTrue,
                                    .erase = kHardenedBoolFalse,
                                });
-  rom_error_t error = flash_ctrl_info_write(page, offset, 1, &val);
+  rom_error_t error = flash_ctrl_info_write(page, offset, 2, val);
   flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
                                    .read = kHardenedBoolFalse,
                                    .write = kHardenedBoolFalse,
@@ -287,7 +333,7 @@ typedef struct boot_data_page_info {
  */
 static rom_error_t boot_data_page_info_get_impl(
     flash_ctrl_info_page_t page, boot_data_page_info_t *page_info) {
-  uint32_t identifiers[kBootDataEntriesPerPage];
+  uint32_t sniff_results[kBootDataEntriesPerPage];
   boot_data_buffer_t buf;
 
   page_info->page = page;
@@ -298,9 +344,9 @@ static rom_error_t boot_data_page_info_get_impl(
   for (size_t i = 0; i < kBootDataEntriesPerPage; ++i) {
     // Read and cache the identifier to quickly determine if an entry can be
     // empty or valid.
-    RETURN_IF_ERROR(boot_data_identifier_read(page, i, &identifiers[i]));
+    RETURN_IF_ERROR(boot_data_sniff(page, i, &sniff_results[i]));
     // Check all words of this entry only if it can be empty.
-    if (identifiers[i] == kBootDataEmptyWordValue) {
+    if (sniff_results[i] == kBootDataEmptyWordValue) {
       RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
       if (boot_data_is_empty(&buf) == kHardenedBoolTrue) {
         page_info->first_empty_index = i;
@@ -316,7 +362,7 @@ static rom_error_t boot_data_page_info_get_impl(
                            : kBootDataEntriesPerPage - 1;
   for (size_t i = start_index; i < kBootDataEntriesPerPage; --i) {
     // Check the digest only if this entry can be valid.
-    if (identifiers[i] == kBootDataIdentifier) {
+    if (sniff_results[i] == kBootDataIdentifier) {
       hardened_bool_t is_valid;
       RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
       RETURN_IF_ERROR(boot_data_digest_is_valid(&buf, &is_valid));
@@ -402,8 +448,9 @@ static rom_error_t boot_data_active_page_find(
  * no valid boot data entry in the flash info pages.
  */
 boot_data_t kBootDataDefault = (boot_data_t){
-    .digest = {{0xadeb2cd1, 0x9aacb381, 0x45610eeb, 0x129e5fe4, 0x5b56c4ee,
-                0x438c2b8c, 0x94d04119, 0x7895f206}},
+    .digest = {{0x0d044e5c, 0x33ceed53, 0x05aa74a4, 0x57b7017f, 0x574a685d,
+                0x6ec8f5f7, 0x594b0141, 0x656bae85}},
+    .is_valid = kBootDataValidEntry,
     .identifier = kBootDataIdentifier,
     // Note: This starts from 5 to have a slightly less trivial value in case we
     // need to distinguish the default entry.
@@ -460,6 +507,7 @@ rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
 
 rom_error_t boot_data_write(const boot_data_t *boot_data) {
   boot_data_t new_entry = *boot_data;
+  new_entry.is_valid = kBootDataValidEntry;
   new_entry.identifier = kBootDataIdentifier;
   boot_data_page_info_t active_page;
   rom_error_t error = boot_data_active_page_find(&active_page);
