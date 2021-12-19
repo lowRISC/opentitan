@@ -25,6 +25,7 @@ filesets:
       - rtl/entropy_src_cntr_reg.sv
       - rtl/entropy_src_ack_sm.sv
       - rtl/entropy_src_main_sm.sv
+      - rtl/entropy_src_comparator_tree.sv
       - rtl/entropy_src_repcnt_ht.sv
       - rtl/entropy_src_repcnts_ht.sv
       - rtl/entropy_src_adaptp_ht.sv
