@@ -9,6 +9,7 @@ package scan_role_pkg;
 
   import prim_pad_wrapper_pkg::*;
 
+  parameter scan_role_e DioPadAstMiscScanRole         = NoScan;
   parameter scan_role_e DioPadPorNScanRole            = NoScan;
   parameter scan_role_e DioPadSpiHostD0ScanRole       = NoScan;
   parameter scan_role_e DioPadSpiHostD1ScanRole       = NoScan;

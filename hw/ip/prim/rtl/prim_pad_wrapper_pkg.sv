@@ -10,7 +10,8 @@ package prim_pad_wrapper_pkg;
     BidirOd = 3'h2,   // Open-drain capable pad
     InputStd = 3'h3,  // Input-only pad
     AnalogIn0 = 3'h4, // Analog input pad
-    AnalogIn1 = 3'h5  // Analog input pad
+    AnalogIn1 = 3'h5, // Analog input pad
+    DualBidirTol = 3'h6   // Dual Voltage tolerant pad
   } pad_type_e;
 
   typedef enum logic [1:0] {
