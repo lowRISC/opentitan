@@ -15,11 +15,18 @@ extern "C" {
 
 #define HMAC_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
+enum {
+  /**
+   * Size of a SHA-256 digest in words.
+   */
+  kHmacDigestNumWords = 8,
+};
+
 /**
  * A typed representation of the HMAC digest.
  */
 typedef struct hmac_digest {
-  uint32_t digest[8];
+  uint32_t digest[kHmacDigestNumWords];
 } hmac_digest_t;
 
 /**
