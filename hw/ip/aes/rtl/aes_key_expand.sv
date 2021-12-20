@@ -206,21 +206,33 @@ module aes_key_expand import aes_pkg::*;
   end
 
   // SubWord - individually substitute bytes.
+  // Every DOM S-Box instance consumes 28 bits of randomness but itself produces 20 bits for use in
+  // another S-Box instance. For other S-Box implementations, only the bits corresponding to prd_i
+  // are used. Other bits are ignored and tied to 0.
+  logic [3:0][WidthPRDSBox+19:0] in_prd;
+  logic [3:0]             [19:0] out_prd;
+
   for (genvar i = 0; i < 4; i++) begin : gen_sbox
+    // Rotate the randomness produced by the S-Boxes. The LSBs are taken from the masking PRNG
+    // (prd_i) whereas the MSBs are produced by the other S-Box instances.
+    assign in_prd[i] = (i == 0) ? {out_prd[3],   prd_i[WidthPRDSBox*i +: WidthPRDSBox]} :
+                                  {out_prd[i-1], prd_i[WidthPRDSBox*i +: WidthPRDSBox]};
+
     aes_sbox #(
       .SBoxImpl ( SBoxImpl )
     ) u_aes_sbox_i (
-      .clk_i     ( clk_i                                 ),
-      .rst_ni    ( rst_ni                                ),
-      .en_i      ( en == SP2V_HIGH                       ),
-      .out_req_o ( sub_word_out_req[i]                   ),
-      .out_ack_i ( out_ack == SP2V_HIGH                  ),
-      .op_i      ( CIPH_FWD                              ),
-      .data_i    ( sub_word_in[8*i +: 8]                 ),
-      .mask_i    ( sw_in_mask[8*i +: 8]                  ),
-      .prd_i     ( prd_i[WidthPRDSBox*i +: WidthPRDSBox] ),
-      .data_o    ( sub_word_out[8*i +: 8]                ),
-      .mask_o    ( sw_out_mask[8*i +: 8]                 )
+      .clk_i     ( clk_i                  ),
+      .rst_ni    ( rst_ni                 ),
+      .en_i      ( en == SP2V_HIGH        ),
+      .out_req_o ( sub_word_out_req[i]    ),
+      .out_ack_i ( out_ack == SP2V_HIGH   ),
+      .op_i      ( CIPH_FWD               ),
+      .data_i    ( sub_word_in[8*i +: 8]  ),
+      .mask_i    ( sw_in_mask[8*i +: 8]   ),
+      .prd_i     ( in_prd[i]              ),
+      .data_o    ( sub_word_out[8*i +: 8] ),
+      .mask_o    ( sw_out_mask[8*i +: 8]  ),
+      .prd_o     ( out_prd[i]             )
     );
   end
 

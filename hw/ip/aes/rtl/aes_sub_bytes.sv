@@ -28,6 +28,12 @@ module aes_sub_bytes import aes_pkg::*;
   sp2v_e           out_ack;
   logic            out_ack_err;
 
+  // Every DOM S-Box instance consumes 28 bits of randomness but itself produces 20 bits for use in
+  // another S-Box instance. For other S-Box implementations, only the bits corresponding to prd_i
+  // are used. Other bits are ignored and tied to 0.
+  logic [3:0][3:0][WidthPRDSBox+19:0] in_prd;
+  logic [3:0][3:0]             [19:0] out_prd;
+
   // Check sparsely encoded signals.
   logic [Sp2VWidth-1:0] en_raw;
   aes_sel_buf_chk #(
@@ -58,6 +64,13 @@ module aes_sub_bytes import aes_pkg::*;
   // Individually substitute bytes.
   for (genvar j = 0; j < 4; j++) begin : gen_sbox_j
     for (genvar i = 0; i < 4; i++) begin : gen_sbox_i
+
+      // Rotate the randomness produced by the S-Boxes over the columns but not across rows as
+      // MixColumns will operate across rows. The LSBs are taken from the masking PRNG (prd_i)
+      // whereas the MSBs are produced by the other S-Box instances.
+      assign in_prd[i][j] = (j == 0) ? {out_prd[i][3],   prd_i[i][j]}  :
+                                       {out_prd[i][j-1], prd_i[i][j]};
+
       aes_sbox #(
         .SBoxImpl ( SBoxImpl )
       ) u_aes_sbox_ij (
@@ -69,9 +82,10 @@ module aes_sub_bytes import aes_pkg::*;
         .op_i      ( op_i                 ),
         .data_i    ( data_i[i][j]         ),
         .mask_i    ( mask_i[i][j]         ),
-        .prd_i     ( prd_i [i][j]         ),
+        .prd_i     ( in_prd[i][j]         ),
         .data_o    ( data_o[i][j]         ),
-        .mask_o    ( mask_o[i][j]         )
+        .mask_o    ( mask_o[i][j]         ),
+        .prd_o     ( out_prd[i][j]        )
       );
     end
   end
