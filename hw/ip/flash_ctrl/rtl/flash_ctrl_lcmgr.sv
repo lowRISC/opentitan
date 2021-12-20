@@ -113,7 +113,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   logic [SeedRdsWidth-1:0] addr_cnt_q;
   logic seed_cnt_en, seed_cnt_clr;
   logic addr_cnt_en, addr_cnt_clr;
-  logic rma_wipe_req, rma_wipe_done, rma_wipe_req_tmp;
+  logic rma_wipe_req, rma_wipe_done, rma_wipe_req_int;
   logic [WipeIdxWidth-1:0] rma_wipe_idx;
   logic rma_wipe_idx_incr;
   flash_lcmgr_phase_e phase;
@@ -425,10 +425,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       end
 
     endcase // unique case (state_q)
-    // TODO this is a temporary fix you cannot glitch rma_wipe_req_tmp
-    // and this will break the x prop issue -but it is techincally still
-    // a combinatiorial loop and should be avoided.
-    rma_wipe_req_tmp = rma_wipe_req;
   end // always_comb
 
   ///////////////////////////////
@@ -573,6 +569,16 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   assign rma_info_sel = RmaWipeEntries[rma_wipe_idx].info_sel;
   assign rma_num_words = WidthMultiple - 1;
 
+  // this variable is specifically here to work around some tooling issues identified in #9661.
+  // Certain tools identify rma_wipe_req as part of a combinational loop.
+  // It is not a combinational loop in the synthesized sense, but rather a combinational loop from
+  // the perspective of simulation scheduler.
+  // This is not a synthesized combo loop for the following reasons
+  // 1. rma_wipe_req is changed only based on the value of state_q, so it cannot be
+  //    affected by non-flop signals
+  // 2. other lint tools do not identify (including sign-off tool) an issue.
+  // The direct feedthrough assignment below helps address some of the tooling issues.
+  assign rma_wipe_req_int = rma_wipe_req;
 
   //fsm for handling the actual wipe
   logic fsm_err;
@@ -596,7 +602,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     unique case (rma_state_q)
 
       StRmaIdle: begin
-        if (rma_wipe_req_tmp) begin
+        if (rma_wipe_req_int) begin
           rma_state_d = StRmaPageSel;
           page_cnt_ld = 1'b1;
         end
