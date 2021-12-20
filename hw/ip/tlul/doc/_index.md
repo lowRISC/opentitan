@@ -45,7 +45,7 @@ about on par of pincount with APB but with the transaction performance of
 AXI-4, modulo the following assumptions.
 
 - Only one request (read or write) per cycle
-- One one response (read or write) per cycle
+- Only one response (read or write) per cycle
 - No burst transactions
 
 Bus primitives are provided in the lowRISC IP library. These are
@@ -611,7 +611,7 @@ TL `typedef` definitions.
 | `input`  |            | `clk_i`     | clock |
 | `input`  |            | `rst_ni`    | active low reest |
 | `input`  | `tl_h2d_t` | `tl_h_i[M]` | unpacked array of incoming host request structs |
-| `output` | `tl_d2h_t` | `tl_h_o[M]` | unpacked array of outgong host response structs |
+| `output` | `tl_d2h_t` | `tl_h_o[M]` | unpacked array of outgoing host response structs |
 | `output` | `tl_h2d_t` | `tl_d_o`    | outgoing device request struct |
 | `input`  | `tl_d2h_t` | `tl_d_i`    | incoming device response struct |
 
@@ -624,13 +624,13 @@ Specifically, it implements the address to `dev_sel` steering logic and ensures 
 
 ### `tlul_adapter_sram`
 
-The TL-UL sram adapter is a bus element that connects a TL-UL interface to a memory like itnerface.
+The TL-UL sram adapter is a bus element that connects a TL-UL interface to a memory like interface.
 The memory interface is defined as follows:
 
 | name    | direction | description                            |
 | :---:   | :---:     | :---:                                  |
 | req     | `output`  | Memory interface transaction request   |
-| gnt     | `input`   | Memory interface trasnaction grant     |
+| gnt     | `input`   | Memory interface transaction grant     |
 | we      | `output`  | Transaction write enable               |
 | addr    | `output`  | Transaction address                    |
 | wdata   | `output`  | Transaction write data                 |
