@@ -1,25 +1,45 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_HMAC_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_HMAC_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_HMAC_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_HMAC_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define HMAC_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+enum {
+  /* Number of bits in an HMAC or SHA-256 digest. */
+  kHmacDigestNumBits = 256,
+  /* Number of bytes in an HMAC or SHA-256 digest. */
+  kHmacDigestNumBytes = kHmacDigestNumBits / 8,
+  /* Number of words in an HMAC or SHA-256 digest. */
+  kHmacDigestNumWords = kHmacDigestNumBytes / sizeof(uint32_t),
+};
+
+/**
+ * Error types for the HMAC driver.
+ */
+typedef enum hmac_error {
+  kHmacOk = 0,
+  /* Invalid argument.*/
+  kHmacErrorBadArg = 1,
+  /* HMAC device is still processing. */
+  kHmacErrorBusy = 2,
+  /* Attempt to push when FIFO is full. */
+  kHmacErrorFifoFull = 3,
+} hmac_error_t;
 
 /**
  * A typed representation of the HMAC digest.
  */
 typedef struct hmac_digest {
-  uint32_t digest[8];
+  uint32_t digest[kHmacDigestNumWords];
 } hmac_digest_t;
 
 /**
@@ -39,23 +59,25 @@ void hmac_sha256_init(void);
  * polling for FIFO status is equivalent to stalling on FIFO write.
  *
  * @param data Buffer to copy data from.
- * @param len size of the `data` buffer.
+ * @param len size of the `data` buffer in bytes.
  * @return The result of the operation.
  */
-HMAC_WARN_UNUSED_RESULT
-rom_error_t hmac_sha256_update(const void *data, size_t len);
+OT_WARN_UNUSED_RESULT
+hmac_error_t hmac_sha256_update(const void *data, size_t len);
 
 /**
  * Finalizes SHA256 operation and writes `digest` buffer.
  *
+ * Blocks while the device is processing.
+ *
  * @param[out] digest Buffer to copy digest to.
  * @return The result of the operation.
  */
-HMAC_WARN_UNUSED_RESULT
-rom_error_t hmac_sha256_final(hmac_digest_t *digest);
+OT_WARN_UNUSED_RESULT
+hmac_error_t hmac_sha256_final(hmac_digest_t *digest);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_HMAC_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_HMAC_H_
