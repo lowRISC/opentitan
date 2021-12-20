@@ -40,14 +40,22 @@
 
 `include "prim_assert.sv"
 
-// Packed struct for pseudo-random data (PRD) distribution. Stages 1, 3 and 4 require 8 bits each.
-// Stage 2 requires just 4 bits.
+// Packed struct for pseudo-random data (PRD) input. Stages 1, 3 and 4 require 8 bits each. Stage 2
+// requires just 4 bits.
 typedef struct packed {
   logic [7:0] prd_1;
   logic [3:0] prd_2;
   logic [7:0] prd_3;
   logic [7:0] prd_4;
-} prd_t;
+} prd_in_t;
+
+// Packed struct for pseudo-random data (PRD) output. Stages 2 and 3 produce 8 bits each. Stage 1
+// produces just 4 bits.
+typedef struct packed {
+  logic [3:0] prd_1;
+  logic [7:0] prd_2;
+  logic [7:0] prd_3;
+} prd_out_t;
 
 // DOM-indep GF(2^N) multiplier, first-order masked.
 // Computes (a_q ^ b_q) = (a_x ^ b_x) * (a_y ^ b_y), i.e. q = x * y using first-order
@@ -319,17 +327,18 @@ module aes_dom_dep_mul_gf2pn #(
                                             //       DOM-indep multiplier, this is the version
                                             //       discussed in [1].
 ) (
-  input  logic              clk_i,
-  input  logic              rst_ni,
-  input  logic              we_i,
-  input  logic [NPower-1:0] a_x,    // Share a of x
-  input  logic [NPower-1:0] a_y,    // Share a of y
-  input  logic [NPower-1:0] b_x,    // Share b of x
-  input  logic [NPower-1:0] b_y,    // Share b of y
-  input  logic [NPower-1:0] z_0,    // Randomness for blinding
-  input  logic [NPower-1:0] z_1,    // Randomness for resharing
-  output logic [NPower-1:0] a_q,    // Share a of q
-  output logic [NPower-1:0] b_q     // Share b of q
+  input  logic                clk_i,
+  input  logic                rst_ni,
+  input  logic                we_i,
+  input  logic   [NPower-1:0] a_x,    // Share a of x
+  input  logic   [NPower-1:0] a_y,    // Share a of y
+  input  logic   [NPower-1:0] b_x,    // Share b of x
+  input  logic   [NPower-1:0] b_y,    // Share b of y
+  input  logic   [NPower-1:0] z_0,    // Randomness for blinding
+  input  logic   [NPower-1:0] z_1,    // Randomness for resharing
+  output logic   [NPower-1:0] a_q,    // Share a of q
+  output logic   [NPower-1:0] b_q,    // Share b of q
+  output logic [2*NPower-1:0] prd_o   // Randomness for use in another S-Box instance
 );
 
   import aes_sbox_canright_pkg::*;
@@ -400,6 +409,14 @@ module aes_dom_dep_mul_gf2pn #(
     .d_i    ( {axz0_z1_d, bxz0_z1_d} ),
     .q_o    ( {axz0_z1_q, bxz0_z1_q} )
   );
+
+  // Use intermediate results for generating PRD for another S-Box instance.
+  // Use one share only. Directly use output of flops updating with we_i.
+  // These intermediate results are obtained by remasking b_y and mul_bx_z0 with z_0 and z_1,
+  // respectively. Since z_0/1 are uniformly distributed and independent of b_y and mul_bx_z0,
+  // the intermediate results are also uniformly distributed and independent of b_y and mul_bx_z0.
+  // For details, see Lemma 1 in [2].
+  assign prd_o = {b_yz0_q, bxz0_z1_q};
 
   /////////////////////////
   // Optional Pipelining //
@@ -581,10 +598,12 @@ module aes_dom_inverse_gf2p4 #(
   input  logic  [1:0] we_i,
   input  logic  [3:0] a_gamma,
   input  logic  [3:0] b_gamma,
-  input  logic  [3:0] prd_2,
-  input  logic  [7:0] prd_3,
+  input  logic  [3:0] prd_2_i,
+  input  logic  [7:0] prd_3_i,
   output logic  [3:0] a_gamma_inv,
-  output logic  [3:0] b_gamma_inv
+  output logic  [3:0] b_gamma_inv,
+  output logic  [7:0] prd_2_o,
+  output logic  [7:0] prd_3_o
 );
 
   import aes_sbox_canright_pkg::*;
@@ -615,6 +634,7 @@ module aes_dom_inverse_gf2p4 #(
     .q_o    ( {a_gamma_ss_q, b_gamma_ss_q} )
   );
 
+  logic [3:0] b_gamma10_prd2;
   aes_dom_dep_mul_gf2pn #(
     .NPower      ( 2           ),
     .Pipeline    ( PipelineMul ),
@@ -627,10 +647,11 @@ module aes_dom_inverse_gf2p4 #(
     .a_y    ( a_gamma0        ), // Share a of y
     .b_x    ( b_gamma1        ), // Share b of x
     .b_y    ( b_gamma0        ), // Share b of y
-    .z_0    ( prd_2[1:0]      ), // Randomness for blinding
-    .z_1    ( prd_2[3:2]      ), // Randomness for resharing
+    .z_0    ( prd_2_i[1:0]    ), // Randomness for blinding
+    .z_1    ( prd_2_i[3:2]    ), // Randomness for resharing
     .a_q    ( a_gamma1_gamma0 ), // Share a of q
-    .b_q    ( b_gamma1_gamma0 )  // Share b of q
+    .b_q    ( b_gamma1_gamma0 ), // Share b of q
+    .prd_o  ( b_gamma10_prd2  )  // Randomness for use in another S-Box instance
   );
 
   ////////////////
@@ -663,6 +684,20 @@ module aes_dom_inverse_gf2p4 #(
     assign b_gamma0_q = u_aes_dom_mul_gamma1_gamma0.gen_pipeline.b_y_q;
   end
 
+  // Use intermediate results for generating PRD for Stage 3 of another S-Box instance.
+  // Use one share only. Directly use output of flops updating with we_i[0].
+  // b_gamma10_prd2 is based on b_gamma1_q, b_gamma0_q but XORed with prd_2_i, thus uniformly
+  // distributed and independent of b_gamma1/0_q (See Lemma 1 in [2]).
+  //
+  // In Stage 3 of another S-Box instance, the MSBs and LSBs of the term below are used:
+  // 1. as randomness in the DOM-dep multipliers u_aes_dom_mul_omega_gamma1/0, and
+  // 2. to generate randomness for the DOM-indep multipliers u_aes_dom_mul_theta_y1/0 in Stage 4 of
+  //    yet another S-Box instance, respectively.
+  // Without interleaving b_gamma1/0_q as well as the upper and lower halves of b_gamma10_prd2 here,
+  // a glitch on the write-enable signal on the input pipeline register of these DOM-indep
+  // multipliers may result in undesirable SCA leakage.
+  assign prd_2_o = {b_gamma1_q, b_gamma10_prd2[3:2], b_gamma0_q, b_gamma10_prd2[1:0]};
+
   /////////////
   // Stage 3 //
   /////////////
@@ -682,42 +717,51 @@ module aes_dom_inverse_gf2p4 #(
   );
 
   // Formulas 16 and 17 in [2].
-
+  logic [3:0] b_gamma1_omega_prd3;
   aes_dom_dep_mul_gf2pn #(
     .NPower      ( 2           ),
     .Pipeline    ( PipelineMul ),
     .PreDomIndep ( 1'b0        )
   ) u_aes_dom_mul_omega_gamma1 (
-    .clk_i  ( clk_i            ),
-    .rst_ni ( rst_ni           ),
-    .we_i   ( we_i[1]          ),
-    .a_x    ( a_gamma1_q       ), // Share a of x
-    .a_y    ( a_omega_buf      ), // Share a of y
-    .b_x    ( b_gamma1_q       ), // Share b of x
-    .b_y    ( b_omega_buf      ), // Share b of y
-    .z_0    ( prd_3[5:4]       ), // Randomness for blinding
-    .z_1    ( prd_3[7:6]       ), // Randomness for resharing
-    .a_q    ( a_gamma_inv[1:0] ), // Share a of q
-    .b_q    ( b_gamma_inv[1:0] )  // Share b of q
+    .clk_i  ( clk_i               ),
+    .rst_ni ( rst_ni              ),
+    .we_i   ( we_i[1]             ),
+    .a_x    ( a_gamma1_q          ), // Share a of x
+    .a_y    ( a_omega_buf         ), // Share a of y
+    .b_x    ( b_gamma1_q          ), // Share b of x
+    .b_y    ( b_omega_buf         ), // Share b of y
+    .z_0    ( prd_3_i[5:4]        ), // Randomness for blinding
+    .z_1    ( prd_3_i[7:6]        ), // Randomness for resharing
+    .a_q    ( a_gamma_inv[1:0]    ), // Share a of q
+    .b_q    ( b_gamma_inv[1:0]    ), // Share b of q
+    .prd_o  ( b_gamma1_omega_prd3 )
   );
 
+  logic [3:0] b_gamma0_omega_prd3;
   aes_dom_dep_mul_gf2pn #(
     .NPower      ( 2           ),
     .Pipeline    ( PipelineMul ),
     .PreDomIndep ( 1'b0        )
   ) u_aes_dom_mul_omega_gamma0 (
-    .clk_i  ( clk_i            ),
-    .rst_ni ( rst_ni           ),
-    .we_i   ( we_i[1]          ),
-    .a_x    ( a_omega_buf      ), // Share a of x
-    .a_y    ( a_gamma0_q       ), // Share a of y
-    .b_x    ( b_omega_buf      ), // Share b of x
-    .b_y    ( b_gamma0_q       ), // Share b of y
-    .z_0    ( prd_3[1:0]       ), // Randomness for blinding
-    .z_1    ( prd_3[3:2]       ), // Randomness for resharing
-    .a_q    ( a_gamma_inv[3:2] ), // Share a of q
-    .b_q    ( b_gamma_inv[3:2] )  // Share b of q
+    .clk_i  ( clk_i               ),
+    .rst_ni ( rst_ni              ),
+    .we_i   ( we_i[1]             ),
+    .a_x    ( a_omega_buf         ), // Share a of x
+    .a_y    ( a_gamma0_q          ), // Share a of y
+    .b_x    ( b_omega_buf         ), // Share b of x
+    .b_y    ( b_gamma0_q          ), // Share b of y
+    .z_0    ( prd_3_i[1:0]        ), // Randomness for blinding
+    .z_1    ( prd_3_i[3:2]        ), // Randomness for resharing
+    .a_q    ( a_gamma_inv[3:2]    ), // Share a of q
+    .b_q    ( b_gamma_inv[3:2]    ), // Share b of q
+    .prd_o  ( b_gamma0_omega_prd3 )
   );
+
+  // Use intermediate results for generating PRD for Stage 4 of another S-Box instance.
+  // Use one share only. Directly use output of flops updating with we_i[1].
+  // b_gamma1/0_omega_prd3 are both based on b_omega but XORed with differend parts of prd_3_i,
+  // thus uniformly distributed and independent of b_omega (see Lemma 1 in [2]).
+  assign prd_3_o = {b_gamma1_omega_prd3, b_gamma0_omega_prd3};
 
 endmodule
 
@@ -731,9 +775,10 @@ module aes_dom_inverse_gf2p8 #(
   input  logic  [3:0] we_i,
   input  logic  [7:0] a_y,     // input data masked by b_y
   input  logic  [7:0] b_y,     // input mask
-  input  prd_t        prd,     // pseudo-random data, e.g. for intermediate masks
+  input  prd_in_t     prd_i,   // pseudo-random data, e.g. for intermediate masks
   output logic  [7:0] a_y_inv, // output data masked by b_y_inv
-  output logic  [7:0] b_y_inv  // output mask
+  output logic  [7:0] b_y_inv, // output mask
+  output prd_out_t    prd_o    // pseudo-random data, e.g. for use in another S-Box instance
 );
 
   import aes_sbox_canright_pkg::*;
@@ -764,22 +809,24 @@ module aes_dom_inverse_gf2p8 #(
     .q_o    ( {a_y_ss_q, b_y_ss_q} )
   );
 
+  logic [7:0] b_y10_prd1;
   aes_dom_dep_mul_gf2pn #(
     .NPower      ( 4           ),
     .Pipeline    ( PipelineMul ),
     .PreDomIndep ( 1'b0        )
   ) u_aes_dom_mul_y1_y0 (
-    .clk_i  ( clk_i          ),
-    .rst_ni ( rst_ni         ),
-    .we_i   ( we_i[0]        ),
-    .a_x    ( a_y1           ), // Share a of x
-    .a_y    ( a_y0           ), // Share a of y
-    .b_x    ( b_y1           ), // Share b of x
-    .b_y    ( b_y0           ), // Share b of y
-    .z_0    ( prd.prd_1[3:0] ), // Randomness for blinding
-    .z_1    ( prd.prd_1[7:4] ), // Randomness for resharing
-    .a_q    ( a_y1_y0        ), // Share a of q
-    .b_q    ( b_y1_y0        )  // Share b of q
+    .clk_i  ( clk_i            ),
+    .rst_ni ( rst_ni           ),
+    .we_i   ( we_i[0]          ),
+    .a_x    ( a_y1             ), // Share a of x
+    .a_y    ( a_y0             ), // Share a of y
+    .b_x    ( b_y1             ), // Share b of x
+    .b_y    ( b_y0             ), // Share b of y
+    .z_0    ( prd_i.prd_1[3:0] ), // Randomness for blinding
+    .z_1    ( prd_i.prd_1[7:4] ), // Randomness for resharing
+    .a_q    ( a_y1_y0          ), // Share a of q
+    .b_q    ( b_y1_y0          ), // Share b of q
+    .prd_o  ( b_y10_prd1       )  // Randomness for use in another S-Box instance
   );
 
   logic [3:0] a_gamma, b_gamma;
@@ -794,6 +841,14 @@ module aes_dom_inverse_gf2p8 #(
     .in_i  ( {a_gamma,     b_gamma}     ),
     .out_o ( {a_gamma_buf, b_gamma_buf} )
   );
+
+  // Use intermediate results for generating PRD for Stage 2 of another S-Box instance.
+  // Use one share only. Directly use output of flops updating with we_i[0].
+  // b_y10_prd1 is based on b_y and XORed with prd_1. We just use the lower part involving a
+  // non-linear element.
+  assign prd_o.prd_1 = b_y10_prd1[3:0];
+  logic [3:0] unused_prd;
+  assign unused_prd  = b_y10_prd1[7:4];
 
   ////////////////////
   // Stages 2 and 3 //
@@ -810,10 +865,12 @@ module aes_dom_inverse_gf2p8 #(
     .we_i        ( we_i[2:1]   ),
     .a_gamma     ( a_gamma_buf ),
     .b_gamma     ( b_gamma_buf ),
-    .prd_2       ( prd.prd_2   ),
-    .prd_3       ( prd.prd_3   ),
+    .prd_2_i     ( prd_i.prd_2 ),
+    .prd_3_i     ( prd_i.prd_3 ),
     .a_gamma_inv ( a_theta     ),
-    .b_gamma_inv ( b_theta     )
+    .b_gamma_inv ( b_theta     ),
+    .prd_2_o     ( prd_o.prd_2 ),
+    .prd_3_o     ( prd_o.prd_3 )
   );
 
   /////////////
@@ -837,32 +894,32 @@ module aes_dom_inverse_gf2p8 #(
     .NPower   ( 4           ),
     .Pipeline ( PipelineMul )
   ) u_aes_dom_mul_theta_y1 (
-    .clk_i  ( clk_i          ),
-    .rst_ni ( rst_ni         ),
-    .we_i   ( we_i[3]        ),
-    .a_x    ( a_y1_q         ), // Share a of x
-    .a_y    ( a_theta        ), // Share a of y
-    .b_x    ( b_y1_q         ), // Share b of x
-    .b_y    ( b_theta        ), // Share b of y
-    .z_0    ( prd.prd_4[7:4] ), // Randomness for resharing
-    .a_q    ( a_y_inv[3:0]   ), // Share a of q
-    .b_q    ( b_y_inv[3:0]   )  // Share b of q
+    .clk_i  ( clk_i            ),
+    .rst_ni ( rst_ni           ),
+    .we_i   ( we_i[3]          ),
+    .a_x    ( a_y1_q           ), // Share a of x
+    .a_y    ( a_theta          ), // Share a of y
+    .b_x    ( b_y1_q           ), // Share b of x
+    .b_y    ( b_theta          ), // Share b of y
+    .z_0    ( prd_i.prd_4[7:4] ), // Randomness for resharing
+    .a_q    ( a_y_inv[3:0]     ), // Share a of q
+    .b_q    ( b_y_inv[3:0]     )  // Share b of q
   );
 
   aes_dom_indep_mul_gf2pn #(
     .NPower   ( 4           ),
     .Pipeline ( PipelineMul )
   ) u_aes_dom_mul_theta_y0 (
-    .clk_i  ( clk_i          ),
-    .rst_ni ( rst_ni         ),
-    .we_i   ( we_i[3]        ),
-    .a_x    ( a_theta        ), // Share a of x
-    .a_y    ( a_y0_q         ), // Share a of y
-    .b_x    ( b_theta        ), // Share b of x
-    .b_y    ( b_y0_q         ), // Share b of y
-    .z_0    ( prd.prd_4[3:0] ), // Randomness for resharing
-    .a_q    ( a_y_inv[7:4]   ), // Share a of q
-    .b_q    ( b_y_inv[7:4]   )  // Share b of q
+    .clk_i  ( clk_i            ),
+    .rst_ni ( rst_ni           ),
+    .we_i   ( we_i[3]          ),
+    .a_x    ( a_theta          ), // Share a of x
+    .a_y    ( a_y0_q           ), // Share a of y
+    .b_x    ( b_theta          ), // Share b of x
+    .b_y    ( b_y0_q           ), // Share b of y
+    .z_0    ( prd_i.prd_4[3:0] ), // Randomness for resharing
+    .a_q    ( a_y_inv[7:4]     ), // Share a of q
+    .b_q    ( b_y_inv[7:4]     )  // Share b of q
   );
 
 endmodule
@@ -879,10 +936,11 @@ module aes_sbox_dom
   input  aes_pkg::ciph_op_e op_i,
   input  logic        [7:0] data_i, // masked, the actual input data is data_i ^ mask_i
   input  logic        [7:0] mask_i, // input mask
-  input  logic        [7:0] prd_i,  // pseudo-random data for remasking, in total we need 28 bits
+  input  logic       [27:0] prd_i,  // pseudo-random data for remasking, in total we need 28 bits
                                     // of PRD per evaluation, but at most 8 bits per cycle
   output logic        [7:0] data_o, // masked, the actual output data is data_o ^ mask_o
-  output logic        [7:0] mask_o  // output mask
+  output logic        [7:0] mask_o, // output mask
+  output logic       [19:0] prd_o   // PRD for usage in Stages 2 - 4 of other S-Box instances
 );
 
   import aes_pkg::*;
@@ -891,7 +949,9 @@ module aes_sbox_dom
   logic [7:0] in_data_basis_x, out_data_basis_x;
   logic [7:0] in_mask_basis_x, out_mask_basis_x;
   logic [3:0] we;
-  prd_t       prd_d, prd_q;
+  logic [7:0] prd1_d, prd1_q;
+  prd_in_t    in_prd;
+  prd_out_t   out_prd;
 
   // Convert data to normal basis X.
   assign in_data_basis_x = (op_i == CIPH_FWD) ? aes_mvm(data_i, A2X) :
@@ -911,9 +971,10 @@ module aes_sbox_dom
     .we_i    ( we               ),
     .a_y     ( in_data_basis_x  ), // input
     .b_y     ( in_mask_basis_x  ), // input
-    .prd     ( prd_d            ), // input
+    .prd_i   ( in_prd           ), // input
     .a_y_inv ( out_data_basis_x ), // output
-    .b_y_inv ( out_mask_basis_x )  // output
+    .b_y_inv ( out_mask_basis_x ), // output
+    .prd_o   ( out_prd          )  // output
   );
 
   // Convert data to basis S or A.
@@ -945,36 +1006,20 @@ module aes_sbox_dom
   assign we[2] = en_i & count_q == 3'd2;
   assign we[3] = en_i & count_q == 3'd3;
 
-  // Buffer and forward PRD for the individual stages. We get 8 bits per cycle from the PRNG.
-  // Stage 1, 3 and 4 require 8 bits each. Stage 2 requires just 4 bits.
-  always_comb begin : iv_mux
-    unique case (we)
-      4'b0000: prd_d = prd_q;
-      4'b0001: prd_d = '{prd_1: prd_i,
-                         prd_2: prd_q.prd_2,
-                         prd_3: prd_q.prd_3,
-                         prd_4: prd_q.prd_4};
-      4'b0010: prd_d = '{prd_1: prd_q.prd_1,
-                         prd_2: prd_i[3:0],
-                         prd_3: prd_q.prd_3,
-                         prd_4: prd_q.prd_4};
-      4'b0100: prd_d = '{prd_1: prd_q.prd_1,
-                         prd_2: prd_q.prd_2,
-                         prd_3: prd_i,
-                         prd_4: prd_q.prd_4};
-      4'b1000: prd_d = '{prd_1: prd_q.prd_1,
-                         prd_2: prd_q.prd_2,
-                         prd_3: prd_q.prd_3,
-                         prd_4: prd_i};
-      default: prd_d = prd_q;
-    endcase
-  end
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_prd
+  // Buffer and forward PRD for the individual stages. We get 8 bits from the PRNG for usage in the
+  // first cycle. Stages 2, 3 and 4 are driven by other S-Box instances.
+  assign prd1_d = we[0] ? prd_i[7:0] : prd1_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_prd1
     if (!rst_ni) begin
-      prd_q <= '0;
-    end else if (|we) begin
-      prd_q <= prd_d;
+      prd1_q <= '0;
+    end else begin
+      prd1_q <= prd1_d;
     end
   end
+  assign in_prd = '{prd_1: prd1_d,
+                    prd_2: prd_i[11:8],
+                    prd_3: prd_i[19:12],
+                    prd_4: prd_i[27:20]};
+  assign prd_o = {out_prd.prd_3, out_prd.prd_2, out_prd.prd_1};
 
 endmodule

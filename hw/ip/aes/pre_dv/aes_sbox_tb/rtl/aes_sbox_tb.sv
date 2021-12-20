@@ -75,7 +75,7 @@ module aes_sbox_tb #(
   // PRD Generation
   parameter int unsigned WidthPRDSBoxCanrightMasked        = 8;
   parameter int unsigned WidthPRDSBoxCanrightMaskedNoreuse = 18;
-  parameter int unsigned WidthPRDSBoxDOM                   = 8;
+  parameter int unsigned WidthPRDSBoxDOM                   = 28;
 
   logic                                   [31:0] prd;
   logic [31-WidthPRDSBoxCanrightMaskedNoreuse:0] unused_prd;
@@ -87,7 +87,7 @@ module aes_sbox_tb #(
       prd <= {$random};
     end
   end
-  assign unused_prd = prd[31:WidthPRDSBoxCanrightMaskedNoreuse];
+  assign unused_prd = prd[31:WidthPRDSBoxDOM];
 
   // Instantiate Masked SBox Implementations
   aes_sbox_canright_masked_noreuse aes_sbox_canright_masked_noreuse (
@@ -109,7 +109,8 @@ module aes_sbox_tb #(
   );
 
   // Instantiate DOM SBox Implementation
-  logic dom_done;
+  logic        dom_done;
+  logic [19:0] unused_out_prd, out_prd;
   aes_sbox_dom aes_sbox_dom (
     .clk_i     ( clk_i                    ),
     .rst_ni    ( rst_ni                   ),
@@ -121,8 +122,10 @@ module aes_sbox_tb #(
     .mask_i    ( in_mask                  ),
     .prd_i     ( prd[WidthPRDSBoxDOM-1:0] ),
     .data_o    ( masked_response[2]       ),
-    .mask_o    ( out_mask[2]              )
+    .mask_o    ( out_mask[2]              ),
+    .prd_o     ( out_prd                  )
   );
+  assign unused_out_prd = out_prd;
 
   // Unmask responses
   always_comb begin : unmask_resp
