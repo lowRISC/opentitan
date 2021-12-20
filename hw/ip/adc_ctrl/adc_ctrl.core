@@ -10,8 +10,8 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - "fileset_partner  ? (partner:systems:ast_pkg)"
-      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+      - "fileset_ast  ? (partner:systems:ast_pkg)"
+      - "!fileset_ast ? (lowrisc:systems:ast_pkg)"
       
       
     files:

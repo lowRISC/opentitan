@@ -23,8 +23,8 @@ filesets:
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:sparse_fsm
-      - "fileset_partner  ? (partner:systems:ast_pkg)"
-      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+      - "fileset_ast  ? (partner:systems:ast_pkg)"
+      - "!fileset_ast ? (lowrisc:systems:ast_pkg)"
     files:
       - rtl/otp_ctrl_core_reg_top.sv
       - rtl/otp_ctrl_ecc_reg.sv
