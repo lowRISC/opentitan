@@ -573,7 +573,9 @@ endmodule
 
 // Inverse in GF(2^4) using first-order domain-oriented masking and normal basis [z^4, z].
 // See Fig. 6 in [2] (grey block, Stages 2 and 3) and Formulas 6, 13, 14, 15, 16, 17 in [2].
-module aes_dom_inverse_gf2p4 (
+module aes_dom_inverse_gf2p4 #(
+  parameter bit PipelineMul = 1'b1
+) (
   input  logic        clk_i,
   input  logic        rst_ni,
   input  logic  [1:0] we_i,
@@ -614,9 +616,9 @@ module aes_dom_inverse_gf2p4 (
   );
 
   aes_dom_dep_mul_gf2pn #(
-    .NPower      ( 2    ),
-    .Pipeline    ( 1'b1 ),
-    .PreDomIndep ( 1'b0 )
+    .NPower      ( 2           ),
+    .Pipeline    ( PipelineMul ),
+    .PreDomIndep ( 1'b0        )
   ) u_aes_dom_mul_gamma1_gamma0 (
     .clk_i  ( clk_i           ),
     .rst_ni ( rst_ni          ),
@@ -630,6 +632,36 @@ module aes_dom_inverse_gf2p4 (
     .a_q    ( a_gamma1_gamma0 ), // Share a of q
     .b_q    ( b_gamma1_gamma0 )  // Share b of q
   );
+
+  ////////////////
+  // Pipelining //
+  ////////////////
+  logic [1:0] a_gamma1_q, a_gamma0_q, b_gamma1_q, b_gamma0_q;
+
+  if (PipelineMul == 1'b0) begin: gen_prim_flop_en
+    // Insert pipeline registers to prevent SCA leakage occuring due to the multiplication of
+    // a/b_gamma1 with a/b_omega belonging to different clock cycles.
+
+    prim_flop_en #(
+      .Width      ( 8  ),
+      .ResetValue ( '0 )
+    ) u_prim_flop_ab_gamma10 (
+      .clk_i  ( clk_i                                            ),
+      .rst_ni ( rst_ni                                           ),
+      .en_i   ( we_i[0]                                          ),
+      .d_i    ( {a_gamma1,   a_gamma0,   b_gamma1,   b_gamma0}   ),
+      .q_o    ( {a_gamma1_q, a_gamma0_q, b_gamma1_q, b_gamma0_q} )
+    );
+
+  end else begin : gen_no_prim_flop_en
+    // When using pipelined multipliers, there is no need to insert additional registers here.
+    // Instead, the pipeline registers of the DOM-dep multiplier in Stage 2 can be re-used.
+
+    assign a_gamma1_q = u_aes_dom_mul_gamma1_gamma0.gen_pipeline.a_x_q;
+    assign a_gamma0_q = u_aes_dom_mul_gamma1_gamma0.gen_pipeline.a_y_q;
+    assign b_gamma1_q = u_aes_dom_mul_gamma1_gamma0.gen_pipeline.b_x_q;
+    assign b_gamma0_q = u_aes_dom_mul_gamma1_gamma0.gen_pipeline.b_y_q;
+  end
 
   /////////////
   // Stage 3 //
@@ -651,22 +683,10 @@ module aes_dom_inverse_gf2p4 (
 
   // Formulas 16 and 17 in [2].
 
-  logic [1:0] a_gamma1_q, a_gamma0_q, b_gamma1_q, b_gamma0_q;
-  prim_flop_en #(
-    .Width      ( 8  ),
-    .ResetValue ( '0 )
-  ) u_prim_flop_ab_gamma10 (
-    .clk_i  ( clk_i                                            ),
-    .rst_ni ( rst_ni                                           ),
-    .en_i   ( we_i[0]                                          ),
-    .d_i    ( {a_gamma1,   a_gamma0,   b_gamma1,   b_gamma0}   ),
-    .q_o    ( {a_gamma1_q, a_gamma0_q, b_gamma1_q, b_gamma0_q} )
-  );
-
   aes_dom_dep_mul_gf2pn #(
-    .NPower      ( 2    ),
-    .Pipeline    ( 1'b1 ),
-    .PreDomIndep ( 1'b0 )
+    .NPower      ( 2           ),
+    .Pipeline    ( PipelineMul ),
+    .PreDomIndep ( 1'b0        )
   ) u_aes_dom_mul_omega_gamma1 (
     .clk_i  ( clk_i            ),
     .rst_ni ( rst_ni           ),
@@ -682,9 +702,9 @@ module aes_dom_inverse_gf2p4 (
   );
 
   aes_dom_dep_mul_gf2pn #(
-    .NPower      ( 2    ),
-    .Pipeline    ( 1'b1 ),
-    .PreDomIndep ( 1'b0 )
+    .NPower      ( 2           ),
+    .Pipeline    ( PipelineMul ),
+    .PreDomIndep ( 1'b0        )
   ) u_aes_dom_mul_omega_gamma0 (
     .clk_i  ( clk_i            ),
     .rst_ni ( rst_ni           ),
@@ -703,7 +723,9 @@ endmodule
 
 // Inverse in GF(2^8) using first-order domain-oriented masking and normal basis [y^16, y].
 // See Fig. 6 in [1] and Formulas 3, 12, 18 and 19 in [2].
-module aes_dom_inverse_gf2p8 (
+module aes_dom_inverse_gf2p8 #(
+  parameter bit PipelineMul = 1'b1
+) (
   input  logic        clk_i,
   input  logic        rst_ni,
   input  logic  [3:0] we_i,
@@ -743,9 +765,9 @@ module aes_dom_inverse_gf2p8 (
   );
 
   aes_dom_dep_mul_gf2pn #(
-    .NPower      ( 4    ),
-    .Pipeline    ( 1'b1 ),
-    .PreDomIndep ( 1'b0 )
+    .NPower      ( 4           ),
+    .Pipeline    ( PipelineMul ),
+    .PreDomIndep ( 1'b0        )
   ) u_aes_dom_mul_y1_y0 (
     .clk_i  ( clk_i          ),
     .rst_ni ( rst_ni         ),
@@ -780,7 +802,9 @@ module aes_dom_inverse_gf2p8 (
   logic [3:0] a_theta, b_theta;
 
   // a_gamma is masked by b_gamma, a_gamma_inv is masked by b_gamma_inv.
-  aes_dom_inverse_gf2p4 u_aes_dom_inverse_gf2p4 (
+  aes_dom_inverse_gf2p4 #(
+    .PipelineMul ( PipelineMul )
+  ) u_aes_dom_inverse_gf2p4 (
     .clk_i       ( clk_i       ),
     .rst_ni      ( rst_ni      ),
     .we_i        ( we_i[2:1]   ),
@@ -810,8 +834,8 @@ module aes_dom_inverse_gf2p8 (
   );
 
   aes_dom_indep_mul_gf2pn #(
-    .NPower   ( 4    ),
-    .Pipeline ( 1'b1 )
+    .NPower   ( 4           ),
+    .Pipeline ( PipelineMul )
   ) u_aes_dom_mul_theta_y1 (
     .clk_i  ( clk_i          ),
     .rst_ni ( rst_ni         ),
@@ -826,8 +850,8 @@ module aes_dom_inverse_gf2p8 (
   );
 
   aes_dom_indep_mul_gf2pn #(
-    .NPower   ( 4    ),
-    .Pipeline ( 1'b1 )
+    .NPower   ( 4           ),
+    .Pipeline ( PipelineMul )
   ) u_aes_dom_mul_theta_y0 (
     .clk_i  ( clk_i          ),
     .rst_ni ( rst_ni         ),
@@ -843,7 +867,10 @@ module aes_dom_inverse_gf2p8 (
 
 endmodule
 
-module aes_sbox_dom (
+module aes_sbox_dom
+#(
+  parameter bit PipelineMul = 1'b1
+) (
   input  logic              clk_i,
   input  logic              rst_ni,
   input  logic              en_i,
@@ -876,7 +903,9 @@ module aes_sbox_dom (
                                                  aes_mvm(mask_i, S2X);
 
   // Do the inversion in normal basis X.
-  aes_dom_inverse_gf2p8 u_aes_dom_inverse_gf2p8 (
+  aes_dom_inverse_gf2p8 #(
+    .PipelineMul ( PipelineMul )
+  ) u_aes_dom_inverse_gf2p8 (
     .clk_i   ( clk_i            ),
     .rst_ni  ( rst_ni           ),
     .we_i    ( we               ),
