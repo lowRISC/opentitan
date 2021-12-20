@@ -141,9 +141,14 @@ for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
     sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_xor2/prim_xilinx_xor2/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
 
+    # Rename prim_sparse_fsm_flop instances. For some reason, sv2v decides to append a suffix.
+    sed -i 's/prim_sparse_fsm_flop_.*/prim_sparse_fsm_flop \#(/g' \
+        $LR_SYNTH_OUT_DIR/generated/${module}.v
+
     # Remove the StateEnumT parameter from prim_sparse_fsm_flop instances. Yosys doesn't seem to
     # support this.
     sed -i '/\.StateEnumT(logic \[.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i '/\.StateEnumT_StateWidth(.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
 done
 
 #-------------------------------------------------------------------------
