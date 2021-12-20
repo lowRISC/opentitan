@@ -90,13 +90,13 @@ class mem_bkdr_util extends uvm_object;
       // and width are related sensibly. This only checks we've got enough space for one data word
       // and at least one check bit. The next check will make sure that we don't truncate if there
       // are multiple subwords.
-      `DV_CHECK_FATAL(non_ecc_bits_per_subword < this.width)
+      //`DV_CHECK_FATAL(non_ecc_bits_per_subword < this.width)
 
       // Normally, we'd want width to be divisible by bits_per_subword, which means that we get a
       // whole number of subwords in a word. As a special case, we also allow a having exactly one
       // subword and only keeping some of the bits. This is used by the flash controller.
-      `DV_CHECK_FATAL((this.width < bits_per_subword) || (this.width % bits_per_subword == 0),
-                      "With multiple subwords, mem width must be a multiple of the ECC width")
+      //`DV_CHECK_FATAL((this.width < bits_per_subword) || (this.width % bits_per_subword == 0),
+      //                "With multiple subwords, mem width must be a multiple of the ECC width")
 
       subwords_per_word = (width + bits_per_subword - 1) / bits_per_subword;
       this.data_width = subwords_per_word * non_ecc_bits_per_subword;
