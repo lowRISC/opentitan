@@ -1697,17 +1697,16 @@
       name: chip_sw_kmac_idle
       desc: '''Verify the KMAC idle signaling to clkmgr.
 
-            - Write the KMAC clk hint to 1 within clkmgr to indicate KMAC clk is ready to be gated.
-              Verify that the KMAC clk hint status within clkmgr reads 0 (KMAC is idle).
-            - Initiate an KMAC operation with a known key, plain text and digest.
-              Verify that the KMAC clk hint status within clkmgr now reads 1 (KMAC is not idle),
-              before the KMAC operation is complete.
+            - Program the KMAC clk hint within clkmgr to indicate KMAC clk is ready to be gated.
+              Verify that the KMAC clk enabled status within clkmgr reads disabled (KMAC is idle).
+            - Initiate a KMAC operation with a known key, plain text and digest.
+              Verify that when enabling the KMAC clk hint after the operation has started but is not
+              yet complete, the clk enabled status in clkmgr stays enabled (KMAC is not idle).
             - After the KMAC operation is complete, verify the digest for correctness.
-              Verify that the KMAC clk hint status within clkmgr now reads 0 again (KMAC is idle),
-              after the KMAC operation is complete.
+              Verify that the KMAC clk enabled status reads as disabled (KMAC is idle).
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_kmac_idle_test"]
     }
 
     // ENTROPY_SRC (pre-verified IP) integration tests:

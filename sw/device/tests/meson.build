@@ -515,6 +515,24 @@ sw_tests += {
   }
 }
 
+kmac_idle_test_lib = declare_dependency(
+  link_with: static_library(
+    'kmac_idle_test_lib',
+    sources: ['kmac_idle_test.c'],
+    dependencies: [
+      sw_lib_dif_kmac,
+      sw_lib_dif_clkmgr,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+    ],
+  ),
+)
+sw_tests += {
+  'kmac_idle_test': {
+    'library': kmac_idle_test_lib,
+  }
+}
+
 # Lifecycle Controller Tests
 lc_ctrl_otp_hw_cfg_test_lib = declare_dependency(
   link_with: static_library(
