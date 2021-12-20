@@ -759,13 +759,5 @@ dif_result_t dif_kmac_end(const dif_kmac_t *kmac,
   operation_state->r = 0;
   operation_state->d = 0;
 
-  // Poll status register until in idle state.
-  while (true) {
-    if (is_state_idle(kmac)) {
-      break;
-    }
-    // TODO(#6248): check for error.
-  }
-
   return kDifOk;
 }
