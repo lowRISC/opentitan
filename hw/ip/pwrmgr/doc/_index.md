@@ -13,6 +13,7 @@ This document specifies the functionality of the OpenTitan power manager.
 - Software initiated low power entry and hardware requested low power exit.
 - Peripheral reset requests
 - Low power abort and low power fall-through support.
+- ROM integrity check at power-up
 
 ## Description
 
@@ -39,7 +40,6 @@ The power manager performs the following functions:
 - Control root clock enables with AST and clock manager.
 - Sequence various power up activities such as OTP sensing, life cycle initiation and releasing software to execute.
 
-If there is a need to perform ROM hashing as an integrity check in the future, that will also be managed by the power manager.
 
 ## Block Diagram
 
@@ -118,6 +118,19 @@ If none of these exception cases are matched for low power entry, the fast FSM t
 
 For reset requests, fall through and aborts are not checked and the system simply resets directly.
 Note in this scenario the slow FSM is not requested to take over.
+
+### ROM Integrity Checks
+
+The power manager coordinates the [start up ROM check]({{< relref "hw/ip/rom_ctrl/doc/_index.md#the-startup-rom-check" >}}) with `rom_ctrl`.
+
+After every reset, the power manager sends an indication to the `rom_ctrl` to begin performing integrity checks.
+When the `rom_ctrl` checks are finished, a `done` and `good` indication are sent back to the power manager.
+
+If the device is in life cycle test states (`TEST_UNLOCKED` or `RMA`), the `good` signal is ignored and the ROM contents are always allowed to execute.
+
+If the device is not in one of the test states, the `good` signal is used to determine ROM execution.
+If `good` is true, ROM execution is allowed.
+If `good` is false, ROM execution is disallowed.
 
 ### Fall Through Handling
 A low power entry fall through occurs when some condition occurs that immediately de-assert the entry conditions right after the software requests it.
