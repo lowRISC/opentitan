@@ -196,7 +196,7 @@
             - Ensure that the data returned is correct for the given locality.
             - Randomise TPM_CFG.invalid_locality and confirm response.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_tpm_locality"]
     }
     {
       name: partial_tpm_txrx
