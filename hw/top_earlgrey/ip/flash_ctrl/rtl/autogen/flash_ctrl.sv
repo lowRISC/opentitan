@@ -536,8 +536,12 @@ module flash_ctrl
 
   // a read request is seen from software but a read operation is not enabled
   // AND there are no pending entries to read from the fifo.
+  // This indicates software has issued a read when it should not have.
+  //
+  // sw_sel qualification is used here to ensure the no_op condition is ignored
+  // when software is not selected through arbitration.
   logic rd_no_op_d, rd_no_op_q;
-  assign rd_no_op_d = rd_fifo_ren & ~rd_op_valid & ~sw_rvalid;
+  assign rd_no_op_d = rd_fifo_ren & ~rd_op_valid & ~sw_rvalid & sw_sel;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
