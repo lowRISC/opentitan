@@ -311,7 +311,9 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         if (!req_pwrup_i || reset_ongoing_q) begin
           ack_pwrup_d = 1'b0;
           clr_cfg_lock_o = 1'b1;
-          wkup_o = pwrup_cause_i == Wake;
+          // generate a wakeup interrupt if we intended to go to low power
+          // and we were woken from low power with a wakeup and not reset
+          wkup_o = (pwrup_cause_i == Wake) & (reset_cause_q == LowPwrEntry);
           // This constitutes the end of a reset cycle
           reset_ongoing_d = 1'b0;
           state_d = FastPwrStateRomCheck;
