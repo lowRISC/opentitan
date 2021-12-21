@@ -383,6 +383,23 @@ void flash_ctrl_exec_set(flash_ctrl_exec_t enable) {
   sec_mmio_write_increment(1);
 }
 
+void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms) {
+  // Read first to preserve ECC, scrambling, and high endurance bits.
+  uint32_t reg =
+      sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET);
+  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_RD_EN_BIT,
+                             perms.read == kHardenedBoolTrue);
+  reg =
+      bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_PROG_EN_BIT,
+                           perms.write == kHardenedBoolTrue);
+  reg =
+      bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_ERASE_EN_BIT,
+                           perms.erase == kHardenedBoolTrue);
+  sec_mmio_write32_shadowed(
+      kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, reg);
+  sec_mmio_write_increment(1);
+}
+
 void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
                                flash_ctrl_perms_t perms) {
   const uint32_t cfg_addr = info_cfg_regs(info_page).cfg_addr;
