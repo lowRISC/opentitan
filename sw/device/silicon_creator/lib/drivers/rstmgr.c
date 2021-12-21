@@ -9,7 +9,11 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
+
+#ifdef OT_PLATFORM_RV32
 #include "sw/device/lib/runtime/hart.h"
+#endif
+
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
