@@ -131,14 +131,22 @@ module pwm_chan #(
   assign duty_cycle_actual = (blink_en_i && !htbt_en_i) ? duty_cycle_blink :
                              (blink_en_i && htbt_en_i) ? duty_cycle_htbt : duty_cycle_a_i;
 
+  logic [15:0] dc_resn_comp;
+  logic [15:0] phase_delay_cropped;
+  logic [15:0] duty_cycle_cropped;
   logic [30:0] phase_delay_scaled;
   logic [30:0] duty_cycle_scaled;
   logic [3:0] lshift;
   logic unused_shift;
 
+  assign dc_resn_comp = 16'h1 << (dc_resn_i + 1);
   assign lshift = 4'd15 - dc_resn_i;
-  assign phase_delay_scaled = phase_delay_i << lshift;
-  assign duty_cycle_scaled = duty_cycle_actual << lshift;
+  assign phase_delay_cropped = (phase_delay_i <= dc_resn_comp) ?
+                                phase_delay_i : (phase_delay_i >> lshift);
+  assign duty_cycle_cropped = (duty_cycle_actual <= dc_resn_comp) ?
+                               duty_cycle_actual : (duty_cycle_actual >> lshift);
+  assign phase_delay_scaled = phase_delay_cropped << lshift;
+  assign duty_cycle_scaled = duty_cycle_cropped << lshift;
   assign unused_shift = ^phase_delay_scaled | ^duty_cycle_scaled;
 
   assign on_phase = phase_delay_scaled[15:0];
