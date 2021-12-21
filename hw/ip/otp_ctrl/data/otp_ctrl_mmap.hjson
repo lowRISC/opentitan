@@ -131,6 +131,14 @@
                     name: "CREATOR_SW_CFG_KEY_IS_VALID",
                     size: "8"
                 }
+                {
+                    name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG",
+                    size: "4"
+                }
             ],
             desc: '''Software configuration partition for
             device-specific calibration data (Clock, LDO,
