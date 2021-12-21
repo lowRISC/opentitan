@@ -237,6 +237,30 @@
       default: "8",
       local: "true"
     },
+    { name: "CreatorSwCfgFlashDataDefaultCfgOffset",
+      desc: "Offset of CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
+      type: "int",
+      default: "212",
+      local: "true"
+    },
+    { name: "CreatorSwCfgFlashDataDefaultCfgSize",
+      desc: "Size of CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "CreatorSwCfgFlashInfoBootDataCfgOffset",
+      desc: "Offset of CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG",
+      type: "int",
+      default: "216",
+      local: "true"
+    },
+    { name: "CreatorSwCfgFlashInfoBootDataCfgSize",
+      desc: "Size of CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",
