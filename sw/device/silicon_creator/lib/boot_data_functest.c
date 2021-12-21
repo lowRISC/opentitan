@@ -46,11 +46,11 @@ boot_data_t kTestBootData = (boot_data_t){
  */
 static void boot_data_pages_mp_set(hardened_bool_t perm) {
   for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
-    flash_ctrl_info_mp_set(kPages[i], (flash_ctrl_mp_t){
-                                          .read = perm,
-                                          .write = perm,
-                                          .erase = perm,
-                                      });
+    flash_ctrl_info_perms_set(kPages[i], (flash_ctrl_perms_t){
+                                             .read = perm,
+                                             .write = perm,
+                                             .erase = perm,
+                                         });
   }
 }
 

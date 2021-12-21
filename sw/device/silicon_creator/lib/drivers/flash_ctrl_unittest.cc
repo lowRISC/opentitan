@@ -278,7 +278,7 @@ struct InfoMpSetCase {
   /**
    * Access permissions to set.
    */
-  flash_ctrl_mp_t perms;
+  flash_ctrl_perms_t perms;
   /**
    * Expected value to be read from the config register.
    */
@@ -300,7 +300,7 @@ TEST_P(FlashCtrlInfoMpSetTest, InfoMpSet) {
                                 GetParam().write_val);
     EXPECT_SEC_WRITE_INCREMENT(1);
 
-    flash_ctrl_info_mp_set(it.first, GetParam().perms);
+    flash_ctrl_info_perms_set(it.first, GetParam().perms);
   }
 }
 

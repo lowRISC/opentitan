@@ -275,7 +275,7 @@ rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
 /**
  * A struct for specifying access permissions.
  */
-typedef struct flash_ctrl_mp {
+typedef struct flash_ctrl_perms {
   /**
    * Read.
    */
@@ -288,7 +288,7 @@ typedef struct flash_ctrl_mp {
    * Erase.
    */
   hardened_bool_t erase;
-} flash_ctrl_mp_t;
+} flash_ctrl_perms_t;
 
 /**
  * Sets access permissions for an info page.
@@ -299,8 +299,8 @@ typedef struct flash_ctrl_mp {
  * @param info_page An information page.
  * @param perms New permissions.
  */
-void flash_ctrl_info_mp_set(flash_ctrl_info_page_t info_page,
-                            flash_ctrl_mp_t perms);
+void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
+                            flash_ctrl_perms_t perms);
 
 typedef enum flash_ctrl_exec {
   kFlashCtrlExecDisable = kMultiBitBool4False,
