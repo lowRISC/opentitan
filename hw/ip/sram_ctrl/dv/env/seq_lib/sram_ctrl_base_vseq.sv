@@ -143,21 +143,30 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
   // is seen from the SRAM.
   // This is useful for when we are testing memory operations during terminal states
   // (such as during LC escalations or parity errors), which are expected to not respond at all.
+  //
+  // not_use_last_addr is used to constrain the address is not equal to max address.
   virtual task do_rand_ops(int num_ops,
                            bit blocking  = $urandom_range(0, 1),
                            bit abort     = 0,
                            bit en_ifetch = 0,
-                           bit wait_complete = 1);
+                           bit wait_complete = 1,
+                           bit not_use_last_addr = 0);
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
     mubi4_t instr_type;
+    bit [TL_AW-1:0] sram_addr_mask = cfg.ral_models[cfg.sram_ral_name].get_addr_mask();
+    bit [TL_AW-1:0] max_offset = {sram_addr_mask[TL_AW-1:2], 2'd0};
+
     repeat (num_ops) begin
       bit completed, saw_err;
       bit write = $urandom_range(0, 1);
 
       // full randomize addr and data
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
+                                         if (not_use_last_addr) {
+                                           (addr & sram_addr_mask) < max_offset;
+                                         })
 
       // never send InstrType transactions unless en_ifetch is enabled
       if (en_ifetch) instr_type = get_rand_mubi4_val();

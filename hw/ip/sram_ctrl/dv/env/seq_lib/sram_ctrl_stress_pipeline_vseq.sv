@@ -18,6 +18,11 @@ class sram_ctrl_stress_pipeline_vseq extends sram_ctrl_multiple_keys_vseq;
     };
   }
 
+  // Reduce iteration as stress_pipeline runs many operations in one iteration
+  constraint num_trans_c {
+    num_trans inside {[5:10]};
+  }
+
   virtual task pre_start();
 
     stress_pipeline = 1'b1;
