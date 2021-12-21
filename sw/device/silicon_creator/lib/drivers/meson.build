@@ -483,11 +483,13 @@ sw_silicon_creator_lib_driver_flash_ctrl = declare_dependency(
     'sw_silicon_creator_lib_driver_flash_ctrl',
     sources: [
       hw_ip_flash_ctrl_reg_h,
+      hw_ip_otp_ctrl_reg_h,
       'flash_ctrl.c',
     ],
     dependencies: [
       sw_silicon_creator_lib_base_abs_mmio,
       sw_silicon_creator_lib_base_sec_mmio,
+      sw_silicon_creator_lib_driver_otp,
     ],
   ),
 )
@@ -497,6 +499,7 @@ test('sw_silicon_creator_lib_driver_flash_ctrl_unittest', executable(
     sources: [
       'flash_ctrl_unittest.cc',
       hw_ip_flash_ctrl_reg_h,
+      hw_ip_otp_ctrl_reg_h,
       'flash_ctrl.c',
     ],
     dependencies: [

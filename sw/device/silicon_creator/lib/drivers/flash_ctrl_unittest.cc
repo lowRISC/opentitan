@@ -9,14 +9,17 @@
 #include "sw/device/lib/base/testing/mock_mmio_test_utils.h"
 #include "sw/device/silicon_creator/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 namespace flash_ctrl_unittest {
 namespace {
 using ::testing::Each;
+using ::testing::Return;
 using ::testing::SizeIs;
 
 /**
@@ -57,6 +60,7 @@ class FlashCtrlTest : public mask_rom_test::MaskRomTest {
   uint32_t base_ = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR;
   mask_rom_test::MockAbsMmio mmio_;
   mask_rom_test::MockSecMmio sec_mmio_;
+  mask_rom_test::MockOtp otp_;
 };
 
 class InfoPagesTest : public FlashCtrlTest {};
@@ -94,18 +98,102 @@ TEST_F(InfoPagesTest, PageIndices) {
   }
 }
 
-class InitTest : public FlashCtrlTest {};
+struct InitCase {
+  /**
+   * Configuration settings to be read from OTP.
+   */
+  flash_ctrl_cfg_t cfg;
+  /**
+   * Expected value to be written to the info config register.
+   */
+  uint32_t info_write_val;
+  /**
+   * Expected value to be written to the data config register.
+   */
+  uint32_t data_write_val;
+};
 
-TEST_F(InitTest, Initialize) {
+class InitTest : public FlashCtrlTest,
+                 public testing::WithParamInterface<InitCase> {};
+
+uint32_t CfgToOtp(flash_ctrl_cfg_t cfg) {
+  uint32_t val = bitfield_field32_write(0, FLASH_CTRL_OTP_FIELD_SCRAMBLING,
+                                        cfg.scrambling);
+  val = bitfield_field32_write(val, FLASH_CTRL_OTP_FIELD_ECC, cfg.ecc);
+  val = bitfield_field32_write(val, FLASH_CTRL_OTP_FIELD_HE, cfg.he);
+  return val;
+}
+
+TEST_P(InitTest, Initialize) {
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
+
   auto info_page = InfoPages().at(kFlashCtrlInfoPageCreatorSecret);
   EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
   EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
   EXPECT_SEC_WRITE_INCREMENT(2);
 
+  EXPECT_CALL(
+      otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET))
+      .WillOnce(Return(CfgToOtp(GetParam().cfg)));
+  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, 0);
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+      GetParam().data_write_val);
+  EXPECT_SEC_WRITE_INCREMENT(1);
+
+  EXPECT_CALL(
+      otp_,
+      read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET))
+      .WillOnce(Return(CfgToOtp(GetParam().cfg)));
+  info_page = InfoPages().at(kFlashCtrlInfoPageBootData0);
+  EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0);
+  EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset,
+                              GetParam().info_write_val);
+  EXPECT_SEC_WRITE_INCREMENT(1);
+  info_page = InfoPages().at(kFlashCtrlInfoPageBootData1);
+  EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0);
+  EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset,
+                              GetParam().info_write_val);
+  EXPECT_SEC_WRITE_INCREMENT(1);
+
   flash_ctrl_init();
 }
+
+INSTANTIATE_TEST_SUITE_P(AllCases, InitTest,
+                         testing::Values(
+                             // Scrambling.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8False},
+                                 .info_write_val = 0x11,
+                                 .data_write_val = 0x8,
+                             },
+                             // ECC.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_write_val = 0x21,
+                                 .data_write_val = 0x10,
+                             },
+                             // High endurance.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8True},
+                                 .info_write_val = 0x41,
+                                 .data_write_val = 0x20,
+                             },
+                             // Scrambling and ECC.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_write_val = 0x31,
+                                 .data_write_val = 0x18,
+                             }));
 
 class StatusCheckTest : public FlashCtrlTest {};
 

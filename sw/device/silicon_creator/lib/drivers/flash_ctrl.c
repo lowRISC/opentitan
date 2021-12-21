@@ -11,10 +11,12 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 // Values of `flash_ctrl_partition_t` constants must be distinct from each
 // other, and `kFlashCtrlRegionInfo* >> 1` should give the correct
@@ -279,10 +281,31 @@ static void page_lockdown(flash_ctrl_info_page_t info_page) {
 void flash_ctrl_init(void) {
   // Initialize the flash controller.
   abs_mmio_write32(kBase + FLASH_CTRL_INIT_REG_OFFSET,
-                   bitfield_bit32_write(0u, FLASH_CTRL_INIT_VAL_BIT, true));
+                   bitfield_bit32_write(0, FLASH_CTRL_INIT_VAL_BIT, true));
   // Disable all access to the silicon creator secret info page.
   page_lockdown(kFlashCtrlInfoPageCreatorSecret);
   sec_mmio_write_increment(2);
+  // Configure default scrambling, ECC, and HE settings for the data partition.
+  uint32_t otp_val =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+  flash_ctrl_cfg_t data_default_cfg = {
+      .scrambling =
+          bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
+      .ecc = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
+      .he = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE),
+  };
+  flash_ctrl_data_default_cfg_set(data_default_cfg);
+  // Configure scrambling, ECC, and HE for `boot_data` pages.
+  otp_val =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET);
+  flash_ctrl_cfg_t boot_data_cfg = {
+      .scrambling =
+          bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
+      .ecc = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
+      .he = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE),
+  };
+  flash_ctrl_info_cfg_set(kFlashCtrlInfoPageBootData0, boot_data_cfg);
+  flash_ctrl_info_cfg_set(kFlashCtrlInfoPageBootData1, boot_data_cfg);
 }
 
 void flash_ctrl_status_get(flash_ctrl_status_t *status) {

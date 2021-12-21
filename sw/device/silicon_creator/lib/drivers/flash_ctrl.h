@@ -4,6 +4,8 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_FLASH_CTRL_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_FLASH_CTRL_H_
 
+#include <limits.h>
+
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/multibits.h"
@@ -126,6 +128,19 @@ typedef enum flash_ctrl_info_page {
 #define FLASH_CTRL_INFO_PAGE_FIELD_PARTITION \
   ((bitfield_field32_t){.mask = 0x7, .index = 4})
 #define FLASH_CTRL_INFO_PAGE_BIT_BANK 7
+
+/**
+ * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
+ * `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP items.
+ *
+ * Defined here to be able to use in tests.
+ */
+#define FLASH_CTRL_OTP_FIELD_SCRAMBLING \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
+#define FLASH_CTRL_OTP_FIELD_ECC \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
+#define FLASH_CTRL_OTP_FIELD_HE \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 2 }
 
 /**
  * Kicks of the initialization of the flash controller.
