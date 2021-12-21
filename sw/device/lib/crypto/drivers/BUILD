@@ -17,3 +17,13 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "otbn",
+    srcs = ["otbn.c"],
+    hdrs = ["otbn.h"],
+    deps = [
+        "//hw/ip/otbn/data:otbn_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base",
+    ],
+)
