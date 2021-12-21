@@ -127,7 +127,7 @@ class alert_monitor extends alert_esc_base_monitor;
               req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
           if (!under_reset && !cfg.en_alert_lpg) begin
             alert_esc_port.write(req);
-            if (cfg.en_cov && cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
+            if (cfg.en_cov && cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.alert_esc_type);
 
             // Spurious alert error, can only happen one clock after timeout. Detail please see
             // discussion on Issue #2321.
@@ -194,7 +194,7 @@ class alert_monitor extends alert_esc_base_monitor;
           if (!under_reset && !cfg.en_alert_lpg) alert_esc_port.write(req);
           if (cfg.en_cov) begin
             cov.m_alert_handshake_complete_cg.sample(req.alert_esc_type, req.alert_handshake_sta);
-            if (cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
+            if (cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.alert_esc_type);
           end
         end
       end

@@ -52,8 +52,8 @@ As similar with HMAC, KMAC HWIP also has a message FIFO (MSG_FIFO) whose depth w
 Based on the given criteria, the MSG_FIFO depth was determined to store the incoming message while the SHA3 core is in computation.
 
 The MSG_FIFO has a packer in front.
-It packs any partial writes into the size of inernal datapath (64bit) and stores in MSG_FIFO.
-It gives some freedome to the software not requiring to align the messages.
+It packs any partial writes into the size of internal datapath (64bit) and stores in MSG_FIFO.
+It frees the software from having to align the messages.
 It also doesn't need the message length information.
 
 The fed messages go into the KMAC core regardless of KMAC enabled or not.
@@ -263,7 +263,7 @@ The refresh does not block the internal entropy expansion operation.
 
 ### Error Report
 
-This section explains the errors KMAC HWIP raises during the hasing operations, their meanings, and the error handling process.
+This section explains the errors KMAC HWIP raises during the hashing operations, their meanings, and the error handling process.
 
 KMAC HWIP has the error checkers in its internal datapath.
 If the checkers detect errors, whether they are triggered by the SW mis-configure, or HW malfunctions, they report the error to {{< regref "ERR_CODE" >}} and raise an `kmac_error` interrupt.
@@ -349,7 +349,7 @@ The SW may get the incorrect signature value.
 #### SwCmdSequence (0x08)
 
 The KMAC_ERRCHK module checks the SW issued commands if it follows the guideline.
-If the SW issues the command that is not relavant to the current context, the module reports the `SwCmdSequence` error.
+If the SW issues the command that is not relevant to the current context, the module reports the `SwCmdSequence` error.
 The lower 3bits of the {{< regref "ERR_CODE" >}} contains the received command.
 
 This error, however, does not stop the KMAC HWIP.
@@ -371,7 +371,7 @@ At first, the software configures {{< regref "CFG.kmac_en" >}} for KMAC operatio
 If KMAC is enabled, the software should configure {{< regref "CFG.mode" >}} to cSHAKE and {{< regref "CFG.kstrength" >}} to 128 or 256 bit security strength.
 The software also updates {{< regref "PREFIX" >}} registers if cSHAKE mode is used.
 Current design does not convert cSHAKE mode to SHAKE even if {{< regref "PREFIX" >}} is empty string.
-It is the software's responsiblity to change the {{< regref "CFG.mode" >}} to SHAKE in case of empty {{< regref "PREFIX" >}}.
+It is the software's responsibility to change the {{< regref "CFG.mode" >}} to SHAKE in case of empty {{< regref "PREFIX" >}}.
 The KMAC/SHA3 HWIP uses {{< regref "PREFIX" >}} registers as it is.
 It means that the software should update {{< regref "PREFIX" >}} with encoded values.
 

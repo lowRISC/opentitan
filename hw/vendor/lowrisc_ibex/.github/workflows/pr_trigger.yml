@@ -1,0 +1,25 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: pr-trigger
+
+on:
+  pull_request:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Copy event file
+        run: cp "$GITHUB_EVENT_PATH" ./event.json
+
+      # If this workflow is triggered by a PR from a fork
+      # it won't have sufficient access rights to make a review
+      # so we just save the file needed to do the review
+      # in a context with proper access rights
+      - name: Upload event file as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: event.json
+          path: event.json

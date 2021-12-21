@@ -321,8 +321,6 @@ module otbn_top_sim (
     .status_o              ( ),
     .insn_cnt_o            ( otbn_model_insn_cnt ),
 
-    .invalidate_imem_i     ( 1'b0 ),
-
     .keymgr_key_i          ( keymgr_key),
 
     .done_rr_o             ( otbn_model_done_rr ),

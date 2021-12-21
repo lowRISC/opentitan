@@ -75,7 +75,7 @@ module tb;
                           .path  (`DV_STRINGIFY(`ROM_CTRL_MEM_HIER)),
                           .depth ($size(`ROM_CTRL_MEM_HIER)),
                           .n_bits($bits(`ROM_CTRL_MEM_HIER)),
-                          .err_detection_scheme(mem_bkdr_util_pkg::Ecc_39_32));
+                          .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();

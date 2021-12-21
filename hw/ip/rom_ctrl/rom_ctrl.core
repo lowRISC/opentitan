@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:buf
       - lowrisc:prim:cipher
       - lowrisc:prim:rom_adv
+      - lowrisc:prim:sparse_fsm
       - lowrisc:prim:subreg
       - lowrisc:prim:util
       - lowrisc:ip:kmac_pkg

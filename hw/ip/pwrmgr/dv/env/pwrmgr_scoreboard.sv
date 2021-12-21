@@ -74,29 +74,42 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
       end
   endtask
 
-  // Resets are triggered without deep sleep at this point.
-  // TODO(maturana) Figure out how to determine a reset triggered while in sleep mode.
+  local task sample_reset_coverage(bit sleep);
+    cov.hw_reset_0_cg.sample(cfg.pwrmgr_vif.rstreqs_i[0], cfg.pwrmgr_vif.reset_en[0], sleep);
+    cov.hw_reset_1_cg.sample(cfg.pwrmgr_vif.rstreqs_i[1], cfg.pwrmgr_vif.reset_en[1], sleep);
+    cov.rstmgr_sw_reset_cg.sample(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True);
+    cov.main_power_reset_cg.sample(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx],
+                                   sleep);
+    cov.esc_reset_cg.sample(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx], sleep);
+    `uvm_info(`gfn, $sformatf(
+              {
+                "reset_cg sample with hw_resets=%b, hw_resets_en=%b, ",
+                "esc_rst=%b, main_pwr_rst=%b, sw_rst=%b, sleep=%b"
+              },
+              cfg.pwrmgr_vif.rstreqs_i,
+              cfg.pwrmgr_vif.reset_en,
+              cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx],
+              cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx],
+              cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True,
+              sleep
+              ), UVM_MEDIUM)
+  endtask
+
   task reset_coverage_collector();
-    forever
-      @(posedge cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::HwReq) begin
-        if (cfg.en_cov) begin
-          cov.reset_cg.sample(
-              .hw_resets(cfg.pwrmgr_vif.rstreqs_i), .hw_resets_en(cfg.pwrmgr_vif.reset_en),
-              .esc_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx]),
-              .main_pwr_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx]),
-              .sw_rst(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True), .sleep(1'b0));
+    fork
+      forever
+        @(posedge cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::HwReq) begin
+          if (cfg.en_cov) begin
+            sample_reset_coverage(.sleep(1'b0));
+          end
         end
-      end
-    forever
-      @(posedge cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateLowPower) begin
-        if (cfg.en_cov) begin
-          cov.reset_cg.sample(
-              .hw_resets(cfg.pwrmgr_vif.rstreqs_i), .hw_resets_en(cfg.pwrmgr_vif.reset_en),
-              .esc_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx]),
-              .main_pwr_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx]),
-              .sw_rst(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True), .sleep(1'b1));
+      forever
+        @(posedge cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateLowPower) begin
+          if (cfg.en_cov) begin
+            sample_reset_coverage(.sleep(1'b1));
+          end
         end
-      end
+    join_none
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);

@@ -495,6 +495,25 @@ sw_tests += {
   }
 }
 
+kmac_app_rom_test_lib = declare_dependency(
+  link_with: static_library(
+    'kmac_app_rom_test_lib',
+    sources: [
+      hw_ip_rom_ctrl_reg_h,
+      'kmac_app_rom_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_rom_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+    ],
+  ),
+)
+sw_tests += {
+  'kmac_app_rom_test': {
+    'library': kmac_app_rom_test_lib,
+  }
+}
 
 # Lifecycle Controller Tests
 lc_ctrl_otp_hw_cfg_test_lib = declare_dependency(
@@ -736,7 +755,7 @@ sw_tests += {
 ###############################################################################
 # Build Targets
 ###############################################################################
-# (unsigned) test binaries loaded with ROM from sw/device/boot_rom/
+# (unsigned) test binaries loaded with ROM from sw/device/lib/testing/test_rom/
 foreach sw_test_name, sw_test_info : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
     sw_test_elf = executable(

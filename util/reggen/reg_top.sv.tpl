@@ -243,31 +243,25 @@ module ${mod_name} (
 
   // Create steering logic
   always_comb begin
-    reg_steer = ${num_dsp-1};       // Default set to register
-
-    // TODO: Can below codes be unique case () inside ?
+    unique case (${f'{tl_h2d_expr}.a_address[AW-1:0]'}) inside
   % for i,w in enumerate(rb.windows):
 <%
       base_addr = w.offset
       limit_addr = w.offset + w.size_in_bytes
-
-      hi_check = f'{tl_h2d_expr}.a_address[AW-1:0] < {limit_addr}'
-      addr_checks = []
-      if base_addr > 0:
-        addr_checks.append(f'{tl_h2d_expr}.a_address[AW-1:0] >= {base_addr}')
-      if limit_addr < 2**addr_width:
-        addr_checks.append(f'{tl_h2d_expr}.a_address[AW-1:0] < {limit_addr}')
-
-      addr_test = ' && '.join(addr_checks)
+      assert (limit_addr-1 >= base_addr)
+      addr_test = f"[{base_addr}:{limit_addr-1}]"
 %>\
-      % if addr_test:
-    if (${addr_test}) begin
-      % endif
-      reg_steer = ${i};
-      % if addr_test:
-    end
-      % endif
+      ${addr_test}: begin
+        reg_steer = ${i};
+      end
   % endfor
+      default: begin
+        // Default set to register
+        reg_steer = ${num_dsp-1};
+      end
+    endcase
+
+    // Override this in case of an integrity error
     if (intg_err) begin
       reg_steer = ${num_dsp-1};
     end

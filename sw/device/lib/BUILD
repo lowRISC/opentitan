@@ -43,3 +43,13 @@ cc_library(
         "//sw/device/lib/base",
     ],
 )
+
+cc_library(
+    name = "irq",
+    srcs = ["irq.c"],
+    hdrs = ["irq.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base",
+    ],
+)

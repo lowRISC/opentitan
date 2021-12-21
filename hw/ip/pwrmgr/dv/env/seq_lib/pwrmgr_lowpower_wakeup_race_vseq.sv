@@ -87,7 +87,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
       // Now bring it back.
       cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
 
-     // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
+      // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
       // This read will not work in the chip, since the processor will be asleep.
       cfg.slow_clk_rst_vif.wait_clks(4);
       csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(wakeups & wakeups_en),

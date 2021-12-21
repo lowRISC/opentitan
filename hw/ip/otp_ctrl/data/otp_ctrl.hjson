@@ -186,13 +186,25 @@
     { name: "CreatorSwCfgAstCfgSize",
       desc: "Size of CREATOR_SW_CFG_AST_CFG",
       type: "int",
-      default: "256",
+      default: "128",
+      local: "true"
+    },
+    { name: "CreatorSwCfgAstInitEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_AST_INIT_EN",
+      type: "int",
+      default: "192",
+      local: "true"
+    },
+    { name: "CreatorSwCfgAstInitEnSize",
+      desc: "Size of CREATOR_SW_CFG_AST_INIT_EN",
+      type: "int",
+      default: "4",
       local: "true"
     },
     { name: "CreatorSwCfgRomExtSkuOffset",
       desc: "Offset of CREATOR_SW_CFG_ROM_EXT_SKU",
       type: "int",
-      default: "320",
+      default: "196",
       local: "true"
     },
     { name: "CreatorSwCfgRomExtSkuSize",
@@ -204,7 +216,7 @@
     { name: "CreatorSwCfgUseSwRsaVerifyOffset",
       desc: "Offset of CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
       type: "int",
-      default: "324",
+      default: "200",
       local: "true"
     },
     { name: "CreatorSwCfgUseSwRsaVerifySize",
@@ -216,7 +228,7 @@
     { name: "CreatorSwCfgKeyIsValidOffset",
       desc: "Offset of CREATOR_SW_CFG_KEY_IS_VALID",
       type: "int",
-      default: "328",
+      default: "204",
       local: "true"
     },
     { name: "CreatorSwCfgKeyIsValidSize",

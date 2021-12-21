@@ -66,6 +66,8 @@ package lc_ctrl_env_pkg;
     bit state_backdoor_err;
     // Invalid count      - via force in lc_ctrl_if
     bit count_backdoor_err;
+    // Send a transition request in post_trans state
+    bit post_trans_err;
     bit transition_err;
   } lc_ctrl_err_inj_t;
 
@@ -74,11 +76,14 @@ package lc_ctrl_env_pkg;
     LcCtrlTestInit,
     LcCtrlIterStart,
     LcCtrlDutReady,
+    LcCtrlBadNextState,
     LcCtrlWaitTransition,
     LcCtrlTransitionComplete,
     LcCtrlReadState1,
     LcCtrlEscalate,
     LcCtrlReadState2,
+    LcCtrlPostTransition,
+    LcCtrlPostTransTransitionComplete,
     LcCtrlPostStart
   } lc_ctrl_test_phase_e;
 
@@ -149,28 +154,35 @@ package lc_ctrl_env_pkg;
   typedef virtual pins_if #(LcPwrIfWidth) pwr_lc_vif;
   typedef virtual lc_ctrl_if lc_ctrl_vif;
 
+  // LC states which are valid for transitions
+  const
+  lc_state_e
+  LcValidStateForTrans[] = '{
+      LcStRaw,
+      LcStTestUnlocked0,
+      LcStTestLocked0,
+      LcStTestUnlocked1,
+      LcStTestLocked1,
+      LcStTestUnlocked2,
+      LcStTestLocked2,
+      LcStTestUnlocked3,
+      LcStTestLocked3,
+      LcStTestUnlocked4,
+      LcStTestLocked4,
+      LcStTestUnlocked5,
+      LcStTestLocked5,
+      LcStTestUnlocked6,
+      LcStTestLocked6,
+      LcStTestUnlocked7,
+      LcStDev,
+      LcStProd,
+      LcStProdEnd,
+      LcStRma
+  };
+
   // functions
   function automatic bit valid_state_for_trans(lc_state_e curr_state);
-    return (curr_state inside {LcStRaw,
-                               LcStTestUnlocked0,
-                               LcStTestLocked0,
-                               LcStTestUnlocked1,
-                               LcStTestLocked1,
-                               LcStTestUnlocked2,
-                               LcStTestLocked2,
-                               LcStTestUnlocked3,
-                               LcStTestLocked3,
-                               LcStTestUnlocked4,
-                               LcStTestLocked4,
-                               LcStTestUnlocked5,
-                               LcStTestLocked5,
-                               LcStTestUnlocked6,
-                               LcStTestLocked6,
-                               LcStTestUnlocked7,
-                               LcStDev,
-                               LcStProd,
-                               LcStProdEnd,
-                               LcStRma});
+    return (curr_state inside {LcValidStateForTrans});
   endfunction
 
   // verilog_format: off - avoid bad reformatting

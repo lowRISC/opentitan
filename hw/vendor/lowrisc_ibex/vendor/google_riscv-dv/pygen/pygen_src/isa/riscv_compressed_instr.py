@@ -223,6 +223,6 @@ class riscv_compressed_instr(riscv_instr):
     def get_c_opcode(self):
         pass
 
-    # TOD0
+    # TODO
     def get_func3(self):
         pass

@@ -85,6 +85,18 @@ unsigned otbn_model_step(OtbnModel *model, svLogic start, unsigned model_state,
 // integrity error. Returns 0 on success or -1 on failure.
 int otbn_model_invalidate_imem(OtbnModel *model);
 
+// Tell the model to mark all of DMEM as invalid so that any load causes an
+// integrity error. Returns 0 on success or -1 on failure.
+int otbn_model_invalidate_dmem(OtbnModel *model);
+
+// Step the CRC calculation for item
+//
+// state is an inout parameter and should be updated in-place. This is
+// a "pure" function: there isn't actually any model state that gets
+// updated by calling it. Returns 0 on success or -1 on failure.
+int otbn_model_step_crc(OtbnModel *model, svBitVecVal *item /* bit [47:0] */,
+                        svBitVecVal *state /* inout bit [31:0] */);
+
 // Flush any information in the model
 void otbn_model_reset(OtbnModel *model);
 

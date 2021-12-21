@@ -120,7 +120,7 @@ module otbn_rf_base
   assign rd_data_a_intg_o = pop_stack_a ? stack_data_intg : rd_data_a_raw_intg;
   assign rd_data_b_intg_o = pop_stack_b ? stack_data_intg : rd_data_b_raw_intg;
 
-  prim_secded_39_32_enc u_wr_data_intg_enc (
+  prim_secded_inv_39_32_enc u_wr_data_intg_enc (
     .data_i(wr_data_no_intg_i),
     .data_o(wr_data_intg_calc)
   );
@@ -148,7 +148,9 @@ module otbn_rf_base
   );
 
   if (RegFile == RegFileFF) begin : gen_rf_base_ff
-    otbn_rf_base_ff u_otbn_rf_base_inner (
+    otbn_rf_base_ff #(
+      .WordZeroVal(prim_secded_pkg::SecdedInv3932ZeroWord)
+    ) u_otbn_rf_base_inner (
       .clk_i,
       .rst_ni,
 
@@ -162,7 +164,9 @@ module otbn_rf_base
       .rd_data_b_o(rd_data_b_raw_intg)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_rf_base_fpga
-    otbn_rf_base_fpga u_otbn_rf_base_inner (
+    otbn_rf_base_fpga #(
+      .WordZeroVal(prim_secded_pkg::SecdedInv3932ZeroWord)
+    ) u_otbn_rf_base_inner (
       .clk_i,
       .rst_ni,
 
@@ -178,14 +182,14 @@ module otbn_rf_base
   end
 
   // Integrity decoders used to detect errors only, corrections (`syndrome_o`/`d_o`) are ignored
-  prim_secded_39_32_dec u_rd_data_a_intg_dec (
+  prim_secded_inv_39_32_dec u_rd_data_a_intg_dec (
     .data_i    (rd_data_a_intg_o),
     .data_o    (),
     .syndrome_o(),
     .err_o     (rd_data_a_err)
   );
 
-  prim_secded_39_32_dec u_rd_data_b_intg_dec (
+  prim_secded_inv_39_32_dec u_rd_data_b_intg_dec (
     .data_i    (rd_data_b_intg_o),
     .data_o    (),
     .syndrome_o(),

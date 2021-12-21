@@ -8,5 +8,6 @@
 
 set -e
 
+readonly REPO_TOP="$TEST_SRCDIR/$TEST_WORKSPACE"
 readonly OPENTITANTOOL="sw/host/opentitantool/opentitantool"
 RUST_BACKTRACE=1 ${OPENTITANTOOL} "$@"

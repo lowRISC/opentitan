@@ -24,7 +24,7 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
 
     assign rsp = extract_d2h_rsp_intg(tl_i);
 
-    prim_secded_64_57_enc u_rsp_gen (
+    prim_secded_inv_64_57_enc u_rsp_gen (
       .data_i(D2HRspMaxWidth'(rsp)),
       .data_o({rsp_intg, unused_payload})
     );

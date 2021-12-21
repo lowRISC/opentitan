@@ -263,6 +263,8 @@
                   Write 1 to request memory init.
                   The init mechanism uses an LFSR that is seeded with a part of the nonce supplied when requesting a scrambling key.
                   Once seeded, the memory is initialized with pseudo-random data pulled from the LFSR.
+                  Note that !!RENEW_SCR_KEY takes priority when writing 1 to both !!RENEW_SCR_KEY and !!INIT with the same write transaction.
+                  This means that the key request will complete first, followed by SRAM initialization.
                   '''
           },
         ]

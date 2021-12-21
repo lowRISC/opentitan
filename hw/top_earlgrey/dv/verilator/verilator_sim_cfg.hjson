@@ -56,7 +56,7 @@
   run_modes: [
     {
       name: sw_test_mode
-      sw_images: ["sw/device/boot_rom/boot_rom:0",
+      sw_images: ["sw/device/lib/testing/test_rom/test_rom:0",
                   "sw/device/otp_img/otp_img:3"]
       run_opts: [
         // The following shell snippet converts the SW images specification to what's
@@ -91,7 +91,7 @@
   //
   // Each entry in `sw_images` is followed by an index separated with ':' which
   // is used by the testbench to know what type of image is it:
-  // - 0 for boot_rom,
+  // - 0 for boot ROM,
   // - 1 for SW test,
   // - 2 for OTBN test,
   // - 3 for OTP and so on

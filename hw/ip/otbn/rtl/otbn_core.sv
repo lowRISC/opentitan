@@ -20,24 +20,24 @@ module otbn_core
   // Size of the data memory, in bytes
   parameter int DmemSizeByte = 4096,
   // Enable internal secure wipe
-  parameter bit SecWipeEn  = 1'b0,
+  parameter bit SecWipeEn = 1'b0,
 
   // Default seed for URND PRNG
-  parameter urnd_prng_seed_t       RndCnstUrndPrngSeed      = RndCnstUrndPrngSeedDefault,
+  parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
-)(
-  input  logic  clk_i,
-  input  logic  rst_ni,
+) (
+  input logic clk_i,
+  input logic rst_ni,
 
-  input  logic  start_i, // start the operation
-  output logic  done_o,  // operation done
-  output logic  locked_o, // otbn locked, reset required to perform further commands
+  input  logic start_i,  // start the operation
+  output logic done_o,   // operation done
+  output logic locked_o, // otbn locked, reset required to perform further commands
 
-  output err_bits_t err_bits_o, // valid when done_o is asserted
-  output logic  recoverable_err_o,
-  output logic  reg_intg_violation_o,
+  output err_bits_t err_bits_o,  // valid when done_o is asserted
+  output logic recoverable_err_o,
+  output logic reg_intg_violation_o,
 
   // Instruction memory (IMEM)
   output logic                     imem_req_o,
@@ -45,7 +45,7 @@ module otbn_core
   input  logic [38:0]              imem_rdata_i,
   input  logic                     imem_rvalid_i,
 
-  output logic                     insn_fetch_err_o,
+  output logic insn_fetch_err_o,
 
   // Data memory (DMEM)
   output logic                        dmem_req_o,
@@ -68,24 +68,24 @@ module otbn_core
   input  logic                    edn_urnd_ack_i,
   input  logic [EdnDataWidth-1:0] edn_urnd_data_i,
 
-  output logic [31:0]             insn_cnt_o,
-  input  logic                    insn_cnt_clear_i,
+  output logic [31:0] insn_cnt_o,
+  input  logic        insn_cnt_clear_i,
 
   // An integrity check on an incoming bus transaction failed. Results in a fatal error.
-  input  logic                    bus_intg_violation_i,
+  input logic bus_intg_violation_i,
 
   // Asserted by system when bus tries to access OTBN memories whilst OTBN is active. Results in a
   // fatal error.
-  input  logic                    illegal_bus_access_i,
+  input logic illegal_bus_access_i,
 
   // Indicates an incoming escalation from the life cycle manager. Results in a fatal error.
-  input  logic                    lifecycle_escalation_i,
+  input logic lifecycle_escalation_i,
 
   // When set software errors become fatal errors.
-  input  logic                    software_errs_fatal_i,
+  input logic software_errs_fatal_i,
 
-  input  logic [1:0]                       sideload_key_shares_valid_i,
-  input  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
+  input logic [1:0]                       sideload_key_shares_valid_i,
+  input logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
 );
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -224,28 +224,28 @@ module otbn_core
 
     .start_i,
 
-    .controller_start_o (controller_start),
+    .controller_start_o(controller_start),
 
-    .urnd_reseed_req_o  (urnd_reseed_req),
-    .urnd_reseed_busy_i (urnd_reseed_busy),
-    .urnd_advance_o     (urnd_advance),
+    .urnd_reseed_req_o (urnd_reseed_req),
+    .urnd_reseed_busy_i(urnd_reseed_busy),
+    .urnd_advance_o    (urnd_advance),
 
-    .start_secure_wipe_i (start_secure_wipe),
-    .secure_wipe_running_o (secure_wipe_running),
+    .start_secure_wipe_i  (start_secure_wipe),
+    .secure_wipe_running_o(secure_wipe_running),
     .done_o,
 
-    .sec_wipe_wdr_o (sec_wipe_wdr),
+    .sec_wipe_wdr_o      (sec_wipe_wdr),
     .sec_wipe_wdr_urnd_o (sec_wipe_wdr_urnd),
-    .sec_wipe_base_o (sec_wipe_base),
-    .sec_wipe_base_urnd_o (sec_wipe_base_urnd),
-    .sec_wipe_addr_o (sec_wipe_addr),
+    .sec_wipe_base_o     (sec_wipe_base),
+    .sec_wipe_base_urnd_o(sec_wipe_base_urnd),
+    .sec_wipe_addr_o     (sec_wipe_addr),
 
-    .sec_wipe_acc_urnd_o (sec_wipe_acc_urnd),
-    .sec_wipe_mod_urnd_o (sec_wipe_mod_urnd),
-    .sec_wipe_zero_o (sec_wipe_zero),
+    .sec_wipe_acc_urnd_o(sec_wipe_acc_urnd),
+    .sec_wipe_mod_urnd_o(sec_wipe_mod_urnd),
+    .sec_wipe_zero_o    (sec_wipe_zero),
 
-    .ispr_init_o   (ispr_init),
-    .state_reset_o (state_reset)
+    .ispr_init_o  (ispr_init),
+    .state_reset_o(state_reset)
   );
 
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
@@ -268,21 +268,21 @@ module otbn_core
     .imem_rvalid_i,
 
     // Instruction to fetch
-    .insn_fetch_req_addr_i  (insn_fetch_req_addr),
-    .insn_fetch_req_valid_i (insn_fetch_req_valid),
+    .insn_fetch_req_addr_i (insn_fetch_req_addr),
+    .insn_fetch_req_valid_i(insn_fetch_req_valid),
 
     // Fetched instruction
-    .insn_fetch_resp_addr_o  (insn_fetch_resp_addr),
-    .insn_fetch_resp_valid_o (insn_fetch_resp_valid),
-    .insn_fetch_resp_data_o  (insn_fetch_resp_data),
-    .insn_fetch_resp_clear_i (insn_fetch_resp_clear),
-    .insn_fetch_err_o        (insn_fetch_err),
+    .insn_fetch_resp_addr_o (insn_fetch_resp_addr),
+    .insn_fetch_resp_valid_o(insn_fetch_resp_valid),
+    .insn_fetch_resp_data_o (insn_fetch_resp_data),
+    .insn_fetch_resp_clear_i(insn_fetch_resp_clear),
+    .insn_fetch_err_o       (insn_fetch_err),
 
-    .prefetch_en_i              (prefetch_en),
-    .prefetch_loop_active_i     (prefetch_loop_active),
-    .prefetch_loop_iterations_i (prefetch_loop_iterations),
-    .prefetch_loop_end_addr_i   (prefetch_loop_end_addr),
-    .prefetch_loop_jump_addr_i  (prefetch_loop_jump_addr)
+    .prefetch_en_i             (prefetch_en),
+    .prefetch_loop_active_i    (prefetch_loop_active),
+    .prefetch_loop_iterations_i(prefetch_loop_iterations),
+    .prefetch_loop_end_addr_i  (prefetch_loop_end_addr),
+    .prefetch_loop_jump_addr_i (prefetch_loop_jump_addr)
   );
 
   assign insn_fetch_err_o = insn_fetch_err;
@@ -294,15 +294,15 @@ module otbn_core
     .rst_ni,
 
     // Instruction to decode
-    .insn_fetch_resp_data_i  (insn_fetch_resp_data),
-    .insn_fetch_resp_valid_i (insn_fetch_resp_valid),
+    .insn_fetch_resp_data_i (insn_fetch_resp_data),
+    .insn_fetch_resp_valid_i(insn_fetch_resp_valid),
 
     // Decoded instruction
-    .insn_valid_o      (insn_valid),
-    .insn_illegal_o    (insn_illegal),
-    .insn_dec_base_o   (insn_dec_base),
-    .insn_dec_bignum_o (insn_dec_bignum),
-    .insn_dec_shared_o (insn_dec_shared)
+    .insn_valid_o     (insn_valid),
+    .insn_illegal_o   (insn_illegal),
+    .insn_dec_base_o  (insn_dec_base),
+    .insn_dec_bignum_o(insn_dec_bignum),
+    .insn_dec_shared_o(insn_dec_shared)
   );
 
   // Controller: coordinate between functional units, prepare their inputs (e.g. by muxing between
@@ -315,7 +315,7 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .start_i (controller_start),
+    .start_i(controller_start),
     .locked_o,
 
     .err_bits_o,
@@ -323,101 +323,101 @@ module otbn_core
     .reg_intg_violation_o,
 
     // Next instruction selection (to instruction fetch)
-    .insn_fetch_req_addr_o   (insn_fetch_req_addr),
-    .insn_fetch_req_valid_o  (insn_fetch_req_valid),
-    .insn_fetch_resp_clear_o (insn_fetch_resp_clear),
+    .insn_fetch_req_addr_o  (insn_fetch_req_addr),
+    .insn_fetch_req_valid_o (insn_fetch_req_valid),
+    .insn_fetch_resp_clear_o(insn_fetch_resp_clear),
     // Error from fetch requested last cycle
     .insn_fetch_err_i       (insn_fetch_err),
 
     // The current instruction
-    .insn_valid_i   (insn_valid),
-    .insn_illegal_i (insn_illegal),
-    .insn_addr_i    (insn_addr),
+    .insn_valid_i  (insn_valid),
+    .insn_illegal_i(insn_illegal),
+    .insn_addr_i   (insn_addr),
 
     // Decoded instruction from decoder
-    .insn_dec_base_i   (insn_dec_base),
-    .insn_dec_bignum_i (insn_dec_bignum),
-    .insn_dec_shared_i (insn_dec_shared),
+    .insn_dec_base_i  (insn_dec_base),
+    .insn_dec_bignum_i(insn_dec_bignum),
+    .insn_dec_shared_i(insn_dec_shared),
 
     // To/from base register file
-    .rf_base_wr_addr_o          (rf_base_wr_addr_ctrl),
-    .rf_base_wr_en_o            (rf_base_wr_en_ctrl),
-    .rf_base_wr_commit_o        (rf_base_wr_commit_ctrl),
-    .rf_base_wr_data_no_intg_o  (rf_base_wr_data_no_intg_ctrl),
-    .rf_base_wr_data_intg_o     (rf_base_wr_data_intg),
-    .rf_base_wr_data_intg_sel_o (rf_base_wr_data_intg_sel),
-    .rf_base_rd_addr_a_o        (rf_base_rd_addr_a),
-    .rf_base_rd_en_a_o          (rf_base_rd_en_a),
-    .rf_base_rd_data_a_intg_i   (rf_base_rd_data_a_intg),
-    .rf_base_rd_addr_b_o        (rf_base_rd_addr_b),
-    .rf_base_rd_en_b_o          (rf_base_rd_en_b),
-    .rf_base_rd_data_b_intg_i   (rf_base_rd_data_b_intg),
-    .rf_base_rd_commit_o        (rf_base_rd_commit),
-    .rf_base_call_stack_err_i   (rf_base_call_stack_err),
-    .rf_base_rd_data_err_i      (rf_base_rd_data_err),
+    .rf_base_wr_addr_o         (rf_base_wr_addr_ctrl),
+    .rf_base_wr_en_o           (rf_base_wr_en_ctrl),
+    .rf_base_wr_commit_o       (rf_base_wr_commit_ctrl),
+    .rf_base_wr_data_no_intg_o (rf_base_wr_data_no_intg_ctrl),
+    .rf_base_wr_data_intg_o    (rf_base_wr_data_intg),
+    .rf_base_wr_data_intg_sel_o(rf_base_wr_data_intg_sel),
+    .rf_base_rd_addr_a_o       (rf_base_rd_addr_a),
+    .rf_base_rd_en_a_o         (rf_base_rd_en_a),
+    .rf_base_rd_data_a_intg_i  (rf_base_rd_data_a_intg),
+    .rf_base_rd_addr_b_o       (rf_base_rd_addr_b),
+    .rf_base_rd_en_b_o         (rf_base_rd_en_b),
+    .rf_base_rd_data_b_intg_i  (rf_base_rd_data_b_intg),
+    .rf_base_rd_commit_o       (rf_base_rd_commit),
+    .rf_base_call_stack_err_i  (rf_base_call_stack_err),
+    .rf_base_rd_data_err_i     (rf_base_rd_data_err),
 
     // To/from bignunm register file
-    .rf_bignum_wr_addr_o          (rf_bignum_wr_addr_ctrl),
-    .rf_bignum_wr_en_o            (rf_bignum_wr_en_ctrl),
-    .rf_bignum_wr_data_no_intg_o  (rf_bignum_wr_data_no_intg_ctrl),
-    .rf_bignum_wr_data_intg_o     (rf_bignum_wr_data_intg),
-    .rf_bignum_wr_data_intg_sel_o (rf_bignum_wr_data_intg_sel),
-    .rf_bignum_rd_addr_a_o        (rf_bignum_rd_addr_a),
-    .rf_bignum_rd_en_a_o          (rf_bignum_rd_en_a),
-    .rf_bignum_rd_data_a_intg_i   (rf_bignum_rd_data_a_intg),
-    .rf_bignum_rd_addr_b_o        (rf_bignum_rd_addr_b),
-    .rf_bignum_rd_en_b_o          (rf_bignum_rd_en_b),
-    .rf_bignum_rd_data_b_intg_i   (rf_bignum_rd_data_b_intg),
-    .rf_bignum_rd_data_err_i      (rf_bignum_rd_data_err),
+    .rf_bignum_wr_addr_o         (rf_bignum_wr_addr_ctrl),
+    .rf_bignum_wr_en_o           (rf_bignum_wr_en_ctrl),
+    .rf_bignum_wr_data_no_intg_o (rf_bignum_wr_data_no_intg_ctrl),
+    .rf_bignum_wr_data_intg_o    (rf_bignum_wr_data_intg),
+    .rf_bignum_wr_data_intg_sel_o(rf_bignum_wr_data_intg_sel),
+    .rf_bignum_rd_addr_a_o       (rf_bignum_rd_addr_a),
+    .rf_bignum_rd_en_a_o         (rf_bignum_rd_en_a),
+    .rf_bignum_rd_data_a_intg_i  (rf_bignum_rd_data_a_intg),
+    .rf_bignum_rd_addr_b_o       (rf_bignum_rd_addr_b),
+    .rf_bignum_rd_en_b_o         (rf_bignum_rd_en_b),
+    .rf_bignum_rd_data_b_intg_i  (rf_bignum_rd_data_b_intg),
+    .rf_bignum_rd_data_err_i     (rf_bignum_rd_data_err),
 
     // To/from base ALU
-    .alu_base_operation_o         (alu_base_operation),
-    .alu_base_comparison_o        (alu_base_comparison),
-    .alu_base_operation_result_i  (alu_base_operation_result),
-    .alu_base_comparison_result_i (alu_base_comparison_result),
+    .alu_base_operation_o        (alu_base_operation),
+    .alu_base_comparison_o       (alu_base_comparison),
+    .alu_base_operation_result_i (alu_base_operation_result),
+    .alu_base_comparison_result_i(alu_base_comparison_result),
 
     // To/from bignum ALU
-    .alu_bignum_operation_o         (alu_bignum_operation),
-    .alu_bignum_operation_result_i  (alu_bignum_operation_result),
-    .alu_bignum_selection_flag_i    (alu_bignum_selection_flag),
+    .alu_bignum_operation_o       (alu_bignum_operation),
+    .alu_bignum_operation_result_i(alu_bignum_operation_result),
+    .alu_bignum_selection_flag_i  (alu_bignum_selection_flag),
 
     // To/from bignum MAC
-    .mac_bignum_operation_o        (mac_bignum_operation),
-    .mac_bignum_operation_result_i (mac_bignum_operation_result),
-    .mac_bignum_en_o               (mac_bignum_en),
+    .mac_bignum_operation_o       (mac_bignum_operation),
+    .mac_bignum_operation_result_i(mac_bignum_operation_result),
+    .mac_bignum_en_o              (mac_bignum_en),
 
     // To/from LSU (base and bignum)
-    .lsu_load_req_o     (lsu_load_req),
-    .lsu_store_req_o    (lsu_store_req),
-    .lsu_req_subset_o   (lsu_req_subset),
-    .lsu_addr_o         (lsu_addr),
+    .lsu_load_req_o  (lsu_load_req),
+    .lsu_store_req_o (lsu_store_req),
+    .lsu_req_subset_o(lsu_req_subset),
+    .lsu_addr_o      (lsu_addr),
 
-    .lsu_base_wdata_o   (lsu_base_wdata),
-    .lsu_bignum_wdata_o (lsu_bignum_wdata),
+    .lsu_base_wdata_o  (lsu_base_wdata),
+    .lsu_bignum_wdata_o(lsu_bignum_wdata),
 
-    .lsu_base_rdata_i   (lsu_base_rdata),
-    .lsu_bignum_rdata_i (lsu_bignum_rdata),
-    .lsu_rdata_err_i    (lsu_rdata_err),
+    .lsu_base_rdata_i  (lsu_base_rdata),
+    .lsu_bignum_rdata_i(lsu_bignum_rdata),
+    .lsu_rdata_err_i   (lsu_rdata_err),
 
     // Isprs read/write (base and bignum)
-    .ispr_addr_o         (ispr_addr),
-    .ispr_base_wdata_o   (ispr_base_wdata),
-    .ispr_base_wr_en_o   (ispr_base_wr_en),
-    .ispr_bignum_wdata_o (ispr_bignum_wdata),
-    .ispr_bignum_wr_en_o (ispr_bignum_wr_en),
-    .ispr_rdata_i        (ispr_rdata),
+    .ispr_addr_o        (ispr_addr),
+    .ispr_base_wdata_o  (ispr_base_wdata),
+    .ispr_base_wr_en_o  (ispr_base_wr_en),
+    .ispr_bignum_wdata_o(ispr_bignum_wdata),
+    .ispr_bignum_wr_en_o(ispr_bignum_wr_en),
+    .ispr_rdata_i       (ispr_rdata),
 
-    .rnd_req_o          (rnd_req),
-    .rnd_prefetch_req_o (rnd_prefetch_req),
-    .rnd_valid_i        (rnd_valid),
+    .rnd_req_o         (rnd_req),
+    .rnd_prefetch_req_o(rnd_prefetch_req),
+    .rnd_valid_i       (rnd_valid),
 
     // Secure wipe
-    .secure_wipe_running_i (secure_wipe_running),
-    .start_secure_wipe_o (start_secure_wipe),
-    .sec_wipe_zero_i (sec_wipe_zero),
+    .secure_wipe_running_i(secure_wipe_running),
+    .start_secure_wipe_o  (start_secure_wipe),
+    .sec_wipe_zero_i      (sec_wipe_zero),
 
-    .state_reset_i      (state_reset),
-    .insn_cnt_o         (insn_cnt),
+    .state_reset_i(state_reset),
+    .insn_cnt_o   (insn_cnt),
     .insn_cnt_clear_i,
     .bus_intg_violation_i,
     .illegal_bus_access_i,
@@ -426,11 +426,11 @@ module otbn_core
 
     .sideload_key_shares_valid_i,
 
-    .prefetch_en_o              (prefetch_en),
-    .prefetch_loop_active_o     (prefetch_loop_active),
-    .prefetch_loop_iterations_o (prefetch_loop_iterations),
-    .prefetch_loop_end_addr_o   (prefetch_loop_end_addr),
-    .prefetch_loop_jump_addr_o  (prefetch_loop_jump_addr)
+    .prefetch_en_o             (prefetch_en),
+    .prefetch_loop_active_o    (prefetch_loop_active),
+    .prefetch_loop_iterations_o(prefetch_loop_iterations),
+    .prefetch_loop_end_addr_o  (prefetch_loop_end_addr),
+    .prefetch_loop_jump_addr_o (prefetch_loop_jump_addr)
   );
 
   `ASSERT(InsnDataStableInStall, u_otbn_controller.state_q == OtbnStateStall |->
@@ -454,47 +454,47 @@ module otbn_core
     .dmem_rvalid_i,
     .dmem_rerror_i,
 
-    .lsu_load_req_i     (lsu_load_req),
-    .lsu_store_req_i    (lsu_store_req),
-    .lsu_req_subset_i   (lsu_req_subset),
-    .lsu_addr_i         (lsu_addr),
+    .lsu_load_req_i  (lsu_load_req),
+    .lsu_store_req_i (lsu_store_req),
+    .lsu_req_subset_i(lsu_req_subset),
+    .lsu_addr_i      (lsu_addr),
 
-    .lsu_base_wdata_i   (lsu_base_wdata),
-    .lsu_bignum_wdata_i (lsu_bignum_wdata),
+    .lsu_base_wdata_i  (lsu_base_wdata),
+    .lsu_bignum_wdata_i(lsu_bignum_wdata),
 
-    .lsu_base_rdata_o   (lsu_base_rdata),
-    .lsu_bignum_rdata_o (lsu_bignum_rdata),
-    .lsu_rdata_err_o    (lsu_rdata_err)
+    .lsu_base_rdata_o  (lsu_base_rdata),
+    .lsu_bignum_rdata_o(lsu_bignum_rdata),
+    .lsu_rdata_err_o   (lsu_rdata_err)
   );
 
   // Base Instruction Subset =======================================================================
 
   otbn_rf_base #(
-    .RegFile (RegFile)
+    .RegFile(RegFile)
   ) u_otbn_rf_base (
     .clk_i,
     .rst_ni,
 
-    .state_reset_i (state_reset),
-    .sec_wipe_stack_reset_i (sec_wipe_zero),
+    .state_reset_i         (state_reset),
+    .sec_wipe_stack_reset_i(sec_wipe_zero),
 
-    .wr_addr_i          (rf_base_wr_addr),
-    .wr_en_i            (rf_base_wr_en),
-    .wr_data_no_intg_i  (rf_base_wr_data_no_intg),
-    .wr_data_intg_i     (rf_base_wr_data_intg),
-    .wr_data_intg_sel_i (rf_base_wr_data_intg_sel),
-    .wr_commit_i        (rf_base_wr_commit),
+    .wr_addr_i         (rf_base_wr_addr),
+    .wr_en_i           (rf_base_wr_en),
+    .wr_data_no_intg_i (rf_base_wr_data_no_intg),
+    .wr_data_intg_i    (rf_base_wr_data_intg),
+    .wr_data_intg_sel_i(rf_base_wr_data_intg_sel),
+    .wr_commit_i       (rf_base_wr_commit),
 
-    .rd_addr_a_i      (rf_base_rd_addr_a),
-    .rd_en_a_i        (rf_base_rd_en_a),
-    .rd_data_a_intg_o (rf_base_rd_data_a_intg),
-    .rd_addr_b_i      (rf_base_rd_addr_b),
-    .rd_en_b_i        (rf_base_rd_en_b),
-    .rd_data_b_intg_o (rf_base_rd_data_b_intg),
-    .rd_commit_i      (rf_base_rd_commit),
+    .rd_addr_a_i     (rf_base_rd_addr_a),
+    .rd_en_a_i       (rf_base_rd_en_a),
+    .rd_data_a_intg_o(rf_base_rd_data_a_intg),
+    .rd_addr_b_i     (rf_base_rd_addr_b),
+    .rd_en_b_i       (rf_base_rd_en_b),
+    .rd_data_b_intg_o(rf_base_rd_data_b_intg),
+    .rd_commit_i     (rf_base_rd_commit),
 
-    .call_stack_err_o (rf_base_call_stack_err),
-    .rd_data_err_o    (rf_base_rd_data_err)
+    .call_stack_err_o(rf_base_call_stack_err),
+    .rd_data_err_o   (rf_base_rd_data_err)
   );
 
   assign rf_base_wr_addr         = sec_wipe_base ? sec_wipe_addr : rf_base_wr_addr_ctrl;
@@ -519,32 +519,32 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .operation_i         (alu_base_operation),
-    .comparison_i        (alu_base_comparison),
-    .operation_result_o  (alu_base_operation_result),
-    .comparison_result_o (alu_base_comparison_result)
+    .operation_i        (alu_base_operation),
+    .comparison_i       (alu_base_comparison),
+    .operation_result_o (alu_base_operation_result),
+    .comparison_result_o(alu_base_comparison_result)
   );
 
   otbn_rf_bignum #(
-    .RegFile (RegFile)
+    .RegFile(RegFile)
   ) u_otbn_rf_bignum (
     .clk_i,
     .rst_ni,
 
-    .wr_addr_i          (rf_bignum_wr_addr),
-    .wr_en_i            (rf_bignum_wr_en),
-    .wr_data_no_intg_i  (rf_bignum_wr_data_no_intg),
-    .wr_data_intg_i     (rf_bignum_wr_data_intg),
-    .wr_data_intg_sel_i (rf_bignum_wr_data_intg_sel),
+    .wr_addr_i         (rf_bignum_wr_addr),
+    .wr_en_i           (rf_bignum_wr_en),
+    .wr_data_no_intg_i (rf_bignum_wr_data_no_intg),
+    .wr_data_intg_i    (rf_bignum_wr_data_intg),
+    .wr_data_intg_sel_i(rf_bignum_wr_data_intg_sel),
 
-    .rd_addr_a_i      (rf_bignum_rd_addr_a),
-    .rd_en_a_i        (rf_bignum_rd_en_a),
-    .rd_data_a_intg_o (rf_bignum_rd_data_a_intg),
-    .rd_addr_b_i      (rf_bignum_rd_addr_b),
-    .rd_en_b_i        (rf_bignum_rd_en_b),
-    .rd_data_b_intg_o (rf_bignum_rd_data_b_intg),
+    .rd_addr_a_i     (rf_bignum_rd_addr_a),
+    .rd_en_a_i       (rf_bignum_rd_en_a),
+    .rd_data_a_intg_o(rf_bignum_rd_data_a_intg),
+    .rd_addr_b_i     (rf_bignum_rd_addr_b),
+    .rd_en_b_i       (rf_bignum_rd_en_b),
+    .rd_data_b_intg_o(rf_bignum_rd_data_b_intg),
 
-    .rd_data_err_o (rf_bignum_rd_data_err)
+    .rd_data_err_o(rf_bignum_rd_data_err)
   );
 
   assign rf_bignum_wr_addr         = sec_wipe_wdr ? sec_wipe_addr : rf_bignum_wr_addr_ctrl;
@@ -568,30 +568,30 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .operation_i              (alu_bignum_operation),
-    .operation_result_o       (alu_bignum_operation_result),
-    .selection_flag_o         (alu_bignum_selection_flag),
+    .operation_i       (alu_bignum_operation),
+    .operation_result_o(alu_bignum_operation_result),
+    .selection_flag_o  (alu_bignum_selection_flag),
 
-    .ispr_addr_i              (ispr_addr),
-    .ispr_base_wdata_i        (ispr_base_wdata),
-    .ispr_base_wr_en_i        (ispr_base_wr_en),
-    .ispr_bignum_wdata_i      (ispr_bignum_wdata),
-    .ispr_bignum_wr_en_i      (ispr_bignum_wr_en),
-    .ispr_init_i              (ispr_init),
-    .ispr_rdata_o             (ispr_rdata),
+    .ispr_addr_i        (ispr_addr),
+    .ispr_base_wdata_i  (ispr_base_wdata),
+    .ispr_base_wr_en_i  (ispr_base_wr_en),
+    .ispr_bignum_wdata_i(ispr_bignum_wdata),
+    .ispr_bignum_wr_en_i(ispr_bignum_wr_en),
+    .ispr_init_i        (ispr_init),
+    .ispr_rdata_o       (ispr_rdata),
 
-    .ispr_acc_i               (ispr_acc),
-    .ispr_acc_wr_data_o       (ispr_acc_wr_data),
-    .ispr_acc_wr_en_o         (ispr_acc_wr_en),
+    .ispr_acc_i        (ispr_acc),
+    .ispr_acc_wr_data_o(ispr_acc_wr_data),
+    .ispr_acc_wr_en_o  (ispr_acc_wr_en),
 
-    .sec_wipe_mod_urnd_i      (sec_wipe_mod_urnd),
-    .sec_wipe_zero_i          (sec_wipe_zero),
+    .sec_wipe_mod_urnd_i(sec_wipe_mod_urnd),
+    .sec_wipe_zero_i    (sec_wipe_zero),
 
-    .mac_operation_flags_i    (mac_bignum_operation_flags),
-    .mac_operation_flags_en_i (mac_bignum_operation_flags_en),
+    .mac_operation_flags_i   (mac_bignum_operation_flags),
+    .mac_operation_flags_en_i(mac_bignum_operation_flags_en),
 
-    .rnd_data_i               (rnd_data),
-    .urnd_data_i              (urnd_data),
+    .rnd_data_i (rnd_data),
+    .urnd_data_i(urnd_data),
 
     .sideload_key_shares_i
   );
@@ -600,37 +600,37 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .operation_i          (mac_bignum_operation),
-    .operation_result_o   (mac_bignum_operation_result),
-    .operation_flags_o    (mac_bignum_operation_flags),
-    .operation_flags_en_o (mac_bignum_operation_flags_en),
+    .operation_i         (mac_bignum_operation),
+    .operation_result_o  (mac_bignum_operation_result),
+    .operation_flags_o   (mac_bignum_operation_flags),
+    .operation_flags_en_o(mac_bignum_operation_flags_en),
 
-    .urnd_data_i (urnd_data),
-    .sec_wipe_acc_urnd_i (sec_wipe_acc_urnd),
-    .sec_wipe_zero_i (sec_wipe_zero),
+    .urnd_data_i        (urnd_data),
+    .sec_wipe_acc_urnd_i(sec_wipe_acc_urnd),
+    .sec_wipe_zero_i    (sec_wipe_zero),
 
-    .mac_en_i           (mac_bignum_en),
+    .mac_en_i(mac_bignum_en),
 
-    .ispr_acc_o         (ispr_acc),
-    .ispr_acc_wr_data_i (ispr_acc_wr_data),
-    .ispr_acc_wr_en_i   (ispr_acc_wr_en)
+    .ispr_acc_o        (ispr_acc),
+    .ispr_acc_wr_data_i(ispr_acc_wr_data),
+    .ispr_acc_wr_en_i  (ispr_acc_wr_en)
   );
 
   otbn_rnd #(
-    .RndCnstUrndPrngSeed      (RndCnstUrndPrngSeed)
+    .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
   ) u_otbn_rnd (
     .clk_i,
     .rst_ni,
 
-    .rnd_req_i          (rnd_req),
-    .rnd_prefetch_req_i (rnd_prefetch_req),
-    .rnd_valid_o        (rnd_valid),
-    .rnd_data_o         (rnd_data),
+    .rnd_req_i         (rnd_req),
+    .rnd_prefetch_req_i(rnd_prefetch_req),
+    .rnd_valid_o       (rnd_valid),
+    .rnd_data_o        (rnd_data),
 
-    .urnd_reseed_req_i  (urnd_reseed_req),
-    .urnd_reseed_busy_o (urnd_reseed_busy),
-    .urnd_advance_i     (urnd_advance),
-    .urnd_data_o        (urnd_data),
+    .urnd_reseed_req_i (urnd_reseed_req),
+    .urnd_reseed_busy_o(urnd_reseed_busy),
+    .urnd_advance_i    (urnd_advance),
+    .urnd_data_o       (urnd_data),
 
     .edn_rnd_req_o,
     .edn_rnd_ack_i,
@@ -661,7 +661,7 @@ module otbn_core
   `ASSERT(EdnUrndReqStable_A, edn_urnd_req_o & ~edn_urnd_ack_i |=> edn_urnd_req_o)
 
   `ASSERT(OnlyWriteLoadDataBaseWhenDMemValid_A,
-    rf_bignum_wr_en_ctrl & insn_dec_bignum.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
+          rf_bignum_wr_en_ctrl & insn_dec_bignum.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
   `ASSERT(OnlyWriteLoadDataBignumWhenDMemValid_A,
-    rf_base_wr_en_ctrl & insn_dec_base.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
+          rf_base_wr_en_ctrl & insn_dec_base.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
 endmodule

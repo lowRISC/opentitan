@@ -175,7 +175,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   function bit eq_trans(sram_trans_t t1, sram_trans_t t2);
     bit equal = (t1.we == t2.we) && (eq_sram_addr(t1.addr, t2.addr)) &&
                 (t1.mask == t2.mask) && (t1.key == t2.key) && (t1.nonce == t2.nonce);
-    `uvm_info(`gfn, $sformatf("Comparing 2 transactions:\nt1: %0p\nt2: %0p", t1, t2), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("Comparing 2 transactions:\nt1: %0p\nt2: %0p", t1, t2), UVM_MEDIUM)
     // as one of the sram_trans_t structs will be still in address phase,
     // it may not have the data field available if it is a READ operation
     //
@@ -298,10 +298,12 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       end
       item = write_item_q.pop_front();
 
-      while (!write_en) begin
+      while (!write_en && !status_lc_esc) begin
         cfg.clk_rst_vif.wait_n_clks(1);
         `DV_CHECK(uvm_hdl_read(write_en_path, write_en))
       end
+      if (status_lc_esc) continue;
+
       `DV_CHECK(uvm_hdl_read(write_addr_path, encrypt_addr))
       decrypt_addr = decrypt_sram_addr(encrypt_addr);
       decrypt_addr = decrypt_addr << 2;
@@ -312,6 +314,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // the data should be settled after posedge. Wait for a 1ps to avoid race condition
       cfg.clk_rst_vif.wait_clks(1);
       #1ps;
+      if (handling_lc_esc) begin
+        `uvm_info(`gfn, "skip checking the write due to escalation", UVM_MEDIUM)
+        continue;
+      end
+
       mem_bkdr_scb.write_finish(decrypt_addr, item.mask);
       `uvm_info(`gfn, $sformatf("Currently num of pending write items is %0d", write_item_q.size),
                 UVM_MEDIUM)
@@ -388,6 +395,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::On);
       `uvm_info(`gfn, "LC escalation request detected", UVM_HIGH)
 
+      // clear exp_mem, scramble is changed due to escalation.
+      exp_mem[cfg.sram_ral_name].init();
+
       handling_lc_esc = 1;
 
       // escalation signal needs 3 cycles to be propagated through the DUT
@@ -441,6 +451,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
       // lc escalation status will be dropped after reset, no further action needed
       wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::Off);
+
+      // there could be up to 4 transactions accepted but not compared due to escalation
+      // 2 transactions are due to outstanding, 2 transactions are finished but we skip checking
+      // due to key changed after escalation
+      `DV_CHECK_LE(mem_bkdr_scb.read_item_q.size + mem_bkdr_scb.write_item_q.size, 4)
 
       // sample coverage
       if (cfg.en_cov) begin
@@ -496,10 +511,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
         `DV_CHECK_EQ(in_key_req, 0, "No item is accepted during key req")
         `DV_CHECK_EQ(in_init, 0, "No item is accepted during init")
-
-        // If the escalation propagation has finished,
-        // do not process anymore addr_phase transactions
-        if (status_lc_esc) continue;
 
         // don't process any error items
         //
@@ -613,9 +624,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
           `DV_CHECK_EQ(addr_trans_available, 1,
               "SRAM returned TLUL response in LC escalation state")
         end
-      end
-
-      if (!item.is_write()) begin
+      end else if (!item.is_write()) begin
         mem_bkdr_scb.read_finish(item.d_data, simplify_addr(item.a_addr), item.a_mask);
       end
 
@@ -945,9 +954,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   endtask
 
   virtual function void reset(string kind = "HARD");
+    sram_trans_t t;
     super.reset(kind);
+
+    while (addr_phase_mbox.try_get(t));
     key = sram_ctrl_pkg::RndCnstSramKeyDefault;
     nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
+    mem_bkdr_scb.reset();
     mem_bkdr_scb.update_key(key, nonce);
     clear_hazard_state();
     exp_status = '0;

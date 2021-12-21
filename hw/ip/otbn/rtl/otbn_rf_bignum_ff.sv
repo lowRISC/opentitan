@@ -15,7 +15,9 @@
  */
 module otbn_rf_bignum_ff
   import otbn_pkg::*;
-(
+#(
+  parameter logic [BaseIntgWidth-1:0] WordZeroVal = '0
+) (
   input  logic             clk_i,
   input  logic             rst_ni,
 
@@ -38,7 +40,7 @@ module otbn_rf_bignum_ff
     // Split registers into halves for clear seperation for the enable terms
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        rf[i][0+:ExtWLEN/2] <= '0;
+        rf[i][0+:ExtWLEN/2] <= {BaseWordsPerWLEN/2{WordZeroVal}};
       end else if (we_onehot[i][0]) begin
         rf[i][0+:ExtWLEN/2] <= wr_data_i[0+:ExtWLEN/2];
       end
@@ -46,7 +48,7 @@ module otbn_rf_bignum_ff
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        rf[i][ExtWLEN/2+:ExtWLEN/2] <= '0;
+        rf[i][ExtWLEN/2+:ExtWLEN/2] <= {BaseWordsPerWLEN/2{WordZeroVal}};
       end else if (we_onehot[i][1]) begin
         rf[i][ExtWLEN/2+:ExtWLEN/2] <= wr_data_i[ExtWLEN/2+:ExtWLEN/2];
       end

@@ -16,6 +16,41 @@
 
 namespace flash_ctrl_unittest {
 namespace {
+using ::testing::Each;
+using ::testing::SizeIs;
+
+/**
+ * A struct that holds bank, page, and config register information for an
+ * information page.
+ */
+struct InfoPage {
+  uint32_t bank;
+  uint32_t page;
+  uint32_t cfg_offset;
+  uint32_t cfg_wen_offset;
+};
+
+/**
+ * Returns a map from `flash_ctrl_info_page_t` to `InfoPage` to be used in
+ * tests.
+ */
+const std::map<flash_ctrl_info_page_t, InfoPage> &InfoPages() {
+#define INFO_PAGE_MAP_INIT(name_, bank_, page_)                                    \
+  {                                                                                \
+    name_,                                                                         \
+        {                                                                          \
+            bank_,                                                                 \
+            page_,                                                                 \
+            FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_SHADOWED_##page_##_REG_OFFSET, \
+            FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,            \
+        },                                                                         \
+  }
+
+  static const std::map<flash_ctrl_info_page_t, InfoPage> *const kInfoPages =
+      new std::map<flash_ctrl_info_page_t, InfoPage>{
+          FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_MAP_INIT)};
+  return *kInfoPages;
+}
 
 class FlashCtrlTest : public mask_rom_test::MaskRomTest {
  protected:
@@ -24,11 +59,50 @@ class FlashCtrlTest : public mask_rom_test::MaskRomTest {
   mask_rom_test::MockSecMmio sec_mmio_;
 };
 
+class InfoPagesTest : public FlashCtrlTest {};
+TEST_F(InfoPagesTest, NumberOfPages) { EXPECT_THAT(InfoPages(), SizeIs(20)); }
+
+TEST_F(InfoPagesTest, PagesPerBank) {
+  std::array<uint32_t, 2> pages_per_bank = {0, 0};
+  for (const auto &it : InfoPages()) {
+    const uint32_t bank = it.second.bank;
+    EXPECT_EQ(bank, static_cast<uint32_t>(bitfield_bit32_read(
+                        it.first, FLASH_CTRL_INFO_PAGE_BIT_BANK)));
+    EXPECT_LE(bank, 1);
+    ++pages_per_bank[bank];
+  }
+
+  EXPECT_THAT(pages_per_bank, Each(10));
+}
+
+TEST_F(InfoPagesTest, AllType0) {
+  for (const auto &it : InfoPages()) {
+    const flash_ctrl_partition_t partition =
+        static_cast<flash_ctrl_partition_t>(bitfield_field32_read(
+            it.first, FLASH_CTRL_INFO_PAGE_FIELD_PARTITION));
+    EXPECT_EQ(partition, kFlashCtrlPartitionInfo0);
+  }
+}
+
+TEST_F(InfoPagesTest, PageIndices) {
+  for (const auto &it : InfoPages()) {
+    const uint32_t page = it.second.page;
+
+    EXPECT_EQ(page,
+              bitfield_field32_read(it.first, FLASH_CTRL_INFO_PAGE_FIELD_PAGE));
+    EXPECT_LE(page, 9);
+  }
+}
+
 class InitTest : public FlashCtrlTest {};
 
 TEST_F(InitTest, Initialize) {
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
+  auto info_page = InfoPages().at(kFlashCtrlInfoPageCreatorSecret);
+  EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
+  EXPECT_SEC_WRITE_INCREMENT(2);
 
   flash_ctrl_init();
 }
@@ -198,6 +272,115 @@ TEST_F(ExecTest, Disable) {
   EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, kMultiBitBool4False);
   EXPECT_SEC_WRITE_INCREMENT(1);
   flash_ctrl_exec_set(kFlashCtrlExecDisable);
+}
+
+struct InfoMpSetCase {
+  /**
+   * Access permissions to set.
+   */
+  flash_ctrl_mp_t perms;
+  /**
+   * Expected value to be read from the config register.
+   */
+  uint32_t read_val;
+  /**
+   * Expected value to be written to the config register.
+   */
+  uint32_t write_val;
+};
+
+class FlashCtrlInfoMpSetTest
+    : public FlashCtrlTest,
+      public testing::WithParamInterface<InfoMpSetCase> {};
+
+TEST_P(FlashCtrlInfoMpSetTest, InfoMpSet) {
+  for (const auto &it : InfoPages()) {
+    EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().read_val);
+    EXPECT_SEC_WRITE32_SHADOWED(base_ + it.second.cfg_offset,
+                                GetParam().write_val);
+    EXPECT_SEC_WRITE_INCREMENT(1);
+
+    flash_ctrl_info_mp_set(it.first, GetParam().perms);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlInfoMpSetTest,
+                         testing::Values(
+                             // Read.
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolTrue,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolFalse},
+                                 .read_val = 0x0,
+                                 .write_val = 0x3,
+                             },
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolTrue,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolFalse},
+                                 .read_val = 0x7f,
+                                 .write_val = 0x73,
+                             },
+                             // Write.
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolFalse},
+                                 .read_val = 0x0,
+                                 .write_val = 0x5,
+                             },
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolFalse},
+                                 .read_val = 0x7f,
+                                 .write_val = 0x75,
+                             },
+                             // Erase.
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolTrue},
+                                 .read_val = 0x0,
+                                 .write_val = 0x9,
+                             },
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolTrue},
+                                 .read_val = 0x7f,
+                                 .write_val = 0x79,
+                             },
+                             // Write and erase.
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolTrue},
+                                 .read_val = 0x0,
+                                 .write_val = 0xd,
+                             },
+                             InfoMpSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolTrue},
+                                 .read_val = 0x7f,
+                                 .write_val = 0x7d,
+                             }));
+
+TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
+  std::array<flash_ctrl_info_page_t, 6> no_owner_access = {
+      kFlashCtrlInfoPageOwnerSecret, kFlashCtrlInfoPageWaferAuthSecret,
+      kFlashCtrlInfoPageBootData0,   kFlashCtrlInfoPageBootData1,
+      kFlashCtrlInfoPageOwnerSlot0,  kFlashCtrlInfoPageOwnerSlot1,
+  };
+  for (auto page : no_owner_access) {
+    auto info_page = InfoPages().at(page);
+    EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
+    EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
+  }
+  EXPECT_SEC_WRITE_INCREMENT(2 * no_owner_access.size());
+
+  flash_ctrl_creator_info_pages_lockdown();
 }
 
 }  // namespace

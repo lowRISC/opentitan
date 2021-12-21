@@ -55,8 +55,8 @@
             This test is based on previous tests:
             - Based on the prim_alert_request_test, this test adds a parallel sequence to randomly
               drive `init_trigger_i` in prim_alert_receiver.
-              Check if alert sender/receiver pairs can resume normal handshake after init_trigger_i
-              is set.
+              Check if `alert_ack_o` returns 1 and check if alert sender/receiver pairs can resume
+              normal handshake after alert init finishes.
               For fatal alert, check if fatal alerts keep firing until reset is issued.
             - Based on prim_alert_ping_request_test, this test adds a parallel sequence to randomly
               drive `init_trigger_i` in prim_alert_receiver.

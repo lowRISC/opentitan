@@ -26,7 +26,7 @@ ifeq ($(OT_TARGET),sim_verilator)
     RUN_TARGET = \
         $(TARGET_SIM) \
             --meminit="otp,$(OT_BIN)/sw/device/otp_img/otp_img_sim_verilator.vmem" \
-            --meminit="rom,$(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.elf" \
+            --meminit="rom,$(OT_BIN)/sw/device/lib/testing/test_rom/test_rom_sim_verilator.elf" \
             --meminit="flash,$(<)" \
             +UARTDPI_LOG_uart0="$(*).uart.log" > $@ 2>&1 \
         && sed -e 's/^/[UART $(shell basename $(*))] /' "$(*).uart.log" $(REDIR) \

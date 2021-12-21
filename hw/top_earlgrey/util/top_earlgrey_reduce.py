@@ -133,7 +133,7 @@ def main():
     if (args.build):
         log.info("Regenerating boot ROM...")
         cmd = ["ninja", "-C", top_path + "/build-out",
-               "sw/device/boot_rom/boot_rom_export_fpga_nexysvideo"]
+               "sw/device/lib/testing/test_rom/test_rom_export_fpga_nexysvideo"]
         try:
             subprocess.run(cmd,
                            check=True,

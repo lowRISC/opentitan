@@ -153,51 +153,48 @@ module sram_ctrl
   logic init_trig;
   assign init_trig = reg2hw.ctrl.init.q & reg2hw.ctrl.init.qe;
 
+  logic init_d, init_q, init_done;
+  assign init_d = (init_done) ? 1'b0 :
+                  (init_trig) ? 1'b1 : init_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_init_reg
+    if(!rst_ni) begin
+      init_q <= 1'b0;
+    end else begin
+      init_q <= init_d;
+    end
+  end
+
+  // This waits until the scrambling keys are actually valid (this allows the SW to trigger
+  // key renewal and initialization at the same time).
+  logic init_req;
+  logic [AddrWidth-1:0] init_cnt;
+  logic key_req_pending_d, key_req_pending_q;
+  assign init_req  = init_q & ~key_req_pending_q;
+  assign init_done = (init_cnt == AddrWidth'(Depth - 1)) & init_req;
+
   // We employ two redundant counters to guard against FI attacks.
   // If any of the two is glitched and the two counter states do not agree,
   // we trigger an alert.
-  logic [1:0] init_req, init_done, init_q;
-  logic [1:0][AddrWidth-1:0] init_cnt_q;
-  for (genvar k = 0; k < 2; k++) begin : gen_double_cnt
-
-    // These size_only buffers are instantiated in order to prevent
-    // optimization / merging of the two counters.
-    logic init_trig_buf;
-    prim_buf u_prim_buf_trig (
-      .in_i(init_trig),
-      .out_o(init_trig_buf)
-    );
-
-    // This waits until the scrambling keys are actually valid (this allows the SW to trigger
-    // key renewal and initialization at the same time).
-    assign init_req[k]  = init_q[k] & reg2hw.status.scr_key_valid.q;
-    assign init_done[k] = (init_cnt_q[k] == AddrWidth'(Depth - 1)) & init_req[k];
-
-    logic init_d;
-    assign init_d     = (init_done[k])  ? 1'b0 :
-                        (init_trig_buf) ? 1'b1 : init_q[k];
-
-    logic [AddrWidth-1:0] init_cnt_d;
-    assign init_cnt_d = (init_trig_buf) ? '0                   :
-                        (init_req[k])   ? init_cnt_q[k] + 1'b1 : init_cnt_q[k];
-
-    prim_flop #(
-      .Width(1+AddrWidth)
-    ) u_prim_flop_cnt (
-      .clk_i,
-      .rst_ni,
-      .d_i({init_d, init_cnt_d}),
-      .q_o({init_q[k], init_cnt_q[k]})
-    );
-  end
+  prim_count #(
+    .Width(AddrWidth),
+    .OutSelDnCnt(0), // count up
+    .CntStyle(prim_count_pkg::DupCnt)
+  ) u_prim_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(init_trig),
+    .set_i(1'b0),
+    .set_cnt_i('0),
+    .en_i(init_req),
+    .step_i(AddrWidth'(1)),
+    .cnt_o(init_cnt),
+    .err_o(init_error)
+  );
 
   // Clear this bit on local escalation.
-  assign hw2reg.status.init_done.d  = init_done[0] & ~init_trig & ~local_esc;
-  assign hw2reg.status.init_done.de = init_done[0] | init_trig | local_esc;
-
-  // Check whether counter is glitched into an invalid state
-  assign init_error = {init_q[0], init_cnt_q[0]} !=
-                      {init_q[1], init_cnt_q[1]};
+  assign hw2reg.status.init_done.d  = init_done & ~init_trig & ~local_esc;
+  assign hw2reg.status.init_done.de = init_done | init_trig | local_esc;
 
   ////////////////////////////
   // Scrambling Key Request //
@@ -208,7 +205,6 @@ module sram_ctrl
   // the req/ack protocol as described in more details here:
   // https://docs.opentitan.org/hw/ip/otp_ctrl/doc/index.html#interfaces-to-sram-and-otbn-scramblers
   logic key_req, key_ack;
-  logic key_req_pending_d, key_req_pending_q;
   assign key_req = reg2hw.ctrl.renew_scr_key.q & reg2hw.ctrl.renew_scr_key.qe;
   assign key_req_pending_d = (key_req) ? 1'b1 :
                              (key_ack) ? 1'b0 : key_req_pending_q;
@@ -316,7 +312,7 @@ module sram_ctrl
   ) u_lfsr (
     .clk_i,
     .rst_ni,
-    .lfsr_en_i(init_req[0]),
+    .lfsr_en_i(init_req),
     .seed_en_i(init_trig),
     .seed_i(nonce_q[NonceWidth +: LfsrWidth]),
     .entropy_i('0),
@@ -371,13 +367,13 @@ module sram_ctrl
   );
 
   // Interposing mux logic for initialization with pseudo random data.
-  assign sram_req        = tlul_req | init_req[0];
-  assign tlul_gnt        = sram_gnt & ~init_req[0];
-  assign sram_we         = tlul_we | init_req[0];
-  assign sram_intg_error = local_esc & ~init_req[0];
-  assign sram_addr       = (init_req[0]) ? init_cnt_q[0]     : tlul_addr;
-  assign sram_wdata      = (init_req[0]) ? lfsr_out_integ    : tlul_wdata;
-  assign sram_wmask      = (init_req[0]) ? {DataWidth{1'b1}} : tlul_wmask;
+  assign sram_req        = tlul_req | init_req;
+  assign tlul_gnt        = sram_gnt & ~init_req;
+  assign sram_we         = tlul_we | init_req;
+  assign sram_intg_error = local_esc & ~init_req;
+  assign sram_addr       = (init_req) ? init_cnt          : tlul_addr;
+  assign sram_wdata      = (init_req) ? lfsr_out_integ    : tlul_wdata;
+  assign sram_wmask      = (init_req) ? {DataWidth{1'b1}} : tlul_wmask;
 
   prim_ram_1p_scr #(
     .Width(DataWidth),
@@ -415,5 +411,9 @@ module sram_ctrl
   `ASSERT_KNOWN(RamTlOutKnown_A,   ram_tl_o)
   `ASSERT_KNOWN(AlertOutKnown_A,   alert_tx_o)
   `ASSERT_KNOWN(SramOtpKeyKnown_A, sram_otp_key_o)
+
+  // Alert assertions for redundant counters.
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCheck_A,
+      u_prim_count, alert_tx_o[0])
 
 endmodule : sram_ctrl

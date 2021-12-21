@@ -72,14 +72,21 @@ module rom_ctrl_counter
   logic          done_q, done_d;
   logic          last_nontop_q, last_nontop_d;
 
+  assign done_d = addr_q == TopAddr;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      done_q <= 1'b0;
+    end else begin
+      done_q <= done_d;
+    end
+  end
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       addr_q        <= '0;
-      done_q        <= 1'b0;
       last_nontop_q <= 1'b0;
     end else if (go) begin
       addr_q        <= addr_d;
-      done_q        <= done_d;
       last_nontop_q <= last_nontop_d;
     end
   end
@@ -99,10 +106,9 @@ module rom_ctrl_counter
     end
   end
 
-  assign go = data_rdy_i & data_vld_o & ~done_q;
+  assign go = data_rdy_i & data_vld_o & ~done_d;
 
   assign addr_d        = addr_q + {{AW-1{1'b0}}, 1'b1};
-  assign done_d        = addr_q == TopAddr;
   assign last_nontop_d = addr_q == TNTAddr;
 
   assign done_o             = done_q;

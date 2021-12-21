@@ -26,6 +26,7 @@ filesets:
       - seq_lib/sram_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/sram_ctrl_throughput_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_multiple_keys_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_bijection_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_stress_pipeline_vseq.sv: {is_include_file: true}

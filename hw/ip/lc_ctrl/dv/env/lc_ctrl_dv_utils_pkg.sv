@@ -178,7 +178,9 @@ package lc_ctrl_dv_utils_pkg;
       DecLcStProdEnd: return LcStProdEnd;
       DecLcStRma: return LcStRma;
       DecLcStScrap: return LcStScrap;
-      default: `uvm_fatal("lc_env_pkg", $sformatf("unknown lc_state 0x%0h", curr_state))
+      default: begin
+        `uvm_fatal("lc_env_pkg", $sformatf("encode_lc_state: unknown lc_state 0x%0h", curr_state))
+      end
     endcase
   endfunction
 
@@ -209,7 +211,7 @@ package lc_ctrl_dv_utils_pkg;
       LcCnt22: return 22;
       LcCnt23: return 23;
       LcCnt24: return 24;
-      default: `uvm_fatal("lc_env_pkg", $sformatf("unknown lc_cnt 0x%0h", curr_cnt))
+      default: `uvm_fatal("lc_env_pkg", $sformatf("dec_lc_cnt: unknown lc_cnt 0x%0h", curr_cnt))
     endcase
   endfunction
 

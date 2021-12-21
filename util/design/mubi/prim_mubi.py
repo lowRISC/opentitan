@@ -12,6 +12,7 @@ MUBI_SENDER_TPL_PATH = "util/design/data/prim_mubi_sender.sv.tpl"
 MUBI_SYNC_TPL_PATH = "util/design/data/prim_mubi_sync.sv.tpl"
 MUBI_DEC_TPL_PATH = "util/design/data/prim_mubi_dec.sv.tpl"
 MUBI_SW_TPL_PATH = "util/design/data/multibits.h.tpl"
+MUBI_SW_ASM_TPL_PATH = "util/design/data/multibits_asm.h.tpl"
 
 MUBI_PKG_OUT_PATH = "hw/ip/prim/rtl/prim_mubi_pkg.sv"
 MUBI_CORE_OUT_PATH = "hw/ip/prim/prim_mubi.core"
@@ -19,6 +20,7 @@ MUBI_SENDER_OUT_PATH = "hw/ip/prim/rtl/prim_mubi{}_sender.sv"
 MUBI_SYNC_OUT_PATH = "hw/ip/prim/rtl/prim_mubi{}_sync.sv"
 MUBI_DEC_OUT_PATH = "hw/ip/prim/rtl/prim_mubi{}_dec.sv"
 MUBI_SW_OUT_PATH = "sw/device/lib/base/multibits.h"
+MUBI_SW_ASM_OUT_PATH = "sw/device/lib/base/multibits_asm.h"
 
 N_MAX_NIBBLES = 4
 
@@ -58,6 +60,7 @@ def gen():
         (MUBI_PKG_TPL_PATH, MUBI_PKG_OUT_PATH),
         (MUBI_CORE_TPL_PATH, MUBI_CORE_OUT_PATH),
         (MUBI_SW_TPL_PATH, MUBI_SW_OUT_PATH),
+        (MUBI_SW_ASM_TPL_PATH, MUBI_SW_ASM_OUT_PATH),
     ]
     for tpl, out in tpls:
         with open(tpl) as inf:

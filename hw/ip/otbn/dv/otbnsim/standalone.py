@@ -43,6 +43,9 @@ def main() -> int:
 
     sim = StandaloneSim()
     exp_end_addr = load_elf(sim, args.elf)
+    key0 = int((str("deadbeef") * 12), 16)
+    key1 = int((str("badf00d") * 12), 16)
+    sim.state.set_keymgr_value(key0, key1, 1)
 
     sim.state.ext_regs.commit()
 

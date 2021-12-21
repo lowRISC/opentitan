@@ -27,7 +27,7 @@ Synthesizing a design for an FPGA board is done with the following commands.
 
 The FPGA build will pull in a program to act as the boot ROM.
 This must be built before running the FPGA build.
-This is pulled in from the `sw/device/boot_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/chip_earlgrey_cw310.core` file).
+This is pulled in from the `sw/device/lib/testing/test_rom/test_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/chip_earlgrey_cw310.core` file).
 
 To build it:
 ```console
@@ -337,7 +337,7 @@ An example connection with GDB, which prints the registers after the connection 
 
 ```console
 $ cd $REPO_TOP
-$ /tools/riscv/bin/riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" sw/device/boot_rom/rom.elf
+$ /tools/riscv/bin/riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.elf
 ```
 
 #### Common operations with GDB

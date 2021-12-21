@@ -50,15 +50,19 @@ package spi_device_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
   // SPI SRAM is 2kB
-  parameter uint SRAM_OFFSET              = 'h1000;
-  parameter uint SRAM_SIZE                = 4096; // 672 depth
-  parameter uint SRAM_MSB                 = $clog2(SRAM_SIZE) - 1;
-  parameter uint SRAM_PTR_PHASE_BIT       = SRAM_MSB + 1;
-  parameter uint SRAM_WORD_SIZE           = 4;
-  parameter uint ASYNC_FIFO_SIZE          = 8;
-  parameter bit[7:0] TPM_WRITE_CMD        = 8'hC0;
-  parameter byte TPM_START                = 8'h01;
-  parameter byte TPM_WAIT                 = 8'h00;
+  parameter uint SRAM_OFFSET                     = 'h1000;
+  parameter uint SRAM_SIZE                       = 4096; // 672 depth
+  parameter uint SRAM_MSB                        = $clog2(SRAM_SIZE) - 1;
+  parameter uint SRAM_PTR_PHASE_BIT              = SRAM_MSB + 1;
+  parameter uint SRAM_WORD_SIZE                  = 4;
+  parameter uint ASYNC_FIFO_SIZE                 = 8;
+  parameter bit[7:0] TPM_WRITE_CMD               = 8'hC0;
+  parameter bit[7:0] TPM_READ_CMD                = 8'hC1;
+  parameter byte TPM_START                       = 8'h01;
+  parameter byte TPM_WAIT                        = 8'h00;
+  parameter bit[11:0] TPM_HW_STS_OFFSET          = 12'h018;
+  parameter bit[11:0] TPM_HW_INT_CAP_OFFSET      = 12'h014;
+  parameter bit[23:0] TPM_BASE_ADDR              = 24'hD40000;
 
   string msg_id = "spi_device_env_pkg";
 
@@ -111,6 +115,11 @@ package spi_device_env_pkg;
       new_ptr[SRAM_PTR_PHASE_BIT] = ptr_phase_bit;
     end
     return new_ptr;
+  endfunction
+
+  // Get TPM address for locality TODO expand to other HW regs
+  function automatic bit[23:0] get_tpm_addr(bit[3:0] locality);
+    return TPM_BASE_ADDR | (locality << 12) | TPM_HW_STS_OFFSET;
   endfunction
 
   // macros

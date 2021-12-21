@@ -30,7 +30,7 @@ class pwm_monitor extends dv_base_monitor #(
     super.run_phase(phase);
   endtask : run_phase
 
-  // collect transactions forever - already forked in dv_base_moditor::run_phase
+  // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task collect_trans(uvm_phase phase);
     forever begin
       // TODO: detect event

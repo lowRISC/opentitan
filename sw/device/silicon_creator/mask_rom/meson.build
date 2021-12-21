@@ -62,11 +62,13 @@ sw_silicon_creator_mask_rom_epmp = declare_dependency(
 mask_rom_epmp_test_lib = declare_dependency(
   sources: [
     hw_ip_aon_timer_reg_h,
-    hw_ip_entropy_src_reg_h,
+    hw_ip_ast_reg_h,
     hw_ip_csrng_reg_h,
     hw_ip_edn_reg_h,
+    hw_ip_entropy_src_reg_h,
+    hw_ip_otp_ctrl_reg_h,
+    hw_ip_sensor_ctrl_reg_h,
     hw_ip_sram_ctrl_reg_h,
-    hw_ip_pwrmgr_reg_h,
     'mask_rom_start.S',
   ],
   link_args: rom_link_args,
@@ -183,9 +185,12 @@ primitive_bootstrap_lib = declare_dependency(
 mask_rom_lib = declare_dependency(
   sources: [
     hw_ip_aon_timer_reg_h,
-    hw_ip_entropy_src_reg_h,
+    hw_ip_ast_reg_h,
     hw_ip_csrng_reg_h,
     hw_ip_edn_reg_h,
+    hw_ip_entropy_src_reg_h,
+    hw_ip_otp_ctrl_reg_h,
+    hw_ip_sensor_ctrl_reg_h,
     hw_ip_sram_ctrl_reg_h,
     'mask_rom_start.S',
   ],

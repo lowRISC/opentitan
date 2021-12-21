@@ -17,19 +17,18 @@ class spi_device_tx_async_fifo_reset_vseq extends spi_device_base_vseq;
     bit [31:0] host_data_exp_q[$];
 
     spi_device_init();
-    ral.cfg.timer_v.set(8'hFF);
-    csr_update(.csr(ral.cfg));
-    `DV_CHECK_RANDOMIZE_FATAL(this)
     `DV_CHECK_STD_RANDOMIZE_FATAL(host_data)
     `DV_CHECK_STD_RANDOMIZE_FATAL(device_data)
     // Fill TX SRAM FIFO with some data, which will be transfered to TX async FIFO
     wait_for_tx_avail_bytes(SRAM_WORD_SIZE, SramSpaceAvail, avail_bytes);
-    write_device_words_to_send({device_data});
+    write_device_words_to_send({device_data}); //TODO random amount of data
     cfg.clk_rst_vif.wait_clks(16);
     // Write 0 into read and write point of TX SRAM FIFO
-    ral.txf_ptr.wptr.set(16'h0);
-    ral.txf_ptr.rptr.set(16'h0);
+    ral.txf_ptr.wptr.set(sram_device_base_addr);
+    ral.txf_ptr.rptr.set(sram_device_base_addr);
     csr_update(.csr(ral.txf_ptr));
+    csr_rd(.ptr(ral.async_fifo_level.txlvl), .value(tx_level));
+    `DV_CHECK_CASE_NE(tx_level, 0)
     // Program `rst_txfifo` to reset the async FIFO
     ral.control.rst_txfifo.set(1'b1);
     csr_update(.csr(ral.control));
@@ -37,8 +36,7 @@ class spi_device_tx_async_fifo_reset_vseq extends spi_device_base_vseq;
     ral.control.rst_txfifo.set(1'b0);
     csr_update(.csr(ral.control));
     // Check `async_fifo_level.txlvl` is 0
-    csr_rd(.ptr(ral.async_fifo_level.txlvl), .value(tx_level));
-    `DV_CHECK_CASE_EQ(tx_level, 0)
+    csr_rd_check(.ptr(ral.async_fifo_level.txlvl), .compare_value(0));
     //Fill TX SRAM FIFO with some other data and enable SPI transfer
     write_device_words_to_send({32'h12345678});
     cfg.clk_rst_vif.wait_clks(100);

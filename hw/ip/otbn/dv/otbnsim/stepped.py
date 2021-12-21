@@ -55,10 +55,17 @@ prefixed with "0x" if they are hexadecimal.
 
     invalidate_imem      Mark all of IMEM as having invalid ECC checksums
 
+    invalidate_dmem      Mark all of DMEM as having invalid ECC checksums
+
     set_keymgr_value     Send keymgr data to the model.
+
+    step_crc             Step CRC function with 48 bits of data. No actual
+                         change of state (this is pure, but handled in Python
+                         to simplify verification).
 
 '''
 
+import binascii
 import sys
 from typing import List, Optional
 
@@ -238,6 +245,14 @@ def on_print_call_stack(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
+def on_reset(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    if args:
+        raise ValueError('reset expects zero arguments. Got {}.'
+                         .format(args))
+
+    return OTBNSim()
+
+
 def on_edn_rnd_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     if len(args) != 1:
         raise ValueError('edn_rnd_step expects exactly 1 argument. Got {}.'
@@ -258,18 +273,6 @@ def on_edn_urnd_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     edn_urnd_data = read_word('edn_urnd_step', args[0], 32)
 
     sim.state.edn_urnd_step(edn_urnd_data)
-
-    return None
-
-
-def on_set_keymgr_value(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if len(args) != 3:
-        raise ValueError('set_keymgr_value expects exactly 1 argument. Got {}.'
-                         .format(args))
-    key0 = read_word('key0', args[0], 384)
-    key1 = read_word('key1', args[1], 384)
-    valid = read_word('valid', args[2], 1) == 1
-    sim.state.set_keymgr_value(key0, key1, valid)
 
     return None
 
@@ -306,16 +309,38 @@ def on_invalidate_imem(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('invalidate_imem', 0, args)
 
     sim.state.invalidate_imem()
+    return None
+
+
+def on_invalidate_dmem(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('invalidate_dmem', 0, args)
+
+    sim.state.dmem.empty_dmem()
+    return None
+
+
+def on_set_keymgr_value(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    if len(args) != 3:
+        raise ValueError('set_keymgr_value expects exactly 1 argument. Got {}.'
+                         .format(args))
+    key0 = read_word('key0', args[0], 384)
+    key1 = read_word('key1', args[1], 384)
+    valid = read_word('valid', args[2], 1) == 1
+    sim.state.set_keymgr_value(key0, key1, valid)
 
     return None
 
 
-def on_reset(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    if args:
-        raise ValueError('reset expects zero arguments. Got {}.'
-                         .format(args))
+def on_step_crc(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('step_crc', 2, args)
 
-    return OTBNSim()
+    item = read_word('item', args[0], 48)
+    state = read_word('state', args[1], 32)
+
+    new_state = binascii.crc32(item.to_bytes(6, 'little'), state)
+    print(f'! otbn.LOAD_CHECKSUM: 0x{new_state:08x}')
+
+    return None
 
 
 _HANDLERS = {
@@ -336,7 +361,9 @@ _HANDLERS = {
     'edn_urnd_cdc_done': on_edn_urnd_cdc_done,
     'edn_flush': on_edn_flush,
     'invalidate_imem': on_invalidate_imem,
-    'set_keymgr_value': on_set_keymgr_value
+    'invalidate_dmem': on_invalidate_dmem,
+    'set_keymgr_value': on_set_keymgr_value,
+    'step_crc': on_step_crc
 }
 
 

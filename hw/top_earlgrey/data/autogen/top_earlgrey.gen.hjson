@@ -6354,6 +6354,7 @@
           exec: True
           byte_write: False
           size: 0x8000
+          data_intg_passthru: True
         }
       }
       param_decl:

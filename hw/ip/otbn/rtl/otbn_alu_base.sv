@@ -13,14 +13,14 @@ module otbn_alu_base
   import otbn_pkg::*;
 (
   // Block is combinatorial; clk/rst are for assertions only.
-  input  logic                 clk_i,
-  input  logic                 rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
 
-  input  alu_base_operation_t  operation_i,
-  input  alu_base_comparison_t comparison_i,
+  input alu_base_operation_t  operation_i,
+  input alu_base_comparison_t comparison_i,
 
-  output logic [31:0]          operation_result_o,
-  output logic                 comparison_result_o
+  output logic [31:0] operation_result_o,
+  output logic        comparison_result_o
 );
 
   logic [32:0] adder_op_a, adder_op_b;
@@ -32,7 +32,7 @@ module otbn_alu_base
   logic [31:0] xor_result;
   logic [31:0] not_result;
 
-  logic  is_equal;
+  logic        is_equal;
 
   ///////////
   // Adder //
@@ -64,12 +64,12 @@ module otbn_alu_base
   /////////////
 
   logic [32:0] shift_in;
-  logic [4:0]  shift_amt;
+  logic [ 4:0] shift_amt;
   logic [31:0] operand_a_reverse;
   logic [32:0] shift_out;
   logic [31:0] shift_out_reverse;
 
-  for (genvar i = 0;i < 32; i++) begin : g_shifter_reverses
+  for (genvar i = 0; i < 32; i++) begin : g_shifter_reverses
     assign operand_a_reverse[i] = operation_i.operand_a[31-i];
     assign shift_out_reverse[i] = shift_out[31-i];
   end
@@ -132,6 +132,6 @@ module otbn_alu_base
   logic unused_clk;
   logic unused_rst_n;
 
-  assign unused_clk = clk_i;
+  assign unused_clk   = clk_i;
   assign unused_rst_n = rst_ni;
 endmodule

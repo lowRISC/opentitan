@@ -31,7 +31,7 @@ Usage: $0 [-t TARGET_BOARD] [-T TARGET_TOP] [-b DV | PROD]
   - b: Mask ROM binary, set to either DV or PROD.
 
 Mask ROM binary targets (-b):
-  - DV: sw/device/boot_rom
+  - DV: sw/device/lib/testing/test_rom
   - PROD: sw/device/silicon_creator/mask_rom
 
 USAGE
@@ -83,7 +83,7 @@ fi
 
 TARGET_PREFIX=""
 if [[ ${FLAGS_BIN} == "DV" ]]; then
-  TARGET_PREFIX="sw/device/boot_rom/boot_rom"
+  TARGET_PREFIX="sw/device/lib/testing/test_rom/test_rom"
 elif [[ ${FLAGS_BIN} == "PROD" ]]; then
   TARGET_PREFIX="sw/device/silicon_creator/mask_rom/mask_rom"
 else
@@ -96,13 +96,30 @@ TARGET_TOP="${FLAGS_TARGET_TOP}"
 TARGET_FILE_EXT=".scr.39.vmem"
 TARGET_EXPORT="${TARGET_PREFIX}_export_fpga_${TARGET_BOARD}"
 TARGET="${BIN_DIR}/${TARGET_PREFIX}_fpga_${TARGET_BOARD}"
+TARGET_PATH="${TARGET}${TARGET_FILE_EXT}"
 
 FPGA_BIN_DIR="${BIN_DIR}/hw/top_${TARGET_TOP}"
 FPGA_BIT_NAME="lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOARD}_0.1"
 
+# Make sure all inputs are available.
+if [[ ! -f "${TARGET_PATH}" ]]; then
+  echo "Unable to find ROM base image ${TARGET_PATH}." >&2
+  exit 1
+fi
+
+if [[ ! -f "${FPGA_BIN_DIR}/rom.mmi" ]]; then
+  echo "Unable to find ${FPGA_BIN_DIR}/rom.mmi." >&2
+  exit 1
+fi
+
+if [[ ! -f "${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit" ]]; then
+  echo "Unable to find ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit." >&2
+  exit 1
+fi
+
 # Create the Vivado image for splicing.
 hw/ip/rom_ctrl/util/gen_vivado_mem_image.py \
-  "${TARGET}${TARGET_FILE_EXT}" \
+  "${TARGET_PATH}" \
   "${TARGET}.updatemem.mem" \
   --swap-nibbles
 
@@ -119,4 +136,9 @@ updatemem -force --meminfo "${FPGA_BIN_DIR}/rom.mmi" \
   --debug
 
 mv ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit.orig
+
+# Rename to the canonical bitstream output name to simplify interaction with
+# other tools, and create a copy with a .splice suffix to be able to
+# export the artifact in CI.
 mv ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.splice.bit ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit
+cp ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit.splice

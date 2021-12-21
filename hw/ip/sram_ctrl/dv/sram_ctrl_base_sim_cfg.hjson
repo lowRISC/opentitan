@@ -97,6 +97,26 @@
       run_opts: ["+zero_delays=1"]
     }
     {
+      name: "{variant}_partial_access"
+      uvm_test_seq: sram_ctrl_smoke_vseq
+      run_opts: ["+partial_access_pct=90"]
+    }
+    {
+      name: "{variant}_partial_access_b2b"
+      uvm_test_seq: sram_ctrl_stress_pipeline_vseq
+      run_opts: ["+partial_access_pct=90"]
+    }
+    {
+      name: "{variant}_max_throughput"
+      uvm_test_seq: sram_ctrl_throughput_vseq
+      run_opts: ["+zero_delays=1 +partial_access_pct=0"]
+    }
+    {
+      name: "{variant}_throughput_w_partial_write"
+      uvm_test_seq: sram_ctrl_throughput_vseq
+      run_opts: ["+zero_delays=1 +partial_access_pct=20"]
+    }
+    {
       name: "{variant}_lc_escalation"
       uvm_test_seq: sram_ctrl_lc_escalation_vseq
     }
@@ -113,12 +133,12 @@
     // Below 2 tests are same as the tests in dvsim/tests/mem_tests.hjson
     // Replicate them here in order to enable scb
     {
-      name: "{variant}_mem_walk"
+      name: "{name}_mem_walk"
       uvm_test_seq: "{name}_common_vseq"
       run_opts: ["+csr_mem_walk"]
     }
     {
-      name: "{variant}_mem_partial_access"
+      name: "{name}_mem_partial_access"
       uvm_test_seq: "{name}_common_vseq"
       run_opts: ["+run_mem_partial_access"]
     }

@@ -5,7 +5,7 @@
 
 import struct
 import sys
-from typing import Dict
+from typing import Dict, List
 
 from shared.elf import read_elf
 from shared.insn_yaml import Insn, load_insns_yaml
@@ -30,13 +30,27 @@ class OTBNProgram:
             if mnem is None:
                 raise ValueError(
                     'No legal decoding for mnemonic: {}'.format(mnem))
-            insn = INSNS_FILE.mnemonic_to_insn.get(mnem)
+            insn = INSNS_FILE.mnemonic_to_insn[mnem]
+            assert insn.encoding is not None
             enc_vals = insn.encoding.extract_operands(opcode)
             op_vals = insn.enc_vals_to_op_vals(pc, enc_vals)
             self.insns[pc] = (insn, op_vals)
 
+    def min_pc(self) -> int:
+        return min(self.insns.keys())
+
+    def max_pc(self) -> int:
+        return max(self.insns.keys())
+
     def get_pc_at_symbol(self, symbol: str) -> int:
+        if symbol not in self.symbols:
+            raise ValueError(
+                'Symbol {} not found in program. Available symbols: {}'.format(
+                    symbol, ', '.join(self.symbols.keys())))
         return self.symbols[symbol]
+
+    def get_symbols_for_pc(self, pc: int) -> List[str]:
+        return [s for s, addr in self.symbols.items() if addr == pc]
 
     def get_data_at_addr(self, addr: int) -> int:
         return self.data[addr]

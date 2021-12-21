@@ -32,6 +32,7 @@ class locality_e(IntEnum):
     SPARSE = auto()
 
 
+# Base class for all load/store instruction stream
 @vsc.randobj
 class riscv_load_store_base_instr_stream(riscv_mem_access_stream):
     def __init__(self):
@@ -213,6 +214,7 @@ class riscv_load_store_base_instr_stream(riscv_mem_access_stream):
             self.load_store_instr.append(instr)
 
 
+# A single load/store instruction
 @vsc.randobj
 class riscv_single_load_store_instr_stream(riscv_load_store_base_instr_stream):
     def __init__(self):
@@ -224,6 +226,7 @@ class riscv_single_load_store_instr_stream(riscv_load_store_base_instr_stream):
         self.num_mixed_instr < 5
 
 
+# Back to back load/store instructions
 @vsc.randobj
 class riscv_load_store_stress_instr_stream(riscv_load_store_base_instr_stream):
     def __init__(self):
@@ -237,6 +240,19 @@ class riscv_load_store_stress_instr_stream(riscv_load_store_base_instr_stream):
         self.num_mixed_instr == 0
 
 
+# Back to back load/store instructions
+@vsc.randobj
+class riscv_load_store_shared_mem_stream(riscv_load_store_stress_instr_stream):
+    def __init__(self):
+        super().__init__()
+
+    def pre_randomize(self):
+        self.load_store_shared_memory = 1
+        super().pre_randomize()
+
+
+# Random load/store sequence
+# A random mix of load/store instructions and other instructions
 @vsc.randobj
 class riscv_load_store_rand_instr_stream(riscv_load_store_base_instr_stream):
     def __init__(self):
@@ -248,6 +264,7 @@ class riscv_load_store_rand_instr_stream(riscv_load_store_base_instr_stream):
         self.num_mixed_instr.inside(vsc.rangelist(vsc.rng(10, 30)))
 
 
+# Use a small set of GPR to create various WAW, RAW, WAR hazard scenario
 @vsc.randobj
 class riscv_load_store_hazard_instr_stream(riscv_load_store_base_instr_stream):
     def __init__(self):

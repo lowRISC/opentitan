@@ -82,8 +82,8 @@ waive -rules INTEGER              -location {ibex_register_file_ff.sv rv_core_ib
       -comment "This assigns int i (signed) to a multibit logic variable (unsigned), which is fine"
 waive -rules ONE_BIT_MEM_WIDTH             -location {ibex_core.sv} -regexp {Memory 'pmp_req_err' has word width which is single bit wide} \
       -comment "For consistency with related signals, we use an unpacked array for this signal."
-waive -rules HIER_BRANCH_NOT_READ -location {ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Net '(clk_i|rst_ni)' is not read from in module '(ibex_decoder|ibex_compressed_decoder)'.*} \
-      -comment "These signals are only used for assertions inside these two modules"
+waive -rules HIER_BRANCH_NOT_READ -location {ibex_branch_predict.sv ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Net '(clk_i|rst_ni)' is not read from in module '(ibex_branch_predict|ibex_decoder|ibex_compressed_decoder)'.*} \
+      -comment "These signals are only used for assertions inside these three modules"
 waive -rules INPUT_NOT_READ -location {ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from in module '(ibex_decoder|ibex_compressed_decoder)'.*} \
       -comment "These signals are only used for assertions inside these two modules"
 waive -rules IFDEF_CODE -location {ibex_core.sv} -regexp {Assignment to 'unused_instr_new_id' contained within `else block} \
@@ -98,6 +98,14 @@ waive -rules CLOCK_USE -location {ibex_id_stage.sv} -regexp {'clk_i' is connecte
       -comment "clk_i is unused in ibex_decoder configurations without RV32B and isn't connected to logic"
 waive -rules RESET_USE -location {ibex_id_stage.sv} -regexp {'rst_ni' is connected to 'ibex_decoder' port 'rst_ni'} \
       -comment "rst_ni is unused in ibex_decoder configurations without RV32B and isn't connected to logic"
+waive -rules {ZERO_REP} -location {ibex_icache.sv} -regexp {Replication count is zero in '{22-IC_TAG_SIZE{1'b0}}'} \
+      -comment "if IC_TAG_SIZE=22, no padding is needed"
+waive -rules {ZERO_REP} -location {ibex_icache.sv} -regexp {Replication count is zero in '{IC_LINE_BEATS_W-1{1'b0}}'} \
+      -comment "if IC_LINE_BEATS=2, IC_LINE_BEATS_W=1 and no padding is needed"
+waive -rules MIXED_SIGN           -location {ibex_lockstep.sv} -regexp {Unsigned operand 'rst_shadow_cnt_q' and signed 'LockstepOffsetW'(1)' encountered in a binary expression} \
+      -comment "In line with our style guide, LockstepOffsetW'(1) results in a signed operand"
+waive -rules UNSIZED_BIT_CONTEXT  -location {ibex_lockstep.sv} -regexp {Bitlength of unsized bit literal "'0" is self determined in this context} \
+      -comment "In line with our style guide, writing this as {$bits(delayed_inputs_t){1'b0}} would be much less readable"
 
 # Highlighting my main concerns here, documenting areas to review in next dive
 #

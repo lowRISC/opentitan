@@ -10,8 +10,8 @@ use thiserror::Error;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 
-mod primitive;
 mod legacy;
+mod primitive;
 
 #[derive(Debug, Error)]
 pub enum BootstrapError {

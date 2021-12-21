@@ -490,7 +490,7 @@ module ibex_tracer (
              rvfi_insn[30:25], rvfi_insn[11:8], 1'b0 });
     branch_target = rvfi_pc_rdata + imm;
 
-    data_accessed = RS1 | RS2 | RD;
+    data_accessed = RS1 | RS2;
     decoded_str = $sformatf("%s\tx%0d,x%0d,%0x",
                             mnemonic, rvfi_rs1_addr, rvfi_rs2_addr, branch_target);
   endfunction
@@ -855,9 +855,12 @@ module ibex_tracer (
         INSN_SLTIU:      decode_i_insn("sltiu");
         INSN_XORI:       decode_i_insn("xori");
         INSN_ORI:        decode_i_insn("ori");
-        // Version 0.92 of the Bitmanip Extension defines the pseudo-instruction
-        // zext.b rd rs = andi rd, rs, 255.
-        // Currently instruction set simulators don't output this pseudo-instruction.
+        // Unlike the ratified v.1.0.0 bitmanip extension, the v.0.94 draft extension continues to
+        // define the pseudo-instruction
+        //   zext.b rd rs = andi rd, rs, 255.
+        // However, for now the tracer doesn't emit this due to a lack of support in the LLVM and
+        // GCC toolchains. Enabling this functionality when the time is right is tracked in
+        // https://github.com/lowRISC/ibex/issues/1228
         INSN_ANDI:       decode_i_insn("andi");
         // INSN_ANDI:begin
           // casez (rvfi_insn)
@@ -907,12 +910,12 @@ module ibex_tracer (
         // MISC-MEM
         INSN_FENCE:      decode_fence();
         INSN_FENCEI:     decode_mnemonic("fence.i");
+        // RV32B - ZBA
+        INSN_SH1ADD:     decode_r_insn("sh1add");
+        INSN_SH2ADD:     decode_r_insn("sh2add");
+        INSN_SH3ADD:     decode_r_insn("sh3add");
         // RV32B - ZBB
-        INSN_SLOI:       decode_i_shift_insn("sloi");
-        INSN_SROI:       decode_i_shift_insn("sroi");
         INSN_RORI:       decode_i_shift_insn("rori");
-        INSN_SLO:        decode_r_insn("slo");
-        INSN_SRO:        decode_r_insn("sro");
         INSN_ROL:        decode_r_insn("rol");
         INSN_ROR:        decode_r_insn("ror");
         INSN_MIN:        decode_r_insn("min");
@@ -922,9 +925,11 @@ module ibex_tracer (
         INSN_XNOR:       decode_r_insn("xnor");
         INSN_ORN:        decode_r_insn("orn");
         INSN_ANDN:       decode_r_insn("andn");
-        // Version 0.92 of the Bitmanip Extension defines the pseudo-instruction
-        // zext.h rd rs = pack rd, rs, zero.
-        // Currently instruction set simulators don't output this pseudo-instruction.
+        // The ratified v.1.0.0 bitmanip extension defines the pseudo-instruction
+        //   zext.h rd rs = pack rd, rs, zero.
+        // However, for now the tracer doesn't emit this due to a lack of support in the LLVM and
+        // GCC toolchains. Enabling this functionality when the time is right is tracked in
+        // https://github.com/lowRISC/ibex/issues/1228
         INSN_PACK:       decode_r_insn("pack");
         // INSN_PACK: begin
           // casez (rvfi_insn)
@@ -936,21 +941,21 @@ module ibex_tracer (
         INSN_PACKU:      decode_r_insn("packu");
         INSN_CLZ:        decode_r1_insn("clz");
         INSN_CTZ:        decode_r1_insn("ctz");
-        INSN_PCNT:       decode_r1_insn("pcnt");
+        INSN_CPOP:       decode_r1_insn("cpop");
         INSN_SEXTB:      decode_r1_insn("sext.b");
         INSN_SEXTH:      decode_r1_insn("sext.h");
         // RV32B - ZBS
-        INSN_SBCLRI:     decode_i_insn("sbclri");
-        INSN_SBSETI:     decode_i_insn("sbseti");
-        INSN_SBINVI:     decode_i_insn("sbinvi");
-        INSN_SBEXTI:     decode_i_insn("sbexti");
-        INSN_SBCLR:      decode_r_insn("sbclr");
-        INSN_SBSET:      decode_r_insn("sbset");
-        INSN_SBINV:      decode_r_insn("sbinv");
-        INSN_SBEXT:      decode_r_insn("sbext");
+        INSN_BCLRI:     decode_i_insn("bclri");
+        INSN_BSETI:     decode_i_insn("bseti");
+        INSN_BINVI:     decode_i_insn("binvi");
+        INSN_BEXTI:     decode_i_insn("bexti");
+        INSN_BCLR:      decode_r_insn("bclr");
+        INSN_BSET:      decode_r_insn("bset");
+        INSN_BINV:      decode_r_insn("binv");
+        INSN_BEXT:      decode_r_insn("bext");
         // RV32B - ZBE
-        INSN_BDEP:       decode_r_insn("bdep");
-        INSN_BEXT:       decode_r_insn("bext");
+        INSN_BDECOMPRESS: decode_r_insn("bdecompress");
+        INSN_BCOMPRESS:   decode_r_insn("bcompress");
         // RV32B - ZBP
         INSN_GREV:       decode_r_insn("grev");
         INSN_GREVI: begin
@@ -1026,6 +1031,13 @@ module ibex_tracer (
             default:       decode_i_insn("unshfli");
           endcase
         end
+        INSN_XPERM_N:    decode_r_insn("xperm_n");
+        INSN_XPERM_B:    decode_r_insn("xperm_b");
+        INSN_XPERM_H:    decode_r_insn("xperm_h");
+        INSN_SLO:        decode_r_insn("slo");
+        INSN_SRO:        decode_r_insn("sro");
+        INSN_SLOI:       decode_i_shift_insn("sloi");
+        INSN_SROI:       decode_i_shift_insn("sroi");
 
         // RV32B - ZBT
         INSN_CMIX:       decode_r_cmixcmov_insn("cmix");

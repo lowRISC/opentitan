@@ -42,7 +42,7 @@
             if previous operation was done successfully.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_sw_op"]
     }
     {
       name: host_read_direct

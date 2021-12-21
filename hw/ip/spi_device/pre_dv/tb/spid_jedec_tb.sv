@@ -13,6 +13,8 @@ module spid_jedec_tb;
   localparam time ClkPeriod = 10000; // 10ns
   localparam time SckPeriod = 14000; // 14ns
 
+  localparam logic [7:0] ContinuousCode = 8'h AD;
+
   wire clk, rst_n;
   clk_rst_if main_clk (
     .clk,
@@ -53,78 +55,6 @@ module spid_jedec_tb;
   cmd_info_index_e cmd_info_idx;
   cmd_info_t cmd_info;
 
-  cmd_info_t [NumCmdInfo-1:0] cmd_info_list;
-  assign cmd_info_list[CmdInfoReadStatus1] = '{
-    valid:            1'b 1,
-    opcode:           8'h 05,
-    addr_mode:        AddrDisabled,
-    addr_swap_en:     1'b 0,
-    mbyte_en:         1'b 0,
-    dummy_en:         1'b 0,
-    dummy_size:          '0,
-    payload_en:       4'b 0010, // MISO
-    payload_dir:      PayloadOut,
-    upload:           1'b 0,
-    busy:             1'b 0
-  };
-  assign cmd_info_list[CmdInfoReadStatus2] = '{
-    valid:            1'b 1,
-    opcode:           8'h 35,
-    addr_mode:        AddrDisabled,
-    addr_swap_en:     1'b 0,
-    mbyte_en:         1'b 0,
-    dummy_en:         1'b 0,
-    dummy_size:          '0,
-    payload_en:       4'b 0010, // MISO
-    payload_dir:      PayloadOut,
-    upload:           1'b 0,
-    busy:             1'b 0
-  };
-  assign cmd_info_list[CmdInfoReadStatus3] = '{
-    valid:            1'b 1,
-    opcode:           8'h 15,
-    addr_mode:        AddrDisabled,
-    addr_swap_en:     1'b 0,
-    mbyte_en:         1'b 0,
-    dummy_en:         1'b 0,
-    dummy_size:          '0,
-    payload_en:       4'b 0010, // MISO
-    payload_dir:      PayloadOut,
-    upload:           1'b 0,
-    busy:             1'b 0
-  };
-
-  assign cmd_info_list[CmdInfoReadJedecId] = '{
-    valid:            1'b 1,
-    opcode:           CmdJedecId,
-    addr_mode:        AddrDisabled,
-    addr_swap_en:     1'b 0,
-    mbyte_en:         1'b 0,
-    dummy_en:         1'b 0,
-    dummy_size:          '0,
-    payload_en:       4'b 0010, // MISO
-    payload_dir:      PayloadOut,
-    upload:           1'b 0,
-    busy:             1'b 0
-  };
-
-  for (genvar i = CmdInfoReadJedecId + 1; i < NumCmdInfo ; i++) begin: g_cmd_info
-    assign cmd_info_list[i] = '{
-      valid:            1'b 0,
-      opcode:           (8'h FF - i),
-      addr_mode:        AddrDisabled,
-      addr_swap_en:     1'b 0,
-      mbyte_en:         1'b 0,
-      dummy_en:         1'b 0,
-      dummy_size:          '0,
-      payload_en:       4'b 0010, // MISO
-      payload_dir:      PayloadOut,
-      upload:           1'b 0,
-      busy:             1'b 0
-    };
-  end
-
-
   // Status Signals
   logic sys_status_we;
   logic [23:0] sys_status_in, sys_status_out;
@@ -132,7 +62,7 @@ module spid_jedec_tb;
   logic busy_set; // SCK
 
   // JEDEC Signals
-  logic [23:0] jedec_id;
+  jedec_cfg_t jedec_id;
 
   spi_mode_e spi_mode;
 
@@ -172,14 +102,20 @@ module spid_jedec_tb;
 
     repeat(10) @(sck_clk.cbn);
 
-    spiflash_readjedec(tb_sif, CmdJedecId, jedec_id);
+    // Expect 5 continuous codes and jedec ID
+    spiflash_readjedec(tb_sif, CmdJedecId, 8'h 5, ContinuousCode, jedec_id);
 
     $display("SPI Flash Read JEDEC ID Tested!!:");
   endtask : host
 
   static task sw();
     // Initial config
-    jedec_id = 24'h DE_ADBE;
+    jedec_id = '{
+      num_cc:     8'h 5        ,
+      cc:        ContinuousCode,
+      jedec_id:   8'h BE       ,
+      device_id: 16'h A55A
+    };
 
     forever @(posedge clk); // Wait host transaction done
 
@@ -238,7 +174,7 @@ module spid_jedec_tb;
 
     .spi_mode_i   (spi_mode),
 
-    .cmd_info_i   (cmd_info_list),
+    .cmd_info_i   (spid_common::CmdInfo),
 
     .io_mode_o    (s2p_iomode),
 

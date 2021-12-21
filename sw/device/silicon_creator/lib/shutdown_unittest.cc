@@ -605,7 +605,7 @@ TEST_F(ShutdownTest, ShutdownFinalize) {
 
 TEST_F(ShutdownTest, FlashKill) {
   EXPECT_ABS_WRITE32(
-      TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR + FLASH_CTRL_DIS_REG_OFFSET, 1);
+      TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR + FLASH_CTRL_DIS_REG_OFFSET, 0);
   unmocked_shutdown_flash_kill();
 }
 

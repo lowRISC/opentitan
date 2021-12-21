@@ -33,6 +33,8 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   event fatal_bus_integ_error_ev;
   // Test phase - used to synchronise scoreboard
   lc_ctrl_test_phase_e test_phase;
+  // Test phase has been set event
+  event set_test_phase_ev;
   // Max delay for alerts in clocks
   uint alert_max_delay;
 
@@ -94,6 +96,7 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
 
   virtual function void set_test_phase(lc_ctrl_test_phase_e test_phase);
     this.test_phase = test_phase;
+    ->set_test_phase_ev;
   endfunction
 
   virtual function lc_ctrl_test_phase_e get_test_phase();

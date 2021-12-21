@@ -24,14 +24,14 @@ class spi_device_abort_vseq extends spi_device_base_vseq;
     cfg.clk_rst_vif.wait_clks(100);
     ral.control.abort.set(1'b1);
     csr_update(.csr(ral.control));
+    //TODO Abort done returns 1 - Issue 9823 for implementation
     while (abort_done == 0) begin
-      write_device_words_to_send({device_data});
       csr_rd(.ptr(ral.status.abort_done), .value(abort_done));
     end
     ral.control.abort.set(1'b0);
     csr_update(.csr(ral.control));
     cfg.clk_rst_vif.wait_clks(100);
-
+    //TODO Checking when we get feedback on issue 9822
   endtask : body
 
 endclass : spi_device_abort_vseq

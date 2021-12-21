@@ -28,6 +28,8 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
     key = cfg.get_imem_key();
     nonce = cfg.get_imem_nonce();
 
+    @(cfg.clk_rst_vif.cbn);
+
     // Mask to corrupt 1 to 2 bits of the imem memory
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
 
@@ -37,9 +39,7 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
       cfg.write_imem_word(i, bad_data, key, nonce);
     end
 
-    cfg.model_agent_cfg.vif.invalidate_imem <= 1'b1;
-    @(cfg.clk_rst_vif.cb);
-    cfg.model_agent_cfg.vif.invalidate_imem <= 1'b0;
+    cfg.model_agent_cfg.vif.invalidate_imem();
 
     // Wait until the ISS and RTL move to a locked state
     wait (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);

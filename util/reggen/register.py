@@ -529,7 +529,7 @@ class Register(RegBase):
             'hwre': str(self.hwre),
             'tags': self.tags,
             'shadowed': str(self.shadowed),
-        }
+        }  # type: Dict[str, object]
         if self.regwen is not None:
             rd['regwen'] = self.regwen
         if self.update_err_alert is not None:

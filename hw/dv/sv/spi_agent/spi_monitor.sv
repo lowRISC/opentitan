@@ -77,6 +77,7 @@ class spi_monitor extends dv_base_monitor#(
                 // sample sio[1] for rx
                 which_bit = cfg.device_bit_dir ? i : 7 - i;
                 device_byte[which_bit] = cfg.vif.sio[1];
+                // sending 7 bits will be padded with 0 for the last bit
                 if (i == 6 && num_bits == 7) begin
                   which_bit = cfg.device_bit_dir ? 7 : 0;
                   device_byte[which_bit] = 0;
@@ -84,6 +85,7 @@ class spi_monitor extends dv_base_monitor#(
                 cfg.vif.device_bit = which_bit;
                 cfg.vif.device_byte = device_byte;
               end
+              // sending less than 7 bits will not be captured, byte to be re-sent
               if (num_bits >= 7) begin
                 host_item.data.push_back(host_byte);
                 device_item.data.push_back(device_byte);

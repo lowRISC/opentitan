@@ -106,6 +106,11 @@ class riscv_instr_cov_test:
     def get_coverage_report(self):
         model = vsc.get_coverage_report_model()
         cov_dir = cfg.argv.log_file_name.split("/")[0]
+        file = open('{}/CoverageGroups.txt'.format(cov_dir), 'w')
+        file.write("CoverGroups, CoverPoints and Bins Summary\n")
+        str_report = vsc.get_coverage_report(details=True)
+        file.write("{}\n".format(str_report))
+        file.close()
         file = open('{}/CoverageReport.txt'.format(cov_dir), 'w')
         file.write("Groups Coverage Summary\n")
         file.write("Total groups in report: {}\n".format(
@@ -125,18 +130,6 @@ class riscv_instr_cov_test:
         pass
 
     def sample(self):
-        binary = vsc.int_t(rcs.XLEN)
-        binary.set_val(get_val(self.trace["binary"], hexa=1))
-        # TODO: Currently handled using string formatting as part select
-        #  isn't yet supported for global vsc variables
-        # width is rcs.XLEN+2 because of 0b in the beginning of binary_bin
-        binary_bin = format(binary.get_val(), '#0{}b'.format(rcs.XLEN + 2))
-        if binary_bin[-2:] != "11":  # TODO: and RV32C in supported_isa
-            # TODO: sample compressed instruction
-            pass
-        if binary_bin[-2:] == "11":
-            # TODO: sampling
-            pass
         processed_instr_name = self.process_instr_name(self.trace["instr"])
         if processed_instr_name in riscv_instr_name_t.__members__:
             instr_name = riscv_instr_name_t[processed_instr_name]
@@ -145,9 +138,10 @@ class riscv_instr_cov_test:
             # cov_instr is created, time to manually assign attributes
             # TODO: This will get fixed later when we get an inst from template
             instruction.assign_attributes()
-            if instruction.group.name in ["RV32I", "RV32M", "RV32C", "RV64I",
+            if (instruction.group.name in ["RV32I", "RV32M", "RV32C", "RV64I",
                                           "RV64M", "RV64C", "RV32F", "RV64F",
-                                          "RV32D", "RV64D", "RV32B", "RV64B"]:
+                                          "RV32D", "RV64D", "RV32B", "RV64B"]) \
+                                       and (instruction.group in rcs.supported_isa):
                 self.assign_trace_info_to_instr(instruction)
                 instruction.pre_sample()
                 self.instr_cg.sample(instruction)
@@ -178,7 +172,7 @@ class riscv_instr_cov_test:
 
     def process_instr_name(self, instruction):
         instruction = instruction.upper()
-        instruction.replace(".", "_")
+        instruction = instruction.replace(".", "_")
         instruction = self.update_instr_name(instruction)
         return instruction
 

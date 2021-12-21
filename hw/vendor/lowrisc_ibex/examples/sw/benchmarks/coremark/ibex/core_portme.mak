@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 RV_ISA = rv32im
+SUPPRESS_PCOUNT_DUMP = 0
 
 OUTFILES = $(OPATH)coremark.dis $(OPATH)coremark.map $(OPATH)coremark.vmem
 
@@ -35,6 +36,10 @@ PORT_CFLAGS = -g -march=$(RV_ISA) -mabi=ilp32 -static -mcmodel=medlow -mtune=sif
   -nostdlib -nostartfiles -ffreestanding -mstrict-align \
 	-DTOTAL_DATA_SIZE=2000 -DMAIN_HAS_NOARGC=1 \
 	-DPERFORMANCE_RUN=1
+
+ifeq ($(SUPPRESS_PCOUNT_DUMP),1)
+	PORT_CFLAGS += -DSUPPRESS_PCOUNT_DUMP
+endif
 
 FLAGS_STR = "$(PORT_CFLAGS) $(XCFLAGS) $(XLFLAGS) $(LFLAGS_END)"
 CFLAGS += $(PORT_CFLAGS) $(XCFLAGS) -I$(SIMPLE_SYSTEM_COMMON) -I$(PORT_DIR) -I.

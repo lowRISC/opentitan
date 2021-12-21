@@ -241,6 +241,14 @@ package spi_device_pkg;
 
   parameter int unsigned CmdInfoIdxW = $clog2(NumCmdInfo);
 
+  // Jedec Configuration Structure
+  typedef struct packed {
+    logic [7:0]  num_cc;    // continuation code repeat
+    logic [7:0]  cc;        // the value of CC (default 7Fh)
+    logic [7:0]  jedec_id;  // JEDEC Manufacturer ID
+    logic [15:0] device_id; // Device ID
+  } jedec_cfg_t ;
+
   // SPI Operation mode
   typedef enum logic [1:0] {
     FwMode      = 'h0,

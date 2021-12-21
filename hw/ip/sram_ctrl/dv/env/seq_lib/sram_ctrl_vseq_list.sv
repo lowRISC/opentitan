@@ -5,6 +5,7 @@
 `include "sram_ctrl_base_vseq.sv"
 `include "sram_ctrl_smoke_vseq.sv"
 `include "sram_ctrl_common_vseq.sv"
+`include "sram_ctrl_throughput_vseq.sv"
 `include "sram_ctrl_multiple_keys_vseq.sv"
 `include "sram_ctrl_bijection_vseq.sv"
 `include "sram_ctrl_stress_pipeline_vseq.sv"

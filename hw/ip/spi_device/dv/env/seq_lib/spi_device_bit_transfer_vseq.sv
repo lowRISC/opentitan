@@ -19,13 +19,10 @@ class spi_device_bit_transfer_vseq extends spi_device_base_vseq;
     uint       avail_data;
     bit [2:0]  bits_num;
 
-    spi_device_init();
-    ral.cfg.timer_v.set(8'hFF);
-    csr_update(.csr(ral.cfg));
-
     for (int i = 1; i <= num_trans; i++) begin
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      spi_device_init();
       repeat ($urandom_range(8)) begin
         bit [31:0] host_data_exp_q[$];
         `DV_CHECK_STD_RANDOMIZE_FATAL(host_data)
@@ -34,7 +31,7 @@ class spi_device_bit_transfer_vseq extends spi_device_base_vseq;
         `uvm_info(`gfn, $sformatf("Device Data = 0x%0h", device_data), UVM_LOW)
         cfg.clk_rst_vif.wait_clks(16);
         cfg.m_spi_agent_cfg.partial_byte = 1;
-        // Rendomize number of bits to send before CSN deassert
+        // Randomize number of bits to send before CSN deassert
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bits_num, bits_num > 0;)
         cfg.m_spi_agent_cfg.bits_to_transfer = bits_num;
         `uvm_info(`gfn, $sformatf("Bits_num = 0x%0h", bits_num), UVM_LOW)

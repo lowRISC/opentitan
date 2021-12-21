@@ -50,6 +50,17 @@
       package: "edn_pkg",
     }
   ],
+  countermeasures: [
+    { name: "FSM.SPARSE"
+      desc: "Sparse state machine implementation."
+    }
+    { name: "CNT.REDUN"
+      desc: "Counter hardening."
+    }
+    { name: "BUS.INTEGRITY"
+      desc: "End-to-end bus integrity scheme."
+    }
+  ],
 
   regwidth: "32",
   registers: [

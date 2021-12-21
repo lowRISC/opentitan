@@ -20,3 +20,5 @@
 `include "spi_device_tx_async_fifo_reset_vseq.sv"
 `include "spi_device_rx_async_fifo_reset_vseq.sv"
 `include "spi_device_abort_vseq.sv"
+`include "spi_device_tpm_locality_vseq.sv"
+`include "spi_device_tpm_read_vseq.sv"

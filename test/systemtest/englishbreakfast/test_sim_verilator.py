@@ -56,7 +56,8 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     """
 
     sim_path = bin_dir / "hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
-    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.32.vmem"
+    rom_vmem_path = (bin_dir /
+            "sw/device/lib/testing/test_rom/test_rom_sim_verilator.32.vmem")
 
     sim = ot.VerilatorSimOpenTitan(sim_path, rom_vmem_path, None, tmp_path)
 

@@ -21,7 +21,7 @@ The flow for each is different, as the boot ROM is meant to be fairly static whi
 
 ### Boot ROM development
 
-The FPGA bitstream is built after compiling whatever code is sitting in `sw/device/boot_rom`.
+The FPGA bitstream is built after compiling whatever code is sitting in `sw/device/lib/testing/test_rom`.
 This binary is used to initialize internal FPGA memory and is part of the bitstream directly.
 
 To update this content without rebuilding the FPGA, a flow is required to splice a new boot ROM binary into the bitstream.
@@ -44,7 +44,7 @@ $ ./util/fpga/cw310_loader.py --bitstream build/lowrisc_systems_chip_earlgrey_cw
 
 The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit` (this is created after following the steps in [getting_started_fpga]({{< relref "doc/ug/getting_started_fpga" >}})).
 
-The script assumes that there is an existing boot ROM image under `build-bin/sw/device/boot_rom` and then creates a new bitfile of the same name at the same location.
+The script assumes that there is an existing boot ROM image under `build-bin/sw/device/lib/testing/test_rom` and then creates a new bitfile of the same name at the same location.
 The original input bitfile is moved to `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig`.
 
 The `cw310_loader.py` can then be used to directly flash the updated bitstream to the FPGA.
@@ -81,4 +81,4 @@ Transferring frame 0x80000006 @             0x00002F10.
 Loading done.
 ```
 
-For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme]({{< relref "sw/device/boot_rom/README.md" >}}).
+For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme]({{< relref "sw/device/lib/testing/test_rom/README.md" >}}).

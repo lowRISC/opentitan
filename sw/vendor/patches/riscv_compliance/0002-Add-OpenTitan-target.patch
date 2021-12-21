@@ -70,7 +70,7 @@ index 0000000..353a9b3
 +To quickly get started with a verilator binary or FPGA bitfile, please see the
 +[OpenTitan quick start guide](https://docs.opentitan.org/doc/ug/quickstart/).
 +
-+Finally the support software must be built, including the boot_rom when using
++Finally the support software must be built, including the test_rom when using
 +the verilator target.
 +
 +```console
@@ -285,7 +285,7 @@ index 0000000..b71105c
 +    CARG = -DSIMULATION=1
 +    RUN_TARGET = \
 +        $(TARGET_SIM) \
-+            --meminit="rom,$(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.elf" \
++            --meminit="rom,$(OT_BIN)/sw/device/lib/testing/test_rom/test_rom_sim_verilator.elf" \
 +            --meminit="flash,$(<)" \
 +            +UARTDPI_LOG_uart0="$(*).uart.log" > $@ 2>&1 \
 +        && sed -e 's/^/[UART $(shell basename $(*))] /' "$(*).uart.log" $(REDIR) \

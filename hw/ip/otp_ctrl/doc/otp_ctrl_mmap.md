@@ -7,10 +7,11 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |:-------:|:--------------:|:----------:|:----------------:|:-----------------------------------------------------:|:--------------:|:----------:|
 |    0    |  VENDOR_TEST   |     64     |      32bit       |                        SCRATCH                        |     0x000      |     56     |
 |         |                |            |      64bit       |    [VENDOR_TEST_DIGEST](#Reg_vendor_test_digest_0)    |     0x038      |     8      |
-|    1    | CREATOR_SW_CFG |    800     |      32bit       |                CREATOR_SW_CFG_AST_CFG                 |     0x040      |    256     |
-|         |                |            |      32bit       |              CREATOR_SW_CFG_ROM_EXT_SKU               |     0x140      |     4      |
-|         |                |            |      32bit       |           CREATOR_SW_CFG_USE_SW_RSA_VERIFY            |     0x144      |     4      |
-|         |                |            |      32bit       |              CREATOR_SW_CFG_KEY_IS_VALID              |     0x148      |     8      |
+|    1    | CREATOR_SW_CFG |    800     |      32bit       |                CREATOR_SW_CFG_AST_CFG                 |     0x040      |    128     |
+|         |                |            |      32bit       |              CREATOR_SW_CFG_AST_INIT_EN               |     0x0C0      |     4      |
+|         |                |            |      32bit       |              CREATOR_SW_CFG_ROM_EXT_SKU               |     0x0C4      |     4      |
+|         |                |            |      32bit       |           CREATOR_SW_CFG_USE_SW_RSA_VERIFY            |     0x0C8      |     4      |
+|         |                |            |      32bit       |              CREATOR_SW_CFG_KEY_IS_VALID              |     0x0CC      |     8      |
 |         |                |            |      64bit       | [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0) |     0x358      |     8      |
 |    2    |  OWNER_SW_CFG  |    800     |      32bit       |                  ROM_ERROR_REPORTING                  |     0x360      |     4      |
 |         |                |            |      32bit       |                   ROM_BOOTSTRAP_EN                    |     0x364      |     4      |

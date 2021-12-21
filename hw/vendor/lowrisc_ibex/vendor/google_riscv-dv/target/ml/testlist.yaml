@@ -34,24 +34,24 @@
   description: >
     Random test with all useful knobs
   gen_opts: >
-    +instr_cnt=10000
+    +instr_cnt=100000
     +num_of_sub_program=5
     +illegal_instr_ratio=5
     +hint_instr_ratio=5
     +stream_name_0=riscv_load_store_rand_instr_stream
-    +stream_freq_0=4
+    +stream_freq_0=20
     +stream_name_1=riscv_loop_instr
-    +stream_freq_1=4
+    +stream_freq_1=20
     +stream_name_2=riscv_hazard_instr_stream
-    +stream_freq_2=4
+    +stream_freq_2=20
     +stream_name_3=riscv_load_store_hazard_instr_stream
-    +stream_freq_3=4
+    +stream_freq_3=20
     +stream_name_4=riscv_mem_region_stress_test
-    +stream_freq_4=4
+    +stream_freq_4=20
     +stream_name_5=riscv_jal_instr
-    +stream_freq_5=4
+    +stream_freq_5=20
     +stream_name_6=riscv_int_numeric_corner_stream
-    +stream_freq_6=4
+    +stream_freq_6=20
     +dist_control_mode=1
     +dist_shift=10
     +dist_arithmetic=10

@@ -42,7 +42,7 @@ def _fusesoc_build_impl(ctx):
     )
     return [DefaultInfo(
         files = depset([out_dir]),
-        data_runfiles = ctx.runfiles(files = [out_dir]),
+        data_runfiles = ctx.runfiles(files = [out_dir] + ctx.files.data),
     )]
 
 fusesoc_build = rule(
@@ -50,6 +50,7 @@ fusesoc_build = rule(
     attrs = {
         "cores": attr.label_list(allow_files = True, doc = "FuseSoC core specification files"),
         "srcs": attr.label_list(allow_files = True, doc = "Source files"),
+        "data": attr.label_list(allow_files = True, doc = "Files needed at runtime"),
         "target": attr.string(mandatory = True, doc = "Target name (e.g. 'sim')"),
         "systems": attr.string_list(mandatory = True, doc = "Systems to build"),
     },

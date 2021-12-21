@@ -44,8 +44,8 @@ package tlul_pkg;
   parameter tl_a_user_t TL_A_USER_DEFAULT = '{
     rsvd: '0,
     instr_type: prim_mubi_pkg::MuBi4False,
-    cmd_intg:  '0,
-    data_intg: '0
+    cmd_intg:  {H2DCmdIntgWidth{1'b1}},
+    data_intg: {DataIntgWidth{1'b1}}
   };
 
   typedef struct packed {
@@ -72,7 +72,7 @@ package tlul_pkg;
   localparam tl_h2d_t TL_H2D_DEFAULT = '{
     d_ready:  1'b1,
     a_opcode: tl_a_op_e'('0),
-    a_user:   tl_a_user_t'('0),
+    a_user:   TL_A_USER_DEFAULT,
     default:  '0
   };
 
@@ -82,8 +82,8 @@ package tlul_pkg;
   } tl_d_user_t;
 
   parameter tl_d_user_t TL_D_USER_DEFAULT = '{
-    rsp_intg: '0,
-    data_intg: '0
+    rsp_intg: {D2HRspIntgWidth{1'b1}},
+    data_intg: {DataIntgWidth{1'b1}}
   };
 
   typedef struct packed {
@@ -115,7 +115,7 @@ package tlul_pkg;
   localparam tl_d2h_t TL_D2H_DEFAULT = '{
     a_ready:  1'b1,
     d_opcode: tl_d_op_e'('0),
-    d_user:   tl_d_user_t'(0),
+    d_user:   TL_D_USER_DEFAULT,
     default:  '0
   };
 
@@ -158,7 +158,8 @@ package tlul_pkg;
     logic [H2DCmdMaxWidth-1:0] unused_cmd_payload;
     tl_h2d_cmd_intg_t cmd;
     cmd = extract_h2d_cmd_intg(tl);
-    {cmd_intg, unused_cmd_payload} = prim_secded_pkg::prim_secded_64_57_enc(H2DCmdMaxWidth'(cmd));
+    {cmd_intg, unused_cmd_payload} =
+        prim_secded_pkg::prim_secded_inv_64_57_enc(H2DCmdMaxWidth'(cmd));
    return cmd_intg;
   endfunction  // get_cmd_intg
 
@@ -166,7 +167,7 @@ package tlul_pkg;
   function automatic logic [DataIntgWidth-1:0] get_data_intg(logic [top_pkg::TL_DW-1:0] data);
     logic [DataIntgWidth-1:0] data_intg;
     logic [top_pkg::TL_DW-1:0] unused_data;
-    {data_intg, unused_data} = prim_secded_pkg::prim_secded_39_32_enc(data);
+    {data_intg, unused_data} = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
     return data_intg;
   endfunction  // get_data_intg
 

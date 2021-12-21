@@ -14,27 +14,10 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
 
   rand int lc_esc_delay;
 
-  rand bit wait_for_first_seed;
-
-  constraint num_ops_c {
-    num_ops dist {
-    [1    : 1000] :/ 2,
-    [1001 : 4000] :/ 2,
-    [4001 : 5000] :/ 1
-    };
-  }
-
   constraint lc_esc_delay_c {
     lc_esc_delay dist {
-      0               :/ 1,
-      [1 : 1_000_000] :/ 4
-    };
-  }
-
-  constraint wait_for_first_seed_c {
-    wait_for_first_seed dist {
-      0 :/ 1,
-      1 :/ 4
+      0            :/ 1,
+      [1 : 10_000] :/ 4
     };
   }
 
@@ -49,71 +32,59 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
   endtask
 
   virtual task body();
-    repeat(num_trans) begin
-
-      bit sent_lc_escalate = 0;
-
+    repeat (num_trans) begin
+      req_mem_init();
       fork
         begin
-          // randomly enable zero delays in the SRAM TLUL agent
-          cfg.zero_delays = $urandom_range(0, 1);
-          req_scr_key();
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_ops)
-          do_rand_ops(.num_ops(num_ops), .abort(1));
+          // when esc occurs during a OP, the OP can't be finished until esc drops.
+          // So don't send too many OPs, otherwise, it may time out
+          do_rand_ops(.num_ops($urandom_range(10, 100)), .blocking(0), .abort(1),
+                      .wait_complete(0));
         end
         begin
-          // wait a random number of cycles then send a lc_escalation request.
-          // check if reset is asserted as well to avoid issues further down the road
-
-          if (wait_for_first_seed) csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1));
-
           #lc_esc_delay;
 
-          if (!cfg.under_reset) begin
-            cfg.lc_vif.drive_lc_esc_en(lc_ctrl_pkg::On);
-            sent_lc_escalate = 1;
-          end
+          cfg.lc_vif.drive_lc_esc_en(lc_ctrl_pkg::On);
         end
       join
 
-      // if lc escalation request was sent, then we need to perform some extra memory accesses
-      if (sent_lc_escalate) begin
-        bit [TL_DW-1:0] status;
+      `uvm_info(`gfn, "Esc_en is on", UVM_MEDIUM);
 
-        // after escalation request is seen, it takes 3 cycles to propagate from
-        // `sram_ctrl` to the `prim_1p_ram_scr`, and 1 more cycle to update the CSRs
-        cfg.clk_rst_vif.wait_clks(LC_ESCALATION_PROPAGATION_CYCLES + 1);
+      // after escalation request is seen, it takes 3 cycles to propagate from
+      // `sram_ctrl` to the `prim_1p_ram_scr`, and 1 more cycle to update the CSRs
+      cfg.clk_rst_vif.wait_clks(LC_ESCALATION_PROPAGATION_CYCLES + 1);
 
-        csr_utils_pkg::wait_no_outstanding_access();
+      fork
+        begin
+          bit [TL_DW-1:0] status;
+          // read out STATUS csr, scoreboard will check that proper updates have been made
+          csr_rd(.ptr(ral.status), .value(status));
+          csr_wr(.ptr(ral.status), .value(status));
 
-        fork
-          begin
-            // read out STATUS csr, scoreboard will check that proper updates have been made
-            csr_rd(.ptr(ral.status), .value(status));
-            csr_wr(.ptr(ral.status), .value(status));
+          `uvm_info(`gfn,
+            $sformatf("Performing %0d random memory accesses after LC escalation request",
+                      num_ops_after_reset),
+            UVM_HIGH)
+          do_rand_ops(.num_ops(num_ops_after_reset), .blocking(0), .abort(1),
+                      .wait_complete(0));
 
-            `uvm_info(`gfn,
-              $sformatf("Performing %0d random memory accesses after LC escalation request",
-                        num_ops_after_reset),
-              UVM_HIGH)
-            do_rand_ops(.num_ops(num_ops_after_reset), .blocking(1), .abort(1));
+          // reset to get the DUT out of terminal state
+          apply_reset();
+        end
+        begin
+          // randomly drop the escalation request, should remain latched by design
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_esc_delay)
+          #lc_esc_delay;
+          cfg.lc_vif.drive_lc_esc_en(lc_ctrl_pkg::Off);
+          `uvm_info(`gfn, "Esc_en is off", UVM_MEDIUM);
+        end
+      join
 
-            // reset to get the DUT out of terminal state
-            apply_reset();
-          end
-          begin
-            // randomly drop the escalation request, should remain latched by design
-            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_esc_delay)
-            #lc_esc_delay;
-            cfg.lc_vif.drive_lc_esc_en(lc_ctrl_pkg::Off);
-          end
-        join
-
-        `uvm_info(`gfn,
-          $sformatf("Performing %0d random memory accesses after reset", num_ops_after_reset),
-          UVM_HIGH)
-        do_rand_ops(.num_ops(num_ops_after_reset), .blocking(1));
-      end
+      req_mem_init();
+      `uvm_info(`gfn,
+                $sformatf("Performing %0d random memory accesses after reset", num_ops_after_reset),
+                UVM_HIGH)
+      do_rand_ops(.num_ops(num_ops_after_reset), .blocking(1));
     end
   endtask
 

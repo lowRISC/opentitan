@@ -20,7 +20,7 @@ module tlul_rsp_intg_chk import tlul_pkg::*; (
   tl_d2h_rsp_intg_t rsp;
   assign rsp = extract_d2h_rsp_intg(tl_i);
 
-  prim_secded_64_57_dec u_chk (
+  prim_secded_inv_64_57_dec u_chk (
     .data_i({tl_i.d_user.rsp_intg, D2HRspMaxWidth'(rsp)}),
     .data_o(),
     .syndrome_o(),

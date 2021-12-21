@@ -140,11 +140,11 @@ def main():
         sys.exit(1)
 
     if (args.build):
-        # Build the software including boot_rom to enable the FPGA build.
+        # Build the software including test_rom to enable the FPGA build.
         binaries = [
-            'sw/device/boot_rom/boot_rom_export_fpga_nexysvideo',
+            'sw/device/lib/testing/test_rom/test_rom_export_fpga_nexysvideo',
             'sw/device/sca/aes_serial_export_fpga_nexysvideo',
-            'sw/device/boot_rom/boot_rom_export_sim_verilator',
+            'sw/device/lib/testing/test_rom/test_rom_export_sim_verilator',
             'sw/device/tests/aes_smoketest_export_sim_verilator',
             'sw/device/examples/hello_world/hello_world_export_sim_verilator',
         ]
