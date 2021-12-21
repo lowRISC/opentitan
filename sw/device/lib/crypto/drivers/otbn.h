@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_OTBN_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_OTBN_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_OTBN_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_OTBN_H_
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -26,7 +26,7 @@ extern const size_t kOtbnIMemSizeBytes;
 /**
  * OTBN commands
  */
-typedef enum dif_otbn_cmd {
+typedef enum otbn_cmd {
   kOtbnCmdExecute = 0xd8,
   kOtbnCmdSecWipeDmem = 0xc3,
   kOtbnCmdSecWipeImem = 0x1e,
@@ -190,4 +190,4 @@ otbn_error_t otbn_set_ctrl_software_errs_fatal(bool enable);
 }
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_OTBN_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_OTBN_H_
