@@ -348,11 +348,19 @@ cc_library(
 
 cc_test(
     name = "rstmgr_unittest",
-    srcs = ["rstmgr_unittest.cc"],
+    srcs = [
+        "rstmgr.c",
+        "rstmgr.h",
+        "rstmgr_unittest.cc",
+    ],
+    defines = [
+        "OT_OFF_TARGET_TEST",
+    ],
     deps = [
-        ":rstmgr",
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
         "@googletest//:gtest_main",
     ],
