@@ -25,6 +25,7 @@ interface sysrst_ctrl_if (
   logic z3_wakeup;
   logic sysrst_ctrl_rst_req;
 
+  logic [6:0] sysrst_ctrl_inputs;
 
   // reset value of input signals
   function automatic void reset_signals();
@@ -37,6 +38,7 @@ interface sysrst_ctrl_if (
     ec_rst_l_in <= 1;
     flash_wp_l_in <= 1;
   endfunction
+
 
   task automatic randomize_input();
     // VCS doesn't support randomizing logic variable
@@ -53,5 +55,8 @@ interface sysrst_ctrl_if (
     ec_rst_l_in = ec_rst_l;
     flash_wp_l_in = flash_wp;
   endtask
+
+  assign sysrst_ctrl_inputs = {flash_wp_l_in, ec_rst_l_in, ac_present, key2_in, key1_in, key0_in,
+                               pwrb_in};
 
 endinterface : sysrst_ctrl_if

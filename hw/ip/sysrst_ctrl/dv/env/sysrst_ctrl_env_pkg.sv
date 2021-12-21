@@ -23,9 +23,32 @@ package sysrst_ctrl_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
   parameter uint   NUM_ALERTS = 1;
 
+  parameter uint NumInputs = 7;
+
   typedef enum {
     IntrSysrstCtrl
   } sysrst_ctrl_intr_e;
+
+  typedef enum {
+    PwrbIdx,
+    Key0Idx,
+    Key1Idx,
+    Key2Idx,
+    AcPresentIdx,
+    EcRstIdx,
+    FlashWpIdx
+  } sysrst_input_idx_e;
+
+
+  typedef struct {
+    bit en_h2l;
+    bit h2l_triggered;
+  } edge_detect_h2l_t;
+
+  typedef struct {
+    bit en_l2h;
+    bit l2h_triggered;
+  } edge_detect_l2h_t;
 
   // package sources
   `include "sysrst_ctrl_env_cfg.sv"
