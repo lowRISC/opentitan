@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OTBN_UTIL_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OTBN_UTIL_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_OTBN_UTIL_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_OTBN_UTIL_H_
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -240,22 +240,8 @@ otbn_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len,
 otbn_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len,
                                       const otbn_addr_t src, uint32_t *dest);
 
-/**
- * Evaluate an expression and return a mask ROM error if the result is an
- * OTBN error.
- *
- * @param expr_ An expression which results in an otbn_error_t.
- */
-#define FOLD_OTBN_ERROR(expr_)          \
-  do {                                  \
-    otbn_error_t local_error_ = expr_;  \
-    if (local_error_ != kOtbnErrorOk) { \
-      return kErrorOtbnInternal;        \
-    }                                   \
-  } while (0)
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OTBN_UTIL_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_OTBN_UTIL_H_
