@@ -14,4 +14,5 @@
 `include "sysrst_ctrl_auto_blk_key_output_vseq.sv"
 `include "sysrst_ctrl_ultra_low_pwr_vseq.sv"
 `include "sysrst_ctrl_combo_detect_vseq.sv"
+`include "sysrst_ctrl_edge_detect_vseq.sv"
 

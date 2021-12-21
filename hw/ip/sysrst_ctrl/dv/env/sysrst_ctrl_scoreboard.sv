@@ -71,7 +71,6 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
         // FIXME
       end
       "intr_test": begin
-        // FIXME
       end
       "pin_out_ctl","pin_allowed_ctl","pin_out_value": begin
       end
@@ -89,11 +88,13 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "auto_block_debounce_ctl", "auto_block_out_ctl": begin
       end
+      "wkup_status": begin
+        do_read_check = 1'b0;
+      end
       "pin_in_value": begin
         do_read_check = 1'b0;  //This check is done in sequence
       end
-      "wkup_status": begin
-        do_read_check = 1'b0;  //This check is done in sequence
+      "auto_block_debounce_ctl", "auto_block_out_ctl": begin
       end
       "ulp_ctl", "ulp_ac_debounce_ctl", "ulp_lid_debounce_ctl", "ulp_pwrb_debounce_ctl": begin
       end

@@ -49,6 +49,7 @@
     {
       name: sysrst_ctrl_smoke
       uvm_test_seq: sysrst_ctrl_smoke_vseq
+      reseed:10
     }
     {
       name: sysrst_ctrl_in_out_inverted
@@ -81,10 +82,17 @@
     {
       name: sysrst_ctrl_ultra_low_pwr
       uvm_test_seq: sysrst_ctrl_ultra_low_pwr_vseq
+      run_opts: ["+test_timeout_ns=1100_000_000"]
     }
     {
       name: sysrst_ctrl_combo_detect
       uvm_test_seq: sysrst_ctrl_combo_detect_vseq
+    }
+    {
+      name: sysrst_ctrl_edge_detect
+      uvm_test_seq: sysrst_ctrl_edge_detect_vseq
+      reseed: 1
+      run_opts: ["+test_timeout_ns=200_000_000"]
     }
   ]
 

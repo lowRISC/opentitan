@@ -25,6 +25,7 @@ interface sysrst_ctrl_if (
   logic z3_wakeup;
   logic sysrst_ctrl_rst_req;
 
+  logic [6:0] sysrst_ctrl_inputs;
 
   // reset value of input signals
   function automatic void reset_signals();
@@ -37,6 +38,7 @@ interface sysrst_ctrl_if (
     ec_rst_l_in <= 1;
     flash_wp_l_in <= 1;
   endfunction
+
 
   task automatic randomize_input();
     // VCS doesn't support randomizing logic variable
@@ -53,5 +55,16 @@ interface sysrst_ctrl_if (
     ec_rst_l_in = ec_rst_l;
     flash_wp_l_in = flash_wp;
   endtask
+
+  /*task automatic randomize_input();
+    // VCS doesn't support randomizing logic variable
+    // so declare bit variable, randomize it and assigned it to logic
+    bit pwrb, key0;
+    `DV_CHECK_FATAL(std::randomize(pwrb), ,
+       "sysrst_ctrl_if")
+    pwrb_in = pwrb;
+  endtask*/
+
+  assign sysrst_ctrl_inputs = {pwrb_in, key0_in, key1_in, key2_in, ac_present, ec_rst_l_in, flash_wp_l_in};
 
 endinterface : sysrst_ctrl_if
