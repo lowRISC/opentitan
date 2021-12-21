@@ -87,6 +87,10 @@
       name: sysrst_ctrl_combo_detect
       uvm_test_seq: sysrst_ctrl_combo_detect_vseq
     }
+    {
+      name: sysrst_ctrl_edge_detect
+      uvm_test_seq: sysrst_ctrl_edge_detect_vseq
+    }
   ]
 
   // List of regressions.

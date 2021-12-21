@@ -30,6 +30,7 @@ filesets:
       - seq_lib/sysrst_ctrl_auto_blk_key_output_vseq.sv: {is_include_file: true}
       - seq_lib/sysrst_ctrl_ultra_low_pwr_vseq.sv: {is_include_file: true}
       - seq_lib/sysrst_ctrl_combo_detect_vseq.sv: {is_include_file: true}
+      - seq_lib/sysrst_ctrl_edge_detect_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
