@@ -65,11 +65,13 @@ cc_library(
     hdrs = ["flash_ctrl.h"],
     deps = [
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
 
@@ -79,10 +81,12 @@ cc_test(
     deps = [
         ":flash_ctrl",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base",
         "//sw/device/lib/base/testing",
         "//sw/device/silicon_creator/lib/base:mock_abs_mmio",
         "//sw/device/silicon_creator/lib/base:mock_sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:mock_otp",
         "@googletest//:gtest_main",
     ],
 )
