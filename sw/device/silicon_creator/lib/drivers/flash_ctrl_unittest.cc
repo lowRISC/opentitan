@@ -274,97 +274,132 @@ TEST_F(ExecTest, Disable) {
   flash_ctrl_exec_set(kFlashCtrlExecDisable);
 }
 
-struct InfoMpSetCase {
+struct PermsSetCase {
   /**
    * Access permissions to set.
    */
   flash_ctrl_perms_t perms;
   /**
-   * Expected value to be read from the config register.
+   * Expected value to be read from the info config register.
    */
-  uint32_t read_val;
+  uint32_t info_read_val;
   /**
-   * Expected value to be written to the config register.
+   * Expected value to be written to the info config register.
    */
-  uint32_t write_val;
+  uint32_t info_write_val;
+  /**
+   * Expected value to be read from the data config register.
+   */
+  uint32_t data_read_val;
+  /**
+   * Expected value to be written to the data config register.
+   */
+  uint32_t data_write_val;
 };
 
-class FlashCtrlInfoMpSetTest
-    : public FlashCtrlTest,
-      public testing::WithParamInterface<InfoMpSetCase> {};
+class FlashCtrlPermsSetTest : public FlashCtrlTest,
+                              public testing::WithParamInterface<PermsSetCase> {
+};
 
-TEST_P(FlashCtrlInfoMpSetTest, InfoMpSet) {
+TEST_P(FlashCtrlPermsSetTest, InfoPermsSet) {
   for (const auto &it : InfoPages()) {
-    EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().read_val);
+    EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().info_read_val);
     EXPECT_SEC_WRITE32_SHADOWED(base_ + it.second.cfg_offset,
-                                GetParam().write_val);
+                                GetParam().info_write_val);
     EXPECT_SEC_WRITE_INCREMENT(1);
 
     flash_ctrl_info_perms_set(it.first, GetParam().perms);
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlInfoMpSetTest,
+TEST_P(FlashCtrlPermsSetTest, DataDefaultPermsSet) {
+  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+                    GetParam().data_read_val);
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+      GetParam().data_write_val);
+  EXPECT_SEC_WRITE_INCREMENT(1);
+
+  flash_ctrl_data_default_perms_set(GetParam().perms);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlPermsSetTest,
                          testing::Values(
                              // Read.
-                             InfoMpSetCase{
+                             PermsSetCase{
                                  .perms = {.read = kHardenedBoolTrue,
                                            .write = kHardenedBoolFalse,
                                            .erase = kHardenedBoolFalse},
-                                 .read_val = 0x0,
-                                 .write_val = 0x3,
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x3,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x1,
                              },
-                             InfoMpSetCase{
+                             PermsSetCase{
                                  .perms = {.read = kHardenedBoolTrue,
                                            .write = kHardenedBoolFalse,
                                            .erase = kHardenedBoolFalse},
-                                 .read_val = 0x7f,
-                                 .write_val = 0x73,
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x73,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x39,
                              },
                              // Write.
-                             InfoMpSetCase{
+                             PermsSetCase{
                                  .perms = {.read = kHardenedBoolFalse,
                                            .write = kHardenedBoolTrue,
                                            .erase = kHardenedBoolFalse},
-                                 .read_val = 0x0,
-                                 .write_val = 0x5,
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x5,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x2,
                              },
-                             InfoMpSetCase{
+                             PermsSetCase{
                                  .perms = {.read = kHardenedBoolFalse,
                                            .write = kHardenedBoolTrue,
                                            .erase = kHardenedBoolFalse},
-                                 .read_val = 0x7f,
-                                 .write_val = 0x75,
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x75,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x3a,
                              },
                              // Erase.
-                             InfoMpSetCase{
+                             PermsSetCase{
                                  .perms = {.read = kHardenedBoolFalse,
                                            .write = kHardenedBoolFalse,
                                            .erase = kHardenedBoolTrue},
-                                 .read_val = 0x0,
-                                 .write_val = 0x9,
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x9,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x4,
                              },
-                             InfoMpSetCase{
+                             PermsSetCase{
                                  .perms = {.read = kHardenedBoolFalse,
                                            .write = kHardenedBoolFalse,
                                            .erase = kHardenedBoolTrue},
-                                 .read_val = 0x7f,
-                                 .write_val = 0x79,
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x79,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x3c,
                              },
                              // Write and erase.
-                             InfoMpSetCase{
+                             PermsSetCase{
                                  .perms = {.read = kHardenedBoolFalse,
                                            .write = kHardenedBoolTrue,
                                            .erase = kHardenedBoolTrue},
-                                 .read_val = 0x0,
-                                 .write_val = 0xd,
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0xd,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x6,
                              },
-                             InfoMpSetCase{
+                             PermsSetCase{
                                  .perms = {.read = kHardenedBoolFalse,
                                            .write = kHardenedBoolTrue,
                                            .erase = kHardenedBoolTrue},
-                                 .read_val = 0x7f,
-                                 .write_val = 0x7d,
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x7d,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x3e,
                              }));
 
 TEST_F(FlashCtrlTest, CreatorInfoLockdown) {

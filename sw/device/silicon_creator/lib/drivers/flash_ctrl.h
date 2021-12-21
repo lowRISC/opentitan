@@ -291,6 +291,16 @@ typedef struct flash_ctrl_perms {
 } flash_ctrl_perms_t;
 
 /**
+ * Sets default access permissions for the data partition.
+ *
+ * A permission is enabled only if the corresponding field in `perms` is
+ * `kHardenedBoolTrue`.
+ *
+ * @param perms New permissions.
+ */
+void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms);
+
+/**
  * Sets access permissions for an info page.
  *
  * A permission is enabled only if the corresponding field in `perms` is
