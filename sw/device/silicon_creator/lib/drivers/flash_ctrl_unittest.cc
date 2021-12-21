@@ -402,6 +402,133 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlPermsSetTest,
                                  .data_write_val = 0x3e,
                              }));
 
+struct CfgSetCase {
+  /**
+   * Configuration settings to set.
+   */
+  flash_ctrl_cfg_t cfg;
+  /**
+   * Expected value to be read from the info config register.
+   */
+  uint32_t info_read_val;
+  /**
+   * Expected value to be written to the info config register.
+   */
+  uint32_t info_write_val;
+  /**
+   * Expected value to be read from the data config register.
+   */
+  uint32_t data_read_val;
+  /**
+   * Expected value to be written to the data config register.
+   */
+  uint32_t data_write_val;
+};
+
+class FlashCtrlCfgSetTest : public FlashCtrlTest,
+                            public testing::WithParamInterface<CfgSetCase> {};
+
+TEST_P(FlashCtrlCfgSetTest, InfoCfgSet) {
+  for (const auto &it : InfoPages()) {
+    EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().info_read_val);
+    EXPECT_SEC_WRITE32_SHADOWED(base_ + it.second.cfg_offset,
+                                GetParam().info_write_val);
+    EXPECT_SEC_WRITE_INCREMENT(1);
+
+    flash_ctrl_info_cfg_set(it.first, GetParam().cfg);
+  }
+}
+
+TEST_P(FlashCtrlCfgSetTest, DataDefaultCfgSet) {
+  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+                    GetParam().data_read_val);
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+      GetParam().data_write_val);
+  EXPECT_SEC_WRITE_INCREMENT(1);
+
+  flash_ctrl_data_default_cfg_set(GetParam().cfg);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
+                         testing::Values(
+                             // Scrambling.
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x11,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x8,
+                             },
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x1f,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0xf,
+                             },
+                             // ECC.
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x21,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x10,
+                             },
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x2f,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x17,
+                             },
+                             // High endurance.
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8True},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x41,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x20,
+                             },
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8True},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x4f,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x27,
+                             },
+                             // Scrambling and ECC.
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x31,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x18,
+                             },
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x3f,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x1f,
+                             }));
+
 TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
   std::array<flash_ctrl_info_page_t, 6> no_owner_access = {
       kFlashCtrlInfoPageOwnerSecret, kFlashCtrlInfoPageWaferAuthSecret,

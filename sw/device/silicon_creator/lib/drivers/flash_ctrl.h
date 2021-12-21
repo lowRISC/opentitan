@@ -312,6 +312,39 @@ void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms);
 void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
                             flash_ctrl_perms_t perms);
 
+/**
+ * A struct for flash configuration settings.
+ */
+typedef struct flash_ctrl_cfg {
+  /**
+   * Scrambling.
+   */
+  multi_bit_bool_t scrambling;
+  /**
+   * ECC.
+   */
+  multi_bit_bool_t ecc;
+  /**
+   * High endurance.
+   */
+  multi_bit_bool_t he;
+} flash_ctrl_cfg_t;
+
+/**
+ * Sets default configuration settings for the data partition.
+ *
+ * @param cfg New configuration settings.
+ */
+void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
+
+/**
+ * Sets configuration settings for an info page.
+ *
+ * @param info_page An information page.
+ * @param cfg New configuration settings.
+ */
+void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page, flash_ctrl_cfg_t cfg);
+
 typedef enum flash_ctrl_exec {
   kFlashCtrlExecDisable = kMultiBitBool4False,
   kFlashCtrlExecEnable = kMultiBitBool4True,

@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -416,6 +417,42 @@ void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
   reg = bitfield_bit32_write(
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ERASE_EN_0_BIT,
       perms.erase == kHardenedBoolTrue);
+  sec_mmio_write32_shadowed(cfg_addr, reg);
+  sec_mmio_write_increment(1);
+}
+
+void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg) {
+  // Read first to preserve permission bits.
+  uint32_t reg =
+      sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET);
+  reg = bitfield_bit32_write(reg,
+                             FLASH_CTRL_DEFAULT_REGION_SHADOWED_SCRAMBLE_EN_BIT,
+                             cfg.scrambling == kMultiBitBool8True);
+  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_ECC_EN_BIT,
+                             cfg.ecc == kMultiBitBool8True);
+  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_HE_EN_BIT,
+                             cfg.he == kMultiBitBool8True);
+  sec_mmio_write32_shadowed(
+      kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, reg);
+  sec_mmio_write_increment(1);
+}
+
+void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
+                             flash_ctrl_cfg_t cfg) {
+  const uint32_t cfg_addr = info_cfg_regs(info_page).cfg_addr;
+  // Read first to preserve permission bits.
+  uint32_t reg = sec_mmio_read32(cfg_addr);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_EN_0_BIT, true);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT,
+      cfg.scrambling == kMultiBitBool8True);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ECC_EN_0_BIT,
+      cfg.ecc == kMultiBitBool8True);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_HE_EN_0_BIT,
+      cfg.he == kMultiBitBool8True);
   sec_mmio_write32_shadowed(cfg_addr, reg);
   sec_mmio_write_increment(1);
 }
