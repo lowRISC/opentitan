@@ -236,17 +236,17 @@ static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
                                          size_t index,
                                          const boot_data_t *boot_data,
                                          hardened_bool_t erase) {
-  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
-                                   .read = kHardenedBoolTrue,
-                                   .write = kHardenedBoolTrue,
-                                   .erase = erase,
-                               });
+  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
+                                      .read = kHardenedBoolTrue,
+                                      .write = kHardenedBoolTrue,
+                                      .erase = erase,
+                                  });
   rom_error_t error = boot_data_entry_write_impl(page, index, boot_data, erase);
-  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
-                                   .read = kHardenedBoolFalse,
-                                   .write = kHardenedBoolFalse,
-                                   .erase = kHardenedBoolFalse,
-                               });
+  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
+                                      .read = kHardenedBoolFalse,
+                                      .write = kHardenedBoolFalse,
+                                      .erase = kHardenedBoolFalse,
+                                  });
   return error;
 }
 
@@ -274,17 +274,17 @@ static rom_error_t boot_data_entry_invalidate(flash_ctrl_info_page_t page,
   const uint32_t offset =
       index * sizeof(boot_data_t) + offsetof(boot_data_t, is_valid);
   const uint32_t val[2] = {0, 0};
-  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
-                                   .read = kHardenedBoolFalse,
-                                   .write = kHardenedBoolTrue,
-                                   .erase = kHardenedBoolFalse,
-                               });
+  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
+                                      .read = kHardenedBoolFalse,
+                                      .write = kHardenedBoolTrue,
+                                      .erase = kHardenedBoolFalse,
+                                  });
   rom_error_t error = flash_ctrl_info_write(page, offset, 2, val);
-  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
-                                   .read = kHardenedBoolFalse,
-                                   .write = kHardenedBoolFalse,
-                                   .erase = kHardenedBoolFalse,
-                               });
+  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
+                                      .read = kHardenedBoolFalse,
+                                      .write = kHardenedBoolFalse,
+                                      .erase = kHardenedBoolFalse,
+                                  });
   return error;
 }
 
@@ -390,17 +390,17 @@ static rom_error_t boot_data_page_info_get_impl(
  */
 static rom_error_t boot_data_page_info_get(flash_ctrl_info_page_t page,
                                            boot_data_page_info_t *page_info) {
-  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
-                                   .read = kHardenedBoolTrue,
-                                   .write = kHardenedBoolFalse,
-                                   .erase = kHardenedBoolFalse,
-                               });
+  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
+                                      .read = kHardenedBoolTrue,
+                                      .write = kHardenedBoolFalse,
+                                      .erase = kHardenedBoolFalse,
+                                  });
   rom_error_t error = boot_data_page_info_get_impl(page, page_info);
-  flash_ctrl_info_mp_set(page, (flash_ctrl_mp_t){
-                                   .read = kHardenedBoolFalse,
-                                   .write = kHardenedBoolFalse,
-                                   .erase = kHardenedBoolFalse,
-                               });
+  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
+                                      .read = kHardenedBoolFalse,
+                                      .write = kHardenedBoolFalse,
+                                      .erase = kHardenedBoolFalse,
+                                  });
   return error;
 }
 
