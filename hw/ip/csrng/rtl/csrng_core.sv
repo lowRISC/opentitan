@@ -338,6 +338,7 @@ module csrng_core import csrng_pkg::*; #(
 
   logic                    cs_rdata_capt_vld;
   logic                    cs_bus_cmp_alert;
+  logic                    cmd_rdy;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_reg2hw_genbits;
@@ -358,6 +359,7 @@ module csrng_core import csrng_pkg::*; #(
   logic               entropy_src_fips_q, entropy_src_fips_d;
   logic [63:0]        cs_rdata_capt_q, cs_rdata_capt_d;
   logic               cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
+  logic               sw_rdy_sts_q, sw_rdy_sts_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -375,6 +377,7 @@ module csrng_core import csrng_pkg::*; #(
       entropy_src_fips_q <= '0;
       cs_rdata_capt_q       <= '0;
       cs_rdata_capt_vld_q   <= '0;
+      sw_rdy_sts_q   <= '0;
     end else begin
       acmd_q  <= acmd_d;
       shid_q  <= shid_d;
@@ -390,6 +393,7 @@ module csrng_core import csrng_pkg::*; #(
       entropy_src_fips_q <= entropy_src_fips_d;
       cs_rdata_capt_q       <= cs_rdata_capt_d;
       cs_rdata_capt_vld_q   <= cs_rdata_capt_vld_d;
+      sw_rdy_sts_q   <= sw_rdy_sts_d;
     end
 
   //--------------------------------------------
@@ -780,7 +784,14 @@ module csrng_core import csrng_pkg::*; #(
   assign cmd_stage_shid[NApps-1] = StateId'(NApps-1);
   assign cmd_stage_bus[NApps-1] = reg2hw.cmd_req.q;
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
-  assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_stage_rdy[NApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
+  assign cmd_rdy = !cmd_stage_vld[NApps-1] && sw_rdy_sts_q;
+  assign sw_rdy_sts_d =
+         !cs_enable ? 1'b1 :
+         cmd_stage_vld[NApps-1] ? 1'b0 :
+         cmd_stage_rdy[NApps-1] ? 1'b1 :
+         sw_rdy_sts_q;
+
   // cmd ack sts
   assign hw2reg.sw_cmd_sts.cmd_sts.de = cmd_stage_ack[NApps-1];
   assign hw2reg.sw_cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NApps-1];
