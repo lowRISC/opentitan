@@ -590,12 +590,16 @@ To arbitrate between the two, a hardware mutex needs to be obtained before eithe
 The hardware mutex internally acts as a mux to block off the unselected path and all accesses to the request interface are blocked until it is claimed.
 If two requests arrive simultaneously, the TAP interface is given priority.
 
-The request interface consists of 5 registers:
+The request interface consists of 7 registers:
 
-1. {{< regref "TRANSITION_TARGET" >}}: Specifies the target state to which the agent wants to transition.
-2. {{< regref "TRANSITION_TOKEN_*" >}}: Any necessary token for conditional transitions.
-3. {{< regref "TRANSITION_CMD" >}}: Start the life cycle transition.
-4. {{< regref "STATUS" >}}: Indicates whether the requested transition succeeded.
+1. {{< regref "TRANSITION_CTRL" >}}: Control register for the transition, can be used to switch to an external clock.
+2. {{< regref "TRANSITION_TARGET" >}}: Specifies the target state to which the agent wants to transition.
+3. {{< regref "TRANSITION_TOKEN_*" >}}: Any necessary token for conditional transitions.
+4. {{< regref "TRANSITION_CMD" >}}: Start the life cycle transition.
+5. {{< regref "STATUS" >}}: Indicates whether the requested transition succeeded.
+6. {{< regref OTP_VENDOR_TEST_CTRL >}}: See [Macro-specific test control bits]({{< relref "#vendor-specific-test-control-register" >}}).
+7. {{< regref OTP_VENDOR_TEST_STATUS >}}: See [Macro-specific test control bits]({{< relref "#vendor-specific-test-control-register" >}}).
+
 If the transition fails, the cause will be reported in this register as well.
 
 See diagram below.
@@ -612,9 +616,12 @@ This resets the mux to select no one and also holds the request interface in res
 #### Vendor-specific Test Control Register
 
 Certain OTP macros require special configuration bits to be set during the test phases.
-Hence, the life cycle CSRs include register {{< regref OTP_TEST_CTRL.VAL >}}, which is reserved for vendor-specific test control bits.
-Its value is only forwarded to the OTP macro in RAW, TEST_* and RMA life cycle states.
-In all other life cycle states, a value of 0 will be sent to the OTP macro.
+Likewise, it is necessary to expose macro-specific status bits during the test phases.
+To this end, the life cycle CSRs contain the {{< regref OTP_VENDOR_TEST_CTRL >}} and {{< regref OTP_VENDOR_TEST_STATUS >}} registers, which are reserved for vendor-specific test control and status bits.
+These registers are only active during RAW, TEST_* and RMA life cycle states.
+In all other life cycle states, the status register reads back all-zero, and the control register value will be tied to 0 before forwarding it to the OTP macro.
+
+Similarly to the [Life Cycle Request Interface]({{< relref "#life-cycle-request-interface" >}}), the hardware mutex must be claimed in order to access these registers.
 
 ### TAP Construction and Isolation
 
