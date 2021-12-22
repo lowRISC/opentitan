@@ -72,13 +72,10 @@
   ]
 
   // List of regressions.
-  // TODO: temporaly disable due to WiP V1
-  /*
   regressions: [
     {
       name: smoke
       tests: ["spi_host_smoke"]
     }
   ]
-  */
 }

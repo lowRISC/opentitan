@@ -325,5 +325,12 @@
             Collect coverage that all events was enabled and seen
             '''
     }
+    {
+      name: different_ch_settings_cg
+      desc: '''
+            - check that multiple end points was running at different speeds concurrently.
+            - collect coverage that multiple SPI endpoints was run with different config opts
+            '''
+    }   
   ]
 }
