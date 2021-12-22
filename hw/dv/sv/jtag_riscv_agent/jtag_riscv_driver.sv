@@ -100,7 +100,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
   // This task sends a CSR register read/write request via JTAG data register.
   protected virtual task send_csr_dr_req(
       input bit [DMI_OPW-1:0] op, input bit [DMI_DATAW-1:0] data,
-      input bit [DMI_ADDRW-1:0] addr, output bit [DMI_DATAW-1:0] dout);
+      input bit [DMI_ADDRW-1:0] addr, output bit [DMI_DRW-1:0] dout);
     jtag_dr_seq m_dr_seq;
     `uvm_create_obj(jtag_dr_seq, m_dr_seq);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_dr_seq,
