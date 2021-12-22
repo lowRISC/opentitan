@@ -57,6 +57,14 @@ interface lc_ctrl_if (
   event                                 fsm_backdoor_count_write_ev;
   event                                 fsm_backdoor_count_read_ev;
 
+  //
+  // Whitebox signals - these come from within the RTL
+  //
+
+  // Decoded mutex claim signal for JTAG and TL
+  logic                                 mutex_claim_jtag;
+  logic                                 mutex_claim_tl;
+
   // Debug signals
   lc_ctrl_env_pkg::lc_ctrl_err_inj_t    err_inj;
   lc_ctrl_env_pkg::lc_ctrl_test_phase_e test_phase;

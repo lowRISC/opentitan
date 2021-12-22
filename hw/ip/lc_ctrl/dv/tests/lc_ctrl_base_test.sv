@@ -16,6 +16,9 @@ class lc_ctrl_base_test extends cip_base_test #(
     // Enable JTAG TAP CSR access via command line option
     void'($value$plusargs("jtag_csr=%0b", cfg.jtag_csr));
 
+    // Increase alert wait time if using JTAG
+    if (cfg.jtag_csr) cfg.alert_max_delay = 4000;
+
   endfunction : build_phase
 
   // Add message demotes here

@@ -37,6 +37,8 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   event set_test_phase_ev;
   // Max delay for alerts in clocks
   uint alert_max_delay;
+  // Enable scoreboard ral update on write
+  bit en_scb_ral_update_write = 1;
 
   `uvm_object_utils_begin(lc_ctrl_env_cfg)
   `uvm_object_utils_end
@@ -86,7 +88,7 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     // Set base address for JTAG map
     ral.set_base_addr(ral.default_map.get_base_addr(), jtag_riscv_map);
 
-    alert_max_delay = 1000;
+    alert_max_delay = 1500;
   endfunction
 
   protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
