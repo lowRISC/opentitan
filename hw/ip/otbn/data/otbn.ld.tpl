@@ -52,7 +52,16 @@ SECTIONS
 
         *(.data*)
         . = ALIGN(32);
+
+        /* Align section end (see note in .text section) */
+        . = ALIGN(4);
+
+    } >dmem AT>dmem_load
+
+    .bss : ALIGN(32)
+    {
         *(.bss*)
+        . = ALIGN(32);
 
         /* Align section end (see note in .text section) */
         . = ALIGN(4);
