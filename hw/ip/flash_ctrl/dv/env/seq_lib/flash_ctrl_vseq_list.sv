@@ -8,4 +8,5 @@
 `include "flash_ctrl_rand_ops_base_vseq.sv"
 `include "flash_ctrl_smoke_vseq.sv"
 `include "flash_ctrl_smoke_hw_vseq.sv"
+`include "flash_ctrl_host_dir_rd_vseq.sv"
 `include "flash_ctrl_rand_ops_vseq.sv"
