@@ -201,7 +201,8 @@ def main() -> int:
         out_embedded_obj = out_dir / (app_name + '.rv32embed.o')
         args = (['-O', 'elf32-littleriscv',
                  '--prefix-sections=.rodata.otbn',
-                 '--set-section-flags=*=alloc,load,readonly',
+                 '--set-section-flags=*=alloc,readonly',
+                 '--set-section-flags=.data=load',
                  '--remove-section=.scratchpad',
                  '--prefix-symbols', sym_pfx] +
                 [out_elf,
