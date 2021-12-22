@@ -180,6 +180,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     bit [bus_params_pkg::BUS_AW-1:0] addr, mem_addr;
     uint size;
+    uint addr_mask;
 
     // Elf file name checks.
     `DV_CHECK_FATAL(cfg.sw_images.exists(sw_type))
@@ -190,10 +191,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // Find the symbol in the sw elf file.
     sw_symbol_get_addr_size({cfg.sw_images[sw_type], ".elf"}, symbol, addr, size);
     `DV_CHECK_EQ_FATAL(size, data.size())
-    mem_addr = addr & (cfg.mem_bkdr_util_h[mem].get_size_bytes() - 1);
+
+    addr_mask = (2**$clog2(cfg.mem_bkdr_util_h[mem].get_size_bytes()))-1;
+    mem_addr = addr & addr_mask;
     `uvm_info(`gfn, $sformatf({"Overwriting symbol \"%s\" via backdoor in %0s: ",
-                               "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d"},
-                              symbol, mem, addr, mem_addr, size), UVM_MEDIUM)
+                               "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
+                               "addr_mask = 0x%0h"},
+                              symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
     for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
   endfunction
 
