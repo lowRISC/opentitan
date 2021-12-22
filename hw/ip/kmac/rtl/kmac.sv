@@ -1202,11 +1202,19 @@ module kmac
 
   assign alert_recov_operation = shadowed_update_err;
 
+  // The recoverable alert is observable via status register until the KMAC operation is restarted
+  // by re-writing the Control Register.
+  assign hw2reg.status.alert_recov_ctrl_update_err.d  = alert_recov_operation;
+
   assign alert_fatal = shadowed_storage_err
                      | alert_intg_err
                      | sparse_fsm_error
                      | counter_error
                      ;
+
+  // Make the fatal alert observable via status register.
+  assign hw2reg.status.alert_fatal_fault.d  = alert_fatal;
+
 
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
