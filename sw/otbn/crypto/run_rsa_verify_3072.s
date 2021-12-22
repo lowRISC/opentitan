@@ -86,7 +86,7 @@ modexp_3:
   jal      x1, modexp_var_3072_3
   ecall
 
-.data
+.bss
 
 /* Mode (1=constants, 2=modexp) */
 .globl mode
