@@ -224,6 +224,8 @@ module kmac_reg_top (
   logic [4:0] status_fifo_depth_qs;
   logic status_fifo_empty_qs;
   logic status_fifo_full_qs;
+  logic status_alert_fatal_fault_qs;
+  logic status_alert_recov_ctrl_update_err_qs;
   logic entropy_period_we;
   logic [9:0] entropy_period_prescaler_qs;
   logic [9:0] entropy_period_prescaler_wd;
@@ -1023,6 +1025,34 @@ module kmac_reg_top (
     .qe     (),
     .q      (),
     .qs     (status_fifo_full_qs)
+  );
+
+  //   F[alert_fatal_fault]: 16:16
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_alert_fatal_fault (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.alert_fatal_fault.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_alert_fatal_fault_qs)
+  );
+
+  //   F[alert_recov_ctrl_update_err]: 17:17
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_alert_recov_ctrl_update_err (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.alert_recov_ctrl_update_err.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_alert_recov_ctrl_update_err_qs)
   );
 
 
@@ -2430,6 +2460,8 @@ module kmac_reg_top (
         reg_rdata_next[12:8] = status_fifo_depth_qs;
         reg_rdata_next[14] = status_fifo_empty_qs;
         reg_rdata_next[15] = status_fifo_full_qs;
+        reg_rdata_next[16] = status_alert_fatal_fault_qs;
+        reg_rdata_next[17] = status_alert_recov_ctrl_update_err_qs;
       end
 
       addr_hit[8]: begin

@@ -25,7 +25,13 @@
   alert_list: [
     { name: "fatal_fault_err",
       desc: '''
-      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected or the shadow registers storage error occurs.
+      This fatal alert is triggered when a fatal error is detected inside the KMAC unit.
+      Examples for such faults include
+      i) TL-UL bus integrity fault
+      ii) storage errors in the shadow registers
+      iii) errors in the message, round, or key counter
+      iv) any internal FSM entering an ivalid state
+      The KMAC unit cannot recover from such an error and needs to be reset.
       '''
     }
     { name: "recov_operation_err"
@@ -470,6 +476,27 @@
         { bits: "15"
           name: "fifo_full"
           desc: "Message FIFO Full indicator"
+        }
+        { bits: "16",
+          name: "ALERT_FATAL_FAULT",
+          resval: "0",
+          desc: '''
+            No fatal fault has occurred inside the KMAC unit (0).
+            A fatal fault has occured and the KMAC unit needs to be reset (1),
+            Examples for such faults include
+            i) TL-UL bus integrity fault
+            ii) storage errors in the shadow registers
+            iii) errors in the message, round, or key counter
+            iv) any internal FSM entering an ivalid state
+          '''
+        }
+        { bits: "17",
+          name: "ALERT_RECOV_CTRL_UPDATE_ERR",
+          resval: "0",
+          desc: '''
+            An update error has not occurred (0) or has occured (1) in the shadowed Control Register.
+            KMAC operation needs to be restarted by re-writing the Control Register.
+          '''
         }
       ]
     } // R: STATUS
