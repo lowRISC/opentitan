@@ -10,10 +10,10 @@ filesets:
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:padring
-      - "fileset_ast ? (partner:systems:ast)"
-      - "fileset_ast ? (partner:systems:scan_role_pkg)"
-      - "!fileset_ast ? (lowrisc:systems:ast)"
-      - "!fileset_ast ? (lowrisc:systems:scan_role_pkg)"
+      - "fileset_partner ? (partner:systems:ast)"
+      - "fileset_partner ? (partner:systems:scan_role_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:ast)"
+      - "!fileset_partner ? (lowrisc:systems:scan_role_pkg)"
     files:
       - rtl/autogen/chip_earlgrey_asic.sv
     file_type: systemVerilogSource

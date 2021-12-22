@@ -9,8 +9,8 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
-      - "!fileset_ast ? (lowrisc:systems:ast_pkg)"
-      - "fileset_ast ? (partner:systems:ast_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+      - "fileset_partner ? (partner:systems:ast_pkg)"
       - lowrisc:systems:sensor_ctrl_reg
     files:
       - rtl/sensor_ctrl_pkg.sv
