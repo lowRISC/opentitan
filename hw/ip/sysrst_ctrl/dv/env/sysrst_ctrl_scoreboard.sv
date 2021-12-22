@@ -11,6 +11,9 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // local variables
 
+  // Intr checks
+  local bit [NUM_MAX_INTERRUPTS-1:0] intr_exp;
+  local bit [NUM_MAX_INTERRUPTS-1:0] intr_exp_at_addr_phase;
 
   // local queues to hold incoming packets pending comparison
 
@@ -62,7 +65,6 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        // FIXME
         do_read_check = 1'b0;
       end
       "intr_enable": begin
@@ -86,7 +88,12 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "combo_intr_status": begin
         do_read_check = 1'b0;  //This check is done in sequence
       end
-      "key_intr_status": begin
+      "key_intr_status", "key_intr_ctl", "key_intr_debounce_ctl": begin
+        do_read_check = 1'b0;
+      end
+      "auto_block_debounce_ctl", "auto_block_out_ctl": begin
+      end
+      "wkup_status": begin
       end
       "pin_in_value": begin
         do_read_check = 1'b0;  //This check is done in sequence
@@ -109,6 +116,7 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
+    intr_exp    = ral.intr_state.get_reset();
   endfunction
 
   function void check_phase(uvm_phase phase);

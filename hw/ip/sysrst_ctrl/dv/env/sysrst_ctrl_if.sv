@@ -41,8 +41,16 @@ interface sysrst_ctrl_if (
   endfunction
 
   task automatic randomize_input();
-    std::randomize(pwrb_in, key0_in, key1_in, key2_in, bat_disable_in, z3_wakeup_in, lid_open,
-                   ac_present);
+    // VCS doesn't support randomizing logic variable
+    // so declare bit variable, randomize it and assigned it to logic
+    bit pwrb, key0, key1, key2, ec_rst_l;
+    `DV_CHECK_FATAL(std::randomize(pwrb, key0, key1, key2, ec_rst_l), ,
+       "sysrst_ctrl_if")
+    pwrb_in = pwrb;
+    key0_in = key0;
+    key1_in = key1;
+    key2_in = key2;
+    ec_rst_l_in = ec_rst_l;
   endtask
 
 endinterface : sysrst_ctrl_if
