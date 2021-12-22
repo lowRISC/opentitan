@@ -56,7 +56,7 @@ modexp_3:
 
   ecall
 
-.data
+.bss
 
 /* Exponent of the RSA-3072 key. Accepted values: 3 or F4=65537 */
 .globl in_exp

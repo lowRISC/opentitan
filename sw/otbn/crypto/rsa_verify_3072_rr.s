@@ -199,13 +199,13 @@ compute_rr:
   ret
 
 /* Input buffer for the modulus. */
-.section .data.in_mod
+.section .bss.in_mod
 .weak in_mod
 in_mod:
   .zero 384
 
 /* Output buffer for the Montgomery transformation constant R^2. */
-.section .data.rr
+.section .bss.rr
 .weak rr
 rr:
   .zero 384

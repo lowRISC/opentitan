@@ -173,13 +173,13 @@ compute_m0_inv:
   ret
 
 /* Input buffer for the modulus. */
-.section .data.in_mod
+.section .bss.in_mod
 .weak in_mod
 in_mod:
   .zero 384
 
 /* Output buffer for the Montgomery constant. */
-.section .data.m0inv
+.section .bss.m0inv
 .weak m0inv
 m0inv:
   .zero 32
