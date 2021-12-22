@@ -64,15 +64,11 @@ class csrng_base_vseq extends cip_base_vseq #(
     end
     else begin
       // Wait for CSRNG cmd_rdy
-      // TODO: Need 2 for now to allow cmd_rdy to go low
-      csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
       csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
       csr_wr(.ptr(ral.cmd_req), .value(cmd));
       for (int i = 0; i < cs_item.clen; i++) begin
         cmd = cs_item.cmd_data_q.pop_front();
         // Wait for CSRNG cmd_rdy
-        // TODO: Need 2 for now to allow cmd_rdy to go low
-        csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
         csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
         csr_wr(.ptr(ral.cmd_req), .value(cmd));
       end
