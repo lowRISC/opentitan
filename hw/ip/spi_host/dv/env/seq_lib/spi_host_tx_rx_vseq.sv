@@ -78,7 +78,6 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
   virtual task generate_transaction();
     transaction_init();
     `DV_CHECK_RANDOMIZE_FATAL(transaction)
-    `uvm_info(`gfn, $sformatf("%s",transaction.convert2string()), UVM_LOW);
   endtask
 
 endclass : spi_host_tx_rx_vseq

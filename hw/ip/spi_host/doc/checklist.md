@@ -131,24 +131,24 @@ Review        | Signoff date            | Not Started |
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_DOC_DRAFT_COMPLETED][]            | DONE        | [SPI_HOST DV document]({{<relref "dv" >}})
 Documentation | [TESTPLAN_COMPLETED][]                | DONE        | [SPI_HOST Testplan]({{<relref "dv/index.md#testplan" >}})
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
-Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
+Testbench     | [TB_TOP_CREATED][]                    | DONE        |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| DONE        |
+Testbench     | [SIM_TB_ENV_CREATED][]                | DONE        |
+Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | DONE        |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | DONE        |
+Testbench     | [TB_GEN_AUTOMATED][]                  | DONE        |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | DONE        |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | DONE        |
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A         |
-Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
-Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
-Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
-Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
-Code Quality  | [TB_LINT_SETUP][]                     | Not Started |
+Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        | Xcelium (signoff), VCS (alt)
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | DONE        |
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started | TBD When 8856 goes in
+Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
+Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | DONE        |
+Code Quality  | [TB_LINT_SETUP][]                     | DONE        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
 Review        | [DESIGN_SPEC_REVIEWED][]              | DONE        |
-Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
+Review        | [TESTPLAN_REVIEWED][]                 | Not Started | TBD in V1 review
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | DONE        |
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
