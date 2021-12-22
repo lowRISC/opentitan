@@ -39,14 +39,14 @@ module prim_alert_tb;
 
   // Minimal cycles to wait between each sequence.
   // The main concern here is the minimal wait cycles between each handshake.
-  localparam int MinHandshakeWait = 2 + WaitCycle;
+  localparam int MinHandshakeWait = IsAsync ? (2 + WaitCycle) * 10 : (2 + WaitCycle);
 
   // Clock cycles for alert init handshake to finish.
-  localparam int WaitAlertInitDone = 30;
+  localparam int WaitAlertInitDone = IsAsync ? 300 : 30;
 
   // Clock cycles for alert or ping handshake to finish.
   // Wait enough cycles to ensure assertions from design are checked.
-  localparam int WaitAlertHandshakeDone = 20;
+  localparam int WaitAlertHandshakeDone = IsAsync ? 200 : 20;
 
   uint default_spinwait_timeout_ns = 100_000;
 
@@ -67,12 +67,20 @@ module prim_alert_tb;
   // Clock and Reset
   //////////////////////////////////////////////////////
 
-  wire clk, rst_n;
+  wire clk, rst_n, sender_clk, sender_rst_n;
 
   clk_rst_if main_clk (
     .clk,
     .rst_n
   );
+
+  clk_rst_if sender_clock (
+    .clk   (sender_clk),
+    .rst_n (sender_rst_n)
+  );
+
+  assign sender_rst_n = rst_n;
+  if (!IsAsync) assign sender_clk = clk;
 
   //////////////////////////////////////////////////////
   // DUTs
@@ -87,8 +95,8 @@ module prim_alert_tb;
     .AsyncOn(IsAsync),
     .IsFatal(IsFatal)
   ) i_alert_sender (
-    .clk_i(clk),
-    .rst_ni(rst_n),
+    .clk_i(sender_clk),
+    .rst_ni(sender_rst_n),
     .alert_test_i(alert_test),
     .alert_req_i(alert_req),
     .alert_ack_o(alert_ack),
@@ -116,6 +124,21 @@ module prim_alert_tb;
   //////////////////////////////////////////////////////
   logic error = 0;
 
+  task automatic pause_sender_clock_nonblocking(int pause_clk_cycs = $urandom_range(1, 100));
+    fork
+      begin
+        force sender_clk = 0;
+        main_clk.wait_clks(pause_clk_cycs);
+        release sender_clk;
+        // Turn off prim_alert_sender's assertion for a clock cycle to avoid assertion failures
+        // from turning off the sender_clock.
+        $assertoff(0, prim_alert_tb.i_alert_sender);
+        @(negedge sender_clk);
+        $asserton(0, prim_alert_tb.i_alert_sender);
+      end
+    join_none
+  endtask
+
   //////////////////////////////////////////////////////
   // Stimuli Application / Response Checking
   //////////////////////////////////////////////////////
@@ -126,6 +149,12 @@ module prim_alert_tb;
     ping_req   = 0;
     main_clk.set_period_ps(ClkPeriod);
     main_clk.set_active();
+    if (IsAsync) begin
+      time AsyncSenderClkPeriod = $urandom_range(1_000, 100_000);
+      sender_clock.set_period_ps(AsyncSenderClkPeriod);
+      sender_clock.set_active(.drive_rst_n_val(0));
+      $display("Async clock period %0d", AsyncSenderClkPeriod);
+    end
     main_clk.apply_reset();
 
     // Wait for initialization sequence to end
@@ -155,8 +184,15 @@ module prim_alert_tb;
         begin
           if ($urandom_range(0, 1)) begin
             main_clk.wait_clks($urandom_range(MinHandshakeWait, 10));
+            if ($urandom_range(0, 1)) begin
+              pause_sender_clock_nonblocking();
+              main_clk.wait_clks($urandom_range(0, 10));
+            end
             init_trig = prim_mubi_pkg::MuBi4True;
             main_clk.wait_clks($urandom_range(1, 10));
+            // Set init_trig to false only when sender clock recovered.
+            wait (sender_clk == 1);
+            main_clk.wait_clks(2);
             init_trig = prim_mubi_pkg::MuBi4False;
             main_clk.wait_clks(WaitAlertInitDone);
           end
@@ -204,14 +240,21 @@ module prim_alert_tb;
         begin
           if ($urandom_range(0, 1)) begin
             main_clk.wait_clks($urandom_range(1, WaitAlertHandshakeDone + 10));
+            if ($urandom_range(0, 1)) begin
+              pause_sender_clock_nonblocking();
+              main_clk.wait_clks($urandom_range(0, 10));
+            end
             init_trig = prim_mubi_pkg::MuBi4True;
-            main_clk.wait_clks($urandom_range(0, 10));
+            main_clk.wait_clks($urandom_range(1, 10));
+            // Set init_trig to false only when sender clock recovered.
+            wait (sender_clk == 1);
+            main_clk.wait_clks(2);
             init_trig = prim_mubi_pkg::MuBi4False;
             main_clk.wait_clks(WaitAlertInitDone);
           end
         end
       join
-      $display($sformatf("[prim_alert_seq] Ping request sequence[%0d] finished!", num_trans));
+      $display($sformatf("[prim_alert_seq] Ping request sequence %0d/10 finished!", num_trans));
     end
 
     // Sequence 4) `Ack_p/n` integrity check sequence.

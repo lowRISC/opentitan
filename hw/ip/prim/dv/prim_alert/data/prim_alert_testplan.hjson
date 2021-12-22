@@ -102,7 +102,10 @@
               to return 1 after `alert_req` is sent.
             '''
       milestone: V3
-      tests: []
+      tests: ["prim_async_alert",
+              "prim_async_fatal_alert",
+              "prim_sync_alert",
+              "prim_sync_fatal_alert"]
     }
   ]
 }
