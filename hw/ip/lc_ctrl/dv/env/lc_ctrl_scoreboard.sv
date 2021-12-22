@@ -76,7 +76,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         end
 
         ->check_lc_output_ev;
-        check_lc_outputs(exp_lc_o, err_msg);
+        check_lc_outputs(exp_lc_o, {$sformatf("Called from line: %0d, ", `__LINE__), err_msg});
 
 
         if (cfg.err_inj.state_err || cfg.err_inj.count_err ||
@@ -216,7 +216,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
 
     // if incoming access is a write to a valid csr, then make updates right away
-    if (addr_phase_write) begin
+    if (addr_phase_write && cfg.en_scb_ral_update_write) begin
       `uvm_info(`gfn, {
                 "process_tl_access: write predict ",
                 csr.get_name(),
@@ -260,13 +260,19 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                 item.sprint(uvm_default_line_printer)
                 }, UVM_MEDIUM)
 
-      // when lc successfully req a transition, all outputs are turned off.
-      if (cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err) begin
-        // Expect escalate
-        exp.lc_escalate_en_o = lc_ctrl_pkg::On;
+      if (cfg.test_phase inside {[LcCtrlEscalate : LcCtrlPostTransTransitionComplete]}) begin
+        if(cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err ||
+            cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp) begin
+          // Expect escalate to be asserted
+          exp.lc_escalate_en_o = lc_ctrl_pkg::On;
+        end
       end
 
-      if (ral.status.transition_successful.get()) check_lc_outputs(exp);
+      // when lc successfully req a transition, all outputs are turned off.
+      if (ral.status.transition_successful.get()) begin
+        check_lc_outputs(exp, $sformatf("Called from line: %0d", `__LINE__));
+      end
+
     end
   endtask
 

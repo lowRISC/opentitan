@@ -189,6 +189,12 @@ package lc_ctrl_env_pkg;
       LcStRma
   };
 
+  // CSR interfaces
+  typedef enum {
+    LcCtrlTLUL = 0,
+    LcCtrlJTAG = 1
+  } lc_ctrl_csr_intf_e;
+
   // functions
   function automatic bit valid_state_for_trans(lc_state_e curr_state);
     return (curr_state inside {LcValidStateForTrans});

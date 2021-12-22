@@ -71,6 +71,130 @@
       uvm_test_seq: lc_ctrl_lc_errors_vseq
     }
 
+    {
+      name: lc_ctrl_regwen_during_op
+      uvm_test_seq: lc_ctrl_regwen_during_op_vseq
+      reseed: 10
+    }
+
+    {
+      name: lc_ctrl_jtag_smoke
+      uvm_test_seq: lc_ctrl_smoke_vseq
+      run_opts: ["+jtag_csr=1"]
+      reseed: 20
+    }
+
+    {
+      name: lc_ctrl_jtag_state_failure
+      uvm_test_seq: lc_ctrl_state_failure_vseq
+      run_opts: ["+jtag_csr=1"]
+      reseed: 20
+    }
+
+    {
+      name: lc_ctrl_jtag_state_post_trans
+      uvm_test_seq: lc_ctrl_state_post_trans_vseq
+      run_opts: ["+jtag_csr=1"]
+      reseed: 20
+    }
+
+    {
+      name: lc_ctrl_jtag_prog_failure
+      uvm_test_seq: lc_ctrl_prog_failure_vseq
+      run_opts: ["+jtag_csr=1"]
+      reseed: 20
+    }
+
+    {
+      name: lc_ctrl_jtag_errors
+      uvm_test_seq: lc_ctrl_lc_errors_vseq
+      run_opts: ["+jtag_csr=1"]
+      reseed: 20
+    }
+
+    {
+      name: lc_ctrl_jtag_access
+      uvm_test_seq: lc_ctrl_jtag_access_vseq
+      run_opts: ["+en_scb=0"]
+      reseed: 50
+    }
+
+    {
+      name: lc_ctrl_jtag_priority
+      uvm_test_seq: lc_ctrl_jtag_priority_vseq
+      run_opts: ["+en_scb=0"]
+      reseed: 10
+    }
+
+    {
+      name: lc_ctrl_jtag_regwen_during_op
+      uvm_test_seq: lc_ctrl_regwen_during_op_vseq
+      run_opts: ["+jtag_csr=1"]
+      reseed: 10
+    }
+
+    {
+      name: "lc_ctrl_jtag_csr_hw_reset"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+csr_hw_reset", "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 10
+    }
+
+    {
+      name: "lc_ctrl_jtag_csr_rw"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+csr_rw", "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 10
+    }
+
+    {
+      name: "lc_ctrl_jtag_csr_bit_bash"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+csr_bit_bash", "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 10
+    }
+
+    {
+      name: "lc_ctrl_jtag_csr_aliasing"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+csr_aliasing", "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 10
+    }
+
+    {
+      name: "lc_ctrl_jtag_same_csr_outstanding"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+run_same_csr_outstanding", "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 10
+    }
+
+    {
+      name: "lc_ctrl_jtag_csr_mem_rw_with_rand_reset"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+run_csr_mem_rw_with_rand_reset", "+test_timeout_ns=10000000000",  "+jtag_csr=1"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 10
+    }
+
+    {
+      name: "lc_ctrl_jtag_alert_test"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "lc_ctrl_common_vseq"
+      run_opts: ["+run_alert_test", "+en_scb=0", "+jtag_csr=1"]
+      reseed: 10
+    }
+
   ]
 
   // List of regressions.
@@ -78,6 +202,24 @@
     {
       name: smoke
       tests: ["lc_ctrl_smoke"]
+    }
+    {
+      name: jtag
+      tests : [ "lc_ctrl_jtag_access",
+              "lc_ctrl_jtag_priority",
+              "lc_ctrl_jtag_smoke",
+              "lc_ctrl_jtag_state_post_trans",
+              "lc_ctrl_jtag_errors",
+              "lc_ctrl_jtag_prog_failure",
+              "lc_ctrl_jtag_regwen_during_op",
+              "lc_ctrl_jtag_csr_hw_reset",
+              "lc_ctrl_jtag_csr_rw",
+              "lc_ctrl_jtag_csr_bit_bash",
+              "lc_ctrl_jtag_csr_aliasing",
+              "lc_ctrl_jtag_same_csr_outstanding",
+              "lc_ctrl_jtag_csr_mem_rw_with_rand_reset",
+              "lc_ctrl_jtag_alert_test"
+      ]
     }
   ]
 }
