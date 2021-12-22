@@ -34,6 +34,7 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
   virtual task body();
     repeat (num_trans) begin
       req_mem_init();
+      cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
       fork
         begin
           // when esc occurs during a OP, the OP can't be finished until esc drops.
@@ -45,6 +46,8 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
           #lc_esc_delay;
 
           cfg.lc_vif.drive_lc_esc_en(lc_ctrl_pkg::On);
+          // after escalation, key will become invalid and design will returns invalid integrity
+          cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
         end
       join
 

@@ -454,7 +454,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual function bit is_data_intg_passthru_mem(tl_seq_item item, string ral_name);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
-    uvm_mem mem = ral.default_map.get_mem_by_offset(addr);
+    uvm_mem mem = cfg.ral_models[ral_name].default_map.get_mem_by_offset(addr);
 
     if (mem == null) begin
       return 0;

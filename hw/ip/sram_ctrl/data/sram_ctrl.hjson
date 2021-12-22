@@ -143,6 +143,12 @@
                   This condition is terminal.
                   ''',
             resval: 0,
+            tags: [// avoid checking this field. When sram_mem has received an item with integrity
+                   // error, in the meanwhile, the reg TLUL interface reads this status, tl_errors
+                   // sequence will update the status predict value but read TLUL interface may
+                   // latch the old value. So only read this status when sram TLUL has finished the
+                   // error integrity transaction.
+                   "excl:CsrNonInitTests:CsrExclCheck"]
           }
           { bits: "1"
             name: "INIT_ERROR"
