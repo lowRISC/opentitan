@@ -9,19 +9,23 @@ from .lib import check_keys, check_str, check_list
 
 CM_ASSETS = [
     'KEY',
+    'ADDR',
     'DATA_REG',
+    'CTRL_FLOW',
+    'CTRL',
     'CONFIG',
     'LFSR',
-    'CNT',
+    'CTR',
     'FSM',
     'MEM',
     'CLK',
     'RST',
     'BUS',
-    'CTRL_FLOW',
+    'INTERSIG',
     'MUX',
-    'CTRL',
     'CONSTANTS',
+    'STATE',
+    'TOKEN',
     'LOGIC'
 ]
 
@@ -36,12 +40,13 @@ CM_TYPES = [
     'CONSISTENCY',
     'DIGEST',
     'LC_GATED',
-    'LOCAL_ESC',
     'BKGN_CHK',
     'GLITCH_DETECT',
     'SW_UNREADABLE',
     'SCA',
-    'MASKING'
+    'MASKING',
+    'LOCAL_ESC',
+    'GLOBAL_ESC'
 ]
 
 
