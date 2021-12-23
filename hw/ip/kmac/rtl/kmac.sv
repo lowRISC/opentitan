@@ -81,21 +81,41 @@ module kmac
   /////////////////
   // This state machine is to track the current process based on SW input and
   // KMAC operation.
-  typedef enum logic [2:0] {
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
+  //      -s 4015776642 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (50.00%)
+  //  4: |||||||||||||||| (40.00%)
+  //  5: |||| (10.00%)
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 5
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 5
+  //
+  localparam int StateWidth = 6;
+  typedef enum logic [StateWidth-1:0] {
     // Idle state
-    KmacIdle,
+    KmacIdle = 6'b001000,
 
     // When software writes CmdStart @ KmacIdle and kmac_en, FSM moves to this
-    KmacPrefix,
+    KmacPrefix = 6'b100110,
 
     // When SHA3 engine processes Key block, FSM moves to here.
-    KmacKeyBlock,
+    KmacKeyBlock = 6'b111101,
 
     // Message Feed
-    KmacMsgFeed,
+    KmacMsgFeed = 6'b010010,
 
     // Complete and squeeze
-    KmacDigest
+    KmacDigest = 6'b100001
 
   } kmac_st_e;
   kmac_st_e kmac_st, kmac_st_d;
@@ -586,12 +606,13 @@ module kmac
   logic sparse_fsm_error;
   logic sha3_state_error, kmac_errchk_state_error;
   logic kmac_core_state_error, kmac_app_state_error;
-  logic kmac_entropy_state_error;
+  logic kmac_entropy_state_error, kmac_state_error;
   assign sparse_fsm_error = sha3_state_error
                           | kmac_errchk_state_error
                           | kmac_core_state_error
                           | kmac_app_state_error
-                          | kmac_entropy_state_error;
+                          | kmac_entropy_state_error
+                          | kmac_state_error;
 
   prim_intr_hw #(.Width(1)) intr_kmac_err (
     .clk_i,
@@ -610,19 +631,26 @@ module kmac
   // State Machine //
   ///////////////////
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      kmac_st <= KmacIdle;
-    end else begin
-      kmac_st <= kmac_st_d;
-    end
-  end
+  // State FF
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  prim_sparse_fsm_flop #(
+    .StateEnumT(kmac_st_e),
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(KmacIdle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( kmac_st_d ),
+    .state_o ( kmac_st   )
+  );
 
   always_comb begin
     // Default value
     kmac_st_d = KmacIdle;
 
     entropy_in_keyblock = 1'b 0;
+    kmac_state_error = 1'b 0;
 
     unique case (kmac_st)
       KmacIdle: begin
@@ -681,7 +709,9 @@ module kmac
       end
 
       default: begin
-        kmac_st_d = KmacIdle;
+        //this state is terminal
+        kmac_st_d = kmac_st;
+        kmac_state_error = 1'b 1;
       end
     endcase
   end
@@ -1213,6 +1243,7 @@ module kmac
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KeccackFsmCheck_A, u_sha3.u_keccak.u_state_regs,
                                        alert_tx_o[0])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ErrorCheckFsmCheck_A, u_errchk.u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacFsmCheck_A, u_state_regs, alert_tx_o[0])
 
   // prim is only instantiated if masking is enabled
   if (EnMasking == 1) begin : g_testassertion
