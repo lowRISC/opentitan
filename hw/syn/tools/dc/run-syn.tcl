@@ -55,14 +55,16 @@ define_design_lib WORK -path $WORKLIB
 ## Library Setup      ##
 ########################
 
-# if the foundry root is specified, some more library setup is needed.
 if {$FOUNDRY_ROOT != ""} {
+  # ASIC lib setup for DC.
   source "${FOUNDRY_ROOT}/syn/dc/setup.tcl"
   # this PRIM_DEFAULT_IMPL selects the appropriate technology by defining
   # PRIM_DEFAULT_IMPL=prim_pkg::Impl<tech identifier>
   # PRIM_DEFAULT_IMPL is set inside the library setup script
   set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL}+${PRIM_STD_CELL_VARIANT}"
 } else {
+  # GTECH lib setup for DC.
+  source "${SYN_ROOT}/tools/dc/gtech-setup.tcl"
   # This black-boxes the 1p and 2p memory models (used for GTECH runs only).
   set DEFINE "SYNTHESIS_MEMORY_BLACK_BOXING=TRUE"
 }
@@ -118,15 +120,6 @@ if {$POST_ELAB_SCRIPT != ""} {
 
 write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
 
-# write out a GTECH netlist and quit if libs are not defined
-if {$FOUNDRY_ROOT == ""} {
-  change_names -rules verilog -hierarchy
-  define_name_rules fixbackslashes -allowed "A-Za-z0-9_" -first_restricted "\\" -remove_chars
-  change_names -rule fixbackslashes -h
-  write_file -format verilog -hierarchy -output "${VLOGDIR}/elab.v"
-  exit
-}
-
 #############################
 ##   CLOCK GATING SETUP    ##
 #############################
@@ -141,10 +134,17 @@ if {$FOUNDRY_ROOT == ""} {
 ##   APPLY CONSTRAINTS   ##
 ###########################
 
-puts "Applying constraints for ${DUT}"
-source "${CONSTRAINT}"
-source "${FOUNDRY_CONSTRAINT}"
-puts "Done applying constraints for ${DUT}"
+if {$CONSTRAINT != ""} {
+  puts "Applying constraints for ${DUT}"
+  source "${CONSTRAINT}"
+  puts "Done applying constraints for ${DUT}"
+}
+
+if {$FOUNDRY_CONSTRAINT != ""} {
+  puts "Applying foundry constraints for ${DUT}"
+  source "${FOUNDRY_CONSTRAINT}"
+  puts "Done applying foundry constraints for ${DUT}"
+}
 
 # If hold time should be fixed
 # set_fix_hold ${CLK_PIN}
@@ -153,8 +153,22 @@ puts "Done applying constraints for ${DUT}"
 ##    MAP DESIGN    ##
 ######################
 
-# preserve hierarchy for reports
-compile_ultra -gate_clock -scan -no_autoungroup > "${REPDIR}/compile.rpt"
+# only use compile_ultra if the foundry library is defined.
+# otherwise we can only do a compile with gtech cells.
+if {$FOUNDRY_ROOT == ""} {
+  # enable auto ungrouping and boundary optimization for
+  # gtech experiments, in order to approximate actual
+  # implementation runs with compile_ultra.
+  compile -gate_clock             \
+          -scan                   \
+          -boundary_optimization  \
+          -auto_ungroup area      > "${REPDIR}/compile.rpt"
+} else {
+  # preserve hierarchy for reports
+  compile_ultra -gate_clock \
+                -scan       \
+                -no_autoungroup > "${REPDIR}/compile.rpt"
+}
 
 #################
 ##   REPORTS   ##
@@ -181,13 +195,21 @@ report_timing      -nosplit -nworst 1000 -input -net -trans -cap > "${REPDIR}/ti
 change_names -rules verilog -hierarchy
 define_name_rules fixbackslashes -allowed "A-Za-z0-9_" -first_restricted "\\" -remove_chars
 change_names -rule fixbackslashes -h
-write_file -format ddc     -hierarchy -output "${DDCDIR}/mapped.ddc"
-write_file -format verilog -hierarchy -output "${VLOGDIR}/mapped.v"
+
+# Change the name in case the netlist has not been mapped against a real ASIC lib.
+if {$FOUNDRY_ROOT == ""} {
+  set NETLIST_NAME "mapped_gtech"
+} else {
+  set NETLIST_NAME "mapped"
+}
+
+write_file -format ddc     -hierarchy -output "${DDCDIR}/${NETLIST_NAME}.ddc"
+write_file -format verilog -hierarchy -output "${VLOGDIR}/${NETLIST_NAME}.v"
 
 # Write final SDC
 write_sdc -nosplit ${RESULTDIR}/${DUT}.final.sdc
 # If SAIF is used, write out SAIF name mapping file for PrimeTime-PX
-saif_map -type ptpx -write_map ${RESULTDIR}/${DUT}.mapped.SAIF.namemap
+saif_map -type ptpx -write_map ${RESULTDIR}/${DUT}.${NETLIST_NAME}.SAIF.namemap
 # ##############################
 # ##  INCREMENTAL FLATTENING  ##
 # ##############################

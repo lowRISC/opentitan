@@ -16,7 +16,8 @@
     }
   ]
 
-  // No timing constraints needed for GTECH flow
-  sdc_file: ""
+  // Load common dont_touch wildcard constraints for the primitives. No other
+  // timing constraints are needed for this flow.
+  sdc_file: "{syn_root}/tools/dc/gtech-constraints.sdc"
   foundry_sdc_file: ""
 }
