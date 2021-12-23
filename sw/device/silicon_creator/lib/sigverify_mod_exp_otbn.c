@@ -108,8 +108,7 @@ otbn_error_t run_otbn_rsa_3072_modexp(
 rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
                                    const sigverify_rsa_buffer_t *sig,
                                    sigverify_rsa_buffer_t *result) {
-  // TODO: The OTBN routines should be consistent with ibex exponent support.
-  if (key->exponent != 65537) {
+  if (key->exponent != 65537 && key->exponent != 3) {
     return kErrorSigverifyBadExponent;
   }
 
