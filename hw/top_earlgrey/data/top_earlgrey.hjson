@@ -1054,15 +1054,15 @@
     // Optionally, each pad can also have a 'desc' field for further description.
     pads: [
       // Special manually connected pads
-      { name: 'POR_N'           , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'System reset'},
-      { name: 'USB_P'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
-      { name: 'USB_N'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
-      { name: 'CC1'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 1'},
-      { name: 'CC2'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 2'},
-      { name: 'FLASH_TEST_VOLT' , type: 'AnalogIn0',bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
-      { name: 'FLASH_TEST_MODE0', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
-      { name: 'FLASH_TEST_MODE1', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
-      { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn1',bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
+      { name: 'POR_N'           , type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'System reset'},
+      { name: 'USB_P'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
+      { name: 'USB_N'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
+      { name: 'CC1'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 1'},
+      { name: 'CC2'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 2'},
+      { name: 'FLASH_TEST_VOLT' , type: 'AnalogIn0',    bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
+      { name: 'FLASH_TEST_MODE0', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
+      { name: 'FLASH_TEST_MODE1', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
+      { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn1',    bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
       // Dedicated IOs
       { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
       { name: 'SPI_HOST_D1'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
@@ -1254,7 +1254,7 @@
         // The corresponding pad of a removed port will remain instantiated,
         // and a wire net will be declared inside the chip-level hierarchy so
         // that it can be manually connected as needed.
-        remove_ports: ['USB_P1', 'USB_N1'],
+        remove_ports: [],
 
         // This is a list of pad names to remove from the base pinout defined
         // above. Removed pads will be stubbed off such that their inputs
@@ -1270,8 +1270,6 @@
         // to the pinmux or peripherals.
         add_pads: [
           { name: 'AST_MISC', type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra infrastructure pad for AST'}
-          { name: 'USB_P1'  , type: 'BidirTol', bank: 'VCC', connection: 'manual', desc: 'USB P signal (second pad)'},
-          { name: 'USB_N1'  , type: 'BidirTol', bank: 'VCC', connection: 'manual', desc: 'USB N signal (second pad)'},
         ],
       },
 

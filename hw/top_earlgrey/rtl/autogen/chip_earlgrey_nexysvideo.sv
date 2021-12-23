@@ -346,8 +346,8 @@ module chip_earlgrey_nexysvideo #(
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D1
       BidirStd, // SPI_DEV_D0
-      BidirTol, // USB_N
-      BidirTol, // USB_P
+      DualBidirTol, // USB_N
+      DualBidirTol, // USB_P
       InputStd  // POR_N
     }),
     .MioPadType ({
