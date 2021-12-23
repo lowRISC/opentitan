@@ -166,11 +166,19 @@ class IpBlock:
         alerts = Alert.from_raw_list('alert_list for block {}'
                                      .format(name),
                                      rd.get('alert_list', []))
+        known_cms = {}
+        raw_cms = rd.get('countermeasures', [])
 
         countermeasures = CounterMeasure.from_raw_list(
             'countermeasure list for block {}'
-            .format(name),
-            rd.get('countermeasures', []))
+            .format(name), raw_cms)
+
+        # Ensure that the countermeasures are unique
+        for x in countermeasures:
+            if str(x) in known_cms:
+                raise RuntimeError(f"Duplicate countermeasure {str(x)}")
+            else:
+                known_cms.update({str(x): 1})
 
         no_auto_intr = check_bool(rd.get('no_auto_intr_regs', not interrupts),
                                   'no_auto_intr_regs field of ' + what)
