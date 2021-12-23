@@ -593,7 +593,8 @@ module kmac_entropy
       end
 
       default: begin
-        st_d = StRandReset;
+        // this state is terminal
+        st_d = st;
         sparse_fsm_error_o = 1'b 1;
       end
     endcase

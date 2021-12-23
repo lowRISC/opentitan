@@ -463,7 +463,8 @@ module sha3pad
       end
 
       default: begin
-        st_d = StPadIdle;
+        // this state is terminal
+        st_d = st;
         sparse_fsm_error_o = 1'b 1;
       end
 

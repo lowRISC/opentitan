@@ -299,11 +299,11 @@ module keccak_round #(
 
       StError: begin
         keccak_st_d = StError;
-        sparse_fsm_error_o = 1'b 1;
       end
 
       default: begin
-        keccak_st_d = StError;
+        //this state is terminal
+        keccak_st_d = keccak_st;
         sparse_fsm_error_o = 1'b 1;
       end
     endcase
