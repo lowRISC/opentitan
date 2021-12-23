@@ -24,7 +24,10 @@ class pwrmgr_wakeup_ctrl_cg_wrap;
     wakeup_cp: coverpoint wakeup;
     status_cp: coverpoint status;
 
-    wakeup_cross: cross enable_cp, capture_cp, wakeup_cp, status_cp;
+    wakeup_cross: cross enable_cp, capture_cp, wakeup_cp, status_cp{
+      ignore_bins disable_status = wakeup_cross with (enable_cp == 0 && status_cp == 1);
+      ignore_bins no_wakeup_status = wakeup_cross with (wakeup_cp == 0 && status_cp == 1);
+    }
   endgroup
 
   function new(string name);
@@ -52,7 +55,10 @@ class pwrmgr_wakeup_intr_cg_wrap;
     wakeup_cp: coverpoint wakeup;
     interrupt_cp: coverpoint interrupt;
 
-    interrupt_cross: cross enable_cp, status_cp, wakeup_cp, interrupt_cp;
+    interrupt_cross: cross enable_cp, status_cp, wakeup_cp, interrupt_cp{
+      ignore_bins disable_pin = interrupt_cross with (enable_cp == 0 && interrupt_cp == 1);
+      ignore_bins no_status_pin = interrupt_cross with (status_cp == 0 && interrupt_cp == 1);
+    }
   endgroup
 
   function new(string name);

@@ -27,7 +27,10 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
     list_of_alerts = pwrmgr_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
     num_interrupts = ral.intr_state.get_n_used_bits();
+    `ASSERT_I(NumInstrMatch_A, num_interrupts == NUM_INTERRUPTS)
+    `uvm_info(`gfn, $sformatf("num_interrupts = %0d", num_interrupts), UVM_MEDIUM)
     tl_intg_alert_fields[ral.fault_status.reg_intg_err] = 1;
+    m_tl_agent_cfg.max_outstanding_req = 1;
   endfunction
 
 endclass

@@ -53,7 +53,8 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
                 UVM_MEDIUM)
       csr_wr(.ptr(ral.wake_info_capture_dis), .value(disable_wakeup_capture));
 
-      update_control_enables(1'b1);
+      low_power_hint = 1'b1;
+      update_control_csr();
 
       wait_for_csr_to_propagate_to_slow_domain();
 
