@@ -501,8 +501,9 @@ module kmac_app
       end
 
       default: begin
+        // this state is terminal
+        st_d = st;
         sparse_fsm_error_o = 1'b 1;
-        st_d = StError;
       end
     endcase
   end

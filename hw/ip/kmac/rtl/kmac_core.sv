@@ -224,7 +224,8 @@ module kmac_core
       end
 
       default: begin
-        st_d = StKmacIdle;
+        // this state is terminal
+        st_d = st;
         sparse_fsm_error_o = 1'b 1;
       end
     endcase

@@ -269,7 +269,8 @@ module sha3
       end
 
       default: begin
-        st_d = StIdle_sparse;
+        //this state is terminal
+        st_d = st;
         sha3_state_error = 1'b 1;
       end
 

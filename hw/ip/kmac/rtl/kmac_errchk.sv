@@ -351,8 +351,8 @@ module kmac_errchk
       end
 
       default: begin
-        st_d = StIdle;
-        //ToDo: add alert
+        // this state is terminal
+        st_d = st;
       end
     endcase
   end : next_state
