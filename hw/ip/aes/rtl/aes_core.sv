@@ -164,7 +164,7 @@ module aes_core
   logic                                       prd_clearing_upd_ack;
   logic                                       prd_clearing_rsd_req;
   logic                                       prd_clearing_rsd_ack;
-  logic                               [127:0] prd_clearing_128;
+  logic                               [127:0] prd_clearing_128 [NumShares];
   logic                               [255:0] prd_clearing_256 [NumSharesKey];
 
   // Unused signals
@@ -194,8 +194,11 @@ module aes_core
   );
 
   // Generate clearing signals of appropriate widths.
-  for (genvar c = 0; c < NumChunksPRDClearing128; c++) begin : gen_prd_clearing_128
-    assign prd_clearing_128[c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[0];
+  // Different shares need to be cleared with different pseudo-random data.
+  for (genvar s = 0; s < NumShares; s++) begin : gen_prd_clearing_128_shares
+    for (genvar c = 0; c < NumChunksPRDClearing128; c++) begin : gen_prd_clearing_128
+      assign prd_clearing_128[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[s];
+    end
   end
   // The initial key is always provided in two shares. The two shares of the initial key register
   // need to be cleared with different pseudo-random data.
@@ -284,8 +287,8 @@ module aes_core
       IV_DATA_OUT_RAW: iv_d = aes_transpose(state_out);
       IV_DATA_IN_PREV: iv_d = data_in_prev_q;
       IV_CTR:          iv_d = ctr;
-      IV_CLEAR:        iv_d = prd_clearing_128;
-      default:         iv_d = prd_clearing_128;
+      IV_CLEAR:        iv_d = prd_clearing_128[0];
+      default:         iv_d = prd_clearing_128[0];
     endcase
   end
 
@@ -305,8 +308,8 @@ module aes_core
   always_comb begin : data_in_prev_mux
     unique case (data_in_prev_sel)
       DIP_DATA_IN: data_in_prev_d = data_in;
-      DIP_CLEAR:   data_in_prev_d = prd_clearing_128;
-      default:     data_in_prev_d = prd_clearing_128;
+      DIP_CLEAR:   data_in_prev_d = prd_clearing_128[0];
+      default:     data_in_prev_d = prd_clearing_128[0];
     endcase
   end
 
@@ -444,9 +447,13 @@ module aes_core
     // counter and feedback path through the IV regs.
 
     // Only unmask the final cipher core output. Unmasking intermediate output data causes
-    // additional SCA leakage and thus has to be avoided.
+    // additional SCA leakage and thus has to be avoided. Forward PRD instead of a determinsitic
+    // value to avoid leaking the cipher core output when it becomes valid.
     logic [3:0][3:0][7:0] state_done_muxed [NumShares];
-    assign state_done_muxed = (cipher_out_valid == SP2V_HIGH) ? state_done : '{default: '0};
+    for (genvar s = 0; s < NumShares; s++) begin : gen_state_done_muxed
+      assign state_done_muxed[s] =
+          (cipher_out_valid == SP2V_HIGH) ? state_done[s] : prd_clearing_128[s];
+    end
 
     // Avoid aggressive synthesis optimizations.
     logic [3:0][3:0][7:0] state_done_buf [NumShares];
@@ -596,7 +603,7 @@ module aes_core
   // Input data register clear
   always_comb begin : data_in_reg_clear
     for (int i = 0; i < NumRegsData; i++) begin
-      hw2reg.data_in[i].d  = prd_clearing_128[i * 32 +: 32];
+      hw2reg.data_in[i].d  = prd_clearing_128[0][i * 32 +: 32];
       hw2reg.data_in[i].de = data_in_we;
     end
   end
