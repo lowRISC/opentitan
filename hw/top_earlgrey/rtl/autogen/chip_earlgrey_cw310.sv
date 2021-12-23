@@ -362,8 +362,8 @@ module chip_earlgrey_cw310 #(
       BidirStd, // SPI_HOST_D2
       BidirStd, // SPI_HOST_D1
       BidirStd, // SPI_HOST_D0
-      BidirTol, // USB_N
-      BidirTol, // USB_P
+      DualBidirTol, // USB_N
+      DualBidirTol, // USB_P
       InputStd  // POR_N
     }),
     .MioPadType ({

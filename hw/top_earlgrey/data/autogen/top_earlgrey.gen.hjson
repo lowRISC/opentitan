@@ -9473,7 +9473,7 @@
       }
       {
         name: USB_P
-        type: BidirTol
+        type: DualBidirTol
         bank: VCC
         connection: manual
         desc: USB P signal
@@ -9481,7 +9481,7 @@
       }
       {
         name: USB_N
-        type: BidirTol
+        type: DualBidirTol
         bank: VCC
         connection: manual
         desc: USB N signal
@@ -11710,11 +11710,7 @@
       name: asic
       pinout:
       {
-        remove_ports:
-        [
-          USB_P1
-          USB_N1
-        ]
+        remove_ports: []
         remove_pads: []
         add_pads:
         [
@@ -11724,20 +11720,6 @@
             bank: VCC
             connection: manual
             desc: Extra infrastructure pad for AST
-          }
-          {
-            name: USB_P1
-            type: BidirTol
-            bank: VCC
-            connection: manual
-            desc: USB P signal (second pad)
-          }
-          {
-            name: USB_N1
-            type: BidirTol
-            bank: VCC
-            connection: manual
-            desc: USB N signal (second pad)
           }
         ]
       }
