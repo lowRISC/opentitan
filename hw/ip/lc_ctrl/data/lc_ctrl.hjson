@@ -335,6 +335,33 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "STATE.SPARSE",
+      desc: "Sparse manufacturing state encoding."
+    }
+    { name: "MAIN.FSM.SPARSE",
+      desc: "The main state FSM is sparsely encoded."
+    }
+    { name: "KMAC.FSM.SPARSE",
+      desc: "The KMAC interface FSM is sparsely encoded."
+    }
+    { name: "KMAC.FSM.LOCAL_ESC",
+      desc: "The KMAC interface FSM is moved into an invalid state upon local escalation."
+    }
+    { name: "MAIN.FSM.LOCAL_ESC",
+      desc: "The main state FSM moves to a virtual scrap state upon local escalation."
+    }
+    { name: "MAIN.FSM.GLOBAL_ESC",
+      desc: "The main state FSM moves to a virtual scrap state upon global escalation."
+    }
+    { name: "KMAC.CTR.REDUN",
+      desc: "The counter inside the KMAC interface is replicated."
+    }
+    { name: "INTERSIG.MUBI",
+      desc: "Life cycle control signals are multibit encoded."
+    }
+    { name: "TOKEN.DIGEST",
+      desc: "Life cycle transition tokens are hashed with cSHAKE128."
+    }
   ]
 
   registers: [
