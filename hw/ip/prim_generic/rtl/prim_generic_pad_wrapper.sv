@@ -58,6 +58,7 @@ module prim_generic_pad_wrapper
     assign (weak0, weak1) inout_io = attr_i.pull_en ? attr_i.pull_select : 1'bz;
   `endif
   end else if (PadType == BidirTol ||
+               PadType == DualBidirTol ||
                PadType == BidirOd ||
                PadType == BidirStd) begin : gen_bidir
 
