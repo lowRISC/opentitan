@@ -34,3 +34,8 @@ void otp_read(uint32_t address, uint32_t *data, size_t num_words) {
     data[i] = sec_mmio_read32(kBase + reg_offset + i * sizeof(uint32_t));
   }
 }
+
+void otp_creator_sw_cfg_lockdown(void) {
+  sec_mmio_write32(kBase + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0);
+  sec_mmio_write_increment(1);
+}

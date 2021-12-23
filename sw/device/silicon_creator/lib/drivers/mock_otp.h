@@ -19,6 +19,7 @@ class MockOtp : public GlobalMock<MockOtp> {
   MOCK_METHOD(uint32_t, read32, (uint32_t address));
   MOCK_METHOD(uint32_t, read64, (uint32_t address));
   MOCK_METHOD(void, read, (uint32_t address, uint32_t *data, size_t num_words));
+  MOCK_METHOD(void, CreatorSwCfgLockdown, ());
 };
 
 }  // namespace internal
@@ -45,6 +46,10 @@ uint64_t otp_read64(uint32_t address) {
 
 void otp_read(uint32_t address, uint32_t *data, size_t num_words) {
   return MockOtp::Instance().read(address, data, num_words);
+}
+
+void otp_creator_sw_cfg_lockdown(void) {
+  MockOtp::Instance().CreatorSwCfgLockdown();
 }
 
 }  // extern "C"
