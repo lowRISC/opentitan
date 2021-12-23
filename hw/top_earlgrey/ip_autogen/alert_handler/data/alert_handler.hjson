@@ -327,7 +327,53 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "CONFIG.SHADOW",
+      desc: "Important CSRs are shadowed."
+    }
+    { name: "ALERT.INTERSIG.DIFF",
+      desc: "Differentially encoded alert channels."
+    }
+    { name: "LPG.INTERSIG.MUBI",
+      desc: "LPG signals are encoded with MUBI types."
+    }
+    { name: "ESC.INTERSIG.DIFF",
+      desc: "Differentially encoded escalation channels."
+    }
+    { name: "ALERT_RX.INTERSIG.BKGN_CHK",
+      desc: "Periodic background checks on alert channels (ping mechanism)."
+    }
+    { name: "ESC_TX.INTERSIG.BKGN_CHK",
+      desc: "Periodic background checks on escalation channels (ping mechanism)."
+    }
+    { name: "ESC_RX.INTERSIG.BKGN_CHK",
+      desc: "Escalation receivers can detect absence of periodic ping requests."
+    }
+    { name: "ESC_TIMER.FSM.SPARSE",
+      desc: "Escalation timer FSMs are sparsely encoded."
+    }
+    { name: "PING_TIMER.FSM.SPARSE",
+      desc: "Ping timer FSM is sparsely encoded."
+    }
+    { name: "ESC_TIMER.FSM.LOCAL_ESC",
+      desc: "Escalation timer FSMs move into an invalid state upon local escalation."
+    }
+    { name: "PING_TIMER.FSM.LOCAL_ESC",
+      desc: "Ping timer FSM moves into an invalid state upon local escalation."
+    }
+    { name: "ACCU.CTR.REDUN",
+      desc: "Accumulator counters are redundant."
+    }
+    { name: "ESC_TIMER.CTR.REDUN",
+      desc: "Escalation timer counters are redundant."
+    }
+    { name: "PING_TIMER.CTR.REDUN",
+      desc: "Ping timer counters are redundant."
+    }
+    { name: "PING_TIMER.LFSR.REDUN",
+      desc: "Ping timer LFSR is redundant."
+    }
   ]
+
 # interrupt registers for the classes
   interrupt_list: [
     { name: "classa",
