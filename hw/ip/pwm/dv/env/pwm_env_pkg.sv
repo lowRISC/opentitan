@@ -40,31 +40,23 @@ package pwm_env_pkg;
     Disable = 1'b0
   } pwm_status_e;
 
-  typedef struct {
-    // cfg reg
-    rand bit [3:0] dc_resn;
-    rand bit [26:0] clk_div;
-    bit cntr_en;
-    // en reg
-    rand bit [PWM_NUM_CHANNELS-1:0] pwm_en;
-    // invert multireg
-    rand bit [PWM_NUM_CHANNELS-1:0] invert;
-    // param multireg
-    rand bit [PWM_NUM_CHANNELS-1:0] blink_en;
-    rand bit [PWM_NUM_CHANNELS-1:0] htbt_en;
-    rand bit [PWM_NUM_CHANNELS-1:0][15:0] phase_delay;
-    // duty_cycle multireg
-    rand bit [PWM_NUM_CHANNELS-1:0][15:0] duty_cycle_a;
-    rand bit [PWM_NUM_CHANNELS-1:0][15:0] duty_cycle_b;
-    // blink_param multireg
-    rand bit [PWM_NUM_CHANNELS-1:0][15:0] blink_param_x;
-    rand bit [PWM_NUM_CHANNELS-1:0][15:0] blink_param_y;
-    // mode multireg
-    rand pwm_mode_e [PWM_NUM_CHANNELS-1:0] pwm_mode;
-    // derived params
-    bit [27:0] beat_cycle;  // 2**(clk_div+1) core cycles
-    bit [16:0] pulse_cycle;  // 2**(dc_resn+1) beat cycles
-  } pwm_regs_t;
+  typedef struct packed {
+    bit [26:0]   ClkDiv;
+    bit [3:0]    DcResn;
+    bit          CntrEn;
+  } cfg_reg_t;
+
+  typedef struct packed {
+    bit          BlinkEn;
+    bit          HtbtEn;
+    bit [13:0]   RsvParam;
+    bit [15:0]   PhaseDelay;
+  } param_reg_t;
+
+  typedef struct packed {
+    bit [15:0]   B;
+    bit [15:0]   A;
+  } dc_blink_t;
 
   // function
   function automatic pwm_mode_e get_pwm_mode(bit [1:0] mode);
@@ -74,13 +66,18 @@ package pwm_env_pkg;
                              Allmodes;
   endfunction : get_pwm_mode
 
+  // the index of multi-reg is at the last char of the name
+  function automatic int get_multireg_idx(string name);
+    string s = name.getc(name.len - 1);
+    return s.atoi();
+  endfunction
+
   // package sources
   `include "pwm_seq_cfg.sv"
   `include "pwm_env_cfg.sv"
   `include "pwm_env_cov.sv"
   `include "pwm_virtual_sequencer.sv"
   `include "pwm_scoreboard.sv"
-  `include "pwm_monitor.sv"
   `include "pwm_env.sv"
   `include "pwm_vseq_list.sv"
 
