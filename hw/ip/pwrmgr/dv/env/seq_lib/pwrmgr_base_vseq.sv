@@ -374,8 +374,53 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_rstmgr_sva_vif.disable_sva = !enable;
   endfunction
 
-  // Updates control CSR enables.
-  task update_control_enables(bit low_power_hint);
+  local task wait_for_fall_through();
+    wait(!cfg.pwrmgr_vif.pwr_cpu.core_sleeping);
+    exp_wakeup_fall_through = 1'b1;
+    exp_intr = 1'b1;
+    `uvm_info(`gfn, "wait_for_fall_through succeeds", UVM_MEDIUM)
+  endtask
+
+  local task wait_for_abort();
+    wait(!cfg.pwrmgr_vif.pwr_flash.flash_idle || !cfg.pwrmgr_vif.pwr_otp_rsp.otp_idle ||
+          !cfg.pwrmgr_vif.pwr_lc_rsp.lc_idle);
+    exp_wakeup_abort = 1'b1;
+    exp_intr = 1'b1;
+    `uvm_info(`gfn, "wait_for_abort succeeds", UVM_MEDIUM)
+  endtask
+
+  local task wait_for_low_power_transition();
+    wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
+    exp_wakeup_reasons = wakeups & wakeups_en;
+    exp_intr = 1'b1;
+    `uvm_info(`gfn, "Setting expected interrupt", UVM_MEDIUM)
+  endtask
+
+  // TODO(maturana) Need to handle core_sleeping never asserting.
+  task process_low_power_hint();
+    // Make sure the low power transition can proceed.
+    wait(cfg.pwrmgr_vif.pwr_cpu.core_sleeping);
+    `uvm_info(`gfn, "In process_low_power_hint pre forks", UVM_MEDIUM)
+    fork
+      wait_for_fall_through();
+      wait_for_abort();
+      wait_for_low_power_transition();
+    join_any
+    disable fork;
+    // At this point we know the low power transition went through or was aborted.
+    // If it went through, determine if the transition to active state is for a reset, and
+    // cancel the expected interrupt.
+    if (exp_wakeup_reasons) begin
+      wait(cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateMainPowerOn);
+      if (cfg.pwrmgr_vif.pwrup_cause == pwrmgr_pkg::Reset) begin
+        `uvm_info(`gfn, "Cancelling expected interrupt", UVM_MEDIUM)
+        exp_intr = 1'b0;
+      end
+    end
+  endtask
+
+  // Updates control CSR.
+  task update_control_csr();
     ral.control.core_clk_en.set(control_enables.core_clk_en);
     ral.control.io_clk_en.set(control_enables.io_clk_en);
     ral.control.usb_clk_en_lp.set(control_enables.usb_clk_en_lp);
@@ -388,10 +433,15 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
               "Setting control CSR to 0x%x, enables=%p, low_power_hint=%b",
               ral.control.get(),
               control_enables,
-              1'b1
+              low_power_hint
               ), UVM_MEDIUM)
     csr_update(.csr(ral.control));
-  endtask : update_control_enables
+
+    // Predict the effect of the potential low power transition.
+    fork
+      if (low_power_hint) process_low_power_hint();
+    join_none
+  endtask : update_control_csr
 
   // This enables the fast fsm to transition to low power when all nvms are idle after the
   // transition is enabled by software and cpu WFI. When not all are idle the transition is

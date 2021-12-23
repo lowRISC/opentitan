@@ -19,6 +19,7 @@ package pwrmgr_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
+  parameter int NUM_INTERRUPTS = 1;
 
   // alerts
   parameter uint NUM_ALERTS = 1;
@@ -28,9 +29,10 @@ package pwrmgr_env_pkg;
   typedef enum int {
     WakeupSysrst,
     WakeupDbgCable,
-    WakeupAon,
+    WakeupPin,
     WakeupUsb,
-    WakeupAonTimer
+    WakeupAonTimer,
+    WakeupSensorCtrl
   } wakeup_e;
 
   typedef struct packed {
@@ -48,6 +50,14 @@ package pwrmgr_env_pkg;
   typedef bit [pwrmgr_pkg::HwResetWidth-1:0] resets_out_t;
 
   // functions
+
+  // variables
+  bit [NUM_INTERRUPTS-1:0] exp_intr;
+  bit exp_wakeup_fall_through;
+  bit exp_wakeup_abort;
+  wakeups_t exp_wakeup_reasons;
+  control_enables_t control_enables;
+  logic low_power_hint;
 
   // package sources
   `include "pwrmgr_env_cfg.sv"

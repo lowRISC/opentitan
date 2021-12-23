@@ -15,56 +15,52 @@ interface pwrmgr_if (
 
   // Ports to the dut side.
 
-  logic                                                              rst_main_n;
+  logic                                                        rst_main_n;
 
-  pwrmgr_pkg::pwr_ast_req_t                                          pwr_ast_req;
-  pwrmgr_pkg::pwr_ast_rsp_t                                          pwr_ast_rsp;
+  pwrmgr_pkg::pwr_ast_req_t                                    pwr_ast_req;
+  pwrmgr_pkg::pwr_ast_rsp_t                                    pwr_ast_rsp;
 
-  pwrmgr_pkg::pwr_rst_req_t                                          pwr_rst_req;
-  pwrmgr_pkg::pwr_rst_rsp_t                                          pwr_rst_rsp;
+  pwrmgr_pkg::pwr_rst_req_t                                    pwr_rst_req;
+  pwrmgr_pkg::pwr_rst_rsp_t                                    pwr_rst_rsp;
 
-  pwrmgr_pkg::pwr_clk_req_t                                          pwr_clk_req;
-  pwrmgr_pkg::pwr_clk_rsp_t                                          pwr_clk_rsp;
+  pwrmgr_pkg::pwr_clk_req_t                                    pwr_clk_req;
+  pwrmgr_pkg::pwr_clk_rsp_t                                    pwr_clk_rsp;
 
-  pwrmgr_pkg::pwr_otp_req_t                                          pwr_otp_req;
-  pwrmgr_pkg::pwr_otp_rsp_t                                          pwr_otp_rsp;
+  pwrmgr_pkg::pwr_otp_req_t                                    pwr_otp_req;
+  pwrmgr_pkg::pwr_otp_rsp_t                                    pwr_otp_rsp;
 
-  pwrmgr_pkg::pwr_lc_req_t                                           pwr_lc_req;
-  pwrmgr_pkg::pwr_lc_rsp_t                                           pwr_lc_rsp;
+  pwrmgr_pkg::pwr_lc_req_t                                     pwr_lc_req;
+  pwrmgr_pkg::pwr_lc_rsp_t                                     pwr_lc_rsp;
 
-  pwrmgr_pkg::pwr_flash_t                                            pwr_flash;
+  pwrmgr_pkg::pwr_flash_t                                      pwr_flash;
 
-  pwrmgr_pkg::pwr_cpu_t                                              pwr_cpu;
+  pwrmgr_pkg::pwr_cpu_t                                        pwr_cpu;
 
-  lc_ctrl_pkg::lc_tx_t                                               fetch_en;
+  lc_ctrl_pkg::lc_tx_t                                         fetch_en;
 
-  logic                             [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
+  logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
 
-  logic                             [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs_i;
+  logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs_i;
 
-  logic                                                              strap;
-  logic                                                              low_power;
-  rom_ctrl_pkg::pwrmgr_data_t                                        rom_ctrl;
+  logic                                                        strap;
+  logic                                                        low_power;
+  rom_ctrl_pkg::pwrmgr_data_t                                  rom_ctrl;
 
-  prim_mubi_pkg::mubi4_t                                             sw_rst_req_i;
+  prim_mubi_pkg::mubi4_t                                       sw_rst_req_i;
 
-  prim_esc_pkg::esc_tx_t                                             esc_rst_tx;
-  prim_esc_pkg::esc_rx_t                                             esc_rst_rx;
+  prim_esc_pkg::esc_tx_t                                       esc_rst_tx;
+  prim_esc_pkg::esc_rx_t                                       esc_rst_rx;
 
-  logic                                                              intr_wakeup;
+  logic                                                        intr_wakeup;
 
   // Relevant CSR values.
-  logic                                                              low_power_hint;
+  logic                                                        wakeup_en_regwen;
+  logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_en;
+  logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_status;
+  logic                                                        wakeup_capture_en;
 
-  pwrmgr_env_pkg::control_enables_t                                  control_enables;
-
-  logic                                                              wakeup_en_regwen;
-  logic                             [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_en;
-  logic                             [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_status;
-  logic                                                              wakeup_capture_en;
-
-  logic                             [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
-  logic                             [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
+  logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
+  logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
 
   // Internal DUT signals.
 `ifndef PATO_TO_DUT
@@ -94,6 +90,12 @@ interface pwrmgr_if (
 
   logic intr_status;
   always_comb intr_status = `PATH_TO_DUT.reg2hw.intr_state.q;
+
+  // This is only used to determine if an interrupt will be set in case of a reset while in
+  // low power.  tryIt is very hard to perdict if the reset or a wakeup happen first, so this
+  // signal is used to help instead.
+  pwrmgr_pkg::pwrup_cause_e pwrup_cause;
+  always_comb pwrup_cause = `PATH_TO_DUT.slow_pwrup_cause;
 
   // Used to disable assertions once with the first power glitch.
   bit internal_assertion_disabled;
@@ -171,16 +173,6 @@ interface pwrmgr_if (
     rst_main_n = 1'b1;
   endtask
 
-  function automatic void update_low_power_hint(logic value);
-    `uvm_info("pwrmgr_if", $sformatf("Updating low power hint to 0x%x", value), UVM_MEDIUM)
-    low_power_hint = value;
-  endfunction
-
-  function automatic void update_control_enables(pwrmgr_env_pkg::control_enables_t value);
-    `uvm_info("pwrmgr_if", $sformatf("Updating control enables to 0x%x", value), UVM_MEDIUM)
-    control_enables = value;
-  endfunction
-
   // FIXME Move all these initializations to sequences.
   initial begin
     // From AST.
@@ -201,7 +193,6 @@ interface pwrmgr_if (
   clocking slow_cb @(posedge clk_slow);
     input slow_state;
     input pwr_ast_req;
-    input control_enables;
     output pwr_ast_rsp;
   endclocking
 
