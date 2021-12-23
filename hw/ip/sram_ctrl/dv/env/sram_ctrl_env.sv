@@ -54,12 +54,6 @@ class sram_ctrl_env #(parameter int AddrWidth = 10) extends cip_base_env #(
     super.connect_phase(phase);
 
     if (cfg.en_scb) begin
-      // connect SRAM TLUL ports
-      m_tl_agents[cfg.sram_ral_name].monitor.a_chan_port.connect(
-          scoreboard.sram_tl_a_chan_fifo.analysis_export);
-      m_tl_agents[cfg.sram_ral_name].monitor.d_chan_port.connect(
-          scoreboard.sram_tl_d_chan_fifo.analysis_export);
-
       // connect KDI port
       m_kdi_agent.monitor.analysis_port.connect(scoreboard.kdi_fifo.analysis_export);
     end
