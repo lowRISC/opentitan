@@ -41,6 +41,7 @@ module prim_generic_pad_attr
     end
   end else if (PadType == BidirStd ||
                PadType == BidirTol ||
+               PadType == DualBidirTol ||
                PadType == BidirOd) begin : gen_bidir_warl
     always_comb begin : p_attr
       attr_warl_o = '0;

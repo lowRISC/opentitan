@@ -243,6 +243,7 @@ class PadType(Enum):
     BIDIR_OD = 'BidirOd'
     ANALOG_IN0 = 'AnalogIn0'
     ANALOG_IN1 = 'AnalogIn1'
+    DUAL_BIDIR_TOL = 'DualBidirTol'
 
 
 def is_valid_pad_type(obj):
