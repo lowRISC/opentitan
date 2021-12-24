@@ -20,6 +20,16 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual pins_if#(8)   otp_en_es_fw_read_vif;
   virtual pins_if#(8)   otp_en_es_fw_over_vif;
 
+  //
+  // Variables for controlling test duration.  Depending on the test there are two options:
+  // fixed duration in time or total number of seeds.
+  //
+  // When selecting fixed duration, the total simulated duration of the test is approximately
+  // equal to cfg.sim_duration
+  //
+  realtime sim_duration;
+  int      seed_cnt;
+
   // Knobs & Weights
   uint          enable_pct, route_software_pct, regwen_pct,
                 otp_en_es_fw_read_pct, otp_en_es_fw_over_pct,
@@ -35,7 +45,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   // TODO: randomize
   uint fips_window_size, bypass_window_size, boot_mode_retry_limit;
-  int  seed_cnt;
 
   rand prim_mubi_pkg::mubi8_t   otp_en_es_fw_read, otp_en_es_fw_over;
 
@@ -112,7 +121,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
                  enable.name()),
         $sformatf("\n\t |***** route_software              : %12s *****| \t",
                   route_software.name()),
-         $sformatf("\n\t |***** type_bypass                 : %12s *****| \t",
+        $sformatf("\n\t |***** type_bypass                 : %12s *****| \t",
                    type_bypass.name()),
         $sformatf("\n\t |***** entropy_data_reg_enable     : %12s *****| \t",
                   entropy_data_reg_enable.name()),
@@ -129,7 +138,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
         $sformatf("\n\t |***** boot_mode_retry_limit       : %12d *****| \t",
                   boot_mode_retry_limit),
         $sformatf("\n\t |***** seed_cnt                    : %12d *****| \t",
-                  seed_cnt)
+                  seed_cnt),
+        $sformatf("\n\t |***** sim_duration                : %9.2f ms *****| \t",
+                  sim_duration/1ms)
     };
 
     str = {str, "\n\t |----------------- knobs ------------------------------| \t"};

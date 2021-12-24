@@ -10,6 +10,8 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
   int rng_count = 0;
   int offset = 0;
 
+  push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq;
+
   task body();
 
     int seed_cnt = cfg.seed_cnt;
@@ -27,7 +29,7 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
           // Wait for data to arrive for TL consumption via the ENTROPY_DATA register
           csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
           // Read all currently available data (but no more than seed_cnt)
-          do_entropy_data_read(seed_cnt, available_seeds);
+          do_entropy_data_read(.max_seeds(seed_cnt), .seeds_found(available_seeds));
           // Update the count of remaining seeds to read
           seed_cnt -= available_seeds;
         end while (seed_cnt > 0);

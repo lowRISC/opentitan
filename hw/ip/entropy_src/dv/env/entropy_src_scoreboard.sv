@@ -442,9 +442,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   // Helper function for process_entropy_data_access
   //
 
-  function bit try_seed(input bit [CSRNG_BUS_WIDTH - 1:0] new_candidate,
-                        input bit [TL_DW - 1:0] tl_data,
-                        output bit [TL_DW - 1:0] tl_prediction);
+  function bit try_seed_tl(input bit [CSRNG_BUS_WIDTH - 1:0] new_candidate,
+                           input bit [TL_DW - 1:0] tl_data,
+                           output bit [TL_DW - 1:0] tl_prediction);
     bit [CSRNG_BUS_WIDTH - 1:0] mask, new_seed_masked, best_seed_masked;
     bit matches_prev_reads;
     bit matches_tl_data;
@@ -505,7 +505,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     while (entropy_data_q.size() > 0) begin : seed_trial_loop
       bit [TL_DW - 1:0] prediction;
       `uvm_info(`gfn, $sformatf("seed_tl_read_cnt: %01d", seed_tl_read_cnt), UVM_FULL)
-      match_found = try_seed(entropy_data_q[0], item.d_data, prediction);
+      match_found = try_seed_tl(entropy_data_q[0], item.d_data, prediction);
       if (match_found) begin
         `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
         seed_tl_read_cnt++;
@@ -866,6 +866,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
         `uvm_info(`gfn, "TODO: manage alerts", UVM_FULL)
       end else if (pass_cnt >= pass_requirement) begin
         bit [FIPS_CSRNG_BUS_WIDTH - 1:0] fips_csrng;
+        bit [CSRNG_BUS_WIDTH - 1:0] csrng_seed;
 
         fips_csrng = predict_fips_csrng(sample);
         `uvm_info(`gfn, $sformatf("sample.size(): %01d", sample.size()), UVM_FULL)
@@ -875,13 +876,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard
         pass_cnt  = 0;
         seed_idx++;
 
-        // package data for routing to SW or to CSRNG:
-        if (cfg.route_software == prim_mubi_pkg::MuBi4True) begin
-          bit [CSRNG_BUS_WIDTH - 1:0] csrng_seed = get_csrng_seed(fips_csrng);
-          entropy_data_q.push_back(csrng_seed);
-        end else if (cfg.route_software == prim_mubi_pkg::MuBi4False) begin
-          fips_csrng_q.push_back(fips_csrng);
-        end
+        // package data for routing to SW and to CSRNG:
+        csrng_seed = get_csrng_seed(fips_csrng);
+        entropy_data_q.push_back(csrng_seed);
+        fips_csrng_q.push_back(fips_csrng);
       end else begin
         // Inconsequential health check failure
       end
@@ -892,16 +890,28 @@ class entropy_src_scoreboard extends cip_base_scoreboard
 
   virtual task process_csrng();
     push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))  item;
-    bit [FIPS_CSRNG_BUS_WIDTH - 1:0]   fips_csrng_data;
-
    `uvm_info(`gfn, "task \"process_csrng\" starting\n", UVM_FULL)
 
     forever begin
+      bit match_found = 0;
+
       csrng_fifo.get(item);
-      fips_csrng_data = item.d_data;
-      `uvm_info(`gfn, "process_csrng: new item: %096h\n", UVM_MEDIUM)
-      `DV_CHECK_EQ_FATAL(fips_csrng_data, fips_csrng_q[0])
-      fips_csrng_q.pop_front();
+      `uvm_info(`gfn, $sformatf("process_csrng: new item: %096h\n", item.d_data), UVM_HIGH)
+
+      while (fips_csrng_q.size() > 0) begin : seed_trial_loop
+        bit [FIPS_CSRNG_BUS_WIDTH - 1:0] prediction;
+        // Unlike in the TL case, there is no need to leave seed predictions in the queue.
+        prediction = fips_csrng_q.pop_front();
+        if (prediction == item.d_data) begin
+          csrng_seeds++;
+          match_found = 1;
+          `uvm_info(`gfn, $sformatf("Match found: %d\n", csrng_seeds), UVM_FULL)
+        end else begin
+          csrng_drops++;
+          `uvm_info(`gfn, $sformatf("Dropped seed: %d\n", csrng_drops), UVM_FULL)
+        end
+      end : seed_trial_loop
+      `DV_CHECK_EQ_FATAL(match_found, 1)
     end
   endtask
 
