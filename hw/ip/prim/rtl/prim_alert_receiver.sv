@@ -98,13 +98,14 @@ module prim_alert_receiver
   logic ping_req_d, ping_req_q;
   logic ping_pending_d, ping_pending_q;
   logic send_init;
+  logic send_ping;
 
   // signal ping request upon positive transition on ping_req_i
   // signalling is performed by a level change event on the diff output
-  assign ping_req_d  = ping_req_i && !(state_q inside {InitReq, InitAckWait});
-  assign ping_rise   = ping_req_i && !ping_req_q;
+  assign ping_req_d  = ping_req_i;
+  assign ping_rise   = ping_req_d && !ping_req_q;
   assign ping_tog_pd = (send_init) ? 1'b0         :
-                       (ping_rise) ? ~ping_tog_pq : ping_tog_pq;
+                       (send_ping) ? ~ping_tog_pq : ping_tog_pq;
 
   // in-band reset is performed by sending out an integrity error on purpose.
   assign ack_dn      = (send_init) ? ack_pd : ~ack_pd;
@@ -135,7 +136,7 @@ module prim_alert_receiver
           ping_tog_pq})
   );
 
-  // the ping pending signal is used to in the FSM to distinguish whether the
+  // the ping pending signal is used in the FSM to distinguish whether the
   // incoming handshake shall be treated as an alert or a ping response.
   // it is important that this is only set on a rising ping_en level change, since
   // otherwise the ping enable signal could be abused to "mask" all native alerts
@@ -161,6 +162,8 @@ module prim_alert_receiver
     integ_fail_o = 1'b0;
     alert_o      = 1'b0;
     send_init    = 1'b0;
+    // by default, a ping request leads to a toogle on the differential ping pair
+    send_ping    = ping_rise;
 
     unique case (state_q)
       Idle: begin
@@ -192,6 +195,8 @@ module prim_alert_receiver
       InitReq: begin
         // we deliberately place a sigint error on the ack and ping lines in this case.
         send_init = 1'b1;
+        // suppress any toggles on the ping line while we are in the init phase.
+        send_ping = 1'b0;
         // As long as init req is asserted, we remain in this state and acknowledge all incoming
         // ping requests. As soon as the init request is dropped however, ping requests are not
         // acked anymore such that the ping mechanism can also flag alert channels that got stuck
@@ -208,8 +213,14 @@ module prim_alert_receiver
       // has been deasserted. At this point, we need to wait for the alert_sigint to drop again
       // before resuming normal operation.
       InitAckWait: begin
+        // suppress any toggles on the ping line while we are in the init phase.
+        send_ping = 1'b0;
         if (!alert_sigint) begin
           state_d = Pause0;
+          // If we get a ping request in this cycle, or if we realize that there is an unhandled
+          // ping request that came in during initialization (but after init_trig_i has been
+          // deasserted), we signal this to the alert sender by toggling the request line.
+          send_ping = ping_rise || ping_pending_q;
         end
       end
       default: state_d = Idle;
@@ -276,7 +287,8 @@ module prim_alert_receiver
           !(state_q inside {InitReq, InitAckWait}) |=> send_init)
 
   // ping request at input -> need to see encoded ping request
-  `ASSERT(PingRequest0_A, ##1 $rose(ping_req_i) && !send_init |=> $changed(alert_rx_o.ping_p))
+  `ASSERT(PingRequest0_A, ##1 $rose(ping_req_i) && !state_q inside {InitReq, InitAckWait}
+      |=> $changed(alert_rx_o.ping_p))
   // ping response implies it has been requested
   `ASSERT(PingResponse0_A, ping_ok_o |-> ping_pending_q)
   // correctly latch ping request
