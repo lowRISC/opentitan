@@ -79,13 +79,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard
         repcnt[i]++;
         max_repcnt = (repcnt[i] > max_repcnt) ? repcnt[i] : max_repcnt;
       end else begin
-        repcnt[i] = 0;
+        repcnt[i] = 1;
       end
     end
     if (rng_val == prev_rng_val) begin
       repcnt_symbol++;
     end else begin
-      repcnt_symbol = 0;
+      repcnt_symbol = 1;
     end
     prev_rng_val = rng_val;
     max_repcnt_symbol = (repcnt_symbol > max_repcnt_symbol) ? repcnt_symbol : max_repcnt_symbol;
@@ -591,11 +591,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       "markov_lo_thresholds": begin
       end
       "repcnt_hi_watermarks": begin
-        // TODO: KNOWN ISSUE: Github Issue pending
+        // TODO: KNOWN ISSUE: pending resolution to #9819
         do_read_check = 1'b0;
       end
       "repcnts_hi_watermarks": begin
-        // TODO: KNOWN ISSUE: Github Issue pending
+        // TODO: KNOWN ISSUE: pending resolution to #9819
         do_read_check = 1'b0;
       end
       "adaptp_hi_watermarks": begin
