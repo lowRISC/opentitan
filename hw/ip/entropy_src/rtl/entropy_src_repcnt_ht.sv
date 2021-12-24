@@ -24,13 +24,14 @@ module entropy_src_repcnt_ht #(
 );
 
   // signals
-  logic [RngBusWidth-1:0] samples_match_pulse;
-  logic [RngBusWidth-1:0] samples_no_match_pulse;
-  logic [RngBusWidth-1:0] rep_cnt_fail;
-  logic [RegWidth-1:0]    rep_cntr[RngBusWidth];
-  logic [RngBusWidth-1:0] rep_cntr_err;
-  logic [RegWidth-1:0]    test_cnt;
-  logic                   test_cnt_err;
+  logic [RngBusWidth-1:0]               samples_match_pulse;
+  logic [RngBusWidth-1:0]               samples_no_match_pulse;
+  logic [RngBusWidth-1:0]               rep_cnt_fail;
+  logic [RngBusWidth-1:0][RegWidth-1:0] rep_cntr;
+  logic [RngBusWidth-1:0]               rep_cntr_err;
+  logic [RegWidth-1:0]                  test_cnt;
+  logic                                 test_cnt_err;
+  logic [RegWidth-1:0]                  cntr_max;
 
   // flops
   logic [RngBusWidth-1:0] prev_sample_q, prev_sample_d;
@@ -84,6 +85,13 @@ module entropy_src_repcnt_ht #(
 
   end : gen_cntrs
 
+  entropy_src_comparator_tree #(
+    .Width(RegWidth),
+    .Depth(2)
+  ) u_comp (
+    .i(rep_cntr),
+    .o(cntr_max)
+  );
 
   // Test event counter
     prim_count #(
@@ -104,7 +112,7 @@ module entropy_src_repcnt_ht #(
 
   // the pulses will be only one clock in length
   assign test_fail_pulse_o = active_i && entropy_bit_vld_i && (|rep_cnt_fail);
-  assign test_cnt_o = test_cnt;
+  assign test_cnt_o = cntr_max;
   assign count_err_o = test_cnt_err || (|rep_cntr_err);
 
 
