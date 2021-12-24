@@ -120,6 +120,27 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "MEM.INTEGRITY",
+      desc: "End-to-end data/memory integrity scheme."
+    }
+    { name: "MEM.SCRAMBLE",
+      desc: "Data is scrambled with a keyed reduced-round PRINCE cipher in CTR mode."
+    }
+    { name: "ADDR.SCRAMBLE",
+      desc: "Address is scrambled with a keyed lightweight permutation/diffusion function."
+    }
+    { name: "INSTR.BUS.LC_GATED",
+      desc: "Prevent code execution from SRAM in non-test lifecycle states."
+    }
+    { name: "KEY.GLOBAL_ESC",
+      desc: "Scrambling key and nonce are reset to a fixed value upon escalation."
+    }
+    { name: "KEY.LOCAL_ESC",
+      desc: "Scrambling key and nonce are reset to a fixed value upon local escalation due to bus integrity or counter errors."
+    }
+    { name: "CTR.REDUN",
+      desc: "The initialization counter is duplicated."
+    }
   ]
 
   regwidth: "32",
