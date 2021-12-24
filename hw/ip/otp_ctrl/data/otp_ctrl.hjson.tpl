@@ -336,6 +336,102 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "SECRET.MEM.SCRAMBLE",
+      desc: "Secret partitions are scrambled with a full-round PRESENT cipher."
+    }
+    { name: "PART.MEM.DIGEST",
+      desc: "Integrity of buffered partitions is ensured via a 64bit digest."
+    }
+    { name: "DAI.FSM.SPARSE",
+      desc: "The direct access interface FSM is sparsely encoded."
+    }
+    { name: "KDI.FSM.SPARSE",
+      desc: "The key derivation interface FSM is sparsely encoded."
+    }
+    { name: "LCI.FSM.SPARSE",
+      desc: "The life cycle interface FSM is sparsely encoded."
+    }
+    { name: "PART.FSM.SPARSE",
+      desc: "The partition FSMs are sparsely encoded."
+    }
+    { name: "SCRMBL.FSM.SPARSE",
+      desc: "The scramble datapath FSM is sparsely encoded."
+    }
+    { name: "TIMER.FSM.SPARSE",
+      desc: "The background check timer FSM is sparsely encoded."
+    }
+    { name: "DAI.CTR.REDUN",
+      desc: "The direct access interface address counter is duplicated."
+    }
+    { name: "KDI_SEED.CTR.REDUN",
+      desc: "The key derivation interface counter is duplicated."
+    }
+    { name: "KDI_ENTROPY.CTR.REDUN",
+      desc: "The key derivation entropy counter is duplicated."
+    }
+    { name: "LCI.CTR.REDUN",
+      desc: "The life cycle interface address counter is duplicated."
+    }
+    { name: "PART.CTR.REDUN",
+      desc: "The address counter of buffered partitions is duplicated."
+    }
+    { name: "SCRMBL.CTR.REDUN",
+      desc: "The srambling datapath counter is duplicated."
+    }
+    { name: "TIMER_INTEG.CTR.REDUN",
+      desc: "The background integrity check timer is duplicated."
+    }
+    { name: "TIMER_CNSTY.CTR.REDUN",
+      desc: "The background consistency check timer is duplicated."
+    }
+    { name: "TIMER.LFSR.REDUN",
+      desc: "The background check LFSR is duplicated."
+    }
+    { name: "DAI.FSM.LOCAL_ESC",
+      desc: "The direct access interface FSM is moved into an invalid state upon local escalation."
+    }
+    { name: "LCI.FSM.LOCAL_ESC",
+      desc: "The life cycle interface FSM is moved into an invalid state upon local escalation."
+    }
+    { name: "KDI.FSM.LOCAL_ESC",
+      desc: "The key derivation interface FSM is moved into an invalid state upon local escalation."
+    }
+    { name: "PART.FSM.LOCAL_ESC",
+      desc: "The partition FSMs are moved into an invalid state upon local escalation."
+    }
+    { name: "SCRMBL.FSM.LOCAL_ESC",
+      desc: "The scramble datapath FSM is moved into an invalid state upon local escalation."
+    }
+    { name: "TIMER.FSM.LOCAL_ESC",
+      desc: "The background check timer FSM is moved into an invalid state upon local escalation."
+    }
+    { name: "DAI.FSM.GLOBAL_ESC",
+      desc: "The direct access interface FSM is moved into an invalid state upon global escalation via life cycle."
+    }
+    { name: "LCI.FSM.GLOBAL_ESC",
+      desc: "The life cycle interface FSM is moved into an invalid state upon global escalation via life cycle."
+    }
+    { name: "KDI.FSM.GLOBAL_ESC",
+      desc: "The key derivation interface FSM is moved into an invalid state upon global escalation via life cycle."
+    }
+    { name: "PART.FSM.GLOBAL_ESC",
+      desc: "The partition FSMs are moved into an invalid state upon global escalation via life cycle."
+    }
+    { name: "SCRMBL.FSM.GLOBAL_ESC",
+      desc: "The scramble datapath FSM is moved into an invalid state upon global escalation via life cycle."
+    }
+    { name: "TIMER.FSM.GLOBAL_ESC",
+      desc: "The background check timer FSM is moved into an invalid state upon global escalation via life cycle."
+    }
+    { name: "PART.DATA_REG.INTEGRITY",
+      desc: "All partition buffer registers are protected with ECC on 64bit blocks."
+    }
+    { name: "MACRO.MEM.INTEGRITY",
+      desc: "All OTP macro words are protected with ECC on 16bit words."
+    }
+    { name: "PART.DATA_REG.BKGN_CHK",
+      desc: "The digest of buffered partitions is recomputed and checked at pseudorandom intervals in the background."
+    }
   ]
 
   ///////////////
