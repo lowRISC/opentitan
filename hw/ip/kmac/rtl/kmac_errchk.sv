@@ -115,6 +115,18 @@ module kmac_errchk
   } st_e;
   st_e st, st_d;
 
+  localparam int StateWidthL = 3;
+  typedef enum logic [StateWidthL-1:0] {
+    StIdleL,
+    StMsgFeedL,
+    StProcessingL,
+    StAbsorbedL,
+    StSqueezingL,
+    StErrorL
+  } st_logical_e;
+  st_logical_e stL;
+
+
   /////////////
   // Signals //
   /////////////
@@ -216,6 +228,16 @@ module kmac_errchk
     end
   end : check_prefix
 
+  always_comb begin : recode_st
+    unique case (st)
+      StIdle       : stL = StIdleL;
+      StMsgFeed    : stL = StMsgFeedL;
+      StProcessing : stL = StProcessingL;
+      StAbsorbed   : stL = StAbsorbedL;
+      StSqueezing  : stL = StSqueezingL;
+      default      : stL = StErrorL;
+    endcase
+  end : recode_st
 
   // Return error code
   err_t err;
@@ -228,7 +250,8 @@ module kmac_errchk
                  code: ErrSwCmdSequence,
                  info: {5'h0,
                         {err_swsequence, err_modestrength, err_prefix},
-                        {6'b0, st, sw_cmd_i}
+                        8'h 0,
+                        {1'b0, stL, sw_cmd_i}
                        }
                };
       end
