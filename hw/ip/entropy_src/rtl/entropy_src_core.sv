@@ -368,7 +368,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     sha3_done;
   logic                     sha3_absorbed;
   logic                     sha3_squeezing;
- // logic [sha3_pkg::StateWidth-1:0] sha3_fsm;
+  logic [2:0]               sha3_fsm;
   logic [32:0]              sha3_err;
   logic                     cs_aes_halt_req;
   logic                     sha3_msg_rdy;
@@ -658,7 +658,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // set the debug status reg
   assign hw2reg.debug_status.entropy_fifo_depth.d = sfifo_esfinal_depth;
-  assign hw2reg.debug_status.sha3_fsm.d = '0;
+  assign hw2reg.debug_status.sha3_fsm.d = sha3_fsm;
   assign hw2reg.debug_status.sha3_block_pr.d = sha3_block_processed;
   assign hw2reg.debug_status.sha3_squeezing.d = sha3_squeezing;
   assign hw2reg.debug_status.sha3_absorbed.d = sha3_absorbed;
@@ -2083,8 +2083,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
     .block_processed_o (sha3_block_processed),
 
-   // .sha3_fsm_o (sha3_fsm),
-    .sha3_fsm_o(),
+    .sha3_fsm_o (sha3_fsm),
 
     .state_valid_o (sha3_state_vld),
     .state_o       (sha3_state),

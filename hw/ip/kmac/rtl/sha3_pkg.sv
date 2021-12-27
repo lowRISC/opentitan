@@ -121,14 +121,14 @@ package sha3_pkg;
   //
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    StIdle = 6'b101100,
+    StIdle_sparse = 6'b101100,
 
     // Absorb stage receives the message bitstream and computes the keccak
     // rounds. This internal operation is mainly done inside sha3pad module
     // not sha3core. The core module and this state machine observe the status
     // of the process and mainly waits until all the sponge absorbing is
     // completed. The main indicator is `absorbed` signal.
-    StAbsorb = 6'b100111,
+    StAbsorb_sparse = 6'b100111,
 
     // TODO: Implement StAbort later after context-switching discussion.
     // Abort stage can be moved from StAbsorb stage. It basically holds the
@@ -136,24 +136,47 @@ package sha3_pkg;
     // software. This stage is for the software to pause current operation and
     // store the internal state elsewhere then initiates new KMAC/SHA3 process.
     // StAbort only can be moved to _StFlush_.
-    //StAbort = 6'b110000,
+    //StAbort_sparse = 6'b110000,
 
     // Squeeze stage allows the software to read the internal state.
     // If `EnMasking`, it opens the read permission of two share of the state.
     // The squeezing in SHA3 specification describes the software to read up to
     // the rate of SHA3 algorithm but this logic opens up the entire 1600 bits
     // of the state (3200bits if `EnMasking`).
-    StSqueeze = 6'b001010,
+    StSqueeze_sparse = 6'b001010,
 
     // ManualRun stage initiaties the keccak round and waits the completion.
     // This state is moved from Squeeze state by writing 1 to manual_run CSR.
     // When keccak round is completed, it goes back to Squeeze state.
-    StManualRun = 6'b111011,
+    StManualRun_sparse = 6'b111011,
 
     // Flush stage, the core clears out the internal variables and also
     // submodules' variables too. Then moves back to Idle state.
-    StFlush =  6'b010101
+    StFlush_sparse =  6'b010101
+  } sha3_st_sparse_e;
+
+  localparam int StateWidthLogic = 3;
+  typedef enum logic [StateWidthLogic-1:0] {
+    StIdle,
+    StAbsorb,
+    //StAbort,
+    StSqueeze,
+    StManualRun,
+    StFlush,
+    StError
   } sha3_st_e;
+
+  function automatic sha3_st_e sparse2logic(sha3_st_sparse_e st);
+    unique case (st)
+      StIdle_sparse      : return StIdle;
+      StAbsorb_sparse    : return StAbsorb;
+      //StAbort_sparse   : return StAbort;
+      StSqueeze_sparse   : return StSqueeze;
+      StManualRun_sparse : return StManualRun;
+      StFlush_sparse     : return StFlush;
+      default            : return StError;
+    endcase
+  endfunction : sparse2logic
 
   //////////////////
   // Error Report //
