@@ -178,11 +178,23 @@ module sha3pad
   logic [KeccakCountW-1:0] sent_message;
   logic inc_sentmsg, clr_sentmsg;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)          sent_message <= '0;
-    else if (clr_sentmsg) sent_message <= '0;
-    else if (inc_sentmsg) sent_message <= sent_message + 1'b 1;
-  end
+  // This primitive is used to place a hardened counter
+  prim_count #(
+    .Width(KeccakCountW),
+    .OutSelDnCnt(1'b0), // 0 selects up count
+    .CntStyle(prim_count_pkg::DupCnt)
+  ) u_sentmsg_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(clr_sentmsg),
+    .set_i(1'b0),
+    .set_cnt_i(KeccakCountW'(0)),
+    .en_i(inc_sentmsg),
+    .step_i(KeccakCountW'(1)),
+    .cnt_o(sent_message),
+    .err_o() //ToDo
+  );
+
 
   assign inc_sentmsg = keccak_valid_o & keccak_ready_i ;
 
