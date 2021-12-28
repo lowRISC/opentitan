@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_functest")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_functest", "verilator_params")
 
 opentitan_functest(
     name = "aes_smoketest",
@@ -56,16 +56,16 @@ opentitan_functest(
     name = "gpio_smoketest",
     srcs = ["gpio_smoketest.c"],
     verilator = verilator_params(
+        tags = [
+            "cpu:4",
+            "failing_verilator"
+        ],
         args = [
             "--verilator-args=--trace",
             "console",
             "--timeout=3600",
             "--exit-failure=FAIL",
             "--exit-success=PASS",
-        ],
-        tags = [
-            "cpu:4",
-            "failing_verilator",
         ],
     ),
     deps = [
