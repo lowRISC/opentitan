@@ -55,7 +55,13 @@ class spi_monitor extends dv_base_monitor#(
               bit [7:0] host_byte;    // from sio
               bit [7:0] device_byte;  // from sio
               int       which_bit;
-              for (int i = 0; i < 8; i++) begin
+              bit [3:0] num_bits;
+              if (cfg.partial_byte == 1) begin
+                num_bits = cfg.bits_to_transfer;
+              end else begin
+                num_bits = 8;
+              end
+              for (int i = 0; i < num_bits; i++) begin
                 // wait for the sampling edge
                 cfg.wait_sck_edge(SamplingEdge);
                 // check sio not x or z
@@ -71,11 +77,19 @@ class spi_monitor extends dv_base_monitor#(
                 // sample sio[1] for rx
                 which_bit = cfg.device_bit_dir ? i : 7 - i;
                 device_byte[which_bit] = cfg.vif.sio[1];
+                // sending 7 bits will be padded with 0 for the last bit
+                if (i == 6 && num_bits == 7) begin
+                  which_bit = cfg.device_bit_dir ? 7 : 0;
+                  device_byte[which_bit] = 0;
+                end
                 cfg.vif.device_bit = which_bit;
                 cfg.vif.device_byte = device_byte;
               end
-              host_item.data.push_back(host_byte);
-              device_item.data.push_back(device_byte);
+              // sending less than 7 bits will not be captured, byte to be re-sent
+              if (num_bits >= 7) begin
+                host_item.data.push_back(host_byte);
+                device_item.data.push_back(device_byte);
+              end
 
               // sending transactions when collect a word data
               if (host_item.data.size == cfg.num_bytes_per_trans_in_mon &&

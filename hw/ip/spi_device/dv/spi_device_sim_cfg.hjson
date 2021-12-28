@@ -103,6 +103,26 @@
     }
     
     {
+      name: spi_device_bit_transfer
+      uvm_test_seq: spi_device_bit_transfer_vseq
+    }
+    
+    {
+      name: spi_device_tx_async_fifo_reset
+      uvm_test_seq: spi_device_tx_async_fifo_reset_vseq
+    }
+    
+    {
+      name: spi_device_rx_async_fifo_reset
+      uvm_test_seq: spi_device_rx_async_fifo_reset_vseq
+    }
+    
+    {
+      name: spi_device_abort
+      uvm_test_seq: spi_device_abort_vseq
+    }
+    
+    {
       name: spi_device_tpm_locality
       uvm_test_seq: spi_device_tpm_locality_vseq
     }

@@ -12,6 +12,7 @@ class spi_device_tpm_read_vseq extends spi_device_tpm_base_vseq;
     bit [7:0]  device_byte_rsp;
     bit [7:0]  tpm_cmd = TPM_READ_CMD; //TPM Read command
     bit [23:0] tpm_addr;
+    bit [23:0] tpm_addr_read;
     bit [31:0] address_command;
     byte data_bytes[$];
     bit [7:0] returned_bytes[*];
@@ -41,6 +42,7 @@ class spi_device_tpm_read_vseq extends spi_device_tpm_base_vseq;
       spi_host_xfer_word(address_command, device_word_rsp);
       fork
         begin
+          csr_rd(.ptr(ral.tpm_cmd_addr), .value(tpm_addr_read));
           // Upon receiving read command, set read fifo contents
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(read_fifo_data, read_fifo_data.size() == 4;)
           foreach (read_fifo_data[i]) csr_wr(.ptr(ral.tpm_read_fifo), .value(read_fifo_data[i]));
