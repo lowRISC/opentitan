@@ -77,7 +77,7 @@ module pinmux_assert_fpv
   `ASSUME(MioSelRange_M, mio_sel_i < pinmux_reg_pkg::NMioPads && mio_sel_i != TargetCfg.tdo_idx)
   `ASSUME(MioSelStable_M, ##1 $stable(mio_sel_i))
 
-  // Input mux assertions
+  // ------ Input mux assertions ------
   pinmux_reg_pkg::pinmux_reg2hw_mio_periph_insel_mreg_t periph_insel;
   assign periph_insel = pinmux.reg2hw.mio_periph_insel[periph_sel_i];
 
@@ -93,7 +93,7 @@ module pinmux_assert_fpv
   //`ASSERT(MioToPeriphO_A, ##1 !$stable(mio_to_periph_o[periph_sel_i]) |->
   //        !$stable(mio_in_i[periph_insel.q - 2]) || !$stable(periph_insel.q))
 
-  //Output mux assertions
+  // ------ Output mux assertions ------
   pinmux_reg_pkg::pinmux_reg2hw_mio_outsel_mreg_t mio_outsel;
   assign mio_outsel = pinmux.reg2hw.mio_outsel[mio_sel_i];
 
@@ -125,4 +125,84 @@ module pinmux_assert_fpv
   // TODO: fix and uncomment the assertion below
   //`ASSERT(MioOeO_A, ##1 !$stable(mio_oe_o[mio_sel_i]) |->
   //    !$stable(mio_outsel.q) || !$stable(periph_to_mio_oe_i[mio_outsel.q - 3]))
+
+  // ------ JTAG pinmux input assertions ------
+  `ASSERT(LcJtagOWoScanmode_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::LcTapSel &&
+          !prim_mubi_pkg::mubi4_test_true_strict(scanmode_i) |->
+          lc_jtag_o == {mio_in_i[TargetCfg.tck_idx],
+                        mio_in_i[TargetCfg.tms_idx],
+                        mio_in_i[TargetCfg.trst_idx],
+                        mio_in_i[TargetCfg.tdi_idx]})
+  `ASSERT(LcJtagOWScanmode_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::LcTapSel &&
+          prim_mubi_pkg::mubi4_test_true_strict(scanmode_i) |->
+          lc_jtag_o == {mio_in_i[TargetCfg.tck_idx],
+                        mio_in_i[TargetCfg.tms_idx],
+                        rst_ni,
+                        mio_in_i[TargetCfg.tdi_idx]})
+  `ASSERT(LcJtagOStable_A, u_pinmux_strap_sampling.tap_strap != pinmux_pkg::LcTapSel &&
+          $past(u_pinmux_strap_sampling.tap_strap) != pinmux_pkg::LcTapSel |->
+          $stable(lc_jtag_o))
+  `ASSERT(LcJtagODefault_A, u_pinmux_strap_sampling.tap_strap != pinmux_pkg::LcTapSel |->
+          lc_jtag_o == '0)
+
+  // Lc_hw_debug_en_i signal goes through a two clock cycle synchronizer.
+  `ASSERT(RvJtagOWoScanmode_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::RvTapSel &&
+          !prim_mubi_pkg::mubi4_test_true_strict(scanmode_i) &&
+          $past(prim_mubi_pkg::mubi4_test_true_strict(lc_hw_debug_en_i), 2) |->
+          rv_jtag_o == {mio_in_i[TargetCfg.tck_idx],
+                        mio_in_i[TargetCfg.tms_idx],
+                        mio_in_i[TargetCfg.trst_idx],
+                        mio_in_i[TargetCfg.tdi_idx]})
+  `ASSERT(RvJtagOWScanmode_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::RvTapSel &&
+          prim_mubi_pkg::mubi4_test_true_strict(scanmode_i) &&
+          $past(prim_mubi_pkg::mubi4_test_true_strict(lc_hw_debug_en_i), 2) |->
+          rv_jtag_o == {mio_in_i[TargetCfg.tck_idx],
+                        mio_in_i[TargetCfg.tms_idx],
+                        rst_ni,
+                        mio_in_i[TargetCfg.tdi_idx]})
+  `ASSERT(RvJtagOStable_A, (u_pinmux_strap_sampling.tap_strap != pinmux_pkg::RvTapSel &&
+          $past(u_pinmux_strap_sampling.tap_strap) != pinmux_pkg::RvTapSel) ||
+          (!$past(prim_mubi_pkg::mubi4_test_true_strict(lc_hw_debug_en_i), 2) &&
+           !$past(prim_mubi_pkg::mubi4_test_true_strict(lc_hw_debug_en_i), 3))|->
+          $stable(rv_jtag_o))
+  `ASSERT(RvJtagODefault_A, u_pinmux_strap_sampling.tap_strap != pinmux_pkg::RvTapSel ||
+          !$past(prim_mubi_pkg::mubi4_test_true_strict(lc_hw_debug_en_i), 2) |->
+          rv_jtag_o == '0)
+
+  // Lc_dft_en_i signal goes through a two clock cycle synchronizer.
+  `ASSERT(DftJtagOWoScanmode_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::DftTapSel &&
+          !prim_mubi_pkg::mubi4_test_true_strict(scanmode_i) &&
+          $past(prim_mubi_pkg::mubi4_test_true_strict(lc_dft_en_i), 2) |->
+          dft_jtag_o == {mio_in_i[TargetCfg.tck_idx],
+                         mio_in_i[TargetCfg.tms_idx],
+                         mio_in_i[TargetCfg.trst_idx],
+                         mio_in_i[TargetCfg.tdi_idx]})
+  `ASSERT(DftJtagOWScanmode_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::DftTapSel &&
+          prim_mubi_pkg::mubi4_test_true_strict(scanmode_i) &&
+          $past(prim_mubi_pkg::mubi4_test_true_strict(lc_dft_en_i), 2) |->
+          dft_jtag_o == {mio_in_i[TargetCfg.tck_idx],
+                         mio_in_i[TargetCfg.tms_idx],
+                         rst_ni,
+                         mio_in_i[TargetCfg.tdi_idx]})
+  `ASSERT(DftJtagOStable_A, (u_pinmux_strap_sampling.tap_strap != pinmux_pkg::DftTapSel &&
+          $past(u_pinmux_strap_sampling.tap_strap) != pinmux_pkg::DftTapSel) ||
+          (!$past(prim_mubi_pkg::mubi4_test_true_strict(lc_dft_en_i), 2) &&
+           !$past(prim_mubi_pkg::mubi4_test_true_strict(lc_dft_en_i), 3))|->
+          $stable(dft_jtag_o))
+  `ASSERT(DftJtagODefault_A, u_pinmux_strap_sampling.tap_strap != pinmux_pkg::DftTapSel ||
+          !$past(prim_mubi_pkg::mubi4_test_true_strict(lc_dft_en_i), 2) |->
+          dft_jtag_o == '0)
+
+  // ------ JTAG pinmux output assertions ------
+  `ASSERT(LcJtagI_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::LcTapSel |->
+          lc_jtag_i == {mio_out_o[TargetCfg.tdo_idx],
+                        mio_oe_o[TargetCfg.tdo_idx]})
+  `ASSERT(RvJtagI_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::RvTapSel &&
+          $past(prim_mubi_pkg::mubi4_test_true_strict(lc_hw_debug_en_i), 2) |->
+          rv_jtag_i == {mio_out_o[TargetCfg.tdo_idx],
+                        mio_oe_o[TargetCfg.tdo_idx]})
+  `ASSERT(DftJtagI_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::DftTapSel &&
+          $past(prim_mubi_pkg::mubi4_test_true_strict(lc_dft_en_i), 2) |->
+          dft_jtag_i == {mio_out_o[TargetCfg.tdo_idx],
+                        mio_oe_o[TargetCfg.tdo_idx]})
 endmodule : pinmux_assert_fpv
