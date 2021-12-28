@@ -45,10 +45,10 @@ if {$env(DUT_TOP) == "prim_count_tb"} {
 
 if {$env(DUT_TOP) == "rv_dm"} {
   clock clk_i -both_edges
-  clock jtag_req_i.tck
-  clock -rate {testmode_i, unavailable_i, tl_d_i, tl_h_i} clk_i
-  clock -rate {jtag_req_i.tms, jtag_req_i.tdi} jtag_req_i.tck
-  reset -expr {!rst_ni !jtag_req_i.trst_n}
+  clock jtag_i.tck
+  clock -rate {testmode, unavailable_i, reg_tl_d_i, sba_tl_h_i} clk_i
+  clock -rate {jtag_i.tms, jtag_i.tdi} jtag_i.tck
+  reset -expr {!rst_ni !jtag_i.trst_n}
 
 } elseif {$env(DUT_TOP) == "spi_device"} {
   clock clk_i -both_edges
@@ -89,13 +89,19 @@ if {$env(DUT_TOP) == "rv_dm"} {
   clock -rate -default clk_i
 }
 
-# use counter abstractions to reduce the run time:
-# alert_handler ping_timer: timer to count until reaches ping threshold
-# hmac sha2: does not check any calculation results, so 64 rounds of calculation can be abstracted
+# Use counter abstractions to reduce the run time.
 if {$env(DUT_TOP) == "alert_handler"} {
-  abstract -counter -env i_ping_timer.cnt_q
+  abstract -counter -env \
+      {u_ping_timer.u_prim_double_lfsr.gen_double_lfsr[0].u_prim_lfsr.gen_max_len_sva.cnt_q}
+  abstract -counter -env \
+      {u_ping_timer.u_prim_double_lfsr.gen_double_lfsr[1].u_prim_lfsr.gen_max_len_sva.cnt_q}
+  abstract -counter -env {gen_classes[0].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
+  abstract -counter -env {gen_classes[1].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
+  abstract -counter -env {gen_classes[2].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
+  abstract -counter -env {gen_classes[3].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
 
 } elseif {$env(DUT_TOP) == "hmac"} {
+  # SHA2: does not check any calculation results, so 64 rounds of calculation can be abstracted.
   abstract -counter -env u_sha2.round
   # disable these assertions because they are unreachable when the fifo is WO
   assert -disable {*hmac.u_tlul_adapter.u_*fifo.*.depthShallNotExceedParamDepth}
