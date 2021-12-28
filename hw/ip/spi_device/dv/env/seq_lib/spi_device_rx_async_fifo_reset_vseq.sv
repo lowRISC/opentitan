@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// RX ASYNC FIFO test with driving data, resetting async rx fifo and driving new data
+// RX ASYNC FIFO test with driving data resetting async rx fifo and driving new data
 class spi_device_rx_async_fifo_reset_vseq extends spi_device_txrx_vseq;
   `uvm_object_utils(spi_device_rx_async_fifo_reset_vseq)
   `uvm_object_new
