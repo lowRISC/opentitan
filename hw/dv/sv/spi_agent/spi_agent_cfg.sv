@@ -17,7 +17,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   bit sck_on;                     // keep sck on
   bit [1:0] csb_sel;      // Select active CSB
   bit partial_byte;       // Transfering less than byte
-  bit [2:0] bits_to_transfer; // Bits to transfer if using less than byte
+  bit [3:0] bits_to_transfer; // Bits to transfer if using less than byte
   bit csb_consecutive;            // Don't deassert CSB
 
   //-------------------------
