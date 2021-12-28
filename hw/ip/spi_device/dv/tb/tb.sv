@@ -24,6 +24,7 @@ module tb;
   wire [3:0] sd_out;
   wire [3:0] sd_out_en;
   wire [3:0] sd_in;
+  spi_device_pkg::passthrough_req_t pass_out;
 
   wire intr_rxf;
   wire intr_rxlvl;
@@ -65,6 +66,9 @@ module tb;
 
     .cio_tpm_csb_i  (tpm_csb   ),
 
+    .passthrough_i  (sd_in     ),
+    .passthrough_o  (pass_out  ),
+
     .intr_generic_rx_full_o             (intr_rxf  ),
     .intr_generic_rx_watermark_o        (intr_rxlvl),
     .intr_generic_tx_watermark_o        (intr_txlvl),
@@ -86,6 +90,7 @@ module tb;
   // TODO: quad SPI mode is currently not yet implemented
   assign sd_in         = {3'b000, spi_if.sio[0]};
   assign spi_if.sio[1] = sd_out_en[1] ? sd_out[1] : 1'bz;
+  assign spi_if.sio[2] = pass_out.csb ? 1'bz : pass_out.s;
 
   assign interrupts[RxFifoFull]      = intr_rxf;
   assign interrupts[RxFifoGeLevel]   = intr_rxlvl;

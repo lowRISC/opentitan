@@ -206,6 +206,19 @@
       milestone: V2
       tests: []
     }
+    {
+      name: pass_cmd_filtering
+      desc: '''
+            - Randomize command opcode.
+            - Configure unused CMD_INFO reg with new opcode and set it to valid.
+            - Check opcode and address are passing through
+            - Configure filter bit corresponding to opcode to 1
+            - Check only opcode is passing through
+            - Set filter bit back to 0
+            - Check opcode and address are passing through again.'''
+      milestone: V2
+      tests: ["spi_device_pass_cmd_filtering"]
+    }
   ]
   covergroups: [
     {

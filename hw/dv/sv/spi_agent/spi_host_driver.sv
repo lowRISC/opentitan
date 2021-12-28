@@ -101,7 +101,11 @@ class spi_host_driver extends spi_driver;
         cfg.wait_sck_edge(SamplingEdge);
         if (cfg.partial_byte == 1 && j >= cfg.bits_to_transfer) break;
         which_bit = cfg.device_bit_dir ? j : 7 - j;
-        device_byte[which_bit] = cfg.vif.sio[1];
+        if (cfg.passthrough_on == 0) begin
+          device_byte[which_bit] = cfg.vif.sio[1];
+        end else begin
+          device_byte[which_bit] = cfg.vif.sio[2];
+        end
         // wait for driving edge to complete 1 cycle
         if (i != req.data.size() - 1 || j != 7) cfg.wait_sck_edge(DrivingEdge);
       end

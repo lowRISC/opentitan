@@ -19,6 +19,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   bit partial_byte;       // Transfering less than byte
   bit [2:0] bits_to_transfer; // Bits to transfer if using less than byte
   bit csb_consecutive;            // Don't deassert CSB
+  bit passthrough_on;     // Using passthrough mode
 
   //-------------------------
   // spi_host regs
@@ -64,6 +65,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int (csb_sel,        UVM_DEFAULT)
     `uvm_field_int (partial_byte,   UVM_DEFAULT)
     `uvm_field_int (csb_consecutive,    UVM_DEFAULT)
+    `uvm_field_int (passthrough_on,     UVM_DEFAULT)
     `uvm_field_int (bits_to_transfer,             UVM_DEFAULT)
     `uvm_field_int (en_extra_dly_btw_sck,         UVM_DEFAULT)
     `uvm_field_int (max_extra_dly_ns_btw_sck,     UVM_DEFAULT)
