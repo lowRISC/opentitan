@@ -16,6 +16,11 @@ set_message -error VERI-1402
 # type.
 set_message -warning VERI-1348
 
+# Downgrade the following error to warning:
+# Assert with local variable assignment in non supported position: Non negative environment.
+# Used for pwrmgr's pwrmgr_clock_enables_sva_if.sv assertion.
+set_message -warning EOBS012
+
 # Disabling warnings:
 # We use parameter instead of localparam in packages to allow redefinition
 # at elaboration time.

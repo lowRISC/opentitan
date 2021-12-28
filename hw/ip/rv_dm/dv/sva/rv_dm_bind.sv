@@ -9,8 +9,8 @@ module rv_dm_bind;
   ) tlul_assert_device (
     .clk_i,
     .rst_ni,
-    .h2d  (tl_d_i),
-    .d2h  (tl_d_o)
+    .h2d  (regs_tl_d_i),
+    .d2h  (regs_tl_d_o)
   );
 
   bind rv_dm tlul_assert #(
@@ -18,8 +18,8 @@ module rv_dm_bind;
   ) tlul_assert_host (
     .clk_i,
     .rst_ni,
-    .h2d  (tl_h_o),
-    .d2h  (tl_h_i)
+    .h2d  (sba_tl_h_o),
+    .d2h  (sba_tl_h_i)
   );
 
 endmodule
