@@ -27,6 +27,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   // 32-bit segment of this seed (as determented by seed_tl_read_cnt)
   bit [CSRNG_BUS_WIDTH - 1:0]      tl_best_seed_candidate;
 
+  // The previous output seed.  We need to track this to determine whether to expect "recov_alert"
+  bit [CSRNG_BUS_WIDTH - 1:0]      prev_csrng_seed;
+
   // Number of 32-bit TL reads to the current (active) seed
   // Ranges from 0 (no data read out) to CSRNG_BUS_WIDTH/TL_DW (seed fully read out)
   int                              seed_tl_read_cnt = 0;
@@ -636,9 +639,22 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       end
       "extht_fail_counts": begin
       end
+      "fw_ov_control": begin
+      end
+      "fw_ov_rd_data": begin
+      end
+      "fw_ov_wr_data": begin
+      end
+      "observe_fifo_thresh": begin
+      end
       "debug_status": begin
       end
-      "seed": begin
+      "recov_alert_sts": begin
+        do_read_check = 1'b0;
+      end
+      "err_code": begin
+      end
+      "err_code_check": begin
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
@@ -880,6 +896,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard
         csrng_seed = get_csrng_seed(fips_csrng);
         entropy_data_q.push_back(csrng_seed);
         fips_csrng_q.push_back(fips_csrng);
+
+        // Check to see whether a recov_alert should be expected
+        if (dut_fsm_phase != BOOT && csrng_seed == prev_csrng_seed) begin
+          set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
+        end
+
+        prev_csrng_seed = csrng_seed;
+
       end else begin
         // Inconsequential health check failure
       end
