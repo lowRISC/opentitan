@@ -162,15 +162,15 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   virtual function bit get_sram_instr_type_err(tl_seq_item item, tl_channels_e channel);
     bit is_tl_err;
     bit allow_ifetch;
-    tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
+    tlul_pkg::tl_a_user_t a_user       = tlul_pkg::tl_a_user_t'(item.a_user);
+    prim_mubi_pkg::mubi8_t sram_ifetch = cfg.exec_vif.otp_en_sram_ifetch;
+    lc_ctrl_pkg::lc_tx_t hw_debug_en   = cfg.exec_vif.lc_hw_debug_en;
+    prim_mubi_pkg::mubi4_t  csr_exec   = `gmv(ral.exec);
 
     if (`INSTR_EXEC) begin
-      bit sram_ifetch = cfg.exec_vif.otp_en_sram_ifetch;
-      bit hw_debug_en = cfg.exec_vif.lc_hw_debug_en;
-      bit csr_exec    = `gmv(ral.exec);
       allow_ifetch = (sram_ifetch  == prim_mubi_pkg::MuBi8True) ?
-                     (hw_debug_en == lc_ctrl_pkg::On)       :
-                     (csr_exec == prim_mubi_pkg::MuBi4True);
+                     (csr_exec == prim_mubi_pkg::MuBi4True)     :
+                     (hw_debug_en == lc_ctrl_pkg::On);
 
       if (cfg.en_cov) begin
         cov.executable_cg.sample(hw_debug_en,
@@ -189,7 +189,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     end
 
     if (channel == DataChannel && is_tl_err) begin
-      `DV_CHECK_EQ(item.d_error, 1, $sformatf("item_err: %0d", is_tl_err))
+      `DV_CHECK_EQ(item.d_error, 1,
+          $sformatf("item_err: %0d, allow_ifetch : %0d, sram_ifetch: %0d, exec: %0d, debug_en: %0d",
+                    is_tl_err, allow_ifetch, sram_ifetch, csr_exec, hw_debug_en))
     end
 
     return is_tl_err;
