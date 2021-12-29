@@ -30,6 +30,15 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   realtime sim_duration;
   int      seed_cnt;
 
+  // Mean time before hard RNG failure
+  realtime hard_mtbf;
+  // Mean time before "soft" RNG failure (still functions but less entropy per bit)
+  realtime soft_mtbf;
+
+  // When expecting an alert, the cip scoreboarding routines expect a to see the
+  // alert within alert_max_delay clock cycles.
+  int      alert_max_delay;
+
   // Knobs & Weights
   uint          enable_pct, route_software_pct, regwen_pct,
                 otp_en_es_fw_read_pct, otp_en_es_fw_over_pct,

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "entropy_src_base_rng_seq.sv"
+
 // rng test vseq
 class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
@@ -9,8 +11,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   `uvm_object_new
 
-  push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)   m_csrng_pull_seq;
-  push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq;
+  push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH) m_csrng_pull_seq;
+  entropy_src_base_rng_seq                                              m_rng_push_seq;
 
   task software_read_seed();
     int seeds_found;
@@ -39,8 +41,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // The csr_access seq task executes all csr accesses for enabling/disabling the DUT as needed,
   // clearing assertions
   //
-  // TODO: the current CSR sequence is a placeholder with a single enable and a single software read
-  // about halfway through the test.
   task csr_access_seq();
     // Explicitly enable the DUT
     enable_dut();
@@ -51,12 +51,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   task body();
     // Create rng host sequence
-    m_rng_push_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::
-        type_id::create("m_rng_push_seq");
+    m_rng_push_seq = entropy_src_base_rng_seq::type_id::create("m_rng_push_seq");
 
     // Create csrng host sequence
     m_csrng_pull_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
         type_id::create("m_csrng_pull_seq");
+
+    m_rng_push_seq.hard_mtbf = cfg.hard_mtbf;
+    m_rng_push_seq.soft_mtbf = cfg.soft_mtbf;
 
     // m_csrng_pull_seq.num_trans = cfg.seed_cnt;
     // TODO: Enhance seq to work for hardware or software entropy consumer
