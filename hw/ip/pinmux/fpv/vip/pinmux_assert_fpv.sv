@@ -69,7 +69,8 @@ module pinmux_assert_fpv
 
   // Symbolic inputs for FPV
   logic [$clog2(pinmux_reg_pkg::NMioPeriphIn)-1:0] periph_sel_i;
-  logic [$clog2(pinmux_reg_pkg::NMioPads)-1:0]  mio_sel_i;
+  logic [$clog2(pinmux_reg_pkg::NMioPads)-1:0] mio_sel_i;
+  logic [$clog2(pinmux_reg_pkg::NDioPads)-1:0] dio_sel_i;
 
   `ASSUME(PeriphSelRange_M, periph_sel_i < pinmux_reg_pkg::NMioPeriphIn)
   `ASSUME(PeriphSelStable_M, ##1 $stable(periph_sel_i))
@@ -78,6 +79,9 @@ module pinmux_assert_fpv
           {TargetCfg.tck_idx, TargetCfg.tms_idx, TargetCfg.trst_idx, TargetCfg.tdi_idx,
            TargetCfg.tdo_idx}))
   `ASSUME(MioSelStable_M, ##1 $stable(mio_sel_i))
+
+  `ASSUME(DioSelRange_M, dio_sel_i < pinmux_reg_pkg::NMioPads)
+  `ASSUME(DioSelStable_M, ##1 $stable(dio_sel_i))
 
   // ------ Input mux assertions ------
   pinmux_reg_pkg::pinmux_reg2hw_mio_periph_insel_mreg_t periph_insel;
@@ -94,6 +98,8 @@ module pinmux_assert_fpv
   // TODO: fix and uncomment the assertion below
   //`ASSERT(MioToPeriphO_A, ##1 !$stable(mio_to_periph_o[periph_sel_i]) |->
   //        !$stable(mio_in_i[periph_insel.q - 2]) || !$stable(periph_insel.q))
+
+  `ASSERT(DioInSelN_A, dio_to_periph_o == dio_in_i)
 
   // ------ Output mux assertions ------
   pinmux_reg_pkg::pinmux_reg2hw_mio_outsel_mreg_t mio_outsel;
@@ -127,6 +133,181 @@ module pinmux_assert_fpv
   // TODO: fix and uncomment the assertion below
   //`ASSERT(MioOeO_A, ##1 !$stable(mio_oe_o[mio_sel_i]) |->
   //    !$stable(mio_outsel.q) || !$stable(periph_to_mio_oe_i[mio_outsel.q - 3]))
+
+  // ------ Mio sleep behavior assertions ------
+  pinmux_reg_pkg::pinmux_reg2hw_mio_pad_sleep_en_mreg_t mio_pad_sleep_en;
+  assign mio_pad_sleep_en = pinmux.reg2hw.mio_pad_sleep_en[mio_sel_i];
+  pinmux_reg_pkg::pinmux_reg2hw_mio_pad_sleep_mode_mreg_t mio_pad_sleep_mode;
+  assign mio_pad_sleep_mode = pinmux.reg2hw.mio_pad_sleep_mode[mio_sel_i];
+
+  `ASSERT(MioSleepMode0_A, ##1 mio_pad_sleep_mode.q == 0 && mio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 mio_pad_sleep_status.q |->
+          mio_out_o[mio_sel_i] == 1'b0)
+  `ASSERT(MioSleepMode1_A, ##1 mio_pad_sleep_mode.q == 1 && mio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 mio_pad_sleep_status.q |->
+          mio_out_o[mio_sel_i] == 1'b1)
+  `ASSERT(MioSleepMode2_A, ##1 mio_pad_sleep_mode.q == 2 && mio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 mio_pad_sleep_status.q |->
+          mio_out_o[mio_sel_i] == 1'b0)
+  `ASSERT(MioSleepMode3_A, ##1 mio_pad_sleep_mode.q == 3 && mio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 mio_pad_sleep_status.q |->
+          $stable(mio_out_o[mio_sel_i]))
+  `ASSERT(MioSleepStable_A, ##1 !$rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 mio_pad_sleep_status.q |->
+          $stable(mio_out_o[mio_sel_i]))
+
+  // TODO: failed and filed issue #9850.
+  `ASSERT(MioOeSleepMode0_A, ##1 mio_pad_sleep_mode.q == 0 && mio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 mio_pad_sleep_status.q && sleep_en_i|->
+          mio_oe_o[mio_sel_i] == 1'b0)
+  `ASSERT(MioOeSleepMode1_A, ##1 mio_pad_sleep_mode.q == 1 && mio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 mio_pad_sleep_status.q |->
+          mio_oe_o[mio_sel_i] == 1'b1)
+  `ASSERT(MioOeSleepMode2_A, ##1 mio_pad_sleep_mode.q == 2 && mio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 mio_pad_sleep_status.q |->
+          mio_oe_o[mio_sel_i] == 1'b0)
+  `ASSERT(MioOeSleepMode3_A, ##1 mio_pad_sleep_mode.q == 3 && mio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 mio_pad_sleep_status.q |->
+          $stable(mio_oe_o[mio_sel_i]))
+  `ASSERT(MioOeSleepStable_A, ##1 !$rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 mio_pad_sleep_status.q |->
+          $stable(mio_oe_o[mio_sel_i]))
+
+  // ------ Output dedicated output assertions ------
+  pinmux_reg_pkg::pinmux_reg2hw_dio_pad_sleep_status_mreg_t dio_pad_sleep_status;
+  assign dio_pad_sleep_status = pinmux.reg2hw.dio_pad_sleep_status[dio_sel_i];
+
+  `ASSERT(DOutSelN_A, !dio_pad_sleep_status.q |->
+          dio_out_o[dio_sel_i] == periph_to_dio_i[dio_sel_i])
+
+  `ASSERT(DOutSelOeN_A, !dio_pad_sleep_status.q |->
+          dio_oe_o[dio_sel_i] == periph_to_dio_oe_i[dio_sel_i])
+
+  // ------ Dio sleep behavior assertions ------
+  pinmux_reg_pkg::pinmux_reg2hw_dio_pad_sleep_en_mreg_t dio_pad_sleep_en;
+  assign dio_pad_sleep_en = pinmux.reg2hw.dio_pad_sleep_en[dio_sel_i];
+  pinmux_reg_pkg::pinmux_reg2hw_dio_pad_sleep_mode_mreg_t dio_pad_sleep_mode;
+  assign dio_pad_sleep_mode = pinmux.reg2hw.dio_pad_sleep_mode[dio_sel_i];
+
+  `ASSERT(DioSleepMode0_A, ##1 dio_pad_sleep_mode.q == 0 && dio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 dio_pad_sleep_status.q |->
+          dio_out_o[dio_sel_i] == 1'b0)
+  `ASSERT(DioSleepMode1_A, ##1 dio_pad_sleep_mode.q == 1 && dio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 dio_pad_sleep_status.q |->
+          dio_out_o[dio_sel_i] == 1'b1)
+  `ASSERT(DioSleepMode2_A, ##1 dio_pad_sleep_mode.q == 2 && dio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 dio_pad_sleep_status.q |->
+          dio_out_o[dio_sel_i] == 1'b0)
+  `ASSERT(DioSleepMode3_A, ##1 dio_pad_sleep_mode.q == 3 && dio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 dio_pad_sleep_status.q |->
+          $stable(dio_out_o[dio_sel_i]))
+  `ASSERT(DioSleepStable_A, ##1 !$rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 dio_pad_sleep_status.q |->
+          $stable(dio_out_o[dio_sel_i]))
+
+  // TODO: failed and filed issue #9850.
+  `ASSERT(DioOeSleepMode0_A, ##1 dio_pad_sleep_mode.q == 0 && dio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 dio_pad_sleep_status.q |->
+          dio_oe_o[dio_sel_i] == 1'b0)
+  `ASSERT(DioOeSleepMode1_A, ##1 dio_pad_sleep_mode.q == 1 && dio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 dio_pad_sleep_status.q |->
+          dio_oe_o[dio_sel_i] == 1'b1)
+  `ASSERT(DioOeSleepMode2_A, ##1 dio_pad_sleep_mode.q == 2 && dio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 dio_pad_sleep_status.q |->
+          dio_oe_o[dio_sel_i] == 1'b0)
+  `ASSERT(DioOeSleepMode3_A, ##1 dio_pad_sleep_mode.q == 3 && dio_pad_sleep_en.q == 1 &&
+          $rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 dio_pad_sleep_status.q |->
+          $stable(dio_oe_o[dio_sel_i]))
+  `ASSERT(DioOeSleepStable_A, ##1 !$rose(sleep_en_i)
+          // Ensure SW does not write to sleep status register to clear sleep status.
+          ##1 dio_pad_sleep_status.q |->
+          $stable(dio_oe_o[dio_sel_i]))
+
+  // ------Dio backward assertions ------
+  `ASSERT(Dio0Backward_A, dio_out_o[dio_sel_i] == 0 |->
+          // Input is 0.
+          periph_to_dio_i[dio_sel_i] == 0 ||
+          // Sleep mode set to 0 and 2.
+          $past(dio_pad_sleep_mode.q) inside {0, 2} ||
+          // Previous value is 0 and sleep mode is set to 3.
+          ($past(dio_out_o[dio_sel_i]) == 0) &&
+           ($past(dio_pad_sleep_mode.q) == 3 ||
+            // Previous value is 0 and sleep mode selection is disabled either by sleep_en_i input
+            // or sleep_en CSR.
+            ($past(!$rose(sleep_en_i) || !dio_pad_sleep_en.q) && dio_pad_sleep_status.q)))
+
+  `ASSERT(Dio1Backward_A, dio_out_o[dio_sel_i] == 1 |->
+          // input is 1.
+          periph_to_dio_i[dio_sel_i] == 1 ||
+          // Sleep mode set to 1.
+          $past(dio_pad_sleep_mode.q) == 1 ||
+          // Previous value is 1 and sleep mode is set to 3.
+          ($past(dio_out_o[dio_sel_i]) == 1) &&
+           ($past(dio_pad_sleep_mode.q) == 3 ||
+            // Previous value is 1 and sleep mode selection is disabled either by sleep_en_i input
+            // or sleep_en CSR.
+            ($past(!$rose(sleep_en_i) || !dio_pad_sleep_en.q) && dio_pad_sleep_status.q)))
+
+  // TODO: failed and filed issue #9850.
+  `ASSERT(DioOe0Backward_A, dio_oe_o[dio_sel_i] == 0 |->
+          // Input is 0.
+          periph_to_dio_oe_i[dio_sel_i] == 0 ||
+          // Sleep mode set to 0 and 2.
+          $past(dio_pad_sleep_mode.q) inside {0, 2} ||
+          // Previous value is 0 and sleep mode is set to 3.
+          ($past(dio_out_o[dio_sel_i]) == 0) &&
+           ($past(dio_pad_sleep_mode.q) == 3 ||
+            // Previous value is 0 and sleep mode selection is disabled either by sleep_en_i input
+            // or sleep_en CSR.
+            ($past(!$rose(sleep_en_i) || !dio_pad_sleep_en.q) && dio_pad_sleep_status.q)))
+
+  // TODO: failed and filed issue #9850.
+  `ASSERT(DioOe1Backward_A, dio_oe_o[dio_sel_i] == 1 |->
+          // input is 1.
+          periph_to_dio_oe_i[dio_sel_i] == 1 ||
+          // Sleep mode set to 1.
+          $past(dio_pad_sleep_mode.q) == 1 ||
+          // Previous value is 1 and sleep mode is set to 3.
+          ($past(dio_out_o[dio_sel_i]) == 1) &&
+           ($past(dio_pad_sleep_mode.q) == 3 ||
+            // Previous value is 1 and sleep mode selection is disabled either by sleep_en_i input
+            // or sleep_en CSR.
+            ($past(!$rose(sleep_en_i) || !dio_pad_sleep_en.q) && dio_pad_sleep_status.q)))
 
   // ------ JTAG pinmux input assertions ------
   `ASSERT(LcJtagOWoScanmode_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::LcTapSel &&
