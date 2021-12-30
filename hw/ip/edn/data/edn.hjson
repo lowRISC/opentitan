@@ -221,6 +221,8 @@
       desc: "EDN command status register",
       swaccess: "ro",
       hwaccess: "hwo",
+      tags: [// Internal HW can modify status register
+                 "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "0",
           name: "CMD_RDY",
@@ -433,6 +435,8 @@
       swaccess: "rw",
       hwaccess: "hro",
       hwqe: "true",
+      tags: [// Setting this register will force an unwanted fatal alert.
+                 "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
             bits: "4:0",
