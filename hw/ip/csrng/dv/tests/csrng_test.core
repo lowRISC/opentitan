@@ -13,6 +13,7 @@ filesets:
       - csrng_base_test.sv: {is_include_file: true}
       - csrng_smoke_test.sv: {is_include_file: true}
       - csrng_cmds_test.sv: {is_include_file: true}
+      - csrng_stress_all_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
