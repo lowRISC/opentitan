@@ -211,6 +211,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     super.connect_phase(phase);
   endfunction
 
+  `define RUN_FOREVR_W_RESET_EXIT(TASK) \
+    forever begin \
+      @(negedge cfg.under_reset); \
+      `DV_SPINWAIT_EXIT(TASK();, \
+                       @(posedge cfg.under_reset);) \
+    end
+
   task run_phase(uvm_phase phase);
     string mem_path = dv_utils_pkg::get_parent_hier(cfg.mem_bkdr_util_h.get_path());
     write_en_path   = $sformatf("%s.write_i", mem_path);
@@ -225,11 +232,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
     super.run_phase(phase);
     fork
-      sample_key_req_access_cg();
-      process_sram_init();
-      process_lc_escalation();
+      `RUN_FOREVR_W_RESET_EXIT(sample_key_req_access_cg)
+      `RUN_FOREVR_W_RESET_EXIT(process_sram_init)
+      `RUN_FOREVR_W_RESET_EXIT(process_lc_escalation)
       process_kdi_fifo();
-      process_write_done_and_check();
+      `RUN_FOREVR_W_RESET_EXIT(process_write_done_and_check)
     join_none
   endtask
 
@@ -294,32 +301,26 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       `DV_CHECK(uvm_hdl_read(write_en_path, write_en))
     end
   endtask
+
   // This task spins forever and samples the appropriate covergroup whenever
   // in_key_req is high and a new valid addr_phase transaction is seen on the memory bus.
   virtual task sample_key_req_access_cg();
     forever begin
-      @(negedge cfg.under_reset);
+      @(posedge in_key_req);
       `DV_SPINWAIT_EXIT(
           forever begin
-            @(posedge in_key_req);
-            `DV_SPINWAIT_EXIT(
-                forever begin
-                  // sample the covergroup every time a new TL request is seen
-                  // while a key request is outstanding.
-                  @(posedge cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_valid);
-                  // zero delay to allow bus values to settle
-                  #0;
-                  if (cfg.en_cov) begin
-                    cov.access_during_key_req_cg.sample(
-                        cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_opcode);
-                  end
-                end
-                ,
-                @(negedge in_key_req);
-            )
+            // sample the covergroup every time a new TL request is seen
+            // while a key request is outstanding.
+            @(posedge cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_valid);
+            // zero delay to allow bus values to settle
+            #0;
+            if (cfg.en_cov) begin
+              cov.access_during_key_req_cg.sample(
+                  cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_opcode);
+            end
           end
           ,
-          wait(cfg.under_reset == 1);
+          @(negedge in_key_req);
       )
     end
   endtask
@@ -330,8 +331,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     // As a result we simply just wait for the first key request to end, and then wait for each line
     // of the memory to be written.
     forever begin
-      wait(!cfg.under_reset);
       @(posedge in_init);
+      `uvm_info(`gfn, "Got in_init", UVM_MEDIUM)
       // clear the init done signal
       exp_status[SramCtrlInitDone] = 0;
       // initialization process only starts once the corresponding key request finishes
@@ -340,7 +341,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       //
       // thus we just need to wait for a number of cycles equal to the total size
       // of the sram address space
-      `uvm_info(`gfn, "starting to wait for init", UVM_HIGH)
+      `uvm_info(`gfn, "starting to wait for init", UVM_MEDIUM)
       cfg.clk_rst_vif.wait_clks(cfg.mem_bkdr_util_h.get_depth());
       // Wait a small delay to latch the updated CSR status
       #1;
@@ -348,7 +349,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // we can set the init done flag here.
       exp_status[SramCtrlInitDone] = status_lc_esc ? 0 : 1;
       in_init = 0;
-      `uvm_info(`gfn, "dropped in_init", UVM_HIGH)
+      `uvm_info(`gfn, "dropped in_init", UVM_MEDIUM)
     end
   endtask
 
@@ -565,11 +566,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
           if (item.a_data[SramCtrlRenewScrKey]) begin
             in_key_req = 1;
             exp_status[SramCtrlScrKeyValid] = 0;
-            `uvm_info(`gfn, "raised in_key_req", UVM_HIGH)
+            `uvm_info(`gfn, "raised in_key_req", UVM_MEDIUM)
           end
           if (item.a_data[SramCtrlInit]) begin
             in_init = 1;
-            `uvm_info(`gfn, "raised in_init", UVM_HIGH)
+            `uvm_info(`gfn, "raised in_init", UVM_MEDIUM)
           end
           if (in_key_req || in_init) exp_mem[cfg.sram_ral_name].init();
         end else if (addr_phase_read) begin
@@ -599,6 +600,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     sram_trans_t t;
     super.reset(kind);
 
+    in_init = 0;
+    in_key_req = 0;
     key = sram_ctrl_pkg::RndCnstSramKeyDefault;
     nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
     mem_bkdr_scb.reset();
@@ -607,6 +610,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     handling_lc_esc = 0;
     status_lc_esc = 0;
     write_item_q.delete();
+    exp_mem[cfg.sram_ral_name].init();
   endfunction
 
   function void check_phase(uvm_phase phase);
@@ -616,3 +620,4 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   endfunction
 
 endclass
+`undef RUN_FOREVR_W_RESET_EXIT

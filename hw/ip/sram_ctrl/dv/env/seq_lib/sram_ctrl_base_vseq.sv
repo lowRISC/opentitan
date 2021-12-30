@@ -60,6 +60,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     ral.ctrl.init.set(1);
     csr_update(.csr(ral.ctrl));
     csr_spinwait(.ptr(ral.status.init_done), .exp_data(1));
+    cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
   endtask
 
   // Request a new scrambling key from the OTP interface.
