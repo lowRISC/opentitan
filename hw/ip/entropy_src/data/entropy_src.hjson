@@ -1303,6 +1303,8 @@
       hwaccess: "hro",
       hwqe: "true",
       regwen: "REGWEN",
+      tags: [// Setting this register will force an unwanted fatal alert.
+                 "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
             bits: "4:0",
