@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv:csrng_agent
     files:
       - edn_env_pkg.sv
+      - edn_path_if.sv
       - edn_env_cfg.sv: {is_include_file: true}
       - edn_env_cov.sv: {is_include_file: true}
       - edn_virtual_sequencer.sv: {is_include_file: true}
@@ -24,6 +25,9 @@ filesets:
       - seq_lib/edn_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/edn_genbits_vseq.sv: {is_include_file: true}
       - seq_lib/edn_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/edn_intr_vseq.sv: {is_include_file: true}
+      - seq_lib/edn_alert_vseq.sv: {is_include_file: true}
+      - seq_lib/edn_err_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

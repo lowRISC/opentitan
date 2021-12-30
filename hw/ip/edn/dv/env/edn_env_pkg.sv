@@ -38,6 +38,51 @@ package edn_env_pkg;
     BootReqMode = 2
   } hw_req_mode_e;
 
+  typedef enum int {
+    invalid_edn_enable    = 0,
+    invalid_boot_req_mode = 1,
+    invalid_auto_req_mode = 2,
+    invalid_cmd_fifo_rst  = 3
+  } invalid_mubi_e;
+
+  typedef enum int {
+    sfifo_rescmd_error    = 0,
+    sfifo_gencmd_error    = 1,
+    edn_ack_sm_error      = 2,
+    edn_main_sm_error     = 3,
+    edn_cntr_error        = 4
+  } fatal_err_e;
+
+  typedef enum int {
+    sfifo_rescmd_err      = 0,
+    sfifo_gencmd_err      = 1,
+    edn_ack_sm_err        = 2,
+    edn_main_sm_err       = 3,
+    edn_cntr_err          = 4,
+    fifo_write_err        = 5,
+    fifo_read_err         = 6,
+    fifo_state_err        = 7,
+    sfifo_rescmd_err_test = 8,
+    sfifo_gencmd_err_test = 9,
+    edn_ack_sm_err_test   = 10,
+    edn_main_sm_err_test  = 11,
+    edn_cntr_err_test     = 12,
+    fifo_write_err_test   = 13,
+    fifo_read_err_test    = 14,
+    fifo_state_err_test   = 15
+  } err_code_e;
+
+  typedef enum int {
+    sfifo_rescmd = 0,
+    sfifo_gencmd = 1
+  } which_fifo_e;
+
+  typedef enum int {
+    fifo_write_error = 0,
+    fifo_read_error  = 1,
+    fifo_state_error = 2
+  } which_fifo_err_e;
+
   // package sources
   `include "edn_env_cfg.sv"
   `include "edn_env_cov.sv"
