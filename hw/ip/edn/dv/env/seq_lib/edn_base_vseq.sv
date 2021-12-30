@@ -146,4 +146,109 @@ class edn_base_vseq extends cip_base_vseq #(
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
   endtask
 
+  task force_fifo_err(string path1, string path2, bit value1, bit value2,
+                                uvm_reg_field reg_field, bit exp_data);
+    if (!uvm_hdl_check_path(path1)) begin
+      `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
+    end else begin
+      `DV_CHECK(uvm_hdl_force(path1, value1));
+    end
+    if (!uvm_hdl_check_path(path2)) begin
+      `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
+    end else begin
+      `DV_CHECK(uvm_hdl_force(path2, value2));
+    end
+    // Check register value
+    csr_spinwait(.ptr(reg_field), .exp_data(exp_data));
+    // Clear interrupt_enable
+    csr_wr(.ptr(ral.intr_enable), .value(32'd0));
+    ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4False);
+    ral.ctrl.cmd_fifo_rst.set(prim_mubi_pkg::MuBi4True);
+    csr_update(.csr(ral.ctrl));
+    // Expect/Clear interrupt bit
+    check_interrupts(.interrupts((1 << FifoErr)), .check_set(1'b1));
+    `DV_CHECK(uvm_hdl_release(path1));
+    `DV_CHECK(uvm_hdl_release(path2));
+  endtask // force_fifo_err
+
+  task force_all_fifo_errs(string paths [4], bit values [4], string path_exts [4],
+                           uvm_reg_field reg_field, bit exp_data, int case_state);
+    int    index1 [$], index2 [$];
+    string path_push, path_full, path_pop, path_not_empty;
+    bit    val_push, val_full, val_pop, val_not_empty;
+    case (case_state)
+      fifo_write_error: begin // fifo write err
+        index1     = path_exts.find_index(x) with (x == "push");
+        index2     = path_exts.find_index(x) with (x == "full");
+        path_push  = paths[index1[0]];
+        path_full  = paths[index2[0]];
+        val_push   = values[index1[0]];
+        val_full   = values[index2[0]];
+        force_fifo_err(path_push, path_full, 1'b1, 1'b1, reg_field, exp_data);
+      end
+      fifo_read_error: begin // fifo read err
+        index1         = path_exts.find_index(x) with (x == "pop");
+        index2         = path_exts.find_index(x) with (x == "not_empty");
+        path_pop       = paths[index1[0]];
+        path_not_empty = paths[index2[0]];
+        val_pop        = values[index1[0]];
+        val_not_empty  = values[index2[0]];
+        force_fifo_err(path_pop, path_not_empty, 1'b1, 1'b0, reg_field, exp_data);
+      end
+      fifo_state_error: begin // fifo state err
+        index1         = path_exts.find_index(x) with (x == "pop");
+        index2         = path_exts.find_index(x) with (x == "not_empty");
+        path_pop       = paths[index1[0]];
+        path_not_empty = paths[index2[0]];
+        val_pop        = values[index1[0]];
+        val_not_empty  = values[index2[0]];
+        force_fifo_err(path_full, path_not_empty, 1'b1, 1'b0, reg_field, exp_data);
+      end
+      default: begin
+        `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
+      end
+    endcase // case (case_state)
+  endtask // force_all_fifo_errs
+
+  task force_path_err(string path, bit [5:0] value, uvm_reg_field reg_field,
+                      bit exp_data);
+    if (!uvm_hdl_check_path(path)) begin
+      `uvm_fatal("intr_dbg", $sformatf("\n\t ----| PATH NOT FOUND"))
+    end else begin
+      `DV_CHECK(uvm_hdl_force(path, value));
+      cfg.clk_rst_vif.wait_clks(50);
+      `DV_CHECK(uvm_hdl_release(path));
+      cfg.clk_rst_vif.wait_clks(50);
+      // Check err_code register
+      csr_rd_check(.ptr(reg_field), .compare_value(exp_data));
+      // Clear interrupt_enable
+      csr_wr(.ptr(ral.intr_enable), .value(32'd0));
+      ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4False);
+      ral.ctrl.cmd_fifo_rst.set(prim_mubi_pkg::MuBi4True);
+      csr_update(.csr(ral.ctrl));
+      // Expect/Clear interrupt bit
+      check_interrupts(.interrupts((1 << FifoErr)), .check_set(1'b1));
+    end
+  endtask // force_path_err
+
+  // Find the first or last index in the original string that the target character appears
+  function automatic int find_index (string target, string original_str, string which_index);
+    int        index;
+    case (which_index)
+      "first": begin
+        for (int i = original_str.len(); i > 0; i--) begin
+          if (original_str[i] == target) index = i;
+        end
+      end
+      "last": begin
+        for (int i = 0; i < original_str.len(); i++) begin
+          if (original_str[i] == target) index = i;
+        end
+      end
+      default: begin
+        `uvm_fatal(`gfn, "Invalid index!")
+      end
+    endcase // case (which_index)
+    return index;
+  endfunction // find_index
 endclass : edn_base_vseq
