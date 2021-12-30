@@ -37,6 +37,11 @@ class edn_env extends cip_base_env #(
       // TODO: Move these
       cfg.m_endpoint_agent_cfg[i].zero_delays = 1'b1;
     end
+
+    // config edn path virtual interface
+    if (!uvm_config_db#(virtual edn_path_if)::get(this, "", "edn_path_vif", cfg.edn_path_vif)) begin
+      `uvm_fatal(`gfn, "failed to get edn_path_vif from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
