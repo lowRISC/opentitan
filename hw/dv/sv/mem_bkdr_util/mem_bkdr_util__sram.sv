@@ -337,7 +337,8 @@ endfunction
 virtual function void sram_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1:0] addr,
                                                  logic [31:0]                       data,
                                                  logic [SRAM_KEY_WIDTH-1:0]         key,
-                                                 logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+                                                 logic [SRAM_BLOCK_WIDTH-1:0]       nonce,
+                                                 bit   [38:0]                       flip_bits = 0);
   logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
   logic [38:0]                       integ_data;
   logic [38:0]                       scrambled_data;
@@ -360,6 +361,9 @@ virtual function void sram_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1
 
   // Calculate the integrity constant
   integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
+
+  // flip some bits to inject integrity fault
+  integ_data ^= flip_bits;
 
   // Calculate the scrambled data
   wdata_arr = {<<{integ_data}};
