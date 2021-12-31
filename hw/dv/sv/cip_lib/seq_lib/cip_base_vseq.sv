@@ -35,6 +35,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // knobs to lock shadow register write access if fatal storage error occurred
   bit do_lock_shadow_reg = 1'b1;
 
+  // knob to enable/disable running csr_vseq with passthru_mem_tl_intg_err
+  bit en_csr_vseq_w_passthru_mem_intg = 1;
+
   // csr queues
   dv_base_reg all_csrs[$];
   dv_base_reg intr_state_csrs[$];
@@ -212,15 +215,16 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       input tl_intg_err_e     tl_intg_err_type = TlIntgErrNone,
       input int               req_abort_pct = 0);
 
+    cip_tl_seq_item rsp;
     if (blocking) begin
-      tl_access_sub(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp, exp_data,
-                    compare_mask, check_exp_data, req_abort_pct, instr_type, tl_sequencer_h,
-                    tl_intg_err_type);
+      tl_access_sub(addr, write, data, completed, saw_err, rsp, mask, check_rsp,
+                    exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
+                    instr_type, tl_sequencer_h, tl_intg_err_type);
     end else begin
       fork
-        tl_access_sub(addr, write, data, completed, saw_err, mask, check_rsp, exp_err_rsp, exp_data,
-                      compare_mask, check_exp_data, req_abort_pct, instr_type, tl_sequencer_h,
-                      tl_intg_err_type);
+        tl_access_sub(addr, write, data, completed, saw_err, rsp, mask, check_rsp,
+                      exp_err_rsp, exp_data, compare_mask, check_exp_data, req_abort_pct,
+                      instr_type, tl_sequencer_h, tl_intg_err_type);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -232,6 +236,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              inout bit [BUS_DW-1:0]  data,
                              output bit              completed,
                              output bit              saw_err,
+                             output cip_tl_seq_item  rsp,
                              input bit [BUS_DBW-1:0] mask = '1,
                              input bit               check_rsp = 1'b1,
                              input bit               exp_err_rsp = 1'b0,
@@ -260,8 +265,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             mask  == local::mask;
             data  == local::data;)
         `uvm_send_pri(tl_seq, 100)
+        rsp = tl_seq.rsp;
+
         if (!write) begin
-          data = tl_seq.rsp.d_data;
+          data = rsp.d_data;
           if (check_exp_data && !cfg.under_reset) begin
             bit [BUS_DW-1:0] masked_data = data & compare_mask;
             exp_data &= compare_mask;
@@ -269,13 +276,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           end
         end
         if (check_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
-          `DV_CHECK_EQ(tl_seq.rsp.d_error, exp_err_rsp, "unexpected error response")
+          `DV_CHECK_EQ(rsp.d_error, exp_err_rsp, "unexpected error response")
         end
+
 
         // Expose whether the transaction ran and whether it generated an error. Note that we
         // probably only want to do a RAL update if it ran and caused no error.
-        completed = tl_seq.rsp.rsp_completed;
-        saw_err = tl_seq.rsp.d_error;
+        completed = rsp.rsp_completed;
+        saw_err = rsp.d_error;
 
         csr_utils_pkg::decrement_outstanding_access();,
         // thread to check timeout
@@ -393,6 +401,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       // Each iteration only sends 1 item with TL integrity error. Increase to send at least
       // 10 x num_times integrity errors
       "tl_intg_err":                   run_tl_intg_err_vseq(10 * num_times);
+      "passthru_mem_tl_intg_err":      run_passthru_mem_tl_intg_err_vseq(10 * num_times);
       "stress_all_with_rand_reset":    run_plusarg_vseq_with_rand_reset(num_times);
       "same_csr_outstanding":          run_same_csr_outstanding_vseq(num_times);
       "shadow_reg_errors":             run_shadow_reg_errors(num_times);
