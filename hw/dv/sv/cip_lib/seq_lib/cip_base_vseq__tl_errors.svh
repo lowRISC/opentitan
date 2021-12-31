@@ -266,6 +266,17 @@ virtual task run_tl_intg_err_vseq(int num_times = 1);
 endtask
 
 virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
+  uvm_mem mems[$];
+  dv_base_mem passthru_mems[$];
+
+  cfg.ral_models[ral_name].get_memories(mems);
+
+  foreach (mems[i]) begin
+    dv_base_mem dv_mem;
+    `downcast(dv_mem, mems[i])
+    if (dv_mem.get_data_intg_passthru()) passthru_mems.push_back(dv_mem);
+  end
+
   fork
     // run csr_rw seq to send some normal CSR accesses in parallel
     begin
@@ -333,5 +344,90 @@ virtual task check_tl_intg_error_response();
     end
   join
 endtask
+
+virtual task run_passthru_mem_tl_intg_err_vseq(int num_times = 1);
+  for (int trans = 1; trans <= num_times; trans++) begin
+    `uvm_info(`gfn, $sformatf("Running run_passthru_mem_tl_intg_err_vseq %0d/%0d",
+                              trans, num_times),
+              UVM_LOW)
+    `loop_ral_models_to_create_threads(run_passthru_mem_tl_intg_err_vseq_sub(num_times, ral_name);)
+    dut_init("HARD");
+  end
+  csr_utils_pkg::wait_no_outstanding_access();
+endtask
+
+virtual task run_passthru_mem_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
+  uvm_mem mems[$];
+  dv_base_mem passthru_mems[$];
+
+  cfg.ral_models[ral_name].get_memories(mems);
+
+  foreach (mems[i]) begin
+    dv_base_mem dv_mem;
+    `downcast(dv_mem, mems[i])
+    if (dv_mem.get_data_intg_passthru()) passthru_mems.push_back(dv_mem);
+  end
+
+  fork
+    // run csr_rw seq to send some normal CSR accesses in parallel
+    if (en_csr_vseq_w_passthru_mem_intg) begin
+      `uvm_info(`gfn, "Run csr_rw seq", UVM_HIGH)
+      run_csr_vseq(.csr_test_type("rw"), .ral_name(ral_name));
+    end
+    begin
+      if (passthru_mems.size > 0) begin
+        cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
+        test_intg_err_in_passthru_mem(passthru_mems);
+        cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
+      end
+    end
+  join
+endtask
+
+virtual task test_intg_err_in_passthru_mem(const ref dv_base_mem mems[$]);
+  foreach (mems[i]) begin
+    bit [BUS_AW-1:0] offset;
+    bit [BUS_AW-1:0] addr;
+    bit [BUS_DW-1:0] data;
+    string ral_name;
+    cip_tl_seq_item tl_access_rsp;
+    bit completed, saw_err;
+    bit data_intg_ok;
+
+    offset = $urandom_range(0, mems[i].get_n_bytes() - 1);
+    addr = mems[i].get_address(offset);
+    ral_name = mems[i].get_parent().get_name();
+
+    // Before inject faults, this read should have correct integrity
+    tl_access_sub(.addr(addr), .write(0), .data(data), .completed(completed), .saw_err(saw_err),
+                  .check_rsp(1),  .rsp(tl_access_rsp),
+                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
+    `DV_CHECK_EQ(completed, 1)
+    `DV_CHECK_EQ(saw_err, 0)
+    tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
+                                    .en_data_intg_chk(1),
+                                    .throw_error(1));
+
+    `uvm_info(`gfn, $sformatf("Backdoor inject intg fault to %s addr 0x%0h", ral_name, addr),
+              UVM_LOW)
+    inject_intg_fault_in_passthru_mem(mems[i], addr);
+
+    // Issue a read on the address that has been injected with integrity error
+    tl_access_sub(.addr(addr), .write(0), .data(data), .completed(completed), .saw_err(saw_err),
+                  .check_rsp(1),  .rsp(tl_access_rsp),
+                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
+    `DV_CHECK_EQ(completed, 1)
+    `DV_CHECK_EQ(saw_err, 0)
+    // data integrity should be wrong
+    data_intg_ok = tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(0),
+                                                   .en_data_intg_chk(1),
+                                                   .throw_error(0));
+    `DV_CHECK_EQ(data_intg_ok, 0)
+  end
+endtask
+
+virtual function void inject_intg_fault_in_passthru_mem(dv_base_mem mem, bit [BUS_AW-1:0] addr);
+  `uvm_fatal(`gfn, "This must be overridden in extended block common_vseq")
+endfunction
 
 `undef create_tl_access_error_case
