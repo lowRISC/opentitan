@@ -17,9 +17,15 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.bypass_window_size          = 384;
     cfg.boot_mode_retry_limit       = 10;
     cfg.entropy_data_reg_enable_pct = 100;
-    cfg.sim_duration                = 10ms;
-    cfg.hard_mtbf                   = 500us;
+    cfg.sim_duration                = 100us;
+    cfg.hard_mtbf                   = 100ms;
     cfg.soft_mtbf                   = 7500us;
+    cfg.adaptp_sigma_min            = 1.0;
+    cfg.adaptp_sigma_max            = 2.0;
+    cfg.bucket_sigma_min            = 1.0;
+    cfg.bucket_sigma_max            = 2.0;
+    cfg.markov_sigma_min            = 1.0;
+    cfg.markov_sigma_max            = 2.0;
     cfg.alert_max_delay             = 5;
 
     // Allow for software reads, but let the vseq body do the enabling

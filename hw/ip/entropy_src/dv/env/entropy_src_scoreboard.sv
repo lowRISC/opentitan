@@ -45,6 +45,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   int                              repcnt_symbol;
   int                              max_repcnt, max_repcnt_symbol;
 
+  // TODO: Document method for clearing alerts in programmer's guide
+  // TODO: Add health check failure and clearing to integration tests.
+  bit threshold_alert_active = 1'b0;
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH)))
       csrng_fifo;
@@ -124,7 +128,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     end
 
     for (int i = 0; i < bin_count; i++) begin
-      `uvm_info(`gfn, $sformatf("Bucket test. bin: %01h, value: %02h", i, buckets[i]), UVM_FULL)
+      `uvm_info(`gfn, $sformatf("Bucket test. bin: %01h, value: %02h", i, buckets[i]), UVM_DEBUG)
     end
 
     result = buckets.max();
@@ -264,7 +268,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     bit        continuous_test;
     bit        failure;
     bit        low_test;
-    string     fmt;
+    string     fmt, msg;
 
     validate_test_name(test);
     low_test             = is_low_test(test);
@@ -305,24 +309,35 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     if (failure) begin
       alert_cnt++;
       fail_total++;
-    end else begin
-      alert_cnt = 0;
     end
 
     fmt = "Threshold for \"%s\" test (FIPS? %d): %04h";
     `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, threshold_val), UVM_HIGH)
 
-    fmt = "Observed Val for \"%s\" test (FIPS? %d): %04h, %s";
+    fmt = "Observed value for \"%s\" test (FIPS? %d): %04h, %s";
     `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, value, failure ? "FAIL" : "PASS"), UVM_HIGH)
 
-    fmt = "Predicted alert cnt for \"%s\" test (FIPS? %d): %04h";
-    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, alert_cnt), UVM_HIGH)
+    fmt = "Previous alert cnt reg: %08h";
+    msg = $sformatf(fmt, alert_cnt_reg.get_mirrored_value());
+    `uvm_info(`gfn, msg, UVM_FULL)
 
-    fmt = "Predicted fail cnt for \"%s\" test (FIPS? %d): %04h";
-    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, fail_total), UVM_HIGH)
 
     `DV_CHECK_FATAL(total_fail_field.predict(.value(fail_total), .kind(UVM_PREDICT_READ)))
     `DV_CHECK_FATAL( alert_cnt_field.predict(.value( alert_cnt), .kind(UVM_PREDICT_READ)))
+
+    fmt = "Predicted alert cnt for \"%s\" test (FIPS? %d): %04h";
+    msg = $sformatf(fmt, test, fips_mode, alert_cnt_field.get_mirrored_value());
+    `uvm_info(`gfn, msg, UVM_HIGH)
+
+    fmt = "Entire alert cnt reg: %08h";
+    msg = $sformatf(fmt, alert_cnt_reg.get_mirrored_value());
+    `uvm_info(`gfn, msg, UVM_FULL)
+
+    fmt = "Predicted fail cnt for \"%s\" test (FIPS? %d): %01h";
+    msg = $sformatf(fmt, test, fips_mode, total_fail_field.get_mirrored_value());
+    `uvm_info(`gfn, msg, UVM_HIGH)
+
+    return failure;
 
   endfunction
 
@@ -365,8 +380,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     update_watermark("markov_lo", fips_mode, minval);
     update_watermark("markov_hi", fips_mode, maxval);
 
-    fail_lo = check_threshold("markov_lo", fips_mode, value);
-    fail_hi = check_threshold("markov_hi", fips_mode, value);
+    fail_lo = check_threshold("markov_lo", fips_mode, minval);
+    fail_hi = check_threshold("markov_hi", fips_mode, maxval);
 
     return (fail_hi || fail_lo);
   endfunction
@@ -414,37 +429,59 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   endfunction
 
   function bit health_check_rng_data(queue_of_rng_val_t window, bit fips_mode);
-    int failcnt = 0;
+    int failcnt = 0, failcnt_fatal = 0;
     bit failure = 0;
     uvm_reg       alert_summary_reg   = ral.get_reg_by_name("alert_summary_fail_counts");
     uvm_reg_field alert_summary_field = alert_summary_reg.get_field_by_name("any_fail_count");
+    uvm_reg       alert_fail_reg   = ral.get_reg_by_name("alert_fail_counts");
+    uvm_reg       extht_fail_reg   = ral.get_reg_by_name("extht_fail_counts");
+    uvm_reg       alert_threshold_reg = ral.get_reg_by_name("alert_threshold");
+    // TODO: Confirm that an alert is triggered when (alert_threshold != alert_threshold_inv)
+    uvm_reg_field alert_threshold_field = alert_threshold_reg.get_field_by_name("alert_threshold");
     string        fmt;
     int           any_fail_count_regval;
+    int           alert_threshold;
 
-    failcnt += evaluate_repcnt_test(fips_mode);
-    failcnt += evaluate_repcnt_symbol_test(fips_mode);
+    failcnt_fatal += evaluate_repcnt_test(fips_mode);
+    failcnt_fatal += evaluate_repcnt_symbol_test(fips_mode);
     failcnt += evaluate_adaptp_test(window, fips_mode);
     failcnt += evaluate_bucket_test(window, fips_mode);
     failcnt += evaluate_markov_test(window, fips_mode);
     failcnt += evaluate_external_ht(window, fips_mode);
 
-    failure = (failcnt != 0);
+    failure = (failcnt != 0  || failcnt_fatal != 0);
+
+    // TODO: If an alert is anticipated, we should check that (if necessary) this seed is
+    // stopped and no others are allowed to progress.
+    alert_threshold = alert_threshold_field.get_mirrored_value();
 
     any_fail_count_regval = alert_summary_field.get_mirrored_value();
-    if (failure) begin
+    if (failure) begin : test_failure
       any_fail_count_regval++;
-    end else begin
+      if (any_fail_count_regval >= alert_threshold) begin
+        if(!threshold_alert_active) begin
+          fmt = "Alert anticpated! Fail count (%01d) >= threshold (%01d)";
+          `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
+          set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
+          threshold_alert_active = 1;
+        end
+      end else begin
+        fmt = "No alert anticpated. fail count (%01d) < threshold (%01d)";
+        `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_FULL)
+      end
+    end else begin : no_test_failure
       any_fail_count_regval = 0;
-    end
+      if (!threshold_alert_active) begin
+        // Now we know that all tests have passed we can clear the failure counts
+        `DV_CHECK_FATAL(alert_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_READ)))
+        `DV_CHECK_FATAL(extht_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_READ)))
+      end
+    end : no_test_failure
 
     fmt = "Predicted alert cnt for all tests (FIPS? %d): %04h";
     `uvm_info(`gfn, $sformatf(fmt, fips_mode, any_fail_count_regval), UVM_HIGH)
-
     `DV_CHECK_FATAL(alert_summary_field.predict(.value(any_fail_count_regval),
                                                 .kind(UVM_PREDICT_READ)))
-    // TODO: Anticipate alerts if any_fail_count crosses the threshold
-    // TODO: If an alert is anticipated, we should check that this (if necessary this seed is
-    // stopped and no others are allowed to progress.
     return failure;
   endfunction
 
@@ -798,32 +835,27 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       dut_fsm_phase = convert_seed_idx_to_phase(seed_idx,
           cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True);
 
-      if(cfg.type_bypass == prim_mubi_pkg::MuBi4True) begin
-        retry_limit          = 2;
-        pass_requirement     = 1;
-        ht_fips_mode         = 0;
-      end else begin
-        case (dut_fsm_phase)
-          BOOT: begin
-            pass_requirement = 1;
-            retry_limit      = cfg.boot_mode_retry_limit;
-            ht_fips_mode     = 0;
-          end
-          STARTUP: begin
-            pass_requirement = 2;
-            retry_limit      = 2;
-            ht_fips_mode     = 1;
-          end
-          CONTINUOUS: begin
-            pass_requirement = 1;
-            retry_limit      = 2;
-            ht_fips_mode     = 1;
-          end
-          default: begin
-            `uvm_fatal(`gfn, "Invalid predicted dut state (bug in environment)")
-          end
-        endcase
-      end
+
+      case (dut_fsm_phase)
+        BOOT: begin
+          pass_requirement = 1;
+          retry_limit      = cfg.boot_mode_retry_limit;
+          ht_fips_mode     = 0;
+        end
+        STARTUP: begin
+          pass_requirement = 2;
+          retry_limit      = 2;
+          ht_fips_mode     = 1;
+        end
+        CONTINUOUS: begin
+          pass_requirement = 0;
+          retry_limit      = 2;
+          ht_fips_mode     = 1;
+        end
+        default: begin
+          `uvm_fatal(`gfn, "Invalid predicted dut state (bug in environment)")
+        end
+      endcase
 
       `uvm_info(`gfn, $sformatf("phase: %s\n", dut_fsm_phase.name), UVM_HIGH)
 
