@@ -9,10 +9,40 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   `uvm_object_utils(entropy_src_rng_vseq)
 
-  `uvm_object_new
-
   push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH) m_csrng_pull_seq;
   entropy_src_base_rng_seq                                              m_rng_push_seq;
+
+  rand uint dly_to_access_intr;
+  rand uint dly_to_access_alert_sts;
+  rand bit  do_check_ht_diag;
+  rand bit  do_clear_ht_alert;
+
+  int do_interrupts;
+
+  constraint dly_to_access_intr_c {
+    dly_to_access_intr dist {
+      0                   :/ 1,
+      [1      :100]       :/ 5,
+      [101    :10_000]    :/ 3
+    };
+  }
+
+  constraint dly_to_access_alert_sts_c {
+    dly_to_access_alert_sts dist {
+      0                   :/ 1,
+      [1      :100]       :/ 5,
+      [101    :10_000]    :/ 3
+    };
+  }
+
+  constraint do_check_ht_diag_c {
+    do_check_ht_diag dist {
+      0 :/ cfg.do_check_ht_diag_pct,
+      1 :/ 100 - cfg.do_check_ht_diag_pct
+    };
+  }
+
+  `uvm_object_new
 
   task software_read_seed();
     int seeds_found;
@@ -109,7 +139,52 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     m_rng_push_seq.hard_mtbf = cfg.hard_mtbf;
     m_rng_push_seq.soft_mtbf = cfg.soft_mtbf;
 
+    do_interrupts = 1'b1;
+
     super.pre_start();
+  endtask
+
+  task clear_ht_alert();
+    bit  alert_sts;
+    // Health check failures are coincident with an alert, which needs to also be cleared
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_intr);
+    cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
+    csr_rd(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(alert_sts));
+    if (alert_sts) begin
+      `uvm_info(`gfn, "Identified main_sm alert", UVM_HIGH)
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
+      if (do_check_ht_diag) begin
+        // read all health check values
+        `uvm_info(`gfn, "Checking_ht_values", UVM_HIGH)
+        check_ht_diagnostics();
+        `uvm_info(`gfn, "ht value check complete", UVM_HIGH)
+      end
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
+      cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
+      `uvm_info(`gfn, "Clearing ES SM Alerts", UVM_HIGH)
+      csr_wr(.ptr(ral.conf.enable), .value(prim_mubi_pkg::MuBi4False));
+      `uvm_info(`gfn, "DUT disabled", UVM_HIGH)
+      csr_wr(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(1'b1));
+      csr_wr(.ptr(ral.conf.enable), .value(prim_mubi_pkg::MuBi4True));
+    end
+  endtask
+
+  task process_interrupts();
+    bit [TL_DW - 1:0] intr_status, clear_intr;
+    `uvm_info(`gfn, "process interrupts", UVM_HIGH)
+
+    // avoid zero delay loop during reset
+    wait(!cfg.under_reset);
+    // read interrupt
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_intr)
+    cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
+    csr_rd(.ptr(ral.intr_state), .value(intr_status));
+    if (intr_status[HealthTestFailed]) begin
+       // TODO: I think there is a distinction between health test failure and alert.
+       //       We may be able to economize (or diversify) this test by only doing this on alerts.
+      `uvm_info(`gfn, "Health test failure detected", UVM_HIGH)
+      clear_ht_alert();
+    end
   endtask
 
   task body();
@@ -118,6 +193,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     fork
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
       m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
+      begin
+        `uvm_info(`gfn, "Starting interrupt loop", UVM_HIGH)
+        while (do_interrupts) process_interrupts();
+        `uvm_info(`gfn, "Exiting interrupt loop", UVM_HIGH)
+      end
       begin
         csr_access_seq();
         // Once the CSR access is done, we can shut down everything else
@@ -131,6 +211,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         m_rng_push_seq.stop(.hard(0));
         m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
         `uvm_info(`gfn, "Exiting test body.", UVM_LOW)
+        do_interrupts = 1'b0;
       end
     join
   endtask : body

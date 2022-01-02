@@ -74,7 +74,7 @@
   verbosity_a: UVM_FULL
   phase_a: run
 
-  component_b: "uvm_test_top.env.m_rng_agent.sequencer"
+  component_b: "uvm_test_top.env.virtual_sequencer"
   id_b : _ALL_
   verbosity_b: UVM_HIGH
   phase_b: run

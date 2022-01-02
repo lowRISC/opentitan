@@ -71,6 +71,15 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   rand prim_mubi_pkg::mubi8_t   otp_en_es_fw_read, otp_en_es_fw_over;
 
+  //
+  // Implementation-specific constants related to the DUT
+  // (Needed for accurate prediction, no randomization required)
+  //
+
+  // Number of clock cycles between a TLUL disable signal, and deassertion
+  // of enable on the RNG bus.
+  int  tlul2rng_disable_delay = 2;
+
   // Constraints
   constraint c_regwen {regwen dist {
       1 :/ regwen_pct,
