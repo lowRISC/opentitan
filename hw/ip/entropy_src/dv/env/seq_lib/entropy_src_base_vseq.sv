@@ -10,10 +10,12 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(entropy_src_base_vseq)
 
-  rand bit [3:0]   rng_val;
+  rand bit [3:0]                     rng_val;
+  rand bit [NumEntropySrcIntr - 1:0] en_intr;
 
   // various knobs to enable certain routines
   bit  do_entropy_src_init = 1'b1;
+  bit  do_interrupt        = 1'b1;
 
   virtual entropy_src_cov_if   cov_vif;
 
@@ -43,29 +45,21 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   //
   task check_ht_diagnostics();
     int val;
+    string stat_regs [] = '{
+        "repcnt_hi_watermarks", "repcnts_hi_watermarks", "adaptp_hi_watermarks",
+        "adaptp_lo_watermarks", "extht_hi_watermarks", "extht_lo_watermarks",
+        "bucket_hi_watermarks", "markov_hi_watermarks", "markov_lo_watermarks",
+        "repcnt_total_fails", "repcnts_total_fails", "adaptp_hi_total_fails",
+        "adaptp_lo_total_fails", "bucket_total_fails", "markov_hi_total_fails",
+        "markov_lo_total_fails", "extht_hi_total_fails", "extht_lo_total_fails",
+        "alert_summary_fail_counts", "alert_fail_counts", "extht_fail_counts"
+    };
+    foreach (stat_regs[i]) begin
+      int val;
+      uvm_reg csr = ral.get_reg_by_name(stat_regs[i]);
+      csr_rd(.ptr(csr), .value(val));
+    end
 
-    csr_rd(.ptr( ral.repcnt_hi_watermarks), .value(val));
-    csr_rd(.ptr(ral.repcnts_hi_watermarks), .value(val));
-    csr_rd(.ptr( ral.adaptp_hi_watermarks), .value(val));
-    csr_rd(.ptr( ral.adaptp_lo_watermarks), .value(val));
-    csr_rd(.ptr(  ral.extht_hi_watermarks), .value(val));
-    csr_rd(.ptr(  ral.extht_lo_watermarks), .value(val));
-    csr_rd(.ptr( ral.bucket_hi_watermarks), .value(val));
-    csr_rd(.ptr( ral.markov_hi_watermarks), .value(val));
-    csr_rd(.ptr( ral.markov_lo_watermarks), .value(val));
-
-    csr_rd(.ptr(   ral.repcnt_total_fails), .value(val));
-    csr_rd(.ptr(  ral.repcnts_total_fails), .value(val));
-    csr_rd(.ptr(ral.adaptp_hi_total_fails), .value(val));
-    csr_rd(.ptr(ral.adaptp_lo_total_fails), .value(val));
-    csr_rd(.ptr( ral.extht_hi_total_fails), .value(val));
-    csr_rd(.ptr( ral.extht_lo_total_fails), .value(val));
-    csr_rd(.ptr(   ral.bucket_total_fails), .value(val));
-    csr_rd(.ptr(ral.markov_hi_total_fails), .value(val));
-    csr_rd(.ptr(ral.markov_lo_total_fails), .value(val));
-
-    csr_rd(.ptr(    ral.alert_fail_counts), .value(val));
-    csr_rd(.ptr(    ral.extht_fail_counts), .value(val));
   endtask
 
   virtual task apply_reset(string kind = "HARD");
@@ -120,6 +114,11 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.conf.rng_bit_enable.set(cfg.rng_bit_enable);
     ral.conf.rng_bit_sel.set(cfg.rng_bit_sel);
     csr_update(.csr(ral.conf));
+
+    if (do_interrupt) begin
+      ral.intr_enable.set(en_intr);
+      csr_update(ral.intr_enable);
+    end
 
     // Register write enable lock is on be default
     // Setting this to zero will lock future writes

@@ -15,11 +15,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   virtual entropy_src_cov_if   cov_vif;
 
   // used by collect_entropy to determine the FSMs phase
-  int seed_idx                = 0;
-  int entropy_data_seeds      = 0;
-  int entropy_data_drops      = 0;
-  int csrng_seeds             = 0;
-  int csrng_drops             = 0;
+  int seed_idx             = 0;
+  int entropy_data_seeds   = 0;
+  int entropy_data_drops   = 0;
+  int csrng_seeds          = 0;
+  int csrng_drops          = 0;
+
+  bit dut_pipeline_enabled = 0;
 
   // Queue of seeds for predicting reads to entropy_data CSR
   bit [CSRNG_BUS_WIDTH - 1:0]      entropy_data_q[$];
@@ -55,6 +57,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH)))
       rng_fifo;
 
+  // Clearing the enable is a soft form of reset.
+  typedef enum int {
+    HardReset,
+    Disable
+  } reset_event_e;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -77,7 +85,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     super.run_phase(phase);
     if (cfg.en_scb) begin
       fork
-        collect_entropy();
         process_csrng();
       join_none
     end
@@ -321,9 +328,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     msg = $sformatf(fmt, alert_cnt_reg.get_mirrored_value());
     `uvm_info(`gfn, msg, UVM_FULL)
 
-
-    `DV_CHECK_FATAL(total_fail_field.predict(.value(fail_total), .kind(UVM_PREDICT_READ)))
-    `DV_CHECK_FATAL( alert_cnt_field.predict(.value( alert_cnt), .kind(UVM_PREDICT_READ)))
+    `DV_CHECK_FATAL(total_fail_field.predict(.value(fail_total), .kind(UVM_PREDICT_DIRECT)))
+    `DV_CHECK_FATAL( alert_cnt_field.predict(.value( alert_cnt), .kind(UVM_PREDICT_DIRECT)))
 
     fmt = "Predicted alert cnt for \"%s\" test (FIPS? %d): %04h";
     msg = $sformatf(fmt, test, fips_mode, alert_cnt_field.get_mirrored_value());
@@ -460,28 +466,33 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       any_fail_count_regval++;
       if (any_fail_count_regval >= alert_threshold) begin
         if(!threshold_alert_active) begin
-          fmt = "Alert anticpated! Fail count (%01d) >= threshold (%01d)";
-          `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
-          set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
+          fmt = "New alert anticpated! Fail count (%01d) >= threshold (%01d)";
           threshold_alert_active = 1;
+          set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
+        end else begin
+          fmt = "Alert already signalled:  Fail count (%01d) >= threshold (%01d)";
         end
+        `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
       end else begin
         fmt = "No alert anticpated. fail count (%01d) < threshold (%01d)";
-        `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_FULL)
+        `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
       end
     end else begin : no_test_failure
-      any_fail_count_regval = 0;
       if (!threshold_alert_active) begin
+        any_fail_count_regval = 0;
         // Now we know that all tests have passed we can clear the failure counts
-        `DV_CHECK_FATAL(alert_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_READ)))
-        `DV_CHECK_FATAL(extht_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_READ)))
+        `DV_CHECK_FATAL(alert_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_DIRECT)))
+      end else begin
+        fmt = "Alert state persists: Fail count (%01d) >= threshold (%01d)";
+        `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
       end
     end : no_test_failure
 
+   `DV_CHECK_FATAL(alert_summary_field.predict(.value(any_fail_count_regval),
+                                               .kind(UVM_PREDICT_DIRECT)))
+
     fmt = "Predicted alert cnt for all tests (FIPS? %d): %04h";
     `uvm_info(`gfn, $sformatf(fmt, fips_mode, any_fail_count_regval), UVM_HIGH)
-    `DV_CHECK_FATAL(alert_summary_field.predict(.value(any_fail_count_regval),
-                                                .kind(UVM_PREDICT_READ)))
     return failure;
   endfunction
 
@@ -574,6 +585,48 @@ class entropy_src_scoreboard extends cip_base_scoreboard
                 "All candidate seeds have been checked.  ENTROPY_DATA does not match")
   endtask
 
+  function void clear_ht_stat_predictions();
+    string stat_regs [] = '{
+        "repcnt_hi_watermarks", "repcnts_hi_watermarks", "adaptp_hi_watermarks",
+        "adaptp_lo_watermarks", "extht_hi_watermarks", "extht_lo_watermarks",
+        "bucket_hi_watermarks", "markov_hi_watermarks", "markov_lo_watermarks",
+        "repcnt_total_fails", "repcnts_total_fails", "adaptp_hi_total_fails",
+        "adaptp_lo_total_fails", "bucket_total_fails", "markov_hi_total_fails",
+        "markov_lo_total_fails", "extht_hi_total_fails", "extht_lo_total_fails",
+        "alert_summary_fail_counts", "alert_fail_counts", "extht_fail_counts"
+    };
+    foreach (stat_regs[i]) begin
+      uvm_reg csr = ral.get_reg_by_name(stat_regs[i]);
+      void'(csr.predict(.value(csr.get_reset()), .kind(UVM_PREDICT_READ)));
+    end
+  endfunction
+
+  // Clear all relevant prediction variables for
+  // Reset and disable events.
+  function void handle_disable_reset(reset_event_e rst_type);
+    threshold_alert_active = 0;
+    clear_ht_stat_predictions();
+    seed_idx = 0;
+    seed_tl_read_cnt = 0;
+    if( rst_type == HardReset ) begin
+      entropy_data_q.delete();
+      fips_csrng_q.delete();
+    end
+    for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
+      repcnt[i]       = 0;
+    end
+    repcnt_symbol     = 0;
+    max_repcnt        = 0;
+    max_repcnt_symbol = 0;
+    rng_fifo.flush();
+    // TODO: should we flush the CSRNG fifo?
+    //csrng_fifo.flush();
+
+    // Communicate this event to the process_entropy process
+    // with a possible delay.
+    `uvm_info(`gfn, $sformatf("%s Detected", rst_type.name), UVM_MEDIUM)
+  endfunction
+
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     // TODO: Add conditioning prediction, still TBD in design
@@ -593,9 +646,42 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+        // Special handling for registers with broader impacts
+        case (csr.get_name())
+          "conf": begin
+            bit do_disable, do_enable;
+            uvm_reg_field enable_field = csr.get_field_by_name("enable");
+            prim_mubi_pkg::mubi4_t enable_mubi = enable_field.get_mirrored_value();
+            // TODO: integrate this with invalid MuBi checks
+            do_disable = (enable_mubi == prim_mubi_pkg::MuBi4False);
+            do_enable  = (enable_mubi == prim_mubi_pkg::MuBi4True);
+            if (do_enable && !dut_pipeline_enabled) begin
+              dut_pipeline_enabled = 1;
+              fork
+                begin
+                  collect_entropy();
+                  handle_disable_reset(Disable);
+                end
+              join_none
+            end
+            if (do_disable && dut_pipeline_enabled) begin
+              fork : background_process
+                begin
+                  // The DUT does not immediately turn off the RNG input
+                  // We wait a few cycles to let any last couple RNG
+                  // samples come into the dut (so we know to delete them
+                  // from our model of the DUT);
+                  cfg.clk_rst_vif.wait_clks(cfg.tlul2rng_disable_delay);
+                  dut_pipeline_enabled = 0;
+                end
+              join_none : background_process
+            end
+          end
+          default: begin
+          end
+        endcase
       end
     end
-
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
@@ -679,6 +765,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       end
       "alert_threshold": begin
       end
+      "alert_summary_fail_counts": begin
+      end
       "alert_fail_counts": begin
       end
       "extht_fail_counts": begin
@@ -742,6 +830,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     int                              pass_cnt;
 
     dut_phase = convert_seed_idx_to_phase(seed_idx,
+                                          cfg.type_bypass == prim_mubi_pkg::MuBi4True,
                                           cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True);
 
     sample_rng_frames = sample.size();
@@ -810,21 +899,59 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     return fips_csrng_data;
   endfunction
 
+  // Wait on the RNG queue for rng sequence items
+  //
+  // If bit selection is enabled, wait for RNG_BUS_WIDTH items. Otherwise, return after one item.
+  // If at any point dut_pipeline_enabled is deasserted, halt and assert disable_detected.
+  task wait_rng_queue(output rng_val_t val, output bit disable_detected);
+    push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH))  rng_item;
+    bit bit_sel_enable = (cfg.rng_bit_enable == prim_mubi_pkg::MuBi4True);
+    int n_items        = bit_sel_enable ? RNG_BUS_WIDTH : 1;
+    disable_detected   = 0;
+
+    if (!dut_pipeline_enabled) begin
+      wait(dut_pipeline_enabled);
+      `uvm_info(`gfn, "Enable detected", UVM_LOW);
+    end
+    for (int i = 0; i < n_items; i++) begin : rng_loop
+      fork : isolation_fork
+        begin
+          fork
+            rng_fifo.get(rng_item);
+            begin
+              wait(!dut_pipeline_enabled);
+              `uvm_info(`gfn, "Disable detected", UVM_LOW);
+            end
+          join_any
+          disable fork;
+        end
+      join : isolation_fork
+      if (!dut_pipeline_enabled) begin
+        `uvm_info(`gfn, "Flushing data on disable", UVM_MEDIUM)
+        disable_detected = 1;
+        break;
+      end
+      if (bit_sel_enable) begin
+        val[i] = rng_item.h_data[cfg.rng_bit_sel];
+      end else begin
+        val    = rng_item.h_data;
+      end
+    end : rng_loop
+  endtask
+
   task collect_entropy();
 
     bit [15:0]                window_size;
     entropy_phase_e           dut_fsm_phase;
-    push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH))  rng_item;
     rng_val_t                 rng_val;
     // TODO rename window to "sample"
     queue_of_rng_val_t        window;
     queue_of_rng_val_t        sample;
     int                       window_rng_frames;
     int                       pass_requirement, pass_cnt;
-    int                       retry_limit, retry_cnt;
     bit                       ht_fips_mode;
+    bit                       disable_detected;
 
-    retry_cnt = 0;
     pass_cnt  = 0;
 
     window.delete();
@@ -832,24 +959,23 @@ class entropy_src_scoreboard extends cip_base_scoreboard
 
     forever begin : collect_entropy_loop
 
-      dut_fsm_phase = convert_seed_idx_to_phase(seed_idx,
-          cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True);
+      `uvm_info(`gfn, $sformatf("SEED_IDX: %01d", seed_idx), UVM_FULL)
 
+      dut_fsm_phase = convert_seed_idx_to_phase(seed_idx,
+          cfg.type_bypass == prim_mubi_pkg::MuBi4True,
+          cfg.boot_bypass_disable == prim_mubi_pkg::MuBi4True);
 
       case (dut_fsm_phase)
         BOOT: begin
           pass_requirement = 1;
-          retry_limit      = cfg.boot_mode_retry_limit;
           ht_fips_mode     = 0;
         end
         STARTUP: begin
           pass_requirement = 2;
-          retry_limit      = 2;
           ht_fips_mode     = 1;
         end
         CONTINUOUS: begin
-          pass_requirement = 0;
-          retry_limit      = 2;
+          pass_requirement = 1;
           ht_fips_mode     = 1;
         end
         default: begin
@@ -876,32 +1002,30 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       window_rng_frames = window_size / RNG_BUS_WIDTH;
 
       window.delete();
-      if(dut_fsm_phase != STARTUP) begin
+      // Should the next window be added to the previous SHA3 message?
+      // In boot or bypass mode the answer is "no"
+      if(dut_fsm_phase == BOOT || cfg.type_bypass != prim_mubi_pkg::MuBi4True) begin
         sample.delete();
       end
 
       while (window.size() < window_rng_frames) begin
-        if (cfg.rng_bit_enable == prim_mubi_pkg::MuBi4True) begin
-          for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
-            rng_fifo.get(rng_item);
-            rng_val[i] = rng_item.h_data[cfg.rng_bit_sel];
-          end
+        wait_rng_queue(rng_val, disable_detected);
+        if (disable_detected) begin
+          // Exit this task.
+          return;
         end else begin
-          rng_fifo.get(rng_item);
-          rng_val = rng_item.h_data;
+          window.push_back(rng_val);
+          // The repetition count is updated continuously.
+          // The other health checks only operate on complete windows, and are processed later.
+          // TODO: Confirm how repcnt is applied in bit-select mode
+          update_repcnts(rng_val);
         end
-        window.push_back(rng_val);
-        // The repetition count is updated continuously.
-        // The other health checks only operate on complete windows, and are processed later.
-        update_repcnts(rng_val);
       end
 
-     `uvm_info(`gfn, "FULL_WINDOW", UVM_FULL)
+      `uvm_info(`gfn, "FULL_WINDOW", UVM_FULL)
       if (health_check_rng_data(window, ht_fips_mode)) begin
-        retry_cnt++;
         pass_cnt = 0;
       end else begin
-        retry_cnt = 0;
         pass_cnt++;
       end
 
@@ -910,24 +1034,18 @@ class entropy_src_scoreboard extends cip_base_scoreboard
         sample.push_back(window.pop_front());
       end
 
-      `uvm_info(`gfn, $sformatf("pass_cnt: %01d, retry_cnt: %01d", pass_cnt, retry_cnt), UVM_HIGH)
       `uvm_info(`gfn, $sformatf("pass_requirement: %01d", pass_requirement), UVM_HIGH)
-      `uvm_info(`gfn, $sformatf("retry_limit: %01d", retry_limit), UVM_HIGH)
       `uvm_info(`gfn, $sformatf("sample.size: %01d", sample.size()), UVM_HIGH)
 
-      // TODO: Update health check stats.
-      if (retry_cnt >= retry_limit) begin
-        // TODO: Alert state
-        `uvm_info(`gfn, "TODO: manage alerts", UVM_FULL)
-      end else if (pass_cnt >= pass_requirement) begin
+      // Health check alert stats and alert handling managed in
+      // health_check_rng_data
+      if (pass_cnt >= pass_requirement && !threshold_alert_active) begin
         bit [FIPS_CSRNG_BUS_WIDTH - 1:0] fips_csrng;
         bit [CSRNG_BUS_WIDTH - 1:0] csrng_seed;
 
         fips_csrng = predict_fips_csrng(sample);
         `uvm_info(`gfn, $sformatf("sample.size(): %01d", sample.size()), UVM_FULL)
-
         // update counters for processing next seed:
-        retry_cnt = 0;
         pass_cnt  = 0;
         seed_idx++;
 
@@ -943,10 +1061,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard
 
         prev_csrng_seed = csrng_seed;
 
-      end else begin
-        // Inconsequential health check failure
       end
-
     end : collect_entropy_loop
 
   endtask
@@ -980,7 +1095,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    // reset local fifos queues and variables
+    if(kind == "HARD") begin
+      // reset local fifos queues and variables
+      handle_disable_reset(HardReset);
+      // Immediately inform the process_entropy process
+      // that the IP is disabled
+      dut_pipeline_enabled = 0;
+    end
   endfunction
 
   function void check_phase(uvm_phase phase);

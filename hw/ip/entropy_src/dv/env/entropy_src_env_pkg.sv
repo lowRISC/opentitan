@@ -27,11 +27,12 @@ package entropy_src_env_pkg;
 
   // types
   typedef enum int {
-    EntropyValid     = 0,
-    HealthTestFailed = 1,
-    EBusChkFailed    = 2,
-    ObserveFifoReady = 3,
-    FatalErr         = 4
+    EntropyValid      = 0,
+    HealthTestFailed  = 1,
+    EBusChkFailed     = 2,
+    ObserveFifoReady  = 3,
+    FatalErr          = 4,
+    NumEntropySrcIntr = 5
   } entropy_src_intr_e;
 
   typedef enum { BOOT, STARTUP, CONTINUOUS } entropy_phase_e;
@@ -50,8 +51,13 @@ package entropy_src_env_pkg;
   // as the DUT's FSM will reset to idle in this case, meaning that it will have to again
   // satisfy both the startup and (optional) boot phases.
   //
-  function automatic entropy_phase_e convert_seed_idx_to_phase(int seed_idx, bit boot_disable);
-    if (!boot_disable) begin
+  function automatic entropy_phase_e convert_seed_idx_to_phase(int seed_idx,
+                                                               bit conditioning_bypass,
+                                                               bit boot_disable);
+
+    if (conditioning_bypass) begin
+      return BOOT;
+    end else if (!boot_disable) begin
       if (seed_idx == 0) begin
         return BOOT;
       end else if (seed_idx == 1) begin
@@ -84,9 +90,9 @@ package entropy_src_env_pkg;
     // Counts the number of seeds that have been successfully generated
     // in any post-boot phase.
 
-    phase = convert_seed_idx_to_phase(seed_idx, boot_disable);
+    phase = convert_seed_idx_to_phase(seed_idx, bypass, boot_disable);
 
-    return (bypass || phase == BOOT) ? entropy_src_pkg::CSRNG_BUS_WIDTH : fips_window_size;
+    return (phase == BOOT) ? entropy_src_pkg::CSRNG_BUS_WIDTH : fips_window_size;
 
   endfunction
 
