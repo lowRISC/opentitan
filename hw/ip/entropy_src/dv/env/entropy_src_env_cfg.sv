@@ -41,11 +41,23 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // alert within alert_max_delay clock cycles.
   int      alert_max_delay;
 
+  rand int unsigned adaptp_sigma_i, markov_sigma_i, bucket_sigma_i;
+  // Randomized real values: to be managed in post_randomized
+  // Controlled by the knobs <test>_sigma_max, <test>_sigma_min
+  // Updated by post_randomize()
+  real              adaptp_sigma, markov_sigma, bucket_sigma;
+
   // Knobs & Weights
   uint          enable_pct, route_software_pct, regwen_pct,
                 otp_en_es_fw_read_pct, otp_en_es_fw_over_pct,
                 type_bypass_pct, boot_bypass_disable_pct,
-                entropy_data_reg_enable_pct, rng_bit_enable_pct;
+                entropy_data_reg_enable_pct, rng_bit_enable_pct,
+                do_check_ht_diag_pct;
+
+  // Health test knobs:
+  real adaptp_sigma_max, adaptp_sigma_min;
+  real markov_sigma_max, markov_sigma_min;
+  real bucket_sigma_max, bucket_sigma_min;
 
   rand bit         regwen;
   rand bit [1:0]   rng_bit_sel;
@@ -151,7 +163,13 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
         $sformatf("\n\t |***** seed_cnt                    : %12d *****| \t",
                   seed_cnt),
         $sformatf("\n\t |***** sim_duration                : %9.2f ms *****| \t",
-                  sim_duration/1ms)
+                  sim_duration/1ms),
+        $sformatf("\n\t |***** adaptp_sigma                : %12.3f *****| \t",
+                  adaptp_sigma),
+        $sformatf("\n\t |***** bucket_sigma                : %12.3f *****| \t",
+                  bucket_sigma),
+        $sformatf("\n\t |***** markov_sigma                : %12.3f *****| \t",
+                  markov_sigma)
     };
 
     str = {str, "\n\t |----------------- knobs ------------------------------| \t"};
@@ -173,12 +191,34 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
         $sformatf("\n\t |***** boot_bypass_disable_pct     : %12d *****| \t",
                   boot_bypass_disable_pct),
         $sformatf("\n\t |***** rng_bit_enable_pct          : %12d *****| \t",
-                  rng_bit_enable_pct)
+                  rng_bit_enable_pct),
+        $sformatf("\n\t |***** adaptp_sigma range          : (%04.2f, %04.2f) *****| \t",
+                  adaptp_sigma_min, adaptp_sigma_max),
+        $sformatf("\n\t |***** bucket_sigma range          : (%04.2f, %04.2f) *****| \t",
+                  bucket_sigma_min, bucket_sigma_max),
+        $sformatf("\n\t |***** markov_sigma range          : (%04.2f, %04.2f) *****| \t",
+                  markov_sigma_min, markov_sigma_max)
+
     };
 
     str = {str, "\n\t |******************************************************| \t"};
     str = {str, "\n"};
     return str;
+  endfunction
+
+  function void post_randomize();
+    // temporary variable to map randomized integer variables to the range [0, 1]
+    real tmp_r;
+
+    tmp_r = real'(adaptp_sigma_i)/{$bits(adaptp_sigma_i){1'b1}};
+    adaptp_sigma = adaptp_sigma_min + (adaptp_sigma_max - adaptp_sigma_min) * tmp_r;
+
+    tmp_r = real'(markov_sigma_i)/{$bits(markov_sigma_i){1'b1}};
+    markov_sigma = markov_sigma_min + (markov_sigma_max - markov_sigma_min) * tmp_r;
+
+    tmp_r = real'(bucket_sigma_i)/{$bits(bucket_sigma_i){1'b1}};
+    bucket_sigma = bucket_sigma_min + (bucket_sigma_max - bucket_sigma_min) * tmp_r;
+
   endfunction
 
 endclass

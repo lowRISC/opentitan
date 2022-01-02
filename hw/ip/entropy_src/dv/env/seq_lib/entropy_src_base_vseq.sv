@@ -87,12 +87,17 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf("Found %01d seeds", seeds_found), UVM_HIGH)
     end while (seeds_found > 0);
 
+    `uvm_info(`gfn, "Checking diagnostics", UVM_MEDIUM)
     check_ht_diagnostics();
-
+    `uvm_info(`gfn, "Disabling DUT", UVM_MEDIUM)
+    ral.conf.enable.set(prim_mubi_pkg::MuBi4False);
+    csr_update(.csr(ral.conf));
+    `uvm_info(`gfn, "Clearing Alerts", UVM_MEDIUM)
+    ral.conf.enable.set(prim_mubi_pkg::MuBi4False);
+    ral.recov_alert_sts.es_main_sm_alert.set(1'b0);
+    csr_update(.csr(ral.recov_alert_sts));
     super.dut_shutdown();
-    // Special feature related to entropy_src virtual sequences:
-    // We notify the environment that we are complete.
-    apply_reset("CSRNG_ONLY");
+    apply_reset(.kind("CSRNG_ONLY"));
   endtask
 
   // setup basic entropy_src features
@@ -101,22 +106,25 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     cfg.otp_en_es_fw_read_vif.drive(.val(cfg.otp_en_es_fw_read));
     cfg.otp_en_es_fw_over_vif.drive(.val(cfg.otp_en_es_fw_over));
 
-    // Register write enable
-    // TODO Do we need to check main_sm_idle before writing DUT registers?
-    csr_wr(.ptr(ral.regwen), .value(cfg.regwen));
-
     // Controls
     ral.entropy_control.es_type.set(cfg.type_bypass);
     ral.entropy_control.es_route.set(cfg.route_software);
     csr_update(.csr(ral.entropy_control));
 
-    // Enables
+    // Thresholds managed in derived vseq classes
+
+    // Enables (should be done last)
     ral.conf.enable.set(cfg.enable);
     ral.conf.entropy_data_reg_enable.set(cfg.entropy_data_reg_enable);
     ral.conf.boot_bypass_disable.set(cfg.boot_bypass_disable);
     ral.conf.rng_bit_enable.set(cfg.rng_bit_enable);
     ral.conf.rng_bit_sel.set(cfg.rng_bit_sel);
     csr_update(.csr(ral.conf));
+
+    // Register write enable lock is on be default
+    // Setting this to zero will lock future writes
+    // TODO Do we need to check main_sm_idle before writing DUT registers?
+    csr_wr(.ptr(ral.regwen), .value(cfg.regwen));
 
   endtask
 
