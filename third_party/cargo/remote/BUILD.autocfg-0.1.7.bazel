@@ -26,17 +26,23 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # Apache-2.0 from expression "Apache-2.0 OR MIT"
 ])
 
 # Generated Targets
 
+# Unsupported target "integers" with type "example" omitted
+
+# Unsupported target "paths" with type "example" omitted
+
+# Unsupported target "traits" with type "example" omitted
+
+# Unsupported target "versions" with type "example" omitted
+
 rust_library(
-    name = "lazy_static",
+    name = "autocfg",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "spin",
-        "spin_no_std",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -48,13 +54,10 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "1.4.0",
+    version = "0.1.7",
     # buildifier: leave-alone
     deps = [
-        "@raze__spin__0_5_2//:spin",
     ],
 )
 
-# Unsupported target "no_std" with type "test" omitted
-
-# Unsupported target "test" with type "test" omitted
+# Unsupported target "rustflags" with type "test" omitted
