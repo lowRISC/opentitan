@@ -310,8 +310,11 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
       for (int j = 1; j <= num_flash_ops_per_cfg; j++) begin
         data_q_t exp_data;
 
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(flash_op)
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(flash_op_data)
+        // Those 2 has to be randomized simultaneously, otherwise the value of flash_op_data from
+        //  the previous iteration will affect the randomization of flash_op.
+        if (!randomize(flash_op, flash_op_data)) begin
+          `uvm_fatal(`gfn, "Randomization failed for flash_op & flash_op_data!")
+        end
 
         `uvm_info(`gfn, $sformatf("Starting flash_ctrl op: %0d/%0d: %p",
                                   j, num_flash_ops_per_cfg, flash_op), UVM_LOW)
