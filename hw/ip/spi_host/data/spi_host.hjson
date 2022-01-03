@@ -108,6 +108,13 @@
                    the IP from reset.''',
           resval: "0x0"
         },
+        { bits: "29",
+          name: "OUTPUT_EN",
+          desc: '''Enable the SPI host output buffers for the sck, csb, and sd lines.  This allows
+                   the SPI_HOST IP to connect to the same bus as other SPI controllers without
+                   interference.''',
+          resval: "0x0"
+        },
         { bits: "15:8",
           name: "TX_WATERMARK"
           desc: '''If !!EVENT_ENABLE.TXWM is set, the IP will send

@@ -35,6 +35,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   spi_host_configopts_t             spi_configopts;
   // control bits
   local bit                         spien              = 1'b0;
+  local bit                         output_en          = 1'b0;
   local bit                         sw_rst             = 1'b0;
 
   int                               in_tx_seg_cnt      = 0;
@@ -228,8 +229,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       case (csr_name)
         // add individual case item for each csr
         "control": begin
-          spien  = bit'(get_field_val(ral.control.spien,  item.a_data));
-          sw_rst = bit'(get_field_val(ral.control.sw_rst, item.a_data));
+          spien      = bit'(get_field_val(ral.control.spien,      item.a_data));
+          output_en  = bit'(get_field_val(ral.control.output_en,  item.a_data));
+          sw_rst     = bit'(get_field_val(ral.control.sw_rst,     item.a_data));
           if (sw_rst || spien) begin
             write_segment_q.delete();
             rx_data_q.delete();

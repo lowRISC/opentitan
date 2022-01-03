@@ -64,6 +64,9 @@ package spi_host_reg_pkg;
     } tx_watermark;
     struct packed {
       logic        q;
+    } output_en;
+    struct packed {
+      logic        q;
     } sw_rst;
     struct packed {
       logic        q;
@@ -276,11 +279,11 @@ package spi_host_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_host_reg2hw_intr_state_reg_t intr_state; // [125:124]
-    spi_host_reg2hw_intr_enable_reg_t intr_enable; // [123:122]
-    spi_host_reg2hw_intr_test_reg_t intr_test; // [121:118]
-    spi_host_reg2hw_alert_test_reg_t alert_test; // [117:116]
-    spi_host_reg2hw_control_reg_t control; // [115:98]
+    spi_host_reg2hw_intr_state_reg_t intr_state; // [126:125]
+    spi_host_reg2hw_intr_enable_reg_t intr_enable; // [124:123]
+    spi_host_reg2hw_intr_test_reg_t intr_test; // [122:119]
+    spi_host_reg2hw_alert_test_reg_t alert_test; // [118:117]
+    spi_host_reg2hw_control_reg_t control; // [116:98]
     spi_host_reg2hw_configopts_mreg_t [0:0] configopts; // [97:67]
     spi_host_reg2hw_csid_reg_t csid; // [66:35]
     spi_host_reg2hw_command_reg_t command; // [34:17]

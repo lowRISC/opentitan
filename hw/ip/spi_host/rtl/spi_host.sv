@@ -89,8 +89,13 @@ module spi_host
   logic             sck;
   logic [NumCS-1:0] csb;
   logic [3:0]       sd_out;
-  logic [3:0]       sd_en;
+  logic [3:0]       sd_en, sd_en_core;
   logic [3:0]       sd_i;
+  logic             output_en;
+
+  assign output_en = reg2hw.control.output_en;
+
+  assign sd_en     = output_en ? sd_en_core : 4'h0;
 
   if (NumCS == 1) begin : gen_passthrough_implementation
     logic passthrough_en;
@@ -111,9 +116,9 @@ module spi_host
     assign pt_sd_en     = passthrough_i.s_en;
 
     assign cio_sck_o    = passthrough_en ? pt_sck    : sck;
-    assign cio_sck_en_o = passthrough_en ? pt_sck_en : 1'b1;
+    assign cio_sck_en_o = passthrough_en ? pt_sck_en : output_en;
     assign cio_csb_o    = passthrough_en ? pt_csb    : csb;
-    assign cio_csb_en_o = passthrough_en ? pt_csb_en : 1'b1;
+    assign cio_csb_en_o = passthrough_en ? pt_csb_en : output_en;
     assign cio_sd_o     = passthrough_en ? pt_sd_out : sd_out;
     assign cio_sd_en_o  = passthrough_en ? pt_sd_en  : sd_en;
 
@@ -123,9 +128,9 @@ module spi_host
     `ASSERT(PassthroughNumCSCompat_A, !passthrough_i.passthrough_en, clk_i, rst_ni)
 
     assign cio_sck_o    = sck;
-    assign cio_sck_en_o = 1'b1;
+    assign cio_sck_en_o = output_en;
     assign cio_csb_o    = csb;
-    assign cio_csb_en_o = {NumCS{1'b1}};
+    assign cio_csb_en_o = {NumCS{output_en}};
     assign cio_sd_o     = sd_out;
     assign cio_sd_en_o  = sd_en;
 
@@ -449,7 +454,7 @@ module spi_host
     .sck_o           (sck),
     .csb_o           (csb),
     .sd_o            (sd_out),
-    .sd_en_o         (sd_en),
+    .sd_en_o         (sd_en_core),
     .sd_i,
     .rx_stall_o      (rx_stall),
     .tx_stall_o      (tx_stall),
