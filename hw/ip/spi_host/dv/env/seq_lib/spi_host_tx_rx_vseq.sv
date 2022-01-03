@@ -55,7 +55,6 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
 
   endtask
 
-
   // sending tx requests to the agent
   virtual task send_trans(spi_transaction_item trans);
     spi_segment_item segment = new();

@@ -657,6 +657,11 @@ If the block is re-enabled by writing a one to {{< regref "CONTROL.SPIEN" >}}, a
 
 An unacknowledged error event suspends the core state machine.
 
+### SPI_HOST Output Enable
+
+In addition to enabling the SPI_HOST FSM, the SPI_HOST outputs must also be enabled for successful operation.
+This can be achieved by also setting the {{< regref "CONTROL.OUTPUT_EN" >}} field when enabling the SPI_HOST FSM.
+
 ### Component reset
 
 In addition to the global hardware reset, there is a software reset option which completely resets the SPI host.

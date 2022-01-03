@@ -174,6 +174,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     ral.control.rx_watermark.set(spi_host_ctrl_reg.rx_watermark);
     // activate spi_host dut
     ral.control.spien.set(1'b1);
+    ral.control.output_en.set(1'b1);
     csr_update(ral.control);
   endtask : program_control_reg
 

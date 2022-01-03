@@ -187,6 +187,8 @@ module spi_host_reg_top (
   logic [7:0] control_rx_watermark_wd;
   logic [7:0] control_tx_watermark_qs;
   logic [7:0] control_tx_watermark_wd;
+  logic control_output_en_qs;
+  logic control_output_en_wd;
   logic control_sw_rst_qs;
   logic control_sw_rst_wd;
   logic control_spien_qs;
@@ -465,6 +467,31 @@ module spi_host_reg_top (
 
     // to register interface (read)
     .qs     (control_tx_watermark_qs)
+  );
+
+  //   F[output_en]: 29:29
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_control_output_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (control_we),
+    .wd     (control_output_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.control.output_en.q),
+
+    // to register interface (read)
+    .qs     (control_output_en_qs)
   );
 
   //   F[sw_rst]: 30:30
@@ -1623,6 +1650,8 @@ module spi_host_reg_top (
 
   assign control_tx_watermark_wd = reg_wdata[15:8];
 
+  assign control_output_en_wd = reg_wdata[29];
+
   assign control_sw_rst_wd = reg_wdata[30];
 
   assign control_spien_wd = reg_wdata[31];
@@ -1717,6 +1746,7 @@ module spi_host_reg_top (
       addr_hit[4]: begin
         reg_rdata_next[7:0] = control_rx_watermark_qs;
         reg_rdata_next[15:8] = control_tx_watermark_qs;
+        reg_rdata_next[29] = control_output_en_qs;
         reg_rdata_next[30] = control_sw_rst_qs;
         reg_rdata_next[31] = control_spien_qs;
       end
