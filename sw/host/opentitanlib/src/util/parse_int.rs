@@ -2,7 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::num::ParseIntError;
+use std::num;
+use thiserror::Error;
+
+#[derive(Error, Debug, Clone, Eq, PartialEq)]
+pub enum ParseIntError {
+    #[error(transparent)]
+    ParseIntError(#[from] num::ParseIntError),
+}
 
 /// Trait for parsing integers.
 ///
@@ -11,7 +18,9 @@ use std::num::ParseIntError;
 /// A leading `+` or `-` is permitted.  Any string parsed by `strtol(3)` or `strtoul(3)`
 /// will be parsed successfully.
 pub trait ParseInt: Sized {
-    fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError>;
+    type FromStrRadixErr: Into<ParseIntError>;
+
+    fn from_str_radix(src: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr>;
 
     fn from_str(src: &str) -> Result<Self, ParseIntError> {
         let (val, negative) = if let Some(v) = src.strip_prefix('-') {
@@ -33,9 +42,9 @@ pub trait ParseInt: Sized {
         if negative {
             let mut digits = digits.to_string();
             digits.insert(0, '-');
-            Self::from_str_radix(&digits, radix)
+            Self::from_str_radix(&digits, radix).map_err(Self::FromStrRadixErr::into)
         } else {
-            Self::from_str_radix(digits, radix)
+            Self::from_str_radix(digits, radix).map_err(Self::FromStrRadixErr::into)
         }
     }
 }
@@ -43,7 +52,9 @@ pub trait ParseInt: Sized {
 macro_rules! impl_parse_int {
     ($ty:ident) => {
         impl ParseInt for $ty {
-            fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError> {
+            type FromStrRadixErr = num::ParseIntError;
+
+            fn from_str_radix(src: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr> {
                 $ty::from_str_radix(src, radix)
             }
         }
