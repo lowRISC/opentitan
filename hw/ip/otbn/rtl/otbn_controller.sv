@@ -145,7 +145,7 @@ module otbn_controller
   output logic                     prefetch_en_o,
   output logic                     prefetch_loop_active_o,
   output logic [31:0]              prefetch_loop_iterations_o,
-  output logic [ImemAddrWidth-1:0] prefetch_loop_end_addr_o,
+  output logic [ImemAddrWidth:0]   prefetch_loop_end_addr_o,
   output logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_o
 );
   otbn_state_e state_q, state_d;
