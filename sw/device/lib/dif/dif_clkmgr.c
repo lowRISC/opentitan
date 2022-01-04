@@ -27,13 +27,6 @@ static_assert(
     CLKMGR_PARAM_NUM_HINTABLE_CLOCKS <= CLKMGR_PARAM_REG_WIDTH,
     "Expected the number of hintable clocks to be <= the width of a CSR.");
 
-/**
- * Converts a `multi_bit_bool_t` to `dif_toggle_t`.
- */
-static dif_toggle_t mubi4_to_toggle(multi_bit_bool_t val) {
-  return (val == kMultiBitBool4True) ? kDifToggleEnabled : kDifToggleDisabled;
-}
-
 static bool clkmgr_valid_gateable_clock(dif_clkmgr_gateable_clock_t clock) {
   return clock < CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS;
 }
@@ -50,7 +43,7 @@ dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
 
   multi_bit_bool_t clk_jitter_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_JITTER_ENABLE_REG_OFFSET);
-  *state = mubi4_to_toggle(clk_jitter_val);
+  *state = dif_multi_bit_bool_to_toggle(clk_jitter_val);
 
   return kDifOk;
 }

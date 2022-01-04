@@ -6,8 +6,11 @@
 
 #include <stdbool.h>
 
+#include "sw/device/lib/base/multibits.h"
+
 // `extern` declarations to give the inline functions in the corresponding
 // header a link location.
 extern bool dif_is_valid_toggle(dif_toggle_t val);
 extern bool dif_toggle_to_bool(dif_toggle_t val);
 extern dif_toggle_t dif_bool_to_toggle(bool val);
+extern dif_toggle_t dif_multi_bit_bool_to_toggle(multi_bit_bool_t val);

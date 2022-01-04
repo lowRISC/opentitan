@@ -12,6 +12,9 @@ cc_library(
     hdrs = [
         "dif_base.h",
     ],
+    deps = [
+        "//sw/device/lib/base",
+    ],
 )
 
 cc_library(
