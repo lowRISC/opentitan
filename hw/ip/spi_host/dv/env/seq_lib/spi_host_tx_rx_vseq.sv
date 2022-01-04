@@ -39,14 +39,12 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     bit [7:0] read_q[$];
 
     csr_rd(.ptr(ral.status.rxqd), .value(fifo_entries));
-    `uvm_info("READ_DBG", $sformatf("num entries %d", fifo_entries), UVM_LOW)
     do begin
       for(int i = 0; i <fifo_entries; i++) begin
         access_data_fifo(read_q, RxFifo);
       end
       csr_spinwait(.ptr(ral.status.active), .exp_data(1'b0));
       csr_rd(.ptr(ral.status.rxqd), .value(fifo_entries));
-             `uvm_info("READ_DBG", $sformatf("num entries_ %d", fifo_entries), UVM_LOW)
     end while (fifo_entries > 0 );
 
     // wait for all accesses to complete
@@ -61,7 +59,6 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
   // sending tx requests to the agent
   virtual task send_trans(spi_transaction_item trans);
     spi_segment_item segment = new();
-    `uvm_info("RX FIFO", $sformatf("New TRansaction"), UVM_LOW)
     while (trans.segments.size() > 0) begin
       // wait on DUT ready
       segment = trans.segments.pop_back();

@@ -49,7 +49,6 @@ package spi_host_env_pkg;
 
   typedef enum {
     Command,
-    Address,
     Dummy,
     Data
   } spi_segment_type_e;
