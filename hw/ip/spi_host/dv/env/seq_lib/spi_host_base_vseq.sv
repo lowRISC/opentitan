@@ -128,6 +128,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     transaction.tx_only_weight = cfg.seq_cfg.tx_only_weight;
     transaction.spi_len_min    = cfg.seq_cfg.host_spi_min_len;
     transaction.spi_len_max    = cfg.seq_cfg.host_spi_max_len;
+    transaction.num_cmd_bytes  = cfg.num_cmd_bytes;
   endfunction
 
 

@@ -25,7 +25,7 @@ class spi_segment_item extends uvm_sequence_item;
   // num dummy cycles
   int num_dummy                       = 0;
   //num_addr_bytes
-  int num_addr_bytes                  = 4;
+  int num_cmd_bytes                  = 4;
 
   // transaction len
   int  spi_len_min = 2;
@@ -52,24 +52,25 @@ class spi_segment_item extends uvm_sequence_item;
     if (seg_type == Command) {
       command_reg.mode == Standard;
     } else {
-      if (cmd inside {ReadStd, WriteStd})        { command_reg.mode == Standard; }
+      if      (cmd inside {ReadStd, WriteStd})   { command_reg.mode == Standard; }
       else if (cmd inside {ReadDual, WriteDual}) { command_reg.mode == Dual; }
       else                                       { command_reg.mode == Quad; }
     }
 
-    if (seg_type == Dummy)         { command_reg.len == num_dummy-1; }
-    else if (seg_type == Address)  { command_reg.len == num_addr_bytes-1; }
-    else if (seg_type == Command)  { command_reg.len == 0; }
-    else { command_reg.len inside  { [spi_len_min-1:spi_len_max-1]}; }
+    if      (seg_type == Command) { command_reg.len == num_cmd_bytes-1; }
+    else if (seg_type == Dummy  ) { command_reg.len == num_dummy-1; }
+    else {   command_reg.len inside  { [spi_len_min-1:spi_len_max-1]}; }
 
+    // ensure we only half or full word writes
+    (command_reg.len+1)%2 == 0;
+    // default set keep transaction going
     command_reg.csaat == 1;
   }
 
   constraint data_c {
-    if (seg_type == Data)          { spi_data.size() == command_reg.len+1; }
+    if      (seg_type == Command)  { spi_data.size() == num_cmd_bytes; }
     else if (seg_type == Dummy)    { spi_data.size() == num_dummy; }
-    else if (seg_type == Address)  { spi_data.size() == num_addr_bytes; }
-    else                           { spi_data.size() == 1; }
+    else                           { spi_data.size() == command_reg.len+1; }
 
     solve command_reg before spi_data;
   }
@@ -83,7 +84,7 @@ class spi_segment_item extends uvm_sequence_item;
     rx_only_weight         =    rhs_.rx_only_weight;
     tx_only_weight         =    rhs_.tx_only_weight;
     num_dummy              =    rhs_.num_dummy;
-    num_addr_bytes         =    rhs_.num_addr_bytes;
+    num_cmd_bytes          =    rhs_.num_cmd_bytes;
     seg_type               =    rhs_.seg_type;
     command_reg.csaat      =    rhs_.command_reg.csaat;
     command_reg.direction  =    rhs_.command_reg.direction;

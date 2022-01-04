@@ -129,8 +129,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
             txt = {txt, $sformatf("\n \t [%d] \t\t\t      %0h  \t\t\t %0h",
                         i, dut_item.data[0], exp_segment.spi_data[i])};
             `uvm_fatal(`gfn,
-                       $sformatf("\n\t WRITE: actual data did not match exp data %s \n len %d %s",
-                           txt, exp_segment.command_reg.len+1, txt))
+                       $sformatf("\n\t WRITE: actual data did not match exp data \n len %d %s",
+                           exp_segment.command_reg.len+1, txt))
           end else begin
             txt = {txt, $sformatf("\n \t [%d] \t\t\t %0h \t\t\t %0h",
                                   i, dut_item.data[0], exp_segment.spi_data[i])};
