@@ -40,7 +40,7 @@ module otbn_instruction_fetch
   input logic                     prefetch_en_i,
   input logic                     prefetch_loop_active_i,
   input logic [31:0]              prefetch_loop_iterations_i,
-  input logic [ImemAddrWidth-1:0] prefetch_loop_end_addr_i,
+  input logic [ImemAddrWidth:0]   prefetch_loop_end_addr_i,
   input logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_i
 );
 
@@ -115,7 +115,8 @@ module otbn_instruction_fetch
       // timing consistent regardless of taken/not-taken.
       // This also applies to jumps, this avoids the need to calculate the jump address here.
       insn_prefetch = 1'b0;
-    end else if (insn_prefetch_addr == prefetch_loop_end_addr_i && prefetch_loop_active_i &&
+    end else if ({1'b0, insn_prefetch_addr} == prefetch_loop_end_addr_i &&
+                 prefetch_loop_active_i &&
                  prefetch_loop_iterations_i > 32'd1) begin
       // When in a loop prefetch the loop beginning when execution reaches the end.
       imem_addr_o = prefetch_loop_jump_addr_i;

@@ -27,7 +27,7 @@ module otbn_loop_controller
 
   output                     prefetch_loop_active_o,
   output [31:0]              prefetch_loop_iterations_o,
-  output [ImemAddrWidth-1:0] prefetch_loop_end_addr_o,
+  output [ImemAddrWidth:0]   prefetch_loop_end_addr_o,
   output [ImemAddrWidth-1:0] prefetch_loop_jump_addr_o,
 
   input jump_or_branch_i,
@@ -211,7 +211,7 @@ module otbn_loop_controller
   // Forward info about loop state for next cycle to prefetch stage
   assign prefetch_loop_active_o     = loop_active_d;
   assign prefetch_loop_iterations_o = current_loop_d.loop_iterations;
-  assign prefetch_loop_end_addr_o   = current_loop_d.loop_end[ImemAddrWidth-1:0];
+  assign prefetch_loop_end_addr_o   = current_loop_d.loop_end;
   assign prefetch_loop_jump_addr_o  = current_loop_d.loop_start;
 
   `ASSERT(NoLoopStackPushAndPop, !(loop_stack_push && loop_stack_pop))
