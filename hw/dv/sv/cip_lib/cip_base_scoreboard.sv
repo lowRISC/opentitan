@@ -323,13 +323,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // Check if there is any tl error.
   //
-  // On the Addr channel, returns 1 if the item should cause a TL error.
+  // On the Addr channel, returns 1 if the item should cause a TL error. If TL integrity generation
+  // is enabled, this also calls update_tl_alert_field_prediction() to update the mirrored value of
+  // any "I've seen an integrity error" bit.
   //
   // On the Data channel, this also asserts that the item's D channel integrity is correct (because
   // the DUT should never inject errors) and that item.d_error matches the prediction (to check that
-  // the DUT correctly spots TL errors on the A channel). If TL integrity generation is enabled,
-  // this also calls update_tl_alert_field_prediction() to update the mirrored value of any "I've
-  // seen an integrity error" bit.
+  // the DUT correctly spots TL errors on the A channel).
   //
   // The following situations might cause a TL error:
   //
@@ -360,9 +360,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     has_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
 
-    // If we got an error response caused by an integrity failure, update the mirrored value for
-    // any bus integrity alert field (if there is one).
-    if (has_intg_err) begin
+    // If this is an integrity failure on the A channel, we expect there to be a bus integrity alert
+    // issued, which might update some CSRs (like FATAL_ALERT_CAUSE and similar). Update them in the
+    // RAL if necessary.
+    if (has_intg_err && (channel == AddrChannel)) begin
       update_tl_alert_field_prediction();
     end
 
@@ -516,14 +517,39 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     foreach (tl_d_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_d_chan_fifos[i])
   endfunction
 
+  // Update the RAL model in response to an access that causes an alert
+  //
+  // This gets run if we see a malformed TL request on the A channel (which will cause an alert). To
+  // match the timing in e.g. csr_rd_check, we need to ensure that on every posedge of the clock the
+  // current RAL model matches the results that we'd expect to see in a D response seen then.
+  //
+  // To get that right, RAL updates for alerts caused by a malformed TL response are delayed until
+  // the following negedge. This matches the RTL, ensuring that if you have two TL interfaces then
+  // the error will only be injected on responses that arrive on the following clock. RAL updates
+  // for alerts caused by a malformed TL request are delayed by 1.5 clock cycles (i.e. 2 negedges).
+  // This matches the RTL, assuming that the device responds and generates an alert on the cycle
+  // after the malformed request is presented.
   virtual function void update_tl_alert_field_prediction();
-    foreach (cfg.tl_intg_alert_fields[field]) begin
-      uvm_reg_data_t value = cfg.tl_intg_alert_fields[field];
-      `DV_CHECK_FATAL(field, "field is Null in tl_intg_alert_fields")
+  fork
+      begin
+        // Wait until the right time to update the RAL (see comment above function)
+        repeat (2) begin
+          @(negedge cfg.clk_rst_vif.clk or !cfg.clk_rst_vif.rst_n);
+          if (!cfg.clk_rst_vif.rst_n) break;
+        end
 
-      // Set the field
-      `DV_CHECK_FATAL(field.predict(.value(value), .kind(UVM_PREDICT_READ)));
-    end
+        // So long as we haven't gone into reset, update each field with the value that it should
+        // take on an alert
+        if (cfg.clk_rst_vif.rst_n) begin
+          foreach (cfg.tl_intg_alert_fields[field]) begin
+            uvm_reg_data_t value = cfg.tl_intg_alert_fields[field];
+            `DV_CHECK_FATAL(field, "field is Null in tl_intg_alert_fields")
+
+            `DV_CHECK_FATAL(field.predict(.value(value), .kind(UVM_PREDICT_READ)));
+          end
+        end
+      end
+    join_none
   endfunction
 
 endclass
