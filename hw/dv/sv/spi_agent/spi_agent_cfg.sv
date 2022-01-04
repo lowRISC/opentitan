@@ -37,7 +37,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
 
 
   // address width in bytes (default is 4 bytes)
-  int spi_addr_width = 4;
+  int spi_cmd_width   = 4;
 
   // how many bytes monitor samples per transaction
   int num_bytes_per_trans_in_mon = 4;

@@ -17,8 +17,8 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
 
   // read queue
   spi_item rsp_q[$];
-  typedef enum {SPI_IDLE, SPI_ADDR, SPI_DATA } spi_fsm_e;
-  spi_fsm_e spi_state = SPI_IDLE;
+  typedef enum {SpiIdle, SpiCmd, SpiData } spi_fsm_e;
+  spi_fsm_e spi_state = SpiIdle;
 
   virtual task body();
 
@@ -48,35 +48,35 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
 
     forever begin
       case (spi_state)
-        SPI_IDLE: begin
+        SpiIdle: begin
           get_nxt_req(item);
           // find start of transaction
           if (item.first_byte) begin
             // decode command
             cmd = cmd_check(item.data.pop_front);
-            spi_state = SPI_ADDR;
+            spi_state = SpiCmd;
           end
         end
 
-        SPI_ADDR: begin
+        SpiCmd: begin
           get_nxt_req(item);
           // make sure that we did not start a new transaction
           if (item.first_byte) begin
             // decode command
             cmd = cmd_check(item.data.pop_front);
-            spi_state = SPI_ADDR;
+            spi_state = SpiCmd;
             addr_cnt = 0;
           end else begin
             addr[31-8*byte_cnt -: 8] = item.data.pop_front();
             byte_cnt += 1;
-            if (byte_cnt == cfg.spi_addr_width) begin
+            if (byte_cnt+1 == cfg.spi_cmd_width) begin // +1 to accound for the cmd byte
               byte_cnt = 0;
-              spi_state = SPI_DATA;
+              spi_state = SpiData;
             end
           end
         end
 
-        SPI_DATA: begin
+        SpiData: begin
           case (cmd)
             ReadStd: begin
               // read_until CSB low
@@ -95,7 +95,7 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
               if (item.first_byte) begin
                 // decode command
                 cmd = cmd_check(item.data.pop_front);
-                spi_state = SPI_ADDR;
+                spi_state = SpiCmd;
                 addr_cnt = 0;
               end
             end
@@ -105,7 +105,7 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
               if (item.first_byte) begin
                 // decode command
                 cmd = cmd_check(item.data.pop_front);
-                spi_state = SPI_ADDR;
+                spi_state = SpiCmd;
                 addr_cnt = 0;
               end else begin
                 data[31-8*addr_cnt[1:0] -: 8] = item.data.pop_front();
@@ -118,13 +118,13 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
               `uvm_fatal(`gfn, $sformatf("UNSUPPORTED COMMAND"))
             end
           endcase
-        end // case: SPI_DATA
+        end
         default: begin
           `uvm_fatal(`gfn, $sformatf("BAD STATE"))
         end
       endcase
     end
-  endtask // decode_cmd
+  endtask
 
 
   function spi_cmd_e cmd_check(bit[7:0] data);
