@@ -169,7 +169,7 @@ module lc_ctrl_fsm
 
     // Status indication going to power manager.
     init_done_o = 1'b1;
-    idle_o      = 1'b1;
+    idle_o      = 1'b0;
 
     // These signals remain asserted once set to On.
     // Note that the remaining life cycle signals are decoded in
