@@ -272,11 +272,12 @@
             '''
     }
     {
-      name: reset_lowpower_distance_cg
+      name: reset_wakeup_distance_cg
       desc: '''
-            This is a temporal cover statement that records the temporal
-            distance between when lowpower entry and reset trigger, in order
-            to measure coverage of the reset_wakeup_race sequence.
+            Covergroup contains a coverpoint for the difference between the
+            cycles when the reset and the wakeup were received in the inputs.
+            The difference is positive when reset happened after wakeup, and
+            zero when the two happened at the same clock cycle.
             '''
     }
   ]

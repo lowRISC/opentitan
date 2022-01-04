@@ -124,6 +124,15 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
     reset_cross: cross esc_reset_cp, sleep_cp;
   endgroup
 
+  // This measures the number of cycles between the reset and wakeup.
+  // It is positive when reset happened after wakeup, and zero when they coincided in time.
+  covergroup reset_wakeup_distance_cg with function sample (int cycles);
+    cycles_cp: coverpoint cycles {
+      bins close[] = {[-4:4]};
+      bins far = default;
+    }
+  endgroup
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     foreach (wakeup_ctrl_cg_wrap[i]) begin
@@ -137,6 +146,7 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
     rstmgr_sw_reset_cg = new();
     main_power_reset_cg = new();
     esc_reset_cg = new();
+    reset_wakeup_distance_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);
