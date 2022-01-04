@@ -265,7 +265,7 @@ class otbn_base_vseq extends cip_base_vseq #(
 
       // Get the current address and iteration counter.
       addr = cfg.loop_vif.insn_addr_i;
-      old_iters = cfg.loop_vif.current_loop_d_iterations;
+      old_iters = cfg.loop_vif.current_loop_q_iterations;
 
       // Convert from the "RTL view" of the iteration count (counting down to 1) to the "ISA view"
       // (counting up from zero).
@@ -278,6 +278,16 @@ class otbn_base_vseq extends cip_base_vseq #(
 
       // Convert this back to the "RTL view"
       new_iters = cfg.loop_vif.loop_count_to_iters(new_count);
+
+      // We want to use this value to override the _d signal, but there's one more wrinkle: if the
+      // current address matches the loop end, it will already have been decremented and we need to
+      // decrement it one more time to match.
+      if (cfg.loop_vif.current_loop_q_iterations != cfg.loop_vif.current_loop_d_iterations) begin
+        `DV_CHECK_EQ_FATAL(cfg.loop_vif.current_loop_q_iterations,
+                           cfg.loop_vif.current_loop_d_iterations + 1)
+        `DV_CHECK_FATAL(new_iters > 0)
+        new_iters--;
+      end
 
       // Override the _d signal
       if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",

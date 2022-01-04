@@ -169,8 +169,9 @@ module tb;
       .current_loop_end   (32'(current_loop_q.loop_end)),
       .next_loop_end      (32'(next_loop.loop_end)),
 
-      // This count is used by the loop warping code.
-      .current_loop_d_iterations (current_loop_d.loop_iterations)
+      // These counts are used by the loop warping code.
+      .current_loop_d_iterations (current_loop_d.loop_iterations),
+      .current_loop_q_iterations (current_loop_q.loop_iterations)
     );
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
