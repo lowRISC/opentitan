@@ -105,7 +105,7 @@ waive -rules {ZERO_REP} -location {ibex_icache.sv} -regexp {Replication count is
 waive -rules MIXED_SIGN           -location {ibex_lockstep.sv} -regexp {Unsigned operand 'rst_shadow_cnt_q' and signed 'LockstepOffsetW'(1)' encountered in a binary expression} \
       -comment "In line with our style guide, LockstepOffsetW'(1) results in a signed operand"
 waive -rules UNSIZED_BIT_CONTEXT  -location {ibex_lockstep.sv} -regexp {Bitlength of unsized bit literal "'0" is self determined in this context} \
-      -comment "In line with our style guide, writing this as {$bits(delayed_inputs_t){1'b0}} would be much less readable"
+      -comment {In line with our style guide, writing this as {$bits(delayed_inputs_t){1'b0}} would be much less readable}
 
 # Highlighting my main concerns here, documenting areas to review in next dive
 #
