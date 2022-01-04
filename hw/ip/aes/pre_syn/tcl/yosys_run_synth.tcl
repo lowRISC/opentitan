@@ -27,8 +27,8 @@ if { $lr_synth_top_module != "aes_sbox" && $lr_synth_top_module != "aes_sub_byte
 }
 yosys "chparam -set SBoxImpl $lr_synth_s_box_impl $lr_synth_top_module"
 
-# Remap Xilinx Vivado "keep" attributes to Yosys style.
-yosys "attrmap -tocase keep -imap keep=\"true\" keep=1 -imap keep=\"false\" keep=0 -remove keep=0"
+# Remap Xilinx Vivado "dont_touch" attributes to Yosys "keep" attributes.
+yosys "attrmap -tocase keep -imap dont_touch=\"yes\" keep=1 -imap dont_touch=\"no\" keep=0 -remove keep=0"
 
 # Place keep_hierarchy contraints on relevant modules to prevent aggressive synthesis optimzations
 # across the boundaries of these modules.
