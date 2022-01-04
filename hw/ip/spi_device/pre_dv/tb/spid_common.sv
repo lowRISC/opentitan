@@ -50,8 +50,42 @@ package spid_common;
   } spi_fifo_t;
 
   // Command list parameters
+  import spi_device_pkg::cmd_info_t;
+  import spi_device_pkg::NumTotalCmdInfo;
 
-  parameter spi_device_pkg::cmd_info_t [23:0] CmdInfo = {
+  parameter cmd_info_t [NumTotalCmdInfo-1:0] CmdInfo = {
+    // 25: EX4B
+    '{
+      valid:            1'b 0,
+      opcode:           8'h E6,
+      addr_mode:        AddrDisabled,
+      addr_swap_en:     1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
+    // 24: EN4B
+    '{
+      valid:            1'b 0,
+      opcode:           8'h E6,
+      addr_mode:        AddrDisabled,
+      addr_swap_en:     1'b 0,
+      mbyte_en:         1'b 0,
+      dummy_en:         1'b 0,
+      dummy_size:          '0,
+      payload_en:       4'b 0010, // MISO
+      payload_dir:      PayloadOut,
+      payload_swap_en:  1'b 0,
+      upload:           1'b 0,
+      busy:             1'b 0
+    },
+
     // 23:
     '{
       valid:            1'b 0,

@@ -53,64 +53,6 @@ module spid_status_tb;
   cmd_info_index_e cmd_info_idx;
   cmd_info_t cmd_info;
 
-  cmd_info_t [NumCmdInfo-1:0] cmd_info_list;
-  assign cmd_info_list[CmdInfoReadStatus1] = '{
-    valid:            1'b 1,
-    opcode:           8'h 05,
-    addr_mode:        AddrDisabled,
-    addr_swap_en:     1'b 0,
-    mbyte_en:         1'b 0,
-    dummy_en:         1'b 0,
-    dummy_size:          '0,
-    payload_en:       4'b 0010, // MISO
-    payload_dir:      PayloadOut,
-    upload:           1'b 0,
-    busy:             1'b 0
-  };
-  assign cmd_info_list[CmdInfoReadStatus2] = '{
-    valid:            1'b 1,
-    opcode:           8'h 35,
-    addr_mode:        AddrDisabled,
-    addr_swap_en:     1'b 0,
-    mbyte_en:         1'b 0,
-    dummy_en:         1'b 0,
-    dummy_size:          '0,
-    payload_en:       4'b 0010, // MISO
-    payload_dir:      PayloadOut,
-    upload:           1'b 0,
-    busy:             1'b 0
-  };
-  assign cmd_info_list[CmdInfoReadStatus3] = '{
-    valid:            1'b 1,
-    opcode:           8'h 15,
-    addr_mode:        AddrDisabled,
-    addr_swap_en:     1'b 0,
-    mbyte_en:         1'b 0,
-    dummy_en:         1'b 0,
-    dummy_size:          '0,
-    payload_en:       4'b 0010, // MISO
-    payload_dir:      PayloadOut,
-    upload:           1'b 0,
-    busy:             1'b 0
-  };
-
-  for (genvar i = CmdInfoReadStatus3 + 1; i < NumCmdInfo ; i++) begin: g_cmd_info
-    assign cmd_info_list[i] = '{
-      valid:            1'b 0,
-      opcode:           (8'h FF - i),
-      addr_en:          1'b 0,
-      addr_swap_en:     1'b 0,
-      addr_4b_affected: 1'b 0,
-      mbyte_en:         1'b 0,
-      dummy_en:         1'b 0,
-      dummy_size:          '0,
-      payload_en:       4'b 0010, // MISO
-      payload_dir:      PayloadOut,
-      upload:           1'b 0,
-      busy:             1'b 0
-    };
-  end
-
   logic sys_status_we;
   logic [23:0] sys_status_in, sys_status_out;
 
@@ -229,7 +171,7 @@ module spid_status_tb;
 
     .spi_mode_i   (spi_mode),
 
-    .cmd_info_i   (cmd_info_list),
+    .cmd_info_i   (spid_common::CmdInfo),
 
     .io_mode_o    (s2p_iomode),
 

@@ -152,18 +152,29 @@ module spi_cmdparse
   logic opcode_readstatus, opcode_readjedec, opcode_readsfdp, opcode_readcmd;
   logic opcode_en4b, opcode_ex4b;
 
-  assign opcode_readstatus = (data_i == cmd_info_i[CmdInfoReadStatus1].opcode)
-                           | (data_i == cmd_info_i[CmdInfoReadStatus2].opcode)
-                           | (data_i == cmd_info_i[CmdInfoReadStatus3].opcode);
-  assign opcode_readjedec = (data_i == cmd_info_i[CmdInfoReadJedecId].opcode);
-  assign opcode_readsfdp = (data_i == cmd_info_i[CmdInfoReadSfdp].opcode);
+  always_comb begin
+    opcode_readstatus = 1'b 0;
+    for (int i = 0 ; i < 3 ; i++) begin
+      if (cmd_info_i[CmdInfoReadStatus1+i].valid
+        && (data_i == cmd_info_i[CmdInfoReadStatus1+i].opcode)) begin
+        opcode_readstatus = 1'b 1;
+      end
+    end
+  end
+
+  assign opcode_readjedec = cmd_info_i[CmdInfoReadJedecId].valid
+                          && (data_i == cmd_info_i[CmdInfoReadJedecId].opcode);
+  assign opcode_readsfdp = cmd_info_i[CmdInfoReadSfdp].valid
+                         && (data_i == cmd_info_i[CmdInfoReadSfdp].opcode);
   assign opcode_en4b = (data_i == cmd_info_i[CmdInfoEn4B].opcode);
   assign opcode_ex4b = (data_i == cmd_info_i[CmdInfoEx4B].opcode);
 
   always_comb begin
     opcode_readcmd = 1'b 0;
     for (int unsigned i = CmdInfoReadCmdStart ; i <= CmdInfoReadCmdEnd ; i++) begin
-      if (data_i == cmd_info_i[i].opcode) opcode_readcmd = 1'b 1;
+      if (cmd_info_i[i].valid && data_i == cmd_info_i[i].opcode) begin
+        opcode_readcmd = 1'b 1;
+      end
     end
   end
 
