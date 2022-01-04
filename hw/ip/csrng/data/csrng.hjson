@@ -89,7 +89,7 @@
     { name: "FSM.SPARSE"
       desc: "Sparse state machine implementation."
     }
-    { name: "CNT.REDUN"
+    { name: "CTR.REDUN"
       desc: "Counter hardening for generate command counter."
     }
     { name: "LOGIC.INTEGRITY"

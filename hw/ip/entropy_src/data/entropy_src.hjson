@@ -85,7 +85,7 @@
     { name: "FSM.SPARSE"
       desc: "Sparse state machine implementation."
     }
-    { name: "CNT.REDUN"
+    { name: "CTR.REDUN"
       desc: "Counter hardening for all health test counters."
     }
     { name: "LOGIC.INTEGRITY"
