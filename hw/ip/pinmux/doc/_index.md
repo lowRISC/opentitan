@@ -369,7 +369,7 @@ A typical programming sequence for the wakeup detectors looks as follows:
 
 2. Optionally, lock the wakeup detector configuration via the {{< regref "WKUP_DETECTOR_REGWEN_0" >}} registers.
 
-3. During sleep, the wakeup detectors will trigger a wakep request if a matching pattern has been observed.
+3. During sleep, the wakeup detectors will trigger a wakeup request if a matching pattern has been observed.
    A bit corresponding to the wakeup detector that has observed the pattern will be set in the {{< regref "WKUP_CAUSE" >}} register.
 
 4. When exiting sleep, SW should read the wake info register in the [power manager]({{< relref "hw/ip/pwrmgr/doc/" >}}) to determine the reason(s) for the wakeup request.
