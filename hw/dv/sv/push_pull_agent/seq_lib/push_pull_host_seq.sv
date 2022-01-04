@@ -15,7 +15,7 @@ class push_pull_host_seq #(parameter int HostDataWidth = 32,
 
   // Default to send 1 transactions.
   // Can be overridden at a higher layer.
-  int unsigned num_trans = 1;
+  int unsigned num_trans = 4;
 
   // Randomizes the host req.
   virtual function void randomize_item(push_pull_item #(HostDataWidth, DeviceDataWidth) item);
