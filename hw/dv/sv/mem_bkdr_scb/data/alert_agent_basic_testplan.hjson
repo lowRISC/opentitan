@@ -1,0 +1,19 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// This DV coverplan documents basic memory access covergroups.
+{
+  covergroups: [
+    {
+      name: b2b_access_types_cg
+      desc: '''
+            - Covers that any combination of access types (R/R, R/W, W/R, W/W) can be present in b2b
+            transaction scenarios.
+            - Covers b2b access with the same address.
+            - Covers b2b access with partial access or not.
+            - Cross all above cases.
+            '''
+    }
+  ]
+}
