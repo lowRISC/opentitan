@@ -2,10 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
-
 load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_functest")
 load("//rules:autogen.bzl", "autogen_chip_info")
+
+package(default_visibility = ["//visibility:public"])
 
 autogen_chip_info(
     name = "chip_info",
@@ -13,9 +13,6 @@ autogen_chip_info(
 
 opentitan_binary(
     name = "test_rom",
-    srcs = [
-        "test_rom_irq_vector.S",
-    ],
     linkopts = [
         "-T $(location test_rom.ld)",
     ],

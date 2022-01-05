@@ -61,7 +61,7 @@ ENTRY(_reset_start);
  */
 SECTIONS {
   /**
-   * Ibex interrupt vector. See test_rom_irq_vector.S for more information.
+   * Ibex interrupt vector. See test_rom_start.S for more information.
    *
    * This has to be set up at the boot address, so that execution jumps to the
    * reset handler correctly.

@@ -2,15 +2,70 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "sram_ctrl_regs.h"
+#include "entropy_src_regs.h"
+#include "csrng_regs.h"
+#include "edn_regs.h"
+
 /**
- * Boot ROM runtime initialization code.
+ * Test ROM interrupt vectors.
+ *
+ * After reset all interrupts are disabled. Only exceptions (interrupt 0) and
+ * non-maskable interrupts (interrupt 31) are possible. For simplicity however
+ * we just set all interrupt handlers in the Test ROM to use the same handler,
+ * which loops forever.
+ *
+ * Interrupt vectors in Ibex have 32 entries for 32 possible interrupts. The
+ * vector must be 256-byte aligned, as Ibex's vectoring mechanism requires that.
+ *
+ * Note that the Ibex reset handler (entry point) immediately follows this
+ * interrupt vector and can be thought of as an extra entry.
+ *
+ * More information about Ibex's interrupts can be found here:
+ *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
  */
 
-  #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
-  #include "sram_ctrl_regs.h"
-  #include "entropy_src_regs.h"
-  #include "csrng_regs.h"
-  #include "edn_regs.h"
+  // Push Test ROM interrupt vector options.
+  .option push
+
+  // Disable RISC-V instruction compression: we need all instructions to
+  // be exactly word wide in the interrupt vector.
+  .option norvc
+
+  // Disable RISC-V linker relaxation, as it can compress instructions at
+  // link-time, which we also really don't want.
+  .option norelax
+
+  // NOTE: The "ax" flag below is necessary to ensure that this section
+  // is allocated executable space in ROM by the linker.
+  .section .vectors, "ax"
+  .balign 256
+  .globl _test_rom_interrupt_vector
+  .type _test_rom_interrupt_vector, @function
+_test_rom_interrupt_vector:
+
+  // Each jump instruction must be exactly 4 bytes in order to ensure that the
+  // entries are properly located.
+  .rept 32
+  j _test_rom_irq_handler
+  .endr
+
+  // Ibex reset vector, the initial entry point after reset. (This falls at IRQ
+  // handler 0x80.)
+  j _reset_start
+
+  // Set size so this vector can be disassembled.
+  .size _test_rom_interrupt_vector, .-_test_rom_interrupt_vector
+
+  // Pop Mask ROM interrupt vector options.
+  //
+  // Re-enable compressed instructions, linker relaxation.
+  .option pop
+
+/**
+ * Test ROM runtime initialization code.
+ */
 
   // NOTE: The "ax" flag below is necessary to ensure that this section
   // is allocated executable space in ROM by the linker.
@@ -22,8 +77,6 @@
 /**
  * Entry point after reset. This symbol is jumped to from the handler
  * for IRQ 0x80.
- *
- * Sets up the stack, then jumps to `_start`.
  */
 _reset_start:
   .globl _reset_start
@@ -127,7 +180,18 @@ _start:
   // Jump into the C program entry point.
   call _boot_start
 
-  // Loop forever if _boot_start somehow returns.
-1:
+  // Enter a wait for interrupt loop, the device should reset shortly.
+.L_wfi_loop:
   wfi
-  j 1b
+  j   .L_wfi_loop
+
+/**
+ * Test ROM IRQ/exception handler; loops forever.
+ */
+
+  // Put this handler in the code section.
+ .section .text
+
+_test_rom_irq_handler:
+  wfi
+  j _test_rom_irq_handler
