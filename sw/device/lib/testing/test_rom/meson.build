@@ -41,7 +41,6 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       hw_ip_edn_reg_h,
       'test_rom.c',
       'bootstrap.c',
-      'test_rom_irq_vector.S',
       'test_rom_start.S',
     ],
     name_suffix: 'elf',
