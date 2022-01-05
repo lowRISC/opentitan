@@ -10,7 +10,9 @@ module edn_main_sm (
   input logic                clk_i,
   input logic                rst_ni,
 
+  input logic                boot_req_mode_i,
   input logic                auto_req_mode_i,
+  input logic                sw_cmd_req_load_i,
   output logic               seq_auto_req_mode_o,
   output logic               auto_req_mode_end_o,
   input logic                csrng_cmd_ack_i,
@@ -87,17 +89,20 @@ module edn_main_sm (
     unique case (state_q)
       Idle: begin
         seq_auto_req_mode_o = 1'b0;
-        if (auto_req_mode_i) begin
+        if (boot_req_mode_i) begin
+          state_d = AckWait;
+        end else if (auto_req_mode_i && sw_cmd_req_load_i) begin
           state_d = AckWait;
         end
       end
       AckWait: begin
+        seq_auto_req_mode_o = 1'b0;
         if (csrng_cmd_ack_i) begin
           state_d = Dispatch;
         end
       end
       Dispatch: begin
-        if (!auto_req_mode_i) begin
+        if (!auto_req_mode_i && !boot_req_mode_i) begin
           auto_req_mode_end_o = 1'b1;
           state_d = Idle;
         end else begin

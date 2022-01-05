@@ -115,11 +115,15 @@
           mubi: true,
           desc: '''
                 Setting this field to kMultiBitBool4True will enable the EDN block to automatically
-                send another request to CSRNG application interface. It is assumed that the command
-                has been set up ahead of time, such that when the previous command has returned ack,
-                then a new command will be send out again without software intervention. It is
+                send another request to CSRNG application interface. It is assumed that a CSRNG
+                instantiate command will be issued using the !!SW_CMD_REQ register interface.
+                When this command has an command ack returned from CSRNG, a
+                new generate command will be send out again without software intervention. It is
                 expected that the generate command will be sent repeatedly so that a continuous
-                supply of entropy can be delivered to the endpoints.
+                supply of entropy can be delivered to the endpoints. Reseed commands will be sent
+                on a programmable basic between generate commands.
+                The !!GENERATE_CMD, !!RESEED_CMD, and !!MAX_NUM_REQS_BETWEEN_RESEEDS registers must
+                set up before the !!SW_CMD_REQ register command is issued.
                  '''
           resval: false
         },
@@ -211,7 +215,7 @@
                 Any CSRNG action can be initiated by writing a CSRNG command to this
                 register. The application interface must wait for the "ack" to
                 return before issuing new commands. This interface is intended
-                to be controlled solely by software. If AUTO_REQ_MODE is set, this
+                to be controlled solely by software. If !!AUTO_REQ_MODE is set, this
                 register will have no effect on operation.
                 '''
         }
@@ -255,7 +259,7 @@
           desc: '''
                 Writing this register will fill a FIFO with up to 13 command words (32b words).
                 This FIFO will be used to automatically send out a reseed command to the CSRNG
-                application interface when in AUTO_REQ_MODE. This command will be sent only after
+                application interface when in !!AUTO_REQ_MODE. This command will be sent only after
                 the MAX_NUM_REQS_BETWEEN_RESEEDS counter value has reached zero. On overflow this
                 FIFO pops the oldest word from the previous command. Updated commands can be inserted
                 by pushing 13 command words into the FIFO, pushing the previous command out.
@@ -275,7 +279,7 @@
           desc: '''
                 Writing this register will fill a FIFO with up to 13 command words (32b words).
                 This FIFO will be used to automatically send out a generate command to the CSRNG
-                appl interface when in AUTO_REQ_MODE. This command will be sent only after
+                appl interface when in !!AUTO_REQ_MODE. This command will be sent only after
                 receiving a command ack from the previous command. On overflow this
                 FIFO pops the oldest word from the previous command. Updated commands can be inserted
                 by pushing 13 command words into the FIFO, pushing the previous command out.
@@ -294,7 +298,7 @@
           desc: '''
                 Setting this field will set the number of generate requests that can be made
                 to CSRNG before a reseed request is made. This value only has meaning when in
-                AUTO_REQ_MODE. This register supports a maximum of 2^32 requests between reseeds.
+                !!AUTO_REQ_MODE. This register supports a maximum of 2^32 requests between reseeds.
                 This register will be used by a counter that counts down, triggering an
                 automatic reseed when it reaches zero.
                 '''
@@ -328,7 +332,7 @@
         { bits: "2",
           name: "AUTO_REQ_MODE_FIELD_ALERT",
           desc: '''
-                This bit is set when the AUTO_REQ_MODE field is set to an illegal value,
+                This bit is set when the !!AUTO_REQ_MODE field is set to an illegal value,
                 something other than 0x5 or 0xA.
                 Writing a zero resets this status bit.
                 '''
