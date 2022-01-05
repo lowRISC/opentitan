@@ -837,7 +837,7 @@
                       resval: 0,
                       desc: '''Selects a specific MIO or DIO pad (depending on !!WKUP_DETECTOR configuration).
                       In case of MIO, the pad select index is the same as used for !!PERIPH_INSEL, meaning that index
-                      0 and 1 just select constant 0, and the MIO pads live at indices >= 2. In case of DIO pads,
+                      0 and 1 just select constants 0 and 1, and the MIO pads live at indices >= 2. In case of DIO pads,
                       the pad select index corresponds 1:1 to the DIO pad to be selected.
                       '''
                     }
