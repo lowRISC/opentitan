@@ -91,7 +91,10 @@ module usbdev_linkstate (
   // four ticks is a bit time
   // Could completely filter out 2-cycle EOP SE0 here but
   // does not seem needed
-  prim_filter #(.Cycles(6)) filter_se0 (
+  prim_filter #(
+    .AsyncOn(0), // No synchronizer required
+    .Cycles(6)
+  ) filter_se0 (
     .clk_i    (clk_48mhz_i),
     .rst_ni   (rst_ni),
     .enable_i (1'b1),
@@ -99,7 +102,10 @@ module usbdev_linkstate (
     .filter_o (see_se0)
   );
 
-  prim_filter #(.Cycles(6)) filter_pwr_sense (
+  prim_filter #(
+    .AsyncOn(0), // No synchronizer required
+    .Cycles(6)
+  ) filter_pwr_sense (
     .clk_i    (clk_48mhz_i),
     .rst_ni   (rst_ni),
     .enable_i (1'b1),

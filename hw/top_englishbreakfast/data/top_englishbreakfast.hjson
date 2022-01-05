@@ -199,6 +199,9 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40040000",
+      param_decl: {
+        GpioAsyncOn: "1"
+      }
     }
     { name: "spi_device",
       type: "spi_device",

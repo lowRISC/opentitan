@@ -18,6 +18,7 @@ module top_earlgrey #(
   // parameters for uart2
   // parameters for uart3
   // parameters for gpio
+  parameter bit GpioGpioAsyncOn = 1,
   // parameters for spi_device
   // parameters for i2c0
   // parameters for i2c1
@@ -1108,7 +1109,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   gpio #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[4:4])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[4:4]),
+    .GpioAsyncOn(GpioGpioAsyncOn)
   ) u_gpio (
 
       // Input
