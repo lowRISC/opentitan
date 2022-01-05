@@ -43,6 +43,7 @@ rust_library(
         "src/transport/verilator/subprocess.rs",
         "src/transport/verilator/transport.rs",
         "src/transport/verilator/uart.rs",
+        "src/util/bigint.rs",
         "src/util/bitfield.rs",
         "src/util/file.rs",
         "src/util/image.rs",
