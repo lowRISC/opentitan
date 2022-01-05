@@ -14,12 +14,11 @@ class sram_ctrl_stress_all_vseq extends sram_ctrl_base_vseq;
   string vseq_names[$] = {"sram_ctrl_smoke_vseq",
                          "sram_ctrl_multiple_keys_vseq",
                          "sram_ctrl_bijection_vseq",
-                         "sram_ctrl_lc_escalation_vseq",
                          "sram_ctrl_executable_vseq"};
 
   virtual task pre_start();
     super.pre_start();
-    if (common_seq_type != "sram_ctrl_stress_all_with_rand_reset") begin
+    if (common_seq_type != "stress_all_with_rand_reset") begin
       vseq_names.push_back("sram_ctrl_lc_escalation_vseq");
     end
   endtask
