@@ -5,10 +5,14 @@
 use std::num;
 use thiserror::Error;
 
+use crate::util::bigint;
+
 #[derive(Error, Debug, Clone, Eq, PartialEq)]
 pub enum ParseIntError {
     #[error(transparent)]
     ParseIntError(#[from] num::ParseIntError),
+    #[error(transparent)]
+    ParseByteArrayError(#[from] bigint::ParseBigIntError),
 }
 
 /// Trait for parsing integers.
