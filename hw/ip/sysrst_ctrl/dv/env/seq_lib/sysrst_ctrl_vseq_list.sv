@@ -7,3 +7,5 @@
 `include "sysrst_ctrl_common_vseq.sv"
 `include "sysrst_ctrl_in_out_inverted_vseq.sv"
 `include "sysrst_ctrl_combo_detect_ec_rst_vseq.sv"
+`include "sysrst_ctrl_pin_access_vseq.sv"
+
