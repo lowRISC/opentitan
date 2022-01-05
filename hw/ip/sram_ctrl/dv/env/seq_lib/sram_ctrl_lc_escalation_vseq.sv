@@ -33,10 +33,13 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
 
   virtual task body();
     repeat (num_trans) begin
-      req_mem_init();
-      cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
       fork
         begin
+          // randomly set init or renew key
+          `DV_CHECK_RANDOMIZE_FATAL(ral.ctrl.init)
+          `DV_CHECK_RANDOMIZE_FATAL(ral.ctrl.renew_scr_key)
+          csr_update(.csr(ral.ctrl));
+          cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
           // when esc occurs during a OP, the OP can't be finished until esc drops.
           // So don't send too many OPs, otherwise, it may time out
           do_rand_ops(.num_ops($urandom_range(10, 100)), .blocking(0), .abort(1),

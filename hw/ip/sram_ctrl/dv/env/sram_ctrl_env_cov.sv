@@ -20,8 +20,8 @@ class sram_ctrl_env_cov #(parameter int AddrWidth = 10)
 
   // cover that all access granularities have been tested for both memory reads and writes
   covergroup subword_access_cg with function sample(bit we, bit [TL_DBW-1:0] mask);
-    subword_we: coverpoint we;
-    subword_granularity: coverpoint mask {
+    subword_we_cp: coverpoint we;
+    subword_granularity_cp: coverpoint mask {
       bins zero_access        = {'b0};
       bins byte_access        = {'b0001, 'b0010, 'b0100, 'b1000};
       bins halfword_access    = {'b0011, 'b0110, 'b1100};
@@ -29,40 +29,28 @@ class sram_ctrl_env_cov #(parameter int AddrWidth = 10)
       bins word_access        = {'b1111};
       illegal_bins ill_access = default;
     }
-    subword_access: cross subword_we, subword_granularity;
+    subword_access: cross subword_we_cp, subword_granularity_cp;
   endgroup
 
   // cover that SRAM handles mem accesses during key requests, both reads and writes
   covergroup access_during_key_req_cg with function sample(tlul_pkg::tl_a_op_e opcode);
-    access_during_key_req: coverpoint opcode {
+    access_during_key_req_cp: coverpoint opcode {
       bins write            = {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
       bins read             = {tlul_pkg::Get};
-      illegal_bins ill_type = default;
     }
   endgroup
 
   // covers SRAM receiving a key in Off/On states,
   // with both valid/invalid key seeds.
   covergroup key_seed_valid_cg with function sample(bit in_lc_esc, bit seed_valid);
-      key_seed_valid: coverpoint seed_valid;
-      escalated: coverpoint in_lc_esc;
+      key_seed_valid_cp: coverpoint seed_valid;
+      escalated_cp: coverpoint in_lc_esc;
 
-      key_seed_valid_cross: cross key_seed_valid, escalated;
+      key_seed_valid_cross: cross key_seed_valid_cp, escalated_cp;
   endgroup
 
-  // covers RAW hazards that are detected in the SRAM,
-  // specifically, whether these hazards are due to address collisions or not.
-  covergroup raw_hazard_cg with function sample(bit addr_collision);
-    raw_hazard: coverpoint addr_collision;
-  endgroup
-
-  // covers that all combinations of reads/writes can create b2b scenario
-  covergroup b2b_access_types_cg with function sample(bit first_write_en, bit second_write_en);
-    b2b_access_types: cross first_write_en, second_write_en;
-  endgroup
-
-  covergroup lc_escalation_rst_cg with function sample(bit rst_n);
-    lc_escalation_rst: coverpoint rst_n;
+  covergroup lc_escalation_idle_cg with function sample(bit rst_n);
+    lc_escalation_idle_cp: coverpoint rst_n;
   endgroup
 
   // covers various scenarios that enable/disable SRAM executability
@@ -118,10 +106,8 @@ class sram_ctrl_env_cov #(parameter int AddrWidth = 10)
     subword_access_cg         = new();
     access_during_key_req_cg  = new();
     key_seed_valid_cg         = new();
-    raw_hazard_cg             = new();
-    b2b_access_types_cg       = new();
-    lc_escalation_rst_cg      = new();
-    executable_cg             = new();
+    lc_escalation_idle_cg     = new();
+    if (`INSTR_EXEC) executable_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);

@@ -67,6 +67,9 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
   //
   // Will trigger a request to the KDI push_pull agent.
   virtual task req_scr_key();
+    // If we only do scrambling without re-initializing the mem, data intg will be wrong
+    // since it's data intg passthru mem, it doesn't matter, just don't check it.
+    cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
     ral.ctrl.renew_scr_key.set(1);
     csr_update(.csr(ral.ctrl));
     csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1));

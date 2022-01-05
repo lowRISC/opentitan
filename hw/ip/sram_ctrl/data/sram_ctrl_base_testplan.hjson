@@ -8,6 +8,7 @@
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/passthru_mem_intg_testplan.hjson",
+                     "hw/dv/sv/mem_bkdr_scb/data/mem_access_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   testpoints: [
@@ -185,24 +186,9 @@
             '''
     }
     {
-      name: lc_escalation_rst_cg
+      name: lc_escalation_idle_cg
       desc: '''
-            Covers de-assertion of LC escalation input before/after/during a reset trigger
-            to get SRAM out of terminal state.
-            '''
-    }
-    {
-      name: raw_hazard_cg
-      desc: '''
-            Covers that the scrambling RAM sees address collisions on RAW hazards
-            (indicating that b2b RAW access has been made to the same memory line).
-            '''
-    }
-    {
-      name: b2b_access_types_cg
-      desc: '''
-            Covers that any combination of access types (R/R, R/W, W/R, W/W) can be present in b2b
-            transaction scenarios.
+            Covers the assertion of LC escalation occurs during idle or SRAM memory access.
             '''
     }
     {

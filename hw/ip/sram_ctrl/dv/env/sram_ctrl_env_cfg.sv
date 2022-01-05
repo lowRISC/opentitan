@@ -61,6 +61,10 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     m_kdi_cfg.zero_delays.rand_mode(0);
 
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
+
+    // default TLUL supports 1 outstanding item, the sram TLUL supports 2 outstanding items.
+    m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
+    m_tl_agent_cfgs[sram_ral_name].max_outstanding_req = 2;
   endfunction
 
   // Override the default implementation in dv_base_env_cfg.
