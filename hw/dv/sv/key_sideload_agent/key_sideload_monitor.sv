@@ -26,17 +26,21 @@ class key_sideload_monitor extends dv_base_monitor #(
 
   // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task collect_trans(uvm_phase phase);
+    key_sideload_item prev_item;
+    key_sideload_item curr_item;
+    prev_item = key_sideload_item::type_id::create("prev_item");
+    curr_item = key_sideload_item::type_id::create("curr_item");
     forever begin
-      // TODO: detect event
-
-      // TODO: sample the interface
-
-      // TODO: sample the covergroups
-
-      // TODO: write trans to analysis_port
-
-      // TODO: remove the line below: it is added to prevent zero delay loop in template code
-      #1us;
+      @(posedge cfg.vif.clk_i or negedge cfg.vif.rst_ni);
+      if (!cfg.vif.rst_ni) continue;
+      curr_item.valid = cfg.vif.sideload_key.valid;
+      curr_item.key0  = cfg.vif.sideload_key.key[0];
+      curr_item.key1  = cfg.vif.sideload_key.key[1];
+      if((prev_item.valid != curr_item.valid) || (prev_item.key0 != curr_item.key0) ||
+         (prev_item.key1 != curr_item.key1)) begin
+        analysis_port.write(curr_item);
+        prev_item.copy(curr_item);
+      end
     end
   endtask
 
