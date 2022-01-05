@@ -309,16 +309,8 @@ module entropy_src
      alert_tx_o[1])
   end : gen_rep_cntrs
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck6_A,
-    u_entropy_src_core.u_entropy_src_repcnt_ht.u_prim_count_test_cnt,
-    alert_tx_o[1])
-
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck7_A,
     u_entropy_src_core.u_entropy_src_repcnts_ht.u_prim_count_rep_cntr,
-    alert_tx_o[1])
-
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck8_A,
-    u_entropy_src_core.u_entropy_src_repcnts_ht.u_prim_count_test_cnt,
     alert_tx_o[1])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A,
