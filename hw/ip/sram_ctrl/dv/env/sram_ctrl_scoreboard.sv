@@ -172,7 +172,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
                      (csr_exec == prim_mubi_pkg::MuBi4True)     :
                      (hw_debug_en == lc_ctrl_pkg::On);
 
-      if (cfg.en_cov) begin
+      if (cfg.en_cov && `INSTR_EXEC) begin
         cov.executable_cg.sample(hw_debug_en,
                                  sram_ifetch,
                                  csr_exec);
@@ -229,6 +229,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
     mem_bkdr_scb = sram_ctrl_mem_bkdr_scb::type_id::create("mem_bkdr_scb");
     mem_bkdr_scb.mem_bkdr_util_h = cfg.mem_bkdr_util_h;
+    mem_bkdr_scb.en_cov = cfg.en_cov;
 
     super.run_phase(phase);
     fork
@@ -422,7 +423,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
       // sample coverage
       if (cfg.en_cov) begin
-        cov.lc_escalation_rst_cg.sample(cfg.clk_rst_vif.rst_n);
+        bit idle = (mem_bkdr_scb.read_item_q.size + mem_bkdr_scb.write_item_q.size == 0);
+        cov.lc_escalation_idle_cg.sample(idle);
       end
     end
   endtask
@@ -495,12 +497,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
         cov.key_seed_valid_cg.sample(status_lc_esc, seed_valid);
       end
 
-      // scr_key_valid simply denotes that a successful handshake with OTP has completed,
-      // so this will be 1 whenever we get a copmleted transaction item
-      exp_status[SramCtrlScrKeyValid]     = 1;
-
-      // if we are in escalated state, scr_key_seed_valid will always stay low
-      exp_status[SramCtrlScrKeySeedValid] = status_lc_esc ? 0 : seed_valid;
+      // if we are in escalated state, key_valid and scr_key_seed_valid will remain low
+      if (!status_lc_esc) begin
+        exp_status[SramCtrlScrKeyValid]     = 1;
+        exp_status[SramCtrlScrKeySeedValid] = seed_valid;
+      end
 
       `uvm_info(`gfn, $sformatf("Updated key: 0x%0x", key), UVM_MEDIUM)
       `uvm_info(`gfn, $sformatf("Updated nonce: 0x%0x", nonce), UVM_MEDIUM)
