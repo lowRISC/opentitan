@@ -90,7 +90,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
 
       tl_intg_err_cgs_wrap[ral_name] = new($sformatf("tl_intg_err_cgs_wrap[%0s]", ral_name));
-      if (!has_mem) tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.weight = 0;
+      if (!has_mem || !has_csr) begin
+        tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.weight = 0;
+      end
     end
   endfunction
 

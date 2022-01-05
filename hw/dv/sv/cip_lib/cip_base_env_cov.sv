@@ -101,7 +101,10 @@ class tl_errors_cg_wrap;
 
     // we don't enumerate the various kinds of TL protocol errors here because there is a covergroup
     // in tl_agent, which covers those
-    cp_tl_protocol_err: coverpoint tl_protocol_err;
+    // No need to cover the case of 0, as protocol error may be the only error and 0 never happens.
+    cp_tl_protocol_err: coverpoint tl_protocol_err {
+      bins covered = {1};
+    }
   endgroup
 
   // Function: new
@@ -169,7 +172,8 @@ class tl_intg_err_mem_subword_cg_wrap;
     cp_tl_intg_err_type: coverpoint tl_intg_err_type;
 
     cp_num_num_enable_bytes: coverpoint num_enable_bytes {
-      bins values[] = {[0:BUS_DW/8]};
+      bins full_word = {BUS_DW / 8};
+      bins partial   = {[0 : BUS_DW / 8 - 1]};
     }
     cp_write: coverpoint write;
 
