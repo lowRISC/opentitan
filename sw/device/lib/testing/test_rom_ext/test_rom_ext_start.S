@@ -11,6 +11,90 @@
   .4byte _start
 
 /**
+ * Ibex-specific interrupt vectors for test flash images.
+ *
+ * This is similar to the test ROM interrupt vectors configured in the Test ROM
+ * (`sw/device/lib/testing/test_rom/test_rom_start.S`), except these are placed
+ * in flash, and point to the OTTF ISRs declared in
+ * `sw/device/lib/testing/test_framework/ottf_isrs.S`. If you are getting link
+ * errors for these symbols, then it's likely you have forgotten to add
+ * `ottf_isrs` as a dependency for your executable.
+ */
+
+  // These symbols are declared in
+  // `sw/device/lib/testing/test_framework/ottf_isrs.S`.
+  .extern handler_exception
+  .extern handler_irq_software
+  .extern handler_irq_timer
+  .extern handler_irq_external
+
+  // NOTE: The "ax" flag below is necessary to ensure that this section
+  // is allocated space in flash by the linker.
+  .section .vectors, "ax"
+  .option push
+  // Switch off compressed instructions so we know each instruction below is
+  // exactly 4 bytes (one entry).
+  .option norvc
+  // Switch off linker relaxation so that the linker does not reduce the size of
+  // any entries.
+  .option norelax
+
+  .balign 256
+  .global _test_rom_ext_interrupt_vector
+  .type _test_rom_ext_interrupt_vector, @function
+_test_rom_ext_interrupt_vector:
+
+  // RISC-V Standard (Vectored) Interrupt Handlers:
+
+  // Exception and User Software Interrupt Handler.
+  j handler_exception
+  // Supervisor Software Interrupt Handler.
+  unimp
+  // Reserved.
+  unimp
+  // Machine Software Interrupt Handler.
+  j handler_irq_software
+
+  // User Timer Interrupt Handler.
+  unimp
+  // Supervisor Timer Interrupt Handler.
+  unimp
+  // Reserved.
+  unimp
+  // Machine Timer Interrupt Handler.
+  j handler_irq_timer
+
+  // User External Interrupt Handler.
+  unimp
+  // Supervisor External Interrupt Handler.
+  unimp
+  // Reserved.
+  unimp
+  // Machine External Interrupt Handler.
+  j handler_irq_external
+
+  // Reserved.
+  unimp
+  unimp
+  unimp
+  unimp
+
+  // Vendor Interrupt Handlers:
+
+  // On Ibex, interrupt IDs 16-30 are for "fast" interrupts.
+  .rept 15
+  unimp
+  .endr
+
+  // On Ibex, interrupt ID 31 is for non-maskable interrupts
+  unimp
+
+  // Set size so vector can be disassembled.
+  .size _test_rom_ext_interrupt_vector, .-_test_rom_ext_interrupt_vector
+
+  .option pop
+
+/**
  * Flash executable runtime initialization code.
  */
 
@@ -45,7 +129,7 @@ _start:
   .option pop
 
   // Set up the new interrupt vector.
-  la   t0, (crt_interrupt_vector + 1)
+  la   t0, (_test_rom_ext_interrupt_vector + 1)
   csrw mtvec, t0
 
   // Zero out the `.bss` segment.
