@@ -36,7 +36,7 @@ class chip_sw_rom_ctrl_integrity_check_vseq extends chip_sw_base_vseq;
     wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi);
 
     // update the lc state to a production state and do a reset
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition(lc_ctrl_state_pkg::LcStProd);
+    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(lc_ctrl_state_pkg::LcStProd);
     apply_reset();
 
     // At this point, a successful boot would be an error. We will start a
