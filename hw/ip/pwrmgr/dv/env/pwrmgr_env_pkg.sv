@@ -13,6 +13,7 @@ package pwrmgr_env_pkg;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
   import pwrmgr_ral_pkg::*;
+  import alert_esc_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

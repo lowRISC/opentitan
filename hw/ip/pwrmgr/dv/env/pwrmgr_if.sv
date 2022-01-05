@@ -48,9 +48,6 @@ interface pwrmgr_if (
 
   prim_mubi_pkg::mubi4_t                                       sw_rst_req_i;
 
-  prim_esc_pkg::esc_tx_t                                       esc_rst_tx;
-  prim_esc_pkg::esc_rx_t                                       esc_rst_rx;
-
   logic                                                        intr_wakeup;
 
   // Relevant CSR values.
@@ -187,7 +184,6 @@ interface pwrmgr_if (
     rstreqs_i = pwrmgr_pkg::RSTREQS_DEFAULT;
     sw_rst_req_i = prim_mubi_pkg::MuBi4False;
     rom_ctrl = rom_ctrl_pkg::PWRMGR_DATA_DEFAULT;
-    esc_rst_tx = prim_esc_pkg::ESC_TX_DEFAULT;
   end
 
   clocking slow_cb @(posedge clk_slow);

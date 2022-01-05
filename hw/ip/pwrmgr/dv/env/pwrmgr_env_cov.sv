@@ -108,6 +108,7 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
     reset_cross: cross reset_cp, enable_cp, sleep_cp;
   endgroup
 
+  // This reset cannot be generated in low power state since it is triggered by software.
   covergroup rstmgr_sw_reset_cg with function sample (logic sw_reset);
     sw_reset_cp: coverpoint sw_reset;
   endgroup
