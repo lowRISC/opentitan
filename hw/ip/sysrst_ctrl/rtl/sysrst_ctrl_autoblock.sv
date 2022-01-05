@@ -27,17 +27,21 @@ module sysrst_ctrl_autoblock
 );
 
   logic aon_ab_cond_met;
-  sysrst_ctrl_timerfsm #(
-    .TimerWidth(TimerWidth)
-  ) u_ab_fsm (
-    .clk_i(clk_aon_i),
-    .rst_ni(rst_aon_ni),
+  sysrst_ctrl_detect #(
+    .TimerWidth(TimerWidth),
+    .EdgeDetect(1),  // require an edge for detection
+    .Sticky(0)       // detected status is automatically reset if signal does not remain stable
+  ) u_sysrst_ctrl_detect (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
     .trigger_i(aon_pwrb_int_i),
     .cfg_timer_i(aon_auto_block_debounce_ctl_i.debounce_timer.q),
     .cfg_l2h_en_i(1'b0),
     .cfg_h2l_en_i(aon_auto_block_debounce_ctl_i.auto_block_enable.q),
-    .timer_l2h_cond_met(),
-    .timer_h2l_cond_met(aon_ab_cond_met)
+    .l2h_detected_o(),
+    .h2l_detected_o(aon_ab_cond_met),
+    .l2h_detected_pulse_o(),
+    .h2l_detected_pulse_o()
   );
 
   assign pwrb_out_hw_o = pwrb_int_i;

@@ -17,11 +17,8 @@ filesets:
       - rtl/sysrst_ctrl_comboact.sv
       - rtl/sysrst_ctrl_pin.sv
       - rtl/sysrst_ctrl_keyintr.sv
-      - rtl/sysrst_ctrl_timerfsm.sv
-      - rtl/sysrst_ctrl_keyfsm.sv
-      - rtl/sysrst_ctrl_combofsm.sv
+      - rtl/sysrst_ctrl_detect.sv
       - rtl/sysrst_ctrl_combo.sv
-      - rtl/sysrst_ctrl_ulpfsm.sv
       - rtl/sysrst_ctrl_ulp.sv
       - rtl/sysrst_ctrl.sv
     file_type: systemVerilogSource
