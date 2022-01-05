@@ -353,6 +353,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     es_main_sm_err;
   logic                     es_main_sm_alert;
   logic                     es_bus_cmp_alert;
+  logic                     es_thresh_cfg_alert;
   logic                     es_main_sm_idle;
   logic [7:0]               es_main_sm_state;
   logic                     fifo_write_err_sum;
@@ -1761,6 +1762,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // signal an alert
   assign alert_threshold = reg2hw.alert_threshold.alert_threshold.q;
   assign alert_threshold_inv = reg2hw.alert_threshold.alert_threshold_inv.q;
+  assign es_thresh_cfg_alert = (~alert_threshold_inv != alert_threshold);
 
   assign alert_threshold_fail =
          ((any_fail_count >= ~alert_threshold_inv) && (~alert_threshold_inv != '0)) ||
@@ -1777,13 +1779,17 @@ module entropy_src_core import entropy_src_pkg::*; #(
          es_route_pfa ||
          es_type_pfa ||
          es_main_sm_alert ||
-         es_bus_cmp_alert;
+         es_bus_cmp_alert ||
+         es_thresh_cfg_alert;
 
   assign hw2reg.recov_alert_sts.es_main_sm_alert.de = es_main_sm_alert;
   assign hw2reg.recov_alert_sts.es_main_sm_alert.d  = es_main_sm_alert;
 
   assign hw2reg.recov_alert_sts.es_bus_cmp_alert.de = es_bus_cmp_alert;
   assign hw2reg.recov_alert_sts.es_bus_cmp_alert.d  = es_bus_cmp_alert;
+
+  assign hw2reg.recov_alert_sts.es_thresh_cfg_alert.de = es_thresh_cfg_alert;
+  assign hw2reg.recov_alert_sts.es_thresh_cfg_alert.d  = es_thresh_cfg_alert;
 
 
   // repcnt fail counter

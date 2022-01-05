@@ -872,6 +872,8 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "REGWEN",
+      tags: [// Setting this register needs to not be random.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "ALERT_THRESHOLD",
@@ -1201,6 +1203,14 @@
           desc: '''
                 This bit is set when the interal entropy bus value is equal to the prior
                 valid value on the bus, indicating a possible attack.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "14",
+          name: "ES_THRESH_CFG_ALERT",
+          desc: '''
+                This bit is set when the !!ALERT_THRESHOLD register is not configured properly.
+                The upper field must be the exact inverse of the lower field.
                 Writing a zero resets this status bit.
                 '''
         }
