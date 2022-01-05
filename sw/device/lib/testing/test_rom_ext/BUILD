@@ -9,7 +9,6 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "test_rom_ext",
     srcs = [
-        "test_rom_ext_irq_vector.S",
         "test_rom_ext_start.S",
     ],
     copts = [

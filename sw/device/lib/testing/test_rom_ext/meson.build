@@ -36,9 +36,6 @@ test_rom_ext = declare_dependency(
     # This contains the contents of the `.crt` section which does the initial
     # setup before jumping to `main`.
     'test_rom_ext_start.S',
-    # This contains the interrupt vector definition, as used by the crt to
-    # initialize mtvec.
-    'test_rom_ext_irq_vector.S',
   ],
   dependencies: [
     freestanding_headers,
