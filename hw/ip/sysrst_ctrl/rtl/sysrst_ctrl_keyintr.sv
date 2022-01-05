@@ -48,35 +48,22 @@ module sysrst_ctrl_keyintr
 
   logic [NumKeyIntr-1:0] l2h_met_pulse, h2l_met_pulse;
   for (genvar k = 0; k < NumKeyIntr; k++) begin : gen_keyfsm
-    // Instantiate the key state machine
-    logic l2h_met_d, h2l_met_d;
-    sysrst_ctrl_keyfsm #(
-      .TimerWidth(TimerWidth)
-    ) u_pwrbintr_fsm (
+    sysrst_ctrl_detect #(
+      .TimerWidth(TimerWidth),
+      .EdgeDetect(1),  // require an edge for detection
+      .Sticky(0)       // detected status is automatically reset if signal does not remain stable
+    ) u_sysrst_ctrl_detect (
       .clk_i,
       .rst_ni,
       .trigger_i(triggers[k]),
       .cfg_timer_i(key_intr_debounce_ctl_i.q),
       .cfg_l2h_en_i(l2h_en[k]),
       .cfg_h2l_en_i(h2l_en[k]),
-      .timer_l2h_cond_met_o(l2h_met_d),
-      .timer_h2l_cond_met_o(h2l_met_d)
+      .l2h_detected_o(),
+      .h2l_detected_o(),
+      .l2h_detected_pulse_o(l2h_met_pulse[k]),
+      .h2l_detected_pulse_o(h2l_met_pulse[k])
     );
-
-    // generate a pulses for interrupt status CSR
-    logic l2h_met_q, h2l_met_q;
-    always_ff @(posedge clk_i or negedge rst_ni) begin : p_pulse_reg
-      if (!rst_ni) begin
-        l2h_met_q <= '0;
-        h2l_met_q <= '0;
-      end else begin
-        l2h_met_q <= l2h_met_d;
-        h2l_met_q <= h2l_met_d;
-      end
-    end
-
-    assign l2h_met_pulse[k] = l2h_met_d & ~l2h_met_q;
-    assign h2l_met_pulse[k] = h2l_met_d & ~h2l_met_q;
   end
 
   // Assign to CSRs

@@ -10,7 +10,7 @@ module sysrst_ctrl_comboact
   input clk_i,
   input rst_ni,
 
-  input combo_det_i,
+  input combo_det_pulse_i,
   input ec_rst_l_i,
 
   input cfg_bat_disable_en_i,
@@ -29,16 +29,12 @@ module sysrst_ctrl_comboact
   // Combo / EC reset detection Pulses //
   ///////////////////////////////////////
 
-  // generate combo detection pulse
-  logic combo_det_pulse, combo_det_q;
-  assign combo_det_pulse = combo_det_i & ~combo_det_q;
-
   // mask combo detection pulse with config bits
   logic combo_bat_disable_pulse, combo_gsc_pulse, combo_ec_rst_pulse;
-  assign combo_bat_disable_pulse = cfg_bat_disable_en_i & combo_det_pulse;
-  assign combo_ec_rst_pulse      = cfg_ec_rst_en_i & combo_det_pulse;
-  assign combo_gsc_pulse         = cfg_rst_req_en_i & combo_det_pulse;
-  assign combo_intr_pulse_o      = cfg_intr_en_i & combo_det_pulse;
+  assign combo_bat_disable_pulse = cfg_bat_disable_en_i & combo_det_pulse_i;
+  assign combo_ec_rst_pulse      = cfg_ec_rst_en_i & combo_det_pulse_i;
+  assign combo_gsc_pulse         = cfg_rst_req_en_i & combo_det_pulse_i;
+  assign combo_intr_pulse_o      = cfg_intr_en_i & combo_det_pulse_i;
 
   //ec_rst_l_i high->low detection
   logic ec_rst_l_det_pulse, ec_rst_l_det_q;
@@ -82,14 +78,12 @@ module sysrst_ctrl_comboact
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      combo_det_q    <= 1'b0;
       bat_disable_q  <= 1'b0;
       ec_rst_l_det_q <= 1'b1;  // active low signal
       rst_req_q      <= 1'b0;
       ec_rst_l_q     <= 1'b0;  // asserted when power-on-reset is asserted
       timer_cnt_q    <= '0;
     end else begin
-      combo_det_q    <= combo_det_i;
       bat_disable_q  <= bat_disable_d;
       ec_rst_l_det_q <= ec_rst_l_i;
       rst_req_q      <= rst_req_d;
