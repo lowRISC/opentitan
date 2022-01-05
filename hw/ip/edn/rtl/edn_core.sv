@@ -513,7 +513,9 @@ module edn_core import edn_pkg::*;
   edn_main_sm u_edn_main_sm (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .auto_req_mode_i(auto_req_mode || boot_auto_req_dly_q),
+    .boot_req_mode_i(boot_auto_req_dly_q),
+    .auto_req_mode_i(auto_req_mode),
+    .sw_cmd_req_load_i(sw_cmd_req_load),
     .seq_auto_req_mode_o(seq_auto_req_mode),
     .auto_req_mode_end_o(auto_req_mode_end),
     .csrng_cmd_ack_i(csrng_cmd_ack),
