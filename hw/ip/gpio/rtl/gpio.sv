@@ -9,7 +9,9 @@
 module gpio
   import gpio_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // This parameter instantiates 2-stage synchronizers on all GPIO inputs.
+  parameter bit GpioAsyncOn = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -40,11 +42,12 @@ module gpio
   logic [31:0] cio_gpio_en_q;
 
   // possibly filter the input based upon register configuration
-
   logic [31:0] data_in_d;
-
   for (genvar i = 0 ; i < 32 ; i++) begin : gen_filter
-    prim_filter_ctr #(.Cycles(16)) filter (
+    prim_filter_ctr #(
+      .AsyncOn(GpioAsyncOn),
+      .Cycles(16)
+    ) filter (
       .clk_i,
       .rst_ni,
       .enable_i(reg2hw.ctrl_en_input_filter.q[i]),

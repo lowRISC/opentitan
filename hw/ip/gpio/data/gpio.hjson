@@ -26,6 +26,17 @@
       '''
     }
   ],
+  param_list: [
+    { name:    "GpioAsyncOn",
+      type:    "bit",
+      default: "1'b1",
+      desc:    '''
+      Instantiates 2-flop synchronizers on all GPIO inputs if set to 1.
+      '''
+      local:   "false",
+      expose:  "true"
+    },
+  ]
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."

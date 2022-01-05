@@ -697,6 +697,10 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        GpioAsyncOn: "1"
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -705,8 +709,18 @@
       [
         "0"
       ]
-      param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: GpioAsyncOn
+          desc: Instantiates 2-flop synchronizers on all GPIO inputs if set to 1.
+          type: bit
+          default: "1"
+          expose: "true"
+          name_top: GpioGpioAsyncOn
+        }
+      ]
       inter_signal_list:
       [
         {
