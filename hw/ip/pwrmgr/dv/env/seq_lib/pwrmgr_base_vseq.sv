@@ -30,8 +30,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   rand bit       en_intr;
 
-  // TODO(maturana) Enable escalation resets once there is support for driving them.
-  constraint escalation_reset_c {escalation_reset == 1'b0;}
   constraint resets_en_c {
     solve resets, power_glitch_reset, escalation_reset before resets_en;
     |{resets_en & resets, power_glitch_reset, escalation_reset} == 1'b1;
@@ -396,10 +394,10 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Setting expected interrupt", UVM_MEDIUM)
   endtask
 
-  // TODO(maturana) Need to handle core_sleeping never asserting.
   task process_low_power_hint();
-    // Make sure the low power transition can proceed.
-    wait(cfg.pwrmgr_vif.pwr_cpu.core_sleeping);
+    // Timeout if the low power transition waits too long for WFI.
+    `DV_SPINWAIT(wait(cfg.pwrmgr_vif.pwr_cpu.core_sleeping);, "timeout waiting for core_sleeping",
+                 10_000,)
     `uvm_info(`gfn, "In process_low_power_hint pre forks", UVM_MEDIUM)
     fork
       wait_for_fall_through();
@@ -482,9 +480,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                  .err_msg("reset_status"));
   endtask
 
-  // Checks the wake_info matches expectations depending on capture disable.
+  // Checks the wake_info CSR matches expectations depending on capture disable.
   // The per-field "prior_" arguments support cases where the wake_info register was not
-  // cleared amd may contain residual values.
+  // cleared and may contain residual values.
   task check_wake_info(wakeups_t reasons, wakeups_t prior_reasons = '0, bit fall_through,
                        bit prior_fall_through = '0, bit abort, bit prior_abort = '0);
 
@@ -511,4 +509,17 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.wake_info_capture_dis), .value(1'b1));
     csr_wr(.ptr(ral.wake_info), .value('1));
   endtask
+
+  task send_escalation_reset(int cycles);
+    `uvm_info(`gfn, "Sending escalation reset", UVM_MEDIUM)
+    cfg.m_esc_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b10;
+    cfg.clk_rst_vif.wait_clks(cycles);
+    `uvm_info(`gfn, "Clearing escalation reset", UVM_MEDIUM)
+    cfg.m_esc_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
+  endtask
+
+  task clear_escalation_reset();
+    cfg.m_esc_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
+  endtask
+
 endclass : pwrmgr_base_vseq

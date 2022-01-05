@@ -74,7 +74,15 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
             `uvm_info(`gfn, "Sending power glitch", UVM_MEDIUM)
             cfg.pwrmgr_vif.glitch_power_reset();
           end
-          `uvm_info(`gfn, $sformatf("Sending reset=%b, power_glitch=%b", resets, power_glitch_reset
+          if (escalation_reset)
+            fork
+              send_escalation_reset(20);
+            join_none
+          `uvm_info(`gfn, $sformatf(
+                    "Sending reset=%b, power_glitch=%b, escalation=%b",
+                    resets,
+                    power_glitch_reset,
+                    escalation_reset
                     ), UVM_MEDIUM)
         end
         begin
