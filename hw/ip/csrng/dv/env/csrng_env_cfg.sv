@@ -79,7 +79,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   endfunction
 
   // Check internal state w/ optional compare
-  task check_internal_state(uint app = 2, bit compare = 0);
+  task check_internal_state(uint app = SW_APP, bit compare = 0);
     bit [TL_DW-1:0]                        rdata;
     bit                                    hw_compliance, hw_status;
     bit [csrng_env_pkg::KEY_LEN-1:0]       hw_key;
@@ -118,12 +118,20 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
         UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("******************************************\n"), UVM_DEBUG)
     if (compare) begin
-      `DV_CHECK_EQ_FATAL(hw_reseed_counter, reseed_counter[app])
-      `DV_CHECK_EQ_FATAL(hw_v, v[app])
-      `DV_CHECK_EQ_FATAL(hw_key, key[app])
-      `DV_CHECK_EQ_FATAL({hw_compliance, hw_status}, {compliance[app], status[app]})
+      if ((read_int_state == MuBi4True) && (otp_en_cs_sw_app_read == MuBi8True)) begin
+        `DV_CHECK_EQ_FATAL(hw_reseed_counter, reseed_counter[app])
+        `DV_CHECK_EQ_FATAL(hw_v, v[app])
+        `DV_CHECK_EQ_FATAL(hw_key, key[app])
+        `DV_CHECK_EQ_FATAL({hw_compliance, hw_status}, {compliance[app], status[app]})
+      end
+      else begin
+        `DV_CHECK_EQ_FATAL(hw_reseed_counter, 0)
+        `DV_CHECK_EQ_FATAL(hw_v, 0)
+        `DV_CHECK_EQ_FATAL(hw_key, 0)
+        `DV_CHECK_EQ_FATAL({hw_compliance, hw_status}, 0)
+      end
     end
- endtask
+  endtask
 
   virtual function string convert2string();
     string str = "";

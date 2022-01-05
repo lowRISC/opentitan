@@ -348,7 +348,13 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       output_block = block_encrypt(cfg.key[app], cfg.v[app]);
       genbits      = output_block;
-      prd_genbits_q[app].push_back(genbits);
+      if ((app != SW_APP) ||
+          ((cfg.sw_app_enable == MuBi4True) && (cfg.otp_en_cs_sw_app_read == MuBi8True))) begin
+        prd_genbits_q[app].push_back(genbits);
+      end
+      else begin
+        prd_genbits_q[app].push_back('h0);
+      end
     end
     ctr_drbg_update(app, additional_input);
     cfg.reseed_counter[app] += 1;
