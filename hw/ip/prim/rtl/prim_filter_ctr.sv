@@ -16,19 +16,17 @@ module prim_filter_ctr #(
   // If this parameter is set, an additional 2-stage synchronizer will be
   // added at the input.
   parameter bit AsyncOn = 0,
-  parameter int unsigned Cycles = 4
+  parameter int unsigned CntWidth = 2
 ) (
-  input  clk_i,
-  input  rst_ni,
-  input  enable_i,
-  input  filter_i,
-  output filter_o
+  input                clk_i,
+  input                rst_ni,
+  input                enable_i,
+  input                filter_i,
+  input [CntWidth-1:0] thresh_i,
+  output logic         filter_o
 );
 
-  localparam int unsigned CTR_WIDTH = $clog2(Cycles);
-  localparam logic [CTR_WIDTH-1:0] CYCLESM1 = (CTR_WIDTH)'(Cycles-1);
-
-  logic [CTR_WIDTH-1:0] diff_ctr_q, diff_ctr_d;
+  logic [CntWidth-1:0] diff_ctr_q, diff_ctr_d;
   logic filter_q, stored_value_q, update_stored_value;
 
   logic filter_synced;
@@ -73,10 +71,10 @@ module prim_filter_ctr #(
   end
 
   // always look for differences, even if not filter enabled
-  assign update_stored_value = (diff_ctr_d == CYCLESM1);
-  assign diff_ctr_d = (filter_synced != filter_q) ? '0                   : // restart
-                      (diff_ctr_q == CYCLESM1)    ? CYCLESM1             : // saturate
-                                                    (diff_ctr_q + 1'b1);   // count up
+  assign update_stored_value = (diff_ctr_d == thresh_i);
+  assign diff_ctr_d = (filter_synced != filter_q) ? '0       :           // restart
+                      (diff_ctr_q >= thresh_i)    ? thresh_i :           // saturate
+                                                    (diff_ctr_q + 1'b1); // count up
 
   assign filter_o = enable_i ? stored_value_q : filter_synced;
 

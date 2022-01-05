@@ -43,15 +43,17 @@ module gpio
 
   // possibly filter the input based upon register configuration
   logic [31:0] data_in_d;
+  localparam int unsigned CntWidth = 4;
   for (genvar i = 0 ; i < 32 ; i++) begin : gen_filter
     prim_filter_ctr #(
       .AsyncOn(GpioAsyncOn),
-      .Cycles(16)
+      .CntWidth(CntWidth)
     ) filter (
       .clk_i,
       .rst_ni,
       .enable_i(reg2hw.ctrl_en_input_filter.q[i]),
       .filter_i(cio_gpio_i[i]),
+      .thresh_i({CntWidth{1'b1}}),
       .filter_o(data_in_d[i])
     );
   end
