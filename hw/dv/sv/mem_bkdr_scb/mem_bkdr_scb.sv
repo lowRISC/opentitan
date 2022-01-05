@@ -21,7 +21,27 @@ virtual class mem_bkdr_scb #(int AddrWidth = bus_params_pkg::BUS_AW,
   mem_item_t read_item_q[$];
   mem_item_t write_item_q[$];
 
-  `uvm_object_new
+  bit en_cov;
+
+  // covers that all combinations of reads/writes can create b2b scenario
+  covergroup b2b_access_types_cg(string name) with function sample(bit addr_collision,
+                                                                   bit first_write_en,
+                                                                   bit second_write_en,
+                                                                   bit first_partial_acc,
+                                                                   bit second_partial_acc);
+    option.per_instance = 1;
+    option.name         = name;
+    raw_hazard_cp: coverpoint addr_collision;
+    b2b_access_types_cp: coverpoint {first_write_en, second_write_en};
+    b2b_partial_types_cp: coverpoint {first_partial_acc, second_partial_acc};
+
+    all_cross: cross raw_hazard_cp, b2b_access_types_cp, b2b_partial_types_cp;
+  endgroup
+
+  function new (string name = "");
+    super.new(name);
+    b2b_access_types_cg = new(name);
+  endfunction : new
 
   // User must override this function to return backdoor value from the memory based on given addr
   pure virtual function mem_data_t get_bkdr_val(mem_addr_t addr);
@@ -112,6 +132,8 @@ virtual class mem_bkdr_scb #(int AddrWidth = bus_params_pkg::BUS_AW,
 
     `uvm_info(`gfn, $sformatf("read_finish: Addr[0x%0h], data[0x%0h], Mask[0x%0h]",
                               exp_item.addr, act_data, exp_item.mask), UVM_MEDIUM)
+
+    sample_b2b_cg(.write(0), .addr(addr), .mask(mask));
   endfunction
 
   // Call this function when a write request is latched by design
@@ -143,5 +165,27 @@ virtual class mem_bkdr_scb #(int AddrWidth = bus_params_pkg::BUS_AW,
 
     `uvm_info(`gfn, $sformatf("write_finish: Addr[0x%0h], data[0x%0h], Mask[0x%0h]",
                               exp_item.addr, act_data, exp_item.mask), UVM_MEDIUM)
+
+    sample_b2b_cg(.write(1), .addr(addr), .mask(mask));
+  endfunction
+
+  function void sample_b2b_cg(bit write, mem_addr_t addr, mem_mask_t mask);
+    if (en_cov && (write_item_q.size + read_item_q.size == 1)) begin
+      mem_item_t second_item;
+      bit second_write_en;
+
+      if (write_item_q.size) begin
+        second_item     = write_item_q[0];
+        second_write_en = 1;
+      end else begin
+        second_item     = read_item_q[0];
+        second_write_en = 0;
+      end
+      b2b_access_types_cg.sample(.addr_collision(second_item.addr == addr),
+                                 .first_write_en(write),
+                                 .second_write_en(second_write_en),
+                                 .first_partial_acc(mask != '1),
+                                 .second_partial_acc(second_item.mask != '1));
+    end
   endfunction
 endclass
