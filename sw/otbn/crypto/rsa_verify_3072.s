@@ -5,30 +5,6 @@
  *
  * Derived from code in
  * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_bn.c
- *
- * The interface for this file can be accessed through the following symbols.
- * All of them are declared weak in this file, so can be overridden by code
- * that links against this object:
- *
- *   out_buf:  OUTPUT
- *             384 bytes
- *             The resulting recovered message
- *
- *   in_mod:   INPUT
- *             384 bytes
- *             The modulus
- *
- *   in_buf:   INPUT
- *             384 bytes
- *             The signature
- *
- *   rr:       INPUT
- *             384 bytes
- *             The Montgomery transformation constant R^2 = (2^3072)^2 mod N
- *
- *   m0inv:    INPUT
- *             384 bytes
- *             The Montgomery constant
  */
 
 .text
@@ -341,18 +317,19 @@ montmul:
  * Returns: C = modexp(A,3) = mod M
  *
  * The squared Montgomery modulus RR and the Montgomery constant m0' have to
- * be provided at the appropriate locations in dmem.
+ * be provided at the appropriate locations in dmem. DMEM locations are
+ * expected to be disjoint.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * The base bignum A is expected in the input buffer, the result C is written
  * to the output buffer.
  *
- * @param[in]  dmem[m0inv] pointer to m0' in dmem
- * @param[in]  dmem[rr] pointer to RR in dmem
- * @param[in]  dmem[in_mod] pointer to first limb of modulus M in dmem
- * @param[in]  dmem[in_buf] pointer to buffer with base bignum
- * @param[in]  dmem[out_buf] pointer to output buffer
+ * @param[in]  dmem[x17] pointer to m0' in dmem
+ * @param[in]  dmem[x26] pointer to RR in dmem
+ * @param[in]  dmem[x16] pointer to first limb of modulus M in dmem
+ * @param[in]  dmem[x23] pointer to buffer with base bignum
+ * @param[in]  dmem[x24] pointer to output buffer
  *
  * clobbered registers: x2, x5 to x13, x16 to x21, x29
                         w2, to w15, w24 to w31
@@ -368,13 +345,6 @@ modexp_var_3072_3:
   li         x9, 3
   li        x10, 4
   li        x11, 2
-
-  /* Set pointers to buffers. */
-  la        x24, out_buf
-  la        x16, in_mod
-  la        x23, in_buf
-  la        x26, rr
-  la        x17, m0inv
 
   /* Convert input to Montgomery domain and store in dmem.
      dmem[out_buf] <= montmul(dmem[in_buf], dmem[in_RR]) = A*R mod M */
@@ -439,18 +409,19 @@ modexp_var_3072_3:
  * F4 exponent (65537).
  *
  * The squared Montgomery modulus RR and the Montgomery constant m0' have to
- * be provided at the appropriate locations in dmem.
+ * be provided at the appropriate locations in dmem. DMEM locations are
+ * expected to be disjoint.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * The base bignum A is expected in the input buffer, the result C is written
  * to the output buffer.
  *
- * @param[in]  dmem[m0inv] pointer to m0' in dmem
- * @param[in]  dmem[rr] pointer to RR in dmem
- * @param[in]  dmem[in_mod] pointer to first limb of modulus M in dmem
- * @param[in]  dmem[in_buf] pointer to buffer with base bignum
- * @param[in]  dmem[out_buf] pointer to output buffer
+ * @param[in]  dmem[x17] pointer to m0' in dmem
+ * @param[in]  dmem[x26] pointer to RR in dmem
+ * @param[in]  dmem[x16] pointer to first limb of modulus M in dmem
+ * @param[in]  dmem[x23] pointer to buffer with base bignum
+ * @param[in]  dmem[x24] pointer to output buffer
  *
  * clobbered registers: x2, x5 to x13, x16 to x21, x29
                         w2, to w15, w24 to w31
@@ -466,13 +437,6 @@ modexp_var_3072_f4:
   li         x9, 3
   li        x10, 4
   li        x11, 2
-
-  /* Set pointers to buffers. */
-  la        x24, out_buf
-  la        x16, in_mod
-  la        x23, in_buf
-  la        x26, rr
-  la        x17, m0inv
 
   /* Convert input to Montgomery domain and store in dmem.
      dmem[out_buf] <= montmul(dmem[in_buf], dmem[in_RR]) = A*R mod M */
@@ -530,33 +494,3 @@ modexp_var_3072_f4:
     addi      x8, x8, 1
 
   ret
-
-/* Output buffer for the resulting, recovered message. */
-.section .data.out_buf
-.weak out_buf
-out_buf:
-  .zero 384
-
-/* Input buffer for the modulus. */
-.section .data.in_mod
-.weak in_mod
-in_mod:
-  .zero 384
-
-/* Input buffer for the signature. */
-.section .data.in_buf
-.weak in_buf
-in_buf:
-  .zero 384
-
-/* Input buffer for the Montgomery transformation constant R^2. */
-.section .data.rr
-.weak rr
-rr:
-  .zero 384
-
-/* The Montgomery constant. */
-.section .data.m0inv
-.weak m0inv
-m0inv:
-  .zero 32

@@ -23,6 +23,13 @@ run_rsa_verify_3072:
   /* Compute R^2 (same for both exponents): dmem[rr] <= R^2 */
   jal      x1, compute_rr
 
+  /* Set pointers to buffers for modexp. */
+  la        x24, out_buf
+  la        x16, in_mod
+  la        x23, in_buf
+  la        x26, rr
+  la        x17, m0inv
+
   /* Get the exponent: x3 <= dmem[in_exp] */
   la       x2, in_exp
   lw       x3, 0(x2)
@@ -79,4 +86,10 @@ rr:
 .globl in_buf
 .balign 32
 in_buf:
+.zero 384
+
+/* Output buffer. */
+.globl out_buf
+.balign 32
+out_buf:
 .zero 384
