@@ -209,7 +209,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "alert_test": begin
-        // do_nothing
+        if (addr_phase_write && item.a_data[0]) set_exp_alert("fatal", .is_fatal(0));
       end
       "fatal_alert_cause": begin
         // do_nothing
