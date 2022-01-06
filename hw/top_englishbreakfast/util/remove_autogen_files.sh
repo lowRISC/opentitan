@@ -13,8 +13,13 @@ top_path=$(dirname $(realpath $0))/../
 
 # Find and delete autogen directories.
 find ${top_path} -depth -type d -name "autogen" -exec rm -rf {} \;
+find ${top_path} -depth -type d -name "ip_autogen" -exec rm -rf {} \;
 
 # Some autogen files are not in autogen folders.
+rm -rf ${top_path}/ip/ast/rtl/*
 rm -rf ${top_path}/ip/sensor_ctrl/rtl/*
 rm -rf ${top_path}/ip/xbar_main/xbar_main.core
 rm -rf ${top_path}/ip/xbar_peri/xbar_peri.core
+
+# Remove topgen files for secondary top levels.
+rm -rf build/top_*-autogen/
