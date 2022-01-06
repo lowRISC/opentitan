@@ -110,6 +110,7 @@ module otbn_top_sim (
     .illegal_bus_access_i        ( 1'b0                ),
     .lifecycle_escalation_i      ( 1'b0                ),
     .software_errs_fatal_i       ( 1'b0                ),
+    .otbn_scramble_state_error_i ( 1'b0                ),
 
     .sideload_key_shares_i       ( sideload_key_shares ),
     .sideload_key_shares_valid_i ( 2'b11               )

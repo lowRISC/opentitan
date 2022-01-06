@@ -385,23 +385,89 @@ package otbn_pkg;
   } mac_bignum_operation_t;
 
   // States for controller state machine
-  typedef enum logic [2:0] {
-    OtbnStateHalt,
-    OtbnStateUrndRefresh,
-    OtbnStateRun,
-    OtbnStateStall,
-    OtbnStateLocked
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
+  //      -s 5799399942 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (50.00%)
+  //  4: |||||||||||||||| (40.00%)
+  //  5: |||| (10.00%)
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 5
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 4
+  //
+  localparam int StateControllerWidth = 6;
+  typedef enum logic [StateControllerWidth-1:0] {
+    OtbnStateHalt        = 6'b001000,
+    OtbnStateUrndRefresh = 6'b010100,
+    OtbnStateRun         = 6'b100101,
+    OtbnStateStall       = 6'b110011,
+    OtbnStateLocked      = 6'b001111
   } otbn_state_e;
 
-  typedef enum logic [2:0] {
-    OtbnStartStopStateHalt,
-    OtbnStartStopStateUrndRefresh,
-    OtbnStartStopStateRunning,
-    OtbnStartStopSecureWipeWdrUrnd,
-    OtbnStartStopSecureWipeAccModBaseUrnd,
-    OtbnStartStopSecureWipeAllZero,
-    OtbnStartStopSecureWipeComplete
+  // States for start_stop_controller
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
+  //      -s 5799399943 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 5
+  //
+  localparam int StateStartStopWidth = 6;
+  typedef enum logic [StateStartStopWidth-1:0] {
+    OtbnStartStopStateHalt                = 6'b011100,
+    OtbnStartStopStateUrndRefresh         = 6'b101111,
+    OtbnStartStopStateRunning             = 6'b010111,
+    OtbnStartStopSecureWipeWdrUrnd        = 6'b000010,
+    OtbnStartStopSecureWipeAccModBaseUrnd = 6'b110001,
+    OtbnStartStopSecureWipeAllZero        = 6'b001001,
+    OtbnStartStopSecureWipeComplete       = 6'b100100
   } otbn_start_stop_state_e;
+
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 3 -n 5 \
+//      -s 5799399983 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (66.67%)
+//  4: |||||||||| (33.33%)
+//  5: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 4
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 3
+//
+localparam int StateScrambleCtrlWidth = 5;
+typedef enum logic [StateScrambleCtrlWidth-1:0] {
+  ScrambleCtrlIdle = 5'b01101,
+  ScrambleCtrlDmemReq = 5'b10000,
+  ScrambleCtrlImemReq = 5'b00110
+} scramble_ctrl_state_e;
 
   // URNG PRNG default seed.
   // These parameters have been generated with

@@ -38,15 +38,12 @@ module otbn_scramble_ctrl
   output logic                    otbn_imem_scramble_key_seed_valid_o,
 
   input  logic otbn_dmem_scramble_new_req_i,
-  input  logic otbn_imem_scramble_new_req_i
-);
-  typedef enum logic [1:0] {
-    ScrambleCtrlIdle,
-    ScrambleCtrlDmemReq,
-    ScrambleCtrlImemReq
-  } scramble_ctrl_state_t;
+  input  logic otbn_imem_scramble_new_req_i,
 
-  scramble_ctrl_state_t state_q, state_d;
+  output logic state_error_o
+);
+
+  scramble_ctrl_state_e state_q, state_d;
 
   logic dmem_key_valid_q, dmem_key_valid_d;
   logic imem_key_valid_q, imem_key_valid_d;
@@ -101,7 +98,6 @@ module otbn_scramble_ctrl
       imem_key_seed_valid_q       <= 1'b0;
       dmem_scramble_req_pending_q <= 1'b0;
       imem_scramble_req_pending_q <= 1'b0;
-      state_q                     <= ScrambleCtrlIdle;
     end else begin
       dmem_key_valid_q            <= dmem_key_valid_d;
       imem_key_valid_q            <= imem_key_valid_d;
@@ -109,9 +105,23 @@ module otbn_scramble_ctrl
       imem_key_seed_valid_q       <= imem_key_seed_valid_d;
       dmem_scramble_req_pending_q <= dmem_scramble_req_pending_d;
       imem_scramble_req_pending_q <= imem_scramble_req_pending_d;
-      state_q                     <= state_d;
     end
   end
+
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateScrambleCtrlWidth-1:0] state_raw_q;
+  assign state_q = scramble_ctrl_state_e'(state_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(scramble_ctrl_state_e),
+    .Width(StateScrambleCtrlWidth),
+    .ResetValue(StateScrambleCtrlWidth'(ScrambleCtrlIdle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
+  );
 
   always_comb begin
     dmem_key_valid_d            = dmem_key_valid_q;
@@ -124,6 +134,7 @@ module otbn_scramble_ctrl
     imem_scramble_req_pending_d = imem_scramble_req_pending_q | otbn_imem_scramble_new_req_i;
     state_d                     = state_q;
     otp_key_req                 = 1'b0;
+    state_error_o               = 1'b0;
 
     unique case (state_q)
       ScrambleCtrlIdle: begin
@@ -154,7 +165,9 @@ module otbn_scramble_ctrl
           imem_key_seed_valid_d       = otp_key_seed_valid;
         end
       end
-      default: ;
+      default: begin
+        state_error_o = 1'b1;
+      end
     endcase
   end
 

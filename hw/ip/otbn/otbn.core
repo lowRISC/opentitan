@@ -15,6 +15,7 @@ filesets:
       - lowrisc:prim:cipher_pkg
       - lowrisc:prim:mubi
       - lowrisc:prim:crc32
+      - lowrisc:prim:sparse_fsm
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:otbn_pkg

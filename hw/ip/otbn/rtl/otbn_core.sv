@@ -84,6 +84,9 @@ module otbn_core
   // When set software errors become fatal errors.
   input logic software_errs_fatal_i,
 
+  // Indicates an invalid state of the scramble controller. Results in a fatal error.
+  input logic otbn_scramble_state_error_i,
+
   input logic [1:0]                       sideload_key_shares_valid_i,
   input logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
 );
@@ -214,6 +217,8 @@ module otbn_core
   logic [ImemAddrWidth:0]   prefetch_loop_end_addr;
   logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr;
 
+  logic start_stop_state_error;
+
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
   otbn_start_stop_control #(
@@ -245,7 +250,8 @@ module otbn_core
     .sec_wipe_zero_o    (sec_wipe_zero),
 
     .ispr_init_o  (ispr_init),
-    .state_reset_o(state_reset)
+    .state_reset_o(state_reset),
+    .state_error_o(start_stop_state_error)
   );
 
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
@@ -423,6 +429,8 @@ module otbn_core
     .illegal_bus_access_i,
     .lifecycle_escalation_i,
     .software_errs_fatal_i,
+    .start_stop_state_error_i(start_stop_state_error),
+    .otbn_scramble_state_error_i,
 
     .sideload_key_shares_valid_i,
 

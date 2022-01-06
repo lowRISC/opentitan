@@ -224,6 +224,8 @@ module otbn
   logic                    otbn_dmem_scramble_valid;
   logic                    unused_otbn_dmem_scramble_key_seed_valid;
 
+  logic otbn_scramble_state_error;
+
   otbn_scramble_ctrl #(
     .RndCnstOtbnKey  (RndCnstOtbnKey),
     .RndCnstOtbnNonce(RndCnstOtbnNonce)
@@ -248,7 +250,9 @@ module otbn
     .otbn_imem_scramble_key_seed_valid_o(unused_otbn_imem_scramble_key_seed_valid),
 
     .otbn_dmem_scramble_new_req_i(1'b0),
-    .otbn_imem_scramble_new_req_i(1'b0)
+    .otbn_imem_scramble_new_req_i(1'b0),
+
+    .state_error_o(otbn_scramble_state_error)
   );
 
   prim_ram_1p_scr #(
@@ -959,6 +963,8 @@ module otbn
 
       .software_errs_fatal_i       (software_errs_fatal_q),
 
+      .otbn_scramble_state_error_i (otbn_scramble_state_error),
+
       .sideload_key_shares_i       (keymgr_key_i.key),
       .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
     );
@@ -1015,6 +1021,8 @@ module otbn
 
       .software_errs_fatal_i       (software_errs_fatal_q),
 
+      .otbn_scramble_state_error_i (otbn_scramble_state_error),
+
       .sideload_key_shares_i       (keymgr_key_i.key),
       .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
     );
@@ -1051,4 +1059,12 @@ module otbn
 
   // Constraint from package, check here as we cannot have `ASSERT_INIT in package
   `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnStartStopFsmCheck_A,
+    u_otbn_core.u_otbn_start_stop_control.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnControllerFsmCheck_A,
+    u_otbn_core.u_otbn_controller.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnScrambleCtrlFsmCheck_A,
+    u_otbn_scramble_ctrl.u_state_regs, alert_tx_o[1])
+
 endmodule
