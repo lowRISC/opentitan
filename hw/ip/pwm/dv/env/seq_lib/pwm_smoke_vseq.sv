@@ -35,7 +35,7 @@ class pwm_smoke_vseq extends pwm_base_vseq;
     cfg.pwm_param[0].BlinkEn = 1;
 
 
-    set_duty_cycle(0, cfg.duty_cycle[0], cfg.pwm_cfg.DcResn);
+    set_duty_cycle(0, cfg.duty_cycle[0]);
     set_blink(0, cfg.blink[0]);
     set_param(0, cfg.pwm_param[0]);
 
