@@ -10,6 +10,8 @@ class csrng_smoke_vseq extends csrng_base_vseq;
   csrng_item   cs_item;
 
   task body();
+    super.body();
+
     cs_item = csrng_item::type_id::create("cs_item");
 
     // Create/Write CSRNG Cmd_Req - Instantiate Command

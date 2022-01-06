@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Implements functional coverage for csrng.
+
 interface csrng_cov_if (
   input logic clk_i
 );
@@ -12,6 +13,7 @@ interface csrng_cov_if (
   import csrng_pkg::*;
   import csrng_agent_pkg::*;
   import csrng_env_pkg::*;
+  import prim_mubi_pkg::*;
   `include "dv_fcov_macros.svh"
 
   bit en_full_cov = 1'b1;
@@ -21,8 +23,22 @@ interface csrng_cov_if (
   bit en_intg_cov_loc;
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
 
+  covergroup csrng_cfg_cg with function sample(mubi8_t   otp_en_cs_sw_app_read,
+                                               mubi4_t   sw_app_enable,
+                                               mubi4_t   read_int_state
+                                              );
+    option.name         = "csrng_cfg_cg";
+    option.per_instance = 1;
+
+    cp_otp_en_cs_sw_app_read: coverpoint otp_en_cs_sw_app_read;
+
+    cp_sw_app_enable: coverpoint sw_app_enable;
+
+    cp_read_int_state: coverpoint read_int_state;
+  endgroup : csrng_cfg_cg
+
   covergroup csrng_cmds_cg with function sample(bit[NUM_HW_APPS-1:0]   hwapp,
-                                                csrng_pkg::acmd_e      acmd,
+                                                acmd_e                 acmd,
                                                 bit[3:0]               clen,
                                                 bit[3:0]               flags,
                                                 bit[18:0]              glen
@@ -37,9 +53,9 @@ interface csrng_cov_if (
     }
 
     cp_clen: coverpoint clen {
-      bins zero            = { 0 };
-      bins additional_data = { [1:12] };
-      bins invalid         = { [13:15] };
+      bins no_additional_data = { 0 };
+      bins additional_data    = { [1:12] };
+      bins invalid            = { [13:15] };
     }
 
     cp_flags: coverpoint flags {
@@ -59,10 +75,18 @@ interface csrng_cov_if (
     cr_acmd_glen:  cross cp_acmd, cp_glen;
   endgroup : csrng_cmds_cg
 
+  `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cmds_cg, en_full_cov)
 
   // Sample functions needed for xcelium
-  function automatic void cg_cmds_sample(bit[NUM_HW_APPS-1:0] hwapp, csrng_item   cs_item);
+  function automatic void cg_cfg_sample(csrng_env_cfg cfg);
+    csrng_cfg_cg_inst.sample(cfg.otp_en_cs_sw_app_read,
+                              cfg.sw_app_enable,
+                              cfg.read_int_state
+                             );
+  endfunction
+
+  function automatic void cg_cmds_sample(bit[NUM_HW_APPS-1:0] hwapp, csrng_item cs_item);
     csrng_cmds_cg_inst.sample(hwapp,
                               cs_item.acmd,
                               cs_item.clen,
