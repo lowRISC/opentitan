@@ -26,29 +26,21 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "MIT"
 ])
 
 # Generated Targets
 
-rust_library(
-    name = "rand",
+# Unsupported target "main" with type "example" omitted
+
+rust_proc_macro(
+    name = "scroll_derive",
     srcs = glob(["**/*.rs"]),
-    aliases = {
-    },
     crate_features = [
-        "alloc",
-        "default",
-        "getrandom",
-        "libc",
-        "rand_chacha",
-        "rand_hc",
-        "std",
-        "std_rng",
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2018",
+    edition = "2015",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -56,25 +48,13 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.8.4",
+    version = "0.9.5",
     # buildifier: leave-alone
     deps = [
-        "@raze__rand_core__0_6_3//:rand_core",
-    ] + selects.with_or({
-        # cfg(not(target_os = "emscripten"))
-        (
-            "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
-        ): [
-            "@raze__rand_chacha__0_3_1//:rand_chacha",
-        ],
-        "//conditions:default": [],
-    }) + selects.with_or({
-        # cfg(unix)
-        (
-            "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
-        ): [
-            "@raze__libc__0_2_107//:libc",
-        ],
-        "//conditions:default": [],
-    }),
+        "@raze__proc_macro2__0_4_30//:proc_macro2",
+        "@raze__quote__0_6_13//:quote",
+        "@raze__syn__0_15_44//:syn",
+    ],
 )
+
+# Unsupported target "tests" with type "test" omitted

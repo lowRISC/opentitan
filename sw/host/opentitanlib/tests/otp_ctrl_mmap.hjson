@@ -1,0 +1,414 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Use the gen-otp-mmap.py script to update dependent files (like documentation
+// tables the comportable hjson and metadata SV package):
+//
+// $ ./util/design/gen-otp-mmap.py
+//
+// Make sure to regenerate the CSRs after converting the memory map:
+//
+// $ cd ${PROJ_ROOT}
+// $ make -C hw regs
+//
+
+{
+    // Seed to be used for generation of partition item default values.
+    // Can be overridden on the command line with the --seed switch.
+    seed: "10556718629619452145"
+
+    otp: {
+        width: "2", // bytes
+        depth: "1024"
+    }
+
+    // Definition of scrambling and digest constants and keys.
+    scrambling: {
+        key_size:  "16",
+        iv_size:   "8",
+        cnst_size: "16",
+        keys: [
+            {
+                name:  "Secret0Key",
+                value: "<random>",
+            }
+            {
+                name:  "Secret1Key",
+                value: "<random>",
+            }
+            {
+                name:  "Secret2Key",
+                value: "<random>",
+            }
+        ]
+        digests: [
+            // This is the consistency digest used by all partitions.
+            {
+                name:       "CnstyDigest",
+                iv_value:   "<random>",
+                cnst_value: "<random>",
+            }
+            // The other digest configurations below are used for
+            // key derivation and token hashing.
+            {
+                name:       "FlashDataKey",
+                iv_value:   "<random>",
+                cnst_value: "<random>",
+            }
+            {
+                name:       "FlashAddrKey",
+                iv_value:   "<random>",
+                cnst_value: "<random>",
+            }
+            {
+                name:       "SramDataKey",
+                iv_value:   "<random>",
+                cnst_value: "<random>",
+            }
+        ]
+    }
+
+    // The enumeration order below defines the address map of the OTP controller,
+    // if the offsets are not defined explicitly via the "offset" key.
+    // Note that the digest items are added automatically to the address map.
+    partitions: [
+        {
+            name:       "VENDOR_TEST",
+            variant:    "Unbuffered",
+            size:       "64", // in bytes
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            ecc_fatal:  false, // Do not send out a fatal alert upon detection of uncorrectable ECC errors.
+            bkout_type: false, // Do not generate a breakout type for this partition.
+            items: [
+                {
+                    name: "SCRATCH",
+                    size: "56"
+                }
+            ],
+            desc: '''Vendor test partition for OTP smoke checks
+            during manufacturing. The OTP wrapper control logic inside prim_otp is allowed
+            to read/write to this region. ECC uncorrectable errors seen on the functional
+            prim_otp interface will not lead to an alert for this partition.
+            '''
+        }
+        {
+            name:       "CREATOR_SW_CFG",
+            variant:    "Unbuffered",
+            absorb:     true,
+            size:       "768", // in bytes
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            ecc_fatal:  true, // Uncorrectable ECC errors trigger a fatal alert.
+            bkout_type: false, // Do not generate a breakout type for this partition.
+            items: [
+                {
+                    name: "CREATOR_SW_CFG_AST_CFG",
+                    size: "128"
+                }
+                {
+                    name: "CREATOR_SW_CFG_AST_INIT_EN",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_ROM_EXT_SKU",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_KEY_IS_VALID",
+                    size: "8"
+                }
+                {
+                    name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_EN",
+                    size: "4"
+                }
+            ],
+            desc: '''Software configuration partition for
+            device-specific calibration data (Clock, LDO,
+            RNG, device identity).
+            '''
+        }
+        {
+            name:       "OWNER_SW_CFG",
+            variant:    "Unbuffered",
+            absorb:     true,
+            size:       "768", // in bytes
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            ecc_fatal:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "ROM_ERROR_REPORTING",
+                    size: "4"
+                }
+                {
+                    name: "ROM_BOOTSTRAP_EN",
+                    size: "4"
+                }
+                {
+                    name: "ROM_FAULT_RESPONSE",
+                    size: "4"
+                }
+                {
+                    name: "ROM_ALERT_CLASS_EN",
+                    size: "4"
+                }
+                {
+                    name: "ROM_ALERT_ESCALATION",
+                    size: "4"
+                }
+                {
+                    name: "ROM_ALERT_CLASSIFICATION",
+                    size: "320"
+                }
+                {
+                    name: "ROM_LOCAL_ALERT_CLASSIFICATION",
+                    size: "64"
+                }
+                {
+                    name: "ROM_ALERT_ACCUM_THRESH",
+                    size: "16"
+                }
+                {
+                    name: "ROM_ALERT_TIMEOUT_CYCLES",
+                    size: "16"
+                }
+                {
+                    name: "ROM_ALERT_PHASE_CYCLES",
+                    size: "64"
+                }
+            ],
+            desc: '''Software configuration partition for
+            data that changes software behavior, specifically
+            in the ROM. E.g., enabling defensive features in
+            ROM or selecting failure modes if verification fails.
+            '''
+        }
+        {
+            name:       "HW_CFG",
+            variant:    "Buffered",
+            secret:     false,
+            sw_digest:  false,
+            hw_digest:  true,
+            write_lock: "Digest",
+            read_lock:  "None",
+            key_sel:    "NoKey",
+            ecc_fatal:  true,
+            bkout_type: true,
+            items: [
+                {
+                    name:        "DEVICE_ID",
+                    size:        "32",
+                    // Default value to be output in case partition has not
+                    // initialized or is in error state. If not specified,
+                    // a value of '0 will be used.
+                    inv_default: "<random>",
+                },
+                {
+                    name:        "MANUF_STATE",
+                    size:        "32",
+                    inv_default: "<random>",
+                },
+                {
+                    name:        "EN_SRAM_IFETCH",
+                    size:        "1",
+                    ismubi:      true,
+                    inv_default: false
+                },
+                {
+                    name:        "EN_CSRNG_SW_APP_READ",
+                    size:        "1",
+                    ismubi:      true,
+                    inv_default: false
+                },
+                {
+                    name:        "EN_ENTROPY_SRC_FW_READ",
+                    size:        "1",
+                    ismubi:      true,
+                    inv_default: false
+                },
+                {
+                    name:        "EN_ENTROPY_SRC_FW_OVER",
+                    size:        "1",
+                    ismubi:      true,
+                    inv_default: false
+                },
+            ],
+            desc: '''
+            EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
+            EN_CSRNG_SW_APP_READ: This input efuse is used to enable access
+            to the NIST internal state per instance.
+            EN_ENTROPY_SRC_FW_READ: This input efuse is used to enable access
+            to the ENTROPY_DATA register directly.
+            EN_ENTROPY_SRC_FW_OVER: This input efuse is used to enable access
+            to the firmware override FIFO and other related functions.
+            '''
+        }
+        {
+            name:       "SECRET0",
+            variant:    "Buffered",
+            secret:     true,
+            sw_digest:  false,
+            hw_digest:  true,
+            write_lock: "Digest",
+            read_lock:  "Digest",
+            key_sel:    "Secret0Key",
+            ecc_fatal:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "TEST_UNLOCK_TOKEN",
+                    // This will generate a random default to be output in
+                    // case partition has not initialized or is in error state.
+                    // If not specified, a value of '0 will be used.
+                    inv_default: "<random>",
+                    size: "16"
+                }
+                {
+                    name: "TEST_EXIT_TOKEN",
+                    inv_default: "<random>",
+                    size: "16"
+                }
+            ],
+            desc: '''Test unlock tokens.
+            '''
+        }
+        {
+            name:       "SECRET1",
+            variant:    "Buffered",
+            secret:     true,
+            sw_digest:  false,
+            hw_digest:  true,
+            write_lock: "Digest",
+            read_lock:  "Digest",
+            key_sel:    "Secret1Key",
+            ecc_fatal:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "FLASH_ADDR_KEY_SEED",
+                    inv_default: "<random>",
+                    size: "32"
+                }
+                {
+                    name: "FLASH_DATA_KEY_SEED",
+                    inv_default: "<random>",
+                    size: "32"
+                }
+                {
+                    name: "SRAM_DATA_KEY_SEED",
+                    inv_default: "<random>",
+                    size: "16"
+                }
+            ],
+            desc: '''SRAM and FLASH scrambling key roots
+            used for scrambling key derivation.
+            '''
+        }
+        {
+            name:       "SECRET2",
+            variant:    "Buffered",
+            secret:     true,
+            sw_digest:  false,
+            hw_digest:  true,
+            write_lock: "Digest",
+            read_lock:  "Digest",
+            key_sel:    "Secret2Key",
+            ecc_fatal:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "RMA_TOKEN",
+                    inv_default: "<random>",
+                    size: "16"
+                }
+                {
+                    name: "CREATOR_ROOT_KEY_SHARE0",
+                    inv_default: "<random>",
+                    size: "32"
+                }
+                {
+                    name: "CREATOR_ROOT_KEY_SHARE1",
+                    inv_default: "<random>",
+                    size: "32"
+                }
+            ],
+            desc: '''RMA unlock token and creator root key.
+            '''
+        }
+        {
+            name:       "LIFE_CYCLE",
+            variant:    "LifeCycle",
+            secret:     false,
+            sw_digest:  false,
+            hw_digest:  false,
+            write_lock: "None",
+            read_lock:  "None",
+            key_sel:    "NoKey",
+            ecc_fatal:  true,
+            bkout_type: false,
+            items: [
+                // The life cycle transition count is specified
+                // first such that any programming attempt of the life cycle
+                // partition through the LCI will always write the transition
+                // counter words first when programming an updated state vector.
+                // This is an additional safeguard, to the sequencing in the
+                // life cycle controller to ensure that the counter is always written
+                // before any state update. I.e., the life cycle controller
+                // already splits the counter and state updates into two
+                // supsequent requests through the LCI, where the first request
+                // only contains the updated transition counter, and the second
+                // request the updated transition counter and state.
+                {
+                    name: "LC_TRANSITION_CNT",
+                    inv_default: "<random>",
+                    size: "48"
+                }
+                {
+                    name: "LC_STATE",
+                    inv_default: "<random>",
+                    size: "40"
+                }
+            ],
+            desc: '''Life-cycle related bits. This
+            partition cannot be locked as the life cycle
+            state needs to be able to advance to RMA in-field.
+            Note that while this partition is not marked secret
+            (i.e. it is not scrambled) it is not readable
+            nor writeable via the DAI. Only the LC controller
+            can access this partition, and even via the LC
+            controller it is not possible to read the
+            raw manufacturing life cycle state in encoded form,
+            since that encoding is considered a netlist secret.
+            The LC controller only exposes a decoded version of
+            this state.
+            '''
+        }
+    ]
+}

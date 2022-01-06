@@ -5,6 +5,7 @@
 pub mod app;
 pub mod bootstrap;
 pub mod io;
+pub mod otp;
 pub mod spiflash;
 pub mod transport;
 pub mod util;
