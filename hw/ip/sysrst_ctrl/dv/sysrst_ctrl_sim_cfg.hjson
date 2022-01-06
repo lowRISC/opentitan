@@ -70,6 +70,10 @@
       name: sysrst_ctrl_flash_wr_prot_out
       uvm_test_seq: sysrst_ctrl_flash_wr_prot_vseq
     }
+    {
+      name: sysrst_ctrl_ec_pwr_on_rst
+      uvm_test_seq: sysrst_ctrl_ec_pwr_on_rst_vseq
+    }
 
   ]
 
