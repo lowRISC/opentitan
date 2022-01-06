@@ -266,17 +266,6 @@ virtual task run_tl_intg_err_vseq(int num_times = 1);
 endtask
 
 virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
-  uvm_mem mems[$];
-  dv_base_mem passthru_mems[$];
-
-  cfg.ral_models[ral_name].get_memories(mems);
-
-  foreach (mems[i]) begin
-    dv_base_mem dv_mem;
-    `downcast(dv_mem, mems[i])
-    if (dv_mem.get_data_intg_passthru()) passthru_mems.push_back(dv_mem);
-  end
-
   fork
     // run csr_rw seq to send some normal CSR accesses in parallel
     begin
