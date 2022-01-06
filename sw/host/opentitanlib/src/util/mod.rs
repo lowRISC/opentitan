@@ -7,8 +7,8 @@ pub mod bitfield;
 pub mod file;
 pub mod image;
 pub mod parse_int;
-pub mod usb;
 pub mod present;
+pub mod usb;
 pub mod voltage;
 
 /// The `collection` macro provides syntax for hash and set literals.

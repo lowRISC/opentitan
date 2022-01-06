@@ -100,7 +100,7 @@ rust_library(
         "@raze__num_traits__0_2_14//:num_traits",
         "@raze__rand__0_8_4//:rand",
         "@raze__serde__1_0_130//:serde",
-        "@raze__smallvec__1_7_0//:smallvec",
+        "@raze__smallvec__1_8_0//:smallvec",
     ],
 )
 

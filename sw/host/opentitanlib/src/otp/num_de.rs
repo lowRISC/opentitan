@@ -1,0 +1,228 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+/// Deserialization utilities for certain values in OTP HJSON files.
+///
+/// The OTP HJSON files have some strange values:
+///
+/// Integers, sometimes wrapped in strings, with inconsistent formatting and meta values, such as:
+///   - value: "0x739"
+///   - key_size: "16"
+///   - seed: "10556718629619452145"
+///   - seed: 01931961561863975174  // This is a decimal integer, not octal.
+///   - value: "<random>"
+///
+/// Additionally, some values have sizes defined within the config files themselves, such as the
+/// keys. This module exists to handle these peculiar cases.
+use anyhow::Result;
+use rand::RngCore;
+use serde::de::{self, Deserializer, Unexpected};
+use serde::ser::Serializer;
+use serde::{Deserialize, Serialize};
+use std::any::type_name;
+use std::fmt;
+use std::marker::PhantomData;
+use std::ops::Deref;
+
+use crate::util::parse_int::{ParseInt, ParseIntError};
+
+pub fn _serialize<S, T>(_r: T, _ser: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+    T: Serialize + Copy,
+{
+    unimplemented!();
+}
+
+/// Deserialize numeric types from HJSON config files.
+pub fn deserialize<'de, D, T>(deserializer: D) -> Result<T, D::Error>
+where
+    D: Deserializer<'de>,
+    T: ParseInt,
+{
+    struct Visitor<U>(PhantomData<U>);
+
+    impl<'a, U: ParseInt> de::Visitor<'a> for Visitor<U> {
+        type Value = U;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_fmt(format_args!("a string that parses to {}", type_name::<U>()))
+        }
+
+        fn visit_string<E>(self, mut name: String) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            if name.starts_with("false") {
+                name = "0".to_owned()
+            } else if name.starts_with("true") {
+                name = "1".to_owned()
+            }
+
+            let trimmed = if name.starts_with("0x") {
+                &name
+            } else {
+                let trimmed = name[0..name.len() - 1].trim_start_matches('0');
+                &name[name.len() - trimmed.len() - 1..]
+            };
+
+            match U::from_str(trimmed) {
+                Ok(value) => Ok(value),
+                Err(_) => Err(de::Error::invalid_value(Unexpected::Str(trimmed), &self)),
+            }
+        }
+
+        fn visit_str<E>(self, name: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            self.visit_string(name.to_owned())
+        }
+
+        fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            if v {
+                self.visit_str("1")
+            } else {
+                self.visit_str("0")
+            }
+        }
+    }
+
+    deserializer.deserialize_string(Visitor {
+        0: PhantomData::<T>,
+    })
+}
+
+/// Placeholder type for values that cannot be resolved during deserialization.
+#[derive(Debug, PartialEq, Clone)]
+enum DeferredInit {
+    Initialized(Vec<u8>),
+    Random,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct DeferredValue(#[serde(with = "self")] DeferredInit);
+
+impl DeferredValue {
+    pub fn resolve(&self, size: usize, rng: &mut dyn RngCore) -> Vec<u8> {
+        match self.0.clone() {
+            DeferredInit::Initialized(mut vec) => {
+                vec.resize(size, 0);
+                vec
+            }
+            DeferredInit::Random => {
+                let mut vec = vec![0u8; size];
+                rng.fill_bytes(&mut vec);
+                vec
+            }
+        }
+    }
+
+    pub fn is_initialized(&self) -> bool {
+        matches!(self.0, DeferredInit::Initialized(_))
+    }
+}
+
+impl ParseInt for DeferredInit {
+    type FromStrRadixErr = ParseIntError;
+
+    fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError> {
+        Ok(DeferredInit::Initialized(Vec::<u8>::from_str_radix(
+            src, radix,
+        )?))
+    }
+
+    fn from_str(src: &str) -> Result<Self, ParseIntError> {
+        if src == "<random>" {
+            Ok(DeferredInit::Random)
+        } else {
+            Ok(DeferredInit::Initialized(Vec::<u8>::from_str(src)?))
+        }
+    }
+}
+
+impl Deref for DeferredValue {
+    type Target = [u8];
+
+    fn deref(&self) -> &Self::Target {
+        match &self.0 {
+            DeferredInit::Initialized(val) => val,
+            _ => panic!("Value has not been initialized"),
+        }
+    }
+}
+
+/// Wrapper type to force deserialization assuming octal encoding.
+#[derive(Deserialize, Debug)]
+pub struct OctEncoded<T: ParseInt>(#[serde(with = "self")] T);
+
+/// Wrapper type to force deserialization assuming decimal encoding.
+#[derive(Deserialize, Debug)]
+pub struct DecEncoded<T: ParseInt>(#[serde(with = "self")] T);
+
+/// Wrapper type to force deserialization assuming hexadecimal encoding.
+#[derive(Deserialize, Debug)]
+pub struct HexEncoded<T: ParseInt>(#[serde(with = "self")] T);
+
+macro_rules! impl_parse_int_enc {
+    ($ty:ident, $radix:expr) => {
+        impl<T: ParseInt> std::ops::Deref for $ty<T> {
+            type Target = T;
+
+            fn deref(&self) -> &Self::Target {
+                &self.0
+            }
+        }
+
+        impl<T: ParseInt> ParseInt for $ty<T> {
+            type FromStrRadixErr = T::FromStrRadixErr;
+
+            fn from_str_radix(src: &str, radix: u32) -> Result<Self, T::FromStrRadixErr> {
+                Ok(Self(T::from_str_radix(src, radix)?))
+            }
+
+            fn from_str(src: &str) -> Result<Self, ParseIntError> {
+                Self::from_str_radix(src, $radix).map_err(|e| e.into())
+            }
+        }
+    };
+}
+
+impl_parse_int_enc!(OctEncoded, 8);
+impl_parse_int_enc!(DecEncoded, 10);
+impl_parse_int_enc!(HexEncoded, 16);
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use serde::Deserialize;
+
+    #[test]
+    fn de_u8() -> Result<()> {
+        #[derive(Debug, Deserialize)]
+        struct TestData {
+            #[serde(with = "super")]
+            oct: OctEncoded<u8>,
+            #[serde(with = "super")]
+            dec: DecEncoded<u8>,
+            #[serde(with = "super")]
+            hex: HexEncoded<u8>,
+        }
+
+        let data: TestData = deser_hjson::from_str(stringify!(
+        {
+            oct: "77",
+            dec: "77",
+            hex: "77"
+        }))?;
+
+        assert_eq!(*data.oct, 63);
+        assert_eq!(*data.dec, 77);
+        assert_eq!(*data.hex, 119);
+        Ok(())
+    }
+}

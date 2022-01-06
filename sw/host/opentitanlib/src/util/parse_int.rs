@@ -73,6 +73,8 @@ impl_parse_int!(i32);
 impl_parse_int!(u32);
 impl_parse_int!(i64);
 impl_parse_int!(u64);
+impl_parse_int!(i128);
+impl_parse_int!(u128);
 impl_parse_int!(isize);
 impl_parse_int!(usize);
 

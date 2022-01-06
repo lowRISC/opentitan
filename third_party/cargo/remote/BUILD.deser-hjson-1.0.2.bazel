@@ -26,18 +26,17 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "MIT"
 ])
 
 # Generated Targets
 
-# Unsupported target "bench" with type "bench" omitted
+# Unsupported target "parse" with type "bench" omitted
 
 rust_library(
-    name = "smallvec",
+    name = "deser_hjson",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "write",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -49,10 +48,27 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "1.7.0",
+    version = "1.0.2",
     # buildifier: leave-alone
     deps = [
+        "@raze__serde__1_0_130//:serde",
     ],
 )
 
-# Unsupported target "macro" with type "test" omitted
+# Unsupported target "bad_format" with type "test" omitted
+
+# Unsupported target "crlf" with type "test" omitted
+
+# Unsupported target "enum" with type "test" omitted
+
+# Unsupported target "guess" with type "test" omitted
+
+# Unsupported target "mix" with type "test" omitted
+
+# Unsupported target "serde-error" with type "test" omitted
+
+# Unsupported target "spacing" with type "test" omitted
+
+# Unsupported target "strings" with type "test" omitted
+
+# Unsupported target "trailing_chars" with type "test" omitted
