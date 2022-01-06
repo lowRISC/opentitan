@@ -311,6 +311,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           if (cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req[1] == 1'b0) begin
             cfg.pwrmgr_vif.update_resets('0);
             cfg.pwrmgr_vif.update_sw_rst_req(prim_mubi_pkg::MuBi4False);
+            clear_escalation_reset();
             `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
           end
           drop_objection("rst_lc_src_n");
@@ -510,16 +511,14 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.wake_info), .value('1));
   endtask
 
-  task send_escalation_reset(int cycles);
+  function void send_escalation_reset();
     `uvm_info(`gfn, "Sending escalation reset", UVM_MEDIUM)
     cfg.m_esc_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b10;
-    cfg.clk_rst_vif.wait_clks(cycles);
+  endfunction
+
+  function void clear_escalation_reset();
     `uvm_info(`gfn, "Clearing escalation reset", UVM_MEDIUM)
     cfg.m_esc_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
-  endtask
-
-  task clear_escalation_reset();
-    cfg.m_esc_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
-  endtask
+  endfunction
 
 endclass : pwrmgr_base_vseq

@@ -54,9 +54,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       cfg.pwrmgr_vif.update_resets(resets);
       `uvm_info(`gfn, $sformatf("Sending sw reset from rstmgr=%b", sw_rst_from_rstmgr), UVM_MEDIUM)
       if (escalation_reset)
-        fork
-          send_escalation_reset(20);
-        join_none
+        send_escalation_reset();
       cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
 
       cfg.slow_clk_rst_vif.wait_clks(4);

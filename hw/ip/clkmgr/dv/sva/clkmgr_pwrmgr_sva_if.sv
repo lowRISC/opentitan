@@ -26,20 +26,24 @@ interface clkmgr_pwrmgr_sva_if (
 
   bit disable_sva;
 
-  `ASSERT(IoStatusFall_A, $fell(io_clk_en) |-> ##[FallCyclesMin:FallCyclesMax] $fell(io_status),
-          clk_i, !rst_ni || disable_sva)
-  `ASSERT(IoStatusRise_A, $rose(io_clk_en) |-> ##[RiseCyclesMin:RiseCyclesMax] $rose(io_status),
-          clk_i, !rst_ni || disable_sva)
+  `ASSERT(IoStatusFall_A,
+          $fell(io_clk_en) |-> ##[FallCyclesMin:FallCyclesMax] io_clk_en || !io_status, clk_i,
+          !rst_ni || disable_sva)
+  `ASSERT(IoStatusRise_A,
+          $rose(io_clk_en) |-> ##[RiseCyclesMin:RiseCyclesMax] !io_clk_en || io_status, clk_i,
+          !rst_ni || disable_sva)
 
   `ASSERT(MainStatusFall_A,
-          $fell(main_clk_en) |-> ##[FallCyclesMin:FallCyclesMax] $fell(main_status), clk_i,
+          $fell(main_clk_en) |-> ##[FallCyclesMin:FallCyclesMax] main_clk_en || !main_status, clk_i,
           !rst_ni || disable_sva)
   `ASSERT(MainStatusRise_A,
-          $rose(main_clk_en) |-> ##[RiseCyclesMin:RiseCyclesMax] $rose(main_status), clk_i,
+          $rose(main_clk_en) |-> ##[RiseCyclesMin:RiseCyclesMax] !main_clk_en || main_status, clk_i,
           !rst_ni || disable_sva)
 
-  `ASSERT(UsbStatusFall_A, $fell(usb_clk_en) |-> ##[FallCyclesMin:FallCyclesMax] $fell(usb_status),
-          clk_i, !rst_ni || disable_sva)
-  `ASSERT(UsbStatusRise_A, $rose(usb_clk_en) |-> ##[RiseCyclesMin:RiseCyclesMax] $rose(usb_status),
-          clk_i, !rst_ni || disable_sva)
+  `ASSERT(UsbStatusFall_A,
+          $fell(usb_clk_en) |-> ##[FallCyclesMin:FallCyclesMax] usb_clk_en || !usb_status, clk_i,
+          !rst_ni || disable_sva)
+  `ASSERT(UsbStatusRise_A,
+          $rose(usb_clk_en) |-> ##[RiseCyclesMin:RiseCyclesMax] !usb_clk_en || usb_status, clk_i,
+          !rst_ni || disable_sva)
 endinterface

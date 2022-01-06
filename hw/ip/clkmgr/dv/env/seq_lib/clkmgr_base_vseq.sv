@@ -24,17 +24,17 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   // synchronizers.
   localparam int IO_DIV4_SYNC_CYCLES = 8;
 
-  rand bit                 io_ip_clk_en;
-  rand bit                 main_ip_clk_en;
-  rand bit                 usb_ip_clk_en;
+  rand bit         io_ip_clk_en;
+  rand bit         main_ip_clk_en;
+  rand bit         usb_ip_clk_en;
 
-  rand hintables_t       idle;
+  rand hintables_t idle;
 
-  mubi4_t                  scanmode;
-  int                      scanmode_on_weight         = 8;
+  mubi4_t          scanmode;
+  int              scanmode_on_weight         = 8;
 
-  lc_tx_t                  extclk_ctrl_low_speed_sel;
-  lc_tx_t                  extclk_ctrl_sel;
+  lc_tx_t          extclk_ctrl_low_speed_sel;
+  lc_tx_t          extclk_ctrl_sel;
 
   virtual function void set_scanmode_on_low_weight();
     scanmode_on_weight = 2;
