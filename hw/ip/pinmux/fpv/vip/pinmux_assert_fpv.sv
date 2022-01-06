@@ -71,6 +71,7 @@ module pinmux_assert_fpv
   logic [$clog2(pinmux_reg_pkg::NMioPeriphIn)-1:0] periph_sel_i;
   logic [$clog2(pinmux_reg_pkg::NMioPads)-1:0] mio_sel_i;
   logic [$clog2(pinmux_reg_pkg::NDioPads)-1:0] dio_sel_i;
+  logic [$clog2(pinmux_reg_pkg::NWkupDetect)-1:0] wkup_sel_i;
 
   `ASSUME(PeriphSelRange_M, periph_sel_i < pinmux_reg_pkg::NMioPeriphIn)
   `ASSUME(PeriphSelStable_M, ##1 $stable(periph_sel_i))
@@ -82,6 +83,9 @@ module pinmux_assert_fpv
 
   `ASSUME(DioSelRange_M, dio_sel_i < pinmux_reg_pkg::NMioPads)
   `ASSUME(DioSelStable_M, ##1 $stable(dio_sel_i))
+
+  `ASSUME(WkupSelRange_M, wkup_sel_i < pinmux_reg_pkg::NWkupDetect)
+  `ASSUME(WkupSelStable_M, ##1 $stable(wkup_sel_i))
 
   // ------ Input mux assertions ------
   pinmux_reg_pkg::pinmux_reg2hw_mio_periph_insel_mreg_t periph_insel;
@@ -304,6 +308,92 @@ module pinmux_assert_fpv
             // Previous value is 1 and sleep mode selection is disabled either by sleep_en_i input
             // or sleep_en CSR.
             ($past(!$rose(sleep_en_i) || !dio_pad_sleep_en.q) && dio_pad_sleep_status.q)))
+
+  // ------ Wakeup assertions ------
+  pinmux_reg2hw_wkup_detector_en_mreg_t wkup_detector_en;
+  assign wkup_detector_en = pinmux.reg2hw.wkup_detector_en[wkup_sel_i];
+  pinmux_reg2hw_wkup_detector_mreg_t wkup_detector;
+  assign wkup_detector = pinmux.reg2hw.wkup_detector[wkup_sel_i];
+  pinmux_reg2hw_wkup_detector_cnt_th_mreg_t wkup_detector_cnt_th;
+  assign wkup_detector_cnt_th = pinmux.reg2hw.wkup_detector_cnt_th[wkup_sel_i];
+  pinmux_reg2hw_wkup_detector_padsel_mreg_t wkup_detector_padsel;
+  assign wkup_detector_padsel = pinmux.reg2hw.wkup_detector_padsel[wkup_sel_i];
+  pinmux_reg2hw_wkup_cause_mreg_t wkup_cause;
+  assign wkup_cause = pinmux.reg2hw.wkup_cause[wkup_sel_i];
+
+  // Get pin value based on Mio and Dio selection.
+  logic pin_val;
+  assign pin_val = wkup_detector.miodio.q ?
+                   (wkup_detector_padsel.q >= pinmux_reg_pkg::NDioPads ? 0 :
+                    dio_in_i[wkup_detector_padsel.q]) :
+                   (wkup_detector_padsel.q >= (pinmux_reg_pkg::NMioPads + 2) ? 0 :
+                    wkup_detector_padsel == 0 ? 0 :
+                    wkup_detector_padsel == 1 ? 1 :
+                    mio_in_i[wkup_detector_padsel.q - 2]);
+
+  // Get filterd pin value.
+  logic [3:0] filter_vals;
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
+      filter_vals <= 4'b0;
+    end else if (pin_val == filter_vals[0]) begin
+      filter_vals <= (filter_vals << 1) | pin_val;
+    end else begin
+      filter_vals <= {filter_vals[3], filter_vals[3], filter_vals[3], pin_val};
+    end
+  end
+
+  logic final_pin_val = wkup_detector.filter.q ? filter_vals[3] : pin_val;
+
+  // Threshold counters.
+  // Adding one more bit for the counters to check overflow case.
+  bit [WkupCntWidth:0] high_cnter, low_cnter;
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni || !wkup_detector_en.q) begin
+      high_cnter <= 0;
+      low_cnter  <= 0;
+    end else if (wkup_detector.mode.q == 3) begin
+      low_cnter <= 0;
+      if ($past(final_pin_val, 2) && (high_cnter < wkup_detector_cnt_th.q)) begin
+        high_cnter <= high_cnter + 1;
+      end else begin
+        high_cnter <= 0;
+      end
+    end else if (wkup_detector.mode.q == 4) begin
+      high_cnter  <= 0;
+      if (!$past(final_pin_val, 2) && (low_cnter < wkup_detector_cnt_th.q)) begin
+        low_cnter <= low_cnter + 1;
+      end else begin
+        low_cnter <= 0;
+      end
+    end else begin
+      high_cnter <= 0;
+      low_cnter  <= 0;
+    end
+  end
+
+  `ASSERT(WkupPosedge_A, wkup_detector_en.q && wkup_detector.mode.q == 0 &&
+          $rose($past(final_pin_val, 2)) |=>
+          wkup_cause.q || $past(u_reg.aon_wkup_cause_we),
+          clk_aon_i, !rst_aon_ni)
+  `ASSERT(WkupNegedge_A, wkup_detector_en.q && wkup_detector.mode.q == 1 &&
+          $fell($past(final_pin_val, 2)) |=>
+          wkup_cause.q || $past(u_reg.aon_wkup_cause_we),
+          clk_aon_i, !rst_aon_ni)
+  `ASSERT(WkupEdge_A, wkup_detector_en.q && wkup_detector.mode.q == 2 &&
+          ($fell($past(final_pin_val, 2)) || $rose($past(final_pin_val, 2))) |=>
+          wkup_cause.q || $past(u_reg.aon_wkup_cause_we),
+          clk_aon_i, !rst_aon_ni)
+  `ASSERT(WkupTimedHigh_A, (high_cnter >= wkup_detector_cnt_th.q) && wkup_detector_en.q &&
+          wkup_detector.mode.q == 3 |=>
+          wkup_cause.q || $past(u_reg.aon_wkup_cause_we),
+          clk_aon_i, !rst_aon_ni)
+  `ASSERT(WkupTimedLow_A, (low_cnter >= wkup_detector_cnt_th.q) && wkup_detector_en.q &&
+          wkup_detector.mode.q == 4 |=>
+          wkup_cause.q || $past(u_reg.aon_wkup_cause_we),
+          clk_aon_i, !rst_aon_ni)
+
+  `ASSERT(AonWkupO_A, wkup_cause.q |-> pin_wkup_req_o, clk_aon_i, !rst_aon_ni)
 
   // ------ JTAG pinmux input assertions ------
   `ASSERT(LcJtagOWoScanmode_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::LcTapSel &&
