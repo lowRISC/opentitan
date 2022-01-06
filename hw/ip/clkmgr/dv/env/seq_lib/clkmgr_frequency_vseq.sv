@@ -169,7 +169,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
             `uvm_info(`gfn, $sformatf(
                       "Expect %0s to get a %0s error",
                       clk_mesr.name,
-                      (min_threshold > expected ? "slow" : "fast" )), UVM_MEDIUM)
+                      (min_threshold > expected ? "slow" : "fast")
+                      ), UVM_MEDIUM)
             cfg.scoreboard.set_exp_alert(.alert_name("recov_fault"), .max_delay(4000));
             expected_recov_err[clk] = 1;
           end

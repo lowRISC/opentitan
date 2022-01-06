@@ -39,14 +39,32 @@ module pwrmgr_bind;
     .pwr_ast_i
   );
 
+  bind pwrmgr clkmgr_pwrmgr_sva_if clkmgr_pwrmgr_sva_if (
+    .clk_i,
+    .rst_ni,
+    .io_clk_en(pwr_clk_o.io_ip_clk_en),
+    .io_status(pwr_clk_i.io_status),
+    .main_clk_en(pwr_clk_o.main_ip_clk_en),
+    .main_status(pwr_clk_i.main_status),
+    .usb_clk_en(pwr_clk_o.usb_ip_clk_en),
+    .usb_status(pwr_clk_i.usb_status)
+  );
+
   bind pwrmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
+    // Input resets.
+    .rstreqs_i(rstreqs_i),
+    .reset_en(reg2hw.reset_en),
+    .sw_rst_req_i(sw_rst_req_i),
+    .main_rst_req_i(rst_main_ni),
+    .esc_rst_req_i(esc_rst_req),
     // The outputs from pwrmgr.
     .rst_lc_req(pwr_rst_o.rst_lc_req),
     .rst_sys_req(pwr_rst_o.rst_sys_req),
+    .rstreqs(pwr_rst_o.rstreqs),
     .ndm_sys_req(1'b0),
-    .reset_cause(pwrmgr_pkg::ResetNone),
+    .reset_cause(pwr_rst_o.reset_cause),
     // The inputs from rstmgr.
     .rst_lc_src_n(pwr_rst_i.rst_lc_src_n),
     .rst_sys_src_n(pwr_rst_i.rst_sys_src_n)

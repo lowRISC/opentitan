@@ -75,9 +75,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
             cfg.pwrmgr_vif.glitch_power_reset();
           end
           if (escalation_reset)
-            fork
-              send_escalation_reset(20);
-            join_none
+            send_escalation_reset();
           `uvm_info(`gfn, $sformatf(
                     "Sending reset=%b, power_glitch=%b, escalation=%b",
                     resets,
@@ -92,8 +90,9 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
         end
       join
 
-      cov.reset_wakeup_distance_cg.sample(cycles_before_reset - cycles_before_wakeup);
-
+      if (cfg.en_cov) begin
+        cov.reset_wakeup_distance_cg.sample(cycles_before_reset - cycles_before_wakeup);
+      end
       // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
       // This read will not work in the chip, since the processor will be asleep.
       cfg.slow_clk_rst_vif.wait_clks(4);
@@ -127,6 +126,9 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       // Instead, we just check if the interrupt status is asserted and it is enabled the
       // output interrupt is active.
       check_and_clear_interrupt(.expected(1'b1), .check_expected('0));
+      // Clear hardware resets: if they are enabled they are cleared when rst_lc_req[1] goes active,
+      // but this makes sure they are cleared even if none is enabled for the next round.
+      cfg.pwrmgr_vif.update_resets('0);
     end
   endtask
 
