@@ -80,7 +80,7 @@ module pinmux_assert_fpv
            TargetCfg.tdo_idx}))
   `ASSUME(MioSelStable_M, ##1 $stable(mio_sel_i))
 
-  `ASSUME(DioSelRange_M, dio_sel_i < pinmux_reg_pkg::NMioPads)
+  `ASSUME(DioSelRange_M, dio_sel_i < pinmux_reg_pkg::NDioPads)
   `ASSUME(DioSelStable_M, ##1 $stable(dio_sel_i))
 
   // ------ Input mux assertions ------
