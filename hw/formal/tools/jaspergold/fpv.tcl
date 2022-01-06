@@ -86,7 +86,7 @@ if {$env(DUT_TOP) == "rv_dm"} {
 
 } elseif {$env(DUT_TOP) == "pinmux_tb"} {
   clock clk_i -both_edges
-  clock clk_aon_i
+  clock clk_aon_i -factor 5
   clock -rate -default clk_i
   reset -expr {!rst_ni !rst_aon_ni}
 } else {
