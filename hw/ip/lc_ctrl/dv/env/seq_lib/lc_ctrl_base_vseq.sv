@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class lc_ctrl_base_vseq extends cip_base_vseq #(
-    .RAL_T               (lc_ctrl_reg_block),
-    .CFG_T               (lc_ctrl_env_cfg),
-    .COV_T               (lc_ctrl_env_cov),
-    .VIRTUAL_SEQUENCER_T (lc_ctrl_virtual_sequencer)
-  );
+  .RAL_T              (lc_ctrl_reg_block),
+  .CFG_T              (lc_ctrl_env_cfg),
+  .COV_T              (lc_ctrl_env_cov),
+  .VIRTUAL_SEQUENCER_T(lc_ctrl_virtual_sequencer)
+);
   `uvm_object_utils(lc_ctrl_base_vseq)
 
   // various knobs to enable certain routines
   bit do_lc_ctrl_init = 1'b1;
 
   lc_ctrl_state_pkg::lc_state_e lc_state;
-  lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
+  lc_ctrl_state_pkg::lc_cnt_e lc_cnt;
 
   `uvm_object_new
 
@@ -36,6 +36,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   virtual task pre_start();
     // LC_CTRL does not have interrupts
     do_clear_all_interrupts = 0;
+    // Set the sequence typename in the interface to aid debugging
+    cfg.lc_ctrl_vif.set_test_sequence_typename(this.get_type_name());
     super.pre_start();
   endtask
 
@@ -61,7 +63,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_cnt, (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);)
     end else begin
       lc_state = LcStRaw;
-      lc_cnt = LcCnt0;
+      lc_cnt   = LcCnt0;
     end
     cfg.lc_ctrl_vif.init(lc_state, lc_cnt);
   endtask
@@ -85,13 +87,13 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
         lc_ctrl_pkg::lc_tx_t rsp;
         wait(cfg.lc_ctrl_vif.clk_byp_req_o == lc_ctrl_pkg::On);
         rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
-                          lc_ctrl_pkg::On;
+            lc_ctrl_pkg::On;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
 
-        wait (cfg.lc_ctrl_vif.clk_byp_req_o != lc_ctrl_pkg::On);
+        wait(cfg.lc_ctrl_vif.clk_byp_req_o != lc_ctrl_pkg::On);
         rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
-                          lc_ctrl_pkg::Off;
+            lc_ctrl_pkg::Off;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
       end
@@ -104,21 +106,20 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
         lc_ctrl_pkg::lc_tx_t rsp;
         wait(cfg.lc_ctrl_vif.flash_rma_req_o == lc_ctrl_pkg::On);
         rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
-                          lc_ctrl_pkg::On;
+            lc_ctrl_pkg::On;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
 
-        wait (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On);
+        wait(cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On);
         rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
-                          lc_ctrl_pkg::Off;
+            lc_ctrl_pkg::Off;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
       end
     join_none
   endtask
 
-  virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state,
-                                 bit [TL_DW*4-1:0] token_val);
+  virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);
     bit trigger_alert;
     bit [TL_DW-1:0] status_val;
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
@@ -130,8 +131,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.transition_cmd, 'h01);
 
     // Wait for status done or terminal errors
-    `DV_SPINWAIT(
-        while (1) begin
+    `DV_SPINWAIT(while (1) begin
           csr_rd(ral.status, status_val);
           if (get_field_val(ral.status.transition_successful, status_val)) break;
           if (get_field_val(ral.status.token_error, status_val)) break;
@@ -152,5 +152,13 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(ral.lc_state, val);
     csr_rd(ral.lc_transition_cnt, val);
   endtask
+
+  // Sample the coverage for this sequence
+  virtual function void sample_cov();
+    // Only if coverage enabled
+    if(cfg.en_cov) begin
+      p_sequencer.cov.sample_cov();
+    end
+  endfunction
 
 endclass : lc_ctrl_base_vseq

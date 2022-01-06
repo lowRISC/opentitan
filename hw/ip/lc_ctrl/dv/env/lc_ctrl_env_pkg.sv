@@ -78,6 +78,8 @@ package lc_ctrl_env_pkg;
     bit transition_err;
     // Invalid transition because count already at maximum
     bit transition_count_err;
+    // Randomly assert one or more escalate inputs
+    bit security_escalation_err;
   } lc_ctrl_err_inj_t;
 
   // Test phase - used to synchronise the scoreboard
@@ -87,6 +89,7 @@ package lc_ctrl_env_pkg;
     LcCtrlDutReady,
     LcCtrlBadNextState,
     LcCtrlWaitTransition,
+    LcCtrlRandomEscalate,
     LcCtrlTransitionComplete,
     LcCtrlReadState1,
     LcCtrlEscalate,

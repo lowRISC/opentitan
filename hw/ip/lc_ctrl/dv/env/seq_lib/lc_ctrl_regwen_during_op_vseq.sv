@@ -46,6 +46,7 @@ class lc_ctrl_regwen_during_op_vseq extends lc_ctrl_smoke_vseq;
             while(cfg.m_otp_prog_pull_agent_cfg.vif.req != 1) cfg.clk_rst_vif.wait_clks(1);,
             cfg.clk_rst_vif.wait_clks(max_wait);, wait_msg)
 
+        cfg.clk_rst_vif.wait_clks(100);
         // Read TRANSITION_REGWEN register - should be 0 by now
         csr_rd_check(.ptr(ral.transition_regwen), .compare_value(0));
 

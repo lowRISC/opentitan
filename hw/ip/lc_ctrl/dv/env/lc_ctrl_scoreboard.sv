@@ -268,6 +268,13 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
 
+      if (cfg.test_phase inside {[LcCtrlRandomEscalate : LcCtrlPostStart]}) begin
+        if (cfg.err_inj.security_escalation_err) begin
+          // Expect escalate to be asserted
+          exp.lc_escalate_en_o = lc_ctrl_pkg::On;
+        end
+      end
+
       // when lc successfully req a transition, all outputs are turned off.
       if (ral.status.transition_successful.get()) begin
         check_lc_outputs(exp, $sformatf("Called from line: %0d", `__LINE__));
@@ -289,6 +296,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     // OTP program error is expected
     bit prog_err_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp;
 
+
     // Exceptions to default
     unique case (cfg.test_phase)
       LcCtrlTestInit, LcCtrlIterStart, LcCtrlDutReady, LcCtrlWaitTransition: begin
@@ -299,7 +307,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         // Default PostTransition
         lc_state_single_exp = DecLcStPostTrans;
 
-        if (state_err_exp) begin
+        if (cfg.err_inj.security_escalation_err) begin
+          // We should have entered escalate state
+          lc_state_single_exp = DecLcStEscalate;
+        end else if (state_err_exp) begin
           // For state error prior to escalate being triggered we expect Invalid
           lc_state_single_exp = DecLcStInvalid;
         end
@@ -308,7 +319,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         // Default PostTransition
         lc_state_single_exp = DecLcStPostTrans;
 
-        if (state_err_exp || prog_err_exp) begin
+        if (cfg.err_inj.security_escalation_err) begin
+          // We should have entered escalate state
+          lc_state_single_exp = DecLcStEscalate;
+        end else if (state_err_exp || prog_err_exp) begin
           // For state / prog error after escalate is triggered we expect Escalate
           lc_state_single_exp = DecLcStEscalate;
         end
