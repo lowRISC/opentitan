@@ -2,30 +2,111 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: "pwm"
-  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/enable_reg_testplan.hjson",
-                     // TODO: enable for V2
-                     //"hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"],
-  testpoints: [
-    {
-      name: smoke
-      desc: '''
-            Smoke test accessing a major datapath within the pwm
+    name: "pwm"
+    import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                       "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                       "hw/dv/tools/dvsim/testplans/enable_reg_testplan.hjson",                      
+                       "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                       "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"],
+    testpoints: [
+        {
+            name: smoke
+            desc: '''
+            Smoke is a simple test accessing a major data path within the pwm
 
             Stimulus:
-              - Program pwm enable register (PWM_EN)
-              - Program configuration registers (CFG, INVERT)
-              - Disable blink and heartbeat enable registers (these mode are verified with other tests)
-              - Program REGEN to lock (enable) register settings and start pwm function
+            - run segments on one channel in standard mode
+            - both send read and write commands
+            - reads and writes the Host FIFO's
+                - uses different clock divisions and resolutions
 
             Checks:
-              - Ensure the output pulses are correctly modulated for all channels
+                - Ensure the output pulses for a single channel i correctly modulated
             '''
       milestone: V1
       tests: ["pwm_smoke"]
+    }
+    {
+      name: dutycycle
+      desc: '''
+            Verify different duty cycle settings in Pulse, Blink and Heart Beat mode.
+
+            '''
+      milestone: V2
+      tests: ["pwm_smoke"]
+    }
+    {
+      name: pulse
+      desc: '''
+            Verify the pulse mode of the PWM
+            by de-asserting blink_en field in the PWM_PARAM register
+            '''
+      milestone: V2
+      tests: ["pwm_smoke"]
+    }
+    {
+      name: Blink
+      desc: '''
+            Verify the blink mode of the PWM
+            by asserting the blink_en field in the PWM_PARAM register
+            '''
+      milestone: V2
+      tests: ["pwm_moke"]
+    }
+    {
+      name: heartbeat
+      desc: '''
+            Verify the Heart Beat mode of the PWM
+            by asserting the blink_en and HTBT field in the PWM_PARAM register
+            '''
+        milestone: V2
+        tests: []
+    }
+   {
+      name: resolution
+      desc: '''
+            Verify the PWM generates correct duty cycle for different resolution settings
+            '''
+        milestone: V2
+        tests: ["pwm_smoke"]
+    }
+    {
+      name: multi_channel
+      desc: '''
+            Verifies that PWM correctly generates pulses on multiple channels concurrently
+            '''
+        milestone: V2
+        tests: []
+    }
+    {
+      name: polarity
+      desc: '''
+            Verify that the polarity of the pulse can be inverted by setting the invert channel bit in the invert register
+            '''
+        milestone: V2
+        tests: []
+    }
+    {
+      name: phase
+      desc: '''
+            Check that the relative phase between pulses matches the setting in the phase_delay field in the PWM_PARAM register.
+            '''
+        milestone: V2
+        tests: []
+    }
+    {
+      name: lowpower
+      desc: '''
+            Verify the PWM can continue when the chip is in low power mode.
+            Stimulus:
+                - start PWM on one or more channels
+                - stop the TL UL clock
+
+            Checks:
+                - Ensure pulses are still generated when in LP mode
+            '''
+        milestone: V2
+        tests: []
     }
     {
       name: perf
@@ -33,80 +114,112 @@
             Checking ip operation at min/max bandwidth
 
             Stimulus:
-              - Program timing registers (CLK_DIV, DC_RESN) to high/low values (slow/fast data rate)
-              - Program other required registers for pwm operation
-              - Start pwm channels
+                - Program timing registers (CLK_DIV, DC_RESN) to high/low values (slow/fast data rate)
+                - Program other required registers for pwm operation
+                - Start pwm channels
 
             Checks:
-              - Ensure the output pulses are correctly modulated for all channels
+                - Ensure the output pulses are correctly modulated for all channels
             '''
       milestone: V2
-      tests: ["pwm_perf"]
+      tests: []
     }
     {
-      name: blink
-      desc: '''
-            Test the blinking mode of pwm
-
-            Stimulus:
-              - Program pwm enable register (PWM_EN)
-              - Program configuration registers (CFG, INVERT)
-              - Enable blink mode (BLINK_EN) and program DUTY_CYCLE register
-              - Program REGEN to lock (enable) register settings and start pwm function
-
-            Checks:
-              - Ensure the output pulses are correctly modulated for all channels
-              - Ensure blinking channel toggles by two duty cycle values programmed to DUTY_CYCLE register
-            '''
-      milestone: V2
-      tests: ["pwm_blink"]
-    }
-    {
-      name: heartbeat
-      desc: '''
-            Test the heartbeat mode of pwm
-
-            Stimulus:
-              - Program pwm enable register (PWM_EN)
-              - Program configuration registers (CFG, INVERT)
-              - Enable heartbeat mode (HTBT_EN) and programm BLINK_PARAM register
-              - Program REGEN to lock (enable) register settings and start pwm function
-
-            Checks:
-              - Ensure the output pulses are correctly modulated for all channels
-              - Ensure output duty cycle linearly increments and decrements between two
-                blink-rate values programmed to BLINK_PARAM register
-            '''
-      milestone: V2
-      tests: ["pwm_heartbeat"]
-    }
-    {
-      name: clock_domain
-      desc: '''
+          name: clock_domain
+          desc: '''
             TBD -Verify the function of clock-crossing domain for pwm
 
             Stimulus:
-              - TBD
+                - TBD
 
             Checking:
-              - TBD
-      '''
-      milestone: V2
-      tests: ["pwm_clock_domain"]
-    }
-    {
-      name: stress_all
-      desc: '''
+                - TBD
+            '''
+          milestone: V2
+          tests: []
+      }
+      {
+          name: stress_all
+          desc: '''
             Combine above sequences in one test then randomly select for running
 
             Stimulus:
-              - Start sequences and randomly add reset between each sequence
+                - Start sequences and randomly add reset between each sequence
 
             Checking:
-              - All sequences should be finished and checked by the scoreboard
-      '''
-      milestone: V2
-      tests: ["pwm_stress_all"]
+                - All sequences should be finished and checked by the scoreboard
+            '''
+          milestone: V2
+          tests: []
+      }
+  ]
+
+ covergroups: [
+    {
+     name: regwen_cg
+      desc: '''
+            Covers that an attempt to write wen REG enable was made and was unsuccessful
+            '''
+    }
+    {
+     name: cfg_cg
+      desc: '''
+            Covers that valid settings for the PWM.CFG register has been tested.
+            This includes values for:
+                - clk_div
+                - dc_resn
+                - cntr_en
+            '''
+    }
+    {
+     name: pwm_en_cg
+      desc: '''
+            Covers that both runs with a single PWM channel and multiple channels has been tested.
+            Verifies both when the channels are enabled for parallel behavior (activated at the same time)
+            and activated individually
+            '''
+    }
+    {
+     name: invert_cg
+      desc: '''
+            Covers that channels have been tested with different polarity
+            Also cover that a mix channels with invert enabled and disabled concurrently have been tested.
+                '''
+    }
+    {
+     name: pwm_param_cg
+      desc: '''
+            Covers that both pulse, blink and heart beat mode have been tested.
+            Also covers that.
+            - various phase delays have been tested
+            - different delays on different concurrent channels
+            '''
+    }
+    {
+     name: duty_cycle_cg
+      desc: '''
+            Covers that a good range of combinations of values for A and B have been send.
+            Also cover that multiple channels can run concurrently with different settings for A and B.
+            '''
+    }
+    {
+     name: blink_param_cg
+      desc: '''
+            Covers that a good range of combinations of values for X and Y have been seend.
+            Also cover that multiple channels can run concurrently with different settings for X and Y.
+            '''
+    }
+    {
+     name: lowpower_cg
+      desc: '''
+            Covers that the DUT will continue to produce pulses with TL clock disabled (low power mode)
+            '''
+    }
+    {
+     name: clock_cg
+      desc: '''
+            Cover that a range of frequencies have been tested for the PWM clock including a clock that matches the TL clk.
+            '''
     }
   ]
 }
