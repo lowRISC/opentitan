@@ -72,6 +72,11 @@
     }
 
     {
+      name: lc_ctrl_security_escalation
+      uvm_test_seq: lc_ctrl_security_escalation_vseq
+    }
+
+    {
       name: lc_ctrl_regwen_during_op
       uvm_test_seq: lc_ctrl_regwen_during_op_vseq
       reseed: 10
@@ -194,6 +199,11 @@
       uvm_test_seq: "lc_ctrl_common_vseq"
       run_opts: ["+run_alert_test", "+en_scb=0", "+jtag_csr=1", "+create_jtag_riscv_map=1"]
       reseed: 10
+    }
+
+    {
+      name: "lc_ctrl_stress_all"
+      uvm_test_seq: lc_ctrl_stress_all_vseq
     }
 
   ]

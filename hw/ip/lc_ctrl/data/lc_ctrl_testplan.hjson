@@ -116,7 +116,14 @@
                upon next power cycle
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_security_escalation",
+              "lc_ctrl_errors",
+              "lc_ctrl_state_failure",
+              "lc_ctrl_prog_failure",
+              "lc_ctrl_jtag_errors",
+              "lc_ctrl_jtag_state_failure",
+              "lc_ctrl_jtag_prog_failure"
+              ]
     }
     {
       name: jtag_access
@@ -163,10 +170,11 @@
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence.
+            - Random selection of Tilelink or JTAG CSR for each sequence
             - Randomly add reset between each sequence.
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_stress_all"]
     }
   ]
 }

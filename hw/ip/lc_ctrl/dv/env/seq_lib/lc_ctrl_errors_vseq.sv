@@ -19,6 +19,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   rand int unsigned fsm_state_err_inj_period;
   rand int unsigned fsm_count_err_inj_delay;
   rand int unsigned fsm_count_err_inj_period;
+  rand int unsigned security_escalation_err_inj_delay;
+  rand bit [1:0] security_escalation_err_inj_channels;
+
 
   bit fatal_prog_alert_received;
   bit fatal_state_alert_received;
@@ -58,6 +61,12 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     err_inj.otp_partition_err == 0;
   }
 
+  constraint security_escalation_c {
+    err_inj.security_escalation_err == 0;
+    security_escalation_err_inj_delay == 0;
+    security_escalation_err_inj_channels == 0;
+  }
+
   constraint invalid_states_bin_c {
     !(invalid_lc_state_bin inside {ValidLcStatesBin});
     !(invalid_lc_count_bin inside {ValidLcCountsBin});
@@ -89,6 +98,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     // Clear all error injection bits so we end with a clean lc_ state, lc_count etc.
     err_inj = 0;
+    update_err_inj_cfg();
+
     // Clear assertions disabled flag
     assertions_disabled = 0;
 
@@ -107,6 +118,14 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 1)
     `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 1)
 
+    // Kill sub processes
+    disable handle_alerts;
+    disable handle_escalate;
+    disable run_clk_byp_rsp_nonblocking;
+    disable run_flash_rma_rsp_nonblocking;
+
+    // Make sure OTP response queue is cleared
+    cfg.m_otp_prog_pull_agent_cfg.clear_d_user_data();
     // delay to avoid race condition when sending item and checking no item after reset occur
     // at the same time
     #1ps;
@@ -248,10 +267,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         cfg.set_test_phase(LcCtrlPostTransTransitionComplete);
       end
       // verilog_format: on
+
       // Sample coverage if enabled
-      if (cfg.en_cov) begin
-        sample_cov();
-      end
+      sample_cov();
 
     end
 
@@ -271,7 +289,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     fatal_bus_integ_alert_received = 0;
 
     // Disable assertions depending on error injection
-    if (err_inj.clk_byp_error_rsp) begin
+    if (err_inj.clk_byp_error_rsp || err_inj.security_escalation_err) begin
       `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A", 0)
       `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 0)
       `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 0)
@@ -306,16 +324,6 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         })
   endfunction
   // verilog_format: on - avoid bad formatting
-
-  // This function add otp_program_i's error bit field from the otp_prog_pull_agent device driver.
-  // The pushed data length is (num_trans * 2) because for each transaction, we will have two
-  // otp_program request at most (one for lc_token and one for lc_state)
-  virtual function void add_otp_prog_err_bit();
-    repeat (num_trans * 2) begin
-      bit err_bit = err_inj.otp_prog_err ? $urandom_range(0, 1) : 0;
-      cfg.m_otp_prog_pull_agent_cfg.add_d_user_data(err_bit);
-    end
-  endfunction
 
   virtual function void set_hashed_token();
     lc_ctrl_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
@@ -411,6 +419,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);
     bit trigger_alert;
+    bit terminate_wait_status = 0;
     bit [TL_DW-1:0] status_val = 0;
 
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
@@ -423,16 +432,30 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       csr_wr(ral.transition_token[i], token_val[TL_DW-1:0]);
       token_val = token_val >> TL_DW;
     end
-    csr_wr(ral.transition_cmd, 'h01);
-    // Wait for status done or terminal errors
-    `DV_SPINWAIT(wait_status(trigger_alert);)
-    // always on alert, set time delay to make sure alert triggered for at least for one
-    // handshake cycle
-    if (trigger_alert) cfg.clk_rst_vif.wait_clks($urandom_range(50, 20));
+
+    fork
+      begin : transition_process
+        csr_wr(ral.transition_cmd, 'h01);
+        // Wait for status done or terminal errors
+        `DV_SPINWAIT(wait_status(trigger_alert, terminate_wait_status);)
+        // always on alert, set time delay to make sure alert triggered
+        // for at least for one  handshake cycle
+        if (trigger_alert) cfg.clk_rst_vif.wait_clks($urandom_range(50, 20));
+      end
+      begin : inject_escalate_process
+        if (err_inj.security_escalation_err) begin
+          security_escalation_inject();
+          cfg.clk_rst_vif.wait_clks($urandom_range(50, 100));
+          // Do not bother waiting for completion status
+          terminate_wait_status = 1;
+        end
+      end
+    join
+
   endtask
 
   // Wait for status done or terminal errors
-  virtual task wait_status(ref bit expect_alert);
+  virtual task wait_status(ref bit expect_alert, ref bit terminate);
     bit [TL_DW-1:0] status_val;
     bit state_error_exp, state_error_act;
     bit count_error_exp, count_error_act;
@@ -444,6 +467,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     // verilog_format: off - avoid bad formatting
     forever begin
+      // If we are in random escalate injection state delay a little to
+      // allow the escalate to be recognised
+      if (cfg.test_phase == LcCtrlRandomEscalate) cfg.clk_rst_vif.wait_clks(5);
       csr_rd(ral.status, status_val);
       `uvm_info(`gfn, {"wait_status: ", ral.status.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
       if (get_field_val(ral.status.transition_successful, status_val)) break;
@@ -460,7 +486,10 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       end
       // verilog_format: on
       // Random delay to next read
-      cfg.clk_rst_vif.wait_clks($urandom_range(10, 1));
+      cfg.clk_rst_vif.wait_clks($urandom_range(10, 3));
+
+      // Allow us to quit from waiting in a quiescent state
+      if (terminate) break;
     end
 
     // Expected bits
@@ -480,13 +509,15 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     transition_count_error_act = get_field_val(ral.status.transition_count_error, status_val);
     otp_partition_error_act = get_field_val(ral.status.otp_partition_error, status_val);
 
-    // Check status against expected from err_inj
-    `DV_CHECK_EQ(state_error_act, state_error_exp)
-    `DV_CHECK_EQ(token_error_act, token_error_exp)
-    `DV_CHECK_EQ(flash_rma_error_act, flash_rma_error_exp)
-    `DV_CHECK_EQ(otp_error_act, otp_error_exp)
-    `DV_CHECK_EQ(transition_count_error_exp, transition_count_error_act)
-    `DV_CHECK_EQ(otp_partition_error_exp, otp_partition_error_act)
+    if (!terminate) begin
+      // Check status against expected from err_inj
+      `DV_CHECK_EQ(state_error_act, state_error_exp)
+      `DV_CHECK_EQ(token_error_act, token_error_exp)
+      `DV_CHECK_EQ(flash_rma_error_act, flash_rma_error_exp)
+      `DV_CHECK_EQ(otp_error_act, otp_error_exp)
+      `DV_CHECK_EQ(transition_count_error_exp, transition_count_error_act)
+      `DV_CHECK_EQ(otp_partition_error_exp, otp_partition_error_act)
+    end
 
   endtask
 
@@ -504,11 +535,6 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     // Debug signal in lc_ctrl_if
     cfg.lc_ctrl_vif.err_inj <= err_inj;
     `uvm_info(`gfn, $sformatf("update_err_inj_cfg: %p", cfg.err_inj), UVM_MEDIUM)
-  endfunction
-
-  // Sample the coverage for this sequence
-  virtual function void sample_cov();
-    p_sequencer.cov.sample_cov();
   endfunction
 
   // Monitor alert events and trigger handling function
@@ -538,18 +564,24 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   endtask
 
   // Send an escalate alert
-  protected virtual task send_escalate(int index, int assert_clocks = 1);
+  // Deassert after an number of clock cycles if assert clocks > 0
+  // Otherwise leave asserted
+  protected virtual task send_escalate(int index, int assert_clocks = 0);
     // TODO - replace with calls to escalate agent when driver implemented
     unique case (index)
       0: begin
         cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b10;
-        cfg.clk_rst_vif.wait_clks(assert_clocks);
-        cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
+        if (assert_clocks > 0) begin
+          cfg.clk_rst_vif.wait_clks(assert_clocks);
+          cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
+        end
       end
       1: begin
         cfg.m_esc_scrap_state1_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b10;
-        cfg.clk_rst_vif.wait_clks(assert_clocks);
-        cfg.m_esc_scrap_state1_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
+        if (assert_clocks > 0) begin
+          cfg.clk_rst_vif.wait_clks(assert_clocks);
+          cfg.m_esc_scrap_state1_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
+        end
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("Invalid index %0d", index))
@@ -677,4 +709,15 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     join_none
   endtask
   // verilog_format: on
+
+  // Security escalation injection task
+  virtual task security_escalation_inject();
+    cfg.clk_rst_vif.wait_clks(security_escalation_err_inj_delay);
+    cfg.set_test_phase(LcCtrlRandomEscalate);
+    fork
+      if (security_escalation_err_inj_channels[0]) send_escalate(0);
+      if (security_escalation_err_inj_channels[1]) send_escalate(1);
+    join
+  endtask
+
 endclass

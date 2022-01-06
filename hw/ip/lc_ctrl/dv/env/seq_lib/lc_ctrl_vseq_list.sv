@@ -10,8 +10,10 @@
 `include "lc_ctrl_state_failure_vseq.sv"
 `include "lc_ctrl_state_post_trans_vseq.sv"
 `include "lc_ctrl_lc_errors_vseq.sv"
+`include "lc_ctrl_security_escalation_vseq.sv"
 `include "lc_ctrl_jtag_access_vseq.sv"
 `include "lc_ctrl_jtag_priority_vseq.sv"
 `include "lc_ctrl_regwen_during_op_vseq.sv"
+`include "lc_ctrl_stress_all_vseq.sv"
 
 
