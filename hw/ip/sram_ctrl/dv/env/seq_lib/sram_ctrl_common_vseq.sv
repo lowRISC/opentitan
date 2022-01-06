@@ -17,8 +17,9 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
     void'($value$plusargs("run_%0s", common_seq_type));
 
     // To avoid reading out unknown data from mem, do init for mem test after 1st reset
-    // Also do init for integrity test to make sure mem has correct integrit
-    if ((!uvm_re_match("*mem*", common_seq_type) || !uvm_re_match("*intg*", common_seq_type)) &&
+    // Also do init for integrity test to make sure mem has correct integrity
+    if ((!uvm_re_match("*mem*", common_seq_type) ||
+         !uvm_re_match("*passthru_mem_tl_intg_err", common_seq_type)) &&
         !first_reset) begin
       do_sram_ctrl_init = 1;
       first_reset       = 1;
