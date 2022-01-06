@@ -58,12 +58,11 @@ typedef enum dif_alert_handler_class {
  * An alert, identified by a numeric id.
  *
  * Alerts are hardware-level events indicating that something catastrophic
- * has happened. An alert handler handle.consumes alerts, classifies them to a
+ * has happened. The alert handler consumes alerts, classifies them into a
  * particular `dif_alert_handler_class_t`, and uses policy information attached
  * to that class to handle it.
  *
- * The number of alerts is configurable at hardware-synthesis time, and is
- * specified by the software when initializing a `dif_alert_handler_t`.
+ * The number of alerts is configurable at hardware-synthesis time.
  */
 typedef uint32_t dif_alert_handler_alert_t;
 
@@ -87,13 +86,13 @@ typedef enum dif_alert_handler_local_alert {
 /**
  * An escalation signal, identified by a numeric id.
  *
- * An escalation signal is a generic "response" to failing to handle a
- * catastrophic event. What each signal means is determined by the chip.
+ * An escalation signal is a generic "response" to failing to handle alert(s).
+ * The meaning of each escalation signal means is determined by the chip.
  *
- * A `dif_alert_handler_class_t` can be configured to raise escalation signals
+ * A `dif_alert_handler_class_t` can be configured to raise escalation signal(s)
  * as part of its policy.
  */
-typedef uint32_t dif_alert_handler_signal_t;
+typedef uint32_t dif_alert_handler_escalation_signal_t;
 
 /**
  * An alert class state.
@@ -111,7 +110,7 @@ typedef uint32_t dif_alert_handler_signal_t;
  * At any point, software may end the escalation protocol by calling
  * `dif_alert_handler_escalation_clear()` (unless clearing is disabled).
  * Successfully calling this function, or clearing the IRQ on time, will reset
- * back to the idle state. Note that this function cannot clear the terminal
+ * the state back to idle. Note that this function cannot clear the terminal
  * state; that state can only be cleared by resetting the chip.
  */
 typedef enum dif_alert_handler_class_state {
@@ -164,9 +163,9 @@ typedef struct dif_alert_handler_class_phase_signal {
    */
   dif_alert_handler_class_state_t phase;
   /**
-   * The signal that should be triggered when this phase begins.
+   * The escalation signal that should be triggered when this phase begins.
    */
-  dif_alert_handler_signal_t signal;
+  dif_alert_handler_escalation_signal_t signal;
 } dif_alert_handler_class_phase_signal_t;
 
 /**
@@ -238,9 +237,8 @@ typedef struct dif_alert_handler_class_config {
    * Whether automatic escalation locking should be used for this class.
    *
    * When enabled, upon beginning the escalation protocol, the hardware will
-   * lock
-   * the escalation clear bit, so that software cannot stop escalation once it
-   * has begun.
+   * lock the escalation clear bit, so that software cannot stop escalation once
+   * it has begun.
    */
   dif_toggle_t automatic_locking;
 
@@ -299,7 +297,8 @@ typedef struct dif_alert_handler_config {
    * Note that the ping timer won't start until `dif_alert_handler_lock()` is
    * successfully called.
    *
-   * This value must fit in 24 bits.
+   * Note while this value must fit into the timeout register which is smaller
+   * than the native word length.
    */
   uint32_t ping_timeout;
 
@@ -328,35 +327,35 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_configure(
     const dif_alert_handler_t *alert_handler,
     dif_alert_handler_config_t config);
+
 /**
- * Locks out alert handler configuration functionality.
+ * Locks out alert handler ping timer configuration.
  *
  * Once locked, `dif_alert_handler_configure()` will return
- * `kDifAlertHandlerConfigLocked`.
+ * `kDifLocked`.
  *
  * This operation cannot be undone, and should be performed at the end of
  * configuring the alert handler in early boot.
  *
  * This function is reentrant: calling it while functionality is locked will
- * have no effect and return `kDifAlertHandlerOk`.
+ * have no effect and return `kDifOk`.
  *
  * @param handler An alert handler handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_alert_handler_lock(const dif_alert_handler_t *alert_handler);
+dif_result_t dif_alert_handler_lock_ping_timer(
+    const dif_alert_handler_t *alert_handler);
 
 /**
- * Checks whether this alert handler is locked.
- *
- * See `dif_alert_handler_lock()`.
+ * Checks whether alert handler's ping timer is locked.
  *
  * @param handler An alert handler handle.
  * @param is_locked Out-param for the locked state.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_alert_handler_is_locked(
+dif_result_t dif_alert_handler_is_ping_timer_locked(
     const dif_alert_handler_t *alert_handler, bool *is_locked);
 
 /**
