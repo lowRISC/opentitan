@@ -14,7 +14,7 @@ filesets:
       - lowrisc:dv:str_utils
       - lowrisc:dv:test_vectors
       - lowrisc:dv:digestpp_dpi:0.1
-      - lowrisc:dv:key_sideload_if
+      - lowrisc:dv:key_sideload_agent
       - lowrisc:ip:kmac
     files:
       - kmac_env_pkg.sv

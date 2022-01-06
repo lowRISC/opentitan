@@ -7,6 +7,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   // ext component cfgs
   rand otbn_model_agent_cfg model_agent_cfg;
 
+  rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
+
   `uvm_object_utils_begin(otbn_env_cfg)
   `uvm_object_utils_end
 
@@ -69,7 +71,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // Tell the CIP base code what alert we generate if we see a TL fault.
     tl_intg_alert_name = "fatal";
 
-    model_agent_cfg = otbn_model_agent_cfg::type_id::create("model_agent_cfg");
+    model_agent_cfg  = otbn_model_agent_cfg  ::type_id::create("model_agent_cfg");
+    keymgr_sideload_agent_cfg = key_sideload_agent_cfg::type_id
+                                ::create("keymgr_sideload_agent_cfg");
 
     super.initialize(csr_base_addr);
 

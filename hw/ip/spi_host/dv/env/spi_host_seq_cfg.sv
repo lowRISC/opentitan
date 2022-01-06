@@ -16,30 +16,45 @@ class spi_host_seq_cfg extends uvm_object;
   uint host_spi_max_runs              = 10;
 
   // knobs for dut's config registers
-  uint host_spi_min_csn_hcyc          = 0;
-  uint host_spi_max_csn_hcyc          = 15;
+  uint host_spi_min_csn_latency       = 0;
+  uint host_spi_max_csn_latency       = 15;
   uint host_spi_min_clkdiv            = 0;
   uint host_spi_max_clkdiv            = 15;
-  uint host_spi_min_tx1               = 0;
-  uint host_spi_max_tx1               = 15;
-  uint host_spi_min_txn               = 0;
-  uint host_spi_max_txn               = 15;
-  uint host_spi_min_rx                = 0;
-  uint host_spi_max_rx                = 15;
-  uint host_spi_min_dummy             = 0;
-  uint host_spi_max_dummy             = 15;
-  uint host_spi_min_speed             = 0;
-  uint host_spi_max_speed             = 2;
+  uint host_spi_min_len               = 3;
+  uint host_spi_max_len               = 6;
   uint host_spi_min_dly               = 0;
   uint host_spi_max_dly               = 5;
-  uint host_spi_min_txwm              = 0;
-  uint host_spi_max_txwm              = (1 << 9) - 1;
-  uint host_spi_min_rxwm              = 0;
-  uint host_spi_max_rxwm              = (1 << 7) - 1;
+  uint host_spi_max_rxwm              = SPI_HOST_RX_DEPTH;
+  uint host_spi_max_txwm              = SPI_HOST_TX_DEPTH;
+
+  uint host_spi_min_num_wr_bytes      = 1;
+  uint host_spi_max_num_wr_bytes      = SPI_HOST_TX_DEPTH;
+  uint host_spi_min_num_rd_bytes      = 1;
+  uint host_spi_max_num_rd_bytes      = SPI_HOST_RX_DEPTH;
 
   // scale factor, core clock is a random value
   // which is in range [bus_clk*(1-scale) : bus_clk*(1+scale)]
   real host_spi_clk_core_ratio        = 0.5;  // must be less than 1
+
+  // knobs for configuring available commands
+  int  read_pct                       = 50;
+  int  write_pct                      = 50;
+  bit  std_en                         = 1;
+  bit  dual_en                        = 0;
+  bit  quad_en                        = 0;
+
+
+  // the direction knobs are speciel,
+  // the setting is vs standart
+  // i.e a rx pc of 20 will result in
+  // 20 of RX transactions will be RX only the
+  // remailing 80% will be standard.
+  // similar for tx pct
+  // i.e the rx setting does not affect
+  // the tx distribution
+  // for the use the knob for the cmd
+  int  rx_only_weight                 = 20;
+  int  tx_only_weight                 = 20;
 
   `uvm_object_new
 

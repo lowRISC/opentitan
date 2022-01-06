@@ -55,7 +55,7 @@
             - Check that accessing its locked CSRs is gated during the transition operation.
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_regwen_during_op"]
     }
     {
       name: lc_prog_failure
@@ -126,7 +126,21 @@
             All above CSR sequences should be accessible via both interfaces.
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_jtag_access",
+              "lc_ctrl_jtag_smoke",
+              "lc_ctrl_jtag_state_post_trans",
+              "lc_ctrl_jtag_errors",
+              "lc_ctrl_jtag_prog_failure",
+              "lc_ctrl_jtag_errors",
+              "lc_ctrl_jtag_regwen_during_op",
+              "lc_ctrl_jtag_csr_hw_reset",
+              "lc_ctrl_jtag_csr_rw",
+              "lc_ctrl_jtag_csr_bit_bash",
+              "lc_ctrl_jtag_csr_aliasing",
+              "lc_ctrl_jtag_same_csr_outstanding",
+              "lc_ctrl_jtag_csr_mem_rw_with_rand_reset",
+              "lc_ctrl_jtag_alert_test"
+              ]
     }
     {
       name: jtag_priority
@@ -143,7 +157,7 @@
               interfaces.
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_jtag_priority"]
     }
     {
       name: stress_all

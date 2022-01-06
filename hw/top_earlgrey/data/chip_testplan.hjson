@@ -2026,7 +2026,7 @@
             - Verify that the CPU can fetch instructions from the ROM.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_rom_ctrl_integrity_check_test"]
     }
     {
       name: chip_rom_ctrl_ast_rom_cfg
@@ -2047,7 +2047,7 @@
               digest does not match the top 8 words of the ROM.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_rom_ctrl_integrity_check_test"]
     }
     {
       name: chip_sw_rom_ctrl_reset_glitch

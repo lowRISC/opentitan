@@ -302,18 +302,9 @@ module lc_ctrl
     // The assignments above are identical for the TAP.
     tap_hw2reg = hw2reg;
 
-    // Assignments gated by mutex.
-    hw2reg.claim_transition_if = sw_claim_transition_if_q;
-    if (mubi8_test_true_strict(sw_claim_transition_if_q)) begin
-      hw2reg.transition_ctrl   = use_ext_clock_q;
-      hw2reg.transition_token  = transition_token_q;
-      hw2reg.transition_target = transition_target_q;
-      hw2reg.transition_regwen = lc_idle_d;
-      hw2reg.otp_vendor_test_ctrl     = otp_vendor_test_ctrl_q;
-      hw2reg.otp_vendor_test_status   = otp_vendor_test_status;
-    end
-
+    // Assignments gated by mutex. Again, the TAP has priority.
     tap_hw2reg.claim_transition_if = tap_claim_transition_if_q;
+    hw2reg.claim_transition_if = sw_claim_transition_if_q;
     if (mubi8_test_true_strict(tap_claim_transition_if_q)) begin
       tap_hw2reg.transition_ctrl   = use_ext_clock_q;
       tap_hw2reg.transition_token  = transition_token_q;
@@ -321,6 +312,13 @@ module lc_ctrl
       tap_hw2reg.transition_regwen = lc_idle_d;
       tap_hw2reg.otp_vendor_test_ctrl     = otp_vendor_test_ctrl_q;
       tap_hw2reg.otp_vendor_test_status   = otp_vendor_test_status;
+    end else if (mubi8_test_true_strict(sw_claim_transition_if_q)) begin
+      hw2reg.transition_ctrl   = use_ext_clock_q;
+      hw2reg.transition_token  = transition_token_q;
+      hw2reg.transition_target = transition_target_q;
+      hw2reg.transition_regwen = lc_idle_d;
+      hw2reg.otp_vendor_test_ctrl     = otp_vendor_test_ctrl_q;
+      hw2reg.otp_vendor_test_status   = otp_vendor_test_status;
     end
   end
 
@@ -333,19 +331,20 @@ module lc_ctrl
     otp_vendor_test_ctrl_d    = otp_vendor_test_ctrl_q;
     use_ext_clock_d           = use_ext_clock_q;
 
-    // SW mutex claim.
-    if (mubi8_test_false_loose(tap_claim_transition_if_q) &&
-        reg2hw.claim_transition_if.qe) begin
-      sw_claim_transition_if_d = mubi8_t'(reg2hw.claim_transition_if.q);
-    end
-    // TAP mutex claim. This has prio over SW above.
+    // TAP mutex claim. This has prio over SW.
     if (mubi8_test_false_loose(sw_claim_transition_if_q) &&
         tap_reg2hw.claim_transition_if.qe) begin
       tap_claim_transition_if_d = mubi8_t'(tap_reg2hw.claim_transition_if.q);
+    // SW mutex claim.
+    end else if (mubi8_test_false_loose(tap_claim_transition_if_q) &&
+        reg2hw.claim_transition_if.qe) begin
+      sw_claim_transition_if_d = mubi8_t'(reg2hw.claim_transition_if.q);
     end
+
 
     // The idle signal serves as the REGWEN in this case.
     if (lc_idle_d) begin
+      // The TAP has priority.
       if (mubi8_test_true_strict(tap_claim_transition_if_q)) begin
         transition_cmd = tap_reg2hw.transition_cmd.q &
                          tap_reg2hw.transition_cmd.qe;

@@ -146,8 +146,15 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
                 err_inj
                 ), UVM_MEDIUM)
 
+      // Randomly check for ready - but not when a non transition state
+      // or an illegal state will be driven via the OTP
       if ($urandom_range(0, 1)) begin
-        csr_rd_check(.ptr(ral.status.ready), .compare_value(1));
+        if (valid_state_for_trans(lc_state) && !err_inj.state_err && !err_inj.count_err) begin
+          csr_rd_check(.ptr(ral.status.ready), .compare_value(1));
+        end else begin
+          // We expect ready to be zero when a bad state is driven
+          csr_rd_check(.ptr(ral.status.ready), .compare_value(0));
+        end
       end
 
       cfg.set_test_phase(LcCtrlDutReady);

@@ -13,6 +13,7 @@ class kmac_env extends cip_base_env #(
   `uvm_component_new
 
   kmac_app_agent m_kmac_app_agent[kmac_pkg::NumAppIntf];
+  key_sideload_agent keymgr_sideload_agent;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -27,9 +28,9 @@ class kmac_env extends cip_base_env #(
     if (!uvm_config_db#(idle_vif)::get(this, "", "idle_vif", cfg.idle_vif)) begin
       `uvm_fatal(`gfn, "failed to get idle_vif handle from uvm_config_db")
     end
-    if (!uvm_config_db#(sideload_vif)::get(this, "", "sideload_vif", cfg.sideload_vif)) begin
-      `uvm_fatal(`gfn, "failed to get sideload_vif handle from uvm_config_db")
-    end
+    keymgr_sideload_agent = key_sideload_agent::type_id::create("keymgr_sideload_agent", this);
+    uvm_config_db#(key_sideload_agent_cfg)::set(this, "keymgr_sideload_agent*",
+                                                "cfg", cfg.keymgr_sideload_agent_cfg);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -39,8 +40,10 @@ class kmac_env extends cip_base_env #(
       m_kmac_app_agent[i].monitor.analysis_port.connect(scoreboard.kmac_app_rsp_fifo[i].analysis_export);
       m_kmac_app_agent[i].m_data_push_agent.monitor.analysis_port.connect(
         scoreboard.kmac_app_req_fifo[i].analysis_export);
-      virtual_sequencer.kmac_app_sequencer_h[i] = m_kmac_app_agent[i].sequencer;
+      virtual_sequencer.kmac_app_sequencer_h[i]  = m_kmac_app_agent[i].sequencer;
+      virtual_sequencer.key_sideload_sequencer_h = keymgr_sideload_agent.sequencer;
     end
+    cfg.keymgr_sideload_agent_cfg.start_default_seq = 0;
 
   endfunction
 

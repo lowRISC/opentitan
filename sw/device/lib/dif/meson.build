@@ -2,6 +2,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Base DIF library
+sw_lib_dif_base = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_base',
+    sources: [
+      'dif_base.c',
+    ],
+  )
+)
+
 subdir('autogen')
 
 # ADC Control Interface DIF Library (dif_adc_ctrl)
@@ -56,6 +66,7 @@ test('dif_clkmgr_unittest', executable(
     sources: [
       'dif_clkmgr_unittest.cc',
       'autogen/dif_clkmgr_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_base.c',
       meson.source_root() / 'sw/device/lib/dif/dif_clkmgr.c',
       meson.source_root() / 'sw/device/lib/dif/autogen/dif_clkmgr_autogen.c',
       hw_ip_clkmgr_reg_h,
@@ -585,6 +596,7 @@ test('dif_alert_handler_unittest', executable(
     sources: [
       'dif_alert_handler_unittest.cc',
       'autogen/dif_alert_handler_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_base.c',
       meson.source_root() / 'sw/device/lib/dif/dif_alert_handler.c',
       meson.source_root() / 'sw/device/lib/dif/autogen/dif_alert_handler_autogen.c',
       hw_ip_alert_handler_reg_h,
@@ -621,6 +633,7 @@ test('dif_pwrmgr_unittest', executable(
     sources: [
       'dif_pwrmgr_unittest.cc',
       'autogen/dif_pwrmgr_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_base.c',
       meson.source_root() / 'sw/device/lib/dif/dif_pwrmgr.c',
       meson.source_root() / 'sw/device/lib/dif/autogen/dif_pwrmgr_autogen.c',
       hw_ip_pwrmgr_reg_h,
@@ -657,6 +670,7 @@ test('dif_keymgr_unittest', executable(
     sources: [
       'dif_keymgr_unittest.cc',
       'autogen/dif_keymgr_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_base.c',
       meson.source_root() / 'sw/device/lib/dif/dif_keymgr.c',
       meson.source_root() / 'sw/device/lib/dif/autogen/dif_keymgr_autogen.c',
       hw_ip_keymgr_reg_h,

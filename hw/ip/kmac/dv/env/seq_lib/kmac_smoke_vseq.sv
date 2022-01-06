@@ -97,6 +97,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
     logic [keymgr_pkg::KeyWidth-1:0] sideload_share0;
     logic [keymgr_pkg::KeyWidth-1:0] sideload_share1;
+    key_sideload_set_seq sideload_seq;
 
     `uvm_info(`gfn, $sformatf("Starting %0d message hashes", num_trans), UVM_LOW)
 
@@ -120,15 +121,11 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       if (kmac_en) begin
         // provide a random sideloaded key
         if (en_sideload || provide_sideload_key) begin
-          `DV_CHECK_STD_RANDOMIZE_FATAL(sideload_share0)
-          `DV_CHECK_STD_RANDOMIZE_FATAL(sideload_share1)
-
-          `uvm_info(`gfn, $sformatf("sideload_key_share0: 0x%0x", sideload_share0), UVM_HIGH)
-          `uvm_info(`gfn, $sformatf("sideload_key_share1: 0x%0x", sideload_share1), UVM_HIGH)
-
-          cfg.sideload_vif.drive_sideload_key(kmac_err_type != kmac_pkg::ErrKeyNotValid,
-                                              sideload_share0,
-                                              sideload_share1);
+          `uvm_create_on(sideload_seq, p_sequencer.key_sideload_sequencer_h);
+          `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq,
+                                         sideload_key.valid == kmac_err_type !=
+                                         kmac_pkg::ErrKeyNotValid;)
+          `uvm_send(sideload_seq)
         end
         // write the SW key to the CSRs
         if (!en_app) begin
@@ -297,7 +294,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       // Drop the sideloaded key if it was provided to the DUT.
       if (kmac_en && (en_sideload || provide_sideload_key)) begin
         `uvm_info(`gfn, "dropping sideload key", UVM_HIGH)
-        cfg.sideload_vif.drive_sideload_key(0);
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq,
+                                       sideload_key.valid == 0;)
+        sideload_seq.start(p_sequencer.key_sideload_sequencer_h);
       end
 
     end

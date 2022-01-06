@@ -13,6 +13,7 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/log.h"
@@ -92,8 +93,10 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest) {
 }
 
 static rom_error_t rom_ext_boot(const manifest_t *manifest) {
-  // Lock down silicon creator info pages until next reset.
+  // Disable access to silicon creator info pages and OTP partitions until next
+  // reset.
   flash_ctrl_creator_info_pages_lockdown();
+  otp_creator_sw_cfg_lockdown();
   // Unlock execution of owner stage executable code (text) sections.
   rom_ext_epmp_unlock_owner_stage_rx(&epmp, manifest_code_region_get(manifest));
 

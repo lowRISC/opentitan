@@ -231,31 +231,6 @@ static void start_operation(const dif_keymgr_t *keymgr,
                       reg_control);
 }
 
-/**
- * Checks if a value is a valid `dif_toggle_t` and converts it to `bool`.
- */
-OT_WARN_UNUSED_RESULT
-static bool toggle_to_bool(dif_toggle_t val, bool *val_bool) {
-  switch (val) {
-    case kDifToggleEnabled:
-      *val_bool = true;
-      break;
-    case kDifToggleDisabled:
-      *val_bool = false;
-      break;
-    default:
-      return false;
-  }
-  return true;
-}
-
-/**
- * Converts a `bool` to `dif_toggle_t`.
- */
-static dif_toggle_t bool_to_toggle(bool val) {
-  return val ? kDifToggleEnabled : kDifToggleDisabled;
-}
-
 dif_result_t dif_keymgr_configure(const dif_keymgr_t *keymgr,
                                   dif_keymgr_config_t config) {
   if (keymgr == NULL) {
@@ -518,8 +493,7 @@ dif_result_t dif_keymgr_generate_versioned_key(
 
 dif_result_t dif_keymgr_sideload_clear_set_enabled(const dif_keymgr_t *keymgr,
                                                    dif_toggle_t state) {
-  bool enable = false;
-  if (keymgr == NULL || !toggle_to_bool(state, &enable)) {
+  if (keymgr == NULL || !dif_is_valid_toggle(state)) {
     return kDifBadArg;
   }
 
@@ -540,7 +514,7 @@ dif_result_t dif_keymgr_sideload_clear_get_enabled(const dif_keymgr_t *keymgr,
 
   uint32_t reg_val =
       mmio_region_read32(keymgr->base_addr, KEYMGR_SIDELOAD_CLEAR_REG_OFFSET);
-  *state = bool_to_toggle(reg_val == kDifKeyMgrSideLoadClearAll);
+  *state = dif_bool_to_toggle(reg_val == kDifKeyMgrSideLoadClearAll);
 
   return kDifOk;
 }

@@ -469,7 +469,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         end
       end
       "ovrd", "intr_enable", "timeout_ctrl", "alert_test": begin
-        // no speical handle is needed
+        // no special handling is needed
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))

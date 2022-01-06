@@ -211,7 +211,7 @@ module otbn_core
   logic                     prefetch_en;
   logic                     prefetch_loop_active;
   logic [31:0]              prefetch_loop_iterations;
-  logic [ImemAddrWidth-1:0] prefetch_loop_end_addr;
+  logic [ImemAddrWidth:0]   prefetch_loop_end_addr;
   logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr;
 
   // Start stop control start OTBN execution when requested and deals with any pre start or post

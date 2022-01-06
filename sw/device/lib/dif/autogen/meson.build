@@ -11,6 +11,7 @@ sw_lib_dif_autogen_adc_ctrl = declare_dependency(
       'dif_adc_ctrl_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -25,6 +26,7 @@ sw_lib_dif_autogen_aes = declare_dependency(
       'dif_aes_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -39,6 +41,7 @@ sw_lib_dif_autogen_alert_handler = declare_dependency(
       'dif_alert_handler_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -53,6 +56,7 @@ sw_lib_dif_autogen_aon_timer = declare_dependency(
       'dif_aon_timer_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -67,6 +71,7 @@ sw_lib_dif_autogen_clkmgr = declare_dependency(
       'dif_clkmgr_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -81,6 +86,7 @@ sw_lib_dif_autogen_csrng = declare_dependency(
       'dif_csrng_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -95,6 +101,7 @@ sw_lib_dif_autogen_edn = declare_dependency(
       'dif_edn_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -109,6 +116,7 @@ sw_lib_dif_autogen_entropy_src = declare_dependency(
       'dif_entropy_src_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -123,6 +131,7 @@ sw_lib_dif_autogen_flash_ctrl = declare_dependency(
       'dif_flash_ctrl_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -137,6 +146,7 @@ sw_lib_dif_autogen_gpio = declare_dependency(
       'dif_gpio_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -151,6 +161,7 @@ sw_lib_dif_autogen_hmac = declare_dependency(
       'dif_hmac_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -165,6 +176,7 @@ sw_lib_dif_autogen_i2c = declare_dependency(
       'dif_i2c_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -179,6 +191,7 @@ sw_lib_dif_autogen_keymgr = declare_dependency(
       'dif_keymgr_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -193,6 +206,7 @@ sw_lib_dif_autogen_kmac = declare_dependency(
       'dif_kmac_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -207,6 +221,7 @@ sw_lib_dif_autogen_lc_ctrl = declare_dependency(
       'dif_lc_ctrl_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -221,6 +236,7 @@ sw_lib_dif_autogen_otbn = declare_dependency(
       'dif_otbn_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -235,6 +251,7 @@ sw_lib_dif_autogen_otp_ctrl = declare_dependency(
       'dif_otp_ctrl_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -249,6 +266,7 @@ sw_lib_dif_autogen_pattgen = declare_dependency(
       'dif_pattgen_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -263,6 +281,7 @@ sw_lib_dif_autogen_pinmux = declare_dependency(
       'dif_pinmux_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -277,6 +296,7 @@ sw_lib_dif_autogen_pwrmgr = declare_dependency(
       'dif_pwrmgr_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -291,6 +311,7 @@ sw_lib_dif_autogen_rstmgr = declare_dependency(
       'dif_rstmgr_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -305,6 +326,7 @@ sw_lib_dif_autogen_rom_ctrl = declare_dependency(
       'dif_rom_ctrl_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -319,6 +341,7 @@ sw_lib_dif_autogen_rv_plic = declare_dependency(
       'dif_rv_plic_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -333,6 +356,7 @@ sw_lib_dif_autogen_rv_timer = declare_dependency(
       'dif_rv_timer_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -347,6 +371,7 @@ sw_lib_dif_autogen_spi_device = declare_dependency(
       'dif_spi_device_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -361,6 +386,7 @@ sw_lib_dif_autogen_spi_host = declare_dependency(
       'dif_spi_host_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -375,6 +401,7 @@ sw_lib_dif_autogen_sram_ctrl = declare_dependency(
       'dif_sram_ctrl_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -389,6 +416,7 @@ sw_lib_dif_autogen_sysrst_ctrl = declare_dependency(
       'dif_sysrst_ctrl_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -403,6 +431,7 @@ sw_lib_dif_autogen_usbdev = declare_dependency(
       'dif_usbdev_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )
@@ -417,6 +446,7 @@ sw_lib_dif_autogen_uart = declare_dependency(
       'dif_uart_autogen.c',
     ],
     dependencies: [
+      sw_lib_dif_base,
       sw_lib_mmio,
     ],
   )

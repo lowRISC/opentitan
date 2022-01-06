@@ -6,7 +6,7 @@ use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinDirection};
+use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::cw310::usb::Backend;
 
 pub struct CW310GpioPin {
@@ -36,9 +36,17 @@ impl GpioPin for CW310GpioPin {
         Ok(())
     }
 
-    fn set_direction(&self, direction: PinDirection) -> Result<()> {
+    fn set_mode(&self, mode: PinMode) -> Result<()> {
         let usb = self.device.borrow();
-        usb.pin_set_output(&self.pinname, direction == PinDirection::Output)?;
+        match mode {
+            PinMode::Input => usb.pin_set_output(&self.pinname, false)?,
+            PinMode::PushPull => usb.pin_set_output(&self.pinname, true)?,
+            PinMode::OpenDrain => return Err(GpioError::UnsupportedPinMode().into()),
+        }
         Ok(())
+    }
+
+    fn set_pull_mode(&self, _mode: PullMode) -> Result<()> {
+        Err(GpioError::UnsupportedPinMode().into())
     }
 }

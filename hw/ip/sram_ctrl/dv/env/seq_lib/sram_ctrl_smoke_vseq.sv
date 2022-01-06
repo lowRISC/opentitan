@@ -48,6 +48,8 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
 
   task body();
 
+    if (!do_sram_ctrl_init) cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
+
     // do some memory transactions right after reset (zeroed key and nonce)
     `uvm_info(`gfn,
               $sformatf("Performing %0d random memory accesses after reset!", num_ops_after_reset),
@@ -75,7 +77,6 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
               end
               1: begin
                 req_mem_init();
-                cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
               end
             endcase
           end

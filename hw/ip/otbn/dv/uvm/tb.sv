@@ -23,7 +23,6 @@ module tb;
   wire clk, rst_n;
   wire idle, intr_done;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  otbn_key_req_t keymgr_key;
 
   // interfaces
   clk_rst_if                    clk_rst_if (.clk(clk), .rst_n(rst_n));
@@ -36,9 +35,16 @@ module tb;
   // needed for sequences that trigger alerts (locking OTBN) without telling the model.
   `DV_ASSERT_CTRL("otbn_status_assert_en", tb.MatchingStatus_A)
 
-  assign keymgr_key.key[0] = {12{32'hDEADBEEF}};
-  assign keymgr_key.key[1] = {12{32'hBAADF00D}};
-  assign keymgr_key.valid  = 1'b1;
+  otbn_key_req_t keymgr_key;
+  hw_key_req_t   sideload_key;
+  key_sideload_if keymgr_if (
+    .clk_i        (clk),
+    .rst_ni       (rst_n),
+    .sideload_key (sideload_key)
+  );
+  assign keymgr_key.valid  = sideload_key.valid;
+  assign keymgr_key.key[0] = sideload_key.key[0];
+  assign keymgr_key.key[1] = sideload_key.key[1];
 
   otbn_model_if #(
     .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE)
@@ -47,6 +53,7 @@ module tb;
     .rst_ni        (rst_n),
     .keymgr_key_i  (keymgr_key)
   );
+
 
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
   `DV_EDN_IF_CONNECT
@@ -169,8 +176,9 @@ module tb;
       .current_loop_end   (32'(current_loop_q.loop_end)),
       .next_loop_end      (32'(next_loop.loop_end)),
 
-      // This count is used by the loop warping code.
-      .current_loop_d_iterations (current_loop_d.loop_iterations)
+      // These counts are used by the loop warping code.
+      .current_loop_d_iterations (current_loop_d.loop_iterations),
+      .current_loop_q_iterations (current_loop_q.loop_iterations)
     );
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
@@ -274,6 +282,8 @@ module tb;
     uvm_config_db#(idle_vif)::set(null, "*.env", "idle_vif", idle_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual otbn_model_if)::set(null, "*.env.model_agent", "vif", model_if);
+    uvm_config_db#(virtual key_sideload_if)::set(null, "*.env.keymgr_sideload_agent",
+    "vif", keymgr_if);
 
     uvm_config_db#(virtual otbn_trace_if)::set(null, "*.env", "trace_vif",
                                                dut.u_otbn_core.i_otbn_trace_if);

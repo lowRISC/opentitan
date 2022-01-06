@@ -160,6 +160,23 @@ module tb;
     .otp_manuf_state_i(lc_ctrl_if.otp_manuf_state_i)
   );
 
+  //
+  // Whitebox signals - these come from within the RTL
+  //
+
+  // JTAG/TL Mutex claim
+  // Need a small delay to filter out glitches
+  assign #1ps lc_ctrl_if.mutex_claim_jtag = (dut.tap_reg2hw.claim_transition_if.qe == 1) &&
+      prim_mubi_pkg::mubi8_test_false_loose(
+      dut.tap_claim_transition_if_q
+  );
+
+  assign #1ps lc_ctrl_if.mutex_claim_tl = (dut.reg2hw.claim_transition_if.qe == 1) &&
+      prim_mubi_pkg::mubi8_test_false_loose(
+      dut.sw_claim_transition_if_q
+  );
+
+
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();

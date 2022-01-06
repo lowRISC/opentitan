@@ -143,6 +143,7 @@ module edn_core import edn_pkg::*;
   logic                               edn_cntr_err;
   logic [RegWidth-1:0]                max_reqs_cnt;
   logic                               max_reqs_cnt_err;
+  logic                               cmd_rdy;
   logic [31:0]                        boot_ins_cmd;
   logic [31:0]                        boot_gen_cmd;
 
@@ -164,6 +165,7 @@ module edn_core import edn_pkg::*;
   logic                               boot_auto_req_dly_q, boot_auto_req_dly_d;
   logic [63:0]                        cs_rdata_capt_q, cs_rdata_capt_d;
   logic                               cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
+  logic                               sw_rdy_sts_q, sw_rdy_sts_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -181,6 +183,7 @@ module edn_core import edn_pkg::*;
       boot_auto_req_dly_q <= '0;
       cs_rdata_capt_q <= '0;
       cs_rdata_capt_vld_q <= '0;
+      sw_rdy_sts_q   <= '0;
     end else begin
       cs_cmd_req_q  <= cs_cmd_req_d;
       cs_cmd_req_vld_q  <= cs_cmd_req_vld_d;
@@ -196,6 +199,7 @@ module edn_core import edn_pkg::*;
       boot_auto_req_dly_q <= boot_auto_req_dly_d;
       cs_rdata_capt_q <= cs_rdata_capt_d;
       cs_rdata_capt_vld_q <= cs_rdata_capt_vld_d;
+      sw_rdy_sts_q   <= sw_rdy_sts_d;
     end
 
   //--------------------------------------------
@@ -404,7 +408,14 @@ module edn_core import edn_pkg::*;
 
   // receive rdy
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
-  assign hw2reg.sw_cmd_sts.cmd_rdy.d = csrng_cmd_i.csrng_req_ready;
+  assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
+  assign cmd_rdy = !sw_cmd_req_load && sw_rdy_sts_q;
+  assign sw_rdy_sts_d =
+         !edn_enable ? 1'b1 :
+         sw_cmd_req_load ? 1'b0 :
+         csrng_cmd_i.csrng_req_ready ? 1'b1 :
+         sw_rdy_sts_q;
+
   // receive cmd ack
   assign csrng_cmd_ack = csrng_cmd_i.csrng_rsp_ack;
   assign hw2reg.sw_cmd_sts.cmd_sts.de = csrng_cmd_ack;

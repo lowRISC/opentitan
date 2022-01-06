@@ -14,8 +14,6 @@ class sram_ctrl_stress_all_vseq extends sram_ctrl_base_vseq;
   string vseq_names[$] = {"sram_ctrl_smoke_vseq",
                          "sram_ctrl_multiple_keys_vseq",
                          "sram_ctrl_bijection_vseq",
-                         "sram_ctrl_mem_tl_errors_vseq",
-                         "sram_ctrl_access_during_key_req_vseq",
                          "sram_ctrl_executable_vseq"};
 
   virtual task pre_start();

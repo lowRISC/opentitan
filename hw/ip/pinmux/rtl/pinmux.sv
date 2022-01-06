@@ -405,7 +405,8 @@ module pinmux
   logic [AlignedMuxSize-1:0] dio_wkup_mux;
   logic [AlignedMuxSize-1:0] mio_wkup_mux;
   assign dio_wkup_mux = AlignedMuxSize'(dio_in_i);
-  assign mio_wkup_mux = AlignedMuxSize'(mio_in_i);
+  // This makes sure that the MIO selection indices are aligned between mux and wakeup detectors.
+  assign mio_wkup_mux = AlignedMuxSize'({mio_in_i, 1'b1, 1'b0});
 
   logic [NWkupDetect-1:0] aon_wkup_req;
   for (genvar k = 0; k < NWkupDetect; k++) begin : gen_wkup_detect

@@ -301,13 +301,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       `DV_SPINWAIT_EXIT(
           forever begin
             // Wait for a valid sideloaded key
-            cfg.sideload_vif.wait_valid(logic'(1'b1));
+            cfg.keymgr_sideload_agent_cfg.vif.wait_valid(logic'(1'b1));
 
             // Once valid sideload keys have been seen, update scoreboard state.
             //
             // Note: max size of sideloaded key is keymgr_pkg::KeyWidth
 
-            sideload_key = cfg.sideload_vif.sideload_key;
+            sideload_key = cfg.keymgr_sideload_agent_cfg.vif.sideload_key;
 
             `uvm_info(`gfn, $sformatf("detected valid sideload_key: %0p", sideload_key), UVM_HIGH)
 
@@ -317,7 +317,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             end
 
             // Sequence will drop the sideloaded key after scb can process the digest
-            cfg.sideload_vif.wait_valid(logic'(1'b0));
+            cfg.keymgr_sideload_agent_cfg.vif.wait_valid(logic'(1'b0));
           end
           ,
           wait(cfg.under_reset);
@@ -414,7 +414,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 end
               end
               StAppCfg: begin
-                if (app_mode == AppKeymgr && !cfg.sideload_vif.sideload_key.valid) begin
+                if (app_mode == AppKeymgr &&
+                    !cfg.keymgr_sideload_agent_cfg.vif.sideload_key.valid) begin
                   app_st = StKeyMgrErrKeyNotValid;
                 end else begin
                   app_st = StAppMsg;

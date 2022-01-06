@@ -136,3 +136,24 @@ sw_tests += {
     'library': spi_tx_rx_test_lib,
   }
 }
+
+rom_ctrl_integrity_check_test_lib = declare_dependency(
+  link_with: static_library(
+    'rom_ctrl_integrity_check_test_lib',
+    sources: [
+      hw_ip_rom_ctrl_reg_h,
+      'rom_ctrl_integrity_check_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_lc_ctrl,
+      sw_lib_dif_rom_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+    ],
+  ),
+)
+sw_tests += {
+  'rom_ctrl_integrity_check_test': {
+    'library': rom_ctrl_integrity_check_test_lib,
+  }
+}

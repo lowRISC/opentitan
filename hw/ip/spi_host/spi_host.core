@@ -11,7 +11,6 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:prim:flop_en
-      - lowrisc:ip:lc_ctrl
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device_pkg
     files:

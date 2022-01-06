@@ -6,8 +6,9 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   `uvm_object_utils(csrng_cmds_vseq)
   `uvm_object_new
 
-  csrng_item                                           cs_item_q[NUM_HW_APPS + 1][$];
-  uint                                                 num_cmds, cmds_gen, cmds_sent;
+  csrng_item   cs_item, cs_item_q[NUM_HW_APPS + 1][$];
+  uint         num_cmds, cmds_gen, cmds_sent;
+  bit          uninstantiate[NUM_HW_APPS + 1];
 
   function void gen_seed(uint app);
     bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]    fips;
@@ -19,8 +20,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   endfunction
 
   function void create_cmds(uint app);
-    bit          uninstantiate;
-    csrng_item   cs_item;
+    bit          uni;
 
     cs_item = new();
     // Start with instantiate command
@@ -49,11 +49,12 @@ class csrng_cmds_vseq extends csrng_base_vseq;
       cs_item_q[app].push_back(cs_item);
     end
 
-    // Generate uninstantiate command only some of the time so final internal state is non-zero.
-    `DV_CHECK_STD_RANDOMIZE_FATAL(uninstantiate)
+    // Predetermine if uninstantiate so final internal state is non-zero some of the time.
+    `DV_CHECK_STD_RANDOMIZE_FATAL(uni)
+    uninstantiate[app] = uni;
 
-    if (uninstantiate) begin
-       cs_item = new();
+    if (uninstantiate[app]) begin
+      cs_item = new();
       `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
                                      cs_item.acmd  == csrng_pkg::UNI;
                                      cs_item.clen  == 'h0;)
@@ -98,7 +99,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
         fork
           begin
             foreach (cs_item_q[j][k]) begin
-              send_cmd_req(j, cs_item_q[j][k]);
+              send_cmd_req(.app(j), .cs_item(cs_item_q[j][k]));
               cmds_sent += 1;
             end
           end
@@ -108,10 +109,17 @@ class csrng_cmds_vseq extends csrng_base_vseq;
       wait (cmds_sent == cmds_gen);
     join
 
-    // Check internal state
+    // Check internal state, then uninstantiate if not already
     if (cfg.check_int_state) begin
       for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
         cfg.check_internal_state(.app(i), .compare(1));
+        if (!uninstantiate[i]) begin
+          cs_item = new();
+          `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
+                                         cs_item.acmd  == csrng_pkg::UNI;
+                                         cs_item.clen  == 'h0;)
+          send_cmd_req(.app(i), .cs_item(cs_item));
+        end
       end
     end
   endtask : body

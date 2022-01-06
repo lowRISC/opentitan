@@ -28,6 +28,7 @@ filesets:
       - seq_lib/csrng_common_vseq.sv: {is_include_file: true}
       - seq_lib/csrng_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/csrng_cmds_vseq.sv: {is_include_file: true}
+      - seq_lib/csrng_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

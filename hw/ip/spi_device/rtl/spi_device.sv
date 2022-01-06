@@ -8,7 +8,7 @@
 `include "prim_assert.sv"
 
 module spi_device
-  import spi_device_reg_pkg::*;
+  import spi_device_reg_pkg::NumAlerts;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -83,8 +83,8 @@ module spi_device
   logic clk_spi_in, clk_spi_in_muxed, clk_spi_in_buf;   // clock for latch SDI
   logic clk_spi_out, clk_spi_out_muxed, clk_spi_out_buf; // clock for driving SDO
 
-  spi_device_reg2hw_t reg2hw;
-  spi_device_hw2reg_t hw2reg;
+  spi_device_reg_pkg::spi_device_reg2hw_t reg2hw;
+  spi_device_reg_pkg::spi_device_hw2reg_t hw2reg;
 
   tlul_pkg::tl_h2d_t tl_sram_h2d;
   tlul_pkg::tl_d2h_t tl_sram_d2h;
@@ -199,12 +199,6 @@ module spi_device
   // The opcodes of the commands SW may configure via CMD_INFO_EN4B,
   // CMD_INFO_EX4B.
   logic cmd_en4b_pulse, cmd_ex4b_pulse;
-  logic unused_addr_4b;
-
-  // TODO: implement inside cmdparse
-  assign unused_addr_4b = ^{reg2hw.cmd_info_en4b, reg2hw.cmd_info_ex4b};
-  assign cmd_en4b_pulse = 1'b 0;
-  assign cmd_ex4b_pulse = 1'b 0;
 
   logic intr_sram_rxf_full, intr_fwm_rxerr;
   logic intr_fwm_rxlvl, rxlvl, rxlvl_d, intr_fwm_txlvl, txlvl, txlvl_d;
@@ -282,7 +276,7 @@ module spi_device
   logic [31:0] payload_swap_data;
 
   // Command Info structure
-  cmd_info_t [NumCmdInfo-1:0] cmd_info;
+  cmd_info_t [NumTotalCmdInfo-1:0] cmd_info;
   // Broadcasted cmd_info. cmdparse compares the opcode up to CmdInfoReadCmdEnd
   // and latches the cmd_info and broadcast to submodules
   cmd_info_t                  cmd_info_broadcast;
@@ -734,6 +728,19 @@ module spi_device
         busy:             reg2hw.cmd_info[i].busy.q
       };
     end
+
+    // Manual addition to cmd_info list
+    // Default Input mode
+    for (int unsigned i = CmdInfoReserveEnd + 1; i < NumTotalCmdInfo; i++) begin
+      cmd_info[i] = CmdInfoInput;
+    end
+
+    cmd_info[CmdInfoEn4B].valid  = reg2hw.cmd_info_en4b.valid.q;
+    cmd_info[CmdInfoEn4B].opcode = reg2hw.cmd_info_en4b.opcode.q;
+
+    cmd_info[CmdInfoEx4B].valid  = reg2hw.cmd_info_ex4b.valid.q;
+    cmd_info[CmdInfoEx4B].opcode = reg2hw.cmd_info_ex4b.opcode.q;
+
   end
 
   //////////////////////////////
@@ -1455,6 +1462,8 @@ module spi_device
   // End:   Upload ---------------------------------------------------
 
   // Begin: Address 3B/4B Tracker ====================================
+  assign cmd_en4b_pulse = cmd_dp_sel == DpEn4B;
+  assign cmd_ex4b_pulse = cmd_dp_sel == DpEx4B;
   spid_addr_4b u_spid_addr_4b (
     .sys_clk_i  (clk_i ),
     .sys_rst_ni (rst_ni),
@@ -1616,7 +1625,7 @@ module spi_device
   //  Return-by-HW registers:
   //    TPM_ACCESS_x, TPM_STS_x, TPM_INT_ENABLE, TPM_INT_VECTOR,
   //    TPM_INT_STATUS, TPM_INTF_CAPABILITY, TPM_DID_VID, TPM_RID
-  for (genvar i = 0 ; i < NumLocality ; i++) begin : g_tpm_access
+  for (genvar i = 0 ; i < spi_device_reg_pkg::NumLocality ; i++) begin : g_tpm_access
     assign tpm_access[8*i+:8] = reg2hw.tpm_access[i].q;
   end : g_tpm_access
 
