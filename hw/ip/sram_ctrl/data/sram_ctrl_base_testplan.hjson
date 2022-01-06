@@ -147,20 +147,13 @@
       tests: ["{variant}_max_throughput", "{variant}_throughput_w_partial_write"]
     }
     {
-      name: parity
+      name: stress_all
       desc: '''
-            TODO - to be changed into an ECC test
-
-            This test is the same as the multiple_keys test, except we randomly inject a parity
-            error into the memory (TODO: figure out how exactly to do this).
-            Verify that the SRAM reports the error and the faulty address correctly, and that the
-            alert is sent out properly.
-            We then perform some memory accesses and verify that none of them go through.
-            This error is terminal, so like the lc_escalation test, issue a reset and then perform
-            some memory accesses to make sure everything comes back online correctly.
-            '''
-      milestone: V3
-      tests: ["{variant}_parity"]
+            - Combine above sequences in one test to run sequentially, except csr sequence and
+              sequences that require zero_delays or invoke reset (such as lc_escalation).
+            - Randomly add reset between each sequence'''
+      milestone: V2
+      tests: ["{variant}_stress_all"]
     }
   ]
 
