@@ -57,10 +57,26 @@
       desc: '''
             Verify intr_edn_cmd_req_done interrupt asserts/clears as predicted.
             Verify intr_edn_fatal_err interrupt asserts/clears as predicted.
+            '''
+      milestone: V2
+      tests: ["edn_intr"]
+    }
+    {
+      name: alerts
+      desc: '''
+            Verify recov_alert_sts asserts/clears as predicted.
+            '''
+      milestone: V2
+      tests: ["edn_alert"]
+    }
+    {
+      name: errs
+      desc: '''
+            Verify ERR_CODE asserts as predicted.
             Verify ERR_CODE all reg bits via ERR_CODE_TEST.
             '''
       milestone: V2
-      tests: []
+      tests: ["edn_err"]
     }
     {
       name: stress_all
@@ -70,6 +86,24 @@
             '''
       milestone: V2
       tests: []
+    }
+  ]
+
+covergroups: [
+    {
+      name: err_test_cg
+      desc: '''
+            Covers that all fatal errors, all fifo errors and all error codes of edn
+            have been tested.
+            Individual config settings that will be covered include:
+            - which_fatal_err (0 to 4), 5 possible fatal errors
+            - which_fifo_write_err (0 to 1), 2 differnt fifos
+            - which_fifo_read_err (0 to 1), 2 different fifos
+            - which_fifo_state_err (0 to 1), 2 different fifos
+            - which_err_code (0 to 15), 8 ERR_CODE errors, plus 8 ERR_CODE_TEST bits test
+            - which_fifo_err (0 to 2), fifo write/read/state errors
+            - which_invalid_mubi (0 to 3), 4 possible invalid mubi4 value fields
+            '''
     }
   ]
 }
