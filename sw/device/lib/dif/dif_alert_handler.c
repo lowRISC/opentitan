@@ -408,15 +408,6 @@ dif_result_t dif_alert_handler_configure(
     return kDifBadArg;
   }
 
-  bool is_locked;
-  dif_result_t result = dif_alert_handler_is_locked(alert_handler, &is_locked);
-  if (result != kDifOk) {
-    return result;
-  }
-  if (is_locked) {
-    return kDifLocked;
-  }
-
   for (int i = 0; i < config.classes_len; ++i) {
     if (!classify_alerts(alert_handler, &config.classes[i])) {
       return kDifError;
@@ -432,6 +423,18 @@ dif_result_t dif_alert_handler_configure(
     }
   }
 
+  // Check if the ping timer is locked.
+  bool is_ping_timer_locked;
+  dif_result_t result = dif_alert_handler_is_ping_timer_locked(
+      alert_handler, &is_ping_timer_locked);
+  if (result != kDifOk) {
+    return result;
+  }
+  if (is_ping_timer_locked) {
+    return kDifLocked;
+  }
+
+  // Configure the ping timer.
   uint32_t ping_timeout_reg = bitfield_field32_write(
       0,
       ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_FIELD,
@@ -443,7 +446,8 @@ dif_result_t dif_alert_handler_configure(
   return kDifOk;
 }
 
-dif_result_t dif_alert_handler_lock(const dif_alert_handler_t *alert_handler) {
+dif_result_t dif_alert_handler_lock_ping_timer(
+    const dif_alert_handler_t *alert_handler) {
   if (alert_handler == NULL) {
     return kDifBadArg;
   }
@@ -457,17 +461,11 @@ dif_result_t dif_alert_handler_lock(const dif_alert_handler_t *alert_handler) {
   return kDifOk;
 }
 
-dif_result_t dif_alert_handler_is_locked(
+dif_result_t dif_alert_handler_is_ping_timer_locked(
     const dif_alert_handler_t *alert_handler, bool *is_locked) {
   if (alert_handler == NULL || is_locked == NULL) {
     return kDifBadArg;
   }
-  // TODO(timothytrippel): more "locking" functionality has been added that
-  // can lock the ping-timer-en and ping-timer-cyc with the
-  // ping-timer-regwen, and likewise with the alert-en-x and alert-class-x
-  // registers. We need to check for this here, otherwise the alerts cannot be
-  // enabled.
-
   uint32_t reg =
       mmio_region_read32(alert_handler->base_addr,
                          ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET);

@@ -175,12 +175,6 @@ TEST_F(ConfigTest, ClassInit) {
       .classes_len = classes.size(),
   };
 
-  // The alert handler needs to be unlocked for it to be configured.
-  EXPECT_READ32(
-      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
-      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
-        false}});
-
   // Configure class A alerts.
   // Unfortunately, we can't use EXPECT_MASK for these reads/writes, since the
   // target registers are shadowed.
@@ -304,6 +298,12 @@ TEST_F(ConfigTest, ClassInit) {
                           15000);
   EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED_REG_OFFSET,
                           150000);
+
+  // The alert handler ping timer needs to be unlocked for it to be configured.
+  EXPECT_READ32(
+      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
+      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
+        false}});
 
   EXPECT_WRITE32_SHADOWED(
       ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
@@ -545,40 +545,43 @@ TEST_F(ConfigTest, NullArgs) {
   EXPECT_EQ(dif_alert_handler_configure(nullptr, {}), kDifBadArg);
 }
 
-class LockTest : public AlertHandlerTest {};
+class PingTimerLockTest : public AlertHandlerTest {};
 
-TEST_F(LockTest, IsLocked) {
+TEST_F(PingTimerLockTest, IsPingTimerLocked) {
   bool flag;
 
   EXPECT_READ32(
       ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
       {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
         false}});
-  EXPECT_EQ(dif_alert_handler_is_locked(&alert_handler_, &flag), kDifOk);
+  EXPECT_EQ(dif_alert_handler_is_ping_timer_locked(&alert_handler_, &flag),
+            kDifOk);
   EXPECT_FALSE(flag);
 
   EXPECT_READ32(
       ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
       {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
         true}});
-  EXPECT_EQ(dif_alert_handler_is_locked(&alert_handler_, &flag), kDifOk);
+  EXPECT_EQ(dif_alert_handler_is_ping_timer_locked(&alert_handler_, &flag),
+            kDifOk);
   EXPECT_TRUE(flag);
 }
 
-TEST_F(LockTest, Lock) {
+TEST_F(PingTimerLockTest, LockPingTimer) {
   EXPECT_WRITE32_SHADOWED(
       ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
       {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
         true}});
-  EXPECT_EQ(dif_alert_handler_lock(&alert_handler_), kDifOk);
+  EXPECT_EQ(dif_alert_handler_lock_ping_timer(&alert_handler_), kDifOk);
 }
 
-TEST_F(LockTest, NullArgs) {
+TEST_F(PingTimerLockTest, NullArgs) {
   bool flag;
-  EXPECT_EQ(dif_alert_handler_is_locked(nullptr, &flag), kDifBadArg);
-  EXPECT_EQ(dif_alert_handler_is_locked(&alert_handler_, nullptr), kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_is_ping_timer_locked(nullptr, &flag), kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_is_ping_timer_locked(&alert_handler_, nullptr),
+            kDifBadArg);
 
-  EXPECT_EQ(dif_alert_handler_lock(nullptr), kDifBadArg);
+  EXPECT_EQ(dif_alert_handler_lock_ping_timer(nullptr), kDifBadArg);
 }
 
 class CauseTest : public AlertHandlerTest {};
