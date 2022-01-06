@@ -12,16 +12,7 @@
         {
             name: smoke
             desc: '''
-            Smoke is a simple test accessing a major data path within the pwm
-
-            Stimulus:
-            - run segments on one channel in standard mode
-            - both send read and write commands
-            - reads and writes the Host FIFO's
-                - uses different clock divisions and resolutions
-
-            Checks:
-                - Ensure the output pulses for a single channel i correctly modulated
+            ensure basic functionality is working for at least one channel.
             '''
       milestone: V1
       tests: ["pwm_smoke"]
