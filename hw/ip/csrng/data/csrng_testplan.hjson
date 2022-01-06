@@ -12,20 +12,11 @@
     {
       name: smoke
       desc: '''
-            Enable csrng, send instantiate/generate cmds, verify genbits/interrupt.
+	    Verify sending instantiate/generate cmds via SW path.
+	    Verify reading genbits via SW path.
             '''
       milestone: V1
       tests: ["csrng_smoke"]
-    }
-    {
-      name: firmware
-      desc: '''
-            Verify ability to access genbits register based on value of efuse input.
-            Verify regen bit disables write access of control registers.
-            Verify registers at End-Of-Test.
-            '''
-      milestone: V2
-      tests: []
     }
     {
       name: interrupts
@@ -47,6 +38,10 @@
             Verify above for all valid values of acmd, clen, flags, glen.
             Verify for multiple hw app interfaces running in parallel.
             Verify sw/hw app interfaces running in parallel.
+            Verify internal state for sw/hw apps.
+            Verify genbits generated as predicted.
+            Verify fips bit is passed through properly.
+            Verify ability to access registers based on otp, enables.
             '''
       milestone: V2
       tests: ["csrng_cmds"]
@@ -55,17 +50,6 @@
       name: life cycle
       desc: '''
             Verify lifecycle hardware debug mode enables AES bypass, reading CSRNG internal state.
-            Verify CSRNG internal state for all csrng/genbits operations.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: genbits
-      desc: '''
-            Verify genbits generated as predicted.
-            Verify fips bits is passed through properly.
-            Verify for multiple hw app interfaces running in parallel.
             '''
       milestone: V2
       tests: []

@@ -65,6 +65,8 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   endfunction
 
   task body();
+    super.body();
+
     // Create entropy_src sequence
     m_entropy_src_pull_seq = push_pull_device_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
         type_id::create("m_entropy_src_pull_seq");

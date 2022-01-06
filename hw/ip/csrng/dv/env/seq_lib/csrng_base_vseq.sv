@@ -11,11 +11,22 @@ class csrng_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(csrng_base_vseq)
   `uvm_object_new
 
-  bit               do_csrng_init = 1'b1;
-  bit [TL_DW-1:0]   rdata;
+  bit                    do_csrng_init = 1'b1;
+  bit [TL_DW-1:0]        rdata;
+
+  virtual csrng_cov_if   cov_vif;
+
 
   push_pull_device_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)   m_entropy_src_pull_seq;
   push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)                m_edn_push_seq[NUM_HW_APPS];
+
+  virtual task body();
+    if (!uvm_config_db#(virtual csrng_cov_if)::get(null, "*.env" , "csrng_cov_if", cov_vif)) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to get csrng_cov_if from uvm_config_db"))
+    end
+
+    cov_vif.cg_cfg_sample(.cfg(cfg));
+  endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
