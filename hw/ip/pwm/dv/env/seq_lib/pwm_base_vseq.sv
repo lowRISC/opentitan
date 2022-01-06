@@ -27,12 +27,6 @@ class pwm_base_vseq extends cip_base_vseq #(
     csr_update(ral.cfg);
   endtask
 
-
-  virtual task set_channel_cfg(bit [PWM_NUM_CHANNELS-1:0] channel, param_reg_t pwm_param);
-    csr_wr(.ptr(ral.pwm_param[channel]), .value(pwm_param));
-  endtask
-
-
   virtual task set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables);
     bit [31:0] reg_val = 32'h0;
     reg_val = enables;
@@ -44,13 +38,8 @@ class pwm_base_vseq extends cip_base_vseq #(
   endtask
 
 
-  virtual task set_duty_cycle(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel,
-                              dc_blink_t value ,bit [3:0] resn );
-    bit [15:0] dc_a;
-    bit [15:0] dc_b;
-    dc_a = value.A;
-    dc_b = value.B;
-    ral.duty_cycle[channel].set({dc_b, dc_a});
+  virtual task set_duty_cycle(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, dc_blink_t value);
+    ral.duty_cycle[channel].set({value.B,value.A});
     csr_update(ral.duty_cycle[channel]);
   endtask
 
@@ -77,6 +66,11 @@ class pwm_base_vseq extends cip_base_vseq #(
     join
   endtask : apply_reset
 
+   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    cfg.clk_rst_core_vif.drive_rst_pin(0);
+    super.apply_resets_concurrently(cfg.clk_rst_core_vif.clk_period_ps);
+    cfg.clk_rst_core_vif.drive_rst_pin(1);
+  endtask
 
   virtual task shutdown_dut();
     // shutdown dut to make last item finish gracefully
