@@ -137,26 +137,27 @@ static void mont_mul(const sigverify_rsa_key_t *key,
  */
 static void calc_r_square(const sigverify_rsa_key_t *key,
                           sigverify_rsa_buffer_t *result) {
-  memset(result->data, 0, sizeof(result->data));
-  // This subtraction sets result = -n mod R = R - n, which is equivalent to R
-  // modulo n and ensures that `result` fits in `kSigVerifyRsaNumWords` going
+  sigverify_rsa_buffer_t buf;
+  memset(buf.data, 0, sizeof(result->data));
+  // This subtraction sets buf = -n mod R = R - n, which is equivalent to R
+  // modulo n and ensures that `buf` fits in `kSigVerifyRsaNumWords` going
   // into the loop.
-  subtract_modulus(key, result);
+  subtract_modulus(key, &buf);
 
-  // Compute T = (2^3 * R) mod n = 2^3 (montgomery form).
-  // Each run of the loop doubles result and reduces modulo n.
-  for (size_t i = 0; i < 3; ++i) {
-    uint32_t msb = shift_left(result);
-    // Reduce until result < n. Doing this at every iteration minimizes the
+  // Compute (2^96 * R) mod n.
+  // Each run of the loop doubles buf and reduces modulo n.
+  for (size_t i = 0; i < 96; ++i) {
+    uint32_t msb = shift_left(&buf);
+    // Reduce until buf < n. Doing this at every iteration minimizes the
     // total number of subtractions that we need to perform.
-    while (msb > 0 || greater_equal_modulus(key, result)) {
-      msb -= subtract_modulus(key, result);
+    while (msb > 0 || greater_equal_modulus(key, &buf)) {
+      msb -= subtract_modulus(key, &buf);
     }
   }
 
-  // Perform 10 montgomery squares to get RR = (2^3)^(2^10) * R.
-  sigverify_rsa_buffer_t buf;
-  for (size_t i = 0; i < 5; ++i) {
+  // Perform 5 montgomery squares to get RR = ((2^96)^32 * R) mod n
+  mont_mul(key, &buf, &buf, result);
+  for (size_t i = 0; i < 2; ++i) {
     mont_mul(key, result, result, &buf);
     mont_mul(key, &buf, &buf, result);
   }
