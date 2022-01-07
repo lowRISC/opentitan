@@ -31,5 +31,5 @@ thiserror = "1.0.24"
 zerocopy = "0.5.0"
 
 [dependencies.mundane]
-version = "0.4.4"
+version = "0.5.0"
 features = ["rsa-pkcs1v15"]
