@@ -196,7 +196,14 @@ class otbn_scoreboard extends cip_base_scoreboard #(
             join_none;
           end
         end
-
+        "alert_test": begin
+          if (item.is_write && (item.a_data[0])) begin
+            expect_alert("fatal");
+          end
+          if (item.is_write && (item.a_data[1])) begin
+            expect_alert("recov");
+          end
+        end
         default: begin
           // No other special behaviour for writes
         end

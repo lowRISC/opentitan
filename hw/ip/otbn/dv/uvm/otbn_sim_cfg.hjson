@@ -43,6 +43,7 @@ name:
       "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
       "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
       "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
+      "{proj_root}/hw/dv/tools/dvsim/tests/passthru_mem_intg_tests.hjson"
   ]
 
   // Add options needed to compile against otbn_memutil, otbn_tracer, and

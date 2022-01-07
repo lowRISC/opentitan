@@ -496,6 +496,10 @@
       hwqe:  "true",
       swaccess: "rw",
       hwaccess: "hrw",
+      tags: [
+            // Don't write this register in the automated CSR tests;
+            "excl:CsrAllTests:CsrExclWrite"
+      ],
       fields: [
         { bits: "31:0",
           name: "checksum",

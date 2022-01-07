@@ -206,7 +206,6 @@ package sram_scrambler_pkg;
     for (int i = 0; i < addr_width; i++) begin
       nonce[i] = full_nonce[SRAM_BLOCK_WIDTH - addr_width + i];
     end
-
     encrypted_addr = sp_encrypt(addr, addr_width, nonce);
     return encrypted_addr;
 
