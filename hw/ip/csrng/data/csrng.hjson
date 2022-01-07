@@ -278,8 +278,6 @@
                 pointer (selects 32 bits of the 448 bit field) will reset to zero. The !!INT_STATE_NUM
                 can be re-written at this time (internal read pointer is also reset), and then
                 another internal state field can be read.
-                Also, the life cycle state must be one where the signal "lc_hw_debug_en" is asserted
-                in order to read any internal state field.
                 '''
         }
       ]
