@@ -25,11 +25,13 @@
 //      -- down_count is halted until set_i is set again
 //         Note: The up_count is still running.
 //      -- err_o is set to 0 (false),
-//      -- cnt_o is either all zero (OutSelDnCnt = 1) or the (running) up_count value (OutSelDnCnt = 0).
+//      -- cnt_o is either all zero (OutSelDnCnt = 1) or the (running) up_count value
+//         (OutSelDnCnt = 0).
 //    - set_i sets
 //      -- the up_count to 0 and the down_count to set_cnt_i,
 //      -- the up_count's maximum value to set_cnt_i.
-//    - en_i increments/decrements the up_count/down_count by step_i, if neither of the above is set.
+//    - en_i increments/decrements the up_count/down_count by step_i, if neither of the above is
+//      set.
 
 module prim_count import prim_count_pkg::*; #(
   parameter int Width = 2,
