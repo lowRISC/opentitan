@@ -26,6 +26,8 @@ class edn_smoke_vseq extends edn_base_vseq;
 
     // Create/Send INS cmd
     acmd  = csrng_pkg::INS;
+    flags = 'h1;
+    glen  = 'h0;
     csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, acmd}));
 
     // Expect/Clear interrupt bit
@@ -35,6 +37,7 @@ class edn_smoke_vseq extends edn_base_vseq;
     // Load genbits_agent
     `DV_CHECK_STD_RANDOMIZE_FATAL(fips)
     `DV_CHECK_STD_RANDOMIZE_FATAL(genbits)
+    `uvm_info(`gfn, $sformatf("{fips, genbits} = %0h", {fips, genbits}), UVM_DEBUG)
     cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.add_h_user_data({fips, genbits});
 
     // Wait for cmd_rdy
@@ -42,6 +45,7 @@ class edn_smoke_vseq extends edn_base_vseq;
 
     // Create/Send GEN cmd
     acmd  = csrng_pkg::GEN;
+    flags = 'h0;
     glen  = 'h1;
     csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, acmd}));
 
@@ -54,6 +58,18 @@ class edn_smoke_vseq extends edn_base_vseq;
     // Expect/Clear interrupt bit
     csr_spinwait(.ptr(ral.intr_state.edn_cmd_req_done), .exp_data(1'b1));
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
+
+    // Create/Send GEN cmd
+    acmd  = csrng_pkg::UNI;
+    clen  = 'h0;
+    flags = 'h0;
+    glen  = 'h0;
+    csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, acmd}));
+
+    // Expect/Clear interrupt bit
+    csr_spinwait(.ptr(ral.intr_state.edn_cmd_req_done), .exp_data(1'b1));
+    check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
+
   endtask
 
 endclass

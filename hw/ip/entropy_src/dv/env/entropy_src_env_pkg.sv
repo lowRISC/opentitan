@@ -29,10 +29,9 @@ package entropy_src_env_pkg;
   typedef enum int {
     EntropyValid      = 0,
     HealthTestFailed  = 1,
-    EBusChkFailed     = 2,
-    ObserveFifoReady  = 3,
-    FatalErr          = 4,
-    NumEntropySrcIntr = 5
+    ObserveFifoReady  = 2,
+    FatalErr          = 3,
+    NumEntropySrcIntr = 4
   } entropy_src_intr_e;
 
   typedef enum { BOOT, STARTUP, CONTINUOUS } entropy_phase_e;
