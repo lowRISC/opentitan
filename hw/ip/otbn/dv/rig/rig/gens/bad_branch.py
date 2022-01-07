@@ -31,18 +31,18 @@ class BadBranch(BranchGen):
         # for offset range. It gives equal weight to all address ranges.
         mode = random.randint(0, 4)
         if mode == 0 and min_addr <= -4:
-            tgt_addr = random.randrange(min_addr, -4, 4)
+            tgt_addr = random.randrange(min_addr, -4 + 1, 4)
         elif mode <= 1 and program.imem_size <= max_addr:
-            tgt_addr = random.randrange(program.imem_size, max_addr, 4)
+            tgt_addr = random.randrange(program.imem_size, max_addr + 1, 4)
         elif mode <= 2 and min_addr <= -4:
             tgt_addr = min_addr
-        elif mode <= 3 and program.imem_size <= max_addr:
+        elif mode <= 3 and program.imem_size - 1 <= max_addr:
             tgt_addr = max_addr
-        elif mode <= 4 and program.imem_size <= max_addr:
+        elif mode <= 4 and program.imem_size - 1 <= max_addr:
             tgt_addr = random.randrange(0, program.imem_size, 4) + 2
         else:
             assert mode <= 4
-            tgt_addr = random.randrange(min_addr + 2, max_addr, 4)
+            tgt_addr = random.randrange(min_addr + 2, max_addr + 1, 4)
 
         return tgt_addr
 
