@@ -12,4 +12,5 @@
 `include "sram_ctrl_lc_escalation_vseq.sv"
 `include "sram_ctrl_access_during_key_req_vseq.sv"
 `include "sram_ctrl_executable_vseq.sv"
+`include "sram_ctrl_regwen_vseq.sv"
 `include "sram_ctrl_stress_all_vseq.sv"

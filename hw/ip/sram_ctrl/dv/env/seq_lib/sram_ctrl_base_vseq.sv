@@ -56,11 +56,15 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
   // Request a memory init.
   //
   virtual task req_mem_init();
-    ral.ctrl.renew_scr_key.set(1);
-    ral.ctrl.init.set(1);
-    csr_update(.csr(ral.ctrl));
-    csr_spinwait(.ptr(ral.status.init_done), .exp_data(1));
-    cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
+    // Use csr_wr rather than csr_update, because we change this reg type to RO in RAL when
+    // ctrl_regwen is clear. csr_update won't issue a write to this CSR
+    csr_wr(.ptr(ral.ctrl), .value('b11));
+
+    // if ctrl_regwen is off, init won't start
+    if (`gmv(ral.ctrl_regwen)) begin
+      csr_spinwait(.ptr(ral.status.init_done), .exp_data(1));
+      cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
+    end
   endtask
 
   // Request a new scrambling key from the OTP interface.

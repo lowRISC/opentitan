@@ -33,6 +33,7 @@ filesets:
       - seq_lib/sram_ctrl_lc_escalation_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_access_during_key_req_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_executable_vseq.sv: {is_include_file: true}
+      - seq_lib/sram_ctrl_regwen_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 

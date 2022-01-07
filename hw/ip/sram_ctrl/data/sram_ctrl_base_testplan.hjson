@@ -147,6 +147,24 @@
       tests: ["{variant}_max_throughput", "{variant}_throughput_w_partial_write"]
     }
     {
+      name: regwen
+      desc: '''
+            This test is intended to test `exec_regwen` and `ctrl_regwen` as well as their related
+            CSRs.
+
+            `ctrl_regwen` related CSRs (renew_scr_key and init) are excluded from CSRs test as they
+            affects other CSRs.
+            `exec_regwen` and its related CSRs are tested in CSRs tests, but this `exec` relates to
+            other sram inputs (en_sram_ifetch and hw_debug_en), so also test it in this test.
+
+            Both `exec_regwen` and `ctrl_regwen` as well as their related CSRs will be programmed
+            at the beginning of each iteration. So when regwen is cleared, the related CSRs will be
+            locked.
+            '''
+      milestone: V2
+      tests: ["{variant}_regwen"]
+    }
+    {
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence and
