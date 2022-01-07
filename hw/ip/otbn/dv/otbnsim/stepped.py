@@ -326,7 +326,8 @@ def on_set_keymgr_value(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     key0 = read_word('key0', args[0], 384)
     key1 = read_word('key1', args[1], 384)
     valid = read_word('valid', args[2], 1) == 1
-    sim.state.set_keymgr_value(key0, key1, valid)
+    sim.state.wsrs.set_sideload_keys(key0 if valid else None,
+                                     key1 if valid else None)
 
     return None
 
