@@ -195,23 +195,29 @@ module aes_control
 
   // To ease interfacing with the individual FSM rails, some signals need to be converted to packed
   // arrays.
-  logic [Sp2VWidth-1:0][NumSharesKey-1:0][NumRegsKey-1:0] int_key_init_we;
-  logic                [NumSharesKey-1:0][NumRegsKey-1:0] int_key_init_qe;
+  logic [Sp2VWidth-1:0][NumSharesKey-1:0][NumRegsKey-1:0]                int_key_init_we;
+  logic                [NumSharesKey-1:0][NumRegsKey-1:0][Sp2VWidth-1:0] log_key_init_we;
+  logic                [NumSharesKey-1:0][NumRegsKey-1:0]                int_key_init_qe;
   for (genvar s = 0; s < NumSharesKey; s++) begin : gen_conv_key_init_wqe_shares
     for (genvar i = 0; i < NumRegsKey; i++) begin : gen_conv_key_init_wqe_regs
       assign int_key_init_qe[s][i] = key_init_qe_i[s][i];
-      for (genvar j = 0; j < Sp2VWidth; j++) begin : gen_conv_key_init_wqe_sp2v
-        assign key_init_we_o[s][i][j] = int_key_init_we[j][s][i];
+      for (genvar j = 0; j < Sp2VWidth; j++) begin : gen_conv_key_init_wqe_log
+        assign log_key_init_we[s][i][j] = int_key_init_we[j][s][i];
       end
+      assign key_init_we_o[s][i] = sp2v_e'(log_key_init_we[s][i]);
     end
   end
-  logic [Sp2VWidth-1:0][NumSlicesCtr-1:0] int_ctr_we;
-  logic [Sp2VWidth-1:0][NumSlicesCtr-1:0] int_iv_we;
+  logic [Sp2VWidth-1:0][NumSlicesCtr-1:0]                int_ctr_we;
+  logic                [NumSlicesCtr-1:0][Sp2VWidth-1:0] log_ctr_we;
+  logic [Sp2VWidth-1:0][NumSlicesCtr-1:0]                int_iv_we;
+  logic                [NumSlicesCtr-1:0][Sp2VWidth-1:0] log_iv_we;
   for (genvar i = 0; i < NumSlicesCtr; i++) begin : gen_conv_ctr_iv_we_slices
-    for (genvar j = 0; j < Sp2VWidth; j++) begin : gen_conv_ctr_iv_we_sp2v
-      assign int_ctr_we[j][i] = ctr_we[i][j];
-      assign iv_we_o[i][j]    = int_iv_we[j][i];
+    assign log_ctr_we[i] = {ctr_we[i]};
+    for (genvar j = 0; j < Sp2VWidth; j++) begin : gen_conv_ctr_iv_we_log
+      assign int_ctr_we[j][i] = log_ctr_we[i][j];
+      assign log_iv_we[i][j]  = int_iv_we[j][i];
     end
+    assign iv_we_o[i] = sp2v_e'(log_iv_we[i]);
   end
 
   /////////
