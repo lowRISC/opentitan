@@ -130,6 +130,10 @@
       name: "{variant}_executable"
       uvm_test_seq: sram_ctrl_executable_vseq
     }
+    {
+      name: "{variant}_regwen"
+      uvm_test_seq: sram_ctrl_regwen_vseq
+    }
     // Below 2 tests are same as the tests in dvsim/tests/mem_tests.hjson
     // Replicate them here in order to enable scb
     {
