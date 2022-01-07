@@ -7,6 +7,8 @@ title: "SPI Device HWIP Technical Specification"
 
 ## Features
 
+### SPI Generic Mode
+
 - Single-bit wide SPI device interface implementing a raw data transfer protocol
   termed "Firmware Operation Mode"
   - No address bits, data is sent and received from peripheral pins to/from an
@@ -18,6 +20,24 @@ title: "SPI Device HWIP Technical Specification"
 - Flexible RX/TX Buffer size within an SRAM range
 - Interrupts for RX/TX SRAM FIFO conditions (empty, full, designated level for
   RX, TX)
+
+### SPI Flash/ Passthrough Modes
+
+- Support Serial Flash emulation
+  - HW processed Read Status, Read JEDEC ID, Read SFDP, EN4B/ EX4B, and multiple read commands
+  - 16 depth Command/ Address FIFOs and 256B Payload buffer for command upload
+  - 2x 1kB read buffer for read commands
+  - 1kB mailbox buffer and configurable mailbox target address
+- Support SPI passthrough
+  - Filtering of inadmissible commands (256-bit filter CSR)
+  - Address translation for read commands
+  - First 4B payload translation
+  - HW control of SPI PADs' output enable based on command information list
+  - SW configurable internal command process for Read Status, Read JEDEC ID, Read SFDP, and read access to the mailbox space
+  - Targets 33MHz @ Quad read mode, fall backs to 25MHz
+- Automated tracking of 3B/ 4B address mode in the flash and passthrough modes
+- 24 entries of command information slots
+  - Configurable address/ dummy/ payload size per opcode
 
 ### TPM over SPI
 
@@ -48,6 +68,38 @@ design complications described later.
 The SW can receive TPM commands with payload (address and data) and respond to the read commands with the return data using the TPM submodule in the SPI_DEVICE HWIP.
 The submodule provides the command, address, write, and read FIFOs for the SW to communicate with the TPM host system.
 The submodule also supports the SW by managing a certain set of the FIFO registers and returning the read request by HW quickly.
+
+In Flash mode, SPI Device HWIP behaves as a Serial Flash device by recognizing SPI Flash commands and processing those commands by HW.
+The commands processed by HW are Read Status (1, 2, 3), Read JEDEC ID, Read SFDP, EN4B/ EX4B, and read commands with aid of SW.
+The IP supports Normal Read, Fast Read, Fast Read Dual Output, Fast Read Quad Output.
+This version of IP does not support Dual IO, Quad IO, QPI commands.
+
+In Passthrough mode, SPI Device receives SPI transactions from a host system and forwards the transactions to a downstream flash device.
+SW may filter prohibited commands by configuring 256-bit {{< regref "FILTER" >}} CSR.
+The IP cancels ongoing transaction if the received opcode matches to the filter CSR by de-asserting CSb and gating SCK to the downstream flash device.
+
+SW may program CSRs to change the address and/or the first 4 bytes of payload on-the-fly in Passthrough mode.
+The address translation feature allows SW to maintain A/B binary images without aids of the host system.
+The payload translation may be used to change the payload of Write Status commands to not allow certain fields to be modified.
+
+In Passthrough mode, parts of the Flash modules can be active.
+While in Passthrough mode, SW may configure the IP to process certain commands internally.
+SW is recommended to filter the commands being processed internally.
+Mailbox is an exception as it shares the Read command opcode.
+
+### SPI Device Modes and Active Submodules
+
+SPI Device HWIP has three modes + TPM mode, which are "Generic" mode (also known as FwMode), "Flash" mode, and "Passthrough" mode.
+Generic mode is exclusive. Flash and Passthrough modes share many parts of the datapath.
+TPM mode only shares the SPI and has separate CSb port, which allows that the host sends TPM commands while other SPI mode is active.
+
+Mode     | FwMode | Status | JEDEC | SFDP | Mailbox | Read | Addr4B | Upload | Passthrough
+---------|--------|--------|-------|------|---------|------|--------|--------|-------------
+Generic  | Y      |        |       |      |         |      |        |        |
+Flash    |        |  Y     |   Y   |   Y  |   Y     |   Y  |   Y    |   Y    |
+Passthru |        |  Y/N   |  Y/N  |  Y/N |  Y/N    |   N  |   Y    |   Y    |     Y
+
+*Y/N*: Based on INTERCEPT_EN
 
 ## Compatibility
 
@@ -308,6 +360,251 @@ software and the TXF read pointer is incremented by hardware.
 All reads and writes to/from the SRAM for RXF and TXF activity are managed by
 direct reads and writes through the TLUL bus interface, managed by the
 auto-generated register file control logic.
+
+## SPI Flash and Passthrough Modes
+
+### Command Information List
+
+The SW may configure the map from the received opcode to the command process module by programming *cmd_info* list.
+Current SPI_DEVICE provides 24 command information entries.
+Each entry represents a command.
+Details of the fields are explained in the {{<regref "CMD_INFO_0">}}
+
+First 11 commands are assigned to specific submodules.
+
+Index  | Assigned Submodule
+-------|--------------------
+[2:0]  | Read Status
+[3]    | Read JEDEC ID
+[4]    | Read SFDP
+[10:5] | Read commands
+
+If the IP is in flash mode or in passthrough mode with {{<regref "INTERCEPT_EN">}} set, other than *opcode* and *valid* fields in the command information entries are ignored for Read Status and Read JEDEC ID commands.
+The submodules directly return data on the MISO line (SD[1]).
+In Passthrough mode, if Read Status and Read JEDEC ID commands are intercepted by the internal HW, the other fields in the command information entries are ignored also.
+
+The main use of the fields other than *opcode* and *valid* is to control the output enable in the passthrough logic.
+See [Output Enable Control](#output-enable-control) section for more.
+
+*upload* and *busy* fields are used in the SPI Flash/ Passthrough modes.
+See [Command Upload](#command-upload) section for details.
+
+### Command Parser
+
+![Command Parser block](cmdparse.svg)
+
+Command parser (*cmdparse*) processes the first byte of the SPI and activates the processing submodules depending on the received opcode and the *cmd_info* list described in the previous section.
+
+The cmdparse compares the recevied opcode with the *cmd_info.opcode* data structure.
+If any entry matches to the received opcode, the cmdparse hands over the matched command information entry with the index to the corresponding submodule.
+As explained in the [previous section](#command-information-list), the command parser checks the index to activate Read Status / Read JEDEC ID/ Read Command / Address 4B modules.
+Other than the first 11 slots and last two slots (the last two slots are not visible to SW), the cmdparse checks the *upload* field and activates the upload module if the field is set.
+
+SW can configure whether a submodule should process the command while in the passthrough mode by setting the {{<regref "INTERCEPT_EN">}} CSR.
+
+### Status Control
+
+If the received command is one of the three read status commands, STATUS control module takes over the SPI interface after the opcode.
+The 3 bytes status register is not reset by CSb.
+Except BUSY bit, other bits are controlled by SW.
+BUSY bit is set by HW when it receives any commands that are uploaded to the FIFOs.
+SW may clear BUSY bit when it completes the received commands (e.g Erase/ Program).
+
+If the host sends the Write Status commands, the commands are not processed in this module.
+SW must configure the remaining command information entries to upload the Write Status commands to the FIFOs.
+
+### JEDEC ID Control
+
+JEDEC module returns JEDEC Device ID and Manufacturer ID following the Continuation Code (CC).
+SW may configure {{<regref "JEDEC_CC">}} CSR for HW to return proper CC.
+The *cc* field in {{<regref "JEDEC_CC">}} defines the return value, which is `0x7F` by default.
+*num_cc* defines how many times the HW to send CC byte before sending the JEDEC ID.
+
+The actual JEDEC ID consists of one byte device ID and two bytes manufacturer ID.
+The HW sends the device ID first, then `[7:0]` of manufacturer ID then `[15:8]` byte.
+
+### Serial Flash Discoverable Parameters (SFDP) Control
+
+HW parses SFDP command then fetch the data from SFDP space in the DPSRAM.
+HW provides 256B SFDP space.
+HW uses lower 8bit of the received 24 bit address to access the DPSRAM.
+Upper 16 bits are ignored (aliased).
+SW should prepare proper SFDP contents before the host system issues SFDP commands.
+
+HW fetches from the DPSRAM in 4B and returns the data to the SPI line.
+HW repeats the operation until CSb is de-asserted.
+
+### Read Command Processor
+
+The read command block has multiple sub-blocks to process normal Read, Fast Read, Fast Read Dual/ Quad from the internal DPSRAM.
+The DPSRAM has a 2kB region for the read command access.
+The read command region has two 1kB buffers.
+If HW recives the read access to the other half of the space first time, then the HW reports to the SW to refill the current 1kB region with new content.
+
+The double buffering scheme aids the SW to prepare the next chunk of data.
+SW copies a portion of data (1kB) from the internal flash memory into SPI_DEVICE DPSRAM.
+From the host system, the emulated SPI Device is seen more than 2kB storage device with the double buffering scheme.
+The assumption is that the host system reads mostly sequentially.
+
+#### Address Handling
+
+For read commands such as Normal Read, Fast Read {Single/ Dual/ Quad} Output commands, the address comes through ID0 only.
+The state machine in this block shifts the address one-by-one and decrements the address counter register by 1.
+
+When it reaches the 4B address (`addr[2]`), the module triggers the DPSRAM state machine to fetch data from the DPSRAM.
+When the module receives `addr[0]`, at the positive edge of SCK, the module moves to appropriate command state based on the given CMD_INFO data.
+
+If the received address falls into mailbox address ragne and mailbox feature is enabled, the module turns on the mailbox selection bit.
+Then all out-going requests to the DPSRAM are forwarded to the mailbox section, not the read buffer section.
+
+#### Dummy Cycle
+
+The SW may configure the dummy cycle field for each individual read commands.
+The default dummy cycle for those commands are 7 (0-based).
+The value is the number of cycles.
+For example, if SW programs the dummy cycle for Fast Read Quad to `3h`, the module waits 4 cycles then returns data.
+
+#### Buffer Management
+
+![Read Buffer Management](buffer-management.svg)
+
+The SPI Device IP uses the first half of the DPSRAM as a read buffer when the SPI mode is flash or passthrough mode.
+The IP returns data from the read buffer based on the given address in the received read command.
+In the current version, the read buffer size is 2kB.
+The IP only uses lower 11 bits of the received read command address (`addr[10:0]`) to issue the read requests to the DPSRAM.
+
+SW is responsible for updating the read buffer contents.
+The HW notifies the SW to update the buffer contents when needed.
+The HW provides a SW configurable read watermark CSR and read-only {{<regref "LAST_READ_ADDRESS">}} CSR.
+The **LAST_READ_ADDRESS** shows the last read address from the buffer.
+For instance, if the host system issues `0xABCD_E000` and reads 128 bytes, the **LAST_READ_ADDRESS** after the transaction will show `0xABCD_E0FC`.
+It does not show the commands falling into the mailbox region or Read SFDP command's address.
+
+The read watermark address width is 1 bit smaller than the read buffer address.
+In the current version, the register has 10-bit width.
+The HW assumes the SW maintains the read buffer as a double buffer scheme.
+When the host system accesses one buffer (1kB), the SW prepares another 1kB by copying data from the internal non-volatile memory.
+If the received read address crosses the SW configured watermark address, the HW informs the SW.
+SW may configure the watermark CSR low enough so that the SW has enough time to copy over the data.
+
+If a new read command crosses the current buffer boundary, the SW flips the internal buffer index bit and clears the cross event for the HW to detect the address cross event again.
+
+### 4B Address Management (EN4B/ EX4B)
+
+SW may configure the HW to receive EN4B and EX4B commands and change the read command address size between 3 bytes and 4 bytes.
+For the IP to recognize EN4B/ EX4B commands, SW should configure {{<regref "CMD_INFO_EN4B">}} and {{<regref "CMD_INFO_EX4B">}}.
+
+The two CSRs omit unnecessary fields from the **CMD_INFO** data structure.
+The HW logic creates the default **CMD_INFO** structures for the two commands.
+The command parser module uses the generated structures to process and trigger the 4B management module.
+
+When the HW receives one of the commands, the HW changes the broadcast signal *cfg_addr_4b_en*.
+Also the HW updates {{<regref "CFG.addr_4b_en">}} after passing through CDC.
+It takes at most three SYS_CLK cycles to update the value in the *CFG* register after the completion of the SPI transaction (CSb de-assertion).
+
+_Note: The HW changes the broadcasting signal and the CSR even though the SPI host system sends more than 8 beats of the SPI S[0].
+After the logic matches the received command byte with EN4B/ EX4B, the logic ignores the rest of the SPI data._
+
+The broadcasted `cfg_addr_4b_en` signal affects the read commands which `addr_mode` is *AddrCfg* in their command information entries.
+
+### Command Upload
+
+If the received command meets following conditions, the HW stores the command into the command/ address FIFOs and the payload buffer:
+
+- The command does not match to the first 11 command information entries nor EN4B/ EX4B.
+- The command matches to any of the rest command information entries.
+- The matched entry has the `upload` field set.
+
+The upload module checks the command information entry to determine whether the address/ payload fields to be uploaded or not.
+The `addr_mode` is used to determine the address size in the command.
+
+If `busy` field in the command information entry is set, the upload module also sets *BUSY* bit in the *STATUS* register.
+SW may clear the *BUSY* bit after processing the command.
+
+### Passthrough
+
+The passthrough module controls the data between a host system and the attached downstream SPI flash device.
+It snoops the SPI transactions and intervenes if the transaction is not permitted.
+The module also manipulates the data if needed.
+
+#### Command Filtering
+
+Fitering the incoming command is the key role of the Passthrough module.
+
+![Command Filtering logic in Passthrough mode](passthrough-filter.svg)
+
+{{<wavejson>}}
+{ signal: [
+  { name: 'CSb_in',  wave: '10.........|....1.'},
+  { name: 'SCK_in',  wave: '0.p........|....l.'},
+  { name: 'IO[0]_i',  wave: 'z.=..=.=.=.=.=.=.=.=|=.=.=.=.z......',
+   data:["C[7]", "C[6]", "C[5]", "C[4]", "C[3]", "C[2]", "C[1]", "C[0]"],
+    period:0.5, },
+  { name: 'filter',  wave: '0................10.................',
+    period:0.5},
+  { name: 'filtered', wave: '0.................1.................',
+    period:0.5},
+  { name: 'SCK_out', wave: '0.p......0........'},
+  { name: 'CSb_out', wave: '10................1.................', period:0.5}
+  ],
+  head:{
+    text: 'Command Filtering',
+    tick: ['-2 -1 0 n-1 n+' ]
+  }
+}
+{{</wavejson>}}
+
+The passthrough logic filters the command based on the 256 bit of {{<regref "CMD_FILTER_0">}} CSR.
+Each bit corresponds to each opcode.
+For example, if bit 5 of {{<regref "CMD_FILTER_0">}} is set, the passthrough drops **CSb** when it receives `05h` SPI command.
+
+The SW does not know whether a SPI transaction is filtered or not.
+If the SW wants to check, it needs to set the _upload_ field with the opcode in the command information list.
+Then, the HW uploads the command into the command/ address FIFOs and the payload buffer.
+
+#### Address Manipulation
+
+SW may configure the passthrough logic to swap certain address bits to desired values by configuring {{<regref "ADDR_SWAP_MASK">}} and {{<regref "ADDR_SWAP_DATA">}} CSRs.
+The address translation takes in effect only when the received command is in the command information list and *addr_swap_en* field in the entry is set.
+
+For instance, the passthrough logic sets bit 20 of the address to 1 if {{<regref "ADDR_SWAP_MASK">}} is `0x0010_0000` and {{<regref "ADDR_SWAP_DATA">}} is `0x0010_0000`.
+
+#### Write Status Data Manipulation
+
+The passthrough logic also provides a way to change the first 4 bytes of the payload to the downstream SPI flash device on-the-fly as same as the address.
+The main use of this feature is to protect the Status register.
+
+SW may configure the {{<regref "PAYLOAD_SWAP_MASK">}} and {{<regref "PAYLOAD_SWAP_DATA">}} CSRs to change the specific bit of the first 4 byte of the write payload.
+For example, {{<regref "PAYLOAD_SWAP_MASK">}} as `32'h 0000_0023` and {{<regref "PAYLOAD_SWAP_DATA">}} as `32'h 0000_0022` change bit 0 to 0, bit 1 to 1, bit 5 to 1 in the first byte payload.
+
+The CSRs are Little Endian (LE)s.
+The passthrough module consumes the lower byte first as SPI flash writes byte 0 first followed by byte 1.
+For example, bit `[7:0]` is processed then `[15:8]`, `[23:16]`, and `[31:24]` at last.
+
+The CSRs affect the commands that have *payload_swap_en* as 1 in their command list entries.
+SW may use additional command informatio slots for the passthrough (index 11 to 23).
+SW must configure *payload_dir* to **PayloadIn** and *payload_en* to `4'b 0001` in order for the payload translation feature to work correctly.
+
+#### Output Enable Control
+
+Passthrough module controls the output enable signals on both host and downstream sides.
+Controlling the output enable ports is critical to not overdrive the PAD directions.
+The information of the pad enable and direction is given by SW.
+SW configures the address size, payload lanes, dummy size in **CMD_INFO** slots.
+
+If passthrough logic does not find valid command information entry based on the received opcode, it assumes the command is **PayloadIn** Single IO command.
+SW is recommended to set the filter bit for Passthrough to not deliver the unmatched command to the downstream flash device.
+
+#### Internally processed Commands
+
+As described in [SPI Device Modes](#spi-device-modes-and-active-submodules), SPI_DEVICE may return the data from the IP even if the passthrough mode is set.
+The HW can process Read Status, Read JEDEC ID, Read SFDP, Read commands accessing themailbox region, and EN4B/EX4B.
+
+SW configures {{<regref "INTERCEPT_EN">}} CSR to enable the feature.
+SW may selectively enable/disable commands.
+For example, HW returns only Read Status data internally if {{<regref "INTERCEPT_EN">}} is `{status: 1'b 1, default: 1'b 0}`.
+
+Other than Read command accessing mailbox space, it is recommended to filter the intercepted commands.
 
 ## TPM over SPI
 
