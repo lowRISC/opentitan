@@ -7,4 +7,6 @@
 waive -rules ALWAYS_SPEC       -location {prim_generic_ram_*p.sv} -regexp {Edge triggered block may be more accurately modeled as always_ff} \
       -comment "Vivado requires here an always instead of always_ff"
 waive -rules HIER_NET_NOT_READ -regexp {Connected net '(addr|wdata)_i' at prim_generic_ram_1p.sv.* is not read from in module 'prim_generic_ram_1p'} \
-      -comment "Ascentlint blackboxes very deep RAMs to speed up runtime. This blacboxing causes above lint errors."
+      -comment "Ascentlint blackboxes very deep RAMs to speed up runtime. This blackboxing causes above lint errors."
+waive -rules IFDEF_CODE -location {prim_generic_ram_1p.sv} -regexp {Assignment to 'unused_cfg' contained within `ifndef} \
+      -comment "Declaration of signal and assignment to it are in same `ifndef"
