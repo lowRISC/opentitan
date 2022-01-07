@@ -42,10 +42,6 @@ waive -rules HIER_NET_NOT_READ    -location {rv_core_ibex.sv} -regexp {Net 'tl_.
       -comment "Not all bits of instruction response needed"
 waive -rules NOT_READ             -location {rv_core_ibex.sv} -regexp {Signal 'tl_._fifo2ibex.d_(error|opcode|param|sink|size|source|user).*' is not read} \
       -comment "Not all bits of instruction response needed"
-waive -rules NOT_READ             -location {ibex_cs_registers.sv} -regexp {Signal 'mstatus_n.mpp' is not read from} \
-      -comment "Cleaner to write this way even if currently fixed at M mode"
-waive -rules CONST_FF             -location {ibex_cs_registers.sv} -regexp {Flip.flop 'mstatus_q.mpp' is driven by constant ones} \
-      -comment "Cleaner to write this way even if currently fixed at M mode"
 waive -rules NOT_READ             -location {ibex_if_stage.sv} -regexp {Signal 'fetch_addr_n.0.' is not read from} \
       -comment "cleaner to write all bits even if not all are used"
 waive -rules NOT_READ             -location {ibex_multdiv_fast.sv} -regexp {Signal 'mac_res_ext.34.' is not read from} \
@@ -56,6 +52,8 @@ waive -rules MULTIPLY             -location {ibex_multdiv_fast.sv} -regexp {Mult
       -comment "got to pay the price for the multiplier"
 waive -rules CONST_OUTPUT         -location {rv_core_ibex.sv} -regexp {Output 'tl_(i|d)_o..*' is driven by constant} \
       -comment "not all bus constructs are used"
+waive -rules SIGNED_RANGE         -location {ibex_controller.sv} -msg {Part select of signed signal 'i[3:0]' encountered} \
+      -comment "switching the loop variable i to unsigned would require loop restructuring to not change interrupt priorities, making the code less readable"
 waive -rules CONST_OUTPUT         -location {ibex_controller.sv} -regexp {Output 'exc_cause_o.5.' is driven by constant} \
       -comment "easier to write with enum, not all causes used yet"
 waive -rules CONST_OUTPUT         -location {ibex_decoder.sv} -regexp {Output 'data_reg_offset_o' is driven by constant} \
@@ -84,7 +82,7 @@ waive -rules ONE_BIT_MEM_WIDTH             -location {ibex_core.sv} -regexp {Mem
       -comment "For consistency with related signals, we use an unpacked array for this signal."
 waive -rules HIER_BRANCH_NOT_READ -location {ibex_branch_predict.sv ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Net '(clk_i|rst_ni)' is not read from in module '(ibex_branch_predict|ibex_decoder|ibex_compressed_decoder)'.*} \
       -comment "These signals are only used for assertions inside these three modules"
-waive -rules INPUT_NOT_READ -location {ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from in module '(ibex_decoder|ibex_compressed_decoder)'.*} \
+waive -rules INPUT_NOT_READ -location {ibex_branch_predict.sv ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from in module '(ibex_branch_predict|ibex_decoder|ibex_compressed_decoder)'.*} \
       -comment "These signals are only used for assertions inside these two modules"
 waive -rules IFDEF_CODE -location {ibex_core.sv} -regexp {Assignment to 'unused_instr_new_id' contained within `else block} \
       -comment "Declaration of signal and assignment to it are in same `else block"
@@ -98,14 +96,26 @@ waive -rules CLOCK_USE -location {ibex_id_stage.sv} -regexp {'clk_i' is connecte
       -comment "clk_i is unused in ibex_decoder configurations without RV32B and isn't connected to logic"
 waive -rules RESET_USE -location {ibex_id_stage.sv} -regexp {'rst_ni' is connected to 'ibex_decoder' port 'rst_ni'} \
       -comment "rst_ni is unused in ibex_decoder configurations without RV32B and isn't connected to logic"
-waive -rules {ZERO_REP} -location {ibex_icache.sv} -regexp {Replication count is zero in '{22-IC_TAG_SIZE{1'b0}}'} \
+waive -rules {ZERO_REP} -location {ibex_icache.sv} -regexp {Replication count is zero in '{22 - IC_TAG_SIZE{1'b0}}'} \
       -comment "if IC_TAG_SIZE=22, no padding is needed"
-waive -rules {ZERO_REP} -location {ibex_icache.sv} -regexp {Replication count is zero in '{IC_LINE_BEATS_W-1{1'b0}}'} \
+waive -rules {ZERO_REP} -location {ibex_icache.sv} -regexp {Replication count is zero in '{IC_LINE_BEATS_W - 1{1'b0}}'} \
       -comment "if IC_LINE_BEATS=2, IC_LINE_BEATS_W=1 and no padding is needed"
+waive -rules {ARITH_CONTEXT} -location {ibex_icache.sv} -msg {Bitlength of arithmetic operation '(output_addr_q[IC_LINE_W - 1:BUS_W] + {{IC_LINE_BEATS_W - 1{1'b0}},skid_valid_q})' is self-determined in this context} \
+      -comment "The bitlengths are determined but the zero replication count (IC_LINE_BEATS_W=1) seems to confuse the tool"
 waive -rules MIXED_SIGN           -location {ibex_lockstep.sv} -regexp {Unsigned operand 'rst_shadow_cnt_q' and signed 'LockstepOffsetW'(1)' encountered in a binary expression} \
       -comment "In line with our style guide, LockstepOffsetW'(1) results in a signed operand"
 waive -rules UNSIZED_BIT_CONTEXT  -location {ibex_lockstep.sv} -regexp {Bitlength of unsized bit literal "'0" is self determined in this context} \
       -comment {In line with our style guide, writing this as {$bits(delayed_inputs_t){1'b0}} would be much less readable}
+waive -rules CONST_FF             -location {ibex_icache.sv} -regexp {Flip-flop 'reset_inval_q' is driven by constant one} \
+      -comment "The only purpose of the flop is to initiate the cache invalidation after reset"
+waive -rules RESET_DRIVER         -location {ibex_lockstep.sv} -regexp {'(rst_shadow_set_q|rst_shadow_n)' is driven here, and used as an asynchronous reset 'rst_ni' at}
+      -comment "A synchronous counter is needed to release the shadow core reset with a delay of LockstepOffset clock cycles"
+waive -rules RESET_DRIVER         -location {ibex_lockstep.sv} -regexp {'(rst_shadow_set_q|rst_shadow_n)' driven in module 'ibex_lockstep'}
+      -comment "A synchronous counter is needed to release the shadow core reset with a delay of LockstepOffset clock cycles"
+waive -rules RESET_MUX            -location {ibex_lockstep.sv} -regexp {Asynchronous reset 'rst_shadow_n' is driven by a multiplexer here}
+      -comment "The test enable input used to control the bypass can be considered static"
+waive -rules RESET_USE            -location {ibex_lockstep.sv} -regexp {'rst_shadow_set_q' is used for some other purpose, and as asynchronous reset 'rst_ni' at}
+      -comment "A synchronous counter is needed to release the shadow core reset with a delay of LockstepOffset clock cycles and start the comparison logic one clock cycle later"
 
 # Highlighting my main concerns here, documenting areas to review in next dive
 #
