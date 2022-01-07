@@ -68,31 +68,6 @@ static uint32_t shift_left(sigverify_rsa_buffer_t *a) {
 }
 
 /**
- * Calculates R^2 mod n, where R = 2^kSigVerifyRsaNumBits.
- *
- * @param key An RSA public key.
- * @param[out] result Buffer to write the result to, little-endian.
- */
-static void calc_r_square(const sigverify_rsa_key_t *key,
-                          sigverify_rsa_buffer_t *result) {
-  memset(result->data, 0, sizeof(result->data));
-  // This subtraction sets result = -n mod R = R - n, which is equivalent to R
-  // modulo n and ensures that `result` fits in `kSigVerifyRsaNumWords` going
-  // into the loop.
-  subtract_modulus(key, result);
-
-  // Iteratively shift and reduce `result`.
-  for (size_t i = 0; i < kSigVerifyRsaNumBits; ++i) {
-    uint32_t msb = shift_left(result);
-    // Reduce until result < n. Doing this at every iteration minimizes the
-    // total number of subtractions that we need to perform.
-    while (msb > 0 || greater_equal_modulus(key, result)) {
-      msb -= subtract_modulus(key, result);
-    }
-  }
-}
-
-/**
  * Computes the Montgomery reduction of the product of two integers.
  *
  * Given an RSA public key, x, and y this function computes x*y*R^-1 mod n,
@@ -151,6 +126,39 @@ static void mont_mul(const sigverify_rsa_key_t *key,
     if (acc0 >> 32) {
       subtract_modulus(key, result);
     }
+  }
+}
+
+/**
+ * Calculates R^2 mod n, where R = 2^kSigVerifyRsaNumBits.
+ *
+ * @param key An RSA public key.
+ * @param[out] result Buffer to write the result to, little-endian.
+ */
+static void calc_r_square(const sigverify_rsa_key_t *key,
+                          sigverify_rsa_buffer_t *result) {
+  memset(result->data, 0, sizeof(result->data));
+  // This subtraction sets result = -n mod R = R - n, which is equivalent to R
+  // modulo n and ensures that `result` fits in `kSigVerifyRsaNumWords` going
+  // into the loop.
+  subtract_modulus(key, result);
+
+  // Compute T = (2^3 * R) mod n = 2^3 (montgomery form).
+  // Each run of the loop doubles result and reduces modulo n.
+  for (size_t i = 0; i < 3; ++i) {
+    uint32_t msb = shift_left(result);
+    // Reduce until result < n. Doing this at every iteration minimizes the
+    // total number of subtractions that we need to perform.
+    while (msb > 0 || greater_equal_modulus(key, result)) {
+      msb -= subtract_modulus(key, result);
+    }
+  }
+
+  // Perform 10 montgomery squares to get RR = (2^3)^(2^10) * R.
+  sigverify_rsa_buffer_t buf;
+  for (size_t i = 0; i < 5; ++i) {
+    mont_mul(key, result, result, &buf);
+    mont_mul(key, &buf, &buf, result);
   }
 }
 
