@@ -701,7 +701,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // fifo err
   assign sfifo_esrng_err =
-         {1'b0,
+         {(sfifo_esrng_push && sfifo_esrng_full),
          (sfifo_esrng_pop && !sfifo_esrng_not_empty),
          (sfifo_esrng_full && !sfifo_esrng_not_empty)};
 
@@ -1978,7 +1978,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // fifo err
   assign sfifo_observe_err =
-         {1'b0,
+         {(sfifo_observe_push && sfifo_observe_full),
          (sfifo_observe_pop && !sfifo_observe_not_empty),
          (sfifo_observe_full && !sfifo_observe_not_empty)};
 
