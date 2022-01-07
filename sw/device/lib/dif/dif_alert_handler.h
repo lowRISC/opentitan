@@ -329,6 +329,24 @@ dif_result_t dif_alert_handler_configure(
     dif_alert_handler_config_t config);
 
 /**
+ * Configures an alert in the alert handler.
+ *
+ * This operation is lock-protected.
+ *
+ * @param handler An alert handler handle.
+ * @param alert The alert to be configured.
+ * @param alert_class The class to assign the alert to.
+ * @param enabled The enablement state to configure the alert in.
+ * @param locked The locked state to configure the alert in.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_configure_alert(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert,
+    dif_alert_handler_class_t alert_class, dif_toggle_t enabled,
+    dif_toggle_t locked);
+
+/**
  * Locks out alert handler ping timer configuration.
  *
  * Once locked, `dif_alert_handler_configure()` will return

@@ -20,9 +20,90 @@ static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
               "Expected seven local alerts!");
 
 /**
+ * We use this to convert the class enum to the integer value that is assigned
+ * to each class in auto-generated register header file. We do this to make this
+ * code robust against changes to the class values in the auto-generated
+ * register header file.
+ */
+OT_WARN_UNUSED_RESULT
+static bool class_to_uint32(dif_alert_handler_class_t alert_class,
+                            uint32_t *classification) {
+  switch (alert_class) {
+    case kDifAlertHandlerClassA:
+      *classification =
+          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSA;
+      break;
+    case kDifAlertHandlerClassB:
+      *classification =
+          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSB;
+      break;
+    case kDifAlertHandlerClassC:
+      *classification =
+          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSC;
+      break;
+    case kDifAlertHandlerClassD:
+      *classification =
+          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSD;
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+/**
+ * NOTE: the alert ID corresponds directly to the multireg index for each CSR.
+ * (I.e., alert N has enable multireg N).
+ */
+dif_result_t dif_alert_handler_configure_alert(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert,
+    dif_alert_handler_class_t alert_class, dif_toggle_t enabled,
+    dif_toggle_t locked) {
+  if (alert_handler == NULL || alert >= ALERT_HANDLER_PARAM_N_ALERTS ||
+      !dif_is_valid_toggle(enabled) || !dif_is_valid_toggle(locked)) {
+    return kDifBadArg;
+  }
+  uint32_t classification;
+  if (!class_to_uint32(alert_class, &classification)) {
+    return kDifBadArg;
+  }
+
+  // Check if configuration is locked.
+  ptrdiff_t regwen_offset =
+      ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t);
+  if (!mmio_region_read32(alert_handler->base_addr, regwen_offset)) {
+    return kDifLocked;
+  }
+
+  // Enable the alert.
+  ptrdiff_t enable_reg_offset =
+      ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + alert * sizeof(uint32_t);
+  uint32_t enable_reg = bitfield_bit32_write(
+      0, ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT, true);
+  mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
+                               enable_reg);
+
+  // Classify the alert.
+  ptrdiff_t class_reg_offset = ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
+                               alert * sizeof(uint32_t);
+  uint32_t class_reg = bitfield_field32_write(
+      0, ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_FIELD, classification);
+  mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
+                               class_reg);
+
+  // Lock the configuration.
+  if (locked == kDifToggleEnabled) {
+    mmio_region_write32(alert_handler->base_addr, regwen_offset, 0);
+  }
+
+  return kDifOk;
+}
+
+/**
  * Classifies alerts for a single alert class. Returns `false` if any of the
  * provided configuration is invalid.
  */
+// TODO(#9899): support locking the alert class configuration.
 OT_WARN_UNUSED_RESULT
 static bool classify_alerts(const dif_alert_handler_t *alert_handler,
                             const dif_alert_handler_class_config_t *class) {
@@ -31,67 +112,11 @@ static bool classify_alerts(const dif_alert_handler_t *alert_handler,
   }
 
   for (int i = 0; i < class->alerts_len; ++i) {
-    if (class->alerts[i] >= ALERT_HANDLER_PARAM_N_ALERTS) {
+    if (dif_alert_handler_configure_alert(alert_handler, class->alerts[i],
+                                          class->alert_class, kDifToggleEnabled,
+                                          kDifToggleDisabled) != kDifOk) {
       return false;
     }
-
-    // Enable the alert.
-    // NOTE: the value in alerts[i] corresponds directly to the multireg index.
-    // (I.e., alert N has enable multireg N).
-    ptrdiff_t enable_reg_offset = ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET +
-                                  class->alerts[i] * sizeof(uint32_t);
-    uint32_t enable_reg =
-        mmio_region_read32(alert_handler->base_addr, enable_reg_offset);
-    // TODO: we would like to use the generated macro for the ENABLE BIT OFFSET
-    // below for the alert with the given index/ID, not just assume they are
-    // the same across all regs in the multireg. However, making this assumption
-    // for now.
-    enable_reg = bitfield_bit32_write(
-        enable_reg, ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT, true);
-    mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
-                                 enable_reg);
-
-    // Determine alert classification.
-    uint32_t classification;
-    switch (class->alert_class) {
-      case kDifAlertHandlerClassA:
-        classification =
-            ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSA;
-        break;
-      case kDifAlertHandlerClassB:
-        classification =
-            ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSB;
-        break;
-      case kDifAlertHandlerClassC:
-        classification =
-            ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSC;
-        break;
-      case kDifAlertHandlerClassD:
-        classification =
-            ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSD;
-        break;
-      default:
-        return false;
-    }
-
-    // Classify the alert.
-    // NOTE: the value in alerts[i] corresponds directly to the multireg index.
-    // (I.e., alert N has enable multireg N).
-    ptrdiff_t class_reg_offset =
-        ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
-        class->alerts[i] * sizeof(uint32_t);
-    uint32_t class_reg =
-        mmio_region_read32(alert_handler->base_addr, class_reg_offset);
-    // TODO: we would like to use the generated macro for the BITFIELD
-    // below for the alert with the given index/ID, not just assume they are
-    // the same across all regs in the multireg.
-    class_reg = bitfield_field32_write(
-        class_reg, ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_FIELD,
-        classification);
-    mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
-                                 class_reg);
-
-    // TODO: support locking the alert class configuration.
   }
 
   return true;
