@@ -188,7 +188,13 @@ module entropy_src
     es_fips: '1
   };
   // once enabled, stub entropy is always available
-  assign stub_es_valid = |reg2hw.conf.enable.q;
+
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi4_test_true_strict;
+
+  mubi4_t mubi_module_en;
+  assign mubi_module_en  = mubi4_t'(reg2hw.module_enable.q);
+  assign stub_es_valid = mubi4_test_true_strict(mubi_module_en);
 
   if (Stub) begin : gen_stub_entropy_src
 
@@ -197,10 +203,10 @@ module entropy_src
       if (!rst_ni) begin
         lfsr_en <= '0;
       end else begin
-        lfsr_en <= |reg2hw.conf.enable.q;
+        lfsr_en <= stub_es_valid;
       end
     end
-    assign seed_ld = |reg2hw.conf.enable.q & !lfsr_en;
+    assign seed_ld = stub_es_valid & !lfsr_en;
 
     prim_lfsr #(
       .LfsrDw(StubLfsrWidth),
@@ -226,7 +232,7 @@ module entropy_src
       // need to move this to package so that it can be referenced
       stub_hw2reg.debug_status.main_sm_state.d = 8'b01110110;
 
-      stub_hw2reg.intr_state.es_entropy_valid.de = |reg2hw.conf.enable.q;
+      stub_hw2reg.intr_state.es_entropy_valid.de = stub_es_valid;
       stub_hw2reg.intr_state.es_entropy_valid.d = 1'b1;
 
     end

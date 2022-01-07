@@ -88,6 +88,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       es_enable_pfa;
   logic       es_enable_early;
 
+  logic       fips_enable_pfe;
+  logic       fips_enable_pfa;
+
   logic       es_enable_rng;
   logic       rng_bit_en;
   logic       rng_bit_enable_pfe;
@@ -449,12 +452,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // check for illegal enable field states, and set alert if detected
 
   // SEC_CM: CONFIG.MUBI
-  mubi4_t mubi_conf_en;
-  assign mubi_conf_en  = mubi4_t'(reg2hw.conf.enable.q);
-  assign es_enable_pfe = mubi4_test_true_strict(mubi_conf_en);
-  assign es_enable_pfa = mubi4_test_invalid(mubi_conf_en);
-  assign hw2reg.recov_alert_sts.enable_field_alert.de = es_enable_pfa;
-  assign hw2reg.recov_alert_sts.enable_field_alert.d  = es_enable_pfa;
+  mubi4_t mubi_module_en;
+  assign mubi_module_en  = mubi4_t'(reg2hw.module_enable.q);
+  assign es_enable_pfe = mubi4_test_true_strict(mubi_module_en);
+  assign es_enable_pfa = mubi4_test_invalid(mubi_module_en);
+  assign hw2reg.recov_alert_sts.module_enable_field_alert.de = es_enable_pfa;
+  assign hw2reg.recov_alert_sts.module_enable_field_alert.d  = es_enable_pfa;
+
+  mubi4_t mubi_fips_en;
+  assign mubi_fips_en  = mubi4_t'(reg2hw.conf.fips_enable.q);
+  assign fips_enable_pfe = mubi4_test_true_strict(mubi_fips_en);
+  assign fips_enable_pfa = mubi4_test_invalid(mubi_fips_en);
+  assign hw2reg.recov_alert_sts.fips_enable_field_alert.de = fips_enable_pfa;
+  assign hw2reg.recov_alert_sts.fips_enable_field_alert.d  = fips_enable_pfa;
 
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_entropy_reg_en;
@@ -2169,7 +2179,15 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_hw_if_req = entropy_src_hw_if_i.es_req;
   assign entropy_src_hw_if_o.es_ack = es_hw_if_ack;
   assign entropy_src_hw_if_o.es_bits = esfinal_data;
-  assign entropy_src_hw_if_o.es_fips = esfinal_fips_flag;
+  // TODO: The following is a placeholder for the final implementation
+  // for blocking non-FIPS data.  Please see PR #9949 & Issue 9853
+  // for details.
+  //
+  // For now data is simply masked if fips_enable is not set
+  // but this does not prevent previously queued seeds from
+  // exiting once FIPS_ENABLE is asserted.
+  assign entropy_src_hw_if_o.es_fips = esfinal_fips_flag
+                                       && fips_enable_pfe; // TODO: Fix fips_enable_pfe
 
   entropy_src_ack_sm u_entropy_src_ack_sm (
     .clk_i            (clk_i),

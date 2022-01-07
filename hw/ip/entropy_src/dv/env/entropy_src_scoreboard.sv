@@ -649,9 +649,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
         // Special handling for registers with broader impacts
         case (csr.get_name())
-          "conf": begin
+          "module_enable": begin
             bit do_disable, do_enable;
-            uvm_reg_field enable_field = csr.get_field_by_name("enable");
+            uvm_reg_field enable_field = csr.get_field_by_name("module_enable");
             prim_mubi_pkg::mubi4_t enable_mubi = enable_field.get_mirrored_value();
             // TODO: integrate this with invalid MuBi checks
             do_disable = (enable_mubi == prim_mubi_pkg::MuBi4False);
@@ -697,7 +697,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard
       end
       "intr_test": begin
       end
+      "regwen_me": begin
+      end
       "regwen": begin
+      end
+      "module_enable": begin
       end
       "conf": begin
       end

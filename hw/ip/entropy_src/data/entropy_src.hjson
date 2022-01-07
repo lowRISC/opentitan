@@ -113,6 +113,20 @@
 
   regwidth: "32",
   registers: [
+    { name: "REGWEN_ME",
+      desc: "Register write enable for module enable control register",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        {
+            bits: "0",
+            desc: ''' When true, the !!MODULE_ENABLE register can be modified.
+            When false, it becomes read-only.
+            '''
+            resval: 1
+        }
+      ]
+    },
     { name: "REGWEN",
       desc: "Register write enable for all control registers",
       swaccess: "rw0c",
@@ -149,6 +163,25 @@
         }
       ]
     },
+    { name: "MODULE_ENABLE",
+      desc: "Module enable register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGWEN_ME",
+      tags: [// Exclude from writes to these field because they cause side affects.
+             "excl:CsrAllTests:CsrExclAll"]
+      fields: [
+        { bits: "3:0",
+          mubi: true,
+          name: "MODULE_ENABLE",
+          desc: '''
+                Setting this field to kMuBi4True will enable the ENTROPY_SRC module. Setting
+                this field to kMuBi4False will effectively reset the module.
+                '''
+          resval: false,
+        },
+      ]
+    },
     { name: "CONF",
       desc: "Configuration register",
       swaccess: "rw",
@@ -158,10 +191,11 @@
              "excl:CsrAllTests:CsrExclAll"]
       fields: [
         { bits: "3:0",
-          name: "ENABLE",
+          name: "FIPS_ENABLE",
           mubi: true,
           desc: '''
-                Setting this field to kMuBi4True will enable the ENTROPY_SRC module.
+                Setting this field to kMuBi4True will enable FIPS qualified entropy to be
+                generated.
                 '''
           resval: false,
         },
@@ -1153,9 +1187,9 @@
       hwaccess: "hwo",
       fields: [
         { bits: "0",
-          name: "ENABLE_FIELD_ALERT",
+          name: "FIPS_ENABLE_FIELD_ALERT",
           desc: '''
-                This bit is set when the ENABLE field in the !!CONF register is set to
+                This bit is set when the FIPS_ENABLE field in the !!CONF register is set to
                 a value other than 0x5 or 0xA.
                 Writing a zero resets this status bit.
                 '''
@@ -1164,6 +1198,14 @@
           name: "ENTROPY_DATA_REG_EN_FIELD_ALERT",
           desc: '''
                 This bit is set when the ENTROPY_DATA_REG_ENABLE field in the !!CONF register is set to
+                a value other than 0x5 or 0xA.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "2",
+          name: "MODULE_ENABLE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the MODULE_ENABLE field in the !!MODULE_ENABLE register is set to
                 a value other than 0x5 or 0xA.
                 Writing a zero resets this status bit.
                 '''

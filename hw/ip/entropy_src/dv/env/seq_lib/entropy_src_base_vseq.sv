@@ -81,13 +81,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf("Found %01d seeds", seeds_found), UVM_HIGH)
     end while (seeds_found > 0);
 
+    `uvm_info(`gfn, "Disabling DUT", UVM_MEDIUM)
+    ral.module_enable.module_enable.set(prim_mubi_pkg::MuBi4False);
+    csr_update(.csr(ral.module_enable));
+
     `uvm_info(`gfn, "Checking diagnostics", UVM_MEDIUM)
     check_ht_diagnostics();
-    `uvm_info(`gfn, "Disabling DUT", UVM_MEDIUM)
-    ral.conf.enable.set(prim_mubi_pkg::MuBi4False);
-    csr_update(.csr(ral.conf));
     `uvm_info(`gfn, "Clearing Alerts", UVM_MEDIUM)
-    ral.conf.enable.set(prim_mubi_pkg::MuBi4False);
     ral.recov_alert_sts.es_main_sm_alert.set(1'b0);
     csr_update(.csr(ral.recov_alert_sts));
     super.dut_shutdown();
@@ -108,12 +108,16 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // Thresholds managed in derived vseq classes
 
     // Enables (should be done last)
-    ral.conf.enable.set(cfg.enable);
+    ral.conf.fips_enable.set(cfg.enable);
+
     ral.conf.entropy_data_reg_enable.set(cfg.entropy_data_reg_enable);
     ral.conf.boot_bypass_disable.set(cfg.boot_bypass_disable);
     ral.conf.rng_bit_enable.set(cfg.rng_bit_enable);
     ral.conf.rng_bit_sel.set(cfg.rng_bit_sel);
     csr_update(.csr(ral.conf));
+
+    ral.module_enable.set(cfg.enable); // TODO: Change config here?
+    csr_update(.csr(ral.module_enable));
 
     if (do_interrupt) begin
       ral.intr_enable.set(en_intr);

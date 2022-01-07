@@ -121,8 +121,13 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
           {ENTROPY_SRC_CONF_HEALTH_TEST_CLR_OFFSET, reset_ht},
           {ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_OFFSET, kMultiBitBool4False},
           {ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET, route_to_fw},
-          {ENTROPY_SRC_CONF_ENABLE_OFFSET, enable},
+          {ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET, enable},
       });
+
+  EXPECT_WRITE32(ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
+                 {
+                     {ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET, enable},
+                 });
 
   EXPECT_EQ(dif_entropy_src_configure(&entropy_src_, config_), kDifOk);
 }

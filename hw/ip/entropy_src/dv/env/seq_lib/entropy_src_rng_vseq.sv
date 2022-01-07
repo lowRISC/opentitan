@@ -63,8 +63,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   task enable_dut();
     `uvm_info(`gfn, "CSR Thread: Enabling DUT", UVM_MEDIUM)
-    ral.conf.enable.set(prim_mubi_pkg::MuBi4True);
-    csr_update(.csr(ral.conf));
+    ral.module_enable.set(prim_mubi_pkg::MuBi4True);
+    csr_update(.csr(ral.module_enable));
   endtask
 
   virtual task entropy_src_init();
@@ -155,7 +155,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       `uvm_info(`gfn, "Identified main_sm alert", UVM_HIGH)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
       cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
-      csr_wr(.ptr(ral.conf.enable), .value(prim_mubi_pkg::MuBi4False));
+      csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4False));
       csr_wr(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(1'b1));
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
       if (do_check_ht_diag) begin
@@ -164,9 +164,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         // read all health check values
         `uvm_info(`gfn, "Checking_ht_values", UVM_HIGH)
         check_ht_diagnostics();
-        `uvm_info(`gfn, "ht value check complete", UVM_HIGH)
+        `uvm_info(`gfn, "HT value check complete", UVM_HIGH)
       end
-      csr_wr(.ptr(ral.conf.enable), .value(prim_mubi_pkg::MuBi4True));
+      csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4True));
     end
   endtask
 

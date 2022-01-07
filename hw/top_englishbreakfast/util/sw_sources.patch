@@ -28,10 +28,10 @@ index 8861f54ba..8442bb896 100644
 -  mmio_region_write32(reg32, reg_offset, reg_value & mask);
  }
 diff --git a/sw/device/lib/testing/test_rom/test_rom_start.S b/sw/device/lib/testing/test_rom/test_rom_start.S
-index e4b14eb84..d595aa757 100644
+index 480451ff5..d595aa757 100644
 --- a/sw/device/lib/testing/test_rom/test_rom_start.S
 +++ b/sw/device/lib/testing/test_rom/test_rom_start.S
-@@ -81,19 +81,6 @@ _reset_start:
+@@ -81,23 +81,6 @@ _reset_start:
  _start:
    .globl _start
 
@@ -39,6 +39,10 @@ index e4b14eb84..d595aa757 100644
 -  li   a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
 -  li   t0, 0x55505a
 -  sw   t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
+-
+-  li   a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+-  li   t0, 0xa
+-  sw   t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
 -
 -  li   a0, TOP_EARLGREY_CSRNG_BASE_ADDR
 -  li   t0, 0xaaa
