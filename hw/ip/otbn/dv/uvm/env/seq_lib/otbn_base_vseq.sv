@@ -495,4 +495,54 @@ class otbn_base_vseq extends cip_base_vseq #(
     if (enable_base_alert_checks) super.check_no_fatal_alerts();
   endtask
 
+  // Task to build a random image in imem
+  virtual task imem_init();
+    bit   [31:0]     rnd_data;
+    logic [127:0]    key;
+    logic [63:0]     nonce;
+    bit   [38:0]     integ_data;
+
+    key = cfg.get_imem_key();
+    nonce = cfg.get_imem_nonce();
+
+    // Randomize the memory contents.
+    //
+    // We can't just use the mem_bkdr_util randomize_mem function because that doesn't obey the
+    // scrambling key. This wouldn't be a problem (the memory is supposed to be random!), except
+    // that we also need to pick ECC values that match.
+    for (int i = 0; i <= otbn_reg_pkg::OTBN_IMEM_SIZE / 4; i++) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
+      integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(rnd_data);
+      cfg.write_imem_word(i, integ_data, key, nonce);
+    end
+  endtask
+
+  // Task to build a random image in dmem
+  virtual task dmem_init();
+    bit   [31:0]     rnd_data;
+    logic [127:0]    key;
+    logic [63:0]     nonce;
+    bit   [38:0]     integ_data;
+    bit   [38:0]     final_data_arr [8];
+    bit   [311:0]    final_data;
+
+    key = cfg.get_dmem_key();
+    nonce = cfg.get_dmem_nonce();
+
+    // Randomize the memory contents.
+    //
+    // We can't just use the mem_bkdr_util randomize_mem function because that doesn't obey the
+    // scrambling key. This wouldn't be a problem (the memory is supposed to be random!), except
+    // that we also need to pick ECC values that match.
+    for (int i = 0; i <= otbn_reg_pkg::OTBN_DMEM_SIZE / 4; i++) begin
+      for (int j = 0; j < 8; j++) begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
+        integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(rnd_data);
+        final_data_arr[j] = integ_data;
+      end
+      final_data = {>>{final_data_arr}};
+      cfg.write_dmem_word(i, final_data, key, nonce);
+    end
+  endtask
+
 endclass : otbn_base_vseq

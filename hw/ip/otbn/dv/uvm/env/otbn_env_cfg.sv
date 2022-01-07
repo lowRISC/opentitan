@@ -181,10 +181,12 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   function void write_imem_word(bit [ImemIndexWidth-1:0]           idx,
                                 logic [38:0]                       clr_data,
                                 logic [127:0]                      key,
-                                otbn_pkg::otbn_imem_nonce_t        nonce);
+                                otbn_pkg::otbn_imem_nonce_t        nonce,
+                                bit   [38:0]                       flip_bits = 0);
 
     logic [ImemIndexWidth-1:0] phys_idx;
     logic [38:0]               scr_data;
+    logic [38:0]               integ_data;
 
     logic key_arr[], nonce_arr[], idx_arr[], phys_idx_arr[], scr_data_arr[], clr_data_arr[];
 
@@ -195,6 +197,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // Scramble the index to find the word in physical memory
     phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, ImemIndexWidth, nonce_arr);
     phys_idx = {<<{phys_idx_arr}};
+
+    // flip some bits to inject integrity fault
+    clr_data ^= flip_bits;
 
     // Scramble the data
     clr_data_arr = {<<{clr_data}};
@@ -211,7 +216,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   function void write_dmem_word(bit [DmemIndexWidth-1:0]    idx,
                                 logic [311:0]               clr_data,
                                 logic [127:0]               key,
-                                otbn_pkg::otbn_dmem_nonce_t nonce);
+                                otbn_pkg::otbn_dmem_nonce_t nonce,
+                                bit   [311:0]               flip_bits = 0);
 
     logic [DmemIndexWidth-1:0] phys_idx;
     bit [311:0]               scr_data;
@@ -225,6 +231,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // Scramble the index to find the word in physical memory
     phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, DmemIndexWidth, nonce_arr);
     phys_idx = {<<{phys_idx_arr}};
+    // flip some bits to inject integrity fault
+    clr_data ^= flip_bits;
 
     // Scramble the data
     clr_data_arr = {<<{clr_data}};

@@ -57,4 +57,48 @@ class otbn_common_vseq extends otbn_base_vseq;
     `DV_ASSERT_CTRL_REQ("otbn_status_assert_en", 1'b1)
   endtask
 
+  // Overriden from cip_base_vseq. Initialise Imem and Dmem and then call the super function.
+  task run_passthru_mem_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
+    `uvm_info(`gfn, "Overriding run_passthru_mem_tl_intg_err_vseq_sub", UVM_HIGH)
+    imem_init();
+    dmem_init();
+    super.run_passthru_mem_tl_intg_err_vseq_sub(num_times, ral_name);
+  endtask
+
+  virtual function void inject_intg_fault_in_passthru_mem(dv_base_mem mem,
+                                                          bit [bus_params_pkg::BUS_AW-1:0] addr);
+    bit [38:0]       rdata_imem;
+    bit [311:0]      rdata_dmem;
+    bit [38:0]       flip_bits_imem;
+    bit [311:0]      flip_bits_dmem;
+    bit [38:0]       flip_bits_dmem_arr [8];
+
+    logic [127:0]    key;
+    logic [63:0]     nonce;
+
+    if(mem.get_name() == "imem") begin
+      key   = cfg.get_imem_key();
+      nonce = cfg.get_imem_nonce();
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flip_bits_imem,
+          $countones(flip_bits_imem) inside {[1:cip_base_pkg::MAX_TL_ECC_ERRORS]};)
+      rdata_imem = cfg.read_imem_word(addr / 4, key, nonce);
+      `uvm_info(`gfn, $sformatf("Backdoor change mem (addr 0x%0h) value 0x%0h by flipping bits %0h",
+                              addr, rdata_imem, flip_bits_imem), UVM_LOW)
+      cfg.write_imem_word(addr / 4, rdata_imem, key, nonce, flip_bits_imem);
+    end
+    else begin
+      key   = cfg.get_dmem_key();
+      nonce = cfg.get_dmem_nonce();
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flip_bits_dmem_arr[addr[7:0] / 4],
+          $countones(flip_bits_dmem_arr[addr[7:0] / 4])
+          inside {[1:cip_base_pkg::MAX_TL_ECC_ERRORS]};)
+      flip_bits_dmem = {<<{flip_bits_dmem_arr}};
+      rdata_dmem = cfg.read_dmem_word(addr / 32, key, nonce);
+      `uvm_info(`gfn, $sformatf("Backdoor change mem (addr 0x%0h) value 0x%0h by flipping bits %0h",
+                                addr, rdata_dmem, flip_bits_dmem), UVM_LOW)
+      cfg.write_dmem_word(addr / 32, rdata_dmem, key, nonce, flip_bits_dmem);
+    end
+
+  endfunction
+
 endclass
