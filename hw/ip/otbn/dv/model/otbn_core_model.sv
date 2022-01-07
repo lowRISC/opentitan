@@ -154,6 +154,10 @@ module otbn_core_model
       raw_err_bits_q <= 0;
       stop_pc_q <= 0;
     end else begin
+      if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
+        otbn_model_set_keymgr_value(model_handle, keymgr_key_i.key[0], keymgr_key_i.key[1],
+                                    keymgr_key_i.valid);
+      end
       if (edn_urnd_cdc_done_i) begin
         edn_model_urnd_cdc_done(model_handle);
       end
@@ -181,15 +185,6 @@ module otbn_core_model
     end
   end
 
-  always_ff @(posedge clk_i or posedge rst_ni)
-  begin
-    if (rst_ni) begin
-      if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
-        otbn_model_set_keymgr_value(model_handle, keymgr_key_i.key[0], keymgr_key_i.key[1],
-                                    keymgr_key_i.valid);
-      end
-    end
-  end
   // Assertion to ensure that keymgr key valid is never unknown.
   `ASSERT_KNOWN(KeyValidIsKnownChk_A, keymgr_key_i.valid)
   // Assertion to ensure that keymgr key values are never unknown if valid is high.
