@@ -11,11 +11,11 @@
  * w0). See comment at the end of the file for expected values.
  */
 run_rsa_verify_3072_consts_test:
-  /* Compute R^2 = (2^3072)^2 mod M */
-  jal      x1, compute_rr
-
   /* Compute m0_inv = (- (M^-1)) mod 2^256 */
   jal      x1, compute_m0_inv
+
+  /* Compute R^2 = (2^3072)^2 mod M */
+  jal      x1, compute_rr
 
   /* Copy m0_inv to w0 */
   li       x8, 0
