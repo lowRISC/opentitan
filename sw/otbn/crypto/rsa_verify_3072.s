@@ -106,11 +106,11 @@ mul256_w30xw2:
  * @param[in]  w2:  current limb of operand B, b_i
  * @param[in]  w3:  Montgomery constant m0'
  * @param[in]  w31: all-zero
- * @param[in]  [w[4+N-1]:w4] intermediate result A
- * @param[out] [w[4+N-1]:w4] intermediate result A
+ * @param[in]  [w15:w4] intermediate result A
+ * @param[out] [w15:w4] intermediate result A
  *
- * clobbered registers: x8, x10, x12, x13, x16, x19
- *                      w24, w25, w26, w27, w28, w29, w30, w4 to w[4+N-1]
+ * clobbered registers: x2, x8, x10, x12, x13, x16, x19, x22
+ *                      w24, w25, w26, w27, w28, w29, w30, w4 to w15
  * clobbered Flag Groups: FG0, FG1
  */
 mont_loop:
@@ -275,10 +275,11 @@ mont_loop:
  * @param[in]  x11: pointer to temp reg, must be set to 2
  * @param[out] [w15:w4]: result C
  *
- * clobbered registers: x5, x6, x7, x8, x10, x12, x13, x17, x19, x20, x21
- *                      w2, to w15, w24 to w30
+ * clobbered registers: x2, x6 to x13, x22
+ *                      w2, w4 to w15, w24 to w30
  * clobbered Flag Groups: FG0, FG1
  */
+.globl montmul
 montmul:
   /* load Montgomery constant: w3 = dmem[x17] = dmem[dptr_m0d] = m0' */
   bn.lid    x9, 0(x17)
@@ -331,8 +332,8 @@ montmul:
  * @param[in]  dmem[x23] pointer to buffer with base bignum
  * @param[in]  dmem[x24] pointer to output buffer
  *
- * clobbered registers: x2, x5 to x13, x16 to x21, x29
-                        w2, to w15, w24 to w31
+ * clobbered registers: x2, x6 to x13, x16, x17, x19 to x22, x26,
+ *                      w2 to w31
  * clobbered Flag Groups: FG0, FG1
  */
  .globl modexp_var_3072_3
@@ -423,8 +424,8 @@ modexp_var_3072_3:
  * @param[in]  dmem[x23] pointer to buffer with base bignum
  * @param[in]  dmem[x24] pointer to output buffer
  *
- * clobbered registers: x2, x5 to x13, x16 to x21, x29
-                        w2, to w15, w24 to w31
+ * clobbered registers: x2, x6 to x13, x16, x17, x19 to x24, x26,
+                        w2 to w31
  * clobbered Flag Groups: FG0, FG1
  */
  .globl modexp_var_3072_f4

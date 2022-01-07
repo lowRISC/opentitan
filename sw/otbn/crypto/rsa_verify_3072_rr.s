@@ -138,32 +138,32 @@ sel_aa:
  *
  *   Returns RR = (2^3072)^2 mod M
  *
- * This implementation is based on section 2.3 of "Montgomery Arithmetic from a
- * Software Perspective" (https://eprint.iacr.org/2017/1057). For the purposes
- * of RSA 3072, the parameters w and n from the paper are fixed (w=256, n=12).
- *
- * A note on bounds: the algorithm from the paper states an assumption that
- * 2^wn-1 <= M < 2^wn (in our case, 2^3071 <= M < 2^3072). We make that
- * assumption here too, because it agrees with FIPS 186-4 section B.3.1 (page
- * 53), which states that the prime factors of the RSA modulus must be at least
- * sqrt(2)*2^(nlen/2-1) (where nlen is the key length, 3072 in this case).
+ * A note on bounds: This computation assumes that 2^3071 <= M < 2^3072. This
+ * agrees with FIPS 186-4 section B.3.1 (page 53), which states that the prime
+ * factors of the RSA modulus must be at least sqrt(2)*2^(nlen/2-1) (where nlen
+ * is the key length, 3072 in this case).
  *
  * The result is stored in dmem[rr]. This routine runs in variable time.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  dmem[in_mod] pointer to first limb of modulus M in dmem
+ * @param[in]  dmem[m0inv]  Montgomery constant (-(M^-1) mod 2^256)
+ * @param[out] dmem[rr]     Montgomery constant (R^2) mod M
  *
- * clobbered registers: x9, x10, x16, w4 to w16, w31
- * clobbered Flag Groups: FG0
+ * clobbered registers: x0 to x3, x6 to x13, x16, x17, x19 to x22, x24,
+ *                      w2 to w31
+ * clobbered Flag Groups: FG0, FG1
  */
  .globl compute_rr
 compute_rr:
   /* Prepare all-zero register. */
   bn.xor    w31, w31, w31
 
-  /* Set pointer to modulus. */
+  /* Set pointers to DMEM buffers. */
   la        x16, in_mod
+  la        x17, m0inv
+  la        x24, rr
 
   /* Zero [w4:w15]. */
   li        x9, 4
@@ -174,29 +174,52 @@ compute_rr:
   /* w16 <= 1 */
   bn.addi   w16, w31, 1
 
-  /* Initialize c0.
-     c0 = [w4:w15] <= [w4:w16] >> 1 = 2^3701 */
+  /* [w4:w15] <= [w4:w16] >> 1 = 2^3701 */
   bn.rshi   w15, w16, w15 >> 1
 
-  /* One modular doubling to get c1 \equiv 2^3072 mod M.
-     c1 = [w4:w15] <= ([w4:w15] * 2) mod M = (2^3072) mod M */
-  jal     x1, double_mod_var
-
-  /* Compute (2^3072)^2 mod M by performing 3072 modular doublings. */
-  li      x9, 3072
-  loop     x9, 4
-    jal     x1, double_mod_var
-    /* Nop because loop can't end on a jump instruction. */
+  /* Compute T = (2^3 * R) mod M = 2^3 (montgomery form).
+     T = [w4:w15] = (2^4 * 2^3071) mod M = (2^3 * R) mod M */
+  loopi     4,2
+    jal x1, double_mod_var
     nop
 
-  /* Store result in dmem[rr]. */
-  li        x9, 4
-  la        x10, rr
+  /* Store T in output buffer (in preparation for montmul).
+     dmem[rr] <= [w4:w15] = T */
+  li        x8, 4
+  addi      x21, x24, 0
   loopi     12, 2
-    bn.sid    x9, 0(x10++)
-    addi      x9, x9, 1
+    bn.sid    x8, 0(x21++)
+    addi      x8, x8, 1
+
+  /* Prepare pointers to temp regs for montmul. */
+  li        x9, 3
+  li        x10, 4
+  li        x11, 2
+
+  /* Prepare a pointer to the w4 register for storing the result. */
+  li        x8, 4
+
+  /* Ten montgomery squares to compute RR = (T^(2^10) * R) mod M. */
+  loopi     10,9
+    /* [w4:w15] <= montmul(dmem[rr], dmem[rr]) */
+    addi      x19, x24, 0
+    addi      x20, x24, 0
+    jal       x1, montmul
+    /* Store result: dmem[rr] <= [w4:w15] */
+    addi      x21, x24, 0
+    addi      x22, x8, 0
+    loopi     12, 2
+      bn.sid    x22, 0(x21++)
+      addi      x22, x22, 1
+    nop
 
   ret
+
+/* Input buffer for the Montgomery constant m0_inv. */
+.section .data.m0inv
+.weak m0inv
+m0inv:
+  .zero 32
 
 /* Input buffer for the modulus. */
 .section .bss.in_mod

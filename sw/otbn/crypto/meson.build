@@ -96,12 +96,14 @@ sw_otbn_sources += {
     'rsa_verify_3072_consts_test.s',
     'rsa_verify_3072_rr.s',
     'rsa_verify_3072_m0inv.s',
+    'rsa_verify_3072.s',
   ),
   'rsa_verify_3072_m0inv': files(
     'rsa_verify_3072_m0inv.s',
   ),
   'rsa_verify_3072_rr': files(
     'rsa_verify_3072_rr.s',
+    'rsa_verify_3072.s',
   ),
   'rsa_verify_3072_test': files(
     'rsa_verify_3072_test.s',
