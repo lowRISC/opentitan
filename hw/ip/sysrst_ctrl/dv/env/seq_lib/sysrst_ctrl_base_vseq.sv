@@ -52,7 +52,10 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
         super.apply_reset(kind);
         cfg.clk_aon_rst_vif.apply_reset(0,400,0,1);
       join
-      `uvm_info(`gfn, "Driving from apply_reset", UVM_NONE)
+     // Ensure flash wp is in reset when opentitan is out of reset
+     `DV_CHECK_EQ(cfg.vif.flash_wp_l, 0);
+     // Ensure EC is in reset when OT is out of reset
+     `DV_CHECK_EQ(cfg.vif.ec_rst_l_out, 0);
     end
   endtask  // apply_reset
 
