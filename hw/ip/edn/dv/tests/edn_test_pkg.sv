@@ -20,5 +20,6 @@ package edn_test_pkg;
   `include "edn_base_test.sv"
   `include "edn_smoke_test.sv"
   `include "edn_genbits_test.sv"
+  `include "edn_stress_all_test.sv"
 
 endpackage

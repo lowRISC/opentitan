@@ -8,7 +8,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard
     .RAL_T(entropy_src_reg_block),
     .COV_T(entropy_src_env_cov)
   );
-  import entropy_src_pkg::*;
 
   `uvm_component_utils(entropy_src_scoreboard)
 

@@ -85,7 +85,7 @@
             in parallel.
             '''
       milestone: V2
-      tests: []
+      tests: ["edn_stress_all"]
     }
   ]
 

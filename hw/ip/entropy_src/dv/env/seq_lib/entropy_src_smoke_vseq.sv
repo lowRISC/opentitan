@@ -22,7 +22,6 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
     m_rng_push_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
                      create("m_rng_push_seq");
 
-
     fork
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
       begin
@@ -39,7 +38,6 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
         m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
       end
     join
-
   endtask : body
 
 endclass : entropy_src_smoke_vseq
