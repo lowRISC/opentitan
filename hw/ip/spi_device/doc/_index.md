@@ -7,6 +7,8 @@ title: "SPI Device HWIP Technical Specification"
 
 ## Features
 
+### SPI Generic Mode
+
 - Single-bit wide SPI device interface implementing a raw data transfer protocol
   termed "Firmware Operation Mode"
   - No address bits, data is sent and received from peripheral pins to/from an
@@ -18,6 +20,24 @@ title: "SPI Device HWIP Technical Specification"
 - Flexible RX/TX Buffer size within an SRAM range
 - Interrupts for RX/TX SRAM FIFO conditions (empty, full, designated level for
   RX, TX)
+
+### SPI Flash/ Passthrough Modes
+
+- Support Serial Flash emulation
+  - HW processed Read Status, Read JEDEC ID, Read SFDP, EN4B/ EX4B, and multiple read commands
+  - 16 depth Command/ Address FIFOs and Payload buffer for command upload
+  - 2x 1kB read buffer for read commands
+  - 1kB mailbox buffer and configurable mailbox target address
+- Support SPI passthrough
+  - Filtering of inadmissible commands (256-bit filter CSR)
+  - Address translation for read commands
+  - First 4B payload translation
+  - HW control of SPI PADs' output enable based on command information list
+  - SW configurable internal command process for Read Status, Read JEDEC ID, Read SFDP, and read access to the mailbox space
+  - Targets 33MHz @ Quad read mode, fall backs to 25MHz
+- Automated tracking of 3B/ 4B address mode in the flash and passthrough modes
+- 24 entries of command information slots
+  - Configurable address/ dummy/ payload size per opcode
 
 ### TPM over SPI
 
@@ -48,6 +68,38 @@ design complications described later.
 The SW can receive TPM commands with payload (address and data) and respond to the read commands with the return data using the TPM submodule in the SPI_DEVICE HWIP.
 The submodule provides the command, address, write, and read FIFOs for the SW to communicate with the TPM host system.
 The submodule also supports the SW by managing a certain set of the FIFO registers and returning the read request by HW quickly.
+
+In Flash mode, SPI Device HWIP behaves as a Serial Flash device by recognizing SPI Flash commands and processing those commands by HW.
+The commands processed by HW are Read Status (1, 2, 3), Read JEDEC ID, Read SFDP, EN4B/ EX4B, and read commands with aids of SW.
+The IP supports Normal Read, Fast Read, Fast Read Dual Output, Fast Read Quad Output.
+This version of IP does not support Dual IO, Quad IO, QPI commands.
+
+In Passthrough mode, SPI Device receives SPI transactions from a host system and forwards the transactions to a downstream flash device.
+SW may filter prohibited commands by configuring 256-bit {{< regref "FILTER" >}} CSR.
+The IP cancels ongoing transaction if the received opcode matches to the filter CSR by de-asserting CSb and gating SCK to the downstream flash device.
+
+SW may program CSRs to change the address and/or the first 4 bytes of payload on-the-fly in Passthrough mode.
+The address translation feature allows SW to maintain A/B binary images without aids of the host system.
+The payload translation may be used to change the payload of Write Status commands to not allow certain fiels to be modified.
+
+Flash mode and Passthrough mode may share the datapath.
+While in Passthrough mode, SW may configure the IP to process certain commands internally.
+SW is recommended to filter the commands being processed internally.
+Mailbox is an exception as it shares the Read command opcode.
+
+### SPI Device Modes and Active Submodules
+
+SPI Device HWIP has three modes + TPM mode, which are "Generic" mode (also known as FwMode), "Flash" mode, and "Passthrough" mode.
+Generic mode is exclusive. Flash and Passthrough modes share many parts of the datapath.
+TPM mode only shares the SPI and has separate CSb port, which allows that the host sends TPM commands while other SPI mode is active.
+
+Mode     | FwMode | Status | JEDEC | SFDP | Mailbox | Read | Addr4B | Upload | Passthrough
+---------|--------|--------|-------|------|---------|------|--------|--------|-------------
+Generic  | Y      |        |       |      |         |      |        |        |
+Flash    |        |  Y     |   Y   |   Y  |   Y     |   Y  |   Y    |   Y    |
+Passthru |        |  Y/N   |  Y/N  |  Y/N |  Y/N    |   N  |   Y    |   Y    |     Y
+
+*Y/N*: Based on INTERCEPT_EN
 
 ## Compatibility
 
@@ -308,6 +360,100 @@ software and the TXF read pointer is incremented by hardware.
 All reads and writes to/from the SRAM for RXF and TXF activity are managed by
 direct reads and writes through the TLUL bus interface, managed by the
 auto-generated register file control logic.
+
+## SPI Flash and Passthrough Modes
+
+### Command Information List
+
+The SW may configure the map from the received opcode to the command process module by programming *cmd_info* list.
+Current SPI_DEVICE provides 24 command information entries.
+Each entry represents a command.
+Details of the fields are explained in the {{<regref "CMD_INFO_0">}}
+
+First 11 commands are assigned to specific submodules.
+
+Index  | Assigned Submodule
+-------|--------------------
+[2:0]  | Read Status
+[3]    | Read JEDEC ID
+[4]    | Read SFDP
+[10:5] | Read commands
+
+When Read Status, Read JEDEC ID commands are processed in Flash mode, the other fields in the command information entry are not used.
+The submodules directly return data on the MISO line (SD[1]).
+In Passthrough mode, if Read Status and Read JEDEC ID commands are intercepted by the internal HW, the other fields in the command information entries are ignored also.
+
+The main use of the fields other than *opcode* and *valid* is to control the output enable in the passthrough logic.
+See [Output Enable Control](#output-enable-control) section for more.
+
+*upload* and *busy* fields are used in the SPI Flash/ Passthrough modes.
+See [Command Upload](#command-upload) section for details.
+
+### Command Parser
+
+![Command Parser block](cmdparse.svg)
+
+Command parser (*cmdparse*) processes the first byte of the SPI and activates the processing submodules depending on the received opcode and the *cmd_info* list described in the previous section.
+
+The cmdparse compares the recevied opcode with the *cmd_info.opcode* data structure.
+If any entry matches to the received opcode, the cmdparse hands over the matched command information entry with the index to the corresponding submodule.
+As explained in the [previous section](#command-information-list), the command parser checks the index to activate Read Status / Read JEDEC ID/ Read Command / Address 4B modules.
+Other than the first 11 slots and last two slots (the last two slots are not visible to SW), the cmdparse checks the *upload* field and activates the upload module if the field is set.
+
+SW can configure whether a submodule shoudl process the command while in the passthrough mode by setting the {{<regref "INTERCEPT_EN">}} CSR.
+
+### Status Control
+
+If the received command is one of the three read status commands, STATUS control module reigns SPI interface after the opcode.
+The 3 bytes status register is not reset by CSb.
+Except BUSY bit, other bits are controlled by SW.
+BUSY bit is set by HW when it receives any commands that are uploaded to the FIFOs.
+SW may clear BUSY bit when it completes the received commands (e.g Erase/ Program).
+
+If the host sends the Write Status commands, the commands are not processed in this module.
+SW must configure the remaining command information entries to upload the Write Status commands to the FIFOs.
+
+### JEDEC ID Control
+
+JEDEC module returns JEDEC Device ID and Manufacturer ID following the Continuation Code (CC).
+SW may configure {{<regref "JEDEC_CC">}} CSR for HW to return proper CC.
+The *cc* field in {{<regref "JEDEC_CC">}} defines the return value, which is `0x7F` by default.
+*num_cc* defines how many times the HW to send CC byte before sending the JEDEC ID.
+
+The actual JEDEC ID consists of one byte device ID and two bytes manufacturer ID.
+The HW sends the device ID first, then `[7:0]` of manufacturer ID then `[15:8]` byte.
+
+### Serial Flash Discoverable Parameters (SFDP) Control
+
+### Read Command Processor
+
+#### Address Handling
+
+#### Dummy Cycle
+
+#### Normal Command
+
+#### Fast Read Command
+
+#### Dual/ Quad Output Command
+
+#### Buffer Management
+
+### 4B Address Management (EN4B/ EX4B)
+
+### Command Upload
+
+### Passthrough
+
+#### Command Filtering
+
+#### Address Manipulation
+
+#### Write Status Data Manipulation
+
+#### Output Enable Control
+
+#### Internally processed Commands
 
 ## TPM over SPI
 
