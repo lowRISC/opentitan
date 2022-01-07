@@ -25,3 +25,7 @@ waive -rules NOT_READ -msg {Signal 'rspfifo_wready' is not read from in module '
 waive -rules VAR_INDEX_RANGE -regexp {.*woffset' of length 1 is larger than the 0 bits required to address.*} \
       -comment "The woffset signal is tied to constant 0 in this case. Fixing this warning in RTL would complicate \
       the design since multiple generate blocks would be needed with almost identical content."
+waive -rules HIER_BRANCH_NOT_READ -location {tlul_sram_byte.sv} -regexp {Net '(clk_i|rst_ni)' is not read from in module 'tlul_sram_byte'} \
+      -comment "If EnableIntg=0, the module is just passed through"
+waive -rules INPUT_NOT_READ -location {tlul_sram_byte.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from} \
+      -comment "If EnableIntg=0, the module is just passed through"
