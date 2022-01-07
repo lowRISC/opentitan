@@ -187,12 +187,17 @@ _mask_rom_start_boot:
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
   li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
-  li t0, (0xa << ENTROPY_SRC_CONF_ENABLE_OFFSET) | \
+  // Note for BOOT_ROM initialization the FIPS_ENABLE bit is set to MuBi4False
+  // to prevent the release of FIPS entropy until all the thresholds are set
+  li t0, (0x5 << ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET) | \
          (0x5 << ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET) | \
          (0x5 << ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_OFFSET) | \
          (0x5 << ENTROPY_SRC_CONF_HEALTH_TEST_CLR_OFFSET) | \
          (0x5 << ENTROPY_SRC_CONF_RNG_BIT_ENABLE_OFFSET)
   sw t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
+
+  li t0, (0xa << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET)
+  sw t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
 
   li a0, TOP_EARLGREY_CSRNG_BASE_ADDR
   li t0, (0xa << CSRNG_CTRL_ENABLE_OFFSET) | \

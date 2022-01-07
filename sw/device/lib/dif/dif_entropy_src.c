@@ -51,11 +51,25 @@ static void config_register_set(const dif_entropy_src_t *entropy_src,
       reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD, sw_rd_en);
 
   // Enable configuration
+  // TODO: Finalize protocols in dif for two-stage initialization.
+  // PR #9949 adds a second enable field, so that the preliminary configuration
+  // established by the bootrom is not accepted for FIPS/CC PTG.2 quality
+  // entropy.
+  //
+  // Here we as assume that this configuration (done in the dif, not boot room)
+  // is the "official" configuration so we apply the enable to both fields
+  // ("module" and "FIPS").  However this procedure should be discussed more
+  // widely
   uint32_t enable_val = config->mode != kDifEntropySrcModeDisabled
                             ? kMultiBitBool4True
                             : kMultiBitBool4False;
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_ENABLE_FIELD, enable_val);
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
+                               enable_val);
   mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET, reg);
+
+  // Set module enable field - TODO: add line below
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET, enable_val);
 }
 
 /**
