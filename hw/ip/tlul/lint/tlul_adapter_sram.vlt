@@ -7,3 +7,11 @@
 
 // This signal is only used by an assertion.
 lint_off -rule UNUSED -file "*/rtl/tlul_adapter_sram.sv" -match "Signal is not used: 'rspfifo_wready'"
+
+// Signal is not used: clk_i
+// leaving clk and reset connected in-case we want to add assertions
+lint_off -rule UNUSED -file "*/rtl/tlul_sram_byte.sv" -match "*clk_i*"
+
+// Signal is not used: rst_ni
+// leaving clk and reset connected in-case we want to add assertions
+lint_off -rule UNUSED -file "*/rtl/tlul_sram_byte.sv" -match "*rst_ni*"
