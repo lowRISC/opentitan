@@ -545,8 +545,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     case (csr.get_name())
       // add individual case item for each csr
       "alert_test": begin
-        // do nothing
-        if (addr_phase_write) set_exp_alert("fatal_error", .is_fatal(0));
+        if (addr_phase_write && item.a_data[0]) set_exp_alert("fatal_error", .is_fatal(0));
       end
       "exec_regwen": begin
         // do nothing
