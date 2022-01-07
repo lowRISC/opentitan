@@ -263,7 +263,7 @@ class KeyTrace(Trace):
 
 class SideloadKey:
     '''Represents a sideloaded key, with 384 bits of data and a valid signal'''
-    def __init__(self, name: str, val: Optional[int]):
+    def __init__(self, name: str):
         self.name = name
         self._value = None  # type: Optional[int]
         self._new_value = None  # type: Optional[Tuple[bool, int]]
@@ -321,17 +321,8 @@ class KeyWSR(WSR):
 class WSRFile:
     '''A model of the WSR file'''
     def __init__(self) -> None:
-        # Use fixed sideload keys for now. This matches the fixed keys used in
-        # the testbenches. Eventually the model will snoop the incoming key as
-        # it snoops the incoming EDN data for RND/URND now.
-        acc0 = 0
-        acc1 = 0
-        for i in range(384 // 32):
-            acc0 |= (0xDEADBEEF << (i * 32))
-            acc1 |= (0xBAADF00D << (i * 32))
-
-        self.KeyS0 = SideloadKey('KeyS0', acc0)
-        self.KeyS1 = SideloadKey('KeyS1', acc1)
+        self.KeyS0 = SideloadKey('KeyS0')
+        self.KeyS1 = SideloadKey('KeyS1')
 
         self.MOD = DumbWSR('MOD')
         self.RND = RandWSR('RND')
