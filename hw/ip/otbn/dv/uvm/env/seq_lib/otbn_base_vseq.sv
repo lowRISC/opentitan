@@ -25,6 +25,10 @@ class otbn_base_vseq extends cip_base_vseq #(
   // This flag is set in the common vseq to re-enable the checks done by check_no_fatal_alerts
   protected bit enable_base_alert_checks = 1'b0;
 
+  // This flag is configured at the start of _run_sideload_sequence() when it decides whether a run
+  // should allow an absent key (in which case, we have to disable end-address checking).
+  protected bit absent_key_allowed = 1'b0;
+
   // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
   // is true) or with TL transactions. Also, pass loop warp rules to the ISS through the model.
   protected task load_elf(string path, bit backdoor);
@@ -174,6 +178,7 @@ class otbn_base_vseq extends cip_base_vseq #(
         fork
           _run_otbn();
           _run_loop_warps();
+          _run_sideload_sequence();
         join_any
         disable fork;
       end
@@ -182,8 +187,10 @@ class otbn_base_vseq extends cip_base_vseq #(
     // Post-run checks
     //
     // The CSR operations above short-circuit and exit immediately if the reset line goes low. If
-    // that happens, we don't want to run the checks (since the run didn't finish properly).
-    if (!cfg.under_reset && check_end_addr) begin
+    // that happens, we don't want to run the checks (since the run didn't finish properly). Also
+    // disable the end-address check if the sideload key is allowed to be absent, because that might
+    // mean a read from the key sideload WSR will fail unpredictably.
+    if (!cfg.under_reset && check_end_addr && !absent_key_allowed) begin
       // If there was an expected end address, compare it with the model. This isn't really a test of
       // the RTL, but it's handy to make sure that the RIG really is generating the control flow that
       // it expects.
@@ -296,6 +303,32 @@ class otbn_base_vseq extends cip_base_vseq #(
         `dv_fatal("Failed to override loop_iterations for loop warp.")
       end
     end
+  endtask
+
+  // Run the correct key sideload sequence
+  protected task _run_sideload_sequence();
+    // First, pick a value for absent_key_allowed. This will be used here to configure the sideload
+    // sequence and then will be checked at the end of run_otbn().
+    absent_key_allowed = $urandom_range(100) <= cfg.allow_no_sideload_key_pct;
+
+    // If absent keys are allowed, the default sideload sequence (which should be running already)
+    // will work just fine. If not, we want to generate our own sequence that doesn't allow keys to
+    // be invalid. Use the grab() method on the sequencer to inject our sequence. Note that this
+    // task will be killed by the "disable fork" in run_otbn(), so we can't be sure we'll ungrab the
+    // sequencer here. Instead, we set the sideload_sequence member variable to something non-null,
+    // which run_otbn() can use to ungrab things.
+    if (!absent_key_allowed) begin
+      key_sideload_set_seq sideload_seq;
+      `uvm_create_on(sideload_seq, p_sequencer.key_sideload_sequencer_h)
+      forever begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq, sideload_key.valid == 1'b1;)
+        `uvm_send_pri(sideload_seq, 200)
+      end
+    end
+
+    // Run forever. This ensures that if absent keys are allowed then the task still hangs
+    // indefinitely (otherwise the join_any in run_otbn would finish early)
+    wait(0);
   endtask
 
   virtual protected function string pick_elf_path();

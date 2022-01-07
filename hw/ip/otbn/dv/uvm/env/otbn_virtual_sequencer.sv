@@ -9,4 +9,6 @@ class otbn_virtual_sequencer extends cip_base_virtual_sequencer #(
   `uvm_component_utils(otbn_virtual_sequencer)
   `uvm_component_new
 
+  key_sideload_sequencer key_sideload_sequencer_h;
+
 endclass
