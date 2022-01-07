@@ -47,6 +47,11 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   // How often should we poll STATUS to detect completion, even though interrupts are enabled?
   int unsigned poll_despite_interrupts_pct = 10;
 
+  // Should we allow the sideload key not to be valid? If we do, we have to disable the exp_end_addr
+  // check (since we might stop in the middle of the operation by reading from the sideload key WSR
+  // when it isn't available).
+  int unsigned allow_no_sideload_key_pct = 50;
+
   // The hierarchical scope of the DUT instance in the testbench. This is used when constructing the
   // DPI wrapper (in otbn_env::build_phase) to tell it where to find the DUT for backdoor loading
   // memories. The default value matches the block-level testbench, but it can be overridden in a

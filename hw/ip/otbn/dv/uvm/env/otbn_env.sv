@@ -69,6 +69,11 @@ class otbn_env extends cip_base_env #(
     model_agent.monitor.analysis_port.connect(scoreboard.model_fifo.analysis_export);
     trace_monitor.analysis_port.connect(scoreboard.trace_fifo.analysis_export);
     cfg.scoreboard = scoreboard;
+    virtual_sequencer.key_sideload_sequencer_h = keymgr_sideload_agent.sequencer;
+
+    // Configure the key sideload sequencer to use UVM_SEQ_ARB_STRICT_FIFO arbitration. This makes
+    // sure that we can inject our own sequence if we need to override the default for a bit.
+    keymgr_sideload_agent.sequencer.set_arbitration(UVM_SEQ_ARB_STRICT_FIFO);
   endfunction
 
   function void final_phase(uvm_phase phase);
