@@ -83,4 +83,7 @@ module tb;
     run_test();
   end
 
+  `ASSERT(CheckFlashWrProtRst, !rst_aon_n -> sysrst_ctrl_if.flash_wp_l == 0, clk_aon, 0)
+  `ASSERT(CheckEcPwrOnRst, !rst_aon_n -> sysrst_ctrl_if.ec_rst_l_out == 0, clk_aon, 0)
+
 endmodule
