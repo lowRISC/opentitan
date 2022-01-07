@@ -454,7 +454,6 @@ module spi_passthrough
     cmd_info.valid, // valid bit is checked before latching into cmd_info
     cmd_info.opcode,
     cmd_info.addr_mode,
-    cmd_info.payload_swap_en,
     cmd_info.opcode,
     cmd_info.upload,
     cmd_info.busy
@@ -562,10 +561,28 @@ module spi_passthrough
 
   // SPI swap (merging Addr & Payload)
   logic swap_en, swap_data, addr_swap_en, payload_swap_en;
+
+  // Latch cmd_info config signals in output clock.
+  // cmd_info structure is latched in input clock.  But addr_swap_en and
+  // payload_swap_en affects the output path (from host to the downstream flash
+  // device).  as the output delay is bigger than the half of SCK, these paths
+  // violates timing regardless of the path delay.  By latching the configs
+  // into output clock (inverted SCK), it alleviates the timing budget.
+  logic cmd_info_addr_swap_en_outclk, cmd_info_payload_swap_en_outclk;
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      cmd_info_addr_swap_en_outclk    <= 1'b 0;
+      cmd_info_payload_swap_en_outclk <= 1'b 0;
+    end else begin
+      cmd_info_addr_swap_en_outclk    <= cmd_info.addr_swap_en;
+      cmd_info_payload_swap_en_outclk <= cmd_info.payload_swap_en;
+    end
+  end
+
   assign addr_swap_en    = addr_phase_outclk
-                         & cmd_info.addr_swap_en;
+                         & cmd_info_addr_swap_en_outclk;
   assign payload_swap_en = payload_replace_outclk
-                         & cmd_info.payload_swap_en;
+                         & cmd_info_payload_swap_en_outclk;
 
   assign swap_en   = addr_swap_en | payload_swap_en ;
   assign swap_data = (addr_swap_en) ? addr_swap : payload_swap ;
