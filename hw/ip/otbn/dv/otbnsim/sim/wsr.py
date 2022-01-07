@@ -31,6 +31,10 @@ class WSR:
         '''Return whether the WSR has a valid value'''
         return True
 
+    def on_start(self) -> None:
+        '''Reset the WSR if necessary for the start of an operation'''
+        return
+
     def read_unsigned(self) -> int:
         '''Get the stored value as a 256-bit unsigned value'''
         raise NotImplementedError()
@@ -69,6 +73,10 @@ class DumbWSR(WSR):
         super().__init__(name)
         self._value = 0
         self._next_value = None  # type: Optional[int]
+
+    def on_start(self) -> None:
+        self._value = 0
+        self._next_value = None
 
     def read_unsigned(self) -> int:
         return self._value
@@ -174,11 +182,9 @@ class URNDWSR(WSR):
     '''Models URND PRNG Structure'''
     def __init__(self, name: str):
         super().__init__(name)
-        self._seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
-                      0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
-        self.state = [self._seed,
-                      4 * [0], 4 * [0],
-                      4 * [0], 4 * [0]]
+        seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
+                0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
+        self.state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
         self.out = 4 * [0]
         self._next_value = None  # type: Optional[int]
         self._value = None  # type: Optional[int]
@@ -259,37 +265,40 @@ class SideloadKey:
     '''Represents a sideloaded key, with 384 bits of data and a valid signal'''
     def __init__(self, name: str, val: Optional[int]):
         self.name = name
-        self._value = (val is not None, val or 0)  # type: Tuple[bool, int]
-        self._next_value = None  # type: Optional[Tuple[bool, int]]
+        self._value = None  # type: Optional[int]
+        self._new_value = None  # type: Optional[Tuple[bool, int]]
 
     def has_value(self) -> bool:
-        return self._value[0]
+        return self._value is not None
 
     def read_unsigned(self, shift: int) -> int:
-        vld, value = self._value
-
         # The simulator should be careful not to call read_unsigned() unless it
         # has first checked that the value exists.
-        assert vld
+        assert self._value is not None
 
         mask256 = (1 << 256) - 1
-        return (value >> shift) & mask256
+        return (self._value >> shift) & mask256
 
-    def write_unsigned(self, value: Optional[int]) -> None:
+    def set_unsigned(self, value: Optional[int]) -> None:
+        '''Unlike the WSR write_unsigned, this takes effect immediately
+
+        That way, we can correctly model the combinatorial path from sideload
+        keys to the WSR file in the RTL. Note that we do still report the
+        change until the next commit.
+        '''
         assert value is None or (0 <= value < (1 << 384))
-        self._next_value = (False, 0) if value is None else (True, value)
+        self._value = value
+        self._new_value = (False, 0) if value is None else (True, value)
 
     def changes(self) -> List[KeyTrace]:
-        if self._next_value is not None:
-            vld, value = self._next_value
+        if self._new_value is not None:
+            vld, value = self._new_value
             return [KeyTrace(self.name, value if vld else None)]
         else:
             return []
 
     def commit(self) -> None:
-        if self._next_value is not None:
-            self._value = self._next_value
-            self._next_value = None
+        self._new_value = None
 
 
 class KeyWSR(WSR):
@@ -343,6 +352,15 @@ class WSRFile:
             6: self.KeyS1L,
             7: self.KeyS1H,
         }
+
+    def on_start(self) -> None:
+        '''Called at the start of an operation
+
+        This clears values that don't persist between runs (everything except
+        RND and the key registers)
+        '''
+        for reg in self._by_idx.values():
+            reg.on_start()
 
     def check_idx(self, idx: int) -> bool:
         '''Return True if idx is a valid WSR index'''
@@ -399,3 +417,9 @@ class WSRFile:
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
         return ret
+
+    def set_sideload_keys(self,
+                          key0: Optional[int],
+                          key1: Optional[int]) -> None:
+        self.KeyS0.set_unsigned(key0)
+        self.KeyS1.set_unsigned(key1)
