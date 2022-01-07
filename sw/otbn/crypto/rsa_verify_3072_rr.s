@@ -177,9 +177,9 @@ compute_rr:
   /* [w4:w15] <= [w4:w16] >> 1 = 2^3701 */
   bn.rshi   w15, w16, w15 >> 1
 
-  /* Compute T = (2^3 * R) mod M = 2^3 (montgomery form).
-     T = [w4:w15] = (2^4 * 2^3071) mod M = (2^3 * R) mod M */
-  loopi     4,2
+  /* Compute T = (2^96 * R) mod M = 2^96 (montgomery form).
+     T = [w4:w15] = (2^97 * 2^3071) mod M = (2^96 * R) mod M */
+  loopi     97,2
     jal x1, double_mod_var
     nop
 
@@ -199,8 +199,8 @@ compute_rr:
   /* Prepare a pointer to the w4 register for storing the result. */
   li        x8, 4
 
-  /* Ten montgomery squares to compute RR = (T^(2^10) * R) mod M. */
-  loopi     10,9
+  /* Five montgomery squares to compute RR = (T^(2^5) * R) mod M. */
+  loopi     5,9
     /* [w4:w15] <= montmul(dmem[rr], dmem[rr]) */
     addi      x19, x24, 0
     addi      x20, x24, 0
