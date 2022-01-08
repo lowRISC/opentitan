@@ -171,7 +171,7 @@
               sequences that require zero_delays or invoke reset (such as lc_escalation).
             - Randomly add reset between each sequence'''
       milestone: V2
-      tests: ["{variant}_stress_all"]
+      tests: ["{name}_stress_all"]
     }
   ]
 
