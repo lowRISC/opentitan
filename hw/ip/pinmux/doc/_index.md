@@ -267,7 +267,7 @@ Signal               | Direction  | Type        | Description
 `attr_i[3]`          | `input`    | `logic`     | Pull select (0: pull-down, 1: pull-up)
 `attr_i[4]`          | `input`    | `logic`     | Keeper enable
 `attr_i[5]`          | `input`    | `logic`     | Schmitt trigger enable
-`attr_i[6]`          | `input`    | `logic`     | Open drain enable enable
+`attr_i[6]`          | `input`    | `logic`     | Open drain enable
 `attr_i[8:7]`        | `input`    | `logic`     | Slew rate (0x0: slowest, 0x3: fastest)
 `attr_i[12:9]`       | `input`    | `logic`     | Drive strength (0x0: weakest, 0xf: strongest)
 
@@ -290,12 +290,12 @@ The following pad attributes are supported by this register layout by default:
 ATTR Bits | Description                                   | Access
 ----------|-----------------------------------------------|---------
 0         | Input/output inversion                        | RW
-1         | Open drain enable                             | RW
+1         | Virtual open drain enable                     | RW
 2         | Pull enable                                   | WARL
 3         | Pull select (0: down, 1: up)                  | WARL
 4         | Keeper enable                                 | WARL
 5         | Schmitt trigger enable                        | WARL
-6         | Open drain enable enable                      | WARL
+6         | Open drain enable                             | WARL
 8:7       | Slew rate (0x0: slowest, 0x3: fastest)        | WARL
 12:9      | Drive strength (0x0: weakest, 0xf: strongest) | WARL
 
