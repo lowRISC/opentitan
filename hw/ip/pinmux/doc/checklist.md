@@ -125,28 +125,28 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | In Progress |
-Documentation | [TESTPLAN_COMPLETED][]                | In Progress |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        |
+Documentation | [TESTPLAN_COMPLETED][]                | Done        |
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
-Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
+Testbench     | [SIM_TB_ENV_CREATED][]                | N/A         |
 Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | N/A         | This block uses FPV
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SIM_SMOKE_TEST_PASSING][]            | Done        |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started | In Progress | FPV CSR tests being developed by @cindychip
-Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
+Testbench     | [TB_GEN_AUTOMATED][]                  | Done        |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | N/A         |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | N/A         |
+Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Done        |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | N/A         |
-Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Done        |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
-Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
-Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | N/A         |
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | N/A         |
+Regression    | [FPV_REGRESSION_SETUP][]              | Done        |
+Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | N/A         |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Waived      | usbdev will be verified by a separate DV testbench.
 Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
-Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
-Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
+Review        | [TESTPLAN_REVIEWED][]                 | Done        |
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | N/A         |
+Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
 [DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
 [TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
