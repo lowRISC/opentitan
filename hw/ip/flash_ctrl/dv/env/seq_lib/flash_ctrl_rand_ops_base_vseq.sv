@@ -19,17 +19,12 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   // A single randomized flash ctrl operation.
   rand flash_op_t flash_op;
 
-  rand uint bank;
-
   // Constraint address to be in relevant range for the selected partition.
   constraint addr_c {
-    solve bank before flash_op;
-    bank inside {[0:flash_ctrl_pkg::NumBanks-1]};
-    if (flash_op.partition == FlashPartData) {
-      flash_op.addr inside {[BytesPerBank*bank:BytesPerBank*(bank+1)-1]};
-    } else {
+    if (flash_op.partition != FlashPartData) {
       flash_op.addr inside
-       {[BytesPerBank*bank:(BytesPerBank*bank)+(InfoTypeBytes[flash_op.partition>>1])-1]};
+       {[0:InfoTypeBytes[flash_op.partition>>1]-1],
+        [BytesPerBank:BytesPerBank+InfoTypeBytes[flash_op.partition>>1]-1]};
     }
   }
 
