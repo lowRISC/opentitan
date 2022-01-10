@@ -109,7 +109,7 @@ The table below lists the `pinmux` signals. The number of dedicated and muxed IO
 
 Signal                                 | Direction | Type                               | Description
 ---------------------------------------|-----------|------------------------------------|---------------
-`aon_wkup_req_o`                       | `output`  | `logic`                            | Wakeup request from wakeup detectors, to the power manager, running on the AON clock.
+`pin_wkup_req_o`                       | `output`  | `logic`                            | Wakeup request from wakeup detectors, to the power manager, running on the AON clock.
 `usb_wkup_req_o`                       | `output`  | `logic`                            | Wakeup request from USB wakeup detector, going to the power manager, running on the AON clock.
 `sleep_en_i`                           | `input`   | `logic`                            | Level signal that is asserted when the power manager enters deep sleep.
 `strap_en_i`                           | `input`   | `logic`                            | This signal is pulsed high by the power manager after reset in order to sample the HW straps.
@@ -219,6 +219,9 @@ TAP strap 1 | TAP strap 0  | Life Cycle State         | Selected TAP
 
 Note that the tool-inserted DFT controller may assert the `dft_hold_tap_sel_i` during a test (e.g. boundary scan) in which case the `pinmux` will temporarily pause sampling of the TAP selection straps.
 
+Also, it should be noted that the pad attributes of all JTAG IOs will be gated to all-zero temporarily, while the JTAG is enabled (this does not affect the values in the CSRs).
+This is to ensure that any functional attributes like inversion or pull-ups / pull-downs do not interfere with the JTAG while it is in use.
+
 For more information about the life cycle states, see [Life Cycle Controller Specification]({{< relref "hw/ip/lc_ctrl/doc" >}}) and the [Life Cycle Definition Table]({{< relref "doc/security/specs/device_life_cycle/_index.md#manufacturing-states" >}}).
 
 
@@ -289,8 +292,8 @@ The following pad attributes are supported by this register layout by default:
 
 ATTR Bits | Description                                   | Access
 ----------|-----------------------------------------------|---------
-0         | Input/output inversion                        | RW
-1         | Virtual open drain enable                     | RW
+0         | Input/output inversion                        | WARL
+1         | Virtual open drain enable                     | WARL
 2         | Pull enable                                   | WARL
 3         | Pull select (0: down, 1: up)                  | WARL
 4         | Keeper enable                                 | WARL
