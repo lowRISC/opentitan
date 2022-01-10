@@ -9,7 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
-      - lowrisc:ip:aes:0.6
+      - lowrisc:ip:aes
     files:
       - aes_cov_if.sv
       - aes_cov_bind.sv

@@ -4,18 +4,18 @@
 {
   // Additional build-time options for enabling the compilation of the C sources
   // with DV simulators such as VCS and Xcelium.
-  aes_mode_core: "lowrisc:model:aes:0.6"
-  aes_mode_src_dir: "{eval_cmd} echo \"{aes_mode_core}\" | tr ':' '_'"
+  aes_model_core: "lowrisc:model:aes:1.0"
+  aes_model_src_dir: "{eval_cmd} echo \"{aes_model_core}\" | tr ':' '_'"
 
   build_modes: [
     {
       name: vcs_aes_model_build_opts
-      build_opts: ["-CFLAGS -I{build_dir}/src/{aes_mode_src_dir}", "-lcrypto"]
+      build_opts: ["-CFLAGS -I{build_dir}/src/{aes_model_src_dir}", "-lcrypto"]
     }
 
     {
       name: xcelium_aes_model_build_opts
-      build_opts: ["-I{build_dir}/src/{aes_mode_src_dir}", "-lcrypto"]
+      build_opts: ["-I{build_dir}/src/{aes_model_src_dir}", "-lcrypto"]
     }
   ]
 }
