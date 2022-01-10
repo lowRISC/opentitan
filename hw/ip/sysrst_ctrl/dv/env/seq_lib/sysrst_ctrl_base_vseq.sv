@@ -19,6 +19,15 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
     cfg.clk_aon_rst_vif.set_freq_khz(200);
   endtask
 
+  virtual task clear_wkup_status_register();
+    // Clear the wkup_status register in order to avoid re-triggering
+    // of intr_state register
+    csr_rd_check(ral.wkup_status, .compare_value(1));
+    csr_wr(ral.wkup_status, 'h1);
+    #100us;
+    csr_rd_check(ral.wkup_status, .compare_value(0));
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
     cfg.vif.reset_signals();
     super.dut_init();
