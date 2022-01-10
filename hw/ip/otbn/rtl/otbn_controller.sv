@@ -243,6 +243,14 @@ module otbn_controller
 
   logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
 
+  // If we are doing an indirect lookup from the bignum register file, it's possible that the
+  // address that we use for the lookup is architecturally unknown. This happens if it came from x1
+  // and we've underflowed the call stack. When this happens, we want to ignore any read data
+  // integrity errors since the read from the bignum register file didn't happen architecturally
+  // anyway.
+  logic ignore_bignum_rd_errs;
+  logic rf_bignum_rd_data_err;
+
   logic [31:0] insn_cnt_d, insn_cnt_q;
   logic        insn_cnt_clear;
 
@@ -436,7 +444,7 @@ module otbn_controller
   assign err_bits.bad_internal_state   = start_stop_state_error_i | state_error |
                                           otbn_scramble_state_error_i;
   assign err_bits.bus_intg_violation   = bus_intg_violation_i;
-  assign err_bits.reg_intg_violation   = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
+  assign err_bits.reg_intg_violation   = rf_base_rd_data_err_i | rf_bignum_rd_data_err;
   assign err_bits.dmem_intg_violation  = lsu_rdata_err_i;
   assign err_bits.imem_intg_violation  = insn_fetch_err_i;
   assign err_bits.key_invalid          = key_invalid_err;
@@ -905,10 +913,12 @@ module otbn_controller
 
   assign rf_a_indirect_err = insn_dec_bignum_i.rf_a_indirect    &
                              (|rf_base_rd_data_a_no_intg[31:5]) &
+                             ~rf_base_call_stack_err_i          &
                              rf_base_rd_en_a_o;
 
   assign rf_b_indirect_err = insn_dec_bignum_i.rf_b_indirect    &
                              (|rf_base_rd_data_b_no_intg[31:5]) &
+                             ~rf_base_call_stack_err_i          &
                              rf_base_rd_en_b_o;
 
   assign rf_d_indirect_err = insn_dec_bignum_i.rf_d_indirect    &
@@ -917,6 +927,12 @@ module otbn_controller
 
   assign rf_indirect_err =
       insn_valid_i & (rf_a_indirect_err | rf_b_indirect_err | rf_d_indirect_err);
+
+  assign ignore_bignum_rd_errs = (insn_dec_bignum_i.rf_a_indirect |
+                                  insn_dec_bignum_i.rf_b_indirect) &
+                                 rf_base_call_stack_err_i;
+
+  assign rf_bignum_rd_data_err = rf_bignum_rd_data_err_i & ~ignore_bignum_rd_errs;
 
   // CSR/WSR/ISPR handling
   // ISPRs (Internal Special Purpose Registers) are the internal registers. CSRs and WSRs are the
