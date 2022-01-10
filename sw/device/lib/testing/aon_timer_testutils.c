@@ -22,7 +22,7 @@ void aon_timer_testutils_wakeup_config(dif_aon_timer_t *aon_timer,
   CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(aon_timer,
                                              kDifAonTimerIrqWkupTimerExpired));
 
-  bool is_pending;
+  bool is_pending = true;
   CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
       aon_timer, kDifAonTimerIrqWkupTimerExpired, &is_pending));
   CHECK(!is_pending);
