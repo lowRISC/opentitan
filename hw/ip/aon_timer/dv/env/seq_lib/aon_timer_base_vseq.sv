@@ -20,7 +20,7 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   // Should the escalation signal be enabled at the start of time?
   rand bit initial_lc_escalate_en;
 
-  // When this is not set, we are locking the configuration registers of watchdog timer after it's
+  // When this is not set, we are locking the configuration registers of watchdog timer after its
   // initial setup.
   rand bit wdog_regwen;
 
@@ -48,7 +48,7 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   virtual task aon_timer_shutdown();
     `uvm_info(`gfn, "Shutting down AON Timer...", UVM_LOW)
 
-    `uvm_info(`gfn, "Clearing interrupts, count registers and wakeup request.", UVM_LOW)
+    `uvm_info(`gfn, "Clearing interrupts, count registers and wakeup request.", UVM_HIGH)
     // Clear wake-up request if we have any
     csr_utils_pkg::csr_wr(ral.wkup_cause, 1'b0);
 
@@ -59,13 +59,13 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     csr_utils_pkg::csr_wr(ral.wkup_count, 32'h0000_0000);
     csr_utils_pkg::csr_wr(ral.wdog_count, 32'h0000_0000);
 
-    `uvm_info(`gfn, "Disabling AON Timer. Writing 0 to WKUP_CTRL and WDOG_CTRL", UVM_LOW)
+    `uvm_info(`gfn, "Disabling AON Timer. Writing 0 to WKUP_CTRL and WDOG_CTRL", UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b0);
     csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b0);
   endtask
 
   // setup basic aon_timer features
-  virtual task aon_timer_init();
+  task aon_timer_init();
 
     `uvm_info(`gfn, "Initializating AON Timer. Writing 0 to WKUP_COUNT and WDOG_COUNT", UVM_LOW)
     // Register Write
@@ -74,18 +74,20 @@ class aon_timer_base_vseq extends cip_base_vseq #(
 
     `uvm_info(`gfn, "Randomizing AON Timer thresholds", UVM_HIGH)
 
+    `uvm_info(`gfn, $sformatf("Writing 0x%0h to wkup_thold", wkup_thold), UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wkup_thold, wkup_thold);
+
+    `uvm_info(`gfn, $sformatf("Writing 0x%0h to wdog_bark_thold", wdog_bark_thold), UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wdog_bark_thold, wdog_bark_thold);
+
+    `uvm_info(`gfn, $sformatf("Writing 0x%0h to wdog_bite_thold", wdog_bite_thold), UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wdog_bite_thold, wdog_bite_thold);
 
     cfg.lc_escalate_en_vif.drive(0);
 
-    `uvm_info(`gfn, $sformatf("Writing 0x%0h to WDOG_REGWEN", wdog_regwen), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("Writing 0x%0h to WDOG_REGWEN", wdog_regwen), UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wdog_regwen, wdog_regwen);
 
-    `uvm_info(`gfn, "Enabling AON Timer. Writing 1 to WKUP_CTRL and WDOG_CTRL", UVM_HIGH)
-    csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b1);
-    csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b1);
   endtask
 
   virtual task apply_reset(string kind = "HARD");

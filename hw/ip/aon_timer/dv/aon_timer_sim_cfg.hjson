@@ -58,7 +58,7 @@
   regressions: [
     {
       name: smoke
-      tests: []
+      tests: ["aon_timer_smoke"]
     }
   ]
 }
