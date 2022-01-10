@@ -1,0 +1,18 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "veri-titan",
+  target_dir: "veri-titan",
+
+  upstream: {
+    url: "https://github.com/secure-foundations/veri-titan.git",
+    rev: "master",
+  },
+
+  exclude_from_upstream: [
+    # Ignore everything except for the gen/ directory (by ignoring every path
+    # not starting with "g"
+    "[!g]*",
+  ]
+}
