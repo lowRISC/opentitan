@@ -32,3 +32,4 @@ void ibex_mepc_write(uint32_t mepc) { CSR_WRITE(CSR_REG_MEPC, mepc); }
 extern uint64_t ibex_mcycle_read(void);
 extern ibex_timeout_t ibex_timeout_init(uint32_t timeout_usec);
 extern bool ibex_timeout_check(const ibex_timeout_t *timeout);
+extern uint64_t ibex_timeout_elapsed(const ibex_timeout_t *timeout);
