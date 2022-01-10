@@ -7,7 +7,7 @@ description: "CSRNG DV UVM environment"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:aes:0.6
+      - lowrisc:ip:aes
   files_dv:
     depend:
       - lowrisc:dv:ralgen

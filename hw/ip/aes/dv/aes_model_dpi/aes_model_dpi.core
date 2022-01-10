@@ -2,13 +2,13 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:aes_model_dpi:0.6"
+name: "lowrisc:dv:aes_model_dpi"
 description: "AES model DPI"
 filesets:
   files_dv:
     depend:
-      - lowrisc:ip:aes:0.6
-      - lowrisc:model:aes:0.6
+      - lowrisc:ip:aes
+      - lowrisc:model:aes
 
     files:
       - aes_model_dpi.c: { file_type: cSource }

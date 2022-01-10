@@ -7,7 +7,7 @@ description: "AES SBox Verilator TB"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:aes:0.6
+      - lowrisc:ip:aes
     files:
       - rtl/aes_sbox_tb.sv
     file_type: systemVerilogSource
