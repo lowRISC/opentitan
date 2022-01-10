@@ -140,15 +140,15 @@ Testbench     | [TB_GEN_AUTOMATED][]                  | DONE        |
 Tests         | [SIM_SMOKE_TEST_PASSING][]            | DONE        |
 Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | DONE        |
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A         |
-Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        | Xcelium (signoff), VCS (alt)
+Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | DONE        | Xcelium (signoff), VCS (alt)
 Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | DONE        |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started | TBD When 8856 goes in
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | DONE        |
 Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | DONE        |
 Code Quality  | [TB_LINT_SETUP][]                     | DONE        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
 Review        | [DESIGN_SPEC_REVIEWED][]              | DONE        |
-Review        | [TESTPLAN_REVIEWED][]                 | Not Started | TBD in V1 review
+Review        | [TESTPLAN_REVIEWED][]                 | DONE        |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | DONE        |
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
