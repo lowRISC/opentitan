@@ -49,7 +49,7 @@ module pinmux_wkup
   logic [WkupCntWidth-1:0] cnt_d, cnt_q;
   assign cnt_d     = (cnt_eq_th) ? '0 : (cnt_en) ? cnt_q + 1'b1 : '0;
 
-  assign cnt_eq_th = (cnt_q == wkup_cnt_th_i);
+  assign cnt_eq_th = (cnt_q >= wkup_cnt_th_i);
 
   always_comb begin : p_mode
     aon_wkup_pulse_o = 1'b0;
