@@ -31,14 +31,10 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "hex" with type "bench" omitted
-
 rust_library(
-    name = "hex",
+    name = "crypto_common",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "alloc",
-        "default",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -51,12 +47,9 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.4.3",
+    version = "0.1.1",
     # buildifier: leave-alone
     deps = [
+        "@raze__generic_array__0_14_5//:generic_array",
     ],
 )
-
-# Unsupported target "serde" with type "test" omitted
-
-# Unsupported target "version-number" with type "test" omitted
