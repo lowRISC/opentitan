@@ -44,15 +44,90 @@ The following utilities provide generic helper tasks and functions to perform ac
 ### Compile-time configurations
 [list compile time configurations, if any and what are they used for]
 ```systemverilog
-TODO
+  // sets the number of spi devices
+  parameter int NumCS = 1;
 ```
+Currently there verification only covers NumCS = 1 since this is the configuration that will be used in tapeout.
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
 `spi_host_env_pkg`. Some of them in use are:
 ```systemverilog
-TODO
+  // types
+  typedef enum int {
+    SpiHostError     = 0,
+    SpiHostEvent     = 1,
+    NumSpiHostIntr   = 2
+  } spi_host_intr_e;
+
+  typedef enum int {
+    TxFifo   = 0,
+    RxFifo   = 1,
+    AllFifos = 2
+  } spi_host_fifo_e;
+
+  typedef enum {
+    Command,
+    Address,
+    Dummy,
+    Data
+  } spi_segment_type_e;
+
+  // spi config
+  typedef struct {
+    // configopts register fields
+    rand bit        cpol[SPI_HOST_NUM_CS];
+    rand bit        cpha[SPI_HOST_NUM_CS];
+    rand bit        fullcyc[SPI_HOST_NUM_CS];
+    rand bit [3:0]  csnlead[SPI_HOST_NUM_CS];
+    rand bit [3:0]  csntrail[SPI_HOST_NUM_CS];
+    rand bit [3:0]  csnidle[SPI_HOST_NUM_CS];
+    rand bit [15:0] clkdiv[SPI_HOST_NUM_CS];
+  } spi_host_configopts_t;
+
+  typedef struct {
+    // csid register
+    rand bit [31:0] csid;
+    // control register fields
+    rand bit [8:0]  tx_watermark;
+    rand bit [6:0]  rx_watermark;
+  } spi_host_ctrl_t;
+
+  // spi direction
+  typedef enum bit [1:0] {
+    None     = 2'b00,
+    RxOnly   = 2'b01,
+    TxOnly   = 2'b10,
+    Bidir    = 2'b11
+  } spi_dir_e;
+
+  typedef struct {
+    // command register fields
+    rand spi_mode_e mode;
+    rand spi_dir_e  direction;
+    rand bit        csaat;
+    rand bit [8:0]  len;
+  } spi_host_command_t;
+
+  typedef struct packed {
+    bit          status;
+    bit          active;
+    bit          txfull;
+    bit          txempty;
+    bit          txstall;
+    bit          tx_wm;
+    bit          rxfull;
+    bit          rxempty;
+    bit          rxstall;
+    bit          byteorder;
+    bit          rsv_0;
+    bit          rx_wm;
+    bit [19:16]  rsv_1;
+    bit [15:8]   rx_qd;
+    bit [7:0]    tx_qd;
+  } spi_host_status_t;
 ```
+
 ### TL_agent
 SPI_HOST testbench instantiates (already handled in CIP base env)
 [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})

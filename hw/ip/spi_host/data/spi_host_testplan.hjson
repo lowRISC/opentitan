@@ -180,7 +180,7 @@
               - verify that the DUT support both half and full duplex in standard mode.
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_smoke"]
     }
     {
       name: tx_rx_only
@@ -194,7 +194,7 @@
               - verify that the DUT does not drain the tx fifo in rx only mode
             '''
       milestone: V2
-      tests: []
+      tests: ["spi_host_smoke"]
     }
     {
       name: stress_all
@@ -209,6 +209,21 @@
             Checking:
               - Ensure transactions are transmitted/received correctly
               - Ensure reset is handled correctly
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: winbond
+      desc: '''
+          Replace SPI agent with the Winbond Flash model
+
+          Stimulus:
+            - constraint the Sequence to create welformed transactions that the model understands
+
+          Checking:
+            - Verify the DUT against the WindBond bfm by making the spi agent passive
+              to verify that we comply with the spi targeted for opentitan
             '''
       milestone: V2
       tests: []
@@ -326,11 +341,38 @@
             '''
     }
     {
+      name: interrupt_cg
+      desc: '''
+            - check that we see all scenarios that can cause an interrupt and that the interrupts is fired.
+            - also check we can clear the interrupt
+            '''
+    }
+    {
       name: different_ch_settings_cg
       desc: '''
-            - check that multiple end points was running at different speeds concurrently.
-            - collect coverage that multiple SPI endpoints was run with different config opts
+            - Check that multiple end points was running at different speeds concurrently.
+            - Collect coverage that multiple SPI endpoints was run with different config opts
             '''
-    }   
+    }
+    {
+      name: stall_cg
+      desc: '''
+            - Check that the DUT stalls if a command is configured to transmit data but the tx fifo is empty
+            - check that the data is transmitted when written to the TX fifo after a stall
+            '''
+    }
+    {
+      name: num_segment_cg
+      desc: '''
+            - Check that the DUT only transmits what is in a command even if more segments are in the TX FIFO
+            '''
+    }
+    {
+      name: segment_speed_cg
+      desc: '''
+            - Check that we test with transactions that uses different speeds
+              i.e first segment in standard mode, followed by segments in dual or quad mode
+            '''
+    }
   ]
 }
