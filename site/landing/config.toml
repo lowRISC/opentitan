@@ -24,6 +24,7 @@ partner_nuvoton = "https://www.nuvoton.com"
 partner_wd = "https://www.westerndigital.com/"
 partner_seagate = "https://www.seagate.com"
 partner_rivos = "https://www.rivosinc.com"
+partner_winbond = "https://www.winbond.com"
 
 [[deployment.targets]]
 name = "staging"
