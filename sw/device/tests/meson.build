@@ -724,6 +724,36 @@ sw_tests += {
   }
 }
 
+
+# AON Timer test wake up irq test.
+aon_timer_wakeup_irq_test = declare_dependency(
+  link_with: static_library(
+    'aon_timer_wakeup_irq_test',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'aon_timer_wakeup_irq_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_rv_timer,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_rv_plic,
+      sw_lib_runtime_log,
+      sw_lib_runtime_ibex,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_rstmgr_testutils,
+      sw_lib_testing_rv_plic_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'aon_timer_wakeup_irq_test': {
+    'library': aon_timer_wakeup_irq_test,
+  }
+}
+
 ###############################################################################
 # Auto-generated tests
 ###############################################################################

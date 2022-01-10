@@ -295,6 +295,13 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
+      name: chip_sw_aon_timer_wakeup_irq
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/aon_timer_wakeup_irq_test:1"]
+      en_run_modes: ["sw_test_mode"]
+      run_opts: ["+sw_test_timeout_ns=18000000"]
+    }
+    {
       name: chip_sw_kmac_mode_cshake_test
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/kmac_mode_cshake_test:1"]
