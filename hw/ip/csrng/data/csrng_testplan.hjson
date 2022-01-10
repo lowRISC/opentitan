@@ -28,7 +28,23 @@
             Verify fifo error status bits are set as predicted.
             '''
       milestone: V2
-      tests: []
+      tests: ["csrng_intr"]
+    }
+    {
+      name: alerts
+      desc: '''
+            Verify recov_alert_sts asserts/clears as predicted.
+            '''
+      milestone: V2
+      tests: ["csrng_alert"]
+    }
+    {
+      name: err
+      desc: '''
+            Verify err_code register asserts/clears as predicted.
+            '''
+      milestone: V2
+      tests: ["csrng_err"]
     }
     {
       name: cmds
@@ -62,6 +78,26 @@
             '''
       milestone: V2
       tests: ["csrng_stress_all"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: err_test_cg
+      desc: '''
+            Covers that all fatal errors, all fifo errors, all state machine errors and
+            all error codes of csrng have been tested.
+            Individual config settings that will be covered include:
+            - which_hw_inst_exc (0 to NHwApps-1), NHwApps possible hw instance exceptions
+            - which_sp2v (0 to Sp2VWidth-1), SP2V_HIGH_LOGIC width
+            - which_fatal_err (0 to 25), 26 possible fatal errors
+            - which_fifo_write_err (0 to 15), 16 different fifos
+            - which_fifo_read_err (0 to 15), 16 different fifos
+            - which_fifo_state_err (0 to 15), 16 different fifos
+            - which_err_code (0 to 51), 26 possible fatal errors, plus 26 ERR_CODE_TEST bits test
+            - which_fifo_err (0 to 2), fifo write/read/state errors
+            - which_invalid_mubi (0 to 2), 3 possible invalid mubi4 fields 
+            '''
     }
   ]
 }
