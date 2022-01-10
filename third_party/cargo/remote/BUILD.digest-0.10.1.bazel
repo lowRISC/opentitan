@@ -26,40 +26,19 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT"
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
 ])
 
 # Generated Targets
 
-# Unsupported target "ar" with type "example" omitted
-
-# Unsupported target "automagic" with type "example" omitted
-
-# Unsupported target "dotnet_pe_analysis" with type "example" omitted
-
-# Unsupported target "dyldinfo" with type "example" omitted
-
-# Unsupported target "lipo" with type "example" omitted
-
-# Unsupported target "rdr" with type "example" omitted
-
-# Unsupported target "scroll" with type "example" omitted
-
 rust_library(
-    name = "goblin",
+    name = "digest",
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "alloc",
-        "archive",
+        "block-buffer",
+        "core-api",
         "default",
-        "elf32",
-        "elf64",
-        "endian_fd",
-        "log",
-        "mach32",
-        "mach64",
-        "pe32",
-        "pe64",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -72,17 +51,11 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.0.24",
+    version = "0.10.1",
     # buildifier: leave-alone
     deps = [
-        "@raze__log__0_4_14//:log",
-        "@raze__plain__0_2_3//:plain",
-        "@raze__scroll__0_9_2//:scroll",
+        "@raze__block_buffer__0_10_0//:block_buffer",
+        "@raze__crypto_common__0_1_1//:crypto_common",
+        "@raze__generic_array__0_14_5//:generic_array",
     ],
 )
-
-# Unsupported target "archive" with type "test" omitted
-
-# Unsupported target "compare_dyldinfos" with type "test" omitted
-
-# Unsupported target "macho" with type "test" omitted
