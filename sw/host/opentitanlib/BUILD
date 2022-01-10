@@ -16,6 +16,8 @@ rust_library(
         "src/bootstrap/legacy.rs",
         "src/bootstrap/mod.rs",
         "src/bootstrap/primitive.rs",
+        "src/crypto/mod.rs",
+        "src/crypto/sha256.rs",
         "src/io/gpio.rs",
         "src/io/i2c.rs",
         "src/io/mod.rs",
