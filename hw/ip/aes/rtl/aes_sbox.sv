@@ -61,6 +61,7 @@ module aes_sbox import aes_pkg::*;
 
   end else begin : gen_sbox_masked
 
+    // SEC_CM: KEY.MASKING
     if (SBoxImpl == SBoxImplDom) begin : gen_sbox_dom
 
       aes_sbox_dom u_aes_sbox (

@@ -302,6 +302,7 @@ The following standardised countermeasures are defined:
 | SW_UNWRITABLE  | The asset is not writable by software | MEM, KEY
 | SW_NOACCESS    | The asset is not writable nor readable by software (SW_UNWRITABLE and SW_UNREADABLE at the same time) | MEM, KEY
 | SIDELOAD       | The asset can be loaded without exposing it to software | KEY
+| SEC_WIPE       | The asset is initialized or cleared using pseudo-random data | KEY, DATA_REG, MEM
 | SCA            | A countermeasure that provides side-channel attack resistance |
 | MASKING        | A more specific version of SCA where an asset is split into shares |
 | LOCAL_ESC      | A local escalation event is triggered when an attack is detected |

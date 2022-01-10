@@ -239,6 +239,7 @@ module aes_control
   assign sp_in_cipher_crypt       = {cipher_crypt};
   assign sp_in_cipher_dec_key_gen = {cipher_dec_key_gen};
 
+  // SEC_CM: MAIN.FSM.REDUN
   // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
   // of every rail are buffered to prevent aggressive synthesis optimizations.
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm
@@ -503,6 +504,7 @@ module aes_control
   // Sparsely Encoded Signals //
   //////////////////////////////
 
+  // SEC_CM: CTRL.SPARSE
   // We use sparse encodings for various critical signals and must ensure that:
   // 1. The synthesis tool doesn't optimize away the sparse encoding.
   // 2. The sparsely encoded signal is always valid. More precisely, an alert or SVA is triggered

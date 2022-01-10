@@ -12,6 +12,11 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
+
+  ////////////////
+  // Parameters //
+  ////////////////
+
   param_list: [
     # Regular parameters
     { name:    "AES192Enable",
@@ -136,6 +141,11 @@
       local:   "true"
     }
   ],
+
+  /////////////////////////////
+  // Intermodule Connections //
+  /////////////////////////////
+
   inter_signal_list: [
     { name:    "idle",
       type:    "uni",
@@ -164,6 +174,11 @@
       package: "keymgr_pkg"
     }
   ],
+
+  ///////////////////////////
+  // Interrupts and Alerts //
+  ///////////////////////////
+
   alert_list: [
     //{ name: "informative",
     //  desc: '''
@@ -194,11 +209,122 @@
       '''
     }
   ],
+
+  /////////////////////
+  // Countermeasures //
+  /////////////////////
+
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "LC_ESCALATE_EN.INTERSIG.MUBI",
+      desc: "The global escalation input signal from life cycle is multibit encoded."
+    }
+    { name: "MAIN.CONFIG.SHADOW",
+      desc: "Main control register shadowed."
+    }
+    { name: "MAIN.CONFIG.SPARSE",
+      desc: "Critical fields in main control register one-hot encoded."
+    }
+    { name: "AUX.CONFIG.SHADOW",
+      desc: "Auxiliary control register shadowed."
+    }
+    { name: "AUX.CONFIG.REGWEN",
+      desc: "Auxiliary control register can be locked until reset."
+    }
+    { name: "KEY.SIDELOAD",
+      desc: "The key can be loaded from a key manager via sideload interface without exposing it to software."
+    }
+    { name: "KEY.SW_UNREADABLE",
+      desc: "Key registers are not readable by software."
+    }
+    { name: "IV.CONFIG.SW_UNREADABLE",
+      desc: "IV registers are not readable by software."
+    }
+    { name: "DATA_REG.SW_UNREADABLE",
+      desc: "Data input and internal state registers are not readable by software."
+    }
+    { name: "KEY.SEC_WIPE",
+      desc: "Key registers are cleared with pseudo-random data."
+    }
+    { name: "IV.CONFIG.SEC_WIPE",
+      desc: "IV registers are cleared with pseudo-random data."
+    }
+    { name: "DATA_REG.SEC_WIPE",
+      desc: "Data input/output and internal state registers are cleared with pseudo-random data."
+    }
+    { name: "DATA_REG.KEY.SCA",
+      desc: '''
+        Internal state register cleared with pseudo-random data at the end of the last round.
+        This uses the same mechanism as KEY.SEC_WIPE and is active independent of KEY.MASKING.
+      '''
+    }
+    { name: "KEY.MASKING",
+      desc: '''
+        1st-order domain-oriented masking of the cipher core including data path and key expand.
+        Can optionally be disabled via compile-time Verilog parameter for instantiations that don't need SCA hardening.
+      '''
+    }
+    { name: "MAIN.FSM.SPARSE",
+      desc: "The main control FSM uses a sparse state encoding."
+    }
+    { name: "MAIN.FSM.REDUN",
+      desc: "The main control FSM uses multiple, independent logic rails."
+    }
+    { name: "CIPHER.FSM.SPARSE",
+      desc: "The cipher core FSM uses a sparse state encoding."
+    }
+    { name: "CIPHER.FSM.REDUN",
+      desc: "The cipher core FSM uses multiple, independent logic rails."
+    }
+    { name: "CIPHER.CTR.REDUN",
+      desc: "The AES round counter inside the cipher core FSM is protected with multiple, independent logic rails."
+    }
+    { name: "CTR.FSM.SPARSE",
+      desc: "The CTR mode FSM uses a sparse state encoding."
+    }
+    { name: "CTR.FSM.REDUN",
+      desc: "The CTR mode FSM uses multiple, independent logic rails."
+    }
+    { name: "CTRL.SPARSE",
+      desc: "Critical control signals such as handshake and MUX control signals use sparse encodings."
+    }
+    { name: "MAIN.FSM.GLOBAL_ESC",
+      desc: "The main control FSM moves to a terminal error state upon global escalation."
+    }
+    { name: "MAIN.FSM.LOCAL_ESC",
+      desc: '''
+        The main control FSM moves to a terminal error state upon local escalation.
+        Can be triggered by MAIN.FSM.SPARSE, MAIN.FSM.REDUN, CTRL.SPARSE, as well as CIPHER.FSM.LOCAL_ESC, CTR.FSM.LOCAL_ESC.
+      '''
+    }
+    { name: "CIPHER.FSM.LOCAL_ESC",
+      desc: '''
+        The cipher core FSM moves to a terminal error state upon local escalation.
+        Can be triggered by CIPHER.FSM.SPARSE, CIPHER.FSM.REDUN, CIPHER.CTR.REDUN, CTRL.SPARSE as well as MAIN.FSM.LOCAL_ESC.
+      '''
+    }
+    { name: "CTR.FSM.LOCAL_ESC",
+      desc: '''
+        The CTR mode FSM moves to a terminal error state upon local escalation.
+        Can be triggered by CTR.FSM.SPARSE, CTR.FSM.REDUN, and CTRL.SPARSE.
+      '''
+    }
+    { name: "DATA_REG.LOCAL_ESC",
+      desc: "Upon local escalation, the module doesn't output intermediate state."
+    }
+    // This is work in progress.
+    // Datapath FI hardening hasn't been a strict requirement but with the current cipher core architecture it can be done at relatively low area/performance overhead and therefore is a nice-to-have.
+    //{ name: "DATA_REG.INTEGRITY",
+    //  desc: "Datapath FI hardening."
+    //}
   ]
+
+  ///////////////
+  // Registers //
+  ///////////////
+
   regwidth: "32",
   registers: [
 ##############################################################################
@@ -551,7 +677,7 @@
 
       This register is shadowed, meaning two subsequent write operations are required to change its content.
       If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
-      A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.              
+      A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.
     '''
     swaccess: "rw",
     hwaccess: "hro",

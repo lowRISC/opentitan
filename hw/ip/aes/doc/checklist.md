@@ -76,7 +76,7 @@ Security      | [SEC_RND_CNST][]        | Done        |
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
-Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
+Security      | [SEC_CM_IMPLEMENTED][]       | Done        | Datapath FI hardening in progress (not strictly required)
 Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
 

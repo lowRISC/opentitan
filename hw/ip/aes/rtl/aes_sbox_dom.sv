@@ -980,6 +980,7 @@ module aes_dom_inverse_gf2p8 #(
 
 endmodule
 
+// SEC_CM: KEY.MASKING
 module aes_sbox_dom
 #(
   parameter bit PipelineMul = 1'b1

@@ -132,6 +132,7 @@ module aes_ctrl_reg_shadowed
   assign ctrl_wd.force_zero_masks = SecAllowForcingMasks ? reg2hw_ctrl_i.force_zero_masks.q : 1'b0;
   assign unused_force_zero_masks = SecAllowForcingMasks ? 1'b0 : reg2hw_ctrl_i.force_zero_masks.q;
 
+  // SEC_CM: MAIN.CONFIG.SHADOW
   // Instantiate one shadowed register primitive per field. An update error in a field should
   // only prevent the update of the affected field.
   prim_subreg_shadow #(

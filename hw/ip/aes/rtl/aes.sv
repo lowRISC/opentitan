@@ -84,6 +84,11 @@ module aes
   // Inputs //
   ////////////
 
+  // SEC_CM: AUX.CONFIG.SHADOW
+  // SEC_CM: AUX.CONFIG.REGWEN
+  // SEC_CM: KEY.SW_UNREADABLE
+  // SEC_CM: IV.CONFIG.SW_UNREADABLE
+  // SEC_CM: DATA_REG.SW_UNREADABLE
   // Register interface
   logic intg_err_alert;
   aes_reg_top u_reg (
@@ -98,6 +103,7 @@ module aes
     .devmode_i(1'b1)
   );
 
+  // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   // Synchronize life cycle input
   prim_lc_sync #(
     .NumCopies (2)

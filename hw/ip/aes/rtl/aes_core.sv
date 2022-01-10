@@ -261,6 +261,8 @@ module aes_core
   // Key, IV and Data //
   //////////////////////
 
+  // SEC_CM: KEY.SEC_WIPE
+  // SEC_CM: KEY.SIDELOAD
   // Initial Key registers
   always_comb begin : key_init_mux
     unique case (key_init_sel)
@@ -285,6 +287,7 @@ module aes_core
     end
   end
 
+  // SEC_CM: IV.CONFIG.SEC_WIPE
   // IV registers
   always_comb begin : iv_mux
     unique case (iv_sel)
@@ -310,6 +313,7 @@ module aes_core
     end
   end
 
+  // SEC_CM: DATA_REG.SEC_WIPE
   // Previous input data register
   always_comb begin : data_in_prev_mux
     unique case (data_in_prev_sel)
@@ -401,6 +405,7 @@ module aes_core
     assign key_init_cipher    = key_init_q;
   end
 
+  // SEC_CM: KEY.MASKING
   // Cipher core
   aes_cipher_core #(
     .AES192Enable           ( AES192Enable           ),
@@ -617,6 +622,7 @@ module aes_core
     .input_ready_we_o          ( hw2reg.status.input_ready.de           )
   );
 
+  // SEC_CM: DATA_REG.SEC_WIPE
   // Input data register clear
   always_comb begin : data_in_reg_clear
     for (int i = 0; i < NumRegsData; i++) begin

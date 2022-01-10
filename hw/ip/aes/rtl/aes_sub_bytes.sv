@@ -34,6 +34,7 @@ module aes_sub_bytes import aes_pkg::*;
   logic [3:0][3:0][WidthPRDSBox+19:0] in_prd;
   logic [3:0][3:0]             [19:0] out_prd;
 
+  // SEC_CM: CTRL.SPARSE
   // Check sparsely encoded signals.
   logic [Sp2VWidth-1:0] en_raw;
   aes_sel_buf_chk #(
