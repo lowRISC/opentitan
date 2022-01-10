@@ -5,9 +5,16 @@ title: "SRAM_CTRL DV document"
 ## Goals
 * **DV**
   * Verify all SRAM_CTRL IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules, except [Pre-verified sub-modules](#pre-verified-sub-modules).
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
+
+## Pre-verified sub-modules
+The following sub-modules are pre-verified:
+* [prim_prince](https://reports.opentitan.org/hw/ip/prim/dv/prim_prince/latest/results.html)
+* [prim_lfsr](https://reports.opentitan.org/hw/ip/prim/dv/prim_lfsr/latest/results.html)
+
+Only toggle coverage on the IOs of these sub-modules is enabled for coverage collection.
 
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
@@ -42,10 +49,9 @@ The following utilities provide generic helper tasks and functions to perform ac
 
 ### Compile-time configurations
 Two compile-time configurations are tested:
-* `sram_ctrl_main` - this configuration uses a 15-bit wide address space to
-  emulate the main SRAM used in the full design
-* `sram_ctrl_ret` - this configuration uses a 10-bit-wide address space to
-  emulate the retention SRAM used in the full design
+* `sram_ctrl_main` - this configuration uses a 15-bit wide address space to emulate the main SRAM used in the full design and enables parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
+* `sram_ctrl_ret` - this configuration uses a 10-bit-wide address space to emulate the retention SRAM used in the full design and turns off parameter `INSTR_EXEC` to disable TLUL instruction fetching altogether.
+
 
 A macro-define `SRAM_ADDR_WIDTH` is defined as a build option in `hw/ip/sram_ctrl/dv/sram_ctrl_base_sim_cfg.hjson`, which is used to set the correct compile-time settings for each configuration.
 
