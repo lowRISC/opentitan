@@ -423,13 +423,6 @@ module tlul_adapter_sram
   //    responses), storing the request is necessary. And if the read entry
   //    is write op, it is safe to return the response right away. If it is
   //    read reqeust, then D response is waiting until read data arrives.
-
-  // Notes:
-  // The oustanding+1 allows the reqfifo to absorb back to back transactions
-  // without any wait states.  Alternatively, the depth can be kept as
-  // oustanding as long as the outgoing ready is qualified with the acceptance
-  // of the response in the same cycle.  Doing so however creates a path from
-  // ready_i to ready_o, which may not be desireable.
   prim_fifo_sync #(
     .Width   (ReqFifoWidth),
     .Pass    (1'b0),
