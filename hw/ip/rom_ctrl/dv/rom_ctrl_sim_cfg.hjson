@@ -56,10 +56,6 @@
       uvm_test_seq: rom_ctrl_smoke_vseq
     }
     {
-      name: successful_rom_chk
-      uvm_test_seq: rom_ctrl_chk_successful_vseq
-    }
-    {
       name: rom_ctrl_stress_all
       uvm_test_seq: rom_ctrl_stress_all_vseq 
     }

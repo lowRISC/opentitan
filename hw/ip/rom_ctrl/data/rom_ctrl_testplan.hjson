@@ -19,31 +19,18 @@
             image and load into memory model
             - Allow the rom check to complete
             - Perform some random memory accesses
+            - Create a random valid ROM where expected digest matches with the KMAC digest
+            - Repeat steps 2 and 3.
 
             **Checks**:
             - Check that all data supplied to kmac is correct
             - Check that the rom checking sequence gives the expected result
             - Check that the memory accesses return expected data
-            - Check that pwrmgr_data_o.good is not asserted. 
+            - Check that pwrmgr_data_o.good is not asserted in first iteration.
+            - Check that pwrmgr_data_o.good is asserted in second iteration.
             '''
       milestone: V1
       tests: ["rom_ctrl_smoke"]
-    }
-    {
-      name: successful_rom_chk
-      desc: '''
-           Test successful completion of rom check
-
-           **Stimulus**:
-           - Create a random valid ROM image and load into memory model.
-           - Ensure that KMAC and expected digest match.
-         
-           **Checks**:
-           - Check that pwrmgr_data_o.good is asserted. 
-           '''
-      milestone: V1
-      tests: []
-
     }
     {
       name: corrupt_sig_fatal_chk
