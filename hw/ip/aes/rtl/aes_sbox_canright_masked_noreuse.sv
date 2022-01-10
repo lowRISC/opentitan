@@ -388,6 +388,7 @@ module aes_masked_inverse_gf2p8_noreuse (
 
 endmodule
 
+// SEC_CM: KEY.MASKING
 module aes_sbox_canright_masked_noreuse (
   input  aes_pkg::ciph_op_e op_i,
   input  logic        [7:0] data_i, // masked, the actual input data is data_i ^ mask_i

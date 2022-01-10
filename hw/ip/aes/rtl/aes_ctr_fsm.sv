@@ -101,6 +101,7 @@ module aes_ctr_fsm import aes_pkg::*;
       end
 
       ERROR: begin
+        // SEC_CM: CTR.FSM.LOCAL_ESC
         // Terminal error state
         alert_o = 1'b1;
       end
@@ -129,6 +130,7 @@ module aes_ctr_fsm import aes_pkg::*;
     end
   end
 
+  // SEC_CM: CTR.FSM.SPARSE
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] aes_ctr_cs_raw;

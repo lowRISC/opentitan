@@ -72,6 +72,7 @@ module aes_ctr import aes_pkg::*;
   // Reverse byte order
   assign ctr_i_rev = aes_rev_order_byte(ctr_i);
 
+  // SEC_CM: CTRL.SPARSE
   // Check sparsely encoded incr signal.
   logic [Sp2VWidth-1:0] incr_raw;
   aes_sel_buf_chk #(
@@ -100,6 +101,7 @@ module aes_ctr import aes_pkg::*;
   // Convert sp2v_e signals to sparsified inputs.
   assign sp_incr = {incr};
 
+  // SEC_CM: CTR.FSM.REDUN
   // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
   // of every rail are buffered to prevent aggressive synthesis optimizations.
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm

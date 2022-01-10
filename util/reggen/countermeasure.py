@@ -52,6 +52,7 @@ CM_TYPES = [
     'SW_UNWRITABLE',
     'SW_NOACCESS',
     'SIDELOAD',
+    'SEC_WIPE',
     'SCA',
     'MASKING',
     'LOCAL_ESC',

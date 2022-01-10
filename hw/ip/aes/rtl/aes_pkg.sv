@@ -82,11 +82,13 @@ parameter int AES_MODE_WIDTH           = 6;
 parameter int AES_KEYLEN_WIDTH         = 3;
 parameter int AES_PRNGRESEEDRATE_WIDTH = 3;
 
+// SEC_CM: MAIN.CONFIG.SPARSE
 typedef enum logic [AES_OP_WIDTH-1:0] {
   AES_ENC = 2'b01,
   AES_DEC = 2'b10
 } aes_op_e;
 
+// SEC_CM: MAIN.CONFIG.SPARSE
 typedef enum logic [AES_MODE_WIDTH-1:0] {
   AES_ECB  = 6'b00_0001,
   AES_CBC  = 6'b00_0010,
@@ -101,12 +103,14 @@ typedef enum logic [AES_OP_WIDTH-1:0] {
   CIPH_INV = 2'b10
 } ciph_op_e;
 
+// SEC_CM: MAIN.CONFIG.SPARSE
 typedef enum logic [AES_KEYLEN_WIDTH-1:0] {
   AES_128 = 3'b001,
   AES_192 = 3'b010,
   AES_256 = 3'b100
 } key_len_e;
 
+// SEC_CM: MAIN.CONFIG.SPARSE
 typedef enum logic [AES_PRNGRESEEDRATE_WIDTH-1:0] {
   PER_1  = 3'b001,
   PER_64 = 3'b010,

@@ -365,10 +365,12 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // Keep requesting PRNG reseeding until it is acknowledged.
         prng_reseed_req_o = Masking & prng_reseed_q_i & ~prng_reseed_done_q;
 
+        // SEC_CM: DATA_REG.KEY.SCA
         // Once we're done, we won't need the state anymore. We actually clear it when progressing
         // to the next state.
         state_sel_o = STATE_CLEAR;
 
+        // SEC_CM: DATA_REG.LOCAL_ESC
         // Advance in sync with SubBytes. Based on the S-Box implementation, it can take multiple
         // cycles to finish. Only indicate that we are done if:
         // - we have valid output (SubBytes finished),
@@ -436,6 +438,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
         end
         if (data_out_clear_q_i) begin
           // Forward the state (previously cleared with psuedo-random data).
+          // SEC_CM: DATA_REG.SEC_WIPE
           add_rk_sel_o    = ADD_RK_INIT;
           key_words_sel_o = KEY_WORDS_ZERO;
           round_key_sel_o = ROUND_KEY_DIRECT;
@@ -450,6 +453,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
       end
 
       ERROR: begin
+        // SEC_CM: CIPHER.FSM.LOCAL_ESC
         // Terminal error state
         alert_o = 1'b1;
       end
@@ -468,6 +472,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
     end
   end
 
+  // SEC_CM: CIPHER.FSM.SPARSE
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
   logic [StateWidth-1:0] aes_cipher_ctrl_cs_raw;

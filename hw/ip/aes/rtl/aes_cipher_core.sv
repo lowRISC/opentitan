@@ -261,6 +261,7 @@ module aes_cipher_core import aes_pkg::*;
   // Data //
   //////////
 
+  // SEC_CM: DATA_REG.SEC_WIPE
   // State registers
   always_comb begin : state_mux
     unique case (state_sel)
@@ -423,6 +424,7 @@ module aes_cipher_core import aes_pkg::*;
   // Key //
   /////////
 
+  // SEC_CM: KEY.SEC_WIPE
   // Full Key registers
   always_comb begin : key_full_mux
     unique case (key_full_sel)
@@ -442,6 +444,7 @@ module aes_cipher_core import aes_pkg::*;
     end
   end
 
+  // SEC_CM: KEY.SEC_WIPE
   // Decryption Key registers
   always_comb begin : key_dec_mux
     unique case (key_dec_sel)
