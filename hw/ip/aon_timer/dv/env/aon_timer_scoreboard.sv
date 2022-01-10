@@ -132,6 +132,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
       end
       "wkup_count": begin
         wkup_count =  csr.get_mirrored_value();
+        if (data_phase_write) wkup_num_update_due = 1;
       end
       "wkup_thold": begin
         wkup_thold =  csr.get_mirrored_value();
@@ -143,6 +144,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
       end
       "wdog_count": begin
         wdog_count =  csr.get_mirrored_value();
+        if (data_phase_write) wdog_num_update_due = 1;
       end
       "wdog_regwen": begin
         wdog_regwen =  csr.get_mirrored_value();
@@ -208,12 +210,26 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
       @(wkup_num_update_due or wdog_num_update_due);
       wait(!under_reset);
       if (wkup_num_update_due) begin
-        wkup_num = ((wkup_thold - wkup_count) * (prescaler + 1));
+        if (wkup_count < wkup_thold) begin
+          wkup_num = ((wkup_thold - wkup_count) * (prescaler + 1));
+        end
+        else begin
+          wkup_num = 0;
+        end
+        `uvm_info(`gfn, $sformatf("Calculated WKUP_NUM: %d", wkup_num), UVM_HIGH)
       end
       if (wdog_num_update_due) begin
         // calculate wdog bark and bite
-        wdog_bark_num = bark_thold - wdog_count;
-        wdog_bite_num = bite_thold - wdog_count;
+        if (wkup_count < wkup_thold) begin
+          wdog_bark_num = bark_thold - wdog_count;
+          `uvm_info(`gfn, $sformatf("Calculated wdog_bark_num: %d", wdog_bark_num), UVM_HIGH)
+          wdog_bite_num = bite_thold - wdog_count;
+          `uvm_info(`gfn, $sformatf("Calculated wdog_bite_num: %d", wdog_bite_num), UVM_HIGH)
+        end
+        else begin
+          wdog_bark_num = 0;
+          wdog_bite_num = 0;
+        end
       end
       wkup_num_update_due = 0;
       wdog_num_update_due = 0;
@@ -234,9 +250,9 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
             @cfg.aon_clk_rst_vif.cb;
             // reset the cycle counter when we update the cycle count needed
             count = wkup_num_update_due ? 0 : (count + 1);
-            `uvm_info(`gfn, $sformatf("WKUP Timer count: %d", count), UVM_LOW)
+            `uvm_info(`gfn, $sformatf("WKUP Timer count: %d", count), UVM_HIGH)
           end
-          `uvm_info(`gfn, $sformatf("WKUP Timer expired check for interrupts"), UVM_LOW)
+          `uvm_info(`gfn, $sformatf("WKUP Timer expired check for interrupts"), UVM_HIGH)
           intr_status_exp[WKUP] = 1'b1;
           // Propagation delay of one cycle from aon_core to interrupt pin.
           cfg.aon_clk_rst_vif.wait_clks(1);
@@ -266,9 +282,9 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
             @cfg.aon_clk_rst_vif.cb;
             // reset the cycle counter when we update the cycle count needed
             count = wdog_num_update_due ? 0 : (count + 1);
-            `uvm_info(`gfn, $sformatf("WDOG Timer count: %d", count), UVM_LOW)
+            `uvm_info(`gfn, $sformatf("WDOG Timer count: %d", count), UVM_HIGH)
           end
-          `uvm_info(`gfn, $sformatf("WDOG Timer expired check for interrupts"), UVM_LOW)
+          `uvm_info(`gfn, $sformatf("WDOG Timer expired check for interrupts"), UVM_HIGH)
           if (count > wdog_bark_num) intr_status_exp[WDOG] = 1'b1;
           if (count > wdog_bite_num) wdog_rst_req_exp = 1'b1;
           // Propagation delay of one cycle from aon_core to interrupt pins.
