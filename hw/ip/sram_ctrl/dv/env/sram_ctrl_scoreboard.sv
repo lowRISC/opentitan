@@ -564,12 +564,12 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       "ctrl": begin
         // do nothing if 0 is written
         if (addr_phase_write) begin
-          if (item.a_data[SramCtrlRenewScrKey]) begin
+          if (item.a_data[SramCtrlRenewScrKey] && `gmv(ral.ctrl_regwen)) begin
             in_key_req = 1;
             exp_status[SramCtrlScrKeyValid] = 0;
             `uvm_info(`gfn, "raised in_key_req", UVM_MEDIUM)
           end
-          if (item.a_data[SramCtrlInit]) begin
+          if (item.a_data[SramCtrlInit] && `gmv(ral.ctrl_regwen)) begin
             in_init = 1;
             `uvm_info(`gfn, "raised in_init", UVM_MEDIUM)
           end
