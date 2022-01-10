@@ -154,7 +154,7 @@ Note however that the PRNG sequence does not have strong security guarantees, si
 ### Code Execution from SRAM
 
 The SRAM controller contains an access control mechanism for filtering instruction fetches from the processor.
-As illustrated below, an OTP chicken switch EN_SRAM_IFETCH (see [OTP memory map]({{< relref "hw/ip/otp_ctrl/doc/#direct-access-memory-map" >}})) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs]({{< relref "hw/ip/lc_ctrl/doc/#hw_debug_en" >}})), or it can be enabled / disabled via the {{< regref "EXEC" >}} CSR.
+As illustrated below, an OTP switch EN_SRAM_IFETCH (see [OTP memory map]({{< relref "hw/ip/otp_ctrl/doc/#direct-access-memory-map" >}})) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs]({{< relref "hw/ip/lc_ctrl/doc/#hw_debug_en" >}})), or it can be enabled / disabled via the {{< regref "EXEC" >}} CSR.
 
 ![SRAM Code Execution](../doc/sram_ctrl_sram_execution.svg)
 
@@ -169,7 +169,7 @@ The different configuration options are listed in the table below:
  != kMultiBitBool8True  | OFF                      | -                      | No
 
 Note that the execute from SRAM feature may only be enabled on certain SRAM controller instances in the top-level design.
-If the feature is turned off via the `InstrExec` parameter, the execute from SRAM feature is permanently disabled, and the status of the OTP chicken bit, the life cycle state and the value of the EXEC register are irrelevant.
+If the feature is turned off via the `InstrExec` parameter, the execute from SRAM feature is permanently disabled, and the status of the OTP switch, the life cycle state and the value of the EXEC register are irrelevant.
 
 As an example, the `top_earlgrey` design only enables this feature on the main SRAM, and permanently disables it on the retention SRAM.
 
