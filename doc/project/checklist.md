@@ -345,6 +345,8 @@ A functional coverage shell object has been created - this may not contain cover
 ### PRE_VERIFIED_SUB_MODULES_V1
 
 Sub-modules that are pre-verified with their own testbenches have already reached V1 or a higher stage.
+The coverage level of the pre-verified sub-modules that are not tracked (i.e., not taken through the verification milestones), meets or exceeds the V1 milestone requirement.
+They are clearly cited in the DV document and the coverage of these sub-modules can be excluded in the IP-level testbench.
 
 ### DESIGN_SPEC_REVIEWED
 
@@ -413,7 +415,7 @@ All tests in the testplan have been written and are passing with at least one ra
 
 ### FPV_ALL_ASSERTIONS_WRITTEN
 
-All assertions are implemented and are 90% proven.
+All assertions (except security countermeasure assertions) are implemented and are 90% proven.
 Each output of the module has at least one forward and one backward assertion check.
 The FPV proof run converges within reasonable runtime.
 
@@ -453,6 +455,7 @@ Any waiver files have been reviewed.
 ### PRE_VERIFIED_SUB_MODULES_V2
 
 Sub-modules that are pre-verified with their own testbenches have already reached V2 or a higher stage.
+The coverage level of the pre-verified sub-modules that are not tracked (i.e., not taken through the verification milestones), meets or exceeds the V2 milestone requirement.
 
 ### SEC_CM_PLANNED
 
@@ -490,10 +493,15 @@ The V3 checklist has been reviewed to understand the scope and estimate effort.
 
 ## V2S
 
-### SEC_CM_VERIFIED
+### FPV_SEC_CM_PROVEN
 
 <!-- TODO, add the link to cm verif methodology doc -->
-Security countermeasures are verified.
+All security countermeasure assertions are proven in FPV.
+
+### SIM_SEC_CM_VERIFIED
+
+<!-- TODO, add the link to cm verif methodology doc -->
+Security countermeasures are verified in simulation.
 
 ## V3
 
@@ -550,6 +558,7 @@ Any lint waiver files have been reviewed and signed off by the technical steerin
 ### PRE_VERIFIED_SUB_MODULES_V3
 
 Sub-modules that are pre-verified with their own testbenches have already reached the V3 stage.
+The coverage level of the pre-verified sub-modules that are not tracked (i.e., not taken through the verification milestones), meets the V3 milestone requirement.
 
 ### NO_ISSUES_PENDING
 
