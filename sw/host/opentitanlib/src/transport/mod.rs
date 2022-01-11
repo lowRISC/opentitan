@@ -11,6 +11,7 @@ use std::rc::Rc;
 use thiserror::Error;
 
 use crate::io::gpio::GpioPin;
+use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
@@ -26,6 +27,7 @@ bitflags! {
         const UART = 0x00000001;
         const SPI = 0x00000002;
         const GPIO = 0x00000004;
+        const I2C = 0x00000008;
     }
 }
 
@@ -83,6 +85,10 @@ pub trait Transport {
 
     /// Returns a SPI [`Target`] implementation.
     fn spi(&self, _instance: &str) -> Result<Rc<dyn Target>> {
+        unimplemented!();
+    }
+    /// Returns a I2C [`Bus`] implementation.
+    fn i2c(&self, _instance: &str) -> Result<Rc<dyn Bus>> {
         unimplemented!();
     }
     /// Returns a [`Uart`] implementation.

@@ -5,6 +5,7 @@
 pub mod bootstrap;
 pub mod console;
 pub mod gpio;
+pub mod i2c;
 pub mod hello;
 pub mod image;
 pub mod load_bitstream;

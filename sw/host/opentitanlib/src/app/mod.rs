@@ -7,6 +7,7 @@ pub mod command;
 pub mod conf;
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
+use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
@@ -41,6 +42,7 @@ pub struct TransportWrapper {
     pin_map: HashMap<String, String>,
     uart_map: HashMap<String, String>,
     spi_map: HashMap<String, String>,
+    i2c_map: HashMap<String, String>,
     flash_map: HashMap<String, conf::FlashConfiguration>,
     pin_conf_map: HashMap<String, PinConfiguration>,
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
@@ -53,6 +55,7 @@ impl TransportWrapper {
             pin_map: HashMap::new(),
             uart_map: HashMap::new(),
             spi_map: HashMap::new(),
+            i2c_map: HashMap::new(),
             flash_map: HashMap::new(),
             pin_conf_map: HashMap::new(),
             strapping_conf_map: HashMap::new(),
@@ -70,6 +73,13 @@ impl TransportWrapper {
         self.transport
             .borrow()
             .spi(Self::map_name(&self.spi_map, name).as_str())
+    }
+
+    /// Returns a I2C [`Bus`] implementation.
+    pub fn i2c(&self, name: &str) -> Result<Rc<dyn Bus>> {
+        self.transport
+            .borrow()
+            .i2c(Self::map_name(&self.i2c_map, name).as_str())
     }
 
     /// Returns a [`Uart`] implementation.
@@ -91,9 +101,9 @@ impl TransportWrapper {
         self.transport.borrow().dispatch(action)
     }
 
-    /// Given an pin/uart/spi port name, if the name is a known alias,
-    /// return the underlying name/number, otherwise return the string
-    /// as is.
+    /// Given an pin/uart/spi/i2c port name, if the name is a known
+    /// alias, return the underlying name/number, otherwise return the
+    /// string as is.
     fn map_name(map: &HashMap<String, String>, name: &str) -> String {
         let name = name.to_uppercase();
         // TODO(#8769): Support multi-level aliasing, either by

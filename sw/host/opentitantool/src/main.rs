@@ -26,6 +26,7 @@ enum RootCommandHierarchy {
 
     Gpio(command::gpio::GpioCommand),
 
+    I2c(command::i2c::I2cCommand),
     Image(command::image::Image),
     LoadBitstream(command::load_bitstream::LoadBitstream),
     NoOp(command::NoOp),
