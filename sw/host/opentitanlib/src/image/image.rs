@@ -4,7 +4,6 @@
 
 use anyhow::{ensure, Result};
 use memoffset::offset_of;
-use sha2::{Digest, Sha256};
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -14,8 +13,10 @@ use thiserror::Error;
 
 use zerocopy::LayoutVerified;
 
+use crate::crypto::rsa::{Modulus, Signature};
+use crate::crypto::sha256;
 use crate::image::manifest::Manifest;
-use crate::image::manifest_def::ManifestDef;
+use crate::image::manifest_def::{ManifestRsaBuffer, ManifestSpec};
 use crate::util::parse_int::ParseInt;
 
 #[derive(Debug, Error)]
@@ -90,10 +91,32 @@ impl Image {
     }
 
     /// Overwrites all fields in the image's manifest that are defined in `other`.
-    pub fn overwrite_manifest(&mut self, other: ManifestDef) -> Result<()> {
+    pub fn overwrite_manifest(&mut self, other: ManifestSpec) -> Result<()> {
         let manifest = self.borrow_manifest_mut()?;
-        let mut manifest_def: ManifestDef = (&*manifest).try_into()?;
+        let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
         manifest_def.overwrite_fields(other);
+        *manifest = manifest_def.try_into()?;
+        Ok(())
+    }
+
+    /// Updates the signature field in the `Manifest`.
+    pub fn update_signature(&mut self, signature: Signature) -> Result<()> {
+        let manifest = self.borrow_manifest_mut()?;
+
+        // Convert to a `ManifestSpec` so we can supply the signature as a `BigInt`.
+        let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
+        manifest_def.update_signature(ManifestRsaBuffer::from_le_bytes(signature.to_le_bytes())?);
+        *manifest = manifest_def.try_into()?;
+        Ok(())
+    }
+
+    /// Updates the modulus field in the `Manifest`.
+    pub fn update_modulus(&mut self, modulus: Modulus) -> Result<()> {
+        let manifest = self.borrow_manifest_mut()?;
+
+        // Convert to a `ManifestSpec` so we can supply the modulus as a `BigInt`.
+        let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
+        manifest_def.update_modulus(ManifestRsaBuffer::from_le_bytes(modulus.to_le_bytes())?);
         *manifest = manifest_def.try_into()?;
         Ok(())
     }
@@ -115,10 +138,8 @@ impl Image {
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
-    pub fn compute_digest(&self) -> Vec<u8> {
-        let mut hasher = Sha256::new();
-        hasher.update(&self.data.bytes[offset_of!(Manifest, usage_constraints)..self.size]);
-        hasher.finalize().to_vec()
+    pub fn compute_digest(&self) -> sha256::Sha256Digest {
+        sha256::sha256(&self.data.bytes[offset_of!(Manifest, usage_constraints)..self.size])
     }
 }
 

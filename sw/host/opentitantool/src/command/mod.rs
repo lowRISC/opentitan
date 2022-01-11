@@ -10,6 +10,7 @@ pub mod hello;
 pub mod i2c;
 pub mod image;
 pub mod load_bitstream;
+pub mod rsa;
 pub mod set_pll;
 pub mod spi;
 pub mod version;

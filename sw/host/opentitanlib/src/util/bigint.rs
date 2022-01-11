@@ -116,12 +116,14 @@ impl<const BIT_LEN: usize, const EXACT_LEN: bool> fmt::Display
 /// Helper macro for the `fixed_size_bigint` macro.
 macro_rules! fixed_size_bigint_impl {
     ($struct_name:ident, $bit_len:expr, $exact_len:expr) => {
-        #[derive(Debug, Clone, Eq, PartialEq)]
+        #[derive(serde::Serialize, Debug, Clone, Eq, PartialEq)]
+        #[serde(into = "String")]
         pub struct $struct_name($crate::util::bigint::FixedSizeBigInt<$bit_len, $exact_len>);
 
         const _: () = {
             use num_bigint_dig::BigUint;
             use std::fmt;
+            use std::result::Result;
 
             use $crate::util::bigint::{FixedSizeBigInt, ParseBigIntError};
             use $crate::util::parse_int::ParseInt;
@@ -151,7 +153,7 @@ macro_rules! fixed_size_bigint_impl {
                     self.0.to_be_bytes()
                 }
 
-                pub(crate) fn as_biguint(&self) -> &BigUint {
+                pub fn as_biguint(&self) -> &BigUint {
                     self.0.as_biguint()
                 }
             }
@@ -169,6 +171,12 @@ macro_rules! fixed_size_bigint_impl {
             impl fmt::Display for $struct_name {
                 fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
                     fmt::Display::fmt(&self.0, f)
+                }
+            }
+
+            impl From<$struct_name> for String {
+                fn from(s: $struct_name) -> String {
+                    s.0.to_string()
                 }
             }
         };

@@ -1214,15 +1214,6 @@ def raze_fetch_remote_crates():
     )
 
     maybe(
-        new_git_repository,
-        name = "raze__safe_ftdi__0_3_0",
-        remote = "https://github.com/cr1901/safe-ftdi",
-        commit = "2e6ff2b77cee8c0d7c04dcdb0dea678edbd8d56f",
-        build_file = Label("//third_party/rust/crates/remote:BUILD.safe-ftdi-0.3.0.bazel"),
-        init_submodules = True,
-    )
-
-    maybe(
         http_archive,
         name = "raze__semver__0_9_0",
         url = "https://crates.io/api/v1/crates/semver/0.9.0/download",

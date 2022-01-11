@@ -23,23 +23,23 @@ pub enum ManifestError {
     MissingField(&'static str),
 }
 
-fixed_size_bigint!(ManifestRsa, at_most 3072);
+fixed_size_bigint!(ManifestRsaBuffer, at_most 3072);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
-struct ManifestBigInt(Option<HexEncoded<ManifestRsa>>);
+struct ManifestBigInt(Option<HexEncoded<ManifestRsaBuffer>>);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
-struct ManifestSmallInt<T: ParseInt + fmt::UpperHex>(Option<HexEncoded<T>>);
+struct ManifestSmallInt<T: ParseInt + fmt::LowerHex>(Option<HexEncoded<T>>);
 
-impl fmt::UpperHex for ManifestRsa {
+impl fmt::LowerHex for ManifestRsaBuffer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        fmt::UpperHex::fmt(&self.as_biguint(), f)
+        fmt::LowerHex::fmt(&self.as_biguint(), f)
     }
 }
 
 /// A macro for wrapping manifest struct definitions that parse from HJSON.
 ///
-/// The #[repr(C)] version of `Manifest` can only be built when the fields in `ManifestDef` are
+/// The #[repr(C)] version of `Manifest` can only be built when the fields in `ManifestSpec` are
 /// present. This macro sets up the field by field conversion and provides the field names for
 /// purposes of error reporting.
 macro_rules! manifest_def {
@@ -93,13 +93,29 @@ macro_rules! manifest_def {
     }
 }
 
-impl ManifestDef {
-    pub fn read_from_file(path: &Path) -> Result<ManifestDef> {
+impl ManifestSpec {
+    pub fn read_from_file(path: &Path) -> Result<ManifestSpec> {
         Ok(deser_hjson::from_str(&std::fs::read_to_string(path)?)?)
     }
 
-    pub fn overwrite_fields(&mut self, other: ManifestDef) {
+    pub fn overwrite_fields(&mut self, other: ManifestSpec) {
         self.overwrite(other)
+    }
+
+    pub fn update_signature(&mut self, signature: ManifestRsaBuffer) {
+        self.signature.0 = Some(HexEncoded(signature))
+    }
+
+    pub fn update_modulus(&mut self, modulus: ManifestRsaBuffer) {
+        self.modulus.0 = Some(HexEncoded(modulus))
+    }
+
+    pub fn signature(&self) -> Option<&ManifestRsaBuffer> {
+        self.signature.0.as_ref().map(|v| &v.0)
+    }
+
+    pub fn modulus(&self) -> Option<&ManifestRsaBuffer> {
+        self.modulus.0.as_ref().map(|v| &v.0)
     }
 }
 
@@ -116,8 +132,8 @@ trait ManifestPacked<T> {
     fn overwrite(&mut self, o: Self);
 }
 
-impl ManifestPacked<ManifestRsa> for ManifestBigInt {
-    fn unpack(self, name: &'static str) -> Result<ManifestRsa> {
+impl ManifestPacked<ManifestRsaBuffer> for ManifestBigInt {
+    fn unpack(self, name: &'static str) -> Result<ManifestRsaBuffer> {
         match self.0 {
             Some(v) => Ok(v.0),
             None => self.unpack_err(name),
@@ -131,7 +147,7 @@ impl ManifestPacked<ManifestRsa> for ManifestBigInt {
     }
 }
 
-impl<T: ParseInt + fmt::UpperHex> ManifestPacked<T> for ManifestSmallInt<T> {
+impl<T: ParseInt + fmt::LowerHex> ManifestPacked<T> for ManifestSmallInt<T> {
     fn unpack(self, name: &'static str) -> Result<T> {
         match self.0 {
             Some(v) => Ok(v.0),
@@ -146,7 +162,7 @@ impl<T: ParseInt + fmt::UpperHex> ManifestPacked<T> for ManifestSmallInt<T> {
     }
 }
 
-impl<T: ParseInt + fmt::UpperHex, const N: usize> ManifestPacked<[T; N]>
+impl<T: ParseInt + fmt::LowerHex, const N: usize> ManifestPacked<[T; N]>
     for [ManifestSmallInt<T>; N]
 {
     fn unpack(self, name: &'static str) -> Result<[T; N]> {
@@ -169,7 +185,7 @@ impl<T: ParseInt + fmt::UpperHex, const N: usize> ManifestPacked<[T; N]>
 }
 
 manifest_def! {
-    pub struct ManifestDef {
+    pub struct ManifestSpec {
         signature: ManifestBigInt,
         usage_constraints: ManifestUsageConstraintsDef,
         modulus: ManifestBigInt,
@@ -198,27 +214,39 @@ manifest_def! {
     }, ManifestUsageConstraints
 }
 
-impl TryFrom<ManifestRsa> for SigverifyRsaBuffer {
+impl TryFrom<ManifestRsaBuffer> for SigverifyRsaBuffer {
     type Error = anyhow::Error;
 
-    fn try_from(rsa: ManifestRsa) -> Result<SigverifyRsaBuffer> {
-        if rsa.eq(&ManifestRsa::from_le_bytes([0])?) {
+    fn try_from(rsa: ManifestRsaBuffer) -> Result<SigverifyRsaBuffer> {
+        if rsa.eq(&ManifestRsaBuffer::from_le_bytes([0])?) {
             // In the case where the BigInt fields are defined but == 0 we should just keep it 0.
             // Without this the conversion to [u32; 96] would fail.
-            Ok(SigverifyRsaBuffer { data: [0; 96] })
+            Ok(SigverifyRsaBuffer {
+                data: le_slice_to_arr(&[0]),
+            })
         } else {
             // Convert between the BigInt byte representation and the manifest word representation.
             Ok(SigverifyRsaBuffer {
-                data: rsa
-                    .to_le_bytes()
-                    .chunks(4)
-                    .map(|v| Ok(u32::from_le_bytes(v.try_into()?)))
-                    .collect::<Result<Vec<u32>>>()?
-                    .as_slice()
-                    .try_into()?,
+                data: le_slice_to_arr(
+                    rsa.to_le_bytes()
+                        .chunks(4)
+                        .map(|v| Ok(u32::from_le_bytes(le_slice_to_arr(v))))
+                        .collect::<Result<Vec<u32>>>()?
+                        .as_slice(),
+                ),
             })
         }
     }
+}
+
+/// Takes a slice with LE element ordering and pads the MSBs with 0 to produce a fixed length array
+///
+/// This is similar to using `try_into()` but does not have the requirement that the slice has
+/// exactly the correct length.
+fn le_slice_to_arr<T: Default + Copy, const N: usize>(slice: &[T]) -> [T; N] {
+    let mut arr = [T::default(); N];
+    arr[..slice.len()].copy_from_slice(slice);
+    arr
 }
 
 impl TryFrom<[u32; 96]> for SigverifyRsaBuffer {
@@ -257,14 +285,14 @@ impl TryFrom<&SigverifyRsaBuffer> for ManifestBigInt {
     type Error = anyhow::Error;
 
     fn try_from(o: &SigverifyRsaBuffer) -> Result<ManifestBigInt> {
-        let rsa = ManifestRsa::from_le_bytes(o.data.as_bytes())?;
+        let rsa = ManifestRsaBuffer::from_le_bytes(o.data.as_bytes())?;
         Ok(ManifestBigInt(Some(HexEncoded(rsa))))
     }
 }
 
 impl<T> From<&T> for ManifestSmallInt<T>
 where
-    T: ParseInt + fmt::UpperHex + Copy,
+    T: ParseInt + fmt::LowerHex + Copy,
 {
     fn from(o: &T) -> ManifestSmallInt<T> {
         ManifestSmallInt(Some(HexEncoded(*o)))
@@ -291,7 +319,7 @@ mod tests {
 
     #[test]
     fn test_manifest_from_hjson() {
-        let def: ManifestDef =
+        let def: ManifestSpec =
             from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
 
         let _: Manifest = def.try_into().unwrap();
@@ -299,7 +327,7 @@ mod tests {
 
     #[test]
     fn test_manifest_from_hjson_missing() {
-        let def: ManifestDef =
+        let def: ManifestSpec =
             from_str(&std::fs::read_to_string(testdata!("manifest_missing.hjson")).unwrap())
                 .unwrap();
 
@@ -309,9 +337,9 @@ mod tests {
 
     #[test]
     fn test_manifest_overwrite() {
-        let mut base: ManifestDef =
+        let mut base: ManifestSpec =
             from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
-        let other = ManifestDef {
+        let other = ManifestSpec {
             identifier: from_str("0xabcd").unwrap(),
             binding_value: from_str(stringify!(["0", "1", "2", "3", "4", "5", "6", "7"])).unwrap(),
             ..Default::default()
@@ -329,14 +357,14 @@ mod tests {
 
     #[test]
     fn test_manifest_convert() {
-        let def1: ManifestDef =
+        let def1: ManifestSpec =
             from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
         let def2 = def1.clone();
 
         let bin1: Manifest = def1.try_into().unwrap();
         let bin2: Manifest = def2.try_into().unwrap();
 
-        let redef: ManifestDef = (&bin1).try_into().unwrap();
+        let redef: ManifestSpec = (&bin1).try_into().unwrap();
         let rebin: Manifest = redef.try_into().unwrap();
         assert_eq!(bin2.as_bytes(), rebin.as_bytes());
     }

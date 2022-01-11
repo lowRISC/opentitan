@@ -33,6 +33,7 @@ enum RootCommandHierarchy {
     SetPll(command::set_pll::SetPll),
     LoadBitstream(command::load_bitstream::LoadBitstream),
     NoOp(command::NoOp),
+    Rsa(command::rsa::Rsa),
     Spi(command::spi::SpiCommand),
     Version(command::version::Version),
 

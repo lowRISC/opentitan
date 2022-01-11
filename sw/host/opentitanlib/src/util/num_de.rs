@@ -164,10 +164,10 @@ where
 #[derive(Clone, Deserialize, Debug)]
 pub struct HexEncoded<T>(#[serde(deserialize_with = "deserialize")] pub T)
 where
-    T: ParseInt + fmt::UpperHex;
+    T: ParseInt + fmt::LowerHex;
 
 macro_rules! impl_parse_int_enc {
-    ($ty:ident, $radix:expr, $fmt:path) => {
+    ($ty:ident, $radix:expr, $fmt:path, $prefix:expr) => {
         impl<T: ParseInt + $fmt> std::ops::Deref for $ty<T> {
             type Target = T;
 
@@ -190,6 +190,7 @@ macro_rules! impl_parse_int_enc {
 
         impl<T: ParseInt + $fmt> fmt::Display for $ty<T> {
             fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+                write!(f, "{}", $prefix)?;
                 <_ as $fmt>::fmt(&self.0, f)
             }
         }
@@ -205,9 +206,9 @@ macro_rules! impl_parse_int_enc {
     };
 }
 
-impl_parse_int_enc!(OctEncoded, 8, fmt::Octal);
-impl_parse_int_enc!(DecEncoded, 10, fmt::Display);
-impl_parse_int_enc!(HexEncoded, 16, fmt::UpperHex);
+impl_parse_int_enc!(OctEncoded, 8, fmt::Octal, "0o");
+impl_parse_int_enc!(DecEncoded, 10, fmt::Display, "");
+impl_parse_int_enc!(HexEncoded, 16, fmt::LowerHex, "0x");
 
 #[cfg(test)]
 mod test {
