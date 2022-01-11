@@ -697,13 +697,15 @@ module chip_${top["name"]}_${target["name"]} (
   // external clock comes in at a fixed position
   assign ext_clk = mio_in_raw[MioPadIoc6];
 
-  assign pad2ast = { manual_in_ast_misc,
-                     mio_in_raw[MioPadIoc3],
-                     mio_in_raw[MioPadIob8],
-                     mio_in_raw[MioPadIob7],
-                     mio_in_raw[MioPadIob2],
-                     mio_in_raw[MioPadIob1],
-                     mio_in_raw[MioPadIob0]
+  assign pad2ast = { manual_in_ast_misc,      // Bond
+                     mio_in_raw[MioPadIoc3],  // 7 or is96M
+                     mio_in_raw[MioPadIob8],  // 6
+                     mio_in_raw[MioPadIob7],  // 5
+                     mio_in_raw[MioPadIob2],  // 4
+                     mio_in_raw[MioPadIob1],  // 3
+                     mio_in_raw[MioPadIob0],  // 2
+                     mio_in_raw[MioPadIoa5],  // 1
+                     mio_in_raw[MioPadIoa4]   // 0
                    };
 
   // AST does not use all clocks / resets forwarded to it
@@ -767,8 +769,6 @@ module chip_${top["name"]}_${target["name"]} (
     .adc_a1_ai             ( CC2 ),
 
     // Direct short to PAD
-    .pad2ast_t0_ai         ( IOA4 ),
-    .pad2ast_t1_ai         ( IOA5 ),
     .ast2pad_t0_ao         ( IOA2 ),
     .ast2pad_t1_ao         ( IOA3 ),
 % else:
@@ -786,8 +786,6 @@ module chip_${top["name"]}_${target["name"]} (
     .adc_a1_ai             ( '0 ),
 
     // Direct short to PAD
-    .pad2ast_t0_ai         ( '0 ),
-    .pad2ast_t1_ai         ( '0 ),
     .ast2pad_t0_ao         (  ),
     .ast2pad_t1_ao         (  ),
 
@@ -867,6 +865,10 @@ module chip_${top["name"]}_${target["name"]} (
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( dft_en           ),
+    .fla_obs_i             ( '0 ),
+    .otp_obs_i             ( '0 ),
+    .otm_obs_i             ( '0 ),
+    .obs_cnt_o             (  ),
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),

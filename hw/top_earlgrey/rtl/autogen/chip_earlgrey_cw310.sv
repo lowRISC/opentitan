@@ -939,8 +939,6 @@ module chip_earlgrey_cw310 #(
     .adc_a1_ai             ( '0 ),
 
     // Direct short to PAD
-    .pad2ast_t0_ai         ( '0 ),
-    .pad2ast_t1_ai         ( '0 ),
     .ast2pad_t0_ao         (  ),
     .ast2pad_t1_ao         (  ),
 
@@ -1025,6 +1023,10 @@ module chip_earlgrey_cw310 #(
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( dft_en           ),
+    .fla_obs_i             ( '0 ),
+    .otp_obs_i             ( '0 ),
+    .otm_obs_i             ( '0 ),
+    .obs_cnt_o             (  ),
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
