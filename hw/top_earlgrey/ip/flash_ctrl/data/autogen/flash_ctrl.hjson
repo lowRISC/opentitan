@@ -363,6 +363,9 @@
               Initializes the flash controller.
               During the initialization process, the flash controller reads out the root seeds
               before allowing other usage of the flash controller.
+
+              When the initialization sequence is complete, the flash read buffers are enabled
+              and turned on.
               '''
             resval: "0"
             tags: [// Dont init flash, it has several side effects on the status bits
