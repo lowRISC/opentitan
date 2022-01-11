@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{anyhow, bail, ensure, Result};
 use erased_serde::Serialize;
 use std::any::Any;
 use std::convert::TryInto;
@@ -14,8 +14,10 @@ use structopt::StructOpt;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 
+use opentitanlib::crypto::rsa::{Modulus, RsaPrivateKey, RsaPublicKey, Signature};
+use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::image::image::{self, ImageAssembler};
-use opentitanlib::image::manifest_def::ManifestDef;
+use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::util::parse_int::ParseInt;
 
 /// Bootstrap the target device.
@@ -80,7 +82,7 @@ impl CommandDispatch for ManifestShowCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         let image = image::Image::read_from_file(&self.image)?;
-        let manifest_def: ManifestDef = image.borrow_manifest()?.try_into()?;
+        let manifest_def: ManifestSpec = image.borrow_manifest()?.try_into()?;
         Ok(Some(Box::new(manifest_def)))
     }
 }
@@ -101,6 +103,12 @@ pub struct ManifestUpdateCommand {
     #[structopt(
         short,
         long,
+        help = "Filename for the key file corresponding to the signature"
+    )]
+    key_file: Option<PathBuf>,
+    #[structopt(
+        short,
+        long,
         help = "Filename to write the output to instead of updating the input file"
     )]
     output: Option<PathBuf>,
@@ -115,11 +123,25 @@ impl CommandDispatch for ManifestUpdateCommand {
         let mut image = image::Image::read_from_file(&self.image)?;
 
         if let Some(hjson) = &self.hjson_file {
-            let def = ManifestDef::read_from_file(&hjson)?;
+            let def = ManifestSpec::read_from_file(&hjson)?;
             image.overwrite_manifest(def)?;
         }
 
-        // TODO: Add signature update.
+        if let Some(key_file) = &self.key_file {
+            let key = match RsaPublicKey::from_pkcs1_der_file(key_file) {
+                Ok(key) => Ok(key),
+                Err(_) => match RsaPrivateKey::from_pkcs8_der_file(key_file) {
+                    Ok(key) => Ok(RsaPublicKey::from_private_key(&key)),
+                    Err(e) => Err(e),
+                },
+            }?;
+            image.update_modulus(key.modulus())?;
+        }
+
+        if let Some(signature_file) = &self.signature_file {
+            let signature = Signature::read_from_file(signature_file)?;
+            image.update_signature(signature)?;
+        }
 
         image.write_to_file(&self.output.as_ref().unwrap_or(&self.image))?;
 
@@ -140,6 +162,14 @@ impl CommandDispatch for ManifestVerifyCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
+        let image = image::Image::read_from_file(&self.image)?;
+        let manifest: ManifestSpec = image.borrow_manifest()?.try_into()?;
+        let modulus = manifest.modulus().ok_or(anyhow!("Invalid modulus"))?;
+        let signature = manifest.signature().ok_or(anyhow!("Invalid signature"))?;
+        let digest = Sha256Digest::from_le_bytes(image.compute_digest().to_le_bytes())?;
+        let key = RsaPublicKey::new(Modulus::from_le_bytes(modulus.to_le_bytes())?)?;
+        let signature = Signature::from_le_bytes(signature.to_le_bytes())?;
+        key.verify(&digest, &signature)?;
         Ok(None)
     }
 }
@@ -172,11 +202,48 @@ impl CommandDispatch for DigestCommand {
         let digest = image.compute_digest();
         if let Some(bin) = &self.bin {
             let mut file = File::create(bin)?;
-            file.write(&digest)?;
+            file.write(&digest.to_le_bytes())?;
         }
         Ok(Some(Box::new(DigestResponse {
-            digest: format!("{}", hex::encode(&digest)),
+            digest: format!("0x{}", hex::encode(&digest.to_be_bytes())),
         })))
+    }
+}
+
+/// Sign the image.
+#[derive(Debug, StructOpt)]
+pub struct SignCommand {
+    #[structopt(name = "IMAGE", help = "Filename for the image to sign")]
+    image: PathBuf,
+    #[structopt(
+        name = "PRIVATE_KEY",
+        help = "Filename for the PKCS8 encoded private key to sign with"
+    )]
+    private_key: PathBuf,
+    #[structopt(
+        short,
+        long,
+        help = "Filename to write the output to instead of updating the input file"
+    )]
+    output: Option<PathBuf>,
+}
+
+impl CommandDispatch for SignCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Serialize>>> {
+        let mut image = image::Image::read_from_file(&self.image)?;
+        let private_key = RsaPrivateKey::from_pkcs8_der_file(&self.private_key)?;
+        let modulus = RsaPublicKey::from_private_key(&private_key).modulus();
+
+        // Update the modulus first, then sign since the modulus resides in the signed region.
+        image.update_modulus(modulus)?;
+
+        image.update_signature(private_key.sign(&image.compute_digest())?)?;
+        image.write_to_file(&self.output.as_ref().unwrap_or(&self.image))?;
+        Ok(None)
     }
 }
 
@@ -194,4 +261,5 @@ pub enum Image {
     Assemble(AssembleCommand),
     Manifest(ManifestCommand),
     Digest(DigestCommand),
+    Sign(SignCommand),
 }
