@@ -7,6 +7,7 @@
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   testpoints: [
     {
@@ -30,20 +31,20 @@
       tests: ["aon_timer_smoke"]
     }
     {
-      name: wdog_lock
+      name: prescaler
       desc: '''
-            Change threshold value and set counter value randomly while running with the
-            configuration lock for watchdog timer enabled
+            Switch prescaler value at random times without locking configuration registers
+            of watchdog timer.
 
             **Stimulus**:
-            - Register writes to WDOG_CTRL, WDOG_REGWEN, WDOG_BARK_THOLD, WDOG_BITE_THOLD
+            - Register writes to WKUP_CTRL while running.
 
             **Checks**:
-            - There should be no change in the behaviour of AON Timer since configurations
-            are locked.
+            - WKUP_COUNT should reflect expected -and changed- passing of real time 
+            regardless of its changing prescaler value.
             '''
-      milestone: V1
-      tests: ["aon_timer_lock"]
+      milestone: V2
+      tests: ["aon_timer_prescaler"]
     }
     {
       name: stress
@@ -66,6 +67,18 @@
             '''
       milestone: V2
       tests: ["aon_timer_stress"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: timer_cfg_cg
+      desc: '''
+        Includes possible values of all registers of AON timer. For 32b registers, bins are
+        introduced in order to simplfy coverage. Maximum and minimum values are collected in
+        a seperate bin to guarantee that they are checked. 32 separate bins are auto-generated 
+        in order to distrubute values evenly.
+      '''
     }
   ]
 }
