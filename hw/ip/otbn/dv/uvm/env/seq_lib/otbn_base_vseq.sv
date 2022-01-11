@@ -184,13 +184,19 @@ class otbn_base_vseq extends cip_base_vseq #(
       end
     join
 
-    // Post-run checks
-    //
-    // The CSR operations above short-circuit and exit immediately if the reset line goes low. If
-    // that happens, we don't want to run the checks (since the run didn't finish properly). Also
-    // disable the end-address check if the sideload key is allowed to be absent, because that might
+    // The wait for OTBN to finish short-circuits and exits immediately if the reset line goes low.
+    // If that happens, we don't want to run any further checks (since the run didn't finish
+    // properly).
+    if (cfg.under_reset) begin
+      running_ = 1'b0;
+      return;
+    end
+
+    // Post-run checks ///////
+
+    // Disable the end-address check if the sideload key is allowed to be absent, because that might
     // mean a read from the key sideload WSR will fail unpredictably.
-    if (!cfg.under_reset && check_end_addr && !absent_key_allowed) begin
+    if (check_end_addr && !absent_key_allowed) begin
       // If there was an expected end address, compare it with the model. This isn't really a test of
       // the RTL, but it's handy to make sure that the RIG really is generating the control flow that
       // it expects.
@@ -199,6 +205,23 @@ class otbn_base_vseq extends cip_base_vseq #(
         `DV_CHECK_EQ_FATAL(exp_end_addr, cfg.model_agent_cfg.vif.stop_pc)
       end
     end
+
+    // If OTBN stopped with an error then it should trigger a recoverable or fatal alert. The
+    // scoreboard is already checking that this goes out properly, but we don't want to follow up
+    // with another execution before that happens. The problem is that the alert system sometimes
+    // takes a while to actually send the alert and the second operation might also generate an
+    // alert in the meantime, causing great confusion!
+    //
+    // It's a bit awkward to track whether there's a pending alert (because in the worst case, it
+    // might have gone out before the status change at the end of the operation) and we're already
+    // handling that logic in the scoreboard, so we can just wait here until the scoreboard's "I'm
+    // waiting for an alert" flags have been cleared. If this was a recoverable alert, we then wait
+    // until the handshake is done (because we can't send a new alert until that finishes).
+    while (cfg.scoreboard.fatal_alert_expected || cfg.scoreboard.recov_alert_expected) begin
+      @(posedge cfg.clk_rst_vif.clk or negedge cfg.clk_rst_vif.rst_n);
+      if (!cfg.clk_rst_vif.rst_n) break;
+    end
+    cfg.m_alert_agent_cfg["recov"].vif.wait_ack_complete();
 
     running_ = 1'b0;
   endtask
