@@ -70,8 +70,12 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   bit          recov_alert_seen  = 1'b0;
 
   // Flags saying that we expect alerts. These might be set (slightly) after an alert comes in and
-  // that's ok. We'll marry up the flags and the alerts themselves in the check phase.
+  // that's ok. We'll marry up the flags and the alerts themselves in the check phase. The
+  // *_alert_expected bits get cleared when we see the expected alert. The fatal_alert_allowed bit
+  // gets set at the same time as fatal_alert_expected but is not cleared: this represents the fact
+  // that fatal alerts are sent continuously.
   bit fatal_alert_expected = 1'b0;
+  bit fatal_alert_allowed  = 1'b0;
   bit recov_alert_expected = 1'b0;
 
   // A counter giving how many "alert wait counters" are currently running. The scoreboard should
@@ -117,8 +121,8 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
     // Clear all alert counters and flags
     fatal_alert_count = 0;
-    recov_alert_expected = 1'b0;
     fatal_alert_expected = 1'b0;
+    fatal_alert_allowed  = 1'b0;
     recov_alert_expected = 1'b0;
   endfunction
 
@@ -456,7 +460,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     if (alert_name == "fatal") begin
       // If this is a fatal alert, check the counter is positive (otherwise something has gone really
       // wrong), but leave it unchanged.
-      `DV_CHECK_FATAL((fatal_alert_count > 0) && fatal_alert_expected)
+      `DV_CHECK_FATAL((fatal_alert_count > 0) && fatal_alert_allowed)
     end else begin
       // Otherwise this was a recoverable alert. Check that the seen flag is set (this should have
       // happened just before we were originally called) and then wait a cycle of the other clock
@@ -500,6 +504,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       // If this was a fatal alert then check the counter is positive and that the expected flag is
       // set (but don't clear it).
       `DV_CHECK_FATAL((fatal_alert_count > 0) && fatal_alert_expected)
+      fatal_alert_expected = 1'b0;
     end else begin
       // Otherwise this was a recoverable alert. Check that the expected flag is set and then wait a
       // cycle of the other clock before clearing it (to allow the wait_for_expected_alert() task
@@ -542,6 +547,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
     if (alert_name == "fatal") begin
       fatal_alert_expected = 1'b1;
+      fatal_alert_allowed  = 1'b1;
     end else if (alert_name == "recov") begin
       // We're not supposed to see an event that expects a second recoverable alert while we're
       // still waiting for the previous one to arrive. If that happens then recov_alert_expected
