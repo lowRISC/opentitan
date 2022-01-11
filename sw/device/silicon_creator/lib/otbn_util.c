@@ -24,10 +24,25 @@ void otbn_init(otbn_t *ctx) {
 
 otbn_error_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
                                         uint32_t *dmem_addr_otbn) {
-  if (ptr < ctx->app.dmem_start || ptr > ctx->app.dmem_end) {
+  uintptr_t ptr_addr = (uintptr_t)ptr;
+  uintptr_t app_dmem_data_start_addr = (uintptr_t)ctx->app.dmem_data_start;
+  uintptr_t app_dmem_data_end_addr = (uintptr_t)ctx->app.dmem_data_end;
+  uintptr_t app_dmem_bss_start_addr = (uintptr_t)ctx->app.dmem_bss_start;
+  uintptr_t app_dmem_bss_end_addr = (uintptr_t)ctx->app.dmem_bss_end;
+  uintptr_t app_dmem_bss_offset = (uintptr_t)ctx->app.dmem_bss_offset;
+
+  if (app_dmem_data_start_addr <= ptr_addr &&
+      ptr_addr < app_dmem_data_end_addr) {
+    // Pointer is in the `data` section, which is at the start of DMEM
+    *dmem_addr_otbn = ptr_addr - app_dmem_data_start_addr;
+  } else if (app_dmem_bss_start_addr <= ptr_addr &&
+             ptr_addr < app_dmem_bss_end_addr) {
+    // Pointer is in the `bss` section, which is after the data section in DMEM
+    *dmem_addr_otbn = ptr_addr - app_dmem_bss_start_addr + app_dmem_bss_offset;
+  } else {
+    // Pointer is not in a valid DMEM region
     return kOtbnErrorInvalidArgument;
   }
-  *dmem_addr_otbn = (uintptr_t)ptr - (uintptr_t)ctx->app.dmem_start;
   return kOtbnErrorOk;
 }
 
@@ -44,21 +59,52 @@ otbn_error_t otbn_busy_wait_for_done(otbn_t *ctx) {
   return kOtbnErrorOk;
 }
 
+/**
+ * Checks if the OTBN application's IMEM and DMEM address parameters are valid.
+ *
+ * IMEM and DMEM ranges must not be "backwards" in memory, with the end address
+ * coming before the start address, and the IMEM range must additionally be
+ * non-empty. Finally, separate sections in DMEM must not overlap each other
+ * when converted to DMEM address space.
+ *
+ * @param app the OTBN application to check
+ * @return true if the addresses are valid, otherwise false.
+ */
+bool check_app_address_ranges(const otbn_app_t *app) {
+  // IMEM must have a strictly positive range (cannot be backwards or empty)
+  if (app->imem_end <= app->imem_start) {
+    return false;
+  }
+  // Both DMEM sections must not be backwards
+  if (app->dmem_data_end < app->dmem_data_start ||
+      app->dmem_bss_end < app->dmem_bss_start) {
+    return false;
+  }
+  // The offset of BSS in DMEM address space must be at least as large as the
+  // data section (i.e. the sections do not overlap in DMEM)
+  if (app->dmem_bss_offset <
+      (uintptr_t)app->dmem_data_end - (uintptr_t)app->dmem_data_start) {
+    return false;
+  }
+  return true;
+}
+
 otbn_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
-  if (app.imem_end <= app.imem_start || app.dmem_end < app.dmem_start) {
+  if (!check_app_address_ranges(&app)) {
     return kOtbnErrorInvalidArgument;
   }
 
   const size_t imem_num_words = app.imem_end - app.imem_start;
-  const size_t dmem_num_words = app.dmem_end - app.dmem_start;
+  const size_t data_num_words = app.dmem_data_end - app.dmem_data_start;
 
   ctx->app_is_loaded = false;
 
   OTBN_RETURN_IF_ERROR(otbn_imem_write(0, app.imem_start, imem_num_words));
 
   otbn_zero_dmem();
-  if (dmem_num_words > 0) {
-    OTBN_RETURN_IF_ERROR(otbn_dmem_write(0, app.dmem_start, dmem_num_words));
+  if (data_num_words > 0) {
+    OTBN_RETURN_IF_ERROR(
+        otbn_dmem_write(0, app.dmem_data_start, data_num_words));
   }
 
   ctx->app = app;

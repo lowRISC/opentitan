@@ -200,9 +200,12 @@ def main() -> int:
         sym_pfx = '_otbn_app_{}_'.format(app_name)
         out_embedded_obj = out_dir / (app_name + '.rv32embed.o')
         args = (['-O', 'elf32-littleriscv',
-                 '--prefix-sections=.rodata.otbn',
-                 '--set-section-flags=*=alloc,readonly',
-                 '--set-section-flags=.data=load',
+                 '--set-section-flags=*=alloc,load,readonly',
+                 '--set-section-flags=.bss=alloc,readonly',
+                 '--rename-section=.text=.rodata.otbn.text',
+                 '--rename-section=.start=.rodata.otbn.start',
+                 '--rename-section=.data=.rodata.otbn.data',
+                 '--rename-section=.bss=.bss.otbn.bss',
                  '--remove-section=.scratchpad',
                  '--prefix-symbols', sym_pfx] +
                 [out_elf,
