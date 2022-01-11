@@ -31,6 +31,28 @@ extern "C" {
   } while (false)
 
 /**
+ * Evaluate a manifestly true expression and call `shutdown_finalize` if the
+ * result is false.
+ *
+ * This macro is intended to be used along with `launder32()` to handle detected
+ * faults when implementing redundant checks, i.e. in places where the compiler
+ * could otherwise prove statically unreachable. For example:
+ * ```
+ * if (launder32(x) == 0) {
+ *   SHUTDOWN_CHECK(launder32(x) == 0);
+ * }
+ * ```
+ * See `launder32()` in `sw/device/lib/base/hardened.h` for more details.
+ * TODO(#10006): Improve this implementation.
+ */
+#define SHUTDOWN_CHECK(expr_)           \
+  do {                                  \
+    if (!(expr_)) {                     \
+      shutdown_finalize(kErrorUnknown); \
+    }                                   \
+  } while (false)
+
+/**
  * Initializes the Mask ROM shutdown infrastructure.
  *
  * Reads the shutdown policy from OTP, and initializes the alert handler.
