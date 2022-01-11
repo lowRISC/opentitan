@@ -12,7 +12,16 @@
         {
             name: smoke
             desc: '''
-            ensure basic functionality is working for at least one channel.
+            pwm_smoke tests pulse and blink mode for a single channel
+
+            Stimulus:
+              - configure the envionment for one PWM channel
+              - program the duty cycle a and b values
+              - configure  the ClkDiv and Resn
+
+            Checking:
+              - ensure pulses are generated correctly in pulse or blink mode
+
             '''
       milestone: V1
       tests: ["pwm_smoke"]
@@ -210,6 +219,12 @@
      name: clock_cg
       desc: '''
             Cover that a range of frequencies have been tested for the PWM clock including a clock that matches the TL clk.
+            '''
+    }
+    {
+     name: overwrite_conf_cg
+      desc: '''
+            Cover that a the PWM configuration cannot be altered while a channel is active
             '''
     }
   ]
