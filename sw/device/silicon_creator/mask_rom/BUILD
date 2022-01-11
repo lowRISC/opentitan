@@ -14,9 +14,11 @@ cc_library(
         "boot_policy_ptrs.h",
     ],
     deps = [
+        "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest_intf",
+        "//sw/device/silicon_creator/lib:shutdown",
     ],
 )
 
@@ -41,8 +43,10 @@ cc_test(
     defines = ["OT_OFF_TARGET_TEST"],
     deps = [
         ":mock_boot_policy_ptrs",
+        "//sw/device/lib/base",
         "//sw/device/silicon_creator/lib:mock_boot_data",
         "//sw/device/silicon_creator/lib:mock_manifest",
+        "//sw/device/silicon_creator/lib:mock_shutdown",
         "//sw/device/silicon_creator/testing:mask_rom_test",
         "@googletest//:gtest_main",
     ],
