@@ -81,6 +81,25 @@ module flash_phy_scramble import flash_phy_pkg::*; (
     end
   end
 
+  // the prim_prince valid_o is a flopped version of valid_i
+  // As a result, when op_req_i stays high due to multiple transactions
+  // in-flight, the receiving logic can misinterpret the 'ack' if we just
+  // tie it to valid_o.
+  // Add a little bit of shimming logic here to properly create the ack
+  logic cipher_valid_in_d, cipher_valid_in_q;
+  logic cipher_valid_out;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      cipher_valid_in_q <= '0;
+    end else begin
+      cipher_valid_in_q <= cipher_valid_in_d;
+    end
+  end
+
+  assign cipher_valid_in_d = op_ack_o ? '0 : op_req_i & !cipher_valid_out;
+  assign op_ack_o = cipher_valid_in_q & cipher_valid_out;
+
   prim_prince # (
     .DataWidth(DataWidth),
     .KeyWidth(KeySize),
@@ -93,12 +112,12 @@ module flash_phy_scramble import flash_phy_pkg::*; (
   ) u_cipher (
     .clk_i,
     .rst_ni,
-    .valid_i(op_req_i),
+    .valid_i(cipher_valid_in_d),
     .data_i(dec ? scrambled_data_i : plain_data_i),
     .key_i(data_key_sel ? rand_data_key_i : data_key_i),
     .dec_i(dec),
     .data_o(data),
-    .valid_o(op_ack_o)
+    .valid_o(cipher_valid_out)
   );
 
   // if decrypt, output the unscrambled data, feed input through otherwise
