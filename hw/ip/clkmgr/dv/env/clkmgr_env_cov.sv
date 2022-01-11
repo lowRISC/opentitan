@@ -64,21 +64,26 @@ endclass
 // Wrapper class for frequency measurement covergroup.
 class freq_measure_cg_wrap;
   // This covergroup collects outcomes of clock frequency measurements.
-  covergroup freq_measure_cg(string name) with function sample (bit okay, bit slow, bit fast);
+  covergroup freq_measure_cg(
+      string name
+  ) with function sample (
+      bit okay, bit slow, bit fast, bit timeout
+  );
     option.name = name;
     option.per_instance = 1;
 
     okay_cp: coverpoint okay;
     slow_cp: coverpoint slow;
     fast_cp: coverpoint fast;
+    timeout_cp: coverpoint timeout;
   endgroup
 
   function new(string name);
     freq_measure_cg = new(name);
   endfunction
 
-  function void sample (bit okay, bit slow, bit fast);
-    freq_measure_cg.sample(okay, slow, fast);
+  function void sample (bit okay, bit slow, bit fast, bit timeout);
+    freq_measure_cg.sample(okay, slow, fast, timeout);
   endfunction
 endclass
 

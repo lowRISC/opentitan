@@ -28,6 +28,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   local bit exp_alert[string];
   local bit is_fatal_alert[string];
   local int alert_chk_max_delay[string];
+  local int alert_count[string];
 
   // intg check
   bit en_d_user_intg_chk = 1;
@@ -221,12 +222,17 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (item.alert_handshake_sta == AlertReceived) begin
       under_alert_handshake[alert_name] = 1;
       on_alert(alert_name, item);
+      ++alert_count[alert_name];
     end else begin
       if (!cfg.under_reset && under_alert_handshake[alert_name] == 0) begin
         `uvm_error(`gfn, $sformatf("alert %0s is not received!", alert_name))
       end
       under_alert_handshake[alert_name] = 0;
     end
+  endfunction
+
+  virtual function int get_alert_count(string alert_name);
+    return alert_count[alert_name];
   endfunction
 
   // this task is implemented to check if expected alert is triggered within certain clock cycles

@@ -150,6 +150,109 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "controlling usb clock done", UVM_LOW)
   endtask
 
+  task disable_frequency_measurement(clk_mesr_e which);
+    `uvm_info(`gfn, $sformatf("Disabling frequency measurement for %0s", which.name), UVM_MEDIUM)
+    case (which)
+      ClkMesrIo: begin
+        csr_wr(.ptr(ral.io_measure_ctrl.en), .value(0));
+      end
+      ClkMesrIoDiv2: begin
+        csr_wr(.ptr(ral.io_div2_measure_ctrl.en), .value(0));
+      end
+      ClkMesrIoDiv4: begin
+        csr_wr(.ptr(ral.io_div4_measure_ctrl.en), .value(0));
+      end
+      ClkMesrMain: begin
+        csr_wr(.ptr(ral.main_measure_ctrl.en), .value(0));
+      end
+      ClkMesrUsb: begin
+        csr_wr(.ptr(ral.usb_measure_ctrl.en), .value(0));
+      end
+      default: ;
+    endcase
+  endtask
+
+  task enable_frequency_measurement(clk_mesr_e which, int min_threshold, int max_threshold);
+    `uvm_info(`gfn, $sformatf(
+              "Enabling frequency measurement for %0s, min=%0d, max=%0d, expected=%0d",
+              which.name,
+              min_threshold,
+              max_threshold,
+              ExpectedCounts[which]
+              ), UVM_MEDIUM)
+    case (which)
+      ClkMesrIo: begin
+        ral.io_measure_ctrl.en.set(1);
+        ral.io_measure_ctrl.min_thresh.set(min_threshold);
+        ral.io_measure_ctrl.max_thresh.set(max_threshold);
+        csr_update(.csr(ral.io_measure_ctrl));
+      end
+      ClkMesrIoDiv2: begin
+        ral.io_div2_measure_ctrl.en.set(1);
+        ral.io_div2_measure_ctrl.min_thresh.set(min_threshold);
+        ral.io_div2_measure_ctrl.max_thresh.set(max_threshold);
+        csr_update(.csr(ral.io_div2_measure_ctrl));
+      end
+      ClkMesrIoDiv4: begin
+        ral.io_div4_measure_ctrl.en.set(1);
+        ral.io_div4_measure_ctrl.min_thresh.set(min_threshold);
+        ral.io_div4_measure_ctrl.max_thresh.set(max_threshold);
+        csr_update(.csr(ral.io_div4_measure_ctrl));
+      end
+      ClkMesrMain: begin
+        ral.main_measure_ctrl.en.set(1);
+        ral.main_measure_ctrl.min_thresh.set(min_threshold);
+        ral.main_measure_ctrl.max_thresh.set(max_threshold);
+        csr_update(.csr(ral.main_measure_ctrl));
+      end
+      ClkMesrUsb: begin
+        ral.usb_measure_ctrl.en.set(1);
+        ral.usb_measure_ctrl.min_thresh.set(min_threshold);
+        ral.usb_measure_ctrl.max_thresh.set(max_threshold);
+        csr_update(.csr(ral.usb_measure_ctrl));
+      end
+      default: ;
+    endcase
+  endtask
+
+  task disturb_measured_clock(clk_mesr_e clk, bit enable);
+    case (clk)
+      ClkMesrIo, ClkMesrIoDiv2, ClkMesrIoDiv4:
+      if (enable) cfg.io_clk_rst_vif.start_clk();
+      else cfg.io_clk_rst_vif.stop_clk();
+      ClkMesrMain:
+      if (enable) cfg.main_clk_rst_vif.start_clk();
+      else cfg.main_clk_rst_vif.stop_clk();
+      ClkMesrUsb:
+      if (enable) cfg.usb_clk_rst_vif.start_clk();
+      else cfg.usb_clk_rst_vif.stop_clk();
+      default: ;
+    endcase
+  endtask
+
+  function void report_recov_error_mismatch(string error_type, recov_bits_t expected,
+                                            recov_bits_t actual);
+    recov_bits_t mismatch = actual ^ expected;
+    foreach (mismatch[clk]) begin
+      clk_mesr_e clk_mesr = clk_mesr_e'(clk);
+      if (mismatch[clk]) begin
+        `uvm_info(`gfn, $sformatf(
+                  "Mismatch %0s for %0s, expected %b, actual %b",
+                  error_type,
+                  clk_mesr.name,
+                  expected[clk],
+                  actual[clk]
+                  ), UVM_LOW)
+      end
+    end
+    `uvm_error(`gfn, $sformatf(
+               "Mismatch for %0s recoverable error, expected 0b%b, got 0x%b",
+               error_type,
+               expected,
+               actual
+               ))
+  endfunction
+
   virtual task apply_reset(string kind = "HARD");
     fork
       super.apply_reset(kind);

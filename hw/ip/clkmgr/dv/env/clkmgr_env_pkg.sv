@@ -26,17 +26,17 @@ package clkmgr_env_pkg;
   typedef virtual clk_rst_if clk_rst_vif;
 
   // parameters
-  localparam int NUM_PERI = 4;
-  localparam int NUM_TRANS = 5;
+  parameter int NUM_PERI = 4;
+  parameter int NUM_TRANS = 5;
 
   typedef logic [NUM_PERI-1:0] peri_enables_t;
   typedef logic [NUM_TRANS-1:0] hintables_t;
 
-  localparam int MainClkHz = 100_000_000;
-  localparam int IoClkHz = 96_000_000;
-  localparam int UsbClkHz = 48_000_000;
-  localparam int AonClkHz = 200_000;
-  localparam int FakeAonClkHz = 7_000_000;
+  parameter int MainClkHz = 100_000_000;
+  parameter int IoClkHz = 96_000_000;
+  parameter int UsbClkHz = 48_000_000;
+  parameter int AonClkHz = 200_000;
+  parameter int FakeAonClkHz = 7_000_000;
 
   // alerts
   parameter uint NUM_ALERTS = 2;
@@ -44,14 +44,8 @@ package clkmgr_env_pkg;
 
   // types
 
-  // These are ordered per the bits in the recov_err_code register.
-  typedef enum int {
-    ClkMesrIo,
-    ClkMesrIoDiv2,
-    ClkMesrIoDiv4,
-    ClkMesrMain,
-    ClkMesrUsb
-  } clk_mesr_e;
+  // Forward class decl to enable cfg to hold a scoreboard handle.
+  typedef class clkmgr_scoreboard;
 
   // The enum values for these match the bit order in the CSRs.
   typedef enum int {
@@ -68,12 +62,28 @@ package clkmgr_env_pkg;
     TransOtbnMain
   } trans_e;
 
-  // Forward class decl to enable cfg to hold a scoreboard handle.
-  typedef class clkmgr_scoreboard;
+  typedef struct {
+    logic valid;
+    logic slow;
+    logic fast;
+  } freq_measurement_t;
 
-  localparam int ClkInHz[ClkMesrUsb+1] = {IoClkHz, IoClkHz / 2, IoClkHz / 4, MainClkHz, UsbClkHz};
+  // These are ordered per the bits in the recov_err_code register.
+  typedef enum int {
+    ClkMesrIo,
+    ClkMesrIoDiv2,
+    ClkMesrIoDiv4,
+    ClkMesrMain,
+    ClkMesrUsb
+  } clk_mesr_e;
 
-  localparam int ExpectedCounts[ClkMesrUsb+1] = {
+  // This is to examine separately the measurement and timeout recoverable error bits.
+  typedef logic [ClkMesrUsb:0] recov_bits_t;
+
+  // These must be after the declaration of clk_mesr_e for sizing.
+  parameter int ClkInHz[ClkMesrUsb+1] = {IoClkHz, IoClkHz / 2, IoClkHz / 4, MainClkHz, UsbClkHz};
+
+  parameter int ExpectedCounts[ClkMesrUsb+1] = {
     ClkInHz[ClkMesrIo] / AonClkHz - 1,
     ClkInHz[ClkMesrIoDiv2] / AonClkHz - 1,
     ClkInHz[ClkMesrIoDiv4] / AonClkHz - 1,

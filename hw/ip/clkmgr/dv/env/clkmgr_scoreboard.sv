@@ -188,85 +188,48 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  local task sample_freq_measurement_cov(clk_mesr_e clk, ref freq_measurement_t measurement,
+                                         logic timeout);
+    if (cfg.en_cov) begin
+      cov.freq_measure_cg_wrap[clk].sample(!measurement.slow && !measurement.fast, measurement.slow,
+                                           measurement.fast, timeout);
+      `uvm_info(`gfn, $sformatf(
+                "Cov for %0s: %0s",
+                clk.name(),
+                measurement.slow ? "slow" : measurement.fast ? "fast" : "okay"
+                ), UVM_MEDIUM)
+      measurement = '{default: 0};
+    end
+  endtask
+
   task sample_freq_measurement_covs();
     fork
       forever
-        @(posedge cfg.clkmgr_vif.io_freq_measurement.valid) begin
-          if (cfg.en_cov) begin
-            cov.freq_measure_cg_wrap[ClkMesrIo].sample(
-                !cfg.clkmgr_vif.io_freq_measurement.slow &&
-                !cfg.clkmgr_vif.io_freq_measurement.fast,
-                cfg.clkmgr_vif.io_freq_measurement.slow, cfg.clkmgr_vif.io_freq_measurement.fast);
-            `uvm_info(`gfn, $sformatf(
-                      "Cov for ClkMesrIo: %0s",
-                      cfg.clkmgr_vif.io_freq_measurement.slow ? "slow" :
-                      cfg.clkmgr_vif.io_freq_measurement.fast ? "fast" : "okay"
-                      ), UVM_MEDIUM)
-            cfg.clkmgr_vif.io_freq_measurement = '{default: 0};
-          end
+        @(posedge cfg.clkmgr_vif.io_freq_measurement.valid or posedge cfg.clkmgr_vif.io_timeout_err) begin
+          sample_freq_measurement_cov(ClkMesrIo, cfg.clkmgr_vif.io_freq_measurement,
+                                      cfg.clkmgr_vif.io_timeout_err);
+        end
+
+      forever
+        @(posedge cfg.clkmgr_vif.io_div2_freq_measurement.valid or posedge cfg.clkmgr_vif.io_div2_timeout_err) begin
+          sample_freq_measurement_cov(ClkMesrIoDiv2, cfg.clkmgr_vif.io_div2_freq_measurement,
+                                      cfg.clkmgr_vif.io_div2_timeout_err);
+
         end
       forever
-        @(posedge cfg.clkmgr_vif.io_div2_freq_measurement.valid) begin
-          if (cfg.en_cov) begin
-            cov.freq_measure_cg_wrap[ClkMesrIoDiv2].sample(
-                !cfg.clkmgr_vif.io_div2_freq_measurement.slow &&
-                !cfg.clkmgr_vif.io_div2_freq_measurement.fast,
-                cfg.clkmgr_vif.io_div2_freq_measurement.slow,
-                cfg.clkmgr_vif.io_div2_freq_measurement.fast);
-            `uvm_info(`gfn, $sformatf(
-                      "Cov for ClkMesrIoDiv2: %0s",
-                      cfg.clkmgr_vif.io_div2_freq_measurement.slow ? "slow" :
-                      cfg.clkmgr_vif.io_div2_freq_measurement.fast ? "fast" : "okay"
-                      ), UVM_MEDIUM)
-            cfg.clkmgr_vif.io_div2_freq_measurement = '{default: 0};
-          end
+        @(posedge cfg.clkmgr_vif.io_div4_freq_measurement.valid or posedge cfg.clkmgr_vif.io_div4_timeout_err) begin
+          sample_freq_measurement_cov(ClkMesrIoDiv4, cfg.clkmgr_vif.io_div4_freq_measurement,
+                                      cfg.clkmgr_vif.io_div4_timeout_err);
         end
       forever
-        @(posedge cfg.clkmgr_vif.io_div4_freq_measurement.valid) begin
-          if (cfg.en_cov) begin
-            cov.freq_measure_cg_wrap[ClkMesrIoDiv4].sample(
-                !cfg.clkmgr_vif.io_div4_freq_measurement.slow &&
-                !cfg.clkmgr_vif.io_div4_freq_measurement.fast,
-                cfg.clkmgr_vif.io_div4_freq_measurement.slow,
-                cfg.clkmgr_vif.io_div4_freq_measurement.fast);
-            `uvm_info(`gfn, $sformatf(
-                      "Cov for ClkMesrIoDiv4: %0s",
-                      cfg.clkmgr_vif.io_div4_freq_measurement.slow ? "slow" :
-                      cfg.clkmgr_vif.io_div4_freq_measurement.fast ? "fast" : "okay"
-                      ), UVM_MEDIUM)
-            cfg.clkmgr_vif.io_div4_freq_measurement = '{default: 0};
-          end
+        @(posedge cfg.clkmgr_vif.main_freq_measurement.valid or posedge cfg.clkmgr_vif.main_timeout_err) begin
+          sample_freq_measurement_cov(ClkMesrMain, cfg.clkmgr_vif.main_freq_measurement,
+                                      cfg.clkmgr_vif.main_timeout_err);
         end
       forever
-        @(posedge cfg.clkmgr_vif.main_freq_measurement.valid) begin
-          if (cfg.en_cov) begin
-            cov.freq_measure_cg_wrap[ClkMesrMain].sample(
-                !cfg.clkmgr_vif.main_freq_measurement.slow &&
-                !cfg.clkmgr_vif.main_freq_measurement.fast,
-                cfg.clkmgr_vif.main_freq_measurement.slow,
-                cfg.clkmgr_vif.main_freq_measurement.fast);
-            `uvm_info(`gfn, $sformatf(
-                      "Cov for ClkMesrMain: %0s",
-                      cfg.clkmgr_vif.main_freq_measurement.slow ? "slow" :
-                      cfg.clkmgr_vif.main_freq_measurement.fast ? "fast" : "okay"
-                      ), UVM_MEDIUM)
-            cfg.clkmgr_vif.main_freq_measurement = '{default: 0};
-          end
-        end
-      forever
-        @(posedge cfg.clkmgr_vif.usb_freq_measurement.valid) begin
-          if (cfg.en_cov) begin
-            cov.freq_measure_cg_wrap[ClkMesrUsb].sample(
-                !cfg.clkmgr_vif.usb_freq_measurement.slow &&
-                !cfg.clkmgr_vif.usb_freq_measurement.fast,
-                cfg.clkmgr_vif.usb_freq_measurement.slow, cfg.clkmgr_vif.usb_freq_measurement.fast);
-            `uvm_info(`gfn, $sformatf(
-                      "Cov for ClkMesrUsb: %0s",
-                      cfg.clkmgr_vif.usb_freq_measurement.slow ? "slow" :
-                      cfg.clkmgr_vif.usb_freq_measurement.fast ? "fast" : "okay"
-                      ), UVM_MEDIUM)
-            cfg.clkmgr_vif.usb_freq_measurement = '{default: 0};
-          end
+        @(posedge cfg.clkmgr_vif.usb_freq_measurement.valid or posedge cfg.clkmgr_vif.usb_timeout_err) begin
+          sample_freq_measurement_cov(ClkMesrUsb, cfg.clkmgr_vif.usb_freq_measurement,
+                                      cfg.clkmgr_vif.usb_timeout_err);
         end
     join_none
   endtask
