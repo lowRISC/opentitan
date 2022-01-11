@@ -95,6 +95,11 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "wkup_status": begin
         do_read_check = 1'b0;  //This check is done in sequence
       end
+      "ulp_ctl", "ulp_ac_debounce_ctl", "ulp_lid_debounce_ctl", "ulp_pwrb_debounce_ctl": begin
+      end
+      "ulp_status": begin
+        do_read_check = 1'b0; // This check is done in sequence
+      end
       default: begin
        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
