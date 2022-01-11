@@ -374,5 +374,15 @@
               i.e first segment in standard mode, followed by segments in dual or quad mode
             '''
     }
+    {
+      name: passthrough_cg
+      desc: '''
+            Check that the pass through data is transmitted instead of the data in the tx fifo.
+
+            - Cover that passthrough is activated when a normal transaction is in progress.
+            - Cover that data on the passthrough interface is ignored while passthroug disabled.
+
+            '''
+    }
   ]
 }
