@@ -78,6 +78,7 @@ module rom_ctrl_compare #(
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 3
   //
+  // SEC_CM: FSM.SPARSE
   typedef enum logic [4:0] {
     Waiting  = 5'b00100,
     Checking = 5'b10010,
@@ -117,14 +118,20 @@ module rom_ctrl_compare #(
   end
 
   // start_i should only be signalled when we're in the Waiting state
+  //
+  // SEC_CM: COMPARE.CTRL_FLOW.CONSISTENCY
   logic start_alert;
   assign start_alert = start_i && (state_q != Waiting);
 
   // addr_q should be zero when we're in the Waiting state
+  //
+  // SEC_CM: COMPARE.CTR.CONSISTENCY
   logic wait_addr_alert;
   assign wait_addr_alert = (state_q == Waiting) && (addr_q != '0);
 
   // addr_q should be EndAddr when we're in the Done state
+  //
+  // SEC_CM: COMPARE.CTR.CONSISTENCY
   logic done_addr_alert;
   assign done_addr_alert = (state_q == Done) && (addr_q != EndAddr);
 

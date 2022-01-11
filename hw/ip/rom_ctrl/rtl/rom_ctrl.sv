@@ -88,6 +88,7 @@ module rom_ctrl
     // The usual situation, with scrambling enabled. Collect up output signals for kmac and split up
     // the input struct into separate signals.
 
+    // SEC_CM: MEM.DIGEST
     assign kmac_data_o = '{valid: kmac_rom_vld,
                            data: kmac_rom_data,
                            strb: '1,
@@ -137,7 +138,7 @@ module rom_ctrl
     .tl_win_o   (tl_rom_h2d_upstream),
     .tl_win_i   (tl_rom_d2h),
 
-    .intg_err_o (rom_reg_integrity_error),
+    .intg_err_o (rom_reg_integrity_error),    // SEC_CM: BUS.INTEGRITY
 
     .devmode_i  (1'b1)
   );
@@ -148,6 +149,8 @@ module rom_ctrl
   // affects bus_rom_prince_index must either affect the ECC check (causing it to fail) OR it cannot
   // affect bus_rom_rom_index (so the address-tweakable scrambling will mean the read probably gets
   // garbage).
+  //
+  // SEC_CM: CTRL.REDUN
   prim_buf #(
     .Width($bits(tlul_pkg::tl_h2d_t))
   ) u_tl_rom_h2d_buf (
@@ -231,6 +234,7 @@ module rom_ctrl
 
   if (!SecDisableScrambling) begin : gen_rom_scramble_enabled
 
+    // SEC_CM: MEM.SCRAMBLE
     rom_ctrl_scrambled_rom #(
       .MemInitFile (BootRomInitFile),
       .Width       (DataWidth),
@@ -294,7 +298,7 @@ module rom_ctrl
     .tl_o       (regs_tl_o),
     .reg2hw     (reg2hw),
     .hw2reg     (hw2reg),
-    .intg_err_o (reg_integrity_error),
+    .intg_err_o (reg_integrity_error),    // SEC_CM: BUS.INTEGRITY
     .devmode_i  (1'b1)
    );
 
