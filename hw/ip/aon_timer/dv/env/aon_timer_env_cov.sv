@@ -27,34 +27,23 @@ class aon_timer_env_cov extends cip_base_env_cov #(.CFG_T(aon_timer_env_cfg));
                                                             bit wkup_cause);
     prescale_cp: coverpoint prescale {
       bins prescale_0 = {0};
-      bins prescale_1 = {1};
-      bins prescale_2_512 = {[2:512]};
-      bins prescale_513_1024 = {[513:1024]};
-      bins prescale_1025_4096 = {[1025:4096]};
+      bins prescale[32] = {[1:$]};
+      bins prescale_max = {'1};
     }
     bark_thold_cp: coverpoint bark_thold {
       bins bark_0 = {0};
-      bins bark_1_512 = {[1:512]};
-      bins bark_513_1024 = {[513:1024]};
-      bins bark_1025_4096 = {[1025:4096]};
+      bins bark[32] = {[1:$]};
       bins bark_max = {'1};
-      bins bark_remainder = default;
     }
     bite_thold_cp: coverpoint bite_thold {
       bins bite_0 = {0};
-      bins bite_1_512 = {[1:512]};
-      bins bite_513_1024 = {[513:1024]};
-      bins bite_1025_4096 = {[1025:4096]};
+      bins bite[32] = {[1:$]};
       bins bite_max = {'1};
-      bins bite_remainder = default;
     }
     wkup_thold_cp: coverpoint wkup_thold {
       bins wkup_0 = {0};
-      bins wkup_1_512 = {[1:512]};
-      bins wkup_513_1024 = {[513:1024]};
-      bins wkup_1025_4096 = {[1025:4096]};
+      bins wkup[32] = {[1:$]};
       bins wkup_max = {'1};
-      bins wkup_remainder = default;
     }
 
     wkup_cause_cp: coverpoint wkup_cause {
