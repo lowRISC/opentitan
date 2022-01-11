@@ -17,14 +17,29 @@ const int kOtbnWlenBytes = 256 / 8;
 otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
                                          uint32_t *dmem_addr_otbn) {
   uintptr_t ptr_addr = (uintptr_t)ptr;
-  uintptr_t app_dmem_start_addr = (uintptr_t)ctx->app.dmem_start;
-  uintptr_t app_dmem_end_addr = (uintptr_t)ctx->app.dmem_end;
+  uintptr_t app_dmem_data_start_addr = (uintptr_t)ctx->app.dmem_data_start;
+  uintptr_t app_dmem_data_end_addr = (uintptr_t)ctx->app.dmem_data_end;
+  uintptr_t app_dmem_bss_start_addr = (uintptr_t)ctx->app.dmem_bss_start;
+  uintptr_t app_dmem_bss_end_addr = (uintptr_t)ctx->app.dmem_bss_end;
+  uintptr_t app_dmem_bss_offset = (uintptr_t)ctx->app.dmem_bss_offset;
 
-  if (dmem_addr_otbn == NULL || ptr == NULL || ctx == NULL ||
-      ptr_addr < app_dmem_start_addr || ptr_addr > app_dmem_end_addr) {
+  if (dmem_addr_otbn == NULL || ptr == NULL || ctx == NULL) {
     return kOtbnBadArg;
   }
-  *dmem_addr_otbn = ptr_addr - app_dmem_start_addr;
+
+  if (app_dmem_data_start_addr <= ptr_addr &&
+      ptr_addr < app_dmem_data_end_addr) {
+    // Pointer is in the data section, which is at the start of DMEM
+    *dmem_addr_otbn = ptr_addr - app_dmem_data_start_addr;
+  } else if (app_dmem_bss_start_addr <= ptr_addr &&
+             ptr_addr < app_dmem_bss_end_addr) {
+    // Pointer is in the bss section, which is after the data section
+    *dmem_addr_otbn = ptr_addr - app_dmem_bss_start_addr + app_dmem_bss_offset;
+  } else {
+    // Pointer is not in a valid DMEM region
+    return kOtbnBadArg;
+  }
+
   return kOtbnOk;
 }
 
@@ -62,16 +77,46 @@ otbn_result_t otbn_init(otbn_t *ctx, mmio_region_t base_addr) {
   return kOtbnOk;
 }
 
+/**
+ * Checks if the OTBN application's IMEM and DMEM address parameters are valid.
+ *
+ * IMEM and DMEM ranges must not be "backwards" in memory, with the end address
+ * coming before the start address, and the IMEM range must additionally be
+ * non-empty. Finally, separate sections in DMEM must not overlap each other
+ * when converted to DMEM address space.
+ *
+ * @param app the OTBN application to check
+ * @return true if the addresses are valid, otherwise false.
+ */
+bool check_app_address_ranges(const otbn_app_t *app) {
+  // IMEM must have a strictly positive range (cannot be backwards or empty)
+  if (app->imem_end <= app->imem_start) {
+    return false;
+  }
+  // Both DMEM sections must not be backwards
+  if (app->dmem_data_end < app->dmem_data_start ||
+      app->dmem_bss_end < app->dmem_bss_start) {
+    return false;
+  }
+  // The offset of BSS in DMEM address space must be at least as large as the
+  // data section (i.e. the sections do not overlap in DMEM)
+  if (app->dmem_bss_offset < app->dmem_data_end - app->dmem_data_start) {
+    return false;
+  }
+  return true;
+}
+
 otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
-  if (app.imem_end <= app.imem_start || app.dmem_end < app.dmem_start) {
+  if (!check_app_address_ranges(&app)) {
     return kOtbnBadArg;
   }
 
   const size_t imem_size = app.imem_end - app.imem_start;
-  const size_t dmem_size = app.dmem_end - app.dmem_start;
+  const size_t data_size = app.dmem_data_end - app.dmem_data_start;
 
-  // Instruction and data memory images must be multiples of 32b words.
-  if (imem_size % sizeof(uint32_t) != 0 || dmem_size % sizeof(uint32_t) != 0) {
+  // Memory images and offsets must be multiples of 32b words.
+  if (imem_size % sizeof(uint32_t) != 0 || data_size % sizeof(uint32_t) != 0 ||
+      (size_t)app.dmem_bss_offset % sizeof(uint32_t) != 0) {
     return kOtbnBadArg;
   }
 
@@ -83,9 +128,16 @@ otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
     return kOtbnError;
   }
 
-  if (dmem_size > 0) {
-    if (dif_otbn_dmem_write(&ctx->dif, 0, ctx->app.dmem_start, dmem_size) !=
-        kDifOk) {
+  // Zero all of DMEM
+  otbn_result_t err = otbn_zero_data_memory(ctx);
+  if (err != kOtbnOk) {
+    return err;
+  }
+
+  // Write initialized data
+  if (data_size > 0) {
+    if (dif_otbn_dmem_write(&ctx->dif, 0, ctx->app.dmem_data_start,
+                            data_size) != kDifOk) {
       return kOtbnError;
     }
   }

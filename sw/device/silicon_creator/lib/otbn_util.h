@@ -45,15 +45,37 @@ typedef struct otbn_app {
    */
   const uint32_t *imem_end;
   /**
-   * Start of OTBN data memory.
-   */
-  const uint32_t *dmem_start;
-  /**
-   * The first word after OTBN data memory.
+   * Start of initialized OTBN data.
    *
-   * This address satifies `dmem_len = dmem_end - dmem_start`.
+   * Data in between dmem_data_start and dmem_data_end will be copied to OTBN
+   * at app load time.
    */
-  const uint32_t *dmem_end;
+  const uint32_t *dmem_data_start;
+  /**
+   * The first word after initialized OTBN data.
+   *
+   * Should satisfy `dmem_data_start <= dmem_data_end`.
+   */
+  const uint32_t *dmem_data_end;
+  /**
+   * Start of uninitialized OTBN data memory.
+   *
+   * Data in between dmem_bss_start and dmem_bss_end will not be copied to
+   * OTBN; it will be initialized to zeroes at app load time.
+   */
+  const uint32_t *dmem_bss_start;
+  /**
+   * The first word after uninitialized OTBN data memory.
+   *
+   * Should satisfy `dmem_bss_start <= dmem_bss_end`.
+   */
+  const uint32_t *dmem_bss_end;
+  /**
+   * DMEM address at which the BSS section begins.
+   *
+   * Should satisfy `dmem_data_end - dmem_data_start <= dmem_bss_offset`.
+   */
+  uint32_t dmem_bss_offset;
 } otbn_app_t;
 
 /**
@@ -103,11 +125,14 @@ typedef struct otbn {
  * @param app_name Name of the application to load, which is typically the
  *                 name of the main (assembly) source file.
  */
-#define OTBN_DECLARE_APP_SYMBOLS(app_name)                    \
-  extern const uint32_t _otbn_app_##app_name##__imem_start[]; \
-  extern const uint32_t _otbn_app_##app_name##__imem_end[];   \
-  extern const uint32_t _otbn_app_##app_name##__dmem_start[]; \
-  extern const uint32_t _otbn_app_##app_name##__dmem_end[]
+#define OTBN_DECLARE_APP_SYMBOLS(app_name)                         \
+  extern const uint32_t _otbn_app_##app_name##__imem_start[];      \
+  extern const uint32_t _otbn_app_##app_name##__imem_end[];        \
+  extern const uint32_t _otbn_app_##app_name##__dmem_data_start[]; \
+  extern const uint32_t _otbn_app_##app_name##__dmem_data_end[];   \
+  extern const uint32_t _otbn_app_##app_name##__dmem_bss_start[];  \
+  extern const uint32_t _otbn_app_##app_name##__dmem_bss_end[];    \
+  extern const uint32_t _otbn_app_##app_name##__dmem_bss_offset[];
 
 /**
  * Initializes the OTBN application information structure.
@@ -119,12 +144,15 @@ typedef struct otbn {
  * @param app_name Name of the application to load.
  * @see OTBN_DECLARE_APP_SYMBOLS()
  */
-#define OTBN_APP_T_INIT(app_name)                       \
-  ((otbn_app_t){                                        \
-      .imem_start = _otbn_app_##app_name##__imem_start, \
-      .imem_end = _otbn_app_##app_name##__imem_end,     \
-      .dmem_start = _otbn_app_##app_name##__dmem_start, \
-      .dmem_end = _otbn_app_##app_name##__dmem_end,     \
+#define OTBN_APP_T_INIT(app_name)                                           \
+  ((otbn_app_t){                                                            \
+      .imem_start = _otbn_app_##app_name##__imem_start,                     \
+      .imem_end = _otbn_app_##app_name##__imem_end,                         \
+      .dmem_data_start = _otbn_app_##app_name##__dmem_data_start,           \
+      .dmem_data_end = _otbn_app_##app_name##__dmem_data_end,               \
+      .dmem_bss_start = _otbn_app_##app_name##__dmem_bss_start,             \
+      .dmem_bss_end = _otbn_app_##app_name##__dmem_bss_end,                 \
+      .dmem_bss_offset = (uint32_t)_otbn_app_##app_name##__dmem_bss_offset, \
   })
 
 /**

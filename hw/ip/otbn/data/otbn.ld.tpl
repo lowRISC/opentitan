@@ -48,26 +48,28 @@ SECTIONS
 
     .data ORIGIN(dmem) : ALIGN(32)
     {
-        _dmem_start = .;
-
+        _dmem_data_start = .;
         *(.data*)
-        . = ALIGN(32);
 
         /* Align section end (see note in .text section) */
         . = ALIGN(4);
 
+        _dmem_data_end = .;
     } >dmem AT>dmem_load
 
     .bss : ALIGN(32)
     {
+        _dmem_bss_start = .;
         *(.bss*)
-        . = ALIGN(32);
 
         /* Align section end (see note in .text section) */
         . = ALIGN(4);
 
-        _dmem_end = .;
+        _dmem_bss_end = .;
     } >dmem AT>dmem_load
+
+    /* This matches the offset *in DMEM* of the .bss section. */
+    _dmem_bss_offset = ADDR(.bss) - ADDR(.data);
 
     .scratchpad ORIGIN(dmem_scratch) (NOLOAD) : ALIGN(32)
     {
