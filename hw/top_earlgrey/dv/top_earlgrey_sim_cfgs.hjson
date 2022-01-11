@@ -40,6 +40,7 @@
              "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
+             "{proj_root}/hw/ip/pwm/dv/pwm_sim_cfg.hjson",
              "{proj_root}/hw/ip/pwrmgr/dv/pwrmgr_sim_cfg.hjson",
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/rstmgr/dv/rstmgr_sim_cfg.hjson",
