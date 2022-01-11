@@ -6,6 +6,7 @@
     name:               "rv_core_ibex",
     design_spec:        "../doc",
     hw_checklist:       "../doc/checklist",
+    dv_doc:             "../doc/dv",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D2",
