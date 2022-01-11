@@ -107,7 +107,7 @@ class sram_ctrl_env_cov #(parameter int AddrWidth = 10)
     access_during_key_req_cg  = new();
     key_seed_valid_cg         = new();
     lc_escalation_idle_cg     = new();
-    if (`INSTR_EXEC) executable_cg = new();
+    executable_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);

@@ -206,6 +206,7 @@
       name: executable_cg
       desc: '''
             Covers the various important scenarios that can enable SRAM executability.
+            Crosses CSR `exec`, input `lc_hw_debug_en` and input `sram_ifetch`.
             '''
     }
   ]

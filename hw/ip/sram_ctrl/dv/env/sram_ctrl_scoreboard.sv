@@ -167,16 +167,16 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     lc_ctrl_pkg::lc_tx_t hw_debug_en   = cfg.exec_vif.lc_hw_debug_en;
     prim_mubi_pkg::mubi4_t  csr_exec   = `gmv(ral.exec);
 
+    if (cfg.en_cov) begin
+      cov.executable_cg.sample(hw_debug_en,
+                               sram_ifetch,
+                               csr_exec);
+    end
     if (`INSTR_EXEC) begin
       allow_ifetch = (sram_ifetch  == prim_mubi_pkg::MuBi8True) ?
                      (csr_exec == prim_mubi_pkg::MuBi4True)     :
                      (hw_debug_en == lc_ctrl_pkg::On);
 
-      if (cfg.en_cov && `INSTR_EXEC) begin
-        cov.executable_cg.sample(hw_debug_en,
-                                 sram_ifetch,
-                                 csr_exec);
-      end
     end else begin
       allow_ifetch = 0;
     end
