@@ -162,6 +162,8 @@
           count: "8"
           swaccess: "ro"
           hwaccess: "hrw"
+          tags: [// avoid writing to CTRL, as this will cause STATUS to be modified
+                 "excl:CsrNonInitTests:CsrExclAll"]
           fields: [
             {
               bits: "31:0"
@@ -172,7 +174,6 @@
           // Disable CSR checks for digest registers, since their values will
           // change under the feet of the CSR package as the ROM checker computes
           // a digest. These values are checked instead by the rom_ctrl TB.
-          tags: ["excl:CsrAllTests:CsrExclCheck"]
         }
       }
       {
@@ -183,6 +184,8 @@
           count: "8"
           swaccess: "ro"
           hwaccess: "hrw"
+          tags: [// avoid writing to CTRL, as this will cause STATUS to be modified
+                 "excl:CsrNonInitTests:CsrExclAll"]
           fields: [
             {
               bits: "31:0"
@@ -191,7 +194,6 @@
             }
           ]
           // As with DIGEST, these values are checked by the rom_ctrl TB.
-          tags: ["excl:CsrAllTests:CsrExclCheck"]
         }
       }
     ],
