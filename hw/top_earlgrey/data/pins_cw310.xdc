@@ -98,8 +98,13 @@ set_property -dict { PACKAGE_PIN AF15  IOSTANDARD LVCMOS18 } [get_ports { IO_UPH
 set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
 set_input_delay -clock ${clks_48_unbuf} -min 3 [get_ports {IO_UPHY_DP_RX IO_UPHY_DN_RX IO_UPHY_D_RX}]
 set_input_delay -clock ${clks_48_unbuf} -add_delay -max 17 [get_ports {IO_UPHY_DP_RX IO_UPHY_DN_RX IO_UPHY_D_RX}]
-set_output_delay -min -clock ${clks_48_unbuf} 0 [get_ports {IO_UPHY_DP_TX IO_UPHY_DN_TX IO_UPHY_OE_N}]
-set_output_delay -max -clock ${clks_48_unbuf} 7 [get_ports {IO_UPHY_DP_TX IO_UPHY_DN_TX IO_UPHY_OE_N}] -add_delay
+
+## USB output max skew constraint
+## Use the output-enable as a "clock" and time the P/N relative to it. Keep the skew within T_FST.
+set usb_embed_out_clk [create_generated_clock -name usb_embed_out_clk -source [get_pin clkgen/pll/CLKOUT1] -multiply_by 1 [get_ports IO_UPHY_OE_N]]
+set_false_path -from [get_clocks -include_generated_clocks clk_io_div4] -to ${usb_embed_out_clk}
+set_output_delay -min -clock ${usb_embed_out_clk} 7 [get_ports {IO_UPHY_DP_TX IO_UPHY_DN_TX}]
+set_output_delay -max -clock ${usb_embed_out_clk} 14 [get_ports {IO_UPHY_DP_TX IO_UPHY_DN_TX}] -add_delay
 
 ## Not used - route to header for now?
 set_property -dict { PACKAGE_PIN A10   IOSTANDARD LVCMOS33 } [get_ports { USB_P }]; #USERIOB-19
