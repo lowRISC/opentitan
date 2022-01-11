@@ -405,6 +405,31 @@ The following diagram shows how the flash read pipeline timing works.
 In this example, the first two host requests trigger a full sequence.
 The third host requests immediately hits in the local cache and responds in order after the first two.
 
+### Flash Buffer
+
+The flash buffer is a small read-only memory that holds multiple entries of recently read flash words.
+This is needed when the flash word is wider than a bus word.
+The flash access time is amortized across the the entire flash word if software accesses in a mostly
+linear sequence.
+
+The flash buffer has a round robin replacement policy when more flash words are read.
+When an erase / program is issued to the flash, the entries are evicted to ensure new words are fetched.
+
+When a page erase / program is issued to a flash bank, only entries that fall into that address range are evicted.
+When a bank erase is issued, then all entires are evicted.
+
+The flash buffer is only enabled after {{< regref "INIT" >}} is invoked.
+When an RMA entry sequence is received, the flash buffers are disabled.
+
+As an example, assume a flash word is made up of 2 bus words.
+Assume also the following address to word mapping:
+- Address 0 - flash word 0 , bus word 0 / bus word 1
+- Address 2 - flash word 1 , bus word 2 / bus word 3
+
+When software reads bus word 1, the entire flash word 0 is captured into the flash buffer.
+When software comes back to read bus word 0, instead of accessing the flash again, the data is retrieved directly from the buffer.
+
+
 ### Accessing Information Partition
 
 The information partition uses the same address scheme as the data partition - which is directly accessible by software.
