@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{bail, ensure, Result};
 
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
@@ -18,12 +18,14 @@ use thiserror::Error;
 
 use crate::collection;
 use crate::io::gpio::GpioPin;
+use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::{Capabilities, Capability, Transport, TransportError};
 use crate::util::usb::UsbBackend;
 
 pub mod gpio;
+pub mod i2c;
 pub mod spi;
 pub mod uart;
 
@@ -32,6 +34,8 @@ pub mod uart;
 pub struct Hyperdebug {
     spi_names: HashMap<String, u8>,
     spi_interface: BulkInterface,
+    i2c_names: HashMap<String, u8>,
+    i2c_interface: BulkInterface,
     uart_ttys: HashMap<String, PathBuf>,
     inner: Rc<Inner>,
 }
@@ -65,6 +69,7 @@ impl Hyperdebug {
 
         let mut console_tty: Option<PathBuf> = None;
         let mut spi_interface: Option<BulkInterface> = None;
+        let mut i2c_interface: Option<BulkInterface> = None;
         let mut uart_ttys: HashMap<String, PathBuf> = HashMap::new();
 
         let config_desc = device.active_config_descriptor()?;
@@ -116,41 +121,63 @@ impl Hyperdebug {
                             }
                             match endpoint_desc.direction() {
                                 rusb::Direction::In => {
-                                    if let Some(_) = in_endpoint.replace(endpoint_desc.address()) {
-                                        return Err(Error::CommunicationError(
-                                            "Multiple SPI IN endpoints",
-                                        )
-                                        .into());
-                                    }
+                                    ensure!(in_endpoint.is_none(),
+                                            Error::CommunicationError("Multiple SPI IN endpoints"));
+                                    in_endpoint.replace(endpoint_desc.address());
                                 }
                                 rusb::Direction::Out => {
-                                    if let Some(_) = out_endpoint.replace(endpoint_desc.address()) {
-                                        return Err(Error::CommunicationError(
-                                            "Multiple SPI OUT endpoints",
-                                        )
-                                        .into());
-                                    }
+                                    ensure!(out_endpoint.is_none(),
+                                            Error::CommunicationError("Multiple SPI OUT endpoints"));
+                                    out_endpoint.replace(endpoint_desc.address());
                                 }
                             }
                         }
                         match (in_endpoint, out_endpoint) {
                             (Some(in_endpoint), Some(out_endpoint)) => {
-                                if let Some(_) = spi_interface.replace(BulkInterface {
+                                ensure!(spi_interface.is_none(),
+                                        Error::CommunicationError("Multiple SPI interfaces"));
+                                spi_interface.replace(BulkInterface {
                                     interface: interface.number(),
                                     in_endpoint,
                                     out_endpoint,
-                                }) {
-                                    return Err(Error::CommunicationError(
-                                        "Multiple SPI interfaces",
-                                    )
-                                    .into());
+                                });
+                            }
+                            _ => bail!(Error::CommunicationError("Missing SPI interface"))
+                        }
+                    }
+                    "I2C" => {
+                        // We found the I2C forwarding USB interface (this one interface allows
+                        // multiplexing physical I2C ports.)
+                        let mut in_endpoint: Option<u8> = None;
+                        let mut out_endpoint: Option<u8> = None;
+                        for endpoint_desc in interface_desc.endpoint_descriptors() {
+                            if endpoint_desc.transfer_type() != rusb::TransferType::Bulk {
+                                continue;
+                            }
+                            match endpoint_desc.direction() {
+                                rusb::Direction::In => {
+                                    ensure!(in_endpoint.is_none(),
+                                            Error::CommunicationError("Multiple I2C IN endpoints"));
+                                    in_endpoint.replace(endpoint_desc.address());
+                                }
+                                rusb::Direction::Out => {
+                                    ensure!(out_endpoint.is_none(),
+                                            Error::CommunicationError("Multiple I2C OUT endpoints"));
+                                    out_endpoint.replace(endpoint_desc.address());
                                 }
                             }
-                            _ => {
-                                return Err(
-                                    Error::CommunicationError("Missing SPI interface").into()
-                                );
+                        }
+                        match (in_endpoint, out_endpoint) {
+                            (Some(in_endpoint), Some(out_endpoint)) => {
+                                ensure!(i2c_interface.is_none(),
+                                        Error::CommunicationError("Multiple I2C interfaces"));
+                                i2c_interface.replace(BulkInterface {
+                                    interface: interface.number(),
+                                    in_endpoint,
+                                    out_endpoint,
+                                });
                             }
+                            _ => bail!(Error::CommunicationError("Missing I2C interface"))
                         }
                     }
                     _ => (),
@@ -163,10 +190,16 @@ impl Hyperdebug {
             "SPI2".to_string() => 0,
             "0".to_string() => 0,
         };
+        let i2c_names: HashMap<String, u8> = collection! {
+            "0".to_string() => 0,
+        };
         let result = Hyperdebug {
             spi_names,
             spi_interface: spi_interface
                 .ok_or(Error::CommunicationError("Missing SPI interface"))?,
+            i2c_names,
+            i2c_interface: i2c_interface
+                .ok_or(Error::CommunicationError("Missing I2C interface"))?,
             uart_ttys,
             inner: Rc::new(Inner {
                 console_tty: console_tty
@@ -174,6 +207,7 @@ impl Hyperdebug {
                 usb_device: RefCell::new(device),
                 gpio: Default::default(),
                 spis: Default::default(),
+                i2cs: Default::default(),
                 uarts: Default::default(),
             }),
         };
@@ -203,6 +237,7 @@ pub struct Inner {
     usb_device: RefCell<UsbBackend>,
     gpio: RefCell<HashMap<String, Rc<dyn GpioPin>>>,
     spis: RefCell<HashMap<u8, Rc<dyn Target>>>,
+    i2cs: RefCell<HashMap<u8, Rc<dyn Bus>>>,
     uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,
 }
 
@@ -323,7 +358,7 @@ pub enum Error {
 
 impl Transport for Hyperdebug {
     fn capabilities(&self) -> Capabilities {
-        Capabilities::new(Capability::UART | Capability::GPIO | Capability::SPI)
+        Capabilities::new(Capability::UART | Capability::GPIO | Capability::SPI | Capability::I2C)
     }
 
     // Crate SPI Target instance, or return one from a cache of previously created instances.
@@ -338,6 +373,23 @@ impl Transport for Hyperdebug {
         let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(&self, idx)?);
         self.inner
             .spis
+            .borrow_mut()
+            .insert(idx, Rc::clone(&instance));
+        Ok(instance)
+    }
+
+    // Crate I2C Target instance, or return one from a cache of previously created instances.
+    fn i2c(&self, instance: &str) -> Result<Rc<dyn Bus>> {
+        let &idx = self
+            .i2c_names
+            .get(instance)
+            .ok_or_else(|| TransportError::InvalidInstance("i2c", instance.to_string()))?;
+        if let Some(instance) = self.inner.i2cs.borrow().get(&idx) {
+            return Ok(Rc::clone(instance));
+        }
+        let instance: Rc<dyn Bus> = Rc::new(i2c::HyperdebugI2cBus::open(&self, idx)?);
+        self.inner
+            .i2cs
             .borrow_mut()
             .insert(idx, Rc::clone(&instance));
         Ok(instance)
