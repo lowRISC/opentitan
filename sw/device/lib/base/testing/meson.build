@@ -12,6 +12,16 @@ sw_lib_testing_bitfield = declare_dependency(
   )
 )
 
+sw_lib_testing_hardened = declare_dependency(
+  link_with: static_library(
+    'hardened',
+    sources: [
+      meson.source_root() / 'sw/device/lib/base/hardened.c',
+    ],
+    native: true,
+  )
+)
+
 sw_lib_base_testing_mock_mmio = declare_dependency(
   link_with: static_library(
     'mock_mmio',

@@ -4,9 +4,11 @@
 
 #include "sw/device/silicon_creator/mask_rom/boot_policy.h"
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/mask_rom/boot_policy_ptrs.h"
 
 boot_policy_manifests_t boot_policy_manifests_get(void) {
@@ -34,11 +36,14 @@ rom_error_t boot_policy_manifest_check(lifecycle_state_t lc_state,
   RETURN_IF_ERROR(manifest_check(manifest));
   boot_data_t boot_data;
   RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
-  // TODO(#9491): Harden this comparison.
-  if (manifest->security_version < boot_data.min_security_version_rom_ext) {
-    return kErrorBootPolicyRollback;
+
+  if (launder32(manifest->security_version) >=
+      boot_data.min_security_version_rom_ext) {
+    SHUTDOWN_CHECK(launder32(manifest->security_version) >=
+                   boot_data.min_security_version_rom_ext);
+    return kErrorOk;
   }
-  return kErrorOk;
+  return kErrorBootPolicyRollback;
 }
 
 // `extern` declarations to give the inline functions in the

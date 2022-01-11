@@ -40,6 +40,8 @@ sw_silicon_creator_mask_rom_boot_policy = declare_dependency(
     dependencies: [
       sw_silicon_creator_lib_manifest,
       sw_silicon_creator_lib_boot_data,
+      sw_silicon_creator_lib_shutdown,
+      sw_lib_hardened,
     ],
   ),
 )
@@ -301,6 +303,7 @@ test('sw_silicon_creator_mask_rom_boot_policy_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
+      sw_lib_testing_hardened,
     ],
     native: true,
     c_args: ['-DOT_OFF_TARGET_TEST'],
