@@ -253,10 +253,31 @@ cc_library(
 )
 
 cc_library(
-    name = "shutdown",
-    srcs = ["shutdown.c"],
+    name = "shutdown_intf",
     hdrs = ["shutdown.h"],
     deps = [
+        ":error",
+        "//sw/device/lib/base",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+    ],
+)
+
+cc_library(
+    name = "mock_shutdown",
+    testonly = True,
+    hdrs = ["mock_shutdown.h"],
+    deps = [
+        ":shutdown_intf",
+        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "shutdown",
+    srcs = ["shutdown.c"],
+    deps = [
+        ":shutdown_intf",
         ":error",
         ":log",
         "//hw/ip/keymgr/data:keymgr_regs",
@@ -277,13 +298,13 @@ cc_test(
     name = "shutdown_unittest",
     srcs = [
         "shutdown.c",
-        "shutdown.h",
         "shutdown_unittest.cc",
     ],
     defines = [
         "OT_OFF_TARGET_TEST",
     ],
     deps = [
+        ":shutdown_intf",
         ":error",
         ":log",
         "//hw/ip/keymgr/data:keymgr_regs",
