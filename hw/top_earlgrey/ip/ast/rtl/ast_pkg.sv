@@ -33,7 +33,7 @@ parameter int unsigned AdcChannels     = 2;
 parameter int unsigned AdcDataWidth    = 10;
 parameter int unsigned UsbCalibWidth   = 20;
 parameter int unsigned Ast2PadOutWidth = 9;
-parameter int unsigned Pad2AstInWidth  = 7;
+parameter int unsigned Pad2AstInWidth  = 9;
 
 // These LFSR parameters have been generated with
 // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
@@ -132,6 +132,31 @@ typedef struct packed {
   logic     io;
   logic     aon;
 } clks_osc_byp_t;
+
+typedef enum logic [4-1:0] {
+  Nmd    = 4'd0,
+  Ast    = 4'd1,
+  Fla    = 4'd2,
+  Otp    = 4'd3,
+  Ot0    = 4'd4,
+  Ot1    = 4'd5,
+  Ot2    = 4'd6,
+  Ot3    = 4'd7,
+  Rs0    = 4'd8,
+  Rs1    = 4'd9,
+  Rs2    = 4'd10,
+  Rs3    = 4'd11,
+  Rs4    = 4'd12,
+  Rs5    = 4'd13,
+  Rs6    = 4'd14,
+  Rs7    = 4'd15
+} ast_omdl_e;
+
+typedef struct packed {
+  logic [4-1:0]          obgsl;
+  ast_omdl_e             obmsl;
+  prim_mubi_pkg::mubi4_t obmen;
+} ast_obs_cnt_t;
 
 endpackage  // of ast_pkg
 `endif  // of __AST_PKG_SV

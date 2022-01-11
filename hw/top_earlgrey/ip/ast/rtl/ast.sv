@@ -14,7 +14,7 @@ module ast #(
   parameter int unsigned EntropyStreams  = 4,
   parameter int unsigned UsbCalibWidth   = 20,
   parameter int unsigned Ast2PadOutWidth = 9,
-  parameter int unsigned Pad2AstInWidth  = 7
+  parameter int unsigned Pad2AstInWidth  = 9
 ) (
   // tlul if
   input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D
@@ -119,13 +119,15 @@ module ast #(
   // dft interface
   input pinmux_pkg::dft_strap_test_req_t dft_strap_test_i,  // DFT Straps
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,     // DFT enable (secure bus)
+  input [8-1:0] fla_obs_i,                    // FLASH Observe Bus
+  input [8-1:0] otp_obs_i,                    // OTP Observe Bus
+  input [8-1:0] otm_obs_i,                    // OT Modules Observe Bus
+  output ast_pkg::obs_cnt_t obs_cnt_o,        // Observe Control
 
   // pad mux/pad related
   input [Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
   output logic [Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
 
-  input ast_pkg::awire_t pad2ast_t0_ai,       // PAD_2_AST Analog T0 Input Signal
-  input ast_pkg::awire_t pad2ast_t1_ai,       // PAD_2_AST Analog T1 Input Signal
   output ast_pkg::awire_t ast2pad_t0_ao,      // AST_2_PAD Analog T0 Output Signal
   output ast_pkg::awire_t ast2pad_t1_ao,      // AST_2_PAD Analog T1 Output Signal
 
@@ -160,15 +162,17 @@ logic vcmain_pok, vcmain_pok_h, vcaon_pok_por;
 
 assign scan_reset_n = scan_reset_no;
 
-
 assign flash_bist_en_o  = prim_mubi_pkg::MuBi4False;
 //
 assign dft_scan_md_o    = prim_mubi_pkg::MuBi4False;
 assign scan_mode        = 1'b0;
 assign scan_shift_en_o  = 1'b0;
 assign scan_reset_no    = 1'b1;
-
-
+assign obs_cnt_o        = '{
+                             obgsl: 4'h0,
+                             obmsl: 4'h0,
+                             obmen: prim_mubi_pkg::MuBi4False
+                           };
 
 
 ///////////////////////////////////////
@@ -857,12 +861,6 @@ assign ast2pad_t1_ao = 1'bz;
 // Unused Signals  //
 /////////////////////
 logic unused_sigs;
-`ifndef ANALOGSIM
-logic unused_analog_sigs;
-assign unused_analog_sigs = ^{ pad2ast_t0_ai,
-                               pad2ast_t1_ai
-                             };
-`endif
 assign unused_sigs = ^{ clk_ast_usb_i,
                         rst_ast_usb_ni,
                         sns_spi_ext_clk_i,
@@ -874,6 +872,9 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         dft_strap_test_i.valid,
                         dft_strap_test_i.straps[1:0],
                         lc_dft_en_i[3:0],
+                        fla_obs_i[8-1:0],
+                        otp_obs_i[8-1:0],
+                        otm_obs_i[8-1:0],
                         reg2hw.rega,  // [0:31]
                         reg2hw.regb   // [0:3]
                       };
