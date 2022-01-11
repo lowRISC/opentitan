@@ -7,11 +7,11 @@ class edn_smoke_vseq extends edn_base_vseq;
 
   `uvm_object_new
 
-  push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)   m_endpoint_pull_seq;
+  push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)   m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
 
   bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]      genbits;
   bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]   fips;
-  bit [edn_pkg::ENDPOINT_BUS_WIDTH - 1:0]       edn_bus[edn_env_pkg::NUM_ENDPOINTS];
+  bit [edn_pkg::ENDPOINT_BUS_WIDTH - 1:0]       edn_bus[MAX_NUM_ENDPOINTS];
 
   bit [3:0]                                     acmd, clen, flags;
   bit [17:0]                                    glen;
@@ -45,9 +45,9 @@ class edn_smoke_vseq extends edn_base_vseq;
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
 
     // Request data
-    m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
-        create("m_endpoint_pull_seq");
-    m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[0]);
+    m_endpoint_pull_seq[0] = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
+        create("m_endpoint_pull_seq[0]");
+    m_endpoint_pull_seq[0].start(p_sequencer.endpoint_sequencer_h[0]);
 
     // Compare actual/expected data
     edn_bus[0] = genbits[edn_pkg::ENDPOINT_BUS_WIDTH - 1:0];

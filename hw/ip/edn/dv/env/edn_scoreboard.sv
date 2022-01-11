@@ -13,17 +13,17 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)))
-      endpoint_fifo[NUM_ENDPOINTS-1:0];
+      endpoint_fifo[MAX_NUM_ENDPOINTS];
 
   // local queues to hold incoming packets pending comparison
   push_pull_item#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-      endpoint_q[$][NUM_ENDPOINTS-1:0];
+      endpoint_q[$][MAX_NUM_ENDPOINTS];
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    for (int i = 0; i < NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < cfg.num_endpoints; i++) begin
       endpoint_fifo[i] = new($sformatf("endpoint_fifo[%0d]", i), this);
     end
   endfunction
