@@ -99,6 +99,105 @@ dif_result_t dif_alert_handler_configure_alert(
   return kDifOk;
 }
 
+dif_result_t dif_alert_handler_configure_local_alert(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_local_alert_t local_alert,
+    dif_alert_handler_class_t alert_class, dif_toggle_t enabled,
+    dif_toggle_t locked) {
+  if (alert_handler == NULL || !dif_is_valid_toggle(enabled) ||
+      !dif_is_valid_toggle(locked)) {
+    return kDifBadArg;
+  }
+  uint32_t classification;
+  if (!class_to_uint32(alert_class, &classification)) {
+    return kDifBadArg;
+  }
+
+  // Get register/field offsets for local alert type.
+  ptrdiff_t enable_reg_offset;
+  bitfield_bit32_index_t enable_bit;
+  ptrdiff_t class_reg_offset;
+  bitfield_field32_t class_field;
+  ptrdiff_t regwen_offset;
+  switch (local_alert) {
+    case kDifAlertHandlerLocalAlertAlertPingFail:
+      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET;
+      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT;
+      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET;
+      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_FIELD;
+      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET;
+      break;
+    case kDifAlertHandlerLocalAlertEscalationPingFail:
+      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_REG_OFFSET;
+      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_EN_LA_1_BIT;
+      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_REG_OFFSET;
+      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_CLASS_LA_1_FIELD;
+      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_1_REG_OFFSET;
+      break;
+    case kDifAlertHandlerLocalAlertAlertIntegrityFail:
+      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_REG_OFFSET;
+      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_EN_LA_2_BIT;
+      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_REG_OFFSET;
+      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_CLASS_LA_2_FIELD;
+      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_2_REG_OFFSET;
+      break;
+    case kDifAlertHandlerLocalAlertEscalationIntegrityFail:
+      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3_REG_OFFSET;
+      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3_EN_LA_3_BIT;
+      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_3_REG_OFFSET;
+      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_3_CLASS_LA_3_FIELD;
+      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_3_REG_OFFSET;
+      break;
+    case kDifAlertHandlerLocalAlertBusIntegrityFail:
+      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_4_REG_OFFSET;
+      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_4_EN_LA_4_BIT;
+      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_4_REG_OFFSET;
+      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_4_CLASS_LA_4_FIELD;
+      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_4_REG_OFFSET;
+      break;
+    case kDifAlertHandlerLocalAlertShadowedUpdateError:
+      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_5_REG_OFFSET;
+      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_5_EN_LA_5_BIT;
+      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_5_REG_OFFSET;
+      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_5_CLASS_LA_5_FIELD;
+      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_5_REG_OFFSET;
+      break;
+    case kDifAlertHandlerLocalAlertShadowedStorageError:
+      enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_6_REG_OFFSET;
+      enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_6_EN_LA_6_BIT;
+      class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_6_REG_OFFSET;
+      class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_6_CLASS_LA_6_FIELD;
+      regwen_offset = ALERT_HANDLER_LOC_ALERT_REGWEN_6_REG_OFFSET;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  // Check if configuration is locked.
+  if (!mmio_region_read32(alert_handler->base_addr, regwen_offset)) {
+    return kDifLocked;
+  }
+
+  // Enable the alert.
+  // NOTE: the alert ID corresponds directly to the multireg index.
+  // (I.e., alert N has enable multireg N).
+  uint32_t enable_reg = bitfield_bit32_write(0, enable_bit, true);
+  mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
+                               enable_reg);
+
+  // Classify the alert.
+  uint32_t class_reg = bitfield_field32_write(0, class_field, classification);
+  mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
+                               class_reg);
+
+  // Lock the configuration.
+  if (locked == kDifToggleEnabled) {
+    mmio_region_write32(alert_handler->base_addr, regwen_offset, 0);
+  }
+
+  return kDifOk;
+}
+
 /**
  * Classifies alerts for a single alert class. Returns `false` if any of the
  * provided configuration is invalid.
@@ -126,6 +225,7 @@ static bool classify_alerts(const dif_alert_handler_t *alert_handler,
  * Classifies local alerts for a single alert class. Returns `false` if any of
  * the provided configuration is invalid.
  */
+// TODO(#9899): support locking the alert class configuration.
 OT_WARN_UNUSED_RESULT
 static bool classify_local_alerts(
     const dif_alert_handler_t *alert_handler,
@@ -135,89 +235,11 @@ static bool classify_local_alerts(
   }
 
   for (int i = 0; i < class->local_alerts_len; ++i) {
-    uint32_t classification;
-    switch (class->alert_class) {
-      case kDifAlertHandlerClassA:
-        classification =
-            ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSA;
-        break;
-      case kDifAlertHandlerClassB:
-        classification =
-            ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSB;
-        break;
-      case kDifAlertHandlerClassC:
-        classification =
-            ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSC;
-        break;
-      case kDifAlertHandlerClassD:
-        classification =
-            ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSD;
-        break;
-      default:
-        return false;
+    if (dif_alert_handler_configure_local_alert(
+            alert_handler, class->local_alerts[i], class->alert_class,
+            kDifToggleEnabled, kDifToggleDisabled) != kDifOk) {
+      return false;
     }
-
-    ptrdiff_t enable_reg_offset;
-    bitfield_bit32_index_t enable_bit;
-    ptrdiff_t class_reg_offset;
-    bitfield_field32_t class_field;
-    switch (class->local_alerts[i]) {
-      case kDifAlertHandlerLocalAlertAlertPingFail:
-        enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET;
-        enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT;
-        class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET;
-        class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_FIELD;
-        break;
-      case kDifAlertHandlerLocalAlertEscalationPingFail:
-        enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_REG_OFFSET;
-        enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_EN_LA_1_BIT;
-        class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_REG_OFFSET;
-        class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_CLASS_LA_1_FIELD;
-        break;
-      case kDifAlertHandlerLocalAlertAlertIntegrityFail:
-        enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_REG_OFFSET;
-        enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_EN_LA_2_BIT;
-        class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_REG_OFFSET;
-        class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_CLASS_LA_2_FIELD;
-        break;
-      case kDifAlertHandlerLocalAlertEscalationIntegrityFail:
-        enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3_REG_OFFSET;
-        enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3_EN_LA_3_BIT;
-        class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_3_REG_OFFSET;
-        class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_3_CLASS_LA_3_FIELD;
-        break;
-      case kDifAlertHandlerLocalAlertBusIntegrityFail:
-        enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_4_REG_OFFSET;
-        enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_4_EN_LA_4_BIT;
-        class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_4_REG_OFFSET;
-        class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_4_CLASS_LA_4_FIELD;
-        break;
-      case kDifAlertHandlerLocalAlertShadowedUpdateError:
-        enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_5_REG_OFFSET;
-        enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_5_EN_LA_5_BIT;
-        class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_5_REG_OFFSET;
-        class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_5_CLASS_LA_5_FIELD;
-        break;
-      case kDifAlertHandlerLocalAlertShadowedStorageError:
-        enable_reg_offset = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_6_REG_OFFSET;
-        enable_bit = ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_6_EN_LA_6_BIT;
-        class_reg_offset = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_6_REG_OFFSET;
-        class_field = ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_6_CLASS_LA_6_FIELD;
-        break;
-      default:
-        return false;
-    }
-
-    uint32_t enable_reg =
-        mmio_region_read32(alert_handler->base_addr, enable_reg_offset);
-    uint32_t class_reg =
-        mmio_region_read32(alert_handler->base_addr, class_reg_offset);
-    enable_reg = bitfield_bit32_write(enable_reg, enable_bit, true);
-    class_reg = bitfield_field32_write(class_reg, class_field, classification);
-    mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
-                                 enable_reg);
-    mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
-                                 class_reg);
   }
 
   return true;
