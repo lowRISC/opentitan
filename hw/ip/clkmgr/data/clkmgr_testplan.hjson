@@ -178,7 +178,7 @@
     }
     {
       name: frequency
-      desc: '''This tests the frequency counters functionality.
+      desc: '''This tests the frequency counters measured count functionality.
 
             These counters compute the number of cycles of some clock relative
             to the aon timer. It should trigger a recoverable alert when the
@@ -196,6 +196,25 @@
             '''
       milestone: V2
       tests: ["clkmgr_frequency"]
+    }
+    {
+      name: frequency_timeout
+      desc: '''This tests the frequency counters timeout functionality.
+
+            These counters compute the number of cycles of some clock relative
+            to the aon timer. It should trigger a recoverable alert when there
+            is no valid measurement when enabled, leading to a timeout. This is
+            separate from the `frequenty` testpoint to simplify the test checks.
+
+            **Stimulus**:
+            - Randomly stop measured clocks to trigger a timeout.
+
+            **Check**:
+            - Timeout should cause a recoverable alert.
+            - Coverage collected per clock.
+            '''
+      milestone: V2
+      tests: ["clkmgr_frequency_timeout"]
     }
     {
       name: frequency_overflow

@@ -75,18 +75,13 @@ interface clkmgr_if (
   logic                  exp_clk_io_div4;
   logic                  actual_clk_io_div4;
 
-  typedef struct {
-    logic valid;
-    logic slow;
-    logic fast;
-  } freq_measurement_t;
-
   // Internal DUT signals.
 `ifndef PATH_TO_DUT
   `define PATH_TO_DUT tb.dut
 `endif
 
   freq_measurement_t io_freq_measurement;
+  logic io_timeout_err;
   always @(posedge `PATH_TO_DUT.u_io_meas.clk_i) begin
     if (`PATH_TO_DUT.u_io_meas.valid_o) begin
       io_freq_measurement = '{valid: `PATH_TO_DUT.u_io_meas.valid_o,
@@ -96,8 +91,10 @@ interface clkmgr_if (
                 UVM_MEDIUM)
     end
   end
+  always_comb io_timeout_err = `PATH_TO_DUT.io_timeout_err;
 
   freq_measurement_t io_div2_freq_measurement;
+  logic io_div2_timeout_err;
   always @(posedge `PATH_TO_DUT.u_io_div2_meas.clk_i) begin
     if (`PATH_TO_DUT.u_io_div2_meas.valid_o) begin
       io_div2_freq_measurement = '{valid: `PATH_TO_DUT.u_io_div2_meas.valid_o,
@@ -107,8 +104,10 @@ interface clkmgr_if (
                 "Sampled coverage for ClkMesrIoDiv2 as %p", io_div2_freq_measurement), UVM_MEDIUM)
     end
   end
+  always_comb io_div2_timeout_err = `PATH_TO_DUT.io_div2_timeout_err;
 
   freq_measurement_t io_div4_freq_measurement;
+  logic io_div4_timeout_err;
   always @(posedge `PATH_TO_DUT.u_io_div4_meas.clk_i) begin
     if (`PATH_TO_DUT.u_io_div4_meas.valid_o) begin
       io_div4_freq_measurement = '{valid: `PATH_TO_DUT.u_io_div4_meas.valid_o,
@@ -118,8 +117,10 @@ interface clkmgr_if (
                 "Sampled coverage for ClkMesrIoDiv4 as %p", io_div4_freq_measurement), UVM_MEDIUM)
     end
   end
+  always_comb io_div4_timeout_err = `PATH_TO_DUT.io_div4_timeout_err;
 
   freq_measurement_t main_freq_measurement;
+  logic main_timeout_err;
   always @(posedge `PATH_TO_DUT.u_main_meas.clk_i) begin
     if (`PATH_TO_DUT.u_main_meas.valid_o) begin
       main_freq_measurement = '{valid: `PATH_TO_DUT.u_main_meas.valid_o,
@@ -129,8 +130,10 @@ interface clkmgr_if (
                 "Sampled coverage for ClkMesrMain as %p", main_freq_measurement), UVM_MEDIUM)
     end
   end
+  always_comb main_timeout_err = `PATH_TO_DUT.main_timeout_err;
 
   freq_measurement_t usb_freq_measurement;
+  logic usb_timeout_err;
   always @(posedge `PATH_TO_DUT.u_usb_meas.clk_i) begin
     if (`PATH_TO_DUT.u_usb_meas.valid_o) begin
       usb_freq_measurement = '{valid: `PATH_TO_DUT.u_usb_meas.valid_o,
@@ -140,6 +143,7 @@ interface clkmgr_if (
                 ), UVM_MEDIUM)
     end
   end
+  always_comb usb_timeout_err = `PATH_TO_DUT.usb_timeout_err;
 
   function automatic void update_extclk_ctrl(logic [2*LcTxTWidth-1:0] value);
     {extclk_ctrl_csr_step_down, extclk_ctrl_csr_sel} = value;

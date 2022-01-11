@@ -64,6 +64,10 @@
       uvm_test_seq: clkmgr_frequency_vseq
     }
     {
+      name: clkmgr_frequency_timeout
+      uvm_test_seq: clkmgr_frequency_timeout_vseq
+    }
+    {
       name: clkmgr_peri
       uvm_test_seq: clkmgr_peri_vseq
     }

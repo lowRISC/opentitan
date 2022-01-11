@@ -9,7 +9,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-  // This is measured in aon clocks, and is pretty tight.
+  // This is measured in aon clocks.
   localparam int CyclesToGetOneMeasurement = 2;
 
   // This is measured in clkmgr clk_i clocks. It is set to cover worst case delays.
@@ -25,6 +25,10 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   // clocks to fail measurement.
   rand int clk_tested;
   constraint clk_tested_c {clk_tested inside {[ClkMesrIo : ClkMesrUsb]};}
+
+  // If cause_saturation force the initial measurement count of clk_tested to a high value
+  // so the counter will saturate.
+  rand bit cause_saturation;
 
   typedef enum int {
     MesrLow,
@@ -54,76 +58,16 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     }
   }
 
-  task disable_frequency_measurement(clk_mesr_e which);
-    `uvm_info(`gfn, $sformatf("Disabling frequency measurement for %0s", which.name), UVM_MEDIUM)
-    case (which)
-      ClkMesrIo: begin
-        csr_wr(.ptr(ral.io_measure_ctrl.en), .value(0));
-      end
-      ClkMesrIoDiv2: begin
-        csr_wr(.ptr(ral.io_div2_measure_ctrl.en), .value(0));
-      end
-      ClkMesrIoDiv4: begin
-        csr_wr(.ptr(ral.io_div4_measure_ctrl.en), .value(0));
-      end
-      ClkMesrMain: begin
-        csr_wr(.ptr(ral.main_measure_ctrl.en), .value(0));
-      end
-      ClkMesrUsb: begin
-        csr_wr(.ptr(ral.usb_measure_ctrl.en), .value(0));
-      end
-    endcase
-  endtask
-
-  task enable_frequency_measurement(clk_mesr_e which, int min_threshold, int max_threshold);
-    `uvm_info(`gfn, $sformatf(
-              "Enabling frequency measurement for %0s, min=%0d, max=%0d, expected=%0d",
-              which.name,
-              min_threshold,
-              max_threshold,
-              ExpectedCounts[which]
-              ), UVM_MEDIUM)
-    case (which)
-      ClkMesrIo: begin
-        ral.io_measure_ctrl.en.set(1);
-        ral.io_measure_ctrl.min_thresh.set(min_threshold);
-        ral.io_measure_ctrl.max_thresh.set(max_threshold);
-        csr_update(.csr(ral.io_measure_ctrl));
-      end
-      ClkMesrIoDiv2: begin
-        ral.io_div2_measure_ctrl.en.set(1);
-        ral.io_div2_measure_ctrl.min_thresh.set(min_threshold);
-        ral.io_div2_measure_ctrl.max_thresh.set(max_threshold);
-        csr_update(.csr(ral.io_div2_measure_ctrl));
-      end
-      ClkMesrIoDiv4: begin
-        ral.io_div4_measure_ctrl.en.set(1);
-        ral.io_div4_measure_ctrl.min_thresh.set(min_threshold);
-        ral.io_div4_measure_ctrl.max_thresh.set(max_threshold);
-        csr_update(.csr(ral.io_div4_measure_ctrl));
-      end
-      ClkMesrMain: begin
-        ral.main_measure_ctrl.en.set(1);
-        ral.main_measure_ctrl.min_thresh.set(min_threshold);
-        ral.main_measure_ctrl.max_thresh.set(max_threshold);
-        csr_update(.csr(ral.main_measure_ctrl));
-      end
-      ClkMesrUsb: begin
-        ral.usb_measure_ctrl.en.set(1);
-        ral.usb_measure_ctrl.min_thresh.set(min_threshold);
-        ral.usb_measure_ctrl.max_thresh.set(max_threshold);
-        csr_update(.csr(ral.usb_measure_ctrl));
-      end
-    endcase
-  endtask
-
   // This waits a number of cycles so that:
   // - only one measurement completes, or we could end up with multiple alerts which cause trouble
   //   for the cip exp_alert functionality, and,
   // - the measurement has had time to update the recov_err_code CSR.
-  task wait_before_read_recov_err_code();
+  task wait_before_read_recov_err_code(bit expect_alert);
     // Wait for one measurement (takes an extra cycle to really start).
-    cfg.aon_clk_rst_vif.wait_clks(CyclesToGetOneMeasurement);
+    repeat (CyclesToGetOneMeasurement) begin
+      cfg.aon_clk_rst_vif.wait_clks(1);
+      if (expect_alert) cfg.scoreboard.set_exp_alert(.alert_name("recov_fault"), .max_delay(4000));
+    end
     // Wait for the result to propagate to the recov_err_code CSR.
     cfg.clk_rst_vif.wait_clks(CyclesForErrUpdate);
   endtask
@@ -141,7 +85,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       clk_mesr_e clk_mesr = clk_mesr_e'(clk);
       enable_frequency_measurement(clk_mesr, ExpectedCounts[clk] - 1, ExpectedCounts[clk] + 1);
     end
-    wait_before_read_recov_err_code();
+    wait_before_read_recov_err_code('0);
     csr_rd_check(.ptr(ral.recov_err_code), .compare_value('0),
                  .err_msg("Expected no measurement errors"));
     foreach (ExpectedCounts[clk]) begin
@@ -155,8 +99,10 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
       logic [ClkMesrUsb:0] actual_recov_err = '0;
-      logic [ClkMesrUsb:0] expected_recov_err = '0;
+      logic [ClkMesrUsb:0] expected_recov_meas_err = '0;
+      bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      `uvm_info(`gfn, "New round", UVM_MEDIUM)
       foreach (ExpectedCounts[clk]) begin
         clk_mesr_e clk_mesr = clk_mesr_e'(clk);
         int min_threshold;
@@ -171,8 +117,10 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
                       clk_mesr.name,
                       (min_threshold > expected ? "slow" : "fast")
                       ), UVM_MEDIUM)
+            expect_alert = 1;
             cfg.scoreboard.set_exp_alert(.alert_name("recov_fault"), .max_delay(4000));
-            expected_recov_err[clk] = 1;
+            `uvm_info(`gfn, "Setting exp_alert[recov_fault]", UVM_MEDIUM)
+            expected_recov_meas_err[clk] = 1;
           end
         end else begin
           min_threshold = expected - 1;
@@ -180,35 +128,27 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
         end
         enable_frequency_measurement(clk_mesr, min_threshold, max_threshold);
       end
-      wait_before_read_recov_err_code();
+      wait_before_read_recov_err_code(expect_alert);
+
       csr_rd(.ptr(ral.recov_err_code), .value(actual_recov_err));
-      `uvm_info(`gfn, $sformatf("Expected recov err register=0x%x", expected_recov_err), UVM_MEDIUM)
-      if (actual_recov_err != expected_recov_err) begin
-        logic [ClkMesrUsb:0] mismatch_recov_err = actual_recov_err ^ expected_recov_err;
-        foreach (mismatch_recov_err[clk]) begin
-          clk_mesr_e clk_mesr = clk_mesr_e'(clk);
-          if (mismatch_recov_err[clk]) begin
-            `uvm_info(`gfn, $sformatf(
-                      "Mismatch for %0s, expected %b, actual %b",
-                      clk_mesr.name,
-                      expected_recov_err[clk],
-                      actual_recov_err[clk]
-                      ), UVM_LOW)
-          end
-        end
-        `uvm_error(`gfn, $sformatf(
-                   "Mismatch for recov_err, expected 0b%b, got 0x%b",
-                   expected_recov_err,
-                   actual_recov_err
-                   ))
+      `uvm_info(`gfn, $sformatf("Expected recov err register=0x%x", expected_recov_meas_err),
+                UVM_MEDIUM)
+      if (actual_recov_err[ClkMesrUsb:0] != expected_recov_meas_err) begin
+        report_recov_error_mismatch("measurement", expected_recov_meas_err,
+                                    actual_recov_err[ClkMesrUsb:0]);
       end
+
       foreach (ExpectedCounts[clk]) begin
         clk_mesr_e clk_mesr = clk_mesr_e'(clk);
         disable_frequency_measurement(clk_mesr);
       end
-      cfg.aon_clk_rst_vif.wait_clks(2);
+
+      // Wait enough time for measurements to complete, and for alerts to get processed
+      // by the alert agents so expected alerts are properly wound down.
+      cfg.aon_clk_rst_vif.wait_clks(6);
       // And clear errors.
       csr_wr(.ptr(ral.recov_err_code), .value('1));
+      cfg.aon_clk_rst_vif.wait_clks(2);
     end
   endtask
 
