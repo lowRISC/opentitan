@@ -133,7 +133,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
           txt = { txt, $sformatf("\n ----| Phase Delay %0h", channel_param[idx].PhaseDelay)};
           txt = {txt,  $sformatf("\n ----| Heart Beat enable: %0b", channel_param[idx].HtbtEn) };
           txt = {txt,  $sformatf("\n ----| Blink enable: %0b", channel_param[idx].BlinkEn) };
-          `uvm_info(`gfn, $sformatf("Setting Channel Param for CH[%d], %s", txt), UVM_HIGH)
+          `uvm_info(`gfn, $sformatf("Setting Channel Param for CH[%d], %s",idx, txt), UVM_HIGH)
         end
 
         (!uvm_re_match("duty_cycle_*",csr_name)): begin
@@ -141,7 +141,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
           duty_cycle[idx].A = get_field_val(ral.duty_cycle[idx].a, item.a_data);
           duty_cycle[idx].B = get_field_val(ral.duty_cycle[idx].b, item.a_data);
           `uvm_info(`gfn, $sformatf("\n Seeting channel[%d] duty cycle A:%0h B:%0h",
-                                    duty_cycle[idx].A ,duty_cycle[idx].B), UVM_HIGH)
+                                    idx, duty_cycle[idx].A ,duty_cycle[idx].B), UVM_HIGH)
         end
 
         (!uvm_re_match("blink_*",csr_name)): begin
@@ -149,7 +149,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
           blink[idx].A = get_field_val(ral.blink_param[idx].x, item.a_data);
           blink[idx].B = get_field_val(ral.blink_param[idx].y, item.a_data);
           `uvm_info(`gfn, $sformatf("\n Seeting channel[%d] Blink X:%0h Y:%0h",
-                                    blink[idx].A ,blink[idx].B), UVM_HIGH)
+                                    idx, blink[idx].A ,blink[idx].B), UVM_HIGH)
           blink_cnt[idx] = blink[idx].A;
         end
 
