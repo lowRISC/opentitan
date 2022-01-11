@@ -262,8 +262,9 @@
         }
 % endfor
       ]
-      // the CLK_ENABLE register cannot be written, otherwise there is the potential clocks could be
-      // disabled and the system will hang
+      // the CLK_ENABLE register cannot be written.
+      // During top level randomized tests, it is possible to disable the clocks and then access
+      // a register in the disabled block.  This would lead to a top level hang.
       tags: ["excl:CsrAllTests:CsrExclAll"]
     },
 
@@ -296,8 +297,9 @@
         }
 % endfor
       ]
-      // the CLK_HINT register cannot be written, otherwise there is the potential clocks could be
-      // disabled and the system will hang
+      // the CLK_HINT register cannot be written.
+      // During top level randomized tests, it is possible to disable the clocks to transactional blocks
+      // and then access a register in the disabled block.  This would lead to a top level hang.
       tags: ["excl:CsrAllTests:CsrExclAll"]
     },
 
@@ -368,7 +370,7 @@
           desc: "Enable measurement for ${src}",
           resval: "0",
           // Measurements can cause recoverable errors depending on the
-          // thresholds which the CSR tests will not predict correctly.
+          // thresholds which randomized CSR tests will not predict correctly.
           // To provide better CSR coverage we allow writing the threshold
           // fields, but not enabling the counters.
           tags: ["excl:CsrNonInitTests:CsrExclWrite"]

@@ -187,12 +187,14 @@ There are two occasions where this is required:
 -  Life cycle transition from `Raw` / `Test_locked` to `Test_unlocked` [states]({{< relref "hw/ip/lc_ctrl/doc/_index.md#clk_byp_req" >}}).
 -  Software request for external clocks during normal functional mode.
 
+
 #### Life Cycle Requested External Clock
 
 The life cycle controller only requests the io clock input to be switched.
 When the life cycle controller requests external clock, a request signal `lc_clk_byp_req_i` is sent from `lc_ctrl` to `clkmgr`.
 `clkmgr` then forwards the request to `ast` through `io_clk_byp_req_o`, which performs the actual clock switch and is acknowledged through `io_clk_byp_ack_i`.
 When the clock switch is complete, the clock dividers are stepped down by a factor of 2 and the life cycle controller is acknowledged through `lc_clk_byp_ack_o`.
+
 
 #### Software Requested External Clocks
 
@@ -213,6 +215,10 @@ When the divider is stepped down, a divide-by-4 clock becomes divide-by-2 clock 
 
 If software requests a high speed external clock, the dividers are kept as is.
 
+Note, software external clock switch support is meant to be a debug / evaluation feature, and should not be used in conjunction with the clock frequency and timeout measurement features.
+This is because if the clock frequency suddenly changes, the thresholds used for timeout / measurement checks will no longer apply.
+There is currently no support in hardware to dynamcially synchronize a threshold change to the expected frequency.
+
 #### Clock Frequency Summary
 
 The table below summarises the valid modes and the settings required.
@@ -223,8 +229,6 @@ The table below summarises the valid modes and the settings required.
 | Internal Clocks              | `lc_ctrl_pkg::Off`     | `kMultiBit4False` | Don't care                  | All                     |
 | Software external high speed | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4False`           | TEST_UNLOCKED, RMA      |
 | Software external low speed  | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4True`            | TEST_UNLOCKED, RMA      |
-
-
 
 
 ### Clock Frequency / Time-out Measurements
@@ -238,8 +242,17 @@ Software sets both an expected maximum and minimum for each measured clock.
 Clock manager then counts the number of relevant root clock cycles in each always-on clock period.
 If the resulting count differs from the programmed thresholds, a recoverable error is registered.
 
-Additionally, clock manager uses a similar time-out mechanism to see if any of the root clocks have stopped toggling altogether.
-This is done by creating an artificial handshake between the two domains that must complete within a certain amount of time based on known clock ratios.
+Since the counts are measured against a single cycle of always on clock, the minimal error that can be detected is dependent on the clock ratio between the measured clock and 1 cycle of of the always on clock.
+Assume a 24MHz clock and an always-on clock of 200KHz.
+The minimal error detection is then 200KHz / 24MHz, or approximately 0.83%.
+
+This means if the clock's actual value is between 23.8MHz and 24.2MHz, this deviation will not be detected.
+Conversely, if the clock's natural operation has an error range wider than this resoltion, the min / max counts must be adjusted to account for this error.
+
+Additionally, clock manager uses a similar time-out mechanism to see if any of the root clocks have stopped toggling for an extended period of time.
+This is done by creating an artificial handshake between the two root clock domain and the always on clock domain that must complete within a certain amount of time based on known clock ratios.
+Based on the nature of the handshake and the margin window, the minimal timeout detection window is approximately 2-4 always on clock cycles.
+If the root clock domain stops and resumes in significantly less time than this window, the time-out may not be detected.
 
 There are three types of errors:
 * Clock too fast error
