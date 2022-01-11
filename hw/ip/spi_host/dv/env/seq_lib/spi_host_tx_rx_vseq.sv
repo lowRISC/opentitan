@@ -53,7 +53,7 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     // read out status/intr_state CSRs to check
     check_status_and_clear_intrs();
 
-  endtask : start_spi_host_trans
+  endtask
 
 
   // sending tx requests to the agent
