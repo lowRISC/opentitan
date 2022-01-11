@@ -45,13 +45,13 @@ bool test_main(void) {
 
     otp_ctrl_testutils_wait_for_dai(&otp);
     CHECK_DIF_OK(dif_otp_ctrl_dai_program32(
-                     &otp, kDifOtpCtrlPartitionOwnerSwCfg, 0x100 + i, word),
+                     &otp, kDifOtpCtrlPartitionVendorTest, 0x10 + i, word),
                  "Failed to program word kTestData[%d] = 0x%8x.", i, word);
   }
 
   uint32_t readout[ARRAYSIZE(kTestData) / sizeof(uint32_t)] = {0};
-  CHECK_DIF_OK(dif_otp_ctrl_read_blocking(&otp, kDifOtpCtrlPartitionOwnerSwCfg,
-                                          0x100, readout, ARRAYSIZE(kTestData)),
+  CHECK_DIF_OK(dif_otp_ctrl_read_blocking(&otp, kDifOtpCtrlPartitionVendorTest,
+                                          0x10, readout, ARRAYSIZE(kTestData)),
                "Failed to perform OTP blocking readout.");
 
   CHECK(memcmp(kTestData, readout, ARRAYSIZE(kTestData)) == 0);
