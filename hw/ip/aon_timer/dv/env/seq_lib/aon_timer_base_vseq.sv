@@ -20,6 +20,10 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   // Should the escalation signal be enabled at the start of time?
   rand bit initial_lc_escalate_en;
 
+  // When this is not set, we are locking the configuration registers of watchdog timer after it's
+  // initial setup.
+  rand bit wdog_regwen;
+
   // Is the chip in sleep at the start of time? In the real chip, the answer is (obviously) no, but
   // the design should work either way so we may as well test it.
   rand bit initial_sleep_mode;
@@ -75,6 +79,9 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     csr_utils_pkg::csr_wr(ral.wdog_bite_thold, wdog_bite_thold);
 
     cfg.lc_escalate_en_vif.drive(0);
+
+    `uvm_info(`gfn, $sformatf("Writing 0x%0h to WDOG_REGWEN", wdog_regwen), UVM_LOW)
+    csr_utils_pkg::csr_wr(ral.wdog_regwen, wdog_regwen);
 
     `uvm_info(`gfn, "Enabling AON Timer. Writing 1 to WKUP_CTRL and WDOG_CTRL", UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b1);
