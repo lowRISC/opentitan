@@ -126,6 +126,115 @@ INSTANTIATE_TEST_SUITE_P(
                                      kDifAlertHandlerClassC,
                                      kDifAlertHandlerClassD)));
 
+class LocalAlertConfigTest
+    : public AlertHandlerTest,
+      public testing::WithParamInterface<std::tuple<
+          dif_alert_handler_local_alert_t, dif_alert_handler_class_t>> {};
+
+TEST_F(LocalAlertConfigTest, BadArgs) {
+  EXPECT_EQ(dif_alert_handler_configure_local_alert(
+                &alert_handler_,
+                static_cast<dif_alert_handler_local_alert_t>(
+                    ALERT_HANDLER_PARAM_N_LOC_ALERT),
+                kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleDisabled),
+            kDifBadArg);
+
+  EXPECT_EQ(
+      dif_alert_handler_configure_local_alert(
+          &alert_handler_, kDifAlertHandlerLocalAlertAlertPingFail,
+          static_cast<dif_alert_handler_class_t>(ALERT_HANDLER_PARAM_N_CLASSES),
+          kDifToggleEnabled, kDifToggleDisabled),
+      kDifBadArg);
+
+  EXPECT_EQ(dif_alert_handler_configure_local_alert(
+                &alert_handler_, kDifAlertHandlerLocalAlertAlertPingFail,
+                kDifAlertHandlerClassA, static_cast<dif_toggle_t>(2),
+                kDifToggleDisabled),
+            kDifBadArg);
+
+  EXPECT_EQ(dif_alert_handler_configure_local_alert(
+                &alert_handler_, kDifAlertHandlerLocalAlertAlertPingFail,
+                kDifAlertHandlerClassA, kDifToggleEnabled,
+                static_cast<dif_toggle_t>(2)),
+            kDifBadArg);
+}
+
+TEST_F(LocalAlertConfigTest, Locked) {
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET, 0);
+  EXPECT_EQ(dif_alert_handler_configure_local_alert(
+                &alert_handler_, kDifAlertHandlerLocalAlertAlertPingFail,
+                kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleDisabled),
+            kDifLocked);
+
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_REGWEN_6_REG_OFFSET, 0);
+  EXPECT_EQ(dif_alert_handler_configure_local_alert(
+                &alert_handler_, kDifAlertHandlerLocalAlertShadowedStorageError,
+                kDifAlertHandlerClassD, kDifToggleEnabled, kDifToggleEnabled),
+            kDifLocked);
+}
+
+TEST_P(LocalAlertConfigTest, EnableOnly) {
+  dif_alert_handler_local_alert_t local_alert = std::get<0>(GetParam());
+  dif_alert_handler_class_t alert_class = std::get<1>(GetParam());
+
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET +
+                    static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_RESVAL);
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET +
+          static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+      {{ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT, true}});
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
+          static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+      {{ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_OFFSET,
+        alert_class}});
+
+  EXPECT_EQ(dif_alert_handler_configure_local_alert(
+                &alert_handler_, local_alert, alert_class, kDifToggleEnabled,
+                kDifToggleDisabled),
+            kDifOk);
+}
+
+TEST_P(LocalAlertConfigTest, EnableAndLock) {
+  dif_alert_handler_local_alert_t local_alert = std::get<0>(GetParam());
+  dif_alert_handler_class_t alert_class = std::get<1>(GetParam());
+
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET +
+                    static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_RESVAL);
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET +
+          static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+      {{ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT, true}});
+  EXPECT_WRITE32_SHADOWED(
+      ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
+          static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+      {{ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_OFFSET,
+        alert_class}});
+  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET +
+                     static_cast<uint32_t>(local_alert) * sizeof(uint32_t),
+                 0);
+
+  EXPECT_EQ(dif_alert_handler_configure_local_alert(
+                &alert_handler_, local_alert, alert_class, kDifToggleEnabled,
+                kDifToggleEnabled),
+            kDifOk);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllLocalAlertsAndClasses, LocalAlertConfigTest,
+    testing::Combine(
+        testing::Values(kDifAlertHandlerLocalAlertAlertPingFail,
+                        kDifAlertHandlerLocalAlertEscalationPingFail,
+                        kDifAlertHandlerLocalAlertAlertIntegrityFail,
+                        kDifAlertHandlerLocalAlertEscalationIntegrityFail,
+                        kDifAlertHandlerLocalAlertBusIntegrityFail,
+                        kDifAlertHandlerLocalAlertShadowedUpdateError,
+                        kDifAlertHandlerLocalAlertShadowedStorageError),
+        testing::Values(kDifAlertHandlerClassA, kDifAlertHandlerClassB,
+                        kDifAlertHandlerClassC, kDifAlertHandlerClassD)));
+
 class ConfigTest : public AlertHandlerTest {
   // We provide our own dev_ member variable in this fixture, in order to
   // support IgnoreMmioCalls().
@@ -297,10 +406,8 @@ TEST_F(ConfigTest, ClassInit) {
   // Configure class A local alerts.
   // Unfortunately, we can't use EXPECT_MASK for these reads/writes, since the
   // target registers are shadowed.
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_REG_OFFSET,
-                ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_REG_RESVAL);
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_REG_OFFSET,
-                ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_REG_RESVAL);
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_REGWEN_1_REG_OFFSET,
+                ALERT_HANDLER_LOC_ALERT_REGWEN_1_REG_RESVAL);
   EXPECT_WRITE32_SHADOWED(
       ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_REG_OFFSET,
       {{ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_EN_LA_1_BIT, true}});
@@ -356,20 +463,16 @@ TEST_F(ConfigTest, ClassInit) {
   // Configure class B local alerts.
   // Unfortunately, we can't use EXPECT_MASK for these reads/writes, since the
   // target registers are shadowed.
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET,
-                ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_RESVAL);
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET,
-                ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_RESVAL);
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET,
+                ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_RESVAL);
   EXPECT_WRITE32_SHADOWED(
       ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET,
       {{ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT, true}});
   EXPECT_WRITE32_SHADOWED(
       ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET,
       ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSB);
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_REG_OFFSET,
-                ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_REG_RESVAL);
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_REG_OFFSET,
-                ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_REG_RESVAL);
+  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_REGWEN_2_REG_OFFSET,
+                ALERT_HANDLER_LOC_ALERT_REGWEN_2_REG_RESVAL);
   EXPECT_WRITE32_SHADOWED(
       ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_REG_OFFSET,
       {{ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_EN_LA_2_BIT, true}});
