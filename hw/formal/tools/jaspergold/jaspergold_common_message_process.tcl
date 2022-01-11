@@ -36,3 +36,4 @@ set_message -disable VERI-1796
 # "initial construct ignored"
 set_message -disable VERI-1060
 
+set_prove_verbosity 4

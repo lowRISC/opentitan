@@ -9,10 +9,8 @@ source $env(COMMON_MSG_TCL_PATH)
 
 if {$env(COV) == 1} {
   check_cov -init -model {branch statement functional} \
-  -enable_prove_based_proof_core
+  -exclude_bind_hierarchies
 }
-set_task_compile_time_limit 1000s
-set_property_compile_time_limit 1000s
 
 #-------------------------------------------------------------------------
 # read design
@@ -24,13 +22,13 @@ analyze -sv09     \
   -f [glob *.scr]
 
 if {$env(DUT_TOP) == "prim_count_tb"} {
-  elaborate -bbox_a 4320 \
-            -top $env(DUT_TOP) \
+  elaborate -top $env(DUT_TOP) \
             -enable_sva_isunknown \
+            -disable_auto_bbox \
             -param OutSelDnCnt $OutSelDnCnt \
             -param CntStyle $CntStyle
 } else {
-  elaborate -bbox_a 4320 -top $env(DUT_TOP) -enable_sva_isunknown
+  elaborate -top $env(DUT_TOP) -enable_sva_isunknown -disable_auto_bbox
 }
 
 #-------------------------------------------------------------------------
@@ -155,15 +153,17 @@ if {[info exists ::env(CHECK)]} {
   }
 }
 
+# Uncomment "jg_auto_coi_cov_waivers" to automatically waive out COI cover items which cannot
+# propagate to "relevant signals" (by default, top instance outputs). If you need to specify
+# include/exclude relevant signals manually, run "jg_auto_coi_cov_waivers -help" for more
+# options.
+jg_auto_coi_cov_waivers
+
 #-------------------------------------------------------------------------
 # configure proofgrid
 #-------------------------------------------------------------------------
 
 set_proofgrid_per_engine_max_local_jobs 2
-
-# Uncomment below 2 lines when using LSF:
-# set_proofgrid_mode lsf
-# set_proofgrid_per_engine_max_jobs 16
 
 #-------------------------------------------------------------------------
 # prove all assertions & report
