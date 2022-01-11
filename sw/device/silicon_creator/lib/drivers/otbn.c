@@ -87,7 +87,7 @@ otbn_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
 otbn_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
                              size_t num_words) {
   OTBN_RETURN_IF_ERROR(
-      check_offset_len(offset_bytes, num_words, kOtbnIMemSizeBytes));
+      check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
 
   for (size_t i = 0; i < num_words; ++i) {
     abs_mmio_write32(
@@ -101,7 +101,7 @@ otbn_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
 otbn_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest,
                             size_t num_words) {
   OTBN_RETURN_IF_ERROR(
-      check_offset_len(offset_bytes, num_words, kOtbnIMemSizeBytes));
+      check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
 
   for (size_t i = 0; i < num_words; ++i) {
     dest[i] = abs_mmio_read32(kBase + OTBN_DMEM_REG_OFFSET + offset_bytes +
