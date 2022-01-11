@@ -25,13 +25,13 @@ class spi_segment_item extends uvm_sequence_item;
   // num dummy cycles
   int num_dummy                       = 0;
   //num_addr_bytes
-  int num_cmd_bytes                  = 4;
+  int num_cmd_bytes                   = 4;
 
   // transaction len
   int  spi_len_min = 2;
   int  spi_len_max = 4;
 
-  spi_cmd_e              cmd          = Data;
+  spi_cmd_e              cmd;
   spi_segment_type_e     seg_type     = Data;
   rand spi_host_command_t command_reg;
   rand bit [7:0] spi_data[$];
@@ -72,7 +72,7 @@ class spi_segment_item extends uvm_sequence_item;
     else if (seg_type == Dummy)    { spi_data.size() == num_dummy; }
     else                           { spi_data.size() == command_reg.len+1; }
 
-    solve command_reg before spi_data;
+    solve command_reg.len before spi_data;
   }
 
 

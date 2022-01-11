@@ -158,7 +158,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, $sformatf("\n successfully compared write transaction of %d ",
                                             exp_segment.command_reg.len+1), UVM_HIGH)
     end
-  endtask : compare_trans
+  endtask
 
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
