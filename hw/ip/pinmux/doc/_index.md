@@ -10,7 +10,7 @@ This module conforms to the [OpenTitan guideline for peripheral device functiona
 See that document for integration overview within the broader OpenTitan top level system.
 The module provides a mechanism to reconfigure the peripheral-to-pin mapping at runtime, which greatly enhances the system flexibility.
 In addition to that, the `pinmux` also allows the user to control pad attributes (such as pull-up, pull-down, open-drain, drive-strength, keeper and inversion), and it contains features that facilitate low-power modes of the system.
-For example, the deep sleep behavior of each pad can programmed individually, and the module contains additional pattern detectors that can listen on any IO and wake up the system if a specific pattern has been detected.
+For example, the sleep behavior of each pad can be programmed individually, and the module contains additional pattern detectors that can listen on any IO and wake up the system if a specific pattern has been detected.
 
 ## Features
 
@@ -62,14 +62,14 @@ See the [muxing matrix]({{< relref "#muxing-matrix">}}) section for more details
 
 ### Retention and Wakeup Features
 
-The retention logic allows SW to specify a certain behavior during deep sleep for each muxed and dedicated output.
+The retention logic allows SW to specify a certain behavior during sleep for each muxed and dedicated output.
 Legal behaviors are tie low, tie high, high-Z, keeping the previous state, or driving the current value (useful for peripherals that are always on).
 
 The wakeup detectors can detect patterns such as rising / falling edges and pulses of a certain width up to 255 AON clock cycles.
 Each wakeup detector can listen on any one of the MIO / DIO signals that are routed through the `pinmux`, and if a pattern is detected, the power manager is informed of that event via a wakeup request.
 
-The `pinmux` module itself is in the always-on (AON) power domain, and as such does not loose configuration state when a deep sleep power cycle is performed.
-However, only the wakeup detector logic will be actively clocked during deep sleep in order to save power.
+The `pinmux` module itself is in the always-on (AON) power domain, and as such does not loose configuration state when a sleep power cycle is performed.
+However, only the wakeup detector logic will be actively clocked during sleep in order to save power.
 
 See the [retention logic]({{< relref "#retention-logic">}}) and [wakeup detectors]({{< relref "#wakeup-detectors">}}) sections for more details about the mux implementation.
 
@@ -111,7 +111,7 @@ Signal                                 | Direction | Type                       
 ---------------------------------------|-----------|------------------------------------|---------------
 `pin_wkup_req_o`                       | `output`  | `logic`                            | Wakeup request from wakeup detectors, to the power manager, running on the AON clock.
 `usb_wkup_req_o`                       | `output`  | `logic`                            | Wakeup request from USB wakeup detector, going to the power manager, running on the AON clock.
-`sleep_en_i`                           | `input`   | `logic`                            | Level signal that is asserted when the power manager enters deep sleep.
+`sleep_en_i`                           | `input`   | `logic`                            | Level signal that is asserted when the power manager enters sleep.
 `strap_en_i`                           | `input`   | `logic`                            | This signal is pulsed high by the power manager after reset in order to sample the HW straps.
 `lc_dft_en_i`                          | `input`   | `lc_ctrl_pkg::lc_tx_t`             | Test enable qualifier coming from life cycle controller, used for HW strap qualification.
 `lc_hw_debug_en_i`                     | `input`   | `lc_ctrl_pkg::lc_tx_t`             | Debug enable qualifier coming from life cycle controller, used for HW strap qualification.
@@ -160,11 +160,11 @@ The output enable and the associated data signal (i.e. `periph_to_mio` and `peri
 ## Retention Logic
 
 As illustrated in the picture above, all muxing matrix and DIO outputs are routed through the retention logic, which essentially consists of a set of multiplexors and two retention registers per output (one register is for the output data and one for the output enable).
-This multiplexor can be configured to be automatically activated upon deep sleep entry in order to either drive the output low, high, high-Z or to the last seen value (keep).
+This multiplexor can be configured to be automatically activated upon sleep entry in order to either drive the output low, high, high-Z or to the last seen value (keep).
 If no sleep behavior is specified, the retention logic will continue to drive out the value coming from the peripheral side, which can be useful for peripherals that reside in the AON domain.
 
 The sleep behavior of all outputs is activated in parallel via a trigger signal asserted by the power manager.
-Once activated, it is the task of SW to disable the sleep behavior for each individual pin when waking up from deep sleep.
+Once activated, it is the task of SW to disable the sleep behavior for each individual pin when waking up from sleep.
 This ensures that the output values remain stable until the system and its peripherals have been re-initialized.
 
 ## Wakeup Detectors
@@ -334,9 +334,9 @@ Note that the `pinmux` configuration should be sequenced after any IO attribute-
 If needed, each select signal can be individually locked down via {{< regref "MIO_PERIPH_INSEL_REGWEN_0" >}} or {{< regref "MIO_OUTSEL_REGWEN_0" >}}.
 The configuration can then not be altered anymore until the next system reset.
 
-## Deep Sleep Features
+## Sleep Features
 
-The deep sleep behavior of each individual MIO or DIO can be defined via the ({{< regref "MIO_PAD_SLEEP_EN_0" >}}, {{< regref "DIO_PAD_SLEEP_EN_0" >}}, {{< regref "MIO_PAD_SLEEP_MODE_0" >}} and {{< regref "DIO_PAD_SLEEP_MODE_0" >}}) registers.
+The sleep behavior of each individual MIO or DIO can be defined via the ({{< regref "MIO_PAD_SLEEP_EN_0" >}}, {{< regref "DIO_PAD_SLEEP_EN_0" >}}, {{< regref "MIO_PAD_SLEEP_MODE_0" >}} and {{< regref "DIO_PAD_SLEEP_MODE_0" >}}) registers.
 Available sleep behaviors are:
 `dio/mio_pad_sleep_en` Value  | `dio/mio_pad_sleep_mode` Value | Sleep Behavior
 ------------------------------|--------------------------------|-----------------------
@@ -346,7 +346,7 @@ Available sleep behaviors are:
 1                             | 2                              | High-Z
 1                             | 3                              | Keep last value
 
-Note that if the behavior is set to "Drive", the sleep mode will not be activated upon deep sleep entry.
+Note that if the behavior is set to "Drive", the sleep mode will not be activated upon sleep entry.
 Rather, the retention logic continues to drive the value coming from the peripheral side.
 Also note that the sleep logic is located after the `pinmux` matrix, hence the sleep configuration is per MIO pad and not per MIO peripheral.
 
