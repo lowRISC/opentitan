@@ -148,6 +148,8 @@ module rom_ctrl_fsm
   // that we can do that for the rom_select_bus_o signal without needing an intermediate 1-bit
   // signal which would need burying.
   //
+  // SEC_CM: FSM.SPARSE
+  // SEC_CM: INTERSIG.MUBI
   typedef enum logic [9:0] {
     ReadingLow  = {6'b111101, MuBi4False},
     ReadingHigh = {6'b110110, MuBi4False},
@@ -278,6 +280,8 @@ module rom_ctrl_fsm
   // would allow them to generate a useful wrong address for a fetch). Fortunately, doing so would
   // cause the counter_done signal to drop again and we *know* that it should stay high when our FSM
   // is in the Done state.
+  //
+  // SEC_CM: CHECKER.CTR.CONSISTENCY
   logic unexpected_counter_change;
   assign unexpected_counter_change = mubi4_test_true_loose(in_state_done) & !counter_done;
 
@@ -287,8 +291,6 @@ module rom_ctrl_fsm
   assign rom_addr_o = counter_read_addr;
   assign rom_req_o = counter_read_req;
 
-  // TODO: There are lots more checks that we could do here (things like spotting vld signals that
-  //       occur when we're in an FSM state that doesn't expect them)
   assign alert_o = fsm_alert | checker_alert | unexpected_counter_change;
 
 endmodule

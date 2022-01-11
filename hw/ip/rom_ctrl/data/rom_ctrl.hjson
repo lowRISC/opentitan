@@ -85,6 +85,35 @@
   ],
   countermeasures: [
     {
+      name: "CHECKER.CTR.CONSISTENCY",
+      desc: '''
+        Once rom_ctrl has handed control of the mux to the bus, the internal
+        FSM counter should point at the top of ROM (where we ensure the word
+        has invalid ECC bits). The unexpected_counter_change signal in
+        rom_ctrl_fsm goes high and generates a fatal alert if that counter is
+        perturbed in any way.
+      '''
+    },
+    {
+      name: "COMPARE.CTRL_FLOW.CONSISTENCY",
+      desc: '''
+        The hash comparison module triggers a fatal error if the checker FSM
+        triggers a second comparison after a reset. This is handled by the
+        start_alert signal in the rom_ctrl_compare module and could be
+        triggered if the checker FSM was somehow glitched to jump backwards.
+      '''
+    },
+    {
+      name: "COMPARE.CTR.CONSISTENCY",
+      desc: '''
+        The hash comparison module has an internal count (indexing 32-bit words
+        in the 256-bit digests). If this glitches to a nonzero value before the
+        comparison starts or to a value other than the last index after the
+        comparison ends then an fatal alert is generated. This is handled by
+        the wait_addr_alert and done_addr_alert signals in rom_ctrl_compare.
+      '''
+    },
+    {
       name: "FSM.SPARSE",
       desc: "FSMs are sparsely encoded."
     },
@@ -97,8 +126,12 @@
       desc: "A cSHAKE digest is computed of the ROM contents."
     },
     {
-      name: "BUS.MUBI",
-      desc: "Checker FSM 'done' signal is multi-bit encoded when passed to pwrmgr."
+      name: "INTERSIG.MUBI",
+      desc: '''
+        Checker FSM 'done' signal is multi-bit encoded when passed to pwrmgr.
+        This signal is derived from the (multi-bit) sparse FSM state in the
+        rom_ctrl_fsm module.
+      '''
     },
     {
       name: "BUS.INTEGRITY",
@@ -109,21 +142,29 @@
     },
     {
       name: "MUX.MUBI",
-      desc: "Checker/Bus mux is multi-bit encoded."
+      desc: '''
+        The mux that arbitrates between the checker and the bus is multi-bit
+        encoded. An invalid value generates a fatal alert with the sel_invalid
+        signal in the rom_ctrl_mux module.
+      '''
+    },
+    {
+      name: "MUX.CONSISTENCY",
+      desc: '''
+        The mux that arbitrates between the checker and the bus gives access to
+        the checker at the start of time and then switches to the bus, never
+        going back. If a glitch does cause it to switch back, a fatal alert is
+        generated with the sel_reverted or sel_q_reverted signals in the
+        rom_ctrl_mux module.
+      '''
     },
     {
       name: "CTRL.REDUN",
       desc: '''
-        Addresses from TL accesses are passed redundantly to the scrambled ROM module, to ensure the
-        address lines are not independently faultable downstream of the bus integrity ECC check.
-      '''
-    },
-    {
-      name: "CTRL.CONSISTENCY",
-      desc: '''
-        There are simple checks to detect unexpected changes in the state of the checker, especially
-        after it should have finished working (and the host processor is now accessing ROM to
-        execute code).
+        Addresses from TL accesses are passed redundantly to the scrambled ROM
+        module, to ensure the address lines are not independently faultable
+        downstream of the bus integrity ECC check. See the bus_rom_prince_index
+        and bus_rom_rom_index signals in the rom_ctrl module.
       '''
     },
   ]

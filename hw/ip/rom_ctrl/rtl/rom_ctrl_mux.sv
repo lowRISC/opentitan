@@ -77,16 +77,22 @@ module rom_ctrl_mux
   assign sel_bus_qq = mubi4_t'(sel_bus_qq_raw);
 
   // Spot if the sel_bus_i signal or its register version has a corrupt value.
+  //
+  // SEC_CM: MUX.MUBI
   logic sel_invalid;
   assign sel_invalid = mubi4_test_invalid(sel_bus_i) || mubi4_test_invalid(sel_bus_q);
 
   // Spot if the select signal switches back to the checker once we've switched to the bus. Doing so
   // will have no lasting effect because of how we calculate sel_bus_q) but isn't supposed to
   // happen, so we want to trigger an alert.
+  //
+  // SEC_CM: MUX.CONSISTENCY
   logic sel_reverted;
   assign sel_reverted = mubi4_test_true_loose(sel_bus_q) & mubi4_test_false_loose(sel_bus_i);
 
   // Spot if the sel_bus_q signal has reverted somehow.
+  //
+  // SEC_CM: MUX.CONSISTENCY
   logic sel_q_reverted;
   assign sel_q_reverted = mubi4_test_true_loose(sel_bus_qq) & mubi4_test_false_loose(sel_bus_q);
 
