@@ -7,6 +7,7 @@
 
 `define ASSERT_I(__name, __prop)
 `define ASSERT_INIT(__name, __prop)
+`define ASSERT_INIT_NET(__name, __prop)
 `define ASSERT_FINAL(__name, __prop)
 `define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
 `define ASSERT_NEVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)

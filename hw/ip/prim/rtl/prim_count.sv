@@ -216,10 +216,7 @@ module prim_count import prim_count_pkg::*; #(
   `ifdef INC_ASSERT
   logic unused_assert_connected;
 
-  // ASSERT_INIT can only be used for paramters/constants in FPV.
-  `ifdef SIMULATION
-  `ASSERT_INIT(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
-  `endif
+  `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
   `endif
 endmodule // prim_count
 
