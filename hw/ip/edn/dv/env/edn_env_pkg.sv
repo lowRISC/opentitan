@@ -15,6 +15,7 @@ package edn_env_pkg;
   import csr_utils_pkg::*;
   import edn_ral_pkg::*;
   import prim_mubi_pkg::*;
+  import edn_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
