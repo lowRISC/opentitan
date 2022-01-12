@@ -444,7 +444,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       // busy to locked), so the scoreboard has no way of knowing whether the recoverable alert was
       // supposed to have happened. In practice, I suspect we don't care: if a fatal alert was
       // raised, a recoverable alert doesn't really matter.
-      expected = ((alert_name == "recov") && recov_alert_expected) || fatal_alert_expected;
+      expected = ((alert_name == "recov") && recov_alert_expected) || fatal_alert_allowed;
       if (expected || cfg.under_reset) begin
         break;
       end
@@ -509,7 +509,8 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
     if (alert_name == "fatal") begin
       // If this was a fatal alert then check the counter is positive and that the expected flag is
-      // set (but don't clear it).
+      // set. Clear the "expected" flag, but not "allowed" (so that we won't see a problem when the
+      // fatal alert is re-triggered).
       `DV_CHECK_FATAL((fatal_alert_count > 0) && fatal_alert_expected)
       fatal_alert_expected = 1'b0;
     end else begin
