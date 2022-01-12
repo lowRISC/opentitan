@@ -53,6 +53,18 @@ package jtag_riscv_agent_pkg;
     DmiHardReset = 17
   } jtag_dtmcs_e;
 
+  typedef enum bit [7:0] {
+    DmControl  = 8'h10,
+    Sbcs       = 8'h38,
+    SbAddress0 = 8'h39,
+    SbData0    = 8'h3C
+  } jtag_dm_csr_e;
+
+  typedef enum bit [4:0] {
+    SbAccess32 = 'd2,
+    SbBusy     = 'd21
+  } sbcs_field_e;
+
   // forward declare classes to allow typedefs below
   typedef class jtag_riscv_item;
   typedef class jtag_riscv_agent_cfg;
@@ -70,7 +82,7 @@ package jtag_riscv_agent_pkg;
 
   task automatic jtag_read_csr(bit [bus_params_pkg::BUS_AW-1:0] csr_addr,
                                jtag_riscv_sequencer seqr,
-                               ref bit [bus_params_pkg::BUS_DW-1:0] csr_val);
+                               output bit [bus_params_pkg::BUS_DW-1:0] csr_val);
     jtag_riscv_csr_seq jtag_csr_seq = jtag_riscv_csr_seq::type_id::create("jtag_csr_seq");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(jtag_csr_seq, addr == csr_addr; do_write == 0;,, msg_id)
     jtag_csr_seq.start(seqr);
@@ -84,6 +96,45 @@ package jtag_riscv_agent_pkg;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(jtag_csr_seq, addr == csr_addr; do_write == 1; data == csr_val;,
                                    , msg_id)
     jtag_csr_seq.start(seqr);
+  endtask
+
+  task automatic activate_rv_dm_jtag(jtag_riscv_sequencer seqr);
+    bit [bus_params_pkg::BUS_DW-1:0] dmctrl_val, sbcs_val;
+
+    // Set dmcontrol's dmactive bit.
+    while (dmctrl_val == 0) begin
+      jtag_write_csr(DmControl, seqr, 1);
+      jtag_read_csr(DmControl, seqr, dmctrl_val);
+    end
+
+    // Read system bus access control and status register.
+    // Once the sbcs value is not 0, then RV_DM jtag is ready.
+    while (sbcs_val == 0) jtag_read_csr(Sbcs, seqr, sbcs_val);
+
+    // Ensure the RV_DM is set to correct bus width.
+    `DV_CHECK_EQ(sbcs_val[SbAccess32], 1, "expect SBA width to be 32 bits!", error, msg_id)
+  endtask
+
+  task automatic rv_dm_jtag_read_csr(bit [bus_params_pkg::BUS_AW-1:0] csr_addr,
+                                     jtag_riscv_sequencer seqr,
+                                     output bit [bus_params_pkg::BUS_DW-1:0] csr_val);
+    // Write to Sbcs register to set the busy bit.
+    jtag_write_csr(Sbcs, seqr, 'b1 << SbBusy);
+    jtag_write_csr(SbAddress0, seqr, csr_addr);
+    jtag_read_csr(SbData0, seqr, csr_val);
+    `uvm_info(msg_id, $sformatf("rv_dm_jtag_read_csr addr: %0h, val: %0h", csr_addr, csr_val),
+              UVM_MEDIUM)
+  endtask
+
+  task automatic rv_dm_jtag_write_csr(bit [bus_params_pkg::BUS_AW-1:0] csr_addr,
+                                      jtag_riscv_sequencer seqr,
+                                      bit [bus_params_pkg::BUS_DW-1:0] csr_val);
+    // Write to Sbcs register to set the busy bit.
+    jtag_write_csr(Sbcs, seqr, 'b1 << SbBusy);
+    jtag_write_csr(SbAddress0, seqr, csr_addr);
+    jtag_write_csr(SbData0, seqr, csr_val);
+    `uvm_info(msg_id, $sformatf("rv_dm_jtag_write_csr addr: %0h, val: %0h", csr_addr, csr_val),
+              UVM_MEDIUM)
   endtask
 
 endpackage: jtag_riscv_agent_pkg
