@@ -29,6 +29,7 @@ package chip_env_pkg;
   import tl_agent_pkg::*;
   import uart_agent_pkg::*;
   import xbar_env_pkg::*;
+  import top_earlgrey_rnd_cnst_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
