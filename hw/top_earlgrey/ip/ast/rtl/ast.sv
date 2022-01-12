@@ -122,7 +122,7 @@ module ast #(
   input [8-1:0] fla_obs_i,                    // FLASH Observe Bus
   input [8-1:0] otp_obs_i,                    // OTP Observe Bus
   input [8-1:0] otm_obs_i,                    // OT Modules Observe Bus
-  output ast_pkg::obs_cnt_t obs_cnt_o,        // Observe Control
+  output ast_pkg::ast_obs_ctrl_t obs_ctrl_o,  // Observe Control
 
   // pad mux/pad related
   input [Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
@@ -168,11 +168,11 @@ assign dft_scan_md_o    = prim_mubi_pkg::MuBi4False;
 assign scan_mode        = 1'b0;
 assign scan_shift_en_o  = 1'b0;
 assign scan_reset_no    = 1'b1;
-assign obs_cnt_o        = '{
-                             obgsl: 4'h0,
-                             obmsl: 4'h0,
-                             obmen: prim_mubi_pkg::MuBi4False
-                           };
+assign obs_ctrl_o = '{
+                       obgsl: 4'h0,
+                       obmsl: ast_pkg::ObsNon,
+                       obmen: prim_mubi_pkg::MuBi4False
+                     };
 
 
 ///////////////////////////////////////

@@ -134,29 +134,29 @@ typedef struct packed {
 } clks_osc_byp_t;
 
 typedef enum logic [4-1:0] {
-  Nmd    = 4'd0,
-  Ast    = 4'd1,
-  Fla    = 4'd2,
-  Otp    = 4'd3,
-  Ot0    = 4'd4,
-  Ot1    = 4'd5,
-  Ot2    = 4'd6,
-  Ot3    = 4'd7,
-  Rs0    = 4'd8,
-  Rs1    = 4'd9,
-  Rs2    = 4'd10,
-  Rs3    = 4'd11,
-  Rs4    = 4'd12,
-  Rs5    = 4'd13,
-  Rs6    = 4'd14,
-  Rs7    = 4'd15
+  ObsNon = 4'h0,  // No module observed (disable)
+  ObsAst = 4'h1,  // Observe AST
+  ObsFla = 4'h2,  // Observe FLASH
+  ObsOtp = 4'h3,  // Observe OTP
+  ObsOt0 = 4'h4,  // Observe OT0
+  ObsOt1 = 4'h5,  // Observe OT1
+  ObsOt2 = 4'h6,  // Observe OT2
+  ObsOt3 = 4'h7,  // Observe OT3
+  ObsRs0 = 4'h8,  // RESERVED
+  ObsRs1 = 4'h9,  // RESERVED
+  ObsRs2 = 4'hA,  // RESERVED
+  ObsRs3 = 4'hB,  // RESERVED
+  ObsRs4 = 4'hC,  // RESERVED
+  ObsRs5 = 4'hD,  // RESERVED
+  ObsRs6 = 4'hE,  // RESERVED
+  ObsRs7 = 4'hF   // RESERVED
 } ast_omdl_e;
 
 typedef struct packed {
   logic [4-1:0]          obgsl;
   ast_omdl_e             obmsl;
   prim_mubi_pkg::mubi4_t obmen;
-} ast_obs_cnt_t;
+} ast_obs_ctrl_t;
 
 endpackage  // of ast_pkg
 `endif  // of __AST_PKG_SV

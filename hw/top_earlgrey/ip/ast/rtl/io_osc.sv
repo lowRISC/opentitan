@@ -16,26 +16,23 @@ module io_osc (
 );
 
 `ifndef AST_BYPASS_CLK
+`ifndef SYNTHESIS
 // Behavioral Model
 ////////////////////////////////////////
 timeunit 1ns / 1ps;
 import ast_bhv_pkg::* ;
 
 localparam real IoClkPeriod = 1000000/96;  // ~10416.666667ps (96Mhz)
-logic clk, en_dly;
+logic clk;
 
 initial begin
   clk = 1'b0;
   $display("\nIO Clock Period: %0dps", IoClkPeriod);
-  en_dly = 1'b0;  // to block init X
-  #(IO_EN_RDLY + VCAON_POK_RDLY + 1) en_dly = 1'b1;
 end
 
-// Enable 5us RC Delay
-logic io_en_dly, io_clk_dly;
-
-assign #(IO_EN_RDLY) io_en_dly = io_en_i;
-assign io_clk_dly = io_en_dly && en_dly;
+// Enable 5us RC Delay on rise
+logic en_osc_re;
+buf #(IO_EN_RDLY, 0) b0 (en_osc_re, (vcore_pok_h_i && io_en_i));
 
 // Clock Oscillator
 ////////////////////////////////////////
@@ -44,11 +41,20 @@ logic en_osc;
 always begin
    #(IoClkPeriod/2000) clk = ~clk && en_osc;
 end
-`else  // of AST_BYPASS_CLK
-// SYNTHESIS/VERILATOR/LINTER/FPGA
+`else  // of SYBTHESIS
+// SYNTHESIS/LINTER
 ///////////////////////////////////////
-logic io_clk_dly;
-assign io_clk_dly = 1'b1;
+logic en_osc_re;
+assign en_osc_re = vcore_pok_h_i && io_en_i;
+
+logic clk, en_osc;
+assign clk = 1'b0;
+`endif  // of SYBTHESIS
+`else  // of AST_BYPASS_CLK
+// VERILATOR/FPGA
+///////////////////////////////////////
+logic en_osc_re;
+assign en_osc_re = vcore_pok_h_i && io_en_i;
 
 // Clock Oscillator
 ////////////////////////////////////////
@@ -64,9 +70,7 @@ prim_clock_gating #(
 );
 `endif
 
-logic en_osc_re, en_osc_fe;
-
-assign en_osc_re = vcore_pok_h_i && io_en_i && io_clk_dly;
+logic en_osc_fe;
 
 // Syncronize en_osc to clk FE for glitch free disable
 always_ff @( negedge clk, negedge vcore_pok_h_i ) begin
