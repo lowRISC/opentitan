@@ -247,6 +247,62 @@ The connection between the modules are defined in the top-level configuration fi
 
 See the section on [Inter Signal Handling](#inter-signal-handling) below for detailed data structure in the configuration file.
 
+### Security countermeasures {#countermeasures}
+
+If this IP block is considered security-critical, it will probably have design features that try to mitigate against attacks like fault injection or side channel analysis.
+These features can be loosely categorised and labelled with pairs of the form `ASSET.CM_TYPE`.
+Here, `ASSET` is the asset that is being protected.
+This might be secret information like a key, or it might be internal state like a processor's control flow.
+The countermeasure that is providing the protection is named with `CM_TYPE`.
+
+The following standardised assets are defined:
+
+| Asset name | Intended meaning |
+| --- | --- |
+| KEY        | A key (secret data) |
+| ADDR       | An address |
+| DATA_REG   | A configuration data register that doesn't come from software (such as Keccak state) |
+| CTRL_FLOW  | The control flow of software or a module |
+| CTRL       | Logic used to steer hardware behavior |
+| CONFIG     | Software-supplied configuration, programmed through the comportable register interface |
+| LFSR       | An LFSR |
+| CTR        | A counter |
+| FSM        | A finite state machine |
+| MEM        | A generic data memory; volatile or non-volatile |
+| CLK        | A clock |
+| RST        | A reset signal |
+| BUS        | Data transferred on a bus |
+| INTERSIG   | A non-bus signal between two IP blocks |
+| MUX        | A multiplexer that controls propagation of sensitive data |
+| CONSTANTS  | A netlist constant |
+| STATE      | An internal state signal (other than FSM state, which is covered by the FSM label) |
+| TOKEN      | A cryptographic token |
+| LOGIC      | Any logic. This is a very broad category: avoid if possible and give an instance or net name if not. |
+
+The following standardised countermeasures are defined:
+
+| Countermeasure name | Intended meaning | Commonly associated assets |
+| --- | --- | --- |
+| MUBI           | A signal is multi-bit encoded | CTRL, CONFIG, CONSTANTS, INTERSIG |
+| SPARSE         | A signal is sparsely encoded  | FSM |
+| DIFF           | A signal is differentially encoded | CTRL, CTR |
+| REDUN          | There are redundant versions of the asset | ADDR, CTRL, CONFIG
+| SHADOW         | A shadow register is used to store the asset | CONFIG
+| SCRAMBLE       | The asset is scrambled | CONFIG, MEM
+| INTEGRITY      | The asset has integrity protection from a computed value such as a checksum | CONFIG, REG, MEM
+| CONSISTENCY    | This asset is checked for consistency other than by associating integrity bits | CTRL, RST
+| DIGEST         | Similar to integrity but more computationally intensive, implying a full hash function | CONFIG, REG, MEM
+| LC_GATED       | Access to the asset is qualified by life-cycle state | REG, MEM, CONSTANTS, CONFIG
+| BKGN_CHK       | The asset is protected with a continuous background health check |
+| GLITCH_DETECT  | The asset is protected by an analog glitch detector | CTRL, FSM, CLK, RST
+| SW_UNREADABLE  | The asset is not accessible by software |
+| SCA            | A countermeasure that provides side-channel attack resistance |
+| MASKING        | A more specific version of SCA where an asset is split into shares |
+| LOCAL_ESC      | A local escalation event is triggered when an attack is detected |
+| GLOBAL_ESC     | A global escalation event is triggered when an attack is detected |
+
+
+
 ## Register Handling
 
 The definition and handling of registers is a topic all on its own, and is specified in its [own document]({{< relref "doc/rm/register_tool" >}}).
@@ -358,6 +414,35 @@ The following shows the expected documentation format for this example.
 | --- | --- |
 | `fatal_uart_breach` | Someone has attacked the UART module |
 | `recov_uart_frozen` | The UART lines are frozen and might be under attack |
+
+### Specifying countermeasures
+
+Countermeasure information can be specified in the register Hjson format.
+This is done with a list with key `countermeasures`.
+Each item is a dictionary with keys `name` and `desc`.
+The `desc` field is a human-readable description of the countermeasure.
+The `name` field should be either of the form `ASSET.CM_TYPE` or `INSTANCE.ASSET.CM_TYPE`.
+Here, `ASSET` and `CM_TYPE` should be one of the values given in the tables in the [Security countermeasures]({{< relref "#countermeasures" >}}) section.
+If specified, `INSTANCE` should name a submodule of the IP block holding the asset.
+It can be used to disambiguate in situations such as where there are two different keys that are protected with different countermeasures.
+
+Here is an example specification:
+```hjson
+  countermeasures: [
+    {
+      name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+    {
+      name: "STATE.SPARSE",
+      desc: "Sparse manufacturing state encoding."
+    }
+    {
+      name: "MAIN.FSM.SPARSE",
+      desc: "The main state FSM is sparsely encoded."
+    }
+  ]
+```
 
 ## Interrupt Handling
 
