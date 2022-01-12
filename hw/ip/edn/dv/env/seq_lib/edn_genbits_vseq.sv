@@ -51,14 +51,13 @@ class edn_genbits_vseq extends edn_base_vseq;
 
     // Endpoints request data
     for (int i = 0; i < cfg.num_endpoints; i++) begin
+      m_endpoint_pull_seq[i].num_trans = csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH;
       m_endpoint_pull_seq[i].start(p_sequencer.endpoint_sequencer_h[i]);
     end
 
     // Expect/Clear interrupt bit
     csr_spinwait(.ptr(ral.intr_state.edn_cmd_req_done), .exp_data(1'b1));
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
-
-    // TODO: Add prediction, compare in scoreboard
   endtask
 
 endclass

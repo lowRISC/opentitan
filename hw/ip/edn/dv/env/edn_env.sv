@@ -12,7 +12,7 @@ class edn_env extends cip_base_env #(
 
   csrng_agent   m_csrng_agent;
   push_pull_agent#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-       m_endpoint_agent [MAX_NUM_ENDPOINTS];
+       m_endpoint_agent[MAX_NUM_ENDPOINTS];
 
   `uvm_component_new
 
@@ -43,9 +43,12 @@ class edn_env extends cip_base_env #(
     virtual_sequencer.csrng_sequencer_h = m_csrng_agent.sequencer;
 
     if (cfg.en_scb) begin
+      m_csrng_agent.m_genbits_push_agent.monitor.analysis_port.connect
+          (scoreboard.genbits_fifo.analysis_export);
+
       for (int i = 0; i < cfg.num_endpoints; i++) begin
         m_endpoint_agent[i].monitor.analysis_port.connect
-        (scoreboard.endpoint_fifo[i].analysis_export);
+            (scoreboard.endpoint_fifo[i].analysis_export);
       end
     end
 

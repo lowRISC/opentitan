@@ -12,17 +12,22 @@ class edn_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)))
+  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)))
+      genbits_fifo;
+
+  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(FIPS_ENDPOINT_BUS_WIDTH)))
       endpoint_fifo[MAX_NUM_ENDPOINTS];
 
   // local queues to hold incoming packets pending comparison
-  push_pull_item#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-      endpoint_q[$][MAX_NUM_ENDPOINTS];
+  bit[FIPS_ENDPOINT_BUS_WIDTH - 1:0]   endpoint_data_q[$];
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    genbits_fifo = new("genbits_fifo", this);
+
     for (int i = 0; i < cfg.num_endpoints; i++) begin
       endpoint_fifo[i] = new($sformatf("endpoint_fifo[%0d]", i), this);
     end
@@ -34,8 +39,19 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
+
     fork
+      process_genbits_fifo();
     join_none
+
+    for (int i = 0; i < cfg.num_endpoints; i++) begin
+      automatic int j = i;
+      fork
+        begin
+          process_endpoint_fifo(j);
+        end
+      join_none;
+    end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -99,6 +115,47 @@ class edn_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  task process_genbits_fifo();
+    push_pull_item#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))   genbits_item;
+    bit[ENDPOINT_BUS_WIDTH - 1:0]   endpoint_data;
+    bit                             fips;
+
+    forever begin
+      genbits_fifo.get(genbits_item);
+      fips = genbits_item.h_data[csrng_pkg::GENBITS_BUS_WIDTH];
+      for (int i = 0; i < csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH; i++) begin
+        endpoint_data = genbits_item.h_data >> (i * ENDPOINT_BUS_WIDTH);
+        endpoint_data_q.push_back({fips, endpoint_data});
+      end
+    end
+  endtask
+
+  task process_endpoint_fifo(uint endpoint);
+    push_pull_item#(.HostDataWidth(FIPS_ENDPOINT_BUS_WIDTH))   endpoint_item;
+    uint   index, q_size;
+    bit    match;
+
+    forever begin
+      endpoint_fifo[endpoint].get(endpoint_item);
+      index = 0;
+      match = 0;
+      q_size = endpoint_data_q.size();
+      do begin
+        if (endpoint_item.d_data == endpoint_data_q[index]) begin
+          match = 1;
+          endpoint_data_q.delete(index);
+        end
+        else if (index == q_size - 1) begin
+          `uvm_fatal(`gfn, $sformatf("No match for endpoint_data: %h", endpoint_item.d_data))
+        end
+        else begin
+          index++;
+        end
+      end
+      while (!match);
+    end
+  endtask
+
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
@@ -106,7 +163,11 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    // post test checks - ensure that all local fifos and queues are empty
+
+    if (endpoint_data_q.size()) begin
+      `uvm_fatal(`gfn, $sformatf("endpoint_data_q.size = %0d at EOT", endpoint_data_q.size()))
+    end
+    // TODO: post test checks - ensure that all local fifos and queues are empty
   endfunction
 
 endclass
