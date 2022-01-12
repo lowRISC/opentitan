@@ -17,27 +17,24 @@ module sys_osc (
 );
 
 `ifndef AST_BYPASS_CLK
+`ifndef SYNTHESIS
 // Behavioral Model
 ////////////////////////////////////////
 timeunit  1ns / 1ps;
 import ast_bhv_pkg::* ;
 
 localparam real SysClkPeriod = 10000; // 10000ps (100Mhz)
-logic clk, en_dly;
+logic clk;
 shortreal jitter;
 
 initial begin
   clk  = 1'b0;
   $display("\nSYS Clock Period: %0dps", SysClkPeriod);
-  en_dly = 1'b0;  // to block init X
-  #(SYS_EN_RDLY + VCAON_POK_RDLY + 1) en_dly = 1'b1;
 end
 
-// Enable 5us RC Delay
-logic sys_en_dly, sys_clk_dly;
-
-assign #(SYS_EN_RDLY) sys_en_dly = sys_en_i;
-assign sys_clk_dly = sys_en_dly && en_dly;
+// Enable 5us RC Delay on rise
+logic en_osc_re;
+buf #(SYS_EN_RDLY, 0) b0 (en_osc_re, (vcore_pok_h_i && sys_en_i));
 
 // Clock Oscillator
 ////////////////////////////////////////
@@ -48,11 +45,20 @@ always begin
   jitter = sys_jen_i ? $urandom_range(2000, 0) : 0;
   #((SysClkPeriod+jitter)/2000) clk = ~clk && en_osc;
 end
+`else  // of SYBTHESIS
+// SYNTHESIS/LINTER
+///////////////////////////////////////
+logic en_osc_re;
+assign en_osc_re = vcore_pok_h_i && sys_en_i;
+
+logic clk, en_osc;
+assign clk = 1'b0;
+`endif  // of SYBTHESIS
 `else  // of AST_BYPASS_CLK
-// SYNTHESIS/VERILATOR/LINTER/FPGA
-////////////////////////////////////////
-logic sys_clk_dly;
-assign sys_clk_dly = 1'b1;
+// VERILATOR/FPGA
+///////////////////////////////////////
+logic en_osc_re;
+assign en_osc_re = vcore_pok_h_i && sys_en_i;
 
 // Clock Oscillator
 ////////////////////////////////////////
@@ -68,9 +74,7 @@ prim_clock_gating #(
 );
 `endif
 
-logic en_osc_re, en_osc_fe;
-
-assign en_osc_re = vcore_pok_h_i && sys_en_i && sys_clk_dly;
+logic en_osc_fe;
 
 // Syncronize en_osc to clk FE for glitch free disable
 always_ff @( negedge clk, negedge vcore_pok_h_i ) begin

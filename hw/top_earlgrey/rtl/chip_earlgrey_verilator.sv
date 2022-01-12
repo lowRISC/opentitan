@@ -342,7 +342,7 @@ module chip_earlgrey_verilator (
     .fla_obs_i             ( '0 ),
     .otp_obs_i             ( '0 ),
     .otm_obs_i             ( '0 ),
-    .obs_cnt_o             (  ),
+    .obs_ctrl_o            (  ),
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
