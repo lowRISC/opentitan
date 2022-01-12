@@ -33,7 +33,7 @@ class jtag_riscv_csr_seq extends jtag_riscv_base_seq;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
       op   == local::op;
       // convert byte address to word address
-      addr == local::addr >> DMI_WORD_SHIFT;
+      addr == (cfg.is_rv_dm ? local::addr : (local::addr >> DMI_WORD_SHIFT));
       data == local::data;)
 
     finish_item(req);
