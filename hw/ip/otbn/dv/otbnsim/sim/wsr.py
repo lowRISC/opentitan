@@ -202,6 +202,9 @@ class URNDWSR(WSR):
         '''Writes to URND are ignored'''
         return
 
+    def on_start(self) -> None:
+        self.running = False
+
     def read_unsigned(self) -> int:
         assert self._value is not None
         return self._value
