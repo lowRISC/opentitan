@@ -108,6 +108,10 @@
   ]
   regressions: [
     {
+      name: smoke
+      tests: ["chip_sw_pwrmgr_smoketest"]
+    }
+    {
       name: dif
       tests: ["chip_sw_aes_smoketest",
               "chip_sw_aon_timer_smoketest",
