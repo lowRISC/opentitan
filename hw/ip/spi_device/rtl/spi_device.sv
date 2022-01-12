@@ -440,7 +440,7 @@ module spi_device
   logic sram_rxf_full_q, fwm_rxerr_q;
   logic sram_rxf_full  , fwm_rxerr  ;
 
-  // TODO: Check if CE# deasserted in the middle of bit transfer
+  // ICEBOX(#10058): Check if CE# deasserted in the middle of bit transfer
   assign fwm_rxerr = 1'b0;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -680,7 +680,6 @@ module spi_device
   logic unused_cfg_intercept_en;
   assign unused_cfg_intercept_en = ^cfg_intercept_en;
 
-  // TODO: Add 2FF sync? or just waive?
   assign hw2reg.last_read_addr.d = readbuf_addr_busclk;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -1512,10 +1511,10 @@ module spi_device
     .clk_out_i (clk_spi_out_buf),
 
     // Configurations
-    .cfg_cmd_filter_i (cmd_filter), //TODO
+    .cfg_cmd_filter_i (cmd_filter),
 
-    .cfg_addr_mask_i  (addr_swap_mask), // TODO
-    .cfg_addr_value_i (addr_swap_data), // TODO
+    .cfg_addr_mask_i  (addr_swap_mask),
+    .cfg_addr_value_i (addr_swap_data),
 
     .cfg_payload_mask_i (payload_swap_mask),
     .cfg_payload_data_i (payload_swap_data),
@@ -1745,6 +1744,8 @@ module spi_device
     // It should be instantly available to not introduce the latency.
     // If prim_sram_arbiter has fixed arbitration, then FW access should be
     // lowest priority.
+    //
+    // ICEBOX(#10065): Implement grant in upload module and sram interface
     `ASSERT(ReqAlwaysAccepted_A, sys_sram_req[i] |-> sys_sram_gnt[i])
   end : g_sram_connect
 

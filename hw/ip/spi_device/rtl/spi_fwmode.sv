@@ -259,8 +259,6 @@ module spi_fwmode
 
   assign fwm_wstrb_o = sram_mask2strb(fwm_wmask);
 
-  // TODO: Assume other 7bits in a byte are same to the first bit
-
   prim_sram_arbiter #(
     .N            (2),  // RXF, TXF
     .SramDw       (SramDw),

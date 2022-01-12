@@ -267,7 +267,6 @@ module spi_cmdparse
     if (!rst_ni) begin
       st <= StIdle;
     end else if (module_active) begin
-      // TODO: What condition should this to be activated?
       st <= st_d;
     end
   end
@@ -351,7 +350,6 @@ module spi_cmdparse
             end
 
             opcode_en4b, opcode_ex4b: begin
-              // TODO: implement
               st_d = StAddr4B;
 
               // opcode only commands. Need to assert DP before transition
