@@ -76,6 +76,14 @@ extern const uint64_t kClockFreqPeripheralHz;
 extern const uint64_t kClockFreqUsbHz;
 
 /**
+ * The always on clock frequency of the device, in hertz.
+ * This is the operating clock used by the always on timer,
+ * power manager and other peripherals that continue to
+ * operate after the device is in sleep state.
+ */
+extern const uint64_t kClockFreqAonHz;
+
+/**
  * The baudrate of the UART peripheral (if such a thing is present).
  */
 extern const uint64_t kUartBaudrate;
