@@ -15,6 +15,11 @@
     assert (__prop);                   \
   end
 
+`define ASSERT_INIT_NET(__name, __prop) \
+  initial begin : __name                \
+    #1ps assert (__prop);               \
+  end
+
 // This doesn't make much sense for a formal tool (we never get to the final block!)
 `define ASSERT_FINAL(__name, __prop)
 

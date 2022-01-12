@@ -47,6 +47,8 @@
 //
 //  ASSERT_INIT:  Assertion in initial block. Can be used for things like parameter checking.
 //
+//  ASSERT_INIT_NET: Assertion in initial block. Can be used for initial value of a net.
+//
 //  ASSERT_FINAL: Assertion in final block. Can be used for things like queues being empty at end of
 //                sim, all credits returned at end of sim, state machines in idle at end of sim.
 //

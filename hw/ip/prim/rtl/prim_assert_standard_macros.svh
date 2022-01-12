@@ -28,6 +28,18 @@
   end                                                                                \
 `endif
 
+`define ASSERT_INIT_NET(__name, __prop)                                                   \
+  initial begin                                                                      \
+    // When a net is assigned with a value, the assignment is evaluated after        \
+    // initial in Xcelium. Add 1ps delay to check value after the assignment is      \
+    // completed.                                                                    \
+    #1ps;                                                                            \
+    __name: assert (__prop)                                                          \
+      else begin                                                                     \
+        `ASSERT_ERROR(__name)                                                        \
+      end                                                                            \
+  end                                                                                \
+
 `define ASSERT_FINAL(__name, __prop)                                         \
   final begin                                                                \
     __name: assert (__prop || $test$plusargs("disable_assert_final_checks")) \
