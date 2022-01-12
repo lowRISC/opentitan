@@ -14,6 +14,77 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
+/*
+ * Shares for producing the `flash_exec` value in encoded message check. First
+ * 95 shares are generated using the `sparse-fsm-encode` script while the last
+ * share is `kSigverifyFlashExec ^ kShares[0] ^ ... ^ kShares[94]` so that
+ * xor'ing all shares produces kSigverifyFlashExec, i.e. the value that unlocks
+ * flash execution.
+ *
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 95 -n 32 \
+ *     -s 3118901143 --language=c
+ *
+ * Hamming distance histogram:
+ *
+ *  0: --
+ *  1: --
+ *  2: --
+ *  3: --
+ *  4: --
+ *  5: --
+ *  6: --
+ *  7:  (0.22%)
+ *  8:  (0.20%)
+ *  9: | (0.74%)
+ * 10: | (1.21%)
+ * 11: |||| (2.98%)
+ * 12: |||||| (4.97%)
+ * 13: ||||||||||| (8.33%)
+ * 14: ||||||||||||||| (11.13%)
+ * 15: ||||||||||||||||| (12.68%)
+ * 16: |||||||||||||||||||| (14.49%)
+ * 17: ||||||||||||||||| (12.65%)
+ * 18: |||||||||||||| (10.26%)
+ * 19: ||||||||||| (8.38%)
+ * 20: ||||||| (5.49%)
+ * 21: |||| (3.27%)
+ * 22: || (1.72%)
+ * 23: | (0.94%)
+ * 24:  (0.22%)
+ * 25:  (0.07%)
+ * 26:  (0.04%)
+ * 27: --
+ * 28: --
+ * 29: --
+ * 30: --
+ * 31: --
+ * 32: --
+ *
+ * Minimum Hamming distance: 7
+ * Maximum Hamming distance: 26
+ * Minimum Hamming weight: 9
+ * Maximum Hamming weight: 23
+ */
+static const uint32_t kSigverifyShares[kSigVerifyRsaNumWords] = {
+    0xaf28073b, 0x5eb7dcfb, 0x177240b5, 0xa8469df3, 0x2e92e9c0, 0x83ed133b,
+    0x0c9e99f0, 0x25611bd9, 0x411a9d85, 0x5c52b3df, 0x4347a537, 0x1e78e574,
+    0x273e33af, 0x6f363bba, 0x11e4ee52, 0xd29ad9aa, 0x4fc2ac85, 0x52490c66,
+    0x59c2528c, 0xef8d3ab2, 0xe74d7eb8, 0x2822259c, 0xe58efaa3, 0xe702fa04,
+    0x82c670f6, 0x42be0a77, 0x3b021ea0, 0x09bd2a22, 0x26d656a4, 0x2f8e008f,
+    0xefca5842, 0xfbc3a713, 0x4ce07aa1, 0xc1826ecc, 0xc697d53f, 0xf6a69161,
+    0x4a7d7628, 0x87f2e957, 0x84db848d, 0xe05e01c5, 0x6188ff27, 0xbf1a2b31,
+    0xb51d4166, 0x85fd6e7c, 0x59c5d2d5, 0x13c6e4e6, 0xff83c944, 0xc78cd4bb,
+    0x8710d989, 0x7608c41e, 0x1061b036, 0x9c2fb244, 0x34a26844, 0x2bdc22a2,
+    0xfd1d95f3, 0x94ac4e84, 0x1a99ce21, 0xd54eb8f7, 0x54c2cd9f, 0x70a967c8,
+    0xde39d471, 0x652563cd, 0x3d4adea1, 0x1cf6631c, 0xb27d16ee, 0x3a18bafa,
+    0xd8a86a86, 0xd839cd7b, 0xda2ab05a, 0x37fc1d99, 0xbc702308, 0x01d57596,
+    0x480d3091, 0x51420446, 0xcc56d97c, 0x7aa57434, 0x7b6097ae, 0x45bca8ae,
+    0xb0b1e322, 0x5487b90f, 0x1045e6ef, 0x87ad10f0, 0x4c72b7f0, 0xc527c9a3,
+    0x29ed4350, 0xe345625b, 0x57063d83, 0xbb56900a, 0xbfb1be4c, 0x1c454e8f,
+    0xdb27c1b7, 0xbe02c694, 0x2604d74a, 0x4d6516dd, 0x322918ab, 0xd25e8754,
+};
+
 /**
  * Checks the padding and the digest of an EMSA-PKCS1-v1_5 encoded message.
  *
@@ -34,42 +105,90 @@
  *
  * @param enc_msg An encoded message, little-endian.
  * @param act_digest Actual digest of the message being verified, little-endian.
+ * @param[out] flash_exec Value to write to the flash_ctrl EXEC register.
  * @return Result of the operation.
  */
-static rom_error_t sigverify_padding_and_digest_check(
-    const sigverify_rsa_buffer_t *enc_msg, const hmac_digest_t *act_digest) {
-  const uint32_t *enc_msg_ptr = enc_msg->data;
+static rom_error_t sigverify_encoded_message_check(
+    sigverify_rsa_buffer_t *enc_msg, const hmac_digest_t *act_digest,
+    uint32_t *flash_exec) {
+  // The algorithm below uses shares, i.e. trivial secret sharing, to check an
+  // encoded message and produce two values: `flash_exec` and `result`.
+  // `flash_exec` is the value to write to the flash_ctrl EXEC register to
+  // unlock flash execution and `result` is the return value. We produce
+  // `result` in addition to `flash_exec` to avoid having the unlock value in
+  // registers or memory just for checking the result of signature verification.
+  // The algorithm consists of two steps:
+  //
+  // 1. First, we xor each word of `enc_msg` with the corresponding expected
+  // value and share (`kSigverifyShares[i]`). At the end of this step, `enc_msg`
+  // becomes `kSigverifyShares` if it's correct and garbage otherwise. Note
+  // that this step of the algorithm is implemented using separate loops to
+  // reduce stack usage.
+  //
+  // 2. Next, we produce `flash_exec` and `result`. `flash_exec` is produced by
+  // xor'ing all words of `enc_msg` with each other. If `enc_msg` is correct,
+  // `flash_exec` will be `kSigverifyFlashExec` due to the way
+  // `kSigverifyShares` is defined. To make sure that we don't produce this
+  // value otherwise, we compare each word of `enc_msg` with the corresponding
+  // expected value and set `flash_exec` to `UINT32_MAX` at each iteration if
+  // there is a mismatch. Finally, we produce the return value `result` from
+  // `flash_exec` by xor'ing parts of it together. Note that the hardware
+  // constant `kSigverifyFlashExec` is chosen such that this operation results
+  // in `kErrorOk`.
 
-  if (memcmp(enc_msg_ptr, act_digest->digest, sizeof(act_digest->digest)) !=
-      0) {
-    return kErrorSigverifyBadEncodedMessage;
+  // Step 1: Process `enc_msg` so that it becomes `kSigverifyShares` if it's
+  // correct, garbage otherwise.
+  uint32_t *enc_msg_ptr = enc_msg->data;
+  size_t i = 0;
+  for (size_t j = 0; j < kHmacDigestNumWords; ++j, ++i) {
+    enc_msg_ptr[i] ^= act_digest->digest[j] ^ kSigverifyShares[i];
   }
-  enc_msg_ptr += ARRAYSIZE(act_digest->digest);
-
   // Note: This also includes the zero byte right before PS.
   static const uint32_t kEncodedSha256[] = {
       0x05000420, 0x03040201, 0x86480165, 0x0d060960, 0x00303130,
   };
-  if (memcmp(enc_msg_ptr, kEncodedSha256, sizeof(kEncodedSha256)) != 0) {
-    return kErrorSigverifyBadEncodedMessage;
+  for (size_t j = 0; j < ARRAYSIZE(kEncodedSha256); ++j, ++i) {
+    enc_msg_ptr[i] ^= kEncodedSha256[j] ^ kSigverifyShares[i];
   }
-  enc_msg_ptr += ARRAYSIZE(kEncodedSha256);
-
   // Note: `kPsLen` excludes the last word of `enc_msg`, which is 0x0001ffff.
   static const size_t kPsLen = ARRAYSIZE(enc_msg->data) -
                                ARRAYSIZE(kEncodedSha256) -
                                ARRAYSIZE(act_digest->digest) - /*last word*/ 1;
-  uint32_t padding = UINT32_MAX;
-  for (size_t i = 0; i < kPsLen; ++i) {
-    padding &= *enc_msg_ptr++;
+  // PS up to the last word.
+  for (size_t j = 0; j < kPsLen; ++j, ++i) {
+    enc_msg_ptr[i] ^= 0xffffffff ^ kSigverifyShares[i];
   }
-  uint32_t res = ~padding;
-  res |= *enc_msg_ptr ^ 0x0001ffff;
-  if (res != 0) {
-    return kErrorSigverifyBadEncodedMessage;
+  // Last word.
+  enc_msg_ptr[i] ^= 0x0001ffff ^ kSigverifyShares[i];
+  // TODO(#10007): Use SHUTDOWN_CHECK to check loop completion.
+
+  // Step 2: Reduce `enc_msg` to produce the value to write to flash_ctrl EXEC
+  // register (`flash_exec`) and the return value (`result`).
+  *flash_exec = 0;
+  uint32_t diff = 0;
+  for (i = 0; i < kSigVerifyRsaNumWords; ++i) {
+    // Following three statements set `diff` to `UINT32_MAX` if `enc_msg[i]` is
+    // incorrect, no change otherwise.
+    diff |= enc_msg_ptr[i] ^ kSigverifyShares[i];
+    diff |= ~diff + 1;          // Set upper bits to 1 if not 0, no change o/w.
+    diff |= ~(diff >> 31) + 1;  // Set to all 1s if MSB is set, no change o/w.
+
+    *flash_exec ^= enc_msg_ptr[i];
+    // Set `flash_exec` to `UINT32_MAX` if `enc_msg` is incorrect.
+    *flash_exec |= diff;
+  }
+  // TODO(#10007): Use SHUTDOWN_CHECK to check loop completion.
+
+  // Note: `kSigverifyFlashExec` is defined such that the following operation
+  // produces `kErrorOk`.
+  rom_error_t result =
+      (*flash_exec << 21 ^ *flash_exec << 10 ^ *flash_exec >> 1) >> 21;
+  if (result == kErrorOk) {
+    // TODO(#10007): Use SHUTDOWN_CHECK once it's merged.
+    return result;
   }
 
-  return kErrorOk;
+  return kErrorSigverifyBadEncodedMessage;
 }
 
 /**
@@ -115,7 +234,9 @@ static rom_error_t sigverify_use_sw_rsa_verify(lifecycle_state_t lc_state,
 rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  const sigverify_rsa_key_t *key,
                                  const hmac_digest_t *act_digest,
-                                 lifecycle_state_t lc_state) {
+                                 lifecycle_state_t lc_state,
+                                 uint32_t *flash_exec) {
+  *flash_exec = UINT32_MAX;
   hardened_bool_t use_sw;
   RETURN_IF_ERROR(sigverify_use_sw_rsa_verify(lc_state, &use_sw));
 
@@ -130,7 +251,8 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
     default:
       return kErrorSigverifyBadOtpValue;
   }
-  RETURN_IF_ERROR(sigverify_padding_and_digest_check(&enc_msg, act_digest));
+  RETURN_IF_ERROR(
+      sigverify_encoded_message_check(&enc_msg, act_digest, flash_exec));
 
   return kErrorOk;
 }

@@ -473,9 +473,11 @@ TEST_P(SigverifyRsaVerify, Ibex) {
               read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
       .WillOnce(Return(kHardenedBoolTrue));
 
+  uint32_t flash_exec;
   EXPECT_EQ(sigverify_rsa_verify(&GetParam().sig, GetParam().key, &kDigest,
-                                 kLcStateProd),
+                                 kLcStateProd, &flash_exec),
             kErrorOk);
+  EXPECT_EQ(flash_exec, kSigverifyFlashExec);
 }
 
 INSTANTIATE_TEST_SUITE_P(AllCases, SigverifyRsaVerify,
