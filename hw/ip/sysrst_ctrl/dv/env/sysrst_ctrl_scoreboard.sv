@@ -77,11 +77,7 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "key_invert_ctl": begin
       end
-      "com_out_ctl[0]": begin
-      end
-      "com_sel_ctl[0]": begin
-      end
-      "com_det_ctl[0]": begin
+      "com_out_ctl_0", "com_sel_ctl_0", "com_det_ctl_0": begin
       end
       "ec_rst_ctl": begin
       end
@@ -96,6 +92,9 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "wkup_status": begin
       end
       "pin_in_value": begin
+        do_read_check = 1'b0;  //This check is done in sequence
+      end
+      "wkup_status": begin
         do_read_check = 1'b0;  //This check is done in sequence
       end
       default: begin
