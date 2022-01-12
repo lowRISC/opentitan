@@ -21,6 +21,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // Backdoor load the sw test image, setup UART, logger and test status interfaces.
   virtual task cpu_init();
+     int size_bytes;
+     logic [31:0] rand_val;
+
     `uvm_info(`gfn, "Started cpu_init", UVM_MEDIUM)
     // TODO: Fixing this for now - need to find a way to pass this on to the SW test.
     foreach (cfg.m_uart_agent_cfgs[i]) begin
@@ -43,7 +46,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // Randomize the main SRAM.
     for (int i = 0; i < cfg.num_ram_main_tiles; i++) begin
       chip_mem_e mem = chip_mem_e'(RamMain0 + i);
-      cfg.mem_bkdr_util_h[mem].randomize_mem();
+      size_bytes = cfg.mem_bkdr_util_h[mem].get_size_bytes();
+       for (int w_idx = 0; w_idx < size_bytes; w_idx=w_idx+4) begin
+         `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!")
+         cfg.mem_bkdr_util_h[mem].sram_encrypt_write32_integ(
+           .addr(w_idx),
+           .data(rand_val),
+           .key(RndCnstSramCtrlMainSramKey),
+           .nonce(RndCnstSramCtrlMainSramNonce)
+         );
+       end
     end
 
     // Initialize the data partition in all flash banks to all 1s.
