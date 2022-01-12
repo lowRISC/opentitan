@@ -12,36 +12,28 @@
     end
 
 // Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates the design elaboration if __prop evaluates to false.
+// This workaround terminates design elaboration if the __prop predict is false.
+// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
+// and CPU time.
 `define ASSERT_INIT(__name, __prop)                                                  \
 `ifdef FPV_ON                                                                        \
-  // The first argument to $fatal() call below, '2' enables the dumping of CPU time  \
-  // and memory usage statistics.                                                    \
   if (!(__prop)) $fatal(2, "Fatal static assertion [%s]: (%s) is not true.",         \
                         (__name), (__prop));                                         \
 `else                                                                                \
   initial begin                                                                      \
-    // #9017: Avoid race condition between the evaluation of assertion and `__prop`. \
-    //                                                                               \
-    // According to IEEE 1800-2017 SystemVerilog LRM, immediate assertions, unlike   \
-    // concurrent assertions are evaluated in the active region set, as opposed to   \
-    // the observed region. They are hence, susceptible to race conditions           \
-    // (described in section 4.8). The #0 is an acceptable workaround for this.      \
-    //                                                                               \
-    // In this context, the assert and if condition exhibit the same behavior, so we \
-    // replace it with if statement instead.                                         \
-    #0;                                                                              \
-    if (!(__prop)) begin: __name                                                     \
-      `ASSERT_ERROR(__name)                                                          \
-    end                                                                              \
+    __name: assert (__prop)                                                          \
+      else begin                                                                     \
+        `ASSERT_ERROR(__name)                                                        \
+      end                                                                            \
   end                                                                                \
 `endif
 
-`define ASSERT_FINAL(__name, __prop)                                               \
-  final begin                                                                      \
-    if (!(__prop) && !$test$plusargs("disable_assert_final_checks")) begin: __name \
-      `ASSERT_ERROR(__name)                                                        \
-    end                                                                            \
+`define ASSERT_FINAL(__name, __prop)                                         \
+  final begin                                                                \
+    __name: assert (__prop || $test$plusargs("disable_assert_final_checks")) \
+      else begin                                                             \
+        `ASSERT_ERROR(__name)                                                \
+      end                                                                    \
   end
 
 `define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
