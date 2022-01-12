@@ -307,16 +307,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "alert_test": begin
         // FIXME
       end
-      "intr_state": begin
-        // FIXME
-        do_read_check = 1'b0;
-      end
-      "intr_enable": begin
-        // FIXME
-      end
-      "intr_test": begin
-        // FIXME
-      end
       "extclk_ctrl_regwen": begin
         if (addr_phase_write) extclk_ctrl_regwen = item.a_data;
       end
@@ -362,6 +352,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "recov_err_code": begin
         do_read_check = 1'b0;
         if (cfg.en_cov) begin
+          // The frequency measurement tests always check if an expected alert occurred.
           // TODO(maturana) Insert coverage.
         end
       end

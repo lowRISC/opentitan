@@ -15,7 +15,6 @@
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
-#include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
@@ -62,8 +61,8 @@ bool test_main(void) {
     _asm_exception_handler();
 
     CHECK(false);  // Unreachable.
-  } else if (bitfield_bit32_read(reason, kRstmgrReasonWatchdog)) {
-    // Watchdog bite: check that the test phase is correct.
+  } else if (bitfield_bit32_read(reason, kRstmgrReasonSoftwareRequest)) {
+    // Software reset: check that the test phase is correct.
     LOG_INFO("Detected reset after exception test");
     if (*phase != kTestPhaseReset) {
       LOG_ERROR("Test failure: expected phase %d but got phase %d",

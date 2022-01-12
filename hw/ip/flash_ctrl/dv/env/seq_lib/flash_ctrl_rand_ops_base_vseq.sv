@@ -19,17 +19,12 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   // A single randomized flash ctrl operation.
   rand flash_op_t flash_op;
 
-  rand uint bank;
-
   // Constraint address to be in relevant range for the selected partition.
   constraint addr_c {
-    solve bank before flash_op;
-    bank inside {[0:flash_ctrl_pkg::NumBanks-1]};
-    if (flash_op.partition == FlashPartData) {
-      flash_op.addr inside {[BytesPerBank*bank:BytesPerBank*(bank+1)-1]};
-    } else {
+    if (flash_op.partition != FlashPartData) {
       flash_op.addr inside
-       {[BytesPerBank*bank:(BytesPerBank*bank)+(InfoTypeBytes[flash_op.partition>>1])-1]};
+       {[0:InfoTypeBytes[flash_op.partition>>1]-1],
+        [BytesPerBank:BytesPerBank+InfoTypeBytes[flash_op.partition>>1]-1]};
     }
   }
 
@@ -126,6 +121,11 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
         1 :/ cfg.seq_cfg.mp_region_erase_en_pc
       };
 
+      mp_regions[i].he_en dist {
+        0 :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
+        1 :/ cfg.seq_cfg.mp_region_he_en_pc
+      };
+
       mp_regions[i].start_page inside {[0:FlashNumPages - 1]};
       mp_regions[i].num_pages inside {[1:FlashNumPages - mp_regions[i].start_page]};
       mp_regions[i].num_pages <= cfg.seq_cfg.mp_region_max_pages;
@@ -202,6 +202,11 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
         mp_info_pages[i][j][k].erase_en dist {
           0 :/ (100 - cfg.seq_cfg.mp_info_page_erase_en_pc[i][j]),
           1 :/ cfg.seq_cfg.mp_info_page_erase_en_pc[i][j]
+        };
+
+        mp_info_pages[i][j][k].he_en dist {
+          0 :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
+          1 :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
         };
 
       }
@@ -300,8 +305,11 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
       for (int j = 1; j <= num_flash_ops_per_cfg; j++) begin
         data_q_t exp_data;
 
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(flash_op)
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(flash_op_data)
+        // Those 2 has to be randomized simultaneously, otherwise the value of flash_op_data from
+        //  the previous iteration will affect the randomization of flash_op.
+        if (!randomize(flash_op, flash_op_data)) begin
+          `uvm_fatal(`gfn, "Randomization failed for flash_op & flash_op_data!")
+        end
 
         `uvm_info(`gfn, $sformatf("Starting flash_ctrl op: %0d/%0d: %p",
                                   j, num_flash_ops_per_cfg, flash_op), UVM_LOW)

@@ -12,9 +12,10 @@
  * FPGA architectures, it will produce RAM32M primitives. Other vendors have not yet been tested.
  */
 module ibex_register_file_fpga #(
-  parameter bit          RV32E             = 0,
-  parameter int unsigned DataWidth         = 32,
-  parameter bit          DummyInstructions = 0
+    parameter bit                   RV32E             = 0,
+    parameter int unsigned          DataWidth         = 32,
+    parameter bit                   DummyInstructions = 0,
+    parameter logic [DataWidth-1:0] WordZeroVal       = '0
 ) (
   // Clock and Reset
   input  logic                 clk_i,
@@ -36,7 +37,7 @@ module ibex_register_file_fpga #(
 );
 
   localparam int ADDR_WIDTH = RV32E ? 4 : 5;
-  localparam int NUM_WORDS  = 2**ADDR_WIDTH;
+  localparam int NUM_WORDS = 2 ** ADDR_WIDTH;
 
   logic [DataWidth-1:0] mem[NUM_WORDS];
   logic we; // write enable if writing to any register other than R0
@@ -50,11 +51,23 @@ module ibex_register_file_fpga #(
   // we select
   assign we = (waddr_a_i == '0) ? 1'b0 : we_a_i;
 
-  always_ff @(posedge clk_i) begin : sync_write
+  // Note that the SystemVerilog LRM requires variables on the LHS of assignments within
+  // "always_ff" to not be written to by any other process. However, to enable the initialization
+  // of the inferred RAM32M primitives with non-zero values, below "initial" procedure is needed.
+  // Therefore, we use "always" instead of the generally preferred "always_ff" for the synchronous
+  // write procedure.
+  always @(posedge clk_i) begin : sync_write
     if (we == 1'b1) begin
       mem[waddr_a_i] <= wdata_a_i;
     end
   end : sync_write
+
+  // Make sure we initialize the BRAM with the correct register reset value.
+  initial begin
+    for (int k = 0; k < NUM_WORDS; k++) begin
+      mem[k] = WordZeroVal;
+    end
+  end
 
   // Reset not used in this register file version
   logic unused_rst_ni;

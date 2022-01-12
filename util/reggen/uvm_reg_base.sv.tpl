@@ -440,6 +440,9 @@ reg_field_name, field)">\
 %     if window.byte_write:
       set_mem_partial_write_support(1);
 %     endif
+%     if window.data_intg_passthru:
+      set_data_intg_passthru(1);
+%     endif
     endfunction : new
 
   endclass : ${class_name}

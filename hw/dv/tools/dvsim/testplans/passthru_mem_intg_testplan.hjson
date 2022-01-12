@@ -1,0 +1,24 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  testpoints: [
+    {
+      name: passthru_mem_tl_intg_err
+      desc: '''Verify data integrity is stored in the passthru memory rather than generated after
+               a read.
+
+               - Randomly read a memory location and check the data integrity is correct.
+               - Backdoor inject fault into this location.
+               - Check the data integrity is incorrect but there is no d_error as the memory block
+                 should just pass the stored data and integrity to the processor where the
+                 integrity is compared.
+               - Above sequences will be run with `csr_rw_vseq` to ensure it won't affect CSR
+                 accesses.
+            '''
+      milestone: V2S
+      tests: ["{name}_passthru_mem_tl_intg_err"]
+    }
+  ]
+}
+

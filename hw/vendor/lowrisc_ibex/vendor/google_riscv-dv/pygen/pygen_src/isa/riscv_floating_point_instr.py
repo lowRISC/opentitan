@@ -116,7 +116,7 @@ class riscv_floating_point_instr(riscv_instr):
             self.has_fs1 = 0
             self.has_fd = 0
         else:
-            logging.info("Unsupported format %0s", self.format.name)
+            logging.info("Unsupported format {}".format(self.format.name))
 
     def pre_randomize(self):
         super().pre_randomize()

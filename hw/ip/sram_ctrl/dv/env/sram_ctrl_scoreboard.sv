@@ -29,23 +29,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   // the LC escalation has finished propagating through the design
   bit status_lc_esc;
 
-  // internal state for executable-mode information
-  bit       allow_ifetch;
-
-  // The values detected from interface and EXEC csr writes - are not immediately valid
-  // as they need to be "latched" by the internal scb logic whenever an addr_phase_write
-  // is detected on the sram_tl_a_chan_fifo.
-  bit [3:0] detected_csr_exec = '0;
-  bit [3:0] detected_hw_debug_en = '0;
-  bit [7:0] detected_en_sram_ifetch = '0;
-
-  // The values that are "latched" by sram_tl_a_chan_fifo and are assumed to be valid
-  bit [3:0] valid_csr_exec;
-  bit [3:0] valid_hw_debug_en;
-  bit [7:0] valid_en_sram_ifetch;
-
-  bit in_executable_mode;
-
   // path for backdoor access
   string write_en_path;
   string write_addr_path;
@@ -81,24 +64,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   mem_item_t write_item_q[$];
 
-  // TLM agent fifos for the tl_agent connected to the SRAM memory itself
-  uvm_tlm_analysis_fifo #(tl_seq_item) sram_tl_a_chan_fifo;
-  uvm_tlm_analysis_fifo #(tl_seq_item) sram_tl_d_chan_fifo;
-
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(KDI_DATA_SIZE))) kdi_fifo;
 
   // local queues to hold incoming packets pending comparison
-
-  // store addr_phase information about incoming transaction
-  mailbox #(sram_trans_t) addr_phase_mbox;
-
-  // mailbox that all completed sram_trans_t structs will be pushed into for processing.
-  //
-  // transaction order in this mailbox represents the orderr in which the underlying memory
-  // will actually perform memory operations, taking into account any forwarding/reordering.
-  //
-  // Use mailbox to enforce atomic FIFO ordering.
-  mailbox #(sram_trans_t) completed_trans_mbox;
 
   otp_ctrl_pkg::sram_key_t key     = sram_ctrl_pkg::RndCnstSramKeyDefault;
   otp_ctrl_pkg::sram_nonce_t nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
@@ -168,35 +136,19 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     t.nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
   endfunction
 
-  // utility function used by `process_sram_tl_d_chan_fifo()` to check that
+  // utility function used by `process_sram_tl_d_chan_item()` to check that
   // the current data_phase transaction matches the transaction pulled from the `addr_phase_mbox`
   //
   // can also be more generally used to check equality of two transactions
   function bit eq_trans(sram_trans_t t1, sram_trans_t t2);
     bit equal = (t1.we == t2.we) && (eq_sram_addr(t1.addr, t2.addr)) &&
                 (t1.mask == t2.mask) && (t1.key == t2.key) && (t1.nonce == t2.nonce);
-    `uvm_info(`gfn, $sformatf("Comparing 2 transactions:\nt1: %0p\nt2: %0p", t1, t2), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("Comparing 2 transactions:\nt1: %0p\nt2: %0p", t1, t2), UVM_MEDIUM)
     // as one of the sram_trans_t structs will be still in address phase,
     // it may not have the data field available if it is a READ operation
     //
     // in this case, only compare the data field if these are write transactions
     return (equal && t1.we) ? (equal && (t1.data == t2.data)) : equal;
-  endfunction
-
-  // utility function to clear all RAW hazard state
-  function void clear_hazard_state();
-    in_raw_hazard = 0;
-    held_data = '0;
-    clear_trans(held_trans);
-  endfunction
-
-  // utility function to expand a TLUL mask to a full bit-mask
-  function bit [TL_DW-1:0] expand_bit_mask(bit [TL_DBW-1:0] mask);
-    bit [TL_DW-1:0] bitmask = '0;
-    for (int i = 0; i < TL_DBW; i++) begin
-      bitmask[i*8 +: 8] = {8{mask[i]}};
-    end
-    return bitmask;
   endfunction
 
   // Check if the input tl_seq_item has any tl errors.
@@ -209,7 +161,25 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   //       any CSRs or uvm_mems.
   virtual function bit get_sram_instr_type_err(tl_seq_item item, tl_channels_e channel);
     bit is_tl_err;
-    tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
+    bit allow_ifetch;
+    tlul_pkg::tl_a_user_t a_user       = tlul_pkg::tl_a_user_t'(item.a_user);
+    prim_mubi_pkg::mubi8_t sram_ifetch = cfg.exec_vif.otp_en_sram_ifetch;
+    lc_ctrl_pkg::lc_tx_t hw_debug_en   = cfg.exec_vif.lc_hw_debug_en;
+    prim_mubi_pkg::mubi4_t  csr_exec   = `gmv(ral.exec);
+
+    if (cfg.en_cov) begin
+      cov.executable_cg.sample(hw_debug_en,
+                               sram_ifetch,
+                               csr_exec);
+    end
+    if (`INSTR_EXEC) begin
+      allow_ifetch = (sram_ifetch  == prim_mubi_pkg::MuBi8True) ?
+                     (csr_exec == prim_mubi_pkg::MuBi4True)     :
+                     (hw_debug_en == lc_ctrl_pkg::On);
+
+    end else begin
+      allow_ifetch = 0;
+    end
 
     if (a_user.instr_type == prim_mubi_pkg::MuBi4True) begin
       // 2 error cases if an InstrType transaction is seen:
@@ -219,7 +189,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     end
 
     if (channel == DataChannel && is_tl_err) begin
-      `DV_CHECK_EQ(item.d_error, 1, $sformatf("item_err: %0d", is_tl_err))
+      `DV_CHECK_EQ(item.d_error, 1,
+          $sformatf("item_err: %0d, allow_ifetch : %0d, sram_ifetch: %0d, exec: %0d, debug_en: %0d",
+                    is_tl_err, allow_ifetch, sram_ifetch, csr_exec, hw_debug_en))
     end
 
     return is_tl_err;
@@ -232,18 +204,19 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    sram_tl_a_chan_fifo = new("sram_tl_a_chan_fifo", this);
-    sram_tl_d_chan_fifo = new("sram_tl_d_chan_fifo", this);
-
     kdi_fifo = new("kdi_fifo", this);
-
-    addr_phase_mbox = new();
-    completed_trans_mbox = new();
   endfunction
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
   endfunction
+
+  `define RUN_FOREVR_W_RESET_EXIT(TASK) \
+    forever begin \
+      @(negedge cfg.under_reset); \
+      `DV_SPINWAIT_EXIT(TASK();, \
+                       @(posedge cfg.under_reset);) \
+    end
 
   task run_phase(uvm_phase phase);
     string mem_path = dv_utils_pkg::get_parent_hier(cfg.mem_bkdr_util_h.get_path());
@@ -256,18 +229,15 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
     mem_bkdr_scb = sram_ctrl_mem_bkdr_scb::type_id::create("mem_bkdr_scb");
     mem_bkdr_scb.mem_bkdr_util_h = cfg.mem_bkdr_util_h;
+    mem_bkdr_scb.en_cov = cfg.en_cov;
 
     super.run_phase(phase);
     fork
-      sample_key_req_access_cg();
-      process_sram_init();
-      process_lc_escalation();
-      process_sram_executable();
-      process_sram_tl_a_chan_fifo();
-      process_sram_tl_d_chan_fifo();
+      `RUN_FOREVR_W_RESET_EXIT(sample_key_req_access_cg)
+      `RUN_FOREVR_W_RESET_EXIT(process_sram_init)
+      `RUN_FOREVR_W_RESET_EXIT(process_lc_escalation)
       process_kdi_fifo();
-      process_completed_trans();
-      process_write_done_and_check();
+      `RUN_FOREVR_W_RESET_EXIT(process_write_done_and_check)
     join_none
   endtask
 
@@ -298,10 +268,12 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       end
       item = write_item_q.pop_front();
 
-      while (!write_en) begin
+      while (!write_en && !status_lc_esc) begin
         cfg.clk_rst_vif.wait_n_clks(1);
         `DV_CHECK(uvm_hdl_read(write_en_path, write_en))
       end
+      if (status_lc_esc) continue;
+
       `DV_CHECK(uvm_hdl_read(write_addr_path, encrypt_addr))
       decrypt_addr = decrypt_sram_addr(encrypt_addr);
       decrypt_addr = decrypt_addr << 2;
@@ -312,6 +284,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // the data should be settled after posedge. Wait for a 1ps to avoid race condition
       cfg.clk_rst_vif.wait_clks(1);
       #1ps;
+      if (handling_lc_esc) begin
+        `uvm_info(`gfn, "skip checking the write due to escalation", UVM_MEDIUM)
+        continue;
+      end
+
       mem_bkdr_scb.write_finish(decrypt_addr, item.mask);
       `uvm_info(`gfn, $sformatf("Currently num of pending write items is %0d", write_item_q.size),
                 UVM_MEDIUM)
@@ -325,32 +302,26 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       `DV_CHECK(uvm_hdl_read(write_en_path, write_en))
     end
   endtask
+
   // This task spins forever and samples the appropriate covergroup whenever
   // in_key_req is high and a new valid addr_phase transaction is seen on the memory bus.
   virtual task sample_key_req_access_cg();
     forever begin
-      @(negedge cfg.under_reset);
+      @(posedge in_key_req);
       `DV_SPINWAIT_EXIT(
           forever begin
-            @(posedge in_key_req);
-            `DV_SPINWAIT_EXIT(
-                forever begin
-                  // sample the covergroup every time a new TL request is seen
-                  // while a key request is outstanding.
-                  @(posedge cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_valid);
-                  // zero delay to allow bus values to settle
-                  #0;
-                  if (cfg.en_cov) begin
-                    cov.access_during_key_req_cg.sample(
-                        cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_opcode);
-                  end
-                end
-                ,
-                @(negedge in_key_req);
-            )
+            // sample the covergroup every time a new TL request is seen
+            // while a key request is outstanding.
+            @(posedge cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_valid);
+            // zero delay to allow bus values to settle
+            #0;
+            if (cfg.en_cov) begin
+              cov.access_during_key_req_cg.sample(
+                  cfg.m_tl_agent_cfgs[cfg.sram_ral_name].vif.h2d.a_opcode);
+            end
           end
           ,
-          wait(cfg.under_reset == 1);
+          @(negedge in_key_req);
       )
     end
   endtask
@@ -361,8 +332,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     // As a result we simply just wait for the first key request to end, and then wait for each line
     // of the memory to be written.
     forever begin
-      wait(!cfg.under_reset);
       @(posedge in_init);
+      `uvm_info(`gfn, "Got in_init", UVM_MEDIUM)
       // clear the init done signal
       exp_status[SramCtrlInitDone] = 0;
       // initialization process only starts once the corresponding key request finishes
@@ -371,7 +342,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       //
       // thus we just need to wait for a number of cycles equal to the total size
       // of the sram address space
-      `uvm_info(`gfn, "starting to wait for init", UVM_HIGH)
+      `uvm_info(`gfn, "starting to wait for init", UVM_MEDIUM)
       cfg.clk_rst_vif.wait_clks(cfg.mem_bkdr_util_h.get_depth());
       // Wait a small delay to latch the updated CSR status
       #1;
@@ -379,7 +350,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // we can set the init done flag here.
       exp_status[SramCtrlInitDone] = status_lc_esc ? 0 : 1;
       in_init = 0;
-      `uvm_info(`gfn, "dropped in_init", UVM_HIGH)
+      `uvm_info(`gfn, "dropped in_init", UVM_MEDIUM)
     end
   endtask
 
@@ -387,6 +358,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     forever begin
       wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::On);
       `uvm_info(`gfn, "LC escalation request detected", UVM_HIGH)
+
+      // clear exp_mem, scramble is changed due to escalation.
+      exp_mem[cfg.sram_ral_name].init();
 
       handling_lc_esc = 1;
 
@@ -442,304 +416,56 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // lc escalation status will be dropped after reset, no further action needed
       wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::Off);
 
+      // there could be up to 4 transactions accepted but not compared due to escalation
+      // 2 transactions are due to outstanding, 2 transactions are finished but we skip checking
+      // due to key changed after escalation
+      `DV_CHECK_LE(mem_bkdr_scb.read_item_q.size + mem_bkdr_scb.write_item_q.size, 4)
+
       // sample coverage
       if (cfg.en_cov) begin
-        cov.lc_escalation_rst_cg.sample(cfg.clk_rst_vif.rst_n);
+        bit idle = (mem_bkdr_scb.read_item_q.size + mem_bkdr_scb.write_item_q.size == 0);
+        cov.lc_escalation_idle_cg.sample(idle);
       end
     end
   endtask
 
-  virtual task process_sram_executable();
-    forever begin
-      @(cfg.exec_vif.lc_hw_debug_en, cfg.exec_vif.otp_en_sram_ifetch, detected_csr_exec);
+  virtual task process_sram_tl_a_chan_item(tl_seq_item item);
+    `uvm_info(`gfn, $sformatf("Received sram_tl_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
 
-      // "latch" these values with a slight delay to ensure everything has settled
-      #1;
+    `DV_CHECK_EQ(in_key_req, 0, "No item is accepted during key req")
+    `DV_CHECK_EQ(in_init, 0, "No item is accepted during init")
 
-      detected_hw_debug_en = cfg.exec_vif.lc_hw_debug_en;
-      detected_en_sram_ifetch = cfg.exec_vif.otp_en_sram_ifetch;
+    if (cfg.en_cov) cov.subword_access_cg.sample(item.is_write(), item.a_mask);
 
-      // sample executability-related coverage
-      if (cfg.en_cov) begin
-        cov.executable_cg.sample(detected_hw_debug_en,
-                                 detected_en_sram_ifetch,
-                                 detected_csr_exec);
-      end
+    if (item.is_write()) begin
+      mem_bkdr_scb.write_start(simplify_addr(item.a_addr), item.a_data, item.a_mask);
 
-      `uvm_info(`gfn, $sformatf("detected_hw_debug_en: %0b", detected_hw_debug_en), UVM_HIGH)
-      `uvm_info(`gfn, $sformatf("detected_en_sram_ifetch: %0b", detected_en_sram_ifetch), UVM_HIGH)
-
+      write_item_q.push_back(mem_item_t'{simplify_addr(item.a_addr),
+                                         item.a_data, item.a_mask});
+    end else begin
+      mem_bkdr_scb.read_start(simplify_addr(item.a_addr), item.a_mask);
     end
+
   endtask
 
-  virtual task process_sram_tl_a_chan_fifo();
-    tl_seq_item item;
-    sram_trans_t addr_trans;
-    forever begin
-      if (sram_tl_a_chan_fifo.try_get(item) > 0) begin // received a tl_seq_item
-        `uvm_info(`gfn, $sformatf("Received sram_tl_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
+  virtual task process_sram_tl_d_chan_item(tl_seq_item item);
+    `uvm_info(`gfn, $sformatf("Received sram_tl_d_chan item:\n%0s", item.sprint()), UVM_HIGH)
 
-        // update internal state related to instruction type and SRAM execution
-        valid_csr_exec = detected_csr_exec;
-        valid_hw_debug_en = detected_hw_debug_en;
-        valid_en_sram_ifetch = detected_en_sram_ifetch;
+    `DV_CHECK_EQ(in_key_req, 0, "No item is accepted during key req")
+    `DV_CHECK_EQ(in_init, 0, "No item is accepted during init")
 
-        if (`INSTR_EXEC) begin
-          allow_ifetch = (valid_en_sram_ifetch == prim_mubi_pkg::MuBi8True) ?
-                         (valid_csr_exec == prim_mubi_pkg::MuBi4True)       :
-                         (valid_hw_debug_en == lc_ctrl_pkg::On);
-        end else begin
-          allow_ifetch = 0;
-        end
-
-        if (!cfg.en_scb) continue;
-
-        `DV_CHECK_EQ(in_key_req, 0, "No item is accepted during key req")
-        `DV_CHECK_EQ(in_init, 0, "No item is accepted during init")
-
-        // If the escalation propagation has finished,
-        // do not process anymore addr_phase transactions
-        if (status_lc_esc) continue;
-
-        // don't process any error items
-        //
-        // TODO: sample error coverage
-        if (cfg.en_scb_tl_err_chk && predict_tl_err(item, AddrChannel, cfg.sram_ral_name)) begin
-          `uvm_info(`gfn, "TL addr_phase error detected", UVM_HIGH)
-          continue;
-        end
-
-        if (item.is_write()) begin
-          mem_bkdr_scb.write_start(simplify_addr(item.a_addr), item.a_data, item.a_mask);
-
-          write_item_q.push_back(mem_item_t'{simplify_addr(item.a_addr),
-                                             item.a_data, item.a_mask});
-        end else begin
-          mem_bkdr_scb.read_start(simplify_addr(item.a_addr), item.a_mask);
-        end
-
-        addr_trans.we    = item.is_write();
-        addr_trans.addr  = word_align_addr(item.a_addr);
-        addr_trans.mask  = item.a_mask;
-        addr_trans.key   = key;
-        addr_trans.nonce = nonce;
-        if (item.is_write()) begin
-          addr_trans.data = item.a_data;
-        end
-        // write the addr_trans into the mailbox
-        addr_phase_mbox.put(addr_trans);
-
-        `uvm_info({`gfn, "::process_sram_tl_a_chan_fifo()"},
-            $sformatf("Put ADDR_PHASE transaction into addr_phase_mbox: %0p", addr_trans),
-            UVM_HIGH)
-
-        // terminate the raw_hazard status if we see this series of mem accesses -
-        // `write -> 1+ reads -> write`, where we are currently looking at
-        // the final `write` transaction
-        //
-        // in this case, we should send the held write transaction off to be checked,
-        // and not do anything to the pending address transaction currently in the address phase
-        //
-        // we also need to lower `in_raw_hazard` as we no longer require data forwarding
-        cfg.clk_rst_vif.wait_n_clks(1);
-        if (in_raw_hazard && addr_trans.we) begin
-          `uvm_info(`gfn, "next b2b transaction is a write, clearing hazard state", UVM_HIGH)
-          completed_trans_mbox.put(held_trans);
-          clear_hazard_state();
-        end
-
-      end else begin // didn't receive tl_seq_item
-
-        // terminate the raw_hazard status in the scenario:
-        // `write -> 1+ reads -> empty cycle` - if an empty cycle occurs after the last read
-        // transaction that causes a hazard, the write will be resolved during this cycle,
-        // so clear the hazard status and check the held write transaction
-        if (in_raw_hazard && !status_lc_esc) begin
-          `uvm_info(`gfn, "Empty cycle seen after hazardous read, clearing hazard state", UVM_HIGH)
-          completed_trans_mbox.put(held_trans);
-          clear_hazard_state();
-        end
-      end
-
-      // wait a cycle before next non-blocking check to sram_tl_a_chan
-      cfg.clk_rst_vif.wait_clks(1);
-      // small delay to allow monitor to complete putting item into sram_tl_a_chan_fifo
-      #1;
-    end
-  endtask
-
-  virtual task process_sram_tl_d_chan_fifo();
-    tl_seq_item item;
-    sram_trans_t addr_trans;
-    sram_trans_t data_trans;
-
-    bit addr_trans_available = 0;
-
-    forever begin
-      sram_tl_d_chan_fifo.get(item);
-      if (!cfg.en_scb) continue;
-      `uvm_info(`gfn, $sformatf("Received sram_tl_d_chan item:\n%0s", item.sprint()), UVM_HIGH)
-
-      // don't process any error items
-      //
-      // TODO: sample error coverage
-      if (cfg.en_scb_tl_err_chk && predict_tl_err(item, DataChannel, cfg.sram_ral_name)) begin
-        `uvm_info(`gfn, "TL data_phase error detected", UVM_HIGH)
-        continue;
-      end
-
-      // check packet integrity
-      void'(item.is_ok());
-
-      addr_trans_available = (addr_phase_mbox.try_get(addr_trans) > 0);
-
-      `DV_CHECK_EQ(in_key_req, 0, "No item is accepted during key req")
-      `DV_CHECK_EQ(in_init, 0, "No item is accepted during init")
-
-      // See the explanation in `process_lc_escalation()` as to why we use `handling_lc_esc`.
-      //
-      // Excepting this edge case, detecting any other item in the `addr_phase_mbox` indicates that
-      // a TLUL response has been seen from the SRAM even though it hasn't been processed by
-      // `process_sram_tl_a_chan_fifo()`. This means one of two things:
-      //
-      // 1) There is a bug in the scoreboard.
-      //
-      // 2) There is a bug in the design and the SRAM is actually servicing memory requests
-      //    while in the terminal escalated state.
-      if (status_lc_esc) begin
-        if (handling_lc_esc) begin
-          continue;
-        end else begin
-          `DV_CHECK_EQ(addr_trans_available, 1,
-              "SRAM returned TLUL response in LC escalation state")
-        end
-      end
-
-      if (!item.is_write()) begin
-        mem_bkdr_scb.read_finish(item.d_data, simplify_addr(item.a_addr), item.a_mask);
-      end
-
-      // the addr_phase_mbox will be populated during A_phase of each memory transaction.
-      //
-      // since we use the addr_phase_mbox in this task to check for data forwarding hazards,
-      // need to keep it up to date with the current transaction.
-      //
-      // it is guaranteed that both:
-      // - the mailbox will have at least 1 addr_trans item in it at this point
-      // - the first item in the mailbox matches up to the current data_phase transaction
-      //
-      // as a result we can safely remove the item from the mailbox here,
-      // and check that the addr_trans and data_trans correspond to the same TLUL operation
-      `DV_CHECK_NE(addr_trans_available, 0,
-        "AddrPhase transaction not available in addr_phase_mbox")
-
-      // assign data_trans fields
-      clear_trans(data_trans);
-      data_trans.we    = item.is_write();
-      data_trans.addr  = word_align_addr(item.a_addr);
-      data_trans.mask  = item.a_mask;
-      data_trans.key   = addr_trans.key;
-      data_trans.nonce = addr_trans.nonce;
-      data_trans.data  = item.is_write() ? item.a_data : item.d_data;
-      `DV_CHECK_EQ(eq_trans(addr_trans, data_trans), 1)
-
-      `uvm_info(`gfn, $sformatf("in_raw_hazard: %0d",  in_raw_hazard), UVM_HIGH)
-
-      if (!item.is_write()) begin // read
-        `uvm_info(`gfn, "Processing READ transaction", UVM_HIGH)
-
-        if (in_raw_hazard) begin
-          // executing a read while `in_raw_hazard` is high means that this read comes after
-          // the most recent write transaction, which has then been held
-          //
-          // as a result we need to check for an address collision then act accordingly.
-
-          // sample b2b-related coovergroup
-          if (cfg.en_cov) begin
-            cov.b2b_access_types_cg.sample(data_trans.we, addr_trans.we);
-          end
-
-          // if we have an address collision (read address is the same as the pending write address)
-          // return data based on the `held_data`
-          if (eq_sram_addr(data_trans.addr, held_trans.addr)) begin
-            bit [TL_DW-1:0] bit_mask = expand_bit_mask(item.a_mask);
-            bit [TL_DW-1:0] exp_masked_rdata = held_data & bit_mask;
-            `uvm_info(`gfn, $sformatf("exp_masked_rdata: 0x%0x", exp_masked_rdata), UVM_HIGH)
-            `DV_CHECK_EQ_FATAL(exp_masked_rdata, item.d_data & bit_mask)
-          end else begin
-            // in this case we do not have a strict RAW hazard on the same address,
-            // so we can check the read transaction normally, as it will complete
-            // before the pending write
-            completed_trans_mbox.put(data_trans);
-          end
-
-        end else begin
-          completed_trans_mbox.put(data_trans);
-        end
-      end else if (item.is_write()) begin // write
-        bit b2b_detected;
-
-        `uvm_info(`gfn, "Processing WRITE transaction", UVM_HIGH)
-
-        // insert a small delay before checking addr_phase_mbox to allow b2b
-        // transactions to be picked up (otherwise we wait until the next cycle)
-        #1;
-
-        // peek at the next address phase request
-        b2b_detected = addr_phase_mbox.try_peek(addr_trans);
-        `uvm_info(`gfn, $sformatf("b2b_detected: %0d", b2b_detected), UVM_HIGH)
-
-        if (b2b_detected) begin
-
-          bit  [TL_AW-1:0] waddr = '0;
-
-          `uvm_info(`gfn, $sformatf("addr_trans: %0p", addr_trans), UVM_HIGH)
-
-          // sample b2b-related covergroup
-          if (cfg.en_cov) begin
-            cov.b2b_access_types_cg.sample(data_trans.we, addr_trans.we);
-          end
-
-          if (addr_trans.we == 0) begin
-            // if we see a read directly after a write and we are not currently in a RAW hazard
-            // handling state, we need to do the following:
-            //
-            // - backdoor read the memory at the given address to get the currently stored data,
-            //   and update the scb data holding "register" with this value
-            //
-            // - overwrite this data holding register with the masked write data sent by the
-            //   original write transaction that caused the forwarding scenario (this is so that
-            //   sub-word reads reading different bytes from the ones being written can still
-            //   return the most recently written values)
-            `uvm_info(`gfn, "detected RAW hazard", UVM_HIGH)
-            in_raw_hazard = 1;
-            held_trans = data_trans;
-            waddr = {data_trans.addr[TL_AW-1:2], 2'b00};
-            held_data = cfg.mem_bkdr_util_h.sram_encrypt_read32_integ(waddr, data_trans.key,
-                                                                      data_trans.nonce);
-
-            // sample covergroup
-            if (cfg.en_cov) begin
-              cov.raw_hazard_cg.sample(waddr == word_align_addr(addr_trans.addr));
-            end
-
-            for (int i = 0; i < TL_DBW; i++) begin
-              if (data_trans.mask[i]) begin
-                held_data[i*8 +: 8] = data_trans.data[i*8 +: 8];
-              end
-            end
-            `uvm_info(`gfn, $sformatf("new held_data: 0x%0x", held_data), UVM_HIGH)
-          end else begin
-            // if we have a write-after-write scenario, whether the addresses are the same or not,
-            // just proceed as normal and send the current transaction off to be checked
-            completed_trans_mbox.put(data_trans);
-          end
-        end else begin
-          // if no b2b transaction detected, it is safe to send
-          // the collected transaction off for checking
-          completed_trans_mbox.put(data_trans);
-        end
-      end
+    // See the explanation in `process_lc_escalation()` as to why we use `handling_lc_esc`.
+    //
+    // Excepting this edge case, detecting any other item in the `addr_phase_mbox` indicates that
+    // a TLUL response has been seen from the SRAM even though it hasn't been processed by
+    // `process_sram_tl_a_chan_item()`. This means one of two things:
+    //
+    // 1) There is a bug in the scoreboard.
+    //
+    // 2) There is a bug in the design and the SRAM is actually servicing memory requests
+    //    while in the terminal escalated state.
+    if (!status_lc_esc && !item.is_write()) begin
+      mem_bkdr_scb.read_finish(item.d_data, simplify_addr(item.a_addr), item.a_mask);
     end
   endtask
 
@@ -771,86 +497,16 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
         cov.key_seed_valid_cg.sample(status_lc_esc, seed_valid);
       end
 
-      // scr_key_valid simply denotes that a successful handshake with OTP has completed,
-      // so this will be 1 whenever we get a copmleted transaction item
-      exp_status[SramCtrlScrKeyValid]     = 1;
-
-      // if we are in escalated state, scr_key_seed_valid will always stay low
-      exp_status[SramCtrlScrKeySeedValid] = status_lc_esc ? 0 : seed_valid;
+      // if we are in escalated state, key_valid and scr_key_seed_valid will remain low
+      if (!status_lc_esc) begin
+        exp_status[SramCtrlScrKeyValid]     = 1;
+        exp_status[SramCtrlScrKeySeedValid] = seed_valid;
+      end
 
       `uvm_info(`gfn, $sformatf("Updated key: 0x%0x", key), UVM_MEDIUM)
       `uvm_info(`gfn, $sformatf("Updated nonce: 0x%0x", nonce), UVM_MEDIUM)
     end
   endtask
-
-  // This task continuously pulls items from the completed_trans_mbox
-  // and checks them for correctness by using the mem_bkdr_util.
-  //
-  // TLUL allows partial reads and writes, so we first need to construct a bit-mask
-  // based off of the TLUL mask field.
-  // We then read from the memory using the backdoor interface, and can then directly compare
-  // the TLUL response data to the backdoor-read data using the bit-mask.
-  virtual task process_completed_trans();
-    sram_trans_t trans;
-
-    forever begin
-      completed_trans_mbox.get(trans);
-
-      // sample access granularity for each completed transaction
-      if (cfg.en_cov) begin
-        cov.subword_access_cg.sample(trans.we, trans.mask);
-      end
-
-      `uvm_info({`gfn, "::process_completed_trans()"},
-                $sformatf("Checking SRAM memory transaction: %0p", trans),
-                UVM_MEDIUM)
-
-      check_mem_trans(trans);
-    end
-  endtask
-
-  // Given a complete memory transaction item as input,
-  // this function compares against the SRAM for correctness
-  // using the mem_bkdr_util.
-  //
-  // TLUL allows partial reads and writes, so we first need to construct a bit-mask
-  // based off of the TLUL mask field.
-  // We then read from the memory using the backdoor interface, and can then directly compare
-  // the TLUL response data to the backdoor-read data using the bit-mask.
-  virtual function void check_mem_trans(sram_trans_t t);
-    bit [TL_AW-1:0] word_addr;
-    bit [TL_DW-1:0] bit_mask;
-
-    // data read from SRAM through backdoor
-    bit [TL_DW-1:0] exp_data;
-    bit [TL_DW-1:0] exp_masked_data;
-    bit [TL_DW-1:0] act_masked_data;
-
-
-    // Word align the request address
-    word_addr = {t.addr[TL_AW-1:2], 2'b00};
-    `uvm_info(`gfn, $sformatf("word_addr: 0x%0x", word_addr), UVM_HIGH)
-
-    bit_mask = expand_bit_mask(t.mask);
-
-    // backdoor read the mem
-    exp_data = cfg.mem_bkdr_util_h.sram_encrypt_read32_integ(word_addr, t.key, t.nonce);
-    `uvm_info(`gfn, $sformatf("exp_data: 0x%0x", exp_data), UVM_MEDIUM)
-
-    exp_masked_data = exp_data & bit_mask;
-    act_masked_data = t.data & bit_mask;
-
-    `uvm_info(`gfn, $sformatf("exp_masked_data: 0x%0x", exp_masked_data), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("act_masked_data: 0x%0x", act_masked_data), UVM_HIGH)
-
-    // TODO, downgrade this check and it can't handle a few b2b cases
-    // This part of checking will be removed once mem_bkdr_scb works well.
-    if (exp_masked_data != act_masked_data) begin
-      `uvm_info(`gfn, $sformatf("act_masked_data: 0x%0x != exp_masked_data: 0x%0x",
-                                act_masked_data, exp_masked_data), UVM_LOW)
-    end
-  endfunction
-
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
@@ -863,7 +519,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
-    if (ral_name != RAL_T::type_name) return;
+    if (ral_name == cfg.sram_ral_name) begin
+      if (channel == AddrChannel) process_sram_tl_a_chan_item(item);
+      else                        process_sram_tl_d_chan_item(item);
+      return;
+    end
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -885,16 +545,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     case (csr.get_name())
       // add individual case item for each csr
       "alert_test": begin
-        // do nothing
+        if (addr_phase_write && item.a_data[0]) set_exp_alert("fatal_error", .is_fatal(0));
       end
       "exec_regwen": begin
         // do nothing
       end
       "exec": begin
-        if (addr_phase_write) begin
-          #1;
-          detected_csr_exec = item.a_data;
-        end
+        // do nothing
       end
       "status": begin
         if (addr_phase_read) begin
@@ -907,14 +564,14 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       "ctrl": begin
         // do nothing if 0 is written
         if (addr_phase_write) begin
-          if (item.a_data[SramCtrlRenewScrKey]) begin
+          if (item.a_data[SramCtrlRenewScrKey] && `gmv(ral.ctrl_regwen)) begin
             in_key_req = 1;
             exp_status[SramCtrlScrKeyValid] = 0;
-            `uvm_info(`gfn, "raised in_key_req", UVM_HIGH)
+            `uvm_info(`gfn, "raised in_key_req", UVM_MEDIUM)
           end
-          if (item.a_data[SramCtrlInit]) begin
+          if (item.a_data[SramCtrlInit] && `gmv(ral.ctrl_regwen)) begin
             in_init = 1;
-            `uvm_info(`gfn, "raised in_init", UVM_HIGH)
+            `uvm_info(`gfn, "raised in_init", UVM_MEDIUM)
           end
           if (in_key_req || in_init) exp_mem[cfg.sram_ral_name].init();
         end else if (addr_phase_read) begin
@@ -924,10 +581,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
           // CTRL.init will be set to 0 once initialization is complete
           void'(ral.ctrl.init.predict(.value(in_init), .kind(UVM_PREDICT_READ)));
         end
-      end
-      "error_address": begin
-        // TODO
-        do_read_check = 1'b0;
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
@@ -945,39 +598,27 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   endtask
 
   virtual function void reset(string kind = "HARD");
+    sram_trans_t t;
     super.reset(kind);
+
+    in_init = 0;
+    in_key_req = 0;
     key = sram_ctrl_pkg::RndCnstSramKeyDefault;
     nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
+    mem_bkdr_scb.reset();
     mem_bkdr_scb.update_key(key, nonce);
-    clear_hazard_state();
     exp_status = '0;
     handling_lc_esc = 0;
     status_lc_esc = 0;
-    detected_csr_exec = '0;
-    detected_hw_debug_en = '0;
-    detected_en_sram_ifetch = '0;
     write_item_q.delete();
+    exp_mem[cfg.sram_ral_name].init();
   endfunction
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, sram_tl_a_chan_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, sram_tl_d_chan_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(push_pull_item#(.DeviceDataWidth(KDI_DATA_SIZE)), kdi_fifo)
     `DV_CHECK_EQ(write_item_q.size, 0)
-    // check addr_phase_mbox
-    while (addr_phase_mbox.num() != 0) begin
-      sram_trans_t t;
-      void'(addr_phase_mbox.try_get(t));
-      `uvm_error(`gfn, $sformatf("addr_phase_mbox item uncompared:\n%0p", t))
-    end
-
-    // check completed_trans_mbox
-    while (completed_trans_mbox.num() != 0) begin
-      sram_trans_t t;
-      void'(completed_trans_mbox.try_get(t));
-      `uvm_error(`gfn, $sformatf("completed_trans_mbox item uncompared:\n%0p", t))
-    end
   endfunction
 
 endclass
+`undef RUN_FOREVR_W_RESET_EXIT

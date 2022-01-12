@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::collection;
-use crate::io::gpio::{GpioError, GpioPin, PinDirection};
+use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
 use crate::util::parse_int::ParseInt;
@@ -83,10 +83,19 @@ impl GpioPin for UltradebugGpioPin {
     }
 
     /// Sets the `direction` of GPIO `id` as input or output.
-    fn set_direction(&self, direction: PinDirection) -> Result<()> {
+    fn set_mode(&self, mode: PinMode) -> Result<()> {
+        let direction = match mode {
+            PinMode::Input => false,
+            PinMode::PushPull => true,
+            PinMode::OpenDrain => return Err(GpioError::UnsupportedPinMode().into()),
+        };
         self.device
             .borrow_mut()
-            .gpio_set_direction(self.pin_id, direction == PinDirection::Output)
+            .gpio_set_direction(self.pin_id, direction)
+    }
+
+    fn set_pull_mode(&self, _mode: PullMode) -> Result<()> {
+        Err(GpioError::UnsupportedPinMode().into())
     }
 }
 

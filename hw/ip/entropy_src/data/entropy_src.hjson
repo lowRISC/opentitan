@@ -81,6 +81,20 @@
             ''',
     }
   ],
+  countermeasures: [
+    { name: "FSM.SPARSE"
+      desc: "Sparse state machine implementation."
+    }
+    { name: "CTR.REDUN"
+      desc: "Counter hardening for all health test counters."
+    }
+    { name: "LOGIC.INTEGRITY"
+      desc: "Comparison on successive bus values for the post-conditioned entropy seed bus."
+    }
+    { name: "BUS.INTEGRITY"
+      desc: "Tilelink end-to-end bus integrity scheme."
+    }
+  ],
 
   regwidth: "32",
   registers: [
@@ -858,6 +872,8 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "REGWEN",
+      tags: [// Setting this register needs to not be random.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
           name: "ALERT_THRESHOLD",
@@ -1190,6 +1206,14 @@
                 Writing a zero resets this status bit.
                 '''
         }
+        { bits: "14",
+          name: "ES_THRESH_CFG_ALERT",
+          desc: '''
+                This bit is set when the !!ALERT_THRESHOLD register is not configured properly.
+                The upper field must be the exact inverse of the lower field.
+                Writing a zero resets this status bit.
+                '''
+        }
       ]
     },
     {
@@ -1206,7 +1230,7 @@
                 This bit will be set to one when an error has been detected for the
                 esrng FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "1",
@@ -1215,7 +1239,7 @@
                 This bit will be set to one when an error has been detected for the
                 observe FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "2",
@@ -1224,7 +1248,7 @@
                 This bit will be set to one when an error has been detected for the
                 esfinal FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "20",
@@ -1233,7 +1257,7 @@
                 This bit will be set to one when an illegal state has been detected for the
                 ES ack stage state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "21",
@@ -1242,7 +1266,7 @@
                 This bit will be set to one when an illegal state has been detected for the
                 ES main stage state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "22",
@@ -1251,7 +1275,7 @@
                 This bit will be set to one when a hardened counter has detected an error
                 condition. This error will signal a fatal alert, and also
                 an interrupt if enabled.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "28",
@@ -1260,7 +1284,7 @@
                 This bit will be set to one when any of the source bits (bits 0 through 1 of this
                 this register) are asserted as a result of an error pulse generated from
                 any full FIFO that has been recieved a write pulse.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "29",
@@ -1269,7 +1293,7 @@
                 This bit will be set to one when any of the source bits (bits 0 through 1 of this
                 this register) are asserted as a result of an error pulse generated from
                 any empty FIFO that has recieved a read pulse.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "30",
@@ -1278,7 +1302,7 @@
                 This bit will be set to one when any of the source bits (bits 0 through 1 of this
                 this register) are asserted as a result of an error pulse generated from
                 any FIFO where both the empty and full status bits are set.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
       ]
@@ -1289,6 +1313,8 @@
       hwaccess: "hro",
       hwqe: "true",
       regwen: "REGWEN",
+      tags: [// Setting this register will force an unwanted fatal alert.
+                 "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
             bits: "4:0",

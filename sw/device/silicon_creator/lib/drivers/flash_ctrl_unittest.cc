@@ -9,29 +9,191 @@
 #include "sw/device/lib/base/testing/mock_mmio_test_utils.h"
 #include "sw/device/silicon_creator/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 namespace flash_ctrl_unittest {
 namespace {
+using ::testing::Each;
+using ::testing::Return;
+using ::testing::SizeIs;
+
+/**
+ * A struct that holds bank, page, and config register information for an
+ * information page.
+ */
+struct InfoPage {
+  uint32_t bank;
+  uint32_t page;
+  uint32_t cfg_offset;
+  uint32_t cfg_wen_offset;
+};
+
+/**
+ * Returns a map from `flash_ctrl_info_page_t` to `InfoPage` to be used in
+ * tests.
+ */
+const std::map<flash_ctrl_info_page_t, InfoPage> &InfoPages() {
+#define INFO_PAGE_MAP_INIT(name_, bank_, page_)                                    \
+  {                                                                                \
+    name_,                                                                         \
+        {                                                                          \
+            bank_,                                                                 \
+            page_,                                                                 \
+            FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_SHADOWED_##page_##_REG_OFFSET, \
+            FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,            \
+        },                                                                         \
+  }
+
+  static const std::map<flash_ctrl_info_page_t, InfoPage> *const kInfoPages =
+      new std::map<flash_ctrl_info_page_t, InfoPage>{
+          FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_MAP_INIT)};
+  return *kInfoPages;
+}
 
 class FlashCtrlTest : public mask_rom_test::MaskRomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR;
   mask_rom_test::MockAbsMmio mmio_;
   mask_rom_test::MockSecMmio sec_mmio_;
+  mask_rom_test::MockOtp otp_;
 };
 
-class InitTest : public FlashCtrlTest {};
+class InfoPagesTest : public FlashCtrlTest {};
+TEST_F(InfoPagesTest, NumberOfPages) { EXPECT_THAT(InfoPages(), SizeIs(20)); }
 
-TEST_F(InitTest, Initialize) {
+TEST_F(InfoPagesTest, PagesPerBank) {
+  std::array<uint32_t, 2> pages_per_bank = {0, 0};
+  for (const auto &it : InfoPages()) {
+    const uint32_t bank = it.second.bank;
+    EXPECT_EQ(bank, static_cast<uint32_t>(bitfield_bit32_read(
+                        it.first, FLASH_CTRL_INFO_PAGE_BIT_BANK)));
+    EXPECT_LE(bank, 1);
+    ++pages_per_bank[bank];
+  }
+
+  EXPECT_THAT(pages_per_bank, Each(10));
+}
+
+TEST_F(InfoPagesTest, AllType0) {
+  for (const auto &it : InfoPages()) {
+    const flash_ctrl_partition_t partition =
+        static_cast<flash_ctrl_partition_t>(bitfield_field32_read(
+            it.first, FLASH_CTRL_INFO_PAGE_FIELD_PARTITION));
+    EXPECT_EQ(partition, kFlashCtrlPartitionInfo0);
+  }
+}
+
+TEST_F(InfoPagesTest, PageIndices) {
+  for (const auto &it : InfoPages()) {
+    const uint32_t page = it.second.page;
+
+    EXPECT_EQ(page,
+              bitfield_field32_read(it.first, FLASH_CTRL_INFO_PAGE_FIELD_PAGE));
+    EXPECT_LE(page, 9);
+  }
+}
+
+struct InitCase {
+  /**
+   * Configuration settings to be read from OTP.
+   */
+  flash_ctrl_cfg_t cfg;
+  /**
+   * Expected value to be written to the info config register.
+   */
+  uint32_t info_write_val;
+  /**
+   * Expected value to be written to the data config register.
+   */
+  uint32_t data_write_val;
+};
+
+class InitTest : public FlashCtrlTest,
+                 public testing::WithParamInterface<InitCase> {};
+
+uint32_t CfgToOtp(flash_ctrl_cfg_t cfg) {
+  uint32_t val = bitfield_field32_write(0, FLASH_CTRL_OTP_FIELD_SCRAMBLING,
+                                        cfg.scrambling);
+  val = bitfield_field32_write(val, FLASH_CTRL_OTP_FIELD_ECC, cfg.ecc);
+  val = bitfield_field32_write(val, FLASH_CTRL_OTP_FIELD_HE, cfg.he);
+  return val;
+}
+
+TEST_P(InitTest, Initialize) {
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
 
+  auto info_page = InfoPages().at(kFlashCtrlInfoPageCreatorSecret);
+  EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
+  EXPECT_SEC_WRITE_INCREMENT(2);
+
+  EXPECT_CALL(
+      otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET))
+      .WillOnce(Return(CfgToOtp(GetParam().cfg)));
+  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, 0);
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+      GetParam().data_write_val);
+  EXPECT_SEC_WRITE_INCREMENT(1);
+
+  EXPECT_CALL(
+      otp_,
+      read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET))
+      .WillOnce(Return(CfgToOtp(GetParam().cfg)));
+  info_page = InfoPages().at(kFlashCtrlInfoPageBootData0);
+  EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0);
+  EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset,
+                              GetParam().info_write_val);
+  EXPECT_SEC_WRITE_INCREMENT(1);
+  info_page = InfoPages().at(kFlashCtrlInfoPageBootData1);
+  EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0);
+  EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset,
+                              GetParam().info_write_val);
+  EXPECT_SEC_WRITE_INCREMENT(1);
+
   flash_ctrl_init();
 }
+
+INSTANTIATE_TEST_SUITE_P(AllCases, InitTest,
+                         testing::Values(
+                             // Scrambling.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8False},
+                                 .info_write_val = 0x11,
+                                 .data_write_val = 0x8,
+                             },
+                             // ECC.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_write_val = 0x21,
+                                 .data_write_val = 0x10,
+                             },
+                             // High endurance.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8True},
+                                 .info_write_val = 0x41,
+                                 .data_write_val = 0x20,
+                             },
+                             // Scrambling and ECC.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_write_val = 0x31,
+                                 .data_write_val = 0x18,
+                             }));
 
 class StatusCheckTest : public FlashCtrlTest {};
 
@@ -198,6 +360,277 @@ TEST_F(ExecTest, Disable) {
   EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, kMultiBitBool4False);
   EXPECT_SEC_WRITE_INCREMENT(1);
   flash_ctrl_exec_set(kFlashCtrlExecDisable);
+}
+
+struct PermsSetCase {
+  /**
+   * Access permissions to set.
+   */
+  flash_ctrl_perms_t perms;
+  /**
+   * Expected value to be read from the info config register.
+   */
+  uint32_t info_read_val;
+  /**
+   * Expected value to be written to the info config register.
+   */
+  uint32_t info_write_val;
+  /**
+   * Expected value to be read from the data config register.
+   */
+  uint32_t data_read_val;
+  /**
+   * Expected value to be written to the data config register.
+   */
+  uint32_t data_write_val;
+};
+
+class FlashCtrlPermsSetTest : public FlashCtrlTest,
+                              public testing::WithParamInterface<PermsSetCase> {
+};
+
+TEST_P(FlashCtrlPermsSetTest, InfoPermsSet) {
+  for (const auto &it : InfoPages()) {
+    EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().info_read_val);
+    EXPECT_SEC_WRITE32_SHADOWED(base_ + it.second.cfg_offset,
+                                GetParam().info_write_val);
+    EXPECT_SEC_WRITE_INCREMENT(1);
+
+    flash_ctrl_info_perms_set(it.first, GetParam().perms);
+  }
+}
+
+TEST_P(FlashCtrlPermsSetTest, DataDefaultPermsSet) {
+  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+                    GetParam().data_read_val);
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+      GetParam().data_write_val);
+  EXPECT_SEC_WRITE_INCREMENT(1);
+
+  flash_ctrl_data_default_perms_set(GetParam().perms);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlPermsSetTest,
+                         testing::Values(
+                             // Read.
+                             PermsSetCase{
+                                 .perms = {.read = kHardenedBoolTrue,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolFalse},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x3,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x1,
+                             },
+                             PermsSetCase{
+                                 .perms = {.read = kHardenedBoolTrue,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolFalse},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x73,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x39,
+                             },
+                             // Write.
+                             PermsSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolFalse},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x5,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x2,
+                             },
+                             PermsSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolFalse},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x75,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x3a,
+                             },
+                             // Erase.
+                             PermsSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolTrue},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x9,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x4,
+                             },
+                             PermsSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolFalse,
+                                           .erase = kHardenedBoolTrue},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x79,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x3c,
+                             },
+                             // Write and erase.
+                             PermsSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolTrue},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0xd,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x6,
+                             },
+                             PermsSetCase{
+                                 .perms = {.read = kHardenedBoolFalse,
+                                           .write = kHardenedBoolTrue,
+                                           .erase = kHardenedBoolTrue},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x7d,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x3e,
+                             }));
+
+struct CfgSetCase {
+  /**
+   * Configuration settings to set.
+   */
+  flash_ctrl_cfg_t cfg;
+  /**
+   * Expected value to be read from the info config register.
+   */
+  uint32_t info_read_val;
+  /**
+   * Expected value to be written to the info config register.
+   */
+  uint32_t info_write_val;
+  /**
+   * Expected value to be read from the data config register.
+   */
+  uint32_t data_read_val;
+  /**
+   * Expected value to be written to the data config register.
+   */
+  uint32_t data_write_val;
+};
+
+class FlashCtrlCfgSetTest : public FlashCtrlTest,
+                            public testing::WithParamInterface<CfgSetCase> {};
+
+TEST_P(FlashCtrlCfgSetTest, InfoCfgSet) {
+  for (const auto &it : InfoPages()) {
+    EXPECT_SEC_READ32(base_ + it.second.cfg_offset, GetParam().info_read_val);
+    EXPECT_SEC_WRITE32_SHADOWED(base_ + it.second.cfg_offset,
+                                GetParam().info_write_val);
+    EXPECT_SEC_WRITE_INCREMENT(1);
+
+    flash_ctrl_info_cfg_set(it.first, GetParam().cfg);
+  }
+}
+
+TEST_P(FlashCtrlCfgSetTest, DataDefaultCfgSet) {
+  EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+                    GetParam().data_read_val);
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET,
+      GetParam().data_write_val);
+  EXPECT_SEC_WRITE_INCREMENT(1);
+
+  flash_ctrl_data_default_cfg_set(GetParam().cfg);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
+                         testing::Values(
+                             // Scrambling.
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x11,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x8,
+                             },
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x1f,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0xf,
+                             },
+                             // ECC.
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x21,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x10,
+                             },
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x2f,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x17,
+                             },
+                             // High endurance.
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8True},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x41,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x20,
+                             },
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8False,
+                                         .ecc = kMultiBitBool8False,
+                                         .he = kMultiBitBool8True},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x4f,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x27,
+                             },
+                             // Scrambling and ECC.
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x0,
+                                 .info_write_val = 0x31,
+                                 .data_read_val = 0x0,
+                                 .data_write_val = 0x18,
+                             },
+                             CfgSetCase{
+                                 .cfg = {.scrambling = kMultiBitBool8True,
+                                         .ecc = kMultiBitBool8True,
+                                         .he = kMultiBitBool8False},
+                                 .info_read_val = 0x7f,
+                                 .info_write_val = 0x3f,
+                                 .data_read_val = 0x3f,
+                                 .data_write_val = 0x1f,
+                             }));
+
+TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
+  std::array<flash_ctrl_info_page_t, 6> no_owner_access = {
+      kFlashCtrlInfoPageOwnerSecret, kFlashCtrlInfoPageWaferAuthSecret,
+      kFlashCtrlInfoPageBootData0,   kFlashCtrlInfoPageBootData1,
+      kFlashCtrlInfoPageOwnerSlot0,  kFlashCtrlInfoPageOwnerSlot1,
+  };
+  for (auto page : no_owner_access) {
+    auto info_page = InfoPages().at(page);
+    EXPECT_SEC_WRITE32_SHADOWED(base_ + info_page.cfg_offset, 0);
+    EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
+  }
+  EXPECT_SEC_WRITE_INCREMENT(2 * no_owner_access.size());
+
+  flash_ctrl_creator_info_pages_lockdown();
 }
 
 }  // namespace

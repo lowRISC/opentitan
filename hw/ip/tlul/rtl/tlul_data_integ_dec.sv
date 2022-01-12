@@ -15,7 +15,7 @@ module tlul_data_integ_dec import tlul_pkg::*; (
 );
 
   logic [1:0] data_err;
-  prim_secded_39_32_dec u_data_chk (
+  prim_secded_inv_39_32_dec u_data_chk (
     .data_i(data_intg_i),
     .data_o(),
     .syndrome_o(),

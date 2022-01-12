@@ -92,15 +92,16 @@ module chip_earlgrey_verilator (
 
   always_comb begin : assign_mio_in
     mio_in = '0;
-    mio_in[32] = cio_uart_rx_p2d_i;
     mio_in[31:0] = cio_gpio_p2d_i;
+    mio_in[25] = cio_uart_rx_p2d_i;
   end
 
-  assign cio_gpio_d2p_o       = mio_out[31:0];
-  assign cio_gpio_en_d2p_o    = mio_oe[31:0];
-  assign cio_uart_tx_d2p_o    = mio_out[33];
-  assign cio_uart_tx_en_d2p_o = mio_oe[33];
-
+  assign cio_gpio_d2p_o[25:0]       = mio_out[25:0];
+  assign cio_gpio_en_d2p_o[25:0]    = mio_oe[25:0];
+  assign cio_gpio_d2p_o[31:27]      = mio_out[31:27];
+  assign cio_gpio_en_d2p_o[31:27]   = mio_oe[31:27];
+  assign cio_uart_tx_d2p_o    = mio_out[26];
+  assign cio_uart_tx_en_d2p_o = mio_oe[26];
 
   ////////////////////////////////
   // AST - Custom for Verilator //

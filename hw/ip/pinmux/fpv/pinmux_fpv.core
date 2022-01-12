@@ -11,9 +11,8 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:ip:pinmux
       - lowrisc:fpv:csr_assert_gen
+      - lowrisc:fpv:pinmux_common_fpv
     files:
-      - vip/pinmux_assert_fpv.sv
-      - tb/pinmux_bind_fpv.sv
       - tb/pinmux_tb.sv
     file_type: systemVerilogSource
 

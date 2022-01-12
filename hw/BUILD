@@ -14,6 +14,7 @@ fusesoc_build(
     cores = [
         "//:cores",
     ],
+    data = ["//hw/ip/otbn:all_files"],
     systems = ["lowrisc:dv:chip_verilator_sim"],
     target = "sim",
 )

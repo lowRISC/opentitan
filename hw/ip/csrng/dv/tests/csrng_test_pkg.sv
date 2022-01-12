@@ -16,5 +16,6 @@ package csrng_test_pkg;
   `include "csrng_base_test.sv"
   `include "csrng_smoke_test.sv"
   `include "csrng_cmds_test.sv"
+  `include "csrng_stress_all_test.sv"
 
 endpackage

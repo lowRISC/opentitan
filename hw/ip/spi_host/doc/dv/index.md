@@ -44,15 +44,90 @@ The following utilities provide generic helper tasks and functions to perform ac
 ### Compile-time configurations
 [list compile time configurations, if any and what are they used for]
 ```systemverilog
-TODO
+  // sets the number of spi devices
+  parameter int NumCS = 1;
 ```
+Currently there verification only covers NumCS = 1 since this is the configuration that will be used in tapeout.
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
 `spi_host_env_pkg`. Some of them in use are:
 ```systemverilog
-TODO
+  // types
+  typedef enum int {
+    SpiHostError     = 0,
+    SpiHostEvent     = 1,
+    NumSpiHostIntr   = 2
+  } spi_host_intr_e;
+
+  typedef enum int {
+    TxFifo   = 0,
+    RxFifo   = 1,
+    AllFifos = 2
+  } spi_host_fifo_e;
+
+  typedef enum {
+    Command,
+    Address,
+    Dummy,
+    Data
+  } spi_segment_type_e;
+
+  // spi config
+  typedef struct {
+    // configopts register fields
+    rand bit        cpol[SPI_HOST_NUM_CS];
+    rand bit        cpha[SPI_HOST_NUM_CS];
+    rand bit        fullcyc[SPI_HOST_NUM_CS];
+    rand bit [3:0]  csnlead[SPI_HOST_NUM_CS];
+    rand bit [3:0]  csntrail[SPI_HOST_NUM_CS];
+    rand bit [3:0]  csnidle[SPI_HOST_NUM_CS];
+    rand bit [15:0] clkdiv[SPI_HOST_NUM_CS];
+  } spi_host_configopts_t;
+
+  typedef struct {
+    // csid register
+    rand bit [31:0] csid;
+    // control register fields
+    rand bit [8:0]  tx_watermark;
+    rand bit [6:0]  rx_watermark;
+  } spi_host_ctrl_t;
+
+  // spi direction
+  typedef enum bit [1:0] {
+    None     = 2'b00,
+    RxOnly   = 2'b01,
+    TxOnly   = 2'b10,
+    Bidir    = 2'b11
+  } spi_dir_e;
+
+  typedef struct {
+    // command register fields
+    rand spi_mode_e mode;
+    rand spi_dir_e  direction;
+    rand bit        csaat;
+    rand bit [8:0]  len;
+  } spi_host_command_t;
+
+  typedef struct packed {
+    bit          status;
+    bit          active;
+    bit          txfull;
+    bit          txempty;
+    bit          txstall;
+    bit          tx_wm;
+    bit          rxfull;
+    bit          rxempty;
+    bit          rxstall;
+    bit          byteorder;
+    bit          rsv_0;
+    bit          rx_wm;
+    bit [19:16]  rsv_1;
+    bit [15:8]   rx_qd;
+    bit [7:0]    tx_qd;
+  } spi_host_status_t;
 ```
+
 ### TL_agent
 SPI_HOST testbench instantiates (already handled in CIP base env)
 [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
@@ -60,9 +135,24 @@ which provides the ability to drive and independently monitor random traffic via
 Transactions will be sampled by the monitor and passed on to the predictor in the scoreboard.
 
 ###  SPI Agent
-SPI agent is configured to work in target mode.
-The agent monitor samples the pins and stores the data in a sequence item that is forwarded to the predictor in the scoreboard.
-The sequence item is then compared to a sequence item from the predictor generated on the stimulus from the TL_UL accesses.
+SPI agent is configured to work in device mode.
+The Agent will decode the SPI transactions send by the DUT and respond with random data to any read command received.
+Write data is discarded.
+The agent sequence could potentially be upgraded to work as a BFM that could store writes for later read back.
+In the current state the agent recognises 6 commands:
+* ReadStd:    8'b11001100
+* WriteStd:   8'b11111100
+* ReadDual:   8'b00000011
+* WriteDual:  8'b00001100
+* ReadQuad:   8'b00001111
+* WriteQuad:  8'b11110000
+* CmdOnly:    8'b10000001
+
+for V1 only ReadStd, WriteStd and CmdOnly has been implemented.
+
+The agent monitor will capture both the outgoing host transactions where it creates an item for the device sequence and for the scoreboard to check agains the configuration.
+and the incoming device transactions where it will capture the response items and forward them to another tlm_analysis_port in the host scoreboard.
+
 
 ### UVM RAL Model
 The SPI_HOST RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
@@ -73,20 +163,26 @@ It can be created manually by invoking [`regtool`]({{< relref "util/reggen/READM
 #### Test sequences
 All test sequences reside in `hw/ip/spi_host/dv/env/seq_lib`.
 The `spi_host_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
-All test sequences are extended from `spi_host_base_vseq`.
+On top of `spi_host_base_vseq` is `spi_host_tx_rx_vseq` which form more complex task from the basic tasks in the base vseq.
+All test sequences are extended from `spi_host_tx_rx_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* spi_read(int len, bit [3:0] addr)
+* generate_transaction()
 
-  read ***len*** bytes from address ***addr***
+  Generates a SPI transaction of n segments with command, address, dummy and data segements
+  
+* read_rx_fifo()
 
-* spi_write(int len, bit [3:0] addr)
+  Read available data in the RX fifo
 
-  write ***len*** bytes to address ***addr***
+* send_trans_(spi_transaction_item trans)
+
+  Will handle the sequence of writing potential data to the tx fifo and then configuring the DUT to transmit it
+  in correct order.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-the list of functional coverpoints can be found under covergroups in the [testplan](#testplan)
+The list of functional coverpoints can be found under covergroups in the [testplan](#testplan)
 
 
 ### Self-checking strategy
@@ -101,15 +197,23 @@ It creates the following analysis ports to retrieve the data monitored by corres
 
 **SPI_AGENT**
 
-* spi_channel: TBD - subject to change until env is in place
+* host_data_fifo: outgoing SPI item from the DUT captured by the monitor
+* device_data_fifo: incoming SPI item for the DUT captured by the monitor
 
-The tl_ul FIFOs provide the transaction items that will be converted to SPI transactions in the DUT.
-A predictor in the DUT will collect these transactions and convert them into SPI items with an address and data.
+When a host programs the DUT to transmit a SPI message.
+The tl-ul agent monitor will capture these in tl items and forward these to the `tl_a_chan_fifo`.
+A predictor will use the tl-ul transactions to generate the expected SPI items.
+The SPI agent monitor will capture the actual transmitted SPI segments into SPI items and forward them to the `host_data_fifo`.
+And the scoreboard will compare the items from the fifo to the expected items created by the predictor to validate the transaction.
 
-On the SPI channel transactions are received in segments.
-These segments are re-assembled into full SPI transactions and stored in SPI sequence items.
+The SPI device will generate responses to the SPI commands from the DUT.
+The SPI agent monitor will capture these into SPI items which are forwarded to the `device_data_fifo`
+A predictor will take these and generate the expected tl data response.
+The host will then read these from the DUT rx fifo.
+The read transaction is captured and forwarded to the `tl_d_chan_fifo`
+When the scoreboard receives an item on the `tl_d_chan_fifo` it will match the data to the predicted data to validate the transaction.
+This way both outgoing and incoming transactions are validated independently of each other.
 
-The generated item from the predictor and the re-assembled item from the SPI channel is then compared in the scoreboard to validate then transaction.
 
 #### Assertions
 * TLUL assertions: The `tb/spi_host_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.

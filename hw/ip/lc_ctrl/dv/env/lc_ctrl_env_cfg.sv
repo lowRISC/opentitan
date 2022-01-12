@@ -33,8 +33,12 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   event fatal_bus_integ_error_ev;
   // Test phase - used to synchronise scoreboard
   lc_ctrl_test_phase_e test_phase;
+  // Test phase has been set event
+  event set_test_phase_ev;
   // Max delay for alerts in clocks
   uint alert_max_delay;
+  // Enable scoreboard ral update on write
+  bit en_scb_ral_update_write = 1;
 
   `uvm_object_utils_begin(lc_ctrl_env_cfg)
   `uvm_object_utils_end
@@ -84,7 +88,7 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     // Set base address for JTAG map
     ral.set_base_addr(ral.default_map.get_base_addr(), jtag_riscv_map);
 
-    alert_max_delay = 500;
+    alert_max_delay = 1500;
   endfunction
 
   protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
@@ -93,7 +97,11 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   endfunction
 
   virtual function void set_test_phase(lc_ctrl_test_phase_e test_phase);
+    // Set in config object
     this.test_phase = test_phase;
+    // And interface
+    lc_ctrl_vif.test_phase <= test_phase;
+    ->set_test_phase_ev;
   endfunction
 
   virtual function lc_ctrl_test_phase_e get_test_phase();

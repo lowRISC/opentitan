@@ -10,7 +10,7 @@ This module conforms to the [OpenTitan guideline for peripheral device functiona
 See that document for integration overview within the broader OpenTitan top level system.
 The module provides a mechanism to reconfigure the peripheral-to-pin mapping at runtime, which greatly enhances the system flexibility.
 In addition to that, the `pinmux` also allows the user to control pad attributes (such as pull-up, pull-down, open-drain, drive-strength, keeper and inversion), and it contains features that facilitate low-power modes of the system.
-For example, the deep sleep behavior of each pad can programmed individually, and the module contains additional pattern detectors that can listen on any IO and wake up the system if a specific pattern has been detected.
+For example, the sleep behavior of each pad can be programmed individually, and the module contains additional pattern detectors that can listen on any IO and wake up the system if a specific pattern has been detected.
 
 ## Features
 
@@ -62,14 +62,14 @@ See the [muxing matrix]({{< relref "#muxing-matrix">}}) section for more details
 
 ### Retention and Wakeup Features
 
-The retention logic allows SW to specify a certain behavior during deep sleep for each muxed and dedicated output.
+The retention logic allows SW to specify a certain behavior during sleep for each muxed and dedicated output.
 Legal behaviors are tie low, tie high, high-Z, keeping the previous state, or driving the current value (useful for peripherals that are always on).
 
 The wakeup detectors can detect patterns such as rising / falling edges and pulses of a certain width up to 255 AON clock cycles.
 Each wakeup detector can listen on any one of the MIO / DIO signals that are routed through the `pinmux`, and if a pattern is detected, the power manager is informed of that event via a wakeup request.
 
-The `pinmux` module itself is in the always-on (AON) power domain, and as such does not loose configuration state when a deep sleep power cycle is performed.
-However, only the wakeup detector logic will be actively clocked during deep sleep in order to save power.
+The `pinmux` module itself is in the always-on (AON) power domain, and as such does not loose configuration state when a sleep power cycle is performed.
+However, only the wakeup detector logic will be actively clocked during sleep in order to save power.
 
 See the [retention logic]({{< relref "#retention-logic">}}) and [wakeup detectors]({{< relref "#wakeup-detectors">}}) sections for more details about the mux implementation.
 
@@ -109,9 +109,9 @@ The table below lists the `pinmux` signals. The number of dedicated and muxed IO
 
 Signal                                 | Direction | Type                               | Description
 ---------------------------------------|-----------|------------------------------------|---------------
-`aon_wkup_req_o`                       | `output`  | `logic`                            | Wakeup request from wakeup detectors, to the power manager, running on the AON clock.
+`pin_wkup_req_o`                       | `output`  | `logic`                            | Wakeup request from wakeup detectors, to the power manager, running on the AON clock.
 `usb_wkup_req_o`                       | `output`  | `logic`                            | Wakeup request from USB wakeup detector, going to the power manager, running on the AON clock.
-`sleep_en_i`                           | `input`   | `logic`                            | Level signal that is asserted when the power manager enters deep sleep.
+`sleep_en_i`                           | `input`   | `logic`                            | Level signal that is asserted when the power manager enters sleep.
 `strap_en_i`                           | `input`   | `logic`                            | This signal is pulsed high by the power manager after reset in order to sample the HW straps.
 `lc_dft_en_i`                          | `input`   | `lc_ctrl_pkg::lc_tx_t`             | Test enable qualifier coming from life cycle controller, used for HW strap qualification.
 `lc_hw_debug_en_i`                     | `input`   | `lc_ctrl_pkg::lc_tx_t`             | Debug enable qualifier coming from life cycle controller, used for HW strap qualification.
@@ -160,11 +160,11 @@ The output enable and the associated data signal (i.e. `periph_to_mio` and `peri
 ## Retention Logic
 
 As illustrated in the picture above, all muxing matrix and DIO outputs are routed through the retention logic, which essentially consists of a set of multiplexors and two retention registers per output (one register is for the output data and one for the output enable).
-This multiplexor can be configured to be automatically activated upon deep sleep entry in order to either drive the output low, high, high-Z or to the last seen value (keep).
+This multiplexor can be configured to be automatically activated upon sleep entry in order to either drive the output low, high, high-Z or to the last seen value (keep).
 If no sleep behavior is specified, the retention logic will continue to drive out the value coming from the peripheral side, which can be useful for peripherals that reside in the AON domain.
 
 The sleep behavior of all outputs is activated in parallel via a trigger signal asserted by the power manager.
-Once activated, it is the task of SW to disable the sleep behavior for each individual pin when waking up from deep sleep.
+Once activated, it is the task of SW to disable the sleep behavior for each individual pin when waking up from sleep.
 This ensures that the output values remain stable until the system and its peripherals have been re-initialized.
 
 ## Wakeup Detectors
@@ -219,6 +219,9 @@ TAP strap 1 | TAP strap 0  | Life Cycle State         | Selected TAP
 
 Note that the tool-inserted DFT controller may assert the `dft_hold_tap_sel_i` during a test (e.g. boundary scan) in which case the `pinmux` will temporarily pause sampling of the TAP selection straps.
 
+Also, it should be noted that the pad attributes of all JTAG IOs will be gated to all-zero temporarily, while the JTAG is enabled (this does not affect the values in the CSRs).
+This is to ensure that any functional attributes like inversion or pull-ups / pull-downs do not interfere with the JTAG while it is in use.
+
 For more information about the life cycle states, see [Life Cycle Controller Specification]({{< relref "hw/ip/lc_ctrl/doc" >}}) and the [Life Cycle Definition Table]({{< relref "doc/security/specs/device_life_cycle/_index.md#manufacturing-states" >}}).
 
 
@@ -267,7 +270,7 @@ Signal               | Direction  | Type        | Description
 `attr_i[3]`          | `input`    | `logic`     | Pull select (0: pull-down, 1: pull-up)
 `attr_i[4]`          | `input`    | `logic`     | Keeper enable
 `attr_i[5]`          | `input`    | `logic`     | Schmitt trigger enable
-`attr_i[6]`          | `input`    | `logic`     | Open drain enable enable
+`attr_i[6]`          | `input`    | `logic`     | Open drain enable
 `attr_i[8:7]`        | `input`    | `logic`     | Slew rate (0x0: slowest, 0x3: fastest)
 `attr_i[12:9]`       | `input`    | `logic`     | Drive strength (0x0: weakest, 0xf: strongest)
 
@@ -289,13 +292,13 @@ The following pad attributes are supported by this register layout by default:
 
 ATTR Bits | Description                                   | Access
 ----------|-----------------------------------------------|---------
-0         | Input/output inversion                        | RW
-1         | Open drain enable                             | RW
+0         | Input/output inversion                        | WARL
+1         | Virtual open drain enable                     | WARL
 2         | Pull enable                                   | WARL
 3         | Pull select (0: down, 1: up)                  | WARL
 4         | Keeper enable                                 | WARL
 5         | Schmitt trigger enable                        | WARL
-6         | Open drain enable enable                      | WARL
+6         | Open drain enable                             | WARL
 8:7       | Slew rate (0x0: slowest, 0x3: fastest)        | WARL
 12:9      | Drive strength (0x0: weakest, 0xf: strongest) | WARL
 
@@ -331,9 +334,9 @@ Note that the `pinmux` configuration should be sequenced after any IO attribute-
 If needed, each select signal can be individually locked down via {{< regref "MIO_PERIPH_INSEL_REGWEN_0" >}} or {{< regref "MIO_OUTSEL_REGWEN_0" >}}.
 The configuration can then not be altered anymore until the next system reset.
 
-## Deep Sleep Features
+## Sleep Features
 
-The deep sleep behavior of each individual MIO or DIO can be defined via the ({{< regref "MIO_PAD_SLEEP_EN_0" >}}, {{< regref "DIO_PAD_SLEEP_EN_0" >}}, {{< regref "MIO_PAD_SLEEP_MODE_0" >}} and {{< regref "DIO_PAD_SLEEP_MODE_0" >}}) registers.
+The sleep behavior of each individual MIO or DIO can be defined via the ({{< regref "MIO_PAD_SLEEP_EN_0" >}}, {{< regref "DIO_PAD_SLEEP_EN_0" >}}, {{< regref "MIO_PAD_SLEEP_MODE_0" >}} and {{< regref "DIO_PAD_SLEEP_MODE_0" >}}) registers.
 Available sleep behaviors are:
 `dio/mio_pad_sleep_en` Value  | `dio/mio_pad_sleep_mode` Value | Sleep Behavior
 ------------------------------|--------------------------------|-----------------------
@@ -343,7 +346,7 @@ Available sleep behaviors are:
 1                             | 2                              | High-Z
 1                             | 3                              | Keep last value
 
-Note that if the behavior is set to "Drive", the sleep mode will not be activated upon deep sleep entry.
+Note that if the behavior is set to "Drive", the sleep mode will not be activated upon sleep entry.
 Rather, the retention logic continues to drive the value coming from the peripheral side.
 Also note that the sleep logic is located after the `pinmux` matrix, hence the sleep configuration is per MIO pad and not per MIO peripheral.
 
@@ -369,7 +372,7 @@ A typical programming sequence for the wakeup detectors looks as follows:
 
 2. Optionally, lock the wakeup detector configuration via the {{< regref "WKUP_DETECTOR_REGWEN_0" >}} registers.
 
-3. During sleep, the wakeup detectors will trigger a wakep request if a matching pattern has been observed.
+3. During sleep, the wakeup detectors will trigger a wakeup request if a matching pattern has been observed.
    A bit corresponding to the wakeup detector that has observed the pattern will be set in the {{< regref "WKUP_CAUSE" >}} register.
 
 4. When exiting sleep, SW should read the wake info register in the [power manager]({{< relref "hw/ip/pwrmgr/doc/" >}}) to determine the reason(s) for the wakeup request.

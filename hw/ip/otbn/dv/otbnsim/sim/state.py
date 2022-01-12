@@ -153,9 +153,6 @@ class OTBNState:
         # signal from RTL
         self.urnd_256b_counter = 0
 
-    def set_keymgr_value(self, key0: int, key1: int, valid: bool) -> None:
-        return None
-
     def edn_rnd_step(self, rnd_data: int) -> None:
         # Take the new data
         assert 0 <= rnd_data < (1 << 32)
@@ -388,18 +385,11 @@ class OTBNState:
 
         self.pc = 0
 
-        # Reset CSRs, WSRs, loop stack and call stack
+        # Reset CSRs, WSRs, loop stack and call stack. WSRs have special
+        # treatment because some of them have values that persist across
+        # operations.
         self.csrs = CSRFile()
-
-        # Save the RND value when starting another run because when a SW
-        # run finishes we still keep RND data.
-        self.rnd_reg_set()
-        old_rnd = self.wsrs.RND._random_value
-
-        self.wsrs = WSRFile()
-        if old_rnd is not None:
-            self.wsrs.RND.set_unsigned(old_rnd)
-
+        self.wsrs.on_start()
         self.loop_stack = LoopStack()
         self.gprs.start()
 

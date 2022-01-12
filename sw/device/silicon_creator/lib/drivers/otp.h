@@ -46,6 +46,14 @@ uint64_t otp_read64(uint32_t address);
  */
 void otp_read(uint32_t address, uint32_t *data, size_t num_words);
 
+/**
+ * Disables read access to CREATOR_SW_CFG partition until next reset.
+ *
+ * This function must be called in ROM_EXT before handing over execution to the
+ * first owner boot stage.
+ */
+void otp_creator_sw_cfg_lockdown(void);
+
 #ifdef __cplusplus
 }
 #endif

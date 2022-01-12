@@ -3,28 +3,28 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module ibex_pmp #(
-    // Granularity of NAPOT access,
-    // 0 = No restriction, 1 = 8 byte, 2 = 16 byte, 3 = 32 byte, etc.
-    parameter int unsigned PMPGranularity = 0,
-    // Number of access channels (e.g. i-side + d-side)
-    parameter int unsigned PMPNumChan     = 2,
-    // Number of implemented regions
-    parameter int unsigned PMPNumRegions  = 4
+  // Granularity of NAPOT access,
+  // 0 = No restriction, 1 = 8 byte, 2 = 16 byte, 3 = 32 byte, etc.
+  parameter int unsigned PMPGranularity = 0,
+  // Number of access channels (e.g. i-side + d-side)
+  parameter int unsigned PMPNumChan     = 2,
+  // Number of implemented regions
+  parameter int unsigned PMPNumRegions  = 4
 ) (
-    // Clock and Reset
-    input  logic                    clk_i,
-    input  logic                    rst_ni,
+  // Clock and Reset
+  input  logic                    clk_i,
+  input  logic                    rst_ni,
 
-    // Interface to CSRs
-    input  ibex_pkg::pmp_cfg_t      csr_pmp_cfg_i     [PMPNumRegions],
-    input  logic [33:0]             csr_pmp_addr_i    [PMPNumRegions],
-    input  ibex_pkg::pmp_mseccfg_t  csr_pmp_mseccfg_i,
+  // Interface to CSRs
+  input  ibex_pkg::pmp_cfg_t      csr_pmp_cfg_i     [PMPNumRegions],
+  input  logic [33:0]             csr_pmp_addr_i    [PMPNumRegions],
+  input  ibex_pkg::pmp_mseccfg_t  csr_pmp_mseccfg_i,
 
-    input  ibex_pkg::priv_lvl_e     priv_mode_i    [PMPNumChan],
-    // Access checking channels
-    input  logic [33:0]             pmp_req_addr_i [PMPNumChan],
-    input  ibex_pkg::pmp_req_e      pmp_req_type_i [PMPNumChan],
-    output logic                    pmp_req_err_o  [PMPNumChan]
+  input  ibex_pkg::priv_lvl_e     priv_mode_i    [PMPNumChan],
+  // Access checking channels
+  input  logic [33:0]             pmp_req_addr_i [PMPNumChan],
+  input  ibex_pkg::pmp_req_e      pmp_req_type_i [PMPNumChan],
+  output logic                    pmp_req_err_o  [PMPNumChan]
 
 );
 
@@ -56,7 +56,7 @@ module ibex_pmp #(
                                                                               csr_pmp_addr_i[r];
     end
     // Address mask for NA matching
-    for (genvar b = PMPGranularity+2; b < 34; b++) begin : g_bitmask
+    for (genvar b = PMPGranularity + 2; b < 34; b++) begin : g_bitmask
       if (b == 2) begin : g_bit0
         // Always mask bit 2 for NAPOT
         assign region_addr_mask[r][b] = (csr_pmp_cfg_i[r].mode != PMP_MODE_NAPOT);
@@ -92,14 +92,14 @@ module ibex_pmp #(
       always_comb begin
         region_match_all[c][r] = 1'b0;
         unique case (csr_pmp_cfg_i[r].mode)
-          PMP_MODE_OFF   : region_match_all[c][r] = 1'b0;
-          PMP_MODE_NA4   : region_match_all[c][r] = region_match_eq[c][r];
-          PMP_MODE_NAPOT : region_match_all[c][r] = region_match_eq[c][r];
-          PMP_MODE_TOR   : begin
+          PMP_MODE_OFF:   region_match_all[c][r] = 1'b0;
+          PMP_MODE_NA4:   region_match_all[c][r] = region_match_eq[c][r];
+          PMP_MODE_NAPOT: region_match_all[c][r] = region_match_eq[c][r];
+          PMP_MODE_TOR: begin
             region_match_all[c][r] = (region_match_eq[c][r] | region_match_gt[c][r]) &
                                      region_match_lt[c][r];
           end
-          default        : region_match_all[c][r] = 1'b0;
+          default:        region_match_all[c][r] = 1'b0;
         endcase
       end
 
@@ -156,7 +156,7 @@ module ibex_pmp #(
 
       // PMP entries are statically prioritized, from 0 to N-1
       // The lowest-numbered PMP entry which matches an address determines accessability
-      for (int r = PMPNumRegions-1; r >= 0; r--) begin
+      for (int r = PMPNumRegions - 1; r >= 0; r--) begin
         if (region_match_all[c][r]) begin
           if (csr_pmp_mseccfg_i.mml) begin
             // When MSECCFG.MML is set use MML specific permission check

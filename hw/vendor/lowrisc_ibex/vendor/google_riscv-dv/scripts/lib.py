@@ -157,7 +157,7 @@ def run_parallel_cmd(cmd_list, timeout_s=999, exit_on_error=0,
                               stderr=subprocess.STDOUT)
         children.append(ps)
     for i in range(len(children)):
-        logging.info("Command progress: {}/{}".format(i, len(children)))
+        logging.info("Command progress: {}/{}".format(i + 1, len(children)))
         logging.debug("Waiting for command: {}".format(cmd_list[i]))
         try:
             output = children[i].communicate(timeout=timeout_s)[0]

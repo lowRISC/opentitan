@@ -5,13 +5,13 @@
 class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
   // ext component cfgs
-  rand csrng_agent_cfg   m_csrng_agent_cfg;
-  rand push_pull_agent_cfg#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-            m_endpoint_agent_cfg [edn_env_pkg::NUM_ENDPOINTS:0];
+  csrng_agent_cfg   m_csrng_agent_cfg;
+  push_pull_agent_cfg#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
+            m_endpoint_agent_cfg[MAX_NUM_ENDPOINTS];
 
   `uvm_object_utils_begin(edn_env_cfg)
     `uvm_field_object(m_csrng_agent_cfg, UVM_DEFAULT)
-    for (int i = 0; i < edn_env_pkg::NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
       `uvm_field_object(m_endpoint_agent_cfg[i], UVM_DEFAULT)
     end
   `uvm_object_utils_end
@@ -22,18 +22,23 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   uint   enable_pct, boot_req_mode_pct, auto_req_mode_pct;
 
   rand mubi4_t   enable, boot_req_mode, auto_req_mode;
+  rand uint      num_endpoints;
 
   // Constraints
   // TODO: utilize suggestions in PR9535 to generate "other" values when testing alerts
-  constraint c_enable {enable dist {
+  constraint enable_c {enable dist {
                        MuBi4True  :/ enable_pct,
                        MuBi4False :/ (100 - enable_pct) };}
-  constraint c_boot_req_mode {boot_req_mode dist {
+  constraint boot_req_mode_c {boot_req_mode dist {
                               MuBi4True  :/ boot_req_mode_pct,
                               MuBi4False :/ (100 - boot_req_mode_pct) };}
-  constraint c_auto_req_mode {auto_req_mode dist {
+  constraint auto_req_mode_c {auto_req_mode dist {
                               MuBi4True  :/ auto_req_mode_pct,
                               MuBi4False :/ (100 - auto_req_mode_pct) };}
+  constraint num_endpoints_c {num_endpoints dist {
+                              MIN_NUM_ENDPOINTS :/ 30,
+                              MAX_NUM_ENDPOINTS :/ 30,
+                              [MIN_NUM_ENDPOINTS + 1:MAX_NUM_ENDPOINTS-1] :/ 40 };}
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = edn_env_pkg::LIST_OF_ALERTS;
@@ -43,7 +48,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     // create config objects
     m_csrng_agent_cfg = csrng_agent_cfg::type_id::create("m_csrng_genbits_agent_cfg");
 
-    for (int i = 0; i < edn_env_pkg::NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
       m_endpoint_agent_cfg[i] = push_pull_agent_cfg#(.HostDataWidth(edn_pkg::
                                 FIPS_ENDPOINT_BUS_WIDTH))::type_id::create
                                 ($sformatf("m_endpoint_agent_cfg[%0d]", i));
@@ -65,10 +70,12 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     str = {str,  $sformatf("\n\t |***** enable             : %10d *****| \t", enable)            };
     str = {str,  $sformatf("\n\t |***** boot_req_mode      : %10d *****| \t", boot_req_mode)     };
     str = {str,  $sformatf("\n\t |***** auto_req_mode      : %10d *****| \t", auto_req_mode)     };
+    str = {str,  $sformatf("\n\t |***** num_endpoints      : %10d *****| \t", num_endpoints)     };
     str = {str,  $sformatf("\n\t |---------- knobs --------------------------| \t")              };
     str = {str,  $sformatf("\n\t |***** enable_pct         : %10d *****| \t", enable_pct)        };
     str = {str,  $sformatf("\n\t |***** boot_req_mode_pct  : %10d *****| \t", boot_req_mode_pct) };
     str = {str,  $sformatf("\n\t |***** auto_req_mode_pct  : %10d *****| \t", auto_req_mode_pct) };
+    str = {str,  $sformatf("\n\t |***** MAX_NUM_ENDPOINTS  : %10d *****| \t", MAX_NUM_ENDPOINTS) };
     str = {str,  $sformatf("\n\t |*******************************************| \t")              };
     str = {str, "\n"};
     return str;

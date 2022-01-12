@@ -10,16 +10,16 @@ module otbn_loop_controller
   input clk_i,
   input rst_ni,
 
-  input                      state_reset_i,
+  input state_reset_i,
 
-  input                      insn_valid_i,
-  input [ImemAddrWidth-1:0]  insn_addr_i,
-  input [ImemAddrWidth-1:0]  next_insn_addr_i,
+  input                     insn_valid_i,
+  input [ImemAddrWidth-1:0] insn_addr_i,
+  input [ImemAddrWidth-1:0] next_insn_addr_i,
 
-  input                      loop_start_req_i,
-  input                      loop_start_commit_i,
-  input [11:0]               loop_bodysize_i,
-  input [31:0]               loop_iterations_i,
+  input        loop_start_req_i,
+  input        loop_start_commit_i,
+  input [11:0] loop_bodysize_i,
+  input [31:0] loop_iterations_i,
 
   output                     loop_jump_o,
   output [ImemAddrWidth-1:0] loop_jump_addr_o,
@@ -27,11 +27,11 @@ module otbn_loop_controller
 
   output                     prefetch_loop_active_o,
   output [31:0]              prefetch_loop_iterations_o,
-  output [ImemAddrWidth-1:0] prefetch_loop_end_addr_o,
+  output [ImemAddrWidth:0]   prefetch_loop_end_addr_o,
   output [ImemAddrWidth-1:0] prefetch_loop_jump_addr_o,
 
-  input                      jump_or_branch_i,
-  input                      otbn_stall_i
+  input jump_or_branch_i,
+  input otbn_stall_i
 );
   // The loop controller has a current loop and then a stack of outer loops, this sets the size of
   // the stack so maximum loop nesting depth is LoopStackDepth + 1.
@@ -196,22 +196,22 @@ module otbn_loop_controller
     .clk_i,
     .rst_ni,
 
-    .full_o      (loop_stack_full),
+    .full_o(loop_stack_full),
 
-    .clear_i     (state_reset_i),
+    .clear_i(state_reset_i),
 
-    .push_data_i (current_loop_q),
-    .push_i      (loop_stack_push),
+    .push_data_i(current_loop_q),
+    .push_i     (loop_stack_push),
 
-    .pop_i       (loop_stack_pop),
-    .top_data_o  (next_loop),
-    .top_valid_o (next_loop_valid)
+    .pop_i      (loop_stack_pop),
+    .top_data_o (next_loop),
+    .top_valid_o(next_loop_valid)
   );
 
   // Forward info about loop state for next cycle to prefetch stage
   assign prefetch_loop_active_o     = loop_active_d;
   assign prefetch_loop_iterations_o = current_loop_d.loop_iterations;
-  assign prefetch_loop_end_addr_o   = current_loop_d.loop_end[ImemAddrWidth-1:0];
+  assign prefetch_loop_end_addr_o   = current_loop_d.loop_end;
   assign prefetch_loop_jump_addr_o  = current_loop_d.loop_start;
 
   `ASSERT(NoLoopStackPushAndPop, !(loop_stack_push && loop_stack_pop))

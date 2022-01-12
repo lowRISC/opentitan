@@ -14,6 +14,12 @@
 // approximately 5 effective rounds), NumDiffRounds = 2 and NumAddrScrRounds = 2 (enabling address
 // scrambling with 2 rounds).
 //
+// There are two input address ports (rom_addr_i and prince_addr_i). These are expected to be
+// connected to signals that are logically the same. The first is used as an input to the physical
+// ROM index. The second is used when calculating the address-tweakable keystream. The trick is that
+// you can mitigate fault-injection attacks that corrupt the address by splitting it somewhere
+// "upstream". If a fault-injection only corrupts one of the two addresses, the result will be
+// garbage.
 
 module rom_ctrl_scrambled_rom
   import prim_rom_pkg::rom_cfg_t;
@@ -43,7 +49,8 @@ module rom_ctrl_scrambled_rom
   input logic              rst_ni,
 
   input  logic             req_i,
-  input  logic [Aw-1:0]    addr_i,
+  input  logic [Aw-1:0]    rom_addr_i,
+  input  logic [Aw-1:0]    prince_addr_i,
   output logic             rvalid_o,
   output logic [Width-1:0] scr_rdata_o,
   output logic [Width-1:0] clr_rdata_o,
@@ -69,7 +76,7 @@ module rom_ctrl_scrambled_rom
     .NumRounds (2),
     .Decrypt   (0)
   ) u_sp_addr (
-    .data_i (addr_i),
+    .data_i (rom_addr_i),
     .key_i  (AddrScrNonce),
     .data_o (addr_scr)
   );
@@ -88,7 +95,7 @@ module rom_ctrl_scrambled_rom
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .valid_i (req_i),
-    .data_i  ({DataScrNonce, addr_i}),
+    .data_i  ({DataScrNonce, prince_addr_i}),
     .key_i   (ScrKey),
     .dec_i   (1'b0),
     .data_o  (keystream),

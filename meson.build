@@ -242,6 +242,8 @@ hw_ip_rstmgr_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/rstmgr/data/autog
 hw_ip_ibex_reg_h = gen_hw_hdr.process('hw//ip/rv_core_ibex/data/rv_core_ibex.hjson')
 hw_top_earlgrey_pinmux_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/pinmux/data/autogen/pinmux.hjson')
 hw_top_earlgrey_rv_plic_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip_autogen/rv_plic/data/rv_plic.hjson')
+hw_ip_ast_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/ast/data/ast.hjson')
+hw_ip_sensor_ctrl_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/sensor_ctrl/data/sensor_ctrl.hjson')
 
 # Top Earlgrey library (top_earlgrey)
 # The sources for this are generated into the hw hierarchy.

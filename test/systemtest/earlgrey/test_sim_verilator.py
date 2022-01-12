@@ -130,7 +130,8 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     """
 
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
-    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem"
+    rom_vmem_path = (bin_dir /
+            "sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem")
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
     sim = ot.VerilatorSimOpenTitan(sim_path, rom_vmem_path, otp_img_path, tmp_path)
@@ -180,7 +181,8 @@ def test_spiflash(tmp_path, bin_dir):
     """ Load a single application to the Verilator simulation using spiflash """
 
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
-    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem"
+    rom_vmem_path = (bin_dir /
+            "sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem")
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
     sim = ot.VerilatorSimOpenTitan(sim_path, rom_vmem_path, otp_img_path, tmp_path)
@@ -210,7 +212,8 @@ def test_openocd_basic_connectivity(tmp_path, bin_dir, topsrcdir, openocd):
     """
     # Run a simulation (bootrom only, no app beyond that)
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
-    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem"
+    rom_vmem_path = (bin_dir /
+            "sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem")
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
     sim = ot.VerilatorSimOpenTitan(sim_path, rom_vmem_path, otp_img_path, tmp_path)
@@ -235,7 +238,7 @@ def test_openocd_basic_connectivity(tmp_path, bin_dir, topsrcdir, openocd):
         ('Info : JTAG tap: riscv.tap tap/device found: 0x04f5484d '
          '(mfg: 0x426 (Google Inc), part: 0x4f54, ver: 0x0)'),
         'Info : Examined RISC-V core; found 1 harts',
-        'Info :  hart 0: XLEN=32, misa=0x40101104',
+        'Info :  hart 0: XLEN=32, misa=0x40101106',
     ]
 
     for msg_exp in msgs_exp:

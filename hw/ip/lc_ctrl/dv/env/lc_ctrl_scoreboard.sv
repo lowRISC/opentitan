@@ -76,13 +76,19 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         end
 
         ->check_lc_output_ev;
-        check_lc_outputs(exp_lc_o, err_msg);
+        check_lc_outputs(exp_lc_o, {$sformatf("Called from line: %0d, ", `__LINE__), err_msg});
 
 
         if (cfg.err_inj.state_err || cfg.err_inj.count_err ||
             cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err
             ) begin // State/count error expected
           set_exp_alert(.alert_name("fatal_state_error"), .is_fatal(1),
+                        .max_delay(cfg.alert_max_delay));
+        end
+
+        if (cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp) begin
+          // OTP program error expected
+          set_exp_alert(.alert_name("fatal_prog_error"), .is_fatal(1),
                         .max_delay(cfg.alert_max_delay));
         end
 
@@ -104,6 +110,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       if (item_rcv.d_data == 1 && cfg.en_scb) begin
         set_exp_alert(.alert_name("fatal_prog_error"), .is_fatal(1));
       end
+
+      // Error if this occurs in the in the Post Transition test phase or beyond
+      `DV_CHECK_LT(cfg.test_phase, LcCtrlPostTransition, "Second transition detected")
+
       // Decode and store to use for prediction
       m_otp_prog_data = otp_ctrl_pkg::lc_otp_program_req_t'(item_rcv.h_data);
 
@@ -206,7 +216,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
 
     // if incoming access is a write to a valid csr, then make updates right away
-    if (addr_phase_write) begin
+    if (addr_phase_write && cfg.en_scb_ral_update_write) begin
       `uvm_info(`gfn, {
                 "process_tl_access: write predict ",
                 csr.get_name(),
@@ -219,29 +229,13 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     if (addr_phase_read) begin
       case (csr.get_name())
         "lc_state": begin
-          // if (cfg.err_inj.state_err) begin // State error expected
-          //   case(cfg.test_phase)
-          //     LcCtrlReadState1: `DV_CHECK_FATAL(
-          //         ral.lc_state.predict(.value(DecLcStInvalid), .kind(UVM_PREDICT_READ)))
-          //     LcCtrlReadState2: `DV_CHECK_FATAL(
-          //         ral.lc_state.predict(.value(DecLcStEscalate), .kind(UVM_PREDICT_READ)))
-          //   endcase
           `DV_CHECK_FATAL(ral.lc_state.state.predict(
                           .value(predict_lc_state()), .kind(UVM_PREDICT_READ)))
         end
 
         "lc_transition_cnt": begin
-          // If we have a state error no transition will take place so
-          // the tarnsition count will be 31
-          if(!cfg.err_inj.count_err && !cfg.err_inj.state_err &&
-              !cfg.err_inj.count_backdoor_err && !cfg.err_inj.state_backdoor_err
-              ) begin
-            `DV_CHECK_FATAL((ral.lc_transition_cnt.predict(
-                            .value(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)), .kind(UVM_PREDICT_READ)
-                            )))
-          end else begin  // State or count error expected
-            `DV_CHECK_FATAL(ral.lc_transition_cnt.predict(.value(31), .kind(UVM_PREDICT_READ)))
-          end
+          `DV_CHECK_FATAL(ral.lc_transition_cnt.cnt.predict(
+                          .value(predict_lc_transition_cnt()), .kind(UVM_PREDICT_READ)))
         end
 
         default: begin
@@ -266,31 +260,67 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                 item.sprint(uvm_default_line_printer)
                 }, UVM_MEDIUM)
 
-      // when lc successfully req a transition, all outputs are turned off.
-      if (cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err) begin
-        // Expect escalate
-        exp.lc_escalate_en_o = lc_ctrl_pkg::On;
+      if (cfg.test_phase inside {[LcCtrlEscalate : LcCtrlPostTransTransitionComplete]}) begin
+        if(cfg.err_inj.state_backdoor_err || cfg.err_inj.count_backdoor_err ||
+            cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp) begin
+          // Expect escalate to be asserted
+          exp.lc_escalate_en_o = lc_ctrl_pkg::On;
+        end
       end
 
-      if (ral.status.transition_successful.get()) check_lc_outputs(exp);
+      // when lc successfully req a transition, all outputs are turned off.
+      if (ral.status.transition_successful.get()) begin
+        check_lc_outputs(exp, $sformatf("Called from line: %0d", `__LINE__));
+      end
+
     end
   endtask
 
   // Predict the value of lc_state register
   virtual function bit [31:0] predict_lc_state();
-    // Unrepeated lc_state expected - default state from otp_i
-    dec_lc_state_e lc_state_single_exp = dec_lc_state(cfg.lc_ctrl_vif.otp_i.state);
+    // Expected lc_state, lc_state register has this repeated DecLcStateNumRep times
+    dec_lc_state_e lc_state_single_exp = 'X;
     bit [31:0] lc_state_exp;
 
+    // State error of some kind expected
+    bit state_err_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
+        cfg.err_inj.count_backdoor_err || cfg.err_inj.state_backdoor_err;
+
+    // OTP program error is expected
+    bit prog_err_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp;
+
     // Exceptions to default
-    if (cfg.err_inj.state_err || cfg.err_inj.count_err || cfg.err_inj.count_backdoor_err ||
-        cfg.err_inj.state_backdoor_err) begin // State error expected
-      case (cfg.test_phase)
-        LcCtrlReadState1: lc_state_single_exp = DecLcStInvalid;
-        LcCtrlReadState2: lc_state_single_exp = DecLcStEscalate;
-        default: lc_state_single_exp = DecLcStInvalid;
-      endcase
-    end
+    unique case (cfg.test_phase)
+      LcCtrlTestInit, LcCtrlIterStart, LcCtrlDutReady, LcCtrlWaitTransition: begin
+        // Prior to transition lc_state should mirror otp_i
+        lc_state_single_exp = dec_lc_state(cfg.lc_ctrl_vif.otp_i.state);
+      end
+      LcCtrlTransitionComplete, LcCtrlReadState1: begin
+        // Default PostTransition
+        lc_state_single_exp = DecLcStPostTrans;
+
+        if (state_err_exp) begin
+          // For state error prior to escalate being triggered we expect Invalid
+          lc_state_single_exp = DecLcStInvalid;
+        end
+      end
+      LcCtrlEscalate, LcCtrlReadState2, LcCtrlPostTransition, LcCtrlPostStart: begin
+        // Default PostTransition
+        lc_state_single_exp = DecLcStPostTrans;
+
+        if (state_err_exp || prog_err_exp) begin
+          // For state / prog error after escalate is triggered we expect Escalate
+          lc_state_single_exp = DecLcStEscalate;
+        end
+      end
+      default: begin
+        `uvm_fatal(
+            `gfn, $sformatf(
+            "predict_lc_state: Unimplemented test_phase %s(%h)", cfg.test_phase.name, cfg.test_phase
+            ))
+      end
+    endcase
+
     // repeat state to fill the word for hardness
     lc_state_exp = {DecLcStateNumRep{lc_state_single_exp}};
 
@@ -304,6 +334,45 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     return lc_state_exp;
   endfunction
 
+  // Predict the value of lc_transition_cnt register
+  virtual function dec_lc_cnt_t predict_lc_transition_cnt();
+    // Default lc_transition_count expected
+    dec_lc_cnt_t lc_transition_cnt_exp = 'X;
+
+    // State error of some kind expected
+    bit state_err_exp = cfg.err_inj.state_err || cfg.err_inj.count_err ||
+        cfg.err_inj.count_backdoor_err || cfg.err_inj.state_backdoor_err;
+
+    // Exceptions to default expected lc_transition_count
+    unique case (cfg.test_phase)
+      LcCtrlTestInit, LcCtrlIterStart, LcCtrlDutReady, LcCtrlWaitTransition: begin
+        // Prior to transition lc_transition_count should mirror otp_i
+        lc_transition_cnt_exp = dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count);
+      end
+      LcCtrlTransitionComplete, LcCtrlReadState1, LcCtrlEscalate,
+        LcCtrlReadState2, LcCtrlPostTransition, LcCtrlPostStart : begin
+        // lc_transition_count post transition is maximum value
+        lc_transition_cnt_exp = '1;
+      end
+
+      default: begin
+        `uvm_fatal(`gfn, $sformatf(
+                   "predict_lc_transition_cnt: Unimplemented test_phase %s(%h)",
+                   cfg.test_phase.name,
+                   cfg.test_phase
+                   ))
+      end
+    endcase
+
+
+    `uvm_info(`gfn, $sformatf(
+              "predict_lc_transition_cnt: lc_transition_cnt_exp= %0d", lc_transition_cnt_exp),
+              UVM_MEDIUM)
+
+    return lc_transition_cnt_exp;
+  endfunction
+
+
   virtual function otp_ctrl_pkg::lc_otp_program_req_t predict_otp_prog_req();
     // Convert state and count back to enums
     const lc_state_e LcStateIn = cfg.lc_ctrl_vif.otp_i.state;
@@ -314,7 +383,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     const
     lc_state_e
     LcTargetState = encode_lc_state(
-        cfg.ral.transition_target.get_mirrored_value()
+        cfg.ral.transition_target.state.get_mirrored_value()
     );
     lc_state_e lc_state_exp;
     lc_cnt_e lc_cnt_exp;

@@ -37,7 +37,7 @@ module rom_ctrl_rom_reg_top (
   tlul_pkg::tl_d2h_t tl_o_pre;
   tlul_rsp_intg_gen #(
     .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1)
+    .EnableDataIntgGen(0)
   ) u_rsp_intg_gen (
     .tl_i(tl_o_pre),
     .tl_o(tl_o)

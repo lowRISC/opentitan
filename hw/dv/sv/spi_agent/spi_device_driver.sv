@@ -52,13 +52,14 @@ class spi_device_driver extends spi_driver;
                               bits_q.size()), UVM_DEBUG)
     // pop enough bits do drive all needed sio
     while (bits_q.size() > 0) begin
+       if (bits_q.size() > 0) cfg.wait_sck_edge(DrivingEdge);
       for (int i = 0; i < 4; i++) begin
         sio_bits[i] = (i < max_tx_bits) ? bits_q.pop_front() : 1'bz;
       end
       send_data_to_sio(cfg.spi_mode, sio_bits);
       `uvm_info(`gfn, $sformatf("\n  dev_drv: assert data bit[%0d] %b",
                                 bits_q.size(), sio_bits[0]), UVM_DEBUG)
-      if (bits_q.size() > 0) cfg.wait_sck_edge(DrivingEdge);
+
     end
   endtask : send_rx_item
 

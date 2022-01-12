@@ -28,7 +28,7 @@ module spi_cmdparse
   // pre-assigned index and search opcode. e.g) if cmdslot[0].opcode == 'h03,
   // then if received opcode matches to the cmdslot[0] opcode, then it activates
   // Read Status module as Index 0 is pre-assigned to Read Status.
-  input cmd_info_t [NumCmdInfo-1:0] cmd_info_i,
+  input cmd_info_t [NumTotalCmdInfo-1:0] cmd_info_i,
 
   // control to spi_s2p
   output io_mode_e io_mode_o,
@@ -68,7 +68,7 @@ module spi_cmdparse
   logic unused_cmdinfo_members;
   always_comb begin
     unused_cmdinfo_members = 1'b 0;
-    for (int unsigned i = 0 ; i < NumCmdInfo ; i++) begin
+    for (int unsigned i = 0 ; i < NumTotalCmdInfo ; i++) begin
       unused_cmdinfo_members ^= ^{ cmd_info_i[i].addr_mode,
                                    cmd_info_i[i].addr_swap_en,
                                    cmd_info_i[i].dummy_en,
@@ -99,6 +99,9 @@ module spi_cmdparse
     StReadCmd,
 
     StUpload,
+
+    // EN4B/ EX4B fall into this state
+    StAddr4B,
 
     // If opcode does not matched, FSM moves to here and wait the reset.
     StWait
@@ -147,12 +150,15 @@ module spi_cmdparse
   // datapath based on the received input (opcode). The opcode is the SW
   // configurable CSRs `cmd_info_i`.
   logic opcode_readstatus, opcode_readjedec, opcode_readsfdp, opcode_readcmd;
+  logic opcode_en4b, opcode_ex4b;
 
   assign opcode_readstatus = (data_i == cmd_info_i[CmdInfoReadStatus1].opcode)
                            | (data_i == cmd_info_i[CmdInfoReadStatus2].opcode)
                            | (data_i == cmd_info_i[CmdInfoReadStatus3].opcode);
   assign opcode_readjedec = (data_i == cmd_info_i[CmdInfoReadJedecId].opcode);
   assign opcode_readsfdp = (data_i == cmd_info_i[CmdInfoReadSfdp].opcode);
+  assign opcode_en4b = (data_i == cmd_info_i[CmdInfoEn4B].opcode);
+  assign opcode_ex4b = (data_i == cmd_info_i[CmdInfoEx4B].opcode);
 
   always_comb begin
     opcode_readcmd = 1'b 0;
@@ -192,7 +198,7 @@ module spi_cmdparse
     };
     cmd_info_idx_d = '0;
     if ((st == StIdle) && module_active && data_valid_i) begin
-      for (int unsigned i = 0 ; i < NumCmdInfo ; i++ ) begin
+      for (int unsigned i = 0 ; i < NumTotalCmdInfo ; i++ ) begin
         if (cmd_info_i[i].valid && (data_i == cmd_info_i[i].opcode)) begin
           cmd_info_d     = cmd_info_i[i];
           cmd_info_idx_d = CmdInfoIdxW'(i);
@@ -333,6 +339,14 @@ module spi_cmdparse
               sel_dp = DpUpload;
             end
 
+            opcode_en4b, opcode_ex4b: begin
+              // TODO: implement
+              st_d = StAddr4B;
+
+              // opcode only commands. Need to assert DP before transition
+              sel_dp = (opcode_en4b) ? DpEn4B : DpEx4B ;
+            end
+
             default: begin
               st_d = StWait;
 
@@ -352,6 +366,8 @@ module spi_cmdparse
       StReadCmd: sel_dp = DpReadCmd;
 
       StUpload:  sel_dp = DpUpload;
+
+      StAddr4B: sel_dp = DpNone; // Terminal state wait reset
 
       StWait: begin
         st_d = StWait;

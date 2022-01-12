@@ -34,6 +34,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/passthru_mem_intg_tests.hjson"
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   en_build_modes: ["{tool}_crypto_dpi_prince_build_opts"]
@@ -53,10 +54,6 @@
     {
       name: rom_ctrl_smoke
       uvm_test_seq: rom_ctrl_smoke_vseq
-    }
-    {
-      name: successful_rom_chk
-      uvm_test_seq: rom_ctrl_chk_successful_vseq
     }
     {
       name: rom_ctrl_stress_all

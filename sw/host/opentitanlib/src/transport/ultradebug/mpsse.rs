@@ -327,7 +327,7 @@ impl Context {
     pub fn gpio_set(&mut self, pin: u8, high: bool) -> Result<()> {
         let dir = GpioDirection::from_bits(1 << pin).ok_or(GpioError::InvalidPinNumber(pin))?;
         if (dir & self.gpio_direction).bits() == 0 {
-            return Err(GpioError::InvalidPinDirection(pin).into());
+            return Err(GpioError::InvalidPinMode(pin).into());
         }
         if high {
             self.gpio_value |= 1 << pin;

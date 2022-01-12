@@ -561,7 +561,7 @@ module csrng_ctr_drbg_upd #(
       OBError: begin
         ctr_drbg_updob_sm_err_o = 1'b1;
       end
-      default: outblk_state_d = AckIdle;
+      default: outblk_state_d = OBError;
     endcase
   end
 

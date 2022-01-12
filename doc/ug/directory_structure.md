@@ -112,13 +112,8 @@ sw
 ├──device                 => Sources compiled for the OpenTitan chip,
 │  │                         including tests run on FPGA and simulations
 │  │ 
-│  ├──boot_rom            => Sources for generating the primary boot image
-│  │                         loaded into ROM
-│  │ 
 │  ├──benchmarks          => Standard benchmarks and instructions for running
 │  │   └──coremark           them
-│  │ 
-│  ├──doc                 => Documentation sources
 │  │ 
 │  ├──examples            => Example programs to demonstrate basic
 │  │   ├──hello_world        functionality
@@ -129,8 +124,10 @@ sw
 │  │   └──common          => Common sources for all SW tests including the CRT
 │  │                         source and the linker script
 │  │ 
-│  ├──lib                 => SW library of device interface functions (DIFs)
-│  │                         that provide APIs for controlling the hardware
+│  ├──lib                 => SW libraries, including device interface functions
+│  │                         (DIFs), testutils, test boot ROM (test_rom), the
+│  │                         OTTF, and other base APIs for controlling the
+│  │                         hardware
 │  │ 
 │  └──tests               => SW tests implemented on FPGA/Verilator/DV targets
 │     ├──flash_ctrl

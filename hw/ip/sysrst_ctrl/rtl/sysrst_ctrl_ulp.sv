@@ -25,72 +25,71 @@ module sysrst_ctrl_ulp
 
 );
 
-  logic pwrb_cond_met_d, pwrb_cond_met_q;
-  logic lid_open_cond_met_d, lid_open_cond_met_q;
-  logic ac_present_cond_met_d, ac_present_cond_met_q;
-
-  sysrst_ctrl_ulpfsm #(
-    .EdgeType  ("HL"),
-    .TimerWidth(TimerWidth)
-  ) u_pwrb_ulpfsm (
+  // This detects a negative edge
+  logic pwrb_det, pwrb_det_pulse;
+  sysrst_ctrl_detect #(
+    .TimerWidth(TimerWidth),
+    .EdgeDetect(1),  // require an edge for detection
+    .Sticky(1)       // detected status remains asserted until disabled
+  ) u_sysrst_ctrl_detect_pwrb (
     .clk_i,
     .rst_ni,
     .trigger_i(pwrb_int_i),
     .cfg_timer_i(ulp_pwrb_debounce_ctl_i.q),
-    .cfg_en_i(ulp_ctl_i.q),
-    .timer_cond_met_o(pwrb_cond_met_d)
+    .cfg_l2h_en_i(1'b0),
+    .cfg_h2l_en_i(ulp_ctl_i.q),
+    .l2h_detected_o(),
+    .h2l_detected_o(pwrb_det),
+    .l2h_detected_pulse_o(),
+    .h2l_detected_pulse_o(pwrb_det_pulse)
   );
 
-  sysrst_ctrl_ulpfsm #(
-    .EdgeType  ("LH"),
-    .TimerWidth(TimerWidth)
-  ) u_lid_open_ulpfsm (
+  // This detects a positivie edge
+  logic lid_open_det, lid_open_det_pulse;
+  sysrst_ctrl_detect #(
+    .TimerWidth(TimerWidth),
+    .EdgeDetect(1),  // require an edge for detection
+    .Sticky(1)       // detected status remains asserted until disabled
+  ) u_sysrst_ctrl_detect_lid_open (
     .clk_i,
     .rst_ni,
     .trigger_i(lid_open_int_i),
     .cfg_timer_i(ulp_lid_debounce_ctl_i.q),
-    .cfg_en_i(ulp_ctl_i.q),
-    .timer_cond_met_o(lid_open_cond_met_d)
+    .cfg_l2h_en_i(ulp_ctl_i.q),
+    .cfg_h2l_en_i(1'b0),
+    .l2h_detected_o(lid_open_det),
+    .h2l_detected_o(),
+    .l2h_detected_pulse_o(lid_open_det_pulse),
+    .h2l_detected_pulse_o()
   );
 
-  sysrst_ctrl_ulpfsm #(
-    .EdgeType  ("H"),
-    .TimerWidth(TimerWidth)
-  ) u_ac_present_ulpfsm (
+  // This detects a positive level
+  logic ac_present_det, ac_present_det_pulse;
+  sysrst_ctrl_detect #(
+    .TimerWidth(TimerWidth),
+    .EdgeDetect(0),  // do NOT require an edge for detection
+    .Sticky(1)       // detected status remains asserted until disabled
+  ) u_sysrst_ctrl_detect_ac_present (
     .clk_i,
     .rst_ni,
     .trigger_i(ac_present_int_i),
     .cfg_timer_i(ulp_ac_debounce_ctl_i.q),
-    .cfg_en_i(ulp_ctl_i.q),
-    .timer_cond_met_o(ac_present_cond_met_d)
+    .cfg_l2h_en_i(ulp_ctl_i.q),
+    .cfg_h2l_en_i(1'b0),
+    .l2h_detected_o(ac_present_det),
+    .h2l_detected_o(),
+    .l2h_detected_pulse_o(ac_present_det_pulse),
+    .h2l_detected_pulse_o()
   );
 
-  // delay the level signal to generate a pulse
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_ulp_cond_met
-    if (!rst_ni) begin
-      pwrb_cond_met_q       <= 1'b0;
-      lid_open_cond_met_q   <= 1'b0;
-      ac_present_cond_met_q <= 1'b0;
-    end else begin
-      pwrb_cond_met_q       <= pwrb_cond_met_d;
-      lid_open_cond_met_q   <= lid_open_cond_met_d;
-      ac_present_cond_met_q <= ac_present_cond_met_d;
-    end
-  end
+  // aggregate pulse and level signals
+  assign ulp_wakeup_pulse_o = pwrb_det_pulse     |
+                              lid_open_det_pulse |
+                              ac_present_det_pulse;
 
-  logic pwrb_det_pulse;
-  logic lid_open_det_pulse;
-  logic ac_present_det_pulse;
-  assign pwrb_det_pulse = pwrb_cond_met_d & ~pwrb_cond_met_q;
-  assign lid_open_det_pulse = lid_open_cond_met_d & ~lid_open_cond_met_q;
-  assign ac_present_det_pulse = ac_present_cond_met_d & ~ac_present_cond_met_q;
-
-  // aggregate pulses
-  assign ulp_wakeup_pulse_o = ulp_ctl_i.q & (pwrb_det_pulse     |
-                                             lid_open_det_pulse |
-                                             ac_present_det_pulse);
-
-  assign z3_wakeup_hw_o = pwrb_cond_met_d | lid_open_cond_met_d | ac_present_cond_met_d;
+  assign z3_wakeup_hw_o = pwrb_det |
+                          lid_open_det |
+                          ac_present_det;
 
   assign ulp_status_o.d = 1'b1;
   assign ulp_status_o.de = ulp_wakeup_pulse_o;

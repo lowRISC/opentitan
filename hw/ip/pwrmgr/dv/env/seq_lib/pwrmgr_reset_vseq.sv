@@ -29,6 +29,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      setup_interrupt(.enable(en_intr));
       enabled_resets = resets_en & resets;
       `uvm_info(`gfn, $sformatf(
                 "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b",
@@ -52,6 +53,8 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, $sformatf("Sending resets=0x%x", resets), UVM_MEDIUM)
       cfg.pwrmgr_vif.update_resets(resets);
       `uvm_info(`gfn, $sformatf("Sending sw reset from rstmgr=%b", sw_rst_from_rstmgr), UVM_MEDIUM)
+      if (escalation_reset)
+        send_escalation_reset();
       cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
 
       cfg.slow_clk_rst_vif.wait_clks(4);
@@ -69,6 +72,9 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
 
       cfg.slow_clk_rst_vif.wait_clks(4);
       csr_rd_check(.ptr(ral.reset_status[0]), .compare_value('0));
+
+      // And check interrupt is not set.
+      check_and_clear_interrupt(.expected(1'b0));
     end
   endtask
 

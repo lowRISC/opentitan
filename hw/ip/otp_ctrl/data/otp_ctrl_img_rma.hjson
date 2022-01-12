@@ -43,6 +43,163 @@
                 {
                     name:  "OWNER_SW_CFG_DIGEST",
                     value: "0x0",
+                },
+                {
+                    name: "ROM_ALERT_CLASS_EN"
+                    // Set the enables to kAlertEnableNone.
+                    // See `alert_enable_t`
+                    // in sw/device/silicon_creator/lib/drivers/alert.h
+                    value: "0xa9a9a9a9",
+                },
+                {
+                    name: "ROM_ALERT_ESCALATION"
+                    // Set the esclation policies to kAlertEscalateNone.
+                    // See `alert_escalate_t`
+                    // in sw/device/silicon_creator/lib/drivers/alert.h
+                    value: "0xd1d1d1d1",
+                },
+                {
+                    name: "ROM_ALERT_CLASSIFICATION"
+                    // Set the classifiactions to kAlertClassX.
+                    // See `alert_class_t`
+                    // in sw/device/silicon_creator/lib/drivers/alert.h
+                    value: [
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                    ],
+                },
+                {
+                    name: "ROM_LOCAL_ALERT_CLASSIFICATION"
+                    // Set the classifiactions to kAlertClassX.
+                    // See `alert_class_t`
+                    // in sw/device/silicon_creator/lib/drivers/alert.h
+                    value: [
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                    ],
+                },
+                {
+                    name: "ROM_ALERT_ACCUM_THRESH"
+                    // Set the alert accumulation thresholds to 0 per class.
+                    value: [
+                        "0x00000000",
+                        "0x00000000",
+                        "0x00000000",
+                        "0x00000000",
+                    ],
+                },
+                {
+                    name: "ROM_ALERT_TIMEOUT_CYCLES"
+                    // Set the alert timeout cycles to 0 per class.
+                    value: [
+                        "0x00000000",
+                        "0x00000000",
+                        "0x00000000",
+                        "0x00000000",
+                    ],
+                },
+                {
+                    name: "ROM_ALERT_PHASE_CYCLES"
+                    // Set the alert phase cycles to 0,10,10,0xFFFFFFFF for 
+                    // classes A and B, and to all zeros for classes C and D.
+                    value: [
+                        "0x0", "0xa", "0xa", "0xFFFFFFFF",
+                        "0x0", "0xa", "0xa", "0xFFFFFFFF",
+                        "0x0", "0x0", "0x0", "0x0",
+                        "0x0", "0x0", "0x0", "0x0",
+                    ],
                 }
             ],
         }

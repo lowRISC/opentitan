@@ -26,8 +26,8 @@ module otbn_instruction_fetch
   input  logic                     imem_rvalid_i,
 
   // Next instruction selection (to instruction fetch)
-  input  logic                     insn_fetch_req_valid_i,
-  input  logic [ImemAddrWidth-1:0] insn_fetch_req_addr_i,
+  input logic                     insn_fetch_req_valid_i,
+  input logic [ImemAddrWidth-1:0] insn_fetch_req_addr_i,
 
   // Decoded instruction
   output logic                     insn_fetch_resp_valid_o,
@@ -35,12 +35,12 @@ module otbn_instruction_fetch
   output logic [31:0]              insn_fetch_resp_data_o,
   input  logic                     insn_fetch_resp_clear_i,
 
-  output logic                     insn_fetch_err_o, // ECC error seen in instruction fetch
+  output logic insn_fetch_err_o,  // ECC error seen in instruction fetch
 
   input logic                     prefetch_en_i,
   input logic                     prefetch_loop_active_i,
   input logic [31:0]              prefetch_loop_iterations_i,
-  input logic [ImemAddrWidth-1:0] prefetch_loop_end_addr_i,
+  input logic [ImemAddrWidth:0]   prefetch_loop_end_addr_i,
   input logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_i
 );
 
@@ -115,7 +115,8 @@ module otbn_instruction_fetch
       // timing consistent regardless of taken/not-taken.
       // This also applies to jumps, this avoids the need to calculate the jump address here.
       insn_prefetch = 1'b0;
-    end else if (insn_prefetch_addr == prefetch_loop_end_addr_i && prefetch_loop_active_i &&
+    end else if ({1'b0, insn_prefetch_addr} == prefetch_loop_end_addr_i &&
+                 prefetch_loop_active_i &&
                  prefetch_loop_iterations_i > 32'd1) begin
       // When in a loop prefetch the loop beginning when execution reaches the end.
       imem_addr_o = prefetch_loop_jump_addr_i;
@@ -123,11 +124,11 @@ module otbn_instruction_fetch
   end
 
   // Check integrity on prefetched instruction
-  prim_secded_39_32_dec u_insn_intg_check (
-    .data_i     (insn_fetch_resp_data_intg_q),
-    .data_o     (),
-    .syndrome_o (),
-    .err_o      (insn_fetch_resp_intg_error_vec)
+  prim_secded_inv_39_32_dec u_insn_intg_check (
+    .data_i    (insn_fetch_resp_data_intg_q),
+    .data_o    (),
+    .syndrome_o(),
+    .err_o     (insn_fetch_resp_intg_error_vec)
   );
 
   assign imem_req_o = insn_prefetch;

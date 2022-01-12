@@ -181,42 +181,42 @@ module prim_ram_2p_async_adv import prim_ram_2p_pkg::*; #(
 
     if (Width == 32) begin : gen_secded_39_32
       if (HammingECC) begin : gen_hamming
-        prim_secded_hamming_39_32_enc u_enc_a (
+        prim_secded_inv_hamming_39_32_enc u_enc_a (
           .data_i(a_wdata_i),
           .data_o(a_wdata_d)
         );
-        prim_secded_hamming_39_32_dec u_dec_a (
+        prim_secded_inv_hamming_39_32_dec u_dec_a (
           .data_i     (a_rdata_sram),
           .data_o     (a_rdata_d[0+:Width]),
           .syndrome_o ( ),
           .err_o      (a_rerror_d)
         );
-        prim_secded_hamming_39_32_enc u_enc_b (
+        prim_secded_inv_hamming_39_32_enc u_enc_b (
           .data_i(b_wdata_i),
           .data_o(b_wdata_d)
         );
-        prim_secded_hamming_39_32_dec u_dec_b (
+        prim_secded_inv_hamming_39_32_dec u_dec_b (
           .data_i     (b_rdata_sram),
           .data_o     (b_rdata_d[0+:Width]),
           .syndrome_o ( ),
           .err_o      (b_rerror_d)
         );
       end else begin : gen_hsiao
-        prim_secded_39_32_enc u_enc_a (
+        prim_secded_inv_39_32_enc u_enc_a (
           .data_i(a_wdata_i),
           .data_o(a_wdata_d)
         );
-        prim_secded_39_32_dec u_dec_a (
+        prim_secded_inv_39_32_dec u_dec_a (
           .data_i     (a_rdata_sram),
           .data_o     (a_rdata_d[0+:Width]),
           .syndrome_o ( ),
           .err_o      (a_rerror_d)
         );
-        prim_secded_39_32_enc u_enc_b (
+        prim_secded_inv_39_32_enc u_enc_b (
           .data_i(b_wdata_i),
           .data_o(b_wdata_d)
         );
-        prim_secded_39_32_dec u_dec_b (
+        prim_secded_inv_39_32_dec u_dec_b (
           .data_i     (b_rdata_sram),
           .data_o     (b_rdata_d[0+:Width]),
           .syndrome_o ( ),

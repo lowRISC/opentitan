@@ -28,8 +28,13 @@ echo "Verifying ${TOP_MODULE} using Alma"
 
 # Parse
 ./parse.py --top-module ${TOP_MODULE} \
---source ${REPO_TOP}/hw/ip/aes/pre_syn/syn_out/latest/generated/${TOP_MODULE}.pre_map.v \
+--source ${REPO_TOP}/hw/ip/aes/pre_syn/syn_out/latest/generated/${TOP_MODULE}.alma.v \
 --netlist tmp/circuit.v --log-yosys
+
+# Label
+sed -i 's/\(data_i\s\[\)\([0-9]\+:0\)\(\]\s=\s\)unimportant/\1\2\3secret \2/g' tmp/labels.txt
+sed -i 's/\(mask_i\s\[\)\([0-9]\+:0\)\(\]\s=\s\)unimportant/\1\2\3secret \2/g' tmp/labels.txt
+sed -i 's/\(prd_i\s\[[0-9]\+:0\]\s=\s\)unimportant/\1random/g' tmp/labels.txt
 
 # Trace
 ./trace.py --testbench ${REPO_TOP}/hw/ip/aes/pre_sca/alma/cpp/verilator_tb_${TESTBENCH}.cpp \
@@ -37,7 +42,7 @@ echo "Verifying ${TOP_MODULE} using Alma"
 
 # Verify
 ./verify.py --json tmp/circuit.json \
-   --label ${REPO_TOP}/hw/ip/aes/pre_sca/alma/labels/${TOP_MODULE}.txt \
+   --label tmp/labels.txt \
    --top-module ${TOP_MODULE} \
    --vcd tmp/tmp.vcd \
    --rst-name rst_ni --rst-phase 0 \

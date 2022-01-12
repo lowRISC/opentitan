@@ -6,8 +6,14 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "base",
+    srcs = [
+        "dif_base.c",
+    ],
     hdrs = [
         "dif_base.h",
+    ],
+    deps = [
+        "//sw/device/lib/base",
     ],
 )
 

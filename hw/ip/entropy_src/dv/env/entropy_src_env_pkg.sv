@@ -90,14 +90,6 @@ package entropy_src_env_pkg;
 
   endfunction
 
-  // return zero if this next set of rng values would cause a health check failure,
-  // based on the currently configured thresholds.
-  function automatic bit health_check_rng_data(queue_of_rng_val_t sample);
-    // TODO: Implement this
-    return 0;
-  endfunction
-
-
   // package sources
   `include "entropy_src_env_cfg.sv"
   `include "entropy_src_env_cov.sv"

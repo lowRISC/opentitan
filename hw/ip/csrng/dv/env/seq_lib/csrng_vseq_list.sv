@@ -6,3 +6,4 @@
 `include "csrng_smoke_vseq.sv"
 `include "csrng_common_vseq.sv"
 `include "csrng_cmds_vseq.sv"
+`include "csrng_stress_all_vseq.sv"

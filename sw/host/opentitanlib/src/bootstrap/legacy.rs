@@ -109,7 +109,9 @@ impl Frame {
             frame_num += 1;
         }
         frames.last_mut().map(|f| f.header.frame_num |= Self::EOF);
-        frames.iter_mut().for_each(|f| f.header.hash = f.header_hash());
+        frames
+            .iter_mut()
+            .for_each(|f| f.header.hash = f.header_hash());
         frames
     }
 }
@@ -218,7 +220,7 @@ impl UpdateProtocol for Legacy {
         // the next.  If so, we heuristically assume that the block just sent will be ack'ed in
         // the upcoming bidirectional transaction.
         let mut optimistic = false;
-        
+
         // Set if the past transaction ack'ed the block sent before that one, while
         // re-transmitting the same block.  If so, we do not care about the ack in the upcoming
         // bidirectional transaction, as it turns out it was not necessary to perform the most
@@ -227,16 +229,19 @@ impl UpdateProtocol for Legacy {
 
         loop {
             if consecutive_errors > Self::MAX_CONSECUTIVE_ERRORS {
-                return Err(LegacyBootstrapError::RepeatedErrors.into())
+                return Err(LegacyBootstrapError::RepeatedErrors.into());
             }
 
             let second_unacked_index = (first_unacked_index + 1).min(frames.len() - 1);
-            let transmit_index =
-                if optimistic { second_unacked_index } else { first_unacked_index };
+            let transmit_index = if optimistic {
+                second_unacked_index
+            } else {
+                first_unacked_index
+            };
             let frame = &frames[transmit_index];
             eprint!("{}.", transmit_index);
             std::thread::sleep(self.inter_frame_delay);
-            
+
             // Write the frame and read back the ack of a previously transmitted frame.
             let mut response = [0u8; std::mem::size_of::<Frame>()];
             spi.run_transaction(&mut [Transfer::Both(frame.as_bytes(), &mut response)])?;

@@ -26,7 +26,8 @@ interface otbn_loop_if (
   input logic [31:0] current_loop_end,
   input logic [31:0] next_loop_end,
 
-  input logic [31:0] current_loop_d_iterations
+  input logic [31:0] current_loop_d_iterations,
+  input logic [31:0] current_loop_q_iterations
 );
 
   function automatic otbn_env_pkg::stack_fullness_e get_fullness();

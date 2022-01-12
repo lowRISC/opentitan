@@ -29,11 +29,11 @@ module entropy_src_bucket_ht #(
   // signals
   logic [NUM_BINS-1:0] bin_incr;
   logic [NUM_BINS-1:0] bin_cnt_exceeds_thresh;
-  logic [RegWidth-1:0] bin_cntr[NUM_BINS];
+  logic [NUM_BINS - 1:0][RegWidth - 1:0] bin_cntr;
   logic [NUM_BINS-1:0] bin_cntr_err;
   logic [RegWidth-1:0] test_cnt;
   logic                test_cnt_err;
-
+  logic [RegWidth-1:0] bin_max;
 
   // Bucket Test
   //
@@ -68,6 +68,14 @@ module entropy_src_bucket_ht #(
     assign bin_cnt_exceeds_thresh[i] = (bin_cntr[i] > thresh_i);
   end : gen_symbol_match
 
+  entropy_src_comparator_tree #(
+    .Width(RegWidth),
+    .Depth(RngBusWidth)
+  ) u_comp (
+    .i(bin_cntr),
+    .o(bin_max)
+  );
+
   // Test event counter
   prim_count #(
       .Width(RegWidth),
@@ -87,7 +95,7 @@ module entropy_src_bucket_ht #(
 
   // the pulses will be only one clock in length
   assign test_fail_pulse_o = active_i && window_wrap_pulse_i && (test_cnt > '0);
-  assign test_cnt_o = test_cnt;
+  assign test_cnt_o = bin_max;
   assign count_err_o = test_cnt_err || (|bin_cntr_err);
 
 

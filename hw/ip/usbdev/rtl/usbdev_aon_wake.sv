@@ -50,17 +50,11 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   // As a result the 2 flop sync could glitch for up to 1 cycle.  Place a filter after
   // the two flop sync to passthrough the value only when stable.
   logic [2:0] filter_cdc_in, filter_cdc_out;
-  prim_flop_2sync #(
-    .Width (3)
-  ) u_cdc_suspend_req (
-    .clk_i  (clk_aon_i),
-    .rst_ni (rst_aon_ni),
-    .d_i    ({low_power_async, suspend_req_async, wake_ack_async}),
-    .q_o    (filter_cdc_in)
-  );
+  assign filter_cdc_in = {low_power_async, suspend_req_async, wake_ack_async};
 
   for (genvar i = 0; i < 3; i++) begin : gen_filters
     prim_filter #(
+      .AsyncOn(1), // Instantiate 2-stage synchronizer
       .Cycles(2)
     ) u_filter (
       .clk_i(clk_aon_i),
@@ -85,7 +79,10 @@ module usbdev_aon_wake import usbdev_pkg::*;(
 
   // aon clock is ~200kHz so 4 cycle filter is about 20us
   // as well as noise debounce this gives the main IP time to detect resume if it didn't turn off
-  prim_filter #(.Cycles(4)) filter_activity (
+  prim_filter #(
+    .AsyncOn(1), // Instantiate 2-stage synchronizer
+    .Cycles(4)
+  ) filter_activity (
     .clk_i    (clk_aon_i),
     .rst_ni   (rst_aon_ni),
     .enable_i (1'b1),

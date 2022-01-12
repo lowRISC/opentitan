@@ -12,7 +12,7 @@ files with MMI and ELF Data"):
 https://www.xilinx.com/support/documentation/sw_manuals/xilinx2020_2/ug898-vivado-embedded-design.pdf#page=165
 
 Typical usage:
->>> ./gen_vivado_mem_image.py boot_rom.scr.32.vmem boot_rom.updatemem.mem
+>>> ./gen_vivado_mem_image.py test_rom.scr.32.vmem test_rom.updatemem.mem
 '''
 
 import argparse

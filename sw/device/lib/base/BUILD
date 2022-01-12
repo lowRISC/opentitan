@@ -20,6 +20,7 @@ cc_library(
         "memory.h",
         "mmio.h",
         "multibits.h",
+        "multibits_asm.h",
         "stdasm.h",
     ],
     copts = [
@@ -31,6 +32,9 @@ cc_library(
     name = "mmio",
     srcs = [
         "mmio.c",
+    ],
+    hdrs = [
+        "mmio.h",
     ],
     deps = [
         ":base",

@@ -10,7 +10,21 @@ class entropy_src_rng_test extends entropy_src_base_test;
   function void configure_env();
     super.configure_env();
 
-    cfg.rng_bit_enable_pct = 10;
+    cfg.rng_bit_enable_pct          = 0;
+
+    cfg.en_scb                      = 1;
+    cfg.fips_window_size            = 2048;
+    cfg.bypass_window_size          = 384;
+    cfg.boot_mode_retry_limit       = 10;
+    cfg.entropy_data_reg_enable_pct = 100;
+    cfg.sim_duration                = 10ms;
+    cfg.hard_mtbf                   = 500us;
+    cfg.soft_mtbf                   = 7500us;
+    cfg.alert_max_delay             = 5;
+
+    // Allow for software reads, but let the vseq body do the enabling
+    cfg.route_software_pct          = 0;
+    cfg.enable_pct                  = 0;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)

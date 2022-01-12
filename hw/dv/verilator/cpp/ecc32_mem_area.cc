@@ -122,7 +122,7 @@ void Ecc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
   memset(buf, 0, phys_size_bytes);
 
   for (int i = 0; i < width_byte_ / 4; ++i) {
-    uint8_t check_bits = enc_secded_39_32(&data[start_idx + 4 * i]);
+    uint8_t check_bits = enc_secded_inv_39_32(&data[start_idx + 4 * i]);
     for (int j = 0; j < 4; ++j) {
       insert_bits(buf, 39 * i + 8 * j, data[start_idx + 4 * i + j], 8);
     }
@@ -152,7 +152,7 @@ void Ecc32MemArea::ReadBufferWithIntegrity(
       w32 |= (uint32_t)byte << 8 * j;
     }
 
-    uint8_t exp_check_bits = enc_secded_39_32(buf32);
+    uint8_t exp_check_bits = enc_secded_inv_39_32(buf32);
     uint8_t check_bits = extract_bits(buf, 39 * i + 32, 7);
     bool good = check_bits == exp_check_bits;
 

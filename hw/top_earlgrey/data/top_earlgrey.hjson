@@ -241,6 +241,9 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40040000",
+      param_decl: {
+        GpioAsyncOn: "1"
+      }
     }
     { name: "spi_device",
       type: "spi_device",
@@ -513,6 +516,7 @@
         ram: {
           label:    "ram_ret_aon",
           swaccess:   "rw",
+          data_intg_passthru: "true",
           exec:       "True",
           byte_write: "True",
           size:     "0x1000"
@@ -529,6 +533,7 @@
         mem: {
           label:      "eflash",
           swaccess:   "ro",
+          data_intg_passthru: "true",
           exec:       "True",
           byte_write: "False",
           config: {
@@ -643,6 +648,7 @@
         ram: {
           label:      "ram_main",
           swaccess:   "rw",
+          data_intg_passthru: "true",
           exec:       "True",
           byte_write: "True",
           size:       "0x20000"
@@ -657,11 +663,13 @@
       base_addrs: {rom: "0x00008000", regs: "0x411e0000"}
       memory: {
         rom: {
-          label:      "rom",
-          swaccess:   "ro",
-          exec:       "True",
-          byte_write: "False",
-          size:       "0x8000"
+          label:              "rom",
+          swaccess:           "ro",
+          data_intg_passthru: "true",
+          exec:               "True",
+          byte_write:         "False",
+          size:               "0x8000"
+          data_intg_passthru: "True"
         }
       },
       param_decl: {
@@ -677,7 +685,7 @@
                    MHPMCounterWidth: "32",
                    RV32E: "0",
                    RV32M: "ibex_pkg::RV32MSingleCycle",
-                   RV32B: "ibex_pkg::RV32BNone",
+                   RV32B: "ibex_pkg::RV32BOTEarlGrey",
                    RegFile: "ibex_pkg::RegFileFF",
                    BranchTargetALU: "1",
                    WritebackStage: "1",
@@ -1049,15 +1057,15 @@
     // Optionally, each pad can also have a 'desc' field for further description.
     pads: [
       // Special manually connected pads
-      { name: 'POR_N'           , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'System reset'},
-      { name: 'USB_P'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
-      { name: 'USB_N'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
-      { name: 'CC1'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 1'},
-      { name: 'CC2'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 2'},
-      { name: 'FLASH_TEST_VOLT' , type: 'AnalogIn0',bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
-      { name: 'FLASH_TEST_MODE0', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
-      { name: 'FLASH_TEST_MODE1', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
-      { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn1',bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
+      { name: 'POR_N'           , type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'System reset'},
+      { name: 'USB_P'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
+      { name: 'USB_N'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
+      { name: 'CC1'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 1'},
+      { name: 'CC2'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 2'},
+      { name: 'FLASH_TEST_VOLT' , type: 'AnalogIn0',    bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
+      { name: 'FLASH_TEST_MODE0', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
+      { name: 'FLASH_TEST_MODE1', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
+      { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn1',    bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
       // Dedicated IOs
       { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
       { name: 'SPI_HOST_D1'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
@@ -1249,7 +1257,7 @@
         // The corresponding pad of a removed port will remain instantiated,
         // and a wire net will be declared inside the chip-level hierarchy so
         // that it can be manually connected as needed.
-        remove_ports: ['USB_P1', 'USB_N1'],
+        remove_ports: [],
 
         // This is a list of pad names to remove from the base pinout defined
         // above. Removed pads will be stubbed off such that their inputs
@@ -1265,8 +1273,6 @@
         // to the pinmux or peripherals.
         add_pads: [
           { name: 'AST_MISC', type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra infrastructure pad for AST'}
-          { name: 'USB_P1'  , type: 'BidirTol', bank: 'VCC', connection: 'manual', desc: 'USB P signal (second pad)'},
-          { name: 'USB_N1'  , type: 'BidirTol', bank: 'VCC', connection: 'manual', desc: 'USB N signal (second pad)'},
         ],
       },
 
@@ -1334,6 +1340,8 @@
           { name: 'IO_UPHY_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_SENSE',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_UPHY_DPPULLUP', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_UPHY_SPD',      type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_UPHY_SUS',      type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           // ChipWhisperer IO
           { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual clock output for SCA setup'}
           { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual trigger output for SCA setup'}

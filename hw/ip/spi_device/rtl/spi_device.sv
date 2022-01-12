@@ -8,7 +8,7 @@
 `include "prim_assert.sv"
 
 module spi_device
-  import spi_device_reg_pkg::*;
+  import spi_device_reg_pkg::NumAlerts;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -83,8 +83,8 @@ module spi_device
   logic clk_spi_in, clk_spi_in_muxed, clk_spi_in_buf;   // clock for latch SDI
   logic clk_spi_out, clk_spi_out_muxed, clk_spi_out_buf; // clock for driving SDO
 
-  spi_device_reg2hw_t reg2hw;
-  spi_device_hw2reg_t hw2reg;
+  spi_device_reg_pkg::spi_device_reg2hw_t reg2hw;
+  spi_device_reg_pkg::spi_device_hw2reg_t hw2reg;
 
   tlul_pkg::tl_h2d_t tl_sram_h2d;
   tlul_pkg::tl_d2h_t tl_sram_d2h;
@@ -185,6 +185,21 @@ module spi_device
   //spi_byte_t fw_dummy_byte;
   logic cfg_addr_4b_en;
 
+  // Address 3B/ 4B tracker related signals
+  //
+  // EN4B/ EX4B change internal status by HW. If SW is involved into the
+  // process, the latency is long. As EN4B/ EX4B commands do not assert BUSY
+  // bit, the host system issues next read commands without any delays. SW
+  // process latency cannot meet the requirement.
+  //
+  // `spid_addr_4b` submodule processes the broadcasting signal
+  // `cfg_addr_4b_en`. The command parser recognizes the commands and triggers
+  // the `spid_addr_4b` submodule to change the internal status.
+  //
+  // The opcodes of the commands SW may configure via CMD_INFO_EN4B,
+  // CMD_INFO_EX4B.
+  logic cmd_en4b_pulse, cmd_ex4b_pulse;
+
   logic intr_sram_rxf_full, intr_fwm_rxerr;
   logic intr_fwm_rxlvl, rxlvl, rxlvl_d, intr_fwm_txlvl, txlvl, txlvl_d;
   logic intr_fwm_rxoverflow, intr_fwm_txunderflow;
@@ -261,22 +276,24 @@ module spi_device
   logic [31:0] payload_swap_data;
 
   // Command Info structure
-  cmd_info_t [NumCmdInfo-1:0] cmd_info;
+  cmd_info_t [NumTotalCmdInfo-1:0] cmd_info;
   // Broadcasted cmd_info. cmdparse compares the opcode up to CmdInfoReadCmdEnd
   // and latches the cmd_info and broadcast to submodules
   cmd_info_t                  cmd_info_broadcast;
   logic [CmdInfoIdxW-1:0]     cmd_info_idx_broadcast;
 
-  // Bus clock pulse event of CSb de-assertion. It is used to latch the SCK
-  // domain variables into the bus clock domain.
-  logic csb_deasserted_busclk;
+  // CSb edge detector in the system clock and SPI input clock
+  // SYS clock assertion can be detected but no usage for the event yet.
+  // SPI clock de-assertion cannot be detected as no SCK at the time is given.
+  logic sys_csb_deasserted_pulse;
+  logic spi_csb_asserted_pulse  ;
 
   // Read Status input and broadcast
   logic status_busy_set; // set by HW (upload)
   logic status_busy_broadcast; // from spid_status
 
   // Jedec ID
-  logic [23:0] jedec_id;
+  jedec_cfg_t jedec_cfg;
 
   // Interrupts in Flash mode
   logic intr_upload_cmdfifo_not_empty, intr_upload_payload_not_empty;
@@ -341,7 +358,7 @@ module spi_device
 
   assign timer_v = reg2hw.cfg.timer_v.q;
 
-  assign cfg_addr_4b_en = reg2hw.cfg.addr_4b_en.q;
+  //assign cfg_addr_4b_en = reg2hw.cfg.addr_4b_en.q;
 
   assign sram_rxf_bindex = reg2hw.rxf_addr.base.q[SDW+:SramAw];
   assign sram_rxf_lindex = reg2hw.rxf_addr.limit.q[SDW+:SramAw];
@@ -656,13 +673,17 @@ module spi_device
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       readbuf_addr_busclk <= '0;
-    end else if (csb_deasserted_busclk) begin
+    end else if (sys_csb_deasserted_pulse) begin
       readbuf_addr_busclk <= readbuf_addr_sck;
     end
   end
 
   // Jedec ID
-  assign jedec_id = {reg2hw.jedec_id.mf.q, reg2hw.jedec_id.id.q};
+  assign jedec_cfg = '{ num_cc:    reg2hw.jedec_cc.num_cc.q,
+                        cc:        reg2hw.jedec_cc.cc.q,
+                        jedec_id:  reg2hw.jedec_id.mf.q,
+                        device_id: reg2hw.jedec_id.id.q
+                      };
 
   assign readbuf_threshold = reg2hw.read_threshold.q[BufferAw:0];
 
@@ -707,6 +728,19 @@ module spi_device
         busy:             reg2hw.cmd_info[i].busy.q
       };
     end
+
+    // Manual addition to cmd_info list
+    // Default Input mode
+    for (int unsigned i = CmdInfoReserveEnd + 1; i < NumTotalCmdInfo; i++) begin
+      cmd_info[i] = CmdInfoInput;
+    end
+
+    cmd_info[CmdInfoEn4B].valid  = reg2hw.cmd_info_en4b.valid.q;
+    cmd_info[CmdInfoEn4B].opcode = reg2hw.cmd_info_en4b.opcode.q;
+
+    cmd_info[CmdInfoEx4B].valid  = reg2hw.cmd_info_ex4b.valid.q;
+    cmd_info[CmdInfoEx4B].opcode = reg2hw.cmd_info_ex4b.opcode.q;
+
   end
 
   //////////////////////////////
@@ -858,41 +892,39 @@ module spi_device
     .clk_o  (sram_rst_n)
   );
 
-  // CSb deassertion pulse generator
-  logic csb_sync, csb_sync_q;
-  prim_flop_2sync #(
-    .Width      (1),
-    .ResetValue (1'b 1)
-  ) u_csb_sync (
+  // CSb edge on the system clock
+  prim_edge_detector #(
+    .Width     (1    ),
+    .ResetValue(1'b 1),
+    .EnSync    (1'b 1)
+  ) u_csb_edge_sysclk (
     .clk_i,
     .rst_ni,
-    .d_i     (cio_csb_i),
-    .q_o     (csb_sync)
+
+    .d_i      (cio_csb_i),
+    .q_sync_o (         ),
+
+    // sys_csb_assertion can be detected but no usage
+    .q_posedge_pulse_o (sys_csb_deasserted_pulse),
+    .q_negedge_pulse_o (                        )
   );
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) csb_sync_q <= 1'b 1;
-    else         csb_sync_q <= csb_sync;
-  end
 
-  assign csb_deasserted_busclk = !csb_sync_q && csb_sync;
+  // CSb edge on the SPI input clock
+  prim_edge_detector #(
+    .Width      (1    ),
+    .ResetValue (1'b 1),
+    .EnSync     (1'b 1)
+  ) u_csb_edge_spiclk (
+    .clk_i  (clk_spi_in_buf),
+    .rst_ni (rst_spi_n),
 
-  // CSb pulse
-  logic csb_sckin_sync_d, csb_sckin_sync_q, csb_asserted_pulse_sckin;
-  prim_flop_2sync #(
-    .Width      (1),
-    .ResetValue (1'b 1)
-  ) u_csb_sckin_sync (
-    .clk_i (clk_spi_in_buf),
-    .rst_ni(rst_spi_n), //Use CSb as a reset
-    .d_i (1'b 0),
-    .q_o (csb_sckin_sync_d)
+    .d_i      (cio_csb_i),
+    .q_sync_o (         ),
+
+    // posedge(deassertion) cannot be detected as clock could be absent.
+    .q_posedge_pulse_o (                      ),
+    .q_negedge_pulse_o (spi_csb_asserted_pulse)
   );
-  always_ff @(posedge clk_spi_in_buf or negedge rst_spi_n) begin
-    if (!rst_spi_n) csb_sckin_sync_q <= 1'b 1;
-    else            csb_sckin_sync_q <= csb_sckin_sync_d;
-  end
-
-  assign csb_asserted_pulse_sckin = csb_sckin_sync_q && !csb_sckin_sync_d;
 
   //////////////////////////////
   // SPI_DEVICE mode selector //
@@ -1309,9 +1341,9 @@ module spi_device
 
     .clk_out_i (clk_spi_out_buf),
 
-    .inclk_csb_asserted_pulse_i (csb_asserted_pulse_sckin),
+    .inclk_csb_asserted_pulse_i (spi_csb_asserted_pulse),
 
-    .sys_jedec_i (jedec_id),
+    .sys_jedec_i (jedec_cfg),
 
     .io_mode_o (sub_iomode[IoModeJedec]),
 
@@ -1348,7 +1380,7 @@ module spi_device
     .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
 
-    .sys_csb_deasserted_pulse_i (csb_deasserted_busclk),
+    .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
 
     .sel_dp_i (cmd_dp_sel),
 
@@ -1428,6 +1460,34 @@ module spi_device
   assign hw2reg.upload_status.payload_depth.d  = payload_depth;
 
   // End:   Upload ---------------------------------------------------
+
+  // Begin: Address 3B/4B Tracker ====================================
+  assign cmd_en4b_pulse = cmd_dp_sel == DpEn4B;
+  assign cmd_ex4b_pulse = cmd_dp_sel == DpEx4B;
+  spid_addr_4b u_spid_addr_4b (
+    .sys_clk_i  (clk_i ),
+    .sys_rst_ni (rst_ni),
+
+    .spi_clk_i  (clk_spi_in_buf),
+
+    .spi_csb_asserted_pulse_i  (spi_csb_asserted_pulse  ),
+    .sys_csb_deasserted_pulse_i(sys_csb_deasserted_pulse),
+
+    // Assume CFG.addr_4b_en is not external register.
+    // And has the permissions as below:
+    //    swaccess: "rw"
+    //    hwaccess: "hrw"
+    .reg2hw_cfg_addr_4b_en_q_i  (reg2hw.cfg.addr_4b_en.q ), // registered input
+    .hw2reg_cfg_addr_4b_en_de_o (hw2reg.cfg.addr_4b_en.de),
+    .hw2reg_cfg_addr_4b_en_d_o  (hw2reg.cfg.addr_4b_en.d ),
+
+    .spi_cfg_addr_4b_en_o (cfg_addr_4b_en), // broadcast
+
+    .spi_addr_4b_set_i (cmd_en4b_pulse), // EN4B command
+    .spi_addr_4b_clr_i (cmd_ex4b_pulse)  // EX4B command
+  );
+  // End:   Address 3B/4B Tracker ------------------------------------
+
   /////////////////////
   // SPI Passthrough //
   /////////////////////
@@ -1565,7 +1625,7 @@ module spi_device
   //  Return-by-HW registers:
   //    TPM_ACCESS_x, TPM_STS_x, TPM_INT_ENABLE, TPM_INT_VECTOR,
   //    TPM_INT_STATUS, TPM_INTF_CAPABILITY, TPM_DID_VID, TPM_RID
-  for (genvar i = 0 ; i < NumLocality ; i++) begin : g_tpm_access
+  for (genvar i = 0 ; i < spi_device_reg_pkg::NumLocality ; i++) begin : g_tpm_access
     assign tpm_access[8*i+:8] = reg2hw.tpm_access[i].q;
   end : g_tpm_access
 

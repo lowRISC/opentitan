@@ -85,6 +85,21 @@
       package: "lc_ctrl_pkg"
     }
   ],
+  countermeasures: [
+    { name: "FSM.SPARSE"
+      desc: "Sparse state machine implementation."
+    }
+    { name: "CTR.REDUN"
+      desc: "Counter hardening for generate command counter."
+    }
+    { name: "LOGIC.INTEGRITY"
+      desc: "Comparison on successive bus values for genbits returned on the software channel."
+    }
+    { name: "BUS.INTEGRITY"
+      desc: "Tilelink end-to-end bus integrity scheme."
+    }
+  ],
+
   regwidth: "32",
   registers: [
     { name: "REGWEN",
@@ -164,6 +179,8 @@
       desc: "Application interface command status register",
       swaccess: "ro",
       hwaccess: "hwo",
+      tags: [// Internal HW can modify status register
+                 "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "0",
           name: "CMD_RDY",
@@ -261,8 +278,6 @@
                 pointer (selects 32 bits of the 448 bit field) will reset to zero. The !!INT_STATE_NUM
                 can be re-written at this time (internal read pointer is also reset), and then
                 another internal state field can be read.
-                Also, the life cycle state must be one where the signal "lc_hw_debug_en" is asserted
-                in order to read any internal state field.
                 '''
         }
       ]
@@ -340,7 +355,7 @@
                 This bit will be set to one when an error has been detected for the
                 command stage command FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "1",
@@ -349,7 +364,7 @@
                 This bit will be set to one when an error has been detected for the
                 command stage genbits FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "2",
@@ -358,7 +373,7 @@
                 This bit will be set to one when an error has been detected for the
                 cmdreq FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "3",
@@ -367,7 +382,7 @@
                 This bit will be set to one when an error has been detected for the
                 rcstage FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "4",
@@ -376,7 +391,7 @@
                 This bit will be set to one when an error has been detected for the
                 keyvrc FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "5",
@@ -385,7 +400,7 @@
                 This bit will be set to one when an error has been detected for the
                 updreq FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "6",
@@ -394,7 +409,7 @@
                 This bit will be set to one when an error has been detected for the
                 bencreq FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "7",
@@ -403,7 +418,7 @@
                 This bit will be set to one when an error has been detected for the
                 bencack FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "8",
@@ -412,7 +427,7 @@
                 This bit will be set to one when an error has been detected for the
                 pdata FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "9",
@@ -421,7 +436,7 @@
                 This bit will be set to one when an error has been detected for the
                 final FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "10",
@@ -430,7 +445,7 @@
                 This bit will be set to one when an error has been detected for the
                 gbencack FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "11",
@@ -439,7 +454,7 @@
                 This bit will be set to one when an error has been detected for the
                 grcstage FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "12",
@@ -448,7 +463,7 @@
                 This bit will be set to one when an error has been detected for the
                 ggenreq FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "13",
@@ -457,7 +472,7 @@
                 This bit will be set to one when an error has been detected for the
                 gadstage FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "14",
@@ -466,7 +481,7 @@
                 This bit will be set to one when an error has been detected for the
                 ggenbits FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "15",
@@ -475,7 +490,7 @@
                 This bit will be set to one when an error has been detected for the
                 blkenc FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "20",
@@ -484,7 +499,7 @@
                 This bit will be set to one when an illegal state has been detected for the
                 command stage state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "21",
@@ -493,7 +508,7 @@
                 This bit will be set to one when an illegal state has been detected for the
                 main state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "22",
@@ -502,7 +517,7 @@
                 This bit will be set to one when an illegal state has been detected for the
                 ctr_dbrg gen state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "23",
@@ -511,7 +526,7 @@
                 This bit will be set to one when an illegal state has been detected for the
                 ctr_dbrg update block encode state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "24",
@@ -520,7 +535,7 @@
                 This bit will be set to one when an illegal state has been detected for the
                 ctr_dbrg update out block state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "25",
@@ -529,7 +544,7 @@
                 This bit will be set to one when an AES fatal error has been detected.
                 This error will signal a fatal alert, and also
                 an interrupt if enabled.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "26",
@@ -539,7 +554,7 @@
                 has been detected.
                 This error will signal a fatal alert, and also
                 an interrupt if enabled.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "28",
@@ -548,7 +563,7 @@
                 This bit will be set to one when any of the source bits (bits 0 through 15 of this
                 this register) are asserted as a result of an error pulse generated from
                 any full FIFO that has been recieved a write pulse.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "29",
@@ -557,7 +572,7 @@
                 This bit will be set to one when any of the source bits (bits 0 through 15 of this
                 this register) are asserted as a result of an error pulse generated from
                 any empty FIFO that has recieved a read pulse.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "30",
@@ -566,7 +581,7 @@
                 This bit will be set to one when any of the source bits (bits 0 through 15 of this
                 this register) are asserted as a result of an error pulse generated from
                 any FIFO where both the empty and full status bits are set.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
       ]
@@ -577,6 +592,8 @@
       hwaccess: "hro",
       hwqe: "true",
       regwen: "REGWEN",
+      tags: [// Setting this register will force an unwanted fatal alert.
+                 "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
             bits: "4:0",

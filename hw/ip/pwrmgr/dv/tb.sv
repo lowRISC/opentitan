@@ -28,6 +28,10 @@ module tb;
     .rst_n(rst_slow_n)
   );
   pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
+  alert_esc_if esc_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
   pins_if #(1) devmode_if (devmode);
   tl_if tl_if (
     .clk  (clk),
@@ -93,8 +97,8 @@ module tb;
 
     .sw_rst_req_i(pwrmgr_if.sw_rst_req_i),
 
-    .esc_rst_tx_i(pwrmgr_if.esc_rst_tx),
-    .esc_rst_rx_o(pwrmgr_if.esc_rst_rx),
+    .esc_rst_tx_i(esc_if.esc_tx),
+    .esc_rst_rx_o(esc_if.esc_rx),
 
     .intr_wakeup_o(pwrmgr_if.intr_wakeup)
   );
@@ -108,6 +112,7 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "slow_clk_rst_vif", slow_clk_rst_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
+    uvm_config_db#(virtual alert_esc_if)::set(null, "*.env.m_esc_agent*", "vif", esc_if);
     uvm_config_db#(virtual pwrmgr_if)::set(null, "*.env", "pwrmgr_vif", pwrmgr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     // Bound assertions interfaces.

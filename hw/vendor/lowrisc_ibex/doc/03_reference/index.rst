@@ -22,5 +22,6 @@ It describes the design in detail, discusses the verification approach and the r
    debug
    tracer
    verification
+   cosim
    rvfi
    history

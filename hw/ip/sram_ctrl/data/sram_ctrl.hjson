@@ -120,6 +120,27 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "MEM.INTEGRITY",
+      desc: "End-to-end data/memory integrity scheme."
+    }
+    { name: "MEM.SCRAMBLE",
+      desc: "Data is scrambled with a keyed reduced-round PRINCE cipher in CTR mode."
+    }
+    { name: "ADDR.SCRAMBLE",
+      desc: "Address is scrambled with a keyed lightweight permutation/diffusion function."
+    }
+    { name: "INSTR.BUS.LC_GATED",
+      desc: "Prevent code execution from SRAM in non-test lifecycle states."
+    }
+    { name: "KEY.GLOBAL_ESC",
+      desc: "Scrambling key and nonce are reset to a fixed value upon escalation."
+    }
+    { name: "KEY.LOCAL_ESC",
+      desc: "Scrambling key and nonce are reset to a fixed value upon local escalation due to bus integrity or counter errors."
+    }
+    { name: "CTR.REDUN",
+      desc: "The initialization counter is duplicated."
+    }
   ]
 
   regwidth: "32",
@@ -143,6 +164,12 @@
                   This condition is terminal.
                   ''',
             resval: 0,
+            tags: [// avoid checking this field. When sram_mem has received an item with integrity
+                   // error, in the meanwhile, the reg TLUL interface reads this status, tl_errors
+                   // sequence will update the status predict value but read TLUL interface may
+                   // latch the old value. So only read this status when sram TLUL has finished the
+                   // error integrity transaction.
+                   "excl:CsrNonInitTests:CsrExclCheck"]
           }
           { bits: "1"
             name: "INIT_ERROR"
@@ -216,7 +243,7 @@
             mubi: true,
             desc: '''
                   Write kMultiBitBool4True to this field to enable execution from SRAM.
-                  Note that this register only takes effect if the EN_SRAM_IFETCH chicken switch
+                  Note that this register only takes effect if the EN_SRAM_IFETCH switch
                   in the OTP HW_CFG partition is set to kMultiBitBool8True. Otherwise execution
                   from SRAM cannot be enabled via this register.
                   ''',
@@ -263,6 +290,8 @@
                   Write 1 to request memory init.
                   The init mechanism uses an LFSR that is seeded with a part of the nonce supplied when requesting a scrambling key.
                   Once seeded, the memory is initialized with pseudo-random data pulled from the LFSR.
+                  Note that !!RENEW_SCR_KEY takes priority when writing 1 to both !!RENEW_SCR_KEY and !!INIT with the same write transaction.
+                  This means that the key request will complete first, followed by SRAM initialization.
                   '''
           },
         ]

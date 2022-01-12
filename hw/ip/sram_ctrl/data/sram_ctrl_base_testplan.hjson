@@ -6,8 +6,10 @@
   // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
-                     // TODO uncomment once supported
-                     //"hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/passthru_mem_intg_testplan.hjson",
+                     "hw/dv/sv/mem_bkdr_scb/data/mem_access_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   testpoints: [
     {
@@ -122,20 +124,54 @@
       tests: ["{variant}_executable"]
     }
     {
-      name: parity
+      name: partial_access
       desc: '''
-            TODO - to be changed into an ECC test
+            This test is intended to test a lot of partial accesses with random addresses or
+            back-to-back accesses.
 
-            This test is the same as the multiple_keys test, except we randomly inject a parity
-            error into the memory (TODO: figure out how exactly to do this).
-            Verify that the SRAM reports the error and the faulty address correctly, and that the
-            alert is sent out properly.
-            We then perform some memory accesses and verify that none of them go through.
-            This error is terminal, so like the lc_escalation test, issue a reset and then perform
-            some memory accesses to make sure everything comes back online correctly.
+            Reuse the `smoke` and `stress_pipeline` by setting `partial_access_pct` = 90%
             '''
-      milestone: V3
-      tests: ["{variant}_parity"]
+      milestone: V2
+      tests: ["{variant}_partial_access", "{variant}_partial_access_b2b"]
+    }
+    {
+      name: max_throughput
+      desc: '''
+            This test is intended to test the max throughput of the SRAM.
+
+            Without partial write, if driver doesn't introduce any delay, it takes N+1 cycles to
+            finish N SRAM read/write accesses.
+            With partial write, it needs 2 extra cycles per partial write.
+            '''
+      milestone: V2
+      tests: ["{variant}_max_throughput", "{variant}_throughput_w_partial_write"]
+    }
+    {
+      name: regwen
+      desc: '''
+            This test is intended to test `exec_regwen` and `ctrl_regwen` as well as their related
+            CSRs.
+
+            `ctrl_regwen` related CSRs (renew_scr_key and init) are excluded from CSRs test as they
+            affects other CSRs.
+            `exec_regwen` and its related CSRs are tested in CSRs tests, but this `exec` relates to
+            other sram inputs (en_sram_ifetch and hw_debug_en), so also test it in this test.
+
+            Both `exec_regwen` and `ctrl_regwen` as well as their related CSRs will be programmed
+            at the beginning of each iteration. So when regwen is cleared, the related CSRs will be
+            locked.
+            '''
+      milestone: V2
+      tests: ["{variant}_regwen"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            - Combine above sequences in one test to run sequentially, except csr sequence and
+              sequences that require zero_delays or invoke reset (such as lc_escalation).
+            - Randomly add reset between each sequence'''
+      milestone: V2
+      tests: ["{name}_stress_all"]
     }
   ]
 
@@ -161,30 +197,16 @@
             '''
     }
     {
-      name: lc_escalation_rst_cg
+      name: lc_escalation_idle_cg
       desc: '''
-            Covers de-assertion of LC escalation input before/after/during a reset trigger
-            to get SRAM out of terminal state.
-            '''
-    }
-    {
-      name: raw_hazard_cg
-      desc: '''
-            Covers that the scrambling RAM sees address collisions on RAW hazards
-            (indicating that b2b RAW access has been made to the same memory line).
-            '''
-    }
-    {
-      name: b2b_access_types_cg
-      desc: '''
-            Covers that any combination of access types (R/R, R/W, W/R, W/W) can be present in b2b
-            transaction scenarios.
+            Covers the assertion of LC escalation occurs during idle or SRAM memory access.
             '''
     }
     {
       name: executable_cg
       desc: '''
             Covers the various important scenarios that can enable SRAM executability.
+            Crosses CSR `exec`, input `lc_hw_debug_en` and input `sram_ifetch`.
             '''
     }
   ]

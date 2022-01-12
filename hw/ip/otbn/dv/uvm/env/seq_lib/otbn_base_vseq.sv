@@ -25,6 +25,10 @@ class otbn_base_vseq extends cip_base_vseq #(
   // This flag is set in the common vseq to re-enable the checks done by check_no_fatal_alerts
   protected bit enable_base_alert_checks = 1'b0;
 
+  // This flag is configured at the start of _run_sideload_sequence() when it decides whether a run
+  // should allow an absent key (in which case, we have to disable end-address checking).
+  protected bit absent_key_allowed = 1'b0;
+
   // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
   // is true) or with TL transactions. Also, pass loop warp rules to the ISS through the model.
   protected task load_elf(string path, bit backdoor);
@@ -52,6 +56,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   // Load the contents of an ELF file into the DUT's memories by TL transactions
   protected task load_elf_over_bus(string path);
     otbn_loaded_word to_load[$];
+    bit [33:0]       opns[$];
 
     // First, tell OtbnMemUtil to stage the ELF. This reads the file and stashes away the segments
     // we need. If something goes wrong, it will print a message to stderr, so we can just fail.
@@ -60,17 +65,55 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
 
     // Next, we need to get the data to be loaded across the "DPI barrier" and into SystemVerilog.
-    // We make a queue of the things that need loading (in address order) and then shuffle it, so
-    // that we load the memory in an arbitrary order
+    // We make a queue of the things that need loading (in address order). We'll index into that
+    // queue in the "operations" list below.
     get_queue_entries(1'b0, to_load);
     get_queue_entries(1'b1, to_load);
-    to_load.shuffle();
+
+    // The operations that we might perform are:
+    //
+    //  - Write a word from to_load into IMEM or DMEM
+    //  - Set LOAD_CHECKSUM to some value
+    //  - Read LOAD_CHECKSUM (the scoreboard will check the result)
+    //
+    // Represent these operations as a pair {op, value} where op is 0, 1 or 2 for the operations
+    // above and value is a 32-bit value that gives an index into to_load if op is zero, a random
+    // value to write to LOAD_CHECKSUM if op is one, and is ignored if op is two.
+    //
+    // We just write to LOAD_CHECKSUM a couple of times (since writing it too often might actually
+    // hide a bug). We read from LOAD_CHECKSUM roughly once every 10 writes.
+    //
+    foreach (to_load[i]) opns.push_back({2'b00, 32'(i)});
+    for (int i = 0; i < 2; ++i) begin
+      bit [31:0] value;
+      `DV_CHECK_STD_RANDOMIZE_FATAL(value)
+      opns.push_back({2'b01, value});
+    end
+    for (int i = 0; i < to_load.size() / 10; ++i) opns.push_back({2'b10, 32'd0});
+
+    // Shuffle opns so that we perform them in an arbitrary order
+    opns.shuffle();
 
     // Send the writes, one by one
-    foreach (to_load[i]) begin
-      csr_utils_pkg::mem_wr(to_load[i].for_imem ? ral.imem : ral.dmem,
-                            to_load[i].offset,
-                            to_load[i].data);
+    foreach (opns[i]) begin
+      bit [1:0] op;
+      bit [31:0] value;
+
+      {op, value} = opns[i];
+      case (op)
+        2'b00:
+          csr_utils_pkg::mem_wr(to_load[value].for_imem ? ral.imem : ral.dmem,
+                                to_load[value].offset,
+                                to_load[value].data);
+        2'b01:
+          csr_utils_pkg::csr_wr(ral.load_checksum, value);
+        2'b10: begin
+          uvm_reg_data_t reg_val;
+          csr_utils_pkg::csr_rd(ral.load_checksum, reg_val);
+        end
+        default:
+          `uvm_fatal(`gfn, "Invalid operation")
+      endcase
     end
   endtask
 
@@ -135,16 +178,25 @@ class otbn_base_vseq extends cip_base_vseq #(
         fork
           _run_otbn();
           _run_loop_warps();
+          _run_sideload_sequence();
         join_any
         disable fork;
       end
     join
 
-    // Post-run checks
-    //
-    // The CSR operations above short-circuit and exit immediately if the reset line goes low. If
-    // that happens, we don't want to run the checks (since the run didn't finish properly).
-    if (!cfg.under_reset && check_end_addr) begin
+    // The wait for OTBN to finish short-circuits and exits immediately if the reset line goes low.
+    // If that happens, we don't want to run any further checks (since the run didn't finish
+    // properly).
+    if (cfg.under_reset) begin
+      running_ = 1'b0;
+      return;
+    end
+
+    // Post-run checks ///////
+
+    // Disable the end-address check if the sideload key is allowed to be absent, because that might
+    // mean a read from the key sideload WSR will fail unpredictably.
+    if (check_end_addr && !absent_key_allowed) begin
       // If there was an expected end address, compare it with the model. This isn't really a test of
       // the RTL, but it's handy to make sure that the RIG really is generating the control flow that
       // it expects.
@@ -153,6 +205,23 @@ class otbn_base_vseq extends cip_base_vseq #(
         `DV_CHECK_EQ_FATAL(exp_end_addr, cfg.model_agent_cfg.vif.stop_pc)
       end
     end
+
+    // If OTBN stopped with an error then it should trigger a recoverable or fatal alert. The
+    // scoreboard is already checking that this goes out properly, but we don't want to follow up
+    // with another execution before that happens. The problem is that the alert system sometimes
+    // takes a while to actually send the alert and the second operation might also generate an
+    // alert in the meantime, causing great confusion!
+    //
+    // It's a bit awkward to track whether there's a pending alert (because in the worst case, it
+    // might have gone out before the status change at the end of the operation) and we're already
+    // handling that logic in the scoreboard, so we can just wait here until the scoreboard's "I'm
+    // waiting for an alert" flags have been cleared. If this was a recoverable alert, we then wait
+    // until the handshake is done (because we can't send a new alert until that finishes).
+    while (cfg.scoreboard.fatal_alert_expected || cfg.scoreboard.recov_alert_expected) begin
+      @(posedge cfg.clk_rst_vif.clk or negedge cfg.clk_rst_vif.rst_n);
+      if (!cfg.clk_rst_vif.rst_n) break;
+    end
+    cfg.m_alert_agent_cfg["recov"].vif.wait_ack_complete();
 
     running_ = 1'b0;
   endtask
@@ -226,7 +295,7 @@ class otbn_base_vseq extends cip_base_vseq #(
 
       // Get the current address and iteration counter.
       addr = cfg.loop_vif.insn_addr_i;
-      old_iters = cfg.loop_vif.current_loop_d_iterations;
+      old_iters = cfg.loop_vif.current_loop_q_iterations;
 
       // Convert from the "RTL view" of the iteration count (counting down to 1) to the "ISA view"
       // (counting up from zero).
@@ -240,6 +309,16 @@ class otbn_base_vseq extends cip_base_vseq #(
       // Convert this back to the "RTL view"
       new_iters = cfg.loop_vif.loop_count_to_iters(new_count);
 
+      // We want to use this value to override the _d signal, but there's one more wrinkle: if the
+      // current address matches the loop end, it will already have been decremented and we need to
+      // decrement it one more time to match.
+      if (cfg.loop_vif.current_loop_q_iterations != cfg.loop_vif.current_loop_d_iterations) begin
+        `DV_CHECK_EQ_FATAL(cfg.loop_vif.current_loop_q_iterations,
+                           cfg.loop_vif.current_loop_d_iterations + 1)
+        `DV_CHECK_FATAL(new_iters > 0)
+        new_iters--;
+      end
+
       // Override the _d signal
       if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
                            "u_otbn_loop_controller.current_loop_d.loop_iterations"},
@@ -247,6 +326,32 @@ class otbn_base_vseq extends cip_base_vseq #(
         `dv_fatal("Failed to override loop_iterations for loop warp.")
       end
     end
+  endtask
+
+  // Run the correct key sideload sequence
+  protected task _run_sideload_sequence();
+    // First, pick a value for absent_key_allowed. This will be used here to configure the sideload
+    // sequence and then will be checked at the end of run_otbn().
+    absent_key_allowed = $urandom_range(100) <= cfg.allow_no_sideload_key_pct;
+
+    // If absent keys are allowed, the default sideload sequence (which should be running already)
+    // will work just fine. If not, we want to generate our own sequence that doesn't allow keys to
+    // be invalid. Use the grab() method on the sequencer to inject our sequence. Note that this
+    // task will be killed by the "disable fork" in run_otbn(), so we can't be sure we'll ungrab the
+    // sequencer here. Instead, we set the sideload_sequence member variable to something non-null,
+    // which run_otbn() can use to ungrab things.
+    if (!absent_key_allowed) begin
+      key_sideload_set_seq sideload_seq;
+      `uvm_create_on(sideload_seq, p_sequencer.key_sideload_sequencer_h)
+      forever begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq, sideload_key.valid == 1'b1;)
+        `uvm_send_pri(sideload_seq, 200)
+      end
+    end
+
+    // Run forever. This ensures that if absent keys are allowed then the task still hangs
+    // indefinitely (otherwise the join_any in run_otbn would finish early)
+    wait(0);
   endtask
 
   virtual protected function string pick_elf_path();

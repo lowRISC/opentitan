@@ -495,6 +495,25 @@ sw_tests += {
   }
 }
 
+kmac_app_rom_test_lib = declare_dependency(
+  link_with: static_library(
+    'kmac_app_rom_test_lib',
+    sources: [
+      hw_ip_rom_ctrl_reg_h,
+      'kmac_app_rom_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_rom_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+    ],
+  ),
+)
+sw_tests += {
+  'kmac_app_rom_test': {
+    'library': kmac_app_rom_test_lib,
+  }
+}
 
 # Lifecycle Controller Tests
 lc_ctrl_otp_hw_cfg_test_lib = declare_dependency(
@@ -736,14 +755,14 @@ sw_tests += {
 ###############################################################################
 # Build Targets
 ###############################################################################
-# (unsigned) test binaries loaded with ROM from sw/device/boot_rom/
+# (unsigned) test binaries loaded with ROM from sw/device/lib/testing/test_rom/
 foreach sw_test_name, sw_test_info : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
     sw_test_elf = executable(
       sw_test_name + '_' + device_name,
       name_suffix: 'elf',
       dependencies: [
-        riscv_crt,
+        test_rom_ext,
         device_lib,
         sw_test_info['library'],
         sw_lib_testing_ottf,
@@ -957,18 +976,18 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     name_suffix: 'elf',
     sources: ['crt_test.c'],
     dependencies: [
-      riscv_crt,
+      test_rom_ext,
       device_lib,
       sw_lib_testing_test_status,
       sw_lib_runtime_print,
       sw_lib_runtime_log,
       sw_lib_dif_uart,
       # Explicitly DO NOT pull in the OTTF; we need to run right after
-      # the CRT is done executing. However, DO pull in the OTTF default ISRs.
-      # While this test does not override any of the default symbols, they
+      # the test ROM_EXT is done executing. However, DO pull in the OTTF ISRs.
+      # While this test does not override any of the default ISR symbols, they
       # should be linked in since the `mtvec` is set to point to these in the
-      # `sw/device/exts/common/flash_crt.S` initialization assembly (contained
-      # in the riscv_crt target above).
+      # `sw/device/lib/testing/test_rom_ext/test_rom_ext_start.S` initialization
+      # assembly (contained in the test_rom_ext target above).
       # sw_lib_testing_ottf,
       sw_lib_testing_ottf_isrs,
     ],

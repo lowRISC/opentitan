@@ -19,10 +19,10 @@ import vsc
 import logging
 from importlib import import_module
 from enum import Enum, IntEnum, auto
-from bitstring import BitArray
 from pygen_src.riscv_instr_pkg import *
 from pygen_src.riscv_instr_gen_config import cfg
 rcs = import_module("pygen_src.target." + cfg.argv.target + ".riscv_core_setting")
+
 
 class operand_sign_e(IntEnum):
     POSITIVE = 0
@@ -33,6 +33,11 @@ class div_result_e(IntEnum):
     DIV_NORMAL = 0
     DIV_BY_ZERO = auto()
     DIV_OVERFLOW = auto()
+
+
+class div_result_ex_overflow_e(IntEnum):
+    DIV_NORMAL = 0
+    DIV_BY_ZERO = auto()
 
 
 class compare_result_e(IntEnum):
@@ -142,7 +147,7 @@ class riscv_cov_instr:
             if self.imm_type.name == "UIMM":
                 self.imm_len = 5
             else:
-                self.imm_len = 11
+                self.imm_len = 12
 
     def set_mode(self):
         # mode setting for Instruction Format
@@ -320,10 +325,11 @@ class riscv_cov_instr:
         the result of the check_hazard_condition won't be accurate. Need to
         explicitly extract the destination register from the operands '''
         if pre_instr.has_rd:
-            if ((self.has_rs1 and self.rs1 == pre_instr.rd) or
-                    (self.has_rs2 and self.rs1 == pre_instr.rd)):
+            if ((self.has_rs1 and (self.rs1 == pre_instr.rd)) or
+                    (self.has_rs2 and (self.rs1 == pre_instr.rd))):
+                logging.info("pre_instr {}".format(pre_instr.instr.name))
                 self.gpr_hazard = hazard_e["RAW_HAZARD"]
-            elif self.has_rd and self.rd == pre_instr.rd:
+            elif self.has_rd and (self.rd == pre_instr.rd):
                 self.gpr_hazard = hazard_e["WAW_HAZARD"]
             elif (self.has_rd and
                   ((pre_instr.has_rs1 and (pre_instr.rs1 == self.rd)) or
@@ -333,16 +339,16 @@ class riscv_cov_instr:
                 self.gpr_hazard = hazard_e["NO_HAZARD"]
         if self.category == riscv_instr_category_t.LOAD:
             if (pre_instr.category == riscv_instr_category_t.STORE and
-                    pre_instr.mem_addr.get_val() == self.mem_addr.get_val()):
+                    (pre_instr.mem_addr.get_val() == self.mem_addr.get_val())):
                 self.lsu_hazard = hazard_e["RAW_HAZARD"]
             else:
                 self.lsu_hazard = hazard_e["NO_HAZARD"]
         if self.category == riscv_instr_category_t.STORE:
             if (pre_instr.category == riscv_instr_category_t.STORE and
-                    pre_instr.mem_addr.get_val() == self.mem_addr.get_val()):
+                    (pre_instr.mem_addr.get_val() == self.mem_addr.get_val())):
                 self.lsu_hazard = hazard_e["WAW_HAZARD"]
             elif (pre_instr.category == riscv_instr_category_t.LOAD and
-                  pre_instr.mem_addr.get_val() == self.mem_addr.get_val()):
+                  (pre_instr.mem_addr.get_val() == self.mem_addr.get_val())):
                 self.lsu_hazard = hazard_e["WAR_HAZARD"]
             else:
                 self.lsu_hazard = hazard_e["NO_HAZARD"]

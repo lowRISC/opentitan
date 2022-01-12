@@ -5,11 +5,24 @@
 // Wrapper functions to write different partitions in OTP.
 // This file is included in `mem_bkdr_util.sv` as a continuation of `mem_bkdr_util` class.
 
-virtual function void otp_write_lc_partition(lc_ctrl_state_pkg::lc_state_e lc_state);
+virtual function void otp_write_lc_partition_state(lc_ctrl_state_pkg::lc_state_e lc_state);
   for (int i = 0; i < LcStateSize; i+=4) begin
     write32(i + LcStateOffset, lc_state[i*8+:32]);
   end
 endfunction
+
+virtual function otp_write_lc_partition_cnt(lc_ctrl_state_pkg::lc_cnt_e lc_cnt);
+  for (int i = 0; i < LcTransitionCntSize; i+=4) begin
+    write32(i + LcTransitionCntOffset, lc_cnt[i*8+:32]);
+  end
+endfunction : otp_write_lc_partition_cnt
+
+function void otp_write_lc_partition(lc_ctrl_state_pkg::lc_cnt_e lc_cnt,
+                                     lc_ctrl_state_pkg::lc_state_e lc_state);
+
+  otp_write_lc_partition_cnt(lc_cnt);
+  otp_write_lc_partition_state(lc_state);
+endfunction: otp_write_lc_partition
 
 // The following steps are needed to backdoor write a secret partition:
 // 1). Scramble the RAW input data.

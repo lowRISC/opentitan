@@ -21,15 +21,15 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   localparam int MaxCyclesBeforeEnable = 6;
 
   // Random wakeups and resets.
-  rand wakeups_t         wakeups;
-  rand wakeups_t         wakeups_en;
-  rand resets_t          resets;
-  rand resets_t          resets_en;
-  rand bit               power_glitch_reset;
-  rand bit               escalation_reset;
+  rand wakeups_t wakeups;
+  rand wakeups_t wakeups_en;
+  rand resets_t  resets;
+  rand resets_t  resets_en;
+  rand bit       power_glitch_reset;
+  rand bit       escalation_reset;
 
-  // TODO(maturana) Enable escalation resets once there is support for driving them.
-  constraint escalation_reset_c {escalation_reset == 1'b0;}
+  rand bit       en_intr;
+
   constraint resets_en_c {
     solve resets, power_glitch_reset, escalation_reset before resets_en;
     |{resets_en & resets, power_glitch_reset, escalation_reset} == 1'b1;
@@ -185,6 +185,29 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     control_assertions(0);
   endtask
 
+  virtual task setup_interrupt(bit enable);
+    csr_wr(.ptr(ral.intr_enable.wakeup), .value(enable));
+    `uvm_info(`gfn, $sformatf("Wakeup interrupt is %0sabled", enable ? "en" : "dis"), UVM_MEDIUM)
+  endtask
+
+  // May check intr_state.wakeup CSR against expected, and regardless, it checks that the
+  // interrupt output matches intr_state && intr_enable. The first check is disabled if
+  // check_expected is off, which is used when a reset and an interrupt come in close
+  // temporal proximity.
+  virtual task check_and_clear_interrupt(bit expected, bit check_expected = 1'b1);
+    bit enable;
+    `uvm_info(`gfn, "Checking and clearing interrupt", UVM_MEDIUM)
+    if (check_expected) begin
+      csr_rd_check(.ptr(ral.intr_state.wakeup), .compare_value(expected),
+                   .err_msg("interrupt mismatch"));
+    end else begin
+      csr_rd(.ptr(ral.intr_state.wakeup), .value(expected));
+    end
+    csr_rd(.ptr(ral.intr_enable.wakeup), .value(enable));
+    `DV_CHECK_EQ(cfg.pwrmgr_vif.intr_wakeup, expected && enable)
+    csr_wr(.ptr(ral.intr_state.wakeup), .value(1'b1));
+  endtask
+
   local function void raise_objection(string label);
     ++objection_count;
     `uvm_info(`gfn, $sformatf("Raising objection to %0d for %0s", objection_count, label), UVM_HIGH)
@@ -288,6 +311,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           if (cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req[1] == 1'b0) begin
             cfg.pwrmgr_vif.update_resets('0);
             cfg.pwrmgr_vif.update_sw_rst_req(prim_mubi_pkg::MuBi4False);
+            clear_escalation_reset();
             `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
           end
           drop_objection("rst_lc_src_n");
@@ -349,8 +373,53 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_rstmgr_sva_vif.disable_sva = !enable;
   endfunction
 
-  // Updates control CSR enables.
-  task update_control_enables(bit low_power_hint);
+  local task wait_for_fall_through();
+    wait(!cfg.pwrmgr_vif.pwr_cpu.core_sleeping);
+    exp_wakeup_fall_through = 1'b1;
+    exp_intr = 1'b1;
+    `uvm_info(`gfn, "wait_for_fall_through succeeds", UVM_MEDIUM)
+  endtask
+
+  local task wait_for_abort();
+    wait(!cfg.pwrmgr_vif.pwr_flash.flash_idle || !cfg.pwrmgr_vif.pwr_otp_rsp.otp_idle ||
+          !cfg.pwrmgr_vif.pwr_lc_rsp.lc_idle);
+    exp_wakeup_abort = 1'b1;
+    exp_intr = 1'b1;
+    `uvm_info(`gfn, "wait_for_abort succeeds", UVM_MEDIUM)
+  endtask
+
+  local task wait_for_low_power_transition();
+    wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
+    exp_wakeup_reasons = wakeups & wakeups_en;
+    exp_intr = 1'b1;
+    `uvm_info(`gfn, "Setting expected interrupt", UVM_MEDIUM)
+  endtask
+
+  task process_low_power_hint();
+    // Timeout if the low power transition waits too long for WFI.
+    `DV_SPINWAIT(wait(cfg.pwrmgr_vif.pwr_cpu.core_sleeping);, "timeout waiting for core_sleeping",
+                 10_000,)
+    `uvm_info(`gfn, "In process_low_power_hint pre forks", UVM_MEDIUM)
+    fork
+      wait_for_fall_through();
+      wait_for_abort();
+      wait_for_low_power_transition();
+    join_any
+    disable fork;
+    // At this point we know the low power transition went through or was aborted.
+    // If it went through, determine if the transition to active state is for a reset, and
+    // cancel the expected interrupt.
+    if (exp_wakeup_reasons) begin
+      wait(cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateMainPowerOn);
+      if (cfg.pwrmgr_vif.pwrup_cause == pwrmgr_pkg::Reset) begin
+        `uvm_info(`gfn, "Cancelling expected interrupt", UVM_MEDIUM)
+        exp_intr = 1'b0;
+      end
+    end
+  endtask
+
+  // Updates control CSR.
+  task update_control_csr();
     ral.control.core_clk_en.set(control_enables.core_clk_en);
     ral.control.io_clk_en.set(control_enables.io_clk_en);
     ral.control.usb_clk_en_lp.set(control_enables.usb_clk_en_lp);
@@ -363,10 +432,15 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
               "Setting control CSR to 0x%x, enables=%p, low_power_hint=%b",
               ral.control.get(),
               control_enables,
-              1'b1
+              low_power_hint
               ), UVM_MEDIUM)
     csr_update(.csr(ral.control));
-  endtask : update_control_enables
+
+    // Predict the effect of the potential low power transition.
+    fork
+      if (low_power_hint) process_low_power_hint();
+    join_none
+  endtask : update_control_csr
 
   // This enables the fast fsm to transition to low power when all nvms are idle after the
   // transition is enabled by software and cpu WFI. When not all are idle the transition is
@@ -407,9 +481,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                  .err_msg("reset_status"));
   endtask
 
-  // Checks the wake_info matches expectations depending on capture disable.
+  // Checks the wake_info CSR matches expectations depending on capture disable.
   // The per-field "prior_" arguments support cases where the wake_info register was not
-  // cleared amd may contain residual values.
+  // cleared and may contain residual values.
   task check_wake_info(wakeups_t reasons, wakeups_t prior_reasons = '0, bit fall_through,
                        bit prior_fall_through = '0, bit abort, bit prior_abort = '0);
 
@@ -436,4 +510,15 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.wake_info_capture_dis), .value(1'b1));
     csr_wr(.ptr(ral.wake_info), .value('1));
   endtask
+
+  function void send_escalation_reset();
+    `uvm_info(`gfn, "Sending escalation reset", UVM_MEDIUM)
+    cfg.m_esc_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b10;
+  endfunction
+
+  function void clear_escalation_reset();
+    `uvm_info(`gfn, "Clearing escalation reset", UVM_MEDIUM)
+    cfg.m_esc_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
+  endfunction
+
 endclass : pwrmgr_base_vseq

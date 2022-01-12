@@ -44,6 +44,7 @@
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/rstmgr/dv/rstmgr_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",
+             "{proj_root}/hw/ip/spi_host/dv/spi_host_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_device/dv/spi_device_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_main_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_ret_sim_cfg.hjson",

@@ -251,4 +251,4 @@ In the open source repository, the embedded flash macro is emulated by a model t
 It lacks the myriad timing knobs and configuration points required to control the final flash block.
 This necessitates that the compliance suite will have initialization sections for flash that differ between FPGA and silicon.
 
-We consider this demonstration of "security equivalence" to be an open, unsolved problem and committed to clearly delimiting any differences in the compliance suite implementation.
+We consider this demonstration of "security equivalence" to be an open, unsolved problem and are committed to clearly delimiting any differences in the compliance suite implementation.

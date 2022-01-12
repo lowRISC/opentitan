@@ -27,7 +27,6 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/examples:demos",
-        "//sw/device/exts/common",
         "//sw/device/lib:pinmux",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/crt",
@@ -39,5 +38,6 @@ cc_library(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework",
         "//sw/device/lib/testing/test_framework:ottf_isrs",
+        "//sw/device/lib/testing/test_rom_ext",
     ],
 )

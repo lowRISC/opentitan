@@ -113,7 +113,11 @@
             items: [
                 {
                     name: "CREATOR_SW_CFG_AST_CFG",
-                    size: "256"
+                    size: "128"
+                }
+                {
+                    name: "CREATOR_SW_CFG_AST_INIT_EN",
+                    size: "4"
                 }
                 {
                     name: "CREATOR_SW_CFG_ROM_EXT_SKU",
@@ -126,6 +130,14 @@
                 {
                     name: "CREATOR_SW_CFG_KEY_IS_VALID",
                     size: "8"
+                }
+                {
+                    name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG",
+                    size: "4"
                 }
             ],
             desc: '''Software configuration partition for

@@ -69,7 +69,7 @@ class MemChunk:
         bits, to make 39-bit words.
 
         '''
-        self.words = ecc_encode_some('hsiao', 32, self.words)[0]
+        self.words = ecc_encode_some('inv_hsiao', 32, self.words)[0]
 
 
 class MemFile:

@@ -15,42 +15,104 @@ extern "C" {
 
 #define ALERT_CLASSES 4
 
-// TODO(lowRISC/opentitan#7148): Choose values for configuration enums.
-// Note: the AlertClass values need to map to a byte.
 /**
- * Alert Classification Values as stored in OTP.
+ * Alert Classification Values as stored in the ROM_ALERT_CLASSIFICATION and
+ * ROM_LOCAL_ALERT_CLASSIFICATION fields in OTP.
+ *
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 2 -m 5 -n 8 \
+ *     -s 3775359077 --language=c
+ *
+ * Hamming distance histogram:
+ *
+ *  0: --
+ *  1: --
+ *  2: --
+ *  3: |||||| (20.00%)
+ *  4: |||||||||||||||||||| (60.00%)
+ *  5: |||||| (20.00%)
+ *  6: --
+ *  7: --
+ *  8: --
+ *
+ * Minimum Hamming distance: 3
+ * Maximum Hamming distance: 5
+ * Minimum Hamming weight: 3
+ * Maximum Hamming weight: 6
  */
 typedef enum AlertClass {
   /***
    * Alert class X is a special class which means "not configured"
    */
-  kAlertClassX,
-  kAlertClassA,
-  kAlertClassB,
-  kAlertClassC,
-  kAlertClassD,
+  kAlertClassX = 0x94,
+  kAlertClassA = 0xee,
+  kAlertClassB = 0x64,
+  kAlertClassC = 0xa7,
+  kAlertClassD = 0x32,
 } alert_class_t;
 
-// Note: the AlertEnable values need to map to a byte.
 /**
- * Alert Enable Values as stored in OTP.
+ * Alert Enable Values as stored in the ROM_ALERT_CLASS_EN field in OTP.
+ *
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 5 -m 3 -n 8 \
+ *     -s 999796195 --language=c
+ *
+ * Hamming distance histogram:
+ *
+ *  0: --
+ *  1: --
+ *  2: --
+ *  3: --
+ *  4: --
+ *  5: |||||||||||||||||||| (66.67%)
+ *  6: |||||||||| (33.33%)
+ *  7: --
+ *  8: --
+ *
+ * Minimum Hamming distance: 5
+ * Maximum Hamming distance: 6
+ * Minimum Hamming weight: 3
+ * Maximum Hamming weight: 4
  */
 typedef enum AlertEnable {
-  kAlertEnableNone,
-  kAlertEnableEnabled,
-  kAlertEnableLocked,
+  kAlertEnableNone = 0xa9,
+  kAlertEnableEnabled = 0x07,
+  kAlertEnableLocked = 0xd2,
 } alert_enable_t;
 
 /**
- * Alert Escalation Policy as stored in OTP.  Note that each phase implies the
- * prior phases are also enabled.
+ * Alert Escalation Policy as stored in the ROM_ALERT_ESCALATION field in OTP.
+ *
+ * Note that each phase implies the prior phases are also enabled.
+ *
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 2 -m 5 -n 8 \
+ *     -s 3525542881 --language=c
+ *
+ * Hamming distance histogram:
+ *
+ *  0: --
+ *  1: --
+ *  2: --
+ *  3: ||||||||||||| (20.00%)
+ *  4: |||||||||||||||||||| (30.00%)
+ *  5: ||||||||||||| (20.00%)
+ *  6: |||||||||||||||||||| (30.00%)
+ *  7: --
+ *  8: --
+ *
+ * Minimum Hamming distance: 3
+ * Maximum Hamming distance: 6
+ * Minimum Hamming weight: 3
+ * Maximum Hamming weight: 5
  */
 typedef enum AlertEscalate {
-  kAlertEscalateNone,
-  kAlertEscalatePhase0,
-  kAlertEscalatePhase1,
-  kAlertEscalatePhase2,
-  kAlertEscalatePhase3,
+  kAlertEscalateNone = 0xd1,
+  kAlertEscalatePhase0 = 0xb9,
+  kAlertEscalatePhase1 = 0xcb,
+  kAlertEscalatePhase2 = 0x25,
+  kAlertEscalatePhase3 = 0x76,
 } alert_escalate_t;
 
 /**

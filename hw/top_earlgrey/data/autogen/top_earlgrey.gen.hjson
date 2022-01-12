@@ -697,6 +697,10 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        GpioAsyncOn: "1"
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -705,8 +709,18 @@
       [
         "0"
       ]
-      param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: GpioAsyncOn
+          desc: Instantiates 2-flop synchronizers on all GPIO inputs if set to 1.
+          type: bit
+          default: "1"
+          expose: "true"
+          name_top: GpioGpioAsyncOn
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -3866,6 +3880,7 @@
         {
           label: ram_ret_aon
           swaccess: rw
+          data_intg_passthru: "true"
           exec: True
           byte_write: True
           size: 0x1000
@@ -4057,6 +4072,7 @@
         {
           label: eflash
           swaccess: ro
+          data_intg_passthru: "true"
           exec: True
           byte_write: False
           config:
@@ -6162,6 +6178,7 @@
         {
           label: ram_main
           swaccess: rw
+          data_intg_passthru: "true"
           exec: True
           byte_write: True
           size: 0x20000
@@ -6351,6 +6368,7 @@
         {
           label: rom
           swaccess: ro
+          data_intg_passthru: True
           exec: True
           byte_write: False
           size: 0x8000
@@ -6507,7 +6525,7 @@
         MHPMCounterWidth: "32"
         RV32E: "0"
         RV32M: ibex_pkg::RV32MSingleCycle
-        RV32B: ibex_pkg::RV32BNone
+        RV32B: ibex_pkg::RV32BOTEarlGrey
         RegFile: ibex_pkg::RegFileFF
         BranchTargetALU: "1"
         WritebackStage: "1"
@@ -6628,7 +6646,7 @@
         {
           name: RV32B
           type: ibex_pkg::rv32b_e
-          default: ibex_pkg::RV32BNone
+          default: ibex_pkg::RV32BOTEarlGrey
           expose: "true"
           name_top: RvCoreIbexRV32B
         }
@@ -9469,7 +9487,7 @@
       }
       {
         name: USB_P
-        type: BidirTol
+        type: DualBidirTol
         bank: VCC
         connection: manual
         desc: USB P signal
@@ -9477,7 +9495,7 @@
       }
       {
         name: USB_N
-        type: BidirTol
+        type: DualBidirTol
         bank: VCC
         connection: manual
         desc: USB N signal
@@ -11706,11 +11724,7 @@
       name: asic
       pinout:
       {
-        remove_ports:
-        [
-          USB_P1
-          USB_N1
-        ]
+        remove_ports: []
         remove_pads: []
         add_pads:
         [
@@ -11720,20 +11734,6 @@
             bank: VCC
             connection: manual
             desc: Extra infrastructure pad for AST
-          }
-          {
-            name: USB_P1
-            type: BidirTol
-            bank: VCC
-            connection: manual
-            desc: USB P signal (second pad)
-          }
-          {
-            name: USB_N1
-            type: BidirTol
-            bank: VCC
-            connection: manual
-            desc: USB N signal (second pad)
           }
         ]
       }
@@ -11922,6 +11922,20 @@
           }
           {
             name: IO_UPHY_DPPULLUP
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
+            name: IO_UPHY_SPD
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
+            name: IO_UPHY_SUS
             type: BidirStd
             bank: VCC
             connection: manual

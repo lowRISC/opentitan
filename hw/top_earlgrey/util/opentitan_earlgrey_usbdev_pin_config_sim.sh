@@ -7,7 +7,7 @@
 VERILATOR=build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator
 
 # Code to load
-ROMCODE=build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.39.vmem
+ROMCODE=build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem
 FLASH=build-bin/sw/device/examples/hello_usbdev/hello_usbdev_sim_verilator.elf
 OTP=build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
 

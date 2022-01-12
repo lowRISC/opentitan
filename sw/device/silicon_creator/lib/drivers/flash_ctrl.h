@@ -4,6 +4,8 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_FLASH_CTRL_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_FLASH_CTRL_H_
 
+#include <limits.h>
+
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/multibits.h"
@@ -12,20 +14,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * Flash memory banks.
- */
-enum {
-  /**
-   * Flash bank 0.
-   */
-  kFlashCtrlBank0 = 0,
-  /**
-   * Flash bank 1.
-   */
-  kFlashCtrlBank1 = 1,
-};
 
 /**
  * A flash partition.
@@ -70,7 +58,7 @@ typedef enum flash_crtl_partition {
 
 /**
  * Helper macro for defining the value of a `flash_ctrl_info_page_t` enumeration
- * constant.
+ * constant for information pages of type 0.
  *
  * Each `flash_ctrl_info_page_t` enumeration constant is a bitfield with the
  * following layout:
@@ -78,41 +66,43 @@ typedef enum flash_crtl_partition {
  * - Bits 4-6: Partition type (a `flash_ctrl_partition_type_t`).
  * - Bit 7: Bank index [0,1].
  *
+ * This macro assumes that all information pages are of type 0 since silicon
+ * creator code does not need to access information pages of other types.
+ *
  * @param bank_ Bank index.
- * @param partition_ Partition type, a `flash_ctrl_partition_type_t`.
- * @param index_ Page index.
+ * @param page_ Page index.
  */
-#define INFO_PAGE_(bank_, partition_, index_) \
-  ((bank_ << 7) | (partition_ << 4) | (index_))
+#define INFO_PAGE_(bank_, page_) \
+  ((bank_ << 7) | (kFlashCtrlPartitionInfo0 << 4) | (page_))
 
 // clang-format off
 #define FLASH_CTRL_INFO_PAGES_DEFINE(X) \
   /**
    * Bank 0 information partition type 0 pages.
    */ \
-  X(kFlashCtrlInfoPageFactoryId,          INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 0)), \
-  X(kFlashCtrlInfoPageCreatorSecret,      INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 1)), \
-  X(kFlashCtrlInfoPageOwnerSecret,        INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 2)), \
-  X(kFlashCtrlInfoPageWaferAuthSecret,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 3)), \
-  X(kFlashCtrlInfoPageBank0Type0Page4,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 4)), \
-  X(kFlashCtrlInfoPageBank0Type0Page5,    INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 5)), \
-  X(kFlashCtrlInfoPageOwnerReserved0,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 6)), \
-  X(kFlashCtrlInfoPageOwnerReserved1,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 7)), \
-  X(kFlashCtrlInfoPageOwnerReserved2,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 8)), \
-  X(kFlashCtrlInfoPageOwnerReserved3,     INFO_PAGE_(kFlashCtrlBank0, kFlashCtrlPartitionInfo0, 9)), \
+  X(kFlashCtrlInfoPageFactoryId,          0, 0), \
+  X(kFlashCtrlInfoPageCreatorSecret,      0, 1), \
+  X(kFlashCtrlInfoPageOwnerSecret,        0, 2), \
+  X(kFlashCtrlInfoPageWaferAuthSecret,    0, 3), \
+  X(kFlashCtrlInfoPageBank0Type0Page4,    0, 4), \
+  X(kFlashCtrlInfoPageBank0Type0Page5,    0, 5), \
+  X(kFlashCtrlInfoPageOwnerReserved0,     0, 6), \
+  X(kFlashCtrlInfoPageOwnerReserved1,     0, 7), \
+  X(kFlashCtrlInfoPageOwnerReserved2,     0, 8), \
+  X(kFlashCtrlInfoPageOwnerReserved3,     0, 9), \
   /**
    * Bank 1 information partition type 0 pages.
    */ \
-  X(kFlashCtrlInfoPageBootData0,          INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 0)), \
-  X(kFlashCtrlInfoPageBootData1,          INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 1)), \
-  X(kFlashCtrlInfoPageOwnerSlot0,         INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 2)), \
-  X(kFlashCtrlInfoPageOwnerSlot1,         INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 3)), \
-  X(kFlashCtrlInfoPageBank1Type0Page4,    INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 4)), \
-  X(kFlashCtrlInfoPageBank1Type0Page5,    INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 5)), \
-  X(kFlashCtrlInfoPageCreatorCertificate, INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 6)), \
-  X(kFlashCtrlInfoPageBootServices,       INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 7)), \
-  X(kFlashCtrlInfoPageOwnerCerificate0,   INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 8)), \
-  X(kFlashCtrlInfoPageOwnerCerificate1,   INFO_PAGE_(kFlashCtrlBank1, kFlashCtrlPartitionInfo0, 9)), \
+  X(kFlashCtrlInfoPageBootData0,          1, 0), \
+  X(kFlashCtrlInfoPageBootData1,          1, 1), \
+  X(kFlashCtrlInfoPageOwnerSlot0,         1, 2), \
+  X(kFlashCtrlInfoPageOwnerSlot1,         1, 3), \
+  X(kFlashCtrlInfoPageBank1Type0Page4,    1, 4), \
+  X(kFlashCtrlInfoPageBank1Type0Page5,    1, 5), \
+  X(kFlashCtrlInfoPageCreatorCertificate, 1, 6), \
+  X(kFlashCtrlInfoPageBootServices,       1, 7), \
+  X(kFlashCtrlInfoPageOwnerCerificate0,   1, 8), \
+  X(kFlashCtrlInfoPageOwnerCerificate1,   1, 9), \
 // clang-format on
 
 /**
@@ -120,7 +110,7 @@ typedef enum flash_crtl_partition {
  * @name_ Name of the enumeration constant.
  * @value_ Value of the enumeration constant.
  */
-#define INFO_PAGE_ENUM_INIT_(name_, value_) name_ = value_
+#define INFO_PAGE_ENUM_INIT_(name_, bank_, page_) name_ = INFO_PAGE_(bank_, page_)
 
 /**
  * Info pages.
@@ -133,11 +123,24 @@ typedef enum flash_ctrl_info_page {
  * Field and bit definitions to get page index, partition type, and bank index
  * from a `flash_ctrl_info_page_t`.
  */
-#define FLASH_CTRL_INFO_PAGE_FIELD_INDEX \
+#define FLASH_CTRL_INFO_PAGE_FIELD_PAGE \
   ((bitfield_field32_t){.mask = 0xf, .index = 0})
 #define FLASH_CTRL_INFO_PAGE_FIELD_PARTITION \
   ((bitfield_field32_t){.mask = 0x7, .index = 4})
 #define FLASH_CTRL_INFO_PAGE_BIT_BANK 7
+
+/**
+ * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
+ * `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP items.
+ *
+ * Defined here to be able to use in tests.
+ */
+#define FLASH_CTRL_OTP_FIELD_SCRAMBLING \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
+#define FLASH_CTRL_OTP_FIELD_ECC \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
+#define FLASH_CTRL_OTP_FIELD_HE \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 2 }
 
 /**
  * Kicks of the initialization of the flash controller.
@@ -287,7 +290,7 @@ rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
 /**
  * A struct for specifying access permissions.
  */
-typedef struct flash_ctrl_mp {
+typedef struct flash_ctrl_perms {
   /**
    * Read.
    */
@@ -300,7 +303,17 @@ typedef struct flash_ctrl_mp {
    * Erase.
    */
   hardened_bool_t erase;
-} flash_ctrl_mp_t;
+} flash_ctrl_perms_t;
+
+/**
+ * Sets default access permissions for the data partition.
+ *
+ * A permission is enabled only if the corresponding field in `perms` is
+ * `kHardenedBoolTrue`.
+ *
+ * @param perms New permissions.
+ */
+void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms);
 
 /**
  * Sets access permissions for an info page.
@@ -311,8 +324,41 @@ typedef struct flash_ctrl_mp {
  * @param info_page An information page.
  * @param perms New permissions.
  */
-void flash_ctrl_info_mp_set(flash_ctrl_info_page_t info_page,
-                            flash_ctrl_mp_t perms);
+void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
+                            flash_ctrl_perms_t perms);
+
+/**
+ * A struct for flash configuration settings.
+ */
+typedef struct flash_ctrl_cfg {
+  /**
+   * Scrambling.
+   */
+  multi_bit_bool_t scrambling;
+  /**
+   * ECC.
+   */
+  multi_bit_bool_t ecc;
+  /**
+   * High endurance.
+   */
+  multi_bit_bool_t he;
+} flash_ctrl_cfg_t;
+
+/**
+ * Sets default configuration settings for the data partition.
+ *
+ * @param cfg New configuration settings.
+ */
+void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
+
+/**
+ * Sets configuration settings for an info page.
+ *
+ * @param info_page An information page.
+ * @param cfg New configuration settings.
+ */
+void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page, flash_ctrl_cfg_t cfg);
 
 typedef enum flash_ctrl_exec {
   kFlashCtrlExecDisable = kMultiBitBool4False,
@@ -330,6 +376,14 @@ typedef enum flash_ctrl_exec {
  *                disable execution.
  */
 void flash_ctrl_exec_set(flash_ctrl_exec_t enable);
+
+/**
+ * Disables all access to silicon creator info pages until next reset.
+ *
+ * This function must be called in ROM_EXT before handing over execution to the
+ * first owner boot stage.
+ */
+void flash_ctrl_creator_info_pages_lockdown(void);
 
 #ifdef __cplusplus
 }

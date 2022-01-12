@@ -54,20 +54,28 @@ module otbn_start_stop_control
   output logic sec_wipe_zero_o,
 
   output logic ispr_init_o,
-  output logic state_reset_o
+  output logic state_reset_o,
+  output logic state_error_o
 );
   otbn_start_stop_state_e state_q, state_d;
 
   logic addr_cnt_inc;
   logic [4:0] addr_cnt_q, addr_cnt_d;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= OtbnStartStopStateHalt;
-    end else begin
-      state_q <= state_d;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateStartStopWidth-1:0] state_raw_q;
+  assign state_q = otbn_start_stop_state_e'(state_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(otbn_start_stop_state_e),
+    .Width(StateStartStopWidth),
+    .ResetValue(StateStartStopWidth'(OtbnStartStopStateHalt))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
+  );
 
   always_comb begin
     urnd_reseed_req_o      = 1'b0;
@@ -84,6 +92,7 @@ module otbn_start_stop_control
     sec_wipe_zero_o        = 1'b0;
     addr_cnt_inc           = 1'b0;
     secure_wipe_running_o  = 1'b0;
+    state_error_o          = 1'b0;
 
     unique case (state_q)
       OtbnStartStopStateHalt: begin
@@ -155,7 +164,9 @@ module otbn_start_stop_control
         secure_wipe_running_o = 1'b1;
         state_d = OtbnStartStopStateHalt;
       end
-      default: ;
+      default: begin
+        state_error_o = 1'b1;
+      end
     endcase
   end
 

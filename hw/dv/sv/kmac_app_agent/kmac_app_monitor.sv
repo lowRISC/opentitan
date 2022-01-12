@@ -36,7 +36,7 @@ class kmac_app_monitor extends dv_base_monitor #(
     join
   endtask
 
-  // collect transactions forever - already forked in dv_base_moditor::run_phase
+  // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task process_trans();
     forever begin
       kmac_app_item req = kmac_app_item::type_id::create("req");

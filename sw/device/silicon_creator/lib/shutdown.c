@@ -294,7 +294,8 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
   enum { kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR };
-  abs_mmio_write32(kBase + FLASH_CTRL_DIS_REG_OFFSET, 1);
+  // Setting DIS (rw0c) to a value other than 5 will disable flash permanently.
+  abs_mmio_write32(kBase + FLASH_CTRL_DIS_REG_OFFSET, 0);
 }
 
 SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {

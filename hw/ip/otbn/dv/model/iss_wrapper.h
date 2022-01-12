@@ -103,6 +103,9 @@ struct ISSWrapper {
   // Mark all of IMEM as invalid so that any fetch causes an integrity error.
   void invalidate_imem();
 
+  // Mark all of DMEM as invalid so that any load causes an integrity error.
+  void invalidate_dmem();
+
   // Step a CRC calculation with 48 bits of data
   uint32_t step_crc(const std::array<uint8_t, 6> &item, uint32_t state) const;
 

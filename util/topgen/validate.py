@@ -216,6 +216,10 @@ memory_optional = {
     'size': ['d', 'memory region size in bytes for the linker script, '
                   'xbar and RTL parameterisations'],
     'config': ['d', 'Extra configuration for a particular memory'],
+    'data_intg_passthru': [
+        'pb',
+        'Integrity bits are passed through directly from the memory'
+    ]
 }
 
 memory_added = {
@@ -239,6 +243,7 @@ class PadType(Enum):
     BIDIR_OD = 'BidirOd'
     ANALOG_IN0 = 'AnalogIn0'
     ANALOG_IN1 = 'AnalogIn1'
+    DUAL_BIDIR_TOL = 'DualBidirTol'
 
 
 def is_valid_pad_type(obj):

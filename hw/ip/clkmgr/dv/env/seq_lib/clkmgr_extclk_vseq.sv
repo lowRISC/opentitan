@@ -43,8 +43,8 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     lc_clk_byp_req = get_rand_lc_tx_val(8, 2, 2);
     lc_debug_en = get_rand_lc_tx_val(8, 2, 2);
     `uvm_info(`gfn, $sformatf(
-              "randomize gives lc_clk_byp_req=0x%x, lc_debug_en=0x%x",
-              lc_clk_byp_req, lc_debug_en), UVM_MEDIUM)
+              "randomize gives lc_clk_byp_req=0x%x, lc_debug_en=0x%x", lc_clk_byp_req, lc_debug_en),
+              UVM_MEDIUM)
     super.post_randomize();
   endfunction
 
@@ -52,9 +52,10 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     update_csrs_with_reset_values();
     set_scanmode_on_low_weight();
     csr_wr(.ptr(ral.extclk_ctrl_regwen), .value(1));
+
     fork
+      // Notice only all_clk_byp_req and io_clk_byp_req Mubi4True and Mubi4False cause transitions.
       forever
-        // Notice only all_clk_byp_req Mubi4True and Mubi4False cause transitions.
         @cfg.clkmgr_vif.all_clk_byp_req begin : all_clk_byp_ack
           if (cfg.clkmgr_vif.all_clk_byp_req == prim_mubi_pkg::MuBi4True) begin
             `uvm_info(`gfn, "Got all_clk_byp_req on", UVM_MEDIUM)
@@ -85,6 +86,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
           end
         end
     join_none
+
     for (int i = 0; i < num_trans; ++i) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // Init needs to be synchronous.
@@ -103,8 +105,10 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
         end
       join
       `uvm_info(`gfn, $sformatf(
-                {"extclk_ctrl_sel=0x%0x, extclk_ctrl_low_speed_sel=0x%0x, lc_clk_byp_req=0x%0x, ",
-                 "lc_debug_en=0x%0x, scanmode=0x%0x"},
+                {
+                  "extclk_ctrl_sel=0x%0x, extclk_ctrl_low_speed_sel=0x%0x, lc_clk_byp_req=0x%0x, ",
+                  "lc_debug_en=0x%0x, scanmode=0x%0x"
+                },
                 extclk_ctrl_sel,
                 extclk_ctrl_low_speed_sel,
                 lc_clk_byp_req,
@@ -118,6 +122,8 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
         cfg.clk_rst_vif.wait_clks(cycles_before_lc_clk_byp_ack);
         cfg.clkmgr_vif.update_lc_clk_byp_req(lc_ctrl_pkg::Off);
       end
+      // Disable extclk software control.
+      csr_wr(.ptr(ral.extclk_ctrl), .value({Off, Off}));
       cfg.clk_rst_vif.wait_clks(cycles_before_next_trans);
     end
     disable fork;

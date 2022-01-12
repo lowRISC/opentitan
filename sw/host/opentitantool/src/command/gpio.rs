@@ -9,7 +9,7 @@ use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::io::gpio::PinDirection;
+use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::transport::Capability;
 
 #[derive(Debug, StructOpt)]
@@ -69,20 +69,20 @@ impl CommandDispatch for GpioWrite {
 }
 
 #[derive(Debug, StructOpt)]
-/// Set the I/O direction of a GPIO pin.
-pub struct GpioSetDirection {
+/// Set the I/O mode of a GPIO pin (Input/OpenDrain/PushPull).
+pub struct GpioSetMode {
     #[structopt(name = "PIN", help = "The GPIO pin to modify")]
     pub pin: String,
     #[structopt(
-        name = "DIRECTION",
-        possible_values = &PinDirection::variants(),
+        name = "MODE",
+        possible_values = &PinMode::variants(),
         case_insensitive=true,
-        help = "The I/O direction of the pin"
+        help = "The I/O mode of the pin"
     )]
-    pub direction: PinDirection,
+    pub mode: PinMode,
 }
 
-impl CommandDispatch for GpioSetDirection {
+impl CommandDispatch for GpioSetMode {
     fn run(
         &self,
         _context: &dyn Any,
@@ -90,7 +90,34 @@ impl CommandDispatch for GpioSetDirection {
     ) -> Result<Option<Box<dyn Serialize>>> {
         transport.capabilities().request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
-        gpio_pin.set_direction(self.direction)?;
+        gpio_pin.set_mode(self.mode)?;
+        Ok(None)
+    }
+}
+
+#[derive(Debug, StructOpt)]
+/// Set the I/O weak pull mode of a GPIO pin (PullUp/PullDown/None).
+pub struct GpioSetPullMode {
+    #[structopt(name = "PIN", help = "The GPIO pin to modify")]
+    pub pin: String,
+    #[structopt(
+        name = "PULLMODE",
+        possible_values = &PullMode::variants(),
+        case_insensitive=true,
+        help = "The weak pull mode of the pin"
+    )]
+    pub pull_mode: PullMode,
+}
+
+impl CommandDispatch for GpioSetPullMode {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Serialize>>> {
+        transport.capabilities().request(Capability::GPIO).ok()?;
+        let gpio_pin = transport.gpio_pin(&self.pin)?;
+        gpio_pin.set_pull_mode(self.pull_mode)?;
         Ok(None)
     }
 }
@@ -100,5 +127,6 @@ impl CommandDispatch for GpioSetDirection {
 pub enum GpioCommand {
     Read(GpioRead),
     Write(GpioWrite),
-    SetDirection(GpioSetDirection),
+    SetMode(GpioSetMode),
+    SetPullMode(GpioSetPullMode),
 }

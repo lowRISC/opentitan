@@ -166,6 +166,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     if (tx_word_q.size > 0) begin
       bit [31:0] data_exp     = tx_word_q.pop_front();
+      if (cfg.m_spi_agent_cfg.bits_to_transfer == 7) begin
+        if (cfg.m_spi_agent_cfg.device_bit_dir == 1)  begin
+          data_exp[7] = 0;
+        end else begin
+          data_exp[0] = 0;
+        end
+      end
       `DV_CHECK_EQ(data_act, data_exp, "Compare SPI TX data")
       update_tx_fifo_and_rptr();
     end else begin // underflow

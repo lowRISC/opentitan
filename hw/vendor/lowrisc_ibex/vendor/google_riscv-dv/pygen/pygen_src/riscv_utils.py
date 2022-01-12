@@ -26,6 +26,10 @@ from pygen_src.riscv_load_store_instr_lib import (riscv_load_store_rand_instr_st
                                                   riscv_single_load_store_instr_stream)
 
 
+# ----------------------------------------------------------
+# pyflow commmon utility helpers functions
+# ----------------------------------------------------------
+
 def factory(obj_of):
     objs = {
         "riscv_directed_instr_stream": riscv_directed_instr_stream,

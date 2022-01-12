@@ -18,9 +18,13 @@ class spi_host_base_test extends cip_base_test #(
   // the run_phase; as such, nothing more needs to be done
 
   virtual function void build_phase(uvm_phase phase);
-    max_quit_count  = 50;
-    test_timeout_ns = 600_000_000; // 600ms
     super.build_phase(phase);
   endfunction : build_phase
 
+  virtual function void end_of_elaboration_phase(uvm_phase phase);
+    super.end_of_elaboration_phase(phase);
+    if (uvm_top.get_report_verbosity_level() > UVM_LOW) begin
+      uvm_top.print_topology();
+    end
+  endfunction // end_of_elaboration
 endclass : spi_host_base_test

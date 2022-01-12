@@ -15,7 +15,7 @@
 // abstract prim wrapper. These warnings occur due to the .*
 // use. TODO: we may want to move these inline waivers
 // into a separate, generated waiver file for consistency.
-//ri lint_check_off OUTPUT_NOT_DRIVEN INPUT_NOT_READ
+//ri lint_check_off OUTPUT_NOT_DRIVEN INPUT_NOT_READ HIER_BRANCH_NOT_READ
 module prim_${prim_name}
 ${module_header_imports}
 #(
@@ -30,4 +30,4 @@ ${module_header_params}
 ${instances}
 
 endmodule
-//ri lint_check_on OUTPUT_NOT_DRIVEN INPUT_NOT_READ
+//ri lint_check_on OUTPUT_NOT_DRIVEN INPUT_NOT_READ HIER_BRANCH_NOT_READ

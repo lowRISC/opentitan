@@ -156,6 +156,11 @@ encoding-schemes: enc-schemes.yml
 #  imm, imm<n> Signed immediate (width <n> if specified) (type simm or simm<n>)
 #  offset      Signed immediate (unspecified width) (type simm)
 #
+# Operands ending in _inc are special: if an operand name has the form
+# <foo>_inc, it is assumed that a) the operand has the "option" type, b)
+# another operand is a GPR and has the name <foo>, and c) the instruction
+# increments the <foo> register if <foo>_inc=1.
+#
 # If specified, the lsu field for an instruction should be a dictionary with
 # the following fields:
 #

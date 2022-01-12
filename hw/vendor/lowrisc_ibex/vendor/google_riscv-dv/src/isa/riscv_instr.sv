@@ -344,7 +344,7 @@ class riscv_instr extends uvm_object;
       if(imm_type == UIMM) begin
         imm_len = 5;
       end else begin
-        imm_len = 11;
+        imm_len = 12;
       end
     end
     imm_mask = imm_mask << imm_len;
@@ -580,7 +580,7 @@ class riscv_instr extends uvm_object;
         if(instr_name inside {FENCE, FENCE_I})
           binary = $sformatf("%8h", {17'b0, get_func3(), 5'b0, get_opcode()});
         else if(category == CSR)
-          binary = $sformatf("%8h", {csr[10:0], imm[4:0], get_func3(), rd, get_opcode()});
+          binary = $sformatf("%8h", {csr[11:0], imm[4:0], get_func3(), rd, get_opcode()});
         else if(instr_name == ECALL)
           binary = $sformatf("%8h", {get_func7(), 18'b0, get_opcode()});
         else if(instr_name inside {URET, SRET, MRET})
@@ -604,7 +604,7 @@ class riscv_instr extends uvm_object;
       end
       R_FORMAT: begin
         if(category == CSR)
-          binary = $sformatf("%8h", {csr[10:0], rs1, get_func3(), rd, get_opcode()});
+          binary = $sformatf("%8h", {csr[11:0], rs1, get_func3(), rd, get_opcode()});
         else if(instr_name == SFENCE_VMA)
           binary = $sformatf("%8h", {get_func7(), 18'b0, get_opcode()});
         else

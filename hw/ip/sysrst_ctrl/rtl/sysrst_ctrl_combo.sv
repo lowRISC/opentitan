@@ -37,12 +37,19 @@ module sysrst_ctrl_combo
   logic [NumCombo-1:0] combo_rst_req;
   logic [NumCombo-1:0] combo_intr_pulse;
 
-  logic [4:0] in;
-  assign in = {pwrb_int_i, key0_int_i, key1_int_i, key2_int_i, ac_present_int_i};
+  localparam int unsigned NumInputs = 5;
+  logic [NumInputs-1:0] in;
+  assign in = {
+    pwrb_int_i,
+    key0_int_i,
+    key1_int_i,
+    key2_int_i,
+    ac_present_int_i
+  };
 
   for (genvar k = 0; k < NumCombo; k++) begin : gen_combo_trigger
     // Generate the trigger for each combo
-    logic [4:0] cfg_in_sel;
+    logic [NumInputs-1:0] cfg_in_sel;
     assign cfg_in_sel = {
       com_sel_ctl_i[k].pwrb_in_sel.q,
       com_sel_ctl_i[k].key0_in_sel.q,
@@ -51,35 +58,46 @@ module sysrst_ctrl_combo
       com_sel_ctl_i[k].ac_present_sel.q
     };
 
-    // If the config bits are all-zero, we tie both trigger outputs to zero.
-    // Otherwise:
-    //           - assert trigger_h_o when all selected bits are 1
-    //           - assert trigger_l_o when all selected bits are 0
-    logic trigger_h, trigger_l;
-    assign trigger_h = (|cfg_in_sel) && ((in & cfg_in_sel) == cfg_in_sel);
-    assign trigger_l = (|cfg_in_sel) && ((in & cfg_in_sel) == '0);
-
+    // Combo detection is enabled if any of the keys is selected for this combo.
     logic cfg_combo_en;
-    assign cfg_combo_en = com_sel_ctl_i[k].pwrb_in_sel.q |
-                          com_sel_ctl_i[k].key0_in_sel.q |
-                          com_sel_ctl_i[k].key1_in_sel.q |
-                          com_sel_ctl_i[k].key2_in_sel.q |
-                          com_sel_ctl_i[k].ac_present_sel.q;
+    assign cfg_combo_en = |cfg_in_sel;
 
-    //Instantiate the combo detection state machine
-    logic combo_det;
-    sysrst_ctrl_combofsm #(
-      .Timer1Width(TimerWidth),
-      .Timer2Width(DetTimerWidth)
-    ) u_combo_fsm (
+    // Config trigger is asserted if all configured keys are pressed (== 0)
+    logic trigger;
+    assign trigger = (in & cfg_in_sel) == '0;
+
+    // Just debounce and forward the trigger level.
+    logic trigger_debounced;
+    prim_filter_ctr #(
+      .AsyncOn(0), // input signal has already been synced to the AON clock
+      .CntWidth(TimerWidth)
+    ) u_prim_filter_ctr (
       .clk_i,
       .rst_ni,
-      .trigger_h_i(trigger_h),
-      .trigger_l_i(trigger_l),
-      .cfg_timer1_i(key_intr_debounce_ctl_i.q),
-      .cfg_timer2_i(com_det_ctl_i[k].q),
-      .cfg_h2l_en_i(cfg_combo_en),
-      .timer_h2l_cond_met_o(combo_det)
+      .enable_i(1'b1),
+      .filter_i(trigger),
+      .thresh_i(key_intr_debounce_ctl_i.q),
+      .filter_o(trigger_debounced)
+    );
+
+    // This detector does not act as a debouncer.
+    // Rather, it checks whether the combo is pressed long enough to trigger the action.
+    logic combo_det_pulse;
+    sysrst_ctrl_detect #(
+      .TimerWidth(DetTimerWidth),
+      .EdgeDetect(1),  // require an edge for detection
+      .Sticky(0)       // detected status is automatically reset if signal does not remain stable
+    ) u_sysrst_ctrl_detect_debounce (
+      .clk_i,
+      .rst_ni,
+      .trigger_i(trigger_debounced),
+      .cfg_timer_i(com_det_ctl_i[k].q),
+      .cfg_l2h_en_i(cfg_combo_en),
+      .cfg_h2l_en_i(1'b0),
+      .l2h_detected_o(),
+      .h2l_detected_o(),
+      .l2h_detected_pulse_o(combo_det_pulse),
+      .h2l_detected_pulse_o()
     );
 
     //Instantiate the combo action module
@@ -90,7 +108,7 @@ module sysrst_ctrl_combo
       .cfg_bat_disable_en_i(com_out_ctl_i[k].bat_disable.q),
       .cfg_ec_rst_en_i(com_out_ctl_i[k].ec_rst.q),
       .cfg_rst_req_en_i(com_out_ctl_i[k].rst_req.q),
-      .combo_det_i(combo_det),
+      .combo_det_pulse_i(combo_det_pulse),
       .ec_rst_l_i(ec_rst_l_int_i),
       .ec_rst_ctl_i(ec_rst_ctl_i),
       .combo_intr_pulse_o(combo_intr_pulse[k]),

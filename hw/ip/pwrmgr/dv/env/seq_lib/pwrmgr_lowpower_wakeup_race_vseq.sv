@@ -37,6 +37,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      setup_interrupt(.enable(en_intr));
       csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
       `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x", wakeups_en & wakeups), UVM_MEDIUM)
 
@@ -61,7 +62,8 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
                 UVM_MEDIUM)
       csr_wr(.ptr(ral.wake_info_capture_dis), .value(disable_wakeup_capture));
 
-      update_control_enables(1'b1);
+      low_power_hint = 1'b1;
+      update_control_csr();
 
       wait_for_csr_to_propagate_to_slow_domain();
       set_nvms_idle();
@@ -87,7 +89,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
       // Now bring it back.
       cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
 
-     // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
+      // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
       // This read will not work in the chip, since the processor will be asleep.
       cfg.slow_clk_rst_vif.wait_clks(4);
       csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(wakeups & wakeups_en),
@@ -119,6 +121,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
 
       // Wait for interrupt to be generated whether or not it is enabled.
       cfg.slow_clk_rst_vif.wait_clks(10);
+      check_and_clear_interrupt(.expected(1'b1));
     end
   endtask
 

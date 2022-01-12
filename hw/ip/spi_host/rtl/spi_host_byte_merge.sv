@@ -54,7 +54,7 @@ module spi_host_byte_merge (
     .clk_i,
     .rst_ni,
     .clr_i    (clr),
-    .wdata_i  (byte_i),
+    .wdata_i  (do_fill ? 8'h0 : byte_i),
     .wvalid_i (byte_valid),
     .wready_o (byte_ready),
     .rdata_o  (word_o),

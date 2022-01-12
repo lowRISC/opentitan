@@ -71,11 +71,7 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "intr_test": begin
         // FIXME
       end
-      "pin_out_ctl": begin
-      end
-      "pin_allowed_ctl": begin
-      end
-      "pin_out_value": begin
+      "pin_out_ctl","pin_allowed_ctl","pin_out_value": begin
       end
       "key_invert_ctl": begin
       end
@@ -91,6 +87,9 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;  //This check is done in sequence
       end
       "key_intr_status": begin
+      end
+      "pin_in_value": begin
+        do_read_check = 1'b0;  //This check is done in sequence
       end
       default: begin
         `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))

@@ -28,6 +28,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      setup_interrupt(.enable(en_intr));
       // Enable resets.
       enabled_resets = resets_en & resets;
       `uvm_info(`gfn, $sformatf(
@@ -52,7 +53,8 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
                 UVM_MEDIUM)
       csr_wr(.ptr(ral.wake_info_capture_dis), .value(disable_wakeup_capture));
 
-      update_control_enables(1'b1);
+      low_power_hint = 1'b1;
+      update_control_csr();
 
       wait_for_csr_to_propagate_to_slow_domain();
 
@@ -61,21 +63,36 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       set_nvms_idle();
 
       // Wait for the slow state machine to be in low power.
-      wait (cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateLowPower);
+      wait(cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateLowPower);
 
       // This will send the wakeup and reset so they almost coincide.
       fork
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_reset);
           cfg.pwrmgr_vif.update_resets(resets);
-          cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
+          if (power_glitch_reset) begin
+            `uvm_info(`gfn, "Sending power glitch", UVM_MEDIUM)
+            cfg.pwrmgr_vif.glitch_power_reset();
+          end
+          if (escalation_reset)
+            send_escalation_reset();
+          `uvm_info(`gfn, $sformatf(
+                    "Sending reset=%b, power_glitch=%b, escalation=%b",
+                    resets,
+                    power_glitch_reset,
+                    escalation_reset
+                    ), UVM_MEDIUM)
         end
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
           cfg.pwrmgr_vif.update_wakeups(wakeups);
+          `uvm_info(`gfn, $sformatf("Sending wakeup=%b", wakeups), UVM_MEDIUM)
         end
       join
 
+      if (cfg.en_cov) begin
+        cov.reset_wakeup_distance_cg.sample(cycles_before_reset - cycles_before_wakeup);
+      end
       // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
       // This read will not work in the chip, since the processor will be asleep.
       cfg.slow_clk_rst_vif.wait_clks(4);
@@ -92,8 +109,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
                    .err_msg("failed reset_status check"));
 
       check_wake_info(.reasons(enabled_wakeups), .prior_reasons(1'b0), .fall_through(1'b0),
-                      .prior_fall_through(1'b0), .abort(1'b0),
-                      .prior_abort(1'b0));
+                      .prior_fall_through(1'b0), .abort(1'b0), .prior_abort(1'b0));
 
       // This is the expected side-effect of the low power entry reset, since the source of the
       // non-aon wakeup sources will deassert it as a consequence of their reset.
@@ -104,8 +120,15 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       csr_rd_check(.ptr(ral.reset_status[0]), .compare_value('0));
       csr_rd_check(.ptr(ral.wake_status[0]), .compare_value('0));
 
-      // Wait for interrupt to be generated whether or not it is enabled.
       cfg.slow_clk_rst_vif.wait_clks(10);
+      // An interrupt will be generated depending on the exact timing of the slow fsm getting
+      // the reset and wakeup. We choose not to predict it here (it is checked on other tests).
+      // Instead, we just check if the interrupt status is asserted and it is enabled the
+      // output interrupt is active.
+      check_and_clear_interrupt(.expected(1'b1), .check_expected('0));
+      // Clear hardware resets: if they are enabled they are cleared when rst_lc_req[1] goes active,
+      // but this makes sure they are cleared even if none is enabled for the next round.
+      cfg.pwrmgr_vif.update_resets('0);
     end
   endtask
 

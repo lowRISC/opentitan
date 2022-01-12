@@ -21,15 +21,15 @@ package edn_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint     NUM_ENDPOINTS = 1;
-  parameter string    LIST_OF_ALERTS[] = {"recov_alert","fatal_alert"};
-  parameter uint     NUM_ALERTS       = 2;
+  parameter uint     MIN_NUM_ENDPOINTS = 1;
+  parameter uint     MAX_NUM_ENDPOINTS = 7;
+  parameter string   LIST_OF_ALERTS[]  = {"recov_alert","fatal_alert"};
+  parameter uint     NUM_ALERTS        = 2;
 
   // types
   typedef enum int {
     CmdReqDone  = 0,
-    EBusChkFail = 1,
-    FifoErr     = 2
+    FifoErr     = 1
   } edn_intr_e;
 
   typedef enum int {

@@ -8,12 +8,15 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 
 // Values of `flash_ctrl_partition_t` constants must be distinct from each
 // other, and `kFlashCtrlRegionInfo* >> 1` should give the correct
@@ -208,15 +211,101 @@ static uint32_t info_page_addr(flash_ctrl_info_page_t info_page) {
   const uint32_t bank_index =
       bitfield_bit32_read(info_page, FLASH_CTRL_INFO_PAGE_BIT_BANK);
   const uint32_t page_index =
-      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_INDEX);
+      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PAGE);
   return kMemBase + bank_index * FLASH_CTRL_PARAM_BYTES_PER_BANK +
          page_index * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+}
+
+/**
+ * A struct for storing config and config write-enable register addresses of an
+ * info page.
+ */
+typedef struct info_cfg_regs {
+  /**
+   * Config write-enable register address.
+   */
+  uint32_t cfg_wen_addr;
+  /**
+   * Config register address.
+   */
+  uint32_t cfg_addr;
+} info_cfg_regs_t;
+
+/**
+ * Returns config and config write-enable register addresses of an info page.
+ *
+ * Note: This function only supports info pages of type 0.
+ *
+ * @param info_page An info page.
+ * @return Config and config write-enable register addresses of the info page.
+ */
+static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
+  // For each bank and info page type, there are N config regwen registers
+  // followed by N config registers, where N is the number pages available for
+  // the info page type. These "blocks" of registers are mapped to a contiguous
+  // address space by bank number starting with config regwen registers for page
+  // 0-9, type 0, bank 0, followed by config registers for page 0-9, type 0,
+  // bank 0, and so on.
+  enum {
+    kBankOffset = FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET -
+                  FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET,
+    kPageOffset = sizeof(uint32_t),
+  };
+  const uint32_t bank_index =
+      bitfield_bit32_read(info_page, FLASH_CTRL_INFO_PAGE_BIT_BANK);
+  const uint32_t page_index =
+      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PAGE);
+  const uint32_t pre_addr =
+      kBase + bank_index * kBankOffset + page_index * kPageOffset;
+  return (info_cfg_regs_t){
+      .cfg_wen_addr = pre_addr + FLASH_CTRL_BANK0_INFO0_REGWEN_0_REG_OFFSET,
+      .cfg_addr =
+          pre_addr + FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET,
+  };
+}
+
+/**
+ * Disables all access to a page until next reset.
+ *
+ * It's the responsibility of the caller to call `sec_mmio_write_increment()`
+ * with the correct value.
+ *
+ * @param info_page An info page.
+ */
+static void page_lockdown(flash_ctrl_info_page_t info_page) {
+  const info_cfg_regs_t regs = info_cfg_regs(info_page);
+  sec_mmio_write32_shadowed(regs.cfg_addr, 0);
+  sec_mmio_write32(regs.cfg_wen_addr, 0);
 }
 
 void flash_ctrl_init(void) {
   // Initialize the flash controller.
   abs_mmio_write32(kBase + FLASH_CTRL_INIT_REG_OFFSET,
-                   bitfield_bit32_write(0u, FLASH_CTRL_INIT_VAL_BIT, true));
+                   bitfield_bit32_write(0, FLASH_CTRL_INIT_VAL_BIT, true));
+  // Disable all access to the silicon creator secret info page.
+  page_lockdown(kFlashCtrlInfoPageCreatorSecret);
+  sec_mmio_write_increment(2);
+  // Configure default scrambling, ECC, and HE settings for the data partition.
+  uint32_t otp_val =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+  flash_ctrl_cfg_t data_default_cfg = {
+      .scrambling =
+          bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
+      .ecc = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
+      .he = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE),
+  };
+  flash_ctrl_data_default_cfg_set(data_default_cfg);
+  // Configure scrambling, ECC, and HE for `boot_data` pages.
+  otp_val =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET);
+  flash_ctrl_cfg_t boot_data_cfg = {
+      .scrambling =
+          bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
+      .ecc = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
+      .he = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE),
+  };
+  flash_ctrl_info_cfg_set(kFlashCtrlInfoPageBootData0, boot_data_cfg);
+  flash_ctrl_info_cfg_set(kFlashCtrlInfoPageBootData1, boot_data_cfg);
 }
 
 void flash_ctrl_status_get(flash_ctrl_status_t *status) {
@@ -318,59 +407,28 @@ void flash_ctrl_exec_set(flash_ctrl_exec_t enable) {
   sec_mmio_write_increment(1);
 }
 
-/**
- * A struct for storing config and config write-enable register addresses of an
- * info page.
- */
-typedef struct info_cfg_regs {
-  /**
-   * Config write-enable register address.
-   */
-  uint32_t cfg_wen_addr;
-  /**
-   * Config register address.
-   */
-  uint32_t cfg_addr;
-} info_cfg_regs_t;
-
-/**
- * Returns config and config write-enable register addresses of an info page.
- *
- * Note: This function only supports info pages of type 0.
- *
- * @param info_page An info page.
- * @return Config and config write-enable register addresses of the info page.
- */
-static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
-  // For each bank and info page type, there are N config regwen registers
-  // followed by N config registers, where N is the number pages available for
-  // the info page type. These "blocks" of registers are mapped to a contiguous
-  // address space by bank number starting with config regwen registers for page
-  // 0-9, type 0, bank 0, followed by config registers for page 0-9, type 0,
-  // bank 0, and so on.
-  enum {
-    kBankOffset = FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET -
-                  FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET,
-    kPageOffset = sizeof(uint32_t),
-  };
-  const uint32_t bank_index =
-      bitfield_bit32_read(info_page, FLASH_CTRL_INFO_PAGE_BIT_BANK);
-  const uint32_t page_index =
-      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_INDEX);
-  const uint32_t pre_addr =
-      kBase + bank_index * kBankOffset + page_index * kPageOffset;
-  return (info_cfg_regs_t){
-      .cfg_wen_addr = pre_addr + FLASH_CTRL_BANK0_INFO0_REGWEN_0_REG_OFFSET,
-      .cfg_addr =
-          pre_addr + FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET,
-  };
+void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms) {
+  // Read first to preserve ECC, scrambling, and high endurance bits.
+  uint32_t reg =
+      sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET);
+  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_RD_EN_BIT,
+                             perms.read == kHardenedBoolTrue);
+  reg =
+      bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_PROG_EN_BIT,
+                           perms.write == kHardenedBoolTrue);
+  reg =
+      bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_ERASE_EN_BIT,
+                           perms.erase == kHardenedBoolTrue);
+  sec_mmio_write32_shadowed(
+      kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, reg);
+  sec_mmio_write_increment(1);
 }
 
-void flash_ctrl_info_mp_set(flash_ctrl_info_page_t info_page,
-                            flash_ctrl_mp_t perms) {
-  const uint32_t addr = info_cfg_regs(info_page).cfg_addr;
+void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
+                               flash_ctrl_perms_t perms) {
+  const uint32_t cfg_addr = info_cfg_regs(info_page).cfg_addr;
   // Read first to preserve ECC, scrambling, and high endurance bits.
-  uint32_t reg = sec_mmio_read32(addr);
+  uint32_t reg = sec_mmio_read32(cfg_addr);
   reg = bitfield_bit32_write(
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_EN_0_BIT, true);
   reg = bitfield_bit32_write(
@@ -382,6 +440,63 @@ void flash_ctrl_info_mp_set(flash_ctrl_info_page_t info_page,
   reg = bitfield_bit32_write(
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ERASE_EN_0_BIT,
       perms.erase == kHardenedBoolTrue);
-  sec_mmio_write32_shadowed(addr, reg);
+  sec_mmio_write32_shadowed(cfg_addr, reg);
   sec_mmio_write_increment(1);
+}
+
+void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg) {
+  // Read first to preserve permission bits.
+  uint32_t reg =
+      sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET);
+  reg = bitfield_bit32_write(reg,
+                             FLASH_CTRL_DEFAULT_REGION_SHADOWED_SCRAMBLE_EN_BIT,
+                             cfg.scrambling == kMultiBitBool8True);
+  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_ECC_EN_BIT,
+                             cfg.ecc == kMultiBitBool8True);
+  reg = bitfield_bit32_write(reg, FLASH_CTRL_DEFAULT_REGION_SHADOWED_HE_EN_BIT,
+                             cfg.he == kMultiBitBool8True);
+  sec_mmio_write32_shadowed(
+      kBase + FLASH_CTRL_DEFAULT_REGION_SHADOWED_REG_OFFSET, reg);
+  sec_mmio_write_increment(1);
+}
+
+void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
+                             flash_ctrl_cfg_t cfg) {
+  const uint32_t cfg_addr = info_cfg_regs(info_page).cfg_addr;
+  // Read first to preserve permission bits.
+  uint32_t reg = sec_mmio_read32(cfg_addr);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_EN_0_BIT, true);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_SCRAMBLE_EN_0_BIT,
+      cfg.scrambling == kMultiBitBool8True);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_ECC_EN_0_BIT,
+      cfg.ecc == kMultiBitBool8True);
+  reg = bitfield_bit32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_HE_EN_0_BIT,
+      cfg.he == kMultiBitBool8True);
+  sec_mmio_write32_shadowed(cfg_addr, reg);
+  sec_mmio_write_increment(1);
+}
+
+/**
+ * Information pages that should be locked by ROM_EXT before handing over
+ * execution to the first owner boot stage. See
+ * `flash_ctrl_creator_info_pages_lockdown()`.
+ *
+ * Note: This array does not include `kFlashCtrlInfoPageCreatorSecret` since
+ * it's locked in `flash_ctrl_init()`.
+ */
+static const flash_ctrl_info_page_t kInfoPagesNoOwnerAccess[] = {
+    kFlashCtrlInfoPageOwnerSecret, kFlashCtrlInfoPageWaferAuthSecret,
+    kFlashCtrlInfoPageBootData0,   kFlashCtrlInfoPageBootData1,
+    kFlashCtrlInfoPageOwnerSlot0,  kFlashCtrlInfoPageOwnerSlot1,
+};
+
+void flash_ctrl_creator_info_pages_lockdown(void) {
+  for (size_t i = 0; i < ARRAYSIZE(kInfoPagesNoOwnerAccess); ++i) {
+    page_lockdown(kInfoPagesNoOwnerAccess[i]);
+  }
+  sec_mmio_write_increment(2 * ARRAYSIZE(kInfoPagesNoOwnerAccess));
 }

@@ -4,8 +4,8 @@
 
 # Mask ROM Linker Parameters
 #
-# See sw/device/exts/common/flash_link.ld for additional info about these
-# parameters.
+# See `sw/device/lib/testing/test_rom_ext/test_rom_ext.ld` for additional info
+# about these parameters.
 
 rom_linkfile = files(['mask_rom.ld'])
 rom_link_args = [
@@ -62,11 +62,13 @@ sw_silicon_creator_mask_rom_epmp = declare_dependency(
 mask_rom_epmp_test_lib = declare_dependency(
   sources: [
     hw_ip_aon_timer_reg_h,
-    hw_ip_entropy_src_reg_h,
+    hw_ip_ast_reg_h,
     hw_ip_csrng_reg_h,
     hw_ip_edn_reg_h,
+    hw_ip_entropy_src_reg_h,
+    hw_ip_otp_ctrl_reg_h,
+    hw_ip_sensor_ctrl_reg_h,
     hw_ip_sram_ctrl_reg_h,
-    hw_ip_pwrmgr_reg_h,
     'mask_rom_start.S',
   ],
   link_args: rom_link_args,
@@ -183,9 +185,12 @@ primitive_bootstrap_lib = declare_dependency(
 mask_rom_lib = declare_dependency(
   sources: [
     hw_ip_aon_timer_reg_h,
-    hw_ip_entropy_src_reg_h,
+    hw_ip_ast_reg_h,
     hw_ip_csrng_reg_h,
     hw_ip_edn_reg_h,
+    hw_ip_entropy_src_reg_h,
+    hw_ip_otp_ctrl_reg_h,
+    hw_ip_sensor_ctrl_reg_h,
     hw_ip_sram_ctrl_reg_h,
     'mask_rom_start.S',
   ],

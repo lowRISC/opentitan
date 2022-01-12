@@ -26,7 +26,7 @@ There are also some other standalone firmware images in the repository, which ar
 
 There are also prototype versions of some of the boot stages, now only used for testing:
 
-- [`sw/device/boot_rom`]({{< relref "sw/device/boot_rom/README.md" >}}) is a previous, testing-only version of the Mask ROM.
+- [`sw/device/lib/testing/test_rom`]({{< relref "sw/device/lib/testing/test_rom/README.md" >}}) is a previous, testing-only version of the Mask ROM.
 - `sw/device/exts` contains software for our prototype second boot stage images.
 
 ## Documentation Index

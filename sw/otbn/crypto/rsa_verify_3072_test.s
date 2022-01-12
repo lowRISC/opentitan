@@ -14,6 +14,13 @@
  * w0). See comment at the end of the file for expected values.
  */
 run_rsa_verify_3072:
+  /* Set pointers to buffers. */
+  la        x24, out_buf
+  la        x16, in_mod
+  la        x23, in_buf
+  la        x26, rr
+  la        x17, m0inv
+
   /* run modular exponentiation */
   jal      x1, modexp_var_3072_f4
 
@@ -28,6 +35,11 @@ run_rsa_verify_3072:
 
 
 .data
+
+/* Output buffer */
+.globl out_buf
+out_buf:
+  .zero 384
 
 /* Modulus of test key */
 .globl in_mod

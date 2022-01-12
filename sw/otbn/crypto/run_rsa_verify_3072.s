@@ -55,6 +55,13 @@ compute_constants:
  * @param[out] dmem[out_buf]: Recovered message digest (msg)
 */
 modexp:
+  /* Set pointers to buffers. */
+  la        x24, out_buf
+  la        x16, in_mod
+  la        x23, in_buf
+  la        x26, rr
+  la        x17, m0inv
+
   /* Get the exponent: x3 <= dmem[in_exp] */
   la       x2, in_exp
   lw       x3, 0(x2)
@@ -75,8 +82,9 @@ modexp_f4:
   ecall
 
 modexp_3:
-  /* e=3 exponentiation is unimplemented */
-  unimp
+  /* run modular exponentiation */
+  jal      x1, modexp_var_3072_3
+  ecall
 
 .data
 
@@ -114,4 +122,10 @@ rr:
 .globl in_buf
 .balign 32
 in_buf:
+.zero 384
+
+/* Output buffer. */
+.globl out_buf
+.balign 32
+out_buf:
 .zero 384

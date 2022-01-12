@@ -771,7 +771,10 @@
       }
     }
     { name: "COMBO_INTR_STATUS",
-      desc: "combo interrupt source",
+      desc: '''
+            Combo interrupt source. These registers will only be set if the
+            interrupt action is configured in the corresponding !!COM_OUT_CTL register.
+            ''',
       swaccess: "rw1c",
       hwaccess: "hwo",
       resval: "0",

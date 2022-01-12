@@ -50,10 +50,10 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_rsp_intg_gen.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_data_integ_dec.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_data_integ_enc.sv
-    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_64_57_dec.sv
-    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_64_57_enc.sv
-    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_39_32_dec.sv
-    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_39_32_enc.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_inv_64_57_dec.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_inv_64_57_enc.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_inv_39_32_dec.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_secded_inv_39_32_enc.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sparse_fsm_flop.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subreg.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subreg_ext.sv
@@ -141,9 +141,14 @@ for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
     sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_xor2/prim_xilinx_xor2/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
 
+    # Rename prim_sparse_fsm_flop instances. For some reason, sv2v decides to append a suffix.
+    sed -i 's/prim_sparse_fsm_flop_.*/prim_sparse_fsm_flop \#(/g' \
+        $LR_SYNTH_OUT_DIR/generated/${module}.v
+
     # Remove the StateEnumT parameter from prim_sparse_fsm_flop instances. Yosys doesn't seem to
     # support this.
     sed -i '/\.StateEnumT(logic \[.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i '/\.StateEnumT_StateWidth(.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
 done
 
 #-------------------------------------------------------------------------

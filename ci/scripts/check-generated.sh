@@ -14,20 +14,31 @@ is_clean() {
     return 1
 }
 
+# Clean up the repo so that we can check further auto-generated stuff
+cleanup() {
+    git clean -fxd >/dev/null
+    git reset --hard >/dev/null
+}
+
 # Run a command and then check the tree is still clean. Print a message if not.
 gen_and_check_clean() {
     thing="$1"
     shift
-    "$@" && is_clean
-    if [[ $? != 0 ]]; then
+    "$@" || {
+        echo -n "##vso[task.logissue type=error]"
+        echo "Failed to auto-generate $thing. (command: '$@')"
+        echo
+        cleanup
+        return 1
+    }
+
+    is_clean || {
         echo -n "##vso[task.logissue type=error]"
         echo "Auto-generated $thing not up-to-date. Regenerate with '$@'."
         echo
-        # Clean up the repo so that we can check further auto-generated stuff
-        git clean -fxd >/dev/null
-        git reset --hard >/dev/null
+        cleanup
         return 1
-    fi
+    }
 }
 
 # A specialized version of gen_and_check_clean for targets of the Makefile in hw

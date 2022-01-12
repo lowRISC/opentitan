@@ -48,6 +48,7 @@ for file in ../rtl/*.sv; do
     --define=SYNTHESIS \
     ../rtl/*_pkg.sv \
     ../vendor/lowrisc_ip/ip/prim/rtl/prim_ram_1p_pkg.sv \
+    ../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_pkg.sv \
     -I../vendor/lowrisc_ip/ip/prim/rtl \
     -I../vendor/lowrisc_ip/dv/sv/dv_utils \
     $file \

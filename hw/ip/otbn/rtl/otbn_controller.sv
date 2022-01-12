@@ -20,13 +20,13 @@ module otbn_controller
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
 ) (
-  input  logic  clk_i,
-  input  logic  rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
 
-  input  logic  start_i, // start the processing at address zero
-  output logic  locked_o, // OTBN in locked state and must be reset to perform any further actions
+  input  logic start_i,  // start the processing at address zero
+  output logic locked_o, // OTBN in locked state and must be reset to perform any further actions
 
-  output err_bits_t err_bits_o, // valid when done_o is asserted
+  output err_bits_t err_bits_o,           // valid when done_o is asserted
   output logic      recoverable_err_o,
   output logic      reg_intg_violation_o,
 
@@ -38,14 +38,14 @@ module otbn_controller
   input  logic                     insn_fetch_err_i,
 
   // Fetched/decoded instruction
-  input  logic                     insn_valid_i,
-  input  logic                     insn_illegal_i,
-  input  logic [ImemAddrWidth-1:0] insn_addr_i,
+  input logic                     insn_valid_i,
+  input logic                     insn_illegal_i,
+  input logic [ImemAddrWidth-1:0] insn_addr_i,
 
   // Decoded instruction data
-  input insn_dec_base_t       insn_dec_base_i,
-  input insn_dec_bignum_t     insn_dec_bignum_i,
-  input insn_dec_shared_t     insn_dec_shared_i,
+  input insn_dec_base_t   insn_dec_base_i,
+  input insn_dec_bignum_t insn_dec_bignum_i,
+  input insn_dec_shared_t insn_dec_shared_i,
 
   // Base register file
   output logic [4:0]               rf_base_wr_addr_o,
@@ -63,8 +63,8 @@ module otbn_controller
   input  logic [BaseIntgWidth-1:0] rf_base_rd_data_b_intg_i,
   output logic                     rf_base_rd_commit_o,
 
-  input  logic         rf_base_call_stack_err_i,
-  input  logic         rf_base_rd_data_err_i,
+  input logic rf_base_call_stack_err_i,
+  input logic rf_base_rd_data_err_i,
 
   // Bignum register file (WDRs)
   output logic [4:0]         rf_bignum_wr_addr_o,
@@ -81,7 +81,7 @@ module otbn_controller
   output logic               rf_bignum_rd_en_b_o,
   input  logic [ExtWLEN-1:0] rf_bignum_rd_data_b_intg_i,
 
-  input  logic               rf_bignum_rd_data_err_i,
+  input logic rf_bignum_rd_data_err_i,
 
   // Execution units
 
@@ -138,14 +138,16 @@ module otbn_controller
   input  logic        illegal_bus_access_i,
   input  logic        lifecycle_escalation_i,
   input  logic        software_errs_fatal_i,
+  input  logic        start_stop_state_error_i,
+  input  logic        otbn_scramble_state_error_i,
 
-  input  logic [1:0]  sideload_key_shares_valid_i,
+  input logic [1:0] sideload_key_shares_valid_i,
 
   // Prefetch stage control
   output logic                     prefetch_en_o,
   output logic                     prefetch_loop_active_o,
   output logic [31:0]              prefetch_loop_iterations_o,
-  output logic [ImemAddrWidth-1:0] prefetch_loop_end_addr_o,
+  output logic [ImemAddrWidth:0]   prefetch_loop_end_addr_o,
   output logic [ImemAddrWidth-1:0] prefetch_loop_jump_addr_o
 );
   otbn_state_e state_q, state_d;
@@ -157,6 +159,7 @@ module otbn_controller
   logic recoverable_err;
   logic done_complete;
   logic executing;
+  logic state_error;
 
   logic                     insn_fetch_req_valid_raw;
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr_last;
@@ -192,6 +195,7 @@ module otbn_controller
   logic                                ispr_wr_insn, ispr_rd_insn;
   logic                                ispr_wr_base_insn;
   logic                                ispr_wr_bignum_insn;
+  logic                                ispr_rd_bignum_insn;
 
   logic lsu_load_req_raw;
   logic lsu_store_req_raw;
@@ -238,6 +242,14 @@ module otbn_controller
   logic key_invalid, key_invalid_err;
 
   logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
+
+  // If we are doing an indirect lookup from the bignum register file, it's possible that the
+  // address that we use for the lookup is architecturally unknown. This happens if it came from x1
+  // and we've underflowed the call stack. When this happens, we want to ignore any read data
+  // integrity errors since the read from the bignum register file didn't happen architecturally
+  // anyway.
+  logic ignore_bignum_rd_errs;
+  logic rf_bignum_rd_data_err;
 
   logic [31:0] insn_cnt_d, insn_cnt_q;
   logic        insn_cnt_clear;
@@ -303,7 +315,8 @@ module otbn_controller
     err_bits_en              = 1'b0;
     prefetch_en_o            = 1'b0;
 
-    // TODO: Harden state machine
+    state_error = 1'b0;
+
     unique case (state_q)
       OtbnStateHalt: begin
         if (start_i) begin
@@ -331,7 +344,7 @@ module otbn_controller
           if (stall) begin
             // When stalling don't request a new fetch and don't clear response either to keep
             // current instruction.
-            state_d               = OtbnStateStall;
+            state_d                  = OtbnStateStall;
             insn_fetch_req_valid_raw = 1'b0;
             insn_fetch_resp_clear_o  = 1'b0;
           end else begin
@@ -369,7 +382,9 @@ module otbn_controller
         insn_fetch_req_valid_raw = 1'b0;
         state_d                  = OtbnStateLocked;
       end
-      default: ;
+      default: begin
+        state_error = 1'b1;
+      end
     endcase
 
     // On any error immediately halt, either going to OtbnStateLocked or OtbnStateHalt depending on
@@ -426,9 +441,10 @@ module otbn_controller
   assign err_bits.fatal_software       = software_err & software_errs_fatal_i;
   assign err_bits.lifecycle_escalation = lifecycle_escalation_i;
   assign err_bits.illegal_bus_access   = illegal_bus_access_i;
-  assign err_bits.bad_internal_state   = 0;
+  assign err_bits.bad_internal_state   = start_stop_state_error_i | state_error |
+                                          otbn_scramble_state_error_i;
   assign err_bits.bus_intg_violation   = bus_intg_violation_i;
-  assign err_bits.reg_intg_violation   = rf_base_rd_data_err_i | rf_bignum_rd_data_err_i;
+  assign err_bits.reg_intg_violation   = rf_base_rd_data_err_i | rf_bignum_rd_data_err;
   assign err_bits.dmem_intg_violation  = lsu_rdata_err_i;
   assign err_bits.imem_intg_violation  = insn_fetch_err_i;
   assign err_bits.key_invalid          = key_invalid_err;
@@ -458,6 +474,7 @@ module otbn_controller
   assign fatal_err = |{err_bits.fatal_software,
                        err_bits.lifecycle_escalation,
                        err_bits.illegal_bus_access,
+                       err_bits.bad_internal_state ,
                        err_bits.bus_intg_violation,
                        err_bits.reg_intg_violation,
                        err_bits.dmem_intg_violation,
@@ -467,7 +484,7 @@ module otbn_controller
 
   assign reg_intg_violation_o = err_bits.reg_intg_violation;
 
-  if (SecWipeEn) begin: gen_sec_wipe
+  if (SecWipeEn) begin : gen_sec_wipe
     err_bits_t err_bits_d, err_bits_q;
     logic      recoverable_err_d, recoverable_err_q;
 
@@ -486,8 +503,7 @@ module otbn_controller
       end
     end
 
-  end
-  else begin: gen_bypass_sec_wipe
+  end else begin : gen_bypass_sec_wipe
     logic unused_err_bits_en;
 
     assign unused_err_bits_en = err_bits_en;
@@ -504,20 +520,27 @@ module otbn_controller
   `ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
   `ASSERT(SoftwareErrIfNonInsnAddrSoftwareErr, non_insn_addr_software_err |-> software_err)
 
-  `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun,
-                                                OtbnStateStall, OtbnStateLocked})
+  `ASSERT(ControllerStateValid,
+          state_q inside {OtbnStateHalt, OtbnStateRun, OtbnStateStall, OtbnStateLocked})
   // Branch only takes effect in OtbnStateRun so must not go into stall state for branch
   // instructions.
   `ASSERT(NoStallOnBranch,
       insn_valid_i & insn_dec_shared_i.branch_insn |-> state_q != OtbnStateStall)
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= OtbnStateHalt;
-    end else begin
-      state_q <= state_d;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateControllerWidth-1:0] state_raw_q;
+  assign state_q = otbn_state_e'(state_raw_q);
+  prim_sparse_fsm_flop #(
+    .StateEnumT(otbn_state_e),
+    .Width(StateControllerWidth),
+    .ResetValue(StateControllerWidth'(OtbnStateHalt))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .state_i ( state_d     ),
+    .state_o ( state_raw_q )
+  );
 
   assign insn_cnt_clear = state_reset_i | (state_q == OtbnStateLocked) | insn_cnt_clear_i;
 
@@ -549,23 +572,23 @@ module otbn_controller
     .clk_i,
     .rst_ni,
 
-    .state_reset_i       (loop_reset),
+    .state_reset_i(loop_reset),
 
     .insn_valid_i,
     .insn_addr_i,
-    .next_insn_addr_i    (next_insn_addr),
+    .next_insn_addr_i(next_insn_addr),
 
-    .loop_start_req_i    (loop_start_req),
-    .loop_start_commit_i (loop_start_commit),
-    .loop_bodysize_i     (loop_bodysize),
-    .loop_iterations_i   (loop_iterations),
+    .loop_start_req_i   (loop_start_req),
+    .loop_start_commit_i(loop_start_commit),
+    .loop_bodysize_i    (loop_bodysize),
+    .loop_iterations_i  (loop_iterations),
 
-    .loop_jump_o         (loop_jump),
-    .loop_jump_addr_o    (loop_jump_addr),
-    .loop_err_o          (loop_err),
+    .loop_jump_o     (loop_jump),
+    .loop_jump_addr_o(loop_jump_addr),
+    .loop_err_o      (loop_err),
 
-    .jump_or_branch_i    (jump_or_branch),
-    .otbn_stall_i        (stall),
+    .jump_or_branch_i(jump_or_branch),
+    .otbn_stall_i    (stall),
 
     .prefetch_loop_active_o,
     .prefetch_loop_iterations_o,
@@ -752,8 +775,8 @@ module otbn_controller
   end
 
   for (genvar i = 0; i < BaseWordsPerWLEN; ++i) begin : g_rf_bignum_rd_data
-    assign rf_bignum_rd_data_a_no_intg[i * 32 +: 32] = rf_bignum_rd_data_a_intg_i[i * 39 +: 32];
-    assign rf_bignum_rd_data_b_no_intg[i * 32 +: 32] = rf_bignum_rd_data_b_intg_i[i * 39 +: 32];
+    assign rf_bignum_rd_data_a_no_intg[i*32+:32] = rf_bignum_rd_data_a_intg_i[i*39+:32];
+    assign rf_bignum_rd_data_b_no_intg[i*32+:32] = rf_bignum_rd_data_b_intg_i[i*39+:32];
   end
 
   assign rf_bignum_rd_addr_a_o = insn_dec_bignum_i.rf_a_indirect ? rf_base_rd_data_a_no_intg[4:0] :
@@ -890,10 +913,12 @@ module otbn_controller
 
   assign rf_a_indirect_err = insn_dec_bignum_i.rf_a_indirect    &
                              (|rf_base_rd_data_a_no_intg[31:5]) &
+                             ~rf_base_call_stack_err_i          &
                              rf_base_rd_en_a_o;
 
   assign rf_b_indirect_err = insn_dec_bignum_i.rf_b_indirect    &
                              (|rf_base_rd_data_b_no_intg[31:5]) &
+                             ~rf_base_call_stack_err_i          &
                              rf_base_rd_en_b_o;
 
   assign rf_d_indirect_err = insn_dec_bignum_i.rf_d_indirect    &
@@ -902,6 +927,12 @@ module otbn_controller
 
   assign rf_indirect_err =
       insn_valid_i & (rf_a_indirect_err | rf_b_indirect_err | rf_d_indirect_err);
+
+  assign ignore_bignum_rd_errs = (insn_dec_bignum_i.rf_a_indirect |
+                                  insn_dec_bignum_i.rf_b_indirect) &
+                                 rf_base_call_stack_err_i;
+
+  assign rf_bignum_rd_data_err = rf_bignum_rd_data_err_i & ~ignore_bignum_rd_errs;
 
   // CSR/WSR/ISPR handling
   // ISPRs (Internal Special Purpose Registers) are the internal registers. CSRs and WSRs are the
@@ -916,7 +947,7 @@ module otbn_controller
     csr_illegal_addr    = 1'b0;
 
     unique case (csr_addr)
-      CsrFlags, CsrFg0, CsrFg1 : begin
+      CsrFlags, CsrFg0, CsrFg1: begin
         ispr_addr_base      = IsprFlags;
         ispr_word_addr_base = '0;
       end
@@ -1024,7 +1055,7 @@ module otbn_controller
                                                       rf_bignum_rd_data_a_no_intg;
 
   // Invalid key only becomes an error if we're trying to read it
-  assign key_invalid_err = ispr_rd_insn & insn_valid_i & key_invalid;
+  assign key_invalid_err = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
 
   assign ispr_illegal_addr = insn_dec_shared_i.subset == InsnSubsetBase ? csr_illegal_addr :
                                                                           wsr_illegal_addr;
@@ -1041,6 +1072,7 @@ module otbn_controller
     ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBase) & (csr_addr != CsrRndPrefetch);
 
   assign ispr_wr_bignum_insn = ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBignum);
+  assign ispr_rd_bignum_insn = ispr_rd_insn & (insn_dec_shared_i.subset == InsnSubsetBignum);
 
   assign ispr_addr_o         = insn_dec_shared_i.subset == InsnSubsetBase ? ispr_addr_base :
                                                                             ispr_addr_bignum;

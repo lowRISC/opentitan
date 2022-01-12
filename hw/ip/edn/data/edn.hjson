@@ -50,6 +50,20 @@
       package: "edn_pkg",
     }
   ],
+  countermeasures: [
+    { name: "FSM.SPARSE"
+      desc: "Sparse state machine implementation."
+    }
+    { name: "CTR.REDUN"
+      desc: "Counter hardening on the generate command maximum requests counter."
+    }
+    { name: "LOGIC.INTEGRITY"
+      desc: "Comparison on successive bus values for genbits returned from csrng that will destribute over the endpoint buses."
+    }
+    { name: "BUS.INTEGRITY"
+      desc: "Tilelink end-to-end bus integrity scheme."
+    }
+  ],
 
   regwidth: "32",
   registers: [
@@ -152,6 +166,38 @@
         }
       ]
     },
+    { name: "BOOT_INS_CMD",
+      desc: "EDN boot instantiate command register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [// Internal HW can modify status register
+                "excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "31:0",
+          name: "BOOT_INS_CMD",
+          desc: '''
+                This field is used as the value for Instantiate command at boot time.
+                '''
+         resval: 0x0000_0001
+        }
+      ]
+    },
+    { name: "BOOT_GEN_CMD",
+      desc: "EDN boot generate command register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [// Internal HW can modify status register
+                "excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "31:0",
+          name: "BOOT_GEN_CMD",
+          desc: '''
+                This field is used as the value for generate command at boot time.
+                '''
+         resval: 0x00ff_f003
+       }
+      ]
+    },
     { name: "SW_CMD_REQ",
       desc: "EDN csrng app command request register",
       swaccess: "wo",
@@ -175,6 +221,8 @@
       desc: "EDN command status register",
       swaccess: "ro",
       hwaccess: "hwo",
+      tags: [// Internal HW can modify status register
+                 "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "0",
           name: "CMD_RDY",
@@ -317,7 +365,7 @@
                 This bit will be set to one when an error has been detected for the
                 reseed command FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "1",
@@ -326,7 +374,7 @@
                 This bit will be set to one when an error has been detected for the
                 generate command FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "20",
@@ -334,7 +382,7 @@
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
                 EDN ack stage state machine. This error will signal a fatal alert.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "21",
@@ -342,7 +390,7 @@
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
                 EDN main stage state machine. This error will signal a fatal alert.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "22",
@@ -350,7 +398,7 @@
           desc: '''
                 This bit will be set to one when a hardened counter has detected an error
                 condition. This error will signal a fatal alert.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "28",
@@ -359,7 +407,7 @@
                 This bit will be set to one when any of the source bits (bits 0 through 1 of this
                 this register) are asserted as a result of an error pulse generated from
                 any full FIFO that has been recieved a write pulse.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "29",
@@ -368,7 +416,7 @@
                 This bit will be set to one when any of the source bits (bits 0 through 1 of this
                 this register) are asserted as a result of an error pulse generated from
                 any empty FIFO that has recieved a read pulse.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
         { bits: "30",
@@ -377,7 +425,7 @@
                 This bit will be set to one when any of the source bits (bits 0 through 1 of this
                 this register) are asserted as a result of an error pulse generated from
                 any FIFO where both the empty and full status bits are set.
-                This bit will stay set until firmware clears it.
+                This bit will stay set until the next reset.
                 '''
         }
       ]
@@ -387,6 +435,8 @@
       swaccess: "rw",
       hwaccess: "hro",
       hwqe: "true",
+      tags: [// Setting this register will force an unwanted fatal alert.
+                 "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
             bits: "4:0",

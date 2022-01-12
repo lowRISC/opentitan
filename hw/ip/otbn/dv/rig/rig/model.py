@@ -246,6 +246,10 @@ class Model:
         wsrs.touch_addr(0x1)        # RND
         wsrs.touch_addr(0x2)        # URND
         wsrs.touch_addr(0x3)        # ACC
+        wsrs.touch_addr(0x4)        # KEY_S0_L
+        wsrs.touch_addr(0x5)        # KEY_S0_H
+        wsrs.touch_addr(0x6)        # KEY_S1_L
+        wsrs.touch_addr(0x7)        # KEY_S1_H
 
         # The current PC (the address of the next instruction that needs
         # generating)

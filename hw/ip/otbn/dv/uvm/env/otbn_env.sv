@@ -12,6 +12,7 @@ class otbn_env extends cip_base_env #(
 
   otbn_model_agent   model_agent;
   otbn_trace_monitor trace_monitor;
+  key_sideload_agent keymgr_sideload_agent;
 
   `uvm_component_new
 
@@ -24,6 +25,10 @@ class otbn_env extends cip_base_env #(
     model_agent = otbn_model_agent::type_id::create("model_agent", this);
     uvm_config_db#(otbn_model_agent_cfg)::set(this, "model_agent*", "cfg", cfg.model_agent_cfg);
     cfg.model_agent_cfg.en_cov = cfg.en_cov;
+
+    keymgr_sideload_agent = key_sideload_agent::type_id::create("keymgr_sideload_agent", this);
+    uvm_config_db#(key_sideload_agent_cfg)::set(this, "keymgr_sideload_agent*",
+                                                "cfg", cfg.keymgr_sideload_agent_cfg);
 
     if (!uvm_config_db#(virtual otbn_trace_if)::get(this, "", "trace_vif", cfg.trace_vif)) begin
       `uvm_fatal(`gfn, "failed to get otbn_trace_if handle from uvm_config_db")
@@ -64,6 +69,11 @@ class otbn_env extends cip_base_env #(
     model_agent.monitor.analysis_port.connect(scoreboard.model_fifo.analysis_export);
     trace_monitor.analysis_port.connect(scoreboard.trace_fifo.analysis_export);
     cfg.scoreboard = scoreboard;
+    virtual_sequencer.key_sideload_sequencer_h = keymgr_sideload_agent.sequencer;
+
+    // Configure the key sideload sequencer to use UVM_SEQ_ARB_STRICT_FIFO arbitration. This makes
+    // sure that we can inject our own sequence if we need to override the default for a bit.
+    keymgr_sideload_agent.sequencer.set_arbitration(UVM_SEQ_ARB_STRICT_FIFO);
   endfunction
 
   function void final_phase(uvm_phase phase);

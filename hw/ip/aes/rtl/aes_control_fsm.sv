@@ -392,7 +392,7 @@ module aes_control_fsm
         // Signal that we have used the current key, IV, data input to register status tracking.
         key_init_load =  cipher_dec_key_gen_i; // This key is no longer "new", but still clean.
         key_init_arm  = ~cipher_dec_key_gen_i; // The key is still "new", prevent partial updates.
-        iv_load       =  cipher_dec_key_gen_i & (doing_cbc_enc |
+        iv_load       = ~cipher_dec_key_gen_i & (doing_cbc_enc |
                                                  doing_cbc_dec |
                                                  doing_cfb_enc |
                                                  doing_cfb_dec |

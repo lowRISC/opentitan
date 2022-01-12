@@ -56,9 +56,9 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
       @(posedge (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheck)) begin
         if (cfg.en_cov) begin
           foreach (cov.wakeup_intr_cg_wrap[i]) begin
-            cov.wakeup_intr_cg_wrap[i].sample(cfg.pwrmgr_vif.wakeup_status[i],
-                                              cfg.pwrmgr_vif.intr_enable,
-                                              cfg.pwrmgr_vif.intr_wakeup);
+            cov.wakeup_intr_cg_wrap[i].sample(
+                cfg.pwrmgr_vif.wakeup_status[i], cfg.pwrmgr_vif.intr_enable,
+                cfg.pwrmgr_vif.intr_status, cfg.pwrmgr_vif.intr_wakeup);
           end
         end
       end
@@ -69,34 +69,47 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
       @(posedge cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::LowPwrEntry) begin
         if (cfg.en_cov) begin
           // At this point pwrmgr is asleep.
-          cov.control_cg.sample(cfg.pwrmgr_vif.control_enables, 1'b1);
+          cov.control_cg.sample(control_enables, 1'b1);
         end
       end
   endtask
 
-  // Resets are triggered without deep sleep at this point.
-  // TODO(maturana) Figure out how to determine a reset triggered while in sleep mode.
+  local task sample_reset_coverage(bit sleep);
+    cov.hw_reset_0_cg.sample(cfg.pwrmgr_vif.rstreqs_i[0], cfg.pwrmgr_vif.reset_en[0], sleep);
+    cov.hw_reset_1_cg.sample(cfg.pwrmgr_vif.rstreqs_i[1], cfg.pwrmgr_vif.reset_en[1], sleep);
+    cov.rstmgr_sw_reset_cg.sample(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True);
+    cov.main_power_reset_cg.sample(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx],
+                                   sleep);
+    cov.esc_reset_cg.sample(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx], sleep);
+    `uvm_info(`gfn, $sformatf(
+              {
+                "reset_cg sample with hw_resets=%b, hw_resets_en=%b, ",
+                "esc_rst=%b, main_pwr_rst=%b, sw_rst=%b, sleep=%b"
+              },
+              cfg.pwrmgr_vif.rstreqs_i,
+              cfg.pwrmgr_vif.reset_en,
+              cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx],
+              cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx],
+              cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True,
+              sleep
+              ), UVM_MEDIUM)
+  endtask
+
   task reset_coverage_collector();
-    forever
-      @(posedge cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::HwReq) begin
-        if (cfg.en_cov) begin
-          cov.reset_cg.sample(
-              .hw_resets(cfg.pwrmgr_vif.rstreqs_i), .hw_resets_en(cfg.pwrmgr_vif.reset_en),
-              .esc_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx]),
-              .main_pwr_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx]),
-              .sw_rst(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True), .sleep(1'b0));
+    fork
+      forever
+        @(posedge cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::HwReq) begin
+          if (cfg.en_cov) begin
+            sample_reset_coverage(.sleep(1'b0));
+          end
         end
-      end
-    forever
-      @(posedge cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateLowPower) begin
-        if (cfg.en_cov) begin
-          cov.reset_cg.sample(
-              .hw_resets(cfg.pwrmgr_vif.rstreqs_i), .hw_resets_en(cfg.pwrmgr_vif.reset_en),
-              .esc_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx]),
-              .main_pwr_rst(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx]),
-              .sw_rst(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True), .sleep(1'b1));
+      forever
+        @(posedge cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateLowPower) begin
+          if (cfg.en_cov) begin
+            sample_reset_coverage(.sleep(1'b1));
+          end
         end
-      end
+    join_none
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -131,13 +144,37 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
+        if (data_phase_write) begin
+          exp_intr &= ~item.a_data;
+        end else if (data_phase_read) begin
+          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+          `uvm_info(`gfn, $sformatf("Reading intr_state: expected %b, got %b", exp_intr, item.a_data
+                    ), UVM_MEDIUM)
+          foreach (exp_intr[i]) begin
+            if (cfg.en_cov) begin
+              cov.intr_cg.sample(i, intr_en[i], exp_intr[i]);
+              cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+            end
+            `DV_CHECK_EQ(item.d_data[i], exp_intr[i], $sformatf("Interrupt bit %0d", i));
+            `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & exp_intr[i]), $sformatf(
+                              "Interrupt_pin bit %0d", i));
+          end
+        end
         // rw1c: write 1 clears, write 0 is no-op.
         do_read_check = 1'b0;
       end
       "intr_enable": begin
-        // FIXME
       end
       "intr_test": begin
+        if (data_phase_write) begin
+          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+          exp_intr |= item.a_data;
+          if (cfg.en_cov) begin
+            foreach (exp_intr[i]) begin
+              cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], exp_intr[i]);
+            end
+          end
+        end
         // Write-only, so it can't be read.
         do_read_check = 1'b0;
       end
@@ -150,18 +187,16 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
         // Only some bits can be checked on reads. Bit 0 is cleared by hardware
         // on low power transition or when registering a valid reset.
         if (data_phase_write) begin
-          bit low_power_hint = get_field_val(ral.control.low_power_hint, item.a_data);
-          control_enables_t control_enables = '{
+          low_power_hint = get_field_val(ral.control.low_power_hint, item.a_data);
+          control_enables = '{
               core_clk_en: get_field_val(ral.control.core_clk_en, item.a_data),
               io_clk_en: get_field_val(ral.control.io_clk_en, item.a_data),
               usb_clk_en_lp: get_field_val(ral.control.usb_clk_en_lp, item.a_data),
               usb_clk_en_active: get_field_val(ral.control.usb_clk_en_active, item.a_data),
               main_pd_n: get_field_val(ral.control.main_pd_n, item.a_data)
           };
-          `uvm_info(`gfn, $sformatf("Writing control=0x%x, enables=%p", item.a_data, control_enables
-                    ), UVM_MEDIUM)
-          cfg.pwrmgr_vif.update_low_power_hint(low_power_hint);
-          cfg.pwrmgr_vif.update_control_enables(control_enables);
+          `uvm_info(`gfn, $sformatf("Writing low power hint=%b", low_power_hint), UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("Writing control_enables=%p", control_enables), UVM_MEDIUM)
           if (cfg.en_cov) begin
             // At this point the processor is not asleep.
             cov.control_cg.sample(control_enables, 1'b0);

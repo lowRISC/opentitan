@@ -10,6 +10,11 @@
  * @brief Shared macros and headers for DIFs.
  */
 
+#include <stdbool.h>
+
+#include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/multibits.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -81,6 +86,68 @@ typedef enum dif_toggle {
    */
   kDifToggleEnabled = 1,
 } dif_toggle_t;
+
+/**
+ * Checks if a DIF toggle type is valid.
+ *
+ * @param val A potential dif_toggle_t value.
+ * @return Bool indicating validity of toggle value.
+ */
+inline bool dif_is_valid_toggle(dif_toggle_t val) {
+  switch (val) {
+    case kDifToggleEnabled:
+      return true;
+    case kDifToggleDisabled:
+      return true;
+    default:
+      return false;
+  }
+}
+
+/**
+ * Converts a `dif_toggle_t` to a `bool`.
+ *
+ * @param val A dif_toggle_t value.
+ * @return Corresponding bool value.
+ */
+inline bool dif_toggle_to_bool(dif_toggle_t val) {
+  switch (val) {
+    case kDifToggleEnabled:
+      return true;
+    case kDifToggleDisabled:
+      return false;
+    default:
+      return false;
+  }
+}
+
+/**
+ * Converts a bool to a `dif_toggle_t`.
+ *
+ * @param val A bool value.
+ * @return Corresponding dif_toggle_t value.
+ */
+inline dif_toggle_t dif_bool_to_toggle(bool val) {
+  return val ? kDifToggleEnabled : kDifToggleDisabled;
+}
+
+/**
+ * Converts a multi-bit bool to a `dif_toggle_t`.
+ *
+ * @param val A multi-bit bool value.
+ * @return Corresponding dif_toggle_t value.
+ */
+inline dif_toggle_t dif_multi_bit_bool_to_toggle(multi_bit_bool_t val) {
+  switch (val) {
+    case kMultiBitBool4True:
+    case kMultiBitBool8True:
+    case kMultiBitBool12True:
+    case kMultiBitBool16True:
+      return kDifToggleEnabled;
+    default:
+      return kDifToggleDisabled;
+  }
+}
 
 #ifdef __cplusplus
 }  // extern "C"

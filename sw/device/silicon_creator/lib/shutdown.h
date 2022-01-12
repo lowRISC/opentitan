@@ -51,13 +51,57 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state);
  * Redact the specific error code.
  * Redact the specific error code and source modules.
  * Redact all error componens (general code, specific code and module).
+ *
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 5 -m 4 -n 32 \
+ *     -s 208548646 --language=c
+ *
+ * Hamming distance histogram:
+ *
+ *  0: --
+ *  1: --
+ *  2: --
+ *  3: --
+ *  4: --
+ *  5: --
+ *  6: --
+ *  7: --
+ *  8: --
+ *  9: --
+ * 10: --
+ * 11: --
+ * 12: --
+ * 13: --
+ * 14: |||||||||| (16.67%)
+ * 15: |||||||||||||||||||| (33.33%)
+ * 16: --
+ * 17: |||||||||||||||||||| (33.33%)
+ * 18: |||||||||| (16.67%)
+ * 19: --
+ * 20: --
+ * 21: --
+ * 22: --
+ * 23: --
+ * 24: --
+ * 25: --
+ * 26: --
+ * 27: --
+ * 28: --
+ * 29: --
+ * 30: --
+ * 31: --
+ * 32: --
+ *
+ * Minimum Hamming distance: 14
+ * Maximum Hamming distance: 18
+ * Minimum Hamming weight: 13
+ * Maximum Hamming weight: 18
  */
-// TODO(lowRISC/opentitan#7148): Choose values for configuration enums.
 typedef enum shutdown_error_redact {
-  kShutdownErrorRedactNone,
-  kShutdownErrorRedactError,
-  kShutdownErrorRedactModule,
-  kShutdownErrorRedactAll,
+  kShutdownErrorRedactNone = 0xe2290aa5,
+  kShutdownErrorRedactError = 0x3367d3d4,
+  kShutdownErrorRedactModule = 0x1e791123,
+  kShutdownErrorRedactAll = 0x48eb4bd9,
 } shutdown_error_redact_t;
 
 /**

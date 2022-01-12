@@ -41,7 +41,12 @@ module tb;
   pins_if #(NUM_GPIOS) gpio_if (.pins(gpio_pins));
 
   // dut
-  gpio dut (
+  gpio #(
+    // TODO: The scoreboard does not handle the 2 cycle delay yet, hence we disable the 2-flop
+    // synchronizers in the block level TB (they are enabled at the top). This should be aligned,
+    // so that synchronizers are always enabled.
+    .GpioAsyncOn(0)
+  ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),
 

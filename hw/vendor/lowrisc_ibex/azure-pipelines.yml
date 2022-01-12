@@ -88,6 +88,11 @@ jobs:
       git checkout "$RISCV_COMPLIANCE_GIT_VERSION"
     displayName: Get RISC-V Compliance test suite
 
+  - bash: |
+      # Build CoreMark without performance counter dump for co-simulation testing
+      make -C ./examples/sw/benchmarks/coremark SUPPRESS_PCOUNT_DUMP=1
+    displayName: Build CoreMark
+
   # Run Ibex RTL CI per supported configuration
   - template : ci/ibex-rtl-ci-steps.yml
     parameters:

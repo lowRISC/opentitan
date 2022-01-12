@@ -7,6 +7,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   // ext component cfgs
   rand otbn_model_agent_cfg model_agent_cfg;
 
+  rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
+
   `uvm_object_utils_begin(otbn_env_cfg)
   `uvm_object_utils_end
 
@@ -45,6 +47,11 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   // How often should we poll STATUS to detect completion, even though interrupts are enabled?
   int unsigned poll_despite_interrupts_pct = 10;
 
+  // Should we allow the sideload key not to be valid? If we do, we have to disable the exp_end_addr
+  // check (since we might stop in the middle of the operation by reading from the sideload key WSR
+  // when it isn't available).
+  int unsigned allow_no_sideload_key_pct = 50;
+
   // The hierarchical scope of the DUT instance in the testbench. This is used when constructing the
   // DPI wrapper (in otbn_env::build_phase) to tell it where to find the DUT for backdoor loading
   // memories. The default value matches the block-level testbench, but it can be overridden in a
@@ -69,7 +76,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // Tell the CIP base code what alert we generate if we see a TL fault.
     tl_intg_alert_name = "fatal";
 
-    model_agent_cfg = otbn_model_agent_cfg::type_id::create("model_agent_cfg");
+    model_agent_cfg  = otbn_model_agent_cfg  ::type_id::create("model_agent_cfg");
+    keymgr_sideload_agent_cfg = key_sideload_agent_cfg::type_id
+                                ::create("keymgr_sideload_agent_cfg");
 
     super.initialize(csr_base_addr);
 
@@ -86,6 +95,13 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     return key;
   endfunction
 
+  function logic [127:0] get_dmem_key();
+    logic [127:0] key;
+    string        key_hier = $sformatf("%s.u_dmem.key_i", dut_instance_hier);
+    `DV_CHECK_FATAL(uvm_hdl_read(key_hier, key), "Failed to read key from DMEM instance")
+    return key;
+  endfunction
+
   function logic [63:0] get_imem_nonce();
     logic [63:0] nonce;
     string       nonce_hier = $sformatf("%s.u_imem.nonce_i", dut_instance_hier);
@@ -93,10 +109,17 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     return nonce;
   endfunction
 
+  function logic [63:0] get_dmem_nonce();
+    logic [63:0] nonce;
+    string       nonce_hier = $sformatf("%s.u_dmem.nonce_i", dut_instance_hier);
+    `DV_CHECK_FATAL(uvm_hdl_read(nonce_hier, nonce), "Failed to read nonce from DMEM instance")
+    return nonce;
+  endfunction
+
   // Read a word from IMEM, descrambling but including integrity bits.
-  function logic [38:0] read_imem_word(bit [ImemIndexWidth-1:0] idx,
-                                       logic [127:0]            key,
-                                       logic [63:0]             nonce);
+  function logic [38:0] read_imem_word(bit [ImemIndexWidth-1:0]    idx,
+                                       logic [127:0]               key,
+                                       otbn_pkg::otbn_imem_nonce_t nonce);
 
     logic [ImemIndexWidth-1:0] phys_idx;
     logic [38:0]               scr_data, clr_data;
@@ -124,11 +147,41 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     return clr_data;
   endfunction
 
+  // Read a word from DMEM, descrambling but including integrity bits.
+  function logic [311:0] read_dmem_word(bit [DmemIndexWidth-1:0]    idx,
+                                        logic [127:0]               key,
+                                        otbn_pkg::otbn_dmem_nonce_t nonce);
+
+    logic [DmemIndexWidth-1:0] phys_idx;
+    logic [311:0]              scr_data, clr_data;
+
+    logic key_arr[], nonce_arr[], idx_arr[], phys_idx_arr[], scr_data_arr[], clr_data_arr[];
+
+    key_arr = new[128]; key_arr = {<<{key}};
+    nonce_arr = new[64]; nonce_arr = {<<{nonce}};
+    idx_arr = new[DmemIndexWidth]; idx_arr = {<<{idx}};
+
+    // Scramble the index to find the word in physical memory
+    phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, DmemIndexWidth, nonce_arr);
+    phys_idx = {<<{phys_idx_arr}};
+
+    // Read the memory at that location to get scrambled data
+    scr_data = dmem_util.read(BUS_AW'(phys_idx) * 32);
+    scr_data_arr = {<<{scr_data}};
+
+    // Descramble the data
+    clr_data_arr = sram_scrambler_pkg::decrypt_sram_data(scr_data_arr, 312, 39,
+                                                         idx_arr, DmemIndexWidth,
+                                                         key_arr, nonce_arr);
+    clr_data = {<<{clr_data_arr}};
+    return clr_data;
+  endfunction
+
   // Scramble and write a word to IMEM (including integrity bits)
-  function void write_imem_word(bit [ImemIndexWidth-1:0] idx,
-                                logic [38:0]             clr_data,
-                                logic [127:0]            key,
-                                logic [63:0]             nonce);
+  function void write_imem_word(bit [ImemIndexWidth-1:0]           idx,
+                                logic [38:0]                       clr_data,
+                                logic [127:0]                      key,
+                                otbn_pkg::otbn_imem_nonce_t        nonce);
 
     logic [ImemIndexWidth-1:0] phys_idx;
     logic [38:0]               scr_data;
@@ -152,6 +205,36 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
 
     // Write the scrambled data to memory
     imem_util.write(BUS_AW'(phys_idx) * 4, scr_data);
+  endfunction
+
+  // Scramble and write a word to DMEM (including integrity bits)
+  function void write_dmem_word(bit [DmemIndexWidth-1:0]    idx,
+                                logic [311:0]               clr_data,
+                                logic [127:0]               key,
+                                otbn_pkg::otbn_dmem_nonce_t nonce);
+
+    logic [DmemIndexWidth-1:0] phys_idx;
+    bit [311:0]               scr_data;
+
+    logic key_arr[], nonce_arr[], idx_arr[], phys_idx_arr[], scr_data_arr[], clr_data_arr[];
+
+    key_arr = new[128]; key_arr = {<<{key}};
+    nonce_arr = new[64]; nonce_arr = {<<{nonce}};
+    idx_arr = new[DmemIndexWidth]; idx_arr = {<<{idx}};
+
+    // Scramble the index to find the word in physical memory
+    phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, DmemIndexWidth, nonce_arr);
+    phys_idx = {<<{phys_idx_arr}};
+
+    // Scramble the data
+    clr_data_arr = {<<{clr_data}};
+    scr_data_arr = sram_scrambler_pkg::encrypt_sram_data(clr_data_arr, 312, 39,
+                                                         idx_arr, DmemIndexWidth,
+                                                         key_arr, nonce_arr);
+    scr_data = {<<{scr_data_arr}};
+
+    // Write the scrambled data to memory
+    dmem_util.write(BUS_AW'(phys_idx) * 32, scr_data);
   endfunction
 
 endclass

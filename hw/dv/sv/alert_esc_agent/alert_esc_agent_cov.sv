@@ -55,7 +55,8 @@ class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
 
   alert_handshake_complete_cg m_alert_handshake_complete_cg;
   esc_handshake_complete_cg   m_esc_handshake_complete_cg;
-  alert_esc_trans_cg          m_alert_esc_trans_cg;
+  alert_esc_trans_cg          m_alert_trans_cg;
+  alert_esc_trans_cg          m_esc_trans_cg;
   alert_ping_lpg_cg           m_alert_ping_lpg_cg;
   alert_lpg_cg                m_alert_lpg_cg;
 
@@ -64,7 +65,10 @@ class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    if (cfg.en_ping_cov) m_alert_esc_trans_cg = new();
+    if (cfg.en_ping_cov) begin
+      if (cfg.is_alert) m_alert_trans_cg = new();
+      else m_esc_trans_cg = new();
+    end
     if (cfg.en_lpg_cov && cfg.is_alert) begin
       m_alert_ping_lpg_cg = new();
       m_alert_lpg_cg = new();

@@ -76,6 +76,11 @@
       name: flash_ctrl_rand_ops
       uvm_test_seq: flash_ctrl_rand_ops_vseq
     }
+    {
+      name: flash_ctrl_sw_op
+      uvm_test_seq: flash_ctrl_sw_op_vseq
+      reseed: 5
+    }
   ]
 
   // List of regressions.

@@ -18,6 +18,7 @@ module top_earlgrey #(
   // parameters for uart2
   // parameters for uart3
   // parameters for gpio
+  parameter bit GpioGpioAsyncOn = 1,
   // parameters for spi_device
   // parameters for i2c0
   // parameters for i2c1
@@ -83,7 +84,7 @@ module top_earlgrey #(
   parameter int unsigned RvCoreIbexMHPMCounterWidth = 32,
   parameter bit RvCoreIbexRV32E = 0,
   parameter ibex_pkg::rv32m_e RvCoreIbexRV32M = ibex_pkg::RV32MSingleCycle,
-  parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BNone,
+  parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BOTEarlGrey,
   parameter ibex_pkg::regfile_e RvCoreIbexRegFile = ibex_pkg::RegFileFF,
   parameter bit RvCoreIbexBranchTargetALU = 1,
   parameter bit RvCoreIbexWritebackStage = 1,
@@ -1108,7 +1109,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   gpio #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[4:4])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[4:4]),
+    .GpioAsyncOn(GpioGpioAsyncOn)
   ) u_gpio (
 
       // Input

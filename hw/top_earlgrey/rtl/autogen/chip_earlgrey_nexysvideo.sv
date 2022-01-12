@@ -12,7 +12,7 @@
 module chip_earlgrey_nexysvideo #(
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
-  parameter BootRomInitFile = "boot_rom_fpga_nexysvideo.32.vmem",
+  parameter BootRomInitFile = "test_rom_fpga_nexysvideo.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
   parameter OtpCtrlMemInitFile = "otp_img_fpga_nexysvideo.vmem"
@@ -346,8 +346,8 @@ module chip_earlgrey_nexysvideo #(
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D1
       BidirStd, // SPI_DEV_D0
-      BidirTol, // USB_N
-      BidirTol, // USB_P
+      DualBidirTol, // USB_N
+      DualBidirTol, // USB_P
       InputStd  // POR_N
     }),
     .MioPadType ({

@@ -38,7 +38,22 @@
   sim_tops: ["pwm_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+    reseed: 50
+
+
+  component_a: "uvm_test_top.env.scoreboard"
+  id_a: _ALL_
+  verbosity_a: UVM_HIGH
+  phase_a: run
+  run_modes: [
+    {
+      name: set_verbosity_comp_a_uvm_high
+      run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
+    }
+  ]
+
+    run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
+
 
   // Default UVM test and seq class name.
   uvm_test: pwm_base_test

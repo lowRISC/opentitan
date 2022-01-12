@@ -61,6 +61,7 @@ module prim_xilinx_pad_wrapper
       .O ( in       )
     );
   end else if (PadType == BidirTol ||
+               PadType == DualBidirTol ||
                PadType == BidirOd ||
                PadType == BidirStd) begin : gen_bidir
 

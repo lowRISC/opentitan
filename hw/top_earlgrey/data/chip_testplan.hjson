@@ -1687,7 +1687,7 @@
             X-ref'ed with ROM_CTRL test/env.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_kmac_app_rom_test"]
     }
     {
       name: chip_sw_kmac_entropy
@@ -1695,11 +1695,11 @@
 
             Requires `EnMasking` parameter to be enabled.
             SW randomly configures the KMAC in any hashing mode/strength, and enable EDN mode.
-            Randomly enable/disable the `entropy_timer`.
+            Randomly enable/disable the `entropy_refresh`.
             // TODO - error handling is not complete, do not enable `wait_timer` yet.
             KMAC should send request to EDN once `CmdStart` is written, and should send out another
             request to EDN when either:
-              - `entropy_timer` runs down (assuming it is non-zero)
+              - kmac hash counter hits the configured threshold (assuming it is non-zero)
               - a hash operation is completed, KMAC will refresh its internal entropy state
             SW verifies that KMAC produces the correct digest value.
 
@@ -1715,7 +1715,7 @@
       name: chip_sw_kmac_edn_reset
       desc: '''Verify that the EDN clock / reset is connected to KMAC.
 
-            - Ensure that the `entropy_timer` resets when the EDN logic is held in reset.
+            // TODO: check if this can use connectivity test.
             '''
       milestone: V2
       tests: []
@@ -2026,7 +2026,7 @@
             - Verify that the CPU can fetch instructions from the ROM.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_rom_ctrl_integrity_check_test"]
     }
     {
       name: chip_rom_ctrl_ast_rom_cfg
@@ -2047,7 +2047,7 @@
               digest does not match the top 8 words of the ROM.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_rom_ctrl_integrity_check_test"]
     }
     {
       name: chip_sw_rom_ctrl_reset_glitch

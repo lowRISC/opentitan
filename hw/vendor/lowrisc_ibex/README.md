@@ -28,9 +28,9 @@ These are configurations on which lowRISC is focusing for performance evaluation
 | Config | "micro" | "small" | "maxperf" | "maxperf-pmp-bmfull" |
 | ------ | ------- | --------| ----------| -------------------- |
 | Features | RV32EC | RV32IMC, 3 cycle mult | RV32IMC, 1 cycle mult, Branch target ALU, Writeback stage | RV32IMCB, 1 cycle mult, Branch target ALU, Writeback stage, 16 PMP regions |
-| Performance (CoreMark/MHz) | 0.904 | 2.47 | 3.13 | 3.05 |
-| Area - Yosys (kGE) | 17.44 | 26.06 | 35.64 | 58.74 |
-| Area - Commercial (estimated kGE) | ~16 | ~24 | ~33 | ~54 |
+| Performance (CoreMark/MHz) | 0.904 | 2.47 | 3.13 | 3.13 |
+| Area - Yosys (kGE) | 16.85 | 26.60 | 32.48 | 66.02 |
+| Area - Commercial (estimated kGE) | ~15 | ~24 | ~30 | ~61 |
 | Verification status | Red | Green | Amber | Amber |
 
 Notes:
@@ -38,7 +38,6 @@ Notes:
 * Performance numbers are based on CoreMark running on the Ibex Simple System [platform](examples/simple_system/README.md).
   Note that different ISAs (use of B and C extensions) give the best results for different configurations.
   See the [Benchmarks README](examples/sw/benchmarks/README.md) for more information.
-  The "maxperf-pmp-bmfull" configuration sets a `SpecBranch` parameter in `ibex_core.sv`; this helps timing but has a small negative performance impact.
 * Yosys synthesis area numbers are based on the Ibex basic synthesis [flow](syn/README.md) using the latch-based register file.
 * Commercial synthesis area numbers are a rough estimate of what might be achievable with a commercial synthesis flow and technology library.
 * For comparison, the original "Zero-riscy" core yields an area of 23.14kGE using our Yosys synthesis flow.
@@ -47,8 +46,8 @@ Notes:
   Amber indicates that some verification has been performed, but the configuration is still experimental.
   Red indicates a configuration with minimal/no verification.
   Users must make their own assessment of verification readiness for any tapeout.
-* v0.92 of the RISC-V Bit Manipulation Extension is supported.
-  This is *not ratified* and there may be changes for the v1.0 ratified version.
+* v.1.0.0 of the RISC-V Bit-Manipulation Extension is supported as well as the remaining sub-extensions of draft v.0.93 of the bitmanip spec.
+  The latter are *not ratified* and there may be changes before ratification.
   See [Standards Compliance](https://ibex-core.readthedocs.io/en/latest/01_overview/compliance.html) in the Ibex documentation for more information.
 
 ## Documentation

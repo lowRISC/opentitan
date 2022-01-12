@@ -10,9 +10,6 @@ class edn_genbits_test extends edn_base_test;
   function void configure_env();
     super.configure_env();
 
-    cfg.boot_req_mode_pct = 100;
-    // TODO: auto_req_mode
-
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_HIGH)
   endfunction

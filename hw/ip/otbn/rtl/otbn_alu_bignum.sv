@@ -121,9 +121,8 @@ module otbn_alu_bignum
 
   assign ispr_update_flags_en = ispr_base_wr_en_i[0] & (ispr_addr_i == IsprFlags);
 
-  `ASSERT(UpdateFlagsOnehot,
-          $onehot0({ispr_init_i, adder_update_flags_en, logic_update_flags_en, mac_update_flags_en,
-                    ispr_update_flags_en}))
+  `ASSERT(UpdateFlagsOnehot, $onehot0({ispr_init_i, adder_update_flags_en, logic_update_flags_en,
+                                       mac_update_flags_en, ispr_update_flags_en}))
 
   assign selected_flags = flags_q[operation_i.flag_group];
 
@@ -142,7 +141,7 @@ module otbn_alu_bignum
 
     assign is_operation_flag_group[i_fg] = operation_i.flag_group == i_fg;
 
-    assign flags_flattened[i_fg * FlagsWidth +: FlagsWidth] = flags_q[i_fg];
+    assign flags_flattened[i_fg*FlagsWidth+:FlagsWidth] = flags_q[i_fg];
 
     // Flag updates can come from the Y adder result, the logical operation result or from an ISPR
     // write.
@@ -154,7 +153,7 @@ module otbn_alu_bignum
         adder_update_flags_en: flags_d[i_fg] = adder_update_flags;
         logic_update_flags_en: flags_d[i_fg] = logic_update_flags;
         mac_update_flags_en:   flags_d[i_fg] = mac_update_flags;
-        ispr_update_flags_en:  flags_d[i_fg] = ispr_base_wdata_i[i_fg * FlagsWidth +: FlagsWidth];
+        ispr_update_flags_en:  flags_d[i_fg] = ispr_base_wdata_i[i_fg*FlagsWidth+:FlagsWidth];
         default: ;
       endcase
     end
@@ -182,13 +181,13 @@ module otbn_alu_bignum
 
     always_comb begin
 
-      unique case(1'b1)
+      unique case (1'b1)
         sec_wipe_mod_urnd_i: mod_d[i_word*32+:32] = urnd_data_i[i_word*32+:32];
         sec_wipe_zero_i:     mod_d[i_word*32+:32] = 32'd0;
         default:             mod_d[i_word*32+:32] = ispr_bignum_wdata_i[i_word*32+:32];
       endcase
 
-    `ASSERT(ModSecWipeSelOneHot, $onehot0({sec_wipe_mod_urnd_i, sec_wipe_zero_i}))
+      `ASSERT(ModSecWipeSelOneHot, $onehot0({sec_wipe_mod_urnd_i, sec_wipe_zero_i}))
 
       unique case (1'b1)
         ispr_init_i:               mod_d[i_word*32+:32] = '0;
@@ -240,16 +239,15 @@ module otbn_alu_bignum
   assign shifter_in_lower = operation_i.operand_b;
 
   for (genvar i = 0; i < WLEN; i++) begin : g_shifter_in_lower_reverse
-    assign shifter_in_lower_reverse[i] = shifter_in_lower[WLEN - i - 1];
+    assign shifter_in_lower_reverse[i] = shifter_in_lower[WLEN-i-1];
   end
 
-  assign shifter_in = {shifter_in_upper, shift_right ? shifter_in_lower :
-                                                       shifter_in_lower_reverse};
+  assign shifter_in = {shifter_in_upper, shift_right ? shifter_in_lower : shifter_in_lower_reverse};
 
   assign shifter_out = shifter_in >> operation_i.shift_amt;
 
   for (genvar i = 0; i < WLEN; i++) begin : g_shifter_out_lower_reverse
-    assign shifter_out_lower_reverse[i] = shifter_out[WLEN - i - 1];
+    assign shifter_out_lower_reverse[i] = shifter_out[WLEN-i-1];
   end
 
   assign shifter_res = shift_right ? shifter_out[WLEN-1:0] : shifter_out_lower_reverse;
@@ -422,7 +420,7 @@ module otbn_alu_bignum
       AluOpBignumOr:  logical_res = operation_i.operand_a | shifter_res;
       AluOpBignumAnd: logical_res = operation_i.operand_a & shifter_res;
       AluOpBignumNot: logical_res = ~shifter_res;
-      default:;
+      default: ;
     endcase
   end
 

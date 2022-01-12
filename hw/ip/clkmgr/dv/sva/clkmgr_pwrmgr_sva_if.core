@@ -1,0 +1,18 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:clkmgr_pwrmgr_sva_if:0.1"
+description: "CLKMGR to PWRMGR assertion interface."
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:prim:assert
+    files:
+      - clkmgr_pwrmgr_sva_if.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

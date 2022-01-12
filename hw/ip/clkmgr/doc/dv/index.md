@@ -56,7 +56,7 @@ All common types and methods defined at the package level can be found in
   typedef virtual clkmgr_if clkmgr_vif;
   typedef virtual clk_rst_if clk_rst_vif;
   typedef enum int {PeriDiv4, PeriDiv2, PeriIo, PeriUsb} peri_e;
-  typedef enum int {TransAes, TransHmac, TransKmac, TransOtbn} trans_e;
+  typedef enum int {TransAes, TransHmac, TransKmac, TransOtbnIoDiv4, TransOtbnMain} trans_e;
 ```
 
 ### TL_agent
@@ -81,7 +81,6 @@ All test sequences are extended from `clkmgr_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can use or call.
 Some of the most commonly used tasks / functions are as follows:
 * `clkmgr_init`: Sets the frequencies of the various clocks.
-* `update_idle`: Updates the `idle` input.
 * `control_ip_clocks`: Turns on or off the input clocks based on the various clock enable and status ports to and from the `pwrmgr` IP.
 
 The sequence `clkmgr_peri_vseq` randomizes the stimuli that drive the four peripheral clocks.
@@ -89,7 +88,7 @@ These clocks are mutually independent so they are tested in parallel.
 They depend on the `clk_enables` CSR, which has a dedicated enable for each peripheral clock, the pwrmgr's `<clk>_ip_clk_en` which has a dedicated bit controlling `io`, `main`, and `usb` clocks, and `scanmode_i` which is used asynchronously and also controls all.
 The sequence runs a number of iterations, each randomizing all the above.
 
-The sequence `clkmgr_trans_vseq` randomizes the stimuli that drive the four transactional unit clocks.
+The sequence `clkmgr_trans_vseq` randomizes the stimuli that drive the five transactional unit clocks.
 These are also mutually independent so they are tested in parallel.
 They depend on the `clk_hints` CSR, which has a separate bit for each, `<clk>_ip_clk_en` and `scanmode_i` as in the peripheral clocks.
 They also depend on the `idle_i` input, which also has a separate bit for each unit.
@@ -103,6 +102,7 @@ When the external clock is selected and `scanmode_i` is not set to `lc_ctrl_pkg:
 * If `extclk_ctrl.low_speed_sel` CSR is `lc_ctrl_pkg::On`, when the selection is enabled by software.
 
 The sequence `clkmgr_frequency_vseq` randomly programs the frequency measurement for each clock so its measurement is either okay, slow, or fast.
+It checks the recoverable alerts trigger as expected when a measurement is not okay.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
@@ -126,7 +126,7 @@ These asynchronous enables become synchronous because of the SVA semantics.
 This is fine since the assertions allow some cycles for the expected behavior to occur.
 
 #### Scoreboard
-The `clkmgr_scoreboard` combines CSR updates and signals from the the clkmgr vif to instrument some checks and coverage collection.
+The `clkmgr_scoreboard` combines CSR updates and signals from the clkmgr vif to instrument some checks and coverage collection.
 The CSR updates are determined using the TLUL analysis port.
 
 The output clocks can be separated into two groups: peripheral ip clocks and transactional unit clocks.

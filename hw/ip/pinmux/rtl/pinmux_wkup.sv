@@ -23,29 +23,18 @@ module pinmux_wkup
   // Optional Signal Filter //
   ////////////////////////////
 
-  // This uses a lower value for filtering than GPIO since
-  // the always-on clock is slower. This can be disabled,
-  // in which case the signal is just combinationally bypassed.
-  logic filter_out, filter_out_d, filter_out_q;
+  // This uses a lower value for filtering than GPIO since the always-on clock is slower. If the
+  // filter is disabled, this reduces to a plain 2-stage flop synchronizer.
+  logic filter_out_d, filter_out_q;
   prim_filter #(
+    .AsyncOn(1), // Instantiate 2-stage synchronizer
     .Cycles(Cycles)
   ) u_prim_filter (
     .clk_i,
     .rst_ni,
     .enable_i(filter_en_i),
     .filter_i(pin_value_i),
-    .filter_o(filter_out)
-  );
-
-  // Run this through a 2 stage synchronizer to
-  // prevent metastability.
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_prim_flop_2sync_filter (
-    .clk_i,
-    .rst_ni,
-    .d_i(filter_out),
-    .q_o(filter_out_d)
+    .filter_o(filter_out_d)
   );
 
   //////////////////////

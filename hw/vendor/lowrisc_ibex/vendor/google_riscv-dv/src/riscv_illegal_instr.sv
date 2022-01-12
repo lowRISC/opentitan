@@ -181,6 +181,38 @@ class riscv_illegal_instr extends uvm_object;
     }
   }
 
+  constraint zba_extension_c {
+    if (RV32ZBA inside {supported_isa}) {
+      if (exception inside {kIllegalFunc3, kIllegalFunc7}) {
+        !(opcode inside {7'b0110011, 7'b0111011, 7'b0011011});
+      }
+    }
+  }
+
+  constraint zbb_extension_c {
+    if (RV32ZBB inside {supported_isa}) {
+      if (exception inside {kIllegalFunc3, kIllegalFunc7}) {
+        !(opcode inside {7'b0110011, 7'b0010011, 7'b0111011, 7'b0011011});
+      }
+    }
+  }
+
+  constraint zbc_extension_c {
+    if (RV32ZBB inside {supported_isa}) {
+      if (exception inside {kIllegalFunc3, kIllegalFunc7}) {
+        !(opcode inside {7'b0110011});
+      }
+    }
+  }
+
+  constraint zbs_extension_c {
+    if (RV32ZBS inside {supported_isa}) {
+      if (exception inside {kIllegalFunc3, kIllegalFunc7}) {
+        !(opcode inside {7'b0110011, 7'b0010011});
+      }
+    }
+  }
+
   constraint illegal_compressed_op_c {
     if (exception == kIllegalCompressedOpcode) {
       c_op != 2'b01;

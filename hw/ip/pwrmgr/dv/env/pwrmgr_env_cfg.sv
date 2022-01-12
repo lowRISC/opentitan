@@ -7,6 +7,7 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
 );
 
   // ext component cfgs
+  alert_esc_agent_cfg m_esc_agent_cfg;
 
   `uvm_object_utils_begin(pwrmgr_env_cfg)
   `uvm_object_utils_end
@@ -27,7 +28,13 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
     list_of_alerts = pwrmgr_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
     num_interrupts = ral.intr_state.get_n_used_bits();
+    `ASSERT_I(NumInstrMatch_A, num_interrupts == NUM_INTERRUPTS)
+    `uvm_info(`gfn, $sformatf("num_interrupts = %0d", num_interrupts), UVM_MEDIUM)
     tl_intg_alert_fields[ral.fault_status.reg_intg_err] = 1;
+    m_tl_agent_cfg.max_outstanding_req = 1;
+    m_esc_agent_cfg = alert_esc_agent_cfg::type_id::create("m_esc_agent_cfg");
+    `DV_CHECK_RANDOMIZE_FATAL(m_esc_agent_cfg)
+    m_esc_agent_cfg.is_alert = 0;
   endfunction
 
 endclass

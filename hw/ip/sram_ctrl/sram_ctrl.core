@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:util
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:count
       - lowrisc:prim:ram_1p_scr
       - lowrisc:tlul:adapter_sram
       - lowrisc:ip:tlul

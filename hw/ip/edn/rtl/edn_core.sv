@@ -10,9 +10,7 @@
 
 module edn_core import edn_pkg::*;
 #(
-  parameter int NumEndPoints = 4,
-  parameter int BootInsCmd = 32'h0000_0001,
-  parameter int BootGenCmd = 32'h0000_1003
+  parameter int NumEndPoints = 4
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -145,6 +143,9 @@ module edn_core import edn_pkg::*;
   logic                               edn_cntr_err;
   logic [RegWidth-1:0]                max_reqs_cnt;
   logic                               max_reqs_cnt_err;
+  logic                               cmd_rdy;
+  logic [31:0]                        boot_ins_cmd;
+  logic [31:0]                        boot_gen_cmd;
 
   // unused
   logic                               unused_err_code_test_bit;
@@ -164,6 +165,7 @@ module edn_core import edn_pkg::*;
   logic                               boot_auto_req_dly_q, boot_auto_req_dly_d;
   logic [63:0]                        cs_rdata_capt_q, cs_rdata_capt_d;
   logic                               cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
+  logic                               sw_rdy_sts_q, sw_rdy_sts_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -181,6 +183,7 @@ module edn_core import edn_pkg::*;
       boot_auto_req_dly_q <= '0;
       cs_rdata_capt_q <= '0;
       cs_rdata_capt_vld_q <= '0;
+      sw_rdy_sts_q   <= '0;
     end else begin
       cs_cmd_req_q  <= cs_cmd_req_d;
       cs_cmd_req_vld_q  <= cs_cmd_req_vld_d;
@@ -196,6 +199,7 @@ module edn_core import edn_pkg::*;
       boot_auto_req_dly_q <= boot_auto_req_dly_d;
       cs_rdata_capt_q <= cs_rdata_capt_d;
       cs_rdata_capt_vld_q <= cs_rdata_capt_vld_d;
+      sw_rdy_sts_q   <= sw_rdy_sts_d;
     end
 
   //--------------------------------------------
@@ -286,6 +290,9 @@ module edn_core import edn_pkg::*;
   assign hw2reg.err_code.edn_cntr_err.d = 1'b1;
   assign hw2reg.err_code.edn_cntr_err.de = edn_cntr_err_sum;
 
+  assign boot_ins_cmd = reg2hw.boot_ins_cmd.q;
+  assign boot_gen_cmd = reg2hw.boot_gen_cmd.q;
+
 
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
@@ -375,7 +382,7 @@ module edn_core import edn_pkg::*;
 
   assign cs_cmd_req_d =
          (!edn_enable) ? '0 :
-         boot_wr_cmd_reg ? BootInsCmd :
+         boot_wr_cmd_reg ? boot_ins_cmd :
          sw_cmd_req_load ? sw_cmd_req_bus :
          cs_cmd_req_q;
 
@@ -401,7 +408,14 @@ module edn_core import edn_pkg::*;
 
   // receive rdy
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
-  assign hw2reg.sw_cmd_sts.cmd_rdy.d = csrng_cmd_i.csrng_req_ready;
+  assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
+  assign cmd_rdy = !sw_cmd_req_load && sw_rdy_sts_q;
+  assign sw_rdy_sts_d =
+         !edn_enable ? 1'b1 :
+         sw_cmd_req_load ? 1'b0 :
+         csrng_cmd_i.csrng_req_ready ? 1'b1 :
+         sw_rdy_sts_q;
+
   // receive cmd ack
   assign csrng_cmd_ack = csrng_cmd_i.csrng_rsp_ack;
   assign hw2reg.sw_cmd_sts.cmd_sts.de = csrng_cmd_ack;
@@ -480,7 +494,7 @@ module edn_core import edn_pkg::*;
 
   assign sfifo_gencmd_wdata =
          (!edn_enable) ? '0 :
-         boot_wr_cmd_genfifo ? BootGenCmd :
+         boot_wr_cmd_genfifo ? boot_gen_cmd :
          seq_auto_req_mode ? cs_cmd_req_out_q :
          generate_cmd_bus;
 

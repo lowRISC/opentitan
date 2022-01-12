@@ -17,27 +17,34 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
   constraint wakeups_c {wakeups != 0;}
   constraint resets_c {resets != 0;}
 
+  constraint control_enables_c {
+    control_enables.core_clk_en == ral.control.core_clk_en.get_reset();
+    control_enables.io_clk_en == ral.control.io_clk_en.get_reset();
+    control_enables.usb_clk_en_lp == ral.control.usb_clk_en_lp.get_reset();
+    control_enables.usb_clk_en_active == ral.control.usb_clk_en_active.get_reset();
+    control_enables.main_pd_n == ral.control.main_pd_n.get_reset();
+  }
+
   task body();
     logic [TL_DW-1:0] value;
     wakeups_t wakeup_en;
     resets_t reset_en;
     set_nvms_idle();
+    setup_interrupt(.enable(1'b1));
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     csr_rd_check(.ptr(ral.wake_status[0]), .compare_value(0));
     csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0));
 
-    // Enable all wakeups so a peripheral can cause a wakeup.
+    // Enable all wakeups so any peripheral can cause a wakeup.
     wakeup_en = '1;
     csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeup_en));
+    low_power_hint = 1'b1;
+    update_control_csr();
     wait_for_csr_to_propagate_to_slow_domain();
-    `uvm_info(`gfn, "smoke waiting for wakeup propagate", UVM_MEDIUM)
 
     // Initiate low power transition.
-    csr_wr(.ptr(ral.control.low_power_hint), .value(1'b1));
     cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
-    if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
-      wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
-    end
+    wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
 
     // Now bring it back.
     cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
@@ -50,6 +57,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
                  .err_msg("failed wake_status check"));
     csr_rd_check(.ptr(ral.reset_status[0]), .compare_value(0),
                  .err_msg("failed reset_status check"));
+    check_and_clear_interrupt(.expected(1'b1));
 
     // Enable resets.
     reset_en = '1;
@@ -71,6 +79,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
     // Wait for interrupt to be generated whether or not it is enabled.
     cfg.slow_clk_rst_vif.wait_clks(10);
+    check_and_clear_interrupt(.expected(1'b0));
   endtask
 
 endclass : pwrmgr_smoke_vseq

@@ -9,10 +9,8 @@ source $env(COMMON_MSG_TCL_PATH)
 
 if {$env(COV) == 1} {
   check_cov -init -model {branch statement functional} \
-  -enable_prove_based_proof_core
+  -exclude_bind_hierarchies
 }
-set_task_compile_time_limit 1000s
-set_property_compile_time_limit 1000s
 
 #-------------------------------------------------------------------------
 # read design
@@ -24,13 +22,13 @@ analyze -sv09     \
   -f [glob *.scr]
 
 if {$env(DUT_TOP) == "prim_count_tb"} {
-  elaborate -bbox_a 4320 \
-            -top $env(DUT_TOP) \
+  elaborate -top $env(DUT_TOP) \
             -enable_sva_isunknown \
+            -disable_auto_bbox \
             -param OutSelDnCnt $OutSelDnCnt \
             -param CntStyle $CntStyle
 } else {
-  elaborate -bbox_a 4320 -top $env(DUT_TOP) -enable_sva_isunknown
+  elaborate -top $env(DUT_TOP) -enable_sva_isunknown -disable_auto_bbox
 }
 
 #-------------------------------------------------------------------------
@@ -45,10 +43,10 @@ if {$env(DUT_TOP) == "prim_count_tb"} {
 
 if {$env(DUT_TOP) == "rv_dm"} {
   clock clk_i -both_edges
-  clock jtag_req_i.tck
-  clock -rate {testmode_i, unavailable_i, tl_d_i, tl_h_i} clk_i
-  clock -rate {jtag_req_i.tms, jtag_req_i.tdi} jtag_req_i.tck
-  reset -expr {!rst_ni !jtag_req_i.trst_n}
+  clock jtag_i.tck
+  clock -rate {testmode, unavailable_i, reg_tl_d_i, sba_tl_h_i} clk_i
+  clock -rate {jtag_i.tms, jtag_i.tdi} jtag_i.tck
+  reset -expr {!rst_ni !jtag_i.trst_n}
 
 } elseif {$env(DUT_TOP) == "spi_device"} {
   clock clk_i -both_edges
@@ -83,19 +81,31 @@ if {$env(DUT_TOP) == "rv_dm"} {
   clock clk_rd_i -factor 3
   clock -rate {rvalid_o, rready_i, rdata_o} clk_rd_i
   reset -expr {!rst_ni}
+
+} elseif {$env(DUT_TOP) == "pinmux_tb"} {
+  clock clk_i -both_edges
+  clock clk_aon_i -factor 5
+  clock -rate -default clk_i
+  reset -expr {!rst_ni !rst_aon_ni}
 } else {
   clock clk_i -both_edges
   reset -expr {!rst_ni}
   clock -rate -default clk_i
 }
 
-# use counter abstractions to reduce the run time:
-# alert_handler ping_timer: timer to count until reaches ping threshold
-# hmac sha2: does not check any calculation results, so 64 rounds of calculation can be abstracted
+# Use counter abstractions to reduce the run time.
 if {$env(DUT_TOP) == "alert_handler"} {
-  abstract -counter -env i_ping_timer.cnt_q
+  abstract -counter -env \
+      {u_ping_timer.u_prim_double_lfsr.gen_double_lfsr[0].u_prim_lfsr.gen_max_len_sva.cnt_q}
+  abstract -counter -env \
+      {u_ping_timer.u_prim_double_lfsr.gen_double_lfsr[1].u_prim_lfsr.gen_max_len_sva.cnt_q}
+  abstract -counter -env {gen_classes[0].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
+  abstract -counter -env {gen_classes[1].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
+  abstract -counter -env {gen_classes[2].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
+  abstract -counter -env {gen_classes[3].u_accu.u_prim_count.gen_cross_cnt_hardening.down_cnt}
 
 } elseif {$env(DUT_TOP) == "hmac"} {
+  # SHA2: does not check any calculation results, so 64 rounds of calculation can be abstracted.
   abstract -counter -env u_sha2.round
   # disable these assertions because they are unreachable when the fifo is WO
   assert -disable {*hmac.u_tlul_adapter.u_*fifo.*.depthShallNotExceedParamDepth}
@@ -143,15 +153,17 @@ if {[info exists ::env(CHECK)]} {
   }
 }
 
+# Uncomment "jg_auto_coi_cov_waivers" to automatically waive out COI cover items which cannot
+# propagate to "relevant signals" (by default, top instance outputs). If you need to specify
+# include/exclude relevant signals manually, run "jg_auto_coi_cov_waivers -help" for more
+# options.
+jg_auto_coi_cov_waivers
+
 #-------------------------------------------------------------------------
 # configure proofgrid
 #-------------------------------------------------------------------------
 
 set_proofgrid_per_engine_max_local_jobs 2
-
-# Uncomment below 2 lines when using LSF:
-# set_proofgrid_mode lsf
-# set_proofgrid_per_engine_max_jobs 16
 
 #-------------------------------------------------------------------------
 # prove all assertions & report

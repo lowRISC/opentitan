@@ -145,7 +145,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                        page_cfg.scramble_en) |
         get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"), data, 
                                        page_cfg.ecc_en) |
-        get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data, 
+        get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data,
                                        page_cfg.he_en);
     csr_wr(.ptr(csr), .value(data));
   endtask
