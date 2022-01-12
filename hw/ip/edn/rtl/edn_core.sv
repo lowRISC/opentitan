@@ -660,7 +660,7 @@ module edn_core import edn_pkg::*;
 
   //--------------------------------------------
   // data path integrity check
-  // - a counter meansure to entropy bus tampering
+  // - a counter measure to software genbits bus tampering
   // - checks to make sure repeated data sets off
   //   an alert for sw to handle
   //--------------------------------------------

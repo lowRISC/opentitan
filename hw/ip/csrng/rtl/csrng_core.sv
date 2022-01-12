@@ -832,7 +832,7 @@ module csrng_core import csrng_pkg::*; #(
 
   //--------------------------------------------
   // data path integrity check
-  // - a counter measure to software genbits bus tampering
+  // - a countermeasure to detect entropy bus tampering attempts
   // - checks to make sure repeated data sets off
   //   an alert for sw to handle
   //--------------------------------------------
