@@ -19,6 +19,8 @@ const uint64_t kClockFreqPeripheralHz = 24 * 1000 * 1000;  // 24MHz
 
 const uint64_t kClockFreqUsbHz = 48 * 1000 * 1000;  // 48MHz
 
+const uint64_t kClockFreqAonHz = 200 * 1000;  // 200kHz
+
 const uint64_t kUartBaudrate = 1 * 1000 * 1000;  // 1Mbps
 
 const uint32_t kUartNCOValue =
