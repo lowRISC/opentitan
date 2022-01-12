@@ -49,17 +49,14 @@
     {
       name: sysrst_ctrl_smoke
       uvm_test_seq: sysrst_ctrl_smoke_vseq
-      reseed: 5
     }
     {
       name: sysrst_ctrl_in_out_inverted
       uvm_test_seq: sysrst_ctrl_in_out_inverted_vseq
-      reseed: 5
     }
     {
       name: sysrst_ctrl_combo_detect_ec_rst
       uvm_test_seq: sysrst_ctrl_combo_detect_ec_rst_vseq
-      reseed: 1
     }
     {
       name: sysrst_ctrl_pin_access_test

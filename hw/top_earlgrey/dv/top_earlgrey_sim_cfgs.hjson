@@ -49,6 +49,7 @@
              "{proj_root}/hw/ip/spi_device/dv/spi_device_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_main_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_ret_sim_cfg.hjson",
+             "{proj_root}/hw/ip/sysrst_ctrl/dv/sysrst_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
              "{proj_root}/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson",
              // Top level IPs.
