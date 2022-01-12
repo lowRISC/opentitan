@@ -254,6 +254,17 @@ endtask : run_tl_errors_vseq_sub
 virtual task run_tl_intg_err_vseq(int num_times = 1);
   // TODO(#6628) as above TODO
   set_tl_assert_en(.enable(0));
+
+  // If there are multiple TLUL interfaces, race condition may occurs as one TLUL is updating intg
+  // status CSR while the other TLUL interface reads it. Exclude checking the CSR
+  if (cfg.ral_models.size > 1) begin
+    foreach (cfg.tl_intg_alert_fields[csr_field]) begin
+      csr_excl_item csr_excl = get_excl_item(csr_field);
+      csr_excl.add_excl(csr_field.`gfn, CsrExclCheck, CsrRwTest);
+      `uvm_info(`gfn, $sformatf("Exclude CSR %s check, due to potential race condition",
+                                csr_field.`gfn), UVM_MEDIUM)
+    end
+  end
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running run_tl_intg_err_vseq %0d/%0d", trans, num_times),
               UVM_LOW)
@@ -265,6 +276,9 @@ virtual task run_tl_intg_err_vseq(int num_times = 1);
   set_tl_assert_en(.enable(1));
 endtask
 
+// when there are multiple TLUL interfaces, multiple thread may update and check integrity status
+// CSR. Use this semaphore to avoid race condition.
+semaphore sem_intg_err = new(1);
 virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
   fork
     // run csr_rw seq to send some normal CSR accesses in parallel
@@ -273,12 +287,20 @@ virtual task run_tl_intg_err_vseq_sub(int num_times = 1, string ral_name);
       run_csr_vseq(.csr_test_type("rw"), .ral_name(ral_name));
     end
     begin
+      sem_intg_err.get(1);
+      // check integrity status before injecting fault
+      foreach (cfg.tl_intg_alert_fields[csr_field]) begin
+        csr_rd_check(.ptr(csr_field), .compare_vs_ral(1));
+      end
+
       issue_tl_access_w_intg_err(ral_name);
 
       // Check design's response to tl_intg_error.
       // This virtual task verifies the fatal alert is firing continuously and verifies integrity
       // error status register field is set.
       check_tl_intg_error_response();
+
+      sem_intg_err.put(1);
     end
   join
 endtask
@@ -327,8 +349,10 @@ virtual task check_tl_intg_error_response();
     begin
       // Check corresponding CSR status is updated correctly
       foreach (cfg.tl_intg_alert_fields[csr_field]) begin
-        bit [BUS_DW-1:0] exp_val = cfg.tl_intg_alert_fields[csr_field];
-        csr_rd_check(.ptr(csr_field), .compare_value(exp_val));
+        void'(csr_field.predict(.value(cfg.tl_intg_alert_fields[csr_field]),
+                                .kind(UVM_PREDICT_READ)));
+
+        csr_rd_check(.ptr(csr_field), .compare_vs_ral(1));
       end
     end
   join
