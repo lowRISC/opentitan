@@ -81,10 +81,16 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   logic usb_clk_en_lp;
   assign usb_clk_en_lp = main_pd_ni & usb_clk_en_lp_i;
 
+  // all other clocks are also diasbled when power is turned off.
+  logic core_clk_en;
+  logic io_clk_en;
+  assign core_clk_en = main_pd_ni & core_clk_en_i;
+  assign io_clk_en = main_pd_ni & io_clk_en_i;
+
   // if clocks were configured to turn off, make sure val is invalid
   // if clocks were not configured to turn off, just bypass the check
-  assign all_clks_invalid = (core_clk_en_i | ~ast_i.core_clk_val) &
-                            (io_clk_en_i | ~ast_i.io_clk_val) &
+  assign all_clks_invalid = (core_clk_en | ~ast_i.core_clk_val) &
+                            (io_clk_en | ~ast_i.io_clk_val) &
                             (usb_clk_en_lp | ~ast_i.usb_clk_val);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -223,8 +229,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
 
       SlowPwrStateClocksOff: begin
-        core_clk_en_d = core_clk_en_i;
-        io_clk_en_d = io_clk_en_i;
+        core_clk_en_d = core_clk_en;
+        io_clk_en_d = io_clk_en;
         usb_clk_en_d = usb_clk_en_lp;
 
         if (all_clks_invalid) begin
