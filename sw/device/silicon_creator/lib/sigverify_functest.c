@@ -131,21 +131,30 @@ rom_error_t compute_digest(void) {
 }
 
 rom_error_t sigverify_test_exp_3(void) {
-  return sigverify_rsa_verify(&kSignatureExp3, &kKeyExp3, &act_digest,
-                              kLcStateRma);
+  uint32_t flash_exec = 0;
+  rom_error_t result = sigverify_rsa_verify(
+      &kSignatureExp3, &kKeyExp3, &act_digest, kLcStateRma, &flash_exec);
+  CHECK(flash_exec == kSigverifyFlashExec);
+  return result;
 }
 
 rom_error_t sigverify_test_exp_65537(void) {
-  return sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp65537, &act_digest,
-                              kLcStateRma);
+  uint32_t flash_exec = 0;
+  rom_error_t result =
+      sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp65537, &act_digest,
+                           kLcStateRma, &flash_exec);
+  CHECK(flash_exec == kSigverifyFlashExec);
+  return result;
 }
 
 rom_error_t sigverify_test_negative(void) {
+  uint32_t flash_exec = 0;
   // Signature verification should fail when using the wrong signature.
   if (sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp3, &act_digest,
-                           kLcStateRma) == kErrorOk) {
+                           kLcStateRma, &flash_exec) == kErrorOk) {
     return kErrorUnknown;
   }
+  CHECK(flash_exec == UINT32_MAX);
   return kErrorOk;
 }
 

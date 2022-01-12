@@ -18,6 +18,15 @@
 extern "C" {
 #endif  // __cplusplus
 
+enum {
+  /**
+   * Correct `flash_exec` value.
+   * TODO(#10022): Remove this and replace all usages from flash_ctrl_regs.h
+   * when hardware is updated.
+   */
+  kSigverifyFlashExec = 0xa26a38f7,
+};
+
 /**
  * Gets the ID of an RSA public key from its modulus.
  *
@@ -42,12 +51,14 @@ inline uint32_t sigverify_rsa_key_id_get(
  * @param key Signer's RSA public key.
  * @param act_digest Actual digest of the message being verified.
  * @param lc_state Life cycle state of the device.
+ * @param[out] flash_exec Value to write to the flash_ctrl EXEC register.
  * @return Result of the operation.
  */
 rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  const sigverify_rsa_key_t *key,
                                  const hmac_digest_t *act_digest,
-                                 lifecycle_state_t lc_state);
+                                 lifecycle_state_t lc_state,
+                                 uint32_t *flash_exec);
 
 /**
  * Gets the usage constraints struct that is used for verifying a ROM_EXT.

@@ -106,9 +106,12 @@ static rom_error_t mask_rom_init(void) {
  * its `identifier` and `security_version` fields, and verifies its signature.
  *
  * @param Manifest of the ROM_EXT to be verified.
+ * @param[out] flash_exec Value to write to the flash_ctrl EXEC register.
  * @return Result of the operation.
  */
-static rom_error_t mask_rom_verify(const manifest_t *manifest) {
+static rom_error_t mask_rom_verify(const manifest_t *manifest,
+                                   uint32_t *flash_exec) {
+  *flash_exec = 0;
   RETURN_IF_ERROR(boot_policy_manifest_check(lc_state, manifest));
 
   const sigverify_rsa_key_t *key;
@@ -129,8 +132,8 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest) {
   // Verify signature
   hmac_digest_t act_digest;
   RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
-  RETURN_IF_ERROR(
-      sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state));
+  RETURN_IF_ERROR(sigverify_rsa_verify(&manifest->signature, key, &act_digest,
+                                       lc_state, flash_exec));
   return kErrorOk;
 }
 
@@ -141,14 +144,17 @@ static rom_error_t mask_rom_verify(const manifest_t *manifest) {
  * from this function must result in shutdown.
  *
  * @param manifest Manifest of the ROM_EXT to boot.
+ * @param flash_exec Value to write to the flash_ctrl EXEC register.
  * @return rom_error_t Result of the operation.
  */
-static rom_error_t mask_rom_boot(const manifest_t *manifest) {
+static rom_error_t mask_rom_boot(const manifest_t *manifest,
+                                 uint32_t flash_exec) {
   RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateReset));
   keymgr_sw_binding_set(&manifest->binding_value, &manifest->binding_value);
   keymgr_creator_max_ver_set(manifest->max_key_version);
 
-  // Enable execution of code from flash.
+  // Enable execution of code from flash if signature is verified.
+  // TODO: Replace kFlashCtrlExecEnable with flash_exec when HW is updated.
   flash_ctrl_exec_set(kFlashCtrlExecEnable);
 
   // TODO(lowRISC/opentitan#8536): Integrate RND driver.
@@ -177,12 +183,13 @@ static rom_error_t mask_rom_try_boot(void) {
   boot_policy_manifests_t manifests = boot_policy_manifests_get();
   rom_error_t error = kErrorMaskRomBootFailed;
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
-    error = mask_rom_verify(manifests.ordered[i]);
+    uint32_t flash_exec = 0;
+    error = mask_rom_verify(manifests.ordered[i], &flash_exec);
     if (error != kErrorOk) {
       continue;
     }
     // Boot fails if a verified ROM_EXT cannot be booted.
-    RETURN_IF_ERROR(mask_rom_boot(manifests.ordered[i]));
+    RETURN_IF_ERROR(mask_rom_boot(manifests.ordered[i], flash_exec));
     // `mask_rom_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorMaskRomBootFailed;

@@ -87,8 +87,9 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest) {
   // Verify signature
   hmac_digest_t act_digest;
   RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
-  RETURN_IF_ERROR(
-      sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state));
+  uint32_t flash_exec = 0;
+  RETURN_IF_ERROR(sigverify_rsa_verify(&manifest->signature, key, &act_digest,
+                                       lc_state, &flash_exec));
   return kErrorOk;
 }
 

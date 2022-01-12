@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/sigverify.h"
 
 #include <cstring>
+#include <limits>
 #include <unordered_set>
 
 #include "gtest/gtest.h"
@@ -148,8 +149,11 @@ TEST_P(SigverifyInNonTestStates, BadOtpValue) {
               read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET))
       .WillOnce(Return(0xA5A5A5A5));
 
-  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
+  uint32_t flash_exec = 0;
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
+                                 &flash_exec),
             kErrorSigverifyBadOtpValue);
+  EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
 }
 
 TEST_P(SigverifyInNonTestStates, GoodSignatureIbex) {
@@ -159,8 +163,11 @@ TEST_P(SigverifyInNonTestStates, GoodSignatureIbex) {
   EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
-  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
+  uint32_t flash_exec = 0;
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
+                                 &flash_exec),
             kErrorOk);
+  EXPECT_EQ(flash_exec, kSigverifyFlashExec);
 }
 
 TEST_P(SigverifyInNonTestStates, GoodSignatureOtbn) {
@@ -170,8 +177,11 @@ TEST_P(SigverifyInNonTestStates, GoodSignatureOtbn) {
   EXPECT_CALL(sigverify_mod_exp_otbn_, mod_exp(&key_, &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
-  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
+  uint32_t flash_exec = 0;
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
+                                 &flash_exec),
             kErrorOk);
+  EXPECT_EQ(flash_exec, kSigverifyFlashExec);
 }
 
 TEST_P(SigverifyInNonTestStates, BadSignatureOtbn) {
@@ -187,9 +197,11 @@ TEST_P(SigverifyInNonTestStates, BadSignatureOtbn) {
     EXPECT_CALL(sigverify_mod_exp_otbn_, mod_exp(&key_, &kSignature, NotNull()))
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
 
-    EXPECT_EQ(
-        sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
-        kErrorSigverifyBadEncodedMessage);
+    uint32_t flash_exec = 0;
+    EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
+                                   &flash_exec),
+              kErrorSigverifyBadEncodedMessage);
+    EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
   }
 }
 
@@ -202,8 +214,11 @@ TEST_P(SigverifyInTestStates, GoodSignatureIbex) {
   EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
-  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
+  uint32_t flash_exec = 0;
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
+                                 &flash_exec),
             kErrorOk);
+  EXPECT_EQ(flash_exec, kSigverifyFlashExec);
 }
 
 TEST_P(SigverifyInTestStates, BadSignatureIbex) {
@@ -216,9 +231,11 @@ TEST_P(SigverifyInTestStates, BadSignatureIbex) {
     EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
         .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
 
-    EXPECT_EQ(
-        sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
-        kErrorSigverifyBadEncodedMessage);
+    uint32_t flash_exec = 0;
+    EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
+                                   &flash_exec),
+              kErrorSigverifyBadEncodedMessage);
+    EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
   }
 }
 
@@ -228,8 +245,11 @@ INSTANTIATE_TEST_SUITE_P(TestStates, SigverifyInTestStates,
 class SigverifyInInvalidStates : public SigverifyInLcState {};
 
 TEST_P(SigverifyInInvalidStates, BadLcState) {
-  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam()),
+  uint32_t flash_exec = 0;
+  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
+                                 &flash_exec),
             kErrorSigverifyBadLcState);
+  EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
 }
 
 INSTANTIATE_TEST_SUITE_P(NonOperationalStates, SigverifyInInvalidStates,
