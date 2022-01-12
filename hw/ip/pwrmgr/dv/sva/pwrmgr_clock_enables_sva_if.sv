@@ -54,6 +54,6 @@ interface pwrmgr_clock_enables_sva_if (
   `ASSERT(CoreClkPwrDown_A, transitionDown_S |=> core_clk_en == core_clk_en_i, clk_i,
           reset_or_disable)
   `ASSERT(IoClkPwrDown_A, transitionDown_S |=> io_clk_en == io_clk_en_i, clk_i, reset_or_disable)
-  `ASSERT(UsbClkPwrDown_A, transitionDown_S |=> usb_clk_en == main_pd_ni & usb_clk_en_lp_i, clk_i,
+  `ASSERT(UsbClkPwrDown_A, transitionDown_S |=> usb_clk_en == (main_pd_ni & usb_clk_en_lp_i), clk_i,
           reset_or_disable)
 endinterface
