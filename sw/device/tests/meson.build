@@ -726,13 +726,13 @@ sw_tests += {
 }
 
 
-# AON Timer test wake up irq test.
-aon_timer_wakeup_irq_test = declare_dependency(
+# AON Timer irq test.
+aon_timer_irq_test = declare_dependency(
   link_with: static_library(
-    'aon_timer_wakeup_irq_test',
+    'aon_timer_irq_test',
     sources: [
       hw_ip_rstmgr_reg_h,
-      'aon_timer_wakeup_irq_test.c',
+      'aon_timer_irq_test.c',
     ],
     dependencies: [
       sw_lib_dif_rstmgr,
@@ -750,8 +750,8 @@ aon_timer_wakeup_irq_test = declare_dependency(
   ),
 )
 sw_tests += {
-  'aon_timer_wakeup_irq_test': {
-    'library': aon_timer_wakeup_irq_test,
+  'aon_timer_irq_test': {
+    'library': aon_timer_irq_test,
   }
 }
 

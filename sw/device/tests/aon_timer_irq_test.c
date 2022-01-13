@@ -86,23 +86,39 @@ static uint64_t tick_count_get(void) {
 }
 
 /**
- * Execute the wake up interrupt test.
+ * Execute the aon timer interrupt test.
  */
-static void execute_test(dif_aon_timer_t *aon_timer, uint32_t sleep_time_us) {
+static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
+                         dif_aon_timer_irq_t expected_irq) {
+  // The interrupt time should be `irq_time_us ±5%`.
+  uint64_t variation = irq_time_us * 5 / 100;
+  CHECK(variation > 0);
+  // Add 200us of overhead on the irq handling
+  variation += 200;
+  uint64_t sleep_range_h = irq_time_us + variation;
+  uint64_t sleep_range_l = irq_time_us - variation;
+
+  uint64_t count_cycles = (irq_time_us * kClockFreqAonHz / 1000000);
+  CHECK(count_cycles < UINT32_MAX,
+        "The value %u can't fit into the 32 bits timer counter.", count_cycles);
+  LOG_INFO("Setting interrupt for %u us (%u cycles)", (uint32_t)irq_time_us,
+           (uint32_t)count_cycles);
+
+  // Set the default value to a different value than expected.
   peripheral = kTopEarlgreyPlicPeripheralUnknown;
   irq = kDifAonTimerIrqWdogTimerBark;
-  // The wake up time should be `sleepTime_us ±5%`.
-  uint32_t variation = sleep_time_us * 5 / 100;
-  CHECK(variation > 0);
-  uint32_t sleep_range_h = sleep_time_us + variation;
-  uint32_t sleep_range_l = sleep_time_us - variation;
+  if (expected_irq == kDifAonTimerIrqWkupTimerExpired) {
+    // Setup the wake up interrupt.
+    aon_timer_testutils_wakeup_config(aon_timer, count_cycles);
+  } else {
+    // Change the default value since the expectation is diffent.
+    irq = kDifAonTimerIrqWkupTimerExpired;
+    // Setup the wdog bark interrupt.
+    aon_timer_testutils_watchdog_config(aon_timer,
+                                        /*bark_cycles=*/count_cycles,
+                                        /*bite_cycles=*/count_cycles * 4);
+  }
 
-  // Setup the timer and wait for the IRQ.
-  uint32_t sleep_cycles = (sleep_time_us * kClockFreqAonHz / 1000000);
-  LOG_INFO("Setting wakeup interrupt for %u us (%u cycles)", sleep_time_us,
-           sleep_cycles);
-
-  aon_timer_testutils_wakeup_config(aon_timer, sleep_cycles);
   // Capture the current tick to measure the time the IRQ will take.
   time_elapsed = tick_count_get();
   do {
@@ -112,15 +128,17 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint32_t sleep_time_us) {
 
   CHECK(time_elapsed < sleep_range_h && time_elapsed > sleep_range_l,
         "Timer took %u usec which is not in the range %u usec and %u usec",
-        (uint32_t)time_elapsed, sleep_range_l, sleep_range_h);
+        (uint32_t)time_elapsed, (uint32_t)sleep_range_l,
+        (uint32_t)sleep_range_h);
 
   CHECK(peripheral == kTopEarlgreyPlicPeripheralAonTimerAon,
         "Interrupt from incorrect peripheral: exp = %d, obs = %d",
         kTopEarlgreyPlicPeripheralAonTimerAon, peripheral);
 
-  CHECK(irq == kDifAonTimerIrqWkupTimerExpired,
-        "Interrupt type incorrect: exp = %d, obs = %d",
+  CHECK(irq == expected_irq, "Interrupt type incorrect: exp = %d, obs = %d",
         kDifAonTimerIrqWkupTimerExpired, irq);
+
+  LOG_INFO("Test completed in %u us", (uint32_t)irq_time_us);
 }
 
 /**
@@ -173,17 +191,21 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &plic));
 
-  // Enable all the AON interrupts to check if the timer will fire only the
-  // correct one.
+  // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(
       &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
       kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
 
-  // Executing the test using a randon time between 1 and 15 ms to make sure
+  // Executing the test using a randon time between 100 and 1500 us to make sure
   // the aon timer is generating the interrupt after the choosen time and theres
   // no error in the reference time measurement.
-  uint32_t sleep_time = rand_testutils_gen32_range(1, 15) * 1000;
-  execute_test(&aon_timer, sleep_time);
+  uint64_t irq_time = rand_testutils_gen32_range(1, 15) * 100;
+  execute_test(&aon_timer, irq_time,
+               /*expected_irq=*/kDifAonTimerIrqWkupTimerExpired);
+
+  irq_time = rand_testutils_gen32_range(1, 15) * 100;
+  execute_test(&aon_timer, irq_time,
+               /*expected_irq=*/kDifAonTimerIrqWdogTimerBark);
 
   return true;
 }

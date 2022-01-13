@@ -607,7 +607,7 @@
             - Verify that the interrupt triggered only after the timeout elapsed.
             '''
       milestone: V2
-      tests: ["chip_sw_aon_timer_wakeup_irq"]
+      tests: ["chip_sw_aon_timer_irq"]
     }
     {
       name: chip_sw_aon_timer_sleep_wakeup
@@ -647,7 +647,7 @@
             - Service the bark interrupt upon reception.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_aon_timer_irq"]
     }
     {
       name: chip_sw_aon_timer_wdog_lc_escalate
