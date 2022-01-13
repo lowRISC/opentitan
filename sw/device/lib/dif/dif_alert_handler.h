@@ -84,17 +84,6 @@ typedef enum dif_alert_handler_local_alert {
 } dif_alert_handler_local_alert_t;
 
 /**
- * An escalation signal, identified by a numeric id.
- *
- * An escalation signal is a generic "response" to failing to handle alert(s).
- * The meaning of each escalation signal means is determined by the chip.
- *
- * A `dif_alert_handler_class_t` can be configured to raise escalation signal(s)
- * as part of its policy.
- */
-typedef uint32_t dif_alert_handler_escalation_signal_t;
-
-/**
  * An alert class state.
  *
  * This enum describes the sequence of states in the *escalation protocol*,
@@ -150,11 +139,20 @@ typedef enum dif_alert_handler_class_state {
 } dif_alert_handler_class_state_t;
 
 /**
- * Runtime configuration for responding to a given escalation phase.
+ * An escalation signal, identified by a numeric ID.
  *
- * See `dif_alert_handler_class_config_t`.
+ * An escalation signal is a generic "response" to failing to handle alert(s).
+ * The meaning of each escalation signal is determined by the chip.
+ *
+ * An alert class can be configured to raise various escalation signal(s) during
+ * various escalation phases as part of its escalation policy.
  */
-typedef struct dif_alert_handler_class_phase_signal {
+typedef uint32_t dif_alert_handler_escalation_signal_t;
+
+/**
+ * Runtime configuration for an escalation phase.
+ */
+typedef struct dif_alert_handler_escalation_phase {
   /**
    * The phase this configuration describes.
    *
@@ -166,88 +164,34 @@ typedef struct dif_alert_handler_class_phase_signal {
    * The escalation signal that should be triggered when this phase begins.
    */
   dif_alert_handler_escalation_signal_t signal;
-} dif_alert_handler_class_phase_signal_t;
-
-/**
- * Runtime configuration for the duration of an escalation phase.
- *
- * See `dif_alert_handler_class_config_t`.
- */
-typedef struct dif_alert_handler_class_phase_duration {
-  /**
-   * The phase this configuration describes.
-   *
-   * It is an error for this to not be one of the `Phase` constants in
-   * `dif_alert_handler_class_state_t`.
-   */
-  dif_alert_handler_class_state_t phase;
   /**
    * The duration of this phase, in cycles.
    */
-  uint32_t cycles;
-} dif_alert_handler_class_phase_duration_t;
+  uint32_t duration_cycles;
+} dif_alert_handler_escalation_phase_t;
 
 /**
  * Runtime configuration for a particular alert class.
  *
- * This struct describes how a particular alert class should be configured,
- * such as which signals are associated with it, and what options are turned
- * on for the escalation protocol.
- *
- * For each of the pointer/length field pairs below, if the length is zero, the
- * pointer may be `NULL`.
+ * This struct describes the escalation protocol for an alert class.
  */
 typedef struct dif_alert_handler_class_config {
   /**
-   * The class this configuration describes.
-   */
-  dif_alert_handler_class_t alert_class;
-
-  /**
-   * A list of alerts that should be classified as having this class.
+   * Whether to automatically lock the accumulation counter.
    *
-   * Each alert in this list will additionally be set as enabled.
+   * There are two ways to lock the accumulation counter (prevent it from being
+   * cleared once the class's escalation protocol has been triggered):
+   *   1. clear the write enable for the accumulation counter clear register, or
+   *   2. to set this configuration flag which will automatically clear the
+   *      write enable for the accumulation counter clear register once the
+   *      class's escalation protocol has been triggered.
    */
-  const dif_alert_handler_alert_t *alerts;
+  dif_toggle_t auto_lock_accumulation_counter;
   /**
-   * The length of the array `alerts`.
-   */
-  size_t alerts_len;
-
-  /**
-   * A list of local that should be classified as having this class.
-   *
-   * Each local alert in this list will additionally be set as enabled.
-   */
-  const dif_alert_handler_local_alert_t *local_alerts;
-  /**
-   * The length of the array `local_alerts`.
-   */
-  size_t local_alerts_len;
-
-  /**
-   * Whether the escalation protocol should be used for this class
-   * (i.e., accumulator and timeout based escalation).
-   *
-   * Class IRQs will still fire regardless of this setting.
-   */
-  dif_toggle_t use_escalation_protocol;
-
-  /**
-   * Whether automatic escalation locking should be used for this class.
-   *
-   * When enabled, upon beginning the escalation protocol, the hardware will
-   * lock the escalation clear bit, so that software cannot stop escalation once
-   * it has begun.
-   */
-  dif_toggle_t automatic_locking;
-
-  /**
-   * The threshold for the class accmulator which, when reached, will
-   * automatically trigger escalation.
+   * The threshold for the class accmulator which indicates the number of alerts
+   * that must fire because the class's escalation protocol will trigger.
    */
   uint16_t accumulator_threshold;
-
   /**
    * The number of cycles this class's associated IRQ handler has to acknowledge
    * the IRQ before escalation is triggered.
@@ -255,36 +199,80 @@ typedef struct dif_alert_handler_class_config {
    * A value of zero disables the timeout.
    */
   uint32_t irq_deadline_cycles;
-
   /**
-   * Signals to associate to each escalation phase.
+   * Escalation phases to be configured for this class.
    *
-   * Each escalation phase signal in this list will additionally be set as
-   * enabled; phases not listed will have their escalation signals disabled.
+   * Each escalation phase in this list will additionally be set as enabled for
+   * this class; phases not listed will have their escalation signals disabled.
    */
-  const dif_alert_handler_class_phase_signal_t *phase_signals;
+  const dif_alert_handler_escalation_phase_t *escalation_phases;
   /**
-   * The length of the array `phase_signals`.
+   * The length of the array `escalation_phases`.
    */
-  size_t phase_signals_len;
-
+  size_t escalation_phases_len;
   /**
-   * Durations, in cycles, of each escalation phase.
+   * The escalation phase to capture the crashdump information in.
+   *
+   * It is an error for this to not be one of the `Phase` constants in
+   * `dif_alert_handler_class_state_t`.
+   *
+   * Note, it is recommended to capture the crashdump upon entering the first
+   * escalation phase that activates a countermeasure with many side-effects
+   * (e.g. life cycle state scrapping) in order to prevent spurious alert events
+   * from masking the original alert causes.
    */
-  const dif_alert_handler_class_phase_duration_t *phase_durations;
-  /**
-   * The length of the array `phase_durations`.
-   */
-  size_t phase_durations_len;
+  dif_alert_handler_class_state_t crashdump_escalation_phase;
 } dif_alert_handler_class_config_t;
 
 /**
- * Runtime configuration for alert handler.
+ * Runtime configuration for the alert handler.
  *
- * This struct describes runtime information for one-time configuration of the
- * hardware.
+ * This struct describes runtime information for a single-shot configuration of
+ * the alert handler hardware.
+ *
+ * Note, any of the array pointers may be NULL, in which case the associated
+ * length should be 0.
  */
 typedef struct dif_alert_handler_config {
+  /**
+   * A list of alerts to configure.
+   */
+  dif_alert_handler_alert_t *alerts;
+  /**
+   * A list of classes to assign each alert to.
+   */
+  dif_alert_handler_class_t *alert_classes;
+  /**
+   * The lengths of the arrays `alerts` and `alert_classes`.
+   */
+  size_t alerts_len;
+
+  /**
+   * A list of local alerts to configure.
+   */
+  dif_alert_handler_local_alert_t *local_alerts;
+  /**
+   * A list of classes to assign each local alert to.
+   */
+  dif_alert_handler_class_t *local_alert_classes;
+  /**
+   * The lengths of the arrays `local_alerts` and `local_alert_classes`.
+   */
+  size_t local_alerts_len;
+
+  /**
+   * A list of alert classes to configure.
+   */
+  const dif_alert_handler_class_t *classes;
+  /**
+   * A list of alert class (escalation protocol) configurations.
+   */
+  const dif_alert_handler_class_config_t *class_configs;
+  /**
+   * The length of the arrays `classes` and `class_configs`.
+   */
+  size_t classes_len;
+
   /**
    * The alert ping timeout, in cycles.
    *
@@ -302,14 +290,6 @@ typedef struct dif_alert_handler_config {
    */
   uint32_t ping_timeout;
 
-  /**
-   * A list of alert classes to configure.
-   */
-  const dif_alert_handler_class_config_t *classes;
-  /**
-   * The length of the array `classes`.
-   */
-  size_t classes_len;
 } dif_alert_handler_config_t;
 
 /**
@@ -317,16 +297,21 @@ typedef struct dif_alert_handler_config {
  *
  * This function should need to be called once for the lifetime of `handle`.
  *
- * This operation is lock-protected.
+ * This operation is lock-protected, meaning once the configuration is locked,
+ * it cannot be reconfigured until after a system reset. If `locked` is set to
+ * `kDifToggleEnabled`, then every lockable configuration will be locked.
+ * Otherwise, configurations may only be locked by performing subsequent calls
+ * to each component-specific locking DIF: `dif_alert_handler_lock_*(...)`.
  *
  * @param handler An alert handler handle.
  * @param config Runtime configuration parameters.
+ * @param locked The locked state to set for each configuration.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_configure(
-    const dif_alert_handler_t *alert_handler,
-    dif_alert_handler_config_t config);
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_config_t config,
+    dif_toggle_t locked);
 
 /**
  * Configures an alert in the alert handler.
@@ -368,10 +353,30 @@ dif_result_t dif_alert_handler_configure_local_alert(
     dif_toggle_t locked);
 
 /**
- * Locks out alert handler ping timer configuration.
+ * Configures the escalation protocol of an alert class in the alert handler.
  *
- * Once locked, `dif_alert_handler_configure()` will return
- * `kDifLocked`.
+ * This operation is lock-protected, meaning once the configuration is locked,
+ * it cannot be reconfigured until after a system reset.
+ *
+ * Note, regardless if the class is enabled or, IRQs will still fire based on
+ * the accumulation counter threshold configuration for the class, however, the
+ * escalation protocol will not trigger.
+ *
+ * @param handler An alert handler handle.
+ * @param alert_class The class to be configured.
+ * @param config The escalation protocol configuration.
+ * @param enabled The enablement state of the class escalation protocol.
+ * @param locked The locked state to configure the class in.
+ * @ return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT dif_result_t
+dif_alert_handler_configure_class(const dif_alert_handler_t *alert_handler,
+                                  dif_alert_handler_class_t alert_class,
+                                  dif_alert_handler_class_config_t config,
+                                  dif_toggle_t enabled, dif_toggle_t locked);
+
+/**
+ * Locks out alert handler ping timer configuration.
  *
  * This operation cannot be undone, and should be performed at the end of
  * configuring the alert handler in early boot.
