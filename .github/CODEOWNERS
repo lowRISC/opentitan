@@ -57,9 +57,9 @@ util/build_docs.py  @moidx
 
 
 # DV related common files
-dv/                 @sriyerg @weicaiyang
-fpv/                @cindychip
-formal/             @cindychip
+dv/                 @lowRISC/ot-dv-reviewers
+fpv/                @lowRISC/ot-dv-reviewers
+formal/             @lowRISC/ot-dv-reviewers
 # lint/             # TBD
 
 # SW related
