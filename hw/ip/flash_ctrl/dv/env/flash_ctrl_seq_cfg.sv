@@ -31,6 +31,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint mp_region_read_en_pc;
   uint mp_region_program_en_pc;
   uint mp_region_erase_en_pc;
+  uint mp_region_scramble_en_pc;
+  uint mp_region_ecc_en_pc;
   uint mp_region_he_en_pc;
   uint mp_region_max_pages;
 
@@ -41,6 +43,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint default_region_read_en_pc;
   uint default_region_program_en_pc;
   uint default_region_erase_en_pc;
+  uint default_region_scramble_en_pc;
+  uint default_region_ecc_en_pc;
+  uint default_region_he_en_pc;
 
   // Weights to enable read / program and erase for each information partition page.
   // For each of the information partitions in each of the banks there is a single variable to
@@ -56,18 +61,18 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Flash ctrl op randomization knobs.
 
   // Partition select. Make sure to keep sum equals to 100.
-  uint op_on_data_partition_pc;         // Choose data partition.
-  uint op_on_info_partition_pc;         // Choose info partition.
-  uint op_on_info1_partition_pc;        // Choose info1 partition.
-  uint op_on_redundancy_partition_pc;   // Choose redundancy partition.
+  uint op_on_data_partition_pc;  // Choose data partition.
+  uint op_on_info_partition_pc;  // Choose info partition.
+  uint op_on_info1_partition_pc;  // Choose info1 partition.
+  uint op_on_redundancy_partition_pc;  // Choose redundancy partition.
 
   bit op_readonly_on_info_partition;  // Make info partition read-only.
-  bit op_readonly_on_info1_partition; // Make info1 partition read-only.
+  bit op_readonly_on_info1_partition;  // Make info1 partition read-only.
 
 
   uint op_erase_type_bank_pc;
   uint op_max_words;
-  bit  op_allow_invalid;
+  bit op_allow_invalid;
 
   // Poll fifo status before writing to prog_fifo / reading from rd_fifo.
   uint poll_fifo_status_pc;
@@ -94,18 +99,24 @@ class flash_ctrl_seq_cfg extends uvm_object;
   `uvm_object_new
 
   // Set partition select percentages. Make sure to keep sum equals to 100.
-  virtual function void set_partition_pc(uint sel_data_part_pc = 100,
-                                         uint sel_info_part_pc = 0,
+  virtual function void set_partition_pc(uint sel_data_part_pc = 100, uint sel_info_part_pc = 0,
                                          uint sel_info1_part_pc = 0,
                                          uint sel_redundancy_part_pc = 0);
 
     `DV_CHECK_EQ(sel_data_part_pc + sel_info_part_pc + sel_info1_part_pc + sel_redundancy_part_pc,
-                 100, $sformatf({"Error! sum of arguments must be 100. Be aware of arguments ",
-                                 "default values - 100 for data partition and 0 for all the ",
-                                 "others. Arguments current value: sel_data_part_pc=%0d , ",
-                                 "sel_info_part_pc=%0d , sel_info1_part_pc=%0d , ",
-                                 "sel_redundancy_part_pc=%0d"}, sel_data_part_pc,
-                                 sel_info_part_pc, sel_info1_part_pc, sel_redundancy_part_pc))
+                 100, $sformatf(
+                 {
+                   "Error! sum of arguments must be 100. Be aware of arguments ",
+                   "default values - 100 for data partition and 0 for all the ",
+                   "others. Arguments current value: sel_data_part_pc=%0d , ",
+                   "sel_info_part_pc=%0d , sel_info1_part_pc=%0d , ",
+                   "sel_redundancy_part_pc=%0d"
+                 },
+                 sel_data_part_pc,
+                 sel_info_part_pc,
+                 sel_info1_part_pc,
+                 sel_redundancy_part_pc
+                 ))
 
     op_on_data_partition_pc       = sel_data_part_pc;
     op_on_info_partition_pc       = sel_info_part_pc;
@@ -116,23 +127,28 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
 
   virtual function void configure();
-    max_num_trans = 20;
+    max_num_trans                 = 20;
 
-    num_en_mp_regions = flash_ctrl_pkg::MpRegions;
+    num_en_mp_regions             = flash_ctrl_pkg::MpRegions;
 
-    allow_mp_region_overlap = 1'b0;
+    allow_mp_region_overlap       = 1'b0;
 
-    mp_region_read_en_pc = 50;
-    mp_region_program_en_pc = 50;
-    mp_region_erase_en_pc = 50;
-    mp_region_he_en_pc = 0;
-    mp_region_max_pages = 32;
+    mp_region_read_en_pc          = 50;
+    mp_region_program_en_pc       = 50;
+    mp_region_erase_en_pc         = 50;
+    mp_region_scramble_en_pc      = 0;
+    mp_region_ecc_en_pc           = 0;
+    mp_region_he_en_pc            = 0;
+    mp_region_max_pages           = 32;
 
-    bank_erase_en_pc = 50;
+    bank_erase_en_pc              = 50;
 
-    default_region_read_en_pc    = 50;
-    default_region_program_en_pc = 50;
-    default_region_erase_en_pc   = 50;
+    default_region_read_en_pc     = 50;
+    default_region_program_en_pc  = 50;
+    default_region_erase_en_pc    = 50;
+    default_region_scramble_en_pc = 0;
+    default_region_ecc_en_pc      = 0;
+    default_region_he_en_pc       = 0;
 
     foreach (mp_info_page_en_pc[i, j]) begin
       mp_info_page_en_pc[i][j] = 50;
@@ -164,9 +180,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
     check_mem_post_tran = 1'b1;
 
-    prog_timeout_ns = 10_000_000; // 10ms
+    prog_timeout_ns = 10_000_000;  // 10ms
 
-    erase_timeout_ns = 120_000_000; // 120ms
+    erase_timeout_ns = 120_000_000;  // 120ms
 
     set_partition_pc();
 

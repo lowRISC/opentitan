@@ -19,6 +19,14 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Determine post-reset initialization method.
   rand flash_mem_init_e flash_init;
 
+  // default region cfg
+  flash_mp_region_cfg_t default_region_cfg = '{default:1, scramble_en:0, ecc_en:0, he_en:0,
+                                               num_pages:1, start_page:0};
+
+  // default info cfg
+  flash_bank_mp_info_page_cfg_t default_info_page_cfg = '{default:1, scramble_en:0, ecc_en:0,
+                                                          he_en:0};
+
   // By default, in 30% of the times initialize flash as in initial state (all 1s),
   //  while in 70% of the times the initialization will be randomized (simulating working flash).
   constraint flash_init_c {
@@ -71,7 +79,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask  // apply_reset
 
   // Configure the memory protection regions.
-  virtual task flash_ctrl_mp_region_cfg(uint index, flash_mp_region_cfg_t region_cfg);
+  virtual task flash_ctrl_mp_region_cfg(uint index, flash_mp_region_cfg_t region_cfg =
+                                        default_region_cfg);
     uvm_reg_data_t data;
     uvm_reg csr;
     //verilog_format: off
@@ -84,6 +93,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                        region_cfg.program_en) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].erase_en, data,
                                        region_cfg.erase_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].scramble_en, data,
+                                       region_cfg.scramble_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].ecc_en, data,
+                                       region_cfg.ecc_en) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].he_en, data,
                                        region_cfg.he_en) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_shadowed[index].base, data,
@@ -96,19 +109,24 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Configure the protection for the "default" region (all pages that do not fall into one
   // of the memory protection regions).
-  virtual task flash_ctrl_default_region_cfg(bit read_en, bit program_en, bit erase_en);
+  virtual task flash_ctrl_default_region_cfg(bit read_en = 1, bit program_en = 1, bit erase_en = 1,
+                                             bit scramble_en = 0, bit ecc_en = 0, bit he_en = 0);
     uvm_reg_data_t data;
 
     data = get_csr_val_with_updated_field(ral.default_region_shadowed.rd_en, data, read_en) |
         get_csr_val_with_updated_field(ral.default_region_shadowed.prog_en, data, program_en) |
-        get_csr_val_with_updated_field(ral.default_region_shadowed.erase_en, data, erase_en);
+        get_csr_val_with_updated_field(ral.default_region_shadowed.erase_en, data, erase_en) |
+        get_csr_val_with_updated_field(ral.default_region_shadowed.scramble_en, data,
+                                       scramble_en) |
+        get_csr_val_with_updated_field(ral.default_region_shadowed.ecc_en, data, ecc_en) |
+        get_csr_val_with_updated_field(ral.default_region_shadowed.he_en, data, he_en);
     csr_wr(.ptr(ral.default_region_shadowed), .value(data));
   endtask
 
   // Configure the memory protection of some selected page in one of the information partitions in
   //  one of the banks.
   virtual task flash_ctrl_mp_info_page_cfg(uint bank, uint info_part, uint page,
-                                           flash_bank_mp_info_page_cfg_t page_cfg);
+                                  flash_bank_mp_info_page_cfg_t page_cfg = default_info_page_cfg);
     uvm_reg_data_t data;
     uvm_reg csr;
     string csr_name = $sformatf("bank%0d_info%0d_page_cfg_shadowed", bank, info_part);
@@ -124,6 +142,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                        page_cfg.program_en) |
         get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data,
                                        page_cfg.erase_en) |
+        get_csr_val_with_updated_field(csr.get_field_by_name("scramble_en"), data,
+                                       page_cfg.scramble_en) |
+        get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"), data,
+                                       page_cfg.ecc_en) |
         get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data,
                                        page_cfg.he_en);
     csr_wr(.ptr(csr), .value(data));

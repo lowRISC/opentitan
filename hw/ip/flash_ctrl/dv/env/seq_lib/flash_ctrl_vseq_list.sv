@@ -10,3 +10,4 @@
 `include "flash_ctrl_smoke_hw_vseq.sv"
 `include "flash_ctrl_rand_ops_vseq.sv"
 `include "flash_ctrl_sw_op_vseq.sv"
+`include "flash_ctrl_host_dir_rd_vseq.sv"
