@@ -106,12 +106,12 @@ module spid_jedec
       p2s_byte = jedec.cc;
     end else if (st_q == StJedecId) begin
       p2s_byte = jedec.jedec_id;
-    end else if (byte_sel_q == 2'h 2) begin
-      // End of the transfer but host keep toggles SCK. Sending out 0 always
-      p2s_byte = 8'h 0;
     end else begin
       // based on byte_sel_q
-      p2s_byte = jedec.device_id[8*byte_sel_q+:8];
+      // End of the transfer but host keep toggles SCK. Sending out 0 always
+      p2s_byte = (byte_sel_q >= 2'b 10) ? 8'h 0 :
+                 (byte_sel_q == 2'b 01) ? jedec.device_id[15:8] :
+                                          jedec.device_id[7:0] ;
     end
   end : p2s_byte_logic
 
