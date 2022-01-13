@@ -18,6 +18,8 @@ from .ext_regs import TraceExtRegChange, ExtRegChange
 # new_cnt.
 LoopWarps = Dict[int, Dict[int, int]]
 
+SEC_WIPE_EN = 0
+SEC_WIPE_CNT = 96
 
 class OTBNSim:
     def __init__(self) -> None:
@@ -93,6 +95,8 @@ class OTBNSim:
                    verbose: bool,
                    insn: OTBNInsn) -> List[Trace]:
         '''This is run when an instruction completes'''
+
+        # print('On retire')
         assert self._execute_generator is None
         self.state.post_insn(self.loop_warps.get(self.state.pc, {}))
 
@@ -102,9 +106,15 @@ class OTBNSim:
         if self.state.pending_halt:
             # We've reached the end of the run (either because of an ECALL
             # instruction or an error).
-            self.state.stop()
+            if SEC_WIPE_EN:
+              self.state.start_wiping()
+            else:
+                self.state.stop()
 
-        changes = self.state.changes()
+        if not self.state.wiping():
+          changes = self.state.changes()
+        else:
+          changes = []
 
         # Program counter before commit
         pc_before = self.state.pc
@@ -121,6 +131,21 @@ class OTBNSim:
 
         return changes
 
+    def _on_wipe(self, verbose: bool) -> List[Trace]:
+        '''This is run on wipe cycles'''
+        if self.state.wiping_cnt == 1:
+            changes = []
+        else:
+            changes = self.state.changes()
+        self.state.commit(sim_stalled=False)
+        if self.stats is not None:
+            self.stats.record_stall()
+        if verbose:
+            self._print_trace(self.state.pc, '(wipe)', changes)
+        if self.state.fsm_state in [FsmState.POST_EXEC, FsmState.LOCKING]:
+            self.state.stop()
+        return changes
+
     def step(self, verbose: bool) -> Tuple[Optional[OTBNInsn], List[Trace]]:
         '''Run a single cycle.
 
@@ -129,6 +154,9 @@ class OTBNSim:
         returns no instruction and no changes.
 
         '''
+        # print(self.state.fsm_state)
+        # print(self.state._err_bits)
+
         if not self.state.running():
             return (None, [])
 
@@ -154,6 +182,9 @@ class OTBNSim:
             changes = self._on_stall(verbose, fetch_next=False)
             self.state.ext_regs.write('INSN_CNT', 0, True)
             return (None, changes)
+
+        if self.state.fsm_state == FsmState.WIPE:
+            return (None, self._on_wipe(verbose))
 
         if self.state.fsm_state in [FsmState.POST_EXEC, FsmState.LOCKING]:
             return (None, self._on_stall(verbose, fetch_next=False))
