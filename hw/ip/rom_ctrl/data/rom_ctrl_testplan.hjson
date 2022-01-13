@@ -28,6 +28,7 @@
             - Check that the memory accesses return expected data
             - Check that pwrmgr_data_o.good is not asserted in first iteration.
             - Check that pwrmgr_data_o.good is asserted in second iteration.
+            - Check that tile link accesses are blocked till pwrmgr_data_o.done is asserted. 
             '''
       milestone: V1
       tests: ["rom_ctrl_smoke"]
@@ -51,6 +52,7 @@
       milestone: V2
       tests: ["rom_ctrl_stress_all"]
     }
+    
   ]
   covergroups: [
     {
@@ -74,8 +76,11 @@
     {
       name: rom_ctrl_check_cg
       desc: '''
-            Collect coverage on the outputs sent to the power manager to confirm
-            that we see pass and fail resutls.
+            - Collect coverage on the outputs sent to the power manager to confirm
+            that we see pass and fail results.
+            - Collect coverage to ensure that a_valid goes high when rom check 
+            is in progress. This ensures that the scenario where TL accesses are 
+            blocked until the ROM check is done is covered. 
             '''
     }
   ]
