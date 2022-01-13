@@ -48,6 +48,7 @@ The protocol controller currently supports the following features:
 *  Provisioning of flash specific attributes:
    * High endurance.
 *  Idle indication to external power managers.
+*  Software control of flash code fetch.
 
 ### Flash Physical Controller Features
 
@@ -289,6 +290,15 @@ This idle indication does not mean the controller is doing "nothing", but rather
 
 This is because an external power manager event (such as shutting off power) while a flash stateful transaction is ongoing may be damaging to the vendor flash module.
 
+#### Flash Code Execution Handling
+
+Flash can be used to store both data and code.
+To support separate access priviledges between data and code, the flash protocol controller provides {{< regref "EXEC" >}} for software control.
+
+If software programs {{< regref "EXEC" >}} to TBD value, code fetch from flash is allowed.
+If software programs {{< regref "EXEC" >}} to any other value, code fetch from flash results in an error.
+
+The flash protocol controller distinguishes code / data transactions through the [instruction type attribute]({{< relref "hw/ip/lc_ctrl/doc/_index.md#usage-of-user-bits" >}}) of the TL-UL interface.
 
 ### Flash Physical Controller
 

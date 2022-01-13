@@ -76,6 +76,8 @@ as input will be in the device-to-host struct (`tl_d2h_t`). The literal
 and structs include the additional (non-TL-UL standard) user extension
 signals per direction to carry chip specific user bits.
 
+The function of the user bits are separately described in a separate table.
+
 | Signal Name | Direction | Description |
 | --- | --- | --- |
 | `a_valid`           | output | Request from host is valid |
@@ -98,6 +100,17 @@ signals per direction to carry chip specific user bits.
 | `d_source[AIW-1:0]` | input  | Bouncing of request ID of configurable width |
 | `d_sink[DIW-1:0]`   | input  | Response ID of configurable width (possibly unused) |
 | `d_user[DUW-1:0]`   | input  | Response attributes of configurable width; includes error responses plus other attributes TBD. **This is an augmentation to the TL-UL specification.** |
+
+The `a_user` bus contains serveral signals
+- `instr_type` - controls whether the transaction is an instruction fetch type
+- `cmd_intg`   - carries the command integrity of the transaction
+- `data_intg`  - carries the write data integrity of the transaction
+
+The `d_user` bus contains serveral signals
+- `rsp_intg`   - carries the response integrity of the transaction
+- `data_intg`  - carries the read data integrity of the transaction
+
+The user bus is primarily used to distinguish data / instruction transactions while also supporting the bus integrity scheme.
 
 There are eight bus width parameters, defined here. Some are generated
 widths based upon the other parameter sizes.
@@ -282,18 +295,25 @@ The following list gives examples of future usage for `a_user` and
 `d_user` bits.
 
 - `a_user` modifications
-  - Bus host identifier, for security checking within devices
-    - We will need redundancy here to avoid single bit failure, so up to
-      8 hosts could be distinguished with 4 user bits
-  - Permission level, for security checking within devices
-    - We will need redundancy here to avoid single bit failure, so 5
-      (up to 8) permission levels could be distinguished with 4 user bits
-  - Parity
-    - We would need one bit for parity enable (to allow parity to be
-      disabled if necessary during debugging), `DBW` bits for parity
+  - Instruction Type
+    - This indicates whether the transaction originates from a code fetch or data fetch.
+    - This attribute is used by downstream consumers to provide separate priviledge control based on transaction type.
+  - Command Integrity
+    - This is the calculated integrity of the instruction type, transaction address, transaction op code and mask.
+    - The integrity is checked by downstream consumers to ensure the transaction has not been tampered.
+
+  - Data Integrity
+    - This is calculated integrity of the write data.
+    - The integrity is checked by downstream consumers to ensure the transaction has not been tampered.
+
 - `d_user` modifications
-  - Parity
-    - We would need one bit for parity enable, `DBW` bits for parity
+  - Response Integrity
+    - This is the calculated integrity of the response op code, response size and response error.
+    - This integrity is checked by the transaction originator to ensure the response has not been tampered.
+
+  - Data Integrity
+    - This is the calculated integrity of the response read data.
+    - This integrity is checked by the transaction originator to ensure the response has not been tampered.
 
 #### Usage of Opcode, Size and Mask
 
@@ -359,6 +379,9 @@ The interconnect does not possess additional hardware mechanisms to detect and h
 The reasons for this are that
 1. the space of potential errors and resolutions would be very large, thus unnecessarily complicating the design,
 2. any tampering attempt leading to an unresponsive system will eventually be detected by other subsystems within the top level system.
+
+### Bus Integrity Scheme
+To be filled in.
 
 
 ## Timing Diagrams
