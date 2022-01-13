@@ -52,7 +52,7 @@
             test pipeline structure.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_host_dir_rd"]
     }
     {
       name: host_ctrl_hw_if
