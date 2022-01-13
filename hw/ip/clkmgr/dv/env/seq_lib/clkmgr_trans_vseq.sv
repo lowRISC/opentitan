@@ -25,7 +25,6 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
   constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1'b1;}
 
   task body();
-    update_csrs_with_reset_values();
     for (int i = 0; i < num_trans; ++i) begin
       logic bit_value;
       hintables_t value;

@@ -46,33 +46,39 @@ interface clkmgr_if (
   logic jitter_en_o;
   clkmgr_pkg::clkmgr_out_t clocks_o;
 
-  // Types for CSR values.
-  typedef struct packed {
-    logic usb_peri_en;
-    logic io_peri_en;
-    logic io_div2_peri_en;
-    logic io_div4_peri_en;
-  } clk_enables_t;
-
-  typedef struct packed {
-    logic otbn_main;
-    logic otbn_io_div4;
-    logic kmac;
-    logic hmac;
-    logic aes;
-  } clk_hints_t;
-
-  // The CSR values from the testbench side.
-  clk_enables_t          clk_enables_csr;
-  clk_hints_t            clk_hints_csr;
-  lc_ctrl_pkg::lc_tx_t   extclk_ctrl_csr_sel;
-  lc_ctrl_pkg::lc_tx_t   extclk_ctrl_csr_step_down;
-  prim_mubi_pkg::mubi4_t jitter_enable_csr;
-
   // Internal DUT signals.
 `ifndef PATH_TO_DUT
   `define PATH_TO_DUT tb.dut
 `endif
+
+  // The CSR values from the testbench side.
+  clk_enables_t clk_enables_csr;
+  always_comb
+    clk_enables_csr = '{
+    usb_peri_en: `PATH_TO_DUT.reg2hw.clk_enables.clk_usb_peri_en.q,
+    io_peri_en: `PATH_TO_DUT.reg2hw.clk_enables.clk_io_peri_en.q,
+    io_div2_peri_en: `PATH_TO_DUT.reg2hw.clk_enables.clk_io_div2_peri_en.q,
+    io_div4_peri_en: `PATH_TO_DUT.reg2hw.clk_enables.clk_io_div4_peri_en.q
+  };
+
+  clk_hints_t clk_hints_csr;
+  always_comb
+    clk_hints_csr = '{
+    otbn_main: `PATH_TO_DUT.reg2hw.clk_hints.clk_main_otbn_hint.q,
+    otbn_io_div4: `PATH_TO_DUT.reg2hw.clk_hints.clk_io_div4_otbn_hint.q,
+    kmac: `PATH_TO_DUT.reg2hw.clk_hints.clk_main_kmac_hint.q,
+    hmac: `PATH_TO_DUT.reg2hw.clk_hints.clk_main_hmac_hint.q,
+    aes: `PATH_TO_DUT.reg2hw.clk_hints.clk_main_aes_hint.q
+  };
+
+  lc_ctrl_pkg::lc_tx_t extclk_ctrl_csr_sel;
+  always_comb extclk_ctrl_csr_sel = `PATH_TO_DUT.reg2hw.extclk_ctrl.sel.q;
+
+  lc_ctrl_pkg::lc_tx_t extclk_ctrl_csr_step_down;
+  always_comb extclk_ctrl_csr_step_down = `PATH_TO_DUT.reg2hw.extclk_ctrl.low_speed_sel.q;
+
+  prim_mubi_pkg::mubi4_t jitter_enable_csr;
+  always_comb jitter_enable_csr = `PATH_TO_DUT.reg2hw.jitter_enable.q;
 
   freq_measurement_t io_freq_measurement;
   logic io_timeout_err;
@@ -139,18 +145,6 @@ interface clkmgr_if (
   end
   always_comb usb_timeout_err = `PATH_TO_DUT.usb_timeout_err;
 
-  function automatic void update_extclk_ctrl(logic [2*LcTxTWidth-1:0] value);
-    {extclk_ctrl_csr_step_down, extclk_ctrl_csr_sel} = value;
-  endfunction
-
-  function automatic void update_clk_enables(clk_enables_t value);
-    clk_enables_csr = value;
-  endfunction
-
-  function automatic void update_clk_hints(clk_hints_t value);
-    clk_hints_csr = value;
-  endfunction
-
   function automatic void update_idle(hintables_t value);
     idle_i = value;
   endfunction
@@ -194,11 +188,8 @@ interface clkmgr_if (
     return pwr_o.main_status;
   endfunction
 
-  function automatic void update_jitter_enable(prim_mubi_pkg::mubi4_t value);
-    jitter_enable_csr = value;
-  endfunction
-
   function automatic void force_high_starting_count(clk_mesr_e clk);
+    `uvm_info("clkmgr_if", $sformatf("Forcing count of %0s to all 1.", clk.name()), UVM_MEDIUM)
     case (clk)
       ClkMesrIo: `PATH_TO_DUT.u_io_meas.cnt = '1;
       ClkMesrIoDiv2: `PATH_TO_DUT.u_io_div2_meas.cnt = '1;

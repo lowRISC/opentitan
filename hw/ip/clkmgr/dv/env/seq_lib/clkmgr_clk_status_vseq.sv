@@ -20,7 +20,6 @@ class clkmgr_clk_status_vseq extends clkmgr_base_vseq;
   endfunction
 
   task body();
-    update_csrs_with_reset_values();
     for (int i = 0; i < num_trans; ++i) begin
       cfg.clk_rst_vif.wait_clks(4);
       `DV_CHECK_RANDOMIZE_FATAL(this)
