@@ -2,13 +2,13 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:spi_host_sim:0.1"
+name: "lowrisc:dv:spi_host_sim:1.0"
 description: "SPI_HOST DV sim target"
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:spi_host:0.1
+      - lowrisc:ip:spi_host:1.0
 
   files_dv:
     depend:

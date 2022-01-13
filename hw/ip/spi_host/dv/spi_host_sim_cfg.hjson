@@ -15,7 +15,7 @@
   tool: xcelium
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:dv:spi_host_sim:0.1
+  fusesoc_core: lowrisc:dv:spi_host_sim:1.0
 
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/spi_host/data/spi_host_testplan.hjson"
