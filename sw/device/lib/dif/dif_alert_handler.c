@@ -19,7 +19,7 @@ static_assert(ALERT_HANDLER_PARAM_N_PHASES == 4,
 static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
               "Expected seven local alerts!");
 
-// TODO: add static assert for accumulator_threshold field size
+// TODO(#9899): add static assert for accumulator_threshold field size
 
 /**
  * We use this to convert the class enum to the integer value that is assigned
@@ -209,20 +209,18 @@ dif_result_t dif_alert_handler_configure_local_alert(
   return kDifOk;
 }
 
-/**
- * Configures the control registers of a particular alert handler class.
- */
-OT_WARN_UNUSED_RESULT
-static bool configure_class(const dif_alert_handler_t *alert_handler,
-                            dif_alert_handler_class_t alert_class,
-                            dif_alert_handler_class_config_t config,
-                            dif_toggle_t enabled, dif_toggle_t locked) {
-  if (!dif_is_valid_toggle(config.auto_lock_accumulation_counter) ||
+dif_result_t dif_alert_handler_configure_class(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class,
+    dif_alert_handler_class_config_t config, dif_toggle_t enabled,
+    dif_toggle_t locked) {
+  if (alert_handler == NULL ||
+      !dif_is_valid_toggle(config.auto_lock_accumulation_counter) ||
       (config.escalation_phases == NULL && config.escalation_phases_len != 0) ||
       (config.escalation_phases != NULL && config.escalation_phases_len == 0) ||
       !is_valid_escalation_phase(config.crashdump_escalation_phase) ||
       !dif_is_valid_toggle(enabled) || !dif_is_valid_toggle(locked)) {
-    return false;
+    return kDifBadArg;
   }
 
   ptrdiff_t class_regwen_offset;
@@ -236,7 +234,7 @@ static bool configure_class(const dif_alert_handler_t *alert_handler,
   ptrdiff_t crashdump_phase_reg_offset;
   switch (alert_class) {
     case kDifAlertHandlerClassA:
-      class_regwen_offset = ALERT_HANDLER_CLASSA_CLR_REGWEN_REG_OFFSET;
+      class_regwen_offset = ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET;
       ctrl_reg_offset = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_REG_OFFSET;
       accum_thresh_reg_offset =
           ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET;
@@ -254,7 +252,7 @@ static bool configure_class(const dif_alert_handler_t *alert_handler,
           ALERT_HANDLER_CLASSA_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET;
       break;
     case kDifAlertHandlerClassB:
-      class_regwen_offset = ALERT_HANDLER_CLASSB_CLR_REGWEN_REG_OFFSET;
+      class_regwen_offset = ALERT_HANDLER_CLASSB_REGWEN_REG_OFFSET;
       ctrl_reg_offset = ALERT_HANDLER_CLASSB_CTRL_SHADOWED_REG_OFFSET;
       accum_thresh_reg_offset =
           ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_REG_OFFSET;
@@ -272,7 +270,7 @@ static bool configure_class(const dif_alert_handler_t *alert_handler,
           ALERT_HANDLER_CLASSB_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET;
       break;
     case kDifAlertHandlerClassC:
-      class_regwen_offset = ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET;
+      class_regwen_offset = ALERT_HANDLER_CLASSC_REGWEN_REG_OFFSET;
       ctrl_reg_offset = ALERT_HANDLER_CLASSC_CTRL_SHADOWED_REG_OFFSET;
       accum_thresh_reg_offset =
           ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_REG_OFFSET;
@@ -290,7 +288,7 @@ static bool configure_class(const dif_alert_handler_t *alert_handler,
           ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET;
       break;
     case kDifAlertHandlerClassD:
-      class_regwen_offset = ALERT_HANDLER_CLASSD_CLR_REGWEN_REG_OFFSET;
+      class_regwen_offset = ALERT_HANDLER_CLASSD_REGWEN_REG_OFFSET;
       ctrl_reg_offset = ALERT_HANDLER_CLASSD_CTRL_SHADOWED_REG_OFFSET;
       accum_thresh_reg_offset =
           ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_REG_OFFSET;
@@ -308,14 +306,14 @@ static bool configure_class(const dif_alert_handler_t *alert_handler,
           ALERT_HANDLER_CLASSD_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET;
       break;
     default:
-      return false;
+      return kDifBadArg;
   }
 
   // Check if class configuration is locked.
   uint32_t class_regwen =
       mmio_region_read32(alert_handler->base_addr, class_regwen_offset);
   if (class_regwen == 0) {
-    return false;
+    return kDifLocked;
   }
 
   // NOTE: from this point on, we assume that Class A's constants are
@@ -338,49 +336,63 @@ static bool configure_class(const dif_alert_handler_t *alert_handler,
 
     if (!is_valid_escalation_phase(phase) ||
         signal >= ALERT_HANDLER_PARAM_N_ESC_SEV) {
-      return false;
+      return kDifBadArg;
     }
 
     bitfield_bit32_index_t signal_enable_bit;
     bitfield_field32_t signal_map_field;
-    switch (phase) {
-      case kDifAlertHandlerClassStatePhase0:
+    switch (signal) {
+      case 0:
         signal_enable_bit = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT;
         signal_map_field = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E0_FIELD;
-        signal_map_field = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E0_FIELD;
-        mmio_region_write32_shadowed(
-            alert_handler->base_addr, phase0_cycles_reg_offset,
-            config.escalation_phases[i].duration_cycles);
         break;
-      case kDifAlertHandlerClassStatePhase1:
+      case 1:
         signal_enable_bit = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E1_BIT;
         signal_map_field = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E1_FIELD;
-        mmio_region_write32_shadowed(
-            alert_handler->base_addr, phase1_cycles_reg_offset,
-            config.escalation_phases[i].duration_cycles);
         break;
-      case kDifAlertHandlerClassStatePhase2:
+      case 2:
         signal_enable_bit = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E2_BIT;
         signal_map_field = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E2_FIELD;
-        mmio_region_write32_shadowed(
-            alert_handler->base_addr, phase2_cycles_reg_offset,
-            config.escalation_phases[i].duration_cycles);
         break;
-      case kDifAlertHandlerClassStatePhase3:
+      case 3:
         signal_enable_bit = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E3_BIT;
         signal_map_field = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E3_FIELD;
-        mmio_region_write32_shadowed(
-            alert_handler->base_addr, phase3_cycles_reg_offset,
-            config.escalation_phases[i].duration_cycles);
         break;
       default:
-        return false;
+        return kDifBadArg;
     }
 
     ctrl_reg = bitfield_bit32_write(ctrl_reg, signal_enable_bit, true);
     ctrl_reg = bitfield_field32_write(
         ctrl_reg, signal_map_field,
         (uint32_t)(phase - kDifAlertHandlerClassStatePhase0));
+
+    // TODO(#9899): alter this to leave no hardware configuration effects if
+    // kDifBadArg needs to be returned.
+    switch (phase) {
+      case kDifAlertHandlerClassStatePhase0:
+        mmio_region_write32_shadowed(
+            alert_handler->base_addr, phase0_cycles_reg_offset,
+            config.escalation_phases[i].duration_cycles);
+        break;
+      case kDifAlertHandlerClassStatePhase1:
+        mmio_region_write32_shadowed(
+            alert_handler->base_addr, phase1_cycles_reg_offset,
+            config.escalation_phases[i].duration_cycles);
+        break;
+      case kDifAlertHandlerClassStatePhase2:
+        mmio_region_write32_shadowed(
+            alert_handler->base_addr, phase2_cycles_reg_offset,
+            config.escalation_phases[i].duration_cycles);
+        break;
+      case kDifAlertHandlerClassStatePhase3:
+        mmio_region_write32_shadowed(
+            alert_handler->base_addr, phase3_cycles_reg_offset,
+            config.escalation_phases[i].duration_cycles);
+        break;
+      default:
+        return kDifBadArg;
+    }
   }
 
   mmio_region_write32_shadowed(alert_handler->base_addr, ctrl_reg_offset,
@@ -399,14 +411,15 @@ static bool configure_class(const dif_alert_handler_t *alert_handler,
   // Configure the crashdump phase.
   mmio_region_write32_shadowed(alert_handler->base_addr,
                                crashdump_phase_reg_offset,
-                               config.crashdump_escalation_phase);
+                               (uint32_t)(config.crashdump_escalation_phase -
+                                          kDifAlertHandlerClassStatePhase0));
 
   // Lock the configuration.
   if (locked == kDifToggleEnabled) {
     mmio_region_write32(alert_handler->base_addr, class_regwen_offset, 0);
   }
 
-  return true;
+  return kDifOk;
 }
 
 dif_result_t dif_alert_handler_configure(
@@ -445,8 +458,8 @@ dif_result_t dif_alert_handler_configure(
 
   // Configure and enable the requested alerts.
   for (int i = 0; i < config.alerts_len; ++i) {
-    // TODO(#9899): replace with CHECK_DIF_OK(...) when this function becomes a
-    // testutil function.
+    // TODO(#9899): replace with CHECK_DIF_OK(...) when the parent function
+    // becomes a testutil function.
     if (dif_alert_handler_configure_alert(
             alert_handler, config.alerts[i], config.alert_classes[i],
             kDifToggleEnabled, locked) != kDifOk) {
@@ -455,6 +468,8 @@ dif_result_t dif_alert_handler_configure(
   }
 
   // Configure and enable the requested local alerts.
+  // TODO(#9899): replace with CHECK_DIF_OK(...) when the parent function
+  // becomes a testutil function.
   for (int i = 0; i < config.local_alerts_len; ++i) {
     if (dif_alert_handler_configure_local_alert(
             alert_handler, config.local_alerts[i],
@@ -465,16 +480,20 @@ dif_result_t dif_alert_handler_configure(
   }
 
   // Configure and enable the requested classes.
+  // TODO(#9899): replace with CHECK_DIF_OK(...) when the parent function
+  // becomes a testutil function.
   for (int i = 0; i < config.classes_len; ++i) {
-    if (!configure_class(alert_handler, config.classes[i],
-                         config.class_configs[i], kDifToggleEnabled, locked)) {
+    if (dif_alert_handler_configure_class(
+            alert_handler, config.classes[i], config.class_configs[i],
+            kDifToggleEnabled, locked) != kDifOk) {
       return kDifError;
     }
   }
 
   // Check if the ping timer is locked.
   bool is_ping_timer_locked;
-  // TODO(#9899): replace with CHECK_DIF_OK(...) when this function becomes a
+  // TODO(#9899): replace with CHECK_DIF_OK(...) when the parent function
+  // becomes a testutil function.
   if (dif_alert_handler_is_ping_timer_locked(alert_handler,
                                              &is_ping_timer_locked) != kDifOk) {
     return kDifError;
