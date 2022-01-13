@@ -97,15 +97,15 @@
       tests: []
     }
     {
-      name: fifo_eviction
+      name: rd_buff_eviction
       desc: '''
             Perform following sequences of operations: read/program/read and read/erase/read in
-            order to test fifo eviction properly. Read should be executed by both Software and
-            Host interface. All combinations should be tested. Covergroup for this hazardous
-            behavior is fifo_evict_cg.
+            order to test read buffer eviction properly. Read should be executed by both Software
+            and Host interface. All combinations should be tested. Covergroup for this hazardous
+            behavior is rd_buff_evict_cg.
             '''
       milestone: V2
-      tests: []
+      tests: ["flash_ctrl_rd_buff_evict"]
     }
     {
       name: host_arb
@@ -320,7 +320,7 @@
             '''
     }
     {
-      name: fifo_evict_cg
+      name: rd_buff_evict_cg
       desc: '''
             Covers that all possible combinations for following sequences of operations
             READ/PROGRAM/READ and READ/ERASE/READ are executed. Software Interface can perform all
