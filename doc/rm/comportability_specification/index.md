@@ -265,7 +265,8 @@ The following standardised assets are defined:
 | CTRL_FLOW  | The control flow of software or a module |
 | CTRL       | Logic used to steer hardware behavior |
 | CONFIG     | Software-supplied configuration, programmed through the comportable register interface |
-| LFSR       | An LFSR |
+| LFSR       | A linear feedback shift register |
+| RNG        | A random number generator |
 | CTR        | A counter |
 | FSM        | A finite state machine |
 | MEM        | A generic data memory; volatile or non-volatile |
@@ -286,8 +287,10 @@ The following standardised countermeasures are defined:
 | MUBI           | A signal is multi-bit encoded | CTRL, CONFIG, CONSTANTS, INTERSIG |
 | SPARSE         | A signal is sparsely encoded  | FSM |
 | DIFF           | A signal is differentially encoded | CTRL, CTR |
-| REDUN          | There are redundant versions of the asset | ADDR, CTRL, CONFIG
+| REDUN          | There are redundant versions of the asset | ADDR, CTRL, CONFIG, CTR
+| REGWEN         | A register write enable is used to protect the asset from write access | CONFIG, MEM
 | SHADOW         | A shadow register is used to store the asset | CONFIG
+| REGREN         | A register write enable is used to protect the asset from read access | CONFIG, MEM
 | SCRAMBLE       | The asset is scrambled | CONFIG, MEM
 | INTEGRITY      | The asset has integrity protection from a computed value such as a checksum | CONFIG, REG, MEM
 | CONSISTENCY    | This asset is checked for consistency other than by associating integrity bits | CTRL, RST
