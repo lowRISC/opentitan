@@ -482,4 +482,10 @@ module rom_ctrl
   // Check that keymgr_data_o.valid is never de-asserted once asserted
   `ASSERT(KeymgrValidChk_A, $rose(keymgr_data_o.valid) |-> always !$fell(keymgr_data_o.valid))
 
+  // Check that rom_tl_o.d_valid is not asserted unless pwrmgr_data_o.done is asseterd.
+  // This check ensures that all tl accesses are blocked until rom check is completed. You might
+  // think we could check for a_ready, but that doesn't work because the TL to SRAM adapter has a
+  // 1-entry cache that accepts the transaction (but doesn't reply)
+  `ASSERT(TlAccessChk_A, (pwrmgr_data_o.done == prim_mubi_pkg::MuBi4False) |-> !rom_tl_o.d_valid)
+
 endmodule
