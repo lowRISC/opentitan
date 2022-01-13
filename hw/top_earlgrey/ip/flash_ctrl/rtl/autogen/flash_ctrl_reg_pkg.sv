@@ -20,6 +20,7 @@ package flash_ctrl_reg_pkg;
   parameter int BytesPerWord = 8;
   parameter int BytesPerPage = 2048;
   parameter int BytesPerBank = 524288;
+  parameter int ExecEn = 2724870391;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
@@ -116,7 +117,7 @@ package flash_ctrl_reg_pkg;
   } flash_ctrl_reg2hw_dis_reg_t;
 
   typedef struct packed {
-    logic [3:0]  q;
+    logic [31:0] q;
   } flash_ctrl_reg2hw_exec_reg_t;
 
   typedef struct packed {
@@ -718,12 +719,12 @@ package flash_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [548:543]
-    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [542:537]
-    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [536:525]
-    flash_ctrl_reg2hw_alert_test_reg_t alert_test; // [524:521]
-    flash_ctrl_reg2hw_dis_reg_t dis; // [520:517]
-    flash_ctrl_reg2hw_exec_reg_t exec; // [516:513]
+    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [576:571]
+    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [570:565]
+    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [564:553]
+    flash_ctrl_reg2hw_alert_test_reg_t alert_test; // [552:549]
+    flash_ctrl_reg2hw_dis_reg_t dis; // [548:545]
+    flash_ctrl_reg2hw_exec_reg_t exec; // [544:513]
     flash_ctrl_reg2hw_init_reg_t init; // [512:512]
     flash_ctrl_reg2hw_control_reg_t control; // [511:492]
     flash_ctrl_reg2hw_addr_reg_t addr; // [491:472]
@@ -998,7 +999,7 @@ package flash_ctrl_reg_pkg;
     4'b 0001, // index[ 2] FLASH_CTRL_INTR_TEST
     4'b 0001, // index[ 3] FLASH_CTRL_ALERT_TEST
     4'b 0001, // index[ 4] FLASH_CTRL_DIS
-    4'b 0001, // index[ 5] FLASH_CTRL_EXEC
+    4'b 1111, // index[ 5] FLASH_CTRL_EXEC
     4'b 0001, // index[ 6] FLASH_CTRL_INIT
     4'b 0001, // index[ 7] FLASH_CTRL_CTRL_REGWEN
     4'b 1111, // index[ 8] FLASH_CTRL_CONTROL

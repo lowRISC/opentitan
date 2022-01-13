@@ -350,14 +350,16 @@ TEST_F(TransferTest, TransferInternalError) {
 class ExecTest : public FlashCtrlTest {};
 
 TEST_F(ExecTest, Enable) {
-  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET,
+                     FLASH_CTRL_PARAM_EXEC_EN);
   EXPECT_SEC_WRITE_INCREMENT(1);
   flash_ctrl_exec_set(kFlashCtrlExecEnable);
 }
 
 TEST_F(ExecTest, Disable) {
-  // Note: any value that is not `0xa` will disable execution.
-  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, kMultiBitBool4False);
+  // Note: any value that is not FLASH_CTRL_PARAM_EXEC_EN will disable
+  // execution.
+  EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_EXEC_REG_OFFSET, 0);
   EXPECT_SEC_WRITE_INCREMENT(1);
   flash_ctrl_exec_set(kFlashCtrlExecDisable);
 }

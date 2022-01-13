@@ -872,10 +872,17 @@ module flash_ctrl
 
   assign flash_phy_req.flash_disable = flash_disable;
 
+  prim_mubi_pkg::mubi4_t sw_flash_exec_en;
   prim_mubi_pkg::mubi4_t flash_exec_en;
+
+  assign sw_flash_exec_en = (reg2hw.exec.q == unsigned'(ExecEn)) ?
+                            prim_mubi_pkg::MuBi4True :
+                            prim_mubi_pkg::MuBi4False;
+
   assign flash_exec_en = lc_escalate_en == lc_ctrl_pkg::On ?
                          prim_mubi_pkg::MuBi4False :
-                         prim_mubi_pkg::mubi4_t'(reg2hw.exec.q);
+                         sw_flash_exec_en;
+
 
   //////////////////////////////////////
   // Errors and Interrupts

@@ -299,6 +299,14 @@
       default: "${cfg.bytes_per_bank}",
       local: "true"
     },
+
+    // hex value of 0xa26a38f7
+    { name:      "ExecEn",
+      desc:      "Constant value that enables flash execution",
+      type:      "int"
+      default:   "${int("0xa26a38f7", 16)}",
+      local:     "true"
+    },
   ],
 
   regwidth: "32",
@@ -331,14 +339,13 @@
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
-          { bits: "3:0",
-            mubi: true,
+          { bits: "31:0",
             name: "EN",
             desc: '''
-              A value of true allows flash to be used for code execution.
+              A value of 0xa26a38f7 allows flash to be used for code execution.
               Any other value prevents code execution.
             '''
-            resval: false
+            resval: 0
           },
         ]
       },
