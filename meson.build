@@ -20,7 +20,7 @@ project(
 )
 
 # We allow both GCC and Clang, but these minimum versions.
-required_gcc_version = '>=5'
+required_gcc_version = '>=8'
 required_clang_version = '>=3.5'
 
 ot_version = get_option('ot_version')
