@@ -246,7 +246,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
       end
     end
     `uvm_error(`gfn, $sformatf(
-               "Mismatch for %0s recoverable error, expected 0b%b, got 0x%b",
+               "Mismatch for %0s recoverable error, expected 0b%b, got 0b%b",
                error_type,
                expected,
                actual

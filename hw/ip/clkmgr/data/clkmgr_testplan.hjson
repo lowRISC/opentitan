@@ -142,14 +142,14 @@
     {
       name: clk_status
       desc: '''
-            This tests the three `pwr_o.<clk>_status` output ports, for the
+            This tests the three `pwr_o.*_status` output ports, for the
             `io`, `main`, and `usb` clocks.
 
-            The `pwr_o.<clk>_status` output must track the correspponding
-            `pwr_i.<clk>_ip_clk_en` input.
+            The `pwr_o.*_status` output must track the correspponding
+            `pwr_i.*_ip_clk_en` input.
 
             **Stimulus**:
-            - Randomize the `pwr_i.<clk>_ip_clk_en` setting for each clock.
+            - Randomize the `pwr_i.*_ip_clk_en` setting for each clock.
 
             **Check**:
             - The checks are done in SVA at `clkmbf_pwrmgr_sva_if.sv`.
@@ -244,6 +244,19 @@
             - clkmgr_smoke_vseq,
             - clkmgr_trans_vseq
             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: stress_with_rand_reset
+      desc: '''Create standard stress tests with random reset.
+
+            Stress with the following sequences:
+            - clkmgr_extclk_vseq,
+            - clkmgr_peri_vseq,
+            - clkmgr_smoke_vseq,
+            - clkmgr_trans_vseq
+            '''
       milestone: V3
       tests: []
     }
@@ -282,9 +295,10 @@
       desc: '''
             Collects coverage for the external clock selection.
 
-            The external clock selection depends on the `extclk_sel` CSR,
-            and the `lc_hw_debug_en_i`, `lc_clk_byp_req_i`, and `scanmode_i`
-            input pins. This covergroup collects their cross.
+            The external clock selection depends on the `extclk_ctrl` CSR
+            fields `sel` and `low_speed_sel`, and the `lc_hw_debug_en_i`,
+            `lc_clk_byp_req_i`, and `scanmode_i` input pins. This covergroup
+            collects their cross.
             '''
     }
     {
@@ -292,8 +306,8 @@
       desc: '''
             Collects coverage for the frequency measurement counters.
 
-            The relevant information is whether it got an okay, slow, and
-            fast measurement.
+            The relevant information is whether it got an okay, slow, or
+            fast measurement, or a timeout.
             '''
     }
   ]
