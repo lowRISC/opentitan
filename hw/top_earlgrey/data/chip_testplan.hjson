@@ -1108,15 +1108,6 @@
       tests: []
     }
     {
-      name: chip_sw_alert_handler_edn_reset
-      desc: '''Verify that the EDN clock / reset is connected to alert_handler.
-
-            - Ensure that the ping timer LFSR resets when the EDN logic is held in reset.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
       name: chip_sw_alert_handler_crashdump
       desc: '''Verify the alert handler crashdump signal.
 
@@ -1560,15 +1551,6 @@
       tests: []
     }
     {
-      name: chip_sw_aes_edn_reset
-      desc: '''Verify that the EDN clock / reset is connected to AES.
-
-            - Ensure that the PRNG within AES resets when the EDN logic is held in reset.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
       name: chip_sw_aes_lc_escalate_en
       desc: '''Verify the effect of LC escalate en signal on AES.
 
@@ -1709,15 +1691,6 @@
             X-ref'ed with EDN test/env.
             '''
       milestone: V3
-      tests: []
-    }
-    {
-      name: chip_sw_kmac_edn_reset
-      desc: '''Verify that the EDN clock / reset is connected to KMAC.
-
-            // TODO: check if this can use connectivity test.
-            '''
-      milestone: V2
       tests: []
     }
     {
@@ -1977,16 +1950,6 @@
             - After the OTBN operation is complete, check the output for correctness.
               Verify that the OTBN clk hint status within clkmgr now reads 0 again (OTBN is idle),
               after the operation is complete.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_otbn_edn_reset
-      desc: '''Verify that the EDN clock / reset is connected to OTBN.
-
-            - Use connectivity assertion check to verify that the right clock and reset signals are
-              connected for receiving the entropy data from EDN.
             '''
       milestone: V2
       tests: []
