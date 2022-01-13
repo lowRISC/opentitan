@@ -7,6 +7,8 @@ from typing import Dict, List
 
 from .lib import check_keys, check_str, check_list
 
+# The documentation of assets and cm_types can be found here
+# https://docs.opentitan.org/doc/rm/comportability_specification/#countermeasures
 CM_ASSETS = [
     'KEY',
     'ADDR',
@@ -15,6 +17,7 @@ CM_ASSETS = [
     'CTRL',
     'CONFIG',
     'LFSR',
+    'RNG',
     'CTR',
     'FSM',
     'MEM',
@@ -34,6 +37,8 @@ CM_TYPES = [
     'SPARSE',
     'DIFF',
     'REDUN',
+    'REGWEN',
+    'REGREN',
     'SHADOW',
     'SCRAMBLE',
     'INTEGRITY',
