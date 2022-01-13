@@ -15,8 +15,10 @@
 #   Please refer the link for the detail
 #   https://help.github.com/en/articles/about-code-owners
 
-*.c                 @moidx
-*.h                 @moidx
+*.cc                @lowRISC/ot-c-cpp-reviewers
+*.c                 @lowRISC/ot-c-cpp-reviewers
+*.h                 @lowRISC/ot-c-cpp-reviewers
+*.rs                @lowRISC/ot-rust-reviewers
 
 
 # Bazel build rules
@@ -35,8 +37,6 @@ util/tlgen.py       @eunchan @msfschaffner @tjaychen
 util/tlgen/         @eunchan @msfschaffner @tjaychen
 util/topgen.py      @msfschaffner @tjaychen @Jacob-Levy
 util/topgen/        @msfschaffner @tjaychen @Jacob-Levy
-util/build_docs.py  @moidx
-
 
 # RTL related
 /hw/ip/aes/             @vogelpi
@@ -61,12 +61,6 @@ dv/                 @lowRISC/ot-dv-reviewers
 fpv/                @lowRISC/ot-dv-reviewers
 formal/             @lowRISC/ot-dv-reviewers
 # lint/             # TBD
-
-# SW related
-sw/**/*.c           @lowRISC/ot-c-cpp-reviewers
-sw/**/*.cc          @lowRISC/ot-c-cpp-reviewers
-sw/**/*.h           @lowRISC/ot-c-cpp-reviewers
-sw/**/*.rs          @lowRISC/ot-rust-reviewers
 
 # Common docs
 /doc/               @asb
