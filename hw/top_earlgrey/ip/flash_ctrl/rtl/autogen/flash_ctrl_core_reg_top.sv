@@ -208,8 +208,8 @@ module flash_ctrl_core_reg_top (
   logic [3:0] dis_qs;
   logic [3:0] dis_wd;
   logic exec_we;
-  logic [3:0] exec_qs;
-  logic [3:0] exec_wd;
+  logic [31:0] exec_qs;
+  logic [31:0] exec_wd;
   logic init_we;
   logic init_qs;
   logic init_wd;
@@ -1457,9 +1457,9 @@ module flash_ctrl_core_reg_top (
 
   // R[exec]: V(False)
   prim_subreg #(
-    .DW      (4),
+    .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5)
+    .RESVAL  (32'h0)
   ) u_exec (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12209,7 +12209,7 @@ module flash_ctrl_core_reg_top (
   assign dis_wd = reg_wdata[3:0];
   assign exec_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign exec_wd = reg_wdata[3:0];
+  assign exec_wd = reg_wdata[31:0];
   assign init_we = addr_hit[6] & reg_we & !reg_error;
 
   assign init_wd = reg_wdata[0];
@@ -13028,7 +13028,7 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[3:0] = exec_qs;
+        reg_rdata_next[31:0] = exec_qs;
       end
 
       addr_hit[6]: begin

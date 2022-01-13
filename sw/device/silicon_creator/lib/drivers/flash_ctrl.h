@@ -361,8 +361,8 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
 void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page, flash_ctrl_cfg_t cfg);
 
 typedef enum flash_ctrl_exec {
-  kFlashCtrlExecDisable = kMultiBitBool4False,
-  kFlashCtrlExecEnable = kMultiBitBool4True,
+  kFlashCtrlExecDisable,
+  kFlashCtrlExecEnable,
 } flash_ctrl_exec_t;
 
 /**

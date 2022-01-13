@@ -295,7 +295,7 @@ This is because an external power manager event (such as shutting off power) whi
 Flash can be used to store both data and code.
 To support separate access priviledges between data and code, the flash protocol controller provides {{< regref "EXEC" >}} for software control.
 
-If software programs {{< regref "EXEC" >}} to TBD value, code fetch from flash is allowed.
+If software programs {{< regref "EXEC" >}} to `0xa26a38f7`, code fetch from flash is allowed.
 If software programs {{< regref "EXEC" >}} to any other value, code fetch from flash results in an error.
 
 The flash protocol controller distinguishes code / data transactions through the [instruction type attribute]({{< relref "hw/ip/lc_ctrl/doc/_index.md#usage-of-user-bits" >}}) of the TL-UL interface.
@@ -450,7 +450,6 @@ If {{< regref "CONTROL.PARTITION_SEL" >}} is set, then the information partition
 If {{< regref "CONTROL.PARTITION_SEL" >}} is not set, then the corresponding word in the data partition is accessed.
 
 Flash scrambling, if enabled, also applies to information partitions.
-However, one TBD feature is related to flash support of life cycle and manufacturing.
 It may be required for manufacturers to directly inject data into specific pages flash information partitions via die contacts.
 For these pages, scramble shall be permanently disabled as the manufacturer should not be aware of scrambling functions.
 
