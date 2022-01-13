@@ -199,10 +199,15 @@
   logic recov_alert;
   assign recov_alert =
     hw2reg.recov_err_code.io_measure_err.de |
+    hw2reg.recov_err_code.io_timeout_err.de |
     hw2reg.recov_err_code.io_div2_measure_err.de |
+    hw2reg.recov_err_code.io_div2_timeout_err.de |
     hw2reg.recov_err_code.io_div4_measure_err.de |
+    hw2reg.recov_err_code.io_div4_timeout_err.de |
     hw2reg.recov_err_code.main_measure_err.de |
-    hw2reg.recov_err_code.usb_measure_err.de;
+    hw2reg.recov_err_code.main_timeout_err.de |
+    hw2reg.recov_err_code.usb_measure_err.de |
+    hw2reg.recov_err_code.usb_timeout_err.de;
 
   assign alerts = {
     |reg2hw.fatal_err_code,

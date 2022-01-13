@@ -169,7 +169,8 @@
   logic recov_alert;
   assign recov_alert =
 % for src in typed_clocks.rg_srcs:
-    hw2reg.recov_err_code.${src}_measure_err.de${";" if loop.last else " |"}
+    hw2reg.recov_err_code.${src}_measure_err.de |
+    hw2reg.recov_err_code.${src}_timeout_err.de${";" if loop.last else " |"}
 % endfor
 
   assign alerts = {
