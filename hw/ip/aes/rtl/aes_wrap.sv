@@ -124,6 +124,7 @@ module aes_wrap
     R_DATA_OUT_2,
     R_DATA_OUT_3,
     W_CTRL_SHADOWED,
+    W_CTRL_AUX_SHADOWED,
     W_TRIGGER_OFFSET,
     R_STATUS,
     FINISH
@@ -164,9 +165,26 @@ module aes_wrap
           h2d.a_valid = 1'b0;
           if (d2h.d_data[0] == 1'b1) begin
             // Once the DUT is idle, we can start the configuration sequence and clear the counter.
-            aes_wrap_ctrl_ns = W_CTRL_SHADOWED;
+            aes_wrap_ctrl_ns = W_CTRL_AUX_SHADOWED;
             count_d          = 32'h0;
           end
+        end
+      end
+
+      W_CTRL_AUX_SHADOWED: begin
+        h2d.a_valid   = 1'b1;
+        h2d.a_opcode  = PutFullData;
+        h2d.a_address = {{{32-BlockAw}{1'b0}}, AES_CTRL_AUX_SHADOWED_OFFSET};
+        h2d.a_data    = 32'h0;
+
+        // We can't do back to back transactions. De-assert valid while receiving response.
+        if (d2h.d_valid) begin
+          h2d.a_valid = 1'b0;
+        end
+
+        // The shadow reg needs to be written twice.
+        if (count_q >= 32'h3 && d2h.d_valid) begin
+          aes_wrap_ctrl_ns = W_CTRL_SHADOWED;
         end
       end
 
@@ -176,13 +194,13 @@ module aes_wrap
         h2d.a_address = {{{32-BlockAw}{1'b0}}, AES_CTRL_SHADOWED_OFFSET};
         h2d.a_data    = {19'h0, 1'b0 ,1'b0, SIDELOAD, AES_128, AES_MODE, AES_ENC};
 
-        // We can't to back to back transactions. De-assert valid while receiving response.
+        // We can't do back to back transactions. De-assert valid while receiving response.
         if (d2h.d_valid) begin
           h2d.a_valid = 1'b0;
         end
 
         // The shadow reg needs to be written twice.
-        if (count_q >= 32'h3 && d2h.d_valid) begin
+        if (count_q >= 32'h7 && d2h.d_valid) begin
           aes_wrap_ctrl_ns = SIDELOAD == 1'b1 ?
               (AES_MODE == AES_ECB ? W_DATA_IN_0 : W_IV_0) : W_KEY_SHARE0_0;
         end

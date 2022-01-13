@@ -28,6 +28,7 @@ module aes_control_fsm
   input  logic                                    sideload_i,
   input  prs_rate_e                               prng_reseed_rate_i,
   input  logic                                    manual_operation_i,
+  input  logic                                    key_touch_forces_reseed_i,
   input  logic                                    start_i,
   input  logic                                    key_iv_data_in_clear_i,
   input  logic                                    data_out_clear_i,
@@ -95,6 +96,7 @@ module aes_control_fsm
   output logic                                    start_we_o,
   output logic                                    key_iv_data_in_clear_we_o,
   output logic                                    data_out_clear_we_o,
+  output logic                                    prng_reseed_o,
   output logic                                    prng_reseed_we_o,
 
   // Status register
@@ -147,6 +149,7 @@ module aes_control_fsm
 
   logic                     key_init_clear;
   logic                     key_init_new;
+  logic                     key_init_new_pulse;
   logic                     key_init_load;
   logic                     key_init_arm;
   logic                     key_init_ready;
@@ -664,14 +667,15 @@ module aes_control_fsm
   aes_reg_status #(
     .Width ( $bits(key_init_we_o) )
   ) u_reg_status_key_init (
-    .clk_i   ( clk_i          ),
-    .rst_ni  ( rst_ni         ),
-    .we_i    ( key_init_we_o  ),
-    .use_i   ( key_init_load  ),
-    .clear_i ( key_init_clear ),
-    .arm_i   ( key_init_arm   ),
-    .new_o   ( key_init_new   ),
-    .clean_o ( key_init_ready )
+    .clk_i       ( clk_i              ),
+    .rst_ni      ( rst_ni             ),
+    .we_i        ( key_init_we_o      ),
+    .use_i       ( key_init_load      ),
+    .clear_i     ( key_init_clear     ),
+    .arm_i       ( key_init_arm       ),
+    .new_o       ( key_init_new       ),
+    .new_pulse_o ( key_init_new_pulse ),
+    .clean_o     ( key_init_ready     )
   );
 
   // We only use clean and unused IVs. Either software/counter has updated
@@ -681,14 +685,15 @@ module aes_control_fsm
   aes_reg_status #(
     .Width ( $bits(iv_we_o) )
   ) u_reg_status_iv (
-    .clk_i   ( clk_i    ),
-    .rst_ni  ( rst_ni   ),
-    .we_i    ( iv_we_o  ),
-    .use_i   ( iv_load  ),
-    .clear_i ( iv_clear ),
-    .arm_i   ( iv_arm   ),
-    .new_o   ( iv_ready ),
-    .clean_o (          )
+    .clk_i       ( clk_i    ),
+    .rst_ni      ( rst_ni   ),
+    .we_i        ( iv_we_o  ),
+    .use_i       ( iv_load  ),
+    .clear_i     ( iv_clear ),
+    .arm_i       ( iv_arm   ),
+    .new_o       ( iv_ready ),
+    .new_pulse_o (          ),
+    .clean_o     (          )
   );
 
   // Input and output data register status tracking detects if:
@@ -782,12 +787,18 @@ module aes_control_fsm
   //////////////////////
   // Trigger Register //
   //////////////////////
-  // Triggers are only ever cleared by control. Fatal alerts clear all bits in the trigger
+  // Most triggers are only ever cleared by control. Fatal alerts clear all bits in the trigger
   // register.
   assign start_we_o                = alert_fatal_i ? 1'b1 : start_we;
   assign key_iv_data_in_clear_we_o = alert_fatal_i ? 1'b1 : key_iv_data_in_clear_we;
   assign data_out_clear_we_o       = alert_fatal_i ? 1'b1 : data_out_clear_we;
-  assign prng_reseed_we_o          = alert_fatal_i ? 1'b1 : prng_reseed_we;
+
+  // If configured, trigger the reseeding of the PRNGs used for clearing and masking purposes after
+  // the key has been updated.
+  assign prng_reseed_o    = alert_fatal_i      ? 1'b0 :
+                            key_init_new_pulse ? 1'b1 : 1'b0;
+  assign prng_reseed_we_o = alert_fatal_i      ? 1'b1                      :
+                            key_init_new_pulse ? key_touch_forces_reseed_i : prng_reseed_we;
 
   ////////////////////////////
   // PRNG Reseeding Counter //

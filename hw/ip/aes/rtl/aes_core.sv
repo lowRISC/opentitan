@@ -65,6 +65,8 @@ module aes_core
   prs_rate_e                                  prng_reseed_rate_q;
   logic                                       manual_operation_q;
   logic                                       force_zero_masks_q;
+  logic                                       ctrl_reg_err_update;
+  logic                                       ctrl_reg_err_storage;
   logic                                       ctrl_err_update;
   logic                                       ctrl_err_storage;
   logic                                       ctrl_err_storage_d;
@@ -507,8 +509,8 @@ module aes_core
     .prng_reseed_rate_o ( prng_reseed_rate_q   ),
     .manual_operation_o ( manual_operation_q   ),
     .force_zero_masks_o ( force_zero_masks_q   ),
-    .err_update_o       ( ctrl_err_update      ),
-    .err_storage_o      ( ctrl_err_storage_d   ),
+    .err_update_o       ( ctrl_reg_err_update  ),
+    .err_storage_o      ( ctrl_reg_err_storage ),
     .reg2hw_ctrl_i      ( reg2hw.ctrl_shadowed ),
     .hw2reg_ctrl_o      ( hw2reg.ctrl_shadowed )
   );
@@ -534,6 +536,7 @@ module aes_core
     .sideload_i                ( sideload_q                             ),
     .prng_reseed_rate_i        ( prng_reseed_rate_q                     ),
     .manual_operation_i        ( manual_operation_q                     ),
+    .key_touch_forces_reseed_i ( reg2hw.ctrl_aux_shadowed.q             ),
     .start_i                   ( reg2hw.trigger.start.q                 ),
     .key_iv_data_in_clear_i    ( reg2hw.trigger.key_iv_data_in_clear.q  ),
     .data_out_clear_i          ( reg2hw.trigger.data_out_clear.q        ),
@@ -822,6 +825,7 @@ module aes_core
   ////////////
 
   // Recoverable alert conditions are signaled as a single alert event.
+  assign ctrl_err_update = ctrl_reg_err_update | reg2hw.ctrl_aux_shadowed.err_update;
   assign alert_recov_o = ctrl_err_update;
 
   // The recoverable alert is observable via status register until the AES operation is restarted
@@ -830,6 +834,7 @@ module aes_core
   assign hw2reg.status.alert_recov_ctrl_update_err.de = ctrl_err_update | ctrl_we | alert_fatal_o;
 
   // Fatal alert conditions need to remain asserted until reset.
+  assign ctrl_err_storage_d = ctrl_reg_err_storage | reg2hw.ctrl_aux_shadowed.err_storage;
   always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_err_storage_reg
     if (!rst_ni) begin
       ctrl_err_storage_q <= 1'b0;

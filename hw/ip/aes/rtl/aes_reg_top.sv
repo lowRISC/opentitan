@@ -9,6 +9,7 @@
 module aes_reg_top (
   input clk_i,
   input rst_ni,
+  input rst_shadowed_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -24,7 +25,7 @@ module aes_reg_top (
 
   import aes_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 8;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -183,6 +184,13 @@ module aes_reg_top (
   logic ctrl_shadowed_manual_operation_wd;
   logic ctrl_shadowed_force_zero_masks_qs;
   logic ctrl_shadowed_force_zero_masks_wd;
+  logic ctrl_aux_shadowed_re;
+  logic ctrl_aux_shadowed_we;
+  logic ctrl_aux_shadowed_qs;
+  logic ctrl_aux_shadowed_wd;
+  logic ctrl_aux_regwen_we;
+  logic ctrl_aux_regwen_qs;
+  logic ctrl_aux_regwen_wd;
   logic trigger_we;
   logic trigger_start_wd;
   logic trigger_key_iv_data_in_clear_wd;
@@ -819,6 +827,64 @@ module aes_reg_top (
   );
 
 
+  // R[ctrl_aux_shadowed]: V(False)
+  prim_subreg_shadow #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1)
+  ) u_ctrl_aux_shadowed (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .rst_shadowed_ni (rst_shadowed_ni),
+
+    // from register interface
+    .re     (ctrl_aux_shadowed_re),
+    .we     (ctrl_aux_shadowed_we),
+    .wd     (ctrl_aux_shadowed_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl_aux_shadowed.q),
+
+    // to register interface (read)
+    .qs     (ctrl_aux_shadowed_qs),
+
+    // Shadow register error conditions
+    .err_update  (reg2hw.ctrl_aux_shadowed.err_update),
+    .err_storage (reg2hw.ctrl_aux_shadowed.err_storage)
+  );
+
+
+  // R[ctrl_aux_regwen]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1)
+  ) u_ctrl_aux_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ctrl_aux_regwen_we),
+    .wd     (ctrl_aux_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (ctrl_aux_regwen_qs)
+  );
+
+
   // R[trigger]: V(False)
   //   F[start]: 0:0
   prim_subreg #(
@@ -1099,7 +1165,7 @@ module aes_reg_top (
 
 
 
-  logic [31:0] addr_hit;
+  logic [33:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == AES_ALERT_TEST_OFFSET);
@@ -1132,8 +1198,10 @@ module aes_reg_top (
     addr_hit[27] = (reg_addr == AES_DATA_OUT_2_OFFSET);
     addr_hit[28] = (reg_addr == AES_DATA_OUT_3_OFFSET);
     addr_hit[29] = (reg_addr == AES_CTRL_SHADOWED_OFFSET);
-    addr_hit[30] = (reg_addr == AES_TRIGGER_OFFSET);
-    addr_hit[31] = (reg_addr == AES_STATUS_OFFSET);
+    addr_hit[30] = (reg_addr == AES_CTRL_AUX_SHADOWED_OFFSET);
+    addr_hit[31] = (reg_addr == AES_CTRL_AUX_REGWEN_OFFSET);
+    addr_hit[32] = (reg_addr == AES_TRIGGER_OFFSET);
+    addr_hit[33] = (reg_addr == AES_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1172,7 +1240,9 @@ module aes_reg_top (
                (addr_hit[28] & (|(AES_PERMIT[28] & ~reg_be))) |
                (addr_hit[29] & (|(AES_PERMIT[29] & ~reg_be))) |
                (addr_hit[30] & (|(AES_PERMIT[30] & ~reg_be))) |
-               (addr_hit[31] & (|(AES_PERMIT[31] & ~reg_be)))));
+               (addr_hit[31] & (|(AES_PERMIT[31] & ~reg_be))) |
+               (addr_hit[32] & (|(AES_PERMIT[32] & ~reg_be))) |
+               (addr_hit[33] & (|(AES_PERMIT[33] & ~reg_be)))));
   end
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
@@ -1271,7 +1341,14 @@ module aes_reg_top (
   assign ctrl_shadowed_manual_operation_wd = reg_wdata[14];
 
   assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[15];
-  assign trigger_we = addr_hit[30] & reg_we & !reg_error;
+  assign ctrl_aux_shadowed_re = addr_hit[30] & reg_re & !reg_error;
+  assign ctrl_aux_shadowed_we = addr_hit[30] & reg_we & !reg_error;
+
+  assign ctrl_aux_shadowed_wd = reg_wdata[0];
+  assign ctrl_aux_regwen_we = addr_hit[31] & reg_we & !reg_error;
+
+  assign ctrl_aux_regwen_wd = reg_wdata[0];
+  assign trigger_we = addr_hit[32] & reg_we & !reg_error;
 
   assign trigger_start_wd = reg_wdata[0];
 
@@ -1413,13 +1490,21 @@ module aes_reg_top (
       end
 
       addr_hit[30]: begin
+        reg_rdata_next[0] = ctrl_aux_shadowed_qs;
+      end
+
+      addr_hit[31]: begin
+        reg_rdata_next[0] = ctrl_aux_regwen_qs;
+      end
+
+      addr_hit[32]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
         reg_rdata_next[3] = '0;
       end
 
-      addr_hit[31]: begin
+      addr_hit[33]: begin
         reg_rdata_next[0] = status_idle_qs;
         reg_rdata_next[1] = status_stall_qs;
         reg_rdata_next[2] = status_output_lost_qs;
@@ -1437,7 +1522,26 @@ module aes_reg_top (
 
   // shadow busy
   logic shadow_busy;
-  assign shadow_busy = 1'b0;
+  logic rst_done;
+  logic shadow_rst_done;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rst_done <= '0;
+    end else begin
+      rst_done <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_shadowed_ni) begin
+    if (!rst_shadowed_ni) begin
+      shadow_rst_done <= '0;
+    end else begin
+      shadow_rst_done <= 1'b1;
+    end
+  end
+
+  // both shadow and normal resets have been released
+  assign shadow_busy = ~(rst_done & shadow_rst_done);
 
   // register busy
   logic reg_busy_sel;

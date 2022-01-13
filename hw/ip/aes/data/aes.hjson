@@ -517,6 +517,45 @@
            // Exclude from write-read checks.
            "excl:CsrNonInitTests:CsrExclWriteCheck"]
   },
+  { name: "CTRL_AUX_SHADOWED",
+    desc: '''
+      Auxiliary Control Register.
+
+      This register is shadowed, meaning two subsequent write operations are required to change its content.
+      If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
+      A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.              
+    '''
+    swaccess: "rw",
+    hwaccess: "hro",
+    shadowed: "true",
+    update_err_alert: "recov_ctrl_update_err",
+    storage_err_alert: "fatal_fault",
+    fields: [
+    {   bits:   "0",
+        name:   "KEY_TOUCH_FORCES_RESEED",
+        desc:   '''
+                Controls whether providing a new key triggers the reseeding of internal pseudo-random number generators used for clearing and masking (1) or not (0).
+                ''',
+        resval: 1,
+      }
+    ]
+  },
+  { name:     "CTRL_AUX_REGWEN",
+    desc:     '''
+              Lock bit for Auxiliary Control Register.
+              '''
+    swaccess: "rw0c",
+    hwaccess: "none",
+    fields: [
+    {   bits:   "0",
+        desc:   '''
+                Auxiliary Control Register configuration enable bit.
+                If this is cleared to 0, the Auxiliary Control Register cannot be written anymore.
+                ''',
+        resval: 1,
+      }
+    ]
+  },
   { name: "TRIGGER",
     desc: '''
       Trigger Register.
@@ -566,6 +605,7 @@
         resval: "1"
         desc:  '''
           Keep continuing with the current states of the internal pseudo-random number generators used for register clearing and masking (0) or perform a reseed of the internal states from the connected entropy source (1).
+          If the KEY_TOUCH_FORCES_RESEED bit in the Auxiliary Control Register is set to one, this trigger will automatically get set after providing a new initial key.
         '''
         tags: ["excl:CsrAllTests:CsrExclCheck"]
       }

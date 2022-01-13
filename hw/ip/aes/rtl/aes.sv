@@ -89,6 +89,7 @@ module aes
   aes_reg_top u_reg (
     .clk_i,
     .rst_ni,
+    .rst_shadowed_ni,
     .tl_i,
     .tl_o,
     .reg2hw,

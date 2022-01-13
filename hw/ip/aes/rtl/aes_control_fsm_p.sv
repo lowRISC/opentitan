@@ -29,6 +29,7 @@ module aes_control_fsm_p
   input  logic                                    sideload_i,
   input  prs_rate_e                               prng_reseed_rate_i,
   input  logic                                    manual_operation_i,
+  input  logic                                    key_touch_forces_reseed_i,
   input  logic                                    start_i,
   input  logic                                    key_iv_data_in_clear_i,
   input  logic                                    data_out_clear_i,
@@ -96,6 +97,7 @@ module aes_control_fsm_p
   output logic                                    start_we_o,
   output logic                                    key_iv_data_in_clear_we_o,
   output logic                                    data_out_clear_we_o,
+  output logic                                    prng_reseed_o,
   output logic                                    prng_reseed_we_o,
 
   // Status register
@@ -125,6 +127,7 @@ module aes_control_fsm_p
     sideload_i,
     prng_reseed_rate_i,
     manual_operation_i,
+    key_touch_forces_reseed_i,
     start_i,
     key_iv_data_in_clear_i,
     data_out_clear_i,
@@ -163,6 +166,7 @@ module aes_control_fsm_p
     sideload_i,
     prng_reseed_rate_i,
     manual_operation_i,
+    key_touch_forces_reseed_i,
     start_i,
     key_iv_data_in_clear_i,
     data_out_clear_i,
@@ -208,10 +212,11 @@ module aes_control_fsm_p
   logic                                    sideload;
   prs_rate_e                               prng_reseed_rate;
   logic                                    manual_operation;
+  logic                                    key_touch_forces_reseed;
   logic                                    start;
   logic                                    key_iv_data_in_clear;
   logic                                    data_out_clear;
-  logic                                    prng_reseed;
+  logic                                    prng_reseed_in_buf;
   logic                                    mux_sel_err;
   logic                                    sp_enc_err;
   lc_ctrl_pkg::lc_tx_t                     lc_escalate_en;
@@ -242,10 +247,11 @@ module aes_control_fsm_p
           sideload,
           prng_reseed_rate,
           manual_operation,
+          key_touch_forces_reseed,
           start,
           key_iv_data_in_clear,
           data_out_clear,
-          prng_reseed,
+          prng_reseed_in_buf,
           mux_sel_err,
           sp_enc_err,
           lc_escalate_en,
@@ -297,6 +303,7 @@ module aes_control_fsm_p
   logic                                    start_we;
   logic                                    key_iv_data_in_clear_we;
   logic                                    data_out_clear_we;
+  logic                                    prng_reseed_out_buf;
   logic                                    prng_reseed_we;
   logic                                    idle;
   logic                                    idle_we;
@@ -328,10 +335,11 @@ module aes_control_fsm_p
     .sideload_i                ( sideload                      ),
     .prng_reseed_rate_i        ( prng_reseed_rate              ),
     .manual_operation_i        ( manual_operation              ),
+    .key_touch_forces_reseed_i ( key_touch_forces_reseed       ),
     .start_i                   ( start                         ),
     .key_iv_data_in_clear_i    ( key_iv_data_in_clear          ),
     .data_out_clear_i          ( data_out_clear                ),
-    .prng_reseed_i             ( prng_reseed                   ),
+    .prng_reseed_i             ( prng_reseed_in_buf            ),
     .mux_sel_err_i             ( mux_sel_err                   ),
     .sp_enc_err_i              ( sp_enc_err                    ),
     .lc_escalate_en_i          ( lc_escalate_en                ),
@@ -386,6 +394,7 @@ module aes_control_fsm_p
     .start_we_o                ( start_we                      ),
     .key_iv_data_in_clear_we_o ( key_iv_data_in_clear_we       ),
     .data_out_clear_we_o       ( data_out_clear_we             ),
+    .prng_reseed_o             ( prng_reseed_out_buf           ),
     .prng_reseed_we_o          ( prng_reseed_we                ),
 
     .idle_o                    ( idle                          ),
@@ -432,6 +441,7 @@ module aes_control_fsm_p
     start_we_o,
     key_iv_data_in_clear_we_o,
     data_out_clear_we_o,
+    prng_reseed_o,
     prng_reseed_we_o,
     idle_o,
     idle_we_o,
@@ -474,6 +484,7 @@ module aes_control_fsm_p
     start_we,
     key_iv_data_in_clear_we,
     data_out_clear_we,
+    prng_reseed_out_buf,
     prng_reseed_we,
     idle,
     idle_we,
@@ -522,6 +533,7 @@ module aes_control_fsm_p
           start_we_o,
           key_iv_data_in_clear_we_o,
           data_out_clear_we_o,
+          prng_reseed_o,
           prng_reseed_we_o,
           idle_o,
           idle_we_o,

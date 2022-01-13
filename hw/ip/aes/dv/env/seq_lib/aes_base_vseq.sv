@@ -60,6 +60,10 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_ctrl[6:1]  = aes_pkg::AES_ECB;   // 6'b00_0001
     aes_ctrl[9:7]  = aes_pkg::AES_128;   // set to 128b key
     csr_wr(.ptr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1), .blocking(1));
+    // initialize aux control register and lock it
+    // This is a temporary workaround until the aux control register is properly supported.
+    csr_wr(.ptr(ral.ctrl_aux_shadowed), .value(0), .en_shadow_wr(1'b1), .blocking(1));
+    csr_wr(.ptr(ral.ctrl_aux_regwen), .value(0));
   endtask // aes_init
 
 
