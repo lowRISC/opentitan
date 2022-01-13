@@ -1413,7 +1413,7 @@ In the event of an error the SPI_HOST IP can be reset under software control usi
 2. Poll IP status registers for confirmation of successful state machine reset:
    - Wait for {{< regref "STATUS.ACTIVE" >}} to clear.
    - Wait for both FIFOs to completely drain by polling {{< regref "STATUS.TXQD" >}} and {{< regref "STATUS.RXQD" >}} until they reach zero.
-3. Clear {{ < regref "CONTROL.SW_RST ">}}.
+3. Clear {{ < regref "CONTROL.SW_RST" >}}.
 
 ## Register Table
 
