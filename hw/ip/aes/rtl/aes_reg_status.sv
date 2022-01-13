@@ -17,6 +17,7 @@ module aes_reg_status #(
   input  logic             clear_i,
   input  logic             arm_i,
   output logic             new_o,
+  output logic             new_pulse_o,
   output logic             clean_o
 );
 
@@ -71,7 +72,8 @@ module aes_reg_status #(
     end
   end
 
-  assign new_o   = new_q;
-  assign clean_o = clean_q;
+  assign new_o       = new_q;
+  assign new_pulse_o = new_d & ~new_q;
+  assign clean_o     = clean_q;
 
 endmodule
