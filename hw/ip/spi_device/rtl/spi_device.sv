@@ -1670,6 +1670,18 @@ module spi_device
   ////////////////////
   // Common modules //
   ////////////////////
+  // Arbiter among Upload CmdFifo/AddrFifo & FW access
+  logic [SysSramEnd-1:0] sys_sram_req                ;
+  logic [SysSramEnd-1:0] sys_sram_gnt                ;
+  logic                  sys_sram_fw_gnt             ;
+  logic [SramAw-1:0]     sys_sram_addr   [SysSramEnd];
+  logic [SysSramEnd-1:0] sys_sram_write              ;
+  logic [SramDw-1:0]     sys_sram_wdata  [SysSramEnd];
+  logic [SramDw-1:0]     sys_sram_wmask  [SysSramEnd];
+  logic [SysSramEnd-1:0] sys_sram_rvalid             ;
+  logic [SramDw-1:0]     sys_sram_rdata  [SysSramEnd];
+  logic [1:0]            sys_sram_rerror [SysSramEnd];
+
 
   logic [SramDw-1:0] sys_sram_l2m_fw_wmask;
 
@@ -1687,7 +1699,7 @@ module spi_device
     .en_ifetch_i (prim_mubi_pkg::MuBi4False),
     .req_o       (sys_sram_l2m[SysSramFw].req),
     .req_type_o  (),
-    .gnt_i       (1'b1),  // TODO: Connect arbiter grant here
+    .gnt_i       (sys_sram_fw_gnt),
     .we_o        (sys_sram_l2m[SysSramFw].we),
     .addr_o      (sys_sram_l2m[SysSramFw].addr),
     .wdata_o     (sys_sram_l2m[SysSramFw].wdata),
@@ -1699,19 +1711,24 @@ module spi_device
   );
   assign sys_sram_l2m[SysSramFw].wstrb = sram_mask2strb(sys_sram_l2m_fw_wmask);
 
-  // Arbiter among Upload CmdFifo/AddrFifo & FW access
-  logic [SysSramEnd-1:0] sys_sram_req                ;
-  logic [SysSramEnd-1:0] sys_sram_gnt                ;
-  logic [SramAw-1:0]     sys_sram_addr   [SysSramEnd];
-  logic [SysSramEnd-1:0] sys_sram_write              ;
-  logic [SramDw-1:0]     sys_sram_wdata  [SysSramEnd];
-  logic [SramDw-1:0]     sys_sram_wmask  [SysSramEnd];
-  logic [SysSramEnd-1:0] sys_sram_rvalid             ;
-  logic [SramDw-1:0]     sys_sram_rdata  [SysSramEnd];
-  logic [1:0]            sys_sram_rerror [SysSramEnd];
-
   for (genvar i = 0 ; i < SysSramEnd ; i++) begin : g_sram_connect
-    assign sys_sram_req   [i] = sys_sram_l2m[i].req;
+    if (i == SysSramFw) begin : g_sram_req_sw
+      // Fixed low priority. (Discussed in #10065)
+      // When HW requests the SRAM access, lower the SW requests (and grant)
+      always_comb begin
+        sys_sram_req[i] = sys_sram_l2m[i].req;
+        sys_sram_fw_gnt = sys_sram_gnt[i];
+        for (int unsigned j = 0; j < SysSramEnd ; j++) begin
+          if (i != j && sys_sram_l2m[j].req) begin
+            sys_sram_req[i] = 1'b 0;
+            // lower the grant
+            sys_sram_fw_gnt = 1'b 0;
+          end
+        end
+      end
+    end else begin : g_sram_req_hw
+      assign sys_sram_req[i] = sys_sram_l2m[i].req;
+    end
     assign sys_sram_addr  [i] = sys_sram_l2m[i].addr;
     assign sys_sram_write [i] = sys_sram_l2m[i].we;
     assign sys_sram_wdata [i] = sys_sram_l2m[i].wdata;
@@ -1721,6 +1738,10 @@ module spi_device
     assign sys_sram_m2l[i].rdata  = sys_sram_rdata[i];
     assign sys_sram_m2l[i].rerror = sys_sram_rerror[i];
 
+    // Other than SYS access (tlul), other requesters can't wait the grant.
+    // It should be instantly available to not introduce the latency.
+    // If prim_sram_arbiter has fixed arbitration, then FW access should be
+    // lowest priority.
     `ASSERT(ReqAlwaysAccepted_A, sys_sram_req[i] |-> sys_sram_gnt[i])
   end : g_sram_connect
 
