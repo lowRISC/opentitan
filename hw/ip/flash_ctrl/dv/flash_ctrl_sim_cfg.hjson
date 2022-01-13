@@ -81,6 +81,11 @@
       run_opts: ["+zero_delays=1"]
       reseed: 5
     }
+    {
+      name: flash_ctrl_rd_buff_evict
+      uvm_test_seq: flash_ctrl_rd_buff_evict_vseq      
+      reseed: 5
+    }
   ]
 
   // List of regressions.
