@@ -69,12 +69,6 @@ interface clkmgr_if (
   lc_ctrl_pkg::lc_tx_t   extclk_ctrl_csr_step_down;
   prim_mubi_pkg::mubi4_t jitter_enable_csr;
 
-  // The expected and actual divided io clocks.
-  logic                  exp_clk_io_div2;
-  logic                  actual_clk_io_div2;
-  logic                  exp_clk_io_div4;
-  logic                  actual_clk_io_div4;
-
   // Internal DUT signals.
 `ifndef PATH_TO_DUT
   `define PATH_TO_DUT tb.dut
@@ -204,12 +198,15 @@ interface clkmgr_if (
     jitter_enable_csr = value;
   endfunction
 
-  function automatic void update_exp_clk_io_divs(logic exp_div2_value, logic actual_div2_value,
-                                                 logic exp_div4_value, logic actual_div4_value);
-    exp_clk_io_div2 = exp_div2_value;
-    actual_clk_io_div2 = actual_div2_value;
-    exp_clk_io_div4 = exp_div4_value;
-    actual_clk_io_div4 = actual_div4_value;
+  function automatic void force_high_starting_count(clk_mesr_e clk);
+    case (clk)
+      ClkMesrIo: `PATH_TO_DUT.u_io_meas.cnt = '1;
+      ClkMesrIoDiv2: `PATH_TO_DUT.u_io_div2_meas.cnt = '1;
+      ClkMesrIoDiv4: `PATH_TO_DUT.u_io_div4_meas.cnt = '1;
+      ClkMesrMain: `PATH_TO_DUT.u_main_meas.cnt = '1;
+      ClkMesrUsb: `PATH_TO_DUT.u_usb_meas.cnt = '1;
+      default: ;
+    endcase
   endfunction
 
   task automatic init(hintables_t idle, prim_mubi_pkg::mubi4_t scanmode,
@@ -345,10 +342,4 @@ interface clkmgr_if (
     input jitter_enable_csr;
   endclocking
 
-  clocking div_clks_cb @(posedge clocks_o.clk_io_powerup);
-    input exp_clk_io_div2;
-    input actual_clk_io_div2;
-    input exp_clk_io_div4;
-    input actual_clk_io_div4;
-  endclocking
 endinterface

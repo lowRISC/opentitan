@@ -26,8 +26,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   rand int clk_tested;
   constraint clk_tested_c {clk_tested inside {[ClkMesrIo : ClkMesrUsb]};}
 
-  // If cause_saturation force the initial measurement count of clk_tested to a high value
-  // so the counter will saturate.
+  // If cause_saturation is active, force the initial measurement count of clk_tested to a high
+  // value so the counter will saturate.
   rand bit cause_saturation;
 
   typedef enum int {
@@ -57,6 +57,14 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       min_offset <= max_offset;
     }
   }
+
+  // Keep saturating the count on aon negedges.
+  local task saturate_count(clk_mesr_e clk_tested);
+    forever begin
+      @cfg.aon_clk_rst_vif.cbn;
+      cfg.clkmgr_vif.force_high_starting_count(clk_mesr_e'(clk_tested));
+    end
+  endtask
 
   // This waits a number of cycles so that:
   // - only one measurement completes, or we could end up with multiple alerts which cause trouble
@@ -111,11 +119,11 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
         if (clk == clk_tested) begin
           min_threshold = expected + min_offset;
           max_threshold = expected + max_offset;
-          if (min_threshold > expected || max_threshold < expected - 1) begin
+          if (min_threshold > expected || max_threshold < expected - 1 || cause_saturation) begin
             `uvm_info(`gfn, $sformatf(
                       "Expect %0s to get a %0s error",
                       clk_mesr.name,
-                      (min_threshold > expected ? "slow" : "fast")
+                      (cause_saturation ? "fast" : (min_threshold > expected ? "slow" : "fast"))
                       ), UVM_MEDIUM)
             expect_alert = 1;
             cfg.scoreboard.set_exp_alert(.alert_name("recov_fault"), .max_delay(4000));
@@ -128,7 +136,18 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
         end
         enable_frequency_measurement(clk_mesr, min_threshold, max_threshold);
       end
-      wait_before_read_recov_err_code(expect_alert);
+
+      fork
+        begin : wait_for_measurements
+          fork
+            if (cause_saturation) begin
+              saturate_count(clk_mesr_e'(clk_tested));
+            end
+            wait_before_read_recov_err_code(expect_alert);
+          join_any
+          disable fork;
+        end
+      join
 
       csr_rd(.ptr(ral.recov_err_code), .value(actual_recov_err));
       `uvm_info(`gfn, $sformatf("Expected recov err register=0x%x", expected_recov_meas_err),
@@ -145,10 +164,10 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
 
       // Wait enough time for measurements to complete, and for alerts to get processed
       // by the alert agents so expected alerts are properly wound down.
-      cfg.aon_clk_rst_vif.wait_clks(6);
+      cfg.aon_clk_rst_vif.wait_clks(4);
       // And clear errors.
       csr_wr(.ptr(ral.recov_err_code), .value('1));
-      cfg.aon_clk_rst_vif.wait_clks(2);
+      cfg.aon_clk_rst_vif.wait_clks(12);
     end
   endtask
 

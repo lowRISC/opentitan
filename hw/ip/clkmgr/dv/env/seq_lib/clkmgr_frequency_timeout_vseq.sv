@@ -10,28 +10,24 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
   `uvm_object_new
 
   // This is measured in aon clocks. We need to have a few rounds of measurement for timeouts to
-  // trigger, since they synchronize to the aon clock.
-  localparam int CyclesToGetOneMeasurement = 6;
-
-  // This is measured in clkmgr clk_i clocks. It is set to cover worst case delays.
-  // The clk_i frequency is randomized for IPs, but the clkmgr is hooked to io_div4, which would
-  // allow a tighter number of cycles. Leaving the clk_i random probably provides more cases,
-  // so leaving it as is.
-  localparam int CyclesForErrUpdate = 16;
+  // trigger, since they synchronize to the aon clock, and they wait for a few number of AON
+  // cycles before declaring a timeout.
+  localparam int CyclesToGetOneMeasurement = 12;
 
   // If cause_timeout is set, turn off clk_timeout so it gets a timeout.
   rand bit cause_timeout;
-  constraint cause_timeout_c {cause_timeout dist {1 := 4, 0 := 1};}
+  constraint cause_timeout_c {
+    cause_timeout dist {
+      1 := 4,
+      0 := 1
+    };
+  }
   rand int clk_timeout;
   constraint clk_timeout_c {clk_timeout inside {[ClkMesrIo : ClkMesrUsb]};}
 
-  // This waits a number of cycles so that:
-  // - only one measurement completes, or we could end up with multiple alerts which cause trouble
-  //   for the cip exp_alert functionality, and,
-  // - the measurement has had time to update the recov_err_code CSR.
+  // This waits a number of AON cycles so that the timeout can get detected.
   task wait_before_read_recov_err_code();
     cfg.aon_clk_rst_vif.wait_clks(CyclesToGetOneMeasurement);
-    cfg.clk_rst_vif.wait_clks(CyclesForErrUpdate);
   endtask
 
   task body();
@@ -66,12 +62,20 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       end
 
       prior_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
+      // Allow some cycles for measurements to start before turning off the clocks, since the
+      // measurement control CSRs are controlled by the clocks we intend to stop.
+      cfg.aon_clk_rst_vif.wait_clks(4);
+
       if (cause_timeout) begin
         clk_mesr_e clk_mesr_timeout = clk_mesr_e'(clk_timeout);
         `uvm_info(`gfn, $sformatf("Will cause a timeout for clk %0s", clk_mesr_timeout.name()),
                   UVM_MEDIUM)
-        expected_recov_timeout_err[clk_timeout] = 1;
-        disturb_measured_clock(.clk(clk_mesr_e'(clk_timeout)), .enable(1'b0));
+        if (clk_mesr_timeout inside {ClkMesrIo, ClkMesrIoDiv2, ClkMesrIoDiv4}) begin
+          expected_recov_timeout_err[ClkMesrIo] = 1;
+          expected_recov_timeout_err[ClkMesrIoDiv2] = 1;
+          expected_recov_timeout_err[ClkMesrIoDiv4] = 1;
+        end else expected_recov_timeout_err[clk_timeout] = 1;
+        disturb_measured_clock(.clk(clk_mesr_timeout), .enable(1'b0));
       end
       wait_before_read_recov_err_code();
       if (cause_timeout) disturb_measured_clock(.clk(clk_mesr_e'(clk_timeout)), .enable(1'b1));
