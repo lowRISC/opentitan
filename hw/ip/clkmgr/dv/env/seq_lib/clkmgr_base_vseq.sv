@@ -65,7 +65,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task pre_start();
-    update_csrs_with_reset_values();
     cfg.clkmgr_vif.init(.idle('1), .scanmode(scanmode), .lc_debug_en(Off));
     cfg.clkmgr_vif.update_io_ip_clk_en(1'b0);
     cfg.clkmgr_vif.update_main_ip_clk_en(1'b0);
@@ -103,51 +102,64 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   task control_io_ip_clock();
     // Do nothing if nothing interesting changed.
     if (cfg.clkmgr_vif.pwr_i.io_ip_clk_en == io_ip_clk_en) return;
-    `uvm_info(`gfn, $sformatf("controlling io clock with clk_en=%b", io_ip_clk_en), UVM_LOW)
+    `uvm_info(`gfn, $sformatf(
+              "controlling usb clk_en from %b to %b with current status %b",
+              cfg.clkmgr_vif.pwr_i.io_ip_clk_en,
+              io_ip_clk_en,
+              cfg.clkmgr_vif.pwr_o.io_status
+              ), UVM_MEDIUM)
     if (!io_ip_clk_en) begin
       cfg.clkmgr_vif.pwr_i.io_ip_clk_en = io_ip_clk_en;
-      @(negedge cfg.clkmgr_vif.pwr_o.io_status);
+      wait(cfg.clkmgr_vif.pwr_o.io_status == 1'b0);
       cfg.io_clk_rst_vif.stop_clk();
     end else begin
       cfg.io_clk_rst_vif.start_clk();
       cfg.clkmgr_vif.pwr_i.io_ip_clk_en = io_ip_clk_en;
-      // There is a check that the RTL generates in a bounded number of cycles, so if this posedge
-      // never occurs we wont timeout.
-      @(posedge cfg.clkmgr_vif.pwr_o.io_status);
+      wait(cfg.clkmgr_vif.pwr_o.io_status == 1'b1);
     end
-    `uvm_info(`gfn, "controlling io clock done", UVM_LOW)
+    `uvm_info(`gfn, "controlling io clock done", UVM_MEDIUM)
   endtask
 
   task control_main_ip_clock();
     // Do nothing if nothing interesting changed.
     if (cfg.clkmgr_vif.pwr_i.main_ip_clk_en == main_ip_clk_en) return;
-    `uvm_info(`gfn, $sformatf("controlling main clock with clk_en=%b", main_ip_clk_en), UVM_LOW)
+    `uvm_info(`gfn, $sformatf(
+              "controlling main clk_en from %b to %b with current status %b",
+              cfg.clkmgr_vif.pwr_i.main_ip_clk_en,
+              main_ip_clk_en,
+              cfg.clkmgr_vif.pwr_o.main_status
+              ), UVM_MEDIUM)
     if (!main_ip_clk_en) begin
       cfg.clkmgr_vif.pwr_i.main_ip_clk_en = main_ip_clk_en;
-      @(negedge cfg.clkmgr_vif.pwr_o.main_status);
+      wait(cfg.clkmgr_vif.pwr_o.main_status == 1'b0);
       cfg.main_clk_rst_vif.stop_clk();
     end else begin
       cfg.main_clk_rst_vif.start_clk();
       cfg.clkmgr_vif.pwr_i.main_ip_clk_en = main_ip_clk_en;
-      @(posedge cfg.clkmgr_vif.pwr_o.main_status);
+      wait(cfg.clkmgr_vif.pwr_o.main_status == 1'b1);
     end
-    `uvm_info(`gfn, "controlling main clock done", UVM_LOW)
+    `uvm_info(`gfn, "controlling main clock done", UVM_MEDIUM)
   endtask
 
   task control_usb_ip_clock();
     // Do nothing if nothing interesting changed.
     if (cfg.clkmgr_vif.pwr_i.usb_ip_clk_en == usb_ip_clk_en) return;
-    `uvm_info(`gfn, $sformatf("controlling usb clock with clk_en=%b", usb_ip_clk_en), UVM_LOW)
+    `uvm_info(`gfn, $sformatf(
+              "controlling usb clk_en from %b to %b with current status %b",
+              cfg.clkmgr_vif.pwr_i.usb_ip_clk_en,
+              usb_ip_clk_en,
+              cfg.clkmgr_vif.pwr_o.usb_status
+              ), UVM_MEDIUM)
     if (!usb_ip_clk_en) begin
       cfg.clkmgr_vif.pwr_i.usb_ip_clk_en = usb_ip_clk_en;
-      @(negedge cfg.clkmgr_vif.pwr_o.usb_status);
+      wait(cfg.clkmgr_vif.pwr_o.usb_status == 1'b0);
       cfg.usb_clk_rst_vif.stop_clk();
     end else begin
       cfg.usb_clk_rst_vif.start_clk();
       cfg.clkmgr_vif.pwr_i.usb_ip_clk_en = usb_ip_clk_en;
-      @(posedge cfg.clkmgr_vif.pwr_o.usb_status);
+      wait(cfg.clkmgr_vif.pwr_o.usb_status == 1'b1);
     end
-    `uvm_info(`gfn, "controlling usb clock done", UVM_LOW)
+    `uvm_info(`gfn, "controlling usb clock done", UVM_MEDIUM)
   endtask
 
   task disable_frequency_measurement(clk_mesr_e which);
@@ -302,11 +314,5 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     // Increasing its frequency improves DV efficiency without compromising quality.
     cfg.aon_clk_rst_vif.set_freq_mhz((1.0 * FakeAonClkHz) / 1_000_000);
   endtask
-
-  function void update_csrs_with_reset_values();
-    cfg.clkmgr_vif.update_clk_enables(ral.clk_enables.get_reset());
-    cfg.clkmgr_vif.update_clk_hints(ral.clk_hints.get_reset());
-    cfg.clkmgr_vif.update_extclk_ctrl(ral.extclk_ctrl.get_reset());
-  endfunction
 
 endclass : clkmgr_base_vseq

@@ -274,24 +274,27 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         if (addr_phase_write) extclk_ctrl_regwen = item.a_data;
       end
       "extclk_ctrl": begin
+        typedef logic [2*$bits(prim_mubi_pkg::mubi4_t) - 1:0] extclk_ctrl_t;
         if (addr_phase_write && extclk_ctrl_regwen) begin
-          cfg.clkmgr_vif.update_extclk_ctrl(item.a_data);
+          `DV_CHECK_EQ(extclk_ctrl_t'(item.a_data), {
+                       cfg.clkmgr_vif.extclk_ctrl_csr_step_down, cfg.clkmgr_vif.extclk_ctrl_csr_sel
+                       })
         end
       end
       "jitter_enable": begin
         if (addr_phase_write) begin
-          cfg.clkmgr_vif.update_jitter_enable(prim_mubi_pkg::mubi4_t'(item.a_data));
+          `DV_CHECK_EQ(prim_mubi_pkg::mubi4_t'(item.a_data), cfg.clkmgr_vif.jitter_enable_csr)
         end
       end
       "clk_enables": begin
         if (addr_phase_write) begin
-          cfg.clkmgr_vif.update_clk_enables(item.a_data);
+          `DV_CHECK_EQ(clk_enables_t'(item.a_data), cfg.clkmgr_vif.clk_enables_csr)
         end
       end
       "clk_hints": begin
         // Clearing a hint sets an expectation for the status to transition to zero.
         if (addr_phase_write) begin
-          cfg.clkmgr_vif.update_clk_hints(item.a_data);
+          `DV_CHECK_EQ(clk_hints_t'(item.a_data), cfg.clkmgr_vif.clk_hints_csr)
         end
       end
       "clk_hints_status": begin

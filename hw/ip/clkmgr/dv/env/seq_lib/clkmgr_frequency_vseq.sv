@@ -58,11 +58,17 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     }
   }
 
-  // Keep saturating the count on aon negedges.
-  local task saturate_count(clk_mesr_e clk_tested);
+  constraint all_clk_en_c {
+    io_ip_clk_en == 1;
+    main_ip_clk_en == 1;
+    usb_ip_clk_en == 1;
+  }
+
+  // Keep saturating the count on aon negedges if needed.
+  local task maybe_saturate_count(bit saturate, clk_mesr_e clk_tested);
     forever begin
       @cfg.aon_clk_rst_vif.cbn;
-      cfg.clkmgr_vif.force_high_starting_count(clk_mesr_e'(clk_tested));
+      if (saturate) cfg.clkmgr_vif.force_high_starting_count(clk_mesr_e'(clk_tested));
     end
   endtask
 
@@ -72,21 +78,20 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   // - the measurement has had time to update the recov_err_code CSR.
   task wait_before_read_recov_err_code(bit expect_alert);
     // Wait for one measurement (takes an extra cycle to really start).
-    repeat (CyclesToGetOneMeasurement) begin
-      cfg.aon_clk_rst_vif.wait_clks(1);
-      if (expect_alert) cfg.scoreboard.set_exp_alert(.alert_name("recov_fault"), .max_delay(4000));
-    end
+    cfg.aon_clk_rst_vif.wait_clks(CyclesToGetOneMeasurement);
     // Wait for the result to propagate to the recov_err_code CSR.
     cfg.clk_rst_vif.wait_clks(CyclesForErrUpdate);
   endtask
 
   task body();
     logic [TL_DW-1:0] value;
-    update_csrs_with_reset_values();
     csr_wr(.ptr(ral.measure_ctrl_regwen), .value(1));
 
     // Make sure the aon clock is running as slow as it is meant to.
     cfg.aon_clk_rst_vif.set_freq_khz(AonClkHz / 1_000);
+    control_ip_clocks();
+    // Wait so the frequency change takes effect.
+    cfg.aon_clk_rst_vif.wait_clks(2);
 
     // Set the thresholds to get no error.
     foreach (ExpectedCounts[clk]) begin
@@ -111,6 +116,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, "New round", UVM_MEDIUM)
+      if (cause_saturation) `uvm_info(`gfn, "Will cause saturation", UVM_MEDIUM)
       foreach (ExpectedCounts[clk]) begin
         clk_mesr_e clk_mesr = clk_mesr_e'(clk);
         int min_threshold;
@@ -121,9 +127,10 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
           max_threshold = expected + max_offset;
           if (min_threshold > expected || max_threshold < expected - 1 || cause_saturation) begin
             `uvm_info(`gfn, $sformatf(
-                      "Expect %0s to get a %0s error",
+                      "Expect %0s to get a %0s error%0s",
                       clk_mesr.name,
-                      (cause_saturation ? "fast" : (min_threshold > expected ? "slow" : "fast"))
+                      (cause_saturation ? "fast" : (min_threshold > expected ? "slow" : "fast")),
+                      (cause_saturation ? " due to saturation" : "")
                       ), UVM_MEDIUM)
             expect_alert = 1;
             cfg.scoreboard.set_exp_alert(.alert_name("recov_fault"), .max_delay(4000));
@@ -140,9 +147,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       fork
         begin : wait_for_measurements
           fork
-            if (cause_saturation) begin
-              saturate_count(clk_mesr_e'(clk_tested));
-            end
+            maybe_saturate_count(cause_saturation, clk_mesr_e'(clk_tested));
             wait_before_read_recov_err_code(expect_alert);
           join_any
           disable fork;

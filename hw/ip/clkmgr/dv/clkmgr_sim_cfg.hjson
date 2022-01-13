@@ -32,8 +32,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
-                // Disable stress until the tests are created.
-                // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
                 ]
 
   // Add additional tops for simulation.
@@ -46,7 +45,7 @@
   uvm_test: clkmgr_base_test
   uvm_test_seq: clkmgr_base_vseq
 
-  // Disable clearing interrupts since clkmgr doesn't yet have any.
+  // Disable clearing interrupts since clkmgr doesn't have any.
   run_opts: ["+do_clear_all_interrupts=0"]
 
   // List of test specifications.

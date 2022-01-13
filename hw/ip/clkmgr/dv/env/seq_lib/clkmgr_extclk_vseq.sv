@@ -48,45 +48,48 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     super.post_randomize();
   endfunction
 
-  task body();
-    update_csrs_with_reset_values();
-    set_scanmode_on_low_weight();
-    csr_wr(.ptr(ral.extclk_ctrl_regwen), .value(1));
+  // Notice only all_clk_byp_req and io_clk_byp_req Mubi4True and Mubi4False cause transitions.
 
-    fork
-      // Notice only all_clk_byp_req and io_clk_byp_req Mubi4True and Mubi4False cause transitions.
-      forever
-        @cfg.clkmgr_vif.all_clk_byp_req begin : all_clk_byp_ack
-          if (cfg.clkmgr_vif.all_clk_byp_req == prim_mubi_pkg::MuBi4True) begin
-            `uvm_info(`gfn, "Got all_clk_byp_req on", UVM_MEDIUM)
-            cfg.clk_rst_vif.wait_clks(cycles_before_all_clk_byp_ack);
-            cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4True);
-          end else if (cfg.clkmgr_vif.all_clk_byp_req == prim_mubi_pkg::MuBi4False) begin
-            `uvm_info(`gfn, "Got all_clk_byp_req off", UVM_MEDIUM)
-            cfg.clk_rst_vif.wait_clks(cycles_before_all_clk_byp_ack);
-            cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
-          end
+  local task all_clk_byp_handshake();
+    forever
+      @cfg.clkmgr_vif.all_clk_byp_req begin : all_clk_byp_ack
+        if (cfg.clkmgr_vif.all_clk_byp_req == prim_mubi_pkg::MuBi4True) begin
+          `uvm_info(`gfn, "Got all_clk_byp_req on", UVM_MEDIUM)
+          cfg.clk_rst_vif.wait_clks(cycles_before_all_clk_byp_ack);
+          cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4True);
+        end else if (cfg.clkmgr_vif.all_clk_byp_req == prim_mubi_pkg::MuBi4False) begin
+          `uvm_info(`gfn, "Got all_clk_byp_req off", UVM_MEDIUM)
+          cfg.clk_rst_vif.wait_clks(cycles_before_all_clk_byp_ack);
+          cfg.clkmgr_vif.update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
         end
-      forever
-        @cfg.clkmgr_vif.io_clk_byp_req begin : io_clk_byp_ack
-          if (cfg.clkmgr_vif.io_clk_byp_req == prim_mubi_pkg::MuBi4True) begin
-            `uvm_info(`gfn, "Got io_clk_byp_req on", UVM_MEDIUM)
-            cfg.clk_rst_vif.wait_clks(cycles_before_io_clk_byp_ack);
-            cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4True);
-          end else begin
-            `uvm_info(`gfn, "Got io_clk_byp_req off", UVM_MEDIUM)
-            cfg.clk_rst_vif.wait_clks(cycles_before_io_clk_byp_ack);
-            cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4False);
-          end
-        end
-      forever
-        @cfg.clkmgr_vif.lc_clk_byp_ack begin : lc_clk_byp_ack
-          if (cfg.clkmgr_vif.lc_clk_byp_ack == lc_ctrl_pkg::On) begin
-            `uvm_info(`gfn, "Got lc_clk_byp_ack on", UVM_MEDIUM)
-          end
-        end
-    join_none
+      end
+  endtask
 
+  local task io_clk_byp_handshake();
+    forever
+      @cfg.clkmgr_vif.io_clk_byp_req begin : io_clk_byp_ack
+        if (cfg.clkmgr_vif.io_clk_byp_req == prim_mubi_pkg::MuBi4True) begin
+          `uvm_info(`gfn, "Got io_clk_byp_req on", UVM_MEDIUM)
+          cfg.clk_rst_vif.wait_clks(cycles_before_io_clk_byp_ack);
+          cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4True);
+        end else begin
+          `uvm_info(`gfn, "Got io_clk_byp_req off", UVM_MEDIUM)
+          cfg.clk_rst_vif.wait_clks(cycles_before_io_clk_byp_ack);
+          cfg.clkmgr_vif.update_io_clk_byp_ack(prim_mubi_pkg::MuBi4False);
+        end
+      end
+  endtask
+
+  local task lc_clk_byp_handshake();
+    forever
+      @cfg.clkmgr_vif.lc_clk_byp_ack begin : lc_clk_byp_ack
+        if (cfg.clkmgr_vif.lc_clk_byp_ack == lc_ctrl_pkg::On) begin
+          `uvm_info(`gfn, "Got lc_clk_byp_ack on", UVM_MEDIUM)
+        end
+      end
+  endtask
+
+  local task run_test();
     for (int i = 0; i < num_trans; ++i) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // Init needs to be synchronous.
@@ -126,7 +129,23 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
       csr_wr(.ptr(ral.extclk_ctrl), .value({Off, Off}));
       cfg.clk_rst_vif.wait_clks(cycles_before_next_trans);
     end
-    disable fork;
+  endtask
+
+  task body();
+    set_scanmode_on_low_weight();
+    csr_wr(.ptr(ral.extclk_ctrl_regwen), .value(1));
+
+    fork
+      begin : isolation_fork
+        fork
+          all_clk_byp_handshake();
+          io_clk_byp_handshake();
+          lc_clk_byp_handshake();
+          run_test();
+        join_any
+        disable fork;
+      end
+    join
   endtask
 
 endclass

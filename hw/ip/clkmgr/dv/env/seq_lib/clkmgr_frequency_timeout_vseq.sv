@@ -25,6 +25,12 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
   rand int clk_timeout;
   constraint clk_timeout_c {clk_timeout inside {[ClkMesrIo : ClkMesrUsb]};}
 
+  constraint all_clk_en_c {
+    io_ip_clk_en == 1;
+    main_ip_clk_en == 1;
+    usb_ip_clk_en == 1;
+  }
+
   // This waits a number of AON cycles so that the timeout can get detected.
   task wait_before_read_recov_err_code();
     cfg.aon_clk_rst_vif.wait_clks(CyclesToGetOneMeasurement);
@@ -34,11 +40,14 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
     logic [TL_DW-1:0] value;
     int prior_alert_count;
     int current_alert_count;
-    update_csrs_with_reset_values();
     csr_wr(.ptr(ral.measure_ctrl_regwen), .value(1));
 
     // Make sure the aon clock is running as slow as it is meant to.
     cfg.aon_clk_rst_vif.set_freq_khz(AonClkHz / 1_000);
+    control_ip_clocks();
+    // Wait so the frequency change takes effect.
+    cfg.aon_clk_rst_vif.wait_clks(2);
+
     // Disable cip scoreboard exp_alert checks since they need very fine control, making checks
     // really cumbersome. Instead we rely on the alert count to detect if alert were triggered.
     cfg.scoreboard.do_alert_check = 0;

@@ -14,7 +14,6 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
   constraint all_busy {idle == '0;}
 
   task body();
-    update_csrs_with_reset_values();
     cfg.clk_rst_vif.wait_clks(10);
     test_jitter();
     test_peri_clocks();

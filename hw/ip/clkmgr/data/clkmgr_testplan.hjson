@@ -232,7 +232,7 @@
             - The fast_o output should be set.
             '''
       milestone: V2
-      tests: []
+      tests: ["clkmgr_frequency"]
     }
     {
       name: stress
@@ -240,12 +240,14 @@
 
             Stress with the following sequences:
             - clkmgr_extclk_vseq,
+            - clkmgr_frequency_timeout_vseq,
+            - clkmgr_frequency_vseq,
             - clkmgr_peri_vseq,
             - clkmgr_smoke_vseq,
             - clkmgr_trans_vseq
             '''
       milestone: V2
-      tests: []
+      tests: ["clkmgr_stress_all"]
     }
     {
       name: stress_with_rand_reset

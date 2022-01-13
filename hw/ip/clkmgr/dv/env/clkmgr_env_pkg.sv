@@ -51,9 +51,16 @@ package clkmgr_env_pkg;
   typedef enum int {
     PeriDiv4,
     PeriDiv2,
-    PeriIo,
-    PeriUsb
+    PeriUsb,
+    PeriIo
   } peri_e;
+  typedef struct packed {
+    logic io_peri_en;
+    logic usb_peri_en;
+    logic io_div2_peri_en;
+    logic io_div4_peri_en;
+  } clk_enables_t;
+
   typedef enum int {
     TransAes,
     TransHmac,
@@ -61,6 +68,13 @@ package clkmgr_env_pkg;
     TransOtbnIoDiv4,
     TransOtbnMain
   } trans_e;
+  typedef struct packed {
+    logic otbn_main;
+    logic otbn_io_div4;
+    logic kmac;
+    logic hmac;
+    logic aes;
+  } clk_hints_t;
 
   typedef struct {
     logic valid;

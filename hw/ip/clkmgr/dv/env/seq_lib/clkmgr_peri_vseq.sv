@@ -19,7 +19,6 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
   constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1'b1;}
 
   task body();
-    update_csrs_with_reset_values();
     for (int i = 0; i < num_trans; ++i) begin
       peri_enables_t flipped_enables;
       `DV_CHECK_RANDOMIZE_FATAL(this)
