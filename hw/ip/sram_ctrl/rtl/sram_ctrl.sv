@@ -73,6 +73,7 @@ module sram_ctrl
     .tl_o      (regs_tl_o),
     .reg2hw,
     .hw2reg,
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o(bus_integ_error[0]),
     .devmode_i (1'b1)
    );
@@ -129,11 +130,13 @@ module sram_ctrl
     .lc_en_o (escalate_en)
   );
 
+  // SEC_CM: KEY.GLOBAL_ESC
   logic escalate;
   assign escalate = (escalate_en != lc_ctrl_pkg::Off);
   assign hw2reg.status.escalated.d  = 1'b1;
   assign hw2reg.status.escalated.de = escalate;
 
+  // SEC_CM: KEY.LOCAL_ESC
   // Aggregate external and internal escalation sources. This is used on countermeasures further
   // below (key reset, transaction blocking and scrambling nonce reversal).
   logic local_esc;
@@ -176,6 +179,7 @@ module sram_ctrl
   // We employ two redundant counters to guard against FI attacks.
   // If any of the two is glitched and the two counter states do not agree,
   // we trigger an alert.
+  // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(AddrWidth),
     .OutSelDnCnt(0), // count up
@@ -237,6 +241,8 @@ module sram_ctrl
         nonce_q <= nonce_d;
       end
       // This scraps the keys.
+      // SEC_CM: KEY.GLOBAL_ESC
+      // SEC_CM: KEY.LOCAL_ESC
       if (local_esc) begin
         key_q   <= RndCnstSramKey;
         nonce_q <= RndCnstSramNonce;
@@ -282,6 +288,7 @@ module sram_ctrl
   if (InstrExec) begin : gen_instr_ctrl
     mubi4_t lc_ifetch_en;
     mubi4_t reg_ifetch_en;
+    // SEC_CM: INSTR.BUS.LC_GATED
     assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? MuBi4True :
                                                                   MuBi4False;
     assign reg_ifetch_en = mubi4_t'(reg2hw.exec.q);
@@ -346,7 +353,7 @@ module sram_ctrl
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(0),
-    .EnableDataIntgPt(1)
+    .EnableDataIntgPt(1) // SEC_CM: MEM.INTEGRITY
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
@@ -360,6 +367,7 @@ module sram_ctrl
     .addr_o      (tlul_addr),
     .wdata_o     (tlul_wdata),
     .wmask_o     (tlul_wmask),
+    // SEC_CM: BUS.INTEGRITY
     .intg_error_o(bus_integ_error[1]),
     .rdata_i     (sram_rdata),
     .rvalid_i    (sram_rvalid),
@@ -375,6 +383,7 @@ module sram_ctrl
   assign sram_wdata      = (init_req) ? lfsr_out_integ    : tlul_wdata;
   assign sram_wmask      = (init_req) ? {DataWidth{1'b1}} : tlul_wmask;
 
+  // SEC_CM: MEM.SCRAMBLE, ADDR.SCRAMBLE
   prim_ram_1p_scr #(
     .Width(DataWidth),
     .Depth(Depth),
