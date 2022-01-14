@@ -736,13 +736,14 @@ package csr_utils_pkg;
 
     // Clone the submaps by calling this function recursively
     map.get_submaps(submaps);
-    if (submaps.size()) `dv_warning("clone_reg_map: submaps are not yet tested", "DV_UTILS_PKG")
     while (submaps.size()) begin
       uvm_reg_map submap, submap_clone;
       submap = submaps.pop_front();
       submap_clone = clone_reg_map(.name(name), .map(submap), .base_addr(submap.get_base_addr()),
-        .n_bytes(submap.get_n_bytes()), .endian(endian));
-      clone.add_submap(.child_map(submap_clone), .offset(clone.get_submap_offset(submap)));
+        // Use `UVM_NO_HIER` argument to get the n_bytes from the submap instead of the system
+        // level value.
+        .n_bytes(submap.get_n_bytes(UVM_NO_HIER)), .endian(endian));
+      clone.add_submap(.child_map(submap_clone), .offset(map.get_submap_offset(submap)));
     end
 
     // Clone the registers
