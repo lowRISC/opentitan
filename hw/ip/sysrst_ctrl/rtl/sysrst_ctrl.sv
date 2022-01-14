@@ -316,15 +316,20 @@ module sysrst_ctrl
                                  aon_sysrst_ctrl_key_intr;
   assign hw2reg.wkup_status.d = 1'b1;
 
-  // sync the wakeup request (level) to bus clock to trigger an IRQ.
-  logic wkup_req;
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_prim_flop_2sync (
+  // Detect a rising edge so that the interrupt can be cleared
+  // independently of the wakeup request.
+  logic wkup_req_pulse;
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue('0),
+    .EnSync(1)
+  ) u_prim_edge_detector (
     .clk_i,
     .rst_ni,
-    .d_i(wkup_req_o),
-    .q_o(wkup_req)
+    .d_i              (wkup_req_o    ),
+    .q_sync_o         (              ),
+    .q_posedge_pulse_o(wkup_req_pulse),
+    .q_negedge_pulse_o(              )
   );
 
   // Instantiate the interrupt module
@@ -333,7 +338,7 @@ module sysrst_ctrl
   ) u_prim_intr_hw (
     .clk_i,
     .rst_ni,
-    .event_intr_i          (wkup_req),
+    .event_intr_i          (wkup_req_pulse),
     .reg2hw_intr_enable_q_i(reg2hw.intr_enable.q),
     .reg2hw_intr_test_q_i  (reg2hw.intr_test.q),
     .reg2hw_intr_test_qe_i (reg2hw.intr_test.qe),
