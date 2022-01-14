@@ -129,28 +129,28 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [ADC_CTRL DV document]({{<relref "dv/index.md" >}})
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [ADC_CTRL Testplan]({{<relref "dv/index.md#testplan" >}})
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
-Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
-Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
-Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
-Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
-Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
-Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
-Code Quality  | [TB_LINT_SETUP][]                     | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
-Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
-Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
-Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done | [ADC_CTRL DV document]({{<relref "dv/index.md" >}})
+Documentation | [TESTPLAN_COMPLETED][]                | Done | [ADC_CTRL Testplan]({{<relref "dv/index.md#testplan" >}})
+Testbench     | [TB_TOP_CREATED][]                    | Done |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done |
+Testbench     | [SIM_TB_ENV_CREATED][]                | Done |
+Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done |
+Testbench     | [TB_GEN_AUTOMATED][]                  | Done |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | Done |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done |
+Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A  |
+Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done |
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Done |
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done |
+Regression    | [FPV_REGRESSION_SETUP][]              | N/A  |
+Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done |
+Code Quality  | [TB_LINT_SETUP][]                     | Done |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A  | Exception for IP modules
+Review        | [DESIGN_SPEC_REVIEWED][]              | Done |
+Review        | [TESTPLAN_REVIEWED][]                 | Done |
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done |
+Review        | [V2_CHECKLIST_SCOPED][]               | Done |
 
 [DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
 [TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
