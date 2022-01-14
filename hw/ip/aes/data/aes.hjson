@@ -226,6 +226,9 @@
       fields: [
         { bits: "31:0", name: "key_share0", desc: "Initial Key Share 0" }
       ],
+      tags: [// Updates based on writes to other regs.
+             // These registers are reset to 0, but the reset also triggers internal operations that clear these registers with pseudo-random data shortly afterwards (See Trigger Register).
+             "excl:CsrHwResetTest:CsrExclCheck"]
       }
     },
     { multireg: {
@@ -251,6 +254,9 @@
       fields: [
         { bits: "31:0", name: "key_share1", desc: "Initial Key Share 1" }
       ],
+      tags: [// Updates based on writes to other regs.
+             // These registers are reset to 0, but the reset also triggers internal operations that clear these registers with pseudo-random data shortly afterwards (See Trigger Register).
+             "excl:CsrHwResetTest:CsrExclCheck"]
       }
     },
 ##############################################################################
@@ -280,6 +286,9 @@
       fields: [
         { bits: "31:0", name: "iv", desc: "Initialization Vector" }
       ],
+      tags: [// Updates based on writes to other regs.
+             // These registers are reset to 0, but the reset also triggers internal operations that clear these registers with pseudo-random data shortly afterwards (See Trigger Register).
+             "excl:CsrHwResetTest:CsrExclCheck"]
       }
     },
 ##############################################################################
@@ -305,6 +314,9 @@
       fields: [
         { bits: "31:0", name: "data_in", desc: "Input Data" }
       ],
+      tags: [// Updates based on writes to other regs.
+             // These registers are reset to 0, but the reset also triggers internal operations that clear these registers with pseudo-random data shortly afterwards (See Trigger Register).
+             "excl:CsrHwResetTest:CsrExclCheck"]
       }
     },
 ##############################################################################
