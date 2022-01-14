@@ -559,6 +559,45 @@ TEST_F(PingTimerConfigTest, ConfigureEnableAndLock) {
       kDifOk);
 }
 
+class PingTimerSetEnabledTest : public AlertHandlerTest {};
+
+TEST_F(PingTimerSetEnabledTest, BadArgs) {
+  EXPECT_EQ(
+      dif_alert_handler_ping_timer_set_enabled(nullptr, kDifToggleDisabled),
+      kDifBadArg);
+
+  EXPECT_EQ(dif_alert_handler_ping_timer_set_enabled(
+                &alert_handler_, static_cast<dif_toggle_t>(2)),
+            kDifBadArg);
+}
+
+TEST_F(PingTimerSetEnabledTest, Locked) {
+  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
+
+  EXPECT_EQ(dif_alert_handler_ping_timer_set_enabled(&alert_handler_,
+                                                     kDifToggleDisabled),
+            kDifLocked);
+}
+
+TEST_F(PingTimerSetEnabledTest, SetEnabled) {
+  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET, 1);
+
+  EXPECT_EQ(dif_alert_handler_ping_timer_set_enabled(&alert_handler_,
+                                                     kDifToggleDisabled),
+            kDifOk);
+}
+
+TEST_F(PingTimerSetEnabledTest, SetEnabledAndLock) {
+  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET, 1);
+  EXPECT_WRITE32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
+
+  EXPECT_EQ(dif_alert_handler_ping_timer_set_enabled(&alert_handler_,
+                                                     kDifToggleEnabled),
+            kDifOk);
+}
+
 class PingTimerLockTest : public AlertHandlerTest {};
 
 TEST_F(PingTimerLockTest, IsPingTimerLocked) {

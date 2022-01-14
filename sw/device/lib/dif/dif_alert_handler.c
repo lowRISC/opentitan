@@ -371,6 +371,32 @@ dif_result_t dif_alert_handler_configure_ping_timer(
   return kDifOk;
 }
 
+dif_result_t dif_alert_handler_ping_timer_set_enabled(
+    const dif_alert_handler_t *alert_handler, dif_toggle_t locked) {
+  if (alert_handler == NULL || !dif_is_valid_toggle(locked)) {
+    return kDifBadArg;
+  }
+
+  // Check if the ping timer is locked.
+  if (!mmio_region_read32(alert_handler->base_addr,
+                          ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  // Enable the ping timer.
+  mmio_region_write32_shadowed(alert_handler->base_addr,
+                               ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
+                               1);
+
+  // Lock the configuration.
+  if (locked == kDifToggleEnabled) {
+    mmio_region_write32(alert_handler->base_addr,
+                        ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
+  }
+
+  return kDifOk;
+}
+
 // TODO(#9899): make this a testutil function.
 dif_result_t dif_alert_handler_configure(
     const dif_alert_handler_t *alert_handler, dif_alert_handler_config_t config,
