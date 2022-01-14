@@ -35,9 +35,7 @@ module adc_ctrl_fsm
 
   logic [3:0] pwrup_timer_cnt_d, pwrup_timer_cnt_q;
   logic pwrup_timer_cnt_clr, pwrup_timer_cnt_en;
-  logic [9:0] chn0_val_d, chn1_val_d;
   logic fsm_chn0_sel, fsm_chn1_sel;
-  logic chn0_val_we_d, chn1_val_we_d;
   logic [7:0] lp_sample_cnt_d, lp_sample_cnt_q;
   logic lp_sample_cnt_clr, lp_sample_cnt_en;
   logic [23:0] wakeup_timer_cnt_d, wakeup_timer_cnt_q;
@@ -141,32 +139,12 @@ module adc_ctrl_fsm
   end
 
   assign fsm_chn0_sel = (fsm_state_q == ONEST_0) || (fsm_state_q == LP_0) || (fsm_state_q == NP_0);
-  assign chn0_val_we_d = fsm_chn0_sel && adc_d_val_i;//adc_d_val_i is a valid pulse
-  assign chn0_val_d = (chn0_val_we_d) ? adc_d_i : chn0_val_o;
+  assign chn0_val_we_o = fsm_chn0_sel && adc_d_val_i;//adc_d_val_i is a valid pulse
+  assign chn0_val_o = adc_d_i;
 
   assign fsm_chn1_sel = (fsm_state_q == ONEST_1) || (fsm_state_q == LP_1) || (fsm_state_q == NP_1);
-  assign chn1_val_we_d = fsm_chn1_sel && adc_d_val_i;
-  assign chn1_val_d = (chn1_val_we_d) ? adc_d_i : chn1_val_o;
-
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
-    if (!rst_aon_ni) begin
-      chn0_val_we_o  <= '0;
-      chn1_val_we_o  <= '0;
-      chn0_val_o     <= '0;
-      chn1_val_o     <= '0;
-    end
-    else if (cfg_fsm_rst_i) begin
-      chn0_val_we_o  <= '0;
-      chn1_val_we_o  <= '0;
-      chn0_val_o     <= '0;
-      chn1_val_o     <= '0;
-    end else begin
-      chn0_val_we_o  <= chn0_val_we_d;
-      chn1_val_we_o  <= chn1_val_we_d;
-      chn0_val_o     <= chn0_val_d;
-      chn1_val_o     <= chn1_val_d;
-    end
-  end
+  assign chn1_val_we_o = fsm_chn1_sel && adc_d_val_i;
+  assign chn1_val_o = adc_d_i;
 
   for (genvar k = 0 ; k < NumAdcFilter ; k++) begin : gen_fst_lp_match
     assign fst_lp_match[k] =
