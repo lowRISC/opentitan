@@ -11,11 +11,12 @@ package flash_ctrl_pkg;
   parameter int unsigned NumBanks        = flash_ctrl_reg_pkg::RegNumBanks;
   parameter int unsigned PagesPerBank    = flash_ctrl_reg_pkg::RegPagesPerBank;
   parameter int unsigned BusPgmResBytes  = flash_ctrl_reg_pkg::RegBusPgmResBytes;
+  // How many types of info per bank
+  parameter int InfoTypes                = flash_ctrl_reg_pkg::NumInfoTypes;
 
   // fixed parameters of flash derived from topgen parameters
   parameter int DataWidth       = ${cfg.data_width};
   parameter int MetaDataWidth   = ${cfg.metadata_width};
-  parameter int InfoTypes       = ${cfg.info_types}; // How many types of info per bank
 
 // The following hard-wired values are there to work-around verilator.
 // For some reason if the values are assigned through parameters verilator thinks

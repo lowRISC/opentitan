@@ -308,7 +308,13 @@
     },
 
     // The following parameters are derived from topgen and should not be
-    // direclty modified.
+    // directly modified.
+    { name: "NumInfoTypes",
+      desc: "Number of info partition types",
+      type: "int",
+      default: "3",
+      local: "true"
+    },
     { name: "NumInfos0",
       desc: "Number of configurable flash info pages for info type 0",
       type: "int",
