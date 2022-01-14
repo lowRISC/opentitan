@@ -34,41 +34,43 @@
 
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa);
 
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_msg);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_r);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_s);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_x);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_y);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_d);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_x_r);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_msg);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_r);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_s);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_x);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_y);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_d);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_x_r);
 
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, mode);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, msg);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, r);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, s);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, x);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, y);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, d);
-OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, x_r);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, mode);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, msg);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, r);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, s);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, y);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, d);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x_r);
 
 static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa);
 
-static const otbn_ptr_t kOtbnVarDptrMsg = OTBN_PTR_T_INIT(p256_ecdsa, dptr_msg);
-static const otbn_ptr_t kOtbnVarDptrR = OTBN_PTR_T_INIT(p256_ecdsa, dptr_r);
-static const otbn_ptr_t kOtbnVarDptrS = OTBN_PTR_T_INIT(p256_ecdsa, dptr_s);
-static const otbn_ptr_t kOtbnVarDptrX = OTBN_PTR_T_INIT(p256_ecdsa, dptr_x);
-static const otbn_ptr_t kOtbnVarDptrY = OTBN_PTR_T_INIT(p256_ecdsa, dptr_y);
-static const otbn_ptr_t kOtbnVarDptrD = OTBN_PTR_T_INIT(p256_ecdsa, dptr_d);
-static const otbn_ptr_t kOtbnVarDptrXR = OTBN_PTR_T_INIT(p256_ecdsa, dptr_x_r);
+static const otbn_addr_t kOtbnVarDptrMsg =
+    OTBN_ADDR_T_INIT(p256_ecdsa, dptr_msg);
+static const otbn_addr_t kOtbnVarDptrR = OTBN_ADDR_T_INIT(p256_ecdsa, dptr_r);
+static const otbn_addr_t kOtbnVarDptrS = OTBN_ADDR_T_INIT(p256_ecdsa, dptr_s);
+static const otbn_addr_t kOtbnVarDptrX = OTBN_ADDR_T_INIT(p256_ecdsa, dptr_x);
+static const otbn_addr_t kOtbnVarDptrY = OTBN_ADDR_T_INIT(p256_ecdsa, dptr_y);
+static const otbn_addr_t kOtbnVarDptrD = OTBN_ADDR_T_INIT(p256_ecdsa, dptr_d);
+static const otbn_addr_t kOtbnVarDptrXR =
+    OTBN_ADDR_T_INIT(p256_ecdsa, dptr_x_r);
 
-static const otbn_ptr_t kOtbnVarMode = OTBN_PTR_T_INIT(p256_ecdsa, mode);
-static const otbn_ptr_t kOtbnVarMsg = OTBN_PTR_T_INIT(p256_ecdsa, msg);
-static const otbn_ptr_t kOtbnVarR = OTBN_PTR_T_INIT(p256_ecdsa, r);
-static const otbn_ptr_t kOtbnVarS = OTBN_PTR_T_INIT(p256_ecdsa, s);
-static const otbn_ptr_t kOtbnVarX = OTBN_PTR_T_INIT(p256_ecdsa, x);
-static const otbn_ptr_t kOtbnVarY = OTBN_PTR_T_INIT(p256_ecdsa, y);
-static const otbn_ptr_t kOtbnVarD = OTBN_PTR_T_INIT(p256_ecdsa, d);
-static const otbn_ptr_t kOtbnVarXR = OTBN_PTR_T_INIT(p256_ecdsa, x_r);
+static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p256_ecdsa, mode);
+static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa, msg);
+static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p256_ecdsa, r);
+static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p256_ecdsa, s);
+static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(p256_ecdsa, x);
+static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p256_ecdsa, y);
+static const otbn_addr_t kOtbnVarD = OTBN_ADDR_T_INIT(p256_ecdsa, d);
+static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
 
 const test_config_t kTestConfig;
 
@@ -116,13 +118,10 @@ static void profile_end(uint64_t t_start, const char *msg) {
 /**
  * Makes a single dptr in the P256 library point to where its value is stored.
  */
-static void setup_data_pointer(otbn_t *otbn_ctx, const otbn_ptr_t dptr,
-                               const otbn_ptr_t value) {
-  uint32_t value_dmem_addr;
-  CHECK(otbn_data_ptr_to_dmem_addr(otbn_ctx, value, &value_dmem_addr) ==
+static void setup_data_pointer(otbn_t *otbn_ctx, otbn_addr_t dptr,
+                               otbn_addr_t value) {
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(value), &value, dptr) ==
         kOtbnOk);
-  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(value_dmem_addr),
-                               &value_dmem_addr, dptr) == kOtbnOk);
 }
 
 /**

@@ -43,7 +43,10 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
+
+from elftools.elf.elffile import ELFFile, SymbolTableSection  # type: ignore
+
 
 REPO_TOP = Path(__file__).parent.parent.resolve()
 
@@ -127,6 +130,43 @@ def call_rv32_ar(args: List[str]):
     run_cmd([rv32_tool_ar] + args)
 
 
+def get_otbn_syms(elf_path: str) -> List[Tuple[str, int]]:
+    '''Get externally-visible symbols from an ELF
+
+    Symbols are returned as a list of triples: (name, address). This
+    discards locals and also anything in .scratchpad, since those addresses
+    aren't bus-accessible.
+    '''
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # First, run objcopy to discard local symbols and the .scratchpad
+        # section. We also use --extract-symbol since we don't care about
+        # anything but the symbol data anyway.
+        syms_path = os.path.join(tmpdir, 'syms.elf')
+        call_rv32_objcopy(['-O', 'elf32-littleriscv',
+                           '--remove-section=.scratchpad',
+                           '--extract-symbol'] +
+                          [elf_path, syms_path])
+
+        # Load the file and use elftools to grab any symbol table
+        with open(syms_path, 'rb') as syms_fd:
+            syms_file = ELFFile(syms_fd)
+            symtab = syms_file.get_section_by_name('.symtab')
+            if symtab is None or not isinstance(symtab, SymbolTableSection):
+                # No symbol table found or we did find a section called
+                # .symtab, but it isn't actually a symbol table (huh?!). Give
+                # up.
+                return []
+
+            ret = []
+            for sym in symtab.iter_symbols():
+                if sym['st_info']['bind'] != 'STB_GLOBAL':
+                    continue
+                addr = sym['st_value']
+                assert isinstance(addr, int)
+                ret.append((sym.name, addr))
+            return ret
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -184,34 +224,42 @@ def main() -> int:
         out_elf = out_dir / (app_name + '.elf')
         call_otbn_ld(obj_files, out_elf, linker_script = args.linker_script)
 
-        # Use objcopy to create an ELF that can be linked into a RISC-V binary
-        # (to run on Ibex). This should set flags for all sections to look like
-        # rodata (since they're not executable on Ibex, nor does it make sense
-        # for Ibex code to manipulate OTBN data sections "in place"). We name
-        # them with a .otbn prefix, so end up with e.g. .rodata.otbn.text and
-        # .rodata.otbn.data.
+        # out_elf is a fully-linked OTBN binary, but we want to be able to use
+        # it from Ibex, the host processor. To make this work, we generate an
+        # ELF file that can be linked into the Ibex image.
         #
-        # Symbols that are exposed by the binary (including those giving the
-        # start and end of imem and dmem) will be relocated as part of the
-        # link, so they'll give addresses in the Ibex address space. So that
-        # the RISC-V binary can link multiple OTBN applications, we give them
-        # an application-specific prefix. (Note: This prefix is used in
-        # sw/device/lib/runtime/otbn.h: so needs to be kept in sync with that).
-        sym_pfx = '_otbn_app_{}_'.format(app_name)
+        # This ELF contains all initialised data (the .text and .data
+        # sections). We change the flags to treat them like rodata (since
+        # they're not executable on Ibex, nor does it make sense for Ibex code
+        # to manipulate OTBN data sections "in place") and add a .rodata.otbn
+        # prefix to the section names.
+        #
+        # The symbols exposed by the binary will be relocated as part of the
+        # link, so they'll point into the Ibex address space. To allow linking
+        # against multiple OTBN applications, we give the symbols an
+        # application-specific prefix. (Note: This prefix is used in driver
+        # code: so needs to be kept in sync with that).
+        #
+        # As well as the initialised data and relocated symbols, we also want
+        # to add (absolute) symbols that have the OTBN addresses of the symbols
+        # in question. Unfortunately, objcopy doesn't seem to have a "make all
+        # symbols absolute" command, so we have to do it by hand. This also
+        # means constructing an enormous objcopy command line :-/ If we run out
+        # of space, we might have to use elftools to inject the addresses after
+        # the objcopy.
+        host_side_pfx = '_otbn_local_app_{}_'.format(app_name)
+        otbn_side_pfx = '_otbn_remote_app_{}_'.format(app_name)
         out_embedded_obj = out_dir / (app_name + '.rv32embed.o')
-        args = (['-O', 'elf32-littleriscv',
-                 '--set-section-flags=*=alloc,load,readonly',
-                 '--set-section-flags=.bss=alloc,readonly',
-                 '--rename-section=.text=.rodata.otbn.text',
-                 '--rename-section=.start=.rodata.otbn.start',
-                 '--rename-section=.data=.rodata.otbn.data',
-                 '--rename-section=.bss=.bss.otbn.bss',
-                 '--remove-section=.scratchpad',
-                 '--prefix-symbols', sym_pfx] +
-                [out_elf,
-                 out_embedded_obj])
+        args = ['-O', 'elf32-littleriscv',
+                '--set-section-flags=*=alloc,load,readonly',
+                '--remove-section=.scratchpad',
+                '--remove-section=.bss',
+                '--prefix-sections=.rodata.otbn',
+                '--prefix-symbols', host_side_pfx]
+        for name, addr in get_otbn_syms(out_elf):
+            args += ['--add-symbol', f'{otbn_side_pfx}{name}=0x{addr:x}']
 
-        call_rv32_objcopy(args)
+        call_rv32_objcopy(args + [out_elf, out_embedded_obj])
 
         # After objcopy has finished, we have to do a little surgery to
         # overwrite the ELF e_type field (a 16-bit little-endian number at file
