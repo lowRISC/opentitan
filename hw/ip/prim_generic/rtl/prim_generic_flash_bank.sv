@@ -12,7 +12,6 @@ module prim_generic_flash_bank #(
   parameter int PagesPerBank   = 256, // data pages per bank
   parameter int WordsPerPage   = 256, // words per page
   parameter int DataWidth      = 32,  // bits per word
-  parameter int MetaDataWidth  = 12,  // this is a temporary parameter to work around ECC issues
 
   // Derived parameters
   localparam int PageW = $clog2(PagesPerBank),

@@ -12,7 +12,7 @@ module rstmgr_crash_info
 #(
   parameter  int CrashDumpWidth = 32,
   localparam int CrashRemainder = CrashDumpWidth % RdWidth > 0 ? 1 : 0,
-  localparam int CrashStoreSlot = CrashDumpWidth / RdWidth + CrashRemainder,
+  localparam int unsigned CrashStoreSlot = CrashDumpWidth / RdWidth + CrashRemainder,
   localparam int SlotCntWidth   = $clog2(CrashStoreSlot)
 ) (
   input clk_i,
