@@ -49,6 +49,11 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // User can set this flag to disable the check for d_user.data_intg
   bit disable_d_user_data_intg_check_for_passthru_mem;
 
+  // Clone the default_map to jtag_riscv_map via adding `run_opts: ["create_jtag_riscv_map=1"]`.
+  // After setting this flag, please do not forget to set the correct sequencer to this map,
+  // and if needed, set the map as default_map.
+  uvm_reg_map jtag_riscv_map;
+
   uint num_interrupts;
   uint num_edn;
   // if module has alerts, this list_of_alerts needs to override in cfg before super.initialize()
@@ -128,6 +133,19 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
       m_edn_pull_agent_cfg[i].agent_type = PullAgent;
       m_edn_pull_agent_cfg[i].if_mode    = Device;
       m_edn_pull_agent_cfg[i].hold_d_data_until_next_req = 1;
+    end
+
+    if (jtag_riscv_map != null) ral.set_base_addr(ral.default_map.get_base_addr(), jtag_riscv_map);
+  endfunction
+
+  protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
+    // Usually plusargs are collected during build_phase, but need this variable here during RAL
+    // initialization.
+    bit create_jtag_riscv_map;
+    void'($value$plusargs("create_jtag_riscv_map=%0b", create_jtag_riscv_map));
+    if (create_jtag_riscv_map) begin
+      jtag_riscv_map = clone_reg_map("jtag_riscv_map", ral.default_map);
+      `uvm_info(`gfn, "Cloned default_map to jtag_riscv_map.", UVM_HIGH)
     end
   endfunction
 

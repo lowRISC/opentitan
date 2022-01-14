@@ -15,7 +15,6 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   alert_esc_agent_cfg m_esc_scrap_state1_agent_cfg;
   alert_esc_agent_cfg m_esc_scrap_state0_agent_cfg;
   jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
-  uvm_reg_map jtag_riscv_map;
 
   // ext interfaces
   pwr_lc_vif pwr_lc_vif;
@@ -85,15 +84,7 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
 
     jtag_csr = 0;
 
-    // Set base address for JTAG map
-    ral.set_base_addr(ral.default_map.get_base_addr(), jtag_riscv_map);
-
     alert_max_delay = 1500;
-  endfunction
-
-  protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
-    // Clone the resister map for JTAG
-    jtag_riscv_map = clone_reg_map("jtag_riscv_map", ral.default_map);
   endfunction
 
   virtual function void set_test_phase(lc_ctrl_test_phase_e test_phase);
