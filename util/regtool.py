@@ -9,11 +9,12 @@ import argparse
 import logging as log
 import re
 import sys
-from pathlib import PurePath
+from pathlib import Path
 
 from reggen import (gen_cheader, gen_dv, gen_fpv, gen_html,
                     gen_json, gen_rtl, gen_rust, gen_selfdoc, version)
 from reggen.ip_block import IpBlock
+from reggen.countermeasure import CounterMeasure
 
 DESC = """regtool, generate register info from Hjson source"""
 
@@ -169,7 +170,7 @@ def main():
         if args.outdir is not None:
             outdir = args.outdir
         elif infile is not sys.stdin:
-            outdir = str(PurePath(infile.name).parents[1].joinpath(dirspec))
+            outdir = str(Path(infile.name).parents[1].joinpath(dirspec))
         else:
             # We're using sys.stdin, so can't infer an output directory name
             log.error(
@@ -191,6 +192,13 @@ def main():
     except ValueError as err:
         log.error(str(err))
         exit(1)
+
+    # If this block has countermeasures, we grep for RTL annotations in all
+    # .sv implementation files and check whether they match up with what is
+    # defined inside the Hjson.
+    sv_files = Path(infile.name).parents[1].joinpath('rtl').glob('*.sv')
+    rtl_names = CounterMeasure.search_rtl_files(sv_files)
+    obj.check_cm_annotations(rtl_names, infile.name)
 
     if args.novalidate:
         with outfile:

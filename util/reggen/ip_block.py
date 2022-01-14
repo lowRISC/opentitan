@@ -383,3 +383,13 @@ class IpBlock:
         '''Return primary clock of an block'''
 
         return self.clocking.primary
+
+    def check_cm_annotations(self,
+                             rtl_names: Dict[str, List[Tuple[str, int]]],
+                             where: str) -> None:
+        '''Check RTL annotations against countermeasure list of this block'''
+
+        what = '{} block at {}'.format(self.name, where)
+        CounterMeasure.check_annotation_list(what,
+                                             rtl_names,
+                                             self.countermeasures)
