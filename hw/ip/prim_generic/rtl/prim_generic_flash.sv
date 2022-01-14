@@ -13,7 +13,6 @@ module prim_generic_flash #(
   parameter int PagesPerBank   = 256,// data pages per bank
   parameter int WordsPerPage   = 256,// words per page
   parameter int DataWidth      = 32, // bits per word
-  parameter int MetaDataWidth  = 12, // metadata such as ECC
   parameter int TestModeWidth  = 2
 ) (
   input clk_i,
@@ -69,8 +68,7 @@ module prim_generic_flash #(
       .InfoTypesWidth(InfoTypesWidth),
       .PagesPerBank(PagesPerBank),
       .WordsPerPage(WordsPerPage),
-      .DataWidth(DataWidth),
-      .MetaDataWidth(MetaDataWidth)
+      .DataWidth(DataWidth)
     ) u_prim_flash_bank (
       .clk_i,
       .rst_ni,

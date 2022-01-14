@@ -9,7 +9,7 @@
 
 module rstmgr_por #(
   parameter int FilterStages = 3,
-  parameter int StretchCount = 32
+  parameter int unsigned StretchCount = 32
 ) (
   input clk_i,
   input rst_ni,

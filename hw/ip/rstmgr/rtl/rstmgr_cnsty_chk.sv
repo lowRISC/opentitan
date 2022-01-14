@@ -120,6 +120,7 @@ module rstmgr_cnsty_chk
 
   logic sync_child_ack;
 
+  // TODO - make this a sparse fsm
   always_comb begin
     state_d = state_q;
     err_o = '0;

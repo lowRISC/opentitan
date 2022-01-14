@@ -185,7 +185,7 @@ module tlul_socket_1n #(
 
 
   // accept responses from devices when selected if upstream is accepting
-  for (genvar i = 0 ; i < N+1 ; i++) begin : gen_u_o_d_ready
+  for (genvar i = 0 ; i < N ; i++) begin : gen_u_o_d_ready
     assign tl_u_o[i].d_ready = tl_t_o.d_ready;
   end
 
@@ -212,6 +212,7 @@ module tlul_socket_1n #(
   // Instantiate the error responder. It's only needed if a value greater than
   // N-1 is actually representable in NWD bits.
   if ($clog2(N+1) <= NWD) begin : gen_err_resp
+    assign tl_u_o[N].d_ready     = tl_t_o.d_ready;
     assign tl_u_o[N].a_valid     = tl_t_o.a_valid &
                                    (dev_select_t >= NWD'(N)) &
                                    ~hold_all_requests;
@@ -229,6 +230,11 @@ module tlul_socket_1n #(
       .tl_h_i     (tl_u_o[N]),
       .tl_h_o     (tl_u_i[N])
     );
+  end else begin : gen_no_err_resp // block: gen_err_resp
+    assign tl_u_o[N] = '0;
+    assign tl_u_i[N] = '0;
+    logic unused_sig;
+    assign unused_sig = ^tl_u_o[N];
   end
 
 endmodule
