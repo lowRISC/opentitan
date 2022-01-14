@@ -14,35 +14,6 @@
  */
 const int kOtbnWlenBytes = 256 / 8;
 
-otbn_result_t otbn_data_ptr_to_dmem_addr(const otbn_t *ctx, otbn_ptr_t ptr,
-                                         uint32_t *dmem_addr_otbn) {
-  uintptr_t ptr_addr = (uintptr_t)ptr;
-  uintptr_t app_dmem_data_start_addr = (uintptr_t)ctx->app.dmem_data_start;
-  uintptr_t app_dmem_data_end_addr = (uintptr_t)ctx->app.dmem_data_end;
-  uintptr_t app_dmem_bss_start_addr = (uintptr_t)ctx->app.dmem_bss_start;
-  uintptr_t app_dmem_bss_end_addr = (uintptr_t)ctx->app.dmem_bss_end;
-  uintptr_t app_dmem_bss_offset = (uintptr_t)ctx->app.dmem_bss_offset;
-
-  if (dmem_addr_otbn == NULL || ptr == NULL || ctx == NULL) {
-    return kOtbnBadArg;
-  }
-
-  if (app_dmem_data_start_addr <= ptr_addr &&
-      ptr_addr < app_dmem_data_end_addr) {
-    // Pointer is in the data section, which is at the start of DMEM
-    *dmem_addr_otbn = ptr_addr - app_dmem_data_start_addr;
-  } else if (app_dmem_bss_start_addr <= ptr_addr &&
-             ptr_addr < app_dmem_bss_end_addr) {
-    // Pointer is in the bss section, which is after the data section
-    *dmem_addr_otbn = ptr_addr - app_dmem_bss_start_addr + app_dmem_bss_offset;
-  } else {
-    // Pointer is not in a valid DMEM region
-    return kOtbnBadArg;
-  }
-
-  return kOtbnOk;
-}
-
 otbn_result_t otbn_busy_wait_for_done(otbn_t *ctx) {
   bool busy = true;
   while (busy) {
@@ -93,14 +64,8 @@ bool check_app_address_ranges(const otbn_app_t *app) {
   if (app->imem_end <= app->imem_start) {
     return false;
   }
-  // Both DMEM sections must not be backwards
-  if (app->dmem_data_end < app->dmem_data_start ||
-      app->dmem_bss_end < app->dmem_bss_start) {
-    return false;
-  }
-  // The offset of BSS in DMEM address space must be at least as large as the
-  // data section (i.e. the sections do not overlap in DMEM)
-  if (app->dmem_bss_offset < app->dmem_data_end - app->dmem_data_start) {
+  // Initialised DMEM section must not be backwards
+  if (app->dmem_data_end < app->dmem_data_start) {
     return false;
   }
   return true;
@@ -115,8 +80,7 @@ otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
   const size_t data_size = app.dmem_data_end - app.dmem_data_start;
 
   // Memory images and offsets must be multiples of 32b words.
-  if (imem_size % sizeof(uint32_t) != 0 || data_size % sizeof(uint32_t) != 0 ||
-      (size_t)app.dmem_bss_offset % sizeof(uint32_t) != 0) {
+  if (imem_size % sizeof(uint32_t) != 0 || data_size % sizeof(uint32_t) != 0) {
     return kOtbnBadArg;
   }
 
@@ -159,37 +123,24 @@ otbn_result_t otbn_execute(otbn_t *ctx) {
 }
 
 otbn_result_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len_bytes,
-                                     const void *src, otbn_ptr_t dest) {
-  if (ctx == NULL || dest == NULL) {
+                                     const void *src, otbn_addr_t dest) {
+  if (ctx == NULL) {
     return kOtbnBadArg;
   }
 
-  uint32_t dest_dmem_addr;
-  otbn_result_t result = otbn_data_ptr_to_dmem_addr(ctx, dest, &dest_dmem_addr);
-  if (result != kOtbnOk) {
-    return result;
-  }
-
-  if (dif_otbn_dmem_write(&ctx->dif, dest_dmem_addr, src, len_bytes) !=
-      kDifOk) {
+  if (dif_otbn_dmem_write(&ctx->dif, dest, src, len_bytes) != kDifOk) {
     return kOtbnError;
   }
   return kOtbnOk;
 }
 
 otbn_result_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
-                                       otbn_ptr_t src, void *dest) {
+                                       otbn_addr_t src, void *dest) {
   if (ctx == NULL || dest == NULL) {
     return kOtbnBadArg;
   }
 
-  uint32_t src_dmem_addr;
-  otbn_result_t result = otbn_data_ptr_to_dmem_addr(ctx, src, &src_dmem_addr);
-  if (result != kOtbnOk) {
-    return result;
-  }
-
-  if (dif_otbn_dmem_read(&ctx->dif, src_dmem_addr, dest, len_bytes) != kDifOk) {
+  if (dif_otbn_dmem_read(&ctx->dif, src, dest, len_bytes) != kDifOk) {
     return kOtbnError;
   }
   return kOtbnOk;

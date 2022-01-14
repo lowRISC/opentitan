@@ -15,34 +15,34 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTBN_DECLARE_APP_SYMBOLS(run_rsa_verify_3072);  // The OTBN RSA-3072 app.
-OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072,
-                        mode);  // Mode (constants or modexp).
-OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072,
-                        out_buf);  // Output buffer (message).
-OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072,
-                        in_exp);  // The RSA key exponent (n).
-OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072, in_mod);  // The RSA modulus (n).
-OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072, in_buf);  // The signature (s).
-OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072,
-                        rr);  // The Montgomery constant R^2.
-OTBN_DECLARE_PTR_SYMBOL(run_rsa_verify_3072,
-                        m0inv);  // The Montgomery constant m0_inv.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072,
+                         mode);  // Mode (constants or modexp).
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072,
+                         out_buf);  // Output buffer (message).
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072,
+                         in_exp);  // The RSA key exponent (n).
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072, in_mod);  // The RSA modulus (n).
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072, in_buf);  // The signature (s).
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072,
+                         rr);  // The Montgomery constant R^2.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072,
+                         m0inv);  // The Montgomery constant m0_inv.
 
 static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa_verify_3072);
-static const otbn_ptr_t kOtbnVarRsaMode =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072, mode);
-static const otbn_ptr_t kOtbnVarRsaOutBuf =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072, out_buf);
-static const otbn_ptr_t kOtbnVarRsaInExp =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072, in_exp);
-static const otbn_ptr_t kOtbnVarRsaInMod =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072, in_mod);
-static const otbn_ptr_t kOtbnVarRsaInBuf =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072, in_buf);
-static const otbn_ptr_t kOtbnVarRsaRR =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072, rr);
-static const otbn_ptr_t kOtbnVarRsaM0Inv =
-    OTBN_PTR_T_INIT(run_rsa_verify_3072, m0inv);
+static const otbn_addr_t kOtbnVarRsaMode =
+    OTBN_ADDR_T_INIT(run_rsa_verify_3072, mode);
+static const otbn_addr_t kOtbnVarRsaOutBuf =
+    OTBN_ADDR_T_INIT(run_rsa_verify_3072, out_buf);
+static const otbn_addr_t kOtbnVarRsaInExp =
+    OTBN_ADDR_T_INIT(run_rsa_verify_3072, in_exp);
+static const otbn_addr_t kOtbnVarRsaInMod =
+    OTBN_ADDR_T_INIT(run_rsa_verify_3072, in_mod);
+static const otbn_addr_t kOtbnVarRsaInBuf =
+    OTBN_ADDR_T_INIT(run_rsa_verify_3072, in_buf);
+static const otbn_addr_t kOtbnVarRsaRR =
+    OTBN_ADDR_T_INIT(run_rsa_verify_3072, rr);
+static const otbn_addr_t kOtbnVarRsaM0Inv =
+    OTBN_ADDR_T_INIT(run_rsa_verify_3072, m0inv);
 
 /* Mode is represented by a single word: 1=constant computation, 2=modexp */
 static const uint32_t kOtbnRsaModeNumWords = 1;
@@ -102,11 +102,11 @@ rom_error_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
  *
  * @param otbn The OTBN context object.
  * @param src Source of the data to copy.
- * @param dst Pointer to the destination in OTBN's data memory.
+ * @param dst Address of the destination in OTBN's data memory.
  * @return The result of the operation.
  */
 otbn_error_t write_rsa_3072_int_to_otbn(otbn_t *otbn, const rsa_3072_int_t *src,
-                                        otbn_ptr_t dst) {
+                                        otbn_addr_t dst) {
   return otbn_copy_data_to_otbn(otbn, kRsa3072NumWords, src->data, dst);
 }
 
@@ -114,11 +114,11 @@ otbn_error_t write_rsa_3072_int_to_otbn(otbn_t *otbn, const rsa_3072_int_t *src,
  * Copies a 3072-bit number from OTBN data memory to CPU memory.
  *
  * @param otbn The OTBN context object.
- * @param src The pointer in OTBN data memory to copy from.
+ * @param src The address in OTBN data memory to copy from.
  * @param dst The destination of the copied data in main memory (preallocated).
  * @return The result of the operation.
  */
-otbn_error_t read_rsa_3072_int_from_otbn(otbn_t *otbn, const otbn_ptr_t src,
+otbn_error_t read_rsa_3072_int_from_otbn(otbn_t *otbn, otbn_addr_t src,
                                          rsa_3072_int_t *dst) {
   return otbn_copy_data_from_otbn(otbn, kRsa3072NumWords, src, dst->data);
 }

@@ -14,23 +14,23 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTBN_DECLARE_APP_SYMBOLS(randomness);
-OTBN_DECLARE_PTR_SYMBOL(randomness, rv);
-OTBN_DECLARE_PTR_SYMBOL(randomness, fail_idx);
-OTBN_DECLARE_PTR_SYMBOL(randomness, rnd_out);
-OTBN_DECLARE_PTR_SYMBOL(randomness, urnd_out);
+OTBN_DECLARE_SYMBOL_ADDR(randomness, rv);
+OTBN_DECLARE_SYMBOL_ADDR(randomness, fail_idx);
+OTBN_DECLARE_SYMBOL_ADDR(randomness, rnd_out);
+OTBN_DECLARE_SYMBOL_ADDR(randomness, urnd_out);
 
 static const otbn_app_t kOtbnAppCfiTest = OTBN_APP_T_INIT(randomness);
-static const otbn_ptr_t kVarRv = OTBN_PTR_T_INIT(randomness, rv);
-static const otbn_ptr_t kVarFailIdx = OTBN_PTR_T_INIT(randomness, fail_idx);
-static const otbn_ptr_t kVarRndOut = OTBN_PTR_T_INIT(randomness, rnd_out);
-static const otbn_ptr_t kVarUrndOut = OTBN_PTR_T_INIT(randomness, urnd_out);
+static const otbn_addr_t kVarRv = OTBN_ADDR_T_INIT(randomness, rv);
+static const otbn_addr_t kVarFailIdx = OTBN_ADDR_T_INIT(randomness, fail_idx);
+static const otbn_addr_t kVarRndOut = OTBN_ADDR_T_INIT(randomness, rnd_out);
+static const otbn_addr_t kVarUrndOut = OTBN_ADDR_T_INIT(randomness, urnd_out);
 
 const test_config_t kTestConfig;
 
 /**
  * LOG_INFO with a 256b unsigned integer as hexadecimal number with a prefix.
  */
-static void print_uint256(otbn_t *ctx, const otbn_ptr_t var,
+static void print_uint256(otbn_t *ctx, const otbn_addr_t var,
                           const char *prefix) {
   uint32_t data[32 / sizeof(uint32_t)];
   CHECK(otbn_copy_data_from_otbn(ctx, /*len_bytes=*/32, var, &data) == kOtbnOk);

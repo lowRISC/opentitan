@@ -67,18 +67,18 @@ static const bool kTestDecrypt = true;
 static const bool kTestRsaGreater1k = false;
 
 OTBN_DECLARE_APP_SYMBOLS(rsa);
-OTBN_DECLARE_PTR_SYMBOL(rsa, mode);
-OTBN_DECLARE_PTR_SYMBOL(rsa, n_limbs);
-OTBN_DECLARE_PTR_SYMBOL(rsa, inout);
-OTBN_DECLARE_PTR_SYMBOL(rsa, modulus);
-OTBN_DECLARE_PTR_SYMBOL(rsa, exp);
+OTBN_DECLARE_SYMBOL_ADDR(rsa, mode);
+OTBN_DECLARE_SYMBOL_ADDR(rsa, n_limbs);
+OTBN_DECLARE_SYMBOL_ADDR(rsa, inout);
+OTBN_DECLARE_SYMBOL_ADDR(rsa, modulus);
+OTBN_DECLARE_SYMBOL_ADDR(rsa, exp);
 
 static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(rsa);
-static const otbn_ptr_t kOtbnVarRsaMode = OTBN_PTR_T_INIT(rsa, mode);
-static const otbn_ptr_t kOtbnVarRsaNLimbs = OTBN_PTR_T_INIT(rsa, n_limbs);
-static const otbn_ptr_t kOtbnVarRsaInOut = OTBN_PTR_T_INIT(rsa, inout);
-static const otbn_ptr_t kOtbnVarRsaModulus = OTBN_PTR_T_INIT(rsa, modulus);
-static const otbn_ptr_t kOtbnVarRsaExp = OTBN_PTR_T_INIT(rsa, exp);
+static const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(rsa, mode);
+static const otbn_addr_t kOtbnVarRsaNLimbs = OTBN_ADDR_T_INIT(rsa, n_limbs);
+static const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(rsa, inout);
+static const otbn_addr_t kOtbnVarRsaModulus = OTBN_ADDR_T_INIT(rsa, modulus);
+static const otbn_addr_t kOtbnVarRsaExp = OTBN_ADDR_T_INIT(rsa, exp);
 
 enum {
   kRsa512SizeBytes = 512 / 8,
