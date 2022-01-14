@@ -14,7 +14,7 @@
   overrides: [
     { // Deletes black-boxed hierarchies before writing out the unmapped netlist
       name: post_elab_script
-      value: "{proj_root}/hw/ip/aes/syn/post_elab_gtech.tcl"
+      value: "{proj_root}/hw/ip/aes/syn/aes_wrap_post_elab_gtech.tcl"
     }
   ]
 }
