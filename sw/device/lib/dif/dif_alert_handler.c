@@ -222,9 +222,7 @@ dif_result_t dif_alert_handler_configure_class(
 #undef ALERT_CLASS_CONFIG_REGS_CASE_
 
   // Check if class configuration is locked.
-  uint32_t class_regwen =
-      mmio_region_read32(alert_handler->base_addr, class_regwen_offset);
-  if (class_regwen == 0) {
+  if (!mmio_region_read32(alert_handler->base_addr, class_regwen_offset)) {
     return kDifLocked;
   }
 
@@ -334,6 +332,45 @@ dif_result_t dif_alert_handler_configure_class(
   return kDifOk;
 }
 
+dif_result_t dif_alert_handler_configure_ping_timer(
+    const dif_alert_handler_t *alert_handler, uint32_t ping_timeout,
+    dif_toggle_t enabled, dif_toggle_t locked) {
+  if (alert_handler == NULL ||
+      ping_timeout >
+          ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_MASK ||
+      !dif_is_valid_toggle(enabled) || !dif_is_valid_toggle(locked)) {
+    return kDifBadArg;
+  }
+
+  // Check if the ping timer is locked.
+  if (!mmio_region_read32(alert_handler->base_addr,
+                          ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  // Set the ping timeout.
+  mmio_region_write32_shadowed(
+      alert_handler->base_addr,
+      ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_REG_OFFSET, ping_timeout);
+
+  // Enable the ping timer.
+  // Note, this must be done after the timeout has been configured above, since
+  // pinging will start immediately.
+  if (enabled == kDifToggleEnabled) {
+    mmio_region_write32_shadowed(
+        alert_handler->base_addr,
+        ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET, 1);
+  }
+
+  // Lock the configuration.
+  if (locked == kDifToggleEnabled) {
+    mmio_region_write32(alert_handler->base_addr,
+                        ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
+  }
+
+  return kDifOk;
+}
+
 // TODO(#9899): make this a testutil function.
 dif_result_t dif_alert_handler_configure(
     const dif_alert_handler_t *alert_handler, dif_alert_handler_config_t config,
@@ -403,28 +440,14 @@ dif_result_t dif_alert_handler_configure(
     }
   }
 
-  // Check if the ping timer is locked.
-  bool is_ping_timer_locked;
+  // Configure the ping timer.
   // TODO(#9899): replace with CHECK_DIF_OK(...) when the parent function
   // becomes a testutil function.
-  if (dif_alert_handler_is_ping_timer_locked(alert_handler,
-                                             &is_ping_timer_locked) != kDifOk) {
+  if (dif_alert_handler_configure_ping_timer(alert_handler, config.ping_timeout,
+                                             kDifToggleEnabled,
+                                             locked) != kDifOk) {
     return kDifError;
   }
-  if (is_ping_timer_locked) {
-    return kDifLocked;
-  }
-
-  // Configure the ping timer.
-  uint32_t ping_timeout_reg = bitfield_field32_write(
-      0,
-      ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_FIELD,
-      config.ping_timeout);
-  mmio_region_write32_shadowed(
-      alert_handler->base_addr,
-      ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_REG_OFFSET, ping_timeout_reg);
-
-  // TODO(#9899): support locking the ping timer.
 
   return kDifOk;
 }

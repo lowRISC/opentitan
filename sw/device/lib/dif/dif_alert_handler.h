@@ -395,6 +395,26 @@ dif_alert_handler_configure_class(const dif_alert_handler_t *alert_handler,
                                   dif_toggle_t enabled, dif_toggle_t locked);
 
 /**
+ * Configures the ping timer in the alert handler.
+ *
+ * This operation is lock-protected, meaning once the configuration is locked,
+ * it cannot be reconfigured until after a system reset.
+ *
+ * Note, the ping timer will only ping alerts that have been enabled AND locked.
+ * Therefore, this DIF should be invoked after configuring and enabling each
+ * (local) alert.
+ *
+ * @param handler An alert handler handle.
+ * @param ping_timeout The alert ping timeout, in cycles.
+ * @param enabled The enablement state to configure the ping timer in.
+ * @param locked The locked state to configure ping timer in.
+ * @ return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT dif_result_t dif_alert_handler_configure_ping_timer(
+    const dif_alert_handler_t *alert_handler, uint32_t ping_timeout,
+    dif_toggle_t enabled, dif_toggle_t locked);
+
+/**
  * Locks out alert handler ping timer configuration.
  *
  * This operation cannot be undone, and should be performed at the end of

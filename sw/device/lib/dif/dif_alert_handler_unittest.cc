@@ -493,94 +493,70 @@ TEST_F(ClassConfigTest, EnableAndLock) {
             kDifOk);
 }
 
-class ConfigTest : public AlertHandlerTest {};
+class PingTimerConfigTest : public AlertHandlerTest {};
 
-TEST_F(ConfigTest, Locked) {
-  dif_alert_handler_config_t config = {.alerts = nullptr,
-                                       .alert_classes = nullptr,
-                                       .alerts_len = 0,
-                                       .local_alerts = nullptr,
-                                       .local_alert_classes = nullptr,
-                                       .local_alerts_len = 0,
-                                       .classes = nullptr,
-                                       .class_configs = nullptr,
-                                       .classes_len = 0,
-                                       .ping_timeout = 0};
-
-  EXPECT_READ32(
-      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
-      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
-        true}});
+TEST_F(PingTimerConfigTest, BadArgs) {
+  EXPECT_EQ(dif_alert_handler_configure_ping_timer(
+                nullptr, 0, kDifToggleDisabled, kDifToggleDisabled),
+            kDifBadArg);
 
   EXPECT_EQ(
-      dif_alert_handler_configure(&alert_handler_, config, kDifToggleDisabled),
-      kDifLocked);
+      dif_alert_handler_configure_ping_timer(
+          &alert_handler_, 0, static_cast<dif_toggle_t>(2), kDifToggleDisabled),
+      kDifBadArg);
+
+  EXPECT_EQ(
+      dif_alert_handler_configure_ping_timer(
+          &alert_handler_, 0, kDifToggleDisabled, static_cast<dif_toggle_t>(2)),
+      kDifBadArg);
 }
 
-TEST_F(ConfigTest, NoClassInit) {
-  dif_alert_handler_config_t config = {.alerts = nullptr,
-                                       .alert_classes = nullptr,
-                                       .alerts_len = 0,
-                                       .local_alerts = nullptr,
-                                       .local_alert_classes = nullptr,
-                                       .local_alerts_len = 0,
-                                       .classes = nullptr,
-                                       .class_configs = nullptr,
-                                       .classes_len = 0,
-                                       .ping_timeout = 50};
+TEST_F(PingTimerConfigTest, TimeoutTooBig) {
+  uint32_t ping_timeout =
+      ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_MASK +
+      1;
 
-  EXPECT_READ32(
-      ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET,
-      {{ALERT_HANDLER_PING_TIMER_EN_SHADOWED_PING_TIMER_EN_SHADOWED_BIT,
-        false}});
+  EXPECT_EQ(dif_alert_handler_configure_ping_timer(
+                &alert_handler_, ping_timeout, kDifToggleDisabled,
+                kDifToggleDisabled),
+            kDifBadArg);
+}
 
-  EXPECT_WRITE32_SHADOWED(
-      ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
-      {{ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_OFFSET,
-        50}});
+TEST_F(PingTimerConfigTest, Locked) {
+  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
+
+  EXPECT_EQ(dif_alert_handler_configure_ping_timer(
+                &alert_handler_, 5000, kDifToggleDisabled, kDifToggleDisabled),
+            kDifLocked);
+}
+
+TEST_F(PingTimerConfigTest, ConfigureAndEnable) {
+  uint32_t ping_timeout = 5000;
+
+  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
+                          ping_timeout);
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET, 1);
 
   EXPECT_EQ(
-      dif_alert_handler_configure(&alert_handler_, config, kDifToggleDisabled),
+      dif_alert_handler_configure_ping_timer(
+          &alert_handler_, ping_timeout, kDifToggleEnabled, kDifToggleDisabled),
       kDifOk);
 }
 
-TEST_F(ConfigTest, TimeoutTooBig) {
-  dif_alert_handler_config_t config = {
-      .alerts = nullptr,
-      .alert_classes = nullptr,
-      .alerts_len = 0,
-      .local_alerts = nullptr,
-      .local_alert_classes = nullptr,
-      .local_alerts_len = 0,
-      .classes = nullptr,
-      .class_configs = nullptr,
-      .classes_len = 0,
-      .ping_timeout =
-          ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_MASK +
-          1};
+TEST_F(PingTimerConfigTest, ConfigureEnableAndLock) {
+  uint32_t ping_timeout = 5000;
+
+  EXPECT_READ32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
+                          ping_timeout);
+  EXPECT_WRITE32_SHADOWED(ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET, 1);
+  EXPECT_WRITE32(ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
 
   EXPECT_EQ(
-      dif_alert_handler_configure(&alert_handler_, config, kDifToggleDisabled),
-      kDifBadArg);
-}
-
-TEST_F(ConfigTest, BadClassPtr) {
-  dif_alert_handler_config_t config = {
-      .alerts = nullptr,
-      .alert_classes = nullptr,
-      .alerts_len = 0,
-      .local_alerts = nullptr,
-      .local_alert_classes = nullptr,
-      .local_alerts_len = 0,
-      .classes = nullptr,
-      .class_configs = nullptr,
-      .classes_len = 2,
-      .ping_timeout = 50,
-  };
-
-  EXPECT_EQ(
-      dif_alert_handler_configure(&alert_handler_, config, kDifToggleDisabled),
-      kDifBadArg);
+      dif_alert_handler_configure_ping_timer(
+          &alert_handler_, ping_timeout, kDifToggleEnabled, kDifToggleEnabled),
+      kDifOk);
 }
 
 class PingTimerLockTest : public AlertHandlerTest {};
