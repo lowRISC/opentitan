@@ -50,7 +50,7 @@ In the following example we synthesize the Earl Grey design for the ChipWhispere
 To target the Nexys Video board, replace `cw310` by `nexysvideo` in the instructions below.
 
 ```console
-$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+$ . /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
 $ cd $REPO_TOP
 $ ./meson_init.sh
 $ ninja -C build-out all
@@ -119,7 +119,7 @@ $ ./util/fpga/cw310_loader.py --bitstream build/lowrisc_systems_chip_earlgrey_cw
 Use the following command to program the FPGA.
 
 ```console
-$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+$ . /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
 $ cd $REPO_TOP
 $ util/opentitan-pgm-fpga/opentitan-pgm-fpga xc7a200tsbg484-1 build/lowrisc_systems_chip_earlgrey_nexysvideo/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit
 ```
@@ -129,7 +129,7 @@ If you have having trouble with programming using the command line, try the GUI.
 ### Using the Vivado GUI for the Nexys Video board
 
 ```console
-$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+$ . /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
 $ cd $REPO_TOP
 $ make -C build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado build-gui
 ```
@@ -299,7 +299,7 @@ $ fusesoc --cores-root . run --flag=fileset_top --target=synth --no-export --set
 
 You can then navigate to the created project directory, and open Vivado
 ```console
-$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+$ . /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
 $ cd $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/
 $ vivado
 ```
