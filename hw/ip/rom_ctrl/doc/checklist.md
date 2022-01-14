@@ -143,9 +143,9 @@ Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
-Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
+Review        | [TESTPLAN_REVIEWED][]                 | Done        |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | 
-Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
+Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
 [DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
 [TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
