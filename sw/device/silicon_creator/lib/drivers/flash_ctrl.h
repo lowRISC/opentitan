@@ -57,60 +57,97 @@ typedef enum flash_crtl_partition {
   ((bitfield_field32_t){.mask = 0x3, .index = 1})
 
 /**
- * Helper macro for defining the value of a `flash_ctrl_info_page_t` enumeration
- * constant for information pages of type 0.
+ * Table of flash information pages.
  *
- * Each `flash_ctrl_info_page_t` enumeration constant is a bitfield with the
- * following layout:
- * - Bits 0-3: Page index ([0,9] for type 0, 0 for type 1, [0,1] for type 2).
- * - Bits 4-6: Partition type (a `flash_ctrl_partition_type_t`).
- * - Bit 7: Bank index [0,1].
+ * Columns: Name, value, bank index, page index.
+ * We use an X macro to faciliate writing enums, swtich statements, and unit
+ * tests using the contants here. All information pages in this table are of
+ * type 0 since silicon creator code does not need to access information pages
+ * of other types.
  *
- * This macro assumes that all information pages are of type 0 since silicon
- * creator code does not need to access information pages of other types.
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 20 -n 32 \
+ *     -s 1755363476 --language=c
  *
- * @param bank_ Bank index.
- * @param page_ Page index.
+ * Hamming distance histogram:
+ *
+ *  0: --
+ *  1: --
+ *  2: --
+ *  3: --
+ *  4: --
+ *  5: --
+ *  6: --
+ *  7: --
+ *  8: --
+ *  9:  (0.53%)
+ * 10: || (2.63%)
+ * 11: || (2.11%)
+ * 12: |||||| (6.84%)
+ * 13: |||||| (6.84%)
+ * 14: ||||||||||| (12.11%)
+ * 15: ||||||||||| (11.58%)
+ * 16: |||||||||||||||||||| (20.53%)
+ * 17: ||||||||| (10.00%)
+ * 18: |||||||||| (10.53%)
+ * 19: ||||||| (7.37%)
+ * 20: |||||| (6.84%)
+ * 21: | (1.05%)
+ * 22: | (1.05%)
+ * 23: --
+ * 24: --
+ * 25: --
+ * 26: --
+ * 27: --
+ * 28: --
+ * 29: --
+ * 30: --
+ * 31: --
+ * 32: --
+ *
+ * Minimum Hamming distance: 9
+ * Maximum Hamming distance: 22
+ * Minimum Hamming weight: 13
+ * Maximum Hamming weight: 25
  */
-#define INFO_PAGE_(bank_, page_) \
-  ((bank_ << 7) | (kFlashCtrlPartitionInfo0 << 4) | (page_))
-
 // clang-format off
 #define FLASH_CTRL_INFO_PAGES_DEFINE(X) \
   /**
    * Bank 0 information partition type 0 pages.
    */ \
-  X(kFlashCtrlInfoPageFactoryId,          0, 0), \
-  X(kFlashCtrlInfoPageCreatorSecret,      0, 1), \
-  X(kFlashCtrlInfoPageOwnerSecret,        0, 2), \
-  X(kFlashCtrlInfoPageWaferAuthSecret,    0, 3), \
-  X(kFlashCtrlInfoPageBank0Type0Page4,    0, 4), \
-  X(kFlashCtrlInfoPageBank0Type0Page5,    0, 5), \
-  X(kFlashCtrlInfoPageOwnerReserved0,     0, 6), \
-  X(kFlashCtrlInfoPageOwnerReserved1,     0, 7), \
-  X(kFlashCtrlInfoPageOwnerReserved2,     0, 8), \
-  X(kFlashCtrlInfoPageOwnerReserved3,     0, 9), \
+  X(kFlashCtrlInfoPageFactoryId,         	0x9dc41c33, 0, 0) \
+  X(kFlashCtrlInfoPageCreatorSecret,     	0xf56af4bb, 0, 1) \
+  X(kFlashCtrlInfoPageOwnerSecret,       	0x10adc6aa, 0, 2) \
+  X(kFlashCtrlInfoPageWaferAuthSecret,   	0x118b5dbb, 0, 3) \
+  X(kFlashCtrlInfoPageBank0Type0Page4,   	0xad3b5bee, 0, 4) \
+  X(kFlashCtrlInfoPageBank0Type0Page5,   	0xa4f6f6c3, 0, 5) \
+  X(kFlashCtrlInfoPageOwnerReserved0,    	0xf646f11b, 0, 6) \
+  X(kFlashCtrlInfoPageOwnerReserved1,    	0x6c86d980, 0, 7) \
+  X(kFlashCtrlInfoPageOwnerReserved2,    	0xdd7f34dc, 0, 8) \
+  X(kFlashCtrlInfoPageOwnerReserved3,    	0x5f07277e, 0, 9) \
   /**
    * Bank 1 information partition type 0 pages.
    */ \
-  X(kFlashCtrlInfoPageBootData0,          1, 0), \
-  X(kFlashCtrlInfoPageBootData1,          1, 1), \
-  X(kFlashCtrlInfoPageOwnerSlot0,         1, 2), \
-  X(kFlashCtrlInfoPageOwnerSlot1,         1, 3), \
-  X(kFlashCtrlInfoPageBank1Type0Page4,    1, 4), \
-  X(kFlashCtrlInfoPageBank1Type0Page5,    1, 5), \
-  X(kFlashCtrlInfoPageCreatorCertificate, 1, 6), \
-  X(kFlashCtrlInfoPageBootServices,       1, 7), \
-  X(kFlashCtrlInfoPageOwnerCerificate0,   1, 8), \
-  X(kFlashCtrlInfoPageOwnerCerificate1,   1, 9), \
+  X(kFlashCtrlInfoPageBootData0,          0xfa38c9f6, 1, 0) \
+  X(kFlashCtrlInfoPageBootData1,          0x389c449e, 1, 1) \
+  X(kFlashCtrlInfoPageOwnerSlot0,         0x238cf15c, 1, 2) \
+  X(kFlashCtrlInfoPageOwnerSlot1,         0xad886d3b, 1, 3) \
+  X(kFlashCtrlInfoPageBank1Type0Page4,    0x7dfbdf9b, 1, 4) \
+  X(kFlashCtrlInfoPageBank1Type0Page5,    0xad5dd31d, 1, 5) \
+  X(kFlashCtrlInfoPageCreatorCertificate, 0xe3ffac86, 1, 6) \
+  X(kFlashCtrlInfoPageBootServices,       0xf4f48c3d, 1, 7) \
+  X(kFlashCtrlInfoPageOwnerCerificate0,   0x9fbb840e, 1, 8) \
+  X(kFlashCtrlInfoPageOwnerCerificate1,   0xec309461, 1, 9) \
 // clang-format on
 
 /**
  * Helper macro for defining a `flash_ctrl_info_page_t` enumeration constant.
- * @name_ Name of the enumeration constant.
- * @value_ Value of the enumeration constant.
+ * @param name_ Name of the enumeration constant.
+ * @param value_ Value of the enumeration constant.
+ * @param bank_ Bank of the info page.
+ * @param page_ Page of the info page.
  */
-#define INFO_PAGE_ENUM_INIT_(name_, bank_, page_) name_ = INFO_PAGE_(bank_, page_)
+#define INFO_PAGE_ENUM_INIT_(name_, value_, bank_, page_) name_ = value_,
 
 /**
  * Info pages.
@@ -118,16 +155,6 @@ typedef enum flash_crtl_partition {
 typedef enum flash_ctrl_info_page {
   FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_ENUM_INIT_)
 } flash_ctrl_info_page_t;
-
-/**
- * Field and bit definitions to get page index, partition type, and bank index
- * from a `flash_ctrl_info_page_t`.
- */
-#define FLASH_CTRL_INFO_PAGE_FIELD_PAGE \
-  ((bitfield_field32_t){.mask = 0xf, .index = 0})
-#define FLASH_CTRL_INFO_PAGE_FIELD_PARTITION \
-  ((bitfield_field32_t){.mask = 0x7, .index = 4})
-#define FLASH_CTRL_INFO_PAGE_BIT_BANK 7
 
 /**
  * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and

@@ -63,6 +63,7 @@ cc_library(
     name = "flash_ctrl",
     srcs = ["flash_ctrl.c"],
     hdrs = ["flash_ctrl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -77,9 +78,15 @@ cc_library(
 
 cc_test(
     name = "flash_ctrl_unittest",
-    srcs = ["flash_ctrl_unittest.cc"],
+    srcs = [
+        "flash_ctrl.h",
+        "flash_ctrl.c",
+        "flash_ctrl_unittest.cc",
+    ],
+    defines = [
+        "OT_OFF_TARGET_TEST",
+    ],
     deps = [
-        ":flash_ctrl",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base",

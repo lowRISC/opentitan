@@ -520,6 +520,7 @@ sw_silicon_creator_lib_driver_flash_ctrl = declare_dependency(
       sw_silicon_creator_lib_base_abs_mmio,
       sw_silicon_creator_lib_base_sec_mmio,
       sw_silicon_creator_lib_driver_otp,
+      sw_lib_hardened,
     ],
   ),
 )
@@ -536,10 +537,11 @@ test('sw_silicon_creator_lib_driver_flash_ctrl_unittest', executable(
       sw_vendor_gtest,
       sw_silicon_creator_lib_base_mock_abs_mmio,
       sw_silicon_creator_lib_base_mock_sec_mmio,
+      sw_lib_testing_hardened,
     ],
     native: true,
-    c_args: ['-DMOCK_ABS_MMIO', '-DMOCK_SEC_MMIO'],
-    cpp_args: ['-DMOCK_ABS_MMIO', '-DMOCK_SEC_MMIO'],
+    c_args: ['-DMOCK_ABS_MMIO', '-DMOCK_SEC_MMIO', '-DOT_OFF_TARGET_TEST'],
+    cpp_args: ['-DMOCK_ABS_MMIO', '-DMOCK_SEC_MMIO', '-DOT_OFF_TARGET_TEST'],
   ),
   suite: 'mask_rom',
 )
