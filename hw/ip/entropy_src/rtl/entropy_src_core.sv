@@ -446,6 +446,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   import prim_mubi_pkg::mubi4_test_invalid;
 
   // check for illegal enable field states, and set alert if detected
+
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_conf_en;
   assign mubi_conf_en  = mubi4_t'(reg2hw.conf.enable.q);
   assign es_enable_pfe = mubi4_test_true_strict(mubi_conf_en);
@@ -453,6 +455,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.recov_alert_sts.enable_field_alert.de = es_enable_pfa;
   assign hw2reg.recov_alert_sts.enable_field_alert.d  = es_enable_pfa;
 
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_entropy_reg_en;
   assign mubi_entropy_reg_en = mubi4_t'(reg2hw.conf.entropy_data_reg_enable.q);
   assign entropy_data_reg_en_pfe = mubi4_test_true_strict(mubi_entropy_reg_en);
@@ -466,6 +469,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_enable_rng = es_enable_q;
   assign observe_fifo_thresh = reg2hw.observe_fifo_thresh.q;
 
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_fw_ov_mode;
   assign mubi_fw_ov_mode = mubi4_t'(reg2hw.fw_ov_control.fw_ov_mode.q);
   assign fw_ov_mode_pfe = mubi4_test_true_strict(mubi_fw_ov_mode);
@@ -473,6 +477,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.recov_alert_sts.fw_ov_mode_field_alert.de = fw_ov_mode_pfa;
   assign hw2reg.recov_alert_sts.fw_ov_mode_field_alert.d  = fw_ov_mode_pfa;
 
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_fw_ov_entropy_insert;
   assign mubi_fw_ov_entropy_insert = mubi4_t'(reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
   assign fw_ov_entropy_insert_pfe = mubi4_test_true_strict(mubi_fw_ov_entropy_insert);
@@ -711,6 +716,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   // pack esrng bus into signal bit packer
+
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_rng_bit_en;
   assign mubi_rng_bit_en = mubi4_t'(reg2hw.conf.rng_bit_enable.q);
   assign rng_bit_enable_pfe = mubi4_test_true_strict(mubi_rng_bit_en);
@@ -770,6 +777,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign markov_active = es_enable;
   assign extht_active = es_enable;
 
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_ht_clr;
   assign mubi_ht_clr = mubi4_t'(reg2hw.conf.health_test_clr.q);
   assign health_test_clr_pfe = mubi4_test_true_strict(mubi_ht_clr);
@@ -1146,6 +1154,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign event_es_health_test_failed = es_main_sm_alert;
   assign event_es_observe_fifo_ready = observe_fifo_thresh_met;
 
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_es_route;
   assign mubi_es_route = mubi4_t'(reg2hw.entropy_control.es_route.q);
   assign es_route_pfe = mubi4_test_true_strict(mubi_es_route);
@@ -1153,6 +1162,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.recov_alert_sts.es_route_field_alert.de = es_route_pfa;
   assign hw2reg.recov_alert_sts.es_route_field_alert.d  = es_route_pfa;
 
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_es_type;
   assign mubi_es_type = mubi4_t'(reg2hw.entropy_control.es_type.q);
   assign es_type_pfe = mubi4_test_true_strict(mubi_es_type);
@@ -1160,6 +1170,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.recov_alert_sts.es_type_field_alert.de = es_type_pfa;
   assign hw2reg.recov_alert_sts.es_type_field_alert.d  = es_type_pfa;
 
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_boot_byp_dis;
   assign mubi_boot_byp_dis = mubi4_t'(reg2hw.conf.boot_bypass_disable.q);
   assign boot_bypass_disable_pfe = mubi4_test_true_strict(mubi_boot_byp_dis);
@@ -1187,6 +1198,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
   // Window counter
+  // SEC_CM: CTR.REDUN
     prim_count #(
       .Width(HalfRegWidth),
       .OutSelDnCnt(1'b0), // count up
@@ -1219,6 +1231,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // repetitive count test
   //--------------------------------------------
 
+  // SEC_CM: RNG.BKGN_CHK
   entropy_src_repcnt_ht #(
     .RegWidth(HalfRegWidth),
     .RngBusWidth(RngBusWidth)
@@ -1280,6 +1293,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // repetitive count symbol test
   //--------------------------------------------
 
+  // SEC_CM: RNG.BKGN_CHK
   entropy_src_repcnts_ht #(
     .RegWidth(HalfRegWidth),
     .RngBusWidth(RngBusWidth)
@@ -1341,6 +1355,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // adaptive proportion test
   //--------------------------------------------
 
+  // SEC_CM: RNG.BKGN_CHK
   entropy_src_adaptp_ht #(
     .RegWidth(HalfRegWidth),
     .RngBusWidth(RngBusWidth)
@@ -1450,6 +1465,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // bucket test
   //--------------------------------------------
 
+  // SEC_CM: RNG.BKGN_CHK
   entropy_src_bucket_ht #(
     .RegWidth(HalfRegWidth),
     .RngBusWidth(RngBusWidth)
@@ -1513,6 +1529,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // Markov test
   //--------------------------------------------
 
+  // SEC_CM: RNG.BKGN_CHK
   entropy_src_markov_ht #(
     .RegWidth(HalfRegWidth),
     .RngBusWidth(RngBusWidth)
@@ -2223,6 +2240,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // - checks to make sure repeated data sets off
   //   an alert for sw to handle
   //--------------------------------------------
+
+  // SEC_CM: ESFINAL_RDATA.BUS.INTEGRITY
 
   // capture a copy of the entropy data
   assign es_rdata_capt_vld = (sfifo_esfinal_pop && sfifo_esfinal_not_empty);

@@ -50,6 +50,7 @@ module entropy_src_bucket_ht #(
     // set the bin incrementer if the symbol matches that bin
     assign bin_incr[i] = entropy_bit_vld_i && (entropy_bit_i == i);
     // use the bin incrementer to increase the bin total count
+    // SEC_CM: CTR.REDUN
     prim_count #(
         .Width(RegWidth),
         .OutSelDnCnt(1'b0), // count up
@@ -77,6 +78,7 @@ module entropy_src_bucket_ht #(
   );
 
   // Test event counter
+  // SEC_CM: CTR.REDUN
   prim_count #(
       .Width(RegWidth),
       .OutSelDnCnt(1'b0), // count up
