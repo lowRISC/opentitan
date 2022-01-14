@@ -50,7 +50,7 @@
             Verify fips bit(s) are properly transferred to endpoint.
             '''
       milestone: V2
-      tests: []
+      tests: ["edn_genbits"]
     }
     {
       name: interrupts
