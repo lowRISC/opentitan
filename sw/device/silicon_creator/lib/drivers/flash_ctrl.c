@@ -208,12 +208,19 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
  * @return Base address of the given page.
  */
 static uint32_t info_page_addr(flash_ctrl_info_page_t info_page) {
-  const uint32_t bank_index =
-      bitfield_bit32_read(info_page, FLASH_CTRL_INFO_PAGE_BIT_BANK);
-  const uint32_t page_index =
-      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PAGE);
-  return kMemBase + bank_index * FLASH_CTRL_PARAM_BYTES_PER_BANK +
-         page_index * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+#define INFO_PAGE_ADDR_CASE_(name_, value_, bank_, page_)       \
+  case (name_):                                                 \
+    SHUTDOWN_CHECK(launder32(info_page) == (name_));            \
+    return kMemBase + (bank_)*FLASH_CTRL_PARAM_BYTES_PER_BANK + \
+           (page_)*FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+
+  switch (launder32(info_page)) {
+    FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_ADDR_CASE_)
+    default:
+      SHUTDOWN_CHECK(false);
+  }
+
+#undef INFO_PAGE_ADDR_CASE_
 }
 
 /**
@@ -240,28 +247,25 @@ typedef struct info_cfg_regs {
  * @return Config and config write-enable register addresses of the info page.
  */
 static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
-  // For each bank and info page type, there are N config regwen registers
-  // followed by N config registers, where N is the number pages available for
-  // the info page type. These "blocks" of registers are mapped to a contiguous
-  // address space by bank number starting with config regwen registers for page
-  // 0-9, type 0, bank 0, followed by config registers for page 0-9, type 0,
-  // bank 0, and so on.
-  enum {
-    kBankOffset = FLASH_CTRL_BANK1_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET -
-                  FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET,
-    kPageOffset = sizeof(uint32_t),
-  };
-  const uint32_t bank_index =
-      bitfield_bit32_read(info_page, FLASH_CTRL_INFO_PAGE_BIT_BANK);
-  const uint32_t page_index =
-      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PAGE);
-  const uint32_t pre_addr =
-      kBase + bank_index * kBankOffset + page_index * kPageOffset;
-  return (info_cfg_regs_t){
-      .cfg_wen_addr = pre_addr + FLASH_CTRL_BANK0_INFO0_REGWEN_0_REG_OFFSET,
-      .cfg_addr =
-          pre_addr + FLASH_CTRL_BANK0_INFO0_PAGE_CFG_SHADOWED_0_REG_OFFSET,
-  };
+#define INFO_CFG_REGS_CASE_(name_, value_, bank_, page_)                           \
+  case (name_):                                                                    \
+    SHUTDOWN_CHECK(launder32(info_page) == (name_));                               \
+    return (info_cfg_regs_t){                                                      \
+        .cfg_wen_addr =                                                            \
+            kBase +                                                                \
+            FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,            \
+        .cfg_addr =                                                                \
+            kBase +                                                                \
+            FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_SHADOWED_##page_##_REG_OFFSET, \
+    };
+
+  switch (launder32(info_page)) {
+    FLASH_CTRL_INFO_PAGES_DEFINE(INFO_CFG_REGS_CASE_)
+    default:
+      SHUTDOWN_CHECK(false);
+  }
+
+#undef INFO_CFG_REGS_CASE_
 }
 
 /**
@@ -343,12 +347,10 @@ rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
                                  uint32_t offset, uint32_t word_count,
                                  uint32_t *data) {
   const uint32_t addr = info_page_addr(info_page) + offset;
-  const flash_ctrl_partition_t partition =
-      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PARTITION);
   transaction_start((transaction_params_t){
       .addr = addr,
       .op_type = FLASH_CTRL_CONTROL_OP_VALUE_READ,
-      .partition = partition,
+      .partition = kFlashCtrlPartitionInfo0,
       .word_count = word_count,
       // Does not apply to read transactions.
       .erase_type = kFlashCtrlEraseTypePage,
@@ -367,9 +369,8 @@ rom_error_t flash_ctrl_info_write(flash_ctrl_info_page_t info_page,
                                   uint32_t offset, uint32_t word_count,
                                   const uint32_t *data) {
   const uint32_t addr = info_page_addr(info_page) + offset;
-  const flash_ctrl_partition_t partition =
-      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PARTITION);
-  return write(addr, partition, word_count, data, kErrorFlashCtrlInfoWrite);
+  return write(addr, kFlashCtrlPartitionInfo0, word_count, data,
+               kErrorFlashCtrlInfoWrite);
 }
 
 rom_error_t flash_ctrl_data_erase(uint32_t addr,
@@ -388,13 +389,11 @@ rom_error_t flash_ctrl_data_erase(uint32_t addr,
 rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
                                   flash_ctrl_erase_type_t erase_type) {
   const uint32_t addr = info_page_addr(info_page);
-  const flash_ctrl_partition_t partition =
-      bitfield_field32_read(info_page, FLASH_CTRL_INFO_PAGE_FIELD_PARTITION);
   transaction_start((transaction_params_t){
       .addr = addr,
       .op_type = FLASH_CTRL_CONTROL_OP_VALUE_ERASE,
       .erase_type = erase_type,
-      .partition = partition,
+      .partition = kFlashCtrlPartitionInfo0,
       // Does not apply to erase transactions.
       .word_count = 1,
   });
