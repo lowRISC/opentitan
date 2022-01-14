@@ -31,7 +31,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * ADC_CTRL IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 * Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Wakeup ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -52,19 +52,13 @@ ADC_CTRL testbench instantiates (already handled in CIP base env) [tl_agent]({{<
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into ADC_CTRL device.
 
-### UVC/agent 1
-[Describe here or add link to its README]
-
-### UVC/agent 2
-[Describe here or add link to its README]
+### push_pull agents
+The ADC data interface is emulated using push_pull agents. ([`push_pull_agent`]({{< relref "hw/dv/sv/push_pull_agent/README.md" >}})
 
 ### UVM RAL Model
 The ADC_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
-
-### Reference models
-[Describe reference models in use if applicable, example: SHA256/HMAC]
 
 ### Stimulus strategy
 #### Test sequences
