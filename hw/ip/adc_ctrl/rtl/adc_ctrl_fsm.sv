@@ -48,27 +48,29 @@ module adc_ctrl_fsm
   logic np_sample_cnt_clr, np_sample_cnt_en;
 
   //FSM flow
-  //1. PWRDN->PWRUP->IDLE->ONEST_0->ONEST_021->ONEST_1->PWRDN
+  //1. PWRDN->PWRUP->IDLE->ONEST_0->ONEST_021->ONEST_1->ONEST_DONE->PWRDN
   //2. PWRDN->PWRUP->IDLE->LP_0->LP_021->LP_1->LP_EVAL->LP_SLP->LP_PWRUP->LP0->
   //   LP_021->LP_1->LP_EVAL->NP_0->NP_021->NP_1->NP_EVAL->NP_0...repeat
-  //3. PWRDN->PWRUP->IDLE->NP_0->NP_021->NP_1->NP_EVAL->NP_0....repeat
-  typedef enum logic [3:0] {
-    PWRDN = 4'h0,// in the power down state
-    PWRUP = 4'h1,// being powered up
-    IDLE = 4'h2,// powered up after the pwrup_timer
-    ONEST_0 = 4'h3,// in oneshot mode; sample channel0 value
-    ONEST_021 = 4'h4,// in oneshot mode; transition from chn0 to chn1
-    ONEST_1 = 4'h5,// in oneshot mode; sample channel1 value
-    LP_0 = 4'h6,// in low-power mode, sample channel0 value
-    LP_021 = 4'h7,// in low-power mode, transition from chn0 to chn1
-    LP_1 = 4'h8,// in low-power mode, sample channel1 value
-    LP_EVAL = 4'h9,// in low-power mode, evaluate if there is a match
-    LP_SLP = 4'ha,// in low-power mode, go to sleep
-    LP_PWRUP = 4'hb,// in low-power mode, being powered up
-    NP_0 = 4'hc,// in normal-power mode, sample channel0 value
-    NP_021 = 4'hd,// in normal-power mode, transition from chn0 to chn1
-    NP_1 = 4'he,// in normal-power mode, sample channel1 value
-    NP_EVAL = 4'hf// in normal-power mode, detection is done
+  //3. PWRDN->PWRUP->IDLE->NP_0->NP_021->NP_1->NP_EVAL->NP_0/NP_DONE....repeat
+  typedef enum logic [4:0] {
+    PWRDN,// in the power down state
+    PWRUP,// being powered up
+    IDLE,// powered up after the pwrup_timer
+    ONEST_0,// in oneshot mode; sample channel0 value
+    ONEST_021,// in oneshot mode; transition from chn0 to chn1
+    ONEST_1,// in oneshot mode; sample channel1 value
+    ONEST_DONE,
+    LP_0,// in low-power mode, sample channel0 value
+    LP_021,// in low-power mode, transition from chn0 to chn1
+    LP_1,// in low-power mode, sample channel1 value
+    LP_EVAL,// in low-power mode, evaluate if there is a match
+    LP_SLP,// in low-power mode, go to sleep
+    LP_PWRUP,// in low-power mode, being powered up
+    NP_0,// in normal-power mode, sample channel0 value
+    NP_021,// in normal-power mode, transition from chn0 to chn1
+    NP_1,// in normal-power mode, sample channel1 value
+    NP_EVAL, // in normal-power mode, detection is done
+    NP_DONE
   } fsm_state_e;
 
   fsm_state_e fsm_state_q, fsm_state_d;
@@ -266,9 +268,15 @@ module adc_ctrl_fsm
         adc_pd_o = 1'b0;
         adc_chn_sel_o = 2'b10;
         if (adc_d_val_i) begin//sample chn1 value
-          oneshot_done_o = 1'b1;
-          fsm_state_d = PWRDN;
+          fsm_state_d = ONEST_DONE;
         end
+      end
+
+      // delay done assertion by one cycle to match
+      // adc capture register timing
+      ONEST_DONE: begin
+        oneshot_done_o = 1'b1;
+        fsm_state_d = PWRDN;
       end
 
       LP_0: begin
@@ -372,12 +380,19 @@ module adc_ctrl_fsm
             np_sample_cnt_clr = 1'b1;
           end
           else if ((np_sample_cnt_q == cfg_np_sample_cnt_i) && (stay_match == 1'b1)) begin
-            fsm_state_d = NP_0;
+            fsm_state_d = NP_DONE;
             np_sample_cnt_clr = 1'b1;
             adc_ctrl_done_o = 1'b1;
           end
         end
       end
+
+      // delay done assertion by one cycle to match with channel register timing
+      NP_DONE: begin
+        adc_ctrl_done_o = 1'b1;
+        fsm_state_d = NP_0;
+      end
+
 
       default: fsm_state_d = PWRDN;
     endcase
