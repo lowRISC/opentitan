@@ -53,7 +53,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       check_lc_output();
       process_otp_prog_rsp();
       process_otp_token_rsp();
-      process_jtag_riscv();
+      if (cfg.jtag_riscv_map != null) process_jtag_riscv();
     join_none
   endtask
 

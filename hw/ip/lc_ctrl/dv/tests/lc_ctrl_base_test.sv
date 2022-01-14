@@ -25,16 +25,14 @@ class lc_ctrl_base_test extends cip_base_test #(
   virtual function void add_message_demotes(dv_report_catcher catcher);
     string msg;
 
+    super.add_message_demotes(catcher);
+
     // Demote field access warnings to infos
     msg = "\s*Individual field access not available for field.*";
     catcher.add_change_sev("RegModel", msg, UVM_INFO);
 
     // Demote field access warnings to infos
     msg = "\s*Target bus does not support byte enabling.*";
-    catcher.add_change_sev("RegModel", msg, UVM_INFO);
-
-    // Demote address maps warnings
-    msg = "\s*map .* does not seem to be initialized correctly.*";
     catcher.add_change_sev("RegModel", msg, UVM_INFO);
 
     // Demote field busy warning
