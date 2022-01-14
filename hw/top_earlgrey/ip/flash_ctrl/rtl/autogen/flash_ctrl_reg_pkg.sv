@@ -13,6 +13,7 @@ package flash_ctrl_reg_pkg;
   parameter int RegPageWidth = 8;
   parameter int RegBankWidth = 1;
   parameter int NumRegions = 8;
+  parameter int NumInfoTypes = 3;
   parameter int NumInfos0 = 10;
   parameter int NumInfos1 = 1;
   parameter int NumInfos2 = 2;
