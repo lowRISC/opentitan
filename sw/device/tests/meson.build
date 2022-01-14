@@ -877,6 +877,36 @@ sw_tests += {
   }
 }
 
+# AON Timer wdog lc escalate test.
+aon_timer_wdog_lc_escalate_test = declare_dependency(
+  link_with: static_library(
+    'aon_timer_wdog_lc_escalate_test',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'aon_timer_wdog_lc_escalate_test.c',
+    ],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_dif_aon_timer,
+      sw_lib_dif_alert_handler,
+      sw_lib_dif_pwrmgr,
+      sw_lib_dif_rv_plic,
+      sw_lib_runtime_log,
+      sw_lib_runtime_ibex,
+      sw_lib_testing_aon_timer_testutils,
+      sw_lib_testing_alert_handler_testutils,
+      sw_lib_testing_rstmgr_testutils,
+      sw_lib_testing_rv_plic_testutils,
+      top_earlgrey,
+    ],
+  ),
+)
+sw_tests += {
+  'aon_timer_wdog_lc_escalate_test': {
+    'library': aon_timer_wdog_lc_escalate_test,
+  }
+}
+
 ###############################################################################
 # Auto-generated tests
 ###############################################################################
