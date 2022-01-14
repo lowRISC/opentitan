@@ -66,8 +66,10 @@ module spid_upload
   // Arbiter among these + SW access is in the SPID top module
   output sram_l2m_t sys_cmdfifo_sram_o,
   input  sram_m2l_t sys_cmdfifo_sram_i,
+  input             sys_cmdfifo_gnt_i, // from arbiter
   output sram_l2m_t sys_addrfifo_sram_o,
   input  sram_m2l_t sys_addrfifo_sram_i,
+  input             sys_addrfifo_gnt_i, // from arbiter
 
   // FIFO access in sys_clk (CMDFIFO/ ADDRFIFO)
   output logic       sys_cmdfifo_rvalid_o,
@@ -451,7 +453,7 @@ module spid_upload
   assign sys_sram_rvalid [SramCmdFifo] = sys_cmdfifo_sram_i.rvalid;
   assign sys_sram_rdata  [SramCmdFifo] = sys_cmdfifo_sram_i.rdata ;
   assign sys_sram_rerror [SramCmdFifo] = sys_cmdfifo_sram_i.rerror;
-  assign sys_sram_gnt    [SramCmdFifo] = sys_sram_req[SramCmdFifo];
+  assign sys_sram_gnt    [SramCmdFifo] = sys_cmdfifo_gnt_i;
 
   // AddrFifo
   prim_fifo_async_sram_adapter #(
@@ -511,7 +513,7 @@ module spid_upload
   assign sys_sram_rvalid [SramAddrFifo] = sys_addrfifo_sram_i.rvalid;
   assign sys_sram_rdata  [SramAddrFifo] = sys_addrfifo_sram_i.rdata ;
   assign sys_sram_rerror [SramAddrFifo] = sys_addrfifo_sram_i.rerror;
-  assign sys_sram_gnt    [SramAddrFifo] = sys_sram_req[SramAddrFifo];
+  assign sys_sram_gnt    [SramAddrFifo] = sys_addrfifo_gnt_i;
 
   // Payload Buffer
   spid_fifo2sram_adapter #(

@@ -140,6 +140,19 @@ module spi_device
   sram_l2m_t sys_sram_l2m [SysSramEnd]; // FW, CMDFIFO, ADDRFIFO
   sram_m2l_t sys_sram_m2l [SysSramEnd];
 
+  // Arbiter among Upload CmdFifo/AddrFifo & FW access
+  logic [SysSramEnd-1:0] sys_sram_req                ;
+  logic [SysSramEnd-1:0] sys_sram_gnt                ;
+  logic                  sys_sram_fw_gnt             ;
+  logic [SramAw-1:0]     sys_sram_addr   [SysSramEnd];
+  logic [SysSramEnd-1:0] sys_sram_write              ;
+  logic [SramDw-1:0]     sys_sram_wdata  [SysSramEnd];
+  logic [SramDw-1:0]     sys_sram_wmask  [SysSramEnd];
+  logic [SysSramEnd-1:0] sys_sram_rvalid             ;
+  logic [SramDw-1:0]     sys_sram_rdata  [SysSramEnd];
+  logic [1:0]            sys_sram_rerror [SysSramEnd];
+
+
   logic       cmdfifo_rvalid, cmdfifo_rready;
   logic [7:0] cmdfifo_rdata;
   logic       cmdfifo_notempty;
@@ -1389,9 +1402,11 @@ module spi_device
 
     .sys_cmdfifo_sram_o (sys_sram_l2m[SysSramCmdFifo]),
     .sys_cmdfifo_sram_i (sys_sram_m2l[SysSramCmdFifo]),
+    .sys_cmdfifo_gnt_i  (sys_sram_gnt[SysSramCmdFifo]),
 
     .sys_addrfifo_sram_o (sys_sram_l2m[SysSramAddrFifo]),
     .sys_addrfifo_sram_i (sys_sram_m2l[SysSramAddrFifo]),
+    .sys_addrfifo_gnt_i  (sys_sram_gnt[SysSramAddrFifo]),
 
     // SYS clock FIFO interface
     .sys_cmdfifo_rvalid_o (cmdfifo_rvalid),
@@ -1670,18 +1685,6 @@ module spi_device
   ////////////////////
   // Common modules //
   ////////////////////
-  // Arbiter among Upload CmdFifo/AddrFifo & FW access
-  logic [SysSramEnd-1:0] sys_sram_req                ;
-  logic [SysSramEnd-1:0] sys_sram_gnt                ;
-  logic                  sys_sram_fw_gnt             ;
-  logic [SramAw-1:0]     sys_sram_addr   [SysSramEnd];
-  logic [SysSramEnd-1:0] sys_sram_write              ;
-  logic [SramDw-1:0]     sys_sram_wdata  [SysSramEnd];
-  logic [SramDw-1:0]     sys_sram_wmask  [SysSramEnd];
-  logic [SysSramEnd-1:0] sys_sram_rvalid             ;
-  logic [SramDw-1:0]     sys_sram_rdata  [SysSramEnd];
-  logic [1:0]            sys_sram_rerror [SysSramEnd];
-
 
   logic [SramDw-1:0] sys_sram_l2m_fw_wmask;
 
@@ -1744,9 +1747,6 @@ module spi_device
     // lowest priority.
     `ASSERT(ReqAlwaysAccepted_A, sys_sram_req[i] |-> sys_sram_gnt[i])
   end : g_sram_connect
-
-  logic unused_sys_sram_gnt;
-  assign unused_sys_sram_gnt = ^sys_sram_gnt;
 
   prim_sram_arbiter #(
     .N      (SysSramEnd),
